@@ -288,6 +288,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	return dst;
 }
 
+// Goal: invalidate data sent to the GPU when the source (GS memory) is modified
+// Called each time you want to write to the GS memory
 void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, bool target)
 {
 	if(!o) return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
@@ -298,6 +300,8 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 	if(!target)
 	{
+		// Remove Source that have same BP as the render target (color&dss)
+		// rendering will dirty the copy
 		const list<Source*>& m = m_src.m_map[bp >> 5];
 
 		for(list<Source*>::const_iterator i = m.begin(); i != m.end(); )
@@ -341,6 +345,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 				if(!s->m_target)
 				{
+					// Invalidate data of input texture
 					if(s->m_repeating)
 					{
 						vector<GSVector2i>& l = s->m_p2t[page];
@@ -361,6 +366,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 				}
 				else
 				{
+					// render target used as input texture
 					// TODO
 
 					if(b)
@@ -419,6 +425,8 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 	}
 }
 
+// Goal: retrive the data from the GPU to the GS memory.
+// Called each time you want to read from the GS memory
 void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
 {
 	uint32 bp = o->bp;
@@ -443,6 +451,14 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
 		{
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
+				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
+				// t->m_valid will do the full target texture whereas r.intersect(t->m_valid) will be limited
+				// to the useful part for the transfer.
+				// 1/ Logically intersect must be enough, except if we miss some call to InvalidateLocalMem
+				// or it need the depth part too
+				// 2/ Read function is slow but I suspect the swizzle part to be costly. Maybe a compute shader
+				// that do the swizzle at the same time of the Stretching could save CPU computation.
+
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
 				if (r.x == 0 && r.y == 0) // Full screen read?
@@ -527,6 +543,7 @@ void GSTextureCache::IncAge()
 {
 	int maxage = m_src.m_used ? 3 : 30;
 
+	// You can't use m_map[page] because Source* are duplicated on several pages.
 	for(hash_set<Source*>::iterator i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end(); )
 	{
 		hash_set<Source*>::iterator j = i++;
@@ -595,6 +612,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(dst->m_type != RenderTarget)
 		{
+			// GH: caller was modifier to never hit this code. I don't think a zbuffer
+			// can be reused as an input texture
 			// TODO
 			delete src;
 			return NULL;
@@ -700,6 +719,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSTexture* st = src->m_texture ? src->m_texture : dst->m_texture;
 		GSTexture *dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
+		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
+		// However it is different here. We want to reuse a Render Target as a texture.
+		// Because the texture is already on the GPU, CPU can't convert it.
 		if (psm.pal > 0)
 			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
 
@@ -734,6 +756,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(tmp != NULL)
 		{
+			// tmp is texture before a MultiSample resolve
 			m_renderer->m_dev->Recycle(dst->m_texture);
 
 			dst->m_texture = tmp;
@@ -1159,11 +1182,16 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 	{
 		// TODO
 
+		// GH: I don't know why but it seems we only consider the first page for a render target
+
 		m_map[TEX0.TBP0 >> 5].push_front(s);
 
 		return;
 	}
 
+	// Remaining code will compute a list of pages that are dirty (in a similar fashion as GSOffset::GetPages)
+	// (Maybe GetPages could be used instead, perf opt?)
+	// The source pointer will be stored/duplicated in all m_map[array of pages]
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
 	GSVector2i bs = (TEX0.TBP0 & 31) == 0 ? psm.pgs : psm.bs;
@@ -1222,6 +1250,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 {
 	m_surfaces.erase(s);
 
+	// Source (except render target) is duplicated for each page they use.
 	for(size_t start = s->m_TEX0.TBP0 >> 5, end = s->m_target ? start : countof(m_map) - 1; start <= end; start++)
 	{
 		list<Source*>& m = m_map[start];

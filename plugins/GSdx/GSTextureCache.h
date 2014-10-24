@@ -93,7 +93,7 @@ public:
 	public:
 		hash_set<Source*> m_surfaces;
 		list<Source*> m_map[MAX_PAGES];
-		uint32 m_pages[16];
+		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;
 
 		SourceMap() : m_used(false) {memset(m_pages, 0, sizeof(m_pages));}
