@@ -128,7 +128,6 @@ set(UtilitiesSources
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
-	x86/MemcpyVibes.cpp
 	)
 
 # variable with all headers of this library
