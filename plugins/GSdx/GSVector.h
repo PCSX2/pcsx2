@@ -3810,7 +3810,8 @@ public:
 
 	template<int i> __forceinline GSVector8i sll() const
 	{
-		return GSVector8i(_mm256_slli_si128(m, i));
+		return GSVector8i(_mm256_slli_si256(m, i));
+		//return GSVector8i(_mm256_slli_si128(m, i));
 	}
 
 	__forceinline GSVector8i sra16(int i) const
@@ -4260,17 +4261,17 @@ public:
 		return cast(v0).insert<1>(v1);
 	}
 
-	template<> __forceinline GSVector8i gather32_32<uint8>(const uint8* ptr) const
+	__forceinline GSVector8i gather32_32(const uint8* ptr) const
 	{
 		return GSVector8i(_mm256_i32gather_epi32((const int*)ptr, m, 1)) & GSVector8i::x000000ff();
 	}
 
-	template<> __forceinline GSVector8i gather32_32<uint16>(const uint16* ptr) const
+	__forceinline GSVector8i gather32_32(const uint16* ptr) const
 	{
 		return GSVector8i(_mm256_i32gather_epi32((const int*)ptr, m, 2)) & GSVector8i::x0000ffff();
 	}
 
-	template<> __forceinline GSVector8i gather32_32<uint32>(const uint32* ptr) const
+	__forceinline GSVector8i gather32_32(const uint32* ptr) const
 	{
 		return GSVector8i(_mm256_i32gather_epi32((const int*)ptr, m, 4));
 	}
@@ -4296,12 +4297,12 @@ public:
 		return cast(v0).insert<1>(v1);
 	}
 
-	template<> __forceinline GSVector8i gather32_32<uint8, uint32>(const uint8* ptr1, const uint32* ptr2) const
+	__forceinline GSVector8i gather32_32(const uint8* ptr1, const uint32* ptr2) const
 	{
 		return gather32_32<uint8>(ptr1).gather32_32<uint32>(ptr2);
 	}
 
-	template<> __forceinline GSVector8i gather32_32<uint32, uint32>(const uint32* ptr1, const uint32* ptr2) const
+	__forceinline GSVector8i gather32_32(const uint32* ptr1, const uint32* ptr2) const
 	{
 		return gather32_32<uint32>(ptr1).gather32_32<uint32>(ptr2);
 	}
