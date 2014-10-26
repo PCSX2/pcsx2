@@ -92,6 +92,7 @@ set(GSdxSources
     GSDrawScanline.cpp
     GSDrawScanlineCodeGenerator.cpp
     GSDrawScanlineCodeGenerator.x86.avx.cpp
+    GSDrawScanlineCodeGenerator.x86.avx2.cpp
     GSDrawScanlineCodeGenerator.x64.cpp
     GSDrawScanlineCodeGenerator.x86.cpp
     GSDrawScanlineCodeGenerator.x64.avx.cpp
@@ -109,6 +110,7 @@ set(GSdxSources
     GSSetting.cpp
     GSSetupPrimCodeGenerator.cpp
     GSSetupPrimCodeGenerator.x86.avx.cpp
+    GSSetupPrimCodeGenerator.x86.avx2.cpp
     GSSetupPrimCodeGenerator.x64.avx.cpp
     GSSetupPrimCodeGenerator.x86.cpp
     GSSetupPrimCodeGenerator.x64.cpp

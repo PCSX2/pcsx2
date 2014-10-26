@@ -37,6 +37,7 @@ for ARG in "$@"; do
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
         --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
+        --no-simd    )  flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
 
         *)
             # Unknown option
@@ -58,6 +59,7 @@ for ARG in "$@"; do
             echo "--gles          : Replace openGL backend of GSdx by openGLES3"
             echo
             echo "--64-bit-dont-work : Don't use it!"
+            echo "--no-simd       : Only allow sse2"
             exit 1
     esac
 done
