@@ -28,6 +28,9 @@ build
 .DS_Store
 Thumbs.db
 
+Debug.txt
+install_log.txt
+
 Debug
 Release
 Devel
@@ -37,6 +40,7 @@ Devel
 /UpgradeLog2.XML
 /UpgradeLog3.XML
 
+/bin/pcsx2*
 /bin/bios
 /bin/dumps
 /bin/help
