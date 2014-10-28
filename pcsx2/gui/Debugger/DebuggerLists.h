@@ -47,8 +47,19 @@ protected:
 	virtual void onDoubleClick(int itemIndex, const wxPoint& point) { };
 	virtual void onRightClick(int itemIndex, const wxPoint& point) { };
 	virtual void onKeyDown(int key) { };
+
+	// This flag prevents resizing loop in the resizeColumn method of this class
+	// when the Windows Classic theme with some large resolutions around larger
+	// than 1024 x 768 have been chosen.
+	//
+	// The resizing loop will occur by the ListView_SetColumnWidth macro in the
+	// Windows SDK called by the wxListCtrl::SetColumnWidth method when the
+	// conditions above have been chosen.
+	bool m_isInResizeColumn;
+
 private:
 	void insertColumns(GenericListViewColumn* columns, int count);
+	void resizeColumn(int col, int width);
 	void resizeColumns(int totalWidth);
 	wxString OnGetItemText(long item, long col) const;
 
