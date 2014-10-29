@@ -74,8 +74,13 @@ public:
         memcpy(&info.lf, &nm.lfMenuFont, sizeof(LOGFONT));
         ms_systemMenuFont->Create(info);
 
-        if (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &ms_showCues, 0) == 0)
+        BOOL vParam = (ms_showCues == true) ? TRUE : FALSE;
+        if (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &vParam, 0) == FALSE) {
             ms_showCues = true;
+        }
+        else {
+            ms_showCues = (vParam == TRUE) ? true : false;
+        }
 #endif
 
         return true;
