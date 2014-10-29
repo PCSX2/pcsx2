@@ -19,7 +19,7 @@
 #include "DebugEvents.h"
 
 BEGIN_EVENT_TABLE(GenericListView, wxWindow)
-	EVT_SIZE(GenericListView::sizeEvent)
+	EVT_SIZE(GenericListView::sizeEventWrapper)
 	EVT_KEY_DOWN(GenericListView::keydownEvent)
 	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
 	EVT_RIGHT_UP(GenericListView::mouseEvent)
@@ -30,6 +30,8 @@ END_EVENT_TABLE()
 GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
 	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)
 {
+	m_isInSizeEventWrapper = false;
+
 	insertColumns(columns,columnCount);
 }
 
@@ -60,6 +62,19 @@ void GenericListView::resizeColumns(int totalWidth)
 void GenericListView::sizeEvent(wxSizeEvent& evt)
 {
 	resizeColumns(GetClientSize().x);
+}
+
+void GenericListView::sizeEventWrapper(wxSizeEvent& evt)
+{
+	if (m_isInSizeEventWrapper) {
+		return;
+	}
+
+	m_isInSizeEventWrapper = true;
+
+	sizeEvent(evt);
+
+	m_isInSizeEventWrapper = false;
 }
 
 void GenericListView::keydownEvent(wxKeyEvent& evt)

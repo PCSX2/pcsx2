@@ -36,7 +36,7 @@ public:
 
 	DECLARE_EVENT_TABLE()
 protected:
-	void sizeEvent(wxSizeEvent& evt);
+	void sizeEventWrapper(wxSizeEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
 	void postEvent(wxEventType type, int value);
 	void mouseEvent(wxMouseEvent& evt);
@@ -47,10 +47,21 @@ protected:
 	virtual void onDoubleClick(int itemIndex, const wxPoint& point) { };
 	virtual void onRightClick(int itemIndex, const wxPoint& point) { };
 	virtual void onKeyDown(int key) { };
+
+	// This flag prevents resizing loop in the sizeEventWrapper method of this
+	// class when the Windows Classic theme with some large resolutions around
+	// larger than 1024 x 768 have been chosen.
+	//
+	// The resizing loop will occur by the ListView_SetColumnWidth macro in the
+	// Windows SDK called by the wxListCtrl::SetColumnWidth method when the
+	// conditions above have been chosen.
+	bool m_isInSizeEventWrapper;
+
 private:
 	void insertColumns(GenericListViewColumn* columns, int count);
 	void resizeColumns(int totalWidth);
 	wxString OnGetItemText(long item, long col) const;
+	void sizeEvent(wxSizeEvent& evt);
 
 	GenericListViewColumn* columns;
 	wxPoint clickPos;
