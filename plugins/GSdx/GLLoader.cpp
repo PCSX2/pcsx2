@@ -158,10 +158,10 @@ namespace GLLoader {
 	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
-	bool found_GL_ARB_buffer_storage = false;
 	// Note: except Apple, all drivers support explicit uniform location
 	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
 	// GL4 hardware
+	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
 	bool found_GL_ARB_gpu_shader5 = false;
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
