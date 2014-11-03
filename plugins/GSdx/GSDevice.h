@@ -49,6 +49,7 @@ public:
 class ExternalFXConstantBuffer
 {
 public:
+	GSVector2 xyFrame;
 	GSVector4 rcpFrame;
 	GSVector4 rcpFrameOpt;
 
