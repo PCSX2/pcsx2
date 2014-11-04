@@ -19,7 +19,7 @@
 #include "DebugEvents.h"
 
 BEGIN_EVENT_TABLE(GenericListView, wxWindow)
-	EVT_SIZE(GenericListView::sizeEvent)
+	EVT_SIZE(GenericListView::sizeEventWrapper)
 	EVT_KEY_DOWN(GenericListView::keydownEvent)
 	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
 	EVT_RIGHT_UP(GenericListView::mouseEvent)
@@ -30,9 +30,9 @@ END_EVENT_TABLE()
 GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
 	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)
 {
-	m_isInResizeColumn = false;
+	m_isInSizeEventWrapper = false;
 
-	insertColumns(columns, columnCount);
+	insertColumns(columns,columnCount);
 }
 
 void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
@@ -51,28 +51,30 @@ void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
 	this->columns = columns;
 }
 
-void GenericListView::resizeColumn(int col, int width)
-{
-	if (!m_isInResizeColumn) {
-		m_isInResizeColumn = true;
-
-		SetColumnWidth(col, width);
-
-		m_isInResizeColumn = false;
-	}
-}
-
 void GenericListView::resizeColumns(int totalWidth)
 {
 	for (int i = 0; i < GetColumnCount(); i++)
 	{
-		resizeColumn(i, totalWidth * columns[i].size);
+		SetColumnWidth(i,totalWidth*columns[i].size);
 	}
 }
 
 void GenericListView::sizeEvent(wxSizeEvent& evt)
 {
 	resizeColumns(GetClientSize().x);
+}
+
+void GenericListView::sizeEventWrapper(wxSizeEvent& evt)
+{
+	if (m_isInSizeEventWrapper) {
+		return;
+	}
+
+	m_isInSizeEventWrapper = true;
+
+	sizeEvent(evt);
+
+	m_isInSizeEventWrapper = false;
 }
 
 void GenericListView::keydownEvent(wxKeyEvent& evt)
