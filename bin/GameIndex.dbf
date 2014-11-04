@@ -3101,6 +3101,10 @@ Serial = SLUS-20315
 Name   = Spyro the Dragon - Enter the Dragonfly
 Region = NTSC-U
 Compat = 2
+[patches = 4B8E0DE8]
+	comment=Spyro NTSC startup fix
+	patch=1,EE,001e71dc,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20316
 Name   = WWF SmackDown! - Just Bring It!
@@ -33609,6 +33613,10 @@ Region = PAL-Unk
 Serial = SLES-51043
 Name   = Spyro - Enter the Dragonfly
 Region = PAL-Unk
+[patches = 0EF1D4BA]
+	comment=Spyro PAL startup fix
+	patch=1,EE,001E763C,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLES-51044
 Name   = Burnout 2 - Point of Impact
