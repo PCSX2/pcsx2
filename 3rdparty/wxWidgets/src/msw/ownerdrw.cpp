@@ -74,8 +74,13 @@ public:
         memcpy(&info.lf, &nm.lfMenuFont, sizeof(LOGFONT));
         ms_systemMenuFont->Create(info);
 
-        if (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &ms_showCues, 0) == 0)
+        BOOL vParam = (ms_showCues == true) ? TRUE : FALSE;
+        if (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &vParam, 0) == FALSE) {
             ms_showCues = true;
+        }
+        else {
+            ms_showCues = (vParam == TRUE) ? true : false;
+        }
 #endif
 
         return true;
@@ -90,7 +95,7 @@ public:
     static wxFont* ms_systemMenuFont;
     static int ms_systemMenuButtonWidth;   // windows clean install default
     static int ms_systemMenuHeight;        // windows clean install default
-    static BOOL ms_showCues;
+    static bool ms_showCues;
 private:
     DECLARE_DYNAMIC_CLASS(wxMSWSystemMenuFontModule)
 };
@@ -102,7 +107,7 @@ private:
 wxFont* wxMSWSystemMenuFontModule::ms_systemMenuFont = NULL;
 int wxMSWSystemMenuFontModule::ms_systemMenuButtonWidth = 18;   // windows clean install default
 int wxMSWSystemMenuFontModule::ms_systemMenuHeight = 18;        // windows clean install default
-BOOL wxMSWSystemMenuFontModule::ms_showCues = true;
+bool wxMSWSystemMenuFontModule::ms_showCues = true;
 
 IMPLEMENT_DYNAMIC_CLASS(wxMSWSystemMenuFontModule, wxModule)
 
