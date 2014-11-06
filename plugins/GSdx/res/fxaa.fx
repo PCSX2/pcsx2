@@ -140,7 +140,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexOff(t, p, o, r) tex2Dlod(t, float4(p + (o * r), 0, 0))
 #endif
 
-#define FxaaEdgeThreshold 0.033
+#define FxaaEdgeThreshold 0.063
 #define FxaaEdgeThresholdMin 0.00
 #define FXAA_QUALITY__P0 1.0
 #define FXAA_QUALITY__P1 1.5

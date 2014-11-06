@@ -75,8 +75,8 @@ float RGBLuminance(float3 color)
 #endif
 
 #if (FxaaQuality == 4)
-#define FxaaEdgeThreshold 0.033
-#define FxaaEdgeThresholdMin 0.0
+#define FxaaEdgeThreshold 0.063
+#define FxaaEdgeThresholdMin 0.000
 #elif (FxaaQuality == 3)
 #define FxaaEdgeThreshold 0.125
 #define FxaaEdgeThresholdMin 0.0312
@@ -701,11 +701,11 @@ float4 GaussianPass(float4 color, float2 texcoord)
 #endif
 
 /*------------------------------------------------------------------------------
-                          [SCALER CODE SECTION]
+                         [BICUBIC SCALAR CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (BICUBLIC_SCALER == 1)
-float4 BicubicScaler(in SamplerState tex, in float2 uv, in float2 texSize)
+#if (BICUBLIC_SCALAR == 1)
+float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
 {
     float2 rec_nrCP = float2(1.0/texSize.x, 1.0/texSize.y);
 
@@ -751,24 +751,18 @@ float4 BicubicScaler(in SamplerState tex, in float2 uv, in float2 texSize)
     return res;
 }
 
-float4 BiCubicScalerPass(float4 color, float2 texcoord)
+float4 BiCubicScalarPass(float4 color, float2 texcoord)
 {
-    color = BicubicScaler(TextureSampler, texcoord, screenSize);
+    color = BicubicScalar(TextureSampler, texcoord, screenSize);
     return color;
 }
 #endif
 
-#if (LANCZOS_SCALER == 1)
-float4 weight4(float x)
-{
-    #define FIX(c) max(abs(c), 1e-5);
-    const float PI = 3.1415926535897932384626433832795;
+/*------------------------------------------------------------------------------
+                         [LANCZOS SCALAR CODE SECTION]
+------------------------------------------------------------------------------*/
 
-    float4 sample = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
-    float4 ret = sin(sample) * sin(sample / 2.0) / (sample * sample);
-    return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
-}
-
+#if (LANCZOS_SCALAR == 1)
 float3 pixel(float xpos, float ypos)
 {
     return Texture.Sample(TextureSampler, float2(xpos, ypos)).rgb;
@@ -780,15 +774,28 @@ float3 line_run(float ypos, float4 xpos, float4 linetaps)
                                   pixel(xpos.z, ypos), pixel(xpos.w, ypos)));
 }
 
-float4 LanczosScaler(float2 texcoord, float2 texSize)
+float4 weight4(float x)
+{
+    #define FIX(c) max(abs(c), 1e-5);
+    const float PI = 3.1415926535897932384626433832795;
+
+    float4 sample = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
+    float4 ret = sin(sample) * sin(sample / 2.0) / (sample * sample);
+
+    return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
+}
+
+float4 LanczosScalar(float2 texcoord, float2 texSize)
 {
     float2 stepxy = 1.0 / texSize;
     float2 pos = texcoord + stepxy;
     float2 f = frac(pos / stepxy);
 
     float2 xystart = (-2.0 - f) * stepxy + pos;
-    float4 xpos = float4(xystart.x, xystart.x + stepxy.x, xystart.x +
-    stepxy.x * 2.0, xystart.x + stepxy.x * 3.0);
+    float4 xpos = float4(xystart.x,
+    xystart.x + stepxy.x,
+    xystart.x + stepxy.x * 2.0,
+    xystart.x + stepxy.x * 3.0);
 
     float4 linetaps = weight4(f.x);
     float4 columntaps = weight4(f.y);
@@ -801,9 +808,9 @@ float4 LanczosScaler(float2 texcoord, float2 texSize)
     line_run(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
 }
 
-float4 LanczosScalerPass(float4 color, float2 texcoord)
+float4 LanczosScalarPass(float4 color, float2 texcoord)
 {
-    color = LanczosScaler(texcoord, screenSize);
+    color = LanczosScalar(texcoord, screenSize);
     return color;
 }
 #endif
@@ -940,7 +947,7 @@ float4 VibrancePass(float4 color, float2 texcoord)
 #if (BLENDED_BLOOM == 1)
 float3 BlendAddLight(float3 color, float3 bloom)
 {
-    return color + bloom;
+    return (color + bloom) * 0.75f;
 }
 
 float3 BlendScreen(float3 color, float3 bloom)
@@ -948,10 +955,17 @@ float3 BlendScreen(float3 color, float3 bloom)
     return (color + bloom) - (color * bloom);
 }
 
-float3 BlendBloom(float3 color, float3 bloom)
+float3 BlendLuma(float3 color, float3 bloom)
 {
-    float3 coeff = step(0.5, color);
-    return lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), coeff);
+    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), RGBLuminance(color + bloom));
+}
+
+float3 BlendGlow(float3 color, float3 bloom)
+{
+    float3 glow = step(0.5, color);
+    glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
+
+    return glow;
 }
 
 float3 BlendOverlay(float3 color, float3 bloom)
@@ -983,7 +997,7 @@ float3 BloomCorrection(float3 color)
     color.g = (1.0 / (1.0 + exp(float(-BloomGreens) * (color.g - 0.5))) - Y) / (1.0 - 2.0 * Y);
     color.b = (1.0 / (1.0 + exp(float(-BloomBlues) * (color.b - 0.5))) - Z) / (1.0 - 2.0 * Z);
 
-    return saturate(color);
+    return color;
 }
 
 float4 BloomPass(float4 color, float2 texcoord)
@@ -991,8 +1005,8 @@ float4 BloomPass(float4 color, float2 texcoord)
     float defocus = 1.25;
     float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
 
-    float2 dx = float2(invDefocus.x * float(BlendSpread), 0.0);
-    float2 dy = float2(0.0, invDefocus.y * float(BlendSpread));
+    float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
+    float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
     float2 dx2 = 2.0 * dx;
     float2 dy2 = 2.0 * dy;
@@ -1123,7 +1137,7 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
     #if (TonemapType == 1)
         float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
     #elif (TonemapType == 2)
-        float Lp = Yxy.r * FilmicTonemap(Yxy.rrr) / RGBLuminance(Yxy.rrr) *
+        float Lp = Yxy.r * FilmicTonemap(Yxy.rrr).r / RGBLuminance(Yxy.rrr) *
         float(Exposure) / (float(Luminance) + delta);
     #endif
 
@@ -1585,12 +1599,12 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
         color = BiCubicPass(color, texcoord);
     #endif
 
-    #if (BICUBLIC_SCALER == 1)
-        color = BiCubicScalerPass(color, texcoord);
+    #if (BICUBLIC_SCALAR == 1)
+        color = BiCubicScalarPass(color, texcoord);
     #endif
 
-    #if (LANCZOS_SCALER == 1)
-        color = LanczosScalerPass(color, texcoord);
+    #if (LANCZOS_SCALAR == 1)
+        color = LanczosScalarPass(color, texcoord);
     #endif
 
     #if (UHQ_FXAA == 1)
