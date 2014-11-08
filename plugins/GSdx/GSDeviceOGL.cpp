@@ -172,7 +172,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 #ifndef ENABLE_GLES
 #ifdef ENABLE_OGL_DEBUG
-	gl_DebugMessageCallback(DebugOutputToFile, NULL);
+	gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 #endif
 #endif
