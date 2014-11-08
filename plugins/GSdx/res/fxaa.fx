@@ -19,8 +19,7 @@ sampler2D TextureSampler : register(s0);
 
 cbuffer cb0
 {
-	float4 _rcpFrame : VIEWPORT : register(c0);
-	static const float GammaConst = 2.2;
+	float4 _rcpFrame : register(c0);
 };
 
 struct VS_INPUT
@@ -54,54 +53,47 @@ float RGBLuminance(float3 color)
 	return dot(color.rgb, lumCoeff);
 }
 
+#define PixelSize float2(_rcpFrame.x, _rcpFrame.y)
+
+/*------------------------------------------------------------------------------
+                        [GAMMA PREPASS CODE SECTION]
+------------------------------------------------------------------------------*/
+
 float3 RGBGammaToLinear(float3 color, float gamma)
 {
-	color = abs(color);
-
-	color.r = (color.r <= 0.0404482362771082) ? saturate(color.r / 12.92) : 
-	saturate(pow((color.r + 0.055) / 1.055, gamma));
-
-	color.g = (color.g <= 0.0404482362771082) ? saturate(color.g / 12.92) : 
-	saturate(pow((color.g + 0.055) / 1.055, gamma));
-
-	color.b = (color.b <= 0.0404482362771082) ? saturate(color.b / 12.92) : 
-	saturate(pow((color.b + 0.055) / 1.055, gamma));
+	color = saturate(color);
+	color.r = (color.r <= 0.0404482362771082) ?
+	color.r / 12.92 : pow((color.r + 0.055) / 1.055, gamma);
+	color.g = (color.g <= 0.0404482362771082) ?
+	color.g / 12.92 : pow((color.g + 0.055) / 1.055, gamma);
+	color.b = (color.b <= 0.0404482362771082) ?
+	color.b / 12.92 : pow((color.b + 0.055) / 1.055, gamma);
 
 	return color;
 }
 
 float3 LinearToRGBGamma(float3 color, float gamma)
 {
-	color = abs(color);
-
-	color.r = (color.r <= 0.00313066844250063) ? saturate(color.r * 12.92) : 1.055 * 
-	saturate(pow(color.r, 1.0 / gamma)) - 0.055;
-
-	color.g = (color.g <= 0.00313066844250063) ? saturate(color.g * 12.92) : 1.055 * 
-	saturate(pow(color.g, 1.0 / gamma)) - 0.055;
-
-	color.b = (color.b <= 0.00313066844250063) ? saturate(color.b * 12.92) : 1.055 * 
-	saturate(pow(color.b, 1.0 / gamma)) - 0.055;
+	color = saturate(color);
+	color.r = (color.r <= 0.00313066844250063) ?
+	color.r * 12.92 : 1.055 * pow(color.r, 1.0 / gamma) - 0.055;
+	color.g = (color.g <= 0.00313066844250063) ?
+	color.g * 12.92 : 1.055 * pow(color.g, 1.0 / gamma) - 0.055;
+	color.b = (color.b <= 0.00313066844250063) ?
+	color.b * 12.92 : 1.055 * pow(color.b, 1.0 / gamma) - 0.055;
 
 	return color;
 }
 
-#define PixelSize float2(_rcpFrame.x, _rcpFrame.y)
-#define GammaCorrection(color, gamma) pow(color, gamma)
-#define InverseGammaCorrection(color, gamma) pow(color, 1.0/gamma)
-
-/*------------------------------------------------------------------------------
-						 [GAMMA PREPASS CODE SECTION]
-------------------------------------------------------------------------------*/
-
 float4 PreGammaPass(float4 color, float2 uv0)
-{	
+{
 	#if (SHADER_MODEL >= 0x400)
 		color = Texture.Sample(TextureSampler, uv0);
 	#else
 		color = tex2D(TextureSampler, uv0);
 	#endif
 
+	const float GammaConst = 2.233;
 	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
 	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
 	color.a = RGBLuminance(color.rgb);
@@ -148,7 +140,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexOff(t, p, o, r) tex2Dlod(t, float4(p + (o * r), 0, 0))
 #endif
 
-#define FxaaEdgeThreshold 0.033
+#define FxaaEdgeThreshold 0.063
 #define FxaaEdgeThresholdMin 0.00
 #define FXAA_QUALITY__P0 1.0
 #define FXAA_QUALITY__P1 1.5

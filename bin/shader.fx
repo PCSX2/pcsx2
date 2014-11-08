@@ -1,5 +1,5 @@
 /*===============================================================================*\
-|########################     [GSdx FX 2.00 Revised]      ########################|
+|########################      [GSdx FX Suite v2.20]      ########################|
 |##########################        By Asmodean          ##########################|
 ||                                                                               ||
 ||          This program is free software; you can redistribute it and/or        ||
@@ -14,6 +14,11 @@
 ||                                                                               ||
 |#################################################################################|
 \*===============================================================================*/
+
+#if (SHADER_MODEL <= 0x300)
+#error GSdx FX requires shader model 4.0(Direct3D10) or higher. Use GSdx DX10/11.
+#endif
+
 #include "GSdx_FX_Settings.ini"
 
 /*------------------------------------------------------------------------------
@@ -22,111 +27,38 @@
 
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
-SamplerState BloomSampler : register(s1);
 
 cbuffer cb0
 {
-	float4 _rcpFrame : VIEWPORT : register(c0);
-	static const float GammaConst = 2.2;
+    float2 _xyFrame;
+    float4 _rcpFrame;
 };
 
 struct VS_INPUT
 {
-	float4 p : POSITION;
-	float2 t : TEXCOORD0;
+    float4 p : POSITION;
+    float2 t : TEXCOORD0;
 };
 
 struct VS_OUTPUT
 {
-	float4 p : SV_Position;
-	float2 t : TEXCOORD0;
+    float4 p : SV_Position;
+    float2 t : TEXCOORD0;
 };
 
 struct PS_OUTPUT
 {
-	float4 c : SV_Target0;
+    float4 c : SV_Target0;
 };
 
-float TrueLuminance(float3 color)
-{
-	float maxRGB;
-	float minRGB;
-	float r = color.x;
-	float g = color.y;
-	float b = color.z;
-
-	if (r >= g) { maxRGB = r; }
-	if (r >= b) { maxRGB = r; }
-	if (g >= r) { maxRGB = g; }
-	if (g >= b) { maxRGB = g; }
-	if (b >= r) { maxRGB = b; }
-	if (b >= g) { maxRGB = b; }
-
-	if (r <= g) { minRGB = r; }
-	if (r <= b) { minRGB = r; }
-	if (g <= r) { minRGB = g; }
-	if (g <= b) { minRGB = g; }
-	if (b <= r) { minRGB = b; }
-	if (b <= g) { minRGB = b; }
-
-	float lumin = ((maxRGB + minRGB) / 2);
-	return lumin;
-}
+static float2 screenSize = _xyFrame;
+static float2 pixelSize = _rcpFrame.xy;
+static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
+static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
 
 float RGBLuminance(float3 color)
 {
-	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
-	return dot(color.rgb, lumCoeff);
-}
-
-float3 RGBGammaToLinear(float3 color, float gamma)
-{
-	color = abs(color);
-
-	color.r = (color.r <= 0.0404482362771082) ? saturate(color.r / 12.92) :
-	saturate(pow((color.r + 0.055) / 1.055, gamma));
-
-	color.g = (color.g <= 0.0404482362771082) ? saturate(color.g / 12.92) :
-	saturate(pow((color.g + 0.055) / 1.055, gamma));
-
-	color.b = (color.b <= 0.0404482362771082) ? saturate(color.b / 12.92) :
-	saturate(pow((color.b + 0.055) / 1.055, gamma));
-
-	return color;
-}
-
-float3 LinearToRGBGamma(float3 color, float gamma)
-{
-	color = abs(color);
-
-	color.r = (color.r <= 0.00313066844250063) ? saturate(color.r * 12.92) : 1.055 *
-	saturate(pow(color.r, 1.0 / gamma)) - 0.055;
-
-	color.g = (color.g <= 0.00313066844250063) ? saturate(color.g * 12.92) : 1.055 *
-	saturate(pow(color.g, 1.0 / gamma)) - 0.055;
-
-	color.b = (color.b <= 0.00313066844250063) ? saturate(color.b * 12.92) : 1.055 *
-	saturate(pow(color.b, 1.0 / gamma)) - 0.055;
-
-	return color;
-}
-
-#define PixelSize float2(_rcpFrame.x, _rcpFrame.y)
-#define GammaCorrection(color, gamma) pow(color, gamma)
-#define InverseGammaCorrection(color, gamma) pow(color, 1.0/gamma)
-
-/*------------------------------------------------------------------------------
-                        [GAMMA PREPASS CODE SECTION]
-------------------------------------------------------------------------------*/
-
-float4 PreGammaPass(float4 color, float2 uv0)
-{
-	color = Texture.Sample(TextureSampler, uv0);
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
-	color.a = RGBLuminance(color.rgb);
-
-	return color;
+    return dot(color.rgb, lumCoeff);
 }
 
 /*------------------------------------------------------------------------------
@@ -137,14 +69,14 @@ float4 PreGammaPass(float4 color, float2 uv0)
 #if (SHADER_MODEL >= 0x500)
 #define FXAA_HLSL_5 1
 #define FXAA_GATHER4_ALPHA 1
-#elif (SHADER_MODEL >= 0x400)
+#else
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
 #endif
 
 #if (FxaaQuality == 4)
-#define FxaaEdgeThreshold 0.033
-#define FxaaEdgeThresholdMin 0.0
+#define FxaaEdgeThreshold 0.063
+#define FxaaEdgeThresholdMin 0.000
 #elif (FxaaQuality == 3)
 #define FxaaEdgeThreshold 0.125
 #define FxaaEdgeThresholdMin 0.0312
@@ -189,572 +121,697 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 
 float FxaaLuma(float4 rgba)
 {
-	rgba.w = RGBLuminance(rgba.xyz);
-	return rgba.w;
+    rgba.w = RGBLuminance(rgba.xyz);
+    return rgba.w;
 }
 
 float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaSubpix, float fxaaEdgeThreshold, float fxaaEdgeThresholdMin)
 {
-	float2 posM;
-	posM.x = pos.x;
-	posM.y = pos.y;
+    float2 posM;
+    posM.x = pos.x;
+    posM.y = pos.y;
 
-	#if (FXAA_GATHER4_ALPHA == 1)
-	float4 rgbyM = FxaaTexTop(tex, posM);
-	float4 luma4A = FxaaTexAlpha4(tex, posM);
-	float4 luma4B = FxaaTexOffAlpha4(tex, posM, int2(-1, -1));
-	rgbyM.w = RGBLuminance(rgbyM.xyz);
+    #if (FXAA_GATHER4_ALPHA == 1)
+    float4 rgbyM = FxaaTexTop(tex, posM);
+    float4 luma4A = FxaaTexAlpha4(tex, posM);
+    float4 luma4B = FxaaTexOffAlpha4(tex, posM, int2(-1, -1));
+    rgbyM.w = RGBLuminance(rgbyM.xyz);
 
-	#define lumaM rgbyM.w
-	#define lumaE luma4A.z
-	#define lumaS luma4A.x
-	#define lumaSE luma4A.y
-	#define lumaNW luma4B.w
-	#define lumaN luma4B.z
-	#define lumaW luma4B.x
+    #define lumaM rgbyM.w
+    #define lumaE luma4A.z
+    #define lumaS luma4A.x
+    #define lumaSE luma4A.y
+    #define lumaNW luma4B.w
+    #define lumaN luma4B.z
+    #define lumaW luma4B.x
     
-	#else
-	float4 rgbyM = FxaaTexTop(tex, posM);
-	rgbyM.w = RGBLuminance(rgbyM.xyz);
-	#define lumaM rgbyM.w
+    #else
+    float4 rgbyM = FxaaTexTop(tex, posM);
+    rgbyM.w = RGBLuminance(rgbyM.xyz);
+    #define lumaM rgbyM.w
 
-	float lumaS = FxaaLuma(FxaaTexOff(tex, posM, int2( 0, 1), fxaaRcpFrame.xy));
-	float lumaE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 0), fxaaRcpFrame.xy));
-	float lumaN = FxaaLuma(FxaaTexOff(tex, posM, int2( 0,-1), fxaaRcpFrame.xy));
-	float lumaW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 0), fxaaRcpFrame.xy));
-	#endif
+    float lumaS = FxaaLuma(FxaaTexOff(tex, posM, int2( 0, 1), fxaaRcpFrame.xy));
+    float lumaE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 0), fxaaRcpFrame.xy));
+    float lumaN = FxaaLuma(FxaaTexOff(tex, posM, int2( 0,-1), fxaaRcpFrame.xy));
+    float lumaW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 0), fxaaRcpFrame.xy));
+    #endif
 
-	float maxSM = max(lumaS, lumaM);
-	float minSM = min(lumaS, lumaM);
-	float maxESM = max(lumaE, maxSM);
-	float minESM = min(lumaE, minSM);
-	float maxWN = max(lumaN, lumaW);
-	float minWN = min(lumaN, lumaW);
+    float maxSM = max(lumaS, lumaM);
+    float minSM = min(lumaS, lumaM);
+    float maxESM = max(lumaE, maxSM);
+    float minESM = min(lumaE, minSM);
+    float maxWN = max(lumaN, lumaW);
+    float minWN = min(lumaN, lumaW);
 
-	float rangeMax = max(maxWN, maxESM);
-	float rangeMin = min(minWN, minESM);
-	float range = rangeMax - rangeMin;
-	float rangeMaxScaled = rangeMax * fxaaEdgeThreshold;
-	float rangeMaxClamped = max(fxaaEdgeThresholdMin, rangeMaxScaled);
+    float rangeMax = max(maxWN, maxESM);
+    float rangeMin = min(minWN, minESM);
+    float range = rangeMax - rangeMin;
+    float rangeMaxScaled = rangeMax * fxaaEdgeThreshold;
+    float rangeMaxClamped = max(fxaaEdgeThresholdMin, rangeMaxScaled);
 
-	bool earlyExit = range < rangeMaxClamped;
-	#if (FxaaEarlyExit == 1)
-	if(earlyExit) { return rgbyM; }
-	#endif
+    bool earlyExit = range < rangeMaxClamped;
+    #if (FxaaEarlyExit == 1)
+    if(earlyExit) { return rgbyM; }
+    #endif
 
-	#if (FXAA_GATHER4_ALPHA == 0)
-	float lumaNW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1,-1), fxaaRcpFrame.xy));
-	float lumaSE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 1), fxaaRcpFrame.xy));
-	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
-	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#else
-	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
-	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#endif
+    #if (FXAA_GATHER4_ALPHA == 0)
+    float lumaNW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1,-1), fxaaRcpFrame.xy));
+    float lumaSE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 1), fxaaRcpFrame.xy));
+    float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
+    float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
+    #else
+    float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
+    float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
+    #endif
 
-	float lumaNS = lumaN + lumaS;
-	float lumaWE = lumaW + lumaE;
-	float subpixRcpRange = 1.0/range;
-	float subpixNSWE = lumaNS + lumaWE;
-	float edgeHorz1 = (-2.0 * lumaM) + lumaNS;
-	float edgeVert1 = (-2.0 * lumaM) + lumaWE;
-	float lumaNESE = lumaNE + lumaSE;
-	float lumaNWNE = lumaNW + lumaNE;
-	float edgeHorz2 = (-2.0 * lumaE) + lumaNESE;
-	float edgeVert2 = (-2.0 * lumaN) + lumaNWNE;
+    float lumaNS = lumaN + lumaS;
+    float lumaWE = lumaW + lumaE;
+    float subpixRcpRange = 1.0/range;
+    float subpixNSWE = lumaNS + lumaWE;
+    float edgeHorz1 = (-2.0 * lumaM) + lumaNS;
+    float edgeVert1 = (-2.0 * lumaM) + lumaWE;
+    float lumaNESE = lumaNE + lumaSE;
+    float lumaNWNE = lumaNW + lumaNE;
+    float edgeHorz2 = (-2.0 * lumaE) + lumaNESE;
+    float edgeVert2 = (-2.0 * lumaN) + lumaNWNE;
 
-	float lumaNWSW = lumaNW + lumaSW;
-	float lumaSWSE = lumaSW + lumaSE;
-	float edgeHorz4 = (abs(edgeHorz1) * 2.0) + abs(edgeHorz2);
-	float edgeVert4 = (abs(edgeVert1) * 2.0) + abs(edgeVert2);
-	float edgeHorz3 = (-2.0 * lumaW) + lumaNWSW;
-	float edgeVert3 = (-2.0 * lumaS) + lumaSWSE;
-	float edgeHorz = abs(edgeHorz3) + edgeHorz4;
-	float edgeVert = abs(edgeVert3) + edgeVert4;
+    float lumaNWSW = lumaNW + lumaSW;
+    float lumaSWSE = lumaSW + lumaSE;
+    float edgeHorz4 = (abs(edgeHorz1) * 2.0) + abs(edgeHorz2);
+    float edgeVert4 = (abs(edgeVert1) * 2.0) + abs(edgeVert2);
+    float edgeHorz3 = (-2.0 * lumaW) + lumaNWSW;
+    float edgeVert3 = (-2.0 * lumaS) + lumaSWSE;
+    float edgeHorz = abs(edgeHorz3) + edgeHorz4;
+    float edgeVert = abs(edgeVert3) + edgeVert4;
 
-	float subpixNWSWNESE = lumaNWSW + lumaNESE;
-	float lengthSign = fxaaRcpFrame.x;
-	bool horzSpan = edgeHorz >= edgeVert;
-	float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
-	if(!horzSpan) lumaN = lumaW;
-	if(!horzSpan) lumaS = lumaE;
-	if(horzSpan) lengthSign = fxaaRcpFrame.y;
-	float subpixB = (subpixA * (1.0/12.0)) - lumaM;
+    float subpixNWSWNESE = lumaNWSW + lumaNESE;
+    float lengthSign = fxaaRcpFrame.x;
+    bool horzSpan = edgeHorz >= edgeVert;
+    float subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
+    if(!horzSpan) lumaN = lumaW;
+    if(!horzSpan) lumaS = lumaE;
+    if(horzSpan) lengthSign = fxaaRcpFrame.y;
+    float subpixB = (subpixA * (1.0/12.0)) - lumaM;
 
-	float gradientN = lumaN - lumaM;
-	float gradientS = lumaS - lumaM;
-	float lumaNN = lumaN + lumaM;
-	float lumaSS = lumaS + lumaM;
-	bool pairN = abs(gradientN) >= abs(gradientS);
-	float gradient = max(abs(gradientN), abs(gradientS));
-	if(pairN) lengthSign = -lengthSign;
-	float subpixC = FxaaSat(abs(subpixB) * subpixRcpRange);
+    float gradientN = lumaN - lumaM;
+    float gradientS = lumaS - lumaM;
+    float lumaNN = lumaN + lumaM;
+    float lumaSS = lumaS + lumaM;
+    bool pairN = abs(gradientN) >= abs(gradientS);
+    float gradient = max(abs(gradientN), abs(gradientS));
+    if(pairN) lengthSign = -lengthSign;
+    float subpixC = FxaaSat(abs(subpixB) * subpixRcpRange);
 
-	float2 posB;
-	posB.x = posM.x;
-	posB.y = posM.y;
-	float2 offNP;
-	offNP.x = (!horzSpan) ? 0.0 : fxaaRcpFrame.x;
-	offNP.y = ( horzSpan) ? 0.0 : fxaaRcpFrame.y;
-	if(!horzSpan) posB.x += lengthSign * 0.5;
-	if( horzSpan) posB.y += lengthSign * 0.5;
+    float2 posB;
+    posB.x = posM.x;
+    posB.y = posM.y;
+    float2 offNP;
+    offNP.x = (!horzSpan) ? 0.0 : fxaaRcpFrame.x;
+    offNP.y = ( horzSpan) ? 0.0 : fxaaRcpFrame.y;
+    if(!horzSpan) posB.x += lengthSign * 0.5;
+    if( horzSpan) posB.y += lengthSign * 0.5;
 
-	float2 posN;
-	posN.x = posB.x - offNP.x * FXAA_QUALITY__P0;
-	posN.y = posB.y - offNP.y * FXAA_QUALITY__P0;
-	float2 posP;
-	posP.x = posB.x + offNP.x * FXAA_QUALITY__P0;
-	posP.y = posB.y + offNP.y * FXAA_QUALITY__P0;
-	float subpixD = ((-2.0)*subpixC) + 3.0;
-	float lumaEndN = FxaaLuma(FxaaTexTop(tex, posN));
-	float subpixE = subpixC * subpixC;
-	float lumaEndP = FxaaLuma(FxaaTexTop(tex, posP));
+    float2 posN;
+    posN.x = posB.x - offNP.x * FXAA_QUALITY__P0;
+    posN.y = posB.y - offNP.y * FXAA_QUALITY__P0;
+    float2 posP;
+    posP.x = posB.x + offNP.x * FXAA_QUALITY__P0;
+    posP.y = posB.y + offNP.y * FXAA_QUALITY__P0;
+    float subpixD = ((-2.0)*subpixC) + 3.0;
+    float lumaEndN = FxaaLuma(FxaaTexTop(tex, posN));
+    float subpixE = subpixC * subpixC;
+    float lumaEndP = FxaaLuma(FxaaTexTop(tex, posP));
 
-	if(!pairN) lumaNN = lumaSS;
-	float gradientScaled = gradient * 1.0/4.0;
-	float lumaMM = lumaM - lumaNN * 0.5;
-	float subpixF = subpixD * subpixE;
-	bool lumaMLTZero = lumaMM < 0.0;
-	lumaEndN -= lumaNN * 0.5;
-	lumaEndP -= lumaNN * 0.5;
-	bool doneN = abs(lumaEndN) >= gradientScaled;
-	bool doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
-	bool doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+    if(!pairN) lumaNN = lumaSS;
+    float gradientScaled = gradient * 1.0/4.0;
+    float lumaMM = lumaM - lumaNN * 0.5;
+    float subpixF = subpixD * subpixE;
+    bool lumaMLTZero = lumaMM < 0.0;
+    lumaEndN -= lumaNN * 0.5;
+    lumaEndP -= lumaNN * 0.5;
+    bool doneN = abs(lumaEndN) >= gradientScaled;
+    bool doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
+    bool doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
 
-	if(doneNP) {
-	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
-	if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
-	if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
-	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
-	doneN = abs(lumaEndN) >= gradientScaled;
-	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P12;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P12;
-	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P12;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P12;
-	}}}}}}}}}}}
+    if(doneNP) {
+    if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
+    if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
+    if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
+    if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
+    doneN = abs(lumaEndN) >= gradientScaled;
+    doneP = abs(lumaEndP) >= gradientScaled;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P12;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P12;
+    doneNP = (!doneN) || (!doneP);
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P12;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P12;
+    }}}}}}}}}}}
 
-	float dstN = posM.x - posN.x;
-	float dstP = posP.x - posM.x;
-	if(!horzSpan) dstN = posM.y - posN.y;
-	if(!horzSpan) dstP = posP.y - posM.y;
+    float dstN = posM.x - posN.x;
+    float dstP = posP.x - posM.x;
+    if(!horzSpan) dstN = posM.y - posN.y;
+    if(!horzSpan) dstP = posP.y - posM.y;
 
-	bool goodSpanN = (lumaEndN < 0.0) != lumaMLTZero;
-	float spanLength = (dstP + dstN);
-	bool goodSpanP = (lumaEndP < 0.0) != lumaMLTZero;
-	float spanLengthRcp = 1.0/spanLength;
+    bool goodSpanN = (lumaEndN < 0.0) != lumaMLTZero;
+    float spanLength = (dstP + dstN);
+    bool goodSpanP = (lumaEndP < 0.0) != lumaMLTZero;
+    float spanLengthRcp = 1.0/spanLength;
 
-	bool directionN = dstN < dstP;
-	float dst = min(dstN, dstP);
-	bool goodSpan = directionN ? goodSpanN : goodSpanP;
-	float subpixG = subpixF * subpixF;
-	float pixelOffset = (dst * (-spanLengthRcp)) + 0.5;
-	float subpixH = subpixG * fxaaSubpix;
+    bool directionN = dstN < dstP;
+    float dst = min(dstN, dstP);
+    bool goodSpan = directionN ? goodSpanN : goodSpanP;
+    float subpixG = subpixF * subpixF;
+    float pixelOffset = (dst * (-spanLengthRcp)) + 0.5;
+    float subpixH = subpixG * fxaaSubpix;
 
-	float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
-	float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
-	if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
-	if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
+    float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
+    float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
+    if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
+    if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
 
-	return float4(FxaaTexTop(tex, posM).xyz, lumaM);
+    return float4(FxaaTexTop(tex, posM).xyz, lumaM);
 }
 
-float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 FxaaPass(float4 FxaaColor, float2 texcoord)
 {
-	FxaaTex tex;
-	tex.tex = Texture;
-	tex.smpl = TextureSampler;
+    FxaaTex tex;
+    tex.tex = Texture;
+    tex.smpl = TextureSampler;
 
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
-	FxaaColor = FxaaPixelShader(uv0, tex, 1.0 / PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+    FxaaColor = FxaaPixelShader(texcoord, tex, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 
-	return FxaaColor;
+    return FxaaColor;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                       [TEXTURE FILTERING FUNCTIONS]
+                        [TEXTURE FILTERING FUNCTIONS]
 ------------------------------------------------------------------------------*/
 
 float BSpline(float x)
 {
-	float f = x;
+    float f = x;
 
-	if (f < 0.0)
-	{
-		f = -f;
-	}
-	if (f >= 0.0 && f <= 1.0)
-	{
-		return (2.0 / 3.0) + (0.5) * (f* f * f) - (f*f);
-	}
-	else if (f > 1.0 && f <= 2.0)
-	{
-		return 1.0 / 6.0 * pow((2.0 - f), 3.0);
-	}
-	return 1.0;
+    if (f < 0.0)
+    {
+        f = -f;
+    }
+    if (f >= 0.0 && f <= 1.0)
+    {
+        return (2.0 / 3.0) + (0.5) * (f* f * f) - (f*f);
+    }
+    else if (f > 1.0 && f <= 2.0)
+    {
+        return 1.0 / 6.0 * pow((2.0 - f), 3.0);
+    }
+    return 1.0;
 }
 
 float CatMullRom(float x)
 {
-	float b = 0.0;
-	float c = 0.5;
-	float f = x;
+    float b = 0.0;
+    float c = 0.5;
+    float f = x;
 
-	if (f < 0.0)
-	{
-		f = -f;
-	}
-	if (f < 1.0)
-	{
-		return ((12.0 - 9.0 * b - 6.0 * c) * (f * f * f) +
-			(-18.0 + 12.0 * b + 6.0 * c) * (f * f) +
-			(6.0 - 2.0 * b)) / 6.0;
-	}
-	else if (f >= 1.0 && f < 2.0)
-	{
-		return ((-b - 6.0 * c) * (f * f * f)
-			+ (6.0 * b + 30.0 * c) * (f *f) +
-			(-(12.0 * b) - 48.0 * c) * f +
-			8.0 * b + 24.0 * c) / 6.0;
-	}
-	else
-	{
-		return 0.0;
-	}
+    if (f < 0.0)
+    {
+        f = -f;
+    }
+    if (f < 1.0)
+    {
+        return ((12.0 - 9.0 * b - 6.0 * c) *
+                (f * f * f) + (-18.0 + 12.0 * b + 6.0 * c) *
+                (f * f) + (6.0 - 2.0 * b)) / 6.0;
+    }
+    else if (f >= 1.0 && f < 2.0)
+    {
+        return ((-b - 6.0 * c) * (f * f * f) +
+                (6.0 * b + 30.0 * c) *(f *f) +
+                (-(12.0 * b) - 48.0 * c) * f +
+                8.0 * b + 24.0 * c) / 6.0;
+    }
+    else
+    {
+        return 0.0;
+    }
 }
 
 float Bell(float x)
 {
-	float f = (x / 2.0) * 1.5;
+    float f = (x / 2.0) * 1.5;
 
-	if (f > -1.5 && f < -0.5)
-	{
-		return(0.5 * pow(f + 1.5, 2.0));
-	}
-	else if (f > -0.5 && f < 0.5)
-	{
-		return 3.0 / 4.0 - (f * f);
-	}
-	else if ((f > 0.5 && f < 1.5))
-	{
-		return(0.5 * pow(f - 1.5, 2.0));
-	}
-	return 0.0;
+    if (f > -1.5 && f < -0.5)
+    {
+        return(0.5 * pow(f + 1.5, 2.0));
+    }
+    else if (f > -0.5 && f < 0.5)
+    {
+        return 3.0 / 4.0 - (f * f);
+    }
+    else if ((f > 0.5 && f < 1.5))
+    {
+        return(0.5 * pow(f - 1.5, 2.0));
+    }
+    return 0.0;
 }
 
 float Triangular(float x)
 {
-	x = x / 2.0;
+    x = x / 2.0;
 
-	if (x < 0.0)
-	{
-		return (x + 1.0);
-	}
-	else
-	{
-		return (1.0 - x);
-	}
-	return 0.0;
+    if (x < 0.0)
+    {
+        return (x + 1.0);
+    }
+    else
+    {
+        return (1.0 - x);
+    }
+    return 0.0;
 }
 
 float Cubic(float x)
 {
-	float x2 = x * x;
-	float x3 = x2 * x;
+    float x2 = x * x;
+    float x3 = x2 * x;
 
-	float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
-	float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
-	float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
-	float cw = x3;
+    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
+    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
+    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
+    float cw = x3;
 
-	return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
+    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
 }
 
 /*------------------------------------------------------------------------------
-                   [BILINEAR FILTERING CODE SECTION]
+                       [BILINEAR FILTERING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 #if (BILINEAR_FILTERING == 1)
-float4 SampleBiLinear(SamplerState texSample, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 SampleBiLinear(SamplerState texSample, float2 texcoord)
 {
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
+    if (screenSize.x < 1024 || screenSize.y < 1024)
+    {
+        pixelSize.x /= 2.0;
+        pixelSize.y /= 2.0;
+    }
 
-	float texelSizeX = 1.0 / PixelSize.x;
-	float texelSizeY = 1.0 / PixelSize.y;
+    float texelSizeX = pixelSize.x;
+    float texelSizeY = pixelSize.y;
 
-	int nX = int(uv0.x * PixelSize.x);
-	int nY = int(uv0.y * PixelSize.y);
+    int nX = int(texcoord.x * screenSize.x);
+    int nY = int(texcoord.y * screenSize.y);
 
-	float2 uvCoord = float2((float(nX) + OffsetAmount) / PixelSize.x,
-	(float(nY) + OffsetAmount) / PixelSize.y);
+    float2 uvCoord = float2((float(nX) + OffsetAmount) / screenSize.x, (float(nY) + OffsetAmount) / screenSize.y);
 
-	// Take nearest two data in current row.
-	float4 SampleA = Texture.Sample(texSample, uvCoord);
-	float4 SampleB = Texture.Sample(texSample, uvCoord + float2(texelSizeX, 0.0));
+    // Take nearest two data in current row.
+    float4 SampleA = Texture.Sample(texSample, uvCoord);
+    float4 SampleB = Texture.Sample(texSample, uvCoord + float2(texelSizeX, 0.0));
 
-	// Take nearest two data in bottom row.
-	float4 SampleC = Texture.Sample(texSample, uvCoord + float2(0.0, texelSizeY));
-	float4 SampleD = Texture.Sample(texSample, uvCoord + float2(texelSizeX, texelSizeY));
+    // Take nearest two data in bottom row.
+    float4 SampleC = Texture.Sample(texSample, uvCoord + float2(0.0, texelSizeY));
+    float4 SampleD = Texture.Sample(texSample, uvCoord + float2(texelSizeX, texelSizeY));
 
-	float LX = frac(uv0.x * PixelSize.x); //Get Interpolation factor for X direction.
+    float LX = frac(texcoord.x * screenSize.x); //Get Interpolation factor for X direction.
 
-	// Interpolate in X direction.
-	float4 InterpolateA = lerp(SampleA, SampleB, LX); //Top row in X direction.
-	float4 InterpolateB = lerp(SampleC, SampleD, LX); //Bottom row in X direction.
+    // Interpolate in X direction.
+    float4 InterpolateA = lerp(SampleA, SampleB, LX); //Top row in X direction.
+    float4 InterpolateB = lerp(SampleC, SampleD, LX); //Bottom row in X direction.
 
-	float LY = frac(uv0.y * PixelSize.y); //Get Interpolation factor for Y direction.
+    float LY = frac(texcoord.y * screenSize.y); //Get Interpolation factor for Y direction.
 
-	return lerp(InterpolateA, InterpolateB, LY); //Interpolate in Y direction.
+    return lerp(InterpolateA, InterpolateB, LY); //Interpolate in Y direction.
 }
 
-float4 BiLinearPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0)
+float4 BiLinearPass(float4 color, float2 texcoord)
 {
-	float4 bilinear = SampleBiLinear(TextureSampler, uv0);
-	color = lerp(color, bilinear, FilterStrength);
+    float4 bilinear = SampleBiLinear(TextureSampler, texcoord);
+    color = lerp(color, bilinear, FilterStrength);
 
-	return color;
+    return color;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                     [BICUBIC FILTERING CODE SECTION]
+                      [BICUBIC FILTERING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 #if (BICUBIC_FILTERING == 1)
-float4 BiCubicFilter(SamplerState texSample, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 BicubicFilter(SamplerState texSample, float2 texcoord)
 {
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
+    if (screenSize.x < 1024 || screenSize.y < 1024)
+    {
+        pixelSize.x /= 2.0;
+        pixelSize.y /= 2.0;
+    }
+    
+    float texelSizeX = pixelSize.x;
+    float texelSizeY = pixelSize.y;
 
-	float texelSizeX = 1.0 / PixelSize.x;
-	float texelSizeY = 1.0 / PixelSize.y;
+    float4 nSum = (float4)0.0;
+    float4 nDenom = (float4)0.0;
 
-	float4 nSum = (float4)0.0;
-	float4 nDenom = (float4)0.0;
+    float a = frac(texcoord.x * screenSize.x);
+    float b = frac(texcoord.y * screenSize.y);
 
-	float a = frac(uv0.x * PixelSize.x);
-	float b = frac(uv0.y * PixelSize.y);
+    int nX = int(texcoord.x * screenSize.x);
+    int nY = int(texcoord.y * screenSize.y);
 
-	int nX = int(uv0.x * PixelSize.x);
-	int nY = int(uv0.y * PixelSize.y);
+    float2 uvCoord = float2(float(nX) / screenSize.x + PixelOffset / screenSize.x,
+    float(nY) / screenSize.y + PixelOffset / screenSize.y);
 
-	float2 uvCoord = float2(float(nX) / PixelSize.x + PixelOffset / PixelSize.x,
-	float(nY) / PixelSize.y + PixelOffset / PixelSize.y);
+    for (int m = -1; m <= 2; m++)
+    {
+        for (int n = -1; n <= 2; n++)
+        {
+            float4 Samples = Texture.Sample(texSample, uvCoord +
+            float2(texelSizeX * float(m), texelSizeY * float(n)));
 
-	for (int m = -1; m <= 2; m++)
-	{
-		for (int n = -1; n <= 2; n++)
-		{
-			float4 Samples = Texture.Sample(texSample, uvCoord +
-			float2(texelSizeX * float(m), texelSizeY * float(n)));
+            float vc1 = Interpolation(float(m) - a);
+            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
 
-			float vc1 = Interpolation(float(m) - a);
-			float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
+            float vc2 = Interpolation(-(float(n) - b));
+            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
 
-			float vc2 = Interpolation(-(float(n) - b));
-			float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
-
-			nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
-			nDenom = nDenom + (vecCoeff2 * vecCoeff1);
-		}
-	}
-	return nSum / nDenom;
+            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
+            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
+        }
+    }
+    return nSum / nDenom;
 }
 
-float4 BiCubicPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 BiCubicPass(float4 color, float2 texcoord)
 {
-	float4 bicubic = BiCubicFilter(TextureSampler, uv0);
-	color = lerp(color, bicubic, BicubicStrength);
-	return color;
+    float4 bicubic = BicubicFilter(TextureSampler, texcoord);
+    color = lerp(color, bicubic, BicubicStrength);
+    return color;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                    [GAUSSIAN FILTERING CODE SECTION]
+                      [GAUSSIAN FILTERING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 #if (GAUSSIAN_FILTERING == 1)
-float4 GaussianPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 GaussianPass(float4 color, float2 texcoord)
 {
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
+    if (screenSize.x < 1024 || screenSize.y < 1024)
+    {
+        pixelSize.x /= 2.0;
+        pixelSize.y /= 2.0;
+    }
+    
+    float2 dx = float2(pixelSize.x * GaussianSpread, 0.0);
+    float2 dy = float2(0.0, pixelSize.y * GaussianSpread);
 
-	float2 dx = float2(1.0 / PixelSize.x * GaussianSpread, 0.0);
-	float2 dy = float2(0.0, 1.0 / PixelSize.y * GaussianSpread);
+    float2 dx2 = 2.0 * dx;
+    float2 dy2 = 2.0 * dy;
 
-	float2 dx2 = 2.0 * dx;
-	float2 dy2 = 2.0 * dy;
+    float4 gaussian = Texture.Sample(TextureSampler, texcoord);
 
-	float4 gaussian = Texture.Sample(TextureSampler, uv0);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx2 + dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx + dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx + dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx2 + dy2);
 
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx2 + dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx + dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx + dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx2 + dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx2 + dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx + dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx + dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx2 + dy);
 
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx2 + dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx + dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx + dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx2 + dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx2);
 
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx2);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx2 - dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx - dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx - dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx2 - dy);
 
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx2 - dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx - dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx - dy);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx2 - dy);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx2 - dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dx - dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord - dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx - dy2);
+    gaussian += Texture.Sample(TextureSampler, texcoord + dx2 - dy2);
 
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx2 - dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dx - dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 - dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx - dy2);
-	gaussian += Texture.Sample(TextureSampler, uv0 + dx2 - dy2);
+    gaussian /= 25.0;
 
-	gaussian /= 25.0;
+    color = lerp(color, gaussian, FilterAmount);
 
-	color = lerp(color, gaussian, FilterAmount);
+    return color;
+}
+#endif
 
-	return color;
+/*------------------------------------------------------------------------------
+                         [BICUBIC SCALAR CODE SECTION]
+------------------------------------------------------------------------------*/
+
+#if (BICUBLIC_SCALAR == 1)
+float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
+{
+    float2 rec_nrCP = float2(1.0/texSize.x, 1.0/texSize.y);
+
+    float2 coord_hg = uv * texSize - 0.5;
+    float2 index = floor(coord_hg);
+    float2 f = coord_hg - index;
+
+    float4x4 M = { -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+                   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
+    M /= 6.0;
+
+    float4 wx = mul(float4(f.x*f.x*f.x, f.x*f.x, f.x, 1.0), M);
+    float4 wy = mul(float4(f.y*f.y*f.y, f.y*f.y, f.y, 1.0), M);
+    float2 w0 = float2(wx.x, wy.x);
+    float2 w1 = float2(wx.y, wy.y);
+    float2 w2 = float2(wx.z, wy.z);
+    float2 w3 = float2(wx.w, wy.w);
+
+    float2 g0 = w0 + w1;
+    float2 g1 = w2 + w3;
+    float2 h0 = w1 / g0 - 1.0;
+    float2 h1 = w3 / g1 + 1.0;
+
+    float2 coord00 = index + h0;
+    float2 coord10 = index + float2(h1.x, h0.y);
+    float2 coord01 = index + float2(h0.x, h1.y);
+    float2 coord11 = index + h1;
+
+    coord00 = (coord00 + 0.5) * rec_nrCP;
+    coord10 = (coord10 + 0.5) * rec_nrCP;
+    coord01 = (coord01 + 0.5) * rec_nrCP;
+    coord11 = (coord11 + 0.5) * rec_nrCP;
+
+    float4 tex00 = Texture.SampleLevel(tex, coord00, 0);
+    float4 tex10 = Texture.SampleLevel(tex, coord10, 0);
+    float4 tex01 = Texture.SampleLevel(tex, coord01, 0);
+    float4 tex11 = Texture.SampleLevel(tex, coord11, 0);
+
+    tex00 = lerp(tex01, tex00, float4(g0.y, g0.y, g0.y, g0.y));
+    tex10 = lerp(tex11, tex10, float4(g0.y, g0.y, g0.y, g0.y));
+    float4 res = lerp(tex10, tex00, float4(g0.x, g0.x, g0.x, g0.x));
+
+    return res;
+}
+
+float4 BiCubicScalarPass(float4 color, float2 texcoord)
+{
+    color = BicubicScalar(TextureSampler, texcoord, screenSize);
+    return color;
+}
+#endif
+
+/*------------------------------------------------------------------------------
+                         [LANCZOS SCALAR CODE SECTION]
+------------------------------------------------------------------------------*/
+
+#if (LANCZOS_SCALAR == 1)
+float3 pixel(float xpos, float ypos)
+{
+    return Texture.Sample(TextureSampler, float2(xpos, ypos)).rgb;
+}
+
+float3 line_run(float ypos, float4 xpos, float4 linetaps)
+{
+    return mul(linetaps, float4x3(pixel(xpos.x, ypos), pixel(xpos.y, ypos),
+                                  pixel(xpos.z, ypos), pixel(xpos.w, ypos)));
+}
+
+float4 weight4(float x)
+{
+    #define FIX(c) max(abs(c), 1e-5);
+    const float PI = 3.1415926535897932384626433832795;
+
+    float4 sample = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
+    float4 ret = sin(sample) * sin(sample / 2.0) / (sample * sample);
+
+    return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
+}
+
+float4 LanczosScalar(float2 texcoord, float2 texSize)
+{
+    float2 stepxy = 1.0 / texSize;
+    float2 pos = texcoord + stepxy;
+    float2 f = frac(pos / stepxy);
+
+    float2 xystart = (-2.0 - f) * stepxy + pos;
+    float4 xpos = float4(xystart.x,
+    xystart.x + stepxy.x,
+    xystart.x + stepxy.x * 2.0,
+    xystart.x + stepxy.x * 3.0);
+
+    float4 linetaps = weight4(f.x);
+    float4 columntaps = weight4(f.y);
+
+    // final sum and weight normalization
+    return float4(mul(columntaps, float4x3(
+    line_run(xystart.y, xpos, linetaps),
+    line_run(xystart.y + stepxy.y, xpos, linetaps),
+    line_run(xystart.y + stepxy.y * 2.0, xpos, linetaps),
+    line_run(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
+}
+
+float4 LanczosScalarPass(float4 color, float2 texcoord)
+{
+    color = LanczosScalar(texcoord, screenSize);
+    return color;
 }
 #endif
 
@@ -763,13 +820,40 @@ float4 GaussianPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
 ------------------------------------------------------------------------------*/
 
 #if (GAMMA_CORRECTION == 1)
-float4 PostGammaPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float3 RGBGammaToLinear(float3 color, float gamma)
 {
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, Gamma);
-	color.a = RGBLuminance(color.rgb);
+    color = saturate(color);
+    color.r = (color.r <= 0.0404482362771082) ?
+    color.r / 12.92 : pow((color.r + 0.055) / 1.055, gamma);
+    color.g = (color.g <= 0.0404482362771082) ?
+    color.g / 12.92 : pow((color.g + 0.055) / 1.055, gamma);
+    color.b = (color.b <= 0.0404482362771082) ?
+    color.b / 12.92 : pow((color.b + 0.055) / 1.055, gamma);
 
-	return color;
+    return color;
+}
+
+float3 LinearToRGBGamma(float3 color, float gamma)
+{
+    color = saturate(color);
+    color.r = (color.r <= 0.00313066844250063) ?
+    color.r * 12.92 : 1.055 * pow(color.r, 1.0 / gamma) - 0.055;
+    color.g = (color.g <= 0.00313066844250063) ?
+    color.g * 12.92 : 1.055 * pow(color.g, 1.0 / gamma) - 0.055;
+    color.b = (color.b <= 0.00313066844250063) ?
+    color.b * 12.92 : 1.055 * pow(color.b, 1.0 / gamma) - 0.055;
+
+    return color;
+}
+
+float4 GammaPass(float4 color, float2 texcoord)
+{
+    const float GammaConst = 2.233;
+    color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
+    color.rgb = LinearToRGBGamma(color.rgb, float(Gamma));
+    color.a = RGBLuminance(color.rgb);
+
+    return color;
 }
 #endif
 
@@ -777,104 +861,62 @@ float4 PostGammaPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
                        [TEXTURE SHARPEN CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (TEXTURE_SHARPENING == 1)
-#define px 1.0 / PixelSize.x
-#define py 1.0 / PixelSize.y
-#define SLumCoeff float3(0.2126729, 0.7151522, 0.0721750)
-
-#if(SharpeningType == 2)
-float4 SampleBiCubic(SamplerState texSample, float2 uv0)
+#if (TEXTURE_SHARPEN == 1)
+float4 SampleBicubic(in SamplerState texSample, in float2 texcoord)
 {
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
+    float texelSizeX = pixelSize.x * float(SharpenBias);
+    float texelSizeY = pixelSize.y * float(SharpenBias);
 
-	float texelSizeX = 1.0 / PixelSize.x * SharpenBias;
-	float texelSizeY = 1.0 / PixelSize.y * SharpenBias;
+    float4 nSum = (float4)0.0;
+    float4 nDenom = (float4)0.0;
 
-	float4 nSum = (float4)0.0;
-	float4 nDenom = (float4)0.0;
+    float a = frac(texcoord.x * screenSize.x);
+    float b = frac(texcoord.y * screenSize.y);
 
-	float a = frac(uv0.x * PixelSize.x);
-	float b = frac(uv0.y * PixelSize.y);
+    int nX = int(texcoord.x * screenSize.x);
+    int nY = int(texcoord.y * screenSize.y);
 
-	int nX = int(uv0.x * PixelSize.x);
-	int nY = int(uv0.y * PixelSize.y);
+    float2 uvCoord = float2(float(nX) / screenSize.x, float(nY) / screenSize.y);
 
-	float2 uvCoord = float2(float(nX) / PixelSize.x, float(nY) / PixelSize.y);
+    for (int m = -1; m <= 2; m++)
+    {
+        for (int n = -1; n <= 2; n++)
+        {
+            float4 Samples = Texture.Sample(texSample, uvCoord +
+            float2(texelSizeX * float(m), texelSizeY * float(n)));
 
-	for (int m = -1; m <= 2; m++)
-	{
-		for (int n = -1; n <= 2; n++)
-		{
-			float4 Samples = Texture.Sample(texSample, uvCoord +
-			float2(texelSizeX * float(m), texelSizeY * float(n)));
+            float vc1 = Cubic(float(m) - a);
+            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
 
-			float vc1 = Cubic(float(m) - a);
-			float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
+            float vc2 = Cubic(-(float(n) - b));
+            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
 
-			float vc2 = Cubic(-(float(n) - b));
-			float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
-
-			nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
-			nDenom = nDenom + (vecCoeff2 * vecCoeff1);
-		}
-	}
-	return nSum / nDenom;
+            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
+            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
+        }
+    }
+    return nSum / nDenom;
 }
 
-float4 TexSharpenPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 TexSharpenPass(float4 color, float2 texcoord)
 {
-	float3 calcSharpen = (SLumCoeff * SharpenStrength);
-	float4 blurredColor = SampleBiCubic(TextureSampler, uv0);
-	float3 sharpenedColor = (color.rgb - blurredColor.rgb);
+    float3 calcSharpen = lumCoeff * float(SharpenStrength);
 
-	float sharpenLuma = dot(sharpenedColor, calcSharpen);
-	sharpenLuma = clamp(sharpenLuma, -SharpenClamp, SharpenClamp);
+    float4 blurredColor = SampleBicubic(TextureSampler, texcoord);
+    float3 sharpenedColor = (color.rgb - blurredColor.rgb);
 
-	color.rgb = color.rgb + sharpenLuma;
-	color.a = RGBLuminance(color.rgb);
+    float sharpenLuma = dot(sharpenedColor, calcSharpen);
+    sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
 
-	#if (DebugSharpen == 1)
-	color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
-	#endif
+    color.rgb = color.rgb + sharpenLuma;
+    color.a = RGBLuminance(color.rgb);
 
-	return saturate(color);
+    #if (DebugSharpen == 1)
+        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
+    #endif
+
+    return saturate(color);
 }
-#else
-
-float4 TexSharpenPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
-{
-	float3 blurredColor;
-
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
-
-	blurredColor = Texture.SampleLevel(TextureSampler, uv0 + float2(-px, py) * SharpenBias, 0.0).rgb;	//North West
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(px, -py) * SharpenBias, 0.0).rgb;	//South East
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(-px, -py) * SharpenBias, 0.0).rgb;	//South West
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(px, py) * SharpenBias, 0.0).rgb;	//North East
-
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(0.0, py) * SharpenBias, 0.0).rgb;	//North
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(0.0, -py) * SharpenBias, 0.0).rgb;	//South
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(-px, 0.0) * SharpenBias, 0.0).rgb;	//West
-	blurredColor += Texture.SampleLevel(TextureSampler, uv0 + float2(px, 0.0) * SharpenBias, 0.0).rgb;	//East
-
-	blurredColor /= 8.0;
-
-	float3 sharpenedColor = color.rgb - blurredColor;
-	float3 calcSharpen = (SLumCoeff * SharpenStrength);
-
-	float sharpenLuma = dot(sharpenedColor, calcSharpen);
-	sharpenLuma = clamp(sharpenLuma, -SharpenClamp, SharpenClamp);
-
-	color.rgb = color.rgb + sharpenLuma;
-	color.a = RGBLuminance(color.rgb);
-
-	#if (DebugSharpen == 1)
-	color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
-	#endif
-
-	return saturate(color);
-}
-#endif
 #endif
 
 /*------------------------------------------------------------------------------
@@ -882,265 +924,299 @@ float4 TexSharpenPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target
 ------------------------------------------------------------------------------*/
 
 #if (PIXEL_VIBRANCE == 1)
-float4 VibrancePass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 VibrancePass(float4 color, float2 texcoord)
 {
-	float luma = RGBLuminance(color.rgb);
+    float luma = RGBLuminance(color.rgb);
 
-	float colorMax = max(color.r, max(color.g, color.b));
-	float colorMin = min(color.r, min(color.g, color.b));
+    float colorMax = max(color.r, max(color.g, color.b));
+    float colorMin = min(color.r, min(color.g, color.b));
 
-	float colorSaturation = colorMax - colorMin;
+    float colorSaturation = colorMax - colorMin;
 
-	color.rgb = lerp(luma, color.rgb, (1.0 + (Vibrance * (1.0 - (sign(Vibrance) * colorSaturation)))));
-	color.a = RGBLuminance(color.rgb);
+    color.rgb = lerp(luma, color.rgb, (1.0 + (Vibrance * (1.0 - (sign(Vibrance) * colorSaturation)))));
+    color.a = RGBLuminance(color.rgb);
 
-	return saturate(color); //Debug: return colorSaturation.xxxx;
+    return saturate(color); //Debug: return colorSaturation.xxxx;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                         [BLOOM PASS CODE SECTION]
+                        [BLENDED BLOOM CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 #if (BLENDED_BLOOM == 1)
-float3 BlendBloom(float3 color, float3 bloom)
+float3 BlendAddLight(float3 color, float3 bloom)
 {
-	color = (bloom + bloom) - (bloom * bloom);
-	return color;
+    return (color + bloom) * 0.75f;
 }
 
 float3 BlendScreen(float3 color, float3 bloom)
 {
-	return (color + bloom) - (color * bloom);
+    return (color + bloom) - (color * bloom);
 }
 
-float3 BlendAddLight(float3 color, float3 bloom)
+float3 BlendLuma(float3 color, float3 bloom)
 {
-	return color + bloom;
+    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), RGBLuminance(color + bloom));
+}
+
+float3 BlendGlow(float3 color, float3 bloom)
+{
+    float3 glow = step(0.5, color);
+    glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
+
+    return glow;
 }
 
 float3 BlendOverlay(float3 color, float3 bloom)
 {
-	return float3((bloom.x <= 0.5) ? (2.0 * color.x * bloom.x)
-		: (1.0 - 2.0 * (1.0 - bloom.x) * (1.0 - color.x)),
-		(bloom.y <= 0.5) ? (2.0 * color.y * bloom.y)
-		: (1.0 - 2.0 * (1.0 - bloom.y) * (1.0 - color.y)),
-		(bloom.z <= 0.5) ? (2.0 * color.z * bloom.z)
-		: (1.0 - 2.0 * (1.0 - bloom.z) * (1.0 - color.z)));
+    float3 overlay = step(0.5, color);
+    overlay = lerp((color * bloom * 2.0), (1.0 - (2.0 * (1.0 - color) * (1.0 - bloom))), overlay);
+
+    return overlay;
 }
 
-float4 BloomPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 PyramidFilter(SamplerState tex, float2 texcoord, float2 width)
 {
-	float4 bloom = Texture.Sample(BloomSampler, uv0);
+    float4 color = Texture.Sample(tex, texcoord + float2(0.5, 0.5) * width);
+    color += Texture.Sample(tex, texcoord + float2(-0.5, 0.5) * width);
+    color += Texture.Sample(tex, texcoord + float2(0.5, -0.5) * width);
+    color += Texture.Sample(tex, texcoord + float2(-0.5, -0.5) * width);
+    color *= 0.25;
 
-	Texture.GetDimensions(PixelSize.x, PixelSize.y);
+    return color;
+}
 
-	float2 dx = float2(1.0 / PixelSize.x * BlendSpread, 0.0);
-	float2 dy = float2(0.0, 1.0 / PixelSize.y * BlendSpread);
+float3 BloomCorrection(float3 color)
+{
+    float X = 1.0 / (1.0 + exp(float(BloomReds) / 2.0));
+    float Y = 1.0 / (1.0 + exp(float(BloomGreens) / 2.0));
+    float Z = 1.0 / (1.0 + exp(float(BloomBlues) / 2.0));
 
-	float2 dx2 = 2.0 * dx;
-	float2 dy2 = 2.0 * dy;
+    color.r = (1.0 / (1.0 + exp(float(-BloomReds) * (color.r - 0.5))) - X) / (1.0 - 2.0 * X);
+    color.g = (1.0 / (1.0 + exp(float(-BloomGreens) * (color.g - 0.5))) - Y) / (1.0 - 2.0 * Y);
+    color.b = (1.0 / (1.0 + exp(float(-BloomBlues) * (color.b - 0.5))) - Z) / (1.0 - 2.0 * Z);
 
-	float4 bloomBlend = bloom * 0.22520613262190495;
+    return color;
+}
 
-	bloomBlend += 0.002589001911021066 * Texture.Sample(BloomSampler, uv0 - dx2 + dy2);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 - dx + dy2);
-	bloomBlend += 0.024146616900339800 * Texture.Sample(BloomSampler, uv0 + dy2);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 + dx + dy2);
-	bloomBlend += 0.002589001911021066 * Texture.Sample(BloomSampler, uv0 + dx2 + dy2);
+float4 BloomPass(float4 color, float2 texcoord)
+{
+    float defocus = 1.25;
+    float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
 
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 - dx2 + dy);
-	bloomBlend += 0.044875475183061630 * Texture.Sample(BloomSampler, uv0 - dx + dy);
-	bloomBlend += 0.100529757860782610 * Texture.Sample(BloomSampler, uv0 + dy);
-	bloomBlend += 0.044875475183061630 * Texture.Sample(BloomSampler, uv0 + dx + dy);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 + dx2 + dy);
+    float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
+    float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
-	bloomBlend += 0.024146616900339800 * Texture.Sample(BloomSampler, uv0 - dx2);
-	bloomBlend += 0.100529757860782610 * Texture.Sample(BloomSampler, uv0 - dx);
-	bloomBlend += 0.100529757860782610 * Texture.Sample(BloomSampler, uv0 + dx);
-	bloomBlend += 0.024146616900339800 * Texture.Sample(BloomSampler, uv0 + dx2);
+    float2 dx2 = 2.0 * dx;
+    float2 dy2 = 2.0 * dy;
 
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 - dx2 - dy);
-	bloomBlend += 0.044875475183061630 * Texture.Sample(BloomSampler, uv0 - dx - dy);
-	bloomBlend += 0.100529757860782610 * Texture.Sample(BloomSampler, uv0 - dy);
-	bloomBlend += 0.044875475183061630 * Texture.Sample(BloomSampler, uv0 + dx - dy);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 + dx2 - dy);
+    float4 bloomBlend = bloom * 0.22520613262190495;
 
-	bloomBlend += 0.002589001911021066 * Texture.Sample(BloomSampler, uv0 - dx2 - dy2);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 - dx - dy2);
-	bloomBlend += 0.024146616900339800 * Texture.Sample(BloomSampler, uv0 - dy2);
-	bloomBlend += 0.010778807494659370 * Texture.Sample(BloomSampler, uv0 + dx - dy2);
-	bloomBlend += 0.002589001911021066 * Texture.Sample(BloomSampler, uv0 + dx2 - dy2);
+    bloomBlend += 0.002589001911021066 * Texture.Sample(TextureSampler, texcoord - dx2 + dy2);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord - dx + dy2);
+    bloomBlend += 0.024146616900339800 * Texture.Sample(TextureSampler, texcoord + dy2);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord + dx + dy2);
+    bloomBlend += 0.002589001911021066 * Texture.Sample(TextureSampler, texcoord + dx2 + dy2);
 
-	bloomBlend = lerp(color, bloomBlend, BlendPower);
-	bloom.rgb = BloomType(color.rgb, bloomBlend.rgb);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord - dx2 + dy);
+    bloomBlend += 0.044875475183061630 * Texture.Sample(TextureSampler, texcoord - dx + dy);
+    bloomBlend += 0.100529757860782610 * Texture.Sample(TextureSampler, texcoord + dy);
+    bloomBlend += 0.044875475183061630 * Texture.Sample(TextureSampler, texcoord + dx + dy);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord + dx2 + dy);
 
-	bloom.r = bloom.r * 1.010778807494659370;
-	color.a = RGBLuminance(color.rgb);
-	bloom.a = RGBLuminance(bloom.rgb);
+    bloomBlend += 0.024146616900339800 * Texture.Sample(TextureSampler, texcoord - dx2);
+    bloomBlend += 0.100529757860782610 * Texture.Sample(TextureSampler, texcoord - dx);
+    bloomBlend += 0.100529757860782610 * Texture.Sample(TextureSampler, texcoord + dx);
+    bloomBlend += 0.024146616900339800 * Texture.Sample(TextureSampler, texcoord + dx2);
 
-	#if (BloomMixType == 1)
-	color = lerp(color, bloom, BloomPower);
-	#elif (BloomMixType == 2)
-	color = (lerp(color, bloom, BloomPower) + lerp(bloom, bloomBlend, BloomPower)) / 2.0;
-	#elif (BloomMixType == 3)
-	color = lerp(color, bloom, lerp(color.a * 0.5, bloom.a, BloomPower));
-	#endif
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord - dx2 - dy);
+    bloomBlend += 0.044875475183061630 * Texture.Sample(TextureSampler, texcoord - dx - dy);
+    bloomBlend += 0.100529757860782610 * Texture.Sample(TextureSampler, texcoord - dy);
+    bloomBlend += 0.044875475183061630 * Texture.Sample(TextureSampler, texcoord + dx - dy);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord + dx2 - dy);
 
-	return saturate(color);
+    bloomBlend += 0.002589001911021066 * Texture.Sample(TextureSampler, texcoord - dx2 - dy2);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord - dx - dy2);
+    bloomBlend += 0.024146616900339800 * Texture.Sample(TextureSampler, texcoord - dy2);
+    bloomBlend += 0.010778807494659370 * Texture.Sample(TextureSampler, texcoord + dx - dy2);
+    bloomBlend += 0.002589001911021066 * Texture.Sample(TextureSampler, texcoord + dx2 - dy2);
+    bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
+
+    bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
+    bloom.rgb = BloomCorrection(bloom.rgb);
+
+    color.a = RGBLuminance(color.rgb);
+    bloom.a = RGBLuminance(bloom.rgb);
+
+    color = lerp(color, bloom, float(BloomStrength));
+
+    return color;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                [COLOR CORRECTION/TONE MAPPING CODE SECTION]
+                 [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (SCENE_TONEMAPPING == 1)
-float YXYLuminance(float3 YXY)
+float3 FilmicTonemap(float3 color)
 {
-	return (-0.9692660 * YXY.x)
-		  + (1.8760108 * YXY.y)
-		  + (0.0415560 * YXY.z);
+    float3 Q = color.xyz;
+
+    float A = 0.10;
+    float B = float(BlackLevels);
+    float C = 0.10;
+    float D = float(ToneAmount);
+    float E = 0.02;
+    float F = 0.30;
+    float W = float(WhitePoint);
+
+    float3 numerator = ((Q*(A*Q + C*B) + D*E) / (Q*(A*Q + B) + D*F)) - E / F;
+    float3 denominator = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
+
+    color.xyz = numerator / denominator;
+
+    return saturate(color);
 }
 
-float3 FilmicTonemap(float3 x)
+float3 ColorShift(float3 color)
 {
-	float A = 0.10;
-	float B = 0.36;
-	float C = 0.10;
-	float D = 0.30;
-	float E = 0.02;
-	float F = 0.30;
+    float3 colMood;
 
-	return ((x*(A*x + C*B) + D*E) / (x*(A*x + B) + D*F)) - E / F;
+    colMood.r = float(RedShift);
+    colMood.g = float(GreenShift);
+    colMood.b = float(BlueShift);
+
+    float fLum = RGBLuminance(color.rgb);
+    colMood = lerp(0.0, colMood, saturate(fLum * 2.0));
+    colMood = lerp(colMood, 1.0, saturate(fLum - 0.5) * 2.0);
+    float3 colOutput = lerp(color, colMood, saturate(fLum * float(ShiftRatio)));
+
+    return colOutput;
 }
 
 float3 ColorCorrection(float3 color)
 {
-	float X = 1.0 / (1.0 + exp(RedCurve / 2.0));
-	float Y = 1.0 / (1.0 + exp(GreenCurve / 2.0));
-	float Z = 1.0 / (1.0 + exp(BlueCurve / 2.0));
+    float X = 1.0 / (1.0 + exp(float(RedCurve) / 2.0));
+    float Y = 1.0 / (1.0 + exp(float(GreenCurve) / 2.0));
+    float Z = 1.0 / (1.0 + exp(float(BlueCurve) / 2.0));
 
-	color.r = (1.0 / (1.0 + exp(-RedCurve *
-	(color.r - 0.5))) - X) / (1.0 - 2.0 * X);
-	color.g = (1.0 / (1.0 + exp(-GreenCurve *
-	(color.g - 0.5))) - Y) / (1.0 - 2.0 * Y);
-	color.b = (1.0 / (1.0 + exp(-BlueCurve *
-	(color.b - 0.5))) - Z) / (1.0 - 2.0 * Z);
+    color.r = (1.0 / (1.0 + exp(float(-RedCurve) * (color.r - 0.5))) - X) / (1.0 - 2.0 * X);
+    color.g = (1.0 / (1.0 + exp(float(-GreenCurve) * (color.g - 0.5))) - Y) / (1.0 - 2.0 * Y);
+    color.b = (1.0 / (1.0 + exp(float(-BlueCurve) * (color.b - 0.5))) - Z) / (1.0 - 2.0 * Z);
 
-	return color;
+    return saturate(color);
 }
 
-float4 TonemapPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 {
-	float3 lumScale = 1.0 / FilmicTonemap(Luminance);
+    const float delta = 0.001f;
+    const float wpoint = pow(1.002f, 2.0f);
+    
+    if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
+    if (FilmicProcess == 1) { color.rgb = ColorShift(color.rgb); }
+    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
 
-	color.rgb = ColorCorrection(color.rgb);
-	color.rgb = FilmicTonemap(Exposure * color.rgb);
-	color.rgb = color.rgb * lumScale;
+    // RGB -> XYZ conversion
+    const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
+                               0.2126729, 0.7151522, 0.0721750,
+                               0.0193339, 0.1191920, 0.9503041 };
 
-	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+    float3 XYZ = mul(RGB2XYZ, color.rgb);
 
-	// RGB -> XYZ conversion
-	const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
-							   0.2126729, 0.7151522, 0.0721750,
-							   0.0193339, 0.1191920, 0.9503041 };
+    // XYZ -> Yxy conversion
+    float3 Yxy;
 
-	float3 XYZ = mul(RGB2XYZ, color.rgb);
+    Yxy.r = XYZ.g;                              // copy luminance Y
+    Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);    // x = X / (X + Y + Z)
+    Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);    // y = Y / (X + Y + Z)
 
-	// XYZ -> Yxy conversion
-	float3 Yxy = lumCoeff;
+    if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
 
-	Yxy.r = XYZ.g;                            	// copy luminance Y
-	Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b); 	// x = X / (X + Y + Z)
-	Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b); 	// y = Y / (X + Y + Z)
+    // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
+    #if (TonemapType == 1)
+        float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
+    #elif (TonemapType == 2)
+        float Lp = Yxy.r * FilmicTonemap(Yxy.rrr).r / RGBLuminance(Yxy.rrr) *
+        float(Exposure) / (float(Luminance) + delta);
+    #endif
 
-	// (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-	#if (TonemapType == 1)
-	float Lp = Yxy.r * Exposure / Luminance;
+    // (Ld) Scale all luminance within a displayable range of 0 to 1
+    Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
 
-	#elif (TonemapType == 2)
-	float Lp = ((Yxy.r * (YXYLuminance(Yxy.rrr) / 1.5)) +
-				(Yxy.g * (YXYLuminance(Yxy.rrr) / 1.5)) +
-				(Yxy.b * (YXYLuminance(Yxy.rrr) / 1.5)))*(Exposure / Luminance);
-	#endif
+    if (FilmicProcess == 1) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
-	// (Ld) Scale all luminance within a displayable range of 0 to 1
-	Yxy.r = (Lp * (1.0 + Lp / (WhitePoint * WhitePoint))) / (1.0 + Lp);
+    // Yxy -> XYZ conversion
+    XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
+    XYZ.g = Yxy.r;                                  // copy luminance Y
+    XYZ.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;  // Z = Y * (1-x-y) / y
 
-	// Yxy -> XYZ conversion
-	XYZ.r = Yxy.r * Yxy.g / Yxy.b;               	// X = Y * x / y
-	XYZ.g = Yxy.r;                                	// copy luminance Y
-	XYZ.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;	// Z = Y * (1-x-y) / y
+    if (CorrectionPalette == 3) { XYZ.rgb = ColorCorrection(XYZ.rgb); }
 
-	// XYZ -> RGB conversion
-	const float3x3 XYZ2RGB = { 3.2404542, -1.5371385, -0.4985314,
-							  -0.9692660, 1.8760108, 0.0415560,
-							   0.0556434, -0.2040259, 1.0572252 };
+    // XYZ -> RGB conversion
+    const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
+                              -0.9692660, 1.8760108, 0.0415560,
+                               0.0556434,-0.2040259, 1.0572252 };
 
-	color.rgb = mul(XYZ2RGB, XYZ);
+    color.rgb = mul(XYZ2RGB, XYZ);
+    color.a = RGBLuminance(color.rgb);
 
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, ToneAmount);
-	color.a = RGBLuminance(color.rgb);
-
-	return saturate(color);
+    return saturate(color);
 }
-#endif
 
 /*------------------------------------------------------------------------------
-                      [S-CURVE CONTRAST CODE SECTION]
+                       [S-CURVE CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 #if (S_CURVE_CONTRAST == 1)
-float4 SCurvePass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 ContrastPass(float4 color, float2 texcoord)
 {
-	float CurveBlend = CurvesContrast;
+    float CurveBlend = CurvesContrast;
 
-	#if (CurveType != 2)
-	float3 luma = (float3)RGBLuminance(color.rgb);
-	float3 chroma = color.rgb - luma;
-	#endif
+    #if (CurveType != 2)
+    float3 luma = (float3)RGBLuminance(color.rgb);
+    float3 chroma = color.rgb - luma;
+    #endif
 
-	#if (CurveType == 2)
-	float3 x = color.rgb;
-	#elif (CurveType == 1)
-	float3 x = chroma;
-	x = x * 0.5 + 0.5;
-	#else
-	float3 x = luma;
-	#endif
+    #if (CurveType == 2)
+    float3 x = color.rgb;
+    #elif (CurveType == 1)
+    float3 x = chroma;
+    x = x * 0.5 + 0.5;
+    #else
+    float3 x = luma;
+    #endif
 
-	//S-Curve - Cubic Bezier spline
-	float3 a = float3(0.00, 0.00, 0.00);	//start point
-	float3 b = float3(0.25, 0.25, 0.25);	//control point 1
-	float3 c = float3(0.80, 0.80, 0.80);	//control point 2
-	float3 d = float3(1.00, 1.00, 1.00);	//endpoint
+    //S-Curve - Cubic Bezier spline
+    float3 a = float3(0.00, 0.00, 0.00);    //start point
+    float3 b = float3(0.25, 0.25, 0.25);    //control point 1
+    float3 c = float3(0.80, 0.80, 0.80);    //control point 2
+    float3 d = float3(1.00, 1.00, 1.00);    //endpoint
 
-	float3 ab = lerp(a, b, x);				//point between a and b (green)
-	float3 bc = lerp(b, c, x);				//point between b and c (green)
-	float3 cd = lerp(c, d, x);				//point between c and d (green)
-	float3 abbc = lerp(ab, bc, x);			//point between ab and bc (blue)
-	float3 bccd = lerp(bc, cd, x);			//point between bc and cd (blue)
-	float3 dest = lerp(abbc, bccd, x);		//point on the bezier-curve (black)
+    float3 ab = lerp(a, b, x);              //point between a and b (green)
+    float3 bc = lerp(b, c, x);              //point between b and c (green)
+    float3 cd = lerp(c, d, x);              //point between c and d (green)
+    float3 abbc = lerp(ab, bc, x);          //point between ab and bc (blue)
+    float3 bccd = lerp(bc, cd, x);          //point between bc and cd (blue)
+    float3 dest = lerp(abbc, bccd, x);      //point on the bezier-curve (black)
 
-	x = dest;
+    x = dest;
 
-	#if (CurveType == 0) //Only Luma
-	x = lerp(luma, x, CurveBlend);
-	color.rgb = x + chroma;
-	#elif (CurveType == 1) //Only Chroma
-	x = x * 2 - 1;
-	float3 LColor = luma + x;
-	color.rgb = lerp(color.rgb, LColor, CurveBlend);
-	#elif (CurveType == 2) //Both Luma and Chroma
-	float3 LColor = x;
-	color.rgb = lerp(color.rgb, LColor, CurveBlend);
-	#endif
+    #if (CurveType == 0) //Only Luma
+    x = lerp(luma, x, CurveBlend);
+    color.rgb = x + chroma;
+    #elif (CurveType == 1) //Only Chroma
+    x = x * 2 - 1;
+    float3 LColor = luma + x;
+    color.rgb = lerp(color.rgb, LColor, CurveBlend);
+    #elif (CurveType == 2) //Both Luma and Chroma
+    float3 LColor = x;
+    color.rgb = lerp(color.rgb, LColor, CurveBlend);
+    #endif
 
-	color.a = RGBLuminance(color.rgb);
+    color.a = RGBLuminance(color.rgb);
 
-	return saturate(color);
+    return saturate(color);
 }
 #endif
 
@@ -1149,8 +1225,6 @@ float4 SCurvePass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
 ------------------------------------------------------------------------------*/
 
 #if (CEL_SHADING == 1)
-#define RoundingOffset float2(0.20, 0.40)
-
 static const int NUM = 9;
 static const float3 thresholds = float3(5.0, 8.0, 6.0);
 
@@ -1162,111 +1236,109 @@ static const float3 thresholds = float3(5.0, 8.0, 6.0);
 
 float3 GetYUV(float3 rgb)
 {
-	#if (LumaConversion == 1)
-	float3x3 RGB2YUV = { 0.2126, 0.7152, 0.0722,
-						-0.09991, -0.33609, 0.436,
-						 0.615, -0.55861, -0.05639 };
+#if (LumaConversion == 1)
+    float3x3 RGB2YUV = { 
+             0.2126, 0.7152, 0.0722,
+            -0.09991, -0.33609, 0.436,
+             0.615, -0.55861, -0.05639 };
 
-	#else
-	float3x3 RGB2YUV = { 0.299, 0.587, 0.114,
-						-0.14713, -0.28886f, 0.436,
-						 0.615, -0.51499, -0.10001 };
-	#endif
+#else
+    float3x3 RGB2YUV = {
+             0.299, 0.587, 0.114,
+            -0.14713, -0.28886f, 0.436,
+             0.615, -0.51499, -0.10001 };
+#endif
 
-	return mul(RGB2YUV, rgb);
+    return mul(RGB2YUV, rgb);
 }
 
 float3 GetRGB(float3 yuv)
 {
-	#if (LumaConversion == 1)
-	float3x3 YUV2RGB = { 1.000, 0.000, 1.28033,
-						 1.000, -0.21482, -0.38059,
-						 1.000, 2.12798, 0.000 };
+#if (LumaConversion == 1)
+    float3x3 YUV2RGB = {
+             1.000, 0.000, 1.28033,
+             1.000, -0.21482, -0.38059,
+             1.000, 2.12798, 0.000 };
 
-	#else
-	float3x3 YUV2RGB = { 1.000, 0.000, 1.13983,
-						 1.000, -0.39465, -0.58060,
-						 1.000, 2.03211, 0.000 };
-	#endif
+#else
+    float3x3 YUV2RGB = {
+             1.000, 0.000, 1.13983,
+             1.000, -0.39465, -0.58060,
+             1.000, 2.03211, 0.000 };
+#endif
 
-	return mul(YUV2RGB, yuv);
+    return mul(YUV2RGB, yuv);
 }
 
 float GetCelLuminance(float3 rgb)
 {
-	return dot(rgb, celLumaCoef);
+    return dot(rgb, celLumaCoef);
 }
 
-float4 CelPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
-{
-	float3 yuv;
-	float3 sum = color.rgb;
+float4 CelPass(float4 color, float2 texcoord)
+{   
+    float3 yuv;
+    float3 sum = color.rgb;
+    float2 pixel = pixelSize * EdgeThickness;
+    const float2 RoundingOffset = float2(0.20, 0.40);
 
-	float2 pixel = float2(1.0 / 2560.0, 1.0 / 1440.0) * EdgeThickness;
+    float2 c[NUM] = {
+    float2(-0.0078125, -0.0078125),
+    float2(0.00, -0.0078125),
+    float2(0.0078125, -0.0078125),
+    float2(-0.0078125, 0.00),
+    float2(0.00, 0.00),
+    float2(0.0078125, 0.00),
+    float2(-0.0078125, 0.0078125),
+    float2(0.00, 0.0078125),
+    float2(0.0078125, 0.0078125) };
 
-	float2 c[NUM] = {
-	float2(-0.0078125, -0.0078125),
-	float2(0.00, -0.0078125),
-	float2(0.0078125, -0.0078125),
-	float2(-0.0078125, 0.00),
-	float2(0.00, 0.00),
-	float2(0.0078125, 0.00),
-	float2(-0.0078125, 0.0078125),
-	float2(0.00, 0.0078125),
-	float2(0.0078125, 0.0078125) };
+    float3 col[NUM];
+    float lum[NUM];
 
-	float3 col[NUM];
-	float lum[NUM];
+    for (int i = 0; i < NUM; i++)
+    {
+        col[i] = Texture.Sample(TextureSampler, texcoord + c[i] * RoundingOffset).rgb;
 
-	for (int i = 0; i < NUM; i++)
-	{
-		col[i] = Texture.Sample(TextureSampler, uv0 + c[i] * RoundingOffset).rgb;
+        #if (ColorRounding == 1)
+        col[i].r = saturate(round(col[i].r * thresholds.r) / thresholds.r);
+        col[i].g = saturate(round(col[i].g * thresholds.g) / thresholds.g);
+        col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
+        #endif
 
-		#if (ColorRounding == 1)
-		col[i].r = saturate(round(col[i].r * thresholds.r) / thresholds.r);
-		col[i].g = saturate(round(col[i].g * thresholds.g) / thresholds.g);
-		col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
-		#endif
+        lum[i] = GetCelLuminance(col[i].xyz);
+        yuv = GetYUV(col[i]);
 
-		lum[i] = GetCelLuminance(col[i].xyz);
+        if (UseYuvLuma == 0)
+        { yuv.r = saturate(round(yuv.r * lum[i]) / thresholds.r + lum[i]); }
+        else
+        { yuv.r = saturate(round(yuv.r * thresholds.r) / thresholds.r + lum[i] / (255.0 / 5.0)); }
 
-		yuv = GetYUV(col[i]);
+        yuv = GetRGB(yuv);
+        sum += yuv;
+    }
 
-		if (UseYuvLuma == 0)
-		{
-			yuv.r = saturate(round(yuv.r * lum[i]) / thresholds.r + lum[i]);
-		}
-		else
-		{
-			yuv.r = saturate(round(yuv.r * thresholds.r) / thresholds.r + lum[i] / (255.0 / 5.0));
-		}
+    float3 shadedColor = (sum / NUM);
 
-		yuv = GetRGB(yuv);
+    float edgeX = dot(Texture.Sample(TextureSampler, texcoord + pixel).rgb, celLumaCoef);
+    edgeX = dot(float4(Texture.Sample(TextureSampler, texcoord - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
 
-		sum += yuv;
-	}
+    float edgeY = dot(Texture.Sample(TextureSampler, texcoord + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
+    edgeY = dot(float4(Texture.Sample(TextureSampler, texcoord + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
 
-	float3 shadedColor = (sum / NUM);
+    float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
 
-	float edgeX = dot(Texture.Sample(TextureSampler, uv0 + pixel).rgb, celLumaCoef);
-	edgeX = dot(float4(Texture.Sample(TextureSampler, uv0 - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
+    #if (PaletteType == 1)
+        color.rgb = lerp(color.rgb, color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, EdgeStrength);
+    #elif (PaletteType == 2)
+        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.25);
+    #elif (PaletteType == 3)
+        color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
+    #endif
 
-	float edgeY = dot(Texture.Sample(TextureSampler, uv0 + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
-	edgeY = dot(float4(Texture.Sample(TextureSampler, uv0 + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
+    color.a = RGBLuminance(color.rgb);
 
-	float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
-
-	#if (PaletteType == 1)
-	color.rgb = lerp(color.rgb, color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, EdgeStrength);
-	#elif (PaletteType == 2)
-	color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.33);
-	#elif (PaletteType == 3)
-	color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
-	#endif
-
-	color.a = RGBLuminance(color.rgb);
-
-	return saturate(color);
+    return saturate(color);
 }
 #endif
 
@@ -1277,110 +1349,110 @@ float4 CelPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
 #if (COLOR_GRADING == 1)
 float RGBCVtoHUE(float3 RGB, float C, float V)
 {
-	float3 Delta = (V - RGB) / C;
+    float3 Delta = (V - RGB) / C;
 
-	Delta.rgb -= Delta.brg;
-	Delta.rgb += float3(2, 4, 6);
-	Delta.brg = step(V, RGB) * Delta.brg;
+    Delta.rgb -= Delta.brg;
+    Delta.rgb += float3(2, 4, 6);
+    Delta.brg = step(V, RGB) * Delta.brg;
 
-	float H;
-	H = max(Delta.r, max(Delta.g, Delta.b));
-	return frac(H / 6);
+    float H;
+    H = max(Delta.r, max(Delta.g, Delta.b));
+    return frac(H / 6);
 }
 
 float3 RGBtoHSV(float3 RGB)
 {
-	float3 HSV = 0;
-	HSV.z = max(RGB.r, max(RGB.g, RGB.b));
-	float M = min(RGB.r, min(RGB.g, RGB.b));
-	float C = HSV.z - M;
+    float3 HSV = 0;
+    HSV.z = max(RGB.r, max(RGB.g, RGB.b));
+    float M = min(RGB.r, min(RGB.g, RGB.b));
+    float C = HSV.z - M;
 
-	if (C != 0)
-	{
-		HSV.x = RGBCVtoHUE(RGB, C, HSV.z);
-		HSV.y = C / HSV.z;
-	}
+    if (C != 0)
+    {
+        HSV.x = RGBCVtoHUE(RGB, C, HSV.z);
+        HSV.y = C / HSV.z;
+    }
 
-	return HSV;
+    return HSV;
 }
 
 float3 HUEtoRGB(float H)
 {
-	float R = abs(H * 6 - 3) - 1;
-	float G = 2 - abs(H * 6 - 2);
-	float B = 2 - abs(H * 6 - 4);
+    float R = abs(H * 6 - 3) - 1;
+    float G = 2 - abs(H * 6 - 2);
+    float B = 2 - abs(H * 6 - 4);
 
-	return saturate(float3(R, G, B));
+    return saturate(float3(R, G, B));
 }
 
 float3 HSVtoRGB(float3 HSV)
 {
-	float3 RGB = HUEtoRGB(HSV.x);
-	return ((RGB - 1) * HSV.y + 1) * HSV.z;
+    float3 RGB = HUEtoRGB(HSV.x);
+    return ((RGB - 1) * HSV.y + 1) * HSV.z;
 }
 
 float3 HSVComplement(float3 HSV)
 {
-	float3 complement = HSV;
-	complement.x -= 0.5;
+    float3 complement = HSV;
+    complement.x -= 0.5;
 
-	if (complement.x < 0.0) { complement.x += 1.0; }
-	return(complement);
+    if (complement.x < 0.0) { complement.x += 1.0; }
+    return(complement);
 }
 
 float HueLerp(float h1, float h2, float v)
 {
-	float d = abs(h1 - h2);
+    float d = abs(h1 - h2);
 
-	if (d <= 0.5)
-	{
-		return lerp(h1, h2, v);
-	}
-	else if (h1 < h2)
-	{
-		return frac(lerp((h1 + 1.0), h2, v));
-	}
-	else
-	{
-		return frac(lerp(h1, (h2 + 1.0), v));
-	}
+    if (d <= 0.5)
+    {
+        return lerp(h1, h2, v);
+    }
+    else if (h1 < h2)
+    {
+        return frac(lerp((h1 + 1.0), h2, v));
+    }
+    else
+    {
+        return frac(lerp(h1, (h2 + 1.0), v));
+    }
 }
 
-float4 ColorGrading(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
+float4 ColorGrading(float4 color, float2 texcoord)
 {
-	float3 guide = float3(RedGrading, GreenGrading, BlueGrading);
-	float amount = GradingStrength;
-	float correlation = Correlation;
-	float concentration = 2.00;
+    float3 guide = float3(RedGrading, GreenGrading, BlueGrading);
+    float amount = GradingStrength;
+    float correlation = Correlation;
+    float concentration = 2.00;
 
-	float3 colorHSV = RGBtoHSV(color.rgb);
-	float3 huePoleA = RGBtoHSV(guide);
-	float3 huePoleB = HSVComplement(huePoleA);
+    float3 colorHSV = RGBtoHSV(color.rgb);
+    float3 huePoleA = RGBtoHSV(guide);
+    float3 huePoleB = HSVComplement(huePoleA);
 
-	float dist1 = abs(colorHSV.x - huePoleA.x); if (dist1 > 0.5) dist1 = 1.0 - dist1;
-	float dist2 = abs(colorHSV.x - huePoleB.x); if (dist2 > 0.5) dist2 = 1.0 - dist2;
+    float dist1 = abs(colorHSV.x - huePoleA.x); if (dist1 > 0.5) dist1 = 1.0 - dist1;
+    float dist2 = abs(colorHSV.x - huePoleB.x); if (dist2 > 0.5) dist2 = 1.0 - dist2;
 
-	float descent = smoothstep(0.0, correlation, colorHSV.y);
+    float descent = smoothstep(0.0, correlation, colorHSV.y);
 
-	float3 HSVColor = colorHSV;
+    float3 HSVColor = colorHSV;
 
-	if (dist1 < dist2)
-	{
-		float c = descent * amount * (1.0 - pow((dist1 * 2.0), 1.0 / concentration));
-		HSVColor.x = HueLerp(colorHSV.x, huePoleA.x, c);
-		HSVColor.y = lerp(colorHSV.y, huePoleA.y, c);
-	}
-	else
-	{
-		float c = descent * amount * (1.0 - pow((dist2 * 2.0), 1.0 / concentration));
-		HSVColor.x = HueLerp(colorHSV.x, huePoleB.x, c);
-		HSVColor.y = lerp(colorHSV.y, huePoleB.y, c);
-	}
+    if (dist1 < dist2)
+    {
+        float c = descent * amount * (1.0 - pow((dist1 * 2.0), 1.0 / concentration));
+        HSVColor.x = HueLerp(colorHSV.x, huePoleA.x, c);
+        HSVColor.y = lerp(colorHSV.y, huePoleA.y, c);
+    }
+    else
+    {
+        float c = descent * amount * (1.0 - pow((dist2 * 2.0), 1.0 / concentration));
+        HSVColor.x = HueLerp(colorHSV.x, huePoleB.x, c);
+        HSVColor.y = lerp(colorHSV.y, huePoleB.y, c);
+    }
 
-	color.rgb = HSVtoRGB(HSVColor);
-	color.a = RGBLuminance(color.rgb);
+    color.rgb = HSVtoRGB(HSVColor);
+    color.a = RGBLuminance(color.rgb);
 
-	return saturate(color);
+    return saturate(color);
 }
 #endif
 
@@ -1389,42 +1461,41 @@ float4 ColorGrading(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target0
 ------------------------------------------------------------------------------*/
 
 #if (SCANLINES == 1)
-float4 ScanlinesPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0, float4 FragCoord : SV_Position) : SV_Target0
+float4 ScanlinesPass(float4 color, float2 texcoord, float4 fragcoord)
 {
+    #if (ScanlineType == 3)
+    float amount = ScanlineBrightness;
+    float intensity = ScanlineIntensity;
 
-	#if (ScanlineType == 3)
-	float amount = ScanlineBrightness;
-	float intensity = ScanlineIntensity;
+    float pos0 = ((texcoord.y + 1.0) * 170.0 * amount);
+    float pos1 = cos((frac(pos0 * ScanlineScale) - 0.5) * 3.1415926 * intensity) * 1.2;
 
-	float pos0 = ((uv0.y + 1.0) * 170.0 * amount);
-	float pos1 = cos((frac(pos0 * ScanlineScale) - 0.5) * 3.1415926 * intensity) * 1.2;
+    color = lerp(float4(0, 0, 0, 0), color, pos1);
+    #else
 
-	color = lerp(float4(0, 0, 0, 0), color, pos1);
-	#else
+    float4 intensity;
 
-	float4 intensity;
+    #if (ScanlineType == 0)
+    if (frac(fragcoord.y * 0.5) > ScanlineScale)
+    #elif (ScanlineType == 1)
+    if (frac(fragcoord.x * 0.5) > ScanlineScale)
+    #elif (ScanlineType == 2)
+    if (frac(fragcoord.x * 0.5) > ScanlineScale && frac(fragcoord.y * 0.5) > ScanlineScale)
+    #endif
+    {
+        intensity = float4(0.0, 0.0, 0.0, 0.0);
+    }
+    else
+    {
+        intensity = smoothstep(0.2, ScanlineBrightness, color) + normalize(float4(color.xyz, RGBLuminance(color.xyz)));
+    }
 
-	#if (ScanlineType == 0)
-	if (frac(FragCoord.y * 0.5) > ScanlineScale)
-	#elif (ScanlineType == 1)
-	if (frac(FragCoord.x * 0.5) > ScanlineScale)
-	#elif (ScanlineType == 2)
-	if (frac(FragCoord.x * 0.5) > ScanlineScale && frac(FragCoord.y * 0.5) > ScanlineScale)
-	#endif
-	{
-		intensity = float4(0.0, 0.0, 0.0, 0.0);
-	}
-	else
-	{
-		intensity = smoothstep(0.2, ScanlineBrightness, color) + normalize(float4(color.xyz, RGBLuminance(color.xyz)));
-	}
+    float level = (4.0 - texcoord.x) * ScanlineIntensity;
 
-	float level = (4.0 - uv0.x) * ScanlineIntensity;
+    color = intensity * (0.5 - level) + color * 1.1;
+    #endif
 
-	color = intensity * (0.5 - level) + color * 1.1;
-	#endif
-
-	return color;
+    return color;
 }
 #endif
 
@@ -1433,20 +1504,19 @@ float4 ScanlinesPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0, float4 FragC
 ------------------------------------------------------------------------------*/
 
 #if (VIGNETTE == 1)
-#define VignetteCenter float2(0.500, 0.500)
-
-float4 VignettePass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target
+float4 VignettePass(float4 color, float2 texcoord)
 {
-	float2 tc = uv0 - VignetteCenter;
+    const float2 VignetteCenter = float2(0.500, 0.500);
+    float2 tc = texcoord - VignetteCenter;
 
-	tc *= float2((PixelSize.x / PixelSize.y), VignetteRatio);
-	tc /= VignetteRadius;
+    tc *= float2((2560.0 / 1440.0), VignetteRatio);
+    tc /= VignetteRadius;
 
-	float v = dot(tc, tc);
+    float v = dot(tc, tc);
 
-	color.rgb *= (1.0 + pow(v, VignetteSlope * 0.25) * -VignetteAmount);
+    color.rgb *= (1.0 + pow(v, VignetteSlope * 0.25) * -VignetteAmount);
 
-	return color;
+    return color;
 }
 #endif
 
@@ -1455,39 +1525,56 @@ float4 VignettePass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target
 ------------------------------------------------------------------------------*/
 
 #if (DITHERING == 1)
-float4 DitherPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target
+float4 DitherPass(float4 color, float2 texcoord)
 {
-	float ditherSize = 2.0;
-	float ditherBits = 8.0;
+    float ditherSize = 2.0;
+    float ditherBits = 8.0;
 
-	#if DitherMethod == 2 //random subpixel dithering
+    #if DitherMethod == 2 //random subpixel dithering
 
-	float seed = dot(uv0, float2(12.9898, 78.233));
-	float sine = sin(seed);
-	float noise = frac(sine * 43758.5453 + uv0.x);
+    float seed = dot(texcoord, float2(12.9898, 78.233));
+    float sine = sin(seed);
+    float noise = frac(sine * 43758.5453 + texcoord.x);
 
-	float ditherShift = (1.0 / (pow(2.0, ditherBits) - 1.0));
-	float ditherHalfShift = (ditherShift * 0.5);
-	ditherShift = ditherShift * noise - ditherHalfShift;
+    float ditherShift = (1.0 / (pow(2.0, ditherBits) - 1.0));
+    float ditherHalfShift = (ditherShift * 0.5);
+    ditherShift = ditherShift * noise - ditherHalfShift;
 
-	color.rgb += float3(-ditherShift, ditherShift, -ditherShift);
+    color.rgb += float3(-ditherShift, ditherShift, -ditherShift);
 
-	#else //Ordered dithering
+    #else //Ordered dithering
 
-	float gridPosition = frac(dot(uv0, (PixelSize.xy / ditherSize)) + (0.5 / ditherSize));
-	float ditherShift = (0.75) * (1.0 / (pow(2, ditherBits) - 1.0));
+    float gridPosition = frac(dot(texcoord, (screenSize / ditherSize)) + (0.5 / ditherSize));
+    float ditherShift = (0.75) * (1.0 / (pow(2, ditherBits) - 1.0));
 
-	float3 RGBShift = float3(ditherShift, -ditherShift, ditherShift);
-	RGBShift = lerp(2.0 * RGBShift, -2.0 * RGBShift, gridPosition);
+    float3 RGBShift = float3(ditherShift, -ditherShift, ditherShift);
+    RGBShift = lerp(2.0 * RGBShift, -2.0 * RGBShift, gridPosition);
 
-	color.rgb += RGBShift;
-	#endif
+    color.rgb += RGBShift;
+    #endif
 
-	color.a = RGBLuminance(color.rgb);
+    color.a = RGBLuminance(color.rgb);
 
-	return color;
+    return color;
 }
 #endif
+
+/*------------------------------------------------------------------------------
+                           [PX BORDER CODE SECTION]
+------------------------------------------------------------------------------*/
+
+float4 BorderPass(float4 colorInput, float2 tex)
+{
+    float3 border_color_float = BorderColor / 255.0;
+
+    float2 border = (_rcpFrame.xy * BorderWidth);
+    float2 within_border = saturate((-tex * tex + tex) - (-border * border + border));
+
+    colorInput.rgb = all(within_border) ? colorInput.rgb : border_color_float; //
+
+    return colorInput;
+
+}
 
 /*------------------------------------------------------------------------------
                      [MAIN() & COMBINE PASS CODE SECTION]
@@ -1495,72 +1582,84 @@ float4 DitherPass(float4 color : COLOR0, float2 uv0 : TEXCOORD0) : SV_Target
 
 PS_OUTPUT ps_main(VS_OUTPUT input)
 {
-	PS_OUTPUT output;
+    PS_OUTPUT output;
 
-	float4 color = Texture.Sample(TextureSampler, input.t);
-	color = PreGammaPass(color, input.t);
+    float2 texcoord = input.t;
+    float4 color = Texture.Sample(TextureSampler, texcoord);
 
-	#if (BILINEAR_FILTERING == 1)
-		color = BiLinearPass(color, input.t);
-	#endif
+    #if (BILINEAR_FILTERING == 1)
+        color = BiLinearPass(color, texcoord);
+    #endif
 
-	#if (GAUSSIAN_FILTERING == 1)
-		color = GaussianPass(color, input.t);
-	#endif
+    #if (GAUSSIAN_FILTERING == 1)
+        color = GaussianPass(color, texcoord);
+    #endif
 
-	#if (BICUBIC_FILTERING == 1)
-		color = BiCubicPass(color, input.t);
-	#endif
+    #if (BICUBIC_FILTERING == 1)
+        color = BiCubicPass(color, texcoord);
+    #endif
 
-	#if (UHQ_FXAA == 1)
-		color = FxaaPass(color, input.t);
-	#endif
+    #if (BICUBLIC_SCALAR == 1)
+        color = BiCubicScalarPass(color, texcoord);
+    #endif
 
-	#if (TEXTURE_SHARPENING == 1)
-		color = TexSharpenPass(color, input.t);
-	#endif
+    #if (LANCZOS_SCALAR == 1)
+        color = LanczosScalarPass(color, texcoord);
+    #endif
 
-	#if (CEL_SHADING == 1)
-		color = CelPass(color, input.t);
-	#endif
+    #if (UHQ_FXAA == 1)
+        color = FxaaPass(color, texcoord);
+    #endif
 
-	#if (SCANLINES == 1)
-		color = ScanlinesPass(color, input.t, input.p);
-	#endif
+    #if (TEXTURE_SHARPEN == 1)
+        color = TexSharpenPass(color, texcoord);
+    #endif
 
-	#if (BLENDED_BLOOM == 1)
-		color = BloomPass(color, input.t);
-	#endif
+    #if (CEL_SHADING == 1)
+        color = CelPass(color, texcoord);
+    #endif
 
-	#if (SCENE_TONEMAPPING == 1)
-		color = TonemapPass(color, input.t);
-	#endif
+    #if (SCANLINES == 1)
+        color = ScanlinesPass(color, texcoord, input.p);
+    #endif
 
-	#if (PIXEL_VIBRANCE == 1)
-		color = VibrancePass(color, input.t);
-	#endif
+    #if (BLENDED_BLOOM == 1)
+        color = BloomPass(color, texcoord);
+    #endif
 
-	#if (COLOR_GRADING == 1)
-		color = ColorGrading(color, input.t);
-	#endif
+    #if (SCENE_TONEMAPPING == 1)
+        color = TonemapPass(color, texcoord);
+    #endif
 
-	#if (S_CURVE_CONTRAST == 1)
-		color = SCurvePass(color, input.t);
-	#endif
+    #if (PIXEL_VIBRANCE == 1)
+        color = VibrancePass(color, texcoord);
+    #endif
 
-	#if (GAMMA_CORRECTION == 1)
-		color = PostGammaPass(color, input.t);
-	#endif
+    #if (COLOR_GRADING == 1)
+        color = ColorGrading(color, texcoord);
+    #endif
 
-	#if (VIGNETTE == 1)
-		color = VignettePass(color, input.t);
-	#endif
+    #if (S_CURVE_CONTRAST == 1)
+        color = ContrastPass(color, texcoord);
+    #endif
 
-	#if (DITHERING == 1)
-		color = DitherPass(color, input.t);
-	#endif
+    #if (GAMMA_CORRECTION == 1)
+        color = GammaPass(color, texcoord);
+    #endif
 
-	output.c = color;
+    #if (VIGNETTE == 1)
+        color = VignettePass(color, texcoord);
+    #endif
 
-	return output;
+    #if (DITHERING == 1)
+        color = DitherPass(color, texcoord);
+    #endif
+
+    #if (PX_BORDER == 1)
+        color = BorderPass(color, texcoord);
+    #endif
+
+    output.c = color;
+
+    return output;
 }
