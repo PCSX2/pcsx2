@@ -263,6 +263,14 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 #endif
 
 // sse
+#ifndef _WINDOWS
+// Convert gcc see define into GSdx (windows) define
+#if defined(__AVX2__)
+	#define _M_SSE 0x501
+#elif defined(__AVX__)
+	#define _M_SSE 0x500
+#endif
+#endif
 
 #if !defined(_M_SSE) && (!defined(_WINDOWS) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 
