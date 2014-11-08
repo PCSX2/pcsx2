@@ -35,6 +35,8 @@ Debug
 Release
 Devel
 
+oprofile_data/
+
 /BuildLog.htm
 /UpgradeLog.XML
 /UpgradeLog2.XML
