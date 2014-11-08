@@ -314,7 +314,13 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	// big upscale
 	// Note: with latest improvement, Pbo could be faster
 #if 1
-	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
+	// Note: not really a performance optimization but it reduces noise
+	// for gl retracers
+	static uint32 unpack_alignment = 0;
+	if (unpack_alignment != m_int_alignment) {
+		unpack_alignment = m_int_alignment;
+		glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+	}
 
 	char* src = (char*)data;
 	char* map = PboPool::Map(r.height() * pitch);
@@ -329,7 +335,13 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	PboPool::Unmap();
 
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
+	// Note: not really a performance optimization but it reduces noise
+	// for gl retracers
+	static int unpack_row_length = 0;
+	if (unpack_row_length != (pitch >> m_int_shift)) {
+		unpack_row_length = pitch >> m_int_shift;
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+	}
 	glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 	// Normally only affect TexSubImage call. (i.e. only the previous line)
 	//glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
