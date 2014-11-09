@@ -947,12 +947,12 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 {
 	// Lazy compile
 	if (!m_shaderfx.ps) {
-		std::ifstream fconfig("bin/GSdx_FX_Settings.ini");
+		std::ifstream fconfig(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
 		std::stringstream config;
 		if (fconfig.good())
 			config << fconfig.rdbuf();
 
-		std::ifstream fshader("bin/shader.fx");
+		std::ifstream fshader(theApp.GetConfig("shaderfx_glsl", "dummy.glsl"));
 		std::stringstream shader;
 		if (!fshader.good())
 			return;
