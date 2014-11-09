@@ -64,7 +64,7 @@ option(USE_ASAN "Enable address sanitizer")
 # Select the architecture
 #-------------------------------------------------------------------------------
 option(64BIT_BUILD_DONT_WORK "Enable a x86_64 build instead of cross compiling (WARNING: NOTHING WORK)" OFF)
-option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
+option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" ON)
 
 # Architecture bitness detection
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -103,7 +103,8 @@ if(_ARCH_64 AND 64BIT_BUILD_DONT_WORK)
     if (DISABLE_ADVANCE_SIMD)
         set(ARCH_FLAG "-m64 -msse -msse2")
     else()
-        set(ARCH_FLAG "-m64 -march=native -fabi-version=6")
+        #set(ARCH_FLAG "-m64 -march=native -fabi-version=6")
+        set(ARCH_FLAG "-m64 -march=native")
     endif()
     add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
     set(_ARCH_64 1)
@@ -137,7 +138,8 @@ else()
     else()
         # AVX requires some fix of the ABI (mangling) (default 2)
         # Note: V6 requires GCC 4.7
-        set(ARCH_FLAG "-m32 -march=native -fabi-version=6")
+        #set(ARCH_FLAG "-m32 -march=native -fabi-version=6")
+        set(ARCH_FLAG "-m32 -march=native")
     endif()
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)

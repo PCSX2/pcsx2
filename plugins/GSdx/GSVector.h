@@ -2970,15 +2970,15 @@ public:
 
 	}
 
-	template<int i> __forceinline int extract32() const
+	template<int idx> __forceinline int extract32() const
 	{
 		#if _M_SSE >= 0x401
 
-		return _mm_extract_ps(m, i);
+		return _mm_extract_ps(m, idx);
 
 		#else
 
-		return i32[i];
+		return i32[idx];
 
 		#endif
 	}
