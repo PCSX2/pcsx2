@@ -170,7 +170,7 @@ bool GSShaderOGL::ValidateShader(GLuint s)
 {
 	if (!m_debug_shader) return true;
 
-	GLint status;
+	GLint status = 0;
 	gl_GetShaderiv(s, GL_COMPILE_STATUS, &status);
 	if (status) return true;
 
@@ -191,7 +191,7 @@ bool GSShaderOGL::ValidateProgram(GLuint p)
 {
 	if (!m_debug_shader) return true;
 
-	GLint status;
+	GLint status = 0;
 	gl_GetProgramiv(p, GL_LINK_STATUS, &status);
 	if (status) return true;
 
@@ -216,7 +216,7 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 	// FIXME: might be mandatory to validate the pipeline
 	gl_ValidateProgramPipeline(p);
 
-	GLint status;
+	GLint status = 0;
 	gl_GetProgramPipelineiv(p, GL_VALIDATE_STATUS, &status);
 	if (status) return true;
 

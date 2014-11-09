@@ -615,6 +615,10 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			m_fxaa = !m_fxaa;
 			fprintf(stderr,"GSdx: fxaa is now %s.\n", m_fxaa ? "enabled" : "disabled");
 			return;
+		case XK_Home:
+			m_shaderfx = !m_shaderfx;
+			printf("GSdx: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
+			return;
 		case XK_Shift_L:
 		case XK_Shift_R:
 			m_shift_key = true;
