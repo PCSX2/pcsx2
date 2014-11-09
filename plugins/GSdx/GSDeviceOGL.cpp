@@ -40,7 +40,6 @@ uint32 g_vertex_upload_byte = 0;
 static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
-static const uint32 g_fxaa_cb_index       = 13;
 static const uint32 g_fx_cb_index         = 14;
 
 GSDeviceOGL::GSDeviceOGL()
@@ -919,26 +918,21 @@ void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
 	// Lazy compile
 	if (!m_fxaa.ps) {
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
-		if (GLLoader::found_GL_ARB_gpu_shader5) {
-			// This extension become core on openGL4
+		if (GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+			// Hardcoded in the new shader
+			//fxaa_macro += "#define FXAA_GATHER4_ALPHA 1\n";
 			fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
-			fxaa_macro += "#define FXAA_GATHER4_ALPHA 1\n";
+		} else {
+			fprintf(stderr, "FXAA requires the GL_ARB_gpu_shader5 extension. Please either disable FXAA or upgrade your GPU/driver.\n");
+			return;
 		}
-		m_fxaa.cb = new GSUniformBufferOGL(g_fxaa_cb_index, sizeof(FXAAConstantBuffer));
-		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, old_fxaa_fx, fxaa_macro);
+		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
 	}
 
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
 	GSVector4 dr(0, 0, s.x, s.y);
-
-	FXAAConstantBuffer cb;
-
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_fxaa.cb->upload(&cb);
 
 	StretchRect(st, sr, dt, dr, m_fxaa.ps, true);
 }

@@ -34,8 +34,7 @@ eval {
     print "Disable MD5\n";
 };
 
-# Keep the old FXAA for now
-my @gsdx_res = qw/convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx.glsl old_fxaa.fx/;
+my @gsdx_res = qw/convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx.glsl fxaa.fx/;
 my $gsdx_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "GSdx", "res");
 my $gsdx_out = File::Spec->catdir($gsdx_path, "glsl_source.h");
 glsl2h($gsdx_path, $gsdx_out, \@gsdx_res);
