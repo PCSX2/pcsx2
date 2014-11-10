@@ -871,6 +871,14 @@ void SIODMAWrite(u8 value)
 	sioWrite8inl(value);
 }
 
+void sioNextFrame() {
+	for ( uint port = 0; port < 2; ++port ) {
+		for ( uint slot = 0; slot < 4; ++slot ) {
+			mcds[port][slot].NextFrame();
+		}
+	}
+}
+
 void SaveStateBase::sioFreeze()
 {
 	// CRCs for memory cards.

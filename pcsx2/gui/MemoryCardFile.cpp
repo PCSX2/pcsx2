@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "Utilities/SafeArray.inl"
 #include <wx/file.h>
-
-#include "MemoryCardFile.h"
+#include <wx/dir.h>
+#include <wx/stopwatch.h>
 
 // IMPORTANT!  If this gets a macro redefinition error it means PluginCallbacks.h is included
 // in a global-scope header, and that's a BAD THING.  Include it only into modules that need
@@ -26,12 +26,16 @@
 struct Component_FileMcd;
 #define PS2E_THISPTR Component_FileMcd*
 
+#include "MemoryCardFile.h"
+#include "MemoryCardFolder.h"
+
 #include "System.h"
 #include "AppConfig.h"
 
 #include "svnrev.h"
 
 #include <wx/ffile.h>
+#include <map>
 
 static const int MCD_SIZE	= 1024 *  8  * 16;		// Legacy PSX card default size
 
@@ -404,7 +408,11 @@ u64 FileMemoryCard::GetCRC( uint slot )
 struct Component_FileMcd
 {
 	PS2E_ComponentAPI_Mcd	api;	// callbacks the plugin provides back to the emulator
+#ifdef MEMORYCARD_USE_FOLDER
+	FolderMemoryCardAggregator impl;
+#else
 	FileMemoryCard			impl;	// class-based implementations we refer to when API is invoked
+#endif
 
 	Component_FileMcd();
 };
@@ -461,6 +469,12 @@ static u64 PS2E_CALLBACK FileMcd_GetCRC( PS2E_THISPTR thisptr, uint port, uint s
 	return thisptr->impl.GetCRC( FileMcd_ConvertToSlot( port, slot ) );
 }
 
+static void PS2E_CALLBACK FileMcd_NextFrame( PS2E_THISPTR thisptr, uint port, uint slot ) {
+#ifdef MEMORYCARD_USE_FOLDER
+	thisptr->impl.NextFrame( FileMcd_ConvertToSlot( port, slot ) );
+#endif
+}
+
 Component_FileMcd::Component_FileMcd()
 {
 	memzero( api );
@@ -475,6 +489,7 @@ Component_FileMcd::Component_FileMcd()
 	api.McdSave			= FileMcd_Save;
 	api.McdEraseBlock	= FileMcd_EraseBlock;
 	api.McdGetCRC		= FileMcd_GetCRC;
+	api.McdNextFrame    = FileMcd_NextFrame;
 }
 
 
@@ -546,32 +561,6 @@ extern "C" const PS2E_LibraryAPI* FileMcd_InitAPI( const PS2E_EmulatorInfo* emui
 {
 	return &FileMcd_Library;
 }
-
-// --------------------------------------------------------------------------------------
-//  Currently Unused Superblock Header Struct
-// --------------------------------------------------------------------------------------
-// (provided for reference purposes)
-
-struct superblock
-{
-	char magic[28]; 			// 0x00
-	char version[12]; 			// 0x1c
-	u16 page_len; 				// 0x28
-	u16 pages_per_cluster;	 	// 0x2a
-	u16 pages_per_block;		// 0x2c
-	u16 unused; 				// 0x2e
-	u32 clusters_per_card;	 	// 0x30
-	u32 alloc_offset; 			// 0x34
-	u32 alloc_end; 				// 0x38
-	u32 rootdir_cluster;		// 0x3c
-	u32 backup_block1;			// 0x40
-	u32 backup_block2;			// 0x44
-	u32 ifc_list[32]; 			// 0x50
-	u32 bad_block_list[32]; 	// 0xd0
-	u8 card_type; 				// 0x150
-	u8 card_flags; 				// 0x151
-};
-
 
 //Tests if a string is a valid name for a new file within a specified directory.
 //returns true if:

@@ -19,6 +19,8 @@
 // Games are highly unlikely to need timed IRQ's for PAD and MemoryCard handling anyway (rama).
 #define SIO_INLINE_IRQS
 
+#include "MemoryCardFile.h"
+
 struct _mcd
 {
 	u8 term; // terminator value;
@@ -80,6 +82,10 @@ struct _mcd
 	{
 		return SysPlugins.McdGetCRC(port, slot);
 	}
+
+	void NextFrame() {
+		SysPlugins.McdNextFrame( port, slot );
+	}
 };
 
 struct _sio
@@ -117,3 +123,4 @@ extern void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
 extern void InitializeSIO(u8 value);
 extern void SetForceMcdEjectTimeoutNow();
+extern void sioNextFrame();

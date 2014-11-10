@@ -29,6 +29,8 @@
 
 #include "ps2/HwInternal.h"
 
+#include "Sio.h"
+
 using namespace Threading;
 
 extern u8 psxhblankgate;
@@ -428,6 +430,12 @@ static __fi void VSyncEnd(u32 sCycle)
 	hwIntcIrq(INTC_VBLANK_E);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
 	if (gates) rcntEndGate(true, sCycle); // Counters End Gate Code
+
+#ifdef MEMORYCARD_USE_FOLDER
+	// FolderMemoryCard needs information on how much time has passed since the last write
+	sioNextFrame();
+#endif
+
 	frameLimit(); // limit FPS
 
 	//Do this here, breaks Dynasty Warriors otherwise.

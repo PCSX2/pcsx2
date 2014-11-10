@@ -296,6 +296,7 @@ set(pcsx2GuiSources
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
 	gui/MemoryCardFile.cpp
+	gui/MemoryCardFolder.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/MemoryCardListPanel.cpp
 	gui/MessageBoxes.cpp
@@ -348,6 +349,7 @@ set(pcsx2GuiHeaders
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MemoryCardFile.h
+	gui/MemoryCardFolder.h
 	gui/MSWstuff.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
