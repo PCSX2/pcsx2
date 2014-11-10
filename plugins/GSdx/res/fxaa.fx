@@ -1,4 +1,8 @@
-#ifdef SHADER_MODEL
+#if defined(SHADER_MODEL) || defined(FXAA_GLSL_130)
+
+#ifndef FXAA_GLSL_130
+    #define FXAA_GLSL_130 0
+#endif
 
 #define UHQ_FXAA 1          //High Quality Fast Approximate Anti Aliasing. Adapted for GSdx from Timothy Lottes FXAA 3.11.
 #define FxaaSubpixMax 0.0   //[0.00 to 1.00] Amount of subpixel aliasing removal. 0.00: Edge only antialiasing (no blurring)
@@ -7,6 +11,29 @@
 /*------------------------------------------------------------------------------
 							 [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/
+#if (FXAA_GLSL_130 == 1)
+
+struct vertex_basic
+{
+    vec4 p;
+    vec2 t;
+};
+
+#ifdef ENABLE_BINDLESS_TEX
+layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
+#else
+layout(binding = 0) uniform sampler2D TextureSampler;
+#endif
+
+in SHADER
+{
+    vec4 p;
+    vec2 t;
+} PSin;
+
+layout(location = 0) out vec4 SV_Target0;
+
+#else
 
 #if (SHADER_MODEL >= 0x400)
 Texture2D Texture : register(t0);
@@ -47,59 +74,7 @@ struct PS_OUTPUT
 	#endif
 };
 
-float RGBLuminance(float3 color)
-{
-	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
-	return dot(color.rgb, lumCoeff);
-}
-
-#define PixelSize float2(_rcpFrame.x, _rcpFrame.y)
-
-/*------------------------------------------------------------------------------
-                        [GAMMA PREPASS CODE SECTION]
-------------------------------------------------------------------------------*/
-
-float3 RGBGammaToLinear(float3 color, float gamma)
-{
-	color = saturate(color);
-	color.r = (color.r <= 0.0404482362771082) ?
-	color.r / 12.92 : pow((color.r + 0.055) / 1.055, gamma);
-	color.g = (color.g <= 0.0404482362771082) ?
-	color.g / 12.92 : pow((color.g + 0.055) / 1.055, gamma);
-	color.b = (color.b <= 0.0404482362771082) ?
-	color.b / 12.92 : pow((color.b + 0.055) / 1.055, gamma);
-
-	return color;
-}
-
-float3 LinearToRGBGamma(float3 color, float gamma)
-{
-	color = saturate(color);
-	color.r = (color.r <= 0.00313066844250063) ?
-	color.r * 12.92 : 1.055 * pow(color.r, 1.0 / gamma) - 0.055;
-	color.g = (color.g <= 0.00313066844250063) ?
-	color.g * 12.92 : 1.055 * pow(color.g, 1.0 / gamma) - 0.055;
-	color.b = (color.b <= 0.00313066844250063) ?
-	color.b * 12.92 : 1.055 * pow(color.b, 1.0 / gamma) - 0.055;
-
-	return color;
-}
-
-float4 PreGammaPass(float4 color, float2 uv0)
-{
-	#if (SHADER_MODEL >= 0x400)
-		color = Texture.Sample(TextureSampler, uv0);
-	#else
-		color = tex2D(TextureSampler, uv0);
-	#endif
-
-	const float GammaConst = 2.233;
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
-	color.a = RGBLuminance(color.rgb);
-
-	return color;
-}
+#endif
 
 /*------------------------------------------------------------------------------
                              [FXAA CODE SECTION]
@@ -111,6 +86,8 @@ float4 PreGammaPass(float4 color, float2 uv0)
 #elif (SHADER_MODEL >= 0x400)
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
+#elif (FXAA_GLSL_130 == 1)
+#define FXAA_GATHER4_ALPHA 1
 #else
 #define FXAA_HLSL_3 1
 #define FXAA_GATHER4_ALPHA 0
@@ -138,6 +115,24 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaSat(x) saturate(x)
 #define FxaaTexTop(t, p) tex2Dlod(t, float4(p, 0.0, 0.0))
 #define FxaaTexOff(t, p, o, r) tex2Dlod(t, float4(p + (o * r), 0, 0))
+
+#elif (FXAA_GLSL_130 == 1)
+
+#define int2 ivec2
+#define float2 vec2
+#define float3 vec3
+#define float4 vec4
+#define FxaaDiscard discard
+#define FxaaSat(x) clamp(x, 0.0, 1.0)
+#define FxaaTex sampler2D
+#define FxaaTexTop(t, p) textureLod(t, p, 0.0)
+#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
+#if (FXAA_GATHER4_ALPHA == 1)
+// use #extension GL_ARB_gpu_shader5 : enable
+#define FxaaTexAlpha4(t, p) textureGather(t, p, 3)
+#define FxaaTexOffAlpha4(t, p, o) textureGatherOffset(t, p, o, 3)
+#endif
+
 #endif
 
 #define FxaaEdgeThreshold 0.063
@@ -155,6 +150,69 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FXAA_QUALITY__P10 4.0
 #define FXAA_QUALITY__P11 8.0
 #define FXAA_QUALITY__P12 8.0
+
+/*------------------------------------------------------------------------------
+                        [GAMMA PREPASS CODE SECTION]
+------------------------------------------------------------------------------*/
+float RGBLuminance(float3 color)
+{
+	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+	return dot(color.rgb, lumCoeff);
+}
+
+#if (FXAA_GLSL_130 == 0)
+#define PixelSize float2(_rcpFrame.x, _rcpFrame.y)
+#endif
+
+
+float3 RGBGammaToLinear(float3 color, float gamma)
+{
+	color = FxaaSat(color);
+	color.r = (color.r <= 0.0404482362771082) ?
+	color.r / 12.92 : pow((color.r + 0.055) / 1.055, gamma);
+	color.g = (color.g <= 0.0404482362771082) ?
+	color.g / 12.92 : pow((color.g + 0.055) / 1.055, gamma);
+	color.b = (color.b <= 0.0404482362771082) ?
+	color.b / 12.92 : pow((color.b + 0.055) / 1.055, gamma);
+
+	return color;
+}
+
+float3 LinearToRGBGamma(float3 color, float gamma)
+{
+	color = FxaaSat(color);
+	color.r = (color.r <= 0.00313066844250063) ?
+	color.r * 12.92 : 1.055 * pow(color.r, 1.0 / gamma) - 0.055;
+	color.g = (color.g <= 0.00313066844250063) ?
+	color.g * 12.92 : 1.055 * pow(color.g, 1.0 / gamma) - 0.055;
+	color.b = (color.b <= 0.00313066844250063) ?
+	color.b * 12.92 : 1.055 * pow(color.b, 1.0 / gamma) - 0.055;
+
+	return color;
+}
+
+float4 PreGammaPass(float4 color, float2 uv0)
+{
+	#if (SHADER_MODEL >= 0x400)
+		color = Texture.Sample(TextureSampler, uv0);
+    #elif (FXAA_GLSL_130 == 1)
+		color = texture(TextureSampler, uv0);
+	#else
+		color = tex2D(TextureSampler, uv0);
+	#endif
+
+	const float GammaConst = 2.233;
+	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
+	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
+	color.a = RGBLuminance(color.rgb);
+
+	return color;
+}
+
+
+/*------------------------------------------------------------------------------
+                        [FXAA CODE SECTION]
+------------------------------------------------------------------------------*/
 
 float FxaaLuma(float4 rgba)
 { 
@@ -463,7 +521,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	return float4(FxaaTexTop(tex, posM).xyz, lumaM);
 }
 
+#if (FXAA_GLSL_130 == 1)
+float4 FxaaPass(float4 FxaaColor, float2 uv0)
+#else
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
+#endif
 {
 	FxaaTex tex;
 
@@ -473,6 +535,13 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 
 	Texture.GetDimensions(PixelSize.x, PixelSize.y);
 	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+
+    #elif (FXAA_GLSL_130 == 1)
+
+	tex = TextureSampler;
+	vec2 PixelSize = textureSize(tex, 0);
+	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+
 	#else
 
 	tex = TextureSampler;
@@ -485,6 +554,18 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 /*------------------------------------------------------------------------------
                       [MAIN() & COMBINE PASS CODE SECTION]
 ------------------------------------------------------------------------------*/
+#if (FXAA_GLSL_130 == 1)
+
+void ps_main()
+{
+    vec4 color = texture(TextureSampler, PSin.t);
+    color      = PreGammaPass(color, PSin.t);
+    color      = FxaaPass(color, PSin.t);
+
+    SV_Target0 = color;
+}
+
+#else
 
 PS_OUTPUT ps_main(VS_OUTPUT input)
 {
@@ -506,4 +587,7 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 	
 	return output;
 }
+
+#endif
+
 #endif

@@ -495,6 +495,11 @@ class GSDeviceOGL : public GSDevice
 	} m_fxaa;
 
 	struct {
+		GLuint ps;
+		GSUniformBufferOGL* cb;
+	} m_shaderfx;
+
+	struct {
 		GSDepthStencilOGL* dss;
 		GSBlendStateOGL* bs;
 		GSTexture* t;
@@ -535,6 +540,7 @@ class GSDeviceOGL : public GSDevice
 	void DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset = 0);
 	void DoFXAA(GSTexture* st, GSTexture* dt);
 	void DoShadeBoost(GSTexture* st, GSTexture* dt);
+	void DoExternalFX(GSTexture* st, GSTexture* dt);
 
 	void OMAttachRt(GLuint rt);
 	void OMAttachDs(GLuint ds);

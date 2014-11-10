@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
+#include <fstream>
 
 #include "res/glsl_source.h"
 
@@ -39,7 +40,7 @@ uint32 g_vertex_upload_byte = 0;
 static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
-static const uint32 g_fxaa_cb_index       = 13;
+static const uint32 g_fx_cb_index         = 14;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_free_window(false)
@@ -52,6 +53,8 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
 	memset(&m_interlace, 0, sizeof(m_interlace));
 	memset(&m_convert, 0, sizeof(m_convert));
+	memset(&m_fxaa, 0, sizeof(m_fxaa));
+	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
 	memset(&m_date, 0, sizeof(m_date));
 	memset(&m_state, 0, sizeof(m_state));
 	GLState::Clear();
@@ -93,6 +96,10 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Clean m_fxaa
 	delete m_fxaa.cb;
 	m_shader->Delete(m_fxaa.ps);
+
+	// Clean m_shaderfx
+	delete m_shaderfx.cb;
+	m_shader->Delete(m_shaderfx.ps);
 
 	// Clean m_date
 	delete m_date.dss;
@@ -295,18 +302,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	rd.DepthClipEnable = false; // ???
 	rd.AntialiasedLineEnable = false;
 #endif
-
-	// ****************************************************************
-	// fxaa
-	// ****************************************************************
-	std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
-	if (GLLoader::found_GL_ARB_gpu_shader5) {
-		// This extension become core on openGL4
-		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
-		fxaa_macro += "#define FXAA_GATHER4_ALPHA 1\n";
-	}
-	m_fxaa.cb = new GSUniformBufferOGL(g_fxaa_cb_index, sizeof(FXAAConstantBuffer));
-	m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, old_fxaa_fx, fxaa_macro);
 
 	// ****************************************************************
 	// DATE
@@ -920,20 +915,62 @@ void GSDeviceOGL::DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool lin
 
 void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
 {
+	// Lazy compile
+	if (!m_fxaa.ps) {
+		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
+		if (GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+			// Hardcoded in the new shader
+			//fxaa_macro += "#define FXAA_GATHER4_ALPHA 1\n";
+			fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
+		} else {
+			fprintf(stderr, "FXAA requires the GL_ARB_gpu_shader5 extension. Please either disable FXAA or upgrade your GPU/driver.\n");
+			return;
+		}
+		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
+	}
+
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
 	GSVector4 dr(0, 0, s.x, s.y);
 
-	FXAAConstantBuffer cb;
+	StretchRect(st, sr, dt, dr, m_fxaa.ps, true);
+}
 
-	// FIXME optimize: remove rcpFrameOpt. And reduce rcpFrame to vec2
+void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
+{
+	// Lazy compile
+	if (!m_shaderfx.ps) {
+		std::ifstream fconfig(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
+		std::stringstream config;
+		if (fconfig.good())
+			config << fconfig.rdbuf();
+
+		std::ifstream fshader(theApp.GetConfig("shaderfx_glsl", "dummy.glsl"));
+		std::stringstream shader;
+		if (!fshader.good())
+			return;
+		shader << fshader.rdbuf();
+
+
+		m_shaderfx.cb = new GSUniformBufferOGL(g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
+		m_shaderfx.ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
+	}
+
+	GSVector2i s = dt->GetSize();
+
+	GSVector4 sr(0, 0, 1, 1);
+	GSVector4 dr(0, 0, s.x, s.y);
+
+	ExternalFXConstantBuffer cb;
+
+	cb.xyFrame = GSVector2(s.x, s.y);
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	m_fxaa.cb->upload(&cb);
+	m_shaderfx.cb->upload(&cb);
 
-	StretchRect(st, sr, dt, dr, m_fxaa.ps, true);
+	StretchRect(st, sr, dt, dr, m_shaderfx.ps, true);
 }
 
 void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
