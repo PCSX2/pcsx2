@@ -519,9 +519,9 @@ float4 FxaaPass(float4 FxaaColor, float2 texcoord)
     FxaaTex tex;
 
     #if(GLSL == 1)
-	tex = TextureSampler;
-	vec2 PixelSize = textureSize(tex, 0);
-	FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+     tex = TextureSampler;
+     vec2 PixelSize = textureSize(tex, 0);
+     FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
     #else
     tex.tex = Texture;
     tex.smpl = TextureSampler;
