@@ -124,7 +124,7 @@ float4 sample_tex(SamplerState texSample, float2 t)
 float4 sample_texLevel(SamplerState texSample, float2 t, float lod)
 {
 #if (GLSL == 1)
-    return texture(texSample, t, lod);
+    return textureLod(texSample, t, lod);
 #else
     return Texture.SampleLevel(texSample, t, lod);
 #endif
@@ -1367,54 +1367,44 @@ float4 ContrastPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (CEL_SHADING == 1)
-static const int NUM = 9;
-static const float3 thresholds = float3(5.0, 8.0, 6.0);
-
-#if (LumaConversion == 1)
-#define celLumaCoef float3(0.2126729, 0.7151522, 0.0721750)
-#else
-#define celLumaCoef float3(0.299, 0.587, 0.114)
-#endif
-
 float3 GetYUV(float3 rgb)
 {
 #if (GLSL == 1)
     mat3 RGB2YUV = mat3( 
-             0.2126, 0.09991, 0.615,
-             0.7152, -0.33609, -0.55861,
-             0.0722, 0.436, -0.05639 );
+             0.2126, 0.7152, 0.0722,
+            -0.09991, -0.33609, 0.436,
+             0.615, -0.55861, -0.05639);
+
+    return (rgb * RGB2YUV);
 #else
     float3x3 RGB2YUV = { 
              0.2126, 0.7152, 0.0722,
             -0.09991, -0.33609, 0.436,
              0.615, -0.55861, -0.05639 };
 
-#endif
-
     return mul(RGB2YUV, rgb);
+
+#endif
 }
 
 float3 GetRGB(float3 yuv)
 {
 #if (GLSL == 1)
     mat3 YUV2RGB = mat3(
-             1.000, 1.000, 1.000,
-             0.000, -0.21482, 2.12798,
-             1.28033, -0.38059, 0.000 );
+             1.000, 0.000, 1.28033,
+             1.000, -0.21482, -0.38059,
+             1.000, 2.12798, 0.000);
+
+    return (yuv * YUV2RGB);
 #else
     float3x3 YUV2RGB = {
              1.000, 0.000, 1.28033,
              1.000, -0.21482, -0.38059,
              1.000, 2.12798, 0.000 };
 
-#endif
-
     return mul(YUV2RGB, yuv);
-}
 
-float GetCelLuminance(float3 rgb)
-{
-    return dot(rgb, celLumaCoef);
+#endif
 }
 
 float4 CelPass(float4 color, float2 texcoord)
@@ -1422,8 +1412,11 @@ float4 CelPass(float4 color, float2 texcoord)
     float3 yuv;
     float3 sum = color.rgb;
     float2 pixel = pixelSize * EdgeThickness;
-    const float2 RoundingOffset = float2(0.20, 0.40);
 
+    const float2 RoundingOffset = float2(0.20, 0.40);
+    const float3 thresholds = float3(5.0, 8.0, 6.0);
+
+    const int NUM = 9;
     float2 c[NUM] = {
     float2(-0.0078125, -0.0078125),
     float2(0.00, -0.0078125),
@@ -1448,7 +1441,7 @@ float4 CelPass(float4 color, float2 texcoord)
         col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
         #endif
 
-        lum[i] = GetCelLuminance(col[i].xyz);
+        lum[i] = RGBLuminance(col[i].xyz);
         yuv = GetYUV(col[i]);
 
         if (UseYuvLuma == 0)
@@ -1462,11 +1455,11 @@ float4 CelPass(float4 color, float2 texcoord)
 
     float3 shadedColor = (sum / NUM);
 
-    float edgeX = dot(sample_tex(TextureSampler, texcoord + pixel).rgb, celLumaCoef);
-    edgeX = dot(float4(sample_tex(TextureSampler, texcoord - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
+    float edgeX = dot(sample_tex(TextureSampler, texcoord + pixel).rgb, lumCoeff);
+    edgeX = dot(float4(sample_tex(TextureSampler, texcoord - pixel).rgb, edgeX), float4(lumCoeff, -1.0));
 
-    float edgeY = dot(sample_tex(TextureSampler, texcoord + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
-    edgeY = dot(float4(sample_tex(TextureSampler, texcoord + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
+    float edgeY = dot(sample_tex(TextureSampler, texcoord + float2(pixel.x, -pixel.y)).rgb, lumCoeff);
+    edgeY = dot(float4(sample_tex(TextureSampler, texcoord + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(lumCoeff, -1.0));
 
     float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
 
