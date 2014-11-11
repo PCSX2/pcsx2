@@ -16,8 +16,7 @@
 
 #set -e # This terminates the script in case of any error
 
-arch64Build=$(uname -a | grep ARCH | grep x86_64)
-if [[ -e "arch64Build" ]]; then
+if [[ (-f /usr/bin/wx-config32-2.8 && -f /usr/bin/wxrc32-2.8) ]]; then
 #add flags for archlinux
 flags=(-DCMAKE_BUILD_PO=FALSE -DwxWidgets_CONFIG_EXECUTABLE='/usr/bin/wx-config32-2.8' -DwxWidgets_wxrc_EXECUTABLE='/usr/bin/wxrc32-2.8')
 else
