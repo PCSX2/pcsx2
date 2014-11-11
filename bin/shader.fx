@@ -126,7 +126,7 @@ float4 sample_texLevel(SamplerState texSample, float2 t, float lod)
 #if (GLSL == 1)
     return texture(texSample, t, lod);
 #else
-    return Texture.Sample(texSample, t, lod);
+    return Texture.SampleLevel(texSample, t, lod);
 #endif
 }
 
