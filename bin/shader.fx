@@ -130,7 +130,6 @@ float4 sample_texLevel(SamplerState texSample, float2 t, float lod)
 #endif
 }
 
-
 /*------------------------------------------------------------------------------
                             [FXAA CODE SECTION]
 ------------------------------------------------------------------------------*/
@@ -519,9 +518,9 @@ float4 FxaaPass(float4 FxaaColor, float2 texcoord)
     FxaaTex tex;
 
     #if(GLSL == 1)
-     tex = TextureSampler;
-     vec2 PixelSize = textureSize(tex, 0);
-     FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+    tex = TextureSampler;
+    vec2 PixelSize = textureSize(tex, 0);
+    FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
     #else
     tex.tex = Texture;
     tex.smpl = TextureSampler;
@@ -1053,7 +1052,7 @@ float4 VibrancePass(float4 color, float2 texcoord)
 #if (BLENDED_BLOOM == 1)
 float3 BlendAddLight(float3 color, float3 bloom)
 {
-    return (color + bloom) * 0.75f;
+    return saturate(color + bloom);
 }
 
 float3 BlendScreen(float3 color, float3 bloom)
@@ -1108,45 +1107,45 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    float defocus = 1.25;
+    const float defocus = 1.25;
     float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
-    float2 dx2 = 2.0 * dx;
-    float2 dy2 = 2.0 * dy;
+    float2 mdx = mul(2.0, dx);
+    float2 mdy = mul(2.0, dy);
 
     float4 bloomBlend = bloom * 0.22520613262190495;
 
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - dx2 + dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx + dy2);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx + dy2);
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + dx2 + dy2);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - mdx + mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx + mdy);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx + mdy);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + mdx + mdy);
 
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx2 + dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - mdx + dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord - dx + dy);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord + dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord + dx + dy);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx2 + dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + mdx + dy);
 
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - dx2);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - mdx);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord - dx);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord + dx);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + dx2);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + mdx);
 
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx2 - dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - mdx - dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord - dx - dy);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord - dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord + dx - dy);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx2 - dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + mdx - dy);
 
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - dx2 - dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx - dy2);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx - dy2);
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + dx2 - dy2);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - mdx - mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx - mdy);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx - mdy);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + mdx - mdy);
     bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
 
     bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
