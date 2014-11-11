@@ -38,6 +38,10 @@
 #endif
 
 // Allow compilation with older mesa
+#ifndef GL_VERSION_4_3
+#define GL_VERSION_4_3 1
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC) (GLDEBUGPROC callback, const void *userParam);
+#endif
 
 #ifndef GL_ARB_copy_image
 #define GL_ARB_copy_image 1
