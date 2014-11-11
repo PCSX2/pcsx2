@@ -17,6 +17,7 @@
 
 #ifndef SHADER_MODEL
 #define GLSL 1
+#extension GL_ARB_gpu_shader5 : enable
 #else
 #define GLSL 0
 #endif
@@ -38,7 +39,10 @@
 #define float2 vec2
 #define float3 vec3
 #define float4 vec4
+#define float4x3 mat4x3
 #define static
+#define frac fract
+#define mul(x, y) y * x
 #define lerp(x,y,s) mix(x,y,s)
 #define saturate(x) clamp(x, 0.0, 1.0)
 #define SamplerState sampler2D
@@ -117,6 +121,14 @@ float4 sample_tex(SamplerState texSample, float2 t)
 #endif
 }
 
+float4 sample_texLevel(SamplerState texSample, float2 t, float lod)
+{
+#if (GLSL == 1)
+    return textureLod(texSample, t, lod);
+#else
+    return Texture.SampleLevel(texSample, t, lod);
+#endif
+}
 
 /*------------------------------------------------------------------------------
                             [FXAA CODE SECTION]
@@ -162,6 +174,22 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
+#endif
+
+#if (GLSL == 1)
+#define FxaaBool bool
+#define FxaaDiscard discard
+#define FxaaSat(x) clamp(x, 0.0, 1.0)
+#define FxaaTex sampler2D
+#define FxaaTexTop(t, p) textureLod(t, p, 0.0)
+#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
+#if (FXAA_GATHER4_ALPHA == 1)
+// use #extension GL_ARB_gpu_shader5 : enable
+#define FxaaTexAlpha4(t, p) textureGather(t, p, 3)
+#define FxaaTexOffAlpha4(t, p, o) textureGatherOffset(t, p, o, 3)
+#define FxaaTexGreen4(t, p) textureGather(t, p, 1)
+#define FxaaTexOffGreen4(t, p, o) textureGatherOffset(t, p, o, 1)
+#endif
 #endif
 
 #define FXAA_QUALITY__P0 1.0
@@ -488,10 +516,16 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 float4 FxaaPass(float4 FxaaColor, float2 texcoord)
 {
     FxaaTex tex;
+
+    #if(GLSL == 1)
+    tex = TextureSampler;
+    vec2 PixelSize = textureSize(tex, 0);
+    FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+    #else
     tex.tex = Texture;
     tex.smpl = TextureSampler;
-
     FxaaColor = FxaaPixelShader(texcoord, tex, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+    #endif
 
     return FxaaColor;
 }
@@ -661,8 +695,8 @@ float4 BicubicFilter(SamplerState texSample, float2 texcoord)
     float texelSizeX = pixelSize.x;
     float texelSizeY = pixelSize.y;
 
-    float4 nSum = (float4)0.0;
-    float4 nDenom = (float4)0.0;
+    float4 nSum = float4(0.0, 0.0, 0.0, 0.0);
+    float4 nDenom = float4(0.0, 0.0, 0.0, 0.0);
 
     float a = frac(texcoord.x * screenSize.x);
     float b = frac(texcoord.y * screenSize.y);
@@ -766,14 +800,19 @@ float4 GaussianPass(float4 color, float2 texcoord)
 #if (BICUBLIC_SCALAR == 1)
 float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
 {
-    float2 rec_nrCP = float2(1.0/texSize.x, 1.0/texSize.y);
+    float2 inputSize = float2(1.0/texSize.x, 1.0/texSize.y);
 
     float2 coord_hg = uv * texSize - 0.5;
     float2 index = floor(coord_hg);
     float2 f = coord_hg - index;
 
+    #if (GLSL == 1)
+    mat4 M = mat4( -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+                   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 );
+    #else
     float4x4 M = { -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
                    -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
+    #endif
     M /= 6.0;
 
     float4 wx = mul(float4(f.x*f.x*f.x, f.x*f.x, f.x, 1.0), M);
@@ -793,10 +832,10 @@ float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
     float2 coord01 = index + float2(h0.x, h1.y);
     float2 coord11 = index + h1;
 
-    coord00 = (coord00 + 0.5) * rec_nrCP;
-    coord10 = (coord10 + 0.5) * rec_nrCP;
-    coord01 = (coord01 + 0.5) * rec_nrCP;
-    coord11 = (coord11 + 0.5) * rec_nrCP;
+    coord00 = (coord00 + 0.5) * inputSize;
+    coord10 = (coord10 + 0.5) * inputSize;
+    coord01 = (coord01 + 0.5) * inputSize;
+    coord11 = (coord11 + 0.5) * inputSize;
 
     float4 tex00 = sample_texLevel(tex, coord00, 0);
     float4 tex10 = sample_texLevel(tex, coord10, 0);
@@ -805,6 +844,7 @@ float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
 
     tex00 = lerp(tex01, tex00, float4(g0.y, g0.y, g0.y, g0.y));
     tex10 = lerp(tex11, tex10, float4(g0.y, g0.y, g0.y, g0.y));
+
     float4 res = lerp(tex10, tex00, float4(g0.x, g0.x, g0.x, g0.x));
 
     return res;
@@ -822,31 +862,34 @@ float4 BiCubicScalarPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (LANCZOS_SCALAR == 1)
-float3 pixel(float xpos, float ypos)
+float3 PixelPos(float xpos, float ypos)
 {
     return sample_tex(TextureSampler, float2(xpos, ypos)).rgb;
 }
 
-float3 line_run(float ypos, float4 xpos, float4 linetaps)
-{
-    return mul(linetaps, float4x3(pixel(xpos.x, ypos), pixel(xpos.y, ypos),
-                                  pixel(xpos.z, ypos), pixel(xpos.w, ypos)));
-}
-
-float4 weight4(float x)
+float4 WeightQuad(float x)
 {
     #define FIX(c) max(abs(c), 1e-5);
     const float PI = 3.1415926535897932384626433832795;
 
-    float4 sample = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
-    float4 ret = sin(sample) * sin(sample / 2.0) / (sample * sample);
+    float4 weight = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
+    float4 ret = sin(weight) * sin(weight / 2.0) / (weight * weight);
 
     return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
 }
 
-float4 LanczosScalar(float2 texcoord, float2 texSize)
+float3 LineRun(float ypos, float4 xpos, float4 linetaps)
 {
-    float2 stepxy = 1.0 / texSize;
+    return mul(linetaps, float4x3(
+    PixelPos(xpos.x, ypos),
+    PixelPos(xpos.y, ypos),
+    PixelPos(xpos.z, ypos),
+    PixelPos(xpos.w, ypos)));
+}
+
+float4 LanczosScalar(float2 texcoord, float2 inputSize)
+{
+    float2 stepxy = float2(1.0/inputSize.x, 1.0/inputSize.y);
     float2 pos = texcoord + stepxy;
     float2 f = frac(pos / stepxy);
 
@@ -856,15 +899,15 @@ float4 LanczosScalar(float2 texcoord, float2 texSize)
     xystart.x + stepxy.x * 2.0,
     xystart.x + stepxy.x * 3.0);
 
-    float4 linetaps = weight4(f.x);
-    float4 columntaps = weight4(f.y);
+    float4 linetaps = WeightQuad(f.x);
+    float4 columntaps = WeightQuad(f.y);
 
     // final sum and weight normalization
     return float4(mul(columntaps, float4x3(
-    line_run(xystart.y, xpos, linetaps),
-    line_run(xystart.y + stepxy.y, xpos, linetaps),
-    line_run(xystart.y + stepxy.y * 2.0, xpos, linetaps),
-    line_run(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
+    LineRun(xystart.y, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y * 2.0, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
 }
 
 float4 LanczosScalarPass(float4 color, float2 texcoord)
@@ -926,8 +969,8 @@ float4 SampleBicubic(in SamplerState texSample, in float2 texcoord)
     float texelSizeX = pixelSize.x * float(SharpenBias);
     float texelSizeY = pixelSize.y * float(SharpenBias);
 
-    float4 nSum = (float4)0.0;
-    float4 nDenom = (float4)0.0;
+    float4 nSum = float4(0.0, 0.0, 0.0, 0.0);
+    float4 nDenom = float4(0.0, 0.0, 0.0, 0.0);
 
     float a = frac(texcoord.x * screenSize.x);
     float b = frac(texcoord.y * screenSize.y);
@@ -985,7 +1028,11 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
 #if (PIXEL_VIBRANCE == 1)
 float4 VibrancePass(float4 color, float2 texcoord)
 {
+    #if (GLSL == 1)
+    float3 luma = float3(RGBLuminance(color.rgb));
+    #else
     float luma = RGBLuminance(color.rgb);
+    #endif
 
     float colorMax = max(color.r, max(color.g, color.b));
     float colorMin = min(color.r, min(color.g, color.b));
@@ -1005,7 +1052,7 @@ float4 VibrancePass(float4 color, float2 texcoord)
 #if (BLENDED_BLOOM == 1)
 float3 BlendAddLight(float3 color, float3 bloom)
 {
-    return (color + bloom) * 0.75f;
+    return saturate(color + bloom);
 }
 
 float3 BlendScreen(float3 color, float3 bloom)
@@ -1060,45 +1107,45 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    float defocus = 1.25;
+    const float defocus = 1.25;
     float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
-    float2 dx2 = 2.0 * dx;
-    float2 dy2 = 2.0 * dy;
+    float2 mdx = mul(2.0, dx);
+    float2 mdy = mul(2.0, dy);
 
     float4 bloomBlend = bloom * 0.22520613262190495;
 
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - dx2 + dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx + dy2);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx + dy2);
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + dx2 + dy2);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - mdx + mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx + mdy);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx + mdy);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + mdx + mdy);
 
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx2 + dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - mdx + dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord - dx + dy);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord + dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord + dx + dy);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx2 + dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + mdx + dy);
 
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - dx2);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - mdx);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord - dx);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord + dx);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + dx2);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord + mdx);
 
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx2 - dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - mdx - dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord - dx - dy);
     bloomBlend += 0.100529757860782610 * sample_tex(TextureSampler, texcoord - dy);
     bloomBlend += 0.044875475183061630 * sample_tex(TextureSampler, texcoord + dx - dy);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx2 - dy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + mdx - dy);
 
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - dx2 - dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx - dy2);
-    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - dy2);
-    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx - dy2);
-    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + dx2 - dy2);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord - mdx - mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord - dx - mdy);
+    bloomBlend += 0.024146616900339800 * sample_tex(TextureSampler, texcoord - mdy);
+    bloomBlend += 0.010778807494659370 * sample_tex(TextureSampler, texcoord + dx - mdy);
+    bloomBlend += 0.002589001911021066 * sample_tex(TextureSampler, texcoord + mdx - mdy);
     bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
 
     bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
@@ -1171,11 +1218,7 @@ float3 ColorCorrection(float3 color)
     return saturate(color);
 }
 
-#if (GLSL == 1)
 float4 TonemapPass(float4 color, float2 texcoord)
-#else
-float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
-#endif
 {
     const float delta = 0.001f;
     const float wpoint = pow(1.002f, 2.0f);
@@ -1203,6 +1246,7 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 #else
     float3 XYZ = mul(RGB2XYZ, color.rgb);
 #endif
+
 
     // XYZ -> Yxy conversion
     float3 Yxy;
@@ -1247,6 +1291,7 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
                                0.0556434,-0.2040259, 1.0572252 };
 #endif
 
+
 #if (GLSL == 1)
     color.rgb = XYZ2RGB * XYZ;
 #else
@@ -1267,7 +1312,11 @@ float4 ContrastPass(float4 color, float2 texcoord)
     float CurveBlend = CurvesContrast;
 
     #if (CurveType != 2)
+    #if (GLSL == 1)
+    float3 luma = float3(RGBLuminance(color.rgb));
+    #else
     float3 luma = (float3)RGBLuminance(color.rgb);
+    #endif
     float3 chroma = color.rgb - luma;
     #endif
 
@@ -1318,54 +1367,44 @@ float4 ContrastPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (CEL_SHADING == 1)
-static const int NUM = 9;
-static const float3 thresholds = float3(5.0, 8.0, 6.0);
-
-#if (LumaConversion == 1)
-#define celLumaCoef float3(0.2126729, 0.7151522, 0.0721750)
-#else
-#define celLumaCoef float3(0.299, 0.587, 0.114)
-#endif
-
 float3 GetYUV(float3 rgb)
 {
-#if (LumaConversion == 1)
+#if (GLSL == 1)
+    mat3 RGB2YUV = mat3( 
+             0.2126, 0.7152, 0.0722,
+            -0.09991, -0.33609, 0.436,
+             0.615, -0.55861, -0.05639);
+
+    return (rgb * RGB2YUV);
+#else
     float3x3 RGB2YUV = { 
              0.2126, 0.7152, 0.0722,
             -0.09991, -0.33609, 0.436,
              0.615, -0.55861, -0.05639 };
 
-#else
-    float3x3 RGB2YUV = {
-             0.299, 0.587, 0.114,
-            -0.14713, -0.28886f, 0.436,
-             0.615, -0.51499, -0.10001 };
-#endif
-
     return mul(RGB2YUV, rgb);
+
+#endif
 }
 
 float3 GetRGB(float3 yuv)
 {
-#if (LumaConversion == 1)
+#if (GLSL == 1)
+    mat3 YUV2RGB = mat3(
+             1.000, 0.000, 1.28033,
+             1.000, -0.21482, -0.38059,
+             1.000, 2.12798, 0.000);
+
+    return (yuv * YUV2RGB);
+#else
     float3x3 YUV2RGB = {
              1.000, 0.000, 1.28033,
              1.000, -0.21482, -0.38059,
              1.000, 2.12798, 0.000 };
 
-#else
-    float3x3 YUV2RGB = {
-             1.000, 0.000, 1.13983,
-             1.000, -0.39465, -0.58060,
-             1.000, 2.03211, 0.000 };
-#endif
-
     return mul(YUV2RGB, yuv);
-}
 
-float GetCelLuminance(float3 rgb)
-{
-    return dot(rgb, celLumaCoef);
+#endif
 }
 
 float4 CelPass(float4 color, float2 texcoord)
@@ -1373,8 +1412,11 @@ float4 CelPass(float4 color, float2 texcoord)
     float3 yuv;
     float3 sum = color.rgb;
     float2 pixel = pixelSize * EdgeThickness;
-    const float2 RoundingOffset = float2(0.20, 0.40);
 
+    const float2 RoundingOffset = float2(0.20, 0.40);
+    const float3 thresholds = float3(5.0, 8.0, 6.0);
+
+    const int NUM = 9;
     float2 c[NUM] = {
     float2(-0.0078125, -0.0078125),
     float2(0.00, -0.0078125),
@@ -1399,7 +1441,7 @@ float4 CelPass(float4 color, float2 texcoord)
         col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
         #endif
 
-        lum[i] = GetCelLuminance(col[i].xyz);
+        lum[i] = RGBLuminance(col[i].xyz);
         yuv = GetYUV(col[i]);
 
         if (UseYuvLuma == 0)
@@ -1413,11 +1455,11 @@ float4 CelPass(float4 color, float2 texcoord)
 
     float3 shadedColor = (sum / NUM);
 
-    float edgeX = dot(sample_tex(TextureSampler, texcoord + pixel).rgb, celLumaCoef);
-    edgeX = dot(float4(sample_tex(TextureSampler, texcoord - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
+    float edgeX = dot(sample_tex(TextureSampler, texcoord + pixel).rgb, lumCoeff);
+    edgeX = dot(float4(sample_tex(TextureSampler, texcoord - pixel).rgb, edgeX), float4(lumCoeff, -1.0));
 
-    float edgeY = dot(sample_tex(TextureSampler, texcoord + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
-    edgeY = dot(float4(sample_tex(TextureSampler, texcoord + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
+    float edgeY = dot(sample_tex(TextureSampler, texcoord + float2(pixel.x, -pixel.y)).rgb, lumCoeff);
+    edgeY = dot(float4(sample_tex(TextureSampler, texcoord + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(lumCoeff, -1.0));
 
     float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
 
@@ -1445,7 +1487,7 @@ float RGBCVtoHUE(float3 RGB, float C, float V)
     float3 Delta = (V - RGB) / C;
 
     Delta.rgb -= Delta.brg;
-    Delta.rgb += float3(2, 4, 6);
+    Delta.rgb += float3(2.0, 4.0, 6.0);
     Delta.brg = step(V, RGB) * Delta.brg;
 
     float H;
@@ -1455,7 +1497,7 @@ float RGBCVtoHUE(float3 RGB, float C, float V)
 
 float3 RGBtoHSV(float3 RGB)
 {
-    float3 HSV = 0;
+    float3 HSV = float3(0.0, 0.0, 0.0);
     HSV.z = max(RGB.r, max(RGB.g, RGB.b));
     float M = min(RGB.r, min(RGB.g, RGB.b));
     float C = HSV.z - M;
@@ -1556,24 +1598,18 @@ float4 ColorGrading(float4 color, float2 texcoord)
 #if (SCANLINES == 1)
 float4 ScanlinesPass(float4 color, float2 texcoord, float4 fragcoord)
 {
-    #if (ScanlineType == 3)
-    float amount = ScanlineBrightness;
-    float intensity = ScanlineIntensity;
-
-    float pos0 = ((texcoord.y + 1.0) * 170.0 * amount);
-    float pos1 = cos((frac(pos0 * ScanlineScale) - 0.5) * 3.1415926 * intensity) * 1.2;
-
-    color = lerp(float4(0, 0, 0, 0), color, pos1);
-    #else
-
     float4 intensity;
+    
+    #if (GLSL == 1)
+    fragcoord = gl_FragCoord;
+    #endif
 
     #if (ScanlineType == 0)
-    if (frac(fragcoord.y * 0.5) > ScanlineScale)
+    if (frac(fragcoord.y * 0.25) > ScanlineScale)
     #elif (ScanlineType == 1)
-    if (frac(fragcoord.x * 0.5) > ScanlineScale)
+    if (frac(fragcoord.x * 0.25) > ScanlineScale)
     #elif (ScanlineType == 2)
-    if (frac(fragcoord.x * 0.5) > ScanlineScale && frac(fragcoord.y * 0.5) > ScanlineScale)
+    if (frac(fragcoord.x * 0.25) > ScanlineScale && frac(fragcoord.y * 0.5) > ScanlineScale)
     #endif
     {
         intensity = float4(0.0, 0.0, 0.0, 0.0);
@@ -1586,7 +1622,6 @@ float4 ScanlinesPass(float4 color, float2 texcoord, float4 fragcoord)
     float level = (4.0 - texcoord.x) * ScanlineIntensity;
 
     color = intensity * (0.5 - level) + color * 1.1;
-    #endif
 
     return color;
 }
@@ -1687,11 +1722,13 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 {
 #if (GLSL == 1)
     float2 texcoord = PSin.t;
+    float4 position = PSin.p;
     float4 color = texture(TextureSampler, texcoord);
 #else
     PS_OUTPUT output;
 
     float2 texcoord = input.t;
+    float4 position = input.p;
     float4 color = sample_tex(TextureSampler, texcoord);
 #endif
 
@@ -1728,7 +1765,7 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
     #endif
 
     #if (SCANLINES == 1)
-        color = ScanlinesPass(color, texcoord, input.p);
+        color = ScanlinesPass(color, texcoord, position);
     #endif
 
     #if (BLENDED_BLOOM == 1)

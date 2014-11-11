@@ -295,6 +295,10 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			// External FX Shader
 			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
+			
+			// External FX Shader(OpenGL)
+			theApp.SetConfig("shaderfx_conf", "GSdx_FX_Settings.ini");
+			theApp.SetConfig("shaderfx_glsl", "shader.fx");
 
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 		}
