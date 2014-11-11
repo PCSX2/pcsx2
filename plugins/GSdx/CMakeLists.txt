@@ -19,6 +19,7 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
+    -fabi-version=6
     )
 
 set(OptimizationFlags

@@ -64,7 +64,7 @@ option(USE_ASAN "Enable address sanitizer")
 # Select the architecture
 #-------------------------------------------------------------------------------
 option(64BIT_BUILD_DONT_WORK "Enable a x86_64 build instead of cross compiling (WARNING: NOTHING WORK)" OFF)
-option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" ON)
+option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
 # Architecture bitness detection
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
