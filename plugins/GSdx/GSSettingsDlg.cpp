@@ -169,6 +169,10 @@ void GSSettingsDlg::OnInit()
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfig("shaderfx", 0));
 	
+	// External FX Shader(OpenGL)
+	theApp.SetConfig("shaderfx_conf", "GSdx_FX_Settings.ini");
+	theApp.SetConfig("shaderfx_glsl", "shader.fx");
+	
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfig("UserHacks", 0));
 	
