@@ -45,7 +45,6 @@ static void debugI()
 	if( cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1] ) Console.Error("R0 is not zero!!!!");
 }
 
-//long int runs=0;
 
 void intBreakpoint(bool memcheck)
 {
@@ -144,23 +143,32 @@ static void execI()
 		debugI();
 
 	const OPCODE& opcode = GetCurrentInstruction();
+#if 0
+	static long int runs = 0;
 	//use this to find out what opcodes your game uses. very slow! (rama)
-	//runs++;
-	//if (runs > 1599999999){ //leave some time to startup the testgame
-	//	if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
-	//		Console.WriteLn ("Load %s", opcode.Name);
-	//	}
-	//}
+	runs++;
+	if (runs > 1599999999){ //leave some time to startup the testgame
+		if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
+			Console.WriteLn ("Load %s", opcode.Name);
+		}
+	}
+#endif
 
-	// Another method of instruction dumping:
-	/*if( cpuRegs.cycle > 0x4f24d714 )
-	{
-		//CPU_LOG( "%s", disR5900Current.getCString());
+#if 0
+	static long int print_me = 0;
+	// Based on cycle
+	// if( cpuRegs.cycle > 0x4f24d714 )
+	// Or dump from a particular PC (useful to debug handler/syscall)
+	if (cpuRegs.pc == 0x80000000) {
+		print_me = 2000;
+	}
+	if (print_me) {
+		print_me--;
 		disOut.clear();
-		opcode.disasm( disOut );
-		disOut += '\n';
+		disR5900Fasm(disOut, cpuRegs.code, pc);
 		CPU_LOG( disOut.c_str() );
-	}*/
+	}
+#endif
 
 
 	cpuBlockCycles += opcode.cycles;
