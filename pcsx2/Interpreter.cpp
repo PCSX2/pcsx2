@@ -133,8 +133,13 @@ static void execI()
 
 	intCheckMemcheck();
 
+	u32 pc = cpuRegs.pc;
+	// We need to increase the pc before executing the memRead32. An exception could appears
+	// and it expects the PC counter to be pre-incremented
+	cpuRegs.pc += 4;
+
 	// interprete instruction
-	cpuRegs.code = memRead32( cpuRegs.pc );
+	cpuRegs.code = memRead32( pc );
 	if( IsDebugBuild )
 		debugI();
 
@@ -159,7 +164,6 @@ static void execI()
 
 
 	cpuBlockCycles += opcode.cycles;
-	cpuRegs.pc += 4;
 
 	opcode.interpret();
 }
