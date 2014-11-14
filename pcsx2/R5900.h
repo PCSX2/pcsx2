@@ -37,6 +37,12 @@ namespace Exception
 	public:
 		explicit ExitCpuExecute() { }
 	};
+
+	class CancelInstruction
+	{
+	public:
+		explicit CancelInstruction() { }
+	};
 }
 
 // --------------------------------------------------------------------------------------

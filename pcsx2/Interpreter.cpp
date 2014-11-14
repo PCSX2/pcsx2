@@ -479,23 +479,48 @@ static void intEventTest()
 
 static void intExecute()
 {
-	try {
-		if (g_SkipBiosHack) {
-			do
-				execI();
-			while (cpuRegs.pc != EELOAD_START);
-			eeloadReplaceOSDSYS();
+	bool instruction_was_cancelled;
+	enum ExecuteState {
+		RESET,
+		REPLACE_OSDSYS_DONE,
+		GAME_STARTING_DONE
+	};
+	ExecuteState state = RESET;
+	do {
+		instruction_was_cancelled = false;
+		try {
+			// The execution was splited in three parts so it is easier to
+			// resume it after a cancelled instruction.
+			switch (state) {
+				case RESET:
+					if (g_SkipBiosHack) {
+						do
+							execI();
+						while (cpuRegs.pc != EELOAD_START);
+						eeloadReplaceOSDSYS();
+					}
+					state = REPLACE_OSDSYS_DONE;
+
+				case REPLACE_OSDSYS_DONE:
+					if (ElfEntry != 0xFFFFFFFF) {
+						do
+							execI();
+						while (cpuRegs.pc != ElfEntry);
+						eeGameStarting();
+					}
+					state = GAME_STARTING_DONE;
+
+				case GAME_STARTING_DONE:
+					while (true)
+						execI();
+			}
 		}
-		if (ElfEntry != 0xFFFFFFFF) {
-			do
-				execI();
-			while (cpuRegs.pc != ElfEntry);
-			eeGameStarting();
-		} else {
-			while (true)
-				execI();
-		}
-	} catch( Exception::ExitCpuExecute& ) { }
+		catch( Exception::ExitCpuExecute& ) { }
+		catch( Exception::CancelInstruction& ) { instruction_was_cancelled = true; }
+
+		// For example a tlb miss will throw an exception. Cpu must be resumed
+		// to execute the handler
+	} while (instruction_was_cancelled);
 }
 
 static void intCheckExecutionState()
