@@ -165,25 +165,6 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	: m_pbo_id(0),
 	m_pbo_size(0)
 {
-	// *************************************************************
-	// Opengl world
-
-	// Render work in parallal with framebuffer object (FBO) http://www.opengl.org/wiki/Framebuffer_Objects
-	// render are attached to FBO through : gl_FramebufferRenderbuffer. You can query the number of colorattachement with GL_MAX_COLOR_ATTACHMENTS
-	// FBO   :  constructor -> gl_GenFramebuffers, gl_DeleteFramebuffers
-	//			binding     -> gl_BindFramebuffer (target can be read/write/both)
-	//			blit		-> gl_BlitFramebuffer (read FB to draw FB)
-	//			info		-> gl_IsFramebuffer, glGetFramebufferAttachmentParameter, gl_CheckFramebufferStatus
-	//
-	// There are two types of framebuffer-attachable images; texture images and renderbuffer images.
-	// If an image of a texture object is attached to a framebuffer, OpenGL performs "render to texture".
-	// And if an image of a renderbuffer object is attached to a framebuffer, then OpenGL performs "offscreen rendering".
-	// Blitting:
-	// gl_DrawBuffers
-	// glReadBuffer
-	// gl_BlitFramebuffer
-
-	// *************************************************************
 	// m_size.x = w;
 	// m_size.y = h;
 	// FIXME
@@ -239,11 +220,6 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			//FIXME I not sure we need a pixel buffer object. It seems more a texture
 			// gl_GenBuffers(1, &m_texture_id);
 			// ASSERT(0);
-			// Note there is also a buffer texture!!!
-			// http://www.opengl.org/wiki/Buffer_Texture
-			// Note: in this case it must use in GLSL
-			// gvec texelFetch(gsampler sampler, ivec texCoord, int lod[, int sample]);
-			// corollary we can maybe use it for multisample stuff
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
@@ -310,16 +286,16 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	EnableUnit();
 
-	// Note: FGLRX crashes with the default path. It is happy with PBO. However not sure PBO are big enough for
-	// big upscale
-	// Note: with latest improvement, Pbo could be faster
-#if 1
-	// Note: not really a performance optimization but it reduces noise
-	// for gl retracers
-	static uint32 unpack_alignment = 0;
-	if (unpack_alignment != m_int_alignment) {
-		unpack_alignment = m_int_alignment;
-		glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+	// Note: reduce noise for gl retracers
+	// It might introduce bug after an emulator pause so always set it in standard mode
+	if (GLLoader::in_replayer) {
+		static uint32 unpack_alignment = 0;
+		if (unpack_alignment != m_int_alignment) {
+			unpack_alignment = m_int_alignment;
+			glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
+		}
+	} else {
+		glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 	}
 
 	char* src = (char*)data;
@@ -335,12 +311,16 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	PboPool::Unmap();
 
-	// Note: not really a performance optimization but it reduces noise
-	// for gl retracers
-	static int unpack_row_length = 0;
-	if (unpack_row_length != (pitch >> m_int_shift)) {
-		unpack_row_length = pitch >> m_int_shift;
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+	// Note: reduce noise for gl retracers
+	// It might introduce bug after an emulator pause so always set it in standard mode
+	if (GLLoader::in_replayer) {
+		static int unpack_row_length = 0;
+		if (unpack_row_length != (pitch >> m_int_shift)) {
+			unpack_row_length = pitch >> m_int_shift;
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+		}
+	} else {
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 	}
 	glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 	// Normally only affect TexSubImage call. (i.e. only the previous line)
@@ -353,8 +333,8 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	return true;
 
-#else
-
+	// For reference, standard upload without pbo (Used to crash on FGLRX)
+#if 0
 	// pitch is in byte wherease GL_UNPACK_ROW_LENGTH is in pixel
 	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
