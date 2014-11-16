@@ -930,7 +930,7 @@ void GSDevice9::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			CompileShader("shader.fx", "ps_main", NULL, &m_shaderfx.ps);
+			CompileShader("shaders/GSdx.fx", "ps_main", NULL, &m_shaderfx.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile external post-processing shader. \n");
