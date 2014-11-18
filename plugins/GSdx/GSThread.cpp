@@ -99,9 +99,9 @@ DWORD WINAPI GSThread::StaticThreadProc(void* lpParam)
 void* GSThread::StaticThreadProc(void* param)
 {
 	((GSThread*)param)->ThreadProc();
-
+#ifndef _STD_THREAD_ // exit is done implicitly by std::thread
 	pthread_exit(NULL);
-
+#endif
 	return NULL;
 }
 
@@ -114,9 +114,13 @@ void GSThread::CreateThread()
 	m_hThread = ::CreateThread(NULL, 0, StaticThreadProc, (void*)this, 0, &m_ThreadId);
 
 	#else
-
+    
+    #ifdef _STD_THREAD_
+    t = new thread(StaticThreadProc,(void*)this);
+    #else
     pthread_attr_init(&m_thread_attr);
     pthread_create(&m_thread, &m_thread_attr, StaticThreadProc, (void*)this);
+    #endif
 
 	#endif
 }
@@ -140,12 +144,19 @@ void GSThread::CloseThread()
 	}
 
     #else
-
+    
+    #ifdef _STD_THREAD_
+    if(t->joinable())
+    {
+        t->join();
+    }
+    delete(t);
+    #else
     void* ret = NULL;
 
     pthread_join(m_thread, &ret);
     pthread_attr_destroy(&m_thread_attr);
-
+    #endif
     #endif
 }
 
