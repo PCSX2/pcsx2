@@ -20,6 +20,7 @@
 #include "Threading.h"
 #include "wxGuiTools.h"
 #include "pxEvents.h"
+#include "AppTrait.h"
 
 using namespace Threading;
 
@@ -80,6 +81,8 @@ protected:
 public:
 	wxAppWithHelpers();
 	virtual ~wxAppWithHelpers() {}
+
+	wxAppTraits* CreateTraits();
 
 	void CleanUp();
 	
