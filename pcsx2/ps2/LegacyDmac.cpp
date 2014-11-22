@@ -270,7 +270,12 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 	//Final Fantasy XII sets the DMA Mode to 3 which doesn't exist. On some channels (like SPR) this will break logic completely. so lets assume they mean chain.
 	if (reg.chcr.MOD == 0x3)
 	{
-		DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+		static bool warned; //Check if the warning has already been output to console, to prevent constant spam.
+		if (!warned)
+		{
+			DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+			warned = true;
+		}
 		reg.chcr.MOD = 0x1;
 	}
 	if (reg.chcr.STR && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER+2))
