@@ -103,6 +103,8 @@ union GSScanlineSelector
 			&& date == 0
 			&& fge == 0;
 	}
+
+    bool sprite = false;
 };
 
 __aligned(struct, 32) GSScanlineGlobalData // per batch variables, this is like a pixel shader constant buffer
