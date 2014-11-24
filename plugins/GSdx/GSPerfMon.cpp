@@ -37,7 +37,15 @@ void GSPerfMon::Put(counter_t c, double val)
 {
 	if(c == Frame)
 	{
+#ifdef __linux__
+		// clock on linux will return CLOCK_PROCESS_CPUTIME_ID.
+		// CLOCK_THREAD_CPUTIME_ID is much more useful to measure the fps
+		struct timespec ts;
+		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+		uint64 now =  (uint64) ts.tv_sec * (uint64) 1e6 + (uint64) ts.tv_nsec / (uint64) 1e3;
+#else
 		clock_t now = clock();
+#endif
 
 		if(m_lastframe != 0)
 		{
