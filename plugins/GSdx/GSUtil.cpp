@@ -94,6 +94,7 @@ static class GSUtilMaps
 public:
 	uint8 PrimClassField[8];
 	uint8 VertexCountField[8];
+	uint8 ClassVertexCountField[4];
 	uint32 CompatibleBitsField[64][2];
 	uint32 SharedBitsField[64][2];
 
@@ -116,6 +117,11 @@ public:
 		VertexCountField[GS_TRIANGLEFAN] = 3;
 		VertexCountField[GS_SPRITE] = 2;
 		VertexCountField[GS_INVALID] = 1;
+
+		ClassVertexCountField[GS_POINT_CLASS] = 1;
+		ClassVertexCountField[GS_LINE_CLASS] = 2;
+		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
+		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
 
 		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
 
@@ -161,6 +167,11 @@ GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
 int GSUtil::GetVertexCount(uint32 prim)
 {
 	return s_maps.VertexCountField[prim];
+}
+
+int GSUtil::GetClassVertexCount(uint32 primclass)
+{
+	return s_maps.ClassVertexCountField[primclass];
 }
 
 const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
@@ -213,6 +224,100 @@ bool GSUtil::CheckSSE()
 	}
 
 	return true;
+}
+
+#define OCL_PROGRAM_VERSION 1
+
+void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
+{
+	dl.clear();
+
+	try
+	{
+		std::vector<cl::Platform> platforms;
+
+		cl::Platform::get(&platforms);
+
+		for(auto& p : platforms)
+		{
+			std::string platform_vendor = p.getInfo<CL_PLATFORM_VENDOR>();
+
+			std::vector<cl::Device> ds;
+
+			p.getDevices(CL_DEVICE_TYPE_ALL, &ds);
+
+			for(auto& device : ds)
+			{
+				string type;
+
+				switch(device.getInfo<CL_DEVICE_TYPE>())
+				{
+				case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+				case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+				}
+
+				if(type.empty()) continue;
+
+				std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+				int major = 0;
+				int minor = 0;
+
+				if(!type.empty() && sscanf(version.c_str(), "OpenCL C %d.%d", &major, &minor) == 2 && major == 1 && minor >= 1 || major > 1)
+				{
+					OCLDeviceDesc desc;
+
+					desc.device = device;
+					desc.name = GetDeviceUniqueName(device);
+					desc.version = major * 100 + minor * 10;
+
+					// TODO: linux
+
+					char* buff = new char[MAX_PATH + 1];
+					GetTempPath(MAX_PATH, buff);
+					desc.tmppath = string(buff) + "/" + desc.name;
+
+					WIN32_FIND_DATA FindFileData;
+					HANDLE hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
+					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
+					else CreateDirectory(desc.tmppath.c_str(), NULL);
+
+					sprintf(buff, "/%d", OCL_PROGRAM_VERSION);
+					desc.tmppath += buff;
+					delete[] buff;
+
+					hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
+					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
+					else CreateDirectory(desc.tmppath.c_str(), NULL);
+
+					dl.push_back(desc);
+				}
+			}
+		}
+	}
+	catch(cl::Error err)
+	{
+		printf("%s (%d)\n", err.what(), err.err());
+	}
+}
+
+string GSUtil::GetDeviceUniqueName(cl::Device& device)
+{
+	std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
+	std::string name = device.getInfo<CL_DEVICE_NAME>();
+	std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+	string type;
+
+	switch(device.getInfo<CL_DEVICE_TYPE>())
+	{
+	case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+	case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+	}
+
+	version.erase(version.find_last_not_of(' ') + 1);
+
+	return vendor + " " + name + " " + version + " " + type;
 }
 
 #ifdef _WINDOWS

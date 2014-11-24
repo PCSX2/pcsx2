@@ -71,6 +71,7 @@
 #define IDC_SHADER_FX                   2088
 #define IDC_ANISOTROPIC                 2089
 #define IDC_AFCOMBO                     2090
+#define IDC_OPENCL_DEVICE               2091
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
@@ -81,6 +82,7 @@
 #define IDR_CS_FX                       10006
 #define IDD_SHADEBOOST                  10007
 #define IDR_SHADEBOOST_FX               10009
+#define IDR_TFX_CL                      10010
 #define IDD_HACKS                       10011
 #define IDC_STATIC                      -1
 
@@ -90,7 +92,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10012
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2091
+#define _APS_NEXT_CONTROL_VALUE         2092
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
