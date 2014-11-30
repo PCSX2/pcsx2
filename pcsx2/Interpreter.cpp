@@ -126,11 +126,19 @@ void intCheckMemcheck()
 
 static void execI()
 {
+	// execI is called for every instruction so it must remains as light as possible.
+	// If you enable the next define, Interpreter will be much slower (around
+	// ~4fps on 3.9GHz Haswell vs ~8fps (even 10fps on dev build))
+	// Extra note: due to some cycle count issue PCSX2's internal debugger is
+	// not yet usable with the interpreter
+//#define EXTRA_DEBUG
+#ifdef EXTRA_DEBUG
 	// check if any breakpoints or memchecks are triggered by this instruction
 	if (isBreakpointNeeded(cpuRegs.pc))
 		intBreakpoint(false);
 
 	intCheckMemcheck();
+#endif
 
 	u32 pc = cpuRegs.pc;
 	// We need to increase the pc before executing the memRead32. An exception could appears
@@ -139,8 +147,11 @@ static void execI()
 
 	// interprete instruction
 	cpuRegs.code = memRead32( pc );
+	// Honestly I think this code is useless nowadays.
+#ifdef EXTRA_DEBUG
 	if( IsDebugBuild )
 		debugI();
+#endif
 
 	const OPCODE& opcode = GetCurrentInstruction();
 #if 0
