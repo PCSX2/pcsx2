@@ -27,6 +27,7 @@
 #include "GSDeviceNull.h"
 #include "GSDeviceOGL.h"
 #include "GSRendererOGL.h"
+#include "GSRendererCL.h"
 
 #ifdef _WINDOWS
 
@@ -37,7 +38,6 @@
 #include "GSWndDX.h"
 #include "GSWndWGL.h"
 #include "GSRendererCS.h"
-#include "GSRendererCL.h"
 #include "GSSettingsDlg.h"
 
 static HRESULT s_hr = E_FAIL;
@@ -265,7 +265,9 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				s_gs = new GSRendererNull();
 				break;
 			case 14: case 15: case 16: case 17:
+#ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
+#endif
 				break;
 			}
 

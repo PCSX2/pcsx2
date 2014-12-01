@@ -45,3 +45,7 @@
 
 // Output stencil to a color buffer
 //#define ENABLE_OGL_STENCIL_DEBUG
+
+#ifdef _WINDOWS
+#define ENABLE_OPENCL
+#endif

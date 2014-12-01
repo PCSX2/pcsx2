@@ -25,7 +25,9 @@
 
 struct OCLDeviceDesc
 {
+#ifdef ENABLE_OPENCL
 	cl::Device device;
+#endif
 	string name;
 	int version;
 	string tmppath;
@@ -48,8 +50,10 @@ public:
 
 	static bool CheckSSE();
 
+#ifdef ENABLE_OPENCL
 	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
 	static string GetDeviceUniqueName(cl::Device& device);
+#endif
 
 #ifdef _WINDOWS
 

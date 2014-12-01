@@ -228,6 +228,7 @@ bool GSUtil::CheckSSE()
 
 #define OCL_PROGRAM_VERSION 1
 
+#ifdef ENABLE_OPENCL
 void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 {
 	dl.clear();
@@ -319,6 +320,7 @@ string GSUtil::GetDeviceUniqueName(cl::Device& device)
 
 	return vendor + " " + name + " " + version + " " + type;
 }
+#endif
 
 #ifdef _WINDOWS
 

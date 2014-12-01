@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSRendererCL.h"
 
+#ifdef ENABLE_OPENCL
+
 #define LOG 0
 
 static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
@@ -2002,3 +2004,4 @@ cl::Kernel& GSRendererCL::CL::GetTFXKernel(const TFXSelector& sel)
 
 	return tfx_map[sel];
 }
+#endif

@@ -23,6 +23,8 @@
 
 #include "GSRenderer.h"
 
+#ifdef ENABLE_OPENCL
+
 __aligned(struct, 32) GSVertexCL
 {
 	GSVector4 p, t;
@@ -252,3 +254,5 @@ public:
 	GSRendererCL();
 	virtual ~GSRendererCL();
 };
+
+#endif
