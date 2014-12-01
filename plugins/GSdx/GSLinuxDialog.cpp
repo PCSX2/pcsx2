@@ -31,30 +31,29 @@ GtkWidget* CreateRenderComboBox()
 
 	render_combo_box = gtk_combo_box_new_text ();
 
-	for(size_t i = 6; i < theApp.m_gs_renderers.size(); i++)
+	for(auto s = theApp.m_gs_renderers.begin(); s != theApp.m_gs_renderers.end(); s++)
 	{
-		const GSSetting& s = theApp.m_gs_renderers[i];
+		string label = s->name;
 
-		string label = s.name;
-
-		if(!s.note.empty()) label += format(" (%s)", s.note.c_str());
+		if(!s->note.empty()) label += format(" (%s)", s->note.c_str());
 
 		// Add some tags to ease users selection
-		switch (i) {
-			// better use opengl instead of SDL
-			case 6:
-			case 7:
-				label += " (removed)";
+		switch (s->id) {
+			// Supported opengl
+			case 12:
+			case 13:
+			case 17:
 				break;
 
 			// (dev only) for any NULL stuff
-			case 8:
-			case 9:
+			case 10:
+			case 11:
+			case 16:
 				label += " (debug only)";
 				break;
 
 			default:
-				break;
+				continue;
 		}
 
 		gtk_combo_box_append_text(GTK_COMBO_BOX(render_combo_box), label.c_str());
@@ -62,13 +61,15 @@ GtkWidget* CreateRenderComboBox()
 
 	switch (theApp.GetConfig("renderer", 0)) {
 		// Note the value are based on m_gs_renderers vector on GSdx.cpp
-		case 10: renderer_box_position = 2; break;
-		case 11: renderer_box_position = 3; break;
-		case 12: renderer_box_position = 4; break;
-		case 13: renderer_box_position = 5; break;
+		case 10: renderer_box_position = 0; break;
+		case 16: renderer_box_position = 1; break;
+		case 11: renderer_box_position = 2; break;
+		case 12: renderer_box_position = 3; break;
+		case 13: renderer_box_position = 4; break;
+		case 17: renderer_box_position = 5; break;
 
 		// Fallback to openGL SW
-		default: renderer_box_position = 5; break;
+		default: renderer_box_position = 4; break;
 	}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(render_combo_box), renderer_box_position);
 	return render_combo_box;
@@ -483,10 +484,12 @@ override_GL_ARB_shading_language_420pack = -1
 		if (gtk_combo_box_get_active(GTK_COMBO_BOX(render_combo_box)) != -1) {
 			// Note the value are based on m_gs_renderers vector on GSdx.cpp
 			switch (gtk_combo_box_get_active(GTK_COMBO_BOX(render_combo_box))) {
-				case 2: theApp.SetConfig("renderer", 10); break;
-				case 3: theApp.SetConfig("renderer", 11); break;
-				case 4: theApp.SetConfig("renderer", 12); break;
-				case 5: theApp.SetConfig("renderer", 13); break;
+				case 0: theApp.SetConfig("renderer", 10); break;
+				case 1: theApp.SetConfig("renderer", 16); break;
+				case 2: theApp.SetConfig("renderer", 11); break;
+				case 3: theApp.SetConfig("renderer", 12); break;
+				case 4: theApp.SetConfig("renderer", 13); break;
+				case 5: theApp.SetConfig("renderer", 17); break;
 
 				// Fallback to SW opengl
 				default: theApp.SetConfig("renderer", 13); break;

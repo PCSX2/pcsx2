@@ -135,12 +135,6 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(4, "Direct3D", "Software"));
 	m_gs_renderers.push_back(GSSetting(15, "Direct3D", "OpenCL"));
 	m_gs_renderers.push_back(GSSetting(5, "Direct3D", "Null"));
-#ifdef _LINUX
-	// note: SDL was removed. We keep those bits for compatibility of the renderer
-	// position in the linux dialog.
-	m_gs_renderers.push_back(GSSetting(7, "SDL 1.3", "Software"));
-	m_gs_renderers.push_back(GSSetting(8, "SDL 1.3", "Null"));
-#endif
 	m_gs_renderers.push_back(GSSetting(10, "Null", "Software"));
 	m_gs_renderers.push_back(GSSetting(16, "Null", "OpenCL"));
 	m_gs_renderers.push_back(GSSetting(11, "Null", "Null"));
