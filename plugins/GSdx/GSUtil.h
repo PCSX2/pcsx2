@@ -23,6 +23,16 @@
 
 #include "GS.h"
 
+struct OCLDeviceDesc
+{
+#ifdef ENABLE_OPENCL
+	cl::Device device;
+#endif
+	string name;
+	int version;
+	string tmppath;
+};
+
 class GSUtil
 {
 public:
@@ -30,6 +40,7 @@ public:
 
 	static GS_PRIM_CLASS GetPrimClass(uint32 prim);
 	static int GetVertexCount(uint32 prim);
+	static int GetClassVertexCount(uint32 primclass);
 
 	static const uint32* HasSharedBitsPtr(uint32 dpsm);
 	static bool HasSharedBits(uint32 spsm, const uint32* ptr);
@@ -38,6 +49,11 @@ public:
 	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
 
 	static bool CheckSSE();
+
+#ifdef ENABLE_OPENCL
+	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
+	static string GetDeviceUniqueName(cl::Device& device);
+#endif
 
 #ifdef _WINDOWS
 

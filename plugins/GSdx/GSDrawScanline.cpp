@@ -2711,7 +2711,7 @@ bool GSDrawScanline::TestAlpha(T& test, T& fm, T& zm, const T& ga)
 
 	case AFAIL_RGB_ONLY:
 		zm |= t;
-		fm |= t & T::xff000000();
+		fm |= t & T::xff000000(); // fpsm 16 bit => & 0xffff8000?
 		break;
 
 	default:

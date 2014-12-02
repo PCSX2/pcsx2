@@ -104,6 +104,7 @@ set(GSdxSources
     GSPerfMon.cpp
     GSRasterizer.cpp
     GSRenderer.cpp
+    GSRendererCL.cpp
     GSRendererHW.cpp
     GSRendererNull.cpp
     GSRendererOGL.cpp

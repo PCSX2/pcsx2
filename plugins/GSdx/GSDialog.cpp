@@ -145,6 +145,8 @@ void GSDialog::ComboBoxInit(UINT id, const vector<GSSetting>& settings, uint32 s
 			ComboBoxAppend(id, str.c_str(), (LPARAM)s.id, s.id == selid);
 		}
 	}
+
+	ComboBoxFixDroppedWidth(id);
 }
 
 int GSDialog::ComboBoxAppend(UINT id, const char* str, LPARAM data, bool select)
@@ -177,4 +179,50 @@ bool GSDialog::ComboBoxGetSelData(UINT id, INT_PTR& data)
 	}
 
 	return false;
+}
+
+void GSDialog::ComboBoxFixDroppedWidth(UINT id)
+{
+	HWND hWnd = GetDlgItem(m_hWnd, id);
+
+	int count = (int)SendMessage(hWnd, CB_GETCOUNT, 0, 0);
+
+	if(count > 0)
+	{
+		HDC hDC = GetDC(hWnd);
+
+		SelectObject(hDC, (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0));
+
+		int width = (int)SendMessage(hWnd, CB_GETDROPPEDWIDTH, 0, 0);
+
+		for(int i = 0; i < count; i++)
+		{
+			int len = (int)SendMessage(hWnd, CB_GETLBTEXTLEN, i, 0);
+
+			if(len > 0)
+			{
+				char* buff = new char[len + 1];
+
+				SendMessage(hWnd, CB_GETLBTEXT, i, (LPARAM)buff);
+
+				SIZE size;
+				
+				if(GetTextExtentPoint32(hDC, buff, strlen(buff), &size))
+				{
+					size.cx += 10;
+
+					if(size.cx > width) width = size.cx;
+				}
+
+				delete [] buff;
+			}
+		}
+
+		ReleaseDC(hWnd, hDC);
+
+		if(width > 0)
+		{
+			SendMessage(hWnd, CB_SETDROPPEDWIDTH, width, 0);
+		}
+	}
 }

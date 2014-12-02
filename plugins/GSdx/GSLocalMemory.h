@@ -54,6 +54,7 @@ public:
 	enum {EOP = 0xffffffff};
 
 	uint32* GetPages(const GSVector4i& rect, uint32* pages = NULL, GSVector4i* bbox = NULL);
+	GSVector4i* GetPagesAsBits(const GSVector4i& rect, GSVector4i* pages = NULL, GSVector4i* bbox = NULL); // free returned value with _aligned_free
 };
 
 struct GSPixelOffset
@@ -76,7 +77,7 @@ struct GSPixelOffset4
 	uint32 fbp, zbp, fpsm, zpsm, bw;
 };
 
-class GSLocalMemory : public GSBlock
+class GSLocalMemory : public GSAlignedClass<32>
 {
 public:
 	typedef uint32 (*pixelAddress)(int x, int y, uint32 bp, uint32 bw);
