@@ -515,13 +515,12 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 float4 FxaaPass(float4 FxaaColor, float2 texcoord)
 {
-    FxaaTex tex;
-
     #if(GLSL == 1)
     tex = TextureSampler;
-    vec2 PixelSize = textureSize(tex, 0);
-    FxaaColor = FxaaPixelShader(texcoord, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+    FxaaColor = FxaaPixelShader(texcoord, TextureSampler, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
     #else
+    FxaaTex tex;
+
     tex.tex = Texture;
     tex.smpl = TextureSampler;
     FxaaColor = FxaaPixelShader(texcoord, tex, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);

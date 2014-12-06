@@ -527,9 +527,9 @@ float4 FxaaPass(float4 FxaaColor, float2 uv0)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 #endif
 {
-	FxaaTex tex;
 
 	#if (SHADER_MODEL >= 0x400)
+	FxaaTex tex;
 	tex.tex = Texture;
 	tex.smpl = TextureSampler;
 
@@ -538,12 +538,11 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 
     #elif (FXAA_GLSL_130 == 1)
 
-	tex = TextureSampler;
-	vec2 PixelSize = textureSize(tex, 0);
-	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
+	vec2 PixelSize = textureSize(TextureSampler, 0);
+	FxaaColor = FxaaPixelShader(uv0, TextureSampler, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 
 	#else
-
+	FxaaTex tex;
 	tex = TextureSampler;
 	FxaaColor = FxaaPixelShader(uv0, tex, PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 	#endif

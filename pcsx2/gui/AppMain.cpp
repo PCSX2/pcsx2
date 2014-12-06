@@ -31,6 +31,7 @@
 #include "Debugger/DisassemblyDialog.h"
 
 #include "Utilities/IniInterface.h"
+#include "Utilities/AppTrait.h"
 
 #include <wx/stdpaths.h>
 

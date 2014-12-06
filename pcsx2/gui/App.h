@@ -362,31 +362,6 @@ public:
 	}
 };
 
-// --------------------------------------------------------------------------------------
-//  Pcsx2AppTraits
-// --------------------------------------------------------------------------------------
-// Overrides and customizes some default wxWidgets behaviors.  This class is instanized by
-// calls to Pcsx2App::CreateTraits(), which is called from wxWidgets as-needed.  wxWidgets
-// does cache an instance of the traits, so the object construction need not be trivial
-// (translation: it can be complicated-ish -- it won't affect performance).
-//
-class Pcsx2AppTraits : public wxGUIAppTraits
-{
-	typedef wxGUIAppTraits _parent;
-
-public:
-	virtual ~Pcsx2AppTraits() {}
-	wxMessageOutput* CreateMessageOutput();
-
-#ifdef wxUSE_STDPATHS
-#if wxMAJOR_VERSION < 3
-	wxStandardPathsBase& GetStandardPaths();
-#else
-	wxStandardPaths& GetStandardPaths();
-#endif
-#endif
-};
-
 // =====================================================================================================
 //  Pcsx2App  -  main wxApp class
 // =====================================================================================================
