@@ -41,6 +41,7 @@ for ARG in "$@"; do
         --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
+        --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
         --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
         --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
         -D*           ) flags+=($ARG) ;;
@@ -51,21 +52,25 @@ for ARG in "$@"; do
             echo "--dev / --devel : Build PCSX2 as a Development build."
             echo "--debug         : Build PCSX2 as a Debug build."
             echo "--release       : Build PCSX2 as a Release build."
+            echo
             echo "--clean         : Do a clean build."
+            echo "--extra         : Build all plugins"
+            echo
             echo "** Developper option **"
             echo "--clang         : Build with Clang/llvm"
-            echo "--extra         : Build all plugins"
-            echo "--asan          : Enable with Address sanitizer"
+            echo "--asan          : Enable Address sanitizer"
             echo
             echo "--wx28          : Force wxWidget 2.8"
             echo "--wx30          : Allow to use wxWidget 3.0"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"
-            echo "--gles          : Replace openGL backend of GSdx by openGLES3"
+            echo "--gles          : Replace openGL backend of GSdx by openGLES3.1"
             echo
+            echo "** Hardcode Developper option **"
             echo "--64-bit-dont-work : Don't use it!"
             echo "--no-simd       : Only allow sse2"
+            echo "--gtk3          : replace GTK2 by GTK3"
             exit 1
     esac
 done

@@ -1,12 +1,6 @@
 #-------------------------------------------------------------------------------
 #						Search all libraries on the system
 #-------------------------------------------------------------------------------
-if(Linux)
-    # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
-    find_package(GTK2 REQUIRED gtk)
-    find_package(X11)
-endif()
-
 ## Use cmake package to find module
 find_package(ALSA)
 find_package(BZip2)
@@ -50,12 +44,26 @@ else()
     find_package(SDL)
 endif()
 
+if (Linux)
+    find_package(X11)
+    # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
+    if (GTK3_API)
+        check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
+    else()
+        find_package(GTK2 REQUIRED gtk)
+    endif()
+endif()
+
 #----------------------------------------
 #		    Use system include
 #----------------------------------------
 if(Linux)
 	if(GTK2_FOUND)
 		include_directories(${GTK2_INCLUDE_DIRS})
+    elseif(GTK3_FOUND)
+		include_directories(${GTK3_INCLUDE_DIRS})
+        # A lazy solution
+        set(GTK2_LIBRARIES ${GTK3_LIBRARIES})
 	endif()
 
 	if(X11_FOUND)
