@@ -905,7 +905,11 @@ void Pcsx2App::OpenGsPanel()
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
 #endif
 
+#if GTK_MAJOR_VERSION < 3
 	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
+#else
+	Window Xwindow = GDK_WINDOW_XID(draw_window);
+#endif
 	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
 
 	pDsp[0] = (uptr)XDisplay;
