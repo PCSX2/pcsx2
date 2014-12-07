@@ -170,7 +170,7 @@ static void execI()
 	// Based on cycle
 	// if( cpuRegs.cycle > 0x4f24d714 )
 	// Or dump from a particular PC (useful to debug handler/syscall)
-	if (cpuRegs.pc == 0x80000000) {
+	if (pc == 0x80000000) {
 		print_me = 2000;
 	}
 	if (print_me) {
