@@ -1740,8 +1740,8 @@ static void __fastcall recRecompile( const u32 startpc )
 	}
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
-		if (pc == 0x33ad48) {
-			// 0x33ad48 is the return address of the function that populate the TLB cache
+		if (pc == 0x33ad48 || pc == 0x35060c) {
+			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
 			xCALL(GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
