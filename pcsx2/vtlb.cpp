@@ -340,6 +340,8 @@ static void GoemonTlbMissDebug()
 	for (u32 i = 0; i < 150; i++) {
 		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add)
 			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is valid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+		else if (tlb[i].low_add != tlb[i].high_add)
+			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is invalid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 	}
 }
 
@@ -371,9 +373,9 @@ void __fastcall GoemonUnloadTlb(u32 key)
 	for (u32 i = 0; i < 150; i++) {
 		if (tlb[i].key == key) {
 			if (tlb[i].valid == 0x1) {
-				DevCon.WriteLn("GoemonUnloadTlb: Entry %d. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 				u32 size  = tlb[i].high_add - tlb[i].low_add;
 				u32 vaddr = tlb[i].low_add;
+				DevCon.WriteLn("GoemonUnloadTlb: Entry %d. Key %x. From V:0x%8.8x to V:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, vaddr+size, size >> VTLB_PAGE_BITS);
 
 				vtlb_VMapUnmap(           vaddr , size);
 				vtlb_VMapUnmap(0x20000000|vaddr , size);
@@ -385,7 +387,7 @@ void __fastcall GoemonUnloadTlb(u32 key)
 				tlb[i].low_add  = 0xFEFEFEFE;
 				tlb[i].high_add = 0xFEFEFEFE;
 			} else {
-				DevCon.Error("GoemonUnloadTlb: Entry is not valid");
+				DevCon.Error("GoemonUnloadTlb: Entry %d is not valid. Key %x", i, tlb[i].key);
 			}
 		}
 	}
