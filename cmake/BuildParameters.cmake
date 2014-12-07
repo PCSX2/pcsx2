@@ -32,8 +32,6 @@ option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
-# FIXME do a proper detection
-set(SDL2_LIBRARY "-lSDL2")
 option(SDL2_API "Use SDL2 on spu2x and onepad")
 option(WX28_API "Force wxWidget 2.8 lib")
 

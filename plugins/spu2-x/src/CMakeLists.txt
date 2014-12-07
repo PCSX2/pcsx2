@@ -122,7 +122,7 @@ include_directories(Linux)
 #     endif(GCC_VERSION VERSION_GREATER 4.7)
 # endif()
 
-if(SDL_FOUND)
+if(SDL_FOUND OR SDL2_FOUND)
     list(APPEND spu2xSources SndOut_SDL.cpp)
     if (SDL2_API)
         set(spu2xFinalFlags
@@ -155,7 +155,7 @@ set(spu2xFinalLibs
 if (SDL2_API)
     set(spu2xFinalLibs
         ${spu2xFinalLibs}
-        ${SDL2_LIBRARY}
+        ${SDL2_LIBRARIES}
     )
 else()
     set(spu2xFinalLibs

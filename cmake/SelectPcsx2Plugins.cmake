@@ -6,8 +6,8 @@ set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=2.8.10), gtk2 (>=
 set(msg_dep_cdvdiso     "check these libraries -> bzip2 (>=1.0.5), gtk2 (>=2.16)")
 set(msg_dep_zerogs      "check these libraries -> glew (>=1.6), opengl, X11, nvidia-cg-toolkit (>=2.1)")
 set(msg_dep_gsdx        "check these libraries -> opengl, egl, X11")
-set(msg_dep_onepad      "check these libraries -> sdl (==1.2)")
-set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (>=1.9), sdl (==1.2) pcsx2 common libs")
+set(msg_dep_onepad      "check these libraries -> sdl (>=1.2)")
+set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (>=1.9), sdl (>=1.2) pcsx2 common libs")
 set(msg_dep_zerospu2    "check these libraries -> soundtouch (>=1.5), alsa")
 if(GLSL_API)
 	set(msg_dep_zzogl       "check these libraries -> glew (>=1.6), jpeg (>=6.2), opengl, X11, pcsx2 common libs")
@@ -208,7 +208,7 @@ endif()
 #---------------------------------------
 # requires: -SDL
 #---------------------------------------
-if(SDL_FOUND)
+if(SDL_FOUND OR SDL2_FOUND)
 	set(onepad TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
@@ -236,7 +236,7 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDL_FOUND AND common_libs)
+if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND (SDL_FOUND OR SDL2_FOUND) AND common_libs)
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)

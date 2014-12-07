@@ -14,9 +14,6 @@ find_package(Gettext) # translation tool
 find_package(Git)
 find_package(JPEG)
 find_package(OpenGL)
-# Tell cmake that we use SDL as a library and not as an application
-set(SDL_BUILDING_LIBRARY TRUE)
-find_package(SDL)
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -44,6 +41,16 @@ check_lib(EGL egl EGL/egl.h)
 check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
+
+# Tell cmake that we use SDL as a library and not as an application
+set(SDL_BUILDING_LIBRARY TRUE)
+if(SDL2_API)
+    check_lib(SDL2 SDL2 SDL.h)
+else()
+    # Tell cmake that we use SDL as a library and not as an application
+    set(SDL_BUILDING_LIBRARY TRUE)
+    find_package(SDL)
+endif()
 
 # Note for include_directory: The order is important to avoid a mess between include file from your system and the one of pcsx2
 # If you include first 3rdparty, all 3rdpary include will have a higer priority...
@@ -93,7 +100,7 @@ if(OPENGL_FOUND)
 	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
-if(SDL_FOUND)
+if(SDL_FOUND AND NOT SDL2_API)
 	include_directories(${SDL_INCLUDE_DIR})
 endif()
 

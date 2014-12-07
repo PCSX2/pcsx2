@@ -82,7 +82,7 @@ set(onepadWindowsHeaders
 
 if (SDL2_API)
 	set(onepadFinalLibs
-		${SDL2_LIBRARY}
+		${SDL2_LIBRARIES}
 	)
 else()
 	set(onepadFinalLibs
