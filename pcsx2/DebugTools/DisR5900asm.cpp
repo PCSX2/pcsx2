@@ -25,6 +25,10 @@
 #include "DisASM.h"
 #include "R5900OpcodeTables.h"
 
+// Allow to print register content when you print dissassembler info
+// Note only a subset of the opcodes are supported. It is intended as a cheap debugger
+//#define PRINT_REG_CONTENT
+
 unsigned long opcode_addr;
 u32 disasmOpcode;
 bool disSimplify;
@@ -710,14 +714,44 @@ const char* signedImmediate(s32 imm, int len = 0)
 
 const char* disDestSource(int dest, int source)
 {
-	static char buffer[32];
-
+	static char buffer[64];
+#ifdef PRINT_REG_CONTENT
+	sprintf(buffer,"%s,%s(0x%8.8x)",GPR_REG[dest],GPR_REG[source], cpuRegs.GPR.r[source].UL[0]);
+#else
 	if (disSimplify && dest == source)
 		sprintf(buffer,"%s",GPR_REG[dest]);
 	else
 		sprintf(buffer,"%s,%s",GPR_REG[dest],GPR_REG[source]);
 
+#endif
+
 	return buffer;
+}
+
+void disBranch(std::string& output, const char* op)
+{
+	ssappendf(output, "%s\t", op);
+	offset_decode(output);
+}
+
+void disBranch(std::string& output, const char* op, int rs)
+{
+#ifdef PRINT_REG_CONTENT
+	ssappendf(output, "%s\t%s(0x%8.8x), ", op, GPR_REG[rs], cpuRegs.GPR.r[rs].UL[0]);
+#else
+	ssappendf(output, "%s\t%s, ", op, GPR_REG[rs]);
+#endif
+	offset_decode(output);
+}
+
+void disBranch(std::string& output, const char* op, int rs, int rt)
+{
+#ifdef PRINT_REG_CONTENT
+	ssappendf(output, "%s\t%s(0x%8.8x), %s(0x%8.8x), ", op, GPR_REG[rs], cpuRegs.GPR.r[rs].UL[0], GPR_REG[rt], cpuRegs.GPR.r[rt].UL[0]);
+#else
+	ssappendf(output, "%s\t%s, %s, ", op, GPR_REG[rs], GPR_REG[rt]);
+#endif
+	offset_decode(output);
 }
 
 //********************* Standard Opcodes***********************
@@ -730,15 +764,13 @@ void BEQ( std::string& output )
 	int rt = DECODE_RT;
 
 	if (disSimplify && rs == rt)
-		ssappendf(output, "b\t");
+		disBranch(output, "b");
 	else if (disSimplify && rs == 0 && rt != 0)
-		ssappendf(output, "beqz\t%s, ",GPR_REG[rt]);
+		disBranch(output, "beqz", rt);
 	else if (disSimplify && rs != 0 && rt == 0)
-		ssappendf(output, "beqz\t%s, ",GPR_REG[rs]);
+		disBranch(output, "beqz", rs);
 	else
-		ssappendf(output, "beq\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
-
-	offset_decode(output);
+		disBranch(output, "beq", rs, rt);
 }
 
 void BNE( std::string& output )
@@ -747,17 +779,15 @@ void BNE( std::string& output )
 	int rt = DECODE_RT;
 
 	if (disSimplify && rs == 0 && rt != 0)
-		ssappendf(output, "bnez\t%s, ",GPR_REG[rt]);
+		disBranch(output, "bnez", rt);
 	else if (disSimplify && rs != 0 && rt == 0)
-		ssappendf(output, "bnez\t%s, ",GPR_REG[rs]);
+		disBranch(output, "bnez", rs);
 	else
-		ssappendf(output, "bne\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
-
-	offset_decode(output);
+		disBranch(output, "bne", rt, rs);
 }
 
-void BLEZ( std::string& output )   { _sap("blez\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGTZ( std::string& output )   { _sap("bgtz\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
+void BLEZ( std::string& output )   { disBranch(output, "blez", DECODE_RS); }
+void BGTZ( std::string& output )   { disBranch(output, "bgtz", DECODE_RS); }
 void ADDI( std::string& output )   { _sap("addi\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED);}
 
 void ADDIU( std::string& output )
@@ -798,15 +828,13 @@ void BEQL( std::string& output )
 	int rt = DECODE_RT;
 
 	if (disSimplify && rs == rt)
-		ssappendf(output, "b\t");
+		disBranch(output, "bl");
 	else if (disSimplify && rs == 0 && rt != 0)
-		ssappendf(output, "beqzl\t%s, ",GPR_REG[rt]);
+		disBranch(output, "beqzl", rt);
 	else if (disSimplify && rs != 0 && rt == 0)
-		ssappendf(output, "beqzl\t%s, ",GPR_REG[rs]);
+		disBranch(output, "beqzl", rs);
 	else
-		ssappendf(output, "beql\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
-
-	offset_decode(output);
+		disBranch(output, "beql", rs, rt);
 }
 
 void BNEL( std::string& output )
@@ -815,17 +843,15 @@ void BNEL( std::string& output )
 	int rt = DECODE_RT;
 
 	if (disSimplify && rs == 0 && rt != 0)
-		ssappendf(output, "bnezl\t%s, ",GPR_REG[rt]);
+		disBranch(output, "bnezl", rt);
 	else if (disSimplify && rs != 0 && rt == 0)
-		ssappendf(output, "bnezl\t%s, ",GPR_REG[rs]);
+		disBranch(output, "bnezl", rs);
 	else
-		ssappendf(output, "bnel\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
-
-	offset_decode(output);
+		disBranch(output, "bnel", rt, rs);
 }
 
-void BLEZL( std::string& output )  { _sap("blezl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGTZL( std::string& output )  { _sap("bgtzl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
+void BLEZL( std::string& output )  { disBranch(output, "blezl", DECODE_RS); }
+void BGTZL( std::string& output )  { disBranch(output, "bgtzl", DECODE_RS); }
 void DADDI( std::string& output )  { _sap("daddi\t%s, 0x%04X")      disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
 void DADDIU( std::string& output ) { _sap("daddiu\t%s, 0x%04X")     disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
 
@@ -994,20 +1020,20 @@ void SYSCALL( std::string& output ) { output +="syscall ---";/*_sap("syscall\t0x
 void BREAK( std::string& output )   { output += "break   ---";/*_sap("break\t0x%05X")     DECODE_BREAK); */}
 void CACHE( std::string& output )   { output += "cache   ---";/*_sap("cache\t%s, 0x%04X(%s)")  GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); */}
 //************************REGIMM OPCODES***************************
-void BLTZ( std::string& output )    { _sap("bltz\t%s, ")       GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGEZ( std::string& output )    { _sap("bgez\t%s, ")       GPR_REG[DECODE_RS]); offset_decode(output); }
-void BLTZL( std::string& output )   { _sap("bltzl\t%s, ")      GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGEZL( std::string& output )   { _sap("bgezl\t%s, ")      GPR_REG[DECODE_RS]); offset_decode(output); }
+void BLTZ( std::string& output )    { disBranch(output, "bltz", DECODE_RS); }
+void BGEZ( std::string& output )    { disBranch(output, "bgez", DECODE_RS); }
+void BLTZL( std::string& output )   { disBranch(output, "bltzl", DECODE_RS); }
+void BGEZL( std::string& output )   { disBranch(output, "bgezl", DECODE_RS); }
 void TGEI( std::string& output )    { _sap("tgei\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
 void TGEIU( std::string& output )   { _sap("tgeiu\t%s,0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
 void TLTI( std::string& output )    { _sap("tlti\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
 void TLTIU( std::string& output )   { _sap("tltiu\t%s,0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
 void TEQI( std::string& output )    { _sap("teqi\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
 void TNEI( std::string& output )    { _sap("tnei\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED); }
-void BLTZAL( std::string& output )  { _sap("bltzal\t%s, ")     GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGEZAL( std::string& output )  { _sap("bgezal\t%s, ")     GPR_REG[DECODE_RS]); offset_decode(output); }
-void BLTZALL( std::string& output ) { _sap("bltzall\t%s, ")    GPR_REG[DECODE_RS]); offset_decode(output); }
-void BGEZALL( std::string& output ) { _sap("bgezall\t%s, ")    GPR_REG[DECODE_RS]); offset_decode(output); }
+void BLTZAL( std::string& output )  { disBranch(output, "bltzal", DECODE_RS); }
+void BGEZAL( std::string& output )  { disBranch(output, "bgezal", DECODE_RS); }
+void BLTZALL( std::string& output ) { disBranch(output, "bltzall", DECODE_RS); }
+void BGEZALL( std::string& output ) { disBranch(output, "bgezall", DECODE_RS); }
 void MTSAB( std::string& output )   { _sap("mtsab\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED);}
 void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_RS], DECODE_IMMED);}
 
