@@ -243,7 +243,11 @@ void DisplayDialog()
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
 
     latency_label = gtk_label_new ("Latency:");
+#if GTK_MAJOR_VERSION < 3
     latency_slide = gtk_hscale_new_with_range(LATENCY_MIN, LATENCY_MAX, 5);
+#else
+    latency_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, LATENCY_MIN, LATENCY_MAX, 5);
+#endif
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
     sync_label = gtk_label_new ("Synchronization Mode:");

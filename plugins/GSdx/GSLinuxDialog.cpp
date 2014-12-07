@@ -348,17 +348,29 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_logz_check), theApp.GetConfig("logz", 1));
 
 	// Shadeboost scale
+#if GTK_MAJOR_VERSION < 3
 	sb_brightness = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_brightness = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_brightness), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_brightness), theApp.GetConfig("ShadeBoost_Brightness", 50));
 
+#if GTK_MAJOR_VERSION < 3
 	sb_contrast = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_contrast = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_contrast_label = gtk_label_new("Shade Boost Contrast");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_contrast), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_contrast), theApp.GetConfig("ShadeBoost_Contrast", 50));
 
+#if GTK_MAJOR_VERSION < 3
 	sb_saturation = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_saturation = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_saturation), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_saturation), theApp.GetConfig("ShadeBoost_Saturation", 50));

@@ -104,15 +104,27 @@ namespace SoundtouchCfg
 		default_button = gtk_button_new_with_label("Reset to Defaults");
 
 		seq_label = gtk_label_new("Sequence Length");
+#if GTK_MAJOR_VERSION < 3
 		seq_slide = gtk_hscale_new_with_range(SequenceLen_Min, SequenceLen_Max, 2);
+#else
+		seq_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, SequenceLen_Min, SequenceLen_Max, 2);
+#endif
 		gtk_range_set_value(GTK_RANGE(seq_slide), SequenceLenMS);
 
 		seek_label = gtk_label_new("Seek Window Size");
+#if GTK_MAJOR_VERSION < 3
 		seek_slide = gtk_hscale_new_with_range(SeekWindow_Min, SeekWindow_Max, 1);
+#else
+		seek_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, SeekWindow_Min, SeekWindow_Max, 1);
+#endif
 		gtk_range_set_value(GTK_RANGE(seek_slide), SeekWindowMS);
 
 		over_label = gtk_label_new("Overlap");
+#if GTK_MAJOR_VERSION < 3
 		over_slide = gtk_hscale_new_with_range(Overlap_Min, Overlap_Max, 1);
+#else
+		over_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, Overlap_Min, Overlap_Max, 1);
+#endif
 		gtk_range_set_value(GTK_RANGE(over_slide), OverlapMS);
 
 		main_box = gtk_vbox_new(false, 5);
