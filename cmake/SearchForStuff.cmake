@@ -43,7 +43,6 @@ check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
 # Tell cmake that we use SDL as a library and not as an application
-set(SDL_BUILDING_LIBRARY TRUE)
 if(SDL2_API)
     check_lib(SDL2 SDL2 SDL.h)
 else()
