@@ -175,10 +175,8 @@ void DisplayDialog()
 		"Spu2-X Config",
 		NULL, // parent window
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		GTK_STOCK_OK,
-			GTK_RESPONSE_ACCEPT,
-		GTK_STOCK_CANCEL,
-			GTK_RESPONSE_REJECT,
+		"OK", GTK_RESPONSE_ACCEPT,
+		"Cancel", GTK_RESPONSE_REJECT,
 		NULL);
 
     main_box = gtk_hbox_new(false, 5);

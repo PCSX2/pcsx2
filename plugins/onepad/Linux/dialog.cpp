@@ -619,12 +619,9 @@ void DisplayDialog()
 		"OnePAD Config",
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		GTK_STOCK_OK,
-			GTK_RESPONSE_ACCEPT,
-		GTK_STOCK_APPLY,
-			GTK_RESPONSE_APPLY,
-		GTK_STOCK_CANCEL,
-			GTK_RESPONSE_REJECT,
+		"_OK", GTK_RESPONSE_ACCEPT,
+		"_Apply", GTK_RESPONSE_APPLY,
+		"_Cancel", GTK_RESPONSE_REJECT,
 		NULL);
 
 	notebook = gtk_notebook_new();

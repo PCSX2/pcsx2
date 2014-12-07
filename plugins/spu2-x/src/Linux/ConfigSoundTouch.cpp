@@ -94,10 +94,8 @@ namespace SoundtouchCfg
 				"Advanced Settings",
 				NULL, /* parent window*/
 				(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-				GTK_STOCK_OK,
-				GTK_RESPONSE_ACCEPT,
-				GTK_STOCK_CANCEL,
-				GTK_RESPONSE_REJECT,
+				"OK", GTK_RESPONSE_ACCEPT,
+				"Cancel", GTK_RESPONSE_REJECT,
 				NULL);
 
 		main_label = gtk_label_new ("These are advanced configuration options fine tuning time stretching behavior. Larger values are better for slowdown, while smaller values are better for speedup (more then 60 fps.). All options are in microseconds.");
