@@ -280,7 +280,7 @@ typedef struct
 
 		gtk_fixed_put(fix, widget, x, y);
 		gtk_widget_set_size_request(widget, 64, 24);
-		g_signal_connect(GTK_OBJECT (widget), "clicked", G_CALLBACK(on_conf_key), this);
+		g_signal_connect(widget, "clicked", G_CALLBACK(on_conf_key), this);
 	}
 } dialog_buttons;
 
@@ -295,7 +295,7 @@ typedef struct
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->options);
-		g_signal_connect(GTK_OBJECT (widget), "toggled", G_CALLBACK(on_toggle_option), this);
+		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
 
@@ -518,7 +518,7 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
     joy_choose_cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
     populate_new_joysticks(joy_choose_cbox);
 	set_current_joy();
-	g_signal_connect(GTK_OBJECT (joy_choose_cbox), "changed", G_CALLBACK(joy_changed), NULL);
+	g_signal_connect(joy_choose_cbox, "changed", G_CALLBACK(joy_changed), NULL);
     
     keys_tree_scroll = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(keys_tree_scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -526,24 +526,24 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
     gtk_widget_set_size_request(keys_tree_scroll, 300, 500);
     
 	keys_tree_clear_btn = gtk_button_new_with_label("Clear All");
-	g_signal_connect(GTK_OBJECT (keys_tree_clear_btn), "clicked", G_CALLBACK(on_clear_clicked), NULL);
+	g_signal_connect(keys_tree_clear_btn, "clicked", G_CALLBACK(on_clear_clicked), NULL);
 	gtk_widget_set_size_request(keys_tree_clear_btn, 70, 24);
 	
 	keys_tree_remove_btn = gtk_button_new_with_label("Remove");
-	g_signal_connect(GTK_OBJECT (keys_tree_remove_btn), "clicked", G_CALLBACK(on_remove_clicked), NULL);
+	g_signal_connect(keys_tree_remove_btn, "clicked", G_CALLBACK(on_remove_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_remove_btn, 70, 24);
     
 	keys_tree_modify_btn = gtk_button_new_with_label("Modify");
-	g_signal_connect(GTK_OBJECT (keys_tree_modify_btn), "clicked", G_CALLBACK(on_modify_clicked), NULL);
+	g_signal_connect(keys_tree_modify_btn, "clicked", G_CALLBACK(on_modify_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_modify_btn, 70, 24);
 
 	keys_tree_show_joy_btn =  gtk_check_button_new_with_label("Show joy");
-	g_signal_connect(GTK_OBJECT (keys_tree_show_joy_btn), "toggled", G_CALLBACK(on_view_joy_clicked), NULL);
+	g_signal_connect(keys_tree_show_joy_btn, "toggled", G_CALLBACK(on_view_joy_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_joy_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_joy_btn), true);
 
 	keys_tree_show_key_btn = gtk_check_button_new_with_label("Show key");
-	g_signal_connect(GTK_OBJECT (keys_tree_show_key_btn), "toggled", G_CALLBACK(on_view_key_clicked), NULL);
+	g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_view_key_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_key_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
 
@@ -635,7 +635,7 @@ void DisplayDialog()
 		page[i] = create_notebook_page_dialog(i, btn[i], checkbox[i]);
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page[i], page_label[i]);
 	}
-	g_signal_connect(GTK_OBJECT (notebook), "switch-page", G_CALLBACK(pad_changed), NULL);
+	g_signal_connect(notebook, "switch-page", G_CALLBACK(pad_changed), NULL);
 
     gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), notebook);
     

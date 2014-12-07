@@ -133,7 +133,7 @@ namespace SoundtouchCfg
 		gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
 		gtk_widget_show_all (dialog);
 
-		g_signal_connect_swapped(GTK_OBJECT (default_button), "clicked", G_CALLBACK(restore_defaults), default_button);
+		g_signal_connect_swapped(default_button, "clicked", G_CALLBACK(restore_defaults), default_button);
 
 		return_value = gtk_dialog_run (GTK_DIALOG (dialog));
 

@@ -297,8 +297,8 @@ void DisplayDialog()
     gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
     gtk_widget_show_all (dialog);
 
-    g_signal_connect_swapped(GTK_OBJECT (advanced_button), "clicked", G_CALLBACK(advanced_dialog), advanced_button);
-    g_signal_connect_swapped(GTK_OBJECT (debug_button), "clicked", G_CALLBACK(debug_dialog), debug_button);
+    g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
+    g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 
     return_value = gtk_dialog_run (GTK_DIALOG (dialog));
 
