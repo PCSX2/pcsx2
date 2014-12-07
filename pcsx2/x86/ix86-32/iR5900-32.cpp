@@ -1739,9 +1739,15 @@ static void __fastcall recRecompile( const u32 startpc )
 		xCALL(PreBlockCheck);
 	}
 
-	// 0x33ad48 is the return address of the function that populate the TLB cache
-	if (pc == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
-		xCALL(GoemonPreloadTlb);
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		if (pc == 0x33ad48) {
+			// 0x33ad48 is the return address of the function that populate the TLB cache
+			xCALL(GoemonPreloadTlb);
+		} else if (pc == 0x3563b8) {
+			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
+			MOV32MtoR(ECX, (int)&cpuRegs.GPR.n.a0.UL[ 0 ] );
+			xCALL(GoemonUnloadTlb);
+		}
 	}
 
 	// go until the next branch
