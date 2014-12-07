@@ -80,7 +80,7 @@ void GSWndEGL::CreateContext(int major, int minor)
 	if (status == EGL_BAD_ATTRIBUTE || status == EGL_BAD_MATCH) {
 		// Radeon/Gallium don't support advance attribute. Fallback to random value
 		// Note: Intel gives an EGL_BAD_MATCH. I don't know why but let's by stubborn and retry.
-		fprintf(stderr, "EGL: warning your driver doesn't suport advance openGL context attributes\n");
+		fprintf(stderr, "EGL: warning your driver doesn't support advance openGL context attributes\n");
 		m_eglContext = eglCreateContext(m_eglDisplay, eglConfig, EGL_NO_CONTEXT, NullContextAttribs);
 		status = eglGetError();
 	}

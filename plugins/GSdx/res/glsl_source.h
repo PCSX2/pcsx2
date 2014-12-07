@@ -419,7 +419,7 @@ static const char* shadeboost_glsl =
 	"	const float brt = SB_BRIGHTNESS / 50.0;\n"
 	"	const float con = SB_CONTRAST / 50.0;\n"
 	"	\n"
-	"	// Increase or decrease theese values to adjust r, g and b color channels seperately\n"
+	"	// Increase or decrease these values to adjust r, g and b color channels seperately\n"
 	"	const float AvgLumR = 0.5;\n"
 	"	const float AvgLumG = 0.5;\n"
 	"	const float AvgLumB = 0.5;\n"
