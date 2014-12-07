@@ -22,11 +22,9 @@
 #ifndef __JOYSTICK_H__
 #define __JOYSTICK_H__
 
-#ifdef ONEPAD_SDL2
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_haptic.h"
-#else
-#include "SDL/SDL.h"
+#include <SDL.h>
+#if SDL_MAJOR_VERSION >= 2
+#include <SDL_haptic.h>
 #endif
 
 

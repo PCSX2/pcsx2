@@ -42,7 +42,6 @@ check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
-# Tell cmake that we use SDL as a library and not as an application
 if(SDL2_API)
     check_lib(SDL2 SDL2 SDL.h)
 else()
@@ -51,19 +50,8 @@ else()
     find_package(SDL)
 endif()
 
-# Note for include_directory: The order is important to avoid a mess between include file from your system and the one of pcsx2
-# If you include first 3rdparty, all 3rdpary include will have a higer priority...
-# If you include first /usr/include, all system include will have a higer priority over the pcsx2 one...
-# Current implementation:
-# 1/ include 3rdparty sub-directory that we will used (either request or fallback)
-# 2/ include system one
 #----------------------------------------
-#         Fallback on 3rdparty libraries
-#----------------------------------------
-# Empty
-
-#----------------------------------------
-#		    Use system include (if not 3rdparty one)
+#		    Use system include
 #----------------------------------------
 if(Linux)
 	if(GTK2_FOUND)
@@ -109,7 +97,7 @@ if(wxWidgets_FOUND)
         # 64 bits machine with 32 bits library in /usr/lib32
         if(_ARCH_64 AND NOT 64BIT_BUILD_DONT_WORK)
             ## There is no guarantee that wx-config is a link to a 32 bits library. So you need to force the destinity
-            # Library can go into 3 path major paths (+ multiarch but you will see that later when implementation is done)
+            # Library can go into 3 path major paths (+ multiarch)
             # 1/ /usr/lib32 (32 bits only)
             # 2/ /usr/lib64 (64 bits only)
             # 3/ /usr/lib   (32 or 64 bits depends on distributions)

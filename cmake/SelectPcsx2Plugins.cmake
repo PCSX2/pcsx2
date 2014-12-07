@@ -21,6 +21,8 @@ endif()
 # Check for additional dependencies.
 # If all dependencies are available, including OS, build it
 #-------------------------------------------------------------------------------
+set(GTKn_FOUND GTK2_FOUND OR GTK3_FOUND)
+set(SDLn_FOUND SDL_FOUND OR SDL2_FOUND)
 
 #---------------------------------------
 #			Common libs
@@ -55,7 +57,7 @@ else()
     message(STATUS "${msg_dep_pcsx2}")
 endif()
 # Linux need also gtk2
-if(Linux AND pcsx2_core AND NOT GTK2_FOUND)
+if(Linux AND pcsx2_core AND NOT GTKn_FOUND)
     set(pcsx2_core FALSE)
     message(STATUS "Skip build of pcsx2 core: miss some dependencies")
     message(STATUS "${msg_dep_pcsx2}")
@@ -73,7 +75,7 @@ endif()
 #---------------------------------------
 #			CDVDnull
 #---------------------------------------
-if(GTK2_FOUND)
+if(GTKn_FOUND)
     set(CDVDnull TRUE)
 endif()
 #---------------------------------------
@@ -85,7 +87,7 @@ endif()
 #           -gtk2 (linux)
 #---------------------------------------
 if(EXTRA_PLUGINS)
-    if(BZIP2_FOUND AND GTK2_FOUND)
+    if(BZIP2_FOUND AND GTKn_FOUND)
         set(CDVDiso TRUE)
     elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso")
         set(CDVDiso FALSE)
@@ -106,7 +108,7 @@ endif()
 #---------------------------------------
 #			dev9null
 #---------------------------------------
-if(GTK2_FOUND)
+if(GTKn_FOUND)
     set(dev9null TRUE)
 endif()
 #---------------------------------------
@@ -114,7 +116,7 @@ endif()
 #---------------------------------------
 #			FWnull
 #---------------------------------------
-if(GTK2_FOUND)
+if(GTKn_FOUND)
     set(FWnull TRUE)
 endif()
 #---------------------------------------
@@ -122,7 +124,7 @@ endif()
 #---------------------------------------
 #			GSnull
 #---------------------------------------
-if(GTK2_FOUND AND EXTRA_PLUGINS)
+if(GTKn_FOUND AND EXTRA_PLUGINS)
     set(GSnull TRUE)
 endif()
 #---------------------------------------
@@ -198,7 +200,7 @@ endif()
 #---------------------------------------
 #			PadNull
 #---------------------------------------
-if(GTK2_FOUND AND EXTRA_PLUGINS)
+if(GTKn_FOUND AND EXTRA_PLUGINS)
     set(PadNull TRUE)
 endif()
 #---------------------------------------
@@ -208,7 +210,7 @@ endif()
 #---------------------------------------
 # requires: -SDL
 #---------------------------------------
-if(SDL_FOUND OR SDL2_FOUND)
+if(SDLn_FOUND)
 	set(onepad TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
@@ -222,7 +224,7 @@ endif()
 #---------------------------------------
 #			SPU2null
 #---------------------------------------
-if(GTK2_FOUND AND EXTRA_PLUGINS)
+if(GTKn_FOUND AND EXTRA_PLUGINS)
     set(SPU2null TRUE)
 endif()
 #---------------------------------------
@@ -236,7 +238,7 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND (SDL_FOUND OR SDL2_FOUND) AND common_libs)
+if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)
@@ -273,7 +275,7 @@ endif()
 #---------------------------------------
 #			USBnull
 #---------------------------------------
-if(GTK2_FOUND)
+if(GTKn_FOUND)
     set(USBnull TRUE)
 endif()
 #---------------------------------------

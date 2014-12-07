@@ -28,13 +28,11 @@
 /* Using SDL2 requires other SDL dependencies in pcsx2 get upgraded as well, or the
  * symbol tables would conflict. Other dependencies in Linux are wxwidgets (you can
  * build wx without sdl support, though) and onepad at the time of writing this. */
-#ifdef SPU2X_SDL2
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
+#include <SDL.h>
+#include <SDL_audio.h>
+#if SDL_MAJOR_VERSION >= 2
 typedef StereoOut32 StereoOut_SDL;
 #else
-#include <SDL/SDL.h>
-#include <SDL/SDL_audio.h>
 typedef StereoOut16 StereoOut_SDL;
 #endif
 

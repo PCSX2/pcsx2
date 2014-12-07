@@ -38,13 +38,6 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
-if (SDL2_API)
-	set(onepadFinalFlags
-		${onepadFinalFlags}
-		-DONEPAD_SDL2
-	)
-endif()
-
 # onepad sources
 set(onepadSources
 	controller.cpp

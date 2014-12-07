@@ -65,6 +65,7 @@ set(spu2xSources
     Reverb.cpp
     SndOut.cpp
     SndOut_Portaudio.cpp
+    SndOut_SDL.cpp
     spu2freeze.cpp
     Spu2replay.cpp
     spu2sys.cpp
@@ -110,32 +111,6 @@ set(spu2xLinuxHeaders
 
 # add additional include directories
 include_directories(Linux)
-
-### Don't use yet c11 feature. I will bump gcc requirement to 4.7 when 4.9 is out.
-### Note: actually it might work on 4.6 too
-# # If compiling on GCC Version 4.7 or higher we build SDLMod in C++11 mode
-# if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-#     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-#     if(GCC_VERSION VERSION_GREATER 4.7)
-#         set_source_files_properties(SndOut_SDL.cpp PROPERTIES COMPILE_FLAGS -std=c++11)
-#         message(STATUS "GCC has C++11 support for SDLAudioMod")
-#     endif(GCC_VERSION VERSION_GREATER 4.7)
-# endif()
-
-if(SDL_FOUND OR SDL2_FOUND)
-    list(APPEND spu2xSources SndOut_SDL.cpp)
-    if (SDL2_API)
-        set(spu2xFinalFlags
-            ${spu2xFinalFlags}
-            -DSPU2X_SDL2
-        )
-    else()
-        set(spu2xFinalFlags
-            ${spu2xFinalFlags}
-            -DSPU2X_SDL
-        )
-    endif()
-endif()
 
 set(spu2xFinalSources
     ${spu2xSources}
