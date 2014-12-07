@@ -43,7 +43,7 @@ vec4 ContrastSaturationBrightness(vec4 color)
 	const float brt = SB_BRIGHTNESS / 50.0;
 	const float con = SB_CONTRAST / 50.0;
 	
-	// Increase or decrease these values to adjust r, g and b color channels seperately
+	// Increase or decrease these values to adjust r, g and b color channels separately
 	const float AvgLumR = 0.5;
 	const float AvgLumG = 0.5;
 	const float AvgLumB = 0.5;
