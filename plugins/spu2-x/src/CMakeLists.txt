@@ -120,7 +120,7 @@ set(spu2xFinalSources
 )
 
 set(spu2xFinalLibs
-    Utilities
+    Utilities_NO_TLS
     ${ALSA_LIBRARIES}
     ${PORTAUDIO_LIBRARIES}
     ${GTK2_LIBRARIES}

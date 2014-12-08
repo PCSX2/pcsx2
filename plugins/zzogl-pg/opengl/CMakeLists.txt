@@ -190,7 +190,7 @@ set(zzoglFinalSources
 )
 
 set(zzoglFinalLibs
-    Utilities
+    Utilities_NO_TLS
     ${OPENGL_LIBRARIES}
 )
 
