@@ -42,7 +42,8 @@ for ARG in "$@"; do
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
         --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
-        --no-simd    )  flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
+        --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
+        -D*           ) flags+=($ARG) ;;
 
         *)
             # Unknown option
