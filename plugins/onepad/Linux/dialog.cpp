@@ -417,7 +417,7 @@ void joy_changed(GtkComboBoxText *box, gpointer user_data)
 	conf->set_joyid(current_pad, joyid);
 }
 
-void pad_changed(GtkNotebook *notebook, GtkNotebookPage *notebook_page, int page, void *data)
+void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *data)
 {
 	current_pad = page;
 	key_tree_manager->set_show_pad(current_pad&1);
