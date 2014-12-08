@@ -214,12 +214,12 @@ void DisplayDialog()
 		NULL);
 
     int_label = gtk_label_new ("Interpolation:");
-    int_box = gtk_combo_box_new_text ();
-    gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "0 - Nearest (fastest/bad quality)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "1 - Linear (simple/okay sound)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "2 - Cubic (artificial highs)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "3 - Hermite (better highs)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "4 - Catmull-Rom (PS2-like/slow)");
+    int_box = gtk_combo_box_text_new ();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (fastest/bad quality)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (simple/okay sound)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (artificial highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (better highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "4 - Catmull-Rom (PS2-like/slow)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), Interpolation);
 
     effects_check = gtk_check_button_new_with_label("Disable Effects Processing");
@@ -229,19 +229,19 @@ void DisplayDialog()
 	debug_button = gtk_button_new_with_label("Debug...");
 
     mod_label = gtk_label_new ("Module:");
-    mod_box = gtk_combo_box_new_text ();
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "0 - No Sound (emulate SPU2 only)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "1 - PortAudio (cross-platform)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
-    //gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "3 - Alsa (probably doesn't work)");
+    mod_box = gtk_combo_box_text_new ();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
+    //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
     api_label = gtk_label_new ("PortAudio API:");
-    api_box = gtk_combo_box_new_text ();
+    api_box = gtk_combo_box_text_new ();
 	// In order to keep it the menu light, I only put linux major api
-    gtk_combo_box_append_text(GTK_COMBO_BOX(api_box), "0 - ALSA (recommended)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(api_box), "1 - OSS (legacy)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(api_box), "2 - JACK");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
 
     latency_label = gtk_label_new ("Latency:");
@@ -249,10 +249,10 @@ void DisplayDialog()
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
     sync_label = gtk_label_new ("Synchronization Mode:");
-    sync_box = gtk_combo_box_new_text ();
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sync_box), "TimeStretch (Recommended)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sync_box), "Async Mix (Breaks some games!)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sync_box), "None (Audio can skip.)");
+    sync_box = gtk_combo_box_text_new ();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "TimeStretch (Recommended)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "Async Mix (Breaks some games!)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "None (Audio can skip.)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(sync_box), SynchMode);
 
 	advanced_button = gtk_button_new_with_label("Advanced...");

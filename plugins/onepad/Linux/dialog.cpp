@@ -29,7 +29,7 @@ void on_conf_key(GtkButton *button, gpointer user_data);
 void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data);
 
 static int current_pad = 0;
-static GtkComboBox *joy_choose_cbox;
+static GtkComboBoxText *joy_choose_cbox;
 
 const char* s_pGuiKeyMap[] =
 {
@@ -240,12 +240,12 @@ class keys_tree
 };
 keys_tree *key_tree_manager;
 
-void populate_new_joysticks(GtkComboBox *box)
+void populate_new_joysticks(GtkComboBoxText *box)
 {
 	char str[255];
 	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
 
-	gtk_combo_box_append_text(box, "Keyboard/mouse only");
+	gtk_combo_box_text_append_text(box, "Keyboard/mouse only");
 	
 	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
 
@@ -254,7 +254,7 @@ void populate_new_joysticks(GtkComboBox *box)
 	{
 		sprintf(str, "Keyboard/mouse and %s - but: %d, axes: %d, hats: %d", (*it)->GetName().c_str(),
 		        (*it)->GetNumButtons(), (*it)->GetNumAxes(), (*it)->GetNumHats());
-		gtk_combo_box_append_text(box, str);
+		gtk_combo_box_text_append_text(box, str);
 		it++;
 	}
 }
@@ -264,9 +264,9 @@ void set_current_joy()
 	u32 joyid = conf->get_joyid(current_pad);
 	if (JoystickIdWithinBounds(joyid))
 		// 0 is special case for no gamepad. So you must increase of 1.
-		gtk_combo_box_set_active(joy_choose_cbox, joyid+1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), joyid+1);
 	else
-		gtk_combo_box_set_active(joy_choose_cbox, 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), 0);
 }
 
 typedef struct
@@ -398,9 +398,9 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 		conf->options &= ~checkbox->mask;
 }
 
-void joy_changed(GtkComboBox *box, gpointer user_data)
+void joy_changed(GtkComboBoxText *box, gpointer user_data)
 {
-	int joyid = gtk_combo_box_get_active(box);
+	int joyid = gtk_combo_box_get_active(GTK_COMBO_BOX(box));
 	// Note position 0 of the combo box is no gamepad
 	joyid--;
 
@@ -515,7 +515,7 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
     GtkWidget *keys_static_frame, *keys_static_box;
     GtkWidget *keys_static_area;
 	
-    joy_choose_cbox = GTK_COMBO_BOX(gtk_combo_box_new_text());
+    joy_choose_cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
     populate_new_joysticks(joy_choose_cbox);
 	set_current_joy();
 	g_signal_connect(GTK_OBJECT (joy_choose_cbox), "changed", G_CALLBACK(joy_changed), NULL);
