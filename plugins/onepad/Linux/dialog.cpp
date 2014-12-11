@@ -29,7 +29,7 @@ void on_conf_key(GtkButton *button, gpointer user_data);
 void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data);
 
 static int current_pad = 0;
-static GtkComboBox *joy_choose_cbox;
+static GtkComboBoxText *joy_choose_cbox;
 
 const char* s_pGuiKeyMap[] =
 {
@@ -240,12 +240,12 @@ class keys_tree
 };
 keys_tree *key_tree_manager;
 
-void populate_new_joysticks(GtkComboBox *box)
+void populate_new_joysticks(GtkComboBoxText *box)
 {
 	char str[255];
 	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
 
-	gtk_combo_box_append_text(box, "Keyboard/mouse only");
+	gtk_combo_box_text_append_text(box, "Keyboard/mouse only");
 	
 	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
 
@@ -254,7 +254,7 @@ void populate_new_joysticks(GtkComboBox *box)
 	{
 		sprintf(str, "Keyboard/mouse and %s - but: %d, axes: %d, hats: %d", (*it)->GetName().c_str(),
 		        (*it)->GetNumButtons(), (*it)->GetNumAxes(), (*it)->GetNumHats());
-		gtk_combo_box_append_text(box, str);
+		gtk_combo_box_text_append_text(box, str);
 		it++;
 	}
 }
@@ -264,9 +264,9 @@ void set_current_joy()
 	u32 joyid = conf->get_joyid(current_pad);
 	if (JoystickIdWithinBounds(joyid))
 		// 0 is special case for no gamepad. So you must increase of 1.
-		gtk_combo_box_set_active(joy_choose_cbox, joyid+1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), joyid+1);
 	else
-		gtk_combo_box_set_active(joy_choose_cbox, 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), 0);
 }
 
 typedef struct
@@ -280,7 +280,7 @@ typedef struct
 
 		gtk_fixed_put(fix, widget, x, y);
 		gtk_widget_set_size_request(widget, 64, 24);
-		g_signal_connect(GTK_OBJECT (widget), "clicked", G_CALLBACK(on_conf_key), this);
+		g_signal_connect(widget, "clicked", G_CALLBACK(on_conf_key), this);
 	}
 } dialog_buttons;
 
@@ -295,7 +295,7 @@ typedef struct
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->options);
-		g_signal_connect(GTK_OBJECT (widget), "toggled", G_CALLBACK(on_toggle_option), this);
+		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
 
@@ -398,9 +398,9 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 		conf->options &= ~checkbox->mask;
 }
 
-void joy_changed(GtkComboBox *box, gpointer user_data)
+void joy_changed(GtkComboBoxText *box, gpointer user_data)
 {
-	int joyid = gtk_combo_box_get_active(box);
+	int joyid = gtk_combo_box_get_active(GTK_COMBO_BOX(box));
 	// Note position 0 of the combo box is no gamepad
 	joyid--;
 
@@ -417,7 +417,7 @@ void joy_changed(GtkComboBox *box, gpointer user_data)
 	conf->set_joyid(current_pad, joyid);
 }
 
-void pad_changed(GtkNotebook *notebook, GtkNotebookPage *notebook_page, int page, void *data)
+void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *data)
 {
 	current_pad = page;
 	key_tree_manager->set_show_pad(current_pad&1);
@@ -515,10 +515,10 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
     GtkWidget *keys_static_frame, *keys_static_box;
     GtkWidget *keys_static_area;
 	
-    joy_choose_cbox = GTK_COMBO_BOX(gtk_combo_box_new_text());
+    joy_choose_cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
     populate_new_joysticks(joy_choose_cbox);
 	set_current_joy();
-	g_signal_connect(GTK_OBJECT (joy_choose_cbox), "changed", G_CALLBACK(joy_changed), NULL);
+	g_signal_connect(joy_choose_cbox, "changed", G_CALLBACK(joy_changed), NULL);
     
     keys_tree_scroll = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(keys_tree_scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -526,24 +526,24 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
     gtk_widget_set_size_request(keys_tree_scroll, 300, 500);
     
 	keys_tree_clear_btn = gtk_button_new_with_label("Clear All");
-	g_signal_connect(GTK_OBJECT (keys_tree_clear_btn), "clicked", G_CALLBACK(on_clear_clicked), NULL);
+	g_signal_connect(keys_tree_clear_btn, "clicked", G_CALLBACK(on_clear_clicked), NULL);
 	gtk_widget_set_size_request(keys_tree_clear_btn, 70, 24);
 	
 	keys_tree_remove_btn = gtk_button_new_with_label("Remove");
-	g_signal_connect(GTK_OBJECT (keys_tree_remove_btn), "clicked", G_CALLBACK(on_remove_clicked), NULL);
+	g_signal_connect(keys_tree_remove_btn, "clicked", G_CALLBACK(on_remove_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_remove_btn, 70, 24);
     
 	keys_tree_modify_btn = gtk_button_new_with_label("Modify");
-	g_signal_connect(GTK_OBJECT (keys_tree_modify_btn), "clicked", G_CALLBACK(on_modify_clicked), NULL);
+	g_signal_connect(keys_tree_modify_btn, "clicked", G_CALLBACK(on_modify_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_modify_btn, 70, 24);
 
 	keys_tree_show_joy_btn =  gtk_check_button_new_with_label("Show joy");
-	g_signal_connect(GTK_OBJECT (keys_tree_show_joy_btn), "toggled", G_CALLBACK(on_view_joy_clicked), NULL);
+	g_signal_connect(keys_tree_show_joy_btn, "toggled", G_CALLBACK(on_view_joy_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_joy_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_joy_btn), true);
 
 	keys_tree_show_key_btn = gtk_check_button_new_with_label("Show key");
-	g_signal_connect(GTK_OBJECT (keys_tree_show_key_btn), "toggled", G_CALLBACK(on_view_key_clicked), NULL);
+	g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_view_key_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_key_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
 
@@ -619,12 +619,9 @@ void DisplayDialog()
 		"OnePAD Config",
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		GTK_STOCK_OK,
-			GTK_RESPONSE_ACCEPT,
-		GTK_STOCK_APPLY,
-			GTK_RESPONSE_APPLY,
-		GTK_STOCK_CANCEL,
-			GTK_RESPONSE_REJECT,
+		"_OK", GTK_RESPONSE_ACCEPT,
+		"_Apply", GTK_RESPONSE_APPLY,
+		"_Cancel", GTK_RESPONSE_REJECT,
 		NULL);
 
 	notebook = gtk_notebook_new();
@@ -635,7 +632,7 @@ void DisplayDialog()
 		page[i] = create_notebook_page_dialog(i, btn[i], checkbox[i]);
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page[i], page_label[i]);
 	}
-	g_signal_connect(GTK_OBJECT (notebook), "switch-page", G_CALLBACK(pad_changed), NULL);
+	g_signal_connect(notebook, "switch-page", G_CALLBACK(pad_changed), NULL);
 
     gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), notebook);
     

@@ -184,42 +184,33 @@ static void SysMessage(const char *fmt, ...)
     gtk_widget_destroy (dialog);
 }
 
-static bool loggingValue = false;
-
-static void __forceinline set_logging(GtkToggleButton *check)
+static void __forceinline set_logging(GtkToggleButton *check, int& log)
 {
-	loggingValue = gtk_toggle_button_get_active(check);
-}
-
-static void __forceinline send_ok(GtkDialog *dialog)
-{
-	int ret = (loggingValue) ? 1 : 0;
-	gtk_dialog_response (dialog, ret);
+    log = gtk_toggle_button_get_active(check);
 }
 
 static void __forceinline PluginNullConfigure(std::string desc, int &log)
 {
-    GtkWidget *dialog, *label, *okay_button, *check_box;
+    GtkWidget *dialog, *label, *check_box;
 
     /* Create the widgets */
     dialog = gtk_dialog_new();
     label = gtk_label_new (desc.c_str());
-    okay_button = gtk_button_new_with_label("Ok");
     check_box = gtk_check_button_new_with_label("Logging");
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_box), (log != 0));
 
     /* Ensure that the dialog box is destroyed when the user clicks ok, and that we get the check box value. */
-    g_signal_connect_swapped(GTK_OBJECT (okay_button), "clicked", G_CALLBACK(send_ok), dialog);
-    g_signal_connect_swapped(GTK_OBJECT (check_box), "toggled", G_CALLBACK(set_logging), check_box);
+    g_signal_connect(check_box, "toggled", G_CALLBACK(set_logging), &log);
 
     /* Add all our widgets, and show everything we've added to the dialog. */
-    gtk_container_add (GTK_CONTAINER (gtk_dialog_get_action_area(GTK_DIALOG(dialog))), okay_button);
     gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))), label);
     gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))), check_box);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), "Ok", 0);
+
     gtk_widget_show_all (dialog);
 
-    log = gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 }
 

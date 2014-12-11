@@ -288,11 +288,11 @@ void DisplayDialog()
 	gtk_widget_set_tooltip_text(log_check, "Used for Debugging.");
 
 	int_label = gtk_label_new("Interlacing:");
-	int_box = gtk_combo_box_new_text();
+	int_box = gtk_combo_box_text_new();
 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "No Interlacing");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "Interlace 0");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(int_box), "Interlace 1");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "No Interlacing");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "Interlace 0");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "Interlace 1");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), conf.interlace);
 	gtk_widget_set_tooltip_text(int_box, "Toggled by pressing F5 when running.");
 	int_holder = gtk_hbox_new(false, 5);
@@ -300,11 +300,11 @@ void DisplayDialog()
 	gtk_box_pack_start(GTK_BOX(int_holder), int_box, false, false, 2);
 
 	bilinear_label = gtk_label_new("Bilinear Filtering:");
-	bilinear_box = gtk_combo_box_new_text();
+	bilinear_box = gtk_combo_box_text_new();
 	
-	gtk_combo_box_append_text(GTK_COMBO_BOX(bilinear_box), "Off");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(bilinear_box), "Normal");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(bilinear_box), "Forced");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(bilinear_box), "Off");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(bilinear_box), "Normal");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(bilinear_box), "Forced");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(bilinear_box), conf.bilinear);
 	gtk_widget_set_tooltip_text(bilinear_box, "Best quality is off. Turn on for speed. Toggled by pressing Shift + F5 when running.");
 	bilinear_holder = gtk_hbox_new(false, 5);
@@ -312,13 +312,13 @@ void DisplayDialog()
 	gtk_box_pack_start(GTK_BOX(bilinear_holder), bilinear_box, false, false, 2);
 	
 	aa_label = gtk_label_new("Anti-Aliasing:");
-	aa_box = gtk_combo_box_new_text();
+	aa_box = gtk_combo_box_text_new();
 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(aa_box), "1X (None)");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(aa_box), "2X");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(aa_box), "4X");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(aa_box), "8X");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(aa_box), "16X");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "1X (None)");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "2X");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "4X");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "8X");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "16X");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(aa_box), conf.aa);
 	gtk_widget_set_tooltip_text(aa_box, "Toggled by pressing F6 when running.");
 	aa_holder = gtk_hbox_new(false, 5);
@@ -326,9 +326,9 @@ void DisplayDialog()
 	gtk_box_pack_start(GTK_BOX(aa_holder), aa_box, false, false, 2);
 	
 	snap_label = gtk_label_new("Snapshot format:");
-	snap_box = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(snap_box), "JPEG");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(snap_box), "TIFF");
+	snap_box = gtk_combo_box_text_new();
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "JPEG");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "TIFF");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(snap_box), conf.zz_options.tga_snap);
 	snap_holder = gtk_hbox_new(false, 5);
 	gtk_box_pack_start(GTK_BOX(snap_holder), snap_label, false, false, 2);
@@ -392,7 +392,7 @@ void DisplayDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dis_hacks_check), (conf.disableHacks));
 
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
-	g_signal_connect_swapped(GTK_OBJECT (advanced_button), "clicked", G_CALLBACK(DisplayAdvancedDialog), advanced_button);
+	g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(DisplayAdvancedDialog), advanced_button);
 	tempHacks = conf.hacks;
 	gtk_widget_show_all(dialog);
 

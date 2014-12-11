@@ -29,7 +29,7 @@ GtkWidget* CreateRenderComboBox()
 	GtkWidget  *render_combo_box;
 	int renderer_box_position = 0;
 
-	render_combo_box = gtk_combo_box_new_text ();
+	render_combo_box = gtk_combo_box_text_new ();
 
 	for(auto s = theApp.m_gs_renderers.begin(); s != theApp.m_gs_renderers.end(); s++)
 	{
@@ -56,7 +56,7 @@ GtkWidget* CreateRenderComboBox()
 				continue;
 		}
 
-		gtk_combo_box_append_text(GTK_COMBO_BOX(render_combo_box), label.c_str());
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
 	}
 
 	switch (theApp.GetConfig("renderer", 0)) {
@@ -78,7 +78,7 @@ GtkWidget* CreateRenderComboBox()
 GtkWidget* CreateInterlaceComboBox()
 {
 	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_new_text ();
+	combo_box = gtk_combo_box_text_new ();
 
 	for(size_t i = 0; i < theApp.m_gs_interlace.size(); i++)
 	{
@@ -88,7 +88,7 @@ GtkWidget* CreateInterlaceComboBox()
 
 		if(!s.note.empty()) label += format(" (%s)", s.note.c_str());
 
-		gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), label.c_str());
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), label.c_str());
 	}
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("interlace", 0));
@@ -98,15 +98,15 @@ GtkWidget* CreateInterlaceComboBox()
 GtkWidget* CreateMsaaComboBox()
 {
 	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_new_text ();
+	combo_box = gtk_combo_box_text_new ();
 
 	// For now, let's just put in the same vaues that show up in the windows combo box.
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "Custom");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "2x");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "3x");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "4x");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "5x");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "6x");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Custom");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "2x");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "3x");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "4x");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "5x");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "6x");
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("upscale_multiplier", 2)-1);
 	return combo_box;
@@ -115,11 +115,11 @@ GtkWidget* CreateMsaaComboBox()
 GtkWidget* CreateFilterComboBox()
 {
 	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_new_text ();
+	combo_box = gtk_combo_box_text_new ();
 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "Off");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "Normal");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), "Forced");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Off");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Normal");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Forced");
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("filter", 0));
 	return combo_box;
@@ -143,11 +143,11 @@ int get_hex_entry(GtkWidget *text_box) {
 GtkWidget* CreateGlComboBox(const char* option)
 {
 	GtkWidget* combo;
-	combo = gtk_combo_box_new_text();
+	combo = gtk_combo_box_text_new();
 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo), "Auto");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo), "Force-Disabled");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo), "Force-Enabled");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Auto");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Force-Disabled");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Force-Enabled");
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), theApp.GetConfig(option, -1) + 1);
 	return combo;
@@ -185,10 +185,8 @@ bool RunLinuxDialog()
 		"GSdx Config",
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		GTK_STOCK_OK,
-		GTK_RESPONSE_ACCEPT,
-		GTK_STOCK_CANCEL,
-		GTK_RESPONSE_REJECT,
+		"OK", GTK_RESPONSE_ACCEPT,
+		"Cancel", GTK_RESPONSE_REJECT,
 		NULL);
 
 	// The main area for the whole dialog box.
@@ -350,17 +348,29 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_logz_check), theApp.GetConfig("logz", 1));
 
 	// Shadeboost scale
+#if GTK_MAJOR_VERSION < 3
 	sb_brightness = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_brightness = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_brightness), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_brightness), theApp.GetConfig("ShadeBoost_Brightness", 50));
 
+#if GTK_MAJOR_VERSION < 3
 	sb_contrast = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_contrast = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_contrast_label = gtk_label_new("Shade Boost Contrast");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_contrast), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_contrast), theApp.GetConfig("ShadeBoost_Contrast", 50));
 
+#if GTK_MAJOR_VERSION < 3
 	sb_saturation = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	sb_saturation = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
 	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
 	gtk_scale_set_value_pos(GTK_SCALE(sb_saturation), GTK_POS_RIGHT);
 	gtk_range_set_value(GTK_RANGE(sb_saturation), theApp.GetConfig("ShadeBoost_Saturation", 50));

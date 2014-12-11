@@ -34,6 +34,7 @@ option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(SDL2_API "Use SDL2 on spu2x and onepad")
 option(WX28_API "Force wxWidget 2.8 lib")
+option(GTK3_API "Use GTK3 api")
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
@@ -239,6 +240,7 @@ else()
     set(ASAN_FLAG "")
 endif()
 
+# Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
