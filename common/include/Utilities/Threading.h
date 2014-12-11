@@ -63,7 +63,7 @@ extern ConsoleLogSource_Threading pxConLog_Thread;
 // For complimentary support for TLS, include Utilities/TlsVariable.inl, and use the
 // DeclareTls macro in the place of __threadlocal.
 //
-//#define PCSX2_THREAD_LOCAL 0		// uncomment this line to force-disable native TLS (useful for testing TlsVariabel on windows/linux)
+//#define PCSX2_THREAD_LOCAL 0		// uncomment this line to force-disable native TLS (useful for testing TlsVariable on windows/linux)
 
 #ifndef PCSX2_THREAD_LOCAL
 #	ifdef __WXMAC__
