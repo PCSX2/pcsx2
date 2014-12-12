@@ -279,7 +279,7 @@ void LoadBIOS()
 		LoadExtraRom( L"erom", eeMem->EROM );
 
 		CurrentBiosInformation = NULL;
-		for (int i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
+		for (size_t i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
 		{
 			if (biosVersions[i].biosChecksum == BiosChecksum && biosVersions[i].biosVersion == BiosVersion)
 			{
