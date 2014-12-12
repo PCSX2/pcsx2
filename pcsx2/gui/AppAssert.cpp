@@ -105,12 +105,12 @@ void Pcsx2App::OnAssertFailure( const wxChar *file, int line, const wxChar *func
 	// Re-entrant assertions are bad mojo -- trap immediately.
 	static DeclareTls(int) _reentrant_lock( 0 );
 	RecursionGuard guard( _reentrant_lock );
-	if( guard.IsReentrant() ) wxTrap();
+	if( guard.IsReentrant() ) pxTrap();
 
 	wxCharBuffer bleh( wxString(func).ToUTF8() );
 	if( AppDoAssert( DiagnosticOrigin( file, line, bleh, cond ), msg ) )
 	{
-		wxTrap();
+		pxTrap();
 	}
 }
 

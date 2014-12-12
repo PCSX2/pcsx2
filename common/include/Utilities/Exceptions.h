@@ -18,6 +18,9 @@
 #include "Assertions.h"
 #include "ScopedPtr.h"
 
+// Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
+void pxTrap();
+
 // --------------------------------------------------------------------------------------
 //  DESTRUCTOR_CATCHALL - safe destructor helper
 // --------------------------------------------------------------------------------------

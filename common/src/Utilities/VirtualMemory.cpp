@@ -330,7 +330,7 @@ void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& ha
 		}
 		else
 		{
-			wxTrap();
+			pxTrap();
 		}
 	}
 	#endif

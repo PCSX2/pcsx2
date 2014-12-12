@@ -102,7 +102,7 @@ DEVASSERT_INLINE void pxOnAssert( const DiagnosticOrigin& origin, const wxChar* 
 	// we get meaningless assertions while unwinding stack traces after exceptions have occurred.
 
 	RecursionGuard guard( s_assert_guard );
-	if (guard.Counter > 2) { return wxTrap(); }
+	if (guard.Counter > 2) { return pxTrap(); }
 
 	// wxWidgets doesn't come with debug builds on some Linux distros, and other distros make
 	// it difficult to use the debug build (compilation failures).  To handle these I've had to
