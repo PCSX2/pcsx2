@@ -19,7 +19,6 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
-    -fabi-version=6
     )
 
 set(OptimizationFlags
@@ -27,44 +26,36 @@ set(OptimizationFlags
     -DNDEBUG
     )
 
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG AND _M_X86_32)
-	set(GSdxFinalFlags
-        ${GSdxFinalFlags} ${CommonFlags} -mpreferred-stack-boundary=2
-    )
-endif()
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSdxFinalFlags
-        ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG -g -Wall
-    )
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG -g -Wall)
 endif()
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags
-        ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL -g
-    )
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL -g)
 endif()
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags
-        ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W
-    )
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W)
 endif()
 
 if(XDG_STD)
-    set(GSdxFinalFlags
-        ${GSdxFinalFlags} -DXDG_STD
-    )
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
 if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalFlags
-        ${GSdxFinalFlags} -DENABLE_GLES
-    )
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_GLES)
+endif()
+
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
+    if (_M_X86_32)
+        set(GSdxFinalFlags ${GSdxFinalFlags} -mpreferred-stack-boundary=2)
+    endif()
 endif()
 
 set(GSdxSources
@@ -87,7 +78,7 @@ set(GSdxSources
     GSCrc.cpp
     GSDevice.cpp
     GSDeviceOGL.cpp
-	GSDeviceSW.cpp
+    GSDeviceSW.cpp
     GSDeviceNull.cpp
     GSDirtyRect.cpp
     GSDrawScanline.cpp
@@ -126,7 +117,7 @@ set(GSdxSources
     GSTextureFXOGL.cpp
     GSTextureOGL.cpp
     GSTextureNull.cpp
-	GSTextureSW.cpp
+    GSTextureSW.cpp
     GSThread.cpp
     GSUtil.cpp
     GSVector.cpp
@@ -243,7 +234,7 @@ add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinal
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
-	set(Replay pcsx2_GSReplayLoader)
+    set(Replay pcsx2_GSReplayLoader)
     set(GSdxReplayLoaderFinalSources
         ${GSdxFinalSources}
         linux_replay.cpp

@@ -273,7 +273,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 #endif
 
 // sse
-#ifndef _WINDOWS
+#ifdef __GNUC__
 // Convert gcc see define into GSdx (windows) define
 #if defined(__AVX2__)
 	#define _M_SSE 0x501
