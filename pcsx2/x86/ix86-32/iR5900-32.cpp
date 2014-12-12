@@ -1744,6 +1744,8 @@ static void __fastcall recRecompile( const u32 startpc )
 			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
 			xCALL(GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
+			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
+			AtomicExchange( eeRecNeedsReset, true );
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
 			MOV32MtoR(ECX, (int)&cpuRegs.GPR.n.a0.UL[ 0 ] );
 			xCALL(GoemonUnloadTlb);
