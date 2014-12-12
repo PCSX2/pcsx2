@@ -226,6 +226,8 @@ namespace GLLoader {
 			intel_buggy_driver = true;
 		if (strstr(vendor, "X.Org")) // Note: it might actually catch nouveau too, but bug are likely to be the same anyway
 			mesa_amd_buggy_driver = true;
+		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
+			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
 		GLuint dot = 0;
 		while (s[dot] != '\0' && s[dot] != '.') dot++;
