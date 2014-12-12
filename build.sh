@@ -40,7 +40,6 @@ for ARG in "$@"; do
         --extra       ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
         --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
-        --wx30        ) flags+=(-DWX28_API=FALSE) ;;
         --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
         --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
         --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
@@ -61,7 +60,6 @@ for ARG in "$@"; do
             echo "--asan          : Enable Address sanitizer"
             echo
             echo "--wx28          : Force wxWidget 2.8"
-            echo "--wx30          : Allow to use wxWidget 3.0"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"
