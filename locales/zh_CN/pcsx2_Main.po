@@ -7,16 +7,17 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-07-30 09:16+0200\n"
-"PO-Revision-Date: 2012-10-03 22:15+0800\n"
+"PO-Revision-Date: 2014-12-13 23:51+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
-"Language: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: pcsx2\\\n"
+"X-Generator: Poedit 1.7.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -771,7 +772,7 @@ msgstr "来源(&S)"
 
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:127
 msgid "panel"
-msgstr ""
+msgstr "面板"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -815,9 +816,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 官方网站和论坛"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "位于 GitHub 的 PCSX2 官方 svn 仓库"
+msgstr "位于 GitHub 的 PCSX2 官方 Git 仓库"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -1268,9 +1268,8 @@ msgid "Enable Cheats"
 msgstr "启用作弊码"
 
 #: pcsx2/gui/MainFrame.cpp:430
-#, fuzzy
 msgid "Enable Widescreen Patches"
-msgstr "启用补丁"
+msgstr "启用宽屏补丁"
 
 #: pcsx2/gui/MainFrame.cpp:433
 msgid "Enable Host Filesystem"
@@ -1538,9 +1537,9 @@ msgid "Blockdumps (%s)"
 msgstr "块转储 (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed (%s)"
-msgstr "块转储 (%s)"
+msgstr "压缩的 (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
@@ -1914,10 +1913,11 @@ msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr "仿真 VIF1 FIFO 提前读取。修正游戏加载缓慢的问题。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
-msgstr "延迟 VIF1 停顿 (VIF1 FIFO) - 用于 SOCOM 2 的 HUD。"
+msgstr ""
+"延迟 VIF1 停顿 (VIF1 FIFO) - 用于 SOCOM 2 的 HUD 以及 Spy Hunter 加载时挂起的"
+"问题。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
@@ -1929,7 +1929,7 @@ msgstr "播放 FMV 时，切换到 GSdx 软件渲染模式"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr ""
+msgstr "预加载 TLB Hack 以避免 Goemon 中 tlb miss"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
@@ -2147,7 +2147,7 @@ msgstr "已格式化"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:113
 msgid "Type"
-msgstr ""
+msgstr "类型"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:114
 msgid "Last Modified"
@@ -2166,14 +2166,12 @@ msgid "Yes"
 msgstr "是"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:161
-#, fuzzy
 msgid "PS2"
-msgstr "FPS"
+msgstr "PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:161
-#, fuzzy
 msgid "PSX"
-msgstr "FPS"
+msgstr "PS1"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:174
 msgid "[-- Unused cards --]"
