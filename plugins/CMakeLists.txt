@@ -116,11 +116,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
 	add_subdirectory(zzogl-pg/opengl)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
 
-# make zzogl-pg
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg-cg" AND zzoglcg AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
-	add_subdirectory(zzogl-pg-cg/opengl)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg-cg" AND zzoglcg AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
-
 # make zeropad
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zeropad" AND zeropad)
 	add_subdirectory(zeropad)
