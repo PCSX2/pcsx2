@@ -8,16 +8,17 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-07-30 09:16+0200\n"
-"PO-Revision-Date: 2012-10-03 22:42+0800\n"
+"PO-Revision-Date: 2014-12-13 23:54+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
-"Language: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: pcsx2\\\n"
+"X-Generator: Poedit 1.7.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -414,29 +415,25 @@ msgstr ""
 " * Transformers (变形金刚)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games)"
 msgstr ""
-"游戏特殊修正可以修正一些游戏中的模拟错误。但它也可能在其它游戏中导致兼容或性"
-"能问题。\n"
 "建议在主菜单启用 '自动应用游戏特殊修正'，不建议在此手动设置 ('自动' 即针对特"
 "定游戏自动应用对应修正)。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
 "The safest way to make sure that all game fixes are completely disabled."
 msgstr ""
-"游戏特殊修正可以修正一些游戏中的模拟错误。但它也可能在其它游戏中导致兼容或性"
-"能问题。\n"
-"建议在主菜单启用 '自动应用游戏特殊修正'，不建议在此手动设置 ('自动' 即针对特"
-"定游戏自动应用对应修正)。"
+"游戏特殊修正可以修正一些游戏中的模拟错误。\n"
+"但它也可能在其它游戏中导致兼容或性能问题。\n"
+"\n"
+"最安全的方式是不启用任何游戏特殊修正。"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
