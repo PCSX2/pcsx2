@@ -168,6 +168,7 @@ static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 #ifdef __linux__
 	wxPrintf(L"\033[0m");
 	wxPrintf(GetLinuxConsoleColor(color));
+	fflush(stdout);
 #endif
 }
 
