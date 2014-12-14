@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"POT-Creation-Date: 2014-12-14 14:04+0100\n"
 "PO-Revision-Date: 2012-08-13 05:40+0100\n"
 "Last-Translator: Miseru99 <miseru99@hotmail.com>\n"
 "Language-Team: Miseru99 <miseru99@hotmail.com>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "została\n"
 "już zarezerwowana przez inny process, usługę lub DLL."
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:398
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -58,7 +58,7 @@ msgstr ""
 "zredukować\n"
 "standardowy rozmiar cache dla rekompilatorów PCSX2, pod ustawieniami Hosta."
 
-#: pcsx2/System.cpp:350
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -67,17 +67,7 @@ msgstr ""
 "virtualnej maszynie PS2.\n"
 "Zamknij niepotrzebne programy i usługi działające w tle i spróbuj ponownie."
 
-#: pcsx2/gui/AppInit.cpp:45
-msgid ""
-"Warning: Your computer does not support SSE2, which is required by many "
-"PCSX2 recompilers and plugins. Your options will be limited and emulation "
-"will be *very* slow."
-msgstr ""
-"Uwaga: Twój komputer nie wspomaga SSE2, który jest wymagany przez wiele "
-"rekompilatorów i wtyczek PCSX2.\n"
-"Twoje opcje będą ograniczone a emulacja będzie BARDZO powolna."
-
-#: pcsx2/gui/AppInit.cpp:178
+#: pcsx2/gui/AppInit.cpp:146
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -85,7 +75,7 @@ msgstr ""
 "Uwaga: Niektóre ze skonfigurowanych rekompilatorów zawiodły i zostały "
 "wyłączone."
 
-#: pcsx2/gui/AppInit.cpp:226
+#: pcsx2/gui/AppInit.cpp:194
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -96,7 +86,7 @@ msgstr ""
 "Będziesz musiał ręcznie przywrócić wymienione rekompilatory jeśli rozwiążesz "
 "problemy."
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:539
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -108,7 +98,7 @@ msgstr ""
 "szczegóły proszę zapoznaj\n"
 "się z FAQ oraz poradnikami."
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:619
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -356,7 +346,7 @@ msgstr ""
 "Kiedy zaznaczone, ten katalog automatycznie odzwierciedla standardowy folder "
 "w ustawieniach użytkownika PCSX2."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -379,7 +369,7 @@ msgstr ""
 "Skrót: CTRL+NUMPAD-PLUS: Zbliżenie, CTRL+NUMPAD-MINUS: Oddalenie, CTRL"
 "+NUMPAD-*: przełącza 100/0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -389,26 +379,7 @@ msgstr ""
 "zasługę do pomniejszenia ilości klatek animacji.\n"
 "Zwykle działa tylko w trybie pełnoekranowym i nie z każdą wtyczką graficzną."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
-msgid ""
-"Enables Vsync when the framerate is exactly at full speed. Should it fall "
-"below that, Vsync gets disabled to avoid further performance penalties. "
-"Note: This currently only works well with GSdx as GS plugin and with it "
-"configured to use DX10/11 hardware rendering. Any other plugin or rendering "
-"mode will either ignore it or produce a black frame that blinks whenever the "
-"mode switches. It also requires Vsync to be enabled."
-msgstr ""
-"Aktywuje synchronizację pionową kiedy klatki animacji są uzyskują pełnię dla "
-"wybranego standardu.\n"
-"Jeśli spadnie poniżej, synchronizacja pionowa zostaje wyłączona aby pominąć "
-"dalsze spadki wydajności.\n"
-"Uwaga: Działa tylko z wtyczką GSdx w trybie sprzętowym DX10/11.\n"
-"Wszelkie inne wtyczki lub tryby renderowania, zignorują tę opcję, lub "
-"stworzą czarną klatkę animacji\n"
-"za każdym razem gdy powinno nastąpić przejście między trybami.\n"
-"Opcja ta wymaga włączonej synchronizacji pionowej."
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -420,7 +391,7 @@ msgstr ""
 "chowa się\n"
 "po 2 sekundach braku aktywności."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -430,7 +401,7 @@ msgstr ""
 "zawieszonej emulacji.\n"
 "Nadal możesz przełączać tryby kiedy zechcesz używając alt+enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -500,7 +471,7 @@ msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "Łatki do gier mogą poprawić działanie pewnych tytułów.\n"
 "Mogą też jednak pogorszyć działanie innych.\n"
@@ -806,7 +777,7 @@ msgstr ""
 "Uwaga: Ta opcja może być włączona w każdym momencie, lecz nagle wyłączona, "
 "będzie powodować błędy graficzne."
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:832
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -818,7 +789,7 @@ msgstr ""
 "małą jego wielkością.\n"
 "Możliwe też, że w tej chwili masz uruchomione inne pamięciożerne programy."
 
-#: pcsx2/x86/sVU_zerorec.cpp:364
+#: pcsx2/x86/sVU_zerorec.cpp:363
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
@@ -830,3 +801,30 @@ msgstr ""
 "ilości pamięci i nie będzie działać. To nie jest błąd krytyczny, gdyż sVU "
 "jest zbędny i tak czy siak\n"
 "powinieneś użyć rekompilatora microVU.:3"
+
+#~ msgid ""
+#~ "Warning: Your computer does not support SSE2, which is required by many "
+#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
+#~ "will be *very* slow."
+#~ msgstr ""
+#~ "Uwaga: Twój komputer nie wspomaga SSE2, który jest wymagany przez wiele "
+#~ "rekompilatorów i wtyczek PCSX2.\n"
+#~ "Twoje opcje będą ograniczone a emulacja będzie BARDZO powolna."
+
+#~ msgid ""
+#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
+#~ "below that, Vsync gets disabled to avoid further performance penalties. "
+#~ "Note: This currently only works well with GSdx as GS plugin and with it "
+#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
+#~ "rendering mode will either ignore it or produce a black frame that blinks "
+#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ msgstr ""
+#~ "Aktywuje synchronizację pionową kiedy klatki animacji są uzyskują pełnię "
+#~ "dla wybranego standardu.\n"
+#~ "Jeśli spadnie poniżej, synchronizacja pionowa zostaje wyłączona aby "
+#~ "pominąć dalsze spadki wydajności.\n"
+#~ "Uwaga: Działa tylko z wtyczką GSdx w trybie sprzętowym DX10/11.\n"
+#~ "Wszelkie inne wtyczki lub tryby renderowania, zignorują tę opcję, lub "
+#~ "stworzą czarną klatkę animacji\n"
+#~ "za każdym razem gdy powinno nastąpić przejście między trybami.\n"
+#~ "Opcja ta wymaga włączonej synchronizacji pionowej."

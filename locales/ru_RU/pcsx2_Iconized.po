@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"POT-Creation-Date: 2014-12-14 14:04+0100\n"
 "PO-Revision-Date: 2011-04-25 01:25+0100\n"
 "Last-Translator: Bukhartsev Dmitriy <bukhartsev.dm@gmail.com>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "В вашей системе недостаточно виртуальной памяти, либо же, доступное адресное "
 "пространство уже занято другим процессом, службой или библиотеками."
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:398
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -52,7 +52,7 @@ msgstr ""
 "Если хотите, вы можете попробовать уменьшить значения кэша для всех "
 "рекомпиляторов PCSX2 (см. «Основные настройки»)."
 
-#: pcsx2/System.cpp:350
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -61,17 +61,7 @@ msgstr ""
 "виртуальной машины PS2. Попробуйте закрыть какие-либо \"тяжелые\" приложения "
 "(антивирус, браузер) и перезапустите PCSX2."
 
-#: pcsx2/gui/AppInit.cpp:45
-msgid ""
-"Warning: Your computer does not support SSE2, which is required by many "
-"PCSX2 recompilers and plugins. Your options will be limited and emulation "
-"will be *very* slow."
-msgstr ""
-"Внимание: ваш компьютер не поддерживает SSE2-инструкции, необходимые для "
-"работы многих плагинов и опций PCSX2. Вы будете ограничены в настройках "
-"эмулятора, а сам процесс эмуляции будет *очень* медленным."
-
-#: pcsx2/gui/AppInit.cpp:178
+#: pcsx2/gui/AppInit.cpp:146
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -79,7 +69,7 @@ msgstr ""
 "Внимание: произошла ошибка инициализации некоторых рекомпиляторов PCSX2, они "
 "будут автоматически отключены."
 
-#: pcsx2/gui/AppInit.cpp:226
+#: pcsx2/gui/AppInit.cpp:194
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -90,7 +80,7 @@ msgstr ""
 "их снова в настройках эмуляции PCSX2 сразу после того, как устраните причину "
 "ошибки."
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:539
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -101,7 +91,7 @@ msgstr ""
 "полученный от друзей. Используйте спец-программы для сохранения вашей "
 "собственной копии BIOS'а с вашей консоли."
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:619
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -344,7 +334,7 @@ msgstr ""
 "Активируйте данную опцию, если желаете чтобы PCSX2 создавала соответствующие "
 "папки относительно пути указанному в настройках пользовательского режима."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 #, fuzzy
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
@@ -362,7 +352,7 @@ msgstr ""
 "лишь при использовании полноэкранного режима и лишь в связке с теми видео-"
 "плагинами, которые его поддерживают."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -373,24 +363,7 @@ msgstr ""
 "лишь при использовании полноэкранного режима и лишь в связке с теми видео-"
 "плагинами, которые его поддерживают."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
-msgid ""
-"Enables Vsync when the framerate is exactly at full speed. Should it fall "
-"below that, Vsync gets disabled to avoid further performance penalties. "
-"Note: This currently only works well with GSdx as GS plugin and with it "
-"configured to use DX10/11 hardware rendering. Any other plugin or rendering "
-"mode will either ignore it or produce a black frame that blinks whenever the "
-"mode switches. It also requires Vsync to be enabled."
-msgstr ""
-"Включает режим вертикальной синхронизации (Vsync) когда скорость смены "
-"кадров происходит на полной мощности. В случае падения ниже этой скорости, "
-"синхронизация отменяеться дабы избежать падения производительности. "
-"Примечание: На данный момент это хорошо работает с плагинами GSdx и GS "
-"настроенными на использование  DX10/11 с рендерингом при помощи \"железа\". "
-"Любой другой плагин или вид рендеринга будет игнорировать это или будет "
-"выдавать черный кадр каждый раз когда происходит переключение режимов."
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -400,7 +373,7 @@ msgstr ""
 "опция моментально скрывает курсор мыши в видеоокне. Удобно, если вы "
 "используете управление мышью в игре."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -409,7 +382,7 @@ msgstr ""
 "Автоматически переводит видеоокно в полный режим при запуске игры. Впрочем, "
 "вы всегда можете выйти из данного режима с помощью комбинации ALT+ENTER."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -476,7 +449,7 @@ msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "Определенные игровые хаки исправляют ошибки эмуляции в определенных играх, "
 "однако почти всегда вызывают ошибки и проблемы в других. При смене игры вам "
@@ -768,7 +741,7 @@ msgstr ""
 "Примечание: данная опция применяется \"на лету\", однако ее последующее "
 "отключение в реальном времени чревато появлением графического мусора в игре. "
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:832
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -777,7 +750,7 @@ msgstr ""
 "Недостаточно виртуальной памяти для запуска PCSX2. Возможно, у вас отключен "
 "своп-файл или какая-то другая программа \"съела\" все системные ресурсы."
 
-#: pcsx2/x86/sVU_zerorec.cpp:364
+#: pcsx2/x86/sVU_zerorec.cpp:363
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
@@ -788,6 +761,32 @@ msgstr ""
 "необходимое адресное пространство и не может быть использован. Впрочем, не "
 "стоит расстраиваться, ведь SuperVU устарел и вы всегда можете выбрать "
 "\"новый и блестящий\" microVU :P"
+
+#~ msgid ""
+#~ "Warning: Your computer does not support SSE2, which is required by many "
+#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
+#~ "will be *very* slow."
+#~ msgstr ""
+#~ "Внимание: ваш компьютер не поддерживает SSE2-инструкции, необходимые для "
+#~ "работы многих плагинов и опций PCSX2. Вы будете ограничены в настройках "
+#~ "эмулятора, а сам процесс эмуляции будет *очень* медленным."
+
+#~ msgid ""
+#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
+#~ "below that, Vsync gets disabled to avoid further performance penalties. "
+#~ "Note: This currently only works well with GSdx as GS plugin and with it "
+#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
+#~ "rendering mode will either ignore it or produce a black frame that blinks "
+#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ msgstr ""
+#~ "Включает режим вертикальной синхронизации (Vsync) когда скорость смены "
+#~ "кадров происходит на полной мощности. В случае падения ниже этой "
+#~ "скорости, синхронизация отменяеться дабы избежать падения "
+#~ "производительности. Примечание: На данный момент это хорошо работает с "
+#~ "плагинами GSdx и GS настроенными на использование  DX10/11 с рендерингом "
+#~ "при помощи \"железа\". Любой другой плагин или вид рендеринга будет "
+#~ "игнорировать это или будет выдавать черный кадр каждый раз когда "
+#~ "происходит переключение режимов."
 
 #~ msgid "!ContextTip:Speedhacks:vuBlockHack"
 #~ msgstr ""

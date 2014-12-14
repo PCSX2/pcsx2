@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.1.0 Rev 5863\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"POT-Creation-Date: 2014-12-14 14:04+0100\n"
 "PO-Revision-Date: 2014-03-04 08:55+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -26,7 +26,7 @@ msgstr ""
 "可用的虛擬記憶體不足，\n"
 "或必備的虛擬記憶體映射已經被其他處理程序、服務，或 DLL 保留。"
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:398
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -46,7 +46,7 @@ msgstr ""
 "此錯誤可能由低水平的虛擬記憶體資源引起，譬如分頁檔案小或沒有分頁檔案，\n"
 "或由另一個獨占大量記憶體的程式引起。"
 
-#: pcsx2/System.cpp:350
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -54,22 +54,13 @@ msgstr ""
 "PCSX2 無法分配 PS2 虛擬機需要的記憶體。\n"
 "關閉一些獨占記憶體的背景工作並再次嘗試。"
 
-#: pcsx2/gui/AppInit.cpp:45
-msgid ""
-"Warning: Your computer does not support SSE2, which is required by many "
-"PCSX2 recompilers and plugins. Your options will be limited and emulation "
-"will be *very* slow."
-msgstr ""
-"警告：您的電腦不支援 SSE2，許多 PCSX2 的反編譯裝置和插件需要 SSE2。\n"
-"您可供調整的模擬器選項將會受到限制，並且遊戲速度會「非常」慢。"
-
-#: pcsx2/gui/AppInit.cpp:178
+#: pcsx2/gui/AppInit.cpp:146
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
 msgstr "警告：某些指定的 PS2 反編譯裝置初始化失敗，並且被停用："
 
-#: pcsx2/gui/AppInit.cpp:226
+#: pcsx2/gui/AppInit.cpp:194
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -78,7 +69,7 @@ msgstr ""
 "注意：反編譯裝置並非執行 PCSX2 所必須的，但反編譯裝置大幅提升遊戲速度。\n"
 "若錯誤已經解決，您可能必須手動重新啟用上面列出的反編譯裝置。"
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:539
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -87,7 +78,7 @@ msgstr ""
 "PCSX2 需要 PS2 BIOS 才能運行遊戲。出於法律上的原因，您「必須」從您自己的 PS2 "
 "真實遊戲主機獲取 BIOS（借的 PS2 不算）。進一步的說明請洽 FAQ 和指南。"
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:619
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -310,7 +301,7 @@ msgid ""
 msgstr ""
 "當勾選時，此資料夾將會自動反映與 PCSX2 當前的使用者設定所關聯的預設值。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -331,7 +322,7 @@ msgstr ""
 "鍵盤熱鍵：Ctrl + Num+ 畫面放大；Ctrl + Num- 畫面縮小；Ctrl + Num * 切換 "
 "100 / 0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -340,23 +331,7 @@ msgstr ""
 "垂直同步消除遊戲畫面出現斷層（Screen tearing），但是效能大幅損失。\n"
 "通常僅用於全螢幕模式，恐怕不是在所有的圖形插件中都能工作。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
-msgid ""
-"Enables Vsync when the framerate is exactly at full speed. Should it fall "
-"below that, Vsync gets disabled to avoid further performance penalties. "
-"Note: This currently only works well with GSdx as GS plugin and with it "
-"configured to use DX10/11 hardware rendering. Any other plugin or rendering "
-"mode will either ignore it or produce a black frame that blinks whenever the "
-"mode switches. It also requires Vsync to be enabled."
-msgstr ""
-"當擁有正常的遊戲速度時，開啟垂直同步。\n"
-"若達不到正常的遊戲速度，就關閉垂直同步以避免遊戲速度進一步下降。\n"
-"注意：僅用於 GSdx 的 Renderer 設定為 Direct3D10/11 (Hardware)。\n"
-"任何其他的圖形插件或 GSdx 的 Renderer 設定將會忽略本選項，\n"
-"或在切換垂直同步時，出現閃爍的黑色框架。\n"
-"本選項也要求開啟顯示卡的垂直同步。"
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -366,7 +341,7 @@ msgstr ""
 "對於使用滑鼠作為遊戲中主要的控制裝置，是有用的。\n"
 "預設，滑鼠指標在 2 秒非活動之後自動隱藏。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -375,7 +350,7 @@ msgstr ""
 "當開始或恢復模擬時，自動切換至全螢幕模式。\n"
 "您仍能使用 Alt + Enter，在視窗模式和全螢幕模式之間隨時切換。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -447,7 +422,7 @@ msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "因為預設勾選『 主選單 -> 檔案 -> 自動使用遊戲修正 』，在運行相應的遊戲時會自"
 "動套用相應的遊戲修正，\n"
@@ -730,7 +705,7 @@ msgstr ""
 "警告：這個選項在遊戲運行時啟用即可生效，但無法在遊戲運行時停用（圖像變得垃"
 "圾）。"
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:832
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -740,7 +715,7 @@ msgstr ""
 "可能由分頁檔案小或沒有分頁檔案引起，\n"
 "或由其他獨占資源的程式引起。"
 
-#: pcsx2/x86/sVU_zerorec.cpp:364
+#: pcsx2/x86/sVU_zerorec.cpp:363
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
@@ -751,6 +726,29 @@ msgstr ""
 "SuperVU 無法留住所需要的指定的記憶體範圍，SuperVU 不可用。\n"
 "這不是嚴重的錯誤，因為 SuperVU 是過時的。無論如何，您應該使用 microVU 代"
 "替。：）"
+
+#~ msgid ""
+#~ "Warning: Your computer does not support SSE2, which is required by many "
+#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
+#~ "will be *very* slow."
+#~ msgstr ""
+#~ "警告：您的電腦不支援 SSE2，許多 PCSX2 的反編譯裝置和插件需要 SSE2。\n"
+#~ "您可供調整的模擬器選項將會受到限制，並且遊戲速度會「非常」慢。"
+
+#~ msgid ""
+#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
+#~ "below that, Vsync gets disabled to avoid further performance penalties. "
+#~ "Note: This currently only works well with GSdx as GS plugin and with it "
+#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
+#~ "rendering mode will either ignore it or produce a black frame that blinks "
+#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ msgstr ""
+#~ "當擁有正常的遊戲速度時，開啟垂直同步。\n"
+#~ "若達不到正常的遊戲速度，就關閉垂直同步以避免遊戲速度進一步下降。\n"
+#~ "注意：僅用於 GSdx 的 Renderer 設定為 Direct3D10/11 (Hardware)。\n"
+#~ "任何其他的圖形插件或 GSdx 的 Renderer 設定將會忽略本選項，\n"
+#~ "或在切換垂直同步時，出現閃爍的黑色框架。\n"
+#~ "本選項也要求開啟顯示卡的垂直同步。"
 
 #~ msgid "!ContextTip:Speedhacks:vuBlockHack"
 #~ msgstr ""

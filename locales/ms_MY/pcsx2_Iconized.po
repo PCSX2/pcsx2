@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"POT-Creation-Date: 2014-12-14 14:04+0100\n"
 "PO-Revision-Date: 2012-05-23 10:01+0800\n"
 "Last-Translator: \n"
 "Language-Team: kohaku2421 <kohaku2421@gmail.com>\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Memori maya tidak mencukupi, atau pengalamatan memori maya yang diperlukan "
 "telah ditempah oleh proses lain, servis dan DLL."
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:398
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -52,7 +52,7 @@ msgstr ""
 "Anda juga boleh mengurangkan saiz cache utk recompiler PCSX2, dibawah Host "
 "Settings."
 
-#: pcsx2/System.cpp:350
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -60,17 +60,7 @@ msgstr ""
 "PCSX2 gagal utk menempah memori utk PS2 virtual machine. Tutup aplikasi yg "
 "banyak menggunakan memori kemudian cuba lagi."
 
-#: pcsx2/gui/AppInit.cpp:45
-msgid ""
-"Warning: Your computer does not support SSE2, which is required by many "
-"PCSX2 recompilers and plugins. Your options will be limited and emulation "
-"will be *very* slow."
-msgstr ""
-"Amaran: Komputer anda tidak menyokong SSE2, dimana ia diperlukan oleh PCSX2 "
-"recompiler dan plugin. Pilihan anda akan menjadi terhad dan emulation akan "
-"jadi *sgt* perlahan."
-
-#: pcsx2/gui/AppInit.cpp:178
+#: pcsx2/gui/AppInit.cpp:146
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -78,7 +68,7 @@ msgstr ""
 "Amaran: Sesetengah PS2 recompiler yg tlh di konfigurasi gagal utk dimulakan "
 "dan tlh dimatikan."
 
-#: pcsx2/gui/AppInit.cpp:226
+#: pcsx2/gui/AppInit.cpp:194
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -89,7 +79,7 @@ msgstr ""
 "kemungkinan perlu menghidupkan semula secara manual recompiler dlm senarai "
 "di atas, jika anda dapat menyelesaikan masalah anda kelak."
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:539
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -99,7 +89,7 @@ msgstr ""
 "*MENDAPATKAN* BIOS dari PS2 MILIK ANDA SENDIRI. Sila rujuk FAQ dan panduan "
 "utk maklumat lanjut."
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:619
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -342,7 +332,7 @@ msgstr ""
 "Apabila ditanda, folder ini akan mengikut yg asalnya terlibat dgn seting mod "
 "pengguna PCSX2 sekarang."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -365,7 +355,7 @@ msgstr ""
 "Keyboard: CTRL + NUMPAD-PLUS: Zoom Masuk, CTRL + NUMPAD-MINUS: Zoom Keluar, "
 "CTRL + NUMPAD-*: Tukar antara 100/0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -375,24 +365,7 @@ msgstr ""
 "Ia selalunya digunakan dlm mod fullscreen, dan kemungkinan tidak akan "
 "berfungsi dgn semua plugin GS."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
-msgid ""
-"Enables Vsync when the framerate is exactly at full speed. Should it fall "
-"below that, Vsync gets disabled to avoid further performance penalties. "
-"Note: This currently only works well with GSdx as GS plugin and with it "
-"configured to use DX10/11 hardware rendering. Any other plugin or rendering "
-"mode will either ignore it or produce a black frame that blinks whenever the "
-"mode switches. It also requires Vsync to be enabled."
-msgstr ""
-"Menghidupkan Vsync apabila framerate betul-betul pada kelajuan penuh. Kurang "
-"shj drpd kelajuan tersebut, Vsync akan dimatikan utk mengelakkan impak "
-"prestasi yg lebih besar. Nota: Pada masa ini ia hanya berfungsi baik dgn "
-"GSdx sbg plugin GS dan di konfigurasi utk menggunakan DX10/11 hardware "
-"rendering. Plugin-plugin atau mod rendering lain akan mengabaikannya atau "
-"menghasilkan frame hitam yg berkelip apabila mod ini berfungsi. Ia juga "
-"memerlukan Vsync untuk diaktifkan."
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -403,7 +376,7 @@ msgstr ""
 "Pada asalnya kursor tetikus akan sembunyi sendiri selepas ketidak aktifan "
 "selama 2 saat."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -413,7 +386,7 @@ msgstr ""
 "memulakan atau menyambung semula emulation. Anda masih boleh menukar paparan "
 "fullscreen pada bila-bila masa dgn alt-enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -483,7 +456,7 @@ msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "GameFix akan menyebabkan emulation salah dalam sesetengah game. \n"
 "Ia juga boleh menyebabkan masalah kestabilan dan kelajuan. \n"
@@ -767,7 +740,7 @@ msgstr ""
 "Amaran: Opsyen ini boleh dihidupkan on-the-fly tetapi tidak boleh dimatikan "
 "on-the-fly (video akan menjadi buruk/pelik)."
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:832
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -777,7 +750,7 @@ msgstr ""
 "disebabkan oleh swapfile yg kecil atau dimatikan, atau program lain yg "
 "menggunakan terlalu banyak memori/ruang."
 
-#: pcsx2/x86/sVU_zerorec.cpp:364
+#: pcsx2/x86/sVU_zerorec.cpp:363
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
@@ -788,3 +761,28 @@ msgstr ""
 "diperlukan, dan tidak akan ada utk digunakan. Ralat ini tidak bersifat "
 "kritikal, kerana sVU rec telah menjadi usang, dan anda patut menggunakan "
 "microVU. :)"
+
+#~ msgid ""
+#~ "Warning: Your computer does not support SSE2, which is required by many "
+#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
+#~ "will be *very* slow."
+#~ msgstr ""
+#~ "Amaran: Komputer anda tidak menyokong SSE2, dimana ia diperlukan oleh "
+#~ "PCSX2 recompiler dan plugin. Pilihan anda akan menjadi terhad dan "
+#~ "emulation akan jadi *sgt* perlahan."
+
+#~ msgid ""
+#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
+#~ "below that, Vsync gets disabled to avoid further performance penalties. "
+#~ "Note: This currently only works well with GSdx as GS plugin and with it "
+#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
+#~ "rendering mode will either ignore it or produce a black frame that blinks "
+#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ msgstr ""
+#~ "Menghidupkan Vsync apabila framerate betul-betul pada kelajuan penuh. "
+#~ "Kurang shj drpd kelajuan tersebut, Vsync akan dimatikan utk mengelakkan "
+#~ "impak prestasi yg lebih besar. Nota: Pada masa ini ia hanya berfungsi "
+#~ "baik dgn GSdx sbg plugin GS dan di konfigurasi utk menggunakan DX10/11 "
+#~ "hardware rendering. Plugin-plugin atau mod rendering lain akan "
+#~ "mengabaikannya atau menghasilkan frame hitam yg berkelip apabila mod ini "
+#~ "berfungsi. Ia juga memerlukan Vsync untuk diaktifkan."

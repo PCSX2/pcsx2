@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"POT-Creation-Date: 2014-12-14 14:04+0100\n"
 "PO-Revision-Date: 2012-05-20 13:26+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: kmartimo <kimmo.martimo@gmail.com>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "virtuaalimuistin kartoitukset on jo varattu muille prosseille, palveluille "
 "tai DLLeille."
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:398
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -56,7 +56,7 @@ msgstr ""
 "yrittää vähentää oletusarvoisia välimuistin kokoja kaikille PCSX2:den "
 "uudelleenkääntäjille. Asetukset löytyvät isäntäasetuksista."
 
-#: pcsx2/System.cpp:350
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -64,17 +64,7 @@ msgstr ""
 "PCSX2 ei pysty varaamaan PS2-virtuaalikoneelle tarvittavaa muistia. Sulje "
 "joitakin paljon muistia vieviä taustatehtäviä ja kokeile uudelleen."
 
-#: pcsx2/gui/AppInit.cpp:45
-msgid ""
-"Warning: Your computer does not support SSE2, which is required by many "
-"PCSX2 recompilers and plugins. Your options will be limited and emulation "
-"will be *very* slow."
-msgstr ""
-"Varoitus: Tietokoneesi ei tue SSE2-käskykantalaajennosta, jota monet PCSX2:"
-"den uudelleenkääntäjät ja liitännäiset vaativat. Vaihtoehtosi ovat "
-"rajoitetut ja emulointi tulee olemaan *todella* hidasta."
-
-#: pcsx2/gui/AppInit.cpp:178
+#: pcsx2/gui/AppInit.cpp:146
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -82,7 +72,7 @@ msgstr ""
 "Varoitus: Joidenkin määriteltyjen PCSX2-uudelleenkääntäjien alustus "
 "epäonnistui ja ne on poistettu käytöstä:"
 
-#: pcsx2/gui/AppInit.cpp:226
+#: pcsx2/gui/AppInit.cpp:194
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -93,7 +83,7 @@ msgstr ""
 "manuaalisesti ottamaan käyttöön yllä listatut uudelleenkääntäjät, jos saat "
 "virheet ratkaistua."
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:539
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -103,7 +93,7 @@ msgstr ""
 "*täytyy* hankkia BIOS-tiedosto omistamastasi PS2-järjestelmästä (lainaamista "
 "ei lasketa). Lisätietoja löydät UKK:sta (FAQ) ja oppaista."
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:619
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -353,7 +343,7 @@ msgstr ""
 "Kun valittu, tämä kansio automaattisesti kuvaa PCSX2:den nykyiseen "
 "käyttäjätila-asetukseen liitettyä oletusarvoa."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -377,7 +367,7 @@ msgstr ""
 "CTRL + NUMERONÄPPÄIMISTÖ-MIINUS: Zoomaus ulos\n"
 "CTRL + NUMERONÄPPÄIMISTÖ-*: Vaihtelee 100/0 välillä"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -387,24 +377,7 @@ msgstr ""
 "suuren suorituskyvyn laskun. Yleensä vaikuttaa vain koko ruudun tilaan, eikä "
 "välttämättä toimi kaikkien GS-liitännäisten kanssa."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
-msgid ""
-"Enables Vsync when the framerate is exactly at full speed. Should it fall "
-"below that, Vsync gets disabled to avoid further performance penalties. "
-"Note: This currently only works well with GSdx as GS plugin and with it "
-"configured to use DX10/11 hardware rendering. Any other plugin or rendering "
-"mode will either ignore it or produce a black frame that blinks whenever the "
-"mode switches. It also requires Vsync to be enabled."
-msgstr ""
-"Ottaa pystytahdistuksen (Vsync) käyttöön kun kehysnopeus on täsmälleen oikea "
-"(täysi nopeus). Jos kehysnopeus tippuu, pystytahdistus poistetaan käytöstä, "
-"jotta suorituskyky ei laske entisestään. Huom: Tällä hetkellä tämä toimii "
-"hyvin vain GS-liitännäisen ollessa GSdx ja se asetettuna käyttämään DX10/11 "
-"hardware rendering -tilaa. Mikä tahansa muu liitännäinen tai rendering-tila "
-"joko jättää asetuksen huomiotta tai tuottaa mustan vilkkuvan kuvan aina kun "
-"tilaa vaihetaan. Vaatii myös pystytahdistuksen käyttöönottoa."
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -414,7 +387,7 @@ msgstr ""
 "sisällä; käytännöllinen jos käytät hiirtä peliohjaimena. Oletusarvoisesti "
 "kursori menee näkymättömäksi kahden sekunnin liikkumattomuuden jälkeen."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -424,7 +397,7 @@ msgstr ""
 "jatkaessa emulaatiota. Voit silti kytkeä koko ruudun tilan päälle ja pois "
 "milloin tahansa näppäinyhdistelmällä alt-enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -496,7 +469,7 @@ msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "Pelikorjaukset voivat kiertää virheellisen emulaation vaikutuksia joissakin "
 "peleissä.\n"
@@ -794,7 +767,7 @@ msgstr ""
 "Varoitus: Tämän valinnan voi ottaa käyttöön lennosta, mutta yleensä ei voi "
 "poistaa käytöstä lennosta (pelikuvan tilalla on yleensä roskaa)."
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:832
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -804,7 +777,7 @@ msgstr ""
 "Tämän voi aiheuttaa pieni tai käytöstä poistettu heittovaihtotiedosto (swap "
 "file) tai muut ohjelmat, jotka vievät resursseja. "
 
-#: pcsx2/x86/sVU_zerorec.cpp:364
+#: pcsx2/x86/sVU_zerorec.cpp:363
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
@@ -815,3 +788,29 @@ msgstr ""
 "varaamaan tiettyjä vaadittuja muistialueita, ja siten ei ole saatavilla. "
 "Tämä ei ole kriittinen virhe, sillä sVU on joka tapauksessa vanhentunut ja "
 "sinun kannattaisi käyttää sen sijaan microVU:ta. :)"
+
+#~ msgid ""
+#~ "Warning: Your computer does not support SSE2, which is required by many "
+#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
+#~ "will be *very* slow."
+#~ msgstr ""
+#~ "Varoitus: Tietokoneesi ei tue SSE2-käskykantalaajennosta, jota monet "
+#~ "PCSX2:den uudelleenkääntäjät ja liitännäiset vaativat. Vaihtoehtosi ovat "
+#~ "rajoitetut ja emulointi tulee olemaan *todella* hidasta."
+
+#~ msgid ""
+#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
+#~ "below that, Vsync gets disabled to avoid further performance penalties. "
+#~ "Note: This currently only works well with GSdx as GS plugin and with it "
+#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
+#~ "rendering mode will either ignore it or produce a black frame that blinks "
+#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ msgstr ""
+#~ "Ottaa pystytahdistuksen (Vsync) käyttöön kun kehysnopeus on täsmälleen "
+#~ "oikea (täysi nopeus). Jos kehysnopeus tippuu, pystytahdistus poistetaan "
+#~ "käytöstä, jotta suorituskyky ei laske entisestään. Huom: Tällä hetkellä "
+#~ "tämä toimii hyvin vain GS-liitännäisen ollessa GSdx ja se asetettuna "
+#~ "käyttämään DX10/11 hardware rendering -tilaa. Mikä tahansa muu "
+#~ "liitännäinen tai rendering-tila joko jättää asetuksen huomiotta tai "
+#~ "tuottaa mustan vilkkuvan kuvan aina kun tilaa vaihetaan. Vaatii myös "
+#~ "pystytahdistuksen käyttöönottoa."
