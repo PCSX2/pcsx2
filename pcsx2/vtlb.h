@@ -225,6 +225,6 @@ struct GoemonTlb {
 	u32 physical_add;
 	u32 unk3; // likely the size
 	u32 high_add;
-	u32 unk4;
+	u32 key; // uniq number attached to an allocation
 	u32 unk5;
 };

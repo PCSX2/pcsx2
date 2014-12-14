@@ -851,7 +851,7 @@ template<int i> void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 	if((TEX0.TBW & 1) && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT4))
 	{
-		ASSERT(TEX0.TBW == 1); // TODO
+		ASSERT(TEX0.TBW == 1); // TODO // Bouken Jidai Katsugeki Goemon
 
 		TEX0.TBW &= ~1; // GS User 2.6
 	}

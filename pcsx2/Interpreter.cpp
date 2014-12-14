@@ -170,7 +170,7 @@ static void execI()
 	// Based on cycle
 	// if( cpuRegs.cycle > 0x4f24d714 )
 	// Or dump from a particular PC (useful to debug handler/syscall)
-	if (cpuRegs.pc == 0x80000000) {
+	if (pc == 0x80000000) {
 		print_me = 2000;
 	}
 	if (print_me) {
@@ -254,6 +254,11 @@ void J()
 
 void JAL()
 {
+	// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		if (_JumpTarget_ == 0x3563b8)
+			GoemonUnloadTlb(cpuRegs.GPR.n.a0.UL[0]);
+	}
 	_SetLink(31);
 	doBranch(_JumpTarget_);
 }
@@ -455,9 +460,11 @@ void BGEZALL()   // Branch if Rs >= 0 and link
 *********************************************************/
 void JR()
 {
-	// 0x33ad48 is the return address of the function that populate the TLB cache
-	if (cpuRegs.GPR.r[_Rs_].UL[0] == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
-		GoemonPreloadTlb();
+	// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		u32 add = cpuRegs.GPR.r[_Rs_].UL[0];
+		if (add == 0x33ad48 || add == 0x35060c)
+			GoemonPreloadTlb();
 	}
 	doBranch(cpuRegs.GPR.r[_Rs_].UL[0]);
 }

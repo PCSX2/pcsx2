@@ -339,7 +339,9 @@ static void GoemonTlbMissDebug()
 
 	for (u32 i = 0; i < 150; i++) {
 		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add)
-			DevCon.WriteLn("Entry %d is valid. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is valid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+		else if (tlb[i].low_add != tlb[i].high_add)
+			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is invalid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 	}
 }
 
@@ -356,9 +358,36 @@ void __fastcall GoemonPreloadTlb()
 			u32 paddr = tlb[i].physical_add;
 
 			if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
-				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> VTLB_PAGE_BITS);
+				DevCon.WriteLn("GoemonPreloadTlb: Entry %d. Key %x. From V:0x%8.8x to P:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, paddr, size >> VTLB_PAGE_BITS);
 				vtlb_VMap(           vaddr , paddr, size);
 				vtlb_VMap(0x20000000|vaddr , paddr, size);
+			}
+		}
+	}
+}
+
+void __fastcall GoemonUnloadTlb(u32 key)
+{
+	// 0x3d5580 is the address of the TLB cache table
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	for (u32 i = 0; i < 150; i++) {
+		if (tlb[i].key == key) {
+			if (tlb[i].valid == 0x1) {
+				u32 size  = tlb[i].high_add - tlb[i].low_add;
+				u32 vaddr = tlb[i].low_add;
+				DevCon.WriteLn("GoemonUnloadTlb: Entry %d. Key %x. From V:0x%8.8x to V:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, vaddr+size, size >> VTLB_PAGE_BITS);
+
+				vtlb_VMapUnmap(           vaddr , size);
+				vtlb_VMapUnmap(0x20000000|vaddr , size);
+
+				// Unmap the tlb in game cache table
+				// Note: Game copy FEFEFEFE for others data
+				tlb[i].valid    = 0;
+				tlb[i].key      = 0xFEFEFEFE;
+				tlb[i].low_add  = 0xFEFEFEFE;
+				tlb[i].high_add = 0xFEFEFEFE;
+			} else {
+				DevCon.Error("GoemonUnloadTlb: Entry %d is not valid. Key %x", i, tlb[i].key);
 			}
 		}
 	}
