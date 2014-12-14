@@ -20,7 +20,6 @@ endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/opengl/ZeroGSShaders" AND REB
 set(Output zzogl-0.4.0)
 
 set(CommonFlags
-    -pthread
     -DZEROGS_SSE2
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -40,32 +39,22 @@ if(NOT USE_CLANG)
     )
 endif(NOT USE_CLANG) 
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    # add defines
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
         ${CommonFlags} -g -Wall -D_DEBUG
     )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    # add defines
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
         ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
     )
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    # add defines
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
         ${CommonFlags} ${OptimizationFlags} -W
     )
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+endif()
 
 # Select the shader API 
 if(GLSL_API)

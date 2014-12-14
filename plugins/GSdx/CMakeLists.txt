@@ -12,8 +12,6 @@ set(Output GSdx-0.1.16)
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
     -mfpmath=sse
-    #-Wstrict-aliasing # Allow to track strict aliasing issue.
-    -std=c++0x
     -fno-strict-aliasing
     -Wno-unknown-pragmas
     -Wno-parentheses
@@ -26,19 +24,15 @@ set(OptimizationFlags
     )
 
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG -g -Wall)
-endif()
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG)
 
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL -g)
-endif()
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL)
 
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W)
+
 endif()
 
 if(XDG_STD)

@@ -3,17 +3,11 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output onepad-1.1.0)
-
-set(CommonFlags
-    -fvisibility=hidden
-    -Wall
-    -std=c++0x
-    )
 
 set(OptimizationFlags
     -O2
@@ -21,22 +15,15 @@ set(OptimizationFlags
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(onepadFinalFlags
-		${CommonFlags} -g
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(onepadFinalFlags "")
 
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(onepadFinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+	set(onepadFinalFlags ${OptimizationFlags})
 
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(onepadFinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+	set(onepadFinalFlags ${OptimizationFlags})
+
+endif()
 
 # onepad sources
 set(onepadSources

@@ -3,43 +3,26 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output zerospu2)
-
-set(CommonFlags
-    -Wall
-    )
 
 set(OptimizationFlags
     -O2
     -DNDEBUG
     )
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	# add defines
-    set(zerospu2FinalFlags
-		${CommonFlags} -g
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(zerospu2FinalFlags "")
 
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	# add defines
-	set(zerospu2FinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+	set(zerospu2FinalFlags ${OptimizationFlags})
 
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	# add defines
-	set(zerospu2FinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+	set(zerospu2FinalFlags ${OptimizationFlags})
+
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # zerospu2 sources

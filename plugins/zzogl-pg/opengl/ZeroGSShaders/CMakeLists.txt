@@ -3,14 +3,13 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output zzogl-shader)
 
 set(CommonFlags
-    -pthread
     -DZEROGS_SSE2
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -23,25 +22,15 @@ set(OptimizationFlags
     -DNDEBUG
     )
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    # add defines
     set(zerogsshadersFinalFlags
-        ${CommonFlags} -g -Wall -D_DEBUG
+        ${CommonFlags} -D_DEBUG
     )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    # add defines
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zerogsshadersFinalFlags
         ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
     )
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    # add defines
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zerogsshadersFinalFlags
         ${CommonFlags} ${OptimizationFlags} -W
     )

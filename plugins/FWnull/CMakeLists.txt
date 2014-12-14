@@ -3,44 +3,26 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output FWnull-0.7.0)
 
-set(CommonFlags
-    -fvisibility=hidden
-    -Wall
-    )
-
 set(OptimizationFlags
     -O2
     )
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	# add defines
-    set(FWnullFinalFlags
-		${CommonFlags} -g
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(FWnullFinalFlags "")
 
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	# add defines
-	set(FWnullFinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+	set(FWnullFinalFlags ${OptimizationFlags})
 
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	# add defines
-	set(FWnullFinalFlags
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+	set(FWnullFinalFlags ${OptimizationFlags})
+
+endif()
 
 # FWnull sources
 set(FWnullSources

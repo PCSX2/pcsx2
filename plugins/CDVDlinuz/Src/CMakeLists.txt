@@ -4,7 +4,6 @@
 set(Output CDVDlinuz)
 
 set(CommonFlags
-    -Wall
     -D_LARGEFILE64_SOURCE
     )
 
@@ -14,29 +13,16 @@ set(OptimizationFlags
     -fomit-frame-pointer
     )
 
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    # add defines
-    set(CDVDlinuzFinalFlags
-        ${CommonFlags} -g
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(CDVDlinuzFinalFlags ${CommonFlags})
 
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    # add defines
-	set(CDVDlinuzFinalFlags
-        ${CommonFlags} ${OptimizationFlags}
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+	set(CDVDlinuzFinalFlags ${CommonFlags} ${OptimizationFlags})
 
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    # add defines
-	set(CDVDlinuzFinalFlags
-        ${CommonFlags} ${OptimizationFlags}
-    )
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+	set(CDVDlinuzFinalFlags ${CommonFlags} ${OptimizationFlags})
+
+endif()
 
 # CDVDlinuz sources
 set(CDVDlinuzSources
