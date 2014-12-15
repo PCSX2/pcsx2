@@ -193,7 +193,7 @@ struct GSAdapter
 	GSAdapter(const DXGI_ADAPTER_DESC1 &desc_dxgi);
 	GSAdapter(const D3DADAPTER_IDENTIFIER9 &desc_d3d9);
 #endif
-#ifdef _LINUX
+#ifdef __linux__
 	// TODO
 #endif
 };

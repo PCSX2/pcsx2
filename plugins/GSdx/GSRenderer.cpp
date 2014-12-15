@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "GSRenderer.h"
-#ifdef _LINUX
+#ifdef __linux__
 #include <X11/keysym.h>
 #endif
 
@@ -583,7 +583,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		}
 
 	}
-#elif defined(_LINUX)
+#elif defined(__linux__)
 	if(e->type == KEYPRESS)
 	{
 		int step = m_shift_key ? -1 : 1;
