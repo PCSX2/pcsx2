@@ -743,32 +743,12 @@ static __forceinline void SetLoWord( u32& src, u16 value )
 	((u16*)&src)[0] = value;
 }
 
-static __forceinline void SetHiWord( s32& src, u16 value )
-{
-	((u16*)&src)[1] = value;
-}
-
-static __forceinline void SetLoWord( s32& src, u16 value )
-{
-	((u16*)&src)[0] = value;
-}
-
 static __forceinline u16 GetHiWord( u32& src )
 {
 	return ((u16*)&src)[1];
 }
 
 static __forceinline u16 GetLoWord( u32& src )
-{
-	return ((u16*)&src)[0];
-}
-
-static __forceinline u16 GetHiWord( s32& src )
-{
-	return ((u16*)&src)[1];
-}
-
-static __forceinline u16 GetLoWord( s32& src )
 {
 	return ((u16*)&src)[0];
 }
