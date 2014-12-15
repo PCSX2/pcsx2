@@ -28,7 +28,6 @@ set(CommonFlags
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 #Clang doesn't support a few common flags that GCC does.

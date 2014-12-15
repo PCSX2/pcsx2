@@ -11,7 +11,6 @@ set(Output dev9null-0.5.0)
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

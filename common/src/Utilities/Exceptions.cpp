@@ -13,6 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Avoid the following gcc error:
+// Exceptions.cpp:133: error: inlining failed in call to always_inline ‘void pxOnAssert(const DiagnosticOrigin&, const char*)’: function not considered for inlining
+//  DEVASSERT_INLINE void pxOnAssert( const DiagnosticOrigin& origin, const char* msg)
+// Exceptions.cpp:141: error: called from here
+//   pxOnAssert( origin, WX_STR(msg) ); // wc_str ???
+//
+// Feel free to provide a better fix
+#if defined(__linux__) && defined(NDEBUG)
+#undef NDEBUG
+#endif
+
 #include "PrecompiledHeader.h"
 
 #include <wx/app.h>

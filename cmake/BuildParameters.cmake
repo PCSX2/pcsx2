@@ -154,7 +154,7 @@ endif()
 if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 	set(CMAKE_BUILD_TYPE Devel)
 	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
-endif(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
+endif()
 
 # Initially strip was disabled on release build but it is not stackstrace friendly!
 # It only cost several MB so disbable it by default
@@ -228,10 +228,12 @@ if (USE_CLANG)
     set(COMMON_FLAG "${COMMON_FLAG} -no-integrated-as")
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
     set(DEBUG_FLAG "-g")
-else()
-    set(DEBUG_FLAG "")
+elseif(CMAKE_BUILD_TYPE MATCHES "Devel")
+    set(DEBUG_FLAG "-g -DNDEBUG")
+elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+    set(DEBUG_FLAG "-DNDEBUG")
 endif()
 
 if (USE_ASAN)

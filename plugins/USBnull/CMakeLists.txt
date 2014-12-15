@@ -11,7 +11,6 @@ set(Output USBnull-0.7.0)
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

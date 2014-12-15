@@ -11,7 +11,6 @@ set(Output onepad-1.1.0)
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

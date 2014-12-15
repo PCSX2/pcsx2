@@ -17,7 +17,6 @@ set(Output spu2x-2.0.0)
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

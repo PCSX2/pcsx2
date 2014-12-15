@@ -13,10 +13,10 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
 # set common flags
-set(CommonFlags 
+set(CommonFlags
     # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
     # Disable this optimization for the moment
-    -fno-omit-frame-pointer 
+    -fno-omit-frame-pointer
     # END GCC-4.6
     -fno-strict-aliasing
     -Wno-parentheses
@@ -24,6 +24,7 @@ set(CommonFlags
     -Wno-char-subscripts # only impact svu which is deprecated
     -Wno-missing-braces
     #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
+    -DWX_PRECOMP
 	)
 
 # set optimization flags
@@ -48,7 +49,7 @@ set(OptimizationFlags
 	-fpeephole2
 	-fregmove
 	-freorder-blocks
-	-freorder-functions 
+	-freorder-functions
 	-frerun-cse-after-loop
 	-fsched-interblock
 	-fsched-spec
@@ -69,52 +70,35 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(pcsx2FinalFlags
-		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
-	)
-endif(NOT USE_CLANG) 
+	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+endif()
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(Output pcsx2-dbg)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
 
-	set(pcsx2FinalFlags
-		${pcsx2FinalFlags}
-		${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
 	set(Output pcsx2-dev)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
 
-	set(pcsx2FinalFlags
-		${pcsx2FinalFlags}
-		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(Output pcsx2)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags})
 
-	set(pcsx2FinalFlags
-		${pcsx2FinalFlags}
-		${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+endif()
 
 if(XDG_STD)
     set(pcsx2FinalFlags
 		${pcsx2FinalFlags}
 		-DXDG_STD
 	)
-endif(XDG_STD)
+endif()
 
 # In package mode always use pcsx2
 if(PACKAGE_MODE)
     set(Output pcsx2)
-endif(PACKAGE_MODE)
+endif()
 
 # Main pcsx2 source
 set(pcsx2Sources
@@ -666,7 +650,7 @@ if(Linux)
 	set(Platform
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders})
-endif(Linux)		
+endif(Linux)
 
 # Windows
 if(Windows)
@@ -679,7 +663,7 @@ endif(Windows)
 if(MacOSX)
 	set(Platform
 		)
-endif(MacOSX)	
+endif(MacOSX)
 
 set(pcsx2FinalSources
 	${Common}
@@ -719,6 +703,6 @@ endforeach()
 # See issue: 1233
 if(PACKAGE_MODE)
 	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
-endif(PACKAGE_MODE)    
+endif(PACKAGE_MODE)
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")

@@ -19,7 +19,6 @@ set(CommonFlags
 
 set(OptimizationFlags
     -O2
-    -DNDEBUG
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
