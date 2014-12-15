@@ -69,11 +69,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
     add_subdirectory(locales)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/locales")
 
-# make 3rdParty
-if(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty")
-    add_subdirectory(3rdparty)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty")
-
 # make common
 if(common_libs)
     add_subdirectory(common/src/Utilities)
