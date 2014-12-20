@@ -32,9 +32,9 @@ option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
-option(SDL2_API "Use SDL2 on spu2x and onepad")
-option(WX28_API "Force wxWidget 2.8 lib")
-option(GTK3_API "Use GTK3 api")
+option(SDL2_API "Use SDL2 on spu2x and onepad (experimental/wxWidget mustn't be built with SDL1.2 support")
+option(WX28_API "Force wxWidget 2.8 lib (deprecated)")
+option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
@@ -215,12 +215,13 @@ endif()
 set(COMMON_FLAG "-pipe -std=c++0x -fvisibility=hidden -pthread")
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
-# -Wstrict-aliasing: to fix one day aliasing issue
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # -Wno-unused-function: warn for function not used in release build
 # -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value")
+set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value ")
+# -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
+set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=4 ")
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
@@ -243,7 +244,7 @@ else()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
