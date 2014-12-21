@@ -109,7 +109,7 @@ static __fi const wxChar* GetLinuxConsoleColor(ConsoleColors color)
 {
     switch(color)
     {
-        case Color_Black: return L"\033[30m";
+        case Color_Black:
         case Color_StrongBlack: return L"\033[30m\033[1m";
 
         case Color_Red: return L"\033[31m";
