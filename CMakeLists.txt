@@ -67,23 +67,23 @@ write_svnrev_h()
 # make the translation
 if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
     add_subdirectory(locales)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/locales")
+endif()
 
 # make common
 if(common_libs)
     add_subdirectory(common/src/Utilities)
     add_subdirectory(common/src/x86emitter)
-endif(common_libs)
+endif()
 
 # make pcsx2
 if(EXISTS "${CMAKE_SOURCE_DIR}/pcsx2" AND pcsx2_core)
     add_subdirectory(pcsx2)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/pcsx2" AND pcsx2_core)
+endif()
 
 # make plugins
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
     add_subdirectory(plugins)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
+endif()
 
 #-------------------------------------------------------------------------------
 # Install some files to ease package creation
@@ -104,4 +104,4 @@ if(PACKAGE_MODE)
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_Readme.pdf" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/pcsx2.1" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man1/")
-endif(PACKAGE_MODE)
+endif()

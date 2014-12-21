@@ -9,7 +9,7 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # set common flags
@@ -650,20 +650,20 @@ if(Linux)
 	set(Platform
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders})
-endif(Linux)
+endif()
 
 # Windows
 if(Windows)
 	set(Platform
 		${pcsx2WindowsSources}
 		${pcsx2WindowsHeaders})
-endif(Windows)
+endif()
 
 # MacOSX
 if(MacOSX)
 	set(Platform
 		)
-endif(MacOSX)
+endif()
 
 set(pcsx2FinalSources
 	${Common}
@@ -703,6 +703,6 @@ endforeach()
 # See issue: 1233
 if(PACKAGE_MODE)
 	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
-endif(PACKAGE_MODE)
+endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
