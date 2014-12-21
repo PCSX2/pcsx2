@@ -43,7 +43,7 @@ T* SafeArray<T>::_virtual_realloc( int newsize )
 		realloc( m_ptr, newsize * sizeof(T) )
 	);
 	
-	if( IsDebugBuild )
+	if( IsDebugBuild && (retval != NULL))
 	{
 		// Zero everything out to 0xbaadf00d, so that its obviously uncleared
 		// to a debuggee
