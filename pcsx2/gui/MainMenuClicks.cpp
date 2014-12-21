@@ -228,12 +228,12 @@ static wxString JoinFiletypes( const wxChar** src )
 		if( !dest.IsEmpty() )
 			dest += L";";
 
-		dest += pxsFmt(L"*.%s", *src);
+		dest += pxsFmt(L"*.%ls", *src);
 
 		if (wxFileName::IsCaseSensitive())
 		{
 			// omgosh!  the filesystem is CaSE SeNSiTiVE!!
-			dest += pxsFmt(L";*.%s", *src).ToUpper();
+			dest += pxsFmt(L";*.%ls", *src).ToUpper();
 		}
 
 		++src;
