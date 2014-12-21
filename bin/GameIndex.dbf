@@ -89,11 +89,11 @@
 -- Game List
 ---------------------------------------------
 Serial = SLES-55671
-Name   = Fifa '14
-Region = PAL
+Name   = FIFA 14
+Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55672
-Name   = Fifa '14
+Name   = FIFA 14
 Region = PAL
 ---------------------------------------------
 Serial = SLES-55673
@@ -1243,7 +1243,7 @@ Region = NTSC-U
 vuClampMode = 2 // Text in GT mode works
 ---------------------------------------------
 Serial = SCUS-97437
-Name   = ATV Offroad Fury 3 [Demo]
+Name   = ATV Off-Road Fury 3 [Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97438
@@ -1937,7 +1937,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20035
-Name   = Baldur's Gate - Dark Alliance
+Name   = Baldur's Gate: Dark Alliance
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
@@ -2057,7 +2057,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20069
-Name   = Bouncer
+Name   = Bouncer, The
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -3689,7 +3689,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20446
-Name   = Agassi - Tennis Generation
+Name   = Agassi Tennis Generation
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -3934,7 +3934,7 @@ Name   = Auto Modellista
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20499
-Name   = Breath of Fire - Dragon Quarter
+Name   = Breath of Fire: Dragon Quarter
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -4127,7 +4127,7 @@ Name   = Malice
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20545
-Name   = Zone of the Enders - The 2nd Runner
+Name   = Zone of the Enders: The 2nd Runner
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -4655,7 +4655,7 @@ Name   = Cabela's Deer Hunt - 2004 Season
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20666
-Name   = Disgaea - Hour of Darkness
+Name   = Disgaea: Hour of Darkness
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -5256,7 +5256,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20803
-Name   = Bard's Tale, The
+Name   = The Bard's Tale
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
@@ -5748,7 +5748,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20911
-Name   = Shin Megami Tensei - Nocturne
+Name   = Shin Megami Tensei: Nocturne
 Region = NTSC-U
 Compat = 5
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
@@ -5964,7 +5964,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20956
-Name   = Leisure Suit Larry - Magna Cum Laude
+Name   = Leisure Suit Larry: Magna Cum Laude
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -6067,7 +6067,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-20974
-Name   = Shin Megami Tensei - Digital Devil Saga
+Name   = Shin Megami Tensei: Digital Devil Saga
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1
@@ -6107,7 +6107,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20982
-Name   = Bad Boys 2
+Name   = Bad Boys: Miami Takedown
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
@@ -6733,7 +6733,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21113
-Name   = Atelier Iris - Eternal Mana
+Name   = Atelier Iris: Eternal Mana
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -6821,7 +6821,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21132
-Name   = Stella Deus - The Gate of Eternity
+Name   = Stella Deus: The Gate of Eternity
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -6904,7 +6904,7 @@ Name   = Yourself Fitness
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21150
-Name   = Beatdown - Fists of Vengeance
+Name   = Beat Down - Fists of Vengeance
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -6914,7 +6914,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21152
-Name   = Shin Megami Tensei - Digital Devil Saga 2
+Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1
@@ -6968,7 +6968,7 @@ Name   = Ford Mustang - The Legend Lives
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21163
-Name   = Brothers in Arms - Road to Hill 30
+Name   = Brothers in Arms: Road to Hill 30
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -7238,7 +7238,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21221
-Name   = Magna Carta - Tears of Blood
+Name   = Magna Carta: Tears of Blood
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -7316,7 +7316,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21237
-Name   = And 1 Streetball
+Name   = AND 1 Streetball
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -7640,7 +7640,7 @@ Compat = 4
 vuClampMode = 2		//Ingame capes become SPS mess with lower than extra VU clamp.
 ---------------------------------------------
 Serial = SLUS-21305
-Name   = Arthur and the Invisibles
+Name   = Arthur and the Invisibles: The Game
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21306
@@ -7658,7 +7658,7 @@ Name   = Let's Ride - Silver Buckle Stables
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21310
-Name   = Brothers in Arms - Earned in Blood
+Name   = Brothers in Arms: Earned in Blood
 Region = NTSC-U
 Compat = 2
 ---------------------------------------------
@@ -7740,7 +7740,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21327
-Name   = Atelier Iris 2 - The Azoth of Destiny
+Name   = Atelier Iris 2: The Azoth of Destiny
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -8094,7 +8094,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21397
-Name   = Disgaea 2 - Cursed Memories
+Name   = Disgaea 2: Cursed Memories
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -8319,7 +8319,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21445
-Name   = Ar Tonelico
+Name   = Ar tonelico: Melody of Elemia
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -8440,7 +8440,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21470
-Name   = Bratz - Forever Diamonds
+Name   = Bratz - Forever Diamondz
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21471
@@ -8721,7 +8721,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21564
-Name   = Atelier Iris 3 - Grand Phantasm
+Name   = Atelier Iris 3: Grand Phantasm
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -8744,7 +8744,7 @@ Name   = Arena Football - Road to Glory
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21569
-Name   = Shin Megami Tensei - Persona 3
+Name   = Shin Megami Tensei: Persona 3
 Region = NTSC-U
 Compat = 5
 VuClipFlagHack = 1
@@ -8986,7 +8986,7 @@ Name   = NCAA Football '08
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21621
-Name   = Shin Megami Tensei - Persona 3 FES
+Name   = Shin Megami Tensei: Persona 3 FES
 Region = NTSC-U
 Compat = 5
 VuClipFlagHack = 1
@@ -9174,7 +9174,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21661
-Name   = Ben 10 - Protector of Earth
+Name   = Ben 10: Protector of Earth
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -9367,7 +9367,7 @@ Region = NTSC-U
 Compat = 2
 ---------------------------------------------
 Serial = SLUS-21706
-Name   = Alvin and The Chipmunks
+Name   = Alvin and the Chipmunks
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -9705,13 +9705,13 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21782
-Name   = Shin Megami Tensei - Persona 4
+Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-U
 Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLUS-21782B
-Name   = Shin Megami Tensei - Persona 4
+Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-U
 Compat = 5
 VuClipFlagHack = 1
@@ -9733,7 +9733,7 @@ Compat = 5
 EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-21788
-Name   = Ar Tonelico 2 - Melody Of Metafalica
+Name   = Ar tonelico II: Melody Of Metafalica
 Region = NTSC-U
 Compat = 5
 eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
@@ -10194,7 +10194,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21902
-Name   = Bakugan Battle Brawlers
+Name   = Bakugan: Battle Brawlers
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21904
@@ -10440,7 +10440,7 @@ Name   = High Heat - Major League Baseball 2004 [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28031
-Name   = Auto Modelista - Public Beta Volume 2.0
+Name   = Auto Modellista - Public Beta Volume 2.0
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28032
@@ -10468,7 +10468,7 @@ Name   = ChoroQ [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28045
-Name   = Shin Megami Tensei - Nocturne [Trade Demo]
+Name   = Shin Megami Tensei: Nocturne [Trade Demo]
 Region = NTSC-U
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
@@ -10477,12 +10477,12 @@ Name   = Guilty Gear Isuka [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28049
-Name   = Shin Megami Tensei - Digital Devil Saga [Trade Demo]
+Name   = Shin Megami Tensei: Digital Devil Saga [Trade Demo]
 Region = NTSC-U
 EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-28050
-Name   = Stella Deus - The Gate of Eternity [Trade Demo]
+Name   = Stella Deus: The Gate of Eternity [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28051
@@ -10506,7 +10506,7 @@ Name   = Steambot Chronicles [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-28062
-Name   = Shin Megami Tensei - Digital Devil Saga 2 [Trade Demo]
+Name   = Shin Megami Tensei: Digital Devil Saga 2 [Trade Demo]
 Region = NTSC-U
 EETimingHack = 1
 ---------------------------------------------
@@ -11234,7 +11234,7 @@ Name   = Time Splitter
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20015
-Name   = Shin Megami Tensei 3 - Nocturine
+Name   = Shin Megami Tensei III: Nocturne
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20016
@@ -11514,7 +11514,7 @@ Name   = Minna no Golf 4 [PlayStation 2 The Best]
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20095
-Name   = Digital Devil Saga - Avatar Tuner
+Name   = Digital Devil Saga: Avatar Tuner
 Region = NTSC-Unk
 EETimingHack = 1
 ---------------------------------------------
@@ -11558,7 +11558,7 @@ Name   = Armored Core - Ninebreaker
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20107
-Name   = Bakufuu Slash!! Kizna Arashi
+Name   = Bakufuu Slash! Kizna Arashi
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20108
@@ -11611,7 +11611,7 @@ Name   = Gladiator - Road to Freedom
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20120
-Name   = Digital Devil Saga - Avatar Tuner 2
+Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-Unk
 EETimingHack = 1
 ---------------------------------------------
@@ -11680,7 +11680,7 @@ vuClampMode = 3
 mvuFlagSpeedHack = 0
 ---------------------------------------------
 Serial = SCAJ-20136
-Name   = Ace Combat 5 - The Unsung War [PlayStation2 The Best]
+Name   = Ace Combat 5 - The Unsung War [PlayStation 2 The Best]
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20137
@@ -11900,15 +11900,15 @@ Region = NTSC-Unk
 FpuMulHack = 1
 ---------------------------------------------
 Serial = SCAJ-20194
-Name   = Minna no Golf 4 [PlayStation 2 the Best]
+Name   = Minna no Golf 4 [PlayStation 2 The Best]
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20195
-Name   = Ape Escape 3 [PlayStation 2 the Best]
+Name   = Ape Escape 3 [PlayStation 2 The Best]
 Region = NTSC-Ch
 ---------------------------------------------
 Serial = SCAJ-20196
-Name   = Shadow of the Colossus [PlayStation 2 the Best]
+Name   = Shadow of the Colossus [PlayStation 2 The Best]
 Region = NTSC-Ch
 ---------------------------------------------
 Serial = SCAJ-20197
@@ -11918,11 +11918,11 @@ Compat = 5
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SCAJ-20198
-Name   = Everybody's Tennis [PlayStation 2 the Best]
+Name   = Everybody's Tennis [PlayStation 2 The Best]
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20199
-Name   = Tekken 5 [PlayStation 2 the Best]
+Name   = Tekken 5 [PlayStation 2 The Best]
 Region = NTSC-Unk
 eeClampMode = 1
 ---------------------------------------------
@@ -12305,7 +12305,7 @@ Name   = Odin Sphere
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20109
-Name   = Persona 3 - Fes [Independent Starting Version]
+Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-K
 VuClipFlagHack = 1
 ---------------------------------------------
@@ -12322,7 +12322,7 @@ Name   = Ratchet and Clank
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20132
-Name   = Shin Megami Tensei - Persona 4
+Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-K
 Compat = 5
 VuClipFlagHack = 1
@@ -12846,7 +12846,7 @@ Name   = EyeToy - Uki Uki Panic [Game Only]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15079
-Name   = Bakufuu Slash! Kizuna Arashi [with Camera]
+Name   = Bakufuu Slash! Kizna Arashi [with Camera]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15080
@@ -12874,7 +12874,7 @@ Name   = Kenran Butousai
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15086
-Name   = Bakufuu Slash! Kizuna Arashi [Game Only]
+Name   = Bakufuu Slash! Kizna Arashi [Game Only]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15087
@@ -13278,19 +13278,19 @@ Name   = Ratchet & Clank 4th Girigiri Gingano Giga-battle [PlayStation 2 the Bes
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19329
-Name   = Bleach - Blade Battlers [PlayStation 2 the Best]
+Name   = Bleach - Blade Battlers [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19330
-Name   = Bleach - Hanatareshi Yabou [PlayStation 2 the Best]
+Name   = Bleach - Hanatareshi Yabou [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19331
-Name   = Bleach - Selected Soul [PlayStation 2 the Best]
+Name   = Bleach - Selected Soul [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19332
-Name   = Minna no Tennis [PlayStation 2 the Best]
+Name   = Minna no Tennis [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-51001
@@ -13967,7 +13967,7 @@ Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-25066
-Name   = Zone of The Enders 2nd Runner SE
+Name   = Zone of the Enders: The 2nd Runner SE
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
@@ -14092,7 +14092,7 @@ Name   = Astro Boy
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25160
-Name   = Shin Megami Tensei III - Nocturne Maniax
+Name   = Shin Megami Tensei III: Nocturne Maniax
 Region = NTSC-K
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
@@ -14249,7 +14249,7 @@ Name   = WWE SmackDown! vs. Raw
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25246
-Name   = Bard's Tale
+Name   = The Bard's Tale
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25249
@@ -14374,7 +14374,7 @@ Compat = 5
 EETimingHack = 1
 ---------------------------------------------
 Serial = SLKA-25301
-Name   = Digital Devil Saga - Avatar Tuner 2
+Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-K
 Compat = 5
 EETimingHack = 1
@@ -14909,7 +14909,7 @@ Name   = Live World Soccer 2001
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62076
-Name   = Age of Empires II - The Age of Kings
+Name   = Age of Empires II: The Age of Kings
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62077
@@ -14966,7 +14966,7 @@ Name   = Keisusaikan, The - Shinjuku 24 Hours
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62098
-Name   = Busin - Wizardry Alternative
+Name   = Busin: Wizardry Alternative
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62100
@@ -15026,7 +15026,7 @@ Name   = ESPN NBA 2Night 2002
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62122
-Name   = Hermina to Culus - Lilie no Atelier Mou Hitotsu no Monogatari
+Name   = Hermina to Culus: Lilie no Atelier Mou Hitotsu no Monogatari
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62123
@@ -16160,7 +16160,7 @@ Name   = Sega Ages 2500 Series Vol.14 - Alien Syndrome
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62501
-Name   = Assault Suits Valken Zero
+Name   = Juusou Kihei Valken
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62502
@@ -17242,11 +17242,11 @@ Name   = Love Songs - Idol is my Classmate
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65018
-Name   = Zone of Enders [Limited Edition]
+Name   = Z.O.E.: Zone of the Enders [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65019
-Name   = Zone of Enders
+Name   = Z.O.E.: Zone of the Enders
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -17361,11 +17361,11 @@ Name   = 7 Blades
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65059
-Name   = Biohazard Gun Survivor 2 - CODE - Veronica [with Guncon]
+Name   = BioHazard Gun Survivor 2 - CODE - Veronica [with Guncon]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65060
-Name   = Biohazard Gun Survivor 2 - CODE - Veronica
+Name   = BioHazard Gun Survivor 2 - CODE - Veronica
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65061
@@ -17528,7 +17528,7 @@ Region = NTSC-J
 IPUWaitHack = 1
 ---------------------------------------------
 Serial = SLPM-65116
-Name   = Lilie no Atelier Plus - Salburg no Renkinjutsushi 3
+Name   = Lilie no Atelier Plus: Salburg no Renkinjutsushi 3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65117
@@ -17577,7 +17577,7 @@ Name   = Dramatic Soccer Game - Becoming a National Team Member
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65131
-Name   = Atelier Judie: Gramnad no Renkinjutsushi
+Name   = Judie no Atelier: Gramnad no Renkinjutsushi
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65132
@@ -17749,7 +17749,7 @@ Region = NTSC-J
 vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-65196
-Name   = Breath of Fire V - Dragon Quarter
+Name   = Breath of Fire V: Dragon Quarter
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65197
@@ -17853,7 +17853,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-65229
-Name   = Arms Men - Air Attack 2
+Name   = Totsugeki! Army Men: Shijou Saishou no Sakusen
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65230
@@ -17886,11 +17886,11 @@ Name   = New Roommania - Porori Seishun
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65236
-Name   = Anubis Zone of Enders
+Name   = Anubis: Zone of the Enders
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65237
-Name   = Zone of the Enders [PlayStation 2 The Best]
+Name   = Z.O.E.: Zone of the Enders [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65238
@@ -17902,12 +17902,12 @@ Name   = Angelic Concert
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65241
-Name   = Shin Megami Tensei 3 - Nocturne [Limited Edition]
+Name   = Shin Megami Tensei III: Nocturne [Limited Edition]
 Region = NTSC-J
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
 Serial = SLPM-65242
-Name   = Shin Megami Tensei 3 - Nocturne
+Name   = Shin Megami Tensei III: Nocturne
 Region = NTSC-J
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
@@ -17920,7 +17920,7 @@ Name   = Tom Clancy's Ghost Recon
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65245
-Name   = Biohazard Gun Survivor 4 - Heroes Never Die
+Name   = BioHazard Gun Survivor 4 - Heroes Never Die
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65246
@@ -18138,11 +18138,11 @@ Name   = Splashdown [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65310
-Name   = Viorate no Atelier - The Alchemist of Gramnad [Limited Edition]
+Name   = The Mark of Kry
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65311
-Name   = Viorate no Atelier - The Alchemist of Gramnad
+Name   = Violet no Atelier: Gramnad no Renkinjutsushi
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65313
@@ -18322,8 +18322,12 @@ Name   = Dance Dance Revolution Extreme
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPM-65359
+Name   = Judie no Atelier: Gramnad no Renkinjutsushi [Gust Best Price]
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPM-65361
-Name   = Anubis Zone of Enders [Special Edition LE]
+Name   = Anubis: Zone of the Enders Special Edition [Limited Edition]
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -18378,7 +18382,7 @@ Name   = Shin Sangoku Musou 3 - Mushouden
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65378
-Name   = Busin 0 - Wizardry Alternative Zero
+Name   = Busin 0: Wizardry Alternative Neo
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65379
@@ -18604,7 +18608,7 @@ Compat = 5
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SLPM-65441
-Name   = Ashita no Joe - Masshiro ni Moetsukuru
+Name   = Ashita no Joe: Masshiro ni Moetsukuru
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65442
@@ -18642,7 +18646,7 @@ Name   = SSX 3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65450
-Name   = Detective Gakuen Q
+Name   = Tantei Gakuen Q: Kiokan no Satsui [First Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65451
@@ -18674,12 +18678,11 @@ Name   = Conflict Delta - Wangan War 1991
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65461
-Name   = Shin Megami Tensei 3 - Nocturne - Maniacs
+Name   = Tantei Gakuen Q: Kiokan no Satsui
 Region = NTSC-J
-eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
 Serial = SLPM-65462
-Name   = Shin Megami Tensei 3 - Nocturne - Maniacs
+Name   = Shin Megami Tensei III: Nocturne Maniax
 Region = NTSC-J
 Compat = 5
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
@@ -18812,7 +18815,7 @@ Name   = Bloody Roar 4
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65500
-Name   = Anubis ZOE - Special Edition
+Name   = Anubis: Zone of the Enders Special Edition
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65501
@@ -19149,7 +19152,7 @@ Name   = Beatmania IIDX - 7th Style
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65594
-Name   = Atelier no Iris - Eternal Mana
+Name   = Iris no Atelier: Eternal Mana
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65595
@@ -19161,7 +19164,7 @@ Name   = Juuni Kuniki - Kakukaku Taru Ou Michi Beni Midori no Uka
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65597
-Name   = Digital Devil Saga - Avatar Tuner
+Name   = Digital Devil Saga: Avatar Tuner
 Region = NTSC-J
 EETimingHack = 1
 ---------------------------------------------
@@ -19267,7 +19270,7 @@ Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65623
-Name   = Tantei Gakuen Q [Konami The Best]
+Name   = Tantei Gakuen Q: Kiokan no Satsui [Konami The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65624
@@ -19275,7 +19278,7 @@ Name   = Dear Boys Fast Break! [Konami Palace Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65625
-Name   = Ashita no Joe Masshiro ni Moetsukuru [Konami The Best]
+Name   = Ashita no Joe: Masshiro ni Moetsukuru [Konami The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65626
@@ -19468,7 +19471,7 @@ Name   = Monochrome
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65683
-Name   = Violet no Atelier [Gust Best Price]
+Name   = Violet no Atelier: Gramnad no Renkinjutsushi [Gust Best Price]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65684
@@ -19876,7 +19879,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-65795
-Name   = Digital Devil Saga - Avatar Tuner 2
+Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-J
 EETimingHack = 1
 ---------------------------------------------
@@ -20183,7 +20186,7 @@ Name   = Growlanser IV - Wayfarer of the Time [Atlus The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65876
-Name   = Busin 0 - Wizardry Alternative Neo [Atlus Best Collection]
+Name   = Busin 0: Wizardry Alternative Neo [Atlus Best Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65878
@@ -20592,7 +20595,7 @@ Name   = Grand Theft Auto - San Andreas
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65985
-Name   = Atelier Iris 2 - Eternal Mana
+Name   = Iris no Atelier: Eternal Mana 2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65986
@@ -20616,7 +20619,7 @@ Name   = Neo Contra [Konami Palace Selection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65991
-Name   = Anubis ZOE - Special Edition [Konami Dendou Collection]
+Name   = Anubis: Zone of the Enders Special Edition [Konami Dendou Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65994
@@ -20793,7 +20796,7 @@ Name   = Shoujo Yoshitsune Den [WellMADE The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66042
-Name   = Brother in Arms - Road to Hill 30
+Name   = Brothers in Arms: Road to Hill 30
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66043
@@ -20933,7 +20936,7 @@ Name   = Generation of Chaos 3 [IF Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66081
-Name   = Atelier no Iris - Eternal Mana [Gust Best Price]
+Name   = Iris no Atelier: Eternal Mana [Gust Best Price]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66082
@@ -21118,7 +21121,7 @@ Name   = Duel Savior Destiny
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66140
-Name   = Atelier Marie + Elie - Atelier of Salburg 1&2
+Name   = Atelier Marie + Elie: Salburg no Renkinjutsushi 1&2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66141
@@ -21925,12 +21928,12 @@ Name   = Train Simulator & Densha de Go! Tokyo Kyuukouhen [Ongakukan Pocket Book
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66372
-Name   = Digital Devil Saga - Avatar Tuner [Atlus Best Collection]
+Name   = Digital Devil Saga: Avatar Tuner [Atlus Best Collection]
 Region = NTSC-J
 EETimingHack = 1
 ---------------------------------------------
 Serial = SLPM-66373
-Name   = Digital Devil Saga - Avatar Tuner 2 (Atlus Best Collection]
+Name   = Digital Devil Saga: Avatar Tuner 2 [Atlus Best Collection]
 Region = NTSC-J
 EETimingHack = 1
 ---------------------------------------------
@@ -22064,7 +22067,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-66410
-Name   = Brothers In Arms - Earned In Blood
+Name   = Brothers In Arms: Meiyo no Daishou
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66412
@@ -22151,7 +22154,7 @@ Name   = Festa!! Hyper Girls Party
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66436
-Name   = Atelier Iris - Grand Fantasm
+Name   = Iris no Atelier: Grand Fantasm
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -22550,11 +22553,11 @@ Name   = Ryu Koku
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66536
-Name   = Aria the Natural
+Name   = Aria: The Natural ~Tooi Yume no Mirage~
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66537
-Name   = Atelier Iris - Eternal Mana 2 [Gust Best Price]
+Name   = Iris no Atelier: Eternal Mana 2 [Gust Best Price]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66538
@@ -22659,7 +22662,7 @@ Name   = Driver - Parallel Lines
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66568
-Name   = Brothers in Arms - Road to Hill 30 [Ubisoft Best]
+Name   = Brothers in Arms: Road to Hill 30 [Ubisoft Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66569
@@ -23077,12 +23080,12 @@ Name   = Harukanaru Jikuu no Kade 3 [Koei the Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66689
-Name   = Persona 3 - Fes [Append Edition]
+Name   = Persona 3 FES [Append Edition]
 Region = NTSC-J
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-66690
-Name   = Persona 3 - Fes [Independent Starting Version]
+Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-J
 VuClipFlagHack = 1
 ---------------------------------------------
@@ -23145,7 +23148,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-66708
-Name   = Brothers In Arms - Earned In Blood [Best Version]
+Name   = Brothers In Arms: Earned In Blood [Ubisoft Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66709
@@ -23665,7 +23668,7 @@ Name   = Sengoku Basara 2 Heroes
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66849
-Name   = Atelier Iris - Grand Phantasm [Gust Best Price]
+Name   = Iris no Atelier: Grand Fantasm [Gust Best Price]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66850
@@ -24107,7 +24110,7 @@ Name   = Godfather, The [EA-SY! 1980]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66967
-Name   = Aria - The Natural [Alchemist Best Collection]
+Name   = Aria: The Natural ~Tooi Yume no Mirage~ [Alchemist Best Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66968
@@ -24363,7 +24366,7 @@ Name   = Rez [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74007
-Name   = Busin - Wizardry Alternative [PlayStation 2 The Best]
+Name   = Busin: Wizardry Alternative [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74044
@@ -24383,7 +24386,7 @@ Name   = Momotaro Dentetsu USA [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74104
-Name   = Momotarou Densetsu 15 [PlayStation 2 the Best]
+Name   = Momotarou Densetsu 15 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74201
@@ -24399,7 +24402,7 @@ Name   = Shutokou Battle 01 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74205
-Name   = Shin Megami Tensei III - Nocturne [PlayStation 2 The Best]
+Name   = Shin Megami Tensei III: Nocturne [PlayStation 2 The Best]
 Region = NTSC-J
 eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 ---------------------------------------------
@@ -24509,7 +24512,7 @@ Name   = Genso Suikoden V [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74239
-Name   = Okami [PlayStation 2 the Best]
+Name   = Okami [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74240
@@ -24517,25 +24520,25 @@ Name   = Tengai Makyou III - Namida [Best Version]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74241
-Name   = God Hand [PlayStation 2 the Best]
+Name   = God Hand [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74242
-Name   = Devil May Cry 3 [Special Edition] [PlayStation 2 the Best]
+Name   = Devil May Cry 3 [Special Edition] [PlayStation 2 The Best]
 Region = NTSC-J
 eeRoundMode = 0
 ---------------------------------------------
 Serial = SLPM-74243
-Name   = True Crime - New York City [PlayStation 2 the Best]
+Name   = True Crime - New York City [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74244
-Name   = Phantasy Star Universe [PlayStation 2 the Best]
+Name   = Phantasy Star Universe [PlayStation 2 The Best]
 Region = NTSC-J
 eeRoundMode = 0
 ---------------------------------------------
 Serial = SLPM-74245
-Name   = Monster Hunter 2 [PlayStation 2 the Best]
+Name   = Monster Hunter 2 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74246
@@ -24543,19 +24546,19 @@ Name   = Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 the Best - 
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74247
-Name   = Sengoku Musou 2 [PlayStation 2 the Best]
+Name   = Sengoku Musou 2 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74248
-Name   = Monster Hunter G [PlayStation 2 the Best]
+Name   = Monster Hunter G [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74249
-Name   = Sengoku Musou Moushouden [PlayStation 2 the Best]
+Name   = Sengoku Musou Moushouden [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74250
-Name   = Shin Sangoku Musou 4 Moushouden [PlayStation 2 the Best]
+Name   = Shin Sangoku Musou 4 Moushouden [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74251
@@ -24575,28 +24578,33 @@ Name   = EX Jinsei Game II [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74259
-Name   = Odin Sphere [PlayStation 2 the Best]
+Name   = Odin Sphere [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74265
-Name   = Nobunaga no Yabou: Kakushin [PlayStation 2 the Best]
+Name   = Nobunaga no Yabou: Kakushin [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74276
-Name   = Sangoku Musou 2 [PlayStation 2 the Best]
+Name   = Sangoku Musou 2 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-74277
+Name   = Persona 3 FES [PlayStation 2 The Best]
+Region = NTSC-J
+VuClipFlagHack = 1
+---------------------------------------------
 Serial = SLPM-74278
-Name   = Persona 4 [PlayStation 2 the Best]
+Name   = Persona 4 [PlayStation 2 The Best]
 Region = NTSC-J
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-74286
-Name   = Shin Sangoku Musou 5 Special [PlayStation 2 the Best]
+Name   = Shin Sangoku Musou 5 Special [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74301
-Name   = Ryu ga Gotoku 2 [PlayStation 2 the Best]
+Name   = Ryu ga Gotoku 2 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74402
@@ -24632,7 +24640,7 @@ Name   = Gun Survivor 2 - Biohazard Code - Veronica [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74410
-Name   = Breath of Fire 5 [PlayStation 2 The Best]
+Name   = Breath of Fire V: Dragon Quarter [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74411
@@ -25173,11 +25181,11 @@ Name   = Low Rider
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20250
-Name   = Makai Senki Disaea [Limited Edition]
+Name   = Makai Senki Disgaea [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20251
-Name   = Makai Senki Disaea
+Name   = Makai Senki Disgaea
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20256
@@ -26117,7 +26125,7 @@ Name   = Evergrace 2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25045
-Name   = Atelier Lilie
+Name   = Lilie no Atelier: Salburg no Renkinjutsushi 3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25046
@@ -26401,7 +26409,7 @@ Name   = Ever 17 - The Out of Infinity
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25139
-Name   = Baldur's Gate - Dark Alliance
+Name   = Baldur's Gate: Dark Alliance
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -26863,7 +26871,7 @@ Name   = Time Crisis 3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25291
-Name   = Baldur's Gate - Dark Alliance [PCCW The Best]
+Name   = Baldur's Gate: Dark Alliance [PCCW The Best]
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -27439,7 +27447,7 @@ Name   = Kagero II - Dark Illusion
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25447
-Name   = Aim for the Top! Gunbuster
+Name   = Top wo Nerae! Gunbuster
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25448
@@ -28046,7 +28054,7 @@ Name   = Tensei - Swords of Destiny [Best Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25604
-Name   = Ar Tonelico - Sekai no Owari de Utai Tsudukeru Shoujo
+Name   = Ar tonelico: Sekai no Owari de Utai Tsudukeru Shoujo
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25605
@@ -28579,11 +28587,11 @@ Name   = Lupin III - Lupin ni wa Shi o, Zenigata ni wa Koi o
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25742
-Name   = Aammegami-Sama [Limited Edition]
+Name   = Aa Megami-sama [Holy Box]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25743
-Name   = Aa Megami Sama
+Name   = Aa Megami-sama
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25744
@@ -28875,8 +28883,9 @@ Name   = Bakumatsu Renka - Karyuu Kenshiden
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25819
-Name   = Ar Tonelico II Sekai ni Hibiku Shoujo Tachi no Souzoushi
+Name   = Ar tonelico II: Sekai ni Hibiku Shoujo-Tachi no Souzoushi
 Region = NTSC-J
+eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
 ---------------------------------------------
 Serial = SLPS-25820
 Name   = Kateikyoushi Hitman Reborn!! Let's Ansatsu! Nerawareta 10 Daime!
@@ -29077,6 +29086,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25892
 Name   = Nogizaka Haruka no Himitsu - Cosplay Hajimemashita
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25894
+Name   = Aa Megami-sama [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25905
@@ -29394,7 +29407,7 @@ Name   = Kagero 2 - Dark Illusion [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73249
-Name   = Ar-Tonelico - Sekai no Owari de Shi Tsudzukeru Shoujo [PlayStation 2 The Best]
+Name   = Ar tonelico: Sekai no Owari de Utai Tsudukeru Shoujo [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73250
@@ -29406,15 +29419,15 @@ Name   = Naruto - Narutimett Hero 3 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73252
-Name   = Tales of the Abyss [PlayStation 2 the Best]
+Name   = Tales of the Abyss [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73253
-Name   = Rurouni Kenshin - Enjou! Kyoto Rinne [PlayStation 2 the Best]
+Name   = Rurouni Kenshin - Enjou! Kyoto Rinne [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73254
-Name   = Disgaea - Hour of Darkness 2 [PlayStation 2 the Best]
+Name   = Makai Senki Disgaea [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73255
@@ -29430,12 +29443,13 @@ Name   = Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73258
-Name   = Kenka Banchou 2 - Full Throttle [PlayStation 2 the Best]
+Name   = Kenka Banchou 2 - Full Throttle [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73263
-Name   = Ar tonelico II: Sekai ni Hibiku Shoujo Tachi no Metafalica [PlayStation 2 the Best]
+Name   = Ar tonelico II: Sekai ni Hibiku Shoujo-Tachi no Metafalica [PlayStation 2 The Best]
 Region = NTSC-J
+eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
 ---------------------------------------------
 Serial = SLPS-73401
 Name   = Victorious Boxers - Championship Edition [PlayStation 2 The Best]
@@ -30427,11 +30441,11 @@ Region = PAL-M9
 Compat = 5
 ---------------------------------------------
 Serial = SCES-52410
-Name   = Athens 2004 - Olympic Summer Games
+Name   = Athens 2004
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCES-52411
-Name   = Athens '04
+Name   = Athens 2004 [Platinum]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCES-52412
@@ -32103,8 +32117,8 @@ Name   = Victorious Boxers
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-50282
-Name   = Age of Empires II - Age of Kings
-Region = PAL-Unk
+Name   = Age of Empires II: The Age of Kings
+Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-50283
@@ -32821,7 +32835,7 @@ Name   = ESPN Winter X-Games Snowboarding 2
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-50672
-Name   = Baldur's Gate - Dark Alliance
+Name   = Baldur's Gate: Dark Alliance
 Region = PAL-M5
 Compat = 4
 ---------------------------------------------
@@ -33801,8 +33815,8 @@ Name   = Hitman 2 - Silent Assassin
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-51113
-Name   = Zone of the Enders - The 2nd Runner
-Region = PAL-Unk
+Name   = Zone of the Enders: The 2nd Runner Special Edition
+Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51114
@@ -34586,7 +34600,7 @@ Compat = 5
 [/patches]
 ---------------------------------------------
 Serial = SLES-51496
-Name   = Breath of Fire - Dragon Quarter
+Name   = Breath of Fire: Dragon Quarter
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-51503
@@ -35072,7 +35086,7 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-51772
 Name   = Bad Boys II
-Region = PAL-Unk
+Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51778
 Name   = Summer Heat Beach Volleyball
@@ -35146,7 +35160,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SLES-51816
 Name   = Final Fantasy X-2
-Region = PAL-Unk
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-51817
 Name   = Final Fantasy X-2
@@ -35955,22 +35969,22 @@ Name   = Kaan Barbarian Blade
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLUS-20675
-Name   = Baldur's Gate - Dark Alliance 2
+Name   = Baldur's Gate: Dark Alliance II
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLES-52187
-Name   = Baldur's Gate - Dark Alliance 2
-Region = PAL-Unk
+Name   = Baldur's Gate: Dark Alliance II
+Region = PAL-M3
 Compat = 4
 ---------------------------------------------
 Serial = SLES-52188
-Name   = Baldur's Gate - Dark Alliance 2
-Region = PAL-Unk
+Name   = Baldur's Gate: Dark Alliance II
+Region = PAL-M3
 Compat = 4
 ---------------------------------------------
 Serial = SLPM-65845
-Name   = Baldur's Gate - Dark Alliance II
+Name   = Baldur's Gate: Dark Alliance II
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -36268,11 +36282,11 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52362
 Name   = Bad Boys II
-Region = PAL-Unk
+Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-52363
 Name   = Bad Boys II
-Region = PAL-Unk
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52366
 Name   = America's 10 Most Wanted
@@ -36453,7 +36467,7 @@ Name   = Shrek 2
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52458
-Name   = Disgaea - Hour of Darkness
+Name   = Disgaea: Hour of Darkness
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52459
@@ -36896,24 +36910,24 @@ Name   = V8 Supercars 2
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52641
-Name   = Leisure Suit Larry - Magna Cum Laude - Uncut
-Region = PAL-Unk
+Name   = Leisure Suit Larry: Magna Cum Laude (Uncut)
+Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52642
-Name   = Leisure Suit Larry - Magne cum Laude
-Region = PAL-Unk
+Name   = Leisure Suit Larry: Magna cum Laude
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52643
-Name   = Leisure Suit Larry - Magna Cum Laude
-Region = PAL-Unk
+Name   = Leisure Suit Larry: Magna Cum Laude
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52644
-Name   = Leisure Suit Larry - Magna Cum Laude
-Region = PAL-Unk
+Name   = Leisure Suit Larry: Magna Cum Laude
+Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52645
-Name   = Leisure Suit Larry - Magne cum Laude
-Region = PAL-Unk
+Name   = Leisure Suit Larry: Magna cum Laude
+Region = PAL-I
 ---------------------------------------------
 Serial = SLES-52646
 Name   = Tom Clancy's Ghost Recon 2
@@ -37498,8 +37512,8 @@ Name   = Power Rangers Dino Thunder
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52888
-Name   = Brothers in Arms - Road to Hill 30
-Region = PAL-R
+Name   = Brothers in Arms: Road to Hill 30
+Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52889
 Name   = Disney's Winnie the Pooh Rumbly Tumbly Adventure
@@ -38199,8 +38213,8 @@ Name   = Mashed Fully Loaded
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53154
-Name   = Bard's Tale
-Region = PAL-Unk	// Multiple languages
+Name   = The Bard's Tale
+Region = PAL-M4	// Multiple languages
 [patches]
 	comment=- This gamedisc supports multiple languages.
 	comment=- Language selection is done through the BIOS configuration.
@@ -38520,7 +38534,7 @@ Name   = Alpine Skiing 2005
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53363
-Name   = Shin Megami Tensei - Lucifer's Call
+Name   = Shin Megami Tensei: Lucifer's Call
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-53366
@@ -38723,7 +38737,7 @@ Name   = Evil Dead - Regeneration
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53458
-Name   = Shin Megami Tensei - Digital Devil Saga
+Name   = Shin Megami Tensei: Digital Devil Saga
 Region = PAL-E
 Compat = 5
 EETimingHack = 1
@@ -38775,8 +38789,8 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53483
-Name   = Magne Carta
-Region = PAL-Unk
+Name   = Magna Carta: Tears of Blood
+Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53484
@@ -39169,8 +39183,8 @@ Name   = Disney-Pixar's The Incredibles - Rise of the Underminer
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53659
-Name   = Brothers in Arms - Earned in Blood
-Region = PAL-Unk
+Name   = Brothers in Arms: Earned in Blood
+Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53661
 Name   = Capcom Classics Collection
@@ -39423,16 +39437,16 @@ Name   = Tom Clancy's Ghost Recon - Advanced Warfighter
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53764
-Name   = Atelier Iris - Eternal Mana
+Name   = Atelier Iris: Eternal Mana
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53765
-Name   = Stella Deus - The Gate of Eternity
+Name   = Stella Deus: The Gate of Eternity
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53767
-Name   = Magna Carta
-Region = PAL-Unk
+Name   = Magna Carta: Les Larmes de Sang
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-53768
 Name   = Sword of Etheria, The
@@ -39767,8 +39781,8 @@ Name   = Winter Sports
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53949
-Name   = Magne Carta
-Region = PAL-Unk
+Name   = Magna Carta: Lacrime di Sangue
+Region = PAL-I
 ---------------------------------------------
 Serial = SLES-53952
 Name   = Cue Academy, The (Snooker-Pool-Billiards)
@@ -39923,7 +39937,7 @@ Name   = Disney-Pixar's Cars
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54016
-Name   = and 1 Streetball
+Name   = AND 1 Streetball
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54021
@@ -40685,7 +40699,7 @@ Name   = Destroy All Humans 2 - Make War not Love
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54385
-Name   = Atelier Iris 2 - The Azoth of Destiny
+Name   = Atelier Iris 2: The Azoth of Destiny
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54388
@@ -40814,7 +40828,7 @@ Name   = Chicken Little - Ace in Action
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54454
-Name   = Disgaea 2 - Cursed Memories
+Name   = Disgaea 2: Cursed Memories
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54456
@@ -40996,7 +41010,7 @@ Name   = Star Trek - Encounters
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54555
-Name   = Shin Megami Tensei - Digital Devil Saga 2
+Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = PAL-E
 EETimingHack = 1
 ---------------------------------------------
@@ -41038,7 +41052,7 @@ Name   = Pac-Man Rally
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54586
-Name   = Ar Tonelico - Melody of Elemia
+Name   = Ar tonelico: Melody of Elemia
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54588
@@ -41336,7 +41350,7 @@ Compat = 5
 VIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-54822
-Name   = Atelier Iris 3 - Grand Phantasm
+Name   = Atelier Iris 3: Grand Phantasm
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-54825
@@ -41515,7 +41529,7 @@ Name   = Catz
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-54952
-Name   = Ben 10 - Protector of Earth
+Name   = Ben 10: Protector of Earth
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54953
@@ -41920,7 +41934,7 @@ Region = PAL-Unk
 Compat = 5
 ---------------------------------------------
 Serial = SLES-55354
-Name   = Persona 3 FES
+Name   = Shin Megami Tensei: Persona 3 FES
 Region = PAL-E
 VuClipFlagHack = 1
 ---------------------------------------------
@@ -42007,7 +42021,7 @@ Name   = Disney Vol't
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-55440
-Name   = Ben 10 - Alien Force
+Name   = Ben 10: Alien Force
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55442
@@ -42030,6 +42044,7 @@ Serial = SLES-55444
 Name   = Ar tonelico II: Melody of Metafalica
 Region = PAL-Unk
 Compat = 5
+eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
 ---------------------------------------------
 Serial = SLES-55448
 Name   = Indiana Jones and the Staff of Kings
@@ -42171,7 +42186,7 @@ Name   = Band Hero
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55579
-Name   = Bakugan - Battle Brawlers
+Name   = Bakugan: Battle Brawlers
 Region = PAL-M7
 ---------------------------------------------
 Serial = SLES-55582
@@ -42195,7 +42210,7 @@ Name   = Pro Evolution Soccer 2010
 Region = PAL-I-P-S
 ---------------------------------------------
 Serial = SLES-55592
-Name   = Ben 10 - Alien Force - Vilgax Attacks
+Name   = Ben 10: Alien Force - Vilgax Attacks
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55593
@@ -42234,14 +42249,14 @@ Serial = SLES-55644
 Name   = FIFA 11
 Region = PAL-M5
 ---------------------------------------------
-Serial = SLES-55665
-Name   = FIFA 13
-Region = PAL-Unk
----------------------------------------------
 Serial = SLES-55648
 Name   = WWE All-Stars
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55665
+Name   = FIFA 13
+Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82001
 Name   = Summoner
