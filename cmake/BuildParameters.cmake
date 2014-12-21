@@ -288,3 +288,15 @@ if(DEFINED USER_CMAKE_CXX_FLAGS)
 endif()
 # Use some default machine flags
 string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
+
+#-------------------------------------------------------------------------------
+# Too much user/packager use experimental flags as release flags
+#-------------------------------------------------------------------------------
+if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
+    if (64BIT_BUILD_DONT_WORK)
+        message(FATAL_ERROR "64 bit is not suitable for end users. It will only crash and it will be 10 times slower than 32 bits !!!")
+    endif()
+    if (GTK3_API)
+        message(FATAL_ERROR "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
+    endif()
+endif()
