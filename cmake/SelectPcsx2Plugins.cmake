@@ -21,8 +21,17 @@ endif()
 # Check for additional dependencies.
 # If all dependencies are available, including OS, build it
 #-------------------------------------------------------------------------------
-set(GTKn_FOUND GTK2_FOUND OR GTK3_FOUND)
-set(SDLn_FOUND SDL_FOUND OR SDL2_FOUND)
+if (GTK2_FOUND OR GTK3_FOUND)
+    set(GTKn_FOUND TRUE)
+else()
+    set(GTKn_FOUND FALSE)
+endif()
+
+if(SDL_FOUND OR SDL2_FOUND)
+    set(SDLn_FOUND TRUE)
+else()
+    set(SDLn_FOUND FALSE)
+endif()
 
 #---------------------------------------
 #			Common libs
