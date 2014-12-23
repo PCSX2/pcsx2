@@ -267,9 +267,13 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			case 14: case 15: case 16: case 17:
 #ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
+#else
+				printf("GSdx error: opencl is disabled\n");
 #endif
 				break;
 			}
+			if (s_gs == NULL)
+				return -1;
 
 			s_renderer = renderer;
 		}
