@@ -47,5 +47,5 @@
 //#define ENABLE_OGL_STENCIL_DEBUG
 
 #ifdef _WINDOWS
-#define ENABLE_OPENCL
+//#define ENABLE_OPENCL
 #endif

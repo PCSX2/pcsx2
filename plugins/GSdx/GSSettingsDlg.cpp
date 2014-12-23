@@ -31,6 +31,7 @@ GSSettingsDlg::GSSettingsDlg(bool isOpen2)
 	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
 	, m_IsOpen2(isOpen2)
 {
+#ifdef ENABLE_OPENCL
 	list<OCLDeviceDesc> ocldevs;
 
 	GSUtil::GetDeviceDescs(ocldevs);
@@ -41,6 +42,7 @@ GSSettingsDlg::GSSettingsDlg(bool isOpen2)
 	{
 		m_ocl_devs.push_back(GSSetting(index++, dev.name.c_str(), ""));
 	}
+#endif
 }
 
 void GSSettingsDlg::OnInit()
