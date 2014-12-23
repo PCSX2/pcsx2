@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pcsx2 main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-12-14 14:04+0100\n"
-"PO-Revision-Date: 2014-07-16 11:59-0300\n"
+"PO-Revision-Date: 2014-12-23 13:38-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.7.1\n"
 
 #: common/include/Utilities/Exceptions.h:190
 msgid "No reason given."
@@ -413,13 +413,12 @@ msgid "Loading PS2 system plugins..."
 msgstr "Carregando plug-ins de sistema do PS2..."
 
 #: pcsx2/gui/AppInit.cpp:49
-#, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE2 instruction set."
 msgstr ""
-"Extensões SSE não disponíveis. PCSX2 requer um processador que suporte o "
-"conjunto de instruções SSE."
+"Extensões SSE não disponíveis. PCSX2 requer um CPU que suporte o conjunto de "
+"instruções SSE."
 
 #: pcsx2/gui/AppInit.cpp:138
 msgid "PCSX2 Recompiler Error(s)"
@@ -2707,21 +2706,21 @@ msgstr ""
 "O arquivo de BIOS configurado não existe. Por favor, configure novamente."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:580
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
 "Extensões %s não encontradas. O recompilador R5900-32 requer uma máquina com "
-"processador que tenha extensões MMX, SSE e SSE2."
+"CPU com extensões SSE2."
 
 #: pcsx2/x86/microVU.cpp:28
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"Extensões %s não encontradas. O microVU requer uma máquina com processador "
-"que tenha extensões MMX, SSE e SSE2."
+"Extensões %s não encontradas. O microVU requer uma máquina com CPU com "
+"extensões SSE2."
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - SSE2 recomendado"

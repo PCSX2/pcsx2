@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pcsx2 iconized master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-12-14 14:04+0100\n"
-"PO-Revision-Date: 2014-07-16 11:59-0300\n"
+"PO-Revision-Date: 2014-12-23 13:39-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.7.1\n"
 
 #: common/src/Utilities/Exceptions.cpp:264
 msgid ""
@@ -454,7 +454,6 @@ msgstr ""
 "especificamente para jogos específicos)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
