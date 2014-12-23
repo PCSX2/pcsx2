@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.0 - 141218\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-20 20:02+0100\n"
+"Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
+"POT-Creation-Date: 2014-12-23 19:50+0100\n"
 "PO-Revision-Date: 2014-12-20 21:25+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
@@ -142,7 +142,7 @@ msgstr ""
 "placeringen innehåller befintliga PCSX2-inställningar kommer Ni ges "
 "möjlighet att importera eller överskriva."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:96
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -154,7 +154,7 @@ msgstr ""
 " Minneskort och BIOS. Ifall detta är första gången Ni installerar %s, \n"
 " Anrådes Ni att undersöka ''Läs mig'' och ''KonfigurationsVägledningen''."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:132
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:139
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"

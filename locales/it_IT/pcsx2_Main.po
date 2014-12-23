@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-21 15:56+0100\n"
+"POT-Creation-Date: 2014-12-23 19:50+0100\n"
 "PO-Revision-Date: 2014-12-21 15:58+0100\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
@@ -18,6 +18,19 @@ msgstr ""
 "X-Generator: Poedit 1.7.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
+
+#: common/include/Utilities/Exceptions.h:190
+msgid "No reason given."
+msgstr "Nessuna spiegazione fornita."
+
+#: common/include/Utilities/Exceptions.h:229
+msgid "Parse error"
+msgstr "Errore d'interpretazione"
+
+#: common/include/Utilities/Exceptions.h:253
+msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
+msgstr ""
+"L'hardware del tuo sistema non è in grado di eseguire PCSX2. Ci dispiace."
 
 #: common/src/Utilities/Exceptions.cpp:240
 msgid "Oh noes! Out of memory!"
@@ -354,6 +367,10 @@ msgstr ""
 msgid "Detailed logging of CDVD hardware."
 msgstr "Log dettagliato dell'hardware CDVD."
 
+#: pcsx2/System.h:221 pcsx2/System.h:222 pcsx2/System.h:223
+msgid "PCSX2 Message"
+msgstr "PCSX2 - Messaggio"
+
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
 "The savestate was not properly saved. The temporary file was created "
@@ -508,14 +525,14 @@ msgstr ""
 "Premi OK per usare il plugin configurato predefinito, o Annulla per chiudere "
 "%s."
 
+#: pcsx2/gui/AppInit.cpp:477
+msgid "PCSX2 Error: Hardware Deficiency"
+msgstr "Errore di PCSX2: Hardware non compatibile"
+
 #: pcsx2/gui/AppInit.cpp:477 pcsx2/gui/AppInit.cpp:489
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Premi OK per chiudere %s."
-
-#: pcsx2/gui/AppInit.cpp:477
-msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "Errore di PCSX2: Hardware non compatibile"
 
 #: pcsx2/gui/AppInit.cpp:490
 #, c-format
@@ -633,12 +650,12 @@ msgid "Executing PS2 Virtual Machine..."
 msgstr "Avvio esecuzione Macchina virtuale PS2..."
 
 #: pcsx2/gui/AppRes.cpp:72
-msgid "Browse..."
-msgstr "Sfoglia..."
-
-#: pcsx2/gui/AppRes.cpp:72
 msgid "Browse for an Iso that is not in your recent history."
 msgstr "Sfoglia le cartelle per una ISO non presente tra quelle recenti."
+
+#: pcsx2/gui/AppRes.cpp:72
+msgid "Browse..."
+msgstr "Sfoglia..."
 
 #: pcsx2/gui/AppUserMode.cpp:95
 msgid "The following folders exist, but are not writable:"
@@ -679,33 +696,39 @@ msgstr ""
 "Prova ad eliminare manualmente il file chiamato \"portable.ini\" dalla tua "
 "cartella d'installazione."
 
+#: pcsx2/gui/ApplyState.h:55
+msgid "Cannot apply new settings, one of the settings is invalid."
+msgstr ""
+"Impossibile applicare le nuove impostazioni, una delle impostazioni non è "
+"valida."
+
 #: pcsx2/gui/ConsoleLogger.cpp:120
 msgid "Save log question"
 msgstr "Conferma salvataggio log"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
-msgid "Small"
-msgstr "Piccolo"
-
-#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Fits a lot of log in a microcosmically small area."
 msgstr "Infila un mucchio di log in un'area microcosmicamente piccola."
 
-#: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
-msgid "Normal"
-msgstr "Normale"
+#: pcsx2/gui/ConsoleLogger.cpp:417
+msgid "Small"
+msgstr "Piccolo"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "It's what I use (the programmer guy)."
 msgstr "È quello che uso io (il programmatore)."
 
-#: pcsx2/gui/ConsoleLogger.cpp:421
-msgid "Large"
-msgstr "Grande"
+#: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
+msgid "Normal"
+msgstr "Normale"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "Its nice and readable."
 msgstr "È bello e leggibile."
+
+#: pcsx2/gui/ConsoleLogger.cpp:421
+msgid "Large"
+msgstr "Grande"
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "Huge"
@@ -716,16 +739,12 @@ msgid "In case you have a really high res display."
 msgstr "Nel caso tu possieda uno schermo veramente ad alta risoluzione."
 
 #: pcsx2/gui/ConsoleLogger.cpp:427
-msgid "Light theme"
-msgstr "Tema chiaro"
-
-#: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Default soft-tone color scheme."
 msgstr "Schema predefinito a colori tenui."
 
-#: pcsx2/gui/ConsoleLogger.cpp:428
-msgid "Dark theme"
-msgstr "Tema scuro"
+#: pcsx2/gui/ConsoleLogger.cpp:427
+msgid "Light theme"
+msgstr "Tema chiaro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
@@ -734,6 +753,10 @@ msgid ""
 msgstr ""
 "Schema classico a colore nero, per la gente che si diverte ad avere il testo "
 "marchiato a fuoco nei propri nervi ottici."
+
+#: pcsx2/gui/ConsoleLogger.cpp:428
+msgid "Dark theme"
+msgstr "Tema scuro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:431
 msgid "Always on Top"
@@ -824,12 +847,12 @@ msgid "About %s"
 msgstr "Informazioni su %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Previous versions"
-msgstr "Versioni precedenti"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Betatesting"
 msgstr "Betatesting"
+
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+msgid "Previous versions"
+msgstr "Versioni precedenti"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Webmasters"
@@ -1018,19 +1041,19 @@ msgstr ""
 "in modo imprevedibile (anche se non è un'eventualità così probabile)."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
-msgid "Settings"
-msgstr "Impostazioni"
-
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "Seleziona una cartella per le impostazioni di %s"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:76
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
 msgid "Language selector"
 msgstr "Selettore Lingua"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:79
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1039,19 +1062,19 @@ msgstr ""
 "L'impostazione predefinita dovrebbe andare bene per la maggior parte dei "
 "sistemi operativi."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:85
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
 msgid "Welcome to PCSX2!"
 msgstr "Benvenuto in PCSX2!"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:96
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:103
 msgid "Configuration Guides (online)"
 msgstr "Guida alla Configurazione (online)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:100
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:107
 msgid "Readme / FAQ (Offline/PDF)"
 msgstr "Leggimi / FAQ (Offline/PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:109
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:116
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s Configurazione del primo avvio"
@@ -2133,15 +2156,15 @@ msgid "Delete memory file?"
 msgstr "Eliminare il file della memory card?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
-msgid "Failed: Can only duplicate an existing card."
-msgstr "Fallita: Si possono copiare solo memory card esistenti."
-
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:791
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
 msgid "Duplicate memory card"
 msgstr "Copia memory card"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
+msgid "Failed: Can only duplicate an existing card."
+msgstr "Fallita: Si possono copiare solo memory card esistenti."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:791
 msgid ""
@@ -2271,20 +2294,20 @@ msgid "Created on"
 msgstr "Creata il"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:160
-msgid "Yes"
-msgstr "Sì"
-
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:160
 msgid "No"
 msgstr "No"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:161
-msgid "PSX"
-msgstr "PSX"
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:160
+msgid "Yes"
+msgstr "Sì"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:161
 msgid "PS2"
 msgstr "PS2"
+
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:161
+msgid "PSX"
+msgstr "PSX"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:174
 msgid "[-- Unused cards --]"
@@ -2701,29 +2724,6 @@ msgid ""
 msgstr ""
 "Estensioni %s non trovate.  microVU richiede una CPU del sistema host con "
 "estensioni SSE2."
-
-#: common/include/Utilities/Exceptions.h:190
-msgid "No reason given."
-msgstr "Nessuna spiegazione fornita."
-
-#: common/include/Utilities/Exceptions.h:229
-msgid "Parse error"
-msgstr "Errore d'interpretazione"
-
-#: common/include/Utilities/Exceptions.h:253
-msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr ""
-"L'hardware del tuo sistema non è in grado di eseguire PCSX2. Ci dispiace."
-
-#: pcsx2/System.h:221 pcsx2/System.h:222 pcsx2/System.h:223
-msgid "PCSX2 Message"
-msgstr "PCSX2 - Messaggio"
-
-#: pcsx2/gui/ApplyState.h:55
-msgid "Cannot apply new settings, one of the settings is invalid."
-msgstr ""
-"Impossibile applicare le nuove impostazioni, una delle impostazioni non è "
-"valida."
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - SSE2 Consigliate"
