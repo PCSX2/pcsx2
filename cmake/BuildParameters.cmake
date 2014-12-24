@@ -66,75 +66,30 @@ option(USE_ASAN "Enable address sanitizer")
 #-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
-option(64BIT_BUILD_DONT_WORK "Enable a x86_64 build instead of cross compiling (WARNING: NOTHING WORK)" OFF)
 option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
 # Architecture bitness detection
 include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
-	set(_ARCH_64 1)
-	if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" AND (CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE))
 		message(FATAL_ERROR "The ${PCSX2_TARGET_ARCHITECTURES} architecture is not ready yet.")
 	endif()
-elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-	set(_ARCH_32 1)
+	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
-message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 
-# Print a clear message that 64bits is not supported
-if(_ARCH_64)
+# Print a clear message that most architectures are not supported
+if(NOT (${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386"))
     message(WARNING "
-    PCSX2 does not support a 64-bits environment and has no yet a plan to support it.
+    PCSX2 does not support the ${PCSX2_TARGET_ARCHITECTURES} architecture and has no plans yet to support it.
     It would need a complete rewrite of the core emulator and a lot of time.
 
-    You can still run a 32-bits binary if you install all 32-bits libraries (runtime and dev).")
+    You can still run a i386 binary if you install all the i386 libraries (runtime and dev).")
 endif()
 
-# 64 bits cross-compile specific configuration
-if(_ARCH_64 AND 64BIT_BUILD_DONT_WORK)
-    # Search library in /usr/lib64
-    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-    # Probably useless but it will not harm
-    SET_PROPERTY(GLOBAL PROPERTY COMPILE_DEFINITIONS "-m64")
-
-    # Note: /usr/lib64 is already taken care above
-
-    # For Debian/ubuntu multiarch
-    if(EXISTS "/usr/lib/x86_64-linux-gnu")
-        set(CMAKE_LIBRARY_ARCHITECTURE "x86_64-linux-gnu")
-    endif()
-
-    # x86_64 requires -fPIC
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-    if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-m64 -msse -msse2")
-    else()
-        #set(ARCH_FLAG "-m64 -march=native -fabi-version=6")
-        set(ARCH_FLAG "-m64 -march=native")
-    endif()
-    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
-    set(_ARCH_64 1)
-    set(_M_X86 1)
-    set(_M_X86_64 1)
-else()
-    # Do not search library in /usr/lib64
-    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
-    # Probably useless but it will not harm
-    SET_PROPERTY(GLOBAL PROPERTY COMPILE_DEFINITIONS "-m32")
-
-    # Force the search on 32-bits path.
-    if(EXISTS "/usr/lib32")
-        set(CMAKE_LIBRARY_ARCHITECTURE "../lib32")
-    endif()
-    # Debian/ubuntu drop /usr/lib32 and move /usr/lib to /usr/lib/i386-linux-gnu
-    if(EXISTS "/usr/lib/i386-linux-gnu")
-        set(CMAKE_LIBRARY_ARCHITECTURE "i386-linux-gnu")
-    endif()
-
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     # * -fPIC option was removed for multiple reasons.
     #     - Code only supports the x86 architecture.
     #     - code uses the ebx register so it's not compliant with PIC.
@@ -142,18 +97,46 @@ else()
     #     - Only plugins. No package will link to them.
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
+    # Do not search library in /usr/lib64
+    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+
     if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-m32 -msse -msse2 -march=i686")
+        set(ARCH_FLAG "-msse -msse2 -march=i686")
     else()
         # AVX requires some fix of the ABI (mangling) (default 2)
         # Note: V6 requires GCC 4.7
-        #set(ARCH_FLAG "-m32 -march=native -fabi-version=6")
-        set(ARCH_FLAG "-m32 -march=native")
+        #set(ARCH_FLAG "-march=native -fabi-version=6")
+        set(ARCH_FLAG "-march=native")
     endif()
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
     set(_M_X86_32 1)
+elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
+    # x86_64 requires -fPIC
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+    # Search library in /usr/lib64 (Arch Linux)
+    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+
+    if (DISABLE_ADVANCE_SIMD)
+        set(ARCH_FLAG "-msse -msse2")
+    else()
+        #set(ARCH_FLAG "-march=native -fabi-version=6")
+        set(ARCH_FLAG "-march=native")
+    endif()
+    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
+    set(_ARCH_64 1)
+    set(_M_X86 1)
+    set(_M_X86_64 1)
+else()
+    # All but i386 requires -fPIC
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+    # Do not search library in /usr/lib64
+    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+
+    message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -212,7 +195,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "")
 # Remove -rdynamic option that can some segmentation fault when openining pcsx2 plugins
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-if(_ARCH_32)
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 	# Remove -fPIC option on 32bit architectures.
 	# No good reason to use it for plugins, also it impacts performance.
 	set(CMAKE_SHARED_LIBRARY_C_FLAGS "")
@@ -303,9 +286,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 # Too much user/packager use experimental flags as release flags
 #-------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
-    if (64BIT_BUILD_DONT_WORK)
-        message(FATAL_ERROR "64 bit is not suitable for end users. It will only crash and it will be 10 times slower than 32 bits !!!")
-    endif()
     if (GTK3_API)
         message(FATAL_ERROR "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
