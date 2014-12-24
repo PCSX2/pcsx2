@@ -42,6 +42,7 @@ for ARG in "$@"; do
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
         --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
+        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake) ;;
         -D*           ) flags+=($ARG) ;;
 
         *)
@@ -54,17 +55,18 @@ for ARG in "$@"; do
             echo "--clean         : Do a clean build."
             echo "--extra         : Build all plugins"
             echo
-            echo "** Developper option **"
+            echo "** Developer option **"
             echo "--clang         : Build with Clang/llvm"
             echo "--asan          : Enable Address sanitizer"
             echo
             echo "--wx28          : Force wxWidget 2.8"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
-            echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"
+            echo "--sdl2          : Build with SDL2 (crashes if wx is linked to SDL1.2)"
             echo "--gles          : Replace openGL backend of GSdx by openGLES3.1"
+            echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
             echo
-            echo "** Hardcode Developper option **"
+            echo "** Hardcode Developer option **"
             echo "--no-simd       : Only allow sse2"
             echo "--gtk3          : replace GTK2 by GTK3"
             exit 1
