@@ -1,3 +1,4 @@
+# Copyright (c) 2014 PCSX2 Dev Team
 # Copyright (c) 2012 Petroules Corporation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -88,6 +89,11 @@ function(target_architecture output_var)
         # Architecture defaults to i386 or ppc on OS X 10.5 and earlier, depending on the CPU type detected at runtime.
         # On OS X 10.6+ the default is x86_64 if the CPU supports it, i386 otherwise.
 
+        LIST(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_num)
+        if(NOT (osx_arch_num EQUAL 1))
+            message(FATAL_ERROR "Currently ${CMAKE_PROJECT_NAME} does not support multiple architectures in CMAKE_OSX_ARCHITECTURES")
+        endif()
+
         foreach(osx_arch ${CMAKE_OSX_ARCHITECTURES})
             if("${osx_arch}" STREQUAL "ppc" AND ppc_support)
                 set(osx_arch_ppc TRUE)
@@ -117,6 +123,11 @@ function(target_architecture output_var)
 
         if(osx_arch_ppc64)
             list(APPEND ARCH ppc64)
+        endif()
+
+        LIST(LENGTH ARCH osx_arch_num)
+        if(osx_arch_num LESS 1)
+            message(FATAL_ERROR "Invalid CMAKE_OSX_ARCHITECTURES: ${CMAKE_OSX_ARCHITECTURES}")
         endif()
     else()
         file(WRITE "${CMAKE_BINARY_DIR}/arch.c" "${archdetect_c_code}")
