@@ -70,11 +70,19 @@ option(64BIT_BUILD_DONT_WORK "Enable a x86_64 build instead of cross compiling (
 option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
 # Architecture bitness detection
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+include(TargetArch)
+target_architecture(PCSX2_TARGET_ARCHITECTURES)
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	set(_ARCH_64 1)
-else()
+	if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
+		message(FATAL_ERROR "The ${PCSX2_TARGET_ARCHITECTURES} architecture is not ready yet.")
+	endif()
+elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 	set(_ARCH_32 1)
+else()
+	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
+message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 
 # Print a clear message that 64bits is not supported
 if(_ARCH_64)
@@ -87,7 +95,6 @@ endif()
 
 # 64 bits cross-compile specific configuration
 if(_ARCH_64 AND 64BIT_BUILD_DONT_WORK)
-    message("Compiling 64bit build on 64bit architecture")
     # Search library in /usr/lib64
     SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
     # Probably useless but it will not harm
@@ -114,7 +121,6 @@ if(_ARCH_64 AND 64BIT_BUILD_DONT_WORK)
     set(_M_X86 1)
     set(_M_X86_64 1)
 else()
-    message("Compiling 32bit build on 32/64bit architecture")
     # Do not search library in /usr/lib64
     SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
     # Probably useless but it will not harm
