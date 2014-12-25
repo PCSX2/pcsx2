@@ -68,12 +68,19 @@ option(USE_ASAN "Enable address sanitizer")
 #-------------------------------------------------------------------------------
 option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
+# Print if we are cross compiling.
+if(CMAKE_CROSSCOMPILING)
+    message(STATUS "Cross compilation is enabled.")
+else()
+    message(STATUS "Cross compilation is disabled.")
+endif()
+
 # Architecture bitness detection
 include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" AND (CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE))
-		message(FATAL_ERROR "The ${PCSX2_TARGET_ARCHITECTURES} architecture is not ready yet.")
+		message(FATAL_ERROR "The code for ${PCSX2_TARGET_ARCHITECTURES} support is not ready yet.")
 	endif()
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()

@@ -15,8 +15,10 @@ find_package(OpenGL)
 # set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
 #
 # Fedora uses an extra non-standard option ... Arch must be the first option.
-if(Fedora)
-    set(wxWidgets_CONFIG_OPTIONS --arch i686 --unicode=yes)
+# They do uname -m if missing so only fix for cross compilations.
+# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
+if(Fedora AND CMAKE_CROSSCOMPILING)
+    set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
 else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
