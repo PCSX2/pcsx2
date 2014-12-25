@@ -126,3 +126,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND zerospu2)
 	add_subdirectory(zerospu2)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND zerospu2)
 
+# make MultiNull
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/MultiNull" AND MultiNull)
+	add_subdirectory(MultiNull)
+endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/MultiNull" AND MultiNull)
