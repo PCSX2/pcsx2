@@ -104,9 +104,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     #     - Only plugins. No package will link to them.
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
-    # Do not search library in /usr/lib64
-    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
-
     if (DISABLE_ADVANCE_SIMD)
         set(ARCH_FLAG "-msse -msse2 -march=i686")
     else()
@@ -123,9 +120,6 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # x86_64 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-    # Search library in /usr/lib64 (Arch Linux)
-    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-
     if (DISABLE_ADVANCE_SIMD)
         set(ARCH_FLAG "-msse -msse2")
     else()
@@ -139,9 +133,6 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 else()
     # All but i386 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-    # Do not search library in /usr/lib64
-    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 
     message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
