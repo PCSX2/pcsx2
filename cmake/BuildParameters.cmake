@@ -63,6 +63,11 @@ endif()
 option(USE_CLANG "Use llvm/clang to build PCSX2 (developer option)")
 option(USE_ASAN "Enable address sanitizer")
 
+# It's probably better to autodetect the USE_CLANG. Remove the option?
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT USE_CLANG)
+    set(USE_CLANG TRUE)
+endif()
+
 #-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
