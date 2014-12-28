@@ -54,16 +54,16 @@ function(write_svnrev_h)
 endfunction()
 
 function(check_compiler_version version_warn version_err)
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    if(CMAKE_COMPILER_IS_GNUCXX)
         execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
         string(STRIP "${GCC_VERSION}" GCC_VERSION)
         if(GCC_VERSION VERSION_LESS ${version_err})
-            message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it ! 
+            message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
             
-            The minimum version is ${version_err} but ${version_warn} is warmly recommended")
+            The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
         else()
             if(GCC_VERSION VERSION_LESS ${version_warn})
-                message(WARNING "PCSX2 will stop to support GCC ${GCC_VERSION} in a near future. Please upgrade it to GCC ${version_warn}.")
+                message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
             endif()
         endif()
     endif()
