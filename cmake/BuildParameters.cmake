@@ -80,7 +80,11 @@ include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" AND (CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE))
-		message(FATAL_ERROR "The code for ${PCSX2_TARGET_ARCHITECTURES} support is not ready yet.")
+		message(FATAL_ERROR "
+        The code for ${PCSX2_TARGET_ARCHITECTURES} support is not ready yet.
+        For now compile with -DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake
+        or with
+        --cross-multilib passed to build.sh")
 	endif()
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()
