@@ -7,7 +7,7 @@ endmacro()
 macro(check_lib var lib)
 	set(_arg_list ${ARGN})
 
-	if(PKG_CONFIG_FOUND AND NOT ${var}_FOUND)
+	if(PKG_CONFIG_FOUND AND NOT ${var}_FOUND AND NOT CMAKE_CROSSCOMPILING)
 		string(TOLOWER ${lib} lower_lib)
 		pkg_search_module(${var} QUIET ${lower_lib})
 	endif()
