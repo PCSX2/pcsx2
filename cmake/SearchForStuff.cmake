@@ -32,7 +32,9 @@ include(FindLibc)
 
 ## Use CheckLib package to find module
 include(CheckLib)
-check_lib(AIO aio aio.h)
+if(Linux)
+    check_lib(AIO aio libaio.h)
+endif()
 check_lib(EGL EGL EGL/egl.h)
 check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
@@ -46,7 +48,7 @@ else()
     find_package(SDL)
 endif()
 
-if (Linux)
+if(UNIX)
     find_package(X11)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
     if (GTK3_API)
@@ -63,7 +65,7 @@ endif()
 #----------------------------------------
 #		    Use system include
 #----------------------------------------
-if(Linux)
+if(UNIX)
 	if(GTK2_FOUND)
 		include_directories(${GTK2_INCLUDE_DIRS})
     elseif(GTK3_FOUND)

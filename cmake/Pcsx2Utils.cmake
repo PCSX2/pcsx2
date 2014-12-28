@@ -7,42 +7,34 @@
 # On linux, it also set a flag for specific distribution (ie Fedora)
 #-------------------------------------------------------------------------------
 function(detectOperatingSystem)
-    # nothing detected yet
-    set(MacOSX FALSE PARENT_SCOPE)
-    set(Windows FALSE PARENT_SCOPE)
-    set(Linux FALSE PARENT_SCOPE)
-    set(Fedora FALSE PARENT_SCOPE)
-
-    # check if we are on Linux
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        set(Linux TRUE PARENT_SCOPE)
-
-        if (EXISTS /etc/os-release)
-            # Read the file without CR character
-            file(STRINGS /etc/os-release OS_RELEASE)
-            if ("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
-                set(Fedora TRUE PARENT_SCOPE)
-                message(STATUS "Build Fedora specific")
-            endif()
-            if ("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
-                set(openSUSE TRUE PARENT_SCOPE)
-                add_definitions(-DopenSUSE)
-                message(STATUS "Build openSUSE specific")
-            endif()
-        endif()
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-
-    # check if we are on MacOSX
-    if(APPLE)
-        message(WARNING "Mac OS X isn't supported, build will most likely fail")
-        set(MacOSX TRUE PARENT_SCOPE)
-    endif(APPLE)
-
-    # check if we are on Windows
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(WIN32)
         set(Windows TRUE PARENT_SCOPE)
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-endfunction(detectOperatingSystem)
+    elseif(UNIX AND APPLE)
+        # No easy way to filter out iOS.
+        message(WARNING "OS X/iOS isn't supported, the build will most likely fail")
+        set(MacOSX TRUE PARENT_SCOPE)
+    elseif(UNIX)
+        if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+            set(Linux TRUE PARENT_SCOPE)
+            if (EXISTS /etc/os-release)
+                # Read the file without CR character
+                file(STRINGS /etc/os-release OS_RELEASE)
+                if("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
+                    set(Fedora TRUE PARENT_SCOPE)
+                    message(STATUS "Build Fedora specific")
+                elseif("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
+                    set(openSUSE TRUE PARENT_SCOPE)
+                    add_definitions(-DopenSUSE)
+                    message(STATUS "Build openSUSE specific")
+                endif()
+            endif()
+        elseif(CMAKE_SYSTEM_NAME MATCHES "kFreeBSD")
+            set(kFreeBSD TRUE PARENT_SCOPE)
+        elseif(CMAKE_SYSTEM_NAME STREQUAL "GNU")
+            set(GNU TRUE PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
 
 function(write_svnrev_h)
     find_package(Git)
