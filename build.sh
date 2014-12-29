@@ -16,14 +16,11 @@
 
 #set -e # This terminates the script in case of any error
 
-if [[ (-f /usr/bin/wx-config32-2.8 && -f /usr/bin/wxrc32-2.8) ]]; then
-#add flags for archlinux
-flags=(-DCMAKE_BUILD_PO=FALSE -DwxWidgets_CONFIG_EXECUTABLE='/usr/bin/wx-config32-2.8' -DwxWidgets_wxrc_EXECUTABLE='/usr/bin/wxrc32-2.8')
-else
 flags=(-DCMAKE_BUILD_PO=FALSE)
-fi
+
 cleanBuild=0
 useClang=0
+Build64=0
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -41,7 +38,7 @@ for ARG in "$@"; do
         --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
-        --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
+        --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE); Build64=1; ;;
         --no-simd    )  flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
 
         *)
@@ -69,6 +66,10 @@ for ARG in "$@"; do
     esac
 done
 
+if [[ (-f /usr/bin/wx-config32-2.8 && -f /usr/bin/wxrc32-2.8) && "$Build64" -eq 0 ]]; then
+#add flags for archlinux, wx 3 is not yet in main repositories, wx2.8 need to be used for now
+flags+=(-DwxWidgets_CONFIG_EXECUTABLE='/usr/bin/wx-config32-2.8' -DwxWidgets_wxrc_EXECUTABLE='/usr/bin/wxrc32-2.8' -DWX28_API=TRUE)
+fi
 root=$PWD/$(dirname "$0")
 log=$root/install_log.txt
 build=$root/build
