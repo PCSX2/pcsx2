@@ -67,6 +67,8 @@ extern wxString  GetUiSettingsFilename();
 extern wxString  GetUiKeysFilename();
 
 extern wxDirName GetLogFolder();
+extern wxDirName GetCheatsFolder();
+extern wxDirName GetCheatsWsFolder();
 
 enum InstallationModeType
 {

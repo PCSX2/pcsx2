@@ -453,9 +453,24 @@ bool AppConfig::FullpathMatchTest( PluginsEnum_t pluginId, const wxString& cmpto
 	return wxFileName(cmpto).SameAs( FullpathTo(pluginId) );
 }
 
+static wxDirName GetResolvedFolder(FoldersEnum_t id)
+{
+	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id) : g_Conf->Folders[id];
+}
+
 wxDirName GetLogFolder()
 {
-	return g_Conf->Folders.IsDefault( FolderId_Logs ) ? PathDefs::Get(FolderId_Logs) : g_Conf->Folders[FolderId_Logs];
+	return GetResolvedFolder(FolderId_Logs);
+}
+
+wxDirName GetCheatsFolder()
+{
+	return GetResolvedFolder(FolderId_Cheats);
+}
+
+wxDirName GetCheatsWsFolder()
+{
+	return GetResolvedFolder(FolderId_CheatsWS);
 }
 
 wxDirName GetSettingsFolder()
