@@ -530,13 +530,20 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	wxFileConfig cfg(L"", L"", L"" , GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE );
 	if( cfg.Read( wxString::FromUTF8(searchfor), &overrideStr) )
 	{
-		overrideStr = wxString(L"\t") + overrideStr;
-		if( codeParser.FromString( overrideStr ) ) // needs a '\t' prefix (originally used for wxMenu accelerators parsing)...
+		// needs a '\t' prefix (originally used for wxMenu accelerators parsing)...
+		if (codeParser.FromString(wxString(L"\t") + overrideStr))
 		{
-			//ini file contains alternative parsable key combination for current 'searchfor'.
+			// ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
-			Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
-				WX_STR(fromUTF8( searchfor )), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+			if (_acode.ToString() != acode.ToString()) {
+				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
+					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+			}
+		}
+		else
+		{
+			Console.Error(L"Error overriding KB shortcut for '%s': can't understand '%s'",
+						  WX_STR(fromUTF8(searchfor)), WX_STR(overrideStr));
 		}
 	}
 	// End of overrides section
