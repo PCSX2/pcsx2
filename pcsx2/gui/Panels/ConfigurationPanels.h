@@ -109,7 +109,7 @@ namespace Panels
 
 	public:
 		virtual ~LanguageSelectionPanel() throw() { }
-		LanguageSelectionPanel( wxWindow* parent );
+		LanguageSelectionPanel( wxWindow* parent, bool showApply = true );
 
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();

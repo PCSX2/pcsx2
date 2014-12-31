@@ -278,9 +278,9 @@ Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)
 	// Keep this in English - same as the menu item.
 	*this += Heading(L"New language will affect newly opened windows.\n");
 	*this += Heading(L"Full change will happen after restarting PCSX2.");
-	*this += new Panels::LanguageSelectionPanel(this) | StdCenter();
+	*this += new Panels::LanguageSelectionPanel(this, false) | StdCenter();
 
-	wxDialogWithHelpers::AddOkCancel();
+	AddOkCancel();
 }
 
 // ------------------------------------------------------------------------
