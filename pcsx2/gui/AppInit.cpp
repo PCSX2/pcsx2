@@ -222,6 +222,8 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"windowed",	_("use windowed GS mode") );
 
 	parser.AddSwitch( wxEmptyString,L"nogui",		_("disables display of the gui while running games") );
+	parser.AddSwitch( wxEmptyString,L"noguiprompt",	_("when nogui - prompt before exiting on suspend") );
+
 	parser.AddOption( wxEmptyString,L"elf",			_("executes an ELF image"), wxCMD_LINE_VAL_STRING );
 	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty dvd tray; use to enter the PS2 system menu") );
 	parser.AddSwitch( wxEmptyString,L"usecd",		_("boots from the CDVD plugin (overrides IsoFile parameter)") );
@@ -319,6 +321,7 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 	//wxApp::OnCmdLineParsed( parser );
 
 	m_UseGUI	= !parser.Found(L"nogui");
+	m_NoGuiExitPrompt = parser.Found(L"noguiprompt"); // by default no prompt for exit with nogui.
 
 	if( !ParseOverrides(parser) ) return false;
 

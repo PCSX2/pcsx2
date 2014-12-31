@@ -446,11 +446,15 @@ public:
 	void DispatchUiSettingsEvent( IniInterface& ini );
 	void DispatchVmSettingsEvent( IniInterface& ini );
 
+	bool HasGUI() { return m_UseGUI; };
+	bool ExitPromptWithNoGUI() { return m_NoGuiExitPrompt; };
+
 	// ----------------------------------------------------------------------------
 protected:
 	int								m_PendingSaves;
 	bool							m_ScheduledTermination;
 	bool							m_UseGUI;
+	bool							m_NoGuiExitPrompt;
 
 	Threading::Mutex				m_mtx_Resources;
 	Threading::Mutex				m_mtx_LoadingGameDB;

@@ -943,7 +943,8 @@ void Pcsx2App::OnGsFrameClosed( wxWindowID id )
 
 	if( !m_UseGUI )
 	{
-		// [TODO] : Prompt user before exiting, k thx. :)
+		// The user is prompted before suspending (at Sys_Suspend() ), because
+		// right now there's no way to resume from suspend without GUI.
 		PrepForExit();
 	}
 }
