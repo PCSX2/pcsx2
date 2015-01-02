@@ -56,7 +56,7 @@ endif()
 #           -aio
 #---------------------------------------
 # Common dependancy
-if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND AIO_FOUND)
+if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
     set(pcsx2_core TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
     set(pcsx2_core FALSE)
@@ -66,7 +66,7 @@ else()
     message(STATUS "${msg_dep_pcsx2}")
 endif()
 # Linux need also gtk2
-if(Linux AND pcsx2_core AND NOT GTKn_FOUND)
+if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
     set(pcsx2_core FALSE)
     message(STATUS "Skip build of pcsx2 core: miss some dependencies")
     message(STATUS "${msg_dep_pcsx2}")
