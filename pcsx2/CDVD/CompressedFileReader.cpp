@@ -14,6 +14,8 @@
 */
 
 #include "PrecompiledHeader.h"
+#include <wx/stdpaths.h>
+#include "AppConfig.h"
 #include "AsyncFileReader.h"
 
 #include "zlib_indexed.h"
@@ -177,16 +179,79 @@ int ChunksCache::Read(void* pDest, PX_off_t offset, int length) {
 	return -1;
 }
 
+static wxString INDEX_TEMPLATE_KEY(L"$(f)");
+// template:
+// must contain one and only one instance of '$(f)' (without the quotes)
+// if if !canEndWithKey -> must not end with $(f)
+// if starts with $(f) then it expands to the full path + file name.
+// if doesn't start with $(f) then it's expanded to file name only (with extension)
+// if doesn't start with $(f) and ends up relative,
+//   then it's relative to base (not to cwd)
+// No checks are performed if the result file name can be created.
+// If this proves useful, we can move it into Path:: . Right now there's no need.
+static wxString ApplyTemplate(const wxString &name, const wxDirName &base,
+                              const wxString &fileTemplate, const wxString &filename,
+                              bool canEndWithKey)
+{
+	wxString tem(fileTemplate);
+	wxString key = INDEX_TEMPLATE_KEY;
+	tem = tem.Trim(true).Trim(false); // both sides
 
-static wxString iso2indexname(const wxString& isoname) {
-	return isoname + L".pindex.tmp";
+	int first = tem.find(key);
+	if (first < 0 // not found
+	    || first != tem.rfind(key) // more than one instance
+	    || !canEndWithKey && first == tem.length() - key.length())
+	{
+		Console.Error(L"Invalid %s template '%s'.\n"
+		              L"Template must contain exactly one '%s' and must not end with it. Abotring.",
+		              name.c_str(), tem.c_str(), key.c_str());
+		return L"";
+	}
+
+	wxString fname(filename);
+	if (first > 0)
+		fname = Path::GetFilename(fname); // without path
+
+	tem.Replace(key, fname);
+	if (first > 0)
+		tem = Path::Combine(base, tem); // ignores appRoot if tem is absolute
+
+	return tem;
 }
 
-static void WarnOldIndex(const wxString& filename) {
-	wxString oldName = filename + L".pcsx2.index.tmp";
-	if (wxFileName::FileExists(oldName)) {
-		Console.Warning("Note: Unused old index detected, please delete it manually: '%s'", (const char*)oldName.To8BitData());
+/*
+static void TestTemplate(const wxDirName &base, const wxString &fname, bool canEndWithKey)
+{
+	const char *ins[] = {
+		"$(f).pindex.tmp",                    // same folder as the original file
+		"	$(f).pindex.tmp ",                // same folder as the original file (trimmed silently)
+		"cache/$(f).pindex",                  // relative to base
+		"../$(f).pindex",                     // relative to base
+		"%appdata%/pcsx2/cache/$(f).pindex",  // c:/Users/<user>/AppData/Roaming/pcsx2/cache/ ...
+		"c:\\pcsx2-cache/$(f).pindex",        // absolute
+		"~/.cache/$(f).pindex",	              // TODO: check if this works on *nix. It should...
+		                                      //       (on windows ~ isn't recognized as special)
+		"cache/$(f)/$(f).index",              // invalid: appears twice
+		"hello",                              // invalid: doesn't contain $(f)
+		"hello$(f)",                          // invalid, can't end with $(f)
+		NULL
+	};
+
+	for (int i = 0; ins[i]; i++) {
+		wxString tem(wxString::From8BitData(ins[i]));
+		Console.WriteLn(Color_Green, L"test: '%s' -> '%s'",
+		                tem.c_str(),
+		                ApplyTemplate(L"test", base, tem, fname, canEndWithKey).c_str());
 	}
+}
+*/
+
+static wxString iso2indexname(const wxString& isoname) {
+	//testTemplate(isoname);
+	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
+	    (wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
+	//TestTemplate(appRoot, isoname, false);
+	return ApplyTemplate(L"gzip index", appRoot, g_Conf->GzipIsoIndexTemplate, isoname, false);
 }
 
 #define SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
@@ -275,8 +340,9 @@ bool GzippedFileReader::OkIndex() {
 		return true;
 
 	// Try to read index from disk
-	WarnOldIndex(m_filename);
 	wxString indexfile = iso2indexname(m_filename);
+	if (indexfile.length() == 0)
+		return false; // iso2indexname(...) will print errors if it can't apply the template
 
 	if (wxFileName::FileExists(indexfile) && (m_pIndex = ReadIndexFromFile(indexfile))) {
 		Console.WriteLn(Color_Green, "OK: Gzip quick access index read from disk: '%s'", (const char*)indexfile.To8BitData());

@@ -544,6 +544,8 @@ AppConfig::AppConfig()
 		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
 		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
 	}
+
+	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
 }
 
 // ------------------------------------------------------------------------
@@ -634,6 +636,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.EnumEntry( L"LanguageId", LanguageId, NULL, LanguageId );
 	IniEntry( LanguageCode );
 	IniEntry( RecentIsoCount );
+	IniEntry( GzipIsoIndexTemplate );
 	IniEntry( DeskTheme );
 	IniEntry( Listbook_ImageSize );
 	IniEntry( Toolbar_ImageSize );
