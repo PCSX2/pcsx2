@@ -204,7 +204,7 @@ static wxString ApplyTemplate(const wxString &name, const wxDirName &base,
 	{
 		Console.Error(L"Invalid %s template '%s'.\n"
 		              L"Template must contain exactly one '%s' and must not end with it. Abotring.",
-		              name.c_str(), tem.c_str(), key.c_str());
+		              WX_STR(name), WX_STR(tem), WX_STR(key));
 		return L"";
 	}
 
@@ -240,8 +240,8 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 	for (int i = 0; ins[i]; i++) {
 		wxString tem(wxString::From8BitData(ins[i]));
 		Console.WriteLn(Color_Green, L"test: '%s' -> '%s'",
-		                tem.c_str(),
-		                ApplyTemplate(L"test", base, tem, fname, canEndWithKey).c_str());
+		                WX_STR(tem),
+		                WX_STR(ApplyTemplate(L"test", base, tem, fname, canEndWithKey)));
 	}
 }
 */
