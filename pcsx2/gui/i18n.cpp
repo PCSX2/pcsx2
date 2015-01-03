@@ -203,7 +203,7 @@ static wxLanguage i18n_FallbackToAnotherLang( wxLanguage wxLangId )
 		case wxLANGUAGE_SWEDISH_FINLAND      : return wxLANGUAGE_SWEDISH;
 
 		case wxLANGUAGE_AFRIKAANS            :
-		case wxLANG_FRISIAN                  :
+		//case wxLANG_FRISIAN                  :
 		// case wxLANGUAGE_LUXEMBOURGISH        :
 		// - not supported by wxWidgets (3.0.0).
 		case wxLANGUAGE_DUTCH_BELGIAN        : return wxLANGUAGE_DUTCH;
