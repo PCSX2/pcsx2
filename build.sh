@@ -24,7 +24,7 @@ useClang=0
 for ARG in "$@"; do
     case "$ARG" in
         --clean       ) cleanBuild=1 ;;
-        --clang       ) flags+=(-DUSE_CLANG=TRUE); useClang=1; ;;
+        --clang       ) useClang=1; ;;
         --dev|--devel ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
         --dbg|--debug ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
         --strip       ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
