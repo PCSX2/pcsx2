@@ -144,7 +144,7 @@ endif()
 # requires: -OpenGL
 #			-X11
 #---------------------------------------
-if(OPENGL_FOUND AND X11_FOUND AND EGL_FOUND)
+if(OPENGL_FOUND AND X11_FOUND AND EGL_FOUND AND GTKn_FOUND)
     set(GSdx TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
 	set(GSdx FALSE)
@@ -186,7 +186,7 @@ endif()
 #			-JPEG
 #           -common_libs
 #---------------------------------------
-if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs) AND (CG_FOUND OR GLSL_API))
+if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
 	set(zzogl TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
 	set(zzogl FALSE)
