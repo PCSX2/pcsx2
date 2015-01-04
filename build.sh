@@ -20,7 +20,6 @@ flags=(-DCMAKE_BUILD_PO=FALSE)
 
 cleanBuild=0
 useClang=0
-Build64=0
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -70,10 +69,6 @@ for ARG in "$@"; do
     esac
 done
 
-if [[ (-f /usr/bin/wx-config32-2.8 && -f /usr/bin/wxrc32-2.8) && "$Build64" -eq 0 ]]; then
-#add flags for archlinux, wx 3 is not yet in main repositories, wx2.8 need to be used for now
-flags+=(-DwxWidgets_CONFIG_EXECUTABLE='/usr/bin/wx-config32-2.8' -DwxWidgets_wxrc_EXECUTABLE='/usr/bin/wxrc32-2.8' -DWX28_API=TRUE)
-fi
 root=$PWD/$(dirname "$0")
 log=$root/install_log.txt
 build=$root/build
