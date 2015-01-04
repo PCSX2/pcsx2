@@ -4,8 +4,10 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 
 # It could be i?86-*linux-gnu, x86_64-*linux-gnu, x86_64-*linux-gnux32, etc.
 # Leave it generic to only support amd64 or x32 to i386 with any compiler.
-set(CMAKE_C_COMPILER cc -m32)
-set(CMAKE_CXX_COMPILER c++ -m32)
+if("$ENV{CC}" STREQUAL "" OR "$ENV{CXX}" STREQUAL "")
+    set(CMAKE_C_COMPILER cc -m32)
+    set(CMAKE_CXX_COMPILER c++ -m32)
+endif()
 
 # cmake 2.8.5 correctly sets CMAKE_LIBRARY_ARCHITECTURE for Debian multiarch.
 # Be really strict about what gets used.

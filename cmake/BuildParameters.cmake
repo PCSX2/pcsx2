@@ -64,6 +64,7 @@ option(USE_ASAN "Enable address sanitizer")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(USE_CLANG TRUE)
+    message(STATUS "Building with Clang/LLVM.")
 endif()
 
 #-------------------------------------------------------------------------------

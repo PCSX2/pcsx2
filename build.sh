@@ -20,6 +20,8 @@ flags=(-DCMAKE_BUILD_PO=FALSE)
 
 cleanBuild=0
 useClang=0
+# 0 => no, 1 => yes, 2 => force yes
+useCross=0
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -38,7 +40,7 @@ for ARG in "$@"; do
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
         --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake) ;;
+        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
         -D*           ) flags+=($ARG) ;;
 
         *)
@@ -92,7 +94,11 @@ mkdir -p $build
 cd $build
 
 if [[ "$useClang" -eq 1 ]]; then
-    CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    if [[ "$useCross" -eq 0 ]]; then
+        CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    else
+        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    fi
 else
     cmake "${flags[@]}" $root 2>&1 | tee -a $log
 fi
