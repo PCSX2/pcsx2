@@ -21,7 +21,7 @@ flags=(-DCMAKE_BUILD_PO=FALSE)
 cleanBuild=0
 useClang=0
 # 0 => no, 1 => yes, 2 => force yes
-useCross=0
+useCross=2
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -79,6 +79,13 @@ if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr $build/*
+fi
+
+if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
+    echo "Forcing cross compilation."
+    flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake)
+elif [[ "$useCross" -ne 1 ]]; then
+    useCross=0
 fi
 
 echo "Building pcsx2 with ${flags[*]}" | tee $log
