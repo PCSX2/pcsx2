@@ -23,7 +23,7 @@
 
 namespace Threading
 {
-	static long					_attr_refcount = 0;
+	static s32					_attr_refcount = 0;
 	static pthread_mutexattr_t	_attr_recursive;
 }
 

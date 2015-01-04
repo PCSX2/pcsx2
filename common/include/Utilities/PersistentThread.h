@@ -103,8 +103,8 @@ namespace Threading
 		MutexRecursive	m_mtx_start;	// used to lock the Start() code from starting simultaneous threads accidentally.
 		Mutex		m_mtx_ThreadName;
 
-		volatile long m_detached;		// a boolean value which indicates if the m_thread handle is valid
-		volatile long m_running;		// set true by Start(), and set false by Cancel(), Block(), etc.
+		volatile s32 m_detached;		// a boolean value which indicates if the m_thread handle is valid
+		volatile s32 m_running;		// set true by Start(), and set false by Cancel(), Block(), etc.
 
 		// exception handle, set non-NULL if the thread terminated with an exception
 		// Use RethrowException() to re-throw the exception using its original exception type.
