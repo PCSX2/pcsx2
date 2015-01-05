@@ -229,7 +229,7 @@ void SysLogMachineCaps()
 	Console.Indent().WriteLn(
 		L"CPU name         =  %s\n"
 		L"Vendor/Model     =  %s (stepping %02X)\n"
-		L"CPU speed        =  %u.%03u ghz (%u logical thread%s)\n"
+		L"CPU speed        =  %u.%03u ghz (%u logical thread%ls)\n"
 		L"x86PType         =  %s\n"
 		L"x86Flags         =  %08x %08x\n"
 		L"x86EFlags        =  %08x",
