@@ -25,23 +25,24 @@ useCross=2
 
 for ARG in "$@"; do
     case "$ARG" in
-        --clean       ) cleanBuild=1 ;;
-        --clang       ) useClang=1; ;;
-        --dev|--devel ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
-        --dbg|--debug ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
-        --strip       ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
-        --release     ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
-        --glsl        ) flags+=(-DGLSL_API=TRUE) ;;
-        --egl         ) flags+=(-DEGL_API=TRUE) ;;
-        --gles        ) flags+=(-DGLES_API=TRUE) ;;
-        --sdl2        ) flags+=(-DSDL2_API=TRUE) ;;
-        --extra       ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
-        --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
-        --wx28        ) flags+=(-DWX28_API=TRUE) ;;
-        --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
-        --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
-        -D*           ) flags+=($ARG) ;;
+        --clean             ) cleanBuild=1 ;;
+        --clang             ) useClang=1; ;;
+        --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
+        --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
+        --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
+        --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
+        --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
+        --egl               ) flags+=(-DEGL_API=TRUE) ;;
+        --gles              ) flags+=(-DGLES_API=TRUE) ;;
+        --sdl2              ) flags+=(-DSDL2_API=TRUE) ;;
+        --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
+        --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
+        --wx28              ) flags+=(-DWX28_API=TRUE) ;;
+        --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;
+        --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
+        --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
+        --no-cross-multilib ) useCross=0; ;;
+        -D*                 ) flags+=($ARG) ;;
 
         *)
             # Unknown option
@@ -52,11 +53,9 @@ for ARG in "$@"; do
             echo
             echo "--clean         : Do a clean build."
             echo "--extra         : Build all plugins"
+            echo "--no-simd       : Only allow sse2"
             echo
             echo "** Developer option **"
-            echo "--clang         : Build with Clang/llvm"
-            echo "--asan          : Enable Address sanitizer"
-            echo
             echo "--wx28          : Force wxWidget 2.8"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
@@ -64,9 +63,12 @@ for ARG in "$@"; do
             echo "--gles          : Replace openGL backend of GSdx by openGLES3.1"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
             echo
-            echo "** Hardcode Developer option **"
-            echo "--no-simd       : Only allow sse2"
+            echo "** Expert Developer option **"
             echo "--gtk3          : replace GTK2 by GTK3"
+            echo "--no-cross-multilib: Build a native PCSX2"
+            echo "--clang         : Build with Clang/llvm"
+            echo "--asan          : Enable Address sanitizer"
+
             exit 1
     esac
 done
