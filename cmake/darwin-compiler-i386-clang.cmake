@@ -8,9 +8,6 @@ set(CMAKE_C_COMPILER_TARGET i686-apple-darwin)
 set(CMAKE_CXX_COMPILER clang++ -m32)
 set(CMAKE_CXX_COMPILER_TARGET i686-apple-darwin)
 
-# Enable clang
-set(USE_CLANG TRUE)
-
 # If given a CMAKE_FIND_ROOT_PATH then
 # FIND_PROGRAM ignores CMAKE_FIND_ROOT_PATH (probably can't run)
 # FIND_{LIBRARY,INCLUDE,PACKAGE} only uses the files in CMAKE_FIND_ROOT_PATH.

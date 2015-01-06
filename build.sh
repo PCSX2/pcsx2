@@ -20,12 +20,13 @@ flags=(-DCMAKE_BUILD_PO=FALSE)
 
 cleanBuild=0
 useClang=0
-Build64=0
+# 0 => no, 1 => yes, 2 => force yes
+useCross=2
 
 for ARG in "$@"; do
     case "$ARG" in
         --clean       ) cleanBuild=1 ;;
-        --clang       ) flags+=(-DUSE_CLANG=TRUE); useClang=1; ;;
+        --clang       ) useClang=1; ;;
         --dev|--devel ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
         --dbg|--debug ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
         --strip       ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
@@ -39,7 +40,7 @@ for ARG in "$@"; do
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3        ) flags+=(-DGTK3_API=TRUE) ;;
         --no-simd     ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake) ;;
+        --cross-multilib ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
         -D*           ) flags+=($ARG) ;;
 
         *)
@@ -70,10 +71,6 @@ for ARG in "$@"; do
     esac
 done
 
-if [[ (-f /usr/bin/wx-config32-2.8 && -f /usr/bin/wxrc32-2.8) && "$Build64" -eq 0 ]]; then
-#add flags for archlinux, wx 3 is not yet in main repositories, wx2.8 need to be used for now
-flags+=(-DwxWidgets_CONFIG_EXECUTABLE='/usr/bin/wx-config32-2.8' -DwxWidgets_wxrc_EXECUTABLE='/usr/bin/wxrc32-2.8' -DWX28_API=TRUE)
-fi
 root=$PWD/$(dirname "$0")
 log=$root/install_log.txt
 build=$root/build
@@ -82,6 +79,13 @@ if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr $build/*
+fi
+
+if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
+    echo "Forcing cross compilation."
+    flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake)
+elif [[ "$useCross" -ne 1 ]]; then
+    useCross=0
 fi
 
 echo "Building pcsx2 with ${flags[*]}" | tee $log
@@ -97,7 +101,11 @@ mkdir -p $build
 cd $build
 
 if [[ "$useClang" -eq 1 ]]; then
-    CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    if [[ "$useCross" -eq 0 ]]; then
+        CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    else
+        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    fi
 else
     cmake "${flags[@]}" $root 2>&1 | tee -a $log
 fi
