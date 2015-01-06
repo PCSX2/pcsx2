@@ -571,11 +571,15 @@ set(pcsx2x86Sources
 	x86/newVif_Dynarec.cpp
 	x86/newVif_Unpack.cpp
 	x86/newVif_UnpackSSE.cpp
+	)
+if (NOT DISABLE_SVU)
+    set(pcsx2x86Sources ${pcsx2x86Sources}
 	x86/sVU_Lower.cpp
 	x86/sVU_Micro.cpp
 	x86/sVU_Upper.cpp
 	x86/sVU_zerorec.cpp
-	)
+    )
+endif()
 
 # x86 headers
 set(pcsx2x86Headers
@@ -614,10 +618,6 @@ set(pcsx2x86Headers
 	x86/newVif.h
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
-	x86/sVU_Compare.h
-	x86/sVU_Debug.h
-	x86/sVU_Micro.h
-	x86/sVU_zerorec.h
 	)
 
 # colect .asm files
@@ -626,11 +626,14 @@ set(pcsx2AsmFiles
 	x86/ix86-32/aVif_proc-32.asm)
 
 # collect .S files
-set(pcsx2SSources
-	x86/aVUzerorec.S)
+if (NOT DISABLE_SVU)
+    set(pcsx2SSources x86/aVUzerorec.S)
+    # change language of .S-files to c++
+    set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
+else()
+    set(pcsx2SSources "")
+endif()
 
-# change language of .S-files to c++
-set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
 
 # common Sources
 set(Common

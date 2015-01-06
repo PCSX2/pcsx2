@@ -1972,8 +1972,10 @@ StartRecomp:
 
 		for(i = startpc; i < s_nEndBlock; i += 4) {
 
+#ifndef DISABLE_SVU
 			// superVU hack: it needs vucycles, for some reason. >_<
 			extern int vucycle;
+#endif
 
 			g_pCurInstInfo++;
 			cpuRegs.code = *(u32*)PSM(i);
@@ -1983,7 +1985,9 @@ StartRecomp:
 
 				if( !usecop2 ) {
 					// init
+#ifndef DISABLE_SVU
 					vucycle = 0;
+#endif
 					usecop2 = 1;
 				}
 
@@ -1992,9 +1996,11 @@ StartRecomp:
 				continue;
 			}
 
+#ifndef DISABLE_SVU
 			// fixme - This should be based on the cycle count of the current EE
 			// instruction being analyzed.
 			if( usecop2 ) vucycle++;
+#endif
 
 		}
 		// This *is* important because g_pCurInstInfo is checked a bit later on and

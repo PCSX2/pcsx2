@@ -185,8 +185,10 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 		RadioPanelItem(_("microVU Recompiler"))
 		.SetToolTip(_("New Vector Unit recompiler with much improved compatibility. Recommended.")),
 
+#ifndef DISABLE_SVU
 		RadioPanelItem(_("superVU Recompiler [legacy]"))
 		.SetToolTip(_("Useful for diagnosing bugs or clamping issues in the new mVU recompiler."))
+#endif
 	};
 
 	m_panel_VU0 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 1 );
@@ -274,8 +276,10 @@ void Panels::CpuPanelVU::Apply()
 	recOps.EnableVU0	= m_panel_VU0->GetSelection() > 0;
 	recOps.EnableVU1	= m_panel_VU1->GetSelection() > 0;
 
+#ifndef DISABLE_SVU
 	recOps.UseMicroVU0	= m_panel_VU0->GetSelection() == 1;
 	recOps.UseMicroVU1	= m_panel_VU1->GetSelection() == 1;
+#endif
 }
 
 void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
@@ -289,21 +293,33 @@ void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_VU1->Enable(true);
 
 	m_panel_VU0->EnableItem( 1, true);
+#ifndef DISABLE_SVU
 	m_panel_VU0->EnableItem( 2, true);
+#endif
 
 	m_panel_VU1->EnableItem( 1, true);
+#ifndef DISABLE_SVU
 	m_panel_VU1->EnableItem( 2, true);
+#endif
 
 	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
+#ifndef DISABLE_SVU
 	if( recOps.UseMicroVU0 )
 		m_panel_VU0->SetSelection( recOps.EnableVU0 ? 1 : 0 );
 	else
 		m_panel_VU0->SetSelection( recOps.EnableVU0 ? 2 : 0 );
+#else
+	m_panel_VU0->SetSelection( recOps.EnableVU0 ? 1 : 0 );
+#endif
 
+#ifndef DISABLE_SVU
 	if( recOps.UseMicroVU1 )
 		m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
 	else
 		m_panel_VU1->SetSelection( recOps.EnableVU1 ? 2 : 0 );
+#else
+	m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
+#endif
 
 	this->Enable(!configToApply.EnablePresets);
 	m_panel_VU0->Enable(!configToApply.EnablePresets);
