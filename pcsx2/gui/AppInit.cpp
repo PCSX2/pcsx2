@@ -167,16 +167,25 @@ void Pcsx2App::AllocateCoreStuffs()
 			{
 				scrollableTextArea->AppendText( L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU0	= false;
+#ifndef DISABLE_SVU
 				recOps.EnableVU0	= recOps.EnableVU0 && m_CpuProviders->IsRecAvailable_SuperVU0();
+#else
+				recOps.EnableVU1	= false;
+#endif
 			}
 
 			if( BaseException* ex = m_CpuProviders->GetException_MicroVU1() )
 			{
 				scrollableTextArea->AppendText( L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU1	= false;
+#ifndef DISABLE_SVU
 				recOps.EnableVU1	= recOps.EnableVU1 && m_CpuProviders->IsRecAvailable_SuperVU1();
+#else
+				recOps.EnableVU1	= false;
+#endif
 			}
 
+#ifndef DISABLE_SVU
 			if( BaseException* ex = m_CpuProviders->GetException_SuperVU0() )
 			{
 				scrollableTextArea->AppendText( L"* SuperVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
@@ -190,9 +199,9 @@ void Pcsx2App::AllocateCoreStuffs()
 				recOps.UseMicroVU1	= m_CpuProviders->IsRecAvailable_MicroVU1();
 				recOps.EnableVU1	= recOps.EnableVU1 && recOps.UseMicroVU1;
 			}
+#endif
 
-			exconf += exconf.Heading( pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." )
-			);
+			exconf += exconf.Heading(pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." ));
 
 			pxIssueConfirmation( exconf, MsgButtons().OK() );
 		}

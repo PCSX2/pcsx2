@@ -331,10 +331,11 @@ CpuInitializer< CpuType >::~CpuInitializer() throw()
 class CpuInitializerSet
 {
 public:
+#ifndef DISABLE_SVU
 	// Note: Allocate sVU first -- it's the most picky.
-
 	CpuInitializer<recSuperVU0>		superVU0;
 	CpuInitializer<recSuperVU1>		superVU1;
+#endif
 
 	CpuInitializer<recMicroVU0>		microVU0;
 	CpuInitializer<recMicroVU1>		microVU1;
@@ -491,10 +492,12 @@ bool SysCpuProviderPack::IsRecAvailable_MicroVU1() const { return CpuProviders->
 BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown; }
 BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown; }
 
+#ifndef DISABLE_SVU
 bool SysCpuProviderPack::IsRecAvailable_SuperVU0() const { return CpuProviders->superVU0.IsAvailable(); }
 bool SysCpuProviderPack::IsRecAvailable_SuperVU1() const { return CpuProviders->superVU1.IsAvailable(); }
 BaseException* SysCpuProviderPack::GetException_SuperVU0() const { return CpuProviders->superVU0.ExThrown; }
 BaseException* SysCpuProviderPack::GetException_SuperVU1() const { return CpuProviders->superVU1.ExThrown; }
+#endif
 
 
 void SysCpuProviderPack::CleanupMess() throw()
@@ -522,10 +525,16 @@ bool SysCpuProviderPack::HadSomeFailures( const Pcsx2Config::RecompilerOptions& 
 {
 	return	(recOpts.EnableEE && !IsRecAvailable_EE()) ||
 			(recOpts.EnableIOP && !IsRecAvailable_IOP()) ||
+#ifndef DISABLE_SVU
 			(recOpts.EnableVU0 && recOpts.UseMicroVU0 && !IsRecAvailable_MicroVU0()) ||
 			(recOpts.EnableVU1 && recOpts.UseMicroVU0 && !IsRecAvailable_MicroVU1()) ||
 			(recOpts.EnableVU0 && !recOpts.UseMicroVU0 && !IsRecAvailable_SuperVU0()) ||
-			(recOpts.EnableVU1 && !recOpts.UseMicroVU1 && !IsRecAvailable_SuperVU1());
+			(recOpts.EnableVU1 && !recOpts.UseMicroVU1 && !IsRecAvailable_SuperVU1())
+#else
+			(recOpts.EnableVU0 && !IsRecAvailable_MicroVU0()) ||
+			(recOpts.EnableVU1 && !IsRecAvailable_MicroVU1())
+#endif
+			;
 
 }
 
@@ -541,12 +550,21 @@ void SysCpuProviderPack::ApplyConfig() const
 	CpuVU1 = CpuProviders->interpVU1;
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU0 )
+#ifndef DISABLE_SVU
 		CpuVU0 = EmuConfig.Cpu.Recompiler.UseMicroVU0 ? (BaseVUmicroCPU*)CpuProviders->microVU0 : (BaseVUmicroCPU*)CpuProviders->superVU0;
+#else
+		CpuVU0 = (BaseVUmicroCPU*)CpuProviders->microVU0;
+#endif
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
+#ifndef DISABLE_SVU
 		CpuVU1 = EmuConfig.Cpu.Recompiler.UseMicroVU1 ? (BaseVUmicroCPU*)CpuProviders->microVU1 : (BaseVUmicroCPU*)CpuProviders->superVU1;
+#else
+		CpuVU1 = (BaseVUmicroCPU*)CpuProviders->microVU1;
+#endif
 }
 
+#ifndef DISABLE_SVU
 // This is a semi-hacky function for convenience
 BaseVUmicroCPU* SysCpuProviderPack::getVUprovider(int whichProvider, int vuIndex) const {
 	switch (whichProvider) {
@@ -556,6 +574,7 @@ BaseVUmicroCPU* SysCpuProviderPack::getVUprovider(int whichProvider, int vuIndex
 	}
 	return NULL;
 }
+#endif
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
 // This can be called at any time outside the context of a Cpu->Execute() block without

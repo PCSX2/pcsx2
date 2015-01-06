@@ -21,7 +21,10 @@
 #include "x86emitter/x86emitter.h"
 #include "iR5900.h"
 #include "iFPU.h"
+
+#ifndef DISABLE_SVU
 #include "sVU_Micro.h"
+#endif
 
 /* This is a version of the FPU that emulates an exponent of 0xff and overflow/underflow flags */
 
