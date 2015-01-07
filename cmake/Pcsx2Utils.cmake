@@ -37,9 +37,8 @@ function(detectOperatingSystem)
 endfunction()
 
 function(write_svnrev_h)
-    find_package(Git)
     set(PCSX2_WC_TIME 0)
-    if (GIT_FOUND)
+    if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
         EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
             OUTPUT_VARIABLE PCSX2_WC_TIME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
