@@ -77,7 +77,7 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	// change it with compilation flags. -- Gregory
 #define xDOC_str(s) DOC_str(s)
 #define DOC_str(s) #s
-	faqFile.Write( L"file://%s/PCSX2_FAQ.pdf", xDOC_str(DOC_DIR_COMPILATION) );
+	faqFile.Write( L"file://%s/PCSX2_FAQ.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
 #endif
 
 	wxStaticBoxSizer& langSel	= *new wxStaticBoxSizer( wxVERTICAL, this, _("Language selector") );
