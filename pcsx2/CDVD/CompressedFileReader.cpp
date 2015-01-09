@@ -28,7 +28,7 @@ static s64 fsize(const wxString& filename) {
 	if (!wxFileName::FileExists(filename))
 		return -1;
 
-	std::ifstream f(filename.ToUTF8(), std::ifstream::binary);
+	std::ifstream f(filename.mbc_str(), std::ifstream::binary);
 	f.seekg(0, f.end);
 	s64 size = f.tellg();
 	f.close();
@@ -46,15 +46,15 @@ static s64 fsize(const wxString& filename) {
 static Access* ReadIndexFromFile(const wxString& filename) {
 	s64 size = fsize(filename);
 	if (size <= 0) {
-		Console.Error("Error: Can't open index file: '%s'", (const char*)filename.To8BitData());
+		Console.Error(L"Error: Can't open index file: '%s'", WX_STR(filename));
 		return 0;
 	}
-	std::ifstream infile(filename.ToUTF8(), std::ifstream::binary);
+	std::ifstream infile(filename.mbc_str(), std::ifstream::binary);
 
 	char fileId[GZIP_ID_LEN + 1] = { 0 };
 	infile.read(fileId, GZIP_ID_LEN);
 	if (wxString::From8BitData(GZIP_ID) != wxString::From8BitData(fileId)) {
-		Console.Error("Error: Incompatible gzip index, please delete it manually: '%s'", (const char*)filename.To8BitData());
+		Console.Error(L"Error: Incompatible gzip index, please delete it manually: '%s'", WX_STR(filename));
 		infile.close();
 		return 0;
 	}
@@ -64,7 +64,7 @@ static Access* ReadIndexFromFile(const wxString& filename) {
 
 	s64 datasize = size - GZIP_ID_LEN - sizeof(Access);
 	if (datasize != index->have * sizeof(Point)) {
-		Console.Error("Error: unexpected size of gzip index, please delete it manually: '%s'.", (const char*)filename.To8BitData());
+		Console.Error(L"Error: unexpected size of gzip index, please delete it manually: '%s'.", WX_STR(filename));
 		infile.close();
 		free(index);
 		return 0;
@@ -79,11 +79,11 @@ static Access* ReadIndexFromFile(const wxString& filename) {
 
 static void WriteIndexToFile(Access* index, const wxString filename) {
 	if (wxFileName::FileExists(filename)) {
-		Console.Warning("WARNING: Won't write index - file name exists (please delete it manually): '%s'", (const char*)filename.To8BitData());
+		Console.Warning(L"WARNING: Won't write index - file name exists (please delete it manually): '%s'", WX_STR(filename));
 		return;
 	}
 
-	std::ofstream outfile(filename.ToUTF8(), std::ofstream::binary);
+	std::ofstream outfile(filename.mbc_str(), std::ofstream::binary);
 	outfile.write(GZIP_ID, GZIP_ID_LEN);
 
 	Point* tmp = index->list;
@@ -96,9 +96,9 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 
 	// Verify
 	if (fsize(filename) != (s64)GZIP_ID_LEN + sizeof(Access) + sizeof(Point) * index->have) {
-		Console.Warning("Warning: Can't write index file to disk: '%s'", (const char*)filename.To8BitData());
+		Console.Warning(L"Warning: Can't write index file to disk: '%s'", WX_STR(filename));
 	} else {
-		Console.WriteLn(Color_Green, "OK: Gzip quick access index file saved to disk: '%s'", (const char*)filename.To8BitData());
+		Console.WriteLn(Color_Green, L"OK: Gzip quick access index file saved to disk: '%s'", WX_STR(filename));
 	}
 }
 
@@ -345,21 +345,22 @@ bool GzippedFileReader::OkIndex() {
 		return false; // iso2indexname(...) will print errors if it can't apply the template
 
 	if (wxFileName::FileExists(indexfile) && (m_pIndex = ReadIndexFromFile(indexfile))) {
-		Console.WriteLn(Color_Green, "OK: Gzip quick access index read from disk: '%s'", (const char*)indexfile.To8BitData());
+		Console.WriteLn(Color_Green, L"OK: Gzip quick access index read from disk: '%s'", WX_STR(indexfile));
 		if (m_pIndex->span != SPAN_DEFAULT) {
-			Console.Warning("Note: This index has %1.1f MB intervals, while the current default for new indexes is %1.1f MB.", (float)m_pIndex->span / 1024 / 1024, (float)SPAN_DEFAULT / 1024 / 1024);
-			Console.Warning("It will work fine, but if you want to generate a new index with default intervals, delete this index file.");
-			Console.Warning("(smaller intervals mean bigger index file and quicker but more frequent decompressions)");
+			Console.Warning(L"Note: This index has %1.1f MB intervals, while the current default for new indexes is %1.1f MB.",
+			                (float)m_pIndex->span / 1024 / 1024, (float)SPAN_DEFAULT / 1024 / 1024);
+			Console.Warning(L"It will work fine, but if you want to generate a new index with default intervals, delete this index file.");
+			Console.Warning(L"(smaller intervals mean bigger index file and quicker but more frequent decompressions)");
 		}
 		InitZstates();
 		return true;
 	}
 
 	// No valid index file. Generate an index
-	Console.Warning("This may take a while (but only once). Scanning compressed file to generate a quick access index...");
+	Console.Warning(L"This may take a while (but only once). Scanning compressed file to generate a quick access index...");
 
 	Access *index;
-	FILE* infile = fopen(m_filename.ToUTF8(), "rb");
+	FILE* infile = fopen(m_filename.mbc_str(), "rb");
 	int len = build_index(infile, SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
 	fclose(infile);
@@ -368,7 +369,7 @@ bool GzippedFileReader::OkIndex() {
 		m_pIndex = index;
 		WriteIndexToFile((Access*)m_pIndex, indexfile);
 	} else {
-		Console.Error("ERROR (%d): index could not be generated for file '%s'", len, (const char*)m_filename.To8BitData());
+		Console.Error(L"ERROR (%d): index could not be generated for file '%s'", len, WX_STR(m_filename));
 		InitZstates();
 		return false;
 	}
@@ -380,7 +381,7 @@ bool GzippedFileReader::OkIndex() {
 bool GzippedFileReader::Open(const wxString& fileName) {
 	Close();
 	m_filename = fileName;
-	if (!(m_src = fopen(m_filename.ToUTF8(), "rb")) || !CanHandle(fileName) || !OkIndex()) {
+	if (!(m_src = fopen(m_filename.mbc_str(), "rb")) || !CanHandle(fileName) || !OkIndex()) {
 		Close();
 		return false;
 	};
@@ -408,7 +409,7 @@ int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 	int bytesToRead = count * m_blocksize;
 	int res = _ReadSync(pBuffer, offset, bytesToRead);
 	if (res < 0)
-		Console.Error("Error: iso-gzip read unsuccessful.");
+		Console.Error(L"Error: iso-gzip read unsuccessful.");
 	return res;
 }
 
@@ -495,11 +496,11 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 
 	int duration = NOW() - s;
 	if (duration > 10)
-		Console.WriteLn(Color_Gray, "gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
-			(int)(offset / 4 / 1024 / 1024),
-			(int)(offset % (4 * 1024 * 1024) / READ_CHUNK_SIZE),
-			(float)size / 1024 / 1024,
-			duration);
+		Console.WriteLn(Color_Gray, L"gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
+		                (int)(offset / 4 / 1024 / 1024),
+		                (int)(offset % (4 * 1024 * 1024) / READ_CHUNK_SIZE),
+		                (float)size / 1024 / 1024,
+		                duration);
 
 	return copied;
 }
