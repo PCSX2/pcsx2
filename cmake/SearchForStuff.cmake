@@ -23,15 +23,12 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
-# Temprorary help for Arch-based distros.
-# They have wx2.8, lib32-wx2.8 and wx3.0 but no lib32-wx3.0.
 # wx2.8 => /usr/bin/wx-config-2.8, /usr/bin/wxrc-2.8
 # lib32-wx2.8 => /usr/bin/wx-config32-2.8, /usr/bin/wxrc32-2.8
-# wx3.0 => /usr/bin/wx-config, /usr/bin/wxrc -> /usr/bin/wxrc-3.0
+# wx3.0 => /usr/bin/wx-config-3.0, /usr/bin/wxrc-3.0
 # I'm going to take a wild guess and predict this:
 # lib32-wx3.0 => /usr/bin/wx-config32-3.0, /usr/bin/wxrc32-3.0
-# FindwxWidgets only searches for wxrc and wx-config. Therefore only native
-# wx3.0 works since everything else has non-standard naming.
+# FindwxWidgets only searches for wxrc and wx-config.
 if(CMAKE_CROSSCOMPILING)
     # May need to fix the filenames for lib32-wx3.0.
     if(NOT WX28_API AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386" AND EXISTS "/usr/bin/wx-config32-3.0" AND EXISTS "/usr/bin/wxrc32-3.0")
@@ -42,7 +39,10 @@ if(CMAKE_CROSSCOMPILING)
         set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc32-2.8")
     endif()
 else()
-    if(WX28_API AND EXISTS "/usr/bin/wx-config-2.8" AND EXISTS "/usr/bin/wxrc-2.8")
+    if(NOT WX28_API AND EXISTS "/usr/bin/wx-config-3.0" AND EXISTS "/usr/bin/wxrc-3.0")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+        set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc-3.0")
+    elseif(WX28_API AND EXISTS "/usr/bin/wx-config-2.8" AND EXISTS "/usr/bin/wxrc-2.8")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-2.8")
         set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc-2.8")
     endif()
