@@ -23,6 +23,18 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
+if(WX28_API)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --version=2.8)
+else()
+    list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+endif()
+
+if(GTK3_API)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+else()
+    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+endif()
+
 # wx2.8 => /usr/bin/wx-config-2.8, /usr/bin/wxrc-2.8
 # lib32-wx2.8 => /usr/bin/wx-config32-2.8, /usr/bin/wxrc32-2.8
 # wx3.0 => /usr/bin/wx-config-3.0, /usr/bin/wxrc-3.0
@@ -157,5 +169,3 @@ include_directories(${CMAKE_SOURCE_DIR}/common/include
 #----------------------------------------
 include(ApiValidation)
 WX_vs_SDL()
-WX_vs_GTK3()
-WX_version()
