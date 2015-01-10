@@ -288,6 +288,7 @@ enum MenuIDs_t
 	MenuId_LogSource_EnableAll = 0x30,
 	MenuId_LogSource_DisableAll,
 	MenuId_LogSource_Devel,
+	MenuId_LogSource_SetDefault,
 	MenuId_LogSource_CDVD_Info,
 
 	MenuId_LogSource_Start = 0x100
@@ -460,6 +461,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	menuSources.AppendSeparator();
 	menuSources.Append( MenuId_LogSource_EnableAll,		_("Enable all"),	_("Enables all log source filters.") );
 	menuSources.Append( MenuId_LogSource_DisableAll,	_("Disable all"),	_("Disables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_SetDefault,	_("Restore Default"), _("Restore default source filters.") );
 
 	pMenuBar->Append(&menuLog,		_("&Log"));
 	pMenuBar->Append(&menuSources,	_("&Sources"));
@@ -484,6 +486,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	Connect( MenuId_LogSource_CDVD_Info,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleCDVDInfo ) );
 	Connect( MenuId_LogSource_EnableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnEnableAllLogging ) );
 	Connect( MenuId_LogSource_DisableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnDisableAllLogging ) );
+	Connect( MenuId_LogSource_SetDefault,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnSetDefaultLogging ) );
 
 	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler			(ConsoleLogFrame::OnCloseWindow) );
 	Connect( wxEVT_MOVE,			wxMoveEventHandler			(ConsoleLogFrame::OnMoveAround) );
@@ -537,6 +540,19 @@ void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = false;
+	}
+
+	OnLoggingChanged();
+	evt.Skip();
+}
+
+void ConsoleLogFrame::OnSetDefaultLogging(wxCommandEvent& evt)
+{
+	uint srcnt = ArraySize(ConLogSources);
+	for (uint i = 0; i<srcnt; ++i)
+	{
+		if (ConsoleLogSource* log = ConLogSources[i])
+			log->Enabled = ConLogDefaults[i];
 	}
 
 	OnLoggingChanged();

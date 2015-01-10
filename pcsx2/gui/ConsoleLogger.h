@@ -242,6 +242,7 @@ protected:
 
 	void OnEnableAllLogging(wxCommandEvent& event);
 	void OnDisableAllLogging(wxCommandEvent& event);
+	void OnSetDefaultLogging(wxCommandEvent& event);
 
 	void OnToggleTheme(wxCommandEvent& event);
 	void OnFontSize(wxCommandEvent& event);

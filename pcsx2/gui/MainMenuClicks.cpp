@@ -70,6 +70,11 @@ void MainEmuFrame::Menu_Language_Click(wxCommandEvent &event)
 	InterfaceConfigDialog(this).ShowModal();
 }
 
+void MainEmuFrame::Menu_ChangeLang(wxCommandEvent &event) // Always in English
+{
+	AppOpenDialog<InterfaceLanguageDialog>(this);
+}
+
 static void WipeSettings()
 {
 	wxGetApp().CleanupRestartable();
@@ -580,19 +585,6 @@ void MainEmuFrame::Menu_ShowConsole(wxCommandEvent &event)
 	wxCommandEvent evt( wxEVT_COMMAND_MENU_SELECTED, g_Conf->ProgLogBox.Visible ? wxID_OPEN : wxID_CLOSE );
 	wxGetApp().ProgramLog_PostEvent( evt );
 }
-
-void MainEmuFrame::Menu_ChangeLang(wxCommandEvent &event) // Always in English
-{
-	Msgbox::Alert ( L"Please restart PCSX2.\n"
-					L"\n"
-					L"First-Time-Wizard will then appear, where you can change the language.\n"
-					L"\n"
-					L"(You can keep other settings by choosing 'Import' when prompted)"
-					 );
-
-	wxGetApp().ForceFirstTimeWizardOnNextRun();
-}
-
 
 void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent &event)
 {

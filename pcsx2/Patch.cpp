@@ -203,7 +203,8 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 			inifile_process(f);
 			f.Close();
 			int loaded = cheatnumber - before;
-			Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s'", loaded, WX_STR(friendlyName), WX_STR(buffer));
+			Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
+							loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundCheatsFiles ++;
 		}
 		found = dir.GetNext(&buffer);
@@ -253,6 +254,9 @@ int LoadCheats(wxString name, const wxDirName& folderName, const wxString& frien
 	wxString filespec = name + L"*.pnach";
 	loaded += LoadCheatsFiles(folderName, filespec, friendlyName, numberFoundCheatsFiles);
 
+	// This message _might_ be buggy. This function (LoadCheats) loads from an explicit folder.
+	// This folder can be cheats or cheats_ws at either the default location or a custom one.
+	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
 	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundCheatsFiles == 0) {
 		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
 		Console.WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));

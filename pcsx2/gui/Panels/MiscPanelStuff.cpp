@@ -100,7 +100,7 @@ void Panels::DocsFolderPickerPanel::OnRadioChanged( wxCommandEvent& evt )
 // --------------------------------------------------------------------------------------
 //  LanguageSelectionPanel
 // --------------------------------------------------------------------------------------
-Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent )
+Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool showApply )
 	: BaseApplicableConfigPanel( parent, wxHORIZONTAL )
 {
 	m_picker = NULL;
@@ -115,14 +115,18 @@ Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent )
 	m_picker = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		size, compiled.GetPtr(), wxCB_READONLY | wxCB_SORT );
 
-	wxButton* applyButton = new wxButton( this, pxID_RestartWizard, _("Apply") );
-	applyButton->SetToolTip(_("Make this language my default right now!"));
-
 	*this	+= 5;
 	*this	+= m_picker | pxSizerFlags::StdSpace();
 	*this	+= 5;
-	*this	+= applyButton | pxSizerFlags::StdSpace();
-	*this	+= 5;
+
+	if (showApply)
+	{
+		wxButton* applyButton = new wxButton( this, pxID_RestartWizard, _("Apply") );
+		applyButton->SetToolTip(_("Make this language my default right now!"));
+
+		*this += applyButton | pxSizerFlags::StdSpace();
+		*this += 5;
+	}
 
 	Connect( pxID_RestartWizard,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( LanguageSelectionPanel::OnApplyLanguage_Clicked ) );
 

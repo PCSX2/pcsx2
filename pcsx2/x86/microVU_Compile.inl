@@ -274,7 +274,7 @@ void mVUincCycles(mV, int x) {
 		calcCycles(mVUregs.VF[z].z, x);
 		calcCycles(mVUregs.VF[z].w, x);
 	}
-	for (int z = 16; z > 0; z--) {
+	for (int z = 15; z > 0; z--) {
 		calcCycles(mVUregs.VI[z], x);
 	}
 	if (mVUregs.q) {

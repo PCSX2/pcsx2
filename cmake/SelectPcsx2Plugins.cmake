@@ -56,7 +56,7 @@ endif()
 #           -aio
 #---------------------------------------
 # Common dependancy
-if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND AIO_FOUND)
+if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
     set(pcsx2_core TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
     set(pcsx2_core FALSE)
@@ -66,7 +66,7 @@ else()
     message(STATUS "${msg_dep_pcsx2}")
 endif()
 # Linux need also gtk2
-if(Linux AND pcsx2_core AND NOT GTKn_FOUND)
+if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
     set(pcsx2_core FALSE)
     message(STATUS "Skip build of pcsx2 core: miss some dependencies")
     message(STATUS "${msg_dep_pcsx2}")
@@ -144,7 +144,7 @@ endif()
 # requires: -OpenGL
 #			-X11
 #---------------------------------------
-if(OPENGL_FOUND AND X11_FOUND AND EGL_FOUND)
+if(OPENGL_FOUND AND X11_FOUND AND EGL_FOUND AND GTKn_FOUND)
     set(GSdx TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
 	set(GSdx FALSE)
@@ -186,7 +186,7 @@ endif()
 #			-JPEG
 #           -common_libs
 #---------------------------------------
-if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs) AND (CG_FOUND OR GLSL_API))
+if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
 	set(zzogl TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
 	set(zzogl FALSE)

@@ -1747,7 +1747,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			AtomicExchange( eeRecNeedsReset, true );
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			MOV32MtoR(ECX, (int)&cpuRegs.GPR.n.a0.UL[ 0 ] );
+			MOV32MtoR(ECX, (uptr)&cpuRegs.GPR.n.a0.UL[ 0 ] );
 			xCALL(GoemonUnloadTlb);
 		}
 	}

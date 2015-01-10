@@ -67,7 +67,7 @@
 -- OPHFLagHack 		= 1 // Bleach Bankais and others
 -- DMABusyHack 		= 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
 -- VIFFIFOHack 		= 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
--- VIF1StallHack 	= 1 // SOCOM II.
+-- VIF1StallHack 	= 1 // SOCOM II HUD and Spy Hunter loading hang.
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -571,6 +571,7 @@ Region = NTSC-U
 Serial = SCUS-97211
 Name   = ATV Off-Road Fury 2
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SCUS-97212
 Name   = My Street (Online)
@@ -2017,6 +2018,8 @@ Compat = 3
 Serial = SLUS-20056
 Name   = Spy Hunter
 Region = NTSC-U
+Compat = 5
+VIF1StallHack = 1 //Fixes loading hang
 ---------------------------------------------
 Serial = SLUS-20058
 Name   = Moto GP
@@ -4116,6 +4119,8 @@ Region = NTSC-U
 Serial = SLUS-20541
 Name   = NBA Ballers
 Region = NTSC-U
+Compat = 5
+vuClampMode = 2 //Fixes transparency issues
 ---------------------------------------------
 Serial = SLUS-20543
 Name   = Metal Gear Solid 2
@@ -7699,6 +7704,7 @@ Compat = 5
 Serial = SLUS-21318
 Name   = Call of Duty 2 - Big Red One [Collector's Edition]
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21319
 Name   = Flow - Urban Dance Uprising

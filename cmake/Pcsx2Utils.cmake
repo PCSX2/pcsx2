@@ -7,47 +7,38 @@
 # On linux, it also set a flag for specific distribution (ie Fedora)
 #-------------------------------------------------------------------------------
 function(detectOperatingSystem)
-    # nothing detected yet
-    set(MacOSX FALSE PARENT_SCOPE)
-    set(Windows FALSE PARENT_SCOPE)
-    set(Linux FALSE PARENT_SCOPE)
-    set(Fedora FALSE PARENT_SCOPE)
-
-    # check if we are on Linux
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        set(Linux TRUE PARENT_SCOPE)
-
-        if (EXISTS /etc/os-release)
-            # Read the file without CR character
-            file(STRINGS /etc/os-release OS_RELEASE)
-            if ("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
-                set(Fedora TRUE PARENT_SCOPE)
-                message(STATUS "Build Fedora specific")
-            endif()
-            if ("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
-                set(openSUSE TRUE PARENT_SCOPE)
-                add_definitions(-DopenSUSE)
-                message(STATUS "Build openSUSE specific")
-            endif()
-        endif()
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-
-    # check if we are on MacOSX
-    if(APPLE)
-        message(WARNING "Mac OS X isn't supported, build will most likely fail")
-        set(MacOSX TRUE PARENT_SCOPE)
-    endif(APPLE)
-
-    # check if we are on Windows
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(WIN32)
         set(Windows TRUE PARENT_SCOPE)
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-endfunction(detectOperatingSystem)
+    elseif(UNIX AND APPLE)
+        # No easy way to filter out iOS.
+        message(WARNING "OS X/iOS isn't supported, the build will most likely fail")
+        set(MacOSX TRUE PARENT_SCOPE)
+    elseif(UNIX)
+        if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+            set(Linux TRUE PARENT_SCOPE)
+            if (EXISTS /etc/os-release)
+                # Read the file without CR character
+                file(STRINGS /etc/os-release OS_RELEASE)
+                if("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
+                    set(Fedora TRUE PARENT_SCOPE)
+                    message(STATUS "Build Fedora specific")
+                elseif("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
+                    set(openSUSE TRUE PARENT_SCOPE)
+                    add_definitions(-DopenSUSE)
+                    message(STATUS "Build openSUSE specific")
+                endif()
+            endif()
+        elseif(CMAKE_SYSTEM_NAME MATCHES "kFreeBSD")
+            set(kFreeBSD TRUE PARENT_SCOPE)
+        elseif(CMAKE_SYSTEM_NAME STREQUAL "GNU")
+            set(GNU TRUE PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
 
 function(write_svnrev_h)
-    find_package(Git)
     set(PCSX2_WC_TIME 0)
-    if (GIT_FOUND)
+    if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
         EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
             OUTPUT_VARIABLE PCSX2_WC_TIME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -62,16 +53,16 @@ function(write_svnrev_h)
 endfunction()
 
 function(check_compiler_version version_warn version_err)
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    if(CMAKE_COMPILER_IS_GNUCXX)
         execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
         string(STRIP "${GCC_VERSION}" GCC_VERSION)
         if(GCC_VERSION VERSION_LESS ${version_err})
-            message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it ! 
+            message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
             
-            The minimum version is ${version_err} but ${version_warn} is warmly recommended")
+            The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
         else()
             if(GCC_VERSION VERSION_LESS ${version_warn})
-                message(WARNING "PCSX2 will stop to support GCC ${GCC_VERSION} in a near future. Please upgrade it to GCC ${version_warn}.")
+                message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
             endif()
         endif()
     endif()

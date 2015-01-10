@@ -453,9 +453,24 @@ bool AppConfig::FullpathMatchTest( PluginsEnum_t pluginId, const wxString& cmpto
 	return wxFileName(cmpto).SameAs( FullpathTo(pluginId) );
 }
 
+static wxDirName GetResolvedFolder(FoldersEnum_t id)
+{
+	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id) : g_Conf->Folders[id];
+}
+
 wxDirName GetLogFolder()
 {
-	return g_Conf->Folders.IsDefault( FolderId_Logs ) ? PathDefs::Get(FolderId_Logs) : g_Conf->Folders[FolderId_Logs];
+	return GetResolvedFolder(FolderId_Logs);
+}
+
+wxDirName GetCheatsFolder()
+{
+	return GetResolvedFolder(FolderId_Cheats);
+}
+
+wxDirName GetCheatsWsFolder()
+{
+	return GetResolvedFolder(FolderId_CheatsWS);
 }
 
 wxDirName GetSettingsFolder()
@@ -529,6 +544,8 @@ AppConfig::AppConfig()
 		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
 		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
 	}
+
+	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
 }
 
 // ------------------------------------------------------------------------
@@ -619,6 +636,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.EnumEntry( L"LanguageId", LanguageId, NULL, LanguageId );
 	IniEntry( LanguageCode );
 	IniEntry( RecentIsoCount );
+	IniEntry( GzipIsoIndexTemplate );
 	IniEntry( DeskTheme );
 	IniEntry( Listbook_ImageSize );
 	IniEntry( Toolbar_ImageSize );

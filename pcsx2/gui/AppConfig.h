@@ -67,6 +67,8 @@ extern wxString  GetUiSettingsFilename();
 extern wxString  GetUiKeysFilename();
 
 extern wxDirName GetLogFolder();
+extern wxDirName GetCheatsFolder();
+extern wxDirName GetCheatsWsFolder();
 
 enum InstallationModeType
 {
@@ -293,7 +295,8 @@ public:
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions				Mcd[8];
-	
+	wxString				GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
+
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
 	FilenameOptions			BaseFilenames;

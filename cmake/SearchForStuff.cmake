@@ -15,11 +15,39 @@ find_package(OpenGL)
 # set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
 #
 # Fedora uses an extra non-standard option ... Arch must be the first option.
-if(Fedora)
-    set(wxWidgets_CONFIG_OPTIONS --arch i686 --unicode=yes)
+# They do uname -m if missing so only fix for cross compilations.
+# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
+if(Fedora AND CMAKE_CROSSCOMPILING)
+    set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
 else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
+
+# Temprorary help for Arch-based distros.
+# They have wx2.8, lib32-wx2.8 and wx3.0 but no lib32-wx3.0.
+# wx2.8 => /usr/bin/wx-config-2.8, /usr/bin/wxrc-2.8
+# lib32-wx2.8 => /usr/bin/wx-config32-2.8, /usr/bin/wxrc32-2.8
+# wx3.0 => /usr/bin/wx-config, /usr/bin/wxrc -> /usr/bin/wxrc-3.0
+# I'm going to take a wild guess and predict this:
+# lib32-wx3.0 => /usr/bin/wx-config32-3.0, /usr/bin/wxrc32-3.0
+# FindwxWidgets only searches for wxrc and wx-config. Therefore only native
+# wx3.0 works since everything else has non-standard naming.
+if(CMAKE_CROSSCOMPILING)
+    # May need to fix the filenames for lib32-wx3.0.
+    if(NOT WX28_API AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386" AND EXISTS "/usr/bin/wx-config32-3.0" AND EXISTS "/usr/bin/wxrc32-3.0")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+        set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc32-3.0")
+    elseif(WX28_API AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386" AND EXISTS "/usr/bin/wx-config32-2.8" AND EXISTS "/usr/bin/wxrc32-2.8")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-2.8")
+        set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc32-2.8")
+    endif()
+else()
+    if(WX28_API AND EXISTS "/usr/bin/wx-config-2.8" AND EXISTS "/usr/bin/wxrc-2.8")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-2.8")
+        set(wxWidgets_wxrc_EXECUTABLE "/usr/bin/wxrc-2.8")
+    endif()
+endif()
+
 find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
@@ -30,25 +58,31 @@ include(FindLibc)
 
 ## Use CheckLib package to find module
 include(CheckLib)
-check_lib(AIO aio aio.h)
-check_lib(EGL egl EGL/egl.h)
+if(Linux)
+    check_lib(AIO aio libaio.h)
+endif()
+check_lib(EGL EGL EGL/egl.h)
 check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
 if(SDL2_API)
-    check_lib(SDL2 SDL2 SDL.h)
+    check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
 else()
     # Tell cmake that we use SDL as a library and not as an application
     set(SDL_BUILDING_LIBRARY TRUE)
     find_package(SDL)
 endif()
 
-if (Linux)
+if(UNIX)
     find_package(X11)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
     if (GTK3_API)
-        check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
+        if(CMAKE_CROSSCOMPILING)
+            find_package(GTK3 REQUIRED gtk)
+        else()
+            check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
+        endif()
     else()
         find_package(GTK2 REQUIRED gtk)
     endif()
@@ -57,7 +91,7 @@ endif()
 #----------------------------------------
 #		    Use system include
 #----------------------------------------
-if(Linux)
+if(UNIX)
 	if(GTK2_FOUND)
 		include_directories(${GTK2_INCLUDE_DIRS})
     elseif(GTK3_FOUND)
@@ -100,41 +134,6 @@ if(SDL_FOUND AND NOT SDL2_API)
 endif()
 
 if(wxWidgets_FOUND)
-    if(Linux)
-        # Force the use of 32 bit library configuration on
-        # 64 bits machine with 32 bits library in /usr/lib32
-        if(_ARCH_64 AND NOT 64BIT_BUILD_DONT_WORK)
-            ## There is no guarantee that wx-config is a link to a 32 bits library. So you need to force the destinity
-            # Library can go into 3 path major paths (+ multiarch)
-            # 1/ /usr/lib32 (32 bits only)
-            # 2/ /usr/lib64 (64 bits only)
-            # 3/ /usr/lib   (32 or 64 bits depends on distributions)
-            if (EXISTS "/usr/lib32/wx")
-                STRING(REGEX REPLACE "/usr/lib/wx" "/usr/lib32/wx" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-                STRING(REGEX REPLACE "/usr/lib64/wx" "/usr/lib32/wx" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-            endif (EXISTS "/usr/lib32/wx")
-            if (EXISTS "/usr/lib/wx")
-                STRING(REGEX REPLACE "/usr/lib64/wx" "/usr/lib/wx" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-            endif (EXISTS "/usr/lib/wx")
-            # Multiarch ubuntu/debian
-            STRING(REGEX REPLACE "/usr/lib/x86_64-linux-gnu" "/usr/lib/i386-linux-gnu" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-        endif()
-
-		# Some people are trying to compile with wx 3.0 ...
-		### 3.0
-		# -I/usr/lib/i386-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -pthread
-		# -L/usr/lib/i386-linux-gnu -pthread   -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0
-		### 2.8
-		# -I/usr/lib/i386-linux-gnu/wx/include/gtk2-unicode-release-2.8 -I/usr/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -pthread
-		# -L/usr/lib/i386-linux-gnu -pthread -Wl,-z,relro  -L/usr/lib/i386-linux-gnu   -lwx_gtk2u_richtext-2.8 -lwx_gtk2u_aui-2.8 -lwx_gtk2u_xrc-2.8 -lwx_gtk2u_qa-2.8 -lwx_gtk2u_html-2.8 -lwx_gtk2u_adv-2.8 -lwx_gtk2u_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8
-        if ("${wxWidgets_INCLUDE_DIRS}" MATCHES "3.0" AND WX28_API)
-			message(WARNING "\nWxwidget 3.0 is installed on your system whereas PCSX2 required 2.8 !!!\nPCSX2 will try to use 2.8 but if it would be better to fix your setup.\n")
-			STRING(REGEX REPLACE "unicode" "unicode-release" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-			STRING(REGEX REPLACE "3\\.0" "2.8" wxWidgets_INCLUDE_DIRS "${wxWidgets_INCLUDE_DIRS}")
-			STRING(REGEX REPLACE "3\\.0" "2.8" wxWidgets_LIBRARIES "${wxWidgets_LIBRARIES}")
-		endif()
-    endif()
-
 	include(${wxWidgets_USE_FILE})
 endif()
 
@@ -152,9 +151,11 @@ include_directories(${CMAKE_SOURCE_DIR}/common/include
                     ${CMAKE_BINARY_DIR}/common/include
                     )
 
-# WORKAROUND Some issue with multiarch on Debian/Ubuntu
-if (64BIT_BUILD_DONT_WORK)
-    include_directories(/usr/include/x86_64-linux-gnu)
-else()
-    include_directories(/usr/include/i386-linux-gnu)
-endif()
+#----------------------------------------
+# Check correctness of the parameter
+# Note: wxWidgets_INCLUDE_DIRS must be defined
+#----------------------------------------
+include(ApiValidation)
+WX_vs_SDL()
+WX_vs_GTK3()
+WX_version()

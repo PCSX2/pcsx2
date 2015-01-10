@@ -281,6 +281,37 @@ namespace Implementations
 
 	void Sys_Suspend()
 	{
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc) {
+			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
+			// However, by default suspend just hides the gs window, so PCSX2 will not exit
+			// and there will also be no way to exit it even if no windows are left.
+			// If the gs window is not set to close on suspend, then the user can still
+			// close it with the X button, which PCSX2 will recognize and exit.
+			// So if we're set to close on esc and nogui:
+			// If the user didn't specify --noguiprompt - exit immediately.
+			// else prompt to either exit or abort the suspend.
+			if (!wxGetApp().ExitPromptWithNoGUI() // the user specified to exit immediately
+				|| (wxOK == wxMessageBox(_("Exit PCSX2?"),
+										 L"PCSX2",
+										 wxICON_WARNING | wxOK | wxCANCEL)))
+			{
+				// Pcsx2App knows to exit if no gui and the GS window closes.
+				gsframe->Close();
+				return;
+			}
+			else
+			{
+				// aborting suspend request
+				// TODO: It's likely that if we were full screen before showing the
+				// prompt then we're now not in full screen anymore. It would have
+				// been ideal to restore full screen, but the full screen flow is complex
+				// and specifically gsframe->IsFullScreen() is always false when we enter
+				// this function - even if we were full screen before displaying the prompt.
+				return;
+			}
+		}
+
 		CoreThread.Suspend();
 		sMainFrame.SetFocus();
 	}
@@ -530,13 +561,20 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	wxFileConfig cfg(L"", L"", L"" , GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE );
 	if( cfg.Read( wxString::FromUTF8(searchfor), &overrideStr) )
 	{
-		overrideStr = wxString(L"\t") + overrideStr;
-		if( codeParser.FromString( overrideStr ) ) // needs a '\t' prefix (originally used for wxMenu accelerators parsing)...
+		// needs a '\t' prefix (originally used for wxMenu accelerators parsing)...
+		if (codeParser.FromString(wxString(L"\t") + overrideStr))
 		{
-			//ini file contains alternative parsable key combination for current 'searchfor'.
+			// ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
-			Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
-				WX_STR(fromUTF8( searchfor )), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+			if (_acode.ToString() != acode.ToString()) {
+				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
+					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+			}
+		}
+		else
+		{
+			Console.Error(L"Error overriding KB shortcut for '%s': can't understand '%s'",
+						  WX_STR(fromUTF8(searchfor)), WX_STR(overrideStr));
 		}
 	}
 	// End of overrides section

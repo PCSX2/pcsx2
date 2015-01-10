@@ -7,4 +7,5 @@ GenericName=Playstation 2 Emulator
 Comment=Sony Playstation 2 emulator
 Exec=pcsx2
 Icon=pcsx2
+Keywords=game;emulator;
 Categories=@PCSX2_MENU_CATEGORIES@
