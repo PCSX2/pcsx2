@@ -268,12 +268,14 @@ void mVUoptimizePipeState(mV) {
 
 void mVUincCycles(mV, int x) {
 	mVUcycles += x;
+	// VF[0] is a constant value (0.0 0.0 0.0 1.0)
 	for (int z = 31; z > 0; z--) {
 		calcCycles(mVUregs.VF[z].x, x);
 		calcCycles(mVUregs.VF[z].y, x);
 		calcCycles(mVUregs.VF[z].z, x);
 		calcCycles(mVUregs.VF[z].w, x);
 	}
+	// VI[0] is a constant value (0)
 	for (int z = 15; z > 0; z--) {
 		calcCycles(mVUregs.VI[z], x);
 	}
