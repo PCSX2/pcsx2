@@ -225,7 +225,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"noguiprompt",	_("when nogui - prompt before exiting on suspend") );
 
 	parser.AddOption( wxEmptyString,L"elf",			_("executes an ELF image"), wxCMD_LINE_VAL_STRING );
-	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty dvd tray; use to enter the PS2 system menu") );
+	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty DVD tray; use to enter the PS2 system menu") );
 	parser.AddSwitch( wxEmptyString,L"usecd",		_("boots from the CDVD plugin (overrides IsoFile parameter)") );
 
 	parser.AddSwitch( wxEmptyString,L"nohacks",		_("disables all speedhacks") );
