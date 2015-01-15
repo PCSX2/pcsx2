@@ -143,7 +143,7 @@ public:
 
 #else
 // let us use std::thread for now, comment out the definition to go back to pthread
-//#define _STD_THREAD_
+#define _STD_THREAD_
 #ifdef _STD_THREAD_
 #include <thread>
 #include <mutex>
