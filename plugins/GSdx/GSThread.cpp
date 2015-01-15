@@ -144,13 +144,27 @@ void GSThread::CloseThread()
 	}
 
     #else
-    
+    // Should be tested on windows too one day, native handle should be disabled there though, or adapted to windows thread
     #ifdef _STD_THREAD_
+    
+    #define _NATIVE_HANDLE_ // Using std::thread native handle, allows to just use posix stuff.
+    #ifdef _NATIVE_HANDLE_ // std::thread join seems to be bugged, have to test it again every now and then, it did work at some point(gcc 5), seems there is bug in system lib...
+    pthread_t m_thread = t->native_handle();
+    void *ret = NULL;
+    pthread_join(m_thread, &ret);
+    /* We are sure thread is dead, not so bad.
+     * Still no way to to delete that crap though... Really, wtf is this standard??
+     * I guess we will have to wait that someone debug either the implementation or change standard.
+     * There should be a moderate memory leak for now, I am trying to find a way to fix it.
+     * 3kinox
+     */
+    #else
     if(t->joinable())
     {
         t->join();
     }
     delete(t);
+    #endif
     #else
     void* ret = NULL;
 
