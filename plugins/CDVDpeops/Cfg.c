@@ -348,7 +348,7 @@ BOOL OnInitCDRDialog(HWND hW)
  ComboBox_AddString(hWC,"Read ahead - fast, reads more sectors at once");
  ComboBox_AddString(hWC,"Async read - faster, additional asynchronous reads");
  ComboBox_AddString(hWC,"Thread read - fast with IOCTL, always async reads");
- ComboBox_AddString(hWC,"Smooth read - for drives with ps2 cd/dvd reading troubles");
+ ComboBox_AddString(hWC,"Smooth read - for drives with PS2 CD/DVD reading troubles");
  ComboBox_SetCurSel(hWC,iUseCaching);
 
  if(iUseDataCache)
