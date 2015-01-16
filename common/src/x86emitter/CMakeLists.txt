@@ -93,7 +93,6 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # variable with all sources of this library
 set(x86emitterSources
-	3dnow.cpp
 	cpudetect.cpp
 	fpu.cpp
 	groups.cpp

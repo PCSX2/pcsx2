@@ -24,7 +24,6 @@
 #include "iCOP0.h"
 #include "VUmicro.h"
 #include "sVU_Micro.h"
-#include "sVU_Debug.h"
 #include "sVU_zerorec.h"
 #include "Gif_Unit.h"
 
@@ -1330,7 +1329,7 @@ void recVUMI_FSSET(VURegs *VU, int info)
 	imm = (((VU->code >> 21 ) & 0x1) << 11) | (VU->code & 0x7FF);
 
     // keep the low 6 bits ONLY if the upper instruction is an fmac instruction (otherwise rewrite) - metal gear solid 3
-    //if( (info & PROCESS_VU_SUPER) && VUREC_FMAC ) {
+    //if( (info & (PROCESS_VU_SUPER | 0x80000000) ) { // FMAC
         MOV32MtoR(EAX, prevaddr);
 	    AND32ItoR(EAX, 0x3f);
 	    if ((imm&0xfc0) != 0) OR32ItoR(EAX, imm & 0xFC0);

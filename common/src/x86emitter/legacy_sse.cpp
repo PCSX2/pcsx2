@@ -117,8 +117,6 @@ emitterT void PSHUFWMtoR(x86MMXRegType to, uptr from, u8 imm8)				{ xPSHUF.W( xR
 
 emitterT void PINSRWRtoMMX( x86MMXRegType to, x86SSERegType from, u8 imm8 ) { xPINSR.W( xRegisterMMX(to), xRegister32(from), imm8 ); }
 
-emitterT void EMMS() { xEMMS(); }
-
 // ------------------------------------------------------------------------
 //                         Begin SSE-Only Part!
 // ------------------------------------------------------------------------

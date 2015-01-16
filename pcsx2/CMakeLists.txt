@@ -603,7 +603,6 @@ set(pcsx2x86Headers
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
 	x86/sVU_Compare.h
-	x86/sVU_Debug.h
 	x86/sVU_Micro.h
 	x86/sVU_zerorec.h
 	)

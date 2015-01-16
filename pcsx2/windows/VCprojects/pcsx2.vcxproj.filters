@@ -945,9 +945,6 @@
     <ClInclude Include="..\..\x86\microVU_Misc.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Debug.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\x86\sVU_Micro.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>

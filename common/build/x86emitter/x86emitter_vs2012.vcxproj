@@ -101,7 +101,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\x86emitter\3dnow.cpp" />
     <ClCompile Include="..\..\src\x86emitter\cpudetect.cpp" />
     <ClCompile Include="..\..\src\x86emitter\fpu.cpp" />
     <ClCompile Include="..\..\src\x86emitter\groups.cpp" />

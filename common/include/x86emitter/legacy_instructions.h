@@ -919,9 +919,6 @@ extern void PSHUFWRtoR(x86MMXRegType to, x86MMXRegType from, u8 imm8);
 extern void PSHUFWMtoR(x86MMXRegType to, uptr from, u8 imm8);
 extern void MASKMOVQRtoR(x86MMXRegType to, x86MMXRegType from);
 
-// emms
-extern void EMMS( void );
-
 extern void PMOVMSKBMMXtoR(x86IntRegType to, x86MMXRegType from);
 
 //*********************
@@ -1361,31 +1358,4 @@ extern void SSE4_PMAXUD_M128_to_XMM(x86SSERegType to, uptr from);
 extern void SSE4_PMINUD_M128_to_XMM(x86SSERegType to, uptr from);
 extern void SSE4_PMULDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
 extern void SSE4_PTEST_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
-
-//*********************
-// 3DNOW instructions *
-//*********************
-extern void FEMMS( void );
-extern void PFCMPEQMtoR( x86IntRegType to, uptr from );
-extern void PFCMPGTMtoR( x86IntRegType to, uptr from );
-extern void PFCMPGEMtoR( x86IntRegType to, uptr from );
-extern void PFADDMtoR( x86IntRegType to, uptr from );
-extern void PFADDRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFSUBMtoR( x86IntRegType to, uptr from );
-extern void PFSUBRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFMULMtoR( x86IntRegType to, uptr from );
-extern void PFMULRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFRCPMtoR( x86IntRegType to, uptr from );
-extern void PFRCPRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFRCPIT1RtoR( x86IntRegType to, x86IntRegType from );
-extern void PFRCPIT2RtoR( x86IntRegType to, x86IntRegType from );
-extern void PFRSQRTRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFRSQIT1RtoR( x86IntRegType to, x86IntRegType from );
-extern void PF2IDMtoR( x86IntRegType to, uptr from );
-extern void PI2FDMtoR( x86IntRegType to, uptr from );
-extern void PI2FDRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFMAXMtoR( x86IntRegType to, uptr from );
-extern void PFMAXRtoR( x86IntRegType to, x86IntRegType from );
-extern void PFMINMtoR( x86IntRegType to, uptr from );
-extern void PFMINRtoR( x86IntRegType to, x86IntRegType from );
 
