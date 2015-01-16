@@ -269,7 +269,9 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
 			{
-				theApp.SetConfig("ocldev", m_ocl_devs[(int)data].name.c_str());
+				if ((int)data < m_ocl_devs.size()) {
+					theApp.SetConfig("ocldev", m_ocl_devs[(int)data].name.c_str());
+				}
 			}
 
 			if(!m_IsOpen2 && ComboBoxGetSelData(IDC_RESOLUTION, data))
