@@ -789,6 +789,14 @@ void Threading::WaitEvent::Wait()
 // Note: For all of these atomic operations below to be atomic, the variables need to be 4-byte
 // aligned. Read: http://msdn.microsoft.com/en-us/library/ms684122%28v=vs.85%29.aspx
 
+// On linux sizes of long depends on the architecture (4B/x86 vs 86/amd64)
+// Windows compiler requires int/long type for those instrinsics
+#ifdef WIN32
+typedef long vol_t;
+#else
+typedef s32 vol_t;
+#endif
+
 __fi u32 Threading::AtomicRead(volatile u32& Target) {
 	return Target; // Properly-aligned 32-bit reads are atomic
 }
@@ -797,35 +805,35 @@ __fi s32 Threading::AtomicRead(volatile s32& Target) {
 }
 
 __fi u32 Threading::AtomicExchange(volatile u32& Target, u32 value ) {
-	return _InterlockedExchange( (volatile s32*)&Target, value );
+	return _InterlockedExchange( (volatile vol_t*)&Target, value );
 }
 __fi s32 Threading::AtomicExchange( volatile s32& Target, s32 value ) {
-	return _InterlockedExchange( (volatile s32*)&Target, value );
+	return _InterlockedExchange( (volatile vol_t*)&Target, value );
 }
 
 __fi u32 Threading::AtomicExchangeAdd( volatile u32& Target, u32 value ) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, value );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
 }
 __fi s32 Threading::AtomicExchangeAdd( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, value );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
 }
 
 __fi s32 Threading::AtomicExchangeSub( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, -value );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -value );
 }
 
 __fi u32 Threading::AtomicIncrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, 1 );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
 }
 __fi s32 Threading::AtomicIncrement( volatile s32& Target) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, 1 );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
 }
 
 __fi u32 Threading::AtomicDecrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile s32*)&Target, -1 );
+	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -1 );
 }
 __fi s32 Threading::AtomicDecrement(volatile s32& Target) {
-	return _InterlockedExchangeAdd((volatile s32*)&Target, -1);
+	return _InterlockedExchangeAdd((volatile vol_t*)&Target, -1);
 }
 
 __fi void* Threading::_AtomicExchangePointer(volatile uptr& target, uptr value)
@@ -833,7 +841,7 @@ __fi void* Threading::_AtomicExchangePointer(volatile uptr& target, uptr value)
 #ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
 	return (void*)_InterlockedExchange64((volatile s64*)&target, value);
 #else
-	return (void*)_InterlockedExchange((volatile s32*)&target, value);
+	return (void*)_InterlockedExchange((volatile vol_t*)&target, value);
 #endif
 }
 
