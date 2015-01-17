@@ -1,4 +1,4 @@
-
+#ifndef __x86_64__
 .686
 .model flat, c
 .mmx
@@ -1837,3 +1837,4 @@ defUNPACK_SkippingWrite2a V4_16, 8
 defUNPACK_SkippingWrite2a V4_8, 4
 
 end
+#endif

@@ -87,17 +87,45 @@ void GSSetupPrimCodeGenerator::Depth()
 			vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d4.f)], xmm2);
 
-			for(int i = 0; i < 4; i++)
+			//for(int i = 0; i < 4; i++)
 			{
 				// m_local.d[i].f = GSVector4i(df * m_shift[i]).xxzzlh();
 
-				vmulps(xmm2, xmm1, Xmm(4 + i));
+				vmulps(xmm2, xmm1, Xmm(4 + 0));
 				vcvttps2dq(xmm2, xmm2);
 				vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
-				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].f)], xmm2);
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].f)], xmm2);
 			}
-		}
+			{
+				// m_local.d[i].f = GSVector4i(df * m_shift[i]).xxzzlh();
+
+				vmulps(xmm2, xmm1, Xmm(4 + 1));
+				vcvttps2dq(xmm2, xmm2);
+				vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].f)], xmm2);
+			}	
+ 			{
+				// m_local.d[i].f = GSVector4i(df * m_shift[i]).xxzzlh();
+
+				vmulps(xmm2, xmm1, Xmm(4 + 2));
+				vcvttps2dq(xmm2, xmm2);
+				vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].f)], xmm2);
+			}		       
+ 			{
+				// m_local.d[i].f = GSVector4i(df * m_shift[i]).xxzzlh();
+
+				vmulps(xmm2, xmm1, Xmm(4 + 3));
+				vcvttps2dq(xmm2, xmm2);
+				vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].f)], xmm2);
+			}       
+        
+        }
 
 		if(m_en.z)
 		{
@@ -110,14 +138,34 @@ void GSSetupPrimCodeGenerator::Depth()
 			vmulps(xmm1, xmm0, xmm3);
 			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d4.z)], xmm1);
 
-			for(int i = 0; i < 4; i++)
+			//for(int i = 0; i < 4; i++)
 			{
 				// m_local.d[i].z = dz * m_shift[i];
 
-				vmulps(xmm1, xmm0, Xmm(4 + i));
-				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].z)], xmm1);
+				vmulps(xmm1, xmm0, Xmm(4 + 0));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].z)], xmm1);
 			}
-		}
+			{
+				// m_local.d[i].z = dz * m_shift[i];
+
+				vmulps(xmm1, xmm0, Xmm(4 + 1));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].z)], xmm1);
+			}
+			{
+				// m_local.d[i].z = dz * m_shift[i];
+
+				vmulps(xmm1, xmm0, Xmm(4 + 2));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].z)], xmm1);
+			}
+			{
+				// m_local.d[i].z = dz * m_shift[i];
+
+				vmulps(xmm1, xmm0, Xmm(4 + 3));
+				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].z)], xmm1);
+			}
+		
+        
+        }
 	}
 	else
 	{
@@ -207,11 +255,11 @@ void GSSetupPrimCodeGenerator::Texture()
 
 		vshufps(xmm1, xmm0, xmm0, (uint8)_MM_SHUFFLE(j, j, j, j));
 
-		for(int i = 0; i < 4; i++)
+		//for(int i = 0; i < 4; i++)
 		{
 			// GSVector4 v = ds/dt * m_shift[i];
 
-			vmulps(xmm2, xmm1, Xmm(4 + i));
+			vmulps(xmm2, xmm1, Xmm(4 + 0));
 
 			if(m_sel.fst)
 			{
@@ -221,8 +269,8 @@ void GSSetupPrimCodeGenerator::Texture()
 
 				switch(j)
 				{
-				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].s)], xmm2); break;
-				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].t)], xmm2); break;
+				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].s)], xmm2); break;
+				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].t)], xmm2); break;
 				}
 			}
 			else
@@ -231,9 +279,96 @@ void GSSetupPrimCodeGenerator::Texture()
 
 				switch(j)
 				{
-				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].s)], xmm2); break;
-				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].t)], xmm2); break;
-				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].q)], xmm2); break;
+				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[0].s)], xmm2); break;
+				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[0].t)], xmm2); break;
+				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[0].q)], xmm2); break;
+				}
+			}
+		}
+		{
+			// GSVector4 v = ds/dt * m_shift[i];
+
+			vmulps(xmm2, xmm1, Xmm(4 + 1));
+
+			if(m_sel.fst)
+			{
+				// m_local.d[i].s/t = GSVector4i(v);
+
+				vcvttps2dq(xmm2, xmm2);
+
+				switch(j)
+				{
+				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].s)], xmm2); break;
+				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].t)], xmm2); break;
+				}
+			}
+			else
+			{
+				// m_local.d[i].s/t/q = v;
+
+				switch(j)
+				{
+				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[1].s)], xmm2); break;
+				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[1].t)], xmm2); break;
+				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[1].q)], xmm2); break;
+				}
+			}
+		}
+		{
+			// GSVector4 v = ds/dt * m_shift[i];
+
+			vmulps(xmm2, xmm1, Xmm(4 + 2));
+
+			if(m_sel.fst)
+			{
+				// m_local.d[i].s/t = GSVector4i(v);
+
+				vcvttps2dq(xmm2, xmm2);
+
+				switch(j)
+				{
+				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].s)], xmm2); break;
+				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].t)], xmm2); break;
+				}
+			}
+			else
+			{
+				// m_local.d[i].s/t/q = v;
+
+				switch(j)
+				{
+				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[2].s)], xmm2); break;
+				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[2].t)], xmm2); break;
+				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[2].q)], xmm2); break;
+				}
+			}
+		}
+		{
+			// GSVector4 v = ds/dt * m_shift[i];
+
+			vmulps(xmm2, xmm1, Xmm(4 + 3));
+
+			if(m_sel.fst)
+			{
+				// m_local.d[i].s/t = GSVector4i(v);
+
+				vcvttps2dq(xmm2, xmm2);
+
+				switch(j)
+				{
+				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].s)], xmm2); break;
+				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].t)], xmm2); break;
+				}
+			}
+			else
+			{
+				// m_local.d[i].s/t/q = v;
+
+				switch(j)
+				{
+				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[3].s)], xmm2); break;
+				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[3].t)], xmm2); break;
+				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[3].q)], xmm2); break;
 				}
 			}
 		}
@@ -269,26 +404,79 @@ void GSSetupPrimCodeGenerator::Color()
 		vshufps(xmm2, xmm0, xmm0, _MM_SHUFFLE(0, 0, 0, 0));
 		vshufps(xmm3, xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		for(int i = 0; i < 4; i++)
+		//for(int i = 0; i < 4; i++)
 		{
 			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
 
-			vmulps(xmm0, xmm2, Xmm(4 + i));
+			vmulps(xmm0, xmm2, Xmm(4 + 0));
 			vcvttps2dq(xmm0, xmm0);
 			vpackssdw(xmm0, xmm0);
 
 			// GSVector4i b = GSVector4i(db * m_shift[i]).ps32();
 
-			vmulps(xmm1, xmm3, Xmm(4 + i));
+			vmulps(xmm1, xmm3, Xmm(4 + 0));
 			vcvttps2dq(xmm1, xmm1);
 			vpackssdw(xmm1, xmm1);
 
 			// m_local.d[i].rb = r.upl16(b);
 
 			vpunpcklwd(xmm0, xmm1);
-			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].rb)], xmm0);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].rb)], xmm0);
 		}
+		{
+			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
 
+			vmulps(xmm0, xmm2, Xmm(4 + 1));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i b = GSVector4i(db * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 1));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].rb = r.upl16(b);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].rb)], xmm0);
+		}
+		{
+			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
+
+			vmulps(xmm0, xmm2, Xmm(4 + 2));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i b = GSVector4i(db * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 2));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].rb = r.upl16(b);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].rb)], xmm0);
+		}
+		{
+			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
+
+			vmulps(xmm0, xmm2, Xmm(4 + 3));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i b = GSVector4i(db * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 3));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].rb = r.upl16(b);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].rb)], xmm0);
+		}
 		// GSVector4 c = dscan.c;
 
 		vmovaps(xmm0, ptr[rdx + offsetof(GSVertexSW, c)]); // not enough regs, have to reload it
@@ -299,24 +487,78 @@ void GSSetupPrimCodeGenerator::Color()
 		vshufps(xmm2, xmm0, xmm0, _MM_SHUFFLE(1, 1, 1, 1));
 		vshufps(xmm3, xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
 
-		for(int i = 0; i < 4; i++)
+		//for(int i = 0; i < 4; i++)
 		{
 			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
 
-			vmulps(xmm0, xmm2, Xmm(4 + i));
+			vmulps(xmm0, xmm2, Xmm(4 + 0));
 			vcvttps2dq(xmm0, xmm0);
 			vpackssdw(xmm0, xmm0);
 
 			// GSVector4i a = GSVector4i(da * m_shift[i]).ps32();
 
-			vmulps(xmm1, xmm3, Xmm(4 + i));
+			vmulps(xmm1, xmm3, Xmm(4 + 0));
 			vcvttps2dq(xmm1, xmm1);
 			vpackssdw(xmm1, xmm1);
 
 			// m_local.d[i].ga = g.upl16(a);
 
 			vpunpcklwd(xmm0, xmm1);
-			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].ga)], xmm0);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[0].ga)], xmm0);
+		}
+		{
+			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
+
+			vmulps(xmm0, xmm2, Xmm(4 + 1));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i a = GSVector4i(da * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 1));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].ga = g.upl16(a);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[1].ga)], xmm0);
+		}
+		{
+			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
+
+			vmulps(xmm0, xmm2, Xmm(4 + 2));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i a = GSVector4i(da * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 2));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].ga = g.upl16(a);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[2].ga)], xmm0);
+		}
+		{
+			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
+
+			vmulps(xmm0, xmm2, Xmm(4 + 3));
+			vcvttps2dq(xmm0, xmm0);
+			vpackssdw(xmm0, xmm0);
+
+			// GSVector4i a = GSVector4i(da * m_shift[i]).ps32();
+
+			vmulps(xmm1, xmm3, Xmm(4 + 3));
+			vcvttps2dq(xmm1, xmm1);
+			vpackssdw(xmm1, xmm1);
+
+			// m_local.d[i].ga = g.upl16(a);
+
+			vpunpcklwd(xmm0, xmm1);
+			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[3].ga)], xmm0);
 		}
 	}
 	else

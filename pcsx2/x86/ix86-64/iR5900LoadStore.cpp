@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __x86_64__
+#ifdef __x86_64__
 #include "PrecompiledHeader.h"
 
 #include "Common.h"

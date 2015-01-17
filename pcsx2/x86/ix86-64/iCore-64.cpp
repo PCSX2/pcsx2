@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __x86_64__
+#ifdef __x86_64__
 #include "PrecompiledHeader.h"
 
 #include "System.h"

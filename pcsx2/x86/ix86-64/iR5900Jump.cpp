@@ -13,9 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __x86_64__
-// recompiler reworked to add dynamic linking zerofrog(@gmail.com) Jan06
 
+// recompiler reworked to add dynamic linking zerofrog(@gmail.com) Jan06
+#ifdef __x86_64__
 #include "PrecompiledHeader.h"
 
 #include "Common.h"

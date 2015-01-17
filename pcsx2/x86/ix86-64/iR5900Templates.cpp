@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __x86_64__
+#ifdef __x86_64__
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
@@ -22,13 +22,11 @@
 #include "iMMI.h"
 #include "iFPU.h"
 #include "iCOP0.h"
+#include "sVU_Micro.h"
 #include "VU.h"
 #include "VUmicro.h"
 
-#ifndef DISABLE_SVU
-#include "sVU_Micro.h"
-#include "sVU_zerorec.h"
-#endif
+
 
 #include "vtlb.h"
 

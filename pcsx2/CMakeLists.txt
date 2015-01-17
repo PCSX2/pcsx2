@@ -556,6 +556,18 @@ set(pcsx2x86Sources
 	x86/ix86-32/iR5900Shift.cpp
 	x86/ix86-32/iR5900Templates.cpp
 	x86/ix86-32/recVTLB.cpp
+    x86/ix86-64/iCore-64.cpp
+    x86/ix86-64/iR5900-64.cpp
+    x86/ix86-64/iR5900Arit.cpp
+	x86/ix86-64/iR5900AritImm.cpp
+	x86/ix86-64/iR5900Branch.cpp
+	x86/ix86-64/iR5900Jump.cpp
+	x86/ix86-64/iR5900LoadStore.cpp
+	x86/ix86-64/iR5900Move.cpp
+	x86/ix86-64/iR5900MultDiv.cpp
+	x86/ix86-64/iR5900Shift.cpp
+	x86/ix86-64/iR5900Templates.cpp
+	x86/ix86-64/recVTLB.cpp
 	x86/newVif_Dynarec.cpp
 	x86/newVif_Unpack.cpp
 	x86/newVif_UnpackSSE.cpp

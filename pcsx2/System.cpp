@@ -225,7 +225,23 @@ void SysLogMachineCaps()
 	);
 
 	u32 speed = x86caps.CalculateMHz();
-
+#ifdef __x86_64__
+	Console.Indent().WriteLn(
+		"CPU name         =  %s\n"
+		"Vendor/Model     =  %s (stepping %02X)\n"
+		"CPU speed        =  %u.%03u ghz (%u logical thread%s)\n"
+		"x86PType         =  %s\n"
+		"x86Flags         =  %08x %08x\n"
+		"x86EFlags        =  %08x",
+			WX_STR(fromUTF8( x86caps.FamilyName ).Trim().Trim(false)),
+			WX_STR(fromUTF8( x86caps.VendorName )), x86caps.StepID,
+			speed / 1000, speed % 1000,
+			x86caps.LogicalCores, (x86caps.LogicalCores==1) ? L"" : L"s",
+			WX_STR(x86caps.GetTypeName()),
+			x86caps.Flags, x86caps.Flags2,
+			x86caps.EFlags
+	);
+#else
 	Console.Indent().WriteLn(
 		L"CPU name         =  %s\n"
 		L"Vendor/Model     =  %s (stepping %02X)\n"
@@ -241,7 +257,7 @@ void SysLogMachineCaps()
 			x86caps.Flags, x86caps.Flags2,
 			x86caps.EFlags
 	);
-
+#endif
 	Console.Newline();
 
 	wxArrayString features[2];	// 2 lines, for readability!

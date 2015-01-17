@@ -80,9 +80,12 @@ protected:
 			wxfn.SetVolume( wxEmptyString );
 			for( int i=0; i<2; ++i )
 				wxfn.RemoveDir(0);
-
+            #ifdef __X86_64__
+            m_stackTrace.Write( " %s:%d", WX_STR(wxfn.GetFullPath()), frame.GetLine() );
+            #else
 			m_stackTrace.Write( L" %s:%d", WX_STR(wxfn.GetFullPath()), frame.GetLine() );
-		}
+		    #endif
+        }
 		
 		m_stackTrace.Write(L"\n");
 	}
@@ -129,7 +132,6 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 
 	Console.Error( L"%s", WX_STR(dbgmsg) );
 	Console.WriteLn( L"%s", WX_STR(trace) );
-
 	wxString windowmsg( L"Assertion failed: " );
 	if( msg != NULL )
 		windowmsg += msg;

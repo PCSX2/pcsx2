@@ -379,7 +379,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				{
 					if (wnd[i] == NULL) continue;
 
-					wnd[i]->Attach((void*)((uint32*)(dsp)+1), false);
+					wnd[i]->Attach((void*)((uptr*)(dsp)+1), false); // Should use uptr* case as Xorg expects ints to be the same size as pointers
 					s_gs->m_wnd = wnd[i];
 
 					if (i == 0) delete wnd[1];
