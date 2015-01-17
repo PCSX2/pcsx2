@@ -59,8 +59,6 @@ extern vFloat vFloats4_useEAX[16];
 extern const __aligned16 float s_fones[8];
 extern const __aligned16 u32 s_mask[4];
 extern const __aligned16 u32 s_expmask[4];
-extern const __aligned16 u32 g_minvals[4];
-extern const __aligned16 u32 g_maxvals[4];
 extern const __aligned16 u32 const_clip[8];
 
 u32 GetVIAddr(VURegs * VU, int reg, int read, int info);

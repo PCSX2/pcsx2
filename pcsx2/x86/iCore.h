@@ -50,7 +50,9 @@
 
 // used in VU recs
 #define PROCESS_VU_UPDATEFLAGS 0x10
+#ifndef DISABLE_SVU
 #define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
+#endif
 #define PROCESS_VU_COP2		0x80 // simple cop2
 
 #define EEREC_S (((info)>>8)&0xf)

@@ -150,13 +150,20 @@ public:
 static bool buffer_is_avail = false;
 static GlobalBufferManager< BaseTlsVariable< FastFormatBuffers > > m_buffer_tls(buffer_is_avail);
 
-//static __ri void format_that_ascii_mess( SafeArray<char>& buffer, uint writepos, const char* fmt, va_list argptr )
-static __ri void format_that_ascii_mess( CharBufferType& buffer, uint writepos, const char* fmt, va_list argptr )
+static
+#ifndef __linux__
+__ri
+#endif
+void format_that_ascii_mess( CharBufferType& buffer, uint writepos, const char* fmt, va_list argptr )
 {
+	va_list args;
 	while( true )
 	{
 		int size = buffer.GetLength();
-		int len = vsnprintf(buffer.GetPtr(writepos), size-writepos, fmt, argptr);
+
+		va_copy(args, argptr);
+		int len = vsnprintf(buffer.GetPtr(writepos), size-writepos, fmt, args);
+		va_end(args);
 
 		// some implementations of vsnprintf() don't NUL terminate
 		// the string if there is not enough space for it so
@@ -182,12 +189,20 @@ static __ri void format_that_ascii_mess( CharBufferType& buffer, uint writepos, 
 }
 
 // returns the length of the formatted string, in characters (wxChars).
-static __ri uint format_that_unicode_mess( CharBufferType& buffer, uint writepos, const wxChar* fmt, va_list argptr)
+static
+#ifndef __linux__
+__ri
+#endif
+uint format_that_unicode_mess( CharBufferType& buffer, uint writepos, const wxChar* fmt, va_list argptr)
 {
+	va_list args;
 	while( true )
 	{
 		int size = buffer.GetLength() / sizeof(wxChar);
-		int len = wxVsnprintf((wxChar*)buffer.GetPtr(writepos*sizeof(wxChar)), size-writepos, fmt, argptr);
+
+		va_copy(args, argptr);
+		int len = wxVsnprintf((wxChar*)buffer.GetPtr(writepos*sizeof(wxChar)), size-writepos, fmt, args);
+		va_end(args);
 
 		// some implementations of vsnprintf() don't NUL terminate
 		// the string if there is not enough space for it so

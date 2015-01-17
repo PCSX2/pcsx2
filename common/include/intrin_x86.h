@@ -54,34 +54,41 @@
 
 /*** Atomic operations ***/
 
-static __inline__ __attribute__((always_inline)) long _InterlockedCompareExchange(volatile long * const Destination, const long Exchange, const long Comperand)
+static __inline__ __attribute__((always_inline)) s32 _InterlockedCompareExchange(volatile s32 * const Destination, const s32 Exchange, const s32 Comperand)
 {
 	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
 }
 
-static __inline__ __attribute__((always_inline)) long long _InterlockedCompareExchange64(volatile long long * const Destination, const long long Exchange, const long long Comperand)
+static __inline__ __attribute__((always_inline)) s64 _InterlockedCompareExchange64(volatile s64 * const Destination, const s64 Exchange, const s64 Comperand)
 {
 	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
 }
 
-static __inline__ __attribute__((always_inline)) long _InterlockedExchange(volatile long * const Target, const long Value)
+static __inline__ __attribute__((always_inline)) s32 _InterlockedExchange(volatile s32 * const Target, const s32 Value)
 {
 	/* NOTE: __sync_lock_test_and_set would be an acquire barrier, so we force a full barrier */
 	__sync_synchronize();
 	return __sync_lock_test_and_set(Target, Value);
 }
 
-static __inline__ __attribute__((always_inline)) long _InterlockedExchangeAdd(volatile long * const Addend, const long Value)
+static __inline__ __attribute__((always_inline)) s64 _InterlockedExchange64(volatile s64 * const Target, const s64 Value)
+{
+	/* NOTE: __sync_lock_test_and_set would be an acquire barrier, so we force a full barrier */
+	__sync_synchronize();
+	return __sync_lock_test_and_set(Target, Value);
+}
+
+static __inline__ __attribute__((always_inline)) s32 _InterlockedExchangeAdd(volatile s32 * const Addend, const s32 Value)
 {
 	return __sync_fetch_and_add(Addend, Value);
 }
 
-static __inline__ __attribute__((always_inline)) long _InterlockedDecrement(volatile long * const lpAddend)
+static __inline__ __attribute__((always_inline)) s32 _InterlockedDecrement(volatile s32 * const lpAddend)
 {
 	return _InterlockedExchangeAdd(lpAddend, -1) - 1;
 }
 
-static __inline__ __attribute__((always_inline)) long _InterlockedIncrement(volatile long * const lpAddend)
+static __inline__ __attribute__((always_inline)) s32 _InterlockedIncrement(volatile s32 * const lpAddend)
 {
 	return _InterlockedExchangeAdd(lpAddend, 1) + 1;
 }

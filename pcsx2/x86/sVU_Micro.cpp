@@ -88,8 +88,6 @@ int vucycle;
 const __aligned16 float s_fones[8]	= {1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 const __aligned16 u32 s_mask[4]		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
 const __aligned16 u32 s_expmask[4]	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-const __aligned16 u32 g_minvals[4]	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-const __aligned16 u32 g_maxvals[4]	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 const __aligned16 u32 const_clip[8]	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
 									   0x80000000, 0x80000000, 0x80000000, 0x80000000};
 

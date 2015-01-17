@@ -18,6 +18,11 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
+# Misc option
+#-------------------------------------------------------------------------------
+option(DISABLE_SVU "Disable superVU (don't use it)")
+
+#-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
 option(GLSL_API "Replace zzogl CG backend by GLSL (experimental option)")
@@ -128,6 +133,9 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # x86_64 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+    # SuperVU will not be ported
+    set(DISABLE_SVU TRUE)
+
     if (DISABLE_ADVANCE_SIMD)
         set(ARCH_FLAG "-msse -msse2")
     else()
@@ -212,6 +220,9 @@ endif()
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
 set(COMMON_FLAG "-pipe -std=c++0x -fvisibility=hidden -pthread")
+if (DISABLE_SVU)
+    set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
+endif()
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
@@ -237,7 +248,10 @@ elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 endif()
 
 if (USE_ASAN)
-    set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer -g -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2 -DASAN_WORKAROUND")
+    set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer -g -DASAN_WORKAROUND")
+    if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+        set(ASAN_FLAG "${ASAN_FLAG} -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2")
+    endif()
 else()
     set(ASAN_FLAG "")
 endif()

@@ -20,9 +20,15 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 #include "iFPU.h"
+
+#ifndef DISABLE_SVU
 #include "sVU_Micro.h"
+#endif
 
 using namespace x86Emitter;
+
+const __aligned16 u32 g_minvals[4]	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
+const __aligned16 u32 g_maxvals[4]	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
 //------------------------------------------------------------------
 namespace R5900 {
