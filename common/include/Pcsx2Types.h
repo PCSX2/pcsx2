@@ -199,4 +199,15 @@ typedef union _s128_t
 
 #endif
 
+// On linux sizes of long depends on the architecture (4B/x86 vs 86/amd64)
+// Windows compiler requires int/long type for _InterlockedExchange* function.
+// The best would be to port all _InterlockedExchange function to use
+// Theading::Atomic* function. Unfortunately Win version is not happy, until
+// code is properly fixed let's use a basic type alias.
+#ifdef WIN32
+typedef long vol_t;
+#else
+typedef s32 vol_t;
+#endif
+
 #endif

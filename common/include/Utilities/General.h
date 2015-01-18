@@ -111,7 +111,7 @@ protected:
 class BaseDeletableObject : public virtual IDeletableObject
 {
 protected:
-	volatile s32	m_IsBeingDeleted;
+	volatile vol_t	m_IsBeingDeleted;
 
 public:
 	BaseDeletableObject();

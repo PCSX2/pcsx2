@@ -291,7 +291,7 @@ bool Threading::pxThread::Detach()
 {
 	AffinityAssert_DisallowFromSelf(pxDiagSpot);
 
-	if( Threading::AtomicExchange( m_detached, true ) ) return false;
+	if( _InterlockedExchange( &m_detached, true ) ) return false;
 	pthread_detach( m_thread );
 	return true;
 }
@@ -788,14 +788,6 @@ void Threading::WaitEvent::Wait()
 // define some overloads for InterlockedExchanges for commonly used types, like u32 and s32.
 // Note: For all of these atomic operations below to be atomic, the variables need to be 4-byte
 // aligned. Read: http://msdn.microsoft.com/en-us/library/ms684122%28v=vs.85%29.aspx
-
-// On linux sizes of long depends on the architecture (4B/x86 vs 86/amd64)
-// Windows compiler requires int/long type for those instrinsics
-#ifdef WIN32
-typedef long vol_t;
-#else
-typedef s32 vol_t;
-#endif
 
 __fi u32 Threading::AtomicRead(volatile u32& Target) {
 	return Target; // Properly-aligned 32-bit reads are atomic
