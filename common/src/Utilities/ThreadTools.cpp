@@ -291,7 +291,7 @@ bool Threading::pxThread::Detach()
 {
 	AffinityAssert_DisallowFromSelf(pxDiagSpot);
 
-	if( _InterlockedExchange( &m_detached, true ) ) return false;
+	if( Threading::AtomicExchange( m_detached, true ) ) return false;
 	pthread_detach( m_thread );
 	return true;
 }
@@ -850,7 +850,7 @@ __fi void* Threading::_AtomicCompareExchangePointer(volatile uptr& target, uptr 
 #ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
 	return (void*)_InterlockedCompareExchange64((volatile s64*)&target, value, comparand);
 #else
-	return (void*)_InterlockedCompareExchange((volatile s32*)&target, value, comparand);
+	return (void*)_InterlockedCompareExchange((volatile vol_t*)&target, value, comparand);
 #endif
 }
 
