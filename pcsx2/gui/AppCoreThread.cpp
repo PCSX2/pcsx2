@@ -287,13 +287,14 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game, bool verbo
 	return gf;
 }
 
+// Used to track the current game serial/id, and used to disable verbose logging of
+// applied patches if the game info hasn't changed.  (avoids spam when suspending/resuming
+// or using TAB or other things), but gets verbose again when booting (even if the same game).
+// File scope since it gets reset externally when rebooting
+static wxString curGameKey;
+
 void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 {
-	// Used to track the current game serial/id, and used to disable verbose logging of
-	// applied patches if the game info hasn't changed.  (avoids spam when suspending/resuming
-	// or using TAB or other things).
-	static wxString curGameKey;
-
 	// 'fixup' is the EmuConfig we're going to upload to the emulator, which very well may
 	// differ from the user-configured EmuConfig settings.  So we make a copy here and then
 	// we apply the commandline overrides and database gamefixes, and then upload 'fixup'
@@ -397,7 +398,8 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
 
 			if (numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive)) {
-				Console.WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
+				if (verbose || SysConsole.ELF.IsActive())
+					Console.WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 			}
 		}
@@ -482,6 +484,10 @@ void AppCoreThread::VsyncInThread()
 
 void AppCoreThread::GameStartingInThread()
 {
+	// Make AppCoreThread::ApplySettings get verbose again even if we're booting
+	// the same game, by making it think that the current CRC is a new one.
+	curGameKey = L"";
+
 	// Simulate a Close/Resume, so that settings get re-applied and the database
 	// lookups and other game-based detections are done.
 
