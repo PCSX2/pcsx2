@@ -398,7 +398,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
 
 			if (numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive)) {
-				if (verbose || SysConsole.ELF.IsActive())
+				if (verbose || DevConWriterEnabled)
 					Console.WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 			}

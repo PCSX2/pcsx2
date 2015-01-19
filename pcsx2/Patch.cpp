@@ -27,10 +27,6 @@
 #include <wx/txtstrm.h>
 #include <wx/zipstrm.h>
 
-bool ElfConActive() {
-	return SysConsole.ELF.IsActive();
-}
-
 IniPatch Patch[ MAX_PATCH ];
 IniPatch Cheat[ MAX_CHEAT ];
 
@@ -201,17 +197,14 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
 	while (found) {
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
-			if (ElfConActive())
-				Console.WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
+			DevCon.WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = cheatnumber;
 			f.Open(Path::Combine(dir.GetName(), buffer));
 			inifile_process(f);
 			f.Close();
 			int loaded = cheatnumber - before;
-			if (ElfConActive()) {
-				Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
-				                loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
-			}
+			DevCon.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
+			               loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundCheatsFiles ++;
 		}
 		found = dir.GetNext(&buffer);
@@ -237,10 +230,8 @@ int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
     wxString name = entry->GetName();
     name.MakeUpper();
     if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
-      if (ElfConActive()) {
-        Console.WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-                        WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
-      }
+      DevCon.WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
+                     WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
       wxTextInputStream pnach(zip);
       while (!zip.Eof()) {
         inifile_processString(pnach.ReadLine());
@@ -271,8 +262,7 @@ int LoadCheats(wxString name, const wxDirName& folderName, const wxString& frien
 		Console.WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
 
-	if (ElfConActive())
-		Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
+	DevCon.WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
 	return loaded;
 }
 
@@ -295,8 +285,7 @@ namespace PatchFunc
 {
     void comment( const wxString& text1, const wxString& text2 )
     {
-		if (ElfConActive())
-			Console.WriteLn(L"comment: " + text2);
+		DevCon.WriteLn(L"comment: " + text2);
     }
 
     struct PatchPieces
@@ -324,8 +313,7 @@ namespace PatchFunc
 		// (translated) messages for display in a popup window then we'll have to upgrade the
 		// exception a little bit.
 
-		if (ElfConActive())
-			Console.WriteLn(cmd + L" " + param);
+		DevCon.WriteLn(cmd + L" " + param);
 
 		try
 		{
