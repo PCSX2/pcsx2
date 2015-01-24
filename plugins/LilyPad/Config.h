@@ -84,8 +84,6 @@ extern GeneralConfig config;
 
 void UnloadConfigs();
 
-void AddIgnore(LPARAM k);
-
 void SetVolume(int volume);
 
 int LoadSettings(int force = 0, wchar_t *file = 0);

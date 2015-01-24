@@ -106,6 +106,7 @@ EXPORT_C_(void) PADconfigure();
 EXPORT_C_(s32) PADfreeze(int mode, freezeData *data);
 EXPORT_C_(s32) PADsetSlot(u8 port, u8 slot);
 EXPORT_C_(s32) PADqueryMtap(u8 port);
+EXPORT_C_(void) PADsetSettingsDir(const char *dir);
 
 #ifdef NO_CRT
 
