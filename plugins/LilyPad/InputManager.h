@@ -196,12 +196,14 @@ struct InitInfo {
 	// 1 when binding.
 	int binding;
 
+#ifdef _MSC_VER
 	HWND hWndTop;
 
 	// For config screen, need to eat button's message handling.
 	//HWND hWndButton;
 
 	WndProcEater* hWndProc;
+#endif
 };
 
 
@@ -216,9 +218,11 @@ public:
 	// Based on input modes.
 	char enabled;
 
+#ifdef _MSC_VER
 	// Not all devices need to subclass the windproc, but most do so might as well
 	// put it here... --air
 	WndProcEater* hWndProc;
+#endif
 
 	union {
 		// Allows for one loop to compare all 3 in order.

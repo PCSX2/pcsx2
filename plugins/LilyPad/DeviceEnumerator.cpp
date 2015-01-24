@@ -33,12 +33,14 @@ void EnumDevices(int hideDXXinput) {
 	InputDeviceManager *oldDm = dm;
 	dm = new InputDeviceManager();
 
+#ifdef _MSC_VER
 	EnumHookDevices();
 	EnumWindowsMessagingDevices();
 	EnumRawInputDevices();
 	EnumDualShock3s();
 	EnumXInputDevices();
 	EnumDirectInputDevices(hideDXXinput);
+#endif
 
 	dm->CopyBindings(oldDm->numDevices, oldDm->devices);
 

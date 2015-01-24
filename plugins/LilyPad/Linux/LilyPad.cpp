@@ -40,11 +40,7 @@
 
 // Keeps the various sources for Update polling (PADpoll, PADupdate, etc) from wreaking
 // havoc on each other...
-#ifdef _MSC_VER
-CRITICAL_SECTION updateLock;
-#else
 static std::mutex updateLock;
-#endif
 
 // Used to toggle mouse listening.
 u8 miceEnabled;
@@ -325,7 +321,6 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255) {
 void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 	if (value < b->deadZone || !value) return;
 	
-#ifdef _MSC_VER
 	if ( config.turboKeyHack == 1 ){ // send a tabulator keypress to emulator
 		//printf("%x\n", b->command);
 		if ( b->command == 0x11 ){ // L3 button
@@ -336,7 +331,6 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 			LastCheck = t;
 		}
 	}
-#endif
 
 	int sensitivity = b->sensitivity;
 	if (sensitivity < 0) {
@@ -403,11 +397,9 @@ void Update(unsigned int port, unsigned int slot) {
 	// Lock prior to timecheck code to avoid pesky race conditions.
 	std::lock_guard<std::mutex> lock(updateLock);
 
-#ifdef _MSC_VER
 	static unsigned int LastCheck = 0;
 	unsigned int t = timeGetTime();
 	if (t - LastCheck < 15 || !openCount) return;
-#endif
 
 #ifdef _MSC_VER
 	if (windowThreadId != GetCurrentThreadId()) {
@@ -422,9 +414,9 @@ void Update(unsigned int port, unsigned int slot) {
 		}
 		return;
 	}
+#endif
 
 	LastCheck = t;
-#endif
 
 	int i;
 	ButtonSum s[2][4];

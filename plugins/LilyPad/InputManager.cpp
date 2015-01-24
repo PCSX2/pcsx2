@@ -54,7 +54,9 @@ Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wc
 	attached = 1;
 	enabled = 0;
 
+#ifdef _MSC_VER
 	hWndProc = 0;
+#endif
 
 	virtualControls = 0;
 	numVirtualControls = 0;
