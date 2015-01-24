@@ -206,6 +206,15 @@ endif()
 #---------------------------------------
 
 #---------------------------------------
+#			LilyPad
+# requires: -X11
+#---------------------------------------
+if(GTKn_FOUND AND X11_FOUND)
+    set(LilyPad TRUE)
+endif()
+#---------------------------------------
+
+#---------------------------------------
 #			onepad
 #---------------------------------------
 # requires: -SDL
@@ -287,7 +296,6 @@ set(cdvdGigaherz FALSE)
 set(CDVDisoEFP FALSE)
 set(CDVDolio FALSE)
 set(CDVDpeops FALSE)
-set(LilyPad FALSE)
 set(PeopsSPU2 FALSE)
 set(SSSPSXPAD FALSE)
 set(xpad FALSE)
