@@ -20,20 +20,18 @@
 #include "InputManager.h"
 #include "Config.h"
 #include "DeviceEnumerator.h"
+#include "Linux/ConfigHelper.h"
 
 GeneralConfig config;
 u8 ps2e = 0;
 
+void CALLBACK PADsetSettingsDir( const char *dir )
+{
+	CfgSetSettingsDir(dir);
+}
+
 int LoadSettings(int force, wchar_t *file) {
 	if (dm && !force) return 0;
-
-#if 0
-	if( createIniDir )
-	{
-		CreateDirectory(L"inis", 0);
-		createIniDir = false;
-	}
-#endif
 
 	// Could just do ClearDevices() instead, but if I ever add any extra stuff,
 	// this will still work.

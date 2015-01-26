@@ -29,6 +29,7 @@ set(lilypadSources
 	DeviceEnumerator.cpp
 	InputManager.cpp
 	Linux/Config.cpp
+	Linux/ConfigHelper.cpp
 	Linux/KeyboardQueue.cpp
     Linux/LilyPad.cpp)
 
