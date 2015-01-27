@@ -25,9 +25,119 @@
 GeneralConfig config;
 u8 ps2e = 0;
 
+struct GeneralSettingsBool {
+	const wchar_t *name;
+	unsigned int ControlId;
+	u8 defaultValue;
+};
+
+// Ties together config data structure, config files, and general config
+// dialog.
+const GeneralSettingsBool BoolOptionsInfo[] = {
+	{L"Force Cursor Hide", 0 /*IDC_FORCE_HIDE*/, 0},
+	{L"Mouse Unfocus", 0 /*IDC_MOUSE_UNFOCUS*/, 1},
+	{L"Background", 0 /*IDC_BACKGROUND*/, 1},
+	{L"Multiple Bindings", 0 /*IDC_MULTIPLE_BINDING*/, 0},
+
+	{L"DirectInput Game Devices", 0 /*IDC_G_DI*/, 1},
+	{L"XInput", 0 /*IDC_G_XI*/, 1},
+	{L"DualShock 3", 0 /*IDC_G_DS3*/, 0},
+
+	{L"Multitap 1", 0 /*IDC_MULTITAP1*/, 0},
+	{L"Multitap 2", 0 /*IDC_MULTITAP2*/, 0},
+
+	{L"Escape Fullscreen Hack", 0 /*IDC_ESCAPE_FULLSCREEN_HACK*/, 1},
+	{L"Disable Screen Saver", 0 /*IDC_DISABLE_SCREENSAVER*/, 1},
+	{L"Logging", 0 /*IDC_DEBUG_FILE*/, 0},
+
+	{L"Save State in Title", 0 /*IDC_SAVE_STATE_TITLE*/, 0}, //No longer required, PCSX2 now handles it - avih 2011-05-17
+	{L"GH2", 0 /*IDC_GH2_HACK*/, 0},
+	{L"Turbo Key Hack", 0 /*IDC_TURBO_KEY_HACK*/, 0},
+
+	{L"Vista Volume", 0 /*IDC_VISTA_VOLUME*/, 1},
+};
+
 void CALLBACK PADsetSettingsDir( const char *dir )
 {
-	CfgSetSettingsDir(dir);
+	CfgHelper::SetSettingsDir(dir);
+}
+
+int SaveSettings(wchar_t *file=0) {
+	CfgHelper cfg;
+
+	for (int i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
+		 cfg.WriteBool(L"General Settings", BoolOptionsInfo[i].name, config.bools[i]);
+	}
+	cfg.WriteInt(L"General Settings", L"Close Hacks", config.closeHacks);
+
+	cfg.WriteInt(L"General Settings", L"Keyboard Mode", config.keyboardApi);
+	cfg.WriteInt(L"General Settings", L"Mouse Mode", config.mouseApi);
+
+	cfg.WriteInt(L"General Settings", L"Volume", config.volume);
+
+	for (int port=0; port<2; port++) {
+		for (int slot=0; slot<4; slot++) {
+			wchar_t temp[50];
+			wsprintf(temp, L"Pad %i %i", port, slot);
+			cfg.WriteInt(temp, L"Mode", config.padConfigs[port][slot].type);
+			cfg.WriteInt(temp, L"Auto Analog", config.padConfigs[port][slot].autoAnalog);
+		}
+	}
+
+	if (!dm)
+		return 0;
+
+	for (int i=0; i<dm->numDevices; i++) {
+		wchar_t id[50];
+		wchar_t temp[50], temp2[1000];
+		wsprintfW(id, L"Device %i", i);
+		Device *dev = dm->devices[i];
+		wchar_t *name = dev->displayName;
+		while (name[0] == '[') {
+			wchar_t *name2 = wcschr(name, ']');
+			if (!name2) break;
+			name = name2+1;
+			while (iswspace(name[0])) name++;
+		}
+
+		cfg.WriteStr(id, L"Display Name", name);
+		cfg.WriteStr(id, L"Instance ID", dev->instanceID);
+		if (dev->productID) {
+			cfg.WriteStr(id, L"Product ID", dev->productID);
+		}
+		cfg.WriteInt(id, L"API", dev->api);
+		cfg.WriteInt(id, L"Type", dev->type);
+		int ffBindingCount = 0;
+		int bindingCount = 0;
+		for (int port=0; port<2; port++) {
+			for (int slot=0; slot<4; slot++) {
+				for (int j=0; j<dev->pads[port][slot].numBindings; j++) {
+					Binding *b = dev->pads[port][slot].bindings+j;
+					VirtualControl *c = &dev->virtualControls[b->controlIndex];
+					wsprintfW(temp, L"Binding %i", bindingCount++);
+					wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone);
+					cfg.WriteStr(id, temp, temp2);
+				}
+
+				for (int j=0; j<dev->pads[port][slot].numFFBindings; j++) {
+					ForceFeedbackBinding *b = dev->pads[port][slot].ffBindings+j;
+					ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
+					wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
+					wsprintfW(temp2, L"%s %i, %i, %i", eff->effectID, port, b->motor, slot);
+					for (int k=0; k<dev->numFFAxes; k++) {
+						ForceFeedbackAxis *axis = dev->ffAxes + k;
+						AxisEffectInfo *info = b->axes + k;
+						//wsprintfW(wcschr(temp2,0), L", %i, %i", axis->id, info->force);
+						// Not secure because I'm too lazy to compute the remaining size
+						wprintf(wcschr(temp2, 0), L", %i, %i", axis->id, info->force);
+					}
+					cfg.WriteStr(id, temp, temp2);
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
 int LoadSettings(int force, wchar_t *file) {
@@ -38,62 +148,28 @@ int LoadSettings(int force, wchar_t *file) {
 	UnloadConfigs();
 	dm = new InputDeviceManager();
 
-#ifdef _MSC_VER
-	if (!file) {
-		file = iniFile;
-		GetPrivateProfileStringW(L"General Settings", L"Last Config Path", L"inis", config.lastSaveConfigPath, sizeof(config.lastSaveConfigPath), file);
-		GetPrivateProfileStringW(L"General Settings", L"Last Config Name", L"LilyPad.lily", config.lastSaveConfigFileName, sizeof(config.lastSaveConfigFileName), file);
-	}
-	else {
-		wchar_t *c = wcsrchr(file, '\\');
-		if (c) {
-			*c = 0;
-			wcscpy(config.lastSaveConfigPath, file);
-			wcscpy(config.lastSaveConfigFileName, c+1);
-			*c = '\\';
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFile);
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFile);
-		}
-	}
+	CfgHelper cfg;
 
 	for (int i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
-		config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
+		config.bools[i] = cfg.ReadBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue);
 	}
 
-	config.closeHacks = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hacks", 0, file);
+
+	config.closeHacks = (u8)cfg.ReadInt(L"General Settings", L"Close Hacks");
 	if (config.closeHacks&1) config.closeHacks &= ~2;
 
-	config.keyboardApi = (DeviceAPI)GetPrivateProfileIntW(L"General Settings", L"Keyboard Mode", WM, file);
+	config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", WM);
 	if (!config.keyboardApi) config.keyboardApi = WM;
-	config.mouseApi = (DeviceAPI) GetPrivateProfileIntW(L"General Settings", L"Mouse Mode", 0, file);
+	config.mouseApi = (DeviceAPI) cfg.ReadInt(L"General Settings", L"Mouse Mode");
 
-	config.volume = GetPrivateProfileInt(L"General Settings", L"Volume", 100, file);
-	OSVERSIONINFO os;
-	os.dwOSVersionInfoSize = sizeof(os);
-	config.osVersion = 0;
-	if (GetVersionEx(&os)) {
-		config.osVersion = os.dwMajorVersion;
-	}
-	if (config.osVersion < 6) config.vistaVolume = 0;
-	if (!config.vistaVolume) config.volume = 100;
-	if (config.vistaVolume) SetVolume(config.volume);
-
-	if (!InitializeRawInput()) {
-		if (config.keyboardApi == RAW) config.keyboardApi = WM;
-		if (config.mouseApi == RAW) config.mouseApi = WM;
-	}
-
-	if (config.debug) {
-		CreateDirectory(L"logs", 0);
-	}
-
+	config.volume = cfg.ReadInt(L"General Settings", L"Volume", 100);
 
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
 			wchar_t temp[50];
 			wsprintf(temp, L"Pad %i %i", port, slot);
-			config.padConfigs[port][slot].type = (PadType) GetPrivateProfileInt(temp, L"Mode", Dualshock2Pad, file);
-			config.padConfigs[port][slot].autoAnalog = GetPrivateProfileBool(temp, L"Auto Analog", 0, file);
+			config.padConfigs[port][slot].type = (PadType) cfg.ReadInt(temp, L"Mode", Dualshock2Pad);
+			config.padConfigs[port][slot].autoAnalog = cfg.ReadBool(temp, L"Auto Analog");
 		}
 	}
 
@@ -105,17 +181,17 @@ int LoadSettings(int force, wchar_t *file) {
 		wchar_t id[50];
 		wchar_t temp[50], temp2[1000], temp3[1000], temp4[1000];
 		wsprintfW(id, L"Device %i", i++);
-		if (!GetPrivateProfileStringW(id, L"Display Name", 0, temp2, 1000, file) || !temp2[0] ||
-			!GetPrivateProfileStringW(id, L"Instance ID", 0, temp3, 1000, file) || !temp3[0]) {
+		if (!cfg.ReadStr(id, L"Display Name", temp2) || !temp2[0] ||
+			!cfg.ReadStr(id, L"Instance ID", temp3) || !temp3[0]) {
 			if (i >= 100) break;
 			continue;
 		}
 		wchar_t *id2 = 0;
-		if (GetPrivateProfileStringW(id, L"Product ID", 0, temp4, 1000, file) && temp4[0])
+		if (cfg.ReadStr(id, L"Product ID", temp4) && temp4[0])
 			id2 = temp4;
 
-		int api = GetPrivateProfileIntW(id, L"API", 0, file);
-		int type = GetPrivateProfileIntW(id, L"Type", 0, file);
+		int api = cfg.ReadInt(id, L"API");
+		int type = cfg.ReadInt(id, L"Type");
 		if (!api || !type) continue;
 
 		Device *dev = new Device((DeviceAPI)api, (DeviceType)type, temp2, temp3, id2);
@@ -125,7 +201,7 @@ int LoadSettings(int force, wchar_t *file) {
 		int last = 0;
 		while (1) {
 			wsprintfW(temp, L"Binding %i", j++);
-			if (!GetPrivateProfileStringW(id, temp, 0, temp2, 1000, file)) {
+			if (!cfg.ReadStr(id, temp, temp2)) {
 				if (j >= 100) {
 					if (!last) break;
 					last = 0;
@@ -147,14 +223,14 @@ int LoadSettings(int force, wchar_t *file) {
 				VirtualControl *c = dev->GetVirtualControl(uid);
 				if (!c) c = dev->AddVirtualControl(uid, -1);
 				if (c) {
-					BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
+					//TODO BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
 				}
 			}
 		}
 		j = 0;
 		while (1) {
 			wsprintfW(temp, L"FF Binding %i", j++);
-			if (!GetPrivateProfileStringW(id, temp, 0, temp2, 1000, file)) {
+			if (!cfg.ReadStr(id, temp, temp2)) {
 				if (j >= 10) {
 					if (!last) break;
 					last = 0;
@@ -191,7 +267,7 @@ int LoadSettings(int force, wchar_t *file) {
 					// eff = &dev->ffEffectTypes[dev->numFFEffectTypes-1];
 				}
 				ForceFeedbackBinding *b;
-				CreateEffectBinding(dev, temp2, port, slot, motor, &b);
+				//TODO CreateEffectBinding(dev, temp2, port, slot, motor, &b);
 				if (b) {
 					while (1) {
 						int axisID = atoi(s);
@@ -215,8 +291,7 @@ int LoadSettings(int force, wchar_t *file) {
 	}
 	config.multipleBinding = multipleBinding;
 
-	RefreshEnabledDevicesAndDisplay(1);
-#endif
+	//TODO RefreshEnabledDevicesAndDisplay(1);
 
 	return 0;
 }
