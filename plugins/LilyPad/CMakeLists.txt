@@ -30,6 +30,7 @@ set(lilypadSources
 	InputManager.cpp
 	Linux/Config.cpp
 	Linux/ConfigHelper.cpp
+    Linux/KeyboardMouse.cpp
 	Linux/KeyboardQueue.cpp
     Linux/LilyPad.cpp)
 

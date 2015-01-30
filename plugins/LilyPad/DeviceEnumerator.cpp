@@ -27,6 +27,10 @@
 #include "HidDevice.h"
 #include "DualShock3.h"
 
+#ifdef __linux__
+#include "Linux/KeyboardMouse.h"
+#endif
+
 void EnumDevices(int hideDXXinput) {
 	// Needed for enumeration of some device types.
 	dm->ReleaseInput();
@@ -40,6 +44,8 @@ void EnumDevices(int hideDXXinput) {
 	EnumDualShock3s();
 	EnumXInputDevices();
 	EnumDirectInputDevices(hideDXXinput);
+#else
+	EnumLnx();
 #endif
 
 	dm->CopyBindings(oldDm->numDevices, oldDm->devices);

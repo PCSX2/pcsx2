@@ -158,8 +158,8 @@ int LoadSettings(int force, wchar_t *file) {
 	config.closeHacks = (u8)cfg.ReadInt(L"General Settings", L"Close Hacks");
 	if (config.closeHacks&1) config.closeHacks &= ~2;
 
-	config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", WM);
-	if (!config.keyboardApi) config.keyboardApi = WM;
+	config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", LNX_KEYBOARD);
+	if (!config.keyboardApi) config.keyboardApi = LNX_KEYBOARD;
 	config.mouseApi = (DeviceAPI) cfg.ReadInt(L"General Settings", L"Mouse Mode");
 
 	config.volume = cfg.ReadInt(L"General Settings", L"Volume", 100);
@@ -292,6 +292,7 @@ int LoadSettings(int force, wchar_t *file) {
 	config.multipleBinding = multipleBinding;
 
 	//TODO RefreshEnabledDevicesAndDisplay(1);
+	RefreshEnabledDevices(1); // XXX For the moment only a subfonction
 
 	return 0;
 }
@@ -314,6 +315,7 @@ void RefreshEnabledDevices(int updateDeviceList) {
 	for (int i=0; i<dm->numDevices; i++) {
 		Device *dev = dm->devices[i];
 
+		// XXX windows magic?
 		if (!dev->attached && dev->displayName[0] != '[') {
 			wchar_t *newName = (wchar_t*) malloc(sizeof(wchar_t) * (wcslen(dev->displayName) + 12));
 			wsprintfW(newName, L"[Detached] %s", dev->displayName);
@@ -328,6 +330,8 @@ void RefreshEnabledDevices(int updateDeviceList) {
 				((dev->api == DI && config.gameApis.directInput) ||
 				 (dev->api == DS3 && config.gameApis.dualShock3) ||
 				 (dev->api == XINPUT && config.gameApis.xInput)))) {
+			dm->EnableDevice(i);
+#if 0 // windows magic?
 					if (config.gameApis.dualShock3 && dev->api == DI && dev->displayName &&
 						!wcsicmp(dev->displayName, L"DX PLAYSTATION(R)3 Controller")) {
 							dm->DisableDevice(i);
@@ -335,6 +339,7 @@ void RefreshEnabledDevices(int updateDeviceList) {
 					else {
 						dm->EnableDevice(i);
 					}
+#endif
 		}
 		else {
 			dm->DisableDevice(i);

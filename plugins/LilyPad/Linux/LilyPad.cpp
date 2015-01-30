@@ -729,6 +729,7 @@ s32 CALLBACK PADinit(u32 flags) {
 	query.lastByte = 1;
 	query.numBytes = 0;
 	ClearKeyQueue();
+	R_ClearKeyQueue();
 	// Just in case, when resuming emulation.
 	ReleaseModifierKeys();
 
@@ -811,6 +812,7 @@ void CALLBACK PADclose() {
 		DEBUG_TEXT_OUT("LilyPad closed\n\n");
 		updateQueued = 0;
 		ClearKeyQueue();
+		R_ClearKeyQueue();
 	}
 }
 

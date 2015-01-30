@@ -130,6 +130,8 @@ enum DeviceAPI {
 	// to ignore individual buttons.  Wrapper itself takes care
 	// of ignoring bound keys.  Otherwise, works normally.
 	IGNORE_KEYBOARD = 7,
+	// XXX
+	LNX_KEYBOARD = 16,
 };
 
 enum DeviceType {
