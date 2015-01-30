@@ -203,6 +203,10 @@ struct InitInfo {
 	//HWND hWndButton;
 
 	WndProcEater* hWndProc;
+#else
+	// Linux equivalent to HWND
+	Display *GSdsp;
+	Window  GSwin;
 #endif
 };
 

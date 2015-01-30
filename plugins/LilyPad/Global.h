@@ -82,6 +82,11 @@ static inline unsigned int timeGetTime() {
 #include "Utilities/StringHelpers.h"
 #include "Utilities/Path.h"
 
+#include <X11/Xutil.h>
+
+extern Display *GSdsp;
+extern Window  GSwin;
+
 #endif
 
 

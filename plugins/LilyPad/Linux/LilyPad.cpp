@@ -38,6 +38,9 @@
 // LilyPad version.
 #define VERSION ((0<<8) | 11 | (0<<24))
 
+Display *GSdsp;
+Window  GSwin;
+
 // Keeps the various sources for Update polling (PADpoll, PADupdate, etc) from wreaking
 // havoc on each other...
 static std::mutex updateLock;
@@ -430,9 +433,13 @@ void Update(unsigned int port, unsigned int slot) {
 	InitInfo info = {
 		0, 0, hWndTop, &hWndGSProc
 	};
-
-	dm->Update(&info);
+#else
+	InitInfo info = {
+		0, 0, GSdsp, GSwin
+	};
 #endif
+	dm->Update(&info);
+
 	static int turbo = 0;
 	turbo++;
 	for (i=0; i<dm->numDevices; i++) {
@@ -789,14 +796,11 @@ s32 CALLBACK PADopen(void *pDsp) {
 		}
 	}
 
-	// I'd really rather use this line, but GetActiveWindow() does not have complete specs.
-	// It *seems* to return null when no window from this thread has focus, but the
-	// Microsoft specs seem to imply it returns the window from this thread that would have focus,
-	// if any window did (topmost in this thread?).  Which isn't what I want, and doesn't seem
-	// to be what it actually does.
-	// activeWindow = GetActiveWindow() == hWnd;
+	updateQueued = 0;
 
-	// activeWindow = (GetAncestor(hWnd, GA_ROOT) == GetAncestor(GetForegroundWindow(), GA_ROOT));
+	GSdsp = *(Display**)pDsp;
+	GSwin = (Window)*(((uptr*)pDsp)+1);
+
 	activeWindow = 1;
 	UpdateEnabledDevices();
 	return 0;
