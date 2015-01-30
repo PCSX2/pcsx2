@@ -634,7 +634,7 @@ float Cubic(float coeff)
 ------------------------------------------------------------------------------*/
 
 #if (BILINEAR_FILTERING == 1)
-float4 SampleBiLinear(SamplerState texSample, float2 texcoord)
+float4 SampleBiLinear(in SamplerState texSample, in float2 texcoord)
 {
     float texelSizeX = pixelSize.x;
     float texelSizeY = pixelSize.y;
@@ -677,7 +677,7 @@ float4 BiLinearPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (BICUBIC_FILTERING == 1)
-float4 BicubicFilter(SamplerState texSample, float2 texcoord)
+float4 BicubicFilter(in SamplerState texSample, in float2 texcoord)
 {  
     float texelSizeX = pixelSize.x;
     float texelSizeY = pixelSize.y;
@@ -781,11 +781,11 @@ float4 GaussianPass(float4 color, float2 texcoord)
 #endif
 
 /*------------------------------------------------------------------------------
-                         [BICUBIC SCALAR CODE SECTION]
+                         [BICUBIC SCALER CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (BICUBLIC_SCALAR == 1)
-float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
+#if (BICUBLIC_SCALER == 1)
+float4 BicubicScaler(in SamplerState tex, in float2 uv, in float2 texSize)
 {
     float2 inputSize = float2(1.0/texSize.x, 1.0/texSize.y);
 
@@ -837,18 +837,18 @@ float4 BicubicScalar(in SamplerState tex, in float2 uv, in float2 texSize)
     return res;
 }
 
-float4 BiCubicScalarPass(float4 color, float2 texcoord)
+float4 BiCubicScalerPass(float4 color, float2 texcoord)
 {
-    color = BicubicScalar(TextureSampler, texcoord, screenSize);
+    color = BicubicScaler(TextureSampler, texcoord, screenSize);
     return color;
 }
 #endif
 
 /*------------------------------------------------------------------------------
-                         [LANCZOS SCALAR CODE SECTION]
+                         [LANCZOS SCALER CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (LANCZOS_SCALAR == 1)
+#if (LANCZOS_SCALER == 1)
 float3 PixelPos(float xpos, float ypos)
 {
     return sample_tex(TextureSampler, float2(xpos, ypos)).rgb;
@@ -874,7 +874,7 @@ float3 LineRun(float ypos, float4 xpos, float4 linetaps)
     PixelPos(xpos.w, ypos)));
 }
 
-float4 LanczosScalar(float2 texcoord, float2 inputSize)
+float4 LanczosScaler(float2 texcoord, float2 inputSize)
 {
     float2 stepxy = float2(1.0/inputSize.x, 1.0/inputSize.y);
     float2 pos = texcoord + stepxy;
@@ -897,9 +897,9 @@ float4 LanczosScalar(float2 texcoord, float2 inputSize)
     LineRun(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
 }
 
-float4 LanczosScalarPass(float4 color, float2 texcoord)
+float4 LanczosScalerPass(float4 color, float2 texcoord)
 {
-    color = LanczosScalar(texcoord, screenSize);
+    color = LanczosScaler(texcoord, screenSize);
     return color;
 }
 #endif
@@ -909,7 +909,7 @@ float4 LanczosScalarPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (GAMMA_CORRECTION == 1)
-float3 RGBGammaToLinear(float3 color, float gamma)
+float3 RGBGammaToLinear(in float3 color, in float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.0404482362771082) ?
@@ -922,7 +922,7 @@ float3 RGBGammaToLinear(float3 color, float gamma)
     return color;
 }
 
-float3 LinearToRGBGamma(float3 color, float gamma)
+float3 LinearToRGBGamma(in float3 color, in float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.00313066844250063) ?
@@ -1038,30 +1038,30 @@ float4 VibrancePass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (BLENDED_BLOOM == 1)
-float3 BlendAddLight(float3 color, float3 bloom)
+float3 BlendAddLight(in float3 color, in float3 bloom)
 {
     return saturate(color + bloom);
 }
 
-float3 BlendScreen(float3 color, float3 bloom)
+float3 BlendScreen(in float3 color, in float3 bloom)
 {
     return (color + bloom) - (color * bloom);
 }
 
-float3 BlendLuma(float3 color, float3 bloom)
+float3 BlendLuma(in float3 color, in float3 bloom)
 {
     return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), RGBLuminance(color + bloom));
 }
 
-float3 BlendGlow(float3 color, float3 bloom)
+float3 BlendGlow(in float3 color, in float3 bloom)
 {
-    float3 glow = step(0.5, color);
+    float3 glow = smoothstep(0.0, 1.0, color);
     glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
 
     return glow;
 }
 
-float3 BlendOverlay(float3 color, float3 bloom)
+float3 BlendOverlay(in float3 color, in float3 bloom)
 {
     float3 overlay = step(0.5, color);
     overlay = lerp((color * bloom * 2.0), (1.0 - (2.0 * (1.0 - color) * (1.0 - bloom))), overlay);
@@ -1069,7 +1069,12 @@ float3 BlendOverlay(float3 color, float3 bloom)
     return overlay;
 }
 
-float4 PyramidFilter(SamplerState tex, float2 texcoord, float2 width)
+float4 BrightPassFilter(in float4 color)
+{
+    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), float(BloomCutoff)), color.a);
+}
+
+float4 PyramidFilter(in SamplerState tex, in float2 texcoord, in float2 width)
 {
     float4 color = sample_tex(tex, texcoord + float2(0.5, 0.5) * width);
     color += sample_tex(tex, texcoord + float2(-0.5, 0.5) * width);
@@ -1095,8 +1100,11 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    const float defocus = 1.25;
-    float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
+    float defocus = 1.25;
+    float anflare = 4.00;
+
+    color = BrightPassFilter(color);
+    float4 bloom = PyramidFilter(TextureSampler, texcoord, invDefocus * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
@@ -1141,6 +1149,7 @@ float4 BloomPass(float4 color, float2 texcoord)
 
     color.a = RGBLuminance(color.rgb);
     bloom.a = RGBLuminance(bloom.rgb);
+    bloom.a *= anflare;
 
     color = lerp(color, bloom, float(BloomStrength));
 
@@ -1151,7 +1160,15 @@ float4 BloomPass(float4 color, float2 texcoord)
                  [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 FilmicTonemap(float3 color)
+float3 ScaleLuma(in float3 L)
+{
+    const float W = 1.00;   // Linear White Point Value
+    const float K = 1.12;   // Scale
+
+    return (1.0 + K * L / (W * W)) * L / (L + K);
+}
+
+float3 FilmicTonemap(in float3 color)
 {
     float3 Q = color.xyz;
 
@@ -1171,17 +1188,23 @@ float3 FilmicTonemap(float3 color)
     return saturate(color);
 }
 
-float3 ColorShift(float3 color)
+float3 CrossShift(in float3 color)
 {
     float3 colMood;
 
-    colMood.r = float(RedShift);
-    colMood.g = float(GreenShift);
-    colMood.b = float(BlueShift);
+    float2 CrossMatrix[3] = {
+    float2 (0.96, 0.04),
+    float2 (0.99, 0.01),
+    float2 (0.97, 0.03), };
+
+    colMood.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
+    colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
+    colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
     float fLum = RGBLuminance(color.rgb);
+
     #if (GLSL == 1)
-    // Is HLSL float3(x) equivalent to float3(x,x,x) ?
+    // Is HLSL float3(x) equivalent to float3(x,x,x) ? (Yes)
     colMood = lerp(float3(0.0), colMood, saturate(fLum * 2.0));
     colMood = lerp(colMood, float3(1.0), saturate(fLum - 0.5) * 2.0);
     #else
@@ -1210,10 +1233,12 @@ float4 TonemapPass(float4 color, float2 texcoord)
 {
     const float delta = 0.001f;
     const float wpoint = pow(1.002f, 2.0f);
-    
+
+    color.rgb = ScaleLuma(color.rgb);
+
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
-    if (FilmicProcess == 1) { color.rgb = ColorShift(color.rgb); }
-    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
+    if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
+    if (TonemapType == 1) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
     #if (GLSL == 1)
@@ -1243,17 +1268,12 @@ float4 TonemapPass(float4 color, float2 texcoord)
     if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-    #if (TonemapType == 1)
-        float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
-    #elif (TonemapType == 2)
-        float Lp = Yxy.r * FilmicTonemap(Yxy.rrr).r / RGBLuminance(Yxy.rrr) *
-        float(Exposure) / (float(Luminance) + delta);
-    #endif
+    float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
 
-    if (FilmicProcess == 1) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
+    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
@@ -1281,7 +1301,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     #endif
     color.a = RGBLuminance(color.rgb);
 
-    return saturate(color);
+    return color;
 }
 
 /*------------------------------------------------------------------------------
@@ -1716,16 +1736,20 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
         color = BiCubicPass(color, texcoord);
     #endif
 
-    #if (BICUBLIC_SCALAR == 1)
-        color = BiCubicScalarPass(color, texcoord);
+    #if (BICUBLIC_SCALER == 1)
+        color = BiCubicScalerPass(color, texcoord);
     #endif
 
-    #if (LANCZOS_SCALAR == 1)
-        color = LanczosScalarPass(color, texcoord);
+    #if (LANCZOS_SCALER == 1)
+        color = LanczosScalerPass(color, texcoord);
     #endif
 
     #if (UHQ_FXAA == 1)
         color = FxaaPass(color, texcoord);
+    #endif
+
+    #if (GAMMA_CORRECTION == 1)
+        color = GammaPass(color, texcoord);
     #endif
 
     #if (TEXTURE_SHARPEN == 1)
@@ -1758,10 +1782,6 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 
     #if (S_CURVE_CONTRAST == 1)
         color = ContrastPass(color, texcoord);
-    #endif
-
-    #if (GAMMA_CORRECTION == 1)
-        color = GammaPass(color, texcoord);
     #endif
 
     #if (VIGNETTE == 1)
