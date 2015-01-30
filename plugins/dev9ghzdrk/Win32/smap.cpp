@@ -204,7 +204,7 @@ void tx_process()
 			{
 				u32 was=16384-base;
 				memcpy(pk.buffer,dev9.txfifo+base,was);
-				memcpy(pk.buffer,dev9.txfifo,pbd->length-was);
+				memcpy(pk.buffer+was,dev9.txfifo,pbd->length-was);
 				printf("Warped read, was=%u, sz=%u, sz-was=%u\n", was, pbd->length, pbd->length-was);
 			}
 			else
