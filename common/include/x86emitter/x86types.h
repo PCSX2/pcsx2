@@ -14,12 +14,19 @@
  */
 
 #pragma once
-
+#ifndef __x86_64__
 // Register counts for x86/32 mode:
 static const uint iREGCNT_XMM = 8;
 static const uint iREGCNT_GPR = 8;
 static const uint iREGCNT_MMX = 8;
+#else
+static const uint iREGCNT_XMM = 16;
+static const uint iREGCNT_GPR = 16;
+static const uint iREGCNT_MMX = 16;
+#define Rex( w, r, x, b ) xWrite8( 0x40 | ((w) << 3) | ((r) << 2) | ((x) << 1) | (b) );
+#define RexR(w, reg) if( w||(reg)>=8 ) { Rex(w, (reg)>=8, 0, 0); }
 
+#endif
 enum XMMSSEType
 {
 	XMMT_INT = 0, // integer (sse2 only)
@@ -72,11 +79,20 @@ extern void xWrite64( u64 val );
 
 extern const char *const x86_regnames_gpr8[8];
 extern const char *const x86_regnames_gpr16[8];
+#ifndef __x86_64__
 extern const char *const x86_regnames_gpr32[8];
+#endif
+#ifdef __x86_64__
+extern const char *const x86_regnames_gpr64[16];
+#endif
 
+#ifndef __x86_64__
 extern const char *const x86_regnames_sse[8];
 extern const char *const x86_regnames_mmx[8];
-
+#else
+extern const char *const x86_regnames_sse[16];
+extern const char *const x86_regnames_mmx[16];
+#endif
 extern const char* xGetRegName( int regid, int operandSize );
 
 //------------------------------------------------------------------
@@ -250,7 +266,7 @@ template< typename T > void xWrite( T val );
 		explicit xRegisterBase( int regId )
 		{
 			Id = regId;
-			pxAssert( (Id >= xRegId_Empty) && (Id < 8) );
+			pxAssert( (Id >= xRegId_Empty) && (Id < 16) ); // 64 bit has 16 register, not 8
 		}
 
 		bool IsEmpty() const		{ return Id < 0 ; }
@@ -330,6 +346,20 @@ template< typename T > void xWrite( T val );
 		bool operator!=( const xRegister32& src ) const	{ return this->Id != src.Id; }
 	};
 
+    class xRegister64 : public xRegisterInt
+	{
+		typedef xRegisterInt _parent;
+
+	public:
+		xRegister64(): _parent() {}
+		explicit xRegister64( int regId ) : _parent( regId ) {}
+
+		virtual uint GetOperandSize() const { return 8; }
+
+		bool operator==( const xRegister64& src ) const	{ return this->Id == src.Id; }
+		bool operator!=( const xRegister64& src ) const	{ return this->Id != src.Id; }
+	};
+
 	// --------------------------------------------------------------------------------------
 	//  xRegisterMMX/SSE  -  Represents either a 64 bit or 128 bit SIMD register
 	// --------------------------------------------------------------------------------------
@@ -390,14 +420,41 @@ template< typename T > void xWrite( T val );
 	// --------------------------------------------------------------------------------------
 	//  xAddressReg
 	// --------------------------------------------------------------------------------------
-	// Use 32 bit registers as our index registers (for ModSib-style memory address calculations).
-	// This type is implicitly exchangeable with xRegister32.
+	// Use 32/64 bit registers as our index registers (for ModSib-style memory address calculations).
+	// This type is implicitly exchangeable with xRegister32/64.
 	//
 	// Only xAddressReg provides operators for constructing xAddressInfo types.  These operators
-	// could have been added to xRegister32 directly instead, however I think this design makes
+	// could have been added to xRegister32/64 directly instead, however I think this design makes
 	// more sense and allows the programmer a little more type protection if needed.
 	//
-	class xAddressReg : public xRegister32
+    #ifdef __x86_64__
+	class xAddressReg : public xRegister64
+	{
+	public:
+		xAddressReg(): xRegister64() {}
+		xAddressReg( const xAddressReg& src ) : xRegister64( src.Id ) {}
+		xAddressReg( const xRegister64& src ) : xRegister64( src ) {}
+		explicit xAddressReg( int regId ) : xRegister64( regId ) {}
+
+		// Returns true if the register is the stack pointer: ESP.
+		bool IsStackPointer() const { return Id == 4; }
+
+		xAddressVoid operator+( const xAddressReg& right ) const;
+		xAddressVoid operator+( s64 right ) const;
+		xAddressVoid operator+( const void* right ) const;
+		xAddressVoid operator-( s64 right ) const;
+		xAddressVoid operator-( const void* right ) const;
+		xAddressVoid operator*( u64 factor ) const;
+		xAddressVoid operator<<( u64 shift ) const;
+
+		/*xAddressReg& operator=( const xRegister32& src )
+		{
+			Id = src.Id;
+			return *this;
+		}*/
+	};
+    #else
+    class xAddressReg : public xRegister32
 	{
 	public:
 		xAddressReg(): xRegister32() {}
@@ -422,6 +479,7 @@ template< typename T > void xWrite( T val );
 			return *this;
 		}*/
 	};
+    #endif
 
 	// --------------------------------------------------------------------------------------
 	//  xRegisterEmpty
@@ -480,7 +538,13 @@ template< typename T > void xWrite( T val );
 	extern const xRegisterMMX
 		mm0, mm1, mm2, mm3,
 		mm4, mm5, mm6, mm7;
-
+    #ifdef __x86_64__
+    extern const xAddressReg
+        rax, rbx, rcx, rdx,
+        rsi, rdi, rbp, rsp,
+        r8, r9, r10, r11,
+        r12, r13, r14, r15;
+    #endif // for the moment, keep both, only first registers may be use for now...
 	extern const xAddressReg
 		eax, ebx, ecx, edx,
 		esi, edi, ebp, esp;
@@ -672,6 +736,37 @@ template< typename T > void xWrite( T val );
 	//
 	// End users should always use xAddressInfo instead.
 	//
+    #if 0
+	class xIndirectVoid : public OperandSizedObject
+	{
+	public:
+		xAddressReg Base;         // base register (no scale)
+		xAddressReg Index;        // index reg gets multiplied by the scale
+		uint        Scale;        // scale applied to the index register, in scale/shift form
+		sptr        Displacement; // offset applied to the Base/Index registers.
+
+	public:
+		explicit xIndirectVoid( s64 disp );
+		explicit xIndirectVoid( const xAddressVoid& src );
+		xIndirectVoid( xAddressReg base, xAddressReg index, int scale=0, s64 displacement=0 );
+
+		virtual uint GetOperandSize() const;
+		xIndirectVoid& Add( s32 imm );
+        xIndirectVoid& Add( s64 imm );
+		bool IsByteSizeDisp() const { return is_s8( Displacement ); }
+
+		operator xAddressVoid()
+		{
+			return xAddressVoid( Base, Index, Scale, Displacement );
+		}
+
+		__fi xIndirectVoid operator+( const s64 imm ) const { return xIndirectVoid( *this ).Add( imm ); }
+		__fi xIndirectVoid operator-( const s64 imm ) const { return xIndirectVoid( *this ).Add( -imm ); }
+
+	protected:
+		void Reduce();
+	};
+	#endif
 	class xIndirectVoid : public OperandSizedObject
 	{
 	public:
@@ -701,7 +796,6 @@ template< typename T > void xWrite( T val );
 	protected:
 		void Reduce();
 	};
-	
 	template< typename OperandType >	
 	class xIndirect : public xIndirectVoid
 	{

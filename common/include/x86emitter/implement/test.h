@@ -28,6 +28,7 @@ struct xImpl_Test
 	void operator()( const xRegister8& to, const xRegister8& from ) const;
 	void operator()( const xRegister16& to, const xRegister16& from ) const;
 	void operator()( const xRegister32& to, const xRegister32& from ) const;
+    void operator()( const xRegister64& to, const xRegister64& from ) const;
 	void operator()( const xIndirect32orLess& dest, int imm ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
 };
@@ -49,7 +50,10 @@ struct xImpl_BitScan
 {
 	// 0xbc [fwd] / 0xbd [rev]
 	u16		Opcode;
-
+    
+#ifdef __x86_64__
+    void operator()( const xRegister64& to, const xRegister64& from ) const;
+#endif
 	void operator()( const xRegister32& to, const xRegister32& from ) const;
 	void operator()( const xRegister16& to, const xRegister16& from ) const;
 	void operator()( const xRegister16or32& to, const xIndirectVoid& sibsrc ) const;
@@ -64,7 +68,14 @@ struct xImpl_Group8
 {
 	G8Type	InstType;
 
-	void operator()( const xRegister32& bitbase, const xRegister32& bitoffset ) const;
+	#ifdef __x86_64__
+    void operator()( const xRegister64& bitbase, const xRegister64& bitoffset ) const;
+	void operator()( const xRegister64& bitbase, u8 bitoffset ) const;
+
+	void operator()( const xIndirectVoid& bitbase, const xRegister64& bitoffset ) const;
+    #endif
+
+    void operator()( const xRegister32& bitbase, const xRegister32& bitoffset ) const;
 	void operator()( const xRegister16& bitbase, const xRegister16& bitoffset ) const;
 	void operator()( const xRegister16or32& bitbase, u8 bitoffset ) const;
 

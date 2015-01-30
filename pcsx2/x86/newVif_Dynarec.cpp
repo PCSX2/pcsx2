@@ -154,6 +154,23 @@ static void ShiftDisplacementWindow( xAddressVoid& addr, const xRegister32& modR
 	if(addImm) { xADD(modReg, addImm); }
 }
 
+#ifdef __x86_64__
+static void ShiftDisplacementWindow( xAddressVoid& addr, const xRegister64& modReg )
+{
+	// Shifts the displacement factor of a given indirect address, so that the address
+	// remains in the optimal 0xf0 range (which allows for byte-form displacements when
+	// generating instructions).
+
+	int addImm = 0;
+	while( addr.Displacement >= 0x80 )
+	{
+		addImm += 0xf0;
+		addr -= 0xf0;
+	}
+	if(addImm) { xADD(modReg, addImm); }
+}
+#endif
+
 void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 {
 	

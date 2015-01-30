@@ -32,10 +32,13 @@ struct xImpl_Mov
 	void operator()( const xRegister8& to, const xRegister8& from ) const;
 	void operator()( const xRegister16& to, const xRegister16& from ) const;
 	void operator()( const xRegister32& to, const xRegister32& from ) const;
+    void operator()( const xRegister64& to, const xRegister64& from ) const;
+    void operator()( const xRegister64& to, const xRegister32& from ) const;
 
 	void operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& src ) const;
 	void operator()( const xIndirect32orLess& dest, int imm ) const;
+    void operator()( const xIndirect64& dest, int imm ) const;
 	void operator()( const xRegisterInt& to, int imm, bool preserve_flags=false ) const;
 
 #if 0
@@ -88,7 +91,10 @@ struct xImpl_Mov
 struct xImpl_CMov
 {
 	JccComparisonType	ccType;
-
+    #ifdef __x86_64__
+    void operator()( const xRegister64& to, const xRegister64& from ) const;
+	void operator()( const xRegister64& to, const xIndirectVoid& sibsrc ) const;
+    #endif
 	void operator()( const xRegister32& to, const xRegister32& from ) const;
 	void operator()( const xRegister32& to, const xIndirectVoid& sibsrc ) const;
 
@@ -119,6 +125,12 @@ struct xImpl_MovExtend
 {
 	bool	SignExtend;
 
+    #ifdef __x86_64__
+	void operator()( const xRegister64& to, const xRegister8& from ) const;
+	void operator()( const xRegister64& to, const xIndirect8& sibsrc ) const;
+	void operator()( const xRegister64& to, const xRegister16& from ) const;
+	void operator()( const xRegister64& to, const xIndirect16& sibsrc ) const;
+    #endif
 	void operator()( const xRegister16or32& to, const xRegister8& from ) const;
 	void operator()( const xRegister16or32& to, const xIndirect8& sibsrc ) const;
 	void operator()( const xRegister32& to, const xRegister16& from ) const;

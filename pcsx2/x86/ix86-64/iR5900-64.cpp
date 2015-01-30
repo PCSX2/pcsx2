@@ -362,7 +362,7 @@ void recCall( void (*func)() )
 
 static void __fastcall recRecompile( const u32 startpc );
 
-static u32 s_store_ebp, s_store_esp;
+static uint64_t s_store_ebp, s_store_esp;
 
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned eeRecDispatchers[__pagesize];
@@ -402,25 +402,25 @@ static void _DynGen_StackFrameCheck()
 
 	// --------- EBP Here -----------
 
-	xCMP( ebp, ptr[&s_store_ebp] );
+	xCMP( rbp, ptr[&s_store_ebp] );
 	xForwardJE8 skipassert_ebp;
 
-	xMOV( ecx, 1 );						// 1 specifies EBP
-	xMOV( edx, ebp );
+	xMOV( rcx, 1 );						// 1 specifies EBP
+	xMOV( rdx, ebp );
 	xCALL( StackFrameCheckFailed );
-	xMOV( ebp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
+	xMOV( rbp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
 
 	skipassert_ebp.SetTarget();
 
 	// --------- ESP There -----------
 
-	xCMP( esp, ptr[&s_store_esp] );
+	xCMP( rsp, ptr[&s_store_esp] );
 	xForwardJE8 skipassert_esp;
 
-	xXOR( ecx, ecx );					// 0 specifies ESP
-	xMOV( edx, esp );
+	xXOR( rcx, rcx );					// 0 specifies ESP
+	xMOV( rdx, rsp );
 	xCALL( StackFrameCheckFailed );
-	xMOV( esp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
+	xMOV( rsp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
 
 	skipassert_esp.SetTarget();
 }
@@ -434,14 +434,14 @@ static DynGenFunc* _DynGen_JITCompile()
 	u8* retval = xGetAlignedCallTarget();
 	_DynGen_StackFrameCheck();
 
-	xMOV( ecx, ptr[&cpuRegs.pc] );
+	xMOV( rcx, ptr[&cpuRegs.pc] );
 	xCALL( recRecompile );
 
-	xMOV( eax, ptr[&cpuRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
-	xMOV( ecx, ptr[recLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rax, ptr[&cpuRegs.pc] );
+	xMOV( rbx, rax );
+	xSHR( rax, (uint64_t)16 );
+	xMOV( rcx, ptr[recLUT + (rax*4)] );
+	xJMP( ptr64[rcx+rbx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -459,11 +459,11 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	u8* retval = xGetPtr();		// fallthrough target, can't align it!
 	_DynGen_StackFrameCheck();
 
-	xMOV( eax, ptr[&cpuRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
-	xMOV( ecx, ptr[recLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rax, ptr[&cpuRegs.pc] );
+	xMOV( rbx, rax );
+	xSHR( rax, (uint64_t)16 );
+	xMOV( rcx, ptr[recLUT + (rax*4)] );
+	xJMP( ptr64[rcx+rbx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -479,9 +479,9 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	//   for the duration of our function, and is used to restore the original
 	//   esp before returning from the function
 
-	xPUSH( ebp );
-	xMOV( ebp, esp );
-	xAND( esp, -0x10 );
+	xPUSH( rbp );
+	xMOV( rbp, rsp );
+	xAND( rsp, -0x10 );
 
 	// First 0x10 is for esi, edi, etc. Second 0x10 is for the return address and ebp.  The
 	// third 0x10 is an optimization for C-style CDECL calls we might make from the recompiler
@@ -489,24 +489,26 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	//  used -- we do everything through __fastcall)
 
 	static const int cdecl_reserve = 0x00;
-	xSUB( esp, 0x20 + cdecl_reserve );
-
-	xMOV( ptr[ebp-12], edi );
-	xMOV( ptr[ebp-8], esi );
-	xMOV( ptr[ebp-4], ebx );
+	xSUB( rsp, 0x40 + cdecl_reserve );
+    
+	xMOV( ptr64[rbp-24], rdi );
+	xMOV( ptr64[rbp-16], rsi );
+	xMOV( ptr64[rbp-8], rbx );
 
 	// Simulate a CALL function by pushing the call address and EBP onto the stack.
 	// (the dummy address here is filled in later right before we generate the LEAVE code)
-	xMOV( ptr32[esp+0x0c+cdecl_reserve], 0xdeadbeef );
-	uptr& imm = *(uptr*)(xGetPtr()-4);
+	xMOV( ptr32[rsp+0x10+cdecl_reserve], 0xdeadbeef   );
+    uint32_t* imm1 = (uint32_t*)(xGetPtr()-4);
+    xMOV( ptr32[rsp+0x14+cdecl_reserve], 0xdeadbeef   );
+    uint32_t* imm2 = (uint32_t*)(xGetPtr()-4);
 
 	// This part simulates the "normal" stackframe prep of "push ebp, mov ebp, esp"
 	// It is done here because we can't really generate that stuff from the Dispatchers themselves.
-	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
-	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
+	xMOV( ptr64[rsp+0x08], rbp );
+	xLEA( rbp, ptr64[rsp+0x08+cdecl_reserve] );
 
-	xMOV( ptr[&s_store_esp], esp );
-	xMOV( ptr[&s_store_ebp], ebp );
+	xMOV( ptr64[&s_store_esp], rsp );
+	xMOV( ptr64[&s_store_ebp], rbp );
 
 	xJMP( DispatcherReg );
 
@@ -515,15 +517,19 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	// This dummy CALL is unreachable code that some debuggers (MSVC2008) need in order to
 	// unwind the stack properly.  This is effectively the call that we simulate above.
 	if( IsDevBuild ) xCALL( DispatcherReg );
-
-	imm = (uptr)xGetPtr();
-	ExitRecompiledCode = (DynGenFunc*)xGetPtr();
+    uptr tmp = (uptr)xGetPtr();
+	uint32_t tmp1 = (uint32_t) (tmp & (0xFFFFFFFF)); //lower 32bits of the address
+	uint32_t tmp2 = (uint32_t) ((tmp>>32) & (0xFFFFFFFF)); //higher 32bits of the address
+    *imm2 = tmp1; // writing lower part last(x86_64 is little endian)
+    *imm1 = tmp2; // writing higher part
+    
+    ExitRecompiledCode = (DynGenFunc*)xGetPtr();
 
 	xLEAVE();
 
-	xMOV( edi, ptr[ebp-12] );
-	xMOV( esi, ptr[ebp-8] );
-	xMOV( ebx, ptr[ebp-4] );
+	xMOV( rdi, ptr64[rbp-24] );
+	xMOV( rsi, ptr64[rbp-16] );
+	xMOV( rbx, ptr64[rbp-8] );
 
 	xLEAVE();
 	xRET();

@@ -686,15 +686,19 @@ const xImplSimd_DestRegSSE xMOVSHDUP = { 0xf3,0x16 };
 //
 
 __fi void xMOVDZX( const xRegisterSSE& to, const xRegister32& from )	{ xOpWrite0F( 0x66, 0x6e, to, from ); }
+__fi void xMOVDZX( const xRegisterSSE& to, const xRegister64& from )	{ xOpWrite0F( 0x66, 0x6e, to, from ); }
 __fi void xMOVDZX( const xRegisterSSE& to, const xIndirectVoid& src )		{ xOpWrite0F( 0x66, 0x6e, to, src ); }
 
 __fi void xMOVDZX( const xRegisterMMX& to, const xRegister32& from )	{ xOpWrite0F( 0x6e, to, from ); }
+__fi void xMOVDZX( const xRegisterMMX& to, const xRegister64& from )	{ xOpWrite0F( 0x6e, to, from ); }
 __fi void xMOVDZX( const xRegisterMMX& to, const xIndirectVoid& src )		{ xOpWrite0F( 0x6e, to, src ); }
 
 __fi void xMOVD( const xRegister32& to, const xRegisterSSE& from )		{ xOpWrite0F( 0x66, 0x7e, from, to ); }
+__fi void xMOVD( const xRegister64& to, const xRegisterSSE& from )		{ xOpWrite0F( 0x66, 0x7e, from, to ); }
 __fi void xMOVD( const xIndirectVoid& dest, const xRegisterSSE& from )	{ xOpWrite0F( 0x66, 0x7e, from, dest ); }
 
 __fi void xMOVD( const xRegister32& to, const xRegisterMMX& from )		{ xOpWrite0F( 0x7e, from, to ); }
+__fi void xMOVD( const xRegister64& to, const xRegisterMMX& from )		{ xOpWrite0F( 0x7e, from, to ); }
 __fi void xMOVD( const xIndirectVoid& dest, const xRegisterMMX& from )	{ xOpWrite0F( 0x7e, from, dest ); }
 
 
@@ -762,7 +766,8 @@ __fi void xMOVNTQ( const xIndirectVoid& to, const xRegisterMMX& from )	{ xOpWrit
 
 __fi void xMOVMSKPS( const xRegister32& to, const xRegisterSSE& from)	{ xOpWrite0F( 0x50, to, from ); }
 __fi void xMOVMSKPD( const xRegister32& to, const xRegisterSSE& from)	{ xOpWrite0F( 0x66, 0x50, to, from, true ); }
-
+__fi void xMOVMSKPS( const xRegister64& to, const xRegisterSSE& from)	{ xOpWrite0F( 0x50, to, from ); }
+__fi void xMOVMSKPD( const xRegister64& to, const xRegisterSSE& from)	{ xOpWrite0F( 0x66, 0x50, to, from, true ); }
 // xMASKMOV:
 // Selectively write bytes from mm1/xmm1 to memory location using the byte mask in mm2/xmm2.
 // The default memory location is specified by DS:EDI.  The most significant bit in each byte

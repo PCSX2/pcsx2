@@ -457,7 +457,7 @@ void _freeX86regs()
 }
 
 // MMX Caching
-_mmxregs mmxregs[8], s_saveMMXregs[8];
+_mmxregs mmxregs[16], s_saveMMXregs[16];
 static int s_mmxchecknext = 0;
 
 void _initMMXregs()

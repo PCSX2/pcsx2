@@ -41,8 +41,13 @@ void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from )
 	if( to == from ) return;	// ignore redundant MOVs.
 
 	from.prefix16();
-	xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-	EmitSibMagic( from, to );
+	RexR(to.GetOperandSize()>=8,to.Id);
+    xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
+	//if(from.GetOperandSize() == 8)
+    //{
+    //    RexR(1,to.Id);
+    //}
+    EmitSibMagic( from, to );
 }
 
 void xImpl_Mov::operator()( const xRegister8& to, const xRegister8& from ) const
@@ -67,13 +72,22 @@ void xImpl_Mov::operator()( const xRegister32& to, const xRegister32& from ) con
 	EmitSibMagic( from, to );
 }
 
+void xImpl_Mov::operator()( const xRegister64& to, const xRegister64& from ) const
+{
+	if( to == from ) return;	// ignore redundant MOVs.
+	RexR(1,to.Id);
+    xWrite8( 0x89 );
+	EmitSibMagic( from, to );
+}
+
+#define MEMADDR(addr, oplen)    ((addr) - ((u64)x86Ptr + ((u64)oplen)))
 void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const
 {
 	from.prefix16();
 
 	// mov eax has a special from when writing directly to a DISP32 address
 	// (sans any register index/base registers).
-
+    RexR(from.GetOperandSize()>=8,from.Id);
 	if( from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty() )
 	{
 		xWrite8( from.Is8BitOp() ? 0xa2 : 0xa3 );
@@ -83,7 +97,9 @@ void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from 
 	{
 		xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
 		EmitSibMagic( from.Id, dest );
-	}
+	    //ModRM(0,from,ModRm_UseDisp32);
+        //xWrite32((u32) MEMADDR(dest,4));
+    }
 }
 
 void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) const
@@ -92,7 +108,7 @@ void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) c
 
 	// mov eax has a special from when reading directly from a DISP32 address
 	// (sans any register index/base registers).
-
+    RexR(to.GetOperandSize()>=8,to.Id);
 	if( to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty() )
 	{
 		xWrite8( to.Is8BitOp() ? 0xa0 : 0xa1 );
@@ -113,6 +129,15 @@ void xImpl_Mov::operator()( const xIndirect32orLess& dest, int imm ) const
 	dest.xWriteImm( imm );
 }
 
+void xImpl_Mov::operator()( const xIndirect64& dest, int imm ) const
+{
+	dest.prefix16();
+    //RexR(1,0);
+	xWrite8( dest.Is8BitOp() ? 0xc6 : 0xc7 );
+	EmitSibMagic( 0, dest );
+	dest.xWriteImm( imm );
+}
+
 // preserve_flags  - set to true to disable optimizations which could alter the state of
 //   the flags (namely replacing mov reg,0 with xor).
 void xImpl_Mov::operator()( const xRegisterInt& to, int imm, bool preserve_flags ) const
@@ -122,7 +147,7 @@ void xImpl_Mov::operator()( const xRegisterInt& to, int imm, bool preserve_flags
 	else
 	{
 		// Note: MOV does not have (reg16/32,imm8) forms.
-
+        RexR(to.GetOperandSize()>=8,to.Id);
 		to.prefix16();
 		xWrite8( (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id );
 		to.xWriteImm( imm );
@@ -145,6 +170,8 @@ const xImpl_Mov xMOV;
 void xCMOV( JccComparisonType ccType, const xRegister32& to, const xRegister32& from )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
 void xCMOV( JccComparisonType ccType, const xRegister32& to, const xIndirectVoid& sibsrc )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
 //void xCMOV( JccComparisonType ccType, const xDirectOrIndirect32& to, const xDirectOrIndirect32& from ) const { ccSane(); _DoI_helpermess( *this, to, from ); }	// too.. lazy.. to fix.
+void xCMOV( JccComparisonType ccType, const xRegister64& to, const xRegister64& from )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
+void xCMOV( JccComparisonType ccType, const xRegister64& to, const xIndirectVoid& sibsrc )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
 
 void xCMOV( JccComparisonType ccType, const xRegister16& to, const xRegister16& from )		{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, from ); }
 void xCMOV( JccComparisonType ccType, const xRegister16& to, const xIndirectVoid& sibsrc )		{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, sibsrc ); }
@@ -153,6 +180,8 @@ void xCMOV( JccComparisonType ccType, const xRegister16& to, const xIndirectVoid
 void xSET( JccComparisonType ccType, const xRegister8& to )		{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, to ); }
 void xSET( JccComparisonType ccType, const xIndirect8& dest )		{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, dest ); }
 
+void xImpl_CMov::operator()( const xRegister64& to, const xRegister64& from ) const					{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
+void xImpl_CMov::operator()( const xRegister64& to, const xIndirectVoid& sibsrc ) const				{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
 void xImpl_CMov::operator()( const xRegister32& to, const xRegister32& from ) const					{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
 void xImpl_CMov::operator()( const xRegister32& to, const xIndirectVoid& sibsrc ) const				{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
 void xImpl_CMov::operator()( const xRegister16& to, const xRegister16& from ) const					{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, from ); }
@@ -175,6 +204,17 @@ void xImpl_MovExtend::operator()( const xRegister16or32& to, const xRegister8& f
 	);
 }
 
+void xImpl_MovExtend::operator()( const xRegister64& to, const xRegister8& from ) const
+{
+	EbpAssert();
+    RexR(to.GetOperandSize()>=8,to.Id);
+	xOpWrite0F(
+		 0,
+		SignExtend ? 0xbe : 0xb6,
+		to, from
+	); // Definitely not sure about that one, It would seem coherent it stays the same, will check later. --3kinox
+}
+
 void xImpl_MovExtend::operator()( const xRegister16or32& to, const xIndirect8& sibsrc ) const
 {
 	EbpAssert();
@@ -185,6 +225,17 @@ void xImpl_MovExtend::operator()( const xRegister16or32& to, const xIndirect8& s
 	);
 }
 
+void xImpl_MovExtend::operator()( const xRegister64& to, const xIndirect8& sibsrc ) const
+{
+	EbpAssert();
+	RexR(to.GetOperandSize()>=8,to.Id);
+    xOpWrite0F(
+		 0,
+		SignExtend ? 0xbe : 0xb6,
+		to, sibsrc
+	);// Definitely not sure about that one, It would seem coherent it stays the same, will check later. --3kinox
+}
+
 void xImpl_MovExtend::operator()( const xRegister32& to, const xRegister16& from ) const
 {
 	EbpAssert();
@@ -192,6 +243,18 @@ void xImpl_MovExtend::operator()( const xRegister32& to, const xRegister16& from
 }
 
 void xImpl_MovExtend::operator()( const xRegister32& to, const xIndirect16& sibsrc ) const
+{
+	EbpAssert();
+	xOpWrite0F( SignExtend ? 0xbf : 0xb7, to, sibsrc );
+}
+
+void xImpl_MovExtend::operator()( const xRegister64& to, const xRegister16& from ) const
+{
+	EbpAssert();
+	xOpWrite0F( SignExtend ? 0xbf : 0xb7, to, from );
+}
+
+void xImpl_MovExtend::operator()( const xRegister64& to, const xIndirect16& sibsrc ) const
 {
 	EbpAssert();
 	xOpWrite0F( SignExtend ? 0xbf : 0xb7, to, sibsrc );

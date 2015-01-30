@@ -36,9 +36,10 @@ extern void xJccKnownTarget( JccComparisonType comparison, const void* target, b
 struct xImpl_JmpCall
 {
 	bool	isJmp;
-
+    void operator()( const xRegister64& absreg ) const;
 	void operator()( const xRegister32& absreg ) const;
-	void operator()( const xIndirect32& src ) const;
+	void operator()( const xIndirect64& src ) const;
+    void operator()( const xIndirect32& src ) const;
 
 	void operator()( const xRegister16& absreg ) const;
 	void operator()( const xIndirect16& src ) const;

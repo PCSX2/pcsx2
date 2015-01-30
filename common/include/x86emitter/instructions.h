@@ -121,14 +121,18 @@ namespace x86Emitter
 	// Miscellaneous Instructions
 	// These are all defined inline or in ix86.cpp.
 	//
-
+    #ifdef __x86_64__
+    extern void xBSWAP( const xRegister64& to );
+    #endif
 	extern void xBSWAP( const xRegister32& to );
 
 	// ----- Lea Instructions (Load Effective Address) -----
 	// Note: alternate (void*) forms of these instructions are not provided since those
 	// forms are functionally equivalent to Mov reg,imm, and thus better written as MOVs
 	// instead.
-
+    #ifdef __x86_64__
+    extern void xLEA( xRegister64 to, const xIndirectVoid& src, bool preserve_flags=false );
+    #endif
 	extern void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags=false );
 	extern void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_flags=false );
 
@@ -139,6 +143,13 @@ namespace x86Emitter
 	extern void xPOP( const xIndirectVoid& from );
 	extern void xPUSH( const xIndirectVoid& from );
 
+#ifdef __x86_64__
+    extern void xPOP( xRegister64 from );
+
+	extern void xPUSH( u64 imm );
+	extern void xPUSH( xRegister64 from );
+
+#endif
 	extern void xPOP( xRegister32 from );
 
 	extern void xPUSH( u32 imm );
@@ -309,16 +320,25 @@ namespace x86Emitter
 	extern void xLDMXCSR( const xIndirect32& src );
 	extern void xFXSAVE( const xIndirectVoid& dest );
 	extern void xFXRSTOR( const xIndirectVoid& src );
-
+    #ifdef __x86_64__
+    extern void xMOVDZX( const xRegisterSSE& to, const xRegister64& from );
+    #endif
 	extern void xMOVDZX( const xRegisterSSE& to, const xRegister32& from );
 	extern void xMOVDZX( const xRegisterSSE& to, const xIndirectVoid& src );
-
+    
+    #ifdef __x86_64__
+    extern void xMOVDZX( const xRegisterMMX& to, const xRegister64& from );
+    #endif
 	extern void xMOVDZX( const xRegisterMMX& to, const xRegister32& from );
 	extern void xMOVDZX( const xRegisterMMX& to, const xIndirectVoid& src );
-
+    #ifdef __x86_64__
+    extern void xMOVD( const xRegister64& to, const xRegisterSSE& from );
+    #endif
 	extern void xMOVD( const xRegister32& to, const xRegisterSSE& from );
 	extern void xMOVD( const xIndirectVoid& dest, const xRegisterSSE& from );
-
+    #ifdef __x86_64__
+    extern void xMOVD( const xRegister64& to, const xRegisterMMX& from );
+    #endif
 	extern void xMOVD( const xRegister32& to, const xRegisterMMX& from );
 	extern void xMOVD( const xIndirectVoid& dest, const xRegisterMMX& from );
 
@@ -348,14 +368,22 @@ namespace x86Emitter
 	extern void xMOVNTPS( const xIndirectVoid& to, const xRegisterSSE& from );
 	extern void xMOVNTQ( const xIndirectVoid& to, const xRegisterMMX& from );
 
+    #ifdef __x86_64__
+    extern void xMOVMSKPS( const xRegister64& to, const xRegisterSSE& from );
+	extern void xMOVMSKPD( const xRegister64& to, const xRegisterSSE& from );
+    #endif
 	extern void xMOVMSKPS( const xRegister32& to, const xRegisterSSE& from );
 	extern void xMOVMSKPD( const xRegister32& to, const xRegisterSSE& from );
 
 	extern void xMASKMOV( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xMASKMOV( const xRegisterMMX& to, const xRegisterMMX& from );
+    #ifdef __x86_64__
+    extern void xPMOVMSKB( const xRegister64& to, const xRegisterSSE& from );
+	extern void xPMOVMSKB( const xRegister64& to, const xRegisterMMX& from );
+    #endif
 	extern void xPMOVMSKB( const xRegister32& to, const xRegisterSSE& from );
 	extern void xPMOVMSKB( const xRegister32& to, const xRegisterMMX& from );
-	extern void xPALIGNR( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8 );
+    extern void xPALIGNR( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8 );
 	extern void xPALIGNR( const xRegisterMMX& to, const xRegisterMMX& from, u8 imm8 );
 
 	// ------------------------------------------------------------------------
@@ -387,9 +415,11 @@ namespace x86Emitter
 
 	extern void xINSERTPS( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8 );
 	extern void xINSERTPS( const xRegisterSSE& to, const xIndirect32& from, u8 imm8 );
-
+    #ifdef __x86_64__
+    extern void xEXTRACTPS( const xRegister64& to, const xRegisterSSE& from, u8 imm8 );
+    #endif
 	extern void xEXTRACTPS( const xRegister32& to, const xRegisterSSE& from, u8 imm8 );
-	extern void xEXTRACTPS( const xIndirect32& dest, const xRegisterSSE& from, u8 imm8 );
+    extern void xEXTRACTPS( const xIndirect32& dest, const xRegisterSSE& from, u8 imm8 );
 
 	// ------------------------------------------------------------------------
 
