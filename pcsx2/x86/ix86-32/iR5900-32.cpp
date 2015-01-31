@@ -1102,7 +1102,7 @@ static u32 scaleBlockCycles_helper()
 	// caused by sync hacks and such, since games seem to care a lot more about
 	// these small blocks having accurate cycle counts.
 
-	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate == 0) )
+	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate == 2) )
 		return s_nBlockCycles >> 3;
 
 	uint scalarLow, scalarMid, scalarHigh;
@@ -1110,34 +1110,46 @@ static u32 scaleBlockCycles_helper()
 	// Note: larger blocks get a smaller scalar, to help keep
 	// them from becoming "too fat" and delaying branch tests.
 
-	switch( EmuConfig.Speedhacks.EECycleRate )
+	switch (EmuConfig.Speedhacks.EECycleRate)
 	{
-		case 0:	return s_nBlockCycles >> 3;
 
-		case 1:		// Sync hack x1.5!
-			scalarLow = 5;
-			scalarMid = 7;
-			scalarHigh = 5;
+	case 0:		// EE clock 50%
+		scalarLow = 7;
+		scalarMid = 9;
+		scalarHigh = 7;
 		break;
 
-		case 2:		// Sync hack x2
-			scalarLow = 7;
-			scalarMid = 9;
-			scalarHigh = 7;
+	case 1:		// EE clock 70%
+		scalarLow = 5;
+		scalarMid = 7;
+		scalarHigh = 5;
 		break;
 
+	case 2:	return s_nBlockCycles >> 3; // default cycle rate
+
+	case 3:		// EE clock 130%
+		scalarLow = 1;
+		scalarMid = 2;
+		scalarHigh = 1;
+		break;
+
+	case 4:		// EE clock 150%
+		scalarLow = 0;
+		scalarMid = 1;
+		scalarHigh = 0;
+		break;
 		// Added insane rates on popular request (rama)
-		//jNO_DEFAULT
-		default:
-			scalarLow = 2;
-			scalarMid = 3;
-			scalarHigh = 2;
-			
-			if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
-				scalarLow *= EmuConfig.Speedhacks.EECycleRate;
-				scalarMid *= EmuConfig.Speedhacks.EECycleRate;
-				scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
-			}
+		//NO_DEFAULT
+	default:
+		scalarLow = 2;
+		scalarMid = 3;
+		scalarHigh = 2;
+
+		//if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
+		//scalarLow *= EmuConfig.Speedhacks.EECycleRate;
+		//scalarMid *= EmuConfig.Speedhacks.EECycleRate;
+		//scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
+		//}
 	}
 
 	const u32 temp = s_nBlockCycles * (
