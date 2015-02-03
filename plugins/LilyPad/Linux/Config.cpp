@@ -25,11 +25,166 @@
 GeneralConfig config;
 u8 ps2e = 0;
 
+#if 0
+remove 0x10F0 to compute the cmd value
+
+#define ID_SENSITIVITY                  0x1007
+#define ID_LOCK_BUTTONS                 0x10FC
+#define ID_LOCK                         0x10FD
+#define ID_LOCK_DIRECTION               0x10FE
+#define ID_MOUSE                        0x10FF
+#define ID_SELECT                       0x1100
+#define ID_L3                           0x1101
+#define ID_R3                           0x1102
+#define ID_START                        0x1103
+#define ID_DPAD_UP                      0x1104
+#define ID_DPAD_RIGHT                   0x1105
+#define ID_DPAD_DOWN                    0x1106
+#define ID_DPAD_LEFT                    0x1107
+#define ID_L2                           0x1108
+#define ID_R2                           0x1109
+#define ID_L1                           0x110A
+#define ID_R1                           0x110B
+#define ID_TRIANGLE                     0x110C
+#define ID_CIRCLE                       0x110D
+#define ID_CROSS                        0x110E
+#define ID_SQUARE                       0x110F
+#define ID_LSTICK_UP                    0x1110
+#define ID_LSTICK_RIGHT                 0x1111
+#define ID_LSTICK_DOWN                  0x1112
+#define ID_LSTICK_LEFT                  0x1113
+#define ID_RSTICK_UP                    0x1114
+#define ID_RSTICK_RIGHT                 0x1115
+#define ID_RSTICK_DOWN                  0x1116
+#define ID_RSTICK_LEFT                  0x1117
+#define ID_ANALOG                       0x1118
+#define ID_DELETE                       0x11FF
+#define ID_DEBUG                        0x1200
+#define ID_IGNORE                       0x1201
+#define ID_CLEAR                        0x1202
+#define ID_REFRESH                      0x1202
+#define ID_SAVE                         0x1204
+#define ID_LOAD                         0x1205
+#define ID_BIG_MOTOR                    0x120A
+#define ID_SMALL_MOTOR                  0x120B
+#define ID_TEST                         0x1300
+#define ID_CONTROLS                     0x1301
+#define ID_FF                           0x1304
+
+#endif
+
 struct GeneralSettingsBool {
 	const wchar_t *name;
 	unsigned int ControlId;
 	u8 defaultValue;
 };
+
+// XXX: I try to remove only gui stuff
+void DeleteBinding(int port, int slot, Device *dev, Binding *b) {
+	fprintf(stderr, "delete binding %d:%d\n", port, slot);
+	Binding *bindings = dev->pads[port][slot].bindings;
+	int i = b - bindings;
+	memmove(bindings+i, bindings+i+1, sizeof(Binding) * (dev->pads[port][slot].numBindings - i - 1));
+	dev->pads[port][slot].numBindings--;
+}
+
+void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b) {
+	ForceFeedbackBinding *bindings = dev->pads[port][slot].ffBindings;
+	int i = b - bindings;
+	memmove(bindings+i, bindings+i+1, sizeof(Binding) * (dev->pads[port][slot].numFFBindings - i - 1));
+	dev->pads[port][slot].numFFBindings--;
+}
+
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, int command, int sensitivity, int turbo, int deadZone) {
+	// Checks needed because I use this directly when loading bindings.
+	if (port > 1 || slot>3) {
+		return -1;
+	}
+	if (!sensitivity) sensitivity = BASE_SENSITIVITY;
+	if ((uid>>16) & (PSHBTN|TGLBTN)) {
+		deadZone = 0;
+	}
+	else if (!deadZone) {
+		if ((uid>>16) & PRESSURE_BTN) {
+			deadZone = 1;
+		}
+		else {
+			deadZone = DEFAULT_DEADZONE;
+		}
+	}
+	// Relative axes can have negative sensitivity.
+	else if (((uid>>16) & 0xFF) == RELAXIS) {
+		sensitivity = abs(sensitivity);
+	}
+	VirtualControl *c = dev->GetVirtualControl(uid);
+	if (!c) return -1;
+	// Add before deleting.  Means I won't scroll up one line when scrolled down to bottom.
+	int controlIndex = c - dev->virtualControls;
+	int index = 0;
+	PadBindings *p = dev->pads[port]+slot;
+	p->bindings = (Binding*) realloc(p->bindings, (p->numBindings+1) * sizeof(Binding));
+	for (index = p->numBindings; index > 0; index--) {
+		if (p->bindings[index-1].controlIndex < controlIndex) break;
+		p->bindings[index] = p->bindings[index-1];
+	}
+	Binding *b = p->bindings+index;
+	p->numBindings++;
+	b->command = command;
+	b->controlIndex = controlIndex;
+	b->turbo = turbo;
+	b->sensitivity = sensitivity;
+	b->deadZone = deadZone;
+	// Where it appears in listview.
+	//int count = ListBoundCommand(port, slot, dev, b);
+
+	int newBindingIndex = index;
+	index = 0;
+	while (index < p->numBindings) {
+		if (index == newBindingIndex) {
+			index ++;
+			continue;
+		}
+		b = p->bindings + index;
+		int nuke = 0;
+		if (config.multipleBinding) {
+			if (b->controlIndex == controlIndex && b->command == command)
+				nuke = 1;
+		}
+		else {
+			int uid2 = dev->virtualControls[b->controlIndex].uid;
+			if (b->controlIndex == controlIndex || (!((uid2^uid) & 0xFFFFFF) && ((uid|uid2) & (UID_POV | UID_AXIS))))
+				nuke = 1;
+		}
+		if (!nuke) {
+			index++;
+			continue;
+		}
+		if (index < newBindingIndex) {
+			newBindingIndex--;
+			//count --;
+		}
+		DeleteBinding(port, slot, dev, b);
+	}
+	if (!config.multipleBinding) {
+		for (int port2=0; port2<2; port2++) {
+			for (int slot2=0; slot2<4; slot2++) {
+				if (port2==port && slot2 == slot) continue;
+				PadBindings *p = dev->pads[port2]+slot2;
+				for (int i=0; i < p->numBindings; i++) {
+					Binding *b = p->bindings+i;
+					int uid2 = dev->virtualControls[b->controlIndex].uid;
+					if (b->controlIndex == controlIndex || (!((uid2^uid) & 0xFFFFFF) && ((uid|uid2) & (UID_POV | UID_AXIS)))) {
+						DeleteBinding(port2, slot2, dev, b);
+						i--;
+					}
+				}
+			}
+		}
+	}
+
+	//return count;
+	return 0;
+}
 
 // Ties together config data structure, config files, and general config
 // dialog.
@@ -223,7 +378,7 @@ int LoadSettings(int force, wchar_t *file) {
 				VirtualControl *c = dev->GetVirtualControl(uid);
 				if (!c) c = dev->AddVirtualControl(uid, -1);
 				if (c) {
-					//TODO BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
+					BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
 				}
 			}
 		}
@@ -266,8 +421,9 @@ int LoadSettings(int force, wchar_t *file) {
 					dev->AddFFEffectType(temp2, temp2, EFFECT_CONSTANT);
 					// eff = &dev->ffEffectTypes[dev->numFFEffectTypes-1];
 				}
+#if 0
 				ForceFeedbackBinding *b;
-				//TODO CreateEffectBinding(dev, temp2, port, slot, motor, &b);
+				CreateEffectBinding(dev, temp2, port, slot, motor, &b);
 				if (b) {
 					while (1) {
 						int axisID = atoi(s);
@@ -286,6 +442,7 @@ int LoadSettings(int force, wchar_t *file) {
 						s++;
 					}
 				}
+#endif
 			}
 		}
 	}
