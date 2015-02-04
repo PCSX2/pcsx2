@@ -28,6 +28,7 @@ endif()
 set(lilypadSources
 	DeviceEnumerator.cpp
 	InputManager.cpp
+	KeyboardQueue.cpp
 	LilyPad.cpp
 	Linux/Config.cpp
 	Linux/ConfigHelper.cpp
