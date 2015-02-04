@@ -26,7 +26,9 @@
 #define PADdefs
 
 #include "DeviceEnumerator.h"
+#ifdef _MSC_VER
 #include "WndProcEater.h"
+#endif
 #include "KeyboardQueue.h"
 #include "svnrev.h"
 #include "DualShock3.h"
@@ -39,6 +41,10 @@
 // LilyPad version.
 #define VERSION ((0<<8) | 11 | (0<<24))
 
+#ifdef __linux__
+Display *GSdsp;
+Window  GSwin;
+#else
 HINSTANCE hInst;
 HWND hWnd;
 HWND hWndTop;
@@ -49,10 +55,15 @@ WndProcEater hWndTopProc;
 // ButtonProc is used mostly by the Config panel for eating the procedures of the
 // button with keyboard focus.
 WndProcEater hWndButtonProc;
+#endif
 
 // Keeps the various sources for Update polling (PADpoll, PADupdate, etc) from wreaking
 // havoc on each other...
+#ifdef __linux__
+static std::mutex updateLock;
+#else
 CRITICAL_SECTION updateLock;
+#endif
 
 // Used to toggle mouse listening.
 u8 miceEnabled;
@@ -61,8 +72,10 @@ u8 miceEnabled;
 int openCount = 0;
 
 int activeWindow = 0;
+#ifdef _MSC_VER
 int windowThreadId = 0;
 int updateQueued = 0;
+#endif
 
 int bufSize = 0;
 unsigned char outBuf[50];
@@ -74,6 +87,7 @@ unsigned char inBuf[50];
 #define MODE_ANALOG 0x73
 #define MODE_DS2_NATIVE 0x79
 
+#ifdef _MSC_VER
 int IsWindowMaximized (HWND hWnd) {
 	RECT rect;
 	if (GetWindowRect(hWnd, &rect)) {
@@ -92,8 +106,10 @@ int IsWindowMaximized (HWND hWnd) {
 	}
 	return 0;
 }
+#endif
 
 void DEBUG_TEXT_OUT(const char *text) {
+#ifdef _MSC_VER
 	if (config.debug) {
 		HANDLE hFile = CreateFileA("logs\\padLog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0);
 		if (hFile != INVALID_HANDLE_VALUE) {
@@ -102,9 +118,11 @@ void DEBUG_TEXT_OUT(const char *text) {
 			CloseHandle(hFile);;
 		}
 	}
+#endif
 }
 
 void DEBUG_NEW_SET() {
+#ifdef _MSC_VER
 	if (config.debug && bufSize>1) {
 		HANDLE hFile = CreateFileA("logs\\padLog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0);
 		if (hFile != INVALID_HANDLE_VALUE) {
@@ -132,6 +150,7 @@ void DEBUG_NEW_SET() {
 		}
 	}
 	bufSize = 0;
+#endif
 }
 
 inline void DEBUG_IN(unsigned char c) {
@@ -289,6 +308,7 @@ void UpdateEnabledDevices(int updateList = 0) {
 	}
 }
 
+#ifdef _MSC_VER
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, void* lpvReserved) {
 	hInst = hInstance;
 	if (fdwReason == DLL_PROCESS_ATTACH) {
@@ -306,6 +326,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, void* lpvReserved) {
 	}
 	return 1;
 }
+#endif
 
 void AddForce(ButtonSum *sum, u8 cmd, int delta = 255) {
 	if (!delta) return;
@@ -400,7 +421,7 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 void CapSum(ButtonSum *sum) {
 	int i;
 	for (i=0; i<3; i++) {
-		int div = max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
+		int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
 		if (div > 255) {
 			sum->sticks[i].horiz = sum->sticks[i].horiz * 255 / div;
 			sum->sticks[i].vert = sum->sticks[i].vert * 255 / div;
@@ -423,6 +444,7 @@ char padReadKeyUpdated[4] = {0, 0, 0, 0};
 #define LOCK_BUTTONS 4
 #define LOCK_BOTH 1
 
+#ifdef _MSC_VER
 struct EnterScopedSection
 {
 	CRITICAL_SECTION& m_cs;
@@ -435,6 +457,7 @@ struct EnterScopedSection
 		LeaveCriticalSection( &m_cs );
 	}
 };
+#endif
 
 void Update(unsigned int port, unsigned int slot) {
 	char *stateUpdated;
@@ -452,12 +475,17 @@ void Update(unsigned int port, unsigned int slot) {
 	}
 
 	// Lock prior to timecheck code to avoid pesky race conditions.
+#ifdef __linux__
+	std::lock_guard<std::mutex> lock(updateLock);
+#else
 	EnterScopedSection padlock( updateLock );
+#endif
 
 	static unsigned int LastCheck = 0;
 	unsigned int t = timeGetTime();
 	if (t - LastCheck < 15 || !openCount) return;
 
+#ifdef _MSC_VER
 	if (windowThreadId != GetCurrentThreadId()) {
 		if (stateUpdated[0] < 0) {
 			if (!updateQueued) {
@@ -470,6 +498,7 @@ void Update(unsigned int port, unsigned int slot) {
 		}
 		return;
 	}
+#endif
 
 	LastCheck = t;
 
@@ -481,10 +510,15 @@ void Update(unsigned int port, unsigned int slot) {
 	for (i=0; i<8; i++) {
 		s[i&1][i>>1] = pads[i&1][i>>1].lockedSum;
 	}
+#ifdef __linux__
+	InitInfo info = {
+		0, 0, GSdsp, GSwin
+	};
+#else
 	InitInfo info = {
 		0, 0, hWndTop, &hWndGSProc
 	};
-
+#endif
 	dm->Update(&info);
 	static int turbo = 0;
 	turbo++;
@@ -669,6 +703,7 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type) {
 	return 0;
 }
 
+#ifdef _MSC_VER
 // Used in about and config screens.
 void GetNameAndVersionString(wchar_t *out) {
 #ifdef NO_CRT
@@ -679,6 +714,7 @@ void GetNameAndVersionString(wchar_t *out) {
 	wsprintfW(out, L"LilyPad %i.%i.%i (%lld)", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF, SVN_REV);
 #endif
 }
+#endif
 
 char* CALLBACK PSEgetLibName() {
 #ifdef NO_CRT
@@ -760,7 +796,9 @@ struct QueryInfo {
 	u8 response[42];
 } query = {0,0,0,0, 0,0xFF, 0xF3};
 
+#ifdef _MSC_VER
 int saveStateIndex = 0;
+#endif
 
 s32 CALLBACK PADinit(u32 flags) {
 	// Note:  Won't load settings if already loaded.
@@ -773,7 +811,7 @@ s32 CALLBACK PADinit(u32 flags) {
 		return PADinit(2);
 	}
 
-	#ifdef PCSX2_DEBUG
+	#if defined(PCSX2_DEBUG) && defined(_MSC_VER)
 	int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 	tmpFlag |= _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF;
 	_CrtSetDbgFlag( tmpFlag );
@@ -790,6 +828,9 @@ s32 CALLBACK PADinit(u32 flags) {
 	query.lastByte = 1;
 	query.numBytes = 0;
 	ClearKeyQueue();
+#ifdef __linux__
+	R_ClearKeyQueue();
+#endif
 	// Just in case, when resuming emulation.
 	ReleaseModifierKeys();
 
@@ -836,6 +877,7 @@ static const u8 queryMode[7] =		{0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 static const u8 setNativeMode[7] =  {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A};
 
+#ifdef _MSC_VER
 // Implements a couple of the hacks that affect whatever top-level window
 // the GS viewport belongs to (title, screensaver)
 ExtraWndProcResult TitleHackWndProc(HWND hWndTop, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output) {
@@ -943,6 +985,7 @@ DWORD WINAPI MaximizeWindowThreadProc(void *lpParameter) {
 	keybd_event(VK_LMENU, MapVirtualKey(VK_LMENU, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, 0);
 	return 0;
 }
+#endif
 
 void CALLBACK PADconfigure() {
 	if (openCount) {
@@ -951,7 +994,7 @@ void CALLBACK PADconfigure() {
 	Configure();
 }
 
-
+#ifdef _MSC_VER
 DWORD WINAPI RenameWindowThreadProc(void *lpParameter) {
 	wchar_t newTitle[200];
 	if (hWndTop) {
@@ -973,12 +1016,14 @@ void SaveStateChanged() {
 		if (hThread) CloseHandle(hThread);
 	}
 }
+#endif
 
 s32 CALLBACK PADopen(void *pDsp) {
 	if (openCount++) return 0;
 	DEBUG_TEXT_OUT("LilyPad opened\n\n");
 
 	miceEnabled = !config.mouseUnfocus;
+#ifdef _MSC_VER
 	if (!hWnd) {
 		if (IsWindow((HWND)pDsp)) {
 			hWnd = (HWND) pDsp;
@@ -1036,6 +1081,7 @@ s32 CALLBACK PADopen(void *pDsp) {
 		}
 		restoreFullScreen = 0;
 	}
+#endif
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
 			memset(&pads[port][slot].sum, 0, sizeof(pads[port][slot].sum));
@@ -1044,6 +1090,7 @@ s32 CALLBACK PADopen(void *pDsp) {
 		}
 	}
 
+#ifdef _MSC_VER
 	// I'd really rather use this line, but GetActiveWindow() does not have complete specs.
 	// It *seems* to return null when no window from this thread has focus, but the
 	// Microsoft specs seem to imply it returns the window from this thread that would have focus,
@@ -1052,6 +1099,11 @@ s32 CALLBACK PADopen(void *pDsp) {
 	// activeWindow = GetActiveWindow() == hWnd;
 
 	// activeWindow = (GetAncestor(hWnd, GA_ROOT) == GetAncestor(GetForegroundWindow(), GA_ROOT));
+#else
+	// Not used so far
+	GSdsp = *(Display**)pDsp;
+	GSwin = (Window)*(((uptr*)pDsp)+1);
+#endif
 	activeWindow = 1;
 	UpdateEnabledDevices();
 	return 0;
@@ -1060,12 +1112,16 @@ s32 CALLBACK PADopen(void *pDsp) {
 void CALLBACK PADclose() {
 	if (openCount && !--openCount) {
 		DEBUG_TEXT_OUT("LilyPad closed\n\n");
+#ifdef _MSC_VER
 		updateQueued = 0;
 		hWndGSProc.Release();
 		hWndTopProc.Release();
 		dm->ReleaseInput();
 		hWnd = 0;
 		hWndTop = 0;
+#else
+		R_ClearKeyQueue();
+#endif
 		ClearKeyQueue();
 	}
 }
@@ -1363,6 +1419,7 @@ u32 CALLBACK PADquery() {
 	return 3;
 }
 
+#ifdef _MSC_VER
 INT_PTR CALLBACK AboutDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (uMsg == WM_INITDIALOG) {
 		wchar_t idString[100];
@@ -1375,10 +1432,13 @@ INT_PTR CALLBACK AboutDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	return 0;
 }
+#endif
 
 
 void CALLBACK PADabout() {
+#ifdef _MSC_VER
 	DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, AboutDialogProc);
+#endif
 }
 
 s32 CALLBACK PADtest() {
@@ -1395,11 +1455,12 @@ keyEvent* CALLBACK PADkeyEvent() {
 	eventCount = 0;
 
 	Update(2, 0);
-	static char shiftDown = 0;
-	static char altDown = 0;
 	static keyEvent ev;
 	if (!GetQueuedKeyEvent(&ev)) return 0;
 
+#ifdef _MSC_VER
+	static char shiftDown = 0;
+	static char altDown = 0;
 	if (miceEnabled && (ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS) {
 		// Disable mouse/KB hooks on escape (before going into paused mode).
 		// This is a hack, since PADclose (which is called on pause) should enevtually also deactivate the
@@ -1453,6 +1514,7 @@ keyEvent* CALLBACK PADkeyEvent() {
 		ev.key = VK_MENU;
 		altDown = (ev.evt == KEYPRESS);
 	}
+#endif
 	return &ev;
 }
 

@@ -28,11 +28,12 @@ endif()
 set(lilypadSources
 	DeviceEnumerator.cpp
 	InputManager.cpp
+	LilyPad.cpp
 	Linux/Config.cpp
 	Linux/ConfigHelper.cpp
-    Linux/KeyboardMouse.cpp
+	Linux/KeyboardMouse.cpp
 	Linux/KeyboardQueue.cpp
-    Linux/LilyPad.cpp)
+	)
 
 # lilypad headers
 set(lilypadHeaders
@@ -59,7 +60,7 @@ endif()
 set(lilypadFinalLibs
 	#${lilypadFinalLibs}
 	#${GTK2_LIBRARIES}
-	${X11_LIBRARIES}
+	#${X11_LIBRARIES}
 )
 
 set(lilypadFinalSources
