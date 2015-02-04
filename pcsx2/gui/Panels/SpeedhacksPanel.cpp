@@ -19,34 +19,43 @@
 
 using namespace pxSizerFlags;
 
-const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg(int val)
+const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg(int val) //Again these are offset by 1 from the values in iR5900-32.cpp so e.g. 1 here is 0 there!
 {
 	switch (val)
 	{
 
+	case -4:
+		return pxEt(L"-4 - Increases the EE's cyclerate by about 50%.  Greatly increases system requirements. May noticably increase in-game FPS."
+			);
+
+	case -3:
+		return pxEt(L"-3 - Increases the EE's cyclerate by about 40%.  Greatly increases system requirements. May noticably increase in-game FPS."
+			);
+
+	case -2:
+		return pxEt(L"-2 - Increases the EE's cyclerate by about 30%.  Increases system requirements. May increase in-game FPS."
+			);
+
+	case -1:
+		return pxEt(L"-1 - Increases the EE's cyclerate by about 20%. Increases system requirements. May increase in-game FPS."
+			);
+
+	case 0:
+		return pxEt(L"0 - Increases the EE's cyclerate by about 10%. Slightly increases system requirements. May slightly increase in-game FPS."
+			);
+
 	case 1:
-		return pxEt(L"1 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
+		return pxEt(L"1 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
 			);
 
 	case 2:
 		return pxEt(L"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
 			);
 
+
 	case 3:
-		return pxEt(L"3 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
+		return pxEt(L"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
 			);
-
-	case 4:
-		return pxEt(L"4 - Increases the EE's cyclerate by about 33%. Increases system requirements. May increase in-game FPS."
-			);
-
-	case 5:
-		return pxEt(L"5 - Increases the EE's cyclerate by about 50%.  Greatly increases system requirements. May noticably increase in-game FPS."
-			);
-
-
-
-
 
 	default:
 		break;
@@ -121,8 +130,8 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	wxPanelWithHelpers* eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Clock control [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( eeSliderPanel, wxID_ANY, 3, 1, 5,
-		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
+	m_slider_eecycle = new wxSlider(eeSliderPanel, wxID_ANY, 1, -4, 3,
+		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS);
 
 	m_msg_eecycle = new pxStaticHeading( eeSliderPanel );
 	m_msg_eecycle->SetForegroundColour( wxColour( L"Red" ) );
