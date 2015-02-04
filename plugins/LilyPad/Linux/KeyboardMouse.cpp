@@ -23,7 +23,6 @@
 LinuxKeyboard::LinuxKeyboard() :
 	Device(LNX_KEYBOARD, KEYBOARD, L"displayName", L"instanceID", L"deviceID")
 {
-	fprintf(stderr, "Create a new device YES\n");
 	for (int i=0; i<MAX_KEYCODE; i++) {
 		AddPhysicalControl(PSHBTN, i, i);
 	}
@@ -57,17 +56,15 @@ int LinuxKeyboard::Update() {
 	while (R_GetQueuedKeyEvent(&event)) {
 		switch (event.evt) {
 			case KeyPress:
-				fprintf(stderr, "key pressed %x\n", event.key);
 				physicalControlState[MAX_KEYCODE & event.key] = FULLY_DOWN;
 				status = 1;
 				break;
 			case KeyRelease:
-				fprintf(stderr, "key released %x\n", event.key);
 				physicalControlState[MAX_KEYCODE & event.key] = 0;
 				status = 1;
 				break;
 			default:
-				fprintf(stderr, "Unsupported event %x\n", event.evt);
+				//fprintf(stderr, "Unsupported event %x\n", event.evt);
 				//assert(0);
 				break;
 		}

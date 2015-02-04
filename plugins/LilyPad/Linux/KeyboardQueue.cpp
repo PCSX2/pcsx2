@@ -56,7 +56,6 @@ void R_ClearKeyQueue() {
 
 EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
 {
-	//fprintf(stderr, "Received evt:%x key:%x\n", evt.evt, evt.key);
 	R_QueueKeyEvent(evt);
 }
 #endif
