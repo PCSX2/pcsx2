@@ -112,6 +112,13 @@ float RGBLuminance(float3 color)
     return dot(color.rgb, lumCoeff);
 }
 
+float AvgLuminance(float3 color)
+{
+    return sqrt((color.x * color.x * lumCoeff.x) +
+                (color.y * color.y * lumCoeff.y) +
+                (color.z * color.z * lumCoeff.z));
+}
+
 float4 sample_tex(SamplerState texSample, float2 t)
 {
 #if (GLSL == 1)
@@ -208,7 +215,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 
 float FxaaLuma(float4 rgba)
 {
-    rgba.w = RGBLuminance(rgba.xyz);
+    rgba.w = AvgLuminance(rgba.xyz);
     return rgba.w;
 }
 
@@ -222,7 +229,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
     float4 rgbyM = FxaaTexTop(tex, posM);
     float4 luma4A = FxaaTexAlpha4(tex, posM);
     float4 luma4B = FxaaTexOffAlpha4(tex, posM, int2(-1, -1));
-    rgbyM.w = RGBLuminance(rgbyM.xyz);
+    rgbyM.w = AvgLuminance(rgbyM.xyz);
 
     #define lumaM rgbyM.w
     #define lumaE luma4A.z
@@ -234,7 +241,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
     
     #else
     float4 rgbyM = FxaaTexTop(tex, posM);
-    rgbyM.w = RGBLuminance(rgbyM.xyz);
+    rgbyM.w = AvgLuminance(rgbyM.xyz);
     #define lumaM rgbyM.w
 
     float lumaS = FxaaLuma(FxaaTexOff(tex, posM, int2( 0, 1), fxaaRcpFrame.xy));
@@ -937,10 +944,10 @@ float3 LinearToRGBGamma(in float3 color, in float gamma)
 
 float4 GammaPass(float4 color, float2 texcoord)
 {
-    const float GammaConst = 2.233;
+    static const float GammaConst = 2.233;
     color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
     color.rgb = LinearToRGBGamma(color.rgb, float(Gamma));
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return color;
 }
@@ -998,7 +1005,7 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
     sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
 
     color.rgb = color.rgb + sharpenLuma;
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     #if (DebugSharpen == 1)
         color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
@@ -1016,9 +1023,9 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
 float4 VibrancePass(float4 color, float2 texcoord)
 {
     #if (GLSL == 1)
-    float3 luma = float3(RGBLuminance(color.rgb));
+    float3 luma = float3(AvgLuminance(color.rgb));
     #else
-    float luma = RGBLuminance(color.rgb);
+    float luma = AvgLuminance(color.rgb);
     #endif
 
     float colorMax = max(color.r, max(color.g, color.b));
@@ -1027,7 +1034,7 @@ float4 VibrancePass(float4 color, float2 texcoord)
     float colorSaturation = colorMax - colorMin;
 
     color.rgb = lerp(luma, color.rgb, (1.0 + (Vibrance * (1.0 - (sign(Vibrance) * colorSaturation)))));
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return saturate(color); //Debug: return colorSaturation.xxxx;
 }
@@ -1050,15 +1057,14 @@ float3 BlendScreen(in float3 color, in float3 bloom)
 
 float3 BlendLuma(in float3 color, in float3 bloom)
 {
-    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), RGBLuminance(color + bloom));
+    float lumavg = AvgLuminance(color + bloom);
+    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), lumavg);
 }
 
 float3 BlendGlow(in float3 color, in float3 bloom)
 {
-    float3 glow = smoothstep(0.0, 1.0, color);
-    glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
-
-    return glow;
+    float glow = smoothstep(0.0, 1.0, AvgLuminance(color.rgb));
+    return lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
 }
 
 float3 BlendOverlay(in float3 color, in float3 bloom)
@@ -1067,11 +1073,6 @@ float3 BlendOverlay(in float3 color, in float3 bloom)
     overlay = lerp((color * bloom * 2.0), (1.0 - (2.0 * (1.0 - color) * (1.0 - bloom))), overlay);
 
     return overlay;
-}
-
-float4 BrightPassFilter(in float4 color)
-{
-    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), float(BloomCutoff)), color.a);
 }
 
 float4 PyramidFilter(in SamplerState tex, in float2 texcoord, in float2 width)
@@ -1103,7 +1104,6 @@ float4 BloomPass(float4 color, float2 texcoord)
     float defocus = 1.25;
     float anflare = 4.00;
 
-    color = BrightPassFilter(color);
     float4 bloom = PyramidFilter(TextureSampler, texcoord, invDefocus * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
@@ -1147,8 +1147,8 @@ float4 BloomPass(float4 color, float2 texcoord)
     bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
     bloom.rgb = BloomCorrection(bloom.rgb);
 
-    color.a = RGBLuminance(color.rgb);
-    bloom.a = RGBLuminance(bloom.rgb);
+    color.a = AvgLuminance(color.rgb);
+    bloom.a = AvgLuminance(bloom.rgb);
     bloom.a *= anflare;
 
     color = lerp(color, bloom, float(BloomStrength));
@@ -1160,12 +1160,12 @@ float4 BloomPass(float4 color, float2 texcoord)
                  [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 ScaleLuma(in float3 L)
+float4 ScaleBlk(in float4 color)
 {
-    const float W = 1.00;   // Linear White Point Value
-    const float K = 1.12;   // Scale
-
-    return (1.0 + K * L / (W * W)) * L / (L + K);
+    color = float4(color.rgb * pow(abs(max(color.r,
+    max(color.g, color.b))), float(BlackLevels)), color.a);
+    
+    return color;
 }
 
 float3 FilmicTonemap(in float3 color)
@@ -1173,7 +1173,7 @@ float3 FilmicTonemap(in float3 color)
     float3 Q = color.xyz;
 
     float A = 0.10;
-    float B = float(BlackLevels);
+    float B = 0.30;
     float C = 0.10;
     float D = float(ToneAmount);
     float E = 0.02;
@@ -1201,10 +1201,9 @@ float3 CrossShift(in float3 color)
     colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
     colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
-    float fLum = RGBLuminance(color.rgb);
+    float fLum = AvgLuminance(color.rgb);
 
     #if (GLSL == 1)
-    // Is HLSL float3(x) equivalent to float3(x,x,x) ? (Yes)
     colMood = lerp(float3(0.0), colMood, saturate(fLum * 2.0));
     colMood = lerp(colMood, float3(1.0), saturate(fLum - 0.5) * 2.0);
     #else
@@ -1231,10 +1230,10 @@ float3 ColorCorrection(float3 color)
 
 float4 TonemapPass(float4 color, float2 texcoord)
 {
-    const float delta = 0.001f;
-    const float wpoint = pow(1.002f, 2.0f);
+    const float delta = 0.001;
+    const float wpoint = pow(1.002, 2.0);
 
-    color.rgb = ScaleLuma(color.rgb);
+    color = ScaleBlk(color);
 
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
@@ -1247,9 +1246,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
                                 0.3575761, 0.7151522, 0.1191920,   // 2nd column
                                 0.1804375, 0.0721750, 0.9503041 ); // 3rd column
     #else
-    const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
-                               0.2126729, 0.7151522, 0.0721750,
-                               0.0193339, 0.1191920, 0.9503041 };
+    static const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
+                                      0.2126729, 0.7151522, 0.0721750,
+                                      0.0193339, 0.1191920, 0.9503041 };
     #endif
 
     #if (GLSL == 1)
@@ -1266,14 +1265,13 @@ float4 TonemapPass(float4 color, float2 texcoord)
     Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);    // y = Y / (X + Y + Z)
 
     if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
+    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
     float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
-
-    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
@@ -1289,9 +1287,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
                                -1.5371385,  1.8760108, -0.2040259,   // 2nd column
                                -0.4985314,  0.0415560,  1.0572252 ); // 3rd column
     #else
-    const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
-                              -0.9692660, 1.8760108, 0.0415560,
-                               0.0556434,-0.2040259, 1.0572252 };
+    static const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
+                                     -0.9692660, 1.8760108, 0.0415560,
+                                      0.0556434,-0.2040259, 1.0572252 };
     #endif
 
     #if (GLSL == 1)
@@ -1299,7 +1297,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     #else
     color.rgb = mul(XYZ2RGB, XYZ);
     #endif
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return color;
 }
@@ -1315,9 +1313,9 @@ float4 ContrastPass(float4 color, float2 texcoord)
 
     #if (CurveType != 2)
     #if (GLSL == 1)
-    float3 luma = float3(RGBLuminance(color.rgb));
+    float3 luma = float3(AvgLuminance(color.rgb));
     #else
-    float3 luma = (float3)RGBLuminance(color.rgb);
+    float3 luma = (float3)AvgLuminance(color.rgb);
     #endif
     float3 chroma = color.rgb - luma;
     #endif
@@ -1358,7 +1356,7 @@ float4 ContrastPass(float4 color, float2 texcoord)
     color.rgb = lerp(color.rgb, LColor, CurveBlend);
     #endif
 
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return saturate(color);
 }
@@ -1437,7 +1435,7 @@ float4 CelPass(float4 color, float2 texcoord)
         col[i].b = round(col[i].b * thresholds.b) / thresholds.b;
         #endif
 
-        lum[i] = RGBLuminance(col[i].xyz);
+        lum[i] = AvgLuminance(col[i].xyz);
         yuv = GetYUV(col[i]);
 
         #if (UseYuvLuma == 0)
@@ -1469,7 +1467,7 @@ float4 CelPass(float4 color, float2 texcoord)
         color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
     #endif
 
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return saturate(color);
 }
@@ -1577,7 +1575,7 @@ float4 ColorGrading(float4 color, float2 texcoord)
     }
 
     color.rgb = HSVtoRGB(HSVColor);
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return saturate(color);
 }
@@ -1608,7 +1606,7 @@ float4 ScanlinesPass(float4 color, float2 texcoord, float4 fragcoord)
     }
     else
     {
-        intensity = smoothstep(0.2, ScanlineBrightness, color) + normalize(float4(color.xyz, RGBLuminance(color.xyz)));
+        intensity = smoothstep(0.2, ScanlineBrightness, color) + normalize(float4(color.xyz, AvgLuminance(color.xyz)));
     }
 
     float level = (4.0 - texcoord.x) * ScanlineIntensity;
@@ -1673,7 +1671,7 @@ float4 DitherPass(float4 color, float2 texcoord)
     color.rgb += RGBShift;
     #endif
 
-    color.a = RGBLuminance(color.rgb);
+    color.a = AvgLuminance(color.rgb);
 
     return color;
 }
