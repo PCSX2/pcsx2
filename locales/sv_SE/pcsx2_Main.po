@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 150130\n"
+"Project-Id-Version: PCSX2 - 150206\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-01-30 11:03+0100\n"
-"PO-Revision-Date: 2015-01-30 11:32+0100\n"
+"POT-Creation-Date: 2015-02-06 16:19+0100\n"
+"PO-Revision-Date: 2015-02-06 16:25+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -1608,8 +1608,9 @@ msgid "All Files (*.*)"
 msgstr "Alla Filer (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:278
-msgid "Select CDVD source iso..."
-msgstr "Välj CDVD'ns käll-ISO ..."
+msgid "Select disc image, gzip compressed disc image, or block-dump..."
+msgstr ""
+"Välj disk-avbild, gzip-komprimerad disk-avbild, eller block-dumpning ..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:295
 msgid "Select ELF file..."
@@ -2683,6 +2684,9 @@ msgid "Cannot apply new settings, one of the settings is invalid."
 msgstr ""
 "Kan ej tillämpa de nya inställningarna, eftersom att minst en av dom är "
 "ogiltlig."
+
+#~ msgid "Select CDVD source iso..."
+#~ msgstr "Välj CDVD'ns käll-ISO ..."
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - SSE2 Anrådes"
