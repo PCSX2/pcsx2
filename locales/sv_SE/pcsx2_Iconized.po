@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 150130\n"
+"Project-Id-Version: PCSX2 - 150206\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-01-30 11:02+0100\n"
-"PO-Revision-Date: 2015-01-30 11:32+0100\n"
+"POT-Creation-Date: 2015-02-06 16:19+0100\n"
+"PO-Revision-Date: 2015-02-06 16:25+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
