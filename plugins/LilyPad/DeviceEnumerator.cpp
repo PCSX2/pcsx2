@@ -29,6 +29,7 @@
 
 #ifdef __linux__
 #include "Linux/KeyboardMouse.h"
+#include "Linux/JoyEvdev.h"
 #endif
 
 void EnumDevices(int hideDXXinput) {
@@ -46,6 +47,7 @@ void EnumDevices(int hideDXXinput) {
 	EnumDirectInputDevices(hideDXXinput);
 #else
 	EnumLnx();
+	EnumJoystickEvdev();
 #endif
 
 	dm->CopyBindings(oldDm->numDevices, oldDm->devices);

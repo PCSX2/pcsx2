@@ -32,6 +32,7 @@ set(lilypadSources
 	LilyPad.cpp
 	Linux/Config.cpp
 	Linux/ConfigHelper.cpp
+	Linux/JoyEvdev.cpp
 	Linux/KeyboardMouse.cpp
 	Linux/KeyboardQueue.cpp
 	)

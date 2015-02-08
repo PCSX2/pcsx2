@@ -480,6 +480,8 @@ void RefreshEnabledDevices(int updateDeviceList) {
 			dev->displayName = newName;
 		}
 
+		dm->EnableDevice(i);
+#if 0 // windows magic?
 		if ((dev->type == KEYBOARD && dev->api == IGNORE_KEYBOARD) ||
 			(dev->type == KEYBOARD && dev->api == config.keyboardApi) ||
 			(dev->type == MOUSE && dev->api == config.mouseApi) ||
@@ -488,7 +490,6 @@ void RefreshEnabledDevices(int updateDeviceList) {
 				 (dev->api == DS3 && config.gameApis.dualShock3) ||
 				 (dev->api == XINPUT && config.gameApis.xInput)))) {
 			dm->EnableDevice(i);
-#if 0 // windows magic?
 					if (config.gameApis.dualShock3 && dev->api == DI && dev->displayName &&
 						!wcsicmp(dev->displayName, L"DX PLAYSTATION(R)3 Controller")) {
 							dm->DisableDevice(i);
@@ -496,11 +497,11 @@ void RefreshEnabledDevices(int updateDeviceList) {
 					else {
 						dm->EnableDevice(i);
 					}
-#endif
 		}
 		else {
 			dm->DisableDevice(i);
 		}
+#endif
 	}
 }
 

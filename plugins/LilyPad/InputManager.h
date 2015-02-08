@@ -132,6 +132,7 @@ enum DeviceAPI {
 	IGNORE_KEYBOARD = 7,
 	// XXX
 	LNX_KEYBOARD = 16,
+	LNX_JOY = 17,
 };
 
 enum DeviceType {
