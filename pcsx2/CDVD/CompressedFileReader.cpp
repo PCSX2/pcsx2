@@ -24,11 +24,24 @@
 
 #include <fstream>
 
+// This is ugly, but it's hard to find something which will work/compile for both
+// windows and *nix and work with non-english file names.
+// Maybe some day we'll convert all file related ops to wxWidgets, which means also the
+// instances at zlib_indexed.h (which use plain stdio FILE*)
+#ifdef WIN32
+#   define PX_wfilename(name_wxstr) (WX_STR(name_wxstr))
+#   define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
+#else
+#   define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
+#   define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
+#endif
+
+
 static s64 fsize(const wxString& filename) {
 	if (!wxFileName::FileExists(filename))
 		return -1;
 
-	std::ifstream f(filename.mbc_str(), std::ifstream::binary);
+	std::ifstream f(PX_wfilename(filename), std::ifstream::binary);
 	f.seekg(0, f.end);
 	s64 size = f.tellg();
 	f.close();
@@ -49,7 +62,7 @@ static Access* ReadIndexFromFile(const wxString& filename) {
 		Console.Error(L"Error: Can't open index file: '%s'", WX_STR(filename));
 		return 0;
 	}
-	std::ifstream infile(filename.mbc_str(), std::ifstream::binary);
+	std::ifstream infile(PX_wfilename(filename), std::ifstream::binary);
 
 	char fileId[GZIP_ID_LEN + 1] = { 0 };
 	infile.read(fileId, GZIP_ID_LEN);
@@ -83,7 +96,7 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 		return;
 	}
 
-	std::ofstream outfile(filename.mbc_str(), std::ofstream::binary);
+	std::ofstream outfile(PX_wfilename(filename), std::ofstream::binary);
 	outfile.write(GZIP_ID, GZIP_ID_LEN);
 
 	Point* tmp = index->list;
@@ -360,7 +373,7 @@ bool GzippedFileReader::OkIndex() {
 	Console.Warning(L"This may take a while (but only once). Scanning compressed file to generate a quick access index...");
 
 	Access *index;
-	FILE* infile = fopen(m_filename.mbc_str(), "rb");
+	FILE* infile = PX_fopen_rb(m_filename);
 	int len = build_index(infile, SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
 	fclose(infile);
@@ -381,7 +394,7 @@ bool GzippedFileReader::OkIndex() {
 bool GzippedFileReader::Open(const wxString& fileName) {
 	Close();
 	m_filename = fileName;
-	if (!(m_src = fopen(m_filename.mbc_str(), "rb")) || !CanHandle(fileName) || !OkIndex()) {
+	if (!(m_src = PX_fopen_rb(m_filename)) || !CanHandle(fileName) || !OkIndex()) {
 		Close();
 		return false;
 	};
