@@ -485,7 +485,7 @@ public:
 	TransactionScope(Lock& fallBackLock_, int max_retries = 3) 
 		: fallBackLock(fallBackLock_)
 	{
-		#if _M_SSE >= 0x501
+		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 
 		int nretries = 0;
 		
@@ -528,7 +528,7 @@ public:
 		{
 			fallBackLock.unlock();
 		}
-		#if _M_SSE >= 0x501
+		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 		else
 		{
 			_xend();
