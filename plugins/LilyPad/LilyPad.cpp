@@ -421,7 +421,11 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 void CapSum(ButtonSum *sum) {
 	int i;
 	for (i=0; i<3; i++) {
+#ifdef __linux__
 		int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
+#else
+		int div = max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
+#endif
 		if (div > 255) {
 			sum->sticks[i].horiz = sum->sticks[i].horiz * 255 / div;
 			sum->sticks[i].vert = sum->sticks[i].vert * 255 / div;
