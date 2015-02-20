@@ -45,7 +45,8 @@ endif()
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
-    if (_M_X86_32)
+    if (_M_X86_32 AND NOT USE_ASAN)
+        # Someone need to seriously test the build of GSdx without this option
         set(GSdxFinalFlags ${GSdxFinalFlags} -mpreferred-stack-boundary=2)
     endif()
 endif()
