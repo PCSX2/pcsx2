@@ -197,13 +197,13 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
 	while (found) {
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
-			DevCon.WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
+			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = cheatnumber;
 			f.Open(Path::Combine(dir.GetName(), buffer));
 			inifile_process(f);
 			f.Close();
 			int loaded = cheatnumber - before;
-			DevCon.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
+			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
 			               loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundCheatsFiles ++;
 		}
@@ -230,15 +230,14 @@ int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
     wxString name = entry->GetName();
     name.MakeUpper();
     if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
-      DevCon.WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-                     WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
+		PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
+                         WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
       wxTextInputStream pnach(zip);
       while (!zip.Eof()) {
         inifile_processString(pnach.ReadLine());
       }
     }
   }
-
   return cheatnumber - before;
 }
 
@@ -259,10 +258,10 @@ int LoadCheats(wxString name, const wxDirName& folderName, const wxString& frien
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
 	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundCheatsFiles == 0) {
 		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
-		Console.WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
+		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
 
-	DevCon.WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
+	PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
 	return loaded;
 }
 
@@ -285,7 +284,7 @@ namespace PatchFunc
 {
     void comment( const wxString& text1, const wxString& text2 )
     {
-		DevCon.WriteLn(L"comment: " + text2);
+		PatchesCon->WriteLn(L"comment: " + text2);
     }
 
     struct PatchPieces
@@ -313,7 +312,7 @@ namespace PatchFunc
 		// (translated) messages for display in a popup window then we'll have to upgrade the
 		// exception a little bit.
 
-		DevCon.WriteLn(cmd + L" " + param);
+		PatchesCon->WriteLn(cmd + L" " + param);
 
 		try
 		{
