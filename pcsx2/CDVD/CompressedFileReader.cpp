@@ -134,6 +134,7 @@ public:
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
 		return available;
 	};
+
 private:
 	class CacheEntry {
 	public:
@@ -281,6 +282,7 @@ public:
 		m_src(0),
 		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
+		AsyncPrefetchReset();
 	};
 
 	virtual ~GzippedFileReader(void) { Close(); };
@@ -328,6 +330,20 @@ private:
 	FILE*	m_src;
 
 	ChunksCache m_cache;
+
+#ifdef WIN32
+	// Used by async prefetch
+	HANDLE hOverlappedFile;
+	OVERLAPPED asyncOperationContext;
+	bool asyncInProgress;
+	byte mDummyAsyncPrefetchTarget[READ_CHUNK_SIZE];
+#endif
+
+	void AsyncPrefetchReset();
+	void AsyncPrefetchOpen();
+	void AsyncPrefetchClose();
+	void AsyncPrefetchChunk(PX_off_t dummy);
+	void AsyncPrefetchCancel();
 };
 
 void GzippedFileReader::InitZstates() {
@@ -342,6 +358,83 @@ void GzippedFileReader::InitZstates() {
 	int size = 2 + m_pIndex->uncompressed_size / m_pIndex->span;
 	m_zstates = new Czstate[size]();
 }
+
+#ifndef WIN32
+void GzippedFileReader::AsyncPrefetchReset() {};
+void GzippedFileReader::AsyncPrefetchOpen() {};
+void GzippedFileReader::AsyncPrefetchClose() {};
+void GzippedFileReader::AsyncPrefetchChunk(PX_off_t dummy) {};
+void GzippedFileReader::AsyncPrefetchCancel() {};
+#else
+// AsyncPrefetch works as follows:
+// ater extracting a chunk from the compressed file, ask the OS to asynchronously
+// read the next chunk from the file, and then completely ignore the result and
+// cancel the async read before the next extract. the next extract then reads the
+// data from the disk buf if it's overlapping/contained within the chunk we've
+// asked the OS to prefetch, then the OS is likely to already have it cached.
+// This procedure is frequently able to overcome seek time due to fragmentation of the
+// compressed file on disk without any meaningful penalty.
+// This system is only enabled for win32 where we have this async read request.
+void GzippedFileReader::AsyncPrefetchReset() {
+	hOverlappedFile = INVALID_HANDLE_VALUE;
+	asyncInProgress = false;
+}
+
+void GzippedFileReader::AsyncPrefetchOpen() {
+	hOverlappedFile = CreateFile(
+		m_filename,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_OVERLAPPED,
+		NULL);
+};
+
+void GzippedFileReader::AsyncPrefetchClose()
+{
+	AsyncPrefetchCancel();
+
+	if (hOverlappedFile != INVALID_HANDLE_VALUE)
+		CloseHandle(hOverlappedFile);
+
+	AsyncPrefetchReset();
+};
+
+void GzippedFileReader::AsyncPrefetchChunk(PX_off_t start)
+{
+	if (hOverlappedFile == INVALID_HANDLE_VALUE || asyncInProgress) {
+		Console.Warning(L"Unexpected file handle or progress state. Aborting prefetch.");
+		return;
+	}
+
+	LARGE_INTEGER offset;
+	offset.QuadPart = start;
+
+	DWORD bytesToRead = READ_CHUNK_SIZE;
+
+	ZeroMemory(&asyncOperationContext, sizeof(asyncOperationContext));
+	asyncOperationContext.hEvent = 0;
+	asyncOperationContext.Offset = offset.LowPart;
+	asyncOperationContext.OffsetHigh = offset.HighPart;
+
+	ReadFile(hOverlappedFile, mDummyAsyncPrefetchTarget, bytesToRead, NULL, &asyncOperationContext);
+	asyncInProgress = true;
+};
+
+void GzippedFileReader::AsyncPrefetchCancel()
+{
+	if (!asyncInProgress)
+		return;
+
+	if (!CancelIo(hOverlappedFile)) {
+		Console.Warning("canceling gz prefetch failed. following prefetching will not work.");
+		return;
+	}
+
+	asyncInProgress = false;
+};
+#endif /* WIN32 */
 
 // TODO: do better than just checking existance and extension
 bool GzippedFileReader::CanHandle(const wxString& fileName) {
@@ -399,6 +492,7 @@ bool GzippedFileReader::Open(const wxString& fileName) {
 		return false;
 	};
 
+	AsyncPrefetchOpen();
 	return true;
 };
 
@@ -478,11 +572,14 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 
 	int span = m_pIndex->span;
 	int spanix = extractOffset / span;
+	AsyncPrefetchCancel();
 	res = extract(m_src, m_pIndex, extractOffset, extracted, size, &(m_zstates[spanix].state));
 	if (res < 0) {
 		free(extracted);
 		return res;
 	}
+	AsyncPrefetchChunk(getInOffset(&(m_zstates[spanix].state)));
+
 	int copied = ChunksCache::CopyAvailable(extracted, extractOffset, res, pBuffer, offset, bytesToRead);
 
 	if (m_zstates[spanix].state.isValid && (extractOffset + res) / span != offset / span) {
@@ -532,6 +629,8 @@ void GzippedFileReader::Close() {
 		fclose(m_src);
 		m_src = 0;
 	}
+
+	AsyncPrefetchClose();
 }
 
 
