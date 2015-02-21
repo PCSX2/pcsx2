@@ -473,6 +473,8 @@ void GSTextureOGL::Save(const string& fn, const void* image, uint32 pitch)
 {
 	// Build a BMP file
 	FILE* fp = fopen(fn.c_str(), "wb");
+	if (fp == NULL)
+		return;
 
 	BITMAPINFOHEADER bih;
 
@@ -542,6 +544,8 @@ void GSTextureOGL::SaveRaw(const string& fn, const void* image, uint32 pitch)
 {
 	// Build a raw CSV file
 	FILE* fp = fopen(fn.c_str(), "w");
+	if (fp == NULL)
+		return;
 
 	uint32* data = (uint32*)image;
 
