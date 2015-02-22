@@ -275,7 +275,7 @@ bool MainEmuFrame::_DoSelectIsoBrowser( wxString& result )
 	isoFilterTypes.Add(_("All Files (*.*)"));
 	isoFilterTypes.Add(L"*.*");
 	
-	wxFileDialog ctrl( this, _("Select CDVD source iso..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
+	wxFileDialog ctrl( this, _("Select disc image, gzip compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
 		JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST );
 
 	if( ctrl.ShowModal() != wxID_CANCEL )

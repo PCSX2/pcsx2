@@ -143,7 +143,7 @@ GSTexture* GSRendererHW::GetOutput(int i)
 		{
 			if(s_save && s_n >= s_saven)
 			{
-				t->Save(format("c:\\temp2\\_%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
+				t->Save(root_hw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
 			}
 
 			s_n++;
@@ -235,19 +235,19 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven && tex)
 		{
-			s = format("c:\\temp2\\_%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
+			s = format("%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, (int)context->TEX0.PSM,
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(s, true);
+			tex->m_texture->Save(root_hw+s, true);
 
 			if(tex->m_palette)
 			{
-				s = format("c:\\temp2\\_%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
+				s = format("%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
 
-				tex->m_palette->Save(s, true);
+				tex->m_palette->Save(root_hw+s, true);
 			}
 		}
 
@@ -255,16 +255,16 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("c:\\temp2\\_%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(s);
+			rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("c:\\temp2\\_%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds->m_texture->Save(s);
+			ds->m_texture->Save(root_hw+s);
 		}
 
 		s_n++;
@@ -338,16 +338,16 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("c:\\temp2\\_%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(s);
+			rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("c:\\temp2\\_%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds->m_texture->Save(s);
+			ds->m_texture->Save(root_hw+s);
 		}
 
 		s_n++;

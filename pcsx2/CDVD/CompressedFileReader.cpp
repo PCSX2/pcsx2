@@ -24,11 +24,24 @@
 
 #include <fstream>
 
+// This is ugly, but it's hard to find something which will work/compile for both
+// windows and *nix and work with non-english file names.
+// Maybe some day we'll convert all file related ops to wxWidgets, which means also the
+// instances at zlib_indexed.h (which use plain stdio FILE*)
+#ifdef WIN32
+#   define PX_wfilename(name_wxstr) (WX_STR(name_wxstr))
+#   define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
+#else
+#   define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
+#   define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
+#endif
+
+
 static s64 fsize(const wxString& filename) {
 	if (!wxFileName::FileExists(filename))
 		return -1;
 
-	std::ifstream f(filename.mbc_str(), std::ifstream::binary);
+	std::ifstream f(PX_wfilename(filename), std::ifstream::binary);
 	f.seekg(0, f.end);
 	s64 size = f.tellg();
 	f.close();
@@ -49,7 +62,7 @@ static Access* ReadIndexFromFile(const wxString& filename) {
 		Console.Error(L"Error: Can't open index file: '%s'", WX_STR(filename));
 		return 0;
 	}
-	std::ifstream infile(filename.mbc_str(), std::ifstream::binary);
+	std::ifstream infile(PX_wfilename(filename), std::ifstream::binary);
 
 	char fileId[GZIP_ID_LEN + 1] = { 0 };
 	infile.read(fileId, GZIP_ID_LEN);
@@ -83,7 +96,7 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 		return;
 	}
 
-	std::ofstream outfile(filename.mbc_str(), std::ofstream::binary);
+	std::ofstream outfile(PX_wfilename(filename), std::ofstream::binary);
 	outfile.write(GZIP_ID, GZIP_ID_LEN);
 
 	Point* tmp = index->list;
@@ -121,6 +134,7 @@ public:
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
 		return available;
 	};
+
 private:
 	class CacheEntry {
 	public:
@@ -268,6 +282,7 @@ public:
 		m_src(0),
 		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
+		AsyncPrefetchReset();
 	};
 
 	virtual ~GzippedFileReader(void) { Close(); };
@@ -315,6 +330,20 @@ private:
 	FILE*	m_src;
 
 	ChunksCache m_cache;
+
+#ifdef WIN32
+	// Used by async prefetch
+	HANDLE hOverlappedFile;
+	OVERLAPPED asyncOperationContext;
+	bool asyncInProgress;
+	byte mDummyAsyncPrefetchTarget[READ_CHUNK_SIZE];
+#endif
+
+	void AsyncPrefetchReset();
+	void AsyncPrefetchOpen();
+	void AsyncPrefetchClose();
+	void AsyncPrefetchChunk(PX_off_t dummy);
+	void AsyncPrefetchCancel();
 };
 
 void GzippedFileReader::InitZstates() {
@@ -329,6 +358,83 @@ void GzippedFileReader::InitZstates() {
 	int size = 2 + m_pIndex->uncompressed_size / m_pIndex->span;
 	m_zstates = new Czstate[size]();
 }
+
+#ifndef WIN32
+void GzippedFileReader::AsyncPrefetchReset() {};
+void GzippedFileReader::AsyncPrefetchOpen() {};
+void GzippedFileReader::AsyncPrefetchClose() {};
+void GzippedFileReader::AsyncPrefetchChunk(PX_off_t dummy) {};
+void GzippedFileReader::AsyncPrefetchCancel() {};
+#else
+// AsyncPrefetch works as follows:
+// ater extracting a chunk from the compressed file, ask the OS to asynchronously
+// read the next chunk from the file, and then completely ignore the result and
+// cancel the async read before the next extract. the next extract then reads the
+// data from the disk buf if it's overlapping/contained within the chunk we've
+// asked the OS to prefetch, then the OS is likely to already have it cached.
+// This procedure is frequently able to overcome seek time due to fragmentation of the
+// compressed file on disk without any meaningful penalty.
+// This system is only enabled for win32 where we have this async read request.
+void GzippedFileReader::AsyncPrefetchReset() {
+	hOverlappedFile = INVALID_HANDLE_VALUE;
+	asyncInProgress = false;
+}
+
+void GzippedFileReader::AsyncPrefetchOpen() {
+	hOverlappedFile = CreateFile(
+		m_filename,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_OVERLAPPED,
+		NULL);
+};
+
+void GzippedFileReader::AsyncPrefetchClose()
+{
+	AsyncPrefetchCancel();
+
+	if (hOverlappedFile != INVALID_HANDLE_VALUE)
+		CloseHandle(hOverlappedFile);
+
+	AsyncPrefetchReset();
+};
+
+void GzippedFileReader::AsyncPrefetchChunk(PX_off_t start)
+{
+	if (hOverlappedFile == INVALID_HANDLE_VALUE || asyncInProgress) {
+		Console.Warning(L"Unexpected file handle or progress state. Aborting prefetch.");
+		return;
+	}
+
+	LARGE_INTEGER offset;
+	offset.QuadPart = start;
+
+	DWORD bytesToRead = READ_CHUNK_SIZE;
+
+	ZeroMemory(&asyncOperationContext, sizeof(asyncOperationContext));
+	asyncOperationContext.hEvent = 0;
+	asyncOperationContext.Offset = offset.LowPart;
+	asyncOperationContext.OffsetHigh = offset.HighPart;
+
+	ReadFile(hOverlappedFile, mDummyAsyncPrefetchTarget, bytesToRead, NULL, &asyncOperationContext);
+	asyncInProgress = true;
+};
+
+void GzippedFileReader::AsyncPrefetchCancel()
+{
+	if (!asyncInProgress)
+		return;
+
+	if (!CancelIo(hOverlappedFile)) {
+		Console.Warning("canceling gz prefetch failed. following prefetching will not work.");
+		return;
+	}
+
+	asyncInProgress = false;
+};
+#endif /* WIN32 */
 
 // TODO: do better than just checking existance and extension
 bool GzippedFileReader::CanHandle(const wxString& fileName) {
@@ -360,7 +466,7 @@ bool GzippedFileReader::OkIndex() {
 	Console.Warning(L"This may take a while (but only once). Scanning compressed file to generate a quick access index...");
 
 	Access *index;
-	FILE* infile = fopen(m_filename.mbc_str(), "rb");
+	FILE* infile = PX_fopen_rb(m_filename);
 	int len = build_index(infile, SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
 	fclose(infile);
@@ -381,11 +487,12 @@ bool GzippedFileReader::OkIndex() {
 bool GzippedFileReader::Open(const wxString& fileName) {
 	Close();
 	m_filename = fileName;
-	if (!(m_src = fopen(m_filename.mbc_str(), "rb")) || !CanHandle(fileName) || !OkIndex()) {
+	if (!(m_src = PX_fopen_rb(m_filename)) || !CanHandle(fileName) || !OkIndex()) {
 		Close();
 		return false;
 	};
 
+	AsyncPrefetchOpen();
 	return true;
 };
 
@@ -465,11 +572,14 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 
 	int span = m_pIndex->span;
 	int spanix = extractOffset / span;
+	AsyncPrefetchCancel();
 	res = extract(m_src, m_pIndex, extractOffset, extracted, size, &(m_zstates[spanix].state));
 	if (res < 0) {
 		free(extracted);
 		return res;
 	}
+	AsyncPrefetchChunk(getInOffset(&(m_zstates[spanix].state)));
+
 	int copied = ChunksCache::CopyAvailable(extracted, extractOffset, res, pBuffer, offset, bytesToRead);
 
 	if (m_zstates[spanix].state.isValid && (extractOffset + res) / span != offset / span) {
@@ -519,6 +629,8 @@ void GzippedFileReader::Close() {
 		fclose(m_src);
 		m_src = 0;
 	}
+
+	AsyncPrefetchClose();
 }
 
 

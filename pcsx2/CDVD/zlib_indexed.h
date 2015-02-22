@@ -336,6 +336,10 @@ typedef struct zstate {
     int isValid;
 } Zstate;
 
+PX_off_t getInOffset(zstate *state) {
+	return state->in_offset;
+}
+
 /* Use the index to read len bytes from offset into buf, return bytes read or
    negative for error (Z_DATA_ERROR or Z_MEM_ERROR).  If data is requested past
    the end of the uncompressed data, then extract() will return a value less

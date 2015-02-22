@@ -473,3 +473,12 @@ extern void vmfree(void* ptr, size_t size);
 	#endif
 
 #endif
+
+// Helper path to dump texture
+#ifdef _WINDOWS
+const std::string root_sw("c:\\temp1\\_");
+const std::string root_hw("c:\\temp2\\_");
+#else
+const std::string root_sw("/tmp/GS_SW_dump/");
+const std::string root_hw("/tmp/GS_HW_dump/");
+#endif

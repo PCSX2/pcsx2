@@ -70,3 +70,4 @@ extern void ApplyPatch(int place = 1);
 extern void ApplyCheat(int place = 1);
 extern void _ApplyPatch(IniPatch *p);
 
+extern const IConsoleWriter *PatchesCon;

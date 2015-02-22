@@ -533,8 +533,8 @@ AppConfig::AppConfig()
 	EnableSpeedHacks	= true;
 	EnableGameFixes		= false;
 
-	EnablePresets		= false;
-	PresetIndex			= 0;
+	EnablePresets		= true;
+	PresetIndex			= 1;
 
 	CdvdSource			= CDVDsrc_Iso;
 

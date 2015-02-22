@@ -175,7 +175,7 @@ static __fi void _dmaSPR0()
 		{
 			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
 			{
-				Console.WriteLn("SPR stall control Normal not implemented");
+				DevCon.Warning("SPR stall control Normal not implemented");
 			}
 			SPR0chain();
 			spr0finished = true;
