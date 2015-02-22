@@ -312,7 +312,9 @@ namespace PatchFunc
 		// (translated) messages for display in a popup window then we'll have to upgrade the
 		// exception a little bit.
 
-		PatchesCon->WriteLn(cmd + L" " + param);
+		// print the actual patch lines only in verbose mode (even in devel)
+		if (DevConWriterEnabled)
+			DevCon.WriteLn(cmd + L" " + param);
 
 		try
 		{
