@@ -19,46 +19,24 @@
 
 using namespace pxSizerFlags;
 
-const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg(int val) //Again these are offset by 1 from the values in iR5900-32.cpp so e.g. 1 here is 0 there!
+const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 {
-	switch (val)
+	switch( val )
 	{
-
-	case -4:
-		return pxEt(L"-4 - Increases the EE's cyclerate by about 50%.  Greatly increases system requirements. May noticably increase in-game FPS."
+		case 1:
+			return pxEt( L"1 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
 			);
 
-	case -3:
-		return pxEt(L"-3 - Increases the EE's cyclerate by about 40%.  Greatly increases system requirements. May noticably increase in-game FPS."
+		case 2:
+			return pxEt( L"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
 			);
 
-	case -2:
-		return pxEt(L"-2 - Increases the EE's cyclerate by about 30%.  Increases system requirements. May increase in-game FPS."
+		case 3:
+			return pxEt( L"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
 			);
 
-	case -1:
-		return pxEt(L"-1 - Increases the EE's cyclerate by about 20%. Increases system requirements. May increase in-game FPS."
-			);
-
-	case 0:
-		return pxEt(L"0 - Increases the EE's cyclerate by about 10%. Slightly increases system requirements. May slightly increase in-game FPS."
-			);
-
-	case 1:
-		return pxEt(L"1 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
-			);
-
-	case 2:
-		return pxEt(L"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
-			);
-
-
-	case 3:
-		return pxEt(L"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
-			);
-
-	default:
-		break;
+		default:
+			break;
 	}
 
 	return L"Unreachable Warning Suppressor!!";
@@ -128,16 +106,16 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	// Cycle stealing works by 'fast-forwarding' the EE by an arbitrary number of cycles whenever VU1 micro-programs
 	// are run, which works as a rough-guess skipping of what would normally be idle time spent running on the EE.
 
-	wxPanelWithHelpers* eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Clock control [Not Recommended]") );
+	wxPanelWithHelpers* eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider(eeSliderPanel, wxID_ANY, 1, -4, 3,
-		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS);
+	m_slider_eecycle = new wxSlider( eeSliderPanel, wxID_ANY, 1, 1, 3,
+		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( eeSliderPanel );
 	m_msg_eecycle->SetForegroundColour( wxColour( L"Red" ) );
 	m_msg_eecycle->SetHeight(3);
 
-	const wxChar* ee_tooltip = pxEt( L"Values less than 3 effectively reduce the clock rate of the EmotionEngine. Values greater than 3 increase it."
+	const wxChar* ee_tooltip = pxEt( L"Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware."
 	);
 
 	pxSetToolTip( m_slider_eecycle, ee_tooltip );

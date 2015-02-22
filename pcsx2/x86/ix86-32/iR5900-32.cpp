@@ -1105,81 +1105,39 @@ static u32 scaleBlockCycles_helper()
 	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate == 0) )
 		return s_nBlockCycles >> 3;
 
-	float scalarLow, scalarMid, scalarHigh; //Changed these to floats. Thought it might cause havoc, but okay so far(probably because at some point they get converted in some maths anyway.) - Blyss
+	uint scalarLow, scalarMid, scalarHigh;
 
 	// Note: larger blocks get a smaller scalar, to help keep
 	// them from becoming "too fat" and delaying branch tests.
 
-	//Blyss's notes:
-	// -5 - Overclock 50%
-	// -4 - Overclock 40%
-	// -3 - Overclock 30%
-	// -2 - Overclock 20%
-	// -1 - Overclock 10%
-	// 0 - Default
-	// 1 - Underclock 33%
-	// 2 - Underclock 50%
-	//THESE ARE OFFSET BY 1 FROM THE UI AND SpeedhacksPanel.CPP so E.G. 0 here is 1 there. Whose idea was that? :p
-
-	switch (EmuConfig.Speedhacks.EECycleRate)
+	switch( EmuConfig.Speedhacks.EECycleRate )
 	{
+		case 0:	return s_nBlockCycles >> 3;
 
-	case -5: // EE Clock 150%
-		scalarLow = 1;
-		scalarMid = 1;
-		scalarHigh = 1;
+		case 1:		// Sync hack x1.5!
+			scalarLow = 5;
+			scalarMid = 7;
+			scalarHigh = 5;
 		break;
 
-	case -4: // EE Clock 140%
-		scalarLow = 1;
-		scalarMid = 1.5;
-		scalarHigh = 1;
-		break;
-
-	case -3: // EE Clock 130%
-		scalarLow = 1.5;
-		scalarMid = 2;
-		scalarHigh = 1.5;
-		break;
-
-	case -2: // EE clock 120%
-		scalarLow = 2.5;
-		scalarMid = 2.5;
-		scalarHigh = 2.5;
-		break;
-
-	case -1: // EE clock 110% (or so, I'm just guessing at these %s)
-		scalarLow = 3;
-		scalarMid = 4;
-		scalarHigh = 3;
-		break;
-
-	case 0:	return s_nBlockCycles >> 3; // default cycle rate
-
-	case 1:		// EE clock 70%
-		scalarLow = 5;
-		scalarMid = 7;
-		scalarHigh = 5;
-		break;
-
-	case 2:		// EE clock 50%
-		scalarLow = 7;
-		scalarMid = 9;
-		scalarHigh = 7;
+		case 2:		// Sync hack x2
+			scalarLow = 7;
+			scalarMid = 9;
+			scalarHigh = 7;
 		break;
 
 		// Added insane rates on popular request (rama)
-		//NO_DEFAULT
-	default:
-		scalarLow = 2;
-		scalarMid = 3;
-		scalarHigh = 2;
-
-		//if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
-		//scalarLow *= EmuConfig.Speedhacks.EECycleRate;
-		//scalarMid *= EmuConfig.Speedhacks.EECycleRate;
-		//scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
-		//}
+		//jNO_DEFAULT
+		default:
+			scalarLow = 2;
+			scalarMid = 3;
+			scalarHigh = 2;
+			
+			if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
+				scalarLow *= EmuConfig.Speedhacks.EECycleRate;
+				scalarMid *= EmuConfig.Speedhacks.EECycleRate;
+				scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
+			}
 	}
 
 	const u32 temp = s_nBlockCycles * (

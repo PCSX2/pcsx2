@@ -386,7 +386,7 @@ struct Pcsx2Config
 				vuThread        :1;		// Enable Threaded VU1
 		BITFIELD_END
 
-		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
+		u8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
 		u8	VUCycleSteal;		// VU Cycle Stealer factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
