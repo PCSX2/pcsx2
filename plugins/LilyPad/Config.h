@@ -62,9 +62,9 @@ public:
 			u8 disableScreenSaver;
 			u8 debug;
 
-			u8 saveStateTitle;
 			u8 GH2;
 			u8 turboKeyHack;
+			u8 saveStateHack;
 
 			u8 vistaVolume;
 		};
