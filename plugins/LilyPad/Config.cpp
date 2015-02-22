@@ -75,7 +75,7 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
 	{L"Disable Screen Saver", IDC_DISABLE_SCREENSAVER, 1},
 	{L"Logging", IDC_DEBUG_FILE, 0},
 
-	{L"Save State in Title", IDC_SAVE_STATE_TITLE, 0}, //No longer required, PCSX2 now handles it - avih 2011-05-17
+	{L"Save State R3", IDC_SAVE_STATE_HACK, 0},
 	{L"GH2", IDC_GH2_HACK, 0},
 	{L"Turbo Key Hack", IDC_TURBO_KEY_HACK, 0},
 

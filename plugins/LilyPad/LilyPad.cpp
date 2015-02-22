@@ -376,6 +376,16 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 		}
 	}
 
+	if (config.saveStateHack == 1){ // send F1 to the emulator
+		if (b->command == 0x12){ // R3 button
+			static unsigned int LastCheckR3 = 0;
+			unsigned int t = timeGetTime();
+			if (t - LastCheckR3 < 300) return;
+			QueueKeyEvent(VK_F1, KEYPRESS);
+			LastCheckR3 = t;
+		}
+	}
+
 	int sensitivity = b->sensitivity;
 	if (sensitivity < 0) {
 		sensitivity = -sensitivity;
@@ -760,7 +770,6 @@ struct QueryInfo {
 	u8 response[42];
 } query = {0,0,0,0, 0,0xFF, 0xF3};
 
-int saveStateIndex = 0;
 
 s32 CALLBACK PADinit(u32 flags) {
 	// Note:  Won't load settings if already loaded.
@@ -840,24 +849,6 @@ static const u8 setNativeMode[7] =  {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A};
 // the GS viewport belongs to (title, screensaver)
 ExtraWndProcResult TitleHackWndProc(HWND hWndTop, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output) {
 	switch (uMsg) {
-		case WM_SETTEXT:
-			if (config.saveStateTitle) {
-				wchar_t text[200];
-				int len;
-				if (IsWindowUnicode(hWndTop)) {
-					len = wcslen((wchar_t*) lParam);
-					if (len < sizeof(text)/sizeof(wchar_t)) wcscpy(text, (wchar_t*) lParam);
-				}
-				else {
-					len = MultiByteToWideChar(CP_ACP, 0, (char*) lParam, -1, text, sizeof(text)/sizeof(wchar_t));
-				}
-				if (len > 0 && len < 150 && !wcsstr(text, L" | State(Lilypad) ")) {
-					wsprintfW(text+len, L" | State(Lilypad) %i", saveStateIndex);
-					SetWindowText(hWndTop, text);
-					return NO_WND_PROC;
-				}
-			}
-			break;
 		case WM_SYSCOMMAND:
 			if ((wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER) && config.disableScreenSaver)
 				return NO_WND_PROC;
@@ -965,15 +956,6 @@ DWORD WINAPI RenameWindowThreadProc(void *lpParameter) {
 	return 0;
 }
 
-void SaveStateChanged() {
-	if (config.saveStateTitle) {
-		// GSDX only checks its window's message queue at certain points or something, so
-		// have to do this in another thread to prevent deadlock.
-		HANDLE hThread = CreateThread(0, 0, RenameWindowThreadProc, 0, 0, 0);
-		if (hThread) CloseHandle(hThread);
-	}
-}
-
 s32 CALLBACK PADopen(void *pDsp) {
 	if (openCount++) return 0;
 	DEBUG_TEXT_OUT("LilyPad opened\n\n");
@@ -1024,7 +1006,6 @@ s32 CALLBACK PADopen(void *pDsp) {
 		if (config.forceHide) {
 			hWndGSProc.Eat(HideCursorProc, 0);
 		}
-		SaveStateChanged();
 
 		windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
 	}
@@ -1429,12 +1410,6 @@ keyEvent* CALLBACK PADkeyEvent() {
 			}
 		}
 		ev.key = VK_ESCAPE;
-	}
-
-	if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
-		saveStateIndex += 1 - 2*shiftDown;
-		saveStateIndex = (saveStateIndex+10)%10;
-		SaveStateChanged();
 	}
 
 	// So don't change skip mode on alt-F4.
