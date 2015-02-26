@@ -34,6 +34,7 @@ extern LimiterModeType g_LimiterMode;
 // --------------------------------------------------------------------------------------
 class GSPanel : public wxWindow
 	, public EventListener_AppStatus
+	, public EventListener_CoreThread
 {
 	typedef wxWindow _parent;
 
@@ -43,6 +44,7 @@ protected:
 	wxTimer					m_HideMouseTimer;
 	bool					m_CursorShown;
 	bool					m_HasFocus;
+	bool					m_coreRunning;
 
 public:
 	GSPanel( wxWindow* parent );
@@ -55,11 +57,6 @@ public:
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();
-
-#ifdef __WXMSW__
-	virtual WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
-#endif
-
 	void InitDefaultAccelerators();
 
 	void OnCloseWindow( wxCloseEvent& evt );
@@ -69,9 +66,12 @@ protected:
 	void OnKeyDown( wxKeyEvent& evt );
 	void OnFocus( wxFocusEvent& evt );
 	void OnFocusLost( wxFocusEvent& evt );
+	void CoreThread_OnResumed();
+	void CoreThread_OnSuspended();
 
 	void OnLeftDclick( wxMouseEvent& evt );
 
+	void UpdateScreensaver();
 };
 
 

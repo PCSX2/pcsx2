@@ -80,6 +80,7 @@ void GSPanel::InitDefaultAccelerators()
 GSPanel::GSPanel( wxWindow* parent )
 	: wxWindow()
 	, m_HideMouseTimer( this )
+	, m_coreRunning(false)
 {
 	m_CursorShown	= true;
 	m_HasFocus		= false;
@@ -312,6 +313,13 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 	DirectKeyCommand(KeyAcceleratorCode( evt ));
 }
 
+void GSPanel::UpdateScreensaver()
+{
+	bool prevent = g_Conf->GSWindow.DisableScreenSaver
+	               && m_HasFocus && m_coreRunning;
+	ScreensaverAllow(!prevent);
+}
+
 void GSPanel::OnFocus( wxFocusEvent& evt )
 {
 	evt.Skip();
@@ -334,6 +342,8 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 	}
 #endif
 	//Console.Warning("GS frame > focus set");
+
+	UpdateScreensaver();
 }
 
 void GSPanel::OnFocusLost( wxFocusEvent& evt )
@@ -350,6 +360,20 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	}
 #endif
 	//Console.Warning("GS frame > focus lost");
+
+	UpdateScreensaver();
+}
+
+void GSPanel::CoreThread_OnResumed()
+{
+        m_coreRunning = true;
+        UpdateScreensaver();
+}
+
+void GSPanel::CoreThread_OnSuspended()
+{
+        m_coreRunning = false;
+        UpdateScreensaver();
 }
 
 void GSPanel::AppStatusEvent_OnSettingsApplied()
@@ -368,8 +392,6 @@ void GSPanel::OnLeftDclick(wxMouseEvent& evt)
 	//Console.WriteLn("GSPanel::OnDoubleClick: Invoking Fullscreen-Toggle accelerator.");
 	DirectKeyCommand(FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL);
 }
-
-
 
 // --------------------------------------------------------------------------------------
 //  GSFrame Implementation
