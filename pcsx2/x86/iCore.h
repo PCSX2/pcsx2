@@ -137,17 +137,17 @@ void _flushConstReg(int reg);
 
 #define XMM_CONV_VU(VU) (VU==&VU1)
 
-#define XMMTYPE_TEMP	0 // has to be 0
-#define XMMTYPE_VFREG	1
-#define XMMTYPE_ACC		2
-#define XMMTYPE_FPREG	3
-#define XMMTYPE_FPACC	4
-#define XMMTYPE_GPRREG	5
+#define XMMTYPE_TEMP    0 // has to be 0
+#define XMMTYPE_VFREG   1
+#define XMMTYPE_ACC     2
+#define XMMTYPE_FPREG   3
+#define XMMTYPE_FPACC   4
+#define XMMTYPE_GPRREG  5
 
 // lo and hi regs
-#define XMMGPR_LO	33
-#define XMMGPR_HI	32
-#define XMMFPU_ACC	32
+#define XMMGPR_LO       33
+#define XMMGPR_HI       32
+#define XMMFPU_ACC      32
 
 struct _xmmregs {
 	u8 inuse;
@@ -218,8 +218,6 @@ struct EEINST
 	// valid if info & EEINSTINFO_COP2
 	int cycle; // cycle of inst (at offset from block)
 	_VURegsNum vuregs;
-
-	u8 numpeeps; // number of peephole optimizations
 };
 
 extern EEINST* g_pCurInstInfo; // info for the cur instruction

@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\x86emitter\3dnow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\x86emitter\cpudetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
