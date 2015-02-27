@@ -48,7 +48,7 @@
 
 
 
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 
 
 

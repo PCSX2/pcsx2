@@ -53,26 +53,7 @@
 #include <unistd.h> // stat()
 
 
-
-#include <gtk/gtkbutton.h> // gtk_button_new_with_label()
-
-#include <gtk/gtkcontainer.h> // gtk_container_add()
-
-#include <gtk/gtkentry.h> // gtk_entry_new()
-
-#include <gtk/gtkhbbox.h> // gtk_hbutton_box_new()
-
-#include <gtk/gtkhbox.h> // gtk_hbox_new()
-
-#include <gtk/gtklabel.h> // gtk_label_new()
-
-#include <gtk/gtkmain.h> // gtk_init(), gtk_main(), gtk_main_quit()
-
-#include <gtk/gtkvbox.h> // gtk_vbox_new()
-
-#include <gtk/gtkwindow.h> // gtk_window_new()
-
-
+#include <gtk/gtk.h>
 
 #include "conf.h"
 

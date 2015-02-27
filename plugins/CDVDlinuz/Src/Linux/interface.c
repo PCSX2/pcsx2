@@ -46,13 +46,7 @@
 
 #include <string.h> // strcmp()
 
-
-
-#include <gtk/gtkmain.h> // gtk_init(), gtk_main(), gtk_main_quit()
-
-#include <gtk/gtkwidget.h> // gtk_widget_show_all()
-
-
+#include <gtk/gtk.h>
 
 #include "logfile.h"
 
