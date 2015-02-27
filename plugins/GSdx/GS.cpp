@@ -370,7 +370,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		if (s_gs->m_wnd) {
 			// A window was already attached to s_gs so we also
 			// need to restore the window state (Attach)
-			s_gs->m_wnd->Attach((void*)((uint32*)(dsp)+1), false);
+			s_gs->m_wnd->Attach((void*)((uptr*)(dsp)+1), false);
 		} else {
 			// No window found, try to attach a GLX win and retry 
 			// with EGL win if failed.
@@ -379,7 +379,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				{
 					if (wnd[i] == NULL) continue;
 
-					wnd[i]->Attach((void*)((uint32*)(dsp)+1), false);
+					wnd[i]->Attach((void*)((uptr*)(dsp)+1), false);
 					s_gs->m_wnd = wnd[i];
 
 					if (i == 0) delete wnd[1];
