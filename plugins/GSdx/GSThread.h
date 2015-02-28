@@ -485,6 +485,11 @@ public:
 	TransactionScope(Lock& fallBackLock_, int max_retries = 3) 
 		: fallBackLock(fallBackLock_)
 	{
+		// The TSX (RTM/HLE) instructions on Intel AVX2 CPUs may either be
+		// absent or disabled (see errata HSD136 and specification change at
+		// http://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/4th-gen-core-family-desktop-specification-update.pdf)
+		// This can cause builds for AVX2 CPUs to fail with GCC/Clang on Linux,
+		// so check that the RTM instructions are actually available.
 		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 
 		int nretries = 0;
