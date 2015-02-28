@@ -36,8 +36,10 @@ struct xImpl_Mov
     void operator()( const xRegister64& to, const xRegister32& from ) const;
 
 	void operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const;
-	void operator()( const xRegisterInt& to, const xIndirectVoid& src ) const;
-	void operator()( const xIndirect32orLess& dest, int imm ) const;
+	void operator()( const xIndirect64& dest, const xRegisterInt& from ) const;
+    void operator()( const xRegisterInt& to, const xIndirectVoid& src ) const;
+	void operator()( const xRegisterInt& to, const xIndirect64& src ) const;
+    void operator()( const xIndirect32orLess& dest, int imm ) const;
     void operator()( const xIndirect64& dest, int imm ) const;
 	void operator()( const xRegisterInt& to, int imm, bool preserve_flags=false ) const;
 

@@ -362,7 +362,8 @@ void recCall( void (*func)() )
 
 static void __fastcall recRecompile( const u32 startpc );
 
-static uint64_t s_store_ebp, s_store_esp;
+static uint64_t s_store_ebp = 0;
+static uint64_t s_store_esp = 0;
 
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned eeRecDispatchers[__pagesize];
@@ -432,15 +433,15 @@ static DynGenFunc* _DynGen_JITCompile()
 	pxAssertMsg( DispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetAlignedCallTarget();
-	_DynGen_StackFrameCheck();
-
-	xMOV( rcx, ptr[&cpuRegs.pc] );
+	//_DynGen_StackFrameCheck();
+    xMOV( r10, (uint64_t) &cpuRegs.pc);
+	xMOV( rcx, ptr64[r10] );
 	xCALL( recRecompile );
-
-	xMOV( rax, ptr[&cpuRegs.pc] );
+    xMOV( r10, (uint64_t) &cpuRegs.pc);
+	xMOV( rax, ptr64[r10] );
 	xMOV( rbx, rax );
-	xSHR( rax, (uint64_t)16 );
-	xMOV( rcx, ptr[recLUT + (rax*4)] );
+	xSHR( rax, (u8)16 );
+	xMOV( rcx, ptr64[recLUT + (rax*4)] );
 	xJMP( ptr64[rcx+rbx] );
 
 	return (DynGenFunc*)retval;
@@ -458,11 +459,11 @@ static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();		// fallthrough target, can't align it!
 	_DynGen_StackFrameCheck();
-
-	xMOV( rax, ptr[&cpuRegs.pc] );
+    xMOV( r10, (uint64_t) &cpuRegs.pc);
+	xMOV( rax, ptr64[r10] );
 	xMOV( rbx, rax );
-	xSHR( rax, (uint64_t)16 );
-	xMOV( rcx, ptr[recLUT + (rax*4)] );
+	xSHR( rax, (u8)16 );
+	xMOV( rcx, ptr64[recLUT + (rax*4)] );
 	xJMP( ptr64[rcx+rbx] );
 
 	return (DynGenFunc*)retval;
@@ -506,9 +507,14 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	// It is done here because we can't really generate that stuff from the Dispatchers themselves.
 	xMOV( ptr64[rsp+0x08], rbp );
 	xLEA( rbp, ptr64[rsp+0x08+cdecl_reserve] );
-
-	xMOV( ptr64[&s_store_esp], rsp );
-	xMOV( ptr64[&s_store_ebp], rbp );
+    
+    // NOTE : addressing in x86_64 is rip relative by default
+    // Here we would have the wrong rip... SO, to avoid it
+    // Load addresses in r10 and THEN write into memory(using r10 value)
+    xMOV( r10, (uint64_t) &s_store_esp);
+	xMOV( ptr64[r10], rsp );
+	xMOV( r10, (uint64_t) &s_store_ebp);
+    xMOV( ptr64[r10], rbp );
 
 	xJMP( DispatcherReg );
 
@@ -516,7 +522,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 
 	// This dummy CALL is unreachable code that some debuggers (MSVC2008) need in order to
 	// unwind the stack properly.  This is effectively the call that we simulate above.
-	if( IsDevBuild ) xCALL( DispatcherReg );
+	// if( IsDevBuild ) xCALL( DispatcherReg );
     uptr tmp = (uptr)xGetPtr();
 	uint32_t tmp1 = (uint32_t) (tmp & (0xFFFFFFFF)); //lower 32bits of the address
 	uint32_t tmp2 = (uint32_t) ((tmp>>32) & (0xFFFFFFFF)); //higher 32bits of the address

@@ -181,10 +181,9 @@ const xImpl_Group1		xSBB	= { G1Type_SBB };
 void xImpl_Group2::operator()( const xRegisterInt& to, const xRegisterCL& /* from */ ) const
 {
 
-if(to.GetOperandSize() == 8)
-    {
-            RexR(1,to.Id);
-    }
+#ifdef __x86_64__
+    RexB(1,to.Id);
+#endif
 	to.prefix16();
 	
     xWrite8( to.Is8BitOp() ? 0xd2 : 0xd3 );
@@ -194,19 +193,19 @@ if(to.GetOperandSize() == 8)
 void xImpl_Group2::operator()(const xRegisterInt& to, u8 imm ) const
 {
 	if( imm == 0 ) return;
-    
+//#ifdef __x86_64__
+    RexB(1,to.Id);
+//#endif
     to.prefix16();
     
     if( imm == 1 )
 	{
-		// special encoding of 1's
-        RexR(to.GetOperandSize()==8,to.Id);
+		// special encoding of 1's   
 		xWrite8( to.Is8BitOp() ? 0xd0 : 0xd1 );
         EmitSibMagic( InstType, to );
 	}
 	else
 	{   
-        RexR(to.GetOperandSize()==8,to.Id);
 		xWrite8( to.Is8BitOp() ? 0xc0 : 0xc1 );
 		EmitSibMagic( InstType, to );
 		xWrite8( imm );
@@ -215,7 +214,9 @@ void xImpl_Group2::operator()(const xRegisterInt& to, u8 imm ) const
 
 void xImpl_Group2::operator()( const xIndirect32orLess& sibdest, const xRegisterCL& /* from */ ) const
 {
-
+#ifdef __x86_64__
+    RexB(1,0);
+#endif
 	sibdest.prefix16();
 	xWrite8( sibdest.Is8BitOp() ? 0xd2 : 0xd3 );
 	EmitSibMagic( InstType, sibdest );
@@ -223,6 +224,9 @@ void xImpl_Group2::operator()( const xIndirect32orLess& sibdest, const xRegister
 
 void xImpl_Group2::operator()( const xIndirect32orLess& sibdest, u8 imm ) const
 {
+#ifdef __x86_64__
+    RexB(1,0);
+#endif
 	if( imm == 0 ) return;
 	sibdest.prefix16();
 	if( imm == 1 )

@@ -39,14 +39,9 @@ void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from )
 	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
 
 	if( to == from ) return;	// ignore redundant MOVs.
-
+    RexRB(to.GetOperandSize()>=8,from.Id, to.Id);
 	from.prefix16();
-	RexR(to.GetOperandSize()>=8,to.Id);
     xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-	//if(from.GetOperandSize() == 8)
-    //{
-    //    RexR(1,to.Id);
-    //}
     EmitSibMagic( from, to );
 }
 
@@ -75,19 +70,26 @@ void xImpl_Mov::operator()( const xRegister32& to, const xRegister32& from ) con
 void xImpl_Mov::operator()( const xRegister64& to, const xRegister64& from ) const
 {
 	if( to == from ) return;	// ignore redundant MOVs.
-	RexR(1,to.Id);
+	RexRB(1,from.Id, to.Id);
     xWrite8( 0x89 );
 	EmitSibMagic( from, to );
 }
 
-#define MEMADDR(addr, oplen)    ((addr) - ((u64)x86Ptr + ((u64)oplen)))
+
+static __fi void ModRM( uint mod, uint reg, uint rm )
+{
+    xWrite8( (mod << 6) | (reg << 3) | rm );
+}
 void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const
 {
-	from.prefix16();
+#ifdef __x86_64__
+    RexRB(1,from.Id,dest.Index.Id);
+#endif
+    from.prefix16();
 
 	// mov eax has a special from when writing directly to a DISP32 address
 	// (sans any register index/base registers).
-    RexR(from.GetOperandSize()>=8,from.Id);
+    
 	if( from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty() )
 	{
 		xWrite8( from.Is8BitOp() ? 0xa2 : 0xa3 );
@@ -97,18 +99,61 @@ void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from 
 	{
 		xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
 		EmitSibMagic( from.Id, dest );
-	    //ModRM(0,from,ModRm_UseDisp32);
+    }
+}
+
+void xImpl_Mov::operator()( const xIndirect64& dest, const xRegisterInt& from ) const
+{
+    RexRB(1,from.Id,dest.Index.Id);
+	from.prefix16();
+
+	// mov eax has a special from when writing directly to a DISP32 address
+	// (sans any register index/base registers).
+	if( from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty() )
+	{
+		xWrite8( from.Is8BitOp() ? 0xa2 : 0xa3 );
+		xWrite32( dest.Displacement );
+	}
+	else
+	{
+		xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
+		EmitSibMagic( from.Id, dest );
+	    //ModRM(0,from.Id,ModRm_UseDisp32);
         //xWrite32((u32) MEMADDR(dest,4));
     }
 }
 
 void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) const
 {
+#ifdef __x86_64__
+    RexRB(1,to.Id,src.Index.Id);
+#endif
+    to.prefix16();
+
+	// mov eax has a special from when reading directly from a DISP32 address
+	// (sans any register index/base registers).
+    
+	if( to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty() )
+	{
+		xWrite8( to.Is8BitOp() ? 0xa0 : 0xa1 );
+		xWrite32( src.Displacement );
+	}
+	else
+	{
+		xWrite8( to.Is8BitOp() ? 0x8a : 0x8b );
+		EmitSibMagic( to, src );
+	}
+}
+
+// This WILL NOT be called with x86_32
+void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirect64& src ) const
+{
+    RexRB(1,to.Id,src.Index.Id);
 	to.prefix16();
 
 	// mov eax has a special from when reading directly from a DISP32 address
 	// (sans any register index/base registers).
-    RexR(to.GetOperandSize()>=8,to.Id);
+    
 	if( to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty() )
 	{
 		xWrite8( to.Is8BitOp() ? 0xa0 : 0xa1 );
@@ -131,8 +176,9 @@ void xImpl_Mov::operator()( const xIndirect32orLess& dest, int imm ) const
 
 void xImpl_Mov::operator()( const xIndirect64& dest, int imm ) const
 {
-	dest.prefix16();
-    //RexR(1,0);
+	RexR(1,0);
+    dest.prefix16();
+    
 	xWrite8( dest.Is8BitOp() ? 0xc6 : 0xc7 );
 	EmitSibMagic( 0, dest );
 	dest.xWriteImm( imm );
@@ -147,7 +193,7 @@ void xImpl_Mov::operator()( const xRegisterInt& to, int imm, bool preserve_flags
 	else
 	{
 		// Note: MOV does not have (reg16/32,imm8) forms.
-        RexR(to.GetOperandSize()>=8,to.Id);
+        RexB(to.GetOperandSize()>=8,to.Id);
 		to.prefix16();
 		xWrite8( (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id );
 		to.xWriteImm( imm );

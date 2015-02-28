@@ -25,7 +25,8 @@ static const uint iREGCNT_GPR = 16;
 static const uint iREGCNT_MMX = 16;
 #define Rex( w, r, x, b ) xWrite8( 0x40 | ((w) << 3) | ((r) << 2) | ((x) << 1) | (b) );
 #define RexR(w, reg) if( w||(reg)>=8 ) { Rex(w, (reg)>=8, 0, 0); }
-
+#define RexRB(w, reg, regb) if( w||(reg)>=8 ) { Rex(w, (reg)>=8, 0,(regb)>=8); }
+#define RexB(w,regb) if( w||(regb)>=8 ) { Rex(w, 0, 0,(regb)>=8); }
 #endif
 enum XMMSSEType
 {
@@ -257,6 +258,11 @@ template< typename T > void xWrite( T val );
 	{
 	public:
 		int Id;
+        
+        #ifdef __x86_64__
+        // As far as cpu is concerned, a x64 int is 8 bytes long
+        virtual uint GetOperandSize() const { return 8; }
+        #endif
 
 		xRegisterBase()
 		{
@@ -288,9 +294,14 @@ template< typename T > void xWrite( T val );
 
 	class xRegisterInt : public xRegisterBase
 	{
+
 		typedef xRegisterBase _parent;
 
 	public:
+        #ifdef __x86_64__
+        // As far as cpu is concerned, a x64 int is 8 bytes long
+        virtual uint GetOperandSize() const { return 8; }
+        #endif
 		xRegisterInt() {}
 		explicit xRegisterInt( const xRegisterBase& src ) : _parent( src ) {}
 		explicit xRegisterInt( int regId ) : _parent( regId ) { }
@@ -544,11 +555,11 @@ template< typename T > void xWrite( T val );
         rsi, rdi, rbp, rsp,
         r8, r9, r10, r11,
         r12, r13, r14, r15;
-    #endif // for the moment, keep both, only first registers may be use for now...
+    #endif // for the moment, keep both, only first registers may be used for now...
 	extern const xAddressReg
 		eax, ebx, ecx, edx,
 		esi, edi, ebp, esp;
-
+    
 	extern const xRegister16
 		ax, bx, cx, dx,
 		si, di, bp, sp;
