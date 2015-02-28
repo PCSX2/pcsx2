@@ -29,7 +29,7 @@ class GSTextureSW : public GSTexture
 
 	int m_pitch;
 	void* m_data;
-	long m_mapped;
+	std::atomic_flag m_mapped;
 
 public:
 	GSTextureSW(int type, int width, int height);

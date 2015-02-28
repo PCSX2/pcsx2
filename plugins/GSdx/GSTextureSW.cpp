@@ -24,8 +24,8 @@
 #include "GSPng.h"
 
 GSTextureSW::GSTextureSW(int type, int width, int height)
-	: m_mapped(0)
 {
+	m_mapped.clear();
 	m_size = GSVector2i(width, height);
 	m_type = type;
 	m_format = 0;
@@ -68,7 +68,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 	if(m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
 	{
-		if(!_interlockedbittestandset(&m_mapped, 0))
+		while(m_mapped.test_and_set()) {}
 		{
 			m.bits = (uint8*)m_data + ((m_pitch * r2.top + r2.left) << 2);
 			m.pitch = m_pitch;
@@ -82,7 +82,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 void GSTextureSW::Unmap()
 {
-	m_mapped = 0;
+	m_mapped.clear();
 }
 
 #ifndef _WIN32
