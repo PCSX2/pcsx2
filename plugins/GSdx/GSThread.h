@@ -30,30 +30,31 @@ class TransactionScope
 public:
 	class Lock
 	{
-		volatile long state;
+		std::atomic<bool> state;
 
 	public:
-		Lock() 
-			: state(0) 
+		Lock()
+			: state(false)
 		{
 		}
 
 		void lock()
 		{
-			while(_InterlockedCompareExchange(&state, 1, 0) != 0)
+			bool expected_value = false;
+			while(state.compare_exchange_strong(expected_value, true))
 			{
-				do {_mm_pause();} while(state == 1);
+				do {_mm_pause();} while(state);
 			}
 		}
 
-		void unlock() 
+		void unlock()
 		{
-			_InterlockedExchange(&state, 0);
+			state = false;
 		}
 
-		bool isLocked() const 
+		bool isLocked() const
 		{
-			return state == 1;
+			return state.load();
 		}
 	};
 
@@ -63,7 +64,7 @@ private:
 	TransactionScope();
 
 public:
-	TransactionScope(Lock& fallBackLock_, int max_retries = 3) 
+	TransactionScope(Lock& fallBackLock_, int max_retries = 3)
 		: fallBackLock(fallBackLock_)
 	{
 		// The TSX (RTM/HLE) instructions on Intel AVX2 CPUs may either be
@@ -74,7 +75,7 @@ public:
 		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 
 		int nretries = 0;
-		
+
 		while(1)
 		{
 			++nretries;
@@ -85,7 +86,7 @@ public:
 			{
 				if(!fallBackLock.isLocked()) return;
 
-				_xabort(0xff); 
+				_xabort(0xff);
 			}
 
 			if((status & _XABORT_EXPLICIT) && _XABORT_CODE(status) == 0xff && !(status & _XABORT_NESTED))
@@ -97,7 +98,7 @@ public:
 				break;
 			}
 
-			if(nretries >= max_retries) 
+			if(nretries >= max_retries)
 			{
 				break;
 			}
