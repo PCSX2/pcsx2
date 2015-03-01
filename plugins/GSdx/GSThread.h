@@ -143,15 +143,17 @@ public:
 
 #else
 // let us use std::thread for now, comment out the definition to go back to pthread
-#define _STD_THREAD_
+// There are currently some bugs/limitations to std::thread (see various comment)
+// For the moment let's keep pthread but uses new std object (mutex, cond_var)
+//#define _STD_THREAD_
 #ifdef _STD_THREAD_
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #else
 #include <pthread.h>
-#include <semaphore.h>
 #endif
+
+#include <mutex>
+#include <condition_variable>
 
 class GSThread : public IGSThread
 {
@@ -174,36 +176,21 @@ public:
 
 class GSCritSec : public IGSLock
 {
-    #ifdef _STD_THREAD_
+	// XXX Do we really need a recursive mutex
+	// It would allow to use condition_variable instead of condition_variable_any
     recursive_mutex *mutex_critsec;
-    #else
-    pthread_mutexattr_t m_mutex_attr;
-    pthread_mutex_t m_mutex;
-    #endif
 
 public:
     GSCritSec(bool recursive = true)
     {
-        #ifdef _STD_THREAD_
         mutex_critsec = new recursive_mutex();    
-        #else
-        pthread_mutexattr_init(&m_mutex_attr);
-        pthread_mutexattr_settype(&m_mutex_attr, recursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_NORMAL);
-        pthread_mutex_init(&m_mutex, &m_mutex_attr);
-        #endif
     }
 
     ~GSCritSec()
     {
-        #ifdef  _STD_THREAD_
         delete(mutex_critsec);
-        #else
-        pthread_mutex_destroy(&m_mutex);
-        pthread_mutexattr_destroy(&m_mutex_attr);
-        #endif
     }
     
-    #ifdef _STD_THREAD_
     void Lock()
     {
         mutex_critsec->lock();
@@ -220,28 +207,8 @@ public:
     }
     
     recursive_mutex& GetMutex() {return ref(*mutex_critsec);}
-    #else
-    void Lock() {pthread_mutex_lock(&m_mutex);}
-    bool TryLock() {return pthread_mutex_trylock(&m_mutex) == 0;}
-    void Unlock() {pthread_mutex_unlock(&m_mutex);}
-
-	operator pthread_mutex_t* () {return &m_mutex;}
-    #endif
 };
-#ifndef _STD_THREAD_
-class GSEvent : public IGSEvent
-{
-protected:
-    sem_t m_sem;
 
-public:
-    GSEvent() {sem_init(&m_sem, 0, 0);}
-    ~GSEvent() {sem_destroy(&m_sem);}
-
-    void Set() {sem_post(&m_sem);}
-	bool Wait(IGSLock* l) {if(l) l->Unlock(); bool b = sem_wait(&m_sem) == 0; if(l) l->Lock(); return b;}
-};
-#endif
 class GSCondVarLock : public GSCritSec
 {
 public:
@@ -252,36 +219,19 @@ public:
 
 class GSCondVar : public IGSEvent
 {
-    #ifdef _STD_THREAD_
     condition_variable_any *cond_var;
-    #else
-    pthread_cond_t m_cv;
-	pthread_condattr_t m_cv_attr;
-    #endif
 
 public:
 	GSCondVar() 
 	{
-        #ifdef _STD_THREAD_
         cond_var = new condition_variable_any();
-        #else
-		pthread_condattr_init(&m_cv_attr);
-		pthread_cond_init(&m_cv, &m_cv_attr);
-        #endif
 	}
 
 	virtual ~GSCondVar() 
 	{
-        #ifdef _STD_THREAD_
         delete(cond_var);
-        #else
-		pthread_condattr_destroy(&m_cv_attr);
-		pthread_cond_destroy(&m_cv);
-        #endif
-    
     }
     
-    #ifdef _STD_THREAD_
 	void Set() 
     {
         cond_var->notify_one();
@@ -289,17 +239,11 @@ public:
     
     bool Wait(IGSLock* l) 
     {
-        cond_var->wait((((GSCondVarLock*)l)->GetMutex())); // Predicate is not useful, it is implicit in the loop
+        cond_var->wait(((GSCondVarLock*)l)->GetMutex()); // Predicate is not useful, it is implicit in the loop
         return 1; // Anyway this value is not used(and no way to get it from std::thread)
     }
 
     operator condition_variable_any* () {return cond_var;}
-    #else
-    void Set() {pthread_cond_signal(&m_cv);}
-	bool Wait(IGSLock* l) {return pthread_cond_wait(&m_cv, *(GSCondVarLock*)l) == 0;}
-
-	operator pthread_cond_t* () {return &m_cv;}
-    #endif
 };
 
 #endif
@@ -358,7 +302,7 @@ public:
 		: m_count(0)
 		, m_exit(false)
 	{
-		bool condvar = !!theApp.GetConfig("condvar", 1);
+		bool condvar = true;
 
 		#ifdef _WINDOWS
 
@@ -368,22 +312,21 @@ public:
 		}
 
 		#endif
-        #ifndef _STD_THREAD_
+
 		if(condvar)
-        #endif
 		{
 			m_notempty = new GSCondVar();
 			m_empty = new GSCondVar();
 			m_lock = new GSCondVarLock();
 		}
-        #ifndef _STD_THREAD_
 		else
 		{
+			#ifdef _WINDOWS
 			m_notempty = new GSEvent();
 			m_empty = new GSEvent();
 			m_lock = new GSCritSec();
+			#endif
 		}
-        #endif
 
 		CreateThread();
 	}
