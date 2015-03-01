@@ -1519,7 +1519,7 @@ GSRendererSW::SharedData::~SharedData()
 	fflush(s_fp);}
 }
 
-static TransactionScope::Lock s_lock;
+//static TransactionScope::Lock s_lock;
 
 void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const uint32* zb_pages, int zpsm)
 {
