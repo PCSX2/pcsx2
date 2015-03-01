@@ -279,6 +279,16 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	#define _M_SSE 0x501
 #elif defined(__AVX__)
 	#define _M_SSE 0x500
+#elif defined(__SSE4_2__)
+	#define _M_SSE 0x402
+#elif defined(__SSE4_1__)
+	#define _M_SSE 0x401
+#elif defined(__SSSE3__)
+	#define _M_SSE 0x301
+#elif defined(__SSE2__)
+	#define _M_SSE 0x200
+#elif defined(__SSE__)
+	#define _M_SSE 0x100
 #endif
 #endif
 

@@ -386,7 +386,7 @@ public:
 };
 
 // http://software.intel.com/en-us/blogs/2012/11/06/exploring-intel-transactional-synchronization-extensions-with-intel-software
-
+#if 0
 class TransactionScope
 {
 public:
@@ -428,7 +428,12 @@ public:
 	TransactionScope(Lock& fallBackLock_, int max_retries = 3) 
 		: fallBackLock(fallBackLock_)
 	{
-		#if _M_SSE >= 0x501
+		// The TSX (RTM/HLE) instructions on Intel AVX2 CPUs may either be
+		// absent or disabled (see errata HSD136 and specification change at
+		// http://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/4th-gen-core-family-desktop-specification-update.pdf)
+		// This can cause builds for AVX2 CPUs to fail with GCC/Clang on Linux,
+		// so check that the RTM instructions are actually available.
+		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 
 		int nretries = 0;
 		
@@ -471,7 +476,7 @@ public:
 		{
 			fallBackLock.unlock();
 		}
-		#if _M_SSE >= 0x501
+		#if (_M_SSE >= 0x501 && !defined(__GNUC__)) || defined(__RTM__)
 		else
 		{
 			_xend();
@@ -479,4 +484,4 @@ public:
 		#endif
 	}
 };
-
+#endif
