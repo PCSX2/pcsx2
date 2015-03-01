@@ -27,18 +27,28 @@
 #include "HidDevice.h"
 #include "DualShock3.h"
 
+#ifdef __linux__
+#include "Linux/KeyboardMouse.h"
+#include "Linux/JoyEvdev.h"
+#endif
+
 void EnumDevices(int hideDXXinput) {
 	// Needed for enumeration of some device types.
 	dm->ReleaseInput();
 	InputDeviceManager *oldDm = dm;
 	dm = new InputDeviceManager();
 
+#ifdef _MSC_VER
 	EnumHookDevices();
 	EnumWindowsMessagingDevices();
 	EnumRawInputDevices();
 	EnumDualShock3s();
 	EnumXInputDevices();
 	EnumDirectInputDevices(hideDXXinput);
+#else
+	EnumLnx();
+	EnumJoystickEvdev();
+#endif
 
 	dm->CopyBindings(oldDm->numDevices, oldDm->devices);
 

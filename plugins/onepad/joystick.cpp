@@ -219,9 +219,9 @@ bool JoystickInfo::Init(int id)
 	// work sometime on half axis neg others time in fulll axis. So better keep them as button for the moment
 	u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
 	if (found_hack != string::npos) {
-		numbuttons = 4;
-		// Enable this hack is bluetooth too. It avoid to restart the onepad gui
-		numbuttons += 4;
+		numbuttons = 4; // (select, start, l3, r3)
+		// Enable this hack in bluetooth too. It avoid to restart the onepad gui
+		numbuttons += 4; // the 4 hat buttons
 	}
 
 #if SDL_MAJOR_VERSION >= 2

@@ -54,7 +54,9 @@ Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wc
 	attached = 1;
 	enabled = 0;
 
+#ifdef _MSC_VER
 	hWndProc = 0;
+#endif
 
 	virtualControls = 0;
 	numVirtualControls = 0;
@@ -221,7 +223,11 @@ void Device::CalcVirtualState() {
 				double East = sin(angle);
 				double South = -cos(angle);
 				// Normalize so greatest direction is 1.
+#ifdef __linux__
+				double mul = FULLY_DOWN / std::max(fabs(South), fabs(East));
+#else
 				double mul = FULLY_DOWN / max(fabs(South), fabs(East));
+#endif
 				iEast = (int) floor(East * mul + 0.5);
 				iSouth = (int) floor(South * mul + 0.5);
 			}

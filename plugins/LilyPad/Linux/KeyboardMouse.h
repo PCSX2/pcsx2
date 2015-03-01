@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2015  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -15,18 +15,15 @@
  *  with PCSX2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Global.h"
+#include "InputManager.h"
+#include "KeyboardQueue.h"
 
-// This entire thing isn't really needed,
-// but takes little enough effort to be safe...
+class LinuxKeyboard : public Device {
+	public:
+		LinuxKeyboard();
+		int Activate(InitInfo* args);
+		int Update();
+};
 
-void QueueKeyEvent(int key, int event);
-int GetQueuedKeyEvent(keyEvent *event);
-
-// Cleans up as well as clears queue.
-void ClearKeyQueue();
-
-#ifdef __linux__
-void R_QueueKeyEvent(const keyEvent& event);
-int R_GetQueuedKeyEvent(keyEvent *event);
-void R_ClearKeyQueue();
-#endif
+void EnumLnx();

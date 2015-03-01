@@ -130,6 +130,9 @@ enum DeviceAPI {
 	// to ignore individual buttons.  Wrapper itself takes care
 	// of ignoring bound keys.  Otherwise, works normally.
 	IGNORE_KEYBOARD = 7,
+	// XXX
+	LNX_KEYBOARD = 16,
+	LNX_JOY = 17,
 };
 
 enum DeviceType {
@@ -196,12 +199,18 @@ struct InitInfo {
 	// 1 when binding.
 	int binding;
 
+#ifdef _MSC_VER
 	HWND hWndTop;
 
 	// For config screen, need to eat button's message handling.
 	//HWND hWndButton;
 
 	WndProcEater* hWndProc;
+#else
+	// Linux equivalent to HWND
+	Display *GSdsp;
+	Window  GSwin;
+#endif
 };
 
 
@@ -216,9 +225,11 @@ public:
 	// Based on input modes.
 	char enabled;
 
+#ifdef _MSC_VER
 	// Not all devices need to subclass the windproc, but most do so might as well
 	// put it here... --air
 	WndProcEater* hWndProc;
+#endif
 
 	union {
 		// Allows for one loop to compare all 3 in order.
