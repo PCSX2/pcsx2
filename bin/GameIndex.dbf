@@ -870,7 +870,7 @@ Name   = Curious George
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20177
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = NTSC-Unk
 Compat = 5
 VuAddSubHack = 1
@@ -943,7 +943,7 @@ Name   = Shadow of the Colossus [PlayStation 2 The Best]
 Region = NTSC-Ch
 ---------------------------------------------
 Serial = SCAJ-20197
-Name   = Valkyrie Profile 2 - Silmeria [Ultimate Hits]
+Name   = Valkyrie Profile 2: Silmeria [Ultimate Hits]
 Region = NTSC-Unk
 Compat = 5
 VuAddSubHack = 1
@@ -2932,7 +2932,7 @@ Name   = Killzone [PlayStation 2 Big Hit Series]
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20079
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = NTSC-K
 Compat = 5
 VuAddSubHack = 1
@@ -3950,11 +3950,11 @@ Region = NTSC-J
 XgKickHack = 1			//SPS.
 ---------------------------------------------
 Serial = SCPS-19327
-Name   = Ape Escape 3 [PlayStation 2 the Best - Reprint]
+Name   = Ape Escape 3 [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19328
-Name   = Ratchet & Clank 4th Girigiri Gingano Giga-battle [PlayStation 2 the Best - Reprint]
+Name   = Ratchet & Clank 4th Girigiri Gingano Giga-battle [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19329
@@ -12701,8 +12701,8 @@ Name   = GoldenEye - Rogue Agent
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52978
-Name   = La Pucelle Tactics
-Region = PAL-Unk
+Name   = La Pucelle: Tactics
+Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52980
 Name   = Big Mutha Truckers 2
@@ -16152,30 +16152,30 @@ Name   = International Cricket Captain III
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54644
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = PAL-E
 Compat = 5
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SLES-54645
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = PAL-F
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SLES-54646
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = PAL-G
 Compat = 5
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SLES-54647
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = PAL-I
 Compat = 5
 VuAddSubHack = 1
 ---------------------------------------------
 Serial = SLES-54648
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = PAL-S
 VuAddSubHack = 1
 ---------------------------------------------
@@ -16824,7 +16824,7 @@ Name   = The Incredible Hulk
 Region = PAL-E-F-G
 ---------------------------------------------
 Serial = SLES-55215
-Name   = Growlanser - Heritage of War
+Name   = Growlanser: Heritage of War
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-55216
@@ -17515,7 +17515,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-15007
-Name   = GrowLanser2
+Name   = Growlanser II: The Sense of Justice
 Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
@@ -17525,7 +17525,7 @@ Name   = Choro Q HG2
 Region = NTSC-E-F-G
 ---------------------------------------------
 Serial = SLKA-15021
-Name   = GrowLanser3
+Name   = Growlanser III: The Dual Darkness
 Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
@@ -18660,12 +18660,12 @@ Name   = Choro-Q HG2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62107
-Name   = Growlanser 3 - The Duel Darkness
+Name   = Growlanser III: The Dual Darkness [Moe-Moe Lucky Pack]
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
 Serial = SLPM-62108
-Name   = Growlanser 3 - The Duel Darkness
+Name   = Growlanser III: The Dual Darkness
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -18907,7 +18907,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-62206
-Name   = Growlanser 2 [Atlus The Best]
+Name   = Growlanser II: The Sense of Justice [Atlus Best Collection]
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -19603,7 +19603,7 @@ Region = NTSC-J
 Compat = 4
 ---------------------------------------------
 Serial = SLPM-62440
-Name   = Growlanser III [Atlus The Best]
+Name   = Growlanser III: The Dual Darkness [Atlus Best Collection]
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -20072,7 +20072,7 @@ Name   = Sega Superstars
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62560
-Name   = Growlanser IV - Return
+Name   = Growlanser IV: Wayfarer of the Time - Return
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62562
@@ -22099,7 +22099,7 @@ Name   = Grand Theft Auto III
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65383
-Name   = Growlanser IV - Wayfarer of the Time [Limited Edition]
+Name   = Growlanser IV: Wayfarer of the Time [Deluxe Pack]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65384
@@ -22186,7 +22186,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-65408
-Name   = Growlanser IV - Wayfarer of the Time
+Name   = Growlanser IV: Wayfarer of the Time
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65409
@@ -23887,7 +23887,7 @@ Name   = Simple 2000 Series Vol.71 - The Fantasy Renai Adventure - Kanojo no Den
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65875
-Name   = Growlanser IV - Wayfarer of the Time [Atlus The Best]
+Name   = Growlanser IV: Wayfarer of the Time [Atlus Best Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65876
@@ -25228,7 +25228,7 @@ Name   = Mr. Incredible - Kyouteki Underminer Toujou
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66249
-Name   = Growlanser V - Generations [Limited Edition]
+Name   = Growlanser V: Generations [Limited First Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66250
@@ -25805,11 +25805,11 @@ Name   = Jikkyou Powerful Pro Major League
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66418
-Name   = Growlanser V - Generations
+Name   = Growlanser V: Generations
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66419
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
@@ -26899,7 +26899,7 @@ Name   = Shinki Gensou Spectral Souls II [IF Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66716
-Name   = Growlanser VI
+Name   = Growlanser VI: Precarious World
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66717
@@ -27165,7 +27165,7 @@ Name   = Dragon Quest - Shonen Yangus to Fushigi no Dungeon [Ultimate Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66782
-Name   = Valkyrie Profile 2 - Silmeria [Ultimate Hits]
+Name   = Valkyrie Profile 2: Silmeria [Ultimate Hits]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
@@ -28266,7 +28266,7 @@ Name   = Monster Hunter 2 [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74246
-Name   = Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 the Best - Reprint]
+Name   = Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74247
@@ -28286,19 +28286,19 @@ Name   = Shin Sangoku Musou 4 Moushouden [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74251
-Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]
+Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best - Reprint Disc 1]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74252
-Name   = Shin Onimusha - Dawn of Dreams [Playstation 2 the Best - Reprint Disc 2]
+Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best - Reprint Disc 2]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74253
-Name   = Ryu ga Gotoku [PlayStation 2 the Best - Reprint]
+Name   = Ryu ga Gotoku [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74254
-Name   = EX Jinsei Game II [PlayStation 2 the Best - Reprint]
+Name   = EX Jinsei Game II [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74259
@@ -28713,12 +28713,12 @@ Name   = Bokujou Monogatari 3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20105
-Name   = Growlanser II - The Sense of Justice [Deluxe Pack]
+Name   = Growlanser II: The Sense of Justice [Deluxe Pack]
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
 Serial = SLPS-20106
-Name   = Growlanser II - The Sense of Justice
+Name   = Growlanser II: The Sense of Justice
 Region = NTSC-J
 Compat = 4
 ---------------------------------------------
@@ -28811,7 +28811,7 @@ Name   = Typing Kengo 634
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20165
-Name   = La Pucelle
+Name   = La Pucelle [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20167
@@ -29286,7 +29286,7 @@ Name   = Slotter UP - Mania 5
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20398
-Name   = La Pucelle - Hikari no Seijyo Densetsu Nijuu
+Name   = La Pucelle: Hikari no Seijyo Densetsu Nijuu
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20399
@@ -33199,15 +33199,15 @@ Name   = Makai Senki Disgaea [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73255
-Name   = Fatal Frame [PlayStation 2 the Best - Reprint]
+Name   = Fatal Frame [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73256
-Name   = Fatal Frame 2 - Crimson Butterfly [PlayStation 2 the Best - Reprint]
+Name   = Fatal Frame 2 - Crimson Butterfly [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73257
-Name   = Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]
+Name   = Fatal Frame III - The Tormented [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73258
@@ -36938,7 +36938,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20847
-Name   = La Pucelle - Tactics
+Name   = La Pucelle: Tactics
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -39866,7 +39866,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21452
-Name   = Valkyrie Profile 2 - Silmeria
+Name   = Valkyrie Profile 2: Silmeria
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
@@ -40269,7 +40269,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21571
-Name   = Growlanser - Heritage of War
+Name   = Growlanser: Heritage of War
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
