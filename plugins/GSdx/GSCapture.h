@@ -22,7 +22,9 @@
 #pragma once
 
 #include "GSVector.h"
+#ifndef _CX11_
 #include "GSThread.h"
+#endif
 
 #ifdef _WINDOWS
 #include "GSCaptureDlg.h"
@@ -30,7 +32,11 @@
 
 class GSCapture
 {
+#ifdef _CX11_
+	std::mutex m_lock;
+#else
 	GSCritSec m_lock;
+#endif
 	bool m_capturing;
 	GSVector2i m_size;
 
