@@ -96,6 +96,14 @@ typedef uint32 uptr;
 #include <set>
 #include <queue>
 #include <algorithm>
+#ifdef _CX11_
+#include <thread>
+#include <atomic>
+#endif
+#if defined(__linux__) || defined(_CX11_)
+#include <mutex>
+#include <condition_variable>
+#endif
 
 using namespace std;
 
