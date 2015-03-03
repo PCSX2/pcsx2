@@ -20,10 +20,15 @@
  */
 
 #include "stdafx.h"
+#ifdef ENABLE_BOOST
+#include "GSThread_CXX11.h"
+#else
 #include "GSThread.h"
+#endif
 
 #ifdef _WINDOWS
 
+#ifndef ENABLE_BOOST
 InitializeConditionVariablePtr pInitializeConditionVariable;
 WakeConditionVariablePtr pWakeConditionVariable;
 WakeAllConditionVariablePtr pWakeAllConditionVariable;
@@ -65,6 +70,7 @@ public:
 };
 
 static InitCondVar s_icv;
+#endif
 
 #endif
 

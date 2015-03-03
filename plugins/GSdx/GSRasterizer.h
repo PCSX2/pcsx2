@@ -24,9 +24,13 @@
 #include "GS.h"
 #include "GSVertexSW.h"
 #include "GSFunctionMap.h"
-#include "GSThread.h"
 #include "GSAlignedClass.h"
 #include "GSPerfMon.h"
+#ifdef ENABLE_BOOST
+#include "GSThread_CXX11.h"
+#else
+#include "GSThread.h"
+#endif
 
 __aligned(class, 32) GSRasterizerData : public GSAlignedClass<32>
 {
