@@ -28,8 +28,9 @@
 #include "GSCaptureDlg.h"
 #endif
 
-class GSCapture : protected GSCritSec
+class GSCapture
 {
+	GSCritSec m_lock;
 	bool m_capturing;
 	GSVector2i m_size;
 

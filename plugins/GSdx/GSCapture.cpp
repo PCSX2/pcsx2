@@ -386,7 +386,7 @@ GSCapture::~GSCapture()
 
 bool GSCapture::BeginCapture(float fps)
 {
-	GSAutoLock lock(this);
+	GSAutoLock lock(&m_lock);
 
 	ASSERT(fps != 0);
 
@@ -481,7 +481,7 @@ bool GSCapture::BeginCapture(float fps)
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
-	GSAutoLock lock(this);
+	GSAutoLock lock(&m_lock);
 
 	if(bits == NULL || pitch == 0)
 	{
@@ -506,7 +506,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 bool GSCapture::EndCapture()
 {
-	GSAutoLock lock(this);
+	GSAutoLock lock(&m_lock);
 
 #ifdef _WINDOWS
 
