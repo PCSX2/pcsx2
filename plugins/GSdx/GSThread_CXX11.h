@@ -66,11 +66,28 @@ protected:
 	std::atomic<bool> m_exit;
 	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
 
+	std::mutex m_lock;
+	std::condition_variable m_empty;
+	std::condition_variable m_notempty;
+
 	void ThreadProc() {
-		while (!m_exit || m_count > 0) {
-			size_t n = m_queue.consume_all(*this);
-			if (n)
-				m_count -= n;
+		std::unique_lock<std::mutex> lock(m_lock);
+
+		while (true) {
+
+			while (m_count == 0) {
+				m_notempty.wait(lock);
+				if (m_exit.load(memory_order_acquire)) return;
+			}
+
+			lock.unlock();
+
+			m_count -= m_queue.consume_all(*this);
+
+			lock.lock();
+
+			if (m_count == 0)
+				m_empty.notify_one();
 		}
 	}
 
@@ -83,6 +100,67 @@ public:
 	};
 
 	virtual ~GSJobQueue() {
+		m_exit = true;
+		m_notempty.notify_one();
+		CloseThread();
+	}
+
+	bool IsEmpty() const {
+		ASSERT(m_count >= 0);
+		return m_count == 0;
+	}
+
+	void Push(const T& item) {
+		std::unique_lock<std::mutex> lock(m_lock);
+
+		while(!m_queue.push(item))
+			;
+
+		m_count++;
+
+		m_notempty.notify_one();
+	}
+
+	void Wait() {
+		std::unique_lock<std::mutex> lock(m_lock);
+
+		while (m_count > 0)
+			m_empty.wait(lock);
+	}
+
+	virtual void Process(T& item) = 0;
+
+	void operator()(T& item) {
+		Process(item);
+	}
+};
+
+template<class T> class GSJobQueue_NonBlocking : private GSThread
+{
+protected:
+	std::atomic<size_t> m_count;
+	std::atomic<bool> m_exit;
+	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
+
+	void ThreadProc() {
+		while (true) {
+			while (m_count == 0) {
+				if (m_exit.load(memory_order_acquire)) return;
+			}
+
+			m_count -= m_queue.consume_all(*this);
+		}
+	}
+
+public:
+	GSJobQueue_NonBlocking() :
+		m_count(0),
+		m_exit(false)
+	{
+		CreateThread();
+	};
+
+	virtual ~GSJobQueue_NonBlocking() {
 		m_exit = true;
 		CloseThread();
 	}
