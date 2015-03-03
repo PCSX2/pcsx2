@@ -20,7 +20,11 @@
  */
 
 #include "stdafx.h"
+#ifdef _CX11_
+#include "GSThread_CXX11.h"
+#else
 #include "GSThread.h"
+#endif
 
 #ifdef _WINDOWS
 

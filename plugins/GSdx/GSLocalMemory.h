@@ -26,7 +26,11 @@
 #include "GSVector.h"
 #include "GSBlock.h"
 #include "GSClut.h"
+#ifdef _CX11_
+#include "GSThread_CXX11.h"
+#else
 #include "GSThread.h"
+#endif
 
 class GSOffset : public GSAlignedClass<32>
 {
