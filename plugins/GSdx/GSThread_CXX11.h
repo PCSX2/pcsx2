@@ -59,6 +59,9 @@ public:
 	virtual ~GSThread();
 };
 
+#define WAIT_EMPTY
+//#define WAIT_NOT_EMPTY
+
 template<class T> class GSJobQueue : private GSThread
 {
 protected:
@@ -72,22 +75,37 @@ protected:
 
 	void ThreadProc() {
 		std::unique_lock<std::mutex> lock(m_lock);
+#ifndef WAIT_NOT_EMPTY
+		lock.unlock();
+#endif
 
 		while (true) {
 
 			while (m_count == 0) {
-				m_notempty.wait(lock);
 				if (m_exit.load(memory_order_acquire)) return;
+#ifdef WAIT_NOT_EMPTY
+				m_notempty.wait(lock);
+#endif
 			}
 
+#ifdef WAIT_NOT_EMPTY
 			lock.unlock();
+#endif
 
 			m_count -= m_queue.consume_all(*this);
 
+#ifdef WAIT_EMPTY
 			lock.lock();
 
 			if (m_count == 0)
 				m_empty.notify_one();
+#ifndef WAIT_NOT_EMPTY
+			lock.unlock();
+#endif
+
+#elif defined(WAIT_NOT_EMPTY)
+			lock.lock();
+#endif
 		}
 	}
 
@@ -111,21 +129,29 @@ public:
 	}
 
 	void Push(const T& item) {
-		std::unique_lock<std::mutex> lock(m_lock);
-
 		while(!m_queue.push(item))
 			;
 
 		m_count++;
 
+#ifdef WAIT_NOT_EMPTY
+		std::unique_lock<std::mutex> lock(m_lock);
 		m_notempty.notify_one();
+#endif
 	}
 
 	void Wait() {
-		std::unique_lock<std::mutex> lock(m_lock);
-
+#ifdef WAIT_EMPTY
+		if(m_count > 0) {
+			std::unique_lock<std::mutex> lock(m_lock);
+			while (m_count > 0) {
+				m_empty.wait(lock);
+			}
+		}
+#else
 		while (m_count > 0)
-			m_empty.wait(lock);
+			;
+#endif
 	}
 
 	virtual void Process(T& item) = 0;
