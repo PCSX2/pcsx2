@@ -60,6 +60,11 @@
 
 #endif
 
+// Require at least Visual Studio 2012
+#if defined(__linux__) || (defined(_MSC_VER) && (_MSC_VER >= 1700))
+#define _CX11_
+#endif
+
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
 
 typedef unsigned char uint8;
