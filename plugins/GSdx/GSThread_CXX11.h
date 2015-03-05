@@ -34,6 +34,27 @@ protected:
 // There are currently some bugs/limitations to std::thread (see various comment)
 // For the moment let's keep pthread but uses new std object (mutex, cond_var)
 //#define _STD_THREAD_
+
+#ifdef _WINDOWS
+
+class GSThread : public IGSThread
+{
+    DWORD m_ThreadId;
+    HANDLE m_hThread;
+
+	static DWORD WINAPI StaticThreadProc(void* lpParam);
+
+protected:
+	void CreateThread();
+	void CloseThread();
+
+public:
+	GSThread();
+	virtual ~GSThread();
+};
+
+#else
+
 #ifdef _STD_THREAD_
 #include <thread>
 #else
@@ -58,6 +79,8 @@ public:
 	GSThread();
 	virtual ~GSThread();
 };
+
+#endif
 
 #define WAIT_EMPTY
 //#define WAIT_NOT_EMPTY
