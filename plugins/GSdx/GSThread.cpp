@@ -28,6 +28,7 @@
 
 #ifdef _WINDOWS
 
+#ifndef _CX11_
 InitializeConditionVariablePtr pInitializeConditionVariable;
 WakeConditionVariablePtr pWakeConditionVariable;
 WakeAllConditionVariablePtr pWakeAllConditionVariable;
@@ -69,6 +70,7 @@ public:
 };
 
 static InitCondVar s_icv;
+#endif
 
 #endif
 
