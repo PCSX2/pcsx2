@@ -155,6 +155,8 @@ public:
 	}
 
 	bool IsEmpty() const {
+		ASSERT(m_count >= 0);
+
 		return m_count == 0;
 	}
 
@@ -178,6 +180,8 @@ public:
 				m_empty.wait(l);
 			}
 		}
+
+		ASSERT(m_count == 0);
 	}
 
 	virtual void Process(T& item) = 0;
@@ -241,6 +245,8 @@ public:
 	}
 
 	bool IsEmpty() const {
+		ASSERT(m_count >= 0);
+
 		return m_count == 0;
 	}
 
@@ -258,6 +264,8 @@ public:
 				m_empty.wait(l);
 			}
 		}
+
+		ASSERT(m_count == 0);
 	}
 
 	virtual void Process(T& item) = 0;
@@ -301,6 +309,8 @@ public:
 	}
 
 	bool IsEmpty() const {
+		ASSERT(m_count >= 0);
+
 		return m_count == 0;
 	}
 
@@ -313,6 +323,8 @@ public:
 	void Wait() {
 		while (m_count > 0)
 			std::this_thread::yield();
+
+		ASSERT(m_count == 0);
 	}
 
 	virtual void Process(T& item) = 0;
