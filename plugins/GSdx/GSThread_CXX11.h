@@ -124,7 +124,11 @@ protected:
 
 			l.unlock();
 
-			int16_t consumed = m_queue.consume_all(*this);
+			int16_t consumed = 0;
+			for (int16_t nb = m_count; nb >= 0; nb--) {
+				if (m_queue.consume_one(*this))
+					consumed++;
+			}
 
 			l.lock();
 
@@ -205,7 +209,11 @@ protected:
 				std::this_thread::yield();
 			}
 
-			int16_t consumed = m_queue.consume_all(*this);
+			int16_t consumed = 0;
+			for (int16_t nb = m_count; nb >= 0; nb--) {
+				if (m_queue.consume_one(*this))
+					consumed++;
+			}
 
 			l.lock();
 
