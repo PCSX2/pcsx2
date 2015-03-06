@@ -82,13 +82,29 @@ public:
 
 #endif
 
-#define WAIT_EMPTY
-//#define WAIT_NOT_EMPTY
+// Activate only a single define (From the lowest latency to better CPU usage)
+
+// This queue locks RENDERING threads + GS threads onto dedicated CPU
+// pros: best fps by thread
+// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 8 cores CPU.
+//#define NO_WAIT_BUT_CPU_INTENSIVE
+
+// This queue locks 'only' RENDERING threads mostly the same performance as above it the CPU is fast enough
+// pros: nearly best fps by thread
+// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
+//#define WAIT_ON_GS_STILL_CPU_INTENSIVE
+
+// This queue doesn't lock any thread. It would be nicer for 2c/4c CPU.
+// pros: no hard limit on thread numbers
+// cons: less performance by thread
+#define FULL_WAIT_LESS_CPU_INTENSIVE
+
+#if defined(FULL_WAIT_LESS_CPU_INTENSIVE)
 
 template<class T> class GSJobQueue : private GSThread
 {
 protected:
-	std::atomic<size_t> m_count;
+	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
 	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
 
@@ -97,38 +113,26 @@ protected:
 	std::condition_variable m_notempty;
 
 	void ThreadProc() {
-		std::unique_lock<std::mutex> lock(m_lock);
-#ifndef WAIT_NOT_EMPTY
-		lock.unlock();
-#endif
+		std::unique_lock<std::mutex> l(m_lock);
 
 		while (true) {
 
 			while (m_count == 0) {
 				if (m_exit.load(memory_order_acquire)) return;
-#ifdef WAIT_NOT_EMPTY
-				m_notempty.wait(lock);
-#endif
+				m_notempty.wait(l);
 			}
 
-#ifdef WAIT_NOT_EMPTY
-			lock.unlock();
-#endif
+			l.unlock();
 
-			m_count -= m_queue.consume_all(*this);
+			int16_t consumed = m_queue.consume_all(*this);
 
-#ifdef WAIT_EMPTY
-			lock.lock();
+			l.lock();
+
+			m_count -= consumed;
 
 			if (m_count == 0)
 				m_empty.notify_one();
-#ifndef WAIT_NOT_EMPTY
-			lock.unlock();
-#endif
 
-#elif defined(WAIT_NOT_EMPTY)
-			lock.lock();
-#endif
 		}
 	}
 
@@ -153,28 +157,24 @@ public:
 
 	void Push(const T& item) {
 		while(!m_queue.push(item))
-			;
+			std::this_thread::yield();
+
+		std::unique_lock<std::mutex> l(m_lock);
 
 		m_count++;
 
-#ifdef WAIT_NOT_EMPTY
-		std::unique_lock<std::mutex> lock(m_lock);
+		l.unlock();
+
 		m_notempty.notify_one();
-#endif
 	}
 
 	void Wait() {
-#ifdef WAIT_EMPTY
-		if(m_count > 0) {
-			std::unique_lock<std::mutex> lock(m_lock);
+		if (m_count > 0) {
+			std::unique_lock<std::mutex> l(m_lock);
 			while (m_count > 0) {
-				m_empty.wait(lock);
+				m_empty.wait(l);
 			}
 		}
-#else
-		while (m_count > 0)
-			;
-#endif
 	}
 
 	virtual void Process(T& item) = 0;
@@ -184,10 +184,89 @@ public:
 	}
 };
 
-template<class T> class GSJobQueue_NonBlocking : private GSThread
+#elif defined(WAIT_ON_GS_STILL_CPU_INTENSIVE)
+
+template<class T> class GSJobQueue : private GSThread
 {
 protected:
-	std::atomic<size_t> m_count;
+	std::atomic<int16_t> m_count;
+	std::atomic<bool> m_exit;
+	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
+
+	std::mutex m_lock;
+	std::condition_variable m_empty;
+
+	void ThreadProc() {
+		std::unique_lock<std::mutex> l(m_lock, defer_lock);
+
+		while (true) {
+
+			while (m_count == 0) {
+				if (m_exit.load(memory_order_acquire)) return;
+				std::this_thread::yield();
+			}
+
+			int16_t consumed = m_queue.consume_all(*this);
+
+			l.lock();
+
+			m_count -= consumed;
+
+			l.unlock();
+
+			if (m_count == 0)
+				m_empty.notify_one();
+
+		}
+	}
+
+public:
+	GSJobQueue() :
+		m_count(0),
+		m_exit(false)
+	{
+		CreateThread();
+	};
+
+	virtual ~GSJobQueue() {
+		m_exit = true;
+		CloseThread();
+	}
+
+	bool IsEmpty() const {
+		ASSERT(m_count >= 0);
+		return m_count == 0;
+	}
+
+	void Push(const T& item) {
+		while(!m_queue.push(item))
+			std::this_thread::yield();
+
+		m_count++;
+	}
+
+	void Wait() {
+		if (m_count > 0) {
+			std::unique_lock<std::mutex> l(m_lock);
+			while (m_count > 0) {
+				m_empty.wait(l);
+			}
+		}
+	}
+
+	virtual void Process(T& item) = 0;
+
+	void operator()(T& item) {
+		Process(item);
+	}
+};
+
+#elif defined(NO_WAIT_BUT_CPU_INTENSIVE)
+
+template<class T> class GSJobQueue : private GSThread
+{
+protected:
+	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
 	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
 
@@ -195,6 +274,7 @@ protected:
 		while (true) {
 			while (m_count == 0) {
 				if (m_exit.load(memory_order_acquire)) return;
+				std::this_thread::yield();
 			}
 
 			m_count -= m_queue.consume_all(*this);
@@ -202,14 +282,14 @@ protected:
 	}
 
 public:
-	GSJobQueue_NonBlocking() :
+	GSJobQueue() :
 		m_count(0),
 		m_exit(false)
 	{
 		CreateThread();
 	};
 
-	virtual ~GSJobQueue_NonBlocking() {
+	virtual ~GSJobQueue() {
 		m_exit = true;
 		CloseThread();
 	}
@@ -222,12 +302,12 @@ public:
 	void Push(const T& item) {
 		m_count++;
 		while(!m_queue.push(item))
-			;
+			std::this_thread::yield();
 	}
 
 	void Wait() {
 		while (m_count > 0)
-			;
+			std::this_thread::yield();
 	}
 
 	virtual void Process(T& item) = 0;
@@ -236,3 +316,7 @@ public:
 		Process(item);
 	}
 };
+
+#else
+	#very bad
+#endif
