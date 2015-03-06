@@ -130,7 +130,7 @@ protected:
 
 			m_count -= consumed;
 
-			if (m_count == 0)
+			if (m_count <= 0)
 				m_empty.notify_one();
 
 		}
@@ -151,7 +151,6 @@ public:
 	}
 
 	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
 		return m_count == 0;
 	}
 
@@ -214,7 +213,7 @@ protected:
 
 			l.unlock();
 
-			if (m_count == 0)
+			if (m_count <= 0)
 				m_empty.notify_one();
 
 		}
@@ -234,7 +233,6 @@ public:
 	}
 
 	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
 		return m_count == 0;
 	}
 
@@ -295,7 +293,6 @@ public:
 	}
 
 	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
 		return m_count == 0;
 	}
 
