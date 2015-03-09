@@ -3284,6 +3284,15 @@ bool GSC_GT3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_DigimonBattleChronicle(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if()
+	}
+}
+
+
 bool GSC_GTConcept(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
