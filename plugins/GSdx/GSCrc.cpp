@@ -503,6 +503,10 @@ CRC::Game CRC::m_games[] =
 	{0x37B99B14, SoulCalibur3, KO, 0},
 	{0xBC5480A3, SoulCalibur3, EU, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
+	{0xB049DD5E, One PieceGrand Battle, US, 0},
+	{0x66953267, One PieceGrand Battle!Rush, JP, 0},
+	{0x568A5C78, DigimonRumbleArena2, US, 0},
+	{0x7F995E8D, DigimonBattleChronicle, US, 0}, 
 	{0x0098F740, SeintoSeiya, NoRegion, 0}, // cutie comment
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
 	{0xAE4BEBD3, UrbanReign, EU, 0},
