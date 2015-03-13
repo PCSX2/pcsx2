@@ -41,7 +41,8 @@ GSRendererSW::GSRendererSW(int threads)
 
 	memset(m_texture, 0, sizeof(m_texture));
 
-	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads, &m_perfmon);
+	bool spin_thread = !!theApp.GetConfig("spin_thread", 0);
+	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads, &m_perfmon, spin_thread);
 
 	m_output = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 
