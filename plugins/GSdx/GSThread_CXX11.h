@@ -82,26 +82,25 @@ public:
 
 #endif
 
-// Activate only a single define (From the lowest latency to better CPU usage)
+// To allow switching between queue dynamically
+template<class T> class IGSJobQueue : public GSThread
+{
+public:
+	IGSJobQueue() {}
+	virtual ~IGSJobQueue() {}
 
-// This queue locks RENDERING threads + GS threads onto dedicated CPU
-// pros: best fps by thread
-// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 8 cores CPU.
-//#define NO_WAIT_BUT_CPU_INTENSIVE
+	virtual bool IsEmpty() const = 0;
+	virtual void Push(const T& item) = 0;
+	virtual void Wait() = 0;
 
-// This queue locks 'only' RENDERING threads mostly the same performance as above it the CPU is fast enough
-// pros: nearly best fps by thread
-// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
-//#define WAIT_ON_GS_STILL_CPU_INTENSIVE
+	virtual void Process(T& item) = 0;
+	virtual int GetPixels(bool reset) = 0;
+};
 
 // This queue doesn't lock any thread. It would be nicer for 2c/4c CPU.
 // pros: no hard limit on thread numbers
 // cons: less performance by thread
-#define FULL_WAIT_LESS_CPU_INTENSIVE
-
-#if defined(FULL_WAIT_LESS_CPU_INTENSIVE)
-
-template<class T> class GSJobQueue : private GSThread
+template<class T> class GSJobQueue : public IGSJobQueue<T>
 {
 protected:
 	std::atomic<int16_t> m_count;
@@ -145,13 +144,13 @@ public:
 		m_count(0),
 		m_exit(false)
 	{
-		CreateThread();
-	};
+		this->CreateThread();
+	}
 
 	virtual ~GSJobQueue() {
 		m_exit = true;
 		m_notempty.notify_one();
-		CloseThread();
+		this->CloseThread();
 	}
 
 	bool IsEmpty() const {
@@ -184,16 +183,16 @@ public:
 		ASSERT(m_count == 0);
 	}
 
-	virtual void Process(T& item) = 0;
-
-	void operator()(T& item) {
-		Process(item);
+	void operator() (T& item) {
+		this->Process(item);
 	}
 };
 
-#elif defined(WAIT_ON_GS_STILL_CPU_INTENSIVE)
 
-template<class T> class GSJobQueue : private GSThread
+// This queue locks 'only' RENDERING threads mostly the same performance as above if the CPU is fast enough
+// pros: nearly best fps by thread
+// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
+template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
 {
 protected:
 	std::atomic<int16_t> m_count;
@@ -232,16 +231,16 @@ protected:
 	}
 
 public:
-	GSJobQueue() :
+	GSJobQueueSpin() :
 		m_count(0),
 		m_exit(false)
 	{
-		CreateThread();
+		this->CreateThread();
 	};
 
-	virtual ~GSJobQueue() {
+	virtual ~GSJobQueueSpin() {
 		m_exit = true;
-		CloseThread();
+		this->CloseThread();
 	}
 
 	bool IsEmpty() const {
@@ -270,14 +269,17 @@ public:
 
 	virtual void Process(T& item) = 0;
 
-	void operator()(T& item) {
-		Process(item);
+	void operator() (T& item) {
+		this->Process(item);
 	}
 };
 
-#elif defined(NO_WAIT_BUT_CPU_INTENSIVE)
+// This queue locks RENDERING threads + GS threads onto dedicated CPU
+// pros: best fps by thread
+// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 8 cores CPU.
+#if 0
 
-template<class T> class GSJobQueue : private GSThread
+template<class T> class GSJobQueue : public IGSJobQueue<T>
 {
 protected:
 	std::atomic<int16_t> m_count;
@@ -329,11 +331,9 @@ public:
 
 	virtual void Process(T& item) = 0;
 
-	void operator()(T& item) {
-		Process(item);
+	void operator() (T& item) {
+		this->Process(item);
 	}
 };
 
-#else
-	#very bad
 #endif
