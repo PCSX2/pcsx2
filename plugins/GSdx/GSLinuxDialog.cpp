@@ -165,12 +165,12 @@ bool RunLinuxDialog()
 
 	GtkWidget *fsaa_combo_box, *render_combo_box, *filter_combo_box;
 	GtkWidget *shader, *shader_conf, *shader_label, *shader_conf_label;
-	GtkWidget *shadeboost_check, *paltex_check, *fba_check, *aa_check,  *native_res_check, *stretch_hack_check, *fxaa_check, *shaderfx_check, *align_sprite_check;
+	GtkWidget *shadeboost_check, *paltex_check, *fba_check, *aa_check,  *native_res_check, *fxaa_check, *shaderfx_check, *spin_thread_check;
 	GtkWidget *sb_contrast, *sb_brightness, *sb_saturation;
 	GtkWidget *resx_spin, *resy_spin;
 
 	GtkWidget *hack_table, *hack_skipdraw_label, *hack_box, *hack_frame;
-	GtkWidget *hack_alpha_check, *hack_date_check, *hack_offset_check, *hack_skipdraw_spin, *hack_sprite_check, * hack_wild_check, *hack_enble_check, *hack_logz_check;
+	GtkWidget *hack_alpha_check, *hack_date_check, *hack_offset_check, *hack_skipdraw_spin, *hack_sprite_check, * hack_wild_check, *hack_enble_check, *hack_logz_check, *align_sprite_check, *stretch_hack_check;
 	GtkWidget *hack_tco_label, *hack_tco_entry;
 	GtkWidget *gl_box, *gl_frame, *gl_table;
 
@@ -352,6 +352,7 @@ bool RunLinuxDialog()
 	paltex_check     = gtk_check_button_new_with_label("Allow 8 bits textures");
 	fba_check        = gtk_check_button_new_with_label("Alpha correction (FBA)");
 	aa_check         = gtk_check_button_new_with_label("Edge anti-aliasing (AA1)");
+	spin_thread_check= gtk_check_button_new_with_label("Disable thread sleeping (6+ cores CPU)");
 	fxaa_check       = gtk_check_button_new_with_label("Fxaa shader");
 	shaderfx_check   = gtk_check_button_new_with_label("External shader");
 
@@ -360,6 +361,7 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(paltex_check), theApp.GetConfig("paltex", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fba_check), theApp.GetConfig("fba", 1));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(aa_check), theApp.GetConfig("aa1", 0));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(spin_thread_check), theApp.GetConfig("spin_thread", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fxaa_check), theApp.GetConfig("fxaa", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(shaderfx_check), theApp.GetConfig("shaderfx", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(native_res_check), theApp.GetConfig("nativeres", 0));
@@ -414,6 +416,7 @@ bool RunLinuxDialog()
 
 	gtk_container_add(GTK_CONTAINER(sw_box), threads_box);
 	gtk_container_add(GTK_CONTAINER(sw_box), aa_check);
+	gtk_container_add(GTK_CONTAINER(sw_box), spin_thread_check);
 
 	// Tables are strange. The numbers are for their position: left, right, top, bottom.
 	gtk_table_attach_defaults(GTK_TABLE(shader_table), fxaa_check, 0, 1, 0, 1);
@@ -544,6 +547,7 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("paltex", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(paltex_check)));
 		theApp.SetConfig("fba", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fba_check)));
 		theApp.SetConfig("aa1", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(aa_check)));
+		theApp.SetConfig("spin_thread", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(spin_thread_check)));
 		theApp.SetConfig("fxaa", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fxaa_check)));
 		theApp.SetConfig("shaderfx", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shaderfx_check)));
 		theApp.SetConfig("nativeres", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_res_check)));
