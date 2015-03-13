@@ -152,9 +152,6 @@ public:
 #include <pthread.h>
 #endif
 
-#include <mutex>
-#include <condition_variable>
-
 class GSThread : public IGSThread
 {
     #ifdef _STD_THREAD_

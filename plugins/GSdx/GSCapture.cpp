@@ -386,7 +386,11 @@ GSCapture::~GSCapture()
 
 bool GSCapture::BeginCapture(float fps)
 {
-	GSAutoLock lock(this);
+#ifdef _CX11_
+	std::lock_guard<std::mutex> lock(m_lock);
+#else
+	GSAutoLock lock(&m_lock);
+#endif
 
 	ASSERT(fps != 0);
 
@@ -481,7 +485,11 @@ bool GSCapture::BeginCapture(float fps)
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
-	GSAutoLock lock(this);
+#ifdef _CX11_
+	std::lock_guard<std::mutex> lock(m_lock);
+#else
+	GSAutoLock lock(&m_lock);
+#endif
 
 	if(bits == NULL || pitch == 0)
 	{
@@ -506,7 +514,11 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 bool GSCapture::EndCapture()
 {
-	GSAutoLock lock(this);
+#ifdef _CX11_
+	std::lock_guard<std::mutex> lock(m_lock);
+#else
+	GSAutoLock lock(&m_lock);
+#endif
 
 #ifdef _WINDOWS
 

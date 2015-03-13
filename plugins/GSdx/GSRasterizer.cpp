@@ -1147,7 +1147,7 @@ GSRasterizerList::GSRasterizerList(int threads, GSPerfMon* perfmon)
 
 GSRasterizerList::~GSRasterizerList()
 {
-	for(vector<GSWorker*>::iterator i = m_workers.begin(); i != m_workers.end(); i++)
+	for(auto i = m_workers.begin(); i != m_workers.end(); i++)
 	{
 		delete *i;
 	}
@@ -1210,13 +1210,13 @@ int GSRasterizerList::GetPixels(bool reset)
 
 // GSRasterizerList::GSWorker
 
-GSRasterizerList::GSWorker::GSWorker(GSRasterizer* r) 
+GSRasterizerList::GSWorker::GSWorker(GSRasterizer* r)
 	: GSJobQueue<shared_ptr<GSRasterizerData> >()
 	, m_r(r)
 {
 }
 
-GSRasterizerList::GSWorker::~GSWorker() 
+GSRasterizerList::GSWorker::~GSWorker()
 {
 	Wait();
 
@@ -1228,7 +1228,32 @@ int GSRasterizerList::GSWorker::GetPixels(bool reset)
 	return m_r->GetPixels(reset);
 }
 
-void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item) 
+void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
+{
+	m_r->Draw(item.get());
+}
+
+// GSRasterizerList::GSWorkerSpin
+
+GSRasterizerList::GSWorkerSpin::GSWorkerSpin(GSRasterizer* r)
+	: GSJobQueueSpin<shared_ptr<GSRasterizerData> >()
+	, m_r(r)
+{
+}
+
+GSRasterizerList::GSWorkerSpin::~GSWorkerSpin()
+{
+	Wait();
+
+	delete m_r;
+}
+
+int GSRasterizerList::GSWorkerSpin::GetPixels(bool reset)
+{
+	return m_r->GetPixels(reset);
+}
+
+void GSRasterizerList::GSWorkerSpin::Process(shared_ptr<GSRasterizerData>& item)
 {
 	m_r->Draw(item.get());
 }
