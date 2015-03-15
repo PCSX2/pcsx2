@@ -5,6 +5,9 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/multinull" AND multinull)
+        add_subdirectory(multinull)
+endif()
 
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
 #	add_subdirectory(cdvdGigaherz)
