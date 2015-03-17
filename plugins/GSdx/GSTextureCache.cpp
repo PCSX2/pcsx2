@@ -362,7 +362,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 					s->m_complete = false;
 
-					found = b;
+					found |= b;
 				}
 				else
 				{
