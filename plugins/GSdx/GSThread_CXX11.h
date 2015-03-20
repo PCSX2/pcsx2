@@ -22,7 +22,12 @@
 #pragma once
 
 #include "GSdx.h"
+#define BOOST_STAND_ALONE
+#ifdef BOOST_STAND_ALONE
+#include "boost_spsc_queue.hpp"
+#else
 #include <boost/lockfree/spsc_queue.hpp>
+#endif
 
 class IGSThread
 {
@@ -97,7 +102,7 @@ public:
 	virtual int GetPixels(bool reset) = 0;
 };
 
-// This queue doesn't lock any thread. It would be nicer for 2c/4c CPU.
+// This queue doesn't reserve any thread. It would be nicer for 2c/4c CPU.
 // pros: no hard limit on thread numbers
 // cons: less performance by thread
 template<class T> class GSJobQueue : public IGSJobQueue<T>
@@ -105,7 +110,11 @@ template<class T> class GSJobQueue : public IGSJobQueue<T>
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
+#ifdef BOOST_STAND_ALONE
+	ringbuffer_base<T, 256> m_queue;
+#else
+	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
+#endif
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;
@@ -148,7 +157,7 @@ public:
 	}
 
 	virtual ~GSJobQueue() {
-		m_exit = true;
+		m_exit.store(true, memory_order_release);
 		m_notempty.notify_one();
 		this->CloseThread();
 	}
@@ -189,7 +198,7 @@ public:
 };
 
 
-// This queue locks 'only' RENDERING threads mostly the same performance as above if the CPU is fast enough
+// This queue reserves 'only' RENDERING threads mostly the same performance as a no reservation queue if the CPU is fast enough
 // pros: nearly best fps by thread
 // cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
 template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
@@ -197,7 +206,11 @@ template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
+#ifdef BOOST_STAND_ALONE
+	ringbuffer_base<T, 256> m_queue;
+#else
+	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
+#endif
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;
@@ -239,7 +252,7 @@ public:
 	};
 
 	virtual ~GSJobQueueSpin() {
-		m_exit = true;
+		m_exit.store(true, memory_order_release);
 		this->CloseThread();
 	}
 
@@ -267,14 +280,12 @@ public:
 		ASSERT(m_count == 0);
 	}
 
-	virtual void Process(T& item) = 0;
-
 	void operator() (T& item) {
 		this->Process(item);
 	}
 };
 
-// This queue locks RENDERING threads + GS threads onto dedicated CPU
+// This queue reserves RENDERING threads + GS threads onto dedicated CPU
 // pros: best fps by thread
 // cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 8 cores CPU.
 #if 0
@@ -284,7 +295,7 @@ template<class T> class GSJobQueue : public IGSJobQueue<T>
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<256> > m_queue;
+	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
 
 	void ThreadProc() {
 		while (true) {
