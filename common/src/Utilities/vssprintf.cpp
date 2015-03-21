@@ -51,7 +51,7 @@
 
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
-#ifdef __linux__
+#ifdef __unix__
 #define _CVTBUFSIZE (309+40)
 #endif
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifdef __linux__
+#ifdef __unix__
 #include <unistd.h>
 #include <gtk/gtk.h>
 #include <sys/timeb.h>	// ftime(), struct timeb

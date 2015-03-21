@@ -20,7 +20,7 @@
 // dll size by over 100k while avoiding any dependencies on updated CRT dlls.
 #pragma once
 
-#ifdef __linux__
+#ifdef __unix__
 // Seriously why there is no standard
 #include "stdint.h"
 typedef uint32_t DWORD;

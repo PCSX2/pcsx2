@@ -32,7 +32,7 @@ extern u64 luPerfFreq;
 
 
 // Copied from Utilities; remove later.
-#ifdef __linux__
+#ifdef __unix__
 
 #include <sys/time.h>
 #include <sys/timeb.h>	// ftime(), struct timeb

@@ -19,7 +19,7 @@
 #include "zerospu2.h"
 #include "zeroworker.h"
 #include "soundtouch/SoundTouch.h"
-#ifdef __linux__
+#ifdef __unix__
 #include "WavFile.h"
 #else
 #include "soundtouch/WavFile.h"

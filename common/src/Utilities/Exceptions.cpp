@@ -20,7 +20,7 @@
 //   pxOnAssert( origin, WX_STR(msg) ); // wc_str ???
 //
 // Feel free to provide a better fix
-#if defined(__linux__) && defined(NDEBUG)
+#if defined(__unix__) && defined(NDEBUG)
 #undef NDEBUG
 #endif
 

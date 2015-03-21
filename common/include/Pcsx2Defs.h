@@ -20,7 +20,7 @@
 #define WX_PCSX2
 
 #ifdef __CYGWIN__
-#define __linux__
+#define __unix__
 #endif
 
 #include "Pcsx2Types.h"

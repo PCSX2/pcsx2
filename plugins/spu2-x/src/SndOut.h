@@ -672,7 +672,7 @@ extern SndOutModule* DSoundOut;
 extern SndOutModule* XAudio2Out;
 #endif
 extern SndOutModule* PortaudioOut;
-#ifdef __linux__
+#ifdef __unix__
 extern SndOutModule * const SDLOut;
 extern SndOutModule* AlsaOut;
 #endif

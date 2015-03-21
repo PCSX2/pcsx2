@@ -28,7 +28,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "keyboard.h"
 
-#ifndef __linux__
+#ifndef __unix__
 char* KeysymToChar(int keysym)
 {
 	LPWORD temp;
@@ -40,7 +40,7 @@ char* KeysymToChar(int keysym)
 
 void SetAutoRepeat(bool autorep)
 {
- #ifdef __linux__
+ #ifdef __unix__
     if (toggleAutoRepeat)
     {
         if (autorep)
@@ -51,7 +51,7 @@ void SetAutoRepeat(bool autorep)
 #endif
 }
 
-#ifdef __linux__
+#ifdef __unix__
 static bool s_grab_input = false;
 static bool s_Shift = false;
 static unsigned int  s_previous_mouse_x = 0;

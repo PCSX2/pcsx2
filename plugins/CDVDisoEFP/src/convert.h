@@ -22,12 +22,12 @@
 
 #include <sys/types.h> // off64_t
 #include "PS2Etypes.h"
-#ifdef __linux__
+#ifdef __unix__
 #include "endian.h"
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #define CONVERTLITTLEENDIAN
 #endif /* __BYTE_ORDER */
-#endif /* __linux__ */
+#endif /* __unix__ */
 #ifdef _WIN32
 #define CONVERTLITTLEENDIAN
 #endif /* _WIN32 */

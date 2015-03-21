@@ -20,13 +20,13 @@
 #include "sVU_Micro.h"
 
 //Using assembly code from an external file.
-#ifdef __linux__
+#ifdef __unix__
 extern "C" {
 #endif
 extern void SuperVUExecuteProgram(u32 startpc, int vuindex);
 extern void SuperVUEndProgram();
 extern void svudispfntemp();
-#ifdef __linux__
+#ifdef __unix__
 }
 #endif
 

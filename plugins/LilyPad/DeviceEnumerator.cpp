@@ -27,7 +27,7 @@
 #include "HidDevice.h"
 #include "DualShock3.h"
 
-#ifdef __linux__
+#ifdef __unix__
 #include "Linux/KeyboardMouse.h"
 #include "Linux/JoyEvdev.h"
 #endif

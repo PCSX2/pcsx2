@@ -23,7 +23,7 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-#ifdef __linux__
+#ifdef __unix__
 #include <sys/stat.h> // mkdir
 #endif
 
@@ -50,7 +50,7 @@ GSState::GSState()
 	s_save = !!theApp.GetConfig("save", 0);
 	s_savez = !!theApp.GetConfig("savez", 0);
 	s_saven = theApp.GetConfig("saven", 0);
-#ifdef __linux__
+#ifdef __unix__
 	if (s_dump) {
 		mkdir("/tmp/GS_HW_dump", 0777);
 		mkdir("/tmp/GS_SW_dump", 0777);

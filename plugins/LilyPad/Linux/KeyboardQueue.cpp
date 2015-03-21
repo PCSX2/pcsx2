@@ -19,7 +19,7 @@
 // This is undoubtedly completely unnecessary.
 #include "KeyboardQueue.h"
 
-#ifdef __linux__
+#ifdef __unix__
 // Above code is for events that go from the plugin to core
 // Here we need the contrary, event that come from core to the plugin
 // Yes it is a crazy ping-pong hell ! I mostly copy past with

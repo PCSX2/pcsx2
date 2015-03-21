@@ -39,7 +39,7 @@ extern u32 SOUNDSIZE;
 extern s32 MaxBuffer;
 
 // Target List
-#ifdef __linux__
+#ifdef __unix__
 
 #if (!defined(ZEROSPU2_ALSA) && !defined(ZEROSPU2_OSS) && !defined(ZEROSPU2_PORTAUDIO))
 #define ZEROSPU2_ALSA // Comment if Alsa isn't on the system.

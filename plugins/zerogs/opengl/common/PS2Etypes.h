@@ -19,14 +19,14 @@
 #define __PS2ETYPES_H__
 
 #ifdef __CYGWIN__
-#define __linux__
+#define __unix__
 #endif
 
 #ifndef ArraySize
 #define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 #define CALLBACK
 #else
 #define CALLBACK    __stdcall
@@ -70,7 +70,7 @@ typedef unsigned int uint;
 
 #else // _MSC_VER
 
-#ifdef __linux__
+#ifdef __unix__
 
 #ifdef HAVE_STDINT_H
 #include "stdint.h"
@@ -111,7 +111,7 @@ typedef unsigned int uint;
 #define _inline __inline__ __attribute__((unused))
 #define __forceinline __attribute__((always_inline,unused))
 
-#endif  // __linux__
+#endif  // __unix__
 
 #define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
@@ -120,7 +120,7 @@ typedef unsigned int uint;
 
 #endif // _MSC_VER
 
-#if !defined(__linux__) || !defined(HAVE_STDINT_H)
+#if !defined(__unix__) || !defined(HAVE_STDINT_H)
 #if defined(__x86_64__)
 typedef u64 uptr;
 typedef s64 sptr;

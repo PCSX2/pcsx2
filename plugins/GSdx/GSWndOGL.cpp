@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndOGL.h"
 
-#if defined(__linux__) && !defined(ENABLE_GLES)
+#if defined(__unix__) && !defined(ENABLE_GLES)
 GSWndOGL::GSWndOGL()
 	: m_NativeWindow(0), m_NativeDisplay(NULL), m_swapinterval(NULL)
 {

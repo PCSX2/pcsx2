@@ -2970,7 +2970,7 @@ public:
 
 	}
 
-#ifdef __linux__
+#ifdef __unix__
 #if 0
 	// Debug build error, _mm_extract_ps is actually a macro that use an anonymous union
 	// that contains i. I decide to rename the template on linux but it makes windows unhappy
