@@ -119,7 +119,7 @@ class IRasterizer : public GSAlignedClass<32>
 public:
 	virtual ~IRasterizer() {}
 
-	virtual void Queue(shared_ptr<GSRasterizerData> data) = 0;
+	virtual void Queue(const shared_ptr<GSRasterizerData>& data) = 0;
 	virtual void Sync() = 0;
 	virtual bool IsSynced() const = 0;
 	virtual int GetPixels(bool reset = true) = 0;
@@ -174,7 +174,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const shared_ptr<GSRasterizerData>& data);
 	void Sync() {}
 	bool IsSynced() const {return true;}
 	int GetPixels(bool reset);
@@ -259,7 +259,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const shared_ptr<GSRasterizerData>& data);
 	void Sync();
 	bool IsSynced() const;
 	int GetPixels(bool reset);
