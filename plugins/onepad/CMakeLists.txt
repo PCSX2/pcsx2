@@ -41,14 +41,14 @@ set(onepadHeaders
     KeyStatus.h
 	onepad.h)
 
-# onepad Linux sources
-set(onepadLinuxSources
+# onepad Unix sources
+set(onepadUnixSources
 	Linux/ini.cpp
 	Linux/dialog.cpp
 	Linux/linux.cpp)
 
-# onepad Linux headers
-set(onepadLinuxHeaders
+# onepad Unix headers
+set(onepadUnixHeaders
 	Linux/linux.h)
 
 # onepad Windows sources
@@ -78,8 +78,8 @@ set(onepadFinalLibs
 set(onepadFinalSources
 	${onepadSources}
 	${onepadHeaders}
-	${onepadLinuxSources}
-	${onepadLinuxHeaders}
+	${onepadUnixSources}
+	${onepadUnixHeaders}
 )
 
 add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")

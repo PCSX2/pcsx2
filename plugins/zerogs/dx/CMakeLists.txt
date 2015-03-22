@@ -11,15 +11,15 @@ set(zerogsSources
 set(zerogsHeaders
 	CDVD.h)
 
-# zerogs Linux sources
-set(zerogsLinuxSources
+# zerogs Unix sources
+set(zerogsUnixSources
 	Linux/callbacks.c
 	Linux/Config.cpp
 	Linux/interface.c
 	Linux/support.c)
 
-# zerogs Linux headers
-set(zerogsLinuxHeaders
+# zerogs Unix headers
+set(zerogsUnixHeaders
 	Linux/callbacks.h
 	Linux/Config.h
 	Linux/interface.h
@@ -38,8 +38,8 @@ set(zerogsWindowsHeaders
 add_library(${zerogsName} SHARED 
 			${zerogsSources}
 			${zerogsHeaders}
-			${zerogsLinuxSources}
-			${zerogsLinuxHeaders})
+			${zerogsUnixSources}
+			${zerogsUnixHeaders})
 
 # set output directory
 set_target_properties(${zerogsName} PROPERTIES

@@ -170,8 +170,15 @@ set(UtilitiesFinalSources
 	${UtilitiesHeaders}
 )
 
+if(Linux)
+	set(UtilitiesFinalLibs
+		${UtilitiesFinalLibs}
+	    ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
+	)
+endif()
+
 set(UtilitiesFinalLibs
-    ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
+    ${UtilitiesFinalLibs}
 	${wxWidgets_LIBRARIES}
 )
 

@@ -2,6 +2,6 @@
 # put Windows stuff here [TODO]
 
 # zerogs plugin opengl
-if(UNIX)
+if(Unix)
 	add_subdirectory(opengl)
 endif()

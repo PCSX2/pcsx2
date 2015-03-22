@@ -160,21 +160,21 @@ set(zzoglShaderSources
     ctx0/ps2hw_ctx.fx
     ctx1/ps2hw_ctx.fx)
 
-# zzogl Linux sources
-set(zzoglLinuxSources
+# zzogl Unix sources
+set(zzoglUnixSources
     Linux/Conf.cpp
     Linux/Linux.cpp)
 
-# zzogl Linux headers
-set(zzoglLinuxHeaders
+# zzogl Unix headers
+set(zzoglUnixHeaders
     Linux/Linux.h)
 
 set(zzoglFinalSources
     ${zzoglSources}
     ${zzoglHeaders}
     ${zzoglShaderSources}
-    ${zzoglLinuxSources}
-    ${zzoglLinuxHeaders}
+    ${zzoglUnixSources}
+    ${zzoglUnixHeaders}
 )
 
 set(zzoglFinalLibs

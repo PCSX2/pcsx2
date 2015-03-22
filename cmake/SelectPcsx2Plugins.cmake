@@ -50,7 +50,7 @@ endif()
 #---------------------------------------
 #			Pcsx2 core
 # requires: -wx
-#           -gtk2 (linux)
+#           -gtk2 (unix)
 #           -zlib
 #           -common_libs
 #           -aio
@@ -65,8 +65,8 @@ else()
     message(STATUS "Skip build of pcsx2 core: miss some dependencies")
     message(STATUS "${msg_dep_pcsx2}")
 endif()
-# Linux need also gtk2
-if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
+# unix need also gtk2
+if(Unix AND pcsx2_core AND NOT GTKn_FOUND)
     set(pcsx2_core FALSE)
     message(STATUS "Skip build of pcsx2 core: miss some dependencies")
     message(STATUS "${msg_dep_pcsx2}")
@@ -93,7 +93,7 @@ endif()
 #			CDVDiso
 #---------------------------------------
 # requires: -BZip2
-#           -gtk2 (linux)
+#           -gtk2 (unix)
 #---------------------------------------
 if(EXTRA_PLUGINS)
     if(BZIP2_FOUND AND GTKn_FOUND)
