@@ -4,10 +4,5 @@
   <PropertyGroup>
     <_PropertySheetDisplayName>cdvd</_PropertySheetDisplayName>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <PreBuildEvent>
-      <Command>"$(SolutionDir)common\vsprops\preBuild.cmd" "$(ProjectDir)."</Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

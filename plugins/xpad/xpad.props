@@ -8,9 +8,6 @@
     <Link>
       <AdditionalDependencies>xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>"$(SolutionDir)common\vsprops\preBuild.cmd" "$(ProjectDir)."</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
