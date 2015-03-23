@@ -646,11 +646,6 @@
     <ClCompile Include="..\..\src\os\win\pa_x86_plain_converters.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\hostapi\wdmks\readme.txt" />
-    <None Include="portaudio.def" />
-    <None Include="portaudio_noasio.def" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\include\pa_asio.h" />
     <ClInclude Include="..\..\include\pa_jack.h" />
     <ClInclude Include="..\..\include\pa_linux_alsa.h" />
