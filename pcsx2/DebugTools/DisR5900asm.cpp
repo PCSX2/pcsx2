@@ -650,9 +650,9 @@ void P_COP2_Unknown( std::string& output )
 
 void label_decode( std::string& output, u32 addr )
 {
-	std::string buf;
-	ssprintf(buf, "->$0x%08X", addr);
-	output += buf;
+	char buffer[32];
+	sprintf(buffer, "->$0x%08X", addr);
+	output += std::string(buffer);
 }
 
 void jump_decode( std::string& output )
