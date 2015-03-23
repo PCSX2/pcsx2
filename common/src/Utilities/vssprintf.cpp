@@ -35,6 +35,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifdef WIN32
+
 #include <math.h>
 
 #ifdef KERNEL
@@ -528,7 +530,7 @@ static void flt( std::string& dest, double num, int size, int precision, char fm
 ///////////////////////////////////////////////////////////////////////////
 // This is a "mostly" direct replacement for vsprintf, that is more secure and easier
 // to use than vsnprintf or vsprintf_s.  See the docs for ssprintf for usage notes.
-void vssappendf(std::string& dest, const char* format, va_list args)
+static void vssappendf(std::string& dest, const char* format, va_list args)
 {
 	int base;
 
@@ -760,16 +762,53 @@ repeat:
 	}
 }
 
-void vssprintf( std::string& dest, const char* format, va_list args )
-{
-	// Optimization: Memory is cheap.  Allocating it on the fly is not.  Allocate more room
-	// than we'll likely need right upfront!  Also, strlen is slow, so better to just pick an
-	// arbitrarily generous value to reserve instead of basing it on string length.
+#else
+// To keep trace of license :)
 
-	dest.clear();
-	dest.reserve( 96 );
-	vssappendf( dest, format, args );
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2015  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// Note: std::vsnprintf requires C++11 (and the function must return the total
+// number of characters which would have been written even if a truncation occured)
+// Note2: Code is only used in debugger (perf is not important)
+static void vssappendf(std::string& dest, const char* format, va_list args)
+{
+	char first_try[128]; // this function is called 99% (100%?) of the times for small string
+	va_list args_copy;
+	va_copy(args_copy, args);
+
+	s32 size = std::vsnprintf(first_try, 128, format, args_copy) + 1;
+
+	va_end(args_copy);
+
+	if (size < 0)
+		return;
+	if (size < 128) {
+		dest += first_try;
+		return;
+	}
+
+	// VLA extension. Not sure it is supported on windows. Maybe one days in C++ standard
+	// Performance is not important here
+	char output[size];
+	std::vsnprintf(output, size, format, args);
+	dest += output;
 }
+
+
+#endif
 
 void ssappendf( std::string& dest, const char* format, ...)
 {
@@ -777,60 +816,4 @@ void ssappendf( std::string& dest, const char* format, ...)
 	va_start(args, format);
 	vssappendf( dest, format, args );
 	va_end(args);
-}
-
-// This is a "mostly" direct replacement for sprintf, based on std::string.
-// The most notable difference in use is the requirement of a "params" keyword delimiting
-// the format string from the parameters used to fill the string's tokens. It looks
-// like this in practice:
-//
-//   ssprintf( dest, "Yo Joe, %d. In the Hizzou %s.", intval, strval );
-//
-// In addition to all standard printf formatting tokens, ssprintf also supports a new token
-// for std::string parameters as %hs (passed by reference/pointer).  I opted for %hs (using 'h'
-// as a qualifier) over %S because under MSVC %S acts as a char/widechar conversion.  Note
-// that these are passed by pointer so you *must* use the & operator most of the time.
-// Example:
-//
-//   ssprintf( dest, "Yo Joe, %hs.", &strval );
-//
-// This can be a cavet of sorts since forgetting to use the & will always compile but
-// will cause undefined behavior and odd crashes (much like how the same thing happens
-// when exchanging an intvalu for a c-string normally -- it's just more tricky with
-// strings since we're not used to prefixing sprintf parameters with &s).
-//
-// === 64-bit -- s64 / u64 -- Support ===
-//
-// ssprintf supports u64/s64 via the L qualifier, which can be prefixed to any one of the
-// integer tokens (d, i, x).  This isn't standard, but it's easy and doesn't conflict with
-// anything, and none of the other 64-bit qualifiers aren't really standard anyway.
-// Example:
-//
-//   ssprintf( dest, "Yo Joe, %Ld, %Lx.", int64, hex64 );
-//
-void ssprintf(std::string& str, const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vssprintf(str, fmt, args);
-	va_end(args);
-}
-
-// See ssprintf for usage details and differences from sprintf formatting.
-std::string fmt_string( const char* fmt, ... )
-{
-	std::string retval;
-	va_list args;
-	va_start( args, fmt );
-	vssprintf( retval, fmt, args );
-	va_end( args );
-
-	return retval;
-}
-
-std::string vfmt_string( const char* fmt, va_list args )
-{
-	std::string retval;
-	vssprintf( retval, fmt, args );
-	return retval;
 }
