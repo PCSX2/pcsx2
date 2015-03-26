@@ -109,7 +109,11 @@ template <int index> void _GSgifTransfer(const u32 *pMem, u32 size)
 			case GIF_FLG_IMAGE:  // FROM_VFRAM
 			case GIF_FLG_IMAGE2: // Used in the DirectX version, so we'll use it here too.
 			{
+#ifdef _WIN32
+				int len = min(size, path->nloop);
+#else
 				int len = std::min(size, path->nloop);
+#endif
 				// clcGS.Log.WriteLn("GIF_FLG_IMAGE(%d)=%d", gs.imageTransfer, len);
 
 				switch (gs.imageTransfer)
