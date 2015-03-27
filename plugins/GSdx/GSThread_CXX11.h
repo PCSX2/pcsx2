@@ -201,6 +201,11 @@ public:
 // This queue reserves 'only' RENDERING threads mostly the same performance as a no reservation queue if the CPU is fast enough
 // pros: nearly best fps by thread
 // cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
+// Note: I'm not sure of the source of the speedup
+//		1/ It could be related to less MT logic (lock, cond var)
+//		2/ But I highly suspect that waking up thread is rather slow.  My guess
+//		is that low power feature (like C state) increases latency. In this case
+//		gain will be smaller if PCSX2 is running or in limited core CPU (<=4)
 template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
 {
 protected:
