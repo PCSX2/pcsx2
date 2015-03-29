@@ -445,7 +445,7 @@ CRC::Game CRC::m_games[] =
 	{0xB083CCC2, Siren, EU, 0}, // Spanish
 	{0x90F4B057, ZettaiZetsumeiToshi2, CH, 0},
 	{0xC988ECBB, ZettaiZetsumeiToshi2, JP, 0},
-	{0x2905C5C6, ZettaiZetsumeiToshi2, US, 0},
+	{0x2905C5C6, ZettaiZetsumeiToshi2, US, 0},  // Raw Danger!
 	{0x81CA29BE, VF4EVO, EU, 0},
 	{0xC9DEF513, VF4EVO, US, 0},
 	{0x7B402694, VF4EVO, KO, 0},
