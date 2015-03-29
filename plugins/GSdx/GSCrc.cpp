@@ -115,7 +115,6 @@ CRC::Game CRC::m_games[] =
 	{0x877F3436, SoTC, JP, 0},
 	{0xA17D6AAA, SoTC, KO, 0},
 	{0x877B3D35, SoTC, CH, 0},
-	{0x7F995E8D, DigimonBattleChronicle ,JP , 0},
 	{0x3122B508, OnePieceGrandAdventure, US, 0},
 	{0x8DF14A24, OnePieceGrandAdventure, EU, 0},
 	{0xE446C9F9, OnePieceGrandAdventure, KO, 0},
