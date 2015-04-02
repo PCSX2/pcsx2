@@ -9178,6 +9178,7 @@ Region = PAL-Unk
 Serial = SLES-51302
 Name   = Bomberman Kart
 Region = PAL-Unk
+compat = 5
 ---------------------------------------------
 Serial = SLES-51303
 Name   = LEGO Dome Racers
@@ -16850,6 +16851,7 @@ Region = PAL-E
 Serial = SLES-55237
 Name   = Naruto - Ultimate Ninja 3
 Region = PAL-M5
+compat = 5
 ---------------------------------------------
 Serial = SLES-55240
 Name   = Pipe Mania
@@ -17057,6 +17059,7 @@ Region = PAL-Unk
 Serial = SLES-55440
 Name   = Ben 10: Alien Force
 Region = PAL-M5
+compat = 5
 ---------------------------------------------
 Serial = SLES-55442
 Name   = Tomb Raider Underworld
@@ -22421,6 +22424,7 @@ Region = NTSC-J
 Serial = SLPM-65473
 Name   = Hagane no Renkinjutsushi - Tobenai Tenshi
 Region = NTSC-J
+compat = 5
 ---------------------------------------------
 Serial = SLPM-65474
 Name   = Kurogane no Houkou 2 - Warship Commander [Limited Edition]
@@ -39978,6 +39982,7 @@ Compat = 5
 Serial = SLUS-21475
 Name   = Final Fantasy XII [Collector's Edition]
 Region = NTSC-U
+compat = 5
 ---------------------------------------------
 Serial = SLUS-21476
 Name   = Madden NFL '07
@@ -41725,6 +41730,7 @@ Compat = 5
 Serial = SLUS-21902
 Name   = Bakugan: Battle Brawlers
 Region = NTSC-U
+compat = 5
 ---------------------------------------------
 Serial = SLUS-21904
 Name   = Teenage Mutant Ninja Turtles: Smash-Up
@@ -41849,6 +41855,7 @@ vuClampMode = 3			//shows the crowd in the back
 Serial = SLUS-21938
 Name   = Ben 10 Ultimate Alien: Cosmic Destruction
 Region = NTSC-U
+compat = 5
 ---------------------------------------------
 Serial = SLUS-21939
 Name   = WWE SmackDown vs. Raw 2011
