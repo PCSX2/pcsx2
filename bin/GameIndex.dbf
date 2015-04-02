@@ -34746,6 +34746,7 @@ Serial = SLUS-20347
 Name   = Shadow Hearts
 Region = NTSC-U
 Compat = 5
+FMVinSoftwareHack = 1
 ---------------------------------------------
 Serial = SLUS-20348
 Name   = Monopoly Party
@@ -34851,6 +34852,7 @@ Serial = SLUS-20370
 Name   = Kingdom Hearts
 Region = NTSC-U
 Compat = 5
+FMVinSoftwareHack = 1
 ---------------------------------------------
 Serial = SLUS-20371
 Name   = Thing, The
@@ -39978,6 +39980,7 @@ Compat = 5
 Serial = SLUS-21475
 Name   = Final Fantasy XII [Collector's Edition]
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21476
 Name   = Madden NFL '07
