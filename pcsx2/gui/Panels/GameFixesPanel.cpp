@@ -97,7 +97,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("Switch to GSdx software rendering when a FMV plays"),
+			_("Switch to GSdx software rendering when an FMV plays"),
 			wxEmptyString
 		},
 		{
