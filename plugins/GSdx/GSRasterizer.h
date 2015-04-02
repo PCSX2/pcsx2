@@ -24,9 +24,13 @@
 #include "GS.h"
 #include "GSVertexSW.h"
 #include "GSFunctionMap.h"
-#include "GSThread.h"
 #include "GSAlignedClass.h"
 #include "GSPerfMon.h"
+#ifdef ENABLE_BOOST
+#include "GSThread_CXX11.h"
+#else
+#include "GSThread.h"
+#endif
 
 __aligned(class, 32) GSRasterizerData : public GSAlignedClass<32>
 {
@@ -115,7 +119,7 @@ class IRasterizer : public GSAlignedClass<32>
 public:
 	virtual ~IRasterizer() {}
 
-	virtual void Queue(shared_ptr<GSRasterizerData> data) = 0;
+	virtual void Queue(const shared_ptr<GSRasterizerData>& data) = 0;
 	virtual void Sync() = 0;
 	virtual bool IsSynced() const = 0;
 	virtual int GetPixels(bool reset = true) = 0;
@@ -170,7 +174,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const shared_ptr<GSRasterizerData>& data);
 	void Sync() {}
 	bool IsSynced() const {return true;}
 	int GetPixels(bool reset);
@@ -195,8 +199,29 @@ protected:
 		void Process(shared_ptr<GSRasterizerData>& item);
 	};
 
+#ifdef ENABLE_BOOST
+	class GSWorkerSpin : public GSJobQueueSpin<shared_ptr<GSRasterizerData> >
+	{
+		GSRasterizer* m_r;
+
+	public:
+		GSWorkerSpin(GSRasterizer* r);
+		virtual ~GSWorkerSpin();
+
+		int GetPixels(bool reset);
+
+		// GSJobQueue
+
+		void Process(shared_ptr<GSRasterizerData>& item);
+	};
+#endif
+
 	GSPerfMon* m_perfmon;
+#ifdef ENABLE_BOOST
+	vector<IGSJobQueue<shared_ptr<GSRasterizerData> > *> m_workers;
+#else
 	vector<GSWorker*> m_workers;
+#endif
 	uint8* m_scanline;
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
@@ -204,7 +229,7 @@ protected:
 public:
 	virtual ~GSRasterizerList();
 
-	template<class DS> static IRasterizer* Create(int threads, GSPerfMon* perfmon)
+	template<class DS> static IRasterizer* Create(int threads, GSPerfMon* perfmon, bool spin_thread = false)
 	{
 		threads = std::max<int>(threads, 0);
 
@@ -218,7 +243,14 @@ public:
 
 			for(int i = 0; i < threads; i++)
 			{
+#ifdef ENABLE_BOOST
+				if (spin_thread)
+					rl->m_workers.push_back(new GSWorkerSpin(new GSRasterizer(new DS(), i, threads, perfmon)));
+				else
+					rl->m_workers.push_back(new GSWorker(new GSRasterizer(new DS(), i, threads, perfmon)));
+#else
 				rl->m_workers.push_back(new GSWorker(new GSRasterizer(new DS(), i, threads, perfmon)));
+#endif
 			}
 
 			return rl;
@@ -227,7 +259,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const shared_ptr<GSRasterizerData>& data);
 	void Sync();
 	bool IsSynced() const;
 	int GetPixels(bool reset);
