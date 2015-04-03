@@ -414,6 +414,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
 		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3;
+		// Don't do extra filtering on sprite (it creates various upscaling issue)
+		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_userhacks_stretch_sprite));
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
@@ -426,7 +428,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
 		// bug on opengl
 		// FIXME for the moment disable it on subroutine (it will kill my perf for nothings)
-		ps_sel.point_sampler = !(bilinear && simple_sample) && !GLLoader::found_GL_ARB_shader_subroutine;
+		ps_sel.point_sampler = 0; // !(bilinear && simple_sample) && !GLLoader::found_GL_ARB_shader_subroutine;
 
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();

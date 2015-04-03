@@ -32,6 +32,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
+	m_userhacks_stretch_sprite = !!theApp.GetConfig("UserHacks_stretch_sprite", 0);
 
 	if(!m_nativeres)
 	{
@@ -53,6 +54,31 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	else
 	{
 		m_upscale_multiplier = 1;
+	}
+	// When you upscale sprite will sample invalid data of the texture. The idea is to add a subtexel offset
+	// so the sampling remains inside the texture.
+	// The strict minimal value can be computed with this formulae (you need to round above, [1;2[ must be rounded to 2).
+	//
+	// s: m_upscale_multiplier
+	// WH: Width or Height of the texture
+	// 0.5: initial offset of texture (not sure it is always true)
+	// L: length of primitive in pixels (after upscaling)
+	//
+	// Full formulae is
+	// 0.5 + (L - 1)* (WH-offset)/L < WH
+	//
+	// A reduced formulae is: (hypothesis 1:1 mapping => L == s*WH)
+	// offset > ((0.5)*s -1)/(s-1/WH)*16
+	//
+	// Rendering is perfect for 2x but some issues remains on higher scaling
+	switch (m_upscale_multiplier) {
+		case 1: m_sub_texel_offset = 0; break;
+		case 2: m_sub_texel_offset = 1; break;
+		case 3: m_sub_texel_offset = 3; break; // texture of 2 texels need 4 (Is is used?)
+		case 4: m_sub_texel_offset = 5; break;
+		case 5: m_sub_texel_offset = 6; break;
+		case 6: m_sub_texel_offset = 6; break;
+		default: break;
 	}
 }
 
@@ -294,6 +320,23 @@ void GSRendererHW::Draw()
 
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
+
+	// Hack to avoid black line in various games.
+	if (m_userhacks_stretch_sprite && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		size_t count = m_vertex.next;
+		GSVertex* v = &m_vertex.buff[0];
+		for(size_t i = 0; i < count; i += 2) {
+			if (v[i+1].U < v[i].U)
+				v[i+1].U += m_sub_texel_offset;
+			else
+				v[i+1].U -= m_sub_texel_offset;
+			if (v[i+1].V < v[i].V)
+				v[i+1].V += m_sub_texel_offset;
+			else
+				v[i+1].V -= m_sub_texel_offset;
+		}
+	}
+
 
 	//
 

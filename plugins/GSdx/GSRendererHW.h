@@ -35,7 +35,8 @@ private:
 	bool m_reset;
 	int m_upscale_multiplier;
 	int m_userhacks_skipdraw;
-	
+	int m_sub_texel_offset;
+
 	#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -133,6 +134,8 @@ protected:
 	GSTextureCache* m_tc;
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
+
+	bool m_userhacks_stretch_sprite;
 
 public:
 	GSRendererHW(GSTextureCache* tc);
