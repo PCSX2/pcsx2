@@ -7,6 +7,8 @@
 #define FMT_16 2
 #define FMT_PAL 4 /* flag bit */
 
+#define APITRACE_DEBUG 0
+
 // Not sure we have same issue on opengl. Doesn't work anyway on ATI card
 // And I say this as an ATI user.
 #define ATI_SUCKS 0
@@ -1026,6 +1028,18 @@ void ps_main()
 #endif
 
     vec4 c = ps_color();
+#if (APITRACE_DEBUG & 1) == 1
+	c.r = 1.0f;
+#endif
+#if (APITRACE_DEBUG & 2) == 2
+	c.g = 1.0f;
+#endif
+#if (APITRACE_DEBUG & 4) == 4
+	c.b = 1.0f;
+#endif
+#if (APITRACE_DEBUG & 8) == 8
+	c.a = 0.5f;
+#endif
 
     float alpha = c.a * 2.0;
 

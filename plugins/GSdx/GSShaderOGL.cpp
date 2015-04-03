@@ -104,7 +104,10 @@ void GSShaderOGL::PS(GLuint s, GLuint sub_count)
 	{
 		m_ps_sub_count = sub_count;
 
+#ifndef _DEBUG
+		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = s;
+#endif
 		GLState::dirty_prog = true;
 		GLState::dirty_subroutine_ps = true;
 		GLState::dirty_ressources = true;
