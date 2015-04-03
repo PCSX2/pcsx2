@@ -330,13 +330,17 @@ void GSRendererHW::Draw()
 		// Note for performance reason I do the check only once on the first
 		// primitive
 		int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
-		if (((win_position & 0xF) == 8) && ((v[1].U & 0xF) == 0)) {
+		const bool unaligned_position = ((win_position & 0xF) == 8);
+		const bool unaligned_texture  = ((v[1].U & 0xF) == 0);
+		const bool one_texel_widht = (v[1].U == v[0].U);
+		if (unaligned_position && (unaligned_texture || one_texel_widht)) {
 			// Normaly vertex are aligned on full pixels and texture in half
 			// pixels. Let's extend the coverage of an half-pixel to avoid
 			// hole after upscaling
 			for(size_t i = 0; i < count; i += 2) {
 				v[i+1].XYZ.X += 8;
-				v[i+1].U += 8;
+				if (!one_texel_widht)
+					v[i+1].U += 8;
 			}
 		}
 	}
