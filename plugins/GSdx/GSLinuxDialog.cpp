@@ -157,14 +157,14 @@ bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
 	GtkWidget *main_box, *central_box, *advance_box, *res_box, *hw_box, *sw_box, *shader_box;
-	GtkWidget  *native_box, *fsaa_box, *resxy_box, *renderer_box, *interlace_box, *threads_box, *filter_box;
+	GtkWidget *native_box, *fsaa_box, *resxy_box, *renderer_box, *interlace_box, *threads_box, *filter_box, *stretch_hack_box;
 	GtkWidget *hw_table, *shader_table, *res_frame, *hw_frame, *sw_frame, *shader_frame;
 	GtkWidget *interlace_combo_box, *threads_spin;
-	GtkWidget *interlace_label, *threads_label, *native_label,  *fsaa_label, *rexy_label, *render_label, *filter_label;
+	GtkWidget *interlace_label, *threads_label, *native_label, *stretch_hack_label, *fsaa_label, *rexy_label, *render_label, *filter_label;
 
 	GtkWidget *fsaa_combo_box, *render_combo_box, *filter_combo_box;
 	GtkWidget *shader, *shader_conf, *shader_label, *shader_conf_label;
-	GtkWidget *shadeboost_check, *paltex_check, *fba_check, *aa_check,  *native_res_check, *fxaa_check, *shaderfx_check;
+	GtkWidget *shadeboost_check, *paltex_check, *fba_check, *aa_check,  *native_res_check, *stretch_hack_check, *fxaa_check, *shaderfx_check;
 	GtkWidget *sb_contrast, *sb_brightness, *sb_saturation;
 	GtkWidget *resx_spin, *resy_spin;
 
@@ -283,6 +283,12 @@ bool RunLinuxDialog()
 	gtk_box_pack_start(GTK_BOX(resxy_box), resx_spin, false, false, 5);
 	gtk_box_pack_start(GTK_BOX(resxy_box), resy_spin, false, false, 5);
 
+	stretch_hack_label = gtk_label_new("Anti upscale-glitch:");
+	stretch_hack_check = gtk_check_button_new();
+	stretch_hack_box = gtk_hbox_new(false, 5);
+	gtk_box_pack_start(GTK_BOX(stretch_hack_box), stretch_hack_label, false, false, 5);
+	gtk_box_pack_start(GTK_BOX(stretch_hack_box), stretch_hack_check, false, false, 5);
+
 	// shader fx entry
 	shader            = gtk_file_chooser_button_new("Select an external shader", GTK_FILE_CHOOSER_ACTION_OPEN);
 	shader_conf       = gtk_file_chooser_button_new("Then select a config", GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -336,6 +342,7 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fxaa_check), theApp.GetConfig("fxaa", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(shaderfx_check), theApp.GetConfig("shaderfx", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(native_res_check), theApp.GetConfig("nativeres", 0));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_hack_check), theApp.GetConfig("UserHacks_stretch_sprite", 0));
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_alpha_check), theApp.GetConfig("UserHacks_AlphaHack", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_offset_check), theApp.GetConfig("UserHacks_HalfPixelOffset", 0));
@@ -383,6 +390,7 @@ bool RunLinuxDialog()
 	gtk_container_add(GTK_CONTAINER(res_box), native_box);
 	gtk_container_add(GTK_CONTAINER(res_box), fsaa_box);
 	gtk_container_add(GTK_CONTAINER(res_box), resxy_box);
+	gtk_container_add(GTK_CONTAINER(res_box), stretch_hack_box);
 
 	gtk_container_add(GTK_CONTAINER(sw_box), threads_box);
 	gtk_container_add(GTK_CONTAINER(sw_box), aa_check);
@@ -519,6 +527,7 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("fxaa", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fxaa_check)));
 		theApp.SetConfig("shaderfx", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shaderfx_check)));
 		theApp.SetConfig("nativeres", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_res_check)));
+		theApp.SetConfig("UserHacks_stretch_sprite", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(stretch_hack_check)));
 
 		theApp.SetConfig("shaderfx_glsl", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader)));
 		theApp.SetConfig("shaderfx_conf", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader_conf)));
