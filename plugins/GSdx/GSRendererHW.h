@@ -37,6 +37,8 @@ private:
 	int m_userhacks_skipdraw;
 	int m_sub_texel_offset;
 
+	bool m_userhacks_align_sprite_X;
+
 	#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
