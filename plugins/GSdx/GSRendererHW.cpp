@@ -322,45 +322,47 @@ void GSRendererHW::Draw()
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
 
-	// Hack to avoid vertical black line in various games (ace combat/tekken)
-	if (m_userhacks_align_sprite_X && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
-		size_t count = m_vertex.next;
-		GSVertex* v = &m_vertex.buff[0];
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		// Hack to avoid vertical black line in various games (ace combat/tekken)
+		if (m_userhacks_align_sprite_X) {
+			size_t count = m_vertex.next;
+			GSVertex* v = &m_vertex.buff[0];
 
-		// Note for performance reason I do the check only once on the first
-		// primitive
-		int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
-		const bool unaligned_position = ((win_position & 0xF) == 8);
-		const bool unaligned_texture  = ((v[1].U & 0xF) == 0);
-		const bool one_texel_widht = (v[1].U == v[0].U);
-		if (unaligned_position && (unaligned_texture || one_texel_widht)) {
-			// Normaly vertex are aligned on full pixels and texture in half
-			// pixels. Let's extend the coverage of an half-pixel to avoid
-			// hole after upscaling
+			// Note for performance reason I do the check only once on the first
+			// primitive
+			int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
+			const bool unaligned_position = ((win_position & 0xF) == 8);
+			const bool unaligned_texture  = ((v[1].U & 0xF) == 0);
+			const bool one_texel_widht = (v[1].U == v[0].U);
+			if (unaligned_position && (unaligned_texture || one_texel_widht)) {
+				// Normaly vertex are aligned on full pixels and texture in half
+				// pixels. Let's extend the coverage of an half-pixel to avoid
+				// hole after upscaling
+				for(size_t i = 0; i < count; i += 2) {
+					v[i+1].XYZ.X += 8;
+					if (!one_texel_widht)
+						v[i+1].U += 8;
+				}
+			}
+		}
+
+		// Hack to avoid black line in various 2D games.
+		if (m_userhacks_stretch_sprite) {
+			size_t count = m_vertex.next;
+			GSVertex* v = &m_vertex.buff[0];
 			for(size_t i = 0; i < count; i += 2) {
-				v[i+1].XYZ.X += 8;
-				if (!one_texel_widht)
-					v[i+1].U += 8;
+				if (v[i+1].U < v[i].U)
+					v[i+1].U += m_sub_texel_offset;
+				else
+					v[i+1].U -= m_sub_texel_offset;
+
+				if (v[i+1].V < v[i].V)
+					v[i+1].V += m_sub_texel_offset;
+				else
+					v[i+1].V -= m_sub_texel_offset;
 			}
 		}
 	}
-
-	// Hack to avoid black line in various 2D games.
-	if (m_userhacks_stretch_sprite && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
-		size_t count = m_vertex.next;
-		GSVertex* v = &m_vertex.buff[0];
-		for(size_t i = 0; i < count; i += 2) {
-			if (v[i+1].U < v[i].U)
-				v[i+1].U += m_sub_texel_offset;
-			else
-				v[i+1].U -= m_sub_texel_offset;
-			if (v[i+1].V < v[i].V)
-				v[i+1].V += m_sub_texel_offset;
-			else
-				v[i+1].V -= m_sub_texel_offset;
-		}
-	}
-
 
 	//
 
