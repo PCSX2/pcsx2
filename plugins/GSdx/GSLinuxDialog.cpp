@@ -117,9 +117,9 @@ GtkWidget* CreateFilterComboBox()
 	GtkWidget  *combo_box;
 	combo_box = gtk_combo_box_text_new ();
 
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Off");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always Off");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always On");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Normal");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Forced");
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("filter", 0));
 	return combo_box;
@@ -246,7 +246,7 @@ bool RunLinuxDialog()
 	gtk_box_pack_start(GTK_BOX(interlace_box), interlace_combo_box, false, false, 5);
 
 	// Create the filter combo box.
-	filter_label = gtk_label_new ("Texture Filtering:");
+	filter_label = gtk_label_new ("Force Texture Filtering:");
 	filter_combo_box = CreateFilterComboBox();
 	filter_box = gtk_hbox_new(false, 5);
 	gtk_box_pack_start(GTK_BOX(filter_box), filter_label, false, false, 5);
