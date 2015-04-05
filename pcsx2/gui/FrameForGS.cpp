@@ -366,14 +366,14 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 
 void GSPanel::CoreThread_OnResumed()
 {
-        m_coreRunning = true;
-        UpdateScreensaver();
+	m_coreRunning = true;
+	UpdateScreensaver();
 }
 
 void GSPanel::CoreThread_OnSuspended()
 {
-        m_coreRunning = false;
-        UpdateScreensaver();
+	m_coreRunning = false;
+	UpdateScreensaver();
 }
 
 void GSPanel::AppStatusEvent_OnSettingsApplied()
