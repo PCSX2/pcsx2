@@ -72,6 +72,8 @@
 #define IDC_ANISOTROPIC                 2089
 #define IDC_AFCOMBO                     2090
 #define IDC_OPENCL_DEVICE               2091
+#define IDC_STRETCH_SPRITE              2092
+#define IDC_ALIGN_SPRITE                2093
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
@@ -92,7 +94,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10012
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2092
+#define _APS_NEXT_CONTROL_VALUE         2094
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
