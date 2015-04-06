@@ -693,6 +693,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 						  "It's possible to exclude CRC hacks also via the gsdx.ini. E.g.:\n"
 						  "CrcHacksExclusions=all\n"
 						  "CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03";
+				break;
 			case IDC_ALIGN_SPRITE:
 				helpstr = "Sprite Alignment Hack\n\n"
 						  "Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
