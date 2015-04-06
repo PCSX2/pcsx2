@@ -48,6 +48,9 @@ typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
+typedef unsigned int* uptr;
+typedef int* sptr;
+
 #else // _MSC_VER*/
 
 #include "stdint.h"
@@ -65,12 +68,12 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef uintptr_t uptr;
+typedef intptr_t sptr;
+
 #define LONG long
 
 #endif //_MSC_VER
-
-typedef uintptr_t uptr;
-typedef intptr_t sptr;
 
 typedef unsigned int uint;
 
