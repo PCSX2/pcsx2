@@ -508,6 +508,7 @@ CRC::Game CRC::m_games[] =
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
 	{0xAE4BEBD3, UrbanReign, EU, 0},
 	{0x9F391882, SteambotChronicles, US, 0},
+	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
 	{0x06A7506A, SacredBlaze, JP, 0},
 };
 
