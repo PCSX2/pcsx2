@@ -288,7 +288,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
 		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
-		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_stretch_sprite && !m_vt.IsLinear());
+		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_userhacks_stretch_sprite || m_userhacks_round_sprite_offset) && !m_vt.IsLinear());
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;

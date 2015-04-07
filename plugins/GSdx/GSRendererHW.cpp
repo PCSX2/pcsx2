@@ -34,6 +34,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_stretch_sprite = !!theApp.GetConfig("UserHacks_stretch_sprite", 0) && !!theApp.GetConfig("UserHacks", 0);
+	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks_round_sprite_offset", 0) && !!theApp.GetConfig("UserHacks", 0);
 
 	if(!m_nativeres)
 	{
@@ -322,12 +323,15 @@ void GSRendererHW::Draw()
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
 
-	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS) /*&& !m_vt.IsLinear()*/) {
+		// TODO: It could be a good idea to check context->CLAMP.WMS/WMT values on the following hack
+
+		size_t count = m_vertex.next;
+		GSVertex* v = &m_vertex.buff[0];
+
 		// Hack to avoid vertical black line in various games (ace combat/tekken)
 		if (m_userhacks_align_sprite_X) {
-			size_t count = m_vertex.next;
-			GSVertex* v = &m_vertex.buff[0];
-
 			// Note for performance reason I do the check only once on the first
 			// primitive
 			int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
@@ -347,9 +351,7 @@ void GSRendererHW::Draw()
 		}
 
 		// Hack to avoid black line in various 2D games.
-		if (m_userhacks_stretch_sprite) {
-			size_t count = m_vertex.next;
-			GSVertex* v = &m_vertex.buff[0];
+		if (m_userhacks_stretch_sprite && !m_vt.IsLinear()) {
 			for(size_t i = 0; i < count; i += 2) {
 				if (v[i+1].U < v[i].U)
 					v[i+1].U += m_sub_texel_offset;
@@ -360,6 +362,45 @@ void GSRendererHW::Draw()
 					v[i+1].V += m_sub_texel_offset;
 				else
 					v[i+1].V -= m_sub_texel_offset;
+			}
+		}
+
+		if (m_userhacks_round_sprite_offset && !m_vt.IsLinear()) {
+			for(size_t i = 0; i < count; i += 2) {
+				// 2nd vertex is always on the right so I'm sure it is bigger than the context
+				int pixel_offset_X = (v[i+1].XYZ.X - context->XYOFFSET.OFX) & 0xF;
+				int pixel_offset_Y = (v[i+1].XYZ.Y - context->XYOFFSET.OFY) & 0xF;
+				int length_Y = v[i+1].XYZ.Y - v[i].XYZ.Y;
+
+				// Bonus to avoid rounding issue
+				if (v[i+1].U < v[i].U)
+					pixel_offset_X += 16 - 1;
+				else
+					pixel_offset_X += 1;
+
+				// TODO check negative case
+				if (v[i+1].V < v[i].V)
+					pixel_offset_Y += 16 - 1;
+				else
+					pixel_offset_Y += 1;
+
+				// Tranlate the primitive to the pixel boundary
+				v[i].U   &= ~0xF;
+				v[i].U   += pixel_offset_X;
+				v[i+1].U &= ~0xF;
+				v[i+1].U += pixel_offset_X;
+
+				v[i].V   &= ~0xF;
+				v[i].V   += pixel_offset_Y;
+				// I'm not confident with the negative case
+				if (v[i+1].V < v[i].V) {
+					v[i+1].V  = v[i].V - length_Y;
+				} else {
+					v[i+1].V  = v[i].V + length_Y;
+				}
+
+				//v[i+1].V &= ~0xF;
+				//v[i+1].V += pixel_offset_Y;
 			}
 		}
 	}
