@@ -7,7 +7,12 @@
 #define FMT_16 2
 #define FMT_PAL 4 /* flag bit */
 
+// APITRACE_DEBUG allows to force pixel output to easily detect
+// the fragment computed by primitive
 #define APITRACE_DEBUG 0
+// TEX_COORD_DEBUG output the uv coordinate as color. It is useful
+// to detect bad sampling due to upscaling
+//#define TEX_COORD_DEBUG
 
 // Not sure we have same issue on opengl. Doesn't work anyway on ATI card
 // And I say this as an ATI user.
@@ -606,6 +611,9 @@ vec4 sample_color(vec2 st, float q)
     if (PS_LTF == 0 && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
     {
         c[0] = sample_c(clampuv(st));
+#ifdef TEX_COORD_DEBUG
+        c[0].rg = clampuv(st).xy;
+#endif
     }
     else
     {
@@ -631,6 +639,9 @@ vec4 sample_color(vec2 st, float q)
         {
             c = sample_4c(uv);
         }
+#ifdef TEX_COORD_DEBUG
+        c[0].rg = uv.xy;
+#endif
     }
 
     // PERF: see the impact of the exansion before/after the interpolation
@@ -985,10 +996,14 @@ vec4 ps_color()
 
     vec4 zero = vec4(0.0f, 0.0f, 0.0f, 0.0f);
     vec4 one = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+#ifdef TEX_COORD_DEBUG
+    vec4 c = clamp(t, zero, one);
+#else
 #if PS_IIP == 1
     vec4 c = clamp(tfx(t, PSin_c), zero, one);
 #else
     vec4 c = clamp(tfx(t, PSin_fc), zero, one);
+#endif
 #endif
 
     atst(c);
