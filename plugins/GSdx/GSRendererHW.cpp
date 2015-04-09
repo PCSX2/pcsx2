@@ -34,7 +34,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_stretch_sprite = !!theApp.GetConfig("UserHacks_stretch_sprite", 0) && !!theApp.GetConfig("UserHacks", 0);
-	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks_round_sprite_offset", 0) && !!theApp.GetConfig("UserHacks", 0);
+	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
 	if(!m_nativeres)
 	{
@@ -195,6 +195,34 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	if(clut) return; // FIXME
 		
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
+}
+
+int GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
+{
+	float t = (1.0f - alpha) * t0 + alpha * t1;
+	return (int)t & ~0xF; // cheap rounding
+}
+
+float GSRendererHW::alpha0(int offset, int x0, int x1)
+{
+	int X0 = x0 - offset;
+	if (X0 & 0xF) {
+		float L = (x1 - x0);
+		float x = (X0 + 15) & ~0xF; // Round up
+		return (x - X0) / L;
+	} else {
+		// X0 is aligned on the pixel. Above calcul can be shortcuted
+		return 0.0f;
+	}
+}
+
+float GSRendererHW::alpha1(int offset, int x0, int x1)
+{
+	int X1 = x1 - offset;
+	int X0 = x0 - offset;
+	float x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
+	float L = (x1 - x0);
+	return (x - X0) / L;
 }
 
 void GSRendererHW::Draw()
@@ -365,42 +393,133 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		if (m_userhacks_round_sprite_offset && !m_vt.IsLinear()) {
+		else if ((m_userhacks_round_sprite_offset == 2) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
+//#define DEBUG_U
+//#define DEBUG_V
 			for(size_t i = 0; i < count; i += 2) {
-				// 2nd vertex is always on the right so I'm sure it is bigger than the context
-				int pixel_offset_X = (v[i+1].XYZ.X - context->XYOFFSET.OFX) & 0xF;
-				int pixel_offset_Y = (v[i+1].XYZ.Y - context->XYOFFSET.OFY) & 0xF;
-				int length_Y = v[i+1].XYZ.Y - v[i].XYZ.Y;
+				// Compute the coordinate of first texels (in native)
+				float ax0 = alpha0(context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
+				float ax1 = alpha1(context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
+				int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
+				int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
+#ifdef DEBUG_U
+				fprintf(stderr, "u0:%d and u1:%d\n", v[i].U, v[i+1].U);
+				fprintf(stderr, "a0:%f and a1:%f\n", ax0, ax1);
+				fprintf(stderr, "t0:%d and t1:%d\n", tx0, tx1);
+#endif
+
+				float ay0 = alpha0(context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
+				float ay1 = alpha1(context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
+				int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
+				int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
+#ifdef DEBUG_V
+				fprintf(stderr, "v0:%d and v1:%d\n", v[i].V, v[i+1].V);
+				fprintf(stderr, "a0:%f and a1:%f\n", ay0, ay1);
+				fprintf(stderr, "t0:%d and t1:%d\n", ty0, ty1);
+#endif
+
+#ifdef DEBUG_U
+				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
+#endif
+
+#if 1
+				if (tx0 < tx1) {
+					v[i].U   = tx0 + 1;
+					v[i+1].U = tx1 + 1 + 16;
+				} else {
+					v[i].U   = tx0 + 15;
+					v[i+1].U = tx1 + 15 + 16;
+				}
+#endif
+#if 1
+				if (ty0 < ty1) {
+					v[i].V   = ty0 + 1;
+					v[i+1].V = ty1 + 1 + 16;
+				} else {
+					v[i].V   = ty0 + 15;
+					v[i+1].V = ty1 + 15 + 16;
+				}
+#endif
+
+#ifdef DEBUG_U
+				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
+#endif
+
+			}
+		}
+
+		else if (0 && m_userhacks_round_sprite_offset && !m_vt.IsLinear()) { // Debug only
+			// This hack moves the sprite geometry to align it on the pixel
+			// boundary. It ensures that interpolation of upscaled sprite remains in
+			// inside the texture dimensions.
+			// It also rescale vertically the sprite to keep 1:1 mapping (silly
+			// ace combat that uses bad dimension)
+			for(size_t i = 0; i < count; i += 2) {
+				// 2nd vertex is always on the right/bottom so I'm sure it is bigger than the context
+				//fprintf(stderr, "test ceil(%d) %f\n", 16, ceil(16));
+				//int extra_pixel_offset_X = (v[i+1].XYZ.X - context->XYOFFSET.OFX) & 0xF;
+				//int extra_pixel_offset_Y = (v[i+1].XYZ.Y - context->XYOFFSET.OFY) & 0xF;
+				int pixel_offset_X;
+				int pixel_offset_Y;
 
 				// Bonus to avoid rounding issue
 				if (v[i+1].U < v[i].U)
-					pixel_offset_X += 16 - 1;
+					pixel_offset_X = 16 - 1;
 				else
-					pixel_offset_X += 1;
+					pixel_offset_X = 1;
 
 				// TODO check negative case
 				if (v[i+1].V < v[i].V)
-					pixel_offset_Y += 16 - 1;
+					pixel_offset_Y = 16 - 1;
 				else
-					pixel_offset_Y += 1;
+					pixel_offset_Y = 1;
 
 				// Tranlate the primitive to the pixel boundary
+#ifdef DEBUG_U
+				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
+#endif
+
 				v[i].U   &= ~0xF;
 				v[i].U   += pixel_offset_X;
 				v[i+1].U &= ~0xF;
 				v[i+1].U += pixel_offset_X;
 
+#ifdef DEBUG_U
+				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
+#endif
+
 				v[i].V   &= ~0xF;
 				v[i].V   += pixel_offset_Y;
-				// I'm not confident with the negative case
-				if (v[i+1].V < v[i].V) {
-					v[i+1].V  = v[i].V - length_Y;
+				// Check the scaling remains the same
+				// delta_Ty * (length_Y - 1) / (length_Y) < length_Y
+				// => delta_Ty * (length_Y - 1) < length_Y^2
+				// if delta_Ty = length_Y + 1) => equation is always true
+				//
+				// it fixes ace combat which uses a strange texture size (delta_Ty == 11 && length_Y == 10)
+				int delta_Ty = abs(v[i+1].V - v[i].V);
+				int length_Y = abs(v[i+1].XYZ.Y - v[i].XYZ.Y);
+				if (abs(delta_Ty - length_Y) <= 16) {
+					if (v[i+1].V < v[i].V) {
+						v[i+1].V  = v[i].V - length_Y;
+					} else {
+						v[i+1].V  = v[i].V + length_Y;
+					}
 				} else {
-					v[i+1].V  = v[i].V + length_Y;
+					v[i+1].V &= ~0xF;
+					v[i+1].V += pixel_offset_Y;
 				}
-
-				//v[i+1].V &= ~0xF;
-				//v[i+1].V += pixel_offset_Y;
 			}
 		}
 	}

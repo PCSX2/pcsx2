@@ -130,6 +130,10 @@ private:
 
 	} m_hacks;
 
+	int Interpolate_UV(float alpha, int t0, int t1);
+	float alpha0(int offset, int x0, int x1);
+	float alpha1(int offset, int x0, int x1);
+
 	#pragma endregion
 
 protected:
@@ -138,7 +142,7 @@ protected:
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
 	bool m_userhacks_stretch_sprite;
-	bool m_userhacks_round_sprite_offset;
+	int m_userhacks_round_sprite_offset;
 
 public:
 	GSRendererHW(GSTextureCache* tc);
