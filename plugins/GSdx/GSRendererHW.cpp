@@ -444,7 +444,7 @@ void GSRendererHW::Draw()
 				// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
 				//
 				// Minus half for t1 case might be too much
-				if (tx0 < tx1) {
+				if (tx0 <= tx1) {
 					v[i].U   = tx0 + half + 1;
 					v[i+1].U = tx1 - half + 1 + 16;
 				} else {
@@ -453,7 +453,7 @@ void GSRendererHW::Draw()
 				}
 #endif
 #if 1
-				if (ty0 < ty1) {
+				if (ty0 <= ty1) {
 					v[i].V   = ty0 + half + 1;
 					v[i+1].V = ty1 - half + 1 + 16;
 				} else {
