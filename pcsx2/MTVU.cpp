@@ -69,6 +69,8 @@ VU_Thread::~VU_Thread() throw()
 
 void VU_Thread::Reset()
 {
+	ScopedLock lock(mtxBusy);
+
 	read_pos     = 0;
 	write_pos    = 0;
 	write_offset = 0;
