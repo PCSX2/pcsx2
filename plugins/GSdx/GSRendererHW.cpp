@@ -229,6 +229,91 @@ float GSRendererHW::alpha1(int offset, int x0, int x1)
 	return (x - X0) / L;
 }
 
+template <bool linear>
+void GSRendererHW::RoundSpriteOffset()
+{
+//#define DEBUG_U
+//#define DEBUG_V
+	bool debug = linear;
+	const int half = linear ? 8 : 0;
+	size_t count = m_vertex.next;
+	GSVertex* v = &m_vertex.buff[0];
+
+	for(size_t i = 0; i < count; i += 2) {
+		// Performance note: if it had any impact on perf, someone would port it to SSE
+
+		// Compute the coordinate of first and last texels (in native with a linear filtering)
+		float ax0 = alpha0(m_context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
+		float ax1 = alpha1(m_context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
+		int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
+		int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
+#ifdef DEBUG_U
+		if (debug) {
+			fprintf(stderr, "u0:%d and u1:%d\n", v[i].U, v[i+1].U);
+			fprintf(stderr, "a0:%f and a1:%f\n", ax0, ax1);
+			fprintf(stderr, "t0:%d and t1:%d\n", tx0, tx1);
+		}
+#endif
+
+		float ay0 = alpha0(m_context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
+		float ay1 = alpha1(m_context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
+		int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
+		int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
+#ifdef DEBUG_V
+		if (debug) {
+			fprintf(stderr, "v0:%d and v1:%d\n", v[i].V, v[i+1].V);
+			fprintf(stderr, "a0:%f and a1:%f\n", ay0, ay1);
+			fprintf(stderr, "t0:%d and t1:%d\n", ty0, ty1);
+		}
+#endif
+
+#ifdef DEBUG_U
+		if (debug)
+			fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+		if (debug)
+			fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
+#endif
+
+#if 1
+		// Use rounded value of the newly computed texture coordinate. It ensures
+		// that sampling will remains inside texture boundary
+		//
+		// Note for bilinear: in this mode the PS2 add -0.5 offset (aka half) and 4 texels
+		// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
+		//
+		// Minus half for t1 case might be too much
+		if (tx0 <= tx1) {
+			v[i].U   = tx0 + half + 1;
+			v[i+1].U = tx1 - half + 1 + 15;
+		} else {
+			v[i].U   = tx0 + 15;
+			v[i+1].U = tx1 + 15 + 16;
+		}
+#endif
+#if 1
+		if (ty0 <= ty1) {
+			v[i].V   = ty0 + half + 1;
+			v[i+1].V = ty1 - half + 1 + 15;
+		} else {
+			v[i].V   = ty0 + 15;
+			v[i+1].V = ty1 + 15 + 16;
+		}
+#endif
+
+#ifdef DEBUG_U
+		if (debug)
+			fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+		if (debug)
+			fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
+#endif
+
+	}
+}
+
 void GSRendererHW::Draw()
 {
 	if(m_dev->IsLost()) return;
@@ -398,84 +483,10 @@ void GSRendererHW::Draw()
 		}
 
 		else if ((m_userhacks_round_sprite_offset == 2) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
-//#define DEBUG_U
-//#define DEBUG_V
-			//bool debug = m_vt.IsLinear();
-			const int half = m_vt.IsLinear() ? 8 : 0;
-
-			for(size_t i = 0; i < count; i += 2) {
-				// Performance note: if it had any impact on perf, someone would port it to SSE
-
-				// Compute the coordinate of first and last texels (in native with a linear filtering)
-				float ax0 = alpha0(context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
-				float ax1 = alpha1(context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
-				int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
-				int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
-#ifdef DEBUG_U
-				if (debug) {
-					fprintf(stderr, "u0:%d and u1:%d\n", v[i].U, v[i+1].U);
-					fprintf(stderr, "a0:%f and a1:%f\n", ax0, ax1);
-					fprintf(stderr, "t0:%d and t1:%d\n", tx0, tx1);
-				}
-#endif
-
-				float ay0 = alpha0(context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
-				float ay1 = alpha1(context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
-				int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
-				int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
-#ifdef DEBUG_V
-				if (debug) {
-					fprintf(stderr, "v0:%d and v1:%d\n", v[i].V, v[i+1].V);
-					fprintf(stderr, "a0:%f and a1:%f\n", ay0, ay1);
-					fprintf(stderr, "t0:%d and t1:%d\n", ty0, ty1);
-				}
-#endif
-
-#ifdef DEBUG_U
-				if (debug)
-					fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
-#endif
-#ifdef DEBUG_V
-				if (debug)
-					fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
-#endif
-
-#if 1
-				// Use rounded value of the newly computed texture coordinate. It ensures
-				// that sampling will remains inside texture boundary
-				//
-				// Note for bilinear: in this mode the PS2 add -0.5 offset (aka half) and 4 texels
-				// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
-				//
-				// Minus half for t1 case might be too much
-				if (tx0 <= tx1) {
-					v[i].U   = tx0 + half + 1;
-					v[i+1].U = tx1 - half + 1 + 15;
-				} else {
-					v[i].U   = tx0 + 15;
-					v[i+1].U = tx1 + 15 + 16;
-				}
-#endif
-#if 1
-				if (ty0 <= ty1) {
-					v[i].V   = ty0 + half + 1;
-					v[i+1].V = ty1 - half + 1 + 15;
-				} else {
-					v[i].V   = ty0 + 15;
-					v[i+1].V = ty1 + 15 + 16;
-				}
-#endif
-
-#ifdef DEBUG_U
-				if (debug)
-					fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
-#endif
-#ifdef DEBUG_V
-				if (debug)
-					fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
-#endif
-
-			}
+			if (m_vt.IsLinear())
+				RoundSpriteOffset<true>();
+			else
+				RoundSpriteOffset<false>();
 		}
 
 		else if (0 && m_userhacks_round_sprite_offset && !m_vt.IsLinear()) { // Debug only
