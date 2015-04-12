@@ -35,6 +35,10 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_stretch_sprite = !!theApp.GetConfig("UserHacks_stretch_sprite", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
+	if (m_userhacks_round_sprite_offset) {
+		// m_userhacks_round_sprite_offset is a better hack
+		m_userhacks_stretch_sprite = 0;
+	}
 
 	if(!m_nativeres)
 	{
