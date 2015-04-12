@@ -352,7 +352,7 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
-	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS) /*&& !m_vt.IsLinear()*/) {
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS) && (PRIM->FST)) {
 		// TODO: It could be a good idea to check context->CLAMP.WMS/WMT values on the following hack
 
 		size_t count = m_vertex.next;
@@ -446,7 +446,7 @@ void GSRendererHW::Draw()
 				// Minus half for t1 case might be too much
 				if (tx0 <= tx1) {
 					v[i].U   = tx0 + half + 1;
-					v[i+1].U = tx1 - half + 1 + 16;
+					v[i+1].U = tx1 - half + 1 + 15;
 				} else {
 					v[i].U   = tx0 + 15;
 					v[i+1].U = tx1 + 15 + 16;
@@ -455,7 +455,7 @@ void GSRendererHW::Draw()
 #if 1
 				if (ty0 <= ty1) {
 					v[i].V   = ty0 + half + 1;
-					v[i+1].V = ty1 - half + 1 + 16;
+					v[i+1].V = ty1 - half + 1 + 15;
 				} else {
 					v[i].V   = ty0 + 15;
 					v[i+1].V = ty1 + 15 + 16;
