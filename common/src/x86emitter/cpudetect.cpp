@@ -25,7 +25,7 @@ __aligned16 x86capabilities x86caps;
 static __pagealigned u8 recSSE[__pagesize];
 static __pagealigned u8 targetFXSAVE[512];
 
-#ifdef __linux__
+#ifdef __unix__
 #	include <sys/time.h>
 #	include <errno.h>
 #endif

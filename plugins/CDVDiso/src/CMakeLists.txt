@@ -34,15 +34,15 @@ set(CDVDisoHeaders
     CDVDiso.h
     libiso.h)
 
-# CDVDiso Linux sources
-set(CDVDisoLinuxSources
+# CDVDiso Unix sources
+set(CDVDisoUnixSources
     Linux/Config.cpp
     Linux/interface.c
     Linux/Linux.cpp
     Linux/support.c)
 
-# CDVDiso Linux headers
-set(CDVDisoLinuxHeaders
+# CDVDiso Unix headers
+set(CDVDisoUnixHeaders
     Linux/callbacks.h
     Linux/Config.h
     Linux/interface.h
@@ -51,8 +51,8 @@ set(CDVDisoLinuxHeaders
 set(CDVDisoFinalSources
     ${CDVDisoSources}
     ${CDVDisoHeaders}
-    ${CDVDisoLinuxSources}
-    ${CDVDisoLinuxHeaders}
+    ${CDVDisoUnixSources}
+    ${CDVDisoUnixHeaders}
 )
 
 set(CDVDisoFinalLibs

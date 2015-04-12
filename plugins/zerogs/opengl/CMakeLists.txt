@@ -67,16 +67,16 @@ set(zerogsShaderSources
 	ctx0/ps2hw_ctx.fx
 	ctx1/ps2hw_ctx.fx)
 
-# zerogs Linux sources
-set(zerogsLinuxSources
+# zerogs Unix sources
+set(zerogsUnixSources
 #	Linux/callbacks.c
 	Linux/Conf.cpp
 	Linux/interface.c
 	Linux/Linux.cpp
 	Linux/support.c)
 
-# zerogs Linux headers
-set(zerogsLinuxHeaders
+# zerogs Unix headers
+set(zerogsUnixHeaders
 	Linux/callbacks.h
 	Linux/interface.h
 	Linux/Linux.h
@@ -111,8 +111,8 @@ add_library(${Output} SHARED
 			${zerogsHeaders}
 			${zerogsSSources}
 			${zerogsShaderSources}
-			${zerogsLinuxSources}
-			${zerogsLinuxHeaders})
+			${zerogsUnixSources}
+			${zerogsUnixHeaders})
 
 # set output directory
 set_target_properties(${Output} PROPERTIES

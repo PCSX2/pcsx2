@@ -41,7 +41,7 @@
  * Since this is still beta things may change.
 
  * OSflags:
-	__linux__ (linux OS)
+	__unix__ (unix OS)
 	_WIN32 (win32 OS)
 
  * common return values (for ie. GSinit):

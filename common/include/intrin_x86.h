@@ -107,7 +107,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long __xgetbv(uns
 }
 
 /*** Interrupts ***/
-#ifndef __linux__
+#ifndef __unix__
 static __inline__ __attribute__((always_inline)) void __debugbreak(void)
 {
 	__asm__("int $3");

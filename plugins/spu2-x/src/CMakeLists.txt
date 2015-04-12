@@ -74,8 +74,8 @@ set(spu2xHeaders
 )
 
 
-# spu2x Linux sources
-set(spu2xLinuxSources
+# spu2x Unix sources
+set(spu2xUnixSources
     Linux/AboutBox.cpp
     Linux/Alsa.cpp
     Linux/CfgHelpers.cpp
@@ -84,8 +84,8 @@ set(spu2xLinuxSources
     Linux/ConfigSoundTouch.cpp
     Linux/Dialogs.cpp)
 
-# spu2x Linux headers
-set(spu2xLinuxHeaders
+# spu2x Unix headers
+set(spu2xUnixHeaders
     Linux/Alsa.h
     Linux/Config.h
     Linux/Dialogs.h)
@@ -96,8 +96,8 @@ include_directories(Linux)
 set(spu2xFinalSources
     ${spu2xSources}
     ${spu2xHeaders}
-    ${spu2xLinuxSources}
-    ${spu2xLinuxHeaders}
+    ${spu2xUnixSources}
+    ${spu2xUnixHeaders}
 )
 
 set(spu2xFinalLibs

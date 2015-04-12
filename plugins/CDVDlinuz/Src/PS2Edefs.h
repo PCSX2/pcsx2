@@ -14,7 +14,7 @@
  * Since this is still beta things may change.
 
  * OSflags:
-	__linux__ (linux OS)
+	__unix__ (linux OS)
 	_WIN32 (win32 OS)
 
  * common return values (for ie. GSinit):
@@ -33,7 +33,7 @@
 
 #include "PS2Etypes.h"
 
-#ifdef __linux__
+#ifdef __unix__
 #define CALLBACK
 #else
 #include <windows.h>

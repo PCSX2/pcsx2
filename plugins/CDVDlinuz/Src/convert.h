@@ -52,7 +52,7 @@
 
 
 
-#ifdef __linux__
+#ifdef __unix__
 
 #include "endian.h"
 
@@ -62,7 +62,7 @@
 
 #endif /* __BYTE_ORDER */
 
-#endif /* __linux__ */
+#endif /* __unix__ */
 
 
 

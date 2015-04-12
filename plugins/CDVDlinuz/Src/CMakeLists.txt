@@ -42,8 +42,8 @@ set(CDVDlinuzHeaders
     # version.h
 )
 
-# CDVDlinuz Linux sources
-set(CDVDlinuzLinuxSources
+# CDVDlinuz Unix sources
+set(CDVDlinuzUnixSources
     Linux/aboutbox.c
     Linux/actualfile.c
     Linux/CD.c
@@ -55,8 +55,8 @@ set(CDVDlinuzLinuxSources
     Linux/logfile.c
     Linux/mainbox.c)
 
-# CDVDlinuz Linux headers
-set(CDVDlinuzLinuxHeaders
+# CDVDlinuz Unix headers
+set(CDVDlinuzUnixHeaders
     Linux/aboutbox.h
     Linux/actualfile.h
     Linux/CD.h
@@ -70,8 +70,8 @@ set(CDVDlinuzLinuxHeaders
 set(CDVDlinuzFinalSources
     ${CDVDlinuzSources}
     ${CDVDlinuzHeaders}
-    ${CDVDlinuzLinuxSources}
-    ${CDVDlinuzLinuxHeaders}
+    ${CDVDlinuzUnixSources}
+    ${CDVDlinuzUnixHeaders}
 )
 
 set(CDVDlinuzFinalLibs

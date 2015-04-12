@@ -853,7 +853,7 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 
 	_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib.GetSymbol( L"PS2EgetLibName" );
 	_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib.GetSymbol( L"PS2EgetLibVersion2" );
-#ifdef __linux__
+#ifdef __unix__
 	_PS2EsetEmuVersion	SetEmuVersion	= NULL;
 #else
 	_PS2EsetEmuVersion	SetEmuVersion	= (_PS2EsetEmuVersion)	Lib.GetSymbol( L"PS2EsetEmuVersion" );
@@ -1188,7 +1188,7 @@ void SysCorePlugins::Open()
 		// If GS doesn't support GSopen2, need to wait until call to GSopen
 		// returns to populate pDsp.  If it does, can initialize other plugins
 		// at same time as GS, as long as GSopen2 does not subclass its window.
-#ifdef __linux__
+#ifdef __unix__
 		// On linux, application have also a channel (named display) to communicate with the
 		// Xserver. The safe rule is 1 thread, 1 channel. In our case we use the display in
 		// several places. Save yourself of multithread headache. Wait few seconds the end of 

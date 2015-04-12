@@ -332,7 +332,7 @@ protected:
 	uint _calcBlockBitArrayLength() const;
 };
 
-#ifdef __linux__
+#ifdef __unix__
 
 #	define PCSX2_PAGEFAULT_PROTECT
 #	define PCSX2_PAGEFAULT_EXCEPT

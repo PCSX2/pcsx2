@@ -83,7 +83,7 @@ extern u32 OutputModule;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
-#ifndef __linux__
+#ifndef __unix__
 extern wchar_t dspPlugin[];
 extern int  dspPluginModule;
 

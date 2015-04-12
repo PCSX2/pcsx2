@@ -23,7 +23,7 @@
 // to remove an unneeded dependency.
 //#include "x86emitter/tools.h"
 
-#if !defined(__linux__) && !defined(__WXMAC__)
+#if !defined(__unix__) && !defined(__WXMAC__)
 
 #	pragma message( "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/Mac distros.")
 

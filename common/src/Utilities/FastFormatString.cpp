@@ -151,7 +151,7 @@ static bool buffer_is_avail = false;
 static GlobalBufferManager< BaseTlsVariable< FastFormatBuffers > > m_buffer_tls(buffer_is_avail);
 
 static
-#ifndef __linux__
+#ifndef __unix__
 __ri
 #endif
 void format_that_ascii_mess( CharBufferType& buffer, uint writepos, const char* fmt, va_list argptr )
@@ -190,7 +190,7 @@ void format_that_ascii_mess( CharBufferType& buffer, uint writepos, const char* 
 
 // returns the length of the formatted string, in characters (wxChars).
 static
-#ifndef __linux__
+#ifndef __unix__
 __ri
 #endif
 uint format_that_unicode_mess( CharBufferType& buffer, uint writepos, const wxChar* fmt, va_list argptr)

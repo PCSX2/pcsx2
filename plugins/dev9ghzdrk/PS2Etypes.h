@@ -29,7 +29,7 @@ typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
-#elif defined(__linux__)
+#elif defined(__unix__)
 
 typedef char s8;
 typedef short s16;

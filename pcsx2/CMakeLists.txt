@@ -439,14 +439,14 @@ set(pcsx2IPUHeaders
 	IPU/IPUdma.h
 	IPU/yuv2rgb.h)
 
-# Linux sources
-set(pcsx2LinuxSources
+# Unix sources
+set(pcsx2UnixSources
 	Linux/LnxKeyCodes.cpp
     Linux/LnxFlatFileReader.cpp
     )
 
-# Linux headers
-set(pcsx2LinuxHeaders
+# Unix headers
+set(pcsx2UnixHeaders
 	)
 
 # ps2 sources
@@ -648,11 +648,11 @@ set(Common
 	${pcsx2SSources})
 
 # platform sources
-# Linux
-if(Linux)
+# Unix
+if(Unix)
 	set(Platform
-		${pcsx2LinuxSources}
-		${pcsx2LinuxHeaders})
+		${pcsx2UnixSources}
+		${pcsx2UnixHeaders})
 endif()
 
 # Windows

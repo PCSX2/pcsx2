@@ -62,7 +62,9 @@ find_package(ZLIB)
 ## Use pcsx2 package to find module
 include(FindCg)
 include(FindGlew)
-include(FindLibc)
+if(Linux)
+    include(FindLibc)
+endif()
 
 ## Use CheckLib package to find module
 include(CheckLib)
@@ -82,7 +84,7 @@ else()
     find_package(SDL)
 endif()
 
-if(UNIX)
+if(Unix)
     find_package(X11)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
     if (GTK3_API)
@@ -99,7 +101,7 @@ endif()
 #----------------------------------------
 #		    Use system include
 #----------------------------------------
-if(UNIX)
+if(Unix)
 	if(GTK2_FOUND)
 		include_directories(${GTK2_INCLUDE_DIRS})
     elseif(GTK3_FOUND)

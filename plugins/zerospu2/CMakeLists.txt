@@ -41,16 +41,16 @@ set(zerospu2Headers
 	zerospu2.h
 	zeroworker.h)
 
-# zerospu2 Linux sources
-set(zerospu2LinuxSources
+# zerospu2 Unix sources
+set(zerospu2UnixSources
 	Linux/Linux.cpp
 	Targets/Alsa.cpp
 	Targets/OSS.cpp
 #	Targets/PortAudio.cpp
 	Targets/SoundTargets.cpp)
 
-# zerospu2 Linux headers
-set(zerospu2LinuxHeaders
+# zerospu2 Unix headers
+set(zerospu2UnixHeaders
 	Linux/Linux.h
 	Targets/Alsa.h
 	Targets/OSS.h
@@ -75,8 +75,8 @@ include_directories(Linux Targets)
 set(zerospu2FinalSources
 	${zerospu2Sources}
 	${zerospu2Headers}
-	${zerospu2LinuxSources}
-	${zerospu2LinuxHeaders}
+	${zerospu2UnixSources}
+	${zerospu2UnixHeaders}
 )
 
 set(zerospu2FinalLibs

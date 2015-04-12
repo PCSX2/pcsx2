@@ -511,7 +511,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 //#define LOG_RESOLVE_PROFILE
 #endif
 

@@ -194,7 +194,7 @@ GSdxApp::GSdxApp()
 	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
 }
 
-#ifdef __linux__
+#ifdef __unix__
 void GSdxApp::ReloadConfig()
 {
 	if (m_configuration_map.empty()) return;

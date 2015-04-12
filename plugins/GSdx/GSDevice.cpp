@@ -413,6 +413,6 @@ GSAdapter::GSAdapter(const D3DADAPTER_IDENTIFIER9 &desc_d3d9)
 {
 }
 #endif
-#ifdef __linux__
+#ifdef __unix__
 // TODO
 #endif

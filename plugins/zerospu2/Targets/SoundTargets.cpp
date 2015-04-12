@@ -22,7 +22,7 @@ SoundCallbacks *SoundCmds;
 u32 SOUNDSIZE;
 s32 MaxBuffer;
 
-#ifdef __linux__
+#ifdef __unix__
 #include "Linux.h"
 
 #ifdef ZEROSPU2_ALSA

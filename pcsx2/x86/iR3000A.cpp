@@ -422,7 +422,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		f.Printf("\n");
 	}
 
-#ifdef __linux__
+#ifdef __unix__
 	char command[256];
 	// dump the asm
 	{

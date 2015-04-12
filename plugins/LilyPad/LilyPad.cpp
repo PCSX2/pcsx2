@@ -41,7 +41,7 @@
 // LilyPad version.
 #define VERSION ((0<<8) | 11 | (0<<24))
 
-#ifdef __linux__
+#ifdef __unix__
 Display *GSdsp;
 Window  GSwin;
 #else
@@ -59,7 +59,7 @@ WndProcEater hWndButtonProc;
 
 // Keeps the various sources for Update polling (PADpoll, PADupdate, etc) from wreaking
 // havoc on each other...
-#ifdef __linux__
+#ifdef __unix__
 static std::mutex updateLock;
 #else
 CRITICAL_SECTION updateLock;
@@ -421,7 +421,7 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 void CapSum(ButtonSum *sum) {
 	int i;
 	for (i=0; i<3; i++) {
-#ifdef __linux__
+#ifdef __unix__
 		int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
 #else
 		int div = max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
@@ -479,7 +479,7 @@ void Update(unsigned int port, unsigned int slot) {
 	}
 
 	// Lock prior to timecheck code to avoid pesky race conditions.
-#ifdef __linux__
+#ifdef __unix__
 	std::lock_guard<std::mutex> lock(updateLock);
 #else
 	EnterScopedSection padlock( updateLock );
@@ -514,7 +514,7 @@ void Update(unsigned int port, unsigned int slot) {
 	for (i=0; i<8; i++) {
 		s[i&1][i>>1] = pads[i&1][i>>1].lockedSum;
 	}
-#ifdef __linux__
+#ifdef __unix__
 	InitInfo info = {
 		0, 0, GSdsp, GSwin
 	};
@@ -832,7 +832,7 @@ s32 CALLBACK PADinit(u32 flags) {
 	query.lastByte = 1;
 	query.numBytes = 0;
 	ClearKeyQueue();
-#ifdef __linux__
+#ifdef __unix__
 	R_ClearKeyQueue();
 #endif
 	// Just in case, when resuming emulation.

@@ -41,12 +41,12 @@ set(lilypadSources
 set(lilypadHeaders
 	)
 
-# lilypad Linux sources
-set(lilypadLinuxSources
+# lilypad Unix sources
+set(lilypadUnixSources
 	)
 
-# lilypad Linux headers
-set(lilypadLinuxHeaders
+# lilypad Unix headers
+set(lilypadUnixHeaders
 	)
 
 if (SDL2_API)
@@ -68,8 +68,8 @@ set(lilypadFinalLibs
 set(lilypadFinalSources
 	${lilypadSources}
 	${lilypadHeaders}
-	${lilypadLinuxSources}
-	${lilypadLinuxHeaders}
+	${lilypadUnixSources}
+	${lilypadUnixHeaders}
 )
 
 add_pcsx2_plugin(${Output} "${lilypadFinalSources}" "${lilypadFinalLibs}" "${lilypadFinalFlags}")

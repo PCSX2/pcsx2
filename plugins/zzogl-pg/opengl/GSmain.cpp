@@ -641,7 +641,7 @@ EXPORT_C_(s32) GSfreeze(int mode, freezeData *data)
 	return 0;
 }
 
-#ifdef __linux__
+#ifdef __unix__
 void _fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	static uint32 read_cnt = 0;

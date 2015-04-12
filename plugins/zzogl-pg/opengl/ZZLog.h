@@ -26,7 +26,7 @@
 extern void HandleGLError();
 
 //Logging for errors that are called often should have a time counter.
-#ifdef __linux__
+#ifdef __unix__
 static u32 __attribute__((unused)) lasttime = 0;
 static u32 __attribute__((unused)) BigTime = 5000;
 static bool __attribute__((unused)) SPAM_PASS;

@@ -323,7 +323,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		int w = theApp.GetConfig("ModeWidth", 0);
 		int h = theApp.GetConfig("ModeHeight", 0);
 
-#ifdef __linux__
+#ifdef __unix__
 		for(uint32 i = 0; i < 2; i++) {
 			try
 			{
@@ -366,7 +366,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 	{
 		s_gs->SetMultithreaded(true);
 
-#ifdef __linux__
+#ifdef __unix__
 		if (s_gs->m_wnd) {
 			// A window was already attached to s_gs so we also
 			// need to restore the window state (Attach)
@@ -419,7 +419,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 {
-#ifdef __linux__
+#ifdef __unix__
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
 	int renderer = theApp.GetConfig("renderer", 12);
@@ -444,7 +444,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		}
 
 #endif
-#ifdef __linux__
+#ifdef __unix__
 		switch(renderer) {
 			case 13: renderer = 12; break; // OGL: SW to HW
 			case 12: renderer = 13; break; // OGL: HW to SW
@@ -1423,7 +1423,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 
 #include <sys/time.h>
 #include <sys/timeb.h>	// ftime(), struct timeb

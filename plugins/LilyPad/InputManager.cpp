@@ -223,7 +223,7 @@ void Device::CalcVirtualState() {
 				double East = sin(angle);
 				double South = -cos(angle);
 				// Normalize so greatest direction is 1.
-#ifdef __linux__
+#ifdef __unix__
 				double mul = FULLY_DOWN / std::max(fabs(South), fabs(East));
 #else
 				double mul = FULLY_DOWN / max(fabs(South), fabs(East));
