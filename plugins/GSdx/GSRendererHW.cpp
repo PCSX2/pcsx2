@@ -282,21 +282,41 @@ void GSRendererHW::RoundSpriteOffset()
 		// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
 		//
 		// Minus half for t1 case might be too much
-		if (tx0 <= tx1) {
-			v[i].U   = tx0 + half + 1;
-			v[i+1].U = tx1 - half + 1 + 15;
+		if (linear) {
+			if (tx0 <= tx1) {
+				v[i].U   = tx0 + half;
+				v[i+1].U = tx1 - half + 16;
+			} else {
+				v[i].U   = tx0 + 15;
+				v[i+1].U = tx1 + 15 + 16;
+			}
 		} else {
-			v[i].U   = tx0 + 15;
-			v[i+1].U = tx1 + 15 + 16;
+			if (tx0 <= tx1) {
+				v[i].U   = tx0;
+				v[i+1].U = tx1 + 16;
+			} else {
+				v[i].U   = tx0 + 15;
+				v[i+1].U = tx1 + 15 + 16;
+			}
 		}
 #endif
 #if 1
-		if (ty0 <= ty1) {
-			v[i].V   = ty0 + half + 1;
-			v[i+1].V = ty1 - half + 1 + 15;
+		if (linear) {
+			if (ty0 <= ty1) {
+				v[i].V   = ty0 + half;
+				v[i+1].V = ty1 - half + 16;
+			} else {
+				v[i].V   = ty0 + 15;
+				v[i+1].V = ty1 + 15 + 16;
+			}
 		} else {
-			v[i].V   = ty0 + 15;
-			v[i+1].V = ty1 + 15 + 16;
+			if (ty0 <= ty1) {
+				v[i].V   = ty0;
+				v[i+1].V = ty1 + 16;
+			} else {
+				v[i].V   = ty0 + 15;
+				v[i+1].V = ty1 + 15 + 16;
+			}
 		}
 #endif
 
