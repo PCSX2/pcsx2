@@ -207,26 +207,16 @@ int GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
 	return (int)t & ~0xF; // cheap rounding
 }
 
-float GSRendererHW::alpha0(int offset, int x0, int x1)
+float GSRendererHW::alpha0(int L, int X0, int X1)
 {
-	int X0 = x0 - offset;
-	if (X0 & 0xF) {
-		float L = (x1 - x0);
-		float x = (X0 + 15) & ~0xF; // Round up
-		return (x - X0) / L;
-	} else {
-		// X0 is aligned on the pixel. Above calcul can be shortcuted
-		return 0.0f;
-	}
+	float x = (X0 + 15) & ~0xF; // Round up
+	return (x - X0) / (float)L;
 }
 
-float GSRendererHW::alpha1(int offset, int x0, int x1)
+float GSRendererHW::alpha1(int L, int X0, int X1)
 {
-	int X1 = x1 - offset;
-	int X0 = x0 - offset;
 	float x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
-	float L = (x1 - x0);
-	return (x - X0) / L;
+	return (x - X0) / (float)L;
 }
 
 template <bool linear>
@@ -240,11 +230,15 @@ void GSRendererHW::RoundSpriteOffset()
 	GSVertex* v = &m_vertex.buff[0];
 
 	for(size_t i = 0; i < count; i += 2) {
-		// Performance note: if it had any impact on perf, someone would port it to SSE
+		// Performance note: if it had any impact on perf, someone would port it to SSE (AKA GSVector)
 
 		// Compute the coordinate of first and last texels (in native with a linear filtering)
-		float ax0 = alpha0(m_context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
-		float ax1 = alpha1(m_context->XYOFFSET.OFX, v[i].XYZ.X, v[i+1].XYZ.X);
+		int   ox  = m_context->XYOFFSET.OFX;
+		int   X0  = v[i].XYZ.X   - ox;
+		int   X1  = v[i+1].XYZ.X - ox;
+		int   Lx  = (v[i+1].XYZ.X - v[i].XYZ.X);
+		float ax0 = alpha0(Lx, X0, X1);
+		float ax1 = alpha1(Lx, X0, X1);
 		int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
 		int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
 #ifdef DEBUG_U
@@ -255,8 +249,12 @@ void GSRendererHW::RoundSpriteOffset()
 		}
 #endif
 
-		float ay0 = alpha0(m_context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
-		float ay1 = alpha1(m_context->XYOFFSET.OFY, v[i].XYZ.Y, v[i+1].XYZ.Y);
+		int   oy  = m_context->XYOFFSET.OFY;
+		int   Y0  = v[i].XYZ.Y   - oy;
+		int   Y1  = v[i+1].XYZ.Y - oy;
+		int   Ly  = (v[i+1].XYZ.Y - v[i].XYZ.Y);
+		float ay0 = alpha0(Ly, Y0, Y1);
+		float ay1 = alpha1(Ly, Y0, Y1);
 		int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
 		int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
 #ifdef DEBUG_V

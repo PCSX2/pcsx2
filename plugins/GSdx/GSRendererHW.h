@@ -133,8 +133,8 @@ private:
 	#pragma endregion
 
 	int Interpolate_UV(float alpha, int t0, int t1);
-	float alpha0(int offset, int x0, int x1);
-	float alpha1(int offset, int x0, int x1);
+	float alpha0(int L, int X0, int X1);
+	float alpha1(int L, int X0, int X1);
 
 	template <bool linear> void RoundSpriteOffset();
 
