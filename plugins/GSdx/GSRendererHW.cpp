@@ -61,6 +61,14 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	{
 		m_upscale_multiplier = 1;
 	}
+
+	if (m_upscale_multiplier == 1) {
+		// No upscaling hack at native resolution
+		m_userhacks_round_sprite_offset = 0;
+		m_userhacks_align_sprite_X = 0;
+		m_userhacks_stretch_sprite = 0;
+	}
+
 	// When you upscale sprite will sample invalid data of the texture. The idea is to add a subtexel offset
 	// so the sampling remains inside the texture.
 	// The strict minimal value can be computed with this formulae (you need to round above, [1;2[ must be rounded to 2).
@@ -500,7 +508,7 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		else if ((m_userhacks_round_sprite_offset == 2) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
+		else if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
 			if (m_vt.IsLinear())
 				RoundSpriteOffset<true>();
 			else
