@@ -60,7 +60,7 @@ CRC::Game CRC::m_games[] =
 	{0xC1274668, FFXII, EU, 0},
 	{0xDC2A467E, FFXII, EU, 0},
 	{0xCA284668, FFXII, EU, 0},
-	{0xC52B466E, FFXII, EU, 0}, //ES
+	{0xC52B466E, FFXII, EU, 0}, // ES
 	{0xE5E71BF9, FFXII, FR, 0},
 	{0x280AD120, FFXII, JP, 0},
 	{0x08C1ED4D, HauntingGround, EU, 0},
@@ -95,7 +95,7 @@ CRC::Game CRC::m_games[] =
 	{0xFE961D28, DBZBT2, US, 0},
 	{0x0393B6BE, DBZBT2, EU, 0},
 	{0xE2F289ED, DBZBT2, JP, 0}, // Sparking Neo!
-	{0xE29C09A3, DBZBT2, KO, 0}, //DragonBall Z Sparking Neo
+	{0xE29C09A3, DBZBT2, KO, 0}, // DragonBall Z Sparking Neo
 	{0x0BAA4387, DBZBT2, JP, 0},
 	{0x35AA84D1, DBZBT2, NoRegion, 0},
 	{0xBE6A9CFB, DBZBT2, NoRegion, 0},
@@ -105,7 +105,7 @@ CRC::Game CRC::m_games[] =
 	{0xF28D21F1, DBZBT3, JP, 0},
 	{0x983C53D2, DBZBT3, NoRegion, 0},
 	{0x983C53D3, DBZBT3, EU, 0},
-	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
+	{0x9B0E119F, DBZBT3, KO, 0}, // DragonBall Z Sparking Meteo
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
 	{0x28703748, Bully, US, 0},
@@ -132,8 +132,8 @@ CRC::Game CRC::m_games[] =
 	{0x5C991F4E, ICO, EU, 0},
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
-	// {0x7ACF7E03, ICO, NoRegion, 0}, // same CRC as "Twisted Metal - Black" (PAL)
-	//  and as {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0},
+	{0x7ACF7E03, ICO, NoRegion, 0}, // same CRC as "Twisted Metal - Black" (PAL)
+	// and as {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0},
 	{0xAEAD1CA3, GT4, JP, 0},
 	{0x30E41D93, GT4, KO, 0},
 	{0x44A61C8F, GT4, EU, 0},
@@ -143,25 +143,25 @@ CRC::Game CRC::m_games[] =
 	{0x7ABDBB5E, GT3, CH, 0}, // cutie comment
 	{0x3E9D448A, GT3, CH, 0}, // cutie comment
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
-	{0x6810C3BC, GT3, CH, 0}, //GRAN TURISMO Concept 2002 Tokyo-Geneva
+	{0x6810C3BC, GT3, CH, 0}, // GRAN TURISMO Concept 2002 Tokyo-Geneva
 	{0x85AE91B3, GT3, US, 0},
 	{0xC220951A, GT3, JP, 0},
-	{0x9DE5CF65, GT3, JP, 0}, //Gran Turismo 3: A-spec
+	{0x9DE5CF65, GT3, JP, 0}, // Gran Turismo 3: A-spec
 	{0x60013EBD, GTConcept, EU, 0},
 	{0xB590CE04, GTConcept, EU, 0},
-	{0x0EEF32A3, GTConcept, KO, 0}, //Gran Turismo Concept 2002 Tokyo-Seoul
+	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
 	{0x2294D322, WildArms5, JP, 0},
 	{0x565B6170, WildArms5, JP, 0},
 	{0xBBC3EFFA, WildArms4, US, 0},
-	{0xBBC396EC, WildArms4, US, 0}, //hmm such a small diff in the CRC..
+	{0xBBC396EC, WildArms4, US, 0}, // hmm such a small diff in the CRC..
 	{0x7B2DE9CC, WildArms4, EU, 0},
 	{0x8B029334, Manhunt2, EU, 0},
 	{0x3B0ADBEF, Manhunt2, US, 0},
 	{0x09F49E37, CrashBandicootWoC, NoRegion, 0},
-	{0x103B5706, CrashBandicootWoC, US, 0}, //American Greatest Hits release
+	{0x103B5706, CrashBandicootWoC, US, 0}, // American Greatest Hits release
 	{0x75182BE5, CrashBandicootWoC, US, 0},
 	{0x5188ABCA, CrashBandicootWoC, US, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
@@ -181,7 +181,7 @@ CRC::Game CRC::m_games[] =
 	{0xB7ADB13A, Drakengard2, CH, 0},
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
-	{0x1F88BECD, Tekken5, EU, 0},	//language selector...
+	{0x1F88BECD, Tekken5, EU, 0}, // language selector...
 	{0x652050D2, Tekken5, US, 0},
 	{0xEA64EF39, Tekken5, KO, 0},
 	{0x9E98B8AE, IkkiTousen, JP, 0},
@@ -198,8 +198,8 @@ CRC::Game CRC::m_games[] =
 	{0xE23D532B, GodOfWar, NoRegion, 0},
 	{0xDF1AF973, GodOfWar, EU, 0},
 	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
-	// {0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
-	//  same CRC as {0x1A85E924, DevilMayCry3, CH, 0},
+	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
+	// same CRC as {0x1A85E924, DevilMayCry3, CH, 0},
 	{0x2F123FD8, GodOfWar2, US, 0}, // same CRC as RU
 	{0x44A8A22A, GodOfWar2, EU, 0},
 	{0x60BC362B, GodOfWar2, EU, 0},
@@ -241,11 +241,11 @@ CRC::Game CRC::m_games[] =
 	{0x56242EC9, Genji, KO, 0},
 	{0xCDAF243D, Genji, CH, 0}, 
 	{0x2A5E0B61, Genji, CH, 0},
-	// {0x7D4EA48F, Genji, EU, 0}, // same CRC as {0x7D4EA48F, HauntingGround, EU, 0},
+	{0x7D4EA48F, Genji, EU, 0}, // same CRC as {0x7D4EA48F, HauntingGround, EU, 0},
 	{0xE04EA200, StarOcean3, EU, 0},
 	{0x23A97857, StarOcean3, US, 0},
 	{0xBEC32D49, StarOcean3, JP, 0},
-	{0x8192A241, StarOcean3, JP, 0}, //NTSC JP special directors cut limited extra sugar on top edition (the special one :p)
+	{0x8192A241, StarOcean3, JP, 0}, // NTSC JP special directors cut limited extra sugar on top edition (the special one :p)
 	// it's the US version with speach files from JP... {0x23A97857, StarOcean3, JPUNDUB, 0},
 	{0xCC96CE93, ValkyrieProfile2, US, 0},
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
@@ -315,7 +315,7 @@ CRC::Game CRC::m_games[] =
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
-	{0xEDDD6573, SpidermanWoS, US, 0},	//Web of Shadows
+	{0xEDDD6573, SpidermanWoS, US, 0}, // Web of Shadows
 	{0xF14C1D82, SpidermanWoS, EU, 0},
 	{0xF56C7948, HeavyMetalThunder, JP, 0},
 	{0x2498951B, SilentHill3, US, 0},
@@ -325,11 +325,11 @@ CRC::Game CRC::m_games[] =
 	{0x6B149273, SilentHill2, EU, 0},
 	{0x6BBD4932, SilentHill2, EU, 0}, // Director's Cut
 	{0x8E8E384B, SilentHill2, US, 0},
-	{0xFE06A030, SilentHill2, US, 0},	//greatest hits
+	{0xFE06A030, SilentHill2, US, 0}, // greatest hits
 	{0xE36E16C9, SilentHill2, JP, 0},
-	{0x380D6782, SilentHill2, JP, 0},	//Saigo no uta
+	{0x380D6782, SilentHill2, JP, 0}, // Saigo no uta
 	{0x6DF62AEA, BleachBladeBattlers, JP, 0},
-	{0x6EB71AB0, BleachBladeBattlers, JP, 0},	//2nd
+	{0x6EB71AB0, BleachBladeBattlers, JP, 0}, //2nd
 	{0x3A446111, CastlevaniaCoD, US, 0},
 	{0xF321BC38, CastlevaniaCoD, EU, 0},
 	{0x950876FA, CastlevaniaCoD, KO, 0},
@@ -391,13 +391,13 @@ CRC::Game CRC::m_games[] =
 	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0},  // EU and US versions have same CRC
 	{0x02F4B541, StarWarsBattlefront2, NoRegion, 0}, // EU and US versions have same CRC
 	{0xA8DB29DF, BlackHawkDown, EU, 0}, // Delta Force - Black Hawk Down - Team Sabre
-	{0x25FC361B, DevilMayCry3, US, 0},	//SE
+	{0x25FC361B, DevilMayCry3, US, 0},	// SE
 	{0x2F7D8AD5, DevilMayCry3, US, 0},
 	{0x0BED0AF9, DevilMayCry3, US, 0},
 	// DMC(1)? {0x79B8A95F, DevilMayCry3, US, 0},
-	{0x18C9343F, DevilMayCry3, EU, 0},	//SE
+	{0x18C9343F, DevilMayCry3, EU, 0},	// SE
 	{0x7ADCB24A, DevilMayCry3, EU, 0},
-	{0x79C952B0, DevilMayCry3, JP, 0},	//SE
+	{0x79C952B0, DevilMayCry3, JP, 0},	// SE
 	{0x7F3DDEAB, DevilMayCry3, JP, 0},
 	{0x05931990, DevilMayCry3, KO, 0},
 	{0x4AD36D59, DevilMayCry3, RU, 0},
@@ -411,9 +411,9 @@ CRC::Game CRC::m_games[] =
 	{0xEEA60511, BurnoutRevenge, KO, 0},
 	{0x8C9576A1, BurnoutDominator, US, 0},
 	{0x8C9576B4, BurnoutDominator, EU, 0},
-	{0x4A0E5B3A, MidnightClub3, US, 0},	//dub
-	{0xEBE1972D, MidnightClub3, EU, 0},	//dub
-	{0x60A42FF5, MidnightClub3, US, 0},	//remix
+	{0x4A0E5B3A, MidnightClub3, US, 0},	// dub
+	{0xEBE1972D, MidnightClub3, EU, 0},	// dub
+	{0x60A42FF5, MidnightClub3, US, 0},	// remix
 	{0x4B1A0FFA, XmenOriginsWolverine, US, 0},
 	{0xBFF3DBCB, CallofDutyFinalFronts, US, 0},
 	{0xB78A5F5A, CallofDutyFinalFronts, EU, 0},
@@ -431,7 +431,7 @@ CRC::Game CRC::m_games[] =
 	{0xA79B0491, NanoBreaker, JP, 0},
 	{0x7098BE76, NanoBreaker, KO, 0},
 	{0x9B89F425, NanoBreaker, EU, 0},
-	{0x519E816B, Kunoichi, US, 0},	//Nightshade
+	{0x519E816B, Kunoichi, US, 0},	// Nightshade
 	{0x3FB419FD, Kunoichi, JP, 0},
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
@@ -478,7 +478,7 @@ CRC::Game CRC::m_games[] =
 	{0x4A4B623A, FightingBeautyWulong, JP,0}, // cutie comment
 	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
 	{0xFF9C0E93, TouristTrophy, US, 0},
-	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
+	{0xCA9AA903, TouristTrophy, EU, 0}, // CRC hack not fully working on PAL, still needs brightness =0
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0x399A49CA, GTASanAndreas, US, 0}, 
 	{0x60FE139C, GTASanAndreas, JP, 0}, 
@@ -504,7 +504,7 @@ CRC::Game CRC::m_games[] =
 	{0xA90CD846, TalesofDestiny, JP, 0},
 	{0xC4D0FACC, SDGundamGGeneration, JP, 0}, // cutie comment
 	{0xBBDE6926, SDGundamGGeneration, JP, 0}, // cutie comment
-	{0x49D60A00, SDGundamGGeneration, JP, 0}, //NEO
+	{0x49D60A00, SDGundamGGeneration, JP, 0}, // NEO
 	{0x83AFB38A, SoulCalibur2, KO, 0},
 	{0xE1B01308, SoulCalibur2, US, 0},
 	{0xFB8554A0, SoulCalibur3, JP, 0},
