@@ -122,28 +122,7 @@ void GSRendererOGL::SetupIA()
 	if (!GLLoader::found_geometry_shader)
 		EmulateGS();
 
-	void* ptr = NULL;
-
-	if(UserHacks_WildHack && !isPackedUV_HackFlag) {
-		// FIXME: why not put it on the Vertex shader
-		if(dev->IAMapVertexBuffer(&ptr, sizeof(GSVertex), m_vertex.next))
-		{
-			GSVector4i::storent(ptr, m_vertex.buff, sizeof(GSVertex) * m_vertex.next);
-
-			GSVertex* RESTRICT d = (GSVertex*)ptr;
-
-			for(unsigned int i = 0; i < m_vertex.next; i++)
-			{
-				if(PRIM->TME && PRIM->FST) d[i].UV &= 0x3FEF3FEF;
-			}
-
-			dev->IAUnmapVertexBuffer();
-		}
-	} else {
-		// By default use the common path (in case it can be made faster)
-		dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
-	}
-
+	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
 	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
 
 	GLenum t = 0;
@@ -284,6 +263,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	vs_sel.tme = PRIM->TME;
 	vs_sel.fst = PRIM->FST;
 	vs_sel.logz = m_logz ? 1 : 0;
+	vs_sel.wildhack = (UserHacks_WildHack && !isPackedUV_HackFlag) ? 1 : 0;
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.

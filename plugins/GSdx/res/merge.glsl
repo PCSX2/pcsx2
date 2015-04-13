@@ -33,14 +33,14 @@ layout(binding = 0) uniform sampler2D TextureSampler;
 void ps_main0()
 {
     vec4 c = texture(TextureSampler, PSin_t);
-	c.a = min(c.a * 2.0, 1.0);
+    c.a = min(c.a * 2.0, 1.0);
     SV_Target0 = c;
 }
 
 void ps_main1()
 {
     vec4 c = texture(TextureSampler, PSin_t);
-	c.a = BGColor.a;
+    c.a = BGColor.a;
     SV_Target0 = c;
 }
 

@@ -131,7 +131,11 @@ void texture_coord()
     {
         if(VS_FST != 0)
         {
-            VSout_t.xy = vec2(i_uv) * TextureScale;
+            if (VS_WILDHACK == 1) {
+                VSout_t.xy = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) * TextureScale;
+            } else {
+                VSout_t.xy = vec2(i_uv) * TextureScale;
+            }
             VSout_t.w = 1.0f;
         }
         else
