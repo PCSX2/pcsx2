@@ -57,7 +57,6 @@ Sys_Suspend                       = ESC
 Sys_RenderswitchToggle            = F9
 
 Sys_LoggingToggle                 = F10
-Sys_FreezeGS                      = F11
 Sys_RecordingToggle               = F12
 
 GSwindow_CycleAspectRatio         = F6
