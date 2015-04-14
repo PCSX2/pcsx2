@@ -260,8 +260,8 @@ bool MainEmuFrame::_DoSelectIsoBrowser( wxString& result )
 	
 	wxArrayString isoFilterTypes;
 
-	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), WX_STR((isoSupportedLabel + L" .dump" + L" .gz"))));
-	isoFilterTypes.Add(isoSupportedList + L";*.dump" + L";*.gz");
+	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), WX_STR((isoSupportedLabel + L" .dump" + L" .gz" + L" .cso"))));
+	isoFilterTypes.Add(isoSupportedList + L";*.dump" + L";*.gz" + L";*.cso");
 
 	isoFilterTypes.Add(pxsFmt(_("Disc Images (%s)"), WX_STR(isoSupportedLabel) ));
 	isoFilterTypes.Add(isoSupportedList);
@@ -269,13 +269,13 @@ bool MainEmuFrame::_DoSelectIsoBrowser( wxString& result )
 	isoFilterTypes.Add(pxsFmt(_("Blockdumps (%s)"), L".dump" ));
 	isoFilterTypes.Add(L"*.dump");
 
-	isoFilterTypes.Add(pxsFmt(_("Compressed (%s)"), L".gz"));
-	isoFilterTypes.Add(L"*.gz");
+	isoFilterTypes.Add(pxsFmt(_("Compressed (%s)"), L".gz .cso"));
+	isoFilterTypes.Add(L"*.gz;*.cso");
 
 	isoFilterTypes.Add(_("All Files (*.*)"));
 	isoFilterTypes.Add(L"*.*");
 	
-	wxFileDialog ctrl( this, _("Select disc image, gzip compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
+	wxFileDialog ctrl( this, _("Select disc image, compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
 		JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST );
 
 	if( ctrl.ShowModal() != wxID_CANCEL )
