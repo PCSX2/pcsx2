@@ -296,7 +296,7 @@ void GSRendererHW::RoundSpriteOffset()
 				v[i+1].U = tx1 - half + 16;
 			} else {
 				v[i].U   = tx0 + 15;
-				v[i+1].U = tx1 + 15 - 16;
+				v[i+1].U = tx1;
 			}
 		} else {
 			if (tx0 <= tx1) {
@@ -304,7 +304,7 @@ void GSRendererHW::RoundSpriteOffset()
 				v[i+1].U = tx1 + 16;
 			} else {
 				v[i].U   = tx0 + 15;
-				v[i+1].U = tx1 + 15 - 16;
+				v[i+1].U = tx1;
 			}
 		}
 #endif
@@ -315,7 +315,7 @@ void GSRendererHW::RoundSpriteOffset()
 				v[i+1].V = ty1 - half + 16;
 			} else {
 				v[i].V   = ty0 + 15;
-				v[i+1].V = ty1 + 15 - 16;
+				v[i+1].V = ty1;
 			}
 		} else {
 			if (ty0 <= ty1) {
@@ -323,7 +323,7 @@ void GSRendererHW::RoundSpriteOffset()
 				v[i+1].V = ty1 + 16;
 			} else {
 				v[i].V   = ty0 + 15;
-				v[i+1].V = ty1 + 15 - 16;
+				v[i+1].V = ty1;
 			}
 		}
 #endif
