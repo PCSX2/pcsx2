@@ -183,6 +183,9 @@ int CsoFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 		return 0;
 	}
 
+	// Note that, in practice, count will always be 1.  It seems one sector is read
+	// per interrupt, even if multiple are requested by the application.
+
 	u8* dest = (u8*)pBuffer;
 	// We do it this way in case m_blocksize is not well aligned to our frame size.
 	u64 pos = (u64)sector * (u64)m_blocksize;
