@@ -33,12 +33,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
-	m_userhacks_stretch_sprite = !!theApp.GetConfig("UserHacks_stretch_sprite", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
-	if (m_userhacks_round_sprite_offset) {
-		// m_userhacks_round_sprite_offset is a better hack
-		m_userhacks_stretch_sprite = 0;
-	}
 
 	if(!m_nativeres)
 	{
@@ -66,7 +61,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		// No upscaling hack at native resolution
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = 0;
-		m_userhacks_stretch_sprite = 0;
 	}
 
 	// When you upscale sprite will sample invalid data of the texture. The idea is to add a subtexel offset
@@ -493,95 +487,11 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		// Hack to avoid black line in various 2D games.
-		if (m_userhacks_stretch_sprite && !m_vt.IsLinear()) {
-			for(size_t i = 0; i < count; i += 2) {
-				if (v[i+1].U < v[i].U)
-					v[i+1].U += m_sub_texel_offset;
-				else
-					v[i+1].U -= m_sub_texel_offset;
-
-				if (v[i+1].V < v[i].V)
-					v[i+1].V += m_sub_texel_offset;
-				else
-					v[i+1].V -= m_sub_texel_offset;
-			}
-		}
-
-		else if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
+		if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
 			if (m_vt.IsLinear())
 				RoundSpriteOffset<true>();
 			else
 				RoundSpriteOffset<false>();
-		}
-
-		else if (0 && m_userhacks_round_sprite_offset && !m_vt.IsLinear()) { // Debug only
-			// This hack moves the sprite geometry to align it on the pixel
-			// boundary. It ensures that interpolation of upscaled sprite remains in
-			// inside the texture dimensions.
-			// It also rescale vertically the sprite to keep 1:1 mapping (silly
-			// ace combat that uses bad dimension)
-			for(size_t i = 0; i < count; i += 2) {
-				// 2nd vertex is always on the right/bottom so I'm sure it is bigger than the context
-				//fprintf(stderr, "test ceil(%d) %f\n", 16, ceil(16));
-				//int extra_pixel_offset_X = (v[i+1].XYZ.X - context->XYOFFSET.OFX) & 0xF;
-				//int extra_pixel_offset_Y = (v[i+1].XYZ.Y - context->XYOFFSET.OFY) & 0xF;
-				int pixel_offset_X;
-				int pixel_offset_Y;
-
-				// Bonus to avoid rounding issue
-				if (v[i+1].U < v[i].U)
-					pixel_offset_X = 16 - 1;
-				else
-					pixel_offset_X = 1;
-
-				// TODO check negative case
-				if (v[i+1].V < v[i].V)
-					pixel_offset_Y = 16 - 1;
-				else
-					pixel_offset_Y = 1;
-
-				// Tranlate the primitive to the pixel boundary
-#ifdef DEBUG_U
-				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
-#endif
-#ifdef DEBUG_V
-				fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
-#endif
-
-				v[i].U   &= ~0xF;
-				v[i].U   += pixel_offset_X;
-				v[i+1].U &= ~0xF;
-				v[i+1].U += pixel_offset_X;
-
-#ifdef DEBUG_U
-				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
-#endif
-#ifdef DEBUG_V
-				fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
-#endif
-
-				v[i].V   &= ~0xF;
-				v[i].V   += pixel_offset_Y;
-				// Check the scaling remains the same
-				// delta_Ty * (length_Y - 1) / (length_Y) < length_Y
-				// => delta_Ty * (length_Y - 1) < length_Y^2
-				// if delta_Ty = length_Y + 1) => equation is always true
-				//
-				// it fixes ace combat which uses a strange texture size (delta_Ty == 11 && length_Y == 10)
-				int delta_Ty = abs(v[i+1].V - v[i].V);
-				int length_Y = abs(v[i+1].XYZ.Y - v[i].XYZ.Y);
-				if (abs(delta_Ty - length_Y) <= 16) {
-					if (v[i+1].V < v[i].V) {
-						v[i+1].V  = v[i].V - length_Y;
-					} else {
-						v[i+1].V  = v[i].V + length_Y;
-					}
-				} else {
-					v[i+1].V &= ~0xF;
-					v[i+1].V += pixel_offset_Y;
-				}
-			}
 		}
 	}
 

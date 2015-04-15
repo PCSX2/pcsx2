@@ -143,7 +143,6 @@ protected:
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
-	bool m_userhacks_stretch_sprite;
 	int m_userhacks_round_sprite_offset;
 
 public:
