@@ -21,9 +21,9 @@ typedef struct zstate Zstate;
 #include "ChunksCache.h"
 #include "zlib_indexed.h"
 
-#define SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
-#define READ_CHUNK_SIZE (256 * 1024)  /* zlib extraction chunks size (at 0-based boundaries) */
-#define CACHE_SIZE_MB 200             /* cache size for extracted data. must be at least READ_CHUNK_SIZE (in MB)*/
+#define GZFILE_SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
+#define GZFILE_READ_CHUNK_SIZE (256 * 1024)  /* zlib extraction chunks size (at 0-based boundaries) */
+#define GZFILE_CACHE_SIZE_MB 200             /* cache size for extracted data. must be at least GZFILE_READ_CHUNK_SIZE (in MB)*/
 
 class GzippedFileReader : public AsyncFileReader
 {
@@ -82,7 +82,7 @@ private:
 	HANDLE hOverlappedFile;
 	OVERLAPPED asyncOperationContext;
 	bool asyncInProgress;
-	byte mDummyAsyncPrefetchTarget[READ_CHUNK_SIZE];
+	byte mDummyAsyncPrefetchTarget[GZFILE_READ_CHUNK_SIZE];
 #endif
 
 	void AsyncPrefetchReset();

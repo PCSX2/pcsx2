@@ -181,7 +181,7 @@ GzippedFileReader::GzippedFileReader(void) :
 	m_pIndex(0),
 	m_zstates(0),
 	m_src(0),
-	m_cache(CACHE_SIZE_MB) {
+	m_cache(GZFILE_CACHE_SIZE_MB) {
 	m_blocksize = 2048;
 	AsyncPrefetchReset();
 };
@@ -251,7 +251,7 @@ void GzippedFileReader::AsyncPrefetchChunk(PX_off_t start)
 	LARGE_INTEGER offset;
 	offset.QuadPart = start;
 
-	DWORD bytesToRead = READ_CHUNK_SIZE;
+	DWORD bytesToRead = GZFILE_READ_CHUNK_SIZE;
 
 	ZeroMemory(&asyncOperationContext, sizeof(asyncOperationContext));
 	asyncOperationContext.hEvent = 0;
@@ -292,9 +292,9 @@ bool GzippedFileReader::OkIndex() {
 
 	if (wxFileName::FileExists(indexfile) && (m_pIndex = ReadIndexFromFile(indexfile))) {
 		Console.WriteLn(Color_Green, L"OK: Gzip quick access index read from disk: '%s'", WX_STR(indexfile));
-		if (m_pIndex->span != SPAN_DEFAULT) {
+		if (m_pIndex->span != GZFILE_SPAN_DEFAULT) {
 			Console.Warning(L"Note: This index has %1.1f MB intervals, while the current default for new indexes is %1.1f MB.",
-			                (float)m_pIndex->span / 1024 / 1024, (float)SPAN_DEFAULT / 1024 / 1024);
+			                (float)m_pIndex->span / 1024 / 1024, (float)GZFILE_SPAN_DEFAULT / 1024 / 1024);
 			Console.Warning(L"It will work fine, but if you want to generate a new index with default intervals, delete this index file.");
 			Console.Warning(L"(smaller intervals mean bigger index file and quicker but more frequent decompressions)");
 		}
@@ -307,7 +307,7 @@ bool GzippedFileReader::OkIndex() {
 
 	Access *index;
 	FILE* infile = PX_fopen_rb(m_filename);
-	int len = build_index(infile, SPAN_DEFAULT, &index);
+	int len = build_index(infile, GZFILE_SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
 	fclose(infile);
 
@@ -368,10 +368,10 @@ PX_off_t GzippedFileReader::GetOptimalExtractionStart(PX_off_t offset) {
 	if (stateOffset && stateOffset <= offset)
 		return stateOffset; // state is faster than indexed
 
-	// If span is not exact multiples of READ_CHUNK_SIZE (because it was configured badly),
-	// we fallback to always READ_CHUNK_SIZE boundaries
-	if (span % READ_CHUNK_SIZE)
-		return offset / READ_CHUNK_SIZE * READ_CHUNK_SIZE;
+	// If span is not exact multiples of GZFILE_READ_CHUNK_SIZE (because it was configured badly),
+	// we fallback to always GZFILE_READ_CHUNK_SIZE boundaries
+	if (span % GZFILE_READ_CHUNK_SIZE)
+		return offset / GZFILE_READ_CHUNK_SIZE * GZFILE_READ_CHUNK_SIZE;
 
 	return span * (offset / span); // index direct access boundaries
 }
@@ -383,8 +383,8 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 	// Without all the caching, chunking and states, this would be enough:
 	// return extract(m_src, m_pIndex, offset, (unsigned char*)pBuffer, bytesToRead);
 
-	// Split request to READ_CHUNK_SIZE chunks at READ_CHUNK_SIZE boundaries
-	uint maxInChunk = READ_CHUNK_SIZE - offset % READ_CHUNK_SIZE;
+	// Split request to GZFILE_READ_CHUNK_SIZE chunks at GZFILE_READ_CHUNK_SIZE boundaries
+	uint maxInChunk = GZFILE_READ_CHUNK_SIZE - offset % GZFILE_READ_CHUNK_SIZE;
 	if (bytesToRead > maxInChunk) {
 		int first = _ReadSync(pBuffer, offset, maxInChunk);
 		if (first != maxInChunk)
@@ -397,16 +397,16 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 		return first + rest;
 	}
 
-	// From here onwards it's guarenteed that the request is inside a single READ_CHUNK_SIZE boundaries
+	// From here onwards it's guarenteed that the request is inside a single GZFILE_READ_CHUNK_SIZE boundaries
 
 	int res = m_cache.Read(pBuffer, offset, bytesToRead);
 	if (res >= 0)
 		return res;
 
 	// Not available from cache. Decompress from optimal starting
-	// point in READ_CHUNK_SIZE chunks and cache each chunk.
+	// point in GZFILE_READ_CHUNK_SIZE chunks and cache each chunk.
 	PTT s = NOW();
-	PX_off_t extractOffset = GetOptimalExtractionStart(offset); // guaranteed in READ_CHUNK_SIZE boundaries
+	PX_off_t extractOffset = GetOptimalExtractionStart(offset); // guaranteed in GZFILE_READ_CHUNK_SIZE boundaries
 	int size = offset + maxInChunk - extractOffset;
 	unsigned char* extracted = (unsigned char*)malloc(size);
 
@@ -431,15 +431,15 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 		m_zstates[spanix].state.isValid = 0; // Not killing because we need the state.
 	}
 
-	if (size <= READ_CHUNK_SIZE)
+	if (size <= GZFILE_READ_CHUNK_SIZE)
 		m_cache.Take(extracted, extractOffset, res, size);
 	else { // split into cacheable chunks
-		for (int i = 0; i < size; i += READ_CHUNK_SIZE) {
-			int available = CLAMP(res - i, 0, READ_CHUNK_SIZE);
+		for (int i = 0; i < size; i += GZFILE_READ_CHUNK_SIZE) {
+			int available = CLAMP(res - i, 0, GZFILE_READ_CHUNK_SIZE);
 			void* chunk = available ? malloc(available) : 0;
 			if (available)
 				memcpy(chunk, extracted + i, available);
-			m_cache.Take(chunk, extractOffset + i, available, std::min(size - i, READ_CHUNK_SIZE));
+			m_cache.Take(chunk, extractOffset + i, available, std::min(size - i, GZFILE_READ_CHUNK_SIZE));
 		}
 		free(extracted);
 	}
@@ -448,7 +448,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 	if (duration > 10)
 		Console.WriteLn(Color_Gray, L"gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
 		                (int)(offset / 4 / 1024 / 1024),
-		                (int)(offset % (4 * 1024 * 1024) / READ_CHUNK_SIZE),
+		                (int)(offset % (4 * 1024 * 1024) / GZFILE_READ_CHUNK_SIZE),
 		                (float)size / 1024 / 1024,
 		                duration);
 
