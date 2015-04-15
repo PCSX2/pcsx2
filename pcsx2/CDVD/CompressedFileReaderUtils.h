@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <Pcsx2Types.h>
+
 /////////// Some complementary utilities for zlib_indexed.c //////////
 
 // This is ugly, but it's hard to find something which will work/compile for both
@@ -27,6 +29,16 @@
 #else
 #   define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
 #   define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
+#endif
+
+#ifdef WIN32
+#	define PX_fseeko _fseeki64
+#   define PX_ftello _ftelli64
+#	define PX_off_t  s64        /* __int64 */
+#else
+#	define PX_fseeko fseeko
+#   define PX_ftello ftello
+#	define PX_off_t  off_t
 #endif
 
 /////////// End of complementary utilities for zlib_indexed.c //////////
