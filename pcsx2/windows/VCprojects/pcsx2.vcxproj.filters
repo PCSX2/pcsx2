@@ -859,6 +859,15 @@
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\CDVD\CsoFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\ChunksCache.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1274,6 +1283,21 @@
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h">
       <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CsoFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CompressedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\GzippedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\ChunksCache.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h">
+      <Filter>System\ISO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

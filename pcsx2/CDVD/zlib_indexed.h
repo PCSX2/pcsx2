@@ -336,7 +336,7 @@ typedef struct zstate {
     int isValid;
 } Zstate;
 
-PX_off_t getInOffset(zstate *state) {
+static inline PX_off_t getInOffset(zstate *state) {
 	return state->in_offset;
 }
 
