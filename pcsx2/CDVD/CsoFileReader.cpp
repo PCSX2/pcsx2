@@ -154,6 +154,9 @@ bool CsoFileReader::InitializeBuffers() {
 
 void CsoFileReader::Close() {
 	m_filename.Empty();
+#if CSO_USE_CHUNKSCACHE
+	m_cache.Clear();
+#endif
 
 	if (m_src) {
 		fclose(m_src);
@@ -193,18 +196,37 @@ int CsoFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 	int bytes = 0;
 
 	while (remaining > 0) {
-		int readBytes = ReadFromFrame(dest + bytes, pos + bytes, remaining);
-		if (readBytes == 0) {
-			// We hit EOF.
-			break;
+		int readBytes;
+
+#if CSO_USE_CHUNKSCACHE
+		// Try first to read from the cache.
+		readBytes = m_cache.Read(dest + bytes, pos + bytes, remaining);
+#else
+		readBytes = -1;
+#endif
+		if (readBytes < 0) {
+			readBytes = ReadFromFrame(dest + bytes, pos + bytes, remaining);
+			if (readBytes == 0) {
+				// We hit EOF.
+				break;
+			}
+
+#if CSO_USE_CHUNKSCACHE
+			// Add the bytes into the cache.  We need to allocate a buffer for it.
+			void *cached = malloc(readBytes);
+			memcpy(cached, dest + bytes, readBytes);
+			m_cache.Take(cached, pos + bytes, readBytes, readBytes);
+#endif
 		}
+
 		bytes += readBytes;
 		remaining -= readBytes;
 	}
+
 	return bytes;
 }
 
-int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, u64 maxBytes) {
+int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, int maxBytes) {
 	if (pos >= m_totalSize) {
 		// Can't read anything passed the end.
 		return 0;
