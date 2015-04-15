@@ -140,28 +140,44 @@ bool CsoFileReader::InitializeBuffers() {
 		return false;
 	}
 
+	m_z_stream = new z_stream;
+	m_z_stream->zalloc = Z_NULL;
+	m_z_stream->zfree = Z_NULL;
+	m_z_stream->opaque = Z_NULL;
+	if (inflateInit2(m_z_stream, -15) != Z_OK) {
+		Console.Error("Unable to initialize zlib for CSO decompression.");
+		return false;
+	}
+
 	return true;
 }
 
 void CsoFileReader::Close() {
 	m_filename.Empty();
+#if CSO_USE_CHUNKSCACHE
+	m_cache.Clear();
+#endif
 
 	if (m_src) {
 		fclose(m_src);
-		m_src = 0;
+		m_src = NULL;
+	}
+	if (m_z_stream) {
+		inflateEnd(m_z_stream);
+		m_z_stream = NULL;
 	}
 
 	if (m_readBuffer) {
 		delete[] m_readBuffer;
-		m_readBuffer = 0;
+		m_readBuffer = NULL;
 	}
 	if (m_zlibBuffer) {
 		delete[] m_zlibBuffer;
-		m_zlibBuffer = 0;
+		m_zlibBuffer = NULL;
 	}
 	if (m_index) {
 		delete[] m_index;
-		m_index = 0;
+		m_index = NULL;
 	}
 }
 
@@ -170,6 +186,9 @@ int CsoFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 		return 0;
 	}
 
+	// Note that, in practice, count will always be 1.  It seems one sector is read
+	// per interrupt, even if multiple are requested by the application.
+
 	u8* dest = (u8*)pBuffer;
 	// We do it this way in case m_blocksize is not well aligned to our frame size.
 	u64 pos = (u64)sector * (u64)m_blocksize;
@@ -177,18 +196,37 @@ int CsoFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 	int bytes = 0;
 
 	while (remaining > 0) {
-		int readBytes = ReadFromFrame(dest + bytes, pos + bytes, remaining);
-		if (readBytes == 0) {
-			// We hit EOF.
-			break;
+		int readBytes;
+
+#if CSO_USE_CHUNKSCACHE
+		// Try first to read from the cache.
+		readBytes = m_cache.Read(dest + bytes, pos + bytes, remaining);
+#else
+		readBytes = -1;
+#endif
+		if (readBytes < 0) {
+			readBytes = ReadFromFrame(dest + bytes, pos + bytes, remaining);
+			if (readBytes == 0) {
+				// We hit EOF.
+				break;
+			}
+
+#if CSO_USE_CHUNKSCACHE
+			// Add the bytes into the cache.  We need to allocate a buffer for it.
+			void *cached = malloc(readBytes);
+			memcpy(cached, dest + bytes, readBytes);
+			m_cache.Take(cached, pos + bytes, readBytes, readBytes);
+#endif
 		}
+
 		bytes += readBytes;
 		remaining -= readBytes;
 	}
+
 	return bytes;
 }
 
-int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, u64 maxBytes) {
+int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, int maxBytes) {
 	if (pos >= m_totalSize) {
 		// Can't read anything passed the end.
 		return 0;
@@ -238,41 +276,33 @@ int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, u64 maxBytes) {
 }
 
 bool CsoFileReader::DecompressFrame(u32 frame, u32 readBufferSize) {
-	z_stream z;
-	z.zalloc = Z_NULL;
-	z.zfree = Z_NULL;
-	z.opaque = Z_NULL;
-	if (inflateInit2(&z, -15) != Z_OK) {
-		Console.Error("Unable to initialize zlib for CSO decompression.");
-		return false;
-	}
+	m_z_stream->next_in = m_readBuffer;
+	m_z_stream->avail_in = readBufferSize;
+	m_z_stream->next_out = m_zlibBuffer;
+	m_z_stream->avail_out = m_frameSize;
 
-	z.next_in = m_readBuffer;
-	z.avail_in = readBufferSize;
-	z.next_out = m_zlibBuffer;
-	z.avail_out = m_frameSize;
-
-	int status = inflate(&z, Z_FINISH);
-	if (status != Z_STREAM_END || z.total_out != m_frameSize) {
-		inflateEnd(&z);
+	int status = inflate(m_z_stream, Z_FINISH);
+	bool success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
+	if (success) {
+		// Our buffer now contains this frame.
+		m_zlibBufferFrame = frame;
+	} else {
 		Console.Error("Unable to decompress CSO frame using zlib.");
-		return false;
+		m_zlibBufferFrame = (u32)-1;
 	}
-	inflateEnd(&z);
 
-	// Our buffer now contains this frame.
-	m_zlibBufferFrame = frame;
-	return true;
+	inflateReset(m_z_stream);
+	return success;
 }
 
 void CsoFileReader::BeginRead(void* pBuffer, uint sector, uint count) {
 	// TODO: No async support yet, implement as sync.
-	mBytesRead = ReadSync(pBuffer, sector, count);
+	m_bytesRead = ReadSync(pBuffer, sector, count);
 }
 
 int CsoFileReader::FinishRead() {
-	int res = mBytesRead;
-	mBytesRead = -1;
+	int res = m_bytesRead;
+	m_bytesRead = -1;
 	return res;
 }
 
