@@ -18,6 +18,7 @@
 #include "AsyncFileReader.h"
 
 struct CsoHeader;
+typedef struct z_stream_s z_stream;
 
 class CsoFileReader : public AsyncFileReader
 {
@@ -28,7 +29,9 @@ public:
 		m_zlibBuffer(0),
 		m_index(0),
 		m_totalSize(0),
-		m_src(0) {
+		m_src(0),
+		m_z_stream(0),
+		m_bytesRead(0) {
 		m_blocksize = 2048;
 	};
 
@@ -69,6 +72,7 @@ private:
 	u64 m_totalSize;
 	// The actual source cso file handle.
 	FILE* m_src;
+	z_stream* m_z_stream;
 	// The result of a read is stored here between BeginRead() and FinishRead().
-	int mBytesRead;
+	int m_bytesRead;
 };
