@@ -407,6 +407,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
+    <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
@@ -696,6 +699,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
+    <ClInclude Include="..\..\CDVD\ChunksCache.h" />
+    <ClInclude Include="..\..\CDVD\CompressedFileReader.h" />
+    <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h" />
+    <ClInclude Include="..\..\CDVD\CsoFileReader.h" />
+    <ClInclude Include="..\..\CDVD\GzippedFileReader.h" />
     <ClInclude Include="..\..\CDVD\zlib_indexed.h" />
     <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
