@@ -635,6 +635,8 @@ void GzippedFileReader::Close() {
 }
 
 
+// Implementation of CSO compressed ISO reading, based on:
+// https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
 struct CsoHeader {
 	u8 magic[4];
 	u32 header_size;
