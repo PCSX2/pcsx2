@@ -20,20 +20,6 @@
 #include "GzippedFileReader.h"
 
 // CompressedFileReader factory.
-
-// Go through available compressed readers
-bool CompressedFileReader::DetectCompressed(AsyncFileReader* pReader) {
-	const wxString& filename = pReader->GetFilename();
-	if (GzippedFileReader::CanHandle(filename)) {
-		return true;
-	}
-	if (CsoFileReader::CanHandle(filename)) {
-		return true;
-	}
-	return false;
-}
-
-// Return a new reader which can handle, or any reader otherwise (which will fail on open)
 AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
 	if (GzippedFileReader::CanHandle(fileName)) {
 		return new GzippedFileReader();
@@ -42,5 +28,5 @@ AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
 		return new CsoFileReader();
 	}
 	// This is the one which will fail on open.
-	return new GzippedFileReader();
+	return NULL;
 }
