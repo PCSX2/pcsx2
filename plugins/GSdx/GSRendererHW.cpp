@@ -461,7 +461,7 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
-	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS) && (PRIM->FST)) {
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// TODO: It could be a good idea to check context->CLAMP.WMS/WMT values on the following hack
 
 		size_t count = m_vertex.next;
@@ -487,11 +487,15 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
-			if (m_vt.IsLinear())
-				RoundSpriteOffset<true>();
-			else
-				RoundSpriteOffset<false>();
+		if (PRIM->FST) {
+			if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
+				if (m_vt.IsLinear())
+					RoundSpriteOffset<true>();
+				else
+					RoundSpriteOffset<false>();
+			}
+		} else {
+			; // vertical line in Yakuza (note check m_userhacks_align_sprite_X behavior)
 		}
 	}
 
