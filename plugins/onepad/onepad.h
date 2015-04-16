@@ -60,8 +60,6 @@ using namespace std;
 #define EXPORT_C_(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
 #endif
 
-extern char libraryName[256];
-
 enum PadOptions
 {
 	PADOPTION_FORCEFEEDBACK = 0x1,
