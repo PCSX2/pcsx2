@@ -462,8 +462,6 @@ void GSRendererHW::Draw()
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
 	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
-		// TODO: It could be a good idea to check context->CLAMP.WMS/WMT values on the following hack
-
 		size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
 
@@ -473,15 +471,16 @@ void GSRendererHW::Draw()
 			// primitive
 			int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
 			const bool unaligned_position = ((win_position & 0xF) == 8);
-			const bool unaligned_texture  = ((v[1].U & 0xF) == 0);
-			const bool one_texel_widht = (v[1].U == v[0].U);
-			if (unaligned_position && (unaligned_texture || one_texel_widht)) {
+			const bool unaligned_texture  = ((v[1].U & 0xF) == 0) && PRIM->FST; // I'm not sure this check is useful
+			const bool hole_in_vertex = (count < 4) || (v[1].XYZ.X != v[2].XYZ.X);
+			if (hole_in_vertex && unaligned_position && (unaligned_texture || !PRIM->FST)) {
 				// Normaly vertex are aligned on full pixels and texture in half
 				// pixels. Let's extend the coverage of an half-pixel to avoid
 				// hole after upscaling
 				for(size_t i = 0; i < count; i += 2) {
 					v[i+1].XYZ.X += 8;
-					if (!one_texel_widht)
+					// I really don't know if it is a good idea. Neither what to do for !PRIM->FST
+					if (unaligned_texture)
 						v[i+1].U += 8;
 				}
 			}
