@@ -54,21 +54,3 @@ void MSW_ListView_SetIconSpacing( wxListbook* listbook, int width )
 	MSW_ListView_SetIconSpacing( *listbook, width );
 }
 
-
-#ifdef __WXMSW__
-WXLRESULT GSPanel::MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam)
-{
-	switch ( message )
-	{
-	case SC_SCREENSAVE:
-	case SC_MONITORPOWER:
-		if( m_HasFocus && g_Conf->GSWindow.DisableScreenSaver)
-		{
-			DevCon.WriteLn("Omg Screensaver adverted!");
-			return 0;
-		}
-		break;
-	}
-	return _parent::MSWWindowProc(message, wParam, lParam);
-}
-#endif

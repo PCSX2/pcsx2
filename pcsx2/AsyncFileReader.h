@@ -97,22 +97,6 @@ public:
 	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 };
 
-// Factory - creates an AsyncFileReader derived instance which can read a compressed file
-class CompressedFileReader {
-public:
-	// Checks if any of the available compressed file handlers can open this
-	static bool DetectCompressed(AsyncFileReader* pReader);
-
-	// fileName is only used to choose the compressed reader.
-	// If no matching handler is found then an arbitrary handlers will be returned.
-	// The returned instance still needs ->Open(filename) before usage.
-	// Open(filename) may still fail.
-	static AsyncFileReader* GetNewReader(const wxString& fileName);
-
-private:
-	virtual ~CompressedFileReader() = 0;
-};
-
 class MultipartFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject( MultipartFileReader );

@@ -18,6 +18,7 @@
 #include "IopCommon.h"
 #include "VUmicro.h"
 #include "newVif.h"
+#include "MTVU.h"
 
 #include "SamplProf.h"
 
@@ -417,6 +418,12 @@ void SysMainMemory::DecommitAll()
 
 	Console.WriteLn( Color_Blue, "Decommitting host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
+
+	// On linux, the MTVU isn't empty and the thread still uses the m_ee/m_vu memory
+	vu1Thread.WaitVU();
+	// The EE thread must be stopped here command mustn't be send
+	// to the ring. Let's call it an extra safety valve :)
+	vu1Thread.Reset();
 
 	m_ee.Decommit();
 	m_iop.Decommit();

@@ -659,6 +659,7 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 		+ format("#define VS_LOGZ %d\n", sel.logz)
 		+ format("#define VS_TME %d\n", sel.tme)
 		+ format("#define VS_FST %d\n", sel.fst)
+		+ format("#define VS_WILDHACK %d\n", sel.wildhack)
 		;
 
 	return m_shader->Compile("tfx.glsl", "vs_main", GL_VERTEX_SHADER, tfx_glsl, macro);
@@ -1061,16 +1062,6 @@ void GSDeviceOGL::EndScene()
 void GSDeviceOGL::IASetVertexBuffer(const void* vertices, size_t count)
 {
 	m_va->UploadVB(vertices, count);
-}
-
-bool GSDeviceOGL::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
-{
-	return m_va->MapVB(vertex, count);
-}
-
-void GSDeviceOGL::IAUnmapVertexBuffer()
-{
-	m_va->UnmapVB();
 }
 
 void GSDeviceOGL::IASetIndexBuffer(const void* index, size_t count)

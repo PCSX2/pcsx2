@@ -600,6 +600,8 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
 	CheckDlgButton(m_hWnd, IDC_CHECK_NVIDIA_HACK, theApp.GetConfig("UserHacks_NVIDIAHack", 0));
 	CheckDlgButton(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS, theApp.GetConfig("UserHacks_DisableCrcHacks", 0));
+	CheckDlgButton(m_hWnd, IDC_STRETCH_SPRITE, theApp.GetConfig("UserHacks_stretch_sprite", 0));
+	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("UserHacks_SkipDraw", 0), 0));
@@ -692,6 +694,15 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 						  "CrcHacksExclusions=all\n"
 						  "CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03";
 				break;
+			case IDC_ALIGN_SPRITE:
+				helpstr = "Sprite Alignment Hack\n\n"
+						  "Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
+				break;
+			case IDC_STRETCH_SPRITE:
+				helpstr = "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
+						  "Fixes lines in sprites of games like Ar tonelico when upscaling.\n"
+						  "Works best at 2x, but helps at any resolution.";
+				break;
 
 			case IDC_TCOFFSETX:
 			case IDC_TCOFFSETX2:
@@ -733,6 +744,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("UserHacks_NVIDIAHack", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_NVIDIA_HACK));
 			theApp.SetConfig("UserHacks_DisableCrcHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS));
+			theApp.SetConfig("Userhacks_stretch_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_STRETCH_SPRITE));
+			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
 						 TCOFFSET |= (SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0) & 0xFFFF) << 16;

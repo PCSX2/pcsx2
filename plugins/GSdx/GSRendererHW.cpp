@@ -32,6 +32,8 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
+	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
+	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
 	if(!m_nativeres)
 	{
@@ -53,6 +55,38 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	else
 	{
 		m_upscale_multiplier = 1;
+	}
+
+	if (m_upscale_multiplier == 1) {
+		// No upscaling hack at native resolution
+		m_userhacks_round_sprite_offset = 0;
+		m_userhacks_align_sprite_X = 0;
+	}
+
+	// When you upscale sprite will sample invalid data of the texture. The idea is to add a subtexel offset
+	// so the sampling remains inside the texture.
+	// The strict minimal value can be computed with this formulae (you need to round above, [1;2[ must be rounded to 2).
+	//
+	// s: m_upscale_multiplier
+	// WH: Width or Height of the texture
+	// 0.5: initial offset of texture (not sure it is always true)
+	// L: length of primitive in pixels (after upscaling)
+	//
+	// Full formulae is
+	// 0.5 + (L - 1)* (WH-offset)/L < WH
+	//
+	// A reduced formulae is: (hypothesis 1:1 mapping => L == s*WH)
+	// offset > ((0.5)*s -1)/(s-1/WH)*16
+	//
+	// Rendering is perfect for 2x but some issues remains on higher scaling
+	switch (m_upscale_multiplier) {
+		case 1: m_sub_texel_offset = 0; break;
+		case 2: m_sub_texel_offset = 1; break;
+		case 3: m_sub_texel_offset = 3; break; // texture of 2 texels need 4 (Is is used?)
+		case 4: m_sub_texel_offset = 5; break;
+		case 5: m_sub_texel_offset = 6; break;
+		case 6: m_sub_texel_offset = 6; break;
+		default: break;
 	}
 }
 
@@ -167,6 +201,137 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	if(clut) return; // FIXME
 		
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
+}
+
+int GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
+{
+	float t = (1.0f - alpha) * t0 + alpha * t1;
+	return (int)t & ~0xF; // cheap rounding
+}
+
+float GSRendererHW::alpha0(int L, int X0, int X1)
+{
+	float x = (X0 + 15) & ~0xF; // Round up
+	return (x - X0) / (float)L;
+}
+
+float GSRendererHW::alpha1(int L, int X0, int X1)
+{
+	float x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
+	return (x - X0) / (float)L;
+}
+
+template <bool linear>
+void GSRendererHW::RoundSpriteOffset()
+{
+//#define DEBUG_U
+//#define DEBUG_V
+	bool debug = linear;
+	const int half = linear ? 8 : 0;
+	size_t count = m_vertex.next;
+	GSVertex* v = &m_vertex.buff[0];
+
+	for(size_t i = 0; i < count; i += 2) {
+		// Performance note: if it had any impact on perf, someone would port it to SSE (AKA GSVector)
+
+		// Compute the coordinate of first and last texels (in native with a linear filtering)
+		int   ox  = m_context->XYOFFSET.OFX;
+		int   X0  = v[i].XYZ.X   - ox;
+		int   X1  = v[i+1].XYZ.X - ox;
+		int   Lx  = (v[i+1].XYZ.X - v[i].XYZ.X);
+		float ax0 = alpha0(Lx, X0, X1);
+		float ax1 = alpha1(Lx, X0, X1);
+		int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
+		int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
+#ifdef DEBUG_U
+		if (debug) {
+			fprintf(stderr, "u0:%d and u1:%d\n", v[i].U, v[i+1].U);
+			fprintf(stderr, "a0:%f and a1:%f\n", ax0, ax1);
+			fprintf(stderr, "t0:%d and t1:%d\n", tx0, tx1);
+		}
+#endif
+
+		int   oy  = m_context->XYOFFSET.OFY;
+		int   Y0  = v[i].XYZ.Y   - oy;
+		int   Y1  = v[i+1].XYZ.Y - oy;
+		int   Ly  = (v[i+1].XYZ.Y - v[i].XYZ.Y);
+		float ay0 = alpha0(Ly, Y0, Y1);
+		float ay1 = alpha1(Ly, Y0, Y1);
+		int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
+		int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
+#ifdef DEBUG_V
+		if (debug) {
+			fprintf(stderr, "v0:%d and v1:%d\n", v[i].V, v[i+1].V);
+			fprintf(stderr, "a0:%f and a1:%f\n", ay0, ay1);
+			fprintf(stderr, "t0:%d and t1:%d\n", ty0, ty1);
+		}
+#endif
+
+#ifdef DEBUG_U
+		if (debug)
+			fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+		if (debug)
+			fprintf(stderr, "GREP_BEFORE %d => %d\n", v[i].V, v[i+1].V);
+#endif
+
+#if 1
+		// Use rounded value of the newly computed texture coordinate. It ensures
+		// that sampling will remains inside texture boundary
+		//
+		// Note for bilinear: in this mode the PS2 add -0.5 offset (aka half) and 4 texels
+		// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
+		//
+		// Minus half for t1 case might be too much
+		if (linear) {
+			if (tx0 <= tx1) {
+				v[i].U   = tx0 + half;
+				v[i+1].U = tx1 - half + 16;
+			} else {
+				v[i].U   = tx0 + 15;
+				v[i+1].U = tx1;
+			}
+		} else {
+			if (tx0 <= tx1) {
+				v[i].U   = tx0;
+				v[i+1].U = tx1 + 16;
+			} else {
+				v[i].U   = tx0 + 15;
+				v[i+1].U = tx1;
+			}
+		}
+#endif
+#if 1
+		if (linear) {
+			if (ty0 <= ty1) {
+				v[i].V   = ty0 + half;
+				v[i+1].V = ty1 - half + 16;
+			} else {
+				v[i].V   = ty0 + 15;
+				v[i+1].V = ty1;
+			}
+		} else {
+			if (ty0 <= ty1) {
+				v[i].V   = ty0;
+				v[i+1].V = ty1 + 16;
+			} else {
+				v[i].V   = ty0 + 15;
+				v[i+1].V = ty1;
+			}
+		}
+#endif
+
+#ifdef DEBUG_U
+		if (debug)
+			fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].U, v[i+1].U);
+#endif
+#ifdef DEBUG_V
+		if (debug)
+			fprintf(stderr, "GREP_AFTER %d => %d\n\n", v[i].V, v[i+1].V);
+#endif
+
+	}
 }
 
 void GSRendererHW::Draw()
@@ -294,6 +459,45 @@ void GSRendererHW::Draw()
 
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
+
+	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		// TODO: It could be a good idea to check context->CLAMP.WMS/WMT values on the following hack
+
+		size_t count = m_vertex.next;
+		GSVertex* v = &m_vertex.buff[0];
+
+		// Hack to avoid vertical black line in various games (ace combat/tekken)
+		if (m_userhacks_align_sprite_X) {
+			// Note for performance reason I do the check only once on the first
+			// primitive
+			int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
+			const bool unaligned_position = ((win_position & 0xF) == 8);
+			const bool unaligned_texture  = ((v[1].U & 0xF) == 0);
+			const bool one_texel_widht = (v[1].U == v[0].U);
+			if (unaligned_position && (unaligned_texture || one_texel_widht)) {
+				// Normaly vertex are aligned on full pixels and texture in half
+				// pixels. Let's extend the coverage of an half-pixel to avoid
+				// hole after upscaling
+				for(size_t i = 0; i < count; i += 2) {
+					v[i+1].XYZ.X += 8;
+					if (!one_texel_widht)
+						v[i+1].U += 8;
+				}
+			}
+		}
+
+		if (PRIM->FST) {
+			if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
+				if (m_vt.IsLinear())
+					RoundSpriteOffset<true>();
+				else
+					RoundSpriteOffset<false>();
+			}
+		} else {
+			; // vertical line in Yakuza (note check m_userhacks_align_sprite_X behavior)
+		}
+	}
 
 	//
 

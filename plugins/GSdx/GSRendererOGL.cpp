@@ -122,28 +122,7 @@ void GSRendererOGL::SetupIA()
 	if (!GLLoader::found_geometry_shader)
 		EmulateGS();
 
-	void* ptr = NULL;
-
-	if(UserHacks_WildHack && !isPackedUV_HackFlag) {
-		// FIXME: why not put it on the Vertex shader
-		if(dev->IAMapVertexBuffer(&ptr, sizeof(GSVertex), m_vertex.next))
-		{
-			GSVector4i::storent(ptr, m_vertex.buff, sizeof(GSVertex) * m_vertex.next);
-
-			GSVertex* RESTRICT d = (GSVertex*)ptr;
-
-			for(unsigned int i = 0; i < m_vertex.next; i++)
-			{
-				if(PRIM->TME && PRIM->FST) d[i].UV &= 0x3FEF3FEF;
-			}
-
-			dev->IAUnmapVertexBuffer();
-		}
-	} else {
-		// By default use the common path (in case it can be made faster)
-		dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
-	}
-
+	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
 	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
 
 	GLenum t = 0;
@@ -284,6 +263,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	vs_sel.tme = PRIM->TME;
 	vs_sel.fst = PRIM->FST;
 	vs_sel.logz = m_logz ? 1 : 0;
+	vs_sel.wildhack = (UserHacks_WildHack && !isPackedUV_HackFlag) ? 1 : 0;
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
@@ -414,6 +394,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
 		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3;
+		// Don't force extra filtering on sprite (it creates various upscaling issue)
+		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
@@ -426,7 +408,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
 		// bug on opengl
 		// FIXME for the moment disable it on subroutine (it will kill my perf for nothings)
-		ps_sel.point_sampler = !(bilinear && simple_sample) && !GLLoader::found_GL_ARB_shader_subroutine;
+		ps_sel.point_sampler = 0; // !(bilinear && simple_sample) && !GLLoader::found_GL_ARB_shader_subroutine;
 
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();

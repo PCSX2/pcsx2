@@ -68,7 +68,7 @@ public:
 
 			u8 vistaVolume;
 		};
-		u8 bools[1];
+		u8 bools[16];
 	};
 
 	int volume;

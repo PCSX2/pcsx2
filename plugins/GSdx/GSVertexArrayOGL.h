@@ -328,10 +328,6 @@ public:
 #endif
 	}
 
-	bool MapVB(void **pointer, size_t count) { return m_vb->Map(pointer, count); }
-
-	void UnmapVB() { m_vb->Unmap(); }
-
 	~GSVertexBufferStateOGL()
 	{
 		gl_DeleteVertexArrays(1, &m_va);

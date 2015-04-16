@@ -273,6 +273,7 @@ class GSDeviceOGL : public GSDevice
 		{
 			struct
 			{
+				uint32 wildhack:1;
 				uint32 bppz:2;
 				uint32 logz:1;
 				// Next param will be handle by subroutine
@@ -283,12 +284,12 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key & 0x7f;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
 
-		static uint32 size() { return 1 << 5; }
+		static uint32 size() { return 1 << 6; }
 	};
 
 	__aligned(struct, 32) PSConstantBuffer
@@ -516,7 +517,7 @@ class GSDeviceOGL : public GSDevice
 		float bf; // blend factor
 	} m_state;
 
-	GLuint m_vs[1<<5];
+	GLuint m_vs[1<<6];
 	GLuint m_gs;
 	GLuint m_ps_ss[1<<3];
 	GSDepthStencilOGL* m_om_dss[1<<6];
@@ -599,8 +600,6 @@ class GSDeviceOGL : public GSDevice
 
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count);
-	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
-	void IAUnmapVertexBuffer();
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(GLuint sr);

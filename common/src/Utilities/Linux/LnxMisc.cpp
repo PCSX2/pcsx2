@@ -55,3 +55,7 @@ wxString GetOSVersionString()
 	return wxGetOsDescription();
 }
 
+void ScreensaverAllow(bool allow)
+{
+	// no-op
+}

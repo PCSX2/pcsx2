@@ -246,10 +246,4 @@ extern wxString operator+(const FastFormatUnicode& str1, const wxChar* str2);
 // These functions are useful since they are ASCII always, even under Unicode.  Typically
 // even in a unicode app.
 
-extern void ssprintf(std::string& dest, const char* fmt, ...);
 extern void ssappendf(std::string& dest, const char* format, ...);
-extern void vssprintf(std::string& dest, const char* format, va_list args);
-extern void vssappendf(std::string& dest, const char* format, va_list args);
-
-extern std::string fmt_string( const char* fmt, ... );
-extern std::string vfmt_string( const char* fmt, va_list args );

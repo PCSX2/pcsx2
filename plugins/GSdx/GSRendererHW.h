@@ -35,7 +35,10 @@ private:
 	bool m_reset;
 	int m_upscale_multiplier;
 	int m_userhacks_skipdraw;
-	
+	int m_sub_texel_offset;
+
+	bool m_userhacks_align_sprite_X;
+
 	#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -129,10 +132,18 @@ private:
 
 	#pragma endregion
 
+	int Interpolate_UV(float alpha, int t0, int t1);
+	float alpha0(int L, int X0, int X1);
+	float alpha1(int L, int X0, int X1);
+
+	template <bool linear> void RoundSpriteOffset();
+
 protected:
 	GSTextureCache* m_tc;
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
+
+	int m_userhacks_round_sprite_offset;
 
 public:
 	GSRendererHW(GSTextureCache* tc);
