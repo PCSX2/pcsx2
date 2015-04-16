@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include "GSdx.h"
 #include "GSLinuxLogo.h"
+#include "GSSetting.h"
 
 GtkWidget* CreateRenderComboBox()
 {
@@ -157,10 +158,10 @@ bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
 	GtkWidget *main_box, *central_box, *advance_box, *res_box, *hw_box, *sw_box, *shader_box;
-	GtkWidget *native_box, *fsaa_box, *resxy_box, *renderer_box, *interlace_box, *threads_box, *filter_box, *stretch_hack_box, *align_sprite_box;
+	GtkWidget *native_box, *fsaa_box, *resxy_box, *renderer_box, *interlace_box, *threads_box, *filter_box;
 	GtkWidget *hw_table, *shader_table, *res_frame, *hw_frame, *sw_frame, *shader_frame;
 	GtkWidget *interlace_combo_box, *threads_spin;
-	GtkWidget *interlace_label, *threads_label, *native_label, *stretch_hack_label, *fsaa_label, *rexy_label, *render_label, *filter_label, *align_sprite_label;
+	GtkWidget *interlace_label, *threads_label, *native_label, *fsaa_label, *rexy_label, *render_label, *filter_label;
 
 	GtkWidget *fsaa_combo_box, *render_combo_box, *filter_combo_box;
 	GtkWidget *shader, *shader_conf, *shader_label, *shader_conf_label;
@@ -169,7 +170,7 @@ bool RunLinuxDialog()
 	GtkWidget *resx_spin, *resy_spin;
 
 	GtkWidget *hack_table, *hack_skipdraw_label, *hack_box, *hack_frame;
-	GtkWidget *hack_alpha_check, *hack_date_check, *hack_offset_check, *hack_skipdraw_spin, *hack_msaa_check, *hack_sprite_check, * hack_wild_check, *hack_enble_check, *hack_logz_check;
+	GtkWidget *hack_alpha_check, *hack_date_check, *hack_offset_check, *hack_skipdraw_spin, *hack_sprite_check, * hack_wild_check, *hack_enble_check, *hack_logz_check;
 	GtkWidget *hack_tco_label, *hack_tco_entry;
 	GtkWidget *gl_box, *gl_frame, *gl_table;
 
@@ -283,23 +284,6 @@ bool RunLinuxDialog()
 	gtk_box_pack_start(GTK_BOX(resxy_box), resx_spin, false, false, 5);
 	gtk_box_pack_start(GTK_BOX(resxy_box), resy_spin, false, false, 5);
 
-	stretch_hack_label = gtk_label_new("Anti upscale-glitch:");
-	stretch_hack_check = gtk_check_button_new();
-	stretch_hack_box = gtk_hbox_new(false, 5);
-	gtk_box_pack_start(GTK_BOX(stretch_hack_box), stretch_hack_label, false, false, 5);
-	gtk_box_pack_start(GTK_BOX(stretch_hack_box), stretch_hack_check, false, false, 5);
-	const char* tooltip_stretch_hack = "Correct the sampling of 2D sprite texture. It is highly recommended to enable it.";
-	gtk_widget_set_tooltip_text(stretch_hack_label, tooltip_stretch_hack);
-	gtk_widget_set_tooltip_text(stretch_hack_check, tooltip_stretch_hack);
-
-	align_sprite_label = gtk_label_new("Anti vertical-line-glitch:");
-	align_sprite_check = gtk_check_button_new();
-	align_sprite_box = gtk_hbox_new(false, 5);
-	gtk_box_pack_start(GTK_BOX(align_sprite_box), align_sprite_label, false, false, 5);
-	gtk_box_pack_start(GTK_BOX(align_sprite_box), align_sprite_check, false, false, 5);
-	const char* tooltip_align_sprite = "Correct vertical lines if previous hack doesn't work. It helps game such as Ace Combat/Tekken/Colin";
-	gtk_widget_set_tooltip_text(align_sprite_label, tooltip_align_sprite);
-	gtk_widget_set_tooltip_text(align_sprite_check, tooltip_align_sprite);
 
 	// shader fx entry
 	shader            = gtk_file_chooser_button_new("Select an external shader", GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -316,27 +300,52 @@ bool RunLinuxDialog()
 	hack_enble_check    = gtk_check_button_new_with_label("Enable User Hacks");
 	hack_wild_check     = gtk_check_button_new_with_label("Wild arm Hack");
 	hack_sprite_check   = gtk_check_button_new_with_label("Sprite Hack");
-	hack_msaa_check     = gtk_check_button_new_with_label("Msaa Hack");
 	hack_tco_label      = gtk_label_new("Texture Offset: 0x");
 	hack_tco_entry      = gtk_entry_new();
 	hack_logz_check     = gtk_check_button_new_with_label("Log Depth Hack");
+	align_sprite_check  = gtk_check_button_new_with_label("Anti vertical line hack");
+	stretch_hack_check  = gtk_check_button_new_with_label("Improve 2D sprite scaling accuracy");
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(hack_skipdraw_spin), theApp.GetConfig("UserHacks_SkipDraw", 0));
 	set_hex_entry(hack_tco_entry, theApp.GetConfig("UserHacks_TCOffset", 0));
 
+	// Reuse windows helper string :)
+	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
+	gtk_widget_set_tooltip_text(hack_date_check, "Disable opengl barrier for performance with DATE operation");
+	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
+	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
+	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
+	gtk_widget_set_tooltip_text(hack_wild_check, dialog_message(IDC_WILDHACK));
+	gtk_widget_set_tooltip_text(hack_sprite_check, dialog_message(IDC_SPRITEHACK));
+	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth");
+	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
+	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_STRETCH_SPRITE));
+
+
 	// Tables are strange. The numbers are for their position: left, right, top, bottom.
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_alpha_check, 0, 1, 0, 1);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_offset_check, 1, 2, 0, 1);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_sprite_check, 0, 1, 1, 2);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_wild_check, 1, 2, 1, 2);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_logz_check, 0, 1, 2, 3);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_date_check, 1, 2, 2, 3);
-	// Note: MSAA is not implemented yet. I disable it to make the table square
-	//gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_msaa_check, 2, 3, 1, 2);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_skipdraw_label, 0, 1, 3, 4);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_skipdraw_spin, 1, 2, 3, 4);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_tco_label, 0, 1, 4, 5);
-	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_tco_entry, 1, 2, 4, 5);
+	int l = 0;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_enble_check, 0, 1, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_alpha_check, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_offset_check, 1, 2, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_sprite_check, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_wild_check  , 1, 2, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_logz_check, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_date_check, 1, 2, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), stretch_hack_check, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), align_sprite_check, 1, 2, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_skipdraw_label, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_skipdraw_spin , 1, 2, l, l+1);
+	l++;
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_tco_label, 0, 1, l, l+1);
+	gtk_table_attach_defaults(GTK_TABLE(hack_table), hack_tco_entry, 1, 2, l, l+1);
 
 	// Create our checkboxes.
 	shadeboost_check = gtk_check_button_new_with_label("Shade boost");
@@ -354,7 +363,7 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fxaa_check), theApp.GetConfig("fxaa", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(shaderfx_check), theApp.GetConfig("shaderfx", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(native_res_check), theApp.GetConfig("nativeres", 0));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_hack_check), theApp.GetConfig("UserHacks_stretch_sprite", 0));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_hack_check), theApp.GetConfig("UserHacks_round_sprite_offset", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(align_sprite_check), theApp.GetConfig("UserHacks_align_sprite_X", 0));
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_alpha_check), theApp.GetConfig("UserHacks_AlphaHack", 0));
@@ -362,7 +371,6 @@ bool RunLinuxDialog()
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_date_check), theApp.GetConfig("UserHacks_DateGL4", 0));
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_enble_check), theApp.GetConfig("UserHacks", 0));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_msaa_check), theApp.GetConfig("UserHacks_MSAA", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_wild_check), theApp.GetConfig("UserHacks_WildHack", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_sprite_check), theApp.GetConfig("UserHacks_SpriteHack", 0));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_logz_check), theApp.GetConfig("logz", 1));
@@ -403,8 +411,6 @@ bool RunLinuxDialog()
 	gtk_container_add(GTK_CONTAINER(res_box), native_box);
 	gtk_container_add(GTK_CONTAINER(res_box), fsaa_box);
 	gtk_container_add(GTK_CONTAINER(res_box), resxy_box);
-	gtk_container_add(GTK_CONTAINER(res_box), stretch_hack_box);
-	gtk_container_add(GTK_CONTAINER(res_box), align_sprite_box);
 
 	gtk_container_add(GTK_CONTAINER(sw_box), threads_box);
 	gtk_container_add(GTK_CONTAINER(sw_box), aa_check);
@@ -541,7 +547,7 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("fxaa", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fxaa_check)));
 		theApp.SetConfig("shaderfx", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shaderfx_check)));
 		theApp.SetConfig("nativeres", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_res_check)));
-		theApp.SetConfig("UserHacks_stretch_sprite", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(stretch_hack_check)));
+		theApp.SetConfig("UserHacks_round_sprite_offset", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(stretch_hack_check)));
 		theApp.SetConfig("UserHacks_align_sprite_X", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(align_sprite_check)));
 
 		theApp.SetConfig("shaderfx_glsl", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader)));
@@ -561,7 +567,6 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("logz", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_logz_check)));
 		theApp.SetConfig("UserHacks_DateGL4", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_date_check)));
 
-		theApp.SetConfig("UserHacks_MSAA", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_msaa_check)));
 		theApp.SetConfig("UserHacks_WildHack", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_wild_check)));
 		theApp.SetConfig("UserHacks_SpriteHack", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_sprite_check)));
 		theApp.SetConfig("UserHacks", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_enble_check)));
