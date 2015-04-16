@@ -698,9 +698,10 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 				helpstr = "Sprite Alignment Hack\n\n"
 						  "Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
 				break;
-			case IDC_STRETCH_SPRITE:
+			case IDC_ROUND_SPRITE:
 				helpstr = "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
 						  "Fixes lines in sprites of games like Ar tonelico when upscaling.\n"
+						  "carries total of three states, are 0 (off) /1 (on for flat sprites)/2 (on all sprites).\n"
 						  "Works best at 2x, but helps at any resolution.";
 				break;
 
@@ -744,7 +745,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("UserHacks_NVIDIAHack", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_NVIDIA_HACK));
 			theApp.SetConfig("UserHacks_DisableCrcHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS));
-			theApp.SetConfig("Userhacks_stretch_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_STRETCH_SPRITE));
+			theApp.SetConfig("UserHacks_round_sprite_offset", (int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
