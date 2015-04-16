@@ -226,8 +226,9 @@ void GSRendererHW::RoundSpriteOffset()
 {
 //#define DEBUG_U
 //#define DEBUG_V
+#if defined(DEBUG_V) || defined(DEBUG_U)
 	bool debug = linear;
-	const int half = linear ? 8 : 0;
+#endif
 	size_t count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 
@@ -280,17 +281,15 @@ void GSRendererHW::RoundSpriteOffset()
 		// Use rounded value of the newly computed texture coordinate. It ensures
 		// that sampling will remains inside texture boundary
 		//
-		// Note for bilinear: in this mode the PS2 add -0.5 offset (aka half) and 4 texels
-		// will be sampled so (t0 - 8) and (t1 - 8 + 16) must be valid.
-		//
-		// Minus half for t1 case might be too much
+		// Note for bilinear: by definition it will never work correctly! A sligh modification
+		// of interpolation migth trigger a discard (with alpha testing)
+		// Let's use something simple that correct really bad case (for a couple of 2D games).
+		// I hope it won't create too much glitches.
 		if (linear) {
-			if (tx0 <= tx1) {
-				v[i].U   = tx0 + half;
-				v[i+1].U = tx1 - half + 16;
-			} else {
-				v[i].U   = tx0 + 15;
-				v[i+1].U = tx1;
+			int Lu = v[i+1].U - v[i].U;
+			// Note 32 is based on taisho-mononoke
+			if ((Lu > 0) && (Lu <= (Lx+32))) {
+				v[i+1].U -= 8;
 			}
 		} else {
 			if (tx0 <= tx1) {
@@ -304,12 +303,9 @@ void GSRendererHW::RoundSpriteOffset()
 #endif
 #if 1
 		if (linear) {
-			if (ty0 <= ty1) {
-				v[i].V   = ty0 + half;
-				v[i+1].V = ty1 - half + 16;
-			} else {
-				v[i].V   = ty0 + 15;
-				v[i+1].V = ty1;
+			int Lv = v[i+1].V - v[i].V;
+			if ((Lv > 0) && (Lv <= (Ly+32))) {
+				v[i+1].V -= 8;
 			}
 		} else {
 			if (ty0 <= ty1) {
