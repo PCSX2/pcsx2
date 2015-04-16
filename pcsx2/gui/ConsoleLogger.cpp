@@ -350,6 +350,13 @@ static const bool ConLogDefaults[] =
 	false
 };
 
+// Typically on startup (or during first time wizard when choosing "import"), the
+// settings are loaded from ini and if the ini doesn't exist then from ConLogDefaults,
+// but during first time wizard when choosing "overwrite", the first action is "save",
+// which ends up saving before applying ConLogDefaults, therefore all conlog sources
+// are saved as disabled. ConLogInitialized is used to detect and avoid this issue.
+static bool ConLogInitialized = false;
+
 void ConLog_LoadSaveSettings( IniInterface& ini )
 {
 	ScopedIniGroup path(ini, L"ConsoleLogSources");
@@ -361,9 +368,14 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
 		{
+			// IsSaving() is for clarity only, since log->Enabled initial value is ignored when loading.
+			if (ini.IsSaving() && !ConLogInitialized)
+				log->Enabled = ConLogDefaults[i];
 			ini.Entry( log->GetCategory() + L"." + log->GetShortName(), log->Enabled, ConLogDefaults[i] );
 		}
 	}
+
+	ConLogInitialized = true;
 }
 
 
