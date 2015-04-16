@@ -21,6 +21,9 @@
 
 #include "stdafx.h"
 #include "GSSetting.h"
+#ifndef __linux__
+#include "resource.h"
+#endif
 
 const char* dialog_message(int ID, bool* updateText) {
 	if (updateText)
