@@ -5,6 +5,9 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/multinull" AND multinull)
+        add_subdirectory(multinull)
+endif()
 
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
 #	add_subdirectory(cdvdGigaherz)
@@ -22,10 +25,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDlinuz" AND CDVDlinuz)
 	add_subdirectory(CDVDlinuz/Src)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
-	add_subdirectory(CDVDnull)
-endif()
-
 # if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDolio" AND CDVDolio)
 # 	add_subdirectory(CDVDolio)
 # endif()
@@ -34,20 +33,8 @@ endif()
 #	add_subdirectory(CDVDpeops)
 #endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
-	add_subdirectory(dev9null)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/FWnull" AND FWnull)
-	add_subdirectory(FWnull)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSnull" AND GSnull)
-	add_subdirectory(GSnull)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/LilyPad" AND LilyPad)
@@ -58,17 +45,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad" AND onepad)
 	add_subdirectory(onepad)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
-	add_subdirectory(PadNull)
-endif()
-
 # if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PeopsSPU2" AND PeopsSPU2)
 # 	add_subdirectory(PeopsSPU2)
 # endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/SPU2null" AND SPU2null)
-	add_subdirectory(SPU2null)
-endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x" AND spu2-x)
 	add_subdirectory(spu2-x/src)
@@ -78,9 +57,6 @@ endif()
 #	add_subdirectory(SSSPSXPAD)
 #endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)
-	add_subdirectory(USBnull)
-endif()
 
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/xpad" AND xpad)
 #	add_subdirectory(xpad)
