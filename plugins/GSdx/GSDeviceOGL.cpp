@@ -662,7 +662,7 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 		+ format("#define VS_WILDHACK %d\n", sel.wildhack)
 		;
 
-	return m_shader->Compile("tfx.glsl", "vs_main", GL_VERTEX_SHADER, tfx_glsl, macro);
+	return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, macro);
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -671,7 +671,7 @@ GLuint GSDeviceOGL::CompileGS()
 #ifdef ENABLE_GLES
 	return 0;
 #else
-	return m_shader->Compile("tfx.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_glsl, "");
+	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, "");
 #endif
 }
 
@@ -699,7 +699,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_IIP %d\n", sel.iip)
 		;
 
-	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_glsl, macro);
+	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
 }
 
 GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, bool msaa, int format)
