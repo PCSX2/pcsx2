@@ -60,6 +60,12 @@
 
 #endif
 
+// Require at least Visual Studio 2012
+#if defined(__linux__) || (defined(_MSC_VER) && (_MSC_VER >= 1700))
+#define _CX11_
+#define ENABLE_BOOST // queue is from boost but it doesn't require a full boost install
+#endif
+
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
 
 typedef unsigned char uint8;
@@ -96,6 +102,14 @@ typedef uint32 uptr;
 #include <set>
 #include <queue>
 #include <algorithm>
+#ifdef _CX11_
+#include <thread>
+#include <atomic>
+#endif
+#if defined(__linux__) || defined(_CX11_)
+#include <mutex>
+#include <condition_variable>
+#endif
 
 using namespace std;
 
