@@ -465,6 +465,8 @@ static const char* tfx_vgs_glsl =
 	"layout(location = 4) in uvec2 i_p;\n"
 	"layout(location = 5) in uint  i_z;\n"
 	"layout(location = 6) in uvec2 i_uv;\n"
+	"// FIXME only first byte is useful\n"
+	"//TEST_ME layout(location = 7) in float i_f;\n"
 	"layout(location = 7) in vec4  i_f;\n"
 	"\n"
 	"out SHADER\n"

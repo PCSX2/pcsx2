@@ -14,6 +14,8 @@ layout(location = 3) in float i_q;
 layout(location = 4) in uvec2 i_p;
 layout(location = 5) in uint  i_z;
 layout(location = 6) in uvec2 i_uv;
+// FIXME only first byte is useful
+//TEST_ME layout(location = 7) in float i_f;
 layout(location = 7) in vec4  i_f;
 
 out SHADER
