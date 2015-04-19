@@ -7,13 +7,6 @@
 #define VS_LOGZ 0
 #endif
 
-struct vertex
-{
-    vec4 t;
-    vec4 c;
-	vec4 fc;
-};
-
 #ifdef VERTEX_SHADER
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in vec4  i_c;
@@ -158,6 +151,11 @@ void vs_main()
 #endif
 
 #ifdef GEOMETRY_SHADER
+
+#ifndef GS_SPRITE
+#define GS_SPRITE 0
+#endif
+
 in gl_PerVertex {
     invariant vec4 gl_Position;
     float gl_PointSize;
@@ -188,15 +186,45 @@ out SHADER
     vec4 t;
     vec4 c;
     flat vec4 fc;
+#if GS_SPRITE > 0
+    flat vec4 flat_T;
+    flat vec2 flat_P;
+    vec2 alpha;
+#endif
 } GSout;
+
+layout(std140, binding = 22) uniform cb22
+{
+    vec4 rt_size;
+};
+
+
+struct vertex
+{
+    vec4 t;
+    vec4 c;
+    vec2 a;
+};
 
 void out_vertex(in vertex v)
 {
     GSout.t = v.t;
     GSout.c = v.c;
-    GSout.fc = v.fc;
+#if GS_SPRITE > 0
+    GSout.alpha = v.a;
+#endif
     gl_PrimitiveID = gl_PrimitiveIDIn;
     EmitVertex();
+}
+
+void out_flat(in vec2 dp)
+{
+    // Flat output
+    GSout.fc = GSin[1].fc;
+#if GS_SPRITE > 0
+    GSout.flat_T = vec4(GSin[0].t.x, GSin[1].t.x, GSin[0].t.y, GSin[1].t.y);
+    GSout.flat_P = 1.0f / dp;
+#endif
 }
 
 layout(lines) in;
@@ -204,10 +232,17 @@ layout(triangle_strip, max_vertices = 6) out;
 
 void gs_main()
 {
+    // Rescale from -1 1 to 0:1 (require window size)
+#if GS_SPRITE > 0
+    vec2 dp = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy) * rt_size.xy;
+#else
+    vec2 dp = vec2(0.0f, 0.0f);
+#endif
+
     // left top     => GSin[0];
     // right bottom => GSin[1];
-    vertex rb = vertex(GSin[1].t, GSin[1].c, GSin[1].fc);
-    vertex lt = vertex(GSin[0].t, GSin[0].c, GSin[0].fc);
+    vertex rb = vertex(GSin[1].t, GSin[1].c, dp);
+    vertex lt = vertex(GSin[0].t, GSin[0].c, vec2(0.0f, 0.0f));
 
     vec4 rb_p = gl_in[1].gl_Position;
     vec4 lb_p = gl_in[1].gl_Position;
@@ -225,10 +260,12 @@ void gs_main()
     vertex lb = rb;
     lb_p.x = lt_p.x;
     lb.t.x = lt.t.x;
+    lb.a.x = lt.a.x;
 
     vertex rt = rb;
     rt_p.y = lt_p.y;
     rt.t.y = lt.t.y;
+    rt.a.y = lt.a.y;
 
     // Triangle 1
     gl_Position = lt_p;
@@ -238,8 +275,8 @@ void gs_main()
     out_vertex(lb);
 
     gl_Position = rt_p;
+    out_flat(dp);
     out_vertex(rt);
-
     EndPrimitive();
 
     // Triangle 2
@@ -250,8 +287,8 @@ void gs_main()
     out_vertex(rt);
 
     gl_Position = rb_p;
+    out_flat(dp);
     out_vertex(rb);
-
     EndPrimitive();
 }
 

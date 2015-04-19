@@ -32,6 +32,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_AlphaStencil = !!theApp.GetConfig("UserHacks_AlphaStencil", 0) && !!theApp.GetConfig("UserHacks", 0);
 	UserHacks_DateGL4 = !!theApp.GetConfig("UserHacks_DateGL4", 0);
 	m_pixelcenter = GSVector2(-0.5f, -0.5f);
+	UserHacks_Unscale_sprite = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_UnscaleSprite", 0) : 0;
 
 	UserHacks_TCOffset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_TCOffset", 0) : 0;
 	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
@@ -165,10 +166,19 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
+	GSDeviceOGL::VSSelector vs_sel;
+	GSDeviceOGL::VSConstantBuffer vs_cb;
 
-	// Blend
+	GSDeviceOGL::GSConstantBuffer gs_cb;
+
+	GSDeviceOGL::PSSelector ps_sel;
+	GSDeviceOGL::PSConstantBuffer ps_cb;
+	GSDeviceOGL::PSSamplerSelector ps_ssel;
 
 	GSDeviceOGL::OMBlendSelector om_bsel;
+	GSDeviceOGL::OMDepthStencilSelector om_dssel;
+
+	// Blend
 
 	if(!IsOpaque())
 	{
@@ -238,8 +248,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	GSDeviceOGL::OMDepthStencilSelector om_dssel;
-
 	if(context->TEST.ZTE)
 	{
 		om_dssel.ztst = context->TEST.ZTST;
@@ -255,9 +263,17 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		om_dssel.fba = context->FBA.FBA;
 	}
 
-	// vs
+	bool hack_enabled = (UserHacks_Unscale_sprite > 1) || ((UserHacks_Unscale_sprite == 1) && !m_vt.IsLinear());
+	if (hack_enabled && (m_vt.m_primclass == GS_SPRITE_CLASS) && GLLoader::found_geometry_shader) {
+		bool blit = tex && (tex->m_texture->GetWidth() == rtsize.x) && (tex->m_texture->GetHeight() == rtsize.y);
+		if (!blit) {
+			ps_sel.sprite = 1;
+			gs_cb.rt_size = GSVector4(rtsize.x / rtscale.x, rtsize.y / rtscale.y) / 2.0f;
+		}
+	}
 
-	GSDeviceOGL::VSSelector vs_sel;
+
+	// vs
 
 	vs_sel.tme = PRIM->TME;
 	vs_sel.fst = PRIM->FST;
@@ -298,8 +314,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// FIXME Opengl support half pixel center (as dx10). Code could be easier!!!
-	GSDeviceOGL::VSConstantBuffer vs_cb;
-
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
 	float ox = (float)(int)context->XYOFFSET.OFX;
@@ -322,12 +336,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Note: DX does y *= -1.0
 	vs_cb.Vertex_Scale_Offset = GSVector4(sx, sy, ox * sx + ox2 + 1, oy * sy + oy2 + 1);
 	// END of FIXME
-
-	// ps
-
-	GSDeviceOGL::PSSelector ps_sel;
-	GSDeviceOGL::PSSamplerSelector ps_ssel;
-	GSDeviceOGL::PSConstantBuffer ps_cb;
 
 	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
 	ps_sel.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 1 : PRIM->IIP;
@@ -481,7 +489,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	SetupIA();
 
 	dev->SetupOM(om_dssel, om_bsel, afix);
-	dev->SetupCB(&vs_cb, &ps_cb);
+	dev->SetupCB(&vs_cb, &ps_cb, ps_sel.sprite ? &gs_cb : NULL);
 
 	if (advance_DATE) {
 		// Create an r32i image that will contain primitive ID

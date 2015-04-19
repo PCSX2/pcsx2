@@ -25,10 +25,12 @@
 
 static const uint32 g_vs_cb_index = 20;
 static const uint32 g_ps_cb_index = 21;
+static const uint32 g_gs_cb_index = 22;
 
 void GSDeviceOGL::CreateTextureFX()
 {
 	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
+	m_gs_cb = new GSUniformBufferOGL(g_gs_cb_index, sizeof(GSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
@@ -117,7 +119,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 	return bs;
 }
 
-void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
+void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb, const GSConstantBuffer* gs_cb)
 {
 	if(m_vs_cb_cache.Update(vs_cb)) {
 		m_vs_cb->upload(vs_cb);
@@ -125,6 +127,10 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 
 	if(m_ps_cb_cache.Update(ps_cb)) {
 		m_ps_cb->upload(ps_cb);
+	}
+
+	if (gs_cb && m_gs_cb_cache.Update(gs_cb)) {
+		m_gs_cb->upload(gs_cb);
 	}
 
 }
