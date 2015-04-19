@@ -36,7 +36,7 @@
 #endif
 
 PADconf* conf;
-char libraryName[256];
+static char libraryName[256];
 
 keyEvent event;
 

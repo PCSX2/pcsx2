@@ -52,8 +52,6 @@ const char* GSUtil::GetLibName()
 
 		list<string> sl;
 
-		// TODO: linux (gcc)
-
 		#ifdef __INTEL_COMPILER
 		sl.push_back(format("Intel C++ %d.%02d", __INTEL_COMPILER / 100, __INTEL_COMPILER % 100));
 		#elif _MSC_VER
