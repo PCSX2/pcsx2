@@ -280,6 +280,9 @@ vec4 sample_color(vec2 st, float q)
         }
 #ifdef TEX_COORD_DEBUG
         c[0].rg = uv.xy;
+        c[1].rg = uv.xy;
+        c[2].rg = uv.xy;
+        c[3].rg = uv.xy;
 #endif
     }
 
