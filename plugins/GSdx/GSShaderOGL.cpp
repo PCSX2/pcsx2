@@ -263,7 +263,7 @@ void GSShaderOGL::UseProgram()
 			hash_map<uint64, GLuint >::iterator it;
 			// Note: shader are integer lookup pointer. They start from 1 and incr
 			// every time you create a new shader OR a new program.
-			// Note2: vs & gs are precompiled at startup. FGLRX and radeon got value < 128.
+			// Note2: vs & gs are precompiled at startup. FGLRX and radeon got value < 128. GS has only 2 programs
 			// We migth be able to pack the value in a 32bits int
 			// I would need to check the behavior on Nvidia (pause/resume).
 			uint64 sel = (uint64)GLState::vs << 40 | (uint64)GLState::gs << 20 | GLState::ps;

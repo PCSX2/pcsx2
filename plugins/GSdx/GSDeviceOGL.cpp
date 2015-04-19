@@ -653,10 +653,10 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 }
 
 /* Note: must be here because tfx_glsl is static */
-GLuint GSDeviceOGL::CompileVS(VSSelector sel)
+GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
 {
 	std::string macro = format("#define VS_BPPZ %d\n", sel.bppz)
-		+ format("#define VS_LOGZ %d\n", sel.logz)
+		+ format("#define VS_LOGZ %d\n", logz)
 		+ format("#define VS_TME %d\n", sel.tme)
 		+ format("#define VS_FST %d\n", sel.fst)
 		+ format("#define VS_WILDHACK %d\n", sel.wildhack)

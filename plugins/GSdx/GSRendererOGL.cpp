@@ -27,7 +27,6 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_logz = !!theApp.GetConfig("logz", 1);
 	m_fba = !!theApp.GetConfig("fba", 1);
 	UserHacks_AlphaHack = !!theApp.GetConfig("UserHacks_AlphaHack", 0) && !!theApp.GetConfig("UserHacks", 0);
 	UserHacks_AlphaStencil = !!theApp.GetConfig("UserHacks_AlphaStencil", 0) && !!theApp.GetConfig("UserHacks", 0);
@@ -262,7 +261,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	vs_sel.tme = PRIM->TME;
 	vs_sel.fst = PRIM->FST;
-	vs_sel.logz = m_logz ? 1 : 0;
 	vs_sel.wildhack = (UserHacks_WildHack && !isPackedUV_HackFlag) ? 1 : 0;
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values

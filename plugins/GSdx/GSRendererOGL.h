@@ -35,7 +35,6 @@ class GSRendererOGL : public GSRendererHW
 {
 	private:
 		GSVector2 m_pixelcenter;
-		bool m_logz;
 		bool m_fba;
 		bool UserHacks_AlphaHack;
 		bool UserHacks_AlphaStencil;

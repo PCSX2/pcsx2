@@ -39,8 +39,15 @@ void GSDeviceOGL::CreateTextureFX()
 	// It might cost a seconds at startup but it would reduce benchmark pollution
 	m_gs = CompileGS();
 
-	for (uint32 key = 0; key < VSSelector::size(); key++)
-		m_vs[key] = CompileVS(VSSelector(key));
+	int logz = theApp.GetConfig("logz", 1);
+	for (uint32 key = 0; key < VSSelector::size(); key++) {
+		// wildhack is only useful if both TME and FST are enabled.
+		VSSelector sel(key);
+		if (sel.wildhack && (!sel.tme || !sel.fst))
+			m_vs[key] = 0;
+		else
+			m_vs[key] = CompileVS(sel, logz);
+	}
 
 	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++)
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));

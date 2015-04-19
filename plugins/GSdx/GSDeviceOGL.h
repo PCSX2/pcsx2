@@ -275,7 +275,6 @@ class GSDeviceOGL : public GSDevice
 			{
 				uint32 wildhack:1;
 				uint32 bppz:2;
-				uint32 logz:1;
 				// Next param will be handle by subroutine
 				uint32 tme:1;
 				uint32 fst:1;
@@ -284,12 +283,12 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x7f;}
+		operator uint32() {return key & 0x3f;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
 
-		static uint32 size() { return 1 << 6; }
+		static uint32 size() { return 1 << 5; }
 	};
 
 	__aligned(struct, 32) PSConstantBuffer
@@ -612,7 +611,7 @@ class GSDeviceOGL : public GSDevice
 	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
 
 	void CreateTextureFX();
-	GLuint CompileVS(VSSelector sel);
+	GLuint CompileVS(VSSelector sel, int logz);
 	GLuint CompileGS();
 	GLuint CompilePS(PSSelector sel);
 	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
