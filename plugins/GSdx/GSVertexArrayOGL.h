@@ -42,7 +42,6 @@ class GSBufferOGL {
 	size_t m_limit;
 	const  GLenum m_target;
 	GLuint m_buffer_name;
-	const bool m_sub_data_config;
 	uint8*  m_buffer_ptr;
 	const bool m_buffer_storage;
 
@@ -53,7 +52,6 @@ class GSBufferOGL {
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
-		, m_sub_data_config(theApp.GetConfig("ogl_vertex_subdata", 1) != 0)
 		, m_buffer_storage((theApp.GetConfig("ogl_vertex_storage", 0) == 1) && GLLoader::found_GL_ARB_buffer_storage)
 	{
 		gl_GenBuffers(1, &m_buffer_name);
@@ -65,8 +63,14 @@ class GSBufferOGL {
 #ifndef ENABLE_GLES
 			bind();
 			// FIXME do I need the dynamic
-			const GLbitfield map_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-			const GLbitfield create_flags = map_flags | GL_DYNAMIC_STORAGE_BIT;
+			const GLbitfield map_flags = GL_MAP_WRITE_BIT
+				| GL_MAP_PERSISTENT_BIT
+				// | GL_MAP_COHERENT_BIT (see barrier in GSDeviceOGL::BeforeDraw)
+				| GL_MAP_INVALIDATE_RANGE_BIT
+				;
+			const GLbitfield create_flags = map_flags
+				// | GL_CLIENT_STORAGE_BIT
+				;
 
 			gl_BufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
 			m_buffer_ptr = (uint8*) gl_MapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
@@ -124,19 +128,35 @@ class GSBufferOGL {
 	void map_upload(const void* src, uint32 count)
 	{
 		void* dst;
-		if (Map(&dst, count)) {
-#if 0
-			// FIXME which one to use. Note dst doesn't have any aligment guarantee
-			// because it depends of the offset
-			if (m_target == GL_ARRAY_BUFFER) {
-				GSVector4i::storent(dst, src, m_count * m_stride);
-			} else {
-				memcpy(dst, src, m_stride*m_count);
+
+		m_count = count;
+
+		// Get the pointer of the buffer
+		{
+			// It would need some protection of the data. For the moment finger cross!
+			if (m_count > m_limit) {
+				fprintf(stderr, "Buffer (%x) too small! Please report it upstream\n", m_target);
+				ASSERT(0);
+			} else if (m_count > (m_limit - m_start) ) {
+				//fprintf(stderr, "Wrap buffer (%x)\n", m_target);
+				// Wrap at startup
+				m_start = 0;
 			}
-#endif
-			memcpy(dst, src, m_stride*m_count);
-			Unmap();
+
+			dst = m_buffer_ptr + m_start*m_stride;
 		}
+
+#if 0
+		// FIXME which one to use. Note dst doesn't have any aligment guarantee
+		// because it depends of the offset
+		if (m_target == GL_ARRAY_BUFFER) {
+			GSVector4i::storent(dst, src, m_count * m_stride);
+		} else {
+			memcpy(dst, src, m_stride*m_count);
+		}
+#else
+		memcpy(dst, src, m_stride*m_count);
+#endif
 	}
 
 #ifdef ENABLE_GLES
@@ -157,61 +177,11 @@ class GSBufferOGL {
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_vertex_upload_byte += count*m_stride;
 #endif
-		if (m_sub_data_config && !m_buffer_storage) {
-			subdata_upload(src, count);
-		} else {
-			map_upload(src, count);
-		}
-	}
-
-	bool Map(void** pointer, uint32 count ) {
-		m_count = count;
-
 		if (m_buffer_storage) {
-			// It would need some protection of the data. For the moment finger cross!
-
-			if (m_count > m_limit) {
-				fprintf(stderr, "Buffer (%x) too small! Please report it upstream\n", m_target);
-				ASSERT(0);
-			} else if (m_count > (m_limit - m_start) ) {
-				//fprintf(stderr, "Wrap buffer (%x)\n", m_target);
-				// Wrap at startup
-				m_start = 0;
-			}
-
-			*pointer = m_buffer_ptr + m_start*m_stride;
-
+			map_upload(src, count);
 		} else {
-			// Note: For an explanation of the map flag
-			// see http://www.opengl.org/wiki/Buffer_Object_Streaming
-			uint32 map_flags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
-
-			// Current GPU buffer is really too small need to allocate a new one
-			if (m_count > m_limit) {
-				allocate(std::max<int>(m_count * 3 / 2, m_limit));
-
-			} else if (m_count > (m_limit - m_start) ) {
-				// Not enough left free room. Just go back at the beginning
-				m_start = 0;
-
-				// Tell the driver that it can orphan previous buffer and restart from a scratch buffer.
-				// Technically the buffer will not be accessible by the application anymore but the
-				// GL will effectively remove it when draws call are finised.
-				map_flags |= GL_MAP_INVALIDATE_BUFFER_BIT;
-			} else {
-				// Tell the driver that it doesn't need to contain any valid buffer data, and that you promise to write the entire range you map
-				map_flags |= GL_MAP_INVALIDATE_RANGE_BIT;
-			}
-
-			// Upload the data to the buffer
-			*pointer = (uint8*) gl_MapBufferRange(m_target, m_stride*m_start, m_stride*m_count, map_flags);
+			subdata_upload(src, count);
 		}
-
-		return true;
-	}
-
-	void Unmap() {
-		if (!m_buffer_storage) gl_UnmapBuffer(m_target);
 	}
 
 	void EndScene()

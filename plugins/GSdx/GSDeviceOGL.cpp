@@ -415,6 +415,9 @@ void GSDeviceOGL::BeforeDraw()
 #ifdef _DEBUG
 	ASSERT(gl_CheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 #endif
+	// Ensure VBOs are uploaded
+	if (GLLoader::found_GL_ARB_buffer_storage)
+		Barrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 
 //#ifdef ENABLE_OGL_STENCIL_DEBUG
 //	if (m_date.t)
