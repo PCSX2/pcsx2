@@ -24,7 +24,7 @@
 #include "GSTexture.h"
 
 // FIXME find the optimal number of PBO
-#define PBO_POOL_SIZE 4
+#define PBO_POOL_SIZE 8
 
 namespace PboPool {
 	void BindPbo();
