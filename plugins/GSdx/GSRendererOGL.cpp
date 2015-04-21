@@ -217,7 +217,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if(DATE)
 	{
 		// Note at the moment OGL has always stencil. Rt can be disabled
-		if(dev->HasStencil())
+		if(dev->HasStencil() && !advance_DATE)
 		{
 			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
 			GSVector4 o = GSVector4(-1.0f, 1.0f);
@@ -342,9 +342,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if(DATE)
 	{
-		om_dssel.date = 1;
 		if (advance_DATE)
 			ps_sel.date = 1 + context->TEST.DATM;
+		else
+			om_dssel.date = 1;
 	}
 
 	if(env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
