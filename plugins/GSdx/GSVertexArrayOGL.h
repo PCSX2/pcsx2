@@ -66,7 +66,7 @@ class GSBufferOGL {
 			const GLbitfield map_flags = GL_MAP_WRITE_BIT
 				| GL_MAP_PERSISTENT_BIT
 				// | GL_MAP_COHERENT_BIT (see barrier in GSDeviceOGL::BeforeDraw)
-				| GL_MAP_INVALIDATE_RANGE_BIT
+				| GL_MAP_FLUSH_EXPLICIT_BIT
 				;
 			const GLbitfield create_flags = map_flags
 				// | GL_CLIENT_STORAGE_BIT
@@ -130,6 +130,8 @@ class GSBufferOGL {
 		void* dst;
 
 		m_count = count;
+		size_t offset = m_start*m_stride;
+		size_t length = m_count*m_stride;
 
 		// Get the pointer of the buffer
 		{
@@ -141,21 +143,25 @@ class GSBufferOGL {
 				//fprintf(stderr, "Wrap buffer (%x)\n", m_target);
 				// Wrap at startup
 				m_start = 0;
+				offset = 0;
 			}
 
-			dst = m_buffer_ptr + m_start*m_stride;
+			dst = m_buffer_ptr + offset;
 		}
 
 #if 0
 		// FIXME which one to use. Note dst doesn't have any aligment guarantee
 		// because it depends of the offset
 		if (m_target == GL_ARRAY_BUFFER) {
-			GSVector4i::storent(dst, src, m_count * m_stride);
+			GSVector4i::storent(dst, src, length);
 		} else {
-			memcpy(dst, src, m_stride*m_count);
+			memcpy(dst, src, length);
 		}
 #else
-		memcpy(dst, src, m_stride*m_count);
+		memcpy(dst, src, length);
+#endif
+#if 1
+		gl_FlushMappedBufferRange(m_target, offset, length);
 #endif
 	}
 
