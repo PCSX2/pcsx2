@@ -36,6 +36,7 @@ namespace PboPool {
 	char*  m_map[PBO_POOL_SIZE];
 	uint32 m_current_pbo = 0;
 	uint32 m_size;
+	bool   m_texture_storage;
 	const uint32 m_pbo_size = 4*1024*1024;
 
 #ifndef ENABLE_GLES
@@ -51,11 +52,12 @@ namespace PboPool {
 
 	void Init() {
 		gl_GenBuffers(countof(m_pool), m_pool);
+		m_texture_storage  = ((theApp.GetConfig("ogl_texture_storage", 0) == 1) && GLLoader::found_GL_ARB_buffer_storage);
 
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();
 
-			if (GLLoader::found_GL_ARB_buffer_storage) {
+			if (m_texture_storage) {
 #ifndef ENABLE_GLES
 				gl_BufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
 				m_map[m_current_pbo] = (char*)gl_MapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
@@ -78,7 +80,7 @@ namespace PboPool {
 			fprintf(stderr, "BUG: PBO too small %d but need %d\n", m_pbo_size, m_size);
 		}
 
-		if (GLLoader::found_GL_ARB_buffer_storage) {
+		if (m_texture_storage) {
 			if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
 				NextPbo();
 			}
@@ -118,7 +120,7 @@ namespace PboPool {
 	}
 
 	void Unmap() {
-		if (GLLoader::found_GL_ARB_buffer_storage) {
+		if (m_texture_storage) {
 			// As far as I understand glTexSubImage2D is a client-server transfer so no need to make
 			// the value visible to the server
 			//gl_MemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
@@ -132,7 +134,7 @@ namespace PboPool {
 	}
 
 	void Destroy() {
-		if (GLLoader::found_GL_ARB_buffer_storage)
+		if (m_texture_storage)
 			UnmapAll();
 		gl_DeleteBuffers(countof(m_pool), m_pool);
 	}
