@@ -142,6 +142,7 @@ PFNGLCREATESAMPLERSPROC                gl_CreateSamplers                    = NU
 PFNGLCREATEPROGRAMPIPELINESPROC        gl_CreateProgramPipelines            = NULL;
 
 PFNGLCLIPCONTROLPROC                   gl_ClipControl                       = NULL;
+PFNGLTEXTUREBARRIERPROC                gl_TextureBarrier                    = NULL;
 
 #endif
 

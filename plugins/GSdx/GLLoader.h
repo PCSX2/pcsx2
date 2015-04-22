@@ -330,6 +330,7 @@ extern PFNGLCREATESAMPLERSPROC                  gl_CreateSamplers;
 extern PFNGLCREATEPROGRAMPIPELINESPROC          gl_CreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     gl_ClipControl;
+extern PFNGLTEXTUREBARRIERPROC                  gl_TextureBarrier;
 
 #else
 #define gl_ActiveTexture glActiveTexture

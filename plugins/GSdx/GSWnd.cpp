@@ -145,6 +145,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_CreateProgramPipelines) = GetProcAddress("glCreateProgramPipelines", true);
 
 	*(void**)&(gl_ClipControl) = GetProcAddress("glClipControl", true);
+	*(void**)&(gl_TextureBarrier) = GetProcAddress("glTextureBarrier", true);
 
 #endif
 }
