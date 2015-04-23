@@ -45,9 +45,9 @@ namespace PboPool {
 	// XXX: actually does I really need coherent and barrier???
 	// As far as I understand glTexSubImage2D is a client-server transfer so no need to make
 	// the value visible to the server
-	const GLbitfield map_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT /*| GL_MAP_COHERENT_BIT*/;
-	// FIXME do I need GL_DYNAMIC_STORAGE_BIT to allow write?
-	const GLbitfield create_flags = map_flags /*| GL_DYNAMIC_STORAGE_BIT*/ | GL_CLIENT_STORAGE_BIT;
+	const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+	const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
+	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 #endif
 
 	void Init() {

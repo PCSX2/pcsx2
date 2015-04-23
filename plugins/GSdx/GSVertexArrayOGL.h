@@ -62,13 +62,10 @@ class GSBufferOGL {
 		if (m_buffer_storage) {
 #ifndef ENABLE_GLES
 			bind();
-			// FIXME do I need the dynamic
-			const GLbitfield map_flags = GL_MAP_WRITE_BIT
-				| GL_MAP_PERSISTENT_BIT
-				// | GL_MAP_COHERENT_BIT (see barrier in GSDeviceOGL::BeforeDraw)
-				| GL_MAP_FLUSH_EXPLICIT_BIT
-				;
-			const GLbitfield create_flags = map_flags
+			// coherency will be done by flushing
+			const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+			const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
+			const GLbitfield create_flags = common_flags
 				// | GL_CLIENT_STORAGE_BIT
 				;
 
