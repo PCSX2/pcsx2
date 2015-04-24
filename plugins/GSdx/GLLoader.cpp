@@ -146,6 +146,47 @@ PFNGLTEXTUREBARRIERPROC                gl_TextureBarrier                    = NU
 
 #endif
 
+namespace Emulate_DSA {
+	void BindTextureUnit(GLuint unit, GLuint texture) {
+		gl_ActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+
+	void CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
+		glGenTextures(1, textures);
+	}
+
+	void TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		gl_TexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
+	}
+
+	void TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
+		BindTextureUnit(7, texture);
+		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
+	}
+
+	void CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
+	}
+
+	void GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
+		BindTextureUnit(7, texture);
+		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	void Init() {
+		fprintf(stderr, "DSA is not supported. Replace GL function pointer to emulate it\n");
+		gl_BindTextureUnit = BindTextureUnit;
+		gl_CreateTextures = CreateTexture;
+		gl_TextureStorage2D = TextureStorage;
+		gl_TextureSubImage2D = TextureSubImage;
+		gl_CopyTextureSubImage2D = CopyTextureSubImage;
+		gl_GetTextureImage = GetTexureImage;
+	}
+}
+
 namespace GLLoader {
 
 	bool fglrx_buggy_driver    = false;
@@ -334,6 +375,9 @@ namespace GLLoader {
 #else // ENABLE_GLES
 		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks", true);
 #endif
+		if (!found_GL_ARB_direct_state_access) {
+			Emulate_DSA::Init();
+		}
 
 		fprintf(stderr, "\n");
 
