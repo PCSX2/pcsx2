@@ -225,7 +225,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
-			glGenTextures(1, &m_texture_id);
+			gl_CreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
 			break;
 		case GSTexture::Backbuffer:
 			break;
@@ -249,8 +249,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GSTexture::DepthStencil:
 		case GSTexture::RenderTarget:
 		case GSTexture::Texture:
-			EnableUnit();
-			gl_TexStorage2D(GL_TEXTURE_2D, 1,  m_format, m_size.x, m_size.y);
+			gl_TextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
 			break;
 		default: break;
 	}
@@ -264,8 +263,6 @@ GSTextureOGL::~GSTextureOGL()
 		GLState::rt = 0;
 	if (m_texture_id == GLState::ds)
 		GLState::ds = 0;
-	if (m_texture_id == GLState::tex)
-		GLState::tex = 0;
 	if (m_texture_id == GLState::tex_unit[0])
 		GLState::tex_unit[0] = 0;
 	if (m_texture_id == GLState::tex_unit[1])
@@ -278,8 +275,6 @@ GSTextureOGL::~GSTextureOGL()
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
-
-	EnableUnit();
 
 	// Note: reduce noise for gl retracers
 	// It might introduce bug after an emulator pause so always set it in standard mode
@@ -317,7 +312,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	} else {
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 	}
-	glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
+	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 	// Normally only affect TexSubImage call. (i.e. only the previous line)
 	//glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
@@ -356,19 +351,9 @@ GLuint64 GSTextureOGL::GetHandle(GLuint sampler_id)
 	return m_handles[sampler_id];
 }
 
-void GSTextureOGL::EnableUnit()
-{
-	/* Not a real texture */
-	ASSERT(!IsBackbuffer());
-
-	if (GLState::tex != m_texture_id) {
-		GLState::tex = m_texture_id;
-		glBindTexture(GL_TEXTURE_2D, m_texture_id);
-	}
-}
-
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 {
+	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
 	if (m_type != GSTexture::Offscreen) return false;
 
 	// The function allow to modify the texture from the CPU
@@ -380,7 +365,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	// Can be used on GL_PIXEL_UNPACK_BUFFER or GL_TEXTURE_BUFFER
 
 	// Bind the texture to the read framebuffer to avoid any disturbance
-	EnableUnit();
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -565,7 +549,8 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 {
 	// Collect the texture data
 	uint32 pitch = 4 * m_size.x;
-	char* image = (char*)malloc(pitch * m_size.y);
+	uint32 buf_size = pitch * m_size.y * 2;// Note *2 for security (depth/stencil)
+	char* image = (char*)malloc(buf_size);
 	bool status = true;
 
 	// FIXME instead of swapping manually B and R maybe you can request the driver to do it
@@ -582,11 +567,8 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	} else if(m_format == GL_R32I) {
-		gl_ActiveTexture(GL_TEXTURE0 + 6);
-		glBindTexture(GL_TEXTURE_2D, m_texture_id);
-
 #ifndef ENABLE_GLES
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_INT, image);
+		gl_GetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
 		SaveRaw(fn, image, pitch);
 #endif
 
@@ -595,9 +577,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 	} else {
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-
-		gl_ActiveTexture(GL_TEXTURE0 + 6);
-		glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
@@ -622,10 +601,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 	if (status) Save(fn, image, pitch);
 	free(image);
-
-	// Restore state
-	gl_ActiveTexture(GL_TEXTURE0 + 3);
-	glBindTexture(GL_TEXTURE_2D, GLState::tex);
 
 	return status;
 }

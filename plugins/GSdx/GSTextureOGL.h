@@ -69,8 +69,6 @@ class GSTextureOGL : public GSTexture
 		void Save(const string& fn, const void* image, uint32 pitch);
 		void SaveRaw(const string& fn, const void* image, uint32 pitch);
 
-		void EnableUnit();
-
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }
 

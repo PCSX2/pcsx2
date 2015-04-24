@@ -629,8 +629,8 @@ class GSDeviceOGL : public GSDevice
 	void IASetVertexBuffer(const void* vertices, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(GLuint sr);
-	void PSSetShaderResources(GLuint tex[2]);
+	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref);

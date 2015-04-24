@@ -213,13 +213,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_va = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
 
 	// ****************************************************************
-	// Texture unit state
-	// ****************************************************************
-	// By default use unit 3 for texture modification
-	// unit 0-2 will allocated to shader input
-	gl_ActiveTexture(GL_TEXTURE0 + 3);
-
-	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
 	for (uint32 key = 0; key < PSSamplerSelector::size(); key++)
@@ -578,10 +571,7 @@ void GSDeviceOGL::InitPrimDateTexture(int w, int h)
 	ClearRenderTarget_ui(m_date.t, 0x0FFFFFFF);
 
 #ifdef ENABLE_OGL_STENCIL_DEBUG
-	gl_ActiveTexture(GL_TEXTURE0 + 5);
-	glBindTexture(GL_TEXTURE_2D, static_cast<GSTextureOGL*>(m_date.t)->GetID());
-	// Get back to the expected active texture unit
-	gl_ActiveTexture(GL_TEXTURE0 + 3);
+	gl_BindTextureUnit(5, static_cast<GSTextureOGL*>(m_date.t)->GetID());
 #endif
 
 	BindDateTexture();
@@ -743,8 +733,7 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, static_cast<GSTextureOGL*>(st_ogl)->GetID(), 0);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-		dt_ogl->EnableUnit();
-		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.x, r.y, r.width(), r.height());
+		gl_CopyTextureSubImage2D(dt_ogl->GetID(), GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
@@ -841,7 +830,7 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(st)->GetHandle(linear ? m_convert.ln : m_convert.pt) , 0};
 		m_shader->PS_ressources(handle);
 	} else {
-		PSSetShaderResource(static_cast<GSTextureOGL*>(st)->GetID());
+		PSSetShaderResource(0, st);
 		PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
 	}
 
@@ -1008,7 +997,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(rt)->GetHandle(m_convert.pt) , 0};
 		m_shader->PS_ressources(handle);
 	} else {
-		PSSetShaderResource(static_cast<GSTextureOGL*>(rt)->GetID());
+		PSSetShaderResource(0, rt);
 		PSSetSamplerState(m_convert.pt);
 	}
 
@@ -1051,34 +1040,18 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 	m_va->SetTopology(topology);
 }
 
-void GSDeviceOGL::PSSetShaderResource(GLuint sr)
+void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	if (GLState::tex_unit[0] != sr) {
-		GLState::tex_unit[0] = sr;
-
-		gl_ActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sr);
-
-		// Get back to the expected active texture unit
-		gl_ActiveTexture(GL_TEXTURE0 + 3);
+	GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
+	if (GLState::tex_unit[i] != id) {
+		gl_BindTextureUnit(i, id);
 	}
 }
 
-void GSDeviceOGL::PSSetShaderResources(GLuint tex[2])
+void GSDeviceOGL::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 {
-	if (GLState::tex_unit[0] != tex[0] || GLState::tex_unit[1] != tex[1]) {
-		GLState::tex_unit[0] = tex[0];
-		GLState::tex_unit[1] = tex[1];
-
-		gl_ActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex[0]);
-
-		gl_ActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, tex[1]);
-
-		// Get back to the expected active texture unit
-		gl_ActiveTexture(GL_TEXTURE0 + 3);
-	}
+	PSSetShaderResource(0, sr0);
+	PSSetShaderResource(1, sr1);
 }
 
 void GSDeviceOGL::PSSetSamplerState(GLuint ss)

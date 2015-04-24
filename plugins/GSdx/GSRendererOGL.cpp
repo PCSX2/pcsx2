@@ -474,11 +474,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->SetupSampler(ps_ssel);
 
 			if (tex->m_palette) {
-				GLuint textures[2] = {static_cast<GSTextureOGL*>(tex->m_texture)->GetID(), static_cast<GSTextureOGL*>(tex->m_palette)->GetID()};
-				dev->PSSetShaderResources(textures);
+				dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
 			} else if (tex->m_texture) {
-				// Only main texture
-				dev->PSSetShaderResource(static_cast<GSTextureOGL*>(tex->m_texture)->GetID());
+				dev->PSSetShaderResource(0, tex->m_texture);
 			}
 		}
 	}
