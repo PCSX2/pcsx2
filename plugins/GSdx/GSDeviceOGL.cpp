@@ -562,11 +562,13 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	return sampler;
 }
 
-void GSDeviceOGL::InitPrimDateTexture(int w, int h)
+void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 {
+	const GSVector2i& rtsize = rt->GetSize();
+
 	// Create a texture to avoid the useless clean@0
 	if (m_date.t == NULL)
-		m_date.t = CreateTexture(w, h, GL_R32I);
+		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
 
 	ClearRenderTarget_ui(m_date.t, 0x0FFFFFFF);
 
@@ -574,19 +576,10 @@ void GSDeviceOGL::InitPrimDateTexture(int w, int h)
 	gl_BindTextureUnit(5, static_cast<GSTextureOGL*>(m_date.t)->GetID());
 #endif
 
-	BindDateTexture();
-}
-
-void GSDeviceOGL::BindDateTexture()
-{
-	// TODO: multibind?
-	// GLuint textures[1] = {static_cast<GSTextureOGL*>(m_date.t)->GetID()};
-	// gl_BindImageTextures(2, 1, textures);
-	//gl_BindImageTexture(2, 0, 0, true, 0, GL_READ_WRITE, GL_R32I);
-
 #ifndef ENABLE_GLES
 	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #endif
+	gl_BindTextureUnit(3, static_cast<GSTextureOGL*>(rt)->GetID());
 }
 
 void GSDeviceOGL::RecycleDateTexture()

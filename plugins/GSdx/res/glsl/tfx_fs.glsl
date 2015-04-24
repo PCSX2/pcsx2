@@ -73,6 +73,7 @@ layout(bindless_sampler, location = 1) uniform sampler2D PaletteSampler;
 #else
 layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
+layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the image below
 #endif
 
 #ifndef DISABLE_GL42_image
@@ -437,6 +438,20 @@ void ps_main()
 #if !pGL_ES
 void ps_main()
 {
+#if PS_DATE == 1 && !defined(DISABLE_GL42_image)
+    // DATM == 0
+    // Pixel with alpha equal to 1 will failed
+	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
+	if ((127.5f / 255.0f) < rt_a) // < 0x80 pass (== 0x80 should not pass)
+		discard;
+#elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
+    // DATM == 1
+    // Pixel with alpha equal to 0 will failed
+	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
+    if(rt_a < (127.5f / 255.0f)) // >= 0x80 pass
+		discard;
+#endif
+
 #if PS_DATE == 3 && !defined(DISABLE_GL42_image)
     int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy));
     // Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
@@ -478,7 +493,6 @@ void ps_main()
     if (c.a > 127.5f / 255.0f) {
         imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
     }
-    //memoryBarrier();
 #elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
     // DATM == 1
     // Pixel with alpha equal to 0 will failed

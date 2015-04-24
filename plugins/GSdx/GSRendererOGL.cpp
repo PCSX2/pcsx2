@@ -225,9 +225,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Reduce the quantity of clean function
 		glScissor( ri.x, ri.y, ri.width(), ri.height() );
 
-		// Note at the moment OGL has always stencil. Rt can be disabled
-		if(dev->HasStencil() && !advance_DATE)
-		{
+		// Must be done here to avoid any GL state pertubation (clear function...)
+		// Create an r32ui image that will containt primitive ID
+		if (advance_DATE) {
+			dev->InitPrimDateTexture(rt);
+		} else {
 			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
 
 			GSVector4 src = (b * s.xyxy()).sat(o.zzyy());
@@ -243,11 +245,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
 		}
-
-		// Must be done here to avoid any GL state pertubation (clear function...)
-		// Create an r32ui image that will containt primitive ID
-		if (advance_DATE)
-			dev->InitPrimDateTexture(rtsize.x, rtsize.y);
 
 		// Restore the scissor state
 		ri = GLState::scissor;
@@ -493,8 +490,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
 
-	dev->OMSetRenderTargets(rt, ds, &scissor);
-
 	uint8 afix = context->ALPHA.FIX;
 
 	SetupIA();
@@ -506,6 +501,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Create an r32i image that will contain primitive ID
 		// Note: do it at the beginning because the clean will dirty the FBO state
 		//dev->InitPrimDateTexture(rtsize.x, rtsize.y);
+
+		// I don't know how much is it legal to mount rt as Texture/RT. No write is done.
+		// In doubt let's detach RT.
+		dev->OMSetRenderTargets(NULL, ds, &scissor);
 
 		// Don't write anything on the color buffer
 		dev->OMSetWriteBuffer(GL_NONE);
@@ -524,6 +523,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 #endif
 	}
+
+	dev->OMSetRenderTargets(rt, ds, &scissor);
 
 	if(context->TEST.DoFirstPass())
 	{

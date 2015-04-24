@@ -610,9 +610,8 @@ class GSDeviceOGL : public GSDevice
 	GSTexture* CreateDepthStencil(int w, int h, bool msaa, int format = 0);
 	GSTexture* CreateTexture(int w, int h, int format = 0);
 	GSTexture* CreateOffscreen(int w, int h, int format = 0);
-	void InitPrimDateTexture(int w, int h);
+	void InitPrimDateTexture(GSTexture* rt);
 	void RecycleDateTexture();
-	void BindDateTexture();
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
 
