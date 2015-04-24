@@ -354,7 +354,7 @@ void GSRenderer::VSync(int field)
 			string s2 = m_regs->SMODE2.INT ? (string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
 			s = format(
-				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d/%d/%d | %d%% CPU | %.2f | %.2f",
+				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
 				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetFPS()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
