@@ -105,7 +105,6 @@ PFNGLBINDIMAGETEXTUREPROC              gl_BindImageTexture                  = NU
 PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier                     = NULL;
 PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D                      = NULL;
 // GL4.4
-PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage                     = NULL;
 PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage                     = NULL;
 // GL_ARB_bindless_texture (GL5?)
 PFNGLGETTEXTURESAMPLERHANDLEARBPROC    gl_GetTextureSamplerHandleARB        = NULL;
@@ -157,7 +156,6 @@ namespace GLLoader {
 	// Optional
 	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
-	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
 	// Note: except Apple, all drivers support explicit uniform location
 	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
 	// GL4 hardware
@@ -297,7 +295,6 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_explicit_uniform_location") == 0) found_GL_ARB_explicit_uniform_location = true;
 				// GL4.4
 				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
-				if (ext.compare("GL_ARB_clear_texture") == 0) found_GL_ARB_clear_texture = true;
 				// FIXME: I have a crash when I hit pause (debug build)
 				//if (ext.compare("GL_ARB_bindless_texture") == 0) found_GL_ARB_bindless_texture = true;
 				// GL4.5
@@ -330,7 +327,6 @@ namespace GLLoader {
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
 		status &= status_and_override(found_GL_ARB_bindless_texture,"GL_ARB_bindless_texture");
-		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");

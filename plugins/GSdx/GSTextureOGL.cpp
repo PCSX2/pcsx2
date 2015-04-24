@@ -275,13 +275,6 @@ GSTextureOGL::~GSTextureOGL()
 	glDeleteTextures(1, &m_texture_id);
 }
 
-void GSTextureOGL::Clear(const void *data)
-{
-#ifndef ENABLE_GLES
-	gl_ClearTexImage(m_texture_id, 0,  m_int_format, m_int_type, data);
-#endif
-}
-
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);

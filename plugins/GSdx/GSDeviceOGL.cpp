@@ -463,33 +463,20 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-	if (GLLoader::found_GL_ARB_clear_texture) {
-		if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
-			glDisable(GL_SCISSOR_TEST);
-			OMSetFBO(0);
-			// glDrawBuffer(GL_BACK); // this is the default when there is no FB
-			// 0 will select the first drawbuffer ie GL_BACK
-			gl_ClearBufferfv(GL_COLOR, 0, c.v);
-			glEnable(GL_SCISSOR_TEST);
-		} else {
-			static_cast<GSTextureOGL*>(t)->Clear((const void*)&c);
-		}
+	glDisable(GL_SCISSOR_TEST);
+	if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
+		OMSetFBO(0);
+
+		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
+		// 0 will select the first drawbuffer ie GL_BACK
+		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	} else {
-		glDisable(GL_SCISSOR_TEST);
-		if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
-			OMSetFBO(0);
+		OMSetFBO(m_fbo);
+		OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
-			// glDrawBuffer(GL_BACK); // this is the default when there is no FB
-			// 0 will select the first drawbuffer ie GL_BACK
-			gl_ClearBufferfv(GL_COLOR, 0, c.v);
-		} else {
-			OMSetFBO(m_fbo);
-			OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
-
-			gl_ClearBufferfv(GL_COLOR, 0, c.v);
-		}
-		glEnable(GL_SCISSOR_TEST);
+		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	}
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
@@ -500,65 +487,43 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
 {
-	if (GLLoader::found_GL_ARB_clear_texture) {
-		static_cast<GSTextureOGL*>(t)->Clear((const void*)&c);
-	} else {
-		uint32 col[4] = {c, c, c, c};
+	uint32 col[4] = {c, c, c, c};
 
-		glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_SCISSOR_TEST);
 
-		OMSetFBO(m_fbo);
-		OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
+	OMSetFBO(m_fbo);
+	OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
-		gl_ClearBufferuiv(GL_COLOR, 0, col);
+	gl_ClearBufferuiv(GL_COLOR, 0, col);
 
-		glEnable(GL_SCISSOR_TEST);
-	}
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
-	// TODO is it possible with GL44 ClearTexture? no the API is garbage!
-	// It can't be used here because it will clear both depth and stencil
-	if (0 && GLLoader::found_GL_ARB_clear_texture) {
-#ifndef ENABLE_GLES
-		ASSERT(c == 0.0f);
-		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
-#endif
-	} else {
-		OMSetFBO(m_fbo);
-		OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
+	OMSetFBO(m_fbo);
+	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 
-		glDisable(GL_SCISSOR_TEST);
-		if (GLState::depth_mask) {
-			gl_ClearBufferfv(GL_DEPTH, 0, &c);
-		} else {
-			glDepthMask(true);
-			gl_ClearBufferfv(GL_DEPTH, 0, &c);
-			glDepthMask(false);
-		}
-		glEnable(GL_SCISSOR_TEST);
+	glDisable(GL_SCISSOR_TEST);
+	if (GLState::depth_mask) {
+		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+	} else {
+		glDepthMask(true);
+		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+		glDepthMask(false);
 	}
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
-	// TODO is it possible with GL44 ClearTexture? no the API is garbage!
-	// It can't be used here because it will clear both depth and stencil
-	if (0 && GLLoader::found_GL_ARB_clear_texture) {
-#ifndef ENABLE_GLES
-		ASSERT(c == 0);
-		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
-#endif
-	} else {
-		OMSetFBO(m_fbo);
-		OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
-		GLint color = c;
+	OMSetFBO(m_fbo);
+	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
+	GLint color = c;
 
-		glDisable(GL_SCISSOR_TEST);
-		gl_ClearBufferiv(GL_STENCIL, 0, &color);
-		glEnable(GL_SCISSOR_TEST);
-	}
+	glDisable(GL_SCISSOR_TEST);
+	gl_ClearBufferiv(GL_STENCIL, 0, &color);
+	glEnable(GL_SCISSOR_TEST);
 }
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)

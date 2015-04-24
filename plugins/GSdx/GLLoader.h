@@ -293,7 +293,6 @@ extern   PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D;
 // GL4.3
 extern   PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData;
 // GL4.4
-extern   PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage;
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)
 extern PFNGLGETTEXTURESAMPLERHANDLEARBPROC      gl_GetTextureSamplerHandleARB;
