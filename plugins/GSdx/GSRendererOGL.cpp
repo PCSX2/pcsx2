@@ -216,13 +216,21 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if(DATE)
 	{
+		// TODO: do I need to clamp the value (if yes how? rintersect with rt?)
+		GSVector4 si = GSVector4(rtscale.x, rtscale.y);
+		GSVector4 o = GSVector4(-1.0f, 1.0f); // Round value
+		GSVector4 b = m_vt.m_min.p.xyxy(m_vt.m_max.p) + o.xxyy();
+		GSVector4i ri = GSVector4i(b * si.xyxy());
+
+		// Reduce the quantity of clean function
+		glScissor( ri.x, ri.y, ri.width(), ri.height() );
+
 		// Note at the moment OGL has always stencil. Rt can be disabled
 		if(dev->HasStencil() && !advance_DATE)
 		{
 			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
-			GSVector4 o = GSVector4(-1.0f, 1.0f);
 
-			GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + o.xxyy()) * s.xyxy()).sat(o.zzyy());
+			GSVector4 src = (b * s.xyxy()).sat(o.zzyy());
 			GSVector4 dst = src * 2.0f + o.xxxx();
 
 			GSVertexPT1 vertices[] =
@@ -240,6 +248,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Create an r32ui image that will containt primitive ID
 		if (advance_DATE)
 			dev->InitPrimDateTexture(rtsize.x, rtsize.y);
+
+		// Restore the scissor state
+		ri = GLState::scissor;
+		glScissor( ri.x, ri.y, ri.width(), ri.height() );
 	}
 
 	//

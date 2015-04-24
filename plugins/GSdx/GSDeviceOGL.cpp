@@ -487,20 +487,20 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
 {
+	// Keep SCISSOR_TEST enabled on purpose to reduce the size
+	// of clean in DATE (impact big upscaling)
 	uint32 col[4] = {c, c, c, c};
-
-	glDisable(GL_SCISSOR_TEST);
 
 	OMSetFBO(m_fbo);
 	OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
 	gl_ClearBufferuiv(GL_COLOR, 0, col);
-
-	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
+	// Keep SCISSOR_TEST enabled on purpose to reduce the size
+	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 
@@ -521,9 +521,7 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 	GLint color = c;
 
-	glDisable(GL_SCISSOR_TEST);
 	gl_ClearBufferiv(GL_STENCIL, 0, &color);
-	glEnable(GL_SCISSOR_TEST);
 }
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
