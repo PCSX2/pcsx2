@@ -56,4 +56,6 @@ class GSRendererOGL : public GSRendererHW
 		void UpdateFBA(GSTexture* rt);
 
 		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+
+		bool PrimitiveOverlap();
 };

@@ -438,13 +438,13 @@ void ps_main()
 #if !pGL_ES
 void ps_main()
 {
-#if PS_DATE == 1 && !defined(DISABLE_GL42_image)
+#if (PS_DATE & 3) == 1 && !defined(DISABLE_GL42_image)
     // DATM == 0
     // Pixel with alpha equal to 1 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
 	if ((127.5f / 255.0f) < rt_a) // < 0x80 pass (== 0x80 should not pass)
 		discard;
-#elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
+#elif (PS_DATE & 3) == 2 && !defined(DISABLE_GL42_image)
     // DATM == 1
     // Pixel with alpha equal to 0 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;

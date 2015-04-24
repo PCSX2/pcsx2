@@ -579,7 +579,6 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 #ifndef ENABLE_GLES
 	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #endif
-	gl_BindTextureUnit(3, static_cast<GSTextureOGL*>(rt)->GetID());
 }
 
 void GSDeviceOGL::RecycleDateTexture()

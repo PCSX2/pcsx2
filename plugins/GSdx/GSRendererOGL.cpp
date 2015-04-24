@@ -151,6 +151,39 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
+bool GSRendererOGL::PrimitiveOverlap()
+{
+	if (m_vertex.next < 4)
+		return false;
+
+	if (m_vt.m_primclass != GS_SPRITE_CLASS)
+		return true;
+
+	// Check intersection of sprite primitive only
+	size_t count = m_vertex.next;
+	GSVertex* v = &m_vertex.buff[0];
+
+	for(size_t i = 0; i < count; i += 2) {
+		// Very bad code
+		GSVector4i vi(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
+		for (size_t j = i+2; j < count; j += 2) {
+			GSVector4i vj(v[j].XYZ.X, v[j].XYZ.Y, v[j+1].XYZ.X, v[j+1].XYZ.Y);
+			GSVector4i inter = vi.rintersect(vj);
+			if (!inter.rempty()) {
+				//fprintf(stderr, "Overlap found between %d and %d (draw of %d vertices)\n", i, j, count);
+				//vi.print();
+				//vj.print();
+				//inter.print();
+				//exit(0);
+				return true;
+			}
+		}
+	}
+
+	//fprintf(stderr, "Yes, code can be optimized (draw of %d vertices)\n", count);
+	return false;
+}
+
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 	GSDrawingEnvironment& env = m_env;
@@ -160,7 +193,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector2& rtscale = rt->GetScale();
 
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
-	bool advance_DATE = false;
+	bool DATE_GL42 = false;
+	bool DATE_GL45 = false;
 
 	ASSERT(m_dev != NULL);
 
@@ -208,14 +242,21 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	om_bsel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 
-	if (DATE && om_bsel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
-		advance_DATE = GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
+	if (DATE) {
+		if (gl_TextureBarrier && !PrimitiveOverlap()) {
+			DATE_GL45 = true;
+			DATE = false;
+		} else if (om_bsel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
+			DATE_GL42 = GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
+		}
 	}
 
 	// DATE
 
-	if(DATE)
-	{
+	if (DATE_GL45) {
+		gl_TextureBarrier();
+		dev->PSSetShaderResource(3, rt);
+	} else if (DATE) {
 		// TODO: do I need to clamp the value (if yes how? rintersect with rt?)
 		GSVector4 si = GSVector4(rtscale.x, rtscale.y);
 		GSVector4 o = GSVector4(-1.0f, 1.0f); // Round value
@@ -227,8 +268,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Must be done here to avoid any GL state pertubation (clear function...)
 		// Create an r32ui image that will containt primitive ID
-		if (advance_DATE) {
+		if (DATE_GL42) {
 			dev->InitPrimDateTexture(rt);
+			dev->PSSetShaderResource(3, rt);
 		} else {
 			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
 
@@ -349,9 +391,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
 	ps_sel.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 1 : PRIM->IIP;
 
-	if(DATE)
-	{
-		if (advance_DATE)
+	if (DATE_GL45) {
+		ps_sel.date = 5 + context->TEST.DATM;
+	} else if(DATE) {
+		if (DATE_GL42)
 			ps_sel.date = 1 + context->TEST.DATM;
 		else
 			om_dssel.date = 1;
@@ -497,7 +540,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupCB(&vs_cb, &ps_cb, ps_sel.sprite ? &gs_cb : NULL);
 
-	if (advance_DATE) {
+	if (DATE_GL42) {
 		// Create an r32i image that will contain primitive ID
 		// Note: do it at the beginning because the clean will dirty the FBO state
 		//dev->InitPrimDateTexture(rtsize.x, rtsize.y);
@@ -598,7 +641,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			}
 		}
 	}
-	if (advance_DATE)
+	if (DATE_GL42)
 		dev->RecycleDateTexture();
 
 	dev->EndScene();

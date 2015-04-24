@@ -372,7 +372,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 clr1:1;
 				uint32 fba:1;
 				uint32 aout:1;
-				uint32 date:2;
+				uint32 date:3;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;

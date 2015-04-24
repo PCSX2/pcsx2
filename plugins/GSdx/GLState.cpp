@@ -54,8 +54,8 @@ namespace GLState {
 
 	GLuint rt = 0;
 	GLuint ds = 0;
-	GLuint tex_unit[2] = {0, 0};
-	GLuint64 tex_handle[2] = { 0, 0};
+	GLuint tex_unit[4] = {0, 0, 0, 0};
+	GLuint64 tex_handle[4] = { 0, 0, 0, 0};
 	bool dirty_ressources = false;
 
 	GLuint ps = 0;
@@ -106,10 +106,10 @@ namespace GLState {
 
 		rt = 0;
 		ds = 0;
-		tex_unit[0] = 0;
-		tex_unit[1] = 0;
-		tex_handle[0] = 0;
-		tex_handle[1] = 0;
+		for (int i = 0; i < 4; i++) {
+			tex_unit[i] = 0;
+			tex_handle[i] = 0;
+		}
 
 		ps = 0;
 		gs = 0;
