@@ -283,12 +283,10 @@ vec4 sample_color(vec2 st, float q)
     // PERF: see the impact of the exansion before/after the interpolation
     for (int i = 0; i < 4; i++)
     {
-        // FIXME GLSL any only support bvec so try to mix it with notEqual
-        bvec3 rgb_check = notEqual( c[i].rgb, vec3(0.0f, 0.0f, 0.0f) );
 #if ((PS_FMT & ~FMT_PAL) == FMT_24)
-        c[i].a = ( (PS_AEM == 0) || any(rgb_check)  ) ? TA.x : 0.0f;
+        c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
 #elif ((PS_FMT & ~FMT_PAL) == FMT_16)
-        c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(rgb_check) ) ? TA.x : 0.0f;
+        c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
 #endif
     }
 
