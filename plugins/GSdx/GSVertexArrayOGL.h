@@ -44,6 +44,7 @@ class GSBufferOGL {
 	GLuint m_buffer_name;
 	uint8*  m_buffer_ptr;
 	const bool m_buffer_storage;
+	GLsync m_fence[5];
 
 	public:
 	GSBufferOGL(GLenum target, size_t stride) :
@@ -60,14 +61,18 @@ class GSBufferOGL {
 		m_limit = 2 * 2 * 1024 * 1024 / m_stride;
 
 		if (m_buffer_storage) {
+			for (size_t i = 0; i < 5; i++) {
+				m_fence[i] = 0;
+			}
+
+			// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
+			// => bigger buffer => less sync
 #ifndef ENABLE_GLES
 			bind();
 			// coherency will be done by flushing
 			const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
 			const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
-			const GLbitfield create_flags = common_flags
-				// | GL_CLIENT_STORAGE_BIT
-				;
+			const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
 			gl_BufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
 			m_buffer_ptr = (uint8*) gl_MapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
@@ -79,6 +84,9 @@ class GSBufferOGL {
 
 	~GSBufferOGL() {
 		if (m_buffer_storage) {
+			for (size_t i = 0; i < 5; i++) {
+				gl_DeleteSync(m_fence[i]);
+			}
 			bind();
 			gl_UnmapBuffer(m_target);
 		}
@@ -101,10 +109,8 @@ class GSBufferOGL {
 		gl_BindBuffer(m_target, m_buffer_name);
 	}
 
-	void subdata_upload(const void* src, uint32 count)
+	void subdata_upload(const void* src)
 	{
-		m_count = count;
-
 		// Current GPU buffer is really too small need to allocate a new one
 		if (m_count > m_limit) {
 			//fprintf(stderr, "Allocate a new buffer\n %d", m_stride);
@@ -122,13 +128,13 @@ class GSBufferOGL {
 		gl_BufferSubData(m_target,  m_stride * m_start,  m_stride * m_count, src);
 	}
 
-	void map_upload(const void* src, uint32 count)
+	void map_upload(const void* src)
 	{
 		void* dst;
 
-		m_count = count;
 		size_t offset = m_start*m_stride;
 		size_t length = m_count*m_stride;
+		//fprintf(stderr, "Upload from %x offset %x bytes (%x)\n", offset, length, m_target);
 
 		// Get the pointer of the buffer
 		{
@@ -137,29 +143,67 @@ class GSBufferOGL {
 				fprintf(stderr, "Buffer (%x) too small! Please report it upstream\n", m_target);
 				ASSERT(0);
 			} else if (m_count > (m_limit - m_start) ) {
-				//fprintf(stderr, "Wrap buffer (%x)\n", m_target);
+				size_t current_chunk = offset >> 20;
+#ifdef ENABLE_OGL_DEBUG_FENCE
+				fprintf(stderr, "%x: Wrap buffer\n", m_target);
+				fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, current_chunk);
+#endif
+				ASSERT(current_chunk > 0 && current_chunk < 5);
+				if (m_fence[current_chunk] == 0) {
+					m_fence[current_chunk] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+				}
+
 				// Wrap at startup
 				m_start = 0;
 				offset = 0;
+
+				// Only check first chunk
+				if (m_fence[0]) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+					GLenum status = gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+					if (status != GL_ALREADY_SIGNALED) {
+						fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
+					}
+#else
+					gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#endif
+					gl_DeleteSync(m_fence[0]);
+					m_fence[0] = 0;
+				}
+
+			}
+
+			// Protect buffer with fences
+			size_t current_chunk = offset >> 20;
+			size_t next_chunk = (offset + length) >> 20;
+			for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+				fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
+#endif
+				ASSERT(c > 0 && c < 5);
+				m_fence[c-1] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+				if (m_fence[c]) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+					GLenum status = gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#else
+					gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#endif
+					gl_DeleteSync(m_fence[c]);
+					m_fence[c] = 0;
+
+#ifdef ENABLE_OGL_DEBUG_FENCE
+					if (status != GL_ALREADY_SIGNALED) {
+						fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
+					}
+#endif
+				}
 			}
 
 			dst = m_buffer_ptr + offset;
 		}
 
-#if 0
-		// FIXME which one to use. Note dst doesn't have any aligment guarantee
-		// because it depends of the offset
-		if (m_target == GL_ARRAY_BUFFER) {
-			GSVector4i::storent(dst, src, length);
-		} else {
-			memcpy(dst, src, length);
-		}
-#else
 		memcpy(dst, src, length);
-#endif
-#if 1
 		gl_FlushMappedBufferRange(m_target, offset, length);
-#endif
 	}
 
 #ifdef ENABLE_GLES
@@ -180,10 +224,13 @@ class GSBufferOGL {
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_vertex_upload_byte += count*m_stride;
 #endif
+
+		m_count = count;
+
 		if (m_buffer_storage) {
-			map_upload(src, count);
+			map_upload(src);
 		} else {
-			subdata_upload(src, count);
+			subdata_upload(src);
 		}
 	}
 
