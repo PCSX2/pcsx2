@@ -147,31 +147,31 @@ PFNGLTEXTUREBARRIERPROC                gl_TextureBarrier                    = NU
 #endif
 
 namespace Emulate_DSA {
-	void BindTextureUnit(GLuint unit, GLuint texture) {
+	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
 		gl_ActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
-	void CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
+	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
 		glGenTextures(1, textures);
 	}
 
-	void TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
 		BindTextureUnit(7, texture);
 		gl_TexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
 	}
 
-	void TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
+	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
 		BindTextureUnit(7, texture);
 		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 	}
 
-	void CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
 		BindTextureUnit(7, texture);
 		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
 	}
 
-	void GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
+	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
 		BindTextureUnit(7, texture);
 		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
 	}
