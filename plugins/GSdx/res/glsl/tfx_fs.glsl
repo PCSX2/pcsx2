@@ -121,15 +121,14 @@ layout(location = 1) subroutine uniform ColClipType colclip;
 vec4 sample_c(vec2 uv)
 {
     // FIXME: check the issue on openGL
-	if (ATI_SUCKS == 1 && PS_POINT_SAMPLER == 1)
-	{
-		// Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
-		// it looks like they add 127/128 of a texel to sampling coordinates
-		// occasionally causing point sampling to erroneously round up.
-		// I'm manually adjusting coordinates to the centre of texels here,
-		// though the centre is just paranoia, the top left corner works fine.
-		uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
-	}
+#if (ATI_SUCKS == 1) && (PS_POINT_SAMPLER == 1)
+    // Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
+    // it looks like they add 127/128 of a texel to sampling coordinates
+    // occasionally causing point sampling to erroneously round up.
+    // I'm manually adjusting coordinates to the centre of texels here,
+    // though the centre is just paranoia, the top left corner works fine.
+    uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
+#endif
 
     return texture(TextureSampler, uv);
 }
@@ -145,36 +144,33 @@ vec4 wrapuv(vec4 uv)
 {
     vec4 uv_out = uv;
 
-    if(PS_WMS == PS_WMT)
-    {
-        if(PS_WMS == 2)
-        {
-            uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
-        }
-        else if(PS_WMS == 3)
-        {
-            uv_out = vec4((ivec4(uv * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
-        }
-    }
-    else
-    {
-        if(PS_WMS == 2)
-        {
-            uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
-        }
-        else if(PS_WMS == 3)
-        {
-            uv_out.xz = vec2((ivec2(uv.xz * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
-        }
-        if(PS_WMT == 2)
-        {
-            uv_out.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
-        }
-        else if(PS_WMT == 3)
-        {
-            uv_out.yw = vec2((ivec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
-        }
-    }
+#if PS_WMS == PS_WMT
+
+#if PS_WMS == 2
+    uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
+#elif PS_WMS == 3
+    uv_out = vec4((ivec4(uv * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
+#endif
+
+#else // PS_WMS != PS_WMT
+
+#if PS_WMS == 2
+    uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
+
+#elif PS_WMS == 3
+    uv_out.xz = vec2((ivec2(uv.xz * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
+
+#endif
+
+#if PS_WMT == 2
+    uv_out.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
+
+#elif PS_WMT == 3
+
+    uv_out.yw = vec2((ivec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
+#endif
+
+#endif
 
     return uv_out;
 }
@@ -183,18 +179,13 @@ vec2 clampuv(vec2 uv)
 {
     vec2 uv_out = uv;
 
-    if(PS_WMS == 2 && PS_WMT == 2) 
-    {
-        uv_out = clamp(uv, MinF, MinMax.zw);
-    }
-    else if(PS_WMS == 2)
-    {
-        uv_out.x = clamp(uv.x, MinF.x, MinMax.z);
-    }
-    else if(PS_WMT == 2)
-    {
-        uv_out.y = clamp(uv.y, MinF.y, MinMax.w);
-    }
+#if (PS_WMS == 2) && (PS_WMT == 2) 
+    uv_out = clamp(uv, MinF, MinMax.zw);
+#elif PS_WMS == 2
+    uv_out.x = clamp(uv.x, MinF.x, MinMax.z);
+#elif PS_WMT == 2
+    uv_out.y = clamp(uv.y, MinF.y, MinMax.w);
+#endif
 
     return uv_out;
 }
@@ -239,23 +230,25 @@ mat4 sample_4p(vec4 u)
 
 vec4 sample_color(vec2 st, float q)
 {
-    if(PS_FST == 0) st /= q;
+#if (PS_FST == 0)
+    st /= q;
+#endif
 
-    if(PS_TCOFFSETHACK == 1) st += TC_OffsetHack.xy;
+#if (PS_TCOFFSETHACK == 1)
+    st += TC_OffsetHack.xy;
+#endif
 
     vec4 t;
     mat4 c;
     vec2 dd;
 
-    if (PS_LTF == 0 && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
-    {
+#if (PS_LTF == 0 && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
         c[0] = sample_c(clampuv(st));
 #ifdef TEX_COORD_DEBUG
         c[0].rg = clampuv(st).xy;
 #endif
-    }
-    else
-    {
+
+#else
         vec4 uv;
 
         if(PS_LTF != 0)
@@ -284,33 +277,26 @@ vec4 sample_color(vec2 st, float q)
         c[2].rg = uv.xy;
         c[3].rg = uv.xy;
 #endif
-    }
+
+#endif
 
     // PERF: see the impact of the exansion before/after the interpolation
     for (int i = 0; i < 4; i++)
     {
-        if((PS_FMT & ~FMT_PAL) == FMT_24)
-        {
-            // FIXME GLSL any only support bvec so try to mix it with notEqual
-            bvec3 rgb_check = notEqual( c[i].rgb, vec3(0.0f, 0.0f, 0.0f) );
-            c[i].a = ( (PS_AEM == 0) || any(rgb_check)  ) ? TA.x : 0.0f;
-        }
-        else if((PS_FMT & ~FMT_PAL) == FMT_16)
-        {
-            // FIXME GLSL any only support bvec so try to mix it with notEqual
-            bvec3 rgb_check = notEqual( c[i].rgb, vec3(0.0f, 0.0f, 0.0f) );
-            c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(rgb_check) ) ? TA.x : 0.0f;
-        }
+        // FIXME GLSL any only support bvec so try to mix it with notEqual
+        bvec3 rgb_check = notEqual( c[i].rgb, vec3(0.0f, 0.0f, 0.0f) );
+#if ((PS_FMT & ~FMT_PAL) == FMT_24)
+        c[i].a = ( (PS_AEM == 0) || any(rgb_check)  ) ? TA.x : 0.0f;
+#elif ((PS_FMT & ~FMT_PAL) == FMT_16)
+        c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(rgb_check) ) ? TA.x : 0.0f;
+#endif
     }
 
-    if(PS_LTF != 0)
-    {
-        t = mix(mix(c[0], c[1], dd.x), mix(c[2], c[3], dd.x), dd.y);
-    }
-    else
-    {
-        t = c[0];
-    }
+#if(PS_LTF != 0)
+    t = mix(mix(c[0], c[1], dd.x), mix(c[2], c[3], dd.x), dd.y);
+#else
+    t = c[0];
+#endif
 
     return t;
 }
@@ -319,46 +305,27 @@ vec4 sample_color(vec2 st, float q)
 vec4 tfx(vec4 t, vec4 c)
 {
     vec4 c_out = c;
-    if(PS_TFX == 0)
-    {
-        if(PS_TCC != 0) 
-        {
-            c_out = c * t * 255.0f / 128.0f;
-        }
-        else
-        {
-            c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f;
-        }
-    }
-    else if(PS_TFX == 1)
-    {
-        if(PS_TCC != 0) 
-        {
-            c_out = t;
-        }
-        else
-        {
-            c_out.rgb = t.rgb;
-        }
-    }
-    else if(PS_TFX == 2)
-    {
-        c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
+#if (PS_TFX == 0)
+    if(PS_TCC != 0) 
+        c_out = c * t * 255.0f / 128.0f;
+    else
+        c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f;
+#elif (PS_TFX == 1)
+    if(PS_TCC != 0) 
+        c_out = t;
+    else
+        c_out.rgb = t.rgb;
+#elif (PS_TFX == 2)
+    c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
 
-        if(PS_TCC != 0) 
-        {
-            c_out.a += t.a;
-        }
-    }
-    else if(PS_TFX == 3)
-    {
-        c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
+    if(PS_TCC != 0) 
+        c_out.a += t.a;
+#elif (PS_TFX == 3)
+    c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
 
-        if(PS_TCC != 0) 
-        {
-            c_out.a = t.a;
-        }
-    }
+    if(PS_TCC != 0) 
+        c_out.a = t.a;
+#endif
 
     return c_out;
 }
@@ -369,45 +336,29 @@ void atst(vec4 c)
 {
     float a = trunc(c.a * 255.0 + 0.01);
 
-    if(PS_ATST == 0) // never
-    {
+#if (PS_ATST == 0) // never
+    discard;
+#elif (PS_ATST == 1) // always
+    // nothing to do
+#elif (PS_ATST == 2) && (PS_SPRITEHACK == 0) // l
+    if ((AREF - a - 0.5f) < 0.0f)
         discard;
-    }
-    else if(PS_ATST == 1) // always
-    {
-        // nothing to do
-    }
-    else if(PS_ATST == 2 ) // l
-    {
-        if (PS_SPRITEHACK == 0)
-            if ((AREF - a - 0.5f) < 0.0f)
-                discard;
-    }
-    else if(PS_ATST == 3 ) // le
-    {
-        if ((AREF - a + 0.5f) < 0.0f)
-            discard;
-    }
-    else if(PS_ATST == 4) // e
-    {
-        if ((0.5f - abs(a - AREF)) < 0.0f)
-            discard;
-    }
-    else if(PS_ATST == 5) // ge
-    {
-        if ((a-AREF + 0.5f) < 0.0f)
-            discard;
-    }
-    else if(PS_ATST == 6) // g
-    {
-        if ((a-AREF - 0.5f) < 0.0f)
-            discard;
-    }
-    else if(PS_ATST == 7) // ne
-    {
-        if ((abs(a - AREF) - 0.5f) < 0.0f)
-            discard;
-    }
+#elif (PS_ATST == 3 ) // le
+    if ((AREF - a + 0.5f) < 0.0f)
+        discard;
+#elif (PS_ATST == 4) // e
+    if ((0.5f - abs(a - AREF)) < 0.0f)
+        discard;
+#elif (PS_ATST == 5) // ge
+    if ((a-AREF + 0.5f) < 0.0f)
+        discard;
+#elif (PS_ATST == 6) // g
+    if ((a-AREF - 0.5f) < 0.0f)
+        discard;
+#elif (PS_ATST == 7) // ne
+    if ((abs(a - AREF) - 0.5f) < 0.0f)
+        discard;
+#endif
 }
 #endif
 
@@ -415,26 +366,22 @@ void atst(vec4 c)
 #ifndef SUBROUTINE_GL40
 void colclip(inout vec4 c)
 {
-    if (PS_COLCLIP == 2)
-    {
+#if (PS_COLCLIP == 2)
         c.rgb = 256.0f/255.0f - c.rgb;
-    }
-    if (PS_COLCLIP > 0)
-    {
+#elif (PS_COLCLIP > 0)
         // FIXME !!!!
         //c.rgb *= c.rgb < 128./255;
         bvec3 factor = bvec3(128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f);
         c.rgb *= vec3(factor);
-    }
+#endif
 }
 #endif
 
 void fog(inout vec4 c, float f)
 {
-    if(PS_FOG != 0)
-    {
-        c.rgb = mix(FogColor, c.rgb, f);
-    }
+#if PS_FOG != 0
+    c.rgb = mix(FogColor, c.rgb, f);
+#endif
 }
 
 vec4 ps_color()
@@ -473,10 +420,9 @@ vec4 ps_color()
 
 	colclip(c);
 
-    if(PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
-    {
-        c.rgb = vec3(1.0f, 1.0f, 1.0f); 
-    }
+#if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
+    c.rgb = vec3(1.0f, 1.0f, 1.0f); 
+#endif
 
     return c;
 }
@@ -519,16 +465,13 @@ void ps_main()
 
     float alpha = c.a * 2.0;
 
-    if(PS_AOUT != 0) // 16 bit output
-    {
-        float a = 128.0f / 255.0; // alpha output will be 0x80
+#if (PS_AOUT != 0) // 16 bit output
+    float a = 128.0f / 255.0; // alpha output will be 0x80
 
-        c.a = (PS_FBA != 0) ? a : step(0.5, c.a) * a;
-    }
-    else if(PS_FBA != 0)
-    {
-        if(c.a < 0.5) c.a += 0.5;
-    }
+    c.a = (PS_FBA != 0) ? a : step(0.5, c.a) * a;
+#elif (PS_FBA != 0)
+    if(c.a < 0.5) c.a += 0.5;
+#endif
 
     // Get first primitive that will write a failling alpha value
 #if PS_DATE == 1 && !defined(DISABLE_GL42_image)
