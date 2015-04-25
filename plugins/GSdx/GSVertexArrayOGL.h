@@ -283,6 +283,7 @@ public:
 	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr)
 	{
 		gl_GenVertexArrays(1, &m_va);
+		bind();
 
 		m_vb = new GSBufferOGL(GL_ARRAY_BUFFER, stride);
 		m_ib = new GSBufferOGL(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32));
@@ -299,7 +300,8 @@ public:
 	void bind()
 	{
 		gl_BindVertexArray(m_va);
-		m_vb->bind();
+		if (m_vb)
+			m_vb->bind();
 	}
 
 	void set_internal_format(GSInputLayoutOGL* layout, uint32 layout_nbr)
