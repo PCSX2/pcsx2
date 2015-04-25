@@ -116,6 +116,13 @@ void vs_main()
     else
         z = i_z;
 
+    if(VS_LOGZ == 1) {
+		// FIXME some games (FFX12 intro) uses MAX_INT as depth parameter. So I replace the +1 with an OR
+		// Initially a +1 was done to avoid log2(0) (If I'm correct)
+		// The or mask won't create any overflow
+		z |= 1u;
+	}
+
     // pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
     // example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
     // input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
@@ -127,13 +134,13 @@ void vs_main()
     p.w = 1.0f;
 #ifdef ZERO_TO_ONE_DEPTH
     if(VS_LOGZ == 1) {
-        p.z = log2(float(1u+z)) / 32.0f;
+        p.z = log2(float(z)) / 32.0f;
     } else {
         p.z = float(z) * exp_min32;
     }
 #else
     if(VS_LOGZ == 1) {
-        p.z = log2(float(1u+z)) / 31.0f - 1.0f;
+        p.z = log2(float(z)) / 31.0f - 1.0f;
     } else {
         p.z = float(z) * exp_min31 - 1.0f;
     }
