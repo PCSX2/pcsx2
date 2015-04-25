@@ -25,7 +25,8 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint32 g_texture_upload_byte;
+extern uint64 g_texture_upload_byte;
+extern uint64 g_real_texture_upload_byte;
 #endif
 
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
@@ -295,6 +296,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	// Note: pitch is the line size that will be copied into the PBO
 	// pitch >> m_int_shift is the line size that will be actually dma-ed into the GPU
 	g_texture_upload_byte += pitch * r.height();
+	g_real_texture_upload_byte += (r.width() * r.height()) << m_int_shift;
 #endif
 
 	memcpy(map, src, pitch*r.height());
@@ -329,7 +331,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 
-	glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
+	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
 
 	// FIXME useful?
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior

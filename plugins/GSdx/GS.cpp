@@ -1589,6 +1589,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		//FIXME map?
 		int finished = theApp.GetConfig("linux_replay", 1);
 		unsigned long frame_number = 0;
+		unsigned long total_frame_nb = 0;
 		while(finished > 0)
 		{
 			frame_number = 0;
@@ -1642,6 +1643,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 			sleep(1);
 			finished--;
+			total_frame_nb += frame_number;
 		}
 
 		if (theApp.GetConfig("linux_replay", 1) > 1) {
@@ -1666,10 +1668,12 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			fprintf(stderr, "Standard deviatin by frame: %fms\n", sd/(float)frame_number);
 		}
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-		fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
-				(float)g_texture_upload_byte/(float)frame_number/1024,
-				(float)g_vertex_upload_byte/(float)frame_number/1024,
-				(float)g_uniform_upload_byte/(float)frame_number/1024
+		total_frame_nb *= 1024;
+		fprintf(stderr, "memory bandwith. T: %f KB/f. RT: %f KB/f. V: %f KB/f. U: %f KB/f\n",
+				(float)g_texture_upload_byte/(float)total_frame_nb,
+				(float)g_real_texture_upload_byte/(float)total_frame_nb,
+				(float)g_vertex_upload_byte/(float)total_frame_nb,
+				(float)g_uniform_upload_byte/(float)total_frame_nb
 			   );
 #endif
 
