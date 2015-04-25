@@ -106,10 +106,10 @@ namespace GLState {
 
 		rt = 0;
 		ds = 0;
-		for (int i = 0; i < 4; i++) {
+		for (size_t i = 0; i < countof(tex_unit); i++)
 			tex_unit[i] = 0;
+		for (size_t i = 0; i < countof(tex_handle); i++)
 			tex_handle[i] = 0;
-		}
 
 		ps = 0;
 		gs = 0;

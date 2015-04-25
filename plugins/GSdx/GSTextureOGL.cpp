@@ -263,10 +263,10 @@ GSTextureOGL::~GSTextureOGL()
 		GLState::rt = 0;
 	if (m_texture_id == GLState::ds)
 		GLState::ds = 0;
-	if (m_texture_id == GLState::tex_unit[0])
-		GLState::tex_unit[0] = 0;
-	if (m_texture_id == GLState::tex_unit[1])
-		GLState::tex_unit[1] = 0;
+	for (size_t i = 0; i < countof(GLState::tex_unit); i++) {
+		if (m_texture_id == GLState::tex_unit[i])
+			GLState::tex_unit[i] = 0;
+	}
 
 	gl_DeleteBuffers(1, &m_pbo_id);
 	glDeleteTextures(1, &m_texture_id);
