@@ -600,6 +600,8 @@ class GSDeviceOGL : public GSDevice
 	void BeforeDraw();
 	void AfterDraw();
 
+	void Invalidate(GSTexture* t);
+
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c);
 	void ClearRenderTarget(GSTexture* t, uint32 c);
 	void ClearRenderTarget_ui(GSTexture* t, uint32 c);

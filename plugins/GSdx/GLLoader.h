@@ -292,6 +292,7 @@ extern   PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier;
 extern   PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D;
 // GL4.3
 extern   PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData;
+extern   PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage;
 // GL4.4
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)

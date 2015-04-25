@@ -100,6 +100,7 @@ PFNGLGETSHADERINFOLOGPROC              gl_GetShaderInfoLog                  = NU
 PFNGLPROGRAMUNIFORM1IPROC              gl_ProgramUniform1i                  = NULL;
 // GL4.3
 PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData                  = NULL;
+PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage                = NULL;
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              gl_BindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier                     = NULL;

@@ -603,6 +603,12 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 #endif
 }
 
+void GSDeviceOGL::Invalidate(GSTexture* t)
+{
+	if (gl_InvalidateTexImage)
+		gl_InvalidateTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0);
+}
+
 /* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
 {
