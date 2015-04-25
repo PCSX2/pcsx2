@@ -23,6 +23,11 @@
 
 #include "GLState.h"
 
+#ifdef ENABLE_OGL_DEBUG_MEM_BW
+extern uint32 g_uniform_upload_byte;
+#endif
+
+
 class GSUniformBufferOGL {
 	GLuint buffer;		// data object
 	GLuint index;		// GLSL slot
@@ -66,6 +71,9 @@ public:
 		// synchronous whereas glBufferSubData could be asynchronous.
 		// TODO: investigate the extension ARB_invalidate_subdata
 		gl_BufferSubData(GL_UNIFORM_BUFFER, 0, size, src);
+#ifdef ENABLE_OGL_DEBUG_MEM_BW
+		g_uniform_upload_byte += size;
+#endif
 	}
 
 	~GSUniformBufferOGL() {
