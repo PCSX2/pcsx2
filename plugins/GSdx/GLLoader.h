@@ -405,6 +405,9 @@ extern PFNGLTEXTUREBARRIERPROC                  gl_TextureBarrier;
 
 #endif
 
+namespace Emulate_DSA {
+	extern void Init();
+}
 
 namespace GLLoader {
 	bool check_gl_version(uint32 major, uint32 minor);

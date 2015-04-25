@@ -379,6 +379,11 @@ namespace GLLoader {
 			Emulate_DSA::Init();
 		}
 
+		if (gl_BindTextureUnit == NULL) {
+			fprintf(stderr, "FATAL ERROR !!!! Failed to setup DSA function pointer!!!\n");
+			status = false;
+		}
+
 		fprintf(stderr, "\n");
 
 		return status;

@@ -147,5 +147,9 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_ClipControl) = GetProcAddress("glClipControl", true);
 	*(void**)&(gl_TextureBarrier) = GetProcAddress("glTextureBarrier", true);
 
+	if (gl_CreateFramebuffers == NULL) {
+		Emulate_DSA::Init();
+	}
+
 #endif
 }
