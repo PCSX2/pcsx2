@@ -207,6 +207,7 @@ namespace GLLoader {
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
 	bool found_GL_ARB_shader_subroutine = false;
 	bool found_GL_ARB_bindless_texture = false; // GL5 GPU?
+	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
 
 	// GL4.5 for the future (dx10/dx11 compatibility)
 	bool found_GL_ARB_clip_control = false;
@@ -342,6 +343,7 @@ namespace GLLoader {
 				// GL4.5
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
+				if (ext.compare("GL_ARB_texture_barrier") == 0) found_GL_ARB_texture_barrier = true;
 #else // ENABLE_GLES
 				if (ext.compare("GL_EXT_shader_io_blocks") == 0) found_GL_EXT_shader_io_blocks = true;
 #endif
@@ -372,6 +374,7 @@ namespace GLLoader {
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
+		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 #else // ENABLE_GLES
 		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks", true);
 #endif

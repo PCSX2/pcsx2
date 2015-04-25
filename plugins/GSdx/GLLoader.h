@@ -433,4 +433,5 @@ namespace GLLoader {
 	extern bool found_GL_ARB_explicit_uniform_location;
 	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_direct_state_access;
+	extern bool found_GL_ARB_texture_barrier;
 }
