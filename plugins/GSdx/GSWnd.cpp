@@ -140,6 +140,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_MapNamedBuffer) = GetProcAddress("glMapNamedBuffer", true);
 	*(void**)&(gl_MapNamedBufferRange) = GetProcAddress("glMapNamedBufferRange", true);
 	*(void**)&(gl_UnmapNamedBuffer) = GetProcAddress("glUnmapNamedBuffer", true);
+	*(void**)&(gl_FlushMappedNamedBufferRange) = GetProcAddress("glFlushMappedNamedBufferRange", true);
 
 	*(void**)&(gl_CreateSamplers) = GetProcAddress("glCreateSamplers", true);
 	*(void**)&(gl_CreateProgramPipelines) = GetProcAddress("glCreateProgramPipelines", true);

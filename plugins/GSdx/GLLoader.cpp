@@ -137,6 +137,7 @@ PFNGLNAMEDBUFFERSUBDATAPROC            gl_NamedBufferSubData                = NU
 PFNGLMAPNAMEDBUFFERPROC                gl_MapNamedBuffer                    = NULL;
 PFNGLMAPNAMEDBUFFERRANGEPROC           gl_MapNamedBufferRange               = NULL;
 PFNGLUNMAPNAMEDBUFFERPROC              gl_UnmapNamedBuffer                  = NULL;
+PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEPROC   gl_FlushMappedNamedBufferRange       = NULL;
 
 PFNGLCREATESAMPLERSPROC                gl_CreateSamplers                    = NULL;
 PFNGLCREATEPROGRAMPIPELINESPROC        gl_CreateProgramPipelines            = NULL;
@@ -147,6 +148,7 @@ PFNGLTEXTUREBARRIERPROC                gl_TextureBarrier                    = NU
 #endif
 
 namespace Emulate_DSA {
+	// Texture entry point
 	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
 		gl_ActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -176,6 +178,69 @@ namespace Emulate_DSA {
 		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
 	}
 
+	// Framebuffer entry point
+	void APIENTRY CreateFramebuffers(GLsizei n, GLuint *framebuffers) {
+	}
+
+	void APIENTRY ClearNamedFramebufferfv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat *value) {
+	}
+
+	void APIENTRY ClearNamedFramebufferiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint *value) {
+	}
+
+	void APIENTRY ClearNamedFramebufferuiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint *value) {
+	}
+
+	void APIENTRY NamedFramebufferTexture(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
+	}
+
+	void APIENTRY NamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum *bufs) {
+	}
+
+	void APIENTRY NamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
+	}
+
+	GLenum APIENTRY CheckNamedFramebufferStatus(GLuint framebuffer, GLenum target) {
+		return 0;
+	}
+
+	// Buffer entry point
+	void APIENTRY CreateBuffers(GLsizei n, GLuint *buffers) {
+	}
+
+	void APIENTRY NamedBufferStorage(GLuint buffer, GLsizei size, const void *data, GLbitfield flags) {
+	}
+
+	void APIENTRY NamedBufferData(GLuint buffer, GLsizei size, const void *data, GLenum usage) {
+	}
+
+	void APIENTRY NamedBufferSubData(GLuint buffer, GLintptr offset, GLsizei size, const void *data) {
+	}
+
+	void *APIENTRY MapNamedBuffer(GLuint buffer, GLenum access) {
+		return NULL;
+	}
+
+	void *APIENTRY MapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length, GLbitfield access) {
+		return NULL;
+	}
+
+	GLboolean APIENTRY UnmapNamedBuffer(GLuint buffer) {
+		return false;
+	}
+
+	void APIENTRY FlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length) {
+	}
+
+	// Misc entry point
+	// (only purpose is to have a consistent API otherwise it is useless)
+	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
+	}
+
+	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
+	}
+
+	// Replace function pointer to emulate DSA behavior
 	void Init() {
 		fprintf(stderr, "DSA is not supported. Replace GL function pointer to emulate it\n");
 		gl_BindTextureUnit = BindTextureUnit;

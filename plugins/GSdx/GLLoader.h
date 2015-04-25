@@ -325,6 +325,7 @@ extern PFNGLNAMEDBUFFERSUBDATAPROC              gl_NamedBufferSubData;
 extern PFNGLMAPNAMEDBUFFERPROC                  gl_MapNamedBuffer;
 extern PFNGLMAPNAMEDBUFFERRANGEPROC             gl_MapNamedBufferRange;
 extern PFNGLUNMAPNAMEDBUFFERPROC                gl_UnmapNamedBuffer;
+extern PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEPROC     gl_FlushMappedNamedBufferRange;
 
 extern PFNGLCREATESAMPLERSPROC                  gl_CreateSamplers;
 extern PFNGLCREATEPROGRAMPIPELINESPROC          gl_CreateProgramPipelines;
