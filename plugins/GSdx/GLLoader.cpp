@@ -179,76 +179,134 @@ namespace Emulate_DSA {
 	}
 
 	// Framebuffer entry point
+	GLenum fb_target = 0;
+	void SetFramebufferTarget(GLenum target) {
+		fb_target = target;
+	}
+
 	void APIENTRY CreateFramebuffers(GLsizei n, GLuint *framebuffers) {
+		gl_GenFramebuffers(n, framebuffers);
 	}
 
 	void APIENTRY ClearNamedFramebufferfv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat *value) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		gl_ClearBufferfv(buffer, drawbuffer, value);
 	}
 
 	void APIENTRY ClearNamedFramebufferiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint *value) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		gl_ClearBufferiv(buffer, drawbuffer, value);
 	}
 
 	void APIENTRY ClearNamedFramebufferuiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint *value) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		gl_ClearBufferuiv(buffer, drawbuffer, value);
 	}
 
 	void APIENTRY NamedFramebufferTexture(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		gl_FramebufferTexture2D(fb_target, attachment, GL_TEXTURE_2D, texture, level);
 	}
 
 	void APIENTRY NamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum *bufs) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		gl_DrawBuffers(n, bufs);
 	}
 
 	void APIENTRY NamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
+		gl_BindFramebuffer(fb_target, framebuffer);
+		glReadBuffer(src);
 	}
 
 	GLenum APIENTRY CheckNamedFramebufferStatus(GLuint framebuffer, GLenum target) {
-		return 0;
+		gl_BindFramebuffer(fb_target, framebuffer);
+		return gl_CheckFramebufferStatus(fb_target);
 	}
 
 	// Buffer entry point
+	GLenum buffer_target = 0;
+	void SetBufferTarget(GLenum target) {
+		buffer_target = target;
+	}
+
 	void APIENTRY CreateBuffers(GLsizei n, GLuint *buffers) {
+		gl_GenBuffers(1, buffers);
 	}
 
 	void APIENTRY NamedBufferStorage(GLuint buffer, GLsizei size, const void *data, GLbitfield flags) {
+		gl_BindBuffer(buffer_target, buffer);
+		gl_BufferStorage(buffer_target, size, data, flags);
 	}
 
 	void APIENTRY NamedBufferData(GLuint buffer, GLsizei size, const void *data, GLenum usage) {
+		gl_BindBuffer(buffer_target, buffer);
+		gl_BufferData(buffer_target, size, data, usage);
 	}
 
 	void APIENTRY NamedBufferSubData(GLuint buffer, GLintptr offset, GLsizei size, const void *data) {
+		gl_BindBuffer(buffer_target, buffer);
+		gl_BufferSubData(buffer_target, offset, size, data);
 	}
 
 	void *APIENTRY MapNamedBuffer(GLuint buffer, GLenum access) {
-		return NULL;
+		gl_BindBuffer(buffer_target, buffer);
+		return gl_MapBuffer(buffer_target, access);
 	}
 
 	void *APIENTRY MapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length, GLbitfield access) {
-		return NULL;
+		gl_BindBuffer(buffer_target, buffer);
+		return gl_MapBufferRange(buffer_target, offset, length, access);
 	}
 
 	GLboolean APIENTRY UnmapNamedBuffer(GLuint buffer) {
-		return false;
+		gl_BindBuffer(buffer_target, buffer);
+		return gl_UnmapBuffer(buffer_target);
 	}
 
 	void APIENTRY FlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length) {
+		gl_BindBuffer(buffer_target, buffer);
+		gl_FlushMappedBufferRange(buffer_target, offset, length);
 	}
 
 	// Misc entry point
 	// (only purpose is to have a consistent API otherwise it is useless)
 	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
+		gl_GenProgramPipelines(n, pipelines);
 	}
 
 	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
+		gl_GenSamplers(n, samplers);
 	}
 
 	// Replace function pointer to emulate DSA behavior
 	void Init() {
 		fprintf(stderr, "DSA is not supported. Replace GL function pointer to emulate it\n");
-		gl_BindTextureUnit = BindTextureUnit;
-		gl_CreateTextures = CreateTexture;
-		gl_TextureStorage2D = TextureStorage;
-		gl_TextureSubImage2D = TextureSubImage;
-		gl_CopyTextureSubImage2D = CopyTextureSubImage;
-		gl_GetTextureImage = GetTexureImage;
+		gl_BindTextureUnit             = BindTextureUnit;
+		gl_CreateTextures              = CreateTexture;
+		gl_TextureStorage2D            = TextureStorage;
+		gl_TextureSubImage2D           = TextureSubImage;
+		gl_CopyTextureSubImage2D       = CopyTextureSubImage;
+		gl_GetTextureImage             = GetTexureImage;
+
+		gl_CreateFramebuffers          = CreateFramebuffers;
+		gl_ClearNamedFramebufferfv     = ClearNamedFramebufferfv;
+		gl_ClearNamedFramebufferiv     = ClearNamedFramebufferiv;
+		gl_ClearNamedFramebufferuiv    = ClearNamedFramebufferuiv;
+		gl_NamedFramebufferDrawBuffers = NamedFramebufferDrawBuffers;
+		gl_NamedFramebufferReadBuffer  = NamedFramebufferReadBuffer;
+		gl_CheckNamedFramebufferStatus = CheckNamedFramebufferStatus;
+
+		gl_CreateBuffers               = CreateBuffers;
+		gl_NamedBufferStorage          = NamedBufferStorage;
+		gl_NamedBufferData             = NamedBufferData;
+		gl_NamedBufferSubData          = NamedBufferSubData;
+		gl_MapNamedBuffer              = MapNamedBuffer;
+		gl_MapNamedBufferRange         = MapNamedBufferRange;
+		gl_UnmapNamedBuffer            = UnmapNamedBuffer;
+		gl_FlushMappedNamedBufferRange = FlushMappedNamedBufferRange;
+
+		gl_CreateProgramPipelines      = CreateProgramPipelines;
+		gl_CreateSamplers              = CreateSamplers;
 	}
 }
 

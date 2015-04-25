@@ -407,6 +407,8 @@ extern PFNGLTEXTUREBARRIERPROC                  gl_TextureBarrier;
 #endif
 
 namespace Emulate_DSA {
+	extern void SetFramebufferTarget(GLenum target);
+	extern void SetBufferTarget(GLenum target);
 	extern void Init();
 }
 
