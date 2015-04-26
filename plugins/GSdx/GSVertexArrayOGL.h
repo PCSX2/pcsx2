@@ -76,6 +76,10 @@ class GSBufferOGL {
 
 			gl_BufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
 			m_buffer_ptr = (uint8*) gl_MapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
+			if (!m_buffer_ptr) {
+				fprintf(stderr, "Failed to map buffer\n");
+				throw GSDXError();
+			}
 #endif
 		} else {
 			m_buffer_ptr = NULL;
@@ -287,10 +291,6 @@ public:
 
 		m_vb = new GSBufferOGL(GL_ARRAY_BUFFER, stride);
 		m_ib = new GSBufferOGL(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32));
-		if (!m_vb || !m_ib) {
-			fprintf(stderr, "Failed to allocate ARRAY/ELEMENT_ARRAY buffers\n");
-			throw GSDXError();
-		}
 
 		m_vb->bind();
 		m_ib->bind();
