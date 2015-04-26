@@ -280,16 +280,19 @@ class GSVertexBufferStateOGL {
 	GLenum m_topology;
 
 public:
-	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr)
+	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL)
 	{
 		gl_GenVertexArrays(1, &m_va);
-		bind();
+		gl_BindVertexArray(m_va);
 
 		m_vb = new GSBufferOGL(GL_ARRAY_BUFFER, stride);
 		m_ib = new GSBufferOGL(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32));
+		if (!m_vb || !m_ib) {
+			fprintf(stderr, "Failed to allocate ARRAY/ELEMENT_ARRAY buffers\n");
+			throw GSDXError();
+		}
 
-		bind();
-		// Note: index array are part of the VA state so it need to be bound only once.
+		m_vb->bind();
 		m_ib->bind();
 
 		m_vb->allocate();
@@ -299,6 +302,7 @@ public:
 
 	void bind()
 	{
+		// Note: index array are part of the VA state so it need to be bound only once.
 		gl_BindVertexArray(m_va);
 		if (m_vb)
 			m_vb->bind();
