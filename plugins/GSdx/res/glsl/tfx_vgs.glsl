@@ -28,7 +28,7 @@ out SHADER
 #define VSout_fc (VSout.fc)
 
 out gl_PerVertex {
-    invariant vec4 gl_Position;
+    vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
     float gl_ClipDistance[];
@@ -157,7 +157,7 @@ void vs_main()
 #endif
 
 in gl_PerVertex {
-    invariant vec4 gl_Position;
+    vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
     float gl_ClipDistance[];
