@@ -701,9 +701,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			case IDC_ROUND_SPRITE:
 				helpstr = "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
 						  "Fixes lines in sprites of games like Ar tonelico when upscaling.\n"
-						  "carries total of three states, are 0 (off) /1 (on for flat sprites)/2 (on all sprites)";
-						 
-				break;
+						  "carries total of three states, Unchecked (off), Squared check box (on for all sprites) checked box (on for flat sprites)";
+						 break;
 
 			case IDC_TCOFFSETX:
 			case IDC_TCOFFSETX2:
