@@ -26,7 +26,9 @@
 
 #include "res/glsl_source.h"
 
-//#define LOUD_DEBUGGING
+#ifdef _DEBUG
+#define LOUD_DEBUGGING
+#endif
 //#define PRINT_FRAME_NUMBER
 //#define ONLY_LINES
 
@@ -63,7 +65,7 @@ GSDeviceOGL::GSDeviceOGL()
 
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
-	FILE* f = fopen("Debug.txt","w");
+	FILE* f = fopen("GSdx_opengl_debug.txt","w");
 	fclose(f);
 	#endif
 }
@@ -1216,7 +1218,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
 	#endif
 
-	FILE* f = fopen("Debug.txt","a");
+	FILE* f = fopen("GSdx_opengl_debug.txt","a");
 	if(f)
 	{
 		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
