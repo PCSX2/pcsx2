@@ -252,7 +252,7 @@ CRC::Game CRC::m_games[] =
 	{0xCC96CE93, ValkyrieProfile2, US, 0},
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
-	{0xB65E141B, ValkyrieProfile2, DE, 0},
+	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
 	{0xC70FC973, ValkyrieProfile2, IT, 0}, 
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
