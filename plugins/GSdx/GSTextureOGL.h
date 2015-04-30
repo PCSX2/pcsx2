@@ -49,6 +49,7 @@ class GSTextureOGL : public GSTexture
 		uint32 m_pbo_id;
 		int m_pbo_size;
 		GLuint m_fbo_read;
+		bool m_dirty;
 
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
@@ -62,6 +63,7 @@ class GSTextureOGL : public GSTexture
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
 		virtual ~GSTextureOGL();
 
+		void Invalidate();
 		bool Update(const GSVector4i& r, const void* data, int pitch);
 		bool Map(GSMap& m, const GSVector4i* r = NULL);
 		void Unmap();

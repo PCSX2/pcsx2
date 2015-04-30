@@ -165,8 +165,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_id(0),
-	m_pbo_size(0)
+	: m_pbo_id(0), m_pbo_size(0), m_dirty(false)
 {
 	// m_size.x = w;
 	// m_size.y = h;
@@ -273,9 +272,16 @@ GSTextureOGL::~GSTextureOGL()
 	glDeleteTextures(1, &m_texture_id);
 }
 
+void GSTextureOGL::Invalidate()
+{
+	if (m_dirty && gl_InvalidateTexImage)
+		gl_InvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
+}
+
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
+	m_dirty = true;
 
 	// Note: reduce noise for gl retracers
 	// It might introduce bug after an emulator pause so always set it in standard mode

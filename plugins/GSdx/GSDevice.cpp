@@ -154,7 +154,7 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
-		Invalidate(t);
+		t->Invalidate();
 
 		t->last_frame_used = m_frame;
 

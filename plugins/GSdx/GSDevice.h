@@ -111,7 +111,6 @@ public:
 	virtual ~GSDevice();
 
 	void Recycle(GSTexture* t);
-	virtual void Invalidate(GSTexture* t) {}
 
 	enum {Windowed, Fullscreen, DontCare};
 
