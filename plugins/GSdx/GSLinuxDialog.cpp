@@ -459,8 +459,8 @@ bool RunLinuxDialog()
 	GtkWidget* gl_ils_combo = CreateGlComboBox("override_GL_ARB_shader_image_load_store");
 	GtkWidget* gl_cc_label = gtk_label_new("Clip Control (depth accuracy):");
 	GtkWidget* gl_cc_combo = CreateGlComboBox("override_GL_ARB_clip_control");
-	GtkWidget* gl_ct_label = gtk_label_new("Clear Texture:");
-	GtkWidget* gl_ct_combo = CreateGlComboBox("override_GL_ARB_clear_texture");
+	GtkWidget* gl_tb_label = gtk_label_new("Texture Barrier:");
+	GtkWidget* gl_tb_combo = CreateGlComboBox("override_GL_ARB_texture_barrier");
 
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_gs_label, 0, 1, 0, 1);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_gs_combo, 1, 2, 0, 1);
@@ -476,8 +476,8 @@ bool RunLinuxDialog()
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ils_combo, 1, 2, 5, 6);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_cc_label, 0, 1, 6, 7);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_cc_combo, 1, 2, 6, 7);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ct_label, 0, 1, 7, 8);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ct_combo, 1, 2, 7, 8);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_tb_label, 0, 1, 7, 8);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_tb_combo, 1, 2, 7, 8);
 	// those one are properly detected so no need a gui
 #if 0
 override_GL_ARB_copy_image = -1
@@ -576,7 +576,7 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("UserHacks", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_enble_check)));
 		theApp.SetConfig("UserHacks_TCOffset", get_hex_entry(hack_tco_entry));
 
-		theApp.SetConfig("override_GL_ARB_clear_texture", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ct_combo)) - 1);
+		theApp.SetConfig("override_GL_ARB_texture_barrier", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_tb_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_bindless_texture", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bt_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_buffer_storage", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bs_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_separate_shader_objects", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_sso_combo)) - 1);
