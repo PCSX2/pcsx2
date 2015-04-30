@@ -51,6 +51,10 @@ void GSDeviceOGL::CreateTextureFX()
 			m_vs[key] = CompileVS(sel, logz);
 	}
 
+	// Enable all bits for stencil operations. Technically 1 bit is
+	// enough but buffer is polluted with noise. Clear will be limited
+	// to the mask.
+	glStencilMask(0xFF);
 	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++)
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 

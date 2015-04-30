@@ -962,6 +962,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 #ifdef ENABLE_OGL_STENCIL_DEBUG
 	const GSVector2i& size = rt->GetSize();
 	GSTexture* t = CreateRenderTarget(size.x, size.y, false);
+	ClearRenderTarget(t, 0);
 #else
 	GSTexture* t = NULL;
 #endif

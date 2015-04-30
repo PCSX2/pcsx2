@@ -180,7 +180,7 @@ public:
 	{
 		// Only needed once since m_stencil_mask is constant
 		// Control which stencil bitplane are written
-		glStencilMask(1);
+		glStencilMask(0xFF);
 	}
 
 	void EnableDepth() { m_depth_enable = true; }
