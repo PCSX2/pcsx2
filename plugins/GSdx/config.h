@@ -38,6 +38,7 @@
 
 //#define DISABLE_DATE
 
+//#define ENABLE_OGL_PNG
 #if defined(_DEBUG) || defined(_DEVEL)
 #define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
 //#define ENABLE_OGL_DEBUG_FENCE

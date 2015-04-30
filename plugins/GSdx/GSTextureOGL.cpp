@@ -527,6 +527,30 @@ void GSTextureOGL::Save(const string& fn, const void* image, uint32 pitch)
 	fclose(fp);
 }
 
+#ifdef ENABLE_OGL_PNG
+#include "png++/png.hpp"
+
+void GSTextureOGL::SavePNG(const string& fn, const void* image, uint32 pitch) {
+	if (IsDss()) {
+		// TODO
+		//png::image<png::gray_pixel_16> img(m_size.x, m_size.y);
+	} else {
+		png::image<png::rgba_pixel> img(m_size.x, m_size.y);
+
+		uint8* data = (uint8*)image;
+		for(int h = 0; h < m_size.y; h++, data += pitch) {
+			for (int w = 0; w < m_size.x; w++) {
+				png::rgba_pixel pixel(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
+				img.set_pixel(w, h, pixel);
+			}
+		}
+
+		std::string rename = fn;
+		img.write(rename.replace(fn.length()-3, 3, "png"));
+	}
+}
+#endif
+
 void GSTextureOGL::SaveRaw(const string& fn, const void* image, uint32 pitch)
 {
 	// Build a raw CSV file
@@ -607,7 +631,11 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
+#ifdef ENABLE_OGL_PNG
+	if (status) SavePNG(fn, image, pitch);
+#else
 	if (status) Save(fn, image, pitch);
+#endif
 	free(image);
 
 	return status;
