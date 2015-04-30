@@ -310,11 +310,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
 
 	m_date.bs = new GSBlendStateOGL();
-	// FIXME impact image load?
-//#ifndef ENABLE_OGL_STENCIL_DEBUG
-//	// Only keep stencil data
-//	m_date.bs->SetMask(false, false, false, false);
-//#endif
 
 	// ****************************************************************
 	// Use DX coordinate convention
@@ -415,20 +410,11 @@ void GSDeviceOGL::BeforeDraw()
 	if (GLLoader::found_GL_ARB_buffer_storage)
 		Barrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 #endif
-
-//#ifdef ENABLE_OGL_STENCIL_DEBUG
-//	if (m_date.t)
-//		static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_before_%04ld.csv", g_draw_count));
-//#endif
 }
 
 void GSDeviceOGL::AfterDraw()
 {
-//#ifdef ENABLE_OGL_STENCIL_DEBUG
-//	if (m_date.t)
-//		static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_after_%04ld.csv", g_draw_count));
-//#endif
-#if defined(ENABLE_OGL_DEBUG) || defined(PRINT_FRAME_NUMBER) || defined(ENABLE_OGL_STENCIL_DEBUG)
+#if defined(ENABLE_OGL_DEBUG) || defined(PRINT_FRAME_NUMBER)
 	g_draw_count++;
 #endif
 }
@@ -574,10 +560,6 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 
 	ClearRenderTarget_ui(m_date.t, 0x0FFFFFFF);
 
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	gl_BindTextureUnit(5, static_cast<GSTextureOGL*>(m_date.t)->GetID());
-#endif
-
 #ifndef ENABLE_GLES
 	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #endif
@@ -586,9 +568,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 void GSDeviceOGL::RecycleDateTexture()
 {
 	if (m_date.t) {
-#ifdef ENABLE_OGL_STENCIL_DEBUG
 		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", g_draw_count));
-#endif
 
 		// FIXME invalidate data
 		Recycle(m_date.t);
@@ -600,10 +580,6 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 {
 #ifndef ENABLE_GLES
 	gl_MemoryBarrier(b);
-//#ifdef ENABLE_OGL_STENCIL_DEBUG
-//	if (m_date.t)
-//		static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/barrier_%04ld.csv", g_draw_count));
-//#endif
 #endif
 }
 
@@ -953,13 +929,7 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
 
 void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
 {
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	const GSVector2i& size = rt->GetSize();
-	GSTexture* t = CreateRenderTarget(size.x, size.y, false);
-	ClearRenderTarget(t, 0);
-#else
 	GSTexture* t = NULL;
-#endif
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	BeginScene();
@@ -998,21 +968,12 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	//
 
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	DrawPrimitive();
-#else
 	// normally ok without it if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetWriteBuffer(GL_NONE);
 	DrawPrimitive();
 	OMSetWriteBuffer();
-#endif
 
 	EndScene();
-
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	// FIXME invalidate data
-	Recycle(t);
-#endif
 }
 
 void GSDeviceOGL::EndScene()

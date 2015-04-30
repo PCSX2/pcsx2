@@ -329,9 +329,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	if (GLLoader::found_GL_ARB_clip_control) {
 		header += "#define ZERO_TO_ONE_DEPTH\n";
 	}
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	header += "#define ENABLE_OGL_STENCIL_DEBUG 1\n";
-#endif
 #else // ENABLE_GLES
 	header = "#version 310 es\n";
 	header += "#extension GL_EXT_shader_io_blocks: require\n";
