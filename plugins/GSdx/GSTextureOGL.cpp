@@ -536,17 +536,27 @@ void GSTextureOGL::SavePNG(const string& fn, const void* image, uint32 pitch) {
 		//png::image<png::gray_pixel_16> img(m_size.x, m_size.y);
 	} else {
 		png::image<png::rgba_pixel> img(m_size.x, m_size.y);
+		png::image<png::rgb_pixel>  img_opaque(m_size.x, m_size.y);
 
 		uint8* data = (uint8*)image;
 		for(int h = 0; h < m_size.y; h++, data += pitch) {
 			for (int w = 0; w < m_size.x; w++) {
-				png::rgba_pixel pixel(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
-				img.set_pixel(w, h, pixel);
+				png::rgba_pixel pa(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
+				img.set_pixel(w, h, pa);
+
+#ifdef ENABLE_OGL_PNG_OPAQUE
+				png::rgb_pixel p(data[4*w+0], data[4*w+1], data[4*w+2]);
+				img_opaque.set_pixel(w, h, p);
+#endif
 			}
 		}
 
 		std::string rename = fn;
-		img.write(rename.replace(fn.length()-3, 3, "png"));
+		img.write(rename.replace(fn.length()-4, 4, "_full.png"));
+#ifdef ENABLE_OGL_PNG_OPAQUE
+		rename = fn;
+		img_opaque.write(rename.replace(fn.length()-4, 4, "_opaque.png"));
+#endif
 	}
 }
 #endif
