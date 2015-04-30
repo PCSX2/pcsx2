@@ -46,7 +46,6 @@ class GSTextureOGL : public GSTexture
 {
 	private:
 		GLuint m_texture_id;	 // the texture id
-		uint32 m_pbo_id;
 		int m_pbo_size;
 		GLuint m_fbo_read;
 		bool m_dirty;

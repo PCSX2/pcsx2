@@ -39,6 +39,7 @@ namespace PboPool {
 	uint32 m_size;
 	bool   m_texture_storage;
 	const uint32 m_pbo_size = 4*1024*1024;
+	uint8*  m_gpu_texture;
 
 #ifndef ENABLE_GLES
 	// Option for buffer storage
@@ -71,6 +72,8 @@ namespace PboPool {
 			NextPbo();
 		}
 		UnbindPbo();
+
+		m_gpu_texture = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 	}
 
 	char* Map(uint32 size) {
@@ -138,6 +141,8 @@ namespace PboPool {
 		if (m_texture_storage)
 			UnmapAll();
 		gl_DeleteBuffers(countof(m_pool), m_pool);
+
+		_aligned_free(m_gpu_texture);
 	}
 
 	void BindPbo() {
@@ -165,7 +170,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_id(0), m_pbo_size(0), m_dirty(false)
+	: m_pbo_size(0), m_dirty(false)
 {
 	// m_size.x = w;
 	// m_size.y = h;
@@ -236,16 +241,6 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	// Allocate the buffer
 	switch (m_type) {
 		case GSTexture::Offscreen:
-			// Extra buffer to handle various pixel transfer
-			gl_GenBuffers(1, &m_pbo_id);
-
-			// Allocate a pbo with the texture
-			m_pbo_size = (m_size.x * m_size.y) << m_int_shift;
-
-			gl_BindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_id);
-			gl_BufferData(GL_PIXEL_PACK_BUFFER, m_pbo_size, NULL, GL_STREAM_READ);
-			gl_BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
 		case GSTexture::DepthStencil:
 		case GSTexture::RenderTarget:
 		case GSTexture::Texture:
@@ -268,7 +263,6 @@ GSTextureOGL::~GSTextureOGL()
 			GLState::tex_unit[i] = 0;
 	}
 
-	gl_DeleteBuffers(1, &m_pbo_id);
 	glDeleteTextures(1, &m_texture_id);
 }
 
@@ -364,37 +358,31 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
 	if (m_type != GSTexture::Offscreen) return false;
 
-	// The function allow to modify the texture from the CPU
-	// Set m.bits <- pointer to the data
-	// Set m.pitch <- size of a row
-	// I think in opengl we need to copy back the data to the RAM: glReadPixels — read a block of pixels from the frame buffer
-	//
-	// gl_MapBuffer — map a buffer object's data store
-	// Can be used on GL_PIXEL_UNPACK_BUFFER or GL_TEXTURE_BUFFER
+	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
+	// architecture is waiting the data right now.
+
+#if 0
+	// Maybe it is as good as the code below. I don't know
+
+	gl_GetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, PboPool::m_gpu_texture);
+
+#else
 
 	// Bind the texture to the read framebuffer to avoid any disturbance
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-	// FIXME It might be possible to only read a subrange of the texture based on r object
-	// Load the PBO with the data
-	gl_BindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_id);
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
-	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, 0);
-	m.pitch = m_size.x << m_int_shift;
+	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, PboPool::m_gpu_texture);
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
-	// Give access from the CPU
-	m.bits = (uint8*) gl_MapBufferRange(GL_PIXEL_PACK_BUFFER, 0, m_pbo_size, GL_MAP_READ_BIT);
+#endif
 
-	if ( m.bits ) {
-		return true;
-	} else {
-		fprintf(stderr, "bad mapping of the pbo\n");
-		gl_BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-		return false;
-	}
+	m.bits = PboPool::m_gpu_texture;
+	m.pitch = m_size.x << m_int_shift;
+
+	return true;
 
 #if 0
 	if(m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
@@ -416,11 +404,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 
 void GSTextureOGL::Unmap()
 {
-	if (m_type == GSTexture::Offscreen) {
-		gl_UnmapBuffer(GL_PIXEL_PACK_BUFFER);
-		gl_BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-	}
 }
 
 #ifndef _WINDOWS
