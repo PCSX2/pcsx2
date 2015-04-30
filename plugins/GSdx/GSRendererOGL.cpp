@@ -265,6 +265,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Reduce the quantity of clean function
 		glScissor( ri.x, ri.y, ri.width(), ri.height() );
+		GLState::scissor = ri;
 
 		// Must be done here to avoid any GL state pertubation (clear function...)
 		// Create an r32ui image that will containt primitive ID
@@ -287,10 +288,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
 		}
-
-		// Restore the scissor state
-		ri = GLState::scissor;
-		glScissor( ri.x, ri.y, ri.width(), ri.height() );
 	}
 
 	//

@@ -948,7 +948,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	OMSetDepthStencilState(m_date.dss, 1);
 	OMSetBlendState(m_date.bs, 0);
-	OMSetRenderTargets(t, ds);
+	OMSetRenderTargets(t, ds, &GLState::scissor);
 
 	// ia
 
