@@ -118,10 +118,34 @@ struct BITMAPINFOHEADER
 
 #endif
 
+#ifdef ENABLE_OGL_PNG
+#include "png++/png.hpp"
+
+void GSTextureSW::SavePNG(const string& fn) {
+	png::image<png::rgba_pixel> img(m_size.x, m_size.y);
+
+	uint8* data = (uint8*)m_data;
+	for(int h = 0; h < m_size.y; h++, data += m_pitch) {
+		for (int w = 0; w < m_size.x; w++) {
+			png::rgba_pixel pixel(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
+			img.set_pixel(w, h, pixel);
+		}
+	}
+
+	std::string rename = fn;
+	img.write(rename.replace(fn.length()-3, 3, "png"));
+}
+#endif
+
 bool GSTextureSW::Save(const string& fn, bool dds)
 {
 	if(dds) return false; // not implemented
 
+#ifdef ENABLE_OGL_PNG
+	SavePNG(fn);
+	return true;
+
+#else
 	if(FILE* fp = fopen(fn.c_str(), "wb"))
 	{
 		BITMAPINFOHEADER bih;
@@ -174,4 +198,5 @@ bool GSTextureSW::Save(const string& fn, bool dds)
 	}
 
 	return false;
+#endif
 }
