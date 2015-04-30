@@ -363,10 +363,11 @@ void colclip(inout vec4 c)
 {
 #if (PS_COLCLIP == 2)
 	c.rgb = 256.0f/255.0f - c.rgb;
-#elif (PS_COLCLIP > 0)
+#endif
+#if (PS_COLCLIP > 0)
 	// FIXME !!!!
 	//c.rgb *= c.rgb < 128./255;
-	bvec3 factor = bvec3(128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f);
+	bvec3 factor = lessThan(c.rgb, vec3(128.0f/255.0f));
 	c.rgb *= vec3(factor);
 #endif
 }
