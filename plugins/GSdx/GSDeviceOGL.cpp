@@ -1044,6 +1044,7 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
 	GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
 	if (GLState::tex_unit[i] != id) {
+		GLState::tex_unit[i] = id;
 		gl_BindTextureUnit(i, id);
 	}
 }
