@@ -31,6 +31,7 @@ public:
 		TomoyoAfter,
 		Clannad,
 		Lamune,
+		DigimonBattleChronicle,
 		KyuuketsuKitanMoonties,
 		PiaCarroteYoukosoGPGakuenPrincess,
 		KazokuKeikakuKokoroNoKizuna,
