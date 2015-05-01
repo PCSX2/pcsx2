@@ -134,77 +134,68 @@ class GSBufferOGL {
 
 	void map_upload(const void* src)
 	{
-		void* dst;
+		ASSERT(m_count < m_limit);
 
 		size_t offset = m_start*m_stride;
 		size_t length = m_count*m_stride;
-		//fprintf(stderr, "Upload from %x offset %x bytes (%x)\n", offset, length, m_target);
 
-		// Get the pointer of the buffer
-		{
-			// It would need some protection of the data. For the moment finger cross!
-			if (m_count > m_limit) {
-				fprintf(stderr, "Buffer (%x) too small! Please report it upstream\n", m_target);
-				ASSERT(0);
-			} else if (m_count > (m_limit - m_start) ) {
-				size_t current_chunk = offset >> 20;
-#ifdef ENABLE_OGL_DEBUG_FENCE
-				fprintf(stderr, "%x: Wrap buffer\n", m_target);
-				fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, current_chunk);
-#endif
-				ASSERT(current_chunk > 0 && current_chunk < 5);
-				if (m_fence[current_chunk] == 0) {
-					m_fence[current_chunk] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-				}
-
-				// Wrap at startup
-				m_start = 0;
-				offset = 0;
-
-				// Only check first chunk
-				if (m_fence[0]) {
-#ifdef ENABLE_OGL_DEBUG_FENCE
-					GLenum status = gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-					if (status != GL_ALREADY_SIGNALED) {
-						fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
-					}
-#else
-					gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-#endif
-					gl_DeleteSync(m_fence[0]);
-					m_fence[0] = 0;
-				}
-
-			}
-
-			// Protect buffer with fences
+		if (m_count > (m_limit - m_start) ) {
 			size_t current_chunk = offset >> 20;
-			size_t next_chunk = (offset + length) >> 20;
-			for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
-				fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
+			fprintf(stderr, "%x: Wrap buffer\n", m_target);
+			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, current_chunk);
 #endif
-				ASSERT(c > 0 && c < 5);
-				m_fence[c-1] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-				if (m_fence[c]) {
-#ifdef ENABLE_OGL_DEBUG_FENCE
-					GLenum status = gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-#else
-					gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-#endif
-					gl_DeleteSync(m_fence[c]);
-					m_fence[c] = 0;
-
-#ifdef ENABLE_OGL_DEBUG_FENCE
-					if (status != GL_ALREADY_SIGNALED) {
-						fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
-					}
-#endif
-				}
+			ASSERT(current_chunk > 0 && current_chunk < 5);
+			if (m_fence[current_chunk] == 0) {
+				m_fence[current_chunk] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			}
 
-			dst = m_buffer_ptr + offset;
+			// Wrap at startup
+			m_start = 0;
+			offset = 0;
+
+			// Only check first chunk
+			if (m_fence[0]) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+				GLenum status = gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				if (status != GL_ALREADY_SIGNALED) {
+					fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
+				}
+#else
+				gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#endif
+				gl_DeleteSync(m_fence[0]);
+				m_fence[0] = 0;
+			}
 		}
+
+		// Protect buffer with fences
+		size_t current_chunk = offset >> 20;
+		size_t next_chunk = (offset + length) >> 20;
+		for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
+#endif
+			ASSERT(c > 0 && c < 5);
+			m_fence[c-1] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			if (m_fence[c]) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+				GLenum status = gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#else
+				gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#endif
+				gl_DeleteSync(m_fence[c]);
+				m_fence[c] = 0;
+
+#ifdef ENABLE_OGL_DEBUG_FENCE
+				if (status != GL_ALREADY_SIGNALED) {
+					fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
+				}
+#endif
+			}
+		}
+
+		void* dst = m_buffer_ptr + offset;
 
 		memcpy(dst, src, length);
 		gl_FlushMappedBufferRange(m_target, offset, length);
