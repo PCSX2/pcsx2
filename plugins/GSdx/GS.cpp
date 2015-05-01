@@ -1588,6 +1588,10 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		//while(IsWindowVisible(hWnd))
 		//FIXME map?
 		int finished = theApp.GetConfig("linux_replay", 1);
+		if (theApp.GetConfig("dump", 0)) {
+			fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
+			finished = 1;
+		}
 		unsigned long frame_number = 0;
 		unsigned long total_frame_nb = 0;
 		while(finished > 0)

@@ -394,7 +394,7 @@ void GSRendererHW::Draw()
 
 		string s;
 
-		if(s_save && s_n >= s_saven && tex)
+		if(s_savet && s_n >= s_saven && tex)
 		{
 			s = format("%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, (int)context->TEX0.PSM,

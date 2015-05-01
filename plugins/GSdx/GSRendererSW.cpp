@@ -255,7 +255,7 @@ GSTexture* GSRendererSW::GetOutput(int i)
 		{
 			if(s_save && s_n >= s_saven)
 			{
-				m_texture[i]->Save(root_sw + format("c:\\temp1\\_%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), (int)DISPFB.PSM));
+				m_texture[i]->Save(root_sw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), (int)DISPFB.PSM));
 			}
 
 			s_n++;
@@ -516,7 +516,7 @@ void GSRendererSW::Draw()
 
 		string s;
 
-		if(s_save && s_n >= s_saven && PRIM->TME)
+		if(s_savet && s_n >= s_saven && PRIM->TME)
 		{
 			s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
 
@@ -1619,7 +1619,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 		string s;
 
-		if(m_parent->s_save && m_parent->s_n >= m_parent->s_saven)
+		if(m_parent->s_savet && m_parent->s_n >= m_parent->s_saven)
 		{
 			for(size_t i = 0; m_tex[i].t != NULL; i++)
 			{
