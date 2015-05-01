@@ -42,6 +42,14 @@ void GSDeviceOGL::CreateTextureFX()
 	m_gs = CompileGS();
 
 	int logz = theApp.GetConfig("logz", 1);
+#ifndef ENABLE_OGL_DEBUG
+	if (GLLoader::found_GL_ARB_clip_control && logz) {
+		fprintf(stderr, "Your driver supports advance depth. Logz will be disabled\n");
+		logz = 0;
+	} else if (!GLLoader::found_GL_ARB_clip_control && !logz) {
+		fprintf(stderr, "Your driver DOESN'T support advance depth (GL_ARB_clip_control)\n It is higly recommmended to enable logz\n");
+	}
+#endif
 	for (uint32 key = 0; key < VSSelector::size(); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
