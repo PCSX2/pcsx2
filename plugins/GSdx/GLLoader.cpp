@@ -346,13 +346,15 @@ namespace GLLoader {
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
-		if (!found) {
-			if(mandatory) {
+		if (mandatory) {
+			if (!found) {
 				fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", name.c_str());
-				return false;
-			} else {
-				fprintf(stderr, "INFO: %s is NOT SUPPORTED\n", name.c_str());
 			}
+			return found;
+		}
+
+		if (!found) {
+			fprintf(stderr, "INFO: %s is NOT SUPPORTED\n", name.c_str());
 		} else {
 			fprintf(stderr, "INFO: %s is available\n", name.c_str());
 		}
