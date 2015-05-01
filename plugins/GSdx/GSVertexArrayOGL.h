@@ -53,7 +53,7 @@ class GSBufferOGL {
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
-		, m_buffer_storage((theApp.GetConfig("ogl_vertex_storage", 0) == 1) && GLLoader::found_GL_ARB_buffer_storage)
+		, m_buffer_storage(GLLoader::found_GL_ARB_buffer_storage)
 	{
 		gl_GenBuffers(1, &m_buffer_name);
 		// Opengl works best with 1-4MB buffer.
