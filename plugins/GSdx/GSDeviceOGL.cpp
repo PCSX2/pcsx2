@@ -182,11 +182,9 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
-#ifndef ENABLE_GLES
 #ifdef ENABLE_OGL_DEBUG
 	gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-#endif
 #endif
 
 	// ****************************************************************
@@ -277,16 +275,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// rasterization configuration
 	// ****************************************************************
-#ifndef ENABLE_GLES
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_SCISSOR_TEST);
-	// FIXME enable it when multisample code will be here
-	// DX: rd.MultisampleEnable = true;
-#ifndef ENABLE_GLES
 	glDisable(GL_MULTISAMPLE);
-#endif
 #ifdef ONLY_LINES
 	glLineWidth(5.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -321,12 +313,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// because of -1 we loose lot of precision for small GS value
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
-#ifndef ENABLE_GLES
 	if (GLLoader::found_GL_ARB_clip_control) {
 		// Change depth convention
 		gl_ClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	}
-#endif
 
 	// ****************************************************************
 	// HW renderer shader
@@ -560,9 +550,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 
 	ClearRenderTarget_ui(m_date.t, 0x0FFFFFFF);
 
-#ifndef ENABLE_GLES
 	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
-#endif
 }
 
 void GSDeviceOGL::RecycleDateTexture()
@@ -578,9 +566,7 @@ void GSDeviceOGL::RecycleDateTexture()
 
 void GSDeviceOGL::Barrier(GLbitfield b)
 {
-#ifndef ENABLE_GLES
 	gl_MemoryBarrier(b);
-#endif
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -604,11 +590,7 @@ GLuint GSDeviceOGL::CompileGS()
 	int unscale_sprite = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_UnscaleSprite", 0) : 0;
 	std::string macro = format("#define GS_SPRITE %d\n", unscale_sprite);
 
-#ifdef ENABLE_GLES
-	return 0;
-#else
 	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
-#endif
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -686,13 +668,11 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 	ASSERT(st && dt);
 
 	if (GLLoader::found_GL_ARB_copy_image) {
-#ifndef ENABLE_GLES
 		gl_CopyImageSubData( static_cast<GSTextureOGL*>(st)->GetID(), GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
 				static_cast<GSTextureOGL*>(dt)->GetID(), GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
 				r.width(), r.height(), 1);
-#endif
 	} else {
 
 		GSTextureOGL* st_ogl = (GSTextureOGL*) st;
@@ -1113,7 +1093,6 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 
 void GSDeviceOGL::CheckDebugLog()
 {
-#ifndef ENABLE_GLES
        unsigned int count = 16; // max. num. of messages that will be read from the log
        int bufsize = 2048;
 	   unsigned int sources[16] = {};
@@ -1136,13 +1115,11 @@ void GSDeviceOGL::CheckDebugLog()
        }
 
 	   delete[] messageLog;
-#endif
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature
 void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam)
 {
-#ifndef ENABLE_GLES
 	std::string message(gl_message, gl_length);
 	std::string type, severity, source;
 	static int sev_counter = 0;
@@ -1182,7 +1159,6 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		fclose(f);
 	}
 	ASSERT(sev_counter < 5);
-#endif
 }
 
 // (A - B) * C + D
@@ -1212,13 +1188,8 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #define D3DBLEND_BLENDFACTOR	GL_CONSTANT_COLOR
 #define D3DBLEND_INVBLENDFACTOR GL_ONE_MINUS_CONSTANT_COLOR
 
-#ifdef ENABLE_GLES
-#define D3DBLEND_SRCALPHA		GL_SRC_ALPHA
-#define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC_ALPHA
-#else
 #define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
 #define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
-#endif
 
 const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 {

@@ -38,10 +38,6 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
-if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_GLES)
-endif()
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
@@ -199,17 +195,10 @@ set(GSdxFinalLibs
     ${X11_LIBRARIES}
 )
 
-if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalLibs
-        ${GSdxFinalLibs}
-        ${GLESV2_LIBRARIES}
-    )
-else()
-    set(GSdxFinalLibs
-        ${GSdxFinalLibs}
-        ${OPENGL_LIBRARIES}
-    )
-endif()
+set(GSdxFinalLibs
+	${GSdxFinalLibs}
+	${OPENGL_LIBRARIES}
+	)
 
 set(GSdxFinalLibs
     ${GSdxFinalLibs}

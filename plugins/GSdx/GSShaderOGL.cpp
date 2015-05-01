@@ -33,20 +33,16 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	memset(&m_ps_sub, 0, countof(m_ps_sub)*sizeof(m_ps_sub[0]));
 
 	m_single_prog.clear();
-#ifndef ENABLE_GLES
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
 		gl_GenProgramPipelines(1, &m_pipeline);
 		gl_BindProgramPipeline(m_pipeline);
 	}
-#endif
 }
 
 GSShaderOGL::~GSShaderOGL()
 {
-#ifndef ENABLE_GLES
 	if (GLLoader::found_GL_ARB_separate_shader_objects)
 		gl_DeleteProgramPipelines(1, &m_pipeline);
-#endif
 
 	for (auto it = m_single_prog.begin(); it != m_single_prog.end() ; it++) gl_DeleteProgram(it->second);
 	m_single_prog.clear();
@@ -61,10 +57,8 @@ void GSShaderOGL::VS(GLuint s, GLuint sub_count)
 		GLState::vs = s;
 		GLState::dirty_prog = true;
 		GLState::dirty_subroutine_vs = true;
-#ifndef ENABLE_GLES
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
 			gl_UseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
-#endif
 	}
 }
 
@@ -111,11 +105,9 @@ void GSShaderOGL::PS(GLuint s, GLuint sub_count)
 		GLState::dirty_prog = true;
 		GLState::dirty_subroutine_ps = true;
 		GLState::dirty_ressources = true;
-#ifndef ENABLE_GLES
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
 			gl_UseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
 		}
-#endif
 	}
 }
 
@@ -125,16 +117,13 @@ void GSShaderOGL::GS(GLuint s)
 	{
 		GLState::gs = s;
 		GLState::dirty_prog = true;
-#ifndef ENABLE_GLES
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
 			gl_UseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
-#endif
 	}
 }
 
 void GSShaderOGL::SetupRessources()
 {
-#ifndef ENABLE_GLES
 	if (!GLLoader::found_GL_ARB_bindless_texture) return;
 
 	if (GLState::dirty_ressources) {
@@ -149,12 +138,10 @@ void GSShaderOGL::SetupRessources()
 				gl_UniformHandleui64vARB(1, 1, &GLState::tex_handle[1]);
 		}
 	}
-#endif
 }
 
 void GSShaderOGL::SetupSubroutineUniform()
 {
-#ifndef ENABLE_GLES
 	if (!GLLoader::found_GL_ARB_shader_subroutine) return;
 
 	if (GLState::dirty_subroutine_vs && m_vs_sub_count) {
@@ -166,7 +153,6 @@ void GSShaderOGL::SetupSubroutineUniform()
 		gl_UniformSubroutinesuiv(GL_FRAGMENT_SHADER, m_ps_sub_count,  m_ps_sub);
 		GLState::dirty_subroutine_ps = false;
 	}
-#endif
 }
 
 bool GSShaderOGL::ValidateShader(GLuint s)
@@ -213,7 +199,6 @@ bool GSShaderOGL::ValidateProgram(GLuint p)
 
 bool GSShaderOGL::ValidatePipeline(GLuint p)
 {
-#ifndef ENABLE_GLES
 	if (!m_debug_shader) return true;
 
 	// FIXME: might be mandatory to validate the pipeline
@@ -232,8 +217,6 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 		delete[] log;
 	}
 	fprintf(stderr, "\n");
-
-#endif
 
 	return false;
 }
@@ -298,7 +281,6 @@ void GSShaderOGL::UseProgram()
 std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro)
 {
 	std::string header;
-#ifndef ENABLE_GLES
 	header = "#version 330 core\n";
 	// Need GL version 420
 	header += "#extension GL_ARB_shading_language_420pack: require\n";
@@ -329,34 +311,21 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	if (GLLoader::found_GL_ARB_clip_control) {
 		header += "#define ZERO_TO_ONE_DEPTH\n";
 	}
-#else // ENABLE_GLES
-	header = "#version 310 es\n";
-	header += "#extension GL_EXT_shader_io_blocks: require\n";
-	// Disable full GL features (actually GLES3.1 could support it)
-	header += "#define DISABLE_GL42_image\n";
-#endif
 
 	// Stupid GL implementation (can't use GL_ES)
 	// AMD/nvidia define it to 0
 	// intel window don't define it
 	// intel linux refuse to define it
-#ifdef ENABLE_GLES
-	header += "#define pGL_ES 1\n";
-	header += "precision highp float;\n";
-#else
 	header += "#define pGL_ES 0\n";
-#endif
 
 	// Allow to puts several shader in 1 files
 	switch (type) {
 		case GL_VERTEX_SHADER:
 			header += "#define VERTEX_SHADER 1\n";
 			break;
-#ifndef ENABLE_GLES
 		case GL_GEOMETRY_SHADER:
 			header += "#define GEOMETRY_SHADER 1\n";
 			break;
-#endif
 		case GL_FRAGMENT_SHADER:
 			header += "#define FRAGMENT_SHADER 1\n";
 			break;
@@ -377,11 +346,9 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 
 	GLuint program = 0;
 
-#ifndef ENABLE_GLES
 	if (type == GL_GEOMETRY_SHADER && !GLLoader::found_geometry_shader) {
 		return program;
 	}
-#endif
 
 	// Note it is better to separate header and source file to have the good line number
 	// in the glsl compiler report
@@ -398,9 +365,7 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 #endif
 
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-#ifndef ENABLE_GLES
 		program = gl_CreateShaderProgramv(type, shader_nb, sources);
-#endif
 	} else {
 		program = gl_CreateShader(type);
 		gl_ShaderSource(program, shader_nb, sources, NULL);

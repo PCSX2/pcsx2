@@ -26,7 +26,6 @@
 #define GL_FB_DEFAULT  (0)
 #define GL_BUFFER_0    (0)
 
-#ifndef ENABLE_GLES
 // FIX compilation issue with Mesa 10
 // Note it might be possible to do better with the right include 
 // in the rigth order but I don't have time
@@ -207,10 +206,6 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 #endif /* GL_VERSION_4_5 */
 
 
-
-#endif
-
-#ifndef ENABLE_GLES
 extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
 extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
 extern   PFNGLATTACHSHADERPROC                  gl_AttachShader;
@@ -333,79 +328,6 @@ extern PFNGLCREATEPROGRAMPIPELINESPROC          gl_CreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     gl_ClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  gl_TextureBarrier;
-
-#else
-#define gl_ActiveTexture glActiveTexture
-#define gl_BlendColor glBlendColor
-#define gl_AttachShader glAttachShader
-#define gl_BindBuffer glBindBuffer
-#define gl_BindBufferBase glBindBufferBase
-#define gl_BindFramebuffer glBindFramebuffer
-#define gl_BindSampler glBindSampler
-#define gl_BindVertexArray glBindVertexArray
-#define gl_BlendEquationSeparate glBlendEquationSeparate
-#define gl_BlendFuncSeparate glBlendFuncSeparate
-#define gl_BlitFramebuffer glBlitFramebuffer
-#define gl_BufferData glBufferData
-#define gl_CheckFramebufferStatus glCheckFramebufferStatus
-#define gl_ClearBufferfv glClearBufferfv
-#define gl_ClearBufferiv glClearBufferiv
-#define gl_ClearBufferuiv glClearBufferuiv
-#define gl_CompileShader glCompileShader
-#define gl_ColorMask glColorMask
-#define gl_CreateProgram glCreateProgram
-#define gl_CreateShader glCreateShader
-#define gl_CreateShaderProgramv glCreateShaderProgramv
-#define gl_DeleteBuffers glDeleteBuffers
-#define gl_DeleteFramebuffers glDeleteFramebuffers
-#define gl_DeleteProgram glDeleteProgram
-#define gl_DeleteSamplers glDeleteSamplers
-#define gl_DeleteShader glDeleteShader
-#define gl_DeleteVertexArrays glDeleteVertexArrays
-#define gl_DetachShader glDetachShader
-#define gl_DrawBuffers glDrawBuffers
-#define gl_DrawElementsBaseVertex glDrawElementsBaseVertex
-#define gl_EnableVertexAttribArray glEnableVertexAttribArray
-#define gl_FramebufferRenderbuffer glFramebufferRenderbuffer
-#define gl_FramebufferTexture2D glFramebufferTexture2D
-#define gl_GenBuffers glGenBuffers
-#define gl_GenFramebuffers glGenFramebuffers
-#define gl_GenSamplers glGenSamplers
-#define gl_GenVertexArrays glGenVertexArrays
-#define gl_GetBufferParameteriv glGetBufferParameteriv
-#define gl_GetDebugMessageLogARB glGetDebugMessageLogARB
-#define gl_GetProgramInfoLog glGetProgramInfoLog
-#define gl_GetProgramiv glGetProgramiv
-#define gl_GetShaderiv glGetShaderiv
-#define gl_GetStringi glGetStringi
-#define gl_IsFramebuffer glIsFramebuffer
-#define gl_LinkProgram glLinkProgram
-#define gl_MapBuffer glMapBuffer
-#define gl_MapBufferRange glMapBufferRange
-#define gl_ProgramParameteri glProgramParameteri
-#define gl_SamplerParameterf glSamplerParameterf
-#define gl_SamplerParameteri glSamplerParameteri
-#define gl_ShaderSource glShaderSource
-#define gl_Uniform1i glUniform1i
-#define gl_UnmapBuffer glUnmapBuffer
-#define gl_UseProgramStages glUseProgramStages
-#define gl_VertexAttribIPointer glVertexAttribIPointer
-#define gl_VertexAttribPointer glVertexAttribPointer
-#define gl_TexStorage2D glTexStorage2D
-#define gl_BufferSubData glBufferSubData
-
-#define gl_BindProgramPipeline glBindProgramPipeline
-#define gl_DeleteProgramPipelines glDeleteProgramPipelines
-#define gl_GenProgramPipelines glGenProgramPipelines
-#define gl_GetProgramPipelineiv glGetProgramPipelineiv
-#define gl_ValidateProgramPipeline glValidateProgramPipeline
-#define gl_GetProgramPipelineInfoLog glGetProgramPipelineInfoLog
-
-#define gl_UseProgram glUseProgram
-#define gl_GetShaderInfoLog glGetShaderInfoLog
-#define gl_ProgramUniform1i glProgramUniform1i
-
-#endif
 
 namespace Emulate_DSA {
 	extern void SetFramebufferTarget(GLenum target);

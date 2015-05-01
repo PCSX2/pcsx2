@@ -70,7 +70,6 @@ if(Linux)
     check_lib(AIO aio libaio.h)
 endif()
 check_lib(EGL EGL EGL/egl.h)
-check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 

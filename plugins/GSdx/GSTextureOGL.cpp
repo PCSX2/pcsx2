@@ -41,7 +41,6 @@ namespace PboPool {
 	const uint32 m_pbo_size = 4*1024*1024;
 	uint8*  m_gpu_texture;
 
-#ifndef ENABLE_GLES
 	// Option for buffer storage
 	// Note there is a barrier (but maybe coherent is faster)
 	// XXX: actually does I really need coherent and barrier???
@@ -50,7 +49,6 @@ namespace PboPool {
 	const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
 	const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
-#endif
 
 	void Init() {
 		gl_GenBuffers(countof(m_pool), m_pool);
@@ -60,10 +58,8 @@ namespace PboPool {
 			BindPbo();
 
 			if (m_texture_storage) {
-#ifndef ENABLE_GLES
 				gl_BufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
 				m_map[m_current_pbo] = (char*)gl_MapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
-#endif
 			} else {
 				gl_BufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, GL_STREAM_COPY);
 				m_map[m_current_pbo] = NULL;
@@ -343,12 +339,10 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 GLuint64 GSTextureOGL::GetHandle(GLuint sampler_id)
 {
 	ASSERT(sampler_id < 12);
-#ifndef ENABLE_GLES
 	if (!m_handles[sampler_id]) {
 		m_handles[sampler_id] = gl_GetTextureSamplerHandleARB(m_texture_id, sampler_id);
 		gl_MakeTextureHandleResidentARB(m_handles[sampler_id]);
 	}
-#endif
 
 	return m_handles[sampler_id];
 }
@@ -604,10 +598,8 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	} else if(m_format == GL_R32I) {
-#ifndef ENABLE_GLES
 		gl_GetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
 		SaveRaw(fn, image, pitch);
-#endif
 
 		// Not supported in Save function
 		status = false;

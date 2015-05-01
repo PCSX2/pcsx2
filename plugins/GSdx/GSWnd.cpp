@@ -25,7 +25,6 @@
 
 void GSWndGL::PopulateGlFunction()
 {
-#ifndef ENABLE_GLES
 	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
 	*(void**)&(gl_AttachShader) = GetProcAddress("glAttachShader");
@@ -152,6 +151,4 @@ void GSWndGL::PopulateGlFunction()
 	if (gl_CreateFramebuffers == NULL) {
 		Emulate_DSA::Init();
 	}
-
-#endif
 }

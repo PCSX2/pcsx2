@@ -33,7 +33,6 @@ for ARG in "$@"; do
         --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
-        --gles              ) flags+=(-DGLES_API=TRUE) ;;
         --sdl2              ) flags+=(-DSDL2_API=TRUE) ;;
         --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
         --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
@@ -60,7 +59,6 @@ for ARG in "$@"; do
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crashes if wx is linked to SDL1.2)"
-            echo "--gles          : Replace openGL backend of GSdx by openGLES3.1"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
             echo
             echo "** Expert Developer option **"

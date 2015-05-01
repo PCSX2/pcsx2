@@ -60,12 +60,8 @@ in SHADER
 #define PSin_fc (PSin.fc)
 
 // Same buffer but 2 colors for dual source blending
-#if pGL_ES
-layout(location = 0) out vec4 SV_Target0;
-#else
 layout(location = 0, index = 0) out vec4 SV_Target0;
 layout(location = 0, index = 1) out vec4 SV_Target1;
-#endif
 
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
@@ -423,16 +419,6 @@ vec4 ps_color()
 	return c;
 }
 
-#if pGL_ES
-void ps_main()
-{
-	vec4 c = ps_color();
-	c.a *= 2.0;
-	SV_Target0 = c;
-}
-#endif
-
-#if !pGL_ES
 void ps_main()
 {
 #if (PS_DATE & 3) == 1 && !defined(DISABLE_GL42_image)
@@ -511,6 +497,5 @@ void ps_main()
 #endif
 
 }
-#endif // !pGL_ES
 
 #endif

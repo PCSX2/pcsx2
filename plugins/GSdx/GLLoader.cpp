@@ -22,7 +22,6 @@
 #include "GLLoader.h"
 #include "GSdx.h"
 
-#ifndef ENABLE_GLES
 PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                     = NULL;
 PFNGLBLENDCOLORPROC                    gl_BlendColor                        = NULL;
 PFNGLATTACHSHADERPROC                  gl_AttachShader                      = NULL;
@@ -145,8 +144,6 @@ PFNGLCREATEPROGRAMPIPELINESPROC        gl_CreateProgramPipelines            = NU
 
 PFNGLCLIPCONTROLPROC                   gl_ClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                gl_TextureBarrier                    = NULL;
-
-#endif
 
 namespace Emulate_DSA {
 	// Texture entry point
@@ -337,9 +334,6 @@ namespace GLLoader {
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
 
-	// Mandatory for opengl ES (allow to use GL code)
-	bool found_GL_EXT_shader_io_blocks = false;
-
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
 	bool found_GL_ARB_shading_language_420pack = false;
@@ -380,9 +374,7 @@ namespace GLLoader {
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		fprintf(stderr, "Supported Opengl version: %s on GPU: %s. Vendor: %s\n", s, glGetString(GL_RENDERER), vendor);
-#ifndef ENABLE_GLES
 		fprintf(stderr, "Note: the maximal version supported by GSdx is 3.3 (even if you driver support more)!\n");
-#endif
 
 		// Name change but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
@@ -403,7 +395,6 @@ namespace GLLoader {
 		GLuint major_gl = s[dot-1]-'0';
 		GLuint minor_gl = s[dot+1]-'0';
 
-#ifndef ENABLE_GLES
 		if (mesa_amd_buggy_driver || intel_buggy_driver) {
 			fprintf(stderr, "Buggy driver detected. Geometry shaders will be disabled\n");
 			found_geometry_shader = false;
@@ -412,15 +403,10 @@ namespace GLLoader {
 			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
 			fprintf(stderr, "Override geometry shaders detection\n");
 		}
-#else
-		found_geometry_shader = false;
-#endif
-#ifndef ENABLE_GLES
 		if ( (major_gl < major) || ( major_gl == major && minor_gl < minor ) ) {
 			fprintf(stderr, "OPENGL %d.%d is not supported\n", major, minor);
 			return false;
 		}
-#endif
 
         return true;
     }
@@ -432,7 +418,6 @@ namespace GLLoader {
 		if (gl_GetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
 				string ext((const char*)gl_GetStringi(GL_EXTENSIONS, i));
-#ifndef ENABLE_GLES
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				// GL4.1
@@ -470,9 +455,6 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
 				if (ext.compare("GL_ARB_texture_barrier") == 0) found_GL_ARB_texture_barrier = true;
-#else // ENABLE_GLES
-				if (ext.compare("GL_EXT_shader_io_blocks") == 0) found_GL_EXT_shader_io_blocks = true;
-#endif
 
 				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 			}
@@ -481,7 +463,6 @@ namespace GLLoader {
 		bool status = true;
 		fprintf(stderr, "\n");
 
-#ifndef ENABLE_GLES
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5,"GL_ARB_gpu_shader5");
 		// GL4.1
@@ -501,9 +482,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
-#else // ENABLE_GLES
-		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks", true);
-#endif
+
 		if (!found_GL_ARB_direct_state_access) {
 			Emulate_DSA::Init();
 		}

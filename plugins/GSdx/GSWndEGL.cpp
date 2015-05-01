@@ -37,12 +37,10 @@ void GSWndEGL::CreateContext(int major, int minor)
 	{
 		EGL_CONTEXT_MAJOR_VERSION_KHR, major,
 		EGL_CONTEXT_MINOR_VERSION_KHR, minor,
-#ifndef ENABLE_GLES
 #ifdef ENABLE_OGL_DEBUG
 		EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR,
 #endif
 		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
-#endif
 		EGL_NONE
 	};
 	EGLint NullContextAttribs[] = { EGL_NONE };
@@ -51,15 +49,11 @@ void GSWndEGL::CreateContext(int major, int minor)
 		EGL_GREEN_SIZE, 8,
 		EGL_BLUE_SIZE, 8,
 		EGL_DEPTH_SIZE, 24,
-#ifndef ENABLE_GLES
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-#endif
 		EGL_NONE
 	};
 
-#ifndef ENABLE_GLES
 	eglBindAPI(EGL_OPENGL_API);
-#endif
 
 	eglChooseConfig(m_eglDisplay, attrList, &eglConfig, 1, &numConfigs);
 	if ( numConfigs == 0 )
@@ -102,9 +96,7 @@ void GSWndEGL::AttachContext()
 	if (!IsContextAttached()) {
 		// The setting of the API is local to a thread. This function 
 		// can be called from 2 threads.
-#ifndef ENABLE_GLES
 		eglBindAPI(EGL_OPENGL_API);
-#endif
 
 		//fprintf(stderr, "Attach the context\n");
 		eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext);
@@ -135,12 +127,7 @@ bool GSWndEGL::Attach(void* handle, bool managed)
 	m_NativeDisplay = XOpenDisplay(NULL);
 	OpenEGLDisplay();
 
-#ifdef ENABLE_GLES
-	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 1);
-#else
 	CreateContext(3, 3);
-#endif
 
 	AttachContext();
 
@@ -187,12 +174,7 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 	m_NativeWindow = XCreateSimpleWindow(m_NativeDisplay, DefaultRootWindow(m_NativeDisplay), 0, 0, w, h, 0, 0, 0);
 	XMapWindow (m_NativeDisplay, m_NativeWindow);
 
-#ifdef ENABLE_GLES
-	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 1);
-#else
 	CreateContext(3, 3);
-#endif
 
 	AttachContext();
 

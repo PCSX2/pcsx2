@@ -67,7 +67,6 @@ class GSBufferOGL {
 
 			// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
 			// => bigger buffer => less sync
-#ifndef ENABLE_GLES
 			bind();
 			// coherency will be done by flushing
 			const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
@@ -80,7 +79,6 @@ class GSBufferOGL {
 				fprintf(stderr, "Failed to map buffer\n");
 				throw GSDXError();
 			}
-#endif
 		} else {
 			m_buffer_ptr = NULL;
 		}
@@ -201,21 +199,8 @@ class GSBufferOGL {
 		gl_FlushMappedBufferRange(m_target, offset, length);
 	}
 
-#ifdef ENABLE_GLES
-	void upload(const void* src, uint32 count, uint32 basevertex = 0)
-#else
 	void upload(const void* src, uint32 count)
-#endif
 	{
-#ifdef ENABLE_GLES
-		// Emulate gl_DrawElementsBaseVertex... Maybe GLES 4 you know!
-		if (basevertex) {
-			uint32* data = (uint32*) src;
-			for (uint32 i = 0; i < count; i++) {
-				data[i] += basevertex;
-			}
-		}
-#endif
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_vertex_upload_byte += count*m_stride;
 #endif
@@ -242,20 +227,12 @@ class GSBufferOGL {
 
 	void Draw(GLenum mode, GLint basevertex)
 	{
-#ifdef ENABLE_GLES
-		glDrawElements(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride));
-#else
 		gl_DrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride), basevertex);
-#endif
 	}
 
 	void Draw(GLenum mode, GLint basevertex, int offset, int count)
 	{
-#ifdef ENABLE_GLES
-		glDrawElements(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * m_stride));
-#else
 		gl_DrawElementsBaseVertex(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * m_stride), basevertex);
-#endif
 	}
 
 	size_t GetStart() { return m_start; }
@@ -338,11 +315,7 @@ public:
 	void UploadVB(const void* vertices, size_t count) { m_vb->upload(vertices, count); }
 
 	void UploadIB(const void* index, size_t count) {
-#ifdef ENABLE_GLES
-		m_ib->upload(index, count, m_vb->GetStart());
-#else
 		m_ib->upload(index, count);
-#endif
 	}
 
 	~GSVertexBufferStateOGL()

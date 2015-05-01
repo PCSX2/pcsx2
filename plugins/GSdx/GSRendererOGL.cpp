@@ -44,10 +44,6 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	if(!GSRenderer::CreateDevice(dev))
 		return false;
 
-#ifdef ENABLE_GLES
-	fprintf(stderr, "FIXME Creation of FBA dss/bs state is not yet implemented\n");
-#endif
-
 	return true;
 }
 
@@ -558,10 +554,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->SetupPS(ps_sel);
 
 		// Be sure that first pass is finished !
-#ifndef ENABLE_GLES
 		if (!UserHacks_DateGL4)
 			dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-#endif
 	}
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
@@ -648,9 +642,4 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 void GSRendererOGL::UpdateFBA(GSTexture* rt)
 {
-#ifdef ENABLE_GLES
-#ifdef _DEBUG
-	fprintf(stderr, "FIXME UpdateFBA not yet implemented\n");
-#endif
-#endif
 }

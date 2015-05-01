@@ -27,7 +27,6 @@ option(DISABLE_SVU "Disable superVU (don't use it)")
 #-------------------------------------------------------------------------------
 option(GLSL_API "Replace zzogl CG backend by GLSL (experimental option)")
 option(EGL_API "Use EGL on zzogl (experimental/developer option)")
-option(GLES_API "Use GLES on GSdx (experimental/developer option)")
 option(REBUILD_SHADER "Rebuild glsl/cg shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 
