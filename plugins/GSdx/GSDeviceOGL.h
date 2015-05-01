@@ -178,9 +178,6 @@ public:
 		, m_stencil_func(0)
 		, m_stencil_spass_dpass_op(GL_KEEP)
 	{
-		// Only needed once since m_stencil_mask is constant
-		// Control which stencil bitplane are written
-		glStencilMask(0xFF);
 	}
 
 	void EnableDepth() { m_depth_enable = true; }
