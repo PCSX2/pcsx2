@@ -34,6 +34,7 @@
 
 static uint32 g_draw_count = 0;
 static uint32 g_frame_count = 1;
+// TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 uint64 g_texture_upload_byte = 0;
 uint64 g_real_texture_upload_byte = 0;
@@ -151,6 +152,7 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int for
 	GSTextureOGL* t = NULL;
 	t = new GSTextureOGL(type, w, h, format, m_fbo_read);
 
+	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	switch(type)
 	{
 		case GSTexture::RenderTarget:
@@ -275,23 +277,15 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// rasterization configuration
 	// ****************************************************************
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_SCISSOR_TEST);
-	glDisable(GL_MULTISAMPLE);
 #ifdef ONLY_LINES
 	glLineWidth(5.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#else
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
-	// Hum I don't know for those options but let's hope there are not activated
-#if 0
-	rd.FrontCounterClockwise = false;
-	rd.DepthBias = false;
-	rd.DepthBiasClamp = 0;
-	rd.SlopeScaledDepthBias = 0;
-	rd.DepthClipEnable = false; // ???
-	rd.AntialiasedLineEnable = false;
-#endif
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_SCISSOR_TEST);
+	glDisable(GL_MULTISAMPLE);
 
 	// ****************************************************************
 	// DATE
@@ -345,7 +339,6 @@ bool GSDeviceOGL::Reset(int w, int h)
 	if(!GSDevice::Reset(w, h))
 		return false;
 
-	// TODO
 	// Opengl allocate the backbuffer with the window. The render is done in the backbuffer when
 	// there isn't any FBO. Only a dummy texture is created to easily detect when the rendering is done
 	// in the backbuffer
@@ -361,7 +354,6 @@ void GSDeviceOGL::SetVSync(bool enable)
 
 void GSDeviceOGL::Flip()
 {
-	// FIXME: disable it when code is working
 	#ifdef ENABLE_OGL_DEBUG
 	CheckDebugLog();
 	#endif
@@ -394,11 +386,6 @@ void GSDeviceOGL::BeforeDraw()
 
 #ifdef _DEBUG
 	ASSERT(gl_CheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-#endif
-#if 0
-	// Ensure VBOs are uploaded
-	if (GLLoader::found_GL_ARB_buffer_storage)
-		Barrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 #endif
 }
 
@@ -434,6 +421,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 	if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
 		OMSetFBO(0);
@@ -470,11 +458,10 @@ void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
-	// Keep SCISSOR_TEST enabled on purpose to reduce the size
-	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 
+	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 	if (GLState::depth_mask) {
 		gl_ClearBufferfv(GL_DEPTH, 0, &c);
@@ -488,6 +475,8 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
+	// Keep SCISSOR_TEST enabled on purpose to reduce the size
+	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 	GLint color = c;
@@ -512,7 +501,6 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 		gl_SamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
-	// FIXME ensure U -> S,  V -> T and W->R
 	if (tau)
 		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	else
@@ -524,17 +512,9 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 
 	gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	// FIXME which value for GL_TEXTURE_MIN_LOD
-	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, FLT_MAX);
+	gl_SamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
+	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
-	// FIXME: seems there is 2 possibility in opengl
-	// DX: sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	// gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-#if 0
-	// Message:Program undefined behavior warning: Sampler object 5 has depth compare enabled. It is being used with non-depth texture 7, by a program that samples it with a regular sampler. This is undefined behavior.
-	gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_FUNC, GL_NEVER);
-#endif
 	// FIXME: need ogl extension sd.MaxAnisotropy = 16;
 
 	return sampler;
@@ -558,7 +538,6 @@ void GSDeviceOGL::RecycleDateTexture()
 	if (m_date.t) {
 		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", g_draw_count));
 
-		// FIXME invalidate data
 		Recycle(m_date.t);
 		m_date.t = NULL;
 	}
@@ -660,9 +639,6 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w
 }
 
 // Copy a sub part of a texture into another
-// Several question to answer did texture have same size?
-// From a sub-part to the same sub-part
-// From a sub-part to a full texture
 void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 {
 	ASSERT(st && dt);
@@ -701,7 +677,6 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 
 void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, GLuint ps, GSBlendStateOGL* bs, bool linear)
 {
-
 	if(!st || !dt)
 	{
 		ASSERT(0);
@@ -834,15 +809,12 @@ void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
 {
 	// Lazy compile
 	if (!m_fxaa.ps) {
-		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
-		if (GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
-			// Hardcoded in the new shader
-			//fxaa_macro += "#define FXAA_GATHER4_ALPHA 1\n";
-			fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
-		} else {
-			fprintf(stderr, "FXAA requires the GL_ARB_gpu_shader5 extension. Please either disable FXAA or upgrade your GPU/driver.\n");
+		if (!GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
 			return;
 		}
+
+		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
+		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
 		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
 	}
 
@@ -858,6 +830,10 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 {
 	// Lazy compile
 	if (!m_shaderfx.ps) {
+		if (!GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+			return;
+		}
+
 		std::ifstream fconfig(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
 		std::stringstream config;
 		if (fconfig.good())
@@ -928,6 +904,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	OMSetDepthStencilState(m_date.dss, 1);
 	OMSetBlendState(m_date.bs, 0);
+	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetRenderTargets(t, ds, &GLState::scissor);
 
 	// ia
@@ -946,9 +923,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 		PSSetSamplerState(m_convert.pt);
 	}
 
-	//
-
-	// normally ok without it if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetWriteBuffer(GL_NONE);
 	DrawPrimitive();
 	OMSetWriteBuffer();

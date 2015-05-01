@@ -42,7 +42,6 @@ namespace PboPool {
 	uint8*  m_gpu_texture;
 
 	// Option for buffer storage
-	// Note there is a barrier (but maybe coherent is faster)
 	// XXX: actually does I really need coherent and barrier???
 	// As far as I understand glTexSubImage2D is a client-server transfer so no need to make
 	// the value visible to the server
@@ -168,9 +167,7 @@ namespace PboPool {
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	: m_pbo_size(0), m_dirty(false)
 {
-	// m_size.x = w;
-	// m_size.y = h;
-	// FIXME
+	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
 	m_size.y = max(1,h);
 	m_format = format;
@@ -217,32 +214,18 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			ASSERT(0);
 	}
 
-	// Generate the buffer
+	// Generate & Allocate the buffer
 	switch (m_type) {
 		case GSTexture::Offscreen:
-			//FIXME I not sure we need a pixel buffer object. It seems more a texture
-			// gl_GenBuffers(1, &m_texture_id);
-			// ASSERT(0);
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
 			gl_CreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
-			break;
-		case GSTexture::Backbuffer:
-			break;
-		default:
-			break;
-	}
-
-	// Allocate the buffer
-	switch (m_type) {
-		case GSTexture::Offscreen:
-		case GSTexture::DepthStencil:
-		case GSTexture::RenderTarget:
-		case GSTexture::Texture:
 			gl_TextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
 			break;
-		default: break;
+		case GSTexture::Backbuffer:
+		default:
+			break;
 	}
 }
 
@@ -311,8 +294,6 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 	}
 	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
-	// Normally only affect TexSubImage call. (i.e. only the previous line)
-	//glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 	// FIXME OGL4: investigate, only 1 unpack buffer always bound
 	PboPool::UnbindPbo();
@@ -377,23 +358,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	m.pitch = m_size.x << m_int_shift;
 
 	return true;
-
-#if 0
-	if(m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
-	{
-		D3D11_MAPPED_SUBRESOURCE map;
-
-		if(SUCCEEDED(m_ctx->Map(m_texture, 0, D3D11_MAP_READ_WRITE, 0, &map)))
-		{
-			m.bits = (uint8*)map.pData;
-			m.pitch = (int)map.RowPitch;
-
-			return true;
-		}
-	}
-
-	return false;
-#endif
 }
 
 void GSTextureOGL::Unmap()
@@ -584,8 +548,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	char* image = (char*)malloc(buf_size);
 	bool status = true;
 
-	// FIXME instead of swapping manually B and R maybe you can request the driver to do it
-	// for us
 	if (IsBackbuffer()) {
 		//glReadBuffer(GL_BACK);
 		//gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);

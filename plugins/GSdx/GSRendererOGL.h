@@ -27,11 +27,7 @@
 #include "GSTextureCacheOGL.h"
 #include "GSVertexHW.h"
 
-// FIXME does it need a GSVertexHWOGL ??? Data order can be easily programmed on opengl (the only potential
-// issue is the unsupported praga push/pop
-// Note it impact GSVertexTrace.cpp => void GSVertexTrace::Update(const GSVertexHWOGL* v, int count, GS_PRIM_CLASS primclass)
 class GSRendererOGL : public GSRendererHW
-//class GSRendererOGL : public GSRendererHW<GSVertexHWOGL>
 {
 	private:
 		GSVector2 m_pixelcenter;

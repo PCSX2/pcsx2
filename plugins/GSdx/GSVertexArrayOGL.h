@@ -237,11 +237,6 @@ class GSBufferOGL {
 
 	size_t GetStart() { return m_start; }
 
-	void debug()
-	{
-		fprintf(stderr, "data buffer: start %d, count %d\n", m_start, m_count);
-	}
-
 };
 
 class GSVertexBufferStateOGL {
@@ -325,26 +320,4 @@ public:
 		delete m_ib;
 	}
 
-	void debug()
-	{
-		string topo;
-		switch (m_topology) {
-			case GL_POINTS:
-				topo = "point";
-				break;
-			case GL_LINES:
-				topo = "line";
-				break;
-			case GL_TRIANGLES:
-				topo = "triangle";
-				break;
-			case GL_TRIANGLE_STRIP:
-				topo = "triangle strip";
-				break;
-		}
-		m_vb->debug();
-		m_ib->debug();
-		fprintf(stderr, "primitives of %s\n", topo.c_str());
-
-	}
 };

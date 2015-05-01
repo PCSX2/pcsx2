@@ -77,8 +77,8 @@ layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the im
 // FIXME how to declare memory access
 layout(r32i, binding = 2) coherent uniform iimage2D img_prim_min;
 layout(early_fragment_tests) in;
-// origin_upper_left
-layout(pixel_center_integer) in vec4 gl_FragCoord;
+// I don't remember why I set this parameter but it is surely useless
+//layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
 #else
 // use basic stencil
@@ -353,7 +353,6 @@ void atst(vec4 c)
 }
 #endif
 
-// Note layout stuff might require gl4.3
 #ifndef SUBROUTINE_GL40
 void colclip(inout vec4 c)
 {
@@ -361,8 +360,6 @@ void colclip(inout vec4 c)
 	c.rgb = 256.0f/255.0f - c.rgb;
 #endif
 #if (PS_COLCLIP > 0)
-	// FIXME !!!!
-	//c.rgb *= c.rgb < 128./255;
 	bvec3 factor = lessThan(c.rgb, vec3(128.0f/255.0f));
 	c.rgb *= vec3(factor);
 #endif

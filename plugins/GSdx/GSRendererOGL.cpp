@@ -167,10 +167,6 @@ bool GSRendererOGL::PrimitiveOverlap()
 			GSVector4i inter = vi.rintersect(vj);
 			if (!inter.rempty()) {
 				//fprintf(stderr, "Overlap found between %d and %d (draw of %d vertices)\n", i, j, count);
-				//vi.print();
-				//vj.print();
-				//inter.print();
-				//exit(0);
 				return true;
 			}
 		}
@@ -473,8 +469,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if(PRIM->FST)
 		{
 			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
-			//Maybe better?
-			//vs_cb.TextureScale = GSVector4(1.0f / 16) * GSVector4(tex->m_texture->GetScale()).xyxy() / WH.zwzw();
 			ps_sel.fst = 1;
 		}
 
@@ -564,7 +558,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		dev->DrawIndexedPrimitive();
 
-		if (env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+		if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 		{
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -617,7 +611,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			dev->DrawIndexedPrimitive();
 
-			if (env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+			if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 			{
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
