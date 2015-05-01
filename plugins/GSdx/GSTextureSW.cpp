@@ -124,25 +124,37 @@ struct BITMAPINFOHEADER
 void GSTextureSW::SavePNG(const string& fn) {
 	png::image<png::rgba_pixel> img(m_size.x, m_size.y);
 	png::image<png::rgb_pixel>  img_opaque(m_size.x, m_size.y);
+	png::image<png::gray_pixel> img_alpha(m_size.x, m_size.y);
 
 	uint8* data = (uint8*)m_data;
 	for(int h = 0; h < m_size.y; h++, data += m_pitch) {
 		for (int w = 0; w < m_size.x; w++) {
-			png::rgba_pixel pa(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
-			img.set_pixel(w, h, pa);
+#if !defined(ENABLE_OGL_PNG_OPAQUE) && !defined(ENABLE_OGL_PNG_ALPHA)
+			png::rgba_pixel p(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
+			img.set_pixel(w, h, p);
+#endif
 
 #ifdef ENABLE_OGL_PNG_OPAQUE
-			png::rgb_pixel p(data[4*w+0], data[4*w+1], data[4*w+2]);
-			img_opaque.set_pixel(w, h, p);
+			png::rgb_pixel po(data[4*w+0], data[4*w+1], data[4*w+2]);
+			img_opaque.set_pixel(w, h, po);
+#endif
+#ifdef ENABLE_OGL_PNG_ALPHA
+			png::gray_pixel pa(data[4*w+3]);
+			img_alpha.set_pixel(w, h, pa);
 #endif
 		}
 	}
 
-	std::string rename = fn;
-	img.write(rename.replace(fn.length()-4, 4, "_full.png"));
+	std::string root = fn;
+	root.replace(fn.length()-4, 4, "");
+#if !defined(ENABLE_OGL_PNG_OPAQUE) && !defined(ENABLE_OGL_PNG_ALPHA)
+	img.write(root + "_full.png");
+#endif
 #ifdef ENABLE_OGL_PNG_OPAQUE
-	rename = fn;
-	img_opaque.write(rename.replace(fn.length()-4, 4, "_opaque.png"));
+	img_opaque.write(root + "_opaque.png");
+#endif
+#ifdef ENABLE_OGL_PNG_ALPHA
+	img_alpha.write(root + "_alpha.png");
 #endif
 }
 #endif
