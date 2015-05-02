@@ -423,14 +423,16 @@ void ps_main()
 	// Pixel with alpha equal to 1 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
 	if ((127.5f / 255.0f) < rt_a) { // < 0x80 pass (== 0x80 should not pass)
-		discard;
+		imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
+		return;
 	}
 #elif (PS_DATE & 3) == 2 && !defined(DISABLE_GL42_image)
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
 	if(rt_a < (127.5f / 255.0f)) { // >= 0x80 pass
-		discard;
+		imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
+		return;
 	}
 #endif
 
@@ -474,25 +476,19 @@ void ps_main()
 	// Pixel with alpha equal to 1 will failed (128-255)
 	if (c.a > 127.5f / 255.0f) {
 		imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
+		return;
 	}
 #elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed (0-127)
 	if (c.a < 127.5f / 255.0f) {
 		imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
+		return;
 	}
 #endif
 
-
-#if (PS_DATE == 2 || PS_DATE == 1) && !defined(DISABLE_GL42_image)
-	// Don't write anything on the framebuffer
-	// Note: you can't use discard because it will also drop
-	// image operation
-#else
 	SV_Target0 = c;
 	SV_Target1 = vec4(alpha, alpha, alpha, alpha);
-#endif
-
 }
 
 #endif
