@@ -77,9 +77,12 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ALIGN_SPRITE:
 			return "Sprite Alignment Hack\n\n"
 				"Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
-		case IDC_STRETCH_SPRITE:
+		case IDC_ROUND_SPRITE:
 			return "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
-				"Fixes lines in sprites of games like Ar tonelico when upscaling.";
+				"Fixes lines in sprites of games like Ar tonelico when upscaling.\n\n"
+				
+				"carries total of three states, Unchecked (off), Squared check box (on for all sprites) checked box (on for flat sprites)";
+			
 		case IDC_TCOFFSETX:
 		case IDC_TCOFFSETX2:
 		case IDC_STATIC_TCOFFSETX:

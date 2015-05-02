@@ -322,7 +322,7 @@ bool RunLinuxDialog()
 	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth");
 	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
-	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_STRETCH_SPRITE));
+	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_ROUND_SPRITE));
 
 
 	// Tables are strange. The numbers are for their position: left, right, top, bottom.
