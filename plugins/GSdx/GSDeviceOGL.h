@@ -588,7 +588,7 @@ class GSDeviceOGL : public GSDevice
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c);
 	void ClearRenderTarget(GSTexture* t, uint32 c);
-	void ClearRenderTarget_ui(GSTexture* t, uint32 c);
+	void ClearRenderTarget_i(GSTexture* t, int32 c);
 	void ClearDepth(GSTexture* t, float c);
 	void ClearStencil(GSTexture* t, uint8 c);
 

@@ -444,16 +444,16 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 	ClearRenderTarget(t, color);
 }
 
-void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
+void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
-	uint32 col[4] = {c, c, c, c};
+	int32 col[4] = {c, c, c, c};
 
 	OMSetFBO(m_fbo);
 	OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
-	gl_ClearBufferuiv(GL_COLOR, 0, col);
+	gl_ClearBufferiv(GL_COLOR, 0, col);
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
@@ -530,7 +530,8 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	if (m_date.t == NULL)
 		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
 
-	ClearRenderTarget_ui(m_date.t, 0x0FFFFFFF);
+	// Clean with the max signed value
+	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
 	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 }
