@@ -515,7 +515,9 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	gl_SamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
 	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
-	// FIXME: need ogl extension sd.MaxAnisotropy = 16;
+	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0)) {
+		gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)theApp.GetConfig("MaxAnisotropy", 0));
+	}
 
 	return sampler;
 }
