@@ -360,4 +360,5 @@ namespace GLLoader {
 	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_direct_state_access;
 	extern bool found_GL_ARB_texture_barrier;
+	extern bool found_GL_EXT_texture_filter_anisotropic;
 }

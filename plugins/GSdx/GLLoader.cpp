@@ -319,6 +319,7 @@ namespace GLLoader {
 	// Optional
 	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
+	bool found_GL_EXT_texture_filter_anisotropic = false;
 	// Note: except Apple, all drivers support explicit uniform location
 	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
 	// GL4 hardware
@@ -418,6 +419,8 @@ namespace GLLoader {
 		if (gl_GetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
 				string ext((const char*)gl_GetStringi(GL_EXTENSIONS, i));
+				// Bonus
+				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				// GL4.1
@@ -463,17 +466,19 @@ namespace GLLoader {
 		bool status = true;
 		fprintf(stderr, "\n");
 
+		// Bonus
+		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
-		status &= status_and_override(found_GL_ARB_gpu_shader5,"GL_ARB_gpu_shader5");
+		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
 		// GL4.1
-		status &= status_and_override(found_GL_ARB_separate_shader_objects,"GL_ARB_separate_shader_objects");
-		status &= status_and_override(found_GL_ARB_shader_subroutine,"GL_ARB_shader_subroutine");
+		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
+		status &= status_and_override(found_GL_ARB_shader_subroutine, "GL_ARB_shader_subroutine");
 		// GL4.2
-		status &= status_and_override(found_GL_ARB_shader_image_load_store,"GL_ARB_shader_image_load_store");
-		status &= status_and_override(found_GL_ARB_shading_language_420pack,"GL_ARB_shading_language_420pack", true);
+		status &= status_and_override(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
+		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
-		status &= status_and_override(found_GL_ARB_explicit_uniform_location,"GL_ARB_explicit_uniform_location");
+		status &= status_and_override(found_GL_ARB_explicit_uniform_location, "GL_ARB_explicit_uniform_location");
 		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image");
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
