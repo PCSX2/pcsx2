@@ -208,6 +208,7 @@ public:
 	bool s_savet;
 	bool s_savez;
 	int s_saven;
+	int s_savel;
 
 public:
 	GSState();

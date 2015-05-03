@@ -429,6 +429,10 @@ void GSRendererHW::Draw()
 		}
 
 		s_n++;
+
+		if ((s_n - s_saven) > s_savel) {
+			s_dump = 0;
+		}
 	}
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))

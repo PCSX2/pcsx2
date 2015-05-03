@@ -560,6 +560,10 @@ void GSRendererSW::Draw()
 		}
 
 		s_n++;
+
+		if ((s_n - s_saven) > s_savel) {
+			s_dump = 0;
+		}
 	}
 	else
 	{
