@@ -332,9 +332,13 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if(m_dev->IsLost()) return;
-
-	if(GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) return;
+	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
+		if (s_dump) {
+			fprintf(stderr, "Warning skipping a draw call\n");
+			s_n += 3; // Keep it sync with SW renderer
+		}
+		return;
+	}
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
@@ -430,9 +434,15 @@ void GSRendererHW::Draw()
 
 		s_n++;
 
-		if ((s_n - s_saven) > s_savel) {
-			s_dump = 0;
+		static uint64 draw_call = 0; // Redundant with s_n but easier to map in GL debug tool
+		if (s_n >= s_saven) {
+			// Dump Register state
+			s = format("%05d_context_d%lld.txt", s_n, draw_call);
+
+			m_env.Dump(root_hw+s);
+			m_context->Dump(root_hw+s);
 		}
+		draw_call++;
 	}
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
@@ -554,6 +564,10 @@ void GSRendererHW::Draw()
 		}
 
 		s_n++;
+
+		if ((s_n - s_saven) > s_savel) {
+			s_dump = 0;
+		}
 	}
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE

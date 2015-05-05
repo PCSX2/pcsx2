@@ -84,4 +84,43 @@ public:
 		dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0),
 		dimx[6] = dimx[7].xxzzlh();
 	}
+
+	void Dump(const std::string& filename)
+	{
+		FILE* fp = fopen(filename.c_str(), "wt");
+		if (!fp) return;
+
+		fprintf(fp, "PRIM\n"
+				"\tPRIM:%d\n"
+				"\tIIP:%d\n"
+				"\tTME:%d\n"
+				"\tFGE:%d\n"
+				"\tABE:%d\n"
+				"\tAA1:%d\n"
+				"\tFST:%d\n"
+				"\tCTXT:%d\n"
+				"\tFIX:%d\n\n"
+				, PRIM.PRIM, PRIM.IIP, PRIM.TME, PRIM.FGE, PRIM.ABE, PRIM.AA1, PRIM.FST, PRIM.CTXT, PRIM.FIX);
+
+		fprintf(fp, "PRMODE (when AC=0)\n"
+				"\t_PRIM:%d\n"
+				"\tIIP:%d\n"
+				"\tTME:%d\n"
+				"\tFGE:%d\n"
+				"\tABE:%d\n"
+				"\tAA1:%d\n"
+				"\tFST:%d\n"
+				"\tCTXT:%d\n"
+				"\tFIX:%d\n\n"
+				, PRMODE._PRIM, PRMODE.IIP, PRMODE.TME, PRMODE.FGE, PRMODE.ABE, PRMODE.AA1, PRMODE.FST, PRMODE.CTXT, PRMODE.FIX);
+
+		fprintf(fp, "PRMODECONT\n"
+				"\tAC:%d\n\n"
+				, PRMODECONT.AC);
+
+		// Lots of register TODO but later
+
+		fclose(fp);
+	}
+
 };

@@ -541,6 +541,17 @@ void GSRendererSW::Draw()
 
 		s_n++;
 
+		static uint64 draw_call = 0; // Redundant with s_n but easier to map in GL debug tool
+		if (s_n >= s_saven) {
+			// Dump Register state
+			s = format("%05d_context_d%lld.txt", s_n, draw_call);
+
+			m_env.Dump(root_sw+s);
+			m_context->Dump(root_sw+s);
+		}
+		draw_call++;
+
+
 		Queue(data);
 
 		Sync(3);

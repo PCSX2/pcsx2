@@ -124,4 +124,95 @@ public:
 
 		return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
 	}
+
+	void Dump(const std::string& filename)
+	{
+		// Append on purpose so env + context are merged into a single file
+		FILE* fp = fopen(filename.c_str(), "at");
+		if (!fp) return;
+
+		fprintf(fp, "XYOFFSET\n"
+				"\tX:%d\n"
+				"\tY:%d\n\n"
+				, XYOFFSET.OFX, XYOFFSET.OFY);
+		fprintf(fp, "TEX0\n"
+				"\tTBP0:%d\n"
+				"\tTBW:%d\n"
+				"\tPSM:%d\n"
+				"\tTW:%d\n"
+				"\tTCC:%d\n"
+				"\tTFX:%d\n"
+				"\tCBP:%d\n"
+				"\tCPSM:%d\n"
+				"\tCSM:%d\n"
+				"\tCSA:%d\n"
+				"\tCLD:%d\n"
+				"\tTH:%lld\n\n"
+				, TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD, TEX0.TH);
+		fprintf(fp, "TEX1\n"
+				"\tLCM:%d\n"
+				"\tMXL:%d\n"
+				"\tMMAG:%d\n"
+				"\tMMIN:%d\n"
+				"\tMTBA:%d\n"
+				"\tL:%d\n"
+				"\tK:%d\n\n"
+				, TEX1.LCM, TEX1.MXL, TEX1.MMAG, TEX1.MMIN, TEX1.MTBA, TEX1.L, TEX1.K);
+		fprintf(fp, "TEX2\n"
+				"\tPSM:%d\n"
+				"\tCBP:%d\n"
+				"\tCPSM:%d\n"
+				"\tCSM:%d\n"
+				"\tCSA:%d\n"
+				"\tCLD:%d\n\n"
+				, TEX2.PSM, TEX2.CBP, TEX2.CPSM, TEX2.CSM, TEX2.CSA, TEX2.CLD);
+		fprintf(fp, "CLAMP\n"
+				"\tWMS:%d\n"
+				"\tWMT:%d\n"
+				"\tMINU:%d\n"
+				"\tMAXU:%d\n"
+				"\tMAXV:%d\n"
+				"\tMINV:%lld\n\n"
+				, CLAMP.WMS, CLAMP.WMT, CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, CLAMP.MINV);
+		// TODO mimmap? (yes I'm lazy)
+		fprintf(fp, "SCISSOR\n"
+				"\tX0:%d\n"
+				"\tX1:%d\n"
+				"\tY0:%d\n"
+				"\tY1:%d\n\n"
+				, SCISSOR.SCAX0, SCISSOR.SCAX1, SCISSOR.SCAY0, SCISSOR.SCAY1);
+		fprintf(fp, "ALPHA\n"
+				"\tA:%d\n"
+				"\tB:%d\n"
+				"\tC:%d\n"
+				"\tD:%d\n"
+				"\tFIX:%d\n\n"
+				, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, ALPHA.FIX);
+		fprintf(fp, "TEST\n"
+				"\tATE:%d\n"
+				"\tATST:%d\n"
+				"\tAREF:%d\n"
+				"\tAFAIL:%d\n"
+				"\tDATE:%d\n"
+				"\tDATM:%d\n"
+				"\tZTE:%d\n"
+				"\tZTST:%d\n\n"
+				, TEST.ATE, TEST.ATST, TEST.AREF, TEST.AFAIL, TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
+		fprintf(fp, "FBA\n"
+				"\tFBA:%d\n\n"
+				, FBA.FBA);
+		fprintf(fp, "FRAME\n"
+				"\tFBP:%d\n"
+				"\tFBW:%d\n"
+				"\tPSM:%d\n"
+				"\tFBMSK:%d\n\n"
+				, FRAME.FBP, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
+		fprintf(fp, "ZBUF\n"
+				"\tZBP:%d\n"
+				"\tPSM:%d\n"
+				"\tZMSK:%d\n\n"
+				, ZBUF.ZBP, ZBUF.PSM, ZBUF.ZMSK);
+
+		fclose(fp);
+	}
 };
