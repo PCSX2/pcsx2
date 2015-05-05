@@ -36,10 +36,7 @@ namespace GLState {
 	extern GLenum f_dRGB;
 	extern GLenum f_sA;
 	extern GLenum f_dA;
-	extern bool r_msk;
-	extern bool g_msk;
-	extern bool b_msk;
-	extern bool a_msk;
+	extern uint32 wrgba;
 	extern float bf;
 
 	extern bool depth;

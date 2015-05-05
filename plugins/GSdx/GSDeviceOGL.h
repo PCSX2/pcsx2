@@ -45,10 +45,6 @@ class GSBlendStateOGL {
 	GLenum m_func_dRGB;
 	GLenum m_func_sA;
 	GLenum m_func_dA;
-	bool   m_r_msk;
-	bool   m_b_msk;
-	bool   m_g_msk;
-	bool   m_a_msk;
 	bool   constant_factor;
 
 public:
@@ -60,10 +56,6 @@ public:
 		, m_func_dRGB(0)
 		, m_func_sA(GL_ONE)
 		, m_func_dA(GL_ZERO)
-		, m_r_msk(GL_TRUE)
-		, m_b_msk(GL_TRUE)
-		, m_g_msk(GL_TRUE)
-		, m_a_msk(GL_TRUE)
 		, constant_factor(false)
 	{}
 
@@ -82,8 +74,6 @@ public:
 		m_func_dA = dst;
 	}
 
-	void SetMask(bool r, bool g, bool b, bool a) { m_r_msk = r; m_g_msk = g; m_b_msk = b; m_a_msk = a; }
-
 	void RevertOp()
 	{
 		if(m_equation_RGB == GL_FUNC_ADD)
@@ -98,23 +88,8 @@ public:
 
 	bool HasConstantFactor() { return constant_factor; }
 
-	void SetupColorMask()
-	{
-		// FIXME align then SSE
-		if (GLState::r_msk != m_r_msk || GLState::g_msk != m_g_msk || GLState::b_msk != m_b_msk || GLState::a_msk != m_a_msk) {
-			GLState::r_msk = m_r_msk;
-			GLState::g_msk = m_g_msk;
-			GLState::b_msk = m_b_msk;
-			GLState::a_msk = m_a_msk;
-
-			gl_ColorMaski(0, m_r_msk, m_g_msk, m_b_msk, m_a_msk);
-		}
-	}
-
 	void SetupBlend(float factor)
 	{
-		SetupColorMask();
-
 		if (GLState::blend != m_enable) {
 			GLState::blend = m_enable;
 			if (m_enable)
@@ -429,6 +404,31 @@ class GSDeviceOGL : public GSDevice
 		static uint32 size() { return 1 << 6; }
 	};
 
+	struct OMColorMaskSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 wr:1;
+				uint32 wg:1;
+				uint32 wb:1;
+				uint32 wa:1;
+			};
+
+			struct
+			{
+				uint32 wrgba:4;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key & 0xf;}
+
+		OMColorMaskSelector() : key(0xF) {}
+	};
+
 	struct OMBlendSelector
 	{
 		union
@@ -440,18 +440,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 b:2;
 				uint32 c:2;
 				uint32 d:2;
-				uint32 wr:1;
-				uint32 wg:1;
-				uint32 wb:1;
-				uint32 wa:1;
 				uint32 negative:1;
 			};
 
 			struct
 			{
-				uint32 _pad:1;
+				uint32 _abe:1;
 				uint32 abcd:8;
-				uint32 wrgba:4;
+				uint32 _negative:1;
 			};
 
 			uint32 key;
@@ -622,6 +618,8 @@ class GSDeviceOGL : public GSDevice
 	void OMSetBlendState(GSBlendStateOGL* bs, float bf);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
+	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
+
 
 	void CreateTextureFX();
 	GLuint CompileVS(VSSelector sel, int logz);

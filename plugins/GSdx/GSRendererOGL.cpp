@@ -202,6 +202,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::PSSamplerSelector ps_ssel;
 
 	GSDeviceOGL::OMBlendSelector om_bsel;
+	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
 	// Blend
@@ -232,13 +233,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	om_bsel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+	om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 
 	if (DATE) {
 		if (GLLoader::found_GL_ARB_texture_barrier && !PrimitiveOverlap()) {
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (om_bsel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
+		} else if (om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
 			DATE_GL42 = GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
 		}
 	}
@@ -419,7 +420,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS))
+	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS))
 	{
 		if (!context->FBA.FBA)
 		{
@@ -524,6 +525,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	SetupIA();
 
+	dev->OMSetColorMaskState(om_csel);
 	dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupCB(&vs_cb, &ps_cb, ps_sel.sprite ? &gs_cb : NULL);
 
@@ -585,10 +587,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->SetupPS(ps_sel);
 
 		bool z = om_dssel.zwe;
-		bool r = om_bsel.wr;
-		bool g = om_bsel.wg;
-		bool b = om_bsel.wb;
-		bool a = om_bsel.wa;
+		bool r = om_csel.wr;
+		bool g = om_csel.wg;
+		bool b = om_csel.wb;
+		bool a = om_csel.wa;
 
 		switch(context->TEST.AFAIL)
 		{
@@ -602,11 +604,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if(z || r || g || b || a)
 		{
 			om_dssel.zwe = z;
-			om_bsel.wr = r;
-			om_bsel.wg = g;
-			om_bsel.wb = b;
-			om_bsel.wa = a;
+			om_csel.wr = r;
+			om_csel.wg = g;
+			om_csel.wb = b;
+			om_csel.wa = a;
 
+			dev->OMSetColorMaskState(om_csel);
 			dev->SetupOM(om_dssel, om_bsel, afix);
 
 			dev->DrawIndexedPrimitive();

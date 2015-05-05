@@ -34,10 +34,8 @@ namespace GLState {
 	GLenum f_dRGB;
 	GLenum f_sA;
 	GLenum f_dA;
-	bool r_msk;
-	bool g_msk;
-	bool b_msk;
-	bool a_msk;
+	uint32 wrgba;
+
 	float bf;
 
 	bool depth;
@@ -86,10 +84,7 @@ namespace GLState {
 		f_dRGB = 0;
 		f_sA = 0;
 		f_dA = 0;
-		r_msk = true;
-		g_msk = true;
-		b_msk = true;
-		a_msk = true;
+		wrgba = 0xF;
 		bf = 0.0;
 
 		depth = false;

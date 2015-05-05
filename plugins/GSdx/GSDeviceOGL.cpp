@@ -709,6 +709,7 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 	OMSetDepthStencilState(m_convert.dss, 0);
 	OMSetBlendState(bs, 0);
 	OMSetRenderTargets(dt, NULL);
+	OMSetColorMaskState();
 
 	// ************************************
 	// ia
@@ -909,6 +910,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	OMSetBlendState(m_date.bs, 0);
 	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetRenderTargets(t, ds, &GLState::scissor);
+	OMSetColorMaskState(); // TODO: likely useless
 
 	// ia
 
@@ -1014,6 +1016,15 @@ void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
 
 		dss->SetupDepth();
 		dss->SetupStencil();
+	}
+}
+
+void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
+{
+	if (sel.wrgba != GLState::wrgba) {
+		GLState::wrgba = sel.wrgba;
+
+		gl_ColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
 	}
 }
 

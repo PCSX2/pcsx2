@@ -126,8 +126,6 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 		if(bsel.negative) bs->RevertOp();
 	}
 
-	bs->SetMask(bsel.wr, bsel.wg, bsel.wb, bsel.wa);
-
 	return bs;
 }
 
