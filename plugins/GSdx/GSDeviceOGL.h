@@ -40,22 +40,16 @@ class GSBlendStateOGL {
 	// We will keep basic the first try
 	bool   m_enable;
 	GLenum m_equation_RGB;
-	GLenum m_equation_A;
 	GLenum m_func_sRGB;
 	GLenum m_func_dRGB;
-	GLenum m_func_sA;
-	GLenum m_func_dA;
 	bool   constant_factor;
 
 public:
 
 	GSBlendStateOGL() : m_enable(false)
 		, m_equation_RGB(0)
-		, m_equation_A(GL_FUNC_ADD)
 		, m_func_sRGB(0)
 		, m_func_dRGB(0)
-		, m_func_sA(GL_ONE)
-		, m_func_dA(GL_ZERO)
 		, constant_factor(false)
 	{}
 
@@ -65,13 +59,6 @@ public:
 		m_func_sRGB = src;
 		m_func_dRGB = dst;
 		if (IsConstant(src) || IsConstant(dst)) constant_factor = true;
-	}
-
-	void SetALPHA(GLenum op, GLenum src, GLenum dst)
-	{
-		m_equation_A = op;
-		m_func_sA = src;
-		m_func_dA = dst;
 	}
 
 	void RevertOp()
@@ -106,18 +93,14 @@ public:
 				}
 			}
 
-			if (GLState::eq_RGB != m_equation_RGB || GLState::eq_A != m_equation_A) {
+			if (GLState::eq_RGB != m_equation_RGB) {
 				GLState::eq_RGB = m_equation_RGB;
-				GLState::eq_A   = m_equation_A;
-				gl_BlendEquationSeparateiARB(0, m_equation_RGB, m_equation_A);
+				gl_BlendEquationSeparateiARB(0, m_equation_RGB, GL_FUNC_ADD);
 			}
-			// FIXME align then SSE
-			if (GLState::f_sRGB != m_func_sRGB || GLState::f_dRGB != m_func_dRGB || GLState::f_sA != m_func_sA || GLState::f_dA != m_func_dA) {
+			if (GLState::f_sRGB != m_func_sRGB || GLState::f_dRGB != m_func_dRGB) {
 				GLState::f_sRGB = m_func_sRGB;
 				GLState::f_dRGB = m_func_dRGB;
-				GLState::f_sA = m_func_sA;
-				GLState::f_dA = m_func_dA;
-				gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, m_func_sA, m_func_dA);
+				gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
 			}
 		}
 	}

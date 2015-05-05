@@ -29,11 +29,8 @@ namespace GLState {
 
 	bool blend;
 	GLenum eq_RGB;
-	GLenum eq_A  ;
 	GLenum f_sRGB;
 	GLenum f_dRGB;
-	GLenum f_sA;
-	GLenum f_dA;
 	uint32 wrgba;
 
 	float bf;
@@ -79,11 +76,8 @@ namespace GLState {
 
 		blend = false;
 		eq_RGB = 0;
-		eq_A   = 0;
 		f_sRGB = 0;
 		f_dRGB = 0;
-		f_sA = 0;
-		f_dA = 0;
 		wrgba = 0xF;
 		bf = 0.0;
 

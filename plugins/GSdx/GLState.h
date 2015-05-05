@@ -31,11 +31,8 @@ namespace GLState {
 
 	extern bool blend;
 	extern GLenum eq_RGB;
-	extern GLenum eq_A;
 	extern GLenum f_sRGB;
 	extern GLenum f_dRGB;
-	extern GLenum f_sA;
-	extern GLenum f_dA;
 	extern uint32 wrgba;
 	extern float bf;
 

@@ -1030,8 +1030,8 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 {
-	// State is checkd inside the object but worst case is 15 comparaisons !
-	if ( m_state.bs != bs || (m_state.bf != bf && bs->HasConstantFactor()) )
+	// State is checkd inside the object but worst case is 8 comparaisons
+	if (m_state.bs != bs || m_state.bf != bf)
 	{
 		m_state.bs = bs;
 		m_state.bf = bf;
