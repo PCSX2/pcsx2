@@ -38,7 +38,6 @@
 #define PS_POINT_SAMPLER 0
 #define PS_TCOFFSETHACK 0
 #define PS_IIP 1
-#define PS_SPRITE 0
 #endif
 
 #ifdef FRAGMENT_SHADER
@@ -48,11 +47,6 @@ in SHADER
 	vec4 t;
 	vec4 c;
 	flat vec4 fc;
-#if PS_SPRITE == 1
-	flat vec4 flat_T;
-	flat vec2 flat_P;
-	vec2 alpha;
-#endif
 } PSin;
 
 #define PSin_t (PSin.t)
@@ -375,21 +369,7 @@ void fog(inout vec4 c, float f)
 
 vec4 ps_color()
 {
-#if PS_SPRITE == 1
-	// Reinterpolate manually the texture coordinate.
-	// trunc => native resolution. Maybe we can add an option to choose a value between
-	// trunc and current.
-	vec2 factor = vec2(trunc(PSin.alpha.x), floor(PSin.alpha.y));
-	//vec2 factor = trunc(PSin.alpha);
-	factor *= PSin.flat_P;
-	vec2 txy;
-	txy.x = mix(PSin.flat_T.x, PSin.flat_T.y, factor.x);
-	txy.y = mix(PSin.flat_T.z, PSin.flat_T.w, factor.y);
-
-#else
-	vec2 txy = PSin_t.xy;
-#endif
-	vec4 t = sample_color(txy, PSin_t.w);
+	vec4 t = sample_color(PSin_t.xy, PSin_t.w);
 
 	vec4 zero = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	vec4 one = vec4(1.0f, 1.0f, 1.0f, 1.0f);

@@ -195,8 +195,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::VSSelector vs_sel;
 	GSDeviceOGL::VSConstantBuffer vs_cb;
 
-	GSDeviceOGL::GSConstantBuffer gs_cb;
-
 	GSDeviceOGL::PSSelector ps_sel;
 	GSDeviceOGL::PSConstantBuffer ps_cb;
 	GSDeviceOGL::PSSamplerSelector ps_ssel;
@@ -306,16 +304,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		om_dssel.fba = context->FBA.FBA;
 	}
-
-	bool hack_enabled = (UserHacks_Unscale_sprite > 1) || ((UserHacks_Unscale_sprite == 1) && !m_vt.IsLinear());
-	if (hack_enabled && (m_vt.m_primclass == GS_SPRITE_CLASS) && GLLoader::found_geometry_shader) {
-		bool blit = tex && (tex->m_texture->GetWidth() == rtsize.x) && (tex->m_texture->GetHeight() == rtsize.y);
-		if (!blit) {
-			ps_sel.sprite = 1;
-			gs_cb.rt_size = GSVector4(rtsize.x / rtscale.x, rtsize.y / rtscale.y) / 2.0f;
-		}
-	}
-
 
 	// vs
 
@@ -530,7 +518,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->OMSetColorMaskState(om_csel);
 	dev->SetupOM(om_dssel, om_bsel, afix);
-	dev->SetupCB(&vs_cb, &ps_cb, ps_sel.sprite ? &gs_cb : NULL);
+	dev->SetupCB(&vs_cb, &ps_cb);
 
 	if (DATE_GL42) {
 		// It could be good idea to use stencil in the same time.

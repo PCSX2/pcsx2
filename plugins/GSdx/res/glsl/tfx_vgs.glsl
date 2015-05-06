@@ -152,10 +152,6 @@ void vs_main()
 
 #ifdef GEOMETRY_SHADER
 
-#ifndef GS_SPRITE
-#define GS_SPRITE 0
-#endif
-
 in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
@@ -186,11 +182,6 @@ out SHADER
     vec4 t;
     vec4 c;
     flat vec4 fc;
-#if GS_SPRITE > 0
-    flat vec4 flat_T;
-    flat vec2 flat_P;
-    vec2 alpha;
-#endif
 } GSout;
 
 layout(std140, binding = 22) uniform cb22
@@ -210,9 +201,6 @@ void out_vertex(in vertex v)
 {
     GSout.t = v.t;
     GSout.c = v.c;
-#if GS_SPRITE > 0
-    GSout.alpha = v.a;
-#endif
     gl_PrimitiveID = gl_PrimitiveIDIn;
     EmitVertex();
 }
@@ -221,10 +209,6 @@ void out_flat(in vec2 dp)
 {
     // Flat output
     GSout.fc = GSin[1].fc;
-#if GS_SPRITE > 0
-    GSout.flat_T = vec4(GSin[0].t.x, GSin[1].t.x, GSin[0].t.y, GSin[1].t.y);
-    GSout.flat_P = 1.0f / dp;
-#endif
 }
 
 layout(lines) in;
@@ -233,11 +217,7 @@ layout(triangle_strip, max_vertices = 6) out;
 void gs_main()
 {
     // Rescale from -1 1 to 0:1 (require window size)
-#if GS_SPRITE > 0
-    vec2 dp = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy) * rt_size.xy;
-#else
     vec2 dp = vec2(0.0f, 0.0f);
-#endif
 
     // left top     => GSin[0];
     // right bottom => GSin[1];

@@ -287,31 +287,6 @@ class GSDeviceOGL : public GSDevice
 		}
 	};
 
-	__aligned(struct, 32) GSConstantBuffer
-	{
-		GSVector4 rt_size;
-
-		GSConstantBuffer()
-		{
-			rt_size = GSVector4::zero();
-		}
-
-		__forceinline bool Update(const GSConstantBuffer* cb)
-		{
-			GSVector4i* a = (GSVector4i*)this;
-			GSVector4i* b = (GSVector4i*)cb;
-
-			if(!(a[0] == b[0]).alltrue())
-			{
-				a[0] = b[0];
-
-				return true;
-			}
-
-			return false;
-		}
-	};
-
 	struct PSSelector
 	{
 		union
@@ -330,7 +305,6 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
-				uint32 sprite:1;
 				// Next param will be handle by subroutine
 				uint32 colclip:2;
 				uint32 atst:3;
@@ -528,11 +502,9 @@ class GSDeviceOGL : public GSDevice
 	GLuint m_rt_ss;
 
 	GSUniformBufferOGL* m_vs_cb;
-	GSUniformBufferOGL* m_gs_cb;
 	GSUniformBufferOGL* m_ps_cb;
 
 	VSConstantBuffer m_vs_cb_cache;
-	GSConstantBuffer m_gs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
 
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
@@ -627,7 +599,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupVS(VSSelector sel);
 	void SetupGS(bool enable);
 	void SetupPS(PSSelector sel);
-	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb, const GSConstantBuffer* gs_cb);
+	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 	GLuint GetSamplerID(PSSamplerSelector ssel);

@@ -121,7 +121,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Delete HW FX
 	delete m_vs_cb;
-	delete m_gs_cb;
 	delete m_ps_cb;
 	gl_DeleteSamplers(1, &m_palette_ss);
 	m_shader->Delete(m_apitrace);
@@ -567,12 +566,7 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
 /* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileGS()
 {
-	// Don't use a dynamic selector to only compile a single GS.
-	// If configuration is updated, shader will be recompiled
-	int unscale_sprite = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_UnscaleSprite", 0) : 0;
-	std::string macro = format("#define GS_SPRITE %d\n", unscale_sprite);
-
-	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
+	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, "");
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -597,7 +591,6 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
 		//+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
 		+ format("#define PS_IIP %d\n", sel.iip)
-		+ format("#define PS_SPRITE %d\n", sel.sprite)
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
