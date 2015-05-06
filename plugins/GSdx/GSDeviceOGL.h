@@ -328,7 +328,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 date:3;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
-				uint32 point_sampler:1;
+				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
 				uint32 sprite:1;
 				// Next param will be handle by subroutine
