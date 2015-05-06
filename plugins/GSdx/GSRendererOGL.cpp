@@ -178,6 +178,10 @@ bool GSRendererOGL::PrimitiveOverlap()
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Draw %d", s_n);
+	GL_PUSH(help.c_str());
+#endif
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
@@ -514,13 +518,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	uint8 afix = context->ALPHA.FIX;
 
+	GL_PUSH("IA");
 	SetupIA();
+	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
 	dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupCB(&vs_cb, &ps_cb);
 
 	if (DATE_GL42) {
+		GL_PUSH("Date GL42");
 		// It could be good idea to use stencil in the same time.
 		// Early stencil test will reduce the number of atomic-load operation
 
@@ -546,6 +553,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Be sure that first pass is finished !
 		if (!UserHacks_DateGL4)
 			dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+		GL_POP();
 	}
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
@@ -556,6 +565,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 		{
+			GL_PUSH("COLCLIP");
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
 
@@ -567,6 +577,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			dev->DrawIndexedPrimitive();
 			dev->SetupOM(om_dssel, om_bsel, afix);
+			GL_POP();
 		}
 	}
 
@@ -610,6 +621,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 			{
+				GL_PUSH("COLCLIP");
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
 
@@ -620,6 +632,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				dev->SetupPS(ps_selneg);
 
 				dev->DrawIndexedPrimitive();
+				GL_POP();
 			}
 		}
 	}
@@ -629,6 +642,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->EndScene();
 
 	if(om_dssel.fba) UpdateFBA(rt);
+	GL_POP();
 }
 
 void GSRendererOGL::UpdateFBA(GSTexture* rt)

@@ -255,6 +255,10 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
 	m_dirty = true;
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Upload Texture %d", m_texture_id);
+	GL_PUSH(help.c_str());
+#endif
 
 	// Note: reduce noise for gl retracers
 	// It might introduce bug after an emulator pause so always set it in standard mode
@@ -300,6 +304,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	PboPool::EndTransfer();
 
+	GL_POP();
 	return true;
 
 	// For reference, standard upload without pbo (Used to crash on FGLRX)

@@ -54,6 +54,8 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		return;
 	}
 
+	GL_PUSH("Texture Cache Read");
+
 	// printf("GSRenderTarget::Read %d,%d - %d,%d (%08x)\n", r.left, r.top, r.right, r.bottom, TEX0.TBP0);
 
 	int w = r.width();
@@ -99,5 +101,7 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		// FIXME invalidate data
 		m_renderer->m_dev->Recycle(offscreen);
 	}
+
+	GL_POP();
 }
 

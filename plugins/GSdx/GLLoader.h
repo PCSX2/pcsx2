@@ -285,9 +285,11 @@ extern   PFNGLPROGRAMUNIFORM1IPROC              gl_ProgramUniform1i;
 extern   PFNGLBINDIMAGETEXTUREPROC              gl_BindImageTexture;
 extern   PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier;
 extern   PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D;
+extern   PFNGLPOPDEBUGGROUPPROC                 gl_PopDebugGroup;
 // GL4.3
 extern   PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData;
 extern   PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage;
+extern   PFNGLPUSHDEBUGGROUPPROC                gl_PushDebugGroup;
 // GL4.4
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)

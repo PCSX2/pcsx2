@@ -100,6 +100,8 @@ PFNGLPROGRAMUNIFORM1IPROC              gl_ProgramUniform1i                  = NU
 // GL4.3
 PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData                  = NULL;
 PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage                = NULL;
+PFNGLPUSHDEBUGGROUPPROC                gl_PushDebugGroup                    = NULL;
+PFNGLPOPDEBUGGROUPPROC                 gl_PopDebugGroup                     = NULL;
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              gl_BindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier                     = NULL;

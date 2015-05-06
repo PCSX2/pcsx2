@@ -493,6 +493,15 @@ extern void vmfree(void* ptr, size_t size);
 
 #endif
 
+// Except apple any sane driver support this extension
+#ifdef ENABLE_OGL_DEBUG
+#define GL_PUSH(s) gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, s);
+#define GL_POP(s)  gl_PopDebugGroup();
+#else
+#define GL_PUSH(s) (0);
+#define GL_POP()   (0);
+#endif
+
 // Helper path to dump texture
 #ifdef _WINDOWS
 const std::string root_sw("c:\\temp1\\_");

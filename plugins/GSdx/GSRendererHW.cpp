@@ -181,6 +181,10 @@ GSTexture* GSRendererHW::GetOutput(int i)
 			}
 
 			s_n++;
+#ifdef ENABLE_OGL_DEBUG
+		} else {
+			s_n += 2;
+#endif
 		}
 	}
 
@@ -335,8 +339,8 @@ void GSRendererHW::Draw()
 	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
 		if (s_dump) {
 			fprintf(stderr, "Warning skipping a draw call\n");
-			s_n += 3; // Keep it sync with SW renderer
 		}
+		s_n += 3; // Keep it sync with SW renderer
 		return;
 	}
 
@@ -382,7 +386,9 @@ void GSRendererHW::Draw()
 
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
+		GL_PUSH("Lookup Source");
 		tex = m_tc->LookupSource(context->TEX0, env.TEXA, r);
+		GL_POP();
 
 		if(!tex) return;
 
@@ -434,15 +440,17 @@ void GSRendererHW::Draw()
 
 		s_n++;
 
-		static uint64 draw_call = 0; // Redundant with s_n but easier to map in GL debug tool
 		if (s_n >= s_saven) {
 			// Dump Register state
-			s = format("%05d_context_d%lld.txt", s_n, draw_call);
+			s = format("%05d_context_d%lld.txt", s_n);
 
 			m_env.Dump(root_hw+s);
 			m_context->Dump(root_hw+s);
 		}
-		draw_call++;
+#ifdef ENABLE_OGL_DEBUG
+	} else {
+		s_n += 2;
+#endif
 	}
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
@@ -568,6 +576,10 @@ void GSRendererHW::Draw()
 		if ((s_n - s_saven) > s_savel) {
 			s_dump = 0;
 		}
+#ifdef ENABLE_OGL_DEBUG
+	} else {
+		s_n += 1;
+#endif
 	}
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE

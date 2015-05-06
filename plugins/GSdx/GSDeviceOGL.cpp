@@ -381,11 +381,15 @@ void GSDeviceOGL::DetachContext()
 
 void GSDeviceOGL::BeforeDraw()
 {
+	GL_PUSH("Before Draw Validation & Setup");
+
 	m_shader->UseProgram();
 
 #ifdef _DEBUG
 	ASSERT(gl_CheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 #endif
+
+	GL_POP();
 }
 
 void GSDeviceOGL::AfterDraw()
@@ -420,6 +424,11 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Clear RT %d", static_cast<GSTextureOGL*>(t)->GetID());
+	GL_PUSH(help.c_str());
+#endif
+
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 	if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
@@ -435,6 +444,8 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	}
 	glEnable(GL_SCISSOR_TEST);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
@@ -445,6 +456,11 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Clear RTi %d", static_cast<GSTextureOGL*>(t)->GetID());
+	GL_PUSH(help.c_str());
+#endif
+
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	int32 col[4] = {c, c, c, c};
@@ -453,10 +469,17 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
 	gl_ClearBufferiv(GL_COLOR, 0, col);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Clear Depth %d", static_cast<GSTextureOGL*>(t)->GetID());
+	GL_PUSH(help.c_str());
+#endif
+
 	OMSetFBO(m_fbo);
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 
@@ -470,10 +493,17 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 		glDepthMask(false);
 	}
 	glEnable(GL_SCISSOR_TEST);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("Clear Stencil %d", static_cast<GSTextureOGL*>(t)->GetID());
+	GL_PUSH(help.c_str());
+#endif
+
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
@@ -481,6 +511,8 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	GLint color = c;
 
 	gl_ClearBufferiv(GL_STENCIL, 0, &color);
+
+	GL_POP();
 }
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
@@ -639,6 +671,8 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 {
 	ASSERT(st && dt);
 
+	GL_PUSH("CopyRect");
+
 	if (GLLoader::found_GL_ARB_copy_image) {
 		gl_CopyImageSubData( static_cast<GSTextureOGL*>(st)->GetID(), GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
@@ -659,6 +693,8 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
+
+	GL_POP();
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, int shader, bool linear)
@@ -678,6 +714,8 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		ASSERT(0);
 		return;
 	}
+
+	GL_PUSH("StretchRect");
 
 	// ************************************
 	// Init
@@ -766,10 +804,14 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 	// ************************************
 
 	EndScene();
+
+	GL_POP();
 }
 
 void GSDeviceOGL::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
 {
+	GL_PUSH("DoMerge");
+
 	ClearRenderTarget(dt, c);
 
 	if(st[1] && !slbg)
@@ -783,10 +825,14 @@ void GSDeviceOGL::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVect
 
 		StretchRect(st[0], sr[0], dt, dr[0], m_merge_obj.ps[mmod ? 1 : 0], m_merge_obj.bs);
 	}
+
+	GL_POP();
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset)
 {
+	GL_PUSH("DoInterlace");
+
 	GSVector4 s = GSVector4(dt->GetSize());
 
 	GSVector4 sr(0, 0, 1, 1);
@@ -800,6 +846,8 @@ void GSDeviceOGL::DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool lin
 	m_interlace.cb->upload(&cb);
 
 	StretchRect(st, sr, dt, dr, m_interlace.ps[shader], linear);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
@@ -815,12 +863,16 @@ void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
 		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
 	}
 
+	GL_PUSH("DoFxaa");
+
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
 	GSVector4 dr(0, 0, s.x, s.y);
 
 	StretchRect(st, sr, dt, dr, m_fxaa.ps, true);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
@@ -847,6 +899,8 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 		m_shaderfx.ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
 	}
 
+	GL_PUSH("DoExternalFX");
+
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
@@ -861,10 +915,14 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 	m_shaderfx.cb->upload(&cb);
 
 	StretchRect(st, sr, dt, dr, m_shaderfx.ps, true);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
 {
+	GL_PUSH("DoShadeBoost");
+
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
@@ -878,10 +936,14 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
 	m_shadeboost.cb->upload(&cb);
 
 	StretchRect(st, sr, dt, dr, m_shadeboost.ps, true);
+
+	GL_POP();
 }
 
 void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
 {
+	GL_PUSH("DATE First Pass");
+
 	GSTexture* t = NULL;
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
@@ -926,6 +988,8 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	OMSetWriteBuffer();
 
 	EndScene();
+
+	GL_POP();
 }
 
 void GSDeviceOGL::EndScene()
@@ -1111,6 +1175,8 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		case GL_DEBUG_TYPE_PORTABILITY_ARB         : type = "Portability"; break;
 		case GL_DEBUG_TYPE_PERFORMANCE_ARB         : type = "Perf"; break;
 		case GL_DEBUG_TYPE_OTHER_ARB               : type = "Others"; break;
+		case GL_DEBUG_TYPE_PUSH_GROUP              : return; // Don't print message injected by myself
+		case GL_DEBUG_TYPE_POP_GROUP               : return; // Don't print message injected by myself
 		default                                    : type = "TTT"; break;
 	}
 	switch(gl_severity) {

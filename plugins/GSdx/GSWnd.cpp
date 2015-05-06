@@ -107,6 +107,8 @@ void GSWndGL::PopulateGlFunction()
 	// GL4.3
 	*(void**)&(gl_CopyImageSubData) = GetProcAddress("glCopyImageSubData", true);
 	*(void**)&(gl_InvalidateTexImage) = GetProcAddress("glInvalidateTexImage", true);
+	*(void**)&(gl_PushDebugGroup) = GetProcAddress("glPushDebugGroup", true);
+	*(void**)&(gl_PopDebugGroup) = GetProcAddress("glPopDebugGroup", true);
 	// GL4.4
 	*(void**)&(gl_BufferStorage) = GetProcAddress("glBufferStorage", true);
 	// GL_ARB_bindless_texture (GL5?)
