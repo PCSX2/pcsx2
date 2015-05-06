@@ -42,7 +42,8 @@ class GSBlendStateOGL {
 	GLenum m_equation_RGB;
 	GLenum m_func_sRGB;
 	GLenum m_func_dRGB;
-	bool   constant_factor;
+	bool   m_constant_factor;
+	char   m_bogus;
 
 public:
 
@@ -50,7 +51,8 @@ public:
 		, m_equation_RGB(0)
 		, m_func_sRGB(0)
 		, m_func_dRGB(0)
-		, constant_factor(false)
+		, m_constant_factor(false)
+		, m_bogus(0)
 	{}
 
 	void SetRGB(GLenum op, GLenum src, GLenum dst)
@@ -58,8 +60,10 @@ public:
 		m_equation_RGB = op;
 		m_func_sRGB = src;
 		m_func_dRGB = dst;
-		if (IsConstant(src) || IsConstant(dst)) constant_factor = true;
+		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
 	}
+
+	void SetBogus(char bogus) { m_bogus = bogus; }
 
 	void RevertOp()
 	{
@@ -73,7 +77,7 @@ public:
 
 	bool IsConstant(GLenum factor) { return ((factor == GL_CONSTANT_COLOR) || (factor == GL_ONE_MINUS_CONSTANT_COLOR)); }
 
-	bool HasConstantFactor() { return constant_factor; }
+	bool HasConstantFactor() { return m_constant_factor; }
 
 	void SetupBlend(float factor)
 	{
@@ -86,6 +90,11 @@ public:
 		}
 
 		if (m_enable) {
+#ifdef ENABLE_OGL_DEBUG
+			if (m_bogus) {
+				fprintf(stderr, "Bogus blending effect used : %s\n", (m_bogus == 1) ? "impossible effect" : "clear effect");
+			}
+#endif
 			if (HasConstantFactor()) {
 				if (GLState::bf != factor) {
 					GLState::bf = factor;

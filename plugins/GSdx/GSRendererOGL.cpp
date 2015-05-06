@@ -229,6 +229,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			{
 				//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
 				//ASSERT(0);
+#ifdef ENABLE_OGL_DEBUG
+				fprintf(stderr, "env PABE  not supported\n");
+#endif
 			}
 		}
 	}
@@ -530,6 +533,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupCB(&vs_cb, &ps_cb, ps_sel.sprite ? &gs_cb : NULL);
 
 	if (DATE_GL42) {
+		// It could be good idea to use stencil in the same time.
+		// Early stencil test will reduce the number of atomic-load operation
+
 		// Create an r32i image that will contain primitive ID
 		// Note: do it at the beginning because the clean will dirty the FBO state
 		//dev->InitPrimDateTexture(rtsize.x, rtsize.y);
