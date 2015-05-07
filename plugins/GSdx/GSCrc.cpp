@@ -26,7 +26,7 @@
 CRC::Game CRC::m_games[] =
 {
 	{0x00000000, NoTitle, NoRegion, 0},
-	{0x2113EA2E, MetalSlug6, NoRegion, 0},
+	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
 	{0x7800DC84, Clannad, JP, PointListPalette},
 	{0xA6167B59, Lamune, JP, PointListPalette},
@@ -63,25 +63,25 @@ CRC::Game CRC::m_games[] =
 	{0xC52B466E, FFXII, EU, 0}, //ES
 	{0xE5E71BF9, FFXII, FR, 0},
 	{0x280AD120, FFXII, JP, 0},
-	{0x08C1ED4D, HauntingGround, NoRegion, 0},
+	{0x08C1ED4D, HauntingGround, EU, 0},
 	{0x2CD5794C, HauntingGround, EU, 0},
 	//duplicate crc with genji.. {0x7D4EA48F, HauntingGround, EU, 0},
 	{0x867BB945, HauntingGround, JP, 0},
 	{0xE263BC4B, HauntingGround, JP, 0},
 	{0x901AAC09, HauntingGround, US, 0},
-	{0x8BE3D7B2, ShadowHearts, NoRegion, 0},
+	{0x8BE3D7B2, ShadowHearts, US, 0},
 	{0xDEFA4763, ShadowHearts, US, 0},
 	{0xDDFB18B0, ShadowHearts, JP, 0},
 	{0x21068223, Okami, US, 0},
-	{0x891F223F, Okami, FR, 0},
+	{0x891F223F, Okami, EU, 0}, // PAL DE, ES & FR.
 	{0xC5DEFEA0, Okami, JP, 0},
-	{0x086273D2, MetalGearSolid3, FR, 0},
-	{0x26A6E286, MetalGearSolid3, EU, 0},
+	{0x086273D2, MetalGearSolid3, EU, 0}, // - PAL UK & FR
+	{0x26A6E286, MetalGearSolid3, DE, 0},
 	{0x9F185CE1, MetalGearSolid3, EU, 0},
-	{0x98D4BC93, MetalGearSolid3, EU, 0},
+	{0x98D4BC93, MetalGearSolid3, ES, 0},
 	{0x79ED26AD, MetalGearSolid3, EU, 0},
 	{0x5E31EA42, MetalGearSolid3, EU, 0},
-	{0xD7ED797D, MetalGearSolid3, EU, 0},
+	{0xD7ED797D, MetalGearSolid3, DE, 0},
 	{0x053D2239, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc1
 	{0x01B2FA7F, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc2
 	{0xAA31B5BF, MetalGearSolid3, US, 0},
@@ -98,11 +98,13 @@ CRC::Game CRC::m_games[] =
 	{0xE29C09A3, DBZBT2, KO, 0}, //DragonBall Z Sparking Neo
 	{0x0BAA4387, DBZBT2, JP, 0},
 	{0x35AA84D1, DBZBT2, NoRegion, 0},
+	{0xBE6A9CFB, DBZBT2, NoRegion, 0},
 	{0x428113C2, DBZBT3, US, 0},
 	{0xA422BB13, DBZBT3, EU, 0},
+	{0xCE93CB30, DBZBT3, JP, 0},
 	{0xF28D21F1, DBZBT3, JP, 0},
 	{0x983C53D2, DBZBT3, NoRegion, 0},
-	{0x983C53D3, DBZBT3, NoRegion, 0},
+	{0x983C53D3, DBZBT3, EU, 0},
 	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
@@ -120,13 +122,14 @@ CRC::Game CRC::m_games[] =
 	{0xE446C9F9, OnePieceGrandAdventure, KO, 0},
 	{0xCA2073B3, OnePieceGrandBattle, KO, 0},
 	{0x66953267, OnePieceGrandAdventure, JP, 0},
+	{0xE1674F57, OnePieceGrandBattle, EU, 0},
 	{0x947B933B, OnePieceGrandAdventure, US, 0},
 	{0xB049DD5E, OnePieceGrandBattle, US, 0},
 	{0x5D02CC5B, OnePieceGrandBattle, NoRegion, 0},
 	{0x6F8545DB, ICO, US, 0},
 	{0xB01A4C95, ICO, JP, 0},
 	{0x2DF2C1EA, ICO, KO, 0},
-	{0x5C991F4E, ICO, NoRegion, 0},
+	{0x5C991F4E, ICO, EU, 0},
 	{0x7ACF7E03, ICO, NoRegion, 0},
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
@@ -141,10 +144,10 @@ CRC::Game CRC::m_games[] =
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
 	{0x6810C3BC, GT3, CH, 0}, //GRAN TURISMO Concept 2002 Tokyo-Geneva
 	{0x85AE91B3, GT3, US, 0},
-	{0xC220951A, GT3, NoRegion, 0},
+	{0xC220951A, GT3, JP, 0},
 	{0x9DE5CF65, GT3, JP, 0}, //Gran Turismo 3: A-spec
 	{0x60013EBD, GTConcept, EU, 0},
-	{0xB590CE04, GTConcept, NoRegion, 0},
+	{0xB590CE04, GTConcept, EU, 0},
 	{0x0EEF32A3, GTConcept, KO, 0}, //Gran Turismo Concept 2002 Tokyo-Seoul
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
@@ -154,7 +157,8 @@ CRC::Game CRC::m_games[] =
 	{0xBBC3EFFA, WildArms4, US, 0},
 	{0xBBC396EC, WildArms4, US, 0}, //hmm such a small diff in the CRC..
 	{0x7B2DE9CC, WildArms4, EU, 0},
-	{0x8B029334, Manhunt2, NoRegion, 0},
+	{0x8B029334, Manhunt2, EU, 0},
+	{0x3B0ADBEF, Manhunt2, US, 0},
 	{0x09F49E37, CrashBandicootWoC, NoRegion, 0},
 	{0x103B5706, CrashBandicootWoC, US, 0}, //American Greatest Hits release
 	{0x75182BE5, CrashBandicootWoC, US, 0},
@@ -166,11 +170,12 @@ CRC::Game CRC::m_games[] =
 	{0x6BA2F6B9, ResidentEvil4, EU, 0},
 	{0x60FA8C69, ResidentEvil4, JP, 0},
 	{0x5F254B7C, ResidentEvil4, KO, 0},
-	{0x72E1E60E, Spartan, NoRegion, 0},
+	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
+	{0x08277A9E, Spartan, US, 0},
 	{0xA32F7CD0, AceCombat4, US, 0},
 	{0x5ED8FB53, AceCombat4, JP, 0},
-	{0x1B9B7563, AceCombat4, NoRegion, 0},
+	{0x1B9B7563, AceCombat4, EU, 0},
 	{0xEC432B24, Drakengard2, EU, 0},
 	{0x1648E3C9, Drakengard2, US, 0},
 	{0xB7ADB13A, Drakengard2, CH, 0},
@@ -181,6 +186,7 @@ CRC::Game CRC::m_games[] =
 	{0xEA64EF39, Tekken5, KO, 0},
 	{0x9E98B8AE, IkkiTousen, JP, 0},
 	{0xD6385328, GodOfWar, US, 0},
+	{0xF2A8D307, GodOfWar, US, 0},
 	{0xFB0E6D72, GodOfWar, EU, 0},
 	{0xEB001875, GodOfWar, EU, 0},
 	{0xCF148C74, GodOfWar, EU, 0},
@@ -188,9 +194,9 @@ CRC::Game CRC::m_games[] =
 	{0xBFCC1795, GodOfWar, KO, 0},
 	{0x9567B7D6, GodOfWar, KO, 0},
 	{0x9B5C97BA, GodOfWar, KO, 0},
-	{0xA61A4C6D, GodOfWar, NoRegion, 0},
+	{0xA61A4C6D, GodOfWar, US, 0},
 	{0xE23D532B, GodOfWar, NoRegion, 0},
-	{0xDF1AF973, GodOfWar, NoRegion, 0},
+	{0xDF1AF973, GodOfWar, EU, 0},
 	// same CRC as US {0xD6385328, GodOfWar, NoRegion, 0},
 	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
 	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
@@ -204,11 +210,12 @@ CRC::Game CRC::m_games[] =
 	{0x0B82BFF7, GodOfWar2, NoRegion, 0},
 	{0x5990866F, GodOfWar2, NoRegion, 0},
 	{0xC4C4FD5F, GodOfWar2, CH, 0},
-	{0xDCD9A9F7, GodOfWar2, NoRegion, 0},
+	{0xDCD9A9F7, GodOfWar2, EU, 0},
 	{0xFA0DF523, GodOfWar2, CH, 0}, // cutie comment
 	{0x9FEE3466, GodOfWar2, CH, 0}, // cutie comment
-	{0x5D482F18, JackieChanAdv, NoRegion, 0},
+	{0x5D482F18, JackieChanAdv, EU, 0},
 	{0xF0A6D880, HarvestMoon, US, 0},
+	{0x9536E111, NamcoXCapcom, JP, 0},
 	{0x75C01A04, NamcoXCapcom, US, 0},
 	//Same CRC also reported as EU, and we have another US crc... {0xBF6F101F, GiTS, US, 0},
 	{0x95CC86EF, GiTS, US, 0},
@@ -224,7 +231,7 @@ CRC::Game CRC::m_games[] =
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
-	{0x5C1EBD61, SimpsonsGame, NoRegion, 0},
+	{0x5C1EBD61, SimpsonsGame, EU, 0},
 	{0x4C7BB3C8, SimpsonsGame, NoRegion, 0},
 	{0x4C94B32C, SimpsonsGame, NoRegion, 0},
 	{0x565B7E04, SimpsonsGame, IT, 0},
@@ -236,7 +243,7 @@ CRC::Game CRC::m_games[] =
 	{0x56242EC9, Genji, KO, 0},
 	{0xCDAF243D, Genji, CH, 0}, 
 	{0x2A5E0B61, Genji, CH, 0},
-	{0x7D4EA48F, Genji, NoRegion, 0},
+	{0x7D4EA48F, Genji, EU, 0},
 	{0xE04EA200, StarOcean3, EU, 0},
 	{0x23A97857, StarOcean3, US, 0},
 	{0xBEC32D49, StarOcean3, JP, 0},
@@ -245,7 +252,7 @@ CRC::Game CRC::m_games[] =
 	{0xCC96CE93, ValkyrieProfile2, US, 0},
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
-	{0xB65E141B, ValkyrieProfile2, EU, 0}, // PAL German
+	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
 	{0xC70FC973, ValkyrieProfile2, IT, 0}, 
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
@@ -271,13 +278,15 @@ CRC::Game CRC::m_games[] =
 	{0x64C58FB4, TenchuFS, US, 0},
 	{0xE7CCCB1E, TenchuFS, EU, 0},
 	{0x1969B19A, TenchuFS, ES, 0},		//PAL Spanish
+	{0xBF0DC4CE, TenchuFS, DE, 0},
 	{0x696BBEC3, TenchuFS, KO, 0},
 	{0x525C1994, TenchuFS, ASIA, 0},
 	{0x0D73BBCD, TenchuFS, KO, 0},
 	{0xAFBFB287, TenchuWoH, KO, 0},
 	{0x767E383D, TenchuWoH, US, 0},
-	{0x83261085, TenchuWoH, EU, 0},		//PAL German
+	{0x83261085, TenchuWoH, DE, 0},		//PAL German
 	{0x7FA1510D, TenchuWoH, EU, 0},		//PAL ES, IT
+	{0xC8DADF58, TenchuWoH, EU, 0},
 	{0x13DD9957, TenchuWoH, JP, 0},
 	{0x8BC95883, Sly3, US, 0},
 	{0x8164C614, Sly3, EU, 0},
@@ -315,6 +324,8 @@ CRC::Game CRC::m_games[] =
 	{0x5088CCDB, SilentHill3, EU, 0},
 	{0x8CFE667F, SilentHill3, JP, 0},
 	{0xC6CBDE91, SilentHill3, KO, 0},
+	{0x6B149273, SilentHill2, EU, 0},
+	{0x6BBD4932, SilentHill2, EU, 0}, // Director's Cut
 	{0x8E8E384B, SilentHill2, US, 0},
 	{0xFE06A030, SilentHill2, US, 0},	//greatest hits
 	{0xE36E16C9, SilentHill2, JP, 0},
@@ -507,6 +518,7 @@ CRC::Game CRC::m_games[] =
 	{0x0098F740, SeintoSeiya, NoRegion, 0}, // cutie comment
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
 	{0xAE4BEBD3, UrbanReign, EU, 0},
+	{0x48AC09BC, SteambotChronicles, EU, 0},
 	{0x9F391882, SteambotChronicles, US, 0},
 	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
 	{0x06A7506A, SacredBlaze, JP, 0},
