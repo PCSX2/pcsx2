@@ -195,7 +195,7 @@ void SysMtgsThread::OpenPlugin()
 	// Vsync on / off ?
 	if( renderswitch )
 	{
-		Console.Indent(2).WriteLn( "Forced software switch enabled." );
+		Console.Indent(2).WriteLn( "Toggling GSdx Hardware/Software renderer" );
 		if ( EmuConfig.GS.VsyncEnable )
 		{
 			// Better turn Vsync off now, as in most cases sw rendering is not fast enough to support a steady 60fps.
