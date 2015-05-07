@@ -207,6 +207,85 @@ GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int 
 	return table;
 }
 
+void populate_res_table(GtkWidget* res_table)
+{
+	GtkWidget* native_label     = gtk_label_new("Original PS2 Resolution: ");
+	GtkWidget* native_res_check = CreateCheckBox("Native", "nativeres");
+
+	GtkWidget* fsaa_label     = gtk_label_new("Or Use Scaling:");
+	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 2);
+
+	GtkWidget* resxy_label = gtk_label_new("Custom Resolution:");
+	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "resx", 1024);
+	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "resy", 1024);
+
+	s_table_line = 0;
+	InsertWidgetInTable(res_table, native_label, native_res_check);
+	InsertWidgetInTable(res_table, fsaa_label, fsaa_combo_box);
+	InsertWidgetInTable(res_table, resxy_label, resx_spin, resy_spin);
+}
+
+void populate_hw_table(GtkWidget* hw_table)
+{
+	GtkWidget* filter_label     = gtk_label_new ("Texture Filtering:");
+	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
+
+	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
+	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
+
+	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
+	GtkWidget* fba_check        = CreateCheckBox("Alpha correction (FBA)", "fba", true);
+
+	s_table_line = 0;
+	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
+	InsertWidgetInTable(hw_table, af_label, af_combo_box);
+	InsertWidgetInTable(hw_table, paltex_check, fba_check);
+}
+
+void populate_gl_table(GtkWidget* gl_table)
+{
+	GtkWidget* gl_bs_label = gtk_label_new("Buffer Storage:");
+	GtkWidget* gl_bs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_buffer_storage", -1);
+	GtkWidget* gl_bt_label = gtk_label_new("Bindless Texture:");
+	GtkWidget* gl_bt_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_bindless_texture", -1);
+	GtkWidget* gl_sso_label = gtk_label_new("Separate Shader:");
+	GtkWidget* gl_sso_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_separate_shader_objects", -1);
+	GtkWidget* gl_ss_label = gtk_label_new("Shader Subroutine:");
+	GtkWidget* gl_ss_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_subroutine", -1);
+	GtkWidget* gl_gs_label = gtk_label_new("Geometry Shader:");
+	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
+	GtkWidget* gl_ils_label = gtk_label_new("Image Load Store:");
+	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store", -1);
+	GtkWidget* gl_cc_label = gtk_label_new("Clip Control (depth accuracy):");
+	GtkWidget* gl_cc_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_clip_control", -1);
+	GtkWidget* gl_tb_label = gtk_label_new("Texture Barrier:");
+	GtkWidget* gl_tb_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_texture_barrier", -1);
+
+	s_table_line = 0;
+	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
+	InsertWidgetInTable(gl_table , gl_bs_label  , gl_bs_combo);
+	InsertWidgetInTable(gl_table , gl_bt_label  , gl_bt_combo);
+	InsertWidgetInTable(gl_table , gl_sso_label , gl_sso_combo);
+	InsertWidgetInTable(gl_table , gl_ss_label  , gl_ss_combo);
+	InsertWidgetInTable(gl_table , gl_ils_label , gl_ils_combo);
+	InsertWidgetInTable(gl_table , gl_cc_label  , gl_cc_combo);
+	InsertWidgetInTable(gl_table , gl_tb_label  , gl_tb_combo);
+}
+
+void populate_sw_table(GtkWidget* sw_table)
+{
+	GtkWidget* threads_label = gtk_label_new("Extra rendering threads:");
+	GtkWidget* threads_spin  = CreateSpinButton(0, 100, "extrathreads", 0);
+
+	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
+	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
+
+	s_table_line = 0;
+	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
+	InsertWidgetInTable(sw_table , aa_check);
+	InsertWidgetInTable(sw_table , spin_thread_check , spin_thread_check);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -251,48 +330,10 @@ bool RunLinuxDialog()
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
 
-	// HW
-	GtkWidget* filter_label     = gtk_label_new ("Texture Filtering:");
-	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
-
-	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
-	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
-
-	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* fba_check        = CreateCheckBox("Alpha correction (FBA)", "fba", true);
-
-	s_table_line = 0;
-	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
-	InsertWidgetInTable(hw_table, af_label, af_combo_box);
-	InsertWidgetInTable(hw_table, paltex_check, fba_check);
-
-	// SW
-	GtkWidget* threads_label = gtk_label_new("Extra rendering threads:");
-	GtkWidget* threads_spin  = CreateSpinButton(0, 100, "extrathreads", 0);
-
-	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
-	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
-
-	s_table_line = 0;
-	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
-	InsertWidgetInTable(sw_table , aa_check);
-	InsertWidgetInTable(sw_table , spin_thread_check , spin_thread_check);
-
-	// Resolution
-	GtkWidget* native_label     = gtk_label_new("Original PS2 Resolution: ");
-	GtkWidget* native_res_check = CreateCheckBox("Native", "nativeres");
-
-	GtkWidget* fsaa_label     = gtk_label_new("Or Use Scaling:");
-	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 2);
-
-	GtkWidget* resxy_label = gtk_label_new("Custom Resolution:");
-	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "resx", 1024);
-	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "resy", 1024);
-
-	s_table_line = 0;
-	InsertWidgetInTable(res_table, native_label, native_res_check);
-	InsertWidgetInTable(res_table, fsaa_label, fsaa_combo_box);
-	InsertWidgetInTable(res_table, resxy_label, resx_spin, resy_spin);
+	// Populate all the tables
+	populate_hw_table(hw_table);
+	populate_sw_table(sw_table);
+	populate_res_table(res_table);
 
 	// Create our hack settings.
 	GtkWidget* hack_alpha_check    = CreateCheckBox("Alpha Hack", "UserHacks_AlphaHack");
@@ -391,32 +432,7 @@ bool RunLinuxDialog()
 	InsertWidgetInTable(shader_table , shader_conf_label   , shader_conf);
 
 	// The GL advance options
-	GtkWidget* gl_bs_label = gtk_label_new("Buffer Storage:");
-	GtkWidget* gl_bs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_buffer_storage", -1);
-	GtkWidget* gl_bt_label = gtk_label_new("Bindless Texture:");
-	GtkWidget* gl_bt_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_bindless_texture", -1);
-	GtkWidget* gl_sso_label = gtk_label_new("Separate Shader:");
-	GtkWidget* gl_sso_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_separate_shader_objects", -1);
-	GtkWidget* gl_ss_label = gtk_label_new("Shader Subroutine:");
-	GtkWidget* gl_ss_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_subroutine", -1);
-	GtkWidget* gl_gs_label = gtk_label_new("Geometry Shader:");
-	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
-	GtkWidget* gl_ils_label = gtk_label_new("Image Load Store:");
-	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store", -1);
-	GtkWidget* gl_cc_label = gtk_label_new("Clip Control (depth accuracy):");
-	GtkWidget* gl_cc_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_clip_control", -1);
-	GtkWidget* gl_tb_label = gtk_label_new("Texture Barrier:");
-	GtkWidget* gl_tb_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_texture_barrier", -1);
-
-	s_table_line = 0;
-	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
-	InsertWidgetInTable(gl_table , gl_bs_label  , gl_bs_combo);
-	InsertWidgetInTable(gl_table , gl_bt_label  , gl_bt_combo);
-	InsertWidgetInTable(gl_table , gl_sso_label , gl_sso_combo);
-	InsertWidgetInTable(gl_table , gl_ss_label  , gl_ss_combo);
-	InsertWidgetInTable(gl_table , gl_ils_label , gl_ils_combo);
-	InsertWidgetInTable(gl_table , gl_cc_label  , gl_cc_combo);
-	InsertWidgetInTable(gl_table , gl_tb_label  , gl_tb_combo);
+	populate_gl_table(gl_table);
 
 	// Handle some nice tab
 
