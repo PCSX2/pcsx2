@@ -678,25 +678,28 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 {
 	ASSERT(st && dt);
 
-	GL_PUSH("CopyRect");
+	const GLuint& sid = static_cast<GSTextureOGL*>(st)->GetID();
+	const GLuint& did = static_cast<GSTextureOGL*>(dt)->GetID();
+
+#ifdef ENABLE_OGL_DEBUG
+	string helper = format("CopyRect from %d to %d", sid, did);
+	GL_PUSH(helper.c_str());
+#endif
 
 	if (GLLoader::found_GL_ARB_copy_image) {
-		gl_CopyImageSubData( static_cast<GSTextureOGL*>(st)->GetID(), GL_TEXTURE_2D,
+		gl_CopyImageSubData( sid, GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
-				static_cast<GSTextureOGL*>(dt)->GetID(), GL_TEXTURE_2D,
+				did, GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
 				r.width(), r.height(), 1);
 	} else {
 
-		GSTextureOGL* st_ogl = (GSTextureOGL*) st;
-		GSTextureOGL* dt_ogl = (GSTextureOGL*) dt;
-
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
-		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, static_cast<GSTextureOGL*>(st_ogl)->GetID(), 0);
+		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-		gl_CopyTextureSubImage2D(dt_ogl->GetID(), GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
+		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}

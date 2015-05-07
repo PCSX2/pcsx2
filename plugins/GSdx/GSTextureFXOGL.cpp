@@ -105,6 +105,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 
 		bs->EnableBlend();
 		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
+		bs->SetBogus(m_blendMapD3D9[i].bogus);
 
 		if(m_blendMapD3D9[i].bogus == 1)
 		{
