@@ -25,12 +25,28 @@
 #include "GSLinuxLogo.h"
 #include "GSSetting.h"
 
+void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
+{
+	if (gtk_combo_box_get_active(combo) == -1) return;
+
+	// Note the value are based on m_gs_renderers vector on GSdx.cpp
+	switch (gtk_combo_box_get_active(combo)) {
+		case 0: theApp.SetConfig("renderer", 10); break;
+		case 1: theApp.SetConfig("renderer", 16); break;
+		case 2: theApp.SetConfig("renderer", 11); break;
+		case 3: theApp.SetConfig("renderer", 12); break;
+		case 4: theApp.SetConfig("renderer", 13); break;
+		case 5: theApp.SetConfig("renderer", 17); break;
+
+				// Fallback to SW opengl
+		default: theApp.SetConfig("renderer", 13); break;
+	}
+}
+
 GtkWidget* CreateRenderComboBox()
 {
-	GtkWidget  *render_combo_box;
+	GtkWidget* render_combo_box = gtk_combo_box_text_new ();
 	int renderer_box_position = 0;
-
-	render_combo_box = gtk_combo_box_text_new ();
 
 	for(auto s = theApp.m_gs_renderers.begin(); s != theApp.m_gs_renderers.end(); s++)
 	{
@@ -73,79 +89,46 @@ GtkWidget* CreateRenderComboBox()
 		default: renderer_box_position = 4; break;
 	}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(render_combo_box), renderer_box_position);
+
+	g_signal_connect(render_combo_box, "changed", G_CALLBACK(CB_ChangedRenderComboBox), NULL);
+
 	return render_combo_box;
 }
 
-GtkWidget* CreateInterlaceComboBox()
+
+void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 {
-	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_text_new ();
+	int p = gtk_combo_box_get_active(combo);
+	vector<GSSetting>* s = (vector<GSSetting>*)g_object_get_data(G_OBJECT(combo), "Settings");
 
-	for(size_t i = 0; i < theApp.m_gs_interlace.size(); i++)
+	try {
+		theApp.SetConfig((char*)user_data, s->at(p).id);
+	} catch (...) {
+	}
+}
+
+GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int opt_default)
+{
+	GtkWidget* combo_box = gtk_combo_box_text_new();
+	int opt_value        = theApp.GetConfig(opt_name, opt_default);
+	int opt_position     = 0;
+
+	for(size_t i = 0; i < s.size(); i++)
 	{
-		const GSSetting& s = theApp.m_gs_interlace[i];
+		string label = s[i].name;
 
-		string label = s.name;
-
-		if(!s.note.empty()) label += format(" (%s)", s.note.c_str());
+		if(!s[i].note.empty()) label += format(" (%s)", s[i].note.c_str());
 
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), label.c_str());
+
+		if ((int)s[i].id == opt_value)
+			opt_position = i;
 	}
 
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("interlace", 0));
-	return combo_box;
-}
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), opt_position);
 
-GtkWidget* CreateFsaaComboBox()
-{
-	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_text_new ();
-
-	// For now, let's just put in the same vaues that show up in the windows combo box.
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Custom");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "2x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "3x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "4x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "5x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "6x");
-
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("upscale_multiplier", 2)-1);
-	return combo_box;
-}
-
-GtkWidget* CreateFilterComboBox()
-{
-	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_text_new ();
-
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always flat");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always bilinear");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Normal");
-
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), theApp.GetConfig("filter", 0));
-
-	gtk_widget_set_tooltip_text(combo_box, "Allow to control the texture interpolation.\nAlways flat is smoother\nAlways flat is more pixelated");
-
-	return combo_box;
-}
-
-GtkWidget* CreateAfComboBox()
-{
-	GtkWidget  *combo_box;
-	combo_box = gtk_combo_box_text_new ();
-
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "OFF");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "2x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "4x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "8x");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "16x");
-
-	if (theApp.GetConfig("AnisotropicFiltering", 0)) {
-		int p = round(log2(theApp.GetConfig("MaxAnisotropy", 0)));
-		gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), p);
-	} else {
-		gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 0);
-	}
+	g_signal_connect(combo_box, "changed", G_CALLBACK(CB_ChangedComboBox), const_cast<char*>(opt_name));
+	g_object_set_data(G_OBJECT(combo_box), "Settings", (void*)&s);
 
 	return combo_box;
 }
@@ -165,17 +148,36 @@ int get_hex_entry(GtkWidget *text_box) {
 	return hex_value;
 }
 
-GtkWidget* CreateGlComboBox(const char* option)
+void CB_ToggleCheckBox(GtkToggleButton *togglebutton, gpointer user_data)
 {
-	GtkWidget* combo;
-	combo = gtk_combo_box_text_new();
+	theApp.SetConfig((char*)user_data, (int)gtk_toggle_button_get_active(togglebutton));
+}
 
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Auto");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Force-Disabled");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), "Force-Enabled");
+GtkWidget* CreateCheckBox(const char* label, const char* opt_name, bool opt_default = false)
+{
+	GtkWidget* check = gtk_check_button_new_with_label(label);
 
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), theApp.GetConfig(option, -1) + 1);
-	return combo;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), theApp.GetConfig(opt_name, opt_default));
+
+	g_signal_connect(check, "toggled", G_CALLBACK(CB_ToggleCheckBox), const_cast<char*>(opt_name));
+
+	return check;
+}
+
+void CB_SpinButton(GtkSpinButton *spin, gpointer user_data)
+{
+	theApp.SetConfig((char*)user_data, (int)gtk_spin_button_get_value(spin));
+}
+
+GtkWidget* CreateSpinButton(double min, double max, const char* opt_name, int opt_default = 0)
+{
+	GtkWidget* spin = gtk_spin_button_new_with_range(min, max, 1);
+
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), theApp.GetConfig(opt_name, opt_default));
+
+	g_signal_connect(spin, "value-changed", G_CALLBACK(CB_SpinButton), const_cast<char*>(opt_name));
+
+	return spin;
 }
 
 static int s_table_line = 0;
@@ -216,7 +218,7 @@ bool RunLinuxDialog()
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 		"OK", GTK_RESPONSE_ACCEPT,
-		"Cancel", GTK_RESPONSE_REJECT,
+		// "Cancel", GTK_RESPONSE_REJECT, // Drop because it is too annoying to support call back this way
 		NULL);
 
 	// The main area for the whole dialog box.
@@ -243,7 +245,7 @@ bool RunLinuxDialog()
 	GtkWidget* render_label     = gtk_label_new ("Renderer:");
 	GtkWidget* render_combo_box = CreateRenderComboBox();
 	GtkWidget* interlace_label     = gtk_label_new ("Interlacing (F5):");
-	GtkWidget* interlace_combo_box = CreateInterlaceComboBox();
+	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
@@ -251,13 +253,13 @@ bool RunLinuxDialog()
 
 	// HW
 	GtkWidget* filter_label     = gtk_label_new ("Texture Filtering:");
-	GtkWidget* filter_combo_box = CreateFilterComboBox();
+	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
 
 	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
-	GtkWidget* af_combo_box = CreateAfComboBox();
+	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
 
-	GtkWidget* paltex_check     = gtk_check_button_new_with_label("Allow 8 bits textures");
-	GtkWidget* fba_check        = gtk_check_button_new_with_label("Alpha correction (FBA)");
+	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
+	GtkWidget* fba_check        = CreateCheckBox("Alpha correction (FBA)", "fba", true);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
@@ -266,11 +268,10 @@ bool RunLinuxDialog()
 
 	// SW
 	GtkWidget* threads_label = gtk_label_new("Extra rendering threads:");
-	GtkWidget* threads_spin  = gtk_spin_button_new_with_range(0,100,1);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(threads_spin), theApp.GetConfig("extrathreads", 0));
+	GtkWidget* threads_spin  = CreateSpinButton(0, 100, "extrathreads", 0);
 
-	GtkWidget* aa_check         = gtk_check_button_new_with_label("Edge anti-aliasing (AA1)");
-	GtkWidget* spin_thread_check= gtk_check_button_new_with_label("Disable thread sleeping (6+ cores CPU)");
+	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
+	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
 
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
@@ -279,16 +280,14 @@ bool RunLinuxDialog()
 
 	// Resolution
 	GtkWidget* native_label     = gtk_label_new("Original PS2 Resolution: ");
-	GtkWidget* native_res_check = gtk_check_button_new_with_label("Native");
+	GtkWidget* native_res_check = CreateCheckBox("Native", "nativeres");
 
 	GtkWidget* fsaa_label     = gtk_label_new("Or Use Scaling:");
-	GtkWidget* fsaa_combo_box = CreateFsaaComboBox();
+	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 2);
 
 	GtkWidget* resxy_label = gtk_label_new("Custom Resolution:");
-	GtkWidget* resx_spin   = gtk_spin_button_new_with_range(256,8192,1);
-	GtkWidget* resy_spin   = gtk_spin_button_new_with_range(256,8192,1);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(resx_spin), theApp.GetConfig("resx", 1024));
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(resy_spin), theApp.GetConfig("resy", 1024));
+	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "resx", 1024);
+	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "resy", 1024);
 
 	s_table_line = 0;
 	InsertWidgetInTable(res_table, native_label, native_res_check);
@@ -296,19 +295,19 @@ bool RunLinuxDialog()
 	InsertWidgetInTable(res_table, resxy_label, resx_spin, resy_spin);
 
 	// Create our hack settings.
-	GtkWidget* hack_alpha_check    = gtk_check_button_new_with_label("Alpha Hack");
-	GtkWidget* hack_date_check     = gtk_check_button_new_with_label("Date Hack");
-	GtkWidget* hack_offset_check   = gtk_check_button_new_with_label("Offset Hack");
+	GtkWidget* hack_alpha_check    = CreateCheckBox("Alpha Hack", "UserHacks_AlphaHack");
+	GtkWidget* hack_date_check     = CreateCheckBox("Date Hack", "UserHacks_DateGL4");
+	GtkWidget* hack_offset_check   = CreateCheckBox("Offset Hack", "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = gtk_label_new("Skipdraw:");
-	GtkWidget* hack_skipdraw_spin  = gtk_spin_button_new_with_range(0,1000,1);
-	GtkWidget* hack_enble_check    = gtk_check_button_new_with_label("Enable User Hacks");
-	GtkWidget* hack_wild_check     = gtk_check_button_new_with_label("Wild arm Hack");
-	GtkWidget* hack_sprite_check   = gtk_check_button_new_with_label("Sprite Hack");
+	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
+	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
+	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
+	GtkWidget* hack_sprite_check   = CreateCheckBox("Sprite Hack", "UserHacks_SpriteHack");
 	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = gtk_entry_new();
-	GtkWidget* hack_logz_check     = gtk_check_button_new_with_label("Log Depth Hack");
-	GtkWidget* align_sprite_check  = gtk_check_button_new_with_label("Anti vertical line hack");
-	GtkWidget* stretch_hack_check  = gtk_check_button_new_with_label("Improve 2D sprite scaling accuracy");
+	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
+	GtkWidget* align_sprite_check  = CreateCheckBox("Anti vertical line hack", "UserHacks_align_sprite_X");
+	GtkWidget* stretch_hack_check  = CreateCheckBox("Improve 2D sprite scaling", "UserHacks_round_sprite_offset");
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(hack_skipdraw_spin), theApp.GetConfig("UserHacks_SkipDraw", 0));
 	set_hex_entry(hack_tco_entry, theApp.GetConfig("UserHacks_TCOffset", 0));
@@ -345,9 +344,9 @@ bool RunLinuxDialog()
 	GtkWidget* shader_label      = gtk_label_new("External shader glsl");
 	GtkWidget* shader_conf_label = gtk_label_new("External shader conf");
 
-	GtkWidget* shadeboost_check = gtk_check_button_new_with_label("Shade boost");
-	GtkWidget* fxaa_check       = gtk_check_button_new_with_label("Fxaa shader");
-	GtkWidget* shaderfx_check   = gtk_check_button_new_with_label("External shader");
+	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "shadeboost");
+	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
+	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
 
 	// Shadeboost scale
 #if GTK_MAJOR_VERSION < 3
@@ -393,21 +392,21 @@ bool RunLinuxDialog()
 
 	// The GL advance options
 	GtkWidget* gl_bs_label = gtk_label_new("Buffer Storage:");
-	GtkWidget* gl_bs_combo = CreateGlComboBox("override_GL_ARB_buffer_storage");
+	GtkWidget* gl_bs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_buffer_storage", -1);
 	GtkWidget* gl_bt_label = gtk_label_new("Bindless Texture:");
-	GtkWidget* gl_bt_combo = CreateGlComboBox("override_GL_ARB_bindless_texture");
+	GtkWidget* gl_bt_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_bindless_texture", -1);
 	GtkWidget* gl_sso_label = gtk_label_new("Separate Shader:");
-	GtkWidget* gl_sso_combo = CreateGlComboBox("override_GL_ARB_separate_shader_objects");
+	GtkWidget* gl_sso_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_separate_shader_objects", -1);
 	GtkWidget* gl_ss_label = gtk_label_new("Shader Subroutine:");
-	GtkWidget* gl_ss_combo = CreateGlComboBox("override_GL_ARB_shader_subroutine");
+	GtkWidget* gl_ss_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_subroutine", -1);
 	GtkWidget* gl_gs_label = gtk_label_new("Geometry Shader:");
-	GtkWidget* gl_gs_combo = CreateGlComboBox("override_geometry_shader");
+	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
 	GtkWidget* gl_ils_label = gtk_label_new("Image Load Store:");
-	GtkWidget* gl_ils_combo = CreateGlComboBox("override_GL_ARB_shader_image_load_store");
+	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store", -1);
 	GtkWidget* gl_cc_label = gtk_label_new("Clip Control (depth accuracy):");
-	GtkWidget* gl_cc_combo = CreateGlComboBox("override_GL_ARB_clip_control");
+	GtkWidget* gl_cc_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_clip_control", -1);
 	GtkWidget* gl_tb_label = gtk_label_new("Texture Barrier:");
-	GtkWidget* gl_tb_combo = CreateGlComboBox("override_GL_ARB_texture_barrier");
+	GtkWidget* gl_tb_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_texture_barrier", -1);
 
 	s_table_line = 0;
 	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
@@ -432,79 +431,24 @@ bool RunLinuxDialog()
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
 
-	{ // Set current value of checkboxes.
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(shadeboost_check)   , theApp.GetConfig("shadeboost"                    , 1));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(paltex_check)       , theApp.GetConfig("paltex"                        , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fba_check)          , theApp.GetConfig("fba"                           , 1));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(aa_check)           , theApp.GetConfig("aa1"                           , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(spin_thread_check)  , theApp.GetConfig("spin_thread"                   , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fxaa_check)         , theApp.GetConfig("fxaa"                          , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(shaderfx_check)     , theApp.GetConfig("shaderfx"                      , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(native_res_check)   , theApp.GetConfig("nativeres"                     , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_hack_check) , theApp.GetConfig("UserHacks_round_sprite_offset" , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(align_sprite_check) , theApp.GetConfig("UserHacks_align_sprite_X"      , 0));
-
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_alpha_check)   , theApp.GetConfig("UserHacks_AlphaHack"           , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_offset_check)  , theApp.GetConfig("UserHacks_HalfPixelOffset"     , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_date_check)    , theApp.GetConfig("UserHacks_DateGL4"             , 0));
-
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_enble_check)   , theApp.GetConfig("UserHacks"                     , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_wild_check)    , theApp.GetConfig("UserHacks_WildHack"            , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_sprite_check)  , theApp.GetConfig("UserHacks_SpriteHack"          , 0));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hack_logz_check)    , theApp.GetConfig("logz"                          , 1));
-	}
-
 	// Put the box in the dialog and show it to the world.
 	gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
 	gtk_widget_show_all (dialog);
 	return_value = gtk_dialog_run (GTK_DIALOG (dialog));
 
-	if (return_value == GTK_RESPONSE_ACCEPT) {
-		int mode_height = 0, mode_width = 0;
+	// Compatibility & not supported option
+	int mode_width = theApp.GetConfig("ModeWidth", 640);
+	int mode_height = theApp.GetConfig("ModeHeight", 480);
+	theApp.SetConfig("ModeHeight", mode_height);
+	theApp.SetConfig("ModeWidth", mode_width);
+	theApp.SetConfig("msaa", 0);
+	theApp.SetConfig("windowed", 1);
+	// Anisotropic is disabled when it is 1x, no need of an extra check box
+	theApp.SetConfig("AnisotropicFiltering", 1);
 
-		mode_width = theApp.GetConfig("ModeWidth", 640);
-		mode_height = theApp.GetConfig("ModeHeight", 480);
-		theApp.SetConfig("ModeHeight", mode_height);
-		theApp.SetConfig("ModeWidth", mode_width);
+	if (return_value == GTK_RESPONSE_ACCEPT) {
 
 		// Get all the settings from the dialog box.
-		if (gtk_combo_box_get_active(GTK_COMBO_BOX(render_combo_box)) != -1) {
-			// Note the value are based on m_gs_renderers vector on GSdx.cpp
-			switch (gtk_combo_box_get_active(GTK_COMBO_BOX(render_combo_box))) {
-				case 0: theApp.SetConfig("renderer", 10); break;
-				case 1: theApp.SetConfig("renderer", 16); break;
-				case 2: theApp.SetConfig("renderer", 11); break;
-				case 3: theApp.SetConfig("renderer", 12); break;
-				case 4: theApp.SetConfig("renderer", 13); break;
-				case 5: theApp.SetConfig("renderer", 17); break;
-
-						// Fallback to SW opengl
-				default: theApp.SetConfig("renderer", 13); break;
-			}
-		}
-
-		if (gtk_combo_box_get_active(GTK_COMBO_BOX(interlace_combo_box)) != -1)
-			theApp.SetConfig( "interlace", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(interlace_combo_box)));
-
-		if (gtk_combo_box_get_active(GTK_COMBO_BOX(af_combo_box)) != -1) {
-			int af = gtk_combo_box_get_active(GTK_COMBO_BOX(af_combo_box));
-			theApp.SetConfig("AnisotropicFiltering", (af) ? 1 : 0);
-			theApp.SetConfig("MaxAnisotropy", round(exp2(af)));
-		}
-
-		theApp.SetConfig("extrathreads", (int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(threads_spin)));
-
-		theApp.SetConfig("filter", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(filter_combo_box)));
-		theApp.SetConfig("shadeboost", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shadeboost_check)));
-		theApp.SetConfig("paltex", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(paltex_check)));
-		theApp.SetConfig("fba", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fba_check)));
-		theApp.SetConfig("aa1", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(aa_check)));
-		theApp.SetConfig("spin_thread", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(spin_thread_check)));
-		theApp.SetConfig("fxaa", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(fxaa_check)));
-		theApp.SetConfig("shaderfx", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shaderfx_check)));
-		theApp.SetConfig("nativeres", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_res_check)));
-		theApp.SetConfig("UserHacks_round_sprite_offset", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(stretch_hack_check)));
-		theApp.SetConfig("UserHacks_align_sprite_X", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(align_sprite_check)));
 
 		theApp.SetConfig("shaderfx_glsl", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader)));
 		theApp.SetConfig("shaderfx_conf", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader_conf)));
@@ -513,35 +457,7 @@ bool RunLinuxDialog()
 		theApp.SetConfig("ShadeBoost_Brightness", (int)gtk_range_get_value(GTK_RANGE(sb_brightness)));
 		theApp.SetConfig("ShadeBoost_Contrast", (int)gtk_range_get_value(GTK_RANGE(sb_contrast)));
 
-		theApp.SetConfig("upscale_multiplier", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(fsaa_combo_box))+1);
-		theApp.SetConfig("resx", (int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(resx_spin)));
-		theApp.SetConfig("resy", (int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(resy_spin)));
-
-		theApp.SetConfig("UserHacks_SkipDraw", (int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(hack_skipdraw_spin)));
-		theApp.SetConfig("UserHacks_HalfPixelOffset", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_offset_check)));
-		theApp.SetConfig("UserHacks_AlphaHack", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_alpha_check)));
-		theApp.SetConfig("logz", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_logz_check)));
-		theApp.SetConfig("UserHacks_DateGL4", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_date_check)));
-
-		theApp.SetConfig("UserHacks_WildHack", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_wild_check)));
-		theApp.SetConfig("UserHacks_SpriteHack", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_sprite_check)));
-		theApp.SetConfig("UserHacks", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_enble_check)));
 		theApp.SetConfig("UserHacks_TCOffset", get_hex_entry(hack_tco_entry));
-
-		theApp.SetConfig("override_GL_ARB_texture_barrier", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_tb_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_bindless_texture", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bt_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_buffer_storage", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bs_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_separate_shader_objects", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_sso_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_shader_subroutine", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ss_combo)) - 1);
-		theApp.SetConfig("override_geometry_shader", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_gs_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_shader_image_load_store", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ils_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_clip_control", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_cc_combo)) - 1);
-
-		// NOT supported yet
-		theApp.SetConfig("msaa", 0);
-
-		// Let's just be windowed for the moment.
-		theApp.SetConfig("windowed", 1);
 
 		gtk_widget_destroy (dialog);
 
