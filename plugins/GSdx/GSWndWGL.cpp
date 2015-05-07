@@ -130,9 +130,7 @@ bool GSWndWGL::Attach(void* handle, bool managed)
 
 	CheckContext();
 
-	// TODO
-	//m_swapinterval = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
-	//PFNGLXSWAPINTERVALMESAPROC m_swapinterval = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapInterval");
+	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
 
 	PopulateGlFunction();
 
@@ -288,9 +286,7 @@ void GSWndWGL::SetVSync(bool enable)
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	//if (m_swapinterval) m_swapinterval((int)enable);
-	// wglSwapIntervalEXT(!enable);
-
+	if (m_swapinterval) m_swapinterval((int)enable);
 }
 
 void GSWndWGL::Flip()

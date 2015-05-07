@@ -29,7 +29,7 @@ class GSWndWGL : public GSWndGL
 	HDC		 m_NativeDisplay;
 	HGLRC	 m_context;
 
-	//PFNGLXSWAPINTERVALMESAPROC m_swapinterval;
+	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
 	bool CreateContext(int major, int minor);
 	void CheckContext();
