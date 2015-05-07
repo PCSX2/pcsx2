@@ -92,6 +92,7 @@ public:
 		if (m_enable) {
 #ifdef ENABLE_OGL_DEBUG
 			if (m_bogus) {
+				GL_INS("!!! Bogus blending effect !!!");
 				fprintf(stderr, "Bogus blending effect used : %s\n", (m_bogus == 1) ? "impossible effect" : "clear effect");
 			}
 #endif

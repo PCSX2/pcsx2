@@ -497,9 +497,12 @@ extern void vmfree(void* ptr, size_t size);
 #ifdef ENABLE_OGL_DEBUG
 #define GL_PUSH(s) gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, s);
 #define GL_POP(s)  gl_PopDebugGroup();
+#define GL_INS(s)  gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, -1, s);
+
 #else
 #define GL_PUSH(s) (0);
 #define GL_POP()   (0);
+#define GL_INS()   (0);
 #endif
 
 // Helper path to dump texture

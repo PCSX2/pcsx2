@@ -290,6 +290,7 @@ extern   PFNGLPOPDEBUGGROUPPROC                 gl_PopDebugGroup;
 extern   PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData;
 extern   PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage;
 extern   PFNGLPUSHDEBUGGROUPPROC                gl_PushDebugGroup;
+extern   PFNGLDEBUGMESSAGEINSERTPROC            gl_DebugMessageInsert;
 // GL4.4
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)

@@ -524,6 +524,8 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 {
+	GL_PUSH("Create Sampler");
+
 	GLuint sampler;
 	gl_GenSamplers(1, &sampler);
 	if (bilinear) {
@@ -554,6 +556,7 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 			gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 	}
 
+	GL_POP();
 	return sampler;
 }
 

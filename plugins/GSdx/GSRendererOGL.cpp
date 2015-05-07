@@ -233,6 +233,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				//ASSERT(0);
 #ifdef ENABLE_OGL_DEBUG
 				fprintf(stderr, "env PABE  not supported\n");
+				GL_INS("!!! ENV PABE  not supported !!!");
 #endif
 			}
 		}
@@ -329,6 +330,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
 				if (m_vt.m_min.p.z > 0xffffff)
 				{
+					GL_INS("Bad Z size on 24 bits buffers")
 					vs_sel.bppz = 1;
 					om_dssel.ztst = ZTST_ALWAYS;
 				}
@@ -342,6 +344,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// Fixme : Same as above, I guess.
 				if (m_vt.m_min.p.z > 0xffff)
 				{
+					GL_INS("Bad Z size on 16 bits buffers")
 					vs_sel.bppz = 2;
 					om_dssel.ztst = ZTST_ALWAYS;
 				}
