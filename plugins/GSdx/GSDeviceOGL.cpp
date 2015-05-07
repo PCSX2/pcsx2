@@ -1148,28 +1148,30 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 
 void GSDeviceOGL::CheckDebugLog()
 {
-       unsigned int count = 16; // max. num. of messages that will be read from the log
-       int bufsize = 2048;
-	   unsigned int sources[16] = {};
-	   unsigned int types[16] = {};
-	   unsigned int ids[16]   = {};
-	   unsigned int severities[16] = {};
-	   int lengths[16] = {};
-       char* messageLog = new char[bufsize];
+	if (!theApp.GetConfig("debug_opengl", 0)) return;
 
-       unsigned int retVal = gl_GetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
+	unsigned int count = 16; // max. num. of messages that will be read from the log
+	int bufsize = 2048;
+	unsigned int sources[16] = {};
+	unsigned int types[16] = {};
+	unsigned int ids[16]   = {};
+	unsigned int severities[16] = {};
+	int lengths[16] = {};
+	char* messageLog = new char[bufsize];
 
-       if(retVal > 0)
-       {
-             unsigned int pos = 0;
-             for(unsigned int i=0; i<retVal; i++)
-             {
-                    DebugOutputToFile(sources[i], types[i], ids[i], severities[i], lengths[i], &messageLog[pos], NULL);
-                    pos += lengths[i];
-              }
-       }
+	unsigned int retVal = gl_GetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
 
-	   delete[] messageLog;
+	if(retVal > 0)
+	{
+		unsigned int pos = 0;
+		for(unsigned int i=0; i<retVal; i++)
+		{
+			DebugOutputToFile(sources[i], types[i], ids[i], severities[i], lengths[i], &messageLog[pos], NULL);
+			pos += lengths[i];
+		}
+	}
+
+	delete[] messageLog;
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

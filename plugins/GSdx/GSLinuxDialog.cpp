@@ -433,6 +433,28 @@ void populate_main_table(GtkWidget* main_table)
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
 }
 
+void populate_debug_table(GtkWidget* debug_table)
+{
+	GtkWidget* glsl_debug_check = CreateCheckBox("GLSL compilation", "debug_glsl_shader");
+	GtkWidget* gl_debug_check   = CreateCheckBox("Print GL error", "debug_opengl");
+	GtkWidget* gs_dump_check    = CreateCheckBox("Dump GS data", "dump");
+	GtkWidget* gs_save_check    = CreateCheckBox("Save RT", "save");
+	GtkWidget* gs_savet_check   = CreateCheckBox("Save Texture", "savet");
+	GtkWidget* gs_savez_check   = CreateCheckBox("Save Depth", "savez");
+
+	GtkWidget* gs_saven_label   = gtk_label_new("Start of Dump");
+	GtkWidget* gs_saven_spin    = CreateSpinButton(0, pow(10, 9), "saven");
+	GtkWidget* gs_savel_label   = gtk_label_new("Lengh of Dump");
+	GtkWidget* gs_savel_spin    = CreateSpinButton(0, pow(10, 5), "savel");
+
+	s_table_line = 0;
+	InsertWidgetInTable(debug_table, gl_debug_check, glsl_debug_check);
+	InsertWidgetInTable(debug_table, gs_dump_check);
+	InsertWidgetInTable(debug_table, gs_save_check, gs_savet_check, gs_savez_check);
+	InsertWidgetInTable(debug_table, gs_saven_label, gs_saven_spin);
+	InsertWidgetInTable(debug_table, gs_savel_label, gs_savel_spin);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -451,6 +473,7 @@ bool RunLinuxDialog()
 	GtkWidget* main_box    = gtk_vbox_new(false, 5);
 	GtkWidget* central_box = gtk_vbox_new(false, 5);
 	GtkWidget* advance_box = gtk_vbox_new(false, 5);
+	GtkWidget* debug_box   = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
 	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
@@ -464,8 +487,10 @@ bool RunLinuxDialog()
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 5  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 5  , 2);
 
-	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 7  , 2);
+	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 10 , 2);
 	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 10 , 2);
+
+	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 5  , 3);
 
 	// Populate all the tables
 	populate_main_table(main_table);
@@ -478,14 +503,15 @@ bool RunLinuxDialog()
 	populate_hack_table(hack_table);
 	populate_gl_table(gl_table);
 
+	populate_debug_table(debug_table);
+
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	GtkWidget* page_label[2];
-	page_label[0] = gtk_label_new("Global Setting");
-	page_label[1] = gtk_label_new("Advance Setting");
-
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box, page_label[0]);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advance_box, page_label[1]);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box, gtk_label_new("Global Setting"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advance_box, gtk_label_new("Advance Setting"));
+#ifdef ENABLE_OGL_DEBUG
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box  , gtk_label_new("Debug Setting"));
+#endif
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
