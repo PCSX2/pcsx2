@@ -231,11 +231,14 @@ class GSDeviceOGL : public GSDevice
 				// Next param will be handle by subroutine
 				uint32 tme:1;
 				uint32 fst:1;
+
+				uint32 _free:27;
 			};
 
 			uint32 key;
 		};
 
+		// FIXME is the & useful ?
 		operator uint32() {return key & 0x3f;}
 
 		VSSelector() : key(0) {}
@@ -314,12 +317,15 @@ class GSDeviceOGL : public GSDevice
 				uint32 wms:2;
 				uint32 wmt:2;
 				uint32 ltf:1;
+
+				uint32 _free:3;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3fffffff;}
+		// FIXME is the & useful ?
+		operator uint32() {return key & 0x1fffffff;}
 
 		PSSelector() : key(0) {}
 	};
@@ -333,11 +339,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 tau:1;
 				uint32 tav:1;
 				uint32 ltf:1;
+
+				uint32 _free:29;
 			};
 
 			uint32 key;
 		};
 
+		// FIXME is the & useful ?
 		operator uint32() {return key & 0x7;}
 
 		PSSamplerSelector() : key(0) {}
@@ -357,11 +366,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 date:1;
 				uint32 fba:1;
 				uint32 alpha_stencil:1;
+
+				uint32 _free:26;
 			};
 
 			uint32 key;
 		};
 
+		// FIXME is the & useful ?
 		operator uint32() {return key & 0x3f;}
 
 		OMDepthStencilSelector() : key(0) {}
@@ -380,6 +392,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 wg:1;
 				uint32 wb:1;
 				uint32 wa:1;
+
+				uint32 _free:28;
 			};
 
 			struct
@@ -390,6 +404,7 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
+		// FIXME is the & useful ?
 		operator uint32() {return key & 0xf;}
 
 		OMColorMaskSelector() : key(0xF) {}
@@ -407,6 +422,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 c:2;
 				uint32 d:2;
 				uint32 negative:1;
+
+				uint32 _free:22;
 			};
 
 			struct
@@ -414,12 +431,15 @@ class GSDeviceOGL : public GSDevice
 				uint32 _abe:1;
 				uint32 abcd:8;
 				uint32 _negative:1;
+
+				uint32 _free2:22;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3fff;}
+		// FIXME is the & useful ?
+		operator uint32() {return key & 0x3ff;}
 
 		OMBlendSelector() : key(0) {}
 

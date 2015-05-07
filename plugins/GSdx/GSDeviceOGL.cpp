@@ -330,6 +330,14 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	GSVector4i rect = wnd->GetClientRect();
 	Reset(rect.z, rect.w);
 
+	// Basic to ensure structures are correctly packed
+	ASSERT(sizeof(VSSelector) == 4);
+	ASSERT(sizeof(PSSelector) == 4);
+	ASSERT(sizeof(PSSamplerSelector) == 4);
+	ASSERT(sizeof(OMDepthStencilSelector) == 4);
+	ASSERT(sizeof(OMColorMaskSelector) == 4);
+	ASSERT(sizeof(OMBlendSelector) == 4);
+
 	return true;
 }
 
