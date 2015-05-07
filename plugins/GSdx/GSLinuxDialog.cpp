@@ -341,6 +341,92 @@ void populate_sw_table(GtkWidget* sw_table)
 	InsertWidgetInTable(sw_table , spin_thread_check , spin_thread_check);
 }
 
+void populate_shader_table(GtkWidget* shader_table)
+{
+	GtkWidget* shader            = CreateFileChooser("Select an external shader", "shaderfx_glsl", "dummy.glsl");
+	GtkWidget* shader_conf       = CreateFileChooser("Then select a config", "shaderfx_conf", "dummy.ini");
+	GtkWidget* shader_label      = gtk_label_new("External shader glsl");
+	GtkWidget* shader_conf_label = gtk_label_new("External shader conf");
+
+	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "shadeboost");
+	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
+	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
+
+	// Shadeboost scale
+	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness", 50);
+	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
+
+	GtkWidget* sb_contrast         = CreateScale("ShadeBoost_Contrast", 50);
+	GtkWidget* sb_contrast_label   = gtk_label_new("Shade Boost Contrast");
+
+	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
+	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
+
+	s_table_line = 0;
+	InsertWidgetInTable(shader_table , fxaa_check);
+	InsertWidgetInTable(shader_table , shadeboost_check);
+	InsertWidgetInTable(shader_table , sb_brightness_label , sb_brightness);
+	InsertWidgetInTable(shader_table , sb_contrast_label   , sb_contrast);
+	InsertWidgetInTable(shader_table , sb_saturation_label , sb_saturation);
+	InsertWidgetInTable(shader_table , shaderfx_check);
+	InsertWidgetInTable(shader_table , shader_label        , shader);
+	InsertWidgetInTable(shader_table , shader_conf_label   , shader_conf);
+}
+
+void populate_hack_table(GtkWidget* hack_table)
+{
+	GtkWidget* hack_alpha_check    = CreateCheckBox("Alpha Hack", "UserHacks_AlphaHack");
+	GtkWidget* hack_date_check     = CreateCheckBox("Date Hack", "UserHacks_DateGL4");
+	GtkWidget* hack_offset_check   = CreateCheckBox("Offset Hack", "UserHacks_HalfPixelOffset");
+	GtkWidget* hack_skipdraw_label = gtk_label_new("Skipdraw:");
+	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
+	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
+	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
+	GtkWidget* hack_sprite_check   = CreateCheckBox("Sprite Hack", "UserHacks_SpriteHack");
+	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
+	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
+	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
+	GtkWidget* align_sprite_check  = CreateCheckBox("Anti vertical line hack", "UserHacks_align_sprite_X");
+	GtkWidget* stretch_hack_check  = CreateCheckBox("Improve 2D sprite scaling", "UserHacks_round_sprite_offset");
+
+	// Reuse windows helper string :)
+	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
+	gtk_widget_set_tooltip_text(hack_date_check, "Disable opengl barrier for performance with DATE operation");
+	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
+	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
+	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
+	gtk_widget_set_tooltip_text(hack_wild_check, dialog_message(IDC_WILDHACK));
+	gtk_widget_set_tooltip_text(hack_sprite_check, dialog_message(IDC_SPRITEHACK));
+	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
+	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth (superseeded by ARB_clip_control)");
+	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
+	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_ROUND_SPRITE));
+
+
+	s_table_line = 0;
+	InsertWidgetInTable(hack_table , hack_enble_check);
+	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
+	InsertWidgetInTable(hack_table , hack_sprite_check   , hack_wild_check);
+	InsertWidgetInTable(hack_table , hack_logz_check     , hack_date_check);
+	InsertWidgetInTable(hack_table , stretch_hack_check  , align_sprite_check);
+	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
+	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
+}
+
+void populate_main_table(GtkWidget* main_table)
+{
+	GtkWidget* render_label     = gtk_label_new ("Renderer:");
+	GtkWidget* render_combo_box = CreateRenderComboBox();
+	GtkWidget* interlace_label     = gtk_label_new ("Interlacing (F5):");
+	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
+
+	s_table_line = 0;
+	InsertWidgetInTable(main_table, render_label, render_combo_box);
+	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -375,97 +461,18 @@ bool RunLinuxDialog()
 	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 7  , 2);
 	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 10 , 2);
 
-	// Main
-	GtkWidget* render_label     = gtk_label_new ("Renderer:");
-	GtkWidget* render_combo_box = CreateRenderComboBox();
-	GtkWidget* interlace_label     = gtk_label_new ("Interlacing (F5):");
-	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
-
-	s_table_line = 0;
-	InsertWidgetInTable(main_table, render_label, render_combo_box);
-	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
-
 	// Populate all the tables
+	populate_main_table(main_table);
+
+	populate_res_table(res_table);
+	populate_shader_table(shader_table);
 	populate_hw_table(hw_table);
 	populate_sw_table(sw_table);
-	populate_res_table(res_table);
 
-	// Create our hack settings.
-	GtkWidget* hack_alpha_check    = CreateCheckBox("Alpha Hack", "UserHacks_AlphaHack");
-	GtkWidget* hack_date_check     = CreateCheckBox("Date Hack", "UserHacks_DateGL4");
-	GtkWidget* hack_offset_check   = CreateCheckBox("Offset Hack", "UserHacks_HalfPixelOffset");
-	GtkWidget* hack_skipdraw_label = gtk_label_new("Skipdraw:");
-	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
-	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
-	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
-	GtkWidget* hack_sprite_check   = CreateCheckBox("Sprite Hack", "UserHacks_SpriteHack");
-	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
-	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
-	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
-	GtkWidget* align_sprite_check  = CreateCheckBox("Anti vertical line hack", "UserHacks_align_sprite_X");
-	GtkWidget* stretch_hack_check  = CreateCheckBox("Improve 2D sprite scaling", "UserHacks_round_sprite_offset");
-
-	// Reuse windows helper string :)
-	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
-	gtk_widget_set_tooltip_text(hack_date_check, "Disable opengl barrier for performance with DATE operation");
-	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
-	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
-	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
-	gtk_widget_set_tooltip_text(hack_wild_check, dialog_message(IDC_WILDHACK));
-	gtk_widget_set_tooltip_text(hack_sprite_check, dialog_message(IDC_SPRITEHACK));
-	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth (superseeded by ARB_clip_control)");
-	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
-	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_ROUND_SPRITE));
-
-
-	// Tables are strange. The numbers are for their position: left, right, top, bottom.
-	s_table_line = 0;
-	InsertWidgetInTable(hack_table , hack_enble_check);
-	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
-	InsertWidgetInTable(hack_table , hack_sprite_check   , hack_wild_check);
-	InsertWidgetInTable(hack_table , hack_logz_check     , hack_date_check);
-	InsertWidgetInTable(hack_table , stretch_hack_check  , align_sprite_check);
-	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
-	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
-
-	// shader
-	GtkWidget* shader            = CreateFileChooser("Select an external shader", "shaderfx_glsl", "dummy.glsl");
-	GtkWidget* shader_conf       = CreateFileChooser("Then select a config", "shaderfx_conf", "dummy.ini");
-	GtkWidget* shader_label      = gtk_label_new("External shader glsl");
-	GtkWidget* shader_conf_label = gtk_label_new("External shader conf");
-
-	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "shadeboost");
-	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
-	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
-
-	// Shadeboost scale
-	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness", 50);
-	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
-
-	GtkWidget* sb_contrast         = CreateScale("ShadeBoost_Contrast", 50);
-	GtkWidget* sb_contrast_label   = gtk_label_new("Shade Boost Contrast");
-
-	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
-	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
-
-	s_table_line = 0;
-	InsertWidgetInTable(shader_table , fxaa_check);
-	InsertWidgetInTable(shader_table , shadeboost_check);
-	InsertWidgetInTable(shader_table , sb_brightness_label , sb_brightness);
-	InsertWidgetInTable(shader_table , sb_contrast_label   , sb_contrast);
-	InsertWidgetInTable(shader_table , sb_saturation_label , sb_saturation);
-	InsertWidgetInTable(shader_table , shaderfx_check);
-	InsertWidgetInTable(shader_table , shader_label        , shader);
-	InsertWidgetInTable(shader_table , shader_conf_label   , shader_conf);
-
-	// The GL advance options
+	populate_hack_table(hack_table);
 	populate_gl_table(gl_table);
 
 	// Handle some nice tab
-
 	GtkWidget* notebook = gtk_notebook_new();
 	GtkWidget* page_label[2];
 	page_label[0] = gtk_label_new("Global Setting");
