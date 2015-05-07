@@ -95,7 +95,6 @@ GtkWidget* CreateRenderComboBox()
 	return render_combo_box;
 }
 
-
 void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 {
 	int p = gtk_combo_box_get_active(combo);
@@ -133,19 +132,38 @@ GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_
 	return combo_box;
 }
 
-void set_hex_entry(GtkWidget *text_box, int hex_value) {
-	gchar* data=(gchar *)g_malloc(sizeof(gchar)*40);
-	sprintf(data,"%X", hex_value);
-	gtk_entry_set_text(GTK_ENTRY(text_box),data);
+void CB_PreEntryActived(GtkEntry *entry, gchar* preedit, gpointer user_data)
+{
+	int hex_value = 0;
+	sscanf(preedit,"%X",&hex_value);
+
+	theApp.SetConfig((char*)user_data, hex_value);
 }
 
-int get_hex_entry(GtkWidget *text_box) {
+void CB_EntryActived(GtkEntry *entry, gpointer user_data)
+{
 	int hex_value = 0;
-	const gchar *data = gtk_entry_get_text(GTK_ENTRY(text_box));
-
+	const gchar *data = gtk_entry_get_text(entry);
 	sscanf(data,"%X",&hex_value);
 
-	return hex_value;
+	theApp.SetConfig((char*)user_data, hex_value);
+}
+
+GtkWidget* CreateTextBox(const char* opt_name, int opt_default = 0) {
+	GtkWidget* entry = gtk_entry_new();
+
+	int hex_value = theApp.GetConfig(opt_name, opt_default);
+
+	gchar* data=(gchar *)g_malloc(sizeof(gchar)*40);
+	sprintf(data,"%X", hex_value);
+	gtk_entry_set_text(GTK_ENTRY(entry),data);
+	g_free(data);
+
+	g_signal_connect(entry, "activate", G_CALLBACK(CB_EntryActived), const_cast<char*>(opt_name));
+	// Note it doesn't seem to work as expected
+	g_signal_connect(entry, "preedit-changed", G_CALLBACK(CB_PreEntryActived), const_cast<char*>(opt_name));
+
+	return entry;
 }
 
 void CB_ToggleCheckBox(GtkToggleButton *togglebutton, gpointer user_data)
@@ -178,6 +196,43 @@ GtkWidget* CreateSpinButton(double min, double max, const char* opt_name, int op
 	g_signal_connect(spin, "value-changed", G_CALLBACK(CB_SpinButton), const_cast<char*>(opt_name));
 
 	return spin;
+}
+
+void CB_RangeChanged(GtkRange* range, gpointer user_data)
+{
+	theApp.SetConfig((char*)user_data, (int)gtk_range_get_value(range));
+}
+
+GtkWidget* CreateScale(const char* opt_name, int opt_default = 0)
+{
+#if GTK_MAJOR_VERSION < 3
+	GtkWidget* scale = gtk_hscale_new_with_range(0, 200, 10);
+#else
+	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+#endif
+
+	gtk_scale_set_value_pos(GTK_SCALE(scale), GTK_POS_RIGHT);
+	gtk_range_set_value(GTK_RANGE(scale), theApp.GetConfig(opt_name, opt_default));
+
+	g_signal_connect(scale, "value-changed", G_CALLBACK(CB_RangeChanged), const_cast<char*>(opt_name));
+
+	return scale;
+}
+
+void CB_PickFile(GtkFileChooserButton *chooser, gpointer user_data)
+{
+	theApp.SetConfig((char*)user_data, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+}
+
+GtkWidget* CreateFileChooser(const char* label, const char* opt_name, const char* opt_default)
+{
+	GtkWidget* chooser = gtk_file_chooser_button_new(label, GTK_FILE_CHOOSER_ACTION_OPEN);
+
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(chooser), theApp.GetConfig(opt_name, opt_default).c_str());
+
+	g_signal_connect(chooser, "file-set", G_CALLBACK(CB_PickFile), const_cast<char*>(opt_name));
+
+	return chooser;
 }
 
 static int s_table_line = 0;
@@ -345,13 +400,10 @@ bool RunLinuxDialog()
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
 	GtkWidget* hack_sprite_check   = CreateCheckBox("Sprite Hack", "UserHacks_SpriteHack");
 	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
-	GtkWidget* hack_tco_entry      = gtk_entry_new();
+	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
 	GtkWidget* align_sprite_check  = CreateCheckBox("Anti vertical line hack", "UserHacks_align_sprite_X");
 	GtkWidget* stretch_hack_check  = CreateCheckBox("Improve 2D sprite scaling", "UserHacks_round_sprite_offset");
-
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(hack_skipdraw_spin), theApp.GetConfig("UserHacks_SkipDraw", 0));
-	set_hex_entry(hack_tco_entry, theApp.GetConfig("UserHacks_TCOffset", 0));
 
 	// Reuse windows helper string :)
 	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
@@ -380,8 +432,8 @@ bool RunLinuxDialog()
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
 
 	// shader
-	GtkWidget* shader            = gtk_file_chooser_button_new("Select an external shader", GTK_FILE_CHOOSER_ACTION_OPEN);
-	GtkWidget* shader_conf       = gtk_file_chooser_button_new("Then select a config", GTK_FILE_CHOOSER_ACTION_OPEN);
+	GtkWidget* shader            = CreateFileChooser("Select an external shader", "shaderfx_glsl", "dummy.glsl");
+	GtkWidget* shader_conf       = CreateFileChooser("Then select a config", "shaderfx_conf", "dummy.ini");
 	GtkWidget* shader_label      = gtk_label_new("External shader glsl");
 	GtkWidget* shader_conf_label = gtk_label_new("External shader conf");
 
@@ -390,36 +442,14 @@ bool RunLinuxDialog()
 	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
 
 	// Shadeboost scale
-#if GTK_MAJOR_VERSION < 3
-	GtkWidget* sb_brightness = gtk_hscale_new_with_range(0, 200, 10);
-#else
-	GtkWidget* sb_brightness = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
-#endif
+	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness", 50);
 	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
-	gtk_scale_set_value_pos(GTK_SCALE(sb_brightness), GTK_POS_RIGHT);
-	gtk_range_set_value(GTK_RANGE(sb_brightness), theApp.GetConfig("ShadeBoost_Brightness", 50));
 
-#if GTK_MAJOR_VERSION < 3
-	GtkWidget* sb_contrast = gtk_hscale_new_with_range(0, 200, 10);
-#else
-	GtkWidget* sb_contrast = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
-#endif
-	GtkWidget* sb_contrast_label = gtk_label_new("Shade Boost Contrast");
-	gtk_scale_set_value_pos(GTK_SCALE(sb_contrast), GTK_POS_RIGHT);
-	gtk_range_set_value(GTK_RANGE(sb_contrast), theApp.GetConfig("ShadeBoost_Contrast", 50));
+	GtkWidget* sb_contrast         = CreateScale("ShadeBoost_Contrast", 50);
+	GtkWidget* sb_contrast_label   = gtk_label_new("Shade Boost Contrast");
 
-#if GTK_MAJOR_VERSION < 3
-	GtkWidget* sb_saturation = gtk_hscale_new_with_range(0, 200, 10);
-#else
-	GtkWidget* sb_saturation = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
-#endif
+	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
 	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
-	gtk_scale_set_value_pos(GTK_SCALE(sb_saturation), GTK_POS_RIGHT);
-	gtk_range_set_value(GTK_RANGE(sb_saturation), theApp.GetConfig("ShadeBoost_Saturation", 50));
-
-	// external shader entry
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(shader), theApp.GetConfig("shaderfx_glsl", "dummy.glsl").c_str());
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(shader_conf), theApp.GetConfig("shaderfx_conf", "dummy.ini").c_str());
 
 	s_table_line = 0;
 	InsertWidgetInTable(shader_table , fxaa_check);
@@ -462,25 +492,7 @@ bool RunLinuxDialog()
 	// Anisotropic is disabled when it is 1x, no need of an extra check box
 	theApp.SetConfig("AnisotropicFiltering", 1);
 
-	if (return_value == GTK_RESPONSE_ACCEPT) {
-
-		// Get all the settings from the dialog box.
-
-		theApp.SetConfig("shaderfx_glsl", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader)));
-		theApp.SetConfig("shaderfx_conf", gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(shader_conf)));
-
-		theApp.SetConfig("ShadeBoost_Saturation", (int)gtk_range_get_value(GTK_RANGE(sb_saturation)));
-		theApp.SetConfig("ShadeBoost_Brightness", (int)gtk_range_get_value(GTK_RANGE(sb_brightness)));
-		theApp.SetConfig("ShadeBoost_Contrast", (int)gtk_range_get_value(GTK_RANGE(sb_contrast)));
-
-		theApp.SetConfig("UserHacks_TCOffset", get_hex_entry(hack_tco_entry));
-
-		gtk_widget_destroy (dialog);
-
-		return true;
-	}
-
 	gtk_widget_destroy (dialog);
 
-	return false;
+	return (return_value == GTK_RESPONSE_ACCEPT);
 }
