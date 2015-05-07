@@ -386,6 +386,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align sprite hack", "UserHacks_align_sprite_X");
+	GtkWidget* auto_skip_check     = CreateCheckBox("Auto Skip depth Texture", "UserHacks_AutoSkipDrawDepth");
 
 	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
 	GtkWidget* hack_sprite_label   = gtk_label_new("Alpha-Sprite Hack:");
@@ -415,6 +416,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
 	InsertWidgetInTable(hack_table , hack_logz_check     , hack_date_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
+	InsertWidgetInTable(hack_table , auto_skip_check);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
