@@ -26,14 +26,9 @@
 
 #include "res/glsl_source.h"
 
-#ifdef _DEBUG
-#define LOUD_DEBUGGING
-#endif
-//#define PRINT_FRAME_NUMBER
 //#define ONLY_LINES
 
 static uint32 g_draw_count = 0;
-static uint32 g_frame_count = 1;
 // TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 uint64 g_texture_upload_byte = 0;
@@ -46,6 +41,8 @@ static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
+
+bool GSDeviceOGL::m_debug_gl_call = false;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_free_window(false)
@@ -69,6 +66,8 @@ GSDeviceOGL::GSDeviceOGL()
 	FILE* f = fopen("GSdx_opengl_debug.txt","w");
 	fclose(f);
 	#endif
+
+	m_debug_gl_call =  theApp.GetConfig("debug_opengl", 0);
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -184,8 +183,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	if (theApp.GetConfig("debug_opengl", 0)) {
+		gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	}
 #endif
 
 	// ****************************************************************
@@ -366,13 +367,6 @@ void GSDeviceOGL::Flip()
 	#endif
 
 	m_wnd->Flip();
-
-#ifdef PRINT_FRAME_NUMBER
-	fprintf(stderr, "Draw %d (Frame %d)\n", g_draw_count, g_frame_count);
-#endif
-#if defined(ENABLE_OGL_DEBUG) || defined(PRINT_FRAME_NUMBER)
-	g_frame_count++;
-#endif
 }
 
 void GSDeviceOGL::AttachContext()
@@ -402,7 +396,7 @@ void GSDeviceOGL::BeforeDraw()
 
 void GSDeviceOGL::AfterDraw()
 {
-#if defined(ENABLE_OGL_DEBUG) || defined(PRINT_FRAME_NUMBER)
+#if defined(ENABLE_OGL_DEBUG)
 	g_draw_count++;
 #endif
 }
@@ -580,7 +574,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 void GSDeviceOGL::RecycleDateTexture()
 {
 	if (m_date.t) {
-		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", g_draw_count));
+		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", s_n));
 
 		Recycle(m_date.t);
 		m_date.t = NULL;
@@ -1148,7 +1142,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 
 void GSDeviceOGL::CheckDebugLog()
 {
-	if (!theApp.GetConfig("debug_opengl", 0)) return;
+	if (!m_debug_gl_call) return;
 
 	unsigned int count = 16; // max. num. of messages that will be read from the log
 	int bufsize = 2048;
@@ -1207,7 +1201,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		default                                  : source = "???"; break;
 	}
 
-	#ifdef LOUD_DEBUGGING
+	#ifdef _DEBUG
 	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
 	#endif
 

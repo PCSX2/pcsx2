@@ -455,6 +455,8 @@ class GSDeviceOGL : public GSDevice
 	private:
 	uint32 m_msaa;				// Level of Msaa
 
+	static bool m_debug_gl_call;
+
 	bool m_free_window;			
 	GSWnd* m_window;
 
