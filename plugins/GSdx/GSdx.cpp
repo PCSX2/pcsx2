@@ -176,6 +176,10 @@ GSdxApp::GSdxApp()
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
 	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
+	m_gs_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_hack.push_back(GSSetting(1,  "Halfly On", ""));
+	m_gs_hack.push_back(GSSetting(2,  "Fully On", ""));
+
 	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));

@@ -65,6 +65,7 @@ public:
 	vector<GSSetting> m_gs_max_anisotropy;
 	vector<GSSetting> m_gs_filter;
 	vector<GSSetting> m_gs_gl_ext;
+	vector<GSSetting> m_gs_hack;
 
 	vector<GSSetting> m_gpu_renderers;
 	vector<GSSetting> m_gpu_filter;

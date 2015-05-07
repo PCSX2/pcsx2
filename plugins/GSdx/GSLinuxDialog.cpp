@@ -106,7 +106,7 @@ void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 	}
 }
 
-GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int opt_default)
+GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int opt_default = 0)
 {
 	GtkWidget* combo_box = gtk_combo_box_text_new();
 	int opt_value        = theApp.GetConfig(opt_name, opt_default);
@@ -382,12 +382,15 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
 	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
-	GtkWidget* hack_sprite_check   = CreateCheckBox("Sprite Hack", "UserHacks_SpriteHack");
 	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* hack_logz_check     = CreateCheckBox("Log Depth Hack", "logz", true);
-	GtkWidget* align_sprite_check  = CreateCheckBox("Anti vertical line hack", "UserHacks_align_sprite_X");
-	GtkWidget* stretch_hack_check  = CreateCheckBox("Improve 2D sprite scaling", "UserHacks_round_sprite_offset");
+	GtkWidget* align_sprite_check  = CreateCheckBox("Align sprite hack", "UserHacks_align_sprite_X");
+
+	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
+	GtkWidget* hack_sprite_label   = gtk_label_new("Alpha-Sprite Hack:");
+	GtkWidget* stretch_hack_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_round_sprite_offset");
+	GtkWidget* stretch_hack_label  = gtk_label_new("Align Sprite Texture:");
 
 	// Reuse windows helper string :)
 	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
@@ -397,20 +400,23 @@ void populate_hack_table(GtkWidget* hack_table)
 	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
 	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
 	gtk_widget_set_tooltip_text(hack_wild_check, dialog_message(IDC_WILDHACK));
-	gtk_widget_set_tooltip_text(hack_sprite_check, dialog_message(IDC_SPRITEHACK));
+	gtk_widget_set_tooltip_text(hack_sprite_box, dialog_message(IDC_SPRITEHACK));
+	gtk_widget_set_tooltip_text(hack_sprite_label, dialog_message(IDC_SPRITEHACK));
 	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth (superseeded by ARB_clip_control)");
 	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
-	gtk_widget_set_tooltip_text(stretch_hack_check, dialog_message(IDC_ROUND_SPRITE));
+	gtk_widget_set_tooltip_text(stretch_hack_box, dialog_message(IDC_ROUND_SPRITE));
+	gtk_widget_set_tooltip_text(stretch_hack_label, dialog_message(IDC_ROUND_SPRITE));
 
 
 	s_table_line = 0;
 	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
-	InsertWidgetInTable(hack_table , hack_sprite_check   , hack_wild_check);
 	InsertWidgetInTable(hack_table , hack_logz_check     , hack_date_check);
-	InsertWidgetInTable(hack_table , stretch_hack_check  , align_sprite_check);
+	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
+	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
+	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
 }
