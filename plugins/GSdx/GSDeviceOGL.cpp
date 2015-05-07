@@ -555,7 +555,9 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
 	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0)) {
-		gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)theApp.GetConfig("MaxAnisotropy", 0));
+		int anisotropy = theApp.GetConfig("MaxAnisotropy", 1);
+		if (anisotropy > 1) // 1 is the default in opengl so don't do anything
+			gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 	}
 
 	return sampler;
