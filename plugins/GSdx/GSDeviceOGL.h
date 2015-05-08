@@ -65,6 +65,8 @@ public:
 
 	void SetBogus(char bogus) { m_bogus = bogus; }
 
+	int GetBogus() { return m_bogus; }
+
 	void RevertOp()
 	{
 		if(m_equation_RGB == GL_FUNC_ADD)
@@ -318,14 +320,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 wmt:2;
 				uint32 ltf:1;
 
-				uint32 _free:4;
+				uint32 blend:4;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x0fffffff;}
+		operator uint32() {return key & 0xffffffff;}
 
 		PSSelector() : key(0) {}
 	};
@@ -623,7 +625,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
+	int  SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

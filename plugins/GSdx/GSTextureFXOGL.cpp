@@ -230,7 +230,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
+int GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
 {
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
@@ -254,4 +254,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, ui
 	// Dynamic
 	// *************************************************************
 	OMSetBlendState(bs, (float)(int)afix / 0x80);
+
+	return bs->GetBogus();
 }

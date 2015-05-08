@@ -543,7 +543,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
-	dev->SetupOM(om_dssel, om_bsel, afix);
+	int bogus_blend = dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupCB(&vs_cb, &ps_cb);
 
 	if (DATE_GL42) {
