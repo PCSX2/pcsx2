@@ -256,6 +256,7 @@ class GSDeviceOGL : public GSDevice
 		GSVector4 WH;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
+		GSVector4 AlphaCoeff;
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
@@ -269,6 +270,7 @@ class GSDeviceOGL : public GSDevice
 			MinMax = GSVector4::zero();
 			MinF_TA = GSVector4::zero();
 			MskFix = GSVector4i::zero();
+			AlphaCoeff = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -278,13 +280,14 @@ class GSDeviceOGL : public GSDevice
 
 			// if WH matches both HalfTexel and TC_OffsetHack do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])).alltrue())
 			{
 				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
 				a[1] = b[1];
 				a[2] = b[2];
 				a[3] = b[3];
+				a[4] = b[4];
 
 				return true;
 			}

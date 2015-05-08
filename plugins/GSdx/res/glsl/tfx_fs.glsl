@@ -65,6 +65,7 @@ layout(std140, binding = 21) uniform cb21
 	vec2 MinF;
 	vec2 TA;
 	uvec4 MskFix;
+	vec4 Af;
 	vec4 HalfTexel;
 	vec4 MinMax;
 	vec4 TC_OffsetHack;

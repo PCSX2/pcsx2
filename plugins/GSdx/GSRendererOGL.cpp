@@ -572,6 +572,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->SetupPS(ps_sel);
 		dev->PSSetShaderResource(3, rt);
 
+		if (bogus_blend == 6 || bogus_blend == 9 || bogus_blend == 12) {
+			ps_cb.AlphaCoeff = GSVector4((float)(int)afix / 0x80);
+		}
+
 		require_barrier = ((bogus_blend != 7) && (bogus_blend != 9));
 	}
 

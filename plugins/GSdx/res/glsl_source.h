@@ -779,6 +779,7 @@ static const char* tfx_fs_all_glsl =
 	"	vec2 MinF;\n"
 	"	vec2 TA;\n"
 	"	uvec4 MskFix;\n"
+	"	vec4 Af;\n"
 	"	vec4 HalfTexel;\n"
 	"	vec4 MinMax;\n"
 	"	vec4 TC_OffsetHack;\n"
