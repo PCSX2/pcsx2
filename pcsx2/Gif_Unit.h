@@ -315,7 +315,7 @@ struct Gif_Path {
 				{
 					state = GIF_PATH_WAIT;
 
-					if(curSize - curOffset > 0 && (gifRegs.stat.M3R || gifRegs.stat.M3P))
+					if(curSize != curOffset && (gifRegs.stat.M3R || gifRegs.stat.M3P))
 					{
 						//Including breaking packets early (Rewind DMA to pick up where left off)
 						//but only do this when the path is masked, else we're pointlessly slowing things down.
