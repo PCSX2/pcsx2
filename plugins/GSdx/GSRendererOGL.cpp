@@ -27,16 +27,29 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_fba = !!theApp.GetConfig("fba", 1);
-	UserHacks_AlphaHack = !!theApp.GetConfig("UserHacks_AlphaHack", 0) && !!theApp.GetConfig("UserHacks", 0);
-	UserHacks_AlphaStencil = !!theApp.GetConfig("UserHacks_AlphaStencil", 0) && !!theApp.GetConfig("UserHacks", 0);
-	UserHacks_DateGL4 = !!theApp.GetConfig("UserHacks_DateGL4", 0);
+	m_fba = theApp.GetConfig("fba", 1);
 	m_pixelcenter = GSVector2(-0.5f, -0.5f);
-	UserHacks_Unscale_sprite = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_UnscaleSprite", 0) : 0;
 
-	UserHacks_TCOffset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_TCOffset", 0) : 0;
-	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
-	UserHacks_TCO_y = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
+	m_accurate_blend  = theApp.GetConfig("accurate_blend", 0);
+	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
+
+	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
+	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
+	UserHacks_DateGL4        = theApp.GetConfig("UserHacks_DateGL4", 0);
+	UserHacks_Unscale_sprite = theApp.GetConfig("UserHacks_UnscaleSprite", 0);
+	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
+	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
+	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
+
+	if (!theApp.GetConfig("UserHacks", 0)) {
+		UserHacks_AlphaHack      = false;
+		UserHacks_AlphaStencil   = false;
+		UserHacks_DateGL4        = false;
+		UserHacks_Unscale_sprite = 0;
+		UserHacks_TCOffset       = 0;
+		UserHacks_TCO_x          = 0;
+		UserHacks_TCO_y          = 0;
+	}
 }
 
 bool GSRendererOGL::CreateDevice(GSDevice* dev)
@@ -246,7 +259,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
-			DATE_GL42 = GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
+			DATE_GL42 = m_accurate_date && GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
 		}
 	}
 

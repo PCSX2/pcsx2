@@ -447,9 +447,8 @@ namespace GLLoader {
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
 				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
-				// Only enable this extension on nvidia
-				// It is too costly on perf (big upscaling), code need to updated to reduce the number of draw stage
-				//if (nvidia_buggy_driver && ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
+				// (I'm not sure AMD supports correctly GL_ARB_shader_image_load_store
+				if (ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
 				// GL4.3
 				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
 				if (ext.compare("GL_ARB_explicit_uniform_location") == 0) found_GL_ARB_explicit_uniform_location = true;
