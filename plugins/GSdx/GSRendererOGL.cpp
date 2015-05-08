@@ -36,7 +36,6 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
 	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
 	UserHacks_DateGL4        = theApp.GetConfig("UserHacks_DateGL4", 0);
-	UserHacks_Unscale_sprite = theApp.GetConfig("UserHacks_UnscaleSprite", 0);
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
@@ -45,7 +44,6 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_AlphaHack      = false;
 		UserHacks_AlphaStencil   = false;
 		UserHacks_DateGL4        = false;
-		UserHacks_Unscale_sprite = 0;
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;

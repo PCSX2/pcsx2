@@ -35,7 +35,6 @@ private:
 	bool m_reset;
 	int m_upscale_multiplier;
 	int m_userhacks_skipdraw;
-	int m_sub_texel_offset;
 
 	bool m_userhacks_align_sprite_X;
 

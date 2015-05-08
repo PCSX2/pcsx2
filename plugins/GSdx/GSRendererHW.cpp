@@ -62,32 +62,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = 0;
 	}
-
-	// When you upscale sprite will sample invalid data of the texture. The idea is to add a subtexel offset
-	// so the sampling remains inside the texture.
-	// The strict minimal value can be computed with this formulae (you need to round above, [1;2[ must be rounded to 2).
-	//
-	// s: m_upscale_multiplier
-	// WH: Width or Height of the texture
-	// 0.5: initial offset of texture (not sure it is always true)
-	// L: length of primitive in pixels (after upscaling)
-	//
-	// Full formulae is
-	// 0.5 + (L - 1)* (WH-offset)/L < WH
-	//
-	// A reduced formulae is: (hypothesis 1:1 mapping => L == s*WH)
-	// offset > ((0.5)*s -1)/(s-1/WH)*16
-	//
-	// Rendering is perfect for 2x but some issues remains on higher scaling
-	switch (m_upscale_multiplier) {
-		case 1: m_sub_texel_offset = 0; break;
-		case 2: m_sub_texel_offset = 1; break;
-		case 3: m_sub_texel_offset = 3; break; // texture of 2 texels need 4 (Is is used?)
-		case 4: m_sub_texel_offset = 5; break;
-		case 5: m_sub_texel_offset = 6; break;
-		case 6: m_sub_texel_offset = 6; break;
-		default: break;
-	}
 }
 
 GSRendererHW::~GSRendererHW()
