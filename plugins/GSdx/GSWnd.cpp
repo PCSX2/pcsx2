@@ -107,9 +107,14 @@ void GSWndGL::PopulateGlFunction()
 	// GL4.3
 	*(void**)&(gl_CopyImageSubData) = GetProcAddress("glCopyImageSubData", true);
 	*(void**)&(gl_InvalidateTexImage) = GetProcAddress("glInvalidateTexImage", true);
-	*(void**)&(gl_PushDebugGroup) = GetProcAddress("glPushDebugGroup", true);
-	*(void**)&(gl_PopDebugGroup) = GetProcAddress("glPopDebugGroup", true);
-	*(void**)&(gl_DebugMessageInsert) = GetProcAddress("glDebugMessageInsert", true);
+#if defined(__linux__) && defined(ENABLE_OGL_DEBUG)
+	bool debug_optional = false;
+#else
+	bool debug_optional = true;
+#endif
+	*(void**)&(gl_PushDebugGroup) = GetProcAddress("glPushDebugGroup", debug_optional);
+	*(void**)&(gl_PopDebugGroup) = GetProcAddress("glPopDebugGroup", debug_optional);
+	*(void**)&(gl_DebugMessageInsert) = GetProcAddress("glDebugMessageInsert", debug_optional);
 	// GL4.4
 	*(void**)&(gl_BufferStorage) = GetProcAddress("glBufferStorage", true);
 	// GL_ARB_bindless_texture (GL5?)
