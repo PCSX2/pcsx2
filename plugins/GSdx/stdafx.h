@@ -502,7 +502,7 @@ extern void vmfree(void* ptr, size_t size);
 #else
 #define GL_PUSH(s) (0);
 #define GL_POP()   (0);
-#define GL_INS()   (0);
+#define GL_INS(s)  (0);
 #endif
 
 // Helper path to dump texture
