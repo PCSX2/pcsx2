@@ -325,7 +325,7 @@ void atst(vec4 c)
 	discard;
 #elif (PS_ATST == 1) // always
 	// nothing to do
-#elif (PS_ATST == 2) && (PS_SPRITEHACK == 0) // l
+#elif (PS_ATST == 2) // l
 	if ((AREF - a - 0.5f) < 0.0f)
 		discard;
 #elif (PS_ATST == 3 ) // le

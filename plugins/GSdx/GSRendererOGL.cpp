@@ -447,6 +447,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// By default don't use texture
 	ps_sel.tfx = 4;
+	bool spritehack = false;
+	int  atst = ps_sel.atst;
 
 	if(tex)
 	{
@@ -464,7 +466,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.tfx = context->TEX0.TFX;
 		ps_sel.tcc = context->TEX0.TCC;
 		ps_sel.ltf = bilinear && !simple_sample;
-		ps_sel.spritehack = tex->m_spritehack_t;
+		spritehack = tex->m_spritehack_t;
 		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
 		// bug on opengl
 		// FIXME for the moment disable it on subroutine (it will kill my perf for nothings)
@@ -517,6 +519,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			} else if (tex->m_texture) {
 				dev->PSSetShaderResource(0, tex->m_texture);
 			}
+		}
+
+		if (spritehack && (ps_sel.atst == 2)) {
+			ps_sel.atst = 1;
 		}
 	}
 
@@ -603,7 +609,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
 
-		ps_sel.atst = iatst[ps_sel.atst];
+		ps_sel.atst = iatst[atst];
+		if (spritehack && (ps_sel.atst == 2)) {
+			ps_sel.atst = 1;
+		}
 
 		dev->SetupPS(ps_sel);
 

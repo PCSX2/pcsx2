@@ -305,7 +305,6 @@ class GSDeviceOGL : public GSDevice
 				uint32 fba:1;
 				uint32 aout:1;
 				uint32 date:3;
-				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
@@ -319,14 +318,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 wmt:2;
 				uint32 ltf:1;
 
-				uint32 _free:3;
+				uint32 _free:4;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x1fffffff;}
+		operator uint32() {return key & 0x0fffffff;}
 
 		PSSelector() : key(0) {}
 	};

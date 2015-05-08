@@ -1046,7 +1046,7 @@ static const char* tfx_fs_all_glsl =
 	"	discard;\n"
 	"#elif (PS_ATST == 1) // always\n"
 	"	// nothing to do\n"
-	"#elif (PS_ATST == 2) && (PS_SPRITEHACK == 0) // l\n"
+	"#elif (PS_ATST == 2) // l\n"
 	"	if ((AREF - a - 0.5f) < 0.0f)\n"
 	"		discard;\n"
 	"#elif (PS_ATST == 3 ) // le\n"
