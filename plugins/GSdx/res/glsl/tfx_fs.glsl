@@ -18,28 +18,6 @@
 // And I say this as an ATI user.
 #define ATI_SUCKS 0
 
-#ifndef PS_FST
-#define PS_FST 0
-#define PS_WMS 0
-#define PS_WMT 0
-#define PS_FMT FMT_32
-#define PS_AEM 0
-#define PS_TFX 0
-#define PS_TCC 1
-#define PS_ATST 1
-#define PS_FOG 0
-#define PS_CLR1 0
-#define PS_FBA 0
-#define PS_AOUT 0
-#define PS_LTF 1
-#define PS_COLCLIP 0
-#define PS_DATE 0
-#define PS_SPRITEHACK 0
-#define PS_POINT_SAMPLER 0
-#define PS_TCOFFSETHACK 0
-#define PS_IIP 1
-#endif
-
 #ifdef FRAGMENT_SHADER
 
 in SHADER

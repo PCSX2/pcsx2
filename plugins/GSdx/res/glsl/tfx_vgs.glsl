@@ -1,12 +1,5 @@
 //#version 420 // Keep it for text editor detection
 
-#ifndef VS_BPPZ
-#define VS_BPPZ 0
-#define VS_TME 1
-#define VS_FST 1
-#define VS_LOGZ 0
-#endif
-
 #ifdef VERTEX_SHADER
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in vec4  i_c;
