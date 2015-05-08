@@ -190,7 +190,7 @@ bool GSRendererOGL::PrimitiveOverlap()
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 #ifdef ENABLE_OGL_DEBUG
-	std::string help = format("Draw %d", s_n);
+	std::string help = format("GL Draw in (%d/%d)", static_cast<GSTextureOGL*>(rt)->GetID(), static_cast<GSTextureOGL*>(ds)->GetID());
 	GL_PUSH(help.c_str());
 #endif
 	GSDrawingEnvironment& env = m_env;

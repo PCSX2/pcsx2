@@ -543,7 +543,7 @@ void GSRendererSW::Draw()
 
 		if (s_n >= s_saven) {
 			// Dump Register state
-			s = format("%05d_context_d%lld.txt", s_n);
+			s = format("%05d_context.txt", s_n);
 
 			m_env.Dump(root_sw+s);
 			m_context->Dump(root_sw+s);

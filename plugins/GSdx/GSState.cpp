@@ -5500,6 +5500,11 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 				skip = 1;
 			}
 		}
+#ifdef ENABLE_OGL_DEBUG
+	} else if (fi.TME) {
+			if(fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S)
+				GL_INS("!!! Depth Texture !!!");
+#endif
 	}
 
 	if(skip > 0)

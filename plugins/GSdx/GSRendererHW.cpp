@@ -317,6 +317,10 @@ void GSRendererHW::Draw()
 		s_n += 3; // Keep it sync with SW renderer
 		return;
 	}
+#ifdef ENABLE_OGL_DEBUG
+	std::string help = format("HW Draw %d", s_n);
+	GL_PUSH(help.c_str());
+#endif
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
@@ -360,9 +364,7 @@ void GSRendererHW::Draw()
 
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
-		GL_PUSH("Lookup Source");
 		tex = m_tc->LookupSource(context->TEX0, env.TEXA, r);
-		GL_POP();
 
 		if(!tex) return;
 
@@ -416,7 +418,7 @@ void GSRendererHW::Draw()
 
 		if (s_n >= s_saven) {
 			// Dump Register state
-			s = format("%05d_context_d%lld.txt", s_n);
+			s = format("%05d_context.txt", s_n);
 
 			m_env.Dump(root_hw+s);
 			m_context->Dump(root_hw+s);
@@ -561,6 +563,8 @@ void GSRendererHW::Draw()
 	m_tc->Read(rt, r);
 
 	#endif
+
+	GL_POP();
 }
 
 // hacks

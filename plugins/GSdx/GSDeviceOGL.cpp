@@ -146,6 +146,8 @@ GSDeviceOGL::~GSDeviceOGL()
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int format)
 {
+	GL_PUSH("Create surface");
+
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
 	GSTextureOGL* t = NULL;
 	t = new GSTextureOGL(type, w, h, format, m_fbo_read);
@@ -161,6 +163,8 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int for
 			// No need to clear the stencil now.
 			break;
 	}
+
+	GL_POP();
 	return t;
 }
 
