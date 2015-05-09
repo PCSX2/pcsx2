@@ -187,6 +187,26 @@ bool GSRendererOGL::PrimitiveOverlap()
 	return false;
 }
 
+void GSRendererOGL::SendDraw(bool require_barrier)
+{
+	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
+
+	if (!require_barrier || !PrimitiveOverlap()) {
+		dev->DrawIndexedPrimitive();
+	} else {
+		ASSERT(m_vt.m_primclass != GS_POINT_CLASS);
+		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
+		ASSERT(GLLoader::found_geometry_shader);
+
+		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+
+		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
+			gl_TextureBarrier();
+			dev->DrawIndexedPrimitive(p, nb_vertex);
+		}
+	}
+}
+
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -202,6 +222,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
+
+	bool require_barrier = false; // For blend (and maybe in date in the future)
 
 	ASSERT(m_dev != NULL);
 
@@ -562,7 +584,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Don't write anything on the color buffer
 		dev->OMSetWriteBuffer(GL_NONE);
 		// Compute primitiveID max that pass the date test
-		dev->DrawIndexedPrimitive();
+		SendDraw(false);
 
 		// Ask PS to discard shader above the primitiveID max
 		dev->OMSetWriteBuffer();
@@ -581,7 +603,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if(context->TEST.DoFirstPass())
 	{
-		dev->DrawIndexedPrimitive();
+		SendDraw(require_barrier);
 
 		if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 		{
@@ -595,7 +617,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->SetupOM(om_dssel, om_bselneg, afix);
 			dev->SetupPS(ps_selneg);
 
-			dev->DrawIndexedPrimitive();
+			SendDraw(false);
 			dev->SetupOM(om_dssel, om_bsel, afix);
 			GL_POP();
 		}
@@ -640,7 +662,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->OMSetColorMaskState(om_csel);
 			dev->SetupOM(om_dssel, om_bsel, afix);
 
-			dev->DrawIndexedPrimitive();
+			SendDraw(require_barrier);
 
 			if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 			{
@@ -654,7 +676,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				dev->SetupOM(om_dssel, om_bselneg, afix);
 				dev->SetupPS(ps_selneg);
 
-				dev->DrawIndexedPrimitive();
+				SendDraw(false);
 				GL_POP();
 			}
 		}
