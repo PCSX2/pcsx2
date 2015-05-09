@@ -103,23 +103,24 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 	{
 		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
-		bs->EnableBlend();
 		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
 		bs->SetBogus(m_blendMapD3D9[i].bogus);
 
-		if(m_blendMapD3D9[i].bogus == 1)
-		{
-			if (bsel.a == 0)
-				bs->SetRGB(m_blendMapD3D9[i].op, GL_ONE, m_blendMapD3D9[i].dst);
-			else
-				bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
+		if (m_blendMapD3D9[i].bogus > 2) {
+			if (!theApp.GetConfig("accurate_blend", 0)) {
+				bs->EnableBlend();
+				if (bsel.a == 0)
+					bs->SetRGB(m_blendMapD3D9[i].op, GL_ONE, m_blendMapD3D9[i].dst);
+				else
+					bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
+			}
 
 			const string afixstr = format("%d >> 7", afix);
 			const char *col[3] = {"Cs", "Cd", "0"};
 			const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-
-			// FIXME, need to investigate OGL capabilities. Maybe for OGL5 ;)
 			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
+		} else {
+			bs->EnableBlend();
 		}
 
 		// Not very good but I don't wanna write another 81 row table
@@ -230,7 +231,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
+int GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
 {
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
@@ -254,4 +255,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, ui
 	// Dynamic
 	// *************************************************************
 	OMSetBlendState(bs, (float)(int)afix / 0x80);
+
+	return bs->GetBogus();
 }

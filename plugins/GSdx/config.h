@@ -38,12 +38,6 @@
 
 //#define DISABLE_DATE
 
-// Allow to dump texture as PNG (require libpng++). It reduces the size of the dump
-// and alpha is well supported (on linux)
-//#define ENABLE_OGL_PNG
-// The next two define allows to dump texture without alpha or only the alpha channel.
-//#define ENABLE_OGL_PNG_OPAQUE
-//#define ENABLE_OGL_PNG_ALPHA
 
 #if defined(_DEBUG) || defined(_DEVEL)
 #define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
@@ -53,4 +47,13 @@
 
 #ifdef _WINDOWS
 //#define ENABLE_OPENCL
+#endif
+
+#if defined(ENABLE_OGL_DEBUG) && defined(__linux__)
+// Allow to dump texture as PNG (require libpng++). It reduces the size of the dump
+// and alpha is well supported (on linux)
+#define ENABLE_OGL_PNG
+// The next two define allows to dump texture without alpha or only the alpha channel.
+#define ENABLE_OGL_PNG_OPAQUE
+#define ENABLE_OGL_PNG_ALPHA
 #endif

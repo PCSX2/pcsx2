@@ -56,4 +56,6 @@ class GSRendererOGL : public GSRendererHW
 		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 
 		bool PrimitiveOverlap();
+
+		void SendDraw(bool require_barrier);
 };

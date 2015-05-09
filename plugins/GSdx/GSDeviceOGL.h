@@ -65,6 +65,8 @@ public:
 
 	void SetBogus(char bogus) { m_bogus = bogus; }
 
+	int GetBogus() { return m_bogus; }
+
 	void RevertOp()
 	{
 		if(m_equation_RGB == GL_FUNC_ADD)
@@ -92,7 +94,7 @@ public:
 #ifdef ENABLE_OGL_DEBUG
 		if (m_bogus) {
 			GL_INS("!!! Bogus blending effect !!!");
-			fprintf(stderr, "Bogus blending effect used : %s\n", (m_bogus == 1) ? "impossible effect" : "clear effect");
+			fprintf(stderr, "Bogus blending effect used : %s (%d)\n", (m_bogus > 2) ? "impossible effect" : "clear effect", m_bogus);
 		}
 #endif
 		if (m_enable) {
@@ -254,6 +256,7 @@ class GSDeviceOGL : public GSDevice
 		GSVector4 WH;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
+		GSVector4 AlphaCoeff;
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
@@ -267,6 +270,7 @@ class GSDeviceOGL : public GSDevice
 			MinMax = GSVector4::zero();
 			MinF_TA = GSVector4::zero();
 			MskFix = GSVector4i::zero();
+			AlphaCoeff = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -276,13 +280,14 @@ class GSDeviceOGL : public GSDevice
 
 			// if WH matches both HalfTexel and TC_OffsetHack do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])).alltrue())
 			{
 				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
 				a[1] = b[1];
 				a[2] = b[2];
 				a[3] = b[3];
+				a[4] = b[4];
 
 				return true;
 			}
@@ -318,14 +323,14 @@ class GSDeviceOGL : public GSDevice
 				uint32 wmt:2;
 				uint32 ltf:1;
 
-				uint32 _free:4;
+				uint32 blend:4;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x0fffffff;}
+		operator uint32() {return key & 0xffffffff;}
 
 		PSSelector() : key(0) {}
 	};
@@ -623,7 +628,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
+	int  SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

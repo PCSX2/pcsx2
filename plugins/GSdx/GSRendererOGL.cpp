@@ -187,6 +187,26 @@ bool GSRendererOGL::PrimitiveOverlap()
 	return false;
 }
 
+void GSRendererOGL::SendDraw(bool require_barrier)
+{
+	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
+
+	if (!require_barrier || !PrimitiveOverlap()) {
+		dev->DrawIndexedPrimitive();
+	} else {
+		ASSERT(m_vt.m_primclass != GS_POINT_CLASS);
+		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
+		ASSERT(GLLoader::found_geometry_shader);
+
+		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+
+		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
+			gl_TextureBarrier();
+			dev->DrawIndexedPrimitive(p, nb_vertex);
+		}
+	}
+}
+
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -202,6 +222,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
+
+	bool require_barrier = false; // For blend (and maybe in date in the future)
 
 	ASSERT(m_dev != NULL);
 
@@ -543,11 +565,25 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
-	dev->SetupOM(om_dssel, om_bsel, afix);
+	// Handle blending with care
+	int bogus_blend = dev->SetupOM(om_dssel, om_bsel, afix);
+	if (m_accurate_blend && bogus_blend > 2) {
+		ps_sel.blend = bogus_blend - 3;
+		dev->SetupPS(ps_sel);
+		dev->PSSetShaderResource(3, rt);
+
+		if (bogus_blend == 6 || bogus_blend == 9 || bogus_blend == 12) {
+			ps_cb.AlphaCoeff = GSVector4((float)(int)afix / 0x80);
+		}
+
+		require_barrier = ((bogus_blend != 7) && (bogus_blend != 9));
+	}
+
 	dev->SetupCB(&vs_cb, &ps_cb);
 
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
+		ASSERT(bogus_blend <= 2);
 		// It could be good idea to use stencil in the same time.
 		// Early stencil test will reduce the number of atomic-load operation
 
@@ -562,7 +598,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Don't write anything on the color buffer
 		dev->OMSetWriteBuffer(GL_NONE);
 		// Compute primitiveID max that pass the date test
-		dev->DrawIndexedPrimitive();
+		SendDraw(false);
 
 		// Ask PS to discard shader above the primitiveID max
 		dev->OMSetWriteBuffer();
@@ -581,10 +617,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if(context->TEST.DoFirstPass())
 	{
-		dev->DrawIndexedPrimitive();
+		SendDraw(require_barrier);
 
 		if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 		{
+			ASSERT(bogus_blend <= 2);
 			GL_PUSH("COLCLIP");
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -595,7 +632,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->SetupOM(om_dssel, om_bselneg, afix);
 			dev->SetupPS(ps_selneg);
 
-			dev->DrawIndexedPrimitive();
+			SendDraw(false);
 			dev->SetupOM(om_dssel, om_bsel, afix);
 			GL_POP();
 		}
@@ -640,10 +677,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->OMSetColorMaskState(om_csel);
 			dev->SetupOM(om_dssel, om_bsel, afix);
 
-			dev->DrawIndexedPrimitive();
+			SendDraw(require_barrier);
 
 			if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
 			{
+				ASSERT(bogus_blend <= 2);
 				GL_PUSH("COLCLIP");
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -654,7 +692,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				dev->SetupOM(om_dssel, om_bselneg, afix);
 				dev->SetupPS(ps_selneg);
 
-				dev->DrawIndexedPrimitive();
+				SendDraw(false);
 				GL_POP();
 			}
 		}
