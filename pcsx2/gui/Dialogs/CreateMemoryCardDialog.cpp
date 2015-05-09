@@ -153,17 +153,31 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 		return;
 	}
 
-	wxString fullPath=(m_mcdpath + composedName).GetFullPath();
-	if( !CreateIt(
-		fullPath,
-		m_radio_CardSize	? m_radio_CardSize->SelectedItem().SomeInt	: 8
-	) )
-	{
-		Msgbox::Alert(
-			_("Error: The memory card could not be created."),
-			_("Create memory card")
-		);
-		return;
+	wxString fullPath = ( m_mcdpath + composedName ).GetFullPath();
+	if ( m_radio_CardSize && m_radio_CardSize->SelectedItem().SomeInt == 0 ) {
+		// user selected to create a folder memory card
+		if ( !wxFileName::Mkdir( fullPath ) ) {
+			Msgbox::Alert(
+				_( "Error: The directory for the memory card could not be created." ),
+				_( "Create memory card" )
+			);
+		} else {
+			// also create an empty superblock so we can recognize memory card folders based on if they have a superblock
+			wxFFile superblock( wxFileName( fullPath, L"_pcsx2_superblock" ).GetFullPath(), L"wb" );
+			superblock.Close();
+		}
+	} else {
+		// otherwise create a file
+		if ( !CreateIt(
+			fullPath,
+			m_radio_CardSize ? m_radio_CardSize->SelectedItem().SomeInt : 8
+			) ) {
+			Msgbox::Alert(
+				_( "Error: The memory card could not be created." ),
+				_( "Create memory card" )
+				);
+			return;
+		}
 	}
 
 	result_createdMcdFilename = composedName;
@@ -205,7 +219,11 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 
 		RadioPanelItem(_("64 MB"), _("Low compatibility warning: Yes it's very big, but may not work with many games."))
 		.	SetToolTip(_t("Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."))
-		.	SetInt(64)
+		.	SetInt(64),
+
+		RadioPanelItem(_("Folder [experimental]"), _("Store memory card contents in the host filesystem instead of a file."))
+		.	SetToolTip(_t("Automatically manages memory card contents so that the console only sees files related to the currently running software. Allows you to drag-and-drop files in and out of the memory card with your standard file explorer. This is still experimental, so use at your own risk!"))
+		.	SetInt(0)
 	};
 
 	m_radio_CardSize = new pxRadioPanel( this, tbl_CardSizes );

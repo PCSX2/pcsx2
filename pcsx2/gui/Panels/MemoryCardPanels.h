@@ -40,6 +40,7 @@ struct McdSlotItem
 {
 	int			Slot;			//0-7: internal slot. -1: unrelated to an internal slot (the rest of the files at the folder).
 	bool		IsPresent;		//Whether or not a file is associated with this item (true/false when 0<=Slot<=7. Always true when Slot==-1)
+	MemoryCardType Type;		//The implementation used for this memory card
 	
 	//Only meaningful when IsPresent==true (a file exists for this item):
 	wxFileName	Filename;		// full pathname

@@ -431,10 +431,8 @@ static __fi void VSyncEnd(u32 sCycle)
 	psxVBlankEnd(); // psxCounters vBlank End
 	if (gates) rcntEndGate(true, sCycle); // Counters End Gate Code
 
-#ifdef MEMORYCARD_USE_FOLDER
 	// FolderMemoryCard needs information on how much time has passed since the last write
 	sioNextFrame();
-#endif
 
 	frameLimit(); // limit FPS
 

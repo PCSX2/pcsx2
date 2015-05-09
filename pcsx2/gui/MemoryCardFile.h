@@ -15,9 +15,6 @@
 
 #pragma once
 
-// define this to use the FolderMemoryCard implementation instead of the regular FileMemoryCard one
-//#define MEMORYCARD_USE_FOLDER
-
 // NOTICE!  This file is intended as a temporary placebo only, until such time that the
 // memorycard system is properly extracted into a plugin system (which would make it a
 // separate project file).

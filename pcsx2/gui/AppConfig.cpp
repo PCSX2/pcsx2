@@ -611,6 +611,10 @@ void AppConfig::LoadSaveMemcards( IniInterface& ini )
 			Mcd[slot].Enabled, Mcd[slot].Enabled );
 		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
 			Mcd[slot].Filename, Mcd[slot].Filename );
+		int type = (int)Mcd[slot].Type;
+		ini.Entry( pxsFmt( L"Slot%u_Type", slot + 1 ),
+			type, (int)MemoryCardType::MemoryCard_File );
+		Mcd[slot].Type = (MemoryCardType)type;
 	}
 
 	for( uint slot=2; slot<8; ++slot )
@@ -622,6 +626,10 @@ void AppConfig::LoadSaveMemcards( IniInterface& ini )
 			Mcd[slot].Enabled, Mcd[slot].Enabled );
 		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Filename", mtport, mtslot ),
 			Mcd[slot].Filename, Mcd[slot].Filename );
+		int type = (int)Mcd[slot].Type;
+		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Type", mtport, mtslot ),
+			type, (int)MemoryCardType::MemoryCard_File );
+		Mcd[slot].Type = (MemoryCardType)type;
 	}
 }
 
