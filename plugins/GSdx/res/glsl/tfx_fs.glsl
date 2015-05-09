@@ -419,16 +419,24 @@ void ps_main()
 	// Pixel with alpha equal to 1 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
 	if ((127.5f / 255.0f) < rt_a) { // < 0x80 pass (== 0x80 should not pass)
+#if PS_DATE >= 5
+		discard;
+#else
 		imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
 		return;
+#endif
 	}
 #elif (PS_DATE & 3) == 2 && !defined(DISABLE_GL42_image)
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
 	if(rt_a < (127.5f / 255.0f)) { // >= 0x80 pass
+#if PS_DATE >= 5
+		discard;
+#else
 		imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
 		return;
+#endif
 	}
 #endif
 

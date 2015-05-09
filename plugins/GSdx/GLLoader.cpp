@@ -504,13 +504,6 @@ namespace GLLoader {
 				theApp.SetConfig("accurate_blend", 0);
 			}
 		}
-		if (!found_GL_ARB_shader_image_load_store) {
-			if (theApp.GetConfig("accurate_date", 0)) {
-				fprintf(stderr, "Error GL_ARB_shader_image_load_store is not supported by your driver so you can't enable accurate_date! Sorry.\n");
-				theApp.SetConfig("accurate_date", 0);
-			}
-		}
-
 
 		fprintf(stderr, "\n");
 

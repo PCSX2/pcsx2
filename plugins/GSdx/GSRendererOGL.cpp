@@ -198,6 +198,9 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
 		ASSERT(GLLoader::found_geometry_shader);
 
+		GL_INS("Special Draw");
+
+		// FIXME: Investigate: do a dynamic check to pack as many primitives as possibles
 		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
 
 		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
@@ -278,8 +281,17 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (GLLoader::found_GL_ARB_texture_barrier && !PrimitiveOverlap()) {
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
-			DATE_GL42 = m_accurate_date && GLLoader::found_GL_ARB_shader_image_load_store && !UserHacks_AlphaStencil;
+		} else if (m_accurate_date && !UserHacks_AlphaStencil &&
+				om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
+			// texture barrier will split the draw call into n draw call. It is very efficient for
+			// few primitive draws. Otherwise it sucks.
+			if (GLLoader::found_GL_ARB_texture_barrier && (m_index.tail < 100)) {
+				require_barrier = true;
+				DATE_GL45 = true;
+				DATE = false;
+			} else {
+				DATE_GL42 = GLLoader::found_GL_ARB_shader_image_load_store;
+			}
 		}
 	}
 
