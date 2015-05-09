@@ -94,6 +94,9 @@ struct MemoryCardFileEntry {
 	bool IsDir()  { return !!( entry.data.mode & 0x0020 ); }
 	bool IsUsed() { return !!( entry.data.mode & 0x8000 ); }
 	bool IsValid() { return entry.data.mode != 0xFFFFFFFF; }
+
+	static const u32 DefaultDirMode = 0x8427;
+	static const u32 DefaultFileMode = 0x8497;
 };
 #pragma pack(pop)
 
@@ -269,7 +272,7 @@ protected:
 	void Flush( const u32 page );
 
 	// flush a directory's file entries and all its subdirectories to the internal data
-	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles );
+	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"" );
 
 	// write data as Save() normally would, but ignore the cache; used for flushing
 	s32 WriteWithoutCache( const u8 *src, u32 adr, int size );
