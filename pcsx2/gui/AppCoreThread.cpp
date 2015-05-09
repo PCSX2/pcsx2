@@ -31,6 +31,7 @@
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"
+#include "Sio.h"
 
 __aligned16 SysMtgsThread mtgsThread;
 __aligned16 AppCoreThread CoreThread;
@@ -381,6 +382,8 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 			}
 		}
 	}
+
+	sioSetGameSerial( curGameKey );
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
 	{

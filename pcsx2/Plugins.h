@@ -242,6 +242,7 @@ public:
 	void McdEraseBlock( uint port, uint slot, u32 adr );
 	u64  McdGetCRC( uint port, uint slot );
 	void McdNextFrame( uint port, uint slot );
+	void McdReIndex( uint port, uint slot, const wxString& filter );
 
 	friend class SysCorePlugins;
 };

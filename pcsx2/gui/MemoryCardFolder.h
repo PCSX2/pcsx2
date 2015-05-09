@@ -169,6 +169,7 @@ public:
 	void Unlock();
 
 	void Open();
+	void Open( const wxString& filter );
 	void Close();
 
 	s32  IsPresent();
@@ -219,7 +220,7 @@ protected:
 
 
 	// loads files and folders from the host file system if a superblock exists in the root directory
-	void LoadMemoryCardData();
+	void LoadMemoryCardData( const wxString& filter );
 
 	// creates the FAT and indirect FAT
 	void CreateFat();
@@ -252,7 +253,7 @@ protected:
 	// adds a folder in the host file system to the memory card, including all files and subdirectories
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
 	// - dirPath: the full path to the directory in the host file system
-	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath );
+	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& filter = L"" );
 
 	// adds a file in the host file sytem to the memory card
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
@@ -313,4 +314,5 @@ public:
 	s32  EraseBlock( uint slot, u32 adr );
 	u64  GetCRC( uint slot );
 	void NextFrame( uint slot );
+	void ReIndex( uint slot, const wxString& filter );
 };

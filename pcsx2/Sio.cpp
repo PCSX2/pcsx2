@@ -879,6 +879,20 @@ void sioNextFrame() {
 	}
 }
 
+// Used to figure out when a new game boots, so that memory cards can re-index themselves and only load data relevant to that game.
+wxString SioCurrentGameSerial = L"";
+void sioSetGameSerial( const wxString& serial ) {
+	if ( serial == SioCurrentGameSerial ) { return; }
+	SioCurrentGameSerial = serial;
+
+	for ( uint port = 0; port < 2; ++port ) {
+		for ( uint slot = 0; slot < 4; ++slot ) {
+			mcds[port][slot].ReIndex( serial );
+		}
+	}
+	SetForceMcdEjectTimeoutNow();
+}
+
 void SaveStateBase::sioFreeze()
 {
 	// CRCs for memory cards.

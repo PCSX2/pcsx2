@@ -47,6 +47,10 @@ bool FolderMemoryCard::IsFormatted() {
 }
 
 void FolderMemoryCard::Open() {
+	Open( L"" );
+}
+
+void FolderMemoryCard::Open( const wxString& filter ) {
 	InitializeInternalData();
 
 	wxFileName configuredFileName( g_Conf->FullpathToMcd( m_slot ) );
@@ -80,7 +84,7 @@ void FolderMemoryCard::Open() {
 	if ( disabled ) return;
 
 	m_isEnabled = true;
-	LoadMemoryCardData();
+	LoadMemoryCardData( filter );
 
 	SetTimeLastWrittenToNow();
 	m_framesUntilFlush = 0;
@@ -98,7 +102,7 @@ void FolderMemoryCard::Close() {
 	}
 }
 
-void FolderMemoryCard::LoadMemoryCardData() {
+void FolderMemoryCard::LoadMemoryCardData( const wxString& filter ) {
 	bool formatted = false;
 
 	// read superblock if it exists
@@ -115,7 +119,7 @@ void FolderMemoryCard::LoadMemoryCardData() {
 		CreateFat();
 		CreateRootDir();
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
-		AddFolder( rootDirEntry, folderName.GetPath() );
+		AddFolder( rootDirEntry, folderName.GetPath(), filter );
 	}
 }
 
@@ -260,7 +264,7 @@ MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( MemoryCardFileEntry
 	return newFileEntry;
 }
 
-bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath ) {
+bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
 		Console.WriteLn( L"(FolderMcd) Adding folder: %s", WX_STR( dirPath ) );
@@ -286,6 +290,14 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 					++entryNumber;
 				}
 			} else {
+				// if possible filter added directories by game serial
+				// this has the effective result of only files relevant to the current game being loaded into the memory card
+				// which means every game essentially sees the memory card as if no other files exist
+				if ( !filter.IsEmpty() && !fileName.Contains( filter ) ) {
+					hasNext = dir.GetNext( &fileName );
+					continue;
+				}
+
 				// make sure we have enough space on the memcard for the directory
 				const u32 newNeededClusters = ( dirEntry->entry.data.length % 2 ) == 0 ? 2 : 1;
 				if ( newNeededClusters > GetAmountFreeDataClusters() ) {
@@ -1029,4 +1041,8 @@ void FolderMemoryCardAggregator::NextFrame( uint slot ) {
 	m_cards[slot].NextFrame();
 }
 
+void FolderMemoryCardAggregator::ReIndex( uint slot, const wxString& filter ) {
+	m_cards[slot].Close();
+	m_cards[slot].Open( filter );
+}
 
