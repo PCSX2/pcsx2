@@ -1112,7 +1112,6 @@ static const char* tfx_fs_all_glsl =
 	"	c.rgb = c.rgb * (Ad + 1.0f);\n"
 	"#elif PS_BLEND == 6\n"
 	"	// {9, D3DBLENDOP_ADD, D3DBLEND_BLENDFACTOR, D3DBLEND_ZERO},				//*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)\n"
-	"	besoin du fix\n"
 	"	c.rgb = c.rgb * (Af.x + 1.0f); // FIXME Not bogus\n"
 	"#elif PS_BLEND == 7\n"
 	"	// {10,D3DBLENDOP_REVSUBTRACT, D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA},		//*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As\n"

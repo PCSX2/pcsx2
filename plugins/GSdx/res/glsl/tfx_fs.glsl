@@ -398,7 +398,6 @@ void ps_blend(inout vec4 c, in float As)
 	c.rgb = c.rgb * (Ad + 1.0f);
 #elif PS_BLEND == 6
 	// {9, D3DBLENDOP_ADD, D3DBLEND_BLENDFACTOR, D3DBLEND_ZERO},				//*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	besoin du fix
 	c.rgb = c.rgb * (Af.x + 1.0f); // FIXME Not bogus
 #elif PS_BLEND == 7
 	// {10,D3DBLENDOP_REVSUBTRACT, D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA},		//*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
