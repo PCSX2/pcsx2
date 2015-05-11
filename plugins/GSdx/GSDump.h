@@ -47,6 +47,7 @@ class GSDump
 {
 	FILE* m_gs;
 	int m_frames;
+	int m_extra_frames;
 
 public:
 	GSDump();

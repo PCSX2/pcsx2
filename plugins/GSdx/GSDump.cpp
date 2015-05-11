@@ -38,6 +38,7 @@ void GSDump::Open(const string& fn, uint32 crc, const GSFreezeData& fd, const GS
 	m_gs = fopen((fn + ".gs").c_str(), "wb");
 
 	m_frames = 0;
+	m_extra_frames = 2;
 
 	if(m_gs)
 	{
@@ -83,9 +84,11 @@ void GSDump::VSync(int field, bool last, const GSPrivRegSet* regs)
 		fputc(1, m_gs);
 		fputc(field, m_gs);
 
-		if((++m_frames & 1) == 0 && last)
+		if((++m_frames & 1) == 0 && last && (m_extra_frames <= 0))
 		{
 			Close();
+		} else if (last) {
+			m_extra_frames--;
 		}
 	}
 }
