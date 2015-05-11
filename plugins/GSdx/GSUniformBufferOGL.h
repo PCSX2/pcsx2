@@ -53,7 +53,7 @@ public:
 
 	void allocate()
 	{
-		gl_BufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STREAM_DRAW);
+		gl_BufferData(GL_UNIFORM_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
 	}
 
 	void attach()
