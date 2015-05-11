@@ -217,6 +217,7 @@ namespace Emulate_DSA {
 	void APIENTRY NamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
 		gl_BindFramebuffer(fb_target, framebuffer);
 		glReadBuffer(src);
+		gl_BindFramebuffer(fb_target, 0);
 	}
 
 	GLenum APIENTRY CheckNamedFramebufferStatus(GLuint framebuffer, GLenum target) {

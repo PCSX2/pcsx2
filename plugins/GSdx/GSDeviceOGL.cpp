@@ -200,6 +200,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	gl_GenFramebuffers(1, &m_fbo);
 	gl_GenFramebuffers(1, &m_fbo_read);
+	// Always read from the first buffer
+	gl_NamedFramebufferReadBuffer(m_fbo_read, GL_COLOR_ATTACHMENT0);
 
 	// ****************************************************************
 	// Vertex buffer state
@@ -688,7 +690,6 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
 
 		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 

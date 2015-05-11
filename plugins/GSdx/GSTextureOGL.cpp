@@ -349,7 +349,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	// Bind the texture to the read framebuffer to avoid any disturbance
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
 	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, PboPool::m_gpu_texture);
@@ -552,8 +551,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	bool status = true;
 
 	if (IsBackbuffer()) {
-		//glReadBuffer(GL_BACK);
-		//gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	} else if(IsDss()) {
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
@@ -574,7 +571,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		if (m_format == GL_RGBA8)
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		else if (m_format == GL_R16UI)
