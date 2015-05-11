@@ -25,7 +25,6 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_texture_upload_byte;
 extern uint64 g_real_texture_upload_byte;
 #endif
 
@@ -271,30 +270,23 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	}
 
 	char* src = (char*)data;
-	char* map = PboPool::Map(r.height() * pitch);
+	uint32 row_byte = r.width() << m_int_shift;
+	uint32 map_size = r.height() * row_byte;
+	char* map = PboPool::Map(map_size);
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-	// Note: pitch is the line size that will be copied into the PBO
-	// pitch >> m_int_shift is the line size that will be actually dma-ed into the GPU
-	g_texture_upload_byte += pitch * r.height();
-	g_real_texture_upload_byte += (r.width() * r.height()) << m_int_shift;
+	g_real_texture_upload_byte += row_byte * r.height();
 #endif
 
-	memcpy(map, src, pitch*r.height());
+	// Note: row_byte != pitch
+	for (int h = 0; h < r.height(); h++) {
+		memcpy(map, src, row_byte);
+		map += row_byte;
+		src += pitch;
+	}
 
 	PboPool::Unmap();
 
-	// Note: reduce noise for gl retracers
-	// It might introduce bug after an emulator pause so always set it in standard mode
-	if (GLLoader::in_replayer) {
-		static int unpack_row_length = 0;
-		if (unpack_row_length != (pitch >> m_int_shift)) {
-			unpack_row_length = pitch >> m_int_shift;
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-		}
-	} else {
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
-	}
 	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 
 	// FIXME OGL4: investigate, only 1 unpack buffer always bound

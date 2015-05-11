@@ -31,7 +31,6 @@
 static uint32 g_draw_count = 0;
 // TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-uint64 g_texture_upload_byte = 0;
 uint64 g_real_texture_upload_byte = 0;
 uint64 g_vertex_upload_byte = 0;
 uint64 g_uniform_upload_byte = 0;

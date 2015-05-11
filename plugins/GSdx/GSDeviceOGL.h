@@ -30,7 +30,6 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_texture_upload_byte;
 extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
 #endif
