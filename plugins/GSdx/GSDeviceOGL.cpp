@@ -430,10 +430,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("Clear RT %d", static_cast<GSTextureOGL*>(t)->GetID());
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("Clear RT %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
@@ -462,10 +459,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("Clear RTi %d", static_cast<GSTextureOGL*>(t)->GetID());
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("Clear RTi %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
@@ -481,10 +475,7 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("Clear Depth %d", static_cast<GSTextureOGL*>(t)->GetID());
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("Clear Depth %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
 
 	OMSetFBO(m_fbo);
 	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
@@ -505,10 +496,7 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("Clear Stencil %d", static_cast<GSTextureOGL*>(t)->GetID());
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("Clear Stencil %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
@@ -686,8 +674,7 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 	const GLuint& did = static_cast<GSTextureOGL*>(dt)->GetID();
 
 #ifdef ENABLE_OGL_DEBUG
-	string helper = format("CopyRect from %d to %d", sid, did);
-	GL_PUSH(helper.c_str());
+	GL_PUSH(format("CopyRect from %d to %d", sid, did).c_str());
 #endif
 
 	if (GLLoader::found_GL_ARB_copy_image) {

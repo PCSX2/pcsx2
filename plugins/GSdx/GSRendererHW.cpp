@@ -317,10 +317,7 @@ void GSRendererHW::Draw()
 		s_n += 3; // Keep it sync with SW renderer
 		return;
 	}
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("HW Draw %d", s_n);
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("HW Draw %d", s_n).c_str());
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;

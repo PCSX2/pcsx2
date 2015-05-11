@@ -212,10 +212,8 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-#ifdef ENABLE_OGL_DEBUG
-	std::string help = format("GL Draw in (%d/%d)", static_cast<GSTextureOGL*>(rt)->GetID(), static_cast<GSTextureOGL*>(ds)->GetID());
-	GL_PUSH(help.c_str());
-#endif
+	GL_PUSH(format("GL Draw in (%d/%d)", static_cast<GSTextureOGL*>(rt)->GetID(), static_cast<GSTextureOGL*>(ds)->GetID()).c_str());
+
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
