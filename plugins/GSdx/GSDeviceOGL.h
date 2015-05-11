@@ -270,6 +270,7 @@ class GSDeviceOGL : public GSDevice
 			MinF_TA = GSVector4::zero();
 			MskFix = GSVector4i::zero();
 			AlphaCoeff = GSVector4::zero();
+			TC_OffsetHack = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
