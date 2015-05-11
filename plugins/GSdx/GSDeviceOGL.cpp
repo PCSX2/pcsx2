@@ -200,7 +200,9 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	gl_GenFramebuffers(1, &m_fbo);
 	gl_GenFramebuffers(1, &m_fbo_read);
 	// Always read from the first buffer
-	gl_NamedFramebufferReadBuffer(m_fbo_read, GL_COLOR_ATTACHMENT0);
+	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 	// ****************************************************************
 	// Vertex buffer state
