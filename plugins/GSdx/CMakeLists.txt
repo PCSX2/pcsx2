@@ -199,17 +199,17 @@ set(GSdxFinalLibs
     ${X11_LIBRARIES}
 )
 
-set(GSdxFinalLibs
-	${GSdxFinalLibs}
+set(GSdxFinalLibs ${GSdxFinalLibs}
 	${OPENGL_LIBRARIES}
-	)
-
-set(GSdxFinalLibs
-    ${GSdxFinalLibs}
     ${EGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
 )
+
+if(PNGPP_FOUND)
+	set(GSdxFinalLibs ${GSdxFinalLibs}
+		"-lpng")
+endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
 if (REBUILD_SHADER)
