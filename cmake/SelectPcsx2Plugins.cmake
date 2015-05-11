@@ -186,14 +186,16 @@ endif()
 #			-JPEG
 #           -common_libs
 #---------------------------------------
-if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
-	set(zzogl TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
-	set(zzogl FALSE)
-else()
-	set(zzogl FALSE)
-    message(STATUS "Skip build of zzogl: miss some dependencies")
-    message(STATUS "${msg_dep_zzogl}")
+if(EXTRA_PLUGINS)
+    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
+        set(zzogl TRUE)
+    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
+        set(zzogl FALSE)
+    else()
+        set(zzogl FALSE)
+        message(STATUS "Skip build of zzogl: miss some dependencies")
+        message(STATUS "${msg_dep_zzogl}")
+    endif()
 endif()
 #---------------------------------------
 

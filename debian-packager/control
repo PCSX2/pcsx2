@@ -1,5 +1,5 @@
 Source: pcsx2.snapshot
-Section: contrib/games
+Section: games
 Priority: optional
 Maintainer: Gregory Hainaut <gregory.hainaut@gmail.com>
 Build-Depends: cmake (>= 2.8.5),
@@ -12,7 +12,6 @@ Build-Depends: cmake (>= 2.8.5),
     libglew-dev,
     libglu1-mesa-dev,
     libgtk2.0-dev (>= 2.16),
-    libjpeg-dev,
     libpulse-dev,
     libsdl1.2-dev,
     libsoundtouch-dev,
@@ -20,8 +19,6 @@ Build-Depends: cmake (>= 2.8.5),
     libwxgtk2.8-dev,
     libx11-dev,
     locales | locales-all,
-# Future: depends on "nvidia-cg-dev" directly
-    libcg, nvidia-cg-toolkit (>= 3),
     portaudio19-dev,
     zlib1g-dev (>= 1:1.2.3.3)
 Standards-Version: 3.9.3
@@ -50,7 +47,7 @@ Description: Playstation 2 emulator
  anyway.
 
 Package: pcsx2-unstable-dbg
-Section: contrib/debug
+Section: debug
 Priority: extra
 Architecture: i386
 Depends: ${misc:Depends}, pcsx2-unstable (= ${binary:Version})
