@@ -289,14 +289,13 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* fba_check        = CreateCheckBox("Alpha correction (FBA)", "fba", true);
 	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", false);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
-	InsertWidgetInTable(hw_table, paltex_check, fba_check);
+	InsertWidgetInTable(hw_table, paltex_check);
 	InsertWidgetInTable(hw_table, acc_blend_check, acc_date_check);
 }
 

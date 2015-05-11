@@ -31,7 +31,6 @@ class GSRendererOGL : public GSRendererHW
 {
 	private:
 		GSVector2 m_pixelcenter;
-		bool m_fba;
 		bool m_accurate_blend;
 		bool m_accurate_date;
 
@@ -50,8 +49,6 @@ class GSRendererOGL : public GSRendererHW
 		virtual ~GSRendererOGL() {};
 
 		bool CreateDevice(GSDevice* dev);
-
-		void UpdateFBA(GSTexture* rt);
 
 		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 

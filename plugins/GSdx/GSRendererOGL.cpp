@@ -27,7 +27,6 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_fba = theApp.GetConfig("fba", 1);
 	m_pixelcenter = GSVector2(-0.5f, -0.5f);
 
 	m_accurate_blend  = theApp.GetConfig("accurate_blend", 0);
@@ -346,11 +345,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	else
 	{
 		om_dssel.ztst = ZTST_ALWAYS;
-	}
-
-	if(m_fba)
-	{
-		om_dssel.fba = context->FBA.FBA;
 	}
 
 	// vs
@@ -712,10 +706,5 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->EndScene();
 
-	if(om_dssel.fba) UpdateFBA(rt);
 	GL_POP();
-}
-
-void GSRendererOGL::UpdateFBA(GSTexture* rt)
-{
 }

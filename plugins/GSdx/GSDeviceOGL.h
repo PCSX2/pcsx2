@@ -369,22 +369,21 @@ class GSDeviceOGL : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
-				uint32 fba:1;
 				uint32 alpha_stencil:1;
 
-				uint32 _free:26;
+				uint32 _free:27;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key & 0x1f;}
 
 		OMDepthStencilSelector() : key(0) {}
 		OMDepthStencilSelector(uint32 k) : key(k) {}
 
-		static uint32 size() { return 1 << 6; }
+		static uint32 size() { return 1 << 5; }
 	};
 
 	struct OMColorMaskSelector
