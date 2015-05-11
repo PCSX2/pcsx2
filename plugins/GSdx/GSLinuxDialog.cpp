@@ -292,6 +292,11 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", false);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
 
+	// Some helper string
+	gtk_widget_set_tooltip_text(paltex_check, dialog_message(IDC_PALTEX));
+	gtk_widget_set_tooltip_text(acc_blend_check, dialog_message(IDC_ACCURATE_BLEND));
+	gtk_widget_set_tooltip_text(acc_date_check, dialog_message(IDC_ACCURATE_DATE));
+
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);

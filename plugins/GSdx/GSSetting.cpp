@@ -92,6 +92,19 @@ const char* dialog_message(int ID, bool* updateText) {
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
 				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)\n";
 
+#ifdef __linux__
+		case IDC_PALTEX:
+			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion. "
+				"(Note it was never tested on openGL)\n\n"
+				"When uncheked the CPU will convert directly the texture to 32 bits\n\n"
+				"It is a basically a trade-off between GPU/CPU";
+		case IDC_ACCURATE_DATE:
+			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
+				"It could be slower when the effects are used.\n\nNote: it requires the 4.2 openGL extension GL_ARB_shader_image_load_store";
+		case IDC_ACCURATE_BLEND:
+			return "Allow to solve the impossible blending error message.\n\n"
+				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
+#endif
 		default:
 			if (updateText)
 				*updateText = false;
