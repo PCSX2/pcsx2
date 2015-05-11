@@ -38,6 +38,10 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
+if(PNGPP_FOUND)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DPNGPP_SUPPORTED)
+endif()
+
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)

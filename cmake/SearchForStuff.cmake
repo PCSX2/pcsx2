@@ -72,6 +72,7 @@ endif()
 check_lib(EGL EGL EGL/egl.h)
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
+check_lib(PNGPP FALSE png++/png.hpp)
 
 if(SDL2_API)
     check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
