@@ -21,29 +21,10 @@
 
 #include "GSWnd.h"
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(EGL_SUPPORTED)
 #include <X11/Xlib.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-
-// Need at least MESA 9.0 (plan for october/november 2012)
-// So force the destiny to at least check the compilation
-#ifndef EGL_KHR_create_context
-#define EGL_KHR_create_context 1
-#define EGL_CONTEXT_MAJOR_VERSION_KHR			    EGL_CONTEXT_CLIENT_VERSION
-#define EGL_CONTEXT_MINOR_VERSION_KHR			    0x30FB
-#define EGL_CONTEXT_FLAGS_KHR				    0x30FC
-#define EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR		    0x30FD
-#define EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_KHR  0x31BD
-#define EGL_NO_RESET_NOTIFICATION_KHR			    0x31BE
-#define EGL_LOSE_CONTEXT_ON_RESET_KHR			    0x31BF
-#define EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR		    0x00000001
-#define EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR	    0x00000002
-#define EGL_CONTEXT_OPENGL_ROBUST_ACCESS_BIT_KHR	    0x00000004
-#define EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR		    0x00000001
-#define EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR    0x00000002
-#endif
-
 
 class GSWndEGL : public GSWndGL
 {

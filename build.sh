@@ -57,7 +57,7 @@ for ARG in "$@"; do
             echo "** Developer option **"
             echo "--wx28          : Force wxWidget 2.8"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
-            echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
+            echo "--egl           : Replace GLX by EGL (ZZogl/GSdx plugins)"
             echo "--sdl2          : Build with SDL2 (crashes if wx is linked to SDL1.2)"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
             echo

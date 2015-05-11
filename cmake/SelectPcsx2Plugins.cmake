@@ -144,7 +144,7 @@ endif()
 # requires: -OpenGL
 #			-X11
 #---------------------------------------
-if(OPENGL_FOUND AND X11_FOUND AND EGL_FOUND AND GTKn_FOUND)
+if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND (EGL_FOUND OR NOT EGL_API))
     set(GSdx TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
 	set(GSdx FALSE)
