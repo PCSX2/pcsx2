@@ -49,6 +49,7 @@ class GSTextureOGL : public GSTexture
 		int m_pbo_size;
 		GLuint m_fbo_read;
 		bool m_dirty;
+		bool m_clean;
 
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
@@ -78,4 +79,6 @@ class GSTextureOGL : public GSTexture
 
 		uint32 GetID() { return m_texture_id; }
 		GLuint64 GetHandle(GLuint sampler_id);
+		bool HasBeenCleaned();
+		void WasAttached() { m_clean = false; m_dirty = true; }
 };

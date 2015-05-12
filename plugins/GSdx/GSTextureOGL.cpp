@@ -164,7 +164,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_dirty(false)
+	: m_pbo_size(0), m_dirty(false), m_clean(false)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -246,8 +246,16 @@ GSTextureOGL::~GSTextureOGL()
 
 void GSTextureOGL::Invalidate()
 {
-	if (m_dirty && gl_InvalidateTexImage)
+	if (m_dirty && gl_InvalidateTexImage) {
 		gl_InvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
+		m_dirty = false;
+	}
+}
+
+bool GSTextureOGL::HasBeenCleaned() {
+	bool old = m_clean;
+	m_clean = true;
+	return old;
 }
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
@@ -256,6 +264,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	GL_PUSH(format("Upload Texture %d", m_texture_id).c_str());
 
 	m_dirty = true;
+	m_clean = false;
 
 	// Note: reduce noise for gl retracers
 	// It might introduce bug after an emulator pause so always set it in standard mode
