@@ -433,7 +433,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-	GL_PUSH(format("Clear RT %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
+	GL_PUSH(format("Clear RT %d", t->GetID()).c_str());
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
@@ -445,7 +445,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	} else {
 		OMSetFBO(m_fbo);
-		OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
+		OMAttachRt(t->GetID());
 
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	}
@@ -462,14 +462,14 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
-	GL_PUSH(format("Clear RTi %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
+	GL_PUSH(format("Clear RTi %d", t->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	int32 col[4] = {c, c, c, c};
 
 	OMSetFBO(m_fbo);
-	OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
+	OMAttachRt(t->GetID());
 
 	gl_ClearBufferiv(GL_COLOR, 0, col);
 
@@ -478,10 +478,10 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
-	GL_PUSH(format("Clear Depth %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
+	GL_PUSH(format("Clear Depth %d", t->GetID()).c_str());
 
 	OMSetFBO(m_fbo);
-	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
+	OMAttachDs(t->GetID());
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
@@ -499,12 +499,12 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
-	GL_PUSH(format("Clear Stencil %d", static_cast<GSTextureOGL*>(t)->GetID()).c_str());
+	GL_PUSH(format("Clear Stencil %d", t->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
-	OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
+	OMAttachDs(t->GetID());
 	GLint color = c;
 
 	gl_ClearBufferiv(GL_STENCIL, 0, &color);
@@ -566,7 +566,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	// Clean with the max signed value
 	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
-	gl_BindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+	gl_BindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 }
 
 void GSDeviceOGL::RecycleDateTexture()
@@ -673,8 +673,8 @@ void GSDeviceOGL::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
 {
 	ASSERT(st && dt);
 
-	const GLuint& sid = static_cast<GSTextureOGL*>(st)->GetID();
-	const GLuint& did = static_cast<GSTextureOGL*>(dt)->GetID();
+	const GLuint& sid = st->GetID();
+	const GLuint& did = dt->GetID();
 
 #ifdef ENABLE_OGL_DEBUG
 	GL_PUSH(format("CopyRect from %d to %d", sid, did).c_str());
@@ -718,9 +718,7 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		return;
 	}
 
-	GL_PUSH(format("StretchRect from %d to %d",
-				static_cast<GSTextureOGL*>(st)->GetID(),
-				static_cast<GSTextureOGL*>(dt)->GetID()).c_str());
+	GL_PUSH(format("StretchRect from %d to %d", st->GetID(), dt->GetID()).c_str());
 
 	// ************************************
 	// Init
@@ -1019,7 +1017,7 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
+	GLuint id = sr->GetID();
 	if (GLState::tex_unit[i] != id) {
 		GLState::tex_unit[i] = id;
 		gl_BindTextureUnit(i, id);
@@ -1107,7 +1105,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if (rt == NULL || !static_cast<GSTextureOGL*>(rt)->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
-			OMAttachRt(static_cast<GSTextureOGL*>(rt)->GetID());
+			OMAttachRt(rt->GetID());
 		} else {
 			// Note: NULL rt is only used in DATE so far.
 			OMAttachRt(0);
@@ -1115,7 +1113,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 
 		// Note: it must be done after OMSetFBO
 		if (ds)
-			OMAttachDs(static_cast<GSTextureOGL*>(ds)->GetID());
+			OMAttachDs(ds->GetID());
 		else
 			OMAttachDs(0);
 
