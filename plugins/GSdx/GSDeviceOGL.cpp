@@ -718,7 +718,9 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		return;
 	}
 
-	GL_PUSH("StretchRect");
+	GL_PUSH(format("StretchRect from %d to %d",
+				static_cast<GSTextureOGL*>(st)->GetID(),
+				static_cast<GSTextureOGL*>(dt)->GetID()).c_str());
 
 	// ************************************
 	// Init
