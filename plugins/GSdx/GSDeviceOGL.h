@@ -541,8 +541,8 @@ class GSDeviceOGL : public GSDevice
 	void DoShadeBoost(GSTexture* st, GSTexture* dt);
 	void DoExternalFX(GSTexture* st, GSTexture* dt);
 
-	void OMAttachRt(GLuint rt);
-	void OMAttachDs(GLuint ds);
+	void OMAttachRt(GSTextureOGL* rt = NULL);
+	void OMAttachDs(GSTextureOGL* ds = NULL);
 	void OMSetFBO(GLuint fbo);
 
 	public:

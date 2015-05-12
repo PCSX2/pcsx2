@@ -433,11 +433,15 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-	GL_PUSH(format("Clear RT %d", t->GetID()).c_str());
+	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
+	if (T->HasBeenCleaned())
+		return;
+
+	GL_PUSH(format("Clear RT %d", T->GetID()).c_str());
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
-	if (static_cast<GSTextureOGL*>(t)->IsBackbuffer()) {
+	if (T->IsBackbuffer()) {
 		OMSetFBO(0);
 
 		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
@@ -445,7 +449,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	} else {
 		OMSetFBO(m_fbo);
-		OMAttachRt(t->GetID());
+		OMAttachRt(T);
 
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	}
@@ -462,14 +466,16 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
-	GL_PUSH(format("Clear RTi %d", t->GetID()).c_str());
+	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
+
+	GL_PUSH(format("Clear RTi %d", T->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	int32 col[4] = {c, c, c, c};
 
 	OMSetFBO(m_fbo);
-	OMAttachRt(t->GetID());
+	OMAttachRt(T);
 
 	gl_ClearBufferiv(GL_COLOR, 0, col);
 
@@ -478,10 +484,12 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
-	GL_PUSH(format("Clear Depth %d", t->GetID()).c_str());
+	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
+
+	GL_PUSH(format("Clear Depth %d", T->GetID()).c_str());
 
 	OMSetFBO(m_fbo);
-	OMAttachDs(t->GetID());
+	OMAttachDs(T);
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
@@ -499,12 +507,14 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
-	GL_PUSH(format("Clear Stencil %d", t->GetID()).c_str());
+	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
+
+	GL_PUSH(format("Clear Stencil %d", T->GetID()).c_str());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
-	OMAttachDs(t->GetID());
+	OMAttachDs(T);
 	GLint color = c;
 
 	gl_ClearBufferiv(GL_STENCIL, 0, &color);
@@ -1038,19 +1048,35 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 	}
 }
 
-void GSDeviceOGL::OMAttachRt(GLuint rt)
+void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
-	if (GLState::rt != rt) {
-		GLState::rt = rt;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt, 0);
+	GLuint id;
+	if (rt) {
+		rt->WasAttached();
+		id = rt->GetID();
+	} else {
+		id = 0;
+	}
+
+	if (GLState::rt != id) {
+		GLState::rt = id;
+		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
 	}
 }
 
-void GSDeviceOGL::OMAttachDs(GLuint ds)
+void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 {
-	if (GLState::ds != ds) {
-		GLState::ds = ds;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ds, 0);
+	GLuint id;
+	if (ds) {
+		ds->WasAttached();
+		id = ds->GetID();
+	} else {
+		id = 0;
+	}
+
+	if (GLState::ds != id) {
+		GLState::ds = id;
+		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
 	}
 }
 
@@ -1102,20 +1128,23 @@ void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
-	if (rt == NULL || !static_cast<GSTextureOGL*>(rt)->IsBackbuffer()) {
+	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
+	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
+
+	if (rt == NULL || !RT->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
-			OMAttachRt(rt->GetID());
+			OMAttachRt(RT);
 		} else {
 			// Note: NULL rt is only used in DATE so far.
-			OMAttachRt(0);
+			OMAttachRt();
 		}
 
 		// Note: it must be done after OMSetFBO
 		if (ds)
-			OMAttachDs(ds->GetID());
+			OMAttachDs(DS);
 		else
-			OMAttachDs(0);
+			OMAttachDs();
 
 	} else {
 		// Render in the backbuffer
