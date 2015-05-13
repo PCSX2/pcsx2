@@ -81,6 +81,7 @@ bool rx_fifo_can_rx()
 	//we can recv a packet !
 	return true;
 }
+bool fireIntR = false;
 void rx_process(NetPacket* pk)
 {
 	if (!rx_fifo_can_rx())
@@ -118,7 +119,8 @@ void rx_process(NetPacket* pk)
 	//increase frame count
 	dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)++;
 	//spams// emu_printf("Got packet, %d bytes (%d fifo)\n", pk->size,bytes);
-	_DEV9irq(SMAP_INTR_RXEND,0);//now ? or when the fifo is full ? i guess now atm
+	fireIntR = true;
+	//_DEV9irq(SMAP_INTR_RXEND,0);//now ? or when the fifo is full ? i guess now atm
 								//note that this _is_ wrong since the IOP interrupt system is not thread safe.. but nothing i can do about that
 }
 
@@ -838,5 +840,14 @@ void CALLBACK smap_writeDMA8Mem(u32* pMem, int size)
 
 		dev9Ru16(SMAP_R_TXFIFO_CTRL) &= ~SMAP_TXFIFO_DMAEN;
 
+	}
+}
+void CALLBACK smap_async(u32 cycles)
+{
+	if (fireIntR)
+	{
+		fireIntR = false; //Thread unsafe?
+		//Is this used to signal each individual packet, or just when there are packets in the RX fifo?
+		_DEV9irq(SMAP_INTR_RXEND, 0); //Make the call to _DEV9irq in a thread safe way
 	}
 }
