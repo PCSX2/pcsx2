@@ -338,6 +338,25 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				m_src.RemoveAt(s);
 			}
 		}
+
+		if ((bw == 20) && (psm == 2)) {
+			// try to detect render target bigger than 1024 Texels
+			uint32 bbp = bp + 0x140;
+
+			const list<Source*>& m = m_src.m_map[bbp >> 5];
+
+			for(list<Source*>::const_iterator i = m.begin(); i != m.end(); )
+			{
+				list<Source*>::const_iterator j = i++;
+
+				Source* s = *j;
+
+				if(GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
+				{
+					m_src.RemoveAt(s);
+				}
+			}
+		}
 	}
 
 	GSVector4i r;
