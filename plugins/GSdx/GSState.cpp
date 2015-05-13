@@ -3412,6 +3412,15 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_SMTNocturne(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0 && fi.TBP0 == 0xE00)
+	{
+		skip = 1;
+	}
+	return true;
+}
+
 bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -5460,6 +5469,7 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::UrbanReign] = GSC_UrbanReign;
 		map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 		map[CRC::SacredBlaze] = GSC_SacredBlaze;
+		map[CRC::SMTNocturne] = GSC_SMTNocturne;
 	}
 
 	// TODO: just set gsc in SetGameCRC once
