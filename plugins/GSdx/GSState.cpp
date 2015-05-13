@@ -2993,7 +2993,6 @@ struct GSFrameInfo
 	uint32 TBP0;
 	uint32 TPSM;
 	uint32 TZTST;
-	bool opaque;
 	bool TME;
 };
 
@@ -3413,25 +3412,16 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SMTNocturne(const GSFrameInfo& fi, int& skip)
+template<uintptr_t state_addr>
+bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
-	if(skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
+	// Nocturne:
+	// -0x5900($gp), ref at 0x100740
+	const int state = *(int*)(state_addr);
+
+	if(skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24))
 	{
-		// Entering battle, delay until sequence is over
-		static int delay_skip = 0;
-		if(fi.opaque)
-		{
-			delay_skip = 100;
-			return true;
-		}
-		else if(delay_skip > 0)
-		{
-			delay_skip--;
-		}
-		else
-		{
-			skip = 1;
-		}
+		skip = 1;
 	}
 	return true;
 }
@@ -5358,7 +5348,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TBP0 = m_context->TEX0.TBP0;
 	fi.TPSM = m_context->TEX0.PSM;
 	fi.TZTST = m_context->TEST.ZTST;
-	fi.opaque = m_context->ALPHA.IsOpaque();
 
 	static GetSkipCount map[CRC::TitleCount];
 	static bool inited = false;
@@ -5485,7 +5474,8 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::UrbanReign] = GSC_UrbanReign;
 		map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 		map[CRC::SacredBlaze] = GSC_SacredBlaze;
-		map[CRC::SMTNocturne] = GSC_SMTNocturne;
+		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 	}
 
 	// TODO: just set gsc in SetGameCRC once
@@ -5493,6 +5483,9 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	GetSkipCount gsc = map[m_game.title];
 	g_crc_region = m_game.region;
 	g_aggressive = UserHacks_AggressiveCRC;
+
+	if(m_game.title == 0)
+		skip = 1000;
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
