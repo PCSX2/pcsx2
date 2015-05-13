@@ -128,12 +128,29 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	if(src == NULL)
 	{
+#ifdef ENABLE_OGL_DEBUG
+		if (dst) {
+			GL_CACHE(format("TC: dst hit: %d (%x)",
+						dst->m_texture ? dst->m_texture->GetID() : 0,
+						TEX0.TBP0
+						).c_str());
+		} else {
+			GL_CACHE(format("TC: src miss (%x)", TEX0.TBP0).c_str());
+		}
+#endif
 		src = CreateSource(TEX0, TEXA, dst);
 
 		if(src == NULL)
 		{
 			return NULL;
 		}
+#ifdef ENABLE_OGL_DEBUG
+	} else {
+		GL_CACHE(format("TC: src hit: %d (%x)",
+					src->m_texture ? src->m_texture->GetID() : 0,
+					TEX0.TBP0
+					).c_str());
+#endif
 	}
 
 	if (src->m_palette)
@@ -362,7 +379,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 					s->m_complete = false;
 
-					found = b;
+					found |= b;
 				}
 				else
 				{
@@ -718,7 +735,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSVector4 sr(0, 0, w, h);
 
 		GSTexture* st = src->m_texture ? src->m_texture : dst->m_texture;
-		GSTexture *dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
+		GSTexture* dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
@@ -1249,6 +1266,10 @@ void GSTextureCache::SourceMap::RemoveAll()
 void GSTextureCache::SourceMap::RemoveAt(Source* s)
 {
 	m_surfaces.erase(s);
+
+	GL_CACHE(format("TC: remove texture %d (%x)",
+				s->m_texture ? s->m_texture->GetID() : 0,
+				s->m_TEX0.TBP0).c_str());
 
 	// Source (except render target) is duplicated for each page they use.
 	for(size_t start = s->m_TEX0.TBP0 >> 5, end = s->m_target ? start : countof(m_map) - 1; start <= end; start++)

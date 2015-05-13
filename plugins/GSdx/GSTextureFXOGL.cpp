@@ -29,6 +29,8 @@ static const uint32 g_gs_cb_index = 22;
 
 void GSDeviceOGL::CreateTextureFX()
 {
+	GL_PUSH("CreateTextureFX");
+
 	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
 
@@ -67,6 +69,8 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
+
+	GL_POP();
 }
 
 GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)

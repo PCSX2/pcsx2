@@ -30,7 +30,6 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_texture_upload_byte;
 extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
 #endif
@@ -542,8 +541,8 @@ class GSDeviceOGL : public GSDevice
 	void DoShadeBoost(GSTexture* st, GSTexture* dt);
 	void DoExternalFX(GSTexture* st, GSTexture* dt);
 
-	void OMAttachRt(GLuint rt);
-	void OMAttachDs(GLuint ds);
+	void OMAttachRt(GSTextureOGL* rt = NULL);
+	void OMAttachDs(GSTextureOGL* ds = NULL);
 	void OMSetFBO(GLuint fbo);
 
 	public:

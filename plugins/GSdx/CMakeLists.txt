@@ -18,9 +18,7 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
-set(OptimizationFlags
-    -O2
-    )
+set(OptimizationFlags -O2)
 
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -40,6 +38,10 @@ endif()
 
 if(PNGPP_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DPNGPP_SUPPORTED)
+endif()
+
+if(EGL_API AND EGL_FOUND)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
 endif()
 
 #Clang doesn't support a few common flags that GCC does.
@@ -201,10 +203,15 @@ set(GSdxFinalLibs
 
 set(GSdxFinalLibs ${GSdxFinalLibs}
 	${OPENGL_LIBRARIES}
-    ${EGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
 )
+
+if(EGL_API AND EGL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs}
+        ${EGL_LIBRARIES}
+        )
+endif()
 
 if(PNGPP_FOUND)
 	set(GSdxFinalLibs ${GSdxFinalLibs}

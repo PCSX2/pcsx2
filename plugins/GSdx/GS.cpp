@@ -292,7 +292,11 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			}
 #else
 			wnd[0] = new GSWndOGL();
+#ifdef EGL_SUPPORTED
 			wnd[1] = new GSWndEGL();
+#else
+			wnd[1] = NULL;
+#endif
 #endif
 		}
 	}
@@ -1669,8 +1673,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		}
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		total_frame_nb *= 1024;
-		fprintf(stderr, "memory bandwith. T: %f KB/f. RT: %f KB/f. V: %f KB/f. U: %f KB/f\n",
-				(float)g_texture_upload_byte/(float)total_frame_nb,
+		fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
 				(float)g_real_texture_upload_byte/(float)total_frame_nb,
 				(float)g_vertex_upload_byte/(float)total_frame_nb,
 				(float)g_uniform_upload_byte/(float)total_frame_nb

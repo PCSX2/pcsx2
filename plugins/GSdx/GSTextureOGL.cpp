@@ -25,7 +25,6 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_texture_upload_byte;
 extern uint64 g_real_texture_upload_byte;
 #endif
 
@@ -165,7 +164,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_dirty(false)
+	: m_pbo_size(0), m_dirty(false), m_clean(false)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -247,8 +246,16 @@ GSTextureOGL::~GSTextureOGL()
 
 void GSTextureOGL::Invalidate()
 {
-	if (m_dirty && gl_InvalidateTexImage)
+	if (m_dirty && gl_InvalidateTexImage) {
 		gl_InvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
+		m_dirty = false;
+	}
+}
+
+bool GSTextureOGL::HasBeenCleaned() {
+	bool old = m_clean;
+	m_clean = true;
+	return old;
 }
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
@@ -257,6 +264,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	GL_PUSH(format("Upload Texture %d", m_texture_id).c_str());
 
 	m_dirty = true;
+	m_clean = false;
 
 	// Note: reduce noise for gl retracers
 	// It might introduce bug after an emulator pause so always set it in standard mode
@@ -271,30 +279,23 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	}
 
 	char* src = (char*)data;
-	char* map = PboPool::Map(r.height() * pitch);
+	uint32 row_byte = r.width() << m_int_shift;
+	uint32 map_size = r.height() * row_byte;
+	char* map = PboPool::Map(map_size);
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-	// Note: pitch is the line size that will be copied into the PBO
-	// pitch >> m_int_shift is the line size that will be actually dma-ed into the GPU
-	g_texture_upload_byte += pitch * r.height();
-	g_real_texture_upload_byte += (r.width() * r.height()) << m_int_shift;
+	g_real_texture_upload_byte += row_byte * r.height();
 #endif
 
-	memcpy(map, src, pitch*r.height());
+	// Note: row_byte != pitch
+	for (int h = 0; h < r.height(); h++) {
+		memcpy(map, src, row_byte);
+		map += row_byte;
+		src += pitch;
+	}
 
 	PboPool::Unmap();
 
-	// Note: reduce noise for gl retracers
-	// It might introduce bug after an emulator pause so always set it in standard mode
-	if (GLLoader::in_replayer) {
-		static int unpack_row_length = 0;
-		if (unpack_row_length != (pitch >> m_int_shift)) {
-			unpack_row_length = pitch >> m_int_shift;
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-		}
-	} else {
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
-	}
 	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 
 	// FIXME OGL4: investigate, only 1 unpack buffer always bound
@@ -349,7 +350,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	// Bind the texture to the read framebuffer to avoid any disturbance
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
 	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, PboPool::m_gpu_texture);
@@ -552,8 +552,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	bool status = true;
 
 	if (IsBackbuffer()) {
-		//glReadBuffer(GL_BACK);
-		//gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	} else if(IsDss()) {
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
@@ -574,7 +572,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		if (m_format == GL_RGBA8)
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		else if (m_format == GL_R16UI)
