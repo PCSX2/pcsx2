@@ -110,7 +110,7 @@ protected:
 	int m_spritehack;
 	uint8* m_temp;
 
-	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL);
+	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
 
 	virtual int Get8bitFormat() = 0;
