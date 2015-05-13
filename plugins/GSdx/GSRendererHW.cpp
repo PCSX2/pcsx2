@@ -34,22 +34,37 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
+}
 
-	if(!m_nativeres)
+void GSRendererHW::SetScaling(){
+	int env = IsEnabled(1) ? 1 : 0;
+
+	m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
+
+	if (m_upscale_multiplier < 6 && (m_width / m_upscale_multiplier) != (m_buffer_size * 64)){
+		printf("Frame buffer width on vsync %d m_width %d\n", m_buffer_size, (m_width / m_upscale_multiplier));
+		m_tc->RemovePartial();
+	}
+	else {
+		return;
+	}
+
+	if (!m_nativeres)
 	{
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 
 		m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
 
-		if(m_upscale_multiplier > 6)
+		if (m_upscale_multiplier > 6)
 		{
 			m_upscale_multiplier = 1; // use the normal upscale math
 		}
-		else if(m_upscale_multiplier > 1)
+		else if (m_upscale_multiplier > 1)
 		{
-			m_width = 640 * m_upscale_multiplier; // 512 is also common, but this is not always detected right.
-			m_height = 512 * m_upscale_multiplier; // 448 is also common, but this is not always detected right.
+			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
+			m_height = m_width; //Keep it square
+			
 		}
 	}
 	else
@@ -59,9 +74,15 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 	if (m_upscale_multiplier == 1) {
 		// No upscaling hack at native resolution
+		if (m_nativeres) {
+			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
+			m_height = m_width; //Keep it square
+		}
+
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = 0;
 	}
+	printf("Frame buffer width %d m_width set to %d multiplier %d", m_buffer_size, m_width, m_upscale_multiplier);
 }
 
 GSRendererHW::~GSRendererHW()
@@ -74,11 +95,6 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 	GSRenderer::SetGameCRC(crc, options);
 
 	m_hacks.SetGameCRC(m_game);
-
-	if(m_game.title == CRC::JackieChanAdv)
-	{
-		m_width = 1280; // TODO: uses a 1280px wide 16 bit render target, but this only fixes half of the problem
-	}
 }
 
 bool GSRendererHW::CanUpscale()
@@ -108,6 +124,9 @@ void GSRendererHW::Reset()
 
 void GSRendererHW::VSync(int field)
 {
+	//Check if the frame buffer width or display width has changed
+	SetScaling();
+
 	if(m_reset)
 	{
 		m_tc->RemoveAll();

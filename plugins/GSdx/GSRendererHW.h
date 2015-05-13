@@ -25,6 +25,7 @@
 #include "GSTextureCache.h"
 #include "GSCrc.h"
 #include "GSFunctionMap.h"
+#include "GSState.h"
 
 class GSRendererHW : public GSRenderer
 {
@@ -34,6 +35,7 @@ private:
 	int m_skip;
 	bool m_reset;
 	int m_upscale_multiplier;
+	int m_buffer_size;
 	int m_userhacks_skipdraw;
 
 	bool m_userhacks_align_sprite_X;
@@ -151,6 +153,7 @@ public:
 	void SetGameCRC(uint32 crc, int options);
 	bool CanUpscale();
 	int GetUpscaleMultiplier();
+	void SetScaling();
 
 	void Reset();
 	void VSync(int field);

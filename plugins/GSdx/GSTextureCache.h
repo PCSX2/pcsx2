@@ -99,6 +99,7 @@ public:
 
 		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* off);
 		void RemoveAll();
+		void RemovePartial();
 		void RemoveAt(Source* s);
 	};
 
@@ -128,6 +129,7 @@ public:
 	virtual void Read(Target* t, const GSVector4i& r) = 0;
 #endif
 	void RemoveAll();
+	void RemovePartial();
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);

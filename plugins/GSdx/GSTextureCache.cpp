@@ -40,6 +40,18 @@ GSTextureCache::~GSTextureCache()
 	_aligned_free(m_temp);
 }
 
+void GSTextureCache::RemovePartial()
+{
+	//m_src.RemoveAll();
+
+	for (int type = 0; type < 2; type++)
+	{
+		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+
+		m_dst[type].clear();
+	}
+}
+
 void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
