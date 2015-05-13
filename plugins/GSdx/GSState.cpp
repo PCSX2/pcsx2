@@ -3419,7 +3419,7 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// -0x5900($gp), ref at 0x100740
 	const int state = *(int*)(state_addr);
 
-	if(skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24))
+	if(g_crc_region == CRC::US && g_aggressive && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
 	{
 		skip = 1;
 	}
@@ -5476,6 +5476,7 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::SacredBlaze] = GSC_SacredBlaze;
 		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
+		map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 	}
 
 	// TODO: just set gsc in SetGameCRC once
