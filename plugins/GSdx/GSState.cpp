@@ -3412,7 +3412,7 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-template<uintptr_t state_addr>
+template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
 	// Nocturne:
