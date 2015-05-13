@@ -2993,6 +2993,7 @@ struct GSFrameInfo
 	uint32 TBP0;
 	uint32 TPSM;
 	uint32 TZTST;
+	bool opaque;
 	bool TME;
 };
 
@@ -3414,9 +3415,23 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 
 bool GSC_SMTNocturne(const GSFrameInfo& fi, int& skip)
 {
-	if(skip == 0 && fi.TBP0 == 0xE00)
+	if(skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
 	{
-		skip = 1;
+		// Entering battle, delay until sequence is over
+		static int delay_skip = 0;
+		if(fi.opaque)
+		{
+			delay_skip = 100;
+			return true;
+		}
+		else if(delay_skip > 0)
+		{
+			delay_skip--;
+		}
+		else
+		{
+			skip = 1;
+		}
 	}
 	return true;
 }
@@ -5343,6 +5358,7 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TBP0 = m_context->TEX0.TBP0;
 	fi.TPSM = m_context->TEX0.PSM;
 	fi.TZTST = m_context->TEST.ZTST;
+	fi.opaque = m_context->ALPHA.IsOpaque();
 
 	static GetSkipCount map[CRC::TitleCount];
 	static bool inited = false;
