@@ -5484,9 +5484,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	g_crc_region = m_game.region;
 	g_aggressive = UserHacks_AggressiveCRC;
 
-	if(m_game.title == 0)
-		skip = 1000;
-
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
 #endif
