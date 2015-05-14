@@ -266,17 +266,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	m_dirty = true;
 	m_clean = false;
 
-	// Note: reduce noise for gl retracers
-	// It might introduce bug after an emulator pause so always set it in standard mode
-	if (GLLoader::in_replayer) {
-		static uint32 unpack_alignment = 0;
-		if (unpack_alignment != m_int_alignment) {
-			unpack_alignment = m_int_alignment;
-			glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
-		}
-	} else {
-		glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
-	}
+	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 
 	char* src = (char*)data;
 	uint32 row_byte = r.width() << m_int_shift;
@@ -284,7 +274,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	char* map = PboPool::Map(map_size);
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-	g_real_texture_upload_byte += row_byte * r.height();
+	g_real_texture_upload_byte += map_size;
 #endif
 
 	// Note: row_byte != pitch
