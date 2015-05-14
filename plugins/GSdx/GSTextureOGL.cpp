@@ -48,6 +48,14 @@ namespace PboPool {
 	const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
+	// Perf impact (test was only done on a gs dump):
+	// Normal (fast): Message:Buffer detailed info: Buffer object 9 (bound to
+	//	GL_PIXEL_UNPACK_BUFFER_ARB, usage hint is GL_STREAM_COPY) will use VIDEO
+	//	memory as the source for buffer object operations.
+	//
+	// Persistent (slower): Message:Buffer detailed info: Buffer object 8
+	//	(bound to GL_PIXEL_UNPACK_BUFFER_ARB, usage hint is GL_DYNAMIC_DRAW)
+	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
 		gl_GenBuffers(countof(m_pool), m_pool);
 		m_texture_storage  = ((theApp.GetConfig("ogl_texture_storage", 0) == 1) && GLLoader::found_GL_ARB_buffer_storage);
@@ -119,9 +127,7 @@ namespace PboPool {
 
 	void Unmap() {
 		if (m_texture_storage) {
-			// As far as I understand glTexSubImage2D is a client-server transfer so no need to make
-			// the value visible to the server
-			//gl_MemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+			gl_FlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
 		} else {
 			gl_UnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 		}
