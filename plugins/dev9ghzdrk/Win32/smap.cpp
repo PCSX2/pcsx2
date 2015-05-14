@@ -81,7 +81,7 @@ bool rx_fifo_can_rx()
 	//we can recv a packet !
 	return true;
 }
-bool fireIntR = false;
+volatile bool fireIntR = false;
 void rx_process(NetPacket* pk)
 {
 	if (!rx_fifo_can_rx())
