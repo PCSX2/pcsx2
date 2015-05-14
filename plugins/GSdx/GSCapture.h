@@ -33,7 +33,7 @@
 class GSCapture
 {
 #ifdef _CX11_
-	std::mutex m_lock;
+	std::recursive_mutex m_lock;
 #else
 	GSCritSec m_lock;
 #endif
