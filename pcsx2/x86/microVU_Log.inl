@@ -99,6 +99,10 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 			mVUlog(")");
 		}
 
+		if (mVUstall) {
+			mVUlog(" Stall %d Cycles", mVUstall);
+		}
+
 		iPC = i;
 		mVU.code = prog.data[i];
 
