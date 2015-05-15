@@ -411,6 +411,7 @@ class GSDeviceOGL : public GSDevice
 		operator uint32() {return key & 0xf;}
 
 		OMColorMaskSelector() : key(0xF) {}
+		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
 	struct OMBlendSelector

@@ -441,6 +441,10 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
+
+	uint32 old_color_mask = GLState::wrgba;
+	OMSetColorMaskState();
+
 	if (T->IsBackbuffer()) {
 		OMSetFBO(0);
 
@@ -453,6 +457,9 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
 	}
+
+	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+
 	glEnable(GL_SCISSOR_TEST);
 
 	GL_POP();
@@ -470,6 +477,9 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 
 	GL_PUSH(format("Clear RTi %d", T->GetID()).c_str());
 
+	uint32 old_color_mask = GLState::wrgba;
+	OMSetColorMaskState();
+
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
 	int32 col[4] = {c, c, c, c};
@@ -478,6 +488,8 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	OMAttachRt(T);
 
 	gl_ClearBufferiv(GL_COLOR, 0, col);
+
+	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
 
 	GL_POP();
 }
@@ -825,6 +837,8 @@ void GSDeviceOGL::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVect
 {
 	GL_PUSH("DoMerge");
 
+	OMSetColorMaskState();
+
 	ClearRenderTarget(dt, c);
 
 	if(st[1] && !slbg)
@@ -845,6 +859,8 @@ void GSDeviceOGL::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVect
 void GSDeviceOGL::DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset)
 {
 	GL_PUSH("DoInterlace");
+
+	OMSetColorMaskState();
 
 	GSVector4 s = GSVector4(dt->GetSize());
 
@@ -877,6 +893,8 @@ void GSDeviceOGL::DoFXAA(GSTexture* st, GSTexture* dt)
 	}
 
 	GL_PUSH("DoFxaa");
+
+	OMSetColorMaskState();
 
 	GSVector2i s = dt->GetSize();
 
@@ -914,6 +932,8 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 
 	GL_PUSH("DoExternalFX");
 
+	OMSetColorMaskState();
+
 	GSVector2i s = dt->GetSize();
 
 	GSVector4 sr(0, 0, 1, 1);
@@ -935,6 +955,8 @@ void GSDeviceOGL::DoExternalFX(GSTexture* st, GSTexture* dt)
 void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
 {
 	GL_PUSH("DoShadeBoost");
+
+	OMSetColorMaskState();
 
 	GSVector2i s = dt->GetSize();
 
