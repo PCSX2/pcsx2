@@ -70,19 +70,19 @@ void GSTextureCache9::Read(Target* t, const GSVector4i& r)
 		{
 			// TODO: block level write
 
-			GSOffset* o = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 			switch(TEX0.PSM)
 			{
 			case PSM_PSMCT32:
-				m_renderer->m_mem.WritePixel32(m.bits, m.pitch, o, r);
+				m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
 				break;
 			case PSM_PSMCT24:
-				m_renderer->m_mem.WritePixel24(m.bits, m.pitch, o, r);
+				m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
 				break;
 			case PSM_PSMCT16:
 			case PSM_PSMCT16S:
-				m_renderer->m_mem.WriteFrame16(m.bits, m.pitch, o, r);
+				m_renderer->m_mem.WriteFrame16(m.bits, m.pitch, off, r);
 				break;
 			default:
 				ASSERT(0);

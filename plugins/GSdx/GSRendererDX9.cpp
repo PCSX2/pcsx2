@@ -243,10 +243,10 @@ void GSRendererDX9::UpdateFBA(GSTexture* rt)
 	// ia
 
 	GSVector4 s = GSVector4(rt->GetScale().x / rt->GetWidth(), rt->GetScale().y / rt->GetHeight());
-	GSVector4 o = GSVector4(-1.0f, 1.0f);
+	GSVector4 off = GSVector4(-1.0f, 1.0f);
 
-	GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + o.xxyy()) * s.xyxy()).sat(o.zzyy());
-	GSVector4 dst = src * 2.0f + o.xxxx();
+	GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy()) * s.xyxy()).sat(off.zzyy());
+	GSVector4 dst = src * 2.0f + off.xxxx();
 
 	GSVertexPT1 vertices[] =
 	{

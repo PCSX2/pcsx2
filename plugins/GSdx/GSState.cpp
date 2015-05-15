@@ -963,14 +963,14 @@ template<int i> void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
-	GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
+	GSVector4i off = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
 
-	if(!o.eq(m_env.CTXT[i].XYOFFSET))
+	if(!off.eq(m_env.CTXT[i].XYOFFSET))
 	{
 		Flush();
 	}
 
-	m_env.CTXT[i].XYOFFSET = o;
+	m_env.CTXT[i].XYOFFSET = off;
 
 	m_env.CTXT[i].UpdateScissor();
 

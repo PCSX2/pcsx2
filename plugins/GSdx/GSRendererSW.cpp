@@ -336,7 +336,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 	#else
 	
-	GSVector4i o = (GSVector4i)m_context->XYOFFSET;
+	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
 
 	for(int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
@@ -347,14 +347,14 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 		GSVector4i xyzuvf(src->m[1]);
 
-		GSVector4i xy = xyzuvf.upl16() - o;
+		GSVector4i xy = xyzuvf.upl16() - off;
 		GSVector4i zf = xyzuvf.ywww().min_u32(GSVector4i::xffffff00());
 
 		#else
 
 		uint32 z = src->XYZ.Z;
 
-		GSVector4i xy = GSVector4i::load((int)src->XYZ.u32[0]).upl16() - o;
+		GSVector4i xy = GSVector4i::load((int)src->XYZ.u32[0]).upl16() - off;
 		GSVector4i zf = GSVector4i((int)std::min<uint32>(z, 0xffffff00), src->FOG); // NOTE: larger values of z may roll over to 0 when converting back to uint32 later
 
 		#endif
@@ -681,9 +681,9 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 {
 	if(LOG) {fprintf(s_fp, "w %05x %d %d, %d %d %d %d\n", BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
 	
-	GSOffset* o = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
+	GSOffset* off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
 
-	o->GetPages(r, m_tmp_pages);
+	off->GetPages(r, m_tmp_pages);
 
 	// check if the changing pages either used as a texture or a target
 
@@ -700,7 +700,7 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		}
 	}
 
-	m_tc->InvalidatePages(m_tmp_pages, o->psm); // if texture update runs on a thread and Sync(5) happens then this must come later
+	m_tc->InvalidatePages(m_tmp_pages, off->psm); // if texture update runs on a thread and Sync(5) happens then this must come later
 }
 
 void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
@@ -709,9 +709,9 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if(!m_rl->IsSynced())
 	{
-		GSOffset* o = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
+		GSOffset* off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 
-		o->GetPages(r, m_tmp_pages);
+		off->GetPages(r, m_tmp_pages);
 
 		for(uint32* RESTRICT p = m_tmp_pages; *p != GSOffset::EOP; p++)
 		{

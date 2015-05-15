@@ -98,7 +98,7 @@ public:
 
 		SourceMap() : m_used(false) {memset(m_pages, 0, sizeof(m_pages));}
 
-		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* o);
+		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* off);
 		void RemoveAll();
 		void RemoveAt(Source* s);
 	};
@@ -134,8 +134,8 @@ public:
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h);
 
-	void InvalidateVideoMem(GSOffset* o, const GSVector4i& r, bool target = true);
-	void InvalidateLocalMem(GSOffset* o, const GSVector4i& r);
+	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
+	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;

@@ -221,19 +221,19 @@ bool GSRenderer::Merge(int field)
 
 		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
-		GSVector2 o(0, 0);
+		GSVector2 off(0, 0);
 
 		if(dr[i].top - baseline >= 4) // 2?
 		{
-			o.y = tex[i]->GetScale().y * (dr[i].top - baseline);
+			off.y = tex[i]->GetScale().y * (dr[i].top - baseline);
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{
-				o.y /= 2;
+				off.y /= 2;
 			}
 		}
 
-		dst[i] = GSVector4(o).xyxy() + scale * GSVector4(r.rsize());
+		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 
 		fs.x = max(fs.x, (int)(dst[i].z + 0.5f));
 		fs.y = max(fs.y, (int)(dst[i].w + 0.5f));

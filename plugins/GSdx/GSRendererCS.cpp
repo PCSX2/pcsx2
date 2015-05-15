@@ -354,11 +354,11 @@ GSTexture* GSRendererCS::GetOutput(int i)
 		GSVector4i r(0, 0, w, h);
 		GSVector4i r2 = r.ralign<Align_Outside>(psm.bs);
 
-		GSOffset* o = m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM);
+		GSOffset* off = m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM);
 
-		Read(o, r2, false);
+		Read(off, r2, false);
 
-		(m_mem.*psm.rtx)(o, r2, m_output, 1024 * 4, m_env.TEXA);
+		(m_mem.*psm.rtx)(off, r2, m_output, 1024 * 4, m_env.TEXA);
 
 		m_texture[i]->Update(r, m_output, 1024 * 4);
 
@@ -682,9 +682,9 @@ void GSRendererCS::Draw()
 
 void GSRendererCS::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
-	GSOffset* o = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
+	GSOffset* off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
 
-	Read(o, r, true); // TODO: fully overwritten pages are not needed to be read, only invalidated (important)
+	Read(off, r, true); // TODO: fully overwritten pages are not needed to be read, only invalidated (important)
 
 	// TODO: false deps, 8H/4HL/4HH texture sharing pages with 24-bit target
 	// TODO: invalidate texture cache
@@ -692,12 +692,12 @@ void GSRendererCS::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererCS::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
 {
-	GSOffset* o = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
+	GSOffset* off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 
-	Read(o, r, false);
+	Read(off, r, false);
 }
 
-void GSRendererCS::Write(GSOffset* o, const GSVector4i& r)
+void GSRendererCS::Write(GSOffset* off, const GSVector4i& r)
 {
 	GSDevice11* dev = (GSDevice11*)m_dev;
 	
@@ -711,7 +711,7 @@ void GSRendererCS::Write(GSOffset* o, const GSVector4i& r)
 	box.bottom = 1;
 	box.back = 1;
 
-	uint32* pages = o->GetPages(r);
+	uint32* pages = off->GetPages(r);
 
 	for(size_t i = 0; pages[i] != GSOffset::EOP; i++)
 	{
@@ -739,14 +739,14 @@ void GSRendererCS::Write(GSOffset* o, const GSVector4i& r)
 			ctx->UpdateSubresource(m_vm, 0, &box, m_mem.m_vm8 + page * PAGE_SIZE, 0, 0);
 */
 			if(0)
-			printf("[%lld] write %05x %d %d (%d)\n", __rdtsc(), o->bp, o->bw, o->psm, page);
+			printf("[%lld] write %05x %d %d (%d)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
 		}
 	}
 
 	delete [] pages;
 }
 
-void GSRendererCS::Read(GSOffset* o, const GSVector4i& r, bool invalidate)
+void GSRendererCS::Read(GSOffset* off, const GSVector4i& r, bool invalidate)
 {
 	GSDevice11* dev = (GSDevice11*)m_dev;
 	
@@ -760,7 +760,7 @@ void GSRendererCS::Read(GSOffset* o, const GSVector4i& r, bool invalidate)
 	box.bottom = 1;
 	box.back = 1;
 
-	uint32* pages = o->GetPages(r);
+	uint32* pages = off->GetPages(r);
 
 	for(size_t i = 0; pages[i] != GSOffset::EOP; i++)
 	{
@@ -799,7 +799,7 @@ void GSRendererCS::Read(GSOffset* o, const GSVector4i& r, bool invalidate)
 				ctx->Unmap(m_pb, 0);
 				
 				if(0)
-				printf("[%lld] read %05x %d %d (%d)\n", __rdtsc(), o->bp, o->bw, o->psm, page);
+				printf("[%lld] read %05x %d %d (%d)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
 			}
 		}
 	}

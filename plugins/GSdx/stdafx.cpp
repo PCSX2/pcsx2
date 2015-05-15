@@ -113,10 +113,10 @@ void* _aligned_malloc(size_t size, size_t alignment)
 {
 	ASSERT(alignment <= 0x8000);
 	size_t r = (size_t)malloc(size + --alignment + 2);
-	size_t o = (r + 2 + alignment) & ~(size_t)alignment;
+	size_t off = (r + 2 + alignment) & ~(size_t)alignment;
 	if(!r) return NULL;
-	((uint16*)o)[-1] = (uint16)(o-r);
-	return (void*)o;
+	((uint16*)off)[-1] = (uint16)(off-r);
+	return (void*)off;
 }
 
 void _aligned_free(void* p)

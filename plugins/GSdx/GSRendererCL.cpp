@@ -197,7 +197,7 @@ const GSVector4 g_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 1.0f);
 template<uint32 primclass, uint32 tme, uint32 fst>
 void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
-	GSVector4i o = (GSVector4i)m_context->XYOFFSET;
+	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 st_scale = GSVector4(16 << m_context->TEX0.TW, 16 << m_context->TEX0.TH, 1, 0);
 
 	for(int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
@@ -206,7 +206,7 @@ void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex*
 
 		GSVector4i xyzuvf(src->m[1]);
 
-		dst->p = (GSVector4(xyzuvf.upl16() - o) * g_pos_scale).xyxy(GSVector4::cast(xyzuvf.ywyw())); // pass zf as uints
+		dst->p = (GSVector4(xyzuvf.upl16() - off) * g_pos_scale).xyxy(GSVector4::cast(xyzuvf.ywyw())); // pass zf as uints
 
 		GSVector4 t = GSVector4::zero();
 
@@ -571,9 +571,9 @@ void GSRendererCL::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 {
 	if(LOG) {fprintf(s_fp, "w %05x %d %d, %d %d %d %d\n", BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
 	
-	GSOffset* o = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
+	GSOffset* off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
 
-	o->GetPagesAsBits(r, m_tmp_pages);
+	off->GetPagesAsBits(r, m_tmp_pages);
 
 	if(!m_synced)
 	{
@@ -607,9 +607,9 @@ void GSRendererCL::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	
 	if(!m_synced)
 	{
-		GSOffset* o = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
+		GSOffset* off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 
-		o->GetPagesAsBits(r, m_tmp_pages);
+		off->GetPagesAsBits(r, m_tmp_pages);
 
 		for(int i = 0; i < 4; i++)
 		{
@@ -1191,9 +1191,9 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 			GSVector4i* src_pages = job->GetSrcPages();
 
-			GSOffset* o = m_mem.GetOffset(context->TEX0.TBP0, context->TEX0.TBW, context->TEX0.PSM);
+			GSOffset* off = m_mem.GetOffset(context->TEX0.TBP0, context->TEX0.TBW, context->TEX0.PSM);
 			
-			o->GetPagesAsBits(r, m_tmp_pages);
+			off->GetPagesAsBits(r, m_tmp_pages);
 
 			for(int i = 0; i < 4; i++)
 			{
@@ -1324,9 +1324,9 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 					GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, job->sel.ltf);
 
-					GSOffset* o = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
+					GSOffset* off = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
 					
-					o->GetPagesAsBits(r, m_tmp_pages);
+					off->GetPagesAsBits(r, m_tmp_pages);
 
 					for(int i = 0; i < 4; i++)
 					{

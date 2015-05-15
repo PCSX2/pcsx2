@@ -251,7 +251,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	GSLocalMemory& mem = m_state->m_mem;
 
-	const GSOffset* RESTRICT o = m_offset;
+	const GSOffset* RESTRICT off = m_offset;
 
 	uint32 blocks = 0;
 
@@ -274,11 +274,11 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
-			uint32 base = o->block.row[y];
+			uint32 base = off->block.row[y];
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + o->block.col[x];
+				uint32 block = base + off->block.col[x];
 
 				if(block < MAX_BLOCKS)
 				{
@@ -301,11 +301,11 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
-			uint32 base = o->block.row[y];
+			uint32 base = off->block.row[y];
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + o->block.col[x];
+				uint32 block = base + off->block.col[x];
 
 				if(block < MAX_BLOCKS)
 				{

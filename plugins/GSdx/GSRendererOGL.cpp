@@ -303,8 +303,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	} else if (DATE) {
 		// TODO: do I need to clamp the value (if yes how? rintersect with rt?)
 		GSVector4 si = GSVector4(rtscale.x, rtscale.y);
-		GSVector4 o = GSVector4(-1.0f, 1.0f); // Round value
-		GSVector4 b = m_vt.m_min.p.xyxy(m_vt.m_max.p) + o.xxyy();
+		GSVector4 off = GSVector4(-1.0f, 1.0f); // Round value
+		GSVector4 b = m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy();
 		GSVector4i ri = GSVector4i(b * si.xyxy());
 
 		// Reduce the quantity of clean function
@@ -319,8 +319,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else {
 			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
 
-			GSVector4 src = (b * s.xyxy()).sat(o.zzyy());
-			GSVector4 dst = src * 2.0f + o.xxxx();
+			GSVector4 src = (b * s.xyxy()).sat(off.zzyy());
+			GSVector4 dst = src * 2.0f + off.xxxx();
 
 			GSVertexPT1 vertices[] =
 			{

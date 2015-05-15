@@ -317,13 +317,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
 // Called each time you want to write to the GS memory
-void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, bool target)
+void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, bool target)
 {
-	if(!o) return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
+	if(!off) return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
 
-	uint32 bp = o->bp;
-	uint32 bw = o->bw;
-	uint32 psm = o->psm;
+	uint32 bp = off->bp;
+	uint32 bw = off->bw;
+	uint32 psm = off->psm;
 
 	if(!target)
 	{
@@ -348,7 +348,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 	uint32* pages = (uint32*)m_temp;
 
-	o->GetPages(rect, pages, &r);
+	off->GetPages(rect, pages, &r);
 
 	bool found = false;
 
@@ -454,11 +454,11 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 
 // Goal: retrive the data from the GPU to the GS memory.
 // Called each time you want to read from the GS memory
-void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
+void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 {
-	uint32 bp = o->bp;
-	uint32 psm = o->psm;
-	//uint32 bw = o->bw;
+	uint32 bp = off->bp;
+	uint32 psm = off->psm;
+	//uint32 bw = off->bw;
 
 	// No depth handling please.
 	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
@@ -698,10 +698,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//{
 			//	for(int dx = 0; dx < dw; dx += blockWidth)
 			//	{
-			//		int o = dy * dw / blockHeight + dx;
+			//		int off = dy * dw / blockHeight + dx;
 
-			//		int sx = o % sw;
-			//		int sy = o / sw;
+			//		int sx = off % sw;
+			//		int sy = off / sw;
 
 			//		GSVector4 sr = GSVector4(GSVector4i(sx, sy).xyxy() + br) * scale / size;
 			//		GSVector4 dr = GSVector4(GSVector4i(dx, dy).xyxy() + br) * scale;
@@ -951,7 +951,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 		m_complete = true; // lame, but better than nothing
 	}
 
-	const GSOffset* o = m_renderer->m_context->offset.tex;
+	const GSOffset* off = m_renderer->m_context->offset.tex;
 
 	uint32 blocks = 0;
 
@@ -959,11 +959,11 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = o->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3];
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + o->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3];
 
 				if(block < MAX_BLOCKS)
 				{
@@ -988,11 +988,11 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = o->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3];
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + o->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3];
 
 				if(block < MAX_BLOCKS)
 				{
@@ -1071,7 +1071,7 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 	GSLocalMemory& mem = m_renderer->m_mem;
 
-	const GSOffset* o = m_renderer->m_context->offset.tex;
+	const GSOffset* off = m_renderer->m_context->offset.tex;
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
@@ -1095,7 +1095,7 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 		if((r > tr).mask() & 0xff00)
 		{
-			(mem.*rtx)(o, r, buff, pitch, m_TEXA);
+			(mem.*rtx)(off, r, buff, pitch, m_TEXA);
 
 			m_texture->Update(r.rintersect(tr), buff, pitch);
 		}
@@ -1105,13 +1105,13 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 			if(m_texture->Map(m, &r))
 			{
-				(mem.*rtx)(o, r, m.bits, m.pitch, plainTEXA);
+				(mem.*rtx)(off, r, m.bits, m.pitch, plainTEXA);
 
 				m_texture->Unmap();
 			}
 			else
 			{
-				(mem.*rtx)(o, r, buff, pitch, plainTEXA);
+				(mem.*rtx)(off, r, buff, pitch, plainTEXA);
 
 				m_texture->Update(r, buff, pitch);
 			}
@@ -1156,7 +1156,7 @@ void GSTextureCache::Target::Update()
 
 		if(GSTexture* t = m_renderer->m_dev->CreateTexture(w, h))
 		{
-			const GSOffset* o = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
+			const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
 			GIFRegTEXA TEXA;
 
@@ -1168,7 +1168,7 @@ void GSTextureCache::Target::Update()
 
 			if(t->Map(m))
 			{
-				m_renderer->m_mem.ReadTexture(o, r, m.bits,  m.pitch, TEXA);
+				m_renderer->m_mem.ReadTexture(off, r, m.bits,  m.pitch, TEXA);
 
 				t->Unmap();
 			}
@@ -1176,7 +1176,7 @@ void GSTextureCache::Target::Update()
 			{
 				int pitch = ((w + 3) & ~3) * 4;
 
-				m_renderer->m_mem.ReadTexture(o, r, m_temp, pitch, TEXA);
+				m_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
 
 				t->Update(r.rsize(), m_temp, pitch);
 			}
@@ -1201,7 +1201,7 @@ void GSTextureCache::Target::Update()
 
 // GSTextureCache::SourceMap
 
-void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* o)
+void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* off)
 {
 	m_surfaces.insert(s);
 
@@ -1228,11 +1228,11 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 
 	for(int y = 0; y < th; y += bs.y)
 	{
-		uint32 base = o->block.row[y >> 3];
+		uint32 base = off->block.row[y >> 3];
 
 		for(int x = 0; x < tw; x += bs.x)
 		{
-			uint32 page = (base + o->block.col[x >> 3]) >> 5;
+			uint32 page = (base + off->block.col[x >> 3]) >> 5;
 
 			if(page < MAX_PAGES)
 			{

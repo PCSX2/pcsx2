@@ -93,7 +93,7 @@ public:
 	typedef uint32 (GSLocalMemory::*readTexelAddr)(uint32 addr, const GIFRegTEXA& TEXA) const;
 	typedef void (GSLocalMemory::*writeImage)(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
 	typedef void (GSLocalMemory::*readImage)(int& tx, int& ty, uint8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG) const;
-	typedef void (GSLocalMemory::*readTexture)(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	typedef void (GSLocalMemory::*readTexture)(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 	typedef void (GSLocalMemory::*readTextureBlock)(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 
 	__aligned(struct, 128) psm_t
@@ -670,15 +670,15 @@ public:
 		WriteFrame16(PixelAddress16SZ(x, y, bp, bw), c);
 	}
 
-	__forceinline void WritePixel32(uint8* RESTRICT src, uint32 pitch, GSOffset* o, const GSVector4i& r)
+	__forceinline void WritePixel32(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
 	{
 		src -= r.left * sizeof(uint32);
 
 		for(int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
-			uint32* RESTRICT d = &m_vm32[o->pixel.row[y]];
-			int* RESTRICT col = o->pixel.col[0];
+			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
+			int* RESTRICT col = off->pixel.col[0];
 
 			for(int x = r.left; x < r.right; x++)
 			{
@@ -687,15 +687,15 @@ public:
 		}
 	}
 
-	__forceinline void WritePixel24(uint8* RESTRICT src, uint32 pitch, GSOffset* o, const GSVector4i& r)
+	__forceinline void WritePixel24(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
 	{
 		src -= r.left * sizeof(uint32);
 
 		for(int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
-			uint32* RESTRICT d = &m_vm32[o->pixel.row[y]];
-			int* RESTRICT col = o->pixel.col[0];
+			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
+			int* RESTRICT col = off->pixel.col[0];
 
 			for(int x = r.left; x < r.right; x++)
 			{
@@ -704,15 +704,15 @@ public:
 		}
 	}
 
-	__forceinline void WritePixel16(uint8* RESTRICT src, uint32 pitch, GSOffset* o, const GSVector4i& r)
+	__forceinline void WritePixel16(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
 	{
 		src -= r.left * sizeof(uint16);
 
 		for(int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint16* RESTRICT s = (uint16*)src;
-			uint16* RESTRICT d = &m_vm16[o->pixel.row[y]];
-			int* RESTRICT col = o->pixel.col[0];
+			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
+			int* RESTRICT col = off->pixel.col[0];
 
 			for(int x = r.left; x < r.right; x++)
 			{
@@ -721,15 +721,15 @@ public:
 		}
 	}
 
-	__forceinline void WriteFrame16(uint8* RESTRICT src, uint32 pitch, GSOffset* o, const GSVector4i& r)
+	__forceinline void WriteFrame16(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
 	{
 		src -= r.left * sizeof(uint32);
 
 		for(int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
-			uint16* RESTRICT d = &m_vm16[o->pixel.row[y]];
-			int* RESTRICT col = o->pixel.col[0];
+			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
+			int* RESTRICT col = off->pixel.col[0];
 
 			for(int x = r.left; x < r.right; x++)
 			{
@@ -876,16 +876,16 @@ public:
 
 	// * => 32
 
-	void ReadTexture32(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture24(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture16(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8H(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HL(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HH(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture32(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8H(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HL(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HH(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
-	void ReadTexture(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	void ReadTextureBlock32(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 	void ReadTextureBlock24(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
@@ -898,11 +898,11 @@ public:
 
 	// pal ? 8 : 32
 
-	void ReadTexture8P(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4P(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8HP(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HLP(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HHP(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8HP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HLP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HHP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	void ReadTextureBlock8P(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 	void ReadTextureBlock4P(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
@@ -912,7 +912,7 @@ public:
 
 	//
 
-	template<typename T> void ReadTexture(const GSOffset* RESTRICT o, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	template<typename T> void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	//
 

@@ -114,8 +114,8 @@ class GSRendererCS : public GSRenderer
 	hash_map<uint32, CComPtr<ID3D11PixelShader> > m_ps1;
 	CComPtr<ID3D11Buffer> m_ps_cb;
 
-	void Write(GSOffset* o, const GSVector4i& r);
-	void Read(GSOffset* o, const GSVector4i& r, bool invalidate);
+	void Write(GSOffset* off, const GSVector4i& r);
+	void Read(GSOffset* off, const GSVector4i& r, bool invalidate);
 
 	struct OffsetBuffer
 	{
