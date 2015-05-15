@@ -116,6 +116,8 @@ bool GSRenderer::Merge(int field)
 		return false;
 	}
 
+	GL_PUSH("Renderer Merge");
+
 	// try to avoid fullscreen blur, could be nice on tv but on a monitor it's like double vision, hurts my eyes (persona 4, guitar hero)
 	//
 	// NOTE: probably the technique explained in graphtip.pdf (Antialiasing by Supersampling / 4. Reading Odd/Even Scan Lines Separately with the PCRTC then Blending)
@@ -291,6 +293,8 @@ bool GSRenderer::Merge(int field)
 			m_dev->FXAA();
 		}
 	}
+
+	GL_POP();
 
 	return true;
 }

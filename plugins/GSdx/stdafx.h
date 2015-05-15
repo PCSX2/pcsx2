@@ -495,7 +495,7 @@ extern void vmfree(void* ptr, size_t size);
 
 // Except apple any sane driver support this extension
 #if defined(__linux__) && defined(_DEBUG)
-#define GL_CACHE(s) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_ERROR, 0xFEAD, GL_DEBUG_SEVERITY_MEDIUM, -1, s);
+#define GL_CACHE(s) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, -1, s);
 #else
 #define GL_CACHE(s) (0);
 #endif

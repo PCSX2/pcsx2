@@ -75,6 +75,8 @@ GSDeviceOGL::~GSDeviceOGL()
 	if (m_shader == NULL)
 		return;
 
+	GL_PUSH("GSDeviceOGL destructor");
+
 	// Clean vertex buffer state
 	delete (m_va);
 
@@ -141,6 +143,8 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
 	m_shader = NULL;
+
+	GL_POP();
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int format)
@@ -179,6 +183,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 		if (!GLLoader::check_gl_supported_extension()) return false;
 	}
+
+	GL_PUSH("GSDeviceOGL::Create");
 
 	m_window = wnd;
 
@@ -328,6 +334,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Pbo Pool allocation
 	// ****************************************************************
 	PboPool::Init();
+
+	GL_POP();
 
 	// ****************************************************************
 	// Finish window setup and backbuffer
@@ -1252,9 +1260,13 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	}
 
 	#ifdef _DEBUG
-	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
+	// Don't spam noisy information on the terminal
+	if (!(gl_type == GL_DEBUG_TYPE_OTHER_ARB && gl_severity == GL_DEBUG_SEVERITY_NOTIFICATION)) {
+		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
+	}
 	#endif
 
+	// FIXME move open/close in constructor/destructor
 	FILE* f = fopen("GSdx_opengl_debug.txt","a");
 	if(f)
 	{

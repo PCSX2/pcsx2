@@ -130,12 +130,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE(format("TC: dst hit: %d (%x)",
+			GL_CACHE(format("TC: dst hit: %d (0x%x)",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
 						TEX0.TBP0
 						).c_str());
 		} else {
-			GL_CACHE(format("TC: src miss (%x)", TEX0.TBP0).c_str());
+			GL_CACHE(format("TC: src miss (0x%x)", TEX0.TBP0).c_str());
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst);
@@ -146,7 +146,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 #ifdef ENABLE_OGL_DEBUG
 	} else {
-		GL_CACHE(format("TC: src hit: %d (%x)",
+		GL_CACHE(format("TC: src hit: %d (0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
 					TEX0.TBP0
 					).c_str());
@@ -195,6 +195,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
+		GL_CACHE(format("TC: Lookup Target(%d) %dx%d, miss (0x%x)", type, w, h, bp).c_str());
+
 		dst = CreateTarget(TEX0, w, h, type);
 
 		if(dst == NULL)
@@ -204,6 +206,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 	else
 	{
+		GL_CACHE(format("TC: Lookup Target(%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp).c_str());
+
 		dst->Update();
 	}
 
@@ -271,6 +275,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		{
 			dst = t;
 
+			GL_CACHE(format("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x)", w, h, dst->m_texture->GetID(), bp).c_str());
+
 			break;
 		}
 		else
@@ -279,6 +285,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			if(t->m_TEX0.TBP0 <= bp && bp < t->m_TEX0.TBP0 + 0xe00UL && (!dst || t->m_TEX0.TBP0 >= dst->m_TEX0.TBP0))
 			{
+				GL_CACHE(format("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, dst->m_texture->GetID(), bp, dst->m_TEX0.TBP0).c_str());
 				dst = t;
 			}
 		}
@@ -286,7 +293,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
+		GL_CACHE(format("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp).c_str());
+
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
+
 
 		if(dst == NULL)
 		{
@@ -1267,7 +1277,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 {
 	m_surfaces.erase(s);
 
-	GL_CACHE(format("TC: remove texture %d (%x)",
+	GL_CACHE(format("TC: remove texture %d (0x%x)",
 				s->m_texture ? s->m_texture->GetID() : 0,
 				s->m_TEX0.TBP0).c_str());
 

@@ -106,6 +106,8 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 		}
 	}
 
+	GL_PUSH("Present");
+
 	ClearRenderTarget(m_backbuffer, 0);
 
 	if(m_current)
@@ -116,6 +118,8 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	}
 
 	Flip();
+
+	GL_POP();
 }
 
 void GSDevice::Present(GSTexture* st, GSTexture* dt, const GSVector4& dr, int shader)
