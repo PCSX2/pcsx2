@@ -89,6 +89,7 @@ class GSBufferOGL {
 			for (size_t i = 0; i < 5; i++) {
 				gl_DeleteSync(m_fence[i]);
 			}
+			// Don't know if we must do it
 			bind();
 			gl_UnmapBuffer(m_target);
 		}

@@ -28,6 +28,9 @@
 extern uint64 g_real_texture_upload_byte;
 #endif
 
+// FIXME find the optimal number of PBO
+#define PBO_POOL_SIZE 8
+
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
 namespace PboPool {
 	
@@ -37,8 +40,9 @@ namespace PboPool {
 	uint32 m_current_pbo = 0;
 	uint32 m_size;
 	bool   m_texture_storage;
+	uint8* m_gpu_texture;
+	GLsync m_fence[PBO_POOL_SIZE];
 	const uint32 m_pbo_size = 4*1024*1024;
-	uint8*  m_gpu_texture;
 
 	// Option for buffer storage
 	// XXX: actually does I really need coherent and barrier???
@@ -66,6 +70,7 @@ namespace PboPool {
 			if (m_texture_storage) {
 				gl_BufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
 				m_map[m_current_pbo] = (char*)gl_MapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
+				m_fence[m_current_pbo] = 0;
 			} else {
 				gl_BufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, GL_STREAM_COPY);
 				m_map[m_current_pbo] = NULL;
@@ -88,7 +93,8 @@ namespace PboPool {
 
 		if (m_texture_storage) {
 			if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
-				NextPbo();
+				//NextPbo(); // For test purpose
+				NextPboWithSync();
 			}
 
 			// Note: texsubimage will access currently bound buffer
@@ -117,14 +123,6 @@ namespace PboPool {
 		return map;
 	}
 
-	// Used to unmap the buffer when context was detached.
-	void UnmapAll() {
-		for (size_t i = 0; i < countof(m_pool); i++) {
-			m_map[i] = NULL;
-			m_offset[m_current_pbo] = 0;
-		}
-	}
-
 	void Unmap() {
 		if (m_texture_storage) {
 			gl_FlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
@@ -138,8 +136,18 @@ namespace PboPool {
 	}
 
 	void Destroy() {
-		if (m_texture_storage)
-			UnmapAll();
+		if (m_texture_storage) {
+			for (size_t i = 0; i < countof(m_pool); i++) {
+				m_map[i] = NULL;
+				m_offset[i] = 0;
+				gl_DeleteSync(m_fence[i]);
+
+				// Don't know if we must do it
+				gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[0]);
+				gl_UnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+			}
+			gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		}
 		gl_DeleteBuffers(countof(m_pool), m_pool);
 
 		_aligned_free(m_gpu_texture);
@@ -153,6 +161,26 @@ namespace PboPool {
 		m_current_pbo = (m_current_pbo + 1) & (countof(m_pool)-1);
 		// Mark new PBO as free
 		m_offset[m_current_pbo] = 0;
+	}
+
+	void NextPboWithSync() {
+		m_fence[m_current_pbo] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		NextPbo();
+		if (m_fence[m_current_pbo]) {
+#ifdef ENABLE_OGL_DEBUG_FENCE
+			GLenum status = gl_ClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#else
+			gl_ClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+#endif
+			gl_DeleteSync(m_fence[m_current_pbo]);
+			m_fence[m_current_pbo] = 0;
+
+#ifdef ENABLE_OGL_DEBUG_FENCE
+			if (status != GL_ALREADY_SIGNALED) {
+				fprintf(stderr, "GL_PIXEL_UNPACK_BUFFER: Sync Sync! Buffer too small\n");
+			}
+#endif
+		}
 	}
 
 	void UnbindPbo() {
