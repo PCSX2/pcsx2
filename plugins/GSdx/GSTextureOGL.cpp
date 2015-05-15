@@ -62,7 +62,7 @@ namespace PboPool {
 	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
 		gl_GenBuffers(countof(m_pool), m_pool);
-		m_texture_storage  = ((theApp.GetConfig("ogl_texture_storage", 0) == 1) && GLLoader::found_GL_ARB_buffer_storage);
+		m_texture_storage  = ((theApp.GetConfig("ogl_texture_storage", 1) == 1) && GLLoader::found_GL_ARB_buffer_storage);
 
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();

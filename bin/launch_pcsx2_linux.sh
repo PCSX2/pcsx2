@@ -85,15 +85,17 @@ then
 fi
 
 # Launch PCSX2
+# Note: __GL_THREADED_OPTIMIZATIONS=1 enables threads optimization on Nvidia driver.
+# It provides a big speed bump
 if [ -x "pcsx2" ]
 then
-    ./pcsx2 $@
+    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2 $@
 elif [ -x "pcsx2-dev" ]
 then
-    ./pcsx2-dev $@
+    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2-dev $@
 elif [ -x "pcsx2-dbg" ]
 then
-    ./pcsx2-dbg $@
+    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2-dbg $@
 else
     echo "Error PCSX2 not found"
     echo "Maybe the script was directly 'called'"
