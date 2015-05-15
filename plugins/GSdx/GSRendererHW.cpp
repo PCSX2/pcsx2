@@ -153,13 +153,9 @@ GSTexture* GSRendererHW::GetOutput(int i)
 			{
 				t->Save(root_hw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
 			}
-
-			s_n++;
-#ifdef ENABLE_OGL_DEBUG
-		} else {
-			s_n += 2;
-#endif
 		}
+
+		s_n++; // Alaways increment it
 	}
 
 	return t;
