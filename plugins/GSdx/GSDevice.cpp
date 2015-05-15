@@ -122,9 +122,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	GL_POP();
 }
 
-void GSDevice::Present(GSTexture* st, GSTexture* dt, const GSVector4& dr, int shader)
+void GSDevice::Present(GSTexture* st, GSTexture* dTex, const GSVector4& dr, int shader)
 {
-	StretchRect(st, dt, dr, shader);
+	StretchRect(st, dTex, dr, shader);
 }
 
 GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
@@ -207,9 +207,9 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 	return FetchSurface(GSTexture::Offscreen, w, h, false, format);
 }
 
-void GSDevice::StretchRect(GSTexture* st, GSTexture* dt, const GSVector4& dr, int shader, bool linear)
+void GSDevice::StretchRect(GSTexture* st, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
 {
-	StretchRect(st, GSVector4(0, 0, 1, 1), dt, dr, shader, linear);
+	StretchRect(st, GSVector4(0, 0, 1, 1), dTex, dr, shader, linear);
 }
 
 GSTexture* GSDevice::GetCurrent()

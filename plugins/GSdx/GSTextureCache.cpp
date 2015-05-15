@@ -745,7 +745,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSVector4 sr(0, 0, w, h);
 
 		GSTexture* st = src->m_texture ? src->m_texture : dst->m_texture;
-		GSTexture* dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h, false);
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
@@ -754,26 +754,26 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(!src->m_texture)
 		{
-			src->m_texture = dt;
+			src->m_texture = dTex;
 		}
 
 		if((sr == dr).alltrue())
 		{
-			m_renderer->m_dev->CopyRect(st, dt, GSVector4i(0, 0, w, h));
+			m_renderer->m_dev->CopyRect(st, dTex, GSVector4i(0, 0, w, h));
 		}
 		else
 		{
 			sr.z /= st->GetWidth();
 			sr.w /= st->GetHeight();
 
-			m_renderer->m_dev->StretchRect(st, sr, dt, dr);
+			m_renderer->m_dev->StretchRect(st, sr, dTex, dr);
 		}
 
-		if(dt != src->m_texture)
+		if(dTex != src->m_texture)
 		{
 			m_renderer->m_dev->Recycle(src->m_texture);
 
-			src->m_texture = dt;
+			src->m_texture = dTex;
 		}
 
 		if( src->m_texture )

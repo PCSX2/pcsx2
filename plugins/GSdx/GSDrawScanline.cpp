@@ -173,7 +173,7 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 			m_local.d8.stq = dt8;
 		}
 
-		GSVector8 dt(dscan.t);
+		GSVector8 dTex(dscan.t);
 
 		for(int j = 0, k = sel.fst ? 2 : 3; j < k; j++)
 		{
@@ -181,9 +181,9 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 			switch(j)
 			{
-			case 0: dstq = dt.xxxx(); break;
-			case 1: dstq = dt.yyyy(); break;
-			case 2: dstq = dt.zzzz(); break;
+			case 0: dstq = dTex.xxxx(); break;
+			case 1: dstq = dTex.yyyy(); break;
+			case 2: dstq = dTex.zzzz(); break;
 			}
 
 			for(int i = 0; i < 8; i++)

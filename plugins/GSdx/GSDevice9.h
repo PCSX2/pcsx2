@@ -74,11 +74,11 @@ class GSDevice9 : public GSDeviceDX
 {
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
-	void DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset = 0);
-	void DoFXAA(GSTexture* st, GSTexture* dt);
-	void DoShadeBoost(GSTexture* st, GSTexture* dt);
-	void DoExternalFX(GSTexture* st, GSTexture* dt);
+	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
+	void DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
+	void DoFXAA(GSTexture* st, GSTexture* dTex);
+	void DoShadeBoost(GSTexture* st, GSTexture* dTex);
+	void DoExternalFX(GSTexture* st, GSTexture* dTex);
 
 	void InitExternalFX();
 	void InitFXAA();
@@ -211,11 +211,11 @@ public:
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
 
-	void CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r);
+	void CopyRect(GSTexture* st, GSTexture* dTex, const GSVector4i& r);
 
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, int shader = 0, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear = true);
+	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear = true);
+	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear = true);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
