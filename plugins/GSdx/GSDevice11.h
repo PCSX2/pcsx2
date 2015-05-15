@@ -34,11 +34,11 @@ class GSDevice11 : public GSDeviceDX
 {
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
-	void DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
-	void DoFXAA(GSTexture* st, GSTexture* dTex);
-	void DoShadeBoost(GSTexture* st, GSTexture* dTex);
-	void DoExternalFX(GSTexture* st, GSTexture* dTex);
+	void DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
+	void DoFXAA(GSTexture* sTex, GSTexture* dTex);
+	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex);
+	void DoExternalFX(GSTexture* sTex, GSTexture* dTex);
 
 	void InitExternalFX();
 	void InitFXAA(); // Bug workaround! Stack corruption? Heap corruption? No idea
@@ -186,11 +186,11 @@ public:
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
 
-	void CopyRect(GSTexture* st, GSTexture* dTex, const GSVector4i& r);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
 
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);

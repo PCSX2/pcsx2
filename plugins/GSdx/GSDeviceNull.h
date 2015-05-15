@@ -29,8 +29,8 @@ class GSDeviceNull : public GSDevice
 private:
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c) {}
-	void DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset = 0) {}
+	void DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c) {}
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) {}
 
 public:
 	GSDeviceNull() {}

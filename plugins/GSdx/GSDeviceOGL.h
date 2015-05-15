@@ -536,11 +536,11 @@ class GSDeviceOGL : public GSDevice
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
-	void DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
-	void DoFXAA(GSTexture* st, GSTexture* dTex);
-	void DoShadeBoost(GSTexture* st, GSTexture* dTex);
-	void DoExternalFX(GSTexture* st, GSTexture* dTex);
+	void DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
+	void DoFXAA(GSTexture* sTex, GSTexture* dTex);
+	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex);
+	void DoExternalFX(GSTexture* sTex, GSTexture* dTex);
 
 	void OMAttachRt(GSTextureOGL* rt = NULL);
 	void OMAttachDs(GSTextureOGL* ds = NULL);
@@ -587,10 +587,10 @@ class GSDeviceOGL : public GSDevice
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
 
-	void CopyRect(GSTexture* st, GSTexture* dTex, const GSVector4i& r);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, GLuint ps, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, GLuint ps, GSBlendStateOGL* bs, bool linear = true);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, GLuint ps, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, GLuint ps, GSBlendStateOGL* bs, bool linear = true);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 

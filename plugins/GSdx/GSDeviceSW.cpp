@@ -102,15 +102,15 @@ GSTexture* GSDeviceSW::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w,
 	return dst;
 }
 
-void GSDeviceSW::CopyRect(GSTexture* st, GSTexture* dTex, const GSVector4i& r)
+void GSDeviceSW::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 {
 	GSTexture::GSMap m;
 
-	if(st->Map(m, &r))
+	if(sTex->Map(m, &r))
 	{
 		dTex->Update(r, m.bits, m.pitch);
 
-		st->Unmap();
+		sTex->Unmap();
 	}
 }
 
@@ -207,7 +207,7 @@ public:
 	}
 };
 
-template<class SHADER> static void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, const SHADER& shader, bool linear)
+template<class SHADER> static void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, const SHADER& shader, bool linear)
 {
 	GSVector4i r(dr.ceil());
 
@@ -221,9 +221,9 @@ template<class SHADER> static void StretchRect(GSTexture* st, const GSVector4& s
 
 	GSTexture::GSMap sm;
 
-	if(!st->Map(sm, NULL)) {dTex->Unmap(); return;}
+	if(!sTex->Map(sm, NULL)) {dTex->Unmap(); return;}
 
-	GSVector2i ssize = st->GetSize();
+	GSVector2i ssize = sTex->GetSize();
 
 	GSVector4 p = dr;
 	GSVector4 t = sr * GSVector4(ssize).xyxy() * GSVector4((float)0x10000);
@@ -297,34 +297,34 @@ template<class SHADER> static void StretchRect(GSTexture* st, const GSVector4& s
 		}
 	}
 
-	st->Unmap();
+	sTex->Unmap();
 	dTex->Unmap();
 }
 
-void GSDeviceSW::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
+void GSDeviceSW::StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
 {
 	// TODO: if dTex == m_backbuffer && m_backbuffer is special
 
 	if(shader == 0)
 	{
-		if((sr == GSVector4(0, 0, 1, 1) & dr == GSVector4(dTex->GetSize()).zwxy()).alltrue() && st->GetSize() == dTex->GetSize())
+		if((sr == GSVector4(0, 0, 1, 1) & dr == GSVector4(dTex->GetSize()).zwxy()).alltrue() && sTex->GetSize() == dTex->GetSize())
 		{
 			// shortcut
 
-			CopyRect(st, dTex, GSVector4i(dTex->GetSize()).zwxy());
+			CopyRect(sTex, dTex, GSVector4i(dTex->GetSize()).zwxy());
 
 			return;
 		}
 
 		ShaderCopy s;
 
-		::StretchRect(st, sr, dTex, dr, s, linear);
+		::StretchRect(sTex, sr, dTex, dr, s, linear);
 	}
 	else if(shader == 1)
 	{
 		ShaderAlphaBlend s;
 
-		::StretchRect(st, sr, dTex, dr, s, linear);
+		::StretchRect(sTex, sr, dTex, dr, s, linear);
 	}
 	else
 	{
@@ -349,24 +349,24 @@ void GSDeviceSW::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 //
 
-void GSDeviceSW::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
+void GSDeviceSW::DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
 {
 	ClearRenderTarget(dTex, c);
 
-	if(st[1] && !slbg)
+	if(sTex[1] && !slbg)
 	{
-		StretchRect(st[1], sr[1], dTex, dr[1]);
+		StretchRect(sTex[1], sr[1], dTex, dr[1]);
 	}
 
-	if(st[0])
+	if(sTex[0])
 	{
 		if(mmod == 0)
 		{
-			// alpha = min(st[0].a * 2, 1)
+			// alpha = min(sTex[0].a * 2, 1)
 
 			ShaderAlpha2xBlend s;
 
-			::StretchRect(st[0], sr[0], dTex, dr[0], s, true);
+			::StretchRect(sTex[0], sr[0], dTex, dr[0], s, true);
 		}
 		else
 		{
@@ -374,14 +374,14 @@ void GSDeviceSW::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVec
 
 			ShaderFactorBlend s((uint32)(int)(c.a * 255));
 
-			::StretchRect(st[0], sr[0], dTex, dr[0], s, true);
+			::StretchRect(sTex[0], sr[0], dTex, dr[0], s, true);
 		}
 	}
 
 	// dTex->Save("c:\\1.bmp");
 }
 
-void GSDeviceSW::DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset)
+void GSDeviceSW::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
 {
 	GSVector4 s = GSVector4(dTex->GetSize());
 
@@ -398,7 +398,7 @@ void GSDeviceSW::DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool li
 	}
 	else if(shader == 3)
 	{
-		StretchRect(st, sr, dTex, dr, 0, linear);
+		StretchRect(sTex, sr, dTex, dr, 0, linear);
 	}
 	else
 	{

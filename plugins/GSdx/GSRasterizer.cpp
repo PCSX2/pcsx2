@@ -876,9 +876,9 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 	if(orientation)
 	{
 		GSVector4 tbf = v0.p.yyyy(v1.p).ceil(); // t t b b
-		GSVector4 tbmax = tbf.max(m_fscissor_y); // max(t, st) max(t, sb) max(b, st) max(b, sb)
-		GSVector4 tbmin = tbf.min(m_fscissor_y); // min(t, st) min(t, sb) min(b, st) min(b, sb)
-		GSVector4i tb = GSVector4i(tbmax.xzyw(tbmin)); // max(t, st) max(b, sb) min(t, st) min(b, sb)
+		GSVector4 tbmax = tbf.max(m_fscissor_y); // max(t, sTex) max(t, sb) max(b, sTex) max(b, sb)
+		GSVector4 tbmin = tbf.min(m_fscissor_y); // min(t, sTex) min(t, sb) min(b, sTex) min(b, sb)
+		GSVector4i tb = GSVector4i(tbmax.xzyw(tbmin)); // max(t, sTex) max(b, sb) min(t, sTex) min(b, sb)
 
 		int top, bottom;
 
@@ -886,7 +886,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 
 		if((dv.p >= GSVector4::zero()).mask() & 2)
 		{
-			top = tb.extract32<0>(); // max(t, st)
+			top = tb.extract32<0>(); // max(t, sTex)
 			bottom = tb.extract32<3>(); // min(b, sb)
 
 			if(top >= bottom) return;
@@ -898,7 +898,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		}
 		else
 		{
-			top = tb.extract32<1>(); // max(b, st)
+			top = tb.extract32<1>(); // max(b, sTex)
 			bottom = tb.extract32<2>(); // min(t, sb)
 
 			if(top >= bottom) return;

@@ -122,9 +122,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	GL_POP();
 }
 
-void GSDevice::Present(GSTexture* st, GSTexture* dTex, const GSVector4& dr, int shader)
+void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader)
 {
-	StretchRect(st, dTex, dr, shader);
+	StretchRect(sTex, dTex, dr, shader);
 }
 
 GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
@@ -207,9 +207,9 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 	return FetchSurface(GSTexture::Offscreen, w, h, false, format);
 }
 
-void GSDevice::StretchRect(GSTexture* st, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
 {
-	StretchRect(st, GSVector4(0, 0, 1, 1), dTex, dr, shader, linear);
+	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dr, shader, linear);
 }
 
 GSTexture* GSDevice::GetCurrent()
@@ -217,7 +217,7 @@ GSTexture* GSDevice::GetCurrent()
 	return m_current;
 }
 
-void GSDevice::Merge(GSTexture* st[2], GSVector4* sr, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
+void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sr, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
 {
 	if(m_merge == NULL || m_merge->GetSize() != fs)
 	{
@@ -238,9 +238,9 @@ void GSDevice::Merge(GSTexture* st[2], GSVector4* sr, GSVector4* dr, const GSVec
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
-			if(st[i] != NULL)
+			if(sTex[i] != NULL)
 			{
-				tex[i] = st[i]->IsMSAA() ? Resolve(st[i]) : st[i];
+				tex[i] = sTex[i]->IsMSAA() ? Resolve(sTex[i]) : sTex[i];
 			}
 		}
 
@@ -248,7 +248,7 @@ void GSDevice::Merge(GSTexture* st[2], GSVector4* sr, GSVector4* dr, const GSVec
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
-			if(tex[i] != st[i])
+			if(tex[i] != sTex[i])
 			{
 				Recycle(tex[i]);
 			}

@@ -484,12 +484,12 @@ void GSState::GIFPackedRegHandlerRGBA(const GIFPackedReg* RESTRICT r)
 
 void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 {
-	GSVector4i st = GSVector4i::loadl(&r->u64[0]);
+	GSVector4i sTex = GSVector4i::loadl(&r->u64[0]);
 	GSVector4i q = GSVector4i::loadl(&r->u64[1]);
 
-	GSVector4i::storel(&m_v.ST, st);
+	GSVector4i::storel(&m_v.ST, sTex);
 
-	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
+	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (sTex also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
 	
 	*(int*)&m_q = GSVector4i::store(q); 
 	
@@ -575,7 +575,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 
 	while(r < r_end)
 	{
-		GSVector4i st = GSVector4i::loadl(&r[0].u64[0]);
+		GSVector4i sTex = GSVector4i::loadl(&r[0].u64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].u64[1]);
 		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 		/*
@@ -586,7 +586,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 		*/
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
+		m_v.m[0] = sTex.upl64(rgba.upl32(q)); // TODO: only store the last one
 
 		GSVector4i xy = GSVector4i::loadl(&r[2].u64[0]);
 		GSVector4i zf = GSVector4i::loadl(&r[2].u64[1]);
@@ -612,7 +612,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 
 	while(r < r_end)
 	{
-		GSVector4i st = GSVector4i::loadl(&r[0].u64[0]);
+		GSVector4i sTex = GSVector4i::loadl(&r[0].u64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].u64[1]);
 		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 		/*
@@ -623,7 +623,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 		*/
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
+		m_v.m[0] = sTex.upl64(rgba.upl32(q)); // TODO: only store the last one
 
 		GSVector4i xy = GSVector4i::loadl(&r[2].u64[0]);
 		GSVector4i z = GSVector4i::loadl(&r[2].u64[1]);
@@ -2652,14 +2652,14 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	if(wms != CLAMP_REGION_REPEAT || wmt != CLAMP_REGION_REPEAT)
 	{
-		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+		GSVector4 sTex = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 
 		if(linear)
 		{
-			st += GSVector4(-0.5f, 0.5f).xxyy();
+			sTex += GSVector4(-0.5f, 0.5f).xxyy();
 		}
 
-		GSVector4i uv = GSVector4i(st.floor());
+		GSVector4i uv = GSVector4i(sTex.floor());
 
 		GSVector4i u, v;
 

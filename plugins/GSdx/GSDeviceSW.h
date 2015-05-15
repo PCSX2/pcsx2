@@ -28,8 +28,8 @@ class GSDeviceSW : public GSDevice
 {
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
-	void DoInterlace(GSTexture* st, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
+	void DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
 
 	void Clear(GSTexture* t, uint32 c);
 
@@ -52,8 +52,8 @@ public:
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
 
-	void CopyRect(GSTexture* st, GSTexture* dTex, const GSVector4i& r);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
+	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
 
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
