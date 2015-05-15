@@ -292,6 +292,7 @@ extern   PFNGLINVALIDATETEXIMAGEPROC            gl_InvalidateTexImage;
 extern   PFNGLPUSHDEBUGGROUPPROC                gl_PushDebugGroup;
 extern   PFNGLDEBUGMESSAGEINSERTPROC            gl_DebugMessageInsert;
 // GL4.4
+extern   PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage;
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)
 extern PFNGLGETTEXTURESAMPLERHANDLEARBPROC      gl_GetTextureSamplerHandleARB;
