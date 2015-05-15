@@ -258,12 +258,6 @@ void GSTextureOGL::Invalidate()
 	}
 }
 
-bool GSTextureOGL::HasBeenCleaned() {
-	bool old = m_clean;
-	m_clean = true;
-	return old;
-}
-
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);

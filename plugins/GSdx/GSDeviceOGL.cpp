@@ -442,7 +442,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-	if (T->HasBeenCleaned())
+	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
 
 	GL_PUSH(format("Clear RT %d", T->GetID()).c_str());
@@ -464,11 +464,14 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 		OMAttachRt(T);
 
 		gl_ClearBufferfv(GL_COLOR, 0, c.v);
+
 	}
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
 
 	glEnable(GL_SCISSOR_TEST);
+
+	T->WasCleaned();
 
 	GL_POP();
 }

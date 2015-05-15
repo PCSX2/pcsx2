@@ -79,6 +79,7 @@ class GSTextureOGL : public GSTexture
 
 		uint32 GetID() { return m_texture_id; }
 		GLuint64 GetHandle(GLuint sampler_id);
-		bool HasBeenCleaned();
+		bool HasBeenCleaned() { return m_clean; }
 		void WasAttached() { m_clean = false; m_dirty = true; }
+		void WasCleaned() { m_clean = true; }
 };
