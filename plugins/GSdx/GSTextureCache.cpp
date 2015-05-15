@@ -704,9 +704,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//		int sy = off / sw;
 
 			//		GSVector4 sRect = GSVector4(GSVector4i(sx, sy).xyxy() + br) * scale / size;
-			//		GSVector4 dr = GSVector4(GSVector4i(dx, dy).xyxy() + br) * scale;
+			//		GSVector4 dRect = GSVector4(GSVector4i(dx, dy).xyxy() + br) * scale;
 
-			//		m_renderer->m_dev->StretchRect(dst->m_texture, sRect, src->m_texture, dr);
+			//		m_renderer->m_dev->StretchRect(dst->m_texture, sRect, src->m_texture, dRect);
 
 			//		// TODO: this is quite a lot of StretchRect, do it with one Draw
 			//	}
@@ -726,19 +726,19 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector2 scale = dst->m_texture->GetScale();
 
-		GSVector4 dr(0, 0, w, h);
+		GSVector4 dRect(0, 0, w, h);
 
 		if(w > dstsize.x)
 		{
 			scale.x = (float)dstsize.x / tw;
-			dr.z = (float)dstsize.x * scale.x / dst->m_texture->GetScale().x;
+			dRect.z = (float)dstsize.x * scale.x / dst->m_texture->GetScale().x;
 			w = dstsize.x;
 		}
 
 		if(h > dstsize.y)
 		{
 			scale.y = (float)dstsize.y / th;
-			dr.w = (float)dstsize.y * scale.y / dst->m_texture->GetScale().y;
+			dRect.w = (float)dstsize.y * scale.y / dst->m_texture->GetScale().y;
 			h = dstsize.y;
 		}
 
@@ -757,7 +757,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = dTex;
 		}
 
-		if((sRect == dr).alltrue())
+		if((sRect == dRect).alltrue())
 		{
 			m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h));
 		}
@@ -766,7 +766,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
 
-			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dr);
+			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect);
 		}
 
 		if(dTex != src->m_texture)

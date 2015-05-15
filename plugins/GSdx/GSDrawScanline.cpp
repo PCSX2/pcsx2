@@ -221,12 +221,12 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 			GSVector8 dc(dscan.c);
 
-			GSVector8 dr = dc.xxxx();
+			GSVector8 dRect = dc.xxxx();
 			GSVector8 db = dc.zzzz();
 
 			for(int i = 0; i < 8; i++)
 			{
-				GSVector8i r = GSVector8i(dr * shift[1 + i]).ps32();
+				GSVector8i r = GSVector8i(dRect * shift[1 + i]).ps32();
 				GSVector8i b = GSVector8i(db * shift[1 + i]).ps32();
 
 				m_local.d[i].rb = r.upl16(b);
@@ -367,12 +367,12 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 		{
 			m_local.d4.c = GSVector4i(dscan.c * shift[0]).xzyw().ps32();
 
-			GSVector4 dr = dscan.c.xxxx();
+			GSVector4 dRect = dscan.c.xxxx();
 			GSVector4 db = dscan.c.zzzz();
 
 			for(int i = 0; i < 4; i++)
 			{
-				GSVector4i r = GSVector4i(dr * shift[1 + i]).ps32();
+				GSVector4i r = GSVector4i(dRect * shift[1 + i]).ps32();
 				GSVector4i b = GSVector4i(db * shift[1 + i]).ps32();
 
 				m_local.d[i].rb = r.upl16(b);

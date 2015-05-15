@@ -122,9 +122,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	GL_POP();
 }
 
-void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader)
+void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader)
 {
-	StretchRect(sTex, dTex, dr, shader);
+	StretchRect(sTex, dTex, dRect, shader);
 }
 
 GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
@@ -207,9 +207,9 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 	return FetchSurface(GSTexture::Offscreen, w, h, false, format);
 }
 
-void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
 {
-	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dr, shader, linear);
+	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
 }
 
 GSTexture* GSDevice::GetCurrent()
@@ -217,7 +217,7 @@ GSTexture* GSDevice::GetCurrent()
 	return m_current;
 }
 
-void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
+void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
 {
 	if(m_merge == NULL || m_merge->GetSize() != fs)
 	{
@@ -244,7 +244,7 @@ void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dr, const 
 			}
 		}
 
-		DoMerge(tex, sRect, m_merge, dr, slbg, mmod, c);
+		DoMerge(tex, sRect, m_merge, dRect, slbg, mmod, c);
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
@@ -322,9 +322,9 @@ void GSDevice::ExternalFX()
 	if (m_shaderfx != NULL)
 	{
 		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dr(0, 0, s.x, s.y);
+		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shaderfx, dr, 7, false);
+		StretchRect(m_current, sRect, m_shaderfx, dRect, 7, false);
 		DoExternalFX(m_shaderfx, m_current);
 	}
 }
@@ -342,9 +342,9 @@ void GSDevice::FXAA()
 	if(m_fxaa != NULL)
 	{
 		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dr(0, 0, s.x, s.y);
+		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_fxaa, dr, 7, false);
+		StretchRect(m_current, sRect, m_fxaa, dRect, 7, false);
 		DoFXAA(m_fxaa, m_current);
 	}
 }
@@ -362,9 +362,9 @@ void GSDevice::ShadeBoost()
 	if(m_shadeboost != NULL)
 	{
 		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dr(0, 0, s.x, s.y);
+		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shadeboost, dr, 0, false);
+		StretchRect(m_current, sRect, m_shadeboost, dRect, 0, false);
 		DoShadeBoost(m_shadeboost, m_current);
 	}
 }

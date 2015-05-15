@@ -92,7 +92,7 @@ bool GSRenderer::Merge(int field)
 	bool en[2];
 
 	GSVector4i fr[2];
-	GSVector4i dr[2];
+	GSVector4i dRect[2];
 
 	int baseline = INT_MAX;
 
@@ -103,11 +103,11 @@ bool GSRenderer::Merge(int field)
 		if(en[i])
 		{
 			fr[i] = GetFrameRect(i);
-			dr[i] = GetDisplayRect(i);
+			dRect[i] = GetDisplayRect(i);
 
-			baseline = min(dr[i].top, baseline);
+			baseline = min(dRect[i].top, baseline);
 
-			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
+			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dRect[i].x,dRect[i].y,dRect[i].z,dRect[i].w);
 		}
 	}
 
@@ -132,15 +132,15 @@ bool GSRenderer::Merge(int field)
 
 	if(samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
 	{
-		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dr[0].eq(dr[1] + GSVector4i(0, 0, 0, 1))
-		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dr[1].eq(dr[0] + GSVector4i(0, 0, 0, 1)))
+		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dRect[0].eq(dRect[1] + GSVector4i(0, 0, 0, 1))
+		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dRect[1].eq(dRect[0] + GSVector4i(0, 0, 0, 1)))
 		{
 			// persona 4:
 			//
 			// fr[0] = 0 0 640 448
 			// fr[1] = 0 1 640 448
-			// dr[0] = 159 50 779 498
-			// dr[1] = 159 50 779 497
+			// dRect[0] = 159 50 779 498
+			// dRect[1] = 159 50 779 497
 			//
 			// second image shifted up by 1 pixel and blended over itself
 			//
@@ -148,29 +148,29 @@ bool GSRenderer::Merge(int field)
 			//
 			// fr[0] = 0 1 512 448
 			// fr[1] = 0 0 512 448
-			// dr[0] = 127 50 639 497
-			// dr[1] = 127 50 639 498
+			// dRect[0] = 127 50 639 497
+			// dRect[1] = 127 50 639 498
 			//
 			// same just the first image shifted
 
 			int top = min(fr[0].top, fr[1].top);
-			int bottom = max(dr[0].bottom, dr[1].bottom);
+			int bottom = max(dRect[0].bottom, dRect[1].bottom);
 
 			fr[0].top = top;
 			fr[1].top = top;
-			dr[0].bottom = bottom;
-			dr[1].bottom = bottom;
+			dRect[0].bottom = bottom;
+			dRect[1].bottom = bottom;
 
 			// blurdetected = true;
 		}
-		else if(dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
+		else if(dRect[0].eq(dRect[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
 		{
 			// dq5:
 			//
 			// fr[0] = 0 1 512 445
 			// fr[1] = 0 0 512 444
-			// dr[0] = 127 50 639 494
-			// dr[1] = 127 50 639 494
+			// dRect[0] = 127 50 639 494
+			// dRect[1] = 127 50 639 494
 
 			int top = min(fr[0].top, fr[1].top);
 			int bottom = min(fr[0].bottom, fr[1].bottom);
@@ -210,7 +210,7 @@ bool GSRenderer::Merge(int field)
 
 		// overscan hack
 
-		if(dr[i].height() > 512) // hmm
+		if(dRect[i].height() > 512) // hmm
 		{
 			int y = GetDeviceSize(i).y;
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD) y /= 2;
@@ -223,9 +223,9 @@ bool GSRenderer::Merge(int field)
 
 		GSVector2 off(0, 0);
 
-		if(dr[i].top - baseline >= 4) // 2?
+		if(dRect[i].top - baseline >= 4) // 2?
 		{
-			off.y = tex[i]->GetScale().y * (dr[i].top - baseline);
+			off.y = tex[i]->GetScale().y * (dRect[i].top - baseline);
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{

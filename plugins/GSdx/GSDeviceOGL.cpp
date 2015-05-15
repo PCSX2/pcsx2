@@ -694,9 +694,9 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 	if(format != GL_RGBA8 && format != GL_R16UI) return NULL;
 
 	GSTexture* dst = CreateOffscreen(w, h, format);
-	GSVector4 dr(0, 0, w, h);
+	GSVector4 dRect(0, 0, w, h);
 
-	StretchRect(src, sRect, dst, dr, m_convert.ps[format == GL_R16UI ? 1 : 0]);
+	StretchRect(src, sRect, dst, dRect, m_convert.ps[format == GL_R16UI ? 1 : 0]);
 
 	return dst;
 }
@@ -733,17 +733,17 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	GL_POP();
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dr, m_convert.ps[shader], linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader], linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, GLuint ps, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dr, ps, m_convert.bs, linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, m_convert.bs, linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, GLuint ps, GSBlendStateOGL* bs, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear)
 {
 	if(!sTex || !dTex)
 	{
@@ -784,16 +784,16 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 
 	// Original code from DX
-	float left = dr.x * 2 / ds.x - 1.0f;
-	float right = dr.z * 2 / ds.x - 1.0f;
+	float left = dRect.x * 2 / ds.x - 1.0f;
+	float right = dRect.z * 2 / ds.x - 1.0f;
 #if 0
-	float top = 1.0f - dr.y * 2 / ds.y;
-	float bottom = 1.0f - dr.w * 2 / ds.y;
+	float top = 1.0f - dRect.y * 2 / ds.y;
+	float bottom = 1.0f - dRect.w * 2 / ds.y;
 #else
 	// Opengl get some issues with the coordinate
 	// I flip top/bottom to fix scaling of the internal resolution
-	float top = -1.0f + dr.y * 2 / ds.y;
-	float bottom = -1.0f + dr.w * 2 / ds.y;
+	float top = -1.0f + dRect.y * 2 / ds.y;
+	float bottom = -1.0f + dRect.w * 2 / ds.y;
 #endif
 
 	// Flip y axis only when we render in the backbuffer
@@ -844,7 +844,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	GL_POP();
 }
 
-void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
+void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, bool slbg, bool mmod, const GSVector4& c)
 {
 	GL_PUSH("DoMerge");
 
@@ -854,14 +854,14 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex,
 
 	if(sTex[1] && !slbg)
 	{
-		StretchRect(sTex[1], sRect[1], dTex, dr[1], m_merge_obj.ps[0]);
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge_obj.ps[0]);
 	}
 
 	if(sTex[0])
 	{
 		m_merge_obj.cb->upload(&c.v);
 
-		StretchRect(sTex[0], sRect[0], dTex, dr[0], m_merge_obj.ps[mmod ? 1 : 0], m_merge_obj.bs);
+		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_merge_obj.bs);
 	}
 
 	GL_POP();
@@ -876,7 +876,7 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	GSVector4 s = GSVector4(dTex->GetSize());
 
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dr(0.0f, yoffset, s.x, s.y + yoffset);
+	GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
 
 	InterlaceConstantBuffer cb;
 
@@ -885,7 +885,7 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	m_interlace.cb->upload(&cb);
 
-	StretchRect(sTex, sRect, dTex, dr, m_interlace.ps[shader], linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
 
 	GL_POP();
 }
@@ -910,9 +910,9 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	GSVector2i s = dTex->GetSize();
 
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
-	StretchRect(sTex, sRect, dTex, dr, m_fxaa.ps, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
 
 	GL_POP();
 }
@@ -948,7 +948,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	GSVector2i s = dTex->GetSize();
 
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
 	ExternalFXConstantBuffer cb;
 
@@ -958,7 +958,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	m_shaderfx.cb->upload(&cb);
 
-	StretchRect(sTex, sRect, dTex, dr, m_shaderfx.ps, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, true);
 
 	GL_POP();
 }
@@ -972,7 +972,7 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 	GSVector2i s = dTex->GetSize();
 
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
 	ShadeBoostConstantBuffer cb;
 
@@ -981,7 +981,7 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 
 	m_shadeboost.cb->upload(&cb);
 
-	StretchRect(sTex, sRect, dTex, dr, m_shadeboost.ps, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, true);
 
 	GL_POP();
 }

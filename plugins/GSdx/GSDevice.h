@@ -100,7 +100,7 @@ protected:
 	virtual GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format) = 0;
 	virtual GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
 
-	virtual void DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c) = 0;
+	virtual void DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, bool slbg, bool mmod, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
@@ -118,7 +118,7 @@ public:
 	virtual bool Reset(int w, int h);
 	virtual bool IsLost(bool update = false) {return false;}
 	virtual void Present(const GSVector4i& r, int shader);
-	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader = 0);
+	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0);
 	virtual void Flip() {}
 
 	virtual void SetVSync(bool enable) {m_vsync = enable;}
@@ -144,9 +144,9 @@ public:
 	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0) {return NULL;}
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true) {}
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true) {}
 
-	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 
 	virtual void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) {}
 	virtual void PSSetShaderResource(int i, GSTexture* sRect) {}
@@ -158,7 +158,7 @@ public:
 
 	GSTexture* GetCurrent();
 
-	void Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c);
+	void Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c);
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
 	void ShadeBoost();
