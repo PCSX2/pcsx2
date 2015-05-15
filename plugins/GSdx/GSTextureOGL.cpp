@@ -143,7 +143,7 @@ namespace PboPool {
 				gl_DeleteSync(m_fence[i]);
 
 				// Don't know if we must do it
-				gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[0]);
+				gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
 				gl_UnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 			}
 			gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
