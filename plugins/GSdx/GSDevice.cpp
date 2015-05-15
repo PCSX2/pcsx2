@@ -217,7 +217,7 @@ GSTexture* GSDevice::GetCurrent()
 	return m_current;
 }
 
-void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sr, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
+void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dr, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
 {
 	if(m_merge == NULL || m_merge->GetSize() != fs)
 	{
@@ -244,7 +244,7 @@ void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sr, GSVector4* dr, const GSV
 			}
 		}
 
-		DoMerge(tex, sr, m_merge, dr, slbg, mmod, c);
+		DoMerge(tex, sRect, m_merge, dr, slbg, mmod, c);
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
@@ -321,10 +321,10 @@ void GSDevice::ExternalFX()
 
 	if (m_shaderfx != NULL)
 	{
-		GSVector4 sr(0, 0, 1, 1);
+		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dr(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sr, m_shaderfx, dr, 7, false);
+		StretchRect(m_current, sRect, m_shaderfx, dr, 7, false);
 		DoExternalFX(m_shaderfx, m_current);
 	}
 }
@@ -341,10 +341,10 @@ void GSDevice::FXAA()
 
 	if(m_fxaa != NULL)
 	{
-		GSVector4 sr(0, 0, 1, 1);
+		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dr(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sr, m_fxaa, dr, 7, false);
+		StretchRect(m_current, sRect, m_fxaa, dr, 7, false);
 		DoFXAA(m_fxaa, m_current);
 	}
 }
@@ -361,10 +361,10 @@ void GSDevice::ShadeBoost()
 
 	if(m_shadeboost != NULL)
 	{
-		GSVector4 sr(0, 0, 1, 1);
+		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dr(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sr, m_shadeboost, dr, 0, false);
+		StretchRect(m_current, sRect, m_shadeboost, dr, 0, false);
 		DoShadeBoost(m_shadeboost, m_current);
 	}
 }

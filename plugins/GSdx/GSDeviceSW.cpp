@@ -90,7 +90,7 @@ void GSDeviceSW::ClearStencil(GSTexture* t, uint8 c)
 	Clear(t, c);
 }
 
-GSTexture* GSDeviceSW::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format)
+GSTexture* GSDeviceSW::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format)
 {
 	GSTexture* dst = CreateOffscreen(w, h, format);
 
@@ -207,7 +207,7 @@ public:
 	}
 };
 
-template<class SHADER> static void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, const SHADER& shader, bool linear)
+template<class SHADER> static void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, const SHADER& shader, bool linear)
 {
 	GSVector4i r(dr.ceil());
 
@@ -226,7 +226,7 @@ template<class SHADER> static void StretchRect(GSTexture* sTex, const GSVector4&
 	GSVector2i ssize = sTex->GetSize();
 
 	GSVector4 p = dr;
-	GSVector4 t = sr * GSVector4(ssize).xyxy() * GSVector4((float)0x10000);
+	GSVector4 t = sRect * GSVector4(ssize).xyxy() * GSVector4((float)0x10000);
 
 	GSVector4 tl = p.xyxy(t);
 	GSVector4 br = p.zwzw(t);
@@ -301,13 +301,13 @@ template<class SHADER> static void StretchRect(GSTexture* sTex, const GSVector4&
 	dTex->Unmap();
 }
 
-void GSDeviceSW::StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
+void GSDeviceSW::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, int shader, bool linear)
 {
 	// TODO: if dTex == m_backbuffer && m_backbuffer is special
 
 	if(shader == 0)
 	{
-		if((sr == GSVector4(0, 0, 1, 1) & dr == GSVector4(dTex->GetSize()).zwxy()).alltrue() && sTex->GetSize() == dTex->GetSize())
+		if((sRect == GSVector4(0, 0, 1, 1) & dr == GSVector4(dTex->GetSize()).zwxy()).alltrue() && sTex->GetSize() == dTex->GetSize())
 		{
 			// shortcut
 
@@ -318,13 +318,13 @@ void GSDeviceSW::StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dT
 
 		ShaderCopy s;
 
-		::StretchRect(sTex, sr, dTex, dr, s, linear);
+		::StretchRect(sTex, sRect, dTex, dr, s, linear);
 	}
 	else if(shader == 1)
 	{
 		ShaderAlphaBlend s;
 
-		::StretchRect(sTex, sr, dTex, dr, s, linear);
+		::StretchRect(sTex, sRect, dTex, dr, s, linear);
 	}
 	else
 	{
@@ -337,7 +337,7 @@ void GSDeviceSW::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 	// TODO
 }
 
-void GSDeviceSW::PSSetShaderResource(int i, GSTexture* sr)
+void GSDeviceSW::PSSetShaderResource(int i, GSTexture* sRect)
 {
 	// TODO
 }
@@ -349,13 +349,13 @@ void GSDeviceSW::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 //
 
-void GSDeviceSW::DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
+void GSDeviceSW::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
 {
 	ClearRenderTarget(dTex, c);
 
 	if(sTex[1] && !slbg)
 	{
-		StretchRect(sTex[1], sr[1], dTex, dr[1]);
+		StretchRect(sTex[1], sRect[1], dTex, dr[1]);
 	}
 
 	if(sTex[0])
@@ -366,7 +366,7 @@ void GSDeviceSW::DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSV
 
 			ShaderAlpha2xBlend s;
 
-			::StretchRect(sTex[0], sr[0], dTex, dr[0], s, true);
+			::StretchRect(sTex[0], sRect[0], dTex, dr[0], s, true);
 		}
 		else
 		{
@@ -374,7 +374,7 @@ void GSDeviceSW::DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSV
 
 			ShaderFactorBlend s((uint32)(int)(c.a * 255));
 
-			::StretchRect(sTex[0], sr[0], dTex, dr[0], s, true);
+			::StretchRect(sTex[0], sRect[0], dTex, dr[0], s, true);
 		}
 	}
 
@@ -385,7 +385,7 @@ void GSDeviceSW::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 {
 	GSVector4 s = GSVector4(dTex->GetSize());
 
-	GSVector4 sr(0, 0, 1, 1);
+	GSVector4 sRect(0, 0, 1, 1);
 	GSVector4 dr(0.0f, yoffset, s.x, s.y + yoffset);
 
 	if(shader == 0 || shader == 1)
@@ -398,7 +398,7 @@ void GSDeviceSW::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	}
 	else if(shader == 3)
 	{
-		StretchRect(sTex, sr, dTex, dr, 0, linear);
+		StretchRect(sTex, sRect, dTex, dr, 0, linear);
 	}
 	else
 	{

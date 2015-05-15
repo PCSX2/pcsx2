@@ -28,7 +28,7 @@ class GSDeviceSW : public GSDevice
 {
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* sTex[2], GSVector4* sr, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
+	void DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
 
 	void Clear(GSTexture* t, uint32 c);
@@ -50,13 +50,13 @@ public:
 	void ClearDepth(GSTexture* t, float c);
 	void ClearStencil(GSTexture* t, uint8 c);
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
+	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
-	void StretchRect(GSTexture* sTex, const GSVector4& sr, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dr, int shader = 0, bool linear = true);
 
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
-	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderResource(int i, GSTexture* sRect);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 };
 

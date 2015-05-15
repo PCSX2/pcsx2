@@ -962,9 +962,9 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 	else
 	{
 		GSVector4 lrf = v0.p.xxxx(v1.p).ceil(); // l l r r
-		GSVector4 lrmax = lrf.max(m_fscissor_x); // max(l, sl) max(l, sr) max(r, sl) max(r, sr)
-		GSVector4 lrmin = lrf.min(m_fscissor_x); // min(l, sl) min(l, sr) min(r, sl) min(r, sr)
-		GSVector4i lr = GSVector4i(lrmax.xzyw(lrmin)); // max(l, sl) max(r, sl) min(l, sr) min(r, sr)
+		GSVector4 lrmax = lrf.max(m_fscissor_x); // max(l, sl) max(l, sRect) max(r, sl) max(r, sRect)
+		GSVector4 lrmin = lrf.min(m_fscissor_x); // min(l, sl) min(l, sRect) min(r, sl) min(r, sRect)
+		GSVector4i lr = GSVector4i(lrmax.xzyw(lrmin)); // max(l, sl) max(r, sl) min(l, sRect) min(r, sRect)
 
 		int left, right;
 
@@ -973,7 +973,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		if((dv.p >= GSVector4::zero()).mask() & 1)
 		{
 			left = lr.extract32<0>(); // max(l, sl)
-			right = lr.extract32<3>(); // min(r, sr)
+			right = lr.extract32<3>(); // min(r, sRect)
 
 			if(left >= right) return;
 
@@ -985,7 +985,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		else
 		{
 			left = lr.extract32<1>(); // max(r, sl)
-			right = lr.extract32<2>(); // min(l, sr)
+			right = lr.extract32<2>(); // min(l, sRect)
 
 			if(left >= right) return;
 
