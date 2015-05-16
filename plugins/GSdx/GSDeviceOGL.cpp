@@ -709,9 +709,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
 
-#ifdef ENABLE_OGL_DEBUG
 	GL_PUSH(format("CopyRect from %d to %d", sid, did).c_str());
-#endif
 
 	if (GLLoader::found_GL_ARB_copy_image) {
 		gl_CopyImageSubData( sid, GL_TEXTURE_2D,

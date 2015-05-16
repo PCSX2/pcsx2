@@ -118,7 +118,86 @@ public:
 				"\tAC:%d\n\n"
 				, PRMODECONT.AC);
 
-		// Lots of register TODO but later
+		fprintf(fp, "TEXCLUT\n"
+				"\tCOU:%d\n"
+				"\tCBW:%d\n"
+				"\tCOV:%d\n\n"
+				, TEXCLUT.COU, TEXCLUT.CBW, TEXCLUT.COV);
+
+		fprintf(fp, "SCANMSK\n"
+				"\tMSK:%d\n\n"
+				"\n"
+				, SCANMSK.MSK);
+
+		fprintf(fp, "TEXA\n"
+				"\tAEM:%d\n"
+				"\tTA0:%d\n"
+				"\tTA1:%d\n\n"
+				, TEXA.AEM, TEXA.TA0, TEXA.TA1);
+
+		fprintf(fp, "FOGCOL\n"
+				"\tFCG:%d\n"
+				"\tFCB:%d\n"
+				"\tFCR:%d\n\n"
+				, FOGCOL.FCG, FOGCOL.FCB, FOGCOL.FCR);
+
+		fprintf(fp, "DIMX\n"
+				"\tDM22:%d\n"
+				"\tDM23:%d\n"
+				"\tDM31:%d\n"
+				"\tDM02:%d\n"
+				"\tDM21:%d\n"
+				"\tDM12:%d\n"
+				"\tDM03:%d\n"
+				"\tDM01:%d\n"
+				"\tDM33:%d\n"
+				"\tDM30:%d\n"
+				"\tDM11:%d\n"
+				"\tDM10:%d\n"
+				"\tDM20:%d\n"
+				"\tDM32:%d\n"
+				"\tDM00:%d\n"
+				"\tDM13:%d\n\n"
+				, DIMX.DM22, DIMX.DM23, DIMX.DM31, DIMX.DM02, DIMX.DM21, DIMX.DM12, DIMX.DM03, DIMX.DM01, DIMX.DM33, DIMX.DM30, DIMX.DM11, DIMX.DM10, DIMX.DM20, DIMX.DM32, DIMX.DM00, DIMX.DM13);
+
+		fprintf(fp, "DTHE\n"
+				"\tDTHE:%d\n\n"
+				, DTHE.DTHE);
+
+		fprintf(fp, "COLCLAMP\n"
+				"\tCLAMP:%d\n\n"
+				, COLCLAMP.CLAMP);
+
+		fprintf(fp, "PABE\n"
+				"\tPABE:%d\n\n"
+				, PABE.PABE);
+
+		fprintf(fp, "BITBLTBUF\n"
+				"\tSBW:%d\n"
+				"\tSBP:%d\n"
+				"\tSPSM:%d\n"
+				"\tDBW:%d\n"
+				"\tDPSM:%d\n"
+				"\tDBP:%d\n\n"
+				, BITBLTBUF.SBW, BITBLTBUF.SBP, BITBLTBUF.SPSM, BITBLTBUF.DBW, BITBLTBUF.DPSM, BITBLTBUF.DBP);
+
+		fprintf(fp, "TRXDIR\n"
+				"\tXDIR:%d\n\n"
+				, TRXDIR.XDIR);
+
+		fprintf(fp, "TRXPOS\n"
+				"\tDIRY:%d\n"
+				"\tSSAY:%d\n"
+				"\tSSAX:%d\n"
+				"\tDIRX:%d\n"
+				"\tDSAX:%d\n"
+				"\tDSAY:%d\n\n"
+				, TRXPOS.DIRY, TRXPOS.SSAY, TRXPOS.SSAX, TRXPOS.DIRX, TRXPOS.DSAX, TRXPOS.DSAY);
+
+		fprintf(fp, "TRXREG\n"
+				"\tRRH:%d\n"
+				"\tRRW:%d\n\n"
+				, TRXREG.RRH, TRXREG.RRW);
 
 		fclose(fp);
 	}
