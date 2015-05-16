@@ -43,6 +43,7 @@ namespace GSPng {
                     }
                     img.write(root + "_R8.png");
                 }
+                break;
 
             case R16I_PNG:
                 {
@@ -55,6 +56,7 @@ namespace GSPng {
                     }
                     img.write(root + "_R16.png");
                 }
+                break;
 
             case R32I_PNG:
                 {
@@ -72,6 +74,7 @@ namespace GSPng {
                     img_msb.write(root + "_R32I_msb.png");
                     img_lsb.write(root + "_R32I_lsb.png");
                 }
+                break;
 
             case DEPTH_PNG:
                 {
@@ -149,6 +152,7 @@ namespace GSPng {
                     img_opaque.write(root + ".png");
                     img_alpha.write(root + "_alpha.png");
                 }
+                break;
 
             default:
                 ASSERT(0);
