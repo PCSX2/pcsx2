@@ -384,18 +384,6 @@ void GSDeviceOGL::Flip()
 	m_wnd->Flip();
 }
 
-void GSDeviceOGL::AttachContext()
-{
-	if (m_window)
-		m_window->AttachContext();
-}
-
-void GSDeviceOGL::DetachContext()
-{
-	if (m_window)
-		m_window->DetachContext();
-}
-
 void GSDeviceOGL::BeforeDraw()
 {
 	GL_PUSH("Before Draw Validation & Setup");

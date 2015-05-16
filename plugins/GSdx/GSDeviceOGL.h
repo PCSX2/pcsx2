@@ -562,9 +562,6 @@ class GSDeviceOGL : public GSDevice
 	bool Reset(int w, int h);
 	void Flip();
 	void SetVSync(bool enable);
-	// Used for opengl multithread hack
-	void AttachContext();
-	void DetachContext();
 
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
