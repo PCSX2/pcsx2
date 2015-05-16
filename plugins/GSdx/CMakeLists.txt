@@ -36,10 +36,6 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
-if(PNGPP_FOUND)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DPNGPP_SUPPORTED)
-endif()
-
 if(EGL_API AND EGL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
 endif()
@@ -88,6 +84,7 @@ set(GSdxSources
     GSLinuxDialog.cpp
     GSLocalMemory.cpp
     GSPerfMon.cpp
+    GSPng.cpp
     GSRasterizer.cpp
     GSRenderer.cpp
     GSRendererCL.cpp
@@ -202,20 +199,16 @@ set(GSdxFinalLibs
 )
 
 set(GSdxFinalLibs ${GSdxFinalLibs}
-	${OPENGL_LIBRARIES}
+    ${OPENGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
+    "-lpng"  # yes it sucks
 )
 
 if(EGL_API AND EGL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs}
         ${EGL_LIBRARIES}
         )
-endif()
-
-if(PNGPP_FOUND)
-	set(GSdxFinalLibs ${GSdxFinalLibs}
-		"-lpng")
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
