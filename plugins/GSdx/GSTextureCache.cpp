@@ -195,7 +195,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE(format("TC: Lookup Target(%d) %dx%d, miss (0x%x)", type, w, h, bp).c_str());
+		GL_CACHE(format("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp).c_str());
 
 		dst = CreateTarget(TEX0, w, h, type);
 
@@ -206,7 +206,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 	else
 	{
-		GL_CACHE(format("TC: Lookup Target(%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp).c_str());
+		GL_CACHE(format("TC: Lookup Target(T%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp).c_str());
 
 		dst->Update();
 	}
@@ -425,6 +425,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				else
 				{
 					m_dst[type].erase(j);
+					GL_CACHE(format("TC: Remove Target(%d) %d (0x%x)", type,
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0).c_str());
 					delete t;
 					continue;
 				}
@@ -602,6 +605,9 @@ void GSTextureCache::IncAge()
 			if(++t->m_age > maxage)
 			{
 				m_dst[type].erase(j);
+				GL_CACHE(format("TC: Remove Target(T%d): %d (0x%x) due to age", type,
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0).c_str());
 
 				delete t;
 			}
@@ -639,8 +645,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(dst->m_type != RenderTarget)
 		{
-			// GH: caller was modifier to never hit this code. I don't think a zbuffer
-			// can be reused as an input texture
+			GL_CACHE(format("TC: Remove dst because not a RT %d (0x%x)",
+						dst->m_texture ? dst->m_texture->GetID() : 0,
+						dst->m_TEX0.TBP0).c_str());
+
 			// TODO
 			delete src;
 			return NULL;
@@ -1277,7 +1285,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 {
 	m_surfaces.erase(s);
 
-	GL_CACHE(format("TC: remove texture %d (0x%x)",
+	GL_CACHE(format("TC: Remove Src Texture: %d (0x%x)",
 				s->m_texture ? s->m_texture->GetID() : 0,
 				s->m_TEX0.TBP0).c_str());
 
