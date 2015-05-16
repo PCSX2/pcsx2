@@ -63,7 +63,10 @@ namespace PboPool {
 	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
 		gl_GenBuffers(countof(m_pool), m_pool);
-		m_texture_storage  = (theApp.GetConfig("ogl_texture_storage", !GLLoader::fglrx_buggy_driver) == 1) && GLLoader::found_GL_ARB_buffer_storage;
+		m_texture_storage  = GLLoader::found_GL_ARB_buffer_storage;
+		// Code is really faster on MT driver. So far only nvidia support it
+		if (!(GLLoader::nvidia_buggy_driver && theApp.GetConfig("enable_nvidia_multi_thread", 1)))
+			m_texture_storage  &= (theApp.GetConfig("ogl_texture_storage", 0) == 1);
 
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();
