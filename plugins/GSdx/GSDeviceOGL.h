@@ -456,6 +456,8 @@ class GSDeviceOGL : public GSDevice
 	struct D3D9Blend {int bogus, op, src, dst;};
 	static const D3D9Blend m_blendMapD3D9[3*3*3*3];
 
+	static int s_n;
+
 	private:
 	uint32 m_msaa;				// Level of Msaa
 

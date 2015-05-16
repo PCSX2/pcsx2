@@ -28,7 +28,6 @@
 
 //#define ONLY_LINES
 
-static uint32 g_draw_count = 0;
 // TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 uint64 g_real_texture_upload_byte = 0;
@@ -42,6 +41,7 @@ static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
 
 bool GSDeviceOGL::m_debug_gl_call = false;
+int  GSDeviceOGL::s_n = 0;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_free_window(false)
@@ -399,9 +399,6 @@ void GSDeviceOGL::BeforeDraw()
 
 void GSDeviceOGL::AfterDraw()
 {
-#if defined(ENABLE_OGL_DEBUG)
-	g_draw_count++;
-#endif
 }
 
 void GSDeviceOGL::DrawPrimitive()
@@ -1251,7 +1248,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
 	if (!(gl_type == GL_DEBUG_TYPE_OTHER_ARB && gl_severity == GL_DEBUG_SEVERITY_NOTIFICATION)) {
-		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
+		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 	}
 	#endif
 
@@ -1259,7 +1256,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	FILE* f = fopen("GSdx_opengl_debug.txt","a");
 	if(f)
 	{
-		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
+		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 		fclose(f);
 	}
 	ASSERT(sev_counter < 5);
