@@ -39,7 +39,4 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r);
 	void Unmap();
 	bool Save(const string& fn, bool dds = false);
-#ifdef ENABLE_OGL_PNG
-	void SavePNG(const string& fn);
-#endif
 };

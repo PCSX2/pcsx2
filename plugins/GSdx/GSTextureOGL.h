@@ -65,10 +65,6 @@ class GSTextureOGL : public GSTexture
 		void Unmap();
 		bool Save(const string& fn, bool dds = false);
 		void Save(const string& fn, const void* image, uint32 pitch);
-#ifdef ENABLE_OGL_PNG
-		void SavePNG(const string& fn, const void* image, uint32 pitch);
-#endif
-		void SaveRaw(const string& fn, const void* image, uint32 pitch);
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }

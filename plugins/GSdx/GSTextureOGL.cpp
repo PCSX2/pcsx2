@@ -23,6 +23,7 @@
 #include <limits.h>
 #include "GSTextureOGL.h"
 #include "GLState.h"
+#include "GSPng.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_real_texture_upload_byte;
@@ -33,7 +34,7 @@ extern uint64 g_real_texture_upload_byte;
 
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
 namespace PboPool {
-	
+
 	GLuint m_pool[PBO_POOL_SIZE];
 	uint32 m_offset[PBO_POOL_SIZE];
 	char*  m_map[PBO_POOL_SIZE];
@@ -237,7 +238,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			break;
 		case 0:
 		case GL_DEPTH32F_STENCIL8:
-			// Backbuffer & dss aren't important 
+			// Backbuffer & dss aren't important
 			m_int_format    = 0;
 			m_int_type      = 0;
 			m_int_alignment = 0;
@@ -265,7 +266,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 GSTextureOGL::~GSTextureOGL()
 {
 	/* Unbind the texture from our local state */
-	
+
 	if (m_texture_id == GLState::rt)
 		GLState::rt = 0;
 	if (m_texture_id == GLState::ds)
@@ -489,78 +490,6 @@ void GSTextureOGL::Save(const string& fn, const void* image, uint32 pitch)
 	fclose(fp);
 }
 
-#ifdef ENABLE_OGL_PNG
-#include "png++/png.hpp"
-
-void GSTextureOGL::SavePNG(const string& fn, const void* image, uint32 pitch) {
-	if (IsDss()) {
-		// TODO
-		//png::image<png::gray_pixel_16> img(m_size.x, m_size.y);
-	} else {
-		png::image<png::rgba_pixel> img(m_size.x, m_size.y);
-		png::image<png::rgb_pixel>  img_opaque(m_size.x, m_size.y);
-		png::image<png::gray_pixel> img_alpha(m_size.x, m_size.y);
-
-		uint8* data = (uint8*)image;
-		for(int h = 0; h < m_size.y; h++, data += pitch) {
-			for (int w = 0; w < m_size.x; w++) {
-#if !defined(ENABLE_OGL_PNG_OPAQUE) && !defined(ENABLE_OGL_PNG_ALPHA)
-				png::rgba_pixel p(data[4*w+0], data[4*w+1], data[4*w+2], data[4*w+3]);
-				img.set_pixel(w, h, p);
-#endif
-
-#ifdef ENABLE_OGL_PNG_OPAQUE
-				png::rgb_pixel po(data[4*w+0], data[4*w+1], data[4*w+2]);
-				img_opaque.set_pixel(w, h, po);
-#endif
-#ifdef ENABLE_OGL_PNG_ALPHA
-				png::gray_pixel pa(data[4*w+3]);
-				img_alpha.set_pixel(w, h, pa);
-#endif
-			}
-		}
-
-		std::string root = fn;
-		root.replace(fn.length()-4, 4, "");
-#if !defined(ENABLE_OGL_PNG_OPAQUE) && !defined(ENABLE_OGL_PNG_ALPHA)
-		img.write(root + "_full.png");
-#endif
-#ifdef ENABLE_OGL_PNG_OPAQUE
-		img_opaque.write(root + "_opaque.png");
-#endif
-#ifdef ENABLE_OGL_PNG_ALPHA
-		img_alpha.write(root + "_alpha.png");
-#endif
-	}
-}
-#endif
-
-void GSTextureOGL::SaveRaw(const string& fn, const void* image, uint32 pitch)
-{
-	// Build a raw CSV file
-	FILE* fp = fopen(fn.c_str(), "w");
-	if (fp == NULL)
-		return;
-
-	uint32* data = (uint32*)image;
-
-	for(int h = m_size.y; h > 0; h--) {
-		for (int w = m_size.x; w > 0; w--, data += 1) {
-			if (*data > 0xffffff)
-				;
-			else {
-				fprintf(fp, "%x", *data);
-			}
-			if ( w > 1)
-				fprintf(fp, ",");
-		}
-		fprintf(fp, "\n");
-	}
-
-	fclose(fp);
-}
-
-
 bool GSTextureOGL::Save(const string& fn, bool dds)
 {
 	// Collect the texture data
@@ -568,6 +497,11 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	uint32 buf_size = pitch * m_size.y * 2;// Note *2 for security (depth/stencil)
 	char* image = (char*)malloc(buf_size);
 	bool status = true;
+#ifdef ENABLE_OGL_DEBUG
+	GSPng::Format fmt = GSPng::RGB_A_PNG;
+#else
+	GSPng::Format fmt = GSPng::RGB_PNG;
+#endif
 
 	if (IsBackbuffer()) {
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
@@ -578,9 +512,12 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image);
 
 		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+		fmt = GSPng::DEPTH_PNG;
 	} else if(m_format == GL_R32I) {
 		gl_GetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
-		SaveRaw(fn, image, pitch);
+
+		fmt = GSPng::R32I_PNG;
 
 		// Not supported in Save function
 		status = false;
@@ -590,16 +527,19 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-		if (m_format == GL_RGBA8)
+		if (m_format == GL_RGBA8) {
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		}
 		else if (m_format == GL_R16UI)
 		{
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image);
+			fmt = GSPng::R16I_PNG;
 			// Not supported in Save function
 			status = false;
 		}
 		else if (m_format == GL_R8)
 		{
+			fmt = GSPng::R8I_PNG;
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image);
 			// Not supported in Save function
 			status = false;
@@ -609,7 +549,7 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	}
 
 #ifdef ENABLE_OGL_PNG
-	if (status) SavePNG(fn, image, pitch);
+	GSPng::Save(fmt, fn, image, m_size.x, m_size.y, pitch);
 #else
 	if (status) Save(fn, image, pitch);
 #endif
