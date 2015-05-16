@@ -248,8 +248,9 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	bool hacksEnabled = configToUse->EnableSpeedHacks;
 	bool HacksEnabledAndNoPreset = hacksEnabled && !hasPreset;
 
-	// Main checkbox - locked only if presets are enabled
+	// Main checkbox and Restore-defaults - locked only if presets are enabled
 	m_check_Enable->Enable(!hasPreset);
+	m_button_Defaults->Enable(!hasPreset);
 
 	// lock/unlock the slider panels rather than the sliders themselves
 	// in order to affect both sliders and texts
