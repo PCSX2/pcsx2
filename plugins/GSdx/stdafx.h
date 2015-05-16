@@ -495,20 +495,20 @@ extern void vmfree(void* ptr, size_t size);
 
 // Except apple any sane driver support this extension
 #if defined(__linux__) && defined(_DEBUG)
-#define GL_CACHE(s) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, -1, s);
+#define GL_CACHE(...) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, -1, format(__VA_ARGS__).c_str());
 #else
-#define GL_CACHE(s) (0);
+#define GL_CACHE(...) (0);
 #endif
 
 #if defined(__linux__) && defined(ENABLE_OGL_DEBUG)
-#define GL_PUSH(s) gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, s);
-#define GL_POP(s)  gl_PopDebugGroup();
-#define GL_INS(s)  gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, -1, s);
+#define GL_PUSH(...)	gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str());
+#define GL_POP()        gl_PopDebugGroup();
+#define GL_INS(...)		gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, -1, format(__VA_ARGS__).c_str());
 
 #else
-#define GL_PUSH(s) (0);
-#define GL_POP()   (0);
-#define GL_INS(s)  (0);
+#define GL_PUSH(...) (0);
+#define GL_POP()     (0);
+#define GL_INS(...)  (0);
 #endif
 
 // Helper path to dump texture

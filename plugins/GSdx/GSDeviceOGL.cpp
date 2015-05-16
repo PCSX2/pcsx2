@@ -147,13 +147,13 @@ GSDeviceOGL::~GSDeviceOGL()
 	GL_POP();
 }
 
-GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int format)
+GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
 {
 	GL_PUSH("Create surface");
 
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
 	GSTextureOGL* t = NULL;
-	t = new GSTextureOGL(type, w, h, format, m_fbo_read);
+	t = new GSTextureOGL(type, w, h, fmt, m_fbo_read);
 
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	switch(type)
@@ -430,7 +430,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
 
-	GL_PUSH(format("Clear RT %d", T->GetID()).c_str());
+	GL_PUSH("Clear RT %d", T->GetID());
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
@@ -471,7 +471,7 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
-	GL_PUSH(format("Clear RTi %d", T->GetID()).c_str());
+	GL_PUSH("Clear RTi %d", T->GetID());
 
 	uint32 old_color_mask = GLState::wrgba;
 	OMSetColorMaskState();
@@ -494,7 +494,7 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
-	GL_PUSH(format("Clear Depth %d", T->GetID()).c_str());
+	GL_PUSH("Clear Depth %d", T->GetID());
 
 	OMSetFBO(m_fbo);
 	OMAttachDs(T);
@@ -517,7 +517,7 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
-	GL_PUSH(format("Clear Stencil %d", T->GetID()).c_str());
+	GL_PUSH("Clear Stencil %d", T->GetID());
 
 	// Keep SCISSOR_TEST enabled on purpose to reduce the size
 	// of clean in DATE (impact big upscaling)
@@ -694,7 +694,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
 
-	GL_PUSH(format("CopyRect from %d to %d", sid, did).c_str());
+	GL_PUSH("CopyRect from %d to %d", sid, did);
 
 	if (GLLoader::found_GL_ARB_copy_image) {
 		gl_CopyImageSubData( sid, GL_TEXTURE_2D,
@@ -734,7 +734,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	GL_PUSH(format("StretchRect from %d to %d", sTex->GetID(), dTex->GetID()).c_str());
+	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
 
 	// ************************************
 	// Init

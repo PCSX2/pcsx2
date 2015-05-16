@@ -130,12 +130,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE(format("TC: dst hit: %d (0x%x)",
+			GL_CACHE("TC: dst hit: %d (0x%x)",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
-						TEX0.TBP0
-						).c_str());
+						TEX0.TBP0);
 		} else {
-			GL_CACHE(format("TC: src miss (0x%x)", TEX0.TBP0).c_str());
+			GL_CACHE("TC: src miss (0x%x)", TEX0.TBP0);
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst);
@@ -146,10 +145,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 #ifdef ENABLE_OGL_DEBUG
 	} else {
-		GL_CACHE(format("TC: src hit: %d (0x%x)",
+		GL_CACHE("TC: src hit: %d (0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
-					TEX0.TBP0
-					).c_str());
+					TEX0.TBP0);
 #endif
 	}
 
@@ -195,7 +193,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE(format("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp).c_str());
+		GL_CACHE("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp);
 
 		dst = CreateTarget(TEX0, w, h, type);
 
@@ -206,7 +204,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 	else
 	{
-		GL_CACHE(format("TC: Lookup Target(T%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp).c_str());
+		GL_CACHE("TC: Lookup Target(T%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp);
 
 		dst->Update();
 	}
@@ -275,7 +273,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		{
 			dst = t;
 
-			GL_CACHE(format("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x)", w, h, dst->m_texture->GetID(), bp).c_str());
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x)", w, h, dst->m_texture->GetID(), bp);
 
 			break;
 		}
@@ -285,7 +283,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			if(t->m_TEX0.TBP0 <= bp && bp < t->m_TEX0.TBP0 + 0xe00UL && (!dst || t->m_TEX0.TBP0 >= dst->m_TEX0.TBP0))
 			{
-				GL_CACHE(format("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, dst->m_texture->GetID(), bp, dst->m_TEX0.TBP0).c_str());
+				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, dst->m_texture->GetID(), bp, dst->m_TEX0.TBP0);
 				dst = t;
 			}
 		}
@@ -293,7 +291,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE(format("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp).c_str());
+		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp);
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 
@@ -425,9 +423,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				else
 				{
 					m_dst[type].erase(j);
-					GL_CACHE(format("TC: Remove Target(%d) %d (0x%x)", type,
+					GL_CACHE("TC: Remove Target(%d) %d (0x%x)", type,
 								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0).c_str());
+								t->m_TEX0.TBP0);
 					delete t;
 					continue;
 				}
@@ -605,9 +603,9 @@ void GSTextureCache::IncAge()
 			if(++t->m_age > maxage)
 			{
 				m_dst[type].erase(j);
-				GL_CACHE(format("TC: Remove Target(T%d): %d (0x%x) due to age", type,
+				GL_CACHE("TC: Remove Target(T%d): %d (0x%x) due to age", type,
 							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0).c_str());
+							t->m_TEX0.TBP0);
 
 				delete t;
 			}
@@ -645,9 +643,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(dst->m_type != RenderTarget)
 		{
-			GL_CACHE(format("TC: Remove dst because not a RT %d (0x%x)",
+			GL_CACHE("TC: Remove dst because not a RT %d (0x%x)",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
-						dst->m_TEX0.TBP0).c_str());
+						dst->m_TEX0.TBP0);
 
 			// TODO
 			delete src;
@@ -1285,9 +1283,9 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 {
 	m_surfaces.erase(s);
 
-	GL_CACHE(format("TC: Remove Src Texture: %d (0x%x)",
+	GL_CACHE("TC: Remove Src Texture: %d (0x%x)",
 				s->m_texture ? s->m_texture->GetID() : 0,
-				s->m_TEX0.TBP0).c_str());
+				s->m_TEX0.TBP0);
 
 	// Source (except render target) is duplicated for each page they use.
 	for(size_t start = s->m_TEX0.TBP0 >> 5, end = s->m_target ? start : countof(m_map) - 1; start <= end; start++)

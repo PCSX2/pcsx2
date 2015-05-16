@@ -313,7 +313,7 @@ void GSRendererHW::Draw()
 		s_n += 3; // Keep it sync with SW renderer
 		return;
 	}
-	GL_PUSH(format("HW Draw %d", s_n).c_str());
+	GL_PUSH("HW Draw %d", s_n);
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
@@ -447,7 +447,7 @@ void GSRendererHW::Draw()
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
 
-	// A couple of hack to avoid upscaling issue. So far it seems to impacts only sprite without linear filtering
+	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];

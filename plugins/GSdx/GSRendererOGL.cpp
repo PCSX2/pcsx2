@@ -211,10 +211,9 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-	GL_PUSH(format("GL Draw from %d in %d (Depth %d)",
+	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
-				rt->GetID(),
-				ds->GetID()).c_str());
+				rt->GetID(), ds->GetID());
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;

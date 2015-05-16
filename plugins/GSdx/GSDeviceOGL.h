@@ -92,7 +92,7 @@ public:
 
 #ifdef ENABLE_OGL_DEBUG
 		if (m_bogus > 2) {
-			GL_INS(format("!!! Bogus blending effect used (%d) !!!", m_bogus).c_str());
+			GL_INS("!!! Bogus blending effect used (%d) !!!", m_bogus);
 		}
 #endif
 		if (m_enable) {

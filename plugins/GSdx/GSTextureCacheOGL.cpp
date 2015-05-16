@@ -54,9 +54,8 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		return;
 	}
 
-	GL_CACHE(format("TC: Read Back Target: %d (0x%x formatted as 0x%x)",
-				t->m_texture->GetID(), TEX0.TBP0, TEX0.PSM
-				).c_str());
+	GL_CACHE("TC: Read Back Target: %d (0x%x formatted as 0x%x)",
+				t->m_texture->GetID(), TEX0.TBP0, TEX0.PSM);
 
 	GL_PUSH("Texture Cache Read");
 
