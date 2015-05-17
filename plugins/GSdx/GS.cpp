@@ -553,6 +553,7 @@ EXPORT_C GSwriteCSR(uint32 csr)
 
 EXPORT_C GSinitReadFIFO(uint8* mem)
 {
+	GL_PERF("Init Read FIFO1");
 	try
 	{
 		s_gs->InitReadFIFO(mem, 1);
@@ -564,6 +565,7 @@ EXPORT_C GSinitReadFIFO(uint8* mem)
 
 EXPORT_C GSreadFIFO(uint8* mem)
 {
+	GL_PERF("Read FIFO1");
 	try
 	{
 		s_gs->ReadFIFO(mem, 1);
@@ -575,6 +577,7 @@ EXPORT_C GSreadFIFO(uint8* mem)
 
 EXPORT_C GSinitReadFIFO2(uint8* mem, uint32 size)
 {
+	GL_PERF("Init Read FIFO2");
 	try
 	{
 		s_gs->InitReadFIFO(mem, size);
@@ -586,6 +589,7 @@ EXPORT_C GSinitReadFIFO2(uint8* mem, uint32 size)
 
 EXPORT_C GSreadFIFO2(uint8* mem, uint32 size)
 {
+	GL_PERF("Read FIFO2");
 	try
 	{
 		s_gs->ReadFIFO(mem, size);

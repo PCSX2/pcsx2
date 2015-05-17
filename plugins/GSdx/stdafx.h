@@ -504,11 +504,12 @@ extern void vmfree(void* ptr, size_t size);
 #define GL_PUSH(...)	gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str());
 #define GL_POP()        gl_PopDebugGroup();
 #define GL_INS(...)		gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, -1, format(__VA_ARGS__).c_str());
-
+#define GL_PERF(...)	gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_MEDIUM, -1, format(__VA_ARGS__).c_str());
 #else
 #define GL_PUSH(...) (0);
 #define GL_POP()     (0);
 #define GL_INS(...)  (0);
+#define GL_PERF(...) (0);
 #endif
 
 // Helper path to dump texture

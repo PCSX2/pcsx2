@@ -197,10 +197,10 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
 		ASSERT(GLLoader::found_geometry_shader);
 
-		GL_INS("Special Draw");
-
 		// FIXME: Investigate: do a dynamic check to pack as many primitives as possibles
 		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+
+		GL_PERF("Split single draw in %d draw", m_index.tail/nb_vertex);
 
 		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
 			gl_TextureBarrier();
