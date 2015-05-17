@@ -83,6 +83,7 @@ set(GSdxSources
     GSFunctionMap.cpp
     GSLinuxDialog.cpp
     GSLocalMemory.cpp
+	GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
     GSRasterizer.cpp
@@ -203,6 +204,7 @@ set(GSdxFinalLibs ${GSdxFinalLibs}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
     "-lpng"  # yes it sucks
+    "-llzma"
 )
 
 if(EGL_API AND EGL_FOUND)
