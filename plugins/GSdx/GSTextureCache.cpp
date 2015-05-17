@@ -283,7 +283,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			if(t->m_TEX0.TBP0 <= bp && bp < t->m_TEX0.TBP0 + 0xe00UL && (!dst || t->m_TEX0.TBP0 >= dst->m_TEX0.TBP0))
 			{
-				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, dst->m_texture->GetID(), bp, dst->m_TEX0.TBP0);
+				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0);
 				dst = t;
 			}
 		}
