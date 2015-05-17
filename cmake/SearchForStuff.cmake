@@ -7,6 +7,8 @@ find_package(BZip2)
 find_package(Gettext) # translation tool
 find_package(Git)
 find_package(JPEG)
+find_package(LibLZMA)
+find_package(PNG)
 find_package(OpenGL)
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)

@@ -40,6 +40,10 @@ if(EGL_API AND EGL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
 endif()
 
+if(LIBLZMA_FOUND)
+	set(GSdxFinalFlags ${GSdxFinalFlags} -DLZMA_SUPPORTED)
+endif()
+
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
@@ -203,14 +207,19 @@ set(GSdxFinalLibs ${GSdxFinalLibs}
     ${OPENGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
-    "-lpng"  # yes it sucks
-    "-llzma"
+    ${PNG_LIBRARY}
 )
 
 if(EGL_API AND EGL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs}
         ${EGL_LIBRARIES}
         )
+endif()
+
+if(LIBLZMA_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs}
+		${LIBLZMA_LIBRARIES}
+		)
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
