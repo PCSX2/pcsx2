@@ -428,9 +428,21 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			om_dssel.date = 1;
 	}
 
-	if(env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
+	if(colclip_wrap)
 	{
-		ps_sel.colclip = 1;
+#ifdef ENABLE_OGL_DEBUG
+		const char *col[3] = {"Cs", "Cd", "0"};
+#endif
+		if (context->ALPHA.A == context->ALPHA.B) {
+			// No addition neither substraction so no risk of overflow the [0:255] range.
+			GL_INS("Disable COLCLIP wrap: blending is a plain copy of %s", col[context->ALPHA.D]);
+			colclip_wrap = false;
+		} else {
+			GL_INS("Enable COLCLIP wrap (blending is %d/%d/%d/%d)",
+						context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+			ps_sel.colclip = 1;
+		}
 	}
 
 	ps_sel.clr1 = om_bsel.IsCLR1();
@@ -626,7 +638,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		SendDraw(require_barrier);
 
-		if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
+		if (colclip_wrap)
 		{
 			ASSERT(bogus_blend <= 2);
 			GL_PUSH("COLCLIP");
@@ -686,7 +698,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			SendDraw(require_barrier);
 
-			if (env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST)
+			if (colclip_wrap)
 			{
 				ASSERT(bogus_blend <= 2);
 				GL_PUSH("COLCLIP");
