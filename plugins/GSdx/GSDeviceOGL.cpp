@@ -42,6 +42,7 @@ static const uint32 g_fx_cb_index         = 14;
 
 bool GSDeviceOGL::m_debug_gl_call = false;
 int  GSDeviceOGL::s_n = 0;
+FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_free_window(false)
@@ -62,8 +63,7 @@ GSDeviceOGL::GSDeviceOGL()
 
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
-	FILE* f = fopen("GSdx_opengl_debug.txt","w");
-	fclose(f);
+	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
 	#endif
 
 	m_debug_gl_call =  theApp.GetConfig("debug_opengl", 0);
@@ -71,6 +71,11 @@ GSDeviceOGL::GSDeviceOGL()
 
 GSDeviceOGL::~GSDeviceOGL()
 {
+	if (m_debug_gl_file) {
+		fclose(m_debug_gl_file);
+		m_debug_gl_file = NULL;
+	}
+
 	// If the create function wasn't called nothing to do.
 	if (m_shader == NULL)
 		return;
@@ -1252,13 +1257,9 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	}
 	#endif
 
-	// FIXME move open/close in constructor/destructor
-	FILE* f = fopen("GSdx_opengl_debug.txt","a");
-	if(f)
-	{
-		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
-		fclose(f);
-	}
+	if (m_debug_gl_file)
+		fprintf(m_debug_gl_file,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
+
 	ASSERT(sev_counter < 5);
 }
 
