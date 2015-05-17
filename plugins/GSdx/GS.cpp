@@ -1468,25 +1468,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 {
 	GLLoader::in_replayer = true;
 
-// lpszCmdLine:
-//   First parameter is the renderer.
-//   Second parameter is the gs file to load and run.
-
-//EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
-#if 0
-	int renderer = -1;
-
-	{
-		char* start = lpszCmdLine;
-		char* end = NULL;
-		long n = strtol(lpszCmdLine, &end, 10);
-		if(end > start) {renderer = n; lpszCmdLine = end;}
-	}
-
-	while(*lpszCmdLine == ' ') lpszCmdLine++;
-
-	::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-#endif
 	// Allow to easyly switch between SW/HW renderer
 	renderer = theApp.GetConfig("renderer", 12);
 	if (renderer != 12 && renderer != 13)
@@ -1495,8 +1476,13 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		return;
 	}
 
+	struct Packet {uint8 type, param; uint32 size, addr; vector<uint8> buff;};
+
+	list<Packet*> packets;
+	vector<uint8> buff;
 	vector<float> stats;
 	stats.clear();
+	uint8 regs[0x2000];
 
 	if(FILE* fp = fopen(lpszCmdLine, "rb"))
 	{
@@ -1504,7 +1490,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 		GSinit();
 
-		uint8 regs[0x2000];
 		GSsetBaseMem(regs);
 
 		s_vsync = !!theApp.GetConfig("vsync", 0);
@@ -1533,10 +1518,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 		GSvsync(1);
 
-		struct Packet {uint8 type, param; uint32 size, addr; vector<uint8> buff;};
-
-		list<Packet*> packets;
-		vector<uint8> buff;
 		int type;
 
 		while((type = fgetc(fp)) != EOF)
@@ -1594,35 +1575,41 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			packets.push_back(p);
 		}
 
-		sleep(1);
+		fclose(fp);
+	} else {
+		fprintf(stderr, "failed to open %s\n", lpszCmdLine);
+		return;
+	}
 
-		//while(IsWindowVisible(hWnd))
-		//FIXME map?
-		int finished = theApp.GetConfig("linux_replay", 1);
-		if (theApp.GetConfig("dump", 0)) {
-			fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
-			finished = 1;
-		}
-		unsigned long frame_number = 0;
-		unsigned long total_frame_nb = 0;
-		while(finished > 0)
+	sleep(1);
+
+	//while(IsWindowVisible(hWnd))
+	//FIXME map?
+	int finished = theApp.GetConfig("linux_replay", 1);
+	if (theApp.GetConfig("dump", 0)) {
+		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
+		finished = 1;
+	}
+	unsigned long frame_number = 0;
+	unsigned long total_frame_nb = 0;
+	while(finished > 0)
+	{
+		frame_number = 0;
+		unsigned long start = timeGetTime();
+		for(auto i = packets.begin(); i != packets.end(); i++)
 		{
-			frame_number = 0;
-			unsigned long start = timeGetTime();
-			for(auto i = packets.begin(); i != packets.end(); i++)
-			{
-				Packet* p = *i;
+			Packet* p = *i;
 
-				switch(p->type)
-				{
+			switch(p->type)
+			{
 				case 0:
 
 					switch(p->param)
 					{
-					case 0: GSgifTransfer1(&p->buff[0], p->addr); break;
-					case 1: GSgifTransfer2(&p->buff[0], p->size / 16); break;
-					case 2: GSgifTransfer3(&p->buff[0], p->size / 16); break;
-					case 3: GSgifTransfer(&p->buff[0], p->size / 16); break;
+						case 0: GSgifTransfer1(&p->buff[0], p->addr); break;
+						case 1: GSgifTransfer2(&p->buff[0], p->size / 16); break;
+						case 2: GSgifTransfer3(&p->buff[0], p->size / 16); break;
+						case 3: GSgifTransfer(&p->buff[0], p->size / 16); break;
 					}
 
 					break;
@@ -1647,66 +1634,61 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 					memcpy(regs, &p->buff[0], 0x2000);
 
 					break;
-				}
 			}
-			unsigned long end = timeGetTime();
-			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
-			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
-
-			stats.push_back((float)(end - start));
-
-
-			sleep(1);
-			finished--;
-			total_frame_nb += frame_number;
 		}
+		unsigned long end = timeGetTime();
+		fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
+		fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
 
-		if (theApp.GetConfig("linux_replay", 1) > 1) {
-			// Print some nice stats
-			// Skip first frame (shader compilation populate the result)
-			// it divides by 10 the standard deviation...
-			float n = (float)theApp.GetConfig("linux_replay", 1) - 1.0f;
-			float mean = 0;
-			float sd = 0;
-			for (auto i = stats.begin()+1; i != stats.end(); i++) {
-				mean += *i;
-			}
-			mean = mean/n;
-			for (auto i = stats.begin()+1; i != stats.end(); i++) {
-				sd += pow((*i)-mean, 2);
-			}
-			sd = sqrt(sd/n);
+		stats.push_back((float)(end - start));
 
-			fprintf(stderr, "\n\nMean: %fms\n", mean);
-			fprintf(stderr, "Standard deviation: %fms\n", sd);
-			fprintf(stderr, "Mean by frame: %fms (%ffps)\n", mean/(float)frame_number, 1000.0f*frame_number/mean);
-			fprintf(stderr, "Standard deviatin by frame: %fms\n", sd/(float)frame_number);
-		}
-#ifdef ENABLE_OGL_DEBUG_MEM_BW
-		total_frame_nb *= 1024;
-		fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
-				(float)g_real_texture_upload_byte/(float)total_frame_nb,
-				(float)g_vertex_upload_byte/(float)total_frame_nb,
-				(float)g_uniform_upload_byte/(float)total_frame_nb
-			   );
-#endif
-
-		for(auto i = packets.begin(); i != packets.end(); i++)
-		{
-			delete *i;
-		}
-
-		packets.clear();
 
 		sleep(1);
-
-		GSclose();
-		GSshutdown();
-
-		fclose(fp);
-	} else {
-		fprintf(stderr, "failed to open %s\n", lpszCmdLine);
+		finished--;
+		total_frame_nb += frame_number;
 	}
+
+	if (theApp.GetConfig("linux_replay", 1) > 1) {
+		// Print some nice stats
+		// Skip first frame (shader compilation populate the result)
+		// it divides by 10 the standard deviation...
+		float n = (float)theApp.GetConfig("linux_replay", 1) - 1.0f;
+		float mean = 0;
+		float sd = 0;
+		for (auto i = stats.begin()+1; i != stats.end(); i++) {
+			mean += *i;
+		}
+		mean = mean/n;
+		for (auto i = stats.begin()+1; i != stats.end(); i++) {
+			sd += pow((*i)-mean, 2);
+		}
+		sd = sqrt(sd/n);
+
+		fprintf(stderr, "\n\nMean: %fms\n", mean);
+		fprintf(stderr, "Standard deviation: %fms\n", sd);
+		fprintf(stderr, "Mean by frame: %fms (%ffps)\n", mean/(float)frame_number, 1000.0f*frame_number/mean);
+		fprintf(stderr, "Standard deviatin by frame: %fms\n", sd/(float)frame_number);
+	}
+#ifdef ENABLE_OGL_DEBUG_MEM_BW
+	total_frame_nb *= 1024;
+	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
+			(float)g_real_texture_upload_byte/(float)total_frame_nb,
+			(float)g_vertex_upload_byte/(float)total_frame_nb,
+			(float)g_uniform_upload_byte/(float)total_frame_nb
+		   );
+#endif
+
+	for(auto i = packets.begin(); i != packets.end(); i++)
+	{
+		delete *i;
+	}
+
+	packets.clear();
+
+	sleep(1);
+
+	GSclose();
+	GSshutdown();
 }
 #endif
 
