@@ -1442,6 +1442,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 #include <sys/time.h>
 #include <sys/timeb.h>	// ftime(), struct timeb
+#include "GSLzma.h"
 
 inline unsigned long timeGetTime()
 {
@@ -1449,18 +1450,6 @@ inline unsigned long timeGetTime()
 	ftime(&t);
 
 	return (unsigned long)(t.time*1000 + t.millitm);
-}
-
-void _fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-	static uint32 read_cnt = 0;
-	read_cnt++;
-
-	size_t result = fread(ptr, size, nmemb, stream);
-	if (result != nmemb) {
-		fprintf(stderr, "Read error\n");
-		exit(read_cnt);
-	}
 }
 
 // Note
@@ -1484,90 +1473,94 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	stats.clear();
 	uint8 regs[0x2000];
 
-	if(FILE* fp = fopen(lpszCmdLine, "rb"))
+	GSinit();
+
+	GSsetBaseMem(regs);
+
+	s_vsync = !!theApp.GetConfig("vsync", 0);
+
+	void* hWnd = NULL;
+
+	int err = _GSopen((void**)&hWnd, "", renderer);
+	if (err != 0) {
+		fprintf(stderr, "Error failed to GSopen\n");
+		return;
+	}
+	if (s_gs->m_wnd == NULL) return;
+
 	{
-		//Console console("GSdx", true);
-
-		GSinit();
-
-		GSsetBaseMem(regs);
-
-		s_vsync = !!theApp.GetConfig("vsync", 0);
-
-		void* hWnd = NULL;
-
-		int err = _GSopen((void**)&hWnd, "", renderer);
-		if (err != 0) {
-			fprintf(stderr, "Error failed to GSopen\n");
-			return;
-		}
-		if (s_gs->m_wnd == NULL) return;
+		std::string f(lpszCmdLine);
+#ifdef LZMA_SUPPORTED
+		GSDumpFile* file = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0)
+			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine)
+			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine);
+#else
+		GSDumpFile* file = new GSDumpRaw(lpszCmdLine);
+#endif
 
 		uint32 crc;
-		_fread(&crc, 4, 1, fp);
+		file->Read(&crc, 4);
 		GSsetGameCRC(crc, 0);
 
 		GSFreezeData fd;
-		_fread(&fd.size, 4, 1, fp);
+		file->Read(&fd.size, 4);
 		fd.data = new uint8[fd.size];
-		_fread(fd.data, fd.size, 1, fp);
+		file->Read(fd.data, fd.size);
+
 		GSfreeze(FREEZE_LOAD, &fd);
 		delete [] fd.data;
 
-		_fread(regs, 0x2000, 1, fp);
+		file->Read(regs, 0x2000);
 
 		GSvsync(1);
 
-		int type;
 
-		while((type = fgetc(fp)) != EOF)
+		while(!file->IsEof())
 		{
+			uint8 type;
+			file->Read(&type, 1);
+
 			Packet* p = new Packet();
 
-			p->type = (uint8)type;
+			p->type = type;
 
 			switch(type)
 			{
 			case 0:
-
-				p->param = (uint8)fgetc(fp);
-
-				_fread(&p->size, 4, 1, fp);
+				file->Read(&p->param, 1);
+				file->Read(&p->size, 4);
 
 				switch(p->param)
 				{
 				case 0:
 					p->buff.resize(0x4000);
 					p->addr = 0x4000 - p->size;
-					_fread(&p->buff[p->addr], p->size, 1, fp);
+					file->Read(&p->buff[p->addr], p->size);
 					break;
 				case 1:
 				case 2:
 				case 3:
 					p->buff.resize(p->size);
-					_fread(&p->buff[0], p->size, 1, fp);
+					file->Read(&p->buff[0], p->size);
 					break;
 				}
 
 				break;
 
 			case 1:
-
-				p->param = (uint8)fgetc(fp);
+				file->Read(&p->param, 1);
 
 				break;
 
 			case 2:
-
-				_fread(&p->size, 4, 1, fp);
+				file->Read(&p->size, 4);
 
 				break;
 
 			case 3:
-
 				p->buff.resize(0x2000);
 
-				_fread(&p->buff[0], 0x2000, 1, fp);
+				file->Read(&p->buff[0], 0x2000);
 
 				break;
 			}
@@ -1575,10 +1568,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			packets.push_back(p);
 		}
 
-		fclose(fp);
-	} else {
-		fprintf(stderr, "failed to open %s\n", lpszCmdLine);
-		return;
 	}
 
 	sleep(1);
