@@ -21,6 +21,7 @@
 # 2/ Change LD_LIBRARY_PATH to uses 3rdparty library
 # Rationale: It is nearly impossible to have the same library version on all systems. So the
 #            easiest solution it to ship library used during the build.
+# 3/ Set __GL_THREADED_OPTIMIZATIONS variable for Nvidia Drivers (major speed boost)
 
 current_script=$0
 
@@ -30,50 +31,29 @@ then
     if [ -e "./launch_pcsx2_linux.sh" ]
     then
         current_script="./launch_pcsx2_linux.sh"
+    else
+        current_script=`which launch_pcsx2_linux.sh`
     fi
 fi
 
 [ $current_script = "launch_pcsx2_linux.sh" ] && \
     echo "Error the script was either directly 'called' (ie launch_pcsx2_linux.sh)" && \
-    echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh" && exit 1;
+    echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh" && return 1;
 
-# Note: sh (dash on debian) does not support pushd, popd...
-# Save current directory
-PWD_old=$PWD
-
-# Go to the script directory
-cd `dirname $current_script`
+# Avoid to screw up the shell context
+DIR=`dirname $current_script`
+MY_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
 # Allow to ship .so library with the build to avoid version issue 
-if [ -e 3rdPartyLibs ]
-then
-    if [ -z $LD_LIBRARY_PATH ]
-    then
-        OLD_LD_LIBRARY_PATH=""
-        export LD_LIBRARY_PATH="./3rdPartyLibs"
-    else
-        OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-        export LD_LIBRARY_PATH="./3rdPartyLibs:$LD_LIBRARY_PATH"
-    fi 
-fi
-# openSUSE don't follow FHS !!!!
-bad_wx_path="/usr/lib/wx-2.8-stl"
-if [ -e "$bad_wx_path" ]
-then
-    if [ -z $LD_LIBRARY_PATH ]
-    then
-        OLD_LD_LIBRARY_PATH=""
-        export LD_LIBRARY_PATH="$bad_wx_path"
-    else
-        OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-        export LD_LIBRARY_PATH="$bad_wx_path:$LD_LIBRARY_PATH"
-    fi
-fi
+MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}$DIR/3rdPartyLibs
 
-# Test plugin depencencies
+# openSUSE don't follow FHS !!!!
+MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}/usr/lib/wx-2.8-stl
+
+# Test plugin depencencies (help users to detect missing depencencies)
 if [ -x `which ldd` ]
 then
-    for plugin in `find plugins -iname "lib*.so"`
+    for plugin in `find $DIR/plugins -iname "lib*.so"`
     do
         if [ `ldd $plugin | grep -c found` != 0 ]
         then
@@ -84,31 +64,21 @@ then
     done
 fi
 
-# Launch PCSX2
-# Note: __GL_THREADED_OPTIMIZATIONS=1 enables threads optimization on Nvidia driver.
-# It provides a big speed bump
-if [ -x "pcsx2" ]
+if [ -x "$DIR/pcsx2" ]
 then
-    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2 $@
-elif [ -x "pcsx2-dev" ]
+    exe="$DIR/pcsx2"
+elif [ -x "$DIR/pcsx2-dev" ]
 then
-    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2-dev $@
-elif [ -x "pcsx2-dbg" ]
+    exe="$DIR/pcsx2-dev"
+elif [ -x "$DIR/pcsx2-dbg" ]
 then
-    __GL_THREADED_OPTIMIZATIONS=1 ./pcsx2-dbg $@
+    exe="$DIR/pcsx2-dbg"
 else
     echo "Error PCSX2 not found"
     echo "Maybe the script was directly 'called'"
     echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh"
-    exit 1
+    return 1 # warning exit will kill current terminal
 fi
 
-# Be a good citizen. Restore the shell context
-cd $PWD_old
-if [ -z $OLD_LD_LIBRARY_PATH ]
-then
-    unset LD_LIBRARY_PATH
-else
-    export LD_LIBRARY_PATH="$OLD_LD_LIBRARY_PATH"
-fi
-
+# And finally launch me
+LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" __GL_THREADED_OPTIMIZATIONS=1 $exe $@
