@@ -22,12 +22,7 @@
 #pragma once
 
 #include "GSdx.h"
-#define BOOST_STAND_ALONE
-#ifdef BOOST_STAND_ALONE
 #include "boost_spsc_queue.hpp"
-#else
-#include <boost/lockfree/spsc_queue.hpp>
-#endif
 
 class IGSThread
 {
@@ -110,11 +105,7 @@ template<class T> class GSJobQueue : public IGSJobQueue<T>
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-#ifdef BOOST_STAND_ALONE
 	ringbuffer_base<T, 256> m_queue;
-#else
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
-#endif
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;
@@ -211,11 +202,7 @@ template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-#ifdef BOOST_STAND_ALONE
 	ringbuffer_base<T, 256> m_queue;
-#else
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
-#endif
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;
