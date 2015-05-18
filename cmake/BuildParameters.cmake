@@ -42,11 +42,11 @@ option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 sup
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
-        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/pcsx2")
+        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/PCSX2")
     endif()
 
     if(NOT DEFINED GAMEINDEX_DIR)
-        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/pcsx2")
+        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/PCSX2")
     endif()
 
     if(NOT DEFINED BIN_DIR)
@@ -54,7 +54,7 @@ if(PACKAGE_MODE)
     endif()
 
     if(NOT DEFINED DOC_DIR)
-        set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")
+        set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/PCSX2")
     endif()
 
     # Compile all source codes with those defines
