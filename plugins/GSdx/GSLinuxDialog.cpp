@@ -224,9 +224,9 @@ void CB_PickFile(GtkFileChooserButton *chooser, gpointer user_data)
 	theApp.SetConfig((char*)user_data, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 }
 
-GtkWidget* CreateFileChooser(const char* label, const char* opt_name, const char* opt_default)
+GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, const char* opt_name, const char* opt_default)
 {
-	GtkWidget* chooser = gtk_file_chooser_button_new(label, GTK_FILE_CHOOSER_ACTION_OPEN);
+	GtkWidget* chooser = gtk_file_chooser_button_new(label, action);
 
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(chooser), theApp.GetConfig(opt_name, opt_default).c_str());
 
@@ -254,7 +254,7 @@ static void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *ri
 }
 
 GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int row, int col) {
-	GtkWidget* table = gtk_table_new(row, col, false);
+	GtkWidget* table = gtk_table_new(row, col, true);
 	GtkWidget* container = (frame_title) ? gtk_frame_new (frame_title) : gtk_vbox_new(false, 5);
 	gtk_container_add(GTK_CONTAINER(container), table);
 	gtk_container_add(GTK_CONTAINER(parent_box), container);
@@ -341,7 +341,7 @@ void populate_gl_table(GtkWidget* gl_table)
 void populate_sw_table(GtkWidget* sw_table)
 {
 	GtkWidget* threads_label = gtk_label_new("Extra rendering threads:");
-	GtkWidget* threads_spin  = CreateSpinButton(0, 100, "extrathreads", 0);
+	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads", 0);
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
 	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
@@ -354,8 +354,8 @@ void populate_sw_table(GtkWidget* sw_table)
 
 void populate_shader_table(GtkWidget* shader_table)
 {
-	GtkWidget* shader            = CreateFileChooser("Select an external shader", "shaderfx_glsl", "dummy.glsl");
-	GtkWidget* shader_conf       = CreateFileChooser("Then select a config", "shaderfx_conf", "dummy.ini");
+	GtkWidget* shader            = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select an external shader", "shaderfx_glsl", "dummy.glsl");
+	GtkWidget* shader_conf       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Then select a config", "shaderfx_conf", "dummy.ini");
 	GtkWidget* shader_label      = gtk_label_new("External shader glsl");
 	GtkWidget* shader_conf_label = gtk_label_new("External shader conf");
 
@@ -468,6 +468,23 @@ void populate_debug_table(GtkWidget* debug_table)
 	InsertWidgetInTable(debug_table, gs_savel_label, gs_savel_spin);
 }
 
+void populate_record_table(GtkWidget* record_table)
+{
+	GtkWidget* resxy_label = gtk_label_new("Resolution:");
+	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "capture_resx", 1280);
+	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "capture_resy", 1024);
+
+	GtkWidget* threads_label = gtk_label_new("Saving Threads:");
+	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads", 4);
+
+	GtkWidget* out_dir_label = gtk_label_new("Output Directory:");
+	GtkWidget* out_dir       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select a directory", "capture_out_dir", "/tmp");
+
+	InsertWidgetInTable(record_table , resxy_label   , resx_spin      , resy_spin);
+	InsertWidgetInTable(record_table , threads_label , threads_spin);
+	InsertWidgetInTable(record_table , out_dir_label , out_dir);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -498,11 +515,12 @@ bool RunLinuxDialog()
 	GtkWidget* res_table    = CreateTableInBox(central_box , "OpenGL Internal Resolution"           , 3  , 3);
 	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 8  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 5  , 2);
-	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 5  , 2);
+	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 3  , 2);
 
-	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 10 , 2);
-	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 10 , 2);
+	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 9 , 2);
+	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 8 , 2);
 
+	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 3  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 5  , 3);
 
 	// Populate all the tables
@@ -517,14 +535,13 @@ bool RunLinuxDialog()
 	populate_gl_table(gl_table);
 
 	populate_debug_table(debug_table);
+	populate_record_table(record_table);
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box, gtk_label_new("Global Setting"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advance_box, gtk_label_new("Advance Setting"));
-#ifdef ENABLE_OGL_DEBUG
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box  , gtk_label_new("Debug Setting"));
-#endif
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box  , gtk_label_new("Debug/Recording Setting"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);

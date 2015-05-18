@@ -381,8 +381,9 @@ static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
 	  , m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
-	  , m_threads(4) // option too
 {
+	m_out_dir = theApp.GetConfig("capture_out_dir", "/tmp/GSdx_Capture");
+	m_threads = theApp.GetConfig("capture_threads", 4);
 }
 
 GSCapture::~GSCapture()
@@ -483,13 +484,14 @@ bool GSCapture::BeginCapture(float fps)
 	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
 
 #elif __linux__
+	// Note I think it doesn't support multiple depth creation
 	mkdir(m_out_dir.c_str(), 0777);
 
 	// Really cheap recording
 	m_frame = 0;
 	// Add option !!!
-	m_size.x = 1280;
-	m_size.y = 1024;
+	m_size.x = theApp.GetConfig("capture_resx", 1280);
+	m_size.y = theApp.GetConfig("capture_resy", 1024);
 
 #ifdef __linux__
 	for(int i = 0; i < m_threads; i++) {
