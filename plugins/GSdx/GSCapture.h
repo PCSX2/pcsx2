@@ -25,6 +25,7 @@
 #ifndef _CX11_
 #include "GSThread.h"
 #endif
+#include "GSPng.h"
 
 #ifdef _WINDOWS
 #include "GSCaptureDlg.h"
@@ -46,6 +47,10 @@ class GSCapture
 
 	CComPtr<IGraphBuilder> m_graph;
 	CComPtr<IBaseFilter> m_src;
+
+	#elif __linux__
+
+	GSPng::Worker* m_worker;
 
 	#endif
 

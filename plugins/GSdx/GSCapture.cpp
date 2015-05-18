@@ -382,11 +382,16 @@ GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
 	  , m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
 {
+#ifdef __linux__
+	m_worker = NULL;
+#endif
 }
 
 GSCapture::~GSCapture()
 {
 	EndCapture();
+
+	delete m_worker;
 }
 
 bool GSCapture::BeginCapture(float fps)
@@ -490,6 +495,8 @@ bool GSCapture::BeginCapture(float fps)
 	m_size.x = 1280;
 	m_size.y = 1024;
 
+	m_worker = new GSPng::Worker();
+
 #endif
 
 	m_capturing = true;
@@ -523,12 +530,9 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 #elif __linux__
 
-	try {
-		std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
-		GSPng::Save(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch);
-	} catch (...) {
-		// Don't care. Likely a wrong setup. Bonus for the futur
-	}
+	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
+	//GSPng::Save(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch);
+	m_worker->Push(shared_ptr<GSPng::Transaction>(new GSPng::Transaction(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch)));
 
 	m_frame++;
 
@@ -562,6 +566,9 @@ bool GSCapture::EndCapture()
 	}
 
 #elif __linux__
+	if (m_worker) {
+		m_worker->Wait();
+	}
 
 	m_frame = 0;
 

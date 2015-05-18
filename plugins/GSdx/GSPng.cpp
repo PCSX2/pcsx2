@@ -159,4 +159,25 @@ namespace GSPng {
         }
 #endif
     }
+
+	Transaction::Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
+		: m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch)
+	{
+		// Note: yes it would be better to use shared pointer
+		m_image = (char*)_aligned_malloc(pitch*h, 32);
+		if (m_image)
+			memcpy(m_image, image, pitch*h);
+	}
+
+	Transaction::~Transaction()
+	{
+		if (m_image)
+			_aligned_free(m_image);
+	}
+
+	void Worker::Process(shared_ptr<Transaction>& item)
+	{
+		Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch);
+	}
+
 }

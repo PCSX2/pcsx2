@@ -18,9 +18,12 @@
  *
  */
 
+#pragma once
+
 #ifdef ENABLE_OGL_PNG
 #include "png++/png.hpp"
 #endif
+#include "GSThread_CXX11.h"
 
 namespace GSPng {
     enum Format {
@@ -34,5 +37,30 @@ namespace GSPng {
         R32I_PNG,
     };
 
+	class Transaction
+	{
+		public:
+			Format m_fmt;
+			const std::string m_file;
+			char* m_image;
+			int m_w;
+			int m_h;
+			int m_pitch;
+
+			Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch);
+			~Transaction();
+	};
+
     void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch);
+
+	class Worker : public GSJobQueue<shared_ptr<Transaction> >
+	{
+		public:
+			Worker() {};
+			virtual ~Worker() {};
+
+			void Process(shared_ptr<Transaction>& item);
+
+			int GetPixels(bool reset) {return 0;}
+	};
 }
