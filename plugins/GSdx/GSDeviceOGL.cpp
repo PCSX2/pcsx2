@@ -913,15 +913,21 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 			return;
 		}
 
-		std::ifstream fconfig(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
+		std::string   config_name(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
+		std::ifstream fconfig(config_name);
 		std::stringstream config;
 		if (fconfig.good())
 			config << fconfig.rdbuf();
+		else
+			fprintf(stderr, "Warning failed to load '%s'. External Shader might be wrongly configured\n", config_name.c_str());
 
-		std::ifstream fshader(theApp.GetConfig("shaderfx_glsl", "dummy.glsl"));
+		std::string   shader_name(theApp.GetConfig("shaderfx_glsl", "dummy.glsl"));
+		std::ifstream fshader(shader_name);
 		std::stringstream shader;
-		if (!fshader.good())
+		if (!fshader.good()) {
+			fprintf(stderr, "Error failed to load '%s'. External Shader will be disabled !\n", shader_name.c_str());
 			return;
+		}
 		shader << fshader.rdbuf();
 
 
