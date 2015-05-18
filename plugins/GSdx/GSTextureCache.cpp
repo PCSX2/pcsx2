@@ -136,6 +136,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 					} else if ((t->m_TEX0.TBW == 20) && (t->m_TEX0.PSM == 2) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + 0x140, t->m_TEX0.PSM)) {
 						// try to detect render target bigger than 1024 Texels
+						// 0x140: In 16 bits format, pages are 64 pixels and 8KB
+						// Half of 1280 is 640 so 10 pages
+						// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
 
 						half_right = true;
 						dst = t;
@@ -363,6 +366,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 		if ((bw == 20) && (psm == 2)) {
 			// try to detect render target bigger than 1024 Texels
+			// 0x140: In 16 bits format, pages are 64 pixels and 8KB
+			// Half of 1280 is 640 so 10 pages
+			// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
 			uint32 bbp = bp + 0x140;
 
 			const list<Source*>& m = m_src.m_map[bbp >> 5];

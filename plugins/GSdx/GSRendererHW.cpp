@@ -64,7 +64,6 @@ void GSRendererHW::SetScaling(){
 		{
 			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
 			m_height = m_width; //Keep it square
-			
 		}
 	}
 	else
