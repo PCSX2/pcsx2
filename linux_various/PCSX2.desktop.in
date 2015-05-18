@@ -5,7 +5,7 @@ Type=Application
 Name=PCSX2
 GenericName=Playstation 2 Emulator
 Comment=Sony Playstation 2 emulator
-Exec=pcsx2
+Exec=env __GL_THREADED_OPTIMIZATIONS=1 PCSX2
 Icon=PCSX2
 Keywords=game;emulator;
 Categories=@PCSX2_MENU_CATEGORIES@
