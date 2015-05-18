@@ -100,12 +100,12 @@ public:
 // This queue doesn't reserve any thread. It would be nicer for 2c/4c CPU.
 // pros: no hard limit on thread numbers
 // cons: less performance by thread
-template<class T> class GSJobQueue : public IGSJobQueue<T>
+template<class T, int CAPACITY> class GSJobQueue : public IGSJobQueue<T>
 {
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-	ringbuffer_base<T, 256> m_queue;
+	ringbuffer_base<T, CAPACITY> m_queue;
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;
@@ -197,12 +197,12 @@ public:
 //		2/ But I highly suspect that waking up thread is rather slow.  My guess
 //		is that low power feature (like C state) increases latency. In this case
 //		gain will be smaller if PCSX2 is running or in limited core CPU (<=4)
-template<class T> class GSJobQueueSpin : public IGSJobQueue<T>
+template<class T, int CAPACITY> class GSJobQueueSpin : public IGSJobQueue<T>
 {
 protected:
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
-	ringbuffer_base<T, 256> m_queue;
+	ringbuffer_base<T, CAPACITY> m_queue;
 
 	std::mutex m_lock;
 	std::condition_variable m_empty;

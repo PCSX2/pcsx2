@@ -53,7 +53,7 @@ namespace GSPng {
 
     void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch);
 
-	class Worker : public GSJobQueue<shared_ptr<Transaction> >
+	class Worker : public GSJobQueue<shared_ptr<Transaction>, 16 >
 	{
 		public:
 			Worker() {};

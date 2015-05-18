@@ -184,7 +184,7 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData> >
+	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 256 >
 	{
 		GSRasterizer* m_r;
 
@@ -200,7 +200,7 @@ protected:
 	};
 
 #ifdef ENABLE_BOOST
-	class GSWorkerSpin : public GSJobQueueSpin<shared_ptr<GSRasterizerData> >
+	class GSWorkerSpin : public GSJobQueueSpin<shared_ptr<GSRasterizerData>, 256>
 	{
 		GSRasterizer* m_r;
 

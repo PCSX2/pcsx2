@@ -1211,7 +1211,7 @@ int GSRasterizerList::GetPixels(bool reset)
 // GSRasterizerList::GSWorker
 
 GSRasterizerList::GSWorker::GSWorker(GSRasterizer* r)
-	: GSJobQueue<shared_ptr<GSRasterizerData> >()
+	: GSJobQueue<shared_ptr<GSRasterizerData>, 256>()
 	, m_r(r)
 {
 }
@@ -1236,7 +1236,7 @@ void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
 // GSRasterizerList::GSWorkerSpin
 #ifdef ENABLE_BOOST
 GSRasterizerList::GSWorkerSpin::GSWorkerSpin(GSRasterizer* r)
-	: GSJobQueueSpin<shared_ptr<GSRasterizerData> >()
+	: GSJobQueueSpin<shared_ptr<GSRasterizerData>, 256>()
 	, m_r(r)
 {
 }
