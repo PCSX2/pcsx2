@@ -43,7 +43,8 @@ void GSDeviceOGL::CreateTextureFX()
 	m_gs = CompileGS();
 
 	int logz = theApp.GetConfig("logz", 1);
-#ifndef ENABLE_OGL_DEBUG
+	// Don't do it in debug build, so it can still be tested
+#ifndef _DEBUG
 	if (GLLoader::found_GL_ARB_clip_control && logz) {
 		fprintf(stderr, "Your driver supports advance depth. Logz will be disabled\n");
 		logz = 0;
