@@ -391,15 +391,7 @@ void GSDeviceOGL::Flip()
 
 void GSDeviceOGL::BeforeDraw()
 {
-	GL_PUSH("Before Draw Validation & Setup");
-
 	m_shader->UseProgram();
-
-#ifdef _DEBUG
-	ASSERT(gl_CheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-#endif
-
-	GL_POP();
 }
 
 void GSDeviceOGL::AfterDraw()
