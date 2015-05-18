@@ -41,7 +41,6 @@ namespace PboPool {
 	uint32 m_current_pbo = 0;
 	uint32 m_size;
 	bool   m_texture_storage;
-	uint8* m_gpu_texture;
 	GLsync m_fence[PBO_POOL_SIZE];
 	const uint32 m_pbo_size = 4*1024*1024;
 
@@ -83,8 +82,6 @@ namespace PboPool {
 			NextPbo();
 		}
 		UnbindPbo();
-
-		m_gpu_texture = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 	}
 
 	char* Map(uint32 size) {
@@ -153,8 +150,6 @@ namespace PboPool {
 			gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		}
 		gl_DeleteBuffers(countof(m_pool), m_pool);
-
-		_aligned_free(m_gpu_texture);
 	}
 
 	void BindPbo() {
@@ -202,7 +197,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_dirty(false), m_clean(false)
+	: m_pbo_size(0), m_dirty(false), m_clean(false), m_local_buffer(NULL)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -254,6 +249,8 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	// Generate & Allocate the buffer
 	switch (m_type) {
 		case GSTexture::Offscreen:
+			// 8B is the worst case for depth/stencil
+			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 8, 32);
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
@@ -280,6 +277,9 @@ GSTextureOGL::~GSTextureOGL()
 	}
 
 	glDeleteTextures(1, &m_texture_id);
+
+	if (m_local_buffer)
+		_aligned_free(m_local_buffer);
 }
 
 void GSTextureOGL::Invalidate()
@@ -365,7 +365,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 #if 0
 	// Maybe it is as good as the code below. I don't know
 
-	gl_GetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, PboPool::m_gpu_texture);
+	gl_GetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
 
 #else
 
@@ -374,12 +374,12 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
-	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, PboPool::m_gpu_texture);
+	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, m_local_buffer);
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 #endif
 
-	m.bits = PboPool::m_gpu_texture;
+	m.bits = m_local_buffer;
 	m.pitch = m_size.x << m_int_shift;
 
 	return true;

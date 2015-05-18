@@ -47,6 +47,8 @@ class GSTextureOGL : public GSTexture
 		bool m_dirty;
 		bool m_clean;
 
+		uint8* m_local_buffer;
+
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
 		GLenum m_int_type;
