@@ -24,25 +24,30 @@
 # 3/ Set __GL_THREADED_OPTIMIZATIONS variable for Nvidia Drivers (major speed boost)
 
 current_script=$0
+me=PCSX2-linux.sh
 
-# We are already in the good directory. Allow to use "bash launch_pcsx2_linux.sh"
-if [ $current_script = "launch_pcsx2_linux.sh" ]
+# We are already in the good directory. Allow to use "bash PCSX2-linux.sh"
+if [ $current_script = $me ]
 then
-    if [ -e "./launch_pcsx2_linux.sh" ]
+    if [ -e "./$me" ]
     then
-        current_script="./launch_pcsx2_linux.sh"
+        current_script="./$me"
     else
-        current_script=`which launch_pcsx2_linux.sh`
+        current_script=`which $me`
     fi
 fi
-
-[ $current_script = "launch_pcsx2_linux.sh" ] && \
-    echo "Error the script was either directly 'called' (ie launch_pcsx2_linux.sh)" && \
-    echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh" && return 1;
 
 # Avoid to screw up the shell context
 DIR=`dirname $current_script`
 MY_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+
+if [ ! -x "$DIR/PCSX2" ]
+then
+    echo "Error PCSX2 not found in $DIR"
+    echo "Maybe the script was directly 'called'"
+    echo "Use either /absolute_path/$me or ./relative_path/$me"
+    return 1 # warning exit will kill current terminal
+fi
 
 # Allow to ship .so library with the build to avoid version issue 
 MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}$DIR/3rdPartyLibs
@@ -62,14 +67,6 @@ then
             echo ""
         fi
     done
-fi
-
-if [ ! -x "$DIR/PCSX2" ]
-then
-    echo "Error PCSX2 not found"
-    echo "Maybe the script was directly 'called'"
-    echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh"
-    return 1 # warning exit will kill current terminal
 fi
 
 # And finally launch me
