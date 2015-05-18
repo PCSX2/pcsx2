@@ -23,22 +23,21 @@
 
 namespace GSPng {
 
-    void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch) 
+    void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
     {
 #ifdef ENABLE_OGL_PNG
         std::string root = file;
         root.replace(file.length()-4, 4, "");
 
         uint8* data = (uint8*)image;
-        
+
         switch (fmt) {
             case R8I_PNG:
                 {
                     png::image<png::gray_pixel> img(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::gray_pixel p(data[x]);
-                            img.set_pixel(x, y, p);
+                            img[y][x] = png::gray_pixel(data[x]);
                         }
                     }
                     img.write(root + "_R8.png");
@@ -50,8 +49,7 @@ namespace GSPng {
                     png::image<png::gray_pixel_16> img(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::gray_pixel_16 p(data[2*x]);
-                            img.set_pixel(x, y, p);
+                            img[y][x] = png::gray_pixel_16(data[2*x]);
                         }
                     }
                     img.write(root + "_R16.png");
@@ -64,11 +62,8 @@ namespace GSPng {
                     png::image<png::gray_pixel_16> img_lsb(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::gray_pixel_16 msb(data[2*x]);
-                            png::gray_pixel_16 lsb(data[2*x+2]);
-
-                            img_msb.set_pixel(x, y, msb);
-                            img_lsb.set_pixel(x, y, lsb);
+                            img_msb[y][x] = png::gray_pixel_16(data[2*x]);
+                            img_lsb[y][x] = png::gray_pixel_16(data[2*x+2]);
                         }
                     }
                     img_msb.write(root + "_R32I_msb.png");
@@ -84,12 +79,12 @@ namespace GSPng {
                         for (int x = 0; x < w; x++) {
                             // TODO packed or not
                             uint32 depth = data[4*x]; //floorf((float)data[2*x] * exp2f(32));
-                            
+
                             png::gray_pixel_16 msb(depth >> 16);
                             png::gray_pixel_16 lsb((depth >> 16) ? 0xFFFF : depth & 0xFFFF);
 
-                            img_msb.set_pixel(x, y, msb);
-                            img_lsb.set_pixel(x, y, lsb);
+                            img_msb[y][x] = msb;
+                            img_lsb[y][x] = lsb;
                         }
                     }
                     img_msb.write(root + "_msb.png");
@@ -97,13 +92,12 @@ namespace GSPng {
                 }
                 break;
 
-            case ALPHA_PNG: 
+            case ALPHA_PNG:
                 {
                     png::image<png::gray_pixel> img_alpha(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::gray_pixel pa(data[4*x+3]);
-                            img_alpha.set_pixel(x, y, pa);
+                            img_alpha[y][x] = png::gray_pixel(data[4*x+3]);
                         }
                     }
                     img_alpha.write(root + "_alpha.png");
@@ -115,8 +109,7 @@ namespace GSPng {
                     png::image<png::rgb_pixel>  img_opaque(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::rgb_pixel po(data[4*x+0], data[4*x+1], data[4*x+2]);
-                            img_opaque.set_pixel(x, y, po);
+                            img_opaque[y][x] = png::rgb_pixel(data[4*x+0], data[4*x+1], data[4*x+2]);
                         }
                     }
                     img_opaque.write(root + ".png");
@@ -128,8 +121,7 @@ namespace GSPng {
                     png::image<png::rgba_pixel>  img(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::rgba_pixel p(data[4*x+0], data[4*x+1], data[4*x+2], data[4*x+3]);
-                            img.set_pixel(x, y, p);
+                            img[y][x] = png::rgba_pixel(data[4*x+0], data[4*x+1], data[4*x+2], data[4*x+3]);
                         }
                     }
                     img.write(root + "_full.png");
@@ -142,11 +134,8 @@ namespace GSPng {
                     png::image<png::gray_pixel> img_alpha(w, h);
                     for(int y = 0; y < h; y++, data += pitch) {
                         for (int x = 0; x < w; x++) {
-                            png::rgb_pixel po(data[4*x+0], data[4*x+1], data[4*x+2]);
-                            img_opaque.set_pixel(x, y, po);
-
-                            png::gray_pixel pa(data[4*x+3]);
-                            img_alpha.set_pixel(x, y, pa);
+                            img_opaque[y][x] = png::rgb_pixel(data[4*x+0], data[4*x+1], data[4*x+2]);
+                            img_alpha[y][x]  = png::gray_pixel(data[4*x+3]);
                         }
                     }
                     img_opaque.write(root + ".png");
@@ -160,24 +149,24 @@ namespace GSPng {
 #endif
     }
 
-	Transaction::Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
-		: m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch)
-	{
-		// Note: yes it would be better to use shared pointer
-		m_image = (char*)_aligned_malloc(pitch*h, 32);
-		if (m_image)
-			memcpy(m_image, image, pitch*h);
-	}
+    Transaction::Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
+        : m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch)
+    {
+        // Note: yes it would be better to use shared pointer
+        m_image = (char*)_aligned_malloc(pitch*h, 32);
+        if (m_image)
+            memcpy(m_image, image, pitch*h);
+    }
 
-	Transaction::~Transaction()
-	{
-		if (m_image)
-			_aligned_free(m_image);
-	}
+    Transaction::~Transaction()
+    {
+        if (m_image)
+            _aligned_free(m_image);
+    }
 
-	void Worker::Process(shared_ptr<Transaction>& item)
-	{
-		Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch);
-	}
+    void Worker::Process(shared_ptr<Transaction>& item)
+    {
+        Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch);
+    }
 
 }
