@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: PCSX2
-Source: http://code.google.com/p/pcsx2/source
+Source: https://github.com/PCSX2/pcsx2
 
 Files: debian/*
 Copyright:
