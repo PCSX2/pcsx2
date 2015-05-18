@@ -75,15 +75,12 @@ endif()
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(Output pcsx2-dbg)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(Output pcsx2-dev)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(Output pcsx2)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags})
 
 endif()
@@ -95,10 +92,7 @@ if(XDG_STD)
 	)
 endif()
 
-# In package mode always use pcsx2
-if(PACKAGE_MODE)
-    set(Output pcsx2)
-endif()
+set(Output PCSX2)
 
 # Main pcsx2 source
 set(pcsx2Sources

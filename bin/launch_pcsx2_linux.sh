@@ -64,16 +64,8 @@ then
     done
 fi
 
-if [ -x "$DIR/pcsx2" ]
+if [ ! -x "$DIR/PCSX2" ]
 then
-    exe="$DIR/pcsx2"
-elif [ -x "$DIR/pcsx2-dev" ]
-then
-    exe="$DIR/pcsx2-dev"
-elif [ -x "$DIR/pcsx2-dbg" ]
-then
-    exe="$DIR/pcsx2-dbg"
-else
     echo "Error PCSX2 not found"
     echo "Maybe the script was directly 'called'"
     echo "Use either /absolute_path/launch_pcsx2_linux.sh or ./relative_path/launch_pcsx2_linux.sh"
@@ -81,4 +73,4 @@ else
 fi
 
 # And finally launch me
-LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" __GL_THREADED_OPTIMIZATIONS=1 $exe $@
+LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" __GL_THREADED_OPTIMIZATIONS=1 $DIR/PCSX2 $@
