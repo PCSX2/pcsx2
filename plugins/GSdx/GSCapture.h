@@ -42,6 +42,7 @@ class GSCapture
 	GSVector2i m_size;
 	uint64 m_frame;
 	std::string m_out_dir;
+	int m_threads;
 
 	#ifdef _WINDOWS
 
@@ -50,7 +51,7 @@ class GSCapture
 
 	#elif __linux__
 
-	GSPng::Worker* m_worker;
+	vector<GSPng::Worker*> m_workers;
 
 	#endif
 
