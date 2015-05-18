@@ -39,6 +39,8 @@ class GSCapture
 #endif
 	bool m_capturing;
 	GSVector2i m_size;
+	uint64 m_frame;
+	std::string m_out_dir;
 
 	#ifdef _WINDOWS
 

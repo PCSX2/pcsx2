@@ -21,6 +21,10 @@
 
 #include "stdafx.h"
 #include "GSCapture.h"
+#include "GSPng.h"
+#ifdef __linux__
+#include <sys/stat.h> // mkdir
+#endif
 
 #ifdef _WINDOWS
 
@@ -375,7 +379,8 @@ static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 //
 
 GSCapture::GSCapture()
-	: m_capturing(false)
+	: m_capturing(false), m_frame(0)
+	  , m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
 {
 }
 
@@ -476,6 +481,15 @@ bool GSCapture::BeginCapture(float fps)
 
 	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
 
+#elif __linux__
+	mkdir(m_out_dir.c_str(), 0777);
+
+	// Really cheap recording
+	m_frame = 0;
+	// Add option !!!
+	m_size.x = 1280;
+	m_size.y = 1024;
+
 #endif
 
 	m_capturing = true;
@@ -507,6 +521,17 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return true;
 	}
 
+#elif __linux__
+
+	try {
+		std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
+		GSPng::Save(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch);
+	} catch (...) {
+		// Don't care. Likely a wrong setup. Bonus for the futur
+	}
+
+	m_frame++;
+
 #endif
 
 	return false;
@@ -535,6 +560,10 @@ bool GSCapture::EndCapture()
 
 		m_graph = NULL;
 	}
+
+#elif __linux__
+
+	m_frame = 0;
 
 #endif
 
