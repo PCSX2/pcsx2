@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-12-23 19:50+0100\n"
-"PO-Revision-Date: 2014-01-13 10:00+0200\n"
+"PO-Revision-Date: 2015-04-22 18:22+0200\n"
 "Last-Translator: Ceyhun Özgöç <atiamar@hotmail.com>\n"
 "Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
 "Language: tr_TR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\\\n"
-"X-Generator: Poedit 1.5.6\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -27,7 +27,7 @@ msgstr "Çözümleme hatası"
 
 #: common/include/Utilities/Exceptions.h:253
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr "Bilgisayarınızın donanımı PCSX2'ye uyumsuz. Kusura bakma."
+msgstr "Bilgisayarınızın donanımı PCSX2 ile uyumsuz. Kusura bakmayın."
 
 #: common/src/Utilities/Exceptions.cpp:240
 msgid "Oh noes! Out of memory!"
@@ -391,12 +391,11 @@ msgid "Loading PS2 system plugins..."
 msgstr "PS2 sistem eklentileri yükleniyor..."
 
 #: pcsx2/gui/AppInit.cpp:49
-#, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE2 instruction set."
 msgstr ""
-"Hiçbir SSE uzantısı kullanılamıyor. PCSX2 SSE komut kümesini destekleyen bir "
+"SSE2 uzantıları kullanılamıyor. PCSX2 SSE2 talimat kümesini destekleyen bir "
 "işlemci gerektirir."
 
 #: pcsx2/gui/AppInit.cpp:138
@@ -805,7 +804,7 @@ msgstr "&Kaynaklar"
 
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:223
 msgid "panel"
-msgstr ""
+msgstr "panel"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -849,9 +848,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 Resmi Web sitesi ve Forumu"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2'nin GitHub'daki Resmi SVN Sayfası"
+msgstr "PCSX2'nin GitHub'daki Resmi Git Deposu"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -1321,9 +1319,8 @@ msgid "Enable Cheats"
 msgstr "Hileleri Etkinleştir"
 
 #: pcsx2/gui/MainFrame.cpp:429
-#, fuzzy
 msgid "Enable Widescreen Patches"
-msgstr "Yamaları Etkinleştir"
+msgstr "Geniş Ekran Yamalarını Etkinleştir"
 
 #: pcsx2/gui/MainFrame.cpp:432
 msgid "Enable Host Filesystem"
@@ -1598,9 +1595,9 @@ msgid "Blockdumps (%s)"
 msgstr "Yığınlar (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed (%s)"
-msgstr "Yığınlar (%s)"
+msgstr "Sıkıştırılmış (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
@@ -1981,10 +1978,11 @@ msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr "VIF1 FIFO ön okumasını etkinleştir. Yavaş yüklenen oyunlar içindir."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
-msgstr "VIF1 Beklemelerini Geciktir (VIF1 FIFO) - SOCOM 2 HUD için."
+msgstr ""
+"VIF1 Beklemelerini Geciktir (VIF1 FIFO) - SOCOM 2 HUD ve Spy Hunter yükleme "
+"ekranındaki donma için."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
@@ -1996,7 +1994,7 @@ msgstr "FMV oynatılıekwn GSdx software rendering moduna geç"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr ""
+msgstr "Geomon'daki eksik TLB sorunun önlemek için TLB hack'ini önyükle"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
@@ -2631,21 +2629,21 @@ msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "Seçili BIOS dosyası bulunamıyor. Lütfen tekrar yapılandırın."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:580
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"%s Uzantıları bulunamıyor. R5900-32 derleyicisi MMX, SSE ve SSE2 destekleyen "
-"bir işlemci gerektirir."
+"%s Uzantıları bulunamadı. R5900-32 derleyicisi SSE2 destekleyen bir ana "
+"bilgisayar işlemcisi gerektirir."
 
 #: pcsx2/x86/microVU.cpp:28
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"%s Uzantıları bulunamıyor. microVU MMX, SSE ve SSE2 destekleyen bir işlemci "
-"gerektirir."
+"%s Uzantıları bulunamadı. microVU, SSE2 destekleyen bir ana bilgisayar "
+"işlemcisi gerektirir."
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - SSE2 Önerilir"
