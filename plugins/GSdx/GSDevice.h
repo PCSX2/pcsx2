@@ -141,7 +141,7 @@ public:
 
 	virtual GSTexture* Resolve(GSTexture* t) {return NULL;}
 
-	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0) {return NULL;}
+	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) {return NULL;}
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true) {}

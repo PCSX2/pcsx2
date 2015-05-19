@@ -90,7 +90,7 @@ void GSDeviceSW::ClearStencil(GSTexture* t, uint8 c)
 	Clear(t, c);
 }
 
-GSTexture* GSDeviceSW::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format)
+GSTexture* GSDeviceSW::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
 {
 	GSTexture* dst = CreateOffscreen(w, h, format);
 

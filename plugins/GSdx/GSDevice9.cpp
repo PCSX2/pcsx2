@@ -768,7 +768,7 @@ GSTexture* GSDevice9::Resolve(GSTexture* t)
 	return NULL;
 }
 
-GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format)
+GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
 {
 	GSTexture* dst = NULL;
 

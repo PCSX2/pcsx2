@@ -666,19 +666,19 @@ GSTexture* GSDeviceOGL::CreateOffscreen(int w, int h, int format)
 }
 
 // blit a texture into an offscreen buffer
-GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format)
+GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
 {
+	if (format == 0)
+		format = GL_RGBA8;
+
 	ASSERT(src);
 	ASSERT(format == GL_RGBA8 || format == GL_R16UI);
 
-	if(format == 0) format = GL_RGBA8;
-
-	if(format != GL_RGBA8 && format != GL_R16UI) return NULL;
-
 	GSTexture* dst = CreateOffscreen(w, h, format);
+
 	GSVector4 dRect(0, 0, w, h);
 
-	StretchRect(src, sRect, dst, dRect, m_convert.ps[format == GL_R16UI ? 1 : 0]);
+	StretchRect(src, sRect, dst, dRect, m_convert.ps[ps_shader]);
 
 	return dst;
 }
