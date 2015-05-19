@@ -109,7 +109,6 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
 		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
-		bs->SetBogus(m_blendMapD3D9[i].bogus);
 
 		if (m_blendMapD3D9[i].bogus & A_MAX) {
 			if (!theApp.GetConfig("accurate_blend", 0)) {
@@ -236,11 +235,20 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-int GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix, bool sw_blending)
 {
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
 	OMSetDepthStencilState(dss, 1);
+
+	if (sw_blending) {
+		if (GLState::blend) {
+			GLState::blend = false;
+			glDisable(GL_BLEND);
+		}
+		// No hardware blending thank
+		return;
+	}
 
 	// *************************************************************
 	// Static
@@ -260,6 +268,4 @@ int GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 	// Dynamic
 	// *************************************************************
 	OMSetBlendState(bs, (float)(int)afix / 0x80);
-
-	return bs->GetBogus();
 }

@@ -47,7 +47,6 @@ class GSBlendStateOGL {
 	GLenum m_func_sRGB;
 	GLenum m_func_dRGB;
 	bool   m_constant_factor;
-	int    m_bogus;
 
 public:
 
@@ -56,7 +55,6 @@ public:
 		, m_func_sRGB(0)
 		, m_func_dRGB(0)
 		, m_constant_factor(false)
-		, m_bogus(0)
 	{}
 
 	void SetRGB(GLenum op, GLenum src, GLenum dst)
@@ -66,10 +64,6 @@ public:
 		m_func_dRGB = dst;
 		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
 	}
-
-	void SetBogus(int bogus) { m_bogus = bogus; }
-
-	int GetBogus() { return m_bogus; }
 
 	void RevertOp()
 	{
@@ -95,11 +89,6 @@ public:
 				glDisable(GL_BLEND);
 		}
 
-#ifdef ENABLE_OGL_DEBUG
-		if (m_bogus & A_MAX) {
-			GL_INS("!!! Bogus blending effect used (%d) !!!", m_bogus);
-		}
-#endif
 		if (m_enable) {
 			if (HasConstantFactor()) {
 				if (GLState::bf != factor) {
@@ -327,14 +316,18 @@ class GSDeviceOGL : public GSDevice
 				uint32 wmt:2;
 				uint32 ltf:1;
 
-				uint32 blend:4;
+				uint32 _free1:4;
+
+				// Word 2
+				uint32 blend:8;
+				uint32 _free2:24;
 			};
 
-			uint32 key;
+			uint64 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0xffffffff;}
+		operator uint64() {return key;}
 
 		PSSelector() : key(0) {}
 	};
@@ -528,7 +521,7 @@ class GSDeviceOGL : public GSDevice
 	GLuint m_gs;
 	GLuint m_ps_ss[1<<3];
 	GSDepthStencilOGL* m_om_dss[1<<6];
-	hash_map<uint32, GLuint > m_ps;
+	hash_map<uint64, GLuint > m_ps;
 	hash_map<uint32, GSBlendStateOGL* > m_om_bs;
 	GLuint m_apitrace;
 
@@ -632,7 +625,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	int  SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
+	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix, bool sw_blending =  false);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

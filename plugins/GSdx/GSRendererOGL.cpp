@@ -31,6 +31,7 @@ GSRendererOGL::GSRendererOGL()
 
 	m_accurate_blend  = theApp.GetConfig("accurate_blend", 0);
 	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
+	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
 
 	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
 	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
@@ -51,7 +52,7 @@ GSRendererOGL::GSRendererOGL()
 
 bool GSRendererOGL::CreateDevice(GSDevice* dev)
 {
-	if(!GSRenderer::CreateDevice(dev))
+	if (!GSRenderer::CreateDevice(dev))
 		return false;
 
 	return true;
@@ -70,7 +71,7 @@ void GSRendererOGL::EmulateGS()
 
 	// assume vertices are tightly packed and sequentially indexed (it should be the case)
 
-	if(m_vertex.next >= 2)
+	if (m_vertex.next >= 2)
 	{
 		size_t count = m_vertex.next;
 
@@ -245,7 +246,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Blend
 
-	if(!IsOpaque())
+	if (!IsOpaque())
 	{
 		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
@@ -254,9 +255,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		om_bsel.c = context->ALPHA.C;
 		om_bsel.d = context->ALPHA.D;
 
-		if(env.PABE.PABE)
+		if (env.PABE.PABE)
 		{
-			if(om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
+			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
 			{
 				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
@@ -340,7 +341,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	if(context->TEST.ZTE)
+	if (context->TEST.ZTE)
 	{
 		om_dssel.ztst = context->TEST.ZTST;
 		om_dssel.zwe = !context->ZBUF.ZMSK;
@@ -360,11 +361,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
 	// We are probably receiving bad coordinates from VU1 in these cases.
 
-	if(om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe)
+	if (om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe)
 	{
-		if(context->ZBUF.PSM == PSM_PSMZ24)
+		if (context->ZBUF.PSM == PSM_PSMZ24)
 		{
-			if(m_vt.m_max.p.z > 0xffffff)
+			if (m_vt.m_max.p.z > 0xffffff)
 			{
 				ASSERT(m_vt.m_min.p.z > 0xffffff);
 				// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
@@ -376,9 +377,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				}
 			}
 		}
-		else if(context->ZBUF.PSM == PSM_PSMZ16 || context->ZBUF.PSM == PSM_PSMZ16S)
+		else if (context->ZBUF.PSM == PSM_PSMZ16 || context->ZBUF.PSM == PSM_PSMZ16S)
 		{
-			if(m_vt.m_max.p.z > 0xffff)
+			if (m_vt.m_max.p.z > 0xffff)
 			{
 				ASSERT(m_vt.m_min.p.z > 0xffff); // sfex capcom logo
 				// Fixme : Same as above, I guess.
@@ -406,7 +407,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if(rt->LikelyOffset)
+	if (rt->LikelyOffset)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
@@ -421,44 +422,53 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (DATE_GL45) {
 		ps_sel.date = 5 + context->TEST.DATM;
-	} else if(DATE) {
+	} else if (DATE) {
 		if (DATE_GL42)
 			ps_sel.date = 1 + context->TEST.DATM;
 		else
 			om_dssel.date = 1;
 	}
 
-	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
-	if(colclip_wrap)
-	{
-#ifdef ENABLE_OGL_DEBUG
-		const char *col[3] = {"Cs", "Cd", "0"};
-#endif
-		if (context->ALPHA.A == context->ALPHA.B) {
+	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST && !m_accurate_colclip;
+	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && m_accurate_colclip;
+	if (context->ALPHA.A == context->ALPHA.B) { // Optimize-away colclip
+		if (colclip_wrap || acc_colclip_wrap) {
 			// No addition neither substraction so no risk of overflow the [0:255] range.
-			GL_INS("Disable COLCLIP wrap: blending is a plain copy of %s", col[context->ALPHA.D]);
 			colclip_wrap = false;
-		} else {
-			GL_INS("Enable COLCLIP wrap (blending is %d/%d/%d/%d)",
-						context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
-			ps_sel.colclip = 1;
+			acc_colclip_wrap = false;
+#ifdef ENABLE_OGL_DEBUG
+			const char *col[3] = {"Cs", "Cd", "0"};
+			GL_INS("Disable COLCLIP wrap: blending is a plain copy of %s", col[context->ALPHA.D]);
+#endif
 		}
+	}
+	if (colclip_wrap) {
+		ps_sel.colclip = 1;
+		GL_INS("Enable COLCLIP wrap (blending is %d/%d/%d/%d)",
+				context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+	} else if (acc_colclip_wrap) {
+			ps_sel.colclip = 3;
+			GL_INS("Enable accurate COLCLIP wrap (blending is %d/%d/%d/%d)",
+					context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+	} else if (env.COLCLAMP.CLAMP == 0) {
+			GL_INS("COLCLIP wrap not supported (blending is %d/%d/%d/%d)",
+					context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
 	}
 
 	ps_sel.clr1 = om_bsel.IsCLR1();
 	ps_sel.fba = context->FBA.FBA;
 	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
 		
-	if(UserHacks_AlphaHack) ps_sel.aout = 1;
+	if (UserHacks_AlphaHack) ps_sel.aout = 1;
 
-	if(PRIM->FGE)
+	if (PRIM->FGE)
 	{
 		ps_sel.fog = 1;
 
 		ps_cb.FogColor_AREF = GSVector4::rgba32(env.FOGCOL.u32[0]) / 255;
 	}
 
-	if(context->TEST.ATE)
+	if (context->TEST.ATE)
 		ps_sel.atst = context->TEST.ATST;
 	else
 		ps_sel.atst = ATST_ALWAYS;
@@ -489,7 +499,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool spritehack = false;
 	int  atst = ps_sel.atst;
 
-	if(tex)
+	if (tex)
 	{
 		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[context->TEX0.PSM];
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[context->TEX0.CPSM] : psm;
@@ -519,7 +529,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		GSVector4 WH(tw, th, w, h);
 
-		if(PRIM->FST)
+		if (PRIM->FST)
 		{
 			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
 			ps_sel.fst = 1;
@@ -565,6 +575,28 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
+	// Compute the blending equation to detect special case
+	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
+	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
+	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || (acc_colclip_wrap);
+
+	if (sw_blending) {
+		GL_INS("!!! SW blending effect used (0x%x) !!!", bogus_blend);
+
+		// select a shader that support blending
+		ps_sel.blend = bogus_blend & 0xFF;
+
+		dev->PSSetShaderResource(3, rt);
+
+		// Require the fix alpha vlaue
+		if (context->ALPHA.C == 2) {
+			ps_cb.AlphaCoeff = GSVector4((float)(int)context->ALPHA.FIX / 0x80);
+		}
+
+		// No need to flush for every primitive
+		require_barrier = !(bogus_blend & NO_BAR);
+	}
+
 	// WARNING: setup of the program must be done first. So you can setup
 	// 1/ subroutine uniform
 	// 2/ bindless texture uniform
@@ -574,29 +606,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupPS(ps_sel);
 
 	// rs
+	uint8 afix = context->ALPHA.FIX;
 
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
-
-	uint8 afix = context->ALPHA.FIX;
 
 	GL_PUSH("IA");
 	SetupIA();
 	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
-	// Handle blending with care
-	int bogus_blend = dev->SetupOM(om_dssel, om_bsel, afix);
-	if (m_accurate_blend && (bogus_blend & A_MAX)) {
-		ps_sel.blend = bogus_blend & 0xF;
-		dev->SetupPS(ps_sel);
-		dev->PSSetShaderResource(3, rt);
-
-		if (context->ALPHA.C == 2) {
-			ps_cb.AlphaCoeff = GSVector4((float)(int)afix / 0x80);
-		}
-
-		require_barrier = !(bogus_blend & NO_BAR);
-	}
+	dev->SetupOM(om_dssel, om_bsel, afix, sw_blending);
 
 	dev->SetupCB(&vs_cb, &ps_cb);
 
@@ -634,7 +653,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
 
-	if(context->TEST.DoFirstPass())
+	if (context->TEST.DoFirstPass())
 	{
 		SendDraw(require_barrier);
 
@@ -657,7 +676,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	if(context->TEST.DoSecondPass())
+	if (context->TEST.DoSecondPass())
 	{
 		ASSERT(!env.PABE.PABE);
 
@@ -685,7 +704,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			default: __assume(0);
 		}
 
-		if(z || r || g || b || a)
+		if (z || r || g || b || a)
 		{
 			om_dssel.zwe = z;
 			om_csel.wr = r;

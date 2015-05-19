@@ -1135,6 +1135,9 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 {
+	// SW date might change the enable state without updating the object
+	// Time to remove this micro-optimization
+#if 0
 	// State is checkd inside the object but worst case is 8 comparaisons
 	if (m_state.bs != bs || m_state.bf != bf)
 	{
@@ -1143,6 +1146,9 @@ void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 
 		bs->SetupBlend(bf);
 	}
+#else
+		bs->SetupBlend(bf);
+#endif
 }
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)

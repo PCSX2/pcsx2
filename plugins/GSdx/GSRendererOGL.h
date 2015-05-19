@@ -33,6 +33,7 @@ class GSRendererOGL : public GSRendererHW
 		GSVector2 m_pixelcenter;
 		bool m_accurate_blend;
 		bool m_accurate_date;
+		bool m_accurate_colclip;
 
 		bool UserHacks_AlphaHack;
 		bool UserHacks_AlphaStencil;

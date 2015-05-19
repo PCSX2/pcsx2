@@ -366,7 +366,9 @@ vec4 ps_color()
 
 	fog(c, PSin_t.z);
 
+#if (PS_COLCLIP < 3)
 	colclip(c);
+#endif
 
 #if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
 	c.rgb = vec3(1.0f, 1.0f, 1.0f);
@@ -408,6 +410,15 @@ void ps_blend(inout vec4 c, in float As)
 #elif PS_BLEND == 12
 	// { A_MAX | 12         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
 	c.rgb = rt.rgb * (Af.x + 1.0f) - c.rgb * Af.x;
+#elif PS_BLEND == 45
+	// { NO_BAR | 45        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
+	c.rgb = - c.rgb * Af.x;
+#elif PS_BLEND > 0
+	error not yet implemented;
+#endif
+
+#if PS_COLCLIP == 3
+	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xFF)) / 255.0f;
 #endif
 }
 
