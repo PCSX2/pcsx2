@@ -470,16 +470,16 @@ void populate_debug_table(GtkWidget* debug_table)
 
 void populate_record_table(GtkWidget* record_table)
 {
-	GtkWidget* resxy_label = gtk_label_new("Resolution:");
-	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "capture_resx", 1280);
-	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "capture_resy", 1024);
-
+	GtkWidget* capture_check = CreateCheckBox("Enable Recording (with F12)", "capture_enabled");
+	GtkWidget* resxy_label   = gtk_label_new("Resolution:");
+	GtkWidget* resx_spin     = CreateSpinButton(256, 8192, "capture_resx", 1280);
+	GtkWidget* resy_spin     = CreateSpinButton(256, 8192, "capture_resy", 1024);
 	GtkWidget* threads_label = gtk_label_new("Saving Threads:");
 	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads", 4);
-
 	GtkWidget* out_dir_label = gtk_label_new("Output Directory:");
 	GtkWidget* out_dir       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select a directory", "capture_out_dir", "/tmp");
 
+	InsertWidgetInTable(record_table , capture_check);
 	InsertWidgetInTable(record_table , resxy_label   , resx_spin      , resy_spin);
 	InsertWidgetInTable(record_table , threads_label , threads_spin);
 	InsertWidgetInTable(record_table , out_dir_label , out_dir);
