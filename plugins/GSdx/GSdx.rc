@@ -82,6 +82,7 @@ IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 
 IDB_LOGO9               BITMAP                  "res\\logo9.bmp"
 IDB_LOGO10              BITMAP                  "res\\logo10.bmp"
+IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -258,6 +259,7 @@ BEGIN
     CONTROL         "Edge Anti-aliasing (AA1)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,319,93,10
     PUSHBUTTON      "Cancel",IDCANCEL,95,346,50,14
     CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_CENTERIMAGE,6,6,175,44
+    CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_CENTERIMAGE,6,6,175,42
     GROUPBOX        "D3D Internal Resolution (can cause glitches)",IDC_STATIC,6,116,175,64,BS_CENTER
     GROUPBOX        "Software Mode Settings",IDC_STATIC,6,290,175,50,BS_CENTER
     GROUPBOX        "Hardware Mode Settings",IDC_STATIC,6,214,175,74,BS_CENTER
