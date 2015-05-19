@@ -43,7 +43,7 @@ GSDumpLzma::GSDumpLzma(char* filename) : GSDumpFile(filename) {
 
 	memset(&m_strm, 0, sizeof(lzma_stream));
 
-	lzma_ret ret = lzma_stream_decoder(&m_strm, UINT32_MAX, LZMA_CONCATENATED);
+	lzma_ret ret = lzma_stream_decoder(&m_strm, UINT32_MAX, 0);
 
 	if (ret != LZMA_OK) {
 		fprintf(stderr, "Error initializing the decoder! (error code %u)\n", ret);
@@ -55,7 +55,6 @@ GSDumpLzma::GSDumpLzma(char* filename) : GSDumpFile(filename) {
 	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, 32);
 	m_avail     = 0;
 	m_start     = 0;
-	m_eof       = false;
 
 	m_strm.avail_in  = 0;
 	m_strm.next_in   = m_inbuf;
@@ -79,11 +78,6 @@ void GSDumpLzma::Decompress() {
 			fprintf(stderr, "Read error: %s\n", strerror(errno));
 			throw "BAD"; // Just exit the program
 		}
-
-		if (feof(m_fp)) {
-			action = LZMA_FINISH;
-			m_eof = true;
-		}
 	}
 
 	lzma_ret ret = lzma_code(&m_strm, action);
@@ -102,7 +96,7 @@ void GSDumpLzma::Decompress() {
 }
 
 bool GSDumpLzma::IsEof() {
-	return m_eof && (m_avail == 0);
+	return feof(m_fp) && (m_avail == 0);
 }
 
 void GSDumpLzma::Read(void* ptr, size_t size) {
