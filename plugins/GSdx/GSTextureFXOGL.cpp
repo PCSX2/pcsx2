@@ -111,7 +111,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
 		bs->SetBogus(m_blendMapD3D9[i].bogus);
 
-		if (m_blendMapD3D9[i].bogus > 2) {
+		if (m_blendMapD3D9[i].bogus & A_MAX) {
 			if (!theApp.GetConfig("accurate_blend", 0)) {
 				bs->EnableBlend();
 				if (bsel.a == 0)

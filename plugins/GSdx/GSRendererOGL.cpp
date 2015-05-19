@@ -586,23 +586,23 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->OMSetColorMaskState(om_csel);
 	// Handle blending with care
 	int bogus_blend = dev->SetupOM(om_dssel, om_bsel, afix);
-	if (m_accurate_blend && bogus_blend > 2) {
-		ps_sel.blend = bogus_blend - 3;
+	if (m_accurate_blend && (bogus_blend & A_MAX)) {
+		ps_sel.blend = bogus_blend & 0xF;
 		dev->SetupPS(ps_sel);
 		dev->PSSetShaderResource(3, rt);
 
-		if (bogus_blend == 6 || bogus_blend == 9 || bogus_blend == 12) {
+		if (context->ALPHA.C == 2) {
 			ps_cb.AlphaCoeff = GSVector4((float)(int)afix / 0x80);
 		}
 
-		require_barrier = ((bogus_blend != 7) && (bogus_blend != 9));
+		require_barrier = !(bogus_blend & NO_BAR);
 	}
 
 	dev->SetupCB(&vs_cb, &ps_cb);
 
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
-		ASSERT(bogus_blend <= 2);
+		ASSERT((bogus_blend & A_MAX) == 0);
 		// It could be good idea to use stencil in the same time.
 		// Early stencil test will reduce the number of atomic-load operation
 
@@ -640,7 +640,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		if (colclip_wrap)
 		{
-			ASSERT(bogus_blend <= 2);
+			ASSERT((bogus_blend & A_MAX) == 0);
 			GL_PUSH("COLCLIP");
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -700,7 +700,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			if (colclip_wrap)
 			{
-				ASSERT(bogus_blend <= 2);
+				ASSERT((bogus_blend & A_MAX) == 0);
 				GL_PUSH("COLCLIP");
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);

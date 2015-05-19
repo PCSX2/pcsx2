@@ -381,32 +381,32 @@ void ps_blend(inout vec4 c, in float As)
 	// FIXME Ad or Ad * 2?
 	float Ad = rt.a;
 
-#if PS_BLEND == 1
-	// {4, D3DBLENDOP_SUBTRACT, D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA},			//*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+#if PS_BLEND == 4
+	// { A_MAX | 4          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
 	c.rgb = c.rgb * (As + 1.0f) - rt.rgb * As;
-#elif PS_BLEND == 2
-	// {5, D3DBLENDOP_SUBTRACT, D3DBLEND_DESTALPHA, D3DBLEND_DESTALPHA},		//*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	c.rgb = c.rgb * (Ad + 1.0f) - rt.rgb * Ad;
-#elif PS_BLEND == 3
-	// {6, D3DBLENDOP_SUBTRACT, D3DBLEND_BLENDFACTOR, D3DBLEND_BLENDFACTOR},	//*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	c.rgb = c.rgb * (Af.x + 1.0f) - rt.rgb * Af.x;
-#elif PS_BLEND == 4
-	// {7, D3DBLENDOP_ADD, D3DBLEND_SRCALPHA, D3DBLEND_ZERO},					//*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	c.rgb = c.rgb * (As + 1.0f); // FIXME Not bogus
 #elif PS_BLEND == 5
-	// {8, D3DBLENDOP_ADD, D3DBLEND_DESTALPHA, D3DBLEND_ZERO},					//*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	c.rgb = c.rgb * (Ad + 1.0f);
+	// { A_MAX | 5          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
+	c.rgb = c.rgb * (Ad + 1.0f) - rt.rgb * Ad;
 #elif PS_BLEND == 6
-	// {9, D3DBLENDOP_ADD, D3DBLEND_BLENDFACTOR, D3DBLEND_ZERO},				//*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	c.rgb = c.rgb * (Af.x + 1.0f); // FIXME Not bogus
+	// { A_MAX | 6          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	c.rgb = c.rgb * (Af.x + 1.0f) - rt.rgb * Af.x;
 #elif PS_BLEND == 7
-	// {10,D3DBLENDOP_REVSUBTRACT, D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA},		//*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	c.rgb = rt.rgb * (As + 1.0f) - c.rgb * As;
+	// { NO_BAR | A_MAX | 7 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
+	c.rgb = c.rgb * (As + 1.0f); // FIXME Not bogus
 #elif PS_BLEND == 8
-	// {11,D3DBLENDOP_REVSUBTRACT, D3DBLEND_DESTALPHA, D3DBLEND_DESTALPHA},	//*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	c.rgb = rt.rgb * (Ad + 1.0f) - c.rgb * Ad;
+	// { A_MAX | 8          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	c.rgb = c.rgb * (Ad + 1.0f);
 #elif PS_BLEND == 9
-	// {12,D3DBLENDOP_REVSUBTRACT, D3DBLEND_BLENDFACTOR, D3DBLEND_BLENDFACTOR},//*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	// { NO_BAR| A_MAX | 9  , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
+	c.rgb = c.rgb * (Af.x + 1.0f); // FIXME Not bogus
+#elif PS_BLEND == 10
+	// { A_MAX | 10         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	c.rgb = rt.rgb * (As + 1.0f) - c.rgb * As;
+#elif PS_BLEND == 11
+	// { A_MAX | 11         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
+	c.rgb = rt.rgb * (Ad + 1.0f) - c.rgb * Ad;
+#elif PS_BLEND == 12
+	// { A_MAX | 12         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
 	c.rgb = rt.rgb * (Af.x + 1.0f) - c.rgb * Af.x;
 #endif
 }

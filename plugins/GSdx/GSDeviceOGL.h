@@ -29,6 +29,11 @@
 #include "GSShaderOGL.h"
 #include "GLState.h"
 
+// A couple of flag to determine the blending behavior
+#define A_MAX	(0x100)	 // Impossible blending uses coeff bigger than 1
+#define C_CLR	(0x200)	 // Clear color blending (use directly the destination color as blending factor)
+#define NO_BAR  (0x400)  // don't require texture barrier for the blending (because the RT is not used)
+
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
@@ -42,7 +47,7 @@ class GSBlendStateOGL {
 	GLenum m_func_sRGB;
 	GLenum m_func_dRGB;
 	bool   m_constant_factor;
-	char   m_bogus;
+	int    m_bogus;
 
 public:
 
@@ -62,7 +67,7 @@ public:
 		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
 	}
 
-	void SetBogus(char bogus) { m_bogus = bogus; }
+	void SetBogus(int bogus) { m_bogus = bogus; }
 
 	int GetBogus() { return m_bogus; }
 
@@ -91,7 +96,7 @@ public:
 		}
 
 #ifdef ENABLE_OGL_DEBUG
-		if (m_bogus > 2) {
+		if (m_bogus & A_MAX) {
 			GL_INS("!!! Bogus blending effect used (%d) !!!", m_bogus);
 		}
 #endif
