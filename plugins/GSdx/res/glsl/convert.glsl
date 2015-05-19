@@ -58,7 +58,7 @@ in SHADER
 #define PSin_t (PSin.t)
 
 // Give a different name so I remember there is a special case!
-#ifdef ps_main1
+#if defined(ps_main1) || defined(ps_main10)
 layout(location = 0) out uint SV_Target1;
 #else
 layout(location = 0) out vec4 SV_Target0;
@@ -134,6 +134,15 @@ void ps_main1()
     SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
 #endif
 
+}
+#endif
+
+#ifdef ps_main10
+void ps_main10()
+{
+	vec4 c = sample_c();
+	const float exp2_32 = exp2(32.0f);
+	SV_Target1 = uint(exp2_32 * c.r);
 }
 #endif
 

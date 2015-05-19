@@ -67,12 +67,12 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 
 		case PSM_PSMZ24:
 			fmt = GL_R32UI;
-			ps_shader = 11;
+			ps_shader = 10;
 			return;
 
 		case PSM_PSMZ16:
 			fmt = GL_R16UI;
-			ps_shader = 12;
+			ps_shader = 10;
 			return;
 
 		default:
