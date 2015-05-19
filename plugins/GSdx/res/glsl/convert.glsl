@@ -108,6 +108,23 @@ void ps_main0()
 #ifdef ps_main1
 void ps_main1()
 {
+	// Input Color is RGBA8
+
+	// We want to output a pixel on the PSMCT16* format
+	// A1-BGR5
+
+#if 0
+	// For me this code is more accurate but it will require some tests
+
+    vec4 c = sample_c() * 255.0f + 0.5f; // Denormalize value
+
+    highp uvec4 i = uvec4(c * vec4(1/32.0f, 4.0f, 64.0f, 512.0f)); // Shift value
+
+    SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
+
+#else
+	// Old code which is likely wrong.
+
     vec4 c = sample_c();
 
 	c.a *= 256.0f / 127.0f; // hm, 0.5 won't give us 1.0 if we just multiply with 2
@@ -115,6 +132,8 @@ void ps_main1()
 	highp uvec4 i = uvec4(c * vec4(uint(0x001f), uint(0x03e0), uint(0x7c00), uint(0x8000)));
 
     SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
+#endif
+
 }
 #endif
 
