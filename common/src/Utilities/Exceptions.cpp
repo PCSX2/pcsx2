@@ -143,7 +143,7 @@ __fi void pxOnAssert( const DiagnosticOrigin& origin, const char* msg)
 #if wxMAJOR_VERSION >= 3
 __fi void pxOnAssert( const DiagnosticOrigin& origin, const wxString& msg)
 {
-	pxOnAssert( origin, WX_STR(msg) ); // wc_str ???
+	pxOnAssert( origin, msg.wc_str() );
 }
 
 __fi void pxOnAssert( const DiagnosticOrigin& origin, const FastFormatUnicode& msg)
