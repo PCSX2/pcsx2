@@ -308,7 +308,7 @@ void GSRendererHW::Draw()
 {
 	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
 		if (s_dump) {
-			fprintf(stderr, "Warning skipping a draw call\n");
+			fprintf(stderr, "Warning skipping a draw call (%d)\n", s_n);
 		}
 		s_n += 3; // Keep it sync with SW renderer
 		return;

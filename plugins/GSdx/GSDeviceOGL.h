@@ -306,7 +306,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
-				// Next param will be handle by subroutine
+				// Next param will be handle by subroutine (broken currently)
 				uint32 colclip:2;
 				uint32 atst:3;
 

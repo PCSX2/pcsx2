@@ -673,7 +673,7 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 		format = GL_RGBA8;
 
 	ASSERT(src);
-	ASSERT(format == GL_RGBA8 || format == GL_R16UI);
+	ASSERT(format == GL_RGBA8 || format == GL_R16UI || format == GL_R32UI);
 
 	GSTexture* dst = CreateOffscreen(w, h, format);
 

@@ -210,9 +210,10 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 
 	// Bunch of constant parameter
 	switch (m_format) {
+		case GL_R32UI:
 		case GL_R32I:
 			m_int_format    = GL_RED_INTEGER;
-			m_int_type      = GL_INT;
+			m_int_type      = (m_format == GL_R32UI) ? GL_UNSIGNED_INT : GL_INT;
 			m_int_alignment = 4;
 			m_int_shift     = 2;
 			break;

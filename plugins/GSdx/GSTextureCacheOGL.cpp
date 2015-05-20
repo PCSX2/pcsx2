@@ -30,13 +30,6 @@ GSTextureCacheOGL::GSTextureCacheOGL(GSRenderer* r)
 
 void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 {
-	if(t->m_type != RenderTarget)
-	{
-		ASSERT(0);
-
-		return;
-	}
-
 	if(!t->m_dirty.empty())
 	{
 		return;
@@ -63,17 +56,18 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		case PSM_PSMZ32:
 			fmt = GL_R32UI;
 			ps_shader = 10;
-			return;
+			break;
 
 		case PSM_PSMZ24:
 			fmt = GL_R32UI;
 			ps_shader = 10;
-			return;
+			break;
 
 		case PSM_PSMZ16:
+		case PSM_PSMZ16S:
 			fmt = GL_R16UI;
 			ps_shader = 10;
-			return;
+			break;
 
 		default:
 			return;
@@ -112,6 +106,17 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 				case PSM_PSMCT16S:
 					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
 					break;
+
+				case PSM_PSMZ32:
+					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
+					break;
+				case PSM_PSMZ24:
+					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
+					break;
+				case PSM_PSMZ16:
+				case PSM_PSMZ16S:
+					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
+
 				default:
 					ASSERT(0);
 			}
