@@ -432,30 +432,26 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST && !m_accurate_colclip;
 	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && m_accurate_colclip;
 	if (context->ALPHA.A == context->ALPHA.B) { // Optimize-away colclip
-		if (colclip_wrap || acc_colclip_wrap) {
-			// No addition neither substraction so no risk of overflow the [0:255] range.
-			colclip_wrap = false;
-			acc_colclip_wrap = false;
+		// No addition neither substraction so no risk of overflow the [0:255] range.
+		colclip_wrap = false;
+		acc_colclip_wrap = false;
 #ifdef ENABLE_OGL_DEBUG
+		if (colclip_wrap || acc_colclip_wrap) {
 			const char *col[3] = {"Cs", "Cd", "0"};
-			GL_INS("Disable COLCLIP wrap: blending is a plain copy of %s", col[context->ALPHA.D]);
-#endif
+			GL_INS("COLCLIP: DISABLED: blending is a plain copy of %s", col[context->ALPHA.D]);
 		}
+#endif
 	}
 	if (colclip_wrap) {
 		ps_sel.colclip = 1;
-		GL_INS("Enable COLCLIP wrap (blending is %d/%d/%d/%d)",
-				context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
 	} else if (acc_colclip_wrap) {
 			ps_sel.colclip = 3;
-			GL_INS("Enable accurate COLCLIP wrap (blending is %d/%d/%d/%d)",
-					context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
 	} else if (env.COLCLAMP.CLAMP == 0) {
-			GL_INS("COLCLIP wrap not supported (blending is %d/%d/%d/%d)",
-					context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+			GL_INS("COLCLIP NOT SUPPORTED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
 	}
 
-	ps_sel.clr1 = om_bsel.IsCLR1();
 	ps_sel.fba = context->FBA.FBA;
 	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
 		
@@ -580,8 +576,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || (acc_colclip_wrap);
 
-	if (sw_blending) {
-		GL_INS("!!! SW blending effect used (0x%x) !!!", bogus_blend);
+	if (sw_blending && om_bsel.abe) {
+		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
 
 		// select a shader that support blending
 		ps_sel.blend = bogus_blend & 0xFF;
@@ -595,6 +591,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// No need to flush for every primitive
 		require_barrier = !(bogus_blend & NO_BAR);
+	} else {
+		ps_sel.clr1 = om_bsel.IsCLR1();
 	}
 
 	// WARNING: setup of the program must be done first. So you can setup
