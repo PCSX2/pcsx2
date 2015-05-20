@@ -354,7 +354,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	// Basic to ensure structures are correctly packed
 	ASSERT(sizeof(VSSelector) == 4);
-	ASSERT(sizeof(PSSelector) == 4);
+	ASSERT(sizeof(PSSelector) == 8);
 	ASSERT(sizeof(PSSamplerSelector) == 4);
 	ASSERT(sizeof(OMDepthStencilSelector) == 4);
 	ASSERT(sizeof(OMColorMaskSelector) == 4);
