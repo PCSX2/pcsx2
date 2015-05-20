@@ -104,6 +104,9 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_BLEND:
 			return "Allow to solve the impossible blending error message.\n\n"
 				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
+		case IDC_ACCURATE_COLCLIP:
+			return "Debug option to implement the wrapping of color after an overflow\n\n"
+				"It will be slow when the effect are used!\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
 #endif
 		default:
 			if (updateText)

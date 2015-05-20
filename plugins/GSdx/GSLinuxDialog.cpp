@@ -291,6 +291,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
 	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", false);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
+	GtkWidget* acc_cclip_check  = CreateCheckBox("Accurate Color Clipping", "accurate_colclip", false);
 
 	GtkWidget* MT_nvidia_check   = CreateCheckBox("Nvidia Multi-Thread support", "enable_nvidia_multi_thread", true);
 
@@ -298,14 +299,15 @@ void populate_hw_table(GtkWidget* hw_table)
 	gtk_widget_set_tooltip_text(paltex_check, dialog_message(IDC_PALTEX));
 	gtk_widget_set_tooltip_text(acc_blend_check, dialog_message(IDC_ACCURATE_BLEND));
 	gtk_widget_set_tooltip_text(acc_date_check, dialog_message(IDC_ACCURATE_DATE));
+	gtk_widget_set_tooltip_text(acc_cclip_check, dialog_message(IDC_ACCURATE_COLCLIP));
 	gtk_widget_set_tooltip_text(MT_nvidia_check, "Huge speedup on Nvidia binary driver! No effect otherwise.");
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
-	InsertWidgetInTable(hw_table, paltex_check);
+	InsertWidgetInTable(hw_table, paltex_check, MT_nvidia_check);
 	InsertWidgetInTable(hw_table, acc_blend_check, acc_date_check);
-	InsertWidgetInTable(hw_table, MT_nvidia_check);
+	InsertWidgetInTable(hw_table, acc_cclip_check);
 }
 
 void populate_gl_table(GtkWidget* gl_table)
