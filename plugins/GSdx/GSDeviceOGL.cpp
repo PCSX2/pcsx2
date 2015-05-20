@@ -304,6 +304,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_SCISSOR_TEST);
 	glDisable(GL_MULTISAMPLE);
+	glDisable(GL_DITHER); // Honestly I don't know!
 
 	// ****************************************************************
 	// DATE
