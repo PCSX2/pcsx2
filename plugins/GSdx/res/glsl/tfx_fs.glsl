@@ -382,43 +382,245 @@ void ps_blend(inout vec4 c, in float As)
 	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 	// FIXME Ad or Ad * 2?
 	float Ad = rt.a;
+	// Let the compiler do its jobs !
+	vec3 Cd = rt.rgb;
+	vec3 Cs = c.rgb;
 
-#if PS_BLEND == 4
-	// { A_MAX | 4          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	c.rgb = c.rgb * (As + 1.0f) - rt.rgb * As;
+#if PS_BLEND == 1
+	//   1   =>  0000: (Cs - Cs)*As + Cs ==> Cs
+	; // nop
+
+#elif PS_BLEND == 2
+	//  2   =>  0001: (Cs - Cs)*As + Cd ==> Cd
+	c.rgb = Cd;
+
+#elif PS_BLEND == 3
+	//   3   =>  0002: (Cs - Cs)*As +  0 ==> 0
+	c.rgb = vec3(0.0);
+
+#elif PS_BLEND == 4
+	//   4   => *0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+	c.rgb = Cs * (As + 1.0f) - Cd * As;
+
 #elif PS_BLEND == 5
-	// { A_MAX | 5          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	c.rgb = c.rgb * (Ad + 1.0f) - rt.rgb * Ad;
+	//   5   => *0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
+	c.rgb = Cs * (Ad + 1.0f) - Cd * Ad;
+
 #elif PS_BLEND == 6
-	// { A_MAX | 6          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	c.rgb = c.rgb * (Af.x + 1.0f) - rt.rgb * Af.x;
+	//   6   => *0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	c.rgb = Cs * (Af.x + 1.0f) - Cd * Af.x;
+
 #elif PS_BLEND == 7
-	// { NO_BAR | A_MAX | 7 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	c.rgb = c.rgb * (As + 1.0f); // FIXME Not bogus
+	//    7   => *0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
+	c.rgb = Cs * (As + 1.0f);
+
 #elif PS_BLEND == 8
-	// { A_MAX | 8          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	c.rgb = c.rgb * (Ad + 1.0f);
+	//   8   => *0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	c.rgb = Cs * (Ad + 1.0f);
+
 #elif PS_BLEND == 9
-	// { NO_BAR| A_MAX | 9  , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	c.rgb = c.rgb * (Af.x + 1.0f); // FIXME Not bogus
+	//   9   => *0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
+	c.rgb = Cs * (Af.x + 1.0f);
+
 #elif PS_BLEND == 10
-	// { A_MAX | 10         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	c.rgb = rt.rgb * (As + 1.0f) - c.rgb * As;
+	//   10   => *1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	c.rgb = Cd * (As + 1.0f) - Cs * As;
+
 #elif PS_BLEND == 11
-	// { A_MAX | 11         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	c.rgb = rt.rgb * (Ad + 1.0f) - c.rgb * Ad;
+	//   11   => *1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
+	c.rgb = Cd * (Ad + 1.0f) - Cs * Ad;
+
 #elif PS_BLEND == 12
-	// { A_MAX | 12         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	c.rgb = rt.rgb * (Af.x + 1.0f) - c.rgb * Af.x;
+	//   12   => *1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	c.rgb = Cd * (Af.x + 1.0f) - Cs * Af.x;
+
+#elif PS_BLEND == 13
+	//  13   =>  0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
+	c.rgb = Cs * As + Cd * (1.0f - As);
+
+#elif PS_BLEND == 14
+	//  14   =>  0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
+	c.rgb = Cs * As - Cd * As;
+
+#elif PS_BLEND == 15
+	//  15   =>  0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
+	c.rgb = Cs * Ad + Cd * (1.0f - Ad);
+
+#elif PS_BLEND == 16
+	//  16   =>  0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
+	c.rgb = Cs * Ad - Cd * Ad;
+
+#elif PS_BLEND == 17
+	//  17   =>  0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
+	c.rgb = Cs * Af.x + Cd * (1.0f - Af.x);
+
+#elif PS_BLEND == 18
+	//  18   =>  0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
+	c.rgb = Cs * Af.x - Cd * Af.x;
+
+#elif PS_BLEND == 19
+	//  19   =>  0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
+	c.rgb = Cs * As + Cd;
+
+#elif PS_BLEND == 20
+	//   20   =>  0202: (Cs -  0)*As +  0 ==> Cs*As
+	c.rgb = Cs * As;
+
+#elif PS_BLEND == 21
+	//  21   =>  0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
+	c.rgb = Cs * Ad + Cd;
+
+#elif PS_BLEND == 22
+	//  22   =>  0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
+	c.rgb = Cs * Ad;
+
+#elif PS_BLEND == 23
+	//  23   =>  0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
+	c.rgb = Cs * Af.x + Cd;
+
+#elif PS_BLEND == 24
+	//   24   =>  0222: (Cs -  0)*F  +  0 ==> Cs*F
+	c.rgb = Cs * Af.x;
+
+#elif PS_BLEND == 25
+	//  25   =>  1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
+	c.rgb = Cd * As + Cs * (1.0f - As);
+
+#elif PS_BLEND == 26
+	//  26   =>  1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
+	c.rgb = Cd * As - Cs * As;
+
+#elif PS_BLEND == 27
+	//  27   =>  1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
+	c.rgb = Cd * Ad + Cs * (1.0f - Ad);
+
+#elif PS_BLEND == 28
+	//  28   =>  1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
+	c.rgb = Cd * Ad - Cs * Ad;
+
+#elif PS_BLEND == 29
+	//  29   =>  1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
+	c.rgb = Cd * Af.x + Cs * (1.0f - Af.x);
+
+#elif PS_BLEND == 30
+	//  30   =>  1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
+	c.rgb = Cd * Af.x - Cs * Af.x;
+
+#elif PS_BLEND == 31
+	//  31   =>  1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
+	c.rgb = Cs + Cd * As;
+
+#elif PS_BLEND == 55
+	//  C_CLR | 55   => #1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
+	c.rgb =  Cd * (1.0f + As);
+
+#elif PS_BLEND == 32
+	//  32   =>  1202: (Cd -  0)*As +  0 ==> Cd*As
+	c.rgb = Cd * As;
+
+#elif PS_BLEND == 33
+	//  33   =>  1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
+	c.rgb = Cs + Cd * Ad;
+
+#elif PS_BLEND == 56
+	//  C_CLR | 56   => #1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
+	c.rgb = Cd * (1.0f + Ad);
+
+#elif PS_BLEND == 34
+	//  34   =>  1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
+	c.rgb = Cd * Ad;
+
+#elif PS_BLEND == 35
+	//   35   =>  1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
+	c.rgb = Cs + Cd * Af.x;
+
+#elif PS_BLEND == 57
+	//  C_CLR | 57   => #1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
+	c.rgb = Cd * (1.0f + Af.x);
+
+#elif PS_BLEND == 36
+	//  36   =>  1222: (Cd -  0)*F  +  0 ==> Cd*F
+	c.rgb = Cd * Af.x;
+
+#elif PS_BLEND == 37
+	//   37   =>  2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
+	c.rgb = Cs * (1.0f - As);
+
+#elif PS_BLEND == 38
+	//  38   =>  2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
+	c.rgb = Cd - Cs * As;
+
+#elif PS_BLEND == 39
+	//   39   =>  2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
+	c.rgb = - Cs * As;
+
+#elif PS_BLEND == 40
+	//  40   =>  2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
+	c.rgb = Cs * (1.0f - Ad);
+
+#elif PS_BLEND == 41
+	//  41   =>  2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
+	c.rgb = Cd - Cs * Ad;
+
+#elif PS_BLEND == 42
+	//  42   =>  2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
+	c.rgb = - Cs * Ad;
+
+#elif PS_BLEND == 43
+	//   43   =>  2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
+	c.rgb = Cs * (1.0f - Af.x);
+
+#elif PS_BLEND == 44
+	//  44   =>  2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
+	c.rgb = Cd - Cs * Af.x;
+
 #elif PS_BLEND == 45
-	// { NO_BAR | 45        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	c.rgb = - c.rgb * Af.x;
-#elif PS_BLEND > 0
-	error not yet implemented;
+	//   45   =>  2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
+	c.rgb = - Cs * Af.x;
+
+#elif PS_BLEND == 46
+	//  46   =>  2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
+	c.rgb = Cs - Cd * As;
+
+#elif PS_BLEND == 47
+	//  47   =>  2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
+	c.rgb = Cd * (1.0f - As);
+
+#elif PS_BLEND == 48
+	//  48   =>  2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
+	c.rgb = - Cd * As;
+
+#elif PS_BLEND == 49
+	//  49   =>  2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
+	c.rgb = Cs - Cd * Ad;
+
+#elif PS_BLEND == 50
+	//  50   =>  2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
+	c.rgb = Cd * (1.0f - Ad);
+
+#elif PS_BLEND == 51
+	//  51   =>  2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
+	c.rgb = - Cd * Ad;
+
+#elif PS_BLEND == 52
+	//  52   =>  2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
+	c.rgb = Cs - Cd * Af.x;
+
+#elif PS_BLEND == 53
+	//  53   =>  2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
+	c.rgb = Cd * (1.0f - Af.x);
+
+#elif PS_BLEND == 54
+	//  54   =>  2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
+	c.rgb = - Cd * Af.x;
+
 #endif
 
 #if PS_COLCLIP == 3
 	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xFF)) / 255.0f;
+
+	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
+	//c.rgb = mod((c.rgb * 255.0f) + 256.5f) / 255.0f;
 #endif
 }
 
