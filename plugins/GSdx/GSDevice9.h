@@ -227,7 +227,7 @@ public:
 	void IASetPrimitiveTopology(D3DPRIMITIVETYPE topology);
 	void VSSetShader(IDirect3DVertexShader9* vs, const float* vs_cb, int vs_cb_len);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
-	void PSSetShaderResource(int i, GSTexture* sRect);
+	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len);
 	void PSSetSamplerState(Direct3DSamplerState9* ss);
 	void OMSetDepthStencilState(Direct3DDepthStencilState9* dss);

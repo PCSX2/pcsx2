@@ -1234,11 +1234,11 @@ void GSDevice9::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 	PSSetShaderResource(2, NULL);
 }
 
-void GSDevice9::PSSetShaderResource(int i, GSTexture* sRect)
+void GSDevice9::PSSetShaderResource(int i, GSTexture* sr)
 {
 	IDirect3DTexture9* srv = NULL;
 
-	if(sRect) srv = *(GSTexture9*)sRect;
+	if(sr) srv = *(GSTexture9*)sr;
 
 	if(m_state.ps_srvs[i] != srv)
 	{

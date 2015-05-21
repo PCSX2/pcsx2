@@ -598,7 +598,7 @@ class GSDeviceOGL : public GSDevice
 	void IASetVertexBuffer(const void* vertices, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sRect);
+	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 

@@ -203,7 +203,7 @@ public:
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
 	void GSSetShader(ID3D11GeometryShader* gs);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
-	void PSSetShaderResource(int i, GSTexture* sRect);
+	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1, ID3D11SamplerState* ss2 = NULL);

@@ -1083,11 +1083,11 @@ void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 	}
 }
 
-void GSDevice11::PSSetShaderResource(int i, GSTexture* sRect)
+void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
 	ID3D11ShaderResourceView* srv = NULL;
 
-	if(sRect) srv = *(GSTexture11*)sRect;
+	if(sr) srv = *(GSTexture11*)sr;
 
 	PSSetShaderResourceView(i, srv);
 }

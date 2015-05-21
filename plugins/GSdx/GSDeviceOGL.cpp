@@ -1045,9 +1045,9 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 	m_va->SetTopology(topology);
 }
 
-void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sRect)
+void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	GLuint id = sRect->GetID();
+	GLuint id = sr ? sr->GetID() : 0;
 	if (GLState::tex_unit[i] != id) {
 		GLState::tex_unit[i] = id;
 		gl_BindTextureUnit(i, id);
