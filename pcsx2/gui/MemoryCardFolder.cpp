@@ -264,6 +264,26 @@ MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( MemoryCardFileEntry
 	return newFileEntry;
 }
 
+bool FilterMatches( const wxString& fileName, const wxString& filter ) {
+	size_t start = 0;
+	size_t len = filter.Len();
+	while ( start < len ) {
+		size_t end = filter.find( '/', start );
+		if ( end == wxString::npos ) {
+			end = len;
+		}
+
+		wxString singleFilter = filter.Mid( start, end - start );
+		if ( fileName.Contains( singleFilter ) ) {
+			return true;
+		}
+
+		start = end + 1;
+	}
+
+	return false;
+}
+
 bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
@@ -273,6 +293,12 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 
 		wxString fileName;
 		bool hasNext;
+
+		wxString localFilter;
+		bool hasFilter = !filter.IsEmpty();
+		if ( hasFilter ) {
+			localFilter = L"DATA-SYSTEM/" + filter;
+		}
 
 		int entryNumber = 2; // include . and ..
 		hasNext = dir.GetFirst( &fileName );
@@ -293,7 +319,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				// if possible filter added directories by game serial
 				// this has the effective result of only files relevant to the current game being loaded into the memory card
 				// which means every game essentially sees the memory card as if no other files exist
-				if ( !filter.IsEmpty() && !fileName.Contains( filter ) ) {
+				if ( hasFilter && !FilterMatches( fileName, localFilter ) ) {
 					hasNext = dir.GetNext( &fileName );
 					continue;
 				}
@@ -1043,6 +1069,7 @@ void FolderMemoryCardAggregator::NextFrame( uint slot ) {
 
 void FolderMemoryCardAggregator::ReIndex( uint slot, const wxString& filter ) {
 	m_cards[slot].Close();
+	Console.WriteLn( Color_Green, L"(FolderMcd) Re-Indexing slot %u with filter \"%s\"", slot, WX_STR( filter ) );
 	m_cards[slot].Open( filter );
 }
 
