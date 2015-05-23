@@ -345,6 +345,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	wxString gameName;
 	wxString gameCompat;
+	wxString gameMemCardFilter;
 
 	int numberLoadedCheats;
 	int numberLoadedWideScreenPatches;
@@ -369,6 +370,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				gameName   = game.getString("Name");
 				gameName  += L" (" + game.getString("Region") + L")";
 				gameCompat = L" [Status = "+compatToStringWX(compat)+L"]";
+				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
 			if (EmuConfig.EnablePatches) {
@@ -383,7 +385,11 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 		}
 	}
 
-	sioSetGameSerial( curGameKey );
+	if (!gameMemCardFilter.IsEmpty()) {
+		sioSetGameSerial(gameMemCardFilter);
+	} else {
+		sioSetGameSerial(curGameKey);
+	}
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
 	{
