@@ -136,13 +136,13 @@ public:
 				"\tY:%d\n\n"
 				, XYOFFSET.OFX, XYOFFSET.OFY);
 		fprintf(fp, "TEX0\n"
-				"\tTBP0:%d\n"
+				"\tTBP0:0x%x\n"
 				"\tTBW:%d\n"
 				"\tPSM:0x%x\n"
 				"\tTW:%d\n"
 				"\tTCC:%d\n"
 				"\tTFX:%d\n"
-				"\tCBP:%d\n"
+				"\tCBP:0x%x\n"
 				"\tCPSM:0x%x\n"
 				"\tCSM:%d\n"
 				"\tCSA:%d\n"
@@ -160,7 +160,7 @@ public:
 				, TEX1.LCM, TEX1.MXL, TEX1.MMAG, TEX1.MMIN, TEX1.MTBA, TEX1.L, TEX1.K);
 		fprintf(fp, "TEX2\n"
 				"\tPSM:0x%x\n"
-				"\tCBP:%d\n"
+				"\tCBP:0x%x\n"
 				"\tCPSM:0x%x\n"
 				"\tCSM:%d\n"
 				"\tCSA:%d\n"
@@ -202,16 +202,16 @@ public:
 				"\tFBA:%d\n\n"
 				, FBA.FBA);
 		fprintf(fp, "FRAME\n"
-				"\tFBP:%d\n"
+				"\tFBP (*32):0x%x\n"
 				"\tFBW:%d\n"
 				"\tPSM:0x%x\n"
 				"\tFBMSK:%d\n\n"
-				, FRAME.FBP, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
+				, FRAME.FBP*32, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
 		fprintf(fp, "ZBUF\n"
-				"\tZBP:%d\n"
+				"\tZBP (*32):0x%x\n"
 				"\tPSM:0x%x\n"
 				"\tZMSK:%d\n\n"
-				, ZBUF.ZBP, ZBUF.PSM, ZBUF.ZMSK);
+				, ZBUF.ZBP*32, ZBUF.PSM, ZBUF.ZMSK);
 
 		fclose(fp);
 	}

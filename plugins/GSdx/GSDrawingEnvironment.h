@@ -174,11 +174,11 @@ public:
 
 		fprintf(fp, "BITBLTBUF\n"
 				"\tSBW:%d\n"
-				"\tSBP:%d\n"
+				"\tSBP:0x%x\n"
 				"\tSPSM:%d\n"
 				"\tDBW:%d\n"
 				"\tDPSM:%d\n"
-				"\tDBP:%d\n\n"
+				"\tDBP:0x%x\n\n"
 				, BITBLTBUF.SBW, BITBLTBUF.SBP, BITBLTBUF.SPSM, BITBLTBUF.DBW, BITBLTBUF.DPSM, BITBLTBUF.DBP);
 
 		fprintf(fp, "TRXDIR\n"
