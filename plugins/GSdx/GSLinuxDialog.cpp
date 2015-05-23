@@ -289,7 +289,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", false);
+	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", true);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
 	GtkWidget* acc_cclip_check  = CreateCheckBox("Accurate Color Clipping", "accurate_colclip", false);
 

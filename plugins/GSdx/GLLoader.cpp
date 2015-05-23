@@ -505,7 +505,7 @@ namespace GLLoader {
 		}
 
 		if (!found_GL_ARB_texture_barrier) {
-			if (theApp.GetConfig("accurate_blend", 0)) {
+			if (theApp.GetConfig("accurate_blend", 1)) {
 				fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver so you can't enable accurate_blend! Sorry.\n");
 				theApp.SetConfig("accurate_blend", 0);
 			}

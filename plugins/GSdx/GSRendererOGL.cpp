@@ -29,7 +29,7 @@ GSRendererOGL::GSRendererOGL()
 {
 	m_pixelcenter = GSVector2(-0.5f, -0.5f);
 
-	m_accurate_blend  = theApp.GetConfig("accurate_blend", 0);
+	m_accurate_blend  = theApp.GetConfig("accurate_blend", 1);
 	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
 	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
 
