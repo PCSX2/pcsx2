@@ -116,6 +116,7 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 				case PSM_PSMZ16:
 				case PSM_PSMZ16S:
 					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
+					break;
 
 				default:
 					ASSERT(0);
