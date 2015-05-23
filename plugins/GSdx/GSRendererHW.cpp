@@ -373,6 +373,14 @@ void GSRendererHW::Draw()
 
 		string s;
 
+		if (s_n >= s_saven) {
+			// Dump Register state
+			s = format("%05d_context.txt", s_n);
+
+			m_env.Dump(root_hw+s);
+			m_context->Dump(root_hw+s);
+		}
+
 		if(s_savet && s_n >= s_saven && tex)
 		{
 			s = format("%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
@@ -409,13 +417,6 @@ void GSRendererHW::Draw()
 
 		s_n++;
 
-		if (s_n >= s_saven) {
-			// Dump Register state
-			s = format("%05d_context.txt", s_n);
-
-			m_env.Dump(root_hw+s);
-			m_context->Dump(root_hw+s);
-		}
 #ifdef ENABLE_OGL_DEBUG
 	} else {
 		s_n += 2;

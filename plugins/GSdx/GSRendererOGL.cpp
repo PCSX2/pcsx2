@@ -448,7 +448,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	} else if (acc_colclip_wrap) {
 			ps_sel.colclip = 3;
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
-	} else if (env.COLCLAMP.CLAMP == 0) {
+	} else if (env.COLCLAMP.CLAMP == 0 && (context->ALPHA.A != context->ALPHA.B)) {
 			GL_INS("COLCLIP NOT SUPPORTED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
 	}
 
@@ -569,6 +569,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (spritehack && (ps_sel.atst == 2)) {
 			ps_sel.atst = 1;
 		}
+	} else {
+#ifdef ENABLE_OGL_DEBUG
+		// Unattach texture to avoid noise in debugger
+		dev->PSSetShaderResource(0, NULL);
+#endif
 	}
 
 	// Compute the blending equation to detect special case

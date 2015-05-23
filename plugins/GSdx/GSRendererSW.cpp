@@ -516,6 +516,14 @@ void GSRendererSW::Draw()
 
 		string s;
 
+		if (s_n >= s_saven) {
+			// Dump Register state
+			s = format("%05d_context.txt", s_n);
+
+			m_env.Dump(root_sw+s);
+			m_context->Dump(root_sw+s);
+		}
+
 		if(s_savet && s_n >= s_saven && PRIM->TME)
 		{
 			s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
@@ -540,14 +548,6 @@ void GSRendererSW::Draw()
 		}
 
 		s_n++;
-
-		if (s_n >= s_saven) {
-			// Dump Register state
-			s = format("%05d_context.txt", s_n);
-
-			m_env.Dump(root_sw+s);
-			m_context->Dump(root_sw+s);
-		}
 
 		Queue(data);
 
