@@ -114,13 +114,23 @@ void ps_main1()
 	// A1-BGR5
 
 #if 0
+	// Note: dot is a good idea from pseudo. However we must be careful about float accuraccy.
+	// Here a global idea example:
+	//
+	// SV_Target1 = dot(round(sample_c() * vec4(31.f, 31.f, 31.f, 1.f)), vec4(1.f, 32.f, 1024.f, 32768.f));
+	//
+
 	// For me this code is more accurate but it will require some tests
 
-    vec4 c = sample_c() * 255.0f + 0.5f; // Denormalize value
+    vec4 c = sample_c() * 255.0f + 0.5f; // Denormalize value to avoid float precision issue
 
-    highp uvec4 i = uvec4(c * vec4(1/32.0f, 4.0f, 64.0f, 512.0f)); // Shift value
+	// shift Red: -3
+	// shift Green: -3 + 5
+	// shift Blue: -3 + 10
+	// shift Alpha: -7 + 15
+    highp uvec4 i = uvec4(c * vec4(1/8.0f, 4.0f, 128.0f, 256.0f)); // Shift value
 
-    SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
+    SV_Target1 = (i.r & uint(0x001f)) | (i.g & uint(0x03e0)) | (i.b & uint(0x7c00)) | (i.a & uint(0x8000));
 
 #else
 	// Old code which is likely wrong.
@@ -133,6 +143,7 @@ void ps_main1()
 
     SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
 #endif
+
 
 }
 #endif
