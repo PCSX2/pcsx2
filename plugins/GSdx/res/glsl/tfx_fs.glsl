@@ -99,11 +99,9 @@ vec4 sample_c(vec2 uv)
 	return texture(TextureSampler, uv);
 }
 
-vec4 sample_p(float u)
+vec4 sample_p(uint idx)
 {
-	//FIXME do we need a 1D sampler. Big impact on opengl to find 1 dim
-	// So for the moment cheat with 0.0f dunno if it work
-	return texture(PaletteSampler, vec2(u, 0.0f));
+	return texelFetch(PaletteSampler, ivec2(idx, 0u), 0);
 }
 
 vec4 wrapuv(vec4 uv)
@@ -168,21 +166,47 @@ mat4 sample_4c(vec4 uv)
 	return c;
 }
 
-vec4 sample_4a(vec4 uv)
+uvec4 sample_4_index(vec4 uv)
 {
 	vec4 c;
 
-	// Dx used the alpha channel.
-	// Opengl is only 8 bits on red channel.
+	// Either GSdx will send a texture that contains a single channel
+	// in this case we must use the red channel (whereas Dx uses alpha)
+	//
+	// Or we have an old RT (ie RGBA8) that contains index (4/8) in the alpha channel
+
+#if PS_IFMT == 0
+	// Single channel texture
 	c.x = sample_c(uv.xy).r;
 	c.y = sample_c(uv.zy).r;
 	c.z = sample_c(uv.xw).r;
 	c.w = sample_c(uv.zw).r;
+	//return c * 255.0/256.0 + 0.5/256.0;
+#else
+	// 4 channels texture
+	c.x = sample_c(uv.xy).a;
+	c.y = sample_c(uv.zy).a;
+	c.z = sample_c(uv.xw).a;
+	c.w = sample_c(uv.zw).a;
+#endif
 
-	return c * 255.0/256.0 + 0.5/256.0;
+	uvec4 i = uvec4(c * 255.0f + 0.5f); // Denormalize value
+	//return (i/uint(16)) & uint(0xF);
+
+#if PS_IFMT == 1
+	// 4HH alpha
+	return i >> 4u;
+#elif PS_IFMT == 2
+	// 4HL alpha
+	return i & 16u;
+#else
+	// 8 bits alpha or red
+	return i;
+#endif
+
 }
 
-mat4 sample_4p(vec4 u)
+mat4 sample_4p(uvec4 u)
 {
 	mat4 c;
 
@@ -231,7 +255,7 @@ vec4 sample_color(vec2 st, float q)
 
 	if((PS_FMT & FMT_PAL) != 0)
 	{
-		c = sample_4p(sample_4a(uv));
+		c = sample_4p(sample_4_index(uv));
 	}
 	else
 	{

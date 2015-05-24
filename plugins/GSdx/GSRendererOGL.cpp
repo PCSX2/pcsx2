@@ -506,7 +506,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
-		ps_sel.fmt = tex->m_palette ? cpsm.fmt | 4 : cpsm.fmt;
+		if (tex->m_palette) {
+			ps_sel.fmt = cpsm.fmt | 4;
+			ps_sel.ifmt = (context->TEX0.PSM == 0x1B) ? 3
+				: (context->TEX0.PSM == 0x24) ? 2
+				: (context->TEX0.PSM == 0x2C) ? 1
+				: 0;
+			GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
+		} else {
+			ps_sel.fmt = cpsm.fmt;
+		}
 		ps_sel.aem = env.TEXA.AEM;
 		ps_sel.tfx = context->TEX0.TFX;
 		ps_sel.tcc = context->TEX0.TCC;
@@ -573,6 +582,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #ifdef ENABLE_OGL_DEBUG
 		// Unattach texture to avoid noise in debugger
 		dev->PSSetShaderResource(0, NULL);
+		dev->PSSetShaderResource(1, NULL);
 #endif
 	}
 
