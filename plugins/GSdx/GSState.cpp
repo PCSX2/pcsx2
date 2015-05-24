@@ -3543,6 +3543,12 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // wall of fog
 		}
+		else if (fi.TME && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S))
+		{
+			// Equivalent to the UserHacks_AutoSkipDrawDepth hack but enabled by default
+			// http://forums.pcsx2.net/Thread-God-of-War-Red-line-rendering-explained
+			skip = 1;
+		}
 	}
 	else
 	{
@@ -3579,6 +3585,12 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80 
 			{
 				skip = 1; // water effect and water vertical lines
+			}
+			else if (fi.TME && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S))
+			{
+				// Equivalent to the UserHacks_AutoSkipDrawDepth hack but enabled by default
+				// http://forums.pcsx2.net/Thread-God-of-War-Red-line-rendering-explained
+				skip = 1;
 			}
 		}
 	}
