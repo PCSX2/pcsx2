@@ -109,6 +109,7 @@ protected:
 	list<Target*> m_dst[2];
 	bool m_paltex;
 	int m_spritehack;
+	int m_filter;
 	uint8* m_temp;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL);

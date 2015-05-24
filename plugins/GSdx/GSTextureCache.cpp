@@ -30,6 +30,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	UserHacks_NVIDIAHack = !!theApp.GetConfig("UserHacks_NVIDIAHack", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
+	m_filter = theApp.GetConfig("filter", 2);
 
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
@@ -772,7 +773,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
 
-			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect);
+			// Note linear filtering can break some games (like star ocean 3)
+			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, 0, (m_filter == 1));
 		}
 
 		if(dTex != src->m_texture)

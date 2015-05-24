@@ -205,7 +205,7 @@ public:
 				"\tFBP (*32):0x%x\n"
 				"\tFBW:%d\n"
 				"\tPSM:0x%x\n"
-				"\tFBMSK:%d\n\n"
+				"\tFBMSK:0x%x\n\n"
 				, FRAME.FBP*32, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
 		fprintf(fp, "ZBUF\n"
 				"\tZBP (*32):0x%x\n"
