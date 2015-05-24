@@ -391,7 +391,7 @@ namespace GLLoader {
 			nvidia_buggy_driver = true;
 		if (strstr(vendor, "Intel"))
 			intel_buggy_driver = true;
-		if (strstr(vendor, "X.Org")) // Note: it might actually catch nouveau too, but bug are likely to be the same anyway
+		if (strstr(vendor, "X.Org") || strstr(vendor, "nouveau")) // Note: it might actually catch nouveau too, but bug are likely to be the same anyway
 			mesa_amd_buggy_driver = true;
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
