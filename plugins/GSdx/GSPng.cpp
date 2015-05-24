@@ -23,6 +23,9 @@
 
 namespace GSPng {
 
+    // FIXME gray_pixel_16 doesn't work. Integer image and depth image are all black
+    // Maybe I can't open them correctly
+    // A better solution must be found!
     void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
     {
 #ifdef ENABLE_OGL_PNG
