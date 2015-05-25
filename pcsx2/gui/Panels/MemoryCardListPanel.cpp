@@ -54,6 +54,7 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 {
 	dest.IsFormatted	= false;
 	dest.IsPresent		= false;
+	dest.IsPSX			= false;
 	dest.Type			= MemoryCardType::MemoryCard_None;
 
 	const wxString fullpath( filename.GetFullPath() );
