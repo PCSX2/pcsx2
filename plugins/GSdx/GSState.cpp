@@ -5530,7 +5530,7 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 #ifdef ENABLE_OGL_DEBUG
 	} else if (fi.TME) {
 			if(fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S)
-				GL_INS("!!! Depth Texture !!!");
+				GL_INS("!!! Depth Texture 0x%x!!!", fi.TPSM);
 #endif
 	}
 

@@ -415,7 +415,7 @@ void GSDeviceOGL::DrawIndexedPrimitive()
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= (int)m_index.count);
+	//ASSERT(offset + count <= (int)m_index.count);
 
 	BeforeDraw();
 	m_va->DrawIndexedPrimitive(offset, count);
