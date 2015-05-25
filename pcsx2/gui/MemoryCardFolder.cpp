@@ -1025,7 +1025,7 @@ FolderMemoryCardAggregator::FolderMemoryCardAggregator() {
 
 void FolderMemoryCardAggregator::Open() {
 	for ( int i = 0; i < totalCardSlots; ++i ) {
-		m_cards[i].Open();
+		m_cards[i].Open( m_lastKnownFilter );
 	}
 }
 
@@ -1071,5 +1071,6 @@ void FolderMemoryCardAggregator::ReIndex( uint slot, const wxString& filter ) {
 	m_cards[slot].Close();
 	Console.WriteLn( Color_Green, L"(FolderMcd) Re-Indexing slot %u with filter \"%s\"", slot, WX_STR( filter ) );
 	m_cards[slot].Open( filter );
+	m_lastKnownFilter = filter;
 }
 

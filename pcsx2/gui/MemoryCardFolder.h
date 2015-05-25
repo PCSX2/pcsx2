@@ -298,6 +298,7 @@ class FolderMemoryCardAggregator {
 protected:
 	static const int totalCardSlots = 8;
 	FolderMemoryCard m_cards[totalCardSlots];
+	wxString m_lastKnownFilter = L"";
 
 public:
 	FolderMemoryCardAggregator();
