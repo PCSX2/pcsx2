@@ -113,5 +113,4 @@ const char* dialog_message(int ID, bool* updateText) {
 				*updateText = false;
 			return "";
 	}
-	return "";
 }
