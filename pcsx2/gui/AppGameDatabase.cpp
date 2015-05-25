@@ -209,7 +209,7 @@ void AppGameDatabase::SaveToFile(const wxString& file) {
 
 		const uint endidx = (blockidx == m_BlockTableWritePos) ? m_CurBlockWritePos : m_GamesPerBlock;
 
-		for( uint gameidx=0; gameidx<=endidx; ++gameidx )
+		for( uint gameidx=0; gameidx<endidx; ++gameidx )
 		{
 			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
 
