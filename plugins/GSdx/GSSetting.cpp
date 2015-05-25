@@ -81,6 +81,9 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
 				"Fixes lines in sprites of games like Ar tonelico when upscaling.\n\n"
 				"Carries a total of three states: Unchecked (off), Shaded (on for all sprites) and Checked (on for flat sprites)";
+		case IDC_AUTO_SKIP:
+		        return "Auto-skip draw depth Hack\n\n"
+		               "Fixes red lines for games like GOW and NFS:Underground.";
 		case IDC_TCOFFSETX:
 		case IDC_TCOFFSETX2:
 		case IDC_STATIC_TCOFFSETX:
