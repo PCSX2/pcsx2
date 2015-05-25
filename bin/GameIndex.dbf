@@ -207,7 +207,7 @@ Name   = Taiko No Tatsujin Doka! To Omori 7Daime
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20001
-Name   = Ratchet and Clank
+Name   = Ratchet & Clank
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20002
@@ -2726,7 +2726,7 @@ Name   = Jak II
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20011
-Name   = Ratchet and Clank 2
+Name   = Ratchet & Clank 2
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20012
@@ -2814,6 +2814,10 @@ Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20035
 Name   = Hot Shots Golf 3 [PlayStation 2 Big Hit Series]
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20037
+Name   = Ratchet & Clank 3
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20038
@@ -3001,7 +3005,7 @@ Name   = Super Robot Taisen OG - Original Generations Gaiden
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20120
-Name   = Ratchet and Clank
+Name   = Ratchet & Clank
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20132
@@ -3618,7 +3622,7 @@ Name   = Formula One 2005
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15099
-Name   = Ratchet & Clank - Giga Battle
+Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15100
@@ -3935,7 +3939,7 @@ Name   = Wanda to Kyozou (Shadow of the Colossus) [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19321
-Name   = Ratchet & Clank 4th - GiriGiri Gingano Giga-Battle [PlayStation 2 The Best]
+Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19322
@@ -3964,7 +3968,7 @@ Name   = Ape Escape 3 [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19328
-Name   = Ratchet & Clank 4th Girigiri Gingano Giga-battle [PlayStation 2 the Best - Reprint]
+Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19329
@@ -5154,7 +5158,7 @@ Name   = NBA '06
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97353
-Name   = Ratchet and Clank - Up Your Arsenal
+Name   = Ratchet & Clank - Up Your Arsenal
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -5705,7 +5709,7 @@ Name   = Killzone [Greatest Hits]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97518
-Name   = Ratchet and Clank - Up Your Arsenal [Greatest Hits]
+Name   = Ratchet & Clank - Up Your Arsenal [Greatest Hits]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97519
@@ -9890,7 +9894,7 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-51693
 Name   = Suffering, The
-Region = PAL-E
+Region = PAL-E-F-G
 ---------------------------------------------
 Serial = SLES-51696
 Name   = Dragon's Lair 3D - Special Edition
@@ -11408,7 +11412,7 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52439
 Name   = Suffering, The
-Region = PAL-E
+Region = PAL-E-I-S
 Compat = 5
 ---------------------------------------------
 Serial = SLES-52440
@@ -11625,7 +11629,7 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52531
 Name   = Suffering, The
-Region = PAL-Unk
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52532
 Name   = Aces of War
@@ -11681,15 +11685,23 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52551
 Name   = Samurai Warriors
-Region = PAL-Unk
+Region = PAL-E
+---------------------------------------------
+Serial = SLES-52552
+Name   = Samurai Warriors
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52553
 Name   = Samurai Warriors
-Region = PAL-Unk
+Region = PAL-G
+---------------------------------------------
+Serial = SLES-52554
+Name   = Samurai Warriors
+Region = PAL-I
 ---------------------------------------------
 Serial = SLES-52555
 Name   = Samurai Warriors
-Region = PAL-Unk
+Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52556
 Name   = Crimson Sea 2
@@ -13919,9 +13931,13 @@ Serial = SLES-53525
 Name   = Mortal Kombat - Shaolin Monks
 Region = PAL-G
 ---------------------------------------------
+Serial = SLES-53526
+Name   = Suffering, The - Ties that Bind
+Region = PAL-E-F
+---------------------------------------------
 Serial = SLES-53527
 Name   = Suffering, The - Ties that Bind
-Region = PAL-Unk
+Region = PAL-E-I-S
 ---------------------------------------------
 Serial = SLES-53528
 Name   = Suffering, The - Ties that Bind
@@ -16164,7 +16180,7 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-54629
-Name   = Shin Megami Tensei - Devil Summoner
+Name   = Shin Megami Tensei - Devil Summoner - Raidou Kuzunoha vs. the Soulless Army
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54631
@@ -17418,8 +17434,12 @@ Region = PAL-E-F
 Compat = 5
 ---------------------------------------------
 Serial = SLES-82018
-Name   = Cy Girls
-Region = PAL-Unk
+Name   = Cy Girls [Disc 1]
+Region = PAL-E-F-S
+---------------------------------------------
+Serial = SLES-82019
+Name   = Cy Girls [Disc 2]
+Region = PAL-E-F-S
 ---------------------------------------------
 Serial = SLES-82020
 Name   = Cy Girls [Disc 1]
@@ -17496,51 +17516,51 @@ Compat = 5
 [/patches]
 ---------------------------------------------
 Serial = SLES-82042
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82043
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82044
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82045
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82046
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82047
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82048
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82049
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82050
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82051
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82052
-Name   = Metal Gear Solid 3 - Subsistance [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-82053
-Name   = Metal Gear Solid 3 - Subsistance [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLKA-15003
@@ -17697,7 +17717,7 @@ Name   = SD Gundam G Generation Neo
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25082
-Name   = Castlevania Lament of Innocence
+Name   = Castlevania - Lament of Innocence
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
@@ -18120,7 +18140,7 @@ Name   = SSX On Tour
 Region = NTSC-J-K
 ---------------------------------------------
 Serial = SLKA-25328
-Name   = Castlevania - Curse of Dakness
+Name   = Castlevania - Curse of Darkness
 Region = NTSC-K
 Compat = 5
 vuClampMode = 0		//SPS with microVU
@@ -18154,12 +18174,12 @@ Name   = Full Metal Alchemist - Dream Carnival
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25353
-Name   = Metal Gear Solid 3 - Subsistance [Limited Edition] [Disc1of2]
+Name   = Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc1of2]
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-25354
-Name   = Metal Gear Solid 3 - Subsistance [Limited Edition] [Disc2of2]
+Name   = Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc2of2]
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
@@ -23251,7 +23271,7 @@ Name   = Ever 17 - Out of Infinity [SuperLite 2000 Series]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65692
-Name   = BioHazard Outbreak - File 2
+Name   = BioHazard Outbreak - File #2
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -24318,7 +24338,12 @@ Name   = World Rally Championship 4
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65976
-Name   = Grandia III
+Name   = Grandia III [Disc1of2]
+Region = NTSC-J
+Compat = 5
+---------------------------------------------
+Serial = SLPM-65977
+Name   = Grandia III [Disc2of2]
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -25258,7 +25283,7 @@ Name   = Jewels Ocean - Star of Sierra Leone
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66246
-Name   = Shin Megami Tensei - Devil Summoner - Kuzunoha Raidou
+Name   = Devil Summoner - Kuzunoha Raidou tai Chouriki Heidan
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -26535,7 +26560,11 @@ Name   = SSX On Tour [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66602
-Name   = Ryu ga Gotoku 2
+Name   = Ryu ga Gotoku 2 [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66603
+Name   = Ryu ga Gotoku 2 [Disc2of2]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66604
@@ -26652,7 +26681,7 @@ Name   = Shoujo Mahou Gaku Little Witch Romanesque
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66634
-Name   = Devil Summoner - Kuzunoha Raidou [Atlus Best Collection]
+Name   = Devil Summoner - Kuzunoha Raidou tai Chouriki Heidan [Atlus Best Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66635
@@ -29978,7 +30007,11 @@ Name   = Tales of the Sunrise Heroes 2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25071
-Name   = Visual Mix - Ayumi Hamasaki Dome Tour 2001
+Name   = Visual Mix - Ayumi Hamasaki Dome Tour 2001 [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25072
+Name   = Visual Mix - Ayumi Hamasaki Dome Tour 2001 [Disc2of2]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25074
@@ -30762,7 +30795,11 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPS-25317
-Name   = Shadow Hearts 2 [Deluxe Pack]
+Name   = Shadow Hearts 2 [Deluxe Pack] [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25318
+Name   = Shadow Hearts 2 [Deluxe Pack] [Disc2of2]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25319
@@ -30807,7 +30844,11 @@ Name   = Gallop Racer Lucky 7
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25334
-Name   = Shadow Hearts 2
+Name   = Shadow Hearts 2 [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25335
+Name   = Shadow Hearts 2 [Disc1of2]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25336
@@ -31317,9 +31358,11 @@ Name   = Eternal Aselia - The Spirit of Eternity Sword [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25467
-Name   = Minna Daisuki Katamaki Damacy
+Name   = Minna Daisuki Katamari Damacy
 Region = NTSC-J
 Compat = 5
+vuClampMode = 3
+mvuFlagSpeedHack = 0
 ---------------------------------------------
 Serial = SLPS-25468
 Name   = Eternal Aselia - The Spirit of Eternity Sword
@@ -37670,7 +37713,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20984
-Name   = Resident Evil - Outbreak File #2
+Name   = Resident Evil Outbreak - File #2
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -37963,7 +38006,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21041
-Name   = Shadow Hearts 2 - Covenant [Disc1of2]
+Name   = Shadow Hearts - Covenant [Disc1of2]
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -37978,7 +38021,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21044
-Name   = Shadow Hearts 2 - Covenant [Disc2of2]
+Name   = Shadow Hearts - Covenant [Disc2of2]
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -38543,7 +38586,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21168
-Name   = Castlevania - Curse of Dakness
+Name   = Castlevania - Curse of Darkness
 Region = NTSC-U
 Compat = 5
 vuClampMode = 0		//SPS with microVU
@@ -38908,7 +38951,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21243
-Name   = Metal Gear Solid 3 - Subsistence
+Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -39468,12 +39511,12 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21359
-Name   = Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc2of3]
+Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21360
-Name   = Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc3of3]
+Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21361
