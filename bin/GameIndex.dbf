@@ -75,6 +75,19 @@
 -- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
 
 ---------------------------------------------
+-- Memory Card Filter Override (MemCardFilter = s)
+---------------------------------------------
+-- By default, the FolderMemoryCard filters save games based on the
+-- game's serial, which means that only saves whose folder names contain
+-- the game's serial are loaded. This works fine for the vast majority
+-- of games, but fails in some cases, for which this override is for.
+-- Examples include multi-disc games, where later games often reuse the
+-- serial of the previous disc(s), and games that allow transfer of save
+-- data between different games, such as importing data from a prequel.
+-- To allow multiple serials separate them with slashes, like this:
+-- MemCardFilter = SLUS-12345/SLUS-12346/SLUS-12347
+
+---------------------------------------------
 -- Patches ([patches] or [patches = crc])
 ---------------------------------------------
 -- Patches must be specified in blocks.
@@ -221,6 +234,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20004
 Name   = dot Hack Vol.3
 Region = NTSC-Unk
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SCAJ-20005
 Name   = Guilty Gear XX
@@ -301,6 +315,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20024
 Name   = dot Hack Vol.4
 Region = NTSC-Unk
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SCAJ-20025
 Name   = Grand Prix Challenge
@@ -440,6 +455,7 @@ Region = NTSC-Unk
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCAJ-20067
 Name   = GunGrave O.D.
@@ -514,10 +530,12 @@ Region = NTSC-Unk
 Serial = SCAJ-20086
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Disc1of2]
 Region = NTSC-Unk
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SCAJ-20087
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Disc2of2]
 Region = NTSC-Unk
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SCAJ-20088
 Name   = UO Nanatsu no Mizu to Densetsu no Nushi
@@ -644,6 +662,7 @@ Serial = SCAJ-20120
 Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-Unk
 EETimingHack = 1
+MemCardFilter = SCAJ-20120/SLPM-65795/SLPM-66373/SCAJ-20095/SLPM-65597/SLPM-66372
 ---------------------------------------------
 Serial = SCAJ-20121
 Name   = Armored Core - Formula Front
@@ -656,6 +675,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20123
 Name   = Wild ARMs - The 4th Detonator
 Region = NTSC-Unk
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCAJ-20124
 Name   = Romancing Saga - Minstrel Song
@@ -708,6 +728,7 @@ Name   = Minna Daisuki Katamari Damacy
 Region = NTSC-Unk
 vuClampMode = 3
 mvuFlagSpeedHack = 0
+MemCardFilter = SCAJ-20135/SLPS-25467/SLPS-73241/SCAJ-20079/SLPS-25360/SLPS-73210/SLPS-73240
 ---------------------------------------------
 Serial = SCAJ-20136
 Name   = Ace Combat 5 - The Unsung War [PlayStation 2 The Best]
@@ -749,6 +770,7 @@ Serial = SCAJ-20146
 Name   = Shadow of the Colossus
 Region = NTSC-Ch-E-J
 Compat = 5
+MemCardFilter = SCAJ-20146/SCAJ-20196/SCAJ-20099/SCPS-11003/SCPS-19103/SCPS-19151/SCPS-55001
 ---------------------------------------------
 Serial = SCAJ-20147
 Name   = Heavy Metal Thunder
@@ -860,6 +882,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20173
 Name   = Ace Combat Zero - The Belkan War
 Region = NTSC-Unk
+MemCardFilter = SCAJ-20173/SLPS-25629/SLPS-73250/SLPS-25052/SLPS-73205/SLPS-73410/SCAJ-20104/SCAJ-20136/SLPS-25418/SLPS-73218
 ---------------------------------------------
 Serial = SCAJ-20175
 Name   = Dragon Quest - Shonen Yangus to Fushigi no Dungeon
@@ -941,6 +964,7 @@ Region = NTSC-Ch
 Serial = SCAJ-20196
 Name   = Shadow of the Colossus [PlayStation 2 The Best]
 Region = NTSC-Ch
+MemCardFilter = SCAJ-20146/SCAJ-20196/SCAJ-20099/SCPS-11003/SCPS-19103/SCPS-19151/SCPS-55001
 ---------------------------------------------
 Serial = SCAJ-20197
 Name   = Valkyrie Profile 2 - Silmeria [Ultimate Hits]
@@ -1019,6 +1043,7 @@ Name   = Gran Turismo 4
 Region = NTSC-Unk
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCAJ-30007
 Name   = Gran Turismo 4
@@ -1026,6 +1051,7 @@ Region = NTSC-Unk
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 //[patches = 7ABDBB5E]
 //	
 //	comment=patches by nachbrenner
@@ -1040,6 +1066,7 @@ Name   = Gran Turismo 4 [PlayStation 2 The Best]
 Region = NTSC-Unk
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCAJ-30010
 Name   = God of War
@@ -1636,6 +1663,8 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-Unk
 Compat = 5
+// reads Ratchet 1 data
+MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
 Serial = SCES-51608
 Name   = Jak & Daxter 2 - Renegade
@@ -1702,6 +1731,7 @@ Region = PAL-Unk
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCES-51719/SCES-52438/SCES-50294
 ---------------------------------------------
 Serial = SCES-51725
 Name   = Everquest Online Adventures
@@ -1893,11 +1923,14 @@ Region = PAL-Unk
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCES-51719/SCES-52438/SCES-50294
 ---------------------------------------------
 Serial = SCES-52456
 Name   = Ratchet & Clank 3
 Region = PAL-Unk
 Compat = 5
+// reads Ratchet 1 & 2 data
+MemCardFilter = SCES-52456/SCES-51607/SCES-50916
 ---------------------------------------------
 Serial = SCES-52460
 Name   = Jak 3
@@ -2107,6 +2140,8 @@ Compat = 5
 Serial = SCES-53286
 Name   = Jak X - Combat Racing
 Region = PAL-Unk
+// reads Ratchet Gladiator data
+MemCardFilter = SCES-53286/SCES-53285
 ---------------------------------------------
 Serial = SCES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
@@ -2151,6 +2186,7 @@ Serial = SCES-53326
 Name   = Shadow of the Colossus
 Region = PAL-Unk
 Compat = 5
+MemCardFilter = SCES-53326/SCES-50760
 ---------------------------------------------
 Serial = SCES-53328
 Name   = Genji
@@ -2354,6 +2390,8 @@ Region = PAL-Unk
 Serial = SCES-54041
 Name   = Ace Combat - The Belkan War
 Region = PAL-E
+// reads AC4 and 5 saves for bonus unlockables
+MemCardFilter = SCES-54041/SCES-50410/SCES-52424
 [patches = 194C9F38]
 	patch=0,EE,00131EB4,word,48498800
 	patch=0,EE,00131EB8,word,4B00682C
@@ -2696,10 +2734,12 @@ Compat = 5
 Serial = SCES-82034
 Name   = Xenosaga II - Jenseits von Gut und Bose [Disc 1]
 Region = PAL-Unk
+MemCardFilter = SLES-82034/SCES-82034
 ---------------------------------------------
 Serial = SCES-82035
 Name   = Xenosaga II - Jenseits von Gut und Bose [Disc 2]
 Region = PAL-Unk
+MemCardFilter = SLES-82034/SCES-82034
 ---------------------------------------------
 Serial = SCKA-10006
 Name   = Come on Baby
@@ -2728,6 +2768,7 @@ Region = NTSC-K
 Serial = SCKA-20011
 Name   = Ratchet & Clank 2
 Region = NTSC-K
+MemCardFilter = SCKA-20011/SCKA-20120
 ---------------------------------------------
 Serial = SCKA-20012
 Name   = Ark the Lad - jeongryeongui Hwanghon
@@ -2819,6 +2860,7 @@ Region = NTSC-K
 Serial = SCKA-20037
 Name   = Ratchet & Clank 3
 Region = NTSC-K
+MemCardFilter = SCKA-20037/SCKA-20011/SCKA-20120
 ---------------------------------------------
 Serial = SCKA-20038
 Name   = Time Crisis - Crisis Zone
@@ -2864,6 +2906,7 @@ Name   = Minna Daisuki Katamari Damacy
 Region = NTSC-K
 vuClampMode = 3
 mvuFlagSpeedHack = 0
+MemCardFilter = SCKA-20051/SCKA-20025
 ---------------------------------------------
 Serial = SCKA-20052
 Name   = Genji
@@ -2906,6 +2949,7 @@ Serial = SCKA-20061
 Name   = Wanda to Kyozou (Shadow of the Colossus)
 Region = NTSC-K
 Compat = 5
+MemCardFilter = SCKA-20061/SCPS-15097/SCPS-19320/SCKA-20028/SCPS-56001
 ---------------------------------------------
 Serial = SCKA-20062
 Name   = Ape Escape 3
@@ -2963,6 +3007,7 @@ Region = NTSC-K
 Serial = SCKA-20087
 Name   = Shin Onimusha - Dawn of Dreams [Disc2of2]
 Region = NTSC-K
+MemCardFilter = SCKA-20086
 ---------------------------------------------
 Serial = SCKA-20090
 Name   = God Hand
@@ -2995,6 +3040,7 @@ Serial = SCKA-20109
 Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-K
 VuClipFlagHack = 1
+MemCardFilter = SCKA-20109/SCKA-20099
 ---------------------------------------------
 Serial = SCKA-20114
 Name   = Obscure II - The Aftermath
@@ -3129,10 +3175,12 @@ Region = NTSC-J
 Serial = SCPS-11019
 Name   = Bravo Music - Chou-Meikyokuban [Limited Edition] [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SCPS-11023/SCPS-11019/SCPS-11020
 ---------------------------------------------
 Serial = SCPS-11020
 Name   = Bravo Music - Chou-Meikyokuban [Limited Edition] [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SCPS-11023/SCPS-11019/SCPS-11020
 ---------------------------------------------
 Serial = SCPS-11021
 Name   = Yoake no Mariko 2nd Act
@@ -3145,6 +3193,7 @@ Region = NTSC-J
 Serial = SCPS-11023
 Name   = Bravo Music - Chou-Meikyokuban
 Region = NTSC-J
+MemCardFilter = SCPS-11023/SCPS-11019/SCPS-11020
 ---------------------------------------------
 Serial = SCPS-11024
 Name   = Otostaz
@@ -3439,10 +3488,12 @@ Name   = Gran Turismo 4 - Prologue
 Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCPS-15056
 Name   = Ratchet & Clank 2
 Region = NTSC-J
+MemCardFilter = SCPS-15056/SCPS-15037
 ---------------------------------------------
 Serial = SCPS-15057
 Name   = Jak & Daxter 2
@@ -3560,6 +3611,7 @@ Region = NTSC-J
 Serial = SCPS-15084
 Name   = Ratchet & Clank 3
 Region = NTSC-J
+MemCardFilter = SCPS-15084/SCPS-15056/SCPS-15037
 ---------------------------------------------
 Serial = SCPS-15085
 Name   = Kenran Butousai
@@ -3589,10 +3641,12 @@ Region = NTSC-J
 Serial = SCPS-15091
 Name   = Wild ARMs - The 4th Detonator
 Region = NTSC-J
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCPS-15092
 Name   = Wild ARMs - The 4th Detonator
 Region = NTSC-J
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCPS-15093
 Name   = Rule of Rose
@@ -3616,6 +3670,7 @@ Serial = SCPS-15097
 Name   = Wanda to Kyozou (Shadow of the Colossus)
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SCAJ-20146/SCAJ-20196/SCAJ-20099/SCPS-11003/SCPS-19103/SCPS-19151/SCPS-55001
 ---------------------------------------------
 Serial = SCPS-15098
 Name   = Formula One 2005
@@ -3727,6 +3782,7 @@ Region = NTSC-J
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCPS-17002
 Name   = Wild ARMs - Alter Code F
@@ -3855,6 +3911,7 @@ Name   = Gran Turismo 4 [PlayStation 2 The Best]
 Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCPS-19253
 Name   = Wild ARMs - Alter Code F [PlayStation 2 The Best - Reprint]
@@ -3877,6 +3934,7 @@ Name   = Gran Turismo 4 - Prologue [PlayStation 2 The Best]
 Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-17001/SCPS-19252/SCPS-19304/SCPS-15009/SCPS-55007
 ---------------------------------------------
 Serial = SCPS-19305
 Name   = Siren [PlayStation 2 The Best]
@@ -3913,6 +3971,7 @@ Region = NTSC-J
 Serial = SCPS-19313
 Name   = Wild ARMs - The 4th Detonator [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCPS-19315
 Name   = EyeToy - Play [PlayStation 2 The Best]
@@ -3937,6 +3996,7 @@ Region = NTSC-J
 Serial = SCPS-19320
 Name   = Wanda to Kyozou (Shadow of the Colossus) [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SCAJ-20146/SCAJ-20196/SCAJ-20099/SCPS-11003/SCPS-19103/SCPS-19151/SCPS-55001
 ---------------------------------------------
 Serial = SCPS-19321
 Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]
@@ -3945,10 +4005,12 @@ Region = NTSC-J
 Serial = SCPS-19322
 Name   = Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCPS-19323
 Name   = Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]
 Region = NTSC-J
+MemCardFilter = SCAJ-20123/SCPS-15091/SCPS-15092/SCPS-19313/SCPS-19322/SCPS-19323/SCAJ-30002/SCPS-17002/SCPS-19251/SCPS-19253
 ---------------------------------------------
 Serial = SCPS-19324
 Name   = Tourist Trophy - The Real Riding Simulator [PlayStation 2 The Best]
@@ -4158,6 +4220,7 @@ Region = NTSC-J
 Serial = SCPS-55029
 Name   = dot Hack - Vol.1
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SCPS-55030
 Name   = First Step Victorious Boxers [PlayStation 2 The Best]
@@ -4186,6 +4249,7 @@ Region = NTSC-J
 Serial = SCPS-55042
 Name   = dot Hack - Vol.2
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SCPS-55043
 Name   = Fatal Frame
@@ -4955,6 +5019,7 @@ Serial = SCUS-97268
 Name   = Ratchet & Clank - Going Commando
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97269
 Name   = Final Fantasy XI [Disc2of2]
@@ -5086,6 +5151,8 @@ Region = NTSC-U
 Compat = 5
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+// allows car imports from GT3 or something
+MemCardFilter = SCUS-97328/SCUS-97436/SCUS-97102/SCUS-97219/SCUS-97512
 ---------------------------------------------
 Serial = SCUS-97329
 Name   = Downhill Domination [Demo]
@@ -5161,6 +5228,7 @@ Serial = SCUS-97353
 Name   = Ratchet & Clank - Up Your Arsenal
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SCUS-97353/SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97355
 Name   = Siren
@@ -5397,6 +5465,7 @@ Serial = SCUS-97429
 Name   = Jak X - Combat Racing
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SCUS-97429/SCUS-97465
 ---------------------------------------------
 Serial = SCUS-97430
 Name   = Hot Shots Golf FORE! [Regular Demo]
@@ -5415,6 +5484,7 @@ Name   = Gran Turismo 4 [Online Public Beta]
 Region = NTSC-U
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+MemCardFilter = SCUS-97328/SCUS-97436/SCUS-97102/SCUS-97219/SCUS-97512
 ---------------------------------------------
 Serial = SCUS-97437
 Name   = ATV Off-Road Fury 3 [Demo]
@@ -5546,6 +5616,7 @@ Serial = SCUS-97472
 Name   = Shadow of the Colossus
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SCUS-97472/SCUS-97113
 ---------------------------------------------
 Serial = SCUS-97473
 Name   = World Tour Soccer 2006 [Demo]
@@ -6162,6 +6233,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25066
 Name   = Burnout Revenge - Battle Racing Ignited
 Region = NTSC-Unk
+MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLAJ-25068
 Name   = Shin Sangoku Musou 4 - Moushouden
@@ -6178,6 +6250,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25075
 Name   = Need for Speed - Most Wanted [Black Edition]
 Region = NTSC-Unk
+MemCardFilter = SLAJ-25075/SLPM-66232/SLPM-66562/SLPM-65766/SLPM-66051/SLPM-66960
 ---------------------------------------------
 Serial = SLAJ-25076
 Name   = Harry Potter and the Goblet of Fire
@@ -6186,6 +6259,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25077
 Name   = Sengoku Musou 2
 Region = NTSC-Unk
+MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-65517/SLPM-74212/SLPM-74235/SLAJ-25048/SLPM-65718/SLPM-74224/SLPM-74249
 ---------------------------------------------
 Serial = SLAJ-25078
 Name   = Black
@@ -6550,6 +6624,8 @@ Compat = 5
 Serial = SLES-50054
 Name   = Midnight Club
 Region = PAL-Unk
+// reads Smuggler's Run for bonus unlockable
+MemCardFilter = SLES-50054/SLES-50071/SLES-50055/SLES-50061
 ---------------------------------------------
 Serial = SLES-50055
 Name   = Smuggler's Run
@@ -6597,6 +6673,7 @@ Serial = SLES-50071
 Name   = Midnight Club - Street Racing
 Region = PAL-Unk
 Compat = 3
+MemCardFilter = SLES-50054/SLES-50071/SLES-50055/SLES-50061
 ---------------------------------------------
 Serial = SLES-50072
 Name   = Street Fighter EX3
@@ -9444,6 +9521,7 @@ Serial = SLES-51434
 Name   = Silent Hill 3
 Region = PAL-M5
 Compat = 5
+MemCardFilter = SLES-51434/SLES-50382/SLES-51156
 ---------------------------------------------
 Serial = SLES-51435
 Name   = International Superstar Soccer 3
@@ -10421,11 +10499,13 @@ Region = PAL-M4
 Serial = SLES-51913
 Name   = Onimusha Blade Warrior
 Region = PAL-Unk
+MemCardFilter = SLES-51913/SLES-51914
 ---------------------------------------------
 Serial = SLES-51914
 Name   = Onimusha 3 - Demon Siege
 Region = PAL-Unk
 Compat = 5
+MemCardFilter = SLES-51913/SLES-51914
 ---------------------------------------------
 Serial = SLES-51915
 Name   = Pro Evolution Soccer 3
@@ -11014,6 +11094,7 @@ EETimingHack = 1		//Path 3 masking errors
 Serial = SLES-52237
 Name   = dot Hack - Part 1 - Infection
 Region = PAL-M5
+MemCardFilter = SLES-52237/SLES-52467/SLES-52468/SLES-52469
 ---------------------------------------------
 Serial = SLES-52238
 Name   = Nightshade
@@ -11471,16 +11552,19 @@ Serial = SLES-52467
 Name   = dot Hack - Part 2 - Mutation
 Region = PAL-M5
 Compat = 5
+MemCardFilter = SLES-52237/SLES-52467/SLES-52468/SLES-52469
 ---------------------------------------------
 Serial = SLES-52468
 Name   = dot Hack - Part 4 - Quarantine
 Region = PAL-M5
 Compat = 5
+MemCardFilter = SLES-52237/SLES-52467/SLES-52468/SLES-52469
 ---------------------------------------------
 Serial = SLES-52469
 Name   = dot Hack - Part 3 - Outbreak
 Region = PAL-M5
 Compat = 5
+MemCardFilter = SLES-52237/SLES-52467/SLES-52468/SLES-52469
 ---------------------------------------------
 Serial = SLES-52471
 Name   = Naval Ops - Commander
@@ -12782,6 +12866,8 @@ patch=1,EE,0010f3e0,word,00000000
 Serial = SLES-52988
 Name   = MegaMan X8
 Region = PAL-Unk
+// reads Command Mission save for bonus boss
+MemCardFilter = SLES-52988/SLES-52832
 ---------------------------------------------
 Serial = SLES-52989
 Name   = Blowout
@@ -12795,6 +12881,8 @@ Serial = SLES-52998
 Name   = Sonic Mega Collection Plus
 Region = PAL-Unk
 Compat = 5
+// two games unlock by having a Sonic Heroes save
+MemCardFilter = SLES-52998/SLES-51950
 ---------------------------------------------
 Serial = SLES-52999
 Name   = RC Toy Machines
@@ -12972,6 +13060,8 @@ Serial = SLES-53039
 Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
 Region = PAL-Unk
 Compat = 4
+// allows import of characters from first game
+MemCardFilter = SLES-53039/SLES-52325
 ---------------------------------------------
 Serial = SLES-53041
 Name   = RTL Ski Alpine 2005
@@ -13481,6 +13571,8 @@ Region = PAL-M6
 Serial = SLES-53319
 Name   = Resident Evil Outbreak - File #2
 Region = PAL-Unk
+// reads and writes to Outbreak File #1
+MemCardFilter = SLES-53319/SCES-50987/SLES-51589
 ---------------------------------------------
 Serial = SLES-53320
 Name   = S.C.A.R. - Squadra Corse Alfa Romeo
@@ -13541,6 +13633,8 @@ Serial = SLES-53350
 Name   = Sonic Gems Collection
 Region = PAL-E
 Compat = 5
+// Vectorman unlocks by having a Mega Collection or Heroes save
+MemCardFilter = SLES-53350/SLES-52998/SLES-51950
 ---------------------------------------------
 Serial = SLES-53351
 Name   = SSX On Tour
@@ -13892,11 +13986,13 @@ Serial = SLES-53506
 Name   = Burnout Revenge
 Region = PAL-M5
 Compat = 5
+MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53507
 Name   = Burnout Revenge
 Region = PAL-Unk
 Compat = 5
+MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53508
 Name   = Ultimate Pro-Pinball
@@ -13934,14 +14030,17 @@ Region = PAL-G
 Serial = SLES-53526
 Name   = Suffering, The - Ties that Bind
 Region = PAL-E-F
+MemCardFilter = SLES-53526/SLES-53527/SLES-53528/SLES-53626/SLES-51693/SLES-52439/SLES-52531
 ---------------------------------------------
 Serial = SLES-53527
 Name   = Suffering, The - Ties that Bind
 Region = PAL-E-I-S
+MemCardFilter = SLES-53526/SLES-53527/SLES-53528/SLES-53626/SLES-51693/SLES-52439/SLES-52531
 ---------------------------------------------
 Serial = SLES-53528
 Name   = Suffering, The - Ties that Bind
 Region = PAL-G
+MemCardFilter = SLES-53526/SLES-53527/SLES-53528/SLES-53626/SLES-51693/SLES-52439/SLES-52531
 ---------------------------------------------
 Serial = SLES-53529
 Name   = FIFA '06
@@ -14032,14 +14131,18 @@ Serial = SLES-53557
 Name   = Need for Speed - Most Wanted
 Region = PAL-E
 Compat = 5
+// reads Underground 2 save for extra money
+MemCardFilter = SLES-53557/SLES-53558/SLES-53559/SLES-53857/SLES-52725
 ---------------------------------------------
 Serial = SLES-53558
 Name   = Need for Speed - Most Wanted
 Region = PAL-Unk
+MemCardFilter = SLES-53557/SLES-53558/SLES-53559/SLES-53857/SLES-52725
 ---------------------------------------------
 Serial = SLES-53559
 Name   = Need for Speed - Most Wanted
 Region = PAL-Unk
+MemCardFilter = SLES-53557/SLES-53558/SLES-53559/SLES-53857/SLES-52725
 ---------------------------------------------
 Serial = SLES-53560
 Name   = Sonic Riders
@@ -14179,6 +14282,7 @@ Compat = 5
 Serial = SLES-53626
 Name   = Suffering, The - Ties that Bind
 Region = PAL-M2
+MemCardFilter = SLES-53526/SLES-53527/SLES-53528/SLES-53626/SLES-51693/SLES-52439/SLES-52531
 ---------------------------------------------
 Serial = SLES-53635
 Name   = NASCAR '06 - Total Team Control
@@ -14465,6 +14569,8 @@ Name   = Castlevania - Curse of Darkness
 Region = PAL-Unk
 Compat = 5
 vuClampMode = 0		//SPS with microVU
+// reads Lament of Innocence save for easter egg
+MemCardFilter = SLES-53755/SLES-52118
 ---------------------------------------------
 Serial = SLES-53756
 Name   = Resident Evil 4
@@ -14506,6 +14612,7 @@ Compat = 5
 Serial = SLES-53769
 Name   = Suikoden Tactics
 Region = PAL-Unk
+MemCardFilter = SLES-53769/SLES-52913
 ---------------------------------------------
 Serial = SLES-53772
 Name   = Air Raid 3
@@ -14658,6 +14765,7 @@ Region = PAL-Unk
 Serial = SLES-53857
 Name   = Need for Speed - Most Wanted [Black Edition]
 Region = PAL-E
+MemCardFilter = SLES-53557/SLES-53558/SLES-53559/SLES-53857/SLES-52725
 ---------------------------------------------
 Serial = SLES-53860
 Name   = Dynasty Warriors 5 - Xtreme Legends
@@ -15440,6 +15548,8 @@ Region = PAL-F
 Serial = SLES-54221
 Name   = LEGO Star Wars II - The Original Trilogy
 Region = PAL-Unk
+// allows import of characters from Lego Star Wars 1
+MemCardFilter = SLES-54221/SLES-53194
 ---------------------------------------------
 Serial = SLES-54222
 Name   = SuperBikes Riding Challenge
@@ -15639,6 +15749,8 @@ Region = PAL-E
 Serial = SLES-54340
 Name   = Samurai Warriors 2
 Region = PAL-Unk
+// reads Samurai Warriors and Samurai Warriors Xtreme Legends saves for unlockables
+MemCardFilter = SLES-54340/SLES-52551/SLES-52552/SLES-52553/SLES-52554/SLES-52555/SLES-53002/SLES-53003/SLES-53004
 ---------------------------------------------
 Serial = SLES-54341
 Name   = Dancing Stage SuperNOVA
@@ -16077,6 +16189,8 @@ Serial = SLES-54555
 Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = PAL-E
 EETimingHack = 1
+// reads data from DDS1
+MemCardFilter = SLES-54555/SLES-53458
 ---------------------------------------------
 Serial = SLES-54560
 Name   = Alpine Ski Racing 2007
@@ -16915,6 +17029,8 @@ Region = PAL-M5
 Serial = SLES-55242
 Name   = Yakuza 2
 Region = PAL-E
+// allows import of Yakuza 1 data
+MemCardFilter = SLES-55242/SLES-54171
 ---------------------------------------------
 Serial = SLES-55243
 Name   = FIFA 09
@@ -17022,6 +17138,7 @@ Serial = SLES-55354
 Name   = Shin Megami Tensei: Persona 3 FES
 Region = PAL-E
 VuClipFlagHack = 1
+MemCardFilter = SLES-55354/SLES-55018
 ---------------------------------------------
 Serial = SLES-55355
 Name   = Guitar Hero - World Tour
@@ -17427,6 +17544,7 @@ Serial = SLES-82012
 Name   = Devil May Cry 2 [Lucia Disc]
 Region = PAL-E
 Compat = 5
+MemCardFilter = SLES-82011
 ---------------------------------------------
 Serial = SLES-82013
 Name   = Metal Gear Solid 3 - Snake Eater
@@ -17440,6 +17558,7 @@ Region = PAL-E-F-S
 Serial = SLES-82019
 Name   = Cy Girls [Disc 2]
 Region = PAL-E-F-S
+MemCardFilter = SLES-82018
 ---------------------------------------------
 Serial = SLES-82020
 Name   = Cy Girls [Disc 1]
@@ -17448,6 +17567,7 @@ Region = PAL-E-G-I
 Serial = SLES-82021
 Name   = Cy Girls [Disc 2]
 Region = PAL-E-G-I
+MemCardFilter = SLES-82020
 ---------------------------------------------
 Serial = SLES-82024
 Name   = Metal Gear Solid 3 - Snake Eater
@@ -17468,6 +17588,7 @@ Name   = Star Ocean 3 - Till the End of Time [Disc2of2]
 Region = PAL-E
 Compat = 5
 VuAddSubHack = 1
+MemCardFilter = SLES-82028
 ---------------------------------------------
 Serial = SLES-82030
 Name   = Shadow Hearts - Covenant [Disc1of2]
@@ -17476,6 +17597,7 @@ Region = PAL-Unk
 Serial = SLES-82031
 Name   = Shadow Hearts - Covenant [Disc2of2]
 Region = PAL-Unk
+MemCardFilter = SLES-82030
 ---------------------------------------------
 Serial = SLES-82032
 Name   = Metal Gear Solid 3 - Snake Eater
@@ -17484,10 +17606,12 @@ Region = PAL-G
 Serial = SLES-82034
 Name   = Xenosaga Episode II [Disc1of2]
 Region = PAL-E
+MemCardFilter = SLES-82034/SCES-82034
 ---------------------------------------------
 Serial = SLES-82035
 Name   = Xenosaga Episode II [Disc2of2]
 Region = PAL-E
+MemCardFilter = SLES-82034/SCES-82034
 ---------------------------------------------
 Serial = SLES-82036
 Name   = Armored Core - Nexus [Evolution Disc]
@@ -17510,6 +17634,7 @@ Serial = SLES-82039
 Name   = Onimusha - Dawn of Dreams [Disc2]
 Region = PAL-Unk
 Compat = 5
+MemCardFilter = SLES-82038
 [patches = 812C5A96]
 	comment= patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
@@ -17522,6 +17647,7 @@ Region = PAL-Unk
 Serial = SLES-82043
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82042
 ---------------------------------------------
 Serial = SLES-82044
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
@@ -17530,6 +17656,7 @@ Region = PAL-Unk
 Serial = SLES-82045
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82044
 ---------------------------------------------
 Serial = SLES-82046
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
@@ -17538,6 +17665,7 @@ Region = PAL-Unk
 Serial = SLES-82047
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82046
 ---------------------------------------------
 Serial = SLES-82048
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
@@ -17546,22 +17674,27 @@ Region = PAL-Unk
 Serial = SLES-82049
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82048
 ---------------------------------------------
 Serial = SLES-82050
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82042
 ---------------------------------------------
 Serial = SLES-82051
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82044
 ---------------------------------------------
 Serial = SLES-82052
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82046
 ---------------------------------------------
 Serial = SLES-82053
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-Unk
+MemCardFilter = SLES-82048
 ---------------------------------------------
 Serial = SLKA-15003
 Name   = Shikigami no Shiro II
@@ -17606,6 +17739,7 @@ Serial = SLKA-25013
 Name   = Devil May Cry 2 Lucia
 Region = NTSC-K
 Compat = 5
+MemCardFilter = SLKA-25012
 ---------------------------------------------
 Serial = SLKA-25015
 Name   = Evolution Skateboarding
@@ -17733,10 +17867,12 @@ Region = NTSC-K
 Serial = SLKA-25092
 Name   = Onimusha Buraiden
 Region = NTSC-K
+MemCardFilter = SLKA-25092/SLKA-25093
 ---------------------------------------------
 Serial = SLKA-25093
 Name   = Onimusha 3 Demon Siege
 Region = NTSC-K
+MemCardFilter = SLKA-25092/SLKA-25093
 ---------------------------------------------
 Serial = SLKA-25100
 Name   = Dragon Quest V Dragon Quarter
@@ -18049,10 +18185,12 @@ Region = NTSC-K
 Serial = SLKA-25280
 Name   = Ryu ga Gotoku 2 [Disc1of2]
 Region = NTSC-K
+MemCardFilter = SLKA-25280/SLKA-25342
 ---------------------------------------------
 Serial = SLKA-25281
 Name   = Ryu ga Gotoku 2 [Disc2of2]
 Region = NTSC-K
+MemCardFilter = SLKA-25280/SLKA-25342
 ---------------------------------------------
 Serial = SLKA-25284
 Name   = Sakura Taisen 3
@@ -18102,6 +18240,7 @@ Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-K
 Compat = 5
 EETimingHack = 1
+MemCardFilter = SLKA-25301/SLKA-25300
 ---------------------------------------------
 Serial = SLKA-25307
 Name   = Dragonball Z Sparking
@@ -18144,6 +18283,7 @@ Name   = Castlevania - Curse of Darkness
 Region = NTSC-K
 Compat = 5
 vuClampMode = 0		//SPS with microVU
+MemCardFilter = SLKA-25328/SLKA-25082
 ---------------------------------------------
 Serial = SLKA-25329
 Name   = Shin Sangoku Musou 4 - Moushouden
@@ -18182,6 +18322,7 @@ Serial = SLKA-25354
 Name   = Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc2of2]
 Region = NTSC-K
 Compat = 5
+MemCardFilter = SLKA-25353
 ---------------------------------------------
 Serial = SLKA-25359
 Name   = Winning Eleven 9 - Liveware Edition
@@ -18344,6 +18485,7 @@ Region = NTSC-J
 Serial = SLPM-55122
 Name   = Sengoku Musou 2
 Region = NTSC-J
+MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-65517/SLPM-74212/SLPM-74235/SLAJ-25048/SLPM-65718/SLPM-74224/SLPM-74249
 ---------------------------------------------
 Serial = SLPM-55127
 Name   = Need for Speed - Undercover
@@ -21058,19 +21200,23 @@ Region = NTSC-J
 Serial = SLPM-65040
 Name   = Fear, The [Disc1of4]
 Region = NTSC-J
+MemCardFilter = SLPM-65040/SLPM-65041/SLPM-65042/SLPM-65043
 ---------------------------------------------
 Serial = SLPM-65041
 Name   = Fear, The [Disc2of4]
 Region = NTSC-J
+MemCardFilter = SLPM-65040/SLPM-65041/SLPM-65042/SLPM-65043
 ---------------------------------------------
 Serial = SLPM-65042
 Name   = Fear, The [Disc3of4]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65040/SLPM-65041/SLPM-65042/SLPM-65043
 ---------------------------------------------
 Serial = SLPM-65043
 Name   = Fear, The [Disc4of4]
 Region = NTSC-J
+MemCardFilter = SLPM-65040/SLPM-65041/SLPM-65042/SLPM-65043
 ---------------------------------------------
 Serial = SLPM-65044
 Name   = Aizouban Angelique Trois [Koei The Best]
@@ -21151,10 +21297,13 @@ Region = NTSC-J
 Serial = SLPM-65073
 Name   = Genso Suikoden III
 Region = NTSC-J
+// This looks like a mess because it includes all serials for Suikoden 3, Suikoden 2, Suikogaiden 1, and Suikogaiden 2. A lot of these probably aren't actually required but it's not really hurting anything to have them here.
+MemCardFilter = SLPM-65073/SLPM-65074/SLPM-65305/SLPM-65694/SLPM-86168/SLPM-86389/SLPM-87100/SLPM-86637/SLPM-86883/SLPM-87261/SLPM-86663/SLPM-86953/SLPM-87262
 ---------------------------------------------
 Serial = SLPM-65074
 Name   = Genso Suikoden III
 Region = NTSC-J
+MemCardFilter = SLPM-65073/SLPM-65074/SLPM-65305/SLPM-65694/SLPM-86168/SLPM-86389/SLPM-87100/SLPM-86637/SLPM-86883/SLPM-87261/SLPM-86663/SLPM-86953/SLPM-87262
 ---------------------------------------------
 Serial = SLPM-65075
 Name   = K-1 World Grand Prix 2001
@@ -21193,11 +21342,13 @@ Serial = SLPM-65086
 Name   = Ayumi Hamasaki Dome Tour 2001 - A Visual Mix [Disc1of2]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPS-25071/SLPS-25072/SLPM-65086/SLPM-65087
 ---------------------------------------------
 Serial = SLPM-65087
 Name   = Ayumi Hamasaki Dome Tour 2001 - A Visual Mix [Disc2of2]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPS-25071/SLPS-25072/SLPM-65086/SLPM-65087
 ---------------------------------------------
 Serial = SLPM-65089
 Name   = Grandia Extreme
@@ -21634,6 +21785,7 @@ Serial = SLPM-65233
 Name   = Devil May Cry 2 [Lucia Disc]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65232
 ---------------------------------------------
 Serial = SLPM-65234
 Name   = Gregory Horror Show - Soul Collector
@@ -21715,6 +21867,7 @@ Serial = SLPM-65257
 Name   = Silent Hill 3
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 ---------------------------------------------
 Serial = SLPM-65260
 Name   = Air Land Force
@@ -21879,6 +22032,7 @@ Region = NTSC-J
 Serial = SLPM-65305
 Name   = Genso Suikoden 3
 Region = NTSC-J
+MemCardFilter = SLPM-65073/SLPM-65074/SLPM-65305/SLPM-65694/SLPM-86168/SLPM-86389/SLPM-87100/SLPM-86637/SLPM-86883/SLPM-87261/SLPM-86663/SLPM-86953/SLPM-87262
 ---------------------------------------------
 Serial = SLPM-65306
 Name   = Sakura Yuki Gekka [Limited Edition]
@@ -22263,6 +22417,7 @@ Serial = SLPM-65411
 Name   = Onimusha Buraiden
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65411/SLPM-65413
 ---------------------------------------------
 Serial = SLPM-65412
 Name   = War of the Monsters
@@ -22271,6 +22426,7 @@ Region = NTSC-J
 Serial = SLPM-65413
 Name   = Onimusha 3
 Region = NTSC-J
+MemCardFilter = SLPM-65411/SLPM-65413
 ---------------------------------------------
 Serial = SLPM-65414
 Name   = Simple 2000 Series Vol.45 - The Love and Tears and Memory
@@ -22365,6 +22521,7 @@ Name   = Star Ocean 3 [Director's Cut] [Disc2of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+MemCardFilter = SLPM-65438
 ---------------------------------------------
 Serial = SLPM-65441
 Name   = Ashita no Joe: Masshiro ni Moetsukuru
@@ -22595,14 +22752,17 @@ Compat = 5
 Serial = SLPM-65504
 Name   = Cool Girl [Limited Edition] [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
 ---------------------------------------------
 Serial = SLPM-65505
 Name   = Cool Girl [Limited Edition] [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
 ---------------------------------------------
 Serial = SLPM-65506
 Name   = Cool Girl
 Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
 ---------------------------------------------
 Serial = SLPM-65508
 Name   = Pop'n Music 9
@@ -23029,6 +23189,7 @@ Compat = 5
 Serial = SLPM-65622
 Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
+MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 ---------------------------------------------
 Serial = SLPM-65623
 Name   = Tantei Gakuen Q: Kiokan no Satsui [Konami The Best]
@@ -23274,6 +23435,7 @@ Serial = SLPM-65692
 Name   = BioHazard Outbreak - File #2
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65692/SLPM-65428/SLPM-74201
 ---------------------------------------------
 Serial = SLPM-65693
 Name   = Tokimeki Memorial 3 [Konami Palace Selection]
@@ -23282,6 +23444,7 @@ Region = NTSC-J
 Serial = SLPM-65694
 Name   = Genso Suikoden 3 [Konami Dendou Collection]
 Region = NTSC-J
+MemCardFilter = SLPM-65073/SLPM-65074/SLPM-65305/SLPM-65694/SLPM-86168/SLPM-86389/SLPM-87100/SLPM-86637/SLPM-86883/SLPM-87261/SLPM-86663/SLPM-86953/SLPM-87262
 ---------------------------------------------
 Serial = SLPM-65695
 Name   = Hard Luck - Return of the Heroes
@@ -23408,6 +23571,7 @@ Region = NTSC-J
 Serial = SLPM-65730
 Name   = RockMan X8
 Region = NTSC-J
+MemCardFilter = SLPM-65730/SLPM-65643
 ---------------------------------------------
 Serial = SLPM-65731
 Name   = Tom Clancy's Rainbow Six 3
@@ -23454,6 +23618,7 @@ Region = NTSC-J
 Serial = SLPM-65742
 Name   = Cool Girl [Konami the Best]
 Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
 ---------------------------------------------
 Serial = SLPM-65744
 Name   = Firefighter F.D. 18 [Konami The Best]
@@ -23510,6 +23675,7 @@ Region = NTSC-J
 Serial = SLPM-65758
 Name   = Sonic Mega Collection Plus
 Region = NTSC-J
+MemCardFilter = SLPM-65758/SLAJ-25027/SLPM-65431
 ---------------------------------------------
 Serial = SLPM-65759
 Name   = Mr. Incredible
@@ -23645,6 +23811,7 @@ Serial = SLPM-65795
 Name   = Digital Devil Saga: Avatar Tuner 2
 Region = NTSC-J
 EETimingHack = 1
+MemCardFilter = SCAJ-20120/SLPM-65795/SLPM-66373/SCAJ-20095/SLPM-65597/SLPM-66372
 ---------------------------------------------
 Serial = SLPM-65796
 Name   = Project Altered Beast
@@ -24346,6 +24513,7 @@ Serial = SLPM-65977
 Name   = Grandia III [Disc2of2]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-65976
 ---------------------------------------------
 Serial = SLPM-65978
 Name   = Kurogane no Houkou 2 - Warship Gunner [Koei The Best]
@@ -24481,6 +24649,7 @@ Region = NTSC-J
 Serial = SLPM-66018
 Name   = Silent Hill 3 [Konami Dendou Collection]
 Region = NTSC-J
+MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 ---------------------------------------------
 Serial = SLPM-66019
 Name   = Stuntman
@@ -24693,6 +24862,7 @@ Serial = SLPM-66074
 Name   = Sonic Gems Collection
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-66074/SLPM-65758/SLAJ-25027/SLPM-65431
 ---------------------------------------------
 Serial = SLPM-66076
 Name   = Meine Liebe - Yuubinaru kioku [Konami the Best]
@@ -24795,6 +24965,8 @@ Region = NTSC-J
 Serial = SLPM-66105
 Name   = Rhapsodia
 Region = NTSC-J
+// this is the JP Suikoden Tactics
+MemCardFilter = SLPM-66105/SLPM-66594/SLPM-65599/SLPM-65600
 ---------------------------------------------
 Serial = SLPM-66106
 Name   = Hoshi no Furu Koku [Limited Edition]
@@ -24807,6 +24979,7 @@ Region = NTSC-J
 Serial = SLPM-66108
 Name   = Burnout Revenge
 Region = NTSC-J
+MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66109
 Name   = Code Age Commanders
@@ -25021,6 +25194,7 @@ Name   = Akumajo Dracula - Yami no Juin
 Region = NTSC-J
 Compat = 5
 vuClampMode = 0		//SPS with microVU
+MemCardFilter = SLPM-66175/SLPM-66668/SLPM-65406/SLPM-65444/SLPM-66325
 ---------------------------------------------
 Serial = SLPM-66176
 Name   = Chaos Field - New Order
@@ -25186,22 +25360,27 @@ Region = NTSC-J
 Serial = SLPM-66220
 Name   = Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc1of3]
 Region = NTSC-J
+MemCardFilter = SLPM-66117
 ---------------------------------------------
 Serial = SLPM-66221
 Name   = Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc2of3]
 Region = NTSC-J
+MemCardFilter = SLPM-66117
 ---------------------------------------------
 Serial = SLPM-66222
 Name   = Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc3of3]
 Region = NTSC-J
+MemCardFilter = SLPM-66117
 ---------------------------------------------
 Serial = SLPM-66223
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPM-66117
 ---------------------------------------------
 Serial = SLPM-66224
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPM-66117
 ---------------------------------------------
 Serial = SLPM-66225
 Name   = Da Capo Four Seasons [Deluxe Pack]
@@ -25230,6 +25409,7 @@ Region = NTSC-J
 Serial = SLPM-66232
 Name   = Need for Speed - Most Wanted
 Region = NTSC-J
+MemCardFilter = SLAJ-25075/SLPM-66232/SLPM-66562/SLPM-65766/SLPM-66051/SLPM-66960
 ---------------------------------------------
 Serial = SLPM-66233
 Name   = Kingdom Hearts II
@@ -25407,6 +25587,7 @@ Serial = SLPM-66276
 Name   = Shin Onimusha - Dawn of Dreams [Disc2of2]
 Region = NTSC-J
 Compat = 2
+MemCardFilter = SLPM-66275
 [patches = BD17248E]
 	comment= patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
@@ -25521,6 +25702,7 @@ Region = NTSC-J
 Serial = SLPM-66307
 Name   = Sengoku Musou 2
 Region = NTSC-J
+MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-65517/SLPM-74212/SLPM-74235/SLAJ-25048/SLPM-65718/SLPM-74224/SLPM-74249
 ---------------------------------------------
 Serial = SLPM-66308
 Name   = Harukanaru Toki no Naka Premium Boxset
@@ -25718,6 +25900,7 @@ Serial = SLPM-66373
 Name   = Digital Devil Saga: Avatar Tuner 2 [Atlus Best Collection]
 Region = NTSC-J
 EETimingHack = 1
+MemCardFilter = SCAJ-20120/SLPM-65795/SLPM-66373/SCAJ-20095/SLPM-65597/SLPM-66372
 ---------------------------------------------
 Serial = SLPM-66374
 Name   = World Soccer Winning Eleven 10
@@ -26114,6 +26297,7 @@ Name   = Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc2of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+MemCardFilter = SLPM-66478
 ---------------------------------------------
 Serial = SLPM-66480
 Name   = Dragon Quest V - Bride of the Sky [Ultimate Hits]
@@ -26423,6 +26607,7 @@ Region = NTSC-J
 Serial = SLPM-66562
 Name   = Need for Speed - Most Wanted [EA Best Hits]
 Region = NTSC-J
+MemCardFilter = SLAJ-25075/SLPM-66232/SLPM-66562/SLPM-65766/SLPM-66051/SLPM-66960
 ---------------------------------------------
 Serial = SLPM-66563
 Name   = Nizu no Senritsu [2800 Collection]
@@ -26463,6 +26648,7 @@ Region = NTSC-J
 Serial = SLPM-66572
 Name   = LEGO Star Wars II - The Original Trilogy
 Region = NTSC-J
+MemCardFilter = SLPM-66572/SLPS-20423
 ---------------------------------------------
 Serial = SLPM-66573
 Name   = Kurogane no Houkou 2 - Warship Gunner [KOEI Selection]
@@ -26538,6 +26724,7 @@ Compat = 5
 Serial = SLPM-66594
 Name   = Rhapsodia [Konami the Best]
 Region = NTSC-J
+MemCardFilter = SLPM-66105/SLPM-66594/SLPM-65599/SLPM-65600
 ---------------------------------------------
 Serial = SLPM-66595
 Name   = J-League Winning Eleven 10 - Europa League '06-'07
@@ -26562,10 +26749,12 @@ Region = NTSC-J
 Serial = SLPM-66602
 Name   = Ryu ga Gotoku 2 [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPM-66602/SLPM-74301/SLPM-66168/SLPM-74234/SLPM-74253
 ---------------------------------------------
 Serial = SLPM-66603
 Name   = Ryu ga Gotoku 2 [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPM-66602/SLPM-74301/SLPM-66168/SLPM-74234/SLPM-74253
 ---------------------------------------------
 Serial = SLPM-66604
 Name   = Galaxy Angel - Moonlit Lovers [Banpresido the Best]
@@ -26744,6 +26933,7 @@ Region = NTSC-J
 Serial = SLPM-66652
 Name   = Burnout Revenge [EA Best Hits]
 Region = NTSC-J
+MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66653
 Name   = Akudaikan 3
@@ -26803,6 +26993,7 @@ Serial = SLPM-66668
 Name   = Akumajo Dracula - Yami no Juin [Konami the Best]
 Region = NTSC-J
 vuClampMode = 0		//SPS with microVU
+MemCardFilter = SLPM-66175/SLPM-66668/SLPM-65406/SLPM-65444/SLPM-66325
 ---------------------------------------------
 Serial = SLPM-66669
 Name   = Prince of Tennis, The - Card Hunter [First Print Limited Edition]
@@ -26832,11 +27023,14 @@ Serial = SLPM-66675
 Name   = Kingdom Hearts II - Final Mix +
 Region = NTSC-J
 Compat = 5
+// reads Re:Chain data and vice-versa
+MemCardFilter = SLPM-66675/SLPM-66676
 ---------------------------------------------
 Serial = SLPM-66676
 Name   = Kingdom Hearts Re: Chain of Memories
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPM-66675/SLPM-66676
 ---------------------------------------------
 Serial = SLPM-66677
 Name   = Final Fantasy X - International [Ultimate Hits]
@@ -26850,10 +27044,12 @@ Region = NTSC-J
 Serial = SLPM-66679
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou [Plus]
 Region = NTSC-J
+MemCardFilter = SLPM-66679/SLPM-66683/SLPM-66246/SLPM-66634
 ---------------------------------------------
 Serial = SLPM-66683
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou
 Region = NTSC-J
+MemCardFilter = SLPM-66679/SLPM-66683/SLPM-66246/SLPM-66634
 ---------------------------------------------
 Serial = SLPM-66685
 Name   = Seaman 2 - Peking Genjin Ikusei Kit
@@ -26876,11 +27072,13 @@ Serial = SLPM-66689
 Name   = Persona 3 FES [Append Edition]
 Region = NTSC-J
 VuClipFlagHack = 1
+MemCardFilter = SLPM-66445/SLPM-66689/SLPM-66690
 ---------------------------------------------
 Serial = SLPM-66690
 Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-J
 VuClipFlagHack = 1
+MemCardFilter = SLPM-66445/SLPM-66689/SLPM-66690
 ---------------------------------------------
 Serial = SLPM-66691
 Name   = Sengoku Basara 2 [CapKore]
@@ -28344,6 +28542,7 @@ Region = NTSC-J
 Serial = SLPM-74247
 Name   = Sengoku Musou 2 [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-65517/SLPM-74212/SLPM-74235/SLAJ-25048/SLPM-65718/SLPM-74224/SLPM-74249
 ---------------------------------------------
 Serial = SLPM-74248
 Name   = Monster Hunter G [PlayStation 2 The Best]
@@ -28402,6 +28601,7 @@ Region = NTSC-J
 Serial = SLPM-74301
 Name   = Ryu ga Gotoku 2 [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SLPM-66602/SLPM-74301/SLPM-66168/SLPM-74234/SLPM-74253
 ---------------------------------------------
 Serial = SLPM-74402
 Name   = Capcom vs. SNK 2 [PlayStation 2 The Best]
@@ -28532,10 +28732,12 @@ Region = NTSC-J
 Serial = SLPS-20018
 Name   = Stepping Selection [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPS-20018/SLPS-20019
 ---------------------------------------------
 Serial = SLPS-20019
 Name   = Stepping Selection [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPS-20018/SLPS-20019
 ---------------------------------------------
 Serial = SLPS-20020
 Name   = FIFA 2000 World Championship
@@ -28694,6 +28896,7 @@ Region = NTSC-J
 Serial = SLPS-20068
 Name   = Midnight Club - Street Racing
 Region = NTSC-J
+MemCardFilter = SLPS-20068/SLPS-20067
 ---------------------------------------------
 Serial = SLPS-20071
 Name   = Game Select 5
@@ -28722,10 +28925,12 @@ Region = NTSC-J
 Serial = SLPS-20084
 Name   = Basic Studio [Disc 1]
 Region = NTSC-J
+MemCardFilter = SLPS-20084/SLPS-20085
 ---------------------------------------------
 Serial = SLPS-20085
 Name   = Basic Studio [Disc 2]
 Region = NTSC-J
+MemCardFilter = SLPS-20084/SLPS-20085
 ---------------------------------------------
 Serial = SLPS-20086
 Name   = Generation of Chaos [Limited Edition]
@@ -30009,10 +30214,12 @@ Region = NTSC-J
 Serial = SLPS-25071
 Name   = Visual Mix - Ayumi Hamasaki Dome Tour 2001 [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPS-25071/SLPS-25072/SLPM-65086/SLPM-65087
 ---------------------------------------------
 Serial = SLPS-25072
 Name   = Visual Mix - Ayumi Hamasaki Dome Tour 2001 [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPS-25071/SLPS-25072/SLPM-65086/SLPM-65087
 ---------------------------------------------
 Serial = SLPS-25074
 Name   = Project Zero
@@ -30174,6 +30381,7 @@ Region = NTSC-J
 Serial = SLPS-25121
 Name   = dot Hack Vol.1
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-25122
 Name   = Mobile Suit Gundam - Lost War Chronicles [Limited Edition]
@@ -30235,6 +30443,7 @@ Region = NTSC-J
 Serial = SLPS-25143
 Name   = dot Hack Vol.2 - Mutation
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-25144
 Name   = Memorial Song
@@ -30275,6 +30484,7 @@ Region = NTSC-J
 Serial = SLPS-25158
 Name   = dot Hack - Vol.3 - Erosion Pollution
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-25159
 Name   = Technic Beat
@@ -30417,6 +30627,7 @@ Region = NTSC-J
 Serial = SLPS-25202
 Name   = dot Hack - Vol.4 - Zettai Houi
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-25204
 Name   = Moto GP3
@@ -30850,6 +31061,7 @@ Region = NTSC-J
 Serial = SLPS-25335
 Name   = Shadow Hearts 2 [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPS-25334
 ---------------------------------------------
 Serial = SLPS-25336
 Name   = Bass Landing 3 [with TsuriCon2+] [Sammy Best]
@@ -30975,18 +31187,23 @@ Region = NTSC-J
 Serial = SLPS-25366
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-25367
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-25368
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Disc1of2]
 Region = NTSC-J
+// allows import of Xenosaga I, Xenosaga I Reloaded, and Xenosaga Freaks data
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-25369
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-25370
 Name   = Spawn - Armageddon
@@ -31363,6 +31580,7 @@ Region = NTSC-J
 Compat = 5
 vuClampMode = 3
 mvuFlagSpeedHack = 0
+MemCardFilter = SCAJ-20135/SLPS-25467/SLPS-73241/SCAJ-20079/SLPS-25360/SLPS-73210/SLPS-73240
 ---------------------------------------------
 Serial = SLPS-25468
 Name   = Eternal Aselia - The Spirit of Eternity Sword
@@ -31989,6 +32207,7 @@ Region = NTSC-J
 Serial = SLPS-25629
 Name   = Ace Combat Zero - The Belkan War
 Region = NTSC-J
+MemCardFilter = SCAJ-20173/SLPS-25629/SLPS-73250/SLPS-25052/SLPS-73205/SLPS-73410/SCAJ-20104/SCAJ-20136/SLPS-25418/SLPS-73218
 ---------------------------------------------
 Serial = SLPS-25630
 Name   = Pro Yakyuu Netsu Star 2006
@@ -32030,11 +32249,14 @@ Serial = SLPS-25640
 Name   = Xenosaga Episode III - Also Sprach Zarathustra [Disc1of2]
 Region = NTSC-J
 Compat = 5
+// allows import of Xenosaga II save data
+MemCardFilter = SLPS-25640/SLPS-25368
 ---------------------------------------------
 Serial = SLPS-25641
 Name   = Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SLPS-25640/SLPS-25368
 ---------------------------------------------
 Serial = SLPS-25642
 Name   = Super DragonBall Z
@@ -32077,6 +32299,7 @@ Compat = 5
 Serial = SLPS-25651
 Name   = dot Hack G.U. Vol.1 - Saitan
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233/SLPS-25651/SLPS-25655/SLPS-25656/SLPS-25756
 ---------------------------------------------
 Serial = SLPS-25653
 Name   = Cluster Edge [Limited Edition]
@@ -32089,10 +32312,12 @@ Region = NTSC-J
 Serial = SLPS-25655
 Name   = dot Hack G.U. Vol.2 - Kimi Omou Koe
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233/SLPS-25651/SLPS-25655/SLPS-25656/SLPS-25756
 ---------------------------------------------
 Serial = SLPS-25656
 Name   = dot Hack - G.U. Vol.3 - Aruku Youna Hayasa de
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233/SLPS-25651/SLPS-25655/SLPS-25656/SLPS-25756
 ---------------------------------------------
 Serial = SLPS-25657
 Name   = Fighting Beauty Wulong
@@ -32478,6 +32703,7 @@ Region = NTSC-J
 Serial = SLPS-25756
 Name   = dot Hack G.U. Vol.1 - Saitan [Bandai the Best]
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233/SLPS-25651/SLPS-25655/SLPS-25656/SLPS-25756
 ---------------------------------------------
 Serial = SLPS-25757
 Name   = Nanatsu Iro - Drops Pure!! [First Print Limited Edition]
@@ -32812,12 +33038,15 @@ Serial = SLPS-25841
 Name   = Tales of Destiny [Director's Cut] [Premium Box]
 Region = NTSC-J
 FpuMulHack = 1
+// allows import of non-DC Tales of Destiny data
+MemCardFilter = SLPS-25841/SLPS-25842/SLPS-25715
 ---------------------------------------------
 Serial = SLPS-25842
 Name   = Tales of Destiny [Director's Cut]
 Region = NTSC-J
 Compat = 5
 FpuMulHack = 1
+MemCardFilter = SLPS-25841/SLPS-25842/SLPS-25715
 ---------------------------------------------
 Serial = SLPS-25843
 Name   = Tir-Na-Nog
@@ -33158,10 +33387,12 @@ eeClampMode = 1
 Serial = SLPS-73224
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc1of2]
 Region = NTSC-J
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-73225
 Name   = Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc2of2]
 Region = NTSC-J
+MemCardFilter = SLPS-29001/SLPS-29002/SLPS-29005/SLPS-25368/SLPS-25353/SLPS-73224
 ---------------------------------------------
 Serial = SLPS-73226
 Name   = Tenchu Kurenai [PlayStation 2 The Best]
@@ -33182,18 +33413,22 @@ Region = NTSC-J
 Serial = SLPS-73230
 Name   = dot Hack - Vol.1 & Vol.2 [PlayStation 2 The Best] [Vol.1 Disc]
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-73231
 Name   = dot Hack - Vol.1 & Vol.2 [PlayStation 2 The Best] [Vol.2 Disc]
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-73232
 Name   = dot Hack - Vol.3 & Vol.4 [PlayStation 2 The Best] [Vol.3 Disc]
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-73233
 Name   = dot Hack - Vol.3 & Vol.4 [PlayStation 2 The Best] [Vol.4 Disc]
 Region = NTSC-J
+MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233
 ---------------------------------------------
 Serial = SLPS-73234
 Name   = Kidou Senshi Z-Gundam - AEUG vs. Titans [PlayStation 2 The Best]
@@ -33229,6 +33464,7 @@ Name   = Minna Daisuki Katamari Damacy [PlayStation 2 The Best]
 Region = NTSC-J
 vuClampMode = 3
 mvuFlagSpeedHack = 0
+MemCardFilter = SCAJ-20135/SLPS-25467/SLPS-73241/SCAJ-20079/SLPS-25360/SLPS-73210/SLPS-73240
 ---------------------------------------------
 Serial = SLPS-73242
 Name   = Tales of Legendia [PlayStation 2 The Best]
@@ -33267,6 +33503,7 @@ Region = NTSC-J
 Serial = SLPS-73250
 Name   = Ace Combat Zero - The Belkan War [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SCAJ-20173/SLPS-25629/SLPS-73250/SLPS-25052/SLPS-73205/SLPS-73410/SCAJ-20104/SCAJ-20136/SLPS-25418/SLPS-73218
 ---------------------------------------------
 Serial = SLPS-73251
 Name   = Naruto - Narutimett Hero 3 [PlayStation 2 The Best]
@@ -33601,6 +33838,7 @@ Serial = SLUS-20063
 Name   = Midnight Club - Street Racing
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20063/SLUS-20065
 ---------------------------------------------
 Serial = SLUS-20064
 Name   = Oni
@@ -34464,6 +34702,7 @@ Serial = SLUS-20267
 Name   = dot Hack - Part 1 - Infection
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564
 ---------------------------------------------
 Serial = SLUS-20268
 Name   = Star Wars - Racer Revenge
@@ -35014,6 +35253,8 @@ Serial = SLUS-20387
 Name   = Suikoden III
 Region = NTSC-U
 Compat = 5
+// allows import of Suikoden II clear data
+MemCardFilter = SLUS-20387/SLUS-00958
 ---------------------------------------------
 Serial = SLUS-20388
 Name   = Fatal Frame
@@ -35782,16 +36023,19 @@ Serial = SLUS-20562
 Name   = dot Hack - Part 2 - Mutation
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564
 ---------------------------------------------
 Serial = SLUS-20563
 Name   = dot Hack - Part 3 - Outbreak
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564
 ---------------------------------------------
 Serial = SLUS-20564
 Name   = dot Hack - Part 4 - Quarantine
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564
 ---------------------------------------------
 Serial = SLUS-20565
 Name   = Champions of Norrath
@@ -36041,6 +36285,8 @@ Serial = SLUS-20622
 Name   = Silent Hill 3
 Region = NTSC-U
 Compat = 5
+// reads Silent Hill 2 for easter egg
+MemCardFilter = SLUS-20622/SLUS-20228
 ---------------------------------------------
 Serial = SLUS-20623
 Name   = Winning Eleven 6
@@ -36063,6 +36309,7 @@ Serial = SLUS-20627
 Name   = Devil May Cry 2 [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20484
 ---------------------------------------------
 Serial = SLUS-20628
 Name   = Disney's Finding Nemo
@@ -36364,6 +36611,7 @@ Serial = SLUS-20694
 Name   = Onimusha 3 - Demon Siege
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20694/SLUS-20710
 ---------------------------------------------
 Serial = SLUS-20695
 Name   = Chaos Legion
@@ -36432,6 +36680,7 @@ Serial = SLUS-20710
 Name   = Onimusha - Blade Warriors
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20694/SLUS-20710
 ---------------------------------------------
 Serial = SLUS-20711
 Name   = Dance Dance Revolution MAX 2
@@ -37071,6 +37320,7 @@ Serial = SLUS-20854
 Name   = Cy Girls [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20697
 ---------------------------------------------
 Serial = SLUS-20855
 Name   = Destruction Derby Arenas
@@ -37124,6 +37374,8 @@ Compat = 5
 Serial = SLUS-20865
 Name   = Backyard Baseball
 Region = NTSC-U
+// reads Backyard Basketball for bonus unlockable
+MemCardFilter = SLUS-20865/SLUS-20704
 ---------------------------------------------
 Serial = SLUS-20866
 Name   = Asterix & Obelix XXL - Kick Buttix
@@ -37251,11 +37503,14 @@ Name   = Star Ocean 3 - Till the End of Time [Disc2of2]
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
+MemCardFilter = SLUS-20488
 ---------------------------------------------
 Serial = SLUS-20892
 Name   = Xenosaga - Episode II - Jenseits von Gut und Bose [Disc1of2]
 Region = NTSC-U
 Compat = 5
+// allows import of Xenosaga I data
+MemCardFilter = SLUS-20469/SLUS-20892
 ---------------------------------------------
 Serial = SLUS-20893
 Name   = Way of the Samurai 2
@@ -37370,6 +37625,7 @@ Serial = SLUS-20917
 Name   = Sonic Mega Collection Plus
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20917/SLUS-20718
 ---------------------------------------------
 Serial = SLUS-20918
 Name   = Super Monkey Ball Deluxe
@@ -37581,6 +37837,7 @@ Serial = SLUS-20960
 Name   = MegaMan X8
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20960/SLUS-20903
 ---------------------------------------------
 Serial = SLUS-20961
 Name   = Neo Contra
@@ -37660,6 +37917,7 @@ Serial = SLUS-20973
 Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20973/SLUS-20565
 ---------------------------------------------
 Serial = SLUS-20974
 Name   = Shin Megami Tensei: Digital Devil Saga
@@ -37716,6 +37974,7 @@ Serial = SLUS-20984
 Name   = Resident Evil Outbreak - File #2
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20984/SLUS-20765
 ---------------------------------------------
 Serial = SLUS-20985
 Name   = Under the Skin
@@ -38024,6 +38283,7 @@ Serial = SLUS-21044
 Name   = Shadow Hearts - Covenant [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21041
 ---------------------------------------------
 Serial = SLUS-21045
 Name   = Conflict Vietnam
@@ -38428,6 +38688,7 @@ Serial = SLUS-21133
 Name   = Xenosaga - Episode II - Jenseits von Gut und Bose [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20469/SLUS-20892
 ---------------------------------------------
 Serial = SLUS-21134
 Name   = Resident Evil 4
@@ -38517,6 +38778,7 @@ Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1
+MemCardFilter = SLUS-21152/SLUS-20974
 ---------------------------------------------
 Serial = SLUS-21153
 Name   = Dynasty Warriors 5
@@ -38590,6 +38852,7 @@ Name   = Castlevania - Curse of Darkness
 Region = NTSC-U
 Compat = 5
 vuClampMode = 0		//SPS with microVU
+MemCardFilter = SLUS-21168/SLUS-20733
 ---------------------------------------------
 Serial = SLUS-21169
 Name   = Rollercoaster Tycoon - The Peeps
@@ -38690,6 +38953,7 @@ Serial = SLUS-21189
 Name   = Suffering, The - Ties That Bind
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21189/SLUS-20636
 ---------------------------------------------
 Serial = SLUS-21190
 Name   = Outlaw Tennis
@@ -38891,6 +39155,8 @@ Region = NTSC-U
 Compat = 5
 vuClampMode = 3
 mvuFlagSpeedHack = 0
+// allows import of constellations from Katamari Damacy
+MemCardFilter = SLUS-21230/SLUS-21008
 ---------------------------------------------
 Serial = SLUS-21231
 Name   = Sniper Elite
@@ -38949,11 +39215,14 @@ Serial = SLUS-21242
 Name   = Burnout Revenge
 Region = NTSC-U
 Compat = 5
+// reads Burnout 3 and NFL 06 saves for unlockables
+MemCardFilter = SLUS-21242/SLUS-21050/SLUS-21213
 ---------------------------------------------
 Serial = SLUS-21243
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21359
 ---------------------------------------------
 Serial = SLUS-21244
 Name   = Fatal Frame 3 - The Tormented
@@ -38964,6 +39233,8 @@ Serial = SLUS-21245
 Name   = Suikoden Tactics
 Region = NTSC-U
 Compat = 5
+// allows import of Suikoden 4 clear data
+MemCardFilter = SLUS-21245/SLUS-20979
 ---------------------------------------------
 Serial = SLUS-21246
 Name   = Charlie and the Chocolate Factory
@@ -39024,6 +39295,7 @@ Serial = SLUS-21258
 Name   = dot Hack - G.U. Vol.1 - Rebirth
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564/SLUS-21258/SLUS-21488/SLUS-21489/SLUS-21480
 ---------------------------------------------
 Serial = SLUS-21259
 Name   = Stacked with Daniel Negreanu
@@ -39069,6 +39341,7 @@ Serial = SLUS-21267
 Name   = Need for Speed - Most Wanted
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21267/SLUS-21351/SLUS-21065
 ---------------------------------------------
 Serial = SLUS-21268
 Name   = 24 - The Game
@@ -39189,6 +39462,8 @@ Serial = SLUS-21292
 Name   = Wild ARMs 4
 Region = NTSC-U
 Compat = 5
+// allows import of Alter Code F clear data
+MemCardFilter = SLUS-21292/SLUS-20937
 ---------------------------------------------
 Serial = SLUS-21293
 Name   = Metal Saga
@@ -39390,6 +39665,7 @@ Serial = SLUS-21335
 Name   = Hustle, The - Detroit Streets - Kat's Story
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21334
 ---------------------------------------------
 Serial = SLUS-21336
 Name   = Zathura
@@ -39445,6 +39721,7 @@ Serial = SLUS-21346
 Name   = Ace Combat Zero - The Belkan War
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21346/SLUS-20152/SLUS-20851
 [patches = 65729657]
 	patch=0,EE,00131EBC,word,48498800
 	patch=0,EE,00131EC0,word,4B00682C
@@ -39475,6 +39752,7 @@ Serial = SLUS-21351
 Name   = Need for Speed - Most Wanted [Black Edition]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21267/SLUS-21351/SLUS-21065
 ---------------------------------------------
 Serial = SLUS-21352
 Name   = Dai Senryaku VII Exceed
@@ -39518,6 +39796,7 @@ Compat = 5
 Serial = SLUS-21360
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = NTSC-U
+MemCardFilter = SLUS-21359
 ---------------------------------------------
 Serial = SLUS-21361
 Name   = Devil May Cry 3 - Dante's Awakening [Special Edition]
@@ -39529,6 +39808,7 @@ Serial = SLUS-21362
 Name   = Onimusha - Dawn of Dreams [Disc2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21180
 [patches = FFDE85E9]
 	comment= patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
@@ -39663,6 +39943,8 @@ Serial = SLUS-21389
 Name   = Xenosaga - Episode III - Also Sprach Zarathustra [Disc1of2]
 Region = NTSC-U
 Compat = 5
+// allows import of Xenosaga II save data
+MemCardFilter = SLUS-21389/SLUS-20892
 ---------------------------------------------
 Serial = SLUS-21390
 Name   = Urban Chaos - Riot Response
@@ -39758,6 +40040,7 @@ Compat = 5
 Serial = SLUS-21409
 Name   = LEGO Star Wars II - The Original Trilogy
 Region = NTSC-U
+MemCardFilter = SLUS-21409/SLUS-21083
 ---------------------------------------------
 Serial = SLUS-21410
 Name   = Mortal Kombat - Armageddon
@@ -39797,6 +40080,7 @@ Serial = SLUS-21417
 Name   = Xenosaga - Episode III - Also Sprach Zarathustra [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21389/SLUS-20892
 ---------------------------------------------
 Serial = SLUS-21418
 Name   = Sprint Cars - Road to Knoxville
@@ -40011,6 +40295,7 @@ Serial = SLUS-21462
 Name   = Samurai Warriors 2
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21462/SLUS-20878/SLUS-21080
 ---------------------------------------------
 Serial = SLUS-21463
 Name   = Tom Clancy's Ghost Recon 2
@@ -40097,6 +40382,7 @@ Serial = SLUS-21480
 Name   = Dot Hack GU Volume 1 - Rebirth - Terminal Disc
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564/SLUS-21258/SLUS-21488/SLUS-21489/SLUS-21480
 ---------------------------------------------
 Serial = SLUS-21481
 Name   = NCAA March Madness '07
@@ -40135,11 +40421,13 @@ Serial = SLUS-21488
 Name   = dot Hack - G.U. Vol.2 - Reminisce
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564/SLUS-21258/SLUS-21488/SLUS-21489/SLUS-21480
 ---------------------------------------------
 Serial = SLUS-21489
 Name   = dot Hack - G.U. Vol.3 - Redemption
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20267/SLUS-20562/SLUS-20563/SLUS-20564/SLUS-21258/SLUS-21488/SLUS-21489/SLUS-21480
 ---------------------------------------------
 Serial = SLUS-21490
 Name   = Test Drive Unlimited
@@ -40600,6 +40888,7 @@ Name   = Shin Megami Tensei: Persona 3 FES
 Region = NTSC-U
 Compat = 5
 VuClipFlagHack = 1
+MemCardFilter = SLUS-21621/SLUS-21569
 ---------------------------------------------
 Serial = SLUS-21622
 Name   = Bee Movie Game
@@ -41266,6 +41555,8 @@ Serial = SLUS-21769
 Name   = Yakuza 2
 Region = NTSC-U
 Compat = 5
+// allows import of Yakuza 1 data
+MemCardFilter = SLUS-21769/SLUS-21348
 ---------------------------------------------
 Serial = SLUS-21770
 Name   = Madden NFL '09
@@ -41579,6 +41870,8 @@ Serial = SLUS-21845
 Name   = Shin Megami Tensei: Devil Summoner 2: Raidou Kuzunoha vs. King Abaddon
 Region = NTSC-U
 Compat = 5
+// allows import of save from Devil Summoner 1
+MemCardFilter = SLUS-21845/SLUS-21431
 ---------------------------------------------
 Serial = SLUS-21846
 Name   = Sonic Unleashed
