@@ -285,6 +285,7 @@ namespace Panels
 	protected:
 		//pxCheckBox*		m_check_Multitap[2];
 		pxCheckBox*		m_check_Ejection;
+		pxCheckBox*		m_folderAutoIndex;
 
 		//moved to the system menu, just below "Save State"
 		//pxCheckBox*		m_check_SavestateBackup;

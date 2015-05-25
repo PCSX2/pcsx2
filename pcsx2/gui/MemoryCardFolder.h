@@ -168,8 +168,7 @@ public:
 	void Lock();
 	void Unlock();
 
-	void Open();
-	void Open( const wxString& filter );
+	void Open( const bool enableFiltering, const wxString& filter );
 	void Close();
 
 	s32  IsPresent();
@@ -220,7 +219,9 @@ protected:
 
 
 	// loads files and folders from the host file system if a superblock exists in the root directory
-	void LoadMemoryCardData( const wxString& filter );
+	// if enableFiltering is set to true, only folders whose name contain the filter string are loaded
+	// filter string can include multiple filters by separating them with "/"
+	void LoadMemoryCardData( const bool enableFiltering, const wxString& filter );
 
 	// creates the FAT and indirect FAT
 	void CreateFat();
@@ -253,7 +254,8 @@ protected:
 	// adds a folder in the host file system to the memory card, including all files and subdirectories
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
 	// - dirPath: the full path to the directory in the host file system
-	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& filter = L"" );
+	// - enableFiltering and filter: filter loaded contents, see LoadMemoryCardData()
+	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const bool enableFiltering = false, const wxString& filter = L"" );
 
 	// adds a file in the host file sytem to the memory card
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
@@ -298,6 +300,7 @@ class FolderMemoryCardAggregator {
 protected:
 	static const int totalCardSlots = 8;
 	FolderMemoryCard m_cards[totalCardSlots];
+	bool m_enableFiltering = true;
 	wxString m_lastKnownFilter = L"";
 
 public:
@@ -307,6 +310,8 @@ public:
 	void Open();
 	void Close();
 
+	void SetFiltering( const bool enableFiltering );
+
 	s32  IsPresent( uint slot );
 	void GetSizeInfo( uint slot, PS2E_McdSizeInfo& outways );
 	bool IsPSX( uint slot );
@@ -315,5 +320,5 @@ public:
 	s32  EraseBlock( uint slot, u32 adr );
 	u64  GetCRC( uint slot );
 	void NextFrame( uint slot );
-	void ReIndex( uint slot, const wxString& filter );
+	void ReIndex( uint slot, const bool enableFiltering, const wxString& filter );
 };

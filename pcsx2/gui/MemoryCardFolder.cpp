@@ -46,11 +46,7 @@ bool FolderMemoryCard::IsFormatted() {
 	return m_superBlock.raw[0x16] == 0x6F;
 }
 
-void FolderMemoryCard::Open() {
-	Open( L"" );
-}
-
-void FolderMemoryCard::Open( const wxString& filter ) {
+void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter ) {
 	InitializeInternalData();
 
 	wxFileName configuredFileName( g_Conf->FullpathToMcd( m_slot ) );
@@ -84,7 +80,7 @@ void FolderMemoryCard::Open( const wxString& filter ) {
 	if ( disabled ) return;
 
 	m_isEnabled = true;
-	LoadMemoryCardData( filter );
+	LoadMemoryCardData( enableFiltering, filter );
 
 	SetTimeLastWrittenToNow();
 	m_framesUntilFlush = 0;
@@ -102,7 +98,7 @@ void FolderMemoryCard::Close() {
 	}
 }
 
-void FolderMemoryCard::LoadMemoryCardData( const wxString& filter ) {
+void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxString& filter ) {
 	bool formatted = false;
 
 	// read superblock if it exists
@@ -116,10 +112,16 @@ void FolderMemoryCard::LoadMemoryCardData( const wxString& filter ) {
 
 	// if superblock was valid, load folders and files
 	if ( formatted ) {
+		if ( enableFiltering ) {
+			Console.WriteLn( Color_Green, L"(FolderMcd) Indexing slot %u with filter \"%s\".", m_slot, WX_STR( filter ) );
+		} else {
+			Console.WriteLn( Color_Green, L"(FolderMcd) Indexing slot %u without filter.", m_slot );
+		}
+
 		CreateFat();
 		CreateRootDir();
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
-		AddFolder( rootDirEntry, folderName.GetPath(), filter );
+		AddFolder( rootDirEntry, folderName.GetPath(), enableFiltering, filter );
 	}
 }
 
@@ -284,7 +286,7 @@ bool FilterMatches( const wxString& fileName, const wxString& filter ) {
 	return false;
 }
 
-bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& filter ) {
+bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const bool enableFiltering, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
 		Console.WriteLn( L"(FolderMcd) Adding folder: %s", WX_STR( dirPath ) );
@@ -295,11 +297,13 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 		bool hasNext;
 
 		wxString localFilter;
-		bool hasFilter = !filter.IsEmpty();
-		if ( hasFilter ) {
-			localFilter = L"DATA-SYSTEM/" + filter;
-		} else {
-			localFilter = L"DATA-SYSTEM";
+		if ( enableFiltering ) {
+			bool hasFilter = !filter.IsEmpty();
+			if ( hasFilter ) {
+				localFilter = L"DATA-SYSTEM/" + filter;
+			} else {
+				localFilter = L"DATA-SYSTEM";
+			}
 		}
 
 		int entryNumber = 2; // include . and ..
@@ -321,7 +325,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				// if possible filter added directories by game serial
 				// this has the effective result of only files relevant to the current game being loaded into the memory card
 				// which means every game essentially sees the memory card as if no other files exist
-				if ( !FilterMatches( fileName, localFilter ) ) {
+				if ( enableFiltering && !FilterMatches( fileName, localFilter ) ) {
 					hasNext = dir.GetNext( &fileName );
 					continue;
 				}
@@ -1027,7 +1031,7 @@ FolderMemoryCardAggregator::FolderMemoryCardAggregator() {
 
 void FolderMemoryCardAggregator::Open() {
 	for ( int i = 0; i < totalCardSlots; ++i ) {
-		m_cards[i].Open( m_lastKnownFilter );
+		m_cards[i].Open( m_enableFiltering, m_lastKnownFilter );
 	}
 }
 
@@ -1035,6 +1039,10 @@ void FolderMemoryCardAggregator::Close() {
 	for ( int i = 0; i < totalCardSlots; ++i ) {
 		m_cards[i].Close();
 	}
+}
+
+void FolderMemoryCardAggregator::SetFiltering( const bool enableFiltering ) {
+	m_enableFiltering = enableFiltering;
 }
 
 s32 FolderMemoryCardAggregator::IsPresent( uint slot ) {
@@ -1069,10 +1077,11 @@ void FolderMemoryCardAggregator::NextFrame( uint slot ) {
 	m_cards[slot].NextFrame();
 }
 
-void FolderMemoryCardAggregator::ReIndex( uint slot, const wxString& filter ) {
+void FolderMemoryCardAggregator::ReIndex( uint slot, const bool enableFiltering, const wxString& filter ) {
 	m_cards[slot].Close();
-	Console.WriteLn( Color_Green, L"(FolderMcd) Re-Indexing slot %u with filter \"%s\"", slot, WX_STR( filter ) );
-	m_cards[slot].Open( filter );
+	m_cards[slot].Open( enableFiltering, filter );
+
+	SetFiltering( enableFiltering );
 	m_lastKnownFilter = filter;
 }
 

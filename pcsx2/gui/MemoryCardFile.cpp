@@ -436,6 +436,7 @@ uint FileMcd_ConvertToSlot( uint port, uint slot )
 static void PS2E_CALLBACK FileMcd_EmuOpen( PS2E_THISPTR thisptr, const PS2E_SessionInfo *session )
 {
 	thisptr->impl.Open();
+	thisptr->implFolder.SetFiltering( g_Conf->EmuOptions.McdFolderAutoManage );
 	thisptr->implFolder.Open();
 }
 
@@ -559,7 +560,7 @@ static void PS2E_CALLBACK FileMcd_ReIndex( PS2E_THISPTR thisptr, uint port, uint
 	//	thisptr->impl.ReIndex( combinedSlot, filter );
 	//	break;
 	case MemoryCardType::MemoryCard_Folder:
-		thisptr->implFolder.ReIndex( combinedSlot, filter );
+		thisptr->implFolder.ReIndex( combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter );
 		break;
 	default:
 		return;
