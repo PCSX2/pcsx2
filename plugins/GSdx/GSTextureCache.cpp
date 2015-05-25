@@ -30,7 +30,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	UserHacks_NVIDIAHack = !!theApp.GetConfig("UserHacks_NVIDIAHack", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
-	m_filter = theApp.GetConfig("filter", 2);
 
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
@@ -756,8 +755,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
-		if (psm.pal > 0)
+		bool linear = true;
+		if (psm.pal > 0) {
 			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			// Palette is used to interpret the alpha channel of the RT as an index.
+			// Star Ocean 3 uses it to emulate a stencil buffer.
+			// It is a very bad idea to force bilinear filtering on it.
+			linear = false;
+		}
 
 		if(!src->m_texture)
 		{
@@ -773,8 +778,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
 
-			// Note linear filtering can break some games (like star ocean 3)
-			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, 0, (m_filter == 1));
+			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, 0, linear);
 		}
 
 		if(dTex != src->m_texture)
