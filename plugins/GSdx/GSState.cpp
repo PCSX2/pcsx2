@@ -3724,6 +3724,19 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
+	// The game emulate a stencil buffer with the alpha channel of the RT
+	// The operation of the stencil is selected with the palette
+	// For example -1 wrap will be [240, 16, 32, 48 ....]
+	// i.e. p[A>>4] = (A - 16) % 256
+	//
+	// The fastest and accurate solution will be to replace this pseudo stencil
+	// by a dedicated GPU draw call
+	// 1/ Use future GPU capabilities to do a "kind" of SW blending
+	// 2/ Use a real stencil/atomic image, and then compute the RT alpha value
+	//
+	// Both of those solutions will increase code complexity (and only avoid upscaling
+	// glitches)
+
 	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
@@ -3756,6 +3769,7 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
         }*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
+			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
 			skip = 1000; //
 		}
 	}
@@ -3780,6 +3794,7 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
         }
 		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
+			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
 			skip = 1000;
 		}
 	}
