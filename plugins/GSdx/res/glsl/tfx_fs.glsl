@@ -404,8 +404,13 @@ vec4 ps_color()
 void ps_blend(inout vec4 c, in float As)
 {
 	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#if PS_DFMT == FMT_24
+	float Ad = 1.0f;
+#else
+	// FIXME FMT_16 case
 	// FIXME Ad or Ad * 2?
-	float Ad = rt.a;
+	float Ad = rt.a * 255.0f / 128.0f;
+#endif
 	// Let the compiler do its jobs !
 	vec3 Cd = rt.rgb;
 	vec3 Cs = c.rgb;
@@ -640,12 +645,26 @@ void ps_blend(inout vec4 c, in float As)
 
 #endif
 
-#if PS_COLCLIP == 3
+	// FIXME dithering
+
+	// Correct the Color value based on the output format
+#if PS_COLCLIP != 3
+	// Standard Clamp
+	c.rgb = clamp(c.rgb, vec3(0.0f), vec3(1.0f));
+#endif
+
+#if PS_DFMT == FMT_16
+	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
+
+	// Basically we want to do 'c.rgb &= 0xF8' in denormalized mode
+	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xF8)) / 255.0f;
+#elif PS_COLCLIP == 3
+	// Basically we want to do 'c.rgb &= 0xFF' in denormalized mode
 	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xFF)) / 255.0f;
+#endif
 
 	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
 	//c.rgb = mod((c.rgb * 255.0f) + 256.5f) / 255.0f;
-#endif
 }
 
 void ps_main()
@@ -700,14 +719,16 @@ void ps_main()
 	c.a = 0.5f;
 #endif
 
-	float alpha = c.a * 2.0;
+	// Must be done before alpha correction
+	float alpha = c.a * 255.0f / 128.0f;
 
-#if (PS_AOUT != 0) // 16 bit output
+	// Correct the ALPHA value based on the output format
+	// FIXME add support of alpha mask to replace properly PS_AOUT
+#if (PS_DFMT == FMT_16) || (PS_AOUT)
 	float a = 128.0f / 255.0; // alpha output will be 0x80
-
 	c.a = (PS_FBA != 0) ? a : step(0.5, c.a) * a;
-#elif (PS_FBA != 0)
-	if(c.a < 0.5) c.a += 0.5;
+#elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
+	if(c.a < 0.5) c.a += 128.0f/255.0f;
 #endif
 
 	// Get first primitive that will write a failling alpha value
