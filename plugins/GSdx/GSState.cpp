@@ -4314,6 +4314,18 @@ bool GSC_Castlevania(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
+		// This hack removes the shadows and globally darker image
+		// I think there are 2 issues on GSdx
+		//
+		// 1/ potential not correctly supported colclip.
+		//
+		// 2/ use of a 32 bits format to emulate a 16 bit formats
+		// For example, if you blend 64 time the value 4 on a dark destination pixels
+		//
+		// FMT32: 4*64 = 256 <= white pixels
+		//
+		// FMT16: output of blending will always be 0 because the 3 lsb of color is dropped.
+		//		  Therefore the pixel remains dark !!!
 		if(fi.TME && fi.FBP == 0 && fi.TBP0 && fi.TPSM == 10 && fi.FBMSK == 0xFFFFFF)
 		{
 			skip = 2;
