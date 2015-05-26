@@ -100,7 +100,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
+GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 {
 	GSBlendStateOGL* bs = new GSBlendStateOGL();
 
@@ -119,7 +119,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 					bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
 			}
 
-			const string afixstr = format("%d >> 7", afix);
+			const string afixstr = format("%f", afix);
 			const char *col[3] = {"Cs", "Cd", "0"};
 			const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
 			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
@@ -235,7 +235,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix, bool sw_blending)
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending)
 {
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
@@ -267,5 +267,5 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, ui
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	OMSetBlendState(bs, (float)(int)afix / 0x80);
+	OMSetBlendState(bs, afix);
 }

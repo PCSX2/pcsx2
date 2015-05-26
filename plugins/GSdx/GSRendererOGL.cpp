@@ -252,16 +252,19 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Format of the output
 	ps_sel.dfmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
 
+	GIFRegALPHA ALPHA = context->ALPHA;
+	float afix = (float)context->ALPHA.FIX / 0x80;
+
 	// Blend
 
 	if (!IsOpaque())
 	{
 		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
-		om_bsel.a = context->ALPHA.A;
-		om_bsel.b = context->ALPHA.B;
-		om_bsel.c = context->ALPHA.C;
-		om_bsel.d = context->ALPHA.D;
+		om_bsel.a = ALPHA.A;
+		om_bsel.b = ALPHA.B;
+		om_bsel.c = ALPHA.C;
+		om_bsel.d = ALPHA.D;
 
 		if (env.PABE.PABE)
 		{
@@ -439,25 +442,25 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST && !m_accurate_colclip;
 	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && m_accurate_colclip;
-	if (context->ALPHA.A == context->ALPHA.B) { // Optimize-away colclip
+	if (ALPHA.A == ALPHA.B) { // Optimize-away colclip
 		// No addition neither substraction so no risk of overflow the [0:255] range.
 		colclip_wrap = false;
 		acc_colclip_wrap = false;
 #ifdef ENABLE_OGL_DEBUG
 		if (colclip_wrap || acc_colclip_wrap) {
 			const char *col[3] = {"Cs", "Cd", "0"};
-			GL_INS("COLCLIP: DISABLED: blending is a plain copy of %s", col[context->ALPHA.D]);
+			GL_INS("COLCLIP: DISABLED: blending is a plain copy of %s", col[ALPHA.D]);
 		}
 #endif
 	}
 	if (colclip_wrap) {
 		ps_sel.colclip = 1;
-		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 	} else if (acc_colclip_wrap) {
-			ps_sel.colclip = 3;
-			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
-	} else if (env.COLCLAMP.CLAMP == 0 && (context->ALPHA.A != context->ALPHA.B)) {
-			GL_INS("COLCLIP NOT SUPPORTED (blending is %d/%d/%d/%d)", context->ALPHA.A, context->ALPHA.B, context->ALPHA.C, context->ALPHA.D);
+		ps_sel.colclip = 3;
+		GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+	} else if (env.COLCLAMP.CLAMP == 0 && (ALPHA.A != ALPHA.B)) {
+		GL_INS("COLCLIP NOT SUPPORTED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 	}
 
 	ps_sel.fba = context->FBA.FBA;
@@ -613,8 +616,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->PSSetShaderResource(3, rt);
 
 		// Require the fix alpha vlaue
-		if (context->ALPHA.C == 2) {
-			ps_cb.AlphaCoeff = GSVector4((float)(int)context->ALPHA.FIX / 0x80);
+		if (ALPHA.C == 2) {
+			ps_cb.AlphaCoeff = GSVector4(afix);
 		}
 
 		// No need to flush for every primitive
@@ -632,7 +635,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupPS(ps_sel);
 
 	// rs
-	uint8 afix = context->ALPHA.FIX;
 
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
 
