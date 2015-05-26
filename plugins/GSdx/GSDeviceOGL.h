@@ -321,7 +321,9 @@ class GSDeviceOGL : public GSDevice
 
 				// Word 2
 				uint32 blend:8;
-				uint32 _free2:24;
+				uint32 dfmt:2;
+
+				uint32 _free2:22;
 			};
 
 			uint64 key;

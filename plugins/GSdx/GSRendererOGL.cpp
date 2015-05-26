@@ -249,6 +249,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
+	// Format of the output
+	ps_sel.dfmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
+
 	// Blend
 
 	if (!IsOpaque())
