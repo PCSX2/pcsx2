@@ -400,14 +400,23 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				}
 			}
 		}
+#endif
+#ifdef _WINDOWS
+		try
+		{
+			s_gs->m_wnd->Attach(*dsp, false);
+		}
+		catch (GSDXRecoverableError)
+		{
+			s_gs->m_wnd->Detach();
+			delete s_gs->m_wnd;
+			s_gs->m_wnd = NULL;
+		}
+#endif
 		if (s_gs->m_wnd == NULL)
 		{
 			return -1;
 		}
-#endif
-#ifdef _WINDOWS
-		s_gs->m_wnd->Attach(*dsp, false);
-#endif
 	}
 
 	if(!s_gs->CreateDevice(dev))

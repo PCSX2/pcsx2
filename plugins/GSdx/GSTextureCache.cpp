@@ -185,6 +185,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst = t;
 
+#ifdef ENABLE_OGL_DEBUG
+			// Likely the root cause of tons and tons of bug
+			if (dst->m_TEX0.PSM != TEX0.PSM) {
+				GL_INS("TC: ERROR: use a target with format 0x%x as 0x%x without any conversion", dst->m_TEX0.PSM, TEX0.PSM);
+			}
+#endif
+
 			dst->m_TEX0 = TEX0;
 
 			break;

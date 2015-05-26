@@ -275,6 +275,8 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 	void* ptr = (void*)wglGetProcAddress(name);
 	if (ptr == NULL) {
 		fprintf(stderr, "Failed to find %s\n", name);
+		if (!opt)
+			throw GSDXRecoverableError();
 	}
 	return ptr;
 }

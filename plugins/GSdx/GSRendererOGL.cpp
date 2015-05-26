@@ -198,8 +198,11 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
 		ASSERT(GLLoader::found_geometry_shader);
 
-		// FIXME: Investigate: do a dynamic check to pack as many primitives as possibles
+		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
+		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
 		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+
+		GL_PUSH("Split the draw");
 
 		GL_PERF("Split single draw in %d draw", m_index.tail/nb_vertex);
 
@@ -207,6 +210,8 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 			gl_TextureBarrier();
 			dev->DrawIndexedPrimitive(p, nb_vertex);
 		}
+
+		GL_POP();
 	}
 }
 
