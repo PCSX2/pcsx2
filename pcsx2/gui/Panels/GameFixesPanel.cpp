@@ -113,7 +113,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 	}
 
 	m_check_Enable = new pxCheckBox( this, _("Enable manual game fixes [Not recommended]"),
-		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. ('Automatic' means: selectively use specific tested fixes for specific games)"
+		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. ('Automatic' means: selectively use specific tested fixes for specific games). Manual game fixes will NOT increase your performance. In fact they may decrease it."
 		)
 	);
 
