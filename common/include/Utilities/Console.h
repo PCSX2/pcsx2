@@ -236,7 +236,7 @@ public:
 	virtual ~ConsoleAttrScope() throw();
 };
 
-extern const IConsoleWriter	Console;
+extern IConsoleWriter	Console;
 
 extern void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp=NULL );
 extern const wxString& ConsoleBuffer_Get();
@@ -249,9 +249,9 @@ extern const IConsoleWriter		ConsoleWriter_Assert;
 extern const IConsoleWriter		ConsoleWriter_Buffered;
 extern const IConsoleWriter		ConsoleWriter_wxError;
 
-extern const NullConsoleWriter	NullCon;
+extern NullConsoleWriter	NullCon;
 
-extern const IConsoleWriter		DevConWriter;
+extern IConsoleWriter			DevConWriter;
 extern bool						DevConWriterEnabled;
 
 #ifdef PCSX2_DEVBUILD
@@ -261,7 +261,7 @@ extern bool						DevConWriterEnabled;
 #endif
 
 #ifdef PCSX2_DEBUG
-extern const IConsoleWriter		DbgConWriter;
+extern IConsoleWriter		DbgConWriter;
 #	define DbgCon				DbgConWriter
 #else
 #	define DbgCon				0&&NullCon

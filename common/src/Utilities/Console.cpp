@@ -55,11 +55,11 @@ void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp )
 			writer.DoWriteLn( ConsoleBuffer_Get() );
 	}
 
-	const_cast<IConsoleWriter&>(Console)		= writer;
-	const_cast<IConsoleWriter&>(DevConWriter)	= writer;
+	Console			= writer;
+	DevConWriter	= writer;
 
 #ifdef PCSX2_DEBUG
-	const_cast<IConsoleWriter&>(DbgCon)	= writer;
+	DbgCon	= writer;
 #endif
 }
 
@@ -597,15 +597,15 @@ ConsoleAttrScope::~ConsoleAttrScope() throw()
 // 
 #define _DefaultWriter_	ConsoleWriter_Stdout
 
-const IConsoleWriter	Console				= _DefaultWriter_;
-const IConsoleWriter	DevConWriter		= _DefaultWriter_;
+IConsoleWriter	Console				= _DefaultWriter_;
+IConsoleWriter	DevConWriter		= _DefaultWriter_;
 bool					DevConWriterEnabled	= false;
 
 #ifdef PCSX2_DEBUG
-const IConsoleWriter	DbgConWriter		= _DefaultWriter_;
+IConsoleWriter	DbgConWriter		= _DefaultWriter_;
 #endif
 
-const NullConsoleWriter	NullCon = {};
+NullConsoleWriter	NullCon = {};
 
 // --------------------------------------------------------------------------------------
 //  ConsoleLogSource  (implementations)
