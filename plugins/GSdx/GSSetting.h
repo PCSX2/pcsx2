@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2007-2009 Gabest
+ *	Copyright (C) 2007-2015 Gabest
  *	http://www.gabest.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -57,6 +57,7 @@ enum {
 	IDC_CHECK_DISABLE_ALL_HACKS,
 	IDC_ALIGN_SPRITE,
 	IDC_ROUND_SPRITE,
+	IDC_AUTO_SKIP,
 	IDC_TCOFFSETX,
 	IDC_TCOFFSETX2,
 	IDC_STATIC_TCOFFSETX,
