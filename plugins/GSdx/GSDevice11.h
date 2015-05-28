@@ -87,7 +87,6 @@ public: // TODO
 
 	bool FXAA_Compiled;
 	bool ExShader_Compiled;
-	bool UserHacks_NVIDIAHack;
 
 	struct
 	{

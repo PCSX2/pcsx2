@@ -599,7 +599,6 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfig("UserHacks_WildHack", 0));
 	CheckDlgButton(m_hWnd, IDC_AGGRESSIVECRC, theApp.GetConfig("UserHacks_AggressiveCRC", 0));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
-	CheckDlgButton(m_hWnd, IDC_CHECK_NVIDIA_HACK, theApp.GetConfig("UserHacks_NVIDIAHack", 0));
 	CheckDlgButton(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS, theApp.GetConfig("UserHacks_DisableCrcHacks", 0));
 	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
@@ -663,7 +662,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AggressiveCRC", (int)IsDlgButtonChecked(m_hWnd, IDC_AGGRESSIVECRC));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
-			theApp.SetConfig("UserHacks_NVIDIAHack", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_NVIDIA_HACK));
 			theApp.SetConfig("UserHacks_DisableCrcHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS));
 			theApp.SetConfig("UserHacks_round_sprite_offset", (int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));

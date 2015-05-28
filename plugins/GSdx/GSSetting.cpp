@@ -62,11 +62,6 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
 				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
-		case IDC_CHECK_NVIDIA_HACK:
-			return "This is a hack to work around problems with recent NVIDIA drivers causing odd stretching problems in DirectX 11 only "
-				"when using Upscaling.\n\n"
-				"Try not to use this unless your game Videos or 2D screens are stretching outside the frame.\n\n"
-				"If you have an AMD/ATi graphics card you should not need this.";
 		case IDC_CHECK_DISABLE_ALL_HACKS:
 			return "FOR TESTING ONLY!!\n\n"
 				"Disable all CRC hacks - will break many games. Overrides CrcHacksExclusion at gsdx.ini\n"

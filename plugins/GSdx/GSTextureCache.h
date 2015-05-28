@@ -28,7 +28,6 @@ class GSTextureCache
 {
 public:
 	enum {RenderTarget, DepthStencil};
-	bool UserHacks_NVIDIAHack;
 
 	class Surface : public GSAlignedClass<32>
 	{

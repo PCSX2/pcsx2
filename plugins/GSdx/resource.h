@@ -69,7 +69,6 @@
 #define IDC_TCOFFSETY                   2084
 #define IDC_TCOFFSETY2                  2085
 #define IDC_FXAA                        2086
-#define IDC_CHECK_NVIDIA_HACK           2087
 #define IDC_SHADER_FX                   2088
 #define IDC_ANISOTROPIC                 2089
 #define IDC_AFCOMBO                     2090
