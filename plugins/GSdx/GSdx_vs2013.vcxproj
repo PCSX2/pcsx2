@@ -2099,6 +2099,7 @@
     <None Include="res\fxaa.fx" />
     <None Include="res\logo10.bmp" />
     <None Include="res\logo9.bmp" />
+    <None Include="res\logo_ogl.bmp" />
     <None Include="res\convert.fx" />
     <None Include="res\interlace.fx" />
     <None Include="res\merge.fx" />
