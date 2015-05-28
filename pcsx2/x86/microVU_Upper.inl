@@ -31,7 +31,7 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 	static const u16 flipMask[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 	//SysPrintf("Status = %d; Mac = %d\n", sFLAG.doFlag, mFLAG.doFlag);
-	if (!sFLAG.doFlag && !mFLAG.doFlag) { return; }
+	if ((!sFLAG.doFlag && !mFLAG.doFlag) || sFLAG.skipWrite == 1) { return; }
 
 	const xmm& regT1 = regT1b ? mVU.regAlloc->allocReg() : regT1in;
 
@@ -125,7 +125,7 @@ static void setupPass1(microVU& mVU, int opCase, bool isACC, bool noFlagUpdate) 
 	opCase3 { mVUanalyzeFMAC1(mVU, ((isACC) ? 0 : _Fd_), _Fs_, 0); }
 	opCase4 { mVUanalyzeFMAC1(mVU, ((isACC) ? 0 : _Fd_), _Fs_, 0); }
 
-	if (noFlagUpdate) {
+	if (noFlagUpdate) { //Max/Min Ops
 		sFLAG.doFlag = false;
 	}
 }

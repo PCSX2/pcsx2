@@ -133,7 +133,7 @@ struct microLowerOp {
 	bool backupVI;	// Backup VI reg to memory if modified before branch (branch uses old VI value unless opcode is ILW or ILWR)
 	bool memReadIs;	// Read Is (VI reg) from memory (used by branches)
 	bool memReadIt;	// Read If (VI reg) from memory (used by branches)
-	bool readFlags; // Current Instruction reads Status, Mac, or Clip flags
+	u8   readFlags; // Current Instruction reads Status, Mac, or Clip flags
 };
 
 struct microFlagInst {
@@ -142,6 +142,7 @@ struct microFlagInst {
 	u8	 write;		  // Points to the instance that should be written to (s-stage write)
 	u8	 lastWrite;	  // Points to the instance that was last written to (most up-to-date flag)
 	u8	 read;		  // Points to the instance that should be read by a lower instruction (t-stage read)
+	u8	 skipWrite;	  // Makes sure the flags dont written (MAC Flag hack)
 };
 
 struct microFlagCycles {
