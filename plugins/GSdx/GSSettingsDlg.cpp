@@ -603,7 +603,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_CHECK_DISABLE_ALL_HACKS, theApp.GetConfig("UserHacks_DisableCrcHacks", 0));
 	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
-	CheckDlgButton(m_hWnd, IDC_AUTO_SKIP, theApp.Getconfig("UserHacks_AutoSkipDrawDepth"));
+	CheckDlgButton(m_hWnd, IDC_AUTO_SKIP, theApp.GetConfig("UserHacks_AutoSkipDrawDepth", 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("UserHacks_SkipDraw", 0), 0));
