@@ -706,6 +706,9 @@
     <None Include="res\logo9.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\logo-ogl.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="res\convert.fx">
       <Filter>Shaders</Filter>
     </None>
