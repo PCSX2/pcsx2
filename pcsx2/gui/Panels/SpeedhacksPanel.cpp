@@ -150,7 +150,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_check_vuThread = new pxCheckBox( vuHacksPanel, _("MTVU (Multi-Threaded microVU1)"),
 		_("Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ cores]") );
 
-	m_check_vuFlagHack->SetToolTip( pxEt( L"Updates Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time, and Super VU does something similar by default."
+	m_check_vuFlagHack->SetToolTip( pxEt( L"Updates Mac and Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time, and Super VU does something similar by default."
 	) );
 
 	m_check_vuThread->SetToolTip( pxEt( L"Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with 3 or more cores. This is safe for most games, but a few games are incompatible and may hang. In the case of GS limited games, it may be a slowdown (especially on dual core CPUs)."
