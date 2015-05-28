@@ -114,8 +114,7 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 				sFLAG.doNonSticky = true;
 				writeProtect = true;
 			}
-			if (writeProtect == true)
-				
+
 			if (aCount >= 3){
 				break;
 			}
