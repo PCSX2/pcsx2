@@ -260,7 +260,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,95,346,50,14
     CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_CENTERIMAGE,6,6,175,44
     CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_CENTERIMAGE,6,6,175,42
-    GROUPBOX        "D3D Internal Resolution (can cause glitches)",IDC_STATIC,6,116,175,64,BS_CENTER
+    GROUPBOX        "Internal Resolution (can cause glitches)",IDC_STATIC,6,116,175,64,BS_CENTER
     GROUPBOX        "Software Mode Settings",IDC_STATIC,6,290,175,50,BS_CENTER
     GROUPBOX        "Hardware Mode Settings",IDC_STATIC,6,214,175,74,BS_CENTER
     CONTROL         "Logarithmic Z",IDC_LOGZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,92,227,58,10
