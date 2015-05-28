@@ -254,7 +254,7 @@ static void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *ri
 }
 
 GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int row, int col) {
-	GtkWidget* table = gtk_table_new(row, col, true);
+	GtkWidget* table = gtk_table_new(row, col, false);
 	GtkWidget* container = (frame_title) ? gtk_frame_new (frame_title) : gtk_vbox_new(false, 5);
 	gtk_container_add(GTK_CONTAINER(container), table);
 	gtk_container_add(GTK_CONTAINER(parent_box), container);
