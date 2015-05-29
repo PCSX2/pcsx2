@@ -151,9 +151,35 @@ void ps_main1()
 #ifdef ps_main10
 void ps_main10()
 {
+	// Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
 	vec4 c = sample_c();
 	const float exp2_32 = exp2(32.0f);
 	SV_Target1 = uint(exp2_32 * c.r);
+}
+#endif
+
+#ifdef ps_main11
+void ps_main11()
+{
+	const float exp2_32 = exp2(32.0f);
+	const vec4 bitSh = vec4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
+	const vec4 bitMsk = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
+
+	// Convert a GL_FLOAT32 depth texture into a RGBA texture
+	vec4 res = fract(vec4(sample_c().r) * bitSh);
+
+	SV_Target0 = (res - res.xxyz * bitMsk) * 256.0f/255.0f;
+}
+#endif
+
+#ifdef ps_main12
+out float gl_FragDepth;
+void ps_main12()
+{
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const vec4 bitSh = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0) * vec4(255.0/256.0);
+	gl_FragDepth = dot(sample_c(), bitSh);
 }
 #endif
 
