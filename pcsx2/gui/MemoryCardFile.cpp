@@ -75,8 +75,6 @@ public:
 	s32  EraseBlock	( uint slot, u32 adr );
 	u64  GetCRC		( uint slot );
 	
-	void NextFrame( uint slot );
-
 protected:
 	bool Seek( wxFFile& f, u32 adr );
 	bool Create( const wxString& mcdFile, uint sizeInMB );
@@ -408,11 +406,6 @@ u64 FileMemoryCard::GetCRC( uint slot )
 	return retval;
 }
 
-void FileMemoryCard::NextFrame( uint slot )
-{
-
-}
-
 // --------------------------------------------------------------------------------------
 //  MemoryCard Component API Bindings
 // --------------------------------------------------------------------------------------
@@ -542,9 +535,9 @@ static u64 PS2E_CALLBACK FileMcd_GetCRC( PS2E_THISPTR thisptr, uint port, uint s
 static void PS2E_CALLBACK FileMcd_NextFrame( PS2E_THISPTR thisptr, uint port, uint slot ) {
 	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
 	switch ( g_Conf->Mcd[combinedSlot].Type ) {
-	case MemoryCardType::MemoryCard_File:
-		thisptr->impl.NextFrame( combinedSlot );
-		break;
+	//case MemoryCardType::MemoryCard_File:
+	//	thisptr->impl.NextFrame( combinedSlot );
+	//	break;
 	case MemoryCardType::MemoryCard_Folder:
 		thisptr->implFolder.NextFrame( combinedSlot );
 		break;

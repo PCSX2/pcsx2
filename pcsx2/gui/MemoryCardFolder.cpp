@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2015  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -47,14 +47,18 @@ bool FolderMemoryCard::IsFormatted() {
 }
 
 void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter ) {
+	Open( g_Conf->FullpathToMcd( m_slot ), g_Conf->Mcd[m_slot], enableFiltering, filter );
+}
+
+void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const bool enableFiltering, const wxString& filter ) {
 	InitializeInternalData();
 
-	wxFileName configuredFileName( g_Conf->FullpathToMcd( m_slot ) );
-	folderName = wxFileName( configuredFileName.GetFullPath() + L"/" );
+	wxFileName configuredFileName( fullPath );
+	m_folderName = wxFileName( configuredFileName.GetFullPath() + L"/" );
 	wxString str( configuredFileName.GetFullPath() );
 	bool disabled = false;
 
-	if ( g_Conf->Mcd[m_slot].Enabled && g_Conf->Mcd[m_slot].Type == MemoryCardType::MemoryCard_Folder ) {
+	if ( mcdOptions.Enabled && mcdOptions.Type == MemoryCardType::MemoryCard_Folder ) {
 		if ( configuredFileName.GetFullName().IsEmpty() ) {
 			str = L"[empty filename]";
 			disabled = true;
@@ -65,8 +69,8 @@ void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter 
 		}
 
 		// if nothing exists at a valid location, create a directory for the memory card
-		if ( !disabled && !folderName.DirExists() ) {
-			if ( !folderName.Mkdir() ) {
+		if ( !disabled && !m_folderName.DirExists() ) {
+			if ( !m_folderName.Mkdir() ) {
 				str = L"[couldn't create folder]";
 				disabled = true;
 			}
@@ -91,7 +95,7 @@ void FolderMemoryCard::Close() {
 
 	Flush();
 
-	wxFileName superBlockFileName( folderName.GetPath(), L"_pcsx2_superblock" );
+	wxFileName superBlockFileName( m_folderName.GetPath(), L"_pcsx2_superblock" );
 	wxFFile superBlockFile( superBlockFileName.GetFullPath().c_str(), L"wb" );
 	if ( superBlockFile.IsOpened() ) {
 		superBlockFile.Write( &m_superBlock.raw, sizeof( m_superBlock.raw ) );
@@ -102,7 +106,7 @@ void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxS
 	bool formatted = false;
 
 	// read superblock if it exists
-	wxFileName superBlockFileName( folderName.GetPath(), L"_pcsx2_superblock" );
+	wxFileName superBlockFileName( m_folderName.GetPath(), L"_pcsx2_superblock" );
 	if ( superBlockFileName.FileExists() ) {
 		wxFFile superBlockFile( superBlockFileName.GetFullPath().c_str(), L"rb" );
 		if ( superBlockFile.IsOpened() && superBlockFile.Read( &m_superBlock.raw, sizeof( m_superBlock.raw ) ) >= sizeof( m_superBlock.data ) ) {
@@ -121,7 +125,7 @@ void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxS
 		CreateFat();
 		CreateRootDir();
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
-		AddFolder( rootDirEntry, folderName.GetPath(), enableFiltering, filter );
+		AddFolder( rootDirEntry, m_folderName.GetPath(), enableFiltering, filter );
 	}
 }
 
@@ -222,29 +226,6 @@ u32 FolderMemoryCard::GetLastClusterOfData( const u32 cluster ) {
 		nextCluster = m_fat.data[0][0][entryCluster] & 0x7FFFFFFF;
 	} while ( nextCluster != 0x7FFFFFFF );
 	return entryCluster;
-}
-
-u64 FolderMemoryCard::ConvertToMemoryCardTimestamp( const wxDateTime& time ) {
-	if ( !time.IsValid() ) {
-		return 0;
-	}
-
-	union {
-		MemoryCardFileEntryDateTime data;
-		u64 value;
-	} t;
-
-	wxDateTime::Tm tm = time.GetTm( wxDateTime::GMT9 );
-
-	t.data.unused = 0;
-	t.data.second = tm.sec;
-	t.data.minute = tm.min;
-	t.data.hour = tm.hour;
-	t.data.day = tm.mday;
-	t.data.month = tm.mon + 1;
-	t.data.year = tm.year;
-
-	return t.value;
 }
 
 MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( MemoryCardFileEntry* const dirEntry ) {
@@ -358,8 +339,8 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 					metaFile.Close();
 				} else {
 					newDirEntry->entry.data.mode = MemoryCardFileEntry::DefaultDirMode;
-					newDirEntry->entry.data.timeCreated.value = ConvertToMemoryCardTimestamp( creationTime );
-					newDirEntry->entry.data.timeModified.value = ConvertToMemoryCardTimestamp( modificationTime );
+					newDirEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
+					newDirEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
 				}
 
 				newDirEntry->entry.data.length = 2;
@@ -398,7 +379,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 
 bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName ) {
 	wxFileName relativeFilePath( dirPath, fileName );
-	relativeFilePath.MakeRelativeTo( folderName.GetPath() );
+	relativeFilePath.MakeRelativeTo( m_folderName.GetPath() );
 	Console.WriteLn( L"(FolderMcd) Adding file: %s", WX_STR( relativeFilePath.GetFullPath() ) );
 
 	wxFileName fileInfo( dirPath, fileName );
@@ -430,8 +411,8 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 			metaFile.Close();
 		} else {
 			newFileEntry->entry.data.mode = MemoryCardFileEntry::DefaultFileMode;
-			newFileEntry->entry.data.timeCreated.value = ConvertToMemoryCardTimestamp( creationTime );
-			newFileEntry->entry.data.timeModified.value = ConvertToMemoryCardTimestamp( modificationTime );
+			newFileEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
+			newFileEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
 		}
 
 		newFileEntry->entry.data.length = filesize;
@@ -601,7 +582,7 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
 
 	// figure out which file to read from
-	wxFileName fileName( folderName );
+	wxFileName fileName( m_folderName );
 	u32 clusterNumber;
 	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
 	if ( entry != nullptr ) {
@@ -768,6 +749,7 @@ void FolderMemoryCard::Flush() {
 	const u32 rootDirCluster = m_superBlock.data.rootdir_cluster;
 	const u32 rootDirPage = ( rootDirCluster + m_superBlock.data.alloc_offset ) * 2;
 	Flush( rootDirPage );
+	Flush( rootDirPage + 1 );
 	MemoryCardFileEntryCluster* rootEntries = &m_fileEntryDict[rootDirCluster];
 	if ( rootEntries->entries[0].IsValid() && rootEntries->entries[0].IsUsed() ) {
 		FlushFileEntries( rootDirCluster, rootEntries->entries[0].entry.data.length );
@@ -807,7 +789,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 				const wxString subDirPath = dirPath + L"/" + subDirName;
 
 				// if this directory has nonstandard metadata, write that to the file system
-				wxFileName metaFileName( folderName.GetFullPath() + subDirPath + L"/_pcsx2_meta_directory" );
+				wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath + L"/_pcsx2_meta_directory" );
 				if ( entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
 					if ( !metaFileName.DirExists() ) {
 						metaFileName.Mkdir();
@@ -879,7 +861,7 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
 
 	// figure out which file to write to
-	wxFileName fileName( folderName );
+	wxFileName fileName( m_folderName );
 	u32 clusterNumber;
 	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
 	if ( entry != nullptr ) {
@@ -1024,19 +1006,19 @@ void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 }
 
 FolderMemoryCardAggregator::FolderMemoryCardAggregator() {
-	for ( uint i = 0; i < totalCardSlots; ++i ) {
+	for ( uint i = 0; i < TotalCardSlots; ++i ) {
 		m_cards[i].SetSlot( i );
 	}
 }
 
 void FolderMemoryCardAggregator::Open() {
-	for ( int i = 0; i < totalCardSlots; ++i ) {
+	for ( int i = 0; i < TotalCardSlots; ++i ) {
 		m_cards[i].Open( m_enableFiltering, m_lastKnownFilter );
 	}
 }
 
 void FolderMemoryCardAggregator::Close() {
-	for ( int i = 0; i < totalCardSlots; ++i ) {
+	for ( int i = 0; i < TotalCardSlots; ++i ) {
 		m_cards[i].Close();
 	}
 }

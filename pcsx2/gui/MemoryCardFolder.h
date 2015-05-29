@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2015  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,11 +17,11 @@
 
 #include <wx/file.h>
 #include <wx/dir.h>
-#include <wx/stopwatch.h>
 #include <wx/ffile.h>
 #include <map>
 
 #include "PluginCallbacks.h"
+#include "AppConfig.h"
 
 // --------------------------------------------------------------------------------------
 //  Superblock Header Struct
@@ -57,6 +57,32 @@ struct MemoryCardFileEntryDateTime {
 	u8 day;
 	u8 month;
 	u16 year;
+
+	static MemoryCardFileEntryDateTime FromWxDateTime( const wxDateTime& time ) {
+		MemoryCardFileEntryDateTime t;
+
+		if ( time.IsValid() ) {
+			wxDateTime::Tm tm = time.GetTm( wxDateTime::GMT9 );
+
+			t.unused = 0;
+			t.second = tm.sec;
+			t.minute = tm.min;
+			t.hour = tm.hour;
+			t.day = tm.mday;
+			t.month = tm.mon + 1;
+			t.year = tm.year;
+		} else {
+			t.unused = 0;
+			t.second = 0;
+			t.minute = 0;
+			t.hour = 0;
+			t.day = 0;
+			t.month = 0;
+			t.year = 0;
+		}
+
+		return t;
+	}
 };
 #pragma pack(pop)
 
@@ -70,18 +96,10 @@ struct MemoryCardFileEntry {
 		struct MemoryCardFileEntryData {
 			u32 mode;
 			u32 length; // number of bytes for file, number of files for dir
-			union {
-				MemoryCardFileEntryDateTime data;
-				u64 value;
-				u8 raw[8];
-			} timeCreated;
+			MemoryCardFileEntryDateTime timeCreated;
 			u32 cluster; // cluster the start of referred file or folder can be found in
 			u32 dirEntry; // parent directory entry number, only used if "." entry of subdir
-			union {
-				MemoryCardFileEntryDateTime data;
-				u64 value;
-				u8 raw[8];
-			} timeModified;
+			MemoryCardFileEntryDateTime timeModified;
 			u32 attr;
 			u8 padding[0x1C];
 			u8 name[0x20];
@@ -118,9 +136,7 @@ struct MemoryCardPage {
 // --------------------------------------------------------------------------------------
 // Fakes a memory card using a regular folder/file structure in the host file system
 class FolderMemoryCard {
-protected:
-	wxFileName folderName;
-
+public:
 	// a few constants so we could in theory change the memory card size without too much effort
 	static const int IndirectFatClusterCount = 1; // should be 32 but only 1 is ever used
 	static const int PageSize = MemoryCardPage::PageSize;
@@ -133,9 +149,11 @@ protected:
 	static const int TotalPages = 0x4000;
 	static const int TotalClusters = TotalPages / 2;
 	static const int TotalBlocks = TotalClusters / 8;
+	static const int TotalSizeRaw = TotalPages * PageSizeRaw;
 
 	static const int FramesAfterWriteUntilFlush = 60;
 
+protected:
 	union superBlockUnion {
 		superblock data;
 		u8 raw[BlockSize];
@@ -151,15 +169,24 @@ protected:
 	u8 m_backupBlock1[BlockSize];
 	u8 m_backupBlock2[BlockSize];
 
+	// stores directory and file metadata
 	std::map<u32, MemoryCardFileEntryCluster> m_fileEntryDict;
 
-	// holds a copy of modified areas of the memory card, in page-sized chunks
+	// holds a copy of modified pages of the memory card before they're flushed to the file system
 	std::map<u32, MemoryCardPage> m_cache;
-
-	uint m_slot;
-	bool m_isEnabled;
-	u64 m_timeLastWritten;
+	// if > 0, the amount of frames until data is flushed to the file system
+	// reset to FramesAfterWriteUntilFlush on each write
 	int m_framesUntilFlush;
+	// used to figure out if contents were changed for savestate-related purposes, see GetCRC()
+	u64 m_timeLastWritten;
+
+	// path to the folder that contains the files of this memory card
+	wxFileName m_folderName;
+
+	// PS2 memory card slot this card is inserted into
+	uint m_slot;
+
+	bool m_isEnabled;
 
 public:
 	FolderMemoryCard();
@@ -168,7 +195,10 @@ public:
 	void Lock();
 	void Unlock();
 
+	// Initialize & Load Memory Card with values configured in the Memory Card Manager
 	void Open( const bool enableFiltering, const wxString& filter );
+	// Initialize & Load Memory Card with provided custom values
+	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const bool enableFiltering, const wxString& filter );
 	void Close();
 
 	s32  IsPresent();
@@ -219,8 +249,8 @@ protected:
 
 
 	// loads files and folders from the host file system if a superblock exists in the root directory
-	// if enableFiltering is set to true, only folders whose name contain the filter string are loaded
-	// filter string can include multiple filters by separating them with "/"
+	// - enableFiltering: if set to true, only folders whose name contain the filter string are loaded
+	// - filter: can include multiple filters by separating them with "/"
 	void LoadMemoryCardData( const bool enableFiltering, const wxString& filter );
 
 	// creates the FAT and indirect FAT
@@ -243,8 +273,6 @@ protected:
 
 	// returns the final cluster of the file or directory which is (partially) stored in the given cluster
 	u32 GetLastClusterOfData( const u32 cluster );
-
-	u64 ConvertToMemoryCardTimestamp( const wxDateTime& time );
 
 
 	// creates and returns a new file entry in the given directory entry, ready to be filled
@@ -282,6 +310,7 @@ protected:
 
 	void SetTimeLastWrittenToNow();
 
+	
 	wxString GetDisabledMessage( uint slot ) const {
 		return wxsFormat( pxE( L"The PS2-slot %d has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu."
 			), slot//TODO: translate internal slot index to human-readable slot description
@@ -298,8 +327,11 @@ protected:
 // Forwards the API's requests for specific memory card slots to the correct FolderMemoryCard.
 class FolderMemoryCardAggregator {
 protected:
-	static const int totalCardSlots = 8;
-	FolderMemoryCard m_cards[totalCardSlots];
+	static const int TotalCardSlots = 8;
+	FolderMemoryCard m_cards[TotalCardSlots];
+
+	// stores the specifics of the current filtering settings, so they can be
+	// re-applied automatically when memory cards are reloaded
 	bool m_enableFiltering = true;
 	wxString m_lastKnownFilter = L"";
 
