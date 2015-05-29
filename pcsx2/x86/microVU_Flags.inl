@@ -31,7 +31,7 @@ __fi void mVUstatusFlagOp(mV) {
 	int i = mVUcount;
 	bool runLoop = true;
 
-	if (sFLAG.doFlag && sFLAG.skipWrite != 1) {
+	if (sFLAG.doFlag) {
 		sFLAG.doNonSticky = true;
 	}
 	else {
@@ -41,7 +41,7 @@ __fi void mVUstatusFlagOp(mV) {
 				runLoop = false;
 				break;
 			}
-			else if (sFLAG.doFlag && sFLAG.skipWrite != 1) {
+			else if (sFLAG.doFlag) {
 				sFLAG.doNonSticky = true;
 				break;
 			}
@@ -92,7 +92,7 @@ void sortFullFlag(int* fFlag, int* bFlag) {
 	}
 }
 
-#define sFlagCond ((sFLAG.doFlag && sFLAG.skipWrite != 1) || mVUlow.isFSSET || mVUinfo.doDivFlag )
+#define sFlagCond (sFLAG.doFlag || mVUlow.isFSSET || mVUinfo.doDivFlag )
 #define sHackCond (mVUsFlagHack && !sFLAG.doNonSticky)
 
 // Note: Flag handling is 'very' complex, it requires full knowledge of how microVU recs work, so don't touch!
@@ -121,98 +121,7 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 		}
 		incPC2(-2);
 	}
-
-	if (mVUsFlagHack){
-		bool flagReadFound = false;
-		bool updateCalcFound = false;
-		int flagReadptr = 0;
-		incPC2((aCount * 2));
-		int instanceCycles = 0;
-
-		// Go through checking flags if they need to be written back or not, ignoring the last 4ish of course
-		for (int i = mVUcount; i > 0; i--) {
-			if (sFLAG.doFlag) {
-				if (writeProtect && (mVUcount - i) <= aCount) { //Don't actually clear any of the last ops in the block, just check for reads
-					//DevCon.Warning("aCnt %d, mVUcnt %d mVUcnt-i %d", aCount, mVUcount, (mVUcount - i));
-					sFLAG.skipWrite = 2;
-				}
-
-				if (flagReadFound) {
-					if (instanceCycles >= 4) {
-						if (mVUinfo.uOp.VF_write.reg != 0) { //Keep going because this is a mac/status calculation op only
-							if (updateCalcFound == false)
-								sFLAG.skipWrite = 2;
-							//DevCon.Warning("Flag read mac found at %d and %d cycles, rolling back to %d", i, instanceCycles, i + (flagReadptr - 1) * 2);
-							flagReadFound = false;
-							updateCalcFound = false;
-							instanceCycles = 0;
-							//Roll back in case there was other flag reads
-
-							incPC2((flagReadptr - 1) * 2);
-							i += flagReadptr - 1;
-							flagReadptr = 0;
-						}
-						else {
-							//DevCon.Warning("Calculation found!");
-							updateCalcFound = true;
-							sFLAG.skipWrite = 2;
-						}
-					}
-					//else DevCon.Warning("waiting On %d cycles, flagptr %d pos %d", instanceCycles, flagReadptr, i);
-					//Else do nothing, we will come back to this one					
-				}
-				else {
-					if (sFLAG.skipWrite != 2) { //Kill only non-write protected flag updates
-
-						sFLAG.skipWrite = 1;
-						//DevCon.Warning("ignoring at %d", i);
-					}
-					//else DevCon.Warning("Write protected at %d", i);
-				}
-			}
-
-
-
-			if (flagReadFound) {
-				if (i == 1) {
-					//Nothing found by the end of the block
-					flagReadFound = false;
-
-					//Roll back in case there was other flag reads
-					if (flagReadptr > 0) {
-						incPC2((flagReadptr)* 2);
-						i += flagReadptr - 1;
-						flagReadptr = 0;
-					}
-				}
-				else { //Relevant flag update instructions not yet found, keep checking the stalls to get the right one
-					if (flagReadptr > 0){
-						//DevCon.Warning("adding cycles Swap ops %d", mVUinfo.swapOps);
-						instanceCycles += mVUstall;
-						if (mVUstall == 0)
-							instanceCycles += 1;
-
-					}
-					flagReadptr++;
-				}
-			}
-			if (mVUlow.readFlags == 1 && !flagReadFound) {
-				flagReadFound = true;
-				flagReadptr = 0;
-				instanceCycles = 0;
-				//DevCon.Warning("Found Flag on %d Stall = %d swapops = %d", i, mVUstall, mVUinfo.swapOps);
-
-				if (mVUinfo.swapOps)
-					instanceCycles += mVUstall;
-				
-				instanceCycles += 1;
-				//DevCon.Warning("%d cycles on flag read", instanceCycles);
-				flagReadptr++;
-			}
-			incPC2(-2);
-		}
-	}
-	
+		
 	// Status/Mac Flags Setup Code
 	int xS = 0, xM = 0, xC = 0;
 	u32 ff0=0, ff1=0, ffOn=0, fInfo=0;

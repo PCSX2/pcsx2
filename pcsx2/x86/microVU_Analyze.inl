@@ -291,7 +291,7 @@ __ri void flagSet(mV, bool setMacFlag) {
 	for (int i = mVUcount, j = 0; i > 0; i--, j++) {
 		j += mVUstall;
 		incPC2(-2);
-		if (sFLAG.doFlag && (j >= 3) && sFLAG.skipWrite != 1) {
+		if (sFLAG.doFlag && (j >= 3)) {
 			if (setMacFlag) { mFLAG.doFlag = 1; }
 			else { sFLAG.doNonSticky = 1; }
 			break; 
@@ -301,7 +301,7 @@ __ri void flagSet(mV, bool setMacFlag) {
 }
 
 __ri void mVUanalyzeSflag(mV, int It) {
-	mVUlow.readFlags = 1;
+	mVUlow.readFlags = true;
 	analyzeVIreg2(mVU, It, mVUlow.VI_write, 1);
 	if (!It) { mVUlow.isNOP = 1; }
 	else {
@@ -317,7 +317,7 @@ __ri void mVUanalyzeSflag(mV, int It) {
 
 __ri void mVUanalyzeFSSET(mV) {
 	mVUlow.isFSSET = 1;
-	mVUlow.readFlags = 2;
+	mVUlow.readFlags = true;
 }
 
 //------------------------------------------------------------------
@@ -325,7 +325,7 @@ __ri void mVUanalyzeFSSET(mV) {
 //------------------------------------------------------------------
 
 __ri void mVUanalyzeMflag(mV, int Is, int It) {
-	mVUlow.readFlags = 1;
+	mVUlow.readFlags = true;
 	analyzeVIreg1(mVU, Is, mVUlow.VI_read[0]);
 	analyzeVIreg2(mVU, It, mVUlow.VI_write, 1);
 	if (!It) { mVUlow.isNOP = 1; }
@@ -345,7 +345,7 @@ __ri void mVUanalyzeMflag(mV, int Is, int It) {
 
 __fi void mVUanalyzeCflag(mV, int It) {
 	mVUinfo.swapOps = 1;
-	mVUlow.readFlags = 2;
+	mVUlow.readFlags = true;
 	if (mVUcount < 4) { 
 		if (!(mVUpBlock->pState.needExactMatch & 4)) // The only time this should happen is on the first program block
 			DevCon.WriteLn(Color_Green, "microVU%d: pState's cFlag Info was expected to be set [%04x]", getIndex, xPC);
