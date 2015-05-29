@@ -345,6 +345,7 @@ namespace GLLoader {
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
 	bool found_GL_ARB_shading_language_420pack = false;
+	bool found_GL_ARB_draw_buffers_blend = false; // could be easily be optional, but I'm lazy
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
@@ -430,6 +431,7 @@ namespace GLLoader {
 				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
+				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
@@ -477,6 +479,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
+		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend", true);
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
 		status &= status_and_override(found_GL_ARB_shader_subroutine, "GL_ARB_shader_subroutine");
