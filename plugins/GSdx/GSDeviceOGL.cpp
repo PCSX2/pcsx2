@@ -733,6 +733,10 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
+	// Performance optimization. It might be faster to use a framebuffer blit for standard case
+	// instead to emulate it with shader
+	// see https://www.opengl.org/wiki/Framebuffer#Blitting
+
 	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
 
 	// ************************************
