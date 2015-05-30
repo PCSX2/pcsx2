@@ -756,6 +756,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		bool linear = true;
 		if (psm.pal > 0) {
 			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			src->m_alpha_palette = true;
 			// Palette is used to interpret the alpha channel of the RT as an index.
 			// Star Ocean 3 uses it to emulate a stencil buffer.
 			// It is a very bad idea to force bilinear filtering on it.
@@ -906,6 +907,7 @@ void GSTextureCache::Surface::Update()
 GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp)
 	: Surface(r, temp)
 	, m_palette(NULL)
+	, m_alpha_palette(false)
 	, m_initpalette(true)
 	, m_target(false)
 	, m_complete(false)

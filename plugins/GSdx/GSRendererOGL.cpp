@@ -518,7 +518,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			bilinear = false;
 
 			ps_sel.fmt = cpsm.fmt | 4;
-			ps_sel.ifmt = (context->TEX0.PSM == 0x1B) ? 3
+			ps_sel.ifmt = !tex->m_alpha_palette ? 0
+				: (context->TEX0.PSM == 0x1B) ? 3
 				: (context->TEX0.PSM == 0x24) ? 2
 				: (context->TEX0.PSM == 0x2C) ? 1
 				: 0;
