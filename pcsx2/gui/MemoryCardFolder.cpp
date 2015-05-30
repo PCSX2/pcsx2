@@ -449,7 +449,7 @@ s32 FolderMemoryCard::IsPresent() {
 void FolderMemoryCard::GetSizeInfo( PS2E_McdSizeInfo& outways ) {
 	outways.SectorSize = PageSize;
 	outways.EraseBlockSizeInSectors = BlockSize / PageSize;
-	outways.McdSizeInSectors = TotalPages;
+	outways.McdSizeInSectors = GetSizeInClusters() * 2;
 
 	u8 *pdata = (u8*)&outways.McdSizeInSectors;
 	outways.Xor = 18;
@@ -720,13 +720,15 @@ void FolderMemoryCard::Flush() {
 
 	// first write the superblock if necessary
 	Flush( 0 );
-
 	if ( !IsFormatted() ) { return; }
+
+	const u32 clusterCount = GetSizeInClusters();
+	const u32 pageCount = clusterCount * 2;
 
 	// then write the indirect FAT
 	for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 		const u32 cluster = m_superBlock.data.ifc_list[i];
-		if ( cluster > 0 && cluster < TotalClusters ) {
+		if ( cluster > 0 && cluster < clusterCount ) {
 			const u32 page = cluster * 2;
 			Flush( page );
 			Flush( page + 1 );
@@ -737,7 +739,7 @@ void FolderMemoryCard::Flush() {
 	for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 		for ( int j = 0; j < ClusterSize / 4; ++j ) {
 			const u32 cluster = m_indirectFat.data[i][j];
-			if ( cluster > 0 && cluster < TotalClusters ) {
+			if ( cluster > 0 && cluster < clusterCount ) {
 				const u32 page = cluster * 2;
 				Flush( page );
 				Flush( page + 1 );
@@ -756,14 +758,13 @@ void FolderMemoryCard::Flush() {
 	}
 
 	// and finally, flush everything that hasn't been flushed yet
-	for ( int i = 0; i < TotalPages; ++i ) {
+	for ( uint i = 0; i < pageCount; ++i ) {
 		Flush( i );
 	}
 
 }
 
 void FolderMemoryCard::Flush( const u32 page ) {
-	if ( page >= TotalPages ) { return; }
 	auto it = m_cache.find( page );
 	if ( it != m_cache.end() ) {
 		WriteWithoutCache( &it->second.raw[0], page * PageSizeRaw, PageSize );
@@ -952,6 +953,31 @@ u64 FolderMemoryCard::GetCRC() {
 void FolderMemoryCard::SetSlot( uint slot ) {
 	pxAssert( slot < 8 );
 	m_slot = slot;
+}
+
+u32 FolderMemoryCard::GetSizeInClusters() {
+	const u32 clusters = m_superBlock.data.clusters_per_card;
+	if ( clusters > 0 && clusters < UINT32_MAX ) {
+		return clusters;
+	} else {
+		return TotalClusters;
+	}
+}
+
+void FolderMemoryCard::SetSizeInClusters( u32 clusters ) {
+	m_superBlock.data.clusters_per_card = clusters;
+	
+	const u32 alloc_offset = clusters / 0x100 + 9;
+	m_superBlock.data.alloc_offset = alloc_offset;
+	m_superBlock.data.alloc_end = clusters - 0x10 - alloc_offset;
+
+	const u32 blocks = clusters / 8;
+	m_superBlock.data.backup_block1 = blocks - 1;
+	m_superBlock.data.backup_block2 = blocks - 2;
+}
+
+void FolderMemoryCard::SetSizeInMB( u32 megaBytes ) {
+	SetSizeInClusters( ( megaBytes * 1024 * 1024 ) / ClusterSize );
 }
 
 void FolderMemoryCard::SetTimeLastWrittenToNow() {

@@ -211,6 +211,14 @@ public:
 
 	void SetSlot( uint slot );
 
+	u32 GetSizeInClusters();
+
+	// WARNING: The intended use-case for this is resetting back to 8MB if a differently-sized superblock was loaded
+	// setting to a different size is untested and will probably not work correctly
+	void SetSizeInClusters( u32 clusters );
+	// see SetSizeInClusters()
+	void SetSizeInMB( u32 megaBytes );
+
 	// called once per frame, used for flushing data after FramesAfterWriteUntilFlush frames of no writes
 	void NextFrame();
 
