@@ -497,13 +497,13 @@ extern void vmfree(void* ptr, size_t size);
 	do if (gl_DebugMessageInsert) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); while(0);
 
 // Except apple any sane driver support this extension
-#if defined(__linux__) && defined(_DEBUG)
+#if defined(_DEBUG)
 #define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
 #define GL_CACHE(...) (0);
 #endif
 
-#if defined(__linux__) && defined(ENABLE_OGL_DEBUG)
+#if defined(ENABLE_OGL_DEBUG)
 #define GL_PUSH(...)	do if (gl_PushDebugGroup) gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
 #define GL_POP()        do if (gl_PopDebugGroup) gl_PopDebugGroup(); while(0);
 #define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
