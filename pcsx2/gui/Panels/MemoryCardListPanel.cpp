@@ -466,6 +466,7 @@ enum McdMenuId
 	McdMenuId_RefreshList,
 	McdMenuId_AssignUnassign,
 	McdMenuId_Duplicate,
+	McdMenuId_Convert,
 };
 
 
@@ -492,6 +493,7 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	m_button_Duplicate = new wxButton(this, wxID_ANY, _("Duplicate ..."));
 	m_button_Rename = new wxButton(this, wxID_ANY, _("Rename ..."));
 	m_button_Create	= new wxButton(this, wxID_ANY, _("Create ..."));
+	m_button_Convert = new wxButton(this, wxID_ANY, _("Convert ..."));
 
 	// ------------------------------------
 	//       Sizer / Layout Section
@@ -511,6 +513,8 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	*s_leftside_buttons	+= m_button_Rename;
 	*s_leftside_buttons	+= 2;
 	*s_leftside_buttons	+= m_button_Create;
+	*s_leftside_buttons	+= 2;
+	*s_leftside_buttons	+= m_button_Convert;
 	SetSizerAndFit(GetSizer());
 
 	parent->SetWindowStyle(parent->GetWindowStyle() | wxRESIZE_BORDER);
@@ -526,12 +530,14 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 
 //	Connect( m_button_Mount->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard));
 	Connect( m_button_Create->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard));
+	Connect( m_button_Convert->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard));
 	Connect( m_button_Rename->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile));
 	Connect( m_button_Duplicate->GetId(),		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnDuplicateFile));
 	Connect( m_button_AssignUnassign->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile));
 
 	// Popup Menu Connections!
 	Connect( McdMenuId_Create,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard) );
+	Connect( McdMenuId_Convert,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard) );
 	//Connect( McdMenuId_Mount,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard) );
 	Connect( McdMenuId_Rename,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile) );
 	Connect( McdMenuId_AssignUnassign,	wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile) );
@@ -562,6 +568,7 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 		m_button_Rename->Disable();
 		m_button_Duplicate->Disable();
 		m_button_AssignUnassign->Disable();
+		m_button_Convert->Disable();
 		return;
 	}
 
@@ -580,6 +587,8 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 	m_button_Duplicate->Enable( card.IsPresent );
 	wxString dupTip = _("Create a duplicate of this memory card ...");
 	pxSetToolTip( m_button_Duplicate, dupTip );
+
+	m_button_Convert->Enable( card.IsPresent && card.IsFormatted && !card.IsPSX );
 
 	//m_button_Create->Enable( card.Slot>=0 || card.IsPresent);
 	m_button_Create->SetLabel( card.IsPresent ? _("Delete") : _("Create ...") );
@@ -744,6 +753,29 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 
 	Apply();
 	RefreshSelections();
+	closed_core.AllowResume();
+}
+
+void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
+	if ( !card.IsPresent ) {
+		Console.WriteLn( "Error: Aborted: Convert mcd invoked but but a file is not associated." );
+		return;
+	}
+
+	ScopedCoreThreadClose closed_core;
+
+	AppConfig::McdOptions config;
+	config.Filename = card.Filename.GetFullName();
+	config.Enabled = card.IsEnabled;
+	config.Type = card.Type;
+	Dialogs::ConvertMemoryCardDialog dialog( this, m_FolderPicker->GetPath(), config );
+	wxWindowID result = dialog.ShowModal();
+
+	if ( result != wxID_CANCEL ) {
+		Apply();
+		RefreshSelections();
+	}
+
 	closed_core.AllowResume();
 }
 
@@ -1009,6 +1041,18 @@ void Panels::MemoryCardListPanel_Simple::OnCreateOrDeleteCard(wxCommandEvent& ev
 		UiCreateNewCard( card );
 }
 
+void Panels::MemoryCardListPanel_Simple::OnConvertCard(wxCommandEvent& evt) {
+	int selectedViewIndex = m_listview->GetFirstSelected();
+	if ( wxNOT_FOUND == selectedViewIndex ) {
+		return;
+	}
+
+	McdSlotItem& card( GetCardForViewIndex( selectedViewIndex ) );
+	if ( card.IsPresent ) {
+		UiConvertCard( card );
+	}
+}
+
 //enable/disapbe port
 /*
 void Panels::MemoryCardListPanel_Simple::OnMountCard(wxCommandEvent& evt)
@@ -1168,6 +1212,9 @@ void Panels::MemoryCardListPanel_Simple::OnOpenItemContextMenu(wxListEvent& evt)
 			junk->Append( McdMenuId_Duplicate,	_("Duplicate card ...") );
 			junk->Append( McdMenuId_Rename,		_("Rename card ...") );
 			junk->Append( McdMenuId_Create,		_("Delete card") );
+			if (card.IsFormatted && !card.IsPSX) {
+				junk->Append( McdMenuId_Convert, _("Convert card") );
+			}
 		}
 		else
 			junk->Append( McdMenuId_Create, _("Create a new card ...") );

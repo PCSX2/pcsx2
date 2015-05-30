@@ -272,6 +272,7 @@ set(pcsx2GuiSources
 	gui/Panels/ThemeSelectorPanel.cpp
 	gui/Dialogs/BaseConfigurationDialog.cpp
 	gui/Dialogs/ConfirmationDialogs.cpp
+	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
 	gui/Dialogs/GameDatabaseDialog.cpp

@@ -665,6 +665,9 @@
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Dialogs\ConvertMemoryCardDialog.cpp">
+      <Filter>AppHost\Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\CreateMemoryCardDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>

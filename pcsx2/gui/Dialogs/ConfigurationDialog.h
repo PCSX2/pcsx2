@@ -237,4 +237,26 @@ namespace Dialogs
 		void CreateControls();
 		void OnOk_Click( wxCommandEvent& evt );
 	};
+
+	// --------------------------------------------------------------------------------------
+	//  ConvertMemoryCardDialog
+	// --------------------------------------------------------------------------------------
+	class ConvertMemoryCardDialog : public wxDialogWithHelpers
+	{
+	protected:
+		wxDirName     m_mcdPath;
+		wxString      m_mcdSourceFilename;
+		wxTextCtrl*   m_text_filenameInput;
+		pxRadioPanel* m_radio_CardType;
+
+	public:
+		virtual ~ConvertMemoryCardDialog()  throw() {}
+		ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const AppConfig::McdOptions& mcdSourceConfig );
+	
+	protected:
+		void CreateControls( const MemoryCardType sourceType );
+		void OnOk_Click( wxCommandEvent& evt );
+		bool ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath );
+		bool ConvertToFolder( const wxFileName& sourcePath, const wxFileName& targetPath );
+	};
 }

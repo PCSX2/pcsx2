@@ -212,6 +212,8 @@ namespace Panels
 		
 		// Doubles as Create and Delete buttons
 		wxButton*		m_button_Create;
+
+		wxButton*		m_button_Convert;
 		
 		// Doubles as Mount and Unmount buttons ("Enable"/"Disable" port)
 //		wxButton*		m_button_Mount;
@@ -237,6 +239,7 @@ namespace Panels
 
 	protected:
 		void OnCreateOrDeleteCard(wxCommandEvent& evt);
+		void OnConvertCard(wxCommandEvent& evt);
 		void OnMountCard(wxCommandEvent& evt);
 //		void OnRelocateCard(wxCommandEvent& evt);
 		void OnRenameFile(wxCommandEvent& evt);
@@ -270,6 +273,7 @@ namespace Panels
 
 		virtual void UiRenameCard( McdSlotItem& card );
 		virtual void UiCreateNewCard( McdSlotItem& card );
+		virtual void UiConvertCard( McdSlotItem& card );
 		virtual void UiDeleteCard( McdSlotItem& card );
 		virtual void UiAssignUnassignFile( McdSlotItem& card );
 		
