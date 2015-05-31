@@ -149,7 +149,7 @@ GSTexture* GSRendererHW::GetOutput(int i)
 
 		if(s_dump)
 		{
-			if(s_save && s_n >= s_saven)
+			if(s_savef && s_n >= s_saven)
 			{
 				t->Save(root_hw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
 			}

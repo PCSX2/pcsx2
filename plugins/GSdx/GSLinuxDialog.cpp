@@ -454,6 +454,7 @@ void populate_debug_table(GtkWidget* debug_table)
 	GtkWidget* gl_debug_check   = CreateCheckBox("Print GL error", "debug_opengl");
 	GtkWidget* gs_dump_check    = CreateCheckBox("Dump GS data", "dump");
 	GtkWidget* gs_save_check    = CreateCheckBox("Save RT", "save");
+	GtkWidget* gs_savef_check   = CreateCheckBox("Save Frame", "savef");
 	GtkWidget* gs_savet_check   = CreateCheckBox("Save Texture", "savet");
 	GtkWidget* gs_savez_check   = CreateCheckBox("Save Depth", "savez");
 
@@ -465,7 +466,8 @@ void populate_debug_table(GtkWidget* debug_table)
 	s_table_line = 0;
 	InsertWidgetInTable(debug_table, gl_debug_check, glsl_debug_check);
 	InsertWidgetInTable(debug_table, gs_dump_check);
-	InsertWidgetInTable(debug_table, gs_save_check, gs_savet_check, gs_savez_check);
+	InsertWidgetInTable(debug_table, gs_save_check, gs_savef_check);
+	InsertWidgetInTable(debug_table, gs_savet_check, gs_savez_check);
 	InsertWidgetInTable(debug_table, gs_saven_label, gs_saven_spin);
 	InsertWidgetInTable(debug_table, gs_savel_label, gs_savel_spin);
 }

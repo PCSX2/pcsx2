@@ -253,7 +253,7 @@ GSTexture* GSRendererSW::GetOutput(int i)
 
 		if(s_dump)
 		{
-			if(s_save && s_n >= s_saven)
+			if(s_savef && s_n >= s_saven)
 			{
 				m_texture[i]->Save(root_sw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), (int)DISPFB.PSM));
 			}
