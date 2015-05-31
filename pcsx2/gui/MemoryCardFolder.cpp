@@ -520,7 +520,7 @@ u8* FolderMemoryCard::GetFileEntryPointer( const u32 currentCluster, const u32 s
 	// check subdirectories
 	for ( int i = 0; i < 2; ++i ) {
 		MemoryCardFileEntry* const entry = &m_fileEntryDict[currentCluster].entries[i];
-		if ( entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
+		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
 			u8* ptr = GetFileEntryPointer( entry->entry.data.cluster, searchCluster, entryNumber, offset );
 			if ( ptr != nullptr ) { return ptr; }
 		}
@@ -533,7 +533,7 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u3
 	// check both entries of the current cluster if they're the file we're searching for, and if yes return it
 	for ( int i = 0; i < 2; ++i ) {
 		MemoryCardFileEntry* const entry = &m_fileEntryDict[currentCluster].entries[i];
-		if ( entry->IsUsed() && entry->IsFile() ) {
+		if ( entry->IsValid() && entry->IsUsed() && entry->IsFile() ) {
 			u32 fileCluster = entry->entry.data.cluster;
 			u32 clusterNumber = 0;
 			do {
@@ -563,7 +563,7 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u3
 	// check subdirectories
 	for ( int i = 0; i < 2; ++i ) {
 		MemoryCardFileEntry* const entry = &m_fileEntryDict[currentCluster].entries[i];
-		if ( entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
+		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
 			MemoryCardFileEntry* ptr = GetFileEntryFromFileDataCluster( entry->entry.data.cluster, searchCluster, fileName, originalDirCount, outClusterNumber );
 			if ( ptr != nullptr ) {
 				fileName->InsertDir( originalDirCount, wxString::FromAscii( (const char*)entry->entry.data.name ) );
