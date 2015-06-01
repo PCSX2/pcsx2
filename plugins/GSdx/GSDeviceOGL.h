@@ -321,7 +321,9 @@ class GSDeviceOGL : public GSDevice
 
 				// Word 2
 				uint32 blend:8;
-				uint32 _free2:24;
+				uint32 dfmt:2;
+
+				uint32 _free2:22;
 			};
 
 			uint64 key;
@@ -617,7 +619,7 @@ class GSDeviceOGL : public GSDevice
 	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
-	GSBlendStateOGL* CreateBlend(OMBlendSelector bsel, uint8 afix);
+	GSBlendStateOGL* CreateBlend(OMBlendSelector bsel, float afix);
 
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
@@ -626,7 +628,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix, bool sw_blending =  false);
+	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending =  false);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 
