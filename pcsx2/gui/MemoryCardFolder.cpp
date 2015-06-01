@@ -474,6 +474,10 @@ u8* FolderMemoryCard::GetSystemBlockPointer( const u32 adr ) {
 	if ( cluster >= startDataCluster && cluster < endDataCluster ) {
 		// trying to access a file entry?
 		const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
+		// if this cluster is unused according to FAT, we can assume we won't find anything
+		if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+			return nullptr;
+		}
 		return GetFileEntryPointer( m_superBlock.data.rootdir_cluster, fatCluster, page % 2, offset );
 	}
 
@@ -583,6 +587,11 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	const u32 offset = adr % PageSizeRaw;
 	const u32 cluster = adr / ClusterSizeRaw;
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
+
+	// if the cluster is unused according to FAT, just return
+	if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+		return false;
+	}
 
 	// figure out which file to read from
 	wxFileName fileName( m_folderName );
@@ -870,6 +879,11 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
+
+	// if the cluster is unused according to FAT, just skip all this, we're not gonna find anything anyway
+	if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+		return false;
+	}
 
 	// figure out which file to write to
 	wxFileName fileName( m_folderName );
