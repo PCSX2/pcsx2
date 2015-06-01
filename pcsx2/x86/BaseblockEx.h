@@ -53,7 +53,7 @@ class BaseBlockArray {
 		pxAssert(size > 0);
 		BASEBLOCKEX *newMem = new BASEBLOCKEX[size];
 		if(blocks) {
-			memmove(newMem, blocks, _Reserved * sizeof(BASEBLOCKEX));
+			memcpy(newMem, blocks, _Reserved * sizeof(BASEBLOCKEX));
 			delete[] blocks;
 		}
 		blocks = newMem;
@@ -84,8 +84,7 @@ public:
 	BASEBLOCKEX *insert(u32 startpc, uptr fnptr)
 	{
 		if(_Size + 1 >= _Reserved) {
-			resize(_Reserved + 0x2000);
-			_Reserved += 0x2000;		// some games requires even more!
+			reserve(_Reserved + 0x2000); // some games requires even more!
 		}
 
 		int imin = 0, imax = _Size, imid;
