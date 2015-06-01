@@ -589,9 +589,6 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	u32 clusterNumber;
 	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
 	if ( entry != nullptr ) {
-		if ( !fileName.DirExists() ) {
-			fileName.Mkdir();
-		}
 		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"rb" );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
@@ -879,13 +876,6 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	u32 clusterNumber;
 	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
 	if ( entry != nullptr ) {
-		if ( !fileName.DirExists() ) {
-			fileName.Mkdir();
-		}
-		if ( !fileName.FileExists() ) {
-			wxFFile createEmptyFile( fileName.GetFullPath(), L"wb" );
-			createEmptyFile.Close();
-		}
 		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"r+b" );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
@@ -1061,6 +1051,16 @@ FileAccessHelper::~FileAccessHelper() {
 
 wxFFile* FileAccessHelper::Open( const wxString& filename, const wxString& mode ) {
 	this->Close();
+
+	wxFileName fn( filename );
+	if ( !fn.FileExists() ) {
+		if ( !fn.DirExists() ) {
+			fn.Mkdir();
+		}
+		wxFFile createEmptyFile( filename, L"wb" );
+		createEmptyFile.Close();
+	}
+
 	m_file = new wxFFile( filename, mode );
 	m_filename = filename;
 	m_mode = mode;
