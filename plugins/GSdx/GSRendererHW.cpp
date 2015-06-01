@@ -41,7 +41,8 @@ void GSRendererHW::SetScaling(){
 
 	m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
 
-	if (m_upscale_multiplier < 6 && (m_width / m_upscale_multiplier) != (m_buffer_size * 64)){
+	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
+	if (m_upscale_multiplier <= 6 && (m_width / m_upscale_multiplier) < (m_buffer_size * 64)){
 		printf("Frame buffer width on vsync %d m_width %d\n", m_buffer_size, (m_width / m_upscale_multiplier));
 		m_tc->RemovePartial();
 	}
@@ -74,7 +75,7 @@ void GSRendererHW::SetScaling(){
 	if (m_upscale_multiplier == 1) {
 		// No upscaling hack at native resolution
 		if (m_nativeres) {
-			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
+			m_width = (m_buffer_size * 64);
 			m_height = m_width; //Keep it square
 		}
 
