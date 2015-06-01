@@ -132,6 +132,30 @@ struct MemoryCardPage {
 #pragma pack(pop)
 
 // --------------------------------------------------------------------------------------
+//  FileAccessHelper
+// --------------------------------------------------------------------------------------
+// Small helper class to keep memory card files opened between calls to Read()/Save() 
+class FileAccessHelper {
+protected:
+	wxFFile* m_file;
+	wxString m_filename;
+	wxString m_mode;
+
+public:
+	FileAccessHelper();
+	~FileAccessHelper();
+
+	// Get an already opened file if possible, or open a new one and remember it
+	wxFFile* ReOpen( const wxString& filename, const wxString& mode );
+	// Close an open file, if any
+	void Close();
+
+protected:
+	// Open a new file and remember it for later
+	wxFFile* Open( const wxString& filename, const wxString& mode );
+};
+
+// --------------------------------------------------------------------------------------
 //  FolderMemoryCard
 // --------------------------------------------------------------------------------------
 // Fakes a memory card using a regular folder/file structure in the host file system
@@ -179,6 +203,9 @@ protected:
 	int m_framesUntilFlush;
 	// used to figure out if contents were changed for savestate-related purposes, see GetCRC()
 	u64 m_timeLastWritten;
+
+	// remembers and keeps the last accessed file open for further access
+	FileAccessHelper m_lastAccessedFile;
 
 	// path to the folder that contains the files of this memory card
 	wxFileName m_folderName;
@@ -316,6 +343,7 @@ protected:
 	// write data as Save() normally would, but ignore the cache; used for flushing
 	s32 WriteWithoutCache( const u8 *src, u32 adr, int size );
 
+	void SetTimeLastReadToNow();
 	void SetTimeLastWrittenToNow();
 
 	

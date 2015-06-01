@@ -39,6 +39,7 @@ void FolderMemoryCard::InitializeInternalData() {
 	m_timeLastWritten = 0;
 	m_isEnabled = false;
 	m_framesUntilFlush = 0;
+	m_lastAccessedFile.Close();
 }
 
 bool FolderMemoryCard::IsFormatted() {
@@ -100,6 +101,8 @@ void FolderMemoryCard::Close() {
 	if ( superBlockFile.IsOpened() ) {
 		superBlockFile.Write( &m_superBlock.raw, sizeof( m_superBlock.raw ) );
 	}
+
+	m_lastAccessedFile.Close();
 }
 
 void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxString& filter ) {
@@ -589,20 +592,20 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 		if ( !fileName.DirExists() ) {
 			fileName.Mkdir();
 		}
-		wxFFile file( fileName.GetFullPath(), L"rb" );
-		if ( file.IsOpened() ) {
+		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"rb" );
+		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileOffset = clusterNumber * ClusterSize + clusterOffset;
 
-			file.Seek( fileOffset );
-			size_t bytesRead = file.Read( dest, dataLength );
+			if ( fileOffset != file->Tell() ) {
+				file->Seek( fileOffset );
+			}
+			size_t bytesRead = file->Read( dest, dataLength );
 
 			// if more bytes were requested than actually exist, fill the rest with 0xFF
 			if ( bytesRead < dataLength ) {
 				memset( &dest[bytesRead], 0xFF, dataLength - bytesRead );
 			}
-
-			file.Close();
 
 			return bytesRead > 0;
 		}
@@ -666,6 +669,8 @@ s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
 		memcpy( dest + eccOffset, ecc, eccLength );
 	}
 
+	SetTimeLastReadToNow();
+
 	// return 0 on fail, 1 on success?
 	return 1;
 }
@@ -712,11 +717,15 @@ s32 FolderMemoryCard::Save( const u8 *src, u32 adr, int size ) {
 void FolderMemoryCard::NextFrame() {
 	if ( m_framesUntilFlush > 0 && --m_framesUntilFlush == 0 ) {
 		Flush();
+		m_lastAccessedFile.Close();
 	}
 }
 
 void FolderMemoryCard::Flush() {
-	Console.WriteLn( L"(FolderMcd) Writing data for slot %u to file system.", m_slot );
+	if ( m_cache.empty() ) { return; }
+
+	Console.WriteLn( L"(FolderMcd) Writing data for slot %u to file system...", m_slot );
+	const u64 timeFlushStart = wxGetLocalTimeMillis().GetValue();
 
 	// first write the superblock if necessary
 	Flush( 0 );
@@ -762,6 +771,10 @@ void FolderMemoryCard::Flush() {
 		Flush( i );
 	}
 
+	m_lastAccessedFile.Close();
+
+	const u64 timeFlushEnd = wxGetLocalTimeMillis().GetValue();
+	Console.WriteLn( L"(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart );
 }
 
 void FolderMemoryCard::Flush( const u32 page ) {
@@ -873,29 +886,31 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 			wxFFile createEmptyFile( fileName.GetFullPath(), L"wb" );
 			createEmptyFile.Close();
 		}
-		wxFFile file( fileName.GetFullPath(), L"r+b" );
-		if ( file.IsOpened() ) {
+		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"r+b" );
+		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileSize = entry->entry.data.length;
 			const u32 fileOffsetStart = std::min( clusterNumber * ClusterSize + clusterOffset, fileSize );;
 			const u32 fileOffsetEnd = std::min( fileOffsetStart + dataLength, fileSize );
 			const u32 bytesToWrite = fileOffsetEnd - fileOffsetStart;
 
-			wxFileOffset actualFileSize = file.Length();
+			wxFileOffset actualFileSize = file->Length();
 			if ( actualFileSize < fileOffsetStart ) {
+				file->Seek( actualFileSize );
 				const u32 diff = fileOffsetStart - actualFileSize;
 				u8 temp = 0xFF;
 				for ( u32 i = 0; i < diff; ++i ) {
-					file.Write( &temp, 1 );
+					file->Write( &temp, 1 );
 				}
 			}
 
-			file.Seek( fileOffsetStart );
-			if ( bytesToWrite > 0 ) {
-				file.Write( src, bytesToWrite );
+			const wxFileOffset fileOffset = file->Tell();
+			if ( fileOffset != fileOffsetStart ) {
+				file->Seek( fileOffsetStart );
 			}
-
-			file.Close();
+			if ( bytesToWrite > 0 ) {
+				file->Write( src, bytesToWrite );
+			}
 		} else {
 			return false;
 		}
@@ -980,6 +995,10 @@ void FolderMemoryCard::SetSizeInMB( u32 megaBytes ) {
 	SetSizeInClusters( ( megaBytes * 1024 * 1024 ) / ClusterSize );
 }
 
+void FolderMemoryCard::SetTimeLastReadToNow() {
+	m_framesUntilFlush = FramesAfterWriteUntilFlush;
+}
+
 void FolderMemoryCard::SetTimeLastWrittenToNow() {
 	m_timeLastWritten = wxGetLocalTimeMillis().GetValue();
 	m_framesUntilFlush = FramesAfterWriteUntilFlush;
@@ -1030,6 +1049,40 @@ void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 
 	return;
 }
+
+
+FileAccessHelper::FileAccessHelper() {
+	m_file = nullptr;
+}
+
+FileAccessHelper::~FileAccessHelper() {
+	this->Close();
+}
+
+wxFFile* FileAccessHelper::Open( const wxString& filename, const wxString& mode ) {
+	this->Close();
+	m_file = new wxFFile( filename, mode );
+	m_filename = filename;
+	m_mode = mode;
+	return m_file;
+}
+
+wxFFile* FileAccessHelper::ReOpen( const wxString& filename, const wxString& mode ) {
+	if ( m_file && mode == m_mode && filename == m_filename ) {
+		return m_file;
+	} else {
+		return this->Open( filename, mode );
+	}
+}
+
+void FileAccessHelper::Close() {
+	if ( m_file ) {
+		m_file->Close();
+		delete m_file;
+		m_file = nullptr;
+	}
+}
+
 
 FolderMemoryCardAggregator::FolderMemoryCardAggregator() {
 	for ( uint i = 0; i < TotalCardSlots; ++i ) {
