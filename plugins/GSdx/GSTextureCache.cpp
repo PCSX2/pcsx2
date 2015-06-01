@@ -40,6 +40,18 @@ GSTextureCache::~GSTextureCache()
 	_aligned_free(m_temp);
 }
 
+void GSTextureCache::RemovePartial()
+{
+	//m_src.RemoveAll();
+
+	for (int type = 0; type < 2; type++)
+	{
+		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+
+		m_dst[type].clear();
+	}
+}
+
 void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
@@ -92,6 +104,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	}
 
 	Target* dst = NULL;
+	bool half_right = false;
 
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if( 0 )
@@ -115,11 +128,23 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			{
 				Target* t = *i;
 
-				if(t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
-				{
-					dst = t;
+				if(t->m_used && t->m_dirty.empty()) {
+					if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+						dst = t;
 
-					break;
+						break;
+
+					} else if ((t->m_TEX0.TBW == 20) && (t->m_TEX0.PSM == 2) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + 0x140, t->m_TEX0.PSM)) {
+						// try to detect render target bigger than 1024 Texels
+						// 0x140: In 16 bits format, pages are 64 pixels and 8KB
+						// Half of 1280 is 640 so 10 pages
+						// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
+
+						half_right = true;
+						dst = t;
+
+						break;
+					}
 				}
 			}
 		}
@@ -136,7 +161,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x)", TEX0.TBP0);
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst);
+		src = CreateSource(TEX0, TEXA, dst, half_right);
 
 		if(src == NULL)
 		{
@@ -336,6 +361,28 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			if(GSUtil::HasSharedBits(bp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
 			{
 				m_src.RemoveAt(s);
+			}
+		}
+
+		if ((bw == 20) && (psm == 2)) {
+			// try to detect render target bigger than 1024 Texels
+			// 0x140: In 16 bits format, pages are 64 pixels and 8KB
+			// Half of 1280 is 640 so 10 pages
+			// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
+			uint32 bbp = bp + 0x140;
+
+			const list<Source*>& m = m_src.m_map[bbp >> 5];
+
+			for(list<Source*>::const_iterator i = m.begin(); i != m.end(); )
+			{
+				list<Source*>::const_iterator j = i++;
+
+				Source* s = *j;
+
+				if(GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
+				{
+					m_src.RemoveAt(s);
+				}
 			}
 		}
 	}
@@ -612,7 +659,7 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
@@ -770,12 +817,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if((sRect == dRect).alltrue())
 		{
-			m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h));
+			// Note: use dstsize.x instead of w because w is limited to 1024 whereas dstsize.x could
+			// be bigger (1280 for snow engine games)
+			if (half_right)
+				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(dstsize.x/2, 0, dstsize.x, h));
+			else
+				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h)); // <= likely wrong dstsize.x could be bigger than w
 		}
 		else
 		{
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
+
+			if (half_right) {
+				sRect.x = sRect.z/2.0f;
+			}
 
 			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, 0, linear);
 		}
