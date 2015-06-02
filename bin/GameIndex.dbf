@@ -1126,6 +1126,12 @@ Serial = SCES-50003
 Name   = Dead or Alive 2 - Hardcore
 Region = PAL-M5
 Compat = 1
+[patches = 7A51F86E]
+//Patched by Prafull
+//Some missing sounds
+patch=0,EE,002b4c44,word,24060000
+patch=0,EE,002b4dc0,word,10000014
+[/patches]
 ---------------------------------------------
 Serial = SCES-50004
 Name   = Formula One 2001
@@ -1676,6 +1682,12 @@ Region = PAL-Unk
 Serial = SCES-51684
 Name   = World Rally Championship 3
 Region = PAL-Unk
+[patches = 80802EA9]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,002aa934,word,00000000
+patch=1,EE,002aa574,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCES-51685
 Name   = Primal
@@ -11548,14 +11560,16 @@ Name   = Neo Contra
 Region = PAL-Unk
 Compat = 4
 [patches = EEE2F6A3]
-	//comment=Patches By Nachbrenner
+	//comment=Patches By Nachbrenner and Prafull
 	
 	//fix IPU busy! ingame
 	patch=0,EE,003a9a88,word,03e00008
 	patch=0,EE,003a9a8c,word,00000000
 	patch=0,EE,003a9b60,word,03e00008
 	patch=0,EE,003a9b64,word,00000000
-	
+	comment= Patch By Prafull
+	//Game should work, avoid pressing start to pause the game
+	patch=1,EE,00100530,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52511
@@ -12335,6 +12349,11 @@ Region = PAL-Unk
 Serial = SLES-52812
 Name   = Disney-Pixar's The Incredibles
 Region = PAL-Unk
+[patches = EBDB6E4B]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010ec20,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52813
 Name   = Incredibles, The
@@ -12351,6 +12370,11 @@ Region = PAL-Unk
 Serial = SLES-52816
 Name   = Incredibles, The
 Region = PAL-Unk
+[patches = 197641AA]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010ec20,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52820
 Name   = Incredibles, The
@@ -12505,6 +12529,11 @@ Serial = SLES-52895
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-Unk
 Compat = 2
+[patches = 536FEB77]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010f3e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52896
 Name   = Spongebob Squarepants - The Movie
@@ -12724,10 +12753,20 @@ Region = PAL-Unk
 Serial = SLES-52985
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-Unk
+[patches = B3C11E2D]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010f3e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52986
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-Unk
+[patches = 34DA05D2]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010f3e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52988
 Name   = MegaMan X8
@@ -33557,24 +33596,24 @@ Name   = Dead or Alive 2
 Region = NTSC-U
 Compat = 5
 [patches = 23AF6876]
+//dvd version
 	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
 	patch=0,EE,002b06ec,word,24060000
 
-	//patch=0,EE,002b0868,word,10000014
+	//Patch by Prafull after combining pseudonym's gamefix and benji229's patch
+	//skips some sound but game works
+	patch=0,EE,002b06ec,word,24060000
+	patch=0,EE,002b0868,word,10000014
+[/patches]
+[patches = 51068006]
+//cd version
+	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
+	patch=0,EE,002b06ec,word,24060000
 
-	// don't ask
-	//patch=0,EE,002B00B8,word,FFB00010
-	//patch=0,EE,002B00BC,word,3C140067
-	//patch=0,EE,002B00C0,word,2690C0C0
-	//patch=0,EE,002B00C4,word,0C0EBA28
-	//patch=0,EE,002B00C8,word,0200202D
-	//patch=0,EE,002B00CC,word,5440FFFD
-	//patch=0,EE,002B00D0,word,2690C0C0
-	//patch=0,EE,002B00D4,word,1040000B
-	//patch=0,EE,002B00D8,word,3253FFF0
-	//patch=0,EE,002B00DC,word,3402C020
-	//patch=0,EE,002B00E0,word,12620009
-	//patch=0,EE,002B00E4,word,3C150067
+	//Patch by Prafull after combining pseudonym's gamefix and benji229's patch
+	//skips some sound but game works
+	patch=0,EE,002b06ec,word,24060000
+	patch=0,EE,002b0868,word,10000014
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20072
@@ -37508,11 +37547,12 @@ Compat = 4
 	comment=Patches By Nachbrenner
 	
 	//fix IPU busy! ingame
-	//patch=0,EE,003a9538,word,03e00008
-	//patch=0,EE,003a953c,word,00000000
+	patch=0,EE,003a9538,word,03e00008
+	patch=0,EE,003a953c,word,00000000
 	
 	patch=0,EE,003a9460,word,03e00008
 	patch=0,EE,003a9464,word,00000000
+	patch=1,EE,00100530,word,00000000
 	
 [/patches]
 ---------------------------------------------
@@ -38736,6 +38776,11 @@ Serial = SLUS-21217
 Name   = Incredibles, The - Rise of the Underminers
 Region = NTSC-U
 Compat = 3
+[patches = 6DFE8ED7]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,001110e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21218
 Name   = Tak - The Great Juju Challenge
@@ -40567,6 +40612,11 @@ Serial = SLUS-21632
 Name   = NHL 2K8
 Region = NTSC-U
 Compat = 3
+[patches = 77B49EF8]
+//Patched by Prafull-thanks to harsh
+//Avoid hang at start
+patch=0,EE,00432310,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21633
 Name   = Aqua Teen Hunger Force - Zombie Ninja Pro-Am
