@@ -335,7 +335,13 @@ protected:
 	void Flush();
 
 	// flush a single page of the cache to the internal data and/or host file system
-	void Flush( const u32 page );
+	void FlushPage( const u32 page );
+
+	// flush a memory card cluster of the cache to the internal data and/or host file system
+	void FlushCluster( const u32 cluster );
+
+	// flush a whole memory card block of the cache to the internal data and/or host file system
+	void FlushBlock( const u32 block );
 
 	// flush a directory's file entries and all its subdirectories to the internal data
 	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"" );

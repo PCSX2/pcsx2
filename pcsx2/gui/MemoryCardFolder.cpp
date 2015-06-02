@@ -734,7 +734,7 @@ void FolderMemoryCard::Flush() {
 	const u64 timeFlushStart = wxGetLocalTimeMillis().GetValue();
 
 	// first write the superblock if necessary
-	Flush( 0 );
+	FlushBlock( 0 );
 	if ( !IsFormatted() ) { return; }
 
 	const u32 clusterCount = GetSizeInClusters();
@@ -744,9 +744,7 @@ void FolderMemoryCard::Flush() {
 	for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 		const u32 cluster = m_superBlock.data.ifc_list[i];
 		if ( cluster > 0 && cluster < clusterCount ) {
-			const u32 page = cluster * 2;
-			Flush( page );
-			Flush( page + 1 );
+			FlushCluster( cluster );
 		}
 	}
 
@@ -755,18 +753,14 @@ void FolderMemoryCard::Flush() {
 		for ( int j = 0; j < ClusterSize / 4; ++j ) {
 			const u32 cluster = m_indirectFat.data[i][j];
 			if ( cluster > 0 && cluster < clusterCount ) {
-				const u32 page = cluster * 2;
-				Flush( page );
-				Flush( page + 1 );
+				FlushCluster( cluster );
 			}
 		}
 	}
 
 	// then all directory and file entries
 	const u32 rootDirCluster = m_superBlock.data.rootdir_cluster;
-	const u32 rootDirPage = ( rootDirCluster + m_superBlock.data.alloc_offset ) * 2;
-	Flush( rootDirPage );
-	Flush( rootDirPage + 1 );
+	FlushCluster( rootDirCluster + m_superBlock.data.alloc_offset );
 	MemoryCardFileEntryCluster* rootEntries = &m_fileEntryDict[rootDirCluster];
 	if ( rootEntries->entries[0].IsValid() && rootEntries->entries[0].IsUsed() ) {
 		FlushFileEntries( rootDirCluster, rootEntries->entries[0].entry.data.length );
@@ -774,7 +768,7 @@ void FolderMemoryCard::Flush() {
 
 	// and finally, flush everything that hasn't been flushed yet
 	for ( uint i = 0; i < pageCount; ++i ) {
-		Flush( i );
+		FlushPage( i );
 	}
 
 	m_lastAccessedFile.Close();
@@ -783,7 +777,7 @@ void FolderMemoryCard::Flush() {
 	Console.WriteLn( L"(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart );
 }
 
-void FolderMemoryCard::Flush( const u32 page ) {
+void FolderMemoryCard::FlushPage( const u32 page ) {
 	auto it = m_cache.find( page );
 	if ( it != m_cache.end() ) {
 		WriteWithoutCache( &it->second.raw[0], page * PageSizeRaw, PageSize );
@@ -791,11 +785,22 @@ void FolderMemoryCard::Flush( const u32 page ) {
 	}
 }
 
+void FolderMemoryCard::FlushCluster( const u32 cluster ) {
+	const u32 page = cluster * 2;
+	FlushPage( page );
+	FlushPage( page + 1 );
+}
+
+void FolderMemoryCard::FlushBlock( const u32 block ) {
+	const u32 page = block * 16;
+	for ( int i = 0; i < 16; ++i ) {
+		FlushPage( page + i );
+	}
+}
+
 void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath ) {
 	// flush the current cluster
-	const u32 page = ( dirCluster + m_superBlock.data.alloc_offset ) * 2;
-	Flush( page );
-	Flush( page + 1 );
+	FlushCluster( dirCluster + m_superBlock.data.alloc_offset );
 
 	// if either of the current entries is a subdir, flush that too
 	MemoryCardFileEntryCluster* entries = &m_fileEntryDict[dirCluster];
