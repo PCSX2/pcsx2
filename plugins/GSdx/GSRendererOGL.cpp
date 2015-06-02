@@ -536,7 +536,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				: (context->TEX0.PSM == 0x24) ? 2
 				: (context->TEX0.PSM == 0x2C) ? 1
 				: 0;
-			GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
+			//GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
 		} else {
 			ps_sel.fmt = cpsm.fmt;
 		}
