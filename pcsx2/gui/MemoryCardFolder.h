@@ -191,7 +191,10 @@ protected:
 		u8 raw[IndirectFatClusterCount][ClusterSize / 4][ClusterSize];
 	} m_fat;
 	u8 m_backupBlock1[BlockSize];
-	u8 m_backupBlock2[BlockSize];
+	union backupBlock2Union {
+		u32 programmedBlock;
+		u8 raw[BlockSize];
+	} m_backupBlock2;
 
 	// stores directory and file metadata
 	std::map<u32, MemoryCardFileEntryCluster> m_fileEntryDict;

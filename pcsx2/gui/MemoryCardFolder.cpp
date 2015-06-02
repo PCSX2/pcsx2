@@ -487,7 +487,7 @@ u8* FolderMemoryCard::GetSystemBlockPointer( const u32 adr ) {
 	} else if ( block == m_superBlock.data.backup_block1 ) {
 		src = &m_backupBlock1[( page % 16 ) * PageSize + offset];
 	} else if ( block == m_superBlock.data.backup_block2 ) {
-		src = &m_backupBlock2[( page % 16 ) * PageSize + offset];
+		src = &m_backupBlock2.raw[( page % 16 ) * PageSize + offset];
 	} else {
 		// trying to access indirect FAT?
 		for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
@@ -736,6 +736,14 @@ void FolderMemoryCard::Flush() {
 	// first write the superblock if necessary
 	FlushBlock( 0 );
 	if ( !IsFormatted() ) { return; }
+
+	// check if we were interrupted in the middle of a save operation, if yes abort
+	FlushBlock( m_superBlock.data.backup_block1 );
+	FlushBlock( m_superBlock.data.backup_block2 );
+	if ( m_backupBlock2.programmedBlock != 0xFFFFFFFFu ) {
+		Console.Warning( L"(FolderMcd) Aborting flush of slot %u, emulation was interrupted during save process!", m_slot );
+		return;
+	}
 
 	const u32 clusterCount = GetSizeInClusters();
 	const u32 pageCount = clusterCount * 2;
