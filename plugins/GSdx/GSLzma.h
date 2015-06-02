@@ -28,12 +28,13 @@ class GSDumpFile {
 	protected:
 	FILE*		m_fp;
 
-	GSDumpFile(char* filename);
-	virtual ~GSDumpFile();
 
 	public:
 	virtual bool IsEof() = 0;
 	virtual void Read(void* ptr, size_t size) = 0;
+
+	GSDumpFile(char* filename);
+	virtual ~GSDumpFile();
 };
 
 #ifdef LZMA_SUPPORTED

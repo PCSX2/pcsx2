@@ -1581,6 +1581,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			packets.push_back(p);
 		}
 
+		delete file;
 	}
 
 	sleep(1);
