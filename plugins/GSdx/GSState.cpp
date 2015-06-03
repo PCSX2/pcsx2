@@ -50,9 +50,9 @@ GSState::GSState()
 	s_save  = !!theApp.GetConfig("save", 0);
 	s_savet = !!theApp.GetConfig("savet", 0);
 	s_savez = !!theApp.GetConfig("savez", 0);
-	s_saven = !!theApp.GetConfig("saven", 0);
 	s_savef = !!theApp.GetConfig("savef", 0);
-	s_savel = !!theApp.GetConfig("savel", 5000);
+	s_saven = theApp.GetConfig("saven", 0);
+	s_savel = theApp.GetConfig("savel", 5000);
 #ifdef __linux__
 	if (s_dump) {
 		mkdir("/tmp/GS_HW_dump", 0777);
