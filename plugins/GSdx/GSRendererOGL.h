@@ -31,7 +31,7 @@ class GSRendererOGL : public GSRendererHW
 {
 	private:
 		GSVector2 m_pixelcenter;
-		bool m_accurate_blend;
+		int  m_accurate_blend;
 		bool m_accurate_date;
 		bool m_accurate_colclip;
 
