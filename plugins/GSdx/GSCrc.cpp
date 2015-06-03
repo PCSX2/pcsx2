@@ -65,7 +65,7 @@ CRC::Game CRC::m_games[] =
 	{0x280AD120, FFXII, JP, 0},
 	{0x08C1ED4D, HauntingGround, EU, 0},
 	{0x2CD5794C, HauntingGround, EU, 0},
-	//duplicate crc with genji.. {0x7D4EA48F, HauntingGround, EU, 0},
+	// {0x7D4EA48F, HauntingGround, EU, 0}, // same CRC as {Genji, EU}
 	{0x867BB945, HauntingGround, JP, 0},
 	{0xE263BC4B, HauntingGround, JP, 0},
 	{0x901AAC09, HauntingGround, US, 0},
@@ -130,7 +130,8 @@ CRC::Game CRC::m_games[] =
 	{0xB01A4C95, ICO, JP, 0},
 	{0x2DF2C1EA, ICO, KO, 0},
 	{0x5C991F4E, ICO, EU, 0},
-	{0x7ACF7E03, ICO, NoRegion, 0},
+	{0x7ACF7E03, ICO, NoRegion, 0}, // same CRC as {SpyroNewBeginning, NoRegion}
+	// and as "Twisted Metal - Black" (PAL).
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
 	{0xAEAD1CA3, GT4, JP, 0},
@@ -165,7 +166,6 @@ CRC::Game CRC::m_games[] =
 	{0x5188ABCA, CrashBandicootWoC, US, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
 	{0x013E349D, ResidentEvil4, US, 0},
-	// same CRC as EU {0x6BA2F6B9, ResidentEvil4, NoRegion, 0},
 	{0xDBB7A559, ResidentEvil4, US, 0},
 	{0x6BA2F6B9, ResidentEvil4, EU, 0},
 	{0x60FA8C69, ResidentEvil4, JP, 0},
@@ -197,11 +197,9 @@ CRC::Game CRC::m_games[] =
 	{0xA61A4C6D, GodOfWar, US, 0},
 	{0xE23D532B, GodOfWar, NoRegion, 0},
 	{0xDF1AF973, GodOfWar, EU, 0},
-	// same CRC as US {0xD6385328, GodOfWar, NoRegion, 0},
 	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
 	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
-	//same crc as the US version. {0x2F123FD8, GodOfWar2, RU, 0},
-	{0x2F123FD8, GodOfWar2, US, 0},
+	{0x2F123FD8, GodOfWar2, US, 0}, // same CRC as RU
 	{0x44A8A22A, GodOfWar2, EU, 0},
 	{0x60BC362B, GodOfWar2, EU, 0},
 	{0x4340C7C6, GodOfWar2, KO, 0},
@@ -216,12 +214,11 @@ CRC::Game CRC::m_games[] =
 	{0x5D482F18, JackieChanAdv, EU, 0},
 	{0xF0A6D880, HarvestMoon, US, 0},
 	{0x9536E111, NamcoXCapcom, JP, 0},
-	{0x75C01A04, NamcoXCapcom, US, 0},
-	//Same CRC also reported as EU, and we have another US crc... {0xBF6F101F, GiTS, US, 0},
-	{0x95CC86EF, GiTS, US, 0},
+	{0x75C01A04, NamcoXCapcom, US, 0}, // same CRC as another JP disc
+	{0x95CC86EF, GiTS, US, 0}, // same CRC also reported as EU
 	{0xA5768F53, GiTS, JP, 0},
 	{0xA3643EB1, GiTS, KO, 0},
-	{0xBF6F101F, GiTS, EU, 0},
+	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
 	{0x6BF11378, Onimusha3, US, 0},
 	{0x71320CA8, Onimusha3, JP, 0},
 	{0xDAFFFB0D, Onimusha3, KO, 0},
@@ -243,7 +240,7 @@ CRC::Game CRC::m_games[] =
 	{0x56242EC9, Genji, KO, 0},
 	{0xCDAF243D, Genji, CH, 0}, 
 	{0x2A5E0B61, Genji, CH, 0},
-	{0x7D4EA48F, Genji, EU, 0},
+	{0x7D4EA48F, Genji, EU, 0}, // same CRC as {HauntingGround, EU}
 	{0xE04EA200, StarOcean3, EU, 0},
 	{0x23A97857, StarOcean3, US, 0},
 	{0xBEC32D49, StarOcean3, JP, 0},
@@ -359,7 +356,7 @@ CRC::Game CRC::m_games[] =
 	{0x2088950A, XE3, US, 0},
 	// DMC(1)? {0x79B8A95F, DevilMayCry3, US, 0},
 	{0x7F3D692D, DevilMayCry3, CH, 0},
-	//duplicate crc with GOW1... {0x1A85E924, DevilMayCry3, CH, 0},
+	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}
 	{0x0a8ef911, ArctheLad, US, 0}, // cutie comment
 	{0x2C5E7DEA, ArctheLad, CH, 0},
 	{0xE69E7F58, ArctheLad, US, 0}, // cutie comment
@@ -394,8 +391,8 @@ CRC::Game CRC::m_games[] =
 	{0x115A184D, DigimonRumbleArena2, KO, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
-	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0},		//EU and US versions have same CRC
-	{0x02F4B541, StarWarsBattlefront2, NoRegion, 0},	//EU and US versions have same CRC
+	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0},  // EU and US versions have the same CRC
+	{0x02F4B541, StarWarsBattlefront2, NoRegion, 0}, // EU and US versions have the same CRC
 	{0xA8DB29DF, BlackHawkDown, EU, 0},
 	{0x25FC361B, DevilMayCry3, US, 0},	//SE
 	{0x2F7D8AD5, DevilMayCry3, US, 0},
@@ -422,7 +419,8 @@ CRC::Game CRC::m_games[] =
 	{0xB78A5F5A, CallofDutyFinalFronts, EU, 0},
 	{0xD03D4C77, SpyroNewBeginning, US, 0},
 	{0x0EE5646B, SpyroNewBeginning, EU, 0},
-	//duplicate crc with ico... {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0},
+	// {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0}, // same CRC as {ICO, NoRegion}
+	//  and as "Twisted Metal - Black" (PAL).
 	{0xB80CE8EC, SpyroEternalNight, US, 0},
 	{0x8AE9536D, SpyroEternalNight, EU, 0},
 	{0xC95F0198, SpyroEternalNight, NoRegion, 0},
