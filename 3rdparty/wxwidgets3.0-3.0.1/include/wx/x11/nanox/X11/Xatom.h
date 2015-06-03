@@ -1,6 +1,0 @@
-
-/*
- * Xlib compatibility
- */
-
-/* Nothing yet */
