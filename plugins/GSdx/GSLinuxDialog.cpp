@@ -288,6 +288,9 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
 	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
 
+	GtkWidget* crc_label     = gtk_label_new("Automatic CRC level:");
+	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level", 3);
+
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
 	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", true);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
@@ -301,13 +304,16 @@ void populate_hw_table(GtkWidget* hw_table)
 	gtk_widget_set_tooltip_text(acc_date_check, dialog_message(IDC_ACCURATE_DATE));
 	gtk_widget_set_tooltip_text(acc_cclip_check, dialog_message(IDC_ACCURATE_COLCLIP));
 	gtk_widget_set_tooltip_text(MT_nvidia_check, "Huge speedup on Nvidia binary driver! No effect otherwise.");
+	gtk_widget_set_tooltip_text(crc_label, dialog_message(IDC_CRC_LEVEL));
+	gtk_widget_set_tooltip_text(crc_combo_box, dialog_message(IDC_CRC_LEVEL));
 
 	s_table_line = 0;
-	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
-	InsertWidgetInTable(hw_table, af_label, af_combo_box);
 	InsertWidgetInTable(hw_table, paltex_check, MT_nvidia_check);
 	InsertWidgetInTable(hw_table, acc_blend_check, acc_date_check);
 	InsertWidgetInTable(hw_table, acc_cclip_check);
+	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
+	InsertWidgetInTable(hw_table, af_label, af_combo_box);
+	InsertWidgetInTable(hw_table, crc_label, crc_combo_box);
 }
 
 void populate_gl_table(GtkWidget* gl_table)
