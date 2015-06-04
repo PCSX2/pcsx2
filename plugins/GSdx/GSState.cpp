@@ -1592,6 +1592,12 @@ void GSState::Move()
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
+	GL_CACHE("Move! %05x %d %d => %05x %d %d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM,
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+		sx, sy, dx, dy, w, h);
+
 	InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(m_env.BITBLTBUF, GSVector4i(dx, dy, dx + w, dy + h));
 
