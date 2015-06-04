@@ -58,11 +58,9 @@ void GSRendererHW::SetScaling() {
 
 	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
 		m_height = (m_buffer_size * 64) <= 640 ? 512 : (int)((m_buffer_size * 64)*0.8);
-		printf("fb");
 	}
 	else {
 		m_height = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPLAY.DH + 1;
-		printf("ds");
 	}
 
 	if (!m_nativeres)
