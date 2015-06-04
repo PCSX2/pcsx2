@@ -39,13 +39,24 @@
 #define float2 vec2
 #define float3 vec3
 #define float4 vec4
-#define float4x3 mat4x3
+#define float3x3 mat3
+#define float4x4 mat4
 #define static
 #define frac fract
-#define mul(x, y) y * x
+#define mul(x, y) x * y
 #define lerp(x,y,s) mix(x,y,s)
 #define saturate(x) clamp(x, 0.0, 1.0)
 #define SamplerState sampler2D
+
+#define matrix4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
+    mat4(a0, b0, c0, d0, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3);
+
+#define matrix3(a0, a1, a2, b0, b1, b2, c0, c1, c2) \
+    mat3(a0, b0, c0, a1, b1, c1, a2, b2, c2);
+
+// Yes it sucks!
+#define matrix4x3(v0, v1, v2, v3) \
+    mat3x4(v0.x, v1.x, v2.x, v3.x, v0.y, v1.y, v2.y, v3.y, v0.z, v1.z, v2.z, v3.z);
 
 struct vertex_basic
 {
@@ -74,6 +85,15 @@ layout(std140, binding = 14) uniform cb10
 };
 
 #else
+
+#define matrix4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
+    float4x4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3);
+
+#define matrix3(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
+    float3x3(a0, a1, a2, b0, b1, b2, c0, c1, c2);
+
+#define matrix4x3(v0, v1, v2, v3) \
+    float4x3(v0, v1, v2, v3);
 
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
@@ -793,13 +813,8 @@ float4 BicubicScaler(in SamplerState tex, in float2 uv, in float2 texSize)
     float2 index = floor(coord_hg);
     float2 f = coord_hg - index;
 
-    #if (GLSL == 1)
-    mat4 M = mat4( -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
-                   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 );
-    #else
-    float4x4 M = { -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
-                   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
-    #endif
+    float4x4 M = matrix4(-1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+                   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0);
     M /= 6.0;
 
     float4 wx = mul(float4(f.x*f.x*f.x, f.x*f.x, f.x, 1.0), M);
@@ -867,7 +882,7 @@ float4 WeightQuad(float x)
 
 float3 LineRun(float ypos, float4 xpos, float4 linetaps)
 {
-    return mul(linetaps, float4x3(
+    return mul(linetaps, matrix4x3(
     PixelPos(xpos.x, ypos),
     PixelPos(xpos.y, ypos),
     PixelPos(xpos.z, ypos),
@@ -890,7 +905,7 @@ float4 LanczosScaler(float2 texcoord, float2 inputSize)
     float4 columntaps = WeightQuad(f.y);
 
     // final sum and weight normalization
-    return float4(mul(columntaps, float4x3(
+    return float4(mul(columntaps, matrix4x3(
     LineRun(xystart.y, xpos, linetaps),
     LineRun(xystart.y + stepxy.y, xpos, linetaps),
     LineRun(xystart.y + stepxy.y * 2.0, xpos, linetaps),
@@ -1241,22 +1256,11 @@ float4 TonemapPass(float4 color, float2 texcoord)
     if (TonemapType == 1) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
-    #if (GLSL == 1)
-    // GLSL is column major whereas HLSL is row major ...
-    const mat3 RGB2XYZ = mat3 ( 0.4124564, 0.2126729, 0.0193339,   // first column (not row)
-                                0.3575761, 0.7151522, 0.1191920,   // 2nd column
-                                0.1804375, 0.0721750, 0.9503041 ); // 3rd column
-    #else
-    const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
+    const float3x3 RGB2XYZ = matrix3(0.4124564, 0.3575761, 0.1804375,
                                0.2126729, 0.7151522, 0.0721750,
-                               0.0193339, 0.1191920, 0.9503041 };
-    #endif
+                               0.0193339, 0.1191920, 0.9503041);
 
-    #if (GLSL == 1)
-    float3 XYZ = RGB2XYZ * color.rgb;
-    #else
     float3 XYZ = mul(RGB2XYZ, color.rgb);
-    #endif
 
     // XYZ -> Yxy conversion
     float3 Yxy;
@@ -1283,22 +1287,11 @@ float4 TonemapPass(float4 color, float2 texcoord)
     if (CorrectionPalette == 3) { XYZ.rgb = ColorCorrection(XYZ.rgb); }
 
     // XYZ -> RGB conversion
-    #if (GLSL == 1)
-    // GLSL is column major whereas HLSL is row major ...
-    const mat3 XYZ2RGB = mat3 ( 3.2404542, -0.9692660,  0.0556434,   // first column (not row)
-                               -1.5371385,  1.8760108, -0.2040259,   // 2nd column
-                               -0.4985314,  0.0415560,  1.0572252 ); // 3rd column
-    #else
-    const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
+    const float3x3 XYZ2RGB = matrix3(3.2404542,-1.5371385,-0.4985314,
                               -0.9692660, 1.8760108, 0.0415560,
-                               0.0556434,-0.2040259, 1.0572252 };
-    #endif
+                               0.0556434,-0.2040259, 1.0572252);
 
-    #if (GLSL == 1)
-    color.rgb = XYZ2RGB * XYZ;
-    #else
     color.rgb = mul(XYZ2RGB, XYZ);
-    #endif
     color.a = RGBLuminance(color.rgb);
 
     return color;
@@ -1371,38 +1364,20 @@ float4 ContrastPass(float4 color, float2 texcoord)
 #if (CEL_SHADING == 1)
 float3 GetYUV(float3 RGB)
 {
-    #if (GLSL == 1)
-    const mat3 RGB2YUV = mat3(0.2126, 0.7152, 0.0722,
-                             -0.09991,-0.33609, 0.436,
-                              0.615, -0.55861, -0.05639);
-
-    return (RGB * RGB2YUV);
-    #else
-    const float3x3 RGB2YUV = { 0.2126, 0.7152, 0.0722,
+    const float3x3 RGB2YUV = matrix3(0.2126, 0.7152, 0.0722,
                               -0.09991,-0.33609, 0.436,
-                               0.615, -0.55861, -0.05639 };
+                               0.615, -0.55861, -0.05639);
 
     return mul(RGB2YUV, RGB);
-
-    #endif
 }
 
 float3 GetRGB(float3 YUV)
 {
-    #if (GLSL == 1)
-    const mat3 YUV2RGB = mat3(1.000, 0.000, 1.28033,
-                              1.000,-0.21482,-0.38059,
-                              1.000, 2.12798, 0.000);
-
-    return (YUV * YUV2RGB);
-    #else
-    const float3x3 YUV2RGB = { 1.000, 0.000, 1.28033,
+    const float3x3 YUV2RGB = matrix3(1.000, 0.000, 1.28033,
                                1.000,-0.21482,-0.38059,
-                               1.000, 2.12798, 0.000 };
+                               1.000, 2.12798, 0.000);
 
     return mul(YUV2RGB, YUV);
-
-    #endif
 }
 
 float4 CelPass(float4 color, float2 texcoord)
