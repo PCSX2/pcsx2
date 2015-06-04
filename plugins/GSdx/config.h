@@ -49,7 +49,7 @@
 //#define ENABLE_OPENCL
 #endif
 
-#if defined(__linux__)
+#if defined(__linux__) && PNGPP_SUPPORTED
 // Allow to dump texture as PNG (require libpng++). It reduces the size of the dump
 // and alpha is well supported (on linux)
 #define ENABLE_OGL_PNG
