@@ -613,7 +613,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Compute the blending equation to detect special case
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || (m_accurate_blend > 1);
+	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
+	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw;
 
 	if (sw_blending && om_bsel.abe) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
