@@ -36,7 +36,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 }
 
-void GSRendererHW::SetScaling(){
+void GSRendererHW::SetScaling() {
 	int env = IsEnabled(1) ? 1 : 0;
 
 	m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
@@ -64,7 +64,9 @@ void GSRendererHW::SetScaling(){
 		else if (m_upscale_multiplier > 1)
 		{
 			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
-			m_height = m_width; //Keep it square
+			// A square RT consumes too much memory (Gran Turismo 4)
+			// Let's keep the smallest size as possible
+			m_height = 512 * m_upscale_multiplier; //m_height = m_width; //Keep it square
 		}
 	}
 	else
