@@ -23,8 +23,8 @@
 #include "GSRendererHW.h"
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
-	: m_width(1024)
-	, m_height(1024)
+	: m_width(640)
+	, m_height(512)
 	, m_skip(0)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
@@ -37,25 +37,42 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 }
 
 void GSRendererHW::SetScaling() {
-	int env = IsEnabled(1) ? 1 : 0;
 
-	m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
-
+	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
+		m_buffer_size = m_context->FRAME.FBW;
+	}
+	else {
+		m_buffer_size = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW;
+	}
+	//m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
+	
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
-	if (m_upscale_multiplier <= 6 && (m_width / m_upscale_multiplier) < (m_buffer_size * 64)){
-		printf("Frame buffer width on vsync %d m_width %d\n", m_buffer_size, (m_width / m_upscale_multiplier));
+	if (m_width < ((m_buffer_size * 64) * m_upscale_multiplier)){
 		m_tc->RemovePartial();
 	}
 	else {
 		return;
 	}
 
+	//printf("FBW1 %d FBW2 %d Context FBW %d PMODE 1 %d 2 %d", m_regs->DISP[0].DISPFB.FBW, m_regs->DISP[1].DISPFB.FBW, m_context->FRAME.FBW, m_regs->PMODE.EN1, m_regs->PMODE.EN2);
+
+	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
+		m_height = (m_buffer_size * 64) <= 640 ? 512 : (int)((m_buffer_size * 64)*0.8);
+		printf("fb");
+	}
+	else {
+		m_height = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPLAY.DH + 1;
+		printf("ds");
+	}
+
 	if (!m_nativeres)
 	{
-		m_width = theApp.GetConfig("resx", m_width);
-		m_height = theApp.GetConfig("resy", m_height);
-
 		m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
+
+		if (m_upscale_multiplier == 1) { //Custom
+			m_width = theApp.GetConfig("resx", m_width);
+			m_height = theApp.GetConfig("resy", m_height);
+		}
 
 		if (m_upscale_multiplier > 6)
 		{
@@ -65,8 +82,9 @@ void GSRendererHW::SetScaling() {
 		{
 			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
 			// A square RT consumes too much memory (Gran Turismo 4)
-			// Let's keep the smallest size as possible
-			m_height = 512 * m_upscale_multiplier; //m_height = m_width; //Keep it square
+			//Smaller resolutions can be strange, but if it's huge they are generally uniform.
+			//Watch this bite me in the ass :P
+			m_height *= m_upscale_multiplier;
 		}
 	}
 	else
@@ -78,13 +96,12 @@ void GSRendererHW::SetScaling() {
 		// No upscaling hack at native resolution
 		if (m_nativeres) {
 			m_width = (m_buffer_size * 64);
-			m_height = m_width; //Keep it square
 		}
 
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = 0;
 	}
-	printf("Frame buffer width %d m_width set to %d multiplier %d", m_buffer_size, m_width, m_upscale_multiplier);
+	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
