@@ -3002,6 +3002,7 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 
 // hacks
 #define Aggresive (s_crc_hack_level > 3)
+#define Dx_only   (s_crc_hack_level > 2)
 
 struct GSFrameInfo
 {
@@ -3827,9 +3828,10 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
         {
 			skip = 1;
         }
-		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
+		else if(Dx_only && fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
+			// Fixed on openGL
 			skip = 1000;
 		}
 	}
@@ -5451,8 +5453,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 		map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		map[CRC::Genji] = GSC_Genji;
-		map[CRC::StarOcean3] = GSC_StarOcean3;
-		map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		map[CRC::RadiataStories] = GSC_RadiataStories;
 		map[CRC::HauntingGround] = GSC_HauntingGround;
 		map[CRC::EvangelionJo] = GSC_EvangelionJo;
@@ -5482,8 +5482,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-		map[CRC::CastlevaniaCoD] = GSC_Castlevania;
-		map[CRC::CastlevaniaLoI] = GSC_Castlevania;
 		map[CRC::CrashNburn] = GSC_CrashNburn;
 		map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
@@ -5538,6 +5536,16 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+
+		// Hack that were fixed on openGL
+		if (Dx_only) {
+			// This one requires accurate_colclip
+			map[CRC::CastlevaniaCoD] = GSC_Castlevania;
+			map[CRC::CastlevaniaLoI] = GSC_Castlevania;
+
+			map[CRC::StarOcean3] = GSC_StarOcean3;
+			map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+		}
 	}
 
 	// TODO: just set gsc in SetGameCRC once
