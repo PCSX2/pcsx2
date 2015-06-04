@@ -30,6 +30,21 @@ const char* dialog_message(int ID, bool* updateText) {
 		*updateText = true;
 	switch (ID)
 	{
+#ifdef __linux__
+		case IDC_CRC_LEVEL:
+			return "Control the number of Auto-CRC hacks applyed to the game.\n\n"
+				"None       : Remove nearly all CRC hacks (debug only).\n\n"
+				"Minimum    : Enable a couple of CRC hacks (23).\n\n"
+				"Partial    : Enable most of the CRC hacks. It is the recommended setting for OpenGL users."
+				"Note, it might require accurate options.\n\n"
+				"Full       : Enable all CRC hacks. It is recommended setting for Dx users.\n\n"
+				"Aggressive : Use more aggressive CRC hacks on some games.\n"
+				"    Only affects few games, removing some effects which might make the image sharper/clearer.\n"
+				"    Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
+				"    Works as a speedhack for: Steambot Chronicles.";
+
+
+#endif
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_STATIC_SKIPDRAW:

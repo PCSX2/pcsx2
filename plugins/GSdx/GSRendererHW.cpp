@@ -98,7 +98,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 
 bool GSRendererHW::CanUpscale()
 {
-	if(m_hacks.m_cu && !(this->*m_hacks.m_cu)())
+	if(m_crc_hack_level && m_hacks.m_cu && !(this->*m_hacks.m_cu)())
 	{
 		return false;
 	}
@@ -447,7 +447,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
+	if(m_crc_hack_level && m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -542,7 +542,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	if(m_hacks.m_oo)
+	if(m_crc_hack_level && m_hacks.m_oo)
 	{
 		(this->*m_hacks.m_oo)();
 	}
@@ -639,6 +639,8 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
 }
+
+// OI (others input?/implementation?) hacks replace current draw call
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
@@ -1125,6 +1127,8 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 	return true;
 }
 
+// OO (others output?) hacks: invalidate extra local memory after the draw call
+
 void GSRendererHW::OO_DBZBT2()
 {
 	// palette readback (cannot detect yet, when fetching the texture later)
@@ -1161,6 +1165,8 @@ void GSRendererHW::OO_MajokkoALaMode2()
 		InvalidateLocalMem(BITBLTBUF, GSVector4i(0, 0, 16, 16));
 	}
 }
+
+// Can Upscale hacks: disable upscaling for some draw calls
 
 bool GSRendererHW::CU_DBZBT2()
 {
