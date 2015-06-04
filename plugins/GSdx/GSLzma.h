@@ -64,8 +64,6 @@ class GSDumpLzma : public GSDumpFile {
 
 class GSDumpRaw : public GSDumpFile {
 
-	lzma_stream m_strm;
-
 	size_t		m_buff_size;
 	uint8_t*	m_area;
 	uint8_t*	m_inbuf;
