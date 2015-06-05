@@ -101,6 +101,7 @@ GSDeviceOGL::~GSDeviceOGL()
 	for (size_t i = 0; i < countof(m_convert.ps); i++)
 		m_shader->Delete(m_convert.ps[i]);
 	delete m_convert.dss;
+	delete m_convert.dss_write;
 	delete m_convert.bs;
 
 	// Clean m_fxaa
@@ -256,8 +257,11 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	bilinear.ltf = true;
 	m_convert.ln = GetSamplerID(bilinear);
 
-	m_convert.dss = new GSDepthStencilOGL();
 	m_convert.bs  = new GSBlendStateOGL();
+	m_convert.dss = new GSDepthStencilOGL();
+	m_convert.dss_write = new GSDepthStencilOGL();
+	m_convert.dss_write->EnableDepth();
+	m_convert.dss_write->SetDepth(GL_ALWAYS, true);
 
 	// ****************************************************************
 	// merge
@@ -734,6 +738,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
+	bool draw_in_depth = (ps == m_convert.ps[12]);
+
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
 	// see https://www.opengl.org/wiki/Framebuffer#Blitting
@@ -760,9 +766,16 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// om
 	// ************************************
 
-	OMSetDepthStencilState(m_convert.dss, 0);
+	if (draw_in_depth)
+		OMSetDepthStencilState(m_convert.dss_write, 0);
+	else
+		OMSetDepthStencilState(m_convert.dss, 0);
+
 	OMSetBlendState(bs, 0);
-	OMSetRenderTargets(dTex, NULL);
+	if (draw_in_depth)
+		OMSetRenderTargets(NULL, dTex);
+	else
+		OMSetRenderTargets(dTex, NULL);
 	OMSetColorMaskState();
 
 	// ************************************
