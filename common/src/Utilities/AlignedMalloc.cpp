@@ -58,7 +58,7 @@ __fi void pcsx2_aligned_free(void* pmem)
 {
 #ifdef _WIN32
 	_aligned_free(pmem);
-#elif
+#else
 	free(pmem);
 #endif
 }
