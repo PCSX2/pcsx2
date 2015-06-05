@@ -29,8 +29,9 @@ static const uint headsize = sizeof(AlignedMallocHeader);
 void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
 {
 	pxAssert( align < 0x10000 );
-
-#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
+#ifdef _WIN32
+	return _aligned_malloc(size, align);
+#elif defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	return aligned_alloc(align, size);
 #else
 	void *result=0;
@@ -48,12 +49,16 @@ void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
 	if( handle != NULL )
 	{
 		memcpy_fast( newbuf, handle, size );
-		free( handle );
+		pcsx2_aligned_free(handle);
 	}
 	return newbuf;
 }
 
 __fi void pcsx2_aligned_free(void* pmem)
 {
+#ifdef _WIN32
+	_aligned_free(pmem);
+#elif
 	free(pmem);
+#endif
 }
