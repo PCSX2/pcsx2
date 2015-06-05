@@ -653,6 +653,17 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 			{
 				func( GetLogFolder().ToString().mb_str(wxConvFile) );
 			}
+
+			//FIX for GSDX loading old config GUI, Code taken from PluginManager.cpp
+#ifdef __linux__
+			_PS2EsetEmuVersion	SetEmuVersion = NULL;
+#else
+            _PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)dynlib.GetSymbol(L"PS2EsetEmuVersion");
+#endif
+
+			if (SetEmuVersion != NULL)
+				SetEmuVersion("PCSX2", (0ul << 24) | (9ul << 16) | (7ul << 8) | 0);
+
 		}
 
 		configfunc();
