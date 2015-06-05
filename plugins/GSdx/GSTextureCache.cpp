@@ -234,22 +234,42 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 	}
 
-	if(dst == NULL)
-	{
-		GL_CACHE("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp);
-
-		dst = CreateTarget(TEX0, w, h, type);
-
-		if(dst == NULL)
-		{
-			return NULL;
-		}
-	}
-	else
-	{
+	if (dst) {
 		GL_CACHE("TC: Lookup Target(T%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp);
 
 		dst->Update();
+	} else {
+
+		if (type == DepthStencil) {
+			// Depth stencil can be an older RT but only check recent RT to avoid to pick
+			// some bad data.
+			for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++)
+			{
+				Target* t = *i;
+
+				if(!t->m_age && bp == t->m_TEX0.TBP0)
+				{
+					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x)", w, h, bp);
+					// Convert the RenderTarget into a Depth Buffer
+					dst = CreateTarget(TEX0, w, h, type);
+					GSVector4 sRect(0, 0, 1.0, 1.0);
+					GSVector4 dRect(0, 0, w, h);
+					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 12, false);
+				}
+			}
+		}
+
+		if(dst == NULL)
+		{
+			GL_CACHE("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp);
+
+			dst = CreateTarget(TEX0, w, h, type);
+
+			if(dst == NULL)
+			{
+				return NULL;
+			}
+		}
 	}
 
 	if(m_renderer->CanUpscale())
