@@ -231,6 +231,9 @@ void GSRendererDX9::SetupIA()
 
 void GSRendererDX9::UpdateFBA(GSTexture* rt)
 {
+	if (!rt)
+		return;
+
 	GSDevice9* dev = (GSDevice9*)m_dev;
 
 	dev->BeginScene();

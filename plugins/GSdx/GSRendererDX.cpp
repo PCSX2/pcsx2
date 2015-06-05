@@ -47,8 +47,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
-	const GSVector2i& rtsize = rt->GetSize();
-	const GSVector2& rtscale = rt->GetScale();
+	const GSVector2i& rtsize = ds->GetSize();
+	const GSVector2& rtscale = ds->GetScale();
 
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 
@@ -199,7 +199,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if(rt->LikelyOffset)
+	if(rt && rt->LikelyOffset)
 	{
 		// DX9 has pixelcenter set to 0.0, so give it some value here
 

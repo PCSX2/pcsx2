@@ -334,12 +334,17 @@ void GSRendererHW::Draw()
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
+	// It is allowed to use the depth and rt at the same location. However at least 1 must
+	// be disabled. GoW uses a Cd blending on a 24 bits buffer (no alpha)
+	const bool no_rt = context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1);
+
 	GIFRegTEX0 TEX0;
 
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
-	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+
+	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -347,7 +352,7 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
 
-	if(!rt || !ds)
+	if((!rt && !no_rt) || !ds)
 	{
 		GL_POP();
 		ASSERT(0);
@@ -429,7 +434,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(root_hw+s);
+			if (rt)
+				rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -447,7 +453,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(NULL, ds->m_texture, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -514,7 +520,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt->m_texture, ds->m_texture, tex);
+	DrawPrims(rt ? rt->m_texture : NULL, ds->m_texture, tex);
 
 	//
 
@@ -526,7 +532,7 @@ void GSRendererHW::Draw()
 
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
-	if(fm != 0xffffffff)
+	if(fm != 0xffffffff && rt)
 	{
 		rt->m_valid = rt->m_valid.runion(r);
 
@@ -557,7 +563,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(root_hw+s);
+			if (rt)
+				rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -580,7 +587,8 @@ void GSRendererHW::Draw()
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 	
-	m_tc->Read(rt, r);
+	if (rt)
+		m_tc->Read(rt, r);
 
 	#endif
 

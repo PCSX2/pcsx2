@@ -996,7 +996,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 {
 	GL_PUSH("DATE First Pass");
 
-	GSTexture* t = NULL;
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	BeginScene();
@@ -1016,7 +1015,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	OMSetDepthStencilState(m_date.dss, 1);
 	OMSetBlendState(m_date.bs, 0);
 	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
-	OMSetRenderTargets(t, ds, &GLState::scissor);
+	OMSetRenderTargets(NULL, ds, &GLState::scissor);
 	OMSetColorMaskState(); // TODO: likely useless
 
 	// ia
@@ -1035,9 +1034,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 		PSSetSamplerState(m_convert.pt);
 	}
 
-	OMSetWriteBuffer(GL_NONE);
 	DrawPrimitive();
-	OMSetWriteBuffer();
 
 	EndScene();
 
@@ -1179,9 +1176,10 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if (rt == NULL || !RT->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
+			OMSetWriteBuffer();
 			OMAttachRt(RT);
 		} else {
-			// Note: NULL rt is only used in DATE so far.
+			OMSetWriteBuffer(GL_NONE);
 			OMAttachRt();
 		}
 

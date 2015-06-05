@@ -217,13 +217,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 {
 	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
-				rt->GetID(), ds->GetID());
+				rt ? rt->GetID() : -1, ds->GetID());
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
-	const GSVector2i& rtsize = rt->GetSize();
-	const GSVector2& rtscale = rt->GetScale();
+	const GSVector2i& rtsize = ds->GetSize();
+	const GSVector2& rtscale = ds->GetScale();
 
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
@@ -425,7 +425,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt->LikelyOffset)
+	if (rt && rt->LikelyOffset)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
@@ -621,7 +621,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
 	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw;
 
-	if (sw_blending && om_bsel.abe) {
+	if (sw_blending && om_bsel.abe && rt) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
 
 		// select a shader that support blending
