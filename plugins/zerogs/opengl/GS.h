@@ -69,32 +69,17 @@ extern std::string s_strIniPath;
 extern u32 THR_KeyEvent; // value for passing out key events beetwen threads
 extern bool THR_bShift;
 
-#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-
-// declare linux equivalents
-static __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
-{
-	assert( align < 0x10000 );
-	char* p = (char*)malloc(size+align);
-	int off = 2+align - ((int)(uptr)(p+2) % align);
-
-	p += off;
-	*(u16*)(p-2) = off;
-
-	return p;
+#if !defined(_MSC_VER)
+// declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
+static __forceinline void* _aligned_malloc(size_t size, size_t alignment) {
+	void *result=0;
+	posix_memalign(&result, alignment, size);
+	return result;
 }
 
-static __forceinline void pcsx2_aligned_free(void* pmem)
-{
-	if( pmem != NULL ) {
-		char* p = (char*)pmem;
-		free(p - (int)*(u16*)(p-2));
-	}
+static __forceinline void _aligned_free(void* p) {
+	free(p);
 }
-
-#define _aligned_malloc pcsx2_aligned_malloc
-#define _aligned_free pcsx2_aligned_free
-
 #endif
 
 #include <sys/timeb.h>	// ftime(), struct timeb

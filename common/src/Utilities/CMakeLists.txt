@@ -54,11 +54,11 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # variable with all sources of this library
 set(UtilitiesSources
+	AlignedMalloc.cpp
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
-    ../../include/Utilities/SafeArray.inl
-    ../../include/Utilities/TlsVariable.inl
-	AlignedMalloc.cpp
+	../../include/Utilities/SafeArray.inl
+	../../include/Utilities/TlsVariable.inl
 	CheckedStaticBox.cpp
 	Console.cpp
 	EventSource.cpp

@@ -16,8 +16,7 @@
 #ifndef _LNX_MEMZERO_H_
 #define _LNX_MEMZERO_H_
 
-// This header contains non-optimized implementation of memzero_ptr and memset8,
-// memset16, etc.
+// This header contains non-optimized implementation of memzero_ptr and memset8, etc
 
 template< u32 data, typename T >
 static __fi void memset32( T& obj )
@@ -50,18 +49,6 @@ static __fi void memset8( T& obj )
 		memset32<data32>( obj );
 	}
 }
-
-template< u16 data, typename T >
-static __fi void memset16( T& obj )
-{
-	if( (sizeof(T) & 0x3) != 0 )
-		_memset16_unaligned( &obj, data, sizeof( T ) );
-	else {
-		const u32 data32 = data + (data<<16);
-		memset32<data32>( obj );
-	}
-}
-
 
 // An optimized memset for 8 bit destination data.
 template< u8 data, size_t bytes >

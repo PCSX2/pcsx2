@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include <wx/string.h>
-
 namespace HashTools {
 
 /// <summary>

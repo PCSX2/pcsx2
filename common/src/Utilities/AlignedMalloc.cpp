@@ -33,19 +33,9 @@ void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
 #if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	return aligned_alloc(align, size);
 #else
-	u8* p = (u8*)malloc(size+align+headsize);
-
-	// start alignment calculations from past the header.
-	uptr pasthead = (uptr)(p+headsize);
-	uptr aligned = (pasthead + align-1) & ~(align-1);
-
-	AlignedMallocHeader* header = (AlignedMallocHeader*)(aligned-headsize);
-	pxAssert( (uptr)header >= (uptr)p );
-
-	header->baseptr = p;
-	header->size = size;
-
-	return (void*)aligned;
+	void *result=0;
+	posix_memalign(&result, alignment, size);
+	return result;
 #endif
 }
 
@@ -57,45 +47,13 @@ void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
 
 	if( handle != NULL )
 	{
-#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 		memcpy_fast( newbuf, handle, size );
 		free( handle );
-#else
-		AlignedMallocHeader* header = (AlignedMallocHeader*)((uptr)handle - headsize);
-		memcpy_fast( newbuf, handle, std::min( size, header->size ) );
-		free( header->baseptr );
-#endif
 	}
 	return newbuf;
 }
 
 __fi void pcsx2_aligned_free(void* pmem)
 {
-#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	free(pmem);
-#else
-	if( pmem == NULL ) return;
-	AlignedMallocHeader* header = (AlignedMallocHeader*)((uptr)pmem - headsize);
-	free( header->baseptr );
-#endif
-}
-
-// ----------------------------------------------------------------------------
-// And for lack of a better home ...
-
-
-// Special unaligned memset used when all other optimized memsets fail (it's called from
-// memzero_obj and stuff).
-__fi void _memset16_unaligned( void* dest, u16 data, size_t size )
-{
-	pxAssume( (size & 0x1) == 0 );
-
-	u16* dst = (u16*)dest;
-	for(int i=size; i; --i, ++dst )
-		*dst = data;
-}
-
-__fi void HostSys::Munmap( void* base, size_t size )
-{
-	Munmap( (uptr)base, size );
 }
