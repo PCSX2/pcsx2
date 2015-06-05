@@ -12,7 +12,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-# set common flags
 set(CommonFlags
     # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
     # Disable this optimization for the moment
@@ -27,46 +26,7 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-# set optimization flags
-set(OptimizationFlags
-	-falign-functions
-	-falign-jumps
-	-falign-labels
-	-falign-loops
-	-fcaller-saves
-	-fcprop-registers
-	-fcrossjumping
-	-fcse-follow-jumps
-	-fcse-skip-blocks
-	-fdefer-pop
-	-fdelete-null-pointer-checks
-	-fgcse
-	-fgcse-lm
-	-fif-conversion
-	-fif-conversion2
-	-fmerge-constants
-	-foptimize-sibling-calls
-	-fpeephole2
-	-fregmove
-	-freorder-blocks
-	-freorder-functions
-	-frerun-cse-after-loop
-	-fsched-interblock
-	-fsched-spec
-	-fstrict-overflow
-	-fthread-jumps
-	-ftree-ccp
-	-ftree-ch
-	-ftree-copyrename
-	-ftree-dce
-	-ftree-dominator-opts
-	-ftree-fre
-	-ftree-lrs
-	-ftree-pre
-	-ftree-sra
-	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
+set(OptimizationFlags -O2)
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
