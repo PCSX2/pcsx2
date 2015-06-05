@@ -121,28 +121,41 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// (Simply not doing this code at all makes a lot of previsouly missing stuff show (but breaks pretty much everything
 		// else.)
 
-		//for(int type = 0; type < 2 && dst == NULL; type++)
-		for(int type = 0; type < 1 && dst == NULL; type++) // Only look for render target, no depth stencil
+		for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++)
 		{
-			for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); i++)
-			{
+			Target* t = *i;
+
+			if(t->m_used && t->m_dirty.empty()) {
+				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+					dst = t;
+
+					break;
+
+				} else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM)) {
+					// Detect half of the render target (fix snow engine game)
+					// Target Page (8KB) have always a width of 64 pixels
+					// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
+					half_right = true;
+					dst = t;
+
+					break;
+				}
+
+			}
+		}
+
+		if (dst == NULL) {
+			// Let's try a trick to avoid to use wrongly a depth buffer
+			// Unfortunately, I don't have any Arc the Lad testcase
+			//
+			// 1/ Check only current frame, I guess it is only used as a postprocessing effect
+			for(list<Target*>::iterator i = m_dst[DepthStencil].begin(); i != m_dst[DepthStencil].end(); i++) {
 				Target* t = *i;
 
-				if(t->m_used && t->m_dirty.empty()) {
-					if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-						dst = t;
-
-						break;
-
-					} else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM)) {
-						// Detect half of the render target (fix snow engine game)
-						// Target Page (8KB) have always a width of 64 pixels
-						// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
-						half_right = true;
-						dst = t;
-
-						break;
-					}
+				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+				{
+					dst = t;
+					break;
 				}
 			}
 		}
@@ -712,17 +725,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		src->m_target = true;
 
-		if(dst->m_type != RenderTarget)
-		{
-			GL_CACHE("TC: Remove dst because not a RT %d (0x%x)",
-						dst->m_texture ? dst->m_texture->GetID() : 0,
-						dst->m_TEX0.TBP0);
-
-			// TODO
-			delete src;
-			return NULL;
-		}
-
 		dst->Update();
 
 		GSTexture* tmp = NULL;
@@ -838,12 +840,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			linear = false;
 		}
 
+		int shader = dst->m_type != RenderTarget ? 11 : 0;
+
 		if(!src->m_texture)
 		{
 			src->m_texture = dTex;
 		}
 
-		if((sRect == dRect).alltrue())
+		if((sRect == dRect).alltrue() && !shader)
 		{
 			if (half_right) {
 				// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
@@ -865,7 +869,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				sRect.x = sRect.z/2.0f;
 			}
 
-			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, 0, linear);
+			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, shader, linear);
 		}
 
 		if(dTex != src->m_texture)
