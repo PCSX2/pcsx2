@@ -135,6 +135,7 @@ public:
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h);
 
+	void InvalidateVideoMemType(int type, uint32 bp);
 	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
 

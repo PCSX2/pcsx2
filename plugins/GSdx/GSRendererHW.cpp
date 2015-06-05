@@ -537,6 +537,8 @@ void GSRendererHW::Draw()
 		rt->m_valid = rt->m_valid.runion(r);
 
 		m_tc->InvalidateVideoMem(context->offset.fb, r, false);
+
+		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
 	}
 
 	if(zm != 0xffffffff)
@@ -544,6 +546,8 @@ void GSRendererHW::Draw()
 		ds->m_valid = ds->m_valid.runion(r);
 
 		m_tc->InvalidateVideoMem(context->offset.zb, r, false);
+
+		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->ZBUF.Block());
 	}
 
 	//

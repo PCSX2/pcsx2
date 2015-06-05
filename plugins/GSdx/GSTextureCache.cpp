@@ -152,7 +152,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE("TC: dst hit (%s): %d (0x%x)", half_right ? "half" : "full",
+			GL_CACHE("TC: dst %s hit (%s): %d (0x%x)", dst->m_type ? "Depth" : "Color", half_right ? "half" : "full",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
 						TEX0.TBP0);
 		} else {
@@ -165,6 +165,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		{
 			return NULL;
 		}
+
 #ifdef ENABLE_OGL_DEBUG
 	} else {
 		GL_CACHE("TC: src hit: %d (0x%x)",
@@ -258,6 +259,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				hh *= 2;
 			}
 
+			// Gregory: I'm sure this sillyness is related to the usage of a 32bits
+			// buffer as a 16 bits format. In this case the height of the buffer is
+			// multiplyed by 2 (Hence a scissor bigger than the RT)
+
 			// This vp2 fix doesn't work most of the time
 
 			if(hh < 512 && m_renderer->m_context->SCISSOR.SCAY1 == 511) // vp2
@@ -332,6 +337,30 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	dst->m_used = true;
 
 	return dst;
+}
+
+// Goal: Depth And Target at the same address is not possible. On GS it is
+// the same memory but not on the Dx/GL. Therefore a write to the Depth/Target
+// must invalidate the Target/Depth respectively
+void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
+{
+	for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); i++)
+	{
+		Target* t = *i;
+
+		if(bp == t->m_TEX0.TBP0)
+		{
+			GL_CACHE("TC: InvalidateVideoMemType: Remove Target(T%d) %d (0x%x)", type,
+					t->m_texture ? t->m_texture->GetID() : 0,
+					t->m_TEX0.TBP0);
+
+			m_dst[type].erase(i);
+			delete t;
+
+			break;
+		}
+	}
+
 }
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
@@ -465,7 +494,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				else
 				{
 					m_dst[type].erase(j);
-					GL_CACHE("TC: Remove Target(%d) %d (0x%x)", type,
+					GL_CACHE("TC: Remove Target(T%d) %d (0x%x)", type,
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
 					delete t;
@@ -776,6 +805,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector4 dRect(0, 0, w, h);
 
+		// Try to extract a texture bigger than the RT. Current solution is to rescale the size
+		// of the texture to fit in the RT. In my opinion, it would be better to increase the size of
+		// the RT
 		if(w > dstsize.x)
 		{
 			scale.x = (float)dstsize.x / tw;
@@ -825,6 +857,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 		else
 		{
+			// Different size or not the same format
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
 
