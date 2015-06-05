@@ -34,7 +34,7 @@ void InitADSR()                                    // INIT ADSR
 		else
 			rate <<= shift;
 
-		PsxRates[i] = (int)std::min( rate, 0x3fffffffLL );
+		PsxRates[i] = (int)std::min( rate, (s64)0x3fffffffLL );
 	}
 }
 
