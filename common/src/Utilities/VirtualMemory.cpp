@@ -500,3 +500,11 @@ wxString PageProtectionMode::ToString() const
 
 	return modeStr;
 }
+
+// --------------------------------------------------------------------------------------
+//  Common HostSys implementation
+// --------------------------------------------------------------------------------------
+void HostSys::Munmap( void* base, size_t size )
+{
+	Munmap( (uptr)base, size);
+}
