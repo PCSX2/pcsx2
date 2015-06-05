@@ -161,14 +161,14 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 	{
 		case 0:	
 		case 1: 
-		case 2: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x3; }	break;
+		case 2: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x3; } break;
 
 		case 4:  
 		case 5:
 		case 6: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
 
-		case 8: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } 	break;
-		case 9:		break;
+		case 8: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
+		case 9:	if (PostOp == false) { UnpkLoopIteration++; } break;
 		case 10: 	break;
 
 		case 12: 	break;
@@ -316,6 +316,10 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	v.block.wl      = vifRegs.cycle.wl;
 	v.block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 
+	if ((upkType & 0xf) != 9)
+		v.block.aligned &= 0x1;
+
+	//DevCon.Warning("Alignment %d", v.block.aligned);
 	// Zero out the mask parameter if it's unused -- games leave random junk
 	// values here which cause false recblock cache misses.
 	v.block.mask	= doMask ? vifRegs.mask : 0;
