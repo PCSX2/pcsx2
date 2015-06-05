@@ -62,6 +62,7 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
+static int s_renderer = -1;
 static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
@@ -154,6 +155,8 @@ EXPORT_C GSshutdown()
 
 	s_gs = NULL;
 
+	s_renderer = -1;
+
 #ifdef _WINDOWS
 
 	if(SUCCEEDED(s_hr))
@@ -211,8 +214,16 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 	try
 	{
-		delete s_gs;
-		s_gs = NULL;
+		if(s_renderer != renderer)
+		{
+			// Emulator has made a render change request, which requires a completely
+			// new s_gs -- if the emu doesn't save/restore the GS state across this
+			// GSopen call then they'll get corrupted graphics, but that's not my problem.
+
+			delete s_gs;
+
+			s_gs = NULL;
+		}
 
 		switch(renderer)
 		{
@@ -270,6 +281,8 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			}
 			if (s_gs == NULL)
 				return -1;
+
+			s_renderer = renderer;
 		}
 
 		if (s_gs->m_wnd == NULL)
