@@ -596,6 +596,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
 			} else if (tex->m_texture) {
 				dev->PSSetShaderResource(0, tex->m_texture);
+#ifdef ENABLE_OGL_DEBUG
+				// Unattach texture to avoid noise in debugger
+				dev->PSSetShaderResource(1, NULL);
+#endif
 			}
 		}
 
