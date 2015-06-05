@@ -150,6 +150,7 @@ public:
 
 	void ApplyConfigToGui( AppConfig& configToApply, int flags=0 ); //flags are: AppConfig::APPLY_CONFIG_FROM_PRESET and (currently unused) AppConfig::APPLY_CONFIG_MANUALLY PROPAGATE
 	void CommitPreset_noTrigger();
+	void AppendKeycodeNamesToMenuOptions();
 
 protected:
 	void DoGiveHelp(const wxString& text, bool show);
