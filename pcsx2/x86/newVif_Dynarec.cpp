@@ -314,7 +314,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	v.block.mode    = (u8&)vifRegs.mode;
 	v.block.cl      = vifRegs.cycle.cl;
 	v.block.wl      = vifRegs.cycle.wl;
-	v.block.aligned = !!(vif.vifpacketsize & 0x1);
+	v.block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 
 	// Zero out the mask parameter if it's unused -- games leave random junk
 	// values here which cause false recblock cache misses.

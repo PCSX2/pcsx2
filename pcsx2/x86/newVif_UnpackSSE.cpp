@@ -244,7 +244,7 @@ void VifUnpackSSE_Base::xUPK_V2_8() const {
 void VifUnpackSSE_Base::xUPK_V3_32() const {
 
 	xMOV128    (destReg, ptr128[srcIndirect]);
-	if(UnpkLoopIteration == (1-IsAligned))  
+	if(UnpkLoopIteration != IsAligned)  
     	xAND.PS( destReg, ptr128[SSEXYZWMask[0]]);
 }
 

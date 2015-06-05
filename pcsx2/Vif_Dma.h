@@ -70,6 +70,7 @@ struct vifStruct {
 		int pass;
 		int cl;
 		u8  usn;
+		bool start_aligned;
 		u8  StructEnd; // Address of this is used to calculate end of struct
 	};
 
@@ -93,6 +94,8 @@ struct vifStruct {
 
 	bool queued_program;
 	u32 queued_pc;
+
+	
 };
 
 extern __aligned16 vifStruct  vif0, vif1;

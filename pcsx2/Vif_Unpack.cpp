@@ -231,6 +231,8 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	vifX.cl			 = 0;
 	vifX.tag.cmd	 = vifX.cmd;
 	GetVifX.pass	 = 1;
+
+	vifX.start_aligned = !!((vifX.vifpacketsize-1) & 0x1);
 }
 
 template void vifUnpackSetup<0>(const u32 *data);
