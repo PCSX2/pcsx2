@@ -36,6 +36,13 @@
 #define APIENTRYP APIENTRY *
 #endif
 
+// Mesa glext.h < 20150122 uses GLsizei for BUFFER*PROCs
+#if GL_GLEXT_VERSION < 20150122
+typedef GLsizei buffer_proc_t;
+#else
+typedef GLsizeiptr buffer_proc_t;
+#endif
+
 // Allow compilation with older mesa
 #ifndef GL_VERSION_4_3
 #define GL_VERSION_4_3 1

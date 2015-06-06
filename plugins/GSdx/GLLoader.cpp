@@ -241,17 +241,17 @@ namespace Emulate_DSA {
 		glGenBuffers(1, buffers);
 	}
 
-	void APIENTRY NamedBufferStorage(GLuint buffer, GLsizei size, const void *data, GLbitfield flags) {
+	void APIENTRY NamedBufferStorage(GLuint buffer, buffer_proc_t size, const void *data, GLbitfield flags) {
 		glBindBuffer(buffer_target, buffer);
 		glBufferStorage(buffer_target, size, data, flags);
 	}
 
-	void APIENTRY NamedBufferData(GLuint buffer, GLsizei size, const void *data, GLenum usage) {
+	void APIENTRY NamedBufferData(GLuint buffer, buffer_proc_t size, const void *data, GLenum usage) {
 		glBindBuffer(buffer_target, buffer);
 		glBufferData(buffer_target, size, data, usage);
 	}
 
-	void APIENTRY NamedBufferSubData(GLuint buffer, GLintptr offset, GLsizei size, const void *data) {
+	void APIENTRY NamedBufferSubData(GLuint buffer, GLintptr offset, buffer_proc_t size, const void *data) {
 		glBindBuffer(buffer_target, buffer);
 		glBufferSubData(buffer_target, offset, size, data);
 	}
@@ -261,7 +261,7 @@ namespace Emulate_DSA {
 		return glMapBuffer(buffer_target, access);
 	}
 
-	void *APIENTRY MapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length, GLbitfield access) {
+	void *APIENTRY MapNamedBufferRange(GLuint buffer, GLintptr offset, buffer_proc_t length, GLbitfield access) {
 		glBindBuffer(buffer_target, buffer);
 		return glMapBufferRange(buffer_target, offset, length, access);
 	}
@@ -271,7 +271,7 @@ namespace Emulate_DSA {
 		return glUnmapBuffer(buffer_target);
 	}
 
-	void APIENTRY FlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizei length) {
+	void APIENTRY FlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, buffer_proc_t length) {
 		glBindBuffer(buffer_target, buffer);
 		glFlushMappedBufferRange(buffer_target, offset, length);
 	}
