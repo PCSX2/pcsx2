@@ -662,7 +662,7 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 #endif
 
 			if (SetEmuVersion != NULL)
-				SetEmuVersion("PCSX2", (0ul << 24) | (9ul << 16) | (7ul << 8) | 0);
+				SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
 
 		}
 
