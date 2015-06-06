@@ -647,6 +647,8 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		//+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
 		+ format("#define PS_BLEND %d\n", sel.blend)
 		+ format("#define PS_IIP %d\n", sel.iip)
+		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
+		+ format("#define PS_READ_BA %d\n", sel.read_ba)
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);

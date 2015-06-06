@@ -710,6 +710,32 @@ void ps_main()
 	c.a = 0.5f;
 #endif
 
+#if PS_SHUFFLE
+	uvec4 denorm_c = uvec4(c * 255.0f + 0.5f);
+	uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+
+	// Write RB part. Mask will take care of the correct destination
+#if PS_READ_BA
+	c.rb = c.bb;
+#else
+	c.rb = c.rr;
+#endif
+
+	// Write GA part. Mask will take care of the correct destination
+#if PS_READ_BA
+	if (bool(denorm_c.a & 0x80u))
+		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+	else
+		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+#else
+	if (bool(denorm_c.g & 0x80u))
+		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+	else
+		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+#endif
+
+#endif
+
 	// Must be done before alpha correction
 	float alpha = c.a * 255.0f / 128.0f;
 
