@@ -642,31 +642,16 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 		ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(pid) );
 		if (!CorePlugins.AreLoaded())
 		{
-			typedef void	(CALLBACK* SetDirFnptr)( const char* dir );
-
-			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setSettingsDir" ) )
-			{
-				func( GetSettingsFolder().ToString().mb_str(wxConvFile) );
-			}
-
-			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setLogDir" ) )
-			{
-				func( GetLogFolder().ToString().mb_str(wxConvFile) );
-			}
-
-			//FIX for GSDX loading old config GUI, Code taken from PluginManager.cpp
-#ifdef __linux__
-			_PS2EsetEmuVersion	SetEmuVersion = NULL;
-#else
-            _PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)dynlib.GetSymbol(L"PS2EsetEmuVersion");
-#endif
-
-			if (SetEmuVersion != NULL)
-				SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
-
+			CorePlugins.Load(pid, filename);
+			CorePlugins.SendLogFolder();
+			CorePlugins.SendSettingsFolder();
+			configfunc();
+			CorePlugins.Unload(pid);
 		}
-
-		configfunc();
+		else
+		{
+			configfunc();
+		}
 	}
 }
 
