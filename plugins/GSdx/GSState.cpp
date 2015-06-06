@@ -346,14 +346,22 @@ void GSState::ResetHandlers()
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-
+	int height = m_regs->DISP[i].DISPLAY.DH + 1;
+	int width = m_regs->DISP[i].DISPLAY.DW + 1;
 	GSVector4i r;
 
+	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
+	if (height > 640) 
+	{
+		height /= 2;
+	}
+
+	
 	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
 	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.bottom = r.top + (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-
+	r.right = r.left + width / (m_regs->DISP[i].DISPLAY.MAGH + 1);
+	r.bottom = r.top + height / (m_regs->DISP[i].DISPLAY.MAGV + 1);
+	
 	return r;
 }
 

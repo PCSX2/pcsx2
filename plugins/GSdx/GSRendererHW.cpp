@@ -37,31 +37,32 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 }
 
 void GSRendererHW::SetScaling() {
+	int height;
 
 	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
-		m_buffer_size = m_context->FRAME.FBW;
+		m_buffer_size = m_context->FRAME.FBW * 64;
+		height = m_buffer_size <= 640 ? 512 : (int)(m_buffer_size*0.8);
 	}
 	else {
-		m_buffer_size = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW;
+		m_buffer_size = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64;
+		height = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPLAY.DH + 1;
+
 	}
-	//m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
 	
+	if (height > m_buffer_size)//Some games like Pool Paradise provide double its actual height.
+		height /= 2;
+
+
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
-	if (m_width < ((m_buffer_size * 64) * m_upscale_multiplier)){
+	if (m_width < (m_buffer_size * m_upscale_multiplier) || m_height < (height * m_upscale_multiplier)){
+		printf("m_w %d bf %d m_h %d, h %d\n", m_width, (m_buffer_size * m_upscale_multiplier), m_height, (height * m_upscale_multiplier));
 		m_tc->RemovePartial();
 	}
 	else {
 		return;
 	}
 
-	//printf("FBW1 %d FBW2 %d Context FBW %d PMODE 1 %d 2 %d", m_regs->DISP[0].DISPFB.FBW, m_regs->DISP[1].DISPFB.FBW, m_context->FRAME.FBW, m_regs->PMODE.EN1, m_regs->PMODE.EN2);
-
-	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
-		m_height = (m_buffer_size * 64) <= 640 ? 512 : (int)((m_buffer_size * 64)*0.8);
-	}
-	else {
-		m_height = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPLAY.DH + 1;
-	}
+	m_height = height;
 
 	if (!m_nativeres)
 	{
@@ -78,7 +79,7 @@ void GSRendererHW::SetScaling() {
 		}
 		else if (m_upscale_multiplier > 1)
 		{
-			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
+			m_width = m_buffer_size * m_upscale_multiplier;
 			// A square RT consumes too much memory (Gran Turismo 4)
 			//Smaller resolutions can be strange, but if it's huge they are generally uniform.
 			//Watch this bite me in the ass :P
@@ -93,7 +94,7 @@ void GSRendererHW::SetScaling() {
 	if (m_upscale_multiplier == 1) {
 		// No upscaling hack at native resolution
 		if (m_nativeres) {
-			m_width = (m_buffer_size * 64);
+			m_width = m_buffer_size;
 		}
 
 		m_userhacks_round_sprite_offset = 0;
