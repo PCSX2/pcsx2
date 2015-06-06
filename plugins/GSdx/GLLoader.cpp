@@ -283,7 +283,7 @@ namespace Emulate_DSA {
 
 	// Replace function pointer to emulate DSA behavior
 	void Init() {
-		fprintf(stderr, "DSA is not supported. Replace GL function pointer to emulate it\n");
+		fprintf(stderr, "DSA is not supported. Replacing the GL function pointer to emulate it\n");
 		gl_BindTextureUnit             = BindTextureUnit;
 		gl_CreateTextures              = CreateTexture;
 		gl_TextureStorage2D            = TextureStorage;
@@ -383,7 +383,7 @@ namespace GLLoader {
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		fprintf(stderr, "Supported Opengl version: %s on GPU: %s. Vendor: %s\n", s, glGetString(GL_RENDERER), vendor);
-		fprintf(stderr, "Note: the maximal version supported by GSdx is 3.3 (even if you driver support more)!\n");
+		fprintf(stderr, "Note: the maximum supported supported by GSdx is 3.3 (even if you driver supports more)!\n");
 
 		// Name change but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
@@ -406,10 +406,10 @@ namespace GLLoader {
 
 		if (theApp.GetConfig("override_geometry_shader", -1) != -1) {
 			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
-			fprintf(stderr, "Override geometry shaders detection\n");
+			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
 		if ( (major_gl < major) || ( major_gl == major && minor_gl < minor ) ) {
-			fprintf(stderr, "OPENGL %d.%d is not supported\n", major, minor);
+			fprintf(stderr, "OpenGL %d.%d is not supported\n", major, minor);
 			return false;
 		}
 
