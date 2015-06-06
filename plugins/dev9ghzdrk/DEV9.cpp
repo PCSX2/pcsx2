@@ -600,6 +600,10 @@ void CALLBACK DEV9irqCallback(void (*callback)(int cycles)) {
 	DEV9irq = callback;
 }
 
+void CALLBACK DEV9async(u32 cycles)
+{
+	smap_async(cycles);
+}
 
 // extended funcs
 
