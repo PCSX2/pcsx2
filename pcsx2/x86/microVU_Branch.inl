@@ -349,7 +349,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		
 		incPC(3);
 		mVUendProgram(mVU, &mFC, 2);
-		xForwardJump8 eJMP((JccComparisonType)JMPcc);
+		xForwardJump32 eJMP((JccComparisonType)JMPcc);
 			incPC(1); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
