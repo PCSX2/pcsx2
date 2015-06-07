@@ -353,8 +353,8 @@ void GSRendererHW::Draw()
 
 	if(!rt || !ds)
 	{
+		GL_POP();
 		ASSERT(0);
-
 		return;
 	}
 
@@ -379,7 +379,10 @@ void GSRendererHW::Draw()
 
 		tex = m_tc->LookupSource(context->TEX0, env.TEXA, r);
 
-		if(!tex) return;
+		if(!tex) {
+			GL_POP();
+			return;
+		}
 
 		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 		{
@@ -445,6 +448,8 @@ void GSRendererHW::Draw()
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
 	{
+		s_n += 1; // keep counter sync
+		GL_POP();
 		return;
 	}
 
