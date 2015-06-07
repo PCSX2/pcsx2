@@ -30,6 +30,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
 
+	m_can_convert_depth = theApp.GetConfig("texture_cache_depth", 1);
+
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
 
@@ -144,7 +146,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
-		if (dst == NULL) {
+		if (dst == NULL && CanConvertDepth()) {
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
 			//
@@ -240,7 +242,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		dst->Update();
 	} else {
 
-		if (type == DepthStencil) {
+		if (type == DepthStencil && CanConvertDepth()) {
 			// Depth stencil can be an older RT but only check recent RT to avoid to pick
 			// some bad data.
 			for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++)
@@ -377,6 +379,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 {
+	if (!CanConvertDepth())
+		return;
+
 	for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); i++)
 	{
 		Target* t = *i;

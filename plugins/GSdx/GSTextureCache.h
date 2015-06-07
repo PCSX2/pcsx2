@@ -110,6 +110,7 @@ protected:
 	bool m_paltex;
 	int m_spritehack;
 	uint8* m_temp;
+	bool m_can_convert_depth;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
@@ -121,6 +122,8 @@ protected:
 #ifndef DISABLE_HW_TEXTURE_CACHE
 	virtual void Read(Target* t, const GSVector4i& r) = 0;
 #endif
+
+	virtual bool CanConvertDepth() { return m_can_convert_depth; }
 
 public:
 	GSTextureCache(GSRenderer* r);
