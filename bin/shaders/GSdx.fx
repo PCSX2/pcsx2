@@ -49,10 +49,10 @@
 #define SamplerState sampler2D
 
 #define matrix4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
-    mat4(a0, b0, c0, d0, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3);
+           mat4(a0, b0, c0, d0, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3);
 
 #define matrix3(a0, a1, a2, b0, b1, b2, c0, c1, c2) \
-    mat3(a0, b0, c0, a1, b1, c1, a2, b2, c2);
+           mat3(a0, b0, c0, a1, b1, c1, a2, b2, c2);
 
 // Yes it sucks!
 #define matrix4x3(v0, v1, v2, v3) \
@@ -87,13 +87,13 @@ layout(std140, binding = 14) uniform cb10
 #else
 
 #define matrix4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
-    float4x4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3);
+       float4x4(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3);
 
-#define matrix3(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3) \
-    float3x3(a0, a1, a2, b0, b1, b2, c0, c1, c2);
+#define matrix3(a0, a1, a2, b0, b1, b2, c0, c1, c2) \
+       float3x3(a0, a1, a2, b0, b1, b2, c0, c1, c2);
 
 #define matrix4x3(v0, v1, v2, v3) \
-    float4x3(v0, v1, v2, v3);
+         float4x3(v0, v1, v2, v3);
 
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
