@@ -37,33 +37,18 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 }
 
 void GSRendererHW::SetScaling() {
-	int height;
 
-	if (!m_regs->PMODE.EN1 && !m_regs->PMODE.EN2){
-		m_buffer_size = m_context->FRAME.FBW * 64;
-		height = m_buffer_size <= 640 ? 512 : (int)(m_buffer_size*0.8);
-	}
-	else {
-		m_buffer_size = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64;
-		height = m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPLAY.DH + 1;
-
-	}
+	m_buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
 	
-	if (height > m_buffer_size)//Some games like Pool Paradise provide double its actual height.
-		height /= 2;
-
-
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
-	if (m_width < (m_buffer_size * m_upscale_multiplier) || m_height < (height * m_upscale_multiplier)){
-		printf("m_w %d bf %d m_h %d, h %d\n", m_width, (m_buffer_size * m_upscale_multiplier), m_height, (height * m_upscale_multiplier));
+	if (m_width < (m_buffer_size * m_upscale_multiplier)){
 		m_tc->RemovePartial();
 	}
 	else {
 		return;
 	}
 
-	m_height = height;
-
+	m_height = m_buffer_size <= 640 ? 512 : (int)(m_buffer_size*0.8);
 	if (!m_nativeres)
 	{
 		m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
