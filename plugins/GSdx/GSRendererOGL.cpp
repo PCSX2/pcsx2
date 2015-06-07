@@ -289,9 +289,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	if (ps_sel.dfmt == 1) {
-		// 24 bits no alpha channel so use 1.0f fix factor as equivalent
-		ALPHA.C = 2;
-		afix = 1.0f;
+		if (ALPHA.C == 1) {
+			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
+			ALPHA.C = 2;
+			afix = 1.0f;
+		}
 		// Disable writing of the alpha channel
 		om_csel.wa = 0;
 	}
