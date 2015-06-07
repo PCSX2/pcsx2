@@ -48,7 +48,7 @@ void GSRendererHW::SetScaling() {
 		return;
 	}
 
-	m_height = m_buffer_size <= 640 ? 512 : (int)(m_buffer_size*0.8);
+	m_height = m_buffer_size < 1024 ? 512 : 1024;
 	if (!m_nativeres)
 	{
 		m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
