@@ -1557,7 +1557,7 @@ void recompileNextInstruction(int delayslot)
 						{
 							disasm = "";
 							disR5900Fasm(disasm, memRead32(i), i,false);
-							DevCon.Warning("%s%08X %s", i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
+							DevCon.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
 						}
 						break;
 					}
