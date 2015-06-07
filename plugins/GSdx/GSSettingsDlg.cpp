@@ -29,7 +29,7 @@
 #include "GSSetting.h"
 
 GSSettingsDlg::GSSettingsDlg(bool isOpen2)
-	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
+	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG2)
 	, m_IsOpen2(isOpen2)
 {
 #ifdef ENABLE_OPENCL
