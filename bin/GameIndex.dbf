@@ -263,6 +263,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20011
 Name   = Armored Core 3 - Silent Line
 Region = NTSC-Unk
+MemCardFilter = SCAJ-20011/SCPS-55014/SLPS-25112/SLPS-25169/SLPS-73417/SLPS-73420
 ---------------------------------------------
 Serial = SCAJ-20012
 Name   = Venus & Braves
@@ -491,8 +492,14 @@ Name   = Dragon Quest V - Bride of the Sky
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20076
-Name   = Armored Core - Nexus
+Name   = Armored Core - Nexus [Disc 1]
 Region = NTSC-Unk
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
+---------------------------------------------
+Serial = SCAJ-20077
+Name   = Armored Core - Nexus [Disc 2]
+Region = NTSC-Unk
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
 ---------------------------------------------
 Serial = SCAJ-20078
 Name   = Kuon
@@ -2886,6 +2893,7 @@ Compat = 5
 Serial = SCKA-20047
 Name   = Armored Core Nine Breaker
 Region = NTSC-K
+MemCardFilter = SCKA-20047/SLKA-25201/SLKA-25202
 ---------------------------------------------
 Serial = SCKA-20048
 Name   = Killzone
@@ -4200,6 +4208,7 @@ Region = NTSC-J
 Serial = SCPS-55024
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
+MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SCPS-55025
 Name   = Eve of Extinction
@@ -8428,6 +8437,7 @@ Region = PAL-Unk
 Serial = SLES-50905
 Name   = Armored Core 2 - Another Age
 Region = PAL-Unk
+// save import option was removed from PAL release
 ---------------------------------------------
 Serial = SLES-50906
 Name   = Master Rally
@@ -11065,6 +11075,7 @@ Serial = SLES-52203
 Name   = Armored Core - Silent Line
 Region = PAL-Unk
 Compat = 5
+MemCardFilter = SLES-51399/SLES-52203
 ---------------------------------------------
 Serial = SLES-52204
 Name   = UFC Sudden Impact
@@ -14679,6 +14690,7 @@ Region = PAL-Unk
 Serial = SLES-53819
 Name   = Armored Core - Nine Breaker
 Region = PAL-Unk
+MemCardFilter = SLES-53819/SLES-82036/SLES-82037
 ---------------------------------------------
 Serial = SLES-53820
 Name   = Armored Core - Last Raven
@@ -17616,10 +17628,12 @@ MemCardFilter = SLES-82034/SCES-82034
 Serial = SLES-82036
 Name   = Armored Core - Nexus [Evolution Disc]
 Region = PAL-M5
+MemCardFilter = SLES-82036/SLES-82037
 ---------------------------------------------
 Serial = SLES-82037
 Name   = Armored Core - Nexus [Revolution Disc]
 Region = PAL-M5
+MemCardFilter = SLES-82036/SLES-82037
 ---------------------------------------------
 Serial = SLES-82038
 Name   = Onimusha - Dawn of Dreams [Disc1]
@@ -17774,6 +17788,7 @@ Region = NTSC-K
 Serial = SLKA-25041
 Name   = Armored Core 3 Silent Line
 Region = NTSC-K
+MemCardFilter = SLKA-25041/SLPM-67524
 ---------------------------------------------
 Serial = SLKA-25042
 Name   = Tamamayu Monogatari 2 Horobi no Mushi
@@ -18016,10 +18031,12 @@ Region = NTSC-K
 Serial = SLKA-25201
 Name   = Armored Core Nexus Evolution DISC1
 Region = NTSC-K
+MemCardFilter = SLKA-25201/SLKA-25202
 ---------------------------------------------
 Serial = SLKA-25202
 Name   = Armored Core Nexus Revolution DISC2
 Region = NTSC-K
+MemCardFilter = SLKA-25201/SLKA-25202
 ---------------------------------------------
 Serial = SLKA-25204
 Name   = Showdown - Legends of Wrestling
@@ -30127,6 +30144,7 @@ Serial = SLPS-25040
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
 Compat = 5
+MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-25041
 Name   = Shadow Hearts
@@ -30517,6 +30535,7 @@ Region = NTSC-J
 Serial = SLPS-25169
 Name   = Armored Core 3 - Silent Line
 Region = NTSC-J
+MemCardFilter = SCAJ-20011/SCPS-55014/SLPS-25112/SLPS-25169/SLPS-73417/SLPS-73420
 ---------------------------------------------
 Serial = SLPS-25170
 Name   = SD Gundam G Generation Neo
@@ -31072,8 +31091,14 @@ Name   = Bass Landing 3 [Sammy Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25338
-Name   = Armored Core - Nexus
+Name   = Armored Core - Nexus [Disc 1]
 Region = NTSC-J
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
+---------------------------------------------
+Serial = SLPS-25339
+Name   = Armored Core - Nexus [Disc 2]
+Region = NTSC-J
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
 ---------------------------------------------
 Serial = SLPS-25340
 Name   = Missing Parts - Side B
@@ -31358,6 +31383,7 @@ Region = NTSC-J
 Serial = SLPS-25408
 Name   = Armored Core - Nine Breaker
 Region = NTSC-J
+MemCardFilter = SLPS-25408/SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
 ---------------------------------------------
 Serial = SLPS-25409
 Name   = Futakoi [Limited Edition]
@@ -33307,8 +33333,14 @@ Name   = Fatal Frame 2 - Crimson Butterfly [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73202
-Name   = Armored Core - Nexus [PlayStation 2 The Best]
+Name   = Armored Core - Nexus [PlayStation 2 The Best] [Disc 1]
 Region = NTSC-J
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
+---------------------------------------------
+Serial = SLPS-73203
+Name   = Armored Core - Nexus [PlayStation 2 The Best] [Disc 2]
+Region = NTSC-J
+MemCardFilter = SCAJ-20076/SCAJ-20077/SLPS-25338/SLPS-25339/SLPS-73202/SLPS-73203
 ---------------------------------------------
 Serial = SLPS-73204
 Name   = Zettai Zetsumi Toshi [PlayStation 2 The Best]
@@ -33578,6 +33610,7 @@ Region = NTSC-J
 Serial = SLPS-73411
 Name   = Armored Core 2 - Another Age [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-73412
 Name   = Vampire Night [PlayStation 2 The Best]
@@ -33607,6 +33640,7 @@ Region = NTSC-J
 Serial = SLPS-73420
 Name   = Armored Core 3 - Silent Line [PlayStation 2 The Best]
 Region = NTSC-J
+MemCardFilter = SCAJ-20011/SCPS-55014/SLPS-25112/SLPS-25169/SLPS-73417/SLPS-73420
 ---------------------------------------------
 Serial = SLPS-73421
 Name   = Tenchu 3 [PlayStation 2 The Best]
@@ -34636,6 +34670,8 @@ Compat = 5
 Serial = SLUS-20249
 Name   = Armored Core 2 - Another Age
 Region = NTSC-U
+// can import data from regular Armored Core 2
+MemCardFilter = SLUS-20249/SLUS-20014
 ---------------------------------------------
 Serial = SLUS-20250
 Name   = Stuntman
@@ -36394,6 +36430,8 @@ Compat = 5
 Serial = SLUS-20644
 Name   = Armored Core - Silent Line
 Region = NTSC-U
+// can import data from AC3
+MemCardFilter = SLUS-20435/SLUS-20644
 ---------------------------------------------
 Serial = SLUS-20645
 Name   = Time Crisis 3 [with Guncon]
@@ -37984,6 +38022,7 @@ Serial = SLUS-20986
 Name   = Armored Core Nexus [Evolution Disc]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-20986/SLUS-21079
 ---------------------------------------------
 Serial = SLUS-20987
 Name   = Pool Paradise
@@ -38440,6 +38479,7 @@ Compat = 5
 Serial = SLUS-21079
 Name   = Armored Core Nexus [Revolution Disc]
 Region = NTSC-U
+MemCardFilter = SLUS-20986/SLUS-21079
 ---------------------------------------------
 Serial = SLUS-21080
 Name   = Samurai Warriors - Xtreme Legends
@@ -39010,6 +39050,8 @@ Serial = SLUS-21200
 Name   = Armored Core - Nine Breaker
 Region = NTSC-U
 Compat = 5
+// can import data from AC:Nexus
+MemCardFilter = SLUS-21200/SLUS-20986/SLUS-21079
 ---------------------------------------------
 Serial = SLUS-21201
 Name   = Tales of Legendia
