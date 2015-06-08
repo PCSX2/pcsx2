@@ -865,6 +865,9 @@
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\WinKeyCodes.cpp">
+      <Filter>AppHost\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">

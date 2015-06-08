@@ -227,7 +227,9 @@ protected:
 
 IMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent )
 
-#ifdef __WXGTK__
+#ifdef __WXMSW__
+extern int TranslateVKToWXK( u32 keysym );
+#elif defined( __WXGTK__ )
 extern int TranslateGDKtoWXK( u32 keysym );
 #endif
 
@@ -236,8 +238,9 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 	m_kevt.SetEventType( ( ev.evt == KEYPRESS ) ? wxEVT_KEY_DOWN : wxEVT_KEY_UP );
 	const bool isDown = (ev.evt == KEYPRESS);
 
+//returns 0 for normal keys and a WXK_* value for special keys
 #ifdef __WXMSW__
-	const int vkey = wxCharCodeMSWToWX( ev.key );	//returns 0 if plain ascii value or a WXK_... (<=32 or >=300) if a special key
+	const int vkey = TranslateVKToWXK(ev.key);
 #elif defined( __WXGTK__ )
 	const int vkey = TranslateGDKtoWXK( ev.key );
 #else

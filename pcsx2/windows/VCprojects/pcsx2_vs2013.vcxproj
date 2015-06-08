@@ -534,6 +534,7 @@
     <ClCompile Include="..\..\IopDma.cpp" />
     <ClCompile Include="..\..\IopIrq.cpp" />
     <ClCompile Include="..\..\IopMem.cpp" />
+    <ClCompile Include="..\WinKeyCodes.cpp" />
     <ClCompile Include="IopSif.cpp" />
     <ClCompile Include="..\..\IopSio2.cpp" />
     <ClCompile Include="..\..\R3000A.cpp" />
