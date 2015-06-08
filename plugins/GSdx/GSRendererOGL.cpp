@@ -527,17 +527,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
 		if (tex->m_palette) {
-			// In standard mode palette is only used when alpha channel of the RT is
-			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
-			// It is a very bad idea to force bilinear filtering on it.
-			bilinear = false;
-
 			ps_sel.fmt = cpsm.fmt | 4;
 			ps_sel.ifmt = !tex->m_alpha_palette ? 0
 				: (context->TEX0.PSM == 0x1B) ? 3
 				: (context->TEX0.PSM == 0x24) ? 2
 				: (context->TEX0.PSM == 0x2C) ? 1
 				: 0;
+
+			// In standard mode palette is only used when alpha channel of the RT is
+			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
+			// It is a very bad idea to force bilinear filtering on it.
+			bilinear &= !ps_sel.ifmt;
+
 			//GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
 		} else {
 			ps_sel.fmt = cpsm.fmt;
