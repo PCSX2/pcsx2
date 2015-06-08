@@ -418,7 +418,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	gtk_widget_set_tooltip_text(hack_sprite_label, dialog_message(IDC_SPRITEHACK));
 	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithm depth instead of a linear depth (superseeded by ARB_clip_control)");
+	gtk_widget_set_tooltip_text(hack_logz_check, "Use a logarithmic depth instead of a linear depth (superseded by ARB_clip_control)");
 	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
 	gtk_widget_set_tooltip_text(stretch_hack_box, dialog_message(IDC_ROUND_SPRITE));
 	gtk_widget_set_tooltip_text(stretch_hack_label, dialog_message(IDC_ROUND_SPRITE));
@@ -460,7 +460,7 @@ void populate_debug_table(GtkWidget* debug_table)
 
 	GtkWidget* gs_saven_label   = gtk_label_new("Start of Dump");
 	GtkWidget* gs_saven_spin    = CreateSpinButton(0, pow(10, 9), "saven");
-	GtkWidget* gs_savel_label   = gtk_label_new("Lengh of Dump");
+	GtkWidget* gs_savel_label   = gtk_label_new("Length of Dump");
 	GtkWidget* gs_savel_spin    = CreateSpinButton(0, pow(10, 5), "savel");
 
 	s_table_line = 0;
