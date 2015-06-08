@@ -12685,6 +12685,7 @@ Region = PAL-Unk
 Serial = SLES-52963
 Name   = Cold Winter
 Region = PAL-Unk
+vuClampMode = 2 //fixes rainbow graphics
 ---------------------------------------------
 Serial = SLES-52964
 Name   = NanoBreaker
@@ -13091,6 +13092,7 @@ Region = PAL-Unk
 Serial = SLES-53093
 Name   = Cold Winter
 Region = PAL-Unk
+vuClampMode = 2 //fixes rainbow graphics
 ---------------------------------------------
 Serial = SLES-53094
 Name   = Rugby 2005
@@ -36974,6 +36976,7 @@ Serial = SLUS-20845
 Name   = Cold Winter
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 //fixes rainbow graphics
 ---------------------------------------------
 Serial = SLUS-20846
 Name   = Strike Force Bowling
