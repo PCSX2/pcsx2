@@ -225,6 +225,83 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	GSDeviceDX::PSSamplerSelector ps_ssel;
 	GSDeviceDX::PSConstantBuffer ps_cb;
 
+	if ((context->FRAME.PSM == 0x2) && (context->TEX0.PSM & 2) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		ps_sel.shuffle = 1;
+		ps_sel.fmt = 0;
+
+		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+		GSVertex* v = &m_vertex.buff[0];
+		size_t count = m_vertex.next;
+
+		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
+		bool write_ba = (((v[0].XYZ.X - o.OFX) & 0xF0) == 128);
+		// Read texture is 8 to 16 pixels (same as above)
+		ps_sel.read_ba = ((v[0].U & 0xF0) == 128);
+
+		GL_INS("Color shuffle %s => %s", ps_sel.read_ba ? "BA" : "RG", write_ba ? "BA" : "RG");
+
+		// Convert the vertex info to a 32 bits color format equivalent
+		for (size_t i = 0; i < count; i += 2) {
+			if (write_ba)
+				v[i].XYZ.X -= 128u;
+			else
+				v[i + 1].XYZ.X += 128u;
+
+			if (ps_sel.read_ba)
+				v[i].U -= 128u;
+			else
+				v[i + 1].U += 128u;
+
+			// Height is too big (2x).
+			int tex_offset = v[i].V & 0xF;
+			GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
+
+			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
+			tmp = ((tmp - offset) >> 1) + offset;
+
+			v[i].XYZ.Y = tmp.x;
+			v[i].V = tmp.y;
+			v[i + 1].XYZ.Y = tmp.z;
+			v[i + 1].V = tmp.w;
+		}
+
+		// Please bang my head against the wall!
+		// 1/ Reduce the frame mask to a 16 bit format
+		const uint32& m = context->FRAME.FBMSK;
+		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
+		om_bsel.wrgba = 0;
+
+		// 2 Select the new mask (Please someone put SSE here)
+		if ((fbmask & 0xFF) == 0) {
+			if (write_ba)
+				om_bsel.wb = 1;
+			else
+				om_bsel.wr = 1;
+		}
+		else if ((fbmask & 0xFF) != 0xFF) {
+			fprintf(stderr, "Please fix me! wb %d wr %d\n", om_bsel.wb, om_bsel.wr);
+			//ASSERT(0);
+		}
+
+		fbmask >>= 8;
+		if ((fbmask & 0xFF) == 0) {
+			if (write_ba)
+				om_bsel.wa = 1;
+			else
+				om_bsel.wg = 1;
+		}
+		else if ((fbmask & 0xFF) != 0xFF) {
+			fprintf(stderr, "Please fix me! wa %d wg %d\n", om_bsel.wa, om_bsel.wg);
+			//ASSERT(0);
+		}
+
+	}
+	else {
+		//ps_sel.fmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
+
+		om_bsel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+	}
+
 	if(DATE)
 	{
 		if(dev->HasStencil())
@@ -245,7 +322,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	ps_sel.clr1 = om_bsel.IsCLR1();
 	ps_sel.fba = context->FBA.FBA;
 	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
-		
+	ps_sel.aout &= !ps_sel.shuffle;
 	if(UserHacks_AlphaHack) ps_sel.aout = 1;
 
 	if(PRIM->FGE)
@@ -292,7 +369,14 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
-		ps_sel.fmt = tex->m_palette? cpsm.fmt | 4 : cpsm.fmt;
+		if (ps_sel.shuffle) {
+			ps_sel.fmt = 0;
+			
+		}
+		else 
+		{
+			ps_sel.fmt = tex->m_palette ? cpsm.fmt | 4 : cpsm.fmt;
+		}
 		ps_sel.aem = env.TEXA.AEM;
 		ps_sel.tfx = context->TEX0.TFX;
 		ps_sel.tcc = context->TEX0.TCC;

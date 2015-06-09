@@ -39,6 +39,8 @@
 #define PS_SPRITEHACK 0
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
+#define PS_SHUFFLE 0
+#define PS_READ_BA 0
 #endif
 
 struct VS_INPUT
@@ -711,6 +713,33 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	float4 c = ps_color(input);
 
 	PS_OUTPUT output;
+
+#if PS_SHUFFLE
+	int4 denorm_c = int4(c * 255.0f + 0.5f);
+	int2 denorm_TA = int2(int2(TA.xy) * 255.0f + 0.5f);
+
+	// Mask will take care of the correct destination
+#if PS_READ_BA
+	c.rb = c.bb;
+#else
+	c.rb = c.rr;
+#endif
+	
+#if PS_READ_BA
+	if (denorm_c.a & 0x80)
+		c.ga = int2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+	else
+		c.ga = int2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+#else
+	if (denorm_c.g & 0x80)
+		c.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f;
+	else
+		c.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f;
+#endif
+	//Probably not right :/
+	c.g = c.b;
+	
+#endif
 
 	output.c1 = c.a * 2; // used for alpha blending
 
