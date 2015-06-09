@@ -867,7 +867,7 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 			.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
 
 	if( SetEmuVersion != NULL )
-		SetEmuVersion( "PCSX2", (0ul << 24) | (9ul<<16) | (7ul<<8) | 0 );
+		SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
 
 	Name = fromUTF8( GetLibName() );
 	int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
