@@ -346,14 +346,22 @@ void GSState::ResetHandlers()
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-
+	int height = m_regs->DISP[i].DISPLAY.DH + 1;
+	int width = m_regs->DISP[i].DISPLAY.DW + 1;
 	GSVector4i r;
 
+	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
+	if (height > 640) 
+	{
+		height /= 2;
+	}
+
+	
 	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
 	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.bottom = r.top + (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-
+	r.right = r.left + width / (m_regs->DISP[i].DISPLAY.MAGH + 1);
+	r.bottom = r.top + height / (m_regs->DISP[i].DISPLAY.MAGV + 1);
+	
 	return r;
 }
 
@@ -1591,6 +1599,12 @@ void GSState::Move()
 	int dy = m_env.TRXPOS.DSAY;
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
+
+	GL_CACHE("Move! %05x %d %d => %05x %d %d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM,
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+		sx, sy, dx, dy, w, h);
 
 	InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(m_env.BITBLTBUF, GSVector4i(dx, dy, dx + w, dy + h));
@@ -3409,6 +3423,23 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
+	}
+	return true;
+}
+
+template<uptr state_addr>
+bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
+{
+	// stop the motion blur on the main character and 
+	// smudge filter from being drawn on USA versions of
+	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
+	// Nocturne:
+	// -0x5900($gp), ref at 0x100740
+	const int state = *(int*)(state_addr);
+
+	if(g_aggressive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
+	{
+		skip = 1;
 	}
 	return true;
 }
@@ -5500,6 +5531,9 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::UrbanReign] = GSC_UrbanReign;
 		map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 		map[CRC::SacredBlaze] = GSC_SacredBlaze;
+		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
+		map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 	}
 
 	// TODO: just set gsc in SetGameCRC once

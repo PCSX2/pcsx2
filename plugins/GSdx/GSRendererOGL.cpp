@@ -289,9 +289,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	if (ps_sel.dfmt == 1) {
-		// 24 bits no alpha channel so use 1.0f fix factor as equivalent
-		ALPHA.C = 2;
-		afix = 1.0f;
+		if (ALPHA.C == 1) {
+			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
+			ALPHA.C = 2;
+			afix = 1.0f;
+		}
 		// Disable writing of the alpha channel
 		om_csel.wa = 0;
 	}
@@ -525,17 +527,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
 		if (tex->m_palette) {
-			// In standard mode palette is only used when alpha channel of the RT is
-			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
-			// It is a very bad idea to force bilinear filtering on it.
-			bilinear = false;
-
 			ps_sel.fmt = cpsm.fmt | 4;
 			ps_sel.ifmt = !tex->m_alpha_palette ? 0
 				: (context->TEX0.PSM == 0x1B) ? 3
 				: (context->TEX0.PSM == 0x24) ? 2
 				: (context->TEX0.PSM == 0x2C) ? 1
 				: 0;
+
+			// In standard mode palette is only used when alpha channel of the RT is
+			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
+			// It is a very bad idea to force bilinear filtering on it.
+			bilinear &= !ps_sel.ifmt;
+
 			//GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
 		} else {
 			ps_sel.fmt = cpsm.fmt;
@@ -596,6 +599,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
 			} else if (tex->m_texture) {
 				dev->PSSetShaderResource(0, tex->m_texture);
+#ifdef ENABLE_OGL_DEBUG
+				// Unattach texture to avoid noise in debugger
+				dev->PSSetShaderResource(1, NULL);
+#endif
 			}
 		}
 
@@ -613,7 +620,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Compute the blending equation to detect special case
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || (m_accurate_blend > 1);
+	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
+	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw;
 
 	if (sw_blending && om_bsel.abe) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);

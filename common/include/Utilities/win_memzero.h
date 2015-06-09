@@ -186,94 +186,6 @@ static __fi void memset_8( void *dest )
 	}
 }
 
-template< u16 data, size_t _bytes >
-static __fi void memset_16( void *dest )
-{
-	if( MZFbytes == 0 ) return;
-
-	// Assertion: data length must be a multiple of 16 or 32 bits
-	pxAssume( (MZFbytes & 0x1) == 0 );
-
-	if( (MZFbytes & 0x3) != 0 )
-	{
-		// Unaligned data length.  No point in doing an optimized inline version (too complicated with
-		// remainders and such).
-
-		_memset16_unaligned( dest, data, MZFbytes );
-		return;
-	}
-
-	//u64 _xmm_backup[2];
-
-	// This function only works on 32-bit alignments of data copied.
-	pxAssume( (MZFbytes & 0x3) == 0 );
-
-	enum
-	{
-		remdat = MZFbytes >> 2,
-		data32 = data + (data<<16)
-	};
-
-	// macro to execute the x86/32 "stosd" copies.
-	switch( remdat )
-	{
-		case 1:
-			*(u32*)dest = data32;
-		return;
-
-		case 2:
-			((u32*)dest)[0] = data32;
-			((u32*)dest)[1] = data32;
-		return;
-
-		case 3:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		case 4:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		case 5:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		default:
-			__asm
-			{
-				mov ecx, remdat;
-				mov edi, dest;
-				mov eax, data32;
-				rep stosd;
-			}
-		return
-	}
-}
-
 template< u32 data, size_t MZFbytes >
 static __fi void memset_32( void *dest )
 {
@@ -370,13 +282,6 @@ template< u8 data, typename T >
 static __fi void memset8( T& object )
 {
 	memset_8<data, sizeof(T)>( &object );
-}
-
-// This method clears an object with the given 16 bit value.
-template< u16 data, typename T >
-static __fi void memset16( T& object )
-{
-	memset_16<data, sizeof(T)>( &object );
 }
 
 // This method clears an object with the given 32 bit value.

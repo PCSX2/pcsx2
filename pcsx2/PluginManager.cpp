@@ -320,6 +320,7 @@ _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
 #endif
 _DEV9irqCallback   DEV9irqCallback;
 _DEV9irqHandler    DEV9irqHandler;
+_DEV9async         DEV9async;
 
 // USB
 _USBopen           USBopen;
@@ -630,6 +631,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_DEV9[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_DEV9[] =
 {
+	{ "DEV9async", (vMeth**)&DEV9async },
 	{ NULL }
 };
 

@@ -69,9 +69,6 @@ CRC::Game CRC::m_games[] =
 	{0x867BB945, HauntingGround, JP, 0},
 	{0xE263BC4B, HauntingGround, JP, 0},
 	{0x901AAC09, HauntingGround, US, 0},
-	{0x8BE3D7B2, ShadowHearts, US, 0},
-	{0xDEFA4763, ShadowHearts, US, 0},
-	{0xDDFB18B0, ShadowHearts, JP, 0},
 	{0x21068223, Okami, US, 0},
 	{0x891F223F, Okami, EU, 0}, // PAL DE, ES & FR.
 	{0xC5DEFEA0, Okami, JP, 0},

@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <windows.h>
 #include <stdarg.h>
+#include <mutex>
 
 #include "smap.h"
 #include "net.h"
@@ -31,6 +32,9 @@
 #include "tap.h"
 
 bool has_link=true;
+volatile bool fireIntR = false;
+std::mutex frame_counter_mutex;
+std::mutex reset_mutex;
 /*
 #define	SMAP_BASE			0xb0000000
 #define	SMAP_REG8(Offset)		(*(u8 volatile*)(SMAP_BASE+(Offset)))
@@ -81,6 +85,7 @@ bool rx_fifo_can_rx()
 	//we can recv a packet !
 	return true;
 }
+
 void rx_process(NetPacket* pk)
 {
 	if (!rx_fifo_can_rx())
@@ -107,6 +112,7 @@ void rx_process(NetPacket* pk)
 	}
 
 	//increase RXBD
+	std::unique_lock<std::mutex> reset_lock(reset_mutex);
 	dev9.rxbdi++;
 	dev9.rxbdi&=(SMAP_BD_SIZE/8)-1;
 
@@ -116,9 +122,13 @@ void rx_process(NetPacket* pk)
 	pbd->ctrl_stat&= ~SMAP_BD_RX_EMPTY;
 
 	//increase frame count
+	std::unique_lock<std::mutex> counter_lock(frame_counter_mutex);
 	dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)++;
+	counter_lock.unlock();
+	reset_lock.unlock();
 	//spams// emu_printf("Got packet, %d bytes (%d fifo)\n", pk->size,bytes);
-	_DEV9irq(SMAP_INTR_RXEND,0);//now ? or when the fifo is full ? i guess now atm
+	fireIntR = true;
+	//_DEV9irq(SMAP_INTR_RXEND,0);//now ? or when the fifo is full ? i guess now atm
 								//note that this _is_ wrong since the IOP interrupt system is not thread safe.. but nothing i can do about that
 }
 
@@ -528,6 +538,8 @@ u32 CALLBACK smap_read32(u32 addr)
 }
 void CALLBACK smap_write8(u32 addr, u8 value)
 {
+	std::unique_lock<std::mutex> reset_lock(reset_mutex, std::defer_lock);
+	std::unique_lock<std::mutex> counter_lock(frame_counter_mutex, std::defer_lock);
 	switch(addr)
 	{
 	case SMAP_R_TXFIFO_FRAME_INC:
@@ -539,10 +551,12 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 
 	case SMAP_R_RXFIFO_FRAME_DEC:
 		DEV9_LOG("SMAP_R_RXFIFO_FRAME_DEC 8bit write %x\n", value);
+		counter_lock.lock();
 		dev9Ru8(addr) = value;
 		{
 			dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)--;
 		}
+		counter_lock.unlock();
 		return;
 
 	case SMAP_R_TXFIFO_CTRL:
@@ -563,11 +577,15 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 		DEV9_LOG("SMAP_R_RXFIFO_CTRL 8bit write %x\n", value);
 		if(value&SMAP_RXFIFO_RESET)
 		{
+			reset_lock.lock(); //lock reset mutex 1st
+			counter_lock.lock();
 			dev9.rxbdi=0;
 			dev9.rxfifo_wr_ptr=0;
 			dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)=0;
 			dev9Ru32(SMAP_R_RXFIFO_RD_PTR)=0;
 			dev9Ru32(SMAP_R_RXFIFO_SIZE)=16384;
+			reset_lock.unlock();
+			counter_lock.unlock();
 		}
 		value&= ~SMAP_RXFIFO_RESET;
 		dev9Ru8(addr) = value;
@@ -838,5 +856,15 @@ void CALLBACK smap_writeDMA8Mem(u32* pMem, int size)
 
 		dev9Ru16(SMAP_R_TXFIFO_CTRL) &= ~SMAP_TXFIFO_DMAEN;
 
+	}
+}
+void CALLBACK smap_async(u32 cycles)
+{
+	if (fireIntR)
+	{
+		fireIntR = false;
+		//Is this used to signal each individual packet, or just when there are packets in the RX fifo?
+		//I think it just signals when there are packets in the RX fifo
+		_DEV9irq(SMAP_INTR_RXEND, 0); //Make the call to _DEV9irq in a thread safe way
 	}
 }

@@ -702,6 +702,7 @@ typedef void (CALLBACK* _DEV9writeDMA8Mem)(u32 *pMem, int size);
 #endif
 typedef void (CALLBACK* _DEV9irqCallback)(DEV9callback callback);
 typedef DEV9handler (CALLBACK* _DEV9irqHandler)(void);
+typedef void (CALLBACK* _DEV9async)(u32 cycles);
 
 // USB
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
@@ -820,6 +821,7 @@ extern _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
 #endif
 extern _DEV9irqCallback   DEV9irqCallback;
 extern _DEV9irqHandler    DEV9irqHandler;
+extern _DEV9async         DEV9async;
 
 // USB
 extern _USBopen           USBopen;

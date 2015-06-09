@@ -308,16 +308,16 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
-		xForwardJump8 tJMP((JccComparisonType)JMPcc);
+		xForwardJump32 tJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(4); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
-		eJMP.SetTarget();
+		tJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
 		iPC = branchAddr/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
-		tJMP.SetTarget();
+		eJMP.SetTarget();
 		iPC = tempPC;	
 	}
 	if (mVUup.dBit && doDBitHandling) 
@@ -329,7 +329,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
-		xForwardJump8 dJMP((JccComparisonType)JMPcc);
+		xForwardJump32 dJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(4); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
@@ -349,11 +349,11 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		
 		incPC(3);
 		mVUendProgram(mVU, &mFC, 2);
-		xForwardJump8 eJMP((JccComparisonType)JMPcc);
+		xForwardJump32 eJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(1); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
-		eJMP.SetTarget();
+			eJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
 		iPC = branchAddr/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);

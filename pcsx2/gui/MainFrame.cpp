@@ -24,6 +24,9 @@
 
 #include <wx/iconbndl.h>
 
+#include <unordered_map>
+#include "AppAccelerators.h"
+
 #include "svnrev.h"
 
 // ------------------------------------------------------------------------
@@ -530,6 +533,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	ApplyCoreStatus();
 	ApplySettings();
+	AppendKeycodeNamesToMenuOptions();
 }
 
 MainEmuFrame::~MainEmuFrame() throw()
@@ -694,6 +698,24 @@ void MainEmuFrame::CommitPreset_noTrigger()
 {
 	wxMenuBar& menubar( *GetMenuBar() );
 	g_Conf->EmuOptions.EnablePatches = menubar.IsChecked( MenuId_EnablePatches );
+}
+
+static void AppendShortcutToMenuOption( wxMenuItem& item, const char* id ) {
+	// this is NOT how a dictionary works but it has like 30 entries so this should still perform okay
+	auto* dict = &wxGetApp().GlobalAccels;
+	for ( auto it = ( *dict )->begin(); it != ( *dict )->end(); ++it ) {
+		if ( strcmp( it->second->Id, id ) == 0 ) {
+			wxString text = item.GetItemLabel();
+			size_t tabPos = text.rfind( L'\t' );
+			KeyAcceleratorCode keycode( (wxKeyCode)it->first );
+			item.SetItemLabel( text.Mid( 0, tabPos ) + L"\t" + keycode.ToString() );
+		}
+	}
+}
+
+void MainEmuFrame::AppendKeycodeNamesToMenuOptions() {
+	AppendShortcutToMenuOption( *m_menuSys.FindChildItem( MenuId_Sys_LoadStates ), "States_DefrostCurrentSlot" );
+	AppendShortcutToMenuOption( *m_menuSys.FindChildItem( MenuId_Sys_SaveStates ), "States_FreezeCurrentSlot" );
 }
 
 

@@ -244,7 +244,7 @@ void VifUnpackSSE_Base::xUPK_V2_8() const {
 void VifUnpackSSE_Base::xUPK_V3_32() const {
 
 	xMOV128    (destReg, ptr128[srcIndirect]);
-	if(UnpkLoopIteration == (1-IsAligned))  
+	if(UnpkLoopIteration != IsAligned)  
     	xAND.PS( destReg, ptr128[SSEXYZWMask[0]]);
 }
 
@@ -260,7 +260,17 @@ void VifUnpackSSE_Base::xUPK_V3_16() const {
 		xPUNPCK.LWD(destReg, destReg);
 		xShiftR    (destReg, 16);
 	}
-}
+
+	//With V3-16, it takes the first vector from the next position as the W vector
+	//However - IF the end of this iteration of the unpack falls on a quadword boundary, W becomes 0
+	//IsAligned is the position through the current QW in the vif packet
+	//Iteration counts where we are in the packet.
+	int result = (((UnpkLoopIteration/4) + 1 + (4-IsAligned)) & 0x3);
+
+	if ((UnpkLoopIteration & 0x1) == 0 && result == 0){
+		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]); //zero last word on QW boundary if whole 32bit word is used - tested on ps2
+	}
+}	
 
 void VifUnpackSSE_Base::xUPK_V3_8() const {
 

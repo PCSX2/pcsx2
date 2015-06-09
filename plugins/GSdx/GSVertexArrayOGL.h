@@ -58,7 +58,7 @@ class GSBufferOGL {
 		gl_GenBuffers(1, &m_buffer_name);
 		// Opengl works best with 1-4MB buffer.
 		// Warning m_limit is the number of object (not the size in Bytes)
-		m_limit = 2 * 2 * 1024 * 1024 / m_stride;
+		m_limit = 8 * 1024 * 1024 / m_stride;
 
 		if (m_buffer_storage) {
 			for (size_t i = 0; i < 5; i++) {
@@ -139,7 +139,7 @@ class GSBufferOGL {
 		size_t length = m_count*m_stride;
 
 		if (m_count > (m_limit - m_start) ) {
-			size_t current_chunk = offset >> 20;
+			size_t current_chunk = offset >> 21;
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Wrap buffer\n", m_target);
 			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, current_chunk);
@@ -169,8 +169,8 @@ class GSBufferOGL {
 		}
 
 		// Protect buffer with fences
-		size_t current_chunk = offset >> 20;
-		size_t next_chunk = (offset + length) >> 20;
+		size_t current_chunk = offset >> 21;
+		size_t next_chunk = (offset + length) >> 21;
 		for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);

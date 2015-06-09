@@ -23,7 +23,7 @@
 #include "GSRendererHW.h"
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
-	: m_width(1024)
+	: m_width(1280)
 	, m_height(1024)
 	, m_skip(0)
 	, m_reset(false)
@@ -34,55 +34,54 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
+
+	if (m_upscale_multiplier == 1) { //Custom
+		m_width = theApp.GetConfig("resx", m_width);
+		m_height = theApp.GetConfig("resy", m_height);
+	}
+
+	if (m_upscale_multiplier == 1) {
+		m_userhacks_round_sprite_offset = 0;
+		m_userhacks_align_sprite_X = 0;
+	}
+
 }
 
-void GSRendererHW::SetScaling(){
-	int env = IsEnabled(1) ? 1 : 0;
+void GSRendererHW::SetScaling() {
 
-	m_buffer_size = max(m_context->FRAME.FBW, m_regs->DISP[env].DISPFB.FBW);
-
+	m_buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
+	
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
-	if (m_upscale_multiplier <= 6 && (m_width / m_upscale_multiplier) < (m_buffer_size * 64)){
-		printf("Frame buffer width on vsync %d m_width %d\n", m_buffer_size, (m_width / m_upscale_multiplier));
+
+	if (!m_nativeres && m_width < (m_buffer_size * m_upscale_multiplier)){
 		m_tc->RemovePartial();
 	}
 	else {
 		return;
 	}
 
-	if (!m_nativeres)
-	{
+	m_height = m_buffer_size < 1024 ? 512 : 1024;
+	
+	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
+
+	if (m_upscale_multiplier == 1) { //Custom
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
-
-		m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
-
+	}
+		
+	if (m_upscale_multiplier > 1)
+	{
 		if (m_upscale_multiplier > 6)
 		{
 			m_upscale_multiplier = 1; // use the normal upscale math
 		}
-		else if (m_upscale_multiplier > 1)
-		{
-			m_width = (m_buffer_size * 64) * m_upscale_multiplier;
-			m_height = m_width; //Keep it square
-		}
-	}
-	else
-	{
-		m_upscale_multiplier = 1;
-	}
 
-	if (m_upscale_multiplier == 1) {
-		// No upscaling hack at native resolution
-		if (m_nativeres) {
-			m_width = (m_buffer_size * 64);
-			m_height = m_width; //Keep it square
-		}
-
-		m_userhacks_round_sprite_offset = 0;
-		m_userhacks_align_sprite_X = 0;
+		m_width = m_buffer_size * m_upscale_multiplier;
+		m_height *= m_upscale_multiplier;
 	}
-	printf("Frame buffer width %d m_width set to %d multiplier %d", m_buffer_size, m_width, m_upscale_multiplier);
+	
+	
+	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
@@ -350,8 +349,8 @@ void GSRendererHW::Draw()
 
 	if(!rt || !ds)
 	{
+		GL_POP();
 		ASSERT(0);
-
 		return;
 	}
 
@@ -376,7 +375,10 @@ void GSRendererHW::Draw()
 
 		tex = m_tc->LookupSource(context->TEX0, env.TEXA, r);
 
-		if(!tex) return;
+		if(!tex) {
+			GL_POP();
+			return;
+		}
 
 		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 		{
@@ -442,6 +444,8 @@ void GSRendererHW::Draw()
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
 	{
+		s_n += 1; // keep counter sync
+		GL_POP();
 		return;
 	}
 

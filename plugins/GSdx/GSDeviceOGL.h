@@ -122,7 +122,7 @@ class GSDepthStencilOGL {
 public:
 
 	GSDepthStencilOGL() : m_depth_enable(false)
-		, m_depth_func(0)
+		, m_depth_func(GL_ALWAYS)
 		, m_depth_mask(0)
 		, m_stencil_enable(false)
 		, m_stencil_func(0)
@@ -486,10 +486,11 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GLuint vs;		// program object
-		GLuint ps[11];	// program object
+		GLuint ps[13];	// program object
 		GLuint ln;		// sampler object
 		GLuint pt;		// sampler object
 		GSDepthStencilOGL* dss;
+		GSDepthStencilOGL* dss_write;
 		GSBlendStateOGL* bs;
 	} m_convert;
 

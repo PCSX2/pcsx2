@@ -31,7 +31,7 @@
 
 #ifdef _WIN32
 
-// Force availability of to WinNT APIs (change to 0x600 to enable XP-specific APIs)
+// Force availability of to WinNT APIs (change to 0x600 to disable XP-specific APIs)
 #ifndef WINVER
 #define WINVER 0x0501
 #define _WIN32_WINNT 0x0501

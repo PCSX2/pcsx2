@@ -447,7 +447,10 @@ void GSRendererSW::Draw()
 	sd->bbox = bbox;
 	sd->frame = m_perfmon.GetFrame();
 
-	if(!GetScanlineGlobalData(sd)) return;
+	if(!GetScanlineGlobalData(sd)) {
+		s_n += 3; // Keep it sync with HW renderer
+		return;
+	}
 
 	if(0) if(LOG)
 	{

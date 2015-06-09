@@ -231,6 +231,13 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	vifX.cl			 = 0;
 	vifX.tag.cmd	 = vifX.cmd;
 	GetVifX.pass	 = 1;
+
+	//Ugh things are never easy.
+	//Alright, in most cases with V2 and V3 we only need to know if its offset 32bits.
+	//However in V3-16 if the data it requires ends on a QW boundary of the source data
+	//the W vector becomes 0, so we need to know how far through the current QW the data begins
+	vifX.start_aligned = 4-((vifX.vifpacketsize-1) & 0x3);
+	//DevCon.Warning("Aligned %d packetsize at data start %d", vifX.start_aligned, vifX.vifpacketsize - 1);
 }
 
 template void vifUnpackSetup<0>(const u32 *data);

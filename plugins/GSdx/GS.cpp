@@ -760,6 +760,9 @@ EXPORT_C GSconfigure()
 		}
 
 #endif
+		// Force a reload of the gs state
+		s_renderer = -1;
+
 	} catch (GSDXRecoverableError)
 	{
 	}

@@ -134,12 +134,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 						break;
 
-					} else if ((t->m_TEX0.TBW == 20) && (t->m_TEX0.PSM == 2) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + 0x140, t->m_TEX0.PSM)) {
-						// try to detect render target bigger than 1024 Texels
-						// 0x140: In 16 bits format, pages are 64 pixels and 8KB
-						// Half of 1280 is 640 so 10 pages
-						// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
-
+					} else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM)) {
+						// Detect half of the render target (fix snow engine game)
+						// Target Page (8KB) have always a width of 64 pixels
+						// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
 						half_right = true;
 						dst = t;
 
@@ -154,7 +152,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE("TC: dst hit: %d (0x%x)",
+			GL_CACHE("TC: dst hit (%s): %d (0x%x)", half_right ? "half" : "full",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
 						TEX0.TBP0);
 		} else {
@@ -364,12 +362,11 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 		}
 
-		if ((bw == 20) && (psm == 2)) {
-			// try to detect render target bigger than 1024 Texels
-			// 0x140: In 16 bits format, pages are 64 pixels and 8KB
-			// Half of 1280 is 640 so 10 pages
-			// TBP0 unit is block of 256B => (10 pages * 8 KB) / (1 block * 256B) = 320 = 0x140
-			uint32 bbp = bp + 0x140;
+		if (bw >= 16) {
+			// Detect half of the render target (fix snow engine game)
+			// Target Page (8KB) have always a width of 64 pixels
+			// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
+			uint32 bbp = bp + bw * 0x10;
 
 			const list<Source*>& m = m_src.m_map[bbp >> 5];
 

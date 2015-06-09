@@ -453,7 +453,10 @@ void psxRcntUpdate()
 		else c -= difference;
 		psxNextCounter = c;
 	}
-
+	if (DEV9async)
+	{
+		DEV9async(1);
+	}
 	if(USBasync)
 	{
 		const s32 difference = psxRegs.cycle - psxCounters[7].sCycleT;

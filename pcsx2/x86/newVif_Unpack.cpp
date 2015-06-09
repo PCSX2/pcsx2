@@ -131,7 +131,7 @@ _vifT int nVifUnpack(const u8* data) {
 			if (newVifDynaRec)	dVifUnpack<idx>(data, isFill);
 			else			   _nVifUnpack(idx, data, vifRegs.mode, isFill);
 		}
-		else vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, size);
+		else vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
 
 		vif.pass		= 0;
 		vif.tag.size	= 0;

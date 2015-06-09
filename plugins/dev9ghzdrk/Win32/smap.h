@@ -26,3 +26,4 @@ void CALLBACK smap_write32(u32 addr, u32 value);
 
 void CALLBACK smap_readDMA8Mem(u32 *pMem, int size);
 void CALLBACK smap_writeDMA8Mem(u32 *pMem, int size);
+void CALLBACK smap_async(u32 cycles);
