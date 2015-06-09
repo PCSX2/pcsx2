@@ -36,6 +36,7 @@ void FolderMemoryCard::InitializeInternalData() {
 	memset( &m_backupBlock1, 0xFF, sizeof( m_backupBlock1 ) );
 	memset( &m_backupBlock2, 0xFF, sizeof( m_backupBlock2 ) );
 	m_cache.clear();
+	m_fileMetadataQuickAccess.clear();
 	m_timeLastWritten = 0;
 	m_isEnabled = false;
 	m_framesUntilFlush = 0;
@@ -102,6 +103,8 @@ void FolderMemoryCard::Close() {
 		superBlockFile.Write( &m_superBlock.raw, sizeof( m_superBlock.raw ) );
 	}
 
+	m_cache.clear();
+	m_fileMetadataQuickAccess.clear();
 	m_lastAccessedFile.Close();
 }
 
@@ -128,7 +131,7 @@ void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxS
 		CreateFat();
 		CreateRootDir();
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
-		AddFolder( rootDirEntry, m_folderName.GetPath(), enableFiltering, filter );
+		AddFolder( rootDirEntry, m_folderName.GetPath(), nullptr, enableFiltering, filter );
 	}
 }
 
@@ -270,7 +273,7 @@ bool FilterMatches( const wxString& fileName, const wxString& filter ) {
 	return false;
 }
 
-bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const bool enableFiltering, const wxString& filter ) {
+bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent, const bool enableFiltering, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
 		Console.WriteLn( L"(FolderMcd) Adding folder: %s", WX_STR( dirPath ) );
@@ -302,7 +305,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 			bool isFile = wxFile::Exists( fileInfo.GetFullPath() );
 
 			if ( isFile ) {
-				if ( AddFile( dirEntry, dirPath, fileName ) ) {
+				if ( AddFile( dirEntry, dirPath, fileName, parent ) ) {
 					++entryNumber;
 				}
 			} else {
@@ -365,10 +368,12 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				subDirCluster->entries[1].entry.data.name[0] = '.';
 				subDirCluster->entries[1].entry.data.name[1] = '.';
 
+				MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess( newDirEntry, parent );
+
 				++entryNumber;
 
 				// and add all files in subdir
-				AddFolder( newDirEntry, fileInfo.GetFullPath() );
+				AddFolder( newDirEntry, fileInfo.GetFullPath(), dirRef );
 			}
 
 			hasNext = dir.GetNext( &fileName );
@@ -380,7 +385,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 	return false;
 }
 
-bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName ) {
+bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent ) {
 	wxFileName relativeFilePath( dirPath, fileName );
 	relativeFilePath.MakeRelativeTo( m_folderName.GetPath() );
 	Console.WriteLn( L"(FolderMcd) Adding file: %s", WX_STR( relativeFilePath.GetFullPath() ) );
@@ -434,6 +439,8 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 		}
 
 		file.Close();
+
+		AddFileEntryToMetadataQuickAccess( newFileEntry, parent );
 	} else {
 		Console.WriteLn( L"(FolderMcd) Could not open file: %s", WX_STR( relativeFilePath.GetFullPath() ) );
 		return false;
@@ -443,6 +450,44 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 	dirEntry->entry.data.length++;
 
 	return true;
+}
+
+MemoryCardFileMetadataReference* FolderMemoryCard::AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent ) {
+	MemoryCardFileMetadataReference* ref = &m_fileMetadataQuickAccess[entry->entry.data.cluster];
+	ref->parent = parent;
+	ref->entry = entry;
+	ref->consecutiveCluster = 0xFFFFFFFFu;
+	return ref;
+}
+
+void FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent ) {
+	u32 fileCluster = entry->entry.data.cluster;
+
+	// zero-length files have no file clusters
+	if ( fileCluster == 0xFFFFFFFFu ) {
+		return;
+	}
+
+	u32 clusterNumber = 0;
+	do {
+		MemoryCardFileMetadataReference* ref = &m_fileMetadataQuickAccess[fileCluster & 0x7FFFFFFFu];
+		ref->parent = parent;
+		ref->entry = entry;
+		ref->consecutiveCluster = clusterNumber;
+		++clusterNumber;
+	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != 0xFFFFFFFFu );
+}
+
+void MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) {
+	if ( parent ) {
+		parent->GetPath( fileName );
+	}
+
+	if ( entry->IsDir() ) {
+		fileName->AppendDir( wxString::FromAscii( (const char*)entry->entry.data.name ) );
+	} else if ( entry->IsFile() ) {
+		fileName->SetName( wxString::FromAscii( (const char*)entry->entry.data.name ) );
+	}
 }
 
 s32 FolderMemoryCard::IsPresent() {
@@ -536,6 +581,8 @@ u8* FolderMemoryCard::GetFileEntryPointer( const u32 currentCluster, const u32 s
 	return nullptr;
 }
 
+// This method is actually unused since the introduction of m_fileMetadataQuickAccess.
+// I'll leave it here anyway though to show how you traverse the file system.
 MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u32 currentCluster, const u32 searchCluster, wxFileName* fileName, const size_t originalDirCount, u32* outClusterNumber ) {
 	// check both entries of the current cluster if they're the file we're searching for, and if yes return it
 	for ( int i = 0; i < 2; ++i ) {
@@ -551,11 +598,6 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u3
 				}
 				++clusterNumber;
 			} while ( ( fileCluster = m_fat.data[0][0][fileCluster] & 0x7FFFFFFF ) != 0x7FFFFFFF );
-			// There's a lot of optimization work that can be done here, looping through all clusters of every single file
-			// is not very efficient, especially since files are going to be accessed from the start and in-order the vast
-			// majority of the time. You can probably cut a lot of the work by remembering the state of the last access
-			// and only checking if the current access is either the same or the next cluster according to the FAT.
-			//} while ( false );
 		}
 	}
 
@@ -594,10 +636,11 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	}
 
 	// figure out which file to read from
-	wxFileName fileName( m_folderName );
-	u32 clusterNumber;
-	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
-	if ( entry != nullptr ) {
+	auto it = m_fileMetadataQuickAccess.find( fatCluster );
+	if ( it != m_fileMetadataQuickAccess.end() ) {
+		wxFileName fileName( m_folderName );
+		const u32 clusterNumber = it->second.consecutiveCluster;
+		it->second.GetPath( &fileName );
 		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"rb" );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
@@ -806,7 +849,7 @@ void FolderMemoryCard::FlushBlock( const u32 block ) {
 	}
 }
 
-void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath ) {
+void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath, MemoryCardFileMetadataReference* parent ) {
 	// flush the current cluster
 	FlushCluster( dirCluster + m_superBlock.data.alloc_offset );
 
@@ -839,15 +882,19 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 					}
 				}
 
-				FlushFileEntries( cluster, entry->entry.data.length, subDirPath );
+				MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess( entry, parent );
+
+				FlushFileEntries( cluster, entry->entry.data.length, subDirPath, dirRef );
 			}
+		} else if ( entry->IsValid() && entry->IsUsed() && entry->IsFile() ) {
+			AddFileEntryToMetadataQuickAccess( entry, parent );
 		}
 	}
 
 	// continue to the next cluster of this directory
 	const u32 nextCluster = m_fat.data[0][0][dirCluster];
 	if ( nextCluster != 0xFFFFFFFF ) {
-		FlushFileEntries( nextCluster & 0x7FFFFFFF, remainingFiles - 2, dirPath );
+		FlushFileEntries( nextCluster & 0x7FFFFFFF, remainingFiles - 2, dirPath, parent );
 	}
 }
 
@@ -899,10 +946,12 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	}
 
 	// figure out which file to write to
-	wxFileName fileName( m_folderName );
-	u32 clusterNumber;
-	const MemoryCardFileEntry* const entry = GetFileEntryFromFileDataCluster( m_superBlock.data.rootdir_cluster, fatCluster, &fileName, fileName.GetDirCount(), &clusterNumber );
-	if ( entry != nullptr ) {
+	auto it = m_fileMetadataQuickAccess.find( fatCluster );
+	if ( it != m_fileMetadataQuickAccess.end() ) {
+		wxFileName fileName( m_folderName );
+		const MemoryCardFileEntry* const entry = it->second.entry;
+		const u32 clusterNumber = it->second.consecutiveCluster;
+		it->second.GetPath( &fileName );
 		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"r+b" );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;

@@ -132,6 +132,18 @@ struct MemoryCardPage {
 #pragma pack(pop)
 
 // --------------------------------------------------------------------------------------
+//  MemoryCardFileMetadataReference
+// --------------------------------------------------------------------------------------
+// Helper structure to quickly access file entries from any file data FAT cluster
+struct MemoryCardFileMetadataReference {
+	MemoryCardFileMetadataReference* parent;
+	MemoryCardFileEntry* entry;
+	u32 consecutiveCluster;
+
+	void GetPath( wxFileName* fileName );
+};
+
+// --------------------------------------------------------------------------------------
 //  FileAccessHelper
 // --------------------------------------------------------------------------------------
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
@@ -198,6 +210,8 @@ protected:
 
 	// stores directory and file metadata
 	std::map<u32, MemoryCardFileEntryCluster> m_fileEntryDict;
+	// quick-access map of related file entry metadata for each memory card FAT cluster that contains file data
+	std::map<u32, MemoryCardFileMetadataReference> m_fileMetadataQuickAccess;
 
 	// holds a copy of modified pages of the memory card before they're flushed to the file system
 	std::map<u32, MemoryCardPage> m_cache;
@@ -320,14 +334,23 @@ protected:
 	// adds a folder in the host file system to the memory card, including all files and subdirectories
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
 	// - dirPath: the full path to the directory in the host file system
+	// - parent: pointer to the parent dir's quick-access reference element
 	// - enableFiltering and filter: filter loaded contents, see LoadMemoryCardData()
-	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const bool enableFiltering = false, const wxString& filter = L"" );
+	bool AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent = nullptr, const bool enableFiltering = false, const wxString& filter = L"" );
 
 	// adds a file in the host file sytem to the memory card
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
 	// - dirPath: the full path to the directory containing the file in the host file system
 	// - fileName: the name of the file, without path
-	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName );
+	// - parent: pointer to the parent dir's quick-access reference element
+	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent = nullptr );
+
+
+	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
+	void AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
+
+	// creates a reference to a directory entry, so it can be passed as parent to other files/directories
+	MemoryCardFileMetadataReference* AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
 
 
 	bool ReadFromFile( u8 *dest, u32 adr, u32 dataLength );
@@ -347,7 +370,7 @@ protected:
 	void FlushBlock( const u32 block );
 
 	// flush a directory's file entries and all its subdirectories to the internal data
-	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"" );
+	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"", MemoryCardFileMetadataReference* parent = nullptr );
 
 	// write data as Save() normally would, but ignore the cache; used for flushing
 	s32 WriteWithoutCache( const u8 *src, u32 adr, int size );
