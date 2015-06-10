@@ -27,14 +27,14 @@ void GSWndGL::PopulateGlFunction()
 {
 	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
+	*(void**)&(gl_BlendEquationSeparate) = GetProcAddress("glBlendEquationSeparate");
+	*(void**)&(gl_BlendFuncSeparate) = GetProcAddress("glBlendFuncSeparate");
 	*(void**)&(gl_AttachShader) = GetProcAddress("glAttachShader");
 	*(void**)&(gl_BindBuffer) = GetProcAddress("glBindBuffer");
 	*(void**)&(gl_BindBufferBase) = GetProcAddress("glBindBufferBase");
 	*(void**)&(gl_BindFramebuffer) = GetProcAddress("glBindFramebuffer");
 	*(void**)&(gl_BindSampler) = GetProcAddress("glBindSampler");
 	*(void**)&(gl_BindVertexArray) = GetProcAddress("glBindVertexArray");
-	*(void**)&(gl_BlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB");
-	*(void**)&(gl_BlendFuncSeparateiARB) = GetProcAddress("glBlendFuncSeparateiARB");
 	*(void**)&(gl_BlitFramebuffer) = GetProcAddress("glBlitFramebuffer");
 	*(void**)&(gl_BufferData) = GetProcAddress("glBufferData");
 	*(void**)&(gl_CheckFramebufferStatus) = GetProcAddress("glCheckFramebufferStatus");
@@ -81,6 +81,8 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_FlushMappedBufferRange) = GetProcAddress("glFlushMappedBufferRange");
 	// GL4.0
 	*(void**)&(gl_UniformSubroutinesuiv) = GetProcAddress("glUniformSubroutinesuiv", true);
+	*(void**)&(gl_BlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB", true);
+	*(void**)&(gl_BlendFuncSeparateiARB) = GetProcAddress("glBlendFuncSeparateiARB", true);
 	// GL4.1
 	*(void**)&(gl_CreateShaderProgramv) = GetProcAddress("glCreateShaderProgramv", true);
 	*(void**)&(gl_BindProgramPipeline) = GetProcAddress("glBindProgramPipeline", true);

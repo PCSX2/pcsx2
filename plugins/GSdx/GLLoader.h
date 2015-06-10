@@ -268,6 +268,8 @@ extern   PFNGLFENCESYNCPROC                     gl_FenceSync;
 extern   PFNGLDELETESYNCPROC                    gl_DeleteSync;
 extern   PFNGLCLIENTWAITSYNCPROC                gl_ClientWaitSync;
 extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange;
+extern   PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate;
+extern   PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate;
 // GL4.0
 extern   PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv;
 // GL4.1

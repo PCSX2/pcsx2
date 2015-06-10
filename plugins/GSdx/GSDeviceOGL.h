@@ -99,12 +99,18 @@ public:
 
 			if (GLState::eq_RGB != m_equation_RGB) {
 				GLState::eq_RGB = m_equation_RGB;
-				gl_BlendEquationSeparateiARB(0, m_equation_RGB, GL_FUNC_ADD);
+				if (gl_BlendEquationSeparateiARB)
+					gl_BlendEquationSeparateiARB(0, m_equation_RGB, GL_FUNC_ADD);
+				else
+					gl_BlendEquationSeparate(m_equation_RGB, GL_FUNC_ADD);
 			}
 			if (GLState::f_sRGB != m_func_sRGB || GLState::f_dRGB != m_func_dRGB) {
 				GLState::f_sRGB = m_func_sRGB;
 				GLState::f_dRGB = m_func_dRGB;
-				gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
+				if (gl_BlendFuncSeparateiARB)
+					gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
+				else
+					gl_BlendFuncSeparate(m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
 			}
 		}
 	}
