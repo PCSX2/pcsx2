@@ -974,7 +974,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type)
 {
-	Target* t = new Target(m_renderer, TEX0, m_temp);
+	Target* t = new Target(m_renderer, TEX0, m_temp, m_can_convert_depth);
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
@@ -1262,10 +1262,11 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 // GSTextureCache::Target
 
-GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp)
+GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported)
 	: Surface(r, temp)
 	, m_type(-1)
 	, m_used(false)
+	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
 
@@ -1277,59 +1278,75 @@ void GSTextureCache::Target::Update()
 	Surface::Update();
 
 	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
+	// GH: it must be doable
+	// 1/ rescale the new t to the good size
+	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
+	// Alternate
+	// 1/ uses multiple vertex rectangle
 
 	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, m_texture->GetSize());
 
-	if(r.rempty()) return;
+	if (r.rempty()) return;
 
+	int w = r.width();
+	int h = r.height();
+
+	GIFRegTEXA TEXA;
+
+	TEXA.AEM = 1;
+	TEXA.TA0 = 0;
+	TEXA.TA1 = 0x80;
+
+	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
+	if (t == NULL) return;
+
+	// No handling please
+	if ((m_type == DepthStencil) && !m_depth_supported) {
+		// do the most likely thing a direct write would do, clear it
+		GL_INS("ERROR: Update DepthStencil dummy");
+
+		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
+			m_renderer->m_dev->ClearDepth(m_texture, 0);
+
+		return;
+	}
+
+	const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
+
+	GSTexture::GSMap m;
+
+	if(t->Map(m))
+	{
+		m_renderer->m_mem.ReadTexture(off, r, m.bits,  m.pitch, TEXA);
+
+		t->Unmap();
+	}
+	else
+	{
+		int pitch = ((w + 3) & ~3) * 4;
+
+		m_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
+
+		t->Update(r.rsize(), m_temp, pitch);
+	}
+
+	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
+
+	// Copy the new GS memory content into the destination texture.
 	if(m_type == RenderTarget)
 	{
-		int w = r.width();
-		int h = r.height();
+		GL_INS("ERROR: Update RenderTarget");
 
-		if(GSTexture* t = m_renderer->m_dev->CreateTexture(w, h))
-		{
-			const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
-
-			GIFRegTEXA TEXA;
-
-			TEXA.AEM = 1;
-			TEXA.TA0 = 0;
-			TEXA.TA1 = 0x80;
-
-			GSTexture::GSMap m;
-
-			if(t->Map(m))
-			{
-				m_renderer->m_mem.ReadTexture(off, r, m.bits,  m.pitch, TEXA);
-
-				t->Unmap();
-			}
-			else
-			{
-				int pitch = ((w + 3) & ~3) * 4;
-
-				m_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
-
-				t->Update(r.rsize(), m_temp, pitch);
-			}
-
-			// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
-
-			m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-
-			m_renderer->m_dev->Recycle(t);
-		}
+		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 	}
 	else if(m_type == DepthStencil)
 	{
-		// do the most likely thing a direct write would do, clear it
+		GL_INS("ERROR: Update DepthStencil");
 
-		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
-		{
-			m_renderer->m_dev->ClearDepth(m_texture, 0);
-		}
+		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 12);
 	}
+
+	m_renderer->m_dev->Recycle(t);
 }
 
 // GSTextureCache::SourceMap
