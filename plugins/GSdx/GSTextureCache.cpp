@@ -974,7 +974,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type)
 {
-	Target* t = new Target(m_renderer, TEX0, m_temp, m_can_convert_depth);
+	Target* t = new Target(m_renderer, TEX0, m_temp, CanConvertDepth());
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
