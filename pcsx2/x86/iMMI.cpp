@@ -25,7 +25,6 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 #include "iMMI.h"
-#include "Utilities/Math.h"
 
 using namespace x86Emitter;
 
@@ -67,10 +66,23 @@ void recPLZCW()
 		_deleteEEreg(_Rd_, 0);
 		GPR_SET_CONST(_Rd_);
 
-		// Return the leading sign bits, excluding the original bit
-		g_cpuConstRegs[_Rd_].UL[0] = count_leading_sign_bits(g_cpuConstRegs[_Rs_].SL[0]) - 1;
-		g_cpuConstRegs[_Rd_].UL[1] = count_leading_sign_bits(g_cpuConstRegs[_Rs_].SL[1]) - 1;
+		for(regs = 0; regs < 2; ++regs) {
+			u32 val = g_cpuConstRegs[_Rs_].UL[regs];
 
+			if( val != 0 ) {
+				u32 setbit = val&0x80000000;
+				g_cpuConstRegs[_Rd_].UL[regs] = 0;
+				val <<= 1;
+
+				while((val & 0x80000000) == setbit) {
+					g_cpuConstRegs[_Rd_].UL[regs]++;
+					val <<= 1;
+				}
+			}
+			else {
+				g_cpuConstRegs[_Rd_].UL[regs] = 31;
+			}
+		}
 		return;
 	}
 

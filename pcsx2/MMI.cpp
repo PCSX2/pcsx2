@@ -16,7 +16,6 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "Utilities/Math.h"
 
 namespace R5900 {
 namespace Interpreter {
@@ -146,13 +145,30 @@ namespace MMI {
 
 //*****************MMI OPCODES*********************************
 
-void PLZCW() {
-	if (!_Rd_)
-		return;
+static __fi void _PLZCW(int n)
+{
+	// This function counts the number of "like" bits in the source register, starting
+	// with the MSB and working its way down, and returns the result MINUS ONE.
+	// So 0xff00 would return 7, not 8.
 
-	// Return the leading sign bits, excluding the original bit
-	cpuRegs.GPR.r[_Rd_].UL[0] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[0]) - 1;
-	cpuRegs.GPR.r[_Rd_].UL[1] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[1]) - 1;
+	int c = 0;
+	s32 i = cpuRegs.GPR.r[_Rs_].SL[n];
+
+	// Negate the source based on the sign bit.  This allows us to use a simple
+	// unified bit test of the MSB for either condition.
+	if( i >= 0 ) i = ~i;
+
+	// shift first, compare, then increment.  This excludes the sign bit from our final count.
+	while( i <<= 1, i < 0 ) c++;
+
+	cpuRegs.GPR.r[_Rd_].UL[n] = c;
+}
+
+void PLZCW() {
+    if (!_Rd_) return;
+
+	_PLZCW (0);
+	_PLZCW (1);
 }
 
 __fi void PMFHL_CLAMP(u16& dst, s32 src)
