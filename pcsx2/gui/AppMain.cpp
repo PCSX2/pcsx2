@@ -280,12 +280,22 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 // displaying a readable --help command line list, so I replace it here with a custom one
 // that formats things nicer.
 //
+
+// This is only used in Windows. It's not possible to have wxWidgets show a localised
+// command line help message in cmd/powershell/mingw bash. It can be done in English
+// locales ( using AttachConsole, WriteConsole, FreeConsole combined with
+// wxMessageOutputStderr), but completely fails for some other languages (i.e. Japanese).
+#ifdef _WIN32
 class pxMessageOutputMessageBox : public wxMessageOutput
 {
 public:
 	pxMessageOutputMessageBox() { }
 
+#if wxMAJOR_VERSION < 3
 	virtual void Printf(const wxChar* format, ...);
+#endif
+	// DoPrintf in wxMessageOutputBase (wxWidgets 3.0) uses this.
+	virtual void Output(const wxString &out);
 };
 
 // EXTRAORDINARY HACK!  wxWidgets does not provide a clean way of overriding the commandline options
@@ -294,21 +304,31 @@ public:
 // wxMessageOutputMessageBox::PrintF is only used in like two places, so we can just check for the
 // commandline window using an identifier we know is contained in it, and then format our own window
 // display. :D  --air
+
+#if wxMAJOR_VERSION < 3
 void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 {
-	using namespace pxSizerFlags;
-
 	va_list args;
 	va_start(args, format);
 	wxString out;
 	out.PrintfV(format, args);
 	va_end(args);
 
-	FastFormatUnicode isoFormatted;
-	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted.c_str() );
-	
-	if(pos == wxNOT_FOUND)
+	Output(out);
+}
+#endif
+
+void pxMessageOutputMessageBox::Output(const wxString& out)
+{
+	using namespace pxSizerFlags;
+
+	wxString isoFormatted;
+	isoFormatted.Printf(L"[%s]", _("IsoFile"));
+
+	int pos = out.Find(isoFormatted.c_str());
+
+	// I've no idea when this is true.
+	if (pos == wxNOT_FOUND)
 	{
 		Msgbox::Alert( out ); return;
 	}
@@ -340,6 +360,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	pxIssueConfirmation(popup, MsgButtons().Close() );
 }
+#endif
 
 wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 {
