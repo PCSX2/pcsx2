@@ -30,8 +30,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
 
-	m_can_convert_depth = theApp.GetConfig("texture_cache_depth", 1);
-
+	m_can_convert_depth = theApp.GetConfig("Renderer", 12) == 12 ? theApp.GetConfig("texture_cache_depth", 1) : 0;
+	
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
 

@@ -721,9 +721,6 @@
     <None Include="res\logo9.bmp">
       <Filter>Resource Files</Filter>
     </None>
-      <None Include="res\logo-ogl.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\convert.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -755,10 +752,18 @@
     <None Include="res\tfx.cl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="res\logo_ogl.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GSdx.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\logo-ogl.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
