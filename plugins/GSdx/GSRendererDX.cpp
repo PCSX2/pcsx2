@@ -234,9 +234,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		size_t count = m_vertex.next;
 
 		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-		bool write_ba = (((v[0].XYZ.X - o.OFX) & 0xF0) == 128);
+		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
+		bool write_ba = (pos > 112 && pos < 136);
 		// Read texture is 8 to 16 pixels (same as above)
-		ps_sel.read_ba = ((v[0].U & 0xF0) == 128);
+		int tex_pos = v[0].U & 0xFF;
+		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
 
 		GL_INS("Color shuffle %s => %s", ps_sel.read_ba ? "BA" : "RG", write_ba ? "BA" : "RG");
 
@@ -257,7 +259,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
 
 			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
-			tmp = ((tmp - offset) >> 1) + offset;
+			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 			v[i].XYZ.Y = tmp.x;
 			v[i].V = tmp.y;
