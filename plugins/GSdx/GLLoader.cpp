@@ -84,6 +84,8 @@ PFNGLFENCESYNCPROC                     gl_FenceSync                         = NU
 PFNGLDELETESYNCPROC                    gl_DeleteSync                        = NULL;
 PFNGLCLIENTWAITSYNCPROC                gl_ClientWaitSync                    = NULL;
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange            = NULL;
+PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate             = NULL;
+PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate                 = NULL;
 // GL4.0
 PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv             = NULL;
 // GL4.1
@@ -326,6 +328,7 @@ namespace GLLoader {
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
+	bool found_GL_ARB_draw_buffers_blend = false; // DX10 GPU limited driver on windows!
 
 	// Note: except Apple, all drivers support explicit uniform location
 	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
@@ -345,7 +348,6 @@ namespace GLLoader {
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
 	bool found_GL_ARB_shading_language_420pack = false;
-	bool found_GL_ARB_draw_buffers_blend = false; // could be easily be optional, but I'm lazy
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
@@ -475,7 +477,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
-		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend", true);
+		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
 		status &= status_and_override(found_GL_ARB_shader_subroutine, "GL_ARB_shader_subroutine");
