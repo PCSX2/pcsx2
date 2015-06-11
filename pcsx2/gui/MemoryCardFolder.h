@@ -150,7 +150,7 @@ struct MemoryCardFileMetadataReference {
 class FileAccessHelper {
 protected:
 	wxFFile* m_file;
-	wxString m_filename;
+	const MemoryCardFileEntry* m_entry;
 	wxString m_mode;
 
 public:
@@ -158,13 +158,13 @@ public:
 	~FileAccessHelper();
 
 	// Get an already opened file if possible, or open a new one and remember it
-	wxFFile* ReOpen( const wxString& filename, const wxString& mode );
+	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
 	// Close an open file, if any
 	void Close();
 
 protected:
 	// Open a new file and remember it for later
-	wxFFile* Open( const wxString& filename, const wxString& mode );
+	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
 };
 
 // --------------------------------------------------------------------------------------

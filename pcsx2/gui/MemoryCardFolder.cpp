@@ -638,10 +638,8 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	// figure out which file to read from
 	auto it = m_fileMetadataQuickAccess.find( fatCluster );
 	if ( it != m_fileMetadataQuickAccess.end() ) {
-		wxFileName fileName( m_folderName );
 		const u32 clusterNumber = it->second.consecutiveCluster;
-		it->second.GetPath( &fileName );
-		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"rb" );
+		wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"rb" );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileOffset = clusterNumber * ClusterSize + clusterOffset;
@@ -948,11 +946,9 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	// figure out which file to write to
 	auto it = m_fileMetadataQuickAccess.find( fatCluster );
 	if ( it != m_fileMetadataQuickAccess.end() ) {
-		wxFileName fileName( m_folderName );
 		const MemoryCardFileEntry* const entry = it->second.entry;
 		const u32 clusterNumber = it->second.consecutiveCluster;
-		it->second.GetPath( &fileName );
-		wxFFile* file = m_lastAccessedFile.ReOpen( fileName.GetFullPath(), L"r+b" );
+		wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"r+b", true );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileSize = entry->entry.data.length;
@@ -979,30 +975,6 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 			}
 		} else {
 			return false;
-		}
-
-		// separately write metadata of file if it's nonstandard
-		fileName.AppendDir( L"_pcsx2_meta" );
-		if ( entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
-			if ( !fileName.DirExists() ) {
-				fileName.Mkdir();
-			}
-			wxFFile metaFile( fileName.GetFullPath(), L"wb" );
-			if ( metaFile.IsOpened() ) {
-				metaFile.Write( entry->entry.raw, 0x40 );
-				metaFile.Close();
-			}
-		} else {
-			// if metadata is standard remove metadata file if it exists
-			if ( fileName.FileExists() ) {
-				wxRemoveFile( fileName.GetFullPath() );
-				
-				// and remove the metadata dir if it's now empty
-				wxDir metaDir( fileName.GetPath() );
-				if ( metaDir.IsOpened() && !metaDir.HasFiles() ) {
-					wxRmdir( fileName.GetPath() );
-				}
-			}
 		}
 
 		return true;
@@ -1125,10 +1097,13 @@ FileAccessHelper::~FileAccessHelper() {
 	this->Close();
 }
 
-wxFFile* FileAccessHelper::Open( const wxString& filename, const wxString& mode ) {
+wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata ) {
 	this->Close();
 
-	wxFileName fn( filename );
+	wxFileName fn( folderName );
+	fileRef->GetPath( &fn );
+	wxString filename( fn.GetFullPath() );
+
 	if ( !fn.FileExists() ) {
 		if ( !fn.DirExists() ) {
 			fn.Mkdir();
@@ -1138,16 +1113,45 @@ wxFFile* FileAccessHelper::Open( const wxString& filename, const wxString& mode 
 	}
 
 	m_file = new wxFFile( filename, mode );
-	m_filename = filename;
+	m_entry = fileRef->entry;
 	m_mode = mode;
+
+	if ( writeMetadata ) {
+		const MemoryCardFileEntry* const entry = fileRef->entry;
+
+		// write metadata of file if it's nonstandard
+		fn.AppendDir( L"_pcsx2_meta" );
+		if ( entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
+			if ( !fn.DirExists() ) {
+				fn.Mkdir();
+			}
+			wxFFile metaFile( fn.GetFullPath(), L"wb" );
+			if ( metaFile.IsOpened() ) {
+				metaFile.Write( entry->entry.raw, 0x40 );
+				metaFile.Close();
+			}
+		} else {
+			// if metadata is standard remove metadata file if it exists
+			if ( fn.FileExists() ) {
+				wxRemoveFile( fn.GetFullPath() );
+
+				// and remove the metadata dir if it's now empty
+				wxDir metaDir( fn.GetPath() );
+				if ( metaDir.IsOpened() && !metaDir.HasFiles() ) {
+					wxRmdir( fn.GetPath() );
+				}
+			}
+		}
+	}
+
 	return m_file;
 }
 
-wxFFile* FileAccessHelper::ReOpen( const wxString& filename, const wxString& mode ) {
-	if ( m_file && mode == m_mode && filename == m_filename ) {
+wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata ) {
+	if ( m_file && fileRef->entry == m_entry && mode == m_mode ) {
 		return m_file;
 	} else {
-		return this->Open( filename, mode );
+		return this->Open( folderName, fileRef, mode, writeMetadata );
 	}
 }
 
