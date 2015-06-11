@@ -123,9 +123,13 @@ int pcap_io_init(char *adapter)
 		fprintf(stderr,"WARNING: Error setting non-blocking mode. Default mode will be used.\n");
 	}
 
-	packet_log=fopen("logs/packet.log","w");
+	//Changing the LogSetting might not affect logging
+	//directory of winPcap logs if done after Open()
+	const std::string pfile(s_strLogPath + "/packet.log");
+	packet_log = fopen(pfile.c_str(), "w");
 
-	dump_pcap = pcap_dump_open(adhandle,"logs/pkt_log.pcap");
+	const std::string plfile(s_strLogPath + "/pkt_log.pcap");
+	dump_pcap = pcap_dump_open(adhandle, plfile.c_str());
 
 	pcap_io_running=1;
 	emu_printf("Ok.\n");
