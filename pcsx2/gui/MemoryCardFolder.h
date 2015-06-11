@@ -280,12 +280,17 @@ protected:
 
 	// returns in-memory address of file or directory metadata searchCluster corresponds to
 	// returns nullptr if searchCluster contains something else
-	// originally call by passing:
-	// - currentCluster: the root directory cluster as indicated in the superblock
 	// - searchCluster: the cluster that is being accessed, relative to alloc_offset in the superblock
 	// - entryNumber: page of cluster
 	// - offset: offset of page
-	u8* GetFileEntryPointer( const u32 currentCluster, const u32 searchCluster, const u32 entryNumber, const u32 offset );
+	u8* GetFileEntryPointer( const u32 searchCluster, const u32 entryNumber, const u32 offset );
+
+	// used by GetFileEntryPointer to find the correct cluster
+	// returns nullptr if searchCluster is not a file or directory metadata cluster
+	// - currentCluster: the cluster we're currently traversing
+	// - searchCluster: the cluster we want
+	// - fileCount: the number of files left in the directory currently traversed
+	MemoryCardFileEntryCluster* GetFileEntryCluster( const u32 currentCluster, const u32 searchCluster, const u32 fileCount );
 
 	// returns file entry of the file at the given searchCluster
 	// the passed fileName will be filled with a path to the file being accessed

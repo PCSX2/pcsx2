@@ -523,7 +523,7 @@ u8* FolderMemoryCard::GetSystemBlockPointer( const u32 adr ) {
 		if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
 			return nullptr;
 		}
-		return GetFileEntryPointer( m_superBlock.data.rootdir_cluster, fatCluster, page % 2, offset );
+		return GetFileEntryPointer( fatCluster, page % 2, offset );
 	}
 
 	u8* src = nullptr;
@@ -556,25 +556,40 @@ u8* FolderMemoryCard::GetSystemBlockPointer( const u32 adr ) {
 	return src;
 }
 
-u8* FolderMemoryCard::GetFileEntryPointer( const u32 currentCluster, const u32 searchCluster, const u32 entryNumber, const u32 offset ) {
+u8* FolderMemoryCard::GetFileEntryPointer( const u32 searchCluster, const u32 entryNumber, const u32 offset ) {
+	const u32 fileCount = m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0].entry.data.length;
+	MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( m_superBlock.data.rootdir_cluster, searchCluster, fileCount );
+	if ( ptr != nullptr ) {
+		return &ptr->entries[entryNumber].entry.raw[offset];
+	}
+
+	return nullptr;
+}
+
+MemoryCardFileEntryCluster* FolderMemoryCard::GetFileEntryCluster( const u32 currentCluster, const u32 searchCluster, const u32 fileCount ) {
 	// we found the correct cluster, return pointer to it
 	if ( currentCluster == searchCluster ) {
-		return &m_fileEntryDict[currentCluster].entries[entryNumber].entry.raw[offset];
+		return &m_fileEntryDict[currentCluster];
 	}
 
 	// check other clusters of this directory
 	const u32 nextCluster = m_fat.data[0][0][currentCluster] & 0x7FFFFFFF;
 	if ( nextCluster != 0x7FFFFFFF ) {
-		u8* ptr = GetFileEntryPointer( nextCluster, searchCluster, entryNumber, offset );
+		MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( nextCluster, searchCluster, fileCount - 2 );
 		if ( ptr != nullptr ) { return ptr; }
 	}
 
 	// check subdirectories
-	for ( int i = 0; i < 2; ++i ) {
-		MemoryCardFileEntry* const entry = &m_fileEntryDict[currentCluster].entries[i];
-		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
-			u8* ptr = GetFileEntryPointer( entry->entry.data.cluster, searchCluster, entryNumber, offset );
-			if ( ptr != nullptr ) { return ptr; }
+	auto it = m_fileEntryDict.find( currentCluster );
+	if ( it != m_fileEntryDict.end() ) {
+		const u32 filesInThisCluster = std::min( fileCount, 2u );
+		for ( unsigned int i = 0; i < filesInThisCluster; ++i ) {
+			MemoryCardFileEntry* const entry = &it->second.entries[i];
+			if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
+				const u32 newFileCount = entry->entry.data.length;
+				MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( entry->entry.data.cluster, searchCluster, newFileCount );
+				if ( ptr != nullptr ) { return ptr; }
+			}
 		}
 	}
 
