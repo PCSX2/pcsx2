@@ -287,9 +287,9 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 		if ( enableFiltering ) {
 			bool hasFilter = !filter.IsEmpty();
 			if ( hasFilter ) {
-				localFilter = L"DATA-SYSTEM/" + filter;
+				localFilter = L"DATA-SYSTEM/BWNETCNF/" + filter;
 			} else {
-				localFilter = L"DATA-SYSTEM";
+				localFilter = L"DATA-SYSTEM/BWNETCNF";
 			}
 		}
 
