@@ -385,6 +385,7 @@ CRC::Game CRC::m_games[] =
 	{0x568A5C78, DigimonRumbleArena2, US, 0},
 	{0x785E22BB, DigimonRumbleArena2, EU, 0},
 	{0x4C5CE4C3, DigimonRumbleArena2, EU, 0},
+	{0x7F995E8D, DigimonRumbleArena2, JP, 0},
 	{0x115A184D, DigimonRumbleArena2, KO, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
