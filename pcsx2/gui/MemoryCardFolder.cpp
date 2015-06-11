@@ -409,24 +409,27 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 		fileInfo.GetTimes( NULL, &modificationTime, &creationTime );
 
 		// set file entry metadata
-		memset( &newFileEntry->entry.raw[0], 0x00, 0x200 );
+		memset( &newFileEntry->entry.raw[0], 0x00, sizeof( newFileEntry->entry.raw ) );
 
 		wxFileName metaFileName( dirPath, fileName );
 		metaFileName.AppendDir( L"_pcsx2_meta" );
 		wxFFile metaFile;
 		if ( metaFileName.FileExists() && metaFile.Open( metaFileName.GetFullPath(), L"rb" ) ) {
-			metaFile.Read( &newFileEntry->entry.raw, 0x40 );
+			size_t bytesRead = metaFile.Read( &newFileEntry->entry.raw, sizeof( newFileEntry->entry.raw ) );
 			metaFile.Close();
+			if ( bytesRead < 0x60 ) {
+				strcpy( (char*)&newFileEntry->entry.data.name[0], fileName.mbc_str() );
+			}
 		} else {
 			newFileEntry->entry.data.mode = MemoryCardFileEntry::DefaultFileMode;
 			newFileEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
 			newFileEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
+			strcpy( (char*)&newFileEntry->entry.data.name[0], fileName.mbc_str() );
 		}
 
 		newFileEntry->entry.data.length = filesize;
 		u32 fileDataStartingCluster = GetFreeDataCluster();
 		newFileEntry->entry.data.cluster = fileDataStartingCluster;
-		strcpy( (char*)&newFileEntry->entry.data.name[0], fileName.mbc_str() );
 
 		// mark the appropriate amount of clusters as used
 		u32 dataCluster = fileDataStartingCluster;
@@ -476,18 +479,6 @@ void FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* c
 		ref->consecutiveCluster = clusterNumber;
 		++clusterNumber;
 	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != 0xFFFFFFFFu );
-}
-
-void MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) {
-	if ( parent ) {
-		parent->GetPath( fileName );
-	}
-
-	if ( entry->IsDir() ) {
-		fileName->AppendDir( wxString::FromAscii( (const char*)entry->entry.data.name ) );
-	} else if ( entry->IsFile() ) {
-		fileName->SetName( wxString::FromAscii( (const char*)entry->entry.data.name ) );
-	}
 }
 
 s32 FolderMemoryCard::IsPresent() {
@@ -1116,7 +1107,7 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 	this->Close();
 
 	wxFileName fn( folderName );
-	fileRef->GetPath( &fn );
+	bool cleanedFilename = fileRef->GetPath( &fn );
 	wxString filename( fn.GetFullPath() );
 
 	if ( !fn.FileExists() ) {
@@ -1136,13 +1127,13 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 		// write metadata of file if it's nonstandard
 		fn.AppendDir( L"_pcsx2_meta" );
-		if ( entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
+		if ( cleanedFilename || entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
 			if ( !fn.DirExists() ) {
 				fn.Mkdir();
 			}
 			wxFFile metaFile( fn.GetFullPath(), L"wb" );
 			if ( metaFile.IsOpened() ) {
-				metaFile.Write( entry->entry.raw, 0x40 );
+				metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
 				metaFile.Close();
 			}
 		} else {
@@ -1176,6 +1167,46 @@ void FileAccessHelper::Close() {
 		delete m_file;
 		m_file = nullptr;
 	}
+}
+
+bool FileAccessHelper::CleanMemcardFilename( char* name ) {
+	// invalid characters for filenames in the PS2 file system: { '/', '?', '*' }
+	// the following characters are valid in a PS2 memcard file system but invalid in Windows
+	// there's less restrictions on Linux but by cleaning them always we keep the folders cross-compatible
+	const char illegalChars[] = { '\\', '%', ':', '|', '"', '<', '>' };
+	bool cleaned = false;
+
+	for ( int i = 0; i < sizeof( illegalChars ); ++i ) {
+		// this sizeof looks really odd but I couldn't get MemoryCardFileEntry::entry.data.name (or variants) working, feel free to replace with something equivalent but nicer looking
+		for ( int j = 0; j < sizeof( ( (MemoryCardFileEntry*)0 )->entry.data.name ); ++j ) {
+			if ( name[j] == illegalChars[i] ) {
+				name[j] = '_';
+				cleaned = true;
+			}
+		}
+	}
+
+	return cleaned;
+}
+
+
+bool MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) {
+	bool parentCleaned = false;
+	if ( parent ) {
+		parentCleaned = parent->GetPath( fileName );
+	}
+
+	char cleanName[sizeof( entry->entry.data.name )];
+	memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+	bool localCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+
+	if ( entry->IsDir() ) {
+		fileName->AppendDir( wxString::FromAscii( cleanName ) );
+	} else if ( entry->IsFile() ) {
+		fileName->SetName( wxString::FromAscii( cleanName ) );
+	}
+
+	return parentCleaned || localCleaned;
 }
 
 

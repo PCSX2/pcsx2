@@ -140,7 +140,8 @@ struct MemoryCardFileMetadataReference {
 	MemoryCardFileEntry* entry;
 	u32 consecutiveCluster;
 
-	void GetPath( wxFileName* fileName );
+	// returns true if filename was modified and metadata containing the actual filename should be written
+	bool GetPath( wxFileName* fileName );
 };
 
 // --------------------------------------------------------------------------------------
@@ -161,6 +162,10 @@ public:
 	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
 	// Close an open file, if any
 	void Close();
+
+	// removes characters from a PS2 file name that would be illegal in a Windows file system
+	// returns true if any changes were made
+	static bool CleanMemcardFilename( char* name );
 
 protected:
 	// Open a new file and remember it for later
