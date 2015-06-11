@@ -576,7 +576,7 @@ MemoryCardFileEntryCluster* FolderMemoryCard::GetFileEntryCluster( const u32 cur
 		const u32 filesInThisCluster = std::min( fileCount, 2u );
 		for ( unsigned int i = 0; i < filesInThisCluster; ++i ) {
 			MemoryCardFileEntry* const entry = &it->second.entries[i];
-			if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
+			if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && !entry->IsDotDir() ) {
 				const u32 newFileCount = entry->entry.data.length;
 				MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( entry->entry.data.cluster, searchCluster, newFileCount );
 				if ( ptr != nullptr ) { return ptr; }
@@ -618,7 +618,7 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u3
 	// check subdirectories
 	for ( int i = 0; i < 2; ++i ) {
 		MemoryCardFileEntry* const entry = &m_fileEntryDict[currentCluster].entries[i];
-		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && entry->entry.data.cluster != 0 ) {
+		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && !entry->IsDotDir() ) {
 			MemoryCardFileEntry* ptr = GetFileEntryFromFileDataCluster( entry->entry.data.cluster, searchCluster, fileName, originalDirCount, outClusterNumber );
 			if ( ptr != nullptr ) {
 				fileName->InsertDir( originalDirCount, wxString::FromAscii( (const char*)entry->entry.data.name ) );
@@ -863,8 +863,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 	for ( unsigned int i = 0; i < filesInThisCluster; ++i ) {
 		MemoryCardFileEntry* entry = &entries->entries[i];
 		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() ) {
-			const u32 cluster = entry->entry.data.cluster;
-			if ( cluster > 0 ) {
+			if ( !entry->IsDotDir() ) {
 				const wxString subDirName = wxString::FromAscii( (const char*)entry->entry.data.name );
 				const wxString subDirPath = dirPath + L"/" + subDirName;
 
@@ -888,7 +887,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 
 				MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess( entry, parent );
 
-				FlushFileEntries( cluster, entry->entry.data.length, subDirPath, dirRef );
+				FlushFileEntries( entry->entry.data.cluster, entry->entry.data.length, subDirPath, dirRef );
 			}
 		} else if ( entry->IsValid() && entry->IsUsed() && entry->IsFile() ) {
 			AddFileEntryToMetadataQuickAccess( entry, parent );

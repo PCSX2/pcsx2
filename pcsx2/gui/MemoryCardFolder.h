@@ -112,6 +112,8 @@ struct MemoryCardFileEntry {
 	bool IsDir()  { return !!( entry.data.mode & 0x0020 ); }
 	bool IsUsed() { return !!( entry.data.mode & 0x8000 ); }
 	bool IsValid() { return entry.data.mode != 0xFFFFFFFF; }
+	// checks if we're either "." or ".."
+	bool IsDotDir() { return entry.data.name[0] == '.' && ( entry.data.name[1] == '\0' || ( entry.data.name[1] == '.' && entry.data.name[2] == '\0' ) ); }
 
 	static const u32 DefaultDirMode = 0x8427;
 	static const u32 DefaultFileMode = 0x8497;
