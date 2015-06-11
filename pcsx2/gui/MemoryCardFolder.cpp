@@ -1111,7 +1111,7 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 	if ( !fn.FileExists() ) {
 		if ( !fn.DirExists() ) {
-			fn.Mkdir();
+			fn.Mkdir( 0777, wxPATH_MKDIR_FULL );
 		}
 		wxFFile createEmptyFile( filename, L"wb" );
 		createEmptyFile.Close();
