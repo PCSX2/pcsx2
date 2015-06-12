@@ -80,8 +80,15 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type) {
 	return (version<<16) | (revision<<8) | build;
 }
 
+
+//string s_strIniPath = "inis";
+std::string s_strLogPath = "logs";
 // Warning: The below log function is SLOW. Better fix it before attempting to use it.
+#ifdef _DEBUG
+int Log = 1;
+#else
 int Log = 0;
+#endif
 
 void __Log(char *fmt, ...) {
 	if (!Log) return;
@@ -94,26 +101,31 @@ void __Log(char *fmt, ...) {
 
 	if(iopPC!=NULL)
 	{
-		fprintf(dev9Log,"[%10d + %4d, IOP PC = %08x] ",nticks,nticks-ticks,*iopPC);
+		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
 	}
 	else
 	{
-		fprintf(dev9Log,"[%10d + %4d] ",nticks,nticks-ticks);
+		DEV9Log.Write( "[%10d + %4d] ", nticks, nticks - ticks);
 	}
 	ticks=nticks;
 
 	va_start(list, fmt);
-	vfprintf(dev9Log, fmt, list);
+	DEV9Log.Write(fmt, list);
 	va_end(list);
 }
 
+void LogInit()
+{
+	const std::string LogFile(s_strLogPath + "/dev9Log.txt");
+	DEV9Log.WriteToFile = true;
+	DEV9Log.Open(LogFile);
+}
 
 s32 CALLBACK DEV9init() 
 {
 
 #ifdef DEV9_LOG_ENABLE
-	dev9Log = fopen("logs/dev9Log.txt", "w");
-	setvbuf(dev9Log, NULL,  _IONBF, 0);
+	LogInit();
 	DEV9_LOG("DEV9init\n");
 #endif
 	memset(&dev9, 0, sizeof(dev9));
@@ -179,7 +191,7 @@ s32 CALLBACK DEV9init()
 void CALLBACK DEV9shutdown() {
 	DEV9_LOG("DEV9shutdown\n");
 #ifdef DEV9_LOG_ENABLE
-	fclose(dev9Log);
+	DEV9Log.Close();
 #endif
 }
 
@@ -618,6 +630,16 @@ void CALLBACK DEV9setSettingsDir(const char* dir)
     // s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
+void CALLBACK DEV9setLogDir(const char* dir)
+{
+	// Get the path to the log directory.
+	s_strLogPath = (dir == NULL) ? "logs" : dir;
+
+	// Reload the log file after updated the path
+	// Currently dosn't change winPcap log directories post DEV9open()
+	DEV9Log.Close();
+	LogInit();
+}
 
 int emu_printf(const char *fmt, ...)
 {
