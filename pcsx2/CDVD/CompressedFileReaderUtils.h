@@ -24,7 +24,7 @@
 // Maybe some day we'll convert all file related ops to wxWidgets, which means also the
 // instances at zlib_indexed.h (which use plain stdio FILE*)
 #ifdef WIN32
-#   define PX_wfilename(name_wxstr) (WX_STR(name_wxstr))
+#   define PX_wfilename(name_wxstr) (name_wxstr.wc_str())
 #   define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
 #else
 #   define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
