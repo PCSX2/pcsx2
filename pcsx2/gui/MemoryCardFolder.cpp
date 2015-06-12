@@ -78,8 +78,8 @@ void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptio
 			}
 		}
 	} else {
-		str = L"[disabled]";
-		disabled = true;
+		// if the user has disabled this slot or is using a different memory card type, just return without a console log
+		return;
 	}
 
 	Console.WriteLn( disabled ? Color_Gray : Color_Green, L"McdSlot %u: [Folder] " + str, m_slot );
@@ -276,8 +276,6 @@ bool FilterMatches( const wxString& fileName, const wxString& filter ) {
 bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent, const bool enableFiltering, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
-		Console.WriteLn( L"(FolderMcd) Adding folder: %s", WX_STR( dirPath ) );
-
 		const u32 dirStartCluster = dirEntry->entry.data.cluster;
 
 		wxString fileName;
@@ -388,7 +386,6 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent ) {
 	wxFileName relativeFilePath( dirPath, fileName );
 	relativeFilePath.MakeRelativeTo( m_folderName.GetPath() );
-	Console.WriteLn( L"(FolderMcd) Adding file: %s", WX_STR( relativeFilePath.GetFullPath() ) );
 
 	wxFileName fileInfo( dirPath, fileName );
 	wxFFile file( fileInfo.GetFullPath(), L"rb" );
