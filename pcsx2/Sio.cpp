@@ -60,6 +60,13 @@ void SetForceMcdEjectTimeoutNow()
 				mcds[port][slot].ForceEjection_Timeout = FORCED_MCD_EJECTION_MAX_TRIES;
 }
 
+void ClearMcdEjectTimeoutNow()
+{
+	for( u8 port=0; port<2; ++port ) 
+			for( u8 slot=0; slot<4; ++slot )
+				mcds[port][slot].ForceEjection_Timeout = 0;
+}
+
 // SIO Inline'd IRQs : Calls the SIO interrupt handlers directly instead of
 // feeding them through the IOP's branch test. (see SIO.H for details)
 

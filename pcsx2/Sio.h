@@ -127,5 +127,6 @@ extern void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
 extern void InitializeSIO(u8 value);
 extern void SetForceMcdEjectTimeoutNow();
+extern void ClearMcdEjectTimeoutNow();
 extern void sioNextFrame();
 extern void sioSetGameSerial(const wxString& serial);

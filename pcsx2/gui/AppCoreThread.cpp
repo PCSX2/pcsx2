@@ -522,6 +522,7 @@ void AppCoreThread::GameStartingInThread()
 	m_ExecMode = ExecMode_Paused;
 	OnResumeReady();
 	_reset_stuff_as_needed();
+	ClearMcdEjectTimeoutNow(); // probably safe to do this when a game boots, eliminates annoying prompts
 	m_ExecMode = ExecMode_Opened;
 	
 	_parent::GameStartingInThread();
