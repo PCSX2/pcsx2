@@ -29,6 +29,8 @@
 
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
+static int s_crc_hack_level = 3;
+
 GSState::GSState()
 	: m_version(6)
 	, m_mt(false)
@@ -64,10 +66,10 @@ GSState::GSState()
 	//s_save = 1;
 	//s_savez = 1;
 
-	UserHacks_AggressiveCRC = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AggressiveCRC", 0) : 0;
-	UserHacks_DisableCrcHacks = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig( "UserHacks_DisableCrcHacks", 0 ) : 0;
 	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
 	UserHacks_AutoSkipDrawDepth = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AutoSkipDrawDepth", 1) : false;
+	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+	s_crc_hack_level = m_crc_hack_level;
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -2304,7 +2306,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(UserHacks_DisableCrcHacks ? 0 : crc);
+	m_game = CRC::Lookup(m_crc_hack_level < 2 ? 0 : crc);
 }
 
 //
@@ -2999,6 +3001,8 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 }
 
 // hacks
+#define Aggresive (s_crc_hack_level > 3)
+#define Dx_only   (s_crc_hack_level > 2)
 
 struct GSFrameInfo
 {
@@ -3013,7 +3017,6 @@ struct GSFrameInfo
 
 typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
 CRC::Region g_crc_region = CRC::NoRegion;
-int g_aggressive = 0;
 
 bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 {
@@ -3182,12 +3185,13 @@ bool GSC_BullyCC(const GSFrameInfo& fi, int& skip)
 
 	return true;
 }
+
 bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 {
             // Not needed anymore? What did it fix anyway? (rama)
     if(skip == 0)
     {
-            if(g_aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
+            if(Aggresive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
             {
                     skip = 48;	//removes sky bloom
             }
@@ -3251,7 +3255,7 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
-		else if( g_aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
+		else if( Aggresive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
 			skip = 1;
 		}
@@ -3437,7 +3441,7 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// -0x5900($gp), ref at 0x100740
 	const int state = *(int*)(state_addr);
 
-	if(g_aggressive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
+	if(Aggresive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
 	{
 		skip = 1;
 	}
@@ -3610,11 +3614,11 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			{
 					skip = 1; // wall of fog
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
+			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
 			{
 				skip = 1; // global haze/halo
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80 
+			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80
 			{
 				skip = 1; // water effect and water vertical lines
 			}
@@ -3824,9 +3828,10 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
         {
 			skip = 1;
         }
-		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
+		else if(Dx_only && fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
+			// Fixed on openGL
 			skip = 1000;
 		}
 	}
@@ -3976,7 +3981,6 @@ bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-
 bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -3991,7 +3995,7 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 
 bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
 		{
@@ -4113,7 +4117,7 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4131,7 +4135,7 @@ bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4149,7 +4153,7 @@ bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4464,7 +4468,7 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 
 bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4519,7 +4523,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 	
 	return true;
 }
-
 
 bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
 {
@@ -5222,6 +5225,7 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 	}
 	return true;
 }
+
 bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -5249,7 +5253,7 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 			{
 				skip=100;//deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
 			}
-			else if(g_aggressive && fi.FBP != 0)//Agressive CRC
+			else if(Aggresive && fi.FBP != 0)//Agressive CRC
 			{
 				skip=19;//"speedhack", makes the game very light, vaporized water can disappear when not looked at directly, possibly some interface still, other value to try: 6 breaks menu background, possibly nothing(?) during gameplay, but it's slower, hence not much of a speedhack anymore
 			}
@@ -5257,6 +5261,8 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 	}
 	return true;
 }
+
+#undef Agressive
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 
@@ -5447,8 +5453,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 		map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		map[CRC::Genji] = GSC_Genji;
-		map[CRC::StarOcean3] = GSC_StarOcean3;
-		map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		map[CRC::RadiataStories] = GSC_RadiataStories;
 		map[CRC::HauntingGround] = GSC_HauntingGround;
 		map[CRC::EvangelionJo] = GSC_EvangelionJo;
@@ -5478,8 +5482,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-		map[CRC::CastlevaniaCoD] = GSC_Castlevania;
-		map[CRC::CastlevaniaLoI] = GSC_Castlevania;
 		map[CRC::CrashNburn] = GSC_CrashNburn;
 		map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
@@ -5534,13 +5536,22 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+
+		// Hack that were fixed on openGL
+		if (Dx_only) {
+			// This one requires accurate_colclip
+			map[CRC::CastlevaniaCoD] = GSC_Castlevania;
+			map[CRC::CastlevaniaLoI] = GSC_Castlevania;
+
+			map[CRC::StarOcean3] = GSC_StarOcean3;
+			map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+		}
 	}
 
 	// TODO: just set gsc in SetGameCRC once
 
 	GetSkipCount gsc = map[m_game.title];
 	g_crc_region = m_game.region;
-	g_aggressive = UserHacks_AggressiveCRC;
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
