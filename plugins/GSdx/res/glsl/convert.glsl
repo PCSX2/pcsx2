@@ -183,6 +183,19 @@ void ps_main12()
 }
 #endif
 
+#ifdef ps_main13
+out float gl_FragDepth;
+void ps_main13()
+{
+	// Same as above but without the alpha channel
+
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const vec4 bitSh = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 0.0) * vec4(255.0/256.0);
+	gl_FragDepth = dot(sample_c(), bitSh);
+}
+#endif
+
 #ifdef ps_main7
 void ps_main7()
 {

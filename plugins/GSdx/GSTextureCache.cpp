@@ -258,7 +258,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				dst = CreateTarget(TEX0, w, h, type);
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 12, false);
+					int shader = (TEX0.PSM & 1) ? 13 : 12;
+					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
 				} else {
 					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 11, false);
@@ -1343,6 +1344,7 @@ void GSTextureCache::Target::Update()
 	{
 		GL_INS("ERROR: Update DepthStencil");
 
+		// FIXME linear or not?
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 12);
 	}
 
