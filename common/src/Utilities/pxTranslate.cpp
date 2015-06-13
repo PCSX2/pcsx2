@@ -26,11 +26,11 @@ bool pxIsEnglish( int id )
 // --------------------------------------------------------------------------------------
 const wxChar* __fastcall pxExpandMsg( const wxChar* englishContent )
 {
-#if wxMAJOR_VERSION >= 3
+#if _WIN32 || wxMAJOR_VERSION < 3
+	return wxGetTranslation(englishContent);
+#else
 	wxString translation = wxGetTranslation( englishContent );
 	return translation.wc_str();
-#else
-	return wxGetTranslation( englishContent );
 #endif
 }
 
@@ -50,10 +50,10 @@ const wxChar* __fastcall pxGetTranslation( const wxChar* message )
 			Console.WriteLn( Color_Green, L"Message: %s", message );
 		}
 	}
-#if wxMAJOR_VERSION >= 3
+#if _WIN32 || wxMAJOR_VERSION < 3
+	return wxGetTranslation(message);
+#else
 	wxString translation = wxGetTranslation( message );
 	return translation.wc_str();
-#else
-	return wxGetTranslation( message );
 #endif
 }
