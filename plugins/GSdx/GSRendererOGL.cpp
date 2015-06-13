@@ -247,7 +247,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
-	if ((context->FRAME.PSM & 0x2) && (context->TEX0.PSM & 2) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		ps_sel.shuffle = 1;
 		ps_sel.dfmt = 0;
 
