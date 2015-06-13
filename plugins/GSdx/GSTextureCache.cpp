@@ -167,11 +167,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE("TC: dst %s hit (%s): %d (0x%x)", dst->m_type ? "Depth" : "Color", half_right ? "half" : "full",
+			GL_CACHE("TC: dst %s hit (%s): %d (0x%x, F:0x%x)", to_string(dst->m_type), half_right ? "half" : "full",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
-						TEX0.TBP0);
+						TEX0.TBP0, TEX0.PSM);
 		} else {
-			GL_CACHE("TC: src miss (0x%x)", TEX0.TBP0);
+			GL_CACHE("TC: src miss (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right);
@@ -237,7 +237,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	if (dst) {
-		GL_CACHE("TC: Lookup Target(T%d) %dx%d, hit: %d (0x%x)", type, w, h, dst->m_texture->GetID(), bp);
+		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, F:0x%x)", to_string(type), w, h, dst->m_texture->GetID(), bp, TEX0.PSM);
 
 		dst->Update();
 	} else if (CanConvertDepth()) {
@@ -257,10 +257,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			{
 				dst = CreateTarget(TEX0, w, h, type);
 				if (type == DepthStencil) {
-					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x)", w, h, bp);
+					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 12, false);
 				} else {
-					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x)", w, h, bp);
+					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 11, false);
 				}
 
@@ -271,7 +271,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE("TC: Lookup Target(T%d) %dx%d, miss (0x%x)", type, w, h, bp);
+		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, F:0x%x)", to_string(type), w, h, bp, TEX0.PSM);
 
 		dst = CreateTarget(TEX0, w, h, type);
 
@@ -393,7 +393,7 @@ void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 
 		if(bp == t->m_TEX0.TBP0)
 		{
-			GL_CACHE("TC: InvalidateVideoMemType: Remove Target(T%d) %d (0x%x)", type,
+			GL_CACHE("TC: InvalidateVideoMemType: Remove Target(%s) %d (0x%x)", to_string(type),
 					t->m_texture ? t->m_texture->GetID() : 0,
 					t->m_TEX0.TBP0);
 
@@ -537,7 +537,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				else
 				{
 					m_dst[type].erase(j);
-					GL_CACHE("TC: Remove Target(T%d) %d (0x%x)", type,
+					GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
 					delete t;
@@ -717,7 +717,7 @@ void GSTextureCache::IncAge()
 			if(++t->m_age > maxage)
 			{
 				m_dst[type].erase(j);
-				GL_CACHE("TC: Remove Target(T%d): %d (0x%x) due to age", type,
+				GL_CACHE("TC: Remove Target(%s): %d (0x%x) due to age", to_string(type),
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0);
 
