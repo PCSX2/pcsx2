@@ -516,6 +516,7 @@ void GSRendererSW::Draw()
 		Sync(2);
 
 		uint64 frame = m_perfmon.GetFrame();
+		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
 
 		string s;
 
@@ -529,18 +530,34 @@ void GSRendererSW::Draw()
 
 		if(s_savet && s_n >= s_saven && PRIM->TME)
 		{
-			s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
+			if (texture_shuffle) {
+				// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_tex_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 
-			m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
+				m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
+			} else {
+				s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
+
+				m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
+			}
+
 		}
 
 		s_n++;
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
 
-			m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			if (texture_shuffle) {
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+			} else {
+				s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
+
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			}
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -558,9 +575,16 @@ void GSRendererSW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
+			if (texture_shuffle) {
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 
-			m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+			} else {
+				s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
+
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			}
 		}
 
 		if(s_savez && s_n >= s_saven)
