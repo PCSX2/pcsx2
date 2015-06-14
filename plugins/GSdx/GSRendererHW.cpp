@@ -98,7 +98,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 
 bool GSRendererHW::CanUpscale()
 {
-	if(m_crc_hack_level && m_hacks.m_cu && !(this->*m_hacks.m_cu)())
+	if(m_hacks.m_cu && !(this->*m_hacks.m_cu)())
 	{
 		return false;
 	}
@@ -447,7 +447,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_crc_hack_level && m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -542,7 +542,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	if(m_crc_hack_level && m_hacks.m_oo)
+	if(m_hacks.m_oo)
 	{
 		(this->*m_hacks.m_oo)();
 	}
