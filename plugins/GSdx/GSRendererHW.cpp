@@ -345,6 +345,7 @@ void GSRendererHW::Draw()
 	TEX0.PSM = context->FRAME.PSM;
 
 	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+	GSTexture* rt_tex = rt ? rt->m_texture : NULL;
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -453,7 +454,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(NULL, ds->m_texture, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds->m_texture, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -520,7 +521,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt ? rt->m_texture : NULL, ds->m_texture, tex);
+	DrawPrims(rt_tex, ds->m_texture, tex);
 
 	//
 
@@ -644,12 +645,67 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	m_oo = m_oo_map[hash];
 	m_cu = m_cu_map[hash];
 
-	if(game.flags & CRC::PointListPalette)
-	{
+	if (game.flags & CRC::PointListPalette) {
 		ASSERT(m_oi == NULL);
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
+#if 0
+	// FIXME: Enable this code in the future. I think it could replace
+	// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
+	// success
+	if (m_oi == NULL) {
+		m_oi = &GSRendererHW::OI_DoubleHalfClear;
+	}
+#endif
+}
+
+bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7)) {
+		GSVertex* v = &m_vertex.buff[0];
+
+		//GL_INS("OI_DoubleHalfClear: psm:%x. Z:%d R:%d G:%d B:%d A:%d", m_context->FRAME.PSM,
+		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
+
+		// Check it is a clear on the first primitive only
+		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
+			return true;
+		}
+		// Only 32 bits format is supported otherwise it is complicated
+		if (m_context->FRAME.PSM & 2)
+			return true;
+
+		// FIXME might need some rounding
+		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
+		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
+		// It is hard to predict the ratio, so I round it to 1. And I use
+		// <= comparison below.
+		uint32 h_pages  = m_context->FRAME.FBW;
+
+		uint32 base;
+		uint32 half;
+		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+			base = m_context->ZBUF.ZBP;
+			half = m_context->FRAME.FBP;
+		} else {
+			base = m_context->FRAME.FBP;
+			half = m_context->ZBUF.ZBP;
+		}
+
+		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
+			//GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
+			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+				m_dev->ClearDepth(ds, 0);
+			} else {
+				m_dev->ClearRenderTarget(rt, 0);
+			}
+			// Don't return false, it will break the rendering. I guess that it misses texture
+			// invalidation
+			//return false;
+		}
+	}
+	return true;
 }
 
 // OI (others input?/implementation?) hacks replace current draw call
