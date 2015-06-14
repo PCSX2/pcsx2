@@ -86,6 +86,7 @@ PFNGLCLIENTWAITSYNCPROC                gl_ClientWaitSync                    = NU
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange            = NULL;
 PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate                 = NULL;
+PFNGLTEXPARAMETERIPROC                 gl_TexParameteri                     = NULL;
 // GL4.0
 PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv             = NULL;
 // GL4.1
@@ -126,6 +127,7 @@ PFNGLTEXTURESUBIMAGE2DPROC			   gl_TextureSubImage2D                 = NULL;
 PFNGLCOPYTEXTURESUBIMAGE2DPROC		   gl_CopyTextureSubImage2D             = NULL;
 PFNGLBINDTEXTUREUNITPROC			   gl_BindTextureUnit                   = NULL;
 PFNGLGETTEXTUREIMAGEPROC               gl_GetTextureImage                   = NULL;
+PFNGLTEXTUREPARAMETERIPROC             gl_TextureParameteri                 = NULL;
 
 PFNGLCREATEFRAMEBUFFERSPROC            gl_CreateFramebuffers                = NULL;
 PFNGLCLEARNAMEDFRAMEBUFFERFVPROC       gl_ClearNamedFramebufferfv           = NULL;
@@ -180,6 +182,11 @@ namespace Emulate_DSA {
 	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
 		BindTextureUnit(7, texture);
 		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
+		BindTextureUnit(7, texture);
+		gl_TexParameteri(GL_TEXTURE_2D, pname, param);
 	}
 
 	// Framebuffer entry point
@@ -292,6 +299,7 @@ namespace Emulate_DSA {
 		gl_TextureSubImage2D           = TextureSubImage;
 		gl_CopyTextureSubImage2D       = CopyTextureSubImage;
 		gl_GetTextureImage             = GetTexureImage;
+		gl_TextureParameteri           = TextureParameteri;
 
 		gl_CreateFramebuffers          = CreateFramebuffers;
 		gl_ClearNamedFramebufferfv     = ClearNamedFramebufferfv;

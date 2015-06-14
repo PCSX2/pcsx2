@@ -79,6 +79,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_DeleteSync) = GetProcAddress("glDeleteSync");
 	*(void**)&(gl_ClientWaitSync) = GetProcAddress("glClientWaitSync");
 	*(void**)&(gl_FlushMappedBufferRange) = GetProcAddress("glFlushMappedBufferRange");
+	*(void**)&(gl_TexParameteri) = GetProcAddress("glTexParameteri");
 	// GL4.0
 	*(void**)&(gl_UniformSubroutinesuiv) = GetProcAddress("glUniformSubroutinesuiv", true);
 	*(void**)&(gl_BlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB", true);
@@ -129,6 +130,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_CopyTextureSubImage2D) = GetProcAddress("glCopyTextureSubImage2D", true);
 	*(void**)&(gl_BindTextureUnit) = GetProcAddress("glBindTextureUnit", true);
 	*(void**)&(gl_GetTextureImage) = GetProcAddress("glGetTextureImage", true);
+	*(void**)&(gl_TextureParameteri) = GetProcAddress("glTextureParameteri", true);
 
 	*(void**)&(gl_CreateFramebuffers) = GetProcAddress("glCreateFramebuffers", true);
 	*(void**)&(gl_ClearNamedFramebufferfv) = GetProcAddress("glClearNamedFramebufferfv", true);

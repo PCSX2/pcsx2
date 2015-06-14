@@ -158,6 +158,7 @@ mat4 sample_4c(vec4 uv)
 {
 	mat4 c;
 
+	// FIXME investigate texture gather (filtering impact?)
 	c[0] = sample_c(uv.xy);
 	c[1] = sample_c(uv.zy);
 	c[2] = sample_c(uv.xw);
@@ -171,36 +172,26 @@ uvec4 sample_4_index(vec4 uv)
 	vec4 c;
 
 	// Either GSdx will send a texture that contains a single channel
-	// in this case we must use the red channel (whereas Dx uses alpha)
+	// in this case the red channel is remapped as alpha channel
 	//
 	// Or we have an old RT (ie RGBA8) that contains index (4/8) in the alpha channel
 
-#if PS_IFMT == 0
-	// Single channel texture
-	c.x = sample_c(uv.xy).r;
-	c.y = sample_c(uv.zy).r;
-	c.z = sample_c(uv.xw).r;
-	c.w = sample_c(uv.zw).r;
-	//return c * 255.0/256.0 + 0.5/256.0;
-#else
-	// 4 channels texture
+	// FIXME investigate texture gather (filtering impact?)
 	c.x = sample_c(uv.xy).a;
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-#endif
 
 	uvec4 i = uvec4(c * 255.0f + 0.5f); // Denormalize value
-	//return (i/uint(16)) & uint(0xF);
 
 #if PS_IFMT == 1
-	// 4HH alpha
+	// 4HH
 	return i >> 4u;
 #elif PS_IFMT == 2
-	// 4HL alpha
+	// 4HL
 	return i & 16u;
 #else
-	// 8 bits alpha or red
+	// 8 bits
 	return i;
 #endif
 

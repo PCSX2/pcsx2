@@ -257,6 +257,11 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GSTexture::DepthStencil:
 			gl_CreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
 			gl_TextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
+			if (m_format == GL_R8) {
+				// Emulate DX behavior, beside it avoid special code in shader to differentiate
+				// palette texture from a GL_RGBA target or a GL_R texture.
+				gl_TextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
+			}
 			break;
 		case GSTexture::Backbuffer:
 		default:
