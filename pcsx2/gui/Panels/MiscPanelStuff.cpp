@@ -113,7 +113,7 @@ Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool s
 		compiled[i].Printf( L"%s", m_langs[i].englishName.c_str() );
 
 	m_picker = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-		size, compiled.GetPtr(), wxCB_READONLY | wxCB_SORT );
+		size, compiled.GetPtr(), wxCB_READONLY);
 
 	*this	+= 5;
 	*this	+= m_picker | pxSizerFlags::StdSpace();
