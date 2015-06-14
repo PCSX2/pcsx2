@@ -3437,13 +3437,17 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// stop the motion blur on the main character and 
 	// smudge filter from being drawn on USA versions of
 	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
-	// Nocturne:
-	// -0x5900($gp), ref at 0x100740
-	const int state = *(int*)(state_addr);
 
-	if(Aggresive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
+	if(Aggresive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
 	{
-		skip = 1;
+		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
+		// Aggresive hacks are evil anyway
+
+		// Nocturne:
+		// -0x5900($gp), ref at 0x100740
+		const int state = *(int*)(state_addr);
+		if (state == 23 || state == 24 || state == 25)
+			skip = 1;
 	}
 	return true;
 }
