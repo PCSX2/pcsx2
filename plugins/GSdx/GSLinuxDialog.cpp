@@ -395,7 +395,6 @@ void populate_shader_table(GtkWidget* shader_table)
 void populate_hack_table(GtkWidget* hack_table)
 {
 	GtkWidget* hack_alpha_check    = CreateCheckBox("Alpha Hack", "UserHacks_AlphaHack");
-	GtkWidget* hack_date_check     = CreateCheckBox("Date Hack", "UserHacks_DateGL4");
 	GtkWidget* hack_offset_check   = CreateCheckBox("Offset Hack", "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = gtk_label_new("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
@@ -413,8 +412,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* stretch_hack_label  = gtk_label_new("Align Sprite Texture:");
 
 	// Reuse windows helper string :)
+	gtk_widget_set_tooltip_text(auto_skip_check, dialog_message(IDC_AUTO_SKIP));
 	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
-	gtk_widget_set_tooltip_text(hack_date_check, "Disable opengl barrier for performance with DATE operation");
 	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
 	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
@@ -433,9 +432,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	s_table_line = 0;
 	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
-	InsertWidgetInTable(hack_table , hack_logz_check     , hack_date_check);
+	InsertWidgetInTable(hack_table , hack_logz_check     , auto_skip_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
-	InsertWidgetInTable(hack_table , auto_skip_check);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
