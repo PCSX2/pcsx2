@@ -742,7 +742,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
-			ps_cb.AlphaCoeff = GSVector4(afix);
+			ps_cb.AlphaCoeff.a = afix;
 		}
 
 		// No need to flush for every primitive

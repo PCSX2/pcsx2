@@ -65,7 +65,8 @@ layout(std140, binding = 21) uniform cb21
 	vec2 MinF;
 	vec2 TA;
 	uvec4 MskFix;
-	vec4 Af;
+	vec3 FbMask;
+	float Af;
 	vec4 HalfTexel;
 	vec4 MinMax;
 	vec4 TC_OffsetHack;
@@ -428,7 +429,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 6
 	//   6   => *0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	c.rgb = Cs * (Af.x + 1.0f) - Cd * Af.x;
+	c.rgb = Cs * (Af + 1.0f) - Cd * Af;
 
 #elif PS_BLEND == 7
 	//    7   => *0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
@@ -440,7 +441,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 9
 	//   9   => *0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	c.rgb = Cs * (Af.x + 1.0f);
+	c.rgb = Cs * (Af + 1.0f);
 
 #elif PS_BLEND == 10
 	//   10   => *1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
@@ -452,7 +453,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 12
 	//   12   => *1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	c.rgb = Cd * (Af.x + 1.0f) - Cs * Af.x;
+	c.rgb = Cd * (Af + 1.0f) - Cs * Af;
 
 #elif PS_BLEND == 13
 	//  13   =>  0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
@@ -472,11 +473,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 17
 	//  17   =>  0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	c.rgb = Cs * Af.x + Cd * (1.0f - Af.x);
+	c.rgb = Cs * Af + Cd * (1.0f - Af);
 
 #elif PS_BLEND == 18
 	//  18   =>  0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	c.rgb = Cs * Af.x - Cd * Af.x;
+	c.rgb = Cs * Af - Cd * Af;
 
 #elif PS_BLEND == 19
 	//  19   =>  0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
@@ -496,11 +497,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 23
 	//  23   =>  0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	c.rgb = Cs * Af.x + Cd;
+	c.rgb = Cs * Af + Cd;
 
 #elif PS_BLEND == 24
 	//   24   =>  0222: (Cs -  0)*F  +  0 ==> Cs*F
-	c.rgb = Cs * Af.x;
+	c.rgb = Cs * Af;
 
 #elif PS_BLEND == 25
 	//  25   =>  1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
@@ -520,11 +521,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 29
 	//  29   =>  1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	c.rgb = Cd * Af.x + Cs * (1.0f - Af.x);
+	c.rgb = Cd * Af + Cs * (1.0f - Af);
 
 #elif PS_BLEND == 30
 	//  30   =>  1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	c.rgb = Cd * Af.x - Cs * Af.x;
+	c.rgb = Cd * Af - Cs * Af;
 
 #elif PS_BLEND == 31
 	//  31   =>  1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
@@ -552,15 +553,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 35
 	//   35   =>  1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	c.rgb = Cs + Cd * Af.x;
+	c.rgb = Cs + Cd * Af;
 
 #elif PS_BLEND == 57
 	//  C_CLR | 57   => #1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	c.rgb = Cd * (1.0f + Af.x);
+	c.rgb = Cd * (1.0f + Af);
 
 #elif PS_BLEND == 36
 	//  36   =>  1222: (Cd -  0)*F  +  0 ==> Cd*F
-	c.rgb = Cd * Af.x;
+	c.rgb = Cd * Af;
 
 #elif PS_BLEND == 37
 	//   37   =>  2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
@@ -588,15 +589,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 43
 	//   43   =>  2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	c.rgb = Cs * (1.0f - Af.x);
+	c.rgb = Cs * (1.0f - Af);
 
 #elif PS_BLEND == 44
 	//  44   =>  2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	c.rgb = Cd - Cs * Af.x;
+	c.rgb = Cd - Cs * Af;
 
 #elif PS_BLEND == 45
 	//   45   =>  2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	c.rgb = - Cs * Af.x;
+	c.rgb = - Cs * Af;
 
 #elif PS_BLEND == 46
 	//  46   =>  2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
@@ -624,15 +625,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 52
 	//  52   =>  2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	c.rgb = Cs - Cd * Af.x;
+	c.rgb = Cs - Cd * Af;
 
 #elif PS_BLEND == 53
 	//  53   =>  2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	c.rgb = Cd * (1.0f - Af.x);
+	c.rgb = Cd * (1.0f - Af);
 
 #elif PS_BLEND == 54
 	//  54   =>  2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	c.rgb = - Cd * Af.x;
+	c.rgb = - Cd * Af;
 
 #endif
 
