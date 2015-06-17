@@ -44,6 +44,7 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
+	, m_crcinited(false)
 {
 	m_nativeres = !!theApp.GetConfig("nativeres", 1);
 
@@ -2305,7 +2306,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
+	m_game = CRC::Lookup(crc);
 }
 
 //
@@ -5416,11 +5417,10 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TZTST = m_context->TEST.ZTST;
 
 	static GetSkipCount map[CRC::TitleCount];
-	static bool inited = false;
 
-	if(!inited)
+	if (!m_crcinited)
 	{
-		inited = true;
+		m_crcinited = true;
 
 		memset(map, 0, sizeof(map));
 

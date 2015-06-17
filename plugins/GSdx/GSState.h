@@ -196,6 +196,7 @@ public:
 	uint32 m_crc;
 	int m_options;
 	int m_frameskip;
+	bool m_crcinited;
 	bool m_framelimit;
 	CRC::Game m_game;
 	GSDump m_dump;
