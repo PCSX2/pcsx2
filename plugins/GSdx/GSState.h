@@ -143,7 +143,6 @@ protected:
 	bool IsBadFrame(int& skip, int UserHacks_SkipDraw);
 
 	int UserHacks_WildHack;
-	bool UserHacks_AutoSkipDrawDepth;
 	bool isPackedUV_HackFlag;
 	int m_crc_hack_level;
 
