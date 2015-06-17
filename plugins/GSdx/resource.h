@@ -62,7 +62,6 @@
 #define IDC_CHECK_DISABLE_ALL_HACKS     2077
 #define IDC_ALPHASTENCIL                2078
 #define IDC_ADAPTER                     2079
-#define IDC_CRC_LEVEL                   2079
 #define IDC_STATIC_TCOFFSETX            2080
 #define IDC_STATIC_TCOFFSETY            2081
 #define IDC_TCOFFSETX                   2082
@@ -79,6 +78,7 @@
 #define IDC_ACCURATE_COLCLIP            2094
 #define IDC_ROUND_SPRITE                2095
 #define IDC_ALIGN_SPRITE                2096
+#define IDC_CRC_LEVEL                   2097
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
