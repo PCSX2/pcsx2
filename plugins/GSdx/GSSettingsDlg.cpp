@@ -603,6 +603,13 @@ void GSHacksDlg::OnInit()
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_SETCURSEL, msaa2cb[min(theApp.GetConfig("UserHacks_MSAA", 0), 16)], 0);
 
+	char crctext[5][32] = { "None", "Minimal", "Partial", "Full", "Agressive" };
+	for (unsigned short i = 0; i < 5; i++){
+		SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_ADDSTRING, 0, (LPARAM)crctext[i]);
+	}
+	
+	SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_SETCURSEL, theApp.GetConfig("crc_hack_level", 3), 0);
+
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfig("UserHacks_AlphaHack", 0));
 	CheckDlgButton(m_hWnd, IDC_OFFSETHACK, theApp.GetConfig("UserHacks_HalfPixelOffset", 0));
 	CheckDlgButton(m_hWnd, IDC_SPRITEHACK, theApp.GetConfig("UserHacks_SpriteHack", 0));
@@ -662,6 +669,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		case IDOK: 
 		{
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
+			theApp.SetConfig("crc_hack_level", (int)SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_GETCURSEL, 0, 0));
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
 			theApp.SetConfig("UserHacks_HalfPixelOffset", (int)IsDlgButtonChecked(m_hWnd, IDC_OFFSETHACK));
 			theApp.SetConfig("UserHacks_SpriteHack", (int)IsDlgButtonChecked(m_hWnd, IDC_SPRITEHACK));

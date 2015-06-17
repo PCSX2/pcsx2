@@ -62,6 +62,7 @@
 #define IDC_CHECK_DISABLE_ALL_HACKS     2077
 #define IDC_ALPHASTENCIL                2078
 #define IDC_ADAPTER                     2079
+#define IDC_CRC_LEVEL                   2079
 #define IDC_STATIC_TCOFFSETX            2080
 #define IDC_STATIC_TCOFFSETY            2081
 #define IDC_TCOFFSETX                   2082
@@ -78,7 +79,6 @@
 #define IDC_ACCURATE_COLCLIP            2094
 #define IDC_ROUND_SPRITE                2095
 #define IDC_ALIGN_SPRITE                2096
-#define IDC_AUTO_SKIP                   2097
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
@@ -97,9 +97,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10012
+#define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2098
+#define _APS_NEXT_CONTROL_VALUE         2099
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
