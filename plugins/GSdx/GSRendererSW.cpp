@@ -516,6 +516,8 @@ void GSRendererSW::Draw()
 		Sync(2);
 
 		uint64 frame = m_perfmon.GetFrame();
+		// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
+		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
 
 		string s;
@@ -531,7 +533,7 @@ void GSRendererSW::Draw()
 		if(s_savet && s_n >= s_saven && PRIM->TME)
 		{
 			if (texture_shuffle) {
-				// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
 				s = format("%05d_f%lld_tex_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 
 				m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);

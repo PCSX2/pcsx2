@@ -50,6 +50,7 @@ protected:
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;
+	bool m_texture_shuffle;
 
 	virtual GSTexture* GetOutput(int i) = 0;
 

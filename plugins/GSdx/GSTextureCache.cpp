@@ -223,13 +223,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst = t;
 
-#if 0
-			// Likely the root cause of tons and tons of bug
-			if (dst->m_TEX0.PSM != TEX0.PSM) {
-				GL_INS("TC: ERROR: use a target with format 0x%x as 0x%x without any conversion", dst->m_TEX0.PSM, TEX0.PSM);
-			}
-#endif
-
+			dst->m_32_bits_fmt |= !(TEX0.PSM & 2);
 			dst->m_TEX0 = TEX0;
 
 			break;
@@ -256,6 +250,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			if(!t->m_age && bp == t->m_TEX0.TBP0)
 			{
 				dst = CreateTarget(TEX0, w, h, type);
+
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
 					int shader = (TEX0.PSM & 1) ? 13 : 12;
@@ -753,6 +748,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	if (dst)
 	{
 		// TODO: clean up this mess
+		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
 		src->m_target = true;
 
@@ -1011,6 +1007,7 @@ GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	, m_texture(NULL)
 	, m_age(0)
 	, m_temp(temp)
+	, m_32_bits_fmt(false)
 {
 	m_TEX0.TBP0 = 0x3fff;
 }
@@ -1270,6 +1267,7 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
+	m_32_bits_fmt |= !(TEX0.PSM & 2);
 
 	m_valid = GSVector4i::zero();
 }

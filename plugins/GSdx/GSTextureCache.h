@@ -40,6 +40,7 @@ public:
 		GIFRegTEXA m_TEXA;
 		int m_age;
 		uint8* m_temp;
+		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);

@@ -225,7 +225,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	GSDeviceDX::PSSamplerSelector ps_ssel;
 	GSDeviceDX::PSConstantBuffer ps_cb;
 
-	if ((context->FRAME.PSM == 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if (m_texture_shuffle) {
 		ps_sel.shuffle = 1;
 		ps_sel.fmt = 0;
 

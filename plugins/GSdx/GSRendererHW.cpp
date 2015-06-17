@@ -361,6 +361,7 @@ void GSRendererHW::Draw()
 	}
 
 	GSTextureCache::Source* tex = NULL;
+	m_texture_shuffle = false;
 
 	if(PRIM->TME)
 	{
@@ -395,6 +396,12 @@ void GSRendererHW::Draw()
 		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
+
+		if (rt) {
+			rt->m_32_bits_fmt |= tex->m_32_bits_fmt;
+		}
+		// Both input and output are 16 bits but texture was initially 32 bits!
+		m_texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt);
 	}
 
 	if(s_dump)
