@@ -2306,7 +2306,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(crc);
+	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
 }
 
 //
