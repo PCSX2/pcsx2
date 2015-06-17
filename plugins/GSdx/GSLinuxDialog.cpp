@@ -411,7 +411,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* stretch_hack_label  = gtk_label_new("Align Sprite Texture:");
 
 	// Reuse windows helper string :)
-	gtk_widget_set_tooltip_text(auto_skip_check, dialog_message(IDC_AUTO_SKIP));
 	gtk_widget_set_tooltip_text(hack_alpha_check, dialog_message(IDC_ALPHAHACK));
 	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
 	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
@@ -431,7 +430,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	s_table_line = 0;
 	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_alpha_check    , hack_offset_check);
-	InsertWidgetInTable(hack_table , hack_logz_check     , auto_skip_check);
+	InsertWidgetInTable(hack_table , hack_logz_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
