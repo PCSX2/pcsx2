@@ -26,37 +26,46 @@
 #define GetKeyVdw(name, var) \
 	GetKeyV(name, var, 4, REG_DWORD);
 
-#define SetKeyV(name, var, s, t) \
-	RegSetValueEx(myKey, name, 0, t, (LPBYTE) var, s);
+//#define SetKeyV(name, var, s, t) \
+//	RegSetValueEx(myKey, name, 0, t, (LPBYTE) var, s);
 
-#define SetKeyVdw(name, var) \
-	SetKeyV(name, var, 4, REG_DWORD);
+//#define SetKeyVdw(name, var) \
+//	SetKeyV(name, var, 4, REG_DWORD);
 
-void SaveConf() {
-	HKEY myKey;
-	DWORD myDisp;
-
-	RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9\\DEV9linuz", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &myKey, &myDisp);
-	SetKeyV("Eth", config.Eth, strlen(config.Eth), REG_SZ);
-	SetKeyV("Hdd", config.Hdd, strlen(config.Hdd), REG_SZ);
-	SetKeyVdw("HddSize", &config.HddSize);
-	SetKeyVdw("ethEnable", &config.ethEnable);
-	SetKeyVdw("hddEnable", &config.hddEnable);
-
-	RegCloseKey(myKey);
+BOOL WritePrivateProfileInt(LPCSTR lpAppName, LPCSTR lpKeyName, int intvar, LPCSTR lpFileName)
+{
+	return WritePrivateProfileString(lpAppName, lpKeyName, std::to_string(intvar).c_str(), lpFileName);
+}
+bool FileExists(std::string szPath)
+{
+	DWORD dwAttrib = GetFileAttributes(szPath.c_str());
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+		!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-void LoadConf() {
+void SaveConf() {
+	const std::string file(s_strIniPath + "/dev9ghz.ini");
+	DeleteFile(file.c_str());
+
+	WritePrivateProfileString("DEV9", "Eth", config.Eth, file.c_str());
+	WritePrivateProfileString("DEV9", "Hdd", config.Hdd, file.c_str());
+	WritePrivateProfileInt("DEV9", "HddSize", config.HddSize, file.c_str());
+	WritePrivateProfileInt("DEV9", "ethEnable", config.ethEnable, file.c_str());
+	WritePrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
+}
+
+void LoadRegConf() {
 	HKEY myKey;
 	DWORD type, size;
 
-	memset(&config, 0, sizeof(config));
-	strcpy(config.Hdd, HDD_DEF);
-	config.HddSize=8*1024;
-	strcpy(config.Eth, ETH_DEF);
+	//memset(&config, 0, sizeof(config));
+	//strcpy(config.Hdd, HDD_DEF);
+	//config.HddSize=8*1024;
+	//strcpy(config.Eth, ETH_DEF);
 
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9\\DEV9linuz", 0, KEY_ALL_ACCESS, &myKey)!=ERROR_SUCCESS) {
-		SaveConf(); return;
+		//SaveConf();
+		return;
 	}
 	GetKeyV("Eth", config.Eth, sizeof(config.Eth), REG_SZ);
 	GetKeyV("Hdd", config.Hdd, sizeof(config.Hdd), REG_SZ);
@@ -65,5 +74,23 @@ void LoadConf() {
 	GetKeyVdw("hddEnable", &config.hddEnable);
 
 	RegCloseKey(myKey);
+}
+void LoadConf() {
+	memset(&config, 0, sizeof(config));
+	strcpy(config.Hdd, HDD_DEF);
+	config.HddSize = 8 * 1024;
+	strcpy(config.Eth, ETH_DEF);
+
+	const std::string file(s_strIniPath + "/dev9ghz.ini");
+	if (FileExists(file.c_str()) == false) {
+		LoadRegConf(); //Import old settings if user has upgraded this plugin
+		SaveConf();
+		return;
+	}
+	GetPrivateProfileString("DEV9", "Eth", ETH_DEF, config.Eth, sizeof(config.Eth), file.c_str());
+	GetPrivateProfileString("DEV9", "Hdd", HDD_DEF, config.Hdd, sizeof(config.Hdd), file.c_str());
+	config.HddSize = GetPrivateProfileInt("DEV9", "HddSize", config.HddSize, file.c_str());
+	config.ethEnable = GetPrivateProfileInt("DEV9", "ethEnable", config.ethEnable, file.c_str());
+	config.ethEnable = GetPrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
 }
 

@@ -128,7 +128,8 @@ EXTERN  DEV9callback DEV9irq;
 //void DEV9thread();
 
 EXTERN  PluginLog DEV9Log;
-//Yes this is meant to be a lowercase extern
+//Yes these are meant to be a lowercase extern
+extern  std::string s_strIniPath;
 extern  std::string s_strLogPath;
 void __Log(char *fmt, ...);
 
