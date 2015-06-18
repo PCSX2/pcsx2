@@ -66,6 +66,8 @@ static int s_renderer = -1;
 static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
+static const char *s_renderer_name = "";
+static const char *s_renderer_type = "";
 #ifdef _WINDOWS
 static bool s_isgsopen2 = false; // boolean to remove some stuff from the config panel in new PCSX2's/
 #endif
@@ -231,9 +233,11 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 #ifdef _WINDOWS
 		case 0: case 1: case 2: case 14:
 			dev = new GSDevice9(); 
+			s_renderer_name = " DX9";
 			break;
 		case 3: case 4: case 5: case 15:
 			dev = new GSDevice11(); 
+			s_renderer_name = " DX11";
 			break;
 #endif
 		case 9: case 10: case 11: case 16:
@@ -241,6 +245,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			break;
 		case 12: case 13: case 17:
 			dev = new GSDeviceOGL(); 
+			s_renderer_name = " OGL";
 			break;
 		}
 
@@ -257,16 +262,20 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 #ifdef _WINDOWS
 			case 0:
 				s_gs = (GSRenderer*)new GSRendererDX9();
+				s_renderer_type = " HW";
 				break;
 			case 3: 
 				s_gs = (GSRenderer*)new GSRendererDX11(); 
+				s_renderer_type = " HW";
 				break;
 #endif
 			case 12: 
 				s_gs = (GSRenderer*)new GSRendererOGL(); 
+				s_renderer_type = " HW";
 				break;
 			case 1: case 4: case 10: case 13:
 				s_gs = new GSRendererSW(threads);
+				s_renderer_type = " SW";
 				break;
 			case 2: case 5: case 11:
 				s_gs = new GSRendererNull();
@@ -274,6 +283,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			case 14: case 15: case 16: case 17:
 #ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
+				s_renderer_type = " OCL";
 #else
 				printf("GSdx error: opencl is disabled\n");
 #endif
@@ -874,6 +884,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	}
 
 	string s = "GSdx";
+	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
 	if(s_gs == NULL) return;
@@ -886,7 +897,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 		GSAutoLock lock(&s_gs->m_pGSsetTitle_Crit);
 #endif
 
-		s = format("GSdx | %s", s_gs->m_GStitleInfoBuffer);
+		s.append(" | ").append(s_gs->m_GStitleInfoBuffer);
 
 		if(s.size() > length - 1)
 		{
