@@ -233,11 +233,11 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 #ifdef _WINDOWS
 		case 0: case 1: case 2: case 14:
 			dev = new GSDevice9(); 
-			s_renderer_name = " DX9";
+			s_renderer_name = " D3D9";
 			break;
 		case 3: case 4: case 5: case 15:
 			dev = new GSDevice11(); 
-			s_renderer_name = " DX11";
+			s_renderer_name = " D3D11";
 			break;
 #endif
 		case 9: case 10: case 11: case 16:
@@ -285,7 +285,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				s_gs = new GSRendererCL();
 				s_renderer_type = " OCL";
 #else
-				printf("GSdx error: opencl is disabled\n");
+				printf("GSdx error: OpenCL is disabled\n");
 #endif
 				break;
 			}
