@@ -59,14 +59,7 @@ LangPackEnumeration::LangPackEnumeration( wxLanguage langId )
 LangPackEnumeration::LangPackEnumeration()
 {
 	wxLangId = wxLANGUAGE_DEFAULT;
-#if wxMAJOR_VERSION < 3
-	englishName = L"_System Default";		// left-side space forces it to sort to the front of the lists
-#else
-	// It seems wx change its sort algo... It seems non alphanumeric character are removed
-	englishName = L"0) System Default";		// left-side 0) forces it to sort to the front of the lists
-	// This one can work too
-	//englishName = L"A default";
-#endif
+	englishName = L"System Default";
 	englishName += _(" (default)");
 	canonicalName = L"default";
 
