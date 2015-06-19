@@ -54,6 +54,29 @@ void SaveConf() {
 	WritePrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
 }
 
+void DeleteRegConf() {
+	HKEY myKey;
+	//DWORD type, size;
+
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9\\DEV9linuz", 0, KEY_ALL_ACCESS, &myKey) != ERROR_SUCCESS) {
+		return;
+	}
+	RegDeleteKey(myKey, "Eth");
+	RegDeleteKey(myKey, "Hdd");
+	RegDeleteKey(myKey, "HddSize");
+	RegDeleteKey(myKey, "ethEnable");
+	RegDeleteKey(myKey, "hddEnable");
+	RegCloseKey(myKey);
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9", 0, KEY_ALL_ACCESS, &myKey) != ERROR_SUCCESS) {
+		emu_printf("Error Opening Key DEV9linuz");
+		return;
+	}
+	if (RegDeleteKey(myKey, "DEV9linuz") != ERROR_SUCCESS) {
+		emu_printf("Error Deleting Key DEV9linuz");
+		return;
+	}
+}
+
 void LoadRegConf() {
 	HKEY myKey;
 	DWORD type, size;
@@ -74,6 +97,7 @@ void LoadRegConf() {
 	GetKeyVdw("hddEnable", &config.hddEnable);
 
 	RegCloseKey(myKey);
+	DeleteRegConf();
 }
 void LoadConf() {
 	memset(&config, 0, sizeof(config));
