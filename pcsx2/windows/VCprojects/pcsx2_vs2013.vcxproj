@@ -644,7 +644,6 @@
     <ClCompile Include="..\..\gui\Dialogs\AboutBoxDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\AssertionDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\CreateMemoryCardDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\FirstTimeWizard.cpp" />

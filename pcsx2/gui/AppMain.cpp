@@ -95,7 +95,7 @@ static bool HandlePluginError( BaseException& ex )
 		return false;
 	}
 
-	g_Conf->SysSettingsTabName = L"Plugins";
+	g_Conf->ComponentsTabName = L"Plugins";
 
 	// TODO: Send a message to the panel to select the failed plugin.
 
@@ -158,6 +158,59 @@ void PluginInitErrorEvent::InvokeEvent()
 	{
 		Console.Error( L"User-canceled plugin configuration after plugin initialization failure.  Plugins unloaded." );
 		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
+	}
+}
+
+// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
+// This message is in a function because it's used as part of several dialogs in PCSX2 (there
+// are multiple variations on the BIOS and BIOS folder checks).
+wxString BIOS_GetMsg_Required()
+{
+	return pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
+		);
+}
+
+class BIOSLoadErrorEvent : public pxExceptionEvent
+{
+	typedef pxExceptionEvent _parent;
+
+public:
+	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
+	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
+
+	virtual ~BIOSLoadErrorEvent() throw() { }
+	virtual BIOSLoadErrorEvent *Clone() const { return new BIOSLoadErrorEvent(*this); }
+
+protected:
+	void InvokeEvent();
+
+};
+
+static bool HandleBIOSError(BaseException& ex)
+{
+	if (!pxDialogExists(L"CoreSettings"))
+	{
+		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
+			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
+			return false;
+	}
+
+	g_Conf->ComponentsTabName = L"BIOS";
+
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>() != wxID_CANCEL;
+}
+
+void BIOSLoadErrorEvent::InvokeEvent()
+{
+	if (!m_except) return;
+
+	ScopedExcept deleteMe(m_except);
+	m_except = NULL;
+
+	if (!HandleBIOSError(*deleteMe))
+	{
+		Console.Warning("User canceled BIOS configuration.");
+		Msgbox::Alert(_("Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."));
 	}
 }
 
@@ -555,16 +608,6 @@ void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 	cmd->Invoke();
 }
 
-// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
-// This message is in a function because it's used as part of several dialogs in PCSX2 (there
-// are multiple variations on the BIOS and BIOS folder checks).
-wxString BIOS_GetMsg_Required()
-{
-	return pxE( L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
-	);
-}
-
-
 void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
 {
 	const_cast<Pcsx2App*>(this)->HandleEvent( handler, func, event );
@@ -584,17 +627,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	// ----------------------------------------------------------------------------
 	catch( Exception::BiosLoadFailed& ex )
 	{
-		wxDialogWithHelpers dialog( NULL, _("PS2 BIOS Error") );
-		dialog += dialog.Heading( ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required() + L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel.") );
-		dialog += new ModalButtonPanel( &dialog, MsgButtons().OKCancel() );
-		
-		if( dialog.ShowModal() == wxID_CANCEL )
-			Console.Warning( "User denied option to re-configure BIOS." );
+		// Commandline 'nogui' users will not receive an error message, but at least PCSX2 will
+		// terminate properly.
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		gsframe->Close();
 
-		if( AppOpenModalDialog<Dialogs::BiosSelectorDialog>() != wxID_CANCEL )
-			SysExecute();
-		else
-			Console.Warning( "User canceled BIOS configuration." );
+		Console.Error(ex.FormatDiagnosticMessage());
+
+		if (wxGetApp().HasGUI())
+			AddIdleEvent(BIOSLoadErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::SaveStateLoadError& ex)

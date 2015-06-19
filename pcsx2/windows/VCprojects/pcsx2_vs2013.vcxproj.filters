@@ -659,9 +659,6 @@
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
