@@ -91,6 +91,6 @@ void LoadConf() {
 	GetPrivateProfileString("DEV9", "Hdd", HDD_DEF, config.Hdd, sizeof(config.Hdd), file.c_str());
 	config.HddSize = GetPrivateProfileInt("DEV9", "HddSize", config.HddSize, file.c_str());
 	config.ethEnable = GetPrivateProfileInt("DEV9", "ethEnable", config.ethEnable, file.c_str());
-	config.ethEnable = GetPrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
+	config.hddEnable = GetPrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
 }
 
