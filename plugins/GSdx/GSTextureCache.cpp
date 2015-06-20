@@ -183,9 +183,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 #ifdef ENABLE_OGL_DEBUG
 	} else {
-		GL_CACHE("TC: src hit: %d (0x%x)",
+		GL_CACHE("TC: src hit: %d (0x%x F:0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
-					TEX0.TBP0);
+					TEX0.TBP0, TEX0.PSM);
 #endif
 	}
 
@@ -748,8 +748,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	if (dst)
 	{
 		// TODO: clean up this mess
-		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
+#ifdef ENABLE_OGL_DEBUG
+		if (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT4) {
+			GL_INS("ERROR: Reading RT as a packed-indexed (0x%x) format is not supported", TEX0.PSM);
+		}
+#endif
+
+		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		src->m_target = true;
 
 		dst->Update();
