@@ -29,6 +29,8 @@
 
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
+static int s_crc_hack_level = 3;
+
 GSState::GSState()
 	: m_version(6)
 	, m_mt(false)
@@ -42,6 +44,7 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
+	, m_crcinited(false)
 {
 	m_nativeres = !!theApp.GetConfig("nativeres", 1);
 
@@ -64,10 +67,9 @@ GSState::GSState()
 	//s_save = 1;
 	//s_savez = 1;
 
-	UserHacks_AggressiveCRC = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AggressiveCRC", 0) : 0;
-	UserHacks_DisableCrcHacks = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig( "UserHacks_DisableCrcHacks", 0 ) : 0;
 	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
-	UserHacks_AutoSkipDrawDepth = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AutoSkipDrawDepth", 1) : false;
+	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+	s_crc_hack_level = m_crc_hack_level;
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -2304,7 +2306,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(UserHacks_DisableCrcHacks ? 0 : crc);
+	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
 }
 
 //
@@ -2999,6 +3001,8 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 }
 
 // hacks
+#define Aggresive (s_crc_hack_level > 3)
+#define Dx_only   (s_crc_hack_level > 2)
 
 struct GSFrameInfo
 {
@@ -3013,7 +3017,6 @@ struct GSFrameInfo
 
 typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
 CRC::Region g_crc_region = CRC::NoRegion;
-int g_aggressive = 0;
 
 bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 {
@@ -3182,12 +3185,13 @@ bool GSC_BullyCC(const GSFrameInfo& fi, int& skip)
 
 	return true;
 }
+
 bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 {
             // Not needed anymore? What did it fix anyway? (rama)
     if(skip == 0)
     {
-            if(g_aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
+            if(Aggresive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
             {
                     skip = 48;	//removes sky bloom
             }
@@ -3251,7 +3255,7 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
-		else if( g_aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
+		else if( Aggresive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
 			skip = 1;
 		}
@@ -3433,13 +3437,17 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// stop the motion blur on the main character and 
 	// smudge filter from being drawn on USA versions of
 	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
-	// Nocturne:
-	// -0x5900($gp), ref at 0x100740
-	const int state = *(int*)(state_addr);
 
-	if(g_aggressive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME && (state == 23 || state == 24 || state == 25))
+	if(Aggresive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
 	{
-		skip = 1;
+		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
+		// Aggresive hacks are evil anyway
+
+		// Nocturne:
+		// -0x5900($gp), ref at 0x100740
+		const int state = *(int*)(state_addr);
+		if (state == 23 || state == 24 || state == 25)
+			skip = 1;
 	}
 	return true;
 }
@@ -3610,11 +3618,11 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			{
 					skip = 1; // wall of fog
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
+			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
 			{
 				skip = 1; // global haze/halo
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80 
+			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80
 			{
 				skip = 1; // water effect and water vertical lines
 			}
@@ -3824,9 +3832,10 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
         {
 			skip = 1;
         }
-		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
+		else if(Dx_only && fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
+			// Fixed on openGL
 			skip = 1000;
 		}
 	}
@@ -3976,7 +3985,6 @@ bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-
 bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -3991,7 +3999,7 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 
 bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
 		{
@@ -4113,7 +4121,7 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4131,7 +4139,7 @@ bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4149,7 +4157,7 @@ bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4464,7 +4472,7 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 
 bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
 {
-	if(g_aggressive && skip == 0)
+	if(Aggresive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -4519,7 +4527,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 	
 	return true;
 }
-
 
 bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
 {
@@ -5222,6 +5229,7 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 	}
 	return true;
 }
+
 bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -5249,7 +5257,7 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 			{
 				skip=100;//deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
 			}
-			else if(g_aggressive && fi.FBP != 0)//Agressive CRC
+			else if(Aggresive && fi.FBP != 0)//Agressive CRC
 			{
 				skip=19;//"speedhack", makes the game very light, vaporized water can disappear when not looked at directly, possibly some interface still, other value to try: 6 breaks menu background, possibly nothing(?) during gameplay, but it's slower, hence not much of a speedhack anymore
 			}
@@ -5257,6 +5265,8 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 	}
 	return true;
 }
+
+#undef Agressive
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 
@@ -5407,140 +5417,146 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TZTST = m_context->TEST.ZTST;
 
 	static GetSkipCount map[CRC::TitleCount];
-	static bool inited = false;
 
-	if(!inited)
+	if (!m_crcinited)
 	{
-		inited = true;
+		m_crcinited = true;
 
 		memset(map, 0, sizeof(map));
 
-		map[CRC::Okami] = GSC_Okami;
-		map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3;
-		map[CRC::DBZBT2] = GSC_DBZBT2;
-		map[CRC::DBZBT3] = GSC_DBZBT3;
-		map[CRC::SFEX3] = GSC_SFEX3;
-		map[CRC::Bully] = GSC_Bully;
-		map[CRC::BullyCC] = GSC_BullyCC;
-		map[CRC::SoTC] = GSC_SoTC;
-		map[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
-		map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		map[CRC::ICO] = GSC_ICO;
-		map[CRC::GT4] = GSC_GT4;
-		map[CRC::GT3] = GSC_GT3;
-		map[CRC::GTConcept] = GSC_GTConcept;
-		map[CRC::WildArms4] = GSC_WildArms4;
-		map[CRC::WildArms5] = GSC_WildArms5;
-		map[CRC::Manhunt2] = GSC_Manhunt2;
-		map[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
-		map[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-		map[CRC::Spartan] = GSC_Spartan;
-		map[CRC::AceCombat4] = GSC_AceCombat4;
-		map[CRC::Drakengard2] = GSC_Drakengard2;
-		map[CRC::Tekken5] = GSC_Tekken5;
-		map[CRC::IkkiTousen] = GSC_IkkiTousen;
-		map[CRC::GodOfWar] = GSC_GodOfWar;
-		map[CRC::GodOfWar2] = GSC_GodOfWar2;
-		map[CRC::GiTS] = GSC_GiTS;
-		map[CRC::Onimusha3] = GSC_Onimusha3;
-		map[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-		map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
-		map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
-		map[CRC::Genji] = GSC_Genji;
-		map[CRC::StarOcean3] = GSC_StarOcean3;
-		map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-		map[CRC::RadiataStories] = GSC_RadiataStories;
-		map[CRC::HauntingGround] = GSC_HauntingGround;
-		map[CRC::EvangelionJo] = GSC_EvangelionJo;
-		map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-		map[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
-		map[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
-		map[CRC::NarutimateAccel] = GSC_NarutimateAccel;
-		map[CRC::Naruto] = GSC_Naruto;
-		map[CRC::EternalPoison] = GSC_EternalPoison;
-		map[CRC::LegoBatman] = GSC_LegoBatman;
-		map[CRC::SakuraTaisen] = GSC_SakuraTaisen;
-		map[CRC::TenchuWoH] = GSC_Tenchu;
-		map[CRC::TenchuFS] = GSC_Tenchu;
-		map[CRC::Sly3] = GSC_Sly3;
-		map[CRC::Sly2] = GSC_Sly2;
-		map[CRC::ShadowofRome] = GSC_ShadowofRome;
-		map[CRC::FFXII] = GSC_FFXII;
-		map[CRC::FFX2] = GSC_FFX2;
-		map[CRC::FFX] = GSC_FFX;
-		map[CRC::ArctheLad] = GSC_ArctheLad;
-		map[CRC::DemonStone] = GSC_DemonStone;
-		map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
-		map[CRC::TimeSplitters2] = GSC_TimeSplitters2;
-		map[CRC::ReZ] = GSC_ReZ;
-		map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
-		map[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
-		map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
-		map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
-		map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-		map[CRC::CastlevaniaCoD] = GSC_Castlevania;
-		map[CRC::CastlevaniaLoI] = GSC_Castlevania;
-		map[CRC::CrashNburn] = GSC_CrashNburn;
-		map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
-		map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
-		map[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
-		map[CRC::SSX3] = GSC_SSX3;
-		map[CRC::Black] = GSC_Black;
-		map[CRC::FFVIIDoC] = GSC_FFVIIDoC;
-		map[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
-		map[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
-		map[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
-		map[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-		map[CRC::DevilMayCry3] = GSC_DevilMayCry3;
-		map[CRC::BurnoutTakedown] = GSC_Burnout;
-		map[CRC::BurnoutRevenge] = GSC_Burnout;
-		map[CRC::BurnoutDominator] = GSC_Burnout;
-		map[CRC::MidnightClub3] = GSC_MidnightClub3;
-		map[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
-		map[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
-		map[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
-		map[CRC::NanoBreaker] = GSC_NanoBreaker;
-		map[CRC::Kunoichi] = GSC_Kunoichi;
-		map[CRC::Yakuza] = GSC_Yakuza;
-		map[CRC::Yakuza2] = GSC_Yakuza2;
-		map[CRC::SkyGunner] = GSC_SkyGunner;
-		map[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
-		map[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
-		map[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		map[CRC::XE3] = GSC_XE3;
-		map[CRC::GetaWay] = GSC_GetaWay;
-		map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
-		map[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
-		map[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-		map[CRC::TouristTrophy] = GSC_TouristTrophy;
-		map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
-		map[CRC::FrontMission5] = GSC_FrontMission5;
-		map[CRC::GodHand] = GSC_GodHand;
-		map[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
-		map[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
-		map[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
-		map[CRC::AlpineRacer3] = GSC_AlpineRacer3;
-		map[CRC::HummerBadlands] = GSC_HummerBadlands;
-		map[CRC::SengokuBasara] = GSC_SengokuBasara;
-		map[CRC::Grandia3] = GSC_Grandia3;
-		map[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
-		map[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
-		map[CRC::SoulCalibur2] = GSC_SoulCalibur2;
-		map[CRC::SoulCalibur3] = GSC_SoulCalibur3;
-		map[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
-		map[CRC::UrbanReign] = GSC_UrbanReign;
-		map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-		map[CRC::SacredBlaze] = GSC_SacredBlaze;
-		map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
-		map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
-		map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+		if (s_crc_hack_level > 1) {
+			map[CRC::Okami] = GSC_Okami;
+			map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3;
+			map[CRC::DBZBT2] = GSC_DBZBT2;
+			map[CRC::DBZBT3] = GSC_DBZBT3;
+			map[CRC::SFEX3] = GSC_SFEX3;
+			map[CRC::Bully] = GSC_Bully;
+			map[CRC::BullyCC] = GSC_BullyCC;
+			map[CRC::SoTC] = GSC_SoTC;
+			map[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
+			map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
+			map[CRC::ICO] = GSC_ICO;
+			map[CRC::GT4] = GSC_GT4;
+			map[CRC::GT3] = GSC_GT3;
+			map[CRC::GTConcept] = GSC_GTConcept;
+			map[CRC::WildArms4] = GSC_WildArms4;
+			map[CRC::WildArms5] = GSC_WildArms5;
+			map[CRC::Manhunt2] = GSC_Manhunt2;
+			map[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
+			map[CRC::ResidentEvil4] = GSC_ResidentEvil4;
+			map[CRC::Spartan] = GSC_Spartan;
+			map[CRC::AceCombat4] = GSC_AceCombat4;
+			map[CRC::Drakengard2] = GSC_Drakengard2;
+			map[CRC::Tekken5] = GSC_Tekken5;
+			map[CRC::IkkiTousen] = GSC_IkkiTousen;
+			map[CRC::GodOfWar] = GSC_GodOfWar;
+			map[CRC::GodOfWar2] = GSC_GodOfWar2;
+			map[CRC::GiTS] = GSC_GiTS;
+			map[CRC::Onimusha3] = GSC_Onimusha3;
+			map[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
+			map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
+			map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
+			map[CRC::Genji] = GSC_Genji;
+			map[CRC::RadiataStories] = GSC_RadiataStories;
+			map[CRC::HauntingGround] = GSC_HauntingGround;
+			map[CRC::EvangelionJo] = GSC_EvangelionJo;
+			map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
+			map[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
+			map[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
+			map[CRC::NarutimateAccel] = GSC_NarutimateAccel;
+			map[CRC::Naruto] = GSC_Naruto;
+			map[CRC::EternalPoison] = GSC_EternalPoison;
+			map[CRC::LegoBatman] = GSC_LegoBatman;
+			map[CRC::SakuraTaisen] = GSC_SakuraTaisen;
+			map[CRC::TenchuWoH] = GSC_Tenchu;
+			map[CRC::TenchuFS] = GSC_Tenchu;
+			map[CRC::Sly3] = GSC_Sly3;
+			map[CRC::Sly2] = GSC_Sly2;
+			map[CRC::ShadowofRome] = GSC_ShadowofRome;
+			map[CRC::FFXII] = GSC_FFXII;
+			map[CRC::FFX2] = GSC_FFX2;
+			map[CRC::FFX] = GSC_FFX;
+			map[CRC::ArctheLad] = GSC_ArctheLad;
+			map[CRC::DemonStone] = GSC_DemonStone;
+			map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
+			map[CRC::TimeSplitters2] = GSC_TimeSplitters2;
+			map[CRC::ReZ] = GSC_ReZ;
+			map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
+			map[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
+			map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
+			map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
+			map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
+			map[CRC::CrashNburn] = GSC_CrashNburn;
+			map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
+			map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
+			map[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
+			map[CRC::SSX3] = GSC_SSX3;
+			map[CRC::Black] = GSC_Black;
+			map[CRC::FFVIIDoC] = GSC_FFVIIDoC;
+			map[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
+			map[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
+			map[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
+			map[CRC::BlackHawkDown] = GSC_BlackHawkDown;
+			map[CRC::DevilMayCry3] = GSC_DevilMayCry3;
+			map[CRC::BurnoutTakedown] = GSC_Burnout;
+			map[CRC::BurnoutRevenge] = GSC_Burnout;
+			map[CRC::BurnoutDominator] = GSC_Burnout;
+			map[CRC::MidnightClub3] = GSC_MidnightClub3;
+			map[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
+			map[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
+			map[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
+			map[CRC::NanoBreaker] = GSC_NanoBreaker;
+			map[CRC::Kunoichi] = GSC_Kunoichi;
+			map[CRC::Yakuza] = GSC_Yakuza;
+			map[CRC::Yakuza2] = GSC_Yakuza2;
+			map[CRC::SkyGunner] = GSC_SkyGunner;
+			map[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
+			map[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
+			map[CRC::ShinOnimusha] = GSC_ShinOnimusha;
+			map[CRC::XE3] = GSC_XE3;
+			map[CRC::GetaWay] = GSC_GetaWay;
+			map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
+			map[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
+			map[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
+			map[CRC::TouristTrophy] = GSC_TouristTrophy;
+			map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
+			map[CRC::FrontMission5] = GSC_FrontMission5;
+			map[CRC::GodHand] = GSC_GodHand;
+			map[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
+			map[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
+			map[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
+			map[CRC::AlpineRacer3] = GSC_AlpineRacer3;
+			map[CRC::HummerBadlands] = GSC_HummerBadlands;
+			map[CRC::SengokuBasara] = GSC_SengokuBasara;
+			map[CRC::Grandia3] = GSC_Grandia3;
+			map[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
+			map[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
+			map[CRC::SoulCalibur2] = GSC_SoulCalibur2;
+			map[CRC::SoulCalibur3] = GSC_SoulCalibur3;
+			map[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
+			map[CRC::UrbanReign] = GSC_UrbanReign;
+			map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+			map[CRC::SacredBlaze] = GSC_SacredBlaze;
+			map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+			map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
+			map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+		}
+
+		// Hack that were fixed on openGL
+		if (Dx_only) {
+			// This one requires accurate_colclip
+			map[CRC::CastlevaniaCoD] = GSC_Castlevania;
+			map[CRC::CastlevaniaLoI] = GSC_Castlevania;
+
+			map[CRC::StarOcean3] = GSC_StarOcean3;
+			map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+		}
 	}
 
 	// TODO: just set gsc in SetGameCRC once
 
 	GetSkipCount gsc = map[m_game.title];
 	g_crc_region = m_game.region;
-	g_aggressive = UserHacks_AggressiveCRC;
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
@@ -5563,23 +5579,12 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			}
 		}
 	}
-	// Mimic old GSdx behavior (skipping all depth textures with a skip value of 1), to avoid floods of bug reports
-	// that games are broken, when the user hasn't found the skiphack yet. (God of War, sigh...)
-	else if ((skip == 0) && UserHacks_AutoSkipDrawDepth)
-	{
-		if(fi.TME)
-		{
-			if(fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S)
-			{
-				skip = 1;
-			}
-		}
 #ifdef ENABLE_OGL_DEBUG
-	} else if (fi.TME) {
+	else if (fi.TME) {
 			if(fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S)
 				GL_INS("!!! Depth Texture 0x%x!!!", fi.TPSM);
-#endif
 	}
+#endif
 
 	if(skip > 0)
 	{

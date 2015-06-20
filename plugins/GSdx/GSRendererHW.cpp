@@ -358,6 +358,11 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
+#ifdef ENABLE_OGL_DEBUG
+		if ((context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
+			GL_INS("ERROR: Source and Target are the same!");
+		}
+#endif
 		/*
 		
 		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
@@ -634,6 +639,8 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
 }
+
+// OI (others input?/implementation?) hacks replace current draw call
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
@@ -1120,6 +1127,8 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 	return true;
 }
 
+// OO (others output?) hacks: invalidate extra local memory after the draw call
+
 void GSRendererHW::OO_DBZBT2()
 {
 	// palette readback (cannot detect yet, when fetching the texture later)
@@ -1156,6 +1165,8 @@ void GSRendererHW::OO_MajokkoALaMode2()
 		InvalidateLocalMem(BITBLTBUF, GSVector4i(0, 0, 16, 16));
 	}
 }
+
+// Can Upscale hacks: disable upscaling for some draw calls
 
 bool GSRendererHW::CU_DBZBT2()
 {

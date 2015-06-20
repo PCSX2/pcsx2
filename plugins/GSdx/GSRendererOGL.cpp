@@ -35,7 +35,6 @@ GSRendererOGL::GSRendererOGL()
 
 	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
 	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
-	UserHacks_DateGL4        = theApp.GetConfig("UserHacks_DateGL4", 0);
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
@@ -43,7 +42,6 @@ GSRendererOGL::GSRendererOGL()
 	if (!theApp.GetConfig("UserHacks", 0)) {
 		UserHacks_AlphaHack      = false;
 		UserHacks_AlphaStencil   = false;
-		UserHacks_DateGL4        = false;
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
@@ -690,8 +688,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->SetupPS(ps_sel);
 
 		// Be sure that first pass is finished !
-		if (!UserHacks_DateGL4)
-			dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 		GL_POP();
 	}

@@ -30,6 +30,23 @@ const char* dialog_message(int ID, bool* updateText) {
 		*updateText = true;
 	switch (ID)
 	{
+		case IDC_CRC_LEVEL:
+			return "Control the number of Auto-CRC hacks applied to games.\n\n"
+				"None\t\t: Remove nearly all CRC hacks (debug only).\n"
+				"------------------------------------------------------------------\n"
+				"Minimum\t: Enable a couple of CRC hacks (23).\n"
+				"------------------------------------------------------------------\n"
+				"Partial\t\t: Enable most of the CRC hacks.\n\n"
+				"Recommended setting for OpenGL users.\n"
+				"Note, may require \'Accurate\' options to be enabled under Hardware Mode Settings.\n"
+				"------------------------------------------------------------------\n"
+				"Full\t\t: Enable all CRC hacks.\n\n" 
+				"Recommended setting for DirectX users.\n"
+				"------------------------------------------------------------------\n"
+				"Aggressive\t : Use more aggressive CRC hacks.\n\n"
+				"Only affects a few games, removing some effects which might make the image sharper/clearer.\n\n"
+				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
+				"Works as a speedhack for: Steambot Chronicles.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_STATIC_SKIPDRAW:
@@ -76,9 +93,6 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Corrects the sampling of 2D sprite textures when upscaling.\n\n"
 				"Fixes lines in sprites of games like Ar tonelico when upscaling.\n\n"
 				"Carries a total of three states: Unchecked (off), Shaded (on for all sprites) and Checked (on for flat sprites)";
-		case IDC_AUTO_SKIP:
-		        return "Auto-skip draw depth Hack\n\n"
-		               "Fixes red lines for games like GOW and NFS:Underground.";
 		case IDC_TCOFFSETX:
 		case IDC_TCOFFSETX2:
 		case IDC_STATIC_TCOFFSETX:

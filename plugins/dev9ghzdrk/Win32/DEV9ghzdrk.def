@@ -27,3 +27,4 @@ EXPORTS
 	DEV9async           @22
 	
 	DEV9setSettingsDir
+	DEV9setLogDir

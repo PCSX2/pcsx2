@@ -180,6 +180,12 @@ GSdxApp::GSdxApp()
 	m_gs_hack.push_back(GSSetting(1,  "Halfly On", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Fully On", ""));
 
+	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "openGL recommended"));
+	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
+	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
+
 	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));

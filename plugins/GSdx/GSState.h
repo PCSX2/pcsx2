@@ -142,11 +142,9 @@ class GSState : public GSAlignedClass<32>
 protected:
 	bool IsBadFrame(int& skip, int UserHacks_SkipDraw);
 
-	int UserHacks_AggressiveCRC;
-	int UserHacks_DisableCrcHacks;
 	int UserHacks_WildHack;
-	bool UserHacks_AutoSkipDrawDepth;
-    bool isPackedUV_HackFlag;
+	bool isPackedUV_HackFlag;
+	int m_crc_hack_level;
 
 	GSVertex m_v;
 	float m_q;
@@ -198,6 +196,7 @@ public:
 	uint32 m_crc;
 	int m_options;
 	int m_frameskip;
+	bool m_crcinited;
 	bool m_framelimit;
 	CRC::Game m_game;
 	GSDump m_dump;

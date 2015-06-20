@@ -37,7 +37,6 @@ class GSRendererOGL : public GSRendererHW
 
 		bool UserHacks_AlphaHack;
 		bool UserHacks_AlphaStencil;
-		bool UserHacks_DateGL4;
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
 
