@@ -34,6 +34,7 @@ class GSRendererOGL : public GSRendererHW
 		int  m_accurate_blend;
 		bool m_accurate_date;
 		bool m_accurate_colclip;
+		bool m_accurate_fbmask;
 
 		bool UserHacks_AlphaHack;
 		bool UserHacks_AlphaStencil;

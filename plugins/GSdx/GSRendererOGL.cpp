@@ -32,6 +32,7 @@ GSRendererOGL::GSRendererOGL()
 	m_accurate_blend  = theApp.GetConfig("accurate_blend", 1);
 	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
 	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
+	m_accurate_fbmask = theApp.GetConfig("accurate_fbmask", 0);
 
 	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
 	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
@@ -293,10 +294,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = context->FRAME.FBMSK;
 		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
+		// FIXME GSVector will be nice here
+		uint8 rg_mask = fbmask & 0xFF;
+		uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		om_csel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
-		if ((fbmask & 0xFF) == 0) {
+		if (rg_mask != 0xFF) {
 			if (write_ba) {
 				GL_INS("Color shuffle %s => B", ps_sel.read_ba ? "B" : "R");
 				om_csel.wb = 1;
@@ -304,13 +308,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				GL_INS("Color shuffle %s => R", ps_sel.read_ba ? "B" : "R");
 				om_csel.wr = 1;
 			}
-		} else if ((fbmask & 0xFF) != 0xFF) {
-			GL_INS("ERROR: not supported RG mask:%x", fbmask & 0xFF);
-			ASSERT(0);
+			if (rg_mask)
+				ps_sel.fbmask = 1;
 		}
 
-		fbmask >>= 8;
-		if ((fbmask & 0xFF) == 0) {
+		if (ba_mask != 0xFF) {
 			if (write_ba) {
 				GL_INS("Color shuffle %s => A", ps_sel.read_ba ? "A" : "G");
 				om_csel.wa = 1;
@@ -318,9 +320,19 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				GL_INS("Color shuffle %s => G", ps_sel.read_ba ? "A" : "G");
 				om_csel.wg = 1;
 			}
-		} else if ((fbmask & 0xFF) != 0xFF) {
-			GL_INS("ERROR: not supported BA mask:%x", fbmask & 0xFF);
-			ASSERT(0);
+			if (ba_mask)
+				ps_sel.fbmask = 1;
+		}
+
+		ps_sel.fbmask &= m_accurate_fbmask;
+		if (ps_sel.fbmask) {
+			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+			ps_cb.FbMask.r = rg_mask;
+			ps_cb.FbMask.g = rg_mask;
+			ps_cb.FbMask.b = ba_mask;
+			ps_cb.FbMask.a = ba_mask;
+			require_barrier = true;
+			dev->PSSetShaderResource(3, rt);
 		}
 
 	} else {
@@ -329,29 +341,35 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 
 		{
-#ifdef ENABLE_OGL_DEBUG
+			// FIXME GSVector will be nice here
 			uint8 r_mask = (context->FRAME.FBMSK >> 0)  & 0xFF;
 			uint8 g_mask = (context->FRAME.FBMSK >> 8)  & 0xFF;
 			uint8 b_mask = (context->FRAME.FBMSK >> 16) & 0xFF;
 			uint8 a_mask = (context->FRAME.FBMSK >> 24) & 0xFF;
-			uint8 bits = (GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 2) ? 16 : 32;
 			if (r_mask != 0 && r_mask != 0xFF) {
-				GL_INS("ERROR: not supported r_mask:%x on %d bits format", r_mask, bits);
-				ASSERT(0);
+				ps_sel.fbmask = 1;
 			}
 			if (g_mask != 0 && g_mask != 0xFF) {
-				GL_INS("ERROR: not supported g_mask:%x on %d bits format", g_mask, bits);
-				ASSERT(0);
+				ps_sel.fbmask = 1;
 			}
 			if (b_mask != 0 && b_mask != 0xFF) {
-				GL_INS("ERROR: not supported b_mask:%x on %d bits format", b_mask, bits);
-				ASSERT(0);
+				ps_sel.fbmask = 1;
 			}
 			if (a_mask != 0 && a_mask != 0xFF) {
-				GL_INS("ERROR: not supported a_mask:%x on %d bits format", a_mask, bits);
-				ASSERT(0);
+				ps_sel.fbmask = 1;
 			}
-#endif
+
+			ps_sel.fbmask &= m_accurate_fbmask;
+			if (ps_sel.fbmask) {
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", context->FRAME.FBMSK,
+						(GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				ps_cb.FbMask.r = r_mask;
+				ps_cb.FbMask.g = g_mask;
+				ps_cb.FbMask.b = b_mask;
+				ps_cb.FbMask.a = a_mask;
+				require_barrier = true;
+				dev->PSSetShaderResource(3, rt);
+			}
 		}
 	}
 
@@ -730,7 +748,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
-	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw;
+	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw || ps_sel.fbmask;
 
 	if (sw_blending && om_bsel.abe && rt) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);

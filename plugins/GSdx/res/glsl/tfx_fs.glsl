@@ -65,11 +65,12 @@ layout(std140, binding = 21) uniform cb21
 	vec2 MinF;
 	vec2 TA;
 	uvec4 MskFix;
-	vec3 FbMask;
+	uvec4 FbMask;
+	vec3 _not_yet_used;
 	float Af;
 	vec4 HalfTexel;
 	vec4 MinMax;
-	vec4 TC_OffsetHack;
+	vec2 TC_OffsetHack;
 };
 
 #ifdef SUBROUTINE_GL40
@@ -393,6 +394,18 @@ vec4 ps_color()
 	return c;
 }
 
+void ps_fbmask(inout vec4 c)
+{
+	// FIXME do I need special case for 16 bits
+#if PS_FBMASK
+	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+	uvec4 denorm_rt = uvec4(rt * 255.0f + 0.5f);
+	uvec4 denorm_c = uvec4(c * 255.0f + 0.5f);
+	c = vec4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;
+#endif
+}
+
+#if PS_BLEND > 0
 void ps_blend(inout vec4 c, in float As)
 {
 	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
@@ -658,6 +671,7 @@ void ps_blend(inout vec4 c, in float As)
 	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
 	//c.rgb = mod((c.rgb * 255.0f) + 256.5f) / 255.0f;
 }
+#endif
 
 void ps_main()
 {
@@ -769,6 +783,8 @@ void ps_main()
 #if PS_BLEND > 0
 	ps_blend(c, alpha);
 #endif
+
+	ps_fbmask(c);
 
 	SV_Target0 = c;
 	SV_Target1 = vec4(alpha, alpha, alpha, alpha);

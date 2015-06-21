@@ -254,6 +254,7 @@ class GSDeviceOGL : public GSDevice
 		GSVector4 WH;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
+		GSVector4i FbMask;
 		GSVector4 AlphaCoeff;
 
 		GSVector4 HalfTexel;
@@ -263,13 +264,14 @@ class GSDeviceOGL : public GSDevice
 		PSConstantBuffer()
 		{
 			FogColor_AREF = GSVector4::zero();
-			HalfTexel = GSVector4::zero();
-			WH = GSVector4::zero();
-			MinMax = GSVector4::zero();
-			MinF_TA = GSVector4::zero();
-			MskFix = GSVector4i::zero();
-			AlphaCoeff = GSVector4::zero();
+			HalfTexel     = GSVector4::zero();
+			WH            = GSVector4::zero();
+			MinMax        = GSVector4::zero();
+			MinF_TA       = GSVector4::zero();
+			MskFix        = GSVector4i::zero();
+			AlphaCoeff    = GSVector4::zero();
 			TC_OffsetHack = GSVector4::zero();
+			FbMask        = GSVector4i::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -279,7 +281,7 @@ class GSDeviceOGL : public GSDevice
 
 			// if WH matches both HalfTexel and TC_OffsetHack do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue())
 			{
 				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
@@ -287,6 +289,7 @@ class GSDeviceOGL : public GSDevice
 				a[2] = b[2];
 				a[3] = b[3];
 				a[4] = b[4];
+				a[5] = b[5];
 
 				return true;
 			}
@@ -330,8 +333,9 @@ class GSDeviceOGL : public GSDevice
 				// Word 2
 				uint32 blend:8;
 				uint32 dfmt:2;
+				uint32 fbmask:1;
 
-				uint32 _free2:22;
+				uint32 _free2:21;
 			};
 
 			uint64 key;
