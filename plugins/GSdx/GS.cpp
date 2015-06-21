@@ -204,7 +204,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 	if(renderer == -1)
 	{
-		renderer = theApp.GetConfig("renderer", 0);
+		renderer = theApp.GetConfig("Renderer", 0);
 	}
 
 	if(threads == -1)
@@ -448,9 +448,9 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 #ifdef __linux__
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
-	int renderer = theApp.GetConfig("renderer", 12);
+	int renderer = theApp.GetConfig("Renderer", 12);
 #else
-	int renderer = theApp.GetConfig("renderer", 0);
+	int renderer = theApp.GetConfig("Renderer", 0);
 #endif
 
 	if(flags & 4)
@@ -520,7 +520,7 @@ EXPORT_C_(int) GSopen(void** dsp, char* title, int mt)
 	{
 		// normal init
 
-		renderer = theApp.GetConfig("renderer", 0);
+		renderer = theApp.GetConfig("Renderer", 0);
 	}
 
 	*dsp = NULL;
@@ -1485,7 +1485,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	GLLoader::in_replayer = true;
 
 	// Allow to easyly switch between SW/HW renderer
-	renderer = theApp.GetConfig("renderer", 12);
+	renderer = theApp.GetConfig("Renderer", 12);
 	if (renderer != 12 && renderer != 13)
 	{
 		fprintf(stderr, "wrong renderer selected %d\n", renderer);

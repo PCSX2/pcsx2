@@ -31,15 +31,15 @@ void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
 
 	// Note the value are based on m_gs_renderers vector on GSdx.cpp
 	switch (gtk_combo_box_get_active(combo)) {
-		case 0: theApp.SetConfig("renderer", 10); break;
-		case 1: theApp.SetConfig("renderer", 16); break;
-		case 2: theApp.SetConfig("renderer", 11); break;
-		case 3: theApp.SetConfig("renderer", 12); break;
-		case 4: theApp.SetConfig("renderer", 13); break;
-		case 5: theApp.SetConfig("renderer", 17); break;
+		case 0: theApp.SetConfig("Renderer", 10); break;
+		case 1: theApp.SetConfig("Renderer", 16); break;
+		case 2: theApp.SetConfig("Renderer", 11); break;
+		case 3: theApp.SetConfig("Renderer", 12); break;
+		case 4: theApp.SetConfig("Renderer", 13); break;
+		case 5: theApp.SetConfig("Renderer", 17); break;
 
 				// Fallback to SW opengl
-		default: theApp.SetConfig("renderer", 13); break;
+		default: theApp.SetConfig("Renderer", 13); break;
 	}
 }
 
@@ -76,7 +76,7 @@ GtkWidget* CreateRenderComboBox()
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
 	}
 
-	switch (theApp.GetConfig("renderer", 0)) {
+	switch (theApp.GetConfig("Renderer", 0)) {
 		// Note the value are based on m_gs_renderers vector on GSdx.cpp
 		case 10: renderer_box_position = 0; break;
 		case 16: renderer_box_position = 1; break;
