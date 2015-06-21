@@ -179,6 +179,8 @@ static void dummyIrqCallback()
 
 void SysMtgsThread::OpenPlugin()
 {
+	static bool stored_renderswitch = false;
+
 	if( m_PluginOpened ) return;
 
 	memcpy( RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS) );
@@ -192,8 +194,9 @@ void SysMtgsThread::OpenPlugin()
 	else
 		result = GSopen( (void*)pDsp, "PCSX2", renderswitch ? 2 : 1 );
 
-	if( renderswitch )
+	if( stored_renderswitch != renderswitch )
 	{
+		stored_renderswitch = renderswitch;
 		Console.Indent(2).WriteLn( "Toggling GSdx Hardware/Software renderer" );
 	}
 
