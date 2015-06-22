@@ -81,7 +81,7 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type) {
 }
 
 
-//string s_strIniPath = "inis";
+std::string s_strIniPath = "inis";
 std::string s_strLogPath = "logs";
 // Warning: The below log function is SLOW. Better fix it before attempting to use it.
 #ifdef _DEBUG
@@ -627,7 +627,7 @@ void CALLBACK DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
-    // s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
 void CALLBACK DEV9setLogDir(const char* dir)
