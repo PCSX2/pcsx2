@@ -67,47 +67,38 @@ void DeleteRegConf() {
 	RegDeleteKey(myKey, "ethEnable");
 	RegDeleteKey(myKey, "hddEnable");
 	RegCloseKey(myKey);
+	//Delete Key Software\PS2Eplugin\DEV9\DEV9linuz
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9", 0, KEY_ALL_ACCESS, &myKey) != ERROR_SUCCESS) {
-		emu_printf("Error Opening Key DEV9linuz");
+		emu_printf("Error Opening Key DEV9\n");
 		return;
 	}
 	if (RegDeleteKey(myKey, "DEV9linuz") != ERROR_SUCCESS) {
-		emu_printf("Error Deleting Key DEV9linuz");
+		emu_printf("Error Removing Key DEV9linuz\n");
+		RegCloseKey(myKey);
 		return;
 	}
+	RegCloseKey(myKey);
+	//Delete Key Software\PS2Eplugin\DEV9
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin", 0, KEY_ALL_ACCESS, &myKey) != ERROR_SUCCESS) {
+		emu_printf("Error Opening Key PS2Eplugin\n");
+		return;
+	}
+	if (RegDeleteKey(myKey, "DEV9") != ERROR_SUCCESS) {
+		emu_printf("Error Removing Key DEV9\n");
+		RegCloseKey(myKey);
+		return;
+	}
+	RegCloseKey(myKey);
 }
 
-void LoadRegConf() {
-	HKEY myKey;
-	DWORD type, size;
-
+void LoadIniConf() {
 	//memset(&config, 0, sizeof(config));
 	//strcpy(config.Hdd, HDD_DEF);
-	//config.HddSize=8*1024;
+	//config.HddSize = 8 * 1024;
 	//strcpy(config.Eth, ETH_DEF);
-
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9\\DEV9linuz", 0, KEY_ALL_ACCESS, &myKey)!=ERROR_SUCCESS) {
-		//SaveConf();
-		return;
-	}
-	GetKeyV("Eth", config.Eth, sizeof(config.Eth), REG_SZ);
-	GetKeyV("Hdd", config.Hdd, sizeof(config.Hdd), REG_SZ);
-	GetKeyVdw("HddSize", &config.HddSize);
-	GetKeyVdw("ethEnable", &config.ethEnable);
-	GetKeyVdw("hddEnable", &config.hddEnable);
-
-	RegCloseKey(myKey);
-	DeleteRegConf();
-}
-void LoadConf() {
-	memset(&config, 0, sizeof(config));
-	strcpy(config.Hdd, HDD_DEF);
-	config.HddSize = 8 * 1024;
-	strcpy(config.Eth, ETH_DEF);
 
 	const std::string file(s_strIniPath + "/dev9ghz.ini");
 	if (FileExists(file.c_str()) == false) {
-		LoadRegConf(); //Import old settings if user has upgraded this plugin
 		SaveConf();
 		return;
 	}
@@ -116,5 +107,31 @@ void LoadConf() {
 	config.HddSize = GetPrivateProfileInt("DEV9", "HddSize", config.HddSize, file.c_str());
 	config.ethEnable = GetPrivateProfileInt("DEV9", "ethEnable", config.ethEnable, file.c_str());
 	config.hddEnable = GetPrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
+}
+
+void LoadConf() {
+	HKEY myKey;
+	DWORD type, size;
+
+	memset(&config, 0, sizeof(config));
+	strcpy(config.Hdd, HDD_DEF);
+	config.HddSize = 8 * 1024;
+	strcpy(config.Eth, ETH_DEF);
+
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\DEV9\\DEV9linuz", 0, KEY_ALL_ACCESS, &myKey)!=ERROR_SUCCESS) {
+		LoadIniConf();
+		return;
+	}
+	printf("Importing Settings\n");
+	//Import old settings if user has upgraded this plugin
+	GetKeyV("Eth", config.Eth, sizeof(config.Eth), REG_SZ);
+	GetKeyV("Hdd", config.Hdd, sizeof(config.Hdd), REG_SZ);
+	GetKeyVdw("HddSize", &config.HddSize);
+	GetKeyVdw("ethEnable", &config.ethEnable);
+	GetKeyVdw("hddEnable", &config.hddEnable);
+
+	RegCloseKey(myKey);
+	SaveConf();
+	DeleteRegConf();
 }
 
