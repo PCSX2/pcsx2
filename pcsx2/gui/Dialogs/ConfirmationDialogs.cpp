@@ -298,10 +298,11 @@ ModalButtonPanel::ModalButtonPanel( wxWindow* parent, const MsgButtons& buttons 
 
 void ModalButtonPanel::OnActionButtonClicked( wxCommandEvent& evt )
 {
-	evt.Skip();
 	wxWindow* toplevel = wxGetTopLevelParent( this );
 	if( wxDialog* dialog = wxDynamicCast( toplevel, wxDialog ) )
 		dialog->EndModal( evt.GetId() );
+	// If the dialog doesn't close, and you're using it for a modeless dialog - hint:
+	// read the name of the class. ;)
 }
 
 void ModalButtonPanel::AddCustomButton( wxWindowID id, const wxString& label )
