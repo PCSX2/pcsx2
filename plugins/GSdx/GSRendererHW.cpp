@@ -64,7 +64,7 @@ void GSRendererHW::SetScaling() {
 	
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
 
-	if (m_upscale_multiplier == 1) { //Custom
+	if (m_upscale_multiplier == 1 && !m_nativeres) { //Custom
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 	}
