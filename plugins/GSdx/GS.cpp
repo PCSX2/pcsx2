@@ -751,6 +751,10 @@ EXPORT_C GSconfigure()
 	{
 		if(!GSUtil::CheckSSE()) return;
 
+		// Be sure config is aligned after F9 toggling
+		if (s_renderer != -1)
+			theApp.SetConfig("renderer", s_renderer);
+
 #ifdef _WINDOWS
 
 		if(GSSettingsDlg(s_isgsopen2).DoModal() == IDOK)
