@@ -149,10 +149,16 @@ wxDialogWithHelpers::~wxDialogWithHelpers() throw()
 
 void wxDialogWithHelpers::Init( const pxDialogCreationFlags& cflags )
 {
+	// Note to self: if any comments indicate platform specific behaviour then
+	// ifdef them out to see if they fix the issue. I wasted too much time
+	// figuring out why the close box wouldn't work on wxGTK modal dialogs that
+	// had a minimise button.
+#if _WIN32
 	// This fixes it so that the dialogs show up in the task bar in Vista:
 	// (otherwise they go stupid iconized mode if the user minimizes them)
 	if( cflags.hasMinimizeBox )
 		SetExtraStyle(GetExtraStyle() & ~wxTOPLEVEL_EX_DIALOG);
+#endif
 
 	m_extraButtonSizer	= NULL;
 
@@ -160,11 +166,6 @@ void wxDialogWithHelpers::Init( const pxDialogCreationFlags& cflags )
 	if( m_hasContextHelp )
 		delete wxHelpProvider::Set( new wxSimpleHelpProvider() );
 #endif
-
-	// GTK/Linux Note: currently the Close (X) button doesn't appear to work in dialogs.  Docs
-	// indicate that it should, so I presume the problem is in wxWidgets and that (hopefully!)
-	// an updated version will fix it later.  I tried to fix it using a manual Connect but it
-	// didn't do any good.  (problem could also be my Co-Linux / x-window manager)
 
 	Connect( pxEvt_OnDialogCreated,	wxCommandEventHandler	(wxDialogWithHelpers::OnDialogCreated) );
 
