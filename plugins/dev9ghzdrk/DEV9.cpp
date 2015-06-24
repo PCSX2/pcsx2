@@ -56,7 +56,7 @@ u32 *iopPC;
 
 const unsigned char version  = PS2E_DEV9_VERSION;
 const unsigned char revision = 0;
-const unsigned char build    = 3;    // increase that with each version
+const unsigned char build    = 4;    // increase that with each version
 
 
 static char *libraryName     = "GiGaHeRz's DEV9 Driver"
