@@ -86,8 +86,8 @@ EXPORT_C_(const char*) PS2EgetLibName()
 
 EXPORT_C_(uint32) PS2EgetLibVersion2(uint32 type)
 {
-	const uint32 revision = 0;
-	const uint32 build = 1;
+	const uint32 revision = 1;
+	const uint32 build = 0;
 
 	return (build << 0) | (revision << 8) | (PS2E_GS_VERSION << 16) | (PLUGIN_VERSION << 24);
 }

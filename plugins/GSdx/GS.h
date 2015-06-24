@@ -21,7 +21,7 @@
 
 #pragma once
 
-#define PLUGIN_VERSION 16
+#define PLUGIN_VERSION 0
 
 #define VM_SIZE 4194304
 #define PAGE_SIZE 8192
