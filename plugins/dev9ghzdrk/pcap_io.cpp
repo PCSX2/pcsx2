@@ -97,9 +97,9 @@ int pcap_io_init(char *adapter)
 	virtual_mac.bytes[0] = host_mac.bytes[0];
 	virtual_mac.bytes[1] = host_mac.bytes[1];
 	virtual_mac.bytes[2] = host_mac.bytes[2];
-	virtual_mac.bytes[3] = host_mac.bytes[3];
-	virtual_mac.bytes[4] = host_mac.bytes[4];
-	virtual_mac.bytes[5] = host_mac.bytes[5];
+	virtual_mac.bytes[3] = host_mac.bytes[2];
+	virtual_mac.bytes[4] = host_mac.bytes[5];
+	virtual_mac.bytes[5] = host_mac.bytes[4];
 	//The checksum seems to be all the values of the mac added up in 16bit chunks
 	checksum = dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2] & 0xffff;
 
