@@ -864,14 +864,34 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
-		bool linear = true;
 		if (psm.pal > 0) {
 			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
-			// Palette is used to interpret the alpha channel of the RT as an index.
-			// Star Ocean 3 uses it to emulate a stencil buffer.
-			// It is a very bad idea to force bilinear filtering on it.
-			linear = false;
 		}
+		// Disable linear filtering for various GS post-processing effect
+		// 1/ Palette is used to interpret the alpha channel of the RT as an index.
+		// Star Ocean 3 uses it to emulate a stencil buffer.
+		// 2/ Z formats are a bad idea to interpolate (discontinuties).
+		// 3/ 16 bits buffer is used to move data from a channel to another.
+		//
+		// I keep linear filtering for standard color even if I'm not sure that it is
+		// working correctly.
+		// Indeed, texture is reduced so you need to read all covered pixels (9 in 3x)
+		// to correctly interpolate the value. Linear interpolation is likely acceptable
+		// only in 2x scaling
+		//
+		// Src texture will still be bilinear interpolated so I'm really not sure
+		// that we need to do it here too.
+		//
+		// Future note: instead to do
+		// RT 2048x2048 -> T 1024x1024 -> RT 2048x2048
+		// We can maybe sample directly a bigger texture
+		// RT 2048x2048 -> T 2048x2048 -> RT 2048x2048
+		// Pro: better quality. Copy instead of StretchRect (must be faster)
+		// Cons: consume more memory
+		//
+		// In distant future: investigate to reuse the RT directly without any
+		// copy. Likely a speed boost and memory usage reduction.
+		bool linear = (TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24);
 
 		int shader = dst->m_type != RenderTarget ? 11 : 0;
 
