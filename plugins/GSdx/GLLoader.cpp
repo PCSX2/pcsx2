@@ -86,7 +86,6 @@ PFNGLCLIENTWAITSYNCPROC                gl_ClientWaitSync                    = NU
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange            = NULL;
 PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate                 = NULL;
-PFNGLTEXPARAMETERIPROC                 gl_TexParameteri                     = NULL;
 // GL4.0
 PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv             = NULL;
 // GL4.1
@@ -186,7 +185,7 @@ namespace Emulate_DSA {
 
 	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
 		BindTextureUnit(7, texture);
-		gl_TexParameteri(GL_TEXTURE_2D, pname, param);
+		glTexParameteri(GL_TEXTURE_2D, pname, param);
 	}
 
 	// Framebuffer entry point

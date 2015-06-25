@@ -205,12 +205,6 @@ typedef void (APIENTRYP PFNGLTEXTUREBARRIERPROC) (void);
 typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
 #endif /* GL_VERSION_4_5 */
 
-// only exist in glcorearb.h
-#ifndef PFNGLTEXPARAMETERIPROC
-typedef void (APIENTRYP PFNGLTEXPARAMETERIPROC) (GLenum target, GLenum pname, GLint param);
-#endif
-
-
 extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
 extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
 extern   PFNGLATTACHSHADERPROC                  gl_AttachShader;
@@ -275,7 +269,6 @@ extern   PFNGLCLIENTWAITSYNCPROC                gl_ClientWaitSync;
 extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange;
 extern   PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate;
 extern   PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate;
-extern   PFNGLTEXPARAMETERIPROC                 gl_TexParameteri;
 // GL4.0
 extern   PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv;
 // GL4.1

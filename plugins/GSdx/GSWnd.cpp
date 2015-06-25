@@ -79,7 +79,6 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_DeleteSync) = GetProcAddress("glDeleteSync");
 	*(void**)&(gl_ClientWaitSync) = GetProcAddress("glClientWaitSync");
 	*(void**)&(gl_FlushMappedBufferRange) = GetProcAddress("glFlushMappedBufferRange");
-	*(void**)&(gl_TexParameteri) = GetProcAddress("glTexParameteri");
 	// GL4.0
 	*(void**)&(gl_UniformSubroutinesuiv) = GetProcAddress("glUniformSubroutinesuiv", true);
 	*(void**)&(gl_BlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB", true);
