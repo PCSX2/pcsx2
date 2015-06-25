@@ -144,8 +144,6 @@ Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, con
 	Connect( wxID_APPLY,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnApply_Click ) );
 	Connect( wxID_SAVE,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnScreenshot_Click ) );
 
-	Connect(				wxEVT_CLOSE_WINDOW,				wxCloseEventHandler(BaseConfigurationDialog::OnCloseWindow) );
-
 	Connect( pxEvt_SetSettingsPage, wxCommandEventHandler( BaseConfigurationDialog::OnSetSettingsPage ) );
 
 	// ----------------------------------------------------------------------------
@@ -230,14 +228,6 @@ void Dialogs::BaseConfigurationDialog::OnSomethingChanged( wxCommandEvent& evt )
 		SomethingChanged();
 }
 
-
-void Dialogs::BaseConfigurationDialog::OnCloseWindow( wxCloseEvent& evt )
-{
-	if( !IsModal() ) Destroy();
-	evt.Skip();
-}
-
-
 void Dialogs::BaseConfigurationDialog::AllowApplyActivation( bool allow )
 {
 	m_allowApplyActivation = allow;
@@ -280,7 +270,6 @@ void Dialogs::BaseConfigurationDialog::OnApply_Click( wxCommandEvent& evt )
 	SomethingChanged_StateModified_IsChanged();
 }
 
-//avih: FIXME: ? for some reason, this OnCancel_Click is called twice when clicking cancel or closing the dialog (Jake's code?).
 void Dialogs::BaseConfigurationDialog::OnCancel_Click( wxCommandEvent& evt )
 {
 	//same as for Ok/Apply: let SysConfigDialog clean-up the presets and derivatives (menu system) if needed.

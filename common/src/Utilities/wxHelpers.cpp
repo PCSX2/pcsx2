@@ -171,7 +171,6 @@ void wxDialogWithHelpers::Init( const pxDialogCreationFlags& cflags )
 
 	Connect( wxID_OK,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
 	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
-	Connect(				wxEVT_CLOSE_WINDOW,				wxCloseEventHandler		(wxDialogWithHelpers::OnCloseWindow) );
 
 	wxCommandEvent createEvent( pxEvt_OnDialogCreated );
 	createEvent.SetId( GetId() );
@@ -287,7 +286,7 @@ pxStaticText& wxDialogWithHelpers::Heading( const wxString& label )
 	return *new pxStaticHeading( this, label );
 }
 
-bool wxDialogWithHelpers::Destroy()
+void wxDialogWithHelpers::RememberPosition()
 {
 	// Save the dialog position if the dialog is named...
 	// FIXME : This doesn't get called if the app is exited by alt-f4'ing the main app window.
@@ -312,20 +311,18 @@ bool wxDialogWithHelpers::Destroy()
 			saver.Entry( dlgName + L"_Pos", pos, screenRect.GetPosition() );
 		}
 	}
-
-	return _parent::Destroy();
-}
-
-void wxDialogWithHelpers::OnCloseWindow( wxCloseEvent& evt )
-{
-	if( !IsModal() ) Destroy();
-	evt.Skip();
 }
 
 void wxDialogWithHelpers::OnOkCancel( wxCommandEvent& evt )
 {
-	Close();
-	evt.Skip();
+	RememberPosition();
+
+	// Modal dialogs should be destroyed after ShowModal returns, otherwise there
+	// might be double delete problems if the dialog was declared on the stack.
+	if (!IsModal())
+		Destroy();
+	else
+		evt.Skip();
 }
 
 void wxDialogWithHelpers::AddOkCancel( wxSizer &sizer, bool hasApply )
