@@ -129,7 +129,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 			if(t->m_used && t->m_dirty.empty()) {
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-					dst = t;
+					if (psm == PSM_PSMT8) {
+						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will
+						// be slow but
+						// 1/ it just works :)
+						// 2/ even with upscaling
+						// 3/ for both DX and OpenGL
+						Read(t, t->m_valid);
+					} else {
+						dst = t;
+					}
 
 					break;
 
