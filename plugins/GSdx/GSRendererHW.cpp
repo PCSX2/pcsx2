@@ -402,6 +402,7 @@ void GSRendererHW::Draw()
 		}
 		// Both input and output are 16 bits but texture was initially 32 bits!
 		m_texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt);
+		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 	}
 
 	if(s_dump)
