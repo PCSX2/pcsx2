@@ -82,6 +82,7 @@ public:
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid;
 		bool m_depth_supported;
+		bool m_dirty_alpha;
 
 	public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
