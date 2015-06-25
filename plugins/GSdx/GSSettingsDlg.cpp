@@ -570,13 +570,9 @@ int swap_states(int a)
 	switch(a)
 	{
 		case 0: return 0;
-		break;
 		case 1: return 2;
-		break;
 		case 2: return 1;
-		break;
 		default: return 0; // If user's set more than 2 in ini file, set variable to 0.
-		break;
 	}
 }
 void GSHacksDlg::OnInit()
