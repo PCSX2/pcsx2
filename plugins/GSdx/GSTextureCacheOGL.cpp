@@ -30,10 +30,8 @@ GSTextureCacheOGL::GSTextureCacheOGL(GSRenderer* r)
 
 void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 {
-	if(!t->m_dirty.empty())
-	{
+	if (!t->m_dirty.empty() || (r.width() == 0 && r.height() == 0))
 		return;
-	}
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
