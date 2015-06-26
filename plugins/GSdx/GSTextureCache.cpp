@@ -379,7 +379,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 
-
 		if(dst == NULL)
 		{
 			return NULL;
@@ -556,6 +555,13 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 			Target* t = *j;
 
+			// GH: (I think) this code is completely broken. Typical issue:
+			// EE write an alpha channel into 32 bits texture
+			// Results: the target is deleted (because HasCompatibleBits is false)
+			//
+			// Major issues are expected if the game try to reuse the target
+			// If we dirty the RT, it will likely upload partially invalid data.
+			// (The color on the previous example)
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
 				if(!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
@@ -574,6 +580,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				}
 			}
 
+			// GH: Try to detect texture write that will overlap with a target buffer
 			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && bp < t->m_TEX0.TBP0)
 			{
 				uint32 rowsize = bw * 8192;

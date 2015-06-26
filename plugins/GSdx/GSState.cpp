@@ -1486,6 +1486,11 @@ void GSState::Write(const uint8* mem, int len)
 		return;
 	}
 
+	GL_CACHE("Write! ...  => 0x%x W:%d F:%d (DIR %d%d), dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+		m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+
 	if(PRIM->TME && (m_env.BITBLTBUF.DBP == m_context->TEX0.TBP0 || m_env.BITBLTBUF.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
 	{
 		FlushPrim();
@@ -1602,7 +1607,7 @@ void GSState::Move()
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	GL_CACHE("Move! %05x %d %d => %05x %d %d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+	GL_CACHE("Move! 0x%x W:%d F:%d => 0x%x W:%d F:%d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
 		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM,
 		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
