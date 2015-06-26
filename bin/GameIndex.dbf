@@ -135,6 +135,10 @@ vuClampMode = 2 // Text in GT mode works
 //	
 //[/patches]
 ---------------------------------------------
+Serial = PBPX-95506
+Name   = Official PlayStation 2 Magazine Demo Disc
+Region = PAL-M5
+---------------------------------------------
 Serial = PCPX-96649
 Name   = Gran Turismo 4 [Demo]
 Region = NTSC-J
@@ -366,7 +370,7 @@ Name   = Chain Drive
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20044
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Lara Croft Tomb Raider: The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-Unk
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
@@ -1092,9 +1096,9 @@ Name   = Official PlayStation 2 Magazine Demo 37
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCED-52436
-Name   = Playstation2 UK Demo 7-2004
+Name   = Official PlayStation 2 Magazine Demo 7
 Region = PAL-Unk
-Compat = 5
+// This disc was shipped together with SCES-52677.
 ---------------------------------------------
 Serial = SCED-52818
 Name   = EyeToy - Chat [Light]
@@ -1144,20 +1148,19 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SCES-50006
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan: The Ancients' Gates	// aka "Drakan 2"
 Region = PAL-M5
 Compat = 5
 EETimingHack = 1	// flickery textures
-[patches]
-	comment=This gamedisc supports multiple languages.
-	comment=Language selection is done through the BIOS configuration.
-	comment=Implementation requires Full boot - "Boot CDVD (full)".
-	//
+[patches = 04F9D87F]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
+	comment=- Implementation requires Full boot - "Boot CDVD (full)".
+	// =====
+	// Fix by pgert against displaycrap which arises with HD
+	//  when using GSdx (in HW-mode) around the Health & Mana bars.
+	// Might not fully work with 16:10 settings.
 	patch=1,EE,001C2274,word,3C013F7F // 3C013F80
-	patch=1,EE,801C2274,word,3C013F7F // 3C013F80 - a clone from 001C2274.
-	patch=1,EE,A01C2274,word,3C013F7F // 3C013F80 - a clone from 001C2274.
-	// Fix by pgert that reduces displaycrap which arises with Resolution Scaling
-	//  around the Health & Mana bars. Improvement someone?
+	patch=1,EE,001C228C,word,3C013E10 // 3C013F00
 [/patches]
 ---------------------------------------------
 Serial = SCES-50009
@@ -1550,19 +1553,7 @@ Region = PAL-Unk
 Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
-Compat = 5	// With GSdx, SW-mode only (issue 1212).
-// [patches]
-//	comment=- Widescreen enforcement lazy-hack by pgert.
-//	patch=1,EE,204886FC,extended,00000001 // 00000000
-//	//
-//	patch=1,EE,00103D9C,word,3C013F55 // 3C013F66 - X-axis of X-button & "Start" on Start menu - better.
-//	patch=1,EE,80103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	patch=1,EE,A0103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	//
-//	patch=1,EE,0012A000,word,3C013F40 // 3C013F66 - Y-axis of X-button & "Select" on TV-mode menu - better.
-//	patch=1,EE,8012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-//	patch=1,EE,A012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-// [/patches]
+Compat = 5	// With GSdx, SW-mode only.
 ---------------------------------------------
 Serial = SCES-51159
 Name   = Getaway, The
@@ -1943,16 +1934,16 @@ Region = PAL-Unk
 Serial = SCES-52677
 Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-Unk	// Multiple languages
-Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
+Compat = 4
+[patches = D859B1B4]
+	comment=- This gamedisc supports multiple languages and Widescreen through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 	comment=-  *  *  *  *  *  *
-	comment=- Using GSdx, this gamedisc crashes in gamemenu with SW-mode, 
+	comment=- Using GSdx, this gamedisc crashes in GameMenu with SW-mode, 
 	comment=-  and has no 3D display with HW-mode.
 	comment=- Playable by toggling between HW-mode (in menu) and SW-mode (in game).
 [/patches]
+// This disc was shipped together with SCED-52436.
 ---------------------------------------------
 Serial = SCES-52748
 Name   = EyeToy - Play 2
@@ -2038,7 +2029,7 @@ Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-53133
 Name   = God of War
-Region = PAL-E
+Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SCES-53178
@@ -4413,8 +4404,13 @@ Serial = SCUS-97127
 Name   = Kiosk Demo Disc 2.02
 Region = NTSC-U
 ---------------------------------------------
+Serial = SCUS-97169
+Name   = Drakan: The Ancients' Gates [Demo]	// aka "Drakan 2 [Demo]"
+Region = NTSC-U
+EETimingHack = 1	// flickery textures
+---------------------------------------------
 Serial = SCUS-97128
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan: The Ancients' Gates	// aka "Drakan 2"
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1	// flickery textures
@@ -4578,10 +4574,6 @@ Serial = SCUS-97167
 Name   = PaRappa the Rapper 2
 Region = NTSC-U
 Compat = 5
----------------------------------------------
-Serial = SCUS-97169
-Name   = Drakan - The Ancients' Gates [Demo]	// aka "Drakan 2 [Demo]"
-Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97170
 Name   = Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]
@@ -6887,9 +6879,8 @@ Serial = SLES-50211
 Name   = Gauntlet - Dark Legacy
 Region = PAL-Unk	// Multiple languages
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = 3E0A256D]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -7799,7 +7790,7 @@ Region = PAL-Unk
 Serial = SLES-50672
 Name   = Baldur's Gate: Dark Alliance
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50677
 Name   = Shadow Hearts
@@ -8126,12 +8117,10 @@ Serial = SLES-50821
 Name   = Project Zero
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc only lets you choose language once,
-	comment=-  whereafter it stores that setting in the memcard.
-	comment=- To change the language you actually have to erase
-	comment=-  the memcard content for the game.
-[/patches]
+// This gamedisc only lets you choose language once,
+//  whereafter it stores that setting in the memcard.
+// To change the language you actually have to erase
+//  the memcard content for the game.
 ---------------------------------------------
 Serial = SLES-50822
 Name   = Shadow Hearts
@@ -8591,9 +8580,10 @@ Region = PAL-Unk
 Serial = SLES-51043
 Name   = Spyro - Enter the Dragonfly
 Region = PAL-Unk
+Compat = 5
 [patches = 0EF1D4BA]
-	comment=Spyro PAL startup fix
-	patch=1,EE,001E763C,word,24020001
+	comment=Spyro PAL startup fix by LXShadow
+	patch=1,EE,001E763C,word,24020001 // 0000102d
 [/patches]
 ---------------------------------------------
 Serial = SLES-51044
@@ -9011,15 +9001,14 @@ Region = PAL-Unk
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51227
-Name   = Tomb Raider - Angel of Darkness	// aka "TRAOD"
+Name   = Lara Croft Tomb Raider: Angel of Darkness	// aka "TRAOD"
 Region = PAL-Unk	// Multiple languages
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
-[patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
+[patches = 54AD76D7]
+	comment=- This gamedisc supports multiple languages and Widescreen through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	comment=- Full boot is recommended anyway for this gamedisc to avoid textproblems.
+	comment=- Full boot is recommended anyway for this game to avoid textproblems.
 [/patches]
 ---------------------------------------------
 Serial = SLES-51229
@@ -10902,9 +10891,8 @@ Serial = SLES-52149
 Name   = Tom Clancy's Splinter Cell - Pandora Tomorrow
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = AB82114E]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -11201,8 +11189,9 @@ Name   = Richard Burns Rally
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52325
-Name   = Champions of Norrath - Realms of EverQuest
-Region = PAL-Unk	// Multiple languages
+Name   = Champions of Norrath	// Realms of EverQuest
+Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52326
 Name   = Spawn - Armageddon
@@ -11332,8 +11321,8 @@ Name   = Shrek 2
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52384
-Name   = Project Zero 2 - Crimson Butterfly
-Region = PAL-Unk
+Name   = Project Zero II - Crimson Butterfly
+Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-52385
@@ -11670,16 +11659,19 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52545
 Name   = Star Wars Battlefront
-Region = PAL-Unk
+Region = PAL-M3
 Compat = 5
+[patches = 503BF9E1]
+	comment=- This disc has the same CRC as SLUS-20898, the NTSC-U disc.
+[/patches]
 ---------------------------------------------
 Serial = SLES-52546
 Name   = Star Wars Battlefront
-Region = PAL-Unk
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52547
 Name   = Star Wars Battlefront
-Region = PAL-Unk
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52551
 Name   = Samurai Warriors
@@ -12822,11 +12814,14 @@ Serial = SLES-53007
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = 4C4D7072]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
+---------------------------------------------
+Serial = SLES-53287
+Name   = Tom Clancy's Splinter Cell - Chaos Theory
+Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-53011
 Name   = Gallop Racer 2
@@ -12959,9 +12954,9 @@ Compat = 5
 eeRoundMode = 0
 ---------------------------------------------
 Serial = SLES-53039
-Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
-Region = PAL-Unk
-Compat = 4
+Name   = Champions: Return to Arms	// aka "Champions of Norrath 2"
+Region = PAL-M4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53041
 Name   = RTL Ski Alpine 2005
@@ -13239,10 +13234,10 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53154
 Name   = The Bard's Tale
-Region = PAL-M4	// Multiple languages
+Region = PAL-M8
+Compat = 5
 [patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -13419,10 +13414,6 @@ Serial = SLES-53284
 Name   = Guilty Gear Isuka
 Region = PAL-Unk
 Compat = 5
----------------------------------------------
-Serial = SLES-53287
-Name   = Tom Clancy's Splinter Cell - Chaos Theory
-Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-53296
 Name   = Ford Mustang - The Legend Lives
@@ -13863,12 +13854,19 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53501
 Name   = Star Wars - Battlefront II
-Region = PAL-Unk
+Region = PAL-M3
 Compat = 5
+[patches = 02F4B541]
+	comment=- This disc has the same CRC as SLUS-21240, the NTSC-U disc.
+[/patches]
 ---------------------------------------------
 Serial = SLES-53502
 Name   = Star Wars - Battlefront II
-Region = PAL-Unk
+Region = PAL-F
+---------------------------------------------
+Serial = SLES-53503
+Name   = Star Wars - Battlefront II
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-53504
 Name   = Agent Hugo
@@ -14234,9 +14232,8 @@ Serial = SLES-53667
 Name   = Gauntlet - Seven Sorrows
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = BBB8392E]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -14569,17 +14566,16 @@ Region = PAL-Unk
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53825
-Name   = Project Zero 3 - The Tormented
-Region = PAL-Unk
+Name   = Project Zero 3: The Tormented
+Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53826
 Name   = Tom Clancy's Splinter Cell - Double Agent
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = ABE3FDEA]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -14704,7 +14700,7 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53886
 Name   = Black
-Region = PAL-Unk
+Region = PAL-M5
 Compat = 5
 vuClampMode = 0
 ---------------------------------------------
@@ -14743,12 +14739,11 @@ Name   = 50cent - Bulletproof
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53908
-Name   = Tomb Raider - Legend
+Name   = Lara Croft Tomb Raider: Legend
 Region = PAL-Unk	// Multiple languages
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = 05177ECE]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -15331,8 +15326,7 @@ Name   = Dirge of Cerberus - Final Fantasy VII
 Region = PAL-Unk
 Compat = 5
 [patches = 33F7D21A]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 	//
 	// Override sceScfGetLanguage patches by nachbrenner:
@@ -16244,12 +16238,11 @@ Name   = Wacky Races - Mad Motors
 Region = PAL-M11
 ---------------------------------------------
 Serial = SLES-54674
-Name   = Lara Croft Tomb Raider - Anniversary
+Name   = Lara Croft Tomb Raider: Anniversary
 Region = PAL-Unk	// Multiple languages
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = A629A376]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -17103,12 +17096,11 @@ Region = PAL-M5
 compat = 5
 ---------------------------------------------
 Serial = SLES-55442
-Name   = Tomb Raider Underworld
+Name   = Tomb Raider: Underworld
 Region = PAL-Unk	// Multiple languages
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
+[patches = 8E214549]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
@@ -17580,12 +17572,12 @@ Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-25012
-Name   = Devil May Cry 2 Dante
+Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-25013
-Name   = Devil May Cry 2 Lucia
+Name   = Devil May Cry 2 [Lucia Disc]
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
@@ -21608,14 +21600,19 @@ Serial = SLPM-65232
 Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-J
 Compat = 5
-[patches]
-	comment=Note that this disc has the same CRC as SLUS-20484, the NTSC-U disc.
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLUS-20484 & SLUS-20627,
+	comment=-  the NTSC-U discs, and as SLPM-65233, the Lucia disc.
 [/patches]
 ---------------------------------------------
 Serial = SLPM-65233
 Name   = Devil May Cry 2 [Lucia Disc]
 Region = NTSC-J
 Compat = 5
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLUS-20484 & SLUS-20627,
+	comment=-  the NTSC-U discs, and as SLPM-65232, the Dante disc.
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65234
 Name   = Gregory Horror Show - Soul Collector
@@ -26382,7 +26379,7 @@ Name   = FIFA Street [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66558
-Name   = Tomb Raider - Legend
+Name   = Lara Croft Tomb Raider: Legend
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66559
@@ -26447,6 +26444,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66574
 Name   = Meitantei Evangelion
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25932
+Name   = Evangelion - Jo
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66575
@@ -30530,7 +30531,7 @@ Name   = True Love Story - Summer Days and Yet
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25246
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Lara Croft Tomb Raider: The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-J
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
@@ -32829,7 +32830,7 @@ Name   = Battle of Sunrise
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25856
-Name   = Tomb Raider - Anniversary
+Name   = Lara Croft Tomb Raider: Anniversary
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25858
@@ -32916,7 +32917,7 @@ Name   = The King of Fighters 2002 - Unlimited Match
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25927
-Name   = Tomb Raider Underworld
+Name   = Tomb Raider: Underworld
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25930
@@ -33252,7 +33253,7 @@ Name   = Fatal Frame 2 - Crimson Butterfly [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73257
-Name   = Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]
+Name   = Fatal Frame 3: The Tormented [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-73258
@@ -33929,7 +33930,7 @@ Compat = 5
 	patch=0,EE,0010FFC8,word,48428800
 	patch=0,EE,0010FFDC,word,4BE83A4B
 
-	// same as ace combat 5, these are definite
+	// same as Ace Combat 5, these are definite
 	patch=0,EE,0017C6C4,word,48438800
 	patch=0,EE,0017C6D4,word,4BE4282C
 	patch=0,EE,0017C0C4,word,48438800
@@ -34635,8 +34636,8 @@ Name   = Spyro the Dragon - Enter the Dragonfly
 Region = NTSC-U
 Compat = 5
 [patches = 4B8E0DE8]
-	comment=Spyro NTSC startup fix
-	patch=1,EE,001e71dc,word,24020001
+	comment=Spyro NTSC startup fix by LXShadow
+	patch=1,EE,001e71dc,word,24020001 // 0000102d
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20316
@@ -35307,7 +35308,7 @@ Name   = Gravenville - Ghost Master
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20467
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Lara Croft Tomb Raider: The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-U
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
@@ -35389,11 +35390,21 @@ Compat = 5
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20484
-Name   = Devil May Cry 2 [Disc1of2]
+Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-U
 Compat = 5
-[patches]
-	comment=Note that this disc has the same CRC as SLPM-65232, the NTSC-J disc.
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLPM-65232 & SLPM-65233,
+	comment=-  the NTSC-J discs, and as SLUS-20627, the Lucia disc.
+[/patches]
+---------------------------------------------
+Serial = SLUS-20627
+Name   = Devil May Cry 2 [Lucia Disc]
+Region = NTSC-U
+Compat = 5
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLPM-65232 & SLPM-65233,
+	comment=-  the NTSC-J discs, and as SLUS-20484, the Dante disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20485
@@ -35753,7 +35764,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20565
-Name   = Champions of Norrath
+Name   = Champions of Norrath	// Realms of EverQuest
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -36017,11 +36028,6 @@ Region = NTSC-U
 Serial = SLUS-20626
 Name   = Deer Hunter
 Region = NTSC-U
----------------------------------------------
-Serial = SLUS-20627
-Name   = Devil May Cry 2 [Disc2of2]
-Region = NTSC-U
-Compat = 5
 ---------------------------------------------
 Serial = SLUS-20628
 Name   = Disney's Finding Nemo
@@ -36653,7 +36659,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20766
-Name   = Fatal Frame 2 - Crimson Butterfly
+Name   = Fatal Frame II - Crimson Butterfly
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -37244,6 +37250,9 @@ Serial = SLUS-20898
 Name   = Star Wars Battlefront
 Region = NTSC-U
 Compat = 5
+[patches = 503BF9E1]
+	comment=- This disc has the same CRC as SLES-52545, the PAL-M3 disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20899
 Name   = Samurai Jack - The Shadow of Aku
@@ -37616,7 +37625,7 @@ Name   = Samurai Showdown V
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20973
-Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
+Name   = Champions: Return to Arms	// aka "Champions of Norrath 2"
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -38717,7 +38726,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21203
-Name   = Tomb Raider - Legend
+Name   = Lara Croft Tomb Raider: Legend
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -38898,6 +38907,9 @@ Serial = SLUS-21240
 Name   = Star Wars Battlefront II
 Region = NTSC-U
 Compat = 5
+[patches = 02F4B541]
+	comment=- This disc has the same CRC as SLES-53501, the PAL-M3 disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21241
 Name   = NHL '06
@@ -38915,7 +38927,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21244
-Name   = Fatal Frame 3 - The Tormented
+Name   = Fatal Frame 3: The Tormented
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -40251,7 +40263,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21555
-Name   = Tomb Raider - Anniversary
+Name   = Lara Croft Tomb Raider: Anniversary
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -41593,7 +41605,7 @@ Name   = Short Track Racing: Trading Paint
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21858
-Name   = Tomb Raider Underworld
+Name   = Tomb Raider: Underworld
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
@@ -42383,7 +42395,7 @@ Name   = Square Enix Sampler Disc Vol.1
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29088
-Name   = Champions of Norrath - Realms of EverQuest [Demo]
+Name   = Champions of Norrath [Demo]	// Realms of EverQuest
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29089
@@ -42468,7 +42480,7 @@ Name   = Konami Preview Disc
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29126
-Name   = Champions - Return to Arms [Demo]	// aka "Champions of Norrath 2 [Demo]"
+Name   = Champions: Return to Arms [Demo]	// aka "Champions of Norrath 2 [Demo]"
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
