@@ -295,6 +295,25 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		if(dst == NULL)
 			return NULL;
+
+#ifdef ENABLE_OGL_DEBUG
+			// In theory new textures contain invalidated data. Still in theory a new target
+			// must contains the content of the GS memory.
+			// In practice, TC will wrongly invalidate some RT. For example due to write on the alpha
+			// channel but colors is still valid. Unfortunately TC doesn't support the upload of data
+			// in target.
+			//
+			// Cleaning the code here will likely break several games. However it might reduce
+			// the noise in draw call debugging. It is the main reason to enable it on debug build.
+			//
+			// From a performance point of view, it might cost a little on big upscaling
+			// but normally few RT are miss so it must remain reasonable.
+			switch (type) {
+				case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+				case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture, 0); break;
+				default:break;
+			}
+#endif
 	}
 
 	if(m_renderer->CanUpscale())
