@@ -161,7 +161,7 @@ GSTexture* GSRendererHW::GetOutput(int i)
 
 	GSTexture* t = NULL;
 
-	if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height))
+	if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GetFrameRect(i).bottom))
 	{
 		t = rt->m_texture;
 

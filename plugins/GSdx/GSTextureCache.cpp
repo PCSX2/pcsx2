@@ -26,6 +26,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
 	m_spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
+	m_preload_frame = theApp.GetConfig("preload_frame_with_gs_data", 0);
 
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
@@ -342,7 +343,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	return dst;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h)
+GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h)
 {
 	uint32 bp = TEX0.TBP0;
 
@@ -385,6 +386,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 
 		m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
+
+		if (m_preload_frame) {
+			// Load GS data into frame. Game can directly uploads a background or the full image in
+			// "CTRC" buffer. It will also avoid various black screen issue in gs dump.
+			//
+			// Code is more or less an equivalent of the SW renderer
+			//
+			// Option is hidden and not enabled by default to avoid any regression
+			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, real_h), TEX0.PSM));
+			dst->Update();
+		}
 	}
 	else
 	{

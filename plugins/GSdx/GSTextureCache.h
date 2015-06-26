@@ -112,6 +112,7 @@ protected:
 	list<Target*> m_dst[2];
 	bool m_paltex;
 	int m_spritehack;
+	bool m_preload_frame;
 	uint8* m_temp;
 	bool m_can_convert_depth;
 
@@ -139,7 +140,7 @@ public:
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
 
 	void InvalidateVideoMemType(int type, uint32 bp);
 	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
