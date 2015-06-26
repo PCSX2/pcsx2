@@ -48,7 +48,10 @@ layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the im
 #if PS_DATE > 0
 // FIXME how to declare memory access
 layout(r32i, binding = 2) coherent uniform iimage2D img_prim_min;
-layout(early_fragment_tests) in;
+// Don't enable it. Discard fragment can still write in the depth buffer
+// it breaks shadow in Shin Megami Tensei Nocturne
+//layout(early_fragment_tests) in;
+
 // I don't remember why I set this parameter but it is surely useless
 //layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
