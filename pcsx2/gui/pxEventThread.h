@@ -171,11 +171,7 @@ protected:
 	}
 };
 
-#ifdef _MSC_VER
-	typedef std::list< SysExecEvent*, WXObjectAllocator(SysExecEvent*) > pxEvtList;
-#else
-	typedef std::list<SysExecEvent*> pxEvtList;
-#endif
+typedef std::list<SysExecEvent*> pxEvtList;
 
 // --------------------------------------------------------------------------------------
 //  pxEvtQueue

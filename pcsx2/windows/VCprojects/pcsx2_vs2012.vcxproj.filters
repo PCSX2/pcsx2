@@ -659,9 +659,6 @@
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
@@ -864,6 +861,9 @@
     </ClCompile>
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp">
       <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WinKeyCodes.cpp">
+      <Filter>AppHost\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -42,8 +42,14 @@ PipeRedirectionBase::~PipeRedirectionBase() throw() {}
 
 // ----------------------------------------------------------------------------
 //
+#if wxMAJOR_VERSION < 3
 void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 {
+	wxString message(szString);
+#else
+void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info)
+{
+#endif
 	switch ( level )
 	{
 		case wxLOG_Trace:
@@ -51,7 +57,7 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 		{
 			wxString str;
 			TimeStamp( &str );
-			MSW_OutputDebugString( str + szString + L"\n" );
+			MSW_OutputDebugString( str + message + L"\n" );
 		}
 		break;
 
@@ -70,15 +76,15 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 			// fallthrough!
 
 		case wxLOG_Message:
-			Console.WriteLn( L"[wx] %ls", szString );
+			Console.WriteLn( L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Error:
-			Console.Error( L"[wx] %ls", szString );
+			Console.Error(L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Warning:
-			Console.Warning( L"[wx] %ls", szString );
+			Console.Warning(L"[wx] %s", WX_STR(message));
 		break;
 	}
 }

@@ -95,7 +95,7 @@ static bool HandlePluginError( BaseException& ex )
 		return false;
 	}
 
-	g_Conf->SysSettingsTabName = L"Plugins";
+	g_Conf->ComponentsTabName = L"Plugins";
 
 	// TODO: Send a message to the panel to select the failed plugin.
 
@@ -158,6 +158,59 @@ void PluginInitErrorEvent::InvokeEvent()
 	{
 		Console.Error( L"User-canceled plugin configuration after plugin initialization failure.  Plugins unloaded." );
 		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
+	}
+}
+
+// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
+// This message is in a function because it's used as part of several dialogs in PCSX2 (there
+// are multiple variations on the BIOS and BIOS folder checks).
+wxString BIOS_GetMsg_Required()
+{
+	return pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
+		);
+}
+
+class BIOSLoadErrorEvent : public pxExceptionEvent
+{
+	typedef pxExceptionEvent _parent;
+
+public:
+	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
+	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
+
+	virtual ~BIOSLoadErrorEvent() throw() { }
+	virtual BIOSLoadErrorEvent *Clone() const { return new BIOSLoadErrorEvent(*this); }
+
+protected:
+	void InvokeEvent();
+
+};
+
+static bool HandleBIOSError(BaseException& ex)
+{
+	if (!pxDialogExists(L"CoreSettings"))
+	{
+		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
+			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
+			return false;
+	}
+
+	g_Conf->ComponentsTabName = L"BIOS";
+
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>() != wxID_CANCEL;
+}
+
+void BIOSLoadErrorEvent::InvokeEvent()
+{
+	if (!m_except) return;
+
+	ScopedExcept deleteMe(m_except);
+	m_except = NULL;
+
+	if (!HandleBIOSError(*deleteMe))
+	{
+		Console.Warning("User canceled BIOS configuration.");
+		Msgbox::Alert(_("Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."));
 	}
 }
 
@@ -227,7 +280,9 @@ protected:
 
 IMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent )
 
-#ifdef __WXGTK__
+#ifdef __WXMSW__
+extern int TranslateVKToWXK( u32 keysym );
+#elif defined( __WXGTK__ )
 extern int TranslateGDKtoWXK( u32 keysym );
 #endif
 
@@ -236,8 +291,9 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 	m_kevt.SetEventType( ( ev.evt == KEYPRESS ) ? wxEVT_KEY_DOWN : wxEVT_KEY_UP );
 	const bool isDown = (ev.evt == KEYPRESS);
 
+//returns 0 for normal keys and a WXK_* value for special keys
 #ifdef __WXMSW__
-	const int vkey = wxCharCodeMSWToWX( ev.key );	//returns 0 if plain ascii value or a WXK_... (<=32 or >=300) if a special key
+	const int vkey = TranslateVKToWXK(ev.key);
 #elif defined( __WXGTK__ )
 	const int vkey = TranslateGDKtoWXK( ev.key );
 #else
@@ -277,12 +333,22 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 // displaying a readable --help command line list, so I replace it here with a custom one
 // that formats things nicer.
 //
+
+// This is only used in Windows. It's not possible to have wxWidgets show a localised
+// command line help message in cmd/powershell/mingw bash. It can be done in English
+// locales ( using AttachConsole, WriteConsole, FreeConsole combined with
+// wxMessageOutputStderr), but completely fails for some other languages (i.e. Japanese).
+#ifdef _WIN32
 class pxMessageOutputMessageBox : public wxMessageOutput
 {
 public:
 	pxMessageOutputMessageBox() { }
 
+#if wxMAJOR_VERSION < 3
 	virtual void Printf(const wxChar* format, ...);
+#endif
+	// DoPrintf in wxMessageOutputBase (wxWidgets 3.0) uses this.
+	virtual void Output(const wxString &out);
 };
 
 // EXTRAORDINARY HACK!  wxWidgets does not provide a clean way of overriding the commandline options
@@ -291,21 +357,31 @@ public:
 // wxMessageOutputMessageBox::PrintF is only used in like two places, so we can just check for the
 // commandline window using an identifier we know is contained in it, and then format our own window
 // display. :D  --air
+
+#if wxMAJOR_VERSION < 3
 void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 {
-	using namespace pxSizerFlags;
-
 	va_list args;
 	va_start(args, format);
 	wxString out;
 	out.PrintfV(format, args);
 	va_end(args);
 
-	FastFormatUnicode isoFormatted;
-	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted.c_str() );
-	
-	if(pos == wxNOT_FOUND)
+	Output(out);
+}
+#endif
+
+void pxMessageOutputMessageBox::Output(const wxString& out)
+{
+	using namespace pxSizerFlags;
+
+	wxString isoFormatted;
+	isoFormatted.Printf(L"[%s]", _("IsoFile"));
+
+	int pos = out.Find(isoFormatted.c_str());
+
+	// I've no idea when this is true.
+	if (pos == wxNOT_FOUND)
 	{
 		Msgbox::Alert( out ); return;
 	}
@@ -337,6 +413,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	pxIssueConfirmation(popup, MsgButtons().Close() );
 }
+#endif
 
 wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 {
@@ -531,16 +608,6 @@ void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 	cmd->Invoke();
 }
 
-// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
-// This message is in a function because it's used as part of several dialogs in PCSX2 (there
-// are multiple variations on the BIOS and BIOS folder checks).
-wxString BIOS_GetMsg_Required()
-{
-	return pxE( L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
-	);
-}
-
-
 void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
 {
 	const_cast<Pcsx2App*>(this)->HandleEvent( handler, func, event );
@@ -560,17 +627,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	// ----------------------------------------------------------------------------
 	catch( Exception::BiosLoadFailed& ex )
 	{
-		wxDialogWithHelpers dialog( NULL, _("PS2 BIOS Error") );
-		dialog += dialog.Heading( ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required() + L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel.") );
-		dialog += new ModalButtonPanel( &dialog, MsgButtons().OKCancel() );
-		
-		if( dialog.ShowModal() == wxID_CANCEL )
-			Console.Warning( "User denied option to re-configure BIOS." );
+		// Commandline 'nogui' users will not receive an error message, but at least PCSX2 will
+		// terminate properly.
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		gsframe->Close();
 
-		if( AppOpenModalDialog<Dialogs::BiosSelectorDialog>() != wxID_CANCEL )
-			SysExecute();
-		else
-			Console.Warning( "User canceled BIOS configuration." );
+		Console.Error(ex.FormatDiagnosticMessage());
+
+		if (wxGetApp().HasGUI())
+			AddIdleEvent(BIOSLoadErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::SaveStateLoadError& ex)

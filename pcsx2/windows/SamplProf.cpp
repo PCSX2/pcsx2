@@ -216,7 +216,7 @@ static void MapUnknownSource( uint Eip )
 		return;
 	}
 
-	Module tmp((sz==0) ? modulenam.c_str() : NULL, (void*)Eip);
+	Module tmp((sz==0) ? modulenam.wc_str() : NULL, (void*)Eip);
 	tmp.ticks++;
 
 	ProfUnknownHash.insert(MapType::value_type(modulenam, tmp));
