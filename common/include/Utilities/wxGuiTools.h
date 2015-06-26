@@ -512,11 +512,11 @@ public:
     void Init( const pxDialogCreationFlags& cflags );
 	void AddOkCancel( wxSizer& sizer, bool hasApply=false );
 	void AddOkCancel( wxSizer* sizer=NULL, bool hasApply=false );
+	void RememberPosition();
 
 	virtual void SmartCenterFit();
 	virtual int ShowModal();
 	virtual bool Show( bool show=true );
-	virtual bool Destroy();
 
 	// Must return the same thing as GetNameStatic; a name ideal for use in uniquely
 	// identifying dialogs.  (this version is the 'instance' version, which is called
@@ -536,7 +536,6 @@ public:
 protected:
 	void OnDialogCreated( wxCommandEvent& evt );
 	void OnOkCancel(wxCommandEvent& evt);
-	void OnCloseWindow(wxCloseEvent& event);
 
 	bool ShouldPreventAppExit() const { return false; }
 

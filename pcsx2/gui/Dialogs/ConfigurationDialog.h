@@ -76,7 +76,6 @@ namespace Dialogs
 		void OnCancel_Click( wxCommandEvent& evt );
 		void OnApply_Click( wxCommandEvent& evt );
 		void OnScreenshot_Click( wxCommandEvent& evt );
-		void OnCloseWindow( wxCloseEvent& evt );
 
 		void OnSetSettingsPage( wxCommandEvent& evt );
 		void OnSomethingChanged( wxCommandEvent& evt );
