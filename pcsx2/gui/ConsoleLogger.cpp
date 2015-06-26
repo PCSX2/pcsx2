@@ -764,10 +764,9 @@ void ConsoleLogFrame::OnCloseWindow(wxCloseEvent& event)
 		// instead of closing just hide the window to be able to Show() it later
 		Show( false );
 
-		// Can't do this via a Connect() on the MainFrame because Close events are not commands,
-		// and thus do not propagate up/down the event chain.
-		if( wxWindow* main = GetParent() )
-			wxStaticCast( main, MainEmuFrame )->OnLogBoxHidden();
+		// In the nogui case there might not be a Main frame window.
+		if (MainEmuFrame* mainframe = GetMainFramePtr())
+			mainframe->OnLogBoxHidden();
 	}
 	else
 	{
