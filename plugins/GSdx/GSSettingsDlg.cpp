@@ -197,7 +197,7 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_BLEND, theApp.GetConfig("accurate_blend", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_COLCLIP, theApp.GetConfig("accurate_colclip", 0));
-	CheckDlgButton(m_hWnd, IDC_OLGDEPTH, theApp.GetConfig("texture_cache_depth", 0));
+	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 
 	// Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
@@ -335,7 +335,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("accurate_blend", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_BLEND));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("accurate_colclip", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_COLCLIP));
-			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_OLGDEPTH));
+			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 						
 
 			// Shade Boost
@@ -440,7 +440,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_COLCLIP), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_OLGDEPTH), ogl && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
 		
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw); // Let uers set software params regardless of renderer used 
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);

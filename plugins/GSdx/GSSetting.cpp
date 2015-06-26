@@ -122,6 +122,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_FBMASK:
 			return "Implement partial color masking\n\n"
 				"No status yet on the speed impact\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
+		case IDC_TC_DEPTH:
+			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 #endif
 		default:
 			if (updateText)

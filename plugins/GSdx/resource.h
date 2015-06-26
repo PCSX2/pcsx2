@@ -80,7 +80,7 @@
 #define IDC_ALIGN_SPRITE                2096
 #define IDC_CRC_LEVEL                   2097
 #define IDC_CHECK1                      2098
-#define IDC_OLGDEPTH                    2099
+#define IDC_TC_DEPTH                    2099
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001

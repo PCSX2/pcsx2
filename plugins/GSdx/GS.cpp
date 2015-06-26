@@ -194,13 +194,6 @@ EXPORT_C GSclose()
 
 static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 {
-	// I really don't know the impact on windows! It could work
-#ifdef __linux__
-	if (theApp.GetConfig("enable_nvidia_multi_thread", 1)) {
-		setenv("__GL_THREADED_OPTIMIZATIONS", "1", 0);
-	}
-#endif
-
 	GSDevice* dev = NULL;
 
 	if(renderer == -1)
