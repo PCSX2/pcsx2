@@ -705,7 +705,7 @@ void ps_main()
 #endif
 
 #if PS_DATE == 3 && !defined(DISABLE_GL42_image)
-	int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy));
+	int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy)).r;
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
 
