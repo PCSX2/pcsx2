@@ -200,12 +200,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			return NULL;
 		}
 
-#ifdef ENABLE_OGL_DEBUG
 	} else {
 		GL_CACHE("TC: src hit: %d (0x%x F:0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
 					TEX0.TBP0, TEX0.PSM);
-#endif
 	}
 
 	if (src->m_palette)
@@ -308,10 +306,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			//
 			// From a performance point of view, it might cost a little on big upscaling
 			// but normally few RT are miss so it must remain reasonable.
-			switch (type) {
-				case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-				case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture, 0); break;
-				default:break;
+			if (IsOpenGL()) {
+				switch (type) {
+					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture, 0); break;
+					default:break;
+				}
 			}
 #endif
 	}
@@ -998,7 +998,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(tmp != NULL)
 		{
-			// tmp is texture before a MultiSample resolve
+			// tmp is the texture before a MultiSample resolve
 			m_renderer->m_dev->Recycle(dst->m_texture);
 
 			dst->m_texture = tmp;

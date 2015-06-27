@@ -128,6 +128,7 @@ protected:
 #endif
 
 	virtual bool CanConvertDepth() { return m_can_convert_depth; }
+	virtual bool IsOpenGL() { return false; }
 
 public:
 	GSTextureCache(GSRenderer* r);
