@@ -1149,15 +1149,13 @@ Region = PAL-M5
 Compat = 5
 EETimingHack = 1	// flickery textures
 [patches]
-	comment=This gamedisc supports multiple languages.
-	comment=Language selection is done through the BIOS configuration.
-	comment=Implementation requires Full boot - "Boot CDVD (full)".
-	//
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
+	comment=- Implementation requires Full boot - "Boot CDVD (full)".
+	// =====
+	// Fix by pgert against displaycrap which arises with HD
+	//  when using GSdx (in HW-mode) around the Health & Mana bars.
 	patch=1,EE,001C2274,word,3C013F7F // 3C013F80
-	patch=1,EE,801C2274,word,3C013F7F // 3C013F80 - a clone from 001C2274.
-	patch=1,EE,A01C2274,word,3C013F7F // 3C013F80 - a clone from 001C2274.
-	// Fix by pgert that reduces displaycrap which arises with Resolution Scaling
-	//  around the Health & Mana bars. Improvement someone?
+	patch=1,EE,001C228C,word,3C013E10 // 3C013F00
 [/patches]
 ---------------------------------------------
 Serial = SCES-50009
