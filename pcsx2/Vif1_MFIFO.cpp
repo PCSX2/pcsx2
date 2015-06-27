@@ -318,7 +318,7 @@ void vifMFIFOInterrupt()
 
 	// Simulated GS transfer time done, clear the flags
 	
-	if (vif1.irq && vif1.tag.size == 0) {
+	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL) {
 		SPR_LOG("VIF MFIFO Code Interrupt detected");
 		vif1Regs.stat.INT = true;
 
