@@ -145,7 +145,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
@@ -156,7 +156,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
@@ -167,7 +167,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
@@ -177,7 +177,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
@@ -187,7 +187,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
@@ -201,7 +201,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;__CLEANUP_SEH;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ptw32pch.h</PrecompiledHeaderFile>
