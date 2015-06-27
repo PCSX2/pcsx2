@@ -139,7 +139,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
-					if (psm == PSM_PSMT8) {
+					if (!IsOpenGL() && (psm == PSM_PSMT8)) {
+						// OpenGL can convert the texture directly in the GPU. Not sure we want to keep this
+						// code for DX. It fixes effect but it is slow (MGS3)
+
 						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will
 						// be slow but
 						// 1/ it just works :)
@@ -808,9 +811,18 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		// TODO: clean up this mess
 
+		// Shader 11 convert depth to color
+		// Shader 14 convert 32 bits color to 8 bits color
+		int shader = dst->m_type != RenderTarget ? 11 : 0;
+
+		if (TEX0.PSM == PSM_PSMT8) {
+			GL_INS("Reading RT as a packed-indexed 8 bits format");
+			shader = 14; // ask a conversion to 8 bits format
+		}
+
 #ifdef ENABLE_OGL_DEBUG
-		if (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT4) {
-			GL_INS("ERROR: Reading RT as a packed-indexed (0x%x) format is not supported", TEX0.PSM);
+		if (TEX0.PSM == PSM_PSMT4) {
+			GL_INS("ERROR: Reading RT as a packed-indexed 4 bits format is not supported");
 		}
 #endif
 
@@ -902,6 +914,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Try to extract a texture bigger than the RT. Current solution is to rescale the size
 		// of the texture to fit in the RT. In my opinion, it would be better to increase the size of
 		// the RT
+		// TODO investigate this code is correct (maybe linked to custom resolution?)
 		if(w > dstsize.x)
 		{
 			scale.x = (float)dstsize.x / tw;
@@ -920,6 +933,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSTexture* sTex = src->m_texture ? src->m_texture : dst->m_texture;
 		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h, false);
+
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
@@ -952,14 +966,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// copy. Likely a speed boost and memory usage reduction.
 		bool linear = (TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24);
 
-		int shader = dst->m_type != RenderTarget ? 11 : 0;
-
 		if(!src->m_texture)
 		{
 			src->m_texture = dTex;
 		}
 
-		if((sRect == dRect).alltrue() && !shader)
+		if ((sRect == dRect).alltrue() && !shader)
 		{
 			if (half_right) {
 				// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT

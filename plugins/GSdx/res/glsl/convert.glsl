@@ -196,6 +196,70 @@ void ps_main13()
 }
 #endif
 
+#ifdef ps_main14
+void ps_main14()
+{
+    // Convert a RGBA texture into a 8 bits packed texture
+    // Input column: 8x2 RGBA pixels
+    // 0: 8 RGBA
+    // 1: 8 RGBA
+    // Output column: 16x4 Index pixels
+    // 0: 8 R | 8 B
+    // 1: 8 R | 8 B
+    // 2: 8 G | 8 A
+    // 3: 8 G | 8 A
+
+    float c;
+
+    uvec2 sel = uvec2(gl_FragCoord.xy) % uvec2(16u, 16u);
+    ivec2 tb  = ((ivec2(gl_FragCoord.xy) & ~ivec2(15, 3)) >> 1u);
+
+    int ty   = tb.y | (int(gl_FragCoord.y) & 1);
+    int txN  = tb.x | (int(gl_FragCoord.x) & 7);
+    int txH  = tb.x | ((int(gl_FragCoord.x) + 4) & 7);
+
+    vec4 cN = texelFetch(TextureSampler, ivec2(txN, ty), 0);
+    vec4 cH = texelFetch(TextureSampler, ivec2(txH, ty), 0);
+
+    // Potential speed optimization. There is a high probability that
+    // game only want to extract a single channel (blue). It will allow
+    // to remove the sel.x condition check
+
+    if ((sel.y & 4u) == 0u) {
+        // Column 0 and 2
+        if ((sel.y & 3u) < 2u) {
+            // first 2 lines of the col
+            if (sel.x < 8u)
+                c = cN.r;
+            else
+                c = cN.b;
+        } else {
+            if (sel.x < 8u)
+                c = cH.g;
+            else
+                c = cH.a;
+        }
+    } else {
+        // Column 1 and 3
+        if ((sel.y & 3u) < 2u) {
+            // first 2 lines of the col
+            if (sel.x < 8u)
+                c = cH.r;
+            else
+                c = cH.b;
+        } else {
+            if (sel.x < 8u)
+                c = cN.g;
+            else
+                c = cN.a;
+        }
+    }
+
+
+    SV_Target0 = vec4(c);
+}
+#endif
+
 #ifdef ps_main7
 void ps_main7()
 {
