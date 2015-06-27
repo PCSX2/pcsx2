@@ -57,7 +57,6 @@ public:
 
 	public:
 		GSTexture* m_palette;
-		bool m_alpha_palette; // in opengl palette value is either in red or alpha channel
 		bool m_initpalette;
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
 		uint32* m_clut;

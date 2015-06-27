@@ -129,7 +129,7 @@
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>zlib-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib-dev.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -151,7 +151,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
@@ -534,6 +534,7 @@
     <ClCompile Include="..\..\IopDma.cpp" />
     <ClCompile Include="..\..\IopIrq.cpp" />
     <ClCompile Include="..\..\IopMem.cpp" />
+    <ClCompile Include="..\WinKeyCodes.cpp" />
     <ClCompile Include="IopSif.cpp" />
     <ClCompile Include="..\..\IopSio2.cpp" />
     <ClCompile Include="..\..\R3000A.cpp" />
@@ -643,7 +644,6 @@
     <ClCompile Include="..\..\gui\Dialogs\AboutBoxDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\AssertionDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\CreateMemoryCardDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\FirstTimeWizard.cpp" />

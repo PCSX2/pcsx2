@@ -205,7 +205,6 @@ typedef void (APIENTRYP PFNGLTEXTUREBARRIERPROC) (void);
 typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
 #endif /* GL_VERSION_4_5 */
 
-
 extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
 extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
 extern   PFNGLATTACHSHADERPROC                  gl_AttachShader;
@@ -310,6 +309,7 @@ extern PFNGLTEXTURESUBIMAGE2DPROC				gl_TextureSubImage2D;
 extern PFNGLCOPYTEXTURESUBIMAGE2DPROC			gl_CopyTextureSubImage2D;
 extern PFNGLBINDTEXTUREUNITPROC					gl_BindTextureUnit;
 extern PFNGLGETTEXTUREIMAGEPROC                 gl_GetTextureImage;
+extern PFNGLTEXTUREPARAMETERIPROC               gl_TextureParameteri;
 
 extern PFNGLCREATEFRAMEBUFFERSPROC				gl_CreateFramebuffers;
 extern PFNGLCLEARNAMEDFRAMEBUFFERFVPROC			gl_ClearNamedFramebufferfv;

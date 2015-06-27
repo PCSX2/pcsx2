@@ -445,17 +445,24 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 {
-#ifdef __linux__
-	// Use ogl renderer as default otherwise it crash at startup
-	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
-	int renderer = theApp.GetConfig("Renderer", 12);
-#else
-	int renderer = theApp.GetConfig("Renderer", 0);
-#endif
+	static bool stored_toggle_state = false;
+	bool toggle_state = !!(flags & 4);
 
-	if(flags & 4)
+	int renderer = s_renderer;
+	// Fresh start up or config file changed
+	if (renderer == -1)
 	{
-#ifdef _WINDOWS
+#ifdef __linux__
+		// Use ogl renderer as default otherwise it crash at startup
+		// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
+		renderer = theApp.GetConfig("Renderer", 12);
+#else
+		renderer = theApp.GetConfig("Renderer", 0);
+#endif
+	}
+	else if (stored_toggle_state != toggle_state)
+	{
+#ifdef _WIN32
 		int best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? 4 : 1; // dx11 / dx9 sw
 
 		switch(renderer){
@@ -477,6 +484,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		}
 #endif
 	}
+	stored_toggle_state = toggle_state;
 
 	int retval = _GSopen(dsp, NULL, renderer);
 
@@ -761,17 +769,19 @@ EXPORT_C GSconfigure()
 
 				GSshutdown();
 			}
+			// Force a reload of the gs state
+			s_renderer = -1;
 		}
 
 #else
 
 		if (RunLinuxDialog()) {
 			theApp.ReloadConfig();
+			// Force a reload of the gs state
+			s_renderer = -1;
 		}
 
 #endif
-		// Force a reload of the gs state
-		s_renderer = -1;
 
 	} catch (GSDXRecoverableError)
 	{

@@ -181,30 +181,12 @@ namespace Msgbox
 	// true if OK, false if cancel.
 	bool OkCancel( const wxString& text, const wxString& caption, int icon )
 	{
-		MsgButtons buttons( MsgButtons().OKCancel() );
-
-		if( wxThread::IsMain() )
-		{
-			return wxID_OK == pxMessageDialog( caption, text, buttons );
-		}
-		else
-		{
-			return wxID_OK == ShowModal( caption, text, buttons );
-		}
+		return ShowModal(caption, text, MsgButtons().OKCancel()) == wxID_OK;
 	}
 
 	bool YesNo( const wxString& text, const wxString& caption, int icon )
 	{
-		MsgButtons buttons( MsgButtons().YesNo() );
-
-		if( wxThread::IsMain() )
-		{
-			return wxID_YES == pxMessageDialog( caption, text, buttons );
-		}
-		else
-		{
-			return wxID_YES == ShowModal( caption, text, buttons );
-		}
+		return ShowModal(caption, text, MsgButtons().YesNo()) == wxID_YES;
 	}
 
 	int Assertion( const wxString& text, const wxString& stacktrace )

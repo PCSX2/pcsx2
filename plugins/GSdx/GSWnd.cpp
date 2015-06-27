@@ -129,6 +129,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_CopyTextureSubImage2D) = GetProcAddress("glCopyTextureSubImage2D", true);
 	*(void**)&(gl_BindTextureUnit) = GetProcAddress("glBindTextureUnit", true);
 	*(void**)&(gl_GetTextureImage) = GetProcAddress("glGetTextureImage", true);
+	*(void**)&(gl_TextureParameteri) = GetProcAddress("glTextureParameteri", true);
 
 	*(void**)&(gl_CreateFramebuffers) = GetProcAddress("glCreateFramebuffers", true);
 	*(void**)&(gl_ClearNamedFramebufferfv) = GetProcAddress("glClearNamedFramebufferfv", true);

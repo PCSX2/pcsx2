@@ -35,7 +35,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
-	if (m_upscale_multiplier == 1) { //Custom
+	if (m_upscale_multiplier == 1 && !m_nativeres) { //Custom
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 	}
@@ -64,7 +64,7 @@ void GSRendererHW::SetScaling() {
 	
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
 
-	if (m_upscale_multiplier == 1) { //Custom
+	if (m_upscale_multiplier == 1 && !m_nativeres) { //Custom
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 	}

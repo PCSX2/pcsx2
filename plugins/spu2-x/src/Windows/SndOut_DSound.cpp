@@ -297,7 +297,7 @@ private:
 				tSel=-1;
 				for(int i=0;i<ndevs;i++)
 				{
-					SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_ADDSTRING,0,(LPARAM)m_devices[i].name.c_str());
+					SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_ADDSTRING,0,(LPARAM)m_devices[i].name.wc_str());
 					if(haveGuid && IsEqualGUID(m_devices[i].guid,DevGuid) || tSel < 0 && !m_devices[i].hasGuid)
 						tSel = i;
 				}

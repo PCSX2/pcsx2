@@ -76,7 +76,6 @@ namespace Dialogs
 		void OnCancel_Click( wxCommandEvent& evt );
 		void OnApply_Click( wxCommandEvent& evt );
 		void OnScreenshot_Click( wxCommandEvent& evt );
-		void OnCloseWindow( wxCloseEvent& evt );
 
 		void OnSetSettingsPage( wxCommandEvent& evt );
 		void OnSomethingChanged( wxCommandEvent& evt );
@@ -205,31 +204,6 @@ namespace Dialogs
 
 	protected:
 		virtual wxString& GetConfSettingsTabName() const { return g_Conf->ComponentsTabName; }
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  BiosSelectorDialog
-	// --------------------------------------------------------------------------------------
-	class BiosSelectorDialog : public BaseApplicableDialog
-	{
-		typedef BaseApplicableDialog _parent;
-
-	protected:
-		Panels::BaseSelectorPanel*	m_selpan;
-
-	public:
-		virtual ~BiosSelectorDialog()  throw() {}
-		BiosSelectorDialog( wxWindow* parent=NULL );
-
-		static wxString GetNameStatic() { return L"BiosSelector"; }
-		wxString GetDialogName() const { return GetNameStatic(); }
-
-		virtual bool Show( bool show=true );
-		virtual int ShowModal();
-
-	protected:
-		void OnOk_Click( wxCommandEvent& evt );
-		void OnDoubleClicked( wxCommandEvent& evt );
 	};
 
 	// --------------------------------------------------------------------------------------
