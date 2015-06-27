@@ -840,6 +840,26 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			dst->m_texture = m_renderer->m_dev->Resolve(dst->m_texture);
 		}
 
+
+		// Unscale 8 bits textures, quality won't be nice but format is really awful
+		// Code won't be compatible with MSAA but it is a DX issue
+		if (TEX0.PSM == PSM_PSMT8) {
+			GSVector2 old_scale = dst->m_texture->GetScale();
+
+			if (old_scale != GSVector2(1.0f, 1.0f)) {
+				GSVector2i size = dst->m_texture->GetSize();
+				tmp = dst->m_texture;
+
+				dst->m_texture = m_renderer->m_dev->CreateRenderTarget(size.x, size.y, false);
+
+				GSVector4 sRect(0.0, 0.0, old_scale.x, old_scale.y);
+				GSVector4 dRect(0.0, 0.0, size.x, size.y);
+				m_renderer->m_dev->StretchRect(tmp, sRect, dst->m_texture, dRect, 0, false);
+
+				dst->m_texture->SetScale(GSVector2(1.0f, 1.0f));
+			}
+		}
+
 		// do not round here!!! if edge becomes a black pixel and addressing mode is clamp => everything outside the clamped area turns into black (kh2 shadows)
 
 		int w = (int)(dst->m_texture->GetScale().x * tw);
