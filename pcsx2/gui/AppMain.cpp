@@ -60,17 +60,21 @@ DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
 ScopedPtr<AppConfig>	g_Conf;
 
 template<typename DialogType>
-int AppOpenModalDialog( wxWindow* parent=NULL )
+int AppOpenModalDialog( wxString panel_name, wxWindow* parent=NULL )
 {
 	if( wxWindow* window = wxFindWindowByName( L"Dialog:" + DialogType::GetNameStatic() ) )
 	{
 		window->SetFocus();
 		if( wxDialog* dialog = wxDynamicCast( window, wxDialog ) )
 		{
+			// Switch to the requested panel.
+			wxCommandEvent evt(pxEvt_SetSettingsPage);
+			evt.SetString(panel_name);
+			dialog->GetEventHandler()->ProcessEvent(evt);
+
 			// It's legal to call ShowModal on a non-modal dialog, therefore making
 			// it modal in nature for the needs of whatever other thread of action wants
 			// to block against it:
-
 			if( !dialog->IsModal() )
 			{
 				int result = dialog->ShowModal();
@@ -87,19 +91,23 @@ int AppOpenModalDialog( wxWindow* parent=NULL )
 
 static bool HandlePluginError( BaseException& ex )
 {
-	if( !pxDialogExists( L"CoreSettings" ) )
+	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
 	{
 		if( !Msgbox::OkCancel( ex.FormatDisplayMessage() +
 				_("\n\nPress Ok to go to the Plugin Configuration Panel.")
 			) )
 		return false;
 	}
+	else
+	{
+		Msgbox::Alert(ex.FormatDisplayMessage());
+	}
 
 	g_Conf->ComponentsTabName = L"Plugins";
 
 	// TODO: Send a message to the panel to select the failed plugin.
 
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>() != wxID_CANCEL;
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"Plugins") != wxID_CANCEL;
 }
 
 class PluginErrorEvent : public pxExceptionEvent
@@ -188,16 +196,20 @@ protected:
 
 static bool HandleBIOSError(BaseException& ex)
 {
-	if (!pxDialogExists(L"CoreSettings"))
+	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
 	{
 		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
 			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
 			return false;
 	}
+	else
+	{
+		Msgbox::Alert(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required(), _("PS2 BIOS Error"));
+	}
 
 	g_Conf->ComponentsTabName = L"BIOS";
 
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>() != wxID_CANCEL;
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"BIOS") != wxID_CANCEL;
 }
 
 void BIOSLoadErrorEvent::InvokeEvent()
