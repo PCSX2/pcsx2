@@ -1172,9 +1172,9 @@ bool FileAccessHelper::CleanMemcardFilename( char* name ) {
 	const char illegalChars[] = { '\\', '%', ':', '|', '"', '<', '>' };
 	bool cleaned = false;
 
-	for ( int i = 0; i < sizeof( illegalChars ); ++i ) {
+	for ( size_t i = 0; i < sizeof( illegalChars ); ++i ) {
 		// this sizeof looks really odd but I couldn't get MemoryCardFileEntry::entry.data.name (or variants) working, feel free to replace with something equivalent but nicer looking
-		for ( int j = 0; j < sizeof( ( (MemoryCardFileEntry*)0 )->entry.data.name ); ++j ) {
+		for ( size_t j = 0; j < sizeof( ( (MemoryCardFileEntry*)0 )->entry.data.name ); ++j ) {
 			if ( name[j] == illegalChars[i] ) {
 				name[j] = '_';
 				cleaned = true;

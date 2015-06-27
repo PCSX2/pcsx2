@@ -119,6 +119,9 @@ void Dialogs::ConvertMemoryCardDialog::OnOk_Click( wxCommandEvent& evt ) {
 		case MemoryCardType::MemoryCard_Folder:
 			success = ConvertToFolder( sourcePath, targetPath );
 			break;
+		default:
+			Msgbox::Alert( _( "This target type is not supported!" ), _( "Convert memory card" ) );
+			return;
 		}
 	}
 
