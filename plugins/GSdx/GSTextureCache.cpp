@@ -833,7 +833,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSTexture* tmp = NULL;
 
-		if(dst->m_texture->IsMSAA())
+		if (dst->m_texture->IsMSAA())
 		{
 			tmp = dst->m_texture;
 
@@ -911,10 +911,24 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector4 dRect(0, 0, w, h);
 
-		// Try to extract a texture bigger than the RT. Current solution is to rescale the size
-		// of the texture to fit in the RT. In my opinion, it would be better to increase the size of
-		// the RT
-		// TODO investigate this code is correct (maybe linked to custom resolution?)
+		// Lengthy explanation of the rescaling code.
+		// Here an example in 2x:
+		// RT is 1280x1024 but only contains 512x448 valid data (so 256x224 pixels without upscaling)
+		//
+		// PS2 want to read it back as a 1024x1024 pixels (they don't care about the extra pixels)
+		// So in theory we need to shrink a 2048x2048 RT into a 1024x1024 texture. Obviously the RT is
+		// too small.
+		//
+		// So we will only limit the resize to the available data in RT.
+		// Therefore we will resize the RT from 1280x1024 to 1280x1024/2048x2048 % of the new texture
+		// size (which is 1280x1024) (i.e. 800x512)
+		// From the rendering point of view. UV coordinate will be normalized on the real GS texture size
+		// This way it can be used on an upscaled texture without extra scaling factor (only requirement is
+		// to have same proportion)
+		//
+		// FIXME: The scaling will create a bad offset. For example if texture coordinate start at 0.5 (pixel 0)
+		// At 2x it will become 0.5/128 * 256 = 1 (pixel 1)
+
 		if(w > dstsize.x)
 		{
 			scale.x = (float)dstsize.x / tw;
