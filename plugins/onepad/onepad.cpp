@@ -246,9 +246,11 @@ EXPORT_C_(s32) PADinit(u32 flags)
 
 EXPORT_C_(void) PADshutdown()
 {
-    CloseLogging();
-	if (conf) delete conf;
-	if (key_status) delete key_status;
+	CloseLogging();
+	delete conf;
+	conf = nullptr;
+	delete key_status;
+	key_status = nullptr;
 }
 
 EXPORT_C_(s32) PADopen(void *pDsp)
