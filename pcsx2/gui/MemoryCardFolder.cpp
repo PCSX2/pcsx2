@@ -1012,7 +1012,7 @@ void FolderMemoryCard::SetSlot( uint slot ) {
 
 u32 FolderMemoryCard::GetSizeInClusters() {
 	const u32 clusters = m_superBlock.data.clusters_per_card;
-	if ( clusters > 0 && clusters < UINT32_MAX ) {
+	if ( clusters > 0 && clusters < 0xFFFFFFFFu ) {
 		return clusters;
 	} else {
 		return TotalClusters;
