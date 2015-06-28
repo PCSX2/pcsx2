@@ -381,6 +381,9 @@ protected:
 	// flush a whole memory card block of the cache to the internal data and/or host file system
 	void FlushBlock( const u32 block );
 
+	// flush all directory and file entries to the internal data
+	void FlushFileEntries();
+
 	// flush a directory's file entries and all its subdirectories to the internal data
 	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"", MemoryCardFileMetadataReference* parent = nullptr );
 

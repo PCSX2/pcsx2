@@ -813,12 +813,7 @@ void FolderMemoryCard::Flush() {
 	}
 
 	// then all directory and file entries
-	const u32 rootDirCluster = m_superBlock.data.rootdir_cluster;
-	FlushCluster( rootDirCluster + m_superBlock.data.alloc_offset );
-	MemoryCardFileEntryCluster* rootEntries = &m_fileEntryDict[rootDirCluster];
-	if ( rootEntries->entries[0].IsValid() && rootEntries->entries[0].IsUsed() ) {
-		FlushFileEntries( rootDirCluster, rootEntries->entries[0].entry.data.length );
-	}
+	FlushFileEntries();
 
 	// and finally, flush everything that hasn't been flushed yet
 	for ( uint i = 0; i < pageCount; ++i ) {
@@ -849,6 +844,16 @@ void FolderMemoryCard::FlushBlock( const u32 block ) {
 	const u32 page = block * 16;
 	for ( int i = 0; i < 16; ++i ) {
 		FlushPage( page + i );
+	}
+}
+
+void FolderMemoryCard::FlushFileEntries() {
+	// Flush all file entry data from the cache into m_fileEntryDict.
+	const u32 rootDirCluster = m_superBlock.data.rootdir_cluster;
+	FlushCluster( rootDirCluster + m_superBlock.data.alloc_offset );
+	MemoryCardFileEntryCluster* rootEntries = &m_fileEntryDict[rootDirCluster];
+	if ( rootEntries->entries[0].IsValid() && rootEntries->entries[0].IsUsed() ) {
+		FlushFileEntries( rootDirCluster, rootEntries->entries[0].entry.data.length );
 	}
 }
 
