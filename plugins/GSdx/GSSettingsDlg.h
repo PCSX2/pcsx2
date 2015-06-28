@@ -68,8 +68,6 @@ public:
 
 class GSSettingsDlg : public GSDialog
 {
-	list<D3DDISPLAYMODE> m_modes;
-
 	struct Adapter
 	{
 		std::string name;
@@ -82,7 +80,6 @@ class GSSettingsDlg : public GSDialog
 
 	vector<GSSetting> m_ocl_devs;
 
-	bool m_IsOpen2;
 	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	void UpdateRenderers();
@@ -97,5 +94,5 @@ protected:
 	GSHacksDlg HacksDlg;
 
 public:
-	GSSettingsDlg(bool isOpen2);
+	GSSettingsDlg();
 };

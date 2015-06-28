@@ -68,6 +68,7 @@ static bool s_vsync = false;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
+static const char *s_type_log ="";
 #ifdef _WINDOWS
 static bool s_isgsopen2 = false; // boolean to remove some stuff from the config panel in new PCSX2's/
 #endif
@@ -85,8 +86,8 @@ EXPORT_C_(const char*) PS2EgetLibName()
 
 EXPORT_C_(uint32) PS2EgetLibVersion2(uint32 type)
 {
-	const uint32 revision = 0;
-	const uint32 build = 1;
+	const uint32 revision = 1;
+	const uint32 build = 0;
 
 	return (build << 0) | (revision << 8) | (PS2E_GS_VERSION << 16) | (PLUGIN_VERSION << 24);
 }
@@ -193,13 +194,6 @@ EXPORT_C GSclose()
 
 static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 {
-	// I really don't know the impact on windows! It could work
-#ifdef __linux__
-	if (theApp.GetConfig("enable_nvidia_multi_thread", 1)) {
-		setenv("__GL_THREADED_OPTIMIZATIONS", "1", 0);
-	}
-#endif
-
 	GSDevice* dev = NULL;
 
 	if(renderer == -1)
@@ -216,7 +210,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 	try
 	{
-		if(s_renderer != renderer)
+		if (s_renderer != renderer)
 		{
 			// Emulator has made a render change request, which requires a completely
 			// new s_gs -- if the emu doesn't save/restore the GS state across this
@@ -227,36 +221,55 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			s_gs = NULL;
 		}
 
-		switch(renderer)
+		switch (renderer)
+		{		
+		case 1: case 4: case 10: case 13:
+			s_type_log = "(Software mode)";
+			break;
+		case 2: case 5: case 11:
+			s_type_log = "(Null mode)";
+			break;
+		case 14: case 15: case 16: case 17:
+			s_type_log = "(OpenCL)";
+			break;
+		default:
+			s_type_log = "(Hardware mode)";
+			break;
+		}
+
+		switch (renderer)
 		{
 		default:
 #ifdef _WINDOWS
 		case 0: case 1: case 2: case 14:
-			dev = new GSDevice9(); 
+			dev = new GSDevice9();
 			s_renderer_name = " D3D9";
+			printf("\n Current Renderer: Direct3D9%s \n", s_type_log);
 			break;
 		case 3: case 4: case 5: case 15:
-			dev = new GSDevice11(); 
+			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
+			printf("\n Current Renderer: Direct3D11%s \n", s_type_log);
 			break;
 #endif
 		case 9: case 10: case 11: case 16:
-			dev = new GSDeviceNull(); 
+			dev = new GSDeviceNull();
 			break;
 		case 12: case 13: case 17:
-			dev = new GSDeviceOGL(); 
+			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
+			printf("\n Current Renderer: OpenGL%s \n", s_type_log);
 			break;
 		}
 
-		if(dev == NULL)
+		if (dev == NULL)
 		{
 			return -1;
 		}
 
-		if(s_gs == NULL)
+		if (s_gs == NULL)
 		{
-			switch(renderer)
+			switch (renderer)
 			{
 			default:
 #ifdef _WINDOWS
@@ -264,13 +277,13 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				s_gs = (GSRenderer*)new GSRendererDX9();
 				s_renderer_type = " HW";
 				break;
-			case 3: 
-				s_gs = (GSRenderer*)new GSRendererDX11(); 
+			case 3:
+				s_gs = (GSRenderer*)new GSRendererDX11();
 				s_renderer_type = " HW";
 				break;
 #endif
-			case 12: 
-				s_gs = (GSRenderer*)new GSRendererOGL(); 
+			case 12:
+				s_gs = (GSRenderer*)new GSRendererOGL();
 				s_renderer_type = " HW";
 				break;
 			case 1: case 4: case 10: case 13:
@@ -279,6 +292,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				break;
 			case 2: case 5: case 11:
 				s_gs = new GSRendererNull();
+					s_renderer_type = " Null";
 				break;
 			case 14: case 15: case 16: case 17:
 #ifdef ENABLE_OPENCL
@@ -298,7 +312,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		if (s_gs->m_wnd == NULL)
 		{
 #ifdef _WINDOWS
-			switch(renderer)
+			switch (renderer)
 			{
 			case 12: case 13: case 17:
 				s_gs->m_wnd = new GSWndWGL();
@@ -317,7 +331,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 #endif
 		}
 	}
-	catch(std::exception& ex)
+	catch (std::exception& ex)
 	{
 		// Allowing std exceptions to escape the scope of the plugin callstack could
 		// be problematic, because of differing typeids between DLL and EXE compilations.
