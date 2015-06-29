@@ -339,6 +339,60 @@ wxGDIRefData *wxBitmap::CloneGDIRefData(const wxGDIRefData *data) const
     return new wxBitmapRefData(*static_cast<const wxBitmapRefData *>(data));
 }
 
+// Premultiply the values of all RGBA pixels in the given range.
+static void PremultiplyPixels(unsigned char* begin, unsigned char* end)
+{
+    for ( unsigned char* pixels = begin; pixels < end; pixels += 4 )
+    {
+        const unsigned char a = pixels[3];
+
+        pixels[0] = ((pixels[0]*a) + 127)/255;
+        pixels[1] = ((pixels[1]*a) + 127)/255;
+        pixels[2] = ((pixels[2]*a) + 127)/255;
+    }
+}
+
+// Helper which examines the alpha channel for any non-0 values and also
+// possibly returns the DIB with premultiplied values if it does have alpha
+// (i.e. this DIB is only filled if the function returns true).
+//
+// The function semantics is complicated but necessary to avoid converting to
+// DIB twice, which is expensive for large bitmaps, yet avoid code duplication
+// between CopyFromIconOrCursor() and MSWUpdateAlpha().
+static bool CheckAlpha(HBITMAP hbmp, HBITMAP* hdib = NULL)
+{
+    BITMAP bm;
+    if ( !::GetObject(hbmp, sizeof(bm), &bm) || (bm.bmBitsPixel != 32) )
+        return false;
+
+    wxDIB dib(hbmp);
+    if ( !dib.IsOk() )
+        return false;
+
+    unsigned char* pixels = dib.GetData();
+    unsigned char* const end = pixels + 4*dib.GetWidth()*dib.GetHeight();
+    for ( ; pixels < end; pixels += 4 )
+    {
+        if ( pixels[3] != 0 )
+        {
+            if ( hdib )
+            {
+                // If we do have alpha, ensure we use premultiplied data for
+                // our pixels as this is what the bitmaps created in other ways
+                // do and this is necessary for e.g. AlphaBlend() to work with
+                // this bitmap.
+                PremultiplyPixels(dib.GetData(), end);
+
+                *hdib = dib.Detach();
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool wxBitmap::CopyFromIconOrCursor(const wxGDIImage& icon,
                                     wxBitmapTransparency transp)
 {
@@ -360,11 +414,24 @@ bool wxBitmap::CopyFromIconOrCursor(const wxGDIImage& icon,
     int w = icon.GetWidth(),
         h = icon.GetHeight();
 
-    refData->m_width = w;
-    refData->m_height = h;
-    refData->m_depth = wxDisplayDepth();
-
-    refData->m_hBitmap = (WXHBITMAP)iconInfo.hbmColor;
+    if ( iconInfo.hbmColor )
+    {
+        refData->m_width = w;
+        refData->m_height = h;
+        refData->m_depth = wxDisplayDepth();
+        refData->m_hBitmap = (WXHBITMAP)iconInfo.hbmColor;
+    }
+    else // we only have monochrome icon/cursor
+    {
+        // Then we need to create our own empty bitmap, which will be modified
+        // by the mask below.
+        wxDIB dib(w, h, wxDisplayDepth());
+        if ( dib.IsOk() )
+        {
+            memset(dib.GetData(), 0, wxDIB::GetLineSize(w, dib.GetDepth())*h);
+            refData->AssignDIB(dib);
+        }
+    }
 
     switch ( transp )
     {
@@ -379,48 +446,14 @@ bool wxBitmap::CopyFromIconOrCursor(const wxGDIImage& icon,
 #if wxUSE_WXDIB
             // If the icon is 32 bits per pixel then it may have alpha channel
             // data, although there are some icons that are 32 bpp but have no
-            // alpha... So convert to a DIB and manually check the 4th byte for
-            // each pixel.
+            // alpha, so check for this.
             {
-                BITMAP bm;
-                if ( ::GetObject(iconInfo.hbmColor, sizeof(bm), &bm) &&
-                        (bm.bmBitsPixel == 32) )
+                HBITMAP hdib = 0;
+                if ( CheckAlpha(iconInfo.hbmColor, &hdib) )
                 {
-                    wxDIB dib(iconInfo.hbmColor);
-                    if (dib.IsOk())
-                    {
-                        unsigned char* const pixels = dib.GetData();
-                        int idx;
-                        for ( idx = 0; idx < w*h*4; idx += 4 )
-                        {
-                            if (pixels[idx+3] != 0)
-                            {
-                                // If there is an alpha byte that is non-zero
-                                // then set the alpha flag and stop checking
-                                refData->m_hasAlpha = true;
-                                break;
-                            }
-                        }
-
-                        if ( refData->m_hasAlpha )
-                        {
-                            // If we do have alpha, ensure we use premultiplied
-                            // data for our pixels as this is what the bitmaps
-                            // created in other ways do and this is necessary
-                            // for e.g. AlphaBlend() to work with this bitmap.
-                            for ( idx = 0; idx < w*h*4; idx += 4 )
-                            {
-                                const unsigned char a = pixels[idx+3];
-
-                                pixels[idx]   = ((pixels[idx]  *a) + 127)/255;
-                                pixels[idx+1] = ((pixels[idx+1]*a) + 127)/255;
-                                pixels[idx+2] = ((pixels[idx+2]*a) + 127)/255;
-                            }
-
-                            ::DeleteObject(refData->m_hBitmap);
-                            refData->m_hBitmap = dib.Detach();
-                        }
-                    }
+                    refData->m_hasAlpha = true;
+                    ::DeleteObject(refData->m_hBitmap);
+                    refData->m_hBitmap = hdib;
                 }
             }
             break;
@@ -1265,6 +1298,12 @@ void wxBitmap::ResetAlpha()
 bool wxBitmap::HasAlpha() const
 {
     return GetBitmapData() && GetBitmapData()->m_hasAlpha;
+}
+
+void wxBitmap::MSWUpdateAlpha()
+{
+    if ( CheckAlpha(GetHbitmap()) )
+        GetBitmapData()->m_hasAlpha = true;
 }
 
 // ----------------------------------------------------------------------------

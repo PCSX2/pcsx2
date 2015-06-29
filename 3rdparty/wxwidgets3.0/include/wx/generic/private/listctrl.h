@@ -564,6 +564,9 @@ public:
     // start editing the label of the given item
     wxTextCtrl *EditLabel(long item,
                           wxClassInfo* textControlClass = wxCLASSINFO(wxTextCtrl));
+
+    bool EndEditLabel(bool cancel);
+
     wxTextCtrl *GetEditControl() const
     {
         return m_textctrlWrapper ? m_textctrlWrapper->GetText() : NULL;

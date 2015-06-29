@@ -4359,6 +4359,13 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
                 unsigned int lineFrom = oldCurrentRow,
                     lineTo = current;
 
+                if ( lineFrom == static_cast<unsigned>(-1) )
+                {
+                    // If we hadn't had any current row before, treat this as a
+                    // simple click and select the new row only.
+                    lineFrom = current;
+                }
+
                 if ( lineTo < lineFrom )
                 {
                     lineTo = lineFrom;

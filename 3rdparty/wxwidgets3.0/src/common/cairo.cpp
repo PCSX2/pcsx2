@@ -214,6 +214,10 @@
        (cairo_format_t format, int width), (format, width), 0)  \
     m( int, cairo_version, \
        (), (), 0)  \
+    m( int, cairo_image_surface_get_width, \
+       (cairo_surface_t *surface), (surface), 0) \
+    m( int, cairo_image_surface_get_height, \
+       (cairo_surface_t *surface), (surface), 0) \
     m( int, cairo_image_surface_get_stride, \
        (cairo_surface_t *surface), (surface), 0) \
     m( unsigned char *, cairo_image_surface_get_data, \

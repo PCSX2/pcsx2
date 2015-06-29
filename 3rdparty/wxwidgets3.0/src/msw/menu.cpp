@@ -360,7 +360,7 @@ wxMenu::~wxMenu()
     // we should free Windows resources only if Windows doesn't do it for us
     // which happens if we're attached to a menubar or a submenu of another
     // menu
-    if ( !IsAttached() && !GetParent() )
+    if ( m_hMenu && !IsAttached() && !GetParent() )
     {
         if ( !::DestroyMenu(GetHmenu()) )
         {

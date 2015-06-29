@@ -20,6 +20,7 @@
 #endif
 
 #include "wx/arrstr.h"
+#include "wx/scopedarray.h"
 
 #include "wx/beforestd.h"
 #include <algorithm>
@@ -106,10 +107,14 @@ void wxArrayString::Copy(const wxArrayString& src)
 }
 
 // grow the array
-void wxArrayString::Grow(size_t nIncrement)
+wxString *wxArrayString::Grow(size_t nIncrement)
 {
-  // only do it if no more place
-  if ( (m_nSize - m_nCount) < nIncrement ) {
+    if ( (m_nSize - m_nCount) >= nIncrement )
+    {
+        // We already have enough space.
+        return NULL;
+    }
+
     // if ARRAY_DEFAULT_INITIAL_SIZE were set to 0, the initially empty would
     // be never resized!
     #if ARRAY_DEFAULT_INITIAL_SIZE == 0
@@ -122,6 +127,9 @@ void wxArrayString::Grow(size_t nIncrement)
       if (m_nSize < nIncrement)
           m_nSize = nIncrement;
       m_pItems = new wxString[m_nSize];
+
+      // Nothing to free, we hadn't had any memory before.
+      return NULL;
     }
     else {
       // otherwise when it's called for the first time, nIncrement would be 0
@@ -140,12 +148,12 @@ void wxArrayString::Grow(size_t nIncrement)
       for ( size_t j = 0; j < m_nCount; j++ )
           pNew[j] = m_pItems[j];
 
-      // delete old memory (but do not release the strings!)
-      delete [] m_pItems;
+      wxString* const pItemsOld = m_pItems;
 
       m_pItems = pNew;
+
+      return pItemsOld;
     }
-  }
 }
 
 // deletes all the strings from the list
@@ -288,7 +296,10 @@ size_t wxArrayString::Add(const wxString& str, size_t nInsert)
     return (size_t)lo;
   }
   else {
-    Grow(nInsert);
+    // Now that we must postpone freeing the old memory until we don't need it
+    // any more, i.e. don't reference "str" which could be a reference to one
+    // of our own strings.
+    wxScopedArray<wxString> oldStrings(Grow(nInsert));
 
     for (size_t i = 0; i < nInsert; i++)
     {
@@ -308,7 +319,7 @@ void wxArrayString::Insert(const wxString& str, size_t nIndex, size_t nInsert)
   wxCHECK_RET( m_nCount <= m_nCount + nInsert,
                wxT("array size overflow in wxArrayString::Insert") );
 
-  Grow(nInsert);
+  wxScopedArray<wxString> oldStrings(Grow(nInsert));
 
   for (int j = m_nCount - nIndex - 1; j >= 0; j--)
       m_pItems[nIndex + nInsert + j] = m_pItems[nIndex + j];
@@ -327,7 +338,7 @@ wxArrayString::insert(iterator it, const_iterator first, const_iterator last)
     const int idx = it - begin();
 
     // grow it once
-    Grow(last - first);
+    wxScopedArray<wxString> oldStrings(Grow(last - first));
 
     // reset "it" since it can change inside Grow()
     it = begin() + idx;

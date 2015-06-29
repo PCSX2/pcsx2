@@ -67,6 +67,11 @@ public:
     // menu handle and will delete it when this object is destroyed.
     static wxMenu *MSWNewFromHMENU(WXHMENU hMenu) { return new wxMenu(hMenu); }
 
+#if wxABI_VERSION >= 30002
+    // Detaches HMENU so that it isn't deleted when this object is destroyed.
+    // Don't use this object after calling this method.
+    WXHMENU MSWDetachHMENU() { WXHMENU m = m_hMenu; m_hMenu = NULL; return m; }
+#endif
 
     // implementation only from now on
     // -------------------------------

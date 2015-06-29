@@ -37,6 +37,7 @@
 
     #if wxUSE_GUI
         #include "wx/window.h"
+        #include "wx/combobox.h"
         #include "wx/control.h"
         #include "wx/dc.h"
         #include "wx/spinbutt.h"
@@ -435,20 +436,27 @@ wxCommandEvent::wxCommandEvent(wxEventType commandType, int theId)
 
 wxString wxCommandEvent::GetString() const
 {
-    if (m_eventType != wxEVT_TEXT || !m_eventObject)
-    {
-        return m_cmdString;
-    }
-    else
+    // This is part of the hack retrieving the event string from the control
+    // itself only when/if it's really needed to avoid copying potentially huge
+    // strings coming from multiline text controls. For consistency we also do
+    // it for combo boxes, even though there are no real performance advantages
+    // in doing this for them.
+    if (m_eventType == wxEVT_TEXT && m_eventObject)
     {
 #if wxUSE_TEXTCTRL
         wxTextCtrl *txt = wxDynamicCast(m_eventObject, wxTextCtrl);
         if ( txt )
             return txt->GetValue();
-        else
 #endif // wxUSE_TEXTCTRL
-            return m_cmdString;
+
+#if wxUSE_COMBOBOX
+        wxComboBox* combo = wxDynamicCast(m_eventObject, wxComboBox);
+        if ( combo )
+            return combo->GetValue();
+#endif // wxUSE_COMBOBOX
     }
+
+    return m_cmdString;
 }
 
 // ----------------------------------------------------------------------------
@@ -1886,7 +1894,7 @@ bool wxEventBlocker::ProcessEvent(wxEvent& event)
             return true;   // yes, it should: mark this event as processed
     }
 
-    return false;
+    return wxEvtHandler::ProcessEvent(event);;
 }
 
 #endif // wxUSE_GUI

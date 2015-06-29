@@ -3277,7 +3277,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
         case TVN_BEGINLABELEDIT:
             {
                 eventType = wxEVT_TREE_BEGIN_LABEL_EDIT;
-                TV_DISPINFO *info = (TV_DISPINFO *)lParam;
+                NMTVDISPINFO *info = (NMTVDISPINFO *)lParam;
 
                 // although the user event handler may still veto it, it is
                 // important to set it now so that calls to SetItemText() from
@@ -3311,7 +3311,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
         case TVN_ENDLABELEDIT:
             {
                 eventType = wxEVT_TREE_END_LABEL_EDIT;
-                TV_DISPINFO *info = (TV_DISPINFO *)lParam;
+                NMTVDISPINFO *info = (NMTVDISPINFO *)lParam;
 
                 event.m_item = info->item.hItem;
                 event.m_label = info->item.pszText;
@@ -3355,7 +3355,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
                     eventType = wxEVT_TREE_SET_INFO;
                 //else: get, already set above
 
-                TV_DISPINFO *info = (TV_DISPINFO *)lParam;
+                NMTVDISPINFO *info = (NMTVDISPINFO *)lParam;
 
                 event.m_item = info->item.hItem;
                 break;
@@ -3857,7 +3857,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
             //if ( /* !processed && */ )
             {
                 wxTreeItemId item = event.m_item;
-                TV_DISPINFO *info = (TV_DISPINFO *)lParam;
+                NMTVDISPINFO *info = (NMTVDISPINFO *)lParam;
 
                 const wxTreeItemParam * const param = GetItemParam(item);
                 if ( !param )

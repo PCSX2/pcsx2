@@ -682,6 +682,13 @@ private:
     bool HandleJoystickEvent(WXUINT msg, int x, int y, WXUINT flags);
     bool HandleNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result);
 
+#ifndef __WXUNIVERSAL__
+    // Call ::IsDialogMessage() if it is safe to do it (i.e. if it's not going
+    // to hang or do something else stupid) with the given message, return true
+    // if the message was handled by it.
+    bool MSWSafeIsDialogMessage(WXMSG* msg);
+#endif // __WXUNIVERSAL__
+
 #if wxUSE_DEFERRED_SIZING
 protected:
     // this function is called after the window was resized to its new size

@@ -960,13 +960,13 @@ bool wxWebViewIE::IsElementVisible(wxCOMPtr<IHTMLElement> elm)
             {
                 //Check if the object has the style display:none.
                 if((style->get_display(&tmp_bstr) != S_OK) || 
-                   (tmp_bstr != NULL && (_wcsicmp(tmp_bstr, L"none") == 0)))
+                   (tmp_bstr != NULL && (wxCRT_StricmpW(tmp_bstr, L"none") == 0)))
                 {
                     is_visible = false;
                 }
                 //Check if the object has the style visibility:hidden.
                 if((is_visible && (style->get_visibility(&tmp_bstr) != S_OK)) ||
-                  (tmp_bstr != NULL && _wcsicmp(tmp_bstr, L"hidden") == 0))
+                  (tmp_bstr != NULL && wxCRT_StricmpW(tmp_bstr, L"hidden") == 0))
                 {
                     is_visible = false;
                 }

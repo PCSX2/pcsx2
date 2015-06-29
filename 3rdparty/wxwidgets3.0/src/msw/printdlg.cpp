@@ -413,6 +413,13 @@ void wxWindowsPrintNativeData::InitializeDevMode(const wxString& printerName, Wi
                 NULL,            // these are not used.
                 0 );             // Zero returns buffer size.
 
+            // Some buggy printer drivers (see #16274 which claims that Kyocera
+            // PCL6 driver does this) seem to return a too small value from
+            // DocumentProperties(), resulting in a crash because when we call
+            // it with DM_OUT_BUFFER below, memory beyond the allocated buffer
+            // is overwritten. So add a bit of extra memory to work around this.
+            dwNeeded += 1024;
+
             LPDEVMODE tempDevMode = static_cast<LPDEVMODE>( GlobalAlloc( GMEM_FIXED | GMEM_ZEROINIT, dwNeeded ) );
 
             // Step 2:

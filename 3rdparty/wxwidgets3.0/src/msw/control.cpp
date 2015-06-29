@@ -372,14 +372,26 @@ WXHBRUSH wxControl::DoMSWControlColor(WXHDC pDC, wxColour colBg, WXHWND hWnd)
             // If this HWND doesn't correspond to a wxWindow, it still might be
             // one of its children for which we need to set the background
             // brush, e.g. this is the case for the EDIT control that is part
-            // of wxComboBox. Check for this by asking the parent if it has it:
-            HWND parent = ::GetParent(hWnd);
-            if ( parent )
+            // of wxComboBox but also e.g. of wxSlider label HWNDs which are
+            // logically part of it, but are siblings of the main control at
+            // Windows level.
+            //
+            // So check whether it's a sibling of this window which is part of
+            // the same wx object.
+            if ( ContainsHWND(hWnd) )
             {
-                wxWindow *winParent = wxFindWinFromHandle( parent );
-                if( winParent && winParent->ContainsHWND( hWnd ) )
-                    win = winParent;
-             }
+                win = this;
+            }
+            else // Or maybe a child sub-window of this one.
+            {
+                HWND parent = ::GetParent(hWnd);
+                if ( parent )
+                {
+                    wxWindow *winParent = wxFindWinFromHandle( parent );
+                    if( winParent && winParent->ContainsHWND( hWnd ) )
+                        win = winParent;
+                 }
+            }
         }
 
         if ( win )

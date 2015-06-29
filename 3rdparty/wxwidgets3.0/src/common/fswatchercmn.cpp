@@ -144,9 +144,11 @@ wxFileSystemWatcherBase::AddAny(const wxFileName& path,
     else
     {
         wxFSWatchInfo& watch = it->second;
-        int count = watch.IncRef();
+        const int count = watch.IncRef();
         wxLogTrace(wxTRACE_FSWATCHER,
                    "'%s' is now watched %d times", canonical, count);
+
+        wxUnusedVar(count); // could be unused if debug tracing is disabled
     }
     return true;
 }

@@ -144,7 +144,13 @@ struct wxCmdLineOption
     bool HasValue() const { return m_hasVal; }
 
     void SetNegated() { m_isNegated = true; }
-    bool IsNegated() const { return m_isNegated; }
+    bool IsNegated() const
+    {
+        wxASSERT_MSG( kind == wxCMD_LINE_SWITCH,
+                      wxT("kind mismatch in wxCmdLineArg") );
+
+        return m_isNegated;
+    }
 
     // Reset to the initial state, called before parsing another command line.
     void Reset()
@@ -272,7 +278,8 @@ void wxCmdLineParserData::SetArguments(int argc, char **argv)
     // temporarily change the locale here. The only drawback is that changing
     // the locale is thread-unsafe but precisely because we're called so early
     // it's hopefully safe to assume that no other threads had been created yet.
-    char * const locOld = SetAllLocaleFacets("");
+    char * const locOld = SetAllLocaleFacets(NULL);
+    SetAllLocaleFacets("");
     wxON_BLOCK_EXIT1( SetAllLocaleFacets, locOld );
 
     for ( int n = 0; n < argc; n++ )
@@ -666,6 +673,7 @@ int wxCmdLineParser::Parse(bool showUsage)
     Reset();
 
     // parse everything
+    m_data->m_parameters.clear();
     wxString arg;
     size_t count = m_data->m_arguments.size();
     for ( size_t n = 1; ok && (n < count); n++ )    // 0 is program name

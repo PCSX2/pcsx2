@@ -153,12 +153,28 @@ size_t wxFFile::Write(const void *pBuf, size_t nCount)
 
 bool wxFFile::Write(const wxString& s, const wxMBConv& conv)
 {
-  const wxWX2MBbuf buf = s.mb_str(conv);
-  if ( !buf )
-      return false;
+    // Writing nothing always succeeds -- and simplifies the check for
+    // conversion failure below.
+    if ( s.empty() )
+        return true;
 
-  const size_t size = strlen(buf); // FIXME: use buf.length() when available
-  return Write(buf, size) == size;
+    const wxWX2MBbuf buf = s.mb_str(conv);
+
+#if wxUSE_UNICODE
+    const size_t size = buf.length();
+
+    if ( !size )
+    {
+        // This means that the conversion failed as the original string wasn't
+        // empty (we explicitly checked for this above) and in this case we
+        // must fail too to indicate that we can't save the data.
+        return false;
+    }
+#else
+    const size_t size = s.length();
+#endif
+
+    return Write(buf, size) == size;
 }
 
 bool wxFFile::Flush()

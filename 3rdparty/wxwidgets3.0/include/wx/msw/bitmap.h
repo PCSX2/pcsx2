@@ -183,6 +183,10 @@ public:
     // implementation only from now on
     // -------------------------------
 
+    // Set alpha flag to true if this is a 32bpp bitmap which has any non-0
+    // values in its alpha channel.
+    void MSWUpdateAlpha();
+
 public:
     void SetHBITMAP(WXHBITMAP bmp) { SetHandle((WXHANDLE)bmp); }
     WXHBITMAP GetHBITMAP() const { return (WXHBITMAP)GetHandle(); }

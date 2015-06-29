@@ -2084,9 +2084,15 @@ wxDateTime& wxDateTime::MakeTimezone(const TimeZone& tz, bool noDST)
 {
     long secDiff = wxGetTimeZone() + tz.GetOffset();
 
-    // we need to know whether DST is or not in effect for this date unless
-    // the test disabled by the caller
-    if ( !noDST && (IsDST() == 1) )
+    // We are converting from the local time, but local time zone does not
+    // include the DST offset (as it varies depending on the date), so we have
+    // to handle DST manually, unless a special flag inhibiting this was
+    // specified.
+    //
+    // Notice that we also shouldn't add the DST offset if we're already in the
+    // local time zone, as indicated by offset of 0, converting from local time
+    // to local time zone shouldn't change it, whether DST is in effect or not.
+    if ( !noDST && secDiff && (IsDST() == 1) )
     {
         // FIXME we assume that the DST is always shifted by 1 hour
         secDiff -= 3600;
@@ -2099,9 +2105,8 @@ wxDateTime& wxDateTime::MakeFromTimezone(const TimeZone& tz, bool noDST)
 {
     long secDiff = wxGetTimeZone() + tz.GetOffset();
 
-    // we need to know whether DST is or not in effect for this date unless
-    // the test disabled by the caller
-    if ( !noDST && (IsDST() == 1) )
+    // See comment in MakeTimezone() above, the logic here is exactly the same.
+    if ( !noDST && secDiff && (IsDST() == 1) )
     {
         // FIXME we assume that the DST is always shifted by 1 hour
         secDiff -= 3600;

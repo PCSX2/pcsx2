@@ -67,7 +67,19 @@ struct PerfCounter
     wxCRIT_SECT_DECLARE_MEMBER(cs);
     LARGE_INTEGER freq;
     bool init;
-} gs_perfCounter;
+};
+
+// Return the global perf counter state.
+//
+// This is wrapped in a function to avoid initialization order problems,
+// otherwise simply creating a global wxStopWatch variable could crash because
+// it would be using a (possibly) still uninitialized critical section.
+PerfCounter& GetPerfCounterState()
+{
+    static PerfCounter s_perfCounter;
+
+    return s_perfCounter;
+}
 
 #endif // __WINDOWS__
 
@@ -79,10 +91,11 @@ const int MICROSECONDS_PER_SECOND = 1000*1000;
 void wxStopWatch::DoStart()
 {
 #ifdef __WINDOWS__
-    if ( !gs_perfCounter.init )
+    PerfCounter& perfCounter = GetPerfCounterState();
+    if ( !perfCounter.init )
     {
-        wxCRIT_SECT_LOCKER(lock, gs_perfCounter.cs);
-        ::QueryPerformanceFrequency(&gs_perfCounter.freq);
+        wxCRIT_SECT_LOCKER(lock, perfCounter.cs);
+        ::QueryPerformanceFrequency(&perfCounter.freq);
 
         // Just a sanity check: it's not supposed to happen but verify that
         // ::QueryPerformanceCounter() succeeds so that we can really use it.
@@ -92,10 +105,10 @@ void wxStopWatch::DoStart()
             wxLogDebug("QueryPerformanceCounter() unexpected failed (%s), "
                        "will not use it.", wxSysErrorMsg());
 
-            gs_perfCounter.freq.QuadPart = 0;
+            perfCounter.freq.QuadPart = 0;
         }
 
-        gs_perfCounter.init = true;
+        perfCounter.init = true;
     }
 #endif // __WINDOWS__
 
@@ -107,8 +120,8 @@ wxLongLong wxStopWatch::GetClockFreq() const
 #ifdef __WINDOWS__
     // Under MSW we use the high resolution performance counter timer which has
     // its own frequency (usually related to the CPU clock speed).
-    if ( gs_perfCounter.CanBeUsed() )
-        return gs_perfCounter.freq.QuadPart;
+    if ( GetPerfCounterState().CanBeUsed() )
+        return GetPerfCounterState().freq.QuadPart;
 #endif // __WINDOWS__
 
 #ifdef HAVE_GETTIMEOFDAY
@@ -136,7 +149,7 @@ void wxStopWatch::Start(long t0)
 wxLongLong wxStopWatch::GetCurrentClockValue() const
 {
 #ifdef __WINDOWS__
-    if ( gs_perfCounter.CanBeUsed() )
+    if ( GetPerfCounterState().CanBeUsed() )
     {
         LARGE_INTEGER counter;
         ::QueryPerformanceCounter(&counter);

@@ -374,7 +374,6 @@ bool wxImageList::Draw(int index,
 // Get the bitmap
 wxBitmap wxImageList::GetBitmap(int index) const
 {
-#if wxUSE_WXDIB && wxUSE_IMAGE
     int bmp_width = 0, bmp_height = 0;
     GetSize(index, bmp_width, bmp_height);
 
@@ -382,29 +381,50 @@ wxBitmap wxImageList::GetBitmap(int index) const
     wxMemoryDC dc;
     dc.SelectObject(bitmap);
 
-    // draw it the first time to find a suitable mask colour
-    ((wxImageList*)this)->Draw(index, dc, 0, 0, wxIMAGELIST_DRAW_TRANSPARENT);
-    dc.SelectObject(wxNullBitmap);
+#if wxUSE_WXDIB && wxUSE_IMAGE
+    IMAGEINFO ii;
+    ImageList_GetImageInfo(GetHImageList(), index, &ii);
+    if ( ii.hbmMask )
+    {
+        // draw it the first time to find a suitable mask colour
+        ((wxImageList*)this)->Draw(index, dc, 0, 0, wxIMAGELIST_DRAW_TRANSPARENT);
+        dc.SelectObject(wxNullBitmap);
 
-    // find the suitable mask colour
-    wxImage image = bitmap.ConvertToImage();
-    unsigned char r = 0, g = 0, b = 0;
-    image.FindFirstUnusedColour(&r, &g, &b);
+        // find the suitable mask colour
+        wxImage image = bitmap.ConvertToImage();
+        unsigned char r = 0, g = 0, b = 0;
+        image.FindFirstUnusedColour(&r, &g, &b);
 
-    // redraw whole image and bitmap in the mask colour
-    image.Create(bmp_width, bmp_height);
-    image.Replace(0, 0, 0, r, g, b);
-    bitmap = wxBitmap(image);
+        // redraw whole image and bitmap in the mask colour
+        image.Create(bmp_width, bmp_height);
+        image.Replace(0, 0, 0, r, g, b);
+        bitmap = wxBitmap(image);
 
-    // redraw icon over the mask colour to actually draw it
-    dc.SelectObject(bitmap);
-    ((wxImageList*)this)->Draw(index, dc, 0, 0, wxIMAGELIST_DRAW_TRANSPARENT);
-    dc.SelectObject(wxNullBitmap);
+        // redraw icon over the mask colour to actually draw it
+        dc.SelectObject(bitmap);
+        ((wxImageList*)this)->Draw(index, dc, 0, 0, wxIMAGELIST_DRAW_TRANSPARENT);
+        dc.SelectObject(wxNullBitmap);
 
-    // get the image, set the mask colour and convert back to get transparent bitmap
-    image = bitmap.ConvertToImage();
-    image.SetMaskColour(r, g, b);
-    bitmap = wxBitmap(image);
+        // get the image, set the mask colour and convert back to get transparent bitmap
+        image = bitmap.ConvertToImage();
+        image.SetMaskColour(r, g, b);
+        bitmap = wxBitmap(image);
+    }
+    else // no mask
+    {
+        // Just draw it normally.
+        ((wxImageList*)this)->Draw(index, dc, 0, 0, wxIMAGELIST_DRAW_NORMAL);
+        dc.SelectObject(wxNullBitmap);
+
+        // And adjust its alpha flag as the destination bitmap would get it if
+        // the source one had it.
+        //
+        // Note that perhaps we could just call UseAlpha() which would set the
+        // "has alpha" flag unconditionally as it doesn't seem to do any harm,
+        // but for now only do it if necessary, just to be on the safe side,
+        // even if it requires more work (and takes more time).
+        bitmap.MSWUpdateAlpha();
+    }
 #else
     wxBitmap bitmap;
 #endif

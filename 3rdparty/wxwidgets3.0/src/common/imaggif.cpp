@@ -721,13 +721,14 @@ bool wxGIFHandler_WriteControl(wxOutputStream *stream,
     int maskIndex, int delayMilliSecs)
 {
     wxUint8 buf[8];
+    const wxUint16 delay = delayMilliSecs / 10;
 
     buf[0] = GIF_MARKER_EXT;    // extension marker
     buf[1] = GIF_MARKER_EXT_GRAPHICS_CONTROL;
     buf[2] = 4;     // length of block
     buf[3] = (maskIndex != wxNOT_FOUND) ? 1 : 0;   // has transparency
-    buf[4] = delayMilliSecs / 10; // delay time
-    buf[5] = 0;
+    buf[4] = delay & 0xff;  // delay time
+    buf[5] = (delay >> 8) & 0xff;   // delay time second byte
     buf[6] = (maskIndex != wxNOT_FOUND) ? (wxUint8) maskIndex : 0;
     buf[7] = 0;
     return wxGIFHandler_Write(stream, buf, sizeof(buf));

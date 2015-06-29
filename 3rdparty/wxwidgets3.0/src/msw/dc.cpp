@@ -1037,7 +1037,9 @@ void wxMSWDCImpl::DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord h
     wxCoord x2 = x + width;
     wxCoord y2 = y + height;
 
-    wxCoord x2dev = XLOG2DEV(x2),
+    wxCoord x1dev = XLOG2DEV(x),
+            y1dev = YLOG2DEV(y),
+            x2dev = XLOG2DEV(x2),
             y2dev = YLOG2DEV(y2);
 
     // Windows (but not Windows CE) draws the filled rectangles without outline
@@ -1046,12 +1048,18 @@ void wxMSWDCImpl::DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord h
 #ifndef __WXWINCE__
     if ( m_pen.IsTransparent() )
     {
-        x2dev++;
+        // Right edge to be extended is "displayed right edge"
+        // and hence its device coordinates depend
+        // on layout direction and can be either x1 or x2.
+        if ( GetLayoutDirection() == wxLayout_RightToLeft )
+            x1dev--;
+        else
+            x2dev++;
         y2dev++;
     }
 #endif // !__WXWINCE__
 
-    (void)Rectangle(GetHdc(), XLOG2DEV(x), YLOG2DEV(y), x2dev, y2dev);
+    (void)Rectangle(GetHdc(), x1dev, y1dev, x2dev, y2dev);
 
     CalcBoundingBox(x, y);
     CalcBoundingBox(x2, y2);
@@ -1932,6 +1940,50 @@ void ApplyEffectiveScale(double scale, int sign, int *device, int *logical)
     *logical = sign*wxRound(VIEWPORT_EXTENT/scale);
 }
 
+// Binary GCD algorithm
+// See: http://en.wikipedia.org/wiki/Binary_GCD_algorithm#Iterative_version_in_C
+unsigned int CalcGCD(unsigned int u, unsigned int v)
+{
+    // GCD(0,v) == v; GCD(u,0) == u, GCD(0,0) == 0
+    if (u == 0)
+        return v;
+    if (v == 0)
+        return u;
+
+    int shift;
+
+    // Let shift := lg K, where K is the greatest power of 2
+    // dividing both u and v.
+    for (shift = 0; ((u | v) & 1) == 0; ++shift)
+    {
+        u >>= 1;
+        v >>= 1;
+    }
+
+    while ((u & 1) == 0)
+        u >>= 1;
+
+    // From here on, u is always odd.
+    do
+    {
+        // remove all factors of 2 in v -- they are not common
+        // note: v is not zero, so while will terminate
+        while ((v & 1) == 0)
+            v >>= 1;
+
+        // Now u and v are both odd. Swap if necessary so u <= v,
+        // then set v = v - u (which is even)
+        if (u > v)
+        {
+            wxSwap(u, v);
+        }
+        v -= u;  // Here v >= u
+    } while (v != 0);
+
+    // restore common factors of 2
+    return u << shift;
+}
+
 } // anonymous namespace
 
 void wxMSWDCImpl::RealizeScaleAndOrigin()
@@ -1951,6 +2003,16 @@ void wxMSWDCImpl::RealizeScaleAndOrigin()
 
     ApplyEffectiveScale(m_scaleX, m_signX, &devExtX, &logExtX);
     ApplyEffectiveScale(m_scaleY, m_signY, &devExtY, &logExtY);
+
+    // Becaue only devExtX/logExtX ratio and devExtY/logExtY ratio are counted
+    // we can reduce the fractions to avoid large absolute numbers
+    // and possible arithmetic overflows.
+    unsigned int gcd = CalcGCD(abs(devExtX), abs(logExtX));
+    devExtX /= gcd;
+    logExtX /= gcd;
+    gcd = CalcGCD(abs(devExtY), abs(logExtY));
+    devExtY /= gcd;
+    logExtY /= gcd;
 
     ::SetViewportExtEx(GetHdc(), devExtX, devExtY, NULL);
     ::SetWindowExtEx(GetHdc(), logExtX, logExtY, NULL);

@@ -41,6 +41,16 @@ public:
         Init();
     }
 
+    bool Create(wxWindow *parent,
+                wxWindowID winid = wxID_ANY,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = 0,
+                const wxString& name = wxEmptyString)
+    {
+        return wxBookCtrlBase::Create(parent, winid, pos, size, style | wxBK_TOP, name);
+    }
+
 
     // Methods specific to this class.
 

@@ -1244,15 +1244,15 @@ wxString wxString::Mid(size_t nFirst, size_t nCount) const
     }
 
     // out-of-bounds requests return sensible things
-    if ( nFirst + nCount > nLen )
-    {
-        nCount = nLen - nFirst;
-    }
-
     if ( nFirst > nLen )
     {
         // AllocCopy() will return empty string
         return wxEmptyString;
+    }
+
+    if ( nCount > nLen - nFirst )
+    {
+        nCount = nLen - nFirst;
     }
 
     wxString dest(*this, nFirst, nCount);
@@ -1797,6 +1797,8 @@ bool wxString::ToCULong(unsigned long *pVal, int base) const
 // point which is different in different locales.
 bool wxString::ToCDouble(double *pVal) const
 {
+    // See the explanations in FromCDouble() below for the reasons for all this.
+
     // Create a copy of this string using the decimal point instead of whatever
     // separator the current locale uses.
 #if wxUSE_INTL
@@ -1854,20 +1856,19 @@ wxString wxString::FromCDouble(double val, int precision)
 {
     wxCHECK_MSG( precision >= -1, wxString(), "Invalid negative precision" );
 
-#if wxUSE_STD_IOSTREAM && wxUSE_STD_STRING
-    // We assume that we can use the ostream and not wstream for numbers.
-    wxSTD ostringstream os;
-    if ( precision != -1 )
-    {
-        os.precision(precision);
-        os.setf(std::ios::fixed, std::ios::floatfield);
-    }
+    // Unfortunately there is no good way to get the number directly in the C
+    // locale. Some platforms provide special functions to do this (e.g.
+    // _sprintf_l() in MSVS or sprintf_l() in BSD systems), but some systems we
+    // still support don't have them and it doesn't seem worth it to have two
+    // different ways to do the same thing. Also, in principle, using the
+    // standard C++ streams should allow us to do it, but some implementations
+    // of them are horribly broken and actually change the global C locale,
+    // thus randomly affecting the results produced in other threads, when
+    // imbue() stream method is called (for the record, the latest libstdc++
+    // version included in OS X does it and so seem to do the versions
+    // currently included in Android NDK and both FreeBSD and OpenBSD), so we
+    // can't do this neither and are reduced to this hack.
 
-    os << val;
-    return os.str();
-#else // !wxUSE_STD_IOSTREAM
-    // Can't use iostream locale support, fall back to the manual method
-    // instead.
     wxString s = FromDouble(val, precision);
 #if wxUSE_INTL
     wxString sep = wxLocale::GetInfo(wxLOCALE_DECIMAL_POINT,
@@ -1881,7 +1882,6 @@ wxString wxString::FromCDouble(double val, int precision)
 
     s.Replace(sep, ".");
     return s;
-#endif // wxUSE_STD_IOSTREAM/!wxUSE_STD_IOSTREAM
 }
 
 // ---------------------------------------------------------------------------

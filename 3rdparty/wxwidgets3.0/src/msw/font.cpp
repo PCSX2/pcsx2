@@ -360,7 +360,7 @@ void wxFontRefData::Init(int pointSize,
     if ( m_sizeUsingPixels )
         SetPixelSize(pixelSize);
     else
-        SetPointSize(pointSize);
+        SetPointSize(pointSize == -1 ? wxNORMAL_FONT->GetPointSize() : pointSize);
 
     SetStyle(style);
     SetWeight(weight);
@@ -841,7 +841,7 @@ bool wxFont::DoCreate(int pointSize,
 
     // wxDEFAULT is a valid value for the font size too so we must treat it
     // specially here (otherwise the size would be 70 == wxDEFAULT value)
-    if ( pointSize == wxDEFAULT || pointSize == -1 )
+    if ( pointSize == wxDEFAULT )
     {
         pointSize = wxNORMAL_FONT->GetPointSize();
     }

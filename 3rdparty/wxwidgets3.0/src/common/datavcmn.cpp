@@ -1461,16 +1461,12 @@ wxDataViewSpinRenderer::wxDataViewSpinRenderer( int min, int max, wxDataViewCell
 wxWindow* wxDataViewSpinRenderer::CreateEditorCtrl( wxWindow *parent, wxRect labelRect, const wxVariant &value )
 {
     long l = value;
-    wxSize size = labelRect.GetSize();
-#ifdef __WXMAC__
-    size = wxSize( wxMax(70,labelRect.width ), -1 );
-#endif
     wxString str;
     str.Printf( wxT("%d"), (int) l );
     wxSpinCtrl *sc = new wxSpinCtrl( parent, wxID_ANY, str,
-               labelRect.GetTopLeft(), size, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, m_min, m_max, l );
+               labelRect.GetTopLeft(), labelRect.GetSize(), wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, m_min, m_max, l );
 #ifdef __WXMAC__
-    size = sc->GetSize();
+    const wxSize size = sc->GetSize();
     wxPoint pt = sc->GetPosition();
     sc->SetSize( pt.x - 4, pt.y - 4, size.x, size.y );
 #endif

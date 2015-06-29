@@ -441,7 +441,7 @@ bool wxBitmapComboBox::MSWOnDraw(WXDRAWITEMSTRUCT *item)
     //if ( lpDrawItem->itemState & ODS_FOCUS )
     //    DrawFocusRect(lpDrawItem->hDC, &lpDrawItem->rcItem);
 
-    return TRUE;
+    return true;
 }
 
 bool wxBitmapComboBox::MSWOnMeasure(WXMEASUREITEMSTRUCT *item)
@@ -449,9 +449,14 @@ bool wxBitmapComboBox::MSWOnMeasure(WXMEASUREITEMSTRUCT *item)
     LPMEASUREITEMSTRUCT lpMeasureItem = (LPMEASUREITEMSTRUCT) item;
     int pos = lpMeasureItem->itemID;
 
-    lpMeasureItem->itemHeight = wxBitmapComboBoxBase::MeasureItem(pos);
+    // Measure item height if item list is not empty,
+    // otherwise leave default system value.
+    if ( pos >= 0 )
+    {
+        lpMeasureItem->itemHeight = wxBitmapComboBoxBase::MeasureItem(pos);
+    }
 
-    return TRUE;
+    return true;
 }
 
 #endif // wxUSE_BITMAPCOMBOBOX

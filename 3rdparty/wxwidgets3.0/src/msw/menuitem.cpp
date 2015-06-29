@@ -671,14 +671,11 @@ void wxMenuItem::SetItemLabel(const wxString& txt)
     m_parentMenu->UpdateAccel(this);
 #endif // wxUSE_ACCEL
 
-    const UINT id = GetMSWId();
-    HMENU hMenu = GetHMenuOf(m_parentMenu);
-    if ( !hMenu )
+    const int itemPos = MSGetMenuItemPos();
+    if ( itemPos == -1 )
         return;
 
-    const UINT state = ::GetMenuState(hMenu, id, MF_BYCOMMAND);
-    if ( state == (UINT)-1 )
-        return;
+    HMENU hMenu = GetHMenuOf(m_parentMenu);
 
     // update the text of the native menu item
     WinStruct<MENUITEMINFO> info;
@@ -696,7 +693,7 @@ void wxMenuItem::SetItemLabel(const wxString& txt)
         info.fMask |= MIIM_BITMAP | MIIM_FTYPE;
     else
         info.fMask |= MIIM_TYPE;
-    if ( !::GetMenuItemInfo(hMenu, id, FALSE, &info) )
+    if ( !::GetMenuItemInfo(hMenu, itemPos, TRUE, &info) )
     {
         wxLogLastError(wxT("GetMenuItemInfo"));
         return;
@@ -716,7 +713,7 @@ void wxMenuItem::SetItemLabel(const wxString& txt)
     // Also notice that we shouldn't use our IsOwnerDrawn() because it can be
     // true because it was set by e.g. SetBitmap(), even if the item wasn't
     // made owner drawn at Windows level.
-    if ( !(state & MF_OWNERDRAW) )
+    if ( !(info.fState & MF_OWNERDRAW) )
 #endif // wxUSE_OWNER_DRAWN
     {
         if ( isLaterThanWin95 )
@@ -726,7 +723,7 @@ void wxMenuItem::SetItemLabel(const wxString& txt)
         info.cch = m_text.length();
     }
 
-    if ( !::SetMenuItemInfo(hMenu, id, FALSE, &info) )
+    if ( !::SetMenuItemInfo(hMenu, itemPos, TRUE, &info) )
     {
         wxLogLastError(wxT("SetMenuItemInfo"));
     }
@@ -1250,6 +1247,42 @@ void wxMenuItem::GetColourToUse(wxODStatus stat, wxColour& colText, wxColour& co
     }
 }
 #endif // wxUSE_OWNER_DRAWN
+
+int wxMenuItem::MSGetMenuItemPos() const
+{
+    if ( !m_parentMenu )
+        return -1;
+
+    const HMENU hMenu = GetHMenuOf(m_parentMenu);
+    if ( !hMenu )
+        return -1;
+
+    const UINT id = GetMSWId();
+    const int menuItems = ::GetMenuItemCount(hMenu);
+    for ( int i = 0; i < menuItems; i++ )
+    {
+        const UINT state = ::GetMenuState(hMenu, i, MF_BYPOSITION);
+        if ( state == (UINT)-1 )
+        {
+            // This indicates that the item at this position and is not
+            // supposed to happen here, but test for it just in case.
+            continue;
+        }
+
+        if ( state & MF_POPUP )
+        {
+            if ( ::GetSubMenu(hMenu, i) == (HMENU)id )
+                return i;
+        }
+        else if ( !(state & MF_SEPARATOR) )
+        {
+            if ( ::GetMenuItemID(hMenu, i) == id )
+                return i;
+        }
+    }
+
+    return -1;
+}
 
 // ----------------------------------------------------------------------------
 // wxMenuItemBase

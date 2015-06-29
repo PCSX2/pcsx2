@@ -271,6 +271,30 @@ GetWeekDayFromName(wxString::const_iterator& p,
     return wd;
 }
 
+// return the year of the Monday of the week containing the given date
+int
+GetWeekBasedYear(const wxDateTime& dt)
+{
+    const wxDateTime::Tm tm = dt.GetTm();
+
+    int year = tm.year;
+
+    // The week-based year can only be different from the normal year for few
+    // days in the beginning and the end of the year.
+    if ( tm.yday > 361 )
+    {
+        if ( dt.GetWeekOfYear() == 1 )
+            year++;
+    }
+    else if ( tm.yday < 5 )
+    {
+        if ( dt.GetWeekOfYear() == 53 )
+            year--;
+    }
+
+    return year;
+}
+
 // parses string starting at given iterator using the specified format and,
 // optionally, a fall back format (and optionally another one... but it stops
 // there, really)
@@ -324,17 +348,38 @@ wxString wxDateTime::Format(const wxString& formatp, const TimeZone& tz) const
     format.Replace("%X",wxLocale::GetInfo(wxLOCALE_TIME_FMT));
 #endif
     // we have to use our own implementation if the date is out of range of
-    // strftime() or if we use non standard specifiers (notice that "%z" is
-    // special because it is de facto standard under Unix but is not supported
-    // under Windows)
+    // strftime()
 #ifdef wxHAS_STRFTIME
     time_t time = GetTicks();
 
-    if ( (time != (time_t)-1) && !wxStrstr(format, wxT("%l"))
+    bool canUseStrftime = time != (time_t)-1;
+
+    // We also can't use strftime() if we use non standard specifier: either
+    // our own extension "%l" or one of "%g", "%G", "%V", "%z" which are POSIX
+    // but not supported under Windows.
+    for ( wxString::const_iterator p = format.begin();
+          canUseStrftime && p != format.end();
+          ++p )
+    {
+        if ( *p != '%' )
+            continue;
+
+        // set the default format
+        switch ( (*++p).GetValue() )
+        {
+            case 'l':
 #ifdef __WINDOWS__
-            && !wxStrstr(format, wxT("%z"))
-#endif
-       )
+            case 'g':
+            case 'G':
+            case 'V':
+            case 'z':
+#endif // __WINDOWS__
+                canUseStrftime = false;
+                break;
+        }
+    }
+
+    if ( canUseStrftime )
     {
         // use strftime()
         struct tm tmstruct;
@@ -408,6 +453,7 @@ wxString wxDateTime::Format(const wxString& formatp, const TimeZone& tz) const
         switch ( (*++p).GetValue() )
         {
             case wxT('Y'):               // year has 4 digits
+            case wxT('G'):               // (and ISO week year too)
             case wxT('z'):               // time zone as well
                 fmt = wxT("%04d");
                 break;
@@ -579,6 +625,14 @@ wxString wxDateTime::Format(const wxString& formatp, const TimeZone& tz) const
                     res += wxString::Format(fmt, tm.mday);
                     break;
 
+                case wxT('g'):      // 2-digit week-based year
+                    res += wxString::Format(fmt, GetWeekBasedYear(*this) % 100);
+                    break;
+
+                case wxT('G'):       // week-based year with century
+                    res += wxString::Format(fmt, GetWeekBasedYear(*this));
+                    break;
+
                 case wxT('H'):       // hour in 24h format (00-23)
                     res += wxString::Format(fmt, tm.hour);
                     break;
@@ -624,6 +678,7 @@ wxString wxDateTime::Format(const wxString& formatp, const TimeZone& tz) const
                     res += wxString::Format(fmt, GetWeekOfYear(Sunday_First, tz));
                     break;
 
+                case wxT('V'):       // ISO week number
                 case wxT('W'):       // week number in the year (Monday 1st week day)
                     res += wxString::Format(fmt, GetWeekOfYear(Monday_First, tz));
                     break;

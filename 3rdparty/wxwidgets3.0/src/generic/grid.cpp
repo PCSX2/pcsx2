@@ -1680,10 +1680,7 @@ void wxGridColLabelWindow::OnPaint( wxPaintEvent& WXUNUSED(event) )
     int x, y;
     m_owner->CalcUnscrolledPosition( 0, 0, &x, &y );
     wxPoint pt = dc.GetDeviceOrigin();
-    if (GetLayoutDirection() == wxLayout_RightToLeft)
-        dc.SetDeviceOrigin( pt.x+x, pt.y );
-    else
-        dc.SetDeviceOrigin( pt.x-x, pt.y );
+    dc.SetDeviceOrigin( pt.x-x, pt.y );
 
     wxArrayInt cols = m_owner->CalcColLabelsExposed( GetUpdateRegion() );
     m_owner->DrawColLabels( dc, cols );
@@ -2359,12 +2356,15 @@ wxGrid::SetTable(wxGridTableBase *table,
         m_numRows = table->GetNumberRows();
         m_numCols = table->GetNumberCols();
 
-        if ( m_useNativeHeader )
-            GetGridColHeader()->SetColumnCount(m_numCols);
-
         m_table = table;
         m_table->SetView( this );
         m_ownTable = takeOwnership;
+
+        // Notice that this must be called after setting m_table as it uses it
+        // indirectly, via wxGrid::GetColLabelValue().
+        if ( m_useNativeHeader )
+            GetGridColHeader()->SetColumnCount(m_numCols);
+
         m_selection = new wxGridSelection( this, selmode );
         if (checkSelection)
         {
@@ -3733,13 +3733,9 @@ void wxGrid::ProcessColLabelMouseEvent( wxMouseEvent& event )
 
                     // and check if we're on the "near" (usually left but right
                     // in RTL case) part of the column
-                    bool onNearPart;
                     const int middle = GetColLeft(colValid) +
                                             GetColWidth(colValid)/2;
-                    if ( GetLayoutDirection() == wxLayout_LeftToRight )
-                        onNearPart = (x <= middle);
-                    else // wxLayout_RightToLeft
-                        onNearPart = (x > middle);
+                    const bool onNearPart = (x <= middle);
 
                     // adjust for the column being dragged itself
                     if ( pos < GetColPos(m_dragRowOrCol) )

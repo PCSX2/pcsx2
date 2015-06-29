@@ -21,6 +21,7 @@
 #include <ole2.h>
 #include "wx/intl.h"
 #include "wx/log.h"
+#include "wx/variant.h"
 
 // ============================================================================
 // General purpose functions and macros
@@ -353,5 +354,31 @@ inline bool wxOleInitialize() { return false; }
 inline void wxOleUninitialize() { }
 
 #endif // wxUSE_OLE/!wxUSE_OLE
+
+// RAII class initializing OLE in its ctor and undoing it in its dtor.
+class wxOleInitializer
+{
+public:
+    wxOleInitializer()
+        : m_ok(wxOleInitialize())
+    {
+    }
+
+    bool IsOk() const
+    {
+        return m_ok;
+    }
+
+    ~wxOleInitializer()
+    {
+        if ( m_ok )
+            wxOleUninitialize();
+    }
+
+private:
+    const bool m_ok;
+
+    wxDECLARE_NO_COPY_CLASS(wxOleInitializer);
+};
 
 #endif  //_WX_OLEUTILS_H

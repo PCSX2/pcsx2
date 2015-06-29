@@ -188,7 +188,7 @@ enum wxPosixPermissions
 #elif (defined(__WINDOWS__) || defined(__OS2__)) && \
       ( \
         defined(__VISUALC__) || \
-        defined(__MINGW64__) || \
+        defined(__MINGW64_TOOLCHAIN__) || \
         (defined(__MINGW32__) && !defined(__WINE__) && \
                                 wxCHECK_W32API_VERSION(0, 5)) || \
         defined(__DMC__) || \
@@ -203,8 +203,8 @@ enum wxPosixPermissions
     // detect compilers which have support for huge files
     #if defined(__VISUALC__)
         #define wxHAS_HUGE_FILES 1
-    #elif defined(__MINGW32__) || defined(__MINGW64__)
-        #define wxHAS_HUGE_FILES 1f
+    #elif defined(__MINGW32__)
+        #define wxHAS_HUGE_FILES 1
     #elif defined(_LARGE_FILES)
         #define wxHAS_HUGE_FILES 1
     #endif
@@ -281,7 +281,7 @@ enum wxPosixPermissions
     // to avoid using them as they're not present in earlier versions and
     // always using the native functions spelling is easier than testing for
     // the versions
-    #if defined(__BORLANDC__) || defined(__DMC__) || defined(__WATCOMC__) || defined(__MINGW64__)
+    #if defined(__BORLANDC__) || defined(__DMC__) || defined(__WATCOMC__) || defined(__MINGW64_TOOLCHAIN__)
         #define wxPOSIX_IDENT(func)    ::func
     #else // by default assume MSVC-compatible names
         #define wxPOSIX_IDENT(func)    _ ## func
@@ -296,7 +296,7 @@ enum wxPosixPermissions
     #define wxWrite        wxPOSIX_IDENT(write)
 
     #ifdef wxHAS_HUGE_FILES
-        #ifndef __MINGW64__
+        #ifndef __MINGW64_TOOLCHAIN__
             #define   wxSeek       wxPOSIX_IDENT(lseeki64)
             #define   wxLseek      wxPOSIX_IDENT(lseeki64)
             #define   wxTell       wxPOSIX_IDENT(telli64)
@@ -337,7 +337,7 @@ enum wxPosixPermissions
     #ifdef wxHAS_HUGE_FILES
         // MinGW-64 provides underscore-less versions of all file functions
         // except for this one.
-        #ifdef __MINGW64__
+        #ifdef __MINGW64_TOOLCHAIN__
             #define   wxCRT_StatA       _stati64
         #else
             #define   wxCRT_StatA       wxPOSIX_IDENT(stati64)

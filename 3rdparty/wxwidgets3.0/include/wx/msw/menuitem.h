@@ -133,6 +133,11 @@ private:
     // common part of all ctors
     void Init();
 
+    // Return the item position in the menu containing it.
+    //
+    // Returns -1 if the item is not attached to a menu or if we can't find its
+    // position (which is not really supposed to ever happen).
+    int MSGetMenuItemPos() const;
 
 #if wxUSE_OWNER_DRAWN
     // item bitmaps

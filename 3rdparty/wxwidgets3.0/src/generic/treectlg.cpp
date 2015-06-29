@@ -458,6 +458,13 @@ wxTreeTextCtrl::wxTreeTextCtrl(wxGenericTreeCtrl *owner,
 
 void wxTreeTextCtrl::EndEdit(bool discardChanges)
 {
+    if ( m_aboutToFinish )
+    {
+        // We already called Finish which cannot be called
+        // more than once.
+        return;
+    }
+
     m_aboutToFinish = true;
 
     if ( discardChanges )
@@ -555,6 +562,7 @@ void wxTreeTextCtrl::OnKillFocus( wxFocusEvent &event )
 {
     if ( !m_aboutToFinish )
     {
+        m_aboutToFinish = true;
         if ( !AcceptChanges() )
             m_owner->OnRenameCancelled( m_itemEdited );
 
@@ -1306,6 +1314,10 @@ bool wxGenericTreeCtrl::SetFont( const wxFont &font )
 bool wxGenericTreeCtrl::IsVisible(const wxTreeItemId& item) const
 {
     wxCHECK_MSG( item.IsOk(), false, wxT("invalid tree item") );
+
+    // Hidden root item is never visible.
+    if ( item == GetRootItem() && HasFlag(wxTR_HIDE_ROOT) )
+        return false;
 
     // An item is only visible if it's not a descendant of a collapsed item
     wxGenericTreeItem *pItem = (wxGenericTreeItem*) item.m_pItem;
@@ -3502,9 +3514,10 @@ wxTextCtrl* wxGenericTreeCtrl::GetEditControl() const
 void wxGenericTreeCtrl::EndEditLabel(const wxTreeItemId& WXUNUSED(item),
                                      bool discardChanges)
 {
-    wxCHECK_RET( m_textCtrl, wxT("not editing label") );
-
-    m_textCtrl->EndEdit(discardChanges);
+    if (m_textCtrl)
+    {
+        m_textCtrl->EndEdit(discardChanges);
+    }
 }
 
 bool wxGenericTreeCtrl::OnRenameAccept(wxGenericTreeItem *item,
@@ -3696,46 +3709,39 @@ void wxGenericTreeCtrl::OnMouse( wxMouseEvent &event )
 #endif
         }
     }
-    else if ( event.LeftUp() || event.RightUp() )
+    else if ( (event.LeftUp() || event.RightUp()) && m_isDragging )
     {
-        if ( m_isDragging )
+        ReleaseMouse();
+
+        // erase the highlighting
+        DrawDropEffect(m_dropTarget);
+
+        if ( m_oldSelection )
         {
-            ReleaseMouse();
+            m_oldSelection->SetHilight(true);
+            RefreshLine(m_oldSelection);
+            m_oldSelection = NULL;
+        }
 
-            // erase the highlighting
-            DrawDropEffect(m_dropTarget);
+        // generate the drag end event
+        wxTreeEvent eventEndDrag(wxEVT_TREE_END_DRAG,  this, item);
 
-            if ( m_oldSelection )
-            {
-                m_oldSelection->SetHilight(true);
-                RefreshLine(m_oldSelection);
-                m_oldSelection = NULL;
-            }
+        eventEndDrag.m_pointDrag = CalcScrolledPosition(pt);
 
-            // generate the drag end event
-            wxTreeEvent eventEndDrag(wxEVT_TREE_END_DRAG,  this, item);
+        (void)GetEventHandler()->ProcessEvent(eventEndDrag);
 
-            eventEndDrag.m_pointDrag = CalcScrolledPosition(pt);
+        m_isDragging = false;
+        m_dropTarget = NULL;
 
-            (void)GetEventHandler()->ProcessEvent(eventEndDrag);
-
-            m_isDragging = false;
-            m_dropTarget = NULL;
-
-            SetCursor(m_oldCursor);
+        SetCursor(m_oldCursor);
 
 #if defined( __WXMSW__ ) || defined(__WXMAC__) || defined(__WXGTK20__)
-            Update();
+        Update();
 #else
-            // TODO: remove this call or use wxEventLoopBase::GetActive()->YieldFor(wxEVT_CATEGORY_UI)
-            //       instead (needs to be tested!)
-            wxYieldIfNeeded();
+        // TODO: remove this call or use wxEventLoopBase::GetActive()->YieldFor(wxEVT_CATEGORY_UI)
+        //       instead (needs to be tested!)
+        wxYieldIfNeeded();
 #endif
-        }
-        else
-        {
-            event.Skip();
-        }
     }
     else
     {

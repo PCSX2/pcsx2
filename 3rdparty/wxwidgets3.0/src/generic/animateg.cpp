@@ -358,7 +358,7 @@ void wxAnimationCtrl::SetInactiveBitmap(const wxBitmap &bmp)
     // (which uses the bitmap's mask), our background colour would be used for
     // transparent areas - and that's not what we want (at least for
     // consistency with the GTK version)
-    if ( bmp.GetMask() != NULL && GetParent() != NULL )
+    if ( bmp.IsOk() && bmp.GetMask() != NULL && GetParent() != NULL )
         SetBackgroundColour(GetParent()->GetBackgroundColour());
 
     wxAnimationCtrlBase::SetInactiveBitmap(bmp);

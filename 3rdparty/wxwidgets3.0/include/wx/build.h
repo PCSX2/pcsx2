@@ -54,13 +54,16 @@
 #if defined(__GXX_ABI_VERSION)
     #define __WX_BO_COMPILER \
             ",compiler with C++ ABI " __WX_BO_STRINGIZE(__GXX_ABI_VERSION)
-#elif defined(__INTEL_COMPILER)
-    #define __WX_BO_COMPILER ",Intel C++"
 #elif defined(__GNUG__)
     #define __WX_BO_COMPILER ",GCC " \
             __WX_BO_STRINGIZE(__GNUC__) "." __WX_BO_STRINGIZE(__GNUC_MINOR__)
 #elif defined(__VISUALC__)
     #define __WX_BO_COMPILER ",Visual C++ " __WX_BO_STRINGIZE(_MSC_VER)
+#elif defined(__INTEL_COMPILER)
+    // Notice that this must come after MSVC check as ICC under Windows is
+    // ABI-compatible with the corresponding version of the MSVC and we want to
+    // allow using it compile the application code using MSVC-built DLLs.
+    #define __WX_BO_COMPILER ",Intel C++"
 #elif defined(__BORLANDC__)
     #define __WX_BO_COMPILER ",Borland C++"
 #elif defined(__DIGITALMARS__)

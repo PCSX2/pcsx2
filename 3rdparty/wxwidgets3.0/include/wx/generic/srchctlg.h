@@ -238,6 +238,9 @@ private:
     // Implement pure virtual function inherited from wxCompositeWindow.
     virtual wxWindowList GetCompositeWindowParts() const;
 
+    // Position the child controls using the current window size.
+    void DoLayoutControls();
+
 #if wxUSE_MENUS
     void PopupSearchMenu();
 #endif // wxUSE_MENUS
