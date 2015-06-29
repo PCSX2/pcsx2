@@ -685,7 +685,7 @@ AppConfig::ConsoleLogOptions::ConsoleLogOptions()
 	, Theme(L"Default")
 {
 	Visible		= true;
-	AutoDock	= true;
+	AutoDock	= false;
 	FontSize	= 8;
 }
 
