@@ -588,6 +588,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			{
 				if(!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 				{
+					GL_CACHE("TC: Dirty Target(%s) %d (0x%x)", to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0);
 					t->m_dirty.push_back(GSDirtyRect(r, psm));
 					t->m_TEX0.TBW = bw;
 				}
@@ -614,6 +617,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 					if(r.bottom > y)
 					{
+						GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0);
 						// TODO: do not add this rect above too
 						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
 						t->m_TEX0.TBW = bw;
