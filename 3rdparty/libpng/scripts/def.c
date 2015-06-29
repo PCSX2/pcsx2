@@ -1,7 +1,7 @@
-/* def.dfn - define format of libpng.def
+/* def.c - define format of libpng.def
  *
- * Last changed in libpng version 1.5.7 [December 15, 2011]
- * Copyright (c) 2010-2011 Glenn Randers-Pehrson
+ * Last changed in libpng version 1.6.16 [December 22, 2014]
+ * Copyright (c) 2011-2014 Glenn Randers-Pehrson
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -21,7 +21,7 @@ PNG_DFN "OS2 DESCRIPTION "PNG image compression library""
 PNG_DFN "OS2 CODE PRELOAD MOVEABLE DISCARDABLE"
 PNG_DFN ""
 PNG_DFN "EXPORTS"
-PNG_DFN ";Version 1.6.2"
+PNG_DFN ";Version 1.6.17"
 
 #define PNG_EXPORTA(ordinal, type, name, args, attributes)\
         PNG_DFN "@" SYMBOL_PREFIX "@@" name "@"

@@ -1,5 +1,5 @@
 # makefile for libpng, HPUX (10.20 and 11.00) using the ANSI/C product.
-# Copyright (C) 1999-2002, 2006, 2009, 2010-2011 Glenn Randers-Pehrson
+# Copyright (C) 1999-2002, 2006, 2009, 2010-2014 Glenn Randers-Pehrson
 # Copyright (C) 1995 Guy Eric Schalnat, Group 42
 # contributed by Jim Rice and updated by Chris Schleicher, Hewlett Packard
 #
@@ -34,13 +34,14 @@ CC=cc
 MKDIR_P=mkdir -p
 LN_SF=ln -sf
 RANLIB=ranlib
+CP=cp
 RM_F=/bin/rm -f
 
-CFLAGS=-I$(ZLIBINC) -O -Ae -Wl,+vnocompatwarnings +DD64 \
--D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 +Z -DHAVE_UNISTD_H -DUSE_MMAP
+CPPFLAGS=-I$(ZLIBINC) \
+        -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DHAVE_UNISTD_H -DUSE_MMAP
+CFLAGS=-O -Ae -Wl,+vnocompatwarnings +DD64 +Z
 # Caution: be sure you have built zlib with the same CFLAGS.
-CCFLAGS=-I$(ZLIBINC) -O -Ae -Wl,+vnocompatwarnings +DD64 \
--D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 +Z -DHAVE_UNISTD_H -DUSE_MMAP
+CCFLAGS=-O -Ae -Wl,+vnocompatwarnings +DD64 +Z
 
 LDFLAGS=-L. -L$(ZLIBLIB) -lpng -lz -lm
 
@@ -67,6 +68,10 @@ DI=$(DESTDIR)$(INCPATH)
 DL=$(DESTDIR)$(LIBPATH)
 DM=$(DESTDIR)$(MANPATH)
 
+# Pre-built configuration
+# See scripts/pnglibconf.mak for more options
+PNGLIBCONF_H_PREBUILT = scripts/pnglibconf.h.prebuilt
+
 OBJS = png.o pngset.o pngget.o pngrutil.o pngtrans.o pngwutil.o \
 	pngread.o pngrio.o pngwio.o pngwrite.o pngrtran.o \
 	pngwtran.o pngmem.o pngerror.o pngpread.o
@@ -75,14 +80,16 @@ OBJSDLL = $(OBJS:.o=.pic.o)
 
 .SUFFIXES:	.c .o .pic.o
 
+.c.o:
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
+
 .c.pic.o:
-	$(CC) -c $(CFLAGS) +z -o $@ $*.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) +z -o $@ $*.c
 
 all: libpng.a $(LIBSO) pngtest libpng.pc libpng-config
 
-# see scripts/pnglibconf.mak for more options
-pnglibconf.h: scripts/pnglibconf.h.prebuilt
-	cp scripts/pnglibconf.h.prebuilt $@
+pnglibconf.h: $(PNGLIBCONF_H_PREBUILT)
+	$(CP) $(PNGLIBCONF_H_PREBUILT) $@
 
 libpng.a: $(OBJS)
 	$(AR_RC) $@ $(OBJS)
@@ -99,7 +106,7 @@ libpng-config:
 	( cat scripts/libpng-config-head.in; \
 	echo prefix=\"$(prefix)\"; \
 	echo I_opts=\"-I$(INCPATH)/$(LIBNAME)\"; \
-	echo ccopts=\"-Ae +DA1.1 +DS2.0\"; \
+	echo ccopts=\"-O -Ae -Wl,+vnocompatwarnings +DD64 +Z\"; \
 	echo L_opts=\"-L$(LIBPATH)\"; \
 	echo libs=\"-lpng16 -lz -lm\"; \
 	cat scripts/libpng-config-body.in ) > libpng-config
@@ -179,7 +186,7 @@ install: install-static install-shared install-man install-config
 test-dd:
 	echo
 	echo Testing installed dynamic shared library in $(DL).
-	$(CC) -I$(DI) -I$(ZLIBINC) $(CCFLAGS) \
+	$(CC) -I$(DI) $(CPPFLAGS) $(CCFLAGS) \
 	   `$(BINPATH)/$(LIBNAME)-config --cflags` pngtest.c \
 	   -L$(DL) -L$(ZLIBLIB) \
 	   -o pngtestd `$(BINPATH)/$(LIBNAME)-config --ldflags`
@@ -188,7 +195,7 @@ test-dd:
 test-installed:
 	echo
 	echo Testing installed dynamic shared library.
-	$(CC) $(CCFLAGS) \
+	$(CC) $(CPPFLAGS) $(CCFLAGS) \
 	   `$(BINPATH)/$(LIBNAME)-config --cflags` pngtest.c \
 	   -L$(ZLIBLIB) \
 	   -o pngtesti `$(BINPATH)/$(LIBNAME)-config --ldflags`
@@ -205,20 +212,20 @@ writelock:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-png.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngerror.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngrio.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngwio.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngmem.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngset.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngget.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngread.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngrtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngrutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngtrans.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngwrite.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngwtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngwutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
-pngpread.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
+png.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngerror.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngrio.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngwio.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngmem.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngset.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngget.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngread.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngrtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngrutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngtrans.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngwrite.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngwtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngwutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+pngpread.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
 
 pngtest.o: png.h pngconf.h pnglibconf.h

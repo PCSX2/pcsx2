@@ -1,9 +1,9 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.2 - April 25, 2013
+ * libpng version 1.6.17, March 26, 2015
  *
- * Copyright (c) 1998-2013 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2015 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -11,9 +11,7 @@
  * For conditions of distribution and use, see the disclaimer
  * and license in png.h
  *
- */
-
-/* Any machine specific code is near the front of this file, so if you
+ * Any machine specific code is near the front of this file, so if you
  * are configuring libpng for a machine, you may want to read the section
  * starting here down to where it starts to typedef png_color, png_text,
  * and png_info.
@@ -21,26 +19,6 @@
 
 #ifndef PNGCONF_H
 #define PNGCONF_H
-
-/* To do: Do all of this in scripts/pnglibconf.dfa */
-#ifdef PNG_SAFE_LIMITS_SUPPORTED
-#  ifdef PNG_USER_WIDTH_MAX
-#    undef PNG_USER_WIDTH_MAX
-#    define PNG_USER_WIDTH_MAX 1000000L
-#  endif
-#  ifdef PNG_USER_HEIGHT_MAX
-#    undef PNG_USER_HEIGHT_MAX
-#    define PNG_USER_HEIGHT_MAX 1000000L
-#  endif
-#  ifdef PNG_USER_CHUNK_MALLOC_MAX
-#    undef PNG_USER_CHUNK_MALLOC_MAX
-#    define PNG_USER_CHUNK_MALLOC_MAX 4000000L
-#  endif
-#  ifdef PNG_USER_CHUNK_CACHE_MAX
-#    undef PNG_USER_CHUNK_CACHE_MAX
-#    define PNG_USER_CHUNK_CACHE_MAX 128
-#  endif
-#endif
 
 #ifndef PNG_BUILDING_SYMBOL_TABLE /* else includes may cause problems */
 
@@ -238,6 +216,7 @@
 #      define PNGAPI _stdcall
 #    endif
 #  endif /* compiler/api */
+
   /* NOTE: PNGCBAPI always defaults to PNGCAPI. */
 
 #  if defined(PNGAPI) && !defined(PNG_USER_PRIVATEBUILD)
@@ -360,7 +339,33 @@
    * version 1.2.41.  Disabling these removes the warnings but may also produce
    * less efficient code.
    */
-#  if defined(__GNUC__)
+#  if defined(__clang__) && defined(__has_attribute)
+     /* Clang defines both __clang__ and __GNUC__. Check __clang__ first. */
+#    if !defined(PNG_USE_RESULT) && __has_attribute(__warn_unused_result__)
+#      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
+#    endif
+#    if !defined(PNG_NORETURN) && __has_attribute(__noreturn__)
+#      define PNG_NORETURN __attribute__((__noreturn__))
+#    endif
+#    if !defined(PNG_ALLOCATED) && __has_attribute(__malloc__)
+#      define PNG_ALLOCATED __attribute__((__malloc__))
+#    endif
+#    if !defined(PNG_DEPRECATED) && __has_attribute(__deprecated__)
+#      define PNG_DEPRECATED __attribute__((__deprecated__))
+#    endif
+#    if !defined(PNG_PRIVATE)
+#      ifdef __has_extension
+#        if __has_extension(attribute_unavailable_with_message)
+#          define PNG_PRIVATE __attribute__((__unavailable__(\
+             "This function is not exported by libpng.")))
+#        endif
+#      endif
+#    endif
+#    ifndef PNG_RESTRICT
+#      define PNG_RESTRICT __restrict
+#    endif
+
+#  elif defined(__GNUC__)
 #    ifndef PNG_USE_RESULT
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
 #    endif
@@ -383,12 +388,12 @@
             __attribute__((__deprecated__))
 #        endif
 #      endif
-#      if ((__GNUC__ != 3) || !defined(__GNUC_MINOR__) || (__GNUC_MINOR__ >= 1))
+#      if ((__GNUC__ > 3) || !defined(__GNUC_MINOR__) || (__GNUC_MINOR__ >= 1))
 #        ifndef PNG_RESTRICT
 #          define PNG_RESTRICT __restrict
 #        endif
-#      endif /*  __GNUC__ == 3.0 */
-#    endif /*  __GNUC__ >= 3 */
+#      endif /* __GNUC__.__GNUC_MINOR__ > 3.0 */
+#    endif /* __GNUC__ >= 3 */
 
 #  elif defined(_MSC_VER)  && (_MSC_VER >= 1300)
 #    ifndef PNG_USE_RESULT
@@ -418,7 +423,7 @@
 #    ifndef PNG_RESTRICT
 #      define PNG_RESTRICT __restrict
 #    endif
-#  endif /* _MSC_VER */
+#  endif
 #endif /* PNG_PEDANTIC_WARNINGS */
 
 #ifndef PNG_DEPRECATED
@@ -439,6 +444,7 @@
 #ifndef PNG_RESTRICT
 #  define PNG_RESTRICT    /* The C99 "restrict" feature */
 #endif
+
 #ifndef PNG_FP_EXPORT     /* A floating point API. */
 #  ifdef PNG_FLOATING_POINT_SUPPORTED
 #     define PNG_FP_EXPORT(ordinal, type, name, args)\

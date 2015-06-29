@@ -2,8 +2,8 @@
 #if 0 /* in case someone actually tries to compile this */
 
 /* example.c - an example of using libpng
- * Last changed in libpng 1.6.0 [February 14, 2013]
- * Maintained 1998-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.15 [November 20, 2014]
+ * Maintained 1998-2014 Glenn Randers-Pehrson
  * Maintained 1996, 1997 Andreas Dilger)
  * Written 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  * To the extent possible under law, the authors have waived
@@ -52,7 +52,7 @@ int main(int argc, const char **argv)
       image.version = PNG_IMAGE_VERSION;
 
       /* The first argument is the file to read: */
-      if (png_image_begin_read_from_file(&image, argv[1]))
+      if (png_image_begin_read_from_file(&image, argv[1]) != 0)
       {
          png_bytep buffer;
 
@@ -97,7 +97,7 @@ int main(int argc, const char **argv)
           */
          if (buffer != NULL &&
             png_image_finish_read(&image, NULL/*background*/, buffer,
-               0/*row_stride*/, NULL/*colormap*/))
+               0/*row_stride*/, NULL/*colormap*/) != 0)
          {
             /* Now write the image out to the second argument.  In the write
              * call 'convert_to_8bit' allows 16-bit data to be squashed down to
@@ -105,7 +105,7 @@ int main(int argc, const char **argv)
              * to the 8-bit format.
              */
             if (png_image_write_to_file(&image, argv[2], 0/*convert_to_8bit*/,
-               buffer, 0/*row_stride*/, NULL/*colormap*/))
+               buffer, 0/*row_stride*/, NULL/*colormap*/) != 0)
             {
                /* The image has been written successfully. */
                exit(0);
@@ -188,13 +188,13 @@ int main(int argc, const char **argv)
  *
  * Don't repeatedly convert between the 8-bit and 16-bit forms.  There is
  * significant data loss when 16-bit data is converted to the 8-bit encoding and
- * the current libpng implementation of convertion to 16-bit is also
+ * the current libpng implementation of conversion to 16-bit is also
  * significantly lossy.  The latter will be fixed in the future, but the former
  * is unavoidable - the 8-bit format just doesn't have enough resolution.
  */
 
 /* If your program needs more information from the PNG data it reads, or if you
- * need to do more complex transformations, or minimise transformations, on the
+ * need to do more complex transformations, or minimize transformations, on the
  * data you read, then you must use one of the several lower level libpng
  * interfaces.
  *
@@ -405,7 +405,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    /* Expand paletted or RGB images with transparency to full alpha channels
     * so the data will be available as RGBA quartets.
     */
-   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0)
       png_set_tRNS_to_alpha(png_ptr);
 
    /* Set the background color to draw transparent and alpha images over.
@@ -417,7 +417,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
 
    png_color_16 my_background, *image_background;
 
-   if (png_get_bKGD(png_ptr, info_ptr, &image_background))
+   if (png_get_bKGD(png_ptr, info_ptr, &image_background) != 0)
       png_set_background(png_ptr, image_background,
                          PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
    else
@@ -441,9 +441,9 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    /* If we don't have another value */
    else
    {
-      screen_gamma = 2.2;  /* A good guess for a PC monitor in a dimly
-                              lit room */
-      screen_gamma = 1.7 or 1.0;  /* A good guess for Mac systems */
+      screen_gamma = PNG_DEFAULT_sRGB;  /* A good guess for a PC monitor
+                                           in a dimly lit room */
+      screen_gamma = PNG_GAMMA_MAC_18 or 1.0; /* Good guesses for Mac systems */
    }
 
    /* Tell libpng to handle the gamma conversion for you.  The final call
@@ -454,12 +454,12 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
 
    int intent;
 
-   if (png_get_sRGB(png_ptr, info_ptr, &intent))
-      png_set_gamma(png_ptr, screen_gamma, 0.45455);
+   if (png_get_sRGB(png_ptr, info_ptr, &intent) != 0)
+      png_set_gamma(png_ptr, screen_gamma, PNG_DEFAULT_sRGB);
    else
    {
       double image_gamma;
-      if (png_get_gAMA(png_ptr, info_ptr, &image_gamma))
+      if (png_get_gAMA(png_ptr, info_ptr, &image_gamma) != 0)
          png_set_gamma(png_ptr, screen_gamma, image_gamma);
       else
          png_set_gamma(png_ptr, screen_gamma, 0.45455);
@@ -469,7 +469,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    /* Quantize RGB files down to 8 bit palette or reduce palettes
     * to the number of colors available on your screen.
     */
-   if (color_type & PNG_COLOR_MASK_COLOR)
+   if ((color_type & PNG_COLOR_MASK_COLOR) != 0)
    {
       int num_palette;
       png_colorp palette;
@@ -484,7 +484,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
             MAX_SCREEN_COLORS, NULL, 0);
       }
       /* This reduces the image to the palette supplied in the file */
-      else if (png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette))
+      else if (png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette) != 0)
       {
          png_uint_16p histogram = NULL;
 
@@ -494,7 +494,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
                         max_screen_colors, histogram, 0);
       }
    }
-#endif /* PNG_READ_QUANTIZE_SUPPORTED */
+#endif /* READ_QUANTIZE */
 
    /* Invert monochrome files to have 0 as white and 1 as black */
    png_set_invert_mono(png_ptr);
@@ -503,7 +503,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
     * [0,65535] to the original [0,7] or [0,31], or whatever range the
     * colors were originally in:
     */
-   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT))
+   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT) != 0)
    {
       png_color_8p sig_bit_p;
 
@@ -512,7 +512,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    }
 
    /* Flip the RGB pixels to BGR (or RGBA to BGRA) */
-   if (color_type & PNG_COLOR_MASK_COLOR)
+   if ((color_type & PNG_COLOR_MASK_COLOR) != 0)
       png_set_bgr(png_ptr);
 
    /* Swap the RGBA or GA data to ARGB or AG (or BGRA to ABGR) */
@@ -532,7 +532,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    number_passes = png_set_interlace_handling(png_ptr);
 #else
    number_passes = 1;
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
+#endif /* READ_INTERLACING */
 
 
    /* Optional call to gamma correct and add the background to the palette
@@ -744,7 +744,7 @@ row_callback(png_structp png_ptr, png_bytep new_row,
     * to pass the current row as new_row, and the function will combine
     * the old row and the new row.
     */
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
+#endif /* READ_INTERLACING */
 }
 
 end_callback(png_structp png_ptr, png_infop info)
@@ -932,7 +932,7 @@ void write_png(char *file_name /* , ... other image information ... */)
     */
 
    /* Once we write out the header, the compression type on the text
-    * chunks gets changed to PNG_TEXT_COMPRESSION_NONE_WR or
+    * chunk gets changed to PNG_TEXT_COMPRESSION_NONE_WR or
     * PNG_TEXT_COMPRESSION_zTXt_WR, so it doesn't get written out again
     * at the end.
     */
@@ -970,7 +970,7 @@ void write_png(char *file_name /* , ... other image information ... */)
    png_set_packswap(png_ptr);
 
    /* Turn on interlace handling if you are not using png_write_image() */
-   if (interlacing)
+   if (interlacing != 0)
       number_passes = png_set_interlace_handling(png_ptr);
 
    else

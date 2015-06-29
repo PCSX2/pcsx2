@@ -1,8 +1,8 @@
 
 /* pngmem.c - stub functions for memory allocation
  *
- * Last changed in libpng 1.6.0 [February 14, 2013]
- * Copyright (c) 1998-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.15 [November 20, 2014]
+ * Copyright (c) 1998-2014 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -41,7 +41,7 @@ png_destroy_png_struct(png_structrp png_ptr)
 }
 
 /* Allocate memory.  For reasonable files, size should never exceed
- * 64K.  However, zlib may allocate more then 64K if you don't tell
+ * 64K.  However, zlib may allocate more than 64K if you don't tell
  * it not to.  See zconf.h and png.h for more information.  zlib does
  * need to allocate exactly 64K, so whatever you call here must
  * have the ability to do that.
@@ -73,9 +73,10 @@ png_malloc_base,(png_const_structrp png_ptr, png_alloc_size_t size),
     * to implement a user memory handler.  This checks to be sure it isn't
     * called with big numbers.
     */
-#ifdef PNG_USER_MEM_SUPPORTED
+#ifndef PNG_USER_MEM_SUPPORTED
    PNG_UNUSED(png_ptr)
 #endif
+
    if (size > 0 && size <= PNG_SIZE_MAX
 #     ifdef PNG_MAX_MALLOC_64K
          && size <= 65536U
@@ -95,6 +96,8 @@ png_malloc_base,(png_const_structrp png_ptr, png_alloc_size_t size),
       return NULL;
 }
 
+#if defined(PNG_TEXT_SUPPORTED) || defined(PNG_sPLT_SUPPORTED) ||\
+   defined(PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED)
 /* This is really here only to work round a spurious warning in GCC 4.6 and 4.7
  * that arises because of the checks in png_realloc_array that are repeated in
  * png_malloc_array.
@@ -156,6 +159,7 @@ png_realloc_array,(png_const_structrp png_ptr, png_const_voidp old_array,
 
    return NULL; /* error */
 }
+#endif /* TEXT || sPLT || STORE_UNKNOWN_CHUNKS */
 
 /* Various functions that have different error handling are derived from this.
  * png_malloc always exists, but if PNG_USER_MEM_SUPPORTED is defined a separate
@@ -195,7 +199,7 @@ png_malloc_default,(png_const_structrp png_ptr, png_alloc_size_t size),
 
    return ret;
 }
-#endif /* PNG_USER_MEM_SUPPORTED */
+#endif /* USER_MEM */
 
 /* This function was added at libpng version 1.2.3.  The png_malloc_warn()
  * function will issue a png_warning and return NULL instead of issuing a
@@ -240,7 +244,7 @@ png_free_default,(png_const_structrp png_ptr, png_voidp ptr),PNG_DEPRECATED)
 {
    if (png_ptr == NULL || ptr == NULL)
       return;
-#endif /* PNG_USER_MEM_SUPPORTED */
+#endif /* USER_MEM */
 
    free(ptr);
 }
@@ -273,5 +277,5 @@ png_get_mem_ptr(png_const_structrp png_ptr)
 
    return png_ptr->mem_ptr;
 }
-#endif /* PNG_USER_MEM_SUPPORTED */
-#endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+#endif /* USER_MEM */
+#endif /* READ || WRITE */

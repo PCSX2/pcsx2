@@ -23,14 +23,14 @@
 
 VERMAJ = 1
 VERMIN = 6
-VERMIC = 2
+VERMIC = 17
 VER = $(VERMAJ).$(VERMIN).$(VERMIC)
 NAME = libpng
 PACKAGE = $(NAME)-$(VER)
 
 BIN = libpng16-0.dll
 LIB = libpng16.a libpng16.dll.a libpng.a libpng.dll.a
-INCLUDE = png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h             pnginfo.h pngdebug.h
+INCLUDE = png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
 PC = libpng16.pc libpng.pc
 
 MANIFESTVERBIN = "Libpng-$(VER): Binary files"

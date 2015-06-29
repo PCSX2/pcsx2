@@ -1,9 +1,9 @@
 #!/bin/awk -f
 # scripts/dfn.awk - process a .dfn file
 #
-# last changed in libpng version 1.5.14 - February 4, 2013
+# last changed in libpng version 1.5.19 - August 21, 2014
 #
-# Copyright (c) 2013-2013 Glenn Randers-Pehrson
+# Copyright (c) 2013-2014 Glenn Randers-Pehrson
 #
 # This code is released under the libpng license.
 # For conditions of distribution and use, see the disclaimer
@@ -17,7 +17,7 @@
 BEGIN{
    out="/dev/null"       # as a flag
    out_count=0           # count of output lines
-   err=0                 # set if an error occured
+   err=0                 # set if an error occurred
    sort=0                # sort the output
    array[""]=""
 }
@@ -25,7 +25,7 @@ BEGIN{
 # The output file must be specified before any input:
 NR==1 && out == "/dev/null" {
    print "out=output.file must be given on the command line"
-   # but continue without setting the error code, this allows the
+   # but continue without setting the error code; this allows the
    # script to be checked easily
 }
 
@@ -61,14 +61,14 @@ $1 ~ /^PNG_DFN_END_SORT/{
 }
 
 /^[^"]*PNG_DFN *".*"[^"]*$/{
-   # A definition line, apparently correctly formated, extract the
+   # A definition line, apparently correctly formatted; extract the
    # definition then replace any doubled "" that remain with a single
    # double quote.  Notice that the original doubled double quotes
    # may have been split by tokenization
    #
-   # Sometimes GCC splits the PNG_DFN lines, we know this has happened
+   # Sometimes GCC splits the PNG_DFN lines; we know this has happened
    # if the quotes aren't closed and must read another line.  In this
-   # case it is essential to reject lines that start '#' because those
+   # case it is essential to reject lines that start with '#' because those
    # are introduced #line directives.
    orig=$0
    line=$0
@@ -126,13 +126,13 @@ $1 ~ /^PNG_DFN_END_SORT/{
          else while (1) {
             if (getline nextline) {
                # If the line starts with '#' it is a preprocesor line directive
-               # from cc -E, skip it:
+               # from cc -E; skip it:
                if (nextline !~ /^#/) {
                   line = line " " nextline
                   break
                }
             } else {
-               # This is end-of-input - probably a missig "@ on the first line:
+               # This is end-of-input - probably a missing "@ on the first line:
                print "line", lineno ": unbalanced @\" ... \"@ pair"
                err=1
                next
@@ -144,7 +144,7 @@ $1 ~ /^PNG_DFN_END_SORT/{
       }
 
       # Attempt to remove a trailing " (not preceded by '@') - if this can
-      # be done stop now, if not assume a split line again
+      # be done, stop now; if not assume a split line again
       if (sub(/"[^"]*$/, "", line))
          break
 
@@ -189,7 +189,7 @@ $1 ~ /^PNG_DFN_END_SORT/{
 }
 
 /PNG_DFN/{
-   print "line", NR, "incorrectly formated PNG_DFN line:"
+   print "line", NR, "incorrectly formatted PNG_DFN line:"
    print $0
    err = 1
 }

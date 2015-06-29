@@ -2,7 +2,7 @@
 <!--
  * zlib.props - location of zlib source
  *
- * libpng version 1.6.2 - April 25, 2013
+ * libpng version 1.6.17 - March 26, 2015
  *
  * Copyright (c) 1998-2011 Glenn Randers-Pehrson
  *
@@ -24,7 +24,7 @@
 	 source.
 
 	 If you use a relative directory name (as below) then it must be
-	 relative to the project directories; these are one level deepers than
+	 relative to the project directories; these are one level deeper than
 	 the directories containing this file.
 
 	 If the version of zlib you use does not match that used when the
@@ -32,7 +32,7 @@
 	 versions do not match.  The zlib version used in this build is recorded
 	 below:
      -->
-    <ZLibSrcDir>..\..\..\..\zlib-1.2.5</ZLibSrcDir>
+    <ZLibSrcDir>..\..\..\..\zlib-1.2.8</ZLibSrcDir>
 
     <!-- The following line allows compilation for an ARM target with Visual
          Studio 2012.  Notice that this is not supported by the Visual Studio

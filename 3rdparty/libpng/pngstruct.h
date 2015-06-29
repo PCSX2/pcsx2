@@ -1,11 +1,10 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
+ * Last changed in libpng 1.6.1 [March 28, 2013]
  * Copyright (c) 1998-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
- *
- * Last changed in libpng 1.6.1 [March 28, 2013]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -101,7 +100,7 @@ typedef struct png_XYZ
 #endif /* COLORSPACE */
 
 #if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
-/* A colorspace is all the above plus, potentially, profile information,
+/* A colorspace is all the above plus, potentially, profile information;
  * however at present libpng does not use the profile internally so it is only
  * stored in the png_info struct (if iCCP is supported.)  The rendering intent
  * is retained here and is checked.
@@ -274,7 +273,7 @@ struct png_struct_def
 #ifdef PNG_READ_GAMMA_SUPPORTED
    png_color_16 background_1; /* background normalized to gamma 1.0 */
 #endif
-#endif /* PNG_bKGD_SUPPORTED */
+#endif /* bKGD */
 
 #ifdef PNG_WRITE_FLUSH_SUPPORTED
    png_flush_ptr output_flush_fn; /* Function for flushing output */
@@ -331,7 +330,7 @@ struct png_struct_def
    int process_mode;                 /* what push library is currently doing */
    int cur_palette;                  /* current push library palette index */
 
-#endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
+#endif /* PROGRESSIVE_READ */
 
 #if defined(__TURBOC__) && !defined(_Windows) && !defined(__FLAT__)
 /* For the Borland special 64K segment handler */

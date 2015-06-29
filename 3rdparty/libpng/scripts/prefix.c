@@ -1,8 +1,8 @@
 
-/* prefix.dfn - generate an unprefixed symbol list
+/* prefix.c - generate an unprefixed symbol list
  *
- * Last changed in libpng version 1.6.0 [January 30, 2012]
- * Copyright (c) 2012 Glenn Randers-Pehrson
+ * Last changed in libpng version 1.6.16 [December 22, 2014]
+ * Copyright (c) 2013-2014 Glenn Randers-Pehrson
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer

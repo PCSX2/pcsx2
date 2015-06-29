@@ -1,8 +1,8 @@
 
-/* vers.dfn - define format of libpng.vers
+/* vers.c - define format of libpng.vers
  *
- * Last changed in libpng version 1.5.0 [January 6, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng version 1.6.16 [December 22, 2014]
+ * Copyright (c) 2011-2014 Glenn Randers-Pehrson
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer

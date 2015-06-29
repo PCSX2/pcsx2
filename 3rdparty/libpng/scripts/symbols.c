@@ -1,8 +1,8 @@
 
-/* symbols.dfn - find all exported symbols
+/* symbols.c - find all exported symbols
  *
- * Last changed in libpng version 1.5.0 [January 6, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng version 1.6.16 [December 22, 2014]
+ * Copyright (c) 2011-2014 Glenn Randers-Pehrson
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -11,9 +11,9 @@
 
 /* NOTE: making 'symbols.chk' checks both that the exported
  * symbols in the library don't change and (implicitly) that
- * scripts/pnglibconf.h.prebuilt is as expected.  If scripts/pnglibconf.h.prebuilt
- * is remade using scripts/pnglibconf.dfa then this checks the
- * .dfa file too.
+ * scripts/pnglibconf.h.prebuilt is as expected.
+ * If scripts/pnglibconf.h.prebuilt is remade using
+ * scripts/pnglibconf.dfa then this checks the .dfa file too.
  */
 
 #define PNG_EXPORTA(ordinal, type, name, args, attributes)\
