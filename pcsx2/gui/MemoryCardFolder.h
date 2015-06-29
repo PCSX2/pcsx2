@@ -19,6 +19,7 @@
 #include <wx/dir.h>
 #include <wx/ffile.h>
 #include <map>
+#include <vector>
 
 #include "PluginCallbacks.h"
 #include "AppConfig.h"
@@ -151,6 +152,13 @@ struct MemoryCardPage {
 	u8 raw[PageSize];
 };
 #pragma pack(pop)
+
+struct MemoryCardFileEntryTreeNode {
+	MemoryCardFileEntry entry;
+	std::vector<MemoryCardFileEntryTreeNode> subdir;
+
+	MemoryCardFileEntryTreeNode( const MemoryCardFileEntry& entry ) : entry(entry) {}
+};
 
 // --------------------------------------------------------------------------------------
 //  MemoryCardFileMetadataReference
@@ -417,8 +425,23 @@ protected:
 	// flush a directory's file entries and all its subdirectories to the internal data
 	void FlushFileEntries( const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"", MemoryCardFileMetadataReference* parent = nullptr );
 
+	// "delete" (prepend '_pcsx2_deleted_' to) any files that exist in oldFileEntries but no longer exist in m_fileEntryDict
+	void FlushDeletedFiles( const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries );
+
+	// recursive worker method of the above
+	// - newCluster: Current directory dotdir cluster of the new entries.
+	// - newFileCount: Number of file entries in the new directory.
+	// - dirPath: Path to the current directory relative to the root of the memcard. Must be identical for both entries.
+	void FlushDeletedFiles( const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries, const u32 newCluster, const u32 newFileCount, const wxString& dirPath );
+
 	// write data as Save() normally would, but ignore the cache; used for flushing
 	s32 WriteWithoutCache( const u8 *src, u32 adr, int size );
+
+	// copies the contents of m_fileEntryDict into the tree structure fileEntryTree
+	void CopyEntryDictIntoTree( std::vector<MemoryCardFileEntryTreeNode>* fileEntryTree, const u32 cluster, const u32 fileCount );
+
+	// find equivalent (same name and type) of searchEntry in m_fileEntryDict in the directory indicated by cluster
+	const MemoryCardFileEntry* FindEquivalent( const MemoryCardFileEntry* searchEntry, const u32 cluster, const u32 fileCount );
 
 	void SetTimeLastReadToNow();
 	void SetTimeLastWrittenToNow();

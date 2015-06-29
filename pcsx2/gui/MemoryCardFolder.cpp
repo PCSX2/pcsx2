@@ -24,6 +24,8 @@
 
 #include "svnrev.h"
 
+bool RemoveDirectory( const wxString& dirname );
+
 FolderMemoryCard::FolderMemoryCard() {
 	m_slot = 0;
 	m_isEnabled = false;
@@ -805,15 +807,21 @@ s32 FolderMemoryCard::Save( const u8 *src, u32 adr, int size ) {
 void FolderMemoryCard::NextFrame() {
 	if ( m_framesUntilFlush > 0 && --m_framesUntilFlush == 0 ) {
 		Flush();
-		m_lastAccessedFile.Close();
 	}
 }
 
 void FolderMemoryCard::Flush() {
+	m_lastAccessedFile.Close();
 	if ( m_cache.empty() ) { return; }
 
 	Console.WriteLn( L"(FolderMcd) Writing data for slot %u to file system...", m_slot );
 	const u64 timeFlushStart = wxGetLocalTimeMillis().GetValue();
+
+	// Keep a copy of the old file entries so we can figure out which files and directories, if any, have been deleted from the memory card.
+	std::vector<MemoryCardFileEntryTreeNode> oldFileEntryTree;
+	if ( IsFormatted() ) {
+		CopyEntryDictIntoTree( &oldFileEntryTree, m_superBlock.data.rootdir_cluster, m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0].entry.data.length );
+	}
 
 	// first write the superblock if necessary
 	FlushBlock( 0 );
@@ -850,6 +858,9 @@ void FolderMemoryCard::Flush() {
 
 	// then all directory and file entries
 	FlushFileEntries();
+
+	// Now we have the new file system, compare it to the old one and "delete" any files that were in it before but aren't anymore.
+	FlushDeletedFiles( oldFileEntryTree );
 
 	// and finally, flush everything that hasn't been flushed yet
 	for ( uint i = 0; i < pageCount; ++i ) {
@@ -944,6 +955,46 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 	}
 }
 
+void FolderMemoryCard::FlushDeletedFiles( const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries ) {
+	const u32 newRootDirCluster = m_superBlock.data.rootdir_cluster;
+	const u32 newFileCount = m_fileEntryDict[newRootDirCluster].entries[0].entry.data.length;
+	wxString path = L"";
+	FlushDeletedFiles( oldFileEntries, newRootDirCluster, newFileCount, path );
+}
+
+void FolderMemoryCard::FlushDeletedFiles( const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries, const u32 newCluster, const u32 newFileCount, const wxString& dirPath ) {
+	// go through all file entires of the current directory of the old data
+	for ( auto it = oldFileEntries.cbegin(); it != oldFileEntries.cend(); ++it ) {
+		const MemoryCardFileEntry* entry = &it->entry;
+		if ( entry->IsValid() && entry->IsUsed() && !entry->IsDotDir() ) {
+			// check if an equivalent entry exists in m_fileEntryDict
+			const MemoryCardFileEntry* newEntry = FindEquivalent( entry, newCluster, newFileCount );
+			if ( newEntry == nullptr ) {
+				// file/dir doesn't exist anymore, remove!
+				char cleanName[sizeof( entry->entry.data.name )];
+				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+				FileAccessHelper::CleanMemcardFilename( cleanName );
+				const wxString fileName = wxString::FromAscii( cleanName );
+				const wxString filePath = m_folderName.GetFullPath() + dirPath + L"/" + fileName;
+				const wxString newFilePath = m_folderName.GetFullPath() + dirPath + L"/_pcsx2_deleted_" + fileName;
+				if ( wxFileName::DirExists( newFilePath ) ) {
+					// wxRenameFile doesn't overwrite directories, so we have to remove the old one first
+					RemoveDirectory( newFilePath );
+				}
+				wxRenameFile( filePath, newFilePath );
+			} else if ( entry->IsDir() ) {
+				// still exists and is a directory, recursive call for subdir
+				char cleanName[sizeof( entry->entry.data.name )];
+				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+				FileAccessHelper::CleanMemcardFilename( cleanName );
+				const wxString subDirName = wxString::FromAscii( cleanName );
+				const wxString subDirPath = dirPath + L"/" + subDirName;
+				FlushDeletedFiles( it->subdir, newEntry->entry.data.cluster, newEntry->entry.data.length, subDirPath );
+			}
+		}
+	}
+}
+
 s32 FolderMemoryCard::WriteWithoutCache( const u8 *src, u32 adr, int size ) {
 	const u32 block = adr / BlockSizeRaw;
 	const u32 cluster = adr / ClusterSizeRaw;
@@ -1029,6 +1080,54 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	}
 
 	return false;
+}
+
+void FolderMemoryCard::CopyEntryDictIntoTree( std::vector<MemoryCardFileEntryTreeNode>* fileEntryTree, const u32 cluster, const u32 fileCount ) {
+	const MemoryCardFileEntryCluster* entryCluster = &m_fileEntryDict[cluster];
+	u32 fileCluster = cluster;
+
+	for ( size_t i = 0; i < fileCount; ++i ) {
+		const MemoryCardFileEntry* entry = &entryCluster->entries[i % 2];
+
+		if ( entry->IsValid() && entry->IsUsed() ) {
+			fileEntryTree->emplace_back( *entry );
+
+			if ( entry->IsDir() && !entry->IsDotDir() ) {
+				MemoryCardFileEntryTreeNode* treeEntry = &fileEntryTree->back();
+				CopyEntryDictIntoTree( &treeEntry->subdir, entry->entry.data.cluster, entry->entry.data.length );
+			}
+		}
+
+		if ( i % 2 == 1 ) {
+			fileCluster = m_fat.data[0][0][fileCluster] & 0x7FFFFFFFu;
+			if ( fileCluster == 0x7FFFFFFFu ) { return; }
+			entryCluster = &m_fileEntryDict[fileCluster];
+		}
+	}
+}
+
+const MemoryCardFileEntry* FolderMemoryCard::FindEquivalent( const MemoryCardFileEntry* searchEntry, const u32 cluster, const u32 fileCount ) {
+	const MemoryCardFileEntryCluster* entryCluster = &m_fileEntryDict[cluster];
+	u32 fileCluster = cluster;
+
+	for ( size_t i = 0; i < fileCount; ++i ) {
+		const MemoryCardFileEntry* entry = &entryCluster->entries[i % 2];
+
+		if ( entry->IsValid() && entry->IsUsed() ) {
+			if ( entry->IsFile() == searchEntry->IsFile() && entry->IsDir() == searchEntry->IsDir()
+			  && strncmp( (const char*)searchEntry->entry.data.name, (const char*)entry->entry.data.name, sizeof( entry->entry.data.name ) ) == 0 ) {
+				return entry;
+			}
+		}
+
+		if ( i % 2 == 1 ) {
+			fileCluster = m_fat.data[0][0][fileCluster] & 0x7FFFFFFFu;
+			if ( fileCluster == 0x7FFFFFFFu ) { return nullptr; }
+			entryCluster = &m_fileEntryDict[fileCluster];
+		}
+	}
+
+	return nullptr;
 }
 
 s32 FolderMemoryCard::EraseBlock( u32 adr ) {
