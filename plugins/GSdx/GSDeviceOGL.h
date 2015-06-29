@@ -504,6 +504,7 @@ class GSDeviceOGL : public GSDevice
 		GSDepthStencilOGL* dss;
 		GSDepthStencilOGL* dss_write;
 		GSBlendStateOGL* bs;
+		GSUniformBufferOGL* cb;
 	} m_convert;
 
 	struct {

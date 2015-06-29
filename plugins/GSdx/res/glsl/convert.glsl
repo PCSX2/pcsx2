@@ -70,6 +70,11 @@ layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 layout(binding = 0) uniform sampler2D TextureSampler;
 #endif
 
+layout(std140, binding = 15) uniform cb15
+{
+    ivec4 ScalingFactor;
+};
+
 vec4 sample_c()
 {
     return texture(TextureSampler, PSin_t );
@@ -199,6 +204,15 @@ void ps_main13()
 #ifdef ps_main14
 void ps_main14()
 {
+
+    // Potential speed optimization. There is a high probability that
+    // game only want to extract a single channel (blue). It will allow
+    // to remove most of the conditional operation and yield a +2/3 fps
+    // boost on MGS3
+    //
+    // Hypothesis wrong in Prince of Persia ... Seriously WTF !
+//#define ONLY_BLUE;
+
     // Convert a RGBA texture into a 8 bits packed texture
     // Input column: 8x2 RGBA pixels
     // 0: 8 RGBA
@@ -208,7 +222,6 @@ void ps_main14()
     // 1: 8 R | 8 B
     // 2: 8 G | 8 A
     // 3: 8 G | 8 A
-
     float c;
 
     uvec2 sel = uvec2(gl_FragCoord.xy) % uvec2(16u, 16u);
@@ -218,15 +231,20 @@ void ps_main14()
     int txN  = tb.x | (int(gl_FragCoord.x) & 7);
     int txH  = tb.x | ((int(gl_FragCoord.x) + 4) & 7);
 
+    txN *= ScalingFactor.x;
+    txH *= ScalingFactor.x;
+    ty  *= ScalingFactor.y;
+
+    // TODO investigate texture gather
     vec4 cN = texelFetch(TextureSampler, ivec2(txN, ty), 0);
     vec4 cH = texelFetch(TextureSampler, ivec2(txH, ty), 0);
 
-    // Potential speed optimization. There is a high probability that
-    // game only want to extract a single channel (blue). It will allow
-    // to remove the sel.x condition check
 
     if ((sel.y & 4u) == 0u) {
         // Column 0 and 2
+#ifdef ONLY_BLUE
+        c = cN.b;
+#else
         if ((sel.y & 3u) < 2u) {
             // first 2 lines of the col
             if (sel.x < 8u)
@@ -239,7 +257,11 @@ void ps_main14()
             else
                 c = cH.a;
         }
+#endif
     } else {
+#ifdef ONLY_BLUE
+        c = cH.b;
+#else
         // Column 1 and 3
         if ((sel.y & 3u) < 2u) {
             // first 2 lines of the col
@@ -253,6 +275,7 @@ void ps_main14()
             else
                 c = cN.a;
         }
+#endif
     }
 
 
