@@ -660,10 +660,23 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	// ----------------------------------------------------------------------------
 	catch( Exception::PluginOpenError& ex )
 	{
-		// Should need to do much here -- all systems should be in an inert and (sorta safe!) state.
-		
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginInitErrorEvent(ex) );
+		// It might be possible for there to be no GS Frame, but I don't really know. This does
+		// prevent PCSX2 from locking up on a Windows wxWidgets 3.0 build. My conjecture is this:
+		// 1. Messagebox appears
+		// 2. Either a close or hide signal for gsframe gets sent to messagebox.
+		// 3. Message box hides itself without exiting the modal event loop, therefore locking up
+		// PCSX2. This probably happened in the BIOS error case above as well.
+		// So the idea is to explicitly close the gsFrame before the modal MessageBox appears and
+		// intercepts the close message. Only for wx3.0 though - it sometimes breaks linux wx2.8.
+#if wxMAJOR_VERSION >= 3
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->Close();
+#endif
+		Console.Error(ex.FormatDiagnosticMessage());
+
+		// Make sure it terminates properly for nogui users.
+		if (wxGetApp().HasGUI())
+			AddIdleEvent(PluginInitErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::PluginInitError& ex )
