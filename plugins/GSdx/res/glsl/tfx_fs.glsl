@@ -661,14 +661,17 @@ void ps_blend(inout vec4 c, in float As)
 	c.rgb = clamp(c.rgb, vec3(0.0f), vec3(1.0f));
 #endif
 
+    // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+    // GS: Color = 1, Alpha = 255 => output 1
+    // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DFMT == FMT_16
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 
 	// Basically we want to do 'c.rgb &= 0xF8' in denormalized mode
-	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xF8)) / 255.0f;
+	c.rgb = vec3(uvec3(c.rgb * 255.0f) & uvec3(0xF8)) / 255.0f;
 #elif PS_COLCLIP == 3
 	// Basically we want to do 'c.rgb &= 0xFF' in denormalized mode
-	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xFF)) / 255.0f;
+	c.rgb = vec3(uvec3(c.rgb * 255.0f) & uvec3(0xFF)) / 255.0f;
 #endif
 
 	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
