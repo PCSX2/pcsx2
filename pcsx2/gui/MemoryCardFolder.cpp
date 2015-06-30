@@ -316,7 +316,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				}
 
 				// make sure we have enough space on the memcard for the directory
-				const u32 newNeededClusters = ( dirEntry->entry.data.length % 2 ) == 0 ? 2 : 1;
+				const u32 newNeededClusters = CalculateRequiredClustersOfDirectory( dirPath + L"/" + fileName ) + ( ( dirEntry->entry.data.length % 2 ) == 0 ? 1 : 0 );
 				if ( newNeededClusters > GetAmountFreeDataClusters() ) {
 					Console.Warning( GetCardFullMessage( fileName ) );
 					hasNext = dir.GetNext( &fileName );
@@ -452,6 +452,39 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 	dirEntry->entry.data.length++;
 
 	return true;
+}
+
+u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory( const wxString& dirPath ) {
+	const u32 clusterSize = m_superBlock.data.pages_per_cluster * m_superBlock.data.page_len;
+	u32 requiredFileEntryPages = 2;
+	u32 requiredClusters = 0;
+
+	wxDir dir( dirPath );
+	wxString fileName;
+	bool hasNext = dir.GetFirst( &fileName );
+	while ( hasNext ) {
+		if ( fileName.StartsWith( L"_pcsx2_" ) ) {
+			hasNext = dir.GetNext( &fileName );
+			continue;
+		}
+
+		++requiredFileEntryPages;
+		wxFileName file( dirPath, fileName );
+		wxString path = file.GetFullPath();
+		bool isFile = wxFile::Exists( path );
+
+		if ( isFile ) {
+			const u32 filesize = file.GetSize().GetValue();
+			const u32 countClusters = ( filesize % clusterSize ) != 0 ? ( filesize / clusterSize + 1 ) : ( filesize / clusterSize );
+			requiredClusters += countClusters;
+		} else {
+			requiredClusters += CalculateRequiredClustersOfDirectory( path );
+		}
+
+		hasNext = dir.GetNext( &fileName );
+	}
+
+	return requiredClusters + requiredFileEntryPages / 2 + ( requiredFileEntryPages % 2 == 0 ? 0 : 1 );
 }
 
 MemoryCardFileMetadataReference* FolderMemoryCard::AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent ) {

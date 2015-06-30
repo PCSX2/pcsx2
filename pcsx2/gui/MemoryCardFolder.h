@@ -357,6 +357,9 @@ protected:
 	// - parent: pointer to the parent dir's quick-access reference element
 	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent = nullptr );
 
+	// calculates the amount of clusters a directory would use up if put into a memory card
+	u32 CalculateRequiredClustersOfDirectory( const wxString& dirPath );
+
 
 	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
 	void AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
