@@ -1301,10 +1301,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\3rdparty\wxWidgets\include\wx\msw\wx.rc">
+    <ResourceCompile Include="..\wxResources.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\wxResources.rc">
+    <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
   </ItemGroup>

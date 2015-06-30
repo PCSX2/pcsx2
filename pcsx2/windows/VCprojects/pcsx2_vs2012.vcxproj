@@ -883,11 +883,7 @@
     <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\3rdparty\wxWidgets\include\wx\msw\wx.rc">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
+    <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc" />
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -899,17 +895,14 @@
       <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_adv_vs2012.vcxproj">
-      <Project>{0e231fb1-f3c9-4724-accb-de8bcb3c089e}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_adv_vs2012.vcxproj">
+      <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_base_vs2012.vcxproj">
-      <Project>{48ad7e0a-25b1-4974-a1e3-03f8c438d34f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base_vs2012.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_core_vs2012.vcxproj">
-      <Project>{0318ba30-ef48-441a-9e10-dc85efae39f0}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core_vs2012.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\zlib\zlib_vs2012.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
