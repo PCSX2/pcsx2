@@ -941,6 +941,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		//
 		// FIXME: The scaling will create a bad offset. For example if texture coordinate start at 0.5 (pixel 0)
 		// At 2x it will become 0.5/128 * 256 = 1 (pixel 1)
+		// I think it is the purpose of the UserHacks_HalfPixelOffset below. However implementation is less
+		// than ideal.
+		// 1/ It suppose games have an half pixel offset on texture coordinate which could be wrong
+		// 2/ It doesn't support rescaling of the RT (tw = 1024)
+		// Maybe it will be more easy to just round the UV value in the Vertex Shader
 
 		if (!is_8bits) {
 			// 8 bits handling is special due to unscaling. It is better to not execute this code
