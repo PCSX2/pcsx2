@@ -391,8 +391,7 @@ namespace GLLoader {
 		}
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
-		fprintf(stderr, "Supported Opengl version: %s on GPU: %s. Vendor: %s\n", s, glGetString(GL_RENDERER), vendor);
-		fprintf(stderr, "Note: the maximum version supported by GSdx is 3.3 (even if you driver supports more)!\n");
+		fprintf(stderr, "OpenGL information. GPU: %s. Vendor: %s\n", glGetString(GL_RENDERER), vendor);
 
 		// Name change but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
@@ -401,10 +400,14 @@ namespace GLLoader {
 			nvidia_buggy_driver = true;
 		if (strstr(vendor, "Intel"))
 			intel_buggy_driver = true;
-		if (strstr(vendor, "X.Org") || strstr(vendor, "nouveau")) // Note: it might actually catch nouveau too, but bug are likely to be the same anyway
+		if (strstr(vendor, "X.Org") || strstr(vendor, "nouveau")) // Note: it might actually catch nouveau too, but bugs are likely to be the same anyway
 			mesa_amd_buggy_driver = true;
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
+#ifdef _WINDOWS
+		if (intel_buggy_driver)
+			return false; // too much buggy no need to check anything.
+#endif
 
 		GLuint dot = 0;
 		while (s[dot] != '\0' && s[dot] != '.') dot++;
@@ -422,7 +425,7 @@ namespace GLLoader {
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
 		if ( (major_gl < major) || ( major_gl == major && minor_gl < minor ) ) {
-			fprintf(stderr, "OpenGL %d.%d is not supported\n", major, minor);
+			fprintf(stderr, "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
 			return false;
 		}
 
@@ -517,10 +520,10 @@ namespace GLLoader {
 		}
 
 		if (!found_GL_ARB_texture_barrier) {
-			if (theApp.GetConfig("accurate_blend", 1)) {
-				fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver so you can't enable accurate_blend! Sorry.\n");
-				theApp.SetConfig("accurate_blend", 0);
-			}
+			fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. Accurate options will be disabled! Sorry!\n");
+			theApp.SetConfig("accurate_blend", 0);
+			theApp.SetConfig("accurate_colclip", 0);
+			theApp.SetConfig("accurate_fbmask", 0);
 		}
 
 		fprintf(stderr, "\n");
