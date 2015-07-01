@@ -86,8 +86,8 @@ EXPORT_C_(const char*) PS2EgetLibName()
 
 EXPORT_C_(uint32) PS2EgetLibVersion2(uint32 type)
 {
-	const uint32 revision = 0;
-	const uint32 build = 1;
+	const uint32 revision = 1;
+	const uint32 build = 0;
 
 	return (build << 0) | (revision << 8) | (PS2E_GS_VERSION << 16) | (PLUGIN_VERSION << 24);
 }
@@ -194,13 +194,6 @@ EXPORT_C GSclose()
 
 static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 {
-	// I really don't know the impact on windows! It could work
-#ifdef __linux__
-	if (theApp.GetConfig("enable_nvidia_multi_thread", 1)) {
-		setenv("__GL_THREADED_OPTIMIZATIONS", "1", 0);
-	}
-#endif
-
 	GSDevice* dev = NULL;
 
 	if(renderer == -1)

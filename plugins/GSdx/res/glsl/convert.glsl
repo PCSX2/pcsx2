@@ -70,6 +70,11 @@ layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 layout(binding = 0) uniform sampler2D TextureSampler;
 #endif
 
+layout(std140, binding = 15) uniform cb15
+{
+    ivec4 ScalingFactor;
+};
+
 vec4 sample_c()
 {
     return texture(TextureSampler, PSin_t );
@@ -180,6 +185,101 @@ void ps_main12()
 	// FIXME: I'm afraid of the accuracy
 	const vec4 bitSh = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0) * vec4(255.0/256.0);
 	gl_FragDepth = dot(sample_c(), bitSh);
+}
+#endif
+
+#ifdef ps_main13
+out float gl_FragDepth;
+void ps_main13()
+{
+	// Same as above but without the alpha channel
+
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const vec4 bitSh = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 0.0) * vec4(255.0/256.0);
+	gl_FragDepth = dot(sample_c(), bitSh);
+}
+#endif
+
+#ifdef ps_main14
+void ps_main14()
+{
+
+    // Potential speed optimization. There is a high probability that
+    // game only want to extract a single channel (blue). It will allow
+    // to remove most of the conditional operation and yield a +2/3 fps
+    // boost on MGS3
+    //
+    // Hypothesis wrong in Prince of Persia ... Seriously WTF !
+//#define ONLY_BLUE;
+
+    // Convert a RGBA texture into a 8 bits packed texture
+    // Input column: 8x2 RGBA pixels
+    // 0: 8 RGBA
+    // 1: 8 RGBA
+    // Output column: 16x4 Index pixels
+    // 0: 8 R | 8 B
+    // 1: 8 R | 8 B
+    // 2: 8 G | 8 A
+    // 3: 8 G | 8 A
+    float c;
+
+    uvec2 sel = uvec2(gl_FragCoord.xy) % uvec2(16u, 16u);
+    ivec2 tb  = ((ivec2(gl_FragCoord.xy) & ~ivec2(15, 3)) >> 1u);
+
+    int ty   = tb.y | (int(gl_FragCoord.y) & 1);
+    int txN  = tb.x | (int(gl_FragCoord.x) & 7);
+    int txH  = tb.x | ((int(gl_FragCoord.x) + 4) & 7);
+
+    txN *= ScalingFactor.x;
+    txH *= ScalingFactor.x;
+    ty  *= ScalingFactor.y;
+
+    // TODO investigate texture gather
+    vec4 cN = texelFetch(TextureSampler, ivec2(txN, ty), 0);
+    vec4 cH = texelFetch(TextureSampler, ivec2(txH, ty), 0);
+
+
+    if ((sel.y & 4u) == 0u) {
+        // Column 0 and 2
+#ifdef ONLY_BLUE
+        c = cN.b;
+#else
+        if ((sel.y & 3u) < 2u) {
+            // first 2 lines of the col
+            if (sel.x < 8u)
+                c = cN.r;
+            else
+                c = cN.b;
+        } else {
+            if (sel.x < 8u)
+                c = cH.g;
+            else
+                c = cH.a;
+        }
+#endif
+    } else {
+#ifdef ONLY_BLUE
+        c = cH.b;
+#else
+        // Column 1 and 3
+        if ((sel.y & 3u) < 2u) {
+            // first 2 lines of the col
+            if (sel.x < 8u)
+                c = cH.r;
+            else
+                c = cH.b;
+        } else {
+            if (sel.x < 8u)
+                c = cN.g;
+            else
+                c = cN.a;
+        }
+#endif
+    }
+
+
+    SV_Target0 = vec4(c);
 }
 #endif
 

@@ -28,6 +28,14 @@
 
 #pragma pack(push, 1)
 
+class ConvertConstantBuffer
+{
+public:
+	GSVector4i ScalingFactor;
+
+	ConvertConstantBuffer() {memset(this, 0, sizeof(*this));}
+};
+
 class MergeConstantBuffer
 {
 public:

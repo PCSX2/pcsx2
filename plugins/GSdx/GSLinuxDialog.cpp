@@ -295,22 +295,23 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", true);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
 	GtkWidget* acc_cclip_check  = CreateCheckBox("Accurate Color Clipping", "accurate_colclip", false);
-
-	GtkWidget* MT_nvidia_check   = CreateCheckBox("Nvidia Multi-Thread support", "enable_nvidia_multi_thread", true);
+	GtkWidget* acc_fbmsk_check  = CreateCheckBox("Accurate FrameBuffer Mask", "accurate_fbmask", false);
+	GtkWidget* tc_depth_check   = CreateCheckBox("Full Depth Emulation", "texture_cache_depth", true);
 
 	// Some helper string
 	gtk_widget_set_tooltip_text(paltex_check, dialog_message(IDC_PALTEX));
 	gtk_widget_set_tooltip_text(acc_blend_check, dialog_message(IDC_ACCURATE_BLEND));
 	gtk_widget_set_tooltip_text(acc_date_check, dialog_message(IDC_ACCURATE_DATE));
 	gtk_widget_set_tooltip_text(acc_cclip_check, dialog_message(IDC_ACCURATE_COLCLIP));
-	gtk_widget_set_tooltip_text(MT_nvidia_check, "Huge speedup on Nvidia binary driver! No effect otherwise.");
+	gtk_widget_set_tooltip_text(acc_fbmsk_check, dialog_message(IDC_ACCURATE_FBMASK));
 	gtk_widget_set_tooltip_text(crc_label, dialog_message(IDC_CRC_LEVEL));
 	gtk_widget_set_tooltip_text(crc_combo_box, dialog_message(IDC_CRC_LEVEL));
+	gtk_widget_set_tooltip_text(tc_depth_check, dialog_message(IDC_TC_DEPTH));
 
 	s_table_line = 0;
-	InsertWidgetInTable(hw_table, paltex_check, MT_nvidia_check);
+	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
 	InsertWidgetInTable(hw_table, acc_blend_check, acc_date_check);
-	InsertWidgetInTable(hw_table, acc_cclip_check);
+	InsertWidgetInTable(hw_table, acc_cclip_check, acc_fbmsk_check);
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
 	InsertWidgetInTable(hw_table, crc_label, crc_combo_box);
@@ -352,11 +353,12 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads", 0);
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
+	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
 	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
 
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
-	InsertWidgetInTable(sw_table , aa_check);
+	InsertWidgetInTable(sw_table , aa_check, mipmap_check);
 	InsertWidgetInTable(sw_table , spin_thread_check , spin_thread_check);
 }
 

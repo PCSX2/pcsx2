@@ -161,7 +161,7 @@ GSTexture* GSRendererHW::GetOutput(int i)
 
 	GSTexture* t = NULL;
 
-	if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height))
+	if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GetFrameRect(i).bottom))
 	{
 		t = rt->m_texture;
 
@@ -334,12 +334,18 @@ void GSRendererHW::Draw()
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
+	// It is allowed to use the depth and rt at the same location. However at least 1 must
+	// be disabled. GoW uses a Cd blending on a 24 bits buffer (no alpha)
+	const bool no_rt = context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1);
+
 	GIFRegTEX0 TEX0;
 
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
-	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+
+	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+	GSTexture* rt_tex = rt ? rt->m_texture : NULL;
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -347,7 +353,7 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
 
-	if(!rt || !ds)
+	if((!rt && !no_rt) || !ds)
 	{
 		GL_POP();
 		ASSERT(0);
@@ -355,6 +361,7 @@ void GSRendererHW::Draw()
 	}
 
 	GSTextureCache::Source* tex = NULL;
+	m_texture_shuffle = false;
 
 	if(PRIM->TME)
 	{
@@ -389,6 +396,13 @@ void GSRendererHW::Draw()
 		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
+
+		if (rt) {
+			rt->m_32_bits_fmt |= tex->m_32_bits_fmt;
+		}
+		// Both input and output are 16 bits but texture was initially 32 bits!
+		m_texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt);
+		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 	}
 
 	if(s_dump)
@@ -429,7 +443,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(root_hw+s);
+			if (rt)
+				rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -447,7 +462,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt->m_texture, ds->m_texture, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds->m_texture, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -514,7 +529,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt->m_texture, ds->m_texture, tex);
+	DrawPrims(rt_tex, ds->m_texture, tex);
 
 	//
 
@@ -526,11 +541,13 @@ void GSRendererHW::Draw()
 
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
-	if(fm != 0xffffffff)
+	if(fm != 0xffffffff && rt)
 	{
 		rt->m_valid = rt->m_valid.runion(r);
 
 		m_tc->InvalidateVideoMem(context->offset.fb, r, false);
+
+		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
 	}
 
 	if(zm != 0xffffffff)
@@ -538,6 +555,8 @@ void GSRendererHW::Draw()
 		ds->m_valid = ds->m_valid.runion(r);
 
 		m_tc->InvalidateVideoMem(context->offset.zb, r, false);
+
+		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->ZBUF.Block());
 	}
 
 	//
@@ -557,7 +576,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
-			rt->m_texture->Save(root_hw+s);
+			if (rt)
+				rt->m_texture->Save(root_hw+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -580,7 +600,8 @@ void GSRendererHW::Draw()
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 	
-	m_tc->Read(rt, r);
+	if (rt)
+		m_tc->Read(rt, r);
 
 	#endif
 
@@ -632,12 +653,67 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	m_oo = m_oo_map[hash];
 	m_cu = m_cu_map[hash];
 
-	if(game.flags & CRC::PointListPalette)
-	{
+	if (game.flags & CRC::PointListPalette) {
 		ASSERT(m_oi == NULL);
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
+#if 0
+	// FIXME: Enable this code in the future. I think it could replace
+	// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
+	// success
+	if (m_oi == NULL) {
+		m_oi = &GSRendererHW::OI_DoubleHalfClear;
+	}
+#endif
+}
+
+bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7)) {
+		GSVertex* v = &m_vertex.buff[0];
+
+		//GL_INS("OI_DoubleHalfClear: psm:%x. Z:%d R:%d G:%d B:%d A:%d", m_context->FRAME.PSM,
+		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
+
+		// Check it is a clear on the first primitive only
+		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
+			return true;
+		}
+		// Only 32 bits format is supported otherwise it is complicated
+		if (m_context->FRAME.PSM & 2)
+			return true;
+
+		// FIXME might need some rounding
+		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
+		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
+		// It is hard to predict the ratio, so I round it to 1. And I use
+		// <= comparison below.
+		uint32 h_pages  = m_context->FRAME.FBW;
+
+		uint32 base;
+		uint32 half;
+		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+			base = m_context->ZBUF.ZBP;
+			half = m_context->FRAME.FBP;
+		} else {
+			base = m_context->FRAME.FBP;
+			half = m_context->ZBUF.ZBP;
+		}
+
+		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
+			//GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
+			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+				m_dev->ClearDepth(ds, 0);
+			} else {
+				m_dev->ClearRenderTarget(rt, 0);
+			}
+			// Don't return false, it will break the rendering. I guess that it misses texture
+			// invalidation
+			//return false;
+		}
+	}
+	return true;
 }
 
 // OI (others input?/implementation?) hacks replace current draw call

@@ -32,6 +32,7 @@ GSRendererOGL::GSRendererOGL()
 	m_accurate_blend  = theApp.GetConfig("accurate_blend", 1);
 	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
 	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
+	m_accurate_fbmask = theApp.GetConfig("accurate_fbmask", 0);
 
 	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
 	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
@@ -217,13 +218,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 {
 	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
-				rt->GetID(), ds->GetID());
+				rt ? rt->GetID() : -1, ds->GetID());
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
-	const GSVector2i& rtsize = rt->GetSize();
-	const GSVector2& rtscale = rt->GetScale();
+	const GSVector2i& rtsize = ds->GetSize();
+	const GSVector2& rtscale = ds->GetScale();
 
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
@@ -247,8 +248,163 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
+	if (m_texture_shuffle) {
+		ps_sel.shuffle = 1;
+		ps_sel.dfmt = 0;
+
+		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+		GSVertex* v = &m_vertex.buff[0];
+		size_t count = m_vertex.next;
+
+		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
+		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
+		bool write_ba = (pos > 112 && pos < 136);
+		// Read texture is 8 to 16 pixels (same as above)
+		float tw = (float)(1u << context->TEX0.TW);
+		int tex_pos = (PRIM->FST) ? v[0].U : tw * v[0].ST.S;
+		tex_pos &= 0xFF;
+		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
+
+		// Convert the vertex info to a 32 bits color format equivalent
+		if (PRIM->FST) {
+			GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
+
+			for(size_t i = 0; i < count; i += 2) {
+				if (write_ba)
+					v[i].XYZ.X   -= 128u;
+				else
+					v[i+1].XYZ.X += 128u;
+
+				if (ps_sel.read_ba)
+					v[i].U       -= 128u;
+				else
+					v[i+1].U     += 128u;
+
+				// Height is too big (2x).
+				int tex_offset = v[i].V & 0xF;
+				GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
+
+				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+				v[i].XYZ.Y   = tmp.x;
+				v[i].V       = tmp.y;
+				v[i+1].XYZ.Y = tmp.z;
+				v[i+1].V     = tmp.w;
+			}
+		} else {
+			const float offset_8pix = 8.0f / tw;
+			GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
+
+			for(size_t i = 0; i < count; i += 2) {
+				if (write_ba)
+					v[i].XYZ.X   -= 128u;
+				else
+					v[i+1].XYZ.X += 128u;
+
+				if (ps_sel.read_ba)
+					v[i].ST.S    -= offset_8pix;
+				else
+					v[i+1].ST.S  += offset_8pix;
+
+				// Height is too big (2x).
+				GSVector4i offset(o.OFY, o.OFY);
+
+				GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
+				v[i].XYZ.Y   = tmp.x;
+				v[i].ST.T   /= 2.0f;
+				v[i+1].XYZ.Y = tmp.y;
+				v[i+1].ST.T /= 2.0f;
+			}
+		}
+
+		// Please bang my head against the wall!
+		// 1/ Reduce the frame mask to a 16 bit format
+		const uint32& m = context->FRAME.FBMSK;
+		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
+		// FIXME GSVector will be nice here
+		uint8 rg_mask = fbmask & 0xFF;
+		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		om_csel.wrgba = 0;
+
+		// 2 Select the new mask (Please someone put SSE here)
+		if (rg_mask != 0xFF) {
+			if (write_ba) {
+				GL_INS("Color shuffle %s => B", ps_sel.read_ba ? "B" : "R");
+				om_csel.wb = 1;
+			} else {
+				GL_INS("Color shuffle %s => R", ps_sel.read_ba ? "B" : "R");
+				om_csel.wr = 1;
+			}
+			if (rg_mask)
+				ps_sel.fbmask = 1;
+		}
+
+		if (ba_mask != 0xFF) {
+			if (write_ba) {
+				GL_INS("Color shuffle %s => A", ps_sel.read_ba ? "A" : "G");
+				om_csel.wa = 1;
+			} else {
+				GL_INS("Color shuffle %s => G", ps_sel.read_ba ? "A" : "G");
+				om_csel.wg = 1;
+			}
+			if (ba_mask)
+				ps_sel.fbmask = 1;
+		}
+
+		ps_sel.fbmask &= m_accurate_fbmask;
+		if (ps_sel.fbmask) {
+			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+			ps_cb.FbMask.r = rg_mask;
+			ps_cb.FbMask.g = rg_mask;
+			ps_cb.FbMask.b = ba_mask;
+			ps_cb.FbMask.a = ba_mask;
+			require_barrier = true;
+			dev->PSSetShaderResource(3, rt);
+		}
+
+	} else {
+		ps_sel.dfmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
+
+		om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+
+		{
+			// FIXME GSVector will be nice here
+			uint8 r_mask = (context->FRAME.FBMSK >> 0)  & 0xFF;
+			uint8 g_mask = (context->FRAME.FBMSK >> 8)  & 0xFF;
+			uint8 b_mask = (context->FRAME.FBMSK >> 16) & 0xFF;
+			uint8 a_mask = (context->FRAME.FBMSK >> 24) & 0xFF;
+			if (r_mask != 0 && r_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (g_mask != 0 && g_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (b_mask != 0 && b_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (a_mask != 0 && a_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+
+			ps_sel.fbmask &= m_accurate_fbmask;
+			if (ps_sel.fbmask) {
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", context->FRAME.FBMSK,
+						(GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				ps_cb.FbMask.r = r_mask;
+				ps_cb.FbMask.g = g_mask;
+				ps_cb.FbMask.b = b_mask;
+				ps_cb.FbMask.a = a_mask;
+				require_barrier = true;
+				dev->PSSetShaderResource(3, rt);
+			}
+		}
+	}
+
 	// Format of the output
-	ps_sel.dfmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
 
 	GIFRegALPHA ALPHA = context->ALPHA;
 	float afix = (float)context->ALPHA.FIX / 0x80;
@@ -285,7 +441,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	if (ps_sel.dfmt == 1) {
 		if (ALPHA.C == 1) {
 			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
@@ -425,7 +580,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt->LikelyOffset)
+	if (rt && rt->LikelyOffset)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
@@ -471,7 +626,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	ps_sel.fba = context->FBA.FBA;
+	// TODO deprecat this stuff
 	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
+	ps_sel.aout &= !ps_sel.shuffle;
 		
 	if (UserHacks_AlphaHack) ps_sel.aout = 1;
 
@@ -524,7 +681,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ps_sel.wms = context->CLAMP.WMS;
 		ps_sel.wmt = context->CLAMP.WMT;
-		if (tex->m_palette) {
+
+		if (ps_sel.shuffle) {
+			ps_sel.fmt = 0;
+		} else if (tex->m_palette) {
 			ps_sel.fmt = cpsm.fmt | 4;
 			ps_sel.ifmt = !tex->m_target ? 0
 				: (context->TEX0.PSM == PSM_PSMT4HL) ? 2
@@ -619,9 +779,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
-	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw;
+	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw || ps_sel.fbmask;
 
-	if (sw_blending && om_bsel.abe) {
+	if (sw_blending && om_bsel.abe && rt) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
 
 		// select a shader that support blending
@@ -631,7 +791,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
-			ps_cb.AlphaCoeff = GSVector4(afix);
+			ps_cb.AlphaCoeff.a = afix;
 		}
 
 		// No need to flush for every primitive

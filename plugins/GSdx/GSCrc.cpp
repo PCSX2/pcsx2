@@ -173,9 +173,6 @@ CRC::Game CRC::m_games[] =
 	{0xA32F7CD0, AceCombat4, US, 0},
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
-	{0xEC432B24, Drakengard2, EU, 0},
-	{0x1648E3C9, Drakengard2, US, 0},
-	{0xB7ADB13A, Drakengard2, CH, 0},
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
 	{0x1F88BECD, Tekken5, EU, 0},	//language selector...
@@ -296,9 +293,6 @@ CRC::Game CRC::m_games[] =
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x5CC9BF81, TimeSplitters2, EU, 0},
 	{0x12532F1C, TimeSplitters2, US, 0},
-	{0xA33748AA, ReZ, US, 0},
-	{0xAE1152EB, ReZ, EU, 0},
-	{0xD2EA890A, ReZ, JP, 0},
 	{0xC818BEC2, LordOfTheRingsTwoTowers, US, 0},
 	{0xDC43F2B8, LordOfTheRingsTwoTowers, EU, 0},
 	{0x9ABF90FB, LordOfTheRingsTwoTowers, ES, 0},
@@ -354,9 +348,6 @@ CRC::Game CRC::m_games[] =
 	// DMC(1)? {0x79B8A95F, DevilMayCry3, US, 0},
 	{0x7F3D692D, DevilMayCry3, CH, 0},
 	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}
-	{0x0a8ef911, ArctheLad, US, 0}, // cutie comment
-	{0x2C5E7DEA, ArctheLad, CH, 0},
-	{0xE69E7F58, ArctheLad, US, 0}, // cutie comment
 	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
 	{0x958DCA28, ShadowofRome, EU, 0},
 	{0x57818AF6, ShadowofRome, US, 0}, 

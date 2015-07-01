@@ -39,6 +39,7 @@ static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
+static const uint32 g_convert_index       = 15;
 
 bool GSDeviceOGL::m_debug_gl_call = false;
 int  GSDeviceOGL::s_n = 0;
@@ -103,6 +104,7 @@ GSDeviceOGL::~GSDeviceOGL()
 	delete m_convert.dss;
 	delete m_convert.dss_write;
 	delete m_convert.bs;
+	delete m_convert.cb;
 
 	// Clean m_fxaa
 	delete m_fxaa.cb;
@@ -242,6 +244,12 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// convert
 	// ****************************************************************
+	m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
+	// Upload once and forget about it
+	ConvertConstantBuffer cb;
+	cb.ScalingFactor = GSVector4i(theApp.GetConfig("nativeres", 0) ? 1 : theApp.GetConfig("upscale_multiplier", 2));
+	m_convert.cb->upload(&cb);
+
 	m_convert.vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 		m_convert.ps[i] = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
@@ -647,6 +655,9 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		//+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
 		+ format("#define PS_BLEND %d\n", sel.blend)
 		+ format("#define PS_IIP %d\n", sel.iip)
+		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
+		+ format("#define PS_READ_BA %d\n", sel.read_ba)
+		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
@@ -738,7 +749,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[12]);
+	bool draw_in_depth = (ps == m_convert.ps[12] || ps == m_convert.ps[13]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -996,7 +1007,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 {
 	GL_PUSH("DATE First Pass");
 
-	GSTexture* t = NULL;
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	BeginScene();
@@ -1016,7 +1026,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	OMSetDepthStencilState(m_date.dss, 1);
 	OMSetBlendState(m_date.bs, 0);
 	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
-	OMSetRenderTargets(t, ds, &GLState::scissor);
+	OMSetRenderTargets(NULL, ds, &GLState::scissor);
 	OMSetColorMaskState(); // TODO: likely useless
 
 	// ia
@@ -1035,9 +1045,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 		PSSetSamplerState(m_convert.pt);
 	}
 
-	OMSetWriteBuffer(GL_NONE);
 	DrawPrimitive();
-	OMSetWriteBuffer();
 
 	EndScene();
 
@@ -1179,9 +1187,10 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if (rt == NULL || !RT->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
+			OMSetWriteBuffer();
 			OMAttachRt(RT);
 		} else {
-			// Note: NULL rt is only used in DATE so far.
+			OMSetWriteBuffer(GL_NONE);
 			OMAttachRt();
 		}
 

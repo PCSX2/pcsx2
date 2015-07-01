@@ -69,7 +69,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_MSAACB:
 		case IDC_STATIC_MSAA:
 			return "Multisample Anti-Aliasing\n\nEnables hardware Anti-Aliasing. Needs lots of memory."
-				" The Z-24 modes might need to have LogarithmicZ to compensate for the bits lost (only in DX9 mode).";
+				" The Z-24 modes might need to have LogarithmicZ to compensate for the bits lost (only in DX9 mode).\n\n"
+				" MSAA is not implemented on the OpenGL renderer";
 		case IDC_AGGRESSIVECRC:
 			return "Use more aggressive CRC hacks on some games\n\n"
 				"Only affects few games, removing some effects which might make the image sharper/clearer.\n"
@@ -107,18 +108,23 @@ const char* dialog_message(int ID, bool* updateText) {
 #ifdef __linux__
 		case IDC_PALTEX:
 			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion. "
-				"(Note it was never tested on openGL)\n\n"
+				"(Note it was never tested on OpenGL)\n\n"
 				"When uncheked the CPU will convert directly the texture to 32 bits\n\n"
 				"It is a basically a trade-off between GPU/CPU";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
-				"It could be slower when the effects are used.\n\nNote: it requires the 4.2 openGL extension GL_ARB_shader_image_load_store";
+				"It could be slower when the effects are used.\n\nNote: it requires the 4.2 OpenGL extension GL_ARB_shader_image_load_store";
 		case IDC_ACCURATE_BLEND:
 			return "Allow to solve the impossible blending error message.\n\n"
-				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
+				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
 		case IDC_ACCURATE_COLCLIP:
-			return "Debug option to implement the wrapping of color after an overflow\n\n"
-				"It will be slow when the effect are used!\n\nNote: it requires the 4.5 openGL extension GL_ARB_texture_barrier";
+			return "Implement the wrapping of color after an overflow\n\n"
+				"It will be slow (half speed) when the effect are used!\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+		case IDC_ACCURATE_FBMASK:
+			return "Implement partial color masking\n\n"
+				"No status yet on the speed impact\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+		case IDC_TC_DEPTH:
+			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 #endif
 		default:
 			if (updateText)

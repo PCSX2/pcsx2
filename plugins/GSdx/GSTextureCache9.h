@@ -31,6 +31,8 @@ protected:
 
 	void Read(Target* t, const GSVector4i& r);
 
+	virtual bool CanConvertDepth() { return false; }
+
 public:
 	GSTextureCache9(GSRenderer* r);
 };

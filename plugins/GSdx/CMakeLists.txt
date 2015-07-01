@@ -7,7 +7,7 @@ endif()
 
 
 # plugin name
-set(Output GSdx-0.1.16)
+set(Output GSdx-1.0.0)
 
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function

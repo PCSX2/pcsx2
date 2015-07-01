@@ -2078,6 +2078,9 @@
   <ItemGroup>
     <ResourceCompile Include="GSdx.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\logo-ogl.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

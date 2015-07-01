@@ -48,7 +48,10 @@ layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the im
 #if PS_DATE > 0
 // FIXME how to declare memory access
 layout(r32i, binding = 2) coherent uniform iimage2D img_prim_min;
-layout(early_fragment_tests) in;
+// Don't enable it. Discard fragment can still write in the depth buffer
+// it breaks shadow in Shin Megami Tensei Nocturne
+//layout(early_fragment_tests) in;
+
 // I don't remember why I set this parameter but it is surely useless
 //layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
@@ -65,10 +68,12 @@ layout(std140, binding = 21) uniform cb21
 	vec2 MinF;
 	vec2 TA;
 	uvec4 MskFix;
-	vec4 Af;
+	uvec4 FbMask;
+	vec3 _not_yet_used;
+	float Af;
 	vec4 HalfTexel;
 	vec4 MinMax;
-	vec4 TC_OffsetHack;
+	vec2 TC_OffsetHack;
 };
 
 #ifdef SUBROUTINE_GL40
@@ -392,6 +397,18 @@ vec4 ps_color()
 	return c;
 }
 
+void ps_fbmask(inout vec4 c)
+{
+	// FIXME do I need special case for 16 bits
+#if PS_FBMASK
+	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+	uvec4 denorm_rt = uvec4(rt * 255.0f + 0.5f);
+	uvec4 denorm_c = uvec4(c * 255.0f + 0.5f);
+	c = vec4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;
+#endif
+}
+
+#if PS_BLEND > 0
 void ps_blend(inout vec4 c, in float As)
 {
 	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
@@ -428,7 +445,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 6
 	//   6   => *0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	c.rgb = Cs * (Af.x + 1.0f) - Cd * Af.x;
+	c.rgb = Cs * (Af + 1.0f) - Cd * Af;
 
 #elif PS_BLEND == 7
 	//    7   => *0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
@@ -440,7 +457,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 9
 	//   9   => *0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	c.rgb = Cs * (Af.x + 1.0f);
+	c.rgb = Cs * (Af + 1.0f);
 
 #elif PS_BLEND == 10
 	//   10   => *1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
@@ -452,7 +469,7 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 12
 	//   12   => *1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	c.rgb = Cd * (Af.x + 1.0f) - Cs * Af.x;
+	c.rgb = Cd * (Af + 1.0f) - Cs * Af;
 
 #elif PS_BLEND == 13
 	//  13   =>  0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
@@ -472,11 +489,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 17
 	//  17   =>  0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	c.rgb = Cs * Af.x + Cd * (1.0f - Af.x);
+	c.rgb = Cs * Af + Cd * (1.0f - Af);
 
 #elif PS_BLEND == 18
 	//  18   =>  0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	c.rgb = Cs * Af.x - Cd * Af.x;
+	c.rgb = Cs * Af - Cd * Af;
 
 #elif PS_BLEND == 19
 	//  19   =>  0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
@@ -496,11 +513,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 23
 	//  23   =>  0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	c.rgb = Cs * Af.x + Cd;
+	c.rgb = Cs * Af + Cd;
 
 #elif PS_BLEND == 24
 	//   24   =>  0222: (Cs -  0)*F  +  0 ==> Cs*F
-	c.rgb = Cs * Af.x;
+	c.rgb = Cs * Af;
 
 #elif PS_BLEND == 25
 	//  25   =>  1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
@@ -520,11 +537,11 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 29
 	//  29   =>  1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	c.rgb = Cd * Af.x + Cs * (1.0f - Af.x);
+	c.rgb = Cd * Af + Cs * (1.0f - Af);
 
 #elif PS_BLEND == 30
 	//  30   =>  1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	c.rgb = Cd * Af.x - Cs * Af.x;
+	c.rgb = Cd * Af - Cs * Af;
 
 #elif PS_BLEND == 31
 	//  31   =>  1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
@@ -552,15 +569,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 35
 	//   35   =>  1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	c.rgb = Cs + Cd * Af.x;
+	c.rgb = Cs + Cd * Af;
 
 #elif PS_BLEND == 57
 	//  C_CLR | 57   => #1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	c.rgb = Cd * (1.0f + Af.x);
+	c.rgb = Cd * (1.0f + Af);
 
 #elif PS_BLEND == 36
 	//  36   =>  1222: (Cd -  0)*F  +  0 ==> Cd*F
-	c.rgb = Cd * Af.x;
+	c.rgb = Cd * Af;
 
 #elif PS_BLEND == 37
 	//   37   =>  2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
@@ -588,15 +605,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 43
 	//   43   =>  2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	c.rgb = Cs * (1.0f - Af.x);
+	c.rgb = Cs * (1.0f - Af);
 
 #elif PS_BLEND == 44
 	//  44   =>  2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	c.rgb = Cd - Cs * Af.x;
+	c.rgb = Cd - Cs * Af;
 
 #elif PS_BLEND == 45
 	//   45   =>  2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	c.rgb = - Cs * Af.x;
+	c.rgb = - Cs * Af;
 
 #elif PS_BLEND == 46
 	//  46   =>  2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
@@ -624,15 +641,15 @@ void ps_blend(inout vec4 c, in float As)
 
 #elif PS_BLEND == 52
 	//  52   =>  2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	c.rgb = Cs - Cd * Af.x;
+	c.rgb = Cs - Cd * Af;
 
 #elif PS_BLEND == 53
 	//  53   =>  2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	c.rgb = Cd * (1.0f - Af.x);
+	c.rgb = Cd * (1.0f - Af);
 
 #elif PS_BLEND == 54
 	//  54   =>  2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	c.rgb = - Cd * Af.x;
+	c.rgb = - Cd * Af;
 
 #endif
 
@@ -644,19 +661,23 @@ void ps_blend(inout vec4 c, in float As)
 	c.rgb = clamp(c.rgb, vec3(0.0f), vec3(1.0f));
 #endif
 
+    // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+    // GS: Color = 1, Alpha = 255 => output 1
+    // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DFMT == FMT_16
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 
 	// Basically we want to do 'c.rgb &= 0xF8' in denormalized mode
-	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xF8)) / 255.0f;
+	c.rgb = vec3(uvec3(c.rgb * 255.0f) & uvec3(0xF8)) / 255.0f;
 #elif PS_COLCLIP == 3
 	// Basically we want to do 'c.rgb &= 0xFF' in denormalized mode
-	c.rgb = vec3(uvec3((c.rgb * 255.0f) + 256.5f) & uvec3(0xFF)) / 255.0f;
+	c.rgb = vec3(uvec3(c.rgb * 255.0f) & uvec3(0xFF)) / 255.0f;
 #endif
 
 	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
 	//c.rgb = mod((c.rgb * 255.0f) + 256.5f) / 255.0f;
 }
+#endif
 
 void ps_main()
 {
@@ -687,7 +708,7 @@ void ps_main()
 #endif
 
 #if PS_DATE == 3 && !defined(DISABLE_GL42_image)
-	int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy));
+	int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy)).r;
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
 
@@ -708,6 +729,32 @@ void ps_main()
 #endif
 #if (APITRACE_DEBUG & 8) == 8
 	c.a = 0.5f;
+#endif
+
+#if PS_SHUFFLE
+	uvec4 denorm_c = uvec4(c * 255.0f + 0.5f);
+	uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+
+	// Write RB part. Mask will take care of the correct destination
+#if PS_READ_BA
+	c.rb = c.bb;
+#else
+	c.rb = c.rr;
+#endif
+
+	// Write GA part. Mask will take care of the correct destination
+#if PS_READ_BA
+	if (bool(denorm_c.a & 0x80u))
+		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+	else
+		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+#else
+	if (bool(denorm_c.g & 0x80u))
+		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+	else
+		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+#endif
+
 #endif
 
 	// Must be done before alpha correction
@@ -742,6 +789,8 @@ void ps_main()
 #if PS_BLEND > 0
 	ps_blend(c, alpha);
 #endif
+
+	ps_fbmask(c);
 
 	SV_Target0 = c;
 	SV_Target1 = vec4(alpha, alpha, alpha, alpha);
