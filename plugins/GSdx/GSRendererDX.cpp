@@ -225,7 +225,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	GSDeviceDX::PSSamplerSelector ps_ssel;
 	GSDeviceDX::PSConstantBuffer ps_cb;
 
-	if (m_texture_shuffle) {
+	// Gregory: code is not yet ready so let's only enable it when
+	// CRC is below the FULL level
+	if (m_texture_shuffle && (m_crc_hack_level < 3)) {
 		ps_sel.shuffle = 1;
 		ps_sel.fmt = 0;
 
@@ -373,10 +375,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		ps_sel.wmt = context->CLAMP.WMT;
 		if (ps_sel.shuffle) {
 			ps_sel.fmt = 0;
-			
-		}
-		else 
-		{
+		} else {
 			ps_sel.fmt = tex->m_palette ? cpsm.fmt | 4 : cpsm.fmt;
 		}
 		ps_sel.aem = env.TEXA.AEM;

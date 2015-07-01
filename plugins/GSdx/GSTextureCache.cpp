@@ -26,12 +26,12 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
 	m_spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
-	m_preload_frame = theApp.GetConfig("preload_frame_with_gs_data", 0);
-
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
-	m_paltex = !!theApp.GetConfig("paltex", 0);
 
-	m_can_convert_depth = theApp.GetConfig("Renderer", 12) == 12 ? theApp.GetConfig("texture_cache_depth", 1) : 0;
+	m_paltex = !!theApp.GetConfig("paltex", 0);
+	m_preload_frame = theApp.GetConfig("preload_frame_with_gs_data", 0);
+	m_can_convert_depth = IsOpenGL() ? theApp.GetConfig("texture_cache_depth", 1) : 0;
+	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
 	
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
@@ -148,7 +148,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// 1/ it just works :)
 						// 2/ even with upscaling
 						// 3/ for both DX and OpenGL
-						Read(t, t->m_valid);
+
+						// Gregory: to avoid a massive slow down for nothing, let's only enable
+						// this code when CRC is below the FULL level
+						if (m_crc_hack_level < 3)
+							Read(t, t->m_valid);
+						else
+							dst = t;
 					} else {
 						dst = t;
 					}
