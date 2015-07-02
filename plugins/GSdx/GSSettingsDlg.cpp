@@ -569,7 +569,16 @@ GSHacksDlg::GSHacksDlg() :
 	memset(msaa2cb, 0, sizeof(msaa2cb));
 	memset(cb2msaa, 0, sizeof(cb2msaa));
 }
-
+int swap_states(int a)
+{
+	switch(a)
+	{
+		case 0: return 0;
+		case 1: return 2;
+		case 2: return 1;
+		default: return 0; // If user's set more than 2 in ini file, set variable to 0.
+	}
+}
 void GSHacksDlg::OnInit()
 {					
 	bool dx9 = (int)SendMessage(GetDlgItem(GetParent(m_hWnd), IDC_RENDERER), CB_GETCURSEL, 0, 0) / 3 == 0;
@@ -619,7 +628,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_SPRITEHACK, theApp.GetConfig("UserHacks_SpriteHack", 0));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfig("UserHacks_WildHack", 0));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
-	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
+	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, swap_states(theApp.GetConfig("UserHacks_round_sprite_offset", 0)));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
@@ -680,7 +689,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
-			theApp.SetConfig("UserHacks_round_sprite_offset", (int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE));
+			theApp.SetConfig("UserHacks_round_sprite_offset", swap_states((int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE)));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
