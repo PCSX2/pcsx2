@@ -30,7 +30,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 	m_paltex = !!theApp.GetConfig("paltex", 0);
 	m_preload_frame = theApp.GetConfig("preload_frame_with_gs_data", 0);
-	m_can_convert_depth = IsOpenGL() ? theApp.GetConfig("texture_cache_depth", 1) : 0;
+	m_can_convert_depth = theApp.GetConfig("Renderer", 12) == 12 ? theApp.GetConfig("texture_cache_depth", 1) : 0;
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
 	
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
