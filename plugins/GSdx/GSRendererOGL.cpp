@@ -836,12 +836,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->OMSetRenderTargets(NULL, ds, &scissor);
 
 		// Don't write anything on the color buffer
+		// Neither in the depth buffer
 		dev->OMSetWriteBuffer(GL_NONE);
+		glDepthMask(false);
 		// Compute primitiveID max that pass the date test
 		SendDraw(false);
 
 		// Ask PS to discard shader above the primitiveID max
 		dev->OMSetWriteBuffer();
+		glDepthMask(GLState::depth_mask);
 
 		ps_sel.date = 3;
 		dev->SetupPS(ps_sel);
