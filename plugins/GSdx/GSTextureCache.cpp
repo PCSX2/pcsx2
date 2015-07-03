@@ -210,7 +210,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 
 	} else {
-		GL_CACHE("TC: src hit: %d (0x%x F:0x%x)",
+		GL_CACHE("TC: src hit: %d (0x%x, F:0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
 					TEX0.TBP0, TEX0.PSM);
 	}
@@ -840,7 +840,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 
-		src->m_32_bits_fmt = dst->m_32_bits_fmt;
+		if (TEX0.PSM < PSM_PSMT8 || TEX0.PSM > PSM_PSMT4HH)
+			src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		src->m_target = true;
 
 		dst->Update();
