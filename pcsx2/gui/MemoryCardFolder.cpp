@@ -43,7 +43,7 @@ void FolderMemoryCard::InitializeInternalData() {
 	m_lastAccessedFile.Close();
 }
 
-bool FolderMemoryCard::IsFormatted() {
+bool FolderMemoryCard::IsFormatted() const {
 	// this should be a good enough arbitrary check, if someone can think of a case where this doesn't work feel free to change
 	return m_superBlock.raw[0x16] == 0x6F;
 }
@@ -155,21 +155,23 @@ void FolderMemoryCard::CreateFat() {
 
 void FolderMemoryCard::CreateRootDir() {
 	MemoryCardFileEntryCluster* const rootCluster = &m_fileEntryDict[m_superBlock.data.rootdir_cluster];
-	memset( &rootCluster->entries[0].entry.raw[0], 0x00, 0x200 );
-	rootCluster->entries[0].entry.data.mode = 0x8427;
+	memset( &rootCluster->entries[0].entry.raw[0], 0x00, sizeof( rootCluster->entries[0].entry.raw ) );
+	rootCluster->entries[0].entry.data.mode = MemoryCardFileEntry::Mode_Read | MemoryCardFileEntry::Mode_Write | MemoryCardFileEntry::Mode_Execute
+	                                        | MemoryCardFileEntry::Mode_Directory | MemoryCardFileEntry::Mode_Unknown0x0400 | MemoryCardFileEntry::Mode_Used;
 	rootCluster->entries[0].entry.data.length = 2;
 	rootCluster->entries[0].entry.data.name[0] = '.';
 
-	memset( &rootCluster->entries[1].entry.raw[0], 0x00, 0x200 );
-	rootCluster->entries[1].entry.data.mode = 0xA426;
+	memset( &rootCluster->entries[1].entry.raw[0], 0x00, sizeof( rootCluster->entries[1].entry.raw ) );
+	rootCluster->entries[1].entry.data.mode = MemoryCardFileEntry::Mode_Write | MemoryCardFileEntry::Mode_Execute | MemoryCardFileEntry::Mode_Directory
+	                                        | MemoryCardFileEntry::Mode_Unknown0x0400 | MemoryCardFileEntry::Mode_Unknown0x2000 | MemoryCardFileEntry::Mode_Used;
 	rootCluster->entries[1].entry.data.name[0] = '.';
 	rootCluster->entries[1].entry.data.name[1] = '.';
 
 	// mark root dir cluster as used
-	m_fat.data[0][0][m_superBlock.data.rootdir_cluster] = 0xFFFFFFFFu;
+	m_fat.data[0][0][m_superBlock.data.rootdir_cluster] = LastDataCluster | DataClusterInUseMask;
 }
 
-u32 FolderMemoryCard::GetFreeSystemCluster() {
+u32 FolderMemoryCard::GetFreeSystemCluster() const {
 	// first block is reserved for superblock
 	u32 highestUsedCluster = ( m_superBlock.data.pages_per_block / m_superBlock.data.pages_per_cluster ) - 1;
 
@@ -181,7 +183,7 @@ u32 FolderMemoryCard::GetFreeSystemCluster() {
 	// or fat clusters
 	for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 		for ( int j = 0; j < ClusterSize / 4; ++j ) {
-			if ( m_indirectFat.data[i][j] != 0xFFFFFFFFu ) {
+			if ( m_indirectFat.data[i][j] != IndirectFatUnused ) {
 				highestUsedCluster = std::max( highestUsedCluster, m_indirectFat.data[i][j] );
 			}
 		}
@@ -190,33 +192,37 @@ u32 FolderMemoryCard::GetFreeSystemCluster() {
 	return highestUsedCluster + 1;
 }
 
-u32 FolderMemoryCard::GetFreeDataCluster() {
+u32 FolderMemoryCard::GetAmountDataClusters() const {
 	// BIOS reports different cluster values than what the memory card actually has, match that when adding files
 	//  8mb card -> BIOS:  7999 clusters / Superblock:  8135 clusters
 	// 16mb card -> BIOS: 15999 clusters / Superblock: 16295 clusters
 	// 32mb card -> BIOS: 31999 clusters / Superblock: 32615 clusters
 	// 64mb card -> BIOS: 64999 clusters / Superblock: 65255 clusters
-	const u32 countDataClusters = ( m_superBlock.data.alloc_end / 1000 ) * 1000 - 1;
+	return ( m_superBlock.data.alloc_end / 1000 ) * 1000 - 1;
+}
+
+u32 FolderMemoryCard::GetFreeDataCluster() const {
+	const u32 countDataClusters = GetAmountDataClusters();
 
 	for ( unsigned int i = 0; i < countDataClusters; ++i ) {
 		const u32 cluster = m_fat.data[0][0][i];
 
-		if ( ( cluster & 0x80000000 ) == 0 ) {
+		if ( ( cluster & DataClusterInUseMask ) == 0 ) {
 			return i;
 		}
 	}
 
-	return 0xFFFFFFFF;
+	return 0xFFFFFFFFu;
 }
 
-u32 FolderMemoryCard::GetAmountFreeDataClusters() {
-	const u32 countDataClusters = ( m_superBlock.data.alloc_end / 1000 ) * 1000 - 1;
+u32 FolderMemoryCard::GetAmountFreeDataClusters() const {
+	const u32 countDataClusters = GetAmountDataClusters();
 	u32 countFreeDataClusters = 0;
 
 	for ( unsigned int i = 0; i < countDataClusters; ++i ) {
 		const u32 cluster = m_fat.data[0][0][i];
 
-		if ( ( cluster & 0x80000000 ) == 0 ) {
+		if ( ( cluster & DataClusterInUseMask ) == 0 ) {
 			++countFreeDataClusters;
 		}
 	}
@@ -224,17 +230,17 @@ u32 FolderMemoryCard::GetAmountFreeDataClusters() {
 	return countFreeDataClusters;
 }
 
-u32 FolderMemoryCard::GetLastClusterOfData( const u32 cluster ) {
+u32 FolderMemoryCard::GetLastClusterOfData( const u32 cluster ) const {
 	u32 entryCluster;
 	u32 nextCluster = cluster;
 	do {
 		entryCluster = nextCluster;
-		nextCluster = m_fat.data[0][0][entryCluster] & 0x7FFFFFFF;
-	} while ( nextCluster != 0x7FFFFFFF );
+		nextCluster = m_fat.data[0][0][entryCluster] & NextDataClusterMask;
+	} while ( nextCluster != LastDataCluster );
 	return entryCluster;
 }
 
-MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( MemoryCardFileEntry* const dirEntry ) {
+MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( const MemoryCardFileEntry* const dirEntry ) {
 	u32 entryCluster = GetLastClusterOfData( dirEntry->entry.data.cluster );
 
 	MemoryCardFileEntry* newFileEntry;
@@ -242,8 +248,8 @@ MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir( MemoryCardFileEntry
 		// need new cluster
 		u32 newCluster = GetFreeDataCluster();
 		if ( newCluster == 0xFFFFFFFFu ) { return nullptr; }
-		m_fat.data[0][0][entryCluster] = newCluster | 0x80000000;
-		m_fat.data[0][0][newCluster] = 0xFFFFFFFF;
+		m_fat.data[0][0][entryCluster] = newCluster | DataClusterInUseMask;
+		m_fat.data[0][0][newCluster] = LastDataCluster | DataClusterInUseMask;
 		newFileEntry = &m_fileEntryDict[newCluster].entries[0];
 	} else {
 		// can use last page of existing clusters
@@ -354,16 +360,16 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				// create new cluster for . and .. entries
 				newDirEntry->entry.data.length = 2;
 				u32 newCluster = GetFreeDataCluster();
-				m_fat.data[0][0][newCluster] = 0xFFFFFFFF;
+				m_fat.data[0][0][newCluster] = LastDataCluster | DataClusterInUseMask;
 				newDirEntry->entry.data.cluster = newCluster;
 
 				MemoryCardFileEntryCluster* const subDirCluster = &m_fileEntryDict[newCluster];
-				memset( &subDirCluster->entries[0].entry.raw[0], 0x00, 0x200 );
+				memset( &subDirCluster->entries[0].entry.raw[0], 0x00, sizeof( subDirCluster->entries[0].entry.raw ) );
 				subDirCluster->entries[0].entry.data.mode = MemoryCardFileEntry::DefaultDirMode;
 				subDirCluster->entries[0].entry.data.dirEntry = entryNumber;
 				subDirCluster->entries[0].entry.data.name[0] = '.';
 
-				memset( &subDirCluster->entries[1].entry.raw[0], 0x00, 0x200 );
+				memset( &subDirCluster->entries[1].entry.raw[0], 0x00, sizeof( subDirCluster->entries[1].entry.raw ) );
 				subDirCluster->entries[1].entry.data.mode = MemoryCardFileEntry::DefaultDirMode;
 				subDirCluster->entries[1].entry.data.name[0] = '.';
 				subDirCluster->entries[1].entry.data.name[1] = '.';
@@ -432,29 +438,29 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 
 		// mark the appropriate amount of clusters as used
 		u32 dataCluster = fileDataStartingCluster;
-		m_fat.data[0][0][dataCluster] = 0xFFFFFFFF;
+		m_fat.data[0][0][dataCluster] = LastDataCluster | DataClusterInUseMask;
 		for ( unsigned int i = 0; i < countClusters - 1; ++i ) {
 			u32 newCluster = GetFreeDataCluster();
-			m_fat.data[0][0][dataCluster] = newCluster | 0x80000000;
-			m_fat.data[0][0][newCluster] = 0xFFFFFFFF;
+			m_fat.data[0][0][dataCluster] = newCluster | DataClusterInUseMask;
+			m_fat.data[0][0][newCluster] = LastDataCluster | DataClusterInUseMask;
 			dataCluster = newCluster;
 		}
 
 		file.Close();
 
 		AddFileEntryToMetadataQuickAccess( newFileEntry, parent );
+
+		// and finally, increase file count in the directory entry
+		dirEntry->entry.data.length++;
+
+		return true;
 	} else {
 		Console.WriteLn( L"(FolderMcd) Could not open file: %s", WX_STR( relativeFilePath.GetFullPath() ) );
 		return false;
 	}
-
-	// and finally, increase file count in the directory entry
-	dirEntry->entry.data.length++;
-
-	return true;
 }
 
-u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory( const wxString& dirPath ) {
+u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory( const wxString& dirPath ) const {
 	const u32 clusterSize = m_superBlock.data.pages_per_cluster * m_superBlock.data.page_len;
 	u32 requiredFileEntryPages = 2;
 	u32 requiredClusters = 0;
@@ -505,19 +511,19 @@ void FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* c
 
 	u32 clusterNumber = 0;
 	do {
-		MemoryCardFileMetadataReference* ref = &m_fileMetadataQuickAccess[fileCluster & 0x7FFFFFFFu];
+		MemoryCardFileMetadataReference* ref = &m_fileMetadataQuickAccess[fileCluster & NextDataClusterMask];
 		ref->parent = parent;
 		ref->entry = entry;
 		ref->consecutiveCluster = clusterNumber;
 		++clusterNumber;
-	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != 0xFFFFFFFFu );
+	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != ( LastDataCluster | DataClusterInUseMask ) );
 }
 
-s32 FolderMemoryCard::IsPresent() {
+s32 FolderMemoryCard::IsPresent() const {
 	return m_isEnabled;
 }
 
-void FolderMemoryCard::GetSizeInfo( PS2E_McdSizeInfo& outways ) {
+void FolderMemoryCard::GetSizeInfo( PS2E_McdSizeInfo& outways ) const {
 	outways.SectorSize = PageSize;
 	outways.EraseBlockSizeInSectors = BlockSize / PageSize;
 	outways.McdSizeInSectors = GetSizeInClusters() * 2;
@@ -527,7 +533,7 @@ void FolderMemoryCard::GetSizeInfo( PS2E_McdSizeInfo& outways ) {
 	outways.Xor ^= pdata[0] ^ pdata[1] ^ pdata[2] ^ pdata[3];
 }
 
-bool FolderMemoryCard::IsPSX() {
+bool FolderMemoryCard::IsPSX() const {
 	return false;
 }
 
@@ -543,40 +549,37 @@ u8* FolderMemoryCard::GetSystemBlockPointer( const u32 adr ) {
 		// trying to access a file entry?
 		const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
 		// if this cluster is unused according to FAT, we can assume we won't find anything
-		if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+		if ( ( m_fat.data[0][0][fatCluster] & DataClusterInUseMask ) == 0 ) {
 			return nullptr;
 		}
 		return GetFileEntryPointer( fatCluster, page % 2, offset );
 	}
 
-	u8* src = nullptr;
 	if ( block == 0 ) {
-		src = &m_superBlock.raw[page * PageSize + offset];
+		return &m_superBlock.raw[page * PageSize + offset];
 	} else if ( block == m_superBlock.data.backup_block1 ) {
-		src = &m_backupBlock1[( page % 16 ) * PageSize + offset];
+		return &m_backupBlock1[( page % 16 ) * PageSize + offset];
 	} else if ( block == m_superBlock.data.backup_block2 ) {
-		src = &m_backupBlock2.raw[( page % 16 ) * PageSize + offset];
+		return &m_backupBlock2.raw[( page % 16 ) * PageSize + offset];
 	} else {
 		// trying to access indirect FAT?
 		for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 			if ( cluster == m_superBlock.data.ifc_list[i] ) {
-				src = &m_indirectFat.raw[i][( page % 2 ) * PageSize + offset];
-				return src;
+				return &m_indirectFat.raw[i][( page % 2 ) * PageSize + offset];
 			}
 		}
 		// trying to access FAT?
 		for ( int i = 0; i < IndirectFatClusterCount; ++i ) {
 			for ( int j = 0; j < ClusterSize / 4; ++j ) {
 				const u32 fatCluster = m_indirectFat.data[i][j];
-				if ( fatCluster != 0xFFFFFFFFu && fatCluster == cluster ) {
-					src = &m_fat.raw[i][j][( page % 2 ) * PageSize + offset];
-					return src;
+				if ( fatCluster != IndirectFatUnused && fatCluster == cluster ) {
+					return &m_fat.raw[i][j][( page % 2 ) * PageSize + offset];
 				}
 			}
 		}
 	}
 
-	return src;
+	return nullptr;
 }
 
 u8* FolderMemoryCard::GetFileEntryPointer( const u32 searchCluster, const u32 entryNumber, const u32 offset ) {
@@ -596,8 +599,8 @@ MemoryCardFileEntryCluster* FolderMemoryCard::GetFileEntryCluster( const u32 cur
 	}
 
 	// check other clusters of this directory
-	const u32 nextCluster = m_fat.data[0][0][currentCluster] & 0x7FFFFFFF;
-	if ( nextCluster != 0x7FFFFFFF ) {
+	const u32 nextCluster = m_fat.data[0][0][currentCluster] & NextDataClusterMask;
+	if ( nextCluster != LastDataCluster ) {
 		MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( nextCluster, searchCluster, fileCount - 2 );
 		if ( ptr != nullptr ) { return ptr; }
 	}
@@ -607,7 +610,7 @@ MemoryCardFileEntryCluster* FolderMemoryCard::GetFileEntryCluster( const u32 cur
 	if ( it != m_fileEntryDict.end() ) {
 		const u32 filesInThisCluster = std::min( fileCount, 2u );
 		for ( unsigned int i = 0; i < filesInThisCluster; ++i ) {
-			MemoryCardFileEntry* const entry = &it->second.entries[i];
+			const MemoryCardFileEntry* const entry = &it->second.entries[i];
 			if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() && !entry->IsDotDir() ) {
 				const u32 newFileCount = entry->entry.data.length;
 				MemoryCardFileEntryCluster* ptr = GetFileEntryCluster( entry->entry.data.cluster, searchCluster, newFileCount );
@@ -635,14 +638,14 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster( const u3
 					return entry;
 				}
 				++clusterNumber;
-			} while ( ( fileCluster = m_fat.data[0][0][fileCluster] & 0x7FFFFFFF ) != 0x7FFFFFFF );
+			} while ( ( fileCluster = m_fat.data[0][0][fileCluster] & NextDataClusterMask ) != LastDataCluster );
 		}
 	}
 
 	// check other clusters of this directory
 	// this can probably be solved more efficiently by looping through nextClusters instead of recursively calling
-	const u32 nextCluster = m_fat.data[0][0][currentCluster] & 0x7FFFFFFF;
-	if ( nextCluster != 0x7FFFFFFF ) {
+	const u32 nextCluster = m_fat.data[0][0][currentCluster] & NextDataClusterMask;
+	if ( nextCluster != LastDataCluster ) {
 		MemoryCardFileEntry* ptr = GetFileEntryFromFileDataCluster( nextCluster, searchCluster, fileName, originalDirCount, outClusterNumber );
 		if ( ptr != nullptr ) { return ptr; }
 	}
@@ -669,7 +672,7 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
 
 	// if the cluster is unused according to FAT, just return
-	if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+	if ( ( m_fat.data[0][0][fatCluster] & DataClusterInUseMask ) == 0 ) {
 		return false;
 	}
 
@@ -739,7 +742,7 @@ s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
 		// is trying to (partially) read the ECC
 		const u32 eccOffset = PageSize - offset;
 		const u32 eccLength = std::min( (u32)( size - offset ), (u32)EccSize );
-		const u32 adrStart = page * 0x210u;
+		const u32 adrStart = page * PageSizeRaw;
 
 		u8 data[PageSize];
 		Read( data, adrStart, PageSize );
@@ -936,8 +939,8 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 
 	// continue to the next cluster of this directory
 	const u32 nextCluster = m_fat.data[0][0][dirCluster];
-	if ( nextCluster != 0xFFFFFFFF ) {
-		FlushFileEntries( nextCluster & 0x7FFFFFFF, remainingFiles - 2, dirPath, parent );
+	if ( nextCluster != ( LastDataCluster | DataClusterInUseMask ) ) {
+		FlushFileEntries( nextCluster & NextDataClusterMask, remainingFiles - 2, dirPath, parent );
 	}
 }
 
@@ -984,7 +987,7 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
 
 	// if the cluster is unused according to FAT, just skip all this, we're not gonna find anything anyway
-	if ( ( m_fat.data[0][0][fatCluster] & 0x80000000 ) == 0 ) {
+	if ( ( m_fat.data[0][0][fatCluster] & DataClusterInUseMask ) == 0 ) {
 		return false;
 	}
 
@@ -997,7 +1000,7 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileSize = entry->entry.data.length;
-			const u32 fileOffsetStart = std::min( clusterNumber * ClusterSize + clusterOffset, fileSize );;
+			const u32 fileOffsetStart = std::min( clusterNumber * ClusterSize + clusterOffset, fileSize );
 			const u32 fileOffsetEnd = std::min( fileOffsetStart + dataLength, fileSize );
 			const u32 bytesToWrite = fileOffsetEnd - fileOffsetStart;
 
@@ -1042,7 +1045,7 @@ s32 FolderMemoryCard::EraseBlock( u32 adr ) {
 	return 1;
 }
 
-u64 FolderMemoryCard::GetCRC() {
+u64 FolderMemoryCard::GetCRC() const {
 	// Since this is just used as integrity check for savestate loading,
 	// give a timestamp of the last time the memory card was written to
 	return m_timeLastWritten;
@@ -1053,7 +1056,7 @@ void FolderMemoryCard::SetSlot( uint slot ) {
 	m_slot = slot;
 }
 
-u32 FolderMemoryCard::GetSizeInClusters() {
+u32 FolderMemoryCard::GetSizeInClusters() const {
 	const u32 clusters = m_superBlock.data.clusters_per_card;
 	if ( clusters > 0 && clusters < 0xFFFFFFFFu ) {
 		return clusters;
@@ -1229,7 +1232,7 @@ bool FileAccessHelper::CleanMemcardFilename( char* name ) {
 }
 
 
-bool MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) {
+bool MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) const {
 	bool parentCleaned = false;
 	if ( parent ) {
 		parentCleaned = parent->GetPath( fileName );

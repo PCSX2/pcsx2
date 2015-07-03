@@ -92,6 +92,25 @@ struct MemoryCardFileEntryDateTime {
 // Structure for directory and file relationships as stored on memory cards
 #pragma pack(push, 1)
 struct MemoryCardFileEntry {
+	enum MemoryCardFileModeFlags {
+		Mode_Read          = 0x0001,
+		Mode_Write         = 0x0002,
+		Mode_Execute       = 0x0004,
+		Mode_CopyProtected = 0x0008,
+		Mode_File          = 0x0010,
+		Mode_Directory     = 0x0020,
+		Mode_Unknown0x0040 = 0x0040,
+		Mode_Unknown0x0080 = 0x0080,
+		Mode_Unknown0x0100 = 0x0100,
+		Mode_Unknown0x0200 = 0x0200,
+		Mode_Unknown0x0400 = 0x0400, // Maybe Mode_PS2_Save or something along those lines?
+		Mode_PocketStation = 0x0800,
+		Mode_PSX           = 0x1000,
+		Mode_Unknown0x2000 = 0x2000, // Supposedly Mode_Hidden but files still show up in the PS2 browser with this set
+		Mode_Unknown0x4000 = 0x4000,
+		Mode_Used          = 0x8000
+	};
+
 	union {
 		struct MemoryCardFileEntryData {
 			u32 mode;
@@ -108,15 +127,15 @@ struct MemoryCardFileEntry {
 		u8 raw[0x200];
 	} entry;
 
-	bool IsFile() { return !!( entry.data.mode & 0x0010 ); }
-	bool IsDir()  { return !!( entry.data.mode & 0x0020 ); }
-	bool IsUsed() { return !!( entry.data.mode & 0x8000 ); }
-	bool IsValid() { return entry.data.mode != 0xFFFFFFFF; }
+	bool IsFile() const { return !!( entry.data.mode & Mode_File ); }
+	bool IsDir()  const { return !!( entry.data.mode & Mode_Directory ); }
+	bool IsUsed() const { return !!( entry.data.mode & Mode_Used ); }
+	bool IsValid() const { return entry.data.mode != 0xFFFFFFFF; }
 	// checks if we're either "." or ".."
-	bool IsDotDir() { return entry.data.name[0] == '.' && ( entry.data.name[1] == '\0' || ( entry.data.name[1] == '.' && entry.data.name[2] == '\0' ) ); }
+	bool IsDotDir() const { return entry.data.name[0] == '.' && ( entry.data.name[1] == '\0' || ( entry.data.name[1] == '.' && entry.data.name[2] == '\0' ) ); }
 
-	static const u32 DefaultDirMode = 0x8427;
-	static const u32 DefaultFileMode = 0x8497;
+	static const u32 DefaultDirMode = Mode_Read | Mode_Write | Mode_Execute | Mode_Directory | Mode_Unknown0x0400 | Mode_Used;
+	static const u32 DefaultFileMode = Mode_Read | Mode_Write | Mode_Execute | Mode_File | Mode_Unknown0x0080 | Mode_Unknown0x0400 | Mode_Used;
 };
 #pragma pack(pop)
 
@@ -143,7 +162,7 @@ struct MemoryCardFileMetadataReference {
 	u32 consecutiveCluster;
 
 	// returns true if filename was modified and metadata containing the actual filename should be written
-	bool GetPath( wxFileName* fileName );
+	bool GetPath( wxFileName* fileName ) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -193,6 +212,11 @@ public:
 	static const int TotalClusters = TotalPages / 2;
 	static const int TotalBlocks = TotalClusters / 8;
 	static const int TotalSizeRaw = TotalPages * PageSizeRaw;
+
+	static const u32 IndirectFatUnused = 0xFFFFFFFFu;
+	static const u32 LastDataCluster = 0x7FFFFFFFu;
+	static const u32 NextDataClusterMask = 0x7FFFFFFFu;
+	static const u32 DataClusterInUseMask = 0x80000000u;
 
 	static const int FramesAfterWriteUntilFlush = 60;
 
@@ -252,17 +276,17 @@ public:
 	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const bool enableFiltering, const wxString& filter );
 	void Close();
 
-	s32  IsPresent();
-	void GetSizeInfo( PS2E_McdSizeInfo& outways );
-	bool IsPSX();
+	s32  IsPresent() const;
+	void GetSizeInfo( PS2E_McdSizeInfo& outways ) const;
+	bool IsPSX() const;
 	s32  Read( u8 *dest, u32 adr, int size );
 	s32  Save( const u8 *src, u32 adr, int size );
 	s32  EraseBlock( u32 adr );
-	u64  GetCRC();
+	u64  GetCRC() const;
 
 	void SetSlot( uint slot );
 
-	u32 GetSizeInClusters();
+	u32 GetSizeInClusters() const;
 
 	// WARNING: The intended use-case for this is resetting back to 8MB if a differently-sized superblock was loaded
 	// setting to a different size is untested and will probably not work correctly
@@ -279,7 +303,7 @@ protected:
 	// initializes memory card data, as if it was fresh from the factory
 	void InitializeInternalData();
 
-	bool IsFormatted();
+	bool IsFormatted() const;
 
 	// returns the in-memory address of data the given memory card adr corresponds to
 	// returns nullptr if adr corresponds to a folder or file entry
@@ -326,22 +350,25 @@ protected:
 
 	// returns the system cluster past the highest used one (will be the lowest free one under normal use)
 	// this is used for creating the FAT, don't call otherwise unless you know exactly what you're doing
-	u32 GetFreeSystemCluster();
+	u32 GetFreeSystemCluster() const;
+
+	// returns the total amount of data clusters available on the memory card, both used and unused
+	u32 GetAmountDataClusters() const;
 
 	// returns the lowest unused data cluster, relative to alloc_offset in the superblock
 	// returns 0xFFFFFFFFu when the memory card is full
-	u32 GetFreeDataCluster();
+	u32 GetFreeDataCluster() const;
 
 	// returns the amount of unused data clusters
-	u32 GetAmountFreeDataClusters();
+	u32 GetAmountFreeDataClusters() const;
 
 	// returns the final cluster of the file or directory which is (partially) stored in the given cluster
-	u32 GetLastClusterOfData( const u32 cluster );
+	u32 GetLastClusterOfData( const u32 cluster ) const;
 
 
 	// creates and returns a new file entry in the given directory entry, ready to be filled
 	// returns nullptr when the memory card is full
-	MemoryCardFileEntry* AppendFileEntryToDir( MemoryCardFileEntry* const dirEntry );
+	MemoryCardFileEntry* AppendFileEntryToDir( const MemoryCardFileEntry* const dirEntry );
 
 	// adds a folder in the host file system to the memory card, including all files and subdirectories
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
@@ -358,7 +385,7 @@ protected:
 	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent = nullptr );
 
 	// calculates the amount of clusters a directory would use up if put into a memory card
-	u32 CalculateRequiredClustersOfDirectory( const wxString& dirPath );
+	u32 CalculateRequiredClustersOfDirectory( const wxString& dirPath ) const;
 
 
 	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
