@@ -279,6 +279,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			if(!t->m_age && bp == t->m_TEX0.TBP0)
 			{
 				dst = CreateTarget(TEX0, w, h, type);
+				dst->m_32_bits_fmt = t->m_32_bits_fmt;
 
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
