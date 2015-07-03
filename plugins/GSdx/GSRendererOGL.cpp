@@ -626,11 +626,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	ps_sel.fba = context->FBA.FBA;
+
 	// TODO deprecat this stuff
-	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
-	ps_sel.aout &= !ps_sel.shuffle;
-		
-	if (UserHacks_AlphaHack) ps_sel.aout = 1;
+	if (ps_sel.shuffle || ps_sel.fbmask) {
+		ps_sel.aout = 0;
+	} else {
+		ps_sel.aout = UserHacks_AlphaHack || ((context->FRAME.FBMSK & 0xff000000) == 0x7f000000) ? 1 : 0;
+	}
 
 	if (PRIM->FGE)
 	{
@@ -647,6 +649,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (context->TEST.ATE && context->TEST.ATST > 1)
 		ps_cb.FogColor_AREF.a = (float)context->TEST.AREF;
 
+	// TODO deprecat this stuff
 	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
