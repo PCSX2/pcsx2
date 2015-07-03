@@ -104,8 +104,6 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
 				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)\n";
-
-#ifdef __linux__
 		case IDC_PALTEX:
 			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion. "
 				"(Note it was never tested on OpenGL)\n\n"
@@ -120,12 +118,14 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_COLCLIP:
 			return "Implement the wrapping of color after an overflow\n\n"
 				"It will be slow (half speed) when the effect are used!\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+#ifdef __linux__
 		case IDC_ACCURATE_FBMASK:
 			return "Implement partial color masking\n\n"
-				"No status yet on the speed impact\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+				"It helps to fix Fifa/Medal of Honors/Fight Night series\nCould slow down a bit the emulation\n\n"
+				"Note: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+#endif
 		case IDC_TC_DEPTH:
 			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
-#endif
 		default:
 			if (updateText)
 				*updateText = false;
