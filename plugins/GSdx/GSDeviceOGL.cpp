@@ -493,6 +493,10 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	OMSetFBO(m_fbo);
 	OMAttachRt(T);
 
+	// Blending is not supported when you render to an Integer texture
+	GLState::blend = false;
+	glDisable(GL_BLEND);
+
 	gl_ClearBufferiv(GL_COLOR, 0, col);
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
