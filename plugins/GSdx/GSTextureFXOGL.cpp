@@ -42,23 +42,13 @@ void GSDeviceOGL::CreateTextureFX()
 	// It might cost a seconds at startup but it would reduce benchmark pollution
 	m_gs = CompileGS();
 
-	int logz = theApp.GetConfig("logz", 1);
-	// Don't do it in debug build, so it can still be tested
-#ifndef _DEBUG
-	if (GLLoader::found_GL_ARB_clip_control && logz) {
-		fprintf(stderr, "Your driver supports advance depth. Logz will be disabled\n");
-		logz = 0;
-	} else if (!GLLoader::found_GL_ARB_clip_control && !logz) {
-		fprintf(stderr, "Your driver DOESN'T support advance depth (GL_ARB_clip_control)\n It is higly recommmended to enable logz\n");
-	}
-#endif
 	for (uint32 key = 0; key < VSSelector::size(); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
 		if (sel.wildhack && (!sel.tme || !sel.fst))
 			m_vs[key] = 0;
 		else
-			m_vs[key] = CompileVS(sel, logz);
+			m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
 	}
 
 	// Enable all bits for stencil operations. Technically 1 bit is
