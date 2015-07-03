@@ -416,13 +416,16 @@ protected:
 	void Flush();
 
 	// flush a single page of the cache to the internal data and/or host file system
-	void FlushPage( const u32 page );
+	bool FlushPage( const u32 page );
 
 	// flush a memory card cluster of the cache to the internal data and/or host file system
-	void FlushCluster( const u32 cluster );
+	bool FlushCluster( const u32 cluster );
 
 	// flush a whole memory card block of the cache to the internal data and/or host file system
-	void FlushBlock( const u32 block );
+	bool FlushBlock( const u32 block );
+
+	// flush the superblock to the internal data and/or host file system
+	void FlushSuperBlock();
 
 	// flush all directory and file entries to the internal data
 	void FlushFileEntries();

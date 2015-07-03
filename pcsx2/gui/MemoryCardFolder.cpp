@@ -99,12 +99,6 @@ void FolderMemoryCard::Close() {
 
 	Flush();
 
-	wxFileName superBlockFileName( m_folderName.GetPath(), L"_pcsx2_superblock" );
-	wxFFile superBlockFile( superBlockFileName.GetFullPath().c_str(), L"wb" );
-	if ( superBlockFile.IsOpened() ) {
-		superBlockFile.Write( &m_superBlock.raw, sizeof( m_superBlock.raw ) );
-	}
-
 	m_cache.clear();
 	m_fileMetadataQuickAccess.clear();
 	m_lastAccessedFile.Close();
@@ -828,7 +822,7 @@ void FolderMemoryCard::Flush() {
 	}
 
 	// first write the superblock if necessary
-	FlushBlock( 0 );
+	FlushSuperBlock();
 	if ( !IsFormatted() ) { return; }
 
 	// check if we were interrupted in the middle of a save operation, if yes abort
@@ -877,24 +871,40 @@ void FolderMemoryCard::Flush() {
 	Console.WriteLn( L"(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart );
 }
 
-void FolderMemoryCard::FlushPage( const u32 page ) {
+bool FolderMemoryCard::FlushPage( const u32 page ) {
 	auto it = m_cache.find( page );
 	if ( it != m_cache.end() ) {
 		WriteWithoutCache( &it->second.raw[0], page * PageSizeRaw, PageSize );
 		m_cache.erase( it );
+		return true;
 	}
+	return false;
 }
 
-void FolderMemoryCard::FlushCluster( const u32 cluster ) {
+bool FolderMemoryCard::FlushCluster( const u32 cluster ) {
 	const u32 page = cluster * 2;
-	FlushPage( page );
-	FlushPage( page + 1 );
+	bool flushed = false;
+	if ( FlushPage( page ) ) { flushed = true; }
+	if ( FlushPage( page + 1 ) ) { flushed = true; }
+	return flushed;
 }
 
-void FolderMemoryCard::FlushBlock( const u32 block ) {
+bool FolderMemoryCard::FlushBlock( const u32 block ) {
 	const u32 page = block * 16;
+	bool flushed = false;
 	for ( int i = 0; i < 16; ++i ) {
-		FlushPage( page + i );
+		if ( FlushPage( page + i ) ) { flushed = true; }
+	}
+	return flushed;
+}
+
+void FolderMemoryCard::FlushSuperBlock() {
+	if ( FlushBlock( 0 ) ) {
+		wxFileName superBlockFileName( m_folderName.GetPath(), L"_pcsx2_superblock" );
+		wxFFile superBlockFile( superBlockFileName.GetFullPath().c_str(), L"wb" );
+		if ( superBlockFile.IsOpened() ) {
+			superBlockFile.Write( &m_superBlock.raw, sizeof( m_superBlock.raw ) );
+		}
 	}
 }
 
@@ -1169,15 +1179,22 @@ u32 FolderMemoryCard::GetSizeInClusters() const {
 }
 
 void FolderMemoryCard::SetSizeInClusters( u32 clusters ) {
-	m_superBlock.data.clusters_per_card = clusters;
+	superBlockUnion newSuperBlock;
+	memcpy( &newSuperBlock.raw[0], &m_superBlock.raw[0], sizeof( newSuperBlock.raw ) );
+
+	newSuperBlock.data.clusters_per_card = clusters;
 	
 	const u32 alloc_offset = clusters / 0x100 + 9;
-	m_superBlock.data.alloc_offset = alloc_offset;
-	m_superBlock.data.alloc_end = clusters - 0x10 - alloc_offset;
+	newSuperBlock.data.alloc_offset = alloc_offset;
+	newSuperBlock.data.alloc_end = clusters - 0x10 - alloc_offset;
 
 	const u32 blocks = clusters / 8;
-	m_superBlock.data.backup_block1 = blocks - 1;
-	m_superBlock.data.backup_block2 = blocks - 2;
+	newSuperBlock.data.backup_block1 = blocks - 1;
+	newSuperBlock.data.backup_block2 = blocks - 2;
+
+	for ( size_t i = 0; i < sizeof( newSuperBlock.raw ) / PageSize; ++i ) {
+		Save( &newSuperBlock.raw[i * PageSize], i * PageSizeRaw, PageSize );
+	}
 }
 
 void FolderMemoryCard::SetSizeInMB( u32 megaBytes ) {
