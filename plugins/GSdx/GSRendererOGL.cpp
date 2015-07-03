@@ -780,6 +780,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
 	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw || ps_sel.fbmask;
+	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
+	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
+	// (therefore primitiveID will be constant to 1)
+	ASSERT(!(DATE_GL42 && sw_blending));
+	sw_blending &= !DATE_GL42;
 
 	if (sw_blending && om_bsel.abe && rt) {
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
