@@ -402,6 +402,11 @@ protected:
 	// creates a reference to a directory entry, so it can be passed as parent to other files/directories
 	MemoryCardFileMetadataReference* AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
 
+	
+	// read data from the memory card, ignoring the cache
+	// do NOT attempt to read ECC with this method, it will not work
+	void ReadDataWithoutCache( u8* const dest, const u32 adr, const u32 dataLength );
+
 
 	bool ReadFromFile( u8 *dest, u32 adr, u32 dataLength );
 	bool WriteToFile( const u8* src, u32 adr, u32 dataLength );

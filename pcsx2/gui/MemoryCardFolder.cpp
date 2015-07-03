@@ -729,14 +729,7 @@ s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
 		if ( it != m_cache.end() ) {
 			memcpy( dest, &it->second.raw[offset], dataLength );
 		} else {
-			u8* src = GetSystemBlockPointer( adr );
-			if ( src != nullptr ) {
-				memcpy( dest, src, dataLength );
-			} else {
-				if ( !ReadFromFile( dest, adr, dataLength ) ) {
-					memset( dest, 0xFF, dataLength );
-				}
-			}
+			ReadDataWithoutCache( dest, adr, dataLength );
 		}
 	}
 
@@ -765,6 +758,17 @@ s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
 	return 1;
 }
 
+void FolderMemoryCard::ReadDataWithoutCache( u8* const dest, const u32 adr, const u32 dataLength ) {
+	u8* src = GetSystemBlockPointer( adr );
+	if ( src != nullptr ) {
+		memcpy( dest, src, dataLength );
+	} else {
+		if ( !ReadFromFile( dest, adr, dataLength ) ) {
+			memset( dest, 0xFF, dataLength );
+		}
+	}
+}
+
 s32 FolderMemoryCard::Save( const u8 *src, u32 adr, int size ) {
 	const u32 block = adr / BlockSizeRaw;
 	const u32 cluster = adr / ClusterSizeRaw;
@@ -790,7 +794,7 @@ s32 FolderMemoryCard::Save( const u8 *src, u32 adr, int size ) {
 		if ( it == m_cache.end() ) {
 			cachePage = &m_cache[page];
 			const u32 adrLoad = page * PageSizeRaw;
-			Read( &cachePage->raw[0], adrLoad, PageSize );
+			ReadDataWithoutCache( &cachePage->raw[0], adrLoad, PageSize );
 		} else {
 			cachePage = &it->second;
 		}
