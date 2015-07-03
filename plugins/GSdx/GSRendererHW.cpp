@@ -658,14 +658,14 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
-#if 0
-	// FIXME: Enable this code in the future. I think it could replace
-	// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
-	// success
-	if (m_oi == NULL) {
+
+	bool hack = theApp.GetConfig("UserHacks_ColorDepthClearOverlap", 0) && theApp.GetConfig("UserHacks", 0);
+	if (hack && !m_oi) {
+		// FIXME: Enable this code in the future. I think it could replace
+		// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
+		// success
 		m_oi = &GSRendererHW::OI_DoubleHalfClear;
 	}
-#endif
 }
 
 bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
