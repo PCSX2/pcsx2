@@ -335,8 +335,11 @@ void GSRendererHW::Draw()
 	GSDrawingContext* context = m_context;
 
 	// It is allowed to use the depth and rt at the same location. However at least 1 must
-	// be disabled. GoW uses a Cd blending on a 24 bits buffer (no alpha)
-	const bool no_rt = context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1);
+	// be disabled.
+	// 1/ GoW uses a Cd blending on a 24 bits buffer (no alpha)
+	// 2/ SuperMan really draw the same value in both buffer...
+	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1)) ||
+		(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK);
 
 	GIFRegTEX0 TEX0;
 
@@ -636,6 +639,8 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
+	// FIXME someone need to add some CRC
+	//m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperMan, CRC::RegionCount, &GSRendererHW::OI_SuperMan));
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
@@ -1202,6 +1207,31 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 
 	return true;
 }
+
+bool GSRendererHW::OI_SuperMan(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// Instead to use a fullscreen rectangle they use a 32 pixels, 4096 pixels with a FBW of 1.
+	// Technically the FB wrap/overlap on itself...
+	GSDrawingContext* ctx = m_context;
+	GSVertex* v = &m_vertex.buff[0];
+
+	if (!(ctx->FRAME.FBP == ctx->ZBUF.ZBP && !PRIM->TME && !ctx->ZBUF.ZMSK && !ctx->FRAME.FBMSK))
+		return true;
+
+	// Please kill those crazy devs!
+	ASSERT(m_vertex.next == 2);
+	ASSERT(m_vt.m_primclass == GS_SPRITE_CLASS);
+	ASSERT((v->RGBAQ.A << 24 | v->RGBAQ.B << 16 | v->RGBAQ.G << 8 | v->RGBAQ.R) == (int)v->XYZ.Z);
+
+	// Do a direct write
+	double depth = (double)v->XYZ.Z * exp2(-32.0f);
+	m_dev->ClearDepth(ds, (float)depth);
+
+	m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, ctx->ZBUF.Block());
+
+	return false;
+}
+
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 
