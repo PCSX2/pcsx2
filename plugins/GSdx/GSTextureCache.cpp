@@ -432,6 +432,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	dst->m_used = true;
+	// Frame is always 32 bits. However target could be reused for standard RT. If the
+	// game uses a 16 bits RT (ricky cricket), you will be screwed
+	dst->m_32_bits_fmt = false;
 
 	return dst;
 }
