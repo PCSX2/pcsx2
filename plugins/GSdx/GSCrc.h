@@ -172,7 +172,7 @@ public:
 		UrbanReign,
 		SteambotChronicles,
 		SacredBlaze,
-		SuperMan,
+		SuperManReturns,
 		TitleCount,
 	};
 
