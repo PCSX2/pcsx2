@@ -674,7 +674,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 
 bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if (m_vt.m_primclass == GS_SPRITE_CLASS && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7)) {
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7) && rt) {
 		GSVertex* v = &m_vertex.buff[0];
 
 		//GL_INS("OI_DoubleHalfClear: psm:%x. Z:%d R:%d G:%d B:%d A:%d", m_context->FRAME.PSM,
