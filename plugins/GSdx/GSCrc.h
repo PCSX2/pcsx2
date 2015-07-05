@@ -172,6 +172,7 @@ public:
 		UrbanReign,
 		SteambotChronicles,
 		SacredBlaze,
+		SuperMan,
 		TitleCount,
 	};
 
