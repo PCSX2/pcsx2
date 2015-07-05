@@ -178,7 +178,7 @@ void ps_main11()
 #endif
 
 #ifdef ps_main12
-out float gl_FragDepth;
+//out float gl_FragDepth;
 void ps_main12()
 {
 	// Convert a RRGBA texture into a float depth texture
@@ -189,7 +189,7 @@ void ps_main12()
 #endif
 
 #ifdef ps_main13
-out float gl_FragDepth;
+//out float gl_FragDepth;
 void ps_main13()
 {
 	// Same as above but without the alpha channel
