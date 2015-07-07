@@ -508,7 +508,7 @@ CRC::Game CRC::m_games[] =
 	{0x48AC09BC, SteambotChronicles, EU, 0},
 	{0x9F391882, SteambotChronicles, US, 0},
 	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
-	{0XE1BF5DCA, SuperMan, NoRegion, 0},
+	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
 };
 
