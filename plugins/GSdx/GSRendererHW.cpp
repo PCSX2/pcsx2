@@ -1207,7 +1207,7 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 	return true;
 }
 
-bool GSRendererHW::OI_SuperMan(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	// Instead to use a fullscreen rectangle they use a 32 pixels, 4096 pixels with a FBW of 1.
 	// Technically the FB wrap/overlap on itself...

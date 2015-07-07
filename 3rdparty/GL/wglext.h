@@ -6,7 +6,14 @@ extern "C" {
 #endif
 
 /*
-** Copyright (c) 2007-2010 The Khronos Group Inc.
+** THIS FILE IS OBSOLETE. Please migrate away from using the
+** ".spec" files and the headers generated from them to the
+** XML Registry and headers generated from that. See
+**   http://www.opengl.org/registry/api/README.txt
+** for more information.
+** 
+** 
+** Copyright (c) 2007-2013 The Khronos Group Inc.
 ** 
 ** Permission is hereby granted, free of charge, to any person obtaining a
 ** copy of this software and/or associated documentation files (the
@@ -48,9 +55,9 @@ extern "C" {
 /*************************************************************/
 
 /* Header file version number */
-/* wglext.h last updated 2010/08/06 */
+/* wglext.h last updated 2013/06/10 */
 /* Current version at http://www.opengl.org/registry/ */
-#define WGL_WGLEXT_VERSION 22
+#define WGL_WGLEXT_VERSION 26
 
 #ifndef WGL_ARB_buffer_region
 #define WGL_FRONT_COLOR_BUFFER_BIT_ARB 0x00000001
@@ -382,8 +389,8 @@ extern "C" {
 #endif
 
 #ifndef WGL_NV_gpu_affinity
-#define WGL_ERROR_INCOMPATIBLE_AFFINITY_MASKS_NV 0x20D0
-#define WGL_ERROR_MISSING_AFFINITY_MASK_NV 0x20D1
+#define ERROR_INCOMPATIBLE_AFFINITY_MASKS_NV 0x20D0
+#define ERROR_MISSING_AFFINITY_MASK_NV 0x20D1
 #endif
 
 #ifndef WGL_AMD_gpu_association
@@ -414,6 +421,18 @@ extern "C" {
 
 #ifndef WGL_EXT_create_context_es2_profile
 #define WGL_CONTEXT_ES2_PROFILE_BIT_EXT 0x00000004
+#endif
+
+#ifndef WGL_NV_DX_interop
+#define WGL_ACCESS_READ_ONLY_NV        0x00000000
+#define WGL_ACCESS_READ_WRITE_NV       0x00000001
+#define WGL_ACCESS_WRITE_DISCARD_NV    0x00000002
+#endif
+
+#ifndef WGL_NV_DX_interop2
+#endif
+
+#ifndef WGL_EXT_swap_control_tear
 #endif
 
 
@@ -891,6 +910,36 @@ typedef BOOL (WINAPI * PFNWGLCOPYIMAGESUBDATANVPROC) (HGLRC hSrcRC, GLuint srcNa
 
 #ifndef WGL_NV_multisample_coverage
 #define WGL_NV_multisample_coverage 1
+#endif
+
+#ifndef WGL_NV_DX_interop
+#define WGL_NV_DX_interop 1
+#ifdef WGL_WGLEXT_PROTOTYPES
+extern BOOL WINAPI wglDXSetResourceShareHandleNV (void *dxObject, HANDLE shareHandle);
+extern HANDLE WINAPI wglDXOpenDeviceNV (void *dxDevice);
+extern BOOL WINAPI wglDXCloseDeviceNV (HANDLE hDevice);
+extern HANDLE WINAPI wglDXRegisterObjectNV (HANDLE hDevice, void *dxObject, GLuint name, GLenum type, GLenum access);
+extern BOOL WINAPI wglDXUnregisterObjectNV (HANDLE hDevice, HANDLE hObject);
+extern BOOL WINAPI wglDXObjectAccessNV (HANDLE hObject, GLenum access);
+extern BOOL WINAPI wglDXLockObjectsNV (HANDLE hDevice, GLint count, HANDLE *hObjects);
+extern BOOL WINAPI wglDXUnlockObjectsNV (HANDLE hDevice, GLint count, HANDLE *hObjects);
+#endif /* WGL_WGLEXT_PROTOTYPES */
+typedef BOOL (WINAPI * PFNWGLDXSETRESOURCESHAREHANDLENVPROC) (void *dxObject, HANDLE shareHandle);
+typedef HANDLE (WINAPI * PFNWGLDXOPENDEVICENVPROC) (void *dxDevice);
+typedef BOOL (WINAPI * PFNWGLDXCLOSEDEVICENVPROC) (HANDLE hDevice);
+typedef HANDLE (WINAPI * PFNWGLDXREGISTEROBJECTNVPROC) (HANDLE hDevice, void *dxObject, GLuint name, GLenum type, GLenum access);
+typedef BOOL (WINAPI * PFNWGLDXUNREGISTEROBJECTNVPROC) (HANDLE hDevice, HANDLE hObject);
+typedef BOOL (WINAPI * PFNWGLDXOBJECTACCESSNVPROC) (HANDLE hObject, GLenum access);
+typedef BOOL (WINAPI * PFNWGLDXLOCKOBJECTSNVPROC) (HANDLE hDevice, GLint count, HANDLE *hObjects);
+typedef BOOL (WINAPI * PFNWGLDXUNLOCKOBJECTSNVPROC) (HANDLE hDevice, GLint count, HANDLE *hObjects);
+#endif
+
+#ifndef WGL_NV_DX_interop2
+#define WGL_NV_DX_interop2 1
+#endif
+
+#ifndef WGL_EXT_swap_control_tear
+#define WGL_EXT_swap_control_tear 1
 #endif
 
 
