@@ -68,6 +68,7 @@ public:
 
 class GSSettingsDlg : public GSDialog
 {
+	list<D3DDISPLAYMODE> m_modes;
 	struct Adapter
 	{
 		std::string name;
