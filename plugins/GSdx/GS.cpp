@@ -72,7 +72,7 @@ static const char *s_type_log ="";
 #ifdef _WINDOWS
 static bool s_isgsopen2 = false; // boolean to remove some stuff from the config panel in new PCSX2's/
 #endif
-bool gsopen_done = false; // crash guard for GSgetTitleInfo2
+bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
 
 EXPORT_C_(uint32) PS2EgetLibType()
 {
@@ -902,18 +902,11 @@ EXPORT_C GSgetLastTag(uint32* tag)
 
 EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 {
-	if (gsopen_done == false) {
-		//printf("GSdx: GSgetTitleInfo but GSOpen not yet done. Ignoring\n");
-		return;
-	}
-
 	string s = "GSdx";
 	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
-	if(s_gs == NULL) return;
-
-	if(s_gs->m_GStitleInfoBuffer[0])
+	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
 	{
 #ifdef _CX11_
 		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
