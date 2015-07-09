@@ -338,8 +338,9 @@ void GSRendererHW::Draw()
 	// be disabled.
 	// 1/ GoW uses a Cd blending on a 24 bits buffer (no alpha)
 	// 2/ SuperMan really draw the same value in both buffer...
+	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
 	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1)) ||
-		(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK);
+		(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE);
 
 	GIFRegTEX0 TEX0;
 
