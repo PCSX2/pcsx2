@@ -251,7 +251,8 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	switch (m_type) {
 		case GSTexture::Offscreen:
 			// 8B is the worst case for depth/stencil
-			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 8, 32);
+			// FIXME I think it is only used for color. So you can save half of the size
+			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
@@ -567,3 +568,18 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	return status;
 }
 
+uint32 GSTextureOGL::GetMemUsage()
+{
+	switch (m_type) {
+		case GSTexture::Offscreen:
+			return m_size.x * m_size.y * (4 + m_int_alignment);
+		case GSTexture::Texture:
+		case GSTexture::RenderTarget:
+			return m_size.x * m_size.y * m_int_alignment;
+		case GSTexture::DepthStencil:
+			return m_size.x * m_size.y * 8;
+		case GSTexture::Backbuffer:
+		default:
+			return 0;
+	}
+}

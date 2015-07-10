@@ -76,4 +76,6 @@ class GSTextureOGL : public GSTexture
 		bool HasBeenCleaned() { return m_clean; }
 		void WasAttached() { m_clean = false; m_dirty = true; }
 		void WasCleaned() { m_clean = true; }
+
+		uint32 GetMemUsage();
 };

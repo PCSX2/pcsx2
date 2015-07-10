@@ -146,6 +146,20 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 	return CreateSurface(type, w, h, msaa, format);
 }
 
+void GSDevice::PrintMemoryUsage()
+{
+#ifdef ENABLE_OGL_DEBUG
+	uint32 pool = 0;
+	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); i++)
+	{
+		GSTexture* t = *i;
+		if (t)
+			pool += t->GetMemUsage();
+	}
+	GL_PERF("MEM: Surface Pool %dMB", pool >> 20u);
+#endif
+}
+
 void GSDevice::EndScene()
 {
 	m_vertex.start += m_vertex.count;

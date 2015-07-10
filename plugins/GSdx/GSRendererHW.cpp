@@ -137,6 +137,9 @@ void GSRendererHW::VSync(int field)
 
 	m_tc->IncAge();
 
+	m_tc->PrintMemoryUsage();
+	m_dev->PrintMemoryUsage();
+
 	m_skip = 0;
 }
 

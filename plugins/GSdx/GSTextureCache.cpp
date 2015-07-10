@@ -1143,6 +1143,38 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 	return t;
 }
 
+void GSTextureCache::PrintMemoryUsage()
+{
+#ifdef ENABLE_OGL_DEBUG
+	uint32 tex    = 0;
+	uint32 tex_rt = 0;
+	uint32 rt     = 0;
+	uint32 dss    = 0;
+	for(hash_set<Source*>::iterator i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end(); i++) {
+		Source* s = *i;
+		if (s) {
+			if (s->m_target)
+				tex_rt += s->m_texture->GetMemUsage();
+			else
+				tex    += s->m_texture->GetMemUsage();
+
+		}
+	}
+	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++) {
+		Target* t = *i;
+		if (t)
+			rt += t->m_texture->GetMemUsage();
+	}
+	for(list<Target*>::iterator i = m_dst[DepthStencil].begin(); i != m_dst[DepthStencil].end(); i++) {
+		Target* t = *i;
+		if (t)
+			dss += t->m_texture->GetMemUsage();
+	}
+
+	GL_PERF("MEM: RO Tex %dMB. RW Tex %dMB. Target %dMB. Depth %dMB", tex >> 20u, tex_rt >> 20u, rt >> 20u, dss >> 20u);
+#endif
+}
+
 // GSTextureCache::Surface
 
 GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
