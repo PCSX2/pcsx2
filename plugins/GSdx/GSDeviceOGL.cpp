@@ -1289,7 +1289,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 
 	#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
-	if (!(gl_type == GL_DEBUG_TYPE_OTHER_ARB && gl_severity == GL_DEBUG_SEVERITY_NOTIFICATION)) {
+	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
 		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 	}
 	#endif
