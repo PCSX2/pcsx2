@@ -190,7 +190,7 @@ template< size_t _size >
 static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 {
 	wxString Bios1;
-	s64 filesize;
+	s64 filesize = 0;
 
 	// Try first a basic extension concatenation (normally results in something like name.bin.rom1)
 	const wxString Bios( g_Conf->FullpathToBios() );

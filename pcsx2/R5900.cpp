@@ -113,7 +113,7 @@ void cpuShutdown()
 __ri void cpuException(u32 code, u32 bd)
 {
 	bool errLevel2, checkStatus;
-	u32 offset;
+	u32 offset = 0;
 
     cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
 	cpuRegs.CP0.n.Cause = code & 0xffff;
