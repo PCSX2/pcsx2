@@ -187,7 +187,6 @@ struct vertex
 {
     vec4 t;
     vec4 c;
-    vec2 a;
 };
 
 void out_vertex(in vertex v)
@@ -198,47 +197,62 @@ void out_vertex(in vertex v)
     EmitVertex();
 }
 
-void out_flat(in vec2 dp)
+void out_flat()
 {
     // Flat output
+#if GS_POINT == 1
+    GSout.fc = GSin[0].fc;
+#else
     GSout.fc = GSin[1].fc;
+#endif
 }
 
+#if GS_POINT == 1
+layout(points) in;
+#else
 layout(lines) in;
+#endif
 layout(triangle_strip, max_vertices = 6) out;
 
 void gs_main()
 {
-    // Rescale from -1 1 to 0:1 (require window size)
-    vec2 dp = vec2(0.0f, 0.0f);
-
     // left top     => GSin[0];
     // right bottom => GSin[1];
-    vertex rb = vertex(GSin[1].t, GSin[1].c, dp);
-    vertex lt = vertex(GSin[0].t, GSin[0].c, vec2(0.0f, 0.0f));
+#if GS_POINT == 1
+    vertex rb = vertex(GSin[0].t, GSin[0].c);
+#else
+    vertex rb = vertex(GSin[1].t, GSin[1].c);
+#endif
+    vertex lt = vertex(GSin[0].t, GSin[0].c);
 
+#if GS_POINT == 1
+    // FIXME need pixel size
+    vec4 rb_p = gl_in[0].gl_Position + vec4(4.0f/1280.0f, 4.0f/1024.0f, 0.0f, 0.0f);
+#else
     vec4 rb_p = gl_in[1].gl_Position;
-    vec4 lb_p = gl_in[1].gl_Position;
-    vec4 rt_p = gl_in[1].gl_Position;
+#endif
+    vec4 lb_p = rb_p;
+    vec4 rt_p = rb_p;
     vec4 lt_p = gl_in[0].gl_Position;
 
+#if GS_POINT == 0
     // flat depth
     lt_p.z = rb_p.z;
     // flat fog and texture perspective
     lt.t.zw = rb.t.zw;
     // flat color
     lt.c = rb.c;
+#endif
 
 	// Swap texture and position coordinate
     vertex lb = rb;
-    lb_p.x = lt_p.x;
     lb.t.x = lt.t.x;
-    lb.a.x = lt.a.x;
+    lb_p.x = lt_p.x;
 
     vertex rt = rb;
     rt_p.y = lt_p.y;
     rt.t.y = lt.t.y;
-    rt.a.y = lt.a.y;
+
 
     // Triangle 1
     gl_Position = lt_p;
@@ -248,7 +262,7 @@ void gs_main()
     out_vertex(lb);
 
     gl_Position = rt_p;
-    out_flat(dp);
+    out_flat();
     out_vertex(rt);
     EndPrimitive();
 
@@ -260,7 +274,7 @@ void gs_main()
     out_vertex(rt);
 
     gl_Position = rb_p;
-    out_flat(dp);
+    out_flat();
     out_vertex(rb);
     EndPrimitive();
 }
