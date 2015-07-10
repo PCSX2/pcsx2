@@ -637,6 +637,27 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					}
 				}
 			}
+
+			// FIXME: this code "fixes" black FMV issue with rule of rose.
+			// Code is completely hardcoded so maybe not the best solution. Besides I don't
+			// know the full impact of it.
+			// Let's keep this code for the future
+#if 0
+			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
+			{
+				GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
+						t->m_texture ? t->m_texture->GetID() : 0,
+						t->m_TEX0.TBP0);
+
+				uint32 rowsize = bw * 8192u;
+				uint32 offset = 0x200 * 256u;
+				int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+				t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
+				t->m_TEX0.TBW = bw;
+				continue;
+			}
+#endif
 		}
 	}
 }
