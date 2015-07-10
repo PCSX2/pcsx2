@@ -248,6 +248,29 @@ class GSDeviceOGL : public GSDevice
 		static uint32 size() { return 1 << 5; }
 	};
 
+	struct GSSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 sprite:1;
+				uint32 point:1;
+
+				uint32 _free:30;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key;}
+
+		GSSelector() : key(0) {}
+		GSSelector(uint32 k) : key(k) {}
+
+		static uint32 size() { return 1 << 2; }
+	};
+
 	__aligned(struct, 32) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
@@ -535,7 +558,7 @@ class GSDeviceOGL : public GSDevice
 	} m_state;
 
 	GLuint m_vs[1<<6];
-	GLuint m_gs;
+	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<3];
 	GSDepthStencilOGL* m_om_dss[1<<6];
 	hash_map<uint64, GLuint > m_ps;
@@ -628,7 +651,7 @@ class GSDeviceOGL : public GSDevice
 
 	void CreateTextureFX();
 	GLuint CompileVS(VSSelector sel, int logz);
-	GLuint CompileGS();
+	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);
 	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
 	GLuint CreateSampler(PSSamplerSelector sel);
@@ -638,7 +661,7 @@ class GSDeviceOGL : public GSDevice
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupVS(VSSelector sel);
-	void SetupGS(bool enable);
+	void SetupGS(GSSelector sel);
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);

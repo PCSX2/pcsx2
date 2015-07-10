@@ -40,7 +40,13 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
-	m_gs = CompileGS();
+	for (uint32 key = 0; key < GSSelector::size(); key++) {
+		GSSelector sel(key);
+		if (sel.point == sel.sprite)
+			m_gs[key] = 0;
+		else
+			m_gs[key] = CompileGS(GSSelector(key));
+	}
 
 	for (uint32 key = 0; key < VSSelector::size(); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
@@ -149,12 +155,9 @@ void GSDeviceOGL::SetupVS(VSSelector sel)
 	m_shader->VS(m_vs[sel], 1);
 }
 
-void GSDeviceOGL::SetupGS(bool enable)
+void GSDeviceOGL::SetupGS(GSSelector sel)
 {
-	if (enable)
-		m_shader->GS(m_gs);
-	else
-		m_shader->GS(0);
+	m_shader->GS(m_gs[sel]);
 }
 
 void GSDeviceOGL::SetupPS(PSSelector sel)

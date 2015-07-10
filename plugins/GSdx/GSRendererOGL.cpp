@@ -240,6 +240,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::VSSelector vs_sel;
 	GSDeviceOGL::VSConstantBuffer vs_cb;
 
+	GSDeviceOGL::GSSelector gs_sel;
+
 	GSDeviceOGL::PSSelector ps_sel;
 	GSDeviceOGL::PSConstantBuffer ps_cb;
 	GSDeviceOGL::PSSamplerSelector ps_ssel;
@@ -778,6 +780,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	}
 
+	// SW Blending
+
 	// Compute the blending equation to detect special case
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
@@ -808,12 +812,17 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.clr1 = om_bsel.IsCLR1();
 	}
 
+	// GS
+
+	gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
+	//gs_sel.point = m_vt.m_primclass == GS_POINT_CLASS;
+
 	// WARNING: setup of the program must be done first. So you can setup
 	// 1/ subroutine uniform
 	// 2/ bindless texture uniform
 	// 3/ others uniform?
 	dev->SetupVS(vs_sel);
-	dev->SetupGS(m_vt.m_primclass == GS_SPRITE_CLASS);
+	dev->SetupGS(gs_sel);
 	dev->SetupPS(ps_sel);
 
 	// rs

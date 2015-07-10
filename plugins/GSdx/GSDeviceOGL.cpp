@@ -134,7 +134,7 @@ GSDeviceOGL::~GSDeviceOGL()
 	m_shader->Delete(m_apitrace);
 
 	for (uint32 key = 0; key < VSSelector::size(); key++) m_shader->Delete(m_vs[key]);
-	m_shader->Delete(m_gs);
+	for (uint32 key = 0; key < GSSelector::size(); key++) m_shader->Delete(m_gs[key]);
 	for (auto it = m_ps.begin(); it != m_ps.end() ; it++) m_shader->Delete(it->second);
 
 	m_ps.clear();
@@ -630,9 +630,11 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
 }
 
 /* Note: must be here because tfx_glsl is static */
-GLuint GSDeviceOGL::CompileGS()
+GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
-	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, "");
+	std::string macro = format("#define GS_POINT %d\n", sel.point);
+
+	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
 }
 
 /* Note: must be here because tfx_glsl is static */
