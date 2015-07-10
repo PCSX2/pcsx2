@@ -1232,7 +1232,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
 			if( EmuConfig.CdvdVerboseReads )
-				Console.WriteLn( Color_Gray, L"CdRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx",
+				Console.WriteLn( Color_Gray, L"CdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
 					cdvd.SeekToSector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 
 			cdvd.ReadTime = cdvdBlockReadTime( MODE_CDROM );
@@ -1280,7 +1280,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 				cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
 			if( EmuConfig.CdvdVerboseReads )
-				Console.WriteLn( Color_Gray, L"CdAudioRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx",
+				Console.WriteLn( Color_Gray, L"CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
 					cdvd.Sector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 
 			cdvd.ReadTime = cdvdBlockReadTime( MODE_CDROM );
@@ -1316,7 +1316,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
 			if( EmuConfig.CdvdVerboseReads )
-				Console.WriteLn( Color_Gray, L"DvdRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx",
+				Console.WriteLn( Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
 					cdvd.SeekToSector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 
 			cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
