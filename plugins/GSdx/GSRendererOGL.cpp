@@ -606,16 +606,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST && !m_accurate_colclip;
 	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && m_accurate_colclip;
-	if (ALPHA.A == ALPHA.B) { // Optimize-away colclip
+	if ((ALPHA.A == ALPHA.B) || !om_bsel.abe) { // Optimize-away colclip
 		// No addition neither substraction so no risk of overflow the [0:255] range.
 		colclip_wrap = false;
 		acc_colclip_wrap = false;
-#ifdef ENABLE_OGL_DEBUG
-		if (colclip_wrap || acc_colclip_wrap) {
-			const char *col[3] = {"Cs", "Cd", "0"};
-			GL_INS("COLCLIP: DISABLED: blending is a plain copy of %s", col[ALPHA.D]);
-		}
-#endif
 	}
 	if (colclip_wrap) {
 		ps_sel.colclip = 1;
@@ -623,8 +617,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	} else if (acc_colclip_wrap) {
 		ps_sel.colclip = 3;
 		GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-	} else if (env.COLCLAMP.CLAMP == 0 && (ALPHA.A != ALPHA.B)) {
-		GL_INS("COLCLIP NOT SUPPORTED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 	}
 
 	ps_sel.fba = context->FBA.FBA;
