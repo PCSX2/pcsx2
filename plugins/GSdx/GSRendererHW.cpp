@@ -404,11 +404,19 @@ void GSRendererHW::Draw()
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
 
+		bool not_really_16_bits = tex->m_32_bits_fmt;
 		if (rt) {
+			not_really_16_bits |= rt->m_32_bits_fmt;
+		}
+		// Both input and output are 16 bits but either texture or RT was initially 32 bits!
+		m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && not_really_16_bits;
+
+		// Be sure texture shuffle detection is properly propagated
+		if (m_texture_shuffle && rt) {
 			rt->m_32_bits_fmt |= tex->m_32_bits_fmt;
 		}
-		// Both input and output are 16 bits but texture was initially 32 bits!
-		m_texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt);
+
+		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 	}
 

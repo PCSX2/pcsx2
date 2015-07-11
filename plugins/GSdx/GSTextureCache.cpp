@@ -432,9 +432,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	dst->m_used = true;
-	// Frame is always 32 bits. However target could be reused for standard RT. If the
-	// game uses a 16 bits RT (ricky cricket), you will be screwed
-	dst->m_32_bits_fmt = false;
 
 	return dst;
 }
@@ -809,6 +806,12 @@ void GSTextureCache::IncAge()
 
 			Target* t = *j;
 
+			// This variable is used to detect the texture shuffle effect. There is a high
+			// probability that game will do it on the current RT.
+			// Variable is cleared here to avoid issue with game that uses a 16 bits
+			// render target
+			t->m_32_bits_fmt = false;
+
 			if(++t->m_age > maxage)
 			{
 				m_dst[type].erase(j);
@@ -864,8 +867,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 
-		if (TEX0.PSM < PSM_PSMT8 || TEX0.PSM > PSM_PSMT4HH)
+		if (TEX0.PSM < PSM_PSMT8 || TEX0.PSM > PSM_PSMT4HH) {
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
+		}
 		src->m_target = true;
 
 		dst->Update();
