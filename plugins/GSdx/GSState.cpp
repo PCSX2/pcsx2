@@ -3023,7 +3023,7 @@ struct GSFrameInfo
 typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
 CRC::Region g_crc_region = CRC::NoRegion;
 
-bool GSC_Okami(const GSFrameInfo& fi, int& skip)
+bool GSC_Okami(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3140,7 +3140,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
     return true;
 }
 
-bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
+bool GSC_SFEX3(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3153,7 +3153,7 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Bully(const GSFrameInfo& fi, int& skip)
+bool GSC_Bully(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3227,7 +3227,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip)
+bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3240,7 +3240,7 @@ bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_OnePieceGrandBattle(const GSFrameInfo& fi, int& skip)
+bool GSC_OnePieceGrandBattle(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3561,7 +3561,7 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
+bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3595,7 +3595,7 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
+bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3639,7 +3639,7 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
+bool GSC_GiTS(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3689,7 +3689,7 @@ bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
+bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3709,7 +3709,7 @@ bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
+bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3760,7 +3760,7 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
+bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
 	// The operation of the stencil is selected with the palette
@@ -3793,7 +3793,7 @@ bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
+bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3822,7 +3822,7 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
+bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3899,7 +3899,7 @@ bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip)
+bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -3999,7 +3999,7 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
+bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(Aggresive && skip == 0)
 	{
@@ -4043,7 +4043,7 @@ bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Tenchu(const GSFrameInfo& fi, int& skip)
+bool GSC_Tenchu(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4056,7 +4056,7 @@ bool GSC_Tenchu(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Sly3(const GSFrameInfo& fi, int& skip)
+bool GSC_Sly3(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4076,7 +4076,7 @@ bool GSC_Sly3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
+bool GSC_Sly2(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4175,7 +4175,7 @@ bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
+bool GSC_DemonStone(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4195,7 +4195,7 @@ bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
+bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4221,7 +4221,7 @@ bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
+bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4326,7 +4326,7 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Castlevania(const GSFrameInfo& fi, int& skip)
+bool GSC_Castlevania(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4616,7 +4616,7 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SpyroNewBeginning(const GSFrameInfo& fi, int& skip)
+bool GSC_SpyroNewBeginning(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4629,7 +4629,7 @@ bool GSC_SpyroNewBeginning(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SpyroEternalNight(const GSFrameInfo& fi, int& skip)
+bool GSC_SpyroEternalNight(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -4877,7 +4877,7 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_XE3(const GSFrameInfo& fi, int& skip)
+bool GSC_XE3(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -5113,7 +5113,7 @@ bool GSC_SengokuBasara(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
+bool GSC_Grandia3(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -5432,7 +5432,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
 			map[CRC::GetaWay] = GSC_GetaWay;
 			map[CRC::GodHand] = GSC_GodHand;
-			map[CRC::GodOfWar2] = GSC_GodOfWar2;
 			map[CRC::GT3] = GSC_GT3;
 			map[CRC::GT4] = GSC_GT4;
 			map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
@@ -5471,7 +5470,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
 			map[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 			map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-			map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 			map[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
 			map[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 			map[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
@@ -5485,7 +5483,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::UrbanReign] = GSC_UrbanReign;
 			map[CRC::WildArms4] = GSC_WildArms4;
 			map[CRC::WildArms5] = GSC_WildArms5;
-			map[CRC::XE3] = GSC_XE3;
 			map[CRC::Yakuza2] = GSC_Yakuza2;
 			map[CRC::Yakuza] = GSC_Yakuza;
 			map[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
@@ -5503,9 +5500,12 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		// Hack that were fixed on openGL
 		if (Dx_only) {
 			map[CRC::Bully] = GSC_Bully;
+			map[CRC::GodOfWar2] = GSC_GodOfWar2;
 			map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 			map[CRC::Okami] = GSC_Okami;
 			map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
+			map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
+			map[CRC::XE3] = GSC_XE3;
 
 			// Not tested but must be fixed with texture shuffle
 			map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
