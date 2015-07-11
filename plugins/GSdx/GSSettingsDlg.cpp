@@ -28,9 +28,8 @@
 #include "resource.h"
 #include "GSSetting.h"
 
-GSSettingsDlg::GSSettingsDlg(bool isOpen2)
-	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
-	, m_IsOpen2(isOpen2)
+GSSettingsDlg::GSSettingsDlg()
+	: GSDialog(IDD_CONFIG)
 {
 #ifdef ENABLE_OPENCL
 	list<OCLDeviceDesc> ocldevs;
@@ -63,37 +62,6 @@ void GSSettingsDlg::OnInit()
 		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
 	}
 
-	if(!m_IsOpen2)
-	{
-		D3DDISPLAYMODE mode;
-		memset(&mode, 0, sizeof(mode));
-		m_modes.push_back(mode);
-
-		ComboBoxAppend(IDC_RESOLUTION, "Please select...", (LPARAM)&m_modes.back(), true);
-
-		if(d3d9)
-		{
-			uint32 w = theApp.GetConfig("ModeWidth", 0);
-			uint32 h = theApp.GetConfig("ModeHeight", 0);
-			uint32 hz = theApp.GetConfig("ModeRefreshRate", 0);
-
-			uint32 n = d3d9->GetAdapterModeCount(D3DADAPTER_DEFAULT, D3DFMT_R5G6B5);
-
-			for(uint32 i = 0; i < n; i++)
-			{
-				if(S_OK == d3d9->EnumAdapterModes(D3DADAPTER_DEFAULT, D3DFMT_R5G6B5, i, &mode))
-				{
-					m_modes.push_back(mode);
-
-					string str = format("%dx%d %dHz", mode.Width, mode.Height, mode.RefreshRate);
-
-					ComboBoxAppend(IDC_RESOLUTION, str.c_str(), (LPARAM)&m_modes.back(), w == mode.Width && h == mode.Height && hz == mode.RefreshRate);
-				}
-			}
-		}
-	}
-
-	adapters.clear();
 
 	adapters.push_back(Adapter("Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_HARDWARE)));
 	adapters.push_back(Adapter("Reference Device", "ref", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_REFERENCE)));
@@ -182,11 +150,9 @@ void GSSettingsDlg::OnInit()
 	UpdateRenderers();
 	
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfig("Interlace", 7)); // 7 = "auto", detects interlace based on SMODE2 register
-	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gs_aspectratio, theApp.GetConfig("AspectRatio", 1));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfig("upscale_multiplier", 1));
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfig("MaxAnisotropy", 0));
 
-	CheckDlgButton(m_hWnd, IDC_WINDOWED, theApp.GetConfig("windowed", 1));
 	CheckDlgButton(m_hWnd, IDC_FILTER, theApp.GetConfig("filter", 2));
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfig("paltex", 0));
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
@@ -279,15 +245,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				}
 			}
 
-			if(!m_IsOpen2 && ComboBoxGetSelData(IDC_RESOLUTION, data))
-			{
-				const D3DDISPLAYMODE* mode = (D3DDISPLAYMODE*)data;
-
-				theApp.SetConfig("ModeWidth", (int)mode->Width);
-				theApp.SetConfig("ModeHeight", (int)mode->Height);
-				theApp.SetConfig("ModeRefreshRate", (int)mode->RefreshRate);
-			}
-
 			if(ComboBoxGetSelData(IDC_RENDERER, data))
 			{
 				theApp.SetConfig("Renderer", (int)data);
@@ -296,11 +253,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if(ComboBoxGetSelData(IDC_INTERLACE, data))
 			{
 				theApp.SetConfig("Interlace", (int)data);
-			}
-
-			if(ComboBoxGetSelData(IDC_ASPECTRATIO, data))
-			{
-				theApp.SetConfig("AspectRatio", (int)data);
 			}
 
 			if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, data))
@@ -315,11 +267,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if(ComboBoxGetSelData(IDC_AFCOMBO, data))
 			{
 				theApp.SetConfig("MaxAnisotropy", (int)data);
-			}
-
-			if(GetId() == IDD_CONFIG) // TODO: other options may not be present in IDD_CONFIG2 as well
-			{
-				theApp.SetConfig("windowed", (int)IsDlgButtonChecked(m_hWnd, IDC_WINDOWED));			
 			}
 
 			theApp.SetConfig("filter", (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER));

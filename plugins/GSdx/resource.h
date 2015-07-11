@@ -86,13 +86,12 @@
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
 #define IDR_INTERLACE_FX                10003
-#define IDD_CONFIG2                     10004
-#define IDR_FXAA_FX                     10005
-#define IDR_CS_FX                       10006
-#define IDD_SHADEBOOST                  10007
-#define IDR_SHADEBOOST_FX               10009
-#define IDR_TFX_CL                      10010
-#define IDD_HACKS                       10011
+#define IDR_FXAA_FX                     10004
+#define IDR_CS_FX                       10005
+#define IDD_SHADEBOOST                  10006
+#define IDR_SHADEBOOST_FX               10007
+#define IDR_TFX_CL                      10008
+#define IDD_HACKS                       10009
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

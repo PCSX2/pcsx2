@@ -775,7 +775,7 @@ EXPORT_C GSconfigure()
 
 #ifdef _WINDOWS
 
-		if(GSSettingsDlg(s_isgsopen2).DoModal() == IDOK)
+		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			if(s_gs != NULL && s_gs->m_wnd->IsManaged())
 			{
