@@ -23,7 +23,7 @@ postBuild.inc.cmd
 postBuild.cmd
 svnrev.h
 
-build
+/build
 
 .DS_Store
 Thumbs.db
@@ -83,6 +83,8 @@ oprofile_data/
 /3rdparty/wxWidgets/lib/vc_lib/msw/wx/setup.h
 /3rdparty/wxWidgets/lib/vc_lib/mswd/wx/setup.h
 /3rdparty/wxWidgets/lib/vc_lib/mswd/wx/msw/rcdefs.h
+/3rdparty/wxwidgets3.0/include/wx/setup.h
+/3rdparty/wxwidgets3.0/include/wx/msw/rcdefs.h
 /3rdparty/zlib/Win32
 /common/deps
 /common/build/Utilities/Win32
