@@ -814,8 +814,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// GS
 
+#if 0
+	if (m_vt.m_primclass == GS_POINT_CLASS) {
+		// Upscaling point will create aliasing because point has a size of 0 pixels.
+		// This code tries to replace point with sprite. So a point in 4x will be replaced by
+		// a 4x4 sprite.
+		gs_sel.point = 1;
+		// FIXME this formula is potentially wrong
+		GSVector4 point_size = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y) * 2.0f;
+		vs_cb.TextureScale = vs_cb.TextureScale.xyxy(point_size);
+	}
+#endif
 	gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
-	//gs_sel.point = m_vt.m_primclass == GS_POINT_CLASS;
 
 	// WARNING: setup of the program must be done first. So you can setup
 	// 1/ subroutine uniform

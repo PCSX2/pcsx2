@@ -1,5 +1,13 @@
 //#version 420 // Keep it for text editor detection
 
+layout(std140, binding = 20) uniform cb20
+{
+    vec2 VertexScale;
+    vec2 VertexOffset;
+    vec2 TextureScale;
+    vec2 PointSize;
+};
+
 #ifdef VERTEX_SHADER
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in vec4  i_c;
@@ -26,13 +34,6 @@ out gl_PerVertex {
 #if !pGL_ES
     float gl_ClipDistance[];
 #endif
-};
-
-layout(std140, binding = 20) uniform cb20
-{
-    vec2 VertexScale;
-    vec2 VertexOffset;
-    vec2 TextureScale;
 };
 
 #ifdef ZERO_TO_ONE_DEPTH
@@ -226,8 +227,7 @@ void gs_main()
     vertex lt = vertex(GSin[0].t, GSin[0].c);
 
 #if GS_POINT == 1
-    // FIXME need pixel size
-    vec4 rb_p = gl_in[0].gl_Position + vec4(4.0f/1280.0f, 4.0f/1024.0f, 0.0f, 0.0f);
+    vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
 #else
     vec4 rb_p = gl_in[1].gl_Position;
 #endif
