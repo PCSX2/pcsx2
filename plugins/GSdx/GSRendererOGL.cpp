@@ -799,7 +799,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 
 		// No need to flush for every primitive
-		require_barrier = !(bogus_blend & NO_BAR);
+		require_barrier |= !(bogus_blend & NO_BAR);
 	} else {
 		ps_sel.clr1 = om_bsel.IsCLR1();
 	}
