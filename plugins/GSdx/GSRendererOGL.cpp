@@ -153,13 +153,15 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
-bool GSRendererOGL::PrimitiveOverlap()
+GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 {
+	// Either 1 triangle or 1 line or 3 POINTs
+	// It is bad for the POINTs but low probability that they overlap
 	if (m_vertex.next < 4)
-		return false;
+		return PRIM_OVERLAP_NO;
 
 	if (m_vt.m_primclass != GS_SPRITE_CLASS)
-		return true;
+		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
 	size_t count = m_vertex.next;
@@ -173,20 +175,20 @@ bool GSRendererOGL::PrimitiveOverlap()
 			GSVector4i inter = vi.rintersect(vj);
 			if (!inter.rempty()) {
 				//fprintf(stderr, "Overlap found between %d and %d (draw of %d vertices)\n", i, j, count);
-				return true;
+				return PRIM_OVERLAP_YES;
 			}
 		}
 	}
 
 	//fprintf(stderr, "Yes, code can be optimized (draw of %d vertices)\n", count);
-	return false;
+	return PRIM_OVERLAP_NO;
 }
 
 void GSRendererOGL::SendDraw(bool require_barrier)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (!require_barrier || !PrimitiveOverlap()) {
+	if (!require_barrier || (m_prim_overlap == PRIM_OVERLAP_NO)) {
 		dev->DrawIndexedPrimitive();
 	} else {
 		ASSERT(m_vt.m_primclass != GS_POINT_CLASS);
@@ -226,7 +228,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
 
-	bool require_barrier = false; // For blend (and maybe in date in the future)
+	bool require_barrier = false; // For accurate option
 
 	ASSERT(m_dev != NULL);
 
@@ -245,6 +247,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMBlendSelector om_bsel;
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
+
+	if (GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		// Except 2D games, sprites are often use for special post-processing effect
+		m_prim_overlap = PrimitiveOverlap();
+#ifdef ENABLE_OGL_DEBUG
+		if ((context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
+			GL_INS("ERROR: Source and Target are the same!");
+		}
+#endif
+	} else {
+		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
+	}
 
 	if (m_texture_shuffle) {
 		ps_sel.shuffle = 1;
@@ -450,7 +464,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	if (DATE) {
-		if (GLLoader::found_GL_ARB_texture_barrier && !PrimitiveOverlap()) {
+		if (GLLoader::found_GL_ARB_texture_barrier && (m_prim_overlap == PRIM_OVERLAP_NO)) {
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (m_accurate_date && om_csel.wa
@@ -754,8 +768,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Compute the blending equation to detect special case
 	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-	bool all_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
-	bool sw_blending = (m_accurate_blend && (bogus_blend & A_MAX)) || acc_colclip_wrap || all_sw || ps_sel.fbmask;
+	bool all_sw      = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
+
+	bool sw_blending = (m_prim_overlap == PRIM_OVERLAP_NO) // Free case
+		|| (m_accurate_blend && (bogus_blend & A_MAX)) || all_sw // Impossible blend or all
+		|| acc_colclip_wrap // accurate colclip
+		|| ps_sel.fbmask; // accurate fbmask
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1)
@@ -822,7 +840,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
-		ASSERT((bogus_blend & A_MAX) == 0);
 		// It could be good idea to use stencil in the same time.
 		// Early stencil test will reduce the number of atomic-load operation
 

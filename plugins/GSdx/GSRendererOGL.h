@@ -29,6 +29,12 @@
 
 class GSRendererOGL : public GSRendererHW
 {
+	enum PRIM_OVERLAP {
+		PRIM_OVERLAP_UNKNOW,
+		PRIM_OVERLAP_YES,
+		PRIM_OVERLAP_NO
+	};
+
 	private:
 		GSVector2 m_pixelcenter;
 		int  m_accurate_blend;
@@ -38,6 +44,8 @@ class GSRendererOGL : public GSRendererHW
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
+
+		PRIM_OVERLAP m_prim_overlap;
 
 	protected:
 		void EmulateGS();
@@ -51,7 +59,7 @@ class GSRendererOGL : public GSRendererHW
 
 		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 
-		bool PrimitiveOverlap();
+		PRIM_OVERLAP PrimitiveOverlap();
 
 		void SendDraw(bool require_barrier);
 };
