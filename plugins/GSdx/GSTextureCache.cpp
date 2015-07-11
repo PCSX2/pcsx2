@@ -491,11 +491,11 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 		}
 
-		if (bw >= 16) {
+		uint32 bbp = bp + bw * 0x10;
+		if (bw >= 16 && bbp < 16384) {
 			// Detect half of the render target (fix snow engine game)
 			// Target Page (8KB) have always a width of 64 pixels
 			// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
-			uint32 bbp = bp + bw * 0x10;
 
 			const list<Source*>& m = m_src.m_map[bbp >> 5];
 
