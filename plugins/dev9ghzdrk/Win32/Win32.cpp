@@ -84,7 +84,7 @@ void OnOk(HWND hW) {
 		{
 			//Trying to use an ethernet without
 			//selected adapter, we can't have that
-			SysMessage("Please Select an ethernet adapter");
+			SysMessage("Please select an ethernet adapter");
 			return;
 		}
 		else 
