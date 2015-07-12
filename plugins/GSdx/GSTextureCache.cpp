@@ -1488,6 +1488,17 @@ void GSTextureCache::Target::Update()
 
 	if (r.rempty()) return;
 
+	// No handling please
+	if ((m_type == DepthStencil) && !m_depth_supported) {
+		// do the most likely thing a direct write would do, clear it
+		GL_INS("ERROR: Update DepthStencil dummy");
+
+		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
+			m_renderer->m_dev->ClearDepth(m_texture, 0);
+
+		return;
+	}
+
 	int w = r.width();
 	int h = r.height();
 
@@ -1499,17 +1510,6 @@ void GSTextureCache::Target::Update()
 
 	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
 	if (t == NULL) return;
-
-	// No handling please
-	if ((m_type == DepthStencil) && !m_depth_supported) {
-		// do the most likely thing a direct write would do, clear it
-		GL_INS("ERROR: Update DepthStencil dummy");
-
-		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
-			m_renderer->m_dev->ClearDepth(m_texture, 0);
-
-		return;
-	}
 
 	const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
