@@ -28,6 +28,23 @@ GSWndWGL::GSWndWGL()
 {
 }
 
+// Used by GSReplay. Perhaps the stuff used by GSReplay can be moved out? That way all
+// the GSOpen 1 stuff can be removed. But that'll take a bit of thinking.
+LRESULT CALLBACK GSWndWGL::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CLOSE:
+		// This takes place before GSClose, so don't destroy the Window so we can clean up.
+		ShowWindow(hWnd, SW_HIDE);
+		// DestroyWindow(hWnd);
+		return 0;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+}
+
+
 bool GSWndWGL::CreateContext(int major, int minor)
 {
 	if ( !m_NativeDisplay || !m_NativeWindow )
@@ -149,6 +166,14 @@ void GSWndWGL::Detach()
 	m_context = NULL;
 
 	CloseWGLDisplay();
+
+	// Used by GSReplay.
+	if (m_NativeWindow && m_managed)
+	{
+		DestroyWindow(m_NativeWindow);
+		m_NativeWindow = NULL;
+	}
+
 }
 
 bool GSWndWGL::OpenWGLDisplay()
@@ -209,55 +234,78 @@ void GSWndWGL::CloseWGLDisplay()
 }
 
 //TODO: GSopen 1 => Drop?
+// Used by GSReplay. At least for now.
+// More or less copy pasted from GSWndDX::Create and GSWndWGL::Attach with a few
+// modifications
 bool GSWndWGL::Create(const string& title, int w, int h)
 {
-#if 0
 	if(m_NativeWindow) return false;
-
-	if(w <= 0 || h <= 0) {
-		w = theApp.GetConfig("ModeWidth", 640);
-		h = theApp.GetConfig("ModeHeight", 480);
-	}
 
 	m_managed = true;
 
-	// note this part must be only executed when replaying .gs debug file
-	m_NativeDisplay = XOpenDisplay(NULL);
+	WNDCLASS wc;
 
-	int attrListDbl[] = { GLX_RGBA, GLX_DOUBLEBUFFER,
-		GLX_RED_SIZE, 8,
-		GLX_GREEN_SIZE, 8,
-		GLX_BLUE_SIZE, 8,
-		GLX_DEPTH_SIZE, 24,
-		None
-	};
-	XVisualInfo* vi = glXChooseVisual(m_NativeDisplay, DefaultScreen(m_NativeDisplay), attrListDbl);
+	memset(&wc, 0, sizeof(wc));
 
-	/* create a color map */
-	XSetWindowAttributes attr;
-	attr.colormap = XCreateColormap(m_NativeDisplay, RootWindow(m_NativeDisplay, vi->screen),
-			vi->visual, AllocNone);
-	attr.border_pixel = 0;
-	attr.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask |
-		StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask |
-		EnterWindowMask | LeaveWindowMask | FocusChangeMask ;
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_OWNDC;
+	wc.lpfnWndProc = WndProc;
+	wc.hInstance = theApp.GetModuleHandle();
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wc.lpszClassName = "GSWndOGL";
 
-	// Create a window at the last position/size
-	m_NativeWindow = XCreateWindow(m_NativeDisplay, RootWindow(m_NativeDisplay, vi->screen),
-			0 , 0 , w, h, 0, vi->depth, InputOutput, vi->visual,
-			CWBorderPixel | CWColormap | CWEventMask, &attr);
+	if (!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
+	{
+		if (!RegisterClass(&wc))
+		{
+			return false;
+		}
+	}
 
-	XMapWindow (m_NativeDisplay, m_NativeWindow);
-	XFree(vi);
+	DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_BORDER;
+
+	GSVector4i r;
+
+	GetWindowRect(GetDesktopWindow(), r);
+
+	// Old GSOpen ModeWidth and ModeHeight are not necessary with this.
+	bool remote = !!GetSystemMetrics(SM_REMOTESESSION);
+
+	if (w <= 0 || h <= 0 || remote)
+	{
+		w = r.width() / 3;
+		h = r.width() / 4;
+
+		if (!remote)
+		{
+			w *= 2;
+			h *= 2;
+		}
+	}
+
+	r.left = (r.left + r.right - w) / 2;
+	r.top = (r.top + r.bottom - h) / 2;
+	r.right = r.left + w;
+	r.bottom = r.top + h;
+
+	AdjustWindowRect(r, style, FALSE);
+
+	m_NativeWindow = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
+
+	if (m_NativeWindow == NULL) return false;
+
+	if (!OpenWGLDisplay()) return false;
 
 	if (!CreateContext(3, 3)) return false;
 
 	AttachContext();
 
-	return (m_NativeWindow != 0);
-#else
-	return false;
-#endif
+	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+
+	PopulateGlFunction();
+
+	return true;
+
 }
 
 //Same as DX
@@ -298,6 +346,12 @@ void GSWndWGL::Flip()
 
 void GSWndWGL::Show()
 {
+	if (!m_managed) return;
+
+	// Used by GSReplay
+	SetForegroundWindow(m_NativeWindow);
+	ShowWindow(m_NativeWindow, SW_SHOWNORMAL);
+	UpdateWindow(m_NativeWindow);
 }
 
 void GSWndWGL::Hide()
@@ -313,7 +367,12 @@ void GSWndWGL::HideFrame()
 
 bool GSWndWGL::SetWindowText(const char* title)
 {
-	return false;
+	if (!m_managed) return false;
+
+	// Used by GSReplay.
+	::SetWindowText(m_NativeWindow, title);
+
+	return true;
 }
 
 
