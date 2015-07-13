@@ -104,7 +104,8 @@ fragment_test()
     head
     echo "#define FRAGMENT_SHADER 1" >> $TEST
     echo "$MACRO" >> $TEST
-    echo "Fragment check with macro : $MACRO"
+    echo "Fragment check with macro : "
+    echo "$MACRO"
 
     tail
     $FRAG $ENTRY $TEST
@@ -116,13 +117,19 @@ fragment_test()
 ######################################################
 
 if [ "$TEST_ZZOGL" = '1' ] ; then
-    ./test_shader.sh --input $INPUT --novert --m TEST_AEM 1
-    ./test_shader.sh --input $INPUT --novert --m REGION_REPEAT 1
-    ./test_shader.sh --input $INPUT --novert --m EXACT_COLOR 1
-    ./test_shader.sh --input $INPUT --m WRITE_DEPTH 1
-    ./test_shader.sh --input $INPUT
+    ./validate_glsl.sh --input $INPUT --novert --m TEST_AEM 1
+    ./validate_glsl.sh --input $INPUT --novert --m REGION_REPEAT 1
+    ./validate_glsl.sh --input $INPUT --novert --m EXACT_COLOR 1
+    ./validate_glsl.sh --input $INPUT --m WRITE_DEPTH 1
+    ./validate_glsl.sh --input $INPUT
 elif [ "$TEST_GSDX" = '1' ] ; then
     echo "not yet implemented"
+    # A very big shader example (124 instructions!)
+    ./validate_glsl.sh --input $INPUT --novert --entry ps_main --macro PS_TCC 0 --macro PS_TFX 0 --macro PS_IIP 1 --macro PS_ATST 4 --macro PS_FST 1 --macro PS_BLEND 4 --macro PS_COLCLIP 3 --macro PS_SHUFFLE 1 --macro PS_LTF 1 --macro PS_FMT 6 --macro PS_AEM 0 --macro PS_FBMASK 1 --macro PS_FOG 1 --macro PS_WMS 2 --macro PS_WMT 3
+
+    # TODO
+    # Maybe it would be nice to make several loop to iterate on various option and to monitor the impact on the instruction number
+
 else
     if [ "$NOVERT" = '0' ] ; then vertex_test; fi
     if [ "$NOFRAG" = '0' ] ; then fragment_test; fi
