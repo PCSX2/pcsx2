@@ -23,8 +23,10 @@ NOVERT=0
 # VERT="cgc -oglsl -profile glslv -po version=$GL_VERSION"
 # FRAG="cgc -oglsl -profile glslf -po version=$GL_VERSION"
 # Uniform buffer not supported on glsl ...
-VERT="cgc -oglsl -profile vp40"
-FRAG="cgc -oglsl -profile fp40"
+#VERT="cgc -oglsl -profile vp40"
+#FRAG="cgc -oglsl -profile fp40"
+VERT="cgc -oglsl -profile gp5vp"
+FRAG="cgc -oglsl -profile gp5fp"
 
 ######################################################
 # Options
