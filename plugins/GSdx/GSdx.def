@@ -5,8 +5,7 @@ EXPORTS
 	PS2EgetLibType		
 	PS2EgetLibName		
 	PS2EgetLibVersion2	
-	PS2EgetCpuPlatform	
-	PS2EsetEmuVersion
+	PS2EgetCpuPlatform
 	GSsetBaseMem		
 	GSinit				
 	GSshutdown			
