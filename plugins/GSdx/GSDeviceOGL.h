@@ -354,7 +354,10 @@ class GSDeviceOGL : public GSDevice
 				//uint32 _free1:0;
 
 				// Word 2
-				uint32 blend:8;
+				uint32 blend_a:2;
+				uint32 blend_b:2;
+				uint32 blend_c:2;
+				uint32 blend_d:2;
 				uint32 dfmt:2;
 				uint32 fbmask:1;
 

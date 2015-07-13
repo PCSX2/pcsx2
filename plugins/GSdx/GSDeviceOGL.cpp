@@ -659,7 +659,10 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_DATE %d\n", sel.date)
 		+ format("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
 		//+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
-		+ format("#define PS_BLEND %d\n", sel.blend)
+		+ format("#define PS_BLEND_A %d\n", sel.blend_a)
+		+ format("#define PS_BLEND_B %d\n", sel.blend_b)
+		+ format("#define PS_BLEND_C %d\n", sel.blend_c)
+		+ format("#define PS_BLEND_D %d\n", sel.blend_d)
 		+ format("#define PS_IIP %d\n", sel.iip)
 		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
 		+ format("#define PS_READ_BA %d\n", sel.read_ba)
@@ -700,14 +703,10 @@ void GSDeviceOGL::SelfShaderTest()
 				sel.tfx = 4;
 
 				int ib = (i + 1) % 3;
-#if 1
-				sel.blend = i*5;
-#else
 				sel.blend_a = i;
 				sel.blend_b = ib;;
 				sel.blend_c = i;
 				sel.blend_d = i;
-#endif
 				sel.colclip = colclip;
 				sel.dfmt    = fmt;
 

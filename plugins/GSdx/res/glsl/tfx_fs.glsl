@@ -18,6 +18,8 @@
 // And I say this as an ATI user.
 #define ATI_SUCKS 0
 
+#define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
+
 #ifdef FRAGMENT_SHADER
 
 in SHADER
@@ -408,9 +410,9 @@ void ps_fbmask(inout vec4 c)
 #endif
 }
 
-#if PS_BLEND > 0
 void ps_blend(inout vec4 c, in float As)
 {
+#if SW_BLEND
 	vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 #if PS_DFMT == FMT_24
 	float Ad = 1.0f;
@@ -423,234 +425,42 @@ void ps_blend(inout vec4 c, in float As)
 	vec3 Cd = rt.rgb;
 	vec3 Cs = c.rgb;
 
-#if PS_BLEND == 1
-	//   1   =>  0000: (Cs - Cs)*As + Cs ==> Cs
-	; // nop
+#if PS_BLEND_A == 0
+    vec3 A = Cs;
+#elif PS_BLEND_A == 1
+    vec3 A = Cd;
+#else
+    vec3 A = vec3(0.0f);
+#endif
 
-#elif PS_BLEND == 2
-	//  2   =>  0001: (Cs - Cs)*As + Cd ==> Cd
-	c.rgb = Cd;
+#if PS_BLEND_B == 0
+    vec3 B = Cs;
+#elif PS_BLEND_B == 1
+    vec3 B = Cd;
+#else
+    vec3 B = vec3(0.0f);
+#endif
 
-#elif PS_BLEND == 3
-	//   3   =>  0002: (Cs - Cs)*As +  0 ==> 0
-	c.rgb = vec3(0.0);
+#if PS_BLEND_C == 0
+    float C = As;
+#elif PS_BLEND_C == 1
+    float C = Ad;
+#else
+    float C = Af;
+#endif
 
-#elif PS_BLEND == 4
-	//   4   => *0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	c.rgb = Cs * (As + 1.0f) - Cd * As;
+#if PS_BLEND_D == 0
+    vec3 D = Cs;
+#elif PS_BLEND_D == 1
+    vec3 D = Cd;
+#else
+    vec3 D = vec3(0.0f);
+#endif
 
-#elif PS_BLEND == 5
-	//   5   => *0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	c.rgb = Cs * (Ad + 1.0f) - Cd * Ad;
-
-#elif PS_BLEND == 6
-	//   6   => *0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	c.rgb = Cs * (Af + 1.0f) - Cd * Af;
-
-#elif PS_BLEND == 7
-	//    7   => *0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	c.rgb = Cs * (As + 1.0f);
-
-#elif PS_BLEND == 8
-	//   8   => *0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	c.rgb = Cs * (Ad + 1.0f);
-
-#elif PS_BLEND == 9
-	//   9   => *0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	c.rgb = Cs * (Af + 1.0f);
-
-#elif PS_BLEND == 10
-	//   10   => *1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	c.rgb = Cd * (As + 1.0f) - Cs * As;
-
-#elif PS_BLEND == 11
-	//   11   => *1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	c.rgb = Cd * (Ad + 1.0f) - Cs * Ad;
-
-#elif PS_BLEND == 12
-	//   12   => *1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	c.rgb = Cd * (Af + 1.0f) - Cs * Af;
-
-#elif PS_BLEND == 13
-	//  13   =>  0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
-	c.rgb = Cs * As + Cd * (1.0f - As);
-
-#elif PS_BLEND == 14
-	//  14   =>  0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
-	c.rgb = Cs * As - Cd * As;
-
-#elif PS_BLEND == 15
-	//  15   =>  0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
-	c.rgb = Cs * Ad + Cd * (1.0f - Ad);
-
-#elif PS_BLEND == 16
-	//  16   =>  0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
-	c.rgb = Cs * Ad - Cd * Ad;
-
-#elif PS_BLEND == 17
-	//  17   =>  0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	c.rgb = Cs * Af + Cd * (1.0f - Af);
-
-#elif PS_BLEND == 18
-	//  18   =>  0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	c.rgb = Cs * Af - Cd * Af;
-
-#elif PS_BLEND == 19
-	//  19   =>  0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
-	c.rgb = Cs * As + Cd;
-
-#elif PS_BLEND == 20
-	//   20   =>  0202: (Cs -  0)*As +  0 ==> Cs*As
-	c.rgb = Cs * As;
-
-#elif PS_BLEND == 21
-	//  21   =>  0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
-	c.rgb = Cs * Ad + Cd;
-
-#elif PS_BLEND == 22
-	//  22   =>  0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
-	c.rgb = Cs * Ad;
-
-#elif PS_BLEND == 23
-	//  23   =>  0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	c.rgb = Cs * Af + Cd;
-
-#elif PS_BLEND == 24
-	//   24   =>  0222: (Cs -  0)*F  +  0 ==> Cs*F
-	c.rgb = Cs * Af;
-
-#elif PS_BLEND == 25
-	//  25   =>  1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
-	c.rgb = Cd * As + Cs * (1.0f - As);
-
-#elif PS_BLEND == 26
-	//  26   =>  1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
-	c.rgb = Cd * As - Cs * As;
-
-#elif PS_BLEND == 27
-	//  27   =>  1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
-	c.rgb = Cd * Ad + Cs * (1.0f - Ad);
-
-#elif PS_BLEND == 28
-	//  28   =>  1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
-	c.rgb = Cd * Ad - Cs * Ad;
-
-#elif PS_BLEND == 29
-	//  29   =>  1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	c.rgb = Cd * Af + Cs * (1.0f - Af);
-
-#elif PS_BLEND == 30
-	//  30   =>  1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	c.rgb = Cd * Af - Cs * Af;
-
-#elif PS_BLEND == 31
-	//  31   =>  1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
-	c.rgb = Cs + Cd * As;
-
-#elif PS_BLEND == 55
-	//  C_CLR | 55   => #1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
-	c.rgb =  Cd * (1.0f + As);
-
-#elif PS_BLEND == 32
-	//  32   =>  1202: (Cd -  0)*As +  0 ==> Cd*As
-	c.rgb = Cd * As;
-
-#elif PS_BLEND == 33
-	//  33   =>  1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
-	c.rgb = Cs + Cd * Ad;
-
-#elif PS_BLEND == 56
-	//  C_CLR | 56   => #1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
-	c.rgb = Cd * (1.0f + Ad);
-
-#elif PS_BLEND == 34
-	//  34   =>  1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
-	c.rgb = Cd * Ad;
-
-#elif PS_BLEND == 35
-	//   35   =>  1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	c.rgb = Cs + Cd * Af;
-
-#elif PS_BLEND == 57
-	//  C_CLR | 57   => #1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	c.rgb = Cd * (1.0f + Af);
-
-#elif PS_BLEND == 36
-	//  36   =>  1222: (Cd -  0)*F  +  0 ==> Cd*F
-	c.rgb = Cd * Af;
-
-#elif PS_BLEND == 37
-	//   37   =>  2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
-	c.rgb = Cs * (1.0f - As);
-
-#elif PS_BLEND == 38
-	//  38   =>  2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
-	c.rgb = Cd - Cs * As;
-
-#elif PS_BLEND == 39
-	//   39   =>  2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
-	c.rgb = - Cs * As;
-
-#elif PS_BLEND == 40
-	//  40   =>  2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
-	c.rgb = Cs * (1.0f - Ad);
-
-#elif PS_BLEND == 41
-	//  41   =>  2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
-	c.rgb = Cd - Cs * Ad;
-
-#elif PS_BLEND == 42
-	//  42   =>  2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
-	c.rgb = - Cs * Ad;
-
-#elif PS_BLEND == 43
-	//   43   =>  2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	c.rgb = Cs * (1.0f - Af);
-
-#elif PS_BLEND == 44
-	//  44   =>  2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	c.rgb = Cd - Cs * Af;
-
-#elif PS_BLEND == 45
-	//   45   =>  2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	c.rgb = - Cs * Af;
-
-#elif PS_BLEND == 46
-	//  46   =>  2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
-	c.rgb = Cs - Cd * As;
-
-#elif PS_BLEND == 47
-	//  47   =>  2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
-	c.rgb = Cd * (1.0f - As);
-
-#elif PS_BLEND == 48
-	//  48   =>  2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
-	c.rgb = - Cd * As;
-
-#elif PS_BLEND == 49
-	//  49   =>  2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
-	c.rgb = Cs - Cd * Ad;
-
-#elif PS_BLEND == 50
-	//  50   =>  2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
-	c.rgb = Cd * (1.0f - Ad);
-
-#elif PS_BLEND == 51
-	//  51   =>  2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
-	c.rgb = - Cd * Ad;
-
-#elif PS_BLEND == 52
-	//  52   =>  2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	c.rgb = Cs - Cd * Af;
-
-#elif PS_BLEND == 53
-	//  53   =>  2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	c.rgb = Cd * (1.0f - Af);
-
-#elif PS_BLEND == 54
-	//  54   =>  2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	c.rgb = - Cd * Af;
-
+#if PS_BLEND_A == PS_BLEND_B
+    c.rgb = D;
+#else
+    c.rgb = ((A - B) * C) + D;
 #endif
 
 	// FIXME dithering
@@ -676,8 +486,8 @@ void ps_blend(inout vec4 c, in float As)
 
 	// Don't compile => unable to find compatible overloaded function "mod(vec3)"
 	//c.rgb = mod((c.rgb * 255.0f) + 256.5f) / 255.0f;
-}
 #endif
+}
 
 void ps_main()
 {
@@ -758,7 +568,7 @@ void ps_main()
 #endif
 
 	// Must be done before alpha correction
-	float alpha = c.a * 255.0f / 128.0f;
+	float alpha_blend = c.a * 255.0f / 128.0f;
 
 	// Correct the ALPHA value based on the output format
 	// FIXME add support of alpha mask to replace properly PS_AOUT
@@ -786,14 +596,12 @@ void ps_main()
 	}
 #endif
 
-#if PS_BLEND > 0
-	ps_blend(c, alpha);
-#endif
+	ps_blend(c, alpha_blend);
 
 	ps_fbmask(c);
 
 	SV_Target0 = c;
-	SV_Target1 = vec4(alpha, alpha, alpha, alpha);
+	SV_Target1 = vec4(alpha_blend);
 }
 
 #endif

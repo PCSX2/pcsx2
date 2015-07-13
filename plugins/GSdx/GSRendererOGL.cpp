@@ -789,7 +789,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
 
 		// select a shader that support blending
-		ps_sel.blend = bogus_blend & 0xFF;
+		ps_sel.blend_a = om_bsel.a;
+		ps_sel.blend_b = om_bsel.b;
+		ps_sel.blend_c = om_bsel.c;
+		ps_sel.blend_d = om_bsel.d;
 
 		dev->PSSetShaderResource(3, rt);
 
