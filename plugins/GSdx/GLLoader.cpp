@@ -382,16 +382,18 @@ namespace GLLoader {
 		return true;
 	}
 
-    bool check_gl_version(uint32 major, uint32 minor) {
+    bool check_gl_version(int major, int minor) {
 
 		const GLubyte* s = glGetString(GL_VERSION);
 		if (s == NULL) {
 			fprintf(stderr, "Error: GLLoader failed to get GL version\n");
 			return false;
 		}
+		GLuint v = 1;
+		while (s[v] != '\0' && s[v-1] != ' ') v++;
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
-		fprintf(stderr, "OpenGL information. GPU: %s. Vendor: %s\n", glGetString(GL_RENDERER), vendor);
+		fprintf(stderr, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name change but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
@@ -409,13 +411,6 @@ namespace GLLoader {
 			return false; // too much buggy no need to check anything.
 #endif
 
-		GLuint dot = 0;
-		while (s[dot] != '\0' && s[dot] != '.') dot++;
-		if (dot == 0) return false;
-
-		GLuint major_gl = s[dot-1]-'0';
-		GLuint minor_gl = s[dot+1]-'0';
-
 		if (mesa_amd_buggy_driver) {
 			fprintf(stderr, "Buggy driver detected. Geometry shaders will be disabled\n");
 			found_geometry_shader = false;
@@ -424,6 +419,11 @@ namespace GLLoader {
 			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
+
+		GLint major_gl = 0;
+		GLint minor_gl = 0;
+		glGetIntegerv(GL_MAJOR_VERSION, &major_gl);
+		glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
 		if ( (major_gl < major) || ( major_gl == major && minor_gl < minor ) ) {
 			fprintf(stderr, "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
 			return false;

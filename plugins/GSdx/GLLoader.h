@@ -342,7 +342,7 @@ namespace Emulate_DSA {
 }
 
 namespace GLLoader {
-	bool check_gl_version(uint32 major, uint32 minor);
+	bool check_gl_version(int major, int minor);
 	void init_gl_function();
 	bool check_gl_supported_extension();
 
