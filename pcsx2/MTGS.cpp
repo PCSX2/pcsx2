@@ -197,7 +197,6 @@ void SysMtgsThread::OpenPlugin()
 	if( stored_renderswitch != renderswitch )
 	{
 		stored_renderswitch = renderswitch;
-		Console.Indent(2).WriteLn( "Toggling GSdx Hardware/Software renderer" );
 	}
 
 	GSsetVsync(EmuConfig.GS.FrameLimitEnable && EmuConfig.GS.VsyncEnable);
