@@ -256,7 +256,7 @@ namespace Dialogs
 	protected:
 		void CreateControls( const MemoryCardType sourceType );
 		void OnOk_Click( wxCommandEvent& evt );
-		bool ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath );
+		bool ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath, const u32 sizeInMB );
 		bool ConvertToFolder( const wxFileName& sourcePath, const wxFileName& targetPath );
 	};
 }

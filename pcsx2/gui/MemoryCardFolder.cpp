@@ -52,10 +52,10 @@ bool FolderMemoryCard::IsFormatted() const {
 }
 
 void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter ) {
-	Open( g_Conf->FullpathToMcd( m_slot ), g_Conf->Mcd[m_slot], enableFiltering, filter );
+	Open( g_Conf->FullpathToMcd( m_slot ), g_Conf->Mcd[m_slot], 0, enableFiltering, filter );
 }
 
-void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const bool enableFiltering, const wxString& filter ) {
+void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter ) {
 	InitializeInternalData();
 
 	wxFileName configuredFileName( fullPath );
@@ -89,16 +89,18 @@ void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptio
 	if ( disabled ) return;
 
 	m_isEnabled = true;
-	LoadMemoryCardData( enableFiltering, filter );
+	LoadMemoryCardData( sizeInClusters, enableFiltering, filter );
 
 	SetTimeLastWrittenToNow();
 	m_framesUntilFlush = 0;
 }
 
-void FolderMemoryCard::Close() {
+void FolderMemoryCard::Close( bool flush ) {
 	if ( !m_isEnabled ) { return; }
 
-	Flush();
+	if ( flush ) {
+		Flush();
+	}
 
 	m_cache.clear();
 	m_oldDataCache.clear();
@@ -106,7 +108,7 @@ void FolderMemoryCard::Close() {
 	m_lastAccessedFile.Close();
 }
 
-void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxString& filter ) {
+void FolderMemoryCard::LoadMemoryCardData( const u32 sizeInClusters, const bool enableFiltering, const wxString& filter ) {
 	bool formatted = false;
 
 	// read superblock if it exists
@@ -116,6 +118,11 @@ void FolderMemoryCard::LoadMemoryCardData( const bool enableFiltering, const wxS
 		if ( superBlockFile.IsOpened() && superBlockFile.Read( &m_superBlock.raw, sizeof( m_superBlock.raw ) ) >= sizeof( m_superBlock.data ) ) {
 			formatted = IsFormatted();
 		}
+	}
+
+	if ( sizeInClusters > 0 && sizeInClusters != GetSizeInClusters() ) {
+		SetSizeInClusters( sizeInClusters );
+		FlushBlock( 0 );
 	}
 
 	// if superblock was valid, load folders and files

@@ -21,6 +21,15 @@
 #include "MemoryCardFolder.h"
 #include <wx/ffile.h>
 
+enum MemoryCardConversionType {
+	MemoryCardConversion_File_8MB,
+	MemoryCardConversion_File_16MB,
+	MemoryCardConversion_File_32MB,
+	MemoryCardConversion_File_64MB,
+	MemoryCardConversion_Folder,
+	MemoryCardConversion_MaxCount
+};
+
 Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const AppConfig::McdOptions& mcdSourceConfig )
 	: wxDialogWithHelpers( parent, _( "Convert a memory card to a different format" ) )
 	, m_mcdPath( mcdPath )
@@ -52,7 +61,10 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 
 	s_padding += m_radio_CardType | pxSizerFlags::StdExpand();
 
-	s_padding += Heading( pxE( L"WARNING: Converting a memory card may take several minutes! Please do not close the emulator during the conversion process, even if the emulator is no longer responding to input." ) );
+	if ( mcdSourceConfig.Type != MemoryCardType::MemoryCard_File ) {
+		s_padding += Heading( pxE( L"Please note that the resulting file may not actually contain all saves, depending on how many are in the source memory card." ) );
+	}
+	s_padding += Heading( pxE( L"WARNING: Converting a memory card may take a while! Please do not close the emulator during the conversion process, even if the emulator is no longer responding to input." ) );
 
 	s_padding += 12;
 	s_padding += s_buttons | pxSizerFlags::StdCenter();
@@ -69,13 +81,19 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 void Dialogs::ConvertMemoryCardDialog::CreateControls( const MemoryCardType sourceType ) {
 	m_text_filenameInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
 
-	RadioPanelItem toFile = RadioPanelItem( _( "File" ), pxE( L"Convert this memory card to a regular 8 MB .ps2 file. Please note that the resulting file may not actually contain all saves, depending on how many are in the source memory card." ) )
-		.SetInt( MemoryCardType::MemoryCard_File );
+	RadioPanelItem toFile8MB = RadioPanelItem( _( "8MB File" ), pxE( L"Convert this memory card to a standard 8 MB Memory Card .ps2 file." ) )
+		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_8MB );
+	RadioPanelItem toFile16MB = RadioPanelItem( _( "16MB File" ), pxE( L"Convert this memory card to a 16 MB Memory Card .ps2 file." ) )
+		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_16MB );
+	RadioPanelItem toFile32MB = RadioPanelItem( _( "32MB File" ), pxE( L"Convert this memory card to a 32 MB Memory Card .ps2 file." ) )
+		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_32MB );
+	RadioPanelItem toFile64MB = RadioPanelItem( _( "64MB File" ), pxE( L"Convert this memory card to a 64 MB Memory Card .ps2 file." ) )
+		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_64MB );
 	RadioPanelItem toFolder = RadioPanelItem( _( "Folder" ), _( "Convert this memory card to a folder of individual saves." ) )
-		.SetInt( MemoryCardType::MemoryCard_Folder );
+		.SetInt( MemoryCardConversionType::MemoryCardConversion_Folder );
 
 	const RadioPanelItem tblForFile[] = { toFolder };
-	const RadioPanelItem tblForFolder[] = { toFile };
+	const RadioPanelItem tblForFolder[] = { toFile8MB, toFile16MB, toFile32MB, toFile64MB };
 
 	switch ( sourceType ) {
 		case MemoryCardType::MemoryCard_File:
@@ -110,13 +128,22 @@ void Dialogs::ConvertMemoryCardDialog::OnOk_Click( wxCommandEvent& evt ) {
 	wxFileName sourcePath = ( m_mcdPath + m_mcdSourceFilename );
 	wxFileName targetPath = ( m_mcdPath + composedName );
 	if ( m_radio_CardType ) {
-		MemoryCardType targetType = (MemoryCardType)m_radio_CardType->SelectedItem().SomeInt;
+		MemoryCardConversionType targetType = (MemoryCardConversionType)m_radio_CardType->SelectedItem().SomeInt;
 
 		switch ( targetType ) {
-		case MemoryCardType::MemoryCard_File:
-			success = ConvertToFile( sourcePath, targetPath );
+		case MemoryCardConversionType::MemoryCardConversion_File_8MB:
+			success = ConvertToFile( sourcePath, targetPath, 8 );
 			break;
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardConversionType::MemoryCardConversion_File_16MB:
+			success = ConvertToFile( sourcePath, targetPath, 16 );
+			break;
+		case MemoryCardConversionType::MemoryCardConversion_File_32MB:
+			success = ConvertToFile( sourcePath, targetPath, 32 );
+			break;
+		case MemoryCardConversionType::MemoryCardConversion_File_64MB:
+			success = ConvertToFile( sourcePath, targetPath, 64 );
+			break;
+		case MemoryCardConversionType::MemoryCardConversion_Folder:
 			success = ConvertToFolder( sourcePath, targetPath );
 			break;
 		default:
@@ -133,7 +160,7 @@ void Dialogs::ConvertMemoryCardDialog::OnOk_Click( wxCommandEvent& evt ) {
 	EndModal( wxID_OK );
 }
 
-bool Dialogs::ConvertMemoryCardDialog::ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath ) {
+bool Dialogs::ConvertMemoryCardDialog::ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath, const u32 sizeInMB ) {
 	// Conversion method: Open FolderMcd as usual, then read the raw data from it and write it to a file stream
 
 	wxFFile targetFile( targetPath.GetFullPath(), L"wb" );
@@ -145,25 +172,24 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFile( const wxFileName& sourcePa
 	AppConfig::McdOptions config;
 	config.Enabled = true;
 	config.Type = MemoryCardType::MemoryCard_Folder;
-	sourceFolderMemoryCard.Open( sourcePath.GetFullPath(), config, false, L"" );
+	sourceFolderMemoryCard.Open( sourcePath.GetFullPath(), config, ( sizeInMB * 1024 * 1024 ) / FolderMemoryCard::ClusterSize, false, L"" );
 
 	u8 buffer[FolderMemoryCard::PageSizeRaw];
 	u32 adr = 0;
-	while ( adr < FolderMemoryCard::TotalSizeRaw ) {
+	while ( adr < sourceFolderMemoryCard.GetSizeInClusters() * FolderMemoryCard::ClusterSizeRaw ) {
 		sourceFolderMemoryCard.Read( buffer, adr, FolderMemoryCard::PageSizeRaw );
 		targetFile.Write( buffer, FolderMemoryCard::PageSizeRaw );
 		adr += FolderMemoryCard::PageSizeRaw;
 	}
 
 	targetFile.Close();
-	sourceFolderMemoryCard.Close();
+	sourceFolderMemoryCard.Close( false );
 
 	return true;
 }
 
 bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& sourcePath, const wxFileName& targetPath ) {
 	// Conversion method: Read all pages of the FileMcd into a FolderMcd, then just write that out with the regular methods
-	// TODO: Test if >8MB files don't super fuck up something
 
 	wxFFile sourceFile( sourcePath.GetFullPath(), L"rb" );
 	if ( !sourceFile.IsOpened() ) {
@@ -175,7 +201,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 	AppConfig::McdOptions config;
 	config.Enabled = true;
 	config.Type = MemoryCardType::MemoryCard_Folder;
-	targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, false, L"" );
+	targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, false, L"" );
 
 	u32 adr = 0;
 	while ( !sourceFile.Eof() ) {
@@ -191,7 +217,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 
 	if ( adr != FolderMemoryCard::TotalSizeRaw ) {
 		// reset memory card metrics in superblock to the default 8MB, since the converted card was different
-		targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, true, L"" );
+		targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, true, L"" );
 		targetFolderMemoryCard.SetSizeInMB( 8 );
 		targetFolderMemoryCard.Close();
 	}

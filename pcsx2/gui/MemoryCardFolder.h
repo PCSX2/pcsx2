@@ -293,8 +293,9 @@ public:
 	// Initialize & Load Memory Card with values configured in the Memory Card Manager
 	void Open( const bool enableFiltering, const wxString& filter );
 	// Initialize & Load Memory Card with provided custom values
-	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const bool enableFiltering, const wxString& filter );
-	void Close();
+	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter );
+	// Close the memory card and flush changes to the file system. Set flush to false to not store changes.
+	void Close( bool flush = true );
 
 	s32  IsPresent() const;
 	void GetSizeInfo( PS2E_McdSizeInfo& outways ) const;
@@ -357,9 +358,10 @@ protected:
 
 
 	// loads files and folders from the host file system if a superblock exists in the root directory
+	// - sizeInClusters: total memory card size in clusters, 0 for default
 	// - enableFiltering: if set to true, only folders whose name contain the filter string are loaded
 	// - filter: can include multiple filters by separating them with "/"
-	void LoadMemoryCardData( const bool enableFiltering, const wxString& filter );
+	void LoadMemoryCardData( const u32 sizeInClusters, const bool enableFiltering, const wxString& filter );
 
 	// creates the FAT and indirect FAT
 	void CreateFat();
