@@ -179,7 +179,6 @@ static void dummyIrqCallback()
 
 void SysMtgsThread::OpenPlugin()
 {
-	static bool stored_renderswitch = false;
 
 	if( m_PluginOpened ) return;
 
@@ -194,10 +193,6 @@ void SysMtgsThread::OpenPlugin()
 	else
 		result = GSopen( (void*)pDsp, "PCSX2", renderswitch ? 2 : 1 );
 
-	if( stored_renderswitch != renderswitch )
-	{
-		stored_renderswitch = renderswitch;
-	}
 
 	GSsetVsync(EmuConfig.GS.FrameLimitEnable && EmuConfig.GS.VsyncEnable);
 
