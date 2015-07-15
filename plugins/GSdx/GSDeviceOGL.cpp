@@ -669,6 +669,187 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
 }
 
+void GSDeviceOGL::SelfShaderTest()
+{
+#define RUN_TEST \
+	do { \
+		GLuint p = CompilePS(sel); \
+		nb_shader++; \
+		perf += m_shader->DumpAsm(file, p); \
+		m_shader->Delete(p); \
+	} while(0);
+
+#define PRINT_TEST(s) \
+	do { \
+		fprintf(stderr, "%s %d instructions for %d shaders (mean of %4.2f)\n", \
+				s, perf, nb_shader, (float)perf/(float)nb_shader); \
+		all += perf; \
+		perf = 0; \
+		nb_shader = 0; \
+	} while(0);
+
+	int nb_shader = 0;
+	int perf = 0;
+	int all = 0;
+	// Test: SW blending
+	for (int colclip = 0; colclip < 4; colclip += 3) {
+		for (int fmt = 0; fmt < 3; fmt++) {
+			for (int i = 0; i < 3; i++) {
+				PSSelector sel;
+				sel.atst = 1;
+				sel.tfx = 4;
+
+				int ib = (i + 1) % 3;
+#if 1
+				sel.blend = i*5;
+#else
+				sel.blend_a = i;
+				sel.blend_b = ib;;
+				sel.blend_c = i;
+				sel.blend_d = i;
+#endif
+				sel.colclip = colclip;
+				sel.dfmt    = fmt;
+
+				std::string file = format("Shader_Blend_%d_%d_%d_%d__Cclip_%d__Dfmt_%d.glsl.asm",
+						i, ib, i, i, colclip, fmt);
+				RUN_TEST;
+			}
+		}
+	}
+	PRINT_TEST("Blend");
+
+	// Test: alpha test
+	for (int atst = 0; atst < 8; atst++) {
+		PSSelector sel;
+		sel.tfx = 4;
+
+		sel.atst = atst;
+		std::string file = format("Shader_Atst_%d.glsl.asm", atst);
+		RUN_TEST;
+	}
+	PRINT_TEST("Alpha Tst");
+
+	// Test: fbmask/fog/shuffle/read_ba
+	for (int read_ba = 0; read_ba < 2; read_ba++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.fog = 1;
+		sel.fbmask = 1;
+		sel.shuffle = 1;
+		sel.read_ba = read_ba;
+
+		std::string file = format("Shader_Fog__Fbmask__Shuffle__Read_ba_%d.glsl.asm", read_ba);
+		RUN_TEST;
+	}
+	PRINT_TEST("Fbmask/fog/shuffle/read_ba");
+
+	// Test: Date
+	for (int date = 1; date < 7; date++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.date = date;
+		std::string file = format("Shader_Date_%d.glsl.asm", date);
+		RUN_TEST;
+	}
+	PRINT_TEST("Date");
+
+	// Test: FBA
+	for (int fmt = 0; fmt < 3; fmt++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.fba = 1;
+		sel.dfmt = fmt;
+		sel.clr1 = 1;
+		std::string file = format("Shader_Fba__Clr1__Dfmt_%d.glsl.asm", fmt);
+		RUN_TEST;
+	}
+	PRINT_TEST("Fba/Clr1/Dfmt");
+
+	// Test: Fst/Tc/IIP
+	{
+		PSSelector sel;
+		sel.tfx = 1;
+		sel.atst = 1;
+
+		sel.fst = 0;
+		sel.iip = 1;
+		sel.tcoffsethack = 1;
+
+		std::string file = format("Shader_Fst__TC__Iip.glsl.asm");
+		RUN_TEST;
+	}
+	PRINT_TEST("Fst/Tc/IIp");
+
+	// Test: Colclip
+	for (int colclip = 0; colclip < 3; colclip += 1) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.colclip = colclip;
+		std::string file = format("Shader_Colclip_%d.glsl.asm", colclip);
+		RUN_TEST;
+	}
+	PRINT_TEST("Colclip");
+
+	// Test: tfx/tcc
+	for (int tfx = 0; tfx < 5; tfx++) {
+		for (int tcc = 0; tcc < 2; tcc++) {
+			PSSelector sel;
+			sel.atst = 1;
+			sel.fst = 1;
+
+			sel.tfx = tfx;
+			sel.tcc = tcc;
+			std::string file = format("Shader_Tfx_%d__Tcc_%d.glsl.asm", tfx, tcc);
+			RUN_TEST;
+		}
+	}
+	PRINT_TEST("Tfx/Tcc");
+
+	// Test: Texture Sampling
+	for (int fmt = 0; fmt < 8; fmt++) {
+		if ((fmt & 3) == 3) continue;
+
+		for (int ltf = 0; ltf < 2; ltf++) {
+			for (int aem = 0; aem < 2; aem++) {
+				for (int ifmt = 0; ifmt < 3; ifmt++) {
+					for (int wms = 1; wms < 4; wms++) {
+						for (int wmt = 1; wmt < 4; wmt++) {
+							PSSelector sel;
+							sel.atst = 1;
+							sel.tfx = 1;
+
+							sel.ltf = ltf;
+							sel.aem = aem;
+							sel.fmt = fmt;
+							sel.ifmt = ifmt;
+							sel.wms = wms;
+							sel.wmt = wmt;
+							std::string file = format("Shader_Ltf_%d__Aem_%d__Fmt_%d__Ifmt_%d__Wms_%d__Wmt_%d.glsl.asm",
+									ltf, aem, fmt, ifmt, wms, wmt);
+							RUN_TEST;
+						}
+					}
+				}
+			}
+		}
+	}
+	PRINT_TEST("Texture Sampling");
+
+	fprintf(stderr, "\nTotal %d\n", all);
+
+#undef RUN_TEST
+#undef PRINT_TEST
+}
+
 GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, bool msaa, int format)
 {
 	return GSDevice::CreateRenderTarget(w, h, msaa, format ? format : GL_RGBA8);

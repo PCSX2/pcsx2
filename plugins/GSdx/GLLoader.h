@@ -278,6 +278,7 @@ extern   PFNGLGENPROGRAMPIPELINESPROC           gl_GenProgramPipelines;
 extern   PFNGLGETPROGRAMPIPELINEIVPROC          gl_GetProgramPipelineiv;
 extern   PFNGLVALIDATEPROGRAMPIPELINEPROC       gl_ValidateProgramPipeline;
 extern   PFNGLGETPROGRAMPIPELINEINFOLOGPROC     gl_GetProgramPipelineInfoLog;
+extern   PFNGLGETPROGRAMBINARYPROC              gl_GetProgramBinary;
 // NO GL4.1
 extern   PFNGLUSEPROGRAMPROC                    gl_UseProgram;
 extern   PFNGLGETSHADERINFOLOGPROC              gl_GetShaderInfoLog;

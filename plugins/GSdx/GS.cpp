@@ -1532,7 +1532,12 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	}
 	if (s_gs->m_wnd == NULL) return;
 
-	{
+	if (theApp.GetConfig("debug_glsl_shader", 0) == 2) {
+		dynamic_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
+		return;
+	}
+
+	{ // Read .gs content
 		std::string f(lpszCmdLine);
 #ifdef LZMA_SUPPORTED
 		GSDumpFile* file = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0)

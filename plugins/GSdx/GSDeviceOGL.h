@@ -658,6 +658,8 @@ class GSDeviceOGL : public GSDevice
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 	GSBlendStateOGL* CreateBlend(OMBlendSelector bsel, float afix);
 
+	void SelfShaderTest();
+
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupVS(VSSelector sel);

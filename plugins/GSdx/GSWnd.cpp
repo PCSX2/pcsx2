@@ -93,6 +93,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_ValidateProgramPipeline) = GetProcAddress("glValidateProgramPipeline", true);
 	*(void**)&(gl_UseProgramStages) = GetProcAddress("glUseProgramStages", true);
 	*(void**)&(gl_ProgramUniform1i) = GetProcAddress("glProgramUniform1i", true); // but no GL4.2
+	*(void**)&(gl_GetProgramBinary) = GetProcAddress("glGetProgramBinary", true);
 	// NO GL4.1
 	*(void**)&(gl_DeleteProgram) = GetProcAddress("glDeleteProgram");
 	*(void**)&(gl_DeleteShader) = GetProcAddress("glDeleteShader");

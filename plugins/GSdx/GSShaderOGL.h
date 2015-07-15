@@ -55,5 +55,8 @@ class GSShaderOGL {
 	void UseProgram();
 
 	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+
+	int DumpAsm(const std::string& file, GLuint p);
+
 	void Delete(GLuint s);
 };

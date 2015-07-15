@@ -393,6 +393,65 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	return program;
 }
 
+// This function will get the binary program. Normally it must be used a caching
+// solution but Nvidia also incorporates the ASM dump. Asm is nice because it allow
+// to have an overview of the program performance based on the instruction number
+// Note: initially I was using cg offline compiler but it doesn't support latest
+// GLSL improvement (unfortunately).
+int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
+{
+	if (!GLLoader::nvidia_buggy_driver) return 0;
+
+	GLint   binaryLength;
+	gl_GetProgramiv(p, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+
+	char* binary = new char[binaryLength+4];
+	GLenum binaryFormat;
+	gl_GetProgramBinary(p, binaryLength, NULL, &binaryFormat, binary);
+
+	FILE* outfile = fopen(file.c_str(), "w");
+	ASSERT(outfile);
+
+	// Search the magic number "!!"
+	int asm_ = 0;
+	while (asm_ < binaryLength && (binary[asm_] != '!' || binary[asm_+1] != '!')) {
+		asm_ += 1;
+	}
+
+	int instructions = -1;
+	if (asm_ < binaryLength) {
+		// Now print asm as text
+		char* asm_txt = strtok(&binary[asm_], "\n");
+		while (asm_txt != NULL && (strncmp(asm_txt, "END", 3) || !strncmp(asm_txt, "ENDIF", 5))) {
+			if (strncmp(asm_txt, "OUT", 3) == 0) {
+				instructions = 0;
+			} else if (instructions >= 0) {
+				if (instructions == 0)
+					fprintf(outfile, "\n");
+				instructions++;
+			}
+
+			fprintf(outfile, "%s\n", asm_txt);
+			asm_txt = strtok(NULL, "\n");
+		}
+		fprintf(outfile, "\nFound %d instructions\n", instructions);
+	}
+	fclose(outfile);
+
+	if (instructions < 0) {
+		// RAW dump in case of error
+		fprintf(stderr, "Error: failed to find the number of instructions!\n");
+		outfile = fopen(file.c_str(), "wb");
+		fwrite(binary, binaryLength, 1, outfile);
+		fclose(outfile);
+		ASSERT(0);
+	}
+
+	delete[] binary;
+
+	return instructions;
+}
+
 void GSShaderOGL::Delete(GLuint s)
 {
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {

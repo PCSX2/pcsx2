@@ -95,6 +95,7 @@ PFNGLDELETEPROGRAMPIPELINESPROC        gl_DeleteProgramPipelines            = NU
 PFNGLGETPROGRAMPIPELINEIVPROC          gl_GetProgramPipelineiv              = NULL;
 PFNGLVALIDATEPROGRAMPIPELINEPROC       gl_ValidateProgramPipeline           = NULL;
 PFNGLGETPROGRAMPIPELINEINFOLOGPROC     gl_GetProgramPipelineInfoLog         = NULL;
+PFNGLGETPROGRAMBINARYPROC              gl_GetProgramBinary                  = NULL;
 // NO GL4.1
 PFNGLUSEPROGRAMPROC                    gl_UseProgram                        = NULL;
 PFNGLGETSHADERINFOLOGPROC              gl_GetShaderInfoLog                  = NULL;
