@@ -37,6 +37,8 @@ class GSWndWGL : public GSWndGL
 	void CloseWGLDisplay();
 	bool OpenWGLDisplay();
 
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 public:
 	GSWndWGL();
 	virtual ~GSWndWGL() {};
