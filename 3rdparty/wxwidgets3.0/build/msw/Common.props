@@ -7,6 +7,7 @@
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
     <_PropertySheetDisplayName>wxCommon</_PropertySheetDisplayName>
     <IntDir>$(PlatformName)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\deps\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemGroup>
     <BuildMacro Include="ProjectRootDir">
