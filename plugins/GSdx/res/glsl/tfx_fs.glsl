@@ -13,6 +13,11 @@
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
+// Just copy directly the texture coordinate
+#ifdef TEX_COORD_DEBUG
+#define PS_TFX 1
+#define PS_TCC 1
+#endif
 
 // Not sure we have same issue on opengl. Doesn't work anyway on ATI card
 // And I say this as an ATI user.
@@ -274,16 +279,13 @@ vec4 sample_color(vec2 st, float q)
 	t = c[0];
 #endif
 
-	return t;
+	return trunc(t * 255.0f);
 }
 
 vec4 tfx(vec4 t, vec4 c)
 {
 	vec4 c_out;
-	// Note: It will be possible to precompute the factor 255/128 in the VS/GS
-	// However, I didn't see real speedup and it might make the code more difficult
-	// to support proper rounding
-	vec4 FxT = c * t * 255.0f / 128.0f;
+	vec4 FxT = trunc(trunc(c) * t / 128.0f);
 
 #if (PS_TFX == 0)
 	c_out = FxT;
@@ -303,7 +305,10 @@ vec4 tfx(vec4 t, vec4 c)
     c_out.a = c.a;
 #endif
 
-	return c_out;
+	// Normalize the value
+	c_out /= 255.0f;
+
+	return clamp(c_out, vec4(0.0f), vec4(1.0f));
 }
 
 void atst(vec4 c)
@@ -340,7 +345,7 @@ void colclip(inout vec4 c)
 #if (PS_COLCLIP == 2)
 	c.rgb = 256.0f/255.0f - c.rgb;
 #endif
-#if (PS_COLCLIP > 0)
+#if (PS_COLCLIP == 1 || PS_COLCLIP == 2)
 	bvec3 factor = lessThan(c.rgb, vec3(128.0f/255.0f));
 	c.rgb *= vec3(factor);
 #endif
@@ -357,25 +362,17 @@ vec4 ps_color()
 {
 	vec4 t = sample_color(PSin_t.xy, PSin_t.w);
 
-	vec4 zero = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	vec4 one = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-#ifdef TEX_COORD_DEBUG
-	vec4 c = clamp(t, zero, one);
-#else
 #if PS_IIP == 1
-	vec4 c = clamp(tfx(t, PSin_c), zero, one);
+	vec4 c = tfx(t, PSin_c);
 #else
-	vec4 c = clamp(tfx(t, PSin_fc), zero, one);
-#endif
+	vec4 c = tfx(t, PSin_fc);
 #endif
 
 	atst(c);
 
 	fog(c, PSin_t.z);
 
-#if (PS_COLCLIP < 3)
 	colclip(c);
-#endif
 
 #if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
 	c.rgb = vec3(1.0f, 1.0f, 1.0f);
