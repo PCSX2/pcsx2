@@ -21,7 +21,7 @@ out SHADER
 {
     vec4 t;
     vec4 c;
-	flat vec4 fc;
+    flat vec4 fc;
 } VSout;
 
 #define VSout_t (VSout.t)
@@ -106,7 +106,7 @@ void vs_main()
     texture_coord();
 
     VSout_c = i_c;
-	VSout_fc = i_c;
+    VSout_fc = i_c;
     VSout_t.z = i_f.x;
 }
 
@@ -212,7 +212,7 @@ void gs_main()
     lt.c = rb.c;
 #endif
 
-	// Swap texture and position coordinate
+    // Swap texture and position coordinate
     vertex lb = rb;
     lb.t.x = lt.t.x;
     lb_p.x = lt_p.x;

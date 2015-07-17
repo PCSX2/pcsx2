@@ -185,7 +185,7 @@ uvec4 sample_4_index(vec4 uv)
 	return i >> 4u;
 #elif PS_IFMT == 2
 	// 4HL
-	return i & 16u;
+	return i & 0xFu;
 #else
 	// 8 bits
 	return i;
