@@ -277,30 +277,30 @@ vec4 sample_color(vec2 st, float q)
 	return t;
 }
 
-// FIXME Precompute the factor 255/128 in VS
 vec4 tfx(vec4 t, vec4 c)
 {
-	vec4 c_out = c;
+	vec4 c_out;
+	// Note: It will be possible to precompute the factor 255/128 in the VS/GS
+	// However, I didn't see real speedup and it might make the code more difficult
+	// to support proper rounding
+	vec4 FxT = c * t * 255.0f / 128.0f;
+
 #if (PS_TFX == 0)
-	if(PS_TCC != 0)
-		c_out = c * t * 255.0f / 128.0f;
-	else
-		c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f;
+	c_out = FxT;
 #elif (PS_TFX == 1)
-	if(PS_TCC != 0)
-		c_out = t;
-	else
-		c_out.rgb = t.rgb;
+	c_out = t;
 #elif (PS_TFX == 2)
-	c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
-
-	if(PS_TCC != 0)
-		c_out.a += t.a;
+	c_out.rgb = FxT.rgb + c.a;
+	c_out.a = t.a + c.a;
 #elif (PS_TFX == 3)
-	c_out.rgb = c.rgb * t.rgb * 255.0f / 128.0f + c.a;
+	c_out.rgb = FxT.rgb + c.a;
+	c_out.a = t.a;
+#else
+	c_out = c;
+#endif
 
-	if(PS_TCC != 0)
-		c_out.a = t.a;
+#if (PS_TCC == 0)
+    c_out.a = c.a;
 #endif
 
 	return c_out;
