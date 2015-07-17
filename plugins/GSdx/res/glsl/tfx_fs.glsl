@@ -35,7 +35,9 @@ in SHADER
 
 // Same buffer but 2 colors for dual source blending
 layout(location = 0, index = 0) out vec4 SV_Target0;
+#if !SW_BLEND
 layout(location = 0, index = 1) out vec4 SV_Target1;
+#endif
 
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
@@ -218,6 +220,7 @@ mat4 sample_4p(uvec4 u)
 
 vec4 sample_color(vec2 st, float q)
 {
+	//FIXME: maybe we can set gl_Position.w = q in VS
 #if (PS_FST == 0)
 	st /= q;
 #endif
@@ -287,6 +290,7 @@ vec4 sample_color(vec2 st, float q)
 	return t;
 }
 
+// FIXME Precompute the factor 255/128 in VS
 #ifndef SUBROUTINE_GL40
 vec4 tfx(vec4 t, vec4 c)
 {
@@ -552,17 +556,29 @@ void ps_main()
 	c.rb = c.rr;
 #endif
 
+	// FIXME precompute my_TA & 0x80
+
 	// Write GA part. Mask will take care of the correct destination
+	// Note: GLSL 4.50/GL_EXT_shader_integer_mix support a mix instruction to select a component\n"
+	// However Nvidia emulate it with an if (at least on kepler arch) ...\n"
 #if PS_READ_BA
 	if (bool(denorm_c.a & 0x80u))
 		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
 	else
 		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+
 #else
 	if (bool(denorm_c.g & 0x80u))
 		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
 	else
 		c.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+
+	// Nice idea but step/mix requires 4 instructions
+	// set / trunc / I2F / Mad
+	//
+	// float sel = step(128.0f/255.0f, c.g);
+	// vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u)) / 255.0f;
+	// c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
 #endif
 
 #endif
@@ -601,7 +617,9 @@ void ps_main()
 	ps_fbmask(c);
 
 	SV_Target0 = c;
+#if !SW_BLEND
 	SV_Target1 = vec4(alpha_blend);
+#endif
 }
 
 #endif
