@@ -80,19 +80,6 @@ layout(std140, binding = 21) uniform cb21
 	vec2 TC_OffsetHack;
 };
 
-#ifdef SUBROUTINE_GL40
-// Function pointer type + the functionn pointer variable
-subroutine void AlphaTestType(vec4 c);
-layout(location = 0) subroutine uniform AlphaTestType atst;
-
-subroutine vec4 TfxType(vec4 t, vec4 c);
-layout(location = 2) subroutine uniform TfxType tfx;
-
-subroutine void ColClipType(inout vec4 c);
-layout(location = 1) subroutine uniform ColClipType colclip;
-#endif
-
-
 vec4 sample_c(vec2 uv)
 {
 	// FIXME: check the issue on openGL
@@ -291,7 +278,6 @@ vec4 sample_color(vec2 st, float q)
 }
 
 // FIXME Precompute the factor 255/128 in VS
-#ifndef SUBROUTINE_GL40
 vec4 tfx(vec4 t, vec4 c)
 {
 	vec4 c_out = c;
@@ -319,9 +305,7 @@ vec4 tfx(vec4 t, vec4 c)
 
 	return c_out;
 }
-#endif
 
-#ifndef SUBROUTINE_GL40
 void atst(vec4 c)
 {
 	float a = trunc(c.a * 255.0 + 0.01);
@@ -350,9 +334,7 @@ void atst(vec4 c)
 		discard;
 #endif
 }
-#endif
 
-#ifndef SUBROUTINE_GL40
 void colclip(inout vec4 c)
 {
 #if (PS_COLCLIP == 2)
@@ -363,7 +345,6 @@ void colclip(inout vec4 c)
 	c.rgb *= vec3(factor);
 #endif
 }
-#endif
 
 void fog(inout vec4 c, float f)
 {

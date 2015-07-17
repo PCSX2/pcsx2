@@ -229,7 +229,6 @@ class GSDeviceOGL : public GSDevice
 			{
 				uint32 wildhack:1;
 				uint32 bppz:2;
-				// Next param will be handle by subroutine
 				uint32 tme:1;
 				uint32 fst:1;
 
@@ -338,7 +337,6 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
-				// Next param will be handle by subroutine (broken currently)
 				uint32 colclip:2;
 				uint32 atst:3;
 

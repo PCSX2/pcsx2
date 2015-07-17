@@ -24,14 +24,8 @@
 #include "GLState.h"
 
 GSShaderOGL::GSShaderOGL(bool debug) :
-	m_debug_shader(debug),
-	m_vs_sub_count(0),
-	m_ps_sub_count(0)
+	m_debug_shader(debug)
 {
-
-	memset(&m_vs_sub, 0, countof(m_vs_sub)*sizeof(m_vs_sub[0]));
-	memset(&m_ps_sub, 0, countof(m_ps_sub)*sizeof(m_ps_sub[0]));
-
 	m_single_prog.clear();
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
 		gl_GenProgramPipelines(1, &m_pipeline);
@@ -48,38 +42,14 @@ GSShaderOGL::~GSShaderOGL()
 	m_single_prog.clear();
 }
 
-void GSShaderOGL::VS(GLuint s, GLuint sub_count)
+void GSShaderOGL::VS(GLuint s)
 {
 	if (GLState::vs != s)
 	{
-		m_vs_sub_count = sub_count;
-
 		GLState::vs = s;
 		GLState::dirty_prog = true;
-		GLState::dirty_subroutine_vs = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
 			gl_UseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
-	}
-}
-
-void GSShaderOGL::VS_subroutine(GLuint *sub)
-{
-	if (!(m_vs_sub[0] == sub[0])) {
-		m_vs_sub[0] = sub[0];
-		GLState::dirty_subroutine_vs = true;
-	}
-}
-
-void GSShaderOGL::PS_subroutine(GLuint *sub)
-{
-	// FIXME could be more efficient with GSvector
-	if (!(m_ps_sub[0] == sub[0] && m_ps_sub[1] == sub[1] && m_ps_sub[2] == sub[2] && m_ps_sub[3] == sub[3] && m_ps_sub[4] == sub[4])) {
-		m_ps_sub[0] = sub[0];
-		m_ps_sub[1] = sub[1];
-		m_ps_sub[2] = sub[2];
-		m_ps_sub[3] = sub[3];
-		m_ps_sub[4] = sub[4];
-		GLState::dirty_subroutine_ps = true;
 	}
 }
 
@@ -92,7 +62,7 @@ void GSShaderOGL::PS_ressources(GLuint64 handle[2])
 	}
 }
 
-void GSShaderOGL::PS(GLuint s, GLuint sub_count)
+void GSShaderOGL::PS(GLuint s)
 {
 #ifdef _DEBUG
 	if (true)
@@ -100,12 +70,9 @@ void GSShaderOGL::PS(GLuint s, GLuint sub_count)
 	if (GLState::ps != s)
 #endif
 	{
-		m_ps_sub_count = sub_count;
-
 		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = s;
 		GLState::dirty_prog = true;
-		GLState::dirty_subroutine_ps = true;
 		GLState::dirty_ressources = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
 			gl_UseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
@@ -139,21 +106,6 @@ void GSShaderOGL::SetupRessources()
 			if (GLState::tex_handle[1])
 				gl_UniformHandleui64vARB(1, 1, &GLState::tex_handle[1]);
 		}
-	}
-}
-
-void GSShaderOGL::SetupSubroutineUniform()
-{
-	if (!GLLoader::found_GL_ARB_shader_subroutine) return;
-
-	if (GLState::dirty_subroutine_vs && m_vs_sub_count) {
-		gl_UniformSubroutinesuiv(GL_VERTEX_SHADER, m_vs_sub_count,  m_vs_sub);
-		GLState::dirty_subroutine_vs = false;
-	}
-
-	if (GLState::dirty_subroutine_ps && m_ps_sub_count) {
-		gl_UniformSubroutinesuiv(GL_FRAGMENT_SHADER, m_ps_sub_count,  m_ps_sub);
-		GLState::dirty_subroutine_ps = false;
 	}
 }
 
@@ -243,8 +195,6 @@ void GSShaderOGL::UseProgram()
 
 	if (GLState::dirty_prog) {
 		if (!GLLoader::found_GL_ARB_separate_shader_objects) {
-			GLState::dirty_subroutine_vs = true;
-			GLState::dirty_subroutine_ps = true;
 			GLState::dirty_ressources = true;
 
 			hash_map<uint64, GLuint >::iterator it;
@@ -277,8 +227,6 @@ void GSShaderOGL::UseProgram()
 
 	SetupRessources();
 
-	SetupSubroutineUniform();
-
 	GLState::dirty_prog = false;
 
 	GL_POP();
@@ -293,11 +241,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
 		// Need GL version 410
 		header += "#extension GL_ARB_separate_shader_objects: require\n";
-	}
-	if (GLLoader::found_GL_ARB_shader_subroutine && GLLoader::found_GL_ARB_explicit_uniform_location) {
-		// Need GL version 400
-		header += "#define SUBROUTINE_GL40 1\n";
-		header += "#extension GL_ARB_shader_subroutine: require\n";
 	}
 	if (GLLoader::found_GL_ARB_explicit_uniform_location) {
 		// Need GL version 430

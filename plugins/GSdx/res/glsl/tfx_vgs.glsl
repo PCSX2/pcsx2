@@ -42,36 +42,6 @@ const float exp_min32 = exp2(-32.0f);
 const float exp_min31 = exp2(-31.0f);
 #endif
 
-#ifdef SUBROUTINE_GL40
-// Function pointer type
-subroutine void TextureCoordType(void);
-
-// a function pointer variable
-layout(location = 0) subroutine uniform TextureCoordType texture_coord;
-
-layout(index = 0) subroutine(TextureCoordType)
-void tme_0()
-{
-    VSout_t.xy = vec2(0.0f, 0.0f);
-    VSout_t.w = 1.0f;
-}
-
-layout(index = 1) subroutine(TextureCoordType)
-void tme_1_fst_0()
-{
-    VSout_t.xy = i_st;
-    VSout_t.w = i_q;
-}
-
-layout(index = 2) subroutine(TextureCoordType)
-void tme_1_fst_1()
-{
-    VSout_t.xy = vec2(i_uv) * TextureScale;
-    VSout_t.w = 1.0f;
-}
-
-#else
-
 void texture_coord()
 {
     if(VS_TME != 0)
@@ -97,8 +67,6 @@ void texture_coord()
         VSout_t.w = 1.0f;
     }
 }
-
-#endif
 
 void vs_main()
 {

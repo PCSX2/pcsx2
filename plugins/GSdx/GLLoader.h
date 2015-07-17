@@ -270,7 +270,6 @@ extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange;
 extern   PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate;
 extern   PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate;
 // GL4.0
-extern   PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv;
 // GL4.1
 extern   PFNGLBINDPROGRAMPIPELINEPROC           gl_BindProgramPipeline;
 extern   PFNGLDELETEPROGRAMPIPELINESPROC        gl_DeleteProgramPipelines;
@@ -361,7 +360,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
 	extern bool found_GL_ARB_buffer_storage;
-	extern bool found_GL_ARB_shader_subroutine;
 	extern bool found_GL_ARB_bindless_texture;
 	extern bool found_GL_ARB_explicit_uniform_location;
 	extern bool found_GL_ARB_clip_control;

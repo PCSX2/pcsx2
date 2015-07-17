@@ -87,7 +87,6 @@ PFNGLFLUSHMAPPEDBUFFERRANGEPROC        gl_FlushMappedBufferRange            = NU
 PFNGLBLENDEQUATIONSEPARATEPROC         gl_BlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             gl_BlendFuncSeparate                 = NULL;
 // GL4.0
-PFNGLUNIFORMSUBROUTINESUIVPROC         gl_UniformSubroutinesuiv             = NULL;
 // GL4.1
 PFNGLBINDPROGRAMPIPELINEPROC           gl_BindProgramPipeline               = NULL;
 PFNGLGENPROGRAMPIPELINESPROC           gl_GenProgramPipelines               = NULL;
@@ -339,13 +338,12 @@ namespace GLLoader {
 	bool found_GL_ARB_draw_buffers_blend = false; // DX10 GPU limited driver on windows!
 
 	// Note: except Apple, all drivers support explicit uniform location
-	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
+	bool found_GL_ARB_explicit_uniform_location = false; // need by bindless texture
 	// GL4 hardware
 	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
 	bool found_GL_ARB_gpu_shader5 = false;
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
-	bool found_GL_ARB_shader_subroutine = false;
 	bool found_GL_ARB_bindless_texture = false; // GL5 GPU?
 	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
 
@@ -450,19 +448,6 @@ namespace GLLoader {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
 					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n");
 				}
-#if 0
-				// Erratum: on nvidia implementation, gain is very nice : 42.5 fps => 46.5 fps
-				//
-				// Strangely it doesn't provide the speed boost as expected.
-				// Note: only atst/colclip was replaced with subroutine for the moment. It replace 2000 program switch on
-				// colin mcrae 3 by 2100 uniform, but code is slower!
-				//
-				// Current hypothesis: the validation of useprogram is done in the "driver thread" whereas the extra function calls
-				// are done on the overloaded main threads.
-				// Apitrace profiling shows faster GPU draw times
-
-				if (ext.compare("GL_ARB_shader_subroutine") == 0) found_GL_ARB_shader_subroutine = true;
-#endif
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
 				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
@@ -495,7 +480,6 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
-		status &= status_and_override(found_GL_ARB_shader_subroutine, "GL_ARB_shader_subroutine");
 		// GL4.2
 		status &= status_and_override(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
 		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);

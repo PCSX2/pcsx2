@@ -143,16 +143,7 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 
 void GSDeviceOGL::SetupVS(VSSelector sel)
 {
-	if (GLLoader::found_GL_ARB_shader_subroutine) {
-		GLuint sub[1];
-		sub[0] = sel.tme ? 1 + (uint32)sel.fst : 0;
-		m_shader->VS_subroutine(sub);
-		// Handle by subroutine useless now
-		sel.tme = 0;
-		sel.fst = 0;
-	}
-
-	m_shader->VS(m_vs[sel], 1);
+	m_shader->VS(m_vs[sel]);
 }
 
 void GSDeviceOGL::SetupGS(GSSelector sel)
@@ -162,38 +153,6 @@ void GSDeviceOGL::SetupGS(GSSelector sel)
 
 void GSDeviceOGL::SetupPS(PSSelector sel)
 {
-	if (GLLoader::found_GL_ARB_shader_subroutine) {
-		GLuint tfx = sel.tfx > 3 ? 19 : 11 + (uint32)sel.tfx + (uint32)sel.tcc*4;
-
-		GLuint colclip = 8 + (uint32)sel.colclip;
-
-		GLuint clamp = 
-			(sel.wms == 2 && sel.wmt == 2) ? 20 :
-			(sel.wms == 2)                 ? 21 :
-			(sel.wmt == 2)                 ? 22 : 23;
-
-		GLuint wrap = 
-			(sel.wms == 2 && sel.wmt == 2) ? 24 :
-			(sel.wms == 3 && sel.wmt == 3) ? 25 :
-			(sel.wms == 2 && sel.wmt == 3) ? 26 :
-			(sel.wms == 3 && sel.wmt == 2) ? 27 :
-			(sel.wms == 2)                 ? 28 :
-			(sel.wmt == 3)                 ? 29 :
-			(sel.wms == 3)                 ? 30 :
-			(sel.wmt == 2)                 ? 31 : 32;
-
-		GLuint sub[5] = {sel.atst, colclip, tfx, clamp, wrap};
-
-		m_shader->PS_subroutine(sub);
-		// Handle by subroutine useless now
-		sel.atst = 0;
-		sel.colclip = 0;
-		sel.tfx = 0;
-		sel.tcc = 0;
-		// sel.wms = 0;
-		// sel.wmt = 0;
-	}
-
 	// *************************************************************
 	// Static
 	// *************************************************************
@@ -210,7 +169,7 @@ void GSDeviceOGL::SetupPS(PSSelector sel)
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	m_shader->PS(ps, 3);
+	m_shader->PS(ps);
 }
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)
