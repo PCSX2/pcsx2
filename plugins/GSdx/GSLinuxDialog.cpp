@@ -325,8 +325,6 @@ void populate_gl_table(GtkWidget* gl_table)
 	GtkWidget* gl_bt_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_bindless_texture", -1);
 	GtkWidget* gl_sso_label = gtk_label_new("Separate Shader:");
 	GtkWidget* gl_sso_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_separate_shader_objects", -1);
-	GtkWidget* gl_ss_label = gtk_label_new("Shader Subroutine:");
-	GtkWidget* gl_ss_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_subroutine", -1);
 	GtkWidget* gl_gs_label = gtk_label_new("Geometry Shader:");
 	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
 	GtkWidget* gl_ils_label = gtk_label_new("Image Load Store:");
@@ -341,7 +339,6 @@ void populate_gl_table(GtkWidget* gl_table)
 	InsertWidgetInTable(gl_table , gl_bs_label  , gl_bs_combo);
 	InsertWidgetInTable(gl_table , gl_bt_label  , gl_bt_combo);
 	InsertWidgetInTable(gl_table , gl_sso_label , gl_sso_combo);
-	InsertWidgetInTable(gl_table , gl_ss_label  , gl_ss_combo);
 	InsertWidgetInTable(gl_table , gl_ils_label , gl_ils_combo);
 	InsertWidgetInTable(gl_table , gl_cc_label  , gl_cc_combo);
 	InsertWidgetInTable(gl_table , gl_tb_label  , gl_tb_combo);
