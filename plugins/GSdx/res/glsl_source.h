@@ -1314,7 +1314,7 @@ static const char* tfx_fs_all_glsl =
 	"#if PS_BLEND_A == PS_BLEND_B\n"
 	"    Color.rgb = D;\n"
 	"#else\n"
-	"    Color.rgb = ((A - B) * C) + D;\n"
+	"    Color.rgb = trunc((A - B) * C + D);\n"
 	"#endif\n"
 	"\n"
 	"	// FIXME dithering\n"

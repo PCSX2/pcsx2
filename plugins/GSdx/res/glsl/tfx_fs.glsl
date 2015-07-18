@@ -451,7 +451,7 @@ void ps_blend(inout vec4 Color, float As)
 #if PS_BLEND_A == PS_BLEND_B
     Color.rgb = D;
 #else
-    Color.rgb = ((A - B) * C) + D;
+    Color.rgb = trunc((A - B) * C + D);
 #endif
 
 	// FIXME dithering
