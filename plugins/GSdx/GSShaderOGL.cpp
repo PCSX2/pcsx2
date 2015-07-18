@@ -366,7 +366,7 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 		// Now print asm as text
 		char* asm_txt = strtok(&binary[asm_], "\n");
 		while (asm_txt != NULL && (strncmp(asm_txt, "END", 3) || !strncmp(asm_txt, "ENDIF", 5))) {
-			if (strncmp(asm_txt, "OUT", 3) == 0) {
+			if (!strncmp(asm_txt, "OUT", 3) || !strncmp(asm_txt, "TEMP", 4) || !strncmp(asm_txt, "LONG", 4)) {
 				instructions = 0;
 			} else if (instructions >= 0) {
 				if (instructions == 0)
