@@ -462,15 +462,18 @@ void ps_blend(inout vec4 Color, float As)
 	Color.rgb = clamp(Color.rgb, vec3(0.0f), vec3(255.0f));
 #endif
 
+	// FIXME rouding of negative float?
+	// compiler uses trunc but it might need floor
+
     // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
     // GS: Color = 1, Alpha = 255 => output 1
     // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DFMT == FMT_16
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 
-	Color.rgb = vec3(uvec3(Color.rgb) & uvec3(0xF8));
+	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xF8));
 #elif PS_COLCLIP == 3
-	Color.rgb = vec3(uvec3(Color.rgb) & uvec3(0xFF));
+	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xFF));
 #endif
 
 #endif
