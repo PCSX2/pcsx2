@@ -41,9 +41,7 @@ in SHADER
 
 // Same buffer but 2 colors for dual source blending
 layout(location = 0, index = 0) out vec4 SV_Target0;
-#if !SW_BLEND
 layout(location = 0, index = 1) out vec4 SV_Target1;
-#endif
 
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
@@ -608,9 +606,7 @@ void ps_main()
 	ps_fbmask(c);
 
 	SV_Target0 = c;
-#if !SW_BLEND
 	SV_Target1 = vec4(alpha_blend);
-#endif
 }
 
 #endif
