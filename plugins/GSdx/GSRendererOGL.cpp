@@ -785,7 +785,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	sw_blending &= !DATE_GL42;
 
 	if (sw_blending && om_bsel.abe && rt) {
-		GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
+		//GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
 
 		// select a shader that support blending
 		ps_sel.blend_a = om_bsel.a;
@@ -884,7 +884,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		if (colclip_wrap)
 		{
-			ASSERT((bogus_blend & A_MAX) == 0);
+			ASSERT(!sw_blending);
 			GL_PUSH("COLCLIP");
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -938,13 +938,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			om_csel.wa = a;
 
 			dev->OMSetColorMaskState(om_csel);
-			dev->SetupOM(om_dssel, om_bsel, afix);
+			dev->SetupOM(om_dssel, om_bsel, afix, sw_blending);
 
 			SendDraw(require_barrier);
 
 			if (colclip_wrap)
 			{
-				ASSERT((bogus_blend & A_MAX) == 0);
+				ASSERT(!sw_blending);
 				GL_PUSH("COLCLIP");
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
