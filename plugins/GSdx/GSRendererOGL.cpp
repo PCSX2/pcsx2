@@ -417,7 +417,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Format of the output
 
-	GIFRegALPHA ALPHA = context->ALPHA;
+	const GIFRegALPHA& ALPHA = context->ALPHA;
 	float afix = (float)context->ALPHA.FIX / 0x80;
 
 	// Blend
@@ -452,15 +452,49 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
+	// Compute the blending equation to detect special case
+	int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
+	int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
+	// SW Blend is (nearly) free. Let's use it.
+	int free_blend = m_sw_blending && ((blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO));
+
+	// Color clip
+	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
+	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && (m_sw_blending >= ACC_BLEND_CCLIP || free_blend);
+	if ((ALPHA.A == ALPHA.B) || !om_bsel.abe) { // Optimize-away colclip
+		// No addition neither substraction so no risk of overflow the [0:255] range.
+		colclip_wrap = false;
+		acc_colclip_wrap = false;
+	}
+	if (acc_colclip_wrap) {
+		colclip_wrap = false;
+		ps_sel.colclip = 3;
+		GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+	} else if (colclip_wrap) {
+		ps_sel.colclip = 1;
+		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+	}
+
+	bool impossible_blend = m_sw_blending && (blend_flag & A_MAX);
+	bool all_blend_sw = (m_sw_blending >= ACC_BLEND_ULTRA)
+		|| (m_sw_blending >= ACC_BLEND_FULL && !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ));
+
+	bool sw_blending = free_blend // Free case
+		|| impossible_blend || all_blend_sw // Impossible blend or all
+		|| acc_colclip_wrap // accurate colclip
+		|| ps_sel.fbmask; // accurate fbmask
+
 	if (ps_sel.dfmt == 1) {
-		if (ALPHA.C == 1) {
+		if (ALPHA.C == 1 && !sw_blending) {
 			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
-			ALPHA.C = 2;
+			om_bsel.c = 2;
 			afix = 1.0f;
 		}
 		// Disable writing of the alpha channel
 		om_csel.wa = 0;
 	}
+
+	// DATE
 
 	if (DATE) {
 		if (GLLoader::found_GL_ARB_texture_barrier && (m_prim_overlap == PRIM_OVERLAP_NO)) {
@@ -479,8 +513,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			}
 		}
 	}
-
-	// DATE
 
 	if (DATE_GL45) {
 		gl_TextureBarrier();
@@ -611,22 +643,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.date = 1 + context->TEST.DATM;
 		else
 			om_dssel.date = 1;
-	}
-
-	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
-	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && (m_sw_blending >= ACC_BLEND_CCLIP || (m_prim_overlap == PRIM_OVERLAP_NO));
-	if ((ALPHA.A == ALPHA.B) || !om_bsel.abe) { // Optimize-away colclip
-		// No addition neither substraction so no risk of overflow the [0:255] range.
-		colclip_wrap = false;
-		acc_colclip_wrap = false;
-	}
-	if (acc_colclip_wrap) {
-		colclip_wrap = false;
-		ps_sel.colclip = 3;
-		GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-	} else if (colclip_wrap) {
-		ps_sel.colclip = 1;
-		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 	}
 
 	ps_sel.fba = context->FBA.FBA;
@@ -764,19 +780,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// SW Blending
-
-	// Compute the blending equation to detect special case
-	int blend_sel         = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
-	int blend_flag        = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-	bool impossible_blend = m_sw_blending && (blend_flag & A_MAX);
-
-	bool all_blend_sw = (m_sw_blending >= ACC_BLEND_ULTRA)
-		|| (m_sw_blending >= ACC_BLEND_FULL && !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ));
-
-	bool sw_blending = (m_prim_overlap == PRIM_OVERLAP_NO) // Free case
-		|| impossible_blend || all_blend_sw // Impossible blend or all
-		|| acc_colclip_wrap // accurate colclip
-		|| ps_sel.fbmask; // accurate fbmask
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1)
