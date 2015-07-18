@@ -1,6 +1,7 @@
 //#version 420 // Keep it for text editor detection
 
-// note lerp => mix
+// Require for bit operation
+//#extension GL_ARB_gpu_shader5 : enable
 
 #define FMT_32 0
 #define FMT_24 1
@@ -159,7 +160,8 @@ mat4 sample_4c(vec4 uv)
 {
 	mat4 c;
 
-	// FIXME investigate texture gather (filtering impact?)
+    // Note: texture gather can't be used because of special clamping/wrapping
+    // Also it doesn't support lod
 	c[0] = sample_c(uv.xy);
 	c[1] = sample_c(uv.zy);
 	c[2] = sample_c(uv.xw);
@@ -177,7 +179,8 @@ uvec4 sample_4_index(vec4 uv)
 	//
 	// Or we have an old RT (ie RGBA8) that contains index (4/8) in the alpha channel
 
-	// FIXME investigate texture gather (filtering impact?)
+    // Note: texture gather can't be used because of special clamping/wrapping
+    // Also it doesn't support lod
 	c.x = sample_c(uv.xy).a;
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
@@ -266,10 +269,15 @@ vec4 sample_color(vec2 st, float q)
 	// PERF: see the impact of the exansion before/after the interpolation
 	for (int i = 0; i < 4; i++)
 	{
+        // PERF note: using dot produce reduces by 1 the number of instruction
+        // but I'm not it is equivalent neither faster.
+        //float sum = dot(c[i].rgb, vec3(1.0f));
 #if ((PS_FMT & ~FMT_PAL) == FMT_24)
 		c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
+		//c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #elif ((PS_FMT & ~FMT_PAL) == FMT_16)
 		c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
+		//c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #endif
 	}
 
@@ -540,6 +548,11 @@ void ps_main()
 	// Note: GLSL 4.50/GL_EXT_shader_integer_mix support a mix instruction to select a component\n"
 	// However Nvidia emulate it with an if (at least on kepler arch) ...\n"
 #if PS_READ_BA
+	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
+	// uint my_ta = (bool(bitfieldExtract(denorm_c.a, 7, 1))) ? denorm_TA.y : denorm_TA.x;
+	// denorm_c.a = bitfieldInsert(denorm_c.a, bitfieldExtract(my_ta, 7, 1), 7, 1);
+	// c.ga = vec2(float(denorm_c.a)/ 255.0f);
+
 	if (bool(denorm_c.a & 0x80u))
 		c.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
 	else

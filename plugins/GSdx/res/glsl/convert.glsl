@@ -135,6 +135,7 @@ void ps_main1()
 	// shift Alpha: -7 + 15
     highp uvec4 i = uvec4(c * vec4(1/8.0f, 4.0f, 128.0f, 256.0f)); // Shift value
 
+	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
     SV_Target1 = (i.r & uint(0x001f)) | (i.g & uint(0x03e0)) | (i.b & uint(0x7c00)) | (i.a & uint(0x8000));
 
 #else
@@ -146,6 +147,7 @@ void ps_main1()
 
 	highp uvec4 i = uvec4(c * vec4(uint(0x001f), uint(0x03e0), uint(0x7c00), uint(0x8000)));
 
+	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
     SV_Target1 = (i.x & uint(0x001f)) | (i.y & uint(0x03e0)) | (i.z & uint(0x7c00)) | (i.w & uint(0x8000));
 #endif
 
