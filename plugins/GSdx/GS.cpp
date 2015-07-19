@@ -69,9 +69,6 @@ static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
 static const char *s_type_log ="";
-#ifdef _WINDOWS
-static bool s_isgsopen2 = false; // boolean to remove some stuff from the config panel in new PCSX2's/
-#endif
 bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
 
 EXPORT_C_(uint32) PS2EgetLibType()
@@ -91,15 +88,6 @@ EXPORT_C_(uint32) PS2EgetLibVersion2(uint32 type)
 
 	return (build << 0) | (revision << 8) | (PS2E_GS_VERSION << 16) | (PLUGIN_VERSION << 24);
 }
-
-#ifdef _WINDOWS
-
-EXPORT_C_(void) PS2EsetEmuVersion(const char* emuId, uint32 version)
-{
-	s_isgsopen2 = true;
-}
-
-#endif
 
 EXPORT_C_(uint32) PS2EgetCpuPlatform()
 {
@@ -775,7 +763,7 @@ EXPORT_C GSconfigure()
 
 #ifdef _WINDOWS
 
-		if(GSSettingsDlg(s_isgsopen2).DoModal() == IDOK)
+		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			if(s_gs != NULL && s_gs->m_wnd->IsManaged())
 			{
