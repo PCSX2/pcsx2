@@ -35,12 +35,18 @@ class GSRendererOGL : public GSRendererHW
 		PRIM_OVERLAP_NO
 	};
 
+	enum ACC_BLEND {
+		ACC_BLEND_NONE = 0,
+		ACC_BLEND_FREE = 1,
+		ACC_BLEND_CCLIP = 2,
+		ACC_BLEND_FULL = 3,
+		ACC_BLEND_ULTRA = 4
+	};
+
 	private:
 		GSVector2 m_pixelcenter;
-		int  m_accurate_blend;
 		bool m_accurate_date;
-		bool m_accurate_colclip;
-		bool m_accurate_fbmask;
+		int m_sw_blending;
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;

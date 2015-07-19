@@ -372,11 +372,6 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
-#ifdef ENABLE_OGL_DEBUG
-		if ((context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
-			GL_INS("ERROR: Source and Target are the same!");
-		}
-#endif
 		/*
 		
 		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
