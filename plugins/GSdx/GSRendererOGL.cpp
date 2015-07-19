@@ -152,6 +152,167 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
+bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb)
+{
+	bool require_barrier = false;
+
+	if (m_texture_shuffle) {
+		ps_sel.shuffle = 1;
+		ps_sel.dfmt = 0;
+
+		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+		GSVertex* v = &m_vertex.buff[0];
+		size_t count = m_vertex.next;
+
+		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
+		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
+		bool write_ba = (pos > 112 && pos < 136);
+		// Read texture is 8 to 16 pixels (same as above)
+		float tw = (float)(1u << m_context->TEX0.TW);
+		int tex_pos = (PRIM->FST) ? v[0].U : tw * v[0].ST.S;
+		tex_pos &= 0xFF;
+		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
+
+		// Convert the vertex info to a 32 bits color format equivalent
+		if (PRIM->FST) {
+			GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
+
+			for(size_t i = 0; i < count; i += 2) {
+				if (write_ba)
+					v[i].XYZ.X   -= 128u;
+				else
+					v[i+1].XYZ.X += 128u;
+
+				if (ps_sel.read_ba)
+					v[i].U       -= 128u;
+				else
+					v[i+1].U     += 128u;
+
+				// Height is too big (2x).
+				int tex_offset = v[i].V & 0xF;
+				GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
+
+				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+				v[i].XYZ.Y   = tmp.x;
+				v[i].V       = tmp.y;
+				v[i+1].XYZ.Y = tmp.z;
+				v[i+1].V     = tmp.w;
+			}
+		} else {
+			const float offset_8pix = 8.0f / tw;
+			GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
+
+			for(size_t i = 0; i < count; i += 2) {
+				if (write_ba)
+					v[i].XYZ.X   -= 128u;
+				else
+					v[i+1].XYZ.X += 128u;
+
+				if (ps_sel.read_ba)
+					v[i].ST.S    -= offset_8pix;
+				else
+					v[i+1].ST.S  += offset_8pix;
+
+				// Height is too big (2x).
+				GSVector4i offset(o.OFY, o.OFY);
+
+				GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
+				v[i].XYZ.Y   = tmp.x;
+				v[i].ST.T   /= 2.0f;
+				v[i+1].XYZ.Y = tmp.y;
+				v[i+1].ST.T /= 2.0f;
+			}
+		}
+
+		// Please bang my head against the wall!
+		// 1/ Reduce the frame mask to a 16 bit format
+		const uint32& m = m_context->FRAME.FBMSK;
+		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
+		// FIXME GSVector will be nice here
+		uint8 rg_mask = fbmask & 0xFF;
+		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		om_csel.wrgba = 0;
+
+		// 2 Select the new mask (Please someone put SSE here)
+		if (rg_mask != 0xFF) {
+			if (write_ba) {
+				GL_INS("Color shuffle %s => B", ps_sel.read_ba ? "B" : "R");
+				om_csel.wb = 1;
+			} else {
+				GL_INS("Color shuffle %s => R", ps_sel.read_ba ? "B" : "R");
+				om_csel.wr = 1;
+			}
+			if (rg_mask)
+				ps_sel.fbmask = 1;
+		}
+
+		if (ba_mask != 0xFF) {
+			if (write_ba) {
+				GL_INS("Color shuffle %s => A", ps_sel.read_ba ? "A" : "G");
+				om_csel.wa = 1;
+			} else {
+				GL_INS("Color shuffle %s => G", ps_sel.read_ba ? "A" : "G");
+				om_csel.wg = 1;
+			}
+			if (ba_mask)
+				ps_sel.fbmask = 1;
+		}
+
+		ps_sel.fbmask &= m_sw_blending;
+		if (ps_sel.fbmask) {
+			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+			ps_cb.FbMask.r = rg_mask;
+			ps_cb.FbMask.g = rg_mask;
+			ps_cb.FbMask.b = ba_mask;
+			ps_cb.FbMask.a = ba_mask;
+			require_barrier = true;
+		}
+
+	} else {
+		ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
+
+		om_csel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+
+		{
+			// FIXME GSVector will be nice here
+			uint8 r_mask = (m_context->FRAME.FBMSK >> 0)  & 0xFF;
+			uint8 g_mask = (m_context->FRAME.FBMSK >> 8)  & 0xFF;
+			uint8 b_mask = (m_context->FRAME.FBMSK >> 16) & 0xFF;
+			uint8 a_mask = (m_context->FRAME.FBMSK >> 24) & 0xFF;
+			if (r_mask != 0 && r_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (g_mask != 0 && g_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (b_mask != 0 && b_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+			if (a_mask != 0 && a_mask != 0xFF) {
+				ps_sel.fbmask = 1;
+			}
+
+			ps_sel.fbmask &= m_sw_blending;
+			if (ps_sel.fbmask) {
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				ps_cb.FbMask.r = r_mask;
+				ps_cb.FbMask.g = g_mask;
+				ps_cb.FbMask.b = b_mask;
+				ps_cb.FbMask.a = a_mask;
+				require_barrier = true;
+			}
+		}
+	}
+
+	return require_barrier;
+}
+
 GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 {
 	// Either 1 triangle or 1 line or 3 POINTs
@@ -234,6 +395,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
 
+	// FIXME: optimization, latch ps_cb & vs_cb in the object
+	// 1/ Avoid a reset every draw
+	// 2/ potentially less update
 	GSDeviceOGL::VSSelector vs_sel;
 	GSDeviceOGL::VSConstantBuffer vs_cb;
 
@@ -259,168 +423,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	}
 
-	if (m_texture_shuffle) {
-		ps_sel.shuffle = 1;
-		ps_sel.dfmt = 0;
+	require_barrier |= EmulateTextureShuffleAndFbmask(ps_sel, om_csel, ps_cb);
 
-		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-		GSVertex* v = &m_vertex.buff[0];
-		size_t count = m_vertex.next;
-
-		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
-		bool write_ba = (pos > 112 && pos < 136);
-		// Read texture is 8 to 16 pixels (same as above)
-		float tw = (float)(1u << context->TEX0.TW);
-		int tex_pos = (PRIM->FST) ? v[0].U : tw * v[0].ST.S;
-		tex_pos &= 0xFF;
-		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
-
-		// Convert the vertex info to a 32 bits color format equivalent
-		if (PRIM->FST) {
-			GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
-
-			for(size_t i = 0; i < count; i += 2) {
-				if (write_ba)
-					v[i].XYZ.X   -= 128u;
-				else
-					v[i+1].XYZ.X += 128u;
-
-				if (ps_sel.read_ba)
-					v[i].U       -= 128u;
-				else
-					v[i+1].U     += 128u;
-
-				// Height is too big (2x).
-				int tex_offset = v[i].V & 0xF;
-				GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
-
-				v[i].XYZ.Y   = tmp.x;
-				v[i].V       = tmp.y;
-				v[i+1].XYZ.Y = tmp.z;
-				v[i+1].V     = tmp.w;
-			}
-		} else {
-			const float offset_8pix = 8.0f / tw;
-			GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
-
-			for(size_t i = 0; i < count; i += 2) {
-				if (write_ba)
-					v[i].XYZ.X   -= 128u;
-				else
-					v[i+1].XYZ.X += 128u;
-
-				if (ps_sel.read_ba)
-					v[i].ST.S    -= offset_8pix;
-				else
-					v[i+1].ST.S  += offset_8pix;
-
-				// Height is too big (2x).
-				GSVector4i offset(o.OFY, o.OFY);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
-
-				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y   = tmp.x;
-				v[i].ST.T   /= 2.0f;
-				v[i+1].XYZ.Y = tmp.y;
-				v[i+1].ST.T /= 2.0f;
-			}
-		}
-
-		// Please bang my head against the wall!
-		// 1/ Reduce the frame mask to a 16 bit format
-		const uint32& m = context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
-		// FIXME GSVector will be nice here
-		uint8 rg_mask = fbmask & 0xFF;
-		uint8 ba_mask = (fbmask >> 8) & 0xFF;
-		om_csel.wrgba = 0;
-
-		// 2 Select the new mask (Please someone put SSE here)
-		if (rg_mask != 0xFF) {
-			if (write_ba) {
-				GL_INS("Color shuffle %s => B", ps_sel.read_ba ? "B" : "R");
-				om_csel.wb = 1;
-			} else {
-				GL_INS("Color shuffle %s => R", ps_sel.read_ba ? "B" : "R");
-				om_csel.wr = 1;
-			}
-			if (rg_mask)
-				ps_sel.fbmask = 1;
-		}
-
-		if (ba_mask != 0xFF) {
-			if (write_ba) {
-				GL_INS("Color shuffle %s => A", ps_sel.read_ba ? "A" : "G");
-				om_csel.wa = 1;
-			} else {
-				GL_INS("Color shuffle %s => G", ps_sel.read_ba ? "A" : "G");
-				om_csel.wg = 1;
-			}
-			if (ba_mask)
-				ps_sel.fbmask = 1;
-		}
-
-		ps_sel.fbmask &= m_sw_blending;
-		if (ps_sel.fbmask) {
-			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
-			ps_cb.FbMask.r = rg_mask;
-			ps_cb.FbMask.g = rg_mask;
-			ps_cb.FbMask.b = ba_mask;
-			ps_cb.FbMask.a = ba_mask;
-			require_barrier = true;
-			dev->PSSetShaderResource(3, rt);
-		}
-
-	} else {
-		ps_sel.dfmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
-
-		om_csel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
-
-		{
-			// FIXME GSVector will be nice here
-			uint8 r_mask = (context->FRAME.FBMSK >> 0)  & 0xFF;
-			uint8 g_mask = (context->FRAME.FBMSK >> 8)  & 0xFF;
-			uint8 b_mask = (context->FRAME.FBMSK >> 16) & 0xFF;
-			uint8 a_mask = (context->FRAME.FBMSK >> 24) & 0xFF;
-			if (r_mask != 0 && r_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (g_mask != 0 && g_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (b_mask != 0 && b_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (a_mask != 0 && a_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-
-			ps_sel.fbmask &= m_sw_blending;
-			if (ps_sel.fbmask) {
-				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 2) ? 16 : 32);
-				ps_cb.FbMask.r = r_mask;
-				ps_cb.FbMask.g = g_mask;
-				ps_cb.FbMask.b = b_mask;
-				ps_cb.FbMask.a = a_mask;
-				require_barrier = true;
-				dev->PSSetShaderResource(3, rt);
-			}
-		}
-	}
-
-	// Format of the output
+	// Blend
 
 	const GIFRegALPHA& ALPHA = context->ALPHA;
 	float afix = (float)context->ALPHA.FIX / 0x80;
-
-	// Blend
 
 	if (!IsOpaque())
 	{
