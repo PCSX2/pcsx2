@@ -503,6 +503,7 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (sTex also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
 	
 	*(int*)&m_q = GSVector4i::store(q); 
+	ASSERT(!std::isnan(m_q)); // See GIFRegHandlerRGBAQ
 	
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
@@ -708,6 +709,9 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 	rgbaq = rgbaq.upl32(rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy()); // see GIFPackedRegHandlerSTQ
 
 	m_v.RGBAQ = rgbaq;
+	if (std::isnan(m_v.RGBAQ.Q)) {
+		m_v.RGBAQ.Q = std::numeric_limits<float>::max();
+	}
 }
 
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
