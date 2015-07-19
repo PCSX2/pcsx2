@@ -30,6 +30,13 @@ const char* dialog_message(int ID, bool* updateText) {
 		*updateText = true;
 	switch (ID)
 	{
+		case IDC_FILTER:
+			return "Control the texture bilinear filtering of the emulation\n\n"
+				"Nearest or OFF\t: Always disable interpolation, rendering will be blocky.\n"
+				"----------------------------------------------------------------------------\n"
+				"PS2 or GRAYED\t: Use same mode as the PS2. It is the more accurate option.\n"
+				"----------------------------------------------------------------------------\n"
+				"Forced or ON\t: Always enable interpolation. Rendering is smoother but it could generate some glitches.";
 		case IDC_CRC_LEVEL:
 			return "Control the number of Auto-CRC hacks applied to games.\n\n"
 				"None\t\t: Remove nearly all CRC hacks (debug only).\n"

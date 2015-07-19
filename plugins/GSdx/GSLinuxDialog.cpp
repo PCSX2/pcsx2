@@ -25,6 +25,15 @@
 #include "GSLinuxLogo.h"
 #include "GSSetting.h"
 
+void AddTooltip(GtkWidget* w, int idc) {
+	gtk_widget_set_tooltip_text(w, dialog_message(idc));
+}
+
+void AddTooltip(GtkWidget* w1, GtkWidget* w2, int idc) {
+	AddTooltip(w1, idc);
+	AddTooltip(w2, idc);
+}
+
 void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
 {
 	if (gtk_combo_box_get_active(combo) == -1) return;
@@ -299,14 +308,14 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* tc_depth_check   = CreateCheckBox("Full Depth Emulation", "texture_cache_depth", true);
 
 	// Some helper string
-	gtk_widget_set_tooltip_text(paltex_check, dialog_message(IDC_PALTEX));
-	gtk_widget_set_tooltip_text(acc_blend_check, dialog_message(IDC_ACCURATE_BLEND));
-	gtk_widget_set_tooltip_text(acc_date_check, dialog_message(IDC_ACCURATE_DATE));
-	gtk_widget_set_tooltip_text(acc_cclip_check, dialog_message(IDC_ACCURATE_COLCLIP));
-	gtk_widget_set_tooltip_text(acc_fbmsk_check, dialog_message(IDC_ACCURATE_FBMASK));
-	gtk_widget_set_tooltip_text(crc_label, dialog_message(IDC_CRC_LEVEL));
-	gtk_widget_set_tooltip_text(crc_combo_box, dialog_message(IDC_CRC_LEVEL));
-	gtk_widget_set_tooltip_text(tc_depth_check, dialog_message(IDC_TC_DEPTH));
+	AddTooltip(paltex_check, IDC_PALTEX);
+	AddTooltip(acc_blend_check, IDC_ACCURATE_BLEND);
+	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
+	AddTooltip(acc_cclip_check, IDC_ACCURATE_COLCLIP);
+	AddTooltip(acc_fbmsk_check, IDC_ACCURATE_FBMASK);
+	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
+	AddTooltip(tc_depth_check, IDC_TC_DEPTH);
+	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
@@ -408,18 +417,16 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* stretch_hack_label  = gtk_label_new("Align Sprite Texture:");
 
 	// Reuse windows helper string :)
-	gtk_widget_set_tooltip_text(hack_offset_check, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_skipdraw_label, dialog_message(IDC_SKIPDRAWHACK));
-	gtk_widget_set_tooltip_text(hack_skipdraw_spin, dialog_message(IDC_SKIPDRAWHACK));
+	AddTooltip(hack_offset_check, IDC_TCOFFSETX);
+	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
+	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
-	gtk_widget_set_tooltip_text(hack_wild_check, dialog_message(IDC_WILDHACK));
-	gtk_widget_set_tooltip_text(hack_sprite_box, dialog_message(IDC_SPRITEHACK));
-	gtk_widget_set_tooltip_text(hack_sprite_label, dialog_message(IDC_SPRITEHACK));
-	gtk_widget_set_tooltip_text(hack_tco_label, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(hack_tco_entry, dialog_message(IDC_TCOFFSETX));
-	gtk_widget_set_tooltip_text(align_sprite_check, dialog_message(IDC_ALIGN_SPRITE));
-	gtk_widget_set_tooltip_text(stretch_hack_box, dialog_message(IDC_ROUND_SPRITE));
-	gtk_widget_set_tooltip_text(stretch_hack_label, dialog_message(IDC_ROUND_SPRITE));
+	AddTooltip(hack_wild_check, IDC_WILDHACK);
+	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
+	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
+	AddTooltip(hack_tco_entry, IDC_TCOFFSETX);
+	AddTooltip(align_sprite_check, IDC_ALIGN_SPRITE);
+	AddTooltip(stretch_hack_label, stretch_hack_box, IDC_ROUND_SPRITE);
 
 
 	s_table_line = 0;

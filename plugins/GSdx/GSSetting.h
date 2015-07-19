@@ -42,6 +42,7 @@ const char* dialog_message(int ID, bool* updateText = NULL);
 
 #ifdef __linux__
 enum {
+	IDC_FILTER,
 	IDC_SKIPDRAWHACK,
 	IDC_SKIPDRAWHACKEDIT,
 	IDC_STATIC_SKIPDRAW,
