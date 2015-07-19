@@ -105,8 +105,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
 				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)\n";
 		case IDC_PALTEX:
-			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion. "
-				"(Note it was never tested on OpenGL)\n\n"
+			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion.\n\n"
 				"When uncheked the CPU will convert directly the texture to 32 bits\n\n"
 				"It is a basically a trade-off between GPU/CPU";
 		case IDC_ACCURATE_DATE:
