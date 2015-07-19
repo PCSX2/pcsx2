@@ -120,18 +120,29 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
 				"It could be slower when the effects are used.\n\nNote: it requires the 4.2 OpenGL extension GL_ARB_shader_image_load_store";
+#ifdef __linux__
+		case IDC_ACCURATE_BLEND_UNIT:
+			return "Control the accuracy level of the GS blending unit emulation. Note: it requires a GL4.5 drivers\n\n"
+				"None\t: Fast but introduce various rendering issues. It is intended for slow computer.\n"
+				"------------------------------------------------------------------\n"
+				"Basic\t: Emulate correctly most of the effects with a limited speed penality. It is the recommended setting.\n"
+				"------------------------------------------------------------------\n"
+				"Medium\t: Add full emulation of color wrapping. It helps Castlevania games. Be aware that it will half your FPS.\n"
+				"------------------------------------------------------------------\n"
+				"Full\t\t: Except few cases, the blending unit will be fully emulated by the shader. It is very slow! It is intended for debug\n"
+				"------------------------------------------------------------------\n"
+				"Ultra\t: The blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug\n";
+#endif
 		case IDC_ACCURATE_BLEND:
 			return "Allow to solve the impossible blending error message.\n\n"
 				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
 		case IDC_ACCURATE_COLCLIP:
 			return "Implement the wrapping of color after an overflow\n\n"
 				"It will be slow (half speed) when the effect are used!\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
-#ifdef __linux__
 		case IDC_ACCURATE_FBMASK:
 			return "Implement partial color masking\n\n"
 				"It helps to fix Fifa/Medal of Honors/Fight Night series\nCould slow down a bit the emulation\n\n"
 				"Note: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
-#endif
 		case IDC_TC_DEPTH:
 			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 		default:

@@ -301,26 +301,24 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level", 3);
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* acc_blend_check  = CreateCheckBox("Accurate Blend", "accurate_blend", true);
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
-	GtkWidget* acc_cclip_check  = CreateCheckBox("Accurate Color Clipping", "accurate_colclip", false);
-	GtkWidget* acc_fbmsk_check  = CreateCheckBox("Accurate FrameBuffer Mask", "accurate_fbmask", false);
 	GtkWidget* tc_depth_check   = CreateCheckBox("Full Depth Emulation", "texture_cache_depth", true);
+
+	GtkWidget* acc_bld_label     = gtk_label_new("Blending Unit Accuracy:");
+	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit", 1);
 
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
-	AddTooltip(acc_blend_check, IDC_ACCURATE_BLEND);
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
-	AddTooltip(acc_cclip_check, IDC_ACCURATE_COLCLIP);
-	AddTooltip(acc_fbmsk_check, IDC_ACCURATE_FBMASK);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
+	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(tc_depth_check, IDC_TC_DEPTH);
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
-	InsertWidgetInTable(hw_table, acc_blend_check, acc_date_check);
-	InsertWidgetInTable(hw_table, acc_cclip_check, acc_fbmsk_check);
+	InsertWidgetInTable(hw_table, acc_date_check);
+	InsertWidgetInTable(hw_table, acc_bld_label, acc_bld_combo_box);
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
 	InsertWidgetInTable(hw_table, crc_label, crc_combo_box);
