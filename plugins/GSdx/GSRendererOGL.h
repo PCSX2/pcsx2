@@ -38,9 +38,10 @@ class GSRendererOGL : public GSRendererHW
 	enum ACC_BLEND {
 		ACC_BLEND_NONE = 0,
 		ACC_BLEND_FREE = 1,
-		ACC_BLEND_CCLIP = 2,
-		ACC_BLEND_FULL = 3,
-		ACC_BLEND_ULTRA = 4
+		ACC_BLEND_SPRITE = 2,
+		ACC_BLEND_CCLIP = 3,
+		ACC_BLEND_FULL = 4,
+		ACC_BLEND_ULTRA = 5
 	};
 
 	private:
