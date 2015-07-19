@@ -487,8 +487,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	bool impossible_blend = m_sw_blending && (blend_flag & A_MAX);
-	bool all_blend_sw = (m_sw_blending >= ACC_BLEND_ULTRA)
-		|| (m_sw_blending >= ACC_BLEND_FULL && !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ));
+	bool all_blend_sw;
+	switch (m_sw_blending) {
+		case ACC_BLEND_ULTRA:	all_blend_sw = true; break;
+		case ACC_BLEND_FULL:	all_blend_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ); break;
+		case ACC_BLEND_CCLIP:
+		case ACC_BLEND_SPRITE:	all_blend_sw = m_vt.m_primclass == GS_SPRITE_CLASS; break;
+		default:				all_blend_sw = false; break;
+	}
 
 	bool sw_blending = free_blend // Free case
 		|| impossible_blend || all_blend_sw // Impossible blend or all
