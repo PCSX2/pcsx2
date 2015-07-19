@@ -29,10 +29,9 @@ GSRendererOGL::GSRendererOGL()
 {
 	m_pixelcenter = GSVector2(-0.5f, -0.5f);
 
-	m_accurate_blend  = theApp.GetConfig("accurate_blend", 1);
 	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
-	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
-	m_accurate_fbmask = theApp.GetConfig("accurate_fbmask", 0);
+
+	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
 
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
@@ -248,7 +247,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
-	if (GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if (GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex) {
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
@@ -367,7 +366,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				ps_sel.fbmask = 1;
 		}
 
-		ps_sel.fbmask &= m_accurate_fbmask;
+		ps_sel.fbmask &= m_sw_blending;
 		if (ps_sel.fbmask) {
 			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
 			ps_cb.FbMask.r = rg_mask;
@@ -402,7 +401,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				ps_sel.fbmask = 1;
 			}
 
-			ps_sel.fbmask &= m_accurate_fbmask;
+			ps_sel.fbmask &= m_sw_blending;
 			if (ps_sel.fbmask) {
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 2) ? 16 : 32);
@@ -614,19 +613,20 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			om_dssel.date = 1;
 	}
 
-	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST && !m_accurate_colclip;
-	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && m_accurate_colclip;
+	bool colclip_wrap = env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
+	bool acc_colclip_wrap = env.COLCLAMP.CLAMP == 0 && (m_sw_blending >= ACC_BLEND_CCLIP || (m_prim_overlap == PRIM_OVERLAP_NO));
 	if ((ALPHA.A == ALPHA.B) || !om_bsel.abe) { // Optimize-away colclip
 		// No addition neither substraction so no risk of overflow the [0:255] range.
 		colclip_wrap = false;
 		acc_colclip_wrap = false;
 	}
-	if (colclip_wrap) {
-		ps_sel.colclip = 1;
-		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-	} else if (acc_colclip_wrap) {
+	if (acc_colclip_wrap) {
+		colclip_wrap = false;
 		ps_sel.colclip = 3;
 		GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+	} else if (colclip_wrap) {
+		ps_sel.colclip = 1;
+		GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 	}
 
 	ps_sel.fba = context->FBA.FBA;
@@ -766,12 +766,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// SW Blending
 
 	// Compute the blending equation to detect special case
-	int blend_sel    = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
-	int bogus_blend  = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-	bool all_sw      = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ) && (m_accurate_blend > 1);
+	int blend_sel         = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
+	int blend_flag        = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
+	bool impossible_blend = m_sw_blending && (blend_flag & A_MAX);
+
+	bool all_blend_sw = (m_sw_blending >= ACC_BLEND_ULTRA)
+		|| (m_sw_blending >= ACC_BLEND_FULL && !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ));
 
 	bool sw_blending = (m_prim_overlap == PRIM_OVERLAP_NO) // Free case
-		|| (m_accurate_blend && (bogus_blend & A_MAX)) || all_sw // Impossible blend or all
+		|| impossible_blend || all_blend_sw // Impossible blend or all
 		|| acc_colclip_wrap // accurate colclip
 		|| ps_sel.fbmask; // accurate fbmask
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
@@ -781,8 +784,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	sw_blending &= !DATE_GL42;
 
 	if (sw_blending && om_bsel.abe && rt) {
-		//GL_INS("!!! SW blending effect used (0x%x from sel %d) !!!", bogus_blend, blend_sel);
-
 		// select a shader that support blending
 		ps_sel.blend_a = om_bsel.a;
 		ps_sel.blend_b = om_bsel.b;
@@ -797,7 +798,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 
 		// No need to flush for every primitive
-		require_barrier |= !(bogus_blend & NO_BAR);
+		require_barrier |= !(blend_flag & NO_BAR);
 	} else {
 		ps_sel.clr1 = om_bsel.IsCLR1();
 	}
