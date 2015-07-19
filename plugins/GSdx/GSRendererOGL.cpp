@@ -351,13 +351,16 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 	if (!require_barrier || (m_prim_overlap == PRIM_OVERLAP_NO)) {
 		dev->DrawIndexedPrimitive();
 	} else {
-		ASSERT(m_vt.m_primclass != GS_POINT_CLASS);
-		ASSERT(m_vt.m_primclass != GS_LINE_CLASS);
 		ASSERT(GLLoader::found_geometry_shader);
 
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
-		size_t nb_vertex = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+		size_t nb_vertex;
+		switch (m_vt.m_primclass) {
+			case GS_TRIANGLE_CLASS: nb_vertex = 3; break;
+			case GS_POINT_CLASS: nb_vertex = 1; break;
+			default: nb_vertex = 2; break;
+		}
 
 		GL_PUSH("Split the draw");
 
