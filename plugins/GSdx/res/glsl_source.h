@@ -1258,7 +1258,7 @@ static const char* tfx_fs_all_glsl =
 	"	// FIXME do I need special case for 16 bits\n"
 	"#if PS_FBMASK\n"
 	"	vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);\n"
-	"	C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask)) / 255.0f;\n"
+	"	C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));\n"
 	"#endif\n"
 	"}\n"
 	"\n"
