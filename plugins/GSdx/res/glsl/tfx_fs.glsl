@@ -578,8 +578,7 @@ void ps_main()
 	float alpha_blend = C.a / 128.0f;
 
 	// Correct the ALPHA value based on the output format
-	// FIXME add support of alpha mask to replace properly PS_AOUT
-#if (PS_DFMT == FMT_16) || (PS_AOUT)
+#if (PS_DFMT == FMT_16)
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
 #elif (PS_DFMT == FMT_32) && (PS_FBA != 0)

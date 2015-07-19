@@ -332,14 +332,12 @@ class GSDeviceOGL : public GSDevice
 				uint32 fog:1;
 				uint32 clr1:1;
 				uint32 fba:1;
-				uint32 aout:1;
 				uint32 date:3;
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
 				uint32 colclip:2;
 				uint32 atst:3;
-
 				uint32 tfx:3;
 				uint32 tcc:1;
 				uint32 wms:2;
@@ -348,6 +346,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 ifmt:2;
 				uint32 shuffle:1;
 				uint32 read_ba:1;
+				uint32 fbmask:1;
 
 				//uint32 _free1:0;
 
@@ -357,7 +356,6 @@ class GSDeviceOGL : public GSDevice
 				uint32 blend_c:2;
 				uint32 blend_d:2;
 				uint32 dfmt:2;
-				uint32 fbmask:1;
 
 				uint32 _free2:21;
 			};

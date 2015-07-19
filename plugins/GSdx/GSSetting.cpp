@@ -54,7 +54,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Use it, for example, to try and get rid of bad post processing effects."
 				" Try values between 1 and 100.";
 		case IDC_ALPHAHACK:
-			return "Alpha Hack\n\nDifferent alpha handling. Can work around some shadow problems.";
+			return "Alpha Hack\n\nDifferent alpha handling. Can work around some shadow problems.\n\n"
+				"DX only, OpenGL emulates those effects correctly with accurate options.";
 		case IDC_OFFSETHACK:
 			return "Halfpixel\n\nMight fix some misaligned fog, bloom, or blend effect.";
 		case IDC_SPRITEHACK:
@@ -79,7 +80,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ALPHASTENCIL:
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
-				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
+				"Will disable partial transparency in some games or even prevent drawing some elements altogether."
+				"DX only, OpenGL emulates those effects correctly with accurate options.";
 		case IDC_CHECK_DISABLE_ALL_HACKS:
 			return "FOR TESTING ONLY!!\n\n"
 				"Disable all CRC hacks - will break many games. Overrides CrcHacksExclusion at gsdx.ini\n"

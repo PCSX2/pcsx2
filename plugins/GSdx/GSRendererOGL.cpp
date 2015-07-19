@@ -34,15 +34,11 @@ GSRendererOGL::GSRendererOGL()
 	m_accurate_colclip = theApp.GetConfig("accurate_colclip", 0);
 	m_accurate_fbmask = theApp.GetConfig("accurate_fbmask", 0);
 
-	UserHacks_AlphaHack      = theApp.GetConfig("UserHacks_AlphaHack", 0);
-	UserHacks_AlphaStencil   = theApp.GetConfig("UserHacks_AlphaStencil", 0);
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 
 	if (!theApp.GetConfig("UserHacks", 0)) {
-		UserHacks_AlphaHack      = false;
-		UserHacks_AlphaStencil   = false;
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
@@ -457,8 +453,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (GLLoader::found_GL_ARB_texture_barrier && !PrimitiveOverlap()) {
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (m_accurate_date && !UserHacks_AlphaStencil &&
-				om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
+		} else if (m_accurate_date && om_csel.wa
+				&& (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
 			if (GLLoader::found_GL_ARB_texture_barrier && (m_index.tail < 100)) {
@@ -621,13 +617,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	ps_sel.fba = context->FBA.FBA;
 
-	// TODO deprecat this stuff
-	if (ps_sel.shuffle || ps_sel.fbmask) {
-		ps_sel.aout = 0;
-	} else {
-		ps_sel.aout = UserHacks_AlphaHack || ((context->FRAME.FBMSK & 0xff000000) == 0x7f000000) ? 1 : 0;
-	}
-
 	if (PRIM->FGE)
 	{
 		ps_sel.fog = 1;
@@ -642,25 +631,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (context->TEST.ATE && context->TEST.ATST > 1)
 		ps_cb.FogColor_AREF.a = (float)context->TEST.AREF;
-
-	// TODO deprecat this stuff
-	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
-	// to only draw pixels which would cause the destination alpha test to fail in the future once.
-	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
-	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_csel.wa && (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS))
-	{
-		if (!context->FBA.FBA)
-		{
-			if (context->TEST.DATM == 0)
-				ps_sel.atst = ATST_GEQUAL; // >=
-			else
-				ps_sel.atst = ATST_LESS; // <
-			ps_cb.FogColor_AREF.a = (float)0x80;
-		}
-		if (!(context->FBA.FBA && context->TEST.DATM == 1))
-			om_dssel.alpha_stencil = 1;
-	}
 
 	// By default don't use texture
 	ps_sel.tfx = 4;

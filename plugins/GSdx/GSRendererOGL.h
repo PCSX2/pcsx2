@@ -36,8 +36,6 @@ class GSRendererOGL : public GSRendererHW
 		bool m_accurate_colclip;
 		bool m_accurate_fbmask;
 
-		bool UserHacks_AlphaHack;
-		bool UserHacks_AlphaStencil;
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
 
