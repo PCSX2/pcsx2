@@ -56,6 +56,7 @@ class GSRendererOGL : public GSRendererHW
 	protected:
 		void EmulateGS();
 		void SetupIA();
+		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb);
 
 	public:
 		GSRendererOGL();
