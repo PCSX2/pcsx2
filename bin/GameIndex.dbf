@@ -1043,11 +1043,11 @@ vuClampMode = 2 // Text in GT mode works
 ---------------------------------------------
 Serial = SCAJ-30010
 Name   = God of War
-Region = NTSC-UK
+Region = NTSC-EN
 ---------------------------------------------
 Serial = SCAJ-30011
 Name   = God of War II
-Region = NTSC-UK
+Region = NTSC-EN
 ---------------------------------------------
 Serial = SCED-50041
 Name   = Tekken Tag Tournament [Demo]
@@ -1059,7 +1059,8 @@ Region = PAL-Unk
 ---------------------------------------------
 Serial = SCED-50254
 Name   = Official Review of the 2000 FIA Formula 1 World Championship [Formula One 2001 Bonus Disc]
-Region = PAL-E
+Region = PAL-Unk
+// Bundled with Formula One 2001 Limited Edition Pack
 ---------------------------------------------
 Serial = SCED-50286
 Name   = Red Faction [Demo]
