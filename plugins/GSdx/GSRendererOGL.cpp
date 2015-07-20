@@ -669,8 +669,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.fmt = cpsm.fmt;
 		}
 		ps_sel.aem = env.TEXA.AEM;
-		ps_sel.tfx = context->TEX0.TFX;
+
+		if (context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
+			// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
+			ps_sel.tfx = TFX_DECAL;
+		} else {
+			ps_sel.tfx = context->TEX0.TFX;
+		}
+
 		ps_sel.tcc = context->TEX0.TCC;
+
 		ps_sel.ltf = bilinear && !simple_sample;
 		spritehack = tex->m_spritehack_t;
 		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
