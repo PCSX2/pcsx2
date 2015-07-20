@@ -398,6 +398,7 @@ Pcsx2Config::Pcsx2Config()
 	bitset = 0;
 	// Set defaults for fresh installs / reset settings
 	McdEnableEjection = true;
+	McdFolderAutoManage = true;
 	EnablePatches = true;
 	BackupSavestate = true;
 }
@@ -417,6 +418,7 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 
 	IniBitBool( BackupSavestate );
 	IniBitBool( McdEnableEjection );
+	IniBitBool( McdFolderAutoManage );
 	IniBitBool( MultitapPort0_Enabled );
 	IniBitBool( MultitapPort1_Enabled );
 

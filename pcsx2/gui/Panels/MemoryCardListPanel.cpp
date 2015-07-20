@@ -30,6 +30,9 @@
 #include <wx/dir.h>
 
 
+bool CopyDirectory( const wxString& from, const wxString& to );
+bool RemoveDirectory( const wxString& dirname );
+
 using namespace pxSizerFlags;
 using namespace Panels;
 
@@ -54,19 +57,48 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 {
 	dest.IsFormatted	= false;
 	dest.IsPresent		= false;
+	dest.IsPSX			= false;
+	dest.Type			= MemoryCardType::MemoryCard_None;
 
 	const wxString fullpath( filename.GetFullPath() );
-	if( !filename.FileExists() ) return false;
-
 	//DevCon.WriteLn( fullpath );
-	wxFFile mcdFile( fullpath );
-	if( !mcdFile.IsOpened() ) return false;	// wx should log the error for us.
+	if ( filename.FileExists() ) {
+		// might be a memory card file
+		wxFFile mcdFile( fullpath );
+		if ( !mcdFile.IsOpened() ) { return false; }	// wx should log the error for us.
 
-	wxFileOffset length = mcdFile.Length();
+		wxFileOffset length = mcdFile.Length();
 
-	if( length < (1024*528) && length != 0x20000 )
-	{
-		Console.Warning( "... MemoryCard appears to be truncated.  Ignoring." );
+		if( length < (1024*528) && length != 0x20000 )
+		{
+			Console.Warning( "... MemoryCard appears to be truncated.  Ignoring." );
+			return false;
+		}
+
+		dest.SizeInMB = (uint)( length / ( 1024 * 528 * 2 ) );
+
+		if ( length == 0x20000 ) {
+			dest.IsPSX = true; // PSX memcard;
+			dest.SizeInMB = 1; // MegaBIT
+		}
+
+		dest.Type = MemoryCardType::MemoryCard_File;
+		dest.IsFormatted = IsMcdFormatted( mcdFile );
+		filename.GetTimes( NULL, &dest.DateModified, &dest.DateCreated );
+	} else if ( filename.DirExists() ) {
+		// might be a memory card folder
+		wxFileName superBlockFileName( fullpath, L"_pcsx2_superblock" );
+		if ( !superBlockFileName.FileExists() ) { return false; }
+		wxFFile mcdFile( superBlockFileName.GetFullPath() );
+		if ( !mcdFile.IsOpened() ) { return false; }
+		
+		dest.SizeInMB = 0;
+
+		dest.Type = MemoryCardType::MemoryCard_Folder;
+		dest.IsFormatted = IsMcdFormatted( mcdFile );
+		superBlockFileName.GetTimes( NULL, &dest.DateModified, &dest.DateCreated );
+	} else {
+		// is neither
 		return false;
 	}
 
@@ -74,18 +106,7 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 	dest.Filename		= filename;
 	if( filename.GetFullPath() == (basePath+filename.GetFullName()).GetFullPath() )
 		dest.Filename = filename.GetFullName();
-
-	dest.SizeInMB		= (uint)(length / (1024 * 528 * 2));
-
-	if(length == 0x20000)
-	{
-		dest.IsPSX = true; // PSX memcard;
-		dest.SizeInMB = 1; // MegaBIT
-	}
 	
-	dest.IsFormatted	= IsMcdFormatted( mcdFile );
-	filename.GetTimes( NULL, &dest.DateModified, &dest.DateCreated );
-
 	return true;
 }
 
@@ -448,6 +469,7 @@ enum McdMenuId
 	McdMenuId_RefreshList,
 	McdMenuId_AssignUnassign,
 	McdMenuId_Duplicate,
+	McdMenuId_Convert,
 };
 
 
@@ -474,6 +496,7 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	m_button_Duplicate = new wxButton(this, wxID_ANY, _("Duplicate ..."));
 	m_button_Rename = new wxButton(this, wxID_ANY, _("Rename ..."));
 	m_button_Create	= new wxButton(this, wxID_ANY, _("Create ..."));
+	m_button_Convert = new wxButton(this, wxID_ANY, _("Convert ..."));
 
 	// ------------------------------------
 	//       Sizer / Layout Section
@@ -493,6 +516,8 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	*s_leftside_buttons	+= m_button_Rename;
 	*s_leftside_buttons	+= 2;
 	*s_leftside_buttons	+= m_button_Create;
+	*s_leftside_buttons	+= 2;
+	*s_leftside_buttons	+= m_button_Convert;
 	SetSizerAndFit(GetSizer());
 
 	parent->SetWindowStyle(parent->GetWindowStyle() | wxRESIZE_BORDER);
@@ -508,12 +533,14 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 
 //	Connect( m_button_Mount->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard));
 	Connect( m_button_Create->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard));
+	Connect( m_button_Convert->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard));
 	Connect( m_button_Rename->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile));
 	Connect( m_button_Duplicate->GetId(),		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnDuplicateFile));
 	Connect( m_button_AssignUnassign->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile));
 
 	// Popup Menu Connections!
 	Connect( McdMenuId_Create,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard) );
+	Connect( McdMenuId_Convert,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard) );
 	//Connect( McdMenuId_Mount,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard) );
 	Connect( McdMenuId_Rename,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile) );
 	Connect( McdMenuId_AssignUnassign,	wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile) );
@@ -544,6 +571,7 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 		m_button_Rename->Disable();
 		m_button_Duplicate->Disable();
 		m_button_AssignUnassign->Disable();
+		m_button_Convert->Disable();
 		return;
 	}
 
@@ -562,6 +590,8 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 	m_button_Duplicate->Enable( card.IsPresent );
 	wxString dupTip = _("Create a duplicate of this memory card ...");
 	pxSetToolTip( m_button_Duplicate, dupTip );
+
+	m_button_Convert->Enable( card.IsPresent && card.IsFormatted && !card.IsPSX );
 
 	//m_button_Create->Enable( card.Slot>=0 || card.IsPresent);
 	m_button_Create->SetLabel( card.IsPresent ? _("Delete") : _("Create ...") );
@@ -595,6 +625,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 	Console.WriteLn( L"Apply Memory cards:" );
 	for( uint slot=0; slot<8; ++slot )
 	{
+		g_Conf->Mcd[slot].Type = m_Cards[slot].Type;
 		g_Conf->Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
 		if (m_Cards[slot].IsPresent)
 			g_Conf->Mcd[slot].Filename = m_Cards[slot].Filename;
@@ -623,7 +654,7 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 		
 		//automatically create the enabled but non-existing file such that it can be managed (else will get created anyway on boot)
 		wxString targetFile = (GetMcdPath() + m_Cards[slot].Filename.GetFullName()).GetFullPath();
-		if ( m_Cards[slot].IsEnabled && !wxFileExists( targetFile ) )
+		if ( m_Cards[slot].IsEnabled && !( wxFileExists( targetFile ) || wxDirExists( targetFile ) ) )
 		{
 			wxString errMsg;
 			if (isValidNewFilename(m_Cards[slot].Filename.GetFullName(), GetMcdPath(), errMsg, 5))
@@ -639,7 +670,7 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 			}
 		}
 
-		if ( !m_Cards[slot].IsEnabled || !wxFileExists( targetFile ) )
+		if ( !m_Cards[slot].IsEnabled || !( wxFileExists( targetFile ) || wxDirExists( targetFile ) ) )
 		{
 			m_Cards[slot].IsEnabled = false;
 			m_Cards[slot].IsPresent = false;
@@ -728,6 +759,28 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 	closed_core.AllowResume();
 }
 
+void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
+	if ( !card.IsPresent ) {
+		Console.WriteLn( "Error: Aborted: Convert mcd invoked but but a file is not associated." );
+		return;
+	}
+
+	ScopedCoreThreadClose closed_core;
+
+	AppConfig::McdOptions config;
+	config.Filename = card.Filename.GetFullName();
+	config.Enabled = card.IsEnabled;
+	config.Type = card.Type;
+	Dialogs::ConvertMemoryCardDialog dialog( this, m_FolderPicker->GetPath(), config );
+	wxWindowID result = dialog.ShowModal();
+
+	if ( result != wxID_CANCEL ) {
+		Apply();
+		RefreshSelections();
+	}
+
+	closed_core.AllowResume();
+}
 
 void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 {
@@ -757,7 +810,12 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 
 		card.IsEnabled=false;
 		Apply();
-		wxRemoveFile( fullpath.GetFullPath() );
+
+		if ( fullpath.FileExists() ) {
+			wxRemoveFile( fullpath.GetFullPath() );
+		} else {
+			RemoveDirectory( fullpath.GetFullPath() );
+		}
 
 		RefreshSelections();
 		closed_core.AllowResume();
@@ -817,7 +875,8 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		ScopedBusyCursor doh( Cursor_ReallyBusy );
 		ScopedCoreThreadClose closed_core;
 
-		if( !wxCopyFile( srcfile.GetFullPath(), destfile.GetFullPath(),	true ) )
+		if( !(    ( srcfile.FileExists() && wxCopyFile( srcfile.GetFullPath(), destfile.GetFullPath(), true ) )
+			   || ( !srcfile.FileExists() && CopyDirectory( srcfile.GetFullPath(), destfile.GetFullPath() ) ) ) )
 		{
 			wxString heading;
 			heading.Printf( pxE( L"Failed: Destination memory card '%s' is in use." ),
@@ -916,6 +975,18 @@ void Panels::MemoryCardListPanel_Simple::OnCreateOrDeleteCard(wxCommandEvent& ev
 		UiDeleteCard( card );
 	else
 		UiCreateNewCard( card );
+}
+
+void Panels::MemoryCardListPanel_Simple::OnConvertCard(wxCommandEvent& evt) {
+	int selectedViewIndex = m_listview->GetFirstSelected();
+	if ( wxNOT_FOUND == selectedViewIndex ) {
+		return;
+	}
+
+	McdSlotItem& card( GetCardForViewIndex( selectedViewIndex ) );
+	if ( card.IsPresent ) {
+		UiConvertCard( card );
+	}
 }
 
 //enable/disapbe port
@@ -1077,6 +1148,9 @@ void Panels::MemoryCardListPanel_Simple::OnOpenItemContextMenu(wxListEvent& evt)
 			junk->Append( McdMenuId_Duplicate,	_("Duplicate card ...") );
 			junk->Append( McdMenuId_Rename,		_("Rename card ...") );
 			junk->Append( McdMenuId_Create,		_("Delete card") );
+			if (card.IsFormatted && !card.IsPSX) {
+				junk->Append( McdMenuId_Convert, _("Convert card") );
+			}
 		}
 		else
 			junk->Append( McdMenuId_Create, _("Create a new card ...") );
@@ -1106,9 +1180,26 @@ void Panels::MemoryCardListPanel_Simple::ReadFilesAtMcdFolder(){
 
 
 	wxArrayString memcardList;
-	wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), &memcardList, L"*.ps2", wxDIR_FILES);
-	wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), &memcardList, L"*.mcd", wxDIR_FILES);
-	wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), &memcardList, L"*.mcr", wxDIR_FILES);
+	wxString filename = m_FolderPicker->GetPath().ToString();
+	wxDir memcardDir( filename );
+	if ( memcardDir.IsOpened() ) {
+		// add memory card files
+		wxDir::GetAllFiles( filename, &memcardList, L"*.ps2", wxDIR_FILES );
+		wxDir::GetAllFiles( filename, &memcardList, L"*.mcd", wxDIR_FILES );
+		wxDir::GetAllFiles( filename, &memcardList, L"*.mcr", wxDIR_FILES );
+
+		// add memory card folders
+		wxString dirname;
+		if ( memcardDir.GetFirst( &dirname, wxEmptyString, wxDIR_DIRS | wxDIR_HIDDEN ) ) {
+			do {
+				wxFileName superBlockFileName( wxFileName( filename, dirname ).GetFullPath(), L"_pcsx2_superblock" );
+				if ( superBlockFileName.FileExists() ) {
+					memcardList.Add( superBlockFileName.GetPath() );
+				}
+			} while ( memcardDir.GetNext( &dirname ) );
+		}
+	}
+	
 
 	for(uint i = 0; i < memcardList.size(); i++) {
 		McdSlotItem currentCardFile;

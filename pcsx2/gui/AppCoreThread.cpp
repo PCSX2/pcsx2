@@ -31,6 +31,7 @@
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"
+#include "Sio.h"
 
 __aligned16 SysMtgsThread mtgsThread;
 __aligned16 AppCoreThread CoreThread;
@@ -344,6 +345,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	wxString gameName;
 	wxString gameCompat;
+	wxString gameMemCardFilter;
 
 	int numberLoadedCheats;
 	int numberLoadedWideScreenPatches;
@@ -368,6 +370,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				gameName   = game.getString("Name");
 				gameName  += L" (" + game.getString("Region") + L")";
 				gameCompat = L" [Status = "+compatToStringWX(compat)+L"]";
+				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
 			if (EmuConfig.EnablePatches) {
@@ -380,6 +383,12 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				}
 			}
 		}
+	}
+
+	if (!gameMemCardFilter.IsEmpty()) {
+		sioSetGameSerial(gameMemCardFilter);
+	} else {
+		sioSetGameSerial(curGameKey);
 	}
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
@@ -513,6 +522,7 @@ void AppCoreThread::GameStartingInThread()
 	m_ExecMode = ExecMode_Paused;
 	OnResumeReady();
 	_reset_stuff_as_needed();
+	ClearMcdEjectTimeoutNow(); // probably safe to do this when a game boots, eliminates annoying prompts
 	m_ExecMode = ExecMode_Opened;
 	
 	_parent::GameStartingInThread();

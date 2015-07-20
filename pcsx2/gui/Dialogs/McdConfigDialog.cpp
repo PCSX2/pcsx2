@@ -40,6 +40,12 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 		)
 	);
 
+	m_folderAutoIndex = new pxCheckBox( this,
+		_( "Automatically manage saves based on running game" ),
+		pxE( L"(Folder type only) Re-index memory card content every time the running software changes. This prevents the memory card from running out of space for saves."
+		)
+	);
+
 	//m_check_SavestateBackup = new pxCheckBox( this, pxsFmt(_("Backup existing Savestate when creating a new one")) );
 /*
 	for( uint i=0; i<2; ++i )
@@ -64,6 +70,7 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 	*this	+= new wxStaticLine( this )	| StdExpand();
 
 	*this += m_check_Ejection;	
+	*this += m_folderAutoIndex;
 }
 
 void Panels::McdConfigPanel_Toggles::Apply()
@@ -73,6 +80,7 @@ void Panels::McdConfigPanel_Toggles::Apply()
 
 	//g_Conf->EmuOptions.BackupSavestate			= m_check_SavestateBackup->GetValue();
 	g_Conf->EmuOptions.McdEnableEjection		= m_check_Ejection->GetValue();
+	g_Conf->EmuOptions.McdFolderAutoManage		= m_folderAutoIndex->GetValue();
 }
 
 void Panels::McdConfigPanel_Toggles::AppStatusEvent_OnSettingsApplied()
@@ -82,6 +90,7 @@ void Panels::McdConfigPanel_Toggles::AppStatusEvent_OnSettingsApplied()
 
 	//m_check_SavestateBackup ->SetValue( g_Conf->EmuOptions.BackupSavestate );
 	m_check_Ejection		->SetValue( g_Conf->EmuOptions.McdEnableEjection );
+	m_folderAutoIndex		->SetValue( g_Conf->EmuOptions.McdFolderAutoManage );
 }
 
 
