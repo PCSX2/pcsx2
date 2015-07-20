@@ -201,19 +201,29 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 	AppConfig::McdOptions config;
 	config.Enabled = true;
 	config.Type = MemoryCardType::MemoryCard_Folder;
-	targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, false, L"" );
-
 	u32 adr = 0;
-	while ( !sourceFile.Eof() ) {
-		int size = sourceFile.Read( buffer, FolderMemoryCard::PageSizeRaw );
-		if ( size > 0 ) {
-			targetFolderMemoryCard.Save( buffer, adr, size );
-			adr += size;
+
+	for ( int i = 0; i < 2; ++i ) {
+		// Before writing the data, we first simulate the entire process without actual writes to the file system.
+		// This ensures that if we crash/fail due to a corrupted memory card file system or similar, we do so during
+		// the simulation run, and don't actually write out any partial data to the host file system.
+		bool simulateWrites = i == 0;
+		targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, false, L"", simulateWrites );
+
+		adr = 0;
+		sourceFile.Seek( 0 );
+		while ( !sourceFile.Eof() ) {
+			int size = sourceFile.Read( buffer, FolderMemoryCard::PageSizeRaw );
+			if ( size > 0 ) {
+				targetFolderMemoryCard.Save( buffer, adr, size );
+				adr += size;
+			}
 		}
+
+		targetFolderMemoryCard.Close();
 	}
 
 	sourceFile.Close();
-	targetFolderMemoryCard.Close();
 
 	if ( adr != FolderMemoryCard::TotalSizeRaw ) {
 		// reset memory card metrics in superblock to the default 8MB, since the converted card was different

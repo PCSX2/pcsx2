@@ -283,6 +283,9 @@ protected:
 
 	bool m_isEnabled;
 
+	// if set to false, nothing is actually written to the file system while flushing, and data is discarded instead
+	bool m_performFileWrites;
+
 public:
 	FolderMemoryCard();
 	virtual ~FolderMemoryCard() throw() {}
@@ -293,7 +296,7 @@ public:
 	// Initialize & Load Memory Card with values configured in the Memory Card Manager
 	void Open( const bool enableFiltering, const wxString& filter );
 	// Initialize & Load Memory Card with provided custom values
-	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter );
+	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites = false );
 	// Close the memory card and flush changes to the file system. Set flush to false to not store changes.
 	void Close( bool flush = true );
 

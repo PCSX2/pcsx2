@@ -44,6 +44,7 @@ void FolderMemoryCard::InitializeInternalData() {
 	m_isEnabled = false;
 	m_framesUntilFlush = 0;
 	m_lastAccessedFile.Close();
+	m_performFileWrites = true;
 }
 
 bool FolderMemoryCard::IsFormatted() const {
@@ -52,11 +53,12 @@ bool FolderMemoryCard::IsFormatted() const {
 }
 
 void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter ) {
-	Open( g_Conf->FullpathToMcd( m_slot ), g_Conf->Mcd[m_slot], 0, enableFiltering, filter );
+	Open( g_Conf->FullpathToMcd( m_slot ), g_Conf->Mcd[m_slot], 0, enableFiltering, filter, false );
 }
 
-void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter ) {
+void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites ) {
 	InitializeInternalData();
+	m_performFileWrites = !simulateFileWrites;
 
 	wxFileName configuredFileName( fullPath );
 	m_folderName = wxFileName( configuredFileName.GetFullPath() + L"/" );
@@ -74,7 +76,7 @@ void FolderMemoryCard::Open( const wxString& fullPath, const AppConfig::McdOptio
 		}
 
 		// if nothing exists at a valid location, create a directory for the memory card
-		if ( !disabled && !m_folderName.DirExists() ) {
+		if ( !disabled && m_performFileWrites && !m_folderName.DirExists() ) {
 			if ( !m_folderName.Mkdir() ) {
 				str = L"[couldn't create folder]";
 				disabled = true;
@@ -910,7 +912,7 @@ bool FolderMemoryCard::FlushBlock( const u32 block ) {
 }
 
 void FolderMemoryCard::FlushSuperBlock() {
-	if ( FlushBlock( 0 ) ) {
+	if ( FlushBlock( 0 ) && m_performFileWrites ) {
 		wxFileName superBlockFileName( m_folderName.GetPath(), L"_pcsx2_superblock" );
 		wxFFile superBlockFile( superBlockFileName.GetFullPath().c_str(), L"wb" );
 		if ( superBlockFile.IsOpened() ) {
@@ -946,21 +948,23 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 				const wxString subDirName = wxString::FromAscii( (const char*)cleanName );
 				const wxString subDirPath = dirPath + L"/" + subDirName;
 
-				// if this directory has nonstandard metadata, write that to the file system
-				wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath + L"/_pcsx2_meta_directory" );
-				if ( filenameCleaned || entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
-					if ( !metaFileName.DirExists() ) {
-						metaFileName.Mkdir();
-					}
-					wxFFile metaFile( metaFileName.GetFullPath(), L"wb" );
-					if ( metaFile.IsOpened() ) {
-						metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
-						metaFile.Close();
-					}
-				} else {
-					// if metadata is standard make sure to remove a possibly existing metadata file
-					if ( metaFileName.FileExists() ) {
-						wxRemoveFile( metaFileName.GetFullPath() );
+				if ( m_performFileWrites ) {
+					// if this directory has nonstandard metadata, write that to the file system
+					wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath + L"/_pcsx2_meta_directory" );
+					if ( filenameCleaned || entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
+						if ( !metaFileName.DirExists() ) {
+							metaFileName.Mkdir();
+						}
+						wxFFile metaFile( metaFileName.GetFullPath(), L"wb" );
+						if ( metaFile.IsOpened() ) {
+							metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
+							metaFile.Close();
+						}
+					} else {
+						// if metadata is standard make sure to remove a possibly existing metadata file
+						if ( metaFileName.FileExists() ) {
+							wxRemoveFile( metaFileName.GetFullPath() );
+						}
 					}
 				}
 
@@ -1105,33 +1109,36 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 	if ( it != m_fileMetadataQuickAccess.end() ) {
 		const MemoryCardFileEntry* const entry = it->second.entry;
 		const u32 clusterNumber = it->second.consecutiveCluster;
-		wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"r+b", true );
-		if ( file->IsOpened() ) {
-			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
-			const u32 fileSize = entry->entry.data.length;
-			const u32 fileOffsetStart = std::min( clusterNumber * ClusterSize + clusterOffset, fileSize );
-			const u32 fileOffsetEnd = std::min( fileOffsetStart + dataLength, fileSize );
-			const u32 bytesToWrite = fileOffsetEnd - fileOffsetStart;
+		
+		if ( m_performFileWrites ) {
+			wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"r+b", true );
+			if ( file->IsOpened() ) {
+				const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
+				const u32 fileSize = entry->entry.data.length;
+				const u32 fileOffsetStart = std::min( clusterNumber * ClusterSize + clusterOffset, fileSize );
+				const u32 fileOffsetEnd = std::min( fileOffsetStart + dataLength, fileSize );
+				const u32 bytesToWrite = fileOffsetEnd - fileOffsetStart;
 
-			wxFileOffset actualFileSize = file->Length();
-			if ( actualFileSize < fileOffsetStart ) {
-				file->Seek( actualFileSize );
-				const u32 diff = fileOffsetStart - actualFileSize;
-				u8 temp = 0xFF;
-				for ( u32 i = 0; i < diff; ++i ) {
-					file->Write( &temp, 1 );
+				wxFileOffset actualFileSize = file->Length();
+				if ( actualFileSize < fileOffsetStart ) {
+					file->Seek( actualFileSize );
+					const u32 diff = fileOffsetStart - actualFileSize;
+					u8 temp = 0xFF;
+					for ( u32 i = 0; i < diff; ++i ) {
+						file->Write( &temp, 1 );
+					}
 				}
-			}
 
-			const wxFileOffset fileOffset = file->Tell();
-			if ( fileOffset != fileOffsetStart ) {
-				file->Seek( fileOffsetStart );
+				const wxFileOffset fileOffset = file->Tell();
+				if ( fileOffset != fileOffsetStart ) {
+					file->Seek( fileOffsetStart );
+				}
+				if ( bytesToWrite > 0 ) {
+					file->Write( src, bytesToWrite );
+				}
+			} else {
+				return false;
 			}
-			if ( bytesToWrite > 0 ) {
-				file->Write( src, bytesToWrite );
-			}
-		} else {
-			return false;
 		}
 
 		return true;
