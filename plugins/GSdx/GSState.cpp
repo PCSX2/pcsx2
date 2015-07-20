@@ -504,6 +504,8 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 	
 	*(int*)&m_q = GSVector4i::store(q); 
 	ASSERT(!std::isnan(m_q)); // See GIFRegHandlerRGBAQ
+	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
+	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
 	
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
@@ -709,6 +711,8 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 	rgbaq = rgbaq.upl32(rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy()); // see GIFPackedRegHandlerSTQ
 
 	m_v.RGBAQ = rgbaq;
+	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
+	// breaks GSVertexTrace code that rely on min/max.
 	if (std::isnan(m_v.RGBAQ.Q)) {
 		m_v.RGBAQ.Q = std::numeric_limits<float>::max();
 	}
@@ -717,6 +721,8 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 {
 	m_v.ST = (GSVector4i)r->ST;
+	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
+	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
 
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
