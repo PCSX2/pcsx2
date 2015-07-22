@@ -104,7 +104,10 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 	{
 		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
-		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
+		if (bsel.accu)
+			bs->SetRGB(GL_FUNC_ADD, GL_ONE, GL_ONE);
+		else
+			bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
 
 		if (m_blendMapD3D9[i].bogus & A_MAX) {
 			if (!theApp.GetConfig("accurate_blending_unit", 1)) {
@@ -187,13 +190,13 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending)
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix)
 {
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
 	OMSetDepthStencilState(dss, 1);
 
-	if (sw_blending) {
+	if (bsel.ps && !bsel.accu) {
 		if (GLState::blend) {
 			GLState::blend = false;
 			glDisable(GL_BLEND);

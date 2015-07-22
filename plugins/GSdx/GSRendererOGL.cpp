@@ -452,8 +452,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	const GIFRegALPHA& ALPHA = context->ALPHA;
 	float afix = (float)context->ALPHA.FIX / 0x80;
-	bool sw_blending = false;
-	bool colclip_wrap = false;
 
 	if (!IsOpaque() && rt)
 	{
@@ -471,7 +469,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			{
 				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-
 				om_bsel.abe = 0;
 			}
 			else
@@ -489,24 +486,34 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 		int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 		// SW Blend is (nearly) free. Let's use it.
-		int free_blend = m_sw_blending && ((blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO));
+		bool free_blend = (blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO);
+		// We really need SW blending for this one, barely used
+		bool impossible_blend = (blend_flag & A_MAX);
+		// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
+		ps_sel.blend_accu = m_sw_blending && ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1;
+		om_bsel.accu = ps_sel.blend_accu;
+
+		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend /*|| ps_sel.blend_accu*/);
 
 		// Color clip
-		bool acc_colclip_wrap =  false;
+		bool acc_colclip_wrap = false;
 		if (env.COLCLAMP.CLAMP == 0) {
-			colclip_wrap = !tex && PRIM->PRIM != GS_POINTLIST;
-			acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || free_blend);
+			// Not supported yet in colclip
+			om_bsel.accu = ps_sel.blend_accu = 0;
+
+			acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
 			if (acc_colclip_wrap) {
-				colclip_wrap = false;
 				ps_sel.colclip = 3;
 				GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-			} else if (colclip_wrap) {
+			} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
+				// Standard (inaccurate) colclip
 				ps_sel.colclip = 1;
 				GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 			}
+		} else {
+			sw_blending_base |= m_sw_blending && ps_sel.blend_accu;
 		}
 
-		bool impossible_blend = m_sw_blending && (blend_flag & A_MAX);
 		bool all_blend_sw;
 		switch (m_sw_blending) {
 			case ACC_BLEND_ULTRA:	all_blend_sw = true; break;
@@ -516,8 +523,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			default:				all_blend_sw = false; break;
 		}
 
-		sw_blending = free_blend // Free case
-			|| impossible_blend || all_blend_sw // Impossible blend or all
+		bool sw_blending = sw_blending_base // Free case or Impossible blend
+			|| all_blend_sw // all blend
 			|| acc_colclip_wrap // accurate colclip
 			|| ps_sel.fbmask; // accurate fbmask
 
@@ -536,6 +543,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 		if (sw_blending && om_bsel.abe) {
 			// select a shader that support blending
+			om_bsel.ps = 1;
 			ps_sel.blend_a = om_bsel.a;
 			ps_sel.blend_b = om_bsel.b;
 			ps_sel.blend_c = om_bsel.c;
@@ -549,18 +557,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			}
 
 			// No need to flush for every primitive
-			require_barrier |= !(blend_flag & NO_BAR);
+			require_barrier |= !(blend_flag & NO_BAR) && !ps_sel.blend_accu;
 		} else {
 			ps_sel.clr1 = om_bsel.IsCLR1();
+			if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
+				// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
+				om_bsel.c = 2;
+				afix = 1.0f;
+			}
 		}
 	}
 
 	if (ps_sel.dfmt == 1) {
-		if (ALPHA.C == 1 && !sw_blending) {
-			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			om_bsel.c = 2;
-			afix = 1.0f;
-		}
 		// Disable writing of the alpha channel
 		om_csel.wa = 0;
 	}
@@ -864,7 +872,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
-	dev->SetupOM(om_dssel, om_bsel, afix, sw_blending);
+	dev->SetupOM(om_dssel, om_bsel, afix);
 
 	dev->SetupCB(&vs_cb, &ps_cb);
 
@@ -907,9 +915,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		SendDraw(require_barrier);
 
-		if (colclip_wrap)
+		if (ps_sel.colclip == 1)
 		{
-			ASSERT(!sw_blending);
+			ASSERT(!om_bsel.ps);
 			GL_PUSH("COLCLIP");
 			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
@@ -963,13 +971,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			om_csel.wa = a;
 
 			dev->OMSetColorMaskState(om_csel);
-			dev->SetupOM(om_dssel, om_bsel, afix, sw_blending);
+			dev->SetupOM(om_dssel, om_bsel, afix);
 
 			SendDraw(require_barrier);
 
-			if (colclip_wrap)
+			if (ps_sel.colclip == 1)
 			{
-				ASSERT(!sw_blending);
+				ASSERT(!om_bsel.ps);
 				GL_PUSH("COLCLIP");
 				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
