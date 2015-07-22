@@ -355,6 +355,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 blend_b:2;
 				uint32 blend_c:2;
 				uint32 blend_d:2;
+				uint32 blend_accu:1;
 				uint32 dfmt:2;
 
 				uint32 _free2:21;
@@ -461,8 +462,10 @@ class GSDeviceOGL : public GSDevice
 				uint32 c:2;
 				uint32 d:2;
 				uint32 negative:1;
+				uint32 accu:1;
+				uint32 ps:1;
 
-				uint32 _free:22;
+				uint32 _free:20;
 			};
 
 			struct
@@ -470,15 +473,16 @@ class GSDeviceOGL : public GSDevice
 				uint32 _abe:1;
 				uint32 abcd:8;
 				uint32 _negative:1;
+				uint32 _accu:1;
+				uint32 _ps:1;
 
-				uint32 _free2:22;
+				uint32 _free2:20;
 			};
 
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3ff;}
+		operator uint32() {return key;}
 
 		OMBlendSelector() : key(0) {}
 
@@ -666,7 +670,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending =  false);
+	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

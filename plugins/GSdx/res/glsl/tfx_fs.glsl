@@ -453,6 +453,9 @@ void ps_blend(inout vec4 Color, float As)
 
 #if PS_BLEND_A == PS_BLEND_B
     Color.rgb = D;
+#elif PS_BLEND_ACCU == 1
+	// The D addition will be done in the blending unit
+	Color.rgb = trunc(A * C);
 #else
     Color.rgb = trunc((A - B) * C + D);
 #endif
