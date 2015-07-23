@@ -210,6 +210,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 
 	// Bunch of constant parameter
 	switch (m_format) {
+			// 1 Channel integer
 		case GL_R32UI:
 		case GL_R32I:
 			m_int_format    = GL_RED_INTEGER;
@@ -223,18 +224,52 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			m_int_alignment = 2;
 			m_int_shift     = 1;
 			break;
-		case GL_RGBA8:
-			m_int_format    = GL_RGBA;
-			m_int_type      = GL_UNSIGNED_BYTE;
-			m_int_alignment = 4;
-			m_int_shift     = 2;
-			break;
+
+			// 1 Channel normalized
 		case GL_R8:
 			m_int_format    = GL_RED;
 			m_int_type      = GL_UNSIGNED_BYTE;
 			m_int_alignment = 1;
 			m_int_shift     = 0;
 			break;
+
+			// 4 channel normalized
+		case GL_RGBA16:
+			m_int_format    = GL_RGBA;
+			m_int_type      = GL_UNSIGNED_SHORT;
+			m_int_alignment = 8;
+			m_int_shift     = 3;
+			break;
+		case GL_RGBA8:
+			m_int_format    = GL_RGBA;
+			m_int_type      = GL_UNSIGNED_BYTE;
+			m_int_alignment = 4;
+			m_int_shift     = 2;
+			break;
+
+			// 4 channel integer
+		case GL_RGBA16I:
+		case GL_RGBA16UI:
+			m_int_format    = GL_RGBA_INTEGER;
+			m_int_type      = (m_format == GL_R16UI) ? GL_UNSIGNED_SHORT : GL_SHORT;
+			m_int_alignment = 8;
+			m_int_shift     = 3;
+
+			// 4 channel float
+		case GL_RGBA32F:
+			m_int_format    = GL_RGBA;
+			m_int_type      = GL_FLOAT;
+			m_int_alignment = 16;
+			m_int_shift     = 4;
+			break;
+		case GL_RGBA16F:
+			m_int_format    = GL_RGBA;
+			m_int_type      = GL_HALF_FLOAT;
+			m_int_alignment = 8;
+			m_int_shift     = 3;
+			break;
+
+			// Special
 		case 0:
 		case GL_DEPTH32F_STENCIL8:
 			// Backbuffer & dss aren't important
