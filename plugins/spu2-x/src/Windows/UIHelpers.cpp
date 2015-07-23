@@ -23,7 +23,7 @@ int SendDialogMsg( HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam
 	return SendMessage( GetDlgItem(hwnd,dlgId), code, wParam, lParam );
 }
 
-HRESULT GUIDFromString(const char *str, LPGUID guid)
+HRESULT GUIDFromString(const wchar_t *str, LPGUID guid)
 {
 	// "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
 
@@ -32,7 +32,7 @@ HRESULT GUIDFromString(const char *str, LPGUID guid)
 		int k; // << not used but still needed as of January 6th, 2011
 	} t;
 
-	int r = sscanf_s(str,"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+	int r = swscanf_s(str,L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
 		&t.g.Data1,
 		&t.g.Data2,
 		&t.g.Data3,
