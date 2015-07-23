@@ -705,9 +705,13 @@ msgstr "Мелкий шрифт"
 msgid "It's what I use (the programmer guy)."
 msgstr "Это то что я использую. (Программист)."
 
-#: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
-msgid "Normal"
+#: pcsx2/gui/ConsoleLogger.cpp:419 
+msgid "Normal font"
 msgstr "Средний шрифт"
+
+#: pcsx2/gui/Panels/CpuPanel.cpp:38
+msgid "Normal"
+msgstr "Normal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "Its nice and readable."
