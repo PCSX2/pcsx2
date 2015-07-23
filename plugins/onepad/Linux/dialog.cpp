@@ -398,6 +398,8 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 	else
 		conf->options &= ~checkbox->mask;
 
+	// Reinitialize the joystick object here to recalculate the number of buttons.
+	// This will allow the DS3 USB hack to toggle without restarting the dialog.
 	s_vjoysticks[joyid]->Init(joyid);
 }
 
