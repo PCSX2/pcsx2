@@ -629,6 +629,7 @@ class GSDeviceOGL : public GSDevice
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
+	void CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear = true);
