@@ -490,7 +490,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// We really need SW blending for this one, barely used
 		bool impossible_blend = (blend_flag & A_MAX);
 		// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-		om_bsel.accu = ps_sel.blend_accu = ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1;
+		ps_sel.blend_accu = m_sw_blending && ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1;
+		om_bsel.accu = ps_sel.blend_accu;
 
 		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend /*|| ps_sel.blend_accu*/);
 
