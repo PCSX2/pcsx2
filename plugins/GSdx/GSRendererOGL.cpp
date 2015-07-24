@@ -344,6 +344,14 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	return PRIM_OVERLAP_NO;
 }
 
+GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize)
+{
+	GSVector4 scale = GSVector4(rtscale.x, rtscale.y);
+	GSVector4 offset = GSVector4(-1.0f, 1.0f); // Round value
+	GSVector4 box = m_vt.m_min.p.xyxy(m_vt.m_max.p) + offset.xxyy();
+	return GSVector4i(box * scale.xyxy()).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
+}
+
 void GSRendererOGL::SendDraw(bool require_barrier)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
@@ -387,6 +395,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
+
+	GSTexture* hdr_rt = NULL;
 
 	const GSVector2i& rtsize = ds->GetSize();
 	const GSVector2& rtscale = ds->GetScale();
@@ -497,14 +507,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.blend_accu = m_sw_blending && ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1;
 		om_bsel.accu = ps_sel.blend_accu;
 
-		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend /*|| ps_sel.blend_accu*/);
+		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend || ps_sel.blend_accu);
 
 		// Color clip
 		bool acc_colclip_wrap = false;
 		if (env.COLCLAMP.CLAMP == 0) {
-			// Not supported yet in colclip
-			om_bsel.accu = ps_sel.blend_accu = 0;
-
 			acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
 			if (acc_colclip_wrap) {
 				ps_sel.colclip = 3;
@@ -514,8 +521,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				ps_sel.colclip = 1;
 				GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 			}
-		} else {
-			sw_blending_base |= m_sw_blending && ps_sel.blend_accu;
 		}
 
 		bool all_blend_sw;
@@ -583,15 +588,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		gl_TextureBarrier();
 		dev->PSSetShaderResource(3, rt);
 	} else if (DATE) {
-		// TODO: do I need to clamp the value (if yes how? rintersect with rt?)
-		GSVector4 si = GSVector4(rtscale.x, rtscale.y);
-		GSVector4 off = GSVector4(-1.0f, 1.0f); // Round value
-		GSVector4 b = m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy();
-		GSVector4i ri = GSVector4i(b * si.xyxy());
+		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
 		// Reduce the quantity of clean function
-		glScissor( ri.x, ri.y, ri.width(), ri.height() );
-		GLState::scissor = ri;
+		glScissor( dRect.x, dRect.y, dRect.width(), dRect.height() );
+		GLState::scissor = dRect;
 
 		// Must be done here to avoid any GL state pertubation (clear function...)
 		// Create an r32ui image that will containt primitive ID
@@ -599,10 +600,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->InitPrimDateTexture(rt);
 			dev->PSSetShaderResource(3, rt);
 		} else {
-			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
-
-			GSVector4 src = (b * s.xyxy()).sat(off.zzyy());
-			GSVector4 dst = src * 2.0f + off.xxxx();
+			GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
+			GSVector4 dst = src * 2.0f - 1.0f;
 
 			GSVertexPT1 vertices[] =
 			{
@@ -913,7 +912,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		GL_POP();
 	}
 
-	dev->OMSetRenderTargets(rt, ds, &scissor);
+	if (env.COLCLAMP.CLAMP == 0 && om_bsel.accu) {
+		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA16F);
+
+		dev->CopyRectConv(rt, hdr_rt, ComputeBoundingBox(rtscale, rtsize), false);
+
+		dev->OMSetRenderTargets(hdr_rt, ds, &scissor);
+	} else {
+		dev->OMSetRenderTargets(rt, ds, &scissor);
+	}
 
 	if (context->TEST.DoFirstPass())
 	{
@@ -997,10 +1004,22 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			}
 		}
 	}
-	if (DATE_GL42)
+
+	if (DATE_GL42) {
 		dev->RecycleDateTexture();
+	}
 
 	dev->EndScene();
+
+	// Warning: EndScene must be called before StretchRect otherwise
+	// vertices will be overwritten. Trust me you don't want to do that.
+	if (hdr_rt) {
+		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+		dev->StretchRect(hdr_rt, sRect, rt, dRect, 4, false);
+
+		dev->Recycle(hdr_rt);
+	}
 
 	GL_POP();
 }

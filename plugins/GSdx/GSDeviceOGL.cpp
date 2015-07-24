@@ -889,7 +889,7 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 }
 
 // Copy a sub part of texture (same as below but force a conversion)
-void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
+void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin)
 {
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
@@ -899,7 +899,10 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-	gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+	if (at_origin)
+		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+	else
+		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -924,7 +927,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 				r.width(), r.height(), 1);
 	} else {
 		// Slower copy (conversion is done)
-		CopyRectConv(sTex, dTex, r);
+		CopyRectConv(sTex, dTex, r, true);
 	}
 
 	GL_POP();
