@@ -77,7 +77,7 @@ layout(std140, binding = 15) uniform cb15
 
 vec4 sample_c()
 {
-    return texture(TextureSampler, PSin_t );
+    return texture(TextureSampler, PSin_t);
 }
 
 vec4 ps_crt(uint i)
@@ -372,11 +372,7 @@ void ps_main3()
 #ifdef ps_main4
 void ps_main4()
 {
-    // FIXME mod and fmod are different when value are negative
-    // 	output.c = fmod(sample_c(input.t) * 255 + 0.5f, 256) / 255;
-    vec4 c = mod(sample_c() * 255.0f + 0.5f, 256.0f) / 255.0f;
-
-    SV_Target0 = c;
+    SV_Target0 = mod(round(sample_c() * 255.0f), 256.0f) / 255.0f;
 }
 #endif
 
