@@ -393,15 +393,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
 				rt ? rt->GetID() : -1, ds->GetID());
 
-	GSDrawingEnvironment& env = m_env;
-	GSDrawingContext* context = m_context;
-
 	GSTexture* hdr_rt = NULL;
 
 	const GSVector2i& rtsize = ds->GetSize();
 	const GSVector2& rtscale = ds->GetScale();
 
-	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
 
@@ -432,7 +429,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
-		if ((m_prim_overlap != PRIM_OVERLAP_NO) && (context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
+		if ((m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
 			GL_INS("ERROR: Source and Target are the same!");
 		}
 #endif
@@ -449,7 +446,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (m_accurate_date && om_csel.wa
-				&& (!context->TEST.ATE || context->TEST.ATST == ATST_ALWAYS)) {
+				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
 			if (GLLoader::found_GL_ARB_texture_barrier && (m_index.tail < 100)) {
@@ -464,11 +461,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Blend
 
-	float afix = (float)context->ALPHA.FIX / 0x80;
+	float afix = (float)m_context->ALPHA.FIX / 0x80;
 
 	if (!IsOpaque() && rt)
 	{
-		const GIFRegALPHA& ALPHA = context->ALPHA;
+		const GIFRegALPHA& ALPHA = m_context->ALPHA;
 
 		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
@@ -477,7 +474,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		om_bsel.c = ALPHA.C;
 		om_bsel.d = ALPHA.D;
 
-		if (env.PABE.PABE)
+		if (m_env.PABE.PABE)
 		{
 			// FIXME it could be supported with SW blending!
 			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
@@ -511,7 +508,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Color clip
 		bool acc_colclip_wrap = false;
-		if (env.COLCLAMP.CLAMP == 0) {
+		if (m_env.COLCLAMP.CLAMP == 0) {
 			acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
 			if (acc_colclip_wrap) {
 				ps_sel.colclip = 3;
@@ -555,7 +552,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #if 0
 		if (om_bsel.abe)
 			GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)",
-					om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
+					om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
 #endif
 		if (sw_blending && om_bsel.abe) {
 			// select a shader that support blending
@@ -628,10 +625,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	if (context->TEST.ZTE)
+	if (m_context->TEST.ZTE)
 	{
-		om_dssel.ztst = context->TEST.ZTST;
-		om_dssel.zwe = !context->ZBUF.ZMSK;
+		om_dssel.ztst = m_context->TEST.ZTST;
+		om_dssel.zwe = !m_context->ZBUF.ZMSK;
 	}
 	else
 	{
@@ -650,7 +647,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe)
 	{
-		if (context->ZBUF.PSM == PSM_PSMZ24)
+		if (m_context->ZBUF.PSM == PSM_PSMZ24)
 		{
 			if (m_vt.m_max.p.z > 0xffffff)
 			{
@@ -664,7 +661,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				}
 			}
 		}
-		else if (context->ZBUF.PSM == PSM_PSMZ16 || context->ZBUF.PSM == PSM_PSMZ16S)
+		else if (m_context->ZBUF.PSM == PSM_PSMZ16 || m_context->ZBUF.PSM == PSM_PSMZ16S)
 		{
 			if (m_vt.m_max.p.z > 0xffff)
 			{
@@ -683,8 +680,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// FIXME Opengl support half pixel center (as dx10). Code could be easier!!!
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
-	float ox = (float)(int)context->XYOFFSET.OFX;
-	float oy = (float)(int)context->XYOFFSET.OFY;
+	float ox = (float)(int)m_context->XYOFFSET.OFX;
+	float oy = (float)(int)m_context->XYOFFSET.OFY;
 	float ox2 = -1.0f / rtsize.x;
 	float oy2 = -1.0f / rtsize.y;
 
@@ -708,30 +705,30 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	ps_sel.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 1 : PRIM->IIP;
 
 	if (DATE_GL45) {
-		ps_sel.date = 5 + context->TEST.DATM;
+		ps_sel.date = 5 + m_context->TEST.DATM;
 	} else if (DATE) {
 		if (DATE_GL42)
-			ps_sel.date = 1 + context->TEST.DATM;
+			ps_sel.date = 1 + m_context->TEST.DATM;
 		else
 			om_dssel.date = 1;
 	}
 
-	ps_sel.fba = context->FBA.FBA;
+	ps_sel.fba = m_context->FBA.FBA;
 
 	if (PRIM->FGE)
 	{
 		ps_sel.fog = 1;
 
-		ps_cb.FogColor_AREF = GSVector4::rgba32(env.FOGCOL.u32[0]);
+		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
 	}
 
-	if (context->TEST.ATE)
-		ps_sel.atst = context->TEST.ATST;
+	if (m_context->TEST.ATE)
+		ps_sel.atst = m_context->TEST.ATST;
 	else
 		ps_sel.atst = ATST_ALWAYS;
 
-	if (context->TEST.ATE && context->TEST.ATST > 1)
-		ps_cb.FogColor_AREF.a = (float)context->TEST.AREF;
+	if (m_context->TEST.ATE && m_context->TEST.ATST > 1)
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
 
 	// By default don't use texture
 	ps_sel.tfx = 4;
@@ -740,23 +737,23 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (tex)
 	{
-		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[context->TEX0.PSM];
-		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[context->TEX0.CPSM] : psm;
+		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
-		ps_sel.wms = context->CLAMP.WMS;
-		ps_sel.wmt = context->CLAMP.WMT;
+		ps_sel.wms = m_context->CLAMP.WMS;
+		ps_sel.wmt = m_context->CLAMP.WMT;
 
 		if (ps_sel.shuffle) {
 			ps_sel.fmt = 0;
 		} else if (tex->m_palette) {
 			ps_sel.fmt = cpsm.fmt | 4;
 			ps_sel.ifmt = !tex->m_target ? 0
-				: (context->TEX0.PSM == PSM_PSMT4HL) ? 2
-				: (context->TEX0.PSM == PSM_PSMT4HH) ? 1
+				: (m_context->TEX0.PSM == PSM_PSMT4HL) ? 2
+				: (m_context->TEX0.PSM == PSM_PSMT4HH) ? 1
 				: 0;
 
 			// In standard mode palette is only used when alpha channel of the RT is
@@ -769,16 +766,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else {
 			ps_sel.fmt = cpsm.fmt;
 		}
-		ps_sel.aem = env.TEXA.AEM;
+		ps_sel.aem = m_env.TEXA.AEM;
 
-		if (context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
+		if (m_context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
 			// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
 			ps_sel.tfx = TFX_DECAL;
 		} else {
-			ps_sel.tfx = context->TEX0.TFX;
+			ps_sel.tfx = m_context->TEX0.TFX;
 		}
 
-		ps_sel.tcc = context->TEX0.TCC;
+		ps_sel.tcc = m_context->TEX0.TCC;
 
 		ps_sel.ltf = bilinear && !simple_sample;
 		spritehack = tex->m_spritehack_t;
@@ -789,8 +786,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();
 
-		int tw = (int)(1 << context->TEX0.TW);
-		int th = (int)(1 << context->TEX0.TH);
+		int tw = (int)(1 << m_context->TEX0.TW);
+		int th = (int)(1 << m_context->TEX0.TH);
 
 		GSVector4 WH(tw, th, w, h);
 
@@ -802,20 +799,20 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ps_cb.WH = WH;
 		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-		ps_cb.MskFix = GSVector4i(context->CLAMP.MINU, context->CLAMP.MINV, context->CLAMP.MAXU, context->CLAMP.MAXV);
+		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
 		ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
 		GSVector4 clamp(ps_cb.MskFix);
-		GSVector4 ta(env.TEXA & GSVector4i::x000000ff());
+		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 
 		ps_cb.MinMax = clamp / WH.xyxy();
 		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
 
-		ps_ssel.tau = (context->CLAMP.WMS + 3) >> 1;
-		ps_ssel.tav = (context->CLAMP.WMT + 3) >> 1;
+		ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
+		ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
 		ps_ssel.ltf = bilinear && simple_sample;
 
 		// Setup Texture ressources
@@ -875,7 +872,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// rs
 
-	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
+	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * m_context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
 
 	GL_PUSH("IA");
 	SetupIA();
@@ -919,7 +916,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		GL_POP();
 	}
 
-	if (env.COLCLAMP.CLAMP == 0 && om_bsel.accu) {
+	if (m_env.COLCLAMP.CLAMP == 0 && om_bsel.accu) {
 		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA16F);
 
 		dev->CopyRectConv(rt, hdr_rt, ComputeBoundingBox(rtscale, rtsize), false);
@@ -929,7 +926,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->OMSetRenderTargets(rt, ds, &scissor);
 	}
 
-	if (context->TEST.DoFirstPass())
+	if (m_context->TEST.DoFirstPass())
 	{
 		SendDraw(require_barrier);
 
@@ -952,9 +949,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	if (context->TEST.DoSecondPass())
+	if (m_context->TEST.DoSecondPass())
 	{
-		ASSERT(!env.PABE.PABE);
+		ASSERT(!m_env.PABE.PABE);
 
 		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
 
@@ -971,7 +968,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		bool b = om_csel.wb;
 		bool a = om_csel.wa;
 
-		switch(context->TEST.AFAIL)
+		switch(m_context->TEST.AFAIL)
 		{
 			case AFAIL_KEEP: z = r = g = b = a = false; break; // none
 			case AFAIL_FB_ONLY: z = false; break; // rgba
