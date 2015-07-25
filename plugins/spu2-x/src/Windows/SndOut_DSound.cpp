@@ -117,11 +117,7 @@ public:
 			if( m_Device.empty() )
 				throw std::runtime_error( "screw it" );
 
-			// Convert from unicode to ANSI:
-			char guid[256];
-			sprintf_s( guid, "%S", m_Device.c_str() );
-
-			if( (FAILED(GUIDFromString( guid, &cGuid ))) ||
+			if ((FAILED(GUIDFromString(m_Device, &cGuid))) ||
 				FAILED( DirectSoundCreate8(&cGuid,&dsound,NULL) ) )
 					throw std::runtime_error( "try again?" );
 		}
@@ -286,9 +282,7 @@ private:
 			{
 				wchar_t temp[128];
 
-				char temp2[192];
-				sprintf_s( temp2, "%S", m_Device.c_str() );
-				haveGuid = ! FAILED(GUIDFromString(temp2,&DevGuid));
+				haveGuid = !FAILED(GUIDFromString(m_Device, &DevGuid));
 				SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_RESETCONTENT,0,0);
 
 				ndevs=0;

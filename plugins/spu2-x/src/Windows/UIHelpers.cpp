@@ -23,32 +23,43 @@ int SendDialogMsg( HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam
 	return SendMessage( GetDlgItem(hwnd,dlgId), code, wParam, lParam );
 }
 
-HRESULT GUIDFromString(const char *str, LPGUID guid)
+HRESULT GUIDFromString(const wchar_t *str, LPGUID guid)
 {
 	// "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
 
-	struct T{	// this is a hack because for some reason sscanf writes too much :/
-		GUID g;
-		int k; // << not used but still needed as of January 6th, 2011
-	} t;
+	// VS2015 supports the hh format specifier (finally). VS2013 doesn't though,
+	// so this will do for now.
+	u32 guid_u32;
+	u16 guid_u16[2];
+	u16 guid_u8[8];
 
-	int r = sscanf_s(str,"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
-		&t.g.Data1,
-		&t.g.Data2,
-		&t.g.Data3,
-		&t.g.Data4[0],
-		&t.g.Data4[1],
-		&t.g.Data4[2],
-		&t.g.Data4[3],
-		&t.g.Data4[4],
-		&t.g.Data4[5],
-		&t.g.Data4[6],
-		&t.g.Data4[7]
+	int r = swscanf_s(str,L"{%08x-%04hx-%04hx-%02hx%02hx-%02hx%02hx%02hx%02hx%02hx%02hx}",
+		&guid_u32,
+		&guid_u16[0],
+		&guid_u16[1],
+		&guid_u8[0],
+		&guid_u8[1],
+		&guid_u8[2],
+		&guid_u8[3],
+		&guid_u8[4],
+		&guid_u8[5],
+		&guid_u8[6],
+		&guid_u8[7]
 	);
 
 	if(r!=11) return -1;
 
-	*guid = t.g;
+	guid->Data1 = guid_u32;
+	guid->Data2 = guid_u16[0];
+	guid->Data3 = guid_u16[1];
+	guid->Data4[0] = (u8)guid_u8[0];
+	guid->Data4[1] = (u8)guid_u8[1];
+	guid->Data4[2] = (u8)guid_u8[2];
+	guid->Data4[3] = (u8)guid_u8[3];
+	guid->Data4[4] = (u8)guid_u8[4];
+	guid->Data4[5] = (u8)guid_u8[5];
+	guid->Data4[6] = (u8)guid_u8[6];
+	guid->Data4[7] = (u8)guid_u8[7];
 	return 0;
 }
 
