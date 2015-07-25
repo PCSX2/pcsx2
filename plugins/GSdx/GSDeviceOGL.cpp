@@ -133,15 +133,15 @@ GSDeviceOGL::~GSDeviceOGL()
 	gl_DeleteSamplers(1, &m_palette_ss);
 	m_shader->Delete(m_apitrace);
 
-	for (uint32 key = 0; key < VSSelector::size(); key++) m_shader->Delete(m_vs[key]);
-	for (uint32 key = 0; key < GSSelector::size(); key++) m_shader->Delete(m_gs[key]);
+	for (uint32 key = 0; key < countof(m_vs); key++) m_shader->Delete(m_vs[key]);
+	for (uint32 key = 0; key < countof(m_gs); key++) m_shader->Delete(m_gs[key]);
 	for (auto it = m_ps.begin(); it != m_ps.end() ; it++) m_shader->Delete(it->second);
 
 	m_ps.clear();
 
-	gl_DeleteSamplers(PSSamplerSelector::size(), m_ps_ss);
+	gl_DeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++) delete m_om_dss[key];
+	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
 
 	for (auto it = m_om_bs.begin(); it != m_om_bs.end(); it++) delete it->second;
 	m_om_bs.clear();
@@ -238,8 +238,9 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
-	for (uint32 key = 0; key < PSSamplerSelector::size(); key++)
+	for (uint32 key = 0; key < countof(m_ps_ss); key++) {
 		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+	}
 
 	// ****************************************************************
 	// convert

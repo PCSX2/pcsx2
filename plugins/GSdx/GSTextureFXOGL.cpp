@@ -40,7 +40,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
-	for (uint32 key = 0; key < GSSelector::size(); key++) {
+	for (uint32 key = 0; key < countof(m_gs); key++) {
 		GSSelector sel(key);
 		if (sel.point == sel.sprite)
 			m_gs[key] = 0;
@@ -48,7 +48,7 @@ void GSDeviceOGL::CreateTextureFX()
 			m_gs[key] = CompileGS(GSSelector(key));
 	}
 
-	for (uint32 key = 0; key < VSSelector::size(); key++) {
+	for (uint32 key = 0; key < countof(m_vs); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
 		if (sel.wildhack && (!sel.tme || !sel.fst))
@@ -61,8 +61,9 @@ void GSDeviceOGL::CreateTextureFX()
 	// enough but buffer is polluted with noise. Clear will be limited
 	// to the mask.
 	glStencilMask(0xFF);
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++)
+	for (uint32 key = 0; key < countof(m_om_dss); key++) {
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
+	}
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
@@ -77,7 +78,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	if (dssel.date)
 	{
 		dss->EnableStencil();
-		dss->SetStencil(GL_EQUAL, dssel.alpha_stencil ? GL_ZERO : GL_KEEP);
+		dss->SetStencil(GL_EQUAL, GL_KEEP);
 	}
 
 	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)

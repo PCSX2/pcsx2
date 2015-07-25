@@ -238,13 +238,10 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 5; }
 	};
 
 	struct GSSelector
@@ -266,8 +263,6 @@ class GSDeviceOGL : public GSDevice
 
 		GSSelector() : key(0) {}
 		GSSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 2; }
 	};
 
 	__aligned(struct, 32) PSConstantBuffer
@@ -386,13 +381,10 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x7;}
+		operator uint32() {return key;}
 
 		PSSamplerSelector() : key(0) {}
 		PSSamplerSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 3; }
 	};
 
 	struct OMDepthStencilSelector
@@ -404,21 +396,18 @@ class GSDeviceOGL : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
-				uint32 alpha_stencil:1;
 
-				uint32 _free:27;
+				uint32 _free:28;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x1f;}
+		operator uint32() {return key;}
 
 		OMDepthStencilSelector() : key(0) {}
 		OMDepthStencilSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 5; }
 	};
 
 	struct OMColorMaskSelector
@@ -560,10 +549,10 @@ class GSDeviceOGL : public GSDevice
 		float bf; // blend factor
 	} m_state;
 
-	GLuint m_vs[1<<6];
+	GLuint m_vs[1<<5];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<3];
-	GSDepthStencilOGL* m_om_dss[1<<6];
+	GSDepthStencilOGL* m_om_dss[1<<4];
 	hash_map<uint64, GLuint > m_ps;
 	hash_map<uint32, GSBlendStateOGL* > m_om_bs;
 	GLuint m_apitrace;
