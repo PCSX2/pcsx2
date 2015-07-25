@@ -505,7 +505,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			if (acc_colclip_wrap) {
 				ps_sel.colclip = 3;
 				GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-			} else if (!tex && PRIM->PRIM != GS_POINTLIST) {
+			} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
 				// Standard (inaccurate) colclip
 				ps_sel.colclip = 1;
 				GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
