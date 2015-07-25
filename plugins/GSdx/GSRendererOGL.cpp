@@ -441,15 +441,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 
-	if (DATE) {
-		if (GLLoader::found_GL_ARB_texture_barrier && (m_prim_overlap == PRIM_OVERLAP_NO)) {
+	if (DATE && GLLoader::found_GL_ARB_texture_barrier) {
+		if (m_prim_overlap == PRIM_OVERLAP_NO) {
+			require_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (m_accurate_date && om_csel.wa
 				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
-			if (GLLoader::found_GL_ARB_texture_barrier && (m_index.tail < 100)) {
+			if (m_index.tail < 100) {
 				require_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
@@ -586,9 +587,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// DATE (setup part)
 
-	if (DATE_GL45) {
-		gl_TextureBarrier();
-	} else if (DATE) {
+	if (DATE) {
 		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
 		// Reduce the quantity of clean function
