@@ -562,8 +562,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.blend_c = om_bsel.c;
 			ps_sel.blend_d = om_bsel.d;
 
-			dev->PSSetShaderResource(3, rt);
-
 			// Require the fix alpha vlaue
 			if (ALPHA.C == 2) {
 				ps_cb.AlphaCoeff.a = afix;
@@ -590,7 +588,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (DATE_GL45) {
 		gl_TextureBarrier();
-		dev->PSSetShaderResource(3, rt);
 	} else if (DATE) {
 		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
@@ -602,7 +599,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Create an r32ui image that will containt primitive ID
 		if (DATE_GL42) {
 			dev->InitPrimDateTexture(rt);
-			dev->PSSetShaderResource(3, rt);
 		} else {
 			GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
 			GSVector4 dst = src * 2.0f - 1.0f;
@@ -846,6 +842,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->PSSetShaderResource(1, NULL);
 #endif
 	}
+	// Always bind the RT. This way special effect can use it.
+	dev->PSSetShaderResource(3, rt);
+
 
 	// GS
 
