@@ -313,6 +313,128 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 	return require_barrier;
 }
 
+bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMBlendSelector& om_bsel, GSDeviceOGL::PSConstantBuffer& ps_cb, float afix, bool DATE_GL42)
+{
+	const GIFRegALPHA& ALPHA = m_context->ALPHA;
+	bool require_barrier = false;
+
+	om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
+
+	om_bsel.a = ALPHA.A;
+	om_bsel.b = ALPHA.B;
+	om_bsel.c = ALPHA.C;
+	om_bsel.d = ALPHA.D;
+
+	if (m_env.PABE.PABE)
+	{
+#ifdef ENABLE_OGL_DEBUG
+		fprintf(stderr, "env PABE  not supported\n");
+		GL_INS("!!! ENV PABE  not supported !!!");
+#endif
+		// FIXME it could be supported with SW blending!
+		if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
+		{
+			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
+			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
+			om_bsel.abe = 0;
+		}
+		else
+		{
+			//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+			//ASSERT(0);
+		}
+	}
+
+	// No blending so early exit
+	if (!om_bsel.abe)
+		return require_barrier;
+
+	// Compute the blending equation to detect special case
+	int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
+	int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
+	// SW Blend is (nearly) free. Let's use it.
+	bool free_blend = (blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO);
+	// We really need SW blending for this one, barely used
+	bool impossible_blend = (blend_flag & A_MAX);
+	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
+	bool accumulation_blend = (ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1);
+
+	bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend || ps_sel.blend_accu);
+
+	// Color clip
+	bool acc_colclip_wrap = false;
+	if (m_env.COLCLAMP.CLAMP == 0) {
+		acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
+		if (acc_colclip_wrap) {
+			ps_sel.colclip = 3;
+			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+		} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
+			// Standard (inaccurate) colclip
+			ps_sel.colclip = 1;
+			accumulation_blend = false;
+			GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+		}
+	}
+
+	// Note: Option is duplicated, one impact the blend unit / the other the shader.
+	if (accumulation_blend && m_sw_blending) {
+		om_bsel.accu = ps_sel.blend_accu = 1;
+		sw_blending_base = true;
+	}
+
+	bool all_blend_sw;
+	switch (m_sw_blending) {
+		case ACC_BLEND_ULTRA:	all_blend_sw = true; break;
+		case ACC_BLEND_FULL:	all_blend_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ); break;
+		case ACC_BLEND_CCLIP:
+		case ACC_BLEND_SPRITE:	all_blend_sw = m_vt.m_primclass == GS_SPRITE_CLASS; break;
+		default:				all_blend_sw = false; break;
+	}
+
+	bool sw_blending = sw_blending_base // Free case or Impossible blend
+		|| all_blend_sw // all blend
+		|| acc_colclip_wrap // accurate colclip
+		|| ps_sel.fbmask; // accurate fbmask
+
+
+	// SW Blending
+	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
+	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
+	// (therefore primitiveID will be constant to 1)
+	sw_blending &= !DATE_GL42;
+
+	// For stat to optimize accurate option
+#if 0
+	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)",
+			om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
+#endif
+	if (sw_blending) {
+		// select a shader that support blending
+		om_bsel.ps = 1;
+		ps_sel.blend_a = om_bsel.a;
+		ps_sel.blend_b = om_bsel.b;
+		ps_sel.blend_c = om_bsel.c;
+		ps_sel.blend_d = om_bsel.d;
+
+		// Require the fix alpha vlaue
+		if (ALPHA.C == 2) {
+			ps_cb.AlphaCoeff.a = afix;
+		}
+
+		// No need to flush for every primitive
+		require_barrier |= !(blend_flag & NO_BAR) && !ps_sel.blend_accu;
+	} else {
+		ps_sel.clr1 = om_bsel.IsCLR1();
+		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
+			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
+			om_bsel.c = 2;
+			afix = 1.0f;
+		}
+	}
+
+	return require_barrier;
+}
+
 GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 {
 	// Either 1 triangle or 1 line or 3 POINTs
@@ -464,120 +586,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	float afix = (float)m_context->ALPHA.FIX / 0x80;
 
-	if (!IsOpaque() && rt)
-	{
-		const GIFRegALPHA& ALPHA = m_context->ALPHA;
-
-		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
-
-		om_bsel.a = ALPHA.A;
-		om_bsel.b = ALPHA.B;
-		om_bsel.c = ALPHA.C;
-		om_bsel.d = ALPHA.D;
-
-		if (m_env.PABE.PABE)
-		{
-			// FIXME it could be supported with SW blending!
-			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
-			{
-				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
-				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-				om_bsel.abe = 0;
-			}
-			else
-			{
-				//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
-				//ASSERT(0);
-#ifdef ENABLE_OGL_DEBUG
-				fprintf(stderr, "env PABE  not supported\n");
-				GL_INS("!!! ENV PABE  not supported !!!");
-#endif
-			}
-		}
-
-		// Compute the blending equation to detect special case
-		int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
-		int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
-		// SW Blend is (nearly) free. Let's use it.
-		bool free_blend = (blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO);
-		// We really need SW blending for this one, barely used
-		bool impossible_blend = (blend_flag & A_MAX);
-		// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-		bool accumulation_blend = (ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1);
-
-		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend || ps_sel.blend_accu);
-
-		// Color clip
-		bool acc_colclip_wrap = false;
-		if (m_env.COLCLAMP.CLAMP == 0) {
-			acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
-			if (acc_colclip_wrap) {
-				ps_sel.colclip = 3;
-				GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-			} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
-				// Standard (inaccurate) colclip
-				ps_sel.colclip = 1;
-				accumulation_blend = false;
-				GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-			}
-		}
-
-		// Note: Option is duplicated, one impact the blend unit / the other the shader.
-		if (accumulation_blend && m_sw_blending) {
-			om_bsel.accu = ps_sel.blend_accu = 1;
-			sw_blending_base = true;
-		}
-
-		bool all_blend_sw;
-		switch (m_sw_blending) {
-			case ACC_BLEND_ULTRA:	all_blend_sw = true; break;
-			case ACC_BLEND_FULL:	all_blend_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ); break;
-			case ACC_BLEND_CCLIP:
-			case ACC_BLEND_SPRITE:	all_blend_sw = m_vt.m_primclass == GS_SPRITE_CLASS; break;
-			default:				all_blend_sw = false; break;
-		}
-
-		bool sw_blending = sw_blending_base // Free case or Impossible blend
-			|| all_blend_sw // all blend
-			|| acc_colclip_wrap // accurate colclip
-			|| ps_sel.fbmask; // accurate fbmask
-
-
-		// SW Blending
-		// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
-		// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
-		// (therefore primitiveID will be constant to 1)
-		sw_blending &= !DATE_GL42;
-
-		// For stat to optimize accurate option
-#if 0
-		if (om_bsel.abe)
-			GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)",
-					om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
-#endif
-		if (sw_blending && om_bsel.abe) {
-			// select a shader that support blending
-			om_bsel.ps = 1;
-			ps_sel.blend_a = om_bsel.a;
-			ps_sel.blend_b = om_bsel.b;
-			ps_sel.blend_c = om_bsel.c;
-			ps_sel.blend_d = om_bsel.d;
-
-			// Require the fix alpha vlaue
-			if (ALPHA.C == 2) {
-				ps_cb.AlphaCoeff.a = afix;
-			}
-
-			// No need to flush for every primitive
-			require_barrier |= !(blend_flag & NO_BAR) && !ps_sel.blend_accu;
-		} else {
-			ps_sel.clr1 = om_bsel.IsCLR1();
-			if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
-				// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-				om_bsel.c = 2;
-				afix = 1.0f;
-			}
-		}
+	if (!IsOpaque() && rt) {
+		require_barrier |= EmulateBlending(ps_sel, om_bsel, ps_cb, afix, DATE_GL42);
 	}
 
 	if (ps_sel.dfmt == 1) {
