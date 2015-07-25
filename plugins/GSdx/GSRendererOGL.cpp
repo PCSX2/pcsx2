@@ -464,11 +464,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Blend
 
-	const GIFRegALPHA& ALPHA = context->ALPHA;
 	float afix = (float)context->ALPHA.FIX / 0x80;
 
 	if (!IsOpaque() && rt)
 	{
+		const GIFRegALPHA& ALPHA = context->ALPHA;
+
 		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
 		om_bsel.a = ALPHA.A;
@@ -504,8 +505,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// We really need SW blending for this one, barely used
 		bool impossible_blend = (blend_flag & A_MAX);
 		// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-		ps_sel.blend_accu = m_sw_blending && ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1;
-		om_bsel.accu = ps_sel.blend_accu;
+		bool accumulation_blend = (ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1);
 
 		bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend || ps_sel.blend_accu);
 
@@ -519,8 +519,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
 				// Standard (inaccurate) colclip
 				ps_sel.colclip = 1;
+				accumulation_blend = false;
 				GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 			}
+		}
+
+		// Note: Option is duplicated, one impact the blend unit / the other the shader.
+		if (accumulation_blend && m_sw_blending) {
+			om_bsel.accu = ps_sel.blend_accu = 1;
+			sw_blending_base = true;
 		}
 
 		bool all_blend_sw;
