@@ -123,11 +123,11 @@ const char* dialog_message(int ID, bool* updateText) {
 				"------------------------------------------------------------------\n"
 				"Basic\t: Emulate correctly most of the effects with a limited speed penality. It is the recommended setting.\n"
 				"------------------------------------------------------------------\n"
-				"Medium\t: Add emulation of all sprites. Performance impact remains reasonable in 3D game.\n"
+				"Medium\t: Extend it to all sprites. Performance impact remains reasonable in 3D game.\n"
 				"------------------------------------------------------------------\n"
-				"High\t: Add full emulation of color wrapping. It helps Castlevania games. Be aware that it will half your FPS.\n"
+				"High\t: Extend it to destination alpha blending and color wrapping. (help shadow and fog effect). A good CPU is required\n"
 				"------------------------------------------------------------------\n"
-				"Full\t\t: Except few cases, the blending unit will be fully emulated by the shader. It is very slow! It is intended for debug\n"
+				"Full\t\t: Except few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug\n"
 				"------------------------------------------------------------------\n"
 				"Ultra\t: The blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug\n";
 #endif

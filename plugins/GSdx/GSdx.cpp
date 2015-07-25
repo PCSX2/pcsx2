@@ -187,9 +187,9 @@ GSdxApp::GSdxApp()
 	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
-	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended"));
+	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended low-end PC"));
 	m_gs_acc_blend_level.push_back(GSSetting(2, "Medium", ""));
-	m_gs_acc_blend_level.push_back(GSSetting(3, "High", "Slow"));
+	m_gs_acc_blend_level.push_back(GSSetting(3, "High", "Recommended high-end PC"));
 	m_gs_acc_blend_level.push_back(GSSetting(4, "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(5, "Ultra", "Ultra Slow"));
 

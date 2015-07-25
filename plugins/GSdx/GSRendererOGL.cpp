@@ -366,7 +366,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 		if (accumulation_blend) {
 			ps_sel.hdr = 1;
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
-		} else if (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base) {
+		} else if (m_sw_blending >= ACC_BLEND_CCLIP_DALPHA || sw_blending_base) {
 			ps_sel.colclip = 1;
 			sw_blending_base = true;
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
@@ -378,17 +378,18 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	// Note: Option is duplicated, one impact the blend unit / the other the shader.
 	sw_blending_base |= accumulation_blend;
 
-	bool all_blend_sw;
+	// Warning no break on purpose
+	bool sw_blending_adv = false;
 	switch (m_sw_blending) {
-		case ACC_BLEND_ULTRA:	all_blend_sw = true; break;
-		case ACC_BLEND_FULL:	all_blend_sw = !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) ); break;
-		case ACC_BLEND_CCLIP:
-		case ACC_BLEND_SPRITE:	all_blend_sw = m_vt.m_primclass == GS_SPRITE_CLASS; break;
-		default:				all_blend_sw = false; break;
+		case ACC_BLEND_ULTRA:			sw_blending_adv |= true;
+		case ACC_BLEND_FULL:			sw_blending_adv |= !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && afix <= 1.002f) );
+		case ACC_BLEND_CCLIP_DALPHA:	sw_blending_adv |= (ALPHA.C == 1);
+		case ACC_BLEND_SPRITE:			sw_blending_adv |= m_vt.m_primclass == GS_SPRITE_CLASS;
+		default:						break;
 	}
 
 	bool sw_blending = sw_blending_base // Free case or Impossible blend
-		|| all_blend_sw // all blend
+		|| sw_blending_adv // complex blending case (for special effect)
 		|| ps_sel.fbmask; // accurate fbmask
 
 
@@ -399,7 +400,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	sw_blending &= !DATE_GL42;
 	// Seriously don't expect me to support this kind of crazyness.
 	// No mix of COLCLIP + accumulation_blend + DATE GL42
+	// Neither fbmask and GL42
 	ASSERT(!(ps_sel.hdr && DATE_GL42));
+	ASSERT(!(ps_sel.fbmask && DATE_GL42));
 
 	// For stat to optimize accurate option
 #if 0
