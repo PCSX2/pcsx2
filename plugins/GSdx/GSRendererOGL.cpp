@@ -348,7 +348,11 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (!require_barrier || (m_prim_overlap == PRIM_OVERLAP_NO)) {
+	if (!require_barrier) {
+		dev->DrawIndexedPrimitive();
+	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
+		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
+		gl_TextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else {
 		ASSERT(GLLoader::found_geometry_shader);
