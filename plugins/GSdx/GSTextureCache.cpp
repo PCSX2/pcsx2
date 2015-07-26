@@ -810,7 +810,10 @@ void GSTextureCache::IncAge()
 			// probability that game will do it on the current RT.
 			// Variable is cleared here to avoid issue with game that uses a 16 bits
 			// render target
-			t->m_32_bits_fmt = false;
+			if (t->m_age > 0) {
+				// GoW2 uses the effect at the start of the frame
+				t->m_32_bits_fmt = false;
+			}
 
 			if(++t->m_age > maxage)
 			{
