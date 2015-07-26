@@ -79,11 +79,7 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Multisample Anti-Aliasing\n\nEnables hardware Anti-Aliasing. Needs lots of memory."
 				" The Z-24 modes might need to have LogarithmicZ to compensate for the bits lost (only in DX9 mode).\n\n"
 				" MSAA is not implemented on the OpenGL renderer";
-		case IDC_AGGRESSIVECRC:
-			return "Use more aggressive CRC hacks on some games\n\n"
-				"Only affects few games, removing some effects which might make the image sharper/clearer.\n"
-				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
-				"Works as a speedhack for: Steambot Chronicles.";
+		
 		case IDC_ALPHASTENCIL:
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
