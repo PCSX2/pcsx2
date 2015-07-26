@@ -148,9 +148,11 @@ void GSSettingsDlg::OnInit()
 
 	UpdateRenderers();
 	
+	
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfig("Interlace", 7)); // 7 = "auto", detects interlace based on SMODE2 register
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfig("upscale_multiplier", 1));
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfig("MaxAnisotropy", 0));
+	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfig("accurate_blending_unit", 1));
 
 	CheckDlgButton(m_hWnd, IDC_FILTER, theApp.GetConfig("filter", 2));
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfig("paltex", 0));
@@ -159,11 +161,9 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
 	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
 	CheckDlgButton(m_hWnd, IDC_ANISOTROPIC, theApp.GetConfig("AnisotropicFiltering", 0));
-	CheckDlgButton(m_hWnd, IDC_ACCURATE_BLEND, theApp.GetConfig("accurate_blend", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
-	CheckDlgButton(m_hWnd, IDC_ACCURATE_COLCLIP, theApp.GetConfig("accurate_colclip", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
-	CheckDlgButton(m_hWnd, IDC_ACCURATE_FBMASK, theApp.GetConfig("accurate_fbmask", 0));
+	
         
 	// Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
@@ -263,7 +263,12 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			{
 				theApp.SetConfig("upscale_multiplier", 1);
 			}
-
+                  
+                        if(ComboBoxGetSelData(IDC_ACCURATE_BLEND_UNIT, data))
+                        {
+                         theApp.SetConfig("accurate_blending_unit", (int)data);
+                        }
+            
 			if(ComboBoxGetSelData(IDC_AFCOMBO, data))
 			{
 				theApp.SetConfig("MaxAnisotropy", (int)data);
@@ -279,11 +284,9 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("AnisotropicFiltering", (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC));
-			theApp.SetConfig("accurate_blend", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_BLEND));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
-			theApp.SetConfig("accurate_colclip", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_COLCLIP));
 			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
-			theApp.SetConfig("accurate_fbmask", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_FBMASK));
+			
 			
 
 						
@@ -386,11 +389,10 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ANISOTROPIC), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC) && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_COLCLIP), ogl && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_FBMASK), ogl && hw);
+		
 		
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw); // Let uers set software params regardless of renderer used 
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
