@@ -541,7 +541,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)",
 					om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
 #endif
-		if (sw_blending) {
+		if (sw_blending && om_bsel.abe) {
 			// select a shader that support blending
 			om_bsel.ps = 1;
 			ps_sel.blend_a = om_bsel.a;
