@@ -135,16 +135,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"------------------------------------------------------------------\n"
 				"Ultra\t: The blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug\n";
 #endif
-		case IDC_ACCURATE_BLEND:
-			return "Allow to solve the impossible blending error message.\n\n"
-				"It could be slower when the effect are used.\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
-		case IDC_ACCURATE_COLCLIP:
-			return "Implement the wrapping of color after an overflow\n\n"
-				"It will be slow (half speed) when the effect are used!\n\nNote: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
-		case IDC_ACCURATE_FBMASK:
-			return "Implement partial color masking\n\n"
-				"It helps to fix Fifa/Medal of Honors/Fight Night series\nCould slow down a bit the emulation\n\n"
-				"Note: it requires the 4.5 OpenGL extension GL_ARB_texture_barrier";
+		
 		case IDC_TC_DEPTH:
 			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 		default:
