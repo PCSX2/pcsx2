@@ -25,9 +25,11 @@ int TranslateVKToWXK(u32 keysym)
 	switch (keysym)
 	{
 	// Shift, Control, Alt and Menu
+	case VK_SHIFT:
 	case VK_LSHIFT:
 	case VK_RSHIFT: key_code = WXK_SHIFT; break;
 
+	case VK_CONTROL:
 	case VK_LCONTROL:
 	case VK_RCONTROL: key_code = WXK_CONTROL; break;
 
