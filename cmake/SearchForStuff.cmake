@@ -3,13 +3,13 @@
 #-------------------------------------------------------------------------------
 ## Use cmake package to find module
 find_package(ALSA)
-find_package(BZip2)
 find_package(Gettext) # translation tool
-find_package(Git)
-find_package(JPEG)
+if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
+    find_package(Git)
+endif()
 find_package(LibLZMA)
-find_package(PNG)
 find_package(OpenGL)
+find_package(PNG)
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -62,9 +62,15 @@ find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
 ## Use pcsx2 package to find module
-include(FindCg)
-include(FindGlew)
 include(FindLibc)
+
+## Only needed by the extra plugins
+if(EXTRA_PLUGINS)
+    find_package(BZip2)
+    include(FindCg)
+    include(FindGlew)
+    find_package(JPEG)
+endif()
 
 ## Use CheckLib package to find module
 include(CheckLib)
