@@ -196,7 +196,7 @@ void SysLogMachineCaps()
 	if ( !PCSX2_isReleaseVersion )
 	{
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s"
-#ifndef openSUSE
+#ifndef DISABLE_BUILD_DATE
 			"- compiled on " __DATE__
 #endif
 			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
@@ -205,7 +205,7 @@ void SysLogMachineCaps()
 	}
 	else { // shorter release version string
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
-#ifndef openSUSE
+#ifndef DISABLE_BUILD_DATE
 			"- compiled on " __DATE__
 #endif
 			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,

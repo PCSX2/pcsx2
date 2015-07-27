@@ -21,6 +21,12 @@
 # Misc option
 #-------------------------------------------------------------------------------
 option(DISABLE_SVU "Disable superVU (don't use it)")
+option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+
+if(DISABLE_BUILD_DATE OR openSUSE)
+    message(STATUS "Disabling the inclusion of the binary compile date.")
+    add_definitions(-DDISABLE_BUILD_DATE)
+endif()
 
 #-------------------------------------------------------------------------------
 # Graphical option
