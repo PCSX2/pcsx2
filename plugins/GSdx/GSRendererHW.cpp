@@ -408,8 +408,14 @@ void GSRendererHW::Draw()
 			// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 			// Initially code also tested the RT but it gives too much false-positive
 			//
+			// Update: due to the pseudo 16 bit nature of the RT, the height must be 2 times bigger than the real
+			// height. Unfortunately we don't have the real height (too easy otherwise)...
+			// So just set an arbitrary limit, except snow engine H is likely smaller than 768. To avoid issue with
+			// big resolution game, FBW*64 was added. An issue remains if big resolution game uses a small width rectangle.
+			bool bigger_than_fullscreen = (m_vt.m_max.p.y - m_vt.m_min.p.y) >= max(768u, context->FRAME.FBW * 64u);
+			bool not_really_16_bits = tex->m_32_bits_fmt || (rt->m_32_bits_fmt && bigger_than_fullscreen);
 			// Both input and output are 16 bits and texture was initially 32 bits!
-			m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
+			m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && not_really_16_bits;
 
 			// Be sure texture shuffle detection is properly propagated
 			// Otherwise set or clear the flag (Code in texture cache only set the flag)
