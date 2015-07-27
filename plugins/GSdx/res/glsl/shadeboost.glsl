@@ -4,6 +4,9 @@
 ** Contrast, saturation, brightness
 ** Code of this function is from TGM's shader pack
 ** http://irrlicht.sourceforge.net/phpBB2/viewtopic.php?t=21057
+** TGM's author comment about the license (included in the previous link)
+** "do with it, what you want! its total free!
+** (but would be nice, if you say that you used my shaders  :wink: ) but not necessary"
 */
 
 struct vertex_basic
