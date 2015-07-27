@@ -418,7 +418,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
-		if ((context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
+		if ((m_prim_overlap != PRIM_OVERLAP_NO) && (context->FRAME.Block() == context->TEX0.TBP0) && (m_vertex.next > 2)) {
 			GL_INS("ERROR: Source and Target are the same!");
 		}
 #endif
