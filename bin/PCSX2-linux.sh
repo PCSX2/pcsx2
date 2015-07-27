@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2011  PCSX2 Dev Team
@@ -22,6 +22,8 @@
 # Rationale: It is nearly impossible to have the same library version on all systems. So the
 #            easiest solution it to ship library used during the build.
 # 3/ Set __GL_THREADED_OPTIMIZATIONS variable for Nvidia Drivers (major speed boost)
+
+set -e
 
 current_script=$0
 me=PCSX2-linux.sh
