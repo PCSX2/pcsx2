@@ -1862,6 +1862,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 			wcscpy(file, config.lastSaveConfigFileName);
 			ofn.lpstrInitialDir = config.lastSaveConfigPath;
 			ofn.Flags = OFN_DONTADDTORECENT | OFN_LONGNAMES | OFN_NOCHANGEDIR;
+			ofn.lpstrDefExt = L"lily";
 			if (LOWORD(wParam) == ID_LOAD) {
 				ofn.lpstrTitle = L"Load LilyPad Configuration";
 				ofn.Flags |= OFN_FILEMUSTEXIST;
