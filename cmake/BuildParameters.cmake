@@ -21,13 +21,19 @@
 # Misc option
 #-------------------------------------------------------------------------------
 option(DISABLE_SVU "Disable superVU (don't use it)")
+option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+
+if(DISABLE_BUILD_DATE OR openSUSE)
+    message(STATUS "Disabling the inclusion of the binary compile date.")
+    add_definitions(-DDISABLE_BUILD_DATE)
+endif()
 
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(GLSL_API "Replace zzogl CG backend by GLSL (experimental option)")
-option(EGL_API "Use EGL on zzogl (experimental/developer option)")
-option(REBUILD_SHADER "Rebuild glsl/cg shader (developer option)")
+option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
+option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
+option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 
 #-------------------------------------------------------------------------------

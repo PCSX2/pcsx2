@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2014  PCSX2 Dev Team
@@ -15,6 +15,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 # This script call xgettext utility to generate some nice pot (translation template) files
+
+set -e
 
 ######################################################################
 # Script configuration
