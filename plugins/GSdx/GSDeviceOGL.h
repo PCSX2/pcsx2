@@ -33,6 +33,7 @@
 #define A_MAX	(0x100)	 // Impossible blending uses coeff bigger than 1
 #define C_CLR	(0x200)	 // Clear color blending (use directly the destination color as blending factor)
 #define NO_BAR  (0x400)  // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_ACCU (0x800) // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_real_texture_upload_byte;
@@ -350,8 +351,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 blend_b:2;
 				uint32 blend_c:2;
 				uint32 blend_d:2;
-				uint32 blend_accu:1;
 				uint32 dfmt:2;
+				uint32 hdr:1;
 
 				uint32 _free2:21;
 			};
@@ -451,9 +452,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 c:2;
 				uint32 d:2;
 				uint32 negative:1;
-				uint32 accu:1;
 
-				uint32 _free:21;
+				uint32 _free:22;
 			};
 
 			struct

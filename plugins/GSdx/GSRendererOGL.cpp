@@ -357,30 +357,26 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	// We really need SW blending for this one, barely used
 	bool impossible_blend = (blend_flag & A_MAX);
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-	bool accumulation_blend = (ALPHA.A == 0 && ALPHA.B == 2 && ALPHA.C != 1 && ALPHA.D == 1);
+	bool accumulation_blend = (blend_flag & BLEND_ACCU);
 
-	bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend || ps_sel.blend_accu);
+	bool sw_blending_base = m_sw_blending && (free_blend || impossible_blend);
 
 	// Color clip
-	bool acc_colclip_wrap = false;
 	if (m_env.COLCLAMP.CLAMP == 0) {
-		acc_colclip_wrap =  (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base);
-		if (acc_colclip_wrap) {
+		if (accumulation_blend) {
+			ps_sel.hdr = 1;
+			GL_INS("COLCLIP Fast HDR mode ENABLED");
+		} else if (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base) {
 			ps_sel.colclip = 3;
+			sw_blending_base = true;
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-		} else if (!PRIM->TME && PRIM->PRIM != GS_POINTLIST) {
-			// Standard (inaccurate) colclip
-			ps_sel.colclip = 1;
-			accumulation_blend = false;
-			GL_INS("COLCLIP ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+		} else {
+			fprintf(stderr, "Sorry colclip isn't supported\n");
 		}
 	}
 
 	// Note: Option is duplicated, one impact the blend unit / the other the shader.
-	if (accumulation_blend && m_sw_blending) {
-		om_bsel.accu = ps_sel.blend_accu = 1;
-		sw_blending_base = true;
-	}
+	sw_blending_base |= accumulation_blend;
 
 	bool all_blend_sw;
 	switch (m_sw_blending) {
@@ -393,7 +389,6 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 
 	bool sw_blending = sw_blending_base // Free case or Impossible blend
 		|| all_blend_sw // all blend
-		|| acc_colclip_wrap // accurate colclip
 		|| ps_sel.fbmask; // accurate fbmask
 
 
@@ -402,6 +397,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1)
 	sw_blending &= !DATE_GL42;
+	// Seriously don't expect me to support this kind of crazyness.
+	// No mix of COLCLIP + accumulation_blend + DATE GL42
+	ASSERT(!(ps_sel.hdr && DATE_GL42));
 
 	// For stat to optimize accurate option
 #if 0
@@ -409,12 +407,20 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 			om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
 #endif
 	if (sw_blending) {
-		// Disable HW blending except in accu mode
-		om_bsel.abe = ps_sel.blend_accu;
 		ps_sel.blend_a = om_bsel.a;
 		ps_sel.blend_b = om_bsel.b;
 		ps_sel.blend_c = om_bsel.c;
 		ps_sel.blend_d = om_bsel.d;
+
+		if (accumulation_blend) {
+			// Keep HW blending to do the addition
+			om_bsel.abe = 1;
+			// Remove the addition from the SW blending
+			ps_sel.blend_d = 2;
+		} else {
+			// Disable HW blending
+			om_bsel.abe = 0;
+		}
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
@@ -422,7 +428,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 		}
 
 		// No need to flush for every primitive
-		require_barrier |= !(blend_flag & NO_BAR) && !ps_sel.blend_accu;
+		require_barrier |= !(blend_flag & NO_BAR) && !accumulation_blend;
 	} else {
 		ps_sel.clr1 = om_bsel.IsCLR1();
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
@@ -924,7 +930,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		GL_POP();
 	}
 
-	if (m_env.COLCLAMP.CLAMP == 0 && om_bsel.accu) {
+	if (ps_sel.hdr) {
 		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA16F);
 
 		dev->CopyRectConv(rt, hdr_rt, ComputeBoundingBox(rtscale, rtsize), false);

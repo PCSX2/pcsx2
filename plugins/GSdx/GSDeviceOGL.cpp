@@ -667,7 +667,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
 		+ format("#define PS_READ_BA %d\n", sel.read_ba)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
-		+ format("#define PS_BLEND_ACCU %d\n", sel.blend_accu)
+		+ format("#define PS_HDR %d\n", sel.hdr)
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
@@ -1551,13 +1551,13 @@ const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 	{ 17                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_INVBLENDFACTOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
 	{ 18                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
 	{ NO_BAR | A_MAX | 7 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	{ 19                 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
+	{ BLEND_ACCU | 19    , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
 	{ NO_BAR | 20        , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 0202: (Cs -  0)*As +  0 ==> Cs*As
 	{ A_MAX | 8          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
 	{ 21                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
 	{ 22                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
 	{ NO_BAR| A_MAX | 9  , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	{ 23                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
+	{ BLEND_ACCU | 23    , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
 	{ NO_BAR | 24        , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
 	{ 25                 , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_SRCALPHA}       , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
 	{ A_MAX | 10         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
