@@ -428,6 +428,22 @@ uint FileMcd_ConvertToSlot( uint port, uint slot )
 
 static void PS2E_CALLBACK FileMcd_EmuOpen( PS2E_THISPTR thisptr, const PS2E_SessionInfo *session )
 {
+	// detect inserted memory card types
+	for ( uint slot = 0; slot < 8; ++slot ) {
+		if ( g_Conf->Mcd[slot].Enabled ) {
+			MemoryCardType type = MemoryCardType::MemoryCard_File; // default to file if we can't find anything at the path so it gets auto-generated
+
+			const wxString path = g_Conf->FullpathToMcd( slot );
+			if ( wxFileExists( path ) ) {
+				type = MemoryCardType::MemoryCard_File;
+			} else if ( wxDirExists( path ) ) {
+				type = MemoryCardType::MemoryCard_Folder;
+			}
+
+			g_Conf->Mcd[slot].Type = type;
+		}
+	}
+
 	thisptr->impl.Open();
 	thisptr->implFolder.SetFiltering( g_Conf->EmuOptions.McdFolderAutoManage );
 	thisptr->implFolder.Open();
