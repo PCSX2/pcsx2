@@ -13928,6 +13928,11 @@ Region = PAL-Unk
 Serial = SLES-53474
 Name   = Incredibles, The - Rise of the Underminer
 Region = PAL-Unk
+[patches = F3AE68FC]
+	//Patch By Prafull
+	//fix hang at loading screen
+	patch=1,EE,001110e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-53480
 Name   = Harvest Moon - A Wonderful Life [Special Edition]
@@ -34561,6 +34566,15 @@ Serial = SLUS-20225
 Name   = Gadget Racers
 Region = NTSC-U
 Compat = 2
+[patches = 03854A28]
+	//Patched by Prafull
+	//Fixes vsync issues
+	patch=0,EE,001a62ac,word,03e00008
+	//Avoid hang at first loading screen
+	patch=0,EE,001a6288,word,00000000
+	//Skips movies
+	patch=0,EE,001b1700,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20226
 Name   = Batman - Vengeance
@@ -37674,6 +37688,11 @@ Serial = SLUS-20919
 Name   = ESPN - NFL 2K5
 Region = NTSC-U
 Compat = 4
+[patches = 42F9D5AF]
+	//Patched by Prafull
+	//Fixes random hangs
+	patch=0,EE,0041c680,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20920
 Name   = ESPN - NBA 2K5
@@ -39209,6 +39228,11 @@ Serial = SLUS-21232
 Name   = College Hoops 2K6
 Region = NTSC-U
 Compat = 2
+[patches = A60E027C]
+	//Patched by Prafull
+	//This fixes random hangs and makes the game playable
+	patch=0,EE,0045f410,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21233
 Name   = NBA 2K6
@@ -40161,6 +40185,11 @@ Serial = SLUS-21425
 Name   = NHL 2K7
 Region = NTSC-U
 Compat = 2
+[patches = 478EFBDB]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,004409d8,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21426
 Name   = Call of Duty 3
@@ -42200,6 +42229,11 @@ Serial = SLUS-21914
 Name   = NHL 2K10
 Region = NTSC-U
 Compat = 2
+[patches = 82CA153C]
+	//Patched by Prafull
+	//Fix hanging problem
+	patch=0,EE,00431b70,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21915
 Name   = The Lord of the Rings: Aragorn's Quest
