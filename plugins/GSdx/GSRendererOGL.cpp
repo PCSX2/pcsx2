@@ -367,7 +367,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 			ps_sel.hdr = 1;
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 		} else if (m_sw_blending >= ACC_BLEND_CCLIP || sw_blending_base) {
-			ps_sel.colclip = 3;
+			ps_sel.colclip = 1;
 			sw_blending_base = true;
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 		} else {
@@ -943,24 +943,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (m_context->TEST.DoFirstPass())
 	{
 		SendDraw(require_barrier);
-
-		if (ps_sel.colclip == 1)
-		{
-			ASSERT(!om_bsel.ps);
-			GL_PUSH("COLCLIP");
-			GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
-			GSDeviceOGL::PSSelector ps_selneg(ps_sel);
-
-			om_bselneg.negative = 1;
-			ps_selneg.colclip = 2;
-
-			dev->SetupOM(om_dssel, om_bselneg, afix);
-			dev->SetupPS(ps_selneg);
-
-			SendDraw(false);
-			dev->SetupOM(om_dssel, om_bsel, afix);
-			GL_POP();
-		}
 	}
 
 	if (m_context->TEST.DoSecondPass())
@@ -1003,23 +985,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->SetupOM(om_dssel, om_bsel, afix);
 
 			SendDraw(require_barrier);
-
-			if (ps_sel.colclip == 1)
-			{
-				ASSERT(!om_bsel.ps);
-				GL_PUSH("COLCLIP");
-				GSDeviceOGL::OMBlendSelector om_bselneg(om_bsel);
-				GSDeviceOGL::PSSelector ps_selneg(ps_sel);
-
-				om_bselneg.negative = 1;
-				ps_selneg.colclip = 2;
-
-				dev->SetupOM(om_dssel, om_bselneg, afix);
-				dev->SetupPS(ps_selneg);
-
-				SendDraw(false);
-				GL_POP();
-			}
 		}
 	}
 

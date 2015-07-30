@@ -123,9 +123,6 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 		} else {
 			bs->EnableBlend();
 		}
-
-		// Not very good but I don't wanna write another 81 row table
-		if(bsel.negative) bs->RevertOp();
 	}
 
 	return bs;

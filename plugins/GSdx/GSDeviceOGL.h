@@ -66,14 +66,6 @@ public:
 		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
 	}
 
-	void RevertOp()
-	{
-		if(m_equation_RGB == GL_FUNC_ADD)
-			m_equation_RGB = GL_FUNC_REVERSE_SUBTRACT;
-		else if(m_equation_RGB == GL_FUNC_REVERSE_SUBTRACT)
-			m_equation_RGB = GL_FUNC_ADD;
-	}
-
 	void EnableBlend() { m_enable = true;}
 
 	bool IsConstant(GLenum factor) { return ((factor == GL_CONSTANT_COLOR) || (factor == GL_ONE_MINUS_CONSTANT_COLOR)); }
@@ -332,7 +324,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
-				uint32 colclip:2;
+				uint32 colclip:1;
 				uint32 atst:3;
 				uint32 tfx:3;
 				uint32 tcc:1;
@@ -344,7 +336,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 read_ba:1;
 				uint32 fbmask:1;
 
-				//uint32 _free1:0;
+				uint32 _free1:1;
 
 				// Word 2
 				uint32 blend_a:2;
@@ -451,19 +443,16 @@ class GSDeviceOGL : public GSDevice
 				uint32 b:2;
 				uint32 c:2;
 				uint32 d:2;
-				uint32 negative:1;
 
-				uint32 _free:22;
+				uint32 _free:23;
 			};
 
 			struct
 			{
 				uint32 _abe:1;
 				uint32 abcd:8;
-				uint32 _negative:1;
-				uint32 _accu:1;
 
-				uint32 _free2:21;
+				uint32 _free2:23;
 			};
 
 			uint32 key;

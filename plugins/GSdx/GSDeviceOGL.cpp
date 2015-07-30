@@ -696,7 +696,7 @@ void GSDeviceOGL::SelfShaderTest()
 	int perf = 0;
 	int all = 0;
 	// Test: SW blending
-	for (int colclip = 0; colclip < 4; colclip += 3) {
+	for (int colclip = 0; colclip < 2; colclip++) {
 		for (int fmt = 0; fmt < 3; fmt++) {
 			for (int i = 0; i < 3; i++) {
 				PSSelector sel;
@@ -786,18 +786,6 @@ void GSDeviceOGL::SelfShaderTest()
 		RUN_TEST;
 	}
 	PRINT_TEST("Fst/Tc/IIp");
-
-	// Test: Colclip
-	for (int colclip = 0; colclip < 3; colclip += 1) {
-		PSSelector sel;
-		sel.tfx = 4;
-		sel.atst = 1;
-
-		sel.colclip = colclip;
-		std::string file = format("Shader_Colclip_%d.glsl.asm", colclip);
-		RUN_TEST;
-	}
-	PRINT_TEST("Colclip");
 
 	// Test: tfx/tcc
 	for (int tfx = 0; tfx < 5; tfx++) {
