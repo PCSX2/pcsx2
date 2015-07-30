@@ -197,15 +197,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, fl
 
 	OMSetDepthStencilState(dss, 1);
 
-	if (bsel.ps && !bsel.accu) {
-		if (GLState::blend) {
-			GLState::blend = false;
-			glDisable(GL_BLEND);
-		}
-		// No hardware blending thank
-		return;
-	}
-
 	// *************************************************************
 	// Static
 	// *************************************************************

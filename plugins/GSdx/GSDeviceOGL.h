@@ -452,9 +452,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 d:2;
 				uint32 negative:1;
 				uint32 accu:1;
-				uint32 ps:1;
 
-				uint32 _free:20;
+				uint32 _free:21;
 			};
 
 			struct
@@ -463,9 +462,8 @@ class GSDeviceOGL : public GSDevice
 				uint32 abcd:8;
 				uint32 _negative:1;
 				uint32 _accu:1;
-				uint32 _ps:1;
 
-				uint32 _free2:20;
+				uint32 _free2:21;
 			};
 
 			uint32 key;

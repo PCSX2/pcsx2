@@ -409,8 +409,8 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 			om_bsel.a, om_bsel.b,  om_bsel.c, om_bsel.d, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
 #endif
 	if (sw_blending) {
-		// select a shader that support blending
-		om_bsel.ps = 1;
+		// Disable HW blending except in accu mode
+		om_bsel.abe = ps_sel.blend_accu;
 		ps_sel.blend_a = om_bsel.a;
 		ps_sel.blend_b = om_bsel.b;
 		ps_sel.blend_c = om_bsel.c;
