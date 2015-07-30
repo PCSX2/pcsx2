@@ -404,20 +404,20 @@ void GSRendererHW::Draw()
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
 
-		if (rt) {
-			// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
-			// Initially code also tested the RT but it gives too much false-positive
-			//
-			// Both input and output are 16 bits and texture was initially 32 bits!
-			m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
+		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
+		// Initially code also tested the RT but it gives too much false-positive
+		//
+		// Both input and output are 16 bits and texture was initially 32 bits!
+		m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
 
-			// Be sure texture shuffle detection is properly propagated
-			// Otherwise set or clear the flag (Code in texture cache only set the flag)
-			rt->m_32_bits_fmt = m_texture_shuffle || !(context->FRAME.PSM & 0x2);
-
-			// Texture shuffle is not yet supported with strange clamp mode
-			ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
-		}
+		// Texture shuffle is not yet supported with strange clamp mode
+		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
+	}
+	if (rt) {
+		// Be sure texture shuffle detection is properly propagated
+		// Otherwise set or clear the flag (Code in texture cache only set the flag)
+		// Note: it is important to clear the flag when RT is used as a real 16 bits target.
+		rt->m_32_bits_fmt = m_texture_shuffle || !(context->FRAME.PSM & 0x2);
 	}
 
 	if(s_dump)
