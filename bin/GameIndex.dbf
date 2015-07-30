@@ -1716,6 +1716,7 @@ Region = PAL-Unk
 Serial = SCES-51684
 Name   = World Rally Championship 3
 Region = PAL-Unk
+XgKickHack = 1
 [patches = 80802EA9]
 comment= Patch By Prafull
 // fix hang at loading screen
@@ -23049,6 +23050,7 @@ Serial = SLPM-65583
 Name   = World Rally Championship 3
 Region = NTSC-J
 Compat = 4
+XgKickHack = 1
 [patches = C4467D30]
 	
 	comment=patch by Nachbrenner
