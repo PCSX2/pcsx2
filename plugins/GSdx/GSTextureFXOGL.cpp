@@ -106,23 +106,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
 		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
-
-		if (m_blendMapD3D9[i].bogus & BLEND_A_MAX) {
-			if (!theApp.GetConfig("accurate_blending_unit", 1)) {
-				bs->EnableBlend();
-				if (bsel.a == 0)
-					bs->SetRGB(m_blendMapD3D9[i].op, GL_ONE, m_blendMapD3D9[i].dst);
-				else
-					bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
-			}
-
-			const string afixstr = format("%f", afix);
-			const char *col[3] = {"Cs", "Cd", "0"};
-			const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
-		} else {
-			bs->EnableBlend();
-		}
+		bs->EnableBlend();
 	}
 
 	return bs;

@@ -30,9 +30,9 @@
 #include "GLState.h"
 
 // A couple of flag to determine the blending behavior
-#define BLEND_A_MAX		(0x100)	 // Impossible blending uses coeff bigger than 1
-#define BLEND_C_CLR		(0x200)	 // Clear color blending (use directly the destination color as blending factor)
-#define BLEND_NO_BAR	(0x400)  // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_A_MAX		(0x100) // Impossible blending uses coeff bigger than 1
+#define BLEND_C_CLR		(0x200) // Clear color blending (use directly the destination color as blending factor)
+#define BLEND_NO_BAR	(0x400) // don't require texture barrier for the blending (because the RT is not used)
 #define BLEND_ACCU		(0x800) // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
