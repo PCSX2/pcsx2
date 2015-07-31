@@ -353,9 +353,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
 	int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_sel].bogus;
 	// SW Blend is (nearly) free. Let's use it.
-	bool free_blend = (blend_flag & NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO);
+	bool free_blend = (blend_flag & BLEND_NO_BAR) || (m_prim_overlap == PRIM_OVERLAP_NO);
 	// We really need SW blending for this one, barely used
-	bool impossible_blend = (blend_flag & A_MAX);
+	bool impossible_blend = (blend_flag & BLEND_A_MAX);
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = (blend_flag & BLEND_ACCU);
 
@@ -428,7 +428,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 		}
 
 		// No need to flush for every primitive
-		require_barrier |= !(blend_flag & NO_BAR) && !accumulation_blend;
+		require_barrier |= !(blend_flag & BLEND_NO_BAR) && !accumulation_blend;
 	} else {
 		ps_sel.clr1 = om_bsel.IsCLR1();
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
