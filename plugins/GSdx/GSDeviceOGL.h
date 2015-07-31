@@ -310,43 +310,57 @@ class GSDeviceOGL : public GSDevice
 
 	struct PSSelector
 	{
+		// Performance note: there are too many shader combinations
+		// It might hurt the performance due to frequent toggling worse it could consume
+		// a lots of memory.
 		union
 		{
 			struct
 			{
-				uint32 fst:1;
+				// *** Word 1
+				// Format
 				uint32 fmt:3;
+				uint32 ifmt:2;
+				uint32 dfmt:2;
+				// Alpha extension/Correction
 				uint32 aem:1;
-				uint32 fog:1;
-				uint32 clr1:1;
 				uint32 fba:1;
-				uint32 date:3;
-				uint32 tcoffsethack:1;
-				//uint32 point_sampler:1; Not tested, so keep the bit for blend
+				// Fog
+				uint32 fog:1;
+				// Flat/goround shading
 				uint32 iip:1;
-				uint32 colclip:1;
+				// Pixel test
+				uint32 date:3;
 				uint32 atst:3;
+				// Color sampling
+				uint32 fst:1; // Investigate to do it on the VS
 				uint32 tfx:3;
 				uint32 tcc:1;
 				uint32 wms:2;
 				uint32 wmt:2;
 				uint32 ltf:1;
-				uint32 ifmt:2;
+				// Shuffle and fbmask effect
 				uint32 shuffle:1;
 				uint32 read_ba:1;
 				uint32 fbmask:1;
 
-				uint32 _free1:1;
+				uint32 _free1:2;
 
-				// Word 2
+				// *** Word 2
+				// Blend and Colclip
 				uint32 blend_a:2;
 				uint32 blend_b:2;
 				uint32 blend_c:2;
 				uint32 blend_d:2;
-				uint32 dfmt:2;
+				uint32 clr1:1; // useful?
 				uint32 hdr:1;
+				uint32 colclip:1;
 
-				uint32 _free2:21;
+				// Hack
+				uint32 tcoffsethack:1;
+				//uint32 point_sampler:1; Not tested, so keep the bit for blend
+
+				uint32 _free2:20;
 			};
 
 			uint64 key;
