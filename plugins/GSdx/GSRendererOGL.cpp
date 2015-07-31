@@ -301,10 +301,13 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 	return require_barrier;
 }
 
-bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMBlendSelector& om_bsel, GSDeviceOGL::PSConstantBuffer& ps_cb, float afix, bool DATE_GL42)
+bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSConstantBuffer& ps_cb, bool DATE_GL42)
 {
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	bool require_barrier = false;
+	bool require_barrier     = false;
+	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
+	float afix               = (float)m_context->ALPHA.FIX / 0x80;
+	GSDeviceOGL::OMBlendSelector om_bsel;
 
 	om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
@@ -331,8 +334,10 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 	}
 
 	// No blending so early exit
-	if (!om_bsel.abe)
+	if (!om_bsel.abe) {
+		dev->OMSetBlendState();
 		return require_barrier;
+	}
 
 	// Compute the blending equation to detect special case
 	int blend_sel  = ((om_bsel.a * 3 + om_bsel.b) * 3 + om_bsel.c) * 3 + om_bsel.d;
@@ -402,12 +407,13 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 
 		if (accumulation_blend) {
 			// Keep HW blending to do the addition
+			dev->OMSetBlendState(blend_sel);
 			om_bsel.abe = 1;
 			// Remove the addition from the SW blending
 			ps_sel.blend_d = 2;
 		} else {
 			// Disable HW blending
-			om_bsel.abe = 0;
+			dev->OMSetBlendState();
 		}
 
 		// Require the fix alpha vlaue
@@ -421,8 +427,10 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 		ps_sel.clr1 = om_bsel.IsCLR1();
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			om_bsel.c = 2;
-			afix = 1.0f;
+			int hacked_blend_sel  = blend_sel + 3; // +3 <=> +1 on C
+			dev->OMSetBlendState(hacked_blend_sel, 1.0f, true);
+		} else {
+			dev->OMSetBlendState(blend_sel, afix, (ALPHA.C == 2));
 		}
 	}
 
@@ -581,7 +589,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::PSConstantBuffer ps_cb;
 	GSDeviceOGL::PSSamplerSelector ps_ssel;
 
-	GSDeviceOGL::OMBlendSelector om_bsel;
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
@@ -624,10 +631,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Blend
 
-	float afix = (float)m_context->ALPHA.FIX / 0x80;
-
 	if (!IsOpaque() && rt) {
-		require_barrier |= EmulateBlending(ps_sel, om_bsel, ps_cb, afix, DATE_GL42);
+		require_barrier |= EmulateBlending(ps_sel, ps_cb, DATE_GL42);
+	} else {
+		dev->OMSetBlendState(); // No blending please
 	}
 
 	if (ps_sel.dfmt == 1) {
@@ -927,7 +934,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
-	dev->SetupOM(om_dssel, om_bsel, afix);
+	dev->SetupOM(om_dssel);
 
 	dev->SetupCB(&vs_cb, &ps_cb);
 
@@ -1016,7 +1023,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			om_csel.wa = a;
 
 			dev->OMSetColorMaskState(om_csel);
-			dev->SetupOM(om_dssel, om_bsel, afix);
+			dev->SetupOM(om_dssel);
 
 			SendDraw(require_barrier);
 		}

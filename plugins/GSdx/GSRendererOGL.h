@@ -60,7 +60,7 @@ class GSRendererOGL : public GSRendererHW
 		void EmulateGS();
 		void SetupIA();
 		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb);
-		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMBlendSelector& om_bsel, GSDeviceOGL::PSConstantBuffer& ps_cb, float afix, bool DATE_GL42);
+		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSConstantBuffer& ps_cb, bool DATE_GL42);
 
 	public:
 		GSRendererOGL();
