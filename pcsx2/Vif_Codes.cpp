@@ -446,7 +446,7 @@ vifOp(vifCode_Nop) {
 
 		//If the top bit was set to interrupt, we don't want it to take commands from a bad code if it's interpreted as a nop by us.
 		//Onimusha - Blade Warriors
-		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0)
+		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0 && vifXch.qwc > 0 /*Not tag*/)
 		{
 			GetVifX.irq = 0;
 		}
