@@ -475,10 +475,6 @@ class GSDeviceOGL : public GSDevice
 		GSUniformBufferOGL *cb;
 	} m_shadeboost;
 
-	struct {
-		GSDepthStencilOGL* dss;
-	} m_state;
-
 	GLuint m_vs[1<<5];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<3];

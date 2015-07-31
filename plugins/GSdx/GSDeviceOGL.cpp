@@ -59,7 +59,6 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_fxaa, 0, sizeof(m_fxaa));
 	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
 	memset(&m_date, 0, sizeof(m_date));
-	memset(&m_state, 0, sizeof(m_state));
 	GLState::Clear();
 
 	// Reset the debug file
@@ -1339,13 +1338,8 @@ void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
 
 void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
 {
-	// State is checkd inside the object but worst case is 11 comparaisons !
-	if (m_state.dss != dss) {
-		m_state.dss = dss;
-
-		dss->SetupDepth();
-		dss->SetupStencil();
-	}
+	dss->SetupDepth();
+	dss->SetupStencil();
 }
 
 void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
