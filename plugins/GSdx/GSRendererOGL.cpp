@@ -329,20 +329,44 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	size_t count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 
-	for(size_t i = 0; i < count; i += 2) {
-		// Very bad code
-		GSVector4i vi(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
-		for (size_t j = i+2; j < count; j += 2) {
-			GSVector4i vj(v[j].XYZ.X, v[j].XYZ.Y, v[j+1].XYZ.X, v[j+1].XYZ.Y);
-			GSVector4i inter = vi.rintersect(vj);
-			if (!inter.rempty()) {
-				//fprintf(stderr, "Overlap found between %d and %d (draw of %d vertices)\n", i, j, count);
-				return PRIM_OVERLAP_YES;
+	// You have no guarantee on the sprite order, first vertex can be either top-left or bottom-left
+	// There is a high probability that the draw call will uses same ordering for all vertices.
+	// In order to keep a small performance impact only the first sprite will be checked
+	//
+	// Some safe-guard will be added in the outer-loop to avoid corruption with a limited perf impact
+	if (v[1].XYZ.Y < v[0].XYZ.Y) {
+		// First vertex is Top-Left
+		for(size_t i = 0; i < count; i += 2) {
+			if (v[i+1].XYZ.Y > v[i].XYZ.Y) {
+				return PRIM_OVERLAP_UNKNOW;
+			}
+			GSVector4i vi(v[i].XYZ.X, v[i+1].XYZ.Y, v[i+1].XYZ.X, v[i].XYZ.Y);
+			for (size_t j = i+2; j < count; j += 2) {
+				GSVector4i vj(v[j].XYZ.X, v[j+1].XYZ.Y, v[j+1].XYZ.X, v[j].XYZ.Y);
+				GSVector4i inter = vi.rintersect(vj);
+				if (!inter.rempty()) {
+					return PRIM_OVERLAP_YES;
+				}
+			}
+		}
+	} else {
+		// First vertex is Bottom-Left
+		for(size_t i = 0; i < count; i += 2) {
+			if (v[i+1].XYZ.Y < v[i].XYZ.Y) {
+				return PRIM_OVERLAP_UNKNOW;
+			}
+			GSVector4i vi(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
+			for (size_t j = i+2; j < count; j += 2) {
+				GSVector4i vj(v[j].XYZ.X, v[j].XYZ.Y, v[j+1].XYZ.X, v[j+1].XYZ.Y);
+				GSVector4i inter = vi.rintersect(vj);
+				if (!inter.rempty()) {
+					return PRIM_OVERLAP_YES;
+				}
 			}
 		}
 	}
 
-	//fprintf(stderr, "Yes, code can be optimized (draw of %d vertices)\n", count);
+	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
 	return PRIM_OVERLAP_NO;
 }
 
