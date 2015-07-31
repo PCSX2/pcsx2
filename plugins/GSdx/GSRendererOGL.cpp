@@ -263,14 +263,15 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 				ps_sel.fbmask = 1;
 		}
 
-		ps_sel.fbmask &= m_sw_blending;
-		if (ps_sel.fbmask) {
+		if (ps_sel.fbmask && m_sw_blending) {
 			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
 			ps_cb.FbMask.r = rg_mask;
 			ps_cb.FbMask.g = rg_mask;
 			ps_cb.FbMask.b = ba_mask;
 			ps_cb.FbMask.a = ba_mask;
 			require_barrier = true;
+		} else {
+			ps_sel.fbmask = 0;
 		}
 
 	} else {
@@ -297,8 +298,7 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 				ps_sel.fbmask = 1;
 			}
 
-			ps_sel.fbmask &= m_sw_blending;
-			if (ps_sel.fbmask) {
+			if (ps_sel.fbmask && m_sw_blending) {
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
 				ps_cb.FbMask.r = r_mask;
@@ -306,6 +306,8 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 				ps_cb.FbMask.b = b_mask;
 				ps_cb.FbMask.a = a_mask;
 				require_barrier = true;
+			} else {
+				ps_sel.fbmask = 0;
 			}
 		}
 	}
