@@ -1353,6 +1353,48 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	}
 }
 
+void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_blend_constant)
+{
+	if (blend_index) {
+		if (!GLState::blend) {
+			GLState::blend = true;
+			glEnable(GL_BLEND);
+		}
+
+		if (is_blend_constant && GLState::bf != blend_factor) {
+			GLState::bf = blend_factor;
+			gl_BlendColor(blend_factor, blend_factor, blend_factor, 0);
+		}
+
+		// FIXME test to use uint16 (cache friendly)
+		const GLenum& op = m_blendMapD3D9[blend_index].op;
+		if (GLState::eq_RGB != op) {
+			GLState::eq_RGB = op;
+			if (gl_BlendEquationSeparateiARB)
+				gl_BlendEquationSeparateiARB(0, op, GL_FUNC_ADD);
+			else
+				gl_BlendEquationSeparate(op, GL_FUNC_ADD);
+		}
+
+		const GLenum& src = m_blendMapD3D9[blend_index].src;
+		const GLenum& dst = m_blendMapD3D9[blend_index].dst;
+		if (GLState::f_sRGB != src || GLState::f_dRGB != dst) {
+			GLState::f_sRGB = src;
+			GLState::f_dRGB = dst;
+			if (gl_BlendFuncSeparateiARB)
+				gl_BlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
+			else
+				gl_BlendFuncSeparate(src, dst, GL_ONE, GL_ZERO);
+		}
+
+	} else {
+		if (GLState::blend) {
+			GLState::blend = false;
+			glDisable(GL_BLEND);
+		}
+	}
+}
+
 void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 {
 	// SW date might change the enable state without updating the object
