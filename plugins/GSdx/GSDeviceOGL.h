@@ -598,6 +598,7 @@ class GSDeviceOGL : public GSDevice
 	void SetVSync(bool enable);
 
 	void DrawPrimitive();
+	void DrawPrimitive(int offset, int count);
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 	void BeforeDraw();

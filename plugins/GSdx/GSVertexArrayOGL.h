@@ -226,6 +226,12 @@ class GSBufferOGL {
 		glDrawArrays(mode, m_start, m_count);
 	}
 
+	void Draw(GLenum mode, int offset, int count)
+	{
+		glDrawArrays(mode, m_start + offset, count);
+	}
+
+
 	void Draw(GLenum mode, GLint basevertex)
 	{
 		gl_DrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride), basevertex);
@@ -301,6 +307,8 @@ public:
 	}
 
 	void DrawPrimitive() { m_vb->Draw(m_topology); }
+
+	void DrawPrimitive(int offset, int count) { m_vb->Draw(m_topology, offset, count); }
 
 	void DrawIndexedPrimitive() { m_ib->Draw(m_topology, m_vb->GetStart() ); }
 

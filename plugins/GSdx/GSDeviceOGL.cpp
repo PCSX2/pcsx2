@@ -419,6 +419,13 @@ void GSDeviceOGL::DrawPrimitive()
 	AfterDraw();
 }
 
+void GSDeviceOGL::DrawPrimitive(int offset, int count)
+{
+	BeforeDraw();
+	m_va->DrawPrimitive(offset, count);
+	AfterDraw();
+}
+
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	BeforeDraw();
