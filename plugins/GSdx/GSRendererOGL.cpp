@@ -52,10 +52,19 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	return true;
 }
 
+bool GSRendererOGL::RequireIndex()
+{
+	switch (PRIM->PRIM) {
+		case GS_LINESTRIP:
+		case GS_TRIANGLESTRIP:
+		case GS_TRIANGLEFAN: return true;
+		case GS_SPRITE: return !GLLoader::found_geometry_shader;
+		default: return false;
+	}
+}
+
 void GSRendererOGL::EmulateGS()
 {
-	if (m_vt.m_primclass != GS_SPRITE_CLASS) return;
-
 	// each sprite converted to quad needs twice the space
 
 	while(m_vertex.tail * 2 > m_vertex.maxcount)
@@ -120,11 +129,12 @@ void GSRendererOGL::SetupIA()
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (!GLLoader::found_geometry_shader)
+	if (!GLLoader::found_geometry_shader && m_vt.m_primclass == GS_SPRITE_CLASS)
 		EmulateGS();
 
 	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
-	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
+	if (RequireIndex())
+		dev->IASetIndexBuffer(m_index.buff, m_index.tail);
 
 	GLenum t = 0;
 
@@ -520,13 +530,22 @@ GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSV
 void GSRendererOGL::SendDraw(bool require_barrier)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
+	const bool index = RequireIndex();
 
 	if (!require_barrier) {
-		dev->DrawIndexedPrimitive();
+		if (index)
+			dev->DrawIndexedPrimitive();
+		else
+			dev->DrawPrimitive();
+
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
 		gl_TextureBarrier();
-		dev->DrawIndexedPrimitive();
+		if (index)
+			dev->DrawIndexedPrimitive();
+		else
+			dev->DrawPrimitive();
+
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
@@ -544,7 +563,10 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
 			gl_TextureBarrier();
-			dev->DrawIndexedPrimitive(p, nb_vertex);
+			if (index)
+				dev->DrawIndexedPrimitive(p, nb_vertex);
+			else
+				dev->DrawPrimitive(p, nb_vertex);
 		}
 
 		GL_POP();

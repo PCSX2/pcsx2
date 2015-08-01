@@ -55,6 +55,7 @@ class GSRendererOGL : public GSRendererHW
 		PRIM_OVERLAP m_prim_overlap;
 
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
+		bool RequireIndex();
 
 	protected:
 		void EmulateGS();
