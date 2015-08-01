@@ -964,9 +964,9 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	if (draw_in_depth)
-		OMSetDepthStencilState(m_convert.dss_write, 0);
+		OMSetDepthStencilState(m_convert.dss_write);
 	else
-		OMSetDepthStencilState(m_convert.dss, 0);
+		OMSetDepthStencilState(m_convert.dss);
 
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
@@ -1210,7 +1210,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// om
 
-	OMSetDepthStencilState(m_date.dss, 1);
+	OMSetDepthStencilState(m_date.dss);
 	if (GLState::blend) {
 		glDisable(GL_BLEND);
 	}
@@ -1335,7 +1335,7 @@ void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
 	gl_DrawBuffers(1, target);
 }
 
-void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
+void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss)
 {
 	dss->SetupDepth();
 	dss->SetupStencil();

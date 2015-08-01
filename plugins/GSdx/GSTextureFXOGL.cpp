@@ -158,7 +158,5 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 
 void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
-	GSDepthStencilOGL* dss = m_om_dss[dssel];
-
-	OMSetDepthStencilState(dss, 1);
+	OMSetDepthStencilState(m_om_dss[dssel]);
 }
