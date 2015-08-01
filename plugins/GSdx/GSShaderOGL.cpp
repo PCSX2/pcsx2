@@ -191,8 +191,6 @@ GLuint GSShaderOGL::LinkNewProgram()
 
 void GSShaderOGL::UseProgram()
 {
-	GL_PUSH("Use Program And Uniform");
-
 	if (GLState::dirty_prog) {
 		if (!GLLoader::found_GL_ARB_separate_shader_objects) {
 			GLState::dirty_ressources = true;
@@ -219,17 +217,12 @@ void GSShaderOGL::UseProgram()
 					gl_UseProgram(GLState::program);
 				}
 			}
-
-		} else {
-			ValidatePipeline(m_pipeline);
 		}
 	}
 
 	SetupRessources();
 
 	GLState::dirty_prog = false;
-
-	GL_POP();
 }
 
 std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro)
