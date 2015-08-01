@@ -49,10 +49,8 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <hash_map>
 
 using namespace std;
-using namespace stdext;
 
 extern string format(const char* fmt, ...);
 

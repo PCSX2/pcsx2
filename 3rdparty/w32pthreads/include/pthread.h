@@ -118,6 +118,10 @@
 #   pragma comment(lib, "pthread")
 #endif
 
+#if _MSC_VER >= 1900
+#   define HAVE_STRUCT_TIMESPEC 1
+#endif
+
 /*
  * -------------------------------------------------------------
  *
