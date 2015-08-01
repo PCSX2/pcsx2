@@ -357,14 +357,13 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		gl_TextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else {
-		ASSERT(GLLoader::found_geometry_shader);
-
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
 		size_t nb_vertex;
 		switch (m_vt.m_primclass) {
 			case GS_TRIANGLE_CLASS: nb_vertex = 3; break;
-			case GS_POINT_CLASS: nb_vertex = 1; break;
+			case GS_POINT_CLASS:	nb_vertex = 1; break;
+			case GS_SPRITE_CLASS:	nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6; break;
 			default: nb_vertex = 2; break;
 		}
 
