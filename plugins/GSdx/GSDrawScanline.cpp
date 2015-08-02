@@ -1148,7 +1148,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.srl32(15) == GSVector8i::zero();
+						// test |= fd.srl32(15) == GSVector8i::zero();
+						test |= fd.sll32(16).sra32(31) == GSVector8i::zero();
 					}
 					else
 					{
@@ -1159,7 +1160,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.sll32(16).sra32(31);
+						test |= fd.sll32(16).sra32(31); // == GSVector8i::xffffffff();
 					}
 					else
 					{
@@ -2264,7 +2265,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.srl32(15) == GSVector4i::zero();
+						// test |= fd.srl32(15) == GSVector4i::zero();
+						test |= fd.sll32(16).sra32(31) == GSVector4i::zero();
 					}
 					else
 					{
@@ -2275,7 +2277,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.sll32(16).sra32(31);
+						test |= fd.sll32(16).sra32(31); // == GSVector4i::xffffffff();
 					}
 					else
 					{

@@ -66,6 +66,9 @@ GSState::GSState()
 	//s_dump = 1;
 	//s_save = 1;
 	//s_savez = 1;
+	//s_savet = 1;
+	//s_savef = 1;
+	//s_saven = 656;
 
 	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);

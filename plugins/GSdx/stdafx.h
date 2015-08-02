@@ -123,8 +123,15 @@ using namespace std;
 	#include <GL/wglext.h>
 	#include "GLLoader.h"
 
+	#if _MSC_VER >= 1800 
+	#include <unordered_map>
+	#include <unordered_set>
+	#define hash_map unordered_map
+	#define hash_set unordered_set
+	#else
 	#include <hash_map>
 	#include <hash_set>
+	#endif
 
 	using namespace stdext;
 

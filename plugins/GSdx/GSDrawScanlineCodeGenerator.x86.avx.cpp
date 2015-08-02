@@ -2330,7 +2330,9 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha()
 		if(m_sel.fpsm == 2)
 		{
 			vpxor(xmm0, xmm0);
-			vpsrld(xmm1, xmm2, 15);
+			//vpsrld(xmm1, xmm2, 15);
+			vpslld(xmm1, xmm2, 16);
+			vpsrad(xmm1, 31);
 			vpcmpeqd(xmm1, xmm0);
 		}
 		else

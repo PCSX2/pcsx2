@@ -224,7 +224,7 @@ bool GSUtil::CheckSSE()
 	return true;
 }
 
-#define OCL_PROGRAM_VERSION 1
+#define OCL_PROGRAM_VERSION 3
 
 #ifdef ENABLE_OPENCL
 void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
