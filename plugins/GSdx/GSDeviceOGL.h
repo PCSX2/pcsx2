@@ -30,9 +30,10 @@
 #include "GLState.h"
 
 // A couple of flag to determine the blending behavior
-#define A_MAX	(0x100)	 // Impossible blending uses coeff bigger than 1
-#define C_CLR	(0x200)	 // Clear color blending (use directly the destination color as blending factor)
-#define NO_BAR  (0x400)  // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_A_MAX		(0x100) // Impossible blending uses coeff bigger than 1
+#define BLEND_C_CLR		(0x200) // Clear color blending (use directly the destination color as blending factor)
+#define BLEND_NO_BAR	(0x400) // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_ACCU		(0x800) // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_real_texture_upload_byte;
@@ -63,14 +64,6 @@ public:
 		m_func_sRGB = src;
 		m_func_dRGB = dst;
 		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
-	}
-
-	void RevertOp()
-	{
-		if(m_equation_RGB == GL_FUNC_ADD)
-			m_equation_RGB = GL_FUNC_REVERSE_SUBTRACT;
-		else if(m_equation_RGB == GL_FUNC_REVERSE_SUBTRACT)
-			m_equation_RGB = GL_FUNC_ADD;
 	}
 
 	void EnableBlend() { m_enable = true;}
@@ -238,13 +231,10 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 5; }
 	};
 
 	struct GSSelector
@@ -266,8 +256,6 @@ class GSDeviceOGL : public GSDevice
 
 		GSSelector() : key(0) {}
 		GSSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 2; }
 	};
 
 	__aligned(struct, 32) PSConstantBuffer
@@ -336,7 +324,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 				uint32 iip:1;
-				uint32 colclip:2;
+				uint32 colclip:1;
 				uint32 atst:3;
 				uint32 tfx:3;
 				uint32 tcc:1;
@@ -348,15 +336,15 @@ class GSDeviceOGL : public GSDevice
 				uint32 read_ba:1;
 				uint32 fbmask:1;
 
-				//uint32 _free1:0;
+				uint32 _free1:1;
 
 				// Word 2
 				uint32 blend_a:2;
 				uint32 blend_b:2;
 				uint32 blend_c:2;
 				uint32 blend_d:2;
-				uint32 blend_accu:1;
 				uint32 dfmt:2;
+				uint32 hdr:1;
 
 				uint32 _free2:21;
 			};
@@ -386,13 +374,10 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x7;}
+		operator uint32() {return key;}
 
 		PSSamplerSelector() : key(0) {}
 		PSSamplerSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 3; }
 	};
 
 	struct OMDepthStencilSelector
@@ -404,21 +389,18 @@ class GSDeviceOGL : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
-				uint32 alpha_stencil:1;
 
-				uint32 _free:27;
+				uint32 _free:28;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x1f;}
+		operator uint32() {return key;}
 
 		OMDepthStencilSelector() : key(0) {}
 		OMDepthStencilSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 5; }
 	};
 
 	struct OMColorMaskSelector
@@ -461,22 +443,16 @@ class GSDeviceOGL : public GSDevice
 				uint32 b:2;
 				uint32 c:2;
 				uint32 d:2;
-				uint32 negative:1;
-				uint32 accu:1;
-				uint32 ps:1;
 
-				uint32 _free:20;
+				uint32 _free:23;
 			};
 
 			struct
 			{
 				uint32 _abe:1;
 				uint32 abcd:8;
-				uint32 _negative:1;
-				uint32 _accu:1;
-				uint32 _ps:1;
 
-				uint32 _free2:20;
+				uint32 _free2:23;
 			};
 
 			uint32 key;
@@ -524,7 +500,7 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GLuint vs;		// program object
-		GLuint ps[15];	// program object
+		GLuint ps[16];	// program object
 		GLuint ln;		// sampler object
 		GLuint pt;		// sampler object
 		GSDepthStencilOGL* dss;
@@ -560,10 +536,10 @@ class GSDeviceOGL : public GSDevice
 		float bf; // blend factor
 	} m_state;
 
-	GLuint m_vs[1<<6];
+	GLuint m_vs[1<<5];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<3];
-	GSDepthStencilOGL* m_om_dss[1<<6];
+	GSDepthStencilOGL* m_om_dss[1<<4];
 	hash_map<uint64, GLuint > m_ps;
 	hash_map<uint32, GSBlendStateOGL* > m_om_bs;
 	GLuint m_apitrace;
@@ -629,7 +605,7 @@ class GSDeviceOGL : public GSDevice
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
-	void CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
+	void CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear = true);

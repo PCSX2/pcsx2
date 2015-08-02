@@ -352,17 +352,6 @@ void atst(vec4 C)
 #endif
 }
 
-void colclip(inout vec4 C)
-{
-#if (PS_COLCLIP == 2)
-	C.rgb = 256.0f - C.rgb;
-#endif
-#if (PS_COLCLIP == 1 || PS_COLCLIP == 2)
-	bvec3 factor = lessThan(C.rgb, vec3(128.0f));
-	C.rgb *= vec3(factor);
-#endif
-}
-
 void fog(inout vec4 C, float f)
 {
 #if PS_FOG != 0
@@ -383,8 +372,6 @@ vec4 ps_color()
 	atst(C);
 
 	fog(C, PSin_t.z);
-
-	colclip(C);
 
 #if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
 	C.rgb = vec3(255.0f);
@@ -453,9 +440,6 @@ void ps_blend(inout vec4 Color, float As)
 
 #if PS_BLEND_A == PS_BLEND_B
     Color.rgb = D;
-#elif PS_BLEND_ACCU == 1
-	// The D addition will be done in the blending unit
-	Color.rgb = trunc(A * C);
 #else
     Color.rgb = trunc((A - B) * C + D);
 #endif
@@ -463,7 +447,7 @@ void ps_blend(inout vec4 Color, float As)
 	// FIXME dithering
 
 	// Correct the Color value based on the output format
-#if PS_COLCLIP != 3
+#if PS_COLCLIP == 0
 	// Standard Clamp
 	Color.rgb = clamp(Color.rgb, vec3(0.0f), vec3(255.0f));
 #endif
@@ -478,7 +462,7 @@ void ps_blend(inout vec4 Color, float As)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 
 	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xF8));
-#elif PS_COLCLIP == 3
+#elif PS_COLCLIP == 1
 	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xFF));
 #endif
 
@@ -612,6 +596,12 @@ void ps_main()
 
 	ps_fbmask(C);
 
+#if PS_HDR == 1
+	// Use negative value to avoid overflow of the texture (in accumulation mode)
+	if (any(greaterThan(C.rgb, vec3(128.0f)))) {
+		C.rgb = (C.rgb - 256.0f);
+	}
+#endif
 	SV_Target0 = C / 255.0f;
 	SV_Target1 = vec4(alpha_blend);
 }

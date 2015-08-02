@@ -39,7 +39,7 @@ class GSRendererOGL : public GSRendererHW
 		ACC_BLEND_NONE = 0,
 		ACC_BLEND_FREE = 1,
 		ACC_BLEND_SPRITE = 2,
-		ACC_BLEND_CCLIP = 3,
+		ACC_BLEND_CCLIP_DALPHA = 3,
 		ACC_BLEND_FULL = 4,
 		ACC_BLEND_ULTRA = 5
 	};
@@ -54,10 +54,13 @@ class GSRendererOGL : public GSRendererHW
 
 		PRIM_OVERLAP m_prim_overlap;
 
+		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
+
 	protected:
 		void EmulateGS();
 		void SetupIA();
 		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb);
+		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMBlendSelector& om_bsel, GSDeviceOGL::PSConstantBuffer& ps_cb, float afix, bool DATE_GL42);
 
 	public:
 		GSRendererOGL();
