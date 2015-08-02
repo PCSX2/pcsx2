@@ -1,31 +1,3 @@
-/* Copyright (c) 2007 MITSUNARI Shigeo
-* All rights reserved.
-* 
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-* 
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice,
-* this list of conditions and the following disclaimer in the documentation
-* and/or other materials provided with the distribution.
-* Neither the name of the copyright owner nor the names of its contributors may
-* be used to endorse or promote products derived from this software without
-* specific prior written permission.
-* 
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-* THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 #ifndef XBYAK_XBYAK_UTIL_H_
 #define XBYAK_XBYAK_UTIL_H_
 
@@ -37,7 +9,7 @@
 */
 #include "xbyak.h"
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	#if (_MSC_VER < 1400) && defined(XBYAK32)
 		static inline __declspec(naked) void __cpuid(int[4], int)
 		{
@@ -86,7 +58,7 @@ namespace Xbyak { namespace util {
 	CPU detection class
 */
 class Cpu {
-	unsigned int type_;
+	uint64 type_;
 	unsigned int get32bitAsBE(const char *x) const
 	{
 		return x[0] | (x[1] << 8) | (x[2] << 16) | (x[3] << 24);
@@ -126,7 +98,7 @@ public:
 	int displayModel; // model + extModel
 	static inline void getCpuid(unsigned int eaxIn, unsigned int data[4])
 	{
-#ifdef _WIN32
+#ifdef _MSC_VER
 		__cpuid(reinterpret_cast<int*>(data), eaxIn);
 #else
 		__cpuid(eaxIn, data[0], data[1], data[2], data[3]);
@@ -134,7 +106,7 @@ public:
 	}
 	static inline void getCpuidEx(unsigned int eaxIn, unsigned int ecxIn, unsigned int data[4])
 	{
-#ifdef _WIN32
+#ifdef _MSC_VER
 		__cpuidex(reinterpret_cast<int*>(data), eaxIn, ecxIn);
 #else
 		__cpuid_count(eaxIn, ecxIn, data[0], data[1], data[2], data[3]);
@@ -152,42 +124,53 @@ public:
 		return ((uint64)edx << 32) | eax;
 #endif
 	}
-	enum Type {
-		NONE = 0,
-		tMMX = 1 << 0,
-		tMMX2 = 1 << 1,
-		tCMOV = 1 << 2,
-		tSSE = 1 << 3,
-		tSSE2 = 1 << 4,
-		tSSE3 = 1 << 5,
-		tSSSE3 = 1 << 6,
-		tSSE41 = 1 << 7,
-		tSSE42 = 1 << 8,
-		tPOPCNT = 1 << 9,
-		tAESNI = 1 << 10,
-		tSSE5 = 1 << 11,
-		tOSXSAVE = 1 << 12,
-		tPCLMULQDQ = 1 << 13,
-		tAVX = 1 << 14,
-		tFMA = 1 << 15,
+	typedef uint64 Type;
+	static const Type NONE = 0;
+	static const Type tMMX = 1 << 0;
+	static const Type tMMX2 = 1 << 1;
+	static const Type tCMOV = 1 << 2;
+	static const Type tSSE = 1 << 3;
+	static const Type tSSE2 = 1 << 4;
+	static const Type tSSE3 = 1 << 5;
+	static const Type tSSSE3 = 1 << 6;
+	static const Type tSSE41 = 1 << 7;
+	static const Type tSSE42 = 1 << 8;
+	static const Type tPOPCNT = 1 << 9;
+	static const Type tAESNI = 1 << 10;
+	static const Type tSSE5 = 1 << 11;
+	static const Type tOSXSAVE = 1 << 12;
+	static const Type tPCLMULQDQ = 1 << 13;
+	static const Type tAVX = 1 << 14;
+	static const Type tFMA = 1 << 15;
 
-		t3DN = 1 << 16,
-		tE3DN = 1 << 17,
-		tSSE4a = 1 << 18,
-		tRDTSCP = 1 << 19,
-		tAVX2 = 1 << 20,
-		tGPR1 = 1 << 21, // andn, bextr, blsi, blsmk, blsr, tzcnt
-		tGPR2 = 1 << 22, // bzhi, mulx, pdep, pext, rorx, sarx, shlx, shrx
-		tLZCNT = 1 << 23,
+	static const Type t3DN = 1 << 16;
+	static const Type tE3DN = 1 << 17;
+	static const Type tSSE4a = 1 << 18;
+	static const Type tRDTSCP = 1 << 19;
+	static const Type tAVX2 = 1 << 20;
+	static const Type tBMI1 = 1 << 21; // andn, bextr, blsi, blsmsk, blsr, tzcnt
+	static const Type tBMI2 = 1 << 22; // bzhi, mulx, pdep, pext, rorx, sarx, shlx, shrx
+	static const Type tLZCNT = 1 << 23;
 
-		tINTEL = 1 << 24,
-		tAMD = 1 << 25
-	};
+	static const Type tINTEL = 1 << 24;
+	static const Type tAMD = 1 << 25;
+
+	static const Type tENHANCED_REP = 1 << 26; // enhanced rep movsb/stosb
+	static const Type tRDRAND = 1 << 27;
+	static const Type tADX = 1 << 28; // adcx, adox
+	static const Type tRDSEED = 1 << 29; // rdseed
+	static const Type tSMAP = 1 << 30; // stac
+	static const Type tHLE = uint64(1) << 31; // xacquire, xrelease, xtest
+	static const Type tRTM = uint64(1) << 32; // xbegin, xend, xabort
+	static const Type tF16C = uint64(1) << 33; // vcvtph2ps, vcvtps2ph
+	static const Type tMOVBE = uint64(1) << 34; // mobve
+
 	Cpu()
 		: type_(NONE)
 	{
 		unsigned int data[4];
 		getCpuid(0, data);
+		const unsigned int maxNum = data[0];
 		static const char intel[] = "ntel";
 		static const char amd[] = "cAMD";
 		if (data[2] == get32bitAsBE(amd)) {
@@ -210,10 +193,13 @@ public:
 		if (data[2] & (1U << 9)) type_ |= tSSSE3;
 		if (data[2] & (1U << 19)) type_ |= tSSE41;
 		if (data[2] & (1U << 20)) type_ |= tSSE42;
+		if (data[2] & (1U << 22)) type_ |= tMOVBE;
 		if (data[2] & (1U << 23)) type_ |= tPOPCNT;
 		if (data[2] & (1U << 25)) type_ |= tAESNI;
 		if (data[2] & (1U << 1)) type_ |= tPCLMULQDQ;
 		if (data[2] & (1U << 27)) type_ |= tOSXSAVE;
+		if (data[2] & (1U << 30)) type_ |= tRDRAND;
+		if (data[2] & (1U << 29)) type_ |= tF16C;
 
 		if (data[3] & (1U << 15)) type_ |= tCMOV;
 		if (data[3] & (1U << 23)) type_ |= tMMX;
@@ -228,10 +214,18 @@ public:
 				if (data[2] & (1U << 12)) type_ |= tFMA;
 			}
 		}
-		getCpuidEx(7, 0, data);
-		if (type_ & tAVX && data[1] & 0x20) type_ |= tAVX2;
-		if (data[1] & (1U << 3)) type_ |= tGPR1;
-		if (data[1] & (1U << 8)) type_ |= tGPR2;
+		if (maxNum >= 7) {
+			getCpuidEx(7, 0, data);
+			if (type_ & tAVX && data[1] & 0x20) type_ |= tAVX2;
+			if (data[1] & (1U << 3)) type_ |= tBMI1;
+			if (data[1] & (1U << 8)) type_ |= tBMI2;
+			if (data[1] & (1U << 9)) type_ |= tENHANCED_REP;
+			if (data[1] & (1U << 18)) type_ |= tRDSEED;
+			if (data[1] & (1U << 19)) type_ |= tADX;
+			if (data[1] & (1U << 20)) type_ |= tSMAP;
+			if (data[1] & (1U << 4)) type_ |= tHLE;
+			if (data[1] & (1U << 11)) type_ |= tRTM;
+		}
 		setFamily();
 	}
 	void putFamily()
@@ -294,6 +288,7 @@ public:
 	Pack(const Pack& rhs)
 		: n_(rhs.n_)
 	{
+		if (n_ > maxTblNum) throw Error(ERR_INTERNAL);
 		for (size_t i = 0; i < n_; i++) tbl_[i] = rhs.tbl_[i];
 	}
 	Pack(const Xbyak::Reg64& t0)
@@ -320,7 +315,7 @@ public:
 	{
 		if (n_ == 10) {
 			fprintf(stderr, "ERR Pack::can't append\n");
-			throw ERR_BAD_PARAMETER;
+			throw Error(ERR_BAD_PARAMETER);
 		}
 		tbl_[n_++] = &t;
 		return *this;
@@ -329,7 +324,7 @@ public:
 	{
 		if (n > maxTblNum) {
 			fprintf(stderr, "ERR Pack::init bad n=%d\n", (int)n);
-			throw ERR_BAD_PARAMETER;
+			throw Error(ERR_BAD_PARAMETER);
 		}
 		n_ = n;
 		for (size_t i = 0; i < n; i++) {
@@ -340,7 +335,7 @@ public:
 	{
 		if (n >= n_) {
 			fprintf(stderr, "ERR Pack bad n=%d\n", (int)n);
-			throw ERR_BAD_PARAMETER;
+			throw Error(ERR_BAD_PARAMETER);
 		}
 		return *tbl_[n];
 	}
@@ -353,7 +348,7 @@ public:
 		if (num == size_t(-1)) num = n_ - pos;
 		if (pos + num > n_) {
 			fprintf(stderr, "ERR Pack::sub bad pos=%d, num=%d\n", (int)pos, (int)num);
-			throw ERR_BAD_PARAMETER;
+			throw Error(ERR_BAD_PARAMETER);
 		}
 		Pack pack;
 		pack.n_ = num;
@@ -361,6 +356,13 @@ public:
 			pack.tbl_[i] = tbl_[pos + i];
 		}
 		return pack;
+	}
+	void put() const
+	{
+		for (size_t i = 0; i < n_; i++) {
+			printf("%s ", tbl_[i]->toString());
+		}
+		printf("\n");
 	}
 };
 
@@ -420,27 +422,27 @@ public:
 		, t(t_)
 	{
 		using namespace Xbyak;
-		if (pNum < 0 || pNum > 4) throw ERR_BAD_PNUM;
+		if (pNum < 0 || pNum > 4) throw Error(ERR_BAD_PNUM);
 		const int allRegNum = pNum + tNum_ + (useRcx_ ? 1 : 0) + (useRdx_ ? 1 : 0);
-		if (allRegNum < pNum || allRegNum > 14) throw ERR_BAD_TNUM;
-		const Reg64& rsp = code->rsp;
-		const AddressFrame& ptr = code->ptr;
+		if (allRegNum < pNum || allRegNum > 14) throw Error(ERR_BAD_TNUM);
+		const Reg64& _rsp = code->rsp;
+		const AddressFrame& _ptr = code->ptr;
 		saveNum_ = (std::max)(0, allRegNum - noSaveNum);
 		const int *tbl = getOrderTbl() + noSaveNum;
 		P_ = saveNum_ + (stackSizeByte + 7) / 8;
 		if (P_ > 0 && (P_ & 1) == 0) P_++; // here (rsp % 16) == 8, then increment P_ for 16 byte alignment
 		P_ *= 8;
-		if (P_ > 0) code->sub(rsp, P_);
+		if (P_ > 0) code->sub(_rsp, P_);
 #ifdef XBYAK64_WIN
 		for (int i = 0; i < (std::min)(saveNum_, 4); i++) {
-			code->mov(ptr [rsp + P_ + (i + 1) * 8], Reg64(tbl[i]));
+			code->mov(_ptr [_rsp + P_ + (i + 1) * 8], Reg64(tbl[i]));
 		}
 		for (int i = 4; i < saveNum_; i++) {
-			code->mov(ptr [rsp + P_ - 8 * (saveNum_ - i)], Reg64(tbl[i]));
+			code->mov(_ptr [_rsp + P_ - 8 * (saveNum_ - i)], Reg64(tbl[i]));
 		}
 #else
 		for (int i = 0; i < saveNum_; i++) {
-			code->mov(ptr [rsp + P_ - 8 * (saveNum_ - i)], Reg64(tbl[i]));
+			code->mov(_ptr [_rsp + P_ - 8 * (saveNum_ - i)], Reg64(tbl[i]));
 		}
 #endif
 		int pos = 0;
@@ -462,22 +464,22 @@ public:
 	void close(bool callRet = true)
 	{
 		using namespace Xbyak;
-		const Reg64& rsp = code_->rsp;
-		const AddressFrame& ptr = code_->ptr;
+		const Reg64& _rsp = code_->rsp;
+		const AddressFrame& _ptr = code_->ptr;
 		const int *tbl = getOrderTbl() + noSaveNum;
 #ifdef XBYAK64_WIN
 		for (int i = 0; i < (std::min)(saveNum_, 4); i++) {
-			code_->mov(Reg64(tbl[i]), ptr [rsp + P_ + (i + 1) * 8]);
+			code_->mov(Reg64(tbl[i]), _ptr [_rsp + P_ + (i + 1) * 8]);
 		}
 		for (int i = 4; i < saveNum_; i++) {
-			code_->mov(Reg64(tbl[i]), ptr [rsp + P_ - 8 * (saveNum_ - i)]);
+			code_->mov(Reg64(tbl[i]), _ptr [_rsp + P_ - 8 * (saveNum_ - i)]);
 		}
 #else
 		for (int i = 0; i < saveNum_; i++) {
-			code_->mov(Reg64(tbl[i]), ptr [rsp + P_ - 8 * (saveNum_ - i)]);
+			code_->mov(Reg64(tbl[i]), _ptr [_rsp + P_ - 8 * (saveNum_ - i)]);
 		}
 #endif
-		if (P_ > 0) code_->add(rsp, P_);
+		if (P_ > 0) code_->add(_rsp, P_);
 
 		if (callRet) code_->ret();
 	}
@@ -486,8 +488,8 @@ public:
 		if (!makeEpilog_) return;
 		try {
 			close();
-		} catch (Xbyak::Error e) {
-			printf("ERR:StackFrame %s\n", ConvertErrorToString(e));
+		} catch (std::exception& e) {
+			printf("ERR:StackFrame %s\n", e.what());
 			exit(1);
 		} catch (...) {
 			printf("ERR:StackFrame otherwise\n");
