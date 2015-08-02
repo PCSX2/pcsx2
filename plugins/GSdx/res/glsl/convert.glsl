@@ -194,17 +194,30 @@ void ps_main12()
 //out float gl_FragDepth;
 void ps_main13()
 {
-	// Same as above but without the alpha channel
+	// Same as above but without the alpha channel (24 bits Z)
 
 	// Convert a RRGBA texture into a float depth texture
 	// FIXME: I'm afraid of the accuracy
-	const vec4 bitSh = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 0.0) * vec4(255.0/256.0);
-	gl_FragDepth = dot(sample_c(), bitSh);
+	const vec3 bitSh = vec3(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0) * vec3(255.0/256.0);
+	gl_FragDepth = dot(sample_c().rgb, bitSh);
 }
 #endif
 
 #ifdef ps_main14
+//out float gl_FragDepth;
 void ps_main14()
+{
+	// Same as above but without the A/B channels (16 bits Z)
+
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const vec2 bitSh = vec2(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0)) * vec2(255.0/256.0);
+	gl_FragDepth = dot(sample_c().rg, bitSh);
+}
+#endif
+
+#ifdef ps_main15
+void ps_main15()
 {
 
     // Potential speed optimization. There is a high probability that

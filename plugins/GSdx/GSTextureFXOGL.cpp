@@ -40,7 +40,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
-	for (uint32 key = 0; key < GSSelector::size(); key++) {
+	for (uint32 key = 0; key < countof(m_gs); key++) {
 		GSSelector sel(key);
 		if (sel.point == sel.sprite)
 			m_gs[key] = 0;
@@ -48,7 +48,7 @@ void GSDeviceOGL::CreateTextureFX()
 			m_gs[key] = CompileGS(GSSelector(key));
 	}
 
-	for (uint32 key = 0; key < VSSelector::size(); key++) {
+	for (uint32 key = 0; key < countof(m_vs); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
 		if (sel.wildhack && (!sel.tme || !sel.fst))
@@ -61,8 +61,9 @@ void GSDeviceOGL::CreateTextureFX()
 	// enough but buffer is polluted with noise. Clear will be limited
 	// to the mask.
 	glStencilMask(0xFF);
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++)
+	for (uint32 key = 0; key < countof(m_om_dss); key++) {
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
+	}
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
@@ -77,7 +78,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	if (dssel.date)
 	{
 		dss->EnableStencil();
-		dss->SetStencil(GL_EQUAL, dssel.alpha_stencil ? GL_ZERO : GL_KEEP);
+		dss->SetStencil(GL_EQUAL, GL_KEEP);
 	}
 
 	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
@@ -104,30 +105,8 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 	{
 		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
-		if (bsel.accu)
-			bs->SetRGB(GL_FUNC_ADD, GL_ONE, GL_ONE);
-		else
-			bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
-
-		if (m_blendMapD3D9[i].bogus & A_MAX) {
-			if (!theApp.GetConfig("accurate_blending_unit", 1)) {
-				bs->EnableBlend();
-				if (bsel.a == 0)
-					bs->SetRGB(m_blendMapD3D9[i].op, GL_ONE, m_blendMapD3D9[i].dst);
-				else
-					bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
-			}
-
-			const string afixstr = format("%f", afix);
-			const char *col[3] = {"Cs", "Cd", "0"};
-			const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
-		} else {
-			bs->EnableBlend();
-		}
-
-		// Not very good but I don't wanna write another 81 row table
-		if(bsel.negative) bs->RevertOp();
+		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
+		bs->EnableBlend();
 	}
 
 	return bs;
@@ -195,15 +174,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, fl
 	GSDepthStencilOGL* dss = m_om_dss[dssel];
 
 	OMSetDepthStencilState(dss, 1);
-
-	if (bsel.ps && !bsel.accu) {
-		if (GLState::blend) {
-			GLState::blend = false;
-			glDisable(GL_BLEND);
-		}
-		// No hardware blending thank
-		return;
-	}
 
 	// *************************************************************
 	// Static

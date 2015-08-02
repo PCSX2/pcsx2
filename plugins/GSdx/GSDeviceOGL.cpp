@@ -133,15 +133,15 @@ GSDeviceOGL::~GSDeviceOGL()
 	gl_DeleteSamplers(1, &m_palette_ss);
 	m_shader->Delete(m_apitrace);
 
-	for (uint32 key = 0; key < VSSelector::size(); key++) m_shader->Delete(m_vs[key]);
-	for (uint32 key = 0; key < GSSelector::size(); key++) m_shader->Delete(m_gs[key]);
+	for (uint32 key = 0; key < countof(m_vs); key++) m_shader->Delete(m_vs[key]);
+	for (uint32 key = 0; key < countof(m_gs); key++) m_shader->Delete(m_gs[key]);
 	for (auto it = m_ps.begin(); it != m_ps.end() ; it++) m_shader->Delete(it->second);
 
 	m_ps.clear();
 
-	gl_DeleteSamplers(PSSamplerSelector::size(), m_ps_ss);
+	gl_DeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++) delete m_om_dss[key];
+	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
 
 	for (auto it = m_om_bs.begin(); it != m_om_bs.end(); it++) delete it->second;
 	m_om_bs.clear();
@@ -238,8 +238,9 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
-	for (uint32 key = 0; key < PSSamplerSelector::size(); key++)
+	for (uint32 key = 0; key < countof(m_ps_ss); key++) {
 		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+	}
 
 	// ****************************************************************
 	// convert
@@ -666,7 +667,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
 		+ format("#define PS_READ_BA %d\n", sel.read_ba)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
-		+ format("#define PS_BLEND_ACCU %d\n", sel.blend_accu)
+		+ format("#define PS_HDR %d\n", sel.hdr)
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
@@ -695,7 +696,7 @@ void GSDeviceOGL::SelfShaderTest()
 	int perf = 0;
 	int all = 0;
 	// Test: SW blending
-	for (int colclip = 0; colclip < 4; colclip += 3) {
+	for (int colclip = 0; colclip < 2; colclip++) {
 		for (int fmt = 0; fmt < 3; fmt++) {
 			for (int i = 0; i < 3; i++) {
 				PSSelector sel;
@@ -785,18 +786,6 @@ void GSDeviceOGL::SelfShaderTest()
 		RUN_TEST;
 	}
 	PRINT_TEST("Fst/Tc/IIp");
-
-	// Test: Colclip
-	for (int colclip = 0; colclip < 3; colclip += 1) {
-		PSSelector sel;
-		sel.tfx = 4;
-		sel.atst = 1;
-
-		sel.colclip = colclip;
-		std::string file = format("Shader_Colclip_%d.glsl.asm", colclip);
-		RUN_TEST;
-	}
-	PRINT_TEST("Colclip");
 
 	// Test: tfx/tcc
 	for (int tfx = 0; tfx < 5; tfx++) {
@@ -889,7 +878,7 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 }
 
 // Copy a sub part of texture (same as below but force a conversion)
-void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
+void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin)
 {
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
@@ -899,7 +888,10 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-	gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+	if (at_origin)
+		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+	else
+		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -924,7 +916,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 				r.width(), r.height(), 1);
 	} else {
 		// Slower copy (conversion is done)
-		CopyRectConv(sTex, dTex, r);
+		CopyRectConv(sTex, dTex, r, true);
 	}
 
 	GL_POP();
@@ -948,7 +940,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[12] || ps == m_convert.ps[13]);
+	bool draw_in_depth = (ps == m_convert.ps[12] || ps == m_convert.ps[13] || ps == m_convert.ps[14]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -1510,6 +1502,11 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 // 1211 Cd*(1 + Ad) => Source * Dest color + Dest * Dest alpha
 // 1221 Cd*(1 + F) => Source * Dest color + Dest * Factor
 
+// Special blending method table:
+// # (tricky) => 1 * Cd + Cd * F => Use (Cd, F) as factor of color (1, Cd)
+// * (bogus) => C * (1 + F ) + ... => factor is always bigger than 1 (except above case)
+// ? => Cs * F + Cd => do the multiplication in shader and addition in blending unit. It is an optimization
+
 // Copy Dx blend table and convert it to ogl
 #define D3DBLENDOP_ADD			GL_FUNC_ADD
 #define D3DBLENDOP_SUBTRACT		GL_FUNC_SUBTRACT
@@ -1526,87 +1523,88 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
 #define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
 
+
 const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 {
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0002: (Cs - Cs)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0012: (Cs - Cs)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0020: (Cs - Cs)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0021: (Cs - Cs)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0022: (Cs - Cs)*F  +  0 ==> 0
-	{ A_MAX | 4          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	{ 13                 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_INVSRCALPHA}    , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
-	{ 14                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
-	{ A_MAX | 5          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	{ 15                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_INVDESTALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
-	{ 16                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
-	{ A_MAX | 6          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	{ 17                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_INVBLENDFACTOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	{ 18                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	{ NO_BAR | A_MAX | 7 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	{ 19                 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
-	{ NO_BAR | 20        , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 0202: (Cs -  0)*As +  0 ==> Cs*As
-	{ A_MAX | 8          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	{ 21                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
-	{ 22                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
-	{ NO_BAR| A_MAX | 9  , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	{ 23                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	{ NO_BAR | 24        , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
-	{ 25                 , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_SRCALPHA}       , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
-	{ A_MAX | 10         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	{ 26                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
-	{ 27                 , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_DESTALPHA}      , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
-	{ A_MAX | 11         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	{ 28                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
-	{ 29                 , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_BLENDFACTOR}    , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	{ A_MAX | 12         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	{ 30                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1100: (Cd - Cd)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1101: (Cd - Cd)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1102: (Cd - Cd)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1112: (Cd - Cd)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1120: (Cd - Cd)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1121: (Cd - Cd)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1122: (Cd - Cd)*F  +  0 ==> 0
-	{ 31                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
-	{ C_CLR | 55         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_SRCALPHA}       , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As) // ffxii main menu background
-	{ 32                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 1202: (Cd -  0)*As +  0 ==> Cd*As
-	{ 33                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
-	{ C_CLR | 56         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_DESTALPHA}      , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
-	{ 34                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_DESTALPHA}      , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
-	{  35                , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	{ C_CLR | 57         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_BLENDFACTOR}    , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	{ 36                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_BLENDFACTOR}    , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
-	{ NO_BAR | 37        , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_ZERO}           , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
-	{ 38                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
-	{ NO_BAR | 39        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
-	{ 40                 , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_ZERO}           , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
-	{ 41                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
-	{ 42                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
-	{ NO_BAR | 43        , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_ZERO}           , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	{ 44                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	{ NO_BAR | 45        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	{ 46                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
-	{ 47                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVSRCALPHA}    , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
-	{ 48                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
-	{ 49                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
-	{ 50                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVDESTALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
-	{ 51                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
-	{ 52                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	{ 53                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVBLENDFACTOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	{ 54                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2200: (0  -  0)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2201: (0  -  0)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2202: (0  -  0)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2210: (0  -  0)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2211: (0  -  0)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2212: (0  -  0)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2220: (0  -  0)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2221: (0  -  0)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2222: (0  -  0)*F  +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0002: (Cs - Cs)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0012: (Cs - Cs)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0020: (Cs - Cs)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0021: (Cs - Cs)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0022: (Cs - Cs)*F  +  0 ==> 0
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_INVSRCALPHA}    , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_INVDESTALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_INVBLENDFACTOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
+	{ BLEND_NO_BAR | BLEND_A_MAX , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
+	{ BLEND_ACCU                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , //?0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 0202: (Cs -  0)*As +  0 ==> Cs*As
+	{ BLEND_A_MAX                , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
+	{ BLEND_NO_BAR | BLEND_A_MAX , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
+	{ BLEND_ACCU                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , //?0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_SRCALPHA}       , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_DESTALPHA}      , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_BLENDFACTOR}    , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1100: (Cd - Cd)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1101: (Cd - Cd)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1102: (Cd - Cd)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1112: (Cd - Cd)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1120: (Cd - Cd)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1121: (Cd - Cd)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1122: (Cd - Cd)*F  +  0 ==> 0
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_SRCALPHA}       , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As) // ffxii main menu background
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 1202: (Cd -  0)*As +  0 ==> Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_DESTALPHA}      , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_DESTALPHA}      , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_BLENDFACTOR}    , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_BLENDFACTOR}    , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_ZERO}           , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
+	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_ZERO}           , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_ZERO}           , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVSRCALPHA}    , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVDESTALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVBLENDFACTOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2200: (0  -  0)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2201: (0  -  0)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2202: (0  -  0)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2210: (0  -  0)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2211: (0  -  0)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2212: (0  -  0)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2220: (0  -  0)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2221: (0  -  0)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2222: (0  -  0)*F  +  0 ==> 0
 };

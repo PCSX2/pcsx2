@@ -507,6 +507,7 @@ namespace GLLoader {
 		if (!found_GL_ARB_texture_barrier) {
 			fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. You can't emulate correctly the GS blending unit! Sorry!\n");
 			theApp.SetConfig("accurate_blending_unit", 0);
+			theApp.SetConfig("accurate_date", 0);
 		}
 
 		fprintf(stderr, "\n");
