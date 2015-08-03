@@ -27,8 +27,6 @@
 #include <sys/stat.h> // mkdir
 #endif
 
-#define _isnan(f) (f != f)
-
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 static int s_crc_hack_level = 3;
@@ -715,17 +713,23 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 {
 	GSVector4i rgbaq = (GSVector4i)r->RGBAQ;
 
-	rgbaq = rgbaq.upl32(rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy()); // see GIFPackedRegHandlerSTQ
-
-	m_v.RGBAQ = rgbaq;
+	GSVector4i q = rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy(); // see GIFPackedRegHandlerSTQ
 
 	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
 	// breaks GSVertexTrace code that rely on min/max.
-	//if (std::isnan(m_v.RGBAQ.Q))
-	if(_isnan(m_v.RGBAQ.Q))
+
+	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
+
+	m_v.RGBAQ = rgbaq.upl32(q);
+
+	/*
+	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
+	// breaks GSVertexTrace code that rely on min/max.
+	if (std::isnan(m_v.RGBAQ.Q))
 	{
 		m_v.RGBAQ.Q = std::numeric_limits<float>::max();
 	}
+	*/
 }
 
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)

@@ -2431,6 +2431,8 @@ public:
 	static const GSVector4 m_four;
 	static const GSVector4 m_x4b000000;
 	static const GSVector4 m_x4f800000;
+	static const GSVector4 m_max;
+	static const GSVector4 m_min;
 
 	__forceinline GSVector4()
 	{
@@ -2906,6 +2908,11 @@ public:
 		return mask() == 0;
 
 		#endif
+	}
+
+	__forceinline GSVector4 replace_nan(const GSVector4& v) const
+	{
+		return v.blend32(*this, *this == *this);
 	}
 
 	template<int src, int dst> __forceinline GSVector4 insert32(const GSVector4& v) const
@@ -5134,6 +5141,8 @@ public:
 	static const GSVector8 m_x80000000;
 	static const GSVector8 m_x4b000000;
 	static const GSVector8 m_x4f800000;
+	static const GSVector8 m_max;
+	static const GSVector8 m_min;
 
 	__forceinline GSVector8() 
 	{
@@ -5519,6 +5528,10 @@ public:
 		return _mm256_testz_ps(m, m) != 0;
 	}
 	
+	__forceinline GSVector8 replace_nan(const GSVector8& v) const
+	{
+		return v.blend32(*this, *this == *this);
+	}
 
 	template<int src, int dst> __forceinline GSVector8 insert32(const GSVector8& v) const
 	{
