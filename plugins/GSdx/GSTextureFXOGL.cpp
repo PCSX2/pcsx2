@@ -114,6 +114,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
 
 void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
 {
+	GL_PUSH("UBO");
 	if(m_vs_cb_cache.Update(vs_cb)) {
 		m_vs_cb->upload(vs_cb);
 	}
@@ -121,6 +122,7 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 	if(m_ps_cb_cache.Update(ps_cb)) {
 		m_ps_cb->upload(ps_cb);
 	}
+	GL_POP();
 }
 
 void GSDeviceOGL::SetupVS(VSSelector sel)
