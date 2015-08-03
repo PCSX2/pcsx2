@@ -218,7 +218,7 @@ bool JoystickInfo::Init(int id)
 	// Keep the 4 hat buttons too (usb driver). (left pressure does not work with recent kernel). Moreover the pressure
 	// work sometime on half axis neg others time in fulll axis. So better keep them as button for the moment
 	u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
-	if (found_hack != string::npos) {
+	if (found_hack != string::npos && numaxes > 4) {
 		numbuttons = 4; // (select, start, l3, r3)
 		// Enable this hack in bluetooth too. It avoid to restart the onepad gui
 		numbuttons += 4; // the 4 hat buttons
