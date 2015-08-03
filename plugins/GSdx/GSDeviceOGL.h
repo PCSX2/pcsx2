@@ -40,75 +40,6 @@ extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
 #endif
 
-class GSBlendStateOGL {
-	// Note: You can also select the index of the draw buffer for which to set the blend setting
-	// We will keep basic the first try
-	bool   m_enable;
-	GLenum m_equation_RGB;
-	GLenum m_func_sRGB;
-	GLenum m_func_dRGB;
-	bool   m_constant_factor;
-
-public:
-
-	GSBlendStateOGL() : m_enable(false)
-		, m_equation_RGB(0)
-		, m_func_sRGB(0)
-		, m_func_dRGB(0)
-		, m_constant_factor(false)
-	{}
-
-	void SetRGB(GLenum op, GLenum src, GLenum dst)
-	{
-		m_equation_RGB = op;
-		m_func_sRGB = src;
-		m_func_dRGB = dst;
-		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
-	}
-
-	void EnableBlend() { m_enable = true;}
-
-	bool IsConstant(GLenum factor) { return ((factor == GL_CONSTANT_COLOR) || (factor == GL_ONE_MINUS_CONSTANT_COLOR)); }
-
-	bool HasConstantFactor() { return m_constant_factor; }
-
-	void SetupBlend(float factor)
-	{
-		if (GLState::blend != m_enable) {
-			GLState::blend = m_enable;
-			if (m_enable)
-				glEnable(GL_BLEND);
-			else
-				glDisable(GL_BLEND);
-		}
-
-		if (m_enable) {
-			if (HasConstantFactor()) {
-				if (GLState::bf != factor) {
-					GLState::bf = factor;
-					gl_BlendColor(factor, factor, factor, 0);
-				}
-			}
-
-			if (GLState::eq_RGB != m_equation_RGB) {
-				GLState::eq_RGB = m_equation_RGB;
-				if (gl_BlendEquationSeparateiARB)
-					gl_BlendEquationSeparateiARB(0, m_equation_RGB, GL_FUNC_ADD);
-				else
-					gl_BlendEquationSeparate(m_equation_RGB, GL_FUNC_ADD);
-			}
-			if (GLState::f_sRGB != m_func_sRGB || GLState::f_dRGB != m_func_dRGB) {
-				GLState::f_sRGB = m_func_sRGB;
-				GLState::f_dRGB = m_func_dRGB;
-				if (gl_BlendFuncSeparateiARB)
-					gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
-				else
-					gl_BlendFuncSeparate(m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
-			}
-		}
-	}
-};
-
 class GSDepthStencilOGL {
 	bool m_depth_enable;
 	GLenum m_depth_func;
@@ -483,7 +414,9 @@ class GSDeviceOGL : public GSDevice
 	};
 
 	struct D3D9Blend {int bogus, op, src, dst;};
-	static const D3D9Blend m_blendMapD3D9[3*3*3*3];
+	static const D3D9Blend m_blendMapD3D9[3*3*3*3 + 1];
+	static const int m_NO_BLEND;
+	static const int m_MERGE_BLEND;
 
 	static int s_n;
 
@@ -504,7 +437,7 @@ class GSDeviceOGL : public GSDevice
 	struct {
 		GLuint ps[2];				 // program object
 		GSUniformBufferOGL* cb;		 // uniform buffer object
-		GSBlendStateOGL* bs;
+		int bs;
 	} m_merge_obj;
 
 	struct {
@@ -519,7 +452,6 @@ class GSDeviceOGL : public GSDevice
 		GLuint pt;		// sampler object
 		GSDepthStencilOGL* dss;
 		GSDepthStencilOGL* dss_write;
-		GSBlendStateOGL* bs;
 		GSUniformBufferOGL* cb;
 	} m_convert;
 
@@ -535,7 +467,6 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
 		GSTexture* t;
 	} m_date;
 
@@ -544,18 +475,11 @@ class GSDeviceOGL : public GSDevice
 		GSUniformBufferOGL *cb;
 	} m_shadeboost;
 
-	struct {
-		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
-		float bf; // blend factor
-	} m_state;
-
 	GLuint m_vs[1<<5];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<3];
 	GSDepthStencilOGL* m_om_dss[1<<4];
 	hash_map<uint64, GLuint > m_ps;
-	hash_map<uint32, GSBlendStateOGL* > m_om_bs;
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
@@ -623,7 +547,7 @@ class GSDeviceOGL : public GSDevice
 	void CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear = true);
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, bool linear = true);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 
@@ -637,8 +561,7 @@ class GSDeviceOGL : public GSDevice
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 
-	void OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref);
-	void OMSetBlendState(GSBlendStateOGL* bs, float bf);
+	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(int blend_index = 0, float blend_factor = 0.0f, bool is_blend_constant = false);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
@@ -652,7 +575,6 @@ class GSDeviceOGL : public GSDevice
 	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
-	GSBlendStateOGL* CreateBlend(OMBlendSelector bsel, float afix);
 
 	void SelfShaderTest();
 
@@ -663,7 +585,7 @@ class GSDeviceOGL : public GSDevice
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix);
+	void SetupOM(OMDepthStencilSelector dssel);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

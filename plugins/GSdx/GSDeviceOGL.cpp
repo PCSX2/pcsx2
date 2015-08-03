@@ -59,7 +59,6 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_fxaa, 0, sizeof(m_fxaa));
 	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
 	memset(&m_date, 0, sizeof(m_date));
-	memset(&m_state, 0, sizeof(m_state));
 	GLState::Clear();
 
 	// Reset the debug file
@@ -90,7 +89,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		m_shader->Delete(m_merge_obj.ps[i]);
 	delete (m_merge_obj.cb);
-	delete (m_merge_obj.bs);
 
 	// Clean m_interlace
 	for (size_t i = 0; i < countof(m_interlace.ps); i++)
@@ -103,7 +101,6 @@ GSDeviceOGL::~GSDeviceOGL()
 		m_shader->Delete(m_convert.ps[i]);
 	delete m_convert.dss;
 	delete m_convert.dss_write;
-	delete m_convert.bs;
 	delete m_convert.cb;
 
 	// Clean m_fxaa
@@ -116,7 +113,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Clean m_date
 	delete m_date.dss;
-	delete m_date.bs;
 
 	// Clean shadeboost
 	delete m_shadeboost.cb;
@@ -142,9 +138,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	gl_DeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
 	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
-
-	for (auto it = m_om_bs.begin(); it != m_om_bs.end(); it++) delete it->second;
-	m_om_bs.clear();
 
 	PboPool::Destroy();
 
@@ -255,10 +248,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 		m_convert.ps[i] = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
 
-	// Note the following object are initialized to 0 so disabled.
-	// Note: maybe enable blend with a factor of 1
-	// m_convert.dss, m_convert.bs
-
 	PSSamplerSelector point;
 	m_convert.pt = GetSamplerID(point);
 
@@ -266,7 +255,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	bilinear.ltf = true;
 	m_convert.ln = GetSamplerID(bilinear);
 
-	m_convert.bs  = new GSBlendStateOGL();
 	m_convert.dss = new GSDepthStencilOGL();
 	m_convert.dss_write = new GSDepthStencilOGL();
 	m_convert.dss_write->EnableDepth();
@@ -280,9 +268,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	for(size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		m_merge_obj.ps[i] = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
 
-	m_merge_obj.bs = new GSBlendStateOGL();
-	m_merge_obj.bs->EnableBlend();
-	m_merge_obj.bs->SetRGB(GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	m_merge_obj.bs = m_MERGE_BLEND;
 
 	// ****************************************************************
 	// interlace
@@ -326,8 +312,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_date.dss = new GSDepthStencilOGL();
 	m_date.dss->EnableStencil();
 	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
-
-	m_date.bs = new GSBlendStateOGL();
 
 	// ****************************************************************
 	// Use DX coordinate convention
@@ -502,12 +486,17 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	OMAttachRt(T);
 
 	// Blending is not supported when you render to an Integer texture
-	GLState::blend = false;
-	glDisable(GL_BLEND);
+	if (GLState::blend) {
+		glDisable(GL_BLEND);
+	}
 
 	gl_ClearBufferiv(GL_COLOR, 0, col);
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+
+	if (GLState::blend) {
+		glEnable(GL_BLEND);
+	}
 
 	GL_POP();
 }
@@ -936,10 +925,10 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, ps, m_convert.bs, linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, m_NO_BLEND, linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, bool linear)
 {
 	if(!sTex || !dTex)
 	{
@@ -976,15 +965,16 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	if (draw_in_depth)
-		OMSetDepthStencilState(m_convert.dss_write, 0);
+		OMSetDepthStencilState(m_convert.dss_write);
 	else
-		OMSetDepthStencilState(m_convert.dss, 0);
+		OMSetDepthStencilState(m_convert.dss);
 
-	OMSetBlendState(bs, 0);
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
 	else
 		OMSetRenderTargets(dTex, NULL);
+
+	OMSetBlendState(bs);
 	OMSetColorMaskState();
 
 	// ************************************
@@ -1221,8 +1211,10 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// om
 
-	OMSetDepthStencilState(m_date.dss, 1);
-	OMSetBlendState(m_date.bs, 0);
+	OMSetDepthStencilState(m_date.dss);
+	if (GLState::blend) {
+		glDisable(GL_BLEND);
+	}
 	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetRenderTargets(NULL, ds, &GLState::scissor);
 	OMSetColorMaskState(); // TODO: likely useless
@@ -1244,6 +1236,10 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	}
 
 	DrawPrimitive();
+
+	if (GLState::blend) {
+		glEnable(GL_BLEND);
+	}
 
 	EndScene();
 
@@ -1340,15 +1336,10 @@ void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
 	gl_DrawBuffers(1, target);
 }
 
-void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
+void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss)
 {
-	// State is checkd inside the object but worst case is 11 comparaisons !
-	if (m_state.dss != dss) {
-		m_state.dss = dss;
-
-		dss->SetupDepth();
-		dss->SetupStencil();
-	}
+	dss->SetupDepth();
+	dss->SetupStencil();
 }
 
 void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
@@ -1400,24 +1391,6 @@ void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_b
 			glDisable(GL_BLEND);
 		}
 	}
-}
-
-void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
-{
-	// SW date might change the enable state without updating the object
-	// Time to remove this micro-optimization
-#if 0
-	// State is checkd inside the object but worst case is 8 comparaisons
-	if (m_state.bs != bs || m_state.bf != bf)
-	{
-		m_state.bs = bs;
-		m_state.bf = bf;
-
-		bs->SetupBlend(bf);
-	}
-#else
-		bs->SetupBlend(bf);
-#endif
 }
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
@@ -1572,8 +1545,10 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
 #define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
 
+const int GSDeviceOGL::m_NO_BLEND = 0;
+const int GSDeviceOGL::m_MERGE_BLEND = 3*3*3*3;
 
-const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
+const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3 + 1] =
 {
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
@@ -1656,4 +1631,5 @@ const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2220: (0  -  0)*F  + Cs ==> Cs
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2221: (0  -  0)*F  + Cd ==> Cd
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2222: (0  -  0)*F  +  0 ==> 0
+	{ 0                          , D3DBLENDOP_ADD         , GL_SRC_ALPHA            , GL_ONE_MINUS_SRC_ALPHA}  , // extra for merge operation
 };

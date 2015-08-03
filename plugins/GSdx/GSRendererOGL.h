@@ -55,12 +55,13 @@ class GSRendererOGL : public GSRendererHW
 		PRIM_OVERLAP m_prim_overlap;
 
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
+		bool RequireIndex();
 
 	protected:
 		void EmulateGS();
 		void SetupIA();
 		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb);
-		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMBlendSelector& om_bsel, GSDeviceOGL::PSConstantBuffer& ps_cb, float afix, bool DATE_GL42);
+		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSConstantBuffer& ps_cb, bool DATE_GL42);
 
 	public:
 		GSRendererOGL();

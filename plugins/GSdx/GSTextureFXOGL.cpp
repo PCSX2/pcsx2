@@ -97,21 +97,6 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
-{
-	GSBlendStateOGL* bs = new GSBlendStateOGL();
-
-	if(bsel.abe)
-	{
-		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
-
-		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
-		bs->EnableBlend();
-	}
-
-	return bs;
-}
-
 void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
 {
 	GL_PUSH("UBO");
@@ -171,28 +156,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix)
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
-	GSDepthStencilOGL* dss = m_om_dss[dssel];
-
-	OMSetDepthStencilState(dss, 1);
-
-	// *************************************************************
-	// Static
-	// *************************************************************
-	auto j = m_om_bs.find(bsel);
-	GSBlendStateOGL* bs;
-
-	if(j == m_om_bs.end())
-	{
-		bs = CreateBlend(bsel, afix);
-		m_om_bs[bsel] = bs;
-	} else {
-		bs = j->second;
-	}
-
-	// *************************************************************
-	// Dynamic
-	// *************************************************************
-	OMSetBlendState(bs, afix);
+	OMSetDepthStencilState(m_om_dss[dssel]);
 }
