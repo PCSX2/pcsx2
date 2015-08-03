@@ -27,6 +27,8 @@
 #include <sys/stat.h> // mkdir
 #endif
 
+#define _isnan(f) (f != f)
+
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 static int s_crc_hack_level = 3;
@@ -466,6 +468,7 @@ bool GSState::IsEnabled(int i)
 float GSState::GetFPS()
 {
 	float base_rate = ((m_regs->SMODE1.CMOD & 1) ? 25 : (30/1.001f));
+
 	return base_rate * (m_regs->SMODE2.INT ? 2 : 1);
 }
 
@@ -506,6 +509,7 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (sTex also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
 	
 	*(int*)&m_q = GSVector4i::store(q); 
+
 	ASSERT(!std::isnan(m_q)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
@@ -714,9 +718,12 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 	rgbaq = rgbaq.upl32(rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy()); // see GIFPackedRegHandlerSTQ
 
 	m_v.RGBAQ = rgbaq;
+
 	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
 	// breaks GSVertexTrace code that rely on min/max.
-	if (std::isnan(m_v.RGBAQ.Q)) {
+	//if (std::isnan(m_v.RGBAQ.Q))
+	if(_isnan(m_v.RGBAQ.Q))
+	{
 		m_v.RGBAQ.Q = std::numeric_limits<float>::max();
 	}
 }
@@ -724,6 +731,7 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 {
 	m_v.ST = (GSVector4i)r->ST;
+
 	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
 
