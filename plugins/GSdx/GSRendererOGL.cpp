@@ -959,7 +959,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	if (ps_sel.hdr) {
-		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA16F);
+		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA32F);
 
 		dev->CopyRectConv(rt, hdr_rt, ComputeBoundingBox(rtscale, rtsize), false);
 
