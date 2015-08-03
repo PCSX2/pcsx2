@@ -131,9 +131,9 @@ using namespace std;
 	#else
 	#include <hash_map>
 	#include <hash_set>
+	using namespace stdext;
 	#endif
 
-	using namespace stdext;
 
 	// hashing algoritms at: http://www.cris.com/~Ttwang/tech/inthash.htm
 	// default hash_compare does ldiv and other crazy stuff to reduce speed
