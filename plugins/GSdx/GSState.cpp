@@ -47,6 +47,7 @@ GSState::GSState()
 	, m_crcinited(false)
 {
 	m_nativeres = !!theApp.GetConfig("nativeres", 1);
+	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);
@@ -2713,6 +2714,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		int mask = 0;
 
 		// See commented code below for the meaning of mask
+
 		if(wms == CLAMP_REPEAT || wmt == CLAMP_REPEAT)
 		{
 			u = uv & GSVector4i::xffffffff().srl32(32 - tw);
@@ -2983,6 +2985,11 @@ bool GSState::IsOpaque()
 	}
 
 	return context->ALPHA.IsOpaque(amin, amax);
+}
+
+bool GSState::IsMipMapActive()
+{
+	return m_mipmap && m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0; 
 }
 
 // GSTransferBuffer

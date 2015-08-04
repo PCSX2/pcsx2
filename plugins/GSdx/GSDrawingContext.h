@@ -125,6 +125,88 @@ public:
 		return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
 	}
 
+	GIFRegTEX0 GetSizeFixedTEX0(const GSVector4i& uvmax, bool mipmap)
+	{
+		// find max value for TW/TH by analyzing vertex trace and clamp values, only for region clamp modes, no mipmaping allowed
+
+		if(mipmap) return TEX0;
+
+		int tw = TEX0.TW;
+		int th = TEX0.TH;
+
+		int wms = (int)CLAMP.WMS;
+		int wmt = (int)CLAMP.WMT;
+
+		int minu = (int)CLAMP.MINU;
+		int minv = (int)CLAMP.MINV;
+		int maxu = (int)CLAMP.MAXU;
+		int maxv = (int)CLAMP.MAXV;
+
+		GSVector4i uv = uvmax;// GSVector4i(m_vt.m_max.t.ceil());
+
+		if(wms == CLAMP_REGION_CLAMP)
+		{
+			int x = uv.x;
+
+			if(x < minu) x = minu;
+			if(x > maxu + 1) x = maxu + 1;
+
+			while(tw < 10 && (1 << tw) < x)
+			{
+				tw++;
+			}
+		}
+		else if(wms == CLAMP_REGION_REPEAT)
+		{
+			int x = maxu + (minu + 1);
+
+			while(tw < 10 && (1 << tw) < x)
+			{
+				tw++;
+			}
+		}
+
+		if(wmt == CLAMP_REGION_CLAMP)
+		{
+			int y = uv.y;
+
+			if(y < minv) y = minv;
+			if(y > maxv + 1) y = maxv + 1;
+
+			while(th < 10 && (1 << th) < y)
+			{
+				th++;
+			}
+		}
+		else if(wmt == CLAMP_REGION_REPEAT)
+		{
+			int y = maxv + (minv + 1);
+
+			while(th < 10 && (1 << th) < y)
+			{
+				th++;
+			}
+		}
+
+#ifdef _DEBUG
+		if(TEX0.TW != tw || TEX0.TH != th)
+		{
+			printf("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+				(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
+				(int)TEX0.TW, tw, (int)TEX0.TH, th,
+				uv.x, uv.y,
+				wms, wmt, minu, maxu, minv, maxv);
+		}
+#endif
+
+		GIFRegTEX0 res = TEX0;
+
+		res.TW = tw;
+		res.TH = th;
+
+		return res;
+	}
+
 	void Dump(const std::string& filename)
 	{
 		// Append on purpose so env + context are merged into a single file

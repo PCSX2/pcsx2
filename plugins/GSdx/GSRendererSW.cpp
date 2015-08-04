@@ -1121,19 +1121,25 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.tfx = TFX_DECAL;
 			}
 
-			GSTextureCacheSW::Texture* t = m_tc->Lookup(context->TEX0, env.TEXA);
+			GSVector4i uvmax = GSVector4i(m_vt.m_max.t.ceil());
 
-			if(t == NULL) {ASSERT(0); return false;}
+			bool mipmap = IsMipMapActive();
+
+			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(uvmax, mipmap);
 
 			GSVector4i r;
 
-			GetTextureMinMax(r, context->TEX0, context->CLAMP, gd.sel.ltf);
+			GetTextureMinMax(r, TEX0, context->CLAMP, gd.sel.ltf);
+
+			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
+
+			if(t == NULL) {ASSERT(0); return false;}
 
 			data->SetSource(t, r, 0);
 
 			gd.sel.tw = t->m_tw - 3;
 
-			if(m_mipmap && context->TEX1.MXL > 0 && context->TEX1.MMIN >= 2 && context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0)
+			if(mipmap)
 			{
 				// TEX1.MMIN
 				// 000 p
@@ -1200,7 +1206,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.k = GSVector4((float)k);
 				}
 
-				GIFRegTEX0 MIP_TEX0 = context->TEX0;
+				GIFRegTEX0 MIP_TEX0 = TEX0;
 				GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
 				GSVector4 tmin = m_vt.m_min.t;
@@ -1329,8 +1335,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				}
 			}
 
-			uint16 tw = 1u << context->TEX0.TW;
-			uint16 th = 1u << context->TEX0.TH;
+			uint16 tw = 1u << TEX0.TW;
+			uint16 th = 1u << TEX0.TH;
 
 			switch(context->CLAMP.WMS)
 			{

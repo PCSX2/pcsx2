@@ -1440,9 +1440,15 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 				sel.tfx = TFX_DECAL;
 			}
 
+			GSVector4i uvmax = GSVector4i(m_vt.m_max.t.ceil());
+
+			bool mipmap = IsMipMapActive();
+
+			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(uvmax, mipmap);
+
 			GSVector4i r;
 
-			GetTextureMinMax(r, context->TEX0, context->CLAMP, sel.ltf);
+			GetTextureMinMax(r, TEX0, context->CLAMP, sel.ltf);
 
 			GSVector4i* src_pages = job->GetSrcPages();
 
@@ -1455,7 +1461,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 				src_pages[i] |= m_tmp_pages[i];
 			}
 
-			if(m_mipmap && context->TEX1.MXL > 0 && context->TEX1.MMIN >= 2 && context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0)
+			if(mipmap)
 			{
 				// TEX1.MMIN
 				// 000 p
@@ -1521,7 +1527,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 					pb->k = (float)k;
 				}
 
-				GIFRegTEX0 MIP_TEX0 = context->TEX0;
+				GIFRegTEX0 MIP_TEX0 = TEX0;
 				GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
 				GSVector4 tmin = m_vt.m_min.t;
@@ -1638,8 +1644,8 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 				}
 			}
 
-			int tw = 1 << context->TEX0.TW;
-			int th = 1 << context->TEX0.TH;
+			int tw = 1 << TEX0.TW;
+			int th = 1 << TEX0.TH;
 
 			switch(context->CLAMP.WMS)
 			{

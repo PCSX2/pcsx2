@@ -40,7 +40,6 @@ GSRenderer::GSRenderer()
 	m_filter = theApp.GetConfig("filter", 1);
 	m_vsync = !!theApp.GetConfig("vsync", 0);
 	m_aa1 = !!theApp.GetConfig("aa1", 0);
-	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 	m_fxaa = !!theApp.GetConfig("fxaa", 0);
 	m_shaderfx = !!theApp.GetConfig("shaderfx", 0);
 	m_shadeboost = !!theApp.GetConfig("ShadeBoost", 0);
