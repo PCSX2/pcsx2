@@ -340,10 +340,11 @@ void GSRendererHW::Draw()
 	// It is allowed to use the depth and rt at the same location. However at least 1 must
 	// be disabled.
 	// 1/ GoW uses a Cd blending on a 24 bits buffer (no alpha)
-	// 2/ SuperMan really draw the same value in both buffer...
+	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
+	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
-	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1)) ||
-		(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE);
+	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1));
+	const bool no_ds = !no_rt && (context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE);
 
 	GIFRegTEX0 TEX0;
 
@@ -358,9 +359,10 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
-	GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+	GSTextureCache::Target* ds = no_ds ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+	GSTexture* ds_tex = ds ? ds->m_texture : NULL;
 
-	if((!rt && !no_rt) || !ds)
+	if(!(rt || no_rt) || !(ds || no_ds))
 	{
 		GL_POP();
 		ASSERT(0);
@@ -461,7 +463,7 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds->m_texture->Save(root_hw+s);
+			ds_tex->Save(root_hw+s);
 		}
 
 		s_n++;
@@ -472,7 +474,7 @@ void GSRendererHW::Draw()
 #endif
 	}
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds->m_texture, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
 	{
 		s_n += 1; // keep counter sync
 		GL_POP();
@@ -539,7 +541,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt_tex, ds->m_texture, tex);
+	DrawPrims(rt_tex, ds_tex, tex);
 
 	//
 
@@ -560,7 +562,7 @@ void GSRendererHW::Draw()
 		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
 	}
 
-	if(zm != 0xffffffff)
+	if(zm != 0xffffffff && ds)
 	{
 		ds->m_valid = ds->m_valid.runion(r);
 
@@ -594,7 +596,7 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds->m_texture->Save(root_hw+s);
+			ds_tex->Save(root_hw+s);
 		}
 
 		s_n++;
@@ -1221,7 +1223,7 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	GSDrawingContext* ctx = m_context;
 	GSVertex* v = &m_vertex.buff[0];
 
-	if (!(ctx->FRAME.FBP == ctx->ZBUF.ZBP && !PRIM->TME && !ctx->ZBUF.ZMSK && !ctx->FRAME.FBMSK))
+	if (!(ctx->FRAME.FBP == ctx->ZBUF.ZBP && !PRIM->TME && !ctx->ZBUF.ZMSK && !ctx->FRAME.FBMSK && m_vt.m_eq.rgba == 0xFFFF))
 		return true;
 
 	// Please kill those crazy devs!
@@ -1230,10 +1232,9 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	ASSERT((v->RGBAQ.A << 24 | v->RGBAQ.B << 16 | v->RGBAQ.G << 8 | v->RGBAQ.R) == (int)v->XYZ.Z);
 
 	// Do a direct write
-	double depth = (double)v->XYZ.Z * exp2(-32.0f);
-	m_dev->ClearDepth(ds, (float)depth);
+	m_dev->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
 
-	m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, ctx->ZBUF.Block());
+	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
 
 	return false;
 }
