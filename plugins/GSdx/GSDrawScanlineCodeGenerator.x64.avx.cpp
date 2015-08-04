@@ -571,13 +571,13 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zoverflow || m_sel.zpsm == 0)
 		{
-			// GSVector4i off = GSVector4i::x80000000();
+			// GSVector4i o = GSVector4i::x80000000();
 
 			vpcmpeqd(xmm2, xmm2);
 			vpslld(xmm2, 31);
 
-			// GSVector4i zso = zs - off;
-			// GSVector4i zdo = zd - off;
+			// GSVector4i zso = zs - o;
+			// GSVector4i zdo = zd - o;
 
 			vpsubd(xmm0, xmm2);
 			vpsubd(xmm1, xmm2);

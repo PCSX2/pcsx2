@@ -92,12 +92,12 @@ void GSRendererSW::VSync(int field)
 	{
 		fprintf(s_fp, "%lld\n", m_perfmon.GetFrame());
 
-		GSVector4i dRect = GetDisplayRect();
+		GSVector4i dr = GetDisplayRect();
 		GSVector4i fr = GetFrameRect();
 		GSVector2i ds = GetDeviceSize();
 
-		fprintf(s_fp, "dRect %d %d %d %d, fr %d %d %d %d, ds %d %d\n",
-			dRect.x, dRect.y, dRect.z, dRect.w,
+		fprintf(s_fp, "dr %d %d %d %d, fr %d %d %d %d, ds %d %d\n",
+			dr.x, dr.y, dr.z, dr.w,
 			fr.x, fr.y, fr.z, fr.w,
 			ds.x, ds.y);
 
@@ -447,7 +447,8 @@ void GSRendererSW::Draw()
 	sd->bbox = bbox;
 	sd->frame = m_perfmon.GetFrame();
 
-	if(!GetScanlineGlobalData(sd)) {
+	if(!GetScanlineGlobalData(sd))
+	{
 		s_n += 3; // Keep it sync with HW renderer
 		return;
 	}
@@ -522,7 +523,8 @@ void GSRendererSW::Draw()
 
 		string s;
 
-		if (s_n >= s_saven) {
+		if(s_n >= s_saven)
+		{
 			// Dump Register state
 			s = format("%05d_context.txt", s_n);
 
@@ -598,7 +600,8 @@ void GSRendererSW::Draw()
 
 		s_n++;
 
-		if ((s_n - s_saven) > s_savel) {
+		if((s_n - s_saven) > s_savel)
+		{
 			s_dump = 0;
 		}
 	}

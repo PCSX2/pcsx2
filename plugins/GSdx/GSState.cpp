@@ -499,12 +499,12 @@ void GSState::GIFPackedRegHandlerRGBA(const GIFPackedReg* RESTRICT r)
 
 void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 {
-	GSVector4i sTex = GSVector4i::loadl(&r->u64[0]);
+	GSVector4i st = GSVector4i::loadl(&r->u64[0]);
 	GSVector4i q = GSVector4i::loadl(&r->u64[1]);
 
-	GSVector4i::storel(&m_v.ST, sTex);
+	GSVector4i::storel(&m_v.ST, st);
 
-	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (sTex also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
+	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
 	
 	*(int*)&m_q = GSVector4i::store(q); 
 
@@ -594,7 +594,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 
 	while(r < r_end)
 	{
-		GSVector4i sTex = GSVector4i::loadl(&r[0].u64[0]);
+		GSVector4i st = GSVector4i::loadl(&r[0].u64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].u64[1]);
 		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 		/*
@@ -605,7 +605,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 		*/
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
-		m_v.m[0] = sTex.upl64(rgba.upl32(q)); // TODO: only store the last one
+		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
 
 		GSVector4i xy = GSVector4i::loadl(&r[2].u64[0]);
 		GSVector4i zf = GSVector4i::loadl(&r[2].u64[1]);
@@ -631,7 +631,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 
 	while(r < r_end)
 	{
-		GSVector4i sTex = GSVector4i::loadl(&r[0].u64[0]);
+		GSVector4i st = GSVector4i::loadl(&r[0].u64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].u64[1]);
 		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 		/*
@@ -642,7 +642,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 		*/
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
-		m_v.m[0] = sTex.upl64(rgba.upl32(q)); // TODO: only store the last one
+		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
 
 		GSVector4i xy = GSVector4i::loadl(&r[2].u64[0]);
 		GSVector4i z = GSVector4i::loadl(&r[2].u64[1]);
@@ -999,14 +999,14 @@ template<int i> void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
-	GSVector4i off = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
+	GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
 
-	if(!off.eq(m_env.CTXT[i].XYOFFSET))
+	if(!o.eq(m_env.CTXT[i].XYOFFSET))
 	{
 		Flush();
 	}
 
-	m_env.CTXT[i].XYOFFSET = off;
+	m_env.CTXT[i].XYOFFSET = o;
 
 	m_env.CTXT[i].UpdateScissor();
 
@@ -2699,14 +2699,14 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	if(wms != CLAMP_REGION_REPEAT || wmt != CLAMP_REGION_REPEAT)
 	{
-		GSVector4 sTex = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 
 		if(linear)
 		{
-			sTex += GSVector4(-0.5f, 0.5f).xxyy();
+			st += GSVector4(-0.5f, 0.5f).xxyy();
 		}
 
-		GSVector4i uv = GSVector4i(sTex.floor());
+		GSVector4i uv = GSVector4i(st.floor());
 
 		GSVector4i u, v;
 
@@ -2784,6 +2784,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	// This really shouldn't happen now except with the clamping region set entirely outside the texture,
 	// special handling should be written for that case.
+
 	if(vr.rempty())
 	{
 		// NOTE: this can happen when texcoords are all outside the texture or clamping area is zero, but we can't 
@@ -2791,6 +2792,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		// examples: 
 		// - THPS (no visible problems)
 		// - NFSMW (strange rectangles on screen, might be unrelated)
+		// - Lupin 3rd (huge problems, textures sizes seem to be randomly specified)
 
 		vr = (vr + GSVector4i(-1, +1).xxyy()).rintersect(tr);
 	}

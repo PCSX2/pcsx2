@@ -179,10 +179,10 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 				{
 					GSVector4i uv(v[index[i]].m[1]);
 
-					GSVector4 sTex = GSVector4(uv.uph16()).xyxy();
+					GSVector4 st = GSVector4(uv.uph16()).xyxy();
 
-					tmin = tmin.min(sTex);
-					tmax = tmax.max(sTex);
+					tmin = tmin.min(st);
+					tmax = tmax.max(st);
 				}
 			}
 
@@ -445,11 +445,11 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 
 	#endif
 
-	GSVector4 off(context->XYOFFSET);
+	GSVector4 o(context->XYOFFSET);
 	GSVector4 s(1.0f / 16, 1.0f / 16, 2.0f, 1.0f);
 
-	m_min.p = (GSVector4(pmin) - off) * s;
-	m_max.p = (GSVector4(pmax) - off) * s;
+	m_min.p = (GSVector4(pmin) - o) * s;
+	m_max.p = (GSVector4(pmax) - o) * s;
 
 	if(tme)
 	{
