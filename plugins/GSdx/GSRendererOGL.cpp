@@ -334,10 +334,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 
 	if (m_env.PABE.PABE)
 	{
-#ifdef ENABLE_OGL_DEBUG
-		fprintf(stderr, "env PABE  not supported\n");
 		GL_INS("!!! ENV PABE  not supported !!!");
-#endif
 		// FIXME it could be supported with SW blending!
 		if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
 		{
@@ -378,7 +375,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL
 			sw_blending_base = true;
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
 		} else {
-			fprintf(stderr, "Sorry colclip isn't supported\n");
+			GL_INS("Sorry colclip isn't supported");
 		}
 	}
 
