@@ -673,6 +673,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_IIP %d\n", sel.iip)
 		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
 		+ format("#define PS_READ_BA %d\n", sel.read_ba)
+		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		+ format("#define PS_HDR %d\n", sel.hdr)
 		;

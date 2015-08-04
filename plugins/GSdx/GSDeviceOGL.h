@@ -342,9 +342,10 @@ class GSDeviceOGL : public GSDevice
 				// Shuffle and fbmask effect
 				uint32 shuffle:1;
 				uint32 read_ba:1;
+				uint32 write_rg:1;
 				uint32 fbmask:1;
 
-				uint32 _free1:2;
+				uint32 _free1:1;
 
 				// *** Word 2
 				// Blend and Colclip

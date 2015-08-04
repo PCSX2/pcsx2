@@ -229,6 +229,11 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 			}
 		}
 
+		// If date is enabled you need to test the green channel instead of the
+		// alpha channel. Only enable this code in DATE mode to reduce the number
+		// of shader.
+		ps_sel.write_rg = !write_ba && m_context->TEST.DATE;
+
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
@@ -598,7 +603,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 
 	if (DATE && GLLoader::found_GL_ARB_texture_barrier) {
-		if (m_prim_overlap == PRIM_OVERLAP_NO) {
+		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
+			// It is way too complex to emulate texture shuffle with DATE. So just use
+			// the slow but accurate algo
 			require_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;

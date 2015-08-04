@@ -471,11 +471,24 @@ void ps_blend(inout vec4 Color, float As)
 
 void ps_main()
 {
-#if (PS_DATE & 3) == 1 && !defined(DISABLE_GL42_image)
-	// DATM == 0
-	// Pixel with alpha equal to 1 will failed
+#if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2) && !defined(DISABLE_GL42_image)
+
+#if PS_WRITE_RG == 1
+	// Pseudo 16 bits access.
+	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).g;
+#else
 	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
-	if ((127.5f / 255.0f) < rt_a) { // < 0x80 pass (== 0x80 should not pass)
+#endif
+
+#if (PS_DATE & 3) == 1
+	// DATM == 0: Pixel with alpha equal to 1 will failed
+	bool bad = (127.5f / 255.0f) < rt_a;
+#elif (PS_DATE & 3) == 2
+	// DATM == 1: Pixel with alpha equal to 0 will failed
+	bool bad = rt_a < (127.5f / 255.0f);
+#endif
+
+	if (bad) {
 #if PS_DATE >= 5
 		discard;
 #else
@@ -483,18 +496,7 @@ void ps_main()
 		return;
 #endif
 	}
-#elif (PS_DATE & 3) == 2 && !defined(DISABLE_GL42_image)
-	// DATM == 1
-	// Pixel with alpha equal to 0 will failed
-	float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
-	if(rt_a < (127.5f / 255.0f)) { // >= 0x80 pass
-#if PS_DATE >= 5
-		discard;
-#else
-		imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
-		return;
-#endif
-	}
+
 #endif
 
 #if PS_DATE == 3 && !defined(DISABLE_GL42_image)
