@@ -455,7 +455,8 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	if (m_vertex.next < 4)
 		return PRIM_OVERLAP_NO;
 
-	if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	// Don't check too many primitive, code will be too slow (game: virtuafighter)
+	if (m_vt.m_primclass != GS_SPRITE_CLASS || m_vertex.next > 256)
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
