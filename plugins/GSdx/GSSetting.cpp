@@ -116,7 +116,6 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
 				"It could be slower when the effects are used.\n\nNote: it requires the 4.2 OpenGL extension GL_ARB_shader_image_load_store";
-#ifdef __linux__
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation. Note: it requires a GL4.5 drivers\n\n"
 				"None\t: Fast but introduce various rendering issues. It is intended for slow computer.\n"
@@ -130,8 +129,6 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full\t\t: Except few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug\n"
 				"------------------------------------------------------------------\n"
 				"Ultra\t: The blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug\n";
-#endif
-		
 		case IDC_TC_DEPTH:
 			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 		default:
