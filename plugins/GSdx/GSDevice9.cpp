@@ -649,11 +649,13 @@ void GSDevice9::EndScene()
 
 void GSDevice9::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	if (!t) return;
 	ClearRenderTarget(t, (c * 255 + 0.5f).zyxw().rgba32());
 }
 
 void GSDevice9::ClearRenderTarget(GSTexture* rt, uint32 c)
 {
+	if (!rt) return;
 	CComPtr<IDirect3DSurface9> surface;
 	m_dev->GetRenderTarget(0, &surface);
 	m_dev->SetRenderTarget(0, *(GSTexture9*)rt);
@@ -663,6 +665,7 @@ void GSDevice9::ClearRenderTarget(GSTexture* rt, uint32 c)
 
 void GSDevice9::ClearDepth(GSTexture* t, float c)
 {
+	if (!t) return;
 	CComPtr<IDirect3DSurface9> dssurface;
 	m_dev->GetDepthStencilSurface(&dssurface);
 	m_dev->SetDepthStencilSurface(*(GSTexture9*)t);
@@ -672,6 +675,7 @@ void GSDevice9::ClearDepth(GSTexture* t, float c)
 
 void GSDevice9::ClearStencil(GSTexture* t, uint8 c)
 {
+	if (!t) return;
 	CComPtr<IDirect3DSurface9> dssurface;
 	m_dev->GetDepthStencilSurface(&dssurface);
 	m_dev->SetDepthStencilSurface(*(GSTexture9*)t);

@@ -47,8 +47,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
 
-	const GSVector2i& rtsize = ds->GetSize();
-	const GSVector2& rtscale = ds->GetScale();
+	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
+	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
 	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 

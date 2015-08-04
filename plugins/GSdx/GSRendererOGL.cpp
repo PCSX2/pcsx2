@@ -547,12 +547,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 {
 	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
-				rt ? rt->GetID() : -1, ds->GetID());
+				rt ? rt->GetID() : -1, ds ? ds->GetID() : -1);
 
 	GSTexture* hdr_rt = NULL;
 
-	const GSVector2i& rtsize = ds->GetSize();
-	const GSVector2& rtscale = ds->GetScale();
+	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
+	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
 	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
