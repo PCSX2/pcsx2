@@ -92,6 +92,7 @@ GSPanel::GSPanel( wxWindow* parent )
 
 	InitDefaultAccelerators();
 
+	SetBackgroundColour(wxColour((unsigned long)0));
 	if( g_Conf->GSWindow.AlwaysHideMouse )
 	{
 		SetCursor( wxCursor(wxCURSOR_BLANK) );

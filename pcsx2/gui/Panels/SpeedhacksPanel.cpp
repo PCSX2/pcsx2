@@ -197,13 +197,13 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*m_vuSliderPanel += m_slider_vustealer | sliderFlags;
 	*m_vuSliderPanel += m_msg_vustealer | sliderFlags;
 
-	*vuHacksPanel	+= m_check_vuFlagHack;
-	*vuHacksPanel	+= m_check_vuThread;
+	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
+	*vuHacksPanel += m_check_vuThread | StdExpand();
 	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
-	*miscHacksPanel	+= m_check_intc;
-	*miscHacksPanel	+= m_check_waitloop;
-	*miscHacksPanel	+= m_check_fastCDVD;
+	*miscHacksPanel	+= m_check_intc | StdExpand();
+	*miscHacksPanel	+= m_check_waitloop | StdExpand();
+	*miscHacksPanel	+= m_check_fastCDVD | StdExpand();
 
 	*left	+= m_eeSliderPanel | StdExpand();
 	*left	+= miscHacksPanel	| StdExpand();
@@ -225,13 +225,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*this	+= s_table					| pxExpand;
 
 	// ------------------------------------------------------------------------
-
-	Connect( wxEVT_SCROLL_PAGEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_PAGEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_TOP,		wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_BOTTOM,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
 
 	Connect( m_slider_eecycle->GetId(),		wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::EECycleRate_Scroll ) );
 	Connect( m_slider_vustealer->GetId(),	wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::VUCycleRate_Scroll ) );
@@ -341,30 +334,6 @@ void Panels::SpeedHacksPanel::Defaults_Click( wxCommandEvent& evt )
 	currentConfigWithHacksReset.EnablePresets=false;//speed hacks gui depends on preset, apply it as if presets are disabled
 	ApplyConfigToGui( currentConfigWithHacksReset );
 	evt.Skip();
-}
-
-void Panels::SpeedHacksPanel::Slider_Click(wxScrollEvent &event) {
-	wxSlider* slider = (wxSlider*) event.GetEventObject();
-	int value = slider->GetValue();
-	int eventType = event.GetEventType();
-	if (eventType == wxEVT_SCROLL_PAGEUP || eventType == wxEVT_SCROLL_LINEUP) {
-		if (value > slider->GetMin()) {
-			slider->SetValue(value-1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_TOP) {
-		slider->SetValue(slider->GetMin());
-	}
-	else if (eventType == wxEVT_SCROLL_PAGEDOWN || eventType == wxEVT_SCROLL_LINEDOWN) {
-		if (value < slider->GetMax()) {
-			slider->SetValue(value+1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_BOTTOM) {
-		slider->SetValue(slider->GetMax());
-	}
-
-	event.Skip();
 }
 
 void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)
