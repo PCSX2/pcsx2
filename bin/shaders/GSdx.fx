@@ -23,7 +23,7 @@
 #endif
 
 #if defined(SHADER_MODEL) && (SHADER_MODEL <= 0x300)
-#error GSdx FX requires shader model 4.0(Direct3D10) or higher. Use GSdx DX10/11.
+#error GSdx FX is not compatible with GSdx9. Use GSdx OGL or DX10/11.
 #endif
 
 #ifdef SHADER_MODEL
@@ -34,7 +34,6 @@
                              [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/
 #if GLSL == 1
-
 #define int2 ivec2
 #define float2 vec2
 #define float3 vec3
@@ -606,7 +605,6 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 float4 FxaaPass(float4 FxaaColor, float2 texcoord)
 {
     #if GLSL == 1
-    tex = TextureSampler;
     FxaaColor = FxaaPixelShader(texcoord, TextureSampler, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
     #else
     FxaaTex tex;
@@ -1134,18 +1132,18 @@ float3 BlendScreen(float3 bloom, float3 blend)
     return (bloom + blend) - (bloom * blend);
 }
 
-float3 BlendAddGlow(float3 bloom, float3 blend)
+float3 BlendGlow(float3 bloom, float3 blend)
 {
-    float glow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
-    return lerp(saturate(bloom + blend),
+    float glow = AvgLuminance(bloom);
+    return lerp((bloom + blend) - (bloom * blend),
     (blend + blend) - (blend * blend), glow);
 }
 
-float3 BlendGlow(float3 bloom, float3 blend)
+float3 BlendAddGlow(float3 bloom, float3 blend)
 {
-    float glow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
-    return lerp((bloom + blend) - (bloom * blend),
-    (blend + blend) - (blend * blend), glow);
+    float addglow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
+    return lerp(saturate(bloom + blend),
+    (blend + blend) - (blend * blend), addglow);
 }
 
 float3 BlendLuma(float3 bloom, float3 blend)
@@ -1162,16 +1160,6 @@ float3 BlendOverlay(float3 bloom, float3 blend)
     (1.0 - bloom) * (1.0 - blend))), overlay);
 }
 
-float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
-{
-    float4 X = sample_tex(tex, texcoord + float2(0.5, 0.5) * width);
-    float4 Y = sample_tex(tex, texcoord + float2(-0.5,  0.5) * width);
-    float4 Z = sample_tex(tex, texcoord + float2(0.5, -0.5) * width);
-    float4 W = sample_tex(tex, texcoord + float2(-0.5, -0.5) * width);
-
-    return (X + Y + Z + W) / 4.0;
-}
-
 float3 BloomCorrection(float3 color)
 {
     float3 bloom = color;
@@ -1184,9 +1172,27 @@ float3 BloomCorrection(float3 color)
     bloom.g = saturate(color.g + float(BloomGreens) * bloom.g);
     bloom.b = saturate(color.b + float(BloomBlues) * bloom.b);
 
-    color = saturate(bloom);
+    color = bloom;
 
     return color;
+}
+
+float4 DefocusFilter(SamplerState tex, float2 texcoord, float2 defocus)
+{
+    float2 texel = pixelSize * defocus;
+
+    float4 sampleA = sample_tex(tex, texcoord + float2(0.5, 0.5) * texel);
+    float4 sampleB = sample_tex(tex, texcoord + float2(-0.5, 0.5) * texel);
+    float4 sampleC = sample_tex(tex, texcoord + float2(0.5, -0.5) * texel);
+    float4 sampleD = sample_tex(tex, texcoord + float2(-0.5, -0.5) * texel);
+
+    float fx = frac(texcoord.x * screenSize.x);
+    float fy = frac(texcoord.y * screenSize.y);
+
+    float4 interpolateA = lerp(sampleA, sampleB, fx);
+    float4 interpolateB = lerp(sampleC, sampleD, fx);
+
+    return lerp(interpolateA, interpolateB, fy);
 }
 
 float4 BloomPass(float4 color, float2 texcoord)
@@ -1194,13 +1200,13 @@ float4 BloomPass(float4 color, float2 texcoord)
     float anflare = 4.0;
 
     float2 defocus = float2(BloomDefocus, BloomDefocus);
-    float4 bloom = PyramidFilter(TextureSampler, texcoord, pixelSize * defocus);
+    float4 bloom = DefocusFilter(TextureSampler, texcoord, defocus);
 
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
-    float2 mdx = mul(dx, 2.0);
-    float2 mdy = mul(dy, 2.0);
+    float2 mdx = float2(dx.x * defocus.x, 0.0);
+    float2 mdy = float2(0.0, dy.y * defocus.y);
 
     float4 blend = bloom * 0.22520613262190495;
 
@@ -1237,9 +1243,9 @@ float4 BloomPass(float4 color, float2 texcoord)
     bloom.xyz = BloomType(bloom.xyz, blend.xyz);
     bloom.xyz = BloomCorrection(bloom.xyz);
 
-    color.a = AvgLuminance(color.xyz);
-    bloom.a = AvgLuminance(bloom.xyz);
-    bloom.a *= anflare;
+    color.w = AvgLuminance(color.xyz);
+    bloom.w = AvgLuminance(bloom.xyz);
+    bloom.w *= anflare;
 
     color = lerp(color, bloom, float(BloomStrength));
 
@@ -1252,68 +1258,96 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if SCENE_TONEMAPPING == 1
-float3 FilmicCurve(float3 color)
+float3 ScaleLuminance(float3 x)
+{
+    float W = 1.02;
+    float L = 0.06;
+    float C = 1.02;
+
+    float N = clamp(0.76 + ToneAmount, 1.0, 2.0);
+    float K = (N - L * C) / C;
+
+    float3 tone = L * C + (1.0 - L * C) * (1.0 + K * (x - L) /
+    ((W - L) * (W - L))) * (x - L) / (x - L + K);
+
+    return tone;
+}
+
+float3 TmMask(float3 color)
+{
+    float3 tone = color;
+
+    float highTone = 6.2; float greyTone = 0.4;
+    float midTone = 1.620; float lowTone = 0.06;
+
+    tone.r = (tone.r * (highTone * tone.r + greyTone))/(
+    tone.r * (highTone * tone.r + midTone) + lowTone);
+    tone.g = (tone.g * (highTone * tone.g + greyTone))/(
+    tone.g * (highTone * tone.g + midTone) + lowTone);
+    tone.b = (tone.b * (highTone * tone.b + greyTone))/(
+    tone.b * (highTone * tone.b + midTone) + lowTone);
+
+    static const float gamma = 2.42;
+    tone = EncodeGamma(tone, gamma);
+
+    color = lerp(color, tone, float(MaskStrength));
+
+    return color;
+}
+
+float3 TmCurve(float3 color)
 {
     float3 T = color;
-    float tnamn = ToneAmount;
 
-    float A = 0.100;
-    float B = 0.300;
-    float C = 0.100;
-    float D = tnamn;
-    float E = 0.020;
-    float F = 0.300;
-    float W = 1.012;
+    float tnamn = ToneAmount;
+    float blevel = length(T);
+    float bmask = pow(blevel, 0.02);
+
+    float A = 0.100; float B = 0.300;
+    float C = 0.100; float D = tnamn;
+    float E = 0.020; float F = 0.300;
+
+    float W = 1.000;
 
     T.r = ((T.r*(A*T.r + C*B) + D*E) / (T.r*(A*T.r + B) + D*F)) - E / F;
     T.g = ((T.g*(A*T.g + C*B) + D*E) / (T.g*(A*T.g + B) + D*F)) - E / F;
     T.b = ((T.b*(A*T.b + C*B) + D*E) / (T.b*(A*T.b + B) + D*F)) - E / F;
 
     float denom = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
+
+    float3 black = float3(bmask, bmask, bmask);
     float3 white = float3(denom, denom, denom);
 
     T = T / white;
+    T = T * black;
+
     color = saturate(T);
-
-    return color;
-}
-
-float3 FilmicTonemap(float3 color)
-{
-    float3 tone = color;
-
-    float3 black = float3(0.0, 0.0, 0.0);
-    tone = max(black, tone);
-
-    tone.r = (tone.r * (6.2 * tone.r + 0.5)) / (tone.r * (6.2 * tone.r + 1.66) + 0.066);
-    tone.g = (tone.g * (6.2 * tone.g + 0.5)) / (tone.g * (6.2 * tone.g + 1.66) + 0.066);
-    tone.b = (tone.b * (6.2 * tone.b + 0.5)) / (tone.b * (6.2 * tone.b + 1.66) + 0.066);
-
-    static const float gamma = 2.42;
-    tone = EncodeGamma(tone, gamma);
-
-    color = lerp(color, tone, float(FilmStrength));
 
     return color;
 }
 
 float4 TonemapPass(float4 color, float2 texcoord)
 {
-    float luminanceAverage = AvgLuminance(Luminance);
-    float bmax = max(color.r, max(color.g, color.b));
+    float3 tonemap = color.rgb;
     
-    float blevel = pow(saturate(bmax), float(BlackLevels));
-    color.rgb = color.rgb * blevel;
+    float blackLevel = length(tonemap);
+    tonemap = ScaleLuminance(tonemap);
 
-    if (FilmOperator == 1) { color.rgb = FilmicTonemap(color.rgb); }
-    if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
+    #if GLSL == 1
+    float luminanceAverage = AvgLuminance(float3(Luminance));
+    #else
+    float luminanceAverage = AvgLuminance(Luminance);
+    #endif
+
+    if (TonemapMask == 1) { tonemap = TmMask(tonemap); }
+    if (TonemapType == 1) { tonemap = TmCurve(tonemap); }
 
     // RGB -> XYZ conversion
     const float3x3 RGB2XYZ = float3x3(0.4124564, 0.3575761, 0.1804375,
                                       0.2126729, 0.7151522, 0.0721750,
                                       0.0193339, 0.1191920, 0.9503041);
 
-    float3 XYZ = mul(RGB2XYZ, color.rgb);
+    float3 XYZ = mul(RGB2XYZ, tonemap);
 
     // XYZ -> Yxy conversion
     float3 Yxy;
@@ -1325,7 +1359,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     // (Wt) Tone mapped scaling of the initial wp before input modifiers
     float Wt = saturate(Yxy.r / AvgLuminance(XYZ));
 
-    if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
+    if (TonemapType == 2) { Yxy.r = TmCurve(Yxy).r; }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
     float Lp = Yxy.r * float(Exposure) / (luminanceAverage + Epsilon);
@@ -1341,12 +1375,19 @@ float4 TonemapPass(float4 color, float2 texcoord)
     XYZ.g = Yxy.r;                                  // copy luminance Y
     XYZ.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;  // Z = Y * (1-x-y) / y
 
+    if (TonemapType == 3) { XYZ = TmCurve(XYZ); }
+
     // XYZ -> RGB conversion
     const float3x3 XYZ2RGB = float3x3(3.2404542,-1.5371385,-0.4985314,
                                      -0.9692660, 1.8760108, 0.0415560,
                                       0.0556434,-0.2040259, 1.0572252);
 
-    color.rgb = mul(XYZ2RGB, XYZ);
+    tonemap = mul(XYZ2RGB, XYZ);
+
+    float shadowmask = pow(saturate(blackLevel), float(BlackLevels));
+    tonemap = tonemap * float3(shadowmask, shadowmask, shadowmask);
+
+    color.rgb = tonemap;
     color.a = AvgLuminance(color.rgb);
 
     return color;
@@ -1358,14 +1399,6 @@ float4 TonemapPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if CROSS_PROCESSING == 1
-float MidLuminance(float3 color)
-{
-    return sqrt(
-    (color.x * color.x * 0.3333) +
-    (color.y * color.y * 0.3333) +
-    (color.z * color.z * 0.3333));
-}
-
 float3 CrossShift(float3 color)
 {
     float3 cross;
@@ -1379,7 +1412,7 @@ float3 CrossShift(float3 color)
     cross.y = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
     cross.z = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
-    float lum = MidLuminance(color);
+    float lum = AvgLuminance(color);
     float3 black = float3(0.0, 0.0, 0.0);
     float3 white = float3(1.0, 1.0, 1.0);
 
@@ -1573,7 +1606,7 @@ float4 ContrastPass(float4 color, float2 texcoord)
     //S-Curve - Cubic Bezier spline
     float3 a = float3(0.00, 0.00, 0.00);    //start point
     float3 b = float3(0.25, 0.25, 0.25);    //control point 1
-    float3 c = float3(0.80, 0.80, 0.80);    //control point 2
+    float3 c = float3(0.85, 0.85, 0.85);    //control point 2
     float3 d = float3(1.00, 1.00, 1.00);    //endpoint
 
     float3 ab = lerp(a, b, x);              //point between a and b (green)
@@ -2075,16 +2108,16 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
     color = ColorGrading(color, texcoord);
     #endif
 
-    #if SCENE_TONEMAPPING == 1
-    color = TonemapPass(color, texcoord);
-    #endif
-
     #if COLOR_CORRECTION == 1
     color = CorrectionPass(color, texcoord);
     #endif
 
     #if CROSS_PROCESSING == 1
     color = CrossPass(color, texcoord);
+    #endif
+
+    #if SCENE_TONEMAPPING == 1
+    color = TonemapPass(color, texcoord);
     #endif
 
     #if BLENDED_BLOOM == 1
