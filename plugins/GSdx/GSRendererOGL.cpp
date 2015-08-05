@@ -455,13 +455,32 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	if (m_vertex.next < 4)
 		return PRIM_OVERLAP_NO;
 
-	// Don't check too many primitive, code will be too slow (game: virtuafighter)
-	if (m_vt.m_primclass != GS_SPRITE_CLASS || m_vertex.next > 256)
+	if (m_vt.m_primclass != GS_SPRITE_CLASS)
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
 	size_t count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
+
+	// In order to speed up comparaison a boundind-box is accumulated. It removes a
+	// loop so code is much faster (check game virtua fighter). Besides it allow to check
+	// properly the Y order.
+	GSVector4i all(0);
+	for(size_t i = 0; i < count; i += 2) {
+		GSVector4i sprite;
+		if (v[i+1].XYZ.Y < v[i].XYZ.Y) {
+			sprite = GSVector4i(v[i].XYZ.X, v[i+1].XYZ.Y, v[i+1].XYZ.X, v[i].XYZ.Y);
+		} else {
+			sprite = GSVector4i(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
+		}
+		if (all.rintersect(sprite).rempty()) {
+			all = all.runion(sprite);
+		} else {
+			return PRIM_OVERLAP_YES;
+		}
+	}
+#if 0
+	// Old algo: less constraint but O(n^2) instead of O(n) as above
 
 	// You have no guarantee on the sprite order, first vertex can be either top-left or bottom-left
 	// There is a high probability that the draw call will uses same ordering for all vertices.
@@ -499,6 +518,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 			}
 		}
 	}
+#endif
 
 	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
 	return PRIM_OVERLAP_NO;
@@ -584,7 +604,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL::OMColorMaskSelector om_csel;
 	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
-	if (GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex) {
+	if ((DATE || m_sw_blending) && GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
