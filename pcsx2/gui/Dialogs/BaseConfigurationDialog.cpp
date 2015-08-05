@@ -301,7 +301,17 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	if( !filename.IsEmpty() )
 	{
 		ScopedBusyCursor busy( Cursor_ReallyBusy );
+#ifdef __WXMSW__
+		// FIXME: Ideally the alpha channel information should be dealt with
+		// at the window level. This will do until I have a comprehensive fix
+		// ready.
+		wxImage image = memBmp.ConvertToImage();
+		if (image.HasAlpha())
+			image.ClearAlpha();
+		image.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#else
 		memBmp.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#endif
 	}
 }
 
