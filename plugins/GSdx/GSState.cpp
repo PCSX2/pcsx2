@@ -69,7 +69,8 @@ GSState::GSState()
 	//s_savez = 1;
 	//s_savet = 1;
 	//s_savef = 1;
-	//s_saven = 656;
+	//s_saven = 0;
+	//s_savel = 0;
 
 	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
@@ -2644,6 +2645,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 
 void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
 {
+	// TODO: some of the +1s can be removed if linear == false
+
 	int tw = TEX0.TW;
 	int th = TEX0.TH;
 

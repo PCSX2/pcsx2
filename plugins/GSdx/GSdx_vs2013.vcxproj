@@ -604,6 +604,7 @@
     <ClCompile Include="GSDeviceSW.cpp" />
     <ClCompile Include="GSDialog.cpp" />
     <ClCompile Include="GSDirtyRect.cpp" />
+    <ClCompile Include="GSDrawingContext.cpp" />
     <ClCompile Include="GSDrawScanline.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp">

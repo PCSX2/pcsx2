@@ -600,7 +600,7 @@ void GSRendererSW::Draw()
 
 		s_n++;
 
-		if((s_n - s_saven) > s_savel)
+		if(s_savel > 0 && (s_n - s_saven) > s_savel)
 		{
 			s_dump = 0;
 		}

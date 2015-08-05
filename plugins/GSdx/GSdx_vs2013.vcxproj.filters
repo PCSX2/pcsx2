@@ -351,6 +351,9 @@
     <ClCompile Include="GSRendererCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSDrawingContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLLoader.h">
