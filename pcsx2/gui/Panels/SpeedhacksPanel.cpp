@@ -197,13 +197,13 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*m_vuSliderPanel += m_slider_vustealer | sliderFlags;
 	*m_vuSliderPanel += m_msg_vustealer | sliderFlags;
 
-	*vuHacksPanel	+= m_check_vuFlagHack;
-	*vuHacksPanel	+= m_check_vuThread;
+	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
+	*vuHacksPanel += m_check_vuThread | StdExpand();
 	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
-	*miscHacksPanel	+= m_check_intc;
-	*miscHacksPanel	+= m_check_waitloop;
-	*miscHacksPanel	+= m_check_fastCDVD;
+	*miscHacksPanel	+= m_check_intc | StdExpand();
+	*miscHacksPanel	+= m_check_waitloop | StdExpand();
+	*miscHacksPanel	+= m_check_fastCDVD | StdExpand();
 
 	*left	+= m_eeSliderPanel | StdExpand();
 	*left	+= miscHacksPanel	| StdExpand();
