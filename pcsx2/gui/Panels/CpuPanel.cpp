@@ -262,6 +262,7 @@ void Panels::CpuPanelEE::OnRestoreDefaults(wxCommandEvent &evt)
 {
 	m_panel_RecEE->SetSelection( m_panel_RecEE->GetButton(1)->IsEnabled() ? 1 : 0 );
 	m_panel_RecIOP->SetSelection( m_panel_RecIOP->GetButton(1)->IsEnabled() ? 1 : 0 );
+	m_check_EECacheEnable->SetValue(0);
 
 	if( BaseAdvancedCpuOptions* opts = (BaseAdvancedCpuOptions*)FindWindowByName(L"AdvancedOptionsFPU") )
 		opts->RestoreDefaults();
