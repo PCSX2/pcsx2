@@ -115,6 +115,17 @@ using namespace std;
 
 #include <memory>
 
+#if _MSC_VER >= 1800 || !defined(_WINDOWS)
+#include <unordered_map>
+#include <unordered_set>
+#define hash_map unordered_map
+#define hash_set unordered_set
+#else
+#include <hash_map>
+#include <hash_set>
+using namespace stdext;
+#endif
+
 #ifdef _WINDOWS
 
 	// Note use GL/glcorearb.h on the future
@@ -122,18 +133,6 @@ using namespace std;
 	#include <GL/glext.h>
 	#include <GL/wglext.h>
 	#include "GLLoader.h"
-
-	#if _MSC_VER >= 1800 
-	#include <unordered_map>
-	#include <unordered_set>
-	#define hash_map unordered_map
-	#define hash_set unordered_set
-	#else
-	#include <hash_map>
-	#include <hash_set>
-	using namespace stdext;
-	#endif
-
 
 	// hashing algoritms at: http://www.cris.com/~Ttwang/tech/inthash.htm
 	// default hash_compare does ldiv and other crazy stuff to reduce speed
@@ -193,18 +192,10 @@ using namespace std;
 
 #else
 
-	#define hash_map map
-	#define hash_set set
-
-	//#include <ext/hash_map>
-	//#include <ext/hash_set>
-
 	// Note use GL/glcorearb.h on the future
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include "GLLoader.h"
-
-	//using namespace __gnu_cxx;
 
 	#define DIRECTORY_SEPARATOR '/'
 
