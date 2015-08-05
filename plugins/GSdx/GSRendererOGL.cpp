@@ -282,38 +282,19 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 	} else {
 		ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		om_csel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
-		{
-			// FIXME GSVector will be nice here
-			uint8 r_mask = (m_context->FRAME.FBMSK >> 0)  & 0xFF;
-			uint8 g_mask = (m_context->FRAME.FBMSK >> 8)  & 0xFF;
-			uint8 b_mask = (m_context->FRAME.FBMSK >> 16) & 0xFF;
-			uint8 a_mask = (m_context->FRAME.FBMSK >> 24) & 0xFF;
-			if (r_mask != 0 && r_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (g_mask != 0 && g_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (b_mask != 0 && b_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
-			if (a_mask != 0 && a_mask != 0xFF) {
-				ps_sel.fbmask = 1;
-			}
+		om_csel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
-			if (ps_sel.fbmask && m_sw_blending) {
-				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
-				ps_cb.FbMask.r = r_mask;
-				ps_cb.FbMask.g = g_mask;
-				ps_cb.FbMask.b = b_mask;
-				ps_cb.FbMask.a = a_mask;
-				require_barrier = true;
-			} else {
-				ps_sel.fbmask = 0;
-			}
+		ps_sel.fbmask = m_sw_blending && (~ff_fbmask & ~zero_fbmask & 0xF);
+
+		if (ps_sel.fbmask) {
+			GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+			ps_cb.FbMask = fbmask_v.u8to32();
+			require_barrier = true;
 		}
 	}
 
