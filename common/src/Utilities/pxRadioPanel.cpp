@@ -149,6 +149,8 @@ void pxRadioPanel::_RealizeDefaultOption()
 	}
 }
 
+// Highlights (bold) the text of the default radio.
+// Not intended for restoring default value at later time.
 pxRadioPanel& pxRadioPanel::SetDefaultItem( int idx )
 {
 	if( idx == m_DefaultIdx ) return *this;
