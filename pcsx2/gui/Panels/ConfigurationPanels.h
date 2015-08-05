@@ -353,7 +353,6 @@ namespace Panels
 
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Defaults_Click( wxCommandEvent& evt );
-		void Slider_Click(wxScrollEvent &event);
 		void EECycleRate_Scroll(wxScrollEvent &event);
 		void VUCycleRate_Scroll(wxScrollEvent &event);
 	};

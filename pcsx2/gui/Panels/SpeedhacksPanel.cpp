@@ -226,13 +226,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	// ------------------------------------------------------------------------
 
-	Connect( wxEVT_SCROLL_PAGEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_PAGEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_TOP,		wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_BOTTOM,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-
 	Connect( m_slider_eecycle->GetId(),		wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::EECycleRate_Scroll ) );
 	Connect( m_slider_vustealer->GetId(),	wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::VUCycleRate_Scroll ) );
 	Connect( m_check_Enable->GetId(),		wxEVT_COMMAND_CHECKBOX_CLICKED,	wxCommandEventHandler( SpeedHacksPanel::OnEnable_Toggled ) );
@@ -341,30 +334,6 @@ void Panels::SpeedHacksPanel::Defaults_Click( wxCommandEvent& evt )
 	currentConfigWithHacksReset.EnablePresets=false;//speed hacks gui depends on preset, apply it as if presets are disabled
 	ApplyConfigToGui( currentConfigWithHacksReset );
 	evt.Skip();
-}
-
-void Panels::SpeedHacksPanel::Slider_Click(wxScrollEvent &event) {
-	wxSlider* slider = (wxSlider*) event.GetEventObject();
-	int value = slider->GetValue();
-	int eventType = event.GetEventType();
-	if (eventType == wxEVT_SCROLL_PAGEUP || eventType == wxEVT_SCROLL_LINEUP) {
-		if (value > slider->GetMin()) {
-			slider->SetValue(value-1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_TOP) {
-		slider->SetValue(slider->GetMin());
-	}
-	else if (eventType == wxEVT_SCROLL_PAGEDOWN || eventType == wxEVT_SCROLL_LINEDOWN) {
-		if (value < slider->GetMax()) {
-			slider->SetValue(value+1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_BOTTOM) {
-		slider->SetValue(slider->GetMax());
-	}
-
-	event.Skip();
 }
 
 void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)
