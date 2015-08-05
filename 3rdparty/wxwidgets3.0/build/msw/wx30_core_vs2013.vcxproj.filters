@@ -1171,7 +1171,7 @@
     <ClInclude Include="..\..\include\wx\msw\radiobut.h">
       <Filter>MSW Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\wx\msw\rcdefs.h">
+    <ClInclude Include="..\..\$(PlatformName)\wx\msw\rcdefs.h">
       <Filter>MSW Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\wx\msw\region.h">

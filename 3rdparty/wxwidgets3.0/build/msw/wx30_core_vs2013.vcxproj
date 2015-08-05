@@ -979,7 +979,7 @@
     <ClInclude Include="..\..\include\wx\msw\progdlg.h" />
     <ClInclude Include="..\..\include\wx\msw\radiobox.h" />
     <ClInclude Include="..\..\include\wx\msw\radiobut.h" />
-    <ClInclude Include="..\..\include\wx\msw\rcdefs.h" />
+    <ClInclude Include="..\..\$(PlatformName)\wx\msw\rcdefs.h" />
     <ClInclude Include="..\..\include\wx\msw\region.h" />
     <ClInclude Include="..\..\include\wx\msw\richmsgdlg.h" />
     <ClInclude Include="..\..\include\wx\msw\scrolbar.h" />
