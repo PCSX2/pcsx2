@@ -80,6 +80,7 @@ set(GSdxSources
     GSDeviceSW.cpp
     GSDeviceNull.cpp
     GSDirtyRect.cpp
+    GSDrawingContext.cpp
     GSDrawScanline.cpp
     GSDrawScanlineCodeGenerator.cpp
     GSDrawScanlineCodeGenerator.x86.avx.cpp
