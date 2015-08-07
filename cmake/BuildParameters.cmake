@@ -226,7 +226,7 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-set(COMMON_FLAG "-pipe -std=c++11 -fvisibility=hidden -pthread")
+set(COMMON_FLAG "-pipe -std=c++11 -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
 endif()
