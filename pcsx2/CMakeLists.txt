@@ -15,6 +15,8 @@ endif()
 set(CommonFlags
     # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
     # Disable this optimization for the moment
+    # GCC-4.9 update:
+    # Crash when you start a game. Likely a stack corruption/alignment
     -fno-omit-frame-pointer
     # END GCC-4.6
     -fno-strict-aliasing
