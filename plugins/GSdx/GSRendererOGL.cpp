@@ -307,7 +307,6 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	bool require_barrier     = false;
 	bool sw_blending         = false;
-	float afix               = (float)m_context->ALPHA.FIX / 0x80;
 
 	// No blending so early exit
 	if (!(PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)) {
@@ -400,7 +399,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
-			ps_cb.AlphaCoeff.a = afix;
+			ps_cb.AlphaCoeff.a = (float)ALPHA.FIX / 128.0f;
 		}
 
 		// No need to flush for every primitive
@@ -410,9 +409,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
 			int hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
-			dev->OMSetBlendState(hacked_blend_index, 1.0f, true);
+			dev->OMSetBlendState(hacked_blend_index, 128, true);
 		} else {
-			dev->OMSetBlendState(blend_index, afix, (ALPHA.C == 2));
+			dev->OMSetBlendState(blend_index, ALPHA.FIX, (ALPHA.C == 2));
 		}
 	}
 

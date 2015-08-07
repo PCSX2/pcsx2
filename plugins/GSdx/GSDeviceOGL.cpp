@@ -1332,7 +1332,7 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	}
 }
 
-void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_blend_constant)
+void GSDeviceOGL::OMSetBlendState(int blend_index, int blend_factor, bool is_blend_constant)
 {
 	if (blend_index) {
 		if (!GLState::blend) {
@@ -1342,7 +1342,8 @@ void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_b
 
 		if (is_blend_constant && GLState::bf != blend_factor) {
 			GLState::bf = blend_factor;
-			gl_BlendColor(blend_factor, blend_factor, blend_factor, 0);
+			float bf = (float)blend_factor / 128.0f;
+			gl_BlendColor(bf, bf, bf, bf);
 		}
 
 		// FIXME test to use uint16 (cache friendly)

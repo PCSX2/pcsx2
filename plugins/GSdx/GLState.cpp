@@ -33,7 +33,7 @@ namespace GLState {
 	GLenum f_dRGB;
 	uint32 wrgba;
 
-	float bf;
+	int bf;
 
 	bool depth;
 	GLenum depth_func;
@@ -58,14 +58,6 @@ namespace GLState {
 	GLuint vs;
 	GLuint program;
 	bool dirty_prog;
-#if 0
-	struct {
-		GSVertexBufferStateOGL* vb;
-		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
-		float bf; // blend factor
-	} m_state;
-#endif
 
 	void Clear() {
 		fbo = 0;
@@ -77,7 +69,7 @@ namespace GLState {
 		f_sRGB = 0;
 		f_dRGB = 0;
 		wrgba = 0xF;
-		bf = 0.0;
+		bf = 0;
 
 		depth = false;
 		depth_func = 0;

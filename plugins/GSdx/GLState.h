@@ -34,7 +34,7 @@ namespace GLState {
 	extern GLenum f_sRGB;
 	extern GLenum f_dRGB;
 	extern uint32 wrgba;
-	extern float bf;
+	extern int bf;
 
 	extern bool depth;
 	extern GLenum depth_func;
