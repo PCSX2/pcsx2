@@ -1,1 +1,1 @@
-#define PA_SVN_REVISION unknown
+#define PA_SVN_REVISION 1954M
