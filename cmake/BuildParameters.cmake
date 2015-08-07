@@ -40,6 +40,8 @@ option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option
 # Path and lib option
 #-------------------------------------------------------------------------------
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
+option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
+option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(SDL2_API "Use SDL2 on spu2x and onepad (experimental/wxWidget mustn't be built with SDL1.2 support")

@@ -88,7 +88,9 @@ endif()
 #-------------------------------------------------------------------------------
 # Install some files to ease package creation
 if(PACKAGE_MODE)
-    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
+    if(NOT DISABLE_CHEATS_ZIP)
+        INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
+    endif()
     INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.dbf" DESTINATION "${GAMEINDEX_DIR}")
 
     # set categories depending on system/distribution in pcsx2.desktop
@@ -104,5 +106,7 @@ if(PACKAGE_MODE)
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${DOC_DIR}")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_Readme.pdf"   DESTINATION "${DOC_DIR}")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man1/")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/PCSX2-linux.sh"          DESTINATION "${BIN_DIR}")
+    if(NOT DISABLE_PCSX2_WRAPPER)
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/PCSX2-linux.sh"          DESTINATION "${BIN_DIR}")
+    endif()
 endif()
