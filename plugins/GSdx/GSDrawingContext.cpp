@@ -23,16 +23,30 @@
 #include "GSDrawingContext.h"
 #include "GSdx.h"
 
-static int clampuv(int uv, int wm, int minuv, int maxuv)
+static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 {
-	if(wm == CLAMP_REGION_CLAMP)
+	// return max possible texcoord
+
+	int uv = br;
+
+	if(wm == CLAMP_CLAMP)
+	{
+		if(uv > limit) uv = limit;
+	}
+	else if(wm == CLAMP_REPEAT)
+	{
+		if(tl < 0) uv = limit; // wrap around
+		else if(uv > limit) uv = limit;
+	}
+	else if(wm == CLAMP_REGION_CLAMP)
 	{
 		if(uv < minuv) uv = minuv;
-		if(uv > maxuv + 1) uv = maxuv + 1;
+		if(uv > maxuv) uv = maxuv;
 	}
 	else if(wm == CLAMP_REGION_REPEAT)
 	{
-		uv = maxuv + (minuv + 1); // cannot determine safely, just use offset + mask + 1
+		if(tl < 0) uv = minuv | maxuv; // wrap around, just use (any & mask) | fix
+		else uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask)
 	}
 
 	return uv;
@@ -40,7 +54,7 @@ static int clampuv(int uv, int wm, int minuv, int maxuv)
 
 static int reduce(int uv, int size)
 {
-	while(size > 3 && (1 << (size - 1)) >= uv)
+	while(size > 3 && (1 << (size - 1)) >= uv + 1)
 	{
 		size--;
 	}
@@ -50,7 +64,7 @@ static int reduce(int uv, int size)
 
 static int extend(int uv, int size)
 {
-	while(size < 10 && (1 << size) < uv)
+	while(size < 10 && (1 << size) < uv + 1)
 	{
 		size++;
 	}
@@ -58,7 +72,7 @@ static int extend(int uv, int size)
 	return size;
 }
 
-GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4i& uvmax, bool mipmap)
+GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap)
 {
 	if(mipmap) return TEX0; // no mipmaping allowed
 
@@ -75,10 +89,17 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4i& uvmax, bool mipm
 	int maxu = (int)CLAMP.MAXU;
 	int maxv = (int)CLAMP.MAXV;
 
-	GSVector4i uv = uvmax;
+	GSVector4 uvf = st;
 
-	uv.x = clampuv(uv.x, wms, minu, maxu);
-	uv.y = clampuv(uv.y, wmt, minv, maxv);
+	if(linear)
+	{
+		uvf += GSVector4(-0.5f, 0.5f).xxyy();
+	}
+
+	GSVector4i uv = GSVector4i(uvf.floor());
+
+	uv.x = findmax(uv.x, uv.z, (1 << tw) - 1, wms, minu, maxu);
+	uv.y = findmax(uv.y, uv.w, (1 << th) - 1, wmt, minv, maxv);
 
 	if(tw + th >= 19) // smaller sizes aren't worth, they just create multiple entries in the textue cache and the saved memory is less
 	{
@@ -99,9 +120,10 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4i& uvmax, bool mipm
 #ifdef _DEBUG
 	if(TEX0.TW != tw || TEX0.TH != th)
 	{
-		printf("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+		printf("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
 			(int)TEX0.TW, tw, (int)TEX0.TH, th,
+			uvf.x, uvf.y, uvf.z, uvf.w,
 			uv.x, uv.y,
 			wms, wmt, minu, maxu, minv, maxv);
 	}
