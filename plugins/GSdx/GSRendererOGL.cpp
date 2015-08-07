@@ -868,25 +868,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_ssel.ltf = bilinear && simple_sample;
 
 		// Setup Texture ressources
-		if (GLLoader::found_GL_ARB_bindless_texture) {
-			GLuint64 handle[2];
-			handle[0] = tex->m_texture ? static_cast<GSTextureOGL*>(tex->m_texture)->GetHandle(dev->GetSamplerID(ps_ssel)): 0;
-			handle[1] = tex->m_palette ? static_cast<GSTextureOGL*>(tex->m_palette)->GetHandle(dev->GetPaletteSamplerID()): 0;
-
-			dev->m_shader->PS_ressources(handle);
-		} else {
-			dev->SetupSampler(ps_ssel);
-
-			if (tex->m_palette) {
-				dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
-			} else if (tex->m_texture) {
-				dev->PSSetShaderResource(0, tex->m_texture);
-#ifdef ENABLE_OGL_DEBUG
-				// Unattach texture to avoid noise in debugger
-				dev->PSSetShaderResource(1, NULL);
-#endif
-			}
-		}
+		dev->SetupSampler(ps_ssel);
+		dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
 
 		if (spritehack && (ps_sel.atst == 2)) {
 			ps_sel.atst = 1;
@@ -894,8 +877,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	} else {
 #ifdef ENABLE_OGL_DEBUG
 		// Unattach texture to avoid noise in debugger
-		dev->PSSetShaderResource(0, NULL);
-		dev->PSSetShaderResource(1, NULL);
+		dev->PSSetShaderResources(NULL, NULL);
 #endif
 	}
 	// Always bind the RT. This way special effect can use it.
@@ -917,10 +899,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
 
-	// WARNING: setup of the program must be done first. So you can setup
-	// 1/ subroutine uniform
-	// 2/ bindless texture uniform
-	// 3/ others uniform?
 	dev->SetupVS(vs_sel);
 	dev->SetupGS(gs_sel);
 	dev->SetupPS(ps_sel);

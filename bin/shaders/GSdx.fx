@@ -54,11 +54,7 @@ struct vertex_basic
     vec2 t;
 };
 
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 
 in SHADER
 {

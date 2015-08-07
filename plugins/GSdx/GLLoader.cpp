@@ -112,12 +112,6 @@ PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D                      = NU
 // GL4.4
 PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage                     = NULL;
 PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage                     = NULL;
-// GL_ARB_bindless_texture (GL5?)
-PFNGLGETTEXTURESAMPLERHANDLEARBPROC    gl_GetTextureSamplerHandleARB        = NULL;
-PFNGLMAKETEXTUREHANDLERESIDENTARBPROC  gl_MakeTextureHandleResidentARB      = NULL;
-PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC gl_MakeTextureHandleNonResidentARB = NULL;
-PFNGLUNIFORMHANDLEUI64VARBPROC         gl_UniformHandleui64vARB             = NULL;
-PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC  gl_ProgramUniformHandleui64vARB      = NULL;
 
 // GL4.5
 PFNGLCREATETEXTURESPROC				   gl_CreateTextures                    = NULL;
@@ -330,24 +324,19 @@ namespace GLLoader {
 	bool intel_buggy_driver    = false;
 	bool in_replayer           = false;
 
-	// Optional
+
+	// GL4 hardware (due to proprietary driver limitation)
 	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
-	bool found_GL_ARB_draw_buffers_blend = false; // DX10 GPU limited driver on windows!
-
-	// Note: except Apple, all drivers support explicit uniform location
-	bool found_GL_ARB_explicit_uniform_location = false; // need by bindless texture
-	// GL4 hardware
 	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
 	bool found_GL_ARB_gpu_shader5 = false;
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
-	bool found_GL_ARB_bindless_texture = false; // GL5 GPU?
 	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
-
-	// GL4.5 for the future (dx10/dx11 compatibility)
+	// DX10 GPU limited driver
+	bool found_GL_ARB_draw_buffers_blend = false;
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
 
@@ -394,7 +383,7 @@ namespace GLLoader {
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		fprintf(stderr, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
-		// Name change but driver is still bad!
+		// Name changed but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
 		if (strstr(vendor, "NVIDIA Corporation"))
@@ -451,16 +440,12 @@ namespace GLLoader {
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
 				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
-				// (I'm not sure AMD supports correctly GL_ARB_shader_image_load_store
 				if (ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
 				// GL4.3
 				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
-				if (ext.compare("GL_ARB_explicit_uniform_location") == 0) found_GL_ARB_explicit_uniform_location = true;
 				// GL4.4
 				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
 				if (ext.compare("GL_ARB_clear_texture") == 0) found_GL_ARB_clear_texture = true;
-				// FIXME: I have a crash when I hit pause (debug build)
-				//if (ext.compare("GL_ARB_bindless_texture") == 0) found_GL_ARB_bindless_texture = true;
 				// GL4.5
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
@@ -485,11 +470,9 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
-		status &= status_and_override(found_GL_ARB_explicit_uniform_location, "GL_ARB_explicit_uniform_location");
 		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image");
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
-		status &= status_and_override(found_GL_ARB_bindless_texture,"GL_ARB_bindless_texture");
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");

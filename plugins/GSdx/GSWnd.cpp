@@ -115,12 +115,6 @@ void GSWndGL::PopulateGlFunction()
 	// GL4.4
 	*(void**)&(gl_ClearTexImage) = GetProcAddress("glClearTexImage", true);
 	*(void**)&(gl_BufferStorage) = GetProcAddress("glBufferStorage", true);
-	// GL_ARB_bindless_texture (GL5?)
-	*(void**)&(gl_GetTextureSamplerHandleARB) = GetProcAddress("glGetTextureSamplerHandleARB", true);
-	*(void**)&(gl_MakeTextureHandleResidentARB) = GetProcAddress("glMakeTextureHandleResidentARB", true);
-	*(void**)&(gl_MakeTextureHandleNonResidentARB) = GetProcAddress("glMakeTextureHandleNonResidentARB", true);
-	*(void**)&(gl_UniformHandleui64vARB) = GetProcAddress("glUniformHandleui64vARB", true);
-	*(void**)&(gl_ProgramUniformHandleui64vARB) = GetProcAddress("glProgramUniformHandleui64vARB", true);
 
 	// GL4.5
 	*(void**)&(gl_CreateTextures) = GetProcAddress("glCreateTextures", true);

@@ -80,28 +80,6 @@ typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count
 typedef void (APIENTRYP PFNGLBINDVERTEXBUFFERSPROC) (GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizei *strides);
 #endif /* GL_VERSION_4_4 */
 
-#ifndef GL_ARB_bindless_texture
-#define GL_ARB_bindless_texture 1
-typedef uint64_t GLuint64EXT;
-#define GL_UNSIGNED_INT64_ARB             0x140F
-typedef GLuint64 (APIENTRYP PFNGLGETTEXTUREHANDLEARBPROC) (GLuint texture);
-typedef GLuint64 (APIENTRYP PFNGLGETTEXTURESAMPLERHANDLEARBPROC) (GLuint texture, GLuint sampler);
-typedef void (APIENTRYP PFNGLMAKETEXTUREHANDLERESIDENTARBPROC) (GLuint64 handle);
-typedef void (APIENTRYP PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC) (GLuint64 handle);
-typedef GLuint64 (APIENTRYP PFNGLGETIMAGEHANDLEARBPROC) (GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum format);
-typedef void (APIENTRYP PFNGLMAKEIMAGEHANDLERESIDENTARBPROC) (GLuint64 handle, GLenum access);
-typedef void (APIENTRYP PFNGLMAKEIMAGEHANDLENONRESIDENTARBPROC) (GLuint64 handle);
-typedef void (APIENTRYP PFNGLUNIFORMHANDLEUI64ARBPROC) (GLint location, GLuint64 value);
-typedef void (APIENTRYP PFNGLUNIFORMHANDLEUI64VARBPROC) (GLint location, GLsizei count, const GLuint64 *value);
-typedef void (APIENTRYP PFNGLPROGRAMUNIFORMHANDLEUI64ARBPROC) (GLuint program, GLint location, GLuint64 value);
-typedef void (APIENTRYP PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC) (GLuint program, GLint location, GLsizei count, const GLuint64 *values);
-typedef GLboolean (APIENTRYP PFNGLISTEXTUREHANDLERESIDENTARBPROC) (GLuint64 handle);
-typedef GLboolean (APIENTRYP PFNGLISIMAGEHANDLERESIDENTARBPROC) (GLuint64 handle);
-typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64ARBPROC) (GLuint index, GLuint64EXT x);
-typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VARBPROC) (GLuint index, const GLuint64EXT *v);
-typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VARBPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
-#endif /* GL_ARB_bindless_texture */
-
 // Note: trim it
 #ifndef GL_VERSION_4_5
 #define GL_VERSION_4_5 1
@@ -295,12 +273,6 @@ extern   PFNGLDEBUGMESSAGEINSERTPROC            gl_DebugMessageInsert;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage;
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
-// GL_ARB_bindless_texture (GL5?)
-extern PFNGLGETTEXTURESAMPLERHANDLEARBPROC      gl_GetTextureSamplerHandleARB;
-extern PFNGLMAKETEXTUREHANDLERESIDENTARBPROC    gl_MakeTextureHandleResidentARB;
-extern PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC gl_MakeTextureHandleNonResidentARB;
-extern PFNGLUNIFORMHANDLEUI64VARBPROC           gl_UniformHandleui64vARB;
-extern PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC    gl_ProgramUniformHandleui64vARB;
 
 // GL4.5
 extern PFNGLCREATETEXTURESPROC					gl_CreateTextures;
@@ -360,8 +332,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
 	extern bool found_GL_ARB_buffer_storage;
-	extern bool found_GL_ARB_bindless_texture;
-	extern bool found_GL_ARB_explicit_uniform_location;
 	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_direct_state_access;
 	extern bool found_GL_ARB_texture_barrier;

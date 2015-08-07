@@ -53,15 +53,6 @@ void GSShaderOGL::VS(GLuint s)
 	}
 }
 
-void GSShaderOGL::PS_ressources(GLuint64 handle[2])
-{
-	if (handle[0] != GLState::tex_handle[0] || handle[1] != GLState::tex_handle[1]) {
-		GLState::tex_handle[0] = handle[0];
-		GLState::tex_handle[1] = handle[1];
-		GLState::dirty_ressources = true;
-	}
-}
-
 void GSShaderOGL::PS(GLuint s)
 {
 #ifdef _DEBUG
@@ -88,24 +79,6 @@ void GSShaderOGL::GS(GLuint s)
 		GLState::dirty_prog = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
 			gl_UseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
-	}
-}
-
-void GSShaderOGL::SetupRessources()
-{
-	if (!GLLoader::found_GL_ARB_bindless_texture) return;
-
-	if (GLState::dirty_ressources) {
-		GLState::dirty_ressources = false;
-		if (GLLoader::found_GL_ARB_separate_shader_objects) {
-			gl_ProgramUniformHandleui64vARB(GLState::ps, 0, 1, &GLState::tex_handle[0]);
-			if (GLState::tex_handle[1])
-				gl_ProgramUniformHandleui64vARB(GLState::ps, 1, 1, &GLState::tex_handle[1]);
-		} else {
-			gl_UniformHandleui64vARB(0, 1, &GLState::tex_handle[0]);
-			if (GLState::tex_handle[1])
-				gl_UniformHandleui64vARB(1, 1, &GLState::tex_handle[1]);
-		}
 	}
 }
 
@@ -220,8 +193,6 @@ void GSShaderOGL::UseProgram()
 		}
 	}
 
-	SetupRessources();
-
 	GLState::dirty_prog = false;
 }
 
@@ -235,20 +206,11 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		// Need GL version 410
 		header += "#extension GL_ARB_separate_shader_objects: require\n";
 	}
-	if (GLLoader::found_GL_ARB_explicit_uniform_location) {
-		// Need GL version 430
-		header += "#extension GL_ARB_explicit_uniform_location: require\n";
-	}
 	if (GLLoader::found_GL_ARB_shader_image_load_store) {
 		// Need GL version 420
 		header += "#extension GL_ARB_shader_image_load_store: require\n";
 	} else {
 		header += "#define DISABLE_GL42_image\n";
-	}
-	if (GLLoader::found_GL_ARB_bindless_texture && GLLoader::found_GL_ARB_explicit_uniform_location) {
-		// ARB extension (4.4)
-		header += "#extension GL_ARB_bindless_texture: require\n";
-		header += "#define ENABLE_BINDLESS_TEX\n";
 	}
 	if (GLLoader::found_GL_ARB_clip_control) {
 		header += "#define ZERO_TO_ONE_DEPTH\n";

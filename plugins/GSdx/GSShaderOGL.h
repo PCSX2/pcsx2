@@ -26,8 +26,6 @@ class GSShaderOGL {
 	hash_map<uint64, GLuint > m_single_prog;
 	const bool m_debug_shader;
 
-	void SetupRessources();
-
 	bool ValidateShader(GLuint p);
 	bool ValidateProgram(GLuint p);
 	bool ValidatePipeline(GLuint p);
@@ -41,7 +39,6 @@ class GSShaderOGL {
 
 	void GS(GLuint s);
 	void PS(GLuint s);
-	void PS_ressources(GLuint64 handle[2]);
 	void VS(GLuint s);
 
 	void UseProgram();

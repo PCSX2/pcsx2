@@ -64,11 +64,7 @@ layout(location = 0) out uint SV_Target1;
 layout(location = 0) out vec4 SV_Target0;
 #endif
 
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 
 layout(std140, binding = 15) uniform cb15
 {

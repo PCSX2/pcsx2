@@ -951,10 +951,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	GSVector2i ds = dTex->GetSize();
 
-	// WARNING: setup of the program must be done first. So you can setup
-	// 1/ subroutine uniform
-	// 2/ bindless texture uniform
-	// 3/ others uniform?
 	m_shader->VS(m_convert.vs);
 	m_shader->GS(0);
 	m_shader->PS(ps);
@@ -1020,13 +1016,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Texture
 	// ************************************
 
-	if (GLLoader::found_GL_ARB_bindless_texture) {
-		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(sTex)->GetHandle(linear ? m_convert.ln : m_convert.pt) , 0};
-		m_shader->PS_ressources(handle);
-	} else {
-		PSSetShaderResource(0, sTex);
-		PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
-	}
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
 
 	// ************************************
 	// Draw
@@ -1200,10 +1191,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	ClearStencil(ds, 0);
 
-	// WARNING: setup of the program must be done first. So you can setup
-	// 1/ subroutine uniform
-	// 2/ bindless texture uniform
-	// 3/ others uniform?
 	m_shader->VS(m_convert.vs);
 	m_shader->GS(0);
 	m_shader->PS(m_convert.ps[datm ? 2 : 3]);
@@ -1226,13 +1213,8 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// Texture
 
-	if (GLLoader::found_GL_ARB_bindless_texture) {
-		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(rt)->GetHandle(m_convert.pt) , 0};
-		m_shader->PS_ressources(handle);
-	} else {
-		PSSetShaderResource(0, rt);
-		PSSetSamplerState(m_convert.pt);
-	}
+	PSSetShaderResource(0, rt);
+	PSSetSamplerState(m_convert.pt);
 
 	DrawPrimitive();
 

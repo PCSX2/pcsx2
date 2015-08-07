@@ -43,14 +43,9 @@ in SHADER
 layout(location = 0, index = 0) out vec4 SV_Target0;
 layout(location = 0, index = 1) out vec4 SV_Target1;
 
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-layout(bindless_sampler, location = 1) uniform sampler2D PaletteSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the image below
-#endif
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
