@@ -94,6 +94,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			continue;
 		}
 
+		// Special check for palette texture (psm.pal > 0)
+		//
+		// if m_paltex is enabled
+		// 1/ s->m_palette must always be defined
+		// 2/ Clut is useless (will be uploaded again at the end of the function)
+		//
+		// if m_paltex is disabled
+		// 1/ Clut must match if m_palette is NULL
 		if(s->m_palette == NULL && psm.pal > 0 && !GSVector4i::compare64(clut, s->m_clut, psm.pal * sizeof(clut[0])))
 		{
 			continue;

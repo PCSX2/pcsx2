@@ -350,6 +350,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	g_real_texture_upload_byte += map_size;
 #endif
 
+	// PERF: slow path of the texture upload. Dunno if we could do better maybe check if TC can keep row_byte == pitch
 	// Note: row_byte != pitch
 	for (int h = 0; h < r.height(); h++) {
 		memcpy(map, src, row_byte);

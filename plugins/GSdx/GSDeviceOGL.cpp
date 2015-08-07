@@ -1405,6 +1405,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if(GLState::viewport != size)
 	{
 		GLState::viewport = size;
+		// FIXME ViewportIndexedf or ViewportIndexedfv (GL4.1)
 		glViewport(0, 0, size.x, size.y);
 	}
 
@@ -1413,6 +1414,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if(!GLState::scissor.eq(r))
 	{
 		GLState::scissor = r;
+		// FIXME ScissorIndexedv (GL4.1)
 		glScissor( r.x, r.y, r.width(), r.height() );
 	}
 }

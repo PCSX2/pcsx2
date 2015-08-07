@@ -262,8 +262,8 @@ vec4 sample_color(vec2 st, float q)
 	// PERF: see the impact of the exansion before/after the interpolation
 	for (int i = 0; i < 4; i++)
 	{
-        // PERF note: using dot produce reduces by 1 the number of instruction
-        // but I'm not it is equivalent neither faster.
+        // PERF note: using dot product reduces by 1 the number of instruction
+        // but I'm not sure it is equivalent neither faster.
         //float sum = dot(c[i].rgb, vec3(1.0f));
 #if ((PS_FMT & ~FMT_PAL) == FMT_24)
 		c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
