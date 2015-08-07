@@ -285,6 +285,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 blend_c:2;
 				uint32 blend_d:2;
 				uint32 clr1:1; // useful?
+				uint32 pabe:1;
 				uint32 hdr:1;
 				uint32 colclip:1;
 
@@ -292,7 +293,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 tcoffsethack:1;
 				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 
-				uint32 _free2:20;
+				uint32 _free2:19;
 			};
 
 			uint64 key;
@@ -376,42 +377,6 @@ class GSDeviceOGL : public GSDevice
 
 		OMColorMaskSelector() : key(0xF) {}
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
-	};
-
-	struct OMBlendSelector
-	{
-		union
-		{
-			struct
-			{
-				uint32 abe:1;
-				uint32 a:2;
-				uint32 b:2;
-				uint32 c:2;
-				uint32 d:2;
-
-				uint32 _free:23;
-			};
-
-			struct
-			{
-				uint32 _abe:1;
-				uint32 abcd:8;
-
-				uint32 _free2:23;
-			};
-
-			uint32 key;
-		};
-
-		operator uint32() {return key;}
-
-		OMBlendSelector() : key(0) {}
-
-		bool IsCLR1() const
-		{
-			return (key & 0x19f) == 0x93; // abe == 1 && a == 1 && b == 2 && d == 1
-		}
 	};
 
 	struct D3D9Blend {int bogus, op, src, dst;};

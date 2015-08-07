@@ -353,7 +353,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	ASSERT(sizeof(PSSamplerSelector) == 4);
 	ASSERT(sizeof(OMDepthStencilSelector) == 4);
 	ASSERT(sizeof(OMColorMaskSelector) == 4);
-	ASSERT(sizeof(OMBlendSelector) == 4);
 
 	return true;
 }
@@ -663,6 +662,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		+ format("#define PS_HDR %d\n", sel.hdr)
+		+ format("#define PS_PABE %d\n", sel.pabe);
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
