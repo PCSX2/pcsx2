@@ -332,8 +332,8 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 	}
 
 	// Compute the blending equation to detect special case
-	int blend_index  = ((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D;
-	int blend_flag = GSDeviceOGL::m_blendMapD3D9[blend_index].bogus;
+	uint8 blend_index  = ((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D;
+	int blend_flag = GSDeviceOGL::m_blendMapOGL[blend_index].bogus;
 
 	// SW Blend is (nearly) free. Let's use it.
 	bool impossible_or_free_blend = (blend_flag & (BLEND_NO_BAR|BLEND_A_MAX|BLEND_ACCU))

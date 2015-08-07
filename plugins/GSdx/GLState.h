@@ -30,11 +30,11 @@ namespace GLState {
 	extern GSVector4i scissor;
 
 	extern bool blend;
-	extern GLenum eq_RGB;
-	extern GLenum f_sRGB;
-	extern GLenum f_dRGB;
+	extern uint16 eq_RGB;
+	extern uint16 f_sRGB;
+	extern uint16 f_dRGB;
+	extern uint8 bf;
 	extern uint32 wrgba;
-	extern int bf;
 
 	extern bool depth;
 	extern GLenum depth_func;

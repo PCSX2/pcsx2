@@ -28,12 +28,11 @@ namespace GLState {
 	GSVector4i scissor;
 
 	bool blend;
-	GLenum eq_RGB;
-	GLenum f_sRGB;
-	GLenum f_dRGB;
+	uint16 eq_RGB;
+	uint16 f_sRGB;
+	uint16 f_dRGB;
+	uint8 bf;
 	uint32 wrgba;
-
-	int bf;
 
 	bool depth;
 	GLenum depth_func;
@@ -68,8 +67,8 @@ namespace GLState {
 		eq_RGB = 0;
 		f_sRGB = 0;
 		f_dRGB = 0;
-		wrgba = 0xF;
 		bf = 0;
+		wrgba = 0xF;
 
 		depth = false;
 		depth_func = 0;

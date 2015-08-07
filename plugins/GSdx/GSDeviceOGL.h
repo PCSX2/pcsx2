@@ -379,8 +379,8 @@ class GSDeviceOGL : public GSDevice
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
-	struct D3D9Blend {int bogus, op, src, dst;};
-	static const D3D9Blend m_blendMapD3D9[3*3*3*3 + 1];
+	struct OGLBlend {uint16 bogus, op, src, dst;};
+	static const OGLBlend m_blendMapOGL[3*3*3*3 + 1];
 	static const int m_NO_BLEND;
 	static const int m_MERGE_BLEND;
 
@@ -527,7 +527,7 @@ class GSDeviceOGL : public GSDevice
 	void PSSetSamplerState(GLuint ss);
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
-	void OMSetBlendState(int blend_index = 0, int blend_factor = 0, bool is_blend_constant = false);
+	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
