@@ -152,7 +152,7 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
-bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel, GSDeviceOGL::PSConstantBuffer& ps_cb)
+bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel)
 {
 	bool require_barrier = false;
 
@@ -301,7 +301,7 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 	return require_barrier;
 }
 
-bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSConstantBuffer& ps_cb, bool DATE_GL42)
+bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42)
 {
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	bool require_barrier     = false;
@@ -577,16 +577,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
 
-	// FIXME: optimization, latch ps_cb & vs_cb in the object
-	// 1/ Avoid a reset every draw
-	// 2/ potentially less update
 	GSDeviceOGL::VSSelector vs_sel;
-	GSDeviceOGL::VSConstantBuffer vs_cb;
-
 	GSDeviceOGL::GSSelector gs_sel;
 
 	GSDeviceOGL::PSSelector ps_sel;
-	GSDeviceOGL::PSConstantBuffer ps_cb;
 	GSDeviceOGL::PSSamplerSelector ps_ssel;
 
 	GSDeviceOGL::OMColorMaskSelector om_csel;
@@ -604,7 +598,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	}
 
-	require_barrier |= EmulateTextureShuffleAndFbmask(ps_sel, om_csel, ps_cb);
+	require_barrier |= EmulateTextureShuffleAndFbmask(ps_sel, om_csel);
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 
@@ -632,7 +626,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Blend
 
 	if (!IsOpaque() && rt) {
-		require_barrier |= EmulateBlending(ps_sel, ps_cb, DATE_GL42);
+		require_barrier |= EmulateBlending(ps_sel, DATE_GL42);
 	} else {
 		dev->OMSetBlendState(); // No blending please
 	}
