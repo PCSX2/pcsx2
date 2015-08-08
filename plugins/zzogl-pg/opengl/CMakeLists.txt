@@ -26,10 +26,6 @@ set(CommonFlags
     -Wunused-variable
     )
 
-set(OptimizationFlags
-    -O2
-    )
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(zzoglFinalFlags
@@ -46,12 +42,12 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
+        ${CommonFlags} -g -W -DZEROGS_DEVBUILD
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} ${OptimizationFlags} -W
+        ${CommonFlags} -W
     )
 endif()
 

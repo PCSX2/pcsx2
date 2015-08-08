@@ -124,14 +124,17 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     #     - Only plugins. No package will link to them.
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
-    if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-msse -msse2 -march=i686")
-    else()
-        # AVX requires some fix of the ABI (mangling) (default 2)
-        # Note: V6 requires GCC 4.7
-        #set(ARCH_FLAG "-march=native -fabi-version=6")
-        set(ARCH_FLAG "-march=native")
+    if(NOT DEFINED ARCH_FLAG)
+        if (DISABLE_ADVANCE_SIMD)
+            set(ARCH_FLAG "-msse -msse2 -march=i686")
+        else()
+            # AVX requires some fix of the ABI (mangling) (default 2)
+            # Note: V6 requires GCC 4.7
+            #set(ARCH_FLAG "-march=native -fabi-version=6")
+            set(ARCH_FLAG "-march=native")
+        endif()
     endif()
+
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
@@ -143,11 +146,13 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # SuperVU will not be ported
     set(DISABLE_SVU TRUE)
 
-    if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-msse -msse2")
-    else()
-        #set(ARCH_FLAG "-march=native -fabi-version=6")
-        set(ARCH_FLAG "-march=native")
+    if(NOT DEFINED ARCH_FLAG)
+        if (DISABLE_ADVANCE_SIMD)
+            set(ARCH_FLAG "-msse -msse2")
+        else()
+            #set(ARCH_FLAG "-march=native -fabi-version=6")
+            set(ARCH_FLAG "-march=native")
+        endif()
     endif()
     add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
     set(_ARCH_64 1)
@@ -266,8 +271,12 @@ else()
     set(ASAN_FLAG "")
 endif()
 
+if(NOT DEFINED OPTIMIZATION_FLAG)
+    set(OPTIMIZATION_FLAG -O2)
+endif()
+
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 

@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output FWnull-0.7.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(FWnullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(FWnullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(FWnullFinalFlags ${OptimizationFlags})
-
-endif()
+set(FWnullFinalFlags "")
 
 # FWnull sources
 set(FWnullSources

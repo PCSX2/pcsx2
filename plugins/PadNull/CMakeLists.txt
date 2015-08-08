@@ -7,21 +7,7 @@ endif()
 
 # plugin name
 set(Output PADnull)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(PadNullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(PadNullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(PadNullFinalFlags ${OptimizationFlags})
-
-endif()
+set(PadNullFinalFlags "")
 
 # PadNull sources
 set(PadNullSources

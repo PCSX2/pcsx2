@@ -12,8 +12,6 @@ set(CommonFlags
 	-fno-strict-aliasing
     )
 
-set(OptimizationFlags -O2)
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(UtilitiesFinalFlags
@@ -38,7 +36,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
 	set(UtilitiesFinalFlags
 		${UtilitiesFinalFlags}
-		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
+		${CommonFlags} -DPCSX2_DEVBUILD
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
@@ -48,7 +46,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
 	set(UtilitiesFinalFlags
 		${UtilitiesFinalFlags}
-		${CommonFlags} ${OptimizationFlags}
+		${CommonFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 

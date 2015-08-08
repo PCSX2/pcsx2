@@ -2,26 +2,7 @@
 
 # plugin name
 set(Output CDVDlinuz)
-
-set(CommonFlags
-    -D_LARGEFILE64_SOURCE
-    )
-
-set(OptimizationFlags
-    -O2
-    -fomit-frame-pointer
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CDVDlinuzFinalFlags ${CommonFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(CDVDlinuzFinalFlags ${CommonFlags} ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(CDVDlinuzFinalFlags ${CommonFlags} ${OptimizationFlags})
-
-endif()
+set(CDVDlinuzFinalFlags -D_LARGEFILE64_SOURCE)
 
 # CDVDlinuz sources
 set(CDVDlinuzSources
