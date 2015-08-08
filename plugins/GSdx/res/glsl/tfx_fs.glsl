@@ -6,7 +6,9 @@
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
-#define FMT_PAL 4 /* flag bit */
+
+#define PS_PAL_FMT (PS_TEX_FMT >> 2)
+#define PS_AEM_FMT (PS_TEX_FMT & 3)
 
 // APITRACE_DEBUG enables forced pixel output to easily detect
 // the fragment computed by primitive
@@ -162,13 +164,13 @@ vec4 sample_4_index(vec4 uv)
 
     uvec4 i = uvec4(c * 255.0f + 0.5f); // Denormalize value
 
-#if PS_IFMT == 1
-    // 4HH
-    return vec4(i >> 4u) / 255.0f;
-
-#elif PS_IFMT == 2
-    // 4HL
+#if PS_PAL_FMT == 1
+	// 4HL
     return vec4(i & 0xFu) / 255.0f;
+
+#elif PS_PAL_FMT == 2
+	// 4HH
+    return vec4(i >> 4u) / 255.0f;
 
 #else
     // Most of texture will hit this code so keep normalized float value
@@ -207,7 +209,7 @@ vec4 sample_color(vec2 st, float q)
     vec2 dd;
 
     // FIXME I'm not sure this condition is useful (I think code will be optimized)
-#if (PS_LTF == 0 && PS_FMT == FMT_32 && PS_WMS < 2 && PS_WMT < 2)
+#if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
     // No software LTF and pure 32 bits RGBA texure without special texture wrapping
     c[0] = sample_c(st);
 #ifdef TEX_COORD_DEBUG
@@ -229,14 +231,12 @@ vec4 sample_color(vec2 st, float q)
 
     uv = clamp_wrap_uv(uv);
 
-    if((PS_FMT & FMT_PAL) != 0)
-    {
-        c = sample_4p(sample_4_index(uv));
-    }
-    else
-    {
-        c = sample_4c(uv);
-    }
+#if PS_PAL_FMT != 0
+    c = sample_4p(sample_4_index(uv));
+#else
+    c = sample_4c(uv);
+#endif
+
 #ifdef TEX_COORD_DEBUG
     c[0].rg = uv.xy;
     c[1].rg = uv.xy;
@@ -246,18 +246,17 @@ vec4 sample_color(vec2 st, float q)
 
 #endif
 
-    // PERF: see the impact of the exansion before/after the interpolation
-    for (int i = 0; i < 4; i++)
-    {
-        // PERF note: using dot product reduces by 1 the number of instruction
-        // but I'm not sure it is equivalent neither faster.
+	// PERF note: using dot product reduces by 1 the number of instruction
+	// but I'm not sure it is equivalent neither faster.
+	for (int i = 0; i < 4; i++)
+	{
         //float sum = dot(c[i].rgb, vec3(1.0f));
-#if ((PS_FMT & ~FMT_PAL) == FMT_24)
-        c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
-        //c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
-#elif ((PS_FMT & ~FMT_PAL) == FMT_16)
-        c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
-        //c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
+#if (PS_AEM_FMT == FMT_24)
+		c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
+		//c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
+#elif (PS_AEM_FMT == FMT_16)
+		c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
+		//c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #endif
     }
 

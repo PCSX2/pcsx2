@@ -802,26 +802,62 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.wms = m_context->CLAMP.WMS;
 		ps_sel.wmt = m_context->CLAMP.WMT;
 
+		// Performance note:
+		// 1/ Don't set 0 as it is the default value
+		// 2/ Only keep aem when it is useful (avoid useless shader permutation)
 		if (ps_sel.shuffle) {
-			ps_sel.fmt = 0;
-		} else if (tex->m_palette) {
-			ps_sel.fmt = cpsm.fmt | 4;
-			ps_sel.ifmt = !tex->m_target ? 0
-				: (m_context->TEX0.PSM == PSM_PSMT4HL) ? 2
-				: (m_context->TEX0.PSM == PSM_PSMT4HH) ? 1
-				: 0;
+			// Force a 32 bits access (normally shuffle is done on 16 bits)
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			ps_sel.aem     = m_env.TEXA.AEM;
+			ASSERT(tex->m_target);
 
-			// In standard mode palette is only used when alpha channel of the RT is
-			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
-			// It is a very bad idea to force bilinear filtering on it.
-			if (tex->m_target)
+			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+
+			// FIXME: it is likely a bad idea to do the bilinear interpolation here
+			// bilinear &= m_vt.IsLinear();
+
+		} else if (tex->m_target) {
+			// Use an old target. AEM and index aren't resolved it must be done
+			// on the GPU
+
+			// Select the 32/24/16 bits color (AEM)
+			ps_sel.tex_fmt = cpsm.fmt;
+			ps_sel.aem     = m_env.TEXA.AEM;
+
+			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+
+			// Select the index format
+			if (tex->m_palette) {
+				// FIXME Potentially improve fmt field in GSLocalMemory
+				if (m_context->TEX0.PSM == PSM_PSMT4HL)
+					ps_sel.tex_fmt |= 1 << 2;
+				else if (m_context->TEX0.PSM == PSM_PSMT4HH)
+					ps_sel.tex_fmt |= 2 << 2;
+				else
+					ps_sel.tex_fmt |= 3 << 2;
+
+				// Alpha channel of the RT is reinterpreted as an index. Star
+				// Ocean 3 uses it to emulate a stencil buffer.  It is a very
+				// bad idea to force bilinear filtering on it.
 				bilinear &= m_vt.IsLinear();
+			}
 
-			//GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
+		} else if (tex->m_palette) {
+			// Use a standard 8 bits texture. AEM is already done on the CLUT
+			// Therefore you only need to set the index
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			// ps_sel.aem     = 0; // removed as an optimization
+
+			// Note 4 bits indexes are converted to 8 bits
+			ps_sel.tex_fmt = 3 << 2;
+
 		} else {
-			ps_sel.fmt = cpsm.fmt;
+			// Standard texture. Both index and AEM expansion were already done by the CPU.
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			// ps_sel.aem     = 0; // removed as an optimization
 		}
-		ps_sel.aem = m_env.TEXA.AEM;
 
 		if (m_context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
 			// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
@@ -856,8 +892,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
 		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
-		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
-		ps_cb.MinF_TA = ta.xyxy() / WH.xyxy(GSVector4(255, 255));
 
 		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);
