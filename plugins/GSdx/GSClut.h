@@ -79,14 +79,14 @@ __aligned(class, 32) GSClut : public GSAlignedClass<32>
 	static void WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut);
 	static void ReadCLUT_T32_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
 	static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
-	static void ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
+	//static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
+	//static void ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
+	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
+	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
 	static void ExpandCLUT64_T32_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo0, const GSVector4i& lo1, const GSVector4i& lo2, const GSVector4i& lo3, GSVector4i* dst);
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo, GSVector4i* dst);
-	static void ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
+	//static void ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
 	static void ExpandCLUT64_T16(const GSVector4i& hi, const GSVector4i& lo0, const GSVector4i& lo1, const GSVector4i& lo2, const GSVector4i& lo3, GSVector4i* dst);
 	static void ExpandCLUT64_T16(const GSVector4i& hi, const GSVector4i& lo, GSVector4i* dst);
 
@@ -99,7 +99,7 @@ public:
 	void Invalidate();
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
-	void Read(const GIFRegTEX0& TEX0);
+	//void Read(const GIFRegTEX0& TEX0);
 	void Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 	void GetAlphaMinMax32(int& amin, int& amax);
 
