@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output onepad-1.1.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(onepadFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(onepadFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(onepadFinalFlags ${OptimizationFlags})
-
-endif()
+set(onepadFinalFlags "")
 
 # onepad sources
 set(onepadSources

@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output CDVDiso)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CDVDisoFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(CDVDisoFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(CDVDisoFinalFlags ${OptimizationFlags})
-
-endif()
+set(CDVDisoFinalFlags "")
 
 # CDVDiso sources
 set(CDVDisoSources

@@ -18,17 +18,14 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
-set(OptimizationFlags -O2)
-
-
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEVEL)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -W)
 
 endif()
 

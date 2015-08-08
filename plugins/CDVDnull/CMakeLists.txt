@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output CDVDnull)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CDVDnullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(CDVDnullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(CDVDnullFinalFlags ${OptimizationFlags})
-
-endif()
+set(CDVDnullFinalFlags "")
 
 # CDVDnull sources
 set(CDVDnullSources

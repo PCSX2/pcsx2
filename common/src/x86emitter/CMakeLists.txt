@@ -12,8 +12,6 @@ set(CommonFlags
 	-fno-strict-aliasing
     )
 
-set(OptimizationFlags -O2)
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(x86emitterFinalFlags
@@ -36,7 +34,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
 	set(x86emitterFinalFlags
 		${x86emitterFinalFlags}
-		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
+		${CommonFlags} -DPCSX2_DEVBUILD
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
@@ -46,7 +44,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
 	set(x86emitterFinalFlags
 		${x86emitterFinalFlags}
-		${CommonFlags} ${OptimizationFlags}
+		${CommonFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 

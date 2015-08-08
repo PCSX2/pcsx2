@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output SPU2null)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(SPU2nullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(SPU2nullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(SPU2nullFinalFlags ${OptimizationFlags})
-
-endif()
+set(SPU2nullFinalFlags "")
 
 # SPU2null sources
 set(SPU2nullSources

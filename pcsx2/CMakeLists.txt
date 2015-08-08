@@ -26,8 +26,6 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-set(OptimizationFlags -O2)
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
@@ -38,10 +36,10 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags})
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
 
 endif()
 

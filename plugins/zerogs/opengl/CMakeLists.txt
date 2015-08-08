@@ -7,10 +7,6 @@ set(CommonFlags
     -Wall
     )
 
-set(OptimizationFlags
-    -O2
-    )
-
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
@@ -20,13 +16,13 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	add_definitions(${CommonFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	add_definitions(${CommonFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # zerogs sources

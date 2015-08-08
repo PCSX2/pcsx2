@@ -17,21 +17,17 @@ set(CommonFlags
     -DNVIDIA_CG_API
     )
 
-set(OptimizationFlags
-    -O2
-    )
-
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(zerogsshadersFinalFlags
         ${CommonFlags} -D_DEBUG
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zerogsshadersFinalFlags
-        ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
+        ${CommonFlags} -g -W -DZEROGS_DEVBUILD
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zerogsshadersFinalFlags
-        ${CommonFlags} ${OptimizationFlags} -W
+        ${CommonFlags} -W
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
