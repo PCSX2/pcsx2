@@ -65,10 +65,14 @@ find_package(ZLIB)
 include(FindLibc)
 
 ## Only needed by the extra plugins
-if(EXTRA_PLUGINS)
+if(BUILD_CDVDISO)
     find_package(BZip2)
+endif()
+if(BUILD_ZEROGS OR BUILD_ZZOGL-PG)
     include(FindCg)
     include(FindGlew)
+endif()
+if(BUILD_ZZOGL-PG)
     find_package(JPEG)
 endif()
 

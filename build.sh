@@ -17,6 +17,16 @@
 #set -e # This terminates the script in case of any error
 
 flags=(-DCMAKE_BUILD_PO=FALSE)
+extra_plugins=(
+    CDVDISO
+    CDVDLINUZ
+    ZEROGS
+    ZZOGL-PG
+    ZEROSPU2
+    GSNULL
+    PADNULL
+    SPU2NULL
+)
 
 cleanBuild=0
 useClang=0
@@ -34,7 +44,7 @@ for ARG in "$@"; do
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
         --sdl2              ) flags+=(-DSDL2_API=TRUE) ;;
-        --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
+        --extra             ) for plugin in ${extra_plugins[@]}; do flags+=(-DBUILD_${plugin}=TRUE); done ;;
         --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28              ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;

@@ -37,13 +37,36 @@ option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 
 #-------------------------------------------------------------------------------
+# Build options
+#-------------------------------------------------------------------------------
+option(BUILD_CORE	"Build PCSX2 core"		TRUE)
+option(BUILD_GSDX	"Build GSdx plugin"		TRUE)
+option(BUILD_ONEPAD	"Build onepad plugin"		TRUE)
+option(BUILD_LILYPAD	"Build LilyPad plugin"		TRUE)
+option(BUILD_SPU2-X	"Build spu2-x plugin"		TRUE)
+
+option(BUILD_CDVDISO	"Build CDVDiso plugin"		FALSE)
+option(BUILD_CDVDLINUZ	"Build CDVDlinuz plugin"	FALSE)
+option(BUILD_ZEROGS	"Build zerogs plugin"		FALSE)
+option(BUILD_ZZOGL-PG	"Build zzogl-pg plugin"		FALSE)
+option(BUILD_ZEROSPU2	"Build zerospu2 plugin"		FALSE)
+
+option(BUILD_CDVDNULL	"Build CDVDnull plugin"		TRUE)
+option(BUILD_DEV9NULL	"Build dev9null plugin"		TRUE)
+option(BUILD_FWNULL	"Build fwnull plugin"		TRUE)
+option(BUILD_USBNULL	"Build USBnull plugin"		TRUE)
+
+option(BUILD_GSNULL	"Build GSnull plugin"		FALSE)
+option(BUILD_PADNULL	"Build PadNull plugin"		FALSE)
+option(BUILD_SPU2NULL	"Build SPU2null plugin"		FALSE)
+
+#-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
 option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
-option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(SDL2_API "Use SDL2 on spu2x and onepad (experimental/wxWidget mustn't be built with SDL1.2 support")
 option(WX28_API "Force wxWidget 2.8 lib (deprecated)")
 option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
