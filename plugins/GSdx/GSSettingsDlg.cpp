@@ -551,8 +551,13 @@ int swap_states(int a)
 	}
 }
 void GSHacksDlg::OnInit()
-{					
-	bool dx9 = (int)SendMessage(GetDlgItem(GetParent(m_hWnd), IDC_RENDERER), CB_GETCURSEL, 0, 0) / 3 == 0;
+{
+	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
+	int renderer = SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0);
+	// It can only be accessed with a HW renderer, so this is sufficient.
+	bool dx9 = renderer == 0;
+	bool dx11 = renderer == 3;
+	bool ogl = renderer == 12;
 	unsigned short cb = 0;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)
@@ -589,11 +594,12 @@ void GSHacksDlg::OnInit()
 
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfig("UserHacks_AlphaHack", 0));
 	CheckDlgButton(m_hWnd, IDC_OFFSETHACK, theApp.GetConfig("UserHacks_HalfPixelOffset", 0));
-	CheckDlgButton(m_hWnd, IDC_SPRITEHACK, theApp.GetConfig("UserHacks_SpriteHack", 0));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfig("UserHacks_WildHack", 0));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
-	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, swap_states(theApp.GetConfig("UserHacks_round_sprite_offset", 0)));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
+
+	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
+	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfig("UserHacks_SpriteHack", 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("UserHacks_SkipDraw", 0), 0));
@@ -604,8 +610,23 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM((theApp.GetConfig("UserHacks_TCOffset", 0) >> 16) & 0xFFFF, 0));
 
-	// Hacks descriptions
-	SetWindowText(GetDlgItem(m_hWnd, IDC_HACK_DESCRIPTION), "Hover over an item to get a description.");
+	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
+	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
+
+	AddTooltip(IDC_SKIPDRAWHACKEDIT);
+	AddTooltip(IDC_SKIPDRAWHACK);
+	AddTooltip(IDC_ALPHAHACK);
+	AddTooltip(IDC_OFFSETHACK);
+	AddTooltip(IDC_SPRITEHACK);
+	AddTooltip(IDC_WILDHACK);
+	AddTooltip(IDC_MSAACB);
+	AddTooltip(IDC_ALPHASTENCIL);
+	AddTooltip(IDC_ALIGN_SPRITE);
+	AddTooltip(IDC_ROUND_SPRITE);
+	AddTooltip(IDC_TCOFFSETX);
+	AddTooltip(IDC_TCOFFSETX2);
+	AddTooltip(IDC_TCOFFSETY);
+	AddTooltip(IDC_TCOFFSETY2);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -615,28 +636,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {	    
 	switch(message)
 	{
-	case WM_SETCURSOR:
-	{
-		bool updateText = true;
-
-		POINT pos;
-		GetCursorPos(&pos);
-		ScreenToClient(m_hWnd, &pos);
-
-		HWND hoveredwnd = ChildWindowFromPointEx(m_hWnd, pos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
-
-		if (hoveredwnd != hovered_window)
-			hovered_window = hoveredwnd;
-		else
-			break;
-
-		const char *helpstr = dialog_message(GetDlgCtrlID(hoveredwnd), &updateText);
-
-		if(updateText)
-			SetWindowText(GetDlgItem(m_hWnd, IDC_HACK_DESCRIPTION), helpstr);
-
-	} break;
-
 	case WM_COMMAND:
 	{
 		int id = LOWORD(wParam);
@@ -645,14 +644,21 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK: 
 		{
+			INT_PTR data;
+			if (ComboBoxGetSelData(IDC_ROUND_SPRITE, data))
+			{
+				theApp.SetConfig("UserHacks_round_sprite_offset", (int)data);
+			}
+			if (ComboBoxGetSelData(IDC_SPRITEHACK, data))
+			{
+				theApp.SetConfig("UserHacks_SpriteHack", (int)data);
+			}
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
 			theApp.SetConfig("UserHacks_HalfPixelOffset", (int)IsDlgButtonChecked(m_hWnd, IDC_OFFSETHACK));
-			theApp.SetConfig("UserHacks_SpriteHack", (int)IsDlgButtonChecked(m_hWnd, IDC_SPRITEHACK));
 			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
-			theApp.SetConfig("UserHacks_round_sprite_offset", swap_states((int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE)));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
