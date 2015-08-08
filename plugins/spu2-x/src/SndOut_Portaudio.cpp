@@ -147,7 +147,7 @@ public:
 
 				if(apiinfo->type == m_ApiId)
 				{
-					if(m_Device == wxString::FromAscii(info->name))
+					if(m_Device == wxString::FromUTF8(info->name))
 					{
 						deviceIndex = i;
 						fprintf(stderr," (selected)");
@@ -386,9 +386,9 @@ private:
 						const PaDeviceInfo * info = Pa_GetDeviceInfo(j);
 						if(info->hostApi == api_idx && info->maxOutputChannels > 0)
 						{
-							SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)info->name);
+							SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)wxString::FromUTF8(info->name).wc_str());
 							SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);			
-							if(wxString::FromAscii(info->name) == m_Device)
+							if(wxString::FromUTF8(info->name) == m_Device)
 							{
 								_idx = i;
 							}
@@ -429,7 +429,7 @@ private:
 						idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETCURSEL,0,0);
 						const PaDeviceInfo * info = (const PaDeviceInfo *)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETITEMDATA,idx,0);
 						if(info)
-							m_Device = wxString::FromAscii( info->name );
+							m_Device = wxString::FromUTF8( info->name );
 						else
 							m_Device = L"default";
 														
@@ -466,7 +466,7 @@ private:
 								const PaDeviceInfo * info = Pa_GetDeviceInfo(j);
 								if(info->hostApi == api_idx && info->maxOutputChannels > 0)
 								{
-									SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)info->name);
+									SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)wxString::FromUTF8(info->name).wc_str());
 									SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);
 									i++;
 								}
