@@ -188,6 +188,13 @@ void GSSettingsDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETRANGE, 0, MAKELPARAM(16, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("extrathreads", 0), 0));
 
+	AddTooltip(IDC_FILTER);
+	AddTooltip(IDC_CRC_LEVEL);
+	AddTooltip(IDC_PALTEX);
+	AddTooltip(IDC_ACCURATE_DATE);
+	AddTooltip(IDC_ACCURATE_BLEND_UNIT);
+	AddTooltip(IDC_TC_DEPTH);
+
 	UpdateControls();
 }
 
