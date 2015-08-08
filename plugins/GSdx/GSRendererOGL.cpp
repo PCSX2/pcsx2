@@ -345,7 +345,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 	// Warning no break on purpose
 	switch (m_sw_blending) {
 		case ACC_BLEND_ULTRA:           sw_blending |= true;
-		case ACC_BLEND_FULL:            sw_blending |= !( (ALPHA.A == ALPHA.B) || (ALPHA.C == 2 && ALPHA.FIX <= 128u) );
+		case ACC_BLEND_FULL:            if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
+										sw_blending |= (ALPHA.A != ALPHA.B) &&
+												((ALPHA.C == 0 && m_vt.m_alpha.max > 128u) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS;
 		case ACC_BLEND_FREE:            sw_blending |= ps_sel.fbmask || impossible_or_free_blend;
