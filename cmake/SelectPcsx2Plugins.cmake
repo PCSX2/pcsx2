@@ -37,14 +37,12 @@ endif()
 #			Common libs
 # requires: -wx
 #---------------------------------------
-if(wxWidgets_FOUND)
+if(wxWidgets_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/common/src/Utilities" AND EXISTS "${CMAKE_SOURCE_DIR}/common/src/x86emitter")
     set(common_libs TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src/Utilities" OR NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src/x86emitter")
     set(common_libs FALSE)
 else()
-    set(common_libs FALSE)
-    message(STATUS "Skip build of common libraries: miss some dependencies")
-    message(STATUS "${msg_dep_common_libs}")
+    message(FATAL_ERROR "Common libraries miss some dependencies: ${msg_dep_common_libs}")
 endif()
 
 #---------------------------------------
@@ -57,7 +55,7 @@ endif()
 #---------------------------------------
 # Common dependancy
 if(BUILD_CORE)
-    if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND) AND EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
+    if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
         set(pcsx2_core TRUE)
     else()
         set(pcsx2_core FALSE)
@@ -98,7 +96,7 @@ endif()
 #           -gtk2 (linux)
 #---------------------------------------
 if(BUILD_CDVDISO)
-    if(BZIP2_FOUND AND GTKn_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso")
+    if(BZIP2_FOUND AND GTKn_FOUND)
         set(CDVDiso TRUE)
     else()
         set(CDVDiso FALSE)
@@ -156,7 +154,7 @@ endif()
 #			-X11
 #---------------------------------------
 if(BUILD_GSDX)
-    if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND PNG_FOUND AND (EGL_FOUND OR NOT EGL_API) AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
+    if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND PNG_FOUND AND (EGL_FOUND OR NOT EGL_API))
         set(GSdx TRUE)
     else()
         set(GSdx FALSE)
@@ -174,7 +172,7 @@ endif()
 #			-CG
 #---------------------------------------
 if(BUILD_ZEROGS)
-    if(GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND CG_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerogs")
+    if(GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND CG_FOUND)
         set(zerogs TRUE)
     else()
         set(zerogs FALSE)
@@ -194,7 +192,7 @@ endif()
 #           -common_libs
 #---------------------------------------
 if(BUILD_ZZOGL-PG)
-    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API) AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
+    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
         set(zzogl TRUE)
     else()
         set(zzogl FALSE)
@@ -235,7 +233,7 @@ endif()
 #			-X11
 #---------------------------------------
 if(BUILD_ONEPAD)
-    if(SDLn_FOUND AND X11_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
+    if(SDLn_FOUND AND X11_FOUND)
         set(onepad TRUE)
     else()
         set(onepad FALSE)
@@ -266,7 +264,7 @@ endif()
 #           -common_libs
 #---------------------------------------
 if(BUILD_SPU2-X)
-    if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
+    if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
         set(spu2-x TRUE)
     else()
         set(spu2-x FALSE)
@@ -283,7 +281,7 @@ endif()
 #			-PortAudio
 #---------------------------------------
 if(BUILD_ZEROSPU2)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND SOUNDTOUCH_FOUND AND ALSA_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2")
+    if(SOUNDTOUCH_FOUND AND ALSA_FOUND)
         set(zerospu2 TRUE)
         message(STATUS "Don't build zerospu2. It is super-seeded by spu2x")
     else()
