@@ -25,7 +25,7 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 #include "iMMI.h"
-#include "Utilities/Math.h"
+#include "Utilities/MathUtils.h"
 
 using namespace x86Emitter;
 
