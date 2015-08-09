@@ -187,8 +187,7 @@ struct MemoryCardFileMetadataReference {
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
 class FileAccessHelper {
 protected:
-	wxFFile* m_file;
-	const MemoryCardFileEntry* m_entry;
+	std::map<const MemoryCardFileEntry* const, wxFFile*> m_files;
 
 public:
 	FileAccessHelper();
@@ -196,8 +195,12 @@ public:
 
 	// Get an already opened file if possible, or open a new one and remember it
 	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
-	// Close an open file, if any
-	void Close();
+	// Close all open files that start with the given path, so either a file if a filename is given or all files in a directory and its subdirectories when a directory is given
+	void CloseMatching( const wxString& path );
+	// Close all open files
+	void CloseAll();
+	// Flush the written data of all open files to the file system
+	void FlushAll();
 
 	// removes characters from a PS2 file name that would be illegal in a Windows file system
 	// returns true if any changes were made
@@ -413,7 +416,8 @@ protected:
 
 
 	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
-	void AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
+	// returns the MemoryCardFileMetadataReference of the first file cluster, or nullptr if the file is zero-length
+	MemoryCardFileMetadataReference* AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
 
 	// creates a reference to a directory entry, so it can be passed as parent to other files/directories
 	MemoryCardFileMetadataReference* AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );

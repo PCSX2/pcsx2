@@ -43,7 +43,7 @@ void FolderMemoryCard::InitializeInternalData() {
 	m_timeLastWritten = 0;
 	m_isEnabled = false;
 	m_framesUntilFlush = 0;
-	m_lastAccessedFile.Close();
+	m_lastAccessedFile.CloseAll();
 	m_performFileWrites = true;
 }
 
@@ -107,7 +107,7 @@ void FolderMemoryCard::Close( bool flush ) {
 	m_cache.clear();
 	m_oldDataCache.clear();
 	m_fileMetadataQuickAccess.clear();
-	m_lastAccessedFile.Close();
+	m_lastAccessedFile.CloseAll();
 }
 
 void FolderMemoryCard::LoadMemoryCardData( const u32 sizeInClusters, const bool enableFiltering, const wxString& filter ) {
@@ -455,7 +455,11 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 
 		file.Close();
 
-		AddFileEntryToMetadataQuickAccess( newFileEntry, parent );
+		MemoryCardFileMetadataReference* fileRef = AddFileEntryToMetadataQuickAccess( newFileEntry, parent );
+		if ( fileRef != nullptr ) {
+			// acquire a handle on the file so nothing else can change the file contents while the memory card is open
+			m_lastAccessedFile.ReOpen( m_folderName, fileRef );
+		}
 
 		// and finally, increase file count in the directory entry
 		dirEntry->entry.data.length++;
@@ -508,12 +512,13 @@ MemoryCardFileMetadataReference* FolderMemoryCard::AddDirEntryToMetadataQuickAcc
 	return ref;
 }
 
-void FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent ) {
-	u32 fileCluster = entry->entry.data.cluster;
+MemoryCardFileMetadataReference* FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent ) {
+	const u32 firstFileCluster = entry->entry.data.cluster;
+	u32 fileCluster = firstFileCluster;
 
 	// zero-length files have no file clusters
 	if ( fileCluster == 0xFFFFFFFFu ) {
-		return;
+		return nullptr;
 	}
 
 	u32 clusterNumber = 0;
@@ -524,6 +529,8 @@ void FolderMemoryCard::AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* c
 		ref->consecutiveCluster = clusterNumber;
 		++clusterNumber;
 	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != ( LastDataCluster | DataClusterInUseMask ) );
+
+	return &m_fileMetadataQuickAccess[firstFileCluster & NextDataClusterMask];
 }
 
 s32 FolderMemoryCard::IsPresent() const {
@@ -821,7 +828,6 @@ void FolderMemoryCard::NextFrame() {
 }
 
 void FolderMemoryCard::Flush() {
-	m_lastAccessedFile.Close();
 	if ( m_cache.empty() ) { return; }
 
 	Console.WriteLn( L"(FolderMcd) Writing data for slot %u to file system...", m_slot );
@@ -877,7 +883,7 @@ void FolderMemoryCard::Flush() {
 		FlushPage( i );
 	}
 
-	m_lastAccessedFile.Close();
+	m_lastAccessedFile.FlushAll();
 	m_oldDataCache.clear();
 
 	const u64 timeFlushEnd = wxGetLocalTimeMillis().GetValue();
@@ -1005,6 +1011,7 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache( const s
 				FileAccessHelper::CleanMemcardFilename( cleanName );
 				const wxString fileName = wxString::FromAscii( cleanName );
 				const wxString filePath = m_folderName.GetFullPath() + dirPath + L"/" + fileName;
+				m_lastAccessedFile.CloseMatching( filePath );
 				const wxString newFilePath = m_folderName.GetFullPath() + dirPath + L"/_pcsx2_deleted_" + fileName;
 				if ( wxFileName::DirExists( newFilePath ) ) {
 					// wxRenameFile doesn't overwrite directories, so we have to remove the old one first
@@ -1309,16 +1316,14 @@ void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 
 
 FileAccessHelper::FileAccessHelper() {
-	m_file = nullptr;
+	m_files.clear();
 }
 
 FileAccessHelper::~FileAccessHelper() {
-	this->Close();
+	this->CloseAll();
 }
 
 wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
-	this->Close();
-
 	wxFileName fn( folderName );
 	bool cleanedFilename = fileRef->GetPath( &fn );
 	wxString filename( fn.GetFullPath() );
@@ -1331,12 +1336,11 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 		createEmptyFile.Close();
 	}
 
-	m_file = new wxFFile( filename, L"r+b" );
-	m_entry = fileRef->entry;
+	const MemoryCardFileEntry* const entry = fileRef->entry;
+	wxFFile* file = new wxFFile( filename, L"r+b" );
+	m_files.emplace( entry, file );
 
 	if ( writeMetadata ) {
-		const MemoryCardFileEntry* const entry = fileRef->entry;
-
 		// write metadata of file if it's nonstandard
 		fn.AppendDir( L"_pcsx2_meta" );
 		if ( cleanedFilename || entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
@@ -1362,22 +1366,45 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 		}
 	}
 
-	return m_file;
+	return file;
 }
 
 wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
-	if ( m_file && fileRef->entry == m_entry ) {
-		return m_file;
+	auto it = m_files.find( fileRef->entry );
+	if ( it != m_files.end() ) {
+		return it->second;
 	} else {
 		return this->Open( folderName, fileRef, writeMetadata );
 	}
 }
 
-void FileAccessHelper::Close() {
-	if ( m_file ) {
-		m_file->Close();
-		delete m_file;
-		m_file = nullptr;
+void FileAccessHelper::CloseMatching( const wxString& path ) {
+	wxFileName fn( path );
+	fn.Normalize();
+	wxString pathNormalized = fn.GetFullPath();
+	for ( auto it = m_files.begin(); it != m_files.end(); ) {
+		wxString openPath = it->second->GetName();
+		if ( openPath.StartsWith( pathNormalized ) ) {
+			it->second->Close();
+			delete it->second;
+			it = m_files.erase( it );
+		} else {
+			++it;
+		}
+	}
+}
+
+void FileAccessHelper::CloseAll() {
+	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
+		it->second->Close();
+		delete it->second;
+	}
+	m_files.clear();
+}
+
+void FileAccessHelper::FlushAll() {
+	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
+		it->second->Flush();
 	}
 }
 
