@@ -1317,9 +1317,11 @@ void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 
 FileAccessHelper::FileAccessHelper() {
 	m_files.clear();
+	m_lastWrittenFileRef = nullptr;
 }
 
 FileAccessHelper::~FileAccessHelper() {
+	m_lastWrittenFileRef = nullptr;
 	this->CloseAll();
 }
 
@@ -1341,37 +1343,67 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 	m_files.emplace( entry, file );
 
 	if ( writeMetadata ) {
-		// write metadata of file if it's nonstandard
 		fn.AppendDir( L"_pcsx2_meta" );
-		if ( cleanedFilename || entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0 ) {
-			if ( !fn.DirExists() ) {
-				fn.Mkdir();
-			}
-			wxFFile metaFile( fn.GetFullPath(), L"wb" );
-			if ( metaFile.IsOpened() ) {
-				metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
-				metaFile.Close();
-			}
-		} else {
-			// if metadata is standard remove metadata file if it exists
-			if ( fn.FileExists() ) {
-				wxRemoveFile( fn.GetFullPath() );
-
-				// and remove the metadata dir if it's now empty
-				wxDir metaDir( fn.GetPath() );
-				if ( metaDir.IsOpened() && !metaDir.HasFiles() ) {
-					wxRmdir( fn.GetPath() );
-				}
-			}
-		}
+		const bool metadataIsNonstandard = cleanedFilename || entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0;
+		WriteMetadata( metadataIsNonstandard, fn, entry );
 	}
 
 	return file;
 }
 
+void FileAccessHelper::WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef ) {
+	wxFileName fn( folderName );
+	bool cleanedFilename = fileRef->GetPath( &fn );
+	fn.AppendDir( L"_pcsx2_meta" );
+
+	const MemoryCardFileEntry* const entry = fileRef->entry;
+	const bool metadataIsNonstandard = cleanedFilename || entry->entry.data.mode != MemoryCardFileEntry::DefaultFileMode || entry->entry.data.attr != 0;
+
+	WriteMetadata( metadataIsNonstandard, fn, entry );
+}
+
+void FileAccessHelper::WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry ) {
+	if ( metadataIsNonstandard ) {
+		// write metadata of file if it's nonstandard
+		if ( !metadataFilename.DirExists() ) {
+			metadataFilename.Mkdir();
+		}
+		wxFFile metaFile( metadataFilename.GetFullPath(), L"wb" );
+		if ( metaFile.IsOpened() ) {
+			metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
+			metaFile.Close();
+		}
+	} else {
+		// if metadata is standard remove metadata file if it exists
+		if ( metadataFilename.FileExists() ) {
+			wxRemoveFile( metadataFilename.GetFullPath() );
+
+			// and remove the metadata dir if it's now empty
+			wxDir metaDir( metadataFilename.GetPath() );
+			if ( metaDir.IsOpened() && !metaDir.HasFiles() ) {
+				wxRmdir( metadataFilename.GetPath() );
+			}
+		}
+	}
+}
+
 wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
 	auto it = m_files.find( fileRef->entry );
 	if ( it != m_files.end() ) {
+		// we already have a handle to this file
+
+		// if the caller wants to write metadata and we haven't done this recently, do so and remember that we did
+		if ( writeMetadata ) {
+			if ( m_lastWrittenFileRef != fileRef ) {
+				WriteMetadata( folderName, fileRef );
+				m_lastWrittenFileRef = fileRef;
+			}
+		} else {
+			if ( m_lastWrittenFileRef != nullptr ) {
+				m_lastWrittenFileRef = nullptr;
+			}
+		}
+
 		return it->second;
 	} else {
 		return this->Open( folderName, fileRef, writeMetadata );

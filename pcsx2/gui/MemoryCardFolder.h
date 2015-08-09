@@ -188,6 +188,7 @@ struct MemoryCardFileMetadataReference {
 class FileAccessHelper {
 protected:
 	std::map<const MemoryCardFileEntry* const, wxFFile*> m_files;
+	MemoryCardFileMetadataReference* m_lastWrittenFileRef; // we remember this to reduce redundant metadata checks/writes
 
 public:
 	FileAccessHelper();
@@ -209,6 +210,9 @@ public:
 protected:
 	// Open a new file and remember it for later
 	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
+
+	void WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef );
+	void WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );
 };
 
 // --------------------------------------------------------------------------------------
