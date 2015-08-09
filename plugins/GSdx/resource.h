@@ -57,14 +57,9 @@
 #define IDC_MSAACB                      2070
 #define IDC_HACKSBUTTON                 2071
 #define IDC_WILDHACK                    2072
-#define IDC_HACK_DESCRIPTION            2073
-#define IDC_STATIC_MSAA                 2074
-#define IDC_STATIC_SKIPDRAW             2075
 #define IDC_CHECK_DISABLE_ALL_HACKS     2076
 #define IDC_ALPHASTENCIL                2077
 #define IDC_ADAPTER                     2078
-#define IDC_STATIC_TCOFFSETX            2079
-#define IDC_STATIC_TCOFFSETY            2080
 #define IDC_TCOFFSETX                   2081
 #define IDC_TCOFFSETX2                  2082
 #define IDC_TCOFFSETY                   2083

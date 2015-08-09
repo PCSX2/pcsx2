@@ -540,16 +540,7 @@ GSHacksDlg::GSHacksDlg() :
 	memset(msaa2cb, 0, sizeof(msaa2cb));
 	memset(cb2msaa, 0, sizeof(cb2msaa));
 }
-int swap_states(int a)
-{
-	switch(a)
-	{
-		case 0: return 0;
-		case 1: return 2;
-		case 2: return 1;
-		default: return 0; // If user's set more than 2 in ini file, set variable to 0.
-	}
-}
+
 void GSHacksDlg::OnInit()
 {
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);

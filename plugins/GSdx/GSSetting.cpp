@@ -56,7 +56,6 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Works as a speedhack for: Steambot Chronicles.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
-		case IDC_STATIC_SKIPDRAW:
 			return "Skipdraw\n\nSkips drawing n surfaces completely. "
 				"Use it, for example, to try and get rid of bad post processing effects."
 				" Try values between 1 and 100.";
@@ -72,7 +71,6 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_WILDHACK:
 			return "Wild Arms\n\nLowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.";
 		case IDC_MSAACB:
-		case IDC_STATIC_MSAA:
 			return "Multisample Anti-Aliasing\n\nEnables hardware Anti-Aliasing. Needs lots of memory."
 				" The Z-24 modes might need to have LogarithmicZ to compensate for the bits lost (only in DX9 mode).\n\n"
 				" MSAA is not implemented on the OpenGL renderer";
@@ -98,10 +96,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Windows: Carries a total of three states: Unchecked (off), Checked (on for all sprites) and Shaded (on for flat sprites)";
 		case IDC_TCOFFSETX:
 		case IDC_TCOFFSETX2:
-		case IDC_STATIC_TCOFFSETX:
 		case IDC_TCOFFSETY:
 		case IDC_TCOFFSETY2:
-		case IDC_STATIC_TCOFFSETY:
 			return "Texture Coordinates Offset Hack\n\n"
 				"Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
