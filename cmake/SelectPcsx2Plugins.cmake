@@ -64,7 +64,7 @@ if(BUILD_CORE)
     # Linux need also gtk2
     if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
         set(pcsx2_core FALSE)
-        message(FATAL_ERROR "PCSX2 core miss some dependencies: ${msg_dep_pcsx2}")
+        message(FATAL_ERROR "PCSX2 core miss GTK dependency")
     endif()
 endif()
 
