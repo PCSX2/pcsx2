@@ -272,7 +272,11 @@ else()
 endif()
 
 if(NOT DEFINED OPTIMIZATION_FLAG)
-    set(OPTIMIZATION_FLAG -O2)
+    if (CMAKE_BUILD_TYPE STREQUAL Debug)
+        set(OPTIMIZATION_FLAG -O0)
+    else()
+        set(OPTIMIZATION_FLAG -O2)
+    endif()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
