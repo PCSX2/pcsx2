@@ -168,6 +168,9 @@
     <ClInclude Include="..\..\include\Utilities\lnx_memzero.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\Math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
