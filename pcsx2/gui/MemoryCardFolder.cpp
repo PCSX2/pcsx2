@@ -687,7 +687,7 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 	auto it = m_fileMetadataQuickAccess.find( fatCluster );
 	if ( it != m_fileMetadataQuickAccess.end() ) {
 		const u32 clusterNumber = it->second.consecutiveCluster;
-		wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"rb" );
+		wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second );
 		if ( file->IsOpened() ) {
 			const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 			const u32 fileOffset = clusterNumber * ClusterSize + clusterOffset;
@@ -1111,7 +1111,7 @@ bool FolderMemoryCard::WriteToFile( const u8* src, u32 adr, u32 dataLength ) {
 		const u32 clusterNumber = it->second.consecutiveCluster;
 		
 		if ( m_performFileWrites ) {
-			wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, L"r+b", true );
+			wxFFile* file = m_lastAccessedFile.ReOpen( m_folderName, &it->second, true );
 			if ( file->IsOpened() ) {
 				const u32 clusterOffset = ( page % 2 ) * PageSize + offset;
 				const u32 fileSize = entry->entry.data.length;
@@ -1316,7 +1316,7 @@ FileAccessHelper::~FileAccessHelper() {
 	this->Close();
 }
 
-wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata ) {
+wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
 	this->Close();
 
 	wxFileName fn( folderName );
@@ -1331,9 +1331,8 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 		createEmptyFile.Close();
 	}
 
-	m_file = new wxFFile( filename, mode );
+	m_file = new wxFFile( filename, L"r+b" );
 	m_entry = fileRef->entry;
-	m_mode = mode;
 
 	if ( writeMetadata ) {
 		const MemoryCardFileEntry* const entry = fileRef->entry;
@@ -1366,11 +1365,11 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 	return m_file;
 }
 
-wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata ) {
-	if ( m_file && fileRef->entry == m_entry && mode == m_mode ) {
+wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
+	if ( m_file && fileRef->entry == m_entry ) {
 		return m_file;
 	} else {
-		return this->Open( folderName, fileRef, mode, writeMetadata );
+		return this->Open( folderName, fileRef, writeMetadata );
 	}
 }
 

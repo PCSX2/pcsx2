@@ -189,14 +189,13 @@ class FileAccessHelper {
 protected:
 	wxFFile* m_file;
 	const MemoryCardFileEntry* m_entry;
-	wxString m_mode;
 
 public:
 	FileAccessHelper();
 	~FileAccessHelper();
 
 	// Get an already opened file if possible, or open a new one and remember it
-	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
+	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
 	// Close an open file, if any
 	void Close();
 
@@ -206,7 +205,7 @@ public:
 
 protected:
 	// Open a new file and remember it for later
-	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
+	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
 };
 
 // --------------------------------------------------------------------------------------
