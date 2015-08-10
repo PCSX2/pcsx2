@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nulls", "Nulls", "{E1828E40-2FBB-48FE-AE7F-5587755DCE0E}"
 EndProject
@@ -40,9 +40,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPU2-X", "plugins\spu2-x\src\Windows\Spu2-X_vs2013.vcxproj", "{5307BBB7-EBB9-4AA4-8CB6-A94EC473C8C4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GSdx", "plugins\GSdx\GSdx_vs2013.vcxproj", "{18E42F6F-3A62-41EE-B42F-79366C4F1E95}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D80D4A75-C385-41BD-AE62-83D2E2B595A7} = {D80D4A75-C385-41BD-AE62-83D2E2B595A7}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch_vs2013.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
 EndProject

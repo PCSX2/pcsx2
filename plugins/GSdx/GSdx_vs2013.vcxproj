@@ -2082,6 +2082,12 @@
   <ItemGroup>
     <Image Include="res\logo-ogl.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\3rdparty\opencl\opencl.vcxproj">
+      <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
