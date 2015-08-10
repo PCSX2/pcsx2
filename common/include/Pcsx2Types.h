@@ -34,6 +34,8 @@
 //  Basic Atomic Types
 // --------------------------------------------------------------------------------------
 
+#include "stdint.h"
+
 #if defined(_MSC_VER)
 
 // In doubt, we keep this define for VS2010
@@ -50,7 +52,6 @@ typedef unsigned __int64 u64;
 
 #else // _MSC_VER*/
 
-#include "stdint.h"
 
 // Note: char does not have a default sign, unlike other types. As we actually want
 // char and not signed char in pcsx2, we define s8 to char

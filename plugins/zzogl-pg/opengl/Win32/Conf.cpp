@@ -37,7 +37,7 @@ void SaveConfig()
 	WritePrivateProfileString(L"Settings", L"Antialiasing", szValue, iniFile);
 	wxSprintf(szValue, L"%u", conf.bilinear);
 	WritePrivateProfileString(L"Settings", L"Bilinear", szValue, iniFile);
-	wxSprintf(szValue, L"%u", conf.zz_options);
+	wxSprintf(szValue, L"%u", conf.zz_options._u32);
 	WritePrivateProfileString(L"Settings", L"ZZOptions", szValue, iniFile);
 	wxSprintf(szValue, L"%u", conf.hacks._u32);
 	WritePrivateProfileString(L"Settings", L"AdvancedOptions", szValue, iniFile);
@@ -52,6 +52,7 @@ void SaveConfig()
 void LoadConfig()
 {
 	wxChar szValue[256];
+	unsigned long val;
 	const wxString iniFile(Path::Combine(s_strIniPath, L"zzogl-pg.ini"));
 
 	memset(&conf, 0, sizeof(conf));
@@ -78,21 +79,29 @@ void LoadConfig()
 	fclose(fp);
 
 	GetPrivateProfileString(L"Settings", L"Interlace", NULL, szValue, 20, iniFile);
-	conf.interlace = (u8)wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.interlace = (u8)val;
 	GetPrivateProfileString(L"Settings", L"Antialiasing", NULL, szValue, 20, iniFile);
-	conf.aa = (u8)wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.aa = (u8)val;
 	GetPrivateProfileString(L"Settings", L"ZZOptions", NULL, szValue, 20, iniFile);
-	conf.zz_options._u32 = wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.zz_options._u32 = val;
 	GetPrivateProfileString(L"Settings", L"AdvancedOptions", NULL, szValue, 20, iniFile);
-	conf.hacks._u32 = wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.hacks._u32 = val;
 	GetPrivateProfileString(L"Settings", L"Bilinear", NULL, szValue, 20, iniFile);
-	conf.bilinear = (u8)wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.bilinear = (u8)val;
 	GetPrivateProfileString(L"Settings", L"Width", NULL, szValue, 20, iniFile);
-	conf.width = wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.width = val;
 	GetPrivateProfileString(L"Settings", L"Height", NULL, szValue, 20, iniFile);
-	conf.height = wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.height = val;
 	GetPrivateProfileString(L"Settings", L"SkipDraw", NULL, szValue, 20, iniFile);
-	conf.SkipDraw = wxStrtoul(szValue, NULL, 10);
+	wxString(szValue).ToULong(&val);
+	conf.SkipDraw = val;
 
 	if (conf.aa < 0 || conf.aa > 4) conf.aa = 0;
 
