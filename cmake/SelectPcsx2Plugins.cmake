@@ -37,14 +37,12 @@ endif()
 #			Common libs
 # requires: -wx
 #---------------------------------------
-if(wxWidgets_FOUND)
+if(wxWidgets_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/common/src/Utilities" AND EXISTS "${CMAKE_SOURCE_DIR}/common/src/x86emitter")
     set(common_libs TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src/Utilities" OR NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src/x86emitter")
     set(common_libs FALSE)
 else()
-    set(common_libs FALSE)
-    message(STATUS "Skip build of common libraries: miss some dependencies")
-    message(STATUS "${msg_dep_common_libs}")
+    message(FATAL_ERROR "Common libraries miss some dependencies: ${msg_dep_common_libs}")
 endif()
 
 #---------------------------------------
@@ -56,20 +54,16 @@ endif()
 #           -aio
 #---------------------------------------
 # Common dependancy
-if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
-    set(pcsx2_core TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
-    set(pcsx2_core FALSE)
-else()
-    set(pcsx2_core FALSE)
-    message(STATUS "Skip build of pcsx2 core: miss some dependencies")
-    message(STATUS "${msg_dep_pcsx2}")
-endif()
-# Linux need also gtk2
-if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
-    set(pcsx2_core FALSE)
-    message(STATUS "Skip build of pcsx2 core: miss some dependencies")
-    message(STATUS "${msg_dep_pcsx2}")
+if(BUILD_CORE)
+    if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
+        set(pcsx2_core TRUE)
+    else()
+        message(FATAL_ERROR "PCSX2 core miss some dependencies: ${msg_dep_pcsx2}")
+    endif()
+    # Linux need also gtk2
+    if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
+        message(FATAL_ERROR "PCSX2 core miss GTK dependency")
+    endif()
 endif()
 
 
@@ -84,8 +78,12 @@ endif()
 #---------------------------------------
 #			CDVDnull
 #---------------------------------------
-if(GTKn_FOUND)
-    set(CDVDnull TRUE)
+if(BUILD_CDVDNULL)
+    if(GTKn_FOUND)
+        set(CDVDnull TRUE)
+    else()
+        message(FATAL_ERROR "CDVDnull miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
@@ -95,46 +93,54 @@ endif()
 # requires: -BZip2
 #           -gtk2 (linux)
 #---------------------------------------
-if(EXTRA_PLUGINS)
+if(BUILD_CDVDISO)
     if(BZIP2_FOUND AND GTKn_FOUND)
         set(CDVDiso TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso")
-        set(CDVDiso FALSE)
     else()
-        set(CDVDiso FALSE)
-        message(STATUS "Skip build of CDVDiso: miss some dependencies")
-        message(STATUS "${msg_dep_cdvdiso}")
+        message(FATAL_ERROR "CDVDiso miss some dependencies: ${msg_dep_cdvdiso}")
     endif()
 endif()
 
 #---------------------------------------
 #			CDVDlinuz
 #---------------------------------------
-if(EXTRA_PLUGINS)
+if(BUILD_CDVDLINUZ)
     set(CDVDlinuz TRUE)
 endif()
 
 #---------------------------------------
 #			dev9null
 #---------------------------------------
-if(GTKn_FOUND)
-    set(dev9null TRUE)
+if(BUILD_DEV9NULL)
+    if(GTKn_FOUND)
+        set(dev9null TRUE)
+    else()
+        message(FATAL_ERROR "dev9null miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
 #---------------------------------------
 #			FWnull
 #---------------------------------------
-if(GTKn_FOUND)
-    set(FWnull TRUE)
+if(BUILD_FWNULL)
+    if(GTKn_FOUND)
+        set(FWnull TRUE)
+    else()
+        message(FATAL_ERROR "fwnull miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
 #---------------------------------------
 #			GSnull
 #---------------------------------------
-if(GTKn_FOUND AND EXTRA_PLUGINS)
-    set(GSnull TRUE)
+if(BUILD_GSNULL)
+    if(GTKn_FOUND)
+        set(GSnull TRUE)
+    else()
+        message(FATAL_ERROR "GSnull miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
@@ -144,14 +150,12 @@ endif()
 # requires: -OpenGL
 #			-X11
 #---------------------------------------
-if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND PNG_FOUND AND (EGL_FOUND OR NOT EGL_API))
-    set(GSdx TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
-    set(GSdx FALSE)
-else()
-    set(GSdx FALSE)
-    message(STATUS "Skip build of GSdx: miss some dependencies")
-    message(STATUS "${msg_dep_gsdx}")
+if(BUILD_GSDX)
+    if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND PNG_FOUND AND (EGL_FOUND OR NOT EGL_API))
+        set(GSdx TRUE)
+    else()
+        message(FATAL_ERROR "GSdx miss some dependencies: ${msg_dep_gsdx}")
+    endif()
 endif()
 #---------------------------------------
 
@@ -163,15 +167,11 @@ endif()
 #			-X11
 #			-CG
 #---------------------------------------
-if(EXTRA_PLUGINS)
+if(BUILD_ZEROGS)
     if(GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND CG_FOUND)
         set(zerogs TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerogs")
-        set(zerogs FALSE)
     else()
-        set(zerogs FALSE)
-        message(STATUS "Skip build of zerogs: miss some dependencies")
-        message(STATUS "${msg_dep_zerogs}")
+        message(FATAL_ERROR "zerogs miss some dependencies: ${msg_dep_zerogs}")
     endif()
 endif()
 #---------------------------------------
@@ -186,15 +186,11 @@ endif()
 #			-JPEG
 #           -common_libs
 #---------------------------------------
-if(EXTRA_PLUGINS)
+if(BUILD_ZZOGL-PG)
     if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
         set(zzogl TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
-        set(zzogl FALSE)
     else()
-        set(zzogl FALSE)
-        message(STATUS "Skip build of zzogl: miss some dependencies")
-        message(STATUS "${msg_dep_zzogl}")
+        message(FATAL_ERROR "zzogl miss some dependencies: ${msg_dep_zzogl}")
     endif()
 endif()
 #---------------------------------------
@@ -202,8 +198,12 @@ endif()
 #---------------------------------------
 #			PadNull
 #---------------------------------------
-if(GTKn_FOUND AND EXTRA_PLUGINS)
-    set(PadNull TRUE)
+if(BUILD_PADNULL)
+    if(GTKn_FOUND)
+        set(PadNull TRUE)
+    else()
+        message(FATAL_ERROR "PadNull miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
@@ -211,8 +211,12 @@ endif()
 #			LilyPad
 # requires: -X11
 #---------------------------------------
-if(GTKn_FOUND AND X11_FOUND)
-    set(LilyPad TRUE)
+if(BUILD_LILYPAD)
+    if(GTKn_FOUND AND X11_FOUND)
+        set(LilyPad TRUE)
+    else()
+        message(FATAL_ERROR "LilyPad miss GTK or X11 dependencies")
+    endif()
 endif()
 #---------------------------------------
 
@@ -222,22 +226,24 @@ endif()
 # requires: -SDL
 #			-X11
 #---------------------------------------
-if(SDLn_FOUND AND X11_FOUND)
-	set(onepad TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
-	set(onepad FALSE)
-else()
-	set(onepad FALSE)
-    message(STATUS "Skip build of onepad: miss some dependencies")
-    message(STATUS "${msg_dep_onepad}")
+if(BUILD_ONEPAD)
+    if(SDLn_FOUND AND X11_FOUND)
+        set(onepad TRUE)
+    else()
+        message(FATAL_ERROR "onepad miss some dependencies: ${msg_dep_onepad}")
+    endif()
 endif()
 #---------------------------------------
 
 #---------------------------------------
 #			SPU2null
 #---------------------------------------
-if(GTKn_FOUND AND EXTRA_PLUGINS)
-    set(SPU2null TRUE)
+if(BUILD_SPU2NULL)
+    if(GTKn_FOUND)
+        set(SPU2null TRUE)
+    else()
+        message(FATAL_ERROR "SPU2null miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
@@ -250,14 +256,12 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
-	set(spu2-x TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
-	set(spu2-x FALSE)
-else()
-	set(spu2-x FALSE)
-    message(STATUS "Skip build of spu2-x: miss some dependencies")
-    message(STATUS "${msg_dep_spu2x}")
+if(BUILD_SPU2-X)
+    if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+        set(spu2-x TRUE)
+    else()
+        message(FATAL_ERROR "spu2-x miss some dependencies: ${msg_dep_spu2x}")
+    endif()
 endif()
 #---------------------------------------
 
@@ -268,18 +272,12 @@ endif()
 #			-ALSA
 #			-PortAudio
 #---------------------------------------
-if(EXTRA_PLUGINS)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND SOUNDTOUCH_FOUND AND ALSA_FOUND)
+if(BUILD_ZEROSPU2)
+    if(SOUNDTOUCH_FOUND AND ALSA_FOUND)
         set(zerospu2 TRUE)
-        # Comment the next line, if you want to compile zerospu2
-        set(zerospu2 FALSE)
         message(STATUS "Don't build zerospu2. It is super-seeded by spu2x")
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2")
-        set(zerospu2 FALSE)
     else()
-        set(zerospu2 FALSE)
-        message(STATUS "Skip build of zerospu2: miss some dependencies")
-        message(STATUS "${msg_dep_zerospu2}")
+        message(FATAL_ERROR "zerospu2 miss some dependencies: ${msg_dep_zerospu2}")
     endif()
 endif()
 #---------------------------------------
@@ -287,8 +285,12 @@ endif()
 #---------------------------------------
 #			USBnull
 #---------------------------------------
-if(GTKn_FOUND)
-    set(USBnull TRUE)
+if(BUILD_USBNULL)
+    if(GTKn_FOUND)
+        set(USBnull TRUE)
+    else()
+        message(FATAL_ERROR "USBnull miss GTK dependency")
+    endif()
 endif()
 #---------------------------------------
 
