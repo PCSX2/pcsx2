@@ -2328,13 +2328,13 @@
     <ClInclude Include="..\..\include\wx\xpmhand.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\libjpeg\libjpeg_vs2013.vcxproj">
+    <ProjectReference Include="..\..\..\libjpeg\libjpeg.vcxproj">
       <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\libpng\projects\vstudio\libpng\libpng_vs2013.vcxproj">
+    <ProjectReference Include="..\..\..\libpng\projects\vstudio\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
-    <ProjectReference Include="wx30_config_vs2013.vcxproj">
+    <ProjectReference Include="wx30_config.vcxproj">
       <Project>{01f4ce10-2cfb-41a8-b41f-e54337868a1d}</Project>
     </ProjectReference>
   </ItemGroup>

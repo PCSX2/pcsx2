@@ -31,45 +31,45 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wx", "wx", "{62BF822E-6A12-
 		common\include\wx\folderdesc.txt = common\include\wx\folderdesc.txt
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroGS", "plugins\zerogs\dx\Windows\zerogs_vs2013.vcxproj", "{5C6B7D28-E73D-4F71-8FC0-17ADA640EBD8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroGS", "plugins\zerogs\dx\Windows\zerogs.vcxproj", "{5C6B7D28-E73D-4F71-8FC0-17ADA640EBD8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDVDiso", "plugins\CDVDiso\src\Windows\CDVDiso_vs2013.vcxproj", "{5F78E90B-BD22-47B1-9CA5-7A80F4DF5EF3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDVDiso", "plugins\CDVDiso\src\Windows\CDVDiso.vcxproj", "{5F78E90B-BD22-47B1-9CA5-7A80F4DF5EF3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch_vs2013.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "3rdparty\zlib\zlib_vs2013.vcxproj", "{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "3rdparty\zlib\zlib.vcxproj", "{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "3rdparty\bzip2\bzip2_vs2013.vcxproj", "{F4EB4AB2-C595-4B05-8BC0-059024BC796C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "3rdparty\bzip2\bzip2.vcxproj", "{F4EB4AB2-C595-4B05-8BC0-059024BC796C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w32pthreads.v4", "3rdparty\w32pthreads\pthreads_vs2013.vcxproj", "{26511268-2902-4997-8421-ECD7055F9E28}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w32pthreads.v4", "3rdparty\w32pthreads\pthreads.vcxproj", "{26511268-2902-4997-8421-ECD7055F9E28}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroSPU2", "plugins\zerospu2\Windows\ZeroSPU2_vs2013.vcxproj", "{7F059854-568D-4E08-9D00-1E78E203E4DC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroSPU2", "plugins\zerospu2\Windows\ZeroSPU2.vcxproj", "{7F059854-568D-4E08-9D00-1E78E203E4DC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDVDolio", "plugins\CDVDolio\cdvd_vs2013.vcxproj", "{FCDF5AE2-EA47-4CC6-9F20-23A0517FEBCB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDVDolio", "plugins\CDVDolio\CDVDolio.vcxproj", "{FCDF5AE2-EA47-4CC6-9F20-23A0517FEBCB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x86emitter", "common\build\x86emitter\x86emitter_vs2013.vcxproj", "{A51123F5-9505-4EAE-85E7-D320290A272C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x86emitter", "common\build\x86emitter\x86emitter.vcxproj", "{A51123F5-9505-4EAE-85E7-D320290A272C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utilities", "common\build\Utilities\utilities_vs2013.vcxproj", "{4639972E-424E-4E13-8B07-CA403C481346}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utilities", "common\build\Utilities\utilities.vcxproj", "{4639972E-424E-4E13-8B07-CA403C481346}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg7", "3rdparty\libjpeg\libjpeg_vs2013.vcxproj", "{BC236261-77E8-4567-8D09-45CD02965EB6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg7", "3rdparty\libjpeg\libjpeg.vcxproj", "{BC236261-77E8-4567-8D09-45CD02965EB6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w32pthreads_lib", "3rdparty\w32pthreads\pthreads_lib_vs2013.vcxproj", "{7E9B2BE7-CEC3-4F14-847B-0AB8D562FB86}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w32pthreads_lib", "3rdparty\w32pthreads\pthreads_lib.vcxproj", "{7E9B2BE7-CEC3-4F14-847B-0AB8D562FB86}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PadSSSPSX", "plugins\SSSPSXPAD\PadSSSPSX_vs2013.vcxproj", "{6C8D28E4-447E-4856-BD9E-6B8F5E7C58C9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PadSSSPSX", "plugins\SSSPSXPAD\PadSSSPSX.vcxproj", "{6C8D28E4-447E-4856-BD9E-6B8F5E7C58C9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZZOgl", "plugins\zzogl-pg\opengl\Win32\zerogsogl_vs2013.vcxproj", "{2D4E85B2-F47F-4D65-B091-701E5C031DAC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZZOgl", "plugins\zzogl-pg\opengl\Win32\zerogsogl.vcxproj", "{2D4E85B2-F47F-4D65-B091-701E5C031DAC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "USBqemu", "plugins\USBqemu\Win32\USBqemu_vs2013.vcxproj", "{E613DA9F-41B4-4613-9911-E418EF5533BC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "USBqemu", "plugins\USBqemu\Win32\USBqemu.vcxproj", "{E613DA9F-41B4-4613-9911-E418EF5533BC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxAdv30", "3rdparty\wxwidgets3.0\build\msw\wx30_adv_vs2013.vcxproj", "{24C45343-FD20-5C92-81C1-35A2AE841E79}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxAdv30", "3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj", "{24C45343-FD20-5C92-81C1-35A2AE841E79}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxBase30", "3rdparty\wxwidgets3.0\build\msw\wx30_base_vs2013.vcxproj", "{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxBase30", "3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj", "{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxConfig30", "3rdparty\wxwidgets3.0\build\msw\wx30_config_vs2013.vcxproj", "{01F4CE10-2CFB-41A8-B41F-E54337868A1D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxConfig30", "3rdparty\wxwidgets3.0\build\msw\wx30_config.vcxproj", "{01F4CE10-2CFB-41A8-B41F-E54337868A1D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxCore30", "3rdparty\wxwidgets3.0\build\msw\wx30_core_vs2013.vcxproj", "{6744DAD8-9C70-574A-BFF2-9F8DDDB24A75}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxCore30", "3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj", "{6744DAD8-9C70-574A-BFF2-9F8DDDB24A75}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "3rdparty\libpng\projects\vstudio\libpng\libpng_vs2013.vcxproj", "{D6973076-9317-4EF2-A0B8-B7A18AC0713E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj", "{D6973076-9317-4EF2-A0B8-B7A18AC0713E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

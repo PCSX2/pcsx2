@@ -646,7 +646,7 @@
     <ClInclude Include="..\..\include\wx\zstream.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="wx30_config_vs2013.vcxproj">
+    <ProjectReference Include="wx30_config.vcxproj">
       <Project>{01f4ce10-2cfb-41a8-b41f-e54337868a1d}</Project>
     </ProjectReference>
   </ItemGroup>
