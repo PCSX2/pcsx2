@@ -166,7 +166,7 @@
     <ClInclude Include="..\..\include\Utilities\HashMap.h" />
     <ClInclude Include="..\..\include\intrin_x86.h" />
     <ClInclude Include="..\..\include\Utilities\lnx_memzero.h" />
-    <ClInclude Include="..\..\include\Utilities\Math.h" />
+    <ClInclude Include="..\..\include\Utilities\MathUtils.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />
     <ClInclude Include="..\..\include\Utilities\Path.h" />
     <ClInclude Include="..\..\src\Utilities\PrecompiledHeader.h" />

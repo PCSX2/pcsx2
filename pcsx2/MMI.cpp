@@ -16,7 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "Utilities/Math.h"
+#include "Utilities/MathUtils.h"
 
 namespace R5900 {
 namespace Interpreter {
