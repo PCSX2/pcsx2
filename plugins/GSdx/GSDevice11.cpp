@@ -444,11 +444,13 @@ void GSDevice11::Dispatch(uint32 x, uint32 y, uint32 z)
 
 void GSDevice11::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	if (!t) return;
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, c.v);
 }
 
 void GSDevice11::ClearRenderTarget(GSTexture* t, uint32 c)
 {
+	if (!t) return;
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, color.v);
@@ -456,11 +458,13 @@ void GSDevice11::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDevice11::ClearDepth(GSTexture* t, float c)
 {
+	if (!t) return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, c, 0);
 }
 
 void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
 {
+	if (!t) return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 

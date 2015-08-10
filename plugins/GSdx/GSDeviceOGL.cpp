@@ -426,6 +426,8 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
@@ -463,12 +465,16 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 {
+	if (!t) return;
+
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 	ClearRenderTarget(t, color);
 }
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear RTi %d", T->GetID());
@@ -501,6 +507,8 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear Depth %d", T->GetID());
@@ -524,6 +532,8 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear Stencil %d", T->GetID());
