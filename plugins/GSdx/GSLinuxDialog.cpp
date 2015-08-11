@@ -397,11 +397,11 @@ void populate_shader_table(GtkWidget* shader_table)
 
 void populate_hack_table(GtkWidget* hack_table)
 {
-	GtkWidget* hack_offset_check   = CreateCheckBox("Offset Hack", "UserHacks_HalfPixelOffset");
+	GtkWidget* hack_offset_check   = CreateCheckBox("Half-pixel Offset Hack", "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = gtk_label_new("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
 	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
-	GtkWidget* hack_wild_check     = CreateCheckBox("Wild arm Hack", "UserHacks_WildHack");
+	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
 	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align sprite hack", "UserHacks_align_sprite_X");
@@ -412,7 +412,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* stretch_hack_label  = gtk_label_new("Align Sprite Texture:");
 
 	// Reuse windows helper string :)
-	AddTooltip(hack_offset_check, IDC_TCOFFSETX);
+	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
