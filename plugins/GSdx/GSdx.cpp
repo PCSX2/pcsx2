@@ -177,12 +177,12 @@ GSdxApp::GSdxApp()
 	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
 	m_gs_hack.push_back(GSSetting(0,  "Off", ""));
-	m_gs_hack.push_back(GSSetting(1,  "Halfly On", ""));
-	m_gs_hack.push_back(GSSetting(2,  "Fully On", ""));
+	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
+	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "openGL recommended"));
+	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
 	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
 	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
 
