@@ -257,9 +257,9 @@ u32 UpdateVSyncRate()
 	//  the GS's output circuit.  It is the same regardless if the GS is outputting interlace
 	//  or progressive scan content. 
 
-	Fixed100	framerate;
-	u32			scanlines;
-	bool		isCustom;
+	Fixed100	framerate = 0;
+	u32			scanlines = 0;
+	bool		isCustom  = false;
 
 	if( gsRegionMode == Region_PAL )
 	{
