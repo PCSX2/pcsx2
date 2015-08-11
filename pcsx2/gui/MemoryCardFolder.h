@@ -85,6 +85,19 @@ struct MemoryCardFileEntryDateTime {
 		return t;
 	}
 
+	wxDateTime ToWxDateTime() const {
+		wxDateTime::Tm tm;
+		tm.sec = this->second;
+		tm.min = this->minute;
+		tm.hour = this->hour;
+		tm.mday = this->day;
+		tm.mon = (wxDateTime::Month)(this->month - 1);
+		tm.year = this->year;
+
+		wxDateTime time( tm );
+		return time.FromTimezone( wxDateTime::GMT9 );
+	}
+
 	bool operator==( const MemoryCardFileEntryDateTime& other ) const {
 		return unused == other.unused && second == other.second && minute == other.minute && hour == other.hour
 		    && day == other.day && month == other.month && year == other.year;
@@ -210,6 +223,9 @@ public:
 protected:
 	// Open a new file and remember it for later
 	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
+	// Close a file and delete its handle
+	// If entry is given, it also attempts to set the created and modified timestamps of the file according to the entry
+	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
 
 	void WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef );
 	void WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );

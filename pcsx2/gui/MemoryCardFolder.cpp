@@ -1410,6 +1410,17 @@ wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileM
 	}
 }
 
+void FileAccessHelper::CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry ) {
+	file->Close();
+
+	if ( entry != nullptr ) {
+		wxFileName fn( file->GetName() );
+		fn.SetTimes( nullptr, &entry->entry.data.timeModified.ToWxDateTime(), &entry->entry.data.timeCreated.ToWxDateTime() );
+	}
+
+	delete file;
+}
+
 void FileAccessHelper::CloseMatching( const wxString& path ) {
 	wxFileName fn( path );
 	fn.Normalize();
@@ -1417,8 +1428,7 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 	for ( auto it = m_files.begin(); it != m_files.end(); ) {
 		wxString openPath = it->second->GetName();
 		if ( openPath.StartsWith( pathNormalized ) ) {
-			it->second->Close();
-			delete it->second;
+			CloseFileHandle( it->second, it->first );
 			it = m_files.erase( it );
 		} else {
 			++it;
@@ -1428,8 +1438,7 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 
 void FileAccessHelper::CloseAll() {
 	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
-		it->second->Close();
-		delete it->second;
+		CloseFileHandle( it->second, it->first );
 	}
 	m_files.clear();
 }
