@@ -69,7 +69,6 @@
 #define IDC_TCOFFSETY2                  2084
 #define IDC_FXAA                        2085
 #define IDC_SHADER_FX                   2086
-#define IDC_ANISOTROPIC                 2087
 #define IDC_AFCOMBO                     2088
 #define IDC_OPENCL_DEVICE               2089
 #define IDC_ACCURATE_BLEND_UNIT         2090

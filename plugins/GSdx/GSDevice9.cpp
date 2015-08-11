@@ -84,9 +84,6 @@ static void FindAdapter(IDirect3D9 *d3d9, UINT &adapter, D3DDEVTYPE &devtype, st
 
 // if supported and null != msaa_desc, msaa_desc will contain requested Count and Quality
 
-D3DTEXTUREFILTERTYPE LinearToAnisotropic = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-D3DTEXTUREFILTERTYPE PointToAnisotropic = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
-
 static bool IsMsaaSupported(IDirect3D9* d3d, UINT adapter, D3DDEVTYPE devtype, D3DFORMAT depth_format, uint32 msaaCount, DXGI_SAMPLE_DESC* msaa_desc = NULL)
 {
 	if(msaaCount > 16) return false;
@@ -304,6 +301,8 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	m_convert.bs.BlendEnable = false;
 	m_convert.bs.RenderTargetWriteMask = D3DCOLORWRITEENABLE_RGBA;
+	D3DTEXTUREFILTERTYPE LinearToAnisotropic = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+	D3DTEXTUREFILTERTYPE PointToAnisotropic = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
 
 	m_convert.ln.FilterMin[0] = LinearToAnisotropic;
 	m_convert.ln.FilterMag[0] = LinearToAnisotropic;

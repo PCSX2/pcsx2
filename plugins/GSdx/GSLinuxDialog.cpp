@@ -295,7 +295,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
 
 	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
-	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
+	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 0);
 
 	GtkWidget* crc_label     = gtk_label_new("Automatic CRC level:");
 	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level", 3);
@@ -560,8 +560,6 @@ bool RunLinuxDialog()
 	theApp.SetConfig("ModeWidth", mode_width);
 	theApp.SetConfig("msaa", 0);
 	theApp.SetConfig("windowed", 1);
-	// Anisotropic is disabled when it is 1x, no need of an extra check box
-	theApp.SetConfig("AnisotropicFiltering", 1);
 
 	gtk_widget_destroy (dialog);
 
