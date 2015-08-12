@@ -41,7 +41,7 @@ if(LIBLZMA_FOUND)
 	set(GSdxFinalFlags ${GSdxFinalFlags} -DLZMA_SUPPORTED)
 endif()
 
-if(PNGPP_FOUND)
+if(ENABLE_PNGPP AND PNGPP_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DPNGPP_SUPPORTED)
 endif()
 
