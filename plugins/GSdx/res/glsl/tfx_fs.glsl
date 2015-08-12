@@ -442,7 +442,7 @@ void ps_blend(inout vec4 Color, float As)
 	// FIXME dithering
 
 	// Correct the Color value based on the output format
-#if PS_COLCLIP == 0
+#if PS_COLCLIP == 0 && PS_HDR == 0
 	// Standard Clamp
 	Color.rgb = clamp(Color.rgb, vec3(0.0f), vec3(255.0f));
 #endif
@@ -457,7 +457,7 @@ void ps_blend(inout vec4 Color, float As)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 
 	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xF8));
-#elif PS_COLCLIP == 1
+#elif PS_COLCLIP == 1 && PS_HDR == 0
 	Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xFF));
 #endif
 

@@ -353,7 +353,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	ASSERT(sizeof(PSSamplerSelector) == 4);
 	ASSERT(sizeof(OMDepthStencilSelector) == 4);
 	ASSERT(sizeof(OMColorMaskSelector) == 4);
-	ASSERT(sizeof(OMBlendSelector) == 4);
 
 	return true;
 }
@@ -673,6 +672,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		+ format("#define PS_HDR %d\n", sel.hdr)
+		+ format("#define PS_PABE %d\n", sel.pabe);
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
@@ -1342,7 +1342,7 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	}
 }
 
-void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_blend_constant)
+void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is_blend_constant)
 {
 	if (blend_index) {
 		if (!GLState::blend) {
@@ -1352,28 +1352,27 @@ void GSDeviceOGL::OMSetBlendState(int blend_index, float blend_factor, bool is_b
 
 		if (is_blend_constant && GLState::bf != blend_factor) {
 			GLState::bf = blend_factor;
-			gl_BlendColor(blend_factor, blend_factor, blend_factor, 0);
+			float bf = (float)blend_factor / 128.0f;
+			gl_BlendColor(bf, bf, bf, bf);
 		}
 
-		// FIXME test to use uint16 (cache friendly)
-		const GLenum& op = m_blendMapD3D9[blend_index].op;
-		if (GLState::eq_RGB != op) {
-			GLState::eq_RGB = op;
+		const OGLBlend& b = m_blendMapOGL[blend_index];
+
+		if (GLState::eq_RGB != b.op) {
+			GLState::eq_RGB = b.op;
 			if (gl_BlendEquationSeparateiARB)
-				gl_BlendEquationSeparateiARB(0, op, GL_FUNC_ADD);
+				gl_BlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
 			else
-				gl_BlendEquationSeparate(op, GL_FUNC_ADD);
+				gl_BlendEquationSeparate(b.op, GL_FUNC_ADD);
 		}
 
-		const GLenum& src = m_blendMapD3D9[blend_index].src;
-		const GLenum& dst = m_blendMapD3D9[blend_index].dst;
-		if (GLState::f_sRGB != src || GLState::f_dRGB != dst) {
-			GLState::f_sRGB = src;
-			GLState::f_dRGB = dst;
+		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
+			GLState::f_sRGB = b.src;
+			GLState::f_dRGB = b.dst;
 			if (gl_BlendFuncSeparateiARB)
-				gl_BlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
+				gl_BlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
 			else
-				gl_BlendFuncSeparate(src, dst, GL_ONE, GL_ZERO);
+				gl_BlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {
@@ -1541,7 +1540,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 const int GSDeviceOGL::m_NO_BLEND = 0;
 const int GSDeviceOGL::m_MERGE_BLEND = 3*3*3*3;
 
-const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3 + 1] =
+const GSDeviceOGL::OGLBlend GSDeviceOGL::m_blendMapOGL[3*3*3*3 + 1] =
 {
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
