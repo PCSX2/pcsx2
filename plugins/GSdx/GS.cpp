@@ -310,10 +310,11 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 				break;
 			}
 #else
-			wnd[0] = new GSWndOGL();
 #ifdef EGL_SUPPORTED
-			wnd[1] = new GSWndEGL();
+			wnd[0] = new GSWndEGL();
+			wnd[1] = new GSWndOGL();
 #else
+			wnd[0] = new GSWndOGL();
 			wnd[1] = NULL;
 #endif
 #endif
