@@ -493,12 +493,12 @@ mVUop(mVU_MULAx)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAx,  cFs);} // Cla
 mVUop(mVU_MULAy)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAy,  cFs);} // Clamp (TOTA, DoM, ...)
 mVUop(mVU_MULAz)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAz,  cFs);} // Clamp (TOTA, DoM, ...)
 mVUop(mVU_MULAw)  { mVU_FMACa(mVU, recPass, 2, 2, true, opMULAw, (_XYZW_PS) ? (cFs | cFt) : cFs); } // Clamp (TOTA, DoM, ...)- Ft for Superman - Shadow Of Apokolips
-mVUop(mVU_MADD)   { mVU_FMACc(mVU, recPass, 1, opMADD, cFs | cFt); }
-mVUop(mVU_MADDi)  { mVU_FMACc(mVU, recPass, 3, opMADDi, cFs | cFt); }
-mVUop(mVU_MADDq)  { mVU_FMACc(mVU, recPass, 4, opMADDq, cFs | cFt); }
-mVUop(mVU_MADDx)  { mVU_FMACc(mVU, recPass, 2, opMADDx, cFs | cFt); } // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDy)  { mVU_FMACc(mVU, recPass, 2, opMADDy, cFs | cFt); } // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDz)  { mVU_FMACc(mVU, recPass, 2, opMADDz, cFs | cFt); } // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADD)   { mVU_FMACc(mVU, recPass, 1,			opMADD, 0); }
+mVUop(mVU_MADDi)  { mVU_FMACc(mVU, recPass, 3,			opMADDi, 0); }
+mVUop(mVU_MADDq)  { mVU_FMACc(mVU, recPass, 4,			opMADDq, 0); }
+mVUop(mVU_MADDx)  { mVU_FMACc(mVU, recPass, 2,			opMADDx, cFs); } // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDy)  { mVU_FMACc(mVU, recPass, 2,			opMADDy, cFs); } // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDz)  { mVU_FMACc(mVU, recPass, 2,			opMADDz, cFs); } // Clamp (TOTA, DoM, ...)
 mVUop(mVU_MADDw)  { mVU_FMACc(mVU, recPass, 2,           opMADDw, (isCOP2)?(cACC|cFt|cFs):cFs);} // Clamp (ICO (COP2), TOTA, DoM)
 mVUop(mVU_MADDA)  { mVU_FMACb(mVU, recPass, 1, 0,        opMADDA,  0);  }
 mVUop(mVU_MADDAi) { mVU_FMACb(mVU, recPass, 3, 0,        opMADDAi, 0);  }
