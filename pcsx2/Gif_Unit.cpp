@@ -97,8 +97,9 @@ bool Gif_HandlerAD_Debug(u8* pMem) {
 }
 
 void Gif_FinishIRQ() {
-	if (CSRreg.FINISH && !(GSIMR&0x200)) {
+	if (CSRreg.FINISH && !(GSIMR & 0x200) && gifUnit.gsFINISH.gsFINISHFired == false) {
 		gsIrq();
+		gifUnit.gsFINISH.gsFINISHFired = true;
 	}
 }
 
@@ -163,6 +164,7 @@ void SaveStateBase::gifFreeze() {
 	Freeze(mtvuMode);
 	Freeze(gifUnit.stat);
 	Freeze(gifUnit.gsSIGNAL);
+	Freeze(gifUnit.gsFINISH);
 	Freeze(gifUnit.lastTranType);
 	gifPathFreeze(GIF_PATH_1);
 	gifPathFreeze(GIF_PATH_2);

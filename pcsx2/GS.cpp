@@ -108,7 +108,10 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		gifUnit.Execute(false, true); // Resume paused transfers
 	}
 	
-	if(csr.FINISH)	CSRreg.FINISH	= false;
+	if (csr.FINISH)	{
+		CSRreg.FINISH = false; 
+		gifUnit.gsFINISH.gsFINISHFired = false; //Clear the previously fired FINISH (YS, Indiecar 2005, MGS3)
+	}
 	if(csr.HSINT)	CSRreg.HSINT	= false;
 	if(csr.VSINT)	CSRreg.VSINT	= false;
 	if(csr.EDWINT)	CSRreg.EDWINT	= false;
