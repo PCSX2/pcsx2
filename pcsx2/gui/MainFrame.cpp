@@ -465,7 +465,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuConfig.Append(MenuId_Config_SysSettings,	_("Emulation &Settings") );
 	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector") );
-	if (IsDebugBuild) m_menuConfig.Append(MenuId_Config_GameDatabase,	_("Game Database Editor") );
+	m_menuConfig.Append(MenuId_Config_GameDatabase,	_("Game Database Editor") );
 	// Empty menu
 	// m_menuConfig.Append(MenuId_Config_Language,		_("Appearance...") );
 
