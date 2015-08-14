@@ -820,9 +820,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ps_sel.ltf = bilinear && !simple_sample;
 		spritehack = tex->m_spritehack_t;
-		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
-		// bug on opengl
-		//ps_sel.point_sampler = 0; // !(bilinear && simple_sample);
 
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();

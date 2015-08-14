@@ -20,10 +20,6 @@
 #define PS_TCC 1
 #endif
 
-// Not sure we have same issue on opengl. Doesn't work anyway on ATI card
-// And I say this as an ATI user.
-#define ATI_SUCKS 0
-
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 
 #ifdef FRAGMENT_SHADER
@@ -81,16 +77,6 @@ layout(std140, binding = 21) uniform cb21
 
 vec4 sample_c(vec2 uv)
 {
-	// FIXME: check the issue on openGL
-#if (ATI_SUCKS == 1) && (PS_POINT_SAMPLER == 1)
-	// Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
-	// it looks like they add 127/128 of a texel to sampling coordinates
-	// occasionally causing point sampling to erroneously round up.
-	// I'm manually adjusting coordinates to the centre of texels here,
-	// though the centre is just paranoia, the top left corner works fine.
-	uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
-#endif
-
 	return texture(TextureSampler, uv);
 }
 

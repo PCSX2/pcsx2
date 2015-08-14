@@ -291,7 +291,6 @@ class GSDeviceOGL : public GSDevice
 
 				// Hack
 				uint32 tcoffsethack:1;
-				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 
 				uint32 _free2:19;
 			};
