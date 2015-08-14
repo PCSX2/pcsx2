@@ -63,16 +63,25 @@ layout(std140, binding = 21) uniform cb21
 {
 	vec3 FogColor;
 	float AREF;
+
 	vec4 WH;
+
 	vec2 MinF;
 	vec2 TA;
+
 	uvec4 MskFix;
+
 	uvec4 FbMask;
-	vec3 _not_yet_used;
+
+	vec3 _pad1;
 	float Af;
+
 	vec4 HalfTexel;
+
 	vec4 MinMax;
+
 	vec2 TC_OffsetHack;
+	vec2 _pad2;
 };
 
 vec4 sample_c(vec2 uv)
@@ -85,7 +94,7 @@ vec4 sample_p(float idx)
 	return texture(PaletteSampler, vec2(idx, 0.0f));
 }
 
-vec4 wrapuv(vec4 uv)
+vec4 clamp_wrap_uv(vec4 uv)
 {
 	vec4 uv_out = uv;
 
@@ -115,21 +124,6 @@ vec4 wrapuv(vec4 uv)
 	uv_out.yw = vec2((ivec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
 #endif
 
-#endif
-
-	return uv_out;
-}
-
-vec2 clampuv(vec2 uv)
-{
-	vec2 uv_out = uv;
-
-#if (PS_WMS == 2) && (PS_WMT == 2)
-	uv_out = clamp(uv, MinF, MinMax.zw);
-#elif PS_WMS == 2
-	uv_out.x = clamp(uv.x, MinF.x, MinMax.z);
-#elif PS_WMT == 2
-	uv_out.y = clamp(uv.y, MinF.y, MinMax.w);
 #endif
 
 	return uv_out;
@@ -211,10 +205,12 @@ vec4 sample_color(vec2 st, float q)
 	mat4 c;
 	vec2 dd;
 
-#if (PS_LTF == 0 && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
-	c[0] = sample_c(clampuv(st));
+    // FIXME I'm not sure this condition is useful (I think code will be optimized)
+#if (PS_LTF == 0 && PS_FMT == FMT_32 && PS_WMS < 2 && PS_WMT < 2)
+	// No software LTF and pure 32 bits RGBA texure without special texture wrapping
+	c[0] = sample_c(st);
 #ifdef TEX_COORD_DEBUG
-	c[0].rg = clampuv(st).xy;
+	c[0].rg = st.xy;
 #endif
 
 #else
@@ -230,7 +226,7 @@ vec4 sample_color(vec2 st, float q)
 		uv = st.xyxy;
 	}
 
-	uv = wrapuv(uv);
+	uv = clamp_wrap_uv(uv);
 
 	if((PS_FMT & FMT_PAL) != 0)
 	{
