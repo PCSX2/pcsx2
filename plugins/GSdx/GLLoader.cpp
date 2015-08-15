@@ -27,6 +27,7 @@ PFNGLBLENDCOLORPROC                    gl_BlendColor                        = NU
 PFNGLATTACHSHADERPROC                  gl_AttachShader                      = NULL;
 PFNGLBINDBUFFERPROC                    gl_BindBuffer                        = NULL;
 PFNGLBINDBUFFERBASEPROC                gl_BindBufferBase                    = NULL;
+PFNGLBINDBUFFERRANGEPROC               gl_BindBufferRange                   = NULL;
 PFNGLBINDFRAMEBUFFERPROC               gl_BindFramebuffer                   = NULL;
 PFNGLBINDSAMPLERPROC                   gl_BindSampler                       = NULL;
 PFNGLBINDVERTEXARRAYPROC               gl_BindVertexArray                   = NULL;

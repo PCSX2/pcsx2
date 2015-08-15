@@ -188,6 +188,7 @@ extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
 extern   PFNGLATTACHSHADERPROC                  gl_AttachShader;
 extern   PFNGLBINDBUFFERPROC                    gl_BindBuffer;
 extern   PFNGLBINDBUFFERBASEPROC                gl_BindBufferBase;
+extern   PFNGLBINDBUFFERRANGEPROC               gl_BindBufferRange;
 extern   PFNGLBINDFRAMEBUFFERPROC               gl_BindFramebuffer;
 extern   PFNGLBINDSAMPLERPROC                   gl_BindSampler;
 extern   PFNGLBINDVERTEXARRAYPROC               gl_BindVertexArray;

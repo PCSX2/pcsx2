@@ -32,6 +32,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_AttachShader) = GetProcAddress("glAttachShader");
 	*(void**)&(gl_BindBuffer) = GetProcAddress("glBindBuffer");
 	*(void**)&(gl_BindBufferBase) = GetProcAddress("glBindBufferBase");
+	*(void**)&(gl_BindBufferRange) = GetProcAddress("glBindBufferRange");
 	*(void**)&(gl_BindFramebuffer) = GetProcAddress("glBindFramebuffer");
 	*(void**)&(gl_BindSampler) = GetProcAddress("glBindSampler");
 	*(void**)&(gl_BindVertexArray) = GetProcAddress("glBindVertexArray");
