@@ -570,14 +570,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if ((DATE || m_sw_blending) && GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
-#ifdef ENABLE_OGL_DEBUG
-		if ((m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
-			GL_INS("ERROR: Source and Target are the same!");
-		}
-#endif
 	} else {
 		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	}
+#ifdef ENABLE_OGL_DEBUG
+	if (m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
+		GL_INS("ERROR: Source and Target are the same!");
+	}
+#endif
 
 	require_barrier |= EmulateTextureShuffleAndFbmask(ps_sel, om_csel);
 
