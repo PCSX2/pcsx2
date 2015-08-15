@@ -405,7 +405,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		// No need to flush for every primitive
 		require_barrier |= !(blend_flag & BLEND_NO_BAR) && !accumulation_blend;
 	} else {
-		ps_sel.clr1 = (blend_flag & BLEND_C_CLR);
+		ps_sel.clr1 = !!(blend_flag & BLEND_C_CLR);
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
 			int hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
