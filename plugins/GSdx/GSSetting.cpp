@@ -70,10 +70,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				" Half option is the preferred one. Use it for Mana Khemia or Ar Tonelico for example."
 				" Full can be used for Tales of Destiny.";
 		case IDC_WILDHACK:
-			return "WildArms\n\nLowers the GS precision to avoid gaps between pixels when"
-				" upscaling. Full option fixes the text on WildArms games, while Half option might improve portraits"
-				" in Ar Tonelico.\n\n"
-				"Strech hack might work too";
+			return "Wild Arms\n\nLowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.";
 		case IDC_MSAACB:
 		case IDC_STATIC_MSAA:
 			return "Multisample Anti-Aliasing\n\nEnables hardware Anti-Aliasing. Needs lots of memory."

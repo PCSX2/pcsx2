@@ -76,7 +76,6 @@ public:
 				uint32 fst:1;
 				uint32 logz:1;
 				uint32 rtcopy:1;
-				uint32 wildhack:2;
 			};
 
 			uint32 key;
