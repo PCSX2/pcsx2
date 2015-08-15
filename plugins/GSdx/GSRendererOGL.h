@@ -45,7 +45,6 @@ class GSRendererOGL : public GSRendererHW
 	};
 
 	private:
-		GSVector2 m_pixelcenter;
 		bool m_accurate_date;
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
