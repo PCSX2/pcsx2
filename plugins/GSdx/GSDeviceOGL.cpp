@@ -205,6 +205,12 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
 	gl_GenFramebuffers(1, &m_fbo);
+	// Always write to the first buffer
+	OMSetFBO(m_fbo);
+	GLenum target[1] = {GL_COLOR_ATTACHMENT0};
+	gl_DrawBuffers(1, target);
+	OMSetFBO(0);
+
 	gl_GenFramebuffers(1, &m_fbo_read);
 	// Always read from the first buffer
 	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
@@ -1211,9 +1217,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	if (GLState::blend) {
 		glDisable(GL_BLEND);
 	}
-	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
 	OMSetRenderTargets(NULL, ds, &GLState::scissor);
-	OMSetColorMaskState(); // TODO: likely useless
 
 	// ia
 
@@ -1324,12 +1328,6 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo)
 	}
 }
 
-void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
-{
-	GLenum target[1] = {buffer};
-	gl_DrawBuffers(1, target);
-}
-
 void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss)
 {
 	dss->SetupDepth();
@@ -1394,10 +1392,8 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if (rt == NULL || !RT->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
-			OMSetWriteBuffer();
 			OMAttachRt(RT);
 		} else {
-			OMSetWriteBuffer(GL_NONE);
 			OMAttachRt();
 		}
 

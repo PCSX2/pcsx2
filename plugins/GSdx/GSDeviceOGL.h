@@ -529,7 +529,6 @@ class GSDeviceOGL : public GSDevice
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
-	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
 
