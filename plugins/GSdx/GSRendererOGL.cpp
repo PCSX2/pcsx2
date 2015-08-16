@@ -359,13 +359,20 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0) {
-		if (accumulation_blend) {
-			ps_sel.hdr = 1;
-			GL_INS("COLCLIP Fast HDR mode ENABLED");
-		} else if (sw_blending) {
+		if (m_prim_overlap == PRIM_OVERLAP_NO) {
+			// The fastest algo that requires a single pass
+			GL_INS("COLCLIP Free mode ENABLED");
 			ps_sel.colclip = 1;
+		} else if (accumulation_blend) {
+			// A fast algo that requires 2 passes
+			GL_INS("COLCLIP Fast HDR mode ENABLED");
+			ps_sel.hdr = 1;
+		} else if (sw_blending) {
+			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+			ps_sel.colclip = 1;
 		} else {
+			// Speed hack skip previous slow algo
 			GL_INS("Sorry colclip isn't supported");
 		}
 	}
@@ -388,9 +395,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		ps_sel.blend_d = ALPHA.D;
 
 		if (accumulation_blend) {
-			// Keep HW blending to do the addition
+			// Keep HW blending to do the addition/subtraction
 			dev->OMSetBlendState(blend_index);
-			// Remove the addition from the SW blending
+			// Remove the addition/substraction from the SW blending
 			ps_sel.blend_d = 2;
 		} else {
 			// Disable HW blending
