@@ -85,6 +85,19 @@ struct MemoryCardFileEntryDateTime {
 		return t;
 	}
 
+	wxDateTime ToWxDateTime() const {
+		wxDateTime::Tm tm;
+		tm.sec = this->second;
+		tm.min = this->minute;
+		tm.hour = this->hour;
+		tm.mday = this->day;
+		tm.mon = (wxDateTime::Month)(this->month - 1);
+		tm.year = this->year;
+
+		wxDateTime time( tm );
+		return time.FromTimezone( wxDateTime::GMT9 );
+	}
+
 	bool operator==( const MemoryCardFileEntryDateTime& other ) const {
 		return unused == other.unused && second == other.second && minute == other.minute && hour == other.hour
 		    && day == other.day && month == other.month && year == other.year;
@@ -187,18 +200,21 @@ struct MemoryCardFileMetadataReference {
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
 class FileAccessHelper {
 protected:
-	wxFFile* m_file;
-	const MemoryCardFileEntry* m_entry;
-	wxString m_mode;
+	std::map<const MemoryCardFileEntry* const, wxFFile*> m_files;
+	MemoryCardFileMetadataReference* m_lastWrittenFileRef; // we remember this to reduce redundant metadata checks/writes
 
 public:
 	FileAccessHelper();
 	~FileAccessHelper();
 
 	// Get an already opened file if possible, or open a new one and remember it
-	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
-	// Close an open file, if any
-	void Close();
+	wxFFile* ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
+	// Close all open files that start with the given path, so either a file if a filename is given or all files in a directory and its subdirectories when a directory is given
+	void CloseMatching( const wxString& path );
+	// Close all open files
+	void CloseAll();
+	// Flush the written data of all open files to the file system
+	void FlushAll();
 
 	// removes characters from a PS2 file name that would be illegal in a Windows file system
 	// returns true if any changes were made
@@ -206,7 +222,13 @@ public:
 
 protected:
 	// Open a new file and remember it for later
-	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, const wxString& mode, bool writeMetadata = false );
+	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
+	// Close a file and delete its handle
+	// If entry is given, it also attempts to set the created and modified timestamps of the file according to the entry
+	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
+
+	void WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef );
+	void WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );
 };
 
 // --------------------------------------------------------------------------------------
@@ -414,7 +436,8 @@ protected:
 
 
 	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
-	void AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
+	// returns the MemoryCardFileMetadataReference of the first file cluster, or nullptr if the file is zero-length
+	MemoryCardFileMetadataReference* AddFileEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
 
 	// creates a reference to a directory entry, so it can be passed as parent to other files/directories
 	MemoryCardFileMetadataReference* AddDirEntryToMetadataQuickAccess( MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent );
