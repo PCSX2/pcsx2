@@ -1415,7 +1415,9 @@ void FileAccessHelper::CloseFileHandle( wxFFile* file, const MemoryCardFileEntry
 
 	if ( entry != nullptr ) {
 		wxFileName fn( file->GetName() );
-		fn.SetTimes( nullptr, &entry->entry.data.timeModified.ToWxDateTime(), &entry->entry.data.timeCreated.ToWxDateTime() );
+		wxDateTime modified = entry->entry.data.timeModified.ToWxDateTime();
+		wxDateTime created = entry->entry.data.timeCreated.ToWxDateTime();
+		fn.SetTimes( nullptr, &modified, &created );
 	}
 
 	delete file;
