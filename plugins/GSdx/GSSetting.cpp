@@ -127,7 +127,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"------------------------------------------------------------------\n"
 				"Ultra\t: The blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug\n";
 		case IDC_TC_DEPTH:
-			return "Allow to convert Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
+			return "Allows the conversion of Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 		default:
 			if (updateText)
 				*updateText = false;

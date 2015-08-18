@@ -415,7 +415,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
-	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
+	gtk_widget_set_tooltip_text(hack_enble_check, "Allows the use of the hack below");
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
 	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
