@@ -397,6 +397,13 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		if (accumulation_blend) {
 			// Keep HW blending to do the addition/subtraction
 			dev->OMSetBlendState(blend_index);
+			if (ALPHA.A == 2) {
+				// The blend unit does a reverse subtraction so it means
+				// the shader must output a positive value.
+				// Replace 0 - Cs by Cs - 0
+				ps_sel.blend_a = ALPHA.B;
+				ps_sel.blend_b = 2;
+			}
 			// Remove the addition/substraction from the SW blending
 			ps_sel.blend_d = 2;
 		} else {
