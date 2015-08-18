@@ -867,7 +867,7 @@ static const char* tfx_fs_all_glsl =
 	"#define FMT_16 2\n"
 	"#define FMT_PAL 4 /* flag bit */\n"
 	"\n"
-	"// APITRACE_DEBUG allows to force pixel output to easily detect\n"
+	"// APITRACE_DEBUG enables forced pixel output to easily detect\n"
 	"// the fragment computed by primitive\n"
 	"#define APITRACE_DEBUG 0\n"
 	"// TEX_COORD_DEBUG output the uv coordinate as color. It is useful\n"

@@ -8,7 +8,7 @@
 #define FMT_16 2
 #define FMT_PAL 4 /* flag bit */
 
-// APITRACE_DEBUG allows to force pixel output to easily detect
+// APITRACE_DEBUG enables forced pixel output to easily detect
 // the fragment computed by primitive
 #define APITRACE_DEBUG 0
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
