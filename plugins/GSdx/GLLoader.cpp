@@ -395,10 +395,6 @@ namespace GLLoader {
 			mesa_amd_buggy_driver = true;
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
-#ifdef _WINDOWS
-		if (intel_buggy_driver)
-			return false; // too much buggy no need to check anything.
-#endif
 
 		if (mesa_amd_buggy_driver) {
 			fprintf(stderr, "Buggy driver detected. Geometry shaders will be disabled\n");

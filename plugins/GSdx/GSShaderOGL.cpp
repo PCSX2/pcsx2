@@ -220,7 +220,16 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	// AMD/nvidia define it to 0
 	// intel window don't define it
 	// intel linux refuse to define it
+#ifdef _WINDOWS
+	// Intel doesn't suppport properly gl_ClipDistance
+	// (use the existing macro to disable it)
+	if (GLLoader::intel_buggy_driver)
+		header += "#define pGL_ES 1\n";
+	else
+		header += "#define pGL_ES 0\n";
+#else
 	header += "#define pGL_ES 0\n";
+#endif
 
 	// Allow to puts several shader in 1 files
 	switch (type) {
