@@ -647,7 +647,7 @@ char *SysLibError();					// Gets previous error loading sysbols
 void SysCloseLibrary(void *lib);		// Closes Library
 void SysMessage(char *fmt, ...);
 
-extern "C" u8 memcmp_mmx(const void *dest, const void *src, int n);
+extern u8 memcmp_mmx(const void *dest, const void *src, int n);
 
 template <typename T>
 class CInterfacePtr
