@@ -92,7 +92,3 @@ typedef signed long long int64;
 #else
 	#define ASSERT(exp) ((void)0)
 #endif
-
-#ifdef _M_SSE
-	#error No SSE please!
-#endif
