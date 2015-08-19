@@ -126,7 +126,7 @@ public:
 		textControl->SetFocus();
 		textControl->SetFocusFromKbd();
 	}
-	wxString getText() { return textControl->GetLabel(); }
+	wxString getText() { return textControl->GetValue(); }
 
 private:
 	NonAutoSelectTextCtrl* textControl;
