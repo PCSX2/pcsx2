@@ -1670,14 +1670,18 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		// Ensure the rendering is complete to measure correctly the time.
 		glFinish();
 
-		unsigned long end = timeGetTime();
-		fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
-		fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
+		if (finished > 90) {
+			sleep(1);
+		} else {
+			unsigned long end = timeGetTime();
+			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
+			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
 
-		stats.push_back((float)(end - start));
+			stats.push_back((float)(end - start));
 
-		finished--;
-		total_frame_nb += frame_number;
+			finished--;
+			total_frame_nb += frame_number;
+		}
 	}
 
 	if (theApp.GetConfig("linux_replay", 1) > 1) {
