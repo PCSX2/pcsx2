@@ -150,6 +150,12 @@
     <ClInclude Include="..\..\include\x86emitter\implement\simd_moremovs.h" />
     <ClInclude Include="..\..\include\x86emitter\implement\simd_shufflepack.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_config.vcxproj">
+      <Project>{01f4ce10-2cfb-41a8-b41f-e54337868a1d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
