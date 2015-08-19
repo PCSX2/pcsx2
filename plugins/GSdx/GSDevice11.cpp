@@ -679,7 +679,9 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	Not sure why, but having the Geometry shader disabled causes the strange stretching in recent drivers*/
 
 	GSSelector sel;
-	sel.iip = 0; //Don't use shading for stretching, we're just passing through
+	//Don't use shading for stretching, we're just passing through - Note: With Win10 it seems to cause other bugs when shading is off if any of the coords is greater than 0
+	//I really don't know whats going on there, but this seems to resolve it mostly (if not all, not tester a lot of games, only BIOS, FFXII and VP2)
+	sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0; 
 	sel.prim = 2; //Triangle Strip
 	SetupGS(sel);
 
