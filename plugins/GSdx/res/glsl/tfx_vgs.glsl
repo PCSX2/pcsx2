@@ -11,27 +11,27 @@ layout(std140, binding = 20) uniform cb20
 // Warning duplicated in both GLSL file
 layout(std140, binding = 21) uniform cb21
 {
-	vec3 FogColor;
-	float AREF;
+    vec3 FogColor;
+    float AREF;
 
-	vec4 WH;
+    vec4 WH;
 
-	vec2 _pad0;
-	vec2 TA;
+    vec2 _pad0;
+    vec2 TA;
 
-	uvec4 MskFix;
+    uvec4 MskFix;
 
-	uvec4 FbMask;
+    uvec4 FbMask;
 
-	vec3 _pad1;
-	float Af;
+    vec3 _pad1;
+    float Af;
 
-	vec4 HalfTexel;
+    vec4 HalfTexel;
 
-	vec4 MinMax;
+    vec4 MinMax;
 
-	vec2 TextureScale;
-	vec2 TC_OffsetHack;
+    vec2 TextureScale;
+    vec2 TC_OffsetHack;
 };
 
 #ifdef VERTEX_SHADER
