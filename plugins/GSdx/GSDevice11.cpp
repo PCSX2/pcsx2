@@ -681,11 +681,11 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSSelector sel;
 	//Don't use shading for stretching, we're just passing through - Note: With Win10 it seems to cause other bugs when shading is off if any of the coords is greater than 0
 	//I really don't know whats going on there, but this seems to resolve it mostly (if not all, not tester a lot of games, only BIOS, FFXII and VP2)
-	sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0; 
-	sel.prim = 2; //Triangle Strip
-	SetupGS(sel);
+	//sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0; 
+	//sel.prim = 2; //Triangle Strip
+	//SetupGS(sel);
 
-	//old code - GSSetShader(NULL);
+	GSSetShader(NULL);
 
 	/*END OF HACK*/
 	
@@ -1241,8 +1241,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = 0;
-		vp.TopLeftY = 0;
+		vp.TopLeftX = -0.01f;
+		vp.TopLeftY = -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
