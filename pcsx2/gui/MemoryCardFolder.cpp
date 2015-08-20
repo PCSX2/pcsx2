@@ -1362,7 +1362,7 @@ void FileAccessHelper::WriteMetadata( const wxFileName& folderName, MemoryCardFi
 	WriteMetadata( metadataIsNonstandard, fn, entry );
 }
 
-void FileAccessHelper::WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry ) {
+void FileAccessHelper::WriteMetadata( bool metadataIsNonstandard, wxFileName& metadataFilename, const MemoryCardFileEntry* const entry ) {
 	if ( metadataIsNonstandard ) {
 		// write metadata of file if it's nonstandard
 		if ( !metadataFilename.DirExists() ) {
