@@ -228,7 +228,7 @@ protected:
 	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
 
 	void WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef );
-	void WriteMetadata( bool metadataIsNonstandard, const wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );
+	void WriteMetadata( bool metadataIsNonstandard, wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );
 };
 
 // --------------------------------------------------------------------------------------
