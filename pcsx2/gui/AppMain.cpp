@@ -834,6 +834,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	g_Conf->Folders.MemoryCards.Mkdir();
 	g_Conf->Folders.Savestates.Mkdir();
 	g_Conf->Folders.Snapshots.Mkdir();
+	g_Conf->Folders.Cheats.Mkdir();
 	g_Conf->Folders.CheatsWS.Mkdir();
 
 	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
