@@ -59,6 +59,7 @@ layout(r32i, binding = 2) coherent uniform iimage2D img_prim_min;
 #endif
 
 
+// Warning duplicated in both GLSL file
 layout(std140, binding = 21) uniform cb21
 {
 	vec3 FogColor;
@@ -80,8 +81,8 @@ layout(std140, binding = 21) uniform cb21
 
 	vec4 MinMax;
 
+	vec2 TextureScale;
 	vec2 TC_OffsetHack;
-	vec2 _pad2;
 };
 
 vec4 sample_c(vec2 uv)

@@ -353,7 +353,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		case ACC_BLEND_ULTRA:           sw_blending |= true;
 		case ACC_BLEND_FULL:            if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
 										sw_blending |= (ALPHA.A != ALPHA.B) &&
-												((ALPHA.C == 0 && m_vt.m_alpha.max > 128u) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS;
 		case ACC_BLEND_FREE:            sw_blending |= ps_sel.fbmask || impossible_or_free_blend;
@@ -843,12 +843,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		GSVector4 WH(tw, th, w, h);
 
-		if (PRIM->FST)
-		{
-			// FIXME move it in the ps_cb
-			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
-			ps_sel.fst = 1;
-		}
+		ps_sel.fst = !!PRIM->FST;
 
 		ps_cb.WH = WH;
 		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
@@ -859,7 +854,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-		ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
 		GSVector4 clamp(ps_cb.MskFix);
 		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
