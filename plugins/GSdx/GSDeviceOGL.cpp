@@ -826,6 +826,7 @@ void GSDeviceOGL::SelfShaderTest()
 							sel.atst = 1;
 							sel.tfx = 1;
 							sel.tcc = 1;
+							sel.fst = 1;
 
 							sel.ltf = ltf;
 							sel.aem = aem;

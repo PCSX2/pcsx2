@@ -760,7 +760,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		ps_sel.fog = 1;
 
-		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+		GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+#if _M_SSE >= 0x401
+		// Blend AREF to avoid to load a random value for alpha (dirty cache)
+		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF);
+#else
+		ps_cb.FogColor_AREF = fc;
+#endif
 	}
 
 	if (m_context->TEST.ATE)
@@ -781,7 +787,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
@@ -831,13 +837,17 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		if (PRIM->FST)
 		{
+			// FIXME move it in the ps_cb
 			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
 			ps_sel.fst = 1;
 		}
 
 		ps_cb.WH = WH;
 		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+		if ((m_context->CLAMP.WMS | m_context->CLAMP.WMT) > 1) {
+			ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+			ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
+		}
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
@@ -849,8 +859,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_cb.MinMax = clamp / WH.xyxy();
 		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
 
-		ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
-		ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
+		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
+		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);
+		ps_ssel.tav = (m_context->CLAMP.WMT != CLAMP_CLAMP);
 		ps_ssel.ltf = bilinear && simple_sample;
 
 		// Setup Texture ressources
