@@ -856,11 +856,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
 		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
-		GSVector4 clamp(ps_cb.MskFix);
 		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
-
-		ps_cb.MinMax = clamp / WH.xyxy();
-		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
+		ps_cb.MinF_TA = ta.xyxy() / WH.xyxy(GSVector4(255, 255));
 
 		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);

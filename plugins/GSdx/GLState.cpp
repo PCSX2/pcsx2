@@ -50,7 +50,6 @@ namespace GLState {
 	GLuint ds;
 	GLuint tex_unit[4];
 	GLuint64 tex_handle[4];
-	bool dirty_ressources;
 
 	GLuint ps;
 	GLuint gs;
@@ -93,7 +92,6 @@ namespace GLState {
 		gs = 0;
 		vs = 0;
 		program = 0;
-		dirty_prog = false;
-		dirty_ressources = false;
+		dirty_prog = true;
 	}
 }

@@ -64,7 +64,6 @@ void GSShaderOGL::PS(GLuint s)
 		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = s;
 		GLState::dirty_prog = true;
-		GLState::dirty_ressources = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
 			gl_UseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
 		}
@@ -166,8 +165,6 @@ void GSShaderOGL::UseProgram()
 {
 	if (GLState::dirty_prog) {
 		if (!GLLoader::found_GL_ARB_separate_shader_objects) {
-			GLState::dirty_ressources = true;
-
 			hash_map<uint64, GLuint >::iterator it;
 			// Note: shader are integer lookup pointer. They start from 1 and incr
 			// every time you create a new shader OR a new program.

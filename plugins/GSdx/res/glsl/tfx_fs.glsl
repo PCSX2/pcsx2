@@ -67,7 +67,7 @@ layout(std140, binding = 21) uniform cb21
 
 	vec4 WH;
 
-	vec2 MinF;
+	vec2 _pad0;
 	vec2 TA;
 
 	uvec4 MskFix;
