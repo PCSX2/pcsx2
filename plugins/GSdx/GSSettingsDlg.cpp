@@ -160,7 +160,6 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
 	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
-	CheckDlgButton(m_hWnd, IDC_ANISOTROPIC, theApp.GetConfig("AnisotropicFiltering", 0));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 	
@@ -210,13 +209,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		case IDC_NATIVERES:
 		case IDC_SHADEBOOST:
 		case IDC_FILTER:
-			if (code == BN_CLICKED)
-				UpdateControls();
-			break;
-		case IDC_ANISOTROPIC:
-			if (code == BN_CLICKED)
-				UpdateControls();
-			break;
+		case IDC_PALTEX:
 		case IDC_HACKS_ENABLED:
 			if (code == BN_CLICKED)
 				UpdateControls();
@@ -283,7 +276,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("resx", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
-			theApp.SetConfig("AnisotropicFiltering", (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 			
@@ -387,8 +379,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ANISOTROPIC), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC) && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && !(int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
