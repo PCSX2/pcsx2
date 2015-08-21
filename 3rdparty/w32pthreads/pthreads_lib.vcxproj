@@ -43,23 +43,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -639,12 +637,6 @@
     <None Include="MAINTAINERS" />
     <None Include="NEWS" />
     <None Include="PCSX2.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

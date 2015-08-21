@@ -59,42 +59,39 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
-    <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
-    <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
-    <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
-    <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -115,8 +112,6 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(ProjectName)-dev</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(DXSDK_DIR)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
     <Midl>
@@ -129,7 +124,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;$(SolutionDir)3rdparty\portaudio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\portaudio\include\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FLOAT_SAMPLES;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -143,7 +138,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dev.lib;x86emitter-dev.lib;utilities-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -167,7 +162,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;$(SolutionDir)3rdparty\portaudio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\portaudio\include\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FLOAT_SAMPLES;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -178,7 +173,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -200,7 +195,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;$(SolutionDir)3rdparty\portaudio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\portaudio\include\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FLOAT_SAMPLES;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -214,7 +209,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -241,7 +236,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;$(SolutionDir)3rdparty\portaudio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\portaudio\include\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>wxUSE_GUI=0;FLOAT_SAMPLES;DEBUG_FAST;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -253,7 +248,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dbg.lib;x86emitter-dbg.lib;utilities-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -451,34 +446,21 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\3rdparty\portaudio\build\msvc\portaudio.vcxproj">
       <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\soundtouch\SoundTouch.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
       <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
       <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
-      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\common\build\Utilities\utilities.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\build\x86emitter\x86emitter.vcxproj">
-      <Project>{a51123f5-9505-4eae-85e7-d320290a272c}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

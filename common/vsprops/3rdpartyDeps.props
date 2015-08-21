@@ -2,14 +2,11 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
-    <_PropertySheetDisplayName>Pcsx3rdpartyDependencies</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\;$(SvnRootDir)\3rdparty\wxwidgets3.0\include;$(SvnRootDir)\3rdparty\w32pthreads\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32_PTHREADS;__CLEANUP_SEH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SvnRootDir)\deps\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
   </ItemDefinitionGroup>
 </Project>

@@ -43,23 +43,24 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\vsprops\CommonLibrary.props" />
-    <Import Project="..\..\vsprops\IncrementalLinking.props" />
     <Import Project="..\..\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\vsprops\CommonLibrary.props" />
     <Import Project="..\..\vsprops\CodeGen_Release.props" />
-    <Import Project="..\..\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\vsprops\CommonLibrary.props" />
     <Import Project="..\..\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\vsprops\pthreads.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -189,9 +190,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
       <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
-      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

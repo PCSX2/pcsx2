@@ -43,29 +43,27 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -84,7 +82,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dsound.lib;winmm.lib;soundtouch-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dsound.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>ZeroSPU2.def</ModuleDefinitionFile>
@@ -104,7 +102,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dsound.lib;winmm.lib;soundtouch.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dsound.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>ZeroSPU2.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
@@ -125,7 +123,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dsound.lib;winmm.lib;soundtouch-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dsound.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>ZeroSPU2.def</ModuleDefinitionFile>
@@ -159,14 +157,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\3rdparty\soundtouch\SoundTouch.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
-      <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

@@ -43,23 +43,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdpartyDLL.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdpartyDLL.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdpartyDLL.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -76,7 +74,6 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(ProjectName)-dev</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)bin\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)bin\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(SolutionDir)bin\</OutDir>
@@ -92,8 +89,6 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)bin\$(TargetName)$(TargetExt)</OutputFile>
-      <ImportLibrary>$(OutDir)$(ProjectName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -107,7 +102,6 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)bin\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
@@ -121,7 +115,6 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)bin\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

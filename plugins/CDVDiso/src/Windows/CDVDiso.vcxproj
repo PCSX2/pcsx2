@@ -45,21 +45,24 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
@@ -88,7 +91,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2-dbg.lib;zlib-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <TargetMachine>MachineX86</TargetMachine>
@@ -102,7 +104,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -119,7 +120,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2-dev.lib;zlib-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>

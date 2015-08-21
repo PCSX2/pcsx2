@@ -5,7 +5,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
-    <_PropertySheetDisplayName>wxCommon</_PropertySheetDisplayName>
     <IntDir>$(PlatformName)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\deps\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -19,12 +18,12 @@
       <ExceptionHandling>Async</ExceptionHandling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <CompileAs>Default</CompileAs>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)\include;$(SolutionDir)\3rdparty\libpng;$(SolutionDir)\3rdparty\libjpeg;$(SolutionDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir)\include;$(SvnRootDir)\3rdparty\libpng;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;_LIB;_CRT_SECURE_NO_DEPRECATE=1;_SCL_SECURE_NO_WARNINGS=1;__WXMSW__;_UNICODE;WXBUILDING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)\include;$(SolutionDir)\3rdparty\libpng;$(SolutionDir)\3rdparty\libjpeg;$(SolutionDir)\3rdparty\zlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir)\include;$(SvnRootDir)\3rdparty\libpng;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
 </Project>
