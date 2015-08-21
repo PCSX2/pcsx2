@@ -60,9 +60,6 @@
     <ClCompile Include="WindowsMouse.cpp">
       <Filter>InputAPIs</Filter>
     </ClCompile>
-    <ClCompile Include="XInput.cpp">
-      <Filter>InputAPIs</Filter>
-    </ClCompile>
     <ClCompile Include="DeviceEnumerator.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -74,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="WndProcEater.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="XInputEnum.cpp">
+      <Filter>InputAPIs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,9 +119,6 @@
     <ClInclude Include="WindowsMouse.h">
       <Filter>InputAPIs</Filter>
     </ClInclude>
-    <ClInclude Include="XInput.h">
-      <Filter>InputAPIs</Filter>
-    </ClInclude>
     <ClInclude Include="DeviceEnumerator.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -133,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="WndProcEater.h">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="XInputEnum.h">
+      <Filter>InputAPIs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

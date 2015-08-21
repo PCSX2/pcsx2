@@ -450,7 +450,7 @@
     <ClCompile Include="WindowsKeyboard.cpp" />
     <ClCompile Include="WindowsMessaging.cpp" />
     <ClCompile Include="WindowsMouse.cpp" />
-    <ClCompile Include="XInput.cpp" />
+    <ClCompile Include="XInputEnum.cpp" />
     <ClCompile Include="DeviceEnumerator.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="VKey.cpp">
@@ -484,7 +484,7 @@
     <ClInclude Include="WindowsKeyboard.h" />
     <ClInclude Include="WindowsMessaging.h" />
     <ClInclude Include="WindowsMouse.h" />
-    <ClInclude Include="XInput.h" />
+    <ClInclude Include="XInputEnum.h" />
     <ClInclude Include="DeviceEnumerator.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="VKey.h" />

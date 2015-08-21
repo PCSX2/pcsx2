@@ -19,6 +19,7 @@
 #include <xinput.h>
 #include "VKey.h"
 #include "InputManager.h"
+#include "XInputEnum.h"
 
 // This way, I don't require that XInput junk be installed.
 typedef void (CALLBACK *_XInputEnable)(BOOL enable);
