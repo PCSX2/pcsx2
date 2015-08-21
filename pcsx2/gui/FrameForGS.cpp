@@ -401,8 +401,8 @@ void GSPanel::OnLeftDclick(wxMouseEvent& evt)
 static const uint TitleBarUpdateMs = 333;
 
 
-GSFrame::GSFrame(wxWindow* parent, const wxString& title)
-	: wxFrame(parent, wxID_ANY, title, g_Conf->GSWindow.WindowPos)
+GSFrame::GSFrame( const wxString& title)
+	: wxFrame(NULL, wxID_ANY, title, g_Conf->GSWindow.WindowPos)
 	, m_timer_UpdateTitle( this )
 {
 	SetIcons( wxGetApp().GetIconBundle() );

@@ -95,7 +95,7 @@ protected:
 	CpuUsageProvider		m_CpuUsage;
 
 public:
-	GSFrame(wxWindow* parent, const wxString& title);
+	GSFrame( const wxString& title);
 	virtual ~GSFrame() throw();
 
 	GSPanel* GetViewport();
