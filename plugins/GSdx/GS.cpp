@@ -445,7 +445,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 	if (renderer == 12 && theApp.GetConfig("debug_glsl_shader", 0) == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
-		dynamic_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
+		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
 		printf("\nGSdx: test OpenGL shader done. It will now exit\n");
 		return -1;
 	}
