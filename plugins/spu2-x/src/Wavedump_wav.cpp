@@ -19,7 +19,7 @@
 #ifdef __linux__
 #include "WavFile.h"
 #else
-#include "soundtouch/WavFile.h"
+#include "soundtouch/source/SoundStretch/WavFile.h"
 #endif
 
 static WavOutFile* _new_WavOutFile( const char* destfile )
