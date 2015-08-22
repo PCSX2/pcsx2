@@ -316,6 +316,11 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 			bool isFile = wxFile::Exists( fileInfo.GetFullPath() );
 
 			if ( isFile ) {
+				// don't load files in the root dir if we're filtering; no official software stores files there
+				if ( enableFiltering && parent == nullptr ) {
+					hasNext = dir.GetNext( &fileName );
+					continue;
+				}
 				if ( AddFile( dirEntry, dirPath, fileName, parent ) ) {
 					++entryNumber;
 				}
