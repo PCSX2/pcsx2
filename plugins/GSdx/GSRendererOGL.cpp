@@ -47,6 +47,14 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	if (!GSRenderer::CreateDevice(dev))
 		return false;
 
+	// No sw blending if not supported (Intel GPU)
+	if (!GLLoader::found_GL_ARB_texture_barrier) {
+		fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. You can't emulate correctly the GS blending unit! Sorry!\n");
+		m_accurate_date = false;
+		m_sw_blending = 0;
+	}
+
+
 	return true;
 }
 
@@ -552,6 +560,15 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
+	GSDeviceOGL::VSSelector vs_sel;
+	GSDeviceOGL::GSSelector gs_sel;
+
+	GSDeviceOGL::PSSelector ps_sel;
+	GSDeviceOGL::PSSamplerSelector ps_ssel;
+
+	GSDeviceOGL::OMColorMaskSelector om_csel;
+	GSDeviceOGL::OMDepthStencilSelector om_dssel;
+
 	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
 				rt ? rt->GetID() : -1, ds ? ds->GetID() : -1);
@@ -571,15 +588,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
-
-	GSDeviceOGL::VSSelector vs_sel;
-	GSDeviceOGL::GSSelector gs_sel;
-
-	GSDeviceOGL::PSSelector ps_sel;
-	GSDeviceOGL::PSSamplerSelector ps_ssel;
-
-	GSDeviceOGL::OMColorMaskSelector om_csel;
-	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
 	if ((DATE || m_sw_blending) && GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
@@ -604,7 +612,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			require_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (m_accurate_date && om_csel.wa
+		} else if (m_accurate_date && om_csel.wa /* FIXME Check the msb bit of the mask instead + the dfmt*/
 				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
