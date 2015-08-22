@@ -29,7 +29,8 @@ layout(binding = 0) uniform sampler2D TextureSampler;
 void ps_main0()
 {
     vec4 c = texture(TextureSampler, PSin_t);
-    c.a = min(c.a * 2.0, 1.0);
+    // Note: clamping will be done by fixed unit
+    c.a *= 2.0f;
     SV_Target0 = c;
 }
 
