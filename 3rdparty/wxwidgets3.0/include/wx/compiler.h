@@ -53,7 +53,14 @@
 #   define __VISUALC11__
 #elif __VISUALC__ < 1900
 #   define __VISUALC12__
+#elif __VISUALC__ < 2000
+    /* There is no __VISUALC13__! */
+#   define __VISUALC14__
 #else
+    /*
+        Don't forget to update include/msvc/wx/setup.h as well when adding
+        support for a newer MSVC version here.
+     */
 #   pragma message("Please update wx/compiler.h to recognize this VC++ version")
 #endif
 
@@ -102,7 +109,13 @@
 #   define wxVISUALC_VERSION(major) 0
 #   define wxCHECK_VISUALC_VERSION(major) 0
 #else
-#   define wxVISUALC_VERSION(major) ( (6 + major) * 100 )
+    /*
+        Things used to be simple with the _MSC_VER value and the version number
+        increasing in lock step, but _MSC_VER value of 1900 is VC14 and not the
+        non existing (presumably for the superstitious reasons) VC13, so we now
+        need to account for this with an extra offset.
+     */
+#   define wxVISUALC_VERSION(major) ( (6 + (major >= 14 ? 1 : 0) + major) * 100 )
 #   define wxCHECK_VISUALC_VERSION(major) ( __VISUALC__ >= wxVISUALC_VERSION(major) )
 #endif
 

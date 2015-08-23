@@ -5,112 +5,88 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Devel|Win32">
       <Configuration>Devel</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|x64">
+      <Configuration>Devel</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}</ProjectGuid>
-    <RootNamespace>SoundTouch</RootNamespace>
     <ProjectName>SoundTouch</ProjectName>
+    <RootNamespace>SoundTouch</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="Configuration">
+  <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>$(DefaultPlatformToolset)_xp</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>$(DefaultPlatformToolset)_xp</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>$(DefaultPlatformToolset)_xp</PlatformToolset>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'!='Debug'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
-    <Import Project="..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Condition="'$(Configuration)'!='Release'" Project="..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Condition="'$(Configuration)'=='Debug'" Project="..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="'$(Configuration)'=='Devel'" Project="..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="'$(Configuration)'=='Release'" Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
-    <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
-    <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(ProjectName)-dev</TargetName>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)soundtouch;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3dnow_win.cpp" />
-    <ClCompile Include="AAFilter.cpp" />
-    <ClCompile Include="cpu_detect_x86_win.cpp" />
-    <ClCompile Include="FIFOSampleBuffer.cpp" />
-    <ClCompile Include="FIRFilter.cpp" />
-    <ClCompile Include="mmx_optimized.cpp" />
-    <ClCompile Include="RateTransposer.cpp" />
-    <ClCompile Include="SoundTouch.cpp" />
-    <ClCompile Include="sse_optimized.cpp" />
-    <ClCompile Include="TDStretch.cpp" />
-    <ClCompile Include="WavFile.cpp" />
+    <ClCompile Include="source\SoundStretch\WavFile.cpp" />
+    <ClCompile Include="source\SoundTouch\AAFilter.cpp" />
+    <ClCompile Include="source\SoundTouch\BPMDetect.cpp" />
+    <ClCompile Include="source\SoundTouch\cpu_detect_x86.cpp" />
+    <ClCompile Include="source\SoundTouch\FIFOSampleBuffer.cpp" />
+    <ClCompile Include="source\SoundTouch\FIRFilter.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateCubic.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateLinear.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateShannon.cpp" />
+    <ClCompile Include="source\SoundTouch\mmx_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\PeakFinder.cpp" />
+    <ClCompile Include="source\SoundTouch\RateTransposer.cpp" />
+    <ClCompile Include="source\SoundTouch\SoundTouch.cpp" />
+    <ClCompile Include="source\SoundTouch\sse_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\TDStretch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AAFilter.h" />
-    <ClInclude Include="BPMDetect.h" />
-    <ClInclude Include="cpu_detect.h" />
-    <ClInclude Include="FIFOSampleBuffer.h" />
-    <ClInclude Include="FIFOSamplePipe.h" />
-    <ClInclude Include="FIRFilter.h" />
-    <ClInclude Include="RateTransposer.h" />
-    <ClInclude Include="SoundTouch.h" />
-    <ClInclude Include="STTypes.h" />
-    <ClInclude Include="TDStretch.h" />
-    <ClInclude Include="WavFile.h" />
+    <ClInclude Include="soundtouch\BPMDetect.h" />
+    <ClInclude Include="soundtouch\FIFOSampleBuffer.h" />
+    <ClInclude Include="soundtouch\FIFOSamplePipe.h" />
+    <ClInclude Include="soundtouch\SoundTouch.h" />
+    <ClInclude Include="soundtouch\STTypes.h" />
+    <ClInclude Include="source\SoundStretch\WavFile.h" />
+    <ClInclude Include="source\SoundTouch\AAFilter.h" />
+    <ClInclude Include="source\SoundTouch\cpu_detect.h" />
+    <ClInclude Include="source\SoundTouch\FIRFilter.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateCubic.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateLinear.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateShannon.h" />
+    <ClInclude Include="source\SoundTouch\PeakFinder.h" />
+    <ClInclude Include="source\SoundTouch\RateTransposer.h" />
+    <ClInclude Include="source\SoundTouch\TDStretch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

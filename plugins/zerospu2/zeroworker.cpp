@@ -22,7 +22,7 @@
 #ifdef __linux__
 #include "WavFile.h"
 #else
-#include "soundtouch/WavFile.h"
+#include "soundtouch/source/SoundStretch/WavFile.h"
 #endif
 
 s32 g_logsound = 0;
