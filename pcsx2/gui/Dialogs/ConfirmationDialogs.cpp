@@ -204,7 +204,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	int modalResult = pxIssueConfirmation( confirmDlg, buttons );
 
-	if( cfg != NULL )
+	if( modalResult != wxID_CANCEL && cfg != NULL )
 	{
 		wxString cfgResult = ResultToString( modalResult, buttons );
 		if( DisablerCtrl->IsChecked() && !cfgResult.IsEmpty() )
