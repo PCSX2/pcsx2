@@ -871,6 +871,9 @@
     <ClCompile Include="..\WinKeyCodes.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\Optimus.cpp">
+      <Filter>AppHost\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">

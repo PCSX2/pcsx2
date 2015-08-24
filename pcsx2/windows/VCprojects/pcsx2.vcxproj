@@ -698,6 +698,7 @@
     <ClCompile Include="..\..\gui\SysState.cpp" />
     <ClCompile Include="..\..\ZipTools\thread_gzip.cpp" />
     <ClCompile Include="..\..\ZipTools\thread_lzma.cpp" />
+    <ClCompile Include="..\Optimus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
