@@ -219,7 +219,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*s_table+= left				| pxExpand;
 	*s_table+= right			| pxExpand;
 
-	*this	+= m_check_Enable;
+	*this	+= m_check_Enable | StdExpand();
 	*this	+= new wxStaticLine( this )	| pxExpand.Border(wxLEFT | wxRIGHT, 20);
 	*this	+= StdPadding;
 	*this	+= s_table					| pxExpand;
