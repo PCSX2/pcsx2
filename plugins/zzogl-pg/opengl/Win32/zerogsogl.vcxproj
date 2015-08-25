@@ -239,21 +239,9 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <Private>true</Private>
+    <ProjectReference Include="..\..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
-      <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
       <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>

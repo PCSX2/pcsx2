@@ -894,12 +894,8 @@
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
-      <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
+    <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
