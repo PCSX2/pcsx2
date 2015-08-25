@@ -58,7 +58,7 @@ out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 };
 
@@ -144,7 +144,7 @@ in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 } gl_in[];
 //in int gl_PrimitiveIDIn;
@@ -153,7 +153,7 @@ out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 };
 //out int gl_PrimitiveID;

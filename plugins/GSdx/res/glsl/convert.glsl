@@ -13,7 +13,7 @@ out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 };
 
