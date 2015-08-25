@@ -116,6 +116,10 @@
 #   pragma comment(lib, "pthread")
 #endif
 
+#if _MSC_VER >= 1900
+#   define HAVE_STRUCT_TIMESPEC 1
+#endif
+
 /*
  * -------------------------------------------------------------
  *
@@ -577,9 +581,24 @@ extern "C"
  * that available with a simple pointer. It should scale for either
  * IA-32 or IA-64.
  */
-typedef struct {
+typedef struct ptw32_handle_t {
     void * p;                   /* Pointer to actual object */
     unsigned int x;             /* Extra information - reuse count etc */
+
+#ifdef __cplusplus
+	// Added support for various operators so that the struct is
+	// more pthreads-compliant in behavior. (air)
+	const bool operator ==( const struct ptw32_handle_t rightside ) const
+	{
+		return p == rightside.p;
+	}
+
+	const bool operator !=( const struct ptw32_handle_t rightside ) const
+	{
+		return p != rightside.p;
+	}
+#endif
+
 } ptw32_handle_t;
 
 typedef ptw32_handle_t pthread_t;

@@ -137,6 +137,10 @@
 #define HAVE_MODE_T
 #endif
 
+#if _MSC_VER >= 1900
+#define HAVE_STRUCT_TIMESPEC
+#endif
+
 #if defined(__BORLANDC__)
 #endif
 
