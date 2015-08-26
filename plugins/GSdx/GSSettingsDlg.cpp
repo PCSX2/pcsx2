@@ -190,6 +190,15 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_ACCURATE_DATE);
 	AddTooltip(IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(IDC_TC_DEPTH);
+	AddTooltip(IDC_AFCOMBO);
+	AddTooltip(IDC_AA1);
+	AddTooltip(IDC_SWTHREADS);
+	AddTooltip(IDC_SWTHREADS_EDIT);
+	AddTooltip(IDC_SHADEBOOST);
+	AddTooltip(IDC_SHADER_FX);
+	AddTooltip(IDC_FXAA);
+	AddTooltip(IDC_FBA);
+	AddTooltip(IDC_LOGZ);
 
 	UpdateControls();
 }
@@ -423,7 +432,7 @@ void GSSettingsDlg::UpdateControls()
 
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw /*&& IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED) == BST_CHECKED*/);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 	}
 }
 

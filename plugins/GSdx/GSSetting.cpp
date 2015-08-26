@@ -104,6 +104,30 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug.";
 		case IDC_TC_DEPTH:
 			return "Allows the conversion of Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
+		case IDC_AFCOMBO:
+			return "Reduces texture aliasing at extreme viewing angles. High performance impact.";
+		case IDC_AA1:
+			return "Internal GS feature. Reduces edge aliasing of lines and triangles when the game requests it.";
+		case IDC_SWTHREADS:
+		case IDC_SWTHREADS_EDIT:
+			return "Increases number of threads used for rendering. Optimal setting depends on CPU.";
+		case IDC_SHADEBOOST:
+			return "Allows brightness, contrast and saturation to be manually adjusted.";
+		case IDC_SHADER_FX:
+			return "Enables external shader for additional post-processing effects.";
+		case IDC_FXAA:
+			return "Enables fast approximate anti-aliasing. Small performance impact.";
+#ifdef _WIN32
+		// DX9 only
+		case IDC_FBA:
+			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns for some games.";
+		case IDC_LOGZ:
+			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
+#endif
+#ifdef __linux__
+		case IDC_MIPMAP:
+			return "Enables mipmapping, which some games require to render correctly. Turn off only for debug purposes.";
+#endif
 		default:
 			if (updateText)
 				*updateText = false;

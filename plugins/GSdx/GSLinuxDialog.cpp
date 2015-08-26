@@ -314,6 +314,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(tc_depth_check, IDC_TC_DEPTH);
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
+	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
@@ -357,6 +358,10 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
 	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
 
+	AddTooltip(aa_check, IDC_AA1);
+	AddTooltip(mipmap_check, IDC_MIPMAP);
+	AddTooltip(threads_label, threads_spin, IDC_SWTHREADS);
+
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
 	InsertWidgetInTable(sw_table , aa_check, mipmap_check);
@@ -383,6 +388,10 @@ void populate_shader_table(GtkWidget* shader_table)
 
 	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
 	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
+
+	AddTooltip(shadeboost_check, IDC_SHADEBOOST);
+	AddTooltip(shaderfx_check, IDC_SHADER_FX);
+	AddTooltip(fxaa_check, IDC_FXAA);
 
 	s_table_line = 0;
 	InsertWidgetInTable(shader_table , fxaa_check);
