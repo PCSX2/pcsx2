@@ -1390,4 +1390,9 @@
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\PCSX2.manifest">
+      <Filter>AppHost\Resources</Filter>
+    </Manifest>
+  </ItemGroup>
 </Project>
