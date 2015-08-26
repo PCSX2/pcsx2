@@ -244,7 +244,7 @@ wxString GetOSVersionString()
 	if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )
 	{
 		retval += L"Windows XP ";
-		retval += ( osvi.wSuiteMask & VER_SUITE_PERSONAL ) ? L"Professional" : L"Home Edition";
+		retval += ( osvi.wSuiteMask & VER_SUITE_PERSONAL ) ? L"Home Edition" : L"Professional";
 	}
 
 	if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0 )
