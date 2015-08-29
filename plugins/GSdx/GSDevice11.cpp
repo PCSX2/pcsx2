@@ -24,6 +24,7 @@
 #include "GSDevice11.h"
 #include "GSUtil.h"
 #include "resource.h"
+#include <fstream>
 
 GSDevice11::GSDevice11()
 {
@@ -171,11 +172,13 @@ bool GSDevice11::Create(GSWnd* wnd)
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	CompileShader(IDR_CONVERT_FX, "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	vector<unsigned char> shader;
+	theApp.LoadResource(IDR_CONVERT_FX, shader);
+	CompileShader((const char *)shader.data(), shader.size(), "convert.fx", "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader(IDR_CONVERT_FX, format("ps_main%d", i).c_str(), NULL, &m_convert.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), "convert.fx", format("ps_main%d", i).c_str(), NULL, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -201,9 +204,10 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_merge.cb);
 
+	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CompileShader(IDR_MERGE_FX, format("ps_main%d", i).c_str(), NULL, &m_merge.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), "merge.fx", format("ps_main%d", i).c_str(), NULL, &m_merge.ps[i]);
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -229,9 +233,10 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_interlace.cb);
 
+	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CompileShader(IDR_INTERLACE_FX, format("ps_main%d", i).c_str(), NULL, &m_interlace.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), "interlace.fx", format("ps_main%d", i).c_str(), NULL, &m_interlace.ps[i]);
 	}
 
 	// Shade Boost	
@@ -262,7 +267,8 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_shadeboost.cb);
 
-	CompileShader(IDR_SHADEBOOST_FX, "ps_main", macro, &m_shadeboost.ps);
+	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
+	CompileShader((const char *)shader.data(), shader.size(), "shadeboost.fx", "ps_main", macro, &m_shadeboost.ps);
 
 	// External fx shader
 
@@ -748,7 +754,17 @@ void GSDevice11::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			CompileShader("shaders/GSdx.fx", "ps_main", NULL, &m_shaderfx.ps);
+			std::ifstream fshader("shaders/GSdx.fx");
+			if (fshader.good())
+			{
+				std::stringstream shader;
+				shader << fshader.rdbuf();
+				CompileShader(shader.str().c_str(), shader.str().length(), "shaders/GSdx.fx", "ps_main", NULL, &m_shaderfx.ps);
+			}
+			else
+			{
+				fprintf(stderr, "GSdx: Failed to load 'shaders/GSdx.fx'. External Shader will be disabled!\n");
+			}
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile external post-processing shader. \n");
@@ -784,7 +800,9 @@ void GSDevice11::InitFXAA()
 	if (!FXAA_Compiled)
 	{
 		try {
-			CompileShader(IDR_FXAA_FX, "ps_main", NULL, &m_fxaa.ps);
+			vector<unsigned char> shader;
+			theApp.LoadResource(IDR_FXAA_FX, shader);
+			CompileShader((const char *)shader.data(), shader.size(), "fxaa.fx", "ps_main", NULL, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile fxaa shader.\n");
@@ -1296,7 +1314,7 @@ void GSDevice11::OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11U
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
+void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
 {
 	HRESULT hr;
 
@@ -1306,7 +1324,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	CComPtr<ID3D11Blob> shader, error;
 
-    hr = D3DX11CompileFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), NULL, &m[0], NULL, entry, m_shader.vs.c_str(), 0, 0, NULL, &shader, &error, NULL);
+	hr = D3DX11CompileFromMemory(source, size, fn, &m[0], NULL, entry, m_shader.vs.c_str(), 0, 0, NULL, &shader, &error, NULL);
 
 	if(error)
 	{
@@ -1333,7 +1351,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
+void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
 {
 	HRESULT hr;
 
@@ -1343,7 +1361,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	CComPtr<ID3D11Blob> shader, error;
 
-    hr = D3DX11CompileFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), NULL, &m[0], NULL, entry, m_shader.gs.c_str(), 0, 0, NULL, &shader, &error, NULL);
+	hr = D3DX11CompileFromMemory(source, size, fn, &m[0], NULL, entry, m_shader.gs.c_str(), 0, 0, NULL, &shader, &error, NULL);
 
 	if(error)
 	{
@@ -1363,7 +1381,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs, D3D11_SO_DECLARATION_ENTRY* layout, int count)
+void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs, D3D11_SO_DECLARATION_ENTRY* layout, int count)
 {
 	HRESULT hr;
 
@@ -1373,7 +1391,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	CComPtr<ID3D11Blob> shader, error;
 
-    hr = D3DX11CompileFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), NULL, &m[0], NULL, entry, m_shader.gs.c_str(), 0, 0, NULL, &shader, &error, NULL);
+	hr = D3DX11CompileFromMemory(source, size, fn, &m[0], NULL, entry, m_shader.gs.c_str(), 0, 0, NULL, &shader, &error, NULL);
 
 	if(error)
 	{
@@ -1393,7 +1411,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11PixelShader** ps)
+void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11PixelShader** ps)
 {
 	HRESULT hr;
 
@@ -1403,7 +1421,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	CComPtr<ID3D11Blob> shader, error;
 
-    hr = D3DX11CompileFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), NULL, &m[0], NULL, entry, m_shader.ps.c_str(), 0, 0, NULL, &shader, &error, NULL);
+	hr = D3DX11CompileFromMemory(source, size, fn, &m[0], NULL, entry, m_shader.ps.c_str(), 0, 0, NULL, &shader, &error, NULL);
 
 	if(error)
 	{
@@ -1415,7 +1433,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 		throw GSDXRecoverableError();
 	}
 
-	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, ps);
+	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, ps);
 
 	if(FAILED(hr))
 	{
@@ -1423,7 +1441,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
+void GSDevice11::CompileShader(const char* source, size_t size, const char *fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
 {
 	HRESULT hr;
 
@@ -1433,7 +1451,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	CComPtr<ID3D11Blob> shader, error;
 
-    hr = D3DX11CompileFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), NULL, &m[0], NULL, entry, m_shader.cs.c_str(), 0, 0, NULL, &shader, &error, NULL);
+	hr = D3DX11CompileFromMemory(source, size, fn, &m[0], NULL, entry, m_shader.cs.c_str(), 0, 0, NULL, &shader, &error, NULL);
 
 	if(error)
 	{
@@ -1445,103 +1463,7 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 		throw GSDXRecoverableError();
 	}
 
-	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, cs);
-
-	if(FAILED(hr))
-	{
-		throw GSDXRecoverableError();
-	}
-}
-
-void GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
-{
-    HRESULT hr;
-
-    vector<D3D11_SHADER_MACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    CComPtr<ID3D11Blob> shader, error;
-
-    hr = D3DX11CompileFromFile(fn, &m[0], NULL, entry, m_shader.vs.c_str(), 0, 0, NULL, &shader, &error, NULL);
-
-    if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-
-    hr = m_dev->CreateVertexShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, vs);
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-
-    hr = m_dev->CreateInputLayout(layout, count, shader->GetBufferPointer(), shader->GetBufferSize(), il);
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-
-void GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11PixelShader** ps)
-{
-    HRESULT hr;
-
-    vector<D3D11_SHADER_MACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    CComPtr<ID3D11Blob> shader, error;
-
-    hr = D3DX11CompileFromFile(fn, &m[0], NULL, entry, m_shader.ps.c_str(), 0, 0, NULL, &shader, &error, NULL);
-
-    if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-
-    hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, ps);
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-void GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
-{
-	HRESULT hr;
-
-	vector<D3D11_SHADER_MACRO> m;
-
-	PrepareShaderMacro(m, macro);
-
-	CComPtr<ID3D11Blob> shader, error;
-
-    hr = D3DX11CompileFromFile(fn, &m[0], NULL, entry, m_shader.cs.c_str(), 0, 0, NULL, &shader, &error, NULL);
-
-	if(error)
-	{
-		printf("%s\n", (const char*)error->GetBufferPointer());
-	}
-
-	if(FAILED(hr))
-	{
-		throw GSDXRecoverableError();
-	}
-
-	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, cs);
+	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, cs);
 
 	if(FAILED(hr))
 	{
