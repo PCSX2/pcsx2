@@ -939,16 +939,24 @@ void GSDevice9::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			std::ifstream fshader("shaders/GSdx.fx");
+			std::string config_name(theApp.GetConfig("shaderfx_conf", "shaders/GSdx_FX_Settings.ini"));
+			std::ifstream fconfig(config_name);
+			std::stringstream shader;
+			if (fconfig.good())
+				shader << fconfig.rdbuf() << "\n";
+			else
+				fprintf(stderr, "GSdx: External shader config '%s' not loaded.\n", config_name.c_str());
+
+			std::string shader_name(theApp.GetConfig("shaderfx_glsl", "shaders/GSdx.fx"));
+			std::ifstream fshader(shader_name);
 			if (fshader.good())
 			{
-				std::stringstream shader;
 				shader << fshader.rdbuf();
 				CompileShader(shader.str().c_str(), shader.str().length(), "ps_main", NULL, &m_shaderfx.ps);
 			}
 			else
 			{
-				fprintf(stderr, "GSdx: Failed to load 'shaders/GSdx.fx'. External Shader will be disabled!\n");
+				fprintf(stderr, "GSdx: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
 			}
 		}
 		catch (GSDXRecoverableError) {
