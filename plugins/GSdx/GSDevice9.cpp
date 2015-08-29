@@ -23,6 +23,7 @@
 #include "GSdx.h"
 #include "GSDevice9.h"
 #include "resource.h"
+#include <fstream>
 
 GSDevice9::GSDevice9()
 	: m_lost(false)
@@ -289,11 +290,13 @@ bool GSDevice9::Create(GSWnd* wnd)
 		D3DDECL_END()
 	};
 
-	CompileShader(IDR_CONVERT_FX, "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	vector<unsigned char> shader;
+	theApp.LoadResource(IDR_CONVERT_FX, shader);
+	CompileShader((const char *)shader.data(), shader.size(), "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader(IDR_CONVERT_FX, format("ps_main%d", i), NULL, &m_convert.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), format("ps_main%d", i), NULL, &m_convert.ps[i]);
 	}
 
 	m_convert.dss.DepthEnable = false;
@@ -322,9 +325,10 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	// merge
 
+	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CompileShader(IDR_MERGE_FX, format("ps_main%d", i), NULL, &m_merge.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), format("ps_main%d", i), NULL, &m_merge.ps[i]);
 	}
 
 	m_merge.bs.BlendEnable = true;
@@ -338,9 +342,10 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	// interlace
 
+	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CompileShader(IDR_INTERLACE_FX, format("ps_main%d", i), NULL, &m_interlace.ps[i]);
+		CompileShader((const char *)shader.data(), shader.size(), format("ps_main%d", i), NULL, &m_interlace.ps[i]);
 	}
 
 	// Shade Boost	
@@ -363,7 +368,8 @@ bool GSDevice9::Create(GSWnd* wnd)
 		{NULL, NULL},
 	};
 
-	CompileShader(IDR_SHADEBOOST_FX, "ps_main", macro, &m_shadeboost.ps);
+	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
+	CompileShader((const char *)shader.data(), shader.size(), "ps_main", macro, &m_shadeboost.ps);
 
 	// create shader layout
 
@@ -933,7 +939,17 @@ void GSDevice9::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			CompileShader("shaders/GSdx.fx", "ps_main", NULL, &m_shaderfx.ps);
+			std::ifstream fshader("shaders/GSdx.fx");
+			if (fshader.good())
+			{
+				std::stringstream shader;
+				shader << fshader.rdbuf();
+				CompileShader(shader.str().c_str(), shader.str().length(), "ps_main", NULL, &m_shaderfx.ps);
+			}
+			else
+			{
+				fprintf(stderr, "GSdx: Failed to load 'shaders/GSdx.fx'. External Shader will be disabled!\n");
+			}
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile external post-processing shader. \n");
@@ -965,7 +981,9 @@ void GSDevice9::InitFXAA()
 	if (!FXAA_Compiled)
 	{
 		try {
-			CompileShader(IDR_FXAA_FX, "ps_main", NULL, &m_fxaa.ps);
+			vector<unsigned char> shader;
+			theApp.LoadResource(IDR_FXAA_FX, shader);
+			CompileShader((const char *)shader.data(), shader.size(), "ps_main", NULL, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: Failed to compile fxaa shader.\n");
@@ -1421,84 +1439,7 @@ void GSDevice9::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4
 	}
 }
 
-void GSDevice9::CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
-{
-    vector<D3DXMACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    HRESULT hr;
-
-    CComPtr<ID3DXBuffer> shader, error;
-
-    hr = D3DXCompileShaderFromFile(fn, &m[0], NULL, entry.c_str(), m_shader.vs.c_str(), 0, &shader, &error, NULL);
-
-    if(SUCCEEDED(hr))
-    {
-        hr = m_dev->CreateVertexShader((DWORD*)shader->GetBufferPointer(), vs);
-    }
-    else if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    ASSERT(SUCCEEDED(hr));
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-
-    hr = m_dev->CreateVertexDeclaration(layout, il);
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-
-void GSDevice9::CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps)
-{
-    uint32 flags = 0;
-
-    if(m_shader.level >= D3D_FEATURE_LEVEL_9_3)
-    {
-        flags |= D3DXSHADER_AVOID_FLOW_CONTROL;
-    }
-    else
-    {
-        flags |= D3DXSHADER_SKIPVALIDATION;
-    }
-
-    vector<D3DXMACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    HRESULT hr;
-
-    CComPtr<ID3DXBuffer> shader, error;
-
-    hr = D3DXCompileShaderFromFile(fn, &m[0], NULL, entry.c_str(), m_shader.ps.c_str(), flags, &shader, &error, NULL);
-
-    if(SUCCEEDED(hr))
-    {
-        hr = m_dev->CreatePixelShader((DWORD*)shader->GetBufferPointer(), ps);
-    }
-    else if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    ASSERT(SUCCEEDED(hr));
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-
-
-void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
+void GSDevice9::CompileShader(const char *source, size_t size, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
 {
 	vector<D3DXMACRO> m;
 
@@ -1508,7 +1449,7 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 
 	CComPtr<ID3DXBuffer> shader, error;
 
-	hr = D3DXCompileShaderFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), &m[0], NULL, entry.c_str(), m_shader.vs.c_str(), 0, &shader, &error, NULL);
+	hr = D3DXCompileShader(source, size, &m[0], NULL, entry.c_str(), m_shader.vs.c_str(), 0, &shader, &error, NULL);
 
 	if(SUCCEEDED(hr))
 	{
@@ -1518,6 +1459,8 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 	{
 		printf("%s\n", (const char*)error->GetBufferPointer());
 	}
+
+	ASSERT(SUCCEEDED(hr));
 
 	if(FAILED(hr))
 	{
@@ -1532,7 +1475,7 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 	}
 }
 
-void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps)
+void GSDevice9::CompileShader(const char *source, size_t size, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps)
 {
 	uint32 flags = 0;
 
@@ -1552,8 +1495,7 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 	HRESULT hr;
 
 	CComPtr<ID3DXBuffer> shader, error;
-
-	hr = D3DXCompileShaderFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), &m[0], NULL, entry.c_str(), m_shader.ps.c_str(), flags, &shader, &error, NULL);
+	hr = D3DXCompileShader(source, size, &m[0], NULL, entry.c_str(), m_shader.ps.c_str(), flags, &shader, &error, NULL);
 
 	if(SUCCEEDED(hr))
 	{
@@ -1564,9 +1506,10 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 		printf("%s\n", (const char*)error->GetBufferPointer());
 	}
 
+	ASSERT(SUCCEEDED(hr));
+
 	if(FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
 }
-
