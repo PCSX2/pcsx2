@@ -54,3 +54,15 @@ void MSW_ListView_SetIconSpacing( wxListbook* listbook, int width )
 	MSW_ListView_SetIconSpacing( *listbook, width );
 }
 
+float MSW_GetDPIScale()
+{
+#ifdef __WXMSW__
+	HDC screen = GetDC(0);
+	float scale = GetDeviceCaps(screen, LOGPIXELSX) / 96.0;
+	ReleaseDC(NULL, screen);
+
+	return scale;
+#else
+	return 1.0;
+#endif
+}

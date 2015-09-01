@@ -135,7 +135,9 @@ void BaseApplicableDialog::OnSettingsApplied( wxCommandEvent& evt )
 Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, const wxString& title, int idealWidth )
 	: _parent( parent, title )
 {
-	SetMinWidth( idealWidth );
+	float scale = MSW_GetDPIScale();
+
+	SetMinWidth( scale * idealWidth );
 	m_listbook = NULL;
 	m_allowApplyActivation = true;
 
