@@ -595,6 +595,12 @@ void pxSetToolTip( wxWindow* wind, const wxString& src )
 {
 	if( wind == NULL ) return;		// Silently ignore nulls
 	wind->SetToolTip( pxFormatToolTipText(wind, src) );
+
+	// Make tooltips show for as long as possible on Windows. Linux (GTK) can
+	// show tooltips indefinitely.
+#ifdef __WXMSW__
+	wind->GetToolTip()->SetAutoPop(32767);
+#endif
 }
 
 void pxSetToolTip( wxWindow& wind, const wxString& src )
