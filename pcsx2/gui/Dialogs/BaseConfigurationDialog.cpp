@@ -302,9 +302,8 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	{
 		ScopedBusyCursor busy( Cursor_ReallyBusy );
 #ifdef __WXMSW__
-		// FIXME: Ideally the alpha channel information should be dealt with
-		// at the window level. This will do until I have a comprehensive fix
-		// ready.
+		// HACK: This works around an actual wx3.0 bug at the cost of icon
+		// quality. See http://trac.wxwidgets.org/ticket/14403 .
 		wxImage image = memBmp.ConvertToImage();
 		if (image.HasAlpha())
 			image.ClearAlpha();
