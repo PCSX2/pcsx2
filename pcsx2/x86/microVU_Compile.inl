@@ -207,7 +207,7 @@ __ri void branchWarning(mV) {
 	incPC(-2);
 	if (mVUup.eBit && mVUbranch) {
 		incPC(2);
-		Console.Error("microVU%d Warning: Branch in E-bit delay slot! [%04x]", mVU.index, xPC);
+		DevCon.Warning("microVU%d Warning: Branch in E-bit delay slot! [%04x]", mVU.index, xPC);
 		mVUlow.isNOP = true;
 	}
 	else incPC(2);

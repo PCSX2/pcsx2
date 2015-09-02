@@ -1925,7 +1925,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 					// sound plugin plays with it.
 					SetVolume(100);
 				}
-				config.vistaVolume = 100;
 			}
 
 			for (i=0; i<4; i++) {
