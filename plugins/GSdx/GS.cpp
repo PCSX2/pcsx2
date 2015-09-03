@@ -770,7 +770,7 @@ EXPORT_C GSconfigure()
 		if(!GSUtil::CheckSSE()) return;
 
 #ifdef _WINDOWS
-
+		GSDialog::InitCommonControls();
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			if(s_gs != NULL && s_gs->m_wnd->IsManaged())

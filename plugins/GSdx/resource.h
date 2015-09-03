@@ -11,6 +11,7 @@
 #define IDC_RESY_EDIT                   2010
 #define IDC_AA1                         2011
 #define IDC_SWTHREADS_EDIT              2012
+#define IDC_FILTER_TEXT                 2014
 #define IDC_FILTER                      2015
 #define IDC_DITHERING                   2016
 #define IDC_RESX                        2018
@@ -39,6 +40,7 @@
 #define IDC_WIDTH                       2041
 #define IDC_HEIGHT                      2042
 #define IDC_CONFIGURE                   2043
+#define IDC_ACCURATE_BLEND_UNIT_TEXT    2044
 #define IDC_WINDOWED                    2046
 #define IDC_SKIPDRAWHACKEDIT            2048
 #define IDC_SPRITEHACK                  2051
@@ -55,20 +57,16 @@
 #define IDC_MSAACB                      2070
 #define IDC_HACKSBUTTON                 2071
 #define IDC_WILDHACK                    2072
-#define IDC_HACK_DESCRIPTION            2073
-#define IDC_STATIC_MSAA                 2074
-#define IDC_STATIC_SKIPDRAW             2075
 #define IDC_CHECK_DISABLE_ALL_HACKS     2076
 #define IDC_ALPHASTENCIL                2077
 #define IDC_ADAPTER                     2078
-#define IDC_STATIC_TCOFFSETX            2079
-#define IDC_STATIC_TCOFFSETY            2080
 #define IDC_TCOFFSETX                   2081
 #define IDC_TCOFFSETX2                  2082
 #define IDC_TCOFFSETY                   2083
 #define IDC_TCOFFSETY2                  2084
 #define IDC_FXAA                        2085
 #define IDC_SHADER_FX                   2086
+#define IDC_AFCOMBO_TEXT                2087
 #define IDC_AFCOMBO                     2088
 #define IDC_OPENCL_DEVICE               2089
 #define IDC_ACCURATE_BLEND_UNIT         2090
@@ -76,7 +74,7 @@
 #define IDC_ROUND_SPRITE                2092
 #define IDC_ALIGN_SPRITE                2093
 #define IDC_CRC_LEVEL                   2094
-#define IDC_CHECK1                      2095
+#define IDC_CRC_LEVEL_TEXT              2095
 #define IDC_TC_DEPTH                    2096
 #define IDC_COLORSPACE                  3000
 #define IDR_CONVERT_FX                  10000

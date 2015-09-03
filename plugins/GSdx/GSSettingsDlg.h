@@ -48,8 +48,6 @@ class GSHacksDlg : public GSDialog
 	
 	bool isdx9;
 
-	HWND hovered_window;
-
 	void UpdateControls();
 
 protected:

@@ -20,6 +20,8 @@
  */
 
 #include "StdAfx.h"
+#include <Shlwapi.h>
+#include <CommCtrl.h>
 #include "GSdx.h"
 #include "GSDialog.h"
 #include "GSVector.h"
@@ -64,7 +66,46 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
 	dlg = (GSDialog*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
+	if (message == WM_NOTIFY)
+	{
+		if (((LPNMHDR)lParam)->code == TTN_GETDISPINFO)
+		{
+			LPNMTTDISPINFO pInfo = (LPNMTTDISPINFO)lParam;
+			UINT id = GetWindowLongPtr((HWND)pInfo->hdr.idFrom, GWL_ID);
+
+			// lpszText is used only if hinst is NULL. Seems to be NULL already,
+			// but it can't hurt to explicitly set it.
+			pInfo->hinst = NULL;
+			pInfo->lpszText = (LPTSTR)dialog_message(id);
+			SendMessage(pInfo->hdr.hwndFrom, TTM_SETMAXTIPWIDTH, 0, 500);
+			return true;
+		}
+	}
+
 	return dlg != NULL ? dlg->OnMessage(message, wParam, lParam) : FALSE;
+}
+
+// Tooltips will only show if the TOOLINFO cbSize <= the struct size. If it's
+// smaller some functionality might be disabled. So let's try and use the
+// correct size.
+UINT GSDialog::GetTooltipStructSize()
+{
+	DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(GetModuleHandle("ComCtl32.dll"), "DllGetVersion");
+	if (dllGetVersion) {
+		DLLVERSIONINFO2 dllversion = { 0 };
+		dllversion.info1.cbSize = sizeof(DLLVERSIONINFO2);
+
+		if (dllGetVersion((DLLVERSIONINFO*)&dllversion) == S_OK) {
+			// Minor, then major version.
+			DWORD version = MAKELONG(dllversion.info1.dwMinorVersion, dllversion.info1.dwMajorVersion);
+			DWORD tooltip_v3 = MAKELONG(0, 6);
+			if (version >= tooltip_v3)
+				return TTTOOLINFOA_V3_SIZE;
+		}
+	}
+	// Should be fine for XP and onwards, comctl versions >= 4.7 should at least
+	// be this size.
+	return TTTOOLINFOA_V2_SIZE;
 }
 
 bool GSDialog::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
@@ -225,4 +266,46 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 			SendMessage(hWnd, CB_SETDROPPEDWIDTH, width, 0);
 		}
 	}
+}
+
+void GSDialog::AddTooltip(UINT id)
+{
+	static UINT tooltipStructSize = GetTooltipStructSize();
+	bool hasTooltip;
+
+	dialog_message(id, &hasTooltip);
+	if (!hasTooltip)
+		return;
+
+	HWND hWnd = GetDlgItem(m_hWnd, id);
+	if (hWnd == NULL)
+		return;
+
+	// TTS_NOPREFIX allows tabs and '&' to be used.
+	HWND hwndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+		TTS_ALWAYSTIP | TTS_NOPREFIX,
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		m_hWnd, NULL, theApp.GetModuleHandle(), NULL);
+	if (hwndTip == NULL)
+		return;
+
+	TOOLINFO toolInfo = { 0 };
+	toolInfo.cbSize = tooltipStructSize;
+	toolInfo.hwnd = m_hWnd;
+	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+	toolInfo.uId = (UINT_PTR)hWnd;
+	// Can't directly add the tooltip string - it doesn't work for long messages
+	toolInfo.lpszText = LPSTR_TEXTCALLBACK;
+	SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+	// 32.767s is the max show time.
+	SendMessage(hwndTip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 32767);
+}
+
+void GSDialog::InitCommonControls()
+{
+	INITCOMMONCONTROLSEX icex;
+	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icex.dwICC = ICC_TAB_CLASSES;
+
+	InitCommonControlsEx(&icex);
 }
