@@ -26,4 +26,6 @@ Dialogs::GameDatabaseDialog::GameDatabaseDialog(wxWindow* parent)
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 	*this += new GameDatabasePanel(this) | StdExpand();
 	AddOkCancel();
+
+	SetSizerAndFit(GetSizer());
 }

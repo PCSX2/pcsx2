@@ -229,6 +229,8 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 	AddOkCancel();
 	AddPresetsControl();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasCustomHacks() )
 		wxGetApp().PostMethod( CheckHacksOverrides );
 }
@@ -248,11 +250,13 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 	AddListbook();
 	AddOkCancel();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasPluginsOverride() )
 		wxGetApp().PostMethod( CheckPluginsOverrides );
 }
 
-
+// FIXME: Purge? It's unused and does nothing.
 Dialogs::InterfaceConfigDialog::InterfaceConfigDialog(wxWindow *parent)
 	: BaseConfigurationDialog( parent, AddAppName(_("Appearance/Themes - %s")), 400 )
 {
@@ -281,6 +285,8 @@ Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)
 	*this += new Panels::LanguageSelectionPanel(this, false) | StdCenter();
 
 	AddOkCancel();
+
+	SetSizerAndFit(GetSizer());
 }
 
 // ------------------------------------------------------------------------

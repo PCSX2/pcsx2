@@ -147,6 +147,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	confirmDlg += new ModalButtonPanel( &confirmDlg, buttons ) | pxCenter.Border( wxTOP, 8 );
 	buttons.SetBestFocus( confirmDlg );
+	confirmDlg.SetSizerAndFit(confirmDlg.GetSizer());
 	return confirmDlg.ShowModal();
 }
 

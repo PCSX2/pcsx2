@@ -28,4 +28,6 @@ Dialogs::LogOptionsDialog::LogOptionsDialog( wxWindow* parent )
 {
 	*this += new LogOptionsPanel( this ) | StdExpand();
 	AddOkCancel();
+
+	SetSizerAndFit(GetSizer());
 }
