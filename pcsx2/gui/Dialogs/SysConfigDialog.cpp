@@ -147,7 +147,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	m_msg_preset->Bold();
 	
 	//I'm unable to do without the next 2 rows.. what am I missing?
-	m_msg_preset->SetMinWidth(150);
+	m_msg_preset->SetMinWidth(250);
 	m_msg_preset->Unwrapped();
 
 
