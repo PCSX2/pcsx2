@@ -14,15 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSFrame.h"
 
 #include "MSWstuff.h"
-#include <wx/listbook.h>
-#include <wx/listctrl.h>
 
 #ifdef __WXMSW__
 #	include <wx/msw/wrapwin.h>		// needed for OutputDebugString
-#	include <commctrl.h>
 #endif
 
 void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter )
@@ -30,28 +26,6 @@ void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter )
 #ifdef __WXMSW__
 	SetWindowPos( (HWND)hwnd, (HWND)hwndAfter, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE );
 #endif
-}
-
-void MSW_ListView_SetIconSpacing( wxListbook& listbook, int width )
-{
-#ifdef __WXMSW__
-	// Depending on Windows version and user appearance settings, the default icon spacing can be
-	// way over generous.  This little bit of Win32-specific code ensures proper icon spacing, scaled
-	// to the size of the frame's ideal width.
-
-	if (listbook.GetPageCount())
-	{
-		ListView_SetIconSpacing( (HWND)listbook.GetListView()->GetHWND(),
-			(width / listbook.GetPageCount()) - 4, g_Conf->Listbook_ImageSize+32		// y component appears to be ignored
-		);
-	}
-#endif
-}
-
-void MSW_ListView_SetIconSpacing( wxListbook* listbook, int width )
-{
-	if( listbook == NULL ) return;
-	MSW_ListView_SetIconSpacing( *listbook, width );
 }
 
 float MSW_GetDPIScale()

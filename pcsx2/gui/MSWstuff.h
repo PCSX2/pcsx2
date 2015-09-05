@@ -15,12 +15,9 @@
 
 #pragma once
 
-class wxListbook;
-
+// FIXME: Missing some includes.
 extern void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter );
 extern void MSW_OutputDebugString( const wxString& text );
-extern void MSW_ListView_SetIconSpacing( wxListbook& listbook, int width );
-extern void MSW_ListView_SetIconSpacing( wxListbook* listbook, int width );
 extern float MSW_GetDPIScale();
 
 extern void pxDwm_Load();

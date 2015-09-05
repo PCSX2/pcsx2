@@ -37,12 +37,9 @@ DEFINE_EVENT_TYPE( pxEvt_SomethingChanged )
 using namespace Panels;
 
 // configure the orientation of the listbox based on the platform
+// For now, they're all on the left.
+static const int s_orient = wxLB_LEFT;
 
-#if defined(__WXMAC__) || defined(__WXMSW__)
-	static const int s_orient = wxBK_TOP;
-#else
-	static const int s_orient = wxBK_LEFT;
-#endif
 
 class ScopedOkButtonDisabler
 {
@@ -314,10 +311,4 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 		memBmp.SaveFile( filename, wxBITMAP_TYPE_PNG );
 #endif
 	}
-}
-
-void Dialogs::BaseConfigurationDialog::OnSettingsApplied( wxCommandEvent& evt )
-{
-	evt.Skip();
-	MSW_ListView_SetIconSpacing( m_listbook, GetClientSize().GetWidth() );
 }
