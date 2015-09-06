@@ -23,6 +23,7 @@
 
 #include "Resources/EmbeddedImage.h"
 #include "Resources/BackgroundLogo.h"
+#include "Resources/ButtonIcon_Camera.h"
 
 #include "Resources/ConfigIcon_Cpu.h"
 #include "Resources/ConfigIcon_Video.h"
@@ -149,6 +150,28 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	return *logo;
 }
 
+const wxBitmap& Pcsx2App::GetScreenshotBitmap()
+{
+	ScopedPtr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
+	if (screenshot) return *screenshot;
+
+	wxFileName mess;
+	bool useTheme = (g_Conf->DeskTheme != L"default");
+
+	if (useTheme)
+	{
+		wxDirName theme(PathDefs::GetThemes() + g_Conf->DeskTheme);
+		mess = theme.ToString();
+	}
+
+	wxImage img;
+	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
+	LoadImageAny(img, useTheme, mess, L"ButtonIcon_Camera", temp);
+	screenshot = new wxBitmap(img);
+
+	return *screenshot;
+}
+
 wxImageList& Pcsx2App::GetImgList_Config()
 {
 	ScopedPtr<wxImageList>& images( GetResourceCache().ConfigImages );
@@ -168,6 +191,11 @@ wxImageList& Pcsx2App::GetImgList_Config()
 
 		// GCC Specific: wxT() macro is required when using string token pasting.  For some
 		// reason L generates syntax errors. >_<
+		// TODO: This can be fixed with something like
+		// #define L_STR(x) L_STR2(x)
+		// #define L_STR2(x) L ## x
+		// but it's probably best to do it everywhere at once. wxWidgets
+		// recommends not to use it since v2.9.0.
 
 		#undef  FancyLoadMacro
 		#define FancyLoadMacro( name ) \
