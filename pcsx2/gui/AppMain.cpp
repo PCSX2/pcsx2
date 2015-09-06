@@ -739,8 +739,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// Runtime errors which have been unhandled should still be safe to recover from,
 		// so lets issue a message to the user and then continue the message pump.
 
+		// Test case (Windows only, Linux has an uncaught exception for some
+		// reason): Run PSX ISO using fast boot
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->Close();
+
 		Console.Error( ex.FormatDiagnosticMessage() );
-		Msgbox::Alert( ex.FormatDisplayMessage() );
+		// I should probably figure out how to have the error message as well.
+		if (wxGetApp().HasGUI())
+			Msgbox::Alert( ex.FormatDisplayMessage() );
 	}
 }
 
