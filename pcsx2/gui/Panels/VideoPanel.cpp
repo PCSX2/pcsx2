@@ -29,8 +29,6 @@ using namespace pxSizerFlags;
 Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 280 );
-
 	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting"),
 		_("Useful for running benchmarks. Toggle this option in-game by pressing F4.") );
 
@@ -169,8 +167,6 @@ void Panels::FramelimiterPanel::Apply()
 Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 350 );
-
 	const RadioPanelItem FrameskipOptions[] =
 	{
 		RadioPanelItem(

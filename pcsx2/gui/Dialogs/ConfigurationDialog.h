@@ -70,8 +70,6 @@ namespace Dialogs
 		}
 
 	protected:
-		void OnSettingsApplied( wxCommandEvent& evt );
-
 		void OnOk_Click( wxCommandEvent& evt );
 		void OnCancel_Click( wxCommandEvent& evt );
 		void OnApply_Click( wxCommandEvent& evt );
