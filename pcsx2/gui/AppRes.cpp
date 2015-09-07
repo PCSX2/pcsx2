@@ -177,7 +177,8 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	ScopedPtr<wxImageList>& images( GetResourceCache().ConfigImages );
 	if( !images )
 	{
-		images = new wxImageList(32, 32);
+		int image_size = g_Conf->Listbook_ImageSize;
+		images = new wxImageList(image_size, image_size);
 		wxFileName mess;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
 
@@ -200,10 +201,10 @@ wxImageList& Pcsx2App::GetImgList_Config()
 		#undef  FancyLoadMacro
 		#define FancyLoadMacro( name ) \
 		{ \
-			EmbeddedImage<res_ConfigIcon_##name> temp( g_Conf->Listbook_ImageSize, g_Conf->Listbook_ImageSize ); \
-			m_Resources->ImageId.Config.name = images->Add( LoadImageAny( \
-				img, useTheme, mess, L"ConfigIcon_" wxT(#name), temp ) \
-			); \
+			EmbeddedImage<res_ConfigIcon_##name> temp; \
+			LoadImageAny(img, useTheme, mess, L"ConfigIcon_" wxT(#name), temp); \
+			img.Rescale(image_size, image_size, wxIMAGE_QUALITY_HIGH); \
+			m_Resources->ImageId.Config.name = images->Add(img); \
 		}
 
 		FancyLoadMacro( Paths );
