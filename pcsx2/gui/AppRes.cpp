@@ -21,6 +21,8 @@
 #include <wx/wfstream.h>
 #include <wx/imaglist.h>
 
+#include "MSWstuff.h"
+
 #include "Resources/EmbeddedImage.h"
 #include "Resources/BackgroundLogo.h"
 #include "Resources/ButtonIcon_Camera.h"
@@ -145,7 +147,8 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	wxImage img;
 	EmbeddedImage<res_BackgroundLogo> temp;	// because gcc can't allow non-const temporaries.
 	LoadImageAny( img, useTheme, mess, L"BackgroundLogo", temp );
-	logo = new wxBitmap( img );
+	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
+	logo = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
 
 	return *logo;
 }
@@ -167,7 +170,8 @@ const wxBitmap& Pcsx2App::GetScreenshotBitmap()
 	wxImage img;
 	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
 	LoadImageAny(img, useTheme, mess, L"ButtonIcon_Camera", temp);
-	screenshot = new wxBitmap(img);
+	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
+	screenshot = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
 
 	return *screenshot;
 }
@@ -177,7 +181,7 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	ScopedPtr<wxImageList>& images( GetResourceCache().ConfigImages );
 	if( !images )
 	{
-		int image_size = g_Conf->Listbook_ImageSize;
+		int image_size = MSW_GetDPIScale() * g_Conf->Listbook_ImageSize;
 		images = new wxImageList(image_size, image_size);
 		wxFileName mess;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
@@ -219,6 +223,7 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	return *images;
 }
 
+// This stuff seems unused?
 wxImageList& Pcsx2App::GetImgList_Toolbars()
 {
 	ScopedPtr<wxImageList>& images( GetResourceCache().ToolbarImages );
