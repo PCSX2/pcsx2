@@ -26,6 +26,27 @@
 #include "GSVertex.h"
 #include "GSAlignedClass.h"
 
+enum ShaderConvert {
+	ShaderConvert_COPY = 0,
+	ShaderConvert_RGBA8_TO_16_BITS,
+	ShaderConvert_DATM_1,
+	ShaderConvert_DATM_0,
+	ShaderConvert_MOD_256,
+	ShaderConvert_SCANLINE = 5,
+	ShaderConvert_DIAGONAL_FILTER,
+	ShaderConvert_TRANSPARENCY_FILTER,
+	ShaderConvert_TRIANGULAR_FILTER,
+	ShaderConvert_COMPLEX_FILTER,
+	ShaderConvert_FLOAT32_TO_32_BITS = 10,
+	ShaderConvert_FLOAT32_TO_RGBA8,
+	ShaderConvert_FLOAT16_TO_RGB5A1,
+	ShaderConvert_RGBA8_TO_FLOAT32 = 13,
+	ShaderConvert_RGBA8_TO_FLOAT24,
+	ShaderConvert_RGBA8_TO_FLOAT16,
+	ShaderConvert_RGB5A1_TO_FLOAT16,
+	ShaderConvert_RGBA_TO_8I = 17
+};
+
 #pragma pack(push, 1)
 
 class ConvertConstantBuffer

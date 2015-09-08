@@ -291,11 +291,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					int shader = 13 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
+					int shader = ShaderConvert_RGBA8_TO_FLOAT32 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
 				} else {
 					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 11, false);
+					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, ShaderConvert_FLOAT32_TO_RGBA8, false);
 				}
 
 				break;
@@ -862,14 +862,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		// TODO: clean up this mess
 
-		// Shader 11 convert depth to color
-		// Shader 14 convert 32 bits color to 8 bits color
-		int shader = dst->m_type != RenderTarget ? 11 : 0;
+		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
 		bool is_8bits = TEX0.PSM == PSM_PSMT8 && IsOpenGL();
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
-			shader = 17; // ask a conversion to 8 bits format
+			shader = ShaderConvert_RGBA_TO_8I;
 		}
 
 #ifdef ENABLE_OGL_DEBUG
@@ -1555,7 +1553,7 @@ void GSTextureCache::Target::Update()
 		GL_INS("ERROR: Update DepthStencil");
 
 		// FIXME linear or not?
-		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 13);
+		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
 	}
 
 	m_renderer->m_dev->Recycle(t);
