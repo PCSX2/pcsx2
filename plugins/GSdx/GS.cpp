@@ -904,11 +904,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
 	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
 	{
-#ifdef _CX11_
 		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
-#else
-		GSAutoLock lock(&s_gs->m_pGSsetTitle_Crit);
-#endif
 
 		s.append(" | ").append(s_gs->m_GStitleInfoBuffer);
 
