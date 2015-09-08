@@ -1555,7 +1555,7 @@ void GSTextureCache::Target::Update()
 		GL_INS("ERROR: Update DepthStencil");
 
 		// FIXME linear or not?
-		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 12);
+		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 13);
 	}
 
 	m_renderer->m_dev->Recycle(t);
