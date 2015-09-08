@@ -950,7 +950,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[12] || ps == m_convert.ps[13] || ps == m_convert.ps[14]);
+	bool draw_in_depth = (ps == m_convert.ps[13] || ps == m_convert.ps[14] ||
+		ps == m_convert.ps[15] || ps == m_convert.ps[16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader

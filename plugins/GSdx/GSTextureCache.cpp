@@ -291,8 +291,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					int shader = 12 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
-					ASSERT(shader <= 14);
+					int shader = 13 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
 				} else {
 					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
@@ -870,7 +869,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
-			shader = 15; // ask a conversion to 8 bits format
+			shader = 17; // ask a conversion to 8 bits format
 		}
 
 #ifdef ENABLE_OGL_DEBUG
