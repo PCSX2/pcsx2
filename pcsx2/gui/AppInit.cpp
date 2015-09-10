@@ -213,7 +213,7 @@ void Pcsx2App::AllocateCoreStuffs()
 
 void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 {
-	parser.SetLogo( AddAppName(" >>  %s  --  A Playstation2 Emulator for the PC  <<") + L"\n\n" +
+	parser.SetLogo( AddAppName(" >>  %s  --  A PlayStation2 Emulator for the PC  <<") + L"\n\n" +
 		_("All options are for the current session only and will not be saved.\n")
 	);
 
