@@ -643,6 +643,7 @@ void DisassemblyFunction::load()
 					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sh",immediate,rt,2);
 					funcPos += 4;
+					break;
 				case 0x2B:	// sw
 					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sw",immediate,rt,4);
