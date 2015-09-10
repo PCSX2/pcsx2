@@ -1670,6 +1670,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			sleep(1);
 		} else {
 			unsigned long end = timeGetTime();
+			frame_number = std::max(1ul, frame_number); // avoid a potential division by 0
+
 			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
 			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
 
