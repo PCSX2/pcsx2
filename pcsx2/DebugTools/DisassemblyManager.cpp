@@ -992,6 +992,8 @@ void DisassemblyData::createLines()
 				}
 				break;
 			default:
+				// Avoid a call to strlen with random data
+				buffer[0] = 0;
 				break;
 			}
 
