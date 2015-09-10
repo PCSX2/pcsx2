@@ -303,6 +303,11 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
         }
     } while (ret != Z_STREAM_END);
 
+    if (index == NULL) {
+        // Could happen if the start of the stream in Z_STREAM_END
+        return 0;
+    }
+
     /* clean up and return index (release unused entries in list) */
     (void)inflateEnd(&strm);
     index->list = (Point*)realloc(index->list, sizeof(struct point) * index->have);
