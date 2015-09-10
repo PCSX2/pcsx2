@@ -316,6 +316,7 @@ bool GzippedFileReader::OkIndex() {
 		WriteIndexToFile((Access*)m_pIndex, indexfile);
 	} else {
 		Console.Error(L"ERROR (%d): index could not be generated for file '%s'", len, WX_STR(m_filename));
+		free_index(index);
 		InitZstates();
 		return false;
 	}
