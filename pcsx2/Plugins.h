@@ -298,7 +298,8 @@ protected:
 	volatile u32				m_mcdOpen;
 
 public:		// hack until we unsuck plugins...
-	ScopedPtr<PluginStatus_t>	m_info[PluginId_Count];
+	// +1 to avoid out-of-bounds due to PluginId_Mcd which is above PluginId_Count
+	ScopedPtr<PluginStatus_t>	m_info[PluginId_Count + 1];
 
 public:
 	SysCorePlugins();

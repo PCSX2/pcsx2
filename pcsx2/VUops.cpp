@@ -176,19 +176,21 @@ static __ri void __fastcall _vuFMACAdd(VURegs * VU, int reg, int xyzw) {
 		if (VU->fmac[i].enable == 1) continue;
 		break;
 	}
-	//if (i==8) Console.Error("*PCSX2*: error , out of fmacs %d", VU->cycle);
 
+	if (i < 8) {
+		VUM_LOG("adding FMAC pipe[%d]; xyzw=%x", i, xyzw);
 
-	VUM_LOG("adding FMAC pipe[%d]; xyzw=%x", i, xyzw);
-
-	VU->fmac[i].enable = 1;
-	VU->fmac[i].sCycle = VU->cycle;
-	VU->fmac[i].Cycle = 3;
-	VU->fmac[i].reg = reg;
-	VU->fmac[i].xyzw = xyzw;
-	VU->fmac[i].macflag = VU->macflag;
-	VU->fmac[i].statusflag = VU->statusflag;
-	VU->fmac[i].clipflag = VU->clipflag;
+		VU->fmac[i].enable = 1;
+		VU->fmac[i].sCycle = VU->cycle;
+		VU->fmac[i].Cycle = 3;
+		VU->fmac[i].reg = reg;
+		VU->fmac[i].xyzw = xyzw;
+		VU->fmac[i].macflag = VU->macflag;
+		VU->fmac[i].statusflag = VU->statusflag;
+		VU->fmac[i].clipflag = VU->clipflag;
+	} else {
+		//Console.Error("*PCSX2*: error , out of fmacs %d", VU->cycle);
+	}
 }
 
 static __ri void __fastcall _vuFDIVAdd(VURegs * VU, int cycles) {
