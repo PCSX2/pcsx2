@@ -444,8 +444,10 @@ void DisassemblyFunction::generateBranchLines()
 	};
 
 	LaneInfo lanes[NUM_LANES];
-	for (int i = 0; i < NUM_LANES; i++)
+	for (int i = 0; i < NUM_LANES; i++) {
 		lanes[i].used = false;
+		lanes[i].end = 0;
+	}
 
 	u32 end = address+size;
 

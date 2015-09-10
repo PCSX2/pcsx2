@@ -869,6 +869,9 @@ void disMemAccess( std::string& output, const char* name, int cop = 0)
 	case 2:
 		rt = COP2_REG_FP[DECODE_FT];
 		break;
+	default:
+		rt = "???";
+		break;
 	}
 
 	const char* rs = GPR_REG[DECODE_RS];

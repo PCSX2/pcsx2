@@ -90,7 +90,8 @@ void InputIsoFile::BeginRead2(uint lsn)
 
 int InputIsoFile::FinishRead3(u8* dst, uint mode)
 {
-	int _offset, length;
+	int _offset = 0;
+	int length = 0;
 	int ret = 0;
 
 	if(m_current_lsn < 0)
