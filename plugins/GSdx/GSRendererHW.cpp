@@ -81,7 +81,8 @@ void GSRendererHW::SetScaling() {
 	}
 	
 	
-	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
+	if (m_upscale_multiplier)
+		printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
