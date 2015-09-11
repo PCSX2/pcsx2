@@ -48,7 +48,7 @@ void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
 
 	if( handle != NULL )
 	{
-		memcpy_fast( newbuf, handle, size );
+		memcpy( newbuf, handle, size );
 		pcsx2_aligned_free(handle);
 	}
 	return newbuf;
