@@ -228,7 +228,13 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
+// GCC removes the variable as dead code and generates some warnings.
+// Stack is automatically realigned due to SSE/AVX operations
+#ifdef __GNUC__
+#define ALIGN_STACK(n) (void)0;
+#else
 #define ALIGN_STACK(n) __aligned(int, n) __dummy;
+#endif
 
 #ifndef RESTRICT
 
