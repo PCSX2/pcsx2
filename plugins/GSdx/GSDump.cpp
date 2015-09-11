@@ -25,6 +25,7 @@
 GSDump::GSDump()
 	: m_gs(NULL)
 	, m_frames(0)
+	, m_extra_frames(0)
 {
 }
 

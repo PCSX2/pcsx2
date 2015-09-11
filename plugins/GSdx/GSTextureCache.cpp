@@ -1251,6 +1251,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_initpalette(true)
 	, m_target(false)
 	, m_complete(false)
+	, m_spritehack_t(false)
 	, m_p2t(NULL)
 {
 	m_TEX0 = TEX0;

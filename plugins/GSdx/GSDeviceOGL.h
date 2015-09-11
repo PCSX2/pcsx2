@@ -390,7 +390,6 @@ class GSDeviceOGL : public GSDevice
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
-	bool m_free_window;			
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
@@ -446,7 +445,6 @@ class GSDeviceOGL : public GSDevice
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
-	GLuint m_rt_ss;
 
 	GSUniformBufferOGL* m_vs_cb;
 	GSUniformBufferOGL* m_ps_cb;

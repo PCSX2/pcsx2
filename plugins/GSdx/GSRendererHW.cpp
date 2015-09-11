@@ -49,21 +49,21 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 void GSRendererHW::SetScaling()
 {
-	m_buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
+	int buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
 
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
 
 	// Also don't change the size for custom resolution (m_upscale_multiplier = 0).
-	if (m_upscale_multiplier && m_width < (m_buffer_size * m_upscale_multiplier)) {
+	if (m_upscale_multiplier && m_width < (buffer_size * m_upscale_multiplier)) {
 		m_tc->RemovePartial();
 	} else {
 		return;
 	}
 
-	m_height = m_buffer_size < 1024 ? 512 : 1024;
+	m_height = buffer_size < 1024 ? 512 : 1024;
 
 	if (m_upscale_multiplier > 1) {
-		m_width = m_buffer_size * m_upscale_multiplier;
+		m_width = buffer_size * m_upscale_multiplier;
 		m_height *= m_upscale_multiplier;
 	}
 	

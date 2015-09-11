@@ -194,7 +194,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		threads = theApp.GetConfig("extrathreads", 0);
 	}
 
-	GSWnd* wnd[2];
+	GSWnd* wnd[2] = { NULL, NULL };
 
 	try
 	{
@@ -315,7 +315,6 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			wnd[1] = new GSWndOGL();
 #else
 			wnd[0] = new GSWndOGL();
-			wnd[1] = NULL;
 #endif
 #endif
 		}

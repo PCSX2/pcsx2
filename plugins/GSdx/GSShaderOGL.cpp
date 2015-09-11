@@ -24,6 +24,7 @@
 #include "GLState.h"
 
 GSShaderOGL::GSShaderOGL(bool debug) :
+	m_pipeline(0),
 	m_debug_shader(debug)
 {
 	m_single_prog.clear();
