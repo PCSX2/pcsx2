@@ -199,7 +199,7 @@ void LoadConfig()
 	u32 keysym;
 	u32 index;
 	while( fscanf(f, "PAD %d:KEYSYM 0x%x = %d\n", &pad, &keysym, &index) != EOF ) {
-		set_keyboad_key(pad, keysym, index);
+		set_keyboad_key(pad & 1, keysym, index);
 		if(pad == 0) have_user_setting = true;
 	}
 
