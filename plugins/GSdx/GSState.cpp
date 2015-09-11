@@ -4143,7 +4143,7 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}		
-		else if(fi.TME && (fi.FBP >=0x0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
+		else if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
 		{
 			skip = 1;
 		}
@@ -5113,7 +5113,7 @@ bool GSC_AlpineRacer3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(!fi.TME && fi.FBP == 0 && fi.TBP0>=0 && (fi.TPSM >= 0 ) && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
+		if(!fi.TME && fi.FBP == 0 && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
 		{
 			skip = 2;
 		}
@@ -5179,7 +5179,7 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP >= 0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
+		if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
 		{
 			skip = 1; //fi.FBMSK==0
 		}
