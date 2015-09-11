@@ -651,8 +651,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
 		+ format("#define PS_WMS %d\n", sel.wms)
 		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_FMT %d\n", sel.fmt)
-		+ format("#define PS_IFMT %d\n", sel.ifmt)
+		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
 		+ format("#define PS_DFMT %d\n", sel.dfmt)
 		+ format("#define PS_AEM %d\n", sel.aem)
 		+ format("#define PS_TFX %d\n", sel.tfx)
@@ -812,30 +811,27 @@ void GSDeviceOGL::SelfShaderTest()
 	PRINT_TEST("Tfx/Tcc");
 
 	// Test: Texture Sampling
-	for (int fmt = 0; fmt < 8; fmt++) {
+	for (int fmt = 0; fmt < 16; fmt++) {
 		if ((fmt & 3) == 3) continue;
 
 		for (int ltf = 0; ltf < 2; ltf++) {
 			for (int aem = 0; aem < 2; aem++) {
-				for (int ifmt = 0; ifmt < 3; ifmt++) {
-					for (int wms = 1; wms < 4; wms++) {
-						for (int wmt = 1; wmt < 4; wmt++) {
-							PSSelector sel;
-							sel.atst = 1;
-							sel.tfx = 1;
-							sel.tcc = 1;
-							sel.fst = 1;
+				for (int wms = 1; wms < 4; wms++) {
+					for (int wmt = 1; wmt < 4; wmt++) {
+						PSSelector sel;
+						sel.atst = 1;
+						sel.tfx  = 1;
+						sel.tcc  = 1;
+						sel.fst = 1;
 
-							sel.ltf = ltf;
-							sel.aem = aem;
-							sel.fmt = fmt;
-							sel.ifmt = ifmt;
-							sel.wms = wms;
-							sel.wmt = wmt;
-							std::string file = format("Shader_Ltf_%d__Aem_%d__Fmt_%d__Ifmt_%d__Wms_%d__Wmt_%d.glsl.asm",
-									ltf, aem, fmt, ifmt, wms, wmt);
-							RUN_TEST;
-						}
+						sel.ltf     = ltf;
+						sel.aem     = aem;
+						sel.tex_fmt = fmt;
+						sel.wms     = wms;
+						sel.wmt     = wmt;
+						std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d.glsl.asm",
+								ltf, aem, fmt, wms, wmt);
+						RUN_TEST;
 					}
 				}
 			}

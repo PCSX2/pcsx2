@@ -396,6 +396,7 @@ void GSRendererHW::Draw()
 			return;
 		}
 
+		// FIXME: Could be removed on openGL
 		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);

@@ -32,8 +32,6 @@ protected:
 
 	void Read(Target* t, const GSVector4i& r);
 
-	virtual bool IsOpenGL() { return true; }
-
 public:
 	GSTextureCacheOGL(GSRenderer* r);
 };
