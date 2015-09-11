@@ -34,8 +34,8 @@ void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
 #elif defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	return aligned_alloc(align, size);
 #else
-	void *result=0;
-	posix_memalign(&result, alignment, size);
+	void *result = 0;
+	posix_memalign(&result, align, size);
 	return result;
 #endif
 }
