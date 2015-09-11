@@ -99,7 +99,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp" />
+    <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\CheckedStaticBox.cpp" />
     <ClCompile Include="..\..\src\Utilities\Console.cpp" />
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
@@ -154,6 +158,7 @@
     <None Include="..\..\include\Utilities\TlsVariable.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
     <ClInclude Include="..\..\include\Utilities\CheckedStaticBox.h" />
