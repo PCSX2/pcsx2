@@ -244,7 +244,7 @@ int CsoFileReader::ReadFromFrame(u8 *dest, u64 pos, int maxBytes) {
 
 	// Calculate where the compressed payload is (if compressed.)
 	const u64 frameRawPos = (u64)index0 << m_indexShift;
-	const u64 frameRawSize = (index1 - index0) << m_indexShift;
+	const u64 frameRawSize = (u64)(index1 - index0) << m_indexShift;
 
 	if (!compressed) {
 		// Just read directly, easy.

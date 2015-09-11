@@ -63,7 +63,7 @@ static Access* ReadIndexFromFile(const wxString& filename) {
 	infile.read((char*)index, sizeof(Access));
 
 	s64 datasize = size - GZIP_ID_LEN - sizeof(Access);
-	if (datasize != index->have * sizeof(Point)) {
+	if (datasize != (s64)index->have * sizeof(Point)) {
 		Console.Error(L"Error: unexpected size of gzip index, please delete it manually: '%s'.", WX_STR(filename));
 		infile.close();
 		free(index);
