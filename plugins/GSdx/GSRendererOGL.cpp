@@ -847,7 +847,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else if (tex->m_palette) {
 			// Use a standard 8 bits texture. AEM is already done on the CLUT
 			// Therefore you only need to set the index
-			// ps_sel.tex_fmt = 0; // removed as an optimization
 			// ps_sel.aem     = 0; // removed as an optimization
 
 			// Note 4 bits indexes are converted to 8 bits
@@ -890,7 +889,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y) / WH.xyxy();
 
 
 		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
