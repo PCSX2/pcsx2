@@ -13,23 +13,20 @@
 
 SETLOCAL ENABLEEXTENSIONS
 
-set mydir=%~dp0
+IF EXIST "%ProgramFiles(x86)%\Git\bin\git.exe" SET "GITPATH=%ProgramFiles(x86)%\Git\bin"
+IF EXIST "%ProgramFiles%\Git\bin\git.exe" SET "GITPATH=%ProgramFiles%\Git\bin"
+IF EXIST "%ProgramW6432%\Git\bin\git.exe" SET "GITPATH=%ProgramW6432%\Git\bin"
+IF DEFINED GITPATH SET "PATH=%PATH%;%GITPATH%"
 
-IF "%PROGRAMFILES(x86)%" == "" do (
-  set PROGRAMFILES(x86)=%PROGRAMFILES%
-)
-
-set PATH=%PATH%;"%PROGRAMFILES(x86)%\Git\bin"
-
-FOR /F "delims=+" %%i IN ('"git show -s --format=%%%ci HEAD"') do (
-  set REV3=%%i
+FOR /F "tokens=1-2" %%i IN ('"git show -s --format=%%%ci HEAD 2> NUL"') do (
+  set REV3=%%i%%j
 )
 
 set REV2=%REV3: =%
 set REV1=%REV2:-=%
 set REV=%REV1::=%
 
-git show -s
+git show -s > NUL 2>&1
 if %ERRORLEVEL% NEQ 0 (
   echo Automatic version detection unavailable.
   echo If you want to have the version string print correctly,
