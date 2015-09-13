@@ -124,10 +124,8 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</EmbedManifest>
-    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PostBuildEventUseInBuild>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release No CRT|x64'">false</LinkIncremental>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release No CRT|x64'">false</EmbedManifest>
-    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release No CRT|x64'">false</PostBuildEventUseInBuild>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -346,9 +344,6 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\Release/LilyPad.bsc</OutputFile>
     </Bscmake>
-    <PostBuildEvent>
-      <Command>mt.exe -manifest $(IntDir)LilyPad64.dll.manifest -outputresource:$(OutDir)$(ProjectName)64.dll</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release No CRT|x64'">
     <Midl>
@@ -399,9 +394,6 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\Release No CRT/LilyPad.bsc</OutputFile>
     </Bscmake>
-    <PostBuildEvent>
-      <Command>mt.exe -manifest $(IntDir)LilyPad64.dll.manifest -outputresource:$(OutDir)$(ProjectName)64.dll</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">

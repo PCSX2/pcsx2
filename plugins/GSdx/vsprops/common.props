@@ -25,9 +25,6 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(VTUNE_AMPLIFIER_XE_2015_DIR)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>.\postBuild.cmd "$(TargetPath)" "$(TargetName)" $(TargetExt) $(PcsxSubsection)</Command>
-    </PostBuildEvent>
     <PreBuildEvent>
       <Command>"$(SvnCommonDir)\vsprops\preBuild.cmd" "$(ProjectRootDir)"</Command>
     </PreBuildEvent>
