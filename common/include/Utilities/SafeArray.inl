@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "MemcpyFast.h"
 #include "SafeArray.h"
 
 // Internal constructor for use by derived classes.  This allows a derived class to
@@ -132,7 +131,7 @@ T* SafeAlignedArray<T,Alignment>::_virtual_realloc( int newsize )
 {
 	return (T*)( ( this->m_ptr == NULL ) ?
 		_aligned_malloc( newsize * sizeof(T), Alignment ) :
-		_aligned_realloc( this->m_ptr, newsize * sizeof(T), Alignment )
+		pcsx2_aligned_realloc( this->m_ptr, newsize * sizeof(T), Alignment, this->m_size * sizeof(T) )
 	);
 }
 

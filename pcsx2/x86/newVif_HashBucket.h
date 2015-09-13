@@ -81,7 +81,7 @@ public:
 		u32 d = (u32&)dataPtr;
 		SizeChain<T>& bucket( mBucket[d % hSize] );
 
-		if( bucket.Chain = (T*)_aligned_realloc( bucket.Chain, sizeof(T)*(bucket.Size+1), 16), bucket.Chain==NULL ) {
+		if( (bucket.Chain = (T*)pcsx2_aligned_realloc( bucket.Chain, sizeof(T)*(bucket.Size+1), 16, sizeof(T)*bucket.Size)) == NULL ) {
 			throw Exception::OutOfMemory(
 				wxsFormat(L"HashBucket Chain (bucket size=%d)", bucket.Size+1)
 			);
