@@ -576,8 +576,8 @@ void SymbolMap::SetLabelName(const char* name, u32 address, bool updateImmediate
 		auto symbolKey = std::make_pair(labelInfo->second.module, labelInfo->second.addr);
 		auto label = labels.find(symbolKey);
 		if (label != labels.end()) {
-			strcpy(label->second.name,name);
-			label->second.name[127] = 0;
+			strncpy(label->second.name, name, ARRAY_SIZE(label->second.name));
+			label->second.name[ARRAY_SIZE(label->second.name) - 1] = 0;
 
 			// Allow the caller to skip this as it causes extreme startup slowdown
 			// when this gets called for every function identified by the function replacement code.
