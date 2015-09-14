@@ -28,13 +28,3 @@ extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
 #else
 #define memcmp_mmx memcmp
 #endif
-
-// Only used in the Windows version of memzero.h. But it's in Misc.cpp for some reason.
-void _memset16_unaligned( void* dest, u16 data, size_t size );
-
-#define memcpy_fast					memcpy
-#define memcpy_aligned(d,s,c)		memcpy(d,s,c)
-#define memcpy_const					memcpy
-#define memcpy_constA				memcpy
-#define memcpy_qwc_					memcpy
-#define memcpy_qwc(d,s,c)			memcpy(d,s,c*16)

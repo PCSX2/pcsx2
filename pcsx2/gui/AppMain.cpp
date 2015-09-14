@@ -739,8 +739,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// Runtime errors which have been unhandled should still be safe to recover from,
 		// so lets issue a message to the user and then continue the message pump.
 
+		// Test case (Windows only, Linux has an uncaught exception for some
+		// reason): Run PSX ISO using fast boot
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->Close();
+
 		Console.Error( ex.FormatDiagnosticMessage() );
-		Msgbox::Alert( ex.FormatDisplayMessage() );
+		// I should probably figure out how to have the error message as well.
+		if (wxGetApp().HasGUI())
+			Msgbox::Alert( ex.FormatDisplayMessage() );
 	}
 }
 
@@ -834,6 +841,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	g_Conf->Folders.MemoryCards.Mkdir();
 	g_Conf->Folders.Savestates.Mkdir();
 	g_Conf->Folders.Snapshots.Mkdir();
+	g_Conf->Folders.Cheats.Mkdir();
 	g_Conf->Folders.CheatsWS.Mkdir();
 
 	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
@@ -927,7 +935,7 @@ void Pcsx2App::OpenGsPanel()
 	GSFrame* gsFrame = GetGsFramePtr();
 	if( gsFrame == NULL )
 	{
-		gsFrame = new GSFrame( GetMainFramePtr(), GetAppName() );
+		gsFrame = new GSFrame(GetAppName() );
 		m_id_GsFrame = gsFrame->GetId();
 
 		switch( wxGetApp().Overrides.GsWindowMode )

@@ -200,7 +200,7 @@ class GSDeviceOGL : public GSDevice
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
-		GSVector4 TC_OffsetHack;
+		GSVector4 TC_OH_TS;
 
 		PSConstantBuffer()
 		{
@@ -211,7 +211,7 @@ class GSDeviceOGL : public GSDevice
 			MinF_TA       = GSVector4::zero();
 			MskFix        = GSVector4i::zero();
 			AlphaCoeff    = GSVector4::zero();
-			TC_OffsetHack = GSVector4::zero();
+			TC_OH_TS      = GSVector4::zero();
 			FbMask        = GSVector4i::zero();
 		}
 
@@ -220,7 +220,7 @@ class GSDeviceOGL : public GSDevice
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			// if WH matches both HalfTexel and TC_OffsetHack do too
+			// if WH matches both HalfTexel and TC_OH_TS do too
 			// MinMax depends on WH and MskFix so no need to check it too
 			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue())
 			{
@@ -250,8 +250,7 @@ class GSDeviceOGL : public GSDevice
 			{
 				// *** Word 1
 				// Format
-				uint32 fmt:3;
-				uint32 ifmt:2;
+				uint32 tex_fmt:4;
 				uint32 dfmt:2;
 				// Alpha extension/Correction
 				uint32 aem:1;
@@ -276,7 +275,7 @@ class GSDeviceOGL : public GSDevice
 				uint32 write_rg:1;
 				uint32 fbmask:1;
 
-				uint32 _free1:1;
+				uint32 _free1:2;
 
 				// *** Word 2
 				// Blend and Colclip
@@ -291,7 +290,6 @@ class GSDeviceOGL : public GSDevice
 
 				// Hack
 				uint32 tcoffsethack:1;
-				//uint32 point_sampler:1; Not tested, so keep the bit for blend
 
 				uint32 _free2:19;
 			};
@@ -412,7 +410,7 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GLuint vs;		// program object
-		GLuint ps[16];	// program object
+		GLuint ps[18];	// program object
 		GLuint ln;		// sampler object
 		GLuint pt;		// sampler object
 		GSDepthStencilOGL* dss;

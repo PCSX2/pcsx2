@@ -52,10 +52,8 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <hash_map>
 
 using namespace std;
-using namespace stdext;
 
 extern string format(const char* fmt, ...);
 
@@ -93,8 +91,4 @@ typedef signed long long int64;
 	#define ASSERT assert
 #else
 	#define ASSERT(exp) ((void)0)
-#endif
-
-#ifdef _M_SSE
-	#error No SSE please!
 #endif

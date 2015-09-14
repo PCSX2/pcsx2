@@ -1234,7 +1234,6 @@ void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
 }
 
 // GSRasterizerList::GSWorkerSpin
-#ifdef ENABLE_BOOST
 GSRasterizerList::GSWorkerSpin::GSWorkerSpin(GSRasterizer* r)
 	: GSJobQueueSpin<shared_ptr<GSRasterizerData>, 256>()
 	, m_r(r)
@@ -1257,4 +1256,3 @@ void GSRasterizerList::GSWorkerSpin::Process(shared_ptr<GSRasterizerData>& item)
 {
 	m_r->Draw(item.get());
 }
-#endif

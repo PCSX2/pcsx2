@@ -24,9 +24,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>.\postBuild.cmd "$(TargetPath)" "$(TargetName)" $(TargetExt) $(PcsxSubsection)</Command>
-    </PostBuildEvent>
     <PreBuildEvent>
       <Command>"$(SvnCommonDir)\vsprops\preBuild.cmd" "$(ProjectRootDir)"</Command>
     </PreBuildEvent>

@@ -307,7 +307,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	memset(&sd, 0, sizeof(sd));
 
-	sd.Filter = sd.Filter = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sd.Filter = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -318,7 +318,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateSamplerState(&sd, &m_convert.ln);
 
-	sd.Filter = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sd.Filter = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 	hr = m_dev->CreateSamplerState(&sd, &m_convert.pt);
 
@@ -679,11 +679,13 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	Not sure why, but having the Geometry shader disabled causes the strange stretching in recent drivers*/
 
 	GSSelector sel;
-	sel.iip = 0; //Don't use shading for stretching, we're just passing through
-	sel.prim = 2; //Triangle Strip
-	SetupGS(sel);
+	//Don't use shading for stretching, we're just passing through - Note: With Win10 it seems to cause other bugs when shading is off if any of the coords is greater than 0
+	//I really don't know whats going on there, but this seems to resolve it mostly (if not all, not tester a lot of games, only BIOS, FFXII and VP2)
+	//sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0; 
+	//sel.prim = 2; //Triangle Strip
+	//SetupGS(sel);
 
-	//old code - GSSetShader(NULL);
+	GSSetShader(NULL);
 
 	/*END OF HACK*/
 	
@@ -1239,8 +1241,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = 0;
-		vp.TopLeftY = 0;
+		vp.TopLeftX = -0.01f;
+		vp.TopLeftY = -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;

@@ -72,6 +72,18 @@ namespace PathDefs
 			return retval;
 		}
 
+		const wxDirName& Bios()
+		{
+			static const wxDirName retval(L"bios");
+			return retval;
+		}
+
+		const wxDirName& Cheats()
+		{
+			static const wxDirName retval(L"cheats");
+			return retval;
+		}
+
 		const wxDirName& CheatsWS()
 		{
 			static const wxDirName retval(L"cheats_ws");
@@ -184,12 +196,12 @@ namespace PathDefs
 
 	wxDirName GetBios()
 	{
-		return GetDocuments() + wxDirName( L"bios" );
+		return GetDocuments() + Base::Bios();;
 	}
 
 	wxDirName GetCheats()
 	{
-		return AppRoot() + wxDirName( L"cheats" );
+		return GetDocuments() + Base::Cheats();
 	}
 
 	wxDirName GetCheatsWS()
@@ -722,6 +734,7 @@ AppConfig::FolderOptions::FolderOptions()
 	, MemoryCards	( PathDefs::GetMemoryCards() )
 	, Langs			( PathDefs::GetLangs() )
 	, Logs			( PathDefs::GetLogs() )
+	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
 
 	, RunIso( PathDefs::GetDocuments() )			// raw default is always the Documents folder.

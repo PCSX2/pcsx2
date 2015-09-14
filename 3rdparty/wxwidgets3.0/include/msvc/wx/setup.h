@@ -63,6 +63,8 @@
         #define wxCOMPILER_PREFIX vc110
     #elif _MSC_VER == 1800
         #define wxCOMPILER_PREFIX vc120
+    #elif _MSC_VER == 1900
+        #define wxCOMPILER_PREFIX vc140
     #else
         #error "Unknown MSVC compiler version, please report to wx-dev."
     #endif

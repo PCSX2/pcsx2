@@ -29,17 +29,15 @@ using namespace pxSizerFlags;
 Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 280 );
-
 	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting"),
 		_("Useful for running benchmarks. Toggle this option in-game by pressing F4.") );
 
 	m_check_LimiterDisable->SetToolTip( pxEt( L"Note that when Framelimiting is disabled, Turbo and SlowMotion modes will not be available either."
 	) );
 
-	pxFitToDigits( m_spin_NominalPct	= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_SlomoPct		= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_TurboPct		= new wxSpinCtrl( this ), 6 );
+	m_spin_NominalPct = new wxSpinCtrl(this);
+	m_spin_SlomoPct = new wxSpinCtrl(this);
+	m_spin_TurboPct = new wxSpinCtrl(this);
 
 	m_text_BaseNtsc		= CreateNumericalTextCtrl( this, 7 );
 	m_text_BasePal		= CreateNumericalTextCtrl( this, 7 );
@@ -51,7 +49,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	// ------------------------------------------------------------
 	// Sizers and Layouts
 
-	*this += m_check_LimiterDisable;
+	*this += m_check_LimiterDisable | StdExpand();
 
 	wxFlexGridSizer& s_spins( *new wxFlexGridSizer( 5 ) );
 	s_spins.AddGrowableCol( 0 );
@@ -74,12 +72,6 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_spins	+= Label(L"%" )							| StdExpand();
 	s_spins	+= 5;
 
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-
 	wxFlexGridSizer& s_fps( *new wxFlexGridSizer( 5 ) );
 	s_fps.AddGrowableCol( 0 );
 
@@ -96,6 +88,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_fps	+= 5;
 
 	*this	+= s_spins	| pxExpand;
+	*this	+= 5;
 	*this	+= s_fps	| pxExpand;
 
 	AppStatusEvent_OnSettingsApplied();
@@ -174,8 +167,6 @@ void Panels::FramelimiterPanel::Apply()
 Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 350 );
-
 	const RadioPanelItem FrameskipOptions[] =
 	{
 		RadioPanelItem(
@@ -196,8 +187,8 @@ Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 	m_radio_SkipMode = new pxRadioPanel( this, FrameskipOptions );
 	m_radio_SkipMode->Realize();
 
-	pxFitToDigits( m_spin_FramesToDraw	= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_FramesToSkip	= new wxSpinCtrl( this ), 6 );
+	m_spin_FramesToDraw = new wxSpinCtrl(this);
+	m_spin_FramesToSkip = new wxSpinCtrl(this);
 
 	// Set tooltips for spinners.
 
@@ -325,7 +316,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
-	*left		+= m_check_SynchronousGS;
+	*left		+= m_check_SynchronousGS | StdExpand();
 	*left		+= m_check_DisableOutput;
 
 	*s_table	+= left		| StdExpand();

@@ -31,7 +31,7 @@
 #ifdef __linux__
 #include "WavFile.h"
 #else
-#include "soundtouch/WavFile.h"
+#include "soundtouch/source/SoundStretch/WavFile.h"
 #endif
 
 char libraryName[256];

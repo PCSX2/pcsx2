@@ -587,11 +587,9 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	gl_SamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
 	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
-	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0)) {
-		int anisotropy = theApp.GetConfig("MaxAnisotropy", 1);
-		if (anisotropy > 1) // 1 is the default in opengl so don't do anything
-			gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
-	}
+	int anisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && !theApp.GetConfig("paltex", 0))
+		gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
 	GL_POP();
 	return sampler;
@@ -653,8 +651,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
 		+ format("#define PS_WMS %d\n", sel.wms)
 		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_FMT %d\n", sel.fmt)
-		+ format("#define PS_IFMT %d\n", sel.ifmt)
+		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
 		+ format("#define PS_DFMT %d\n", sel.dfmt)
 		+ format("#define PS_AEM %d\n", sel.aem)
 		+ format("#define PS_TFX %d\n", sel.tfx)
@@ -814,29 +811,27 @@ void GSDeviceOGL::SelfShaderTest()
 	PRINT_TEST("Tfx/Tcc");
 
 	// Test: Texture Sampling
-	for (int fmt = 0; fmt < 8; fmt++) {
+	for (int fmt = 0; fmt < 16; fmt++) {
 		if ((fmt & 3) == 3) continue;
 
 		for (int ltf = 0; ltf < 2; ltf++) {
 			for (int aem = 0; aem < 2; aem++) {
-				for (int ifmt = 0; ifmt < 3; ifmt++) {
-					for (int wms = 1; wms < 4; wms++) {
-						for (int wmt = 1; wmt < 4; wmt++) {
-							PSSelector sel;
-							sel.atst = 1;
-							sel.tfx = 1;
-							sel.tcc = 1;
+				for (int wms = 1; wms < 4; wms++) {
+					for (int wmt = 1; wmt < 4; wmt++) {
+						PSSelector sel;
+						sel.atst = 1;
+						sel.tfx  = 1;
+						sel.tcc  = 1;
+						sel.fst = 1;
 
-							sel.ltf = ltf;
-							sel.aem = aem;
-							sel.fmt = fmt;
-							sel.ifmt = ifmt;
-							sel.wms = wms;
-							sel.wmt = wmt;
-							std::string file = format("Shader_Ltf_%d__Aem_%d__Fmt_%d__Ifmt_%d__Wms_%d__Wmt_%d.glsl.asm",
-									ltf, aem, fmt, ifmt, wms, wmt);
-							RUN_TEST;
-						}
+						sel.ltf     = ltf;
+						sel.aem     = aem;
+						sel.tex_fmt = fmt;
+						sel.wms     = wms;
+						sel.wmt     = wmt;
+						std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d.glsl.asm",
+								ltf, aem, fmt, wms, wmt);
+						RUN_TEST;
 					}
 				}
 			}
@@ -951,7 +946,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[12] || ps == m_convert.ps[13] || ps == m_convert.ps[14]);
+	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
+		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -1209,7 +1205,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	m_shader->VS(m_convert.vs);
 	m_shader->GS(0);
-	m_shader->PS(m_convert.ps[datm ? 2 : 3]);
+	m_shader->PS(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
 
 	// om
 
@@ -1596,13 +1592,13 @@ const GSDeviceOGL::OGLBlend GSDeviceOGL::m_blendMapOGL[3*3*3*3 + 1] =
 	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_BLENDFACTOR}    , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_BLENDFACTOR}    , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_ZERO}           , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
-	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
+	{ BLEND_ACCU                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
 	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_ZERO}           , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
 	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
 	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
 	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_ZERO}           , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
+	{ BLEND_ACCU                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
 	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
 	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
 	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVSRCALPHA}    , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)

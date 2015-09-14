@@ -4,8 +4,34 @@ layout(std140, binding = 20) uniform cb20
 {
     vec2 VertexScale;
     vec2 VertexOffset;
-    vec2 TextureScale;
+    vec2 _removed_TextureScale;
     vec2 PointSize;
+};
+
+// Warning duplicated in both GLSL file
+layout(std140, binding = 21) uniform cb21
+{
+    vec3 FogColor;
+    float AREF;
+
+    vec4 WH;
+
+    vec2 _pad0;
+    vec2 TA;
+
+    uvec4 MskFix;
+
+    uvec4 FbMask;
+
+    vec3 _pad1;
+    float Af;
+
+    vec4 HalfTexel;
+
+    vec4 MinMax;
+
+    vec2 TextureScale;
+    vec2 TC_OffsetHack;
 };
 
 #ifdef VERTEX_SHADER
@@ -32,7 +58,7 @@ out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 };
 
@@ -118,7 +144,7 @@ in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 } gl_in[];
 //in int gl_PrimitiveIDIn;
@@ -127,7 +153,7 @@ out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
 #if !pGL_ES
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 #endif
 };
 //out int gl_PrimitiveID;

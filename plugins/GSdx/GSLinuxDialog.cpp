@@ -295,7 +295,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
 
 	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
-	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 1);
+	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 0);
 
 	GtkWidget* crc_label     = gtk_label_new("Automatic CRC level:");
 	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level", 3);
@@ -314,6 +314,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(tc_depth_check, IDC_TC_DEPTH);
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
+	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
@@ -357,6 +358,10 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
 	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
 
+	AddTooltip(aa_check, IDC_AA1);
+	AddTooltip(mipmap_check, IDC_MIPMAP);
+	AddTooltip(threads_label, threads_spin, IDC_SWTHREADS);
+
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
 	InsertWidgetInTable(sw_table , aa_check, mipmap_check);
@@ -383,6 +388,10 @@ void populate_shader_table(GtkWidget* shader_table)
 
 	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
 	GtkWidget* sb_saturation_label = gtk_label_new("Shade Boost Saturation");
+
+	AddTooltip(shadeboost_check, IDC_SHADEBOOST);
+	AddTooltip(shaderfx_check, IDC_SHADER_FX);
+	AddTooltip(fxaa_check, IDC_FXAA);
 
 	s_table_line = 0;
 	InsertWidgetInTable(shader_table , fxaa_check);
@@ -415,7 +424,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
-	gtk_widget_set_tooltip_text(hack_enble_check, "Allow to use hack below");
+	gtk_widget_set_tooltip_text(hack_enble_check, "Allows the use of the hack below");
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
 	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
@@ -560,8 +569,6 @@ bool RunLinuxDialog()
 	theApp.SetConfig("ModeWidth", mode_width);
 	theApp.SetConfig("msaa", 0);
 	theApp.SetConfig("windowed", 1);
-	// Anisotropic is disabled when it is 1x, no need of an extra check box
-	theApp.SetConfig("AnisotropicFiltering", 1);
 
 	gtk_widget_destroy (dialog);
 

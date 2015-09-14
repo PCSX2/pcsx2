@@ -147,6 +147,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	confirmDlg += new ModalButtonPanel( &confirmDlg, buttons ) | pxCenter.Border( wxTOP, 8 );
 	buttons.SetBestFocus( confirmDlg );
+	confirmDlg.SetSizerAndFit(confirmDlg.GetSizer());
 	return confirmDlg.ShowModal();
 }
 
@@ -204,7 +205,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	int modalResult = pxIssueConfirmation( confirmDlg, buttons );
 
-	if( cfg != NULL )
+	if( modalResult != wxID_CANCEL && cfg != NULL )
 	{
 		wxString cfgResult = ResultToString( modalResult, buttons );
 		if( DisablerCtrl->IsChecked() && !cfgResult.IsEmpty() )

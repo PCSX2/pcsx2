@@ -47,6 +47,14 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	if (!GSRenderer::CreateDevice(dev))
 		return false;
 
+	// No sw blending if not supported (Intel GPU)
+	if (!GLLoader::found_GL_ARB_texture_barrier) {
+		fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. You can't emulate correctly the GS blending unit! Sorry!\n");
+		m_accurate_date = false;
+		m_sw_blending = 0;
+	}
+
+
 	return true;
 }
 
@@ -345,7 +353,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		case ACC_BLEND_ULTRA:           sw_blending |= true;
 		case ACC_BLEND_FULL:            if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
 										sw_blending |= (ALPHA.A != ALPHA.B) &&
-												((ALPHA.C == 0 && m_vt.m_alpha.max > 128u) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS;
 		case ACC_BLEND_FREE:            sw_blending |= ps_sel.fbmask || impossible_or_free_blend;
@@ -359,13 +367,20 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0) {
-		if (accumulation_blend) {
-			ps_sel.hdr = 1;
-			GL_INS("COLCLIP Fast HDR mode ENABLED");
-		} else if (sw_blending) {
+		if (m_prim_overlap == PRIM_OVERLAP_NO) {
+			// The fastest algo that requires a single pass
+			GL_INS("COLCLIP Free mode ENABLED");
 			ps_sel.colclip = 1;
+		} else if (accumulation_blend) {
+			// A fast algo that requires 2 passes
+			GL_INS("COLCLIP Fast HDR mode ENABLED");
+			ps_sel.hdr = 1;
+		} else if (sw_blending) {
+			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+			ps_sel.colclip = 1;
 		} else {
+			// Speed hack skip previous slow algo
 			GL_INS("Sorry colclip isn't supported");
 		}
 	}
@@ -388,9 +403,16 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		ps_sel.blend_d = ALPHA.D;
 
 		if (accumulation_blend) {
-			// Keep HW blending to do the addition
+			// Keep HW blending to do the addition/subtraction
 			dev->OMSetBlendState(blend_index);
-			// Remove the addition from the SW blending
+			if (ALPHA.A == 2) {
+				// The blend unit does a reverse subtraction so it means
+				// the shader must output a positive value.
+				// Replace 0 - Cs by Cs - 0
+				ps_sel.blend_a = ALPHA.B;
+				ps_sel.blend_b = 2;
+			}
+			// Remove the addition/substraction from the SW blending
 			ps_sel.blend_d = 2;
 		} else {
 			// Disable HW blending
@@ -538,6 +560,15 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
+	GSDeviceOGL::VSSelector vs_sel;
+	GSDeviceOGL::GSSelector gs_sel;
+
+	GSDeviceOGL::PSSelector ps_sel;
+	GSDeviceOGL::PSSamplerSelector ps_ssel;
+
+	GSDeviceOGL::OMColorMaskSelector om_csel;
+	GSDeviceOGL::OMDepthStencilSelector om_dssel;
+
 	GL_PUSH("GL Draw from %d in %d (Depth %d)",
 				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
 				rt ? rt->GetID() : -1, ds ? ds->GetID() : -1);
@@ -557,15 +588,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
-
-	GSDeviceOGL::VSSelector vs_sel;
-	GSDeviceOGL::GSSelector gs_sel;
-
-	GSDeviceOGL::PSSelector ps_sel;
-	GSDeviceOGL::PSSamplerSelector ps_ssel;
-
-	GSDeviceOGL::OMColorMaskSelector om_csel;
-	GSDeviceOGL::OMDepthStencilSelector om_dssel;
 
 	if ((DATE || m_sw_blending) && GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
@@ -590,7 +612,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			require_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (m_accurate_date && om_csel.wa
+		} else if (m_accurate_date && om_csel.wa /* FIXME Check the msb bit of the mask instead + the dfmt*/
 				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
@@ -746,7 +768,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		ps_sel.fog = 1;
 
-		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+		GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+#if _M_SSE >= 0x401
+		// Blend AREF to avoid to load a random value for alpha (dirty cache)
+		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF);
+#else
+		ps_cb.FogColor_AREF = fc;
+#endif
 	}
 
 	if (m_context->TEST.ATE)
@@ -767,33 +795,69 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 		ps_sel.wms = m_context->CLAMP.WMS;
 		ps_sel.wmt = m_context->CLAMP.WMT;
 
+		// Performance note:
+		// 1/ Don't set 0 as it is the default value
+		// 2/ Only keep aem when it is useful (avoid useless shader permutation)
 		if (ps_sel.shuffle) {
-			ps_sel.fmt = 0;
-		} else if (tex->m_palette) {
-			ps_sel.fmt = cpsm.fmt | 4;
-			ps_sel.ifmt = !tex->m_target ? 0
-				: (m_context->TEX0.PSM == PSM_PSMT4HL) ? 2
-				: (m_context->TEX0.PSM == PSM_PSMT4HH) ? 1
-				: 0;
+			// Force a 32 bits access (normally shuffle is done on 16 bits)
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			ps_sel.aem     = m_env.TEXA.AEM;
+			ASSERT(tex->m_target);
 
-			// In standard mode palette is only used when alpha channel of the RT is
-			// reinterpreted as an index. Star Ocean 3 uses it to emulate a stencil buffer.
-			// It is a very bad idea to force bilinear filtering on it.
-			if (tex->m_target)
+			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+
+			// FIXME: it is likely a bad idea to do the bilinear interpolation here
+			// bilinear &= m_vt.IsLinear();
+
+		} else if (tex->m_target) {
+			// Use an old target. AEM and index aren't resolved it must be done
+			// on the GPU
+
+			// Select the 32/24/16 bits color (AEM)
+			ps_sel.tex_fmt = cpsm.fmt;
+			ps_sel.aem     = m_env.TEXA.AEM;
+
+			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+
+			// Select the index format
+			if (tex->m_palette) {
+				// FIXME Potentially improve fmt field in GSLocalMemory
+				if (m_context->TEX0.PSM == PSM_PSMT4HL)
+					ps_sel.tex_fmt |= 1 << 2;
+				else if (m_context->TEX0.PSM == PSM_PSMT4HH)
+					ps_sel.tex_fmt |= 2 << 2;
+				else
+					ps_sel.tex_fmt |= 3 << 2;
+
+				// Alpha channel of the RT is reinterpreted as an index. Star
+				// Ocean 3 uses it to emulate a stencil buffer.  It is a very
+				// bad idea to force bilinear filtering on it.
 				bilinear &= m_vt.IsLinear();
+			}
 
-			//GL_INS("Use palette with format %d and index format %d", ps_sel.fmt, ps_sel.ifmt);
+		} else if (tex->m_palette) {
+			// Use a standard 8 bits texture. AEM is already done on the CLUT
+			// Therefore you only need to set the index
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			// ps_sel.aem     = 0; // removed as an optimization
+
+			// Note 4 bits indexes are converted to 8 bits
+			ps_sel.tex_fmt = 3 << 2;
+
 		} else {
-			ps_sel.fmt = cpsm.fmt;
+			// Standard texture. Both index and AEM expansion were already done by the CPU.
+			// ps_sel.tex_fmt = 0; // removed as an optimization
+			// ps_sel.aem     = 0; // removed as an optimization
 		}
-		ps_sel.aem = m_env.TEXA.AEM;
 
 		if (m_context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
 			// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
@@ -806,9 +870,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ps_sel.ltf = bilinear && !simple_sample;
 		spritehack = tex->m_spritehack_t;
-		// FIXME the ati is currently disabled on the shader. I need to find a .gs to test that we got same
-		// bug on opengl
-		//ps_sel.point_sampler = 0; // !(bilinear && simple_sample);
 
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();
@@ -818,28 +879,23 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		GSVector4 WH(tw, th, w, h);
 
-		if (PRIM->FST)
-		{
-			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
-			ps_sel.fst = 1;
-		}
+		ps_sel.fst = !!PRIM->FST;
 
 		ps_cb.WH = WH;
 		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+		if ((m_context->CLAMP.WMS | m_context->CLAMP.WMT) > 1) {
+			ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+			ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
+		}
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-		ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
-		GSVector4 clamp(ps_cb.MskFix);
-		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 
-		ps_cb.MinMax = clamp / WH.xyxy();
-		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
-
-		ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
-		ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
+		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
+		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);
+		ps_ssel.tav = (m_context->CLAMP.WMT != CLAMP_CLAMP);
 		ps_ssel.ltf = bilinear && simple_sample;
 
 		// Setup Texture ressources
@@ -991,7 +1047,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (hdr_rt) {
 		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
 		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		dev->StretchRect(hdr_rt, sRect, rt, dRect, 4, false);
+		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
 
 		dev->Recycle(hdr_rt);
 	}

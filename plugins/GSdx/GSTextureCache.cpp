@@ -22,9 +22,13 @@
 #include "stdafx.h"
 #include "GSTextureCache.h"
 
+bool s_IS_OPENGL = false;
+
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
+	s_IS_OPENGL = (theApp.GetConfig("Renderer", 12) == 12);
+
 	m_spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 
@@ -72,12 +76,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
 
-	GIFRegTEXA plainTEXA;
+	// Until DX is fixed
+	if (s_IS_OPENGL) {
+		if(psm.pal > 0)
+			m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
+	} else {
+		GIFRegTEXA plainTEXA;
 
-	plainTEXA.AEM = 1;
-	plainTEXA.TA0 = 0;
-	plainTEXA.TA1 = 0x80;
-	m_renderer->m_mem.m_clut.Read32(TEX0, plainTEXA);
+		plainTEXA.AEM = 1;
+		plainTEXA.TA0 = 0;
+		plainTEXA.TA1 = 0x80;
+		m_renderer->m_mem.m_clut.Read32(TEX0, plainTEXA);
+	}
 
 	const uint32* clut = m_renderer->m_mem.m_clut;
 
@@ -85,26 +95,27 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	list<Source*>& m = m_src.m_map[TEX0.TBP0 >> 5];
 
+
 	for(list<Source*>::iterator i = m.begin(); i != m.end(); i++)
 	{
 		Source* s = *i;
 
-		if(((TEX0.u32[0] ^ s->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ s->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
-		{
+		if (((TEX0.u32[0] ^ s->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ s->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
 			continue;
-		}
 
-		// Special check for palette texture (psm.pal > 0)
-		//
-		// if m_paltex is enabled
-		// 1/ s->m_palette must always be defined
-		// 2/ Clut is useless (will be uploaded again at the end of the function)
-		//
-		// if m_paltex is disabled
-		// 1/ Clut must match if m_palette is NULL
-		if(s->m_palette == NULL && psm.pal > 0 && !GSVector4i::compare64(clut, s->m_clut, psm.pal * sizeof(clut[0])))
-		{
-			continue;
+		// Target are converted (AEM & palette) on the fly by the GPU. They don't need extra check
+		if (!s->m_target) {
+			// We request a palette texture (psm.pal). If the texture was
+			// converted by the CPU (s->m_palette == NULL), we need to ensure
+			// palette content is the same.
+			// Note: content of the palette will be uploaded at the end of the function
+			if (psm.pal > 0 && s->m_palette == NULL && !GSVector4i::compare64(clut, s->m_clut, psm.pal * sizeof(clut[0])))
+				continue;
+
+			// We request a 24/16 bit RGBA texture. Alpha expansion was done by
+			// the CPU.  We need to check that TEXA is identical
+			if (psm.pal == 0 && psm.fmt > 0 && s->m_TEXA.u64 != TEXA.u64)
+				continue;
 		}
 
 		m.splice(m.begin(), m, i);
@@ -147,7 +158,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
-					if (!IsOpenGL() && (psm == PSM_PSMT8)) {
+					if (!s_IS_OPENGL && (psm == PSM_PSMT8)) {
 						// OpenGL can convert the texture directly in the GPU. Not sure we want to keep this
 						// code for DX. It fixes effect but it is slow (MGS3)
 
@@ -291,12 +302,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					int shader = 12 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
-					ASSERT(shader <= 14);
+					int shader = ShaderConvert_RGBA8_TO_FLOAT32 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
 					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
 				} else {
 					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, 11, false);
+					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, ShaderConvert_FLOAT32_TO_RGBA8, false);
 				}
 
 				break;
@@ -325,7 +335,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			//
 			// From a performance point of view, it might cost a little on big upscaling
 			// but normally few RT are miss so it must remain reasonable.
-			if (IsOpenGL()) {
+			if (s_IS_OPENGL) {
 				switch (type) {
 					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
 					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture, 0); break;
@@ -863,14 +873,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		// TODO: clean up this mess
 
-		// Shader 11 convert depth to color
-		// Shader 14 convert 32 bits color to 8 bits color
-		int shader = dst->m_type != RenderTarget ? 11 : 0;
-		bool is_8bits = TEX0.PSM == PSM_PSMT8 && IsOpenGL();
+		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
+		bool is_8bits = TEX0.PSM == PSM_PSMT8 && s_IS_OPENGL;
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
-			shader = 15; // ask a conversion to 8 bits format
+			shader = ShaderConvert_RGBA_TO_8I;
 		}
 
 #ifdef ENABLE_OGL_DEBUG
@@ -1420,9 +1428,14 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 	GIFRegTEXA plainTEXA;
 
-	plainTEXA.AEM = 1;
-	plainTEXA.TA0 = 0;
-	plainTEXA.TA1 = 0x80;
+	// Until DX is fixed
+	if (s_IS_OPENGL) {
+		plainTEXA = m_TEXA;
+	} else {
+		plainTEXA.AEM = 1;
+		plainTEXA.TA0 = 0;
+		plainTEXA.TA1 = 0x80;
+	}
 
 	if(m_palette)
 	{
@@ -1556,7 +1569,7 @@ void GSTextureCache::Target::Update()
 		GL_INS("ERROR: Update DepthStencil");
 
 		// FIXME linear or not?
-		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), 12);
+		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
 	}
 
 	m_renderer->m_dev->Recycle(t);

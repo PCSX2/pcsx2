@@ -799,7 +799,6 @@ extern wxString pxGetAppName();
 extern int pxGetCharHeight( const wxWindow* wind, int rows=1 );
 extern int pxGetCharHeight( const wxWindow& wind, int rows=1 );
 
-extern wxString pxFormatToolTipText( wxWindow* wind, const wxString& src );
 extern void pxSetToolTip( wxWindow* wind, const wxString& src );
 extern void pxSetToolTip( wxWindow& wind, const wxString& src );
 extern wxFont pxGetFixedFont( int ptsize=8, int weight=wxNORMAL );

@@ -445,7 +445,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 	if (renderer == 12 && theApp.GetConfig("debug_glsl_shader", 0) == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
-		dynamic_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
+		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
 		printf("\nGSdx: test OpenGL shader done. It will now exit\n");
 		return -1;
 	}
@@ -770,7 +770,7 @@ EXPORT_C GSconfigure()
 		if(!GSUtil::CheckSSE()) return;
 
 #ifdef _WINDOWS
-
+		GSDialog::InitCommonControls();
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			if(s_gs != NULL && s_gs->m_wnd->IsManaged())
@@ -904,11 +904,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
 	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
 	{
-#ifdef _CX11_
 		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
-#else
-		GSAutoLock lock(&s_gs->m_pGSsetTitle_Crit);
-#endif
 
 		s.append(" | ").append(s_gs->m_GStitleInfoBuffer);
 
@@ -1670,14 +1666,18 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		// Ensure the rendering is complete to measure correctly the time.
 		glFinish();
 
-		unsigned long end = timeGetTime();
-		fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
-		fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
+		if (finished > 90) {
+			sleep(1);
+		} else {
+			unsigned long end = timeGetTime();
+			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
+			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
 
-		stats.push_back((float)(end - start));
+			stats.push_back((float)(end - start));
 
-		finished--;
-		total_frame_nb += frame_number;
+			finished--;
+			total_frame_nb += frame_number;
+		}
 	}
 
 	if (theApp.GetConfig("linux_replay", 1) > 1) {

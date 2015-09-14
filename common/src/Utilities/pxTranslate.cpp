@@ -29,8 +29,7 @@ const wxChar* __fastcall pxExpandMsg( const wxChar* englishContent )
 #if _WIN32 || wxMAJOR_VERSION < 3
 	return wxGetTranslation(englishContent);
 #else
-	wxString translation = wxGetTranslation( englishContent );
-	return translation.wc_str();
+	return wxGetTranslation(englishContent).wc_str();
 #endif
 }
 
@@ -53,7 +52,6 @@ const wxChar* __fastcall pxGetTranslation( const wxChar* message )
 #if _WIN32 || wxMAJOR_VERSION < 3
 	return wxGetTranslation(message);
 #else
-	wxString translation = wxGetTranslation( message );
-	return translation.wc_str();
+	return wxGetTranslation( message ).wc_str();
 #endif
 }

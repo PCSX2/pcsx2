@@ -37,12 +37,9 @@ DEFINE_EVENT_TYPE( pxEvt_SomethingChanged )
 using namespace Panels;
 
 // configure the orientation of the listbox based on the platform
+// For now, they're all on the left.
+static const int s_orient = wxLB_LEFT;
 
-#if defined(__WXMAC__) || defined(__WXMSW__)
-	static const int s_orient = wxBK_TOP;
-#else
-	static const int s_orient = wxBK_LEFT;
-#endif
 
 class ScopedOkButtonDisabler
 {
@@ -135,7 +132,9 @@ void BaseApplicableDialog::OnSettingsApplied( wxCommandEvent& evt )
 Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, const wxString& title, int idealWidth )
 	: _parent( parent, title )
 {
-	SetMinWidth( idealWidth );
+	float scale = MSW_GetDPIScale();
+
+	SetMinWidth( scale * idealWidth );
 	m_listbook = NULL;
 	m_allowApplyActivation = true;
 
@@ -302,9 +301,8 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	{
 		ScopedBusyCursor busy( Cursor_ReallyBusy );
 #ifdef __WXMSW__
-		// FIXME: Ideally the alpha channel information should be dealt with
-		// at the window level. This will do until I have a comprehensive fix
-		// ready.
+		// HACK: This works around an actual wx3.0 bug at the cost of icon
+		// quality. See http://trac.wxwidgets.org/ticket/14403 .
 		wxImage image = memBmp.ConvertToImage();
 		if (image.HasAlpha())
 			image.ClearAlpha();
@@ -313,10 +311,4 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 		memBmp.SaveFile( filename, wxBITMAP_TYPE_PNG );
 #endif
 	}
-}
-
-void Dialogs::BaseConfigurationDialog::OnSettingsApplied( wxCommandEvent& evt )
-{
-	evt.Skip();
-	MSW_ListView_SetIconSpacing( m_listbook, GetClientSize().GetWidth() );
 }

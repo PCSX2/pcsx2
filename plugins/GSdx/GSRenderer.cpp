@@ -409,11 +409,7 @@ void GSRenderer::VSync(int field)
 			// be noticeable).  Besides, these locks are extremely short -- overhead of conditional
 			// is way more expensive than just waiting for the CriticalSection in 1 of 10,000,000 tries. --air
 
-#ifdef _CX11_
 			std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
-#else
-			GSAutoLock lock(&m_pGSsetTitle_Crit);
-#endif
 
 			strncpy(m_GStitleInfoBuffer, s.c_str(), countof(m_GStitleInfoBuffer) - 1);
 
