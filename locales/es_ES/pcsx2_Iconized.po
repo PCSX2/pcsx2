@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
-"PO-Revision-Date: 2014-08-25 15:33+0100\n"
+"POT-Creation-Date: 2015-09-14 12:34+0200\n"
+"PO-Revision-Date: 2015-09-14 12:35+0200\n"
 "Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.8.4\n"
 
 #: common/src/Utilities/Exceptions.cpp:275
 msgid ""
@@ -455,19 +455,17 @@ msgstr ""
 "para juegos concretos)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
-"Los arreglos para juegos arreglan temporalmente la emulación en algunos "
-"juegos.\n"
+"Los arreglos para juegos pueden corregir la emulación en algunos juegos.\n"
 "También pueden provocar problemas de compatibilidad o de rendimiento.\n"
 "\n"
-"La forma más segura de confirmar que todos los arreglos para juegos están "
-"desactivados."
+"Lo más seguro es verificar que has desactivado todos los arreglos para "
+"juegos."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
