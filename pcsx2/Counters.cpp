@@ -173,6 +173,7 @@ static u64 m_iStart=0;
 struct vSyncTimingInfo
 {
 	Fixed100 Framerate;		// frames per second (8 bit fixed)
+	GS_RegionMode RegionMode; // used to detect change (interlaced/progressive)
 	u32 Render;				// time from vblank end to vblank start (cycles)
 	u32 Blank;				// time from vblank start to vblank end (cycles)
 
@@ -278,18 +279,19 @@ u32 UpdateVSyncRate()
 	else if ( gsRegionMode == Region_NTSC_PROGRESSIVE )
 	{
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
-		framerate = 30; // Cheating here to avoid a complex change to the below "vSyncInfo.Framerate != framerate" branch
+		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 	}
 
-	if( vSyncInfo.Framerate != framerate )
+	if (vSyncInfo.Framerate != framerate || vSyncInfo.RegionMode != gsRegionMode)
 	{
+		vSyncInfo.RegionMode = gsRegionMode;
 		vSyncInfoCalc( &vSyncInfo, framerate, scanlines );
 		Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ( gsRegionMode == Region_PAL ) ? "PAL" : 
-			( gsRegionMode == Region_NTSC ) ? "NTSC" : "Progressive Scan" );
+			( gsRegionMode == Region_NTSC ) ? "NTSC" : "NTSC Progressive Scan" );
 		
 		if( isCustom )
-			Console.Indent().WriteLn( Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", framerate.ToFloat() );
+			Console.Indent().WriteLn( Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", 2 * framerate.ToFloat() );
 
 		hsyncCounter.CycleT = vSyncInfo.hRender;	// Amount of cycles before the counter will be updated
 		vsyncCounter.CycleT = vSyncInfo.Render;		// Amount of cycles before the counter will be updated
