@@ -465,11 +465,9 @@ bool GSState::IsEnabled(int i)
 	return false;
 }
 
-float GSState::GetFPS()
+float GSState::GetTvRefreshRate()
 {
-	float base_rate = ((m_regs->SMODE1.CMOD & 1) ? 25 : (30/1.001f));
-
-	return base_rate * (m_regs->SMODE2.INT ? 2 : 1);
+	return (m_regs->SMODE1.CMOD & 1) ? 50 : (60/1.001f);
 }
 
 // GIFPackedRegHandler*
