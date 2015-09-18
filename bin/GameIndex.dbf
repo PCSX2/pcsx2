@@ -1495,6 +1495,7 @@ Region = PAL-M6
 Serial = SCES-50934
 Name   = World Rally Championship II Extreme
 Region = PAL-M7
+Compat = 5
 ---------------------------------------------
 Serial = SCES-50935
 Name   = World Rally Championship II Extreme
@@ -1890,6 +1891,7 @@ Region = PAL-M5
 Serial = SCES-52424
 Name   = Ace Combat - Squadron Leader
 Region = PAL-M5
+Compat = 5
 [patches = 1D54FEA9]
 	patch=0,EE,001A3154,word,48498800
 	patch=0,EE,001A3158,word,4B00682C
@@ -5648,7 +5650,7 @@ Region = NTSC-U
 Serial = SCUS-97479
 Name   = ATV Off-Road Fury 4
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SCUS-97481
 Name   = God of War II
@@ -8361,6 +8363,7 @@ Region = PAL-M5
 Serial = SLES-50874
 Name   = F1 2002
 Region = PAL-M4
+Compat = 3
 ---------------------------------------------
 Serial = SLES-50875
 Name   = F1 2002
@@ -8681,6 +8684,7 @@ Region = PAL-E
 Serial = SLES-51043
 Name   = Spyro - Enter the Dragonfly
 Region = PAL-M6
+Compat = 5
 [patches = 0EF1D4BA]
 	comment=Spyro PAL startup fix
 	patch=1,EE,001E763C,word,24020001
@@ -9280,7 +9284,7 @@ Region = PAL-M3
 Serial = SLES-51302
 Name   = Bomberman Kart
 Region = PAL-M3
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51303
 Name   = LEGO Dome Racers
@@ -9963,7 +9967,7 @@ Region = PAL-E
 Serial = SLES-51686
 Name   = Pitfall - The Lost Expedition
 Region = PAL-E
-Compat = 3
+Compat = 4
 ---------------------------------------------
 Serial = SLES-51687
 Name   = Pitfall - The Lost Expedition
@@ -10976,7 +10980,7 @@ Region = PAL-F
 Serial = SLES-52134
 Name   = Hitman - Contracts
 Region = PAL-I
-Compat = 5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-52135
 Name   = Hitman - Contracts
@@ -11097,6 +11101,7 @@ Region = PAL-M5
 Serial = SLES-52219
 Name   = Corvette
 Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52230
 Name   = Muppets Party Cruise
@@ -11262,6 +11267,7 @@ Compat = 5
 Serial = SLES-52298
 Name   = IndyCar Series 2005
 Region = PAL-M5
+Compat = 2
 ---------------------------------------------
 Serial = SLES-52308
 Name   = Karaoke Stage
@@ -11494,6 +11500,7 @@ Compat = 5
 Serial = SLES-52418
 Name   = Powerdrome
 Region = PAL-M5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-52423
 Name   = Smash Court Tennis - Pro Tournament 2
@@ -12455,6 +12462,7 @@ Region = PAL-M3
 Serial = SLES-52812
 Name   = Disney-Pixar's The Incredibles
 Region = PAL-E
+Compat = 5
 [patches = EBDB6E4B]
 comment= Patch By Prafull
 // fix hang at loading screen
@@ -12634,7 +12642,7 @@ Region = PAL-M6
 Serial = SLES-52895
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-E
-Compat = 2
+Compat = 5
 [patches = 536FEB77]
 comment= Patch By Prafull
 // fix hang at loading screen
@@ -13977,6 +13985,7 @@ Region = PAL-M5
 Serial = SLES-53494
 Name   = Spongebob Squarepants - Lights, Camera, PANTS!
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53496
 Name   = Spongebob Squarepants - Lights, Camera, PANTS!
@@ -15000,6 +15009,7 @@ Compat = 5
 Serial = SLES-53965
 Name   = Plan, The
 Region = PAL-E-G
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53966
 Name   = Taito Legends
@@ -16207,6 +16217,7 @@ Region = PAL-M5
 Serial = SLES-54554
 Name   = Star Trek - Encounters
 Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-54555
 Name   = Shin Megami Tensei: Digital Devil Saga 2
@@ -17043,7 +17054,7 @@ Region = PAL-E
 Serial = SLES-55237
 Name   = Naruto - Ultimate Ninja 3
 Region = PAL-M5
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55240
 Name   = Pipe Mania
@@ -17254,7 +17265,7 @@ Region = PAL-R
 Serial = SLES-55440
 Name   = Ben 10: Alien Force
 Region = PAL-M5
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55442
 Name   = Tomb Raider Underworld
@@ -21293,6 +21304,7 @@ Region = NTSC-J
 Serial = SLPM-65059
 Name   = BioHazard Gun Survivor 2 - CODE - Veronica [with Guncon]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65060
 Name   = BioHazard Gun Survivor 2 - CODE - Veronica
@@ -22668,7 +22680,7 @@ Region = NTSC-J
 Serial = SLPM-65473
 Name   = Hagane no Renkinjutsushi - Tobenai Tenshi
 Region = NTSC-J
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65474
 Name   = Kurogane no Houkou 2 - Warship Commander [Limited Edition]
@@ -31371,6 +31383,7 @@ Region = NTSC-J
 Serial = SLPS-25402
 Name   = Hagane no Renkinjutsushi - Dream Carnival
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25403
 Name   = Hitman - Silent Assassin [Eidos The Best]
@@ -34351,6 +34364,7 @@ Compat = 5
 Serial = SLUS-20176
 Name   = NASCAR Heat 2002
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20177
 Name   = Test Drive - Off-Road - Wide Open
@@ -34811,6 +34825,7 @@ Compat = 5
 Serial = SLUS-20278
 Name   = Yanya Caballista - City Skater
 Region = NTSC-U
+Compat = 4
 ---------------------------------------------
 Serial = SLUS-20279
 Name   = X-Men - Next Dimension
@@ -35403,7 +35418,7 @@ Compat = 5
 Serial = SLUS-20408
 Name   = Pitfall - The Lost Expedition
 Region = NTSC-U
-Compat = 3
+Compat = 4
 ---------------------------------------------
 Serial = SLUS-20409
 Name   = Total Immersion Racing
@@ -35433,6 +35448,7 @@ Compat = 5
 Serial = SLUS-20416
 Name   = Headhunter
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20417
 Name   = Grandia Xtreme
@@ -36137,7 +36153,7 @@ Compat = 5
 Serial = SLUS-20573
 Name   = Sims, The
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20574
 Name   = NCAA March Madness 2003
@@ -36485,6 +36501,7 @@ Region = NTSC-U
 Serial = SLUS-20651
 Name   = NBA Street 2
 Region = NTSC-U
+Compat = 5
 vuClampMode = 2		//missing environment with microVU
 ---------------------------------------------
 Serial = SLUS-20652
@@ -36714,6 +36731,7 @@ Compat = 5
 Serial = SLUS-20704
 Name   = Backyard Basketball
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20705
 Name   = I-Ninja
@@ -37508,6 +37526,7 @@ Compat = 5
 Serial = SLUS-20880
 Name   = Fairly Odd Parents, The - Shadow Showdown
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20881
 Name   = Mortal Kombat - Deception
@@ -37623,11 +37642,12 @@ Compat = 5
 Serial = SLUS-20904
 Name   = SpongeBob Squarepants - The Movie
 Region = NTSC-U
-Compat = 3
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20905
 Name   = Incredibles, The
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20906
 Name   = Fight Night 2004
@@ -38007,6 +38027,7 @@ Compat = 5
 Serial = SLUS-20978
 Name   = Power Drome
 Region = NTSC-U
+Compat = 4
 ---------------------------------------------
 Serial = SLUS-20979
 Name   = Suikoden IV
@@ -38295,7 +38316,7 @@ Compat = 5
 Serial = SLUS-21033
 Name   = Second Sight
 Region = NTSC-U
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21034
 Name   = Magix Music Maker [Deluxe Edition]
@@ -39151,7 +39172,7 @@ Compat = 5
 Serial = SLUS-21217
 Name   = Incredibles, The - Rise of the Underminers
 Region = NTSC-U
-Compat = 3
+Compat = 5
 [patches = 6DFE8ED7]
 comment= Patch By Prafull
 // fix hang at loading screen
@@ -39378,6 +39399,7 @@ Compat = 5
 Serial = SLUS-21260
 Name   = Ed, Edd, 'n Eddy - The Mis-Edventures
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21261
 Name   = Shadow the Hedgehog
@@ -40434,7 +40456,7 @@ Compat = 5
 Serial = SLUS-21475
 Name   = Final Fantasy XII [Collector's Edition]
 Region = NTSC-U
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21476
 Name   = Madden NFL '07
@@ -41800,6 +41822,7 @@ Compat = 5
 Serial = SLUS-21808
 Name   = Harry Potter and the Half-Blood Prince
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21809
 Name   = Backyard Football 2009
@@ -42195,7 +42218,7 @@ Compat = 5
 Serial = SLUS-21902
 Name   = Bakugan: Battle Brawlers
 Region = NTSC-U
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21904
 Name   = Teenage Mutant Ninja Turtles: Smash-Up
@@ -42325,7 +42348,7 @@ vuClampMode = 3			//shows the crowd in the back
 Serial = SLUS-21938
 Name   = Ben 10 Ultimate Alien: Cosmic Destruction
 Region = NTSC-U
-compat = 5
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21939
 Name   = WWE SmackDown vs. Raw 2011
