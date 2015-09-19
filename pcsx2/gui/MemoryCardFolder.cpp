@@ -413,11 +413,6 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 		// make sure we have enough space on the memcard to hold the data
 		const u32 clusterSize = m_superBlock.data.pages_per_cluster * m_superBlock.data.page_len;
 		const u32 filesize = file.Length();
-		if (!filesize) {
-			Console.Error(L"(MCDF) Empty file. Aborting.");
-			file.Close();
-			return false;
-		}
 		const u32 countClusters = ( filesize % clusterSize ) != 0 ? ( filesize / clusterSize + 1 ) : ( filesize / clusterSize );
 		const u32 newNeededClusters = ( dirEntry->entry.data.length % 2 ) == 0 ? countClusters + 1 : countClusters;
 		if ( newNeededClusters > GetAmountFreeDataClusters() ) {
@@ -450,17 +445,21 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 		}
 
 		newFileEntry->entry.data.length = filesize;
-		u32 fileDataStartingCluster = GetFreeDataCluster();
-		newFileEntry->entry.data.cluster = fileDataStartingCluster;
+		if ( filesize != 0 ) {
+			u32 fileDataStartingCluster = GetFreeDataCluster();
+			newFileEntry->entry.data.cluster = fileDataStartingCluster;
 
-		// mark the appropriate amount of clusters as used
-		u32 dataCluster = fileDataStartingCluster;
-		m_fat.data[0][0][dataCluster] = LastDataCluster | DataClusterInUseMask;
-		for ( unsigned int i = 0; i < countClusters - 1; ++i ) {
-			u32 newCluster = GetFreeDataCluster();
-			m_fat.data[0][0][dataCluster] = newCluster | DataClusterInUseMask;
-			m_fat.data[0][0][newCluster] = LastDataCluster | DataClusterInUseMask;
-			dataCluster = newCluster;
+			// mark the appropriate amount of clusters as used
+			u32 dataCluster = fileDataStartingCluster;
+			m_fat.data[0][0][dataCluster] = LastDataCluster | DataClusterInUseMask;
+			for ( unsigned int i = 0; i < countClusters - 1; ++i ) {
+				u32 newCluster = GetFreeDataCluster();
+				m_fat.data[0][0][dataCluster] = newCluster | DataClusterInUseMask;
+				m_fat.data[0][0][newCluster] = LastDataCluster | DataClusterInUseMask;
+				dataCluster = newCluster;
+			}
+		} else {
+			newFileEntry->entry.data.cluster = MemoryCardFileEntry::EmptyFileCluster;
 		}
 
 		file.Close();
