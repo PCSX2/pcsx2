@@ -434,7 +434,9 @@ static __fi void VSyncEnd(u32 sCycle)
 	if (gates) rcntEndGate(true, sCycle); // Counters End Gate Code
 
 	// FolderMemoryCard needs information on how much time has passed since the last write
-	sioNextFrame();
+	// Call it every 60 frames
+	if (!(g_FrameCount % 60))
+		sioNextFrame();
 
 	frameLimit(); // limit FPS
 

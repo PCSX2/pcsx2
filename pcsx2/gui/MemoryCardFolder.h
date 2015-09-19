@@ -256,7 +256,7 @@ public:
 	static const u32 NextDataClusterMask = 0x7FFFFFFFu;
 	static const u32 DataClusterInUseMask = 0x80000000u;
 
-	static const int FramesAfterWriteUntilFlush = 60;
+	static const int FramesAfterWriteUntilFlush = 2;
 
 protected:
 	union superBlockUnion {
