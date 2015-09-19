@@ -225,7 +225,7 @@ public:
 
 	bool IsEnabled(int i);
 
-	float GetFPS();
+	float GetTvRefreshRate();
 
 	virtual void Reset();
 	virtual void Flush();

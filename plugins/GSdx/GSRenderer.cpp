@@ -358,7 +358,7 @@ void GSRenderer::VSync(int field)
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
-				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetFPS()),
+				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
 				theApp.m_gs_aspectratio[m_aspectratio].name.c_str(),
@@ -533,7 +533,7 @@ bool GSRenderer::MakeSnapshot(const string& path)
 
 bool GSRenderer::BeginCapture()
 {
-	return m_capture.BeginCapture(GetFPS());
+	return m_capture.BeginCapture(GetTvRefreshRate());
 }
 
 void GSRenderer::EndCapture()
