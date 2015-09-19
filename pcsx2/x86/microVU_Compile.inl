@@ -499,7 +499,7 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 
 	mVUincCycles(mVU, 1); //Just incase the is XGKick
 	if (mVUinfo.doXGKICK) {
-		mVU_XGKICK_DELAY(mVU, true);
+		mVU_XGKICK_DELAY(mVU);
 	}
 
 	return thisPtr;
@@ -624,7 +624,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 		}
 
 		if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 
 		if (isEvilBlock) {

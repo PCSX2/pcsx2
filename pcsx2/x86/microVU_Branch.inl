@@ -54,7 +54,7 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		}
 		//Run any pending XGKick, providing we've got to it.
 		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1) xCALL(mVU0clearlpStateJIT);
@@ -113,7 +113,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 			mVUdivSet(mVU);
 		}
 		if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1)
