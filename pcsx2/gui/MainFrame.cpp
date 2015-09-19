@@ -348,7 +348,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	// ------------------------------------------------------------------------
 
-	wxSize backsize( m_background.GetSize() );
+	// The background logo and its window size are different on Windows. Use the
+	// background logo size, which is what it'll eventually be resized to.
+	wxSize backsize(m_background.GetBitmap().GetWidth(), m_background.GetBitmap().GetHeight());
 
 	wxString wintitle;
 	if( PCSX2_isReleaseVersion )
@@ -385,6 +387,10 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	wxBoxSizer& joe( *new wxBoxSizer( wxVERTICAL ) );
 	joe.Add( &m_background );
 	SetSizerAndFit( &joe );
+	// Makes no sense, but this is needed for the window size to be correct for
+	// 200% DPI on Windows. The SetSizerAndFit is supposed to be doing the exact
+	// same thing.
+	GetSizer()->SetSizeHints(this);
 
 	// Use default window position if the configured windowpos is invalid (partially offscreen)
 	if( g_Conf->MainGuiPosition == wxDefaultPosition || !pxIsValidWindowPosition( *this, g_Conf->MainGuiPosition) )

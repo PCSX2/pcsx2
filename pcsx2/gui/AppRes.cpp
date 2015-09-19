@@ -21,8 +21,11 @@
 #include <wx/wfstream.h>
 #include <wx/imaglist.h>
 
+#include "MSWstuff.h"
+
 #include "Resources/EmbeddedImage.h"
 #include "Resources/BackgroundLogo.h"
+#include "Resources/ButtonIcon_Camera.h"
 
 #include "Resources/ConfigIcon_Cpu.h"
 #include "Resources/ConfigIcon_Video.h"
@@ -144,9 +147,33 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	wxImage img;
 	EmbeddedImage<res_BackgroundLogo> temp;	// because gcc can't allow non-const temporaries.
 	LoadImageAny( img, useTheme, mess, L"BackgroundLogo", temp );
-	logo = new wxBitmap( img );
+	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
+	logo = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
 
 	return *logo;
+}
+
+const wxBitmap& Pcsx2App::GetScreenshotBitmap()
+{
+	ScopedPtr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
+	if (screenshot) return *screenshot;
+
+	wxFileName mess;
+	bool useTheme = (g_Conf->DeskTheme != L"default");
+
+	if (useTheme)
+	{
+		wxDirName theme(PathDefs::GetThemes() + g_Conf->DeskTheme);
+		mess = theme.ToString();
+	}
+
+	wxImage img;
+	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
+	LoadImageAny(img, useTheme, mess, L"ButtonIcon_Camera", temp);
+	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
+	screenshot = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
+
+	return *screenshot;
 }
 
 wxImageList& Pcsx2App::GetImgList_Config()
@@ -154,7 +181,8 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	ScopedPtr<wxImageList>& images( GetResourceCache().ConfigImages );
 	if( !images )
 	{
-		images = new wxImageList(32, 32);
+		int image_size = MSW_GetDPIScale() * g_Conf->Listbook_ImageSize;
+		images = new wxImageList(image_size, image_size);
 		wxFileName mess;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
 
@@ -168,14 +196,19 @@ wxImageList& Pcsx2App::GetImgList_Config()
 
 		// GCC Specific: wxT() macro is required when using string token pasting.  For some
 		// reason L generates syntax errors. >_<
+		// TODO: This can be fixed with something like
+		// #define L_STR(x) L_STR2(x)
+		// #define L_STR2(x) L ## x
+		// but it's probably best to do it everywhere at once. wxWidgets
+		// recommends not to use it since v2.9.0.
 
 		#undef  FancyLoadMacro
 		#define FancyLoadMacro( name ) \
 		{ \
-			EmbeddedImage<res_ConfigIcon_##name> temp( g_Conf->Listbook_ImageSize, g_Conf->Listbook_ImageSize ); \
-			m_Resources->ImageId.Config.name = images->Add( LoadImageAny( \
-				img, useTheme, mess, L"ConfigIcon_" wxT(#name), temp ) \
-			); \
+			EmbeddedImage<res_ConfigIcon_##name> temp; \
+			LoadImageAny(img, useTheme, mess, L"ConfigIcon_" wxT(#name), temp); \
+			img.Rescale(image_size, image_size, wxIMAGE_QUALITY_HIGH); \
+			m_Resources->ImageId.Config.name = images->Add(img); \
 		}
 
 		FancyLoadMacro( Paths );
@@ -190,6 +223,7 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	return *images;
 }
 
+// This stuff seems unused?
 wxImageList& Pcsx2App::GetImgList_Toolbars()
 {
 	ScopedPtr<wxImageList>& images( GetResourceCache().ToolbarImages );

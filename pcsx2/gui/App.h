@@ -242,6 +242,7 @@ public:
 	ScopedPtr<wxImageList>		ToolbarImages;
 	ScopedPtr<wxIconBundle>		IconBundle;
 	ScopedPtr<wxBitmap>			Bitmap_Logo;
+	ScopedPtr<wxBitmap>			ScreenshotBitmap;
 	ScopedPtr<AppGameDatabase>	GameDB;
 
 	pxAppResources();
@@ -559,6 +560,7 @@ public:
 	pxAppResources&		GetResourceCache();
 	const wxIconBundle&	GetIconBundle();
 	const wxBitmap&		GetLogoBitmap();
+	const wxBitmap&		GetScreenshotBitmap();
 	wxImageList&		GetImgList_Config();
 	wxImageList&		GetImgList_Toolbars();
 
