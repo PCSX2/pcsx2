@@ -989,6 +989,24 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 			}
 		} else if ( entry->IsValid() && entry->IsUsed() && entry->IsFile() ) {
 			AddFileEntryToMetadataQuickAccess( entry, parent );
+			if ( entry->entry.data.length == 0 ) {
+				// empty files need to be explicitly created, as there will be no data cluster referencing it later
+				char cleanName[sizeof( entry->entry.data.name )];
+				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+				bool filenameCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+				const wxString filePath = dirPath + L"/" + wxString::FromAscii( (const char*)cleanName );
+
+				if ( m_performFileWrites ) {
+					wxFileName fn( m_folderName.GetFullPath() + filePath );
+					if ( !fn.FileExists() ) {
+						if ( !fn.DirExists() ) {
+							fn.Mkdir( 0777, wxPATH_MKDIR_FULL );
+						}
+						wxFFile createEmptyFile( fn.GetFullPath(), L"wb" );
+						createEmptyFile.Close();
+					}
+				}
+			}
 		}
 	}
 
