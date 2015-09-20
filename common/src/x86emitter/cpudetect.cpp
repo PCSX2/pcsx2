@@ -182,7 +182,7 @@ void x86capabilities::CountCores()
 static const char* tbl_x86vendors[] = 
 {
 	"GenuineIntel",
-	"AuthenticAMD"
+	"AuthenticAMD",
 	"Unknown     ",
 };
 

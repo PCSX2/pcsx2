@@ -73,7 +73,7 @@ public:
 	}
 
 	BaseBlockArray (s32 size) : _Reserved(0),
-		_Size(0)
+		_Size(0), blocks(NULL)
 	{
 		if(size > 0) {
 			resize(size);

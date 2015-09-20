@@ -74,7 +74,7 @@ static inline int wcsicmp(const wchar_t* w1, const wchar_t* w2) {
 static inline unsigned int timeGetTime() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	uint64_t ms = (now.tv_usec/1000) + (now.tv_sec * 1000);
+	uint64_t ms = (now.tv_usec/1000) + ((uint64_t)now.tv_sec * 1000);
 	return (ms & 0xFFFFFFFF); // MS code is u32 ...
 }
 

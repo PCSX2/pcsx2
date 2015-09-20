@@ -710,7 +710,7 @@ static void recResetRaw()
 
 	maxrecmem = 0;
 
-	memset(recConstBuf, 0, RECCONSTBUF_SIZE * sizeof(recConstBuf));
+	memset(recConstBuf, 0, RECCONSTBUF_SIZE * sizeof(*recConstBuf));
 
 	if( s_pInstCache )
 		memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );

@@ -241,6 +241,7 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 
 	ModuleEntry mod;
 	strncpy(mod.name, name, ARRAY_SIZE(mod.name));
+	mod.name[ARRAY_SIZE(mod.name) - 1] = 0;
 	mod.start = address;
 	mod.size = size;
 	mod.index = (int)modules.size() + 1;

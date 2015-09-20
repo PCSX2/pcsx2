@@ -1767,7 +1767,7 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 
 			cdvdGetMechaVer(&cdvd.Result[1]);
 			cdvdReadRegionParams(&cdvd.Result[3]);//size==8
-			DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[cdvd.Result[1]], &cdvd.Result[3]);
+			DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[cdvd.Result[1] & 7], &cdvd.Result[3]);
 			cdvd.Result[1] = 1 << cdvd.Result[1];	//encryption zone; see offset 0x1C in encrypted headers
 			//////////////////////////////////////////
 			cdvd.Result[2] = 0;						//??

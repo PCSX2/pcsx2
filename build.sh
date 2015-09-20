@@ -22,6 +22,7 @@ cleanBuild=0
 useClang=0
 # 0 => no, 1 => yes, 2 => force yes
 useCross=2
+CoverityBuild=0
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -41,6 +42,7 @@ for ARG in "$@"; do
         --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
         --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
+        --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         -D*                 ) flags+=($ARG) ;;
 
         *)
@@ -66,6 +68,7 @@ for ARG in "$@"; do
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
             echo "--asan          : Enable Address sanitizer"
+            echo "--coverity      : Do a build for coverity (require the tool)"
 
             exit 1
     esac
@@ -74,6 +77,8 @@ done
 root=$PWD/$(dirname "$0")
 log=$root/install_log.txt
 build=$root/build
+coverity_dir=cov-int
+coverity_result=pcsx2-coverity.xz
 
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
@@ -116,7 +121,13 @@ else
     ncpu=$(grep -w -c processor /proc/cpuinfo)
 fi
 
-make -j"$ncpu" 2>&1 | tee -a $log
-make install 2>&1 | tee -a $log
+if [[ "$CoverityBuild" -eq 1 ]]; then
+    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a $log
+    # Warning: $coverity_dir must be the root directory
+    (cd $build; tar caf $coverity_result $coverity_dir)
+else
+    make -j"$ncpu" 2>&1 | tee -a $log
+    make install 2>&1 | tee -a $log
+fi
 
 exit 0

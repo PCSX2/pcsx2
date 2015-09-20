@@ -209,9 +209,10 @@ u32 IsoDirectory::GetFileSize( const wxString& filePath ) const
 
 IsoFileDescriptor::IsoFileDescriptor()
 {
-	lba = 0;
-	size = 0;
+	lba   = 0;
+	size  = 0;
 	flags = 0;
+	memset(&date, 0, sizeof(date));
 }
 
 IsoFileDescriptor::IsoFileDescriptor(const u8* data, int length)
