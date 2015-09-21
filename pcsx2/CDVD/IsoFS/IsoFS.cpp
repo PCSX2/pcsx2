@@ -105,6 +105,7 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 IsoDirectory::IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry)
 	: internalReader(r)
 {
+	m_fstype = FStype_ISO9660;
 	Init(directoryEntry);
 }
 
