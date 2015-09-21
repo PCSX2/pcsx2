@@ -362,11 +362,11 @@ void GSSettingsDlg::UpdateControls()
 {
 	INT_PTR i;
 
-	int scaling = 1; // in case reading the combo doesn't work, enable the custom res control anyway
+	int integer_scaling = 0; // in case reading the combo doesn't work, enable the custom res control anyway
 
 	if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, i))
 	{
-		scaling = (int)i;
+		integer_scaling = (int)i;
 	}
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
@@ -394,10 +394,10 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && scaling == 9);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && scaling == 9);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && scaling == 9);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && scaling == 9);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);

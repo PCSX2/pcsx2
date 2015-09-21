@@ -35,7 +35,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
-	if (m_upscale_multiplier == 9) { //Custom Resolution
+	if (!m_upscale_multiplier) { //Custom Resolution
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 	}
@@ -53,8 +53,8 @@ void GSRendererHW::SetScaling()
 
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
 
-	// Also don't change the size for custom resolution (m_upscale_multiplier = 9).
-	if (m_upscale_multiplier != 9 && m_width < (m_buffer_size * m_upscale_multiplier)) {
+	// Also don't change the size for custom resolution (m_upscale_multiplier = 0).
+	if (m_upscale_multiplier && m_width < (m_buffer_size * m_upscale_multiplier)) {
 		m_tc->RemovePartial();
 	} else {
 		return;
@@ -96,8 +96,8 @@ bool GSRendererHW::CanUpscale()
 
 int GSRendererHW::GetUpscaleMultiplier()
 {
-	// Custom resolution (currently 9) needs an upscale multiplier of 1.
-	return m_upscale_multiplier != 9? m_upscale_multiplier: 1;
+	// Custom resolution (currently 0) needs an upscale multiplier of 1.
+	return m_upscale_multiplier ? m_upscale_multiplier : 1;
 }
 
 void GSRendererHW::Reset()
