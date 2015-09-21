@@ -159,7 +159,6 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
-	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 
@@ -220,7 +219,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if (code == CBN_SELCHANGE)
 				UpdateControls();
 			break;
-		case IDC_NATIVERES:
 		case IDC_SHADEBOOST:
 		case IDC_PALTEX:
 		case IDC_HACKS_ENABLED:
@@ -294,7 +292,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
-			theApp.SetConfig("nativeres", (int)IsDlgButtonChecked(m_hWnd, IDC_NATIVERES));
 			theApp.SetConfig("resx", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
@@ -381,7 +378,6 @@ void GSSettingsDlg::UpdateControls()
 		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
 		bool ocl = i >= 14 && i <= 17;
 
-		bool native = !!IsDlgButtonChecked(m_hWnd, IDC_NATIVERES);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
@@ -398,12 +394,11 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw && !native);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_NATIVERES), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && scaling == 9);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && scaling == 9);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && scaling == 9);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && scaling == 9);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);

@@ -46,7 +46,7 @@ GSState::GSState()
 	, m_frameskip(0)
 	, m_crcinited(false)
 {
-	m_nativeres = !!theApp.GetConfig("nativeres", 1);
+	m_nativeres = theApp.GetConfig("upscale_multiplier",1)==1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 
 	s_n     = 0;

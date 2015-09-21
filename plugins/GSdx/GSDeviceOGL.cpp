@@ -247,7 +247,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
 	// Upload once and forget about it
 	ConvertConstantBuffer cb;
-	cb.ScalingFactor = GSVector4i(theApp.GetConfig("nativeres", 0) ? 1 : theApp.GetConfig("upscale_multiplier", 2));
+	cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
 	m_convert.cb->upload(&cb);
 
 	m_convert.vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
