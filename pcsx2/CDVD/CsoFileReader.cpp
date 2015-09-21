@@ -43,10 +43,12 @@ bool CsoFileReader::CanHandle(const wxString& fileName) {
 	if (wxFileName::FileExists(fileName) && fileName.Lower().EndsWith(L".cso")) {
 		FILE* fp = PX_fopen_rb(fileName);
 		CsoHeader hdr;
-		if (fp && fread(&hdr, 1, sizeof(hdr), fp) == sizeof(hdr)) {
-			supported = ValidateHeader(hdr);
+		if (fp) {
+			if (fread(&hdr, 1, sizeof(hdr), fp) == sizeof(hdr)) {
+				supported = ValidateHeader(hdr);
+			}
+			fclose(fp);
 		}
-		fclose(fp);
 	}
 	return supported;
 }
