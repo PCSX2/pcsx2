@@ -43,7 +43,8 @@ struct BreakPointCond
 
 struct BreakPoint
 {
-	BreakPoint() : hasCond(false) {}
+	BreakPoint() : addr(0), enabled(false), temporary(false), hasCond(false)
+	{}
 
 	u32	addr;
 	bool enabled;
