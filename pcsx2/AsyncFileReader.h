@@ -25,7 +25,7 @@
 class AsyncFileReader
 {
 protected:
-	AsyncFileReader() : m_dataoffset(0) {}
+	AsyncFileReader() : m_dataoffset(0), m_blocksize(0) {}
 
 	wxString m_filename;
 
