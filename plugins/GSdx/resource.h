@@ -76,7 +76,13 @@
 #define IDC_CRC_LEVEL                   2071
 #define IDC_CRC_LEVEL_TEXT              2072
 #define IDC_TC_DEPTH                    2073
-#define IDC_COLORSPACE                  2075
+#define IDC_COLORSPACE                  2074
+#define IDC_SHADER_FX_EDIT              2075
+#define IDC_SHADER_FX_CONF_EDIT         2076
+#define IDC_SHADER_FX_BUTTON            2077
+#define IDC_SHADER_FX_CONF_BUTTON       2078
+#define IDC_SHADER_FX_TEXT              2079
+#define IDC_SHADER_FX_CONF_TEXT         2080
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -95,7 +101,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2074
+#define _APS_NEXT_CONTROL_VALUE         2081
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
