@@ -262,8 +262,6 @@ protected:
 	int m_fpsqueue_writepos;
 	uint m_initpause;
 
-	uint m_FrameCounter;
-
 public:
 	FramerateManager() { Reset(); }
 	virtual ~FramerateManager() throw() {}

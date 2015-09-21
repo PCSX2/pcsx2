@@ -519,8 +519,6 @@ void FramerateManager::Resume()
 
 void FramerateManager::DoFrame()
 {
-	++m_FrameCounter;
-
 	m_fpsqueue_writepos = (m_fpsqueue_writepos + 1) % FramerateQueueDepth;
 	m_fpsqueue[m_fpsqueue_writepos] = GetCPUTicks();
 
