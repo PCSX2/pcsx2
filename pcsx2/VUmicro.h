@@ -61,6 +61,7 @@ public:
 	BaseCpuProvider()
 	{
 		m_Reserved = 0;
+		IsInterpreter = false;
 	}
 
 	virtual ~BaseCpuProvider() throw()
