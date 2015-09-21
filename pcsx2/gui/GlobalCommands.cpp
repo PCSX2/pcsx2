@@ -383,8 +383,26 @@ namespace Implementations
 		g_Pcsx2Recording ^= 1;
 
 		GetMTGS().WaitGS();		// make sure GS is in sync with the audio stream when we start.
-		if( GSsetupRecording != NULL ) GSsetupRecording(g_Pcsx2Recording, NULL);
-		if( SPU2setupRecording != NULL ) SPU2setupRecording(g_Pcsx2Recording, NULL);
+		if (g_Pcsx2Recording) {
+			// start recording
+			if (GSsetupRecording) {
+				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
+				if (GSsetupRecording(g_Pcsx2Recording, NULL)) {
+					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+				} else {
+					// recording dialog canceled by the user. align our state
+					g_Pcsx2Recording ^= 1;
+				}
+			} else {
+				// the GS doesn't support recording.
+				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+			}
+
+		} else {
+			// stop recording
+			if (GSsetupRecording) GSsetupRecording(g_Pcsx2Recording, NULL);
+			if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+		}
 	}
 
 	void Cpu_DumpRegisters()

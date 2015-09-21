@@ -873,8 +873,12 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 	if(start & 1)
 	{
 		printf("GSdx: Recording start command\n");
-		if( s_gs->BeginCapture() )
+		if (s_gs->BeginCapture()) {
 			pt(" - Capture started\n");
+		} else {
+			pt(" - Capture cancelled\n");
+			return 0;
+		}
 	}
 	else
 	{
