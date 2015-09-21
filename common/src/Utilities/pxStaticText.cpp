@@ -23,7 +23,12 @@
 pxStaticText::pxStaticText( wxWindow* parent )
 	: _parent( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER )
 {
+	m_align         = wxALIGN_CENTRE_HORIZONTAL;
+	m_autowrap      = true;
+	m_wrappedWidth  = -1;
 	m_heightInLines = 1;
+
+	SetPaddingDefaults();
 }
 
 pxStaticText::pxStaticText( wxWindow* parent, const wxString& label, wxAlignment align )
