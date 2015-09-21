@@ -109,7 +109,7 @@ protected:
 	bool	m_handled;
 
 public:
-	SrcType_PageFault() {}
+	SrcType_PageFault() : m_handled(false) {}
 	virtual ~SrcType_PageFault() throw() { }
 
 	bool WasHandled() const { return m_handled; }
