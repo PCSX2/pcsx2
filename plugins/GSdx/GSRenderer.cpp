@@ -533,7 +533,10 @@ bool GSRenderer::MakeSnapshot(const string& path)
 
 bool GSRenderer::BeginCapture()
 {
-	return m_capture.BeginCapture(GetTvRefreshRate());
+	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
+	float aspect = (float)disp.width() / max(1, disp.height());
+
+	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect);
 }
 
 void GSRenderer::EndCapture()

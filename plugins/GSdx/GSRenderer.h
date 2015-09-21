@@ -69,6 +69,9 @@ public:
 	virtual void KeyEvent(GSKeyEventData* e);
 	virtual bool CanUpscale() {return false;}
 	virtual int GetUpscaleMultiplier() {return 1;}
+	virtual GSVector2i GetInternalResolution() {
+		return GSVector2i(GetDisplayRect().width(), GetDisplayRect().height());
+	}
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(bool enabled);
 	void SetFrameLimit(bool limit);

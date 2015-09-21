@@ -100,6 +100,15 @@ int GSRendererHW::GetUpscaleMultiplier()
 	return m_upscale_multiplier ? m_upscale_multiplier : 1;
 }
 
+GSVector2i GSRendererHW::GetInternalResolution() {
+	GSVector2i dr(GetDisplayRect().width(), GetDisplayRect().height());
+
+	if (m_upscale_multiplier)
+		return GSVector2i(dr.x * m_upscale_multiplier, dr.y * m_upscale_multiplier);
+	else
+		return GSVector2i(m_width, m_height);
+}
+
 void GSRendererHW::Reset()
 {
 	// TODO: GSreset can come from the main thread too => crash

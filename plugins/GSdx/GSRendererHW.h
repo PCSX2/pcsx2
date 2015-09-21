@@ -155,6 +155,7 @@ public:
 	void SetGameCRC(uint32 crc, int options);
 	bool CanUpscale();
 	int GetUpscaleMultiplier();
+	virtual GSVector2i GetInternalResolution();
 	void SetScaling();
 
 	void Reset();
