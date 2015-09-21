@@ -165,7 +165,7 @@ protected:
 		ConsoleColors	color;
 		int				startpoint;
 
-		ColorSection() {}
+		ColorSection() : color(Color_Default), startpoint(0) {}
 		ColorSection( ConsoleColors _color, int msgptr ) : color(_color), startpoint(msgptr) { }
 	};
 

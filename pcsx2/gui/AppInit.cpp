@@ -697,10 +697,13 @@ Pcsx2App::Pcsx2App()
 
 	m_PendingSaves			= 0;
 	m_ScheduledTermination	= false;
+	m_UseGUI				= true;
+	m_NoGuiExitPrompt		= true;
 
 	m_id_MainFrame		= wxID_ANY;
 	m_id_GsFrame		= wxID_ANY;
 	m_id_ProgramLogBox	= wxID_ANY;
+	m_id_Disassembler	= wxID_ANY;
 	m_ptr_ProgramLog	= NULL;
 
 	SetAppName( L"PCSX2" );

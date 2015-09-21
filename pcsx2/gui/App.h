@@ -219,10 +219,12 @@ struct AppImageIds
 
 		ToolbarIds()
 		{
-			Settings	= Play	=
-			PluginVideo	=
-			PluginAudio	=
-			PluginPad	= -1;
+			Settings    = -1;
+			Play        = -1;
+			Resume      = -1;
+			PluginVideo = -1;
+			PluginAudio = -1;
+			PluginPad   = -1;
 		}
 	} Toolbars;
 };

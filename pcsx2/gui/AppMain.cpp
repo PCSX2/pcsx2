@@ -1090,6 +1090,7 @@ public:
 	SysExecEvent_Execute()
 		: m_UseCDVDsrc(false)
 		, m_UseELFOverride(false)
+		, m_cdvdsrc_type(CDVDsrc_Iso)
 	{
 	}
 
