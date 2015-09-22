@@ -561,7 +561,10 @@ namespace Panels
 		public:
 			virtual ~EnumThread() throw()
 			{
-				pxThread::Cancel();
+				try {
+					pxThread::Cancel();
+				}
+				DESTRUCTOR_CATCHALL
 			}
 
 			EnumThread( PluginSelectorPanel& master );

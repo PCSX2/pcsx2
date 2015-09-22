@@ -163,7 +163,10 @@ ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
 
 ConsoleLogFrame::ColorArray::~ColorArray() throw()
 {
-	Cleanup();
+	try {
+		Cleanup();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void ConsoleLogFrame::ColorArray::Create( int fontsize )

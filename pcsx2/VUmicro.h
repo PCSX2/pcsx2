@@ -66,8 +66,11 @@ public:
 
 	virtual ~BaseCpuProvider() throw()
 	{
-		if( m_Reserved != 0 )
-			Console.Warning( "Cleanup miscount detected on CPU provider.  Count=%d", m_Reserved );
+		try {
+			if( m_Reserved != 0 )
+				Console.Warning( "Cleanup miscount detected on CPU provider.  Count=%d", m_Reserved );
+		}
+		DESTRUCTOR_CATCHALL
 	}
 
 	virtual const char* GetShortName() const=0;

@@ -374,7 +374,10 @@ public:
 
 	virtual ~GameDatabaseLoaderThread() throw()
 	{
-		_parent::Cancel();
+		try {
+			_parent::Cancel();
+		}
+		DESTRUCTOR_CATCHALL
 	}
 
 protected:

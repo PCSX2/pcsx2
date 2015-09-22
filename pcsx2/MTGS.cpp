@@ -90,7 +90,10 @@ void SysMtgsThread::OnStart()
 
 SysMtgsThread::~SysMtgsThread() throw()
 {
-	_parent::Cancel();
+	try {
+		_parent::Cancel();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysMtgsThread::OnResumeReady()
