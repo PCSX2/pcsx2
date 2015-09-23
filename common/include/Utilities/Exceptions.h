@@ -29,16 +29,25 @@ void pxTrap();
 // exception.  Use this macro to dispose of these dangerous exceptions, and generate a
 // friendly error log in their wake.
 //
+// Note: Console can also fire an Exception::OutOfMemory
 #define __DESTRUCTOR_CATCHALL( funcname ) \
 	catch( BaseException& ex ) \
 	{ \
-		Console.Error( "Unhandled BaseException in %s (ignored!):", funcname ); \
-		Console.Error( ex.FormatDiagnosticMessage() ); \
+		try { \
+			Console.Error( "Unhandled BaseException in %s (ignored!):", funcname ); \
+			Console.Error( ex.FormatDiagnosticMessage() ); \
+		} catch (...) { \
+			fprintf(stderr, "ERROR: (out of memory?)\n"); \
+		} \
 	} \
 	catch( std::exception& ex ) \
 	{ \
-		Console.Error( "Unhandled std::exception in %s (ignored!):", funcname ); \
-		Console.Error( ex.what() ); \
+		try { \
+			Console.Error( "Unhandled std::exception in %s (ignored!):", funcname ); \
+			Console.Error( ex.what() ); \
+		} catch (...) { \
+			fprintf(stderr, "ERROR: (out of memory?)\n"); \
+		} \
 	}
 
 #define DESTRUCTOR_CATCHALL		__DESTRUCTOR_CATCHALL( __pxFUNCTION__ )
