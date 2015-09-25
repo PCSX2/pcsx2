@@ -596,7 +596,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds_tex->Save(root_hw+s);
+			if (ds_tex)
+				ds_tex->Save(root_hw+s);
 		}
 
 		s_n++;
