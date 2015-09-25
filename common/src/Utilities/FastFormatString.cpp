@@ -261,10 +261,13 @@ FastFormatUnicode::FastFormatUnicode()
 
 FastFormatUnicode::~FastFormatUnicode() throw()
 {
-	if (m_deleteDest)
-		delete m_dest;
-	else
-		m_buffer_tls.Get()->ReleaseBuffer();
+	try {
+		if (m_deleteDest)
+			delete m_dest;
+		else
+			m_buffer_tls.Get()->ReleaseBuffer();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void FastFormatUnicode::Clear()
@@ -396,10 +399,13 @@ FastFormatAscii::FastFormatAscii()
 
 FastFormatAscii::~FastFormatAscii() throw()
 {
-	if (m_deleteDest)
-		delete m_dest;
-	else
-		m_buffer_tls.Get()->ReleaseBuffer();
+	try {
+		if (m_deleteDest)
+			delete m_dest;
+		else
+			m_buffer_tls.Get()->ReleaseBuffer();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void FastFormatAscii::Clear()

@@ -26,7 +26,11 @@ GSTexture::GSTexture()
 	: m_scale(1, 1)
 	, m_size(0, 0)
 	, m_type(0)
+	, m_format(0)
 	, m_msaa(false)
+	, last_frame_used(0)
 	, LikelyOffset(false)
+	, OffsetHack_modx(0.0f)
+	, OffsetHack_mody(0.0f)
 {
 }

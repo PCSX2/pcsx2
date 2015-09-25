@@ -35,6 +35,8 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 
+	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
+
 	if (!theApp.GetConfig("UserHacks", 0)) {
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;

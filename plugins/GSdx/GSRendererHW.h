@@ -35,7 +35,6 @@ private:
 	int m_skip;
 	bool m_reset;
 	int m_upscale_multiplier;
-	int m_buffer_size;
 	int m_userhacks_skipdraw;
 
 	bool m_userhacks_align_sprite_X;

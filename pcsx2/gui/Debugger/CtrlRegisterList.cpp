@@ -45,8 +45,9 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 {
 	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight+2;
 	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
-	category = 0;
-	maxBits = 128;
+	category  = 0;
+	maxBits   = 128;
+	lastPc    = 0xFFFFFFFF;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{

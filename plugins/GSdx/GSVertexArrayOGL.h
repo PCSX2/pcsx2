@@ -60,11 +60,11 @@ class GSBufferOGL {
 		// Warning m_limit is the number of object (not the size in Bytes)
 		m_limit = 8 * 1024 * 1024 / m_stride;
 
-		if (m_buffer_storage) {
-			for (size_t i = 0; i < 5; i++) {
-				m_fence[i] = 0;
-			}
+		for (size_t i = 0; i < 5; i++) {
+			m_fence[i] = 0;
+		}
 
+		if (m_buffer_storage) {
 			// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
 			// => bigger buffer => less sync
 			bind();
@@ -254,7 +254,7 @@ class GSVertexBufferStateOGL {
 	GLenum m_topology;
 
 public:
-	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL)
+	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
 	{
 		gl_GenVertexArrays(1, &m_va);
 		gl_BindVertexArray(m_va);

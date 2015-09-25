@@ -45,7 +45,14 @@ u32 __fastcall standardizeBreakpointAddress(u32 addr)
 	return addr;
 }
 
-MemCheck::MemCheck()
+MemCheck::MemCheck() :
+	start(0),
+	end(0),
+	cond(MEMCHECK_READWRITE),
+	result(MEMCHECK_BOTH),
+	lastPC(0),
+	lastAddr(0),
+	lastSize(0)
 {
 	numHits = 0;
 }

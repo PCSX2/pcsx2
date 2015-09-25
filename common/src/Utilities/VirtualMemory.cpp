@@ -342,7 +342,7 @@ void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& ha
 // --------------------------------------------------------------------------------------
 
 SpatialArrayReserve::SpatialArrayReserve( const wxString& name ) :
-	_parent( name )
+	_parent( name ), m_numblocks(0)
 {
 	m_prot_mode = PageAccess_ReadWrite();
 }

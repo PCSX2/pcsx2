@@ -159,7 +159,7 @@ public:
 	ConsoleColors	DefaultColor;
 
 protected:
-	ConsoleLogSource() {}
+	ConsoleLogSource() : DefaultColor(Color_Gray) {}
 
 public:
 	ConsoleLog_ImplementBaseAPI(ConsoleLogSource)

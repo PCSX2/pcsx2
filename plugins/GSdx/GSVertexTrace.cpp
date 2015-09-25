@@ -29,6 +29,9 @@ const GSVector4 GSVertexTrace::s_minmax(FLT_MAX, -FLT_MAX);
 GSVertexTrace::GSVertexTrace(const GSState* state)
 	: m_state(state)
 {
+	m_primclass = GS_INVALID_CLASS;
+	memset(&m_alpha, 0, sizeof(m_alpha));
+
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
 		m_fmm[COLOR][FST][TME][IIP][P] = &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR>;
 

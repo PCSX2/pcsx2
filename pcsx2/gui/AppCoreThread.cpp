@@ -89,7 +89,10 @@ AppCoreThread::AppCoreThread() : SysCoreThread()
 
 AppCoreThread::~AppCoreThread() throw()
 {
-	_parent::Cancel();		// use parent's, skips thread affinity check.
+	try {
+		_parent::Cancel();		// use parent's, skips thread affinity check.
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 static void _Cancel()
@@ -734,8 +737,11 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 ScopedCoreThreadClose::~ScopedCoreThreadClose() throw()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsFullyClosed = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsFullyClosed = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me )
@@ -761,8 +767,11 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 ScopedCoreThreadPause::~ScopedCoreThreadPause() throw()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsPaused = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsPaused = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPopup::ScopedCoreThreadPopup()

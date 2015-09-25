@@ -178,6 +178,7 @@ static wxString iso2indexname(const wxString& isoname) {
 }
 
 GzippedFileReader::GzippedFileReader(void) :
+	mBytesRead(0),
 	m_pIndex(0),
 	m_zstates(0),
 	m_src(0),

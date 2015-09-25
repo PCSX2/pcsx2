@@ -544,12 +544,15 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 MainEmuFrame::~MainEmuFrame() throw()
 {
-	if( m_RestartEmuOnDelete )
-	{
-		sApp.SetExitOnFrameDelete( false );
-		sApp.PostAppMethod( &Pcsx2App::DetectCpuAndUserMode );
-		sApp.WipeUserModeSettings();
+	try {
+		if( m_RestartEmuOnDelete )
+		{
+			sApp.SetExitOnFrameDelete( false );
+			sApp.PostAppMethod( &Pcsx2App::DetectCpuAndUserMode );
+			sApp.WipeUserModeSettings();
+		}
 	}
+	DESTRUCTOR_CATCHALL
 }
 
 void MainEmuFrame::DoGiveHelp(const wxString& text, bool show)

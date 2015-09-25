@@ -102,7 +102,6 @@ private:
 	CpuTabPage* currentCpu;
 
 	wxBoxSizer* topSizer;
-	wxStatusBar* statusBar;
 	wxButton* breakRunButton;
 	wxButton* stepIntoButton;
 	wxButton* stepOverButton;
