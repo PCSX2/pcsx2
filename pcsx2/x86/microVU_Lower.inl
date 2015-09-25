@@ -1212,15 +1212,14 @@ void __fastcall mVU_XGKICK_(u32 addr) {
 	}
 }
 
-static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
+static __fi void mVU_XGKICK_DELAY(mV) {
 	mVUbackupRegs(mVU);
 #if 0 // XGkick Break - ToDo: Change "SomeGifPathValue" to w/e needs to be tested
 	xTEST (ptr32[&SomeGifPathValue], 1); // If '1', breaks execution
 	xMOV  (ptr32[&mVU.resumePtrXG], (uptr)xGetPtr() + 10 + 6);
 	xJcc32(Jcc_NotZero, (uptr)mVU.exitFunctXG - ((uptr)xGetPtr()+6));
 #endif
-	if (memVI)	xMOV(gprT2, ptr32[&mVU.VIxgkick]);
-	else		mVUallocVIa(mVU, gprT2, _Is_);
+	xMOV(gprT2, ptr32[&mVU.VIxgkick]);
 	xCALL(mVU_XGKICK_);
 	mVUrestoreRegs(mVU);
 }
@@ -1228,12 +1227,8 @@ static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
 mVUop(mVU_XGKICK) {
 	pass1 { mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES); }
 	pass2 {
-		if (!mVU_XGKICK_CYCLES) {
-			mVU_XGKICK_DELAY(mVU, false);
-			return;
-		}
-		else if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+		if (mVUinfo.doXGKICK) { // check for XGkick Transfer
+			mVU_XGKICK_DELAY(mVU);
 			mVUinfo.doXGKICK = false;
 		}
 
