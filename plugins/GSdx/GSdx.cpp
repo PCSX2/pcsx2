@@ -243,13 +243,13 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 	m_configuration_map["inifile"] = inifile_value;
 
 	// Load config from file
-	char value[255];
-	char key[255];
+	char value[256];
+	char key[256];
 	FILE* f = fopen(lpFileName, "r");
 
 	if (f == NULL) return; // FIXME print a nice message
 
-	while( fscanf(f, "%s = %s\n", key, value) != EOF ) {
+	while( fscanf(f, "%255s = %255s\n", key, value) != EOF ) {
 		std::string key_s(key);
 		std::string value_s(value);
 		m_configuration_map[key_s] = value_s;

@@ -29,6 +29,8 @@ GSRenderer::GSRenderer()
 	: m_shader(0)
 	, m_shift_key(false)
 	, m_control_key(false)
+	, m_framelimit(false)
+	, m_texture_shuffle(false)
 	, m_wnd(NULL)
 	, m_dev(NULL)
 {

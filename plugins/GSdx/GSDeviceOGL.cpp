@@ -46,12 +46,16 @@ int  GSDeviceOGL::s_n = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
-	: m_free_window(false)
-	  , m_window(NULL)
-	  , m_fbo(0)
-	  , m_fbo_read(0)
-	  , m_va(NULL)
-	  , m_shader(NULL)
+	: m_msaa(0)
+	, m_window(NULL)
+	, m_fbo(0)
+	, m_fbo_read(0)
+	, m_va(NULL)
+	, m_apitrace(0)
+	, m_palette_ss(0)
+	, m_vs_cb(NULL)
+	, m_ps_cb(NULL)
+	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
 	memset(&m_interlace, 0, sizeof(m_interlace));
@@ -59,6 +63,8 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_fxaa, 0, sizeof(m_fxaa));
 	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
 	memset(&m_date, 0, sizeof(m_date));
+	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
+	memset(&m_om_dss, 0, sizeof(m_om_dss));
 	GLState::Clear();
 
 	// Reset the debug file

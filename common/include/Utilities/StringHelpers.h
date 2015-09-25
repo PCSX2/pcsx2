@@ -145,7 +145,6 @@ class FastFormatAscii
 protected:
 	ScopedAlignedAlloc<char,16>*	m_dest;
 	bool				m_deleteDest;
-	uint				m_Length;
 	
 public:
 	FastFormatAscii();
@@ -155,7 +154,6 @@ public:
 
 	void Clear();
 	bool IsEmpty() const;
-	uint Length() const { return m_Length; }
 
 	const char* c_str() const		{ return m_dest->GetPtr(); }
 	operator const char*() const	{ return m_dest->GetPtr(); }

@@ -35,6 +35,7 @@ GSDevice::GSDevice()
 	, m_fxaa(NULL)
 	, m_shadeboost(NULL)
 	, m_1x1(NULL)
+	, m_current(NULL)
 	, m_frame(0)
 {
 	memset(&m_vertex, 0, sizeof(m_vertex));

@@ -45,7 +45,12 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 	return isbd;
 }
 
-BlockdumpFileReader::BlockdumpFileReader(void)
+BlockdumpFileReader::BlockdumpFileReader(void) :
+	m_file(NULL),
+	m_blocks(0),
+	m_blockofs(0),
+	m_dtablesize(0),
+	m_lresult(0)
 {
 }
 

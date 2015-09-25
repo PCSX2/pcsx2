@@ -30,7 +30,6 @@ class GSRenderer : public GSState
 {
 	GSCapture m_capture;
 	string m_snapshot;
-	bool m_snapdump;
 	int m_shader;
 
 	bool Merge(int field);
