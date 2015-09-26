@@ -46,7 +46,6 @@ class GSHacksDlg : public GSDialog
 	unsigned short msaa2cb[17];
 	std::string adapter_id;
 	
-	bool isdx9;
 
 	void UpdateControls();
 
