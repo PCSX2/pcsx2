@@ -22,9 +22,7 @@
 #include "stdafx.h"
 #include "GSCapture.h"
 #include "GSPng.h"
-#ifdef __linux__
-#include <sys/stat.h> // mkdir
-#endif
+#include "GSUtil.h"
 
 #ifdef _WINDOWS
 
@@ -482,7 +480,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 
 #elif __linux__
 	// Note I think it doesn't support multiple depth creation
-	mkdir(m_out_dir.c_str(), 0777);
+	GSmkdir(m_out_dir.c_str());
 
 	// Really cheap recording
 	m_frame = 0;

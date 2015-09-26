@@ -23,10 +23,6 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-#ifdef __linux__
-#include <sys/stat.h> // mkdir
-#endif
-
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 static int s_crc_hack_level = 3;
@@ -59,8 +55,8 @@ GSState::GSState()
 	s_savel = theApp.GetConfig("savel", 5000);
 #ifdef __linux__
 	if (s_dump) {
-		mkdir("/tmp/GS_HW_dump", 0777);
-		mkdir("/tmp/GS_SW_dump", 0777);
+		GSmkdir("/tmp/GS_HW_dump");
+		GSmkdir("/tmp/GS_SW_dump");
 	}
 #endif
 

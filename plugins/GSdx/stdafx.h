@@ -116,6 +116,10 @@ using namespace std;
 using namespace stdext;
 #endif
 
+#ifdef __linux__
+#include <sys/stat.h> // mkdir
+#endif
+
 #ifdef _WINDOWS
 
 	// Note use GL/glcorearb.h on the future
