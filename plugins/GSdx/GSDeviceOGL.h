@@ -472,7 +472,8 @@ class GSDeviceOGL : public GSDevice
 	virtual ~GSDeviceOGL();
 
 	static void CheckDebugLog();
-	static void DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
+	// Used by OpenGL, so the same calling convention is required.
+	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
 
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }
