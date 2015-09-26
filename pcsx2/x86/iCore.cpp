@@ -144,6 +144,9 @@ int _allocTempXMMreg(XMMSSEType type, int xmmreg) {
 	else
 		_freeXMMreg(xmmreg);
 
+	if (xmmreg == -1)
+		return -1;
+
 	xmmregs[xmmreg].inuse = 1;
 	xmmregs[xmmreg].type = XMMTYPE_TEMP;
 	xmmregs[xmmreg].needed = 1;
@@ -190,6 +193,9 @@ int _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode) {
 		xmmreg = _getFreeXMMreg();
 	else
 		_freeXMMreg(xmmreg);
+
+	if (xmmreg == -1)
+		return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
@@ -273,6 +279,9 @@ int _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode) {
 	else
 		_freeXMMreg(xmmreg);
 
+	if (xmmreg == -1)
+		return -1;
+
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
 	xmmregs[xmmreg].type = XMMTYPE_ACC;
@@ -314,6 +323,7 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 	}
 
 	if (xmmreg == -1) xmmreg = _getFreeXMMreg();
+	if (xmmreg == -1) return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
@@ -379,6 +389,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 	}
 
 	if (xmmreg == -1) xmmreg = _getFreeXMMreg();
+	if (xmmreg == -1) return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_INT;
 	xmmregs[xmmreg].inuse = 1;
@@ -455,9 +466,10 @@ int _allocFPACCtoXMMreg(int xmmreg, int mode)
 		return i;
 	}
 
-	if (xmmreg == -1) {
+	if (xmmreg == -1)
 		xmmreg = _getFreeXMMreg();
-	}
+	if (xmmreg == -1)
+		return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
