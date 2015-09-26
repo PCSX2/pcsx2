@@ -46,8 +46,8 @@ __ri void vifExecQueue(int idx)
 	if (!idx) startcycles = VU0.cycle;
 	else      startcycles = VU1.cycle;
 
-	if (!idx) vu0ExecMicro(GetVifX.queued_pc);
-	else	  vu1ExecMicro(GetVifX.queued_pc);
+	if (!idx) vu0ExecMicro(vif0.queued_pc);
+	else	  vu1ExecMicro(vif1.queued_pc);
 
 	///NOTE: Shadowman 2 has SPS with this, uncommenting the correct code fixes it
 	if (!idx) { startcycles = ((VU0.cycle-startcycles) + ( vif0ch.qwc - (vif0.vifpacketsize >> 2) )); CPU_INT(VIF_VU0_FINISH, 1/*startcycles * BIAS*/); }
