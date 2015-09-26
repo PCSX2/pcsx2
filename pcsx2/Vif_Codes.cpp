@@ -278,6 +278,7 @@ vifOp(vifCode_Mark) {
 static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	VURegs& VUx = idx ? VU1 : VU0;
 	vifStruct& vifX = GetVifX;
+	u16 vuMemSize = idx ? 0x4000 : 0x1000;
 	pxAssert(VUx.Micro > 0);
 
 	vifExecQueue(idx);
@@ -290,14 +291,14 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	
 
 	// Don't forget the Unsigned designator for these checks
-	if((addr + size *4) > (idx ? 0x4000U : 0x1000U))
+	if((addr + size *4) > vuMemSize)
 	{
 		//DevCon.Warning("Handling split MPG");
-		if (!idx)  CpuVU0->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
-		else	   CpuVU1->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
+		if (!idx)  CpuVU0->Clear(addr, vuMemSize - addr);
+		else	   CpuVU1->Clear(addr, vuMemSize - addr);
 		
-		memcpy(VUx.Micro + addr, data, (idx ? 0x4000 : 0x1000) - addr);
-		size -= ((idx ? 0x4000 : 0x1000) - addr) / 4;
+		memcpy(VUx.Micro + addr, data, vuMemSize - addr);
+		size -= (vuMemSize - addr) / 4;
 		memcpy(VUx.Micro, data, size);
 
 		vifX.tag.addr = size * 4;
