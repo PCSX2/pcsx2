@@ -12467,6 +12467,7 @@ Compat = 5
 comment= Patch By Prafull
 // fix hang at loading screen
 patch=1,EE,0010ec20,word,00000000
+	comment=- This disc has the same CRC as SLUS-20905, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52813
@@ -37648,6 +37649,12 @@ Serial = SLUS-20905
 Name   = Incredibles, The
 Region = NTSC-U
 Compat = 5
+[patches = EBDB6E4B]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010ec20,word,00000000
+	comment=- This disc has the same CRC as SLES-52812, the PAL-E disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20906
 Name   = Fight Night 2004
