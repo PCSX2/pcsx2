@@ -362,8 +362,9 @@ void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v) {
 		mVUopU(mVU, 3);
 		found |= (mVUregs.needExactMatch&8)>>3;
 		mVUregs.needExactMatch &= 7;
-		if (  curI & _Ebit_  )	{ branch = 1; }
-		if (  curI & _DTbit_ )	{ branch = 6; }
+		if ( curI & _Ebit_  )	{ branch = 1; }
+		if ( curI & _Tbit_ ) { branch = 6; } 
+		if ( (curI & _Dbit_) && doDBitHandling ) { branch = 6; }
 		if (!(curI & _Ibit_) )	{ incPC(-1); mVUopL(mVU, 3); incPC(1); }
 		
 		// if (mVUbranch&&(branch>=3)&&(branch<=5)) { DevCon.Error("Double Branch [%x]", xPC); mVUregs.needExactMatch |= 7; break; }

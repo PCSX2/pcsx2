@@ -76,7 +76,6 @@ static const uint _Ebit_ = 1 << 30;
 static const uint _Mbit_ = 1 << 29;
 static const uint _Dbit_ = 1 << 28;
 static const uint _Tbit_ = 1 << 27;
-static const uint _DTbit_ = 0; //( _Dbit_ | _Tbit_ ) // ToDo: Implement this stuff...
 
 static const uint divI = 0x1040000;
 static const uint divD = 0x2080000;
