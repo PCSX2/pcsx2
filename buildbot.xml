@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="ReleaseAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Add all the projects that use the non-standard configurations here. -->
+  <ItemGroup>
+    <TargetsSetCPU Include="plugins\GSdx"/>
+  </ItemGroup>
   <!-- Add all the solutions here. -->
   <ItemGroup>
     <SolutionSet Include="$(MSBuildProjectDirectory)\PCSX2_suite.sln" />
     <!--SolutionSet Include="$(MSBuildProjectDirectory)\old_plugins.sln" /-->
-    <ProjectSetCPU Include="$(MSBuildProjectDirectory)\plugins\GSdx\GSdx.vcxproj" />
+    <ProjectSetCPU Include="$(MSBuildProjectDirectory)\PCSX2_suite.sln" />
   </ItemGroup>
   <!-- Add common build  properties here. -->
   <PropertyGroup>
@@ -41,14 +45,15 @@
     <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="false" Properties="Configuration=%(ConfigCPU.Identity)" Targets="Clean" />
     <CallTarget Targets="CleanCruft" />
     <MSBuild Projects="@(SolutionSet)" BuildInParallel="false" Properties="Configuration=$(BaseConfiguration);$(CompileFastPlz)" Targets="Build" />
-    <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="true" Properties="Configuration=%(ConfigCPU.Identity);BuildProjectReferences=false;$(CompileFastPlz);SolutionDir=$(MSBuildProjectDirectory)\" Targets="Build" />
+    <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="true" Properties="Configuration=%(ConfigCPU.Identity);BuildProjectReferences=false;$(CompileFastPlz)" Targets="@(TargetsSetCPU)" />
   </Target>
   <Target Name="DebugAll">
     <PropertyGroup>
       <BaseConfiguration>Debug</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Debug AVX;Debug AVX2;Debug SSE4;Debug SSSE3"/>
+      <ConfigCPU Include="Debug"/>
+      <!--ConfigCPU Include="Debug AVX;Debug AVX2;Debug SSE4;Debug SSSE3"/-->
     </ItemGroup>
   </Target>
   <Target Name="DevelAll">
@@ -56,7 +61,7 @@
       <BaseConfiguration>Devel</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Release AVX;Release AVX2;Release SSE4;Release SSSE3"/>
+      <ConfigCPU Include="Devel"/>
       <!--ConfigCPU Include="Devel AVX;Devel AVX2;Devel SSE4;Devel SSSE3"/-->
     </ItemGroup>
   </Target>
