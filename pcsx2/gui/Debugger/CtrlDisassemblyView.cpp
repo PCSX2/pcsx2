@@ -827,6 +827,7 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 					return;
 				gotoAddress(addr);
 			}
+			break;
 		default:
 			evt.Skip();
 			break;
