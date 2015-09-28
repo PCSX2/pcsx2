@@ -1500,7 +1500,16 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	if (m_debug_gl_file)
 		fprintf(m_debug_gl_file,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 
-	ASSERT(sev_counter < 5);
+#ifdef _DEBUG
+	if (sev_counter >= 5) {
+		// Close the file to flush the content on disk before exiting.
+		if (m_debug_gl_file) {
+			fclose(m_debug_gl_file);
+			m_debug_gl_file = NULL;
+		}
+		ASSERT(0);
+	}
+#endif
 }
 
 // (A - B) * C + D
