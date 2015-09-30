@@ -92,6 +92,9 @@ if(PACKAGE_MODE)
         INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
     endif()
     INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.dbf" DESTINATION "${GAMEINDEX_DIR}")
+    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/PCSX2_keys.ini.default" DESTINATION "${GAMEINDEX_DIR}")
+    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/shaders/GSdx.fx" DESTINATION "${GAMEINDEX_DIR}/shaders")
+    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/shaders/GSdx_FX_Settings.ini" DESTINATION "${GAMEINDEX_DIR}/shaders")
 
     # set categories depending on system/distribution in pcsx2.desktop
     if(openSUSE)
