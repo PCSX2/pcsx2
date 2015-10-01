@@ -232,19 +232,11 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 #define shuffleSS(x) ((x==1)?(0x27):((x==2)?(0xc6):((x==4)?(0xe1):(0xe4))))
 #define clampE       CHECK_VU_EXTRA_OVERFLOW
 #define varPrint(x)  DevCon.WriteLn(#x " = %d", (int)x)
+#define islowerOP    ((iPC & 1) == 0)
 
 #define blockCreate(addr) {												\
 	if  (!mVUblocks[addr]) mVUblocks[addr] = new microBlockManager();	\
 }
-
-#define branchAddr (																	\
-	pxAssertDev((iPC & 1) == 0, "microVU: Expected Lower Op for valid branch addr."),	\
-	((((iPC + 2)  + (_Imm11_ * 2)) & mVU.progMemMask) * 4)								\
-)
-#define branchAddrN (																	\
-	pxAssertDev((iPC & 1) == 0, "microVU: Expected Lower Op for valid branch addr."),	\
-	((((iPC + 4)  + (_Imm11_ * 2)) & mVU.progMemMask) * 4)								\
-)
 
 // Fetches the PC and instruction opcode relative to the current PC.  Used to rewind and
 // fast-forward the IR state while calculating VU pipeline conditions (branches, writebacks, etc)
