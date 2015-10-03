@@ -31865,6 +31865,7 @@ Compat = 5
 EETimingHack = 1
 OPHFlagHack = 1
 DMABusyHack = 1
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLPS-25528
 Name   = Summon Night EX Thesis - Yoake no Tsubasa
