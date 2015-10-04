@@ -223,9 +223,9 @@ void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
 			reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ);
 			if( reghi >= 0 ) {
 				if( xmmregs[reghi].mode & MODE_WRITE ) SSE2_MOVQ_XMM_to_M64(hiaddr-8, reghi);
+				xmmregs[reghi].inuse = 0;
 			}
-
-			xmmregs[reghi].inuse = 0;
+						
 			MOVQRtoM(hiaddr, mmreg);
 		}
 		else {
