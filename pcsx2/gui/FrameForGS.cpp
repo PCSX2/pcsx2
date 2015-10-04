@@ -438,7 +438,7 @@ GSFrame::~GSFrame() throw()
 void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 {
 	sApp.OnGsFrameClosed( GetId() );
-	Hide();		// and don't close it.
+	CoreThread.Reset(); // reset thread to avoid suspend status on close event.
 }
 
 bool GSFrame::ShowFullScreen(bool show, long style)

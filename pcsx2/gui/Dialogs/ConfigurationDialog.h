@@ -156,7 +156,7 @@ namespace Dialogs
 
 	protected:
 		Panels::BaseMcdListPanel*	m_panel_mcdlist;
-		bool m_needs_suspending;
+		bool m_needs_resume;
 
 	public:
 		virtual ~McdConfigDialog() throw() {}
