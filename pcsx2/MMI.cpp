@@ -183,18 +183,20 @@ void PMFHL() {
 		case 0x02: // SLW
 			{
 				s64 TempS64 = ((u64)cpuRegs.HI.UL[0] << 32) | (u64)cpuRegs.LO.UL[0];
+											
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[0] = (s64)cpuRegs.LO.SL[0];
 				}
 
 				TempS64 = ((u64)cpuRegs.HI.UL[2] << 32) | (u64)cpuRegs.LO.UL[2];
+
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[1] = (s64)cpuRegs.LO.SL[2];
