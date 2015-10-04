@@ -26,7 +26,7 @@ std::pair<u32,u32> ElfTextRange;
 wxString LastELF;
 
 // All of ElfObjects functions.
-ElfObject::ElfObject(const wxString& srcfile, IsoFile isofile)
+ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile)
 	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
 	, proghead( NULL )
 	, secthead( NULL )
@@ -138,7 +138,7 @@ std::pair<u32,u32> ElfObject::getTextRange()
 	return std::make_pair(0,0);
 }
 
-void ElfObject::readIso(IsoFile file)
+void ElfObject::readIso(IsoFile& file)
 {
 	int rsize = file.read(data.GetPtr(), data.GetSizeInBytes());
 	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);

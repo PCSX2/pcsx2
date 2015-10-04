@@ -132,7 +132,7 @@ class ElfObject
 		wxString filename;
 
 		void initElfHeaders();
-		void readIso(IsoFile file);
+		void readIso(IsoFile& file);
 		void readFile();
 		void checkElfSize(s64 elfsize);
 
@@ -144,7 +144,7 @@ class ElfObject
 		// C++ does all the cleanup automagically for us.
 		virtual ~ElfObject() throw() { }
 
-		ElfObject(const wxString& srcfile, IsoFile isofile);
+		ElfObject(const wxString& srcfile, IsoFile& isofile);
 		ElfObject( const wxString& srcfile, uint hdrsize );
 
 		void loadProgramHeaders();
