@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "App.h"
 #include "CDVD/CDVD.h"
 #include "GS.h"
 
@@ -37,7 +38,9 @@ void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent &event)
 {
-	AppOpenDialog<McdConfigDialog>( this );
+	ScopedCoreThreadClose closed_core;
+	closed_core.AllowResume();
+	AppOpenModalDialog<McdConfigDialog>(wxEmptyString, this);
 }
 
 void MainEmuFrame::Menu_GameDatabase_Click(wxCommandEvent &event)

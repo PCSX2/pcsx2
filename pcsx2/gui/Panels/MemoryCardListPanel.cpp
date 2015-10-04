@@ -618,9 +618,6 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 {
 	_parent::Apply();
 
-	ScopedCoreThreadClose closed_core;
-	closed_core.AllowResume();
-
 	int used=0;
 	Console.WriteLn( L"Apply Memory cards:" );
 	for( uint slot=0; slot<8; ++slot )
@@ -736,8 +733,6 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 		return;
 	}
 
-	ScopedCoreThreadClose closed_core;
-
 	Dialogs::CreateMemoryCardDialog dialog( this, m_FolderPicker->GetPath(), L"my memory card" );
 	wxWindowID result = dialog.ShowModal();
 
@@ -756,7 +751,6 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 
 	Apply();
 	RefreshSelections();
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
@@ -764,8 +758,6 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
 		Console.WriteLn( "Error: Aborted: Convert mcd invoked but but a file is not associated." );
 		return;
 	}
-
-	ScopedCoreThreadClose closed_core;
 
 	AppConfig::McdOptions config;
 	config.Filename = card.Filename.GetFullName();
@@ -778,8 +770,6 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
 		Apply();
 		RefreshSelections();
 	}
-
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
@@ -804,7 +794,6 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 
 	if( result )
 	{
-		ScopedCoreThreadClose closed_core;
 	
 		wxFileName fullpath( m_FolderPicker->GetPath() + card.Filename.GetFullName());
 
@@ -818,7 +807,6 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 		}
 
 		RefreshSelections();
-		closed_core.AllowResume();
 	}
 
 }
@@ -873,7 +861,6 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		wxFileName destfile( basepath + dest.Filename);
 
 		ScopedBusyCursor doh( Cursor_ReallyBusy );
-		ScopedCoreThreadClose closed_core;
 
 		if( !(    ( srcfile.FileExists() && wxCopyFile( srcfile.GetFullPath(), destfile.GetFullPath(), true ) )
 			   || ( !srcfile.FileExists() && CopyDirectory( srcfile.GetFullPath(), destfile.GetFullPath() ) ) ) )
@@ -886,8 +873,7 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 			wxString content;
 
 			Msgbox::Alert( heading + L"\n\n" + content, _("Copy failed!") );
-			
-			closed_core.AllowResume();
+
 			return false;
 		}
 
@@ -903,7 +889,6 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 
 		Apply();
 		DoRefresh();
-		closed_core.AllowResume();
 		return true;
 }
 
@@ -940,8 +925,6 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 		break;
 	}
 
-	ScopedCoreThreadClose closed_core;
-
 	bool origEnabled=card.IsEnabled;
 	card.IsEnabled=false;
 	Apply();
@@ -950,8 +933,7 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 		card.IsEnabled=origEnabled;
 		Apply();
 		Msgbox::Alert( _("Error: Rename could not be completed.\n"), _("Rename memory card") );
-	
-		closed_core.AllowResume();
+
 		return;
 	}
 
@@ -960,7 +942,6 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 	Apply();
 
 	RefreshSelections();
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::OnCreateOrDeleteCard(wxCommandEvent& evt)

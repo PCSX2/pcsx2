@@ -155,16 +155,12 @@ namespace Dialogs
 
 	protected:
 		Panels::BaseMcdListPanel*	m_panel_mcdlist;
-		bool m_needs_suspending;
 
 	public:
 		virtual ~McdConfigDialog() throw() {}
 		McdConfigDialog(wxWindow* parent=NULL);
 		static wxString GetNameStatic() { return L"McdConfig"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
-
-		virtual bool Show( bool show=true );
-		virtual int ShowModal();
 
 	protected:
 		virtual wxString& GetConfSettingsTabName() const { return g_Conf->McdSettingsTabName; }
