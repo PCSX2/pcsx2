@@ -101,7 +101,6 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 	: BaseConfigurationDialog( parent, _("MemoryCard Manager"), 600 )
 {
 	m_panel_mcdlist	= new MemoryCardListPanel_Simple( this );
-	m_needs_suspending = false;
 
 	wxFlexGridSizer* s_flex=new wxFlexGridSizer(3,1, 0, 0);
 	s_flex->AddGrowableCol(0);
@@ -152,30 +151,3 @@ void Dialogs::McdConfigDialog::OnMultitapClicked( wxCommandEvent& evt )
 		m_panel_mcdlist->SetMultitapEnabled( (int)box->GetClientData(), box->IsChecked() );
 }
 */
-bool Dialogs::McdConfigDialog::Show( bool show )
-{
-	// Suspend the emulation before any file operations on the memory cards can be done.
-	if( show && CoreThread.IsRunning() )
-	{
-		m_needs_suspending = true;
-		CoreThread.Suspend();
-	}
-	else if( !show && m_needs_suspending == true )
-	{
-		m_needs_suspending = false;
-		CoreThread.Resume();
-	}
-
-	if( show && m_panel_mcdlist )
-		m_panel_mcdlist->OnShown();
-
-	return _parent::Show( show );
-}
-
-int Dialogs::McdConfigDialog::ShowModal()
-{
-	if( m_panel_mcdlist )
-		m_panel_mcdlist->OnShown();
-
-	return _parent::ShowModal();
-}

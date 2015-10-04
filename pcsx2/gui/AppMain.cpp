@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "App.h"
 #include "MainFrame.h"
 #include "GSFrame.h"
 #include "GS.h"
@@ -58,36 +59,6 @@ DEFINE_EVENT_TYPE( pxEvt_LogicalVsync );
 DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
 
 ScopedPtr<AppConfig>	g_Conf;
-
-template<typename DialogType>
-int AppOpenModalDialog( wxString panel_name, wxWindow* parent=NULL )
-{
-	if( wxWindow* window = wxFindWindowByName( L"Dialog:" + DialogType::GetNameStatic() ) )
-	{
-		window->SetFocus();
-		if( wxDialog* dialog = wxDynamicCast( window, wxDialog ) )
-		{
-			// Switch to the requested panel.
-			wxCommandEvent evt(pxEvt_SetSettingsPage);
-			evt.SetString(panel_name);
-			dialog->GetEventHandler()->ProcessEvent(evt);
-
-			// It's legal to call ShowModal on a non-modal dialog, therefore making
-			// it modal in nature for the needs of whatever other thread of action wants
-			// to block against it:
-			if( !dialog->IsModal() )
-			{
-				int result = dialog->ShowModal();
-				dialog->Destroy();
-				return result;
-			}
-		}
-		pxFailDev( "Can only show wxDialog class windows as modal!" );
-		return wxID_CANCEL;
-	}
-	else
-		return DialogType( parent ).ShowModal();
-}
 
 static bool HandlePluginError( BaseException& ex )
 {
