@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "System.h"
 #include "App.h"
+#include "MSWstuff.h"
 
 #include "ModalPopups.h"
 #include "Utilities/StringHelpers.h"
@@ -143,7 +144,7 @@ void MsgButtons::SetBestFocus( wxWindow* dialog ) const
 
 wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons )
 {
-	if( confirmDlg.GetMinWidth() <= 0 ) confirmDlg.SetMinWidth( 400 );
+	if( confirmDlg.GetMinWidth() <= 0 ) confirmDlg.SetMinWidth( 400 * MSW_GetDPIScale());
 
 	confirmDlg += new ModalButtonPanel( &confirmDlg, buttons ) | pxCenter.Border( wxTOP, 8 );
 	buttons.SetBestFocus( confirmDlg );
