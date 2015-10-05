@@ -263,16 +263,16 @@ ModalButtonPanel::ModalButtonPanel( wxWindow* parent, const MsgButtons& buttons 
 
 #ifdef __WXGTK__
 	if( buttons.HasRetry() )
-		AddActionButton( wxID_RETRY );
+		AddCustomButton( wxID_RETRY,  _("Retry") );
 
 	if( buttons.HasAbort() )
-		AddActionButton( wxID_ABORT );
+		AddCustomButton( wxID_ABORT, _("Abort") );
 #else
 	if( buttons.HasAbort() )
-		AddActionButton( wxID_ABORT );
+		AddCustomButton( wxID_ABORT, _("Abort") );
 
 	if( buttons.HasRetry() )
-		AddActionButton( wxID_RETRY );
+		AddCustomButton( wxID_RETRY,  _("Retry") );
 #endif
 
 	if( buttons.HasReset() )
