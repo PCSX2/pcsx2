@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "ConfigurationDialog.h"
 #include "System.h"
+#include "MSWstuff.h"
 
 #include "MemoryCardFile.h"
 //#include <wx/filepicker.h>
@@ -41,8 +42,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	, m_mcdpath( mcdpath )
 	, m_mcdfile( suggested_mcdfileName )//suggested_and_result_mcdfileName.IsEmpty() ? g_Conf->Mcd[slot].Filename.GetFullName()
 {
-
-	SetMinWidth( 472 );
+	SetMinWidth( 472 * MSW_GetDPIScale());
 	//m_filepicker	= NULL;
 
 	CreateControls();
@@ -72,13 +72,12 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 		s_padding += Heading( wxString(_("At folder:    ")) + (m_mcdpath + m_mcdfile).GetPath() ).Unwrapped()	| StdExpand();
 
 		wxBoxSizer& s_filename( *new wxBoxSizer(wxHORIZONTAL) );
-		s_filename += Heading( _("Select file name: ")).SetMinWidth(150);
-		m_text_filenameInput->SetMinSize(wxSize(150,20));
+		s_filename += Heading( _("Select file name: ")).Unwrapped().Align(wxALIGN_RIGHT) | pxProportion(1);
 		m_text_filenameInput->SetValue ((m_mcdpath + m_mcdfile).GetName());
-		s_filename += m_text_filenameInput;
-		s_filename += Heading( L".ps2" );
+		s_filename += m_text_filenameInput | pxProportion(2);
+		s_filename += Heading( L".ps2" ).Align(wxALIGN_LEFT) | pxProportion(1);
 
-		s_padding += s_filename | wxALIGN_LEFT;
+		s_padding += s_filename | StdExpand();
 
 	}
 
@@ -95,6 +94,9 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 
 	Connect( wxID_OK,							wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
 	Connect( m_text_filenameInput->GetId(),		wxEVT_COMMAND_TEXT_ENTER,		wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
+
+	// ...Typical solution to everything? Or are we doing something weird?
+	SetSizerAndFit(GetSizer());
 
 	m_text_filenameInput->SetFocus();
 	m_text_filenameInput->SelectAll();
