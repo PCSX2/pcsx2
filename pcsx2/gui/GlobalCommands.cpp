@@ -281,6 +281,8 @@ namespace Implementations
 
 	void Sys_Suspend()
 	{
+		CoreThread.Suspend();
+
 		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
 		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc) {
 			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
@@ -303,16 +305,17 @@ namespace Implementations
 			else
 			{
 				// aborting suspend request
-				// TODO: It's likely that if we were full screen before showing the
-				// prompt then we're now not in full screen anymore. It would have
-				// been ideal to restore full screen, but the full screen flow is complex
-				// and specifically gsframe->IsFullScreen() is always false when we enter
-				// this function - even if we were full screen before displaying the prompt.
+				// Note: if LilyPad is configured to "Safe fullscreen exit on ESC",
+				// then pressing escape will also exit full screen, but won't restore full screen
+				// when emulation is resumed if the user doesn't want to exit PCSX2 after the prompt.
+				// So when using --nogui and --noguiprompt, consider disabling this option at Lilypad.
+				// Not sure yet why when using the GUI (without --nogiu), it does know to restore
+				// full screen even if this option is enabled at LilyPad.
+				CoreThread.Resume();
 				return;
 			}
 		}
 
-		CoreThread.Suspend();
 		sMainFrame.SetFocus();
 	}
 
