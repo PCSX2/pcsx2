@@ -69,8 +69,8 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 	*this += 4;
 	*this	+= new wxStaticLine( this )	| StdExpand();
 
-	*this += m_check_Ejection;	
-	*this += m_folderAutoIndex;
+	*this += m_check_Ejection | StdExpand();
+	*this += m_folderAutoIndex | StdExpand();
 }
 
 void Panels::McdConfigPanel_Toggles::Apply()
