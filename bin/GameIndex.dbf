@@ -124,6 +124,10 @@ Serial = PBPX-95503
 Name   = Gran Turismo 3 - A-Spec [PS2 Bundle]
 Region = NTSC-U
 ---------------------------------------------
+Serial = PBPX-95506
+Name   = Official PlayStation 2 Magazine Demo Disc
+Region = PAL-M5
+---------------------------------------------
 Serial = PBPX-95517
 Name   = Network Adapter Start-Up Disc
 Region = NTSC-U
@@ -382,7 +386,8 @@ Name   = Chain Drive
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20044
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Tomb Raider - The Angel of Darkness
+	// aka "TRAOD"
 Region = NTSC-Unk
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
@@ -1178,19 +1183,18 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SCES-50006
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan - The Ancients' Gates
+	// aka "Drakan 2"
 Region = PAL-M5
 Compat = 5
 EETimingHack = 1	// flickery textures
-[patches]
-	comment=- This gamedisc supports multiple languages through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	// =====
+[patches = 04F9D87F]
 	// Fix by pgert against displaycrap which arises with HD
 	//  when using GSdx (in HW-mode) around the Health & Mana bars.
 	patch=1,EE,001C2274,word,3C013F7F // 3C013F80
 	patch=1,EE,001C228C,word,3C013E10 // 3C013F00
 [/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SCES-50009
 Name   = Wild Wild Racing
@@ -1583,19 +1587,7 @@ Region = PAL-S
 Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
-Compat = 5	// With GSdx, SW-mode only (issue 1212).
-// [patches]
-//	comment=- Widescreen enforcement lazy-hack by pgert.
-//	patch=1,EE,204886FC,extended,00000001 // 00000000
-//	//
-//	patch=1,EE,00103D9C,word,3C013F55 // 3C013F66 - X-axis of X-button & "Start" on Start menu - better.
-//	patch=1,EE,80103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	patch=1,EE,A0103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	//
-//	patch=1,EE,0012A000,word,3C013F40 // 3C013F66 - Y-axis of X-button & "Select" on TV-mode menu - better.
-//	patch=1,EE,8012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-//	patch=1,EE,A012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-// [/patches]
+Compat = 5	// With GSdx, SW-mode only.
 ---------------------------------------------
 Serial = SCES-51159
 Name   = Getaway, The
@@ -1985,15 +1977,11 @@ Serial = SCES-52677
 Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	comment=-  *  *  *  *  *  *
-	comment=- Using GSdx, this gamedisc crashes in gamemenu with SW-mode, 
-	comment=-  and has no 3D display with HW-mode.
-	comment=- Playable by toggling between HW-mode (in menu) and SW-mode (in game).
-[/patches]
+// Using GSdx, this gamedisc crashes in gamemenu with SW-mode, 
+//  and has no 3D display with HW-mode.
+// Playable by toggling between HW-mode (in menu) and SW-mode (in game).
+// =====
+// Language selection & Widescreen mode via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SCES-52748
 Name   = EyeToy - Play 2
@@ -4492,7 +4480,8 @@ Name   = Kiosk Demo Disc 2.02
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97128
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan - The Ancients' Gates
+	// aka "Drakan 2"
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1	// flickery textures
@@ -4658,8 +4647,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97169
-Name   = Drakan - The Ancients' Gates [Demo]	// aka "Drakan 2 [Demo]"
+Name   = Drakan - The Ancients' Gates [Demo]
+	// aka "Drakan 2 [Demo]"
 Region = NTSC-U
+EETimingHack = 1	// flickery textures
 ---------------------------------------------
 Serial = SCUS-97170
 Name   = Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]
@@ -6419,7 +6410,7 @@ Name   = Pro Evolution Soccer 5 [Demo]
 Region = PAL-E
 ---------------------------------------------
 Serial = SLED-53723
-Name   = Peter Jackson's king Kong [Demo]
+Name   = Peter Jackson's King Kong [Demo]
 Region = PAL-E
 ---------------------------------------------
 Serial = SLED-53745
@@ -6978,11 +6969,7 @@ Serial = SLES-50211
 Name   = Gauntlet - Dark Legacy
 Region = PAL-M3
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-50212
 Name   = Paris-Dakar Rally
@@ -7059,7 +7046,7 @@ Name   = Escape from Monkey Island 4
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-50229
-Name   = Monkey Island 4
+Name   = Monkey Island 4 (La Fuga de Monkey Island)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-50230
@@ -7317,8 +7304,8 @@ Region = PAL-M3
 Compat = 5
 ---------------------------------------------
 Serial = SLES-50384
-Name   = Project Zero II
-Region = PAL-Unk
+Name   = Metal Gear Solid 2 - Sons of Liberty
+Region = PAL-I
 ---------------------------------------------
 Serial = SLES-50385
 Name   = Metal Gear Solid 2 - Sons of Liberty
@@ -7890,7 +7877,7 @@ Region = PAL-M3
 Serial = SLES-50672
 Name   = Baldur's Gate: Dark Alliance
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50677
 Name   = Shadow Hearts
@@ -8217,12 +8204,6 @@ Serial = SLES-50821
 Name   = Project Zero
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc only lets you choose language once,
-	comment=-  whereafter it stores that setting in the memcard.
-	comment=- To change the language you actually have to erase
-	comment=-  the memcard content for the game.
-[/patches]
 ---------------------------------------------
 Serial = SLES-50822
 Name   = Shadow Hearts
@@ -8259,28 +8240,32 @@ Region = PAL-S
 Serial = SLES-50836
 Name   = Indiana Jones and The Emperor's Tomb
 Region = PAL-E
-EETimingHack = 1		//For texture flicker.
+EETimingHack = 1	// For texture flicker.
 ---------------------------------------------
 Serial = SLES-50837
 Name   = Indiana Jones and The Emperor's Tomb
+	// Indiana Jones et le Tombeau de L'Empereur
 Region = PAL-F
-EETimingHack = 1		//For texture flicker.
+EETimingHack = 1	// For texture flicker.
 ---------------------------------------------
 Serial = SLES-50838
 Name   = Indiana Jones and The Emperor's Tomb
+	// Indiana Jones und die Legende der Kaisergruft
 Region = PAL-G
 Compat = 5
-EETimingHack = 1		//For texture flicker.
+EETimingHack = 1	// For texture flicker.
 ---------------------------------------------
 Serial = SLES-50839
 Name   = Indiana Jones and The Emperor's Tomb
+	// Indiana Jones e la Tomba dell'Imperatore
 Region = PAL-I
-EETimingHack = 1		//For texture flicker.
+EETimingHack = 1	// For texture flicker.
 ---------------------------------------------
 Serial = SLES-50840
 Name   = Indiana Jones and The Emperor's Tomb
+	// Indiana Jones y la Tumba del Emperador
 Region = PAL-S
-EETimingHack = 1		//For texture flicker.
+EETimingHack = 1	// For texture flicker.
 ---------------------------------------------
 Serial = SLES-50841
 Name   = Largo Winch - Empire Under Threat
@@ -8315,6 +8300,8 @@ Region = PAL-M5
 Serial = SLES-50850
 Name   = ATV Off-Road 2
 Region = PAL-Unk
+// Language selection via BIOS settings (requires Full boot),
+//  and in Options menu if you have Dutch or Portuguese.
 ---------------------------------------------
 Serial = SLES-50852
 Name   = Sven-Goran Eriksson's World Challenge
@@ -8596,7 +8583,8 @@ Name   = Scorpion King, The - Rise of an Akkadian
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-50988
-Name   = Lord of the Rings, The - The Fellowship of the Ring (Der Herr der Ringe - Die Gefahrten)
+Name   = Lord of the Rings, The - The Fellowship of the Ring
+	// Der Herr der Ringe - Die Gefahrten
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-50992
@@ -8647,10 +8635,12 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51018
 Name   = Scooby-Doo! and The Night of 100 Frights
+	// La Nuit des 100 Frissons
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-51019
 Name   = Scooby-Doo! and The Night of 100 Frights
+	// Nacht der 100 Schrecken
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-51022
@@ -8686,8 +8676,8 @@ Name   = Spyro - Enter the Dragonfly
 Region = PAL-M6
 Compat = 5
 [patches = 0EF1D4BA]
-	comment=Spyro PAL startup fix
-	patch=1,EE,001E763C,word,24020001
+	comment=Spyro PAL startup fix by LXShadow
+	patch=1,EE,001E763C,word,24020001 // 0000102D
 [/patches]
 ---------------------------------------------
 Serial = SLES-51044
@@ -8741,6 +8731,7 @@ Compat = 5
 Serial = SLES-51064
 Name   = Gladius
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-51065
 Name   = Gladius
@@ -8787,10 +8778,12 @@ Compat = 5
 Serial = SLES-51079
 Name   = Ajax Club Football
 Region = PAL-M4
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-51080
 Name   = AC Milan Club Football
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-51081
 Name   = Club Football - Juventus 2003-2004 Season
@@ -9030,7 +9023,7 @@ Region = PAL-E
 Compat = 3
 ---------------------------------------------
 Serial = SLES-51194
-Name   = Harry Potter - Kammer D Schreckens
+Name   = Harry Potter und die Kammer des Schreckens
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-51195
@@ -9054,6 +9047,7 @@ Region = PAL-M5
 Serial = SLES-51199
 Name   = 4x4 Evolution II
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-51200
 Name   = Kelly Slater's Pro Surfer
@@ -9105,16 +9099,14 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51227
-Name   = Tomb Raider - Angel of Darkness	// aka "TRAOD"
+Name   = Tomb Raider - Angel of Darkness
+	// aka "TRAOD"
 Region = PAL-M10
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
-[patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	comment=- Full boot is recommended anyway for this gamedisc to avoid textproblems.
-[/patches]
+// =====
+// Language selection & Widescreen mode via BIOS settings (requires Full boot).
+// Full boot is recommended anyway for this gamedisc to avoid textdisplay-problems.
 ---------------------------------------------
 Serial = SLES-51229
 Name   = Virtua Cop - Elite Edition
@@ -9182,7 +9174,7 @@ Name   = Lord of the Rings, The - The Two Towers (Der Herr der Ringe - Die Zwei 
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-51255
-Name   = Lord of the Rings, The - The Two Towers
+Name   = Lord of the Rings, The - The Two Towers (Il Signore degli Anelli - Le Due Torri)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-51256
@@ -9241,7 +9233,7 @@ Name   = Contra - Shattered Soldier
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-51285
-Name   = Spongebob Squarepants - Revenge of the Flying Dutchman
+Name   = SpongeBob Squarepants - Revenge of the Flying Dutchman
 Region = PAL-E
 Compat = 5
 ---------------------------------------------
@@ -9250,7 +9242,7 @@ Name   = X-Men 2 - Wolverine's Revenge
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51287
-Name   = X-Men 2 - Wolverine's Revenge
+Name   = X-Men 2 - Wolverine's Revenge (La Vengeance de Wolverine)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-51289
@@ -9303,7 +9295,7 @@ Name   = Rugrats Royal Ransom
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51312
-Name   = Rugrats Royal Ransom
+Name   = Rugrats Royal Ransom (Nickelodeon Les Razmoket - La Rancon Royale)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-51313
@@ -9320,7 +9312,7 @@ Name   = Grand Theft Auto - Vice City
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51317
-Name   = Minority Report
+Name   = Minority Report (Le Futur vous Rattrape)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-51318
@@ -9429,6 +9421,7 @@ Region = PAL-M5
 Serial = SLES-51365
 Name   = BMX XXX
 Region = PAL-M4
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-51371
 Name   = Pride FC
@@ -9468,13 +9461,14 @@ Region = PAL-M3
 Serial = SLES-51388
 Name   = Sega Bass Fishing Duel
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-51390
 Name   = Fightbox
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51391
-Name   = RTL Skispringen 2003
+Name   = RTL Skijumping 2003 (Skispringen 2003)
 Region = PAL-E-G
 ---------------------------------------------
 Serial = SLES-51392
@@ -9499,7 +9493,7 @@ Name   = Armored Core 3
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51400
-Name   = Tenchu - Wrath of Heaven
+Name   = Tenchu - Wrath of Heaven (La Ira del Cielo)
 Region = PAL-S	// Voices: English & Japanese (Videos)
 ---------------------------------------------
 Serial = SLES-51401
@@ -9512,7 +9506,7 @@ Region = PAL-G
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51403
-Name   = Tenchu - Wrath of Heaven
+Name   = Tenchu - Wrath of Heaven (La Colere Divine)
 Region = PAL-F	// Voices: English & Japanese (Option menu)
 ---------------------------------------------
 Serial = SLES-51409
@@ -9753,6 +9747,9 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51580
 Name   = London Racer World Challenge
+	// FR: Paris - Marseille Racing - Edition Tour du Monde
+	// GE: Autobahn Raser - World Challenge
+	// NL: A2 Racer - World Challenge
 Region = PAL-M4
 ---------------------------------------------
 Serial = SLES-51581
@@ -9784,6 +9781,7 @@ Region = PAL-E
 Serial = SLES-51595
 Name   = Grand Theft Auto - Vice City
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-51600
 Name   = WWE Crush Hour
@@ -10320,7 +10318,7 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51845
-Name   = Barbie - Horse Adventure
+Name   = Barbie Horse Adventures - Wild Horse Rescue
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-51846
@@ -10512,7 +10510,7 @@ Name   = Pro Evolution Soccer 3
 Region = PAL-M4
 ---------------------------------------------
 Serial = SLES-51913
-Name   = Onimusha Blade Warrior
+Name   = Onimusha - Blade Warriors
 Region = PAL-M3
 MemCardFilter = SLES-51913/SLES-51914
 ---------------------------------------------
@@ -10656,11 +10654,11 @@ Compat = 5
 EETimingHack = 1	//broken textures
 ---------------------------------------------
 Serial = SLES-51968
-Name   = Spongebob Squarepants - Battle for Bikini Bottom
+Name   = SpongeBob Squarepants - Battle for Bikini Bottom
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51970
-Name   = Spongebob Schwammkopf - Schlacht um Bikini Bottom
+Name   = SpongeBob Schwammkopf - Schlacht um Bikini Bottom
 Region = PAL-G
 Compat = 5
 ---------------------------------------------
@@ -10751,7 +10749,7 @@ Name   = Tak and The Power of Juju
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52015
-Name   = Les Chevaliers de Baphomet
+Name   = Les Chevaliers de Baphomet - Le Manuscrit de Voynich
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52017
@@ -10764,15 +10762,15 @@ Name   = Lord of the Rings, The - Return of the King (Der Herr der Ringe, Die Ru
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52019
-Name   = Lord of the Rings, The - Return of the King
+Name   = Lord of the Rings, The - Return of the King (Le Seigneur des Anneaux - Le Retour du Roi)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52020
-Name   = Lord of the Rings, The - The Return of the King
+Name   = Lord of the Rings, The - The Return of the King (El Senor de los Anillos - El Retorno del Rey)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52021
-Name   = Lord of the Rings, The - The Return of the King
+Name   = Lord of the Rings, The - The Return of the King (Il Signore degli Anelli - Il ritorno del Re)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-52022
@@ -10999,11 +10997,7 @@ Serial = SLES-52149
 Name   = Tom Clancy's Splinter Cell - Pandora Tomorrow
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-52150
 Name   = Legacy of Kain - Defiance
@@ -11304,6 +11298,7 @@ Region = PAL-M5
 Serial = SLES-52325
 Name   = Champions of Norrath - Realms of EverQuest
 Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52326
 Name   = Spawn - Armageddon
@@ -11602,6 +11597,10 @@ Name   = Red Dead Revolver
 Region = PAL-M5
 Compat = 4
 ---------------------------------------------
+Serial = SLES-62478
+Name   = Red Dead Revolver
+Region = PAL-M5
+---------------------------------------------
 Serial = SLES-52479
 Name   = Samurai Jack - The Shadow of Aku
 Region = PAL-M5
@@ -11727,7 +11726,9 @@ Name   = Mouse Trophy
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52527
-Name   = Harry Potter og Fangen fra Azkaban
+Name   = Harry Potter and the Prisoner of Azkaban
+	// Harry Potter og Fangen fra Azkaban
+	// Harry Potter och Fangen fran Azkaban
 Region = PAL-M4	// Nordic
 ---------------------------------------------
 Serial = SLES-52531
@@ -11777,6 +11778,9 @@ Serial = SLES-52545
 Name   = Star Wars Battlefront
 Region = PAL-M3
 Compat = 5
+[patches = 503BF9E1]
+	comment=- This disc has the same CRC as SLUS-20898, the NTSC-U disc.
+[/patches]
 ---------------------------------------------
 Serial = SLES-52546
 Name   = Star Wars Battlefront
@@ -12040,7 +12044,7 @@ Name   = Tom Clancy's Ghost Recon 2
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52647
-Name   = Club Football - Manchester United 2005
+Name   = Club Football 2005 - Manchester United
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-52648
@@ -12048,7 +12052,7 @@ Name   = BVB 09 - Club Football 2005 - Borussia Dortmund
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52649
-Name   = Om Droit au Bit - Club Football 2005
+Name   = Club Football 2005 - Olympique de Marseille
 Region = PAL-E-F
 ---------------------------------------------
 Serial = SLES-52650
@@ -12068,7 +12072,7 @@ Name   = Liverpool FC - Club Football 2005
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-52654
-Name   = Club Football - Real Madri 2005
+Name   = Real Madrid - Club Football 2005
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52655
@@ -12076,7 +12080,7 @@ Name   = FC Bayern Munich - Club Football 2005
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-52656
-Name   = AC Milan Club Football 2005
+Name   = AC Milan - Club Football 2005
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-52657
@@ -12088,7 +12092,7 @@ Name   = Hamburg SV - Club Football 2005
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52659
-Name   = Paris Saint-Germain Club Football 2005
+Name   = Paris Saint-Germain - Club Football 2005
 Region = PAL-E-F
 ---------------------------------------------
 Serial = SLES-52660
@@ -12096,7 +12100,7 @@ Name   = Inter - Club Football 2005
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-52661
-Name   = Ajax Club Football 2005
+Name   = Ajax - Club Football 2005
 Region = PAL-M4
 ---------------------------------------------
 Serial = SLES-52662
@@ -12138,7 +12142,7 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-52671
-Name   = Ghostmaster
+Name   = Ghostmaster - The Gravenville Chronicles
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52673
@@ -12205,6 +12209,7 @@ Region = PAL-M5
 Serial = SLES-52703
 Name   = Psi-Ops - The Mindgate Conspiracy
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-52705
 Name   = Mortal Kombat - Deception
@@ -12424,7 +12429,7 @@ Name   = Lord of the Rings, The - The Third Age
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52802
-Name   = Lord of the Rings, The - The Third Age
+Name   = Lord of the Rings, The - The Third Age (Le Seigneur des Anneaux - Le Tiers Age)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52803
@@ -12432,11 +12437,11 @@ Name   = Lord of the Rings, The - The Third Age (Der Herr der Ringe - Das dritte
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52804
-Name   = Lord of the Rings, The - The Third Age
+Name   = Lord of the Rings, The - The Third Age (Il Signore degli Anelli - La Terza Era)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-52805
-Name   = Lord of the Rings, The - The Third Age
+Name   = Lord of the Rings, The - The Third Age (El Senor de los Anillos - La Tercera Edad)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52807
@@ -12445,15 +12450,23 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52808
 Name   = Lemony Snicket's A Series of Unfortunate Events
+	// Les Desastreuses Aventures des Orphelins Baudelaire - D'Apres Lemony Snicket
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-52809
-Name   = Lemony Snicket - Schauriger Schlamassel
+Name   = Lemony Snicket's A Series of Unfortunate Events
+	// Ratselhafte Ereignisse - Schauriger Schlamassel
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52810
-Name   = Lemony Snicket's Una Serie Disfortunati Eventi
+Name   = Lemony Snicket's A Series of Unfortunate Events
+	// Lemony Snicket's Una Serie Disfortunati Eventi
 Region = PAL-I
+---------------------------------------------
+Serial = SLES-52825
+Name   = Lemony Snicket's A Series of Unfortunate Events
+	// Una Serie de Catastroficas Desdichas de Lemony Snicket
+Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52811
 Name   = Get on da Mic
@@ -12485,6 +12498,7 @@ Region = PAL-G
 Serial = SLES-52816
 Name   = Incredibles, The
 Region = PAL-S
+Compat = 5
 [patches = 197641AA]
 comment= Patch By Prafull
 // fix hang at loading screen
@@ -12496,7 +12510,7 @@ Name   = Incredibles, The
 Region = PAL-M4	// Nordic
 ---------------------------------------------
 Serial = SLES-52821
-Name   = Incredibles, The
+Name   = Incredibles, The (Os Super-Herois)
 Region = PAL-P
 ---------------------------------------------
 Serial = SLES-52822
@@ -12507,10 +12521,6 @@ Compat = 5
 Serial = SLES-52824
 Name   = Furry Tales
 Region = PAL-E-F
----------------------------------------------
-Serial = SLES-52825
-Name   = Lemony Snicket's A Series of Unfortunate Events
-Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52831
 Name   = Syberia 2
@@ -12641,7 +12651,7 @@ Name   = Disney's Winnie the Pooh Rumbly Tumbly Adventure
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-52895
-Name   = Spongebob Squarepants - The Movie
+Name   = SpongeBob Squarepants - The Movie
 Region = PAL-E
 Compat = 5
 [patches = 536FEB77]
@@ -12651,7 +12661,7 @@ patch=1,EE,0010f3e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52896
-Name   = Spongebob Squarepants - The Movie
+Name   = SpongeBob Squarepants - The Movie
 Region = PAL-F-G
 ---------------------------------------------
 Serial = SLES-52898
@@ -12667,7 +12677,7 @@ Name   = Arcade Classics Vol.1
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52906
-Name   = Spongebob and Friends - Movin'
+Name   = SpongeBob and Friends - Movin'
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52908
@@ -12697,7 +12707,7 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SLES-52915
-Name   = Shark Tale
+Name   = Shark Tale (Hajar som Hajar)
 Region = PAL-SE
 ---------------------------------------------
 Serial = SLES-52917
@@ -12843,15 +12853,15 @@ Name   = GoldenEye - Rogue Agent
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52977
-Name   = GoldenEye - Rogue Agent
+Name   = GoldenEye - Rogue Agent (Agente Corrupto)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-52978
-Name   = La Pucelle Tactics
+Name   = La Pucelle - Tactics
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52980
-Name   = Big Mutha Truckers 2
+Name   = Big Mutha Truckers 2 - Truck Me Harder
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52982
@@ -12863,11 +12873,12 @@ Name   = Fitness Fun
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52984
-Name   = Panzer Front Ausf B
+Name   = Panzer Front Ausf.B
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-52985
-Name   = Spongebob Squarepants - The Movie
+Name   = SpongeBob Squarepants - The Movie
+	// SpongeBob Schwammkopf - Der Film
 Region = PAL-G
 [patches = B3C11E2D]
 comment= Patch By Prafull
@@ -12876,7 +12887,8 @@ patch=1,EE,0010f3e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52986
-Name   = Spongebob Squarepants - The Movie
+Name   = SpongeBob Squarepants - The Movie
+	// Bob Esponja - La Pelicula
 Region = PAL-S
 [patches = 34DA05D2]
 comment= Patch By Prafull
@@ -12941,11 +12953,7 @@ Serial = SLES-53007
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53011
 Name   = Gallop Racer 2
@@ -13017,7 +13025,7 @@ Name   = ESPN NBA 2K5
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53023
-Name   = RTL Ski Jump 2005
+Name   = RTL Skijumping 2005 (Skispringen 2005)
 Region = PAL-E-G
 ---------------------------------------------
 Serial = SLES-53024
@@ -13078,14 +13086,15 @@ Compat = 5
 eeRoundMode = 0
 ---------------------------------------------
 Serial = SLES-53039
-Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
+Name   = Champions - Return to Arms
+	// aka "Champions of Norrath 2"
 Region = PAL-M4
 Compat = 4
 // allows import of characters from first game
 MemCardFilter = SLES-53039/SLES-52325
 ---------------------------------------------
 Serial = SLES-53041
-Name   = RTL Ski Alpine 2005
+Name   = RTL Ski Alpine 2005 (Alpine Skiing 2005)
 Region = PAL-E-G
 ---------------------------------------------
 Serial = SLES-53044
@@ -13290,10 +13299,12 @@ Region = PAL-M5
 Serial = SLES-53129
 Name   = Tak 2 - The Staff of Dreams
 Region = PAL-F-G
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53130
 Name   = World Championship Poker
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-53131
 Name   = Full Spectrum Warrior
@@ -13308,6 +13319,7 @@ Serial = SLES-53139
 Name   = Alien Humanoid
 Region = PAL-M6
 Compat = 5
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-53140
 Name   = Choro Q
@@ -13327,7 +13339,7 @@ Name   = Fantastic Four
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53144
-Name   = Four Fantastiques, Les
+Name   = Fantastic Four (Quatre Fantastiques, Les)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-53145
@@ -13335,11 +13347,11 @@ Name   = Fantastic Four
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-53146
-Name   = I Fantastici Quattro
+Name   = Fantastic Four (I Fantastici Quattro)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-53147
-Name   = Four Fantasticos, Los
+Name   = Fantastic Four (Cuatro Fantasticos, Los)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-53148
@@ -13349,6 +13361,7 @@ Region = PAL-E
 Serial = SLES-53150
 Name   = 10 Pin - Champions' Alley
 Region = PAL-M6
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-53151
 Name   = Juiced
@@ -13361,11 +13374,7 @@ Region = PAL-M5
 Serial = SLES-53154
 Name   = The Bard's Tale
 Region = PAL-M8
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53155
 Name   = Star Wars - Episode III - Revenge of the Sith
@@ -13458,9 +13467,10 @@ Region = PAL-M5
 Serial = SLES-53219
 Name   = Winx Club
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53221
-Name   = l'Entraineur 5
+Name   = L'Entraineur 5 - Saison 04/05
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-53222
@@ -13569,7 +13579,7 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53303
-Name   = Skijumping 2006
+Name   = RTL Skijumping 2006 (Skispringen 2006)
 Region = PAL-E-G
 ---------------------------------------------
 Serial = SLES-53309
@@ -13691,6 +13701,10 @@ Name   = Shin Megami Tensei: Lucifer's Call
 Region = PAL-M3
 Compat = 5
 ---------------------------------------------
+Serial = SLES-53364
+Name   = 7 Sins
+Region = PAL-G
+---------------------------------------------
 Serial = SLES-53366
 Name   = Killer 7
 Region = PAL-M3
@@ -13766,7 +13780,7 @@ Name   = Ultimate Spider-Man
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53393
-Name   = Spartan Total Warrior
+Name   = Spartan - Total Warrior
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
@@ -13855,6 +13869,7 @@ Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-53435
 Name   = SAS Anti-Terror Force
+	// GSG9 Anti-Terror Force
 Region = PAL-M3
 Compat = 5
 ---------------------------------------------
@@ -13880,8 +13895,8 @@ Name   = Warriors, The
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53444
-Name   = Pro Evolution Soccer 5
-Region = PAL-Unk
+Name   = Panzer Elite Action - Fields of Glory
+Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53446
 Name   = Arcade USA
@@ -13984,18 +13999,22 @@ Name   = Total Overdose
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53494
-Name   = Spongebob Squarepants - Lights, Camera, PANTS!
+Name   = SpongeBob Squarepants - Lights, Camera, PANTS!
 Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53496
-Name   = Spongebob Squarepants - Lights, Camera, PANTS!
+Name   = SpongeBob Squarepants - Lights, Camera, PANTS!
+	// Ciak si Gira!
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-53501
 Name   = Star Wars - Battlefront II
 Region = PAL-M3
 Compat = 5
+[patches = 02F4B541]
+	comment=- This disc has the same CRC as SLUS-21240, the NTSC-U disc.
+[/patches]
 ---------------------------------------------
 Serial = SLES-53502
 Name   = Star Wars - Battlefront II
@@ -14185,7 +14204,7 @@ Name   = Canis Canem Edit
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53563
-Name   = Spongebob Squarepants and Friends - Untie!
+Name   = SpongeBob Squarepants and Friends - Untie!
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-53564
@@ -14302,7 +14321,8 @@ Name   = Wallace & Grommit - The Curse of the Were Rabbit
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53623
-Name   = Spongebob Squarepants - Battle for Bikini Bottom
+Name   = SpongeBob Squarepants - Battle for Bikini Bottom
+	// Bob L'eponge - La Bataille de Bikini Bottom
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-53624
@@ -14351,6 +14371,8 @@ Compat = 5
 ---------------------------------------------
 Serial = SLES-53654
 Name   = London Racer - Destruction Madness
+	// Paris-Marseille Racing - Destruction Madness
+	// Autobahn Raser - Destruction Madness
 Region = PAL-M3
 Compat = 5
 ---------------------------------------------
@@ -14383,11 +14405,7 @@ Serial = SLES-53667
 Name   = Gauntlet - Seven Sorrows
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53668
 Name   = Micro Machines v4
@@ -14434,8 +14452,9 @@ Region = PAL-M6
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53697
-Name   = Dora the Explorer
+Name   = Dora the Explorer - Journey to the Purple Planet
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53699
 Name   = Swords of Destiny
@@ -14472,18 +14491,22 @@ Compat = 5
 ---------------------------------------------
 Serial = SLES-53707
 Name   = Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe
+	// Die Chroniken von Narnia - Der Konig von Narnia
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-53708
 Name   = Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe
+	// Le Cronache di Narnia - Il leone, la strega e l'armadio
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-53709
 Name   = Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe
+	// Le Monde de Narnia - Le Lion, la Sorciere blanche et l'Armoire magique 
 Region = PAL-DU-F
 ---------------------------------------------
 Serial = SLES-53710
 Name   = Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe
+	// Las Cronicas de Narnia - El Leon, la Bruja y el Armario
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-53712
@@ -14521,6 +14544,7 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53725
 Name   = Asterix & Obelix XXL2
+	// Asterix & Obelix XXL 2 - Mission: Las Vegum
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53726
@@ -14529,6 +14553,7 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53727
 Name   = Harry Potter and The Goblet of Fire
+	// Harry Potter och den Flammande Bagaren
 Region = PAL-M7
 ---------------------------------------------
 Serial = SLES-53728
@@ -14560,7 +14585,7 @@ Name   = Disney's Chicken Little
 Region = PAL-F-S
 ---------------------------------------------
 Serial = SLES-53740
-Name   = Disney's Chicken Little
+Name   = Disney's Chicken Little (Himmel und Huhn)
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-53741
@@ -14580,7 +14605,7 @@ Name   = Superman Returns
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53747
-Name   = Ed, Edd, 'n Eddy - The Misadventure
+Name   = Ed, Edd n Eddy - The Mis-Edventures
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53748
@@ -14730,11 +14755,7 @@ Serial = SLES-53826
 Name   = Tom Clancy's Splinter Cell - Double Agent
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53827
 Name   = Tom Clancy's Splinter Cell - Double Agent
@@ -14754,6 +14775,7 @@ Compat = 5
 Serial = SLES-53830
 Name   = Psychonauts
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53831
 Name   = BloodRayne 2
@@ -14900,11 +14922,7 @@ Serial = SLES-53908
 Name   = Tomb Raider - Legend
 Region = PAL-M8
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53909
 Name   = Full Spectrum Warrior - Ten Hammers
@@ -14918,6 +14936,7 @@ Region = PAL-R
 Serial = SLES-53913
 Name   = Plan, The
 Region = PAL-F-I
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-53914
 Name   = Plan, The
@@ -15025,11 +15044,11 @@ Name   = Godfather, The (Le Parrain)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-53970
-Name   = Godfather, The
+Name   = Godfather, The (Il Padrino)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-53971
-Name   = Godfather, The
+Name   = Godfather, The (El Padrino)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-53972
@@ -15060,7 +15079,7 @@ Name   = Ice Age 2 - The Meltdown
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-53987
-Name   = Over the Hedge
+Name   = Over the Hedge (Vecinos Invasores)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-53988
@@ -15068,7 +15087,7 @@ Name   = Over the Hedge
 Region = PAL-E-G
 ---------------------------------------------
 Serial = SLES-53989
-Name   = Over the Hedge
+Name   = Over the Hedge (Beestenboel Bij De Buren)
 Region = PAL-DU
 ---------------------------------------------
 Serial = SLES-53991
@@ -15107,7 +15126,7 @@ Name   = Disney-Pixar's Cars
 Region = PAL-DU-P
 ---------------------------------------------
 Serial = SLES-54006
-Name   = Disney-Pixar's Cars
+Name   = Disney-Pixar's Cars (Quatre Roues)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-54007
@@ -15115,15 +15134,16 @@ Name   = Disney-Pixar's Cars
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-54010
-Name   = Disney-Pixar's Cars
+Name   = Disney-Pixar's Cars (Motori Ruggenti)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-54011
-Name   = Disney-Pixar's Cars
+Name   = Disney-Pixar's Cars (Bilar)
 Region = PAL-SE
 ---------------------------------------------
 Serial = SLES-54012
 Name   = Disney-Pixar's Cars
+	// Disney Prasentiert einen Pixar Film - Cars
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-54013
@@ -15183,6 +15203,7 @@ Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-54064
 Name   = FIFA World Cup 2006
+	// FIFA Fotbolls-VM 2006
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-54066
@@ -15347,6 +15368,7 @@ Region = PAL-E
 Serial = SLES-54140
 Name   = Playwize Poker & Casino
 Region = PAL-M3
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-54143
 Name   = Hard Rock Casino
@@ -15486,15 +15508,12 @@ Name   = Dirge of Cerberus - Final Fantasy VII
 Region = PAL-M5
 Compat = 5
 [patches = 33F7D21A]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	//
 	// Override sceScfGetLanguage patches by nachbrenner:
 	//  patch=0,EE,002486d8,word,24020000 // japanese
 	//  patch=0,EE,002486d8,word,24020001 // english
 	//  patch=0,EE,002486d8,word,24020004 // german
 [/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-54186
 Name   = Devil May Cry 3 - Dante's Awakening [Special Edition]
@@ -15722,6 +15741,7 @@ Region = PAL-M4
 ---------------------------------------------
 Serial = SLES-54311
 Name   = Noddy and The Magic Book
+	// Noddy e o livro magico
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54316
@@ -15811,7 +15831,7 @@ Region = PAL-M11
 Compat = 5
 ---------------------------------------------
 Serial = SLES-54350
-Name   = Superman Returns
+Name   = Superman Returns - Das Spiel
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-54354
@@ -15867,6 +15887,7 @@ Region = PAL-DU-F
 Serial = SLES-54368
 Name   = RTL Ski Jumping 2007
 Region = PAL-E-G
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-54370
 Name   = Alpine Ski Racing
@@ -15975,6 +15996,7 @@ Region = PAL-M6	// Eng, P & Nordic
 Serial = SLES-54430
 Name   = Teen Titans
 Region = PAL-E-F
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-54431
 Name   = Teen Titans
@@ -16020,19 +16042,19 @@ Name   = Chicken Little - Ace in Action
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54450
-Name   = Chicken Little - Aventures Intergalactiques
+Name   = Chicken Little - Ace in Action (Aventures Intergalactiques)
 Region = PAL-F
 ---------------------------------------------
 Serial = SLES-54451
-Name   = Himmel und Huhn - Ace in Action
+Name   = Chicken Little - Ace in Action (Himmel und Huhn)
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-54452
-Name   = Chicken Little - 'As' en Accion
+Name   = Chicken Little - Ace in Action ('As' en Accion)
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-54453
-Name   = Chicken Little - Ace in Action
+Name   = Chicken Little - Ace in Action (Asso Spaziale!)
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-54454
@@ -16175,6 +16197,10 @@ Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54527
 Name   = Flushed Away
+	// FR: Souris City
+	// SP: Ratonpolis
+	// GE: Flutsch und Weg
+	// IT: Giu peril Tubo
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54541
@@ -16195,7 +16221,8 @@ Name   = Maxxed Out Racing Nitro
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54546
-Name   = Horsez
+Name   = Pippa Funnell - Take the Reins
+	// Horsez - Abenteuer auf dem Reiterhof - Die Meisterschule
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54548
@@ -16410,11 +16437,7 @@ Serial = SLES-54674
 Name   = Lara Croft Tomb Raider - Anniversary
 Region = PAL-M10
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-54675
 Name   = Street Warrior
@@ -16773,6 +16796,10 @@ Serial = SLES-54958
 Name   = Alan Hansen's Sports Challenge
 Region = PAL-M5
 ---------------------------------------------
+Serial = SLES-54959
+Name   = MotoGP 07
+Region = PAL-M5
+---------------------------------------------
 Serial = SLES-54962
 Name   = Guitar Hero III - Legends of Rock
 Region = PAL-E
@@ -16939,6 +16966,10 @@ Serial = SLES-55090
 Name   = Naruto - Uzumaki Chronicles 2
 Region = PAL-M5
 OPHFLagHack = 1
+---------------------------------------------
+Serial = SLES-55091
+Name   = Hoppie
+Region = PAL-E
 ---------------------------------------------
 Serial = SLES-55105
 Name   = UEFA Euro 2008 - Austria-Switzerland
@@ -17150,6 +17181,7 @@ Serial = SLES-55345
 Name   = James Bond: Quantum of Solace
 Region = PAL-M5
 Compat = 5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-55347
 Name   = Dragonball Z Infinite World
@@ -17272,11 +17304,7 @@ Serial = SLES-55442
 Name   = Tomb Raider Underworld
 Region = PAL-M8
 Compat = 5
-[patches]
-	comment=- This gamedisc supports multiple languages.
-	comment=- Language selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-55443
 Name   = Mana Khemia - Alchemists of Al-Revis
@@ -17301,6 +17329,7 @@ Region = PAL-Unk
 Serial = SLES-55457
 Name   = AC/DC LIVE: Rock Band Track Pack
 Region = PAL-M5
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-55459
 Name   = Jelly Belly: Ballistic Beans
@@ -17347,12 +17376,13 @@ Region = PAL-M5
 Serial = SLES-55494
 Name   = X-Men Origins - Wolverine
 Region = PAL-E-F
-FpuCompareHack = 1		//flickering objects, sound loop
+FpuCompareHack = 1	// flickering objects, sound loop
+// Language selection via BIOS settings (requires Full boot).
 ---------------------------------------------
 Serial = SLES-55495
 Name   = X-Men Origins - Wolverine
 Region = PAL-G-F-S
-FpuCompareHack = 1		//flickering objects, sound loop
+FpuCompareHack = 1	// flickering objects, sound loop
 ---------------------------------------------
 Serial = SLES-55496
 Name   = Secret Agent Clank
@@ -17423,7 +17453,7 @@ Region = PAL-M14
 OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLES-55574
-Name   = the Lord of the Rings - Aragorn's Quest
+Name   = The Lord of the Rings - Aragorn's Quest
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-55578
@@ -17522,10 +17552,27 @@ Serial = SLES-55664
 Name   = FIFA 13
 Region = PAL-M5
 Compat = 5
+// Language selection via BIOS settings (requires Full boot), and in Options menu.
 ---------------------------------------------
 Serial = SLES-55665
 Name   = FIFA 13
 Region = PAL-M4
+---------------------------------------------
+Serial = SLES-55666
+Name   = Pro Evolution Soccer 2013
+Region = PAL-M5
+---------------------------------------------
+Serial = SLES-55667
+Name   = Pro Evolution Soccer 2013
+Region = PAL-F-G
+---------------------------------------------
+Serial = SLES-55668
+Name   = Pro Evolution Soccer 2013
+Region = PAL-GR-I
+---------------------------------------------
+Serial = SLES-55669
+Name   = Pro Evolution Soccer 2013
+Region = PAL-P-S
 ---------------------------------------------
 Serial = SLES-55671
 Name   = FIFA 14
@@ -17678,60 +17725,52 @@ MemCardFilter = SLES-82038
 [/patches]
 ---------------------------------------------
 Serial = SLES-82042
-Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
-Region = PAL-E-F
+Name   = Metal Gear Solid 3 - Disc 1 of 3 - Subsistance Disc
+Region = PAL-M2	// UK & FR
 ---------------------------------------------
 Serial = SLES-82043
-Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
-Region = PAL-E-F
-MemCardFilter = SLES-82042
+Name   = Metal Gear Solid 3 - Disc 2 of 3 - Persistence Disc
+Region = PAL-M2	// UK & FR
+---------------------------------------------
+Serial = SLES-82050
+Name   = Metal Gear Solid 3 - Disc 3 of 3 - Existence Disc
+Region = PAL-M2	// UK & FR
 ---------------------------------------------
 Serial = SLES-82044
-Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
+Name   = Metal Gear Solid 3 - Disc 1 of 3 - Subsistance Disc
 Region = PAL-I
 ---------------------------------------------
 Serial = SLES-82045
-Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
+Name   = Metal Gear Solid 3 - Disc 2 of 3 - Persistence Disc
 Region = PAL-I
-MemCardFilter = SLES-82044
+---------------------------------------------
+Serial = SLES-82051
+Name   = Metal Gear Solid 3 - Disc 3 of 3 - Existence Disc
+Region = PAL-I
 ---------------------------------------------
 Serial = SLES-82046
-Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
+Name   = Metal Gear Solid 3 - Disc 1 of 3 - Subsistance Disc
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-82047
-Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
+Name   = Metal Gear Solid 3 - Disc 2 of 3 - Persistence Disc
 Region = PAL-G
-MemCardFilter = SLES-82046
+---------------------------------------------
+Serial = SLES-82052
+Name   = Metal Gear Solid 3 - Disc 3 of 3 - Existence Disc
+Region = PAL-G
 ---------------------------------------------
 Serial = SLES-82048
-Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
+Name   = Metal Gear Solid 3 - Disc 1 of 3 - Subsistance Disc
 Region = PAL-S
 ---------------------------------------------
 Serial = SLES-82049
-Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
+Name   = Metal Gear Solid 3 - Disc 2 of 3 - Persistence Disc
 Region = PAL-S
-MemCardFilter = SLES-82048
----------------------------------------------
-Serial = SLES-82050
-Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
-Region = PAL-E-F
-MemCardFilter = SLES-82042
----------------------------------------------
-Serial = SLES-82051
-Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
-Region = PAL-I
-MemCardFilter = SLES-82044
----------------------------------------------
-Serial = SLES-82052
-Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
-Region = PAL-G
-MemCardFilter = SLES-82046
 ---------------------------------------------
 Serial = SLES-82053
-Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
+Name   = Metal Gear Solid 3 - Disc 3 of 3 - Existence Disc
 Region = PAL-S
-MemCardFilter = SLES-82048
 ---------------------------------------------
 Serial = SLKA-15003
 Name   = Shikigami no Shiro II
@@ -21818,8 +21857,9 @@ Serial = SLPM-65232
 Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-J
 Compat = 5
-[patches]
-	comment=Note that this disc has the same CRC as SLUS-20484, the NTSC-U disc.
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLUS-20484 & SLUS-20627,
+	comment=-  the NTSC-U discs, and as SLPM-65233, the Lucia disc.
 [/patches]
 ---------------------------------------------
 Serial = SLPM-65233
@@ -21827,6 +21867,10 @@ Name   = Devil May Cry 2 [Lucia Disc]
 Region = NTSC-J
 Compat = 5
 MemCardFilter = SLPM-65232
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLUS-20484 & SLUS-20627,
+	comment=-  the NTSC-U discs, and as SLPM-65232, the Dante disc.
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65234
 Name   = Gregory Horror Show - Soul Collector
@@ -26700,6 +26744,10 @@ Serial = SLPM-66574
 Name   = Meitantei Evangelion
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25932
+Name   = Evangelion - Jo
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPM-66575
 Name   = Guitar Freaks V-2 & Drummania V-2
 Region = NTSC-J
@@ -27135,7 +27183,7 @@ Name   = Princess Maker 4 [Best Version]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66694
-Name   = Spongebob
+Name   = SpongeBob
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66695
@@ -30816,7 +30864,8 @@ Name   = True Love Story - Summer Days and Yet
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25246
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Tomb Raider - The Angel of Darkness
+	// aka "TRAOD"
 Region = NTSC-J
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
@@ -34269,7 +34318,7 @@ Compat = 5
 	patch=0,EE,0010FFC8,word,48428800
 	patch=0,EE,0010FFDC,word,4BE83A4B
 
-	// same as ace combat 5, these are definite
+	// same as Ace Combat 5, these are definite
 	patch=0,EE,0017C6C4,word,48438800
 	patch=0,EE,0017C6D4,word,4BE4282C
 	patch=0,EE,0017C0C4,word,48438800
@@ -34989,8 +35038,8 @@ Name   = Spyro the Dragon - Enter the Dragonfly
 Region = NTSC-U
 Compat = 5
 [patches = 4B8E0DE8]
-	comment=Spyro NTSC startup fix
-	patch=1,EE,001e71dc,word,24020001
+	comment=Spyro NTSC startup fix by LXShadow
+	patch=1,EE,001e71dc,word,24020001 // 0000102d
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20316
@@ -35492,7 +35541,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20425
-Name   = Spongebob Squarepants - Revenge of the Flying Dutchman
+Name   = SpongeBob Squarepants - Revenge of the Flying Dutchman
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -35660,11 +35709,12 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20466
-Name   = Gravenville - Ghost Master
+Name   = Ghost Master - The Gravenville Chronicles
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20467
-Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
+Name   = Tomb Raider - The Angel of Darkness
+	// aka "TRAOD"
 Region = NTSC-U
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
@@ -35746,11 +35796,12 @@ Compat = 5
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20484
-Name   = Devil May Cry 2 [Disc1of2]
+Name   = Devil May Cry 2 [Disc 1 of 2 - Dante Disc]
 Region = NTSC-U
 Compat = 5
-[patches]
-	comment=Note that this disc has the same CRC as SLPM-65232, the NTSC-J disc.
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLPM-65232 & SLPM-65233,
+	comment=-  the NTSC-J discs, and as SLUS-20627, the Lucia disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20485
@@ -36381,10 +36432,14 @@ Name   = Deer Hunter
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20627
-Name   = Devil May Cry 2 [Disc2of2]
+Name   = Devil May Cry 2 [Disc 2 of 2 - Lucia Disc]
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SLUS-20484
+[patches = 08995DEE]
+	comment=- This disc has the same CRC as SLPM-65232 & SLPM-65233,
+	comment=-  the NTSC-J discs, and as SLUS-20484, the Dante disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20628
 Name   = Disney's Finding Nemo
@@ -37620,6 +37675,9 @@ Serial = SLUS-20898
 Name   = Star Wars Battlefront
 Region = NTSC-U
 Compat = 5
+[patches = 503BF9E1]
+	comment=- This disc has the same CRC as SLES-52545, the PAL-M3 disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20899
 Name   = Samurai Jack - The Shadow of Aku
@@ -38006,7 +38064,8 @@ Name   = Samurai Showdown V
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20973
-Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
+Name   = Champions - Return to Arms
+	// aka "Champions of Norrath 2"
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SLUS-20973/SLUS-20565
@@ -38359,7 +38418,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21041
-Name   = Shadow Hearts - Covenant [Disc1of2]
+Name   = Shadow Hearts 2 - Covenant [Disc 1 of 2]
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -38374,7 +38433,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21044
-Name   = Shadow Hearts - Covenant [Disc2of2]
+Name   = Shadow Hearts 2 - Covenant [Disc 2 of 2]
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SLUS-21041
@@ -39307,6 +39366,9 @@ Serial = SLUS-21240
 Name   = Star Wars Battlefront II
 Region = NTSC-U
 Compat = 5
+[patches = 02F4B541]
+	comment=- This disc has the same CRC as SLES-53501, the PAL-M3 disc.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21241
 Name   = NHL '06
@@ -41878,7 +41940,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21818
-Name   = Spongebob Squarepants Featuring Nicktoons - Globs Of Doom
+Name   = SpongeBob Squarepants Featuring Nicktoons - Globs Of Doom
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -42916,7 +42978,8 @@ Name   = Konami Preview Disc
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29126
-Name   = Champions - Return to Arms [Demo]	// aka "Champions of Norrath 2 [Demo]"
+Name   = Champions - Return to Arms [Demo]
+	// aka "Champions of Norrath 2 [Demo]"
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
