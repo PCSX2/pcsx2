@@ -385,12 +385,16 @@ namespace Implementations
 		GetMTGS().WaitGS();		// make sure GS is in sync with the audio stream when we start.
 		if (g_Pcsx2Recording) {
 			// start recording
-			if (GSsetupRecording) {
-				// make the recording-config dialog[s] pseudo-modal also for the main PCSX2 window
-				// (it's already properly modal for the GS window)
-				if (GetMainFramePtr())
-					GetMainFramePtr()->Disable();
 
+			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
+			// (the GSdx dialog is already properly modal for the GS window)
+			bool needsMainFrameEnable = false;
+			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled()) {
+				needsMainFrameEnable = true;
+				GetMainFramePtr()->Disable();
+			}
+
+			if (GSsetupRecording) {
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
 				if (GSsetupRecording(g_Pcsx2Recording, NULL)) {
 					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
@@ -398,14 +402,13 @@ namespace Implementations
 					// recording dialog canceled by the user. align our state
 					g_Pcsx2Recording ^= 1;
 				}
-
-				if (GetMainFramePtr())
-					GetMainFramePtr()->Enable();
-
 			} else {
 				// the GS doesn't support recording.
 				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
 			}
+
+			if (GetMainFramePtr() && needsMainFrameEnable)
+				GetMainFramePtr()->Enable();
 
 		} else {
 			// stop recording
