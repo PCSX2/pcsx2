@@ -103,7 +103,7 @@ public:
 	bool Show( bool shown=true );
 	wxStaticText* GetLabel_OutputDisabled() const;
 
-	bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
+	bool ShowFullScreen(bool show);
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );
