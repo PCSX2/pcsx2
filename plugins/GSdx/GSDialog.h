@@ -56,6 +56,8 @@ public:
 	bool ComboBoxGetSelData(UINT id, INT_PTR& data);
 	void ComboBoxFixDroppedWidth(UINT id);
 
+	void OpenFileDialog(UINT id, const char *title);
+
 	void AddTooltip(UINT id);
 
 	static void InitCommonControls();

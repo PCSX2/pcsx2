@@ -26,10 +26,6 @@
 #error GSdx FX is not compatible with GSdx9. Use GSdx OGL or DX10/11.
 #endif
 
-#ifdef SHADER_MODEL
-#include "GSdx_FX_Settings.ini"
-#endif
-
 /*------------------------------------------------------------------------------
                              [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/

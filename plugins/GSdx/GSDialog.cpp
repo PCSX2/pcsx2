@@ -268,6 +268,31 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 	}
 }
 
+void GSDialog::OpenFileDialog(UINT id, const char *title)
+{
+	char filename[512];
+	OPENFILENAME ofn = { 0 };
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = m_hWnd;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
+	ofn.lpstrFile = filename;
+	ofn.lpstrFile[0] = 0;
+	ofn.nMaxFile = 512;
+	ofn.lpstrTitle = title;
+
+	// GetOpenFileName changes the current directory, so we need to save and
+	// restore the current directory or everything using relative paths will
+	// break.
+	char current_directory[512];
+	GetCurrentDirectory(512, current_directory);
+
+	if (GetOpenFileName(&ofn))
+		SendMessage(GetDlgItem(m_hWnd, id), WM_SETTEXT, 0, (LPARAM)filename);
+
+	SetCurrentDirectory(current_directory);
+
+}
+
 void GSDialog::AddTooltip(UINT id)
 {
 	static UINT tooltipStructSize = GetTooltipStructSize();
