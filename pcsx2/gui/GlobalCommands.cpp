@@ -293,8 +293,8 @@ namespace Implementations
 			// So if we're set to close on esc and nogui:
 			// If the user didn't specify --noguiprompt - exit immediately.
 			// else prompt to either exit or abort the suspend.
-			if (!wxGetApp().ExitPromptWithNoGUI() // the user specified to exit immediately
-				|| (wxOK == wxMessageBox(_("Exit PCSX2?"),
+			if (!wxGetApp().ExitPromptWithNoGUI() // configured to exit without a dialog
+				|| (wxOK == wxMessageBox(_("Exit PCSX2?"), // or confirmed exit at the dialog
 										 L"PCSX2",
 										 wxICON_WARNING | wxOK | wxCANCEL)))
 			{
@@ -305,12 +305,12 @@ namespace Implementations
 			else
 			{
 				// aborting suspend request
-				// Note: if LilyPad is configured to "Safe fullscreen exit on ESC",
-				// then pressing escape will also exit full screen, but won't restore full screen
-				// when emulation is resumed if the user doesn't want to exit PCSX2 after the prompt.
-				// So when using --nogui and --noguiprompt, consider disabling this option at Lilypad.
-				// Not sure yet why when using the GUI (without --nogiu), it does know to restore
-				// full screen even if this option is enabled at LilyPad.
+				// Note: if we didn't want to suspend emulation for this confirmation dialog,
+				// and if LilyPad has "Safe fullscreen exit on ESC", then pressing ESC would
+				// have exited fullscreen without PCSX2 knowing about it, and since it's not
+				// suspended it would not re-init the fullscreen state if the confirmation is
+				// aborted. On such case we'd have needed to set the gsframe fullscreen mode
+				// here according to g_Conf->GSWindow.IsFullscreen
 				CoreThread.Resume();
 				return;
 			}
