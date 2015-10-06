@@ -30,6 +30,8 @@
 #include <wx/dir.h>
 
 
+static wxDataFormat drag_drop_format(L"PCSX2McdDragDrop");
+
 bool CopyDirectory( const wxString& from, const wxString& to );
 bool RemoveDirectory( const wxString& dirname );
 
@@ -261,76 +263,6 @@ void Panels::BaseMcdListPanel::AppStatusEvent_OnSettingsApplied()
 	}
 }
 
-// --------------------------------------------------------------------------------------
-//  McdDataObject
-// --------------------------------------------------------------------------------------
-class WXDLLEXPORT McdDataObject : public wxDataObjectSimple
-{
-	DECLARE_NO_COPY_CLASS(McdDataObject)
-
-protected:
-	int  m_viewIndex;
-
-public:
-	McdDataObject(int viewIndex = -1)
-#ifdef __linux__
-		// XXX: On linux drag and drop doesn't work. I think wxDF_PRIVATE is a MS extension.
-		// Besides it will raise on assertion on wx3.0.
-		//
-		// wxDF_FILENAME returns the filename of the memory card dropped. Maybe code can be updated
-		// to use it. However Model/view stuff is not my cup of tea so I will
-		// let others improve it on linux. --Greg
-		: wxDataObjectSimple( /*wxDF_FILENAME*/ )
-#else
-		: wxDataObjectSimple( wxDF_PRIVATE )
-#endif
-	{
-		m_viewIndex = viewIndex;
-	}
-
-	uint GetViewIndex() const
-	{
-		pxAssertDev( m_viewIndex >= 0, "memory card view-Index is uninitialized (invalid drag&drop object state)" );
-		return (uint)m_viewIndex;
-	}
-
-	size_t GetDataSize() const
-	{
-		return sizeof(u32);
-	}
-
-	bool GetDataHere(void *buf) const
-	{
-		*(u32*)buf = GetViewIndex();
-		return true;
-	}
-
-	virtual bool SetData(size_t len, const void *buf)
-	{
-		if( !pxAssertDev( len == sizeof(u32), "Data length mismatch on memory card drag&drop operation." ) ) return false;
-
-		m_viewIndex = *(u32*)buf;
-		return true;//( (uint)m_viewIndex < 8 );		// sanity check (unsigned, so that -1 also is invalid) :)
-	}
-
-	// Must provide overloads to avoid hiding them (and warnings about it)
-	virtual size_t GetDataSize(const wxDataFormat&) const
-	{
-		return GetDataSize();
-	}
-
-	virtual bool GetDataHere(const wxDataFormat&, void *buf) const
-	{
-		return GetDataHere(buf);
-	}
-
-	virtual bool SetData(const wxDataFormat&, size_t len, const void *buf)
-	{
-		return SetData(len, buf);
-	}
-};
-
-
 class McdDropTarget : public wxDropTarget
 {
 protected:
@@ -340,7 +272,7 @@ public:
 	McdDropTarget( BaseMcdListView* listview=NULL )
 	{
 		m_listview = listview;
-		SetDataObject(new McdDataObject());
+		SetDataObject(new wxCustomDataObject(drag_drop_format));
 	}
 
 	// these functions are called when data is moved over position (x, y) and
@@ -395,8 +327,13 @@ public:
 		if ( !GetData() )
 			return wxDragNone;
 
-		McdDataObject *dobj = (McdDataObject *)GetDataObject();
-		int sourceViewIndex = dobj->GetViewIndex();
+		wxCustomDataObject *dobj = static_cast<wxCustomDataObject *>(GetDataObject());
+
+		if (dobj->GetDataSize() != sizeof(int))
+			return wxDragNone;
+
+		int sourceViewIndex;
+		dobj->GetDataHere(&sourceViewIndex);
 
 		wxDragResult result = OnDropMcd(
 			m_listview->GetMcdProvider().GetCardForViewIndex( sourceViewIndex ),
@@ -1102,11 +1039,12 @@ void Panels::MemoryCardListPanel_Simple::OnListDrag(wxListEvent& evt)
 	int selectionViewIndex = m_listview->GetFirstSelected();
 
 	if( selectionViewIndex < 0 ) return;
-	McdDataObject my_data( selectionViewIndex );
+	wxCustomDataObject my_data(drag_drop_format);
+	my_data.SetData(sizeof(int), &selectionViewIndex);
 
 	wxDropSource dragSource( m_listview );
 	dragSource.SetData( my_data );
-	/*wxDragResult result = */dragSource.DoDragDrop( wxDrag_AllowMove );
+	/*wxDragResult result = */dragSource.DoDragDrop( wxDrag_DefaultMove );
 }
 
 void Panels::MemoryCardListPanel_Simple::OnListSelectionChanged(wxListEvent& evt)
