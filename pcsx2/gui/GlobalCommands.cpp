@@ -281,9 +281,20 @@ namespace Implementations
 
 	void Sys_Suspend()
 	{
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		if (gsframe) {
+			// On some cases, probably due to driver bugs, if we don't exit fullscreen then
+			// the content stays on screen. Try to prevent that by first exiting fullscreen,
+			// but don't update the internal PCSX2 state/config, and PCSX2 will restore
+			// fullscreen correctly when emulation resumes according to its state/config.
+			// This is similar to what LilyPad's "Safe fullscreen exit on escape" hack does,
+			// and thus hopefully makes LilyPad's hack redundant.
+			gsframe->ShowFullScreen(false, false);
+		}
+
 		CoreThread.Suspend();
 
-		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		gsframe = wxGetApp().GetGsFramePtr(); // just in case suspend removes this window
 		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc) {
 			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
 			// However, by default suspend just hides the gs window, so PCSX2 will not exit
