@@ -99,9 +99,6 @@ class BaseMcdListView : public wxListView
 protected:
 	IMcdList*		m_CardProvider;
 
-	// specifies the target of a drag&drop operation
-	int				m_TargetedItem;
-
 public:
 	void (*m_externHandler)(void);
 	void setExternHandler(void (*f)(void)){m_externHandler=f;};
@@ -124,7 +121,6 @@ public:
 	virtual const ListViewColumnInfo& GetDefaultColumnInfo( uint idx ) const=0;
 
 	virtual IMcdList& GetMcdProvider();
-	virtual void SetTargetedItem( int sel );
 };
 
 // --------------------------------------------------------------------------------------

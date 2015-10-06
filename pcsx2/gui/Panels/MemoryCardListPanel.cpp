@@ -275,49 +275,8 @@ public:
 		SetDataObject(new wxCustomDataObject(drag_drop_format));
 	}
 
-	// these functions are called when data is moved over position (x, y) and
-	// may return either wxDragCopy, wxDragMove or wxDragNone depending on
-	// what would happen if the data were dropped here.
-	//
-	// the last parameter is what would happen by default and is determined by
-	// the platform-specific logic (for example, under Windows it's wxDragCopy
-	// if Ctrl key is pressed and wxDragMove otherwise) except that it will
-	// always be wxDragNone if the carried data is in an unsupported format.
-
-
-	// called when the mouse moves in the window - shouldn't take long to
-	// execute or otherwise mouse movement would be too slow.
-	virtual wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def)
-	{
-		int flags = 0;
-		int viewIndex = m_listview->HitTest( wxPoint(x,y), flags);
-		m_listview->SetTargetedItem( viewIndex );
-
-		// can always drop. non item target is the filesystem placeholder. //if( wxNOT_FOUND == viewIndex ) return wxDragNone;
-
-		return def;
-	}
-
-	virtual void OnLeave()
-	{
-		m_listview->SetTargetedItem( wxNOT_FOUND );
-	}
-
-	// this function is called when data is dropped at position (x, y) - if it
-	// returns true, OnData() will be called immediately afterwards which will
-	// allow to retrieve the data dropped.
-	virtual bool OnDrop(wxCoord x, wxCoord y)
-	{
-		int flags = 0;
-		int viewIndex = m_listview->HitTest( wxPoint(x,y), flags);
-		return true;// can always drop. non item target is the filesystem placeholder.//( wxNOT_FOUND != viewIndex );
-	}
-
-	// may be called *only* from inside OnData() and will fill m_dataObject
-	// with the data from the drop source if it returns true
 	virtual wxDragResult OnData(wxCoord x, wxCoord y, wxDragResult def)
 	{
-		m_listview->SetTargetedItem( wxNOT_FOUND );
 		int flags = 0;
 
 		int destViewIndex = m_listview->HitTest( wxPoint(x,y), flags);

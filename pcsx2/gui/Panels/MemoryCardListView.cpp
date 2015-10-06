@@ -40,15 +40,6 @@ IMcdList& BaseMcdListView::GetMcdProvider()
 	return *m_CardProvider;
 }
 
-void BaseMcdListView::SetTargetedItem( int sel )
-{
-	if( m_TargetedItem == sel ) return;
-
-	if( m_TargetedItem >= 0 ) RefreshItem( m_TargetedItem );
-	m_TargetedItem = sel;
-	RefreshItem( sel );
-}
-
 void BaseMcdListView::LoadSaveColumns( IniInterface& ini )
 {
 	FastFormatUnicode label;
@@ -218,9 +209,6 @@ wxListItemAttr* MemoryCardListView_Simple::OnGetItemAttr(long item) const
 
 	if( it.Slot==-1 || it.IsPresent && !it.IsEnabled)
 		m_ItemAttr.SetTextColour( *wxLIGHT_GREY );
-/*
-	if( m_TargetedItem == item )
-		m_ItemAttr.SetBackgroundColour( wxColour(L"Wheat") );
-*/
+
 	return &m_ItemAttr;
 }
