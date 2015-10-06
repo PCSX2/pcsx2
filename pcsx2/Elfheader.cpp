@@ -150,7 +150,7 @@ void ElfObject::readFile()
 	FILE *f;
 
 	f = fopen( filename.ToUTF8(), "rb" );
-	if (f == NULL) Exception::FileNotFound( filename );
+	if (f == NULL) throw Exception::FileNotFound( filename );
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
