@@ -564,15 +564,15 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	gsDest[0] = 0; // No need to set whole array to NULL.
 	GSgetTitleInfo2( gsDest, sizeof(gsDest) );
 
-	const wxChar* limiterStr = L" (Unlimited)";
+	const wxChar* limiterStr = L"-unlimited";
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
 		switch( g_LimiterMode )
 		{
 			case Limit_Nominal:	limiterStr = L""; break;
-			case Limit_Turbo:	limiterStr = L" (Turbo)"; break;
-			case Limit_Slomo:	limiterStr = L" (Slomo)"; break;
+			case Limit_Turbo:	limiterStr = L"-turbo"; break;
+			case Limit_Slomo:	limiterStr = L"-slowmo"; break;
 		}
 	}
 
@@ -591,7 +591,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 
-	SetTitle( pxsFmt( L"State %d | Speed%ls: %3d%% (%.02f)%ls | %ls-%ls | %s",
+	SetTitle( pxsFmt( L"Slot %d | Speed%ls: %3d%% (%.02f)%ls | %ls-%ls | %s",
 		States_GetCurrentSlot(),
 		limiterStr, lround(per), fps,
 		cpuUsage.c_str(),
