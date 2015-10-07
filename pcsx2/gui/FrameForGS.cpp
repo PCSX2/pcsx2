@@ -564,43 +564,41 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	gsDest[0] = 0; // No need to set whole array to NULL.
 	GSgetTitleInfo2( gsDest, sizeof(gsDest) );
 
-	const wxChar* limiterStr = L"None";
+	const wxChar* limiterStr = L" (Unlimited)";
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
 		switch( g_LimiterMode )
 		{
-			case Limit_Nominal:	limiterStr = L"Normal"; break;
-			case Limit_Turbo:	limiterStr = L"Turbo"; break;
-			case Limit_Slomo:	limiterStr = L"Slomo"; break;
+			case Limit_Nominal:	limiterStr = L""; break;
+			case Limit_Turbo:	limiterStr = L" (Turbo)"; break;
+			case Limit_Slomo:	limiterStr = L" (Slomo)"; break;
 		}
 	}
 
 	FastFormatUnicode cpuUsage;
 	if (m_CpuUsage.IsImplemented()) {
 		m_CpuUsage.UpdateStats();
-		if (THREAD_VU1) { // Display VU thread's usage
-			cpuUsage.Write(L" | EE: %3d%% | GS: %3d%% | VU: %3d%% | UI: %3d%%",
-				m_CpuUsage.GetEEcorePct(),	m_CpuUsage.GetGsPct(),
-				m_CpuUsage.GetVUPct(),		m_CpuUsage.GetGuiPct());
-		}
-		else {
-			cpuUsage.Write(L" | EE: %3d%% | GS: %3d%% | UI: %3d%%",
-				m_CpuUsage.GetEEcorePct(),	m_CpuUsage.GetGsPct(),
-				m_CpuUsage.GetGuiPct());
-		}
+
+		cpuUsage.Write(L" | EE: %3d%%", m_CpuUsage.GetEEcorePct());
+		cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
+
+		if (THREAD_VU1)
+			cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
+
+		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetEEcorePct());)
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 
-	SetTitle( pxsFmt( L"%s | %ls (%ls) | Limiter: %ls | Speed: %3d%% (%.02f)%ls | State %d",
-		WX_STR(fromUTF8(gsDest)),
-		(smode2 & 1) ? L"Interlaced" : L"Progressive",
+	SetTitle( pxsFmt( L"State %d | Speed%ls: %3d%% (%.02f)%ls | %ls-%ls | %s",
+		States_GetCurrentSlot(),
+		limiterStr, lround(per), fps,
+		cpuUsage.c_str(),
 		(smode2 & 2) ? L"frame" : L"field",
-		limiterStr, lround(per), fps, cpuUsage.c_str(), States_GetCurrentSlot() )
+		(smode2 & 1) ? L"i" : L"p",
+		WX_STR(fromUTF8(gsDest)))
 	);
-
-	//States_GetCurrentSlot()
 }
 
 void GSFrame::OnActivate( wxActivateEvent& evt )
