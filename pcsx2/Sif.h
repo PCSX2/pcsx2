@@ -18,9 +18,6 @@
 
 static const int FIFO_SIF_W = 128;
 
-// psxdev: was here on the initial psx merge
-//static u32 sif2fifostat = (u32&)eeHw[0xf380];
-
 // Despite its name, this is actually the IOP's DMAtag, which itself also contains
 // the EE's DMAtag in its upper 64 bits.  Note that only the lower 24 bits of 'data' is
 // the IOP's chain transfer address (loaded into MADR).  Bits 30 and 31 are transfer stop
