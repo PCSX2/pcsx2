@@ -555,6 +555,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
 #endif
+	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
 	double fps = wxGetApp().FpsManager.GetFramerate();
 	// The "not PAL" case covers both Region_NTSC and Region_NTSC_PROGRESSIVE
@@ -564,15 +565,15 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	gsDest[0] = 0; // No need to set whole array to NULL.
 	GSgetTitleInfo2( gsDest, sizeof(gsDest) );
 
-	const wxChar* limiterStr = L"-unlimited";
+	const wxChar* limiterStr = templates.LimiterUnlimited;
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
 		switch( g_LimiterMode )
 		{
-			case Limit_Nominal:	limiterStr = L""; break;
-			case Limit_Turbo:	limiterStr = L"-turbo"; break;
-			case Limit_Slomo:	limiterStr = L"-slowmo"; break;
+			case Limit_Nominal:	limiterStr = templates.LimiterNormal; break;
+			case Limit_Turbo:	limiterStr = templates.LimiterTurbo; break;
+			case Limit_Slomo:	limiterStr = templates.LimiterSlowmo; break;
 		}
 	}
 
@@ -580,7 +581,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	if (m_CpuUsage.IsImplemented()) {
 		m_CpuUsage.UpdateStats();
 
-		cpuUsage.Write(L" | EE: %3d%%", m_CpuUsage.GetEEcorePct());
+		cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
 		cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
 
 		if (THREAD_VU1)
@@ -590,15 +591,20 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
+	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
+	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
 
-	SetTitle( pxsFmt( L"Slot %d | Speed%ls: %3d%% (%.02f)%ls | %ls-%ls | %s",
-		States_GetCurrentSlot(),
-		limiterStr, lround(per), fps,
-		cpuUsage.c_str(),
-		(smode2 & 2) ? L"frame" : L"field",
-		(smode2 & 1) ? L"i" : L"p",
-		WX_STR(fromUTF8(gsDest)))
-	);
+	wxString title = templates.TitleTemplate;
+	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
+	title.Replace(L"${limiter}",	limiterStr);
+	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(per)));
+	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
+	title.Replace(L"${cpuusage}",	cpuUsage);
+	title.Replace(L"${omodef}",		omodef);
+	title.Replace(L"${omodei}",		omodei);
+	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
+
+	SetTitle(title);
 }
 
 void GSFrame::OnActivate( wxActivateEvent& evt )

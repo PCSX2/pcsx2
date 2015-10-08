@@ -686,6 +686,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
+	Templates		.LoadSave( ini );
 
 	ini.Flush();
 }
@@ -926,6 +927,34 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
+}
+
+AppConfig::UiTemplateOptions::UiTemplateOptions()
+{
+	LimiterUnlimited	= L"-unlimited";
+	LimiterTurbo		= L"-turbo";
+	LimiterSlowmo		= L"-slowmo";
+	LimiterNormal		= L"";
+	OutputFrame			= L"frame";
+	OutputField			= L"field";
+	OutputProgressive	= L"p";
+	OutputInterlaced	= L"i";
+	TitleTemplate		= L"Slot: ${slot} | Speed${limiter}: ${speed} (${vfps}) | ${cpuusage} | ${omodef}-${omodei} | ${gsdx}";
+}
+
+void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"UiTemplates");
+
+	IniEntry(LimiterUnlimited);
+	IniEntry(LimiterTurbo);
+	IniEntry(LimiterSlowmo);
+	IniEntry(LimiterNormal);
+	IniEntry(OutputFrame);
+	IniEntry(OutputField);
+	IniEntry(OutputProgressive);
+	IniEntry(OutputInterlaced);
+	IniEntry(TitleTemplate);
 }
 
 int AppConfig::GetMaxPresetIndex()
