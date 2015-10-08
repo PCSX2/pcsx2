@@ -157,6 +157,10 @@ class JoystickInfo
 		SDL_Haptic*   		haptic;
 		SDL_HapticEffect	haptic_effect_data[2];
 		int   				haptic_effect_id[2];
+        int first;
+        SDL_HapticEffect Triangle_effect;
+        SDL_HapticEffect Sine_effect;
+        int Triangle_id, Sine_id;
 #endif
 };
 

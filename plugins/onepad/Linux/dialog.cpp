@@ -426,24 +426,29 @@ void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *dat
 	// update joy
 	set_current_joy();
 }
+#if 0
+void on_forcefeedback_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+	int mask = PADOPTION_REVERSELX << (16 * current_pad);
+    fprintf(stderr,"We enter forcefeedback_toggled\n");
+	if (gtk_toggle_button_get_active(togglebutton))
+	{
+        fprintf(stderr,"Button is now active!\n");
+		conf->options |= mask;
 
-//void on_forcefeedback_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-//{
-//	int mask = PADOPTION_REVERSELX << (16 * s_selectedpad);
-//
-//	if (gtk_toggle_button_get_active(togglebutton))
-//	{
-//		conf->options |= mask;
-//
-//		u32 joyid = conf->get_joyid(current_pad);
-//		if (JoystickIdWithinBounds(joyid)) s_vjoysticks[joyid]->TestForce();
-//	}
-//	else
-//	{
-//		conf->options &= ~mask;
-//	}
-//}
-
+		u32 joyid = conf->get_joyid(current_pad);
+		if (JoystickIdWithinBounds(joyid))
+        {
+            fprintf(stderr,"Button actually had effect!\n");
+            s_vjoysticks[joyid]->TestForce();
+        }
+    }
+	else
+	{
+		conf->options &= ~mask;
+	}
+}
+#endif
 struct button_positions
 {
 	const char* label;
@@ -505,7 +510,7 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
 {
     GtkWidget *main_box;
     GtkWidget *joy_choose_frame, *joy_choose_box;
-    
+
     GtkWidget *keys_frame, *keys_box;
     
     GtkWidget *keys_tree_box, *keys_tree_scroll;
@@ -546,6 +551,12 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
 	g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_view_key_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_key_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
+
+	// REACTIVATE FORCE FEEDBACK!
+    //keys_tree_show_key_btn = gtk_check_button_new_with_label("Enable force feedback");
+	//g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_forcefeedback_toggled), NULL);
+    //gtk_widget_set_size_request(keys_tree_show_key_btn, 40, 400);
+	//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
 
     joy_choose_box = gtk_hbox_new(false, 5);
     joy_choose_frame = gtk_frame_new ("Joystick to use for this pad");
