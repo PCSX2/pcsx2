@@ -134,7 +134,9 @@ static __fi bool ProcessIOPTag()
 
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
 	hw_dma9.madr = sif0data & 0xFFFFFF;
-	sif0.iop.counter = sif0words;
+	if (sif0words > 0xFFFFC) DevCon.Warning("SIF0 Overrun %x", sif0words);
+	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
+	sif0.iop.counter = sif0words & 0xFFFFC;
 
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
