@@ -41,10 +41,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-05-18 15:28:41 +0000 (Mon, 18 May 2015) $
+// Last changed  : $Date: 2015-09-20 10:38:32 +0300 (Sun, 20 Sep 2015) $
 // File revision : $Revision: 4 $
 //
-// $Id: SoundTouch.h 216 2015-05-18 15:28:41Z oparviai $
+// $Id: SoundTouch.h 230 2015-09-20 07:38:32Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -79,10 +79,10 @@ namespace soundtouch
 {
 
 /// Soundtouch library version string
-#define SOUNDTOUCH_VERSION          "1.9.0"
+#define SOUNDTOUCH_VERSION          "1.9.2"
 
 /// SoundTouch library version id
-#define SOUNDTOUCH_VERSION_ID       (10900)
+#define SOUNDTOUCH_VERSION_ID       (10902)
 
 //
 // Available setting IDs for the 'setSetting' & 'get_setting' functions:
@@ -151,16 +151,23 @@ private:
     class TDStretch *pTDStretch;
 
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
-    float virtualRate;
+    double virtualRate;
 
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
-    float virtualTempo;
+    double virtualTempo;
 
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
-    float virtualPitch;
+    double virtualPitch;
 
     /// Flag: Has sample rate been set?
     bool  bSrateSet;
+
+    /// Accumulator for how many samples in total will be expected as output vs. samples put in,
+    /// considering current processing settings.
+    double samplesExpectedOut;
+
+    /// Accumulator for how many samples in total have been read out from the processing so far
+    long   samplesOutput;
 
     /// Calculates effective rate & tempo valuescfrom 'virtualRate', 'virtualTempo' and 
     /// 'virtualPitch' parameters.
@@ -171,10 +178,10 @@ protected :
     uint  channels;
 
     /// Effective 'rate' value calculated from 'virtualRate', 'virtualTempo' and 'virtualPitch'
-    float rate;
+    double rate;
 
     /// Effective 'tempo' value calculated from 'virtualRate', 'virtualTempo' and 'virtualPitch'
-    float tempo;
+    double tempo;
 
 public:
     SoundTouch();
@@ -188,32 +195,32 @@ public:
 
     /// Sets new rate control value. Normal rate = 1.0, smaller values
     /// represent slower rate, larger faster rates.
-    void setRate(float newRate);
+    void setRate(double newRate);
 
     /// Sets new tempo control value. Normal tempo = 1.0, smaller values
     /// represent slower tempo, larger faster tempo.
-    void setTempo(float newTempo);
+    void setTempo(double newTempo);
 
     /// Sets new rate control value as a difference in percents compared
     /// to the original rate (-50 .. +100 %)
-    void setRateChange(float newRate);
+    void setRateChange(double newRate);
 
     /// Sets new tempo control value as a difference in percents compared
     /// to the original tempo (-50 .. +100 %)
-    void setTempoChange(float newTempo);
+    void setTempoChange(double newTempo);
 
     /// Sets new pitch control value. Original pitch = 1.0, smaller values
     /// represent lower pitches, larger values higher pitch.
-    void setPitch(float newPitch);
+    void setPitch(double newPitch);
 
     /// Sets pitch change in octaves compared to the original pitch  
     /// (-1.00 .. +1.00)
-    void setPitchOctaves(float newPitch);
+    void setPitchOctaves(double newPitch);
 
     /// Sets pitch change in semi-tones compared to the original pitch
     /// (-12 .. +12)
     void setPitchSemiTones(int newPitch);
-    void setPitchSemiTones(float newPitch);
+    void setPitchSemiTones(double newPitch);
 
     /// Sets the number of channels, 1 = mono, 2 = stereo
     void setChannels(uint numChannels);
@@ -239,6 +246,23 @@ public:
                                                     ///< that in case of stereo-sound a single sample
                                                     ///< contains data for both channels.
             );
+
+    /// Output samples from beginning of the sample buffer. Copies requested samples to 
+    /// output buffer and removes them from the sample buffer. If there are less than 
+    /// 'numsample' samples in the buffer, returns all that available.
+    ///
+    /// \return Number of samples returned.
+    virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
+        uint maxSamples                 ///< How many samples to receive at max.
+        );
+
+    /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
+    /// sample buffer without copying them anywhere. 
+    ///
+    /// Used to reduce the number of samples in the buffer when accessing the sample buffer directly
+    /// with 'ptrBegin' function.
+    virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
+        );
 
     /// Clears all the samples in the object's output and internal processing
     /// buffers.

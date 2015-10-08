@@ -9,11 +9,11 @@
   <meta name="description"
  content="Readme file for SoundTouch audio processing library">
   <style> <!-- .normal { font-family: Arial }
-	--></style>
+    --></style>
 </head>
 <body class="normal">
 <hr>
-<h1>SoundTouch audio processing library v1.9</h1>
+<h1>SoundTouch audio processing library v1.9.2</h1>
 <p class="normal">SoundTouch library Copyright © Olli Parviainen 2001-2015</p>
 <hr>
 <h2>1. Introduction </h2>
@@ -60,10 +60,10 @@ the compilation, the target program will require additional vcomp dll library to
 properly run. In Visual C++ 9.0 these libraries can be found in the following 
 folders.</p>
 <ul>
-	<li>x86 32bit: C:\Program Files (x86)\Microsoft Visual Studio 
-	9.0\VC\redist\x86\Microsoft.VC90.OPENMP\vcomp90.dll</li>
-	<li>x64 64bit: C:\Program Files (x86)\Microsoft Visual Studio 
-	9.0\VC\redist\amd64\Microsoft.VC90.OPENMP\vcomp90.dll</li>
+    <li>x86 32bit: C:\Program Files (x86)\Microsoft Visual Studio 
+    9.0\VC\redist\x86\Microsoft.VC90.OPENMP\vcomp90.dll</li>
+    <li>x64 64bit: C:\Program Files (x86)\Microsoft Visual Studio 
+    9.0\VC\redist\amd64\Microsoft.VC90.OPENMP\vcomp90.dll</li>
 </ul>
 <p>In Visual Studio 2008, a SP1 version may be required for these libraries. In 
 other VC++ versions the required library will be expectedly found in similar 
@@ -103,8 +103,8 @@ Notice that "configure" file is not available before running the
       </td>
       <td>
       <p>Builds the SoundTouch library &amp; SoundStretch utility. You can 
-	  optionally add &quot;-j&quot; switch after &quot;make&quot; to speed up the compilation in 
-	  multi-core systems.</p>
+      optionally add &quot;-j&quot; switch after &quot;make&quot; to speed up the compilation in 
+      multi-core systems.</p>
       </td>
     </tr>
     <tr valign="top">
@@ -172,7 +172,8 @@ Android devices.</p>
 <hr>
 <h2>3. About implementation &amp; Usage tips <h3>3.1. Supported sample data formats</h3>
 <p>The sample data format can be chosen between 16bit signed integer
-and 32bit floating point values, the default is 32bit floating point. </p>
+and 32bit floating point values. The default is 32bit floating point format, 
+which will also provide slightly better sound quality over the integer format. </p>
 <p> In Windows environment, the sample data format is chosen in file
 "STTypes.h" by choosing one of the following defines:</p>
 <ul>
@@ -355,8 +356,8 @@ computation burden</td>
 <h3>3.5 Performance Optimizations </h3>
 <p><strong>General optimizations:</strong></p>
 <p>The time-stretch routine has a 'quick' mode that substantially
-speeds up the algorithm but may degrade the sound quality by a small
-amount. This mode is activated by calling SoundTouch::setSetting()
+speeds up the algorithm but may slightly compromise the sound quality. 
+This mode is activated by calling SoundTouch::setSetting()
 function with parameter&nbsp; id of SETTING_USE_QUICKSEEK and value
 "1", i.e. </p>
 <blockquote>
@@ -368,7 +369,7 @@ intrinsics, providing about a 3x processing speedup for x86 compatible
 processors vs. non-SIMD implementation:</p>
 <ul>
     <li> Intel MMX optimized routines are used with x86 CPUs when 16bit integer 
-	sample type is used</li>
+    sample type is used</li>
   <li> Intel SSE optimized routines are used with x86 CPUs when 32bit floating 
   point sample type is used</li>
 </ul>
@@ -395,17 +396,17 @@ This include for example multi-core embedded devices.</p>
 <p>OpenMP parallel computation can be enabled before compiling SoundTouch 
 library as follows:</p>
 <ul>
-	<li><strong>Visual Studio</strong>: Open properties for the <strong>SoundTouch
-	</strong>sub-project, browse to <strong>C/C++</strong> and <strong>Language 
-	</strong>settings. Set 
-	there &quot;<strong>OpenMP support</strong>&quot; to &quot;<strong>Yes</strong>&quot;. Alternatively add 
-	<strong>/openmp</strong> switch to command-line 
-	parameters</li>
-	<li><strong>GNU</strong>: Run the configure script with &quot;<strong>./configure 
-	--enable-openmp</strong>&quot; switch, then run make as usually</li>
-	<li><strong>Android</strong>: Add &quot;<strong>-fopenmp</strong>&quot; switches to compiler &amp; linker 
-	options, see README-SoundTouch-Android.html in the source code package for 
-	more detailed instructions.</li>
+    <li><strong>Visual Studio</strong>: Open properties for the <strong>SoundTouch
+    </strong>sub-project, browse to <strong>C/C++</strong> and <strong>Language 
+    </strong>settings. Set 
+    there &quot;<strong>OpenMP support</strong>&quot; to &quot;<strong>Yes</strong>&quot;. Alternatively add 
+    <strong>/openmp</strong> switch to command-line 
+    parameters</li>
+    <li><strong>GNU</strong>: Run the configure script with &quot;<strong>./configure 
+    --enable-openmp</strong>&quot; switch, then run make as usually</li>
+    <li><strong>Android</strong>: Add &quot;<strong>-fopenmp</strong>&quot; switches to compiler &amp; linker 
+    options, see README-SoundTouch-Android.html in the source code package for 
+    more detailed instructions.</li>
 </ul>
 <hr>
 <h2><a name="SoundStretch"></a>4. SoundStretch audio processing utility
@@ -566,18 +567,31 @@ this corresponds to lowering the pitch by -0.318 semitones:</p>
 <hr>
 <h2>5. Change History</h2>
 <h3>5.1. SoundTouch library Change History </h3>
+    <p><b>1.9.2:</b></p>
+    <ul>
+        <li>Fix in GNU package configuration</li>
+    </ul>
+    <p><b>1.9.1:</b></p>
+    <ul>
+        <li>Improved SoundTouch::flush() function so that it returns precisely the desired amount of samples for exact output duration control</li>
+        <li>Redesigned quickseek algorithm for improved sound quality when using the quickseek mode. The new quickseek algorithm can find 99% as good results as the 
+		default full-scan mode, while the quickseek algorithm is remarkable less 
+		CPU intensive.</li>
+        <li>Added adaptive integer divider scaling for improved sound quality when using integer processing algorithm
+        </li>
+    </ul>
 <p><b>1.9:</b></p>
 <ul>
     <li>Added support for parallel computation support via OpenMP primitives for better performance in multicore systems. 
         Benchmarks show that achieved parallel processing speedup improvement 
-	typically range from +30% (x86 dual-core) to +180% (ARM quad-core). The 
-	OpenMP optimizations are disabled by default, see OpenMP notes above in this 
-	readme file how to enabled these optimizations.</li>
+    typically range from +30% (x86 dual-core) to +180% (ARM quad-core). The 
+    OpenMP optimizations are disabled by default, see OpenMP notes above in this 
+    readme file how to enabled these optimizations.</li>
     <li>Android: Added support for Android devices featuring X86 and MIPS CPUs, 
-	in addition to ARM CPUs.</li>
-	<li>Android: More versatile Android example application that processes WAV 
-	audio files with SoundTouch library</li>
-	<li>Replaced Windows-like 'BOOL' types with native 'bool'</li>
+    in addition to ARM CPUs.</li>
+    <li>Android: More versatile Android example application that processes WAV 
+    audio files with SoundTouch library</li>
+    <li>Replaced Windows-like 'BOOL' types with native 'bool'</li>
     <li>Changed documentation token to "dist_doc_DATA" in Makefile.am file</li>
     <li>Miscellaneous small fixes and improvements</li>
 </ul>
@@ -816,7 +830,7 @@ submitted bugfixes:</p>
   <li> David Clark</li>
   <li> Patrick Colis</li>
   <li> Miquel Colon</li>
-	<li> Jim Credland</li>
+    <li> Jim Credland</li>
   <li> Sandro Cumerlato</li>
   <li> Justin Frankel</li>
     <li> Masa H.</li>
@@ -827,10 +841,10 @@ submitted bugfixes:</p>
   <li> Yuval Naveh</li>
   <li> Paulo Pizarro</li>
   <li> Blaise Potard</li>
-	<li> Michael Pruett</li>
+    <li> Michael Pruett</li>
   <li> Rajeev Puran</li>
-	<li> RJ Ryan</li>
-	<li> John Sheehy</li>
+    <li> RJ Ryan</li>
+    <li> John Sheehy</li>
   <li> Tim Shuttleworth</li>
   <li> Albert Sirvent</li>
   <li> John Stumpo</li>
@@ -852,8 +866,9 @@ General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</p>
 <hr><!--
-$Id: README.html 220 2015-05-18 17:39:26Z oparviai $-->
+$Id: README.html 230 2015-09-20 07:38:32Z oparviai $
+-->
     <p>
-        <i>README.html file updated in May-2015</i></p>
+        <i>README.html file updated in Sep-2015</i></p>
 </body>
 </html>

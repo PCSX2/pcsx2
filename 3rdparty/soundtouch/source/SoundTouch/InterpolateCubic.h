@@ -8,7 +8,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// $Id: InterpolateCubic.h 179 2014-01-06 18:41:42Z oparviai $
+// $Id: InterpolateCubic.h 225 2015-07-26 14:45:48Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -56,7 +56,7 @@ protected:
                         const SAMPLETYPE *src, 
                         int &srcSamples);
 
-    float fract;
+    double fract;
 
 public:
     InterpolateCubic();

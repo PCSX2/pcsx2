@@ -20,10 +20,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-02-22 15:10:38 +0000 (Sun, 22 Feb 2015) $
+// Last changed  : $Date: 2015-08-09 00:00:15 +0300 (Sun, 09 Aug 2015) $
 // File revision : $Revision: 4 $
 //
-// $Id: mmx_optimized.cpp 206 2015-02-22 15:10:38Z oparviai $
+// $Id: mmx_optimized.cpp 226 2015-08-08 21:00:15Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -68,7 +68,7 @@ using namespace soundtouch;
 
 
 // Calculates cross correlation of two buffers
-double TDStretchMMX::calcCrossCorr(const short *pV1, const short *pV2, double &dnorm) const
+double TDStretchMMX::calcCrossCorr(const short *pV1, const short *pV2, double &dnorm)
 {
     const __m64 *pVec1, *pVec2;
     __m64 shifter;
@@ -79,7 +79,7 @@ double TDStretchMMX::calcCrossCorr(const short *pV1, const short *pV2, double &d
     pVec1 = (__m64*)pV1;
     pVec2 = (__m64*)pV2;
 
-    shifter = _m_from_int(overlapDividerBits);
+    shifter = _m_from_int(overlapDividerBitsNorm);
     normaccu = accu = _mm_setzero_si64();
 
     // Process 4 parallel sets of 2 * stereo samples or 4 * mono samples 
@@ -123,6 +123,11 @@ double TDStretchMMX::calcCrossCorr(const short *pV1, const short *pV2, double &d
     // Clear MMS state
     _m_empty();
 
+    if (norm > (long)maxnorm)
+    {
+        maxnorm = norm;
+    }
+
     // Normalize result by dividing by sqrt(norm) - this step is easiest 
     // done using floating point operation
     dnorm = (double)norm;
@@ -134,7 +139,7 @@ double TDStretchMMX::calcCrossCorr(const short *pV1, const short *pV2, double &d
 
 
 /// Update cross-correlation by accumulating "norm" coefficient by previously calculated value
-double TDStretchMMX::calcCrossCorrAccumulate(const short *pV1, const short *pV2, double &dnorm) const
+double TDStretchMMX::calcCrossCorrAccumulate(const short *pV1, const short *pV2, double &dnorm)
 {
     const __m64 *pVec1, *pVec2;
     __m64 shifter;
@@ -146,13 +151,13 @@ double TDStretchMMX::calcCrossCorrAccumulate(const short *pV1, const short *pV2,
     lnorm = 0;
     for (i = 1; i <= channels; i ++)
     {
-        lnorm -= (pV1[-i] * pV1[-i]) >> overlapDividerBits;
+        lnorm -= (pV1[-i] * pV1[-i]) >> overlapDividerBitsNorm;
     }
 
     pVec1 = (__m64*)pV1;
     pVec2 = (__m64*)pV2;
 
-    shifter = _m_from_int(overlapDividerBits);
+    shifter = _m_from_int(overlapDividerBitsNorm);
     accu = _mm_setzero_si64();
 
     // Process 4 parallel sets of 2 * stereo samples or 4 * mono samples 
@@ -191,9 +196,14 @@ double TDStretchMMX::calcCrossCorrAccumulate(const short *pV1, const short *pV2,
     pV1 = (short *)pVec1;
     for (int j = 1; j <= channels; j ++)
     {
-        lnorm += (pV1[-j] * pV1[-j]) >> overlapDividerBits;
+        lnorm += (pV1[-j] * pV1[-j]) >> overlapDividerBitsNorm;
     }
     dnorm += (double)lnorm;
+
+    if (lnorm > (long)maxnorm)
+    {
+        maxnorm = lnorm;
+    }
 
     // Normalize result by dividing by sqrt(norm) - this step is easiest 
     // done using floating point operation
@@ -233,7 +243,7 @@ void TDStretchMMX::overlapStereo(short *output, const short *input) const
 
     // Overlaplength-division by shifter. "+1" is to account for "-1" deduced in
     // overlapDividerBits calculation earlier.
-    shifter = _m_from_int(overlapDividerBits + 1);
+    shifter = _m_from_int(overlapDividerBitsPure + 1);
 
     for (i = 0; i < overlapLength / 4; i ++)
     {
