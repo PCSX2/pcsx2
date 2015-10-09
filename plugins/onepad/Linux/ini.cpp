@@ -130,9 +130,9 @@ void SaveConfig()
 
 	fprintf(f, "log = %d\n", conf->log);
 	fprintf(f, "options = %d\n", conf->options);
-	fprintf(f, "mouse_sensibility = %d\n", conf->sensibility);
+	fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
 	fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
-	fprintf(f, "ff_intensity = %d\n", conf->ff_intensity);
+	fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
 	for (int pad = 0; pad < 2; pad++)
 	{
@@ -176,11 +176,11 @@ void LoadConfig()
 	if (fscanf(f, "options = %d\n", &value) == 0) goto error;
 	conf->options = value;
 	if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
-	conf->sensibility = value;
+	conf->set_sensibility(value);
 	if (fscanf(f, "joy_pad_map = %d\n", &value) == 0) goto error;
 	conf->joyid_map = value;
 	if (fscanf(f, "ff_intensity = %d\n", &value) == 0) goto error;
-	conf->ff_intensity = value;
+	conf->set_ff_intensity(value);
 
 	for (int pad = 0; pad < 2; pad++)
 	{

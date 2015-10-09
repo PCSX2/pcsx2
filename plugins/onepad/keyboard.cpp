@@ -156,7 +156,7 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 
 				unsigned x = evt.key & 0xFFFF;
 				unsigned int value = (s_previous_mouse_x > x) ? s_previous_mouse_x - x : x - s_previous_mouse_x;
-				value *= conf->sensibility;
+				value *= conf->get_sensibility();
 
 				if (x == 0)
 					key_status->press(pad, pad_x, -MAX_ANALOG_VALUE);
@@ -172,7 +172,7 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 
 				unsigned y = evt.key >> 16;
 				value = (s_previous_mouse_y > y) ? s_previous_mouse_y - y : y - s_previous_mouse_y;
-				value *= conf->sensibility;
+				value *= conf->get_sensibility();
 
 				if (y == 0)
 					key_status->press(pad, pad_y, -MAX_ANALOG_VALUE);

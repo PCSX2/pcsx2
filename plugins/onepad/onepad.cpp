@@ -413,25 +413,23 @@ u8  _PADpoll(u8 value)
 
 				buf = stdpar[curPad];
 
-				// FIXME FEEDBACK. Set effect here
-				/* Small Motor */
-				vib_small = padVibF[curPad][0] ? 2000 : 0;
-				// if ((padVibF[curPad][2] != vib_small) && (padVibC[curPad] >= 0))
+				// FIXED FEEDBACK
+                /* Small Motor */
+                vib_small = padVibF[curPad][0] ? 2000 : 0;
 				if (padVibF[curPad][2] != vib_small)
 				{
+                    JoystickInfo* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
 					padVibF[curPad][2] = vib_small;
-					// SetDeviceForceS (padVibC[curPad], vib_small);
-					JoystickInfo::DoHapticEffect(0, curPad, vib_small);
-				}
+                    pjoy->DoHapticEffect(0);
 
+				}
 				/* Big Motor */
 				vib_big = padVibF[curPad][1] ? 500 + 37*padVibF[curPad][1] : 0;
-				// if ((padVibF[curPad][3] != vib_big) && (padVibC[curPad] >= 0))
 				if (padVibF[curPad][3] != vib_big)
 				{
+                    JoystickInfo* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
 					padVibF[curPad][3] = vib_big;
-					// SetDeviceForceB (padVibC[curPad], vib_big);
-					JoystickInfo::DoHapticEffect(1, curPad, vib_big);
+                    pjoy->DoHapticEffect(1);
 				}
 
 				return padID[curPad];

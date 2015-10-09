@@ -554,7 +554,7 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
 
 	// REACTIVATE FORCE FEEDBACK!
     //keys_tree_show_key_btn = gtk_check_button_new_with_label("Enable force feedback");
-	//g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_forcefeedback_toggled), NULL);
+	//g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_toggle_option), NULL);
     //gtk_widget_set_size_request(keys_tree_show_key_btn, 40, 400);
 	//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
 

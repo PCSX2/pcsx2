@@ -42,8 +42,6 @@ class JoystickInfo
 			 vhatstate.clear();
 #if SDL_MAJOR_VERSION >= 2
 			 haptic = NULL;
-			 for (int i = 0 ; i < 2 ; i++)
-				 haptic_effect_id[i] = -1;
 #endif
 		 }
 
@@ -58,9 +56,18 @@ class JoystickInfo
 		void Destroy();
 		// opens handles to all possible joysticks
 		static void EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks);
-
+        
+        /**
+         * (Re)Initialize first, Triangle_id and Sine_id
+         **/
 		void InitHapticEffect();
-		static void DoHapticEffect(int type, int pad, int force);
+		
+        /**
+         * In first call, create effects and upload them to device
+         * For every call:
+         * According to effect type(int type), an effect is uploaded and ran on this pad/joystick
+         **/
+        void DoHapticEffect(int type);
 
 		bool Init(int id); // opens a handle and gets information
 
@@ -155,9 +162,7 @@ class JoystickInfo
 		SDL_Joystick*		joy;
 #if SDL_MAJOR_VERSION >= 2
 		SDL_Haptic*   		haptic;
-		SDL_HapticEffect	haptic_effect_data[2];
-		int   				haptic_effect_id[2];
-        int first;
+        bool first;
         SDL_HapticEffect Triangle_effect;
         SDL_HapticEffect Sine_effect;
         int Triangle_id, Sine_id;

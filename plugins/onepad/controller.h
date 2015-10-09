@@ -55,23 +55,40 @@ extern int hat_to_key(int dir, int axis_id);
 
 extern int PadEnum[2][2];
 
-struct PADconf
+typedef struct{
+    signed PADOPTION_FORCEFEEDBACK :1;
+	signed PADOPTION_REVERSELX :1;
+	signed PADOPTION_REVERSELY :1;
+	signed PADOPTION_REVERSERX :1;
+	signed PADOPTION_REVERSERY :1;
+	signed PADOPTION_MOUSE_L :1;
+	signed PADOPTION_MOUSE_R :1;
+	signed PADOPTION_SIXAXIS_USB :1;
+}PADOption; // One pad is 8 bit now. And much much more readable  --3kinox
+
+class PADconf
 {
-	public:
-	u32 keys[2][MAX_KEYS];
-	u32 log;
-	u32 options;  // upper 16 bits are for pad2
 	u32 sensibility;
-	u32 joyid_map;
 	u32 ff_intensity;
-	map<u32,u32> keysym_map[2];
+    public:
+
+    /** 
+     * These two bitfields will replace the "option" variables 
+     * It stays public for ease of use 
+     **/
+    PADOption pad1;
+    PADOption pad2; // Options separated for each pads usig bit fields
 
 	PADconf() { init(); }
-
+	u32 joyid_map;
+    u32 options;  // upper 16 bits are for pad2
+    u32 keys[2][MAX_KEYS];
+	u32 log;
+	map<u32,u32> keysym_map[2];
 	void init() {
 		memset(&keys, 0, sizeof(keys));
 		log = options = joyid_map = 0;
-		ff_intensity = 100;
+		ff_intensity = 0x7FFF;
 		sensibility = 500;
 		for (int pad = 0; pad < 2 ; pad++)
 			keysym_map[pad].clear();
@@ -87,6 +104,37 @@ struct PADconf
 		int shift = 8 * pad;
 		return ((joyid_map >> shift) & 0xFF);
 	}
+
+	u32 get_sensibility()
+    {
+        return sensibility;
+    }
+	
+    void set_sensibility(u32 new_sensibility)
+    {
+        /**
+         * Add some checks here!
+         * Dunno variable range there
+         **/
+        sensibility = new_sensibility;
+    }
+	
+    u32 get_ff_intensity()
+    {
+        return ff_intensity;
+    }
+
+    /**
+     * Check intensity while checking that the new value is within
+     * valid range
+     **/
+    void set_ff_intensity(u32 new_intensity)
+    {
+        if(new_intensity < 0x7FFF && new_intensity >= 0)
+        {
+            ff_intensity = new_intensity;
+        }
+    }
 };
 extern PADconf *conf;
 #endif

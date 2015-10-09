@@ -22,7 +22,7 @@
 #include "joystick.h"
 
 //////////////////////////
-// Joystick definitions //
+// Joystick initions //
 //////////////////////////
 
 vector<JoystickInfo*> s_vjoysticks;
@@ -87,162 +87,94 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 
 void JoystickInfo::InitHapticEffect()
 {
-#if 1
+
 #if SDL_MAJOR_VERSION >= 2
 	if (haptic == NULL) return;
-
-#if 0
-	additional field of the effect
-    /* Trigger */
-    Uint16 button;      /**< Button that triggers the effect. */
-    Uint16 interval;    /**< How soon it can be triggered again after button. */
-
-	// periodic parameter
-    Sint16 offset;      /**< Mean value of the wave. */
-    Uint16 phase;       /**< Horizontal shift given by hundredth of a cycle. */
-#endif
-        first = 1;
-        Triangle_id = -1, Sine_id = -1;
-        
-        SDL_HapticEffect m_effect;
-        	
-        SDL_HapticDirection direction;
-        direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
-        direction.dir[0] = 18000; // Polar only uses first parameter
-        m_effect.periodic.direction = direction;
-        m_effect.periodic.period = 10;
-	    m_effect.periodic.magnitude = (Sint16)(0x7FFF);
-	    m_effect.periodic.offset = 0;
-	    m_effect.periodic.phase = 18000;
-	    m_effect.periodic.length = 500;
-	    m_effect.periodic.delay = 0;
-	    m_effect.periodic.attack_length = 0;
-	/*******************************************************************/
-	/* Effect big & small    										   */
-	/*******************************************************************/
-	for (int new_effect = 0; new_effect < 2 ; new_effect++) {
-
-
-        
-		// Direction of the effect SDL_HapticDirection
-		haptic_effect_data[new_effect] = m_effect;
-	}
-
-
-	/*******************************************************************/
-	/* Effect small													   */
-	/*******************************************************************/
-	haptic_effect_data[0].type = SDL_HAPTIC_SINE;
-
-	/*******************************************************************/
-	/* Effect big													   */
-	/*******************************************************************/
-	haptic_effect_data[1].type = SDL_HAPTIC_TRIANGLE;
-
-	/*******************************************************************/
-	/* Upload effect to the device									   */
-	/*******************************************************************/
-	for (int i = 0 ; i < 2 ; i++)
-    {
-		haptic_effect_id[i] = SDL_HapticNewEffect(haptic, &haptic_effect_data[i]);
-    }
-#endif
+    first = 1;
+    Triangle_id = -1;
+    Sine_id = -1;
 #endif
 }
 
-void JoystickInfo::DoHapticEffect(int type, int pad, int force)
+void JoystickInfo::DoHapticEffect(int type)
 {
 	if (type > 1) return;
-	//if ( !(conf->options & (PADOPTION_FORCEFEEDBACK << 16 * pad)) ) return;
+	//if ( !(conf->options & (PADOPTION_FORCEFEEDBACK << 16)) ) return;
 
 #if SDL_MAJOR_VERSION >= 2
-	int joyid = conf->get_joyid(pad);
-	if (!JoystickIdWithinBounds(joyid)) return;
-	JoystickInfo* pjoy = s_vjoysticks[joyid];
+	if (haptic == NULL) return;
 
-	if (pjoy->haptic == NULL) return;
-	if (pjoy->haptic_effect_id[type] < 0) return;
-
-
-    fprintf(stderr,"We enter the DoHapticEffect method!!\n");
-#if 1
-
-    if(pjoy->first)
-    {
-        pjoy->first = 0;
-        
-        pjoy->Triangle_effect.type = SDL_HAPTIC_TRIANGLE;
+    if(first)
+    {// If done multiple times, device memory will be filled
+        first = 0;
+        /** Effect for big motor **/
+        Triangle_effect.type = SDL_HAPTIC_TRIANGLE;
 	
         SDL_HapticDirection direction;
         direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
-        direction.dir[0] = 18000; // Polar only uses first parameter
-        pjoy->Triangle_effect.periodic.direction = direction;
-        pjoy->Triangle_effect.periodic.period = 10;
-	    pjoy->Triangle_effect.periodic.magnitude = (Sint16)(0x7FFF);
-	    pjoy->Triangle_effect.periodic.offset = 0;
-	    pjoy->Triangle_effect.periodic.phase = 18000;
-	    pjoy->Triangle_effect.periodic.length = 125;
-	    pjoy->Triangle_effect.periodic.delay = 0;
-	    pjoy->Triangle_effect.periodic.attack_length = 0;
+        direction.dir[0] = 18000;
+        Triangle_effect.periodic.direction = direction;
+        Triangle_effect.periodic.period = 10;
+	    Triangle_effect.periodic.magnitude = (Sint16)(0x7FFF); // Effect at maximum instensity
+	    Triangle_effect.periodic.offset = 0;
+	    Triangle_effect.periodic.phase = 18000;
+	    Triangle_effect.periodic.length = 125; // 125ms feels quite near to original
+	    Triangle_effect.periodic.delay = 0;
+	    Triangle_effect.periodic.attack_length = 0;
     
-        pjoy->Triangle_id = SDL_HapticNewEffect(pjoy->haptic, (&pjoy->Triangle_effect));
-        if(pjoy->Triangle_id < 0)
+        Triangle_id = SDL_HapticNewEffect(haptic, (&Triangle_effect));
+        if(Triangle_id < 0)
         {
-            fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),pjoy->Triangle_id);
+            fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),Triangle_id);
         }
-        pjoy->Sine_effect.type = SDL_HAPTIC_TRIANGLE;
+        /** Effect for small motor, more soft **/
+        Sine_effect.type = SDL_HAPTIC_SINE;
 
-        pjoy->Sine_effect.periodic.direction = direction;
-        pjoy->Sine_effect.periodic.period = 10;
-	    pjoy->Sine_effect.periodic.magnitude = (Sint16)(0x4FFF);
-	    pjoy->Sine_effect.periodic.offset = 0;
-	    pjoy->Sine_effect.periodic.phase = 18000;
-	    pjoy->Sine_effect.periodic.length = 125;
-	    pjoy->Sine_effect.periodic.delay = 0;
-	    pjoy->Sine_effect.periodic.attack_length = 0;
+        Sine_effect.periodic.direction = direction;
+        Sine_effect.periodic.period = 10;
+	    Sine_effect.periodic.magnitude = (Sint16)(0x4FFF); // slightly less powerful effect
+	    Sine_effect.periodic.offset = 0;
+	    Sine_effect.periodic.phase = 18000;
+	    Sine_effect.periodic.length = 125;
+	    Sine_effect.periodic.delay = 0;
+	    Sine_effect.periodic.attack_length = 0;
     
-        pjoy->Sine_id = SDL_HapticNewEffect(pjoy->haptic, &(pjoy->Sine_effect));
-        if(pjoy->Sine_id < 0)
+        Sine_id = SDL_HapticNewEffect(haptic, &(Sine_effect));
+        if(Sine_id < 0)
         {
-            fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),pjoy->Sine_id);
+            fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),Sine_id);
+        }
+
+        if(SDL_HapticUpdateEffect(haptic, Triangle_id, &Triangle_effect) != 0)
+        {
+            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),Triangle_id);
+        }
+        if(SDL_HapticUpdateEffect(haptic, Sine_id, &Sine_effect) != 0)
+        {
+            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),Sine_id);
         }
     }
     
     int id;
-    SDL_HapticEffect m_effect;
+    SDL_HapticEffect effect;
     if(type == 0)
     {
-         id = pjoy->Sine_id;
-         m_effect = pjoy->Sine_effect;
+         id = Sine_id;
+         effect = Sine_effect;
     }
     else
     {
-         id = pjoy->Triangle_id;
-         m_effect = pjoy->Triangle_effect;
+         id = Triangle_id;
+         effect = Triangle_effect;
     }
-        SDL_HapticUpdateEffect(pjoy->haptic, id, &m_effect);
-        if(SDL_HapticRunEffect(pjoy->haptic, id, 1) != 0)
+        if(SDL_HapticUpdateEffect(haptic, id, &effect) != 0)
+        {
+            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),id);
+        }
+        if(SDL_HapticRunEffect(haptic, id, 1) != 0)
         {
             fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(),id);
         }
-
-#else
-
-	// FIXME: might need to multiply force
-		// run the effect once
-	if( SDL_HapticUpdateEffect(pjoy->haptic, pjoy->haptic_effect_id[type], &(pjoy->haptic_effect_data[type])) !=0)
-    {
-        fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d and pad %d, effect is %p\n",SDL_GetError(),pjoy->haptic_effect_id[type],pad,&(pjoy->haptic_effect_data[type]));
-       
-    }
-    
-    
-    if(SDL_HapticRunEffect( pjoy->haptic, pjoy->haptic_effect_id[type], 1 ) != 0)
-    {
-         fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(), pjoy->haptic_effect_id[type]  );
-    }
-    fprintf(stderr,"We go out of the DoHapticEffect method!!\n");
-#endif
 #endif
 }
 
@@ -314,7 +246,7 @@ bool JoystickInfo::Init(int id)
 		} else {
 			haptic = SDL_HapticOpenFromJoystick(joy);
 			// upload some default effect
-			InitHapticEffect();
+            InitHapticEffect();
 		}
 	}
 #endif
@@ -334,38 +266,14 @@ void JoystickInfo::SaveState()
 }
 
 void JoystickInfo::TestForce()
-{
-    fprintf(stderr,"We enter the TestForce method!!, haptic is %p\n",haptic);
-    SDL_HapticEffect m_effect;
-    m_effect.type = SDL_HAPTIC_TRIANGLE;
-	
-    SDL_HapticDirection direction;
-    direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
-    direction.dir[0] = 18000; // Polar only uses first parameter
-    m_effect.periodic.direction = direction;
-    m_effect.periodic.period = 10;
-	m_effect.periodic.magnitude = (Sint16)(1 * 0x7FFF);
-	m_effect.periodic.offset = 0;
-	m_effect.periodic.phase = 18000;
-	m_effect.periodic.length = 500;
-	m_effect.periodic.delay = 0;
-	m_effect.periodic.attack_length = 0;
-    
-    int id = SDL_HapticNewEffect(haptic, &m_effect);
-    if(id < 0)
-    {
-        fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),id);
-    }
-    SDL_HapticUpdateEffect(haptic, id, &m_effect);
-    if(SDL_HapticRunEffect(haptic, id, 1) != 0)
-    {
-         fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(),id);
-    }
-    /*SDL_HapticRumbleInit( haptic );
-    if( SDL_HapticRumblePlay( haptic, 0.75, 500 ) != 0)
+{ // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
+
+    SDL_HapticRumbleInit( haptic );
+    // Make the haptic pad rumble full strength for half a second, shoudld be enough for user to see if it works or not
+    if( SDL_HapticRumblePlay( haptic, 1, 500 ) != 0)
     {
         fprintf(stderr,"ERROR: Rumble is not working! %s\n",SDL_GetError());
-    }*/
+    }
 }
 
 bool JoystickInfo::PollButtons(u32 &pkey)
