@@ -15,13 +15,13 @@
 # HOME    - FX shader
 # INSERT  - Software mipmapping
 
-# Note: some "normal" keys may not display correctly at the log console message
-# but still work correctly (e.g. ']').
-
 # -----------------------------------------------------------------------------
 # The KB shortcuts can be a normal key (e.g. f or ] etc) or a combination of
-# ALT/SHIFT/CTRL and a key, separated with a - (e.g. m or alt-m or alt-ctrl-m).
-# Number (key) pad names start with KP_ (e.g. KP_0 to KP_9, KP_ADD, etc)
+# ALT/SHIFT/CTRL and a key, separated with a - or + (e.g. m or alt+ctrl+m or
+# alt-F12). Number (key) pad names start with KP_ (e.g. KP_0 to KP_9, KP_ADD).
+
+# Note: If the Dev console source is enabled, keypresses (including with Alt
+# etc) will be printed to the console and could be copied to PCSX2_keys.ini .
 
 # List of special key names (beyond KP_0 to KP_9 and normal keys):
 # DEL DELETE BACK INS INSERT ENTER RETURN PGUP PGDN LEFT RIGHT UP DOWN HOME END

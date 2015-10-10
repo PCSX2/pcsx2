@@ -16,8 +16,14 @@
 #include "PrecompiledHeader.h"
 #include <Windows.h>
 
+// VK values without MS constants. see - https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
+#define PX_VK_A 0x41
+#define PX_VK_Z 0x5A
+
+
 // Returns a WXK_* keycode translated from a VK_* virtual key. wxCharCodeMSWToWx was
 // removed from wxWidgets 3, this should work as a replacement.
+// Where an ascii code for a printable char exists, we try to return it
 int TranslateVKToWXK(u32 keysym)
 {
 	int key_code;
@@ -118,7 +124,28 @@ int TranslateVKToWXK(u32 keysym)
 	case VK_EXECUTE: key_code = WXK_EXECUTE; break;
 	case VK_PRINT: key_code = WXK_PRINT; break;
 
-	default: key_code = 0;
+	// symbol-only keys on all keyboards - return ascii
+	case VK_OEM_PERIOD: key_code = '.'; break;
+	case VK_OEM_PLUS: key_code = '='; break;
+	case VK_OEM_MINUS: key_code = '-'; break;
+	case VK_OEM_COMMA: key_code = ','; break;
+
+	// symbol-only keys on US keyboards - return ascii
+	case VK_OEM_1: key_code = ';'; break;
+	case VK_OEM_2: key_code = '/'; break;
+	case VK_OEM_3: key_code = '`'; break;
+	case VK_OEM_4: key_code = '['; break;
+	case VK_OEM_5: key_code = '\\'; break;
+	case VK_OEM_6: key_code = ']'; break;
+	case VK_OEM_7: key_code = '\''; break;
+
+	default:
+		if (keysym >= PX_VK_A && keysym <= PX_VK_Z) {
+			// VK codes for letter keys - return lower case ascii
+			key_code = keysym + 'a' - PX_VK_A;
+		} else {
+			key_code = 0;
+		}
 	}
 
 	return key_code;

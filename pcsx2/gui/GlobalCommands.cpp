@@ -610,6 +610,17 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 		{
 			// ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
+			if (acode.keycode >= 'A' && acode.keycode <= 'Z') {
+				// Note that this needs to match the key event codes at Pcsx2App::PadKeyDispatch
+				// Our canonical representation is the char code (at lower case if
+				// applicable) with a separate modifier indicator, including shift.
+				// The parser deviates from this by parsing e.g. `shift-q` as 81 (Q) without shift, instead of 113 (q) with shift.
+				// (For plain `q` it does end up correctly with 113).
+				// The parser works correctly for symbols, e.g. `-` ends up as 45
+				// So we only need to change upper case letters to lower case and add the shift flag.
+				acode.keycode += 'a' - 'A';
+				acode.Shift();
+			}
 			if (_acode.ToString() != acode.ToString()) {
 				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
 					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
@@ -672,6 +683,9 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	typedef KeyAcceleratorCode AAC;
 
 	if( !GlobalAccels ) GlobalAccels = new AcceleratorDictionary;
+
+	// Why do we even have those here? all of them seem to be overridden
+	// by GSPanel::m_Accels ( GSPanel::InitDefaultAccelerators() )
 
 	GlobalAccels->Map( AAC( WXK_F1 ),			"States_FreezeCurrentSlot" );
 	GlobalAccels->Map( AAC( WXK_F3 ),			"States_DefrostCurrentSlot" );

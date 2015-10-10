@@ -30,8 +30,10 @@ static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceler
 
 void GSPanel::InitDefaultAccelerators()
 {
-	// Note!  These don't really work yet due to some hacks to get things working for
-	// old legacy PAD plugins.  (the global accelerator tables are used instead) --air
+	// Note: these override GlobalAccels ( Pcsx2App::InitDefaultGlobalAccelerators() )
+	// For plain letters or symbols, replace e.g. WXK_F1 with e.g. wxKeyCode('q') or wxKeyCode('-')
+	// For plain letter keys with shift, use e.g. AAC( wxKeyCode('q') ).Shift() and NOT wxKeyCode('Q')
+	// For a symbol with shift (e.g. '_' which is '-' with shift) use AAC( wxKeyCode('-') ).Shift()
 
 	typedef KeyAcceleratorCode AAC;
 

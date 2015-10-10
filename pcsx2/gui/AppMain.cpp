@@ -294,6 +294,18 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 
 	m_kevt.m_keyCode = vkey? vkey : ev.key;
 
+	if (DevConWriterEnabled && m_kevt.GetEventType() == wxEVT_KEY_DOWN) {
+		wxString strFromCode = wxAcceleratorEntry(
+			(m_kevt.m_shiftDown ? wxACCEL_SHIFT : 0) | (m_kevt.m_controlDown ? wxACCEL_CTRL : 0) | (m_kevt.m_altDown ? wxACCEL_ALT : 0),
+			m_kevt.m_keyCode
+			).ToString();
+
+		if (strFromCode.EndsWith(L"\\"))
+			strFromCode += L"\\"; // If copied into PCSX2_keys.ini, \ needs escaping
+
+		Console.WriteLn(wxString(L"> Key: %s (Code: %ld)"),	WX_STR(strFromCode), m_kevt.m_keyCode);
+	}
+
 	if( m_kevt.GetEventType() == wxEVT_KEY_DOWN )
 	{
 		if( GSFrame* gsFrame = wxGetApp().GetGsFramePtr() )
