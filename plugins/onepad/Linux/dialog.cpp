@@ -294,7 +294,34 @@ typedef struct
 		mask = mask_value;
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->options);
+        switch(mask){
+            case PADOPTION_FORCEFEEDBACK :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_FORCEFEEDBACK);
+            break;
+            case PADOPTION_REVERSELX :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSELX);
+            break;
+            case PADOPTION_REVERSELY :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSELY);
+            break;
+            case PADOPTION_REVERSERX :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSERX);
+            break;
+            case PADOPTION_REVERSERY :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSERY);
+            break;
+            case PADOPTION_MOUSE_L :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_MOUSE_L);
+            break;
+            case PADOPTION_MOUSE_R :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_MOUSE_R);
+            break;
+            case PADOPTION_SIXAXIS_USB :
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_SIXAXIS_USB);
+            break;
+        }
+
+		
 		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
@@ -393,9 +420,66 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 	dialog_checkbox *checkbox = (dialog_checkbox*)user_data;
 
 	if (gtk_toggle_button_get_active(togglebutton))
-		conf->options |= checkbox->mask;
-	else
-		conf->options &= ~checkbox->mask;
+	{
+        switch(checkbox->mask)
+        {
+            case PADOPTION_FORCEFEEDBACK :
+                conf->pad.PADOPTION_FORCEFEEDBACK = 1;
+                s_vjoysticks[conf->get_joyid(current_pad)]->TestForce();
+                break;
+            case PADOPTION_REVERSELX :
+                conf->pad.PADOPTION_REVERSELX = 1;
+                break;
+            case PADOPTION_REVERSELY :
+                conf->pad.PADOPTION_REVERSELY = 1;
+                break;
+            case PADOPTION_REVERSERX :
+                conf->pad.PADOPTION_REVERSERX = 1;
+                break;
+            case PADOPTION_REVERSERY :
+                conf->pad.PADOPTION_REVERSERY = 1;
+                break;
+            case PADOPTION_MOUSE_L :
+                conf->pad.PADOPTION_MOUSE_L = 1;
+                break;
+            case PADOPTION_MOUSE_R :
+                conf->pad.PADOPTION_MOUSE_R = 1;
+                break;
+            case PADOPTION_SIXAXIS_USB :
+                conf->pad.PADOPTION_SIXAXIS_USB = 1;
+                break;
+        }
+    }
+    else
+    {
+        switch(checkbox->mask)
+        {
+            case PADOPTION_FORCEFEEDBACK :
+                conf->pad.PADOPTION_FORCEFEEDBACK = 0;
+                break;
+            case PADOPTION_REVERSELX :
+                conf->pad.PADOPTION_REVERSELX = 0;
+                break;
+            case PADOPTION_REVERSELY :
+                conf->pad.PADOPTION_REVERSELY = 0;
+                break;
+            case PADOPTION_REVERSERX :
+                conf->pad.PADOPTION_REVERSERX = 0;
+                break;
+            case PADOPTION_REVERSERY :
+                conf->pad.PADOPTION_REVERSERY = 0;
+                break;
+            case PADOPTION_MOUSE_L :
+                conf->pad.PADOPTION_MOUSE_L = 0;
+                break;
+            case PADOPTION_MOUSE_R :
+                conf->pad.PADOPTION_MOUSE_R = 0;
+                break;
+            case PADOPTION_SIXAXIS_USB :
+                conf->pad.PADOPTION_SIXAXIS_USB = 0;
+                break;
+        }
+    }
 }
 
 void joy_changed(GtkComboBoxText *box, gpointer user_data)

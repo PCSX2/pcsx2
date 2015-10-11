@@ -22,7 +22,7 @@
 #include "joystick.h"
 
 //////////////////////////
-// Joystick initions //
+// Joystick definitions //
 //////////////////////////
 
 vector<JoystickInfo*> s_vjoysticks;
@@ -59,7 +59,7 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 		// SDL in 3rdparty wrap X11 call. In order to get x11 symbols loaded
 		// video must be loaded too.
 		// Example of X11 symbol are XAutoRepeatOn/XAutoRepeatOff
-		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_VIDEO|SDL_INIT_HAPTIC|SDL_INIT_GAMECONTROLLER|SDL_INIT_EVENTS) < 0) return;
+		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_HAPTIC|SDL_INIT_EVENTS) < 0) return;
 #else
 		if (SDL_Init(SDL_INIT_JOYSTICK) < 0) return;
 #endif
@@ -88,18 +88,21 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 void JoystickInfo::InitHapticEffect()
 {
 
-#if SDL_MAJOR_VERSION >= 2
+    #if SDL_MAJOR_VERSION >= 2
+
 	if (haptic == NULL) return;
+    #if 0
     first = 1;
     Triangle_id = -1;
     Sine_id = -1;
-#endif
+    #endif// Not useful yet, may be solved soonish
+    #endif
 }
 
 void JoystickInfo::DoHapticEffect(int type)
 {
 	if (type > 1) return;
-	//if ( !(conf->options & (PADOPTION_FORCEFEEDBACK << 16)) ) return;
+	if ( !(conf->pad.PADOPTION_FORCEFEEDBACK) ) return;
 
 #if SDL_MAJOR_VERSION >= 2
 	if (haptic == NULL) return;
@@ -108,6 +111,7 @@ void JoystickInfo::DoHapticEffect(int type)
     {// If done multiple times, device memory will be filled
         first = 0;
         /** Effect for big motor **/
+        memset( &Triangle_effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default      
         Triangle_effect.type = SDL_HAPTIC_TRIANGLE;
 	
         SDL_HapticDirection direction;
@@ -122,12 +126,12 @@ void JoystickInfo::DoHapticEffect(int type)
 	    Triangle_effect.periodic.delay = 0;
 	    Triangle_effect.periodic.attack_length = 0;
     
-        Triangle_id = SDL_HapticNewEffect(haptic, (&Triangle_effect));
+        Triangle_id = SDL_HapticNewEffect(haptic, &Triangle_effect);
         if(Triangle_id < 0)
         {
             fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),Triangle_id);
         }
-        /** Effect for small motor, more soft **/
+        memset( &Sine_effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default
         Sine_effect.type = SDL_HAPTIC_SINE;
 
         Sine_effect.periodic.direction = direction;
@@ -139,42 +143,19 @@ void JoystickInfo::DoHapticEffect(int type)
 	    Sine_effect.periodic.delay = 0;
 	    Sine_effect.periodic.attack_length = 0;
     
-        Sine_id = SDL_HapticNewEffect(haptic, &(Sine_effect));
+        Sine_id = SDL_HapticNewEffect(haptic, &Sine_effect);
         if(Sine_id < 0)
         {
             fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),Sine_id);
         }
-
-        if(SDL_HapticUpdateEffect(haptic, Triangle_id, &Triangle_effect) != 0)
-        {
-            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),Triangle_id);
-        }
-        if(SDL_HapticUpdateEffect(haptic, Sine_id, &Sine_effect) != 0)
-        {
-            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),Sine_id);
-        }
     }
     
     int id;
-    SDL_HapticEffect effect;
-    if(type == 0)
+    id = type ? Triangle_id : Sine_id;
+    if(SDL_HapticRunEffect(haptic, id, 1) != 0)
     {
-         id = Sine_id;
-         effect = Sine_effect;
+        fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(),id);
     }
-    else
-    {
-         id = Triangle_id;
-         effect = Triangle_effect;
-    }
-        if(SDL_HapticUpdateEffect(haptic, id, &effect) != 0)
-        {
-            fprintf(stderr,"ERROR: Effect is not updated! %s, id is %d\n",SDL_GetError(),id);
-        }
-        if(SDL_HapticRunEffect(haptic, id, 1) != 0)
-        {
-            fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(),id);
-        }
 #endif
 }
 
@@ -198,7 +179,7 @@ void JoystickInfo::Destroy()
 #else
 		if (SDL_JoystickOpened(_id)) SDL_JoystickClose(joy);
 #endif
-		joy = NULL;
+		//joy = NULL;
 	}
 }
 
@@ -245,7 +226,7 @@ bool JoystickInfo::Init(int id)
 			PAD_LOG("Haptic devices not supported!\n");
 		} else {
 			haptic = SDL_HapticOpenFromJoystick(joy);
-			// upload some default effect
+			// does not do anything for now, might be used to upload effect otherwise be removed soon --3kinox
             InitHapticEffect();
 		}
 	}
@@ -267,10 +248,10 @@ void JoystickInfo::SaveState()
 
 void JoystickInfo::TestForce()
 { // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-
+    if(haptic == NULL) return; // Otherwise, core dump!
     SDL_HapticRumbleInit( haptic );
-    // Make the haptic pad rumble full strength for half a second, shoudld be enough for user to see if it works or not
-    if( SDL_HapticRumblePlay( haptic, 1, 500 ) != 0)
+    // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
+    if( SDL_HapticRumblePlay( haptic, 0.60, 400 ) != 0)
     {
         fprintf(stderr,"ERROR: Rumble is not working! %s\n",SDL_GetError());
     }
@@ -311,7 +292,8 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 		if (found_hack != string::npos) {
 			// The analog mode of the hat button is quite erratic. Values can be in half- axis
 			// or full axis... So better keep them as button for the moment -- gregory
-			if (i >= 8 && i <= 11 && (conf->options & PADOPTION_SIXAXIS_USB))
+            // sdl2 seems to handle them fully as button, not sure this is still relevant --3kinox
+			if (i >= 8 && i <= 11 && (conf->pad.PADOPTION_SIXAXIS_USB))
 				continue;
 			// Disable accelerometer
 			if ((i >= 4 && i <= 6))

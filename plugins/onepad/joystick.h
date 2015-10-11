@@ -41,7 +41,10 @@ class JoystickInfo
 			 vaxisstate.clear();
 			 vhatstate.clear();
 #if SDL_MAJOR_VERSION >= 2
-			 haptic = NULL;
+			haptic = NULL;
+            first = 1;
+            Triangle_id = -1;
+            Sine_id = -1;
 #endif
 		 }
 

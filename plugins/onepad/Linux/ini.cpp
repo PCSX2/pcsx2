@@ -129,8 +129,15 @@ void SaveConfig()
 	}
 
 	fprintf(f, "log = %d\n", conf->log);
-	fprintf(f, "options = %d\n", conf->options);
-	fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
+    fprintf(f, "PADOPTION_FORCEFEEDBACK = %d\n", conf->pad.PADOPTION_FORCEFEEDBACK);
+    fprintf(f, "PADOPTION_REVERSELX = %d\n", conf->pad.PADOPTION_REVERSELX);
+    fprintf(f, "PADOPTION_REVERSELY = %d\n", conf->pad.PADOPTION_REVERSELY);
+    fprintf(f, "PADOPTION_REVERSERX = %d\n", conf->pad.PADOPTION_REVERSERX);
+    fprintf(f, "PADOPTION_REVERSERY = %d\n", conf->pad.PADOPTION_REVERSERY);
+    fprintf(f, "PADOPTION_MOUSE_L = %d\n", conf->pad.PADOPTION_MOUSE_L);
+    fprintf(f, "PADOPTION_MOUSE_R = %d\n", conf->pad.PADOPTION_MOUSE_R);
+    fprintf(f, "PADOPTION_SIXAXIS_USB = %d\n", conf->pad.PADOPTION_SIXAXIS_USB);
+    fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
 	fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
 	fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
@@ -173,9 +180,23 @@ void LoadConfig()
 	u32 value;
 	if (fscanf(f, "log = %d\n", &value) == 0) goto error;
 	conf->log = value;
-	if (fscanf(f, "options = %d\n", &value) == 0) goto error;
-	conf->options = value;
-	if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "PADOPTION_FORCEFEEDBACK = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_FORCEFEEDBACK = value;
+    if (fscanf(f, "PADOPTION_REVERSELX = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_REVERSELX = value;
+    if (fscanf(f, "PADOPTION_REVERSELY = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_REVERSELY = value;
+    if (fscanf(f, "PADOPTION_REVERSERX = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_REVERSERX = value;
+    if (fscanf(f, "PADOPTION_REVERSERY = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_REVERSERY = value;
+    if (fscanf(f, "PADOPTION_MOUSE_L = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_MOUSE_L = value;
+    if (fscanf(f, "PADOPTION_MOUSE_R = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_MOUSE_R = value;
+    if (fscanf(f, "PADOPTION_SIXAXIS_USB = %d\n", &value) == 0) goto error;
+    conf->pad.PADOPTION_SIXAXIS_USB = value;
+    if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
 	conf->set_sensibility(value);
 	if (fscanf(f, "joy_pad_map = %d\n", &value) == 0) goto error;
 	conf->joyid_map = value;

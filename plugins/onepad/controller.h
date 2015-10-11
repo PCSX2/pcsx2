@@ -76,18 +76,18 @@ class PADconf
      * These two bitfields will replace the "option" variables 
      * It stays public for ease of use 
      **/
-    PADOption pad1;
-    PADOption pad2; // Options separated for each pads usig bit fields
+    PADOption pad;
+    //PADOption pad2; // Options separated for each pads usig bit fields
 
 	PADconf() { init(); }
 	u32 joyid_map;
-    u32 options;  // upper 16 bits are for pad2
+    //u32 options;  // upper 16 bits are for pad2
     u32 keys[2][MAX_KEYS];
 	u32 log;
 	map<u32,u32> keysym_map[2];
 	void init() {
 		memset(&keys, 0, sizeof(keys));
-		log = options = joyid_map = 0;
+		log = joyid_map = 0;
 		ff_intensity = 0x7FFF;
 		sensibility = 500;
 		for (int pad = 0; pad < 2 ; pad++)
