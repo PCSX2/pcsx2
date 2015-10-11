@@ -144,7 +144,7 @@ static void initTable()
 
 	pxAssert(PX_VK_A < PX_VK_Z);
 	// VK codes for letter keys - return lower case ascii
-	for (UINT i = PX_VK_A; i < PX_VK_Z; i++)
+	for (UINT i = PX_VK_A; i <= PX_VK_Z; i++)
 		addTx(i, i + 'a' - PX_VK_A);
 
 	initialized = true;
