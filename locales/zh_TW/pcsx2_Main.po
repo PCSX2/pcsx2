@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.1.0 Rev 5863\n"
+"Project-Id-Version: PCSX2 1.3.1 1201\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-12-23 19:50+0100\n"
-"PO-Revision-Date: 2014-03-04 10:56+0800\n"
+"PO-Revision-Date: 2015-10-05 11:58+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: F:\\PCSX2_0.9.9_GUI_翻譯\\SRC_0.9.9_trunk_4915\\\n"
@@ -35,13 +35,8 @@ msgid "Oh noes! Out of memory!"
 msgstr "啊！不！Out of memory！"
 
 #: common/src/Utilities/Exceptions.cpp:255
-msgid ""
-"Virtual memory mapping failure!  Your system may have conflicting device "
-"drivers, services, or may simply have insufficient memory or resources to "
-"meet PCSX2's lofty needs."
-msgstr ""
-"虛擬記憶體映射失敗！您的系統可能有衝突的硬體驅動程式、服務，或可能只是沒有足"
-"夠的記憶體或資源以滿足 PCSX2 崇高的需求。"
+msgid "Virtual memory mapping failure!  Your system may have conflicting device drivers, services, or may simply have insufficient memory or resources to meet PCSX2's lofty needs."
+msgstr "虛擬記憶體映射失敗！您的系統可能有衝突的硬體驅動程式、服務，或可能只是沒有足夠的記憶體或資源以滿足 PCSX2 崇高的需求。"
 
 #: common/src/Utilities/Exceptions.cpp:328
 msgid "Path: "
@@ -60,15 +55,11 @@ msgid "File not found."
 msgstr "檔案未找到。"
 
 #: common/src/Utilities/Exceptions.cpp:392
-msgid ""
-"Permission denied while trying to open file, likely due to insufficient user "
-"account rights."
+msgid "Permission denied while trying to open file, likely due to insufficient user account rights."
 msgstr "當嘗試開啟檔案時沒有權限，可能是由於使用者帳戶權限不足。"
 
 #: common/src/Utilities/Exceptions.cpp:412
-msgid ""
-"Unexpected end of file or stream encountered.  File is probably truncated or "
-"corrupted."
+msgid "Unexpected end of file or stream encountered.  File is probably truncated or corrupted."
 msgstr "遭遇意外的檔案結尾或流。檔案可能被縮減或損壞。"
 
 #: common/src/Utilities/ThreadTools.cpp:41
@@ -96,39 +87,30 @@ msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
 msgstr "無法載入 ELF 檔案。檔案可能損壞或不完整。"
 
 #: pcsx2/Elfheader.cpp:167
-msgid ""
-"If loading from an ISO image, this error may be caused by an unsupported ISO "
-"image type or a bug in PCSX2 ISO image support."
+msgid "If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support."
 msgstr ""
 "如果是從光碟映像檔讀取檔案，\n"
 "那麼這個錯誤可能由未支援的光碟映像檔類型引起，\n"
 "或者由功能 PCSX2 光碟映像檔支援，它的程式錯誤所引起。"
 
 #: pcsx2/MTGS.cpp:871
-msgid ""
-"The MTGS thread has become unresponsive while waiting for the GS plugin to "
-"open."
+msgid "The MTGS thread has become unresponsive while waiting for the GS plugin to open."
 msgstr "當等候圖形插件開啟時，多執行緒圖形模式的執行緒停止回應。"
 
 #: pcsx2/PluginManager.cpp:716
-msgid ""
-"The savestate cannot be loaded, as it appears to be corrupt or incomplete."
+msgid "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr "無法讀取即時存檔，檔案似乎損壞或不完整。"
 
 #: pcsx2/PluginManager.cpp:726
 #, c-format
-msgid ""
-"%s plugin failed to open.  Your computer may have insufficient resources, or "
-"incompatible hardware/drivers."
+msgid "%s plugin failed to open.  Your computer may have insufficient resources, or incompatible hardware/drivers."
 msgstr ""
 "開啟【%s】插件失敗。您的電腦可能沒有足夠的資源，\n"
 "或是有不相容的硬體或驅動程式。"
 
 #: pcsx2/PluginManager.cpp:733
 #, c-format
-msgid ""
-"%s plugin failed to initialize.  Your system may have insufficient memory or "
-"resources needed."
+msgid "%s plugin failed to initialize.  Your system may have insufficient memory or resources needed."
 msgstr "初始化【%s】插件失敗。您的系統可能沒有足夠的記憶體或資源。"
 
 #: pcsx2/PluginManager.cpp:839
@@ -143,29 +125,21 @@ msgstr "所選【%s】插件的檔案不是有效的動態連結函式庫"
 
 #: pcsx2/PluginManager.cpp:865
 #, c-format
-msgid ""
-"The configured %s plugin is not a PCSX2 plugin, or is for an older "
-"unsupported version of PCSX2."
+msgid "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."
 msgstr "所選擇的 %s 插件不是 PCSX2 的插件，或者是不再支援的舊版 PCSX2 的插件。"
 
 #: pcsx2/PluginManager.cpp:890
-msgid ""
-"The plugin reports that your hardware or software/drivers are not supported."
+msgid "The plugin reports that your hardware or software/drivers are not supported."
 msgstr "插件報告不支援您的硬體或軟體 / 驅動程式。"
 
 #: pcsx2/PluginManager.cpp:911
-msgid ""
-"Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
-"version of PCSX2."
+msgid "Configured plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."
 msgstr "所選擇的插件不是 PCSX2 的插件，或者是不再支援的舊版 PCSX2 的插件。"
 
 #: pcsx2/PluginManager.cpp:937
 #, c-format
-msgid ""
-"Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
-"unsupported version of PCSX2."
-msgstr ""
-"所選擇的 %s 插件不是有效的 PCSX2 插件，或者是不再支援的舊版 PCSX2 的插件。"
+msgid "Configured %s plugin is not a valid PCSX2 plugin, or is for an older unsupported version of PCSX2."
+msgstr "所選擇的 %s 插件不是有效的 PCSX2 插件，或者是不再支援的舊版 PCSX2 的插件。"
 
 #: pcsx2/PluginManager.cpp:1366
 msgid "Internal Memorycard Plugin failed to initialize."
@@ -184,9 +158,7 @@ msgid "Dumps detailed information for PS2 executables (ELFs)."
 msgstr "擷取 PS2 執行檔（ELF）的詳細資訊"
 
 #: pcsx2/SourceLog.cpp:101
-msgid ""
-"Logs manual protection, split blocks, and other things that might impact "
-"performance."
+msgid "Logs manual protection, split blocks, and other things that might impact performance."
 msgstr "記錄手動保護、分塊，以及其他可能影響效能的東西。"
 
 #: pcsx2/SourceLog.cpp:106
@@ -209,7 +181,8 @@ msgstr "SYSCALL 和 DECI2 的活動。"
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
 msgstr "直接記憶體存取至未知或未映射的 EE 記憶體空間。"
 
-#: pcsx2/SourceLog.cpp:157 pcsx2/SourceLog.cpp:276
+#: pcsx2/SourceLog.cpp:157
+#: pcsx2/SourceLog.cpp:276
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
 msgstr "執行核心指令集的反組譯（不包含 COP 和 CACHE）。"
 
@@ -230,16 +203,16 @@ msgid "Execution of EE cache instructions."
 msgstr "EE 快取指令集的執行。"
 
 #: pcsx2/SourceLog.cpp:187
-msgid ""
-"All known hardware register accesses (very slow!); not including sub filter "
-"options below."
+msgid "All known hardware register accesses (very slow!); not including sub filter options below."
 msgstr "所有已知的硬體暫存器存取（非常慢！）；不包括下面的分項選項。"
 
-#: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
+#: pcsx2/SourceLog.cpp:193
+#: pcsx2/SourceLog.cpp:294
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
 msgstr "僅記錄未知、未映射，或未實現的暫存器存取。"
 
-#: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
+#: pcsx2/SourceLog.cpp:199
+#: pcsx2/SourceLog.cpp:300
 msgid "Logs only DMA-related registers."
 msgstr "僅記錄 DMA 相關的暫存器。"
 
@@ -292,8 +265,7 @@ msgid "Disasm of the IOP's GPU co-processor instructions."
 msgstr "IOP 的 GPU 輔助處理器指令集的反組譯。"
 
 #: pcsx2/SourceLog.cpp:288
-msgid ""
-"All known hardware register accesses, not including the sub-filters below."
+msgid "All known hardware register accesses, not including the sub-filters below."
 msgstr "所有已知的硬體暫存器存取，不包括下面的分項。"
 
 #: pcsx2/SourceLog.cpp:306
@@ -316,14 +288,14 @@ msgstr "追蹤全部 IOP 計數器事件以及一些計數器暫存器活動。"
 msgid "Detailed logging of CDVD hardware."
 msgstr "CDVD 硬體的詳細日誌紀錄。"
 
-#: pcsx2/System.h:221 pcsx2/System.h:222 pcsx2/System.h:223
+#: pcsx2/System.h:221
+#: pcsx2/System.h:222
+#: pcsx2/System.h:223
 msgid "PCSX2 Message"
 msgstr "PCSX2 訊息"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:82
-msgid ""
-"The savestate was not properly saved. The temporary file was created "
-"successfully but could not be moved to its final resting place."
+msgid "The savestate was not properly saved. The temporary file was created successfully but could not be moved to its final resting place."
 msgstr "即時存檔未能正確地儲存。成功建立暫存檔，但是無法將其移至目的地。"
 
 #: pcsx2/gui/AppConfig.cpp:909
@@ -350,7 +322,8 @@ msgstr "更加激進"
 msgid "Mostly Harmful"
 msgstr "基本上有害"
 
-#: pcsx2/gui/AppConfig.cpp:1074 pcsx2/gui/AppConfig.cpp:1080
+#: pcsx2/gui/AppConfig.cpp:1074
+#: pcsx2/gui/AppConfig.cpp:1080
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆寫現存的設定檔失敗；沒有權限。"
 
@@ -359,11 +332,8 @@ msgid "Loading PS2 system plugins..."
 msgstr "載入 PS2 系統插件..."
 
 #: pcsx2/gui/AppInit.cpp:49
-#, fuzzy
-msgid ""
-"SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
-"SSE2 instruction set."
-msgstr "SSE 不可用。PCSX2 要求 CPU 支援 SSE。"
+msgid "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the SSE2 instruction set."
+msgstr "SSE2 不可用。PCSX2 要求 CPU 支援 SSE2。"
 
 #: pcsx2/gui/AppInit.cpp:138
 msgid "PCSX2 Recompiler Error(s)"
@@ -373,7 +343,8 @@ msgstr "PCSX2 反編譯錯誤"
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "全部選項僅用於當前的作業並且不會被儲存。\n"
 
-#: pcsx2/gui/AppInit.cpp:218 pcsx2/gui/AppMain.cpp:305
+#: pcsx2/gui/AppInit.cpp:218
+#: pcsx2/gui/AppMain.cpp:305
 msgid "IsoFile"
 msgstr "ISO 檔案"
 
@@ -451,8 +422,7 @@ msgstr "插件覆寫錯誤 - %s"
 #: pcsx2/gui/AppInit.cpp:291
 #, c-format
 msgid ""
-"%s Plugin Override Error!  The following file does not exist or is not a "
-"valid %s plugin:\n"
+"%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n"
 "\n"
 msgstr ""
 "%s 插件覆寫錯誤！下列檔案不存在或不是有效的 %s 插件：\n"
@@ -467,7 +437,8 @@ msgstr "按【確定】使用預設所選擇的插件，或按【取消】關閉
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 錯誤：硬體缺陷"
 
-#: pcsx2/gui/AppInit.cpp:477 pcsx2/gui/AppInit.cpp:489
+#: pcsx2/gui/AppInit.cpp:477
+#: pcsx2/gui/AppInit.cpp:489
 #, c-format
 msgid "Press OK to close %s."
 msgstr "按【確定】關閉 %s。"
@@ -555,9 +526,9 @@ msgstr ""
 "\n"
 "按【確定】開啟插件設定視窗。"
 
-#: pcsx2/gui/AppMain.cpp:146 pcsx2/gui/AppMain.cpp:160
-msgid ""
-"Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
+#: pcsx2/gui/AppMain.cpp:146
+#: pcsx2/gui/AppMain.cpp:160
+msgid "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr "警告！插件未載入。PCSX2 可能無法使用。"
 
 #: pcsx2/gui/AppMain.cpp:315
@@ -607,9 +578,7 @@ msgid "Portable mode error - %s"
 msgstr "可攜式軟體模式出錯 - %s"
 
 #: pcsx2/gui/AppUserMode.cpp:153
-msgid ""
-"PCSX2 has been installed as a portable application but cannot run due to the "
-"following errors:"
+msgid "PCSX2 has been installed as a portable application but cannot run due to the following errors:"
 msgstr "PCSX2 已經被安裝成為可攜式軟體，但由於下列錯誤，無法運行 PCSX2："
 
 #: pcsx2/gui/AppUserMode.cpp:161
@@ -622,9 +591,7 @@ msgid "%s is switching to local install mode."
 msgstr "%s 正在切換至本地安裝模式。"
 
 #: pcsx2/gui/AppUserMode.cpp:175
-msgid ""
-"Try to remove the file called \"portable.ini\" from your installation "
-"directory manually."
+msgid "Try to remove the file called \"portable.ini\" from your installation directory manually."
 msgstr "嘗試從安裝 PCSX2 的目的資料夾手動刪除檔案 portable.ini。"
 
 #: pcsx2/gui/ApplyState.h:55
@@ -647,7 +614,8 @@ msgstr "最小"
 msgid "It's what I use (the programmer guy)."
 msgstr "這是 PCSX2 程式設計師們使用的字型大小"
 
-#: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
+#: pcsx2/gui/ConsoleLogger.cpp:419
+#: pcsx2/gui/Panels/CpuPanel.cpp:38
 msgid "Normal"
 msgstr "普通"
 
@@ -676,9 +644,7 @@ msgid "Light theme"
 msgstr "明亮背景主題（需重啟 PCSX2）"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
-msgid ""
-"Classic black color scheme for people who enjoy having text seared into "
-"their optic nerves."
+msgid "Classic black color scheme for people who enjoy having text seared into their optic nerves."
 msgstr "經典的黑色主題，獻給喜歡讓文字灼燒視神經的人。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
@@ -690,8 +656,7 @@ msgid "Always on Top"
 msgstr "視窗總在最前"
 
 #: pcsx2/gui/ConsoleLogger.cpp:432
-msgid ""
-"When checked the log window will be visible over other foreground windows."
+msgid "When checked the log window will be visible over other foreground windows."
 msgstr "當勾選時，日誌視窗總是保持在最前端。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:434
@@ -710,7 +675,8 @@ msgstr "清空"
 msgid "Clear the log window contents"
 msgstr "清除日誌視窗中的全部內容"
 
-#: pcsx2/gui/ConsoleLogger.cpp:437 pcsx2/gui/Dialogs/SysConfigDialog.cpp:264
+#: pcsx2/gui/ConsoleLogger.cpp:437
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:264
 msgid "Appearance"
 msgstr "字型"
 
@@ -764,7 +730,7 @@ msgstr "來源"
 
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:223
 msgid "panel"
-msgstr ""
+msgstr "視窗"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -808,9 +774,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 官方網站和官方討論區"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2 官方 SVN 檔案庫位於 GitHub"
+msgstr "PCSX2 官方 GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -837,16 +802,11 @@ msgid "Do not show this dialog again."
 msgstr "不要再顯示此對話方塊"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:199
-msgid ""
-"Disables this popup and whatever response you select here will be "
-"automatically used from now on."
-msgstr ""
-"停用這個彈出型視窗。無論您在這裡選擇哪種回應方式，它都會從今以後自動使用。"
+msgid "Disables this popup and whatever response you select here will be automatically used from now on."
+msgstr "停用這個彈出型視窗。無論您在這裡選擇哪種回應方式，它都會從今以後自動使用。"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
-msgid ""
-"The popup will not be shown again.  This setting can be undone from the "
-"settings panels."
+msgid "The popup will not be shown again.  This setting can be undone from the settings panels."
 msgstr "不再顯示此彈出型視窗。這項設定可以從設定面板復原。"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:247
@@ -904,15 +864,11 @@ msgid "8 MB [most compatible]"
 msgstr "8 MB【相容性最好】"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:194
-msgid ""
-"This is the standard Sony-provisioned size, and is supported by all games "
-"and BIOS versions."
+msgid "This is the standard Sony-provisioned size, and is supported by all games and BIOS versions."
 msgstr "標準的 Sony 提供的大小，所有遊戲和 BIOS 版本都支援。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:195
-msgid ""
-"Always use this option if you want the safest and surest memory card "
-"behavior."
+msgid "Always use this option if you want the safest and surest memory card behavior."
 msgstr "如果您想要最安全可靠的記憶卡行為，就一直使用這個選項。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:198
@@ -921,8 +877,7 @@ msgstr "16 MB"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:198
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:202
-msgid ""
-"A typical size for 3rd-party memory cards which should work with most games."
+msgid "A typical size for 3rd-party memory cards which should work with most games."
 msgstr "典型的第三方記憶卡的大小，在大多數遊戲中應該能夠正常工作。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:199
@@ -939,15 +894,11 @@ msgid "64 MB"
 msgstr "64 MB"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
-msgid ""
-"Low compatibility warning: Yes it's very big, but may not work with many "
-"games."
+msgid "Low compatibility warning: Yes it's very big, but may not work with many games."
 msgstr "低相容性警告：是的，檔案非常大。但恐怕在許多遊戲中不能正常工作。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:207
-msgid ""
-"Use at your own risk.  Erratic memory card behavior is possible (though "
-"unlikely)."
+msgid "Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."
 msgstr "使用者自擔風險。可能出現不確定的記憶卡行為（儘管可能性不大）"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
@@ -1127,7 +1078,8 @@ msgstr "終止"
 msgid "GS Output is Disabled!"
 msgstr "畫面輸出被停用！"
 
-#: pcsx2/gui/GlobalCommands.cpp:386 pcsx2/gui/MainFrame.cpp:416
+#: pcsx2/gui/GlobalCommands.cpp:386
+#: pcsx2/gui/MainFrame.cpp:416
 msgid "Save state"
 msgstr "即時存檔"
 
@@ -1135,7 +1087,8 @@ msgstr "即時存檔"
 msgid "Saves the virtual machine state to the current slot."
 msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
 
-#: pcsx2/gui/GlobalCommands.cpp:392 pcsx2/gui/MainFrame.cpp:415
+#: pcsx2/gui/GlobalCommands.cpp:392
+#: pcsx2/gui/MainFrame.cpp:415
 msgid "Load state"
 msgstr "即時讀檔"
 
@@ -1173,12 +1126,11 @@ msgstr "拖曳錯誤"
 
 #: pcsx2/gui/IsoDropTarget.cpp:56
 #, c-format
-msgid ""
-"It is an error to drop multiple files onto a %s window.  One at a time "
-"please, thank you."
+msgid "It is an error to drop multiple files onto a %s window.  One at a time please, thank you."
 msgstr "拖曳多個檔案至 %s 視窗是一個錯誤。請一次一個檔案，謝謝。"
 
-#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:342
+#: pcsx2/gui/IsoDropTarget.cpp:87
+#: pcsx2/gui/MainMenuClicks.cpp:342
 msgid "Confirm PS2 Reset"
 msgstr "確認重新啟動 PS2"
 
@@ -1201,7 +1153,8 @@ msgstr "您已經拖曳下列 ISO 檔案至 %s："
 msgid "Slot %d"
 msgstr "插槽 %d"
 
-#: pcsx2/gui/MainFrame.cpp:42 pcsx2/gui/Saveslots.cpp:150
+#: pcsx2/gui/MainFrame.cpp:42
+#: pcsx2/gui/Saveslots.cpp:150
 msgid "Backup"
 msgstr "備份"
 
@@ -1233,7 +1186,8 @@ msgstr "其他"
 msgid "&Debug"
 msgstr "偵錯"
 
-#: pcsx2/gui/MainFrame.cpp:401 pcsx2/gui/MainFrame.cpp:403
+#: pcsx2/gui/MainFrame.cpp:401
+#: pcsx2/gui/MainFrame.cpp:403
 #: pcsx2/gui/MainFrame.cpp:409
 msgid "Initializing..."
 msgstr "正在初始化..."
@@ -1331,7 +1285,8 @@ msgstr "記憶卡"
 msgid "&Plugin/BIOS Selector"
 msgstr "插件 / BIOS"
 
-#: pcsx2/gui/MainFrame.cpp:465 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
+#: pcsx2/gui/MainFrame.cpp:465
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
 msgstr "遊戲資料庫編輯器"
 
@@ -1456,7 +1411,8 @@ msgstr "啟動遊戲（快速）"
 msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "啟動遊戲時跳過 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:714 pcsx2/gui/MainFrame.cpp:749
+#: pcsx2/gui/MainFrame.cpp:714
+#: pcsx2/gui/MainFrame.cpp:749
 msgid "No plugin loaded"
 msgstr "未載入插件"
 
@@ -1465,9 +1421,7 @@ msgid "Core GS Settings..."
 msgstr "核心設定"
 
 #: pcsx2/gui/MainFrame.cpp:720
-msgid ""
-"Modify hardware emulation settings regulated by the PCSX2 core virtual "
-"machine."
+msgid "Modify hardware emulation settings regulated by the PCSX2 core virtual machine."
 msgstr "變更 PCSX2 核心虛擬機控制的硬體模擬設定"
 
 #: pcsx2/gui/MainFrame.cpp:722
@@ -1499,7 +1453,8 @@ msgstr "確認更換光碟映像檔"
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:145 pcsx2/gui/MainMenuClicks.cpp:191
+#: pcsx2/gui/MainMenuClicks.cpp:145
+#: pcsx2/gui/MainMenuClicks.cpp:191
 msgid "Swap Disc"
 msgstr "更換光碟"
 
@@ -1532,11 +1487,12 @@ msgid "Blockdumps (%s)"
 msgstr "區塊轉存檔 (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed (%s)"
-msgstr "區塊轉存檔 (%s)"
+msgstr "壓縮 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
+#: pcsx2/gui/MainMenuClicks.cpp:270
+#: pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
 msgstr "所有檔案 (*.*)"
 
@@ -1557,9 +1513,7 @@ msgid "An error occurred while trying to open the file:"
 msgstr "當嘗試開啟這個檔案時出現錯誤："
 
 #: pcsx2/gui/MainMenuClicks.cpp:319
-msgid ""
-"Error: The configured ISO file does not exist.  Click OK to select a new ISO "
-"source for CDVD."
+msgid "Error: The configured ISO file does not exist.  Click OK to select a new ISO source for CDVD."
 msgstr "錯誤：指定的光碟映像檔不存在。按【確定】選擇一個新的光碟映像檔。"
 
 #: pcsx2/gui/MainMenuClicks.cpp:390
@@ -1625,9 +1579,7 @@ msgid "Select folder with PS2 BIOS roms"
 msgstr "選擇含有 PS2 BIOS 的資料夾"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
-msgid ""
-"Click the Browse button to select a different folder where PCSX2 will look "
-"for PS2 BIOS roms."
+msgid "Click the Browse button to select a different folder where PCSX2 will look for PS2 BIOS roms."
 msgstr "按下【瀏覽】按鈕選擇不同的資料夾"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
@@ -1672,7 +1624,8 @@ msgstr "無"
 msgid "EE/FPU Advanced Recompiler Options"
 msgstr "EE/FPU 進階反編譯選項"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:87 pcsx2/gui/Panels/CpuPanel.cpp:102
+#: pcsx2/gui/Panels/CpuPanel.cpp:87
+#: pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra + Preserve Sign"
 msgstr "額外 + 保留標記"
 
@@ -1688,7 +1641,8 @@ msgstr "VU0 / VU1 進階反編譯選項"
 msgid "Extra"
 msgstr "額外"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:116 pcsx2/gui/Panels/CpuPanel.cpp:125
+#: pcsx2/gui/Panels/CpuPanel.cpp:116
+#: pcsx2/gui/Panels/CpuPanel.cpp:125
 #: pcsx2/gui/Panels/CpuPanel.cpp:182
 msgid "Interpreter"
 msgstr "直譯器"
@@ -1697,14 +1651,13 @@ msgstr "直譯器"
 msgid "Quite possibly the slowest thing in the universe."
 msgstr "很可能是宇宙中最慢的。"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:119 pcsx2/gui/Panels/CpuPanel.cpp:128
+#: pcsx2/gui/Panels/CpuPanel.cpp:119
+#: pcsx2/gui/Panels/CpuPanel.cpp:128
 msgid "Recompiler"
 msgstr "反編譯"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:120
-msgid ""
-"Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
-"x86."
+msgid "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."
 msgstr "適時地將 64 位元 MIPS-IV 機器碼轉譯至 x86。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:126
@@ -1712,9 +1665,7 @@ msgid "Pretty slow; provided for diagnostic purposes only."
 msgstr "非常慢；僅用於診斷。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:129
-msgid ""
-"Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
-"x86."
+msgid "Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."
 msgstr "適時地將 32 位元 MIPS-I 機器碼轉譯至 x86。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:153
@@ -1725,15 +1676,14 @@ msgstr "啟用快取 - 僅用於直譯器！（速度更慢）"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "用於診斷"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:169 pcsx2/gui/Panels/CpuPanel.cpp:221
+#: pcsx2/gui/Panels/CpuPanel.cpp:169
+#: pcsx2/gui/Panels/CpuPanel.cpp:221
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
 msgid "Restore Defaults"
 msgstr "還原成預設值"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:183
-msgid ""
-"Vector Unit Interpreter. Slow and not very compatible. Only use for "
-"diagnostics."
+msgid "Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics."
 msgstr "向量單元直譯器。速度慢而且相容性不是非常好。僅用於診斷。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:185
@@ -1741,8 +1691,7 @@ msgid "microVU Recompiler"
 msgstr "microVU 反編譯"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:186
-msgid ""
-"New Vector Unit recompiler with much improved compatibility. Recommended."
+msgid "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr "新式的向量單元反編譯大幅改善相容性。推薦。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
@@ -1750,8 +1699,7 @@ msgid "superVU Recompiler [legacy]"
 msgstr "superVU 反編譯【舊式】"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:189
-msgid ""
-"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+msgid "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "對於診斷 microVU 的程式錯誤或夾持模式的問題是有用的。"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
@@ -1830,9 +1778,7 @@ msgid "Zoom:"
 msgstr "畫面縮放（以百分數表示）："
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:166
-msgid ""
-"Invalid window dimensions specified: Size cannot contain non-numeric digits! "
-">_<"
+msgid "Invalid window dimensions specified: Size cannot contain non-numeric digits! >_<"
 msgstr "無效的視窗維度：【自訂視窗大小】的數值必須是整數！ ＞＿＜"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
@@ -1846,9 +1792,7 @@ msgstr "遊戲修正"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:40
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
-msgstr ""
-"VU Add Hack - 修正 Tri-Ace 的遊戲啟動後就會當掉：星海遊俠 3、拉吉亞達物語、女"
-"神戰記 2"
+msgstr "VU Add Hack - 修正 Tri-Ace 的遊戲啟動後就會當掉：星海遊俠 3、拉吉亞達物語、女神戰記 2"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:41
 msgid ""
@@ -1888,39 +1832,27 @@ msgstr "FFX videos fix - 修正太空戰士１０遊戲動畫中糟糕的圖形�
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
-msgstr ""
-"EE timing hack - 多用途的修正，若所有其他選項都失敗，嘗試之（數位惡魔傳說、"
-"SSX、惡靈古堡：英雄不死）"
+msgstr "EE timing hack - 多用途的修正，若所有其他選項都失敗，嘗試之（數位惡魔傳說、SSX、惡靈古堡：英雄不死）"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:73
-msgid ""
-"Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
+msgid "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr "Skip MPEG hack - 跳過遊戲動畫，避免遊戲動畫的播放造成遊戲停止回應"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
-msgstr ""
-"OPH Flag hack - 若遊戲畫面定住時持續顯示同樣的畫框，嘗試之（死神刀刃戰士、夢"
-"幻騎士 II 和 III、巫術）"
+msgstr "OPH Flag hack - 若遊戲畫面定住時持續顯示同樣的畫框，嘗試之（死神刀刃戰士、夢幻騎士 II 和 III、巫術）"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
-msgstr ""
-"當 DMAC 忙碌時忽略其寫入 - 修正 Mana Khemia 1 離開校園進入大地圖時（Off "
-"Campus）遊戲畫面全黑"
+msgstr "當 DMAC 忙碌時忽略其寫入 - 修正 Mana Khemia 1 離開校園進入大地圖時（Off Campus）遊戲畫面全黑"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
-msgstr ""
-"模擬 VIF1 FIFO 預讀，解決遊戲載入速度慢 - 變形金剛（Transformers）、車魂：無"
-"限賽（Test Drive Unlimited）"
+msgstr "模擬 VIF1 FIFO 預讀，解決遊戲載入速度慢 - 變形金剛（Transformers）、車魂：無限賽（Test Drive Unlimited）"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
-msgid ""
-"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
-msgstr ""
-"延遲 VIF1 停頓（VIF1 FIFO）- 美國海豹特遣隊２（SOCOM 2）的抬頭顯示器（HUD）"
+msgid "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
+msgstr "延遲 VIF1 停頓（VIF1 FIFO）- 美國海豹特遣隊２（SOCOM 2）的抬頭顯示器（HUD）、間諜飛車（Spy Hunter）載入遊戲時當機"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
@@ -1930,9 +1862,12 @@ msgstr "忽略匯流排於 Path3 的傳輸 - 風火輪賽車（Hot Wheels）"
 msgid "Switch to GSdx software rendering when a FMV plays"
 msgstr "當播放遊戲動畫時，切換至 GSdx 的軟體渲染模式"
 
+msgid "Switch to GSdx software rendering when an FMV plays"
+msgstr "當播放遊戲動畫時，切換至 GSdx 的軟體渲染模式"
+
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr ""
+msgstr "預先載入 TLB，避免大盜五右衛門（Goemon）出現 tlb miss"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
@@ -1943,18 +1878,12 @@ msgid "Enable Trace Logging"
 msgstr "啟用追蹤日誌"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
-msgid ""
-"Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
-"using F10."
+msgid "Trace logs are all written to emulog.txt.  Toggle trace logging at any time using F10."
 msgstr "追蹤日誌全部寫入 emulog.txt。隨時按 F10 開啟或關閉追蹤日誌。"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
-msgid ""
-"Warning: Enabling trace logs is typically very slow, and is a leading cause "
-"of 'What happened to my FPS?' problems. :)"
-msgstr ""
-"警告：啟用追蹤日誌會令遊戲速度非常慢，而且是「我的 FPS 發生了什麼事？」問題的"
-"最重要的原因。：）"
+msgid "Warning: Enabling trace logs is typically very slow, and is a leading cause of 'What happened to my FPS?' problems. :)"
+msgstr "警告：啟用追蹤日誌會令遊戲速度非常慢，而且是「我的 FPS 發生了什麼事？」問題的最重要的原因。：）"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:166
 msgid "Select folder with PS2 memory cards"
@@ -2203,9 +2132,7 @@ msgid "Custom folder:"
 msgstr "自訂資料夾："
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:51
-msgid ""
-"This setting may require administration privileges from your operating "
-"system, depending on how your system is configured."
+msgid "This setting may require administration privileges from your operating system, depending on how your system is configured."
 msgstr ""
 "取決於系統如何配置，\n"
 "這項設定可能需要作業系統管理員權限。"
@@ -2306,14 +2233,11 @@ msgid "Enable speedhacks"
 msgstr "啟用速度駭客"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
-msgid ""
-"A safe and easy way to make sure that all speedhacks are completely disabled."
+msgid "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "安全且舒適的狀態就是確保完全停用所有的速度駭客"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
-msgid ""
-"Resets all speedhack options to their defaults, which consequently turns "
-"them all OFF."
+msgid "Resets all speedhack options to their defaults, which consequently turns them all OFF."
 msgstr "所有的速度駭客選項重設為預設值，結果是關掉全部速度駭客選項。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
@@ -2333,8 +2257,7 @@ msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
-msgid ""
-"Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
+msgid "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "不錯的速度提升而且相容性高；可能導致\n"
 "圖像變得糟糕...\n"
@@ -2345,9 +2268,7 @@ msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU（多執行緒 microVU1）"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
-msgid ""
-"Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
-"cores]"
+msgid "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ cores]"
 msgstr ""
 "不錯的速度提升而且相容性高；可能導致\n"
 "遊戲停止回應...\n"
@@ -2362,9 +2283,7 @@ msgid "Enable INTC Spin Detection"
 msgstr "Enable INTC Spin Detection"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
-msgid ""
-"Huge speedup for some games, with almost no compatibility side effects. "
-"[Recommended]"
+msgid "Huge speedup for some games, with almost no compatibility side effects. [Recommended]"
 msgstr ""
 "對於一些遊戲有巨大的速度提升，\n"
 "幾乎沒有相容性副作用【推薦】"
@@ -2374,8 +2293,7 @@ msgid "Enable Wait Loop Detection"
 msgstr "Enable Wait Loop Detection"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
-msgid ""
-"Moderate speedup for some games, with no known side effects. [Recommended]"
+msgid "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "對於一些遊戲有適度的速度提升，\n"
 "沒有已知的副作用【推薦】"
@@ -2397,9 +2315,7 @@ msgid "Select folder containing PCSX2 visual themes"
 msgstr "選擇一個包含 PCSX2 視覺主題的資料夾"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:45
-msgid ""
-"Click the Browse button to select a different folder containing PCSX2 visual "
-"themes."
+msgid "Click the Browse button to select a different folder containing PCSX2 visual themes."
 msgstr "按下【瀏覽】按鈕選擇一個不同的包含 PCSX2 視覺主題的資料夾。"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:49
@@ -2411,8 +2327,7 @@ msgid "Disable Framelimiting"
 msgstr "停用畫框限制"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
-msgid ""
-"Useful for running benchmarks. Toggle this option in-game by pressing F4."
+msgid "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
 "對於執行效能測試是有用的\n"
 "遊戲時按 F4 開啟或關閉畫框限制"
@@ -2433,7 +2348,8 @@ msgstr "渦輪加速（TAB）："
 msgid "NTSC Framerate:"
 msgstr "NTSC 遊戲的畫框速率："
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:89 pcsx2/gui/Panels/VideoPanel.cpp:95
+#: pcsx2/gui/Panels/VideoPanel.cpp:89
+#: pcsx2/gui/Panels/VideoPanel.cpp:95
 msgid "FPS"
 msgstr "FPS"
 
@@ -2442,12 +2358,8 @@ msgid "PAL Framerate:"
 msgstr "PAL 遊戲的畫框速率："
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:164
-msgid ""
-"Error while parsing either NTSC or PAL framerate settings.  Settings must be "
-"valid floating point numerics."
-msgstr ""
-"當解析 NTSC 遊戲或 PAL 遊戲的畫框速率設定時出現錯誤。設定值必須是有效的浮點"
-"數。"
+msgid "Error while parsing either NTSC or PAL framerate settings.  Settings must be valid floating point numerics."
+msgstr "當解析 NTSC 遊戲或 PAL 遊戲的畫框速率設定時出現錯誤。設定值必須是有效的浮點數。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:182
 msgid "Disabled [default]"
@@ -2462,9 +2374,7 @@ msgid "Constant skipping"
 msgstr "恆定的跳框"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:192
-msgid ""
-"Normal and Turbo limit rates skip frames.  Slow motion mode will still "
-"disable frameskipping."
+msgid "Normal and Turbo limit rates skip frames.  Slow motion mode will still disable frameskipping."
 msgstr ""
 "普通模式和渦輪加速模式有限制速度，能夠跳框\n"
 "慢動作模式依然會停用跳框"
@@ -2482,9 +2392,7 @@ msgid "Use Synchronized MTGS"
 msgstr "使用同步的多執行緒圖形模式"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:295
-msgid ""
-"For troubleshooting potential bugs in the MTGS only, as it is potentially "
-"very slow."
+msgid "For troubleshooting potential bugs in the MTGS only, as it is potentially very slow."
 msgstr ""
 "僅用於排除多執行緒圖形模式潛在的程式錯誤，\n"
 "因為速度可能非常慢"
@@ -2494,9 +2402,7 @@ msgid "Disable all GS output"
 msgstr "停止輸出遊戲畫面"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:299
-msgid ""
-"Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-"components."
+msgid "Completely disables all GS plugin activity; ideal for benchmarking EEcore components."
 msgstr ""
 "完全停止圖形插件所有的活動；\n"
 "適合用來做 EEcore 的效能測試"
@@ -2522,10 +2428,7 @@ msgid "There is no active virtual machine state to download or save."
 msgstr "沒有活動中的虛擬機狀態以下載或儲存。"
 
 #: pcsx2/gui/SysState.cpp:520
-msgid ""
-"This savestate cannot be loaded because it is not a valid gzip archive.  It "
-"may have been created by an older unsupported version of PCSX2, or it may be "
-"corrupted."
+msgid "This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted."
 msgstr ""
 "無法讀取即時存檔，因為不是一個有效的 gzip 壓縮檔。\n"
 "即時存檔可能由不再支援的舊版 PCSX2 所建立，或者也可能即時存檔損壞。"
@@ -2535,23 +2438,20 @@ msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr "這個檔案不是一個有效的 PCSX2 即時存檔。詳情請洽日誌檔案。"
 
 #: pcsx2/gui/SysState.cpp:598
-msgid ""
-"This savestate cannot be loaded due to missing critical components.  See the "
-"log file for details."
+msgid "This savestate cannot be loaded due to missing critical components.  See the log file for details."
 msgstr "由於缺失關鍵元件，無法讀取這個即時存檔。詳情請洽日誌檔案。"
 
 #: pcsx2/gui/i18n.cpp:70
 msgid " (default)"
 msgstr "（ 正體中文 ）"
 
-#: pcsx2/ps2/BiosTools.cpp:89 pcsx2/ps2/BiosTools.cpp:157
+#: pcsx2/ps2/BiosTools.cpp:89
+#: pcsx2/ps2/BiosTools.cpp:157
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr "指定的 BIOS 檔案不是有效的 PS2 BIOS。請重新設定。"
 
 #: pcsx2/ps2/BiosTools.cpp:250
-msgid ""
-"The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
-"configuration has been corrupted.  Please re-configure."
+msgid "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the configuration has been corrupted.  Please re-configure."
 msgstr "無法載入 PS2 BIOS。未設定 PS2 BIOS，或設定已經損壞。請重新設定。"
 
 #: pcsx2/ps2/BiosTools.cpp:257
@@ -2559,17 +2459,26 @@ msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "指定的 BIOS 檔案不存在。請重新設定。"
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:580
-#, fuzzy, c-format
-msgid ""
-"%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
-"SSE2 extensions."
-msgstr "%s 指令集未找到。R5900-32 反編譯裝置要求 CPU 支援 MMX、SSE、SSE2。"
+#, c-format
+msgid "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."
+msgstr "%s 指令集未找到。R5900-32 反編譯裝置要求 CPU 支援 SSE2。"
 
 #: pcsx2/x86/microVU.cpp:28
-#, fuzzy, c-format
-msgid ""
-"%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
-msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
+#, c-format
+msgid "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
+msgstr "%s 指令集未找到。microVU 要求 CPU 支援 SSE2。"
+
+msgid "Normal font"
+msgstr "普通"
+
+msgid "Restore Default"
+msgstr "還原成預設值"
+
+msgid "Automatically manage saves based on running game"
+msgstr "基於正在運行的遊戲，自動管理遊戲存檔"
+
+msgid "Convert ..."
+msgstr "轉換"
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - 推薦 SSE2"
