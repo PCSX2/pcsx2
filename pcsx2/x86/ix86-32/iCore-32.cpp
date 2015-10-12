@@ -311,6 +311,9 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 	else
 		_freeX86reg(x86reg);
 
+	if (x86reg == -1)
+		return -1;
+
 	x86regs[x86reg].type = type;
 	x86regs[x86reg].reg = reg;
 	x86regs[x86reg].mode = mode;
@@ -584,6 +587,7 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 	}
 
 	if (mmxreg == -1) mmxreg = _getFreeMMXreg();
+	if (mmxreg == -1) return -1;
 
 	mmxregs[mmxreg].inuse = 1;
 	mmxregs[mmxreg].reg = reg;
