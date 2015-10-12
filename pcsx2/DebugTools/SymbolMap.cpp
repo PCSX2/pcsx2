@@ -341,11 +341,8 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 	if (existing != functions.end()) {
 		existing->second.size = size;
 		if (existing->second.module != moduleIndex) {
-			FunctionEntry func = existing->second;
-			func.start = relAddress;
-			func.module = moduleIndex;
-			functions.erase(existing);
-			functions[symbolKey] = func;
+			existing->second.start = relAddress;
+			existing->second.module = moduleIndex;
 		}
 
 		// Refresh the active item if it exists.
@@ -540,11 +537,8 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 		// We leave an existing label alone, rather than overwriting.
 		// But we'll still upgrade it to the correct module / relative address.
 		if (existing->second.module != moduleIndex) {
-			LabelEntry label = existing->second;
-			label.addr = relAddress;
-			label.module = moduleIndex;
-			labels.erase(existing);
-			labels[symbolKey] = label;
+			existing->second.addr = relAddress;
+			existing->second.module = moduleIndex;
 
 			// Refresh the active item if it exists.
 			auto active = activeLabels.find(address);
@@ -646,11 +640,8 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 		existing->second.size = size;
 		existing->second.type = type;
 		if (existing->second.module != moduleIndex) {
-			DataEntry entry = existing->second;
-			entry.module = moduleIndex;
-			entry.start = relAddress;
-			data.erase(existing);
-			data[symbolKey] = entry;
+			existing->second.module = moduleIndex;
+			existing->second.start = relAddress;
 		}
 
 		// Refresh the active item if it exists.
