@@ -931,15 +931,15 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 
 AppConfig::UiTemplateOptions::UiTemplateOptions()
 {
-	LimiterUnlimited	= L"-unlimited";
-	LimiterTurbo		= L"-turbo";
-	LimiterSlowmo		= L"-slowmo";
-	LimiterNormal		= L"";
-	OutputFrame			= L"frame";
-	OutputField			= L"field";
-	OutputProgressive	= L"p";
-	OutputInterlaced	= L"i";
-	TitleTemplate		= L"Slot: ${slot} | Speed${limiter}: ${speed} (${vfps}) | ${cpuusage} | ${omodef}-${omodei} | ${gsdx}";
+	LimiterUnlimited	= L"Max";
+	LimiterTurbo		= L"Turbo";
+	LimiterSlowmo		= L"Slowmo";
+	LimiterNormal		= L"Normal";
+	OutputFrame			= L"Frame";
+	OutputField			= L"Field";
+	OutputProgressive	= L"Progressive";
+	OutputInterlaced	= L"Interlaced";
+	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodec} | ${cpuusage}";
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
