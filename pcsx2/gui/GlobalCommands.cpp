@@ -614,12 +614,11 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 				// Note that this needs to match the key event codes at Pcsx2App::PadKeyDispatch
 				// Our canonical representation is the char code (at lower case if
 				// applicable) with a separate modifier indicator, including shift.
-				// The parser deviates from this by parsing e.g. `shift-q` as 81 (Q) without shift, instead of 113 (q) with shift.
-				// (For plain `q` it does end up correctly with 113).
-				// The parser works correctly for symbols, e.g. `-` ends up as 45
-				// So we only need to change upper case letters to lower case and add the shift flag.
+				// The parser deviates from this by setting the keycode to upper case if
+				// modifiers are used with plain letters. Luckily, it sets the modifiers
+				// correctly, including shift (for letters without modifiers it parses lower case).
+				// So we only need to change upper case letters to lower case.
 				acode.keycode += 'a' - 'A';
-				acode.Shift();
 			}
 			if (_acode.ToString() != acode.ToString()) {
 				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
