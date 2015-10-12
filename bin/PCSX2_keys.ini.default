@@ -48,10 +48,9 @@ FullscreenToggle                  = Alt-ENTER
 
 Sys_Suspend                       = ESC
 
-# PCSX2 binds F8, shift-F8 and ctrl-shift-f8 to Sys_TakeSnapshot.
-# This ini file supports only one key per function, so if you override
-# it then it will override all 3 original bindings (and show some warnings).
-# Sys_TakeSnapshot                  = F8
+# Screenshot. Note: must not include shift or ctrl. With these held - it will
+# create debug GS dump. The two other shortcuts will be added automatically.
+Sys_TakeSnapshot                  = F8
 
 # Hardware/software rendering toggle
 Sys_RenderswitchToggle            = F9

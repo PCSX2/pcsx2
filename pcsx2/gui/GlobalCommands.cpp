@@ -661,7 +661,39 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	}
 	else
 	{
-		operator[](acode.val32) = result;
+		if (!strcmp("Sys_TakeSnapshot", searchfor)) {
+			// Sys_TakeSnapshot is special in a bad way. On its own it creates a screenshot
+			// but GSdx also checks whether shift or ctrl are held down, and for each of
+			// them it does a different thing (gs dumps). So we need to map a shortcut and
+			// also the same shortcut with shift and the same with ctrl to the same function.
+			// So make sure the shortcut doesn't include shift or ctrl, and then add two more
+			// which are derived from it.
+			// Also, looking at the GSdx code, it seems that it never cares about both shift
+			// and ctrl held together, but PCSX2 traditionally mapped f8, shift-f8 and ctrl-shift-f8
+			// to Sys_TakeSnapshot, so let's not change it - we'll keep adding only shift and
+			// ctrl-shift to the base shortcut.
+			if (acode.cmd || acode.shift) {
+				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
+					WX_STR(acode.ToString()));
+			}
+			else {
+				KeyAcceleratorCode shifted(acode); shifted.Shift();
+				KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
+				operator[](acode.val32) = result;
+				operator[](shifted.val32) = result;
+				operator[](controlledShifted.val32) = result;
+
+				if (_acode.val32 != acode.val32) { // overriding default
+					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
+						WX_STR(shifted.ToString()),
+						WX_STR(controlledShifted.ToString())
+						);
+				}
+			}
+		}
+		else {
+			operator[](acode.val32) = result;
+		}
 	}
 }
 

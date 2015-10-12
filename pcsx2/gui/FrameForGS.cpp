@@ -67,9 +67,7 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_NUMPAD_DIVIDE ).Cmd().Alt(),	"GSwindow_OffsetReset" );
 
 	m_Accels->Map( AAC( WXK_ESCAPE ),			"Sys_Suspend" );
-	m_Accels->Map( AAC( WXK_F8 ),				"Sys_TakeSnapshot" );
-	m_Accels->Map( AAC( WXK_F8 ).Shift(),		"Sys_TakeSnapshot");
-	m_Accels->Map( AAC( WXK_F8 ).Shift().Cmd(),	"Sys_TakeSnapshot");
+	m_Accels->Map( AAC( WXK_F8 ),				"Sys_TakeSnapshot" ); // also shift and ctrl-shift will be added automatically
 	m_Accels->Map( AAC( WXK_F9 ),				"Sys_RenderswitchToggle");
 
 	m_Accels->Map( AAC( WXK_F10 ),				"Sys_LoggingToggle" );
