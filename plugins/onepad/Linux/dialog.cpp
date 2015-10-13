@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "keyboard.h"
 #include "onepad.h"
 #include <gtk/gtk.h>
@@ -243,11 +243,11 @@ keys_tree *key_tree_manager;
 void populate_new_joysticks(GtkComboBoxText *box)
 {
 	char str[255];
-	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
+	GamePad::EnumerateGamePads(s_vjoysticks);
 
 	gtk_combo_box_text_append_text(box, "Keyboard/mouse only");
 	
-	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
+	vector<GamePad*>::iterator it = s_vjoysticks.begin();
 
 	// Get everything in the vector vjoysticks.
 	while (it != s_vjoysticks.end())
@@ -294,7 +294,7 @@ typedef struct
 		mask = mask_value;
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->options);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->pad.packed_opt);	
 		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
@@ -305,10 +305,10 @@ void config_key(int pad, int key)
 	u32 key_pressed = 0;
 
 	// I don't have any guarantee that not-yet-pressed state is egual to released state
-	JoystickInfo::UpdateReleaseState();
+	GamePad::UpdateReleaseState();
 	while (!captured)
 	{
-		vector<JoystickInfo*>::iterator itjoy;
+		vector<GamePad*>::iterator itjoy;
 
 		if (PollX11KeyboardMouseEvent(key_pressed))
 		{
@@ -321,10 +321,12 @@ void config_key(int pad, int key)
 			break;
 		}
 
-		SDL_JoystickUpdate();
-
 		itjoy = s_vjoysticks.begin();
-		while ((itjoy != s_vjoysticks.end()) && (!captured))
+
+		(*itjoy)->UpdateGamePadState(); // Do it with first one. Good enough for now.
+                                        // Anyway this whole file will be removed soon enough --3kinox
+
+        while ((itjoy != s_vjoysticks.end()) && (!captured))
 		{
 			if ((*itjoy)->PollButtons(key_pressed)) {
 				set_key(pad, key, key_pressed);
@@ -393,9 +395,21 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 	dialog_checkbox *checkbox = (dialog_checkbox*)user_data;
 
 	if (gtk_toggle_button_get_active(togglebutton))
-		conf->options |= checkbox->mask;
-	else
-		conf->options &= ~checkbox->mask;
+	{
+        if(checkbox->mask == PADOPTION_FORCEFEEDBACK)
+        {
+            conf->pad.PADOPTION_FORCEFEEDBACK = 1;
+            s_vjoysticks[conf->get_joyid(current_pad)]->TestForce();
+        }
+        else
+        {
+            conf->pad.packed_opt |= checkbox->mask;
+        }
+    }
+    else
+    {
+        conf->pad.packed_opt &= ~checkbox->mask;
+    }
 }
 
 void joy_changed(GtkComboBoxText *box, gpointer user_data)
@@ -426,23 +440,6 @@ void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *dat
 	// update joy
 	set_current_joy();
 }
-
-//void on_forcefeedback_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-//{
-//	int mask = PADOPTION_REVERSELX << (16 * s_selectedpad);
-//
-//	if (gtk_toggle_button_get_active(togglebutton))
-//	{
-//		conf->options |= mask;
-//
-//		u32 joyid = conf->get_joyid(current_pad);
-//		if (JoystickIdWithinBounds(joyid)) s_vjoysticks[joyid]->TestForce();
-//	}
-//	else
-//	{
-//		conf->options &= ~mask;
-//	}
-//}
 
 struct button_positions
 {
@@ -505,7 +502,7 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
 {
     GtkWidget *main_box;
     GtkWidget *joy_choose_frame, *joy_choose_box;
-    
+
     GtkWidget *keys_frame, *keys_box;
     
     GtkWidget *keys_tree_box, *keys_tree_scroll;

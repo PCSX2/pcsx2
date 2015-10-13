@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "onepad.h"
 #include "keyboard.h"
 
@@ -74,7 +74,7 @@ void _PADclose()
 {
 	SetAutoRepeat(true);
 
-	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
+	vector<GamePad*>::iterator it = s_vjoysticks.begin();
 
 	// Delete everything in the vector vjoysticks.
 	while (it != s_vjoysticks.end())
@@ -91,18 +91,16 @@ void PollForJoystickInput(int cpad)
 	int joyid = conf->get_joyid(cpad);
 	if (!JoystickIdWithinBounds(joyid)) return;
 
-	SDL_JoystickUpdate();
+ 	GamePad* pjoy = s_vjoysticks[joyid];  
+    pjoy->UpdateGamePadState();
 	for (int i = 0; i < MAX_KEYS; i++)
 	{
-		JoystickInfo* pjoy = s_vjoysticks[joyid];
-
 		switch (type_of_joykey(cpad, i))
 		{
 			case PAD_JOYBUTTONS:
 				{
-
-					int value = SDL_JoystickGetButton((pjoy)->GetJoy(), key_to_button(cpad, i));
-					if (value)
+					int value = pjoy->GetButton( key_to_axis(cpad, i));
+                    if (value)
 						key_status->press(cpad, i);
 					else
 						key_status->release(cpad, i);
@@ -111,8 +109,7 @@ void PollForJoystickInput(int cpad)
 				}
 			case PAD_HAT:
 				{
-					int value = SDL_JoystickGetHat((pjoy)->GetJoy(), key_to_axis(cpad, i));
-
+                    int value = pjoy->GetHat( key_to_axis(cpad, i));
 					// key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
 					// key_to_hat_dir. SDL_JoystickGetHat handles diagonal too (2 bits) so you must check the intersection
 					// '&' not only equality '=='. -- Gregory

@@ -142,11 +142,11 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 			// 1/ small move == no move. Cons : can not do small movement
 			// 2/ use a watchdog timer thread
 			// 3/ ??? idea welcome ;)
-			if (conf->options & ((PADOPTION_MOUSE_L|PADOPTION_MOUSE_R) << 16 * pad )) {
+			if (conf->pad.PADOPTION_MOUSE_L || conf->pad.PADOPTION_MOUSE_R){
 				unsigned int pad_x;
 				unsigned int pad_y;
 				// Note when both PADOPTION_MOUSE_R and PADOPTION_MOUSE_L are set, take only the right one
-				if (conf->options & (PADOPTION_MOUSE_R << 16 * pad)) {
+				if (conf->pad.PADOPTION_MOUSE_R) {
 					pad_x = PAD_R_RIGHT;
 					pad_y = PAD_R_UP;
 				} else {
@@ -156,7 +156,7 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 
 				unsigned x = evt.key & 0xFFFF;
 				unsigned int value = (s_previous_mouse_x > x) ? s_previous_mouse_x - x : x - s_previous_mouse_x;
-				value *= conf->sensibility;
+				value *= conf->get_sensibility();
 
 				if (x == 0)
 					key_status->press(pad, pad_x, -MAX_ANALOG_VALUE);
@@ -172,7 +172,7 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 
 				unsigned y = evt.key >> 16;
 				value = (s_previous_mouse_y > y) ? s_previous_mouse_y - y : y - s_previous_mouse_y;
-				value *= conf->sensibility;
+				value *= conf->get_sensibility();
 
 				if (y == 0)
 					key_status->press(pad, pad_y, -MAX_ANALOG_VALUE);

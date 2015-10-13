@@ -22,7 +22,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "keyboard.h"
 #include "onepad.h"
 #include "linux.h"
@@ -73,19 +73,19 @@ string KeyName(int pad, int key, int keysym)
 					int axis = key_to_axis(pad, key);
 					switch(key_to_hat_dir(pad, key))
 					{
-						case SDL_HAT_UP:
+						case HAT_UP:
 							sprintf(&tmp[0], "JPOVU-%d", axis);
 							break;
 
-						case SDL_HAT_RIGHT:
+						case HAT_RIGHT:
 							sprintf(&tmp[0], "JPOVR-%d", axis);
 							break;
 
-						case SDL_HAT_DOWN:
+						case HAT_DOWN:
 							sprintf(&tmp[0], "JPOVD-%d", axis);
 							break;
 
-						case SDL_HAT_LEFT:
+						case HAT_LEFT:
 							sprintf(&tmp[0], "JPOVL-%d", axis);
 							break;
 					}
@@ -129,10 +129,10 @@ void SaveConfig()
 	}
 
 	fprintf(f, "log = %d\n", conf->log);
-	fprintf(f, "options = %d\n", conf->options);
-	fprintf(f, "mouse_sensibility = %d\n", conf->sensibility);
+    fprintf(f, "PADOPTION = %d\n", conf->pad.packed_opt);
+    fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
 	fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
-	fprintf(f, "ff_intensity = %d\n", conf->ff_intensity);
+	fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
 	for (int pad = 0; pad < 2; pad++)
 	{
@@ -173,14 +173,14 @@ void LoadConfig()
 	u32 value;
 	if (fscanf(f, "log = %d\n", &value) == 0) goto error;
 	conf->log = value;
-	if (fscanf(f, "options = %d\n", &value) == 0) goto error;
-	conf->options = value;
-	if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
-	conf->sensibility = value;
+	if (fscanf(f, "PADOPTION = %d\n", &value) == 0) goto error;
+    conf->pad.packed_opt = value;
+    if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
+	conf->set_sensibility(value);
 	if (fscanf(f, "joy_pad_map = %d\n", &value) == 0) goto error;
 	conf->joyid_map = value;
 	if (fscanf(f, "ff_intensity = %d\n", &value) == 0) goto error;
-	conf->ff_intensity = value;
+	conf->set_ff_intensity(value);
 
 	for (int pad = 0; pad < 2; pad++)
 	{

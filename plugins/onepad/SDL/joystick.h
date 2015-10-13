@@ -19,20 +19,21 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __JOYSTICK_H__
-#define __JOYSTICK_H__
+#pragma once
 
 #include <SDL.h>
 #if SDL_MAJOR_VERSION >= 2
 #include <SDL_haptic.h>
+#else
+#warning Compiling SDL backend of onepad with sdl1.x is deprecated, rumble will not be disponible, and bugs are bound to happen!
 #endif
 
 
 #include "onepad.h"
 #include "controller.h"
-
+#include "GamePad.h"
 // holds all joystick info
-class JoystickInfo
+class JoystickInfo : virtual GamePad
 {
 	public:
 		JoystickInfo() : devname(""), _id(-1), numbuttons(0), numaxes(0), numhats(0),
@@ -41,9 +42,10 @@ class JoystickInfo
 			 vaxisstate.clear();
 			 vhatstate.clear();
 #if SDL_MAJOR_VERSION >= 2
-			 haptic = NULL;
-			 for (int i = 0 ; i < 2 ; i++)
-				 haptic_effect_id[i] = -1;
+			haptic = NULL;
+            first = 1;
+            Triangle_id = -1;
+            Sine_id = -1;
 #endif
 		 }
 
@@ -57,10 +59,19 @@ class JoystickInfo
     
 		void Destroy();
 		// opens handles to all possible joysticks
-		static void EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks);
-
+		static void EnumerateJoysticks(vector<GamePad*>& vjoysticks);
+        
+        /**
+         * (Re)Initialize first, Triangle_id and Sine_id
+         **/
 		void InitHapticEffect();
-		static void DoHapticEffect(int type, int pad, int force);
+		
+        /**
+         * In first call, create effects and upload them to device
+         * For every call:
+         * According to effect type(int type), an effect is uploaded and ran on this pad/joystick
+         **/
+        void DoHapticEffect(int type);
 
 		bool Init(int id); // opens a handle and gets information
 
@@ -69,6 +80,21 @@ class JoystickInfo
 		bool PollButtons(u32 &pkey);
 		bool PollAxes(u32 &pkey);
 		bool PollHats(u32 &pkey);
+
+        void UpdateGamePadState()
+        {
+            SDL_JoystickUpdate();
+        }
+
+        int GetHat(int key_to_axis)
+        {
+            return SDL_JoystickGetHat(joy, key_to_axis);
+        }
+
+        int GetButton(int key_to_button)
+        {
+            return SDL_JoystickGetButton(joy, key_to_button);
+        }
 
 		const string& GetName()
 		{
@@ -155,13 +181,9 @@ class JoystickInfo
 		SDL_Joystick*		joy;
 #if SDL_MAJOR_VERSION >= 2
 		SDL_Haptic*   		haptic;
-		SDL_HapticEffect	haptic_effect_data[2];
-		int   				haptic_effect_id[2];
+        bool first;
+        SDL_HapticEffect Triangle_effect;
+        SDL_HapticEffect Sine_effect;
+        int Triangle_id, Sine_id;
 #endif
 };
-
-
-extern int s_selectedpad;
-extern vector<JoystickInfo*> s_vjoysticks;
-extern bool JoystickIdWithinBounds(int joyid);
-#endif
