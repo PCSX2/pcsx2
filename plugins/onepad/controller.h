@@ -28,6 +28,7 @@
 #define MAX_KEYS 20
 #endif
 
+#include <string.h>
 enum KeyType
 {
 	PAD_JOYBUTTONS = 0,
@@ -55,7 +56,9 @@ extern int hat_to_key(int dir, int axis_id);
 
 extern int PadEnum[2][2];
 
-typedef struct{
+
+union PADOption {
+    struct {
     signed PADOPTION_FORCEFEEDBACK :1;
 	signed PADOPTION_REVERSELX :1;
 	signed PADOPTION_REVERSELY :1;
@@ -63,8 +66,10 @@ typedef struct{
 	signed PADOPTION_REVERSERY :1;
 	signed PADOPTION_MOUSE_L :1;
 	signed PADOPTION_MOUSE_R :1;
-	signed PADOPTION_SIXAXIS_USB :1;
-}PADOption; // One pad is 8 bit now. And much much more readable  --3kinox
+	signed PADOPTION_SIXAXIS_USB :1;                    
+    };
+    uint32_t packed_opt;//8 bit is enough, like in good ol'times :)
+};
 
 class PADconf
 {

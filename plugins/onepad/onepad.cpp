@@ -263,7 +263,7 @@ EXPORT_C_(s32) PADopen(void *pDsp)
 	mutex_WasInit = true;
 
 #ifdef __linux__
-	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
+	GamePad::EnumerateGamePads(s_vjoysticks);
 #endif
 	return _PADopen(pDsp);
 }
@@ -418,7 +418,7 @@ u8  _PADpoll(u8 value)
                 vib_small = padVibF[curPad][0] ? 2000 : 0;
 				if (padVibF[curPad][2] != vib_small)
 				{
-                    JoystickInfo* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
+                    GamePad* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
 					padVibF[curPad][2] = vib_small;
                     pjoy->DoHapticEffect(0);
 
@@ -427,7 +427,7 @@ u8  _PADpoll(u8 value)
 				vib_big = padVibF[curPad][1] ? 500 + 37*padVibF[curPad][1] : 0;
 				if (padVibF[curPad][3] != vib_big)
 				{
-                    JoystickInfo* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
+                    GamePad* pjoy = s_vjoysticks[conf->get_joyid(curPad)];
 					padVibF[curPad][3] = vib_big;
                     pjoy->DoHapticEffect(1);
 				}

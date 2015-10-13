@@ -25,12 +25,11 @@
 // Joystick definitions //
 //////////////////////////
 
-vector<JoystickInfo*> s_vjoysticks;
 static u32 s_bSDLInit = false;
 
 void JoystickInfo::UpdateReleaseState()
 {
-	vector<JoystickInfo*>::iterator itjoy = s_vjoysticks.begin();
+	vector<GamePad*>::iterator itjoy = s_vjoysticks.begin();
 
 	SDL_JoystickUpdate();
 
@@ -47,8 +46,8 @@ bool JoystickIdWithinBounds(int joyid)
 	return ((joyid >= 0) && (joyid < (int)s_vjoysticks.size()));
 }
 
-// opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
+// opens handles to all possible joystick
+void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 {
 
 	if (!s_bSDLInit)
@@ -67,7 +66,7 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 		s_bSDLInit = true;
 	}
 
-	vector<JoystickInfo*>::iterator it = vjoysticks.begin();
+	vector<GamePad*>::iterator it = vjoysticks.begin();
 
 	// Delete everything in the vector vjoysticks.
 	while (it != vjoysticks.end())

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "keyboard.h"
 #include "onepad.h"
 #include <gtk/gtk.h>
@@ -243,11 +243,11 @@ keys_tree *key_tree_manager;
 void populate_new_joysticks(GtkComboBoxText *box)
 {
 	char str[255];
-	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
+	GamePad::EnumerateGamePads(s_vjoysticks);
 
 	gtk_combo_box_text_append_text(box, "Keyboard/mouse only");
 	
-	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
+	vector<GamePad*>::iterator it = s_vjoysticks.begin();
 
 	// Get everything in the vector vjoysticks.
 	while (it != s_vjoysticks.end())
@@ -294,34 +294,7 @@ typedef struct
 		mask = mask_value;
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
-        switch(mask){
-            case PADOPTION_FORCEFEEDBACK :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_FORCEFEEDBACK);
-            break;
-            case PADOPTION_REVERSELX :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSELX);
-            break;
-            case PADOPTION_REVERSELY :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSELY);
-            break;
-            case PADOPTION_REVERSERX :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSERX);
-            break;
-            case PADOPTION_REVERSERY :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_REVERSERY);
-            break;
-            case PADOPTION_MOUSE_L :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_MOUSE_L);
-            break;
-            case PADOPTION_MOUSE_R :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_MOUSE_R);
-            break;
-            case PADOPTION_SIXAXIS_USB :
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), conf->pad.PADOPTION_SIXAXIS_USB);
-            break;
-        }
-
-		
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->pad.packed_opt);	
 		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
@@ -332,10 +305,10 @@ void config_key(int pad, int key)
 	u32 key_pressed = 0;
 
 	// I don't have any guarantee that not-yet-pressed state is egual to released state
-	JoystickInfo::UpdateReleaseState();
+	GamePad::UpdateReleaseState();
 	while (!captured)
 	{
-		vector<JoystickInfo*>::iterator itjoy;
+		vector<GamePad*>::iterator itjoy;
 
 		if (PollX11KeyboardMouseEvent(key_pressed))
 		{
@@ -348,10 +321,12 @@ void config_key(int pad, int key)
 			break;
 		}
 
-		SDL_JoystickUpdate();
-
 		itjoy = s_vjoysticks.begin();
-		while ((itjoy != s_vjoysticks.end()) && (!captured))
+
+		(*itjoy)->UpdateGamePadState(); // Do it with first one. Good enough for now.
+                                        // Anyway this whole file will be removed soon enough --3kinox
+
+        while ((itjoy != s_vjoysticks.end()) && (!captured))
 		{
 			if ((*itjoy)->PollButtons(key_pressed)) {
 				set_key(pad, key, key_pressed);
@@ -421,64 +396,19 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 
 	if (gtk_toggle_button_get_active(togglebutton))
 	{
-        switch(checkbox->mask)
+        if(checkbox->mask == PADOPTION_FORCEFEEDBACK)
         {
-            case PADOPTION_FORCEFEEDBACK :
-                conf->pad.PADOPTION_FORCEFEEDBACK = 1;
-                s_vjoysticks[conf->get_joyid(current_pad)]->TestForce();
-                break;
-            case PADOPTION_REVERSELX :
-                conf->pad.PADOPTION_REVERSELX = 1;
-                break;
-            case PADOPTION_REVERSELY :
-                conf->pad.PADOPTION_REVERSELY = 1;
-                break;
-            case PADOPTION_REVERSERX :
-                conf->pad.PADOPTION_REVERSERX = 1;
-                break;
-            case PADOPTION_REVERSERY :
-                conf->pad.PADOPTION_REVERSERY = 1;
-                break;
-            case PADOPTION_MOUSE_L :
-                conf->pad.PADOPTION_MOUSE_L = 1;
-                break;
-            case PADOPTION_MOUSE_R :
-                conf->pad.PADOPTION_MOUSE_R = 1;
-                break;
-            case PADOPTION_SIXAXIS_USB :
-                conf->pad.PADOPTION_SIXAXIS_USB = 1;
-                break;
+            conf->pad.PADOPTION_FORCEFEEDBACK = 1;
+            s_vjoysticks[conf->get_joyid(current_pad)]->TestForce();
+        }
+        else
+        {
+            conf->pad.packed_opt |= checkbox->mask;
         }
     }
     else
     {
-        switch(checkbox->mask)
-        {
-            case PADOPTION_FORCEFEEDBACK :
-                conf->pad.PADOPTION_FORCEFEEDBACK = 0;
-                break;
-            case PADOPTION_REVERSELX :
-                conf->pad.PADOPTION_REVERSELX = 0;
-                break;
-            case PADOPTION_REVERSELY :
-                conf->pad.PADOPTION_REVERSELY = 0;
-                break;
-            case PADOPTION_REVERSERX :
-                conf->pad.PADOPTION_REVERSERX = 0;
-                break;
-            case PADOPTION_REVERSERY :
-                conf->pad.PADOPTION_REVERSERY = 0;
-                break;
-            case PADOPTION_MOUSE_L :
-                conf->pad.PADOPTION_MOUSE_L = 0;
-                break;
-            case PADOPTION_MOUSE_R :
-                conf->pad.PADOPTION_MOUSE_R = 0;
-                break;
-            case PADOPTION_SIXAXIS_USB :
-                conf->pad.PADOPTION_SIXAXIS_USB = 0;
-                break;
-        }
+        conf->pad.packed_opt &= ~checkbox->mask;
     }
 }
 
@@ -510,29 +440,7 @@ void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *dat
 	// update joy
 	set_current_joy();
 }
-#if 0
-void on_forcefeedback_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-	int mask = PADOPTION_REVERSELX << (16 * current_pad);
-    fprintf(stderr,"We enter forcefeedback_toggled\n");
-	if (gtk_toggle_button_get_active(togglebutton))
-	{
-        fprintf(stderr,"Button is now active!\n");
-		conf->options |= mask;
 
-		u32 joyid = conf->get_joyid(current_pad);
-		if (JoystickIdWithinBounds(joyid))
-        {
-            fprintf(stderr,"Button actually had effect!\n");
-            s_vjoysticks[joyid]->TestForce();
-        }
-    }
-	else
-	{
-		conf->options &= ~mask;
-	}
-}
-#endif
 struct button_positions
 {
 	const char* label;
@@ -635,12 +543,6 @@ GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], d
 	g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_view_key_clicked), NULL);
     gtk_widget_set_size_request(keys_tree_show_key_btn, 100, 24);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
-
-	// REACTIVATE FORCE FEEDBACK!
-    //keys_tree_show_key_btn = gtk_check_button_new_with_label("Enable force feedback");
-	//g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_toggle_option), NULL);
-    //gtk_widget_set_size_request(keys_tree_show_key_btn, 40, 400);
-	//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
 
     joy_choose_box = gtk_hbox_new(false, 5);
     joy_choose_frame = gtk_frame_new ("Joystick to use for this pad");
