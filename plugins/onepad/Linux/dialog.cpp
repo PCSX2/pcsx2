@@ -393,7 +393,11 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 	dialog_checkbox *checkbox = (dialog_checkbox*)user_data;
 
 	if (gtk_toggle_button_get_active(togglebutton))
+	{
 		conf->packed_options |= checkbox->mask;
+		if(checkbox->mask == PADOPTION_FORCEFEEDBACK && (conf->get_joyid(current_pad)< s_vgamePad.size()))
+			s_vgamePad[conf->get_joyid(current_pad)]->TestForce();
+	}
 	else
 		conf->packed_options &= ~checkbox->mask;
 }

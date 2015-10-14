@@ -29,20 +29,19 @@
 #include "GamePad.h"
 #include "onepad.h"
 #include "controller.h"
-
+#define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
 // holds all joystick info
 class JoystickInfo : GamePad
 {
 	public:
 		JoystickInfo() : devname(""), _id(-1), numbuttons(0), numaxes(0), numhats(0),
 		 deadzone(1500), pad(-1), joy(NULL) {
-			 vbuttonstate.clear();
-			 vaxisstate.clear();
-			 vhatstate.clear();
+			vbuttonstate.clear();
+			vaxisstate.clear();
+			vhatstate.clear();
 #if SDL_MAJOR_VERSION >= 2
-			 haptic = NULL;
-			 for (int i = 0 ; i < 2 ; i++)
-				 haptic_effect_id[i] = -1;
+			haptic = NULL;
+			first = true;
 #endif
 		 }
 
@@ -58,8 +57,7 @@ class JoystickInfo : GamePad
 		// opens handles to all possible joysticks
 		static void EnumerateJoysticks(vector<GamePad*>& vjoysticks);
 
-		void InitHapticEffect();
-		void Rumble(int type);
+		void Rumble(int type,int pad);
 
 		bool Init(int id); // opens a handle and gets information
 
@@ -146,6 +144,7 @@ class JoystickInfo : GamePad
 		{
 			return joy;
 		}
+		void GenerateDefaultEffect();
 		string devname; // pretty device name
 		int _id;
 		int numbuttons, numaxes, numhats;
@@ -157,7 +156,8 @@ class JoystickInfo : GamePad
 		SDL_Joystick*		joy;
 #if SDL_MAJOR_VERSION >= 2
 		SDL_Haptic*   		haptic;
-		SDL_HapticEffect	haptic_effect_data[2];
-		int   				haptic_effect_id[2];
+		bool first;
+		SDL_HapticEffect effects[NB_EFFECT];
+		int effects_id[NB_EFFECT];
 #endif
 };

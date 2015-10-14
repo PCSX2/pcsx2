@@ -42,7 +42,7 @@ class GamePad
 		 * Causes devices to rumble
 		 * Rumble will differ according to type which is either 0(small motor) or 1(big motor)
 		 **/
-		virtual void Rumble(int type){return;}
+		virtual void Rumble(int type,int pad){return;}
 
 		virtual bool Init(int id){return false;} // opens a handle and gets information
 

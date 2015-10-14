@@ -300,7 +300,6 @@ EXPORT_C_(u32) PADquery()
 void PADsetMode(int pad, int mode)
 {
 	padMode[pad] = mode;
-	// FIXME FEEDBACK
 	padVib0[pad] = 0;
 	padVib1[pad] = 0;
 	padVibF[pad][0] = 0;
@@ -413,7 +412,6 @@ u8  _PADpoll(u8 value)
 
 				buf = stdpar[curPad];
 
-				// FIXME FEEDBACK. Set effect here
 				/* Small Motor */
 				vib_small = padVibF[curPad][0] ? 2000 : 0;
 				// if ((padVibF[curPad][2] != vib_small) && (padVibC[curPad] >= 0))
@@ -422,7 +420,7 @@ u8  _PADpoll(u8 value)
 					padVibF[curPad][2] = vib_small;
 					// SetDeviceForceS (padVibC[curPad], vib_small);
 					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
-					gamePad->Rumble(0);
+					gamePad->Rumble(0,curPad);
 				}
 
 				/* Big Motor */
@@ -433,7 +431,7 @@ u8  _PADpoll(u8 value)
 					padVibF[curPad][3] = vib_big;
 					// SetDeviceForceB (padVibC[curPad], vib_big);
 					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
-					gamePad->Rumble(1);
+					gamePad->Rumble(1,curPad);
 				}
 
 				return padID[curPad];
@@ -493,7 +491,7 @@ u8  _PADpoll(u8 value)
 	switch (curCmd)
 	{
 		case CMD_READ_DATA_AND_VIBRATE:
-			// FIXME FEEDBACK
+
 			if (curByte == padVib0[curPad])
 				padVibF[curPad][0] = value;
 			if (curByte == padVib1[curPad])
@@ -559,7 +557,7 @@ u8  _PADpoll(u8 value)
 			break;
 
 		case CMD_VIBRATION_TOGGLE:
-			// FIXME FEEDBACK
+
 			if (curByte >= 2)
 			{
 				if (curByte == padVib0[curPad])
@@ -569,16 +567,10 @@ u8  _PADpoll(u8 value)
 				if (value == 0x00)
 				{
 					padVib0[curPad] = curByte;
-					// FIXME: code from SSSXPAD I'm not sure we need this part
-					// if ((padID[curPad] & 0x0f) < (curByte - 1) / 2)
-					// 	padID[curPad] = (padID[curPad] & 0xf0) + (curByte - 1) / 2;
 				}
 				else if (value == 0x01)
 				{
 					padVib1[curPad] = curByte;
-					// FIXME: code from SSSXPAD I'm not sure we need this part
-					// if ((padID[curPad] & 0x0f) < (curByte - 1) / 2)
-					// 	padID[curPad] = (padID[curPad] & 0xf0) + (curByte - 1) / 2;
 				}
 			}
 			break;
