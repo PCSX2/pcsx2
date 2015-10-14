@@ -514,7 +514,7 @@ public:
 
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
-	DisassemblyDialog*	GetDisassemblyPtr() const	{ return m_id_Disassembler ? (DisassemblyDialog*)wxWindow::FindWindowById( m_id_Disassembler ) : NULL; }
+	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 	
 	void enterDebugMode();
 	void leaveDebugMode();

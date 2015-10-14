@@ -392,6 +392,7 @@ void CBreakPoints::Update(u32 addr)
 	
 	if (resume)
 		r5900Debug.resumeCpu();
-
-	wxGetApp().GetDisassemblyPtr()->update();
+	auto disassembly_window = wxGetApp().GetDisassemblyPtr();
+	if (disassembly_window) // make sure that valid pointer is recieved to prevent potential NULL dereference.
+		disassembly_window->update();
 }
