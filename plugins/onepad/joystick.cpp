@@ -146,7 +146,7 @@ void JoystickInfo::InitHapticEffect()
 void JoystickInfo::DoHapticEffect(int type, int pad, int force)
 {
 	if (type > 1) return;
-	if ( !(conf->options & (PADOPTION_FORCEFEEDBACK << 16 * pad)) ) return;
+	if ( !(conf->pad_options[pad].forcefeedback) ) return;
 
 #if SDL_MAJOR_VERSION >= 2
 	int joyid = conf->get_joyid(pad);
@@ -157,7 +157,7 @@ void JoystickInfo::DoHapticEffect(int type, int pad, int force)
 	if (pjoy->haptic_effect_id[type] < 0) return;
 
 	// FIXME: might need to multiply force
-	pjoy->haptic_effect_data[type].periodic.magnitude = force * conf->ff_intensity ; // force/32767 strength
+	pjoy->haptic_effect_data[type].periodic.magnitude = force * conf->get_ff_intensity() ; // force/32767 strength
 	// Upload the new effect
 	SDL_HapticUpdateEffect(pjoy->haptic, pjoy->haptic_effect_id[type], &pjoy->haptic_effect_data[type]);
 
@@ -289,7 +289,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 		if (found_hack != string::npos) {
 			// The analog mode of the hat button is quite erratic. Values can be in half- axis
 			// or full axis... So better keep them as button for the moment -- gregory
-			if (i >= 8 && i <= 11 && (conf->options & PADOPTION_SIXAXIS_USB))
+			if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb))
 				continue;
 			// Disable accelerometer
 			if ((i >= 4 && i <= 6))

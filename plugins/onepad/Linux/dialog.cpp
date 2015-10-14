@@ -294,7 +294,7 @@ typedef struct
 		mask = mask_value;
 
 		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->options);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->packed_options);
 		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
 	}
 } dialog_checkbox;
@@ -393,9 +393,9 @@ void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
 	dialog_checkbox *checkbox = (dialog_checkbox*)user_data;
 
 	if (gtk_toggle_button_get_active(togglebutton))
-		conf->options |= checkbox->mask;
+		conf->packed_options |= checkbox->mask;
 	else
-		conf->options &= ~checkbox->mask;
+		conf->packed_options &= ~checkbox->mask;
 }
 
 void joy_changed(GtkComboBoxText *box, gpointer user_data)
@@ -426,23 +426,6 @@ void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *dat
 	// update joy
 	set_current_joy();
 }
-
-//void on_forcefeedback_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-//{
-//	int mask = PADOPTION_REVERSELX << (16 * s_selectedpad);
-//
-//	if (gtk_toggle_button_get_active(togglebutton))
-//	{
-//		conf->options |= mask;
-//
-//		u32 joyid = conf->get_joyid(current_pad);
-//		if (JoystickIdWithinBounds(joyid)) s_vjoysticks[joyid]->TestForce();
-//	}
-//	else
-//	{
-//		conf->options &= ~mask;
-//	}
-//}
 
 struct button_positions
 {

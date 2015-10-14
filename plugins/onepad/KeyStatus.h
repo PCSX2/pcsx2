@@ -49,7 +49,7 @@ class KeyStatus
 		PADAnalog m_internal_analog_joy[2];
 
 		void analog_set(u32 pad, u32 index, u8 value);
-		bool analog_is_reversed(u32 index);
+		bool analog_is_reversed(u32 pad, u32 index);
 		u8   analog_merge(u8 kbd, u8 joy);
 
 	public:
