@@ -13,18 +13,20 @@ set(onepadFinalFlags "")
 # onepad sources
 set(onepadSources
 	controller.cpp
-	joystick.cpp
+	GamePad.cpp
+	SDL/joystick.cpp
 	keyboard.cpp
-    KeyStatus.cpp
+	KeyStatus.cpp
 	onepad.cpp)
 
 # onepad headers
 set(onepadHeaders
 	bitwise.h
 	controller.h
-	joystick.h
+	GamePad.h
+	SDL/joystick.h
 	keyboard.h
-    KeyStatus.h
+	KeyStatus.h
 	onepad.h)
 
 # onepad Linux sources
@@ -49,10 +51,12 @@ if (SDL2_API)
 	set(onepadFinalLibs
 		${SDL2_LIBRARIES}
 	)
+	add_definitions(-DSDL_BUILD)
 else()
 	set(onepadFinalLibs
 		${SDL_LIBRARY}
 	)
+	add_definitions(-DSDL_BUILD)
 endif()
 
 set(onepadFinalLibs

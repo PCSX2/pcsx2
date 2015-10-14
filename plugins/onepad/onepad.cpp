@@ -263,7 +263,7 @@ EXPORT_C_(s32) PADopen(void *pDsp)
 	mutex_WasInit = true;
 
 #ifdef __linux__
-	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
+	GamePad::EnumerateGamePads(s_vgamePad);
 #endif
 	return _PADopen(pDsp);
 }
@@ -421,7 +421,8 @@ u8  _PADpoll(u8 value)
 				{
 					padVibF[curPad][2] = vib_small;
 					// SetDeviceForceS (padVibC[curPad], vib_small);
-					JoystickInfo::DoHapticEffect(0, curPad, vib_small);
+					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
+					gamePad->Rumble(0);
 				}
 
 				/* Big Motor */
@@ -431,7 +432,8 @@ u8  _PADpoll(u8 value)
 				{
 					padVibF[curPad][3] = vib_big;
 					// SetDeviceForceB (padVibC[curPad], vib_big);
-					JoystickInfo::DoHapticEffect(1, curPad, vib_big);
+					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
+					gamePad->Rumble(1);
 				}
 
 				return padID[curPad];

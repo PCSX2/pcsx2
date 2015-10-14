@@ -19,20 +19,19 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __JOYSTICK_H__
-#define __JOYSTICK_H__
+#pragma once
 
 #include <SDL.h>
 #if SDL_MAJOR_VERSION >= 2
 #include <SDL_haptic.h>
 #endif
 
-
+#include "GamePad.h"
 #include "onepad.h"
 #include "controller.h"
 
 // holds all joystick info
-class JoystickInfo
+class JoystickInfo : GamePad
 {
 	public:
 		JoystickInfo() : devname(""), _id(-1), numbuttons(0), numaxes(0), numhats(0),
@@ -57,10 +56,10 @@ class JoystickInfo
     
 		void Destroy();
 		// opens handles to all possible joysticks
-		static void EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks);
+		static void EnumerateJoysticks(vector<GamePad*>& vjoysticks);
 
 		void InitHapticEffect();
-		static void DoHapticEffect(int type, int pad, int force);
+		void Rumble(int type);
 
 		bool Init(int id); // opens a handle and gets information
 
@@ -69,6 +68,10 @@ class JoystickInfo
 		bool PollButtons(u32 &pkey);
 		bool PollAxes(u32 &pkey);
 		bool PollHats(u32 &pkey);
+
+		int GetHat(int key_to_axis);
+
+		int GetButton(int key_to_button);
 
 		const string& GetName()
 		{
@@ -134,16 +137,15 @@ class JoystickInfo
 			vhatstate[i] = value;
 		}
 
-		SDL_Joystick* GetJoy()
-		{
-			return joy;
-		}
-
 		int GetAxisFromKey(int pad, int index);
 
 		static void UpdateReleaseState();
 
 	private:
+		SDL_Joystick* GetJoy()
+		{
+			return joy;
+		}
 		string devname; // pretty device name
 		int _id;
 		int numbuttons, numaxes, numhats;
@@ -159,9 +161,3 @@ class JoystickInfo
 		int   				haptic_effect_id[2];
 #endif
 };
-
-
-extern int s_selectedpad;
-extern vector<JoystickInfo*> s_vjoysticks;
-extern bool JoystickIdWithinBounds(int joyid);
-#endif

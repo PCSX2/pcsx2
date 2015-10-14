@@ -25,30 +25,24 @@
 // Joystick definitions //
 //////////////////////////
 
-vector<JoystickInfo*> s_vjoysticks;
 static u32 s_bSDLInit = false;
 
 void JoystickInfo::UpdateReleaseState()
 {
-	vector<JoystickInfo*>::iterator itjoy = s_vjoysticks.begin();
+	vector<GamePad*>::iterator itjoy = s_vgamePad.begin();
 
 	SDL_JoystickUpdate();
 
 	// Save everything in the vector s_vjoysticks.
-	while (itjoy != s_vjoysticks.end())
+	while (itjoy != s_vgamePad.end())
 	{
 		(*itjoy)->SaveState();
 		itjoy++;
 	}
 }
 
-bool JoystickIdWithinBounds(int joyid)
-{
-	return ((joyid >= 0) && (joyid < (int)s_vjoysticks.size()));
-}
-
 // opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
+void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 {
 
 	if (!s_bSDLInit)
@@ -67,7 +61,7 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 		s_bSDLInit = true;
 	}
 
-	vector<JoystickInfo*>::iterator it = vjoysticks.begin();
+	vector<GamePad*>::iterator it = vjoysticks.begin();
 
 	// Delete everything in the vector vjoysticks.
 	while (it != vjoysticks.end())
@@ -143,26 +137,14 @@ void JoystickInfo::InitHapticEffect()
 #endif
 }
 
-void JoystickInfo::DoHapticEffect(int type, int pad, int force)
+void JoystickInfo::Rumble(int type)
 {
 	if (type > 1) return;
 	if ( !(conf->pad_options[pad].forcefeedback) ) return;
 
 #if SDL_MAJOR_VERSION >= 2
-	int joyid = conf->get_joyid(pad);
-	if (!JoystickIdWithinBounds(joyid)) return;
-	JoystickInfo* pjoy = s_vjoysticks[joyid];
-
-	if (pjoy->haptic == NULL) return;
-	if (pjoy->haptic_effect_id[type] < 0) return;
-
-	// FIXME: might need to multiply force
-	pjoy->haptic_effect_data[type].periodic.magnitude = force * conf->get_ff_intensity() ; // force/32767 strength
-	// Upload the new effect
-	SDL_HapticUpdateEffect(pjoy->haptic, pjoy->haptic_effect_id[type], &pjoy->haptic_effect_data[type]);
-
-	// run the effect once
-	SDL_HapticRunEffect( pjoy->haptic, pjoy->haptic_effect_id[type], 1 );
+	if (haptic == NULL) return;
+	return;
 #endif
 }
 
@@ -358,6 +340,16 @@ bool JoystickInfo::PollHats(u32 &pkey)
 		}
 	}
 	return false;
+}
+
+int JoystickInfo::GetHat(int key_to_axis)
+{
+	return SDL_JoystickGetHat(GetJoy(),key_to_axis);
+}
+
+int JoystickInfo::GetButton(int key_to_button)
+{
+	return SDL_JoystickGetButton(GetJoy(),key_to_button);
 }
 
 int JoystickInfo::GetAxisFromKey(int pad, int index)
