@@ -200,20 +200,23 @@ static void vSyncInfoCalc( vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 
 	// One test we have shows that VBlank lasts for ~22 HBlanks, another we have show that is the time it's off.
 	// There exists a game (Legendz Gekitou! Saga Battle) Which runs REALLY slowly if VBlank is ~22 HBlanks, so the other test wins.
 
-	u64 Blank = HalfFrame / 2; // PAL VBlank Period is off for roughly 22 HSyncs
+	
 
 	//I would have suspected this to be Frame - Blank, but that seems to completely freak it out
 	//and the test results are completely wrong. It seems 100% the same as the PS2 test on this,
 	//So let's roll with it :P
-	u64 Render		= HalfFrame - Blank;	// so use the half-frame value for these...
+	
 
 	// Important!  The hRender/hBlank timers should be 50/50 for best results.
 	//  (this appears to be what the real EE's timing crystal does anyway)
 
-	u64 Scanline	= Frame / scansPerFrame;
-	u64 hBlank		= Scanline / 2;
+	u64 Scanline	= (Frame / scansPerFrame);
+	u64 hBlank		= Scanline;
 	u64 hRender		= Scanline - hBlank;
-	
+
+	u64 Blank = Scanline * 22; // PAL VBlank Period is off for roughly 22 HSyncs
+	u64 Render = (HalfFrame - Blank);	// so use the half-frame value for these...
+
 	if ( gsRegionMode == Region_NTSC_PROGRESSIVE )
 	{
 		hBlank /= 2;
@@ -655,7 +658,8 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 				// Just set the start cycle (sCycleT) -- counting will be done as needed
 				// for events (overflows, targets, mode changes, and the gate off below)
 
-				counters[i].mode.IsCounting = 1;
+				counters[i].count = rcntRcount(i);
+				counters[i].mode.IsCounting = 0;
 				counters[i].sCycleT = sCycle;
 				EECNT_LOG("EE Counter[%d] %s StartGate Type0, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].count );
@@ -700,10 +704,9 @@ static __fi void rcntEndGate(bool isVblank , u32 sCycle)
 				// Set the count here.  Since the timer is being turned off it's
 				// important to record its count at this point (it won't be counted by
 				// calls to rcntUpdate).
-
-				counters[i].count = rcntRcount(i);
-				counters[i].mode.IsCounting = 0;
-				counters[i].sCycleT = sCycle;
+				counters[i].mode.IsCounting = 1;
+				counters[i].sCycleT = cpuRegs.cycle;
+				
 				EECNT_LOG("EE Counter[%d] %s EndGate Type0, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].count );
 			break;
