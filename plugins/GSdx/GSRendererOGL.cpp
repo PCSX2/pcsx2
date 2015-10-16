@@ -373,6 +373,8 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 			// The fastest algo that requires a single pass
 			GL_INS("COLCLIP Free mode ENABLED");
 			ps_sel.colclip = 1;
+			ASSERT(sw_blending);
+			accumulation_blend = false; // disable the HDR algo
 		} else if (accumulation_blend) {
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
