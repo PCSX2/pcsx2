@@ -48,10 +48,23 @@ layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the im
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
 // FIXME how to declare memory access
-layout(r32i, binding = 2) coherent uniform iimage2D img_prim_min;
-// Don't enable it. Discard fragment can still write in the depth buffer
-// it breaks shadow in Shin Megami Tensei Nocturne
-//layout(early_fragment_tests) in;
+layout(r32i, binding = 2) uniform iimage2D img_prim_min;
+// WARNING:
+// You can't enable it if you discard the fragment. The depth is still
+// updated (shadow in Shin Megami Tensei Nocturne)
+//
+// early_fragment_tests must still be enabled in the first pass of the 2 passes algo
+// First pass search the first primitive that will write the bad alpha value. Value
+// won't be written if the fragment fails the depth test.
+//
+// In theory the best solution will be do
+// 1/ copy the depth buffer
+// 2/ do the full depth (current depth writes are disabled)
+// 3/ restore the depth buffer for 2nd pass
+// Of course, it is likely too costly.
+#if PS_DATE == 1 || PS_DATE == 2
+layout(early_fragment_tests) in;
+#endif
 
 // I don't remember why I set this parameter but it is surely useless
 //layout(pixel_center_integer) in vec4 gl_FragCoord;
@@ -564,15 +577,15 @@ void ps_main()
     // Pixel with alpha equal to 1 will failed (128-255)
     if (C.a > 127.5f) {
         imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
-        return;
     }
+    return;
 #elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
     // DATM == 1
     // Pixel with alpha equal to 0 will failed (0-127)
     if (C.a < 127.5f) {
         imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
-        return;
     }
+    return;
 #endif
 
     ps_blend(C, alpha_blend);
