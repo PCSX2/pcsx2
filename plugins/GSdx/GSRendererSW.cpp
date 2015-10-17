@@ -1572,12 +1572,12 @@ void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const 
 	{
 		//TransactionScope scope(s_lock);
 
-		if(global.sel.fb)
+		if(global.sel.fb && fb_pages != NULL)
 		{
 			m_parent->UsePages(fb_pages, 0);
 		}
 
-		if(global.sel.zb)
+		if(global.sel.zb && zb_pages != NULL)
 		{
 			m_parent->UsePages(zb_pages, 1);
 		}
