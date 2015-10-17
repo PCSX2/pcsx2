@@ -1411,7 +1411,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	}
 
 
-	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
+	GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
 	if(GLState::viewport != size)
 	{
 		GLState::viewport = size;
