@@ -559,7 +559,7 @@ void psxRcntWcount16(int index, u16 value)
 	}
 
 	psxCounters[index].count = value & 0xffff;
-	if ((psxCounters[index].mode & 0x400) == 1 || (psxCounters[index].mode & 0x40)) {
+	if ((psxCounters[index].mode & 0x400) || (psxCounters[index].mode & 0x40)) {
 		psxCounters[index].target &= 0xffff;
 	}
 	if (value > psxCounters[index].target) {//Count already higher than Target
@@ -588,7 +588,7 @@ void psxRcntWcount32(int index, u32 value)
 	}
 
 	psxCounters[index].count = value;
-	if ((psxCounters[index].mode & 0x400) == 1 || (psxCounters[index].mode & 0x40)) { //IRQ not triggered (one shot) or toggle
+	if ((psxCounters[index].mode & 0x400) || (psxCounters[index].mode & 0x40)) { //IRQ not triggered (one shot) or toggle
 		psxCounters[index].target &= 0xffffffff;
 	}
 	if (value > psxCounters[index].target) {//Count already higher than Target
