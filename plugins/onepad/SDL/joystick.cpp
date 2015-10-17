@@ -25,30 +25,24 @@
 // Joystick definitions //
 //////////////////////////
 
-vector<JoystickInfo*> s_vjoysticks;
 static u32 s_bSDLInit = false;
 
 void JoystickInfo::UpdateReleaseState()
 {
-	vector<JoystickInfo*>::iterator itjoy = s_vjoysticks.begin();
+	vector<GamePad*>::iterator itjoy = s_vgamePad.begin();
 
 	SDL_JoystickUpdate();
 
 	// Save everything in the vector s_vjoysticks.
-	while (itjoy != s_vjoysticks.end())
+	while (itjoy != s_vgamePad.end())
 	{
 		(*itjoy)->SaveState();
 		itjoy++;
 	}
 }
 
-bool JoystickIdWithinBounds(int joyid)
-{
-	return ((joyid >= 0) && (joyid < (int)s_vjoysticks.size()));
-}
-
 // opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
+void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 {
 
 	if (!s_bSDLInit)
@@ -56,10 +50,7 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 #if SDL_MAJOR_VERSION >= 2
 		// Tell SDL to catch event even if the windows isn't focussed
 		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-		// SDL in 3rdparty wrap X11 call. In order to get x11 symbols loaded
-		// video must be loaded too.
-		// Example of X11 symbol are XAutoRepeatOn/XAutoRepeatOff
-		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_VIDEO|SDL_INIT_HAPTIC|SDL_INIT_GAMECONTROLLER|SDL_INIT_EVENTS) < 0) return;
+		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_HAPTIC|SDL_INIT_EVENTS) < 0) return;
 #else
 		if (SDL_Init(SDL_INIT_JOYSTICK) < 0) return;
 #endif
@@ -67,7 +58,7 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 		s_bSDLInit = true;
 	}
 
-	vector<JoystickInfo*>::iterator it = vjoysticks.begin();
+	vector<GamePad*>::iterator it = vjoysticks.begin();
 
 	// Delete everything in the vector vjoysticks.
 	while (it != vjoysticks.end())
@@ -85,84 +76,68 @@ void JoystickInfo::EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks)
 	}
 }
 
-void JoystickInfo::InitHapticEffect()
+void JoystickInfo::GenerateDefaultEffect()
 {
+	for(int i=0;i<NB_EFFECT;i++)
+	{
+		SDL_HapticEffect effect;
+		memset( &effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default
+		SDL_HapticDirection direction;
+		direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
+		direction.dir[0] = 18000;
+		effect.periodic.direction = direction;
+		effect.periodic.period = 10;
+		effect.periodic.magnitude = (Sint16)(conf->get_ff_intensity()); // Effect at maximum instensity
+		effect.periodic.offset = 0;
+		effect.periodic.phase = 18000;
+		effect.periodic.length = 125; // 125ms feels quite near to original
+		effect.periodic.delay = 0;
+		effect.periodic.attack_length = 0;
+		effects[i] = effect;
+	}
+}
+
+void JoystickInfo::Rumble(int type, int pad)
+{
+	if (type > 1) return;
+	if ( !(conf->pad_options[pad].forcefeedback) ) return;
+
 #if SDL_MAJOR_VERSION >= 2
 	if (haptic == NULL) return;
 
-#if 0
-	additional field of the effect
-    /* Trigger */
-    Uint16 button;      /**< Button that triggers the effect. */
-    Uint16 interval;    /**< How soon it can be triggered again after button. */
-
-	// periodic parameter
-    Sint16 offset;      /**< Mean value of the wave. */
-    Uint16 phase;       /**< Horizontal shift given by hundredth of a cycle. */
-#endif
-
-	/*******************************************************************/
-	/* Effect big & small    										   */
-	/*******************************************************************/
-	for (int new_effect = 0; new_effect < 2 ; new_effect++) {
-
-		// Direction of the effect SDL_HapticDirection
-		haptic_effect_data[new_effect].periodic.direction.type = SDL_HAPTIC_POLAR; // Polar coordinates
-		haptic_effect_data[new_effect].periodic.direction.dir[0] = 18000; // Force comes from south
-
-		// periodic parameter
-		haptic_effect_data[new_effect].periodic.period = 20; // 20 ms
-		haptic_effect_data[new_effect].periodic.magnitude = 2000; // 2000/32767 strength
-
-		// Replay
-		haptic_effect_data[new_effect].periodic.length = 60; // 60 ms long
-		haptic_effect_data[new_effect].periodic.delay  = 0;	   // start 0 second after the upload
-
-		// enveloppe
-		haptic_effect_data[new_effect].periodic.attack_length = 5;// Takes 5 ms to get max strength
-		haptic_effect_data[new_effect].periodic.attack_level = 0;   // start at 0
-		haptic_effect_data[new_effect].periodic.fade_length = 5;	// Takes 5 ms to fade away
-		haptic_effect_data[new_effect].periodic.fade_level = 0;    	// finish at 0
+	if(first)
+	{// If done multiple times, device memory will be filled
+		first = 0;
+		GenerateDefaultEffect();
+		/** Sine and triangle are quite probably the best, don't change that lightly and if you do
+		 *	keep effects ordered by type
+		 **/
+		/** Effect for small motor **/
+		/** Sine seems to be the only effect making little motor from DS3/4 react
+		 *	Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
+		 **/
+		effects[0].type = SDL_HAPTIC_SINE;
+		effects_id[0] = SDL_HapticNewEffect(haptic, &effects[0]);
+		if(effects_id[0] < 0)
+		{
+			fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),effects_id[0]);
+		}
+		
+		/** Effect for big motor **/
+		effects[1].type = SDL_HAPTIC_TRIANGLE;
+		effects_id[1] = SDL_HapticNewEffect(haptic, &effects[1]);
+		if(effects_id[1] < 0)
+		{
+			fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),effects_id[1]);
+		}
 	}
 
-	/*******************************************************************/
-	/* Effect small													   */
-	/*******************************************************************/
-	haptic_effect_data[0].type = SDL_HAPTIC_LEFTRIGHT;
-
-	/*******************************************************************/
-	/* Effect big													   */
-	/*******************************************************************/
-	haptic_effect_data[1].type = SDL_HAPTIC_TRIANGLE;
-
-	/*******************************************************************/
-	/* Upload effect to the device									   */
-	/*******************************************************************/
-	for (int i = 0 ; i < 2 ; i++)
-		haptic_effect_id[i] = SDL_HapticNewEffect(haptic, &haptic_effect_data[i]);
-#endif
-}
-
-void JoystickInfo::DoHapticEffect(int type, int pad, int force)
-{
-	if (type > 1) return;
-	if ( !(conf->options & (PADOPTION_FORCEFEEDBACK << 16 * pad)) ) return;
-
-#if SDL_MAJOR_VERSION >= 2
-	int joyid = conf->get_joyid(pad);
-	if (!JoystickIdWithinBounds(joyid)) return;
-	JoystickInfo* pjoy = s_vjoysticks[joyid];
-
-	if (pjoy->haptic == NULL) return;
-	if (pjoy->haptic_effect_id[type] < 0) return;
-
-	// FIXME: might need to multiply force
-	pjoy->haptic_effect_data[type].periodic.magnitude = force * conf->ff_intensity ; // force/32767 strength
-	// Upload the new effect
-	SDL_HapticUpdateEffect(pjoy->haptic, pjoy->haptic_effect_id[type], &pjoy->haptic_effect_data[type]);
-
-	// run the effect once
-	SDL_HapticRunEffect( pjoy->haptic, pjoy->haptic_effect_id[type], 1 );
+	int id;
+	id = effects_id[type];
+	if(SDL_HapticRunEffect(haptic, id, 1) != 0)
+	{
+		fprintf(stderr,"ERROR: Effect is not working! %s, id is %d\n",SDL_GetError(),id);
+	}
 #endif
 }
 
@@ -179,7 +154,9 @@ void JoystickInfo::Destroy()
 #endif
 
 #if SDL_MAJOR_VERSION >= 2
+#if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
 		if (joy) SDL_JoystickClose(joy);
+#endif
 #else
 		if (SDL_JoystickOpened(_id)) SDL_JoystickClose(joy);
 #endif
@@ -230,8 +207,7 @@ bool JoystickInfo::Init(int id)
 			PAD_LOG("Haptic devices not supported!\n");
 		} else {
 			haptic = SDL_HapticOpenFromJoystick(joy);
-			// upload some default effect
-			InitHapticEffect();
+			first = true;
 		}
 	}
 #endif
@@ -251,7 +227,14 @@ void JoystickInfo::SaveState()
 }
 
 void JoystickInfo::TestForce()
-{
+{ // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
+	if(haptic == NULL) return; // Otherwise, core dump!
+	SDL_HapticRumbleInit( haptic );
+    // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
+	if( SDL_HapticRumblePlay( haptic, 0.60, 400 ) != 0)
+	{
+		fprintf(stderr,"ERROR: Rumble is not working! %s\n",SDL_GetError());
+	}
 }
 
 bool JoystickInfo::PollButtons(u32 &pkey)
@@ -289,7 +272,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 		if (found_hack != string::npos) {
 			// The analog mode of the hat button is quite erratic. Values can be in half- axis
 			// or full axis... So better keep them as button for the moment -- gregory
-			if (i >= 8 && i <= 11 && (conf->options & PADOPTION_SIXAXIS_USB))
+			if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb))
 				continue;
 			// Disable accelerometer
 			if ((i >= 4 && i <= 6))
@@ -358,6 +341,16 @@ bool JoystickInfo::PollHats(u32 &pkey)
 		}
 	}
 	return false;
+}
+
+int JoystickInfo::GetHat(int key_to_axis)
+{
+	return SDL_JoystickGetHat(GetJoy(),key_to_axis);
+}
+
+int JoystickInfo::GetButton(int key_to_button)
+{
+	return SDL_JoystickGetButton(GetJoy(),key_to_button);
 }
 
 int JoystickInfo::GetAxisFromKey(int pad, int index)
