@@ -536,7 +536,7 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		dev->DrawIndexedPrimitive();
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
-		gl_TextureBarrier();
+		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
@@ -554,7 +554,7 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		GL_PERF("Split single draw in %d draw", m_index.tail/nb_vertex);
 
 		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
-			gl_TextureBarrier();
+			glTextureBarrier();
 			dev->DrawIndexedPrimitive(p, nb_vertex);
 		}
 

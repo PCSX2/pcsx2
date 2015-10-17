@@ -29,17 +29,17 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 {
 	m_single_prog.clear();
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		gl_GenProgramPipelines(1, &m_pipeline);
-		gl_BindProgramPipeline(m_pipeline);
+		glGenProgramPipelines(1, &m_pipeline);
+		glBindProgramPipeline(m_pipeline);
 	}
 }
 
 GSShaderOGL::~GSShaderOGL()
 {
 	if (GLLoader::found_GL_ARB_separate_shader_objects)
-		gl_DeleteProgramPipelines(1, &m_pipeline);
+		glDeleteProgramPipelines(1, &m_pipeline);
 
-	for (auto it = m_single_prog.begin(); it != m_single_prog.end() ; it++) gl_DeleteProgram(it->second);
+	for (auto it = m_single_prog.begin(); it != m_single_prog.end() ; it++) glDeleteProgram(it->second);
 	m_single_prog.clear();
 }
 
@@ -50,7 +50,7 @@ void GSShaderOGL::VS(GLuint s)
 		GLState::vs = s;
 		GLState::dirty_prog = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
-			gl_UseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
+			glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
 	}
 }
 
@@ -66,7 +66,7 @@ void GSShaderOGL::PS(GLuint s)
 		GLState::ps = s;
 		GLState::dirty_prog = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
-			gl_UseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
+			glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
 		}
 	}
 }
@@ -78,7 +78,7 @@ void GSShaderOGL::GS(GLuint s)
 		GLState::gs = s;
 		GLState::dirty_prog = true;
 		if (GLLoader::found_GL_ARB_separate_shader_objects)
-			gl_UseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
+			glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
 	}
 }
 
@@ -87,14 +87,14 @@ bool GSShaderOGL::ValidateShader(GLuint s)
 	if (!m_debug_shader) return true;
 
 	GLint status = 0;
-	gl_GetShaderiv(s, GL_COMPILE_STATUS, &status);
+	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
 	if (status) return true;
 
 	GLint log_length = 0;
-	gl_GetShaderiv(s, GL_INFO_LOG_LENGTH, &log_length);
+	glGetShaderiv(s, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		gl_GetShaderInfoLog(s, log_length, NULL, log);
+		glGetShaderInfoLog(s, log_length, NULL, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -108,14 +108,14 @@ bool GSShaderOGL::ValidateProgram(GLuint p)
 	if (!m_debug_shader) return true;
 
 	GLint status = 0;
-	gl_GetProgramiv(p, GL_LINK_STATUS, &status);
+	glGetProgramiv(p, GL_LINK_STATUS, &status);
 	if (status) return true;
 
 	GLint log_length = 0;
-	gl_GetProgramiv(p, GL_INFO_LOG_LENGTH, &log_length);
+	glGetProgramiv(p, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		gl_GetProgramInfoLog(p, log_length, NULL, log);
+		glGetProgramInfoLog(p, log_length, NULL, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -129,17 +129,17 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 	if (!m_debug_shader) return true;
 
 	// FIXME: might be mandatory to validate the pipeline
-	gl_ValidateProgramPipeline(p);
+	glValidateProgramPipeline(p);
 
 	GLint status = 0;
-	gl_GetProgramPipelineiv(p, GL_VALIDATE_STATUS, &status);
+	glGetProgramPipelineiv(p, GL_VALIDATE_STATUS, &status);
 	if (status) return true;
 
 	GLint log_length = 0;
-	gl_GetProgramPipelineiv(p, GL_INFO_LOG_LENGTH, &log_length);
+	glGetProgramPipelineiv(p, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		gl_GetProgramPipelineInfoLog(p, log_length, NULL, log);
+		glGetProgramPipelineInfoLog(p, log_length, NULL, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -150,12 +150,12 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 
 GLuint GSShaderOGL::LinkNewProgram()
 {
-	GLuint p = gl_CreateProgram();
-	if (GLState::vs) gl_AttachShader(p, GLState::vs);
-	if (GLState::ps) gl_AttachShader(p, GLState::ps);
-	if (GLState::gs) gl_AttachShader(p, GLState::gs);
+	GLuint p = glCreateProgram();
+	if (GLState::vs) glAttachShader(p, GLState::vs);
+	if (GLState::ps) glAttachShader(p, GLState::ps);
+	if (GLState::gs) glAttachShader(p, GLState::gs);
 
-	gl_LinkProgram(p);
+	glLinkProgram(p);
 
 	ValidateProgram(p);
 
@@ -180,12 +180,12 @@ void GSShaderOGL::UseProgram()
 
 				ValidateProgram(GLState::program);
 
-				gl_UseProgram(GLState::program);
+				glUseProgram(GLState::program);
 			} else {
 				GLuint prog = it->second;
 				if (prog != GLState::program) {
 					GLState::program = prog;
-					gl_UseProgram(GLState::program);
+					glUseProgram(GLState::program);
 				}
 			}
 		}
@@ -267,11 +267,11 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 #endif
 
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		program = gl_CreateShaderProgramv(type, shader_nb, sources);
+		program = glCreateShaderProgramv(type, shader_nb, sources);
 	} else {
-		program = gl_CreateShader(type);
-		gl_ShaderSource(program, shader_nb, sources, NULL);
-		gl_CompileShader(program);
+		program = glCreateShader(type);
+		glShaderSource(program, shader_nb, sources, NULL);
+		glCompileShader(program);
 	}
 
 	bool status;
@@ -299,11 +299,11 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 	if (!GLLoader::nvidia_buggy_driver) return 0;
 
 	GLint   binaryLength;
-	gl_GetProgramiv(p, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+	glGetProgramiv(p, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
 
 	char* binary = new char[binaryLength+4];
 	GLenum binaryFormat;
-	gl_GetProgramBinary(p, binaryLength, NULL, &binaryFormat, binary);
+	glGetProgramBinary(p, binaryLength, NULL, &binaryFormat, binary);
 
 	FILE* outfile = fopen(file.c_str(), "w");
 	ASSERT(outfile);
@@ -351,8 +351,8 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 void GSShaderOGL::Delete(GLuint s)
 {
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		gl_DeleteProgram(s);
+		glDeleteProgram(s);
 	} else {
-		gl_DeleteShader(s);
+		glDeleteShader(s);
 	}
 }

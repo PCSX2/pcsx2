@@ -126,13 +126,13 @@ GSDeviceOGL::~GSDeviceOGL()
 
 
 	// Clean various opengl allocation
-	gl_DeleteFramebuffers(1, &m_fbo);
-	gl_DeleteFramebuffers(1, &m_fbo_read);
+	glDeleteFramebuffers(1, &m_fbo);
+	glDeleteFramebuffers(1, &m_fbo_read);
 
 	// Delete HW FX
 	delete m_vs_cb;
 	delete m_ps_cb;
-	gl_DeleteSamplers(1, &m_palette_ss);
+	glDeleteSamplers(1, &m_palette_ss);
 	m_shader->Delete(m_apitrace);
 
 	for (uint32 key = 0; key < countof(m_vs); key++) m_shader->Delete(m_vs[key]);
@@ -141,7 +141,7 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	m_ps.clear();
 
-	gl_DeleteSamplers(countof(m_ps_ss), m_ps_ss);
+	glDeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
 	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
 
@@ -199,8 +199,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfig("debug_opengl", 0) && gl_DebugMessageCallback) {
-		gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+	if (theApp.GetConfig("debug_opengl", 0) && glDebugMessageCallback) {
+		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 	}
 #endif
@@ -210,18 +210,18 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
-	gl_GenFramebuffers(1, &m_fbo);
+	glGenFramebuffers(1, &m_fbo);
 	// Always write to the first buffer
 	OMSetFBO(m_fbo);
 	GLenum target[1] = {GL_COLOR_ATTACHMENT0};
-	gl_DrawBuffers(1, target);
+	glDrawBuffers(1, target);
 	OMSetFBO(0);
 
-	gl_GenFramebuffers(1, &m_fbo_read);
+	glGenFramebuffers(1, &m_fbo_read);
 	// Always read from the first buffer
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 	// ****************************************************************
 	// Vertex buffer state
@@ -335,7 +335,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// gl_position.z could range from [0, 1]
 	if (GLLoader::found_GL_ARB_clip_control) {
 		// Change depth convention
-		gl_ClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	}
 
 	// ****************************************************************
@@ -456,12 +456,12 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
 		// 0 will select the first drawbuffer ie GL_BACK
-		gl_ClearBufferfv(GL_COLOR, 0, c.v);
+		glClearBufferfv(GL_COLOR, 0, c.v);
 	} else {
 		OMSetFBO(m_fbo);
 		OMAttachRt(T);
 
-		gl_ClearBufferfv(GL_COLOR, 0, c.v);
+		glClearBufferfv(GL_COLOR, 0, c.v);
 
 	}
 
@@ -505,7 +505,7 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 		glDisable(GL_BLEND);
 	}
 
-	gl_ClearBufferiv(GL_COLOR, 0, col);
+	glClearBufferiv(GL_COLOR, 0, col);
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
 
@@ -530,10 +530,10 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 	if (GLState::depth_mask) {
-		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &c);
 	} else {
 		glDepthMask(true);
-		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &c);
 		glDepthMask(false);
 	}
 	glEnable(GL_SCISSOR_TEST);
@@ -555,7 +555,7 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	OMAttachDs(T);
 	GLint color = c;
 
-	gl_ClearBufferiv(GL_STENCIL, 0, &color);
+	glClearBufferiv(GL_STENCIL, 0, &color);
 
 	GL_POP();
 }
@@ -570,32 +570,32 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	GL_PUSH("Create Sampler");
 
 	GLuint sampler;
-	gl_GenSamplers(1, &sampler);
+	glGenSamplers(1, &sampler);
 	if (bilinear) {
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	} else {
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
 	if (tau)
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	else
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	if (tav)
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	else
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	gl_SamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
-	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
+	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
+	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
 	int anisotropy = theApp.GetConfig("MaxAnisotropy", 0);
 	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && !theApp.GetConfig("paltex", 0))
-		gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
+		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
 	GL_POP();
 	return sampler;
@@ -612,7 +612,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	// Clean with the max signed value
 	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
-	gl_BindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+	glBindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 }
 
 void GSDeviceOGL::RecycleDateTexture()
@@ -627,7 +627,7 @@ void GSDeviceOGL::RecycleDateTexture()
 
 void GSDeviceOGL::Barrier(GLbitfield b)
 {
-	gl_MemoryBarrier(b);
+	glMemoryBarrier(b);
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -897,15 +897,15 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 
 	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
 
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
-	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
 	if (at_origin)
-		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
 	else
-		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
+		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 	GL_POP();
 }
@@ -921,7 +921,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
 	if (GLLoader::found_GL_ARB_copy_image) {
-		gl_CopyImageSubData( sid, GL_TEXTURE_2D,
+		glCopyImageSubData( sid, GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
 				did, GL_TEXTURE_2D,
 				0, 0, 0, 0,
@@ -1271,7 +1271,7 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 		GLuint id = sr->GetID();
 		if (GLState::tex_unit[i] != id) {
 			GLState::tex_unit[i] = id;
-			gl_BindTextureUnit(i, id);
+			glBindTextureUnit(i, id);
 		}
 	}
 }
@@ -1286,7 +1286,7 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 {
 	if (GLState::ps_ss != ss) {
 		GLState::ps_ss = ss;
-		gl_BindSampler(0, ss);
+		glBindSampler(0, ss);
 	}
 }
 
@@ -1302,7 +1302,7 @@ void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 
 	if (GLState::rt != id) {
 		GLState::rt = id;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
 	}
 }
 
@@ -1318,7 +1318,7 @@ void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 
 	if (GLState::ds != id) {
 		GLState::ds = id;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
 	}
 }
 
@@ -1326,7 +1326,7 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo)
 {
 	if (GLState::fbo != fbo) {
 		GLState::fbo = fbo;
-		gl_BindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
 }
 
@@ -1341,7 +1341,7 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	if (sel.wrgba != GLState::wrgba) {
 		GLState::wrgba = sel.wrgba;
 
-		gl_ColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
+		glColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
 	}
 }
 
@@ -1356,26 +1356,26 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 		if (is_blend_constant && GLState::bf != blend_factor) {
 			GLState::bf = blend_factor;
 			float bf = (float)blend_factor / 128.0f;
-			gl_BlendColor(bf, bf, bf, bf);
+			glBlendColor(bf, bf, bf, bf);
 		}
 
 		const OGLBlend& b = m_blendMapOGL[blend_index];
 
 		if (GLState::eq_RGB != b.op) {
 			GLState::eq_RGB = b.op;
-			if (gl_BlendEquationSeparateiARB)
-				gl_BlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
+			if (glBlendEquationSeparateiARB)
+				glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
 			else
-				gl_BlendEquationSeparate(b.op, GL_FUNC_ADD);
+				glBlendEquationSeparate(b.op, GL_FUNC_ADD);
 		}
 
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
-			if (gl_BlendFuncSeparateiARB)
-				gl_BlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
+			if (glBlendFuncSeparateiARB)
+				glBlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
 			else
-				gl_BlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
+				glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {
@@ -1442,7 +1442,7 @@ void GSDeviceOGL::CheckDebugLog()
 	int lengths[16] = {};
 	char* messageLog = new char[bufsize];
 
-	unsigned int retVal = gl_GetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
+	unsigned int retVal = glGetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
 
 	if(retVal > 0)
 	{

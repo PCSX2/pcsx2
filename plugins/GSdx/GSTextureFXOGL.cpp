@@ -36,7 +36,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(false, false, false);
-	gl_BindSampler(1, m_palette_ss);
+	glBindSampler(1, m_palette_ss);
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
