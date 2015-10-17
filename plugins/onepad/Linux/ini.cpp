@@ -20,7 +20,6 @@
  */
 
 #include <string.h>
-#include <gtk/gtk.h>
 
 #include "GamePad.h"
 #include "keyboard.h"

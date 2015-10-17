@@ -38,7 +38,7 @@ class GamePad
 		 **/
 		static void UpdateGamePadState();
 
-		/** 
+		/**
 		 * Causes devices to rumble
 		 * Rumble will differ according to type which is either 0(small motor) or 1(big motor)
 		 **/
@@ -53,7 +53,7 @@ class GamePad
 		/**
 		 * Used for GUI checkbox to give feedback to the user
 		 **/
-		virtual void TestForce(){return;}
+		virtual bool TestForce(float strength = 0.6){return false;}
 
 		virtual bool PollButtons(u32 &pkey){return false;}
 		virtual bool PollAxes(u32 &pkey){return false;}

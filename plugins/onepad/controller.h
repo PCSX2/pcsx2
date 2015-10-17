@@ -101,7 +101,7 @@ class PADconf
 		int shift = 8 * pad;
 		return ((joyid_map >> shift) & 0xFF);
 	}
-	
+
 	/**
 	 * Return (a copy of) private memner ff_instensity
 	 **/
@@ -116,7 +116,7 @@ class PADconf
 	 **/
 	void set_ff_intensity(u32 new_intensity)
 	{
-		if(new_intensity < 0x7FFF && new_intensity >= 0)
+		if(new_intensity <= 0x7FFF && new_intensity >= 0)
 		{
 			ff_intensity = new_intensity;
 		}

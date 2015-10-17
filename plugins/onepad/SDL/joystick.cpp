@@ -130,7 +130,7 @@ void JoystickInfo::Rumble(int type, int pad)
 		{
 			fprintf(stderr,"ERROR: Effect is not uploaded! %s, id is %d\n",SDL_GetError(),effects_id[0]);
 		}
-		
+
 		/** Effect for big motor **/
 		effects[1].type = SDL_HAPTIC_TRIANGLE;
 		effects_id[1] = SDL_HapticNewEffect(haptic, &effects[1]);
@@ -236,18 +236,23 @@ void JoystickInfo::SaveState()
 		SetHatState(i, SDL_JoystickGetHat(joy, i));
 }
 
-void JoystickInfo::TestForce()
+bool JoystickInfo::TestForce(float strength=0.60)
 {
 #if SDL_MAJOR_VERSION >= 2
 	// This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-	if(haptic == NULL) return; // Otherwise, core dump!
+	if(haptic == NULL)
+		return false; // Otherwise, core dump!
 	SDL_HapticRumbleInit( haptic );
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
-	if( SDL_HapticRumblePlay( haptic, 0.60, 400 ) != 0)
+	if( SDL_HapticRumblePlay( haptic, strength, 400 ) != 0)
 	{
 		fprintf(stderr,"ERROR: Rumble is not working! %s\n",SDL_GetError());
+		return false;
 	}
+
 #endif
+
+	return true;
 }
 
 bool JoystickInfo::PollButtons(u32 &pkey)

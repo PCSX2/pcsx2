@@ -47,7 +47,7 @@ bool toggleAutoRepeat = false;
 
 const u32 version  = PS2E_PAD_VERSION;
 const u32 revision = 1;
-const u32 build    = 1;    // increase that with each version
+const u32 build    = 2;    // increase that with each version
 
 int PadEnum[2][2] = {{0, 2}, {1, 3}};
 

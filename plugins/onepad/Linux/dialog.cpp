@@ -1,8 +1,5 @@
-/*  OnePAD - author: arcum42(@gmail.com)
- *  Copyright (C) 2009
- *
- *  Based on ZeroPAD, author zerofrog@gmail.com
- *  Copyright (C) 2006-2007
+/*  OnePAD
+ *  Copyright (C) 2015
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,287 +16,475 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "GamePad.h"
-#include "keyboard.h"
-#include "onepad.h"
-#include <gtk/gtk.h>
+#include "dialog.h"
 
-void config_key(int pad, int key);
-void on_conf_key(GtkButton *button, gpointer user_data);
-void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data);
-
-static int current_pad = 0;
-static GtkComboBoxText *joy_choose_cbox;
-
-const char* s_pGuiKeyMap[] =
+// Construtor of Dialog
+Dialog::Dialog() : wxFrame( NULL, // Parent
+                            wxID_ANY, // ID
+                            _T("OnePad configuration"), // Title
+                            wxDefaultPosition, // Position
+                            wxSize(1000, 760), // Width + Lenght
+                            // Style
+                            wxSYSTEM_MENU |
+                            wxCAPTION |
+                            wxCLOSE_BOX |
+                            wxCLIP_CHILDREN
+                        )
 {
-	"L2", "R2", "L1", "R1",
-	"Triangle", "Circle", "Cross", "Square",
-	"Select", "L3", "R3", "Start",
-	"Up", "Right", "Down", "Left",
-	"L_Up", "L_Right", "L_Down", "L_Left",
-	"R_Up", "R_Right", "R_Down", "R_Left"
-};
 
-enum
-{
-	COL_PAD = 0,
-	COL_BUTTON,
-	COL_KEY,
-	COL_PAD_NUM,
-	COL_VALUE,
-	COL_KEYSYM,
-	NUM_COLS
-};
-	
-class keys_tree
-{	
-	private:
-		GtkTreeStore *treestore;
-		GtkTreeModel *model;
-		GtkTreeView *view[2];
-		bool has_columns;
-		int show_pad;
-		bool show_keyboard_key[2];
-		bool show_joy_key[2];
+    /*
+     * Define the size and the position of each button :
+     * padding[ButtonID][0] : Width
+     * padding[ButtonID][1] : Height
+     * padding[ButtonID][2] : x position
+     * padding[ButtonID][3] : y position
+    */
+    int padding[BUTTONS_LENGHT][4];
 
-		void repopulate()
-		{
-			GtkTreeIter toplevel;
+    // L1
+    padding[PAD_L1][0] = 218; // Width
+    padding[PAD_L1][1] = 28; // Height
+    padding[PAD_L1][2] = 50; // X
+    padding[PAD_L1][3] = 174; // Y
 
-			gtk_tree_store_clear(treestore);
+    // L2
+    padding[PAD_L2][0] = 218; // Width
+    padding[PAD_L2][1] = 28; // Height
+    padding[PAD_L2][2] = 50; // X
+    padding[PAD_L2][3] = 103; // Y
 
-			string pad_value;
-			switch(show_pad) {
-				case 0: pad_value = "Pad 1"; break;
-				case 1: pad_value = "Pad 2"; break;
-				default: pad_value = "Invalid"; break;
-			}
+    // R1
+    padding[PAD_R1][0] = 218; // Width
+    padding[PAD_R1][1] = 28; // Height
+    padding[PAD_R1][2] = 726; // X
+    padding[PAD_R1][3] = 174; // Y
 
-			// joystick key
-			if (show_joy_key[show_pad]) {
-				for (int key = 0; key < MAX_KEYS; key++)
-				{
-					if (get_key(show_pad, key) != 0)
-					{
-						gtk_tree_store_append(treestore, &toplevel, NULL);
-						gtk_tree_store_set(treestore, &toplevel,
-								COL_PAD, pad_value.c_str(),
-								COL_BUTTON, s_pGuiKeyMap[key],
-								COL_KEY, KeyName(show_pad, key).c_str(),
-								COL_PAD_NUM, show_pad,
-								COL_VALUE, key,
-								COL_KEYSYM, 0,
-								-1);
-					}
-				}
-			}
+    // R2
+    padding[PAD_R2][0] = 218; // Width
+    padding[PAD_R2][1] = 28; // Height
+    padding[PAD_R2][2] = 726; // X
+    padding[PAD_R2][3] = 103; // Y
 
-			// keyboard/mouse key
-			if (show_keyboard_key[show_pad]) {
-				map<u32,u32>::iterator it;
-				for (it = conf->keysym_map[show_pad].begin(); it != conf->keysym_map[show_pad].end(); ++it) {
-					int keysym = it->first;
-					int key = it->second;
-					gtk_tree_store_append(treestore, &toplevel, NULL);
-					gtk_tree_store_set(treestore, &toplevel,
-							COL_PAD, pad_value.c_str(),
-							COL_BUTTON, s_pGuiKeyMap[key],
-							COL_KEY, KeyName(show_pad, key, keysym).c_str(),
-							COL_PAD_NUM, show_pad,
-							COL_VALUE, key,
-							COL_KEYSYM, keysym,
-							-1);
-				}
-			}
-		}
+    // Triangle
+    padding[PAD_TRIANGLE][0] = 218; // Width
+    padding[PAD_TRIANGLE][1] = 28; // Height
+    padding[PAD_TRIANGLE][2] = 726; // X
+    padding[PAD_TRIANGLE][3] = 244; // Y
 
-		void create_a_column(const char *name, int num, bool visible)
-		{
-			for (int i = 0; i < 2; i++) {
-				GtkCellRenderer     *renderer;
-				GtkTreeViewColumn   *col;
+    // Circle
+    padding[PAD_CIRCLE][0] = 218; // Width
+    padding[PAD_CIRCLE][1] = 28; // Height
+    padding[PAD_CIRCLE][2] = 726; // X
+    padding[PAD_CIRCLE][3] = 317; // Y
 
-				col = gtk_tree_view_column_new();
-				gtk_tree_view_column_set_title(col, name);
+    // Cross
+    padding[PAD_CROSS][0] = 218; // Width
+    padding[PAD_CROSS][1] = 28; // Height
+    padding[PAD_CROSS][2] = 726; // X
+    padding[PAD_CROSS][3] = 389; // Y
 
-				/* pack tree view column into tree view */
-				gtk_tree_view_append_column(view[i], col);
+    // Square
+    padding[PAD_SQUARE][0] = 218; // Width
+    padding[PAD_SQUARE][1] = 28; // Height
+    padding[PAD_SQUARE][2] = 726; // X
+    padding[PAD_SQUARE][3] = 461; // Y
 
-				renderer = gtk_cell_renderer_text_new();
+    // Directional pad up
+    padding[PAD_UP][0] = 100; // Width
+    padding[PAD_UP][1] = 25; // Height
+    padding[PAD_UP][2] = 108; // X
+    padding[PAD_UP][3] = 288; // Y
 
-				/* pack cell renderer into tree view column */
-				gtk_tree_view_column_pack_start(col, renderer, TRUE);
+    // Directional pad down
+    padding[PAD_DOWN][0] = 100; // Width
+    padding[PAD_DOWN][1] = 25; // Height
+    padding[PAD_DOWN][2] = 108; // X
+    padding[PAD_DOWN][3] = 338; // Y
 
-				/* connect 'text' property of the cell renderer to
-				 *  model column that contains the first name */
-				gtk_tree_view_column_add_attribute(col, renderer, "text", num);
-				gtk_tree_view_column_set_visible(col, visible);
-			}
-		}
+    // Directional pad right
+    padding[PAD_RIGHT][0] = 109; // Width
+    padding[PAD_RIGHT][1] = 25; // Height
+    padding[PAD_RIGHT][2] = 159; // X
+    padding[PAD_RIGHT][3] = 313; // Y
 
-		void create_columns()
-		{
-			if (!has_columns)
-			{
-				create_a_column("Pad #", COL_PAD, true);
-				create_a_column("Pad Button", COL_BUTTON, true);
-				create_a_column("Key Value", COL_KEY, true);
-				create_a_column("Pad Num", COL_PAD_NUM, false);
-				create_a_column("Internal", COL_VALUE, false);
-				create_a_column("Keysym", COL_KEYSYM, false);
-				has_columns = true;
-			}
-		}
-	public:
-		GtkWidget *view_widget(int i)
-		{
-			return GTK_WIDGET(view[i]);
-		}
+    // Directional pad left
+    padding[PAD_LEFT][0] = 109; // Width
+    padding[PAD_LEFT][1] = 25; // Height
+    padding[PAD_LEFT][2] = 50; // X
+    padding[PAD_LEFT][3] = 313; // Y
 
-		void init()
-		{
-			show_pad = 0;
-			has_columns = false;
-			for (int i = 0; i < 2; i++)
-				show_keyboard_key[i] = show_joy_key[i] = true;
+    // Left Joystick up
+    padding[PAD_L_UP][0] = 100; // Width
+    padding[PAD_L_UP][1] = 25; // Height
+    padding[PAD_L_UP][2] = 330; // X
+    padding[PAD_L_UP][3] = 525; // Y
 
-			treestore = gtk_tree_store_new(NUM_COLS,
-					G_TYPE_STRING,
-					G_TYPE_STRING,
-					G_TYPE_STRING,
-					G_TYPE_UINT,
-					G_TYPE_UINT,
-					G_TYPE_UINT);
+    // Left Joystick down
+    padding[PAD_L_DOWN][0] = 100; // Width
+    padding[PAD_L_DOWN][1] = 25; // Height
+    padding[PAD_L_DOWN][2] = 330; // X
+    padding[PAD_L_DOWN][3] = 575; // Y
 
-			model = GTK_TREE_MODEL(treestore);
+    // Left Joystick right
+    padding[PAD_L_RIGHT][0] = 109; // Width
+    padding[PAD_L_RIGHT][1] = 25; // Height
+    padding[PAD_L_RIGHT][2] = 382; // X
+    padding[PAD_L_RIGHT][3] = 550; // Y
 
-			for (int i = 0; i < 2; i++) {
-				view[i] = GTK_TREE_VIEW(gtk_tree_view_new());
-				gtk_tree_view_set_model(view[i], model);
-				gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view[i]), GTK_SELECTION_SINGLE);
-			}
-			g_object_unref(model); /* destroy model automatically with view */
-		}
+    // Left Joystick left
+    padding[PAD_L_LEFT][0] = 109; // Width
+    padding[PAD_L_LEFT][1] = 25; // Height
+    padding[PAD_L_LEFT][2] = 273; // X
+    padding[PAD_L_LEFT][3] = 550; // Y
 
-		void set_show_pad(int pad) { show_pad = pad; }
+    // L3
+    padding[PAD_L3][0] = 218; // Width
+    padding[PAD_L3][1] = 28; // Height
+    padding[PAD_L3][2] = 273; // X
+    padding[PAD_L3][3] = 642; // Y
 
-		void set_show_joy(bool flag) { show_joy_key[show_pad] = flag; }
+    // Right Joystick up
+    padding[PAD_R_UP][0] = 100; // Width
+    padding[PAD_R_UP][1] = 25; // Height
+    padding[PAD_R_UP][2] = 560; // X
+    padding[PAD_R_UP][3] = 525; // Y
 
-		void set_show_key(bool flag) { show_keyboard_key[show_pad] = flag; }
+    // Right Joystick down
+    padding[PAD_R_DOWN][0] = 100; // Width
+    padding[PAD_R_DOWN][1] = 25; // Height
+    padding[PAD_R_DOWN][2] = 560; // X
+    padding[PAD_R_DOWN][3] = 575; // Y
 
-		void update()
-		{
-			create_columns();
-			repopulate();
-		}
+    // Right Joystick right
+    padding[PAD_R_RIGHT][0] = 109; // Width
+    padding[PAD_R_RIGHT][1] = 25; // Height
+    padding[PAD_R_RIGHT][2] = 612; // X
+    padding[PAD_R_RIGHT][3] = 550; // Y
 
-		void clear_all()
-		{
-			clearPAD(show_pad);
-			update();
-		}
+    // Right Joystick left
+    padding[PAD_R_LEFT][0] = 109; // Width
+    padding[PAD_R_LEFT][1] = 25; // Height
+    padding[PAD_R_LEFT][2] = 503; // X
+    padding[PAD_R_LEFT][3] = 550; // Y
 
-		bool get_selected(int &pad, int &key, int &keysym)
-		{
-			GtkTreeSelection *selection;
-			GtkTreeIter iter;
+    // R3
+    padding[PAD_R3][0] = 218; // Width
+    padding[PAD_R3][1] = 28; // Height
+    padding[PAD_R3][2] = 503; // X
+    padding[PAD_R3][3] = 642; // Y
 
-			selection = gtk_tree_view_get_selection(view[show_pad&1]);
-			if (gtk_tree_selection_get_selected(selection, &model, &iter))
-			{
-				gtk_tree_model_get(model, &iter, COL_PAD_NUM, &pad, COL_VALUE, &key, COL_KEYSYM, &keysym,-1);
-				return true;
-			}
-			return false;
-		}
+    // Start
+    padding[PAD_START][0] = 218; // Width
+    padding[PAD_START][1] = 28; // Height
+    padding[PAD_START][2] = 503; // X
+    padding[PAD_START][3] = 32; // Y
 
-		void remove_selected()
-		{
-			int key, pad, keysym;
-			if (get_selected(pad, key, keysym))
-			{
-				if (keysym)
-					conf->keysym_map[pad].erase(keysym);
-				else
-					set_key(pad, key, 0);
-				update();
-			}
-		}
+    // Select
+    padding[PAD_SELECT][0] = 218; // Width
+    padding[PAD_SELECT][1] = 28; // Height
+    padding[PAD_SELECT][2] = 273; // X
+    padding[PAD_SELECT][3] = 32; // Y
 
-		void modify_selected()
-		{
-			int key, pad, keysym;
-			if (get_selected(pad, key, keysym))
-			{
-				remove_selected();
-				config_key(pad,key);
-				update();
-			}
-		}
-};
-keys_tree *key_tree_manager;
+    // Analog
+    padding[Analog][0] = 218; // Width
+    padding[Analog][1] = 28; // Height
+    padding[Analog][2] = 50; // X
+    padding[Analog][3] = 450; // Y
 
-void populate_new_joysticks(GtkComboBoxText *box)
-{
-	char str[255];
-	GamePad::EnumerateGamePads(s_vgamePad);
+    // Left Joystick Configuration
+    padding[JoyL_config][0] = 180; // Width
+    padding[JoyL_config][1] = 28; // Height
+    padding[JoyL_config][2] = 50; // X
+    padding[JoyL_config][3] = 550; // Y
 
-	gtk_combo_box_text_append_text(box, "Keyboard/mouse only");
-	
-	vector<GamePad*>::iterator it = s_vgamePad.begin();
+    // Right Joystick Configuration
+    padding[JoyR_config][0] = 180; // Width
+    padding[JoyR_config][1] = 28; // Height
+    padding[JoyR_config][2] = 764; // X
+    padding[JoyR_config][3] = 550; // Y
 
-	// Get everything in the vector vjoysticks.
-	while (it != s_vgamePad.end())
-	{
-		sprintf(str, "Keyboard/mouse and %s - but: %d, axes: %d, hats: %d", (*it)->GetName().c_str(),
-		        (*it)->GetNumButtons(), (*it)->GetNumAxes(), (*it)->GetNumHats());
-		gtk_combo_box_text_append_text(box, str);
-		it++;
-	}
+    // Gamepad Configuration
+    padding[Gamepad_config][0] = 180; // Width
+    padding[Gamepad_config][1] = 28; // Height
+    padding[Gamepad_config][2] = 50; // X
+    padding[Gamepad_config][3] = 585; // Y
+
+    // Apply modifications without exit
+    padding[Apply][0] = 70; // Width
+    padding[Apply][1] = 28; // Height
+    padding[Apply][2] = 833; // X
+    padding[Apply][3] = 642; // Y
+
+    // Ok button
+    padding[Ok][0] = 70; // Width
+    padding[Ok][1] = 28; // Height
+    padding[Ok][2] = 913; // X
+    padding[Ok][3] = 642; // Y
+
+    // Cancel button
+    padding[Cancel][0] = 70; // Width
+    padding[Cancel][1] = 28; // Height
+    padding[Cancel][2] = 753; // X
+    padding[Cancel][3] = 642; // Y
+
+    // create a new Notebook
+    this->tab_gamepad = new wxNotebook(this, wxID_ANY);
+    for(int i=0; i<GAMEPAD_NUMBER; ++i)
+    {
+        // Tabs panels
+        this->pan_tabs[i] = new opPanel(
+        this->tab_gamepad,
+        wxID_ANY,
+        wxDefaultPosition,
+        wxSize(1000, 760)
+        );
+        // Add new page
+        // Define label
+        std::stringstream sstm;
+        std::string label = "Gamepad ";
+        sstm << label << i;
+        // New page creation
+        this->tab_gamepad->AddPage(
+            this->pan_tabs[i], // Parent
+            sstm.str(), // Title
+            0, // select (if 1 the tab is selected, 0 otherwise)
+            wxEXPAND // Specifies the optional image index for the new page.
+        );
+
+        for(int j=0; j<BUTTONS_LENGHT; ++j)
+        {
+          // Gamepad buttons
+          this->bt_gamepad[i][j] = new wxButton(
+            this->pan_tabs[i], // Parent
+            wxID_HIGHEST+j+1, // ID
+            _T("Undefined"), // Label
+            wxPoint(padding[j][2], padding[j][3]), // Position
+            wxSize(padding[j][0], padding[j][1]) // Size
+          );
+        }
+        // Redefine others gui buttons label
+        this->bt_gamepad[i][JoyL_config]->SetLabel(_T("&Left Joystick Config"));
+        this->bt_gamepad[i][JoyR_config]->SetLabel(_T("&Right Joystick Config"));
+        this->bt_gamepad[i][Gamepad_config]->SetLabel(_T("&Gamepad Configuration"));
+        this->bt_gamepad[i][Cancel]->SetLabel(_T("&Cancel"));
+        this->bt_gamepad[i][Apply]->SetLabel(_T("&Apply"));
+        this->bt_gamepad[i][Ok]->SetLabel(_T("&Ok"));
+
+        // Disable analog button (not yet supported)
+        this->bt_gamepad[i][Analog]->Disable();
+    }
+
+    // Connect the buttons to the OnButtonClicked Event
+    this->Connect(
+        wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Dialog::OnButtonClicked)
+    );
+
+    time_update_gui.SetOwner(this);
+    this->Connect(
+        wxEVT_TIMER,
+        wxCommandEventHandler(Dialog::JoystickEvent)
+    );
+    time_update_gui.Start(UPDATE_TIME, wxTIMER_CONTINUOUS);
+
+    for(int i=0; i<GAMEPAD_NUMBER; ++i)
+    {
+        for(int j=0; j<NB_IMG; ++j)
+        {
+            this->pressed[i][j] = false;
+        }
+    }
 }
 
-void set_current_joy()
+void Dialog::InitDialog()
 {
-	u32 joyid = conf->get_joyid(current_pad);
-	if (GamePadIdWithinBounds(joyid))
-		// 0 is special case for no gamepad. So you must increase of 1.
-		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), joyid+1);
-	else
-		gtk_combo_box_set_active(GTK_COMBO_BOX(joy_choose_cbox), 0);
+	GamePad::EnumerateGamePads(s_vgamePad); // activate gamepads
+    LoadConfig(); // Load configuration from the ini file
+    this->repopulate(); // Set label and fit simulated key array
 }
 
-typedef struct
+/****************************************/
+/*********** Events functions ***********/
+/****************************************/
+
+void Dialog::OnButtonClicked(wxCommandEvent &event)
 {
-	GtkWidget *widget;
-	int index;
-	void put(const char* lbl, int i, GtkFixed *fix, int x, int y)
-	{
-		widget = gtk_button_new_with_label(lbl);
-		index = i;
+    // Affichage d'un message à chaque clic sur le bouton
+    wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
+    int bt_id = bt_tmp->GetId()-wxID_HIGHEST-1; // get the real ID
+    int gamepad_id = this->tab_gamepad->GetSelection(); // get the tab ID (equivalent to the gamepad id)
+    if(bt_id >= 0 && bt_id <= PAD_R_LEFT) // if the button ID is a gamepad button
+    {
+        bt_tmp->Disable(); // switch the button state to "Disable"
+        this->config_key(gamepad_id, bt_id);
+        bt_tmp->Enable(); // switch the button state to "Enable"
+    }
+    else if(bt_id == Gamepad_config) // If the button ID is equals to the Gamepad_config button ID
+    {
+        this->frm_gamepad_config = new GamepadConfiguration(gamepad_id, this);
+        this->frm_gamepad_config->InitGamepadConfiguration();
+        this->frm_gamepad_config->Show(true);
+    }
+    else if(bt_id == JoyL_config) // If the button ID is equals to the JoyL_config button ID
+    {
+        this->frm_joystick_config = new JoystickConfiguration(gamepad_id, true, this);
+        this->frm_joystick_config->InitJoystickConfiguration();
+        this->frm_joystick_config->Show(true);
+    }
+    else if(bt_id == JoyR_config) // If the button ID is equals to the JoyR_config button ID
+    {
+        this->frm_joystick_config = new JoystickConfiguration(gamepad_id, false, this);
+        this->frm_joystick_config->InitJoystickConfiguration();
+        this->frm_joystick_config->Show(true);
+    }
+    else if(bt_id == Ok) // If the button ID is equals to the Ok button ID
+    {
+        SaveConfig(); // Save the configuration
+        Close(); // Close the window
+    }
+    else if(bt_id == Apply) // If the button ID is equals to the Apply button ID
+    {
+        SaveConfig(); // Save the configuration
+    }
+    else if(bt_id == Cancel) // If the button ID is equals to the cancel button ID
+    {
+        Close(); // Close the window
+    }
+}
 
-		gtk_fixed_put(fix, widget, x, y);
-		gtk_widget_set_size_request(widget, 64, 24);
-		g_signal_connect(widget, "clicked", G_CALLBACK(on_conf_key), this);
-	}
-} dialog_buttons;
-
-typedef struct
+void Dialog::JoystickEvent(wxCommandEvent& event)
 {
-	GtkWidget *widget;
-	unsigned int mask;
-	void create(GtkWidget* area, const char* label, u32 x, u32 y, u32 mask_value)
-	{
-		widget = gtk_check_button_new_with_label(label);
-		mask = mask_value;
+#ifdef SDL_BUILD
+    u32 key;
+    int map;
+    std::map<u32,int>::iterator it;
+    std::map<u32,int>::iterator it2;
+    SDL_JoystickEventState(SDL_ENABLE);
+    SDL_Event events;
+    while(SDL_PollEvent(&events))
+    {
+        switch(events.type)
+        {
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+                fprintf(stderr, "%d\n", events.key.keysym);
+                break;
+            case SDL_JOYAXISMOTION:
+                key = axis_to_key(false, (events.jaxis.value<0), events.jaxis.axis);
+                it=this->map_images[events.jaxis.which].find(key);
+                if(it != this->map_images[events.jaxis.which].end())
+                {
+                    map = this->map_images[events.jaxis.which][key];
+                    if(events.jaxis.value == 0)
+                    {
+                        if(map >= PAD_L_UP && map <= PAD_L_LEFT)
+                            this->pan_tabs[events.jaxis.which]->HideImg(img_left_cursor);
+                        else if(map >= PAD_R_UP && map <= PAD_R_LEFT)
+                            this->pan_tabs[events.jaxis.which]->HideImg(img_right_cursor);
+                    }
+                    else
+                    {
+                        if(map >= PAD_L_UP && map <= PAD_L_LEFT)
+                        {
+                            this->pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_left_cursor);
+                        }
+                        else if(map >= PAD_R_UP && map <= PAD_R_LEFT)
+                        {
+                            this->pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_right_cursor);
+                        }
+                        else if(map < PAD_L_UP) // if this is not a joystick
+                        {
+                            this->pan_tabs[events.jaxis.which]->ShowImg(map);
+                        }
+                    }
+                    break;
+                }
+                // Hack Dualshock 4 (L2, R2)
+                key = axis_to_key(false, (events.jaxis.value>0), events.jaxis.axis);
+                it2=this->map_images[events.jaxis.which].find(key);
+                if(it2 != this->map_images[events.jaxis.which].end())
+                {
+                    map = this->map_images[events.jaxis.which][key];
+                    if(map < PAD_L_UP) // if this is not a joystick
+                    {
+                        this->pan_tabs[events.jaxis.which]->HideImg(map);
+                    }
+                    break;
+                }
+                break;
+            case SDL_JOYBUTTONDOWN:
+                key = button_to_key(events.jbutton.button);
+                it=this->map_images[events.jaxis.which].find(key);
+                if(it != this->map_images[events.jaxis.which].end())
+                {
+                    map = this->map_images[events.jaxis.which][key];
+                    this->pan_tabs[events.jaxis.which]->ShowImg(map);
+                }
+                break;
+            case SDL_JOYBUTTONUP:
+                key = button_to_key(events.jbutton.button);
+                it=this->map_images[events.jaxis.which].find(key);
+                if(it != this->map_images[events.jaxis.which].end())
+                {
+                    map = this->map_images[events.jaxis.which][key];
+                    this->pan_tabs[events.jaxis.which]->HideImg(map);
+                }
+            case SDL_JOYHATMOTION:
+                switch(events.jhat.value)
+                {
+                    case SDL_HAT_UP:
+                        key = hat_to_key(events.jhat.value, events.jhat.hat);
+                        it=this->map_images[events.jaxis.which].find(key);
+                        if(it != this->map_images[events.jaxis.which].end())
+                        {
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_dp_up);
+                        }
+                        break;
+                    case SDL_HAT_DOWN:
+                        key = hat_to_key(events.jhat.value, events.jhat.hat);
+                        it=this->map_images[events.jaxis.which].find(key);
+                        if(it != this->map_images[events.jaxis.which].end())
+                        {
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_dp_bottom);
+                        }
+                        break;
+                    case SDL_HAT_RIGHT:
+                        key = hat_to_key(events.jhat.value, events.jhat.hat);
+                        it=this->map_images[events.jaxis.which].find(key);
+                        if(it != this->map_images[events.jaxis.which].end())
+                        {
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_dp_right);
+                        }
+                        break;
+                    case SDL_HAT_LEFT:
+                        key = hat_to_key(events.jhat.value, events.jhat.hat);
+                        it=this->map_images[events.jaxis.which].find(key);
+                        if(it != this->map_images[events.jaxis.which].end())
+                        {
+                            this->pan_tabs[events.jaxis.which]->ShowImg(img_dp_left);
+                        }
+                        break;
+                    case SDL_HAT_CENTERED:
+                        this->pan_tabs[events.jaxis.which]->HideImg(img_dp_up);
+                        this->pan_tabs[events.jaxis.which]->HideImg(img_dp_bottom);
+                        this->pan_tabs[events.jaxis.which]->HideImg(img_dp_right);
+                        this->pan_tabs[events.jaxis.which]->HideImg(img_dp_left);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+#endif // SDL_BUILD
+}
 
-		gtk_fixed_put(GTK_FIXED(area), widget, x, y);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mask & conf->packed_options);
-		g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_option), this);
-	}
-} dialog_checkbox;
+/****************************************/
+/*********** Methods functions **********/
+/****************************************/
 
-void config_key(int pad, int key)
+void Dialog::config_key(int pad, int key)
 {
 	bool captured = false;
 	u32 key_pressed = 0;
@@ -309,333 +494,121 @@ void config_key(int pad, int key)
 	while (!captured)
 	{
 		vector<GamePad*>::iterator itjoy;
-
 		if (PollX11KeyboardMouseEvent(key_pressed))
 		{
 			// special case for keyboard/mouse to handle multiple keys
 			// Note: key_pressed == 0 when ESC is hit to abort the capture
 			if (key_pressed > 0)
+            {
+                this->clear_key(pad, key);
 				set_keyboad_key(pad, key_pressed, key);
-
+                this->simulatedKeys[pad][key] = key_pressed;
+                this->map_images[pad][key_pressed] = key;
+            }
 			captured = true;
-			break;
 		}
+        else
+        {
+            GamePad::UpdateGamePadState();
 
-		GamePad::UpdateGamePadState();
+    		itjoy = s_vgamePad.begin();
+    		while ((itjoy != s_vgamePad.end()) && (!captured))
+    		{
+    			if ((*itjoy)->PollButtons(key_pressed))
+                {
+                    this->clear_key(pad, key);
+    				set_key(pad, key, key_pressed);
+                    this->map_images[pad][key_pressed] = key;
+    				captured = true;
+    			}
+                else if((*itjoy)->PollAxes(key_pressed))
+                {
 
-		itjoy = s_vgamePad.begin();
-		while ((itjoy != s_vgamePad.end()) && (!captured))
-		{
-			if ((*itjoy)->PollButtons(key_pressed)) {
-				set_key(pad, key, key_pressed);
-				captured = true;
-				break;
-			}
-
-			if ((*itjoy)->PollAxes(key_pressed)) {
-				set_key(pad, key, key_pressed);
-				captured = true;
-				break;
-			}
-
-			if ((*itjoy)->PollHats(key_pressed)) {
-				set_key(pad, key, key_pressed);
-				captured = true;
-				break;
-			}
-			itjoy++;
-		}
+                    this->clear_key(pad, key);
+    				set_key(pad, key, key_pressed);
+                    this->map_images[pad][key_pressed] = key;
+    				captured = true;
+    			}
+                else if((*itjoy)->PollHats(key_pressed))
+                {
+                    this->clear_key(pad, key);
+    				set_key(pad, key, key_pressed);
+                    this->map_images[pad][key_pressed] = key;
+    				captured = true;
+    			}
+    			itjoy++;
+    		}
+        }
 	}
-
-	PAD_LOG("%s\n", KeyName(pad, key).c_str());
+    this->bt_gamepad[pad][key]->SetLabel(
+        KeyName(pad, key, this->simulatedKeys[pad][key]).c_str()
+    );
 }
 
-void on_conf_key(GtkButton *button, gpointer user_data)
+void Dialog::clear_key(int pad, int key)
 {
-	dialog_buttons *btn = (dialog_buttons *)user_data;
-	int key = btn->index;
+    // Erase the keyboard binded key
+    u32 keysim = this->simulatedKeys[pad][key];
+    this->simulatedKeys[pad][key] = 0;
 
-	if (key == -1) return;
-	
-	config_key(current_pad, key);
-	key_tree_manager->update();
+    // erase gamepad entry (keysim map)
+    std::map<u32,u32>::iterator it1;
+    it1=conf->keysym_map[pad].find(keysim);
+    if(it1 != conf->keysym_map[pad].end())
+        conf->keysym_map[pad].erase(it1);
+
+    // erase gamepad entry (image map)
+    int val = get_key(pad, key);
+    std::map<u32,int>::iterator it2;
+    it2=this->map_images[pad].find(val);
+    if(it2 != this->map_images[pad].end())
+    {
+        this->map_images[pad].erase(it2);
+    }
+
+    // Erase the keyboard image map
+    //this->map_images[pad].erase(keysim);
+    // Erase the Gamepad binded key
+    set_key(pad, key, 0);
 }
 
-void on_remove_clicked(GtkButton *button, gpointer user_data)
+
+// Set button values
+void Dialog::repopulate()
 {
-	key_tree_manager->remove_selected();
+    for(int gamepad_id=0; gamepad_id<GAMEPAD_NUMBER; ++gamepad_id)
+    {
+        for (int key = 0; key < MAX_KEYS; key++)
+        {
+            if (get_key(gamepad_id, key) != 0)
+            {
+                this->bt_gamepad[gamepad_id][key]->SetLabel(
+                    KeyName(gamepad_id, key).c_str()
+                );
+                this->map_images[gamepad_id][get_key(gamepad_id, key)] = key;
+            }
+        }
+
+        // keyboard/mouse key
+        map<u32,u32>::iterator it;
+        for (it = conf->keysym_map[gamepad_id].begin();
+             it != conf->keysym_map[gamepad_id].end(); ++it)
+        {
+            int keysym = it->first;
+            int key = it->second;
+            this->bt_gamepad[gamepad_id][key]->SetLabel(
+                KeyName(gamepad_id, key, keysym).c_str()
+            );
+            this->simulatedKeys[gamepad_id][key] = keysym;
+            this->map_images[gamepad_id][keysym] = key;
+        }
+    }
 }
 
-void on_clear_clicked(GtkButton *button, gpointer user_data)
-{
-	key_tree_manager->clear_all();
-}
-
-void on_modify_clicked(GtkButton *button, gpointer user_data)
-{
-	key_tree_manager->modify_selected();
-}
-
-void on_view_joy_clicked(GtkToggleButton *togglebutton, gpointer user_data)
-{
-	key_tree_manager->set_show_joy(gtk_toggle_button_get_active(togglebutton));
-	key_tree_manager->update();
-}
-
-void on_view_key_clicked(GtkToggleButton *togglebutton, gpointer user_data)
-{
-	key_tree_manager->set_show_key(gtk_toggle_button_get_active(togglebutton));
-	key_tree_manager->update();
-}
-
-void on_toggle_option(GtkToggleButton *togglebutton, gpointer user_data)
-{
-	dialog_checkbox *checkbox = (dialog_checkbox*)user_data;
-
-	if (gtk_toggle_button_get_active(togglebutton))
-	{
-		conf->packed_options |= checkbox->mask;
-		if(checkbox->mask == PADOPTION_FORCEFEEDBACK && (conf->get_joyid(current_pad)< s_vgamePad.size()))
-			s_vgamePad[conf->get_joyid(current_pad)]->TestForce();
-	}
-	else
-		conf->packed_options &= ~checkbox->mask;
-}
-
-void joy_changed(GtkComboBoxText *box, gpointer user_data)
-{
-	int joyid = gtk_combo_box_get_active(GTK_COMBO_BOX(box));
-	// Note position 0 of the combo box is no gamepad
-	joyid--;
-
-	// FIXME: might be a good idea to ask the user first ;)
-	// FIXME: do you need to clean the previous key association. or what the user want
-	// 1 : keep previous joy
-	// 2 : use new joy with old key binding
-	// 3 : use new joy with fresh key binding
-
-	// unassign every joystick with this pad
-	for (u32 i = 0; i < 2; ++i)
-		if (joyid == (int)conf->get_joyid(i)) conf->set_joyid(i, -1);
-
-	conf->set_joyid(current_pad, joyid);
-}
-
-void pad_changed(GtkNotebook *notebook, void *notebook_page, int page, void *data)
-{
-	current_pad = page;
-	key_tree_manager->set_show_pad(current_pad&1);
-	key_tree_manager->update();
-	
-	// update joy
-	set_current_joy();
-}
-
-struct button_positions
-{
-	const char* label;
-	u32 x,y;
-};
-
-// Warning position is important and must match the order of the gamePadValues structure
-button_positions b_pos[MAX_KEYS] =
-{
-	{ "L2", 64, 8},
-	{ "R2", 392, 8},
-	{ "L1", 64, 32},
-	{ "R1", 392, 32},
-	
-	{ "Triangle", 392, 80},
-	{ "Circle", 456, 104},
-	{ "Cross", 392, 128},
-	{ "Square", 328, 104},
-	
-	{ "Select", 200, 48},
-	{ "L3", 64, 224},
-	{ "R3", 392, 224},
-	{ "Start", 272, 48},
-	
-	// Arrow pad
-	{ "Up", 64, 80},
-	{ "Right", 128, 104},
-	{ "Down", 64, 128},
-	{ "Left", 0, 104},
-	
-	// Left Analog joystick
-	{ "Up", 64, 200},
-	{ "Right", 128, 224},
-	{ "Down", 64, 248},
-	{ "Left", 0, 224},
-	
-	// Right Analog joystick
-	{ "Up", 392, 200},
-	{ "Right", 456, 224},
-	{ "Down", 392, 248},
-	{ "Left", 328, 224}
-};
-
-// Warning position is important and must match the order of the PadOptions structure
-#define CHECK_NBR 9
-button_positions check_pos[CHECK_NBR] =
-{
-	{ "Enable force feedback", 40, 400},
-	{ "Reverse Lx", 40, 304},
-	{ "Reverse Ly", 40, 328},
-	{ "Reverse Rx", 368, 304},
-	{ "Reverse Ry", 368, 328},
-	{ "Use mouse for left analog joy", 40, 352},
-	{ "Use mouse for right analog joy", 368, 352},
-	{ "Hack: Sixaxis/DS3 plugged in USB", 368, 400},
-	{ "Hack: Sixaxis/DS3 pressure", 368, 424}
-};
-
-GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], dialog_checkbox checkbox[CHECK_NBR])
-{
-    GtkWidget *main_box;
-    GtkWidget *joy_choose_frame, *joy_choose_box;
-    
-    GtkWidget *keys_frame, *keys_box;
-    
-    GtkWidget *keys_tree_box, *keys_tree_scroll;
-    GtkWidget *keys_tree_clear_btn, *keys_tree_remove_btn, *keys_tree_modify_btn, *keys_tree_show_key_btn, *keys_tree_show_joy_btn;
-    GtkWidget *keys_btn_box, *keys_filter_box;
-    
-    GtkWidget *keys_static_frame, *keys_static_box;
-    GtkWidget *keys_static_area;
-	
-    joy_choose_cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-    populate_new_joysticks(joy_choose_cbox);
-	set_current_joy();
-	g_signal_connect(joy_choose_cbox, "changed", G_CALLBACK(joy_changed), NULL);
-    
-    keys_tree_scroll = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(keys_tree_scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER(keys_tree_scroll), key_tree_manager->view_widget(page));
-    gtk_widget_set_size_request(keys_tree_scroll, 300, 500);
-    
-	keys_tree_clear_btn = gtk_button_new_with_label("Clear All");
-	g_signal_connect(keys_tree_clear_btn, "clicked", G_CALLBACK(on_clear_clicked), NULL);
-	gtk_widget_set_size_request(keys_tree_clear_btn, 70, 24);
-	
-	keys_tree_remove_btn = gtk_button_new_with_label("Remove");
-	g_signal_connect(keys_tree_remove_btn, "clicked", G_CALLBACK(on_remove_clicked), NULL);
-    gtk_widget_set_size_request(keys_tree_remove_btn, 70, 24);
-    
-	keys_tree_modify_btn = gtk_button_new_with_label("Modify");
-	g_signal_connect(keys_tree_modify_btn, "clicked", G_CALLBACK(on_modify_clicked), NULL);
-    gtk_widget_set_size_request(keys_tree_modify_btn, 70, 24);
-
-	keys_tree_show_joy_btn =  gtk_check_button_new_with_label("Show joy");
-	g_signal_connect(keys_tree_show_joy_btn, "toggled", G_CALLBACK(on_view_joy_clicked), NULL);
-    gtk_widget_set_size_request(keys_tree_show_joy_btn, 100, 24);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_joy_btn), true);
-
-	keys_tree_show_key_btn = gtk_check_button_new_with_label("Show key");
-	g_signal_connect(keys_tree_show_key_btn, "toggled", G_CALLBACK(on_view_key_clicked), NULL);
-    gtk_widget_set_size_request(keys_tree_show_key_btn, 100, 24);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keys_tree_show_key_btn), true);
-
-    joy_choose_box = gtk_hbox_new(false, 5);
-    joy_choose_frame = gtk_frame_new ("Joystick to use for this pad");
-    gtk_container_add (GTK_CONTAINER(joy_choose_frame), joy_choose_box);
-
-    keys_btn_box = gtk_hbox_new(false, 5);
-	keys_filter_box = gtk_hbox_new(false, 5);
-    keys_tree_box = gtk_vbox_new(false, 5);
-    
-    keys_static_box = gtk_hbox_new(false, 5);
-    keys_static_frame = gtk_frame_new ("");
-    gtk_container_add (GTK_CONTAINER(keys_static_frame), keys_static_box);
-    
-	keys_static_area = gtk_fixed_new();
-	
-	for(int i = 0; i < MAX_KEYS; i++)
-	{
-		btn[i].put(b_pos[i].label, i, GTK_FIXED(keys_static_area), b_pos[i].x, b_pos[i].y);
-	}
-    
-	u32 mask = 1 << (16*page);
-	for(int i = 0; i < CHECK_NBR; i++) {
-		checkbox[i].create(keys_static_area, check_pos[i].label, check_pos[i].x, check_pos[i].y, mask);
-		mask = mask << 1;
-	}
-
-    keys_box = gtk_hbox_new(false, 5);
-    keys_frame = gtk_frame_new ("Key Settings");
-    gtk_container_add (GTK_CONTAINER(keys_frame), keys_box);
-    
-	gtk_box_pack_start (GTK_BOX (keys_tree_box), keys_tree_scroll, true, true, 0);
-	gtk_box_pack_start (GTK_BOX (keys_tree_box), keys_btn_box, false, false, 0);
-	gtk_box_pack_start (GTK_BOX (keys_tree_box), keys_filter_box, false, false, 0);
-
-	gtk_box_pack_start (GTK_BOX (keys_filter_box), keys_tree_show_joy_btn, false, false, 0);
-	gtk_box_pack_start (GTK_BOX (keys_filter_box), keys_tree_show_key_btn, false, false, 0);
-
-	gtk_box_pack_start (GTK_BOX (keys_btn_box), keys_tree_clear_btn, false, false, 0);
-	gtk_box_pack_start (GTK_BOX (keys_btn_box), keys_tree_remove_btn, false, false, 0);
-	gtk_box_pack_start (GTK_BOX (keys_btn_box), keys_tree_modify_btn, false, false, 0);
-    
-	gtk_container_add(GTK_CONTAINER(joy_choose_box), GTK_WIDGET(joy_choose_cbox));
-	gtk_box_pack_start(GTK_BOX (keys_box), keys_tree_box, false, false, 0);
-	gtk_container_add(GTK_CONTAINER(keys_box), keys_static_area);
-
-    main_box = gtk_vbox_new(false, 5);
-	gtk_container_add(GTK_CONTAINER(main_box), joy_choose_frame);
-	gtk_container_add(GTK_CONTAINER(main_box), keys_frame);
-
-	return main_box;
-}
-
+// Main
 void DisplayDialog()
 {
-    int return_value;
-
-    GtkWidget *dialog;
-
-	GtkWidget *notebook, *page[2];
-	GtkWidget *page_label[2];
-
-	dialog_buttons btn[2][MAX_KEYS];
-	dialog_checkbox checkbox[2][CHECK_NBR];
-
-	LoadConfig();
-	key_tree_manager = new keys_tree;
-	key_tree_manager->init();
-
-    /* Create the widgets */
-    dialog = gtk_dialog_new_with_buttons (
-		"OnePAD Config",
-		NULL, /* parent window*/
-		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		"_OK", GTK_RESPONSE_ACCEPT,
-		"_Apply", GTK_RESPONSE_APPLY,
-		"_Cancel", GTK_RESPONSE_REJECT,
-		NULL);
-
-	notebook = gtk_notebook_new();
-
-	page_label[0] = gtk_label_new("Pad 1");
-	page_label[1] = gtk_label_new("Pad 2");
-	for (int i = 0; i < 2; i++) {
-		page[i] = create_notebook_page_dialog(i, btn[i], checkbox[i]);
-		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page[i], page_label[i]);
-	}
-	g_signal_connect(notebook, "switch-page", G_CALLBACK(pad_changed), NULL);
-
-    gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), notebook);
-    
-    key_tree_manager->update();
-    
-    gtk_widget_show_all (dialog);
-
-	do {
-		return_value = gtk_dialog_run (GTK_DIALOG (dialog));
-		if (return_value == GTK_RESPONSE_APPLY || return_value == GTK_RESPONSE_ACCEPT) {
-			SaveConfig();
-		}
-	} while (return_value == GTK_RESPONSE_APPLY);
-
-	LoadConfig();
-	delete key_tree_manager;
-    gtk_widget_destroy (dialog);
+    Dialog* dialog = new Dialog();
+    dialog->InitDialog();
+    dialog->Show(true);
 }
