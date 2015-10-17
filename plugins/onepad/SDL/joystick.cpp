@@ -78,6 +78,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 
 void JoystickInfo::GenerateDefaultEffect()
 {
+#if SDL_MAJOR_VERSION >= 2
 	for(int i=0;i<NB_EFFECT;i++)
 	{
 		SDL_HapticEffect effect;
@@ -95,6 +96,7 @@ void JoystickInfo::GenerateDefaultEffect()
 		effect.periodic.attack_length = 0;
 		effects[i] = effect;
 	}
+#endif
 }
 
 void JoystickInfo::Rumble(int type, int pad)
@@ -227,7 +229,9 @@ void JoystickInfo::SaveState()
 }
 
 void JoystickInfo::TestForce()
-{ // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
+{
+#if SDL_MAJOR_VERSION >= 2
+	// This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
 	if(haptic == NULL) return; // Otherwise, core dump!
 	SDL_HapticRumbleInit( haptic );
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
@@ -235,6 +239,7 @@ void JoystickInfo::TestForce()
 	{
 		fprintf(stderr,"ERROR: Rumble is not working! %s\n",SDL_GetError());
 	}
+#endif
 }
 
 bool JoystickInfo::PollButtons(u32 &pkey)
