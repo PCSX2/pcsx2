@@ -897,9 +897,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 
 		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
-		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);
-		ps_ssel.tav = (m_context->CLAMP.WMT != CLAMP_CLAMP);
-		ps_ssel.ltf = bilinear && simple_sample;
+		ps_ssel.tau   = (m_context->CLAMP.WMS != CLAMP_CLAMP);
+		ps_ssel.tav   = (m_context->CLAMP.WMT != CLAMP_CLAMP);
+		ps_ssel.ltf   = bilinear && simple_sample;
+		ps_ssel.aniso = simple_sample;
 
 		// Setup Texture ressources
 		dev->SetupSampler(ps_ssel);
