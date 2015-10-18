@@ -311,8 +311,6 @@ extern PFNGLCREATEPROGRAMPIPELINESPROC          glCreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     glClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
-extern PFNGLACTIVETEXTUREPROC                   glActiveTexture;
-extern PFNGLBLENDCOLORPROC                      glBlendColor;
 
 namespace Emulate_DSA {
 	extern void SetFramebufferTarget(GLenum target);
