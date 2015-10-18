@@ -111,6 +111,14 @@ Serial = PBPX-95205
 Name   = Playstation 2 - Demo Disc 2000
 Region = PAL-Unk
 ---------------------------------------------
+Serial = SCED-51657
+Name   = Official Playstation Magazine - Demo Disc 33
+Region = PAL-Unk
+Compat = 5
+[patches = 90C0E5F1]
+	comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
+[/patches]
+---------------------------------------------
 Serial = PBPX-95201
 Name   = Dead or Alive 2
 Region = NTSC-J
