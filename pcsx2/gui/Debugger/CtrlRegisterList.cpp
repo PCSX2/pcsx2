@@ -85,6 +85,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
 
         regGrid->EnableEditing(false);
         regGrid->SetDefaultCellFont(font);
+        regGrid->SetLabelFont(font.Bold());
         regGrid->DisableDragGridSize();
         regGrid->DisableDragRowSize();
         regGrid->DisableDragColSize();
