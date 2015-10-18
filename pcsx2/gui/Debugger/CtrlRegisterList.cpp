@@ -1,26 +1,23 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2014  PCSX2 Dev Team
-*
-*  PCSX2 is free software: you can redistribute it and/or modify it under the terms
-*  of the GNU Lesser General Public License as published by the Free Software Found-
-*  ation, either version 3 of the License, or (at your option) any later version.
-*
-*  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-*  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-*  PURPOSE.  See the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License along with PCSX2.
-*  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "PrecompiledHeader.h"
 #include "CtrlRegisterList.h"
 #include "DebugTools/Debug.h"
-
 #include "DebugEvents.h"
 #include "AppConfig.h"
-
-
 
 enum DisassemblyMenuIdentifiers
 {
@@ -36,21 +33,21 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
     wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS | wxBORDER_NONE),
     cpu(_cpu),
     lastPc(0),
-    maxBits(128),
     lastCycles(0),
-    needsValueUpdating(true),
-    needsSizeUpdating(true)
+    maxBits(128),
+    needsSizeUpdating(true),
+    needsValueUpdating(true)
 {
-    int rowHeight = g_Conf->EmuOptions.Debugger.FontHeight + 2;
+    int rowHeight = g_Conf->EmuOptions.Debugger.FontHeight;
     int charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
 
 
-#ifdef WIN32
-    wxFont font = wxFont(wxSize(charWidth, rowHeight - 2), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
+#ifdef _WIN32
+    wxFont font = wxFont(wxSize(charWidth, rowHeight), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
         false, L"Lucida Console");
 #else
     wxFont font = wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, L"Lucida Console");
-    font.SetPixelSize(wxSize(charWidth, rowHeight - 2));
+    font.SetPixelSize(wxSize(charWidth, rowHeight));
 #endif
     registerCategories = new wxNotebook(this, -1);
     registerCategories->Bind(wxEVT_BOOKCTRL_PAGE_CHANGED, &CtrlRegisterList::categoryChangedEvent, this);
@@ -71,14 +68,13 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
         int numCols;
         switch (type)
         {
-        case DebugInterface::NORMAL:	// display them in 32 bit parts 
+        case DebugInterface::NORMAL:	// display them in 32 bit parts
             numCols = registerBits / 32;
             regGrid->CreateGrid(numRegs, numCols);
             for (int row = 0; row < numRegs; row++)
                 regGrid->SetRowLabelValue(row, cpu->getRegisterName(cat, row));
             for (int col = 0; col < numCols; col++)
-                regGrid->SetColLabelValue(col, std::to_string(32 * (numCols - col) - 1) + std::string("-") +
-                    std::to_string(32 * (numCols - col - 1)));
+                regGrid->SetColLabelValue(col, wxsFormat("%d-%d", 32 * (numCols - col) - 1, 32 * (numCols - col - 1)));
             break;
         case DebugInterface::SPECIAL:
             regGrid->CreateGrid(numRegs, 1);
@@ -137,7 +133,7 @@ void CtrlRegisterList::updateValues(int cat)
             switch (type)
             {
             case DebugInterface::NORMAL:
-                cellValue = wxString::Format("%08X", value._u32[numCols - col - 1]);
+                cellValue = wxsFormat("%08X", value._u32[numCols - col - 1]);
                 textColor = changed.changed[numCols - col - 1] ? colorChanged : colorUnchanged;
                 break;
             case DebugInterface::SPECIAL:
@@ -161,47 +157,42 @@ void CtrlRegisterList::updateSize(int cat)
 {
     wxGrid* regGrid = registerGrids[cat];
 
-    // Make sure that the number of shown cols is correct.
-    {
-        int regBits = cpu->getRegisterSize(cat);
-        int numCols = regGrid->GetNumberCols();
+    int regBits = cpu->getRegisterSize(cat);
+    int numCols = regGrid->GetNumberCols();
 
-        int shownCols = 0;
-        while (shownCols < numCols && regGrid->IsColShown(shownCols)) shownCols++;
-        if (shownCols > maxBits / 32)
-            shownCols = (maxBits / 32);
-        else if (shownCols < regBits / 32)
-            shownCols = std::min(maxBits / 32, regBits / 32);
+    int shownCols = 0;
+    while (shownCols < numCols && regGrid->IsColShown(shownCols)) shownCols++;
+    if (shownCols > maxBits / 32)
+        shownCols = (maxBits / 32);
+    else if (shownCols < regBits / 32)
+        shownCols = std::min(maxBits / 32, regBits / 32);
 
-        for (int col = 0; col < numCols; col++)
-            if (col < shownCols)
-                regGrid->ShowCol(numCols - col - 1); // Big-endian representation so flip order
-            else
-                regGrid->HideCol(numCols - col - 1); // Big-endian representation so flip order
-    }
+    for (int col = 0; col < numCols; col++)
+        if (col < shownCols)
+            regGrid->ShowCol(numCols - col - 1); // Big-endian representation so flip order
+        else
+            regGrid->HideCol(numCols - col - 1); // Big-endian representation so flip order
 
     regGrid->AutoSize();
     wxSize pageSize = regGrid->GetSize();
 
-    // Hacks below
-    {
-        // Hack: Sometimes the vertical scroll bar covers some of the text so add some room
-        pageSize.x += 20;
+    // Hack: Sometimes the vertical scroll bar covers some of the text so add some room
+    pageSize.x += 20;
 
-        // Hack: AFAIK wxNotebook does not provide a way to get the necessary size
-        // for the tabs so we use a rough approximation and hope that the tabs
-        // will have enough room to all be shown. 50 pixels per tab should hopefully work.
-        int minX = registerCategories->GetPageCount() * 50;
-        pageSize.x = std::max(pageSize.x, minX);
+    // Hack: AFAIK wxNotebook does not provide a way to get the necessary size
+    // for the tabs so we use a rough approximation and hope that the tabs
+    // will have enough room to all be shown. 50 pixels per tab should hopefully work.
+    int minX = registerCategories->GetPageCount() * 50;
+    pageSize.x = std::max(pageSize.x, minX);
 
-        // Hack: Sometimes showing all the rows on the screen take up too much
-        // vertical room and squeezes other components (breakpoint window, etc.)
-        // into nothing so we limit the vertical size to 1/2 screen size.
-        // If necessary, this will automatically create a vertical scroll bar so
-        // all rows can be accessed.
-        int screenSize = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);
-        pageSize.y = std::min(screenSize / 2, pageSize.y);
-    }
+    // Hack: Sometimes showing all the rows on the screen take up too much
+    // vertical room and squeezes other components (breakpoint window, etc.)
+    // into nothing so we limit the vertical size with this heuristic.
+    // If necessary, this will automatically create a vertical scroll bar so
+    // all rows can be accessed.
+    int screenSize = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);
+    pageSize.y = std::min(std::max(screenSize - 400, screenSize / 2), pageSize.y);
+
     regGrid->SetSize(pageSize);
 
     wxSize size = registerCategories->CalcSizeFromPage(pageSize);
@@ -301,32 +292,32 @@ void CtrlRegisterList::updateHandler()
         needsSizeUpdating = false;
     }
 
+    // The wxGrid allows selecting boxes with a bold outline
+    // but we don't want this, and there is no setting to turn off this feature
     wxGrid* regGrid = registerGrids[getCurrentCategory()];
     regGrid->ClearSelection();
 }
 
-
 void CtrlRegisterList::changeValue(RegisterChangeMode mode, int cat, int reg)
 {
-    wchar_t str[64];
-
+    wxString oldStr;
     u128 oldValue = cpu->getRegister(cat, reg);
 
     switch (mode)
     {
     case LOWER64:
-        swprintf(str, 64, L"0x%016llX", oldValue._u64[0]);
+        oldStr = wxsFormat("0x%016llX", oldValue._u64[0]);
         break;
     case UPPER64:
-        swprintf(str, 64, L"0x%016llX", oldValue._u64[1]);
+        oldStr = wxsFormat("0x%016llX", oldValue._u64[1]);
         break;
     case CHANGE32:
-        swprintf(str, 64, L"0x%08X", oldValue._u32[0]);
+        oldStr = wxsFormat("0x%08X", oldValue._u64[0]);
         break;
     }
 
     u64 newValue;
-    if (executeExpressionWindow(this, cpu, newValue, str))
+    if (executeExpressionWindow(this, cpu, newValue, oldStr))
     {
         switch (mode)
         {
@@ -346,6 +337,7 @@ void CtrlRegisterList::changeValue(RegisterChangeMode mode, int cat, int reg)
     needsValueUpdating = true;
     needsSizeUpdating = true;
 }
+
 
 void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
 {
