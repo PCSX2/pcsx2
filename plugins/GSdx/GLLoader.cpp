@@ -144,6 +144,8 @@ PFNGLCREATEPROGRAMPIPELINESPROC        glCreateProgramPipelines            = NUL
 
 PFNGLCLIPCONTROLPROC                   glClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
+PFNGLACTIVETEXTUREPROC                 glActiveTexture                     = NULL;
+PFNGLBLENDCOLORPROC                    glBlendColor                        = NULL;
 
 namespace Emulate_DSA {
 	// Texture entry point
