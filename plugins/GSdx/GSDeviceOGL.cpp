@@ -1356,7 +1356,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 		if (is_blend_constant && GLState::bf != blend_factor) {
 			GLState::bf = blend_factor;
 			float bf = (float)blend_factor / 128.0f;
-			glBlendColor(bf, bf, bf, bf);
+			gl_BlendColor(bf, bf, bf, bf);
 		}
 
 		const OGLBlend& b = m_blendMapOGL[blend_index];

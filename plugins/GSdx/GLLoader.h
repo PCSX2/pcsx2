@@ -183,6 +183,12 @@ typedef void (APIENTRYP PFNGLTEXTUREBARRIERPROC) (void);
 typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
 #endif /* GL_VERSION_4_5 */
 
+// Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
+// (maybe gl.h is outdated, or my setup is wrong)
+// Anyway, let's just keep the mangled function pointer for those 2 functions.
+extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
+extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
+
 extern   PFNGLATTACHSHADERPROC                  glAttachShader;
 extern   PFNGLBINDBUFFERPROC                    glBindBuffer;
 extern   PFNGLBINDBUFFERBASEPROC                glBindBufferBase;

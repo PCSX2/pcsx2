@@ -25,6 +25,9 @@
 
 void GSWndGL::PopulateGlFunction()
 {
+	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
+	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
+
 	*(void**)&(glBlendEquationSeparate) = GetProcAddress("glBlendEquationSeparate");
 	*(void**)&(glBlendFuncSeparate) = GetProcAddress("glBlendFuncSeparate");
 	*(void**)&(glAttachShader) = GetProcAddress("glAttachShader");

@@ -22,6 +22,9 @@
 #include "GLLoader.h"
 #include "GSdx.h"
 
+PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                    = NULL;
+PFNGLBLENDCOLORPROC                    gl_BlendColor                       = NULL;
+
 PFNGLATTACHSHADERPROC                  glAttachShader                      = NULL;
 PFNGLBINDBUFFERPROC                    glBindBuffer                        = NULL;
 PFNGLBINDBUFFERBASEPROC                glBindBufferBase                    = NULL;
@@ -150,7 +153,7 @@ PFNGLBLENDCOLORPROC                    glBlendColor                        = NUL
 namespace Emulate_DSA {
 	// Texture entry point
 	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
-		glActiveTexture(GL_TEXTURE0 + unit);
+		gl_ActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
