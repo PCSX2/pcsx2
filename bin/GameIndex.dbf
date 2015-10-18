@@ -107,8 +107,8 @@ Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
 ---------------------------------------------
-Serial = PBPS-95205
-Name   = Demo Disc
+Serial = PBPX-95205
+Name   = Playstation 2 - Demo Disc 2000
 Region = PAL-Unk
 ---------------------------------------------
 Serial = PBPX-95201
