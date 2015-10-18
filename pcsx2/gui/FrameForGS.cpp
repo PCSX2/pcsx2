@@ -565,7 +565,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	gsDest[0] = 0; // No need to set whole array to NULL.
 	GSgetTitleInfo2( gsDest, sizeof(gsDest) );
 
-	const wxChar* limiterStr = templates.LimiterUnlimited;
+	wxString limiterStr = templates.LimiterUnlimited;
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
