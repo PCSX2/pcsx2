@@ -19,6 +19,16 @@
 #include "DebugEvents.h"
 #include "AppConfig.h"
 
+BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
+    EVT_PAINT(CtrlRegisterList::paintEvent)
+    EVT_GRID_LABEL_LEFT_CLICK(CtrlRegisterList::gridEvent)
+    EVT_GRID_LABEL_RIGHT_CLICK(CtrlRegisterList::gridEvent)
+    EVT_GRID_CELL_LEFT_CLICK(CtrlRegisterList::gridEvent)
+    EVT_GRID_CELL_RIGHT_CLICK(CtrlRegisterList::gridEvent)
+    EVT_KEY_DOWN(CtrlRegisterList::keydownEvent)
+    EVT_BOOKCTRL_PAGE_CHANGED(-1, CtrlRegisterList::categoryChangedEvent)
+END_EVENT_TABLE()
+
 enum DisassemblyMenuIdentifiers
 {
     ID_REGISTERLIST_DISPLAY32 = 1,
@@ -45,12 +55,20 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
 #ifdef _WIN32
     wxFont font = wxFont(wxSize(charWidth, rowHeight), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
         false, L"Lucida Console");
+    wxFont labelFont = font.Bold();
 #else
     wxFont font = wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, L"Lucida Console");
     font.SetPixelSize(wxSize(charWidth, rowHeight));
+    wxFont labelFont = font;
+    labelFont.SetWeight(wxFONTWEIGHT_BOLD);
 #endif
-    registerCategories = new wxNotebook(this, -1);
-    registerCategories->Bind(wxEVT_BOOKCTRL_PAGE_CHANGED, &CtrlRegisterList::categoryChangedEvent, this);
+    registerCategories = new wxNotebook(this, wxID_ANY);
+// 'c' and 'C', much time wasted.
+#if wxMAJOR_VERSION >= 3
+    registerCategories->Connect(wxEVT_BOOKCTRL_PAGE_CHANGED, wxBookCtrlEventHandler(CtrlRegisterList::categoryChangedEvent), nullptr, this);
+#else
+    registerCategories->Connect(wxEVT_COMMAND_BOOKCTRL_PAGE_CHANGED, wxBookctrlEventHandler(CtrlRegisterList::categoryChangedEvent), nullptr, this);
+#endif
     for (int cat = 0; cat < cpu->getRegisterCategoryCount(); cat++)
     {
         int numRegs = cpu->getRegisterCount(cat);
@@ -60,7 +78,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
         wxGrid* regGrid = new wxGrid(registerCategories, -1);
 
         registerGrids.push_back(regGrid);
-        registerCategories->AddPage(regGrid, cpu->getRegisterCategoryName(cat));
+        registerCategories->AddPage(regGrid, wxString(cpu->getRegisterCategoryName(cat), wxConvUTF8));
 
         DebugInterface::RegisterType type = cpu->getRegisterType(cat);
         int registerBits = cpu->getRegisterSize(cat);
@@ -72,29 +90,29 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu) :
             numCols = registerBits / 32;
             regGrid->CreateGrid(numRegs, numCols);
             for (int row = 0; row < numRegs; row++)
-                regGrid->SetRowLabelValue(row, cpu->getRegisterName(cat, row));
+                regGrid->SetRowLabelValue(row, wxString(cpu->getRegisterName(cat, row), wxConvUTF8));
             for (int col = 0; col < numCols; col++)
-                regGrid->SetColLabelValue(col, wxsFormat("%d-%d", 32 * (numCols - col) - 1, 32 * (numCols - col - 1)));
+                regGrid->SetColLabelValue(col, wxsFormat(L"%d-%d", 32 * (numCols - col) - 1, 32 * (numCols - col - 1)));
             break;
         case DebugInterface::SPECIAL:
             regGrid->CreateGrid(numRegs, 1);
             for (int row = 0; row < numRegs; row++)
-                regGrid->SetRowLabelValue(row, cpu->getRegisterName(cat, row));
+                regGrid->SetRowLabelValue(row, wxString(cpu->getRegisterName(cat, row), wxConvUTF8));
             break;
         }
 
         regGrid->EnableEditing(false);
         regGrid->SetDefaultCellFont(font);
-        regGrid->SetLabelFont(font.Bold());
+        regGrid->SetLabelFont(labelFont);
         regGrid->DisableDragGridSize();
         regGrid->DisableDragRowSize();
         regGrid->DisableDragColSize();
-        regGrid->Bind(wxEVT_PAINT, &CtrlRegisterList::paintEvent, this);
-        regGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &CtrlRegisterList::gridEvent, this);
-        regGrid->Bind(wxEVT_GRID_LABEL_RIGHT_CLICK, &CtrlRegisterList::gridEvent, this);
-        regGrid->Bind(wxEVT_GRID_CELL_RIGHT_CLICK, &CtrlRegisterList::gridEvent, this);
-        regGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &CtrlRegisterList::gridEvent, this);
-        regGrid->Bind(wxEVT_KEY_DOWN, &CtrlRegisterList::keydownEvent, this);
+        regGrid->Connect(wxEVT_PAINT, wxPaintEventHandler(CtrlRegisterList::paintEvent), nullptr, this);
+        regGrid->Connect(wxEVT_GRID_LABEL_LEFT_CLICK, wxGridEventHandler(CtrlRegisterList::gridEvent), nullptr, this);
+        regGrid->Connect(wxEVT_GRID_LABEL_RIGHT_CLICK, wxGridEventHandler(CtrlRegisterList::gridEvent), nullptr, this);
+        regGrid->Connect(wxEVT_GRID_CELL_RIGHT_CLICK, wxGridEventHandler(CtrlRegisterList::gridEvent), nullptr, this);
+        regGrid->Connect(wxEVT_GRID_CELL_LEFT_CLICK, wxGridEventHandler(CtrlRegisterList::gridEvent), nullptr, this);
+        regGrid->Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(CtrlRegisterList::keydownEvent), nullptr, this);
     }
 
     for (int cat = 0; cat < cpu->getRegisterCategoryCount(); cat++)
@@ -134,7 +152,7 @@ void CtrlRegisterList::updateValues(int cat)
             switch (type)
             {
             case DebugInterface::NORMAL:
-                cellValue = wxsFormat("%08X", value._u32[numCols - col - 1]);
+                cellValue = wxsFormat(L"%08X", value._u32[numCols - col - 1]);
                 textColor = changed.changed[numCols - col - 1] ? colorChanged : colorUnchanged;
                 break;
             case DebugInterface::SPECIAL:
@@ -161,6 +179,7 @@ void CtrlRegisterList::updateSize(int cat)
     int regBits = cpu->getRegisterSize(cat);
     int numCols = regGrid->GetNumberCols();
 
+#if wxMAJOR_VERSION >= 3
     int shownCols = 0;
     while (shownCols < numCols && regGrid->IsColShown(shownCols)) shownCols++;
     if (shownCols > maxBits / 32)
@@ -173,6 +192,7 @@ void CtrlRegisterList::updateSize(int cat)
             regGrid->ShowCol(numCols - col - 1); // Big-endian representation so flip order
         else
             regGrid->HideCol(numCols - col - 1); // Big-endian representation so flip order
+#endif
 
     regGrid->AutoSize();
     wxSize pageSize = regGrid->GetSize();
@@ -307,13 +327,13 @@ void CtrlRegisterList::changeValue(RegisterChangeMode mode, int cat, int reg)
     switch (mode)
     {
     case LOWER64:
-        oldStr = wxsFormat("0x%016llX", oldValue._u64[0]);
+        oldStr = wxsFormat(L"0x%016llX", oldValue._u64[0]);
         break;
     case UPPER64:
-        oldStr = wxsFormat("0x%016llX", oldValue._u64[1]);
+        oldStr = wxsFormat(L"0x%016llX", oldValue._u64[1]);
         break;
     case CHANGE32:
-        oldStr = wxsFormat("0x%08X", oldValue._u64[0]);
+        oldStr = wxsFormat(L"0x%08X", oldValue._u64[0]);
         break;
     }
 
@@ -427,11 +447,14 @@ void CtrlRegisterList::gridEvent(wxGridEvent& evt)
             break;
         }
 
-        menu.Bind(wxEVT_COMMAND_MENU_SELECTED, &CtrlRegisterList::onPopupClick, this);
+        menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CtrlRegisterList::onPopupClick), nullptr, this);
         PopupMenu(&menu, evt.GetPosition());
+        needsValueUpdating = true;
     }
-    needsValueUpdating = true;
-    evt.Skip();
+    else
+    {
+        evt.Skip();
+    }
 }
 
 void CtrlRegisterList::categoryChangedEvent(wxBookCtrlEvent& evt)
@@ -441,7 +464,7 @@ void CtrlRegisterList::categoryChangedEvent(wxBookCtrlEvent& evt)
     evt.Skip();
 }
 
-void CtrlRegisterList::keydownEvent(wxEvent& evt)
+void CtrlRegisterList::keydownEvent(wxKeyEvent& evt)
 {
     needsValueUpdating = true;
     evt.Skip();

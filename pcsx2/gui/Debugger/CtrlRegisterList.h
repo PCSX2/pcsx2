@@ -30,7 +30,8 @@ public:
     void onPopupClick(wxCommandEvent& evt);
     void gridEvent(wxGridEvent& evt);
     void categoryChangedEvent(wxBookCtrlEvent& evt);
-    void keydownEvent(wxEvent& evt);
+    void keydownEvent(wxKeyEvent& evt);
+    DECLARE_EVENT_TABLE()
 private:
     enum RegisterChangeMode { LOWER64, UPPER64, CHANGE32 };
 
