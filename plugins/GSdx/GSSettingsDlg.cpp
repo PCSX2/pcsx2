@@ -153,7 +153,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfig("MaxAnisotropy", 0));
 	ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, theApp.GetConfig("filter", 2));
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfig("accurate_blending_unit", 1));
-	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfig("crc_hack_level", 3));
+	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfig("crc_hack_level", -1));
 
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfig("paltex", 0));
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
@@ -353,18 +353,24 @@ void GSSettingsDlg::UpdateRenderers()
 
 	vector<GSSetting> renderers;
 
-	unsigned renderer_setting = theApp.GetConfig("Renderer", 0);
+	GS_RENDERER renderer_setting = static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
 	unsigned renderer_sel = 0;
 
 	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		if(r.id >= 3 && r.id <= 5 || r.id == 15)
+		switch(r.id)
 		{
-			if(level < D3D_FEATURE_LEVEL_10_0) continue;
+			case REND_D3D1011_HW:
+			case REND_D3D1011_NULL:
+			case REND_D3D1011_OCL:
+			case REND_D3D1011_SW:
+				if (level < D3D_FEATURE_LEVEL_10_0)
+					continue;
 
-			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
+				r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
+			break;
 		}
 
 		renderers.push_back(r);
@@ -391,12 +397,14 @@ void GSSettingsDlg::UpdateControls()
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		bool dx9 = i >= 0 && i <= 2 || i == 14;
-		bool dx11 = i >= 3 && i <= 5 || i == 15;
-		bool ogl = i >= 12 && i <= 13 || i == 17;
-		bool hw = i == 0 || i == 3 || i == 12;
-		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
-		bool ocl = i >= 14 && i <= 17;
+		
+
+		bool dx9 = i == REND_D3D9_HW || i == REND_D3D9_NULL || i == REND_D3D9_OCL || i == REND_D3D9_SW;
+		bool dx11 = i == REND_D3D1011_HW || i == REND_D3D1011_NULL || i == REND_D3D1011_OCL || i == REND_D3D1011_SW;
+		bool ogl = i == REND_OGL_HW || i == REND_OGL_OCL || i == REND_OGL_SW;
+		bool hw = i == REND_D3D9_HW || i == REND_D3D1011_HW || i == REND_OGL_HW;
+		//bool sw = REND_D3D9_SW || i == REND_D3D1011_SW || i == REND_OGL_SW;;
+		bool ocl = i == REND_D3D9_OCL || i == REND_D3D1011_OCL || i == REND_OGL_OCL;
 
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
@@ -577,11 +585,11 @@ GSHacksDlg::GSHacksDlg() :
 void GSHacksDlg::OnInit()
 {
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
-	int renderer = SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0);
+	GS_RENDERER renderer = static_cast<GS_RENDERER>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
 	// It can only be accessed with a HW renderer, so this is sufficient.
-	bool dx9 = renderer == 0;
-	// bool dx11 = renderer == 3;
-	bool ogl = renderer == 12;
+	bool dx9 = renderer == REND_D3D9_HW;
+	// bool dx11 = renderer ==  REND_D3D1011_HW;
+	bool ogl = renderer == REND_OGL_HW;
 	unsigned short cb = 0;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)

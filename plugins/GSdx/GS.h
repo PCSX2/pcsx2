@@ -216,6 +216,38 @@ enum GS_AFAIL
 	AFAIL_RGB_ONLY	= 3,
 };
 
+enum GS_RENDERER
+{
+	REND_UNDEFINED = -1,
+
+	REND_D3D9_HW = 0,
+	REND_D3D9_SW = 1,
+	REND_D3D9_OCL = 14,
+	REND_D3D9_NULL = 2,
+
+	REND_D3D1011_HW = 3,
+	REND_D3D1011_SW = 4,
+	REND_D3D1011_OCL = 15,
+	REND_D3D1011_NULL = 5,
+
+	REND_OGL_HW = 12,
+	REND_OGL_SW = 13,
+	REND_OGL_OCL = 17,
+
+	REND_NULL_HW = 9,
+	REND_NULL_SW = 10,
+	REND_NULL_OCL = 16,
+	REND_NULL_NULL = 11
+};
+
+#ifdef __linux__
+	// Use ogl renderer as default otherwise it crash at startup
+	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
+	#define GS_DEFAULT_RENDERER REND_OGL_HW
+#else
+	#define GS_DEFAULT_RENDERER REND_D3D9_HW
+#endif
+
 #define REG32(name) \
 union name			\
 {					\
@@ -1246,3 +1278,36 @@ enum {FREEZE_LOAD=0, FREEZE_SAVE=1, FREEZE_SIZE=2};
 struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
+
+static inline int AutoselectCRCHackLevel(GS_RENDERER renderer)
+{
+
+	switch (renderer)
+	{
+		case REND_D3D9_HW:  // D3D9_HW
+		case REND_D3D9_SW:  // D3D9_SW
+		case REND_D3D9_OCL: // D3D9_OCL
+		case REND_D3D9_NULL:  // D3D9_Null
+
+		case REND_D3D1011_HW:  // D3D10/11_HW
+		case REND_D3D1011_SW:  // D3D10/11_SW
+		case REND_D3D1011_OCL: // D3D10/11_OCL
+		case REND_D3D1011_NULL:  // D3D10/11_Null
+
+		case REND_NULL_HW: // Null_SW
+		case REND_NULL_SW: // Null_OCL
+		case REND_NULL_OCL: // Null_Null
+		case REND_NULL_NULL:
+
+			return 3; //CRC Hack Level Full
+
+		case REND_OGL_HW: // OGL_HW
+		case REND_OGL_SW: // OGL_SW
+		case REND_OGL_OCL: // OGL_OCL
+
+			return 2; //CRC Hack Level Partial
+
+		default:
+			return 3; // Not sure if warning or default is more appropriate.
+	}
+}

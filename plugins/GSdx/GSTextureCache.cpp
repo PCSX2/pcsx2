@@ -27,16 +27,20 @@ bool s_IS_OPENGL = false;
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
-	s_IS_OPENGL = (theApp.GetConfig("Renderer", 12) == 12);
+	s_IS_OPENGL = (theApp.GetConfig("Renderer", REND_OGL_HW) == REND_OGL_HW);
 
 	m_spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 
 	m_paltex = !!theApp.GetConfig("paltex", 0);
 	m_preload_frame = theApp.GetConfig("preload_frame_with_gs_data", 0);
-	m_can_convert_depth = theApp.GetConfig("Renderer", 12) == 12 ? theApp.GetConfig("texture_cache_depth", 1) : 0;
+	m_can_convert_depth = s_IS_OPENGL ? theApp.GetConfig("texture_cache_depth", 1) : 0;
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
 	
+	m_crc_hack_level = m_crc_hack_level == -1 ?
+		AutoselectCRCHackLevel(static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER))) :
+		m_crc_hack_level;
+
 	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 }
 
