@@ -973,7 +973,7 @@ void Pcsx2App::OpenGsPanel()
 #if wxMAJOR_VERSION < 3
 	GtkWidget *child_window = gtk_bin_get_child(GTK_BIN(gsFrame->GetViewport()->GetHandle()));
 #else
-	GtkWidget *child_window = (GtkWidget*)GTK_BIN(gsFrame->GetViewport()->GetHandle());
+	GtkWidget *child_window = GTK_WIDGET(gsFrame->GetViewport()->GetHandle());
 #endif
 
 	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
