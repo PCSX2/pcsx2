@@ -10572,7 +10572,7 @@ Region = PAL-E
 Serial = SLES-51933
 Name   = Gregory Horror Show
 Region = PAL-M3
-Compat = 1
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51934
 Name   = Curse - The Eye of Isis
@@ -10811,6 +10811,7 @@ Region = PAL-M5
 Serial = SLES-52036
 Name   = WWE SmackDown! - Here Comes the Pain!
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52038
 Name   = Terminator 3 - Rise of the Machines
@@ -16535,6 +16536,7 @@ Region = PAL-E
 Serial = SLES-54793
 Name   = WWE SmackDown vs. Raw 2008
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-54804
 Name   = Operation Air Assault 2
@@ -17394,6 +17396,7 @@ Region = PAL-M6
 Serial = SLES-55545
 Name   = WWE SmackDown vs. Raw 2010
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55546
 Name   = The Secret Saturdays - Beasts of the 5th Sun
@@ -17433,6 +17436,7 @@ Region = PAL-M5
 Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
 Region = PAL-M7
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55582
 Name   = FIFA 10
@@ -17462,6 +17466,7 @@ Region = PAL-I-P-S
 Serial = SLES-55592
 Name   = Ben 10: Alien Force - Vilgax Attacks
 Region = PAL-M5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-55593
 Name   = Astro Boy - The Video Game
@@ -41478,6 +41483,7 @@ Compat = 5
 Serial = SLUS-21727
 Name   = Naruto - Ultimate Ninja 3
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21728
 Name   = Crash - Mind Over Mutant
@@ -43148,6 +43154,7 @@ Region = NTSC-J
 Serial = TCPS-10085
 Name   = Densha de Go! Final [Limited Edition]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = TCPS-10094
 Name   = Ys III - Wanderer from Ys
