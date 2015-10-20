@@ -182,6 +182,7 @@ GSdxApp::GSdxApp()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_crc_level.push_back(GSSetting(-1, "Automatic", "Recommended"));
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));

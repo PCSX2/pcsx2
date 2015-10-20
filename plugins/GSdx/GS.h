@@ -1246,3 +1246,18 @@ enum {FREEZE_LOAD=0, FREEZE_SAVE=1, FREEZE_SIZE=2};
 struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
+
+static inline int AutoselectCRCHackLevel(int renderer)
+{
+	switch (renderer)
+	{
+	case 0: // D3D9_HW
+	case 3: // D3D1011_HW
+	case 9: // NULL_HW
+		return 3; //CRC Hack Level Full
+	case 12: // OGL_HW
+		return 2; //CRC Hack Level Partial
+	default:
+		return 3; // Not sure if warning or default is more appropriate.
+	}
+}

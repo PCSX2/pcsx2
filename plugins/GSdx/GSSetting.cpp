@@ -37,6 +37,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Forced:\nAlways enable interpolation. Rendering is smoother but it could generate some glitches.";
 		case IDC_CRC_LEVEL:
 			return "Control the number of Auto-CRC hacks applied to games.\n\n"
+				"Automatic:\nAutomatically selects recommended CRC hack level according to the renderer\n(Accurate/depth options may be required for OpenGL).\n\n"
 				"None:\nRemove nearly all CRC hacks (debug only).\n\n"
 				"Minimum:\nEnable a couple of CRC hacks (23).\n\n"
 				"Partial:\nEnable most of the CRC hacks.\nRecommended OpenGL setting (Accurate/depth options may be required).\n\n"
