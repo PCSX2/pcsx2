@@ -65,7 +65,7 @@ void GPUSettingsDlg::OnInit()
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfig("Renderer", 0));
+	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
 	ComboBoxInit(IDC_FILTER, theApp.m_gpu_filter, theApp.GetConfig("filter", 0));
 	ComboBoxInit(IDC_DITHERING, theApp.m_gpu_dithering, theApp.GetConfig("dithering", 1));
 	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gpu_aspectratio, theApp.GetConfig("AspectRatio", 1));

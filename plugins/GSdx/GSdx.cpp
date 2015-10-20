@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSdx.h"
+#include "GS.h"
 
 static void* s_hModule;
 
@@ -127,20 +128,20 @@ GSdxApp::GSdxApp()
 	m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 
-	m_gs_renderers.push_back(GSSetting(0, "Direct3D9", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(1, "Direct3D9", "Software"));
-	m_gs_renderers.push_back(GSSetting(14, "Direct3D9", "OpenCL"));
-	m_gs_renderers.push_back(GSSetting(2, "Direct3D9", "Null"));
-	m_gs_renderers.push_back(GSSetting(3, "Direct3D", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(4, "Direct3D", "Software"));
-	m_gs_renderers.push_back(GSSetting(15, "Direct3D", "OpenCL"));
-	m_gs_renderers.push_back(GSSetting(5, "Direct3D", "Null"));
-	m_gs_renderers.push_back(GSSetting(10, "Null", "Software"));
-	m_gs_renderers.push_back(GSSetting(16, "Null", "OpenCL"));
-	m_gs_renderers.push_back(GSSetting(11, "Null", "Null"));
-	m_gs_renderers.push_back(GSSetting(12, "OpenGL", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(13, "OpenGL", "Software"));
-	m_gs_renderers.push_back(GSSetting(17, "OpenGL", "OpenCL"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D9_HW, "Direct3D9", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D9_SW, "Direct3D9", "Software"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D9_OCL, "Direct3D9", "OpenCL"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D9_NULL, "Direct3D9", "Null"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D1011_HW, "Direct3D", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D1011_SW, "Direct3D", "Software"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D1011_OCL, "Direct3D", "OpenCL"));
+	m_gs_renderers.push_back(GSSetting(REND_D3D1011_NULL, "Direct3D", "Null"));
+	m_gs_renderers.push_back(GSSetting(REND_NULL_SW, "Null", "Software"));
+	m_gs_renderers.push_back(GSSetting(REND_NULL_OCL, "Null", "OpenCL"));
+	m_gs_renderers.push_back(GSSetting(REND_NULL_NULL, "Null", "Null"));
+	m_gs_renderers.push_back(GSSetting(REND_OGL_HW, "OpenGL", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(REND_OGL_SW, "OpenGL", "Software"));
+	m_gs_renderers.push_back(GSSetting(REND_OGL_OCL, "OpenGL", "OpenCL"));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
