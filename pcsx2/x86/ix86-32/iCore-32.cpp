@@ -155,8 +155,7 @@ int _getFreeX86reg(int mode)
 	}
 
 	pxFailDev( "x86 register allocation error" );
-
-	return -1;
+	throw Exception::FailedToAllocateRegister();
 }
 
 void _flushCachedRegs()
@@ -310,9 +309,6 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 		x86reg = _getFreeX86reg(oldmode);
 	else
 		_freeX86reg(x86reg);
-
-	if (x86reg == -1)
-		return -1;
 
 	x86regs[x86reg].type = type;
 	x86regs[x86reg].reg = reg;
@@ -545,7 +541,7 @@ int  _getFreeMMXreg()
 	}
 
 	pxFailDev( "mmx register allocation error" );
-	return -1;
+	throw Exception::FailedToAllocateRegister();
 }
 
 int _allocMMXreg(int mmxreg, int reg, int mode)
@@ -586,8 +582,8 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 		}
 	}
 
-	if (mmxreg == -1) mmxreg = _getFreeMMXreg();
-	if (mmxreg == -1) return -1;
+	if (mmxreg == -1)
+		mmxreg = _getFreeMMXreg();
 
 	mmxregs[mmxreg].inuse = 1;
 	mmxregs[mmxreg].reg = reg;

@@ -1476,7 +1476,20 @@ void recompileNextInstruction(int delayslot)
 	else {
 		//If the COP0 DIE bit is disabled, cycles should be doubled.
 		s_nBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
-		opcode.recompile();
+		try {
+			opcode.recompile();
+		} catch (Exception::FailedToAllocateRegister&) {
+			// TODO: fallback to interpreter
+#if 0
+			iFlushCall(FLUSH_INTERPRETER);
+			CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
+#endif
+			// TODO: Free register ?
+#if 0
+			//	_freeXMMregs();
+			//	_freeMMXregs();
+#endif
+		}
 	}
 
 	if( !delayslot ) {
