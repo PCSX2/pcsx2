@@ -133,9 +133,9 @@ int  _getFreeXMMreg()
 		_freeXMMreg(tempi);
 		return tempi;
 	}
-	pxFailDev("*PCSX2*: XMM Reg Allocation Error in _getFreeXMMreg()!");
 
-	return -1;
+	pxFailDev("*PCSX2*: XMM Reg Allocation Error in _getFreeXMMreg()!");
+	throw Exception::FailedToAllocateRegister();
 }
 
 int _allocTempXMMreg(XMMSSEType type, int xmmreg) {
@@ -143,9 +143,6 @@ int _allocTempXMMreg(XMMSSEType type, int xmmreg) {
 		xmmreg = _getFreeXMMreg();
 	else
 		_freeXMMreg(xmmreg);
-
-	if (xmmreg == -1)
-		return -1;
 
 	xmmregs[xmmreg].inuse = 1;
 	xmmregs[xmmreg].type = XMMTYPE_TEMP;
@@ -193,9 +190,6 @@ int _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode) {
 		xmmreg = _getFreeXMMreg();
 	else
 		_freeXMMreg(xmmreg);
-
-	if (xmmreg == -1)
-		return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
@@ -279,9 +273,6 @@ int _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode) {
 	else
 		_freeXMMreg(xmmreg);
 
-	if (xmmreg == -1)
-		return -1;
-
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
 	xmmregs[xmmreg].type = XMMTYPE_ACC;
@@ -322,8 +313,8 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 		return i;
 	}
 
-	if (xmmreg == -1) xmmreg = _getFreeXMMreg();
-	if (xmmreg == -1) return -1;
+	if (xmmreg == -1)
+		xmmreg = _getFreeXMMreg();
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
@@ -388,8 +379,8 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 		g_cpuHasConstReg &= ~(1<<gprreg);
 	}
 
-	if (xmmreg == -1) xmmreg = _getFreeXMMreg();
-	if (xmmreg == -1) return -1;
+	if (xmmreg == -1)
+		xmmreg = _getFreeXMMreg();
 
 	g_xmmtypes[xmmreg] = XMMT_INT;
 	xmmregs[xmmreg].inuse = 1;
@@ -468,8 +459,6 @@ int _allocFPACCtoXMMreg(int xmmreg, int mode)
 
 	if (xmmreg == -1)
 		xmmreg = _getFreeXMMreg();
-	if (xmmreg == -1)
-		return -1;
 
 	g_xmmtypes[xmmreg] = XMMT_FPS;
 	xmmregs[xmmreg].inuse = 1;
