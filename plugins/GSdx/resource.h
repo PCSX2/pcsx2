@@ -95,6 +95,8 @@
 #define IDR_SHADEBOOST_FX               10007
 #define IDR_TFX_CL                      10008
 #define IDD_HACKS                       10009
+#define IDC_MIPMAP                      10010
+#define IDC_PRELOAD_GS                  10011
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
