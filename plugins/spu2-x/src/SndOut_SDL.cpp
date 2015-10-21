@@ -19,11 +19,7 @@
 #include "Global.h"
 #include "SndOut.h"
 
-#if __cplusplus >= 201103L
 #include <memory>
-#else
-#include <cstddef>
-#endif
 
 /* Using SDL2 requires other SDL dependencies in pcsx2 get upgraded as well, or the
  * symbol tables would conflict. Other dependencies in Linux are wxwidgets (you can
@@ -54,11 +50,7 @@ namespace {
 
 	Uint16 samples = desiredSamples;
 
-#if __cplusplus >= 201103L
 	std::unique_ptr<StereoOut_SDL[]> buffer;
-#else
-	StereoOut_SDL *buffer = NULL;
-#endif
 
 	void callback_fillBuffer(void *userdata, Uint8 *stream, int len) {
 		// Length should always be samples in bytes.
@@ -66,11 +58,7 @@ namespace {
 
 		for(Uint16 i = 0; i < samples; i += SndOutPacketSize)
 			SndBuffer::ReadSamples(&buffer[i]);
-#if __cplusplus >= 201103L
 		SDL_MixAudio(stream, (Uint8*) buffer.get() , len, SDL_MIX_MAXVOLUME);
-#else
-		SDL_MixAudio(stream, (Uint8*) buffer , len, SDL_MIX_MAXVOLUME);
-#endif
 	}
 }
 
@@ -88,11 +76,7 @@ struct SDLAudioMod : public SndOutModule {
 		}
 		/* This is so ugly. It is hilariously ugly. I didn't use a vector to save reallocs. */
 		if(samples != spec.samples || buffer == NULL)
-#if __cplusplus >= 201103L
 			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
-#else
-			buffer = new StereoOut_SDL[spec.samples];
-#endif
 		if(samples != spec.samples) {
 			// Samples must always be a multiple of packet size.
 			assert(spec.samples % SndOutPacketSize == 0);
@@ -107,10 +91,6 @@ struct SDLAudioMod : public SndOutModule {
 
 	void Close() {
 		SDL_CloseAudio();
-#if __cplusplus < 201103L
-		delete[] buffer;
-		buffer = NULL;
-#endif
 	}
 
 	s32 Test() const { return 0; }
