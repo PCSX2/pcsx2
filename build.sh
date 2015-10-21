@@ -34,7 +34,7 @@ for ARG in "$@"; do
         --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
-        --sdl2              ) flags+=(-DSDL2_API=TRUE) ;;
+        --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
         --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
         --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28              ) flags+=(-DWX28_API=TRUE) ;;
@@ -57,11 +57,13 @@ for ARG in "$@"; do
             echo "--no-simd       : Only allow sse2"
             echo
             echo "** Developer option **"
-            echo "--wx28          : Force wxWidget 2.8"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl/GSdx plugins)"
-            echo "--sdl2          : Build with SDL2 (crashes if wx is linked to SDL1.2)"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
+            echo
+            echo "** Distribution Compatibilities **"
+            echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
+            echo "--wx28          : Force wxWidget 2.8"
             echo
             echo "** Expert Developer option **"
             echo "--gtk3          : replace GTK2 by GTK3"
