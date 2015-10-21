@@ -1479,13 +1479,10 @@ void recompileNextInstruction(int delayslot)
 		try {
 			opcode.recompile();
 		} catch (Exception::FailedToAllocateRegister&) {
-			// TODO: fallback to interpreter
+			// Fall back to the interpreter
+			recCall(opcode.interpret);
 #if 0
-			iFlushCall(FLUSH_INTERPRETER);
-			CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
-#endif
 			// TODO: Free register ?
-#if 0
 			//	_freeXMMregs();
 			//	_freeMMXregs();
 #endif
