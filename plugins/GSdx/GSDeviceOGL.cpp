@@ -892,6 +892,10 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 // Copy a sub part of texture (same as below but force a conversion)
 void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin)
 {
+	ASSERT(sTex && dTex);
+	if (!(sTex && dTex))
+		return;
+
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
 
@@ -914,6 +918,8 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 {
 	ASSERT(sTex && dTex);
+	if (!(sTex && dTex))
+		return;
 
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
