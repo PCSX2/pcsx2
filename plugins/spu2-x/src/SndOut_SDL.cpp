@@ -109,21 +109,22 @@ struct SDLAudioMod : public SndOutModule {
 	SDLAudioMod()
 #if __cplusplus >= 201103L
 		: spec({SampleRate, format, channels, 0,
-				desiredSamples, 0, 0, &callback_fillBuffer, nullptr}) {
-#else
-			{
-				spec.freq = SampleRate;
-				spec.format = format;
-				spec.channels = channels;
-				spec.samples = desiredSamples;
-				spec.callback = callback_fillBuffer;
-				spec.userdata = NULL;
+				desiredSamples, 0, 0, &callback_fillBuffer, nullptr})
 #endif
-				// Number of samples must be a multiple of packet size.
-				assert(samples % SndOutPacketSize == 0);
-			}
-		};
+		{
+#if __cplusplus >= 201103L
+			spec.freq = SampleRate;
+			spec.format = format;
+			spec.channels = channels;
+			spec.samples = desiredSamples;
+			spec.callback = callback_fillBuffer;
+			spec.userdata = NULL;
+#endif
+			// Number of samples must be a multiple of packet size.
+			assert(samples % SndOutPacketSize == 0);
+		}
+};
 
-	SDLAudioMod SDLAudioMod::mod;
+SDLAudioMod SDLAudioMod::mod;
 
-	SndOutModule * const SDLOut = &SDLAudioMod::mod;
+SndOutModule * const SDLOut = &SDLAudioMod::mod;
