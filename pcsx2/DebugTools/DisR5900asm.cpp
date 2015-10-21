@@ -770,7 +770,7 @@ void BEQ( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "beqz", rs);
 	else
-		disBranch(output, "beq", rs, rt);
+		disBranch(output, "beq", rt, rs);
 }
 
 void BNE( std::string& output )
@@ -847,7 +847,7 @@ void BNEL( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "bnezl", rs);
 	else
-		disBranch(output, "bnel", rt, rs);
+		disBranch(output, "bnel", rs, rt);
 }
 
 void BLEZL( std::string& output )  { disBranch(output, "blezl", DECODE_RS); }
