@@ -613,6 +613,10 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
 	glBindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+#ifdef ENABLE_OGL_DEBUG
+	// Help to see the texture in apitrace
+	PSSetShaderResource(2, m_date.t);
+#endif
 }
 
 void GSDeviceOGL::RecycleDateTexture()
