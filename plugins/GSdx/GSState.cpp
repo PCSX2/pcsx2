@@ -2994,6 +2994,7 @@ bool GSState::IsMipMapActive()
 GSState::GSTransferBuffer::GSTransferBuffer()
 {
 	x = y = 0;
+	overflow = false;
 	start = end = total = 0;
 	buff = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 }
