@@ -562,10 +562,10 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 {
-	return CreateSampler(sel.ltf, sel.tau, sel.tav);
+	return CreateSampler(sel.ltf, sel.tau, sel.tav, sel.aniso);
 }
 
-GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
+GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 {
 	GL_PUSH("Create Sampler");
 
@@ -594,7 +594,7 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
 	int anisotropy = theApp.GetConfig("MaxAnisotropy", 0);
-	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && !theApp.GetConfig("paltex", 0))
+	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && aniso)
 		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
 	GL_POP();
