@@ -62,11 +62,14 @@ struct McdSlotItem
 
 	McdSlotItem()
 	{
-		Slot		= -1;
+		Slot = -1;
+		SizeInMB = 0;
+		Type = MemoryCard_None;
 		
 		IsPSX = false;
 		IsPresent = false;
 		IsEnabled = false;
+		IsFormatted = false;
 	}
 
 };
