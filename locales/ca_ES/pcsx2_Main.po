@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.3.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-12-23 19:50+0100\n"
-"PO-Revision-Date: 2015-10-23 01:15+0200\n"
+"PO-Revision-Date: 2015-10-23 01:34+0200\n"
 "Last-Translator: Sergi Canaleta (Dokman) <dokman@hotmail.es>\n"
 "Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
@@ -85,6 +85,7 @@ msgstr ""
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
 msgstr ""
+"Activitat dels fils: iniciar, separar, sincronització, eliminació, etc."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
@@ -471,6 +472,8 @@ msgstr ""
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
+"Premeu D'acord per utilitzar el plugin predeterminat configurat o Cancel·la "
+"per tancar %s."
 
 #: pcsx2/gui/AppInit.cpp:477
 msgid "PCSX2 Error: Hardware Deficiency"
@@ -488,11 +491,11 @@ msgstr "%s Error Crític"
 
 #: pcsx2/gui/AppInit.cpp:660
 msgid "OK"
-msgstr "Accepta"
+msgstr "D'acord"
 
 #: pcsx2/gui/AppInit.cpp:661
 msgid "&OK"
-msgstr "&Accepta"
+msgstr "&Acceptar"
 
 #: pcsx2/gui/AppInit.cpp:662
 msgid "Cancel"
@@ -552,7 +555,7 @@ msgstr "&Inici"
 
 #: pcsx2/gui/AppInit.cpp:677
 msgid "Show about dialog"
-msgstr ""
+msgstr "Mostra la finestra Sobre"
 
 #: pcsx2/gui/AppMain.cpp:93
 msgid ""
@@ -560,6 +563,9 @@ msgid ""
 "\n"
 "Press Ok to go to the Plugin Configuration Panel."
 msgstr ""
+"\n"
+"\n"
+"Premeu D'acord per anar al Panell de configuració Plugin."
 
 #: pcsx2/gui/AppMain.cpp:146 pcsx2/gui/AppMain.cpp:160
 msgid ""
@@ -577,7 +583,7 @@ msgstr "Error de la BIOS de PS2"
 
 #: pcsx2/gui/AppMain.cpp:564
 msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr ""
+msgstr "Premeu D'acord per anar al panell de configuració del BIOS."
 
 #: pcsx2/gui/AppMain.cpp:616
 msgid "PCSX2 Unresponsive Thread"
@@ -593,7 +599,7 @@ msgstr "Executant la Màquina Virtual de la PS2"
 
 #: pcsx2/gui/AppRes.cpp:72
 msgid "Browse for an Iso that is not in your recent history."
-msgstr ""
+msgstr "Busqui un ISO que no està en el seu historial recent."
 
 #: pcsx2/gui/AppRes.cpp:72
 msgid "Browse..."
@@ -651,7 +657,7 @@ msgstr "Petit"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "It's what I use (the programmer guy)."
-msgstr ""
+msgstr "És el que jo faig servir (el tiu programador)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
 msgid "Normal"
@@ -671,7 +677,7 @@ msgstr "Enorme"
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "In case you have a really high res display."
-msgstr ""
+msgstr "En cas de tenir una molt alta resolució de la pantalla."
 
 #: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Default soft-tone color scheme."
@@ -708,7 +714,7 @@ msgstr "&Guardar..."
 
 #: pcsx2/gui/ConsoleLogger.cpp:434
 msgid "Save log contents to file"
-msgstr ""
+msgstr "Guardar registre en un arxiu"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "C&lear"
@@ -1025,13 +1031,16 @@ msgstr "Administrador de MemoryCard"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:108
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
+msgstr "Arrossega les targetes a/o dels ports de PS2"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:109
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
+"\n"
+"Nota: Duplicar / Canvia el nom / Crear / Eliminar NO serà revertit amb "
+"\"Cancel·lar\"."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -2004,7 +2013,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:567
 msgid "Delete"
-msgstr ""
+msgstr "Elimina"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:570
 msgid "Permanently delete this memory card from disk (all contents are lost)"
@@ -2093,27 +2102,27 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1016
 msgid "Insert card"
-msgstr ""
+msgstr "Inserta la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1076
 msgid "Eject card"
-msgstr ""
+msgstr "Extreu la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1076
 msgid "Insert card ..."
-msgstr ""
+msgstr "Inserta la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1077
 msgid "Duplicate card ..."
-msgstr ""
+msgstr "Duplica la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1078
 msgid "Rename card ..."
-msgstr ""
+msgstr "Renombra la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1079
 msgid "Delete card"
-msgstr ""
+msgstr "Elimina la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1082
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1086
