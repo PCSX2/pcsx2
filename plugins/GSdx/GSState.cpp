@@ -1457,7 +1457,7 @@ void GSState::FlushPrim()
 				__assume(0);
 			}
 				
-			ASSERT(unused < GSUtil::GetVertexCount(PRIM->PRIM));
+			ASSERT((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
 
 		if(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt < 3 && GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt < 3)
@@ -1867,8 +1867,6 @@ template void GSState::Transfer<1>(const uint8* mem, uint32 size);
 template void GSState::Transfer<2>(const uint8* mem, uint32 size);
 template void GSState::Transfer<3>(const uint8* mem, uint32 size);
 
-static hash_map<uint64, uint64> s_tags;
-
 template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 {
 	GSPerfMonAutoTimer pmat(&m_perfmon);
@@ -1882,16 +1880,6 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 		if(path.nloop == 0)
 		{
 			path.SetTag(mem);
-
-			if(0)
-			{
-				GIFTag* t = (GIFTag*)mem;
-				uint64 hash;
-				if(t->NREG < 8) hash = t->u32[2] & ((1 << t->NREG * 4) - 1);
-				else if(t->NREG < 16) {hash = t->u32[2]; ((uint32*)&hash)[1] = t->u32[3] & ((1 << (t->NREG - 8) * 4) - 1);}
-				else hash = t->u64[1];
-				s_tags[hash] += path.nloop * path.nreg;
-			}
 
 			mem += sizeof(GIFTag);
 			size--;
