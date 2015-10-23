@@ -108,21 +108,10 @@ struct SDLAudioMod : public SndOutModule {
 	private:
 	SDL_AudioSpec spec;
 
-	/* Only C++11 supports the aggregate initializer list syntax used here. */
 	SDLAudioMod()
-#if __cplusplus >= 201103L
 		: spec({SampleRate, format, channels, 0,
 				desiredSamples, 0, 0, &callback_fillBuffer, nullptr})
-#endif
 		{
-#if __cplusplus >= 201103L
-			spec.freq = SampleRate;
-			spec.format = format;
-			spec.channels = channels;
-			spec.samples = desiredSamples;
-			spec.callback = callback_fillBuffer;
-			spec.userdata = NULL;
-#endif
 			// Number of samples must be a multiple of packet size.
 			assert(samples % SndOutPacketSize == 0);
 		}
