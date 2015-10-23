@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 - 150922\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-09-22 15:21+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
 "PO-Revision-Date: 2015-09-22 15:36+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
@@ -53,7 +53,7 @@ msgstr ""
 " spärrad växlingsfil används, eller av att ett annat program tar för sig "
 "mycket minne."
 
-#: pcsx2/System.cpp:356
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -80,7 +80,7 @@ msgstr ""
 "de förbättrar oftast emuleringshastigheten avsevärt. Ni kanske måste "
 "återmöjliggöra omkompilerarna ovanför egenhändigt, om Ni löser fel."
 
-#: pcsx2/gui/AppMain.cpp:177
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -90,7 +90,7 @@ msgstr ""
 "ett BIOS från en faktisk PS2 enhet som Ni äger (tillåns gäller inte). Öga "
 "igenom FAQ'er och Guider för ytterligare information."
 
-#: pcsx2/gui/AppMain.cpp:709
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -115,7 +115,7 @@ msgstr ""
 "självt. Om Ni inte har upphöjd Behörighet för Er dator, får Ni byta till "
 "AnvändarnivåDokument-läge (klicka på knappen nedanför)."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:65
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
 msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
@@ -123,7 +123,7 @@ msgstr ""
 "Bemärk att slutfilen måhända inte innehåller alla sparningar, beroende på "
 "hur många som är med i käll-Minneskortet."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:67
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
 "WARNING: Converting a memory card may take a while! Please do not close the "
 "emulator during the conversion process, even if the emulator is no longer "
@@ -132,23 +132,23 @@ msgstr ""
 "VARNING: Omvandling av Minneskort kan ta en stund! Stäng inte emulatorn "
 "under omvandlingsprocessen, även om den ej längre svarar."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:84
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr "Omvandla detta Minneskort till en standard 8 MB Minneskort .ps2 fil."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:86
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
 msgstr "Omvandla detta Minneskort till en 16 MB Minneskort .ps2 fil."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:88
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
 msgstr "Omvandla detta Minneskort till en 32 MB Minneskort .ps2 fil."
 
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:90
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr "Omvandla detta Minneskort till en 64 MB Minneskort .ps2 fil."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:195
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -321,7 +321,7 @@ msgstr ""
 " framsteg kommer att gå förlorade. \n"
 "Är Ni säker?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:112
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -353,6 +353,13 @@ msgstr ""
 "PS2-sockeln %d har blivit automatiskt spärrad. Ni kan åtgärda problemet \n"
 " och återmöjliggöra sockeln när som helst genom ''Konfig > Minneskort'' i "
 "Huvudmenyn."
+
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+"(MappMkort) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: "
+"%s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
@@ -525,7 +532,7 @@ msgstr ""
 "Det bästa sättet att försäkra Er om att alla Egna \n"
 " Spelfixar är helt spärrade, är att ha denna Avmarkerad."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -535,14 +542,14 @@ msgstr ""
 "All data på detta kort kommer att förloras! \n"
 "Är Ni helt säker?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:839
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Misslyckades: Dubblering är endast tillåtet till en tom PS2-sockel, eller "
 "till filsystemet."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:882
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Misslyckades: MålMinneskortet '%s' används för närvarande."
@@ -851,13 +858,6 @@ msgstr ""
 "bruk. \n"
 "Detta är inte ett kritiskt fel eftersom sVU är föråldrat, \n"
 " och följaktligen borde Ni hur som helst använda Er av microVU istället."
-
-#: pcsx2/gui/MemoryCardFolder.h:512
-#, c-format
-msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
-"(MappMkort) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: "
-"%s"
 
 #~ msgid ""
 #~ "Warning: Your computer does not support SSE2, which is required by many "

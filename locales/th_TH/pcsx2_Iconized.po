@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
 "PO-Revision-Date: 2014-09-16 11:50+0700\n"
 "Last-Translator: blackb1rd <blackb1rd@riseup.net>\n"
 "Language-Team: xyteton <xyteton@hotmail.com>, blackb1rd <blackb1rd@riseup."
@@ -41,7 +41,7 @@ msgstr ""
 "PCSX2 ไม่รองรับดิสก์เกม Playstation 1 ถ้าคุณต้องการเล่นเกมนี้\n"
 "คุณจะต้องดาวน์โหลดตัวจำลอง ePSXe หรือ PCSX"
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 #, fuzzy
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -54,7 +54,7 @@ msgstr ""
 "หรือ swapfile ไม่ถูกใช้งาน หรือเพราะโปรแกรมอื่นใช้หน่วยความจำมาก \n"
 "คุณสามารถลองลดขนาดแค็ชสำหรับรีคอมไพเลอร์ PCSX2 ทั้งหมด ซึ่งพบได้ที่การตั้งค่าโฮสต์"
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -69,7 +69,7 @@ msgid ""
 msgstr ""
 "คำเตือน: บางค่าที่ได้กำหนดไว้ในรีคอมไพเลอร์ PS2 ล้มเหลวในการเริ่มต้นและได้มีการปิดการใช้งาน"
 
-#: pcsx2/gui/AppInit.cpp:194
+#: pcsx2/gui/AppInit.cpp:204
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -79,7 +79,7 @@ msgstr ""
 "มันจะช่วยปรับปรุงความเร็วของการจำลองอย่างเห็นได้ชัด\n"
 "คุณอาจจะลองเปิดการใช้งานรีคอมไพเลอร์ที่ระบุไว้ด้านบนอีกครั้ง หากคุณต้องการจะแก้ปัญหา"
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -89,7 +89,7 @@ msgstr ""
 "ได้รับไบออสมาจากตัว PS2 ที่แท้จริงของคุณเอง (ไม่นับการยืม)\n"
 "โปรดศึกษาจากแนวทางและคำถามที่พบบ่อยสำหรับคำแนะนำเพิ่มเติม"
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -114,7 +114,36 @@ msgstr ""
 "ถ้าคุณไม่มีสิทธิในคอมพิวเตอร์นี้ ดังนั้นคุณจำเป็นต้องสลับ\n"
 "ไปใช้โหมดเอกสารผู้ใช้ (คลิกปุ่มด้านล่าง)"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -185,6 +214,13 @@ msgid ""
 msgstr ""
 "หลีกเลี่ยงการเสียของการ์ดความจำ โดยการบังคับเกม ให้ทำดัชนีเนื้อหาการ์ด\n"
 "หลังจากการโหลดจากบันทึกสถานภาพ อาจไม่เข้ากันกับทุกเกม (Guitar Hero)"
+
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -261,7 +297,7 @@ msgstr ""
 "การกระทำนี้ จะรีเซ็ตสถานภาพเครื่องเสมือน PS2 ที่มีอยู่แล้วใหม่\n"
 "ความคืบหน้าในปัจจุบันจะสูญหายไป คุณแน่ใจหรือไม่?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -280,7 +316,7 @@ msgstr ""
 "\n"
 "(หมายเหตุ: การตั้งค่าสำหรับปลั๊กอินไม่ได้รับผลกระทบ)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -290,6 +326,11 @@ msgstr ""
 "สล็อต-PS2 %d ได้ถูกปิดการใช้งานโดยอัตโนมัติ คุณสามารถแก้ไขปัญหา \n"
 "และใช้งานมันใหม่ตอนไหนก็ได้โดยใช้การ กำหนดค่า:การ์ดความจำ จากเมนูหลัก"
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -298,11 +339,11 @@ msgstr ""
 "โปรดเลือกไบออสที่ถูกต้อง ถ้าคุณไม่สามารถทำการเลือกที่ถูกต้องได้\n"
 "กด ยกเลิก เพื่อปิดผังการกำหนดค่า"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr "แจ้งเตือน: ค่าตัวเลือกตั้งต้นมักจะดีกับเกมส่วนใหญ่"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr "แจ้งเตือน: ค่าตัวเลือกตั้งต้นมักจะดีกับเกมส่วนใหญ่"
 
@@ -417,7 +458,8 @@ msgstr ""
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
 "การแก้ปัญหาเกมสามารถทำงานประมาณการจำลองที่ไม่ถูกต้องได้ในบางเรื่อง\n"
 "มันอาจจะทำให้เกิดปัญหาการไม่เข้ากันและปัญหาสมรรถนะ \n"
@@ -441,7 +483,7 @@ msgstr ""
 "('อัตโนมัติ' หมายถึง: "
 "การเลือกใช้วิธีการแก้ปัญหาเกมที่ผ่านการทดสอบแล้วและจำเพาะเจาะจงต่อเกมนั้น ๆ)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -450,12 +492,12 @@ msgstr ""
 "คุณกำลังจะลบการ์ดความจำที่ฟอร์แมตแล้ว '%s' \n"
 "ข้อมูลทั้งหมดบนการ์ดนี้จะหายไป! คุณแน่ใจและเข้าใจอย่างถ่องแท้แล้วหรือไม่?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "ล้มเหลว: การทำสำเนาซ้ำอนุญาตเฉพาะสู่พอร์ต-PS2 ที่ว่าง หรือสู่ระบบไฟล์"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "ล้มเหลว: การ์ดความจำปลายทาง '%s' กำลังถูกใช้อยู่"
@@ -659,7 +701,7 @@ msgstr ""
 "ตรวจสอบรายการเข้ากันได้ของ HDLoader สำหรับเกมที่ทราบและมีการออกสิ่งนี้ไว้ \n"
 "(มักจะทำหมายเหตุว่า ความต้องการ 'mode 1' หรือ 'slow DVD') "
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
@@ -667,7 +709,7 @@ msgstr ""
 "หมายเหตุ เมื่อการจำกัดเฟรมถูกปิดการทำงาน โหมดเทอร์โบและโหมดเคลื่อนไหวช้า "
 "จะไม่มีผลทั้งคู่เช่นกัน"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -675,7 +717,7 @@ msgstr ""
 "แจ้งเตือน: เนื่องด้วยการออกแบบอุปกรณ์ PS2, การข้ามเฟรมแบบแม่นยำจึงเป็นไปไม่ได้\n"
 "การเปิดการทำงานมันจะเป็นสาเหตุความผิดพลาดที่รุนแรงของกราฟิกในบางเกม"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -683,7 +725,7 @@ msgstr ""
 "เปิดการทำงานสิ่งนี้ ถ้าคุณคิดว่าการประสานสายงาน MTGS เป็นสาเหตุของการขัดข้อง "
 "หรือความผิดผลาดด้านกราฟฟิก "
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "
