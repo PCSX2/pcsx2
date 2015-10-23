@@ -22,7 +22,7 @@
 // addressable memory.  Yay!
 struct BASEBLOCK
 {
-	u32 m_pFnptr;
+	uptr m_pFnptr;
 
 	const __inline uptr GetFnptr() const { return m_pFnptr; }
 	void __inline SetFnptr( uptr ptr ) { m_pFnptr = ptr; }
