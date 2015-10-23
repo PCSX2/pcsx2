@@ -77,7 +77,7 @@ public:
 	bool			Enabled;
 
 protected:
-	BaseTraceLogSource() {}
+	BaseTraceLogSource() : m_Descriptor(NULL), Enabled(false) {}
 
 public:
 	TraceLog_ImplementBaseAPI(BaseTraceLogSource)
