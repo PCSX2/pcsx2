@@ -361,6 +361,8 @@ void recCall( void (*func)() )
 // =====================================================================================================
 
 static void __fastcall recRecompile( const u32 startpc );
+static void __fastcall dyna_block_discard(u32 start,u32 sz);
+static void __fastcall dyna_page_reset(u32 start,u32 sz);
 
 static u32 s_store_ebp, s_store_esp;
 
@@ -375,6 +377,8 @@ static DynGenFunc* JITCompile			= NULL;
 static DynGenFunc* JITCompileInBlock	= NULL;
 static DynGenFunc* EnterRecompiledCode	= NULL;
 static DynGenFunc* ExitRecompiledCode	= NULL;
+static DynGenFunc* DispatchBlockDiscard = NULL;
+static DynGenFunc* DispatchPageReset    = NULL;
 
 static void recEventTest()
 {
@@ -505,8 +509,10 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
 	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
 
-	xMOV( ptr[&s_store_esp], esp );
-	xMOV( ptr[&s_store_ebp], ebp );
+	if (EmuConfig.Cpu.Recompiler.StackFrameChecks) {
+		xMOV( ptr[&s_store_esp], esp );
+		xMOV( ptr[&s_store_ebp], ebp );
+	}
 
 	xJMP( DispatcherReg );
 
@@ -531,6 +537,22 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	return (DynGenFunc*)retval;
 }
 
+static DynGenFunc* _DynGen_DispatchBlockDiscard()
+{
+	u8* retval = xGetPtr();
+	xCALL(dyna_block_discard);
+	xJMP(ExitRecompiledCode);
+	return (DynGenFunc*)retval;
+}
+
+static DynGenFunc* _DynGen_DispatchPageReset()
+{
+	u8* retval = xGetPtr();
+	xCALL(dyna_page_reset);
+	xJMP(ExitRecompiledCode);
+	return (DynGenFunc*)retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
@@ -547,9 +569,11 @@ static void _DynGen_Dispatchers()
 	xCALL( recEventTest );
 	DispatcherReg	= _DynGen_DispatcherReg();
 
-	JITCompile			= _DynGen_JITCompile();
-	JITCompileInBlock	= _DynGen_JITCompileInBlock();
-	EnterRecompiledCode	= _DynGen_EnterRecompiledCode();
+	JITCompile           = _DynGen_JITCompile();
+	JITCompileInBlock    = _DynGen_JITCompileInBlock();
+	EnterRecompiledCode  = _DynGen_EnterRecompiledCode();
+	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
+	DispatchPageReset    = _DynGen_DispatchPageReset();
 
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
 
@@ -559,7 +583,6 @@ static void _DynGen_Dispatchers()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-static void __fastcall dyna_block_discard(u32 start,u32 sz);
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
@@ -1623,15 +1646,6 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
 	eeRecPerfLog.Write( Color_StrongGray, "Clearing Manual Block @ 0x%08X  [size=%d]", start, sz*4);
 	recClear(start, sz);
-
-	// Stack trick: This function was invoked via a direct jmp, so manually pop the
-	// EBP/stackframe before issuing a RET, else esp/ebp will be incorrect.
-
-#ifdef _MSC_VER
-	__asm leave __asm jmp [ExitRecompiledCode]
-#else
-	__asm__ __volatile__( "leave\n jmp *%[exitRec]\n" : : [exitRec] "m" (ExitRecompiledCode) : );
-#endif
 }
 
 // called when a page under manual protection has been run enough times to be a candidate
@@ -1642,12 +1656,6 @@ void __fastcall dyna_page_reset(u32 start,u32 sz)
 	recClear(start & ~0xfffUL, 0x400);
 	manual_counter[start >> 12]++;
 	mmap_MarkCountedRamPage( start );
-
-#ifdef _MSC_VER
-	__asm leave __asm jmp [ExitRecompiledCode]
-#else
-	__asm__ __volatile__( "leave\n jmp *%[exitRec]\n" : : [exitRec] "m" (ExitRecompiledCode) : );
-#endif
 }
 
 // Skip MPEG Game-Fix
@@ -2073,7 +2081,7 @@ StartRecomp:
 			while(stg>0)
 			{
 				xCMP( ptr32[PSM(lpc)], *(u32*)PSM(lpc) );
-				xJNE( dyna_block_discard );
+				xJNE(DispatchBlockDiscard);
 
 				stg -= 4;
 				lpc += 4;
@@ -2106,7 +2114,7 @@ StartRecomp:
 				// that the current amount of recompilation is fairly cheap).
 
 				xADD(ptr16[&manual_page[inpage_ptr >> 12]], sz);
-				xJC( dyna_page_reset );
+				xJC(DispatchPageReset);
 
 				// note: clearcnt is measured per-page, not per-block!
 				ConsoleColorScope cs( Color_Gray );
