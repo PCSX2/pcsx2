@@ -28,8 +28,8 @@ namespace Panels
 		wxStaticBoxSizer*	m_miscGroup;
 
 	public:
-		BaseCpuLogOptionsPanel( wxWindow* parent, const wxString& title, wxOrientation orient=wxVERTICAL )
-			: CheckedStaticBox( parent, orient, title ) {}
+		BaseCpuLogOptionsPanel(wxWindow* parent, const wxString& title, wxOrientation orient = wxVERTICAL)
+			: CheckedStaticBox(parent, orient, title), m_miscGroup(NULL){}
 
 		virtual wxStaticBoxSizer* GetMiscGroup() const { return m_miscGroup; }
 		virtual CheckedStaticBox* GetStaticBox( const wxString& subgroup ) const=0;
