@@ -66,9 +66,6 @@ struct SysTraceLogDescriptor
 class SysTraceLog : public TextFileTraceLog
 {
 public:
-	const char*		PrePrefix;
-
-public:
 	TraceLog_ImplementBaseAPI(SysTraceLog)
 
 	// Pass me a NULL and you *will* suffer!  Muahahaha.
@@ -76,12 +73,6 @@ public:
 		: TextFileTraceLog( &desc->base ) {}
 
 	void DoWrite( const char *fmt ) const;
-
-	SysTraceLog& SetPrefix( const char* name )
-	{
-		PrePrefix = name;
-		return *this;
-	}
 
 };
 
