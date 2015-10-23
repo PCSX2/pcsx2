@@ -505,8 +505,10 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
 	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
 
-	xMOV( ptr[&s_store_esp], esp );
-	xMOV( ptr[&s_store_ebp], ebp );
+	if (EmuConfig.Cpu.Recompiler.StackFrameChecks) {
+		xMOV( ptr[&s_store_esp], esp );
+		xMOV( ptr[&s_store_ebp], ebp );
+	}
 
 	xJMP( DispatcherReg );
 
