@@ -270,7 +270,8 @@ __fi void vif1FBRST(u32 value) {
 				{
 				    case MFD_VIF1:
                         //Console.WriteLn("MFIFO Stall");
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
+						//MFIFO active and not empty
+                        if(vif1ch.chcr.STR == true && !(vif1.inprogress & 0x10)) CPU_INT(DMAC_MFIFO_VIF, 0);
                         break;
 
                     case NO_MFD:
