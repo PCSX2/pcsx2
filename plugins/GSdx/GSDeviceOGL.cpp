@@ -214,6 +214,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Various object
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Various");
+
 	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
 	glGenFramebuffers(1, &m_fbo);
@@ -229,9 +231,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
+	GL_POP();
+
 	// ****************************************************************
 	// Vertex buffer state
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Vertex Buffer");
+
 	ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
 	GSInputLayoutOGL il_convert[] =
 	{
@@ -246,16 +252,23 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	};
 	m_va = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
 
+	GL_POP();
 	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Sampler");
+
 	for (uint32 key = 0; key < countof(m_ps_ss); key++) {
 		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
 	}
 
+	GL_POP();
+
 	// ****************************************************************
 	// convert
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Convert");
+
 	m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
 	// Upload once and forget about it
 	ConvertConstantBuffer cb;
@@ -278,24 +291,37 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_convert.dss_write->EnableDepth();
 	m_convert.dss_write->SetDepth(GL_ALWAYS, true);
 
+	GL_POP();
+
 	// ****************************************************************
 	// merge
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Merge");
+
 	m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
 
 	for(size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		m_merge_obj.ps[i] = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
 
+	GL_POP();
+
 	// ****************************************************************
 	// interlace
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Interlace");
+
 	m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 		m_interlace.ps[i] = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+
+	GL_POP();
+
 	// ****************************************************************
 	// Shade boost
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Shadeboost");
+
 	m_shadeboost.cb = new GSUniformBufferOGL(g_shadeboost_cb_index, sizeof(ShadeBoostConstantBuffer));
 
 	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
@@ -307,9 +333,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	m_shadeboost.ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
 
+	GL_POP();
+
 	// ****************************************************************
 	// rasterization configuration
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Rasterization");
+
 #ifdef ONLY_LINES
 	glLineWidth(5.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -321,14 +351,18 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glDisable(GL_MULTISAMPLE);
 	glDisable(GL_DITHER); // Honestly I don't know!
 
+	GL_POP();
+
 	// ****************************************************************
 	// DATE
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Date");
 
 	m_date.dss = new GSDepthStencilOGL();
 	m_date.dss->EnableStencil();
 	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
 
+	GL_POP();
 	// ****************************************************************
 	// Use DX coordinate convention
 	// ****************************************************************
@@ -347,13 +381,22 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// HW renderer shader
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::CreateTextureFX");
+
 	CreateTextureFX();
+
+	GL_POP();
 
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::PBO");
+
 	PboPool::Init();
 
+	GL_POP();
+
+	// Done !
 	GL_POP();
 
 	// ****************************************************************
