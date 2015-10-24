@@ -275,6 +275,7 @@ extern   PFNGLCOPYIMAGESUBDATAPROC              glCopyImageSubData;
 extern   PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage;
 extern   PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup;
 extern   PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert;
+extern   PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 glClearTexImage;
 extern   PFNGLBUFFERSTORAGEPROC                 glBufferStorage;

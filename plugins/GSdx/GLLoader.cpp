@@ -107,6 +107,7 @@ PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage                = NUL
 PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup                    = NULL;
 PFNGLPOPDEBUGGROUPPROC                 glPopDebugGroup                     = NULL;
 PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert                = NULL;
+PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl               = NULL;
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 glMemoryBarrier                     = NULL;

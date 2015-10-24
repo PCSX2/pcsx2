@@ -114,6 +114,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(glPushDebugGroup) = GetProcAddress("glPushDebugGroup", true);
 	*(void**)&(glPopDebugGroup) = GetProcAddress("glPopDebugGroup", true);
 	*(void**)&(glDebugMessageInsert) = GetProcAddress("glDebugMessageInsert", true);
+	*(void**)&(glDebugMessageControl) = GetProcAddress("glDebugMessageControl", true);
 	// GL4.4
 	*(void**)&(glClearTexImage) = GetProcAddress("glClearTexImage", true);
 	*(void**)&(glBufferStorage) = GetProcAddress("glBufferStorage", true);

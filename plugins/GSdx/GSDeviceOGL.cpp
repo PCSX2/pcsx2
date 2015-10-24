@@ -191,19 +191,25 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		if (!GLLoader::check_gl_supported_extension()) return false;
 	}
 
-	GL_PUSH("GSDeviceOGL::Create");
-
 	m_window = wnd;
 
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfig("debug_opengl", 0) && glDebugMessageCallback) {
-		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	if (theApp.GetConfig("debug_opengl", 0)) {
+		if (glDebugMessageCallback) {
+			glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		}
+		if (glDebugMessageControl) {
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+		}
 	}
 #endif
+
+	// WARNING it must be done after the control setup (at least on MESA)
+	GL_PUSH("GSDeviceOGL::Create");
 
 	// ****************************************************************
 	// Various object
