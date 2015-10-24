@@ -629,6 +629,12 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					delete t;
 					continue;
 				}
+			} else if (GSUtil::HasSharedBits(bp, t->m_TEX0.TBP0)) {
+				// EE writes the ALPHA channel. Mark it as invalid for
+				// the texture cache. Otherwise it will generate a wrong
+				// hit on the texture cache.
+				// Game: Conflict - Desert Storm (flickering)
+				t->m_dirty_alpha = false;
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
