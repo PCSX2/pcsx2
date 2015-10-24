@@ -358,14 +358,6 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				HANDLE_CHECK(IDC_EFFECTS_DISABLE,EffectsDisabled);
 				HANDLE_CHECK(IDC_DEALIASFILTER,postprocess_filter_dealias);
 				HANDLE_CHECK(IDC_DSP_ENABLE,dspPluginEnabled);
-				
-				// Fixme : Eh, how to update this based on drop list selections? :p
-				// IDC_TS_ENABLE already deleted!
-
-				//HANDLE_CHECKNB(IDC_TS_ENABLE,timeStretchEnabled);
-				//	EnableWindow( GetDlgItem( hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH ), timeStretchEnabled );
-				break;
-
 				HANDLE_CHECKNB(IDC_DEBUG_ENABLE,DebugEnabled);
 					DebugConfig::EnableControls( hWnd );
 					EnableWindow( GetDlgItem( hWnd, IDC_OPEN_CONFIG_DEBUG ), DebugEnabled );
