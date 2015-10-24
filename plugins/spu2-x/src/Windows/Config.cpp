@@ -344,6 +344,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						curpos = (int)res;
 						swprintf_s(temp,L"%d ms (avg)",curpos);
 						SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);
+						bool soundtouch = sMode == 0;
+						EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), soundtouch);
 					}
 				}
 				break;
