@@ -187,7 +187,8 @@ void mfifoVIF1transfer(int qwc)
 			if(vif1ch.chcr.STR == true && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
 			{
 				SPR_LOG("Data Added, Resuming");
-				CPU_INT(DMAC_MFIFO_VIF, 16);
+				//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
+				CPU_INT(DMAC_MFIFO_VIF, qwc * BIAS);
 			}
 
 			//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
@@ -329,10 +330,7 @@ void vifMFIFOInterrupt()
 
 		hwIntcIrq(INTC_VIF1);
 		--vif1.irq;
-		if (vif1.inprogress & 0x10) {
-			FireMFIFOEmpty();
-			//if (!(vif1.done && vif1ch.qwc == 0))return;
-		}
+		
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
 			//vif1Regs.stat.FQC = 0; // FQC=0
 			//vif1ch.chcr.STR = false;
