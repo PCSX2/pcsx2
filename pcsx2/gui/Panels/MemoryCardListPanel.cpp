@@ -190,6 +190,8 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 	);
 
 	m_listview = NULL;
+	s_leftside_buttons = NULL;
+	s_rightside_buttons = NULL;
 
 	m_btn_Refresh = new wxButton( this, wxID_ANY, _("Refresh list") );
 

@@ -48,7 +48,6 @@ protected:
 	AsyncFileReader*	m_reader;
 
 	s32 		m_current_lsn;
-	uint		m_current_count;
 
 	isoType		m_type;
 	u32			m_flags;

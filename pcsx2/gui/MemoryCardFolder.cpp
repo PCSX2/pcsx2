@@ -29,6 +29,9 @@ bool RemoveDirectory( const wxString& dirname );
 FolderMemoryCard::FolderMemoryCard() {
 	m_slot = 0;
 	m_isEnabled = false;
+	m_performFileWrites = false;
+	m_framesUntilFlush = 0;
+	m_timeLastWritten = 0;
 }
 
 void FolderMemoryCard::InitializeInternalData() {

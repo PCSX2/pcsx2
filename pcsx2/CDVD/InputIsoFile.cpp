@@ -179,7 +179,10 @@ void InputIsoFile::_init()
 	
 	m_read_inprogress = false;
 	m_read_count = 0;
+	ReadUnit = 0;
+	m_current_lsn = -1;
 	m_read_lsn = -1;
+	m_reader = NULL;
 }
 
 // Tests the specified filename to see if it is a supported ISO type.  This function typically

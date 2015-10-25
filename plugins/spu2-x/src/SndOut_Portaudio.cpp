@@ -110,11 +110,18 @@ public:
 
 	Portaudio()
 	{
-		m_ApiId=-1;
 		m_SuggestedLatencyMinimal = true;
+		m_UseHardware = false;
+		m_WasapiExclusiveMode = false;
+		started = false;
+		stream = NULL;
+		ActualPaCallback = NULL;
+		m_ApiId=-1;
 		m_SuggestedLatencyMS = 20;
-
 		actualUsedChannels = 0;
+		writtenSoFar = 0;
+		writtenLastTime = 0;
+		availableLastTime = 0;
 	}
 
 	s32 Init()
