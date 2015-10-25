@@ -48,8 +48,8 @@ protected:
 	MenuItemAddonList	m_PluginMenuItems;
 
 public:
+	wxMenu&				MyMenu;
 	PluginsEnum_t		PluginId;
-	wxMenu&			MyMenu;
 
 public:
 	PerPluginMenuInfo() : MyMenu(*new wxMenu()), PluginId (PluginId_Count) {}
