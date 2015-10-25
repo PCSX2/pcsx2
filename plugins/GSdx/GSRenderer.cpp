@@ -25,6 +25,10 @@
 #include <X11/keysym.h>
 #endif
 
+const unsigned int s_interlace_nb = 8;
+const unsigned int s_post_shader_nb = 5;
+const unsigned int s_aspect_ratio_nb = 3;
+
 GSRenderer::GSRenderer()
 	: m_shader(0)
 	, m_shift_key(false)
@@ -36,9 +40,9 @@ GSRenderer::GSRenderer()
 {
 	m_GStitleInfoBuffer[0] = 0;
 
-	m_interlace = theApp.GetConfig("interlace", 7);
-	m_aspectratio = theApp.GetConfig("aspectratio", 1);
-	m_shader = theApp.GetConfig("TVShader", 0);
+	m_interlace = theApp.GetConfig("interlace", 7) % s_interlace_nb;
+	m_aspectratio = theApp.GetConfig("aspectratio", 1) % s_aspect_ratio_nb;
+	m_shader = theApp.GetConfig("TVShader", 0) % s_post_shader_nb;
 	m_filter = theApp.GetConfig("filter", 1);
 	m_vsync = !!theApp.GetConfig("vsync", 0);
 	m_aa1 = !!theApp.GetConfig("aa1", 0);
@@ -548,9 +552,6 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
-	const unsigned int interlace_nb = 8;
-	const unsigned int post_shader_nb = 5;
-	const unsigned int aspect_ratio_nb = 3;
 #ifdef _WINDOWS
 	if(e->type == KEYPRESS)
 	{
@@ -560,15 +561,15 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case VK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case VK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case VK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			printf("GSdx: Set shader to: %d.\n", (int)m_shader);
 			theApp.SetConfig("TVShader", (int)m_shader);
 			return;
@@ -599,15 +600,15 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case XK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 			fprintf(stderr, "GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case XK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case XK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			theApp.SetConfig("TVShader", (int)m_shader);
 			fprintf(stderr,"GSdx: Set shader %d.\n", (int)m_shader);
 			return;
