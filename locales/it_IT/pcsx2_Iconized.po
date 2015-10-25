@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
-"PO-Revision-Date: 2015-07-26 22:08+0200\n"
+"POT-Creation-Date: 2015-10-24 10:24+0200\n"
+"PO-Revision-Date: 2015-10-24 10:24+0200\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 1.8.3\n"
+"X-Generator: Poedit 1.8.6\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -355,11 +355,6 @@ msgstr ""
 "Lo slot PS2 %d è stato automaticamente disabilitato. Si può correggere il "
 "problema\n"
 "e riabilitarlo utilizzando Configurazione -> Memory Card dai menù principali."
-
-#: pcsx2/gui/MemoryCardFolder.h:512
-#, c-format
-msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr "(FolderMcd) Memory Card è piena, impossibile aggiungere: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
@@ -849,3 +844,8 @@ msgstr ""
 "disponibile all'utilizzo. Questo non è un errore critico, dato che il "
 "ricompilatore superVU è obsoleto e in ogni caso dovresti utilizzare "
 "microVU. :)"
+
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr "(FolderMcd) Memory Card è piena, impossibile aggiungere: %s"
