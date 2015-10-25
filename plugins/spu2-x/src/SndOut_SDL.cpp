@@ -18,6 +18,7 @@
 
 #include "Global.h"
 #include "SndOut.h"
+#include "Dialogs.h"
 
 #include <memory>
 
@@ -67,8 +68,13 @@ namespace {
 
 struct SDLAudioMod : public SndOutModule {
 	static SDLAudioMod mod;
+	wxString m_api;
 
 	s32 Init() {
+		ReadSettings();
+
+		fprintf(stderr, "SDL audio driver is %s\n", static_cast<const char*>(m_api.c_str()));
+
 		/* SDL backends will mangle the AudioSpec and change the sample count. If we reopen
 		 * the audio backend, we need to make sure we keep our desired samples in the spec */
 		spec.samples = desiredSamples;
@@ -96,20 +102,46 @@ struct SDLAudioMod : public SndOutModule {
 		SDL_CloseAudio();
 	}
 
+	~SDLAudioMod() {  Close(); }
+
 	s32 Test() const { return 0; }
-	void Configure(uptr parent) {}
-	void ReadSettings() {}
-	void SetApiSettings(wxString api) {}
-	void WriteSettings() const {};
 	int GetEmptySampleCount() { return 0; }
 
-	~SDLAudioMod() {  Close(); }
+	void Configure(uptr parent) {}
+
+	void ReadSettings() {
+		wxString api(L"EMPTYEMPTYEMPTY");
+		CfgReadStr(L"SDL", L"HostApi", api, L"pulseaudio");
+		SetApiSettings(api);
+	}
+
+	void WriteSettings() const {
+		CfgWriteStr(L"SDL", L"HostApi", m_api);
+	};
+
+	void SetApiSettings(wxString api) {
+#if SDL_MAJOR_VERSION >= 2
+		// Validate the api name
+		bool valid = false;
+		for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
+			valid |= (api.Cmp(wxString(SDL_GetAudioDriver(i))) == 0);
+		}
+		if (valid) {
+			m_api = api;
+		} else {
+			fprintf(stderr, "SDL audio driver configuration is invalid!\n"
+					"It will be replaced by pulseaudio!\n");
+			m_api = "pulseaudio";
+		}
+#endif
+	}
+
 
 	private:
 	SDL_AudioSpec spec;
 
-	SDLAudioMod()
-		: spec({SampleRate, format, channels, 0,
+	SDLAudioMod() : m_api("pulseaudio"),
+		spec({SampleRate, format, channels, 0,
 				desiredSamples, 0, 0, &callback_fillBuffer, nullptr})
 		{
 			// Number of samples must be a multiple of packet size.

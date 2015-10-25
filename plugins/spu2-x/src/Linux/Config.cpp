@@ -19,6 +19,9 @@
 #include "Dialogs.h"
 #include "Config.h"
 
+#include <SDL.h>
+#include <SDL_audio.h>
+
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
 #else
@@ -70,6 +73,7 @@ u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 static u32 OutputAPI = 0;
+static u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
 int dplLevel = 0;
@@ -121,10 +125,21 @@ void ReadSettings()
 	if (temp == L"OSS")  OutputAPI = 1;
 	if (temp == L"JACK") OutputAPI = 2;
 
+	CfgReadStr( L"SDL", L"HostApi", temp, L"pulseaudio" );
+	SdlOutputAPI = -1;
+#if SDL_MAJOR_VERSION >= 2
+	// YES It sucks ...
+	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
+		if (!temp.Cmp(SDL_GetAudioDriver(i)))
+			SdlOutputAPI = i;
+	}
+#endif
+
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 300);
 	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 
 	PortaudioOut->ReadSettings();
+	SDLOut->ReadSettings();
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
 
@@ -167,6 +182,7 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
 
 	PortaudioOut->WriteSettings();
+	SDLOut->WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }
@@ -198,6 +214,9 @@ void DisplayDialog()
     GtkWidget *output_frame, *output_box;
     GtkWidget *mod_label, *mod_box;
     GtkWidget *api_label, *api_box;
+#if SDL_MAJOR_VERSION >= 2
+    GtkWidget *sdl_api_label, *sdl_api_box;
+#endif
     GtkWidget *latency_label, *latency_slide;
     GtkWidget *sync_label, *sync_box;
     GtkWidget *advanced_button;
@@ -242,6 +261,16 @@ void DisplayDialog()
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
 
+#if SDL_MAJOR_VERSION >= 2
+    sdl_api_label = gtk_label_new ("SDL API:");
+    sdl_api_box = gtk_combo_box_text_new ();
+    // YES It sucks ...
+    for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sdl_api_box), SDL_GetAudioDriver(i));
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(sdl_api_box), SdlOutputAPI);
+#endif
+
     latency_label = gtk_label_new ("Latency:");
 #if GTK_MAJOR_VERSION < 3
     latency_slide = gtk_hscale_new_with_range(LATENCY_MIN, LATENCY_MAX, 5);
@@ -282,6 +311,10 @@ void DisplayDialog()
 	gtk_container_add(GTK_CONTAINER(output_box), mod_box);
 	gtk_container_add(GTK_CONTAINER(output_box), api_label);
 	gtk_container_add(GTK_CONTAINER(output_box), api_box);
+#if SDL_MAJOR_VERSION >= 2
+	gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
+	gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
+#endif
 	gtk_container_add(GTK_CONTAINER(output_box), sync_label);
 	gtk_container_add(GTK_CONTAINER(output_box), sync_box);
 	gtk_container_add(GTK_CONTAINER(output_box), latency_label);
@@ -326,6 +359,14 @@ void DisplayDialog()
 				default: PortaudioOut->SetApiSettings(L"Unknown");
 			}
 		}
+
+#if SDL_MAJOR_VERSION >= 2
+		if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
+			SdlOutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box));
+			// YES It sucks ...
+			SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI)));
+		}
+#endif
 
     	SndOutLatencyMS = gtk_range_get_value(GTK_RANGE(latency_slide));
     	
