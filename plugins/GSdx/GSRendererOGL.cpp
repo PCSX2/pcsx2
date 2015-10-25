@@ -461,14 +461,48 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	// In order to speed up comparaison a boundind-box is accumulated. It removes a
 	// loop so code is much faster (check game virtua fighter). Besides it allow to check
 	// properly the Y order.
-	GSVector4i all(0);
-	for(size_t i = 0; i < count; i += 2) {
+	GSVector4i all;
+	//FIXME better vector operation
+	if (v[1].XYZ.Y < v[0].XYZ.Y) {
+		all.y = v[1].XYZ.Y;
+		all.w = v[0].XYZ.Y;
+	} else {
+		all.y = v[0].XYZ.Y;
+		all.w = v[1].XYZ.Y;
+	}
+	if (v[1].XYZ.X < v[0].XYZ.X) {
+		all.x = v[1].XYZ.X;
+		all.z = v[0].XYZ.X;
+	} else {
+		all.x = v[0].XYZ.X;
+		all.z = v[1].XYZ.X;
+	}
+
+	for(size_t i = 2; i < count; i += 2) {
 		GSVector4i sprite;
-		if (v[i+1].XYZ.Y < v[i].XYZ.Y) {
-			sprite = GSVector4i(v[i].XYZ.X, v[i+1].XYZ.Y, v[i+1].XYZ.X, v[i].XYZ.Y);
+		//FIXME better vector operation
+		if (v[i+1].XYZ.Y < v[i+0].XYZ.Y) {
+			sprite.y = v[i+1].XYZ.Y;
+			sprite.w = v[i+0].XYZ.Y;
 		} else {
-			sprite = GSVector4i(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
+			sprite.y = v[i+0].XYZ.Y;
+			sprite.w = v[i+1].XYZ.Y;
 		}
+		if (v[i+1].XYZ.X < v[i+0].XYZ.X) {
+			sprite.x = v[i+1].XYZ.X;
+			sprite.z = v[i+0].XYZ.X;
+		} else {
+			sprite.x = v[i+0].XYZ.X;
+			sprite.z = v[i+1].XYZ.X;
+		}
+
+		// Be sure to get vertex in good order, otherwise .r* function doesn't
+		// work as expected.
+		ASSERT(sprite.x <= sprite.z);
+		ASSERT(sprite.y <= sprite.w);
+		ASSERT(all.x <= all.z);
+		ASSERT(all.y <= all.w);
+
 		if (all.rintersect(sprite).rempty()) {
 			all = all.runion(sprite);
 		} else {
