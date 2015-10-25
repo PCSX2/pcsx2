@@ -68,21 +68,46 @@ namespace {
 
 struct SDLAudioMod : public SndOutModule {
 	static SDLAudioMod mod;
-	wxString m_api;
+	std::string m_api;
 
 	s32 Init() {
 		ReadSettings();
 
-		fprintf(stderr, "SDL audio driver is %s\n", static_cast<const char*>(m_api.c_str()));
+#if SDL_MAJOR_VERSION >= 2
+		std::cerr << "Request SDL audio driver: " << m_api.c_str() << std::endl;
+#endif
 
 		/* SDL backends will mangle the AudioSpec and change the sample count. If we reopen
 		 * the audio backend, we need to make sure we keep our desired samples in the spec */
 		spec.samples = desiredSamples;
 
-		if(SDL_Init(SDL_INIT_AUDIO) < 0 || SDL_OpenAudio(&spec, NULL) < 0) {
+		// Mandatory otherwise, init will be redone in SDL_OpenAudio
+		if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+			std::cerr << "SPU2-X: SDL INIT audio error: " << SDL_GetError() << std::endl;
+			return -1;
+		}
+
+#if SDL_MAJOR_VERSION >= 2
+		if (m_api.compare("pulseaudio")) {
+			// Close the audio, but keep the subsystem open
+			SDL_AudioQuit();
+			// Reopen the audio
+			if (SDL_AudioInit(m_api.c_str()) < 0) {
+				std::cerr << "SPU2-X: SDL audio init error: " << SDL_GetError() << std::endl;
+				return -1;
+			}
+		}
+#endif
+
+		if (SDL_OpenAudio(&spec, NULL) < 0) {
 			std::cerr << "SPU2-X: SDL audio error: " << SDL_GetError() << std::endl;
 			return -1;
 		}
+
+#if SDL_MAJOR_VERSION >= 2
+		std::cerr << "Opened SDL audio driver: " << SDL_GetCurrentAudioDriver() << std::endl;
+#endif
+
 		/* This is so ugly. It is hilariously ugly. I didn't use a vector to save reallocs. */
 		if(samples != spec.samples || buffer == NULL)
 			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
@@ -99,7 +124,8 @@ struct SDLAudioMod : public SndOutModule {
 	const wchar_t* GetLongName() const { return L"SDL Audio"; }
 
 	void Close() {
-		SDL_CloseAudio();
+		// Related to SDL_Init(SDL_INIT_AUDIO)
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	}
 
 	~SDLAudioMod() {  Close(); }
@@ -123,14 +149,15 @@ struct SDLAudioMod : public SndOutModule {
 #if SDL_MAJOR_VERSION >= 2
 		// Validate the api name
 		bool valid = false;
+		std::string api_name = std::string(api);
 		for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-			valid |= (api.Cmp(wxString(SDL_GetAudioDriver(i))) == 0);
+			valid |= (api_name.compare(SDL_GetAudioDriver(i)) == 0);
 		}
 		if (valid) {
 			m_api = api;
 		} else {
-			fprintf(stderr, "SDL audio driver configuration is invalid!\n"
-					"It will be replaced by pulseaudio!\n");
+			std::cerr	<< "SDL audio driver configuration is invalid!" << std::endl
+						<< "It will be replaced by pulseaudio!" << std::endl;
 			m_api = "pulseaudio";
 		}
 #endif
