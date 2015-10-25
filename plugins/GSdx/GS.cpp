@@ -62,7 +62,7 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
-static int s_renderer = -1;
+static GS_RENDERER s_renderer = REND_UNDEFINED;
 static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
@@ -146,7 +146,7 @@ EXPORT_C GSshutdown()
 
 	s_gs = NULL;
 
-	s_renderer = -1;
+	s_renderer = REND_UNDEFINED;
 
 #ifdef _WINDOWS
 
@@ -180,13 +180,13 @@ EXPORT_C GSclose()
 	}
 }
 
-static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
+static int _GSopen(void** dsp, char* title, GS_RENDERER renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
 
-	if(renderer == -1)
+	if(renderer == REND_UNDEFINED)
 	{
-		renderer = theApp.GetConfig("Renderer", 0);
+		renderer = static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
 	}
 
 	if(threads == -1)
@@ -211,13 +211,13 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 
 		switch (renderer)
 		{		
-		case 1: case 4: case 10: case 13:
+		case REND_D3D9_SW: case REND_D3D1011_SW: case REND_NULL_SW: case REND_OGL_SW:
 			s_type_log = "(Software mode)";
 			break;
-		case 2: case 5: case 11:
+		case REND_D3D9_NULL: case REND_D3D1011_NULL: case REND_NULL_NULL:
 			s_type_log = "(Null mode)";
 			break;
-		case 14: case 15: case 16: case 17:
+		case REND_D3D9_OCL: case REND_D3D1011_OCL: case REND_NULL_OCL: case REND_OGL_OCL:
 			s_type_log = "(OpenCL)";
 			break;
 		default:
@@ -229,21 +229,21 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		{
 		default:
 #ifdef _WINDOWS
-		case 0: case 1: case 2: case 14:
+		case REND_D3D9_HW: case REND_D3D9_NULL: case REND_D3D9_OCL: case REND_D3D9_SW:
 			dev = new GSDevice9();
 			s_renderer_name = " D3D9";
 			printf("\n Current Renderer: Direct3D9%s \n", s_type_log);
 			break;
-		case 3: case 4: case 5: case 15:
+		case REND_D3D1011_HW: case REND_D3D1011_NULL: case REND_D3D1011_OCL: case REND_D3D1011_SW:
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
 			printf("\n Current Renderer: Direct3D11%s \n", s_type_log);
 			break;
 #endif
-		case 9: case 10: case 11: case 16:
+		case REND_NULL_HW: case REND_NULL_SW: case REND_NULL_OCL: case REND_NULL_NULL:
 			dev = new GSDeviceNull();
 			break;
-		case 12: case 13: case 17:
+		case REND_OGL_HW: case REND_OGL_SW: case REND_OGL_OCL:
 			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
 			printf("\n Current Renderer: OpenGL%s \n", s_type_log);
@@ -261,28 +261,28 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			{
 			default:
 #ifdef _WINDOWS
-			case 0:
+			case REND_D3D9_HW:
 				s_gs = (GSRenderer*)new GSRendererDX9();
 				s_renderer_type = " HW";
 				break;
-			case 3:
+			case REND_D3D1011_HW:
 				s_gs = (GSRenderer*)new GSRendererDX11();
 				s_renderer_type = " HW";
 				break;
 #endif
-			case 12:
+			case REND_OGL_HW:
 				s_gs = (GSRenderer*)new GSRendererOGL();
 				s_renderer_type = " HW";
 				break;
-			case 1: case 4: case 10: case 13:
+			case REND_D3D9_SW: case REND_D3D1011_SW: case REND_OGL_SW: case REND_NULL_SW:
 				s_gs = new GSRendererSW(threads);
 				s_renderer_type = " SW";
 				break;
-			case 2: case 5: case 11:
+			case REND_D3D9_NULL: case REND_D3D1011_NULL: case REND_NULL_NULL:
 				s_gs = new GSRendererNull();
 					s_renderer_type = " Null";
 				break;
-			case 14: case 15: case 16: case 17:
+			case REND_D3D1011_OCL: case REND_D3D9_OCL: case REND_NULL_OCL: case REND_OGL_OCL:
 #ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
 				s_renderer_type = " OCL";
@@ -302,7 +302,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 #ifdef _WINDOWS
 			switch (renderer)
 			{
-			case 12: case 13: case 17:
+			case REND_OGL_HW: case REND_OGL_SW: case REND_OGL_OCL:
 				s_gs->m_wnd = new GSWndWGL();
 				break;
 			default:
@@ -442,7 +442,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		return -1;
 	}
 
-	if (renderer == 12 && theApp.GetConfig("debug_glsl_shader", 0) == 2) {
+	if (renderer == REND_OGL_HW && theApp.GetConfig("debug_glsl_shader", 0) == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
 		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
 		printf("\nGSdx: test OpenGL shader done. It will now exit\n");
@@ -457,39 +457,33 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	static bool stored_toggle_state = false;
 	bool toggle_state = !!(flags & 4);
 
-	int renderer = s_renderer;
+	GS_RENDERER renderer = s_renderer;
 	// Fresh start up or config file changed
-	if (renderer == -1)
+	if (renderer == REND_UNDEFINED)
 	{
-#ifdef __linux__
-		// Use ogl renderer as default otherwise it crash at startup
-		// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
-		renderer = theApp.GetConfig("Renderer", 12);
-#else
-		renderer = theApp.GetConfig("Renderer", 0);
-#endif
+		renderer = static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
 	}
 	else if (stored_toggle_state != toggle_state)
 	{
 #ifdef _WIN32
-		int best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? 4 : 1; // dx11 / dx9 sw
+		GS_RENDERER best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? REND_D3D1011_SW : REND_D3D9_SW; // dx11 / dx9 sw
 
 		switch(renderer){
 			// Use alternative renderer (SW if currently using HW renderer, and vice versa, keeping the same DX level)
-			case 1: renderer = 0; break; // DX9:  SW to HW
-			case 0: renderer = 1; break; // DX9:  HW to SW
-			case 4: renderer = 3; break; // DX11: SW to HW
-			case 3: renderer = 4; break; // DX11: HW to SW
-			case 13: renderer = 12; break; // OGL: SW to HW
-			case 12: renderer = 13; break; // OGL: HW to SW
+			case REND_D3D9_SW: renderer = REND_D3D9_HW; break; // DX9:  SW to HW
+			case REND_D3D9_HW: renderer = REND_D3D9_SW; break; // DX9:  HW to SW
+			case REND_D3D1011_SW: renderer = REND_D3D1011_HW; break; // DX11: SW to HW
+			case REND_D3D1011_HW: renderer = REND_D3D1011_SW; break; // DX11: HW to SW
+			case REND_OGL_SW: renderer = REND_OGL_HW; break; // OGL: SW to HW
+			case REND_OGL_HW: renderer = REND_OGL_SW; break; // OGL: HW to SW
 			default: renderer = best_sw_renderer; // If wasn't using DX (e.g. SDL), use best SW renderer.
 		}
 
 #endif
 #ifdef __linux__
 		switch(renderer) {
-			case 13: renderer = 12; break; // OGL: SW to HW
-			case 12: renderer = 13; break; // OGL: HW to SW
+			case REND_OGL_SW: renderer = REND_OGL_HW; break; // OGL: SW to HW
+			case REND_OGL_HW: renderer = REND_OGL_SW; break; // OGL: HW to SW
 		}
 #endif
 	}
@@ -515,7 +509,7 @@ EXPORT_C_(int) GSopen(void** dsp, char* title, int mt)
 	XCloseDisplay(display);
 	*/
 
-	int renderer = 0;
+	GS_RENDERER renderer = REND_D3D9_HW;
 
 	// Legacy GUI expects to acquire vsync from the configuration files.
 
@@ -527,7 +521,7 @@ EXPORT_C_(int) GSopen(void** dsp, char* title, int mt)
 
 #ifdef _WINDOWS
 
-		renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? 4 : 1; // dx11 / dx9 sw
+		renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? REND_D3D1011_SW : REND_D3D9_SW; // dx11 / dx9 sw
 
 #endif
 
@@ -537,7 +531,7 @@ EXPORT_C_(int) GSopen(void** dsp, char* title, int mt)
 	{
 		// normal init
 
-		renderer = theApp.GetConfig("Renderer", 0);
+		renderer = static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
 	}
 
 	*dsp = NULL;
@@ -779,7 +773,7 @@ EXPORT_C GSconfigure()
 				GSshutdown();
 			}
 			// Force a reload of the gs state
-			s_renderer = -1;
+			s_renderer = REND_UNDEFINED;
 		}
 
 #else
@@ -787,7 +781,7 @@ EXPORT_C GSconfigure()
 		if (RunLinuxDialog()) {
 			theApp.ReloadConfig();
 			// Force a reload of the gs state
-			s_renderer = -1;
+			s_renderer = REND_UNDEFINED;
 		}
 
 #endif
@@ -1030,13 +1024,13 @@ public:
 
 EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 {
-	int renderer = -1;
+	GS_RENDERER renderer = REND_UNDEFINED;
 
 	{
 		char* start = lpszCmdLine;
 		char* end = NULL;
 		long n = strtol(lpszCmdLine, &end, 10);
-		if(end > start) {renderer = n; lpszCmdLine = end;}
+		if(end > start) {renderer = static_cast<GS_RENDERER>(n); lpszCmdLine = end;}
 	}
 
 	while(*lpszCmdLine == ' ') lpszCmdLine++;
@@ -1492,13 +1486,13 @@ inline unsigned long timeGetTime()
 }
 
 // Note
-EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
+EXPORT_C GSReplay(char* lpszCmdLine, GS_RENDERER renderer)
 {
 	GLLoader::in_replayer = true;
 
 	// Allow to easyly switch between SW/HW renderer
-	renderer = theApp.GetConfig("Renderer", 12);
-	if (renderer != 12 && renderer != 13)
+	renderer = static_cast<GS_RENDERER>(theApp.GetConfig("Renderer", GS_DEFAULT_RENDERER));
+	if (renderer != REND_OGL_HW && renderer != REND_OGL_SW)
 	{
 		fprintf(stderr, "wrong renderer selected %d\n", renderer);
 		return;
