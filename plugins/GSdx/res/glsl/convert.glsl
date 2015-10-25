@@ -326,7 +326,7 @@ vec4 ps_scanlines(uint i)
 
 void ps_main5() // scanlines
 {
-    highp uvec4 p = uvec4(PSin_p);
+    highp uvec4 p = uvec4(gl_FragCoord);
 
     vec4 c = ps_scanlines(p.y % 2u);
 
@@ -337,7 +337,7 @@ void ps_main5() // scanlines
 #ifdef ps_main6
 void ps_main6() // diagonal
 {
-    highp uvec4 p = uvec4(PSin_p);
+    highp uvec4 p = uvec4(gl_FragCoord);
 
     vec4 c = ps_crt((p.x + (p.y % 3u)) % 3u);
 
@@ -348,7 +348,7 @@ void ps_main6() // diagonal
 #ifdef ps_main8
 void ps_main8() // triangular
 {
-    highp uvec4 p = uvec4(PSin_p);
+    highp uvec4 p = uvec4(gl_FragCoord);
 
     vec4 c = ps_crt(((p.x + ((p.y >> 1u) & 1u) * 3u) >> 1u) % 3u);
 
