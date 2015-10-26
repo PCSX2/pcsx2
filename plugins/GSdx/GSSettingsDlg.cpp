@@ -356,14 +356,16 @@ void GSSettingsDlg::UpdateRenderers()
 
 	vector<GSSetting> renderers;
 
-	unsigned renderer_setting = theApp.GetConfig("Renderer", 0);
-	unsigned renderer_sel = 0;
+	GSRendererType renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	GSRendererType renderer_sel = GSRendererType::Default;
 
 	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		if(r.id >= 3 && r.id <= 5 || r.id == 15)
+		GSRendererType renderer = static_cast<GSRendererType>(r.id);
+
+		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
 
@@ -372,13 +374,13 @@ void GSSettingsDlg::UpdateRenderers()
 
 		renderers.push_back(r);
 
-		if(r.id == renderer_setting)
+		if (static_cast<GSRendererType>(r.id) == renderer_setting)
 		{
 			renderer_sel = renderer_setting;
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, renderers, renderer_sel);
+	ComboBoxInit(IDC_RENDERER, renderers, static_cast<uint32>(renderer_sel));
 }
 
 void GSSettingsDlg::UpdateControls()
@@ -394,13 +396,15 @@ void GSSettingsDlg::UpdateControls()
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		bool dx9 = i >= 0 && i <= 2 || i == 14;
-		bool dx11 = i >= 3 && i <= 5 || i == 15;
-		bool ogl = i >= 12 && i <= 13 || i == 17;
-		bool hw = i == 0 || i == 3 || i == 12;
-		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
-		bool ocl = i >= 14 && i <= 17;
+		GSRendererType renderer = static_cast<GSRendererType>(i);
 
+		bool dx9 = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX9_Null || renderer == GSRendererType::DX9_OpenCL;
+		bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL;
+		bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+
+		bool hw = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW || renderer == GSRendererType::Null_HW;
+		//bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW  || renderer == GSRendererType::Null_SW
+		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::Null_OpenCL || renderer == GSRendererType::OGL_OpenCL;
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
@@ -580,11 +584,11 @@ GSHacksDlg::GSHacksDlg() :
 void GSHacksDlg::OnInit()
 {
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
-	int renderer = SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0);
+	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
 	// It can only be accessed with a HW renderer, so this is sufficient.
-	bool dx9 = renderer == 0;
-	// bool dx11 = renderer == 3;
-	bool ogl = renderer == 12;
+	bool dx9 = renderer == GSRendererType::DX9_HW;
+	// bool dx11 = renderer == GSRendererType::DX1011_HW;
+	bool ogl = renderer == GSRendererType::OGL_HW;
 	unsigned short cb = 0;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)
