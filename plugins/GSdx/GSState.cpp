@@ -426,13 +426,24 @@ GSVector2i GSState::GetDeviceSize(int i)
 			ASSERT(0);
 			break;
 		case 2: // NTSC
-			h = 448;
+			if (h < 448)
+				h = 224; // KOF2000. Strangely FFMD is set without INT
+			else if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+				h = 224;
+			else
+				h = 448;
 			break;
 		case 3: // PAL
-			h = 512;
+			if (h < 512)
+				h = 256;
+			else if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+				h = 256;
+			else
+				h = 512;
 			break;
 	}
 
+#if 0
 	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
 	{
 		h /= 2;
@@ -457,6 +468,7 @@ GSVector2i GSState::GetDeviceSize(int i)
 	{
 		h /= 2; 
 	}
+#endif
 
 	return GSVector2i(w, h);
 
