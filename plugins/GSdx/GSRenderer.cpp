@@ -215,12 +215,16 @@ bool GSRenderer::Merge(int field)
 
 		// overscan hack
 
+#if 0
 		if(dr[i].height() > 512) // hmm
 		{
 			int y = GetDeviceSize(i).y;
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD) y /= 2;
 			r.bottom = r.top + y;
 		}
+#else
+		r.bottom = r.top + GetDeviceSize(i).y;
+#endif
 
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 

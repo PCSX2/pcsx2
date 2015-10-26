@@ -379,11 +379,13 @@ GSVector4i GSState::GetFrameRect(int i)
 	int w = r.width();
 	int h = r.height();
 
+#if 0
 	//Fixme: These games have an extra black bar at bottom of screen
 	if((m_game.title == CRC::DevilMayCry3 || m_game.title == CRC::SkyGunner) && (m_game.region == CRC::US || m_game.region == CRC::JP))
 	{
 		h = 448; //
 	}
+#endif
 	
 	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
 
@@ -417,6 +419,20 @@ GSVector2i GSState::GetDeviceSize(int i)
 	int w = r.width();
 	int h = r.height();
 
+	switch (m_regs->SMODE1.CMOD) {
+		case 0: // VESA
+			break;
+		case 1:
+			ASSERT(0);
+			break;
+		case 2: // NTSC
+			h = 448;
+			break;
+		case 3: // PAL
+			h = 512;
+			break;
+	}
+
 	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
 	{
 		h /= 2;
@@ -436,6 +452,7 @@ GSVector2i GSState::GetDeviceSize(int i)
 	}
 
 	//Fixme: These games elude the code above, worked with the old hack
+	// GREG note: Maybe the IsEnabled is a bad idea
 	else if(m_game.title == CRC::SilentHill2 || m_game.title == CRC::SilentHill3)
 	{
 		h /= 2; 
