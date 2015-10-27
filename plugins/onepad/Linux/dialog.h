@@ -1,4 +1,5 @@
-/*  onepad.h
+/*  dialog.h
+ *  PCSX2 Dev Team
  *  Copyright (C) 2015
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -41,7 +42,6 @@
 
 #include "GamepadConfiguration.h"
 #include "JoystickConfiguration.h"
-#include <SDL2/SDL.h>
 
 // Allow to found quickly button id
 // e.g L2 → 0, triangle → 4, ...
@@ -52,12 +52,13 @@ enum gui_buttons {
     JoyL_config, // Left Joystick Configuration
     JoyR_config, // Right Joystick Configuration
     Gamepad_config, // Gamepad Configuration
+    Set_all, // Set all buttons
     Apply, // Apply modifications without exit
     Ok, // Apply modifications and exit
     Cancel // Exit without apply modificatons
 };
 
-#define BUTTONS_LENGHT 31 // numbers of buttons on the gamepad
+#define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
 #define GAMEPAD_NUMBER 2 // numbers of gamepad
 #define UPDATE_TIME 5
 

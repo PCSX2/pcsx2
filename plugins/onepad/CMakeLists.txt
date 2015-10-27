@@ -31,6 +31,10 @@ set(onepadGuiResources
     ${compiled_images}/square.h
     ${compiled_images}/start.h
     ${compiled_images}/triangle.h
+    ${compiled_images}/arrow_up.h
+    ${compiled_images}/arrow_bottom.h
+    ${compiled_images}/arrow_left.h
+    ${compiled_images}/arrow_right.h
     )
 
 # plugin name
@@ -115,7 +119,8 @@ file(MAKE_DIRECTORY ${compiled_images})
 
 foreach(result_file IN ITEMS
         analog circle cross dp_bottom dp_left dp_right dp_up dualshock2
-        joystick_cursor l1 r1 l2 r2 l3 r3 select square start triangle)
+        joystick_cursor l1 r1 l2 r2 l3 r3 select square start triangle arrow_up
+        arrow_bottom arrow_left arrow_right)
     add_custom_command(
         OUTPUT  "${compiled_images}/${result_file}.h"
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${image_sources}/${result_file}.png" "${compiled_images}/${result_file}" )

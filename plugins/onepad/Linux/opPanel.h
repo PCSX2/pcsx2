@@ -1,4 +1,5 @@
 /*  opPanel.h
+ *  PCSX2 Dev Team
  *  Copyright (C) 2015
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -45,18 +46,24 @@ enum gui_img {
     img_left_cursor,
     img_right_cursor,
     img_analog,
-    img_background // background pic
+    img_background, // background pic
+    img_l_arrow_up,
+    img_l_arrow_right,
+    img_l_arrow_bottom,
+    img_l_arrow_left,
+    img_r_arrow_up,
+    img_r_arrow_right,
+    img_r_arrow_bottom,
+    img_r_arrow_left
 };
 
-#define NB_IMG 20
+#define NB_IMG 28
 
 class opPanel : public wxPanel
 {
-    wxBitmap picture[NB_IMG];
-    int img_size[NB_IMG][2];
-    bool show_image[NB_IMG];
-    int left_cursor_x, left_cursor_y, right_cursor_x, right_cursor_y;
-    void SaveSize(int);
+    wxBitmap m_picture[NB_IMG];
+    bool m_show_image[NB_IMG];
+    int m_left_cursor_x, m_left_cursor_y, m_right_cursor_x, m_right_cursor_y;
     DECLARE_EVENT_TABLE()
     void OnPaint(wxPaintEvent& event);
 

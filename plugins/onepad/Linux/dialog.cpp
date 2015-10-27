@@ -1,4 +1,5 @@
-/*  OnePAD
+/*  dialog.cpp
+ *  PCSX2 Dev Team
  *  Copyright (C) 2015
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -209,6 +210,12 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
     padding[Gamepad_config][2] = 50; // X
     padding[Gamepad_config][3] = 585; // Y
 
+    // Set All Buttons
+    padding[Set_all][0] = 180; // Width
+    padding[Set_all][1] = 28; // Height
+    padding[Set_all][2] = 764; // X
+    padding[Set_all][3] = 585; // Y
+
     // Apply modifications without exit
     padding[Apply][0] = 70; // Width
     padding[Apply][1] = 28; // Height
@@ -246,9 +253,7 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
         // New page creation
         this->tab_gamepad->AddPage(
             this->pan_tabs[i], // Parent
-            sstm.str(), // Title
-            0, // select (if 1 the tab is selected, 0 otherwise)
-            wxEXPAND // Specifies the optional image index for the new page.
+            sstm.str() // Title
         );
 
         for(int j=0; j<BUTTONS_LENGHT; ++j)
@@ -266,6 +271,7 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
         this->bt_gamepad[i][JoyL_config]->SetLabel(_T("&Left Joystick Config"));
         this->bt_gamepad[i][JoyR_config]->SetLabel(_T("&Right Joystick Config"));
         this->bt_gamepad[i][Gamepad_config]->SetLabel(_T("&Gamepad Configuration"));
+        this->bt_gamepad[i][Set_all]->SetLabel(_T("&Set All Buttons"));
         this->bt_gamepad[i][Cancel]->SetLabel(_T("&Cancel"));
         this->bt_gamepad[i][Apply]->SetLabel(_T("&Apply"));
         this->bt_gamepad[i][Ok]->SetLabel(_T("&Ok"));
@@ -337,6 +343,79 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
         this->frm_joystick_config->InitJoystickConfiguration();
         this->frm_joystick_config->Show(true);
     }
+    else if(bt_id == Set_all) // If the button ID is equals to the Set_all button ID
+    {
+        for(int i=0; i<MAX_KEYS; ++i)
+        {
+            bt_tmp = this->bt_gamepad[gamepad_id][i];
+            switch(i)
+            {
+                case PAD_L_UP: // Left joystick (Up) ↑
+                    this->pan_tabs[gamepad_id]->ShowImg(img_l_arrow_up);
+                    break;
+                case PAD_L_RIGHT: // Left joystick (Right) →
+                    this->pan_tabs[gamepad_id]->ShowImg(img_l_arrow_right);
+                    break;
+                case PAD_L_DOWN: // Left joystick (Down) ↓
+                    this->pan_tabs[gamepad_id]->ShowImg(img_l_arrow_bottom);
+                    break;
+                case PAD_L_LEFT: // Left joystick (Left) ←
+                    this->pan_tabs[gamepad_id]->ShowImg(img_l_arrow_left);
+                    break;
+                case PAD_R_UP: // Right joystick (Up) ↑
+                    this->pan_tabs[gamepad_id]->ShowImg(img_r_arrow_up);
+                    break;
+                case PAD_R_RIGHT: // Right joystick (Right) →
+                    this->pan_tabs[gamepad_id]->ShowImg(img_r_arrow_right);
+                    break;
+                case PAD_R_DOWN: // Right joystick (Down) ↓
+                    this->pan_tabs[gamepad_id]->ShowImg(img_r_arrow_bottom);
+                    break;
+                case PAD_R_LEFT: // Right joystick (Left) ←
+                    this->pan_tabs[gamepad_id]->ShowImg(img_r_arrow_left);
+                    break;
+                default:
+                    this->pan_tabs[gamepad_id]->ShowImg(i);
+                    break;
+            }
+            this->pan_tabs[gamepad_id]->Refresh();
+            this->pan_tabs[gamepad_id]->Update();
+            this->config_key(gamepad_id, i);
+            switch(i)
+            {
+                case PAD_L_UP: // Left joystick (Up) ↑
+                    this->pan_tabs[gamepad_id]->HideImg(img_l_arrow_up);
+                    break;
+                case PAD_L_RIGHT: // Left joystick (Right) →
+                    this->pan_tabs[gamepad_id]->HideImg(img_l_arrow_right);
+                    break;
+                case PAD_L_DOWN: // Left joystick (Down) ↓
+                    this->pan_tabs[gamepad_id]->HideImg(img_l_arrow_bottom);
+                    break;
+                case PAD_L_LEFT: // Left joystick (Left) ←
+                    this->pan_tabs[gamepad_id]->HideImg(img_l_arrow_left);
+                    break;
+                case PAD_R_UP: // Right joystick (Up) ↑
+                    this->pan_tabs[gamepad_id]->HideImg(img_r_arrow_up);
+                    break;
+                case PAD_R_RIGHT: // Right joystick (Right) →
+                    this->pan_tabs[gamepad_id]->HideImg(img_r_arrow_right);
+                    break;
+                case PAD_R_DOWN: // Right joystick (Down) ↓
+                    this->pan_tabs[gamepad_id]->HideImg(img_r_arrow_bottom);
+                    break;
+                case PAD_R_LEFT: // Right joystick (Left) ←
+                    this->pan_tabs[gamepad_id]->HideImg(img_r_arrow_left);
+                    break;
+                default:
+                    this->pan_tabs[gamepad_id]->HideImg(i);
+                    break;
+            }
+            this->pan_tabs[gamepad_id]->Refresh();
+            this->pan_tabs[gamepad_id]->Update();
+            usleep(500000); // give enough time to the user to release the button
+        }
+    }
     else if(bt_id == Ok) // If the button ID is equals to the Ok button ID
     {
         SaveConfig(); // Save the configuration
@@ -367,7 +446,6 @@ void Dialog::JoystickEvent(wxCommandEvent& event)
         {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-                fprintf(stderr, "%d\n", events.key.keysym);
                 break;
             case SDL_JOYAXISMOTION:
                 key = axis_to_key(false, (events.jaxis.value<0), events.jaxis.axis);
