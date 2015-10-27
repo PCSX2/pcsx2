@@ -1134,31 +1134,40 @@ static u32 scaleBlockCycles_helper()
 
 	switch( EmuConfig.Speedhacks.EECycleRate )
 	{
-		case 0:	return s_nBlockCycles >> 3;
+		case -2:
+			scalarLow = 1;
+			scalarMid = 1;
+			scalarHigh = 1;
+		break;
 
-		case 1:		// Sync hack x1.5!
+		case -1:
+			scalarLow = 2;
+			scalarMid = 2;
+			scalarHigh = 1;
+		break;
+
+		case 0:
+			return s_nBlockCycles >> 3; // Default cyclerate
+
+		case 1:
 			scalarLow = 5;
 			scalarMid = 7;
 			scalarHigh = 5;
 		break;
 
-		case 2:		// Sync hack x2
+		case 2:
 			scalarLow = 7;
 			scalarMid = 9;
 			scalarHigh = 7;
 		break;
 
 		// Added insane rates on popular request (rama)
-		//jNO_DEFAULT
+		// This allows higher values to be set at INI, higher values follows same series as case 0 and case 1.
 		default:
-			scalarLow = 2;
-			scalarMid = 3;
-			scalarHigh = 2;
-			
 			if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
-				scalarLow *= EmuConfig.Speedhacks.EECycleRate;
-				scalarMid *= EmuConfig.Speedhacks.EECycleRate;
-				scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
+				scalarLow = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
+				scalarMid = 5 + (2*EmuConfig.Speedhacks.EECycleRate);
+				scalarHigh = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
 			}
 	}
 
