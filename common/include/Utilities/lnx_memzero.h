@@ -50,117 +50,11 @@ static __fi void memset8( T& obj )
 	}
 }
 
-// An optimized memset for 8 bit destination data.
+// Code is only called in the init so no need to bother with ASM
 template< u8 data, size_t bytes >
 static __fi void memset_8( void *dest )
 {
-	if( bytes == 0 ) return;
-
-	if( (bytes & 0x3) != 0 )
-	{
-		// unaligned data length.  No point in doing an optimized inline version (too complicated!)
-		// So fall back on the compiler implementation:
-
-		memset( dest, data, bytes );
-		return;
-	}
-
-	// This function only works on 32-bit alignments of data copied.
-	jASSUME( (bytes & 0x3) == 0 );
-
-	enum
-	{
-		remdat = bytes>>2,
-		data32 = data + (data<<8) + (data<<16) + (data<<24)
-	};
-
-	// macro to execute the x86/32 "stosd" copies.
-	switch( remdat )
-	{
-#if 0
-		case 1:
-			*(u32*)dest = data32;
-		return;
-
-		case 2:
-			((u32*)dest)[0] = data32;
-			((u32*)dest)[1] = data32;
-		return;
-
-		case 3:
-			__asm__ volatile
-			(
-				".intel_syntax noprefix\n"
-				"cld\n"
-//				"mov edi, %[dest]\n"
-//				"mov eax, %[data32]\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				".att_syntax\n"
-				: "=D"(dest)
-				// Input specifiers: D - edi, a -- eax, c ecx
-				: [dest]"D"(dest), [data32]"a"(data32)
-				: "memory"
-			);
-		return;
-
-		case 4:
-			__asm__ volatile
-			(
-				".intel_syntax noprefix\n"
-				"cld\n"
-//				"mov edi, %[dest]\n"
-//				"mov eax, %[data32]\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				".att_syntax\n"
-				:  "=D"(dest)
-				:  [dest]"D"(dest), [data32]"a"(data32)
-				:  "memory"
-
-			);
-		return;
-
-		case 5:
-			__asm__ volatile
-			(
-				".intel_syntax noprefix\n"
-				"cld\n"
-//				"mov edi, %[dest]\n"
-//				"mov eax, %[data32]\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				"stosd\n"
-				".att_syntax\n"
-				: "=D"(dest)
-				: [dest]"D"(dest), [data32]"a"(data32)
-				: "memory"
-
-			);
-		return;
-#endif
-
-		default:
-			__asm__ volatile
-			(
-				".intel_syntax noprefix\n"
-				"cld\n"
-//				"mov ecx, %[remdat]\n"
-//				"mov edi, %[dest]\n"
-//				"mov eax, %\[data32]n"
-				"rep stosd\n"
-				".att_syntax\n"
-				: "=D"(dest)
-				: [remdat]"c"(remdat), [dest]"D"(dest), [data32]"a"(data32)
-				: "memory"
-			);
-		return;
-	}
+	memset(dest, data, bytes);
 }
 
 #endif
