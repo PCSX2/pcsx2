@@ -45,6 +45,7 @@ GSState::GSState()
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
+	m_crtc_size = theApp.GetConfig("crtc_size", 0);
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);
@@ -425,6 +426,15 @@ GSVector2i GSState::GetDeviceSize(int i)
 		h &= ~0x1F;
 
 	}
+
+	if (m_crtc_size) {
+		if (m_crtc_size < h) {
+			h = m_crtc_size;
+		} else {
+			h = m_crtc_size / 2;
+		}
+	}
+
 #if 0
 	switch (m_regs->SMODE1.CMOD) {
 		case 0: // VESA
