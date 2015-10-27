@@ -322,8 +322,11 @@ CpuInitializer< CpuType >::CpuInitializer()
 template< typename CpuType >
 CpuInitializer< CpuType >::~CpuInitializer() throw()
 {
-	if (MyCpu)
-		MyCpu->Shutdown();
+	try {
+		if (MyCpu)
+			MyCpu->Shutdown();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 // --------------------------------------------------------------------------------------
@@ -366,7 +369,10 @@ SysMainMemory::SysMainMemory()
 
 SysMainMemory::~SysMainMemory() throw()
 {
-	ReleaseAll();
+	try {
+		ReleaseAll();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysMainMemory::ReserveAll()

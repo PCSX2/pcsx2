@@ -125,7 +125,7 @@ public:
 			KEY key = i->first;
 			ActivePtr* p = i->second;
 
-			if(p->frames > 0)
+			if(p->frames && ttpf)
 			{
 				uint64 tpp = p->actual > 0 ? p->ticks / p->actual : 0;
 				uint64 tpf = p->frames > 0 ? p->ticks / p->frames : 0;

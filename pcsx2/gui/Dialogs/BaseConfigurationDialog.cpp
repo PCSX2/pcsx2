@@ -22,9 +22,6 @@
 #include "ModalPopups.h"
 #include "Panels/ConfigurationPanels.h"
 
-#include "Resources/EmbeddedImage.h"
-#include "Resources/ButtonIcon_Camera.h"
-
 #include <wx/artprov.h>
 #include <wx/filepicker.h>
 #include <wx/listbook.h>
@@ -187,7 +184,7 @@ void Dialogs::BaseConfigurationDialog::AddOkCancel( wxSizer* sizer )
 	if( wxWindow* apply = FindWindow( wxID_APPLY ) ) apply->Disable();
 	SomethingChanged_StateModified_IsChanged();
 
-	wxBitmapButton& screenshotButton( *new wxBitmapButton( this, wxID_SAVE, EmbeddedImage<res_ButtonIcon_Camera>().Get() ) );
+	wxBitmapButton& screenshotButton(*new wxBitmapButton(this, wxID_SAVE, wxGetApp().GetScreenshotBitmap()));
 	screenshotButton.SetToolTip( _("Saves a snapshot of this settings panel to a PNG file.") );
 
 	*m_extraButtonSizer += screenshotButton|pxMiddle;

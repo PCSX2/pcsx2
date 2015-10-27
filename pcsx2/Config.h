@@ -34,7 +34,8 @@ enum PluginsEnum_t
 	// time.  So it's placed afer PluginId_Count so that it doesn't show up in the conf
 	// screens or other plugin tables.
 
-	PluginId_Mcd
+	PluginId_Mcd,
+	PluginId_AllocCount // Extra value for correct array allocation
 };
 
 enum GamefixId
@@ -386,7 +387,7 @@ struct Pcsx2Config
 				vuThread        :1;		// Enable Threaded VU1
 		BITFIELD_END
 
-		u8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
+		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
 		u8	VUCycleSteal;		// VU Cycle Stealer factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();

@@ -429,13 +429,34 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(0x1f8010f4):
 			{
-				u32 tmp = (~val) & HW_DMA_ICR;
-				psxHu(addr) = ((tmp ^ val) & 0xffffff) ^ tmp;
-			}
+				//u32 tmp = (~val) & HW_DMA_ICR;
+				//u32 old = ((tmp ^ val) & 0xffffff) ^ tmp;
+				///psxHu(addr) = ((tmp ^ val) & 0xffffff) ^ tmp;
+				u32 newtmp = (HW_DMA_ICR & 0xff000000) | (val & 0xffffff);
+				newtmp &= ~(val & 0x7F000000);
+				if (((newtmp >> 15) & 0x1) || (((newtmp >> 23) & 0x1) == 0x1 && (((newtmp & 0x7F000000) >> 8) & (newtmp & 0x7F0000)) != 0)) {
+					newtmp |= 0x80000000;
+				}
+				else {
+					newtmp &= ~0x80000000;
+				}
+				//if (newtmp != old)
+				//	DevCon.Warning("ICR Old %x New %x", old, newtmp);
+				psxHu(addr) = newtmp;
+				if ((HW_DMA_ICR >> 15) & 0x1) {
+					DevCon.Warning("Force ICR IRQ!");
+					psxRegs.CP0.n.Cause &= ~0x7C;
+					iopIntcIrq(3);
+				}
+				else {
+					psxDmaInterrupt(33);
+				}
+			}				
 			break;
-
+			
 			mcase(0x1f8010f6):		// ICR_hi (16 bit?) [dunno if it ever happens]
 			{
+				DevCon.Warning("High ICR Write!!");
 				const u32 val2 = (u32)val << 16;
 				const u32 tmp = (~val2) & HW_DMA_ICR;
 				psxHu(addr) = (((tmp ^ val2) & 0xffffff) ^ tmp) >> 16;
@@ -444,13 +465,36 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(0x1f801574):
 			{
-				u32 tmp = (~val) & HW_DMA_ICR2;
-				psxHu(addr) = ((tmp ^ val) & 0xffffff) ^ tmp;
+				/*u32 tmp = (~val) & HW_DMA_ICR2;
+				psxHu(addr) = ((tmp ^ val) & 0xffffff) ^ tmp;*/
+				//u32 tmp = (~val) & HW_DMA_ICR2;
+				//u32 old = ((tmp ^ val) & 0xffffff) ^ tmp;
+				///psxHu(addr) = ((tmp ^ val) & 0xffffff) ^ tmp;
+				u32 newtmp = (HW_DMA_ICR2 & 0xff000000) | (val & 0xffffff);
+				newtmp &= ~(val & 0x7F000000);
+				if (((newtmp >> 15) & 0x1) || (((newtmp >> 23) & 0x1) == 0x1 && (((newtmp & 0x7F000000) >> 8) & (newtmp & 0x7F0000)) != 0)) {
+					newtmp |= 0x80000000;
+				}
+				else {
+					newtmp &= ~0x80000000;
+				}
+				//if (newtmp != old)
+				//	DevCon.Warning("ICR2 Old %x New %x", old, newtmp);
+				psxHu(addr) = newtmp;
+				if ((HW_DMA_ICR2 >> 15) & 0x1) {
+					DevCon.Warning("Force ICR2 IRQ!");
+					psxRegs.CP0.n.Cause &= ~0x7C;
+					iopIntcIrq(3);
+				}
+				else {
+					psxDmaInterrupt2(33);
+				}
 			}
 			break;
 
 			mcase(0x1f801576):		// ICR2_hi (16 bit?) [dunno if it ever happens]
 			{
+				DevCon.Warning("ICR2 high write!");
 				const u32 val2 = (u32)val << 16;
 				const u32 tmp = (~val2) & HW_DMA_ICR2;
 				psxHu(addr) = (((tmp ^ val2) & 0xffffff) ^ tmp) >> 16;

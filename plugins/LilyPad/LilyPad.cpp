@@ -980,6 +980,8 @@ ExtraWndProcResult HideCursorProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 }
 
 char restoreFullScreen = 0;
+// This hack sends ALT+ENTER to the window to toggle fullscreen.
+// PCSX2 doesn't need it (it exits full screen on ESC on its own).
 DWORD WINAPI MaximizeWindowThreadProc(void *lpParameter) {
 	Sleep(100);
 	keybd_event(VK_LMENU, MapVirtualKey(VK_LMENU, MAPVK_VK_TO_VSC), 0, 0);

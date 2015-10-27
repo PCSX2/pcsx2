@@ -415,4 +415,12 @@ D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter *adapter, D3D_DRIVER
 	return SUCCEEDED(hr) ? level : (D3D_FEATURE_LEVEL)0;
 }
 
+#else
+
+void GSmkdir(const char* dir)
+{
+	if (mkdir(dir, 0777))
+		fprintf(stderr, "Failed to create directory: %s\n", dir);
+}
+
 #endif

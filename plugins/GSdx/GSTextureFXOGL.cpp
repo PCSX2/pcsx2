@@ -29,17 +29,17 @@ static const uint32 g_gs_cb_index = 22;
 
 void GSDeviceOGL::CreateTextureFX()
 {
-	GL_PUSH("CreateTextureFX");
-
 	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(false, false, false);
-	gl_BindSampler(1, m_palette_ss);
+	glBindSampler(1, m_palette_ss);
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
+	GL_PUSH("Compile GS");
+
 	for (uint32 key = 0; key < countof(m_gs); key++) {
 		GSSelector sel(key);
 		if (sel.point == sel.sprite)
@@ -47,6 +47,10 @@ void GSDeviceOGL::CreateTextureFX()
 		else
 			m_gs[key] = CompileGS(GSSelector(key));
 	}
+
+	GL_POP();
+
+	GL_PUSH("Compile VS");
 
 	for (uint32 key = 0; key < countof(m_vs); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
@@ -56,6 +60,8 @@ void GSDeviceOGL::CreateTextureFX()
 		else
 			m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
 	}
+
+	GL_POP();
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
@@ -67,8 +73,6 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
-
-	GL_POP();
 }
 
 GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)

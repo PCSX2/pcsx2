@@ -60,9 +60,11 @@ WavOutFile::WavOutFile(const char *fileName, int sampleRate, int bits, int chann
 
 WavOutFile::~WavOutFile()
 {
-    finishHeader();
-    if (fptr) fclose(fptr);
-    fptr = NULL;
+    if (fptr)
+    {
+        finishHeader();
+        fclose(fptr);
+    }
 }
 
 

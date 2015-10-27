@@ -183,10 +183,12 @@ void mfifoVIF1transfer(int qwc)
 		SPR_LOG("Added %x qw to mfifo,Vif CHCR %x Stalled %x done %x", qwc, vif1ch.chcr._u32, vif1.vifstalled.enabled, vif1.done);
 		if (vif1.inprogress & 0x10)
 		{
-			if(vif1ch.chcr.STR == true && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)))
+			//Don't resume if stalled or already looping
+			if(vif1ch.chcr.STR == true && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
 			{
 				SPR_LOG("Data Added, Resuming");
-				CPU_INT(DMAC_MFIFO_VIF, 16);
+				//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
+				CPU_INT(DMAC_MFIFO_VIF, qwc * BIAS);
 			}
 
 			//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
@@ -328,12 +330,14 @@ void vifMFIFOInterrupt()
 
 		hwIntcIrq(INTC_VIF1);
 		--vif1.irq;
-
+		
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
 			//vif1Regs.stat.FQC = 0; // FQC=0
 			//vif1ch.chcr.STR = false;
 			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
-			if((vif1ch.qwc > 0 || !vif1.done) && !(vif1.inprogress & 0x10)) {
+			VIF_LOG("VIF1 MFIFO Stalled qwc = %x done = %x inprogress = %x", vif1ch.qwc,vif1.done, vif1.inprogress & 0x10);
+			//Used to check if the MFIFO was empty, there's really no need if it's finished what it needed.
+			if((vif1ch.qwc > 0 || !vif1.done)) {
 				VIF_LOG("VIF1 MFIFO Stalled");
 				return;
 			}

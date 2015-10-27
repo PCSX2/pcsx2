@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
 "PO-Revision-Date: 2014-01-14 19:47+0900\n"
 "Last-Translator: 99skull <99skull@gmail.com>\n"
 "Language-Team: 99skull,p695091 <99skull@gmail.com>\n"
@@ -40,7 +40,7 @@ msgstr ""
 "에뮬레이트하고 싶은 경우 당신은 ePSXe 또는 PCSX와 같은 특정 PSX 에뮬레이터를 "
 "다운로드해야 합니다."
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -51,7 +51,7 @@ msgstr ""
 "오류는 작거나 비활성화된 교체 파일, 또는 메모리를 많이 점유하는 다른 프로그램"
 "에서 가상 메모리 자원 부족으로 인해 발생할 수 있습니다. "
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -66,7 +66,7 @@ msgid ""
 msgstr ""
 "경고: 구성된 PS2의 리컴파일러 중 일부 초기화에 실패하여 비활성화되었습니다:"
 
-#: pcsx2/gui/AppInit.cpp:194
+#: pcsx2/gui/AppInit.cpp:204
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -76,7 +76,7 @@ msgstr ""
 "이션 속도를 상당히 개선시킬 수 있습니다. 당신은 오류를 해결하기 위해 수동으"
 "로 위에 나열된 리컴파일러를 다시-활성화할 수 있습니다."
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -86,7 +86,7 @@ msgstr ""
 "시* 자신이 소유한 실제 PS2 유닛에서 바이오스를 얻어야 합니다 (빌린것도 포함되"
 "지 않습니다). 추가 설명에 대한 FAQ 및 안내를 참조하십시오."
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -110,7 +110,36 @@ msgstr ""
 "능력을 부여한 뒤 PCSX2를 다시-실행합니다. 이 컴퓨터에 대한 높은 권한이 없는 "
 "경우, 당신은 사용자 문서 방식으로 전환해야 합니다 (아래 버튼을 누르십시오)."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -189,6 +218,13 @@ msgstr ""
 "의 손상을 방지합니다. 모든 게임과 함께 호환되지 않을 수 있습니다 (기타 히어"
 "로)."
 
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
+
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
 msgid ""
@@ -264,7 +300,7 @@ msgstr ""
 "이 작업은 기존 PS2의 가상 머신 상태를 리셋할 것입니다; 현재의 모든 진행을 잃"
 "게 될 것입니다. 확실한가요?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -283,7 +319,7 @@ msgstr ""
 "\n"
 "(주의: 플러그인에 대한 설정은 영향받지 않습니다)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -294,6 +330,11 @@ msgstr ""
 "다;\n"
 "메인 메뉴에서 메모리 카드 구성을 사용하여 언제든지 다시-활성화할 수 있습니다."
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -302,11 +343,11 @@ msgstr ""
 "유효한 바이오스를 선택하십시오. 당신이 확실한 선택을 할 수 없다면 취소를 눌"
 "러 구성 패널을 닫으십시오."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr "주의: 대부분의 게임은 기본 옵션으로 잘 작동합니다."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr "주의: 대부분의 게임은 기본 옵션으로 잘 작동합니다."
 
@@ -433,7 +474,8 @@ msgstr ""
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
 "게임 수정은 일부 타이틀에서 잘못된 에뮬레이션을 해결할 수 있습니다.\n"
 "또한 호환성이나 성능 문제가 발생할 수 있습니다.\n"
@@ -459,7 +501,7 @@ msgstr ""
 "('자동'의 의미: 특정한 게임을 위해 확실히 검증된 수정을 선택적으로 사용합니"
 "다)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -468,12 +510,12 @@ msgstr ""
 "당신은 포맷된 '%s' 메모리 카드를 삭제하려고 합니다. 이 카드의 모든 데이터를 "
 "잃게 됩니다! 정말로 분명히 확실한가요?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "실패: 복사는 오직 비어있는 PS2-포트 또는 파일 시스템에 허용됩니다."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "실패: 대상  '%s' 메모리 카드가 사용 중입니다."
@@ -689,7 +731,7 @@ msgstr ""
 "이 문제가 알려진 게임에 대해 하드로더 호환 목록을 확인하십시오 (종종 필요에 "
 "따라 '방식 1' 또는 '느린 DVD'로 표시됩니다)"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
@@ -697,7 +739,7 @@ msgstr ""
 "제한된 프레임이 비활성화될 때, 터보와 느린 동작 방식 중 하나를 사용할 수 없으"
 "니 주의하십시오."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -705,7 +747,7 @@ msgstr ""
 "주의: PS2의 하드웨어 설계로 인한, 정확한 프레임 생략이 불가능합니다. 이것을 "
 "활성화하면 일부 게임에서 심각한 그래픽 오류가 발생합니다."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -713,7 +755,7 @@ msgstr ""
 "충돌 또는 그래픽 오류 발생이 MTGS 스레드 동기화라고 생각되면 이것을 활성화합"
 "니다."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

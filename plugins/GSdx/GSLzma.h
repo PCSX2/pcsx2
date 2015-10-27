@@ -48,7 +48,6 @@ class GSDumpLzma : public GSDumpFile {
 
 	size_t		m_avail;
 	size_t		m_start;
-	bool  		m_eof;
 
 	void Decompress();
 
@@ -70,7 +69,6 @@ class GSDumpRaw : public GSDumpFile {
 
 	size_t		m_avail;
 	size_t		m_start;
-	bool  		m_eof;
 
 	void Decompress();
 

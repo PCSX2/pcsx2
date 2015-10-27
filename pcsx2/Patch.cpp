@@ -222,7 +222,7 @@ int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
 
   int before = cheatnumber;
 
-  std::auto_ptr<wxZipEntry> entry;
+  std::unique_ptr<wxZipEntry> entry;
   wxFFileInputStream in(cheatsArchiveFilename);
   wxZipInputStream zip(in);
   while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)

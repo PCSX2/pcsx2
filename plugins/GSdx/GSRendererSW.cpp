@@ -1534,6 +1534,8 @@ GSRendererSW::SharedData::SharedData(GSRendererSW* parent)
 	: m_parent(parent)
 	, m_fb_pages(NULL)
 	, m_zb_pages(NULL)
+	, m_fpsm(0)
+	, m_zpsm(0)
 	, m_using_pages(false)
 	, m_syncpoint(SyncNone)
 {
@@ -1570,12 +1572,12 @@ void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const 
 	{
 		//TransactionScope scope(s_lock);
 
-		if(global.sel.fb)
+		if(global.sel.fb && fb_pages != NULL)
 		{
 			m_parent->UsePages(fb_pages, 0);
 		}
 
-		if(global.sel.zb)
+		if(global.sel.zb && zb_pages != NULL)
 		{
 			m_parent->UsePages(zb_pages, 1);
 		}

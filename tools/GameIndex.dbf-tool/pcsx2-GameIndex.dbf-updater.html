@@ -13,10 +13,11 @@ Quick and (very) dirty gameindex.dbf update tool from website compatibility db d
 - can import external html files with games info and compare the name/region to our own data
 */
 var CONFIG_SKIP_SORT_1 = 0; // sort after initial dbf import
-var CONFIG_SKIP_REGIONS_SUMMARY = 1;
+var CONFIG_SKIP_REGIONS_SUMMARY = 0;
 var CONFIG_SKIP_IMPORT_CSV = 0;
 var CONFIG_SKIP_ADD_MISSING_FROM_CSV = 0;
 var CONFIG_SKIP_LOG_CSV_MISSING = 0; // files which have compat info at the dbf but not at the csv
+var CONFIG_SKIP_LOG_IMPROVEMENTS = 0; // the common case of data.csv having better compat than the current dbf.
 var CONFIG_SKIP_SORT_2 = 0; // sort after adding entries from data.csv
 var CONFIG_SKIP_HTML_INDEX_IMPORTS = 1;
 
@@ -278,9 +279,11 @@ function parseDbf(dbf, startLine) {
           
           if (com > dbcom) {
             updateSummary.better++
+            if (!CONFIG_SKIP_LOG_IMPROVEMENTS)
+              logln("--> ++ Improving compat from " + dbcom + " to " + com + " for " + serPretty(ser) + ": " + game.Name);
           } else {
             updateSummary.worse++;
-            logln(":( Degrading compat from " + dbcom + " to " + com + " for " + serPretty(ser) + ": " + game.Name);
+            logln("--> -- Degrading compat from " + dbcom + " to " + com + " for " + serPretty(ser) + ": " + game.Name);
           }
         } else {
           updateSummary.same++;

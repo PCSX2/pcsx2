@@ -130,6 +130,11 @@ GSDumpLzma::~GSDumpLzma() {
 /******************************************************************/
 
 GSDumpRaw::GSDumpRaw(char* filename) : GSDumpFile(filename) {
+	m_buff_size = 0;
+	m_area      = NULL;
+	m_inbuf     = NULL;
+	m_avail     = 0;
+	m_start     = 0;
 }
 
 GSDumpRaw::~GSDumpRaw() {

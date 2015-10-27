@@ -558,7 +558,10 @@ ConsoleIndentScope::ConsoleIndentScope( int tabs )
 
 ConsoleIndentScope::~ConsoleIndentScope() throw()
 {
-	LeaveScope();
+	try {
+		LeaveScope();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void ConsoleIndentScope::EnterScope()
@@ -581,8 +584,11 @@ ConsoleAttrScope::ConsoleAttrScope( ConsoleColors newcolor, int indent )
 
 ConsoleAttrScope::~ConsoleAttrScope() throw()
 {
-	Console.SetColor( m_old_color );
-	Console.SetIndent( -m_tabsize );
+	try {
+		Console.SetColor( m_old_color );
+		Console.SetIndent( -m_tabsize );
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 

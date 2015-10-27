@@ -14,10 +14,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2014-04-06 15:57:21 +0000 (Sun, 06 Apr 2014) $
+// Last changed  : $Date: 2015-07-26 17:45:48 +0300 (Sun, 26 Jul 2015) $
 // File revision : $Revision: 4 $
 //
-// $Id: RateTransposer.h 195 2014-04-06 15:57:21Z oparviai $
+// $Id: RateTransposer.h 225 2015-07-26 14:45:48Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -81,14 +81,14 @@ protected:
     static ALGORITHM algorithm;
 
 public:
-    float rate;
+    double rate;
     int numChannels;
 
     TransposerBase();
     virtual ~TransposerBase();
 
     virtual int transpose(FIFOSampleBuffer &dest, FIFOSampleBuffer &src);
-    virtual void setRate(float newRate);
+    virtual void setRate(double newRate);
     virtual void setChannels(int channels);
 
     // static factory function
@@ -158,7 +158,7 @@ public:
 
     /// Sets new target rate. Normal rate = 1.0, smaller values represent slower 
     /// rate, larger faster rates.
-    virtual void setRate(float newRate);
+    virtual void setRate(double newRate);
 
     /// Sets the number of channels, 1 = mono, 2 = stereo
     void setChannels(int channels);

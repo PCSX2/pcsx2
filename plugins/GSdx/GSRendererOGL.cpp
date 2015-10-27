@@ -35,6 +35,8 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 
+	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
+
 	if (!theApp.GetConfig("UserHacks", 0)) {
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
@@ -371,6 +373,8 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 			// The fastest algo that requires a single pass
 			GL_INS("COLCLIP Free mode ENABLED");
 			ps_sel.colclip = 1;
+			ASSERT(sw_blending);
+			accumulation_blend = false; // disable the HDR algo
 		} else if (accumulation_blend) {
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
@@ -457,14 +461,48 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	// In order to speed up comparaison a boundind-box is accumulated. It removes a
 	// loop so code is much faster (check game virtua fighter). Besides it allow to check
 	// properly the Y order.
-	GSVector4i all(0);
-	for(size_t i = 0; i < count; i += 2) {
+	GSVector4i all;
+	//FIXME better vector operation
+	if (v[1].XYZ.Y < v[0].XYZ.Y) {
+		all.y = v[1].XYZ.Y;
+		all.w = v[0].XYZ.Y;
+	} else {
+		all.y = v[0].XYZ.Y;
+		all.w = v[1].XYZ.Y;
+	}
+	if (v[1].XYZ.X < v[0].XYZ.X) {
+		all.x = v[1].XYZ.X;
+		all.z = v[0].XYZ.X;
+	} else {
+		all.x = v[0].XYZ.X;
+		all.z = v[1].XYZ.X;
+	}
+
+	for(size_t i = 2; i < count; i += 2) {
 		GSVector4i sprite;
-		if (v[i+1].XYZ.Y < v[i].XYZ.Y) {
-			sprite = GSVector4i(v[i].XYZ.X, v[i+1].XYZ.Y, v[i+1].XYZ.X, v[i].XYZ.Y);
+		//FIXME better vector operation
+		if (v[i+1].XYZ.Y < v[i+0].XYZ.Y) {
+			sprite.y = v[i+1].XYZ.Y;
+			sprite.w = v[i+0].XYZ.Y;
 		} else {
-			sprite = GSVector4i(v[i].XYZ.X, v[i].XYZ.Y, v[i+1].XYZ.X, v[i+1].XYZ.Y);
+			sprite.y = v[i+0].XYZ.Y;
+			sprite.w = v[i+1].XYZ.Y;
 		}
+		if (v[i+1].XYZ.X < v[i+0].XYZ.X) {
+			sprite.x = v[i+1].XYZ.X;
+			sprite.z = v[i+0].XYZ.X;
+		} else {
+			sprite.x = v[i+0].XYZ.X;
+			sprite.z = v[i+1].XYZ.X;
+		}
+
+		// Be sure to get vertex in good order, otherwise .r* function doesn't
+		// work as expected.
+		ASSERT(sprite.x <= sprite.z);
+		ASSERT(sprite.y <= sprite.w);
+		ASSERT(all.x <= all.z);
+		ASSERT(all.y <= all.w);
+
 		if (all.rintersect(sprite).rempty()) {
 			all = all.runion(sprite);
 		} else {
@@ -532,7 +570,7 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		dev->DrawIndexedPrimitive();
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
-		gl_TextureBarrier();
+		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
@@ -550,7 +588,7 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		GL_PERF("Split single draw in %d draw", m_index.tail/nb_vertex);
 
 		for (size_t p = 0; p < m_index.tail; p += nb_vertex) {
-			gl_TextureBarrier();
+			glTextureBarrier();
 			dev->DrawIndexedPrimitive(p, nb_vertex);
 		}
 
@@ -847,7 +885,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else if (tex->m_palette) {
 			// Use a standard 8 bits texture. AEM is already done on the CLUT
 			// Therefore you only need to set the index
-			// ps_sel.tex_fmt = 0; // removed as an optimization
 			// ps_sel.aem     = 0; // removed as an optimization
 
 			// Note 4 bits indexes are converted to 8 bits
@@ -890,13 +927,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+		ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y) / WH.xyxy();
 
 
 		// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
-		ps_ssel.tau = (m_context->CLAMP.WMS != CLAMP_CLAMP);
-		ps_ssel.tav = (m_context->CLAMP.WMT != CLAMP_CLAMP);
-		ps_ssel.ltf = bilinear && simple_sample;
+		ps_ssel.tau   = (m_context->CLAMP.WMS != CLAMP_CLAMP);
+		ps_ssel.tav   = (m_context->CLAMP.WMT != CLAMP_CLAMP);
+		ps_ssel.ltf   = bilinear && simple_sample;
+		ps_ssel.aniso = simple_sample;
 
 		// Setup Texture ressources
 		dev->SetupSampler(ps_ssel);

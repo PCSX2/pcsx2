@@ -73,8 +73,8 @@
  \
 	static __fi bool EnumIsValid( enumName id ) { \
 		return ((int)id >= enumName##_FIRST) && ((int)id < enumName##_COUNT); } \
-	static __fi bool EnumAssert( enumName id ) { \
-		return pxAssert( EnumIsValid(id) ); } \
+	static __fi void EnumAssert( enumName id ) { \
+		pxAssert( EnumIsValid(id) ); } \
  \
 	extern const wxChar* EnumToString( enumName id )
 

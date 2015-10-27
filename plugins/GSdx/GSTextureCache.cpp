@@ -629,6 +629,12 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					delete t;
 					continue;
 				}
+			} else if (GSUtil::HasSharedBits(bp, t->m_TEX0.TBP0)) {
+				// EE writes the ALPHA channel. Mark it as invalid for
+				// the texture cache. Otherwise it will generate a wrong
+				// hit on the texture cache.
+				// Game: Conflict - Desert Storm (flickering)
+				t->m_dirty_alpha = false;
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
@@ -1122,6 +1128,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			case 4:  modx = 4.2f; mody = 4.2f; dst->m_texture->LikelyOffset = true;  break;
 			case 5:  modx = 5.3f; mody = 5.3f; dst->m_texture->LikelyOffset = true;  break;
 			case 6:  modx = 6.2f; mody = 6.2f; dst->m_texture->LikelyOffset = true;  break;
+			case 8:  modx = 8.2f; mody = 8.2f; dst->m_texture->LikelyOffset = true;  break;
 			default: modx = 0.0f; mody = 0.0f; dst->m_texture->LikelyOffset = false; break;
 			}
 		}
@@ -1250,6 +1257,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_initpalette(true)
 	, m_target(false)
 	, m_complete(false)
+	, m_spritehack_t(false)
 	, m_p2t(NULL)
 {
 	m_TEX0 = TEX0;

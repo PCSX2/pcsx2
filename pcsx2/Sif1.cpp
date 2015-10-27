@@ -125,7 +125,11 @@ static __fi bool SIFIOPReadTag()
 	// Only use the first 24 bits.
 	hw_dma10.madr = sif1data & 0xffffff;
 
-	sif1.iop.counter = sif1words;
+	
+	if (sif1words > 0xFFFFC) DevCon.Warning("SIF1 Overrun %x", sif1words);
+	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
+	sif1.iop.counter = sif1words & 0xFFFFC;
+
 	if (sif1tag.IRQ  || (sif1tag.ID & 4)) sif1.iop.end = true;
 
 	return true;

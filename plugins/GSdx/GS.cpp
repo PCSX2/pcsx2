@@ -194,7 +194,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 		threads = theApp.GetConfig("extrathreads", 0);
 	}
 
-	GSWnd* wnd[2];
+	GSWnd* wnd[2] = { NULL, NULL };
 
 	try
 	{
@@ -315,7 +315,6 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			wnd[1] = new GSWndOGL();
 #else
 			wnd[0] = new GSWndOGL();
-			wnd[1] = NULL;
 #endif
 #endif
 		}
@@ -873,8 +872,12 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 	if(start & 1)
 	{
 		printf("GSdx: Recording start command\n");
-		if( s_gs->BeginCapture() )
+		if (s_gs->BeginCapture()) {
 			pt(" - Capture started\n");
+		} else {
+			pt(" - Capture cancelled\n");
+			return 0;
+		}
 	}
 	else
 	{
@@ -1670,6 +1673,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			sleep(1);
 		} else {
 			unsigned long end = timeGetTime();
+			frame_number = std::max(1ul, frame_number); // avoid a potential division by 0
+
 			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
 			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
 

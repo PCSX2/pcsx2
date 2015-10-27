@@ -55,7 +55,10 @@ SysCoreThread::SysCoreThread()
 
 SysCoreThread::~SysCoreThread() throw()
 {
-	SysCoreThread::Cancel();
+	try {
+		SysCoreThread::Cancel();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysCoreThread::Cancel( bool isBlocking )

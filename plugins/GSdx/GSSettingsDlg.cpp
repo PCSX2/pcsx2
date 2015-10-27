@@ -159,7 +159,6 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
-	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 
@@ -171,6 +170,8 @@ void GSSettingsDlg::OnInit()
 
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfig("shaderfx", 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_glsl", "shaders\\GSdx.fx").c_str());
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_conf", "shaders\\GSdx_FX_Settings.ini").c_str());
 	
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfig("UserHacks", 0));
@@ -220,8 +221,8 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if (code == CBN_SELCHANGE)
 				UpdateControls();
 			break;
-		case IDC_NATIVERES:
 		case IDC_SHADEBOOST:
+		case IDC_SHADER_FX:
 		case IDC_PALTEX:
 		case IDC_HACKS_ENABLED:
 			if (code == BN_CLICKED)
@@ -234,6 +235,14 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		case IDC_HACKSBUTTON:
 			if (code == BN_CLICKED)
 				HacksDlg.DoModal();
+			break;
+		case IDC_SHADER_FX_BUTTON:
+			if (code == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_EDIT, "Select External Shader");
+			break;
+		case IDC_SHADER_FX_CONF_BUTTON:
+			if (code == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_CONF_EDIT, "Select External Shader Config");
 			break;
 		case IDOK:
 		{
@@ -294,7 +303,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
-			theApp.SetConfig("nativeres", (int)IsDlgButtonChecked(m_hWnd, IDC_NATIVERES));
 			theApp.SetConfig("resx", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
@@ -311,8 +319,17 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
 			
 			// External FX Shader(OpenGL)
-			theApp.SetConfig("shaderfx_conf", "shaders/GSdx_FX_Settings.ini");
-			theApp.SetConfig("shaderfx_glsl", "shaders/GSdx.fx");
+			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
+			char *buffer = new char[length];
+
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_conf", buffer);
+
+			delete [] buffer;
 
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 		}
@@ -365,11 +382,11 @@ void GSSettingsDlg::UpdateControls()
 {
 	INT_PTR i;
 
-	int scaling = 1; // in case reading the combo doesn't work, enable the custom res control anyway
+	int integer_scaling = 0; // in case reading the combo doesn't work, enable the custom res control anyway
 
 	if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, i))
 	{
-		scaling = (int)i;
+		integer_scaling = (int)i;
 	}
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
@@ -381,7 +398,6 @@ void GSSettingsDlg::UpdateControls()
 		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
 		bool ocl = i >= 14 && i <= 17;
 
-		bool native = !!IsDlgButtonChecked(m_hWnd, IDC_NATIVERES);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
@@ -398,12 +414,13 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw && !native);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_NATIVERES), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);
@@ -421,19 +438,26 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
 		
-		
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw); // Let uers set software params regardless of renderer used 
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
-
-
-		// Shade Boost
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED);
 
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 	}
+
+	// External shader
+	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_BUTTON), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_BUTTON), external_shader_selected);
+
+	// Shade Boost
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED);
 }
 
 // Shade Boost Dialog
@@ -556,7 +580,7 @@ void GSHacksDlg::OnInit()
 	int renderer = SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0);
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool dx9 = renderer == 0;
-	bool dx11 = renderer == 3;
+	// bool dx11 = renderer == 3;
 	bool ogl = renderer == 12;
 	unsigned short cb = 0;
 

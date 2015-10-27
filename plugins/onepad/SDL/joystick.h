@@ -19,31 +19,29 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __JOYSTICK_H__
-#define __JOYSTICK_H__
+#pragma once
 
 #include <SDL.h>
 #if SDL_MAJOR_VERSION >= 2
 #include <SDL_haptic.h>
 #endif
 
-
+#include "GamePad.h"
 #include "onepad.h"
 #include "controller.h"
-
+#define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
 // holds all joystick info
-class JoystickInfo
+class JoystickInfo : GamePad
 {
 	public:
 		JoystickInfo() : devname(""), _id(-1), numbuttons(0), numaxes(0), numhats(0),
 		 deadzone(1500), pad(-1), joy(NULL) {
-			 vbuttonstate.clear();
-			 vaxisstate.clear();
-			 vhatstate.clear();
+			vbuttonstate.clear();
+			vaxisstate.clear();
+			vhatstate.clear();
 #if SDL_MAJOR_VERSION >= 2
-			 haptic = NULL;
-			 for (int i = 0 ; i < 2 ; i++)
-				 haptic_effect_id[i] = -1;
+			haptic = NULL;
+			first = true;
 #endif
 		 }
 
@@ -57,10 +55,9 @@ class JoystickInfo
     
 		void Destroy();
 		// opens handles to all possible joysticks
-		static void EnumerateJoysticks(vector<JoystickInfo*>& vjoysticks);
+		static void EnumerateJoysticks(vector<GamePad*>& vjoysticks);
 
-		void InitHapticEffect();
-		static void DoHapticEffect(int type, int pad, int force);
+		void Rumble(int type,int pad);
 
 		bool Init(int id); // opens a handle and gets information
 
@@ -69,6 +66,10 @@ class JoystickInfo
 		bool PollButtons(u32 &pkey);
 		bool PollAxes(u32 &pkey);
 		bool PollHats(u32 &pkey);
+
+		int GetHat(int key_to_axis);
+
+		int GetButton(int key_to_button);
 
 		const string& GetName()
 		{
@@ -134,16 +135,16 @@ class JoystickInfo
 			vhatstate[i] = value;
 		}
 
-		SDL_Joystick* GetJoy()
-		{
-			return joy;
-		}
-
 		int GetAxisFromKey(int pad, int index);
 
 		static void UpdateReleaseState();
 
 	private:
+		SDL_Joystick* GetJoy()
+		{
+			return joy;
+		}
+		void GenerateDefaultEffect();
 		string devname; // pretty device name
 		int _id;
 		int numbuttons, numaxes, numhats;
@@ -155,13 +156,8 @@ class JoystickInfo
 		SDL_Joystick*		joy;
 #if SDL_MAJOR_VERSION >= 2
 		SDL_Haptic*   		haptic;
-		SDL_HapticEffect	haptic_effect_data[2];
-		int   				haptic_effect_id[2];
+		bool first;
+		SDL_HapticEffect effects[NB_EFFECT];
+		int effects_id[NB_EFFECT];
 #endif
 };
-
-
-extern int s_selectedpad;
-extern vector<JoystickInfo*> s_vjoysticks;
-extern bool JoystickIdWithinBounds(int joyid);
-#endif

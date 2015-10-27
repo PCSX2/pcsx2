@@ -61,7 +61,7 @@ namespace PboPool {
 	//	(bound to GL_PIXEL_UNPACK_BUFFER_ARB, usage hint is GL_DYNAMIC_DRAW)
 	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
-		gl_GenBuffers(countof(m_pool), m_pool);
+		glGenBuffers(countof(m_pool), m_pool);
 		m_texture_storage  = GLLoader::found_GL_ARB_buffer_storage;
 		// Code is really faster on MT driver. So far only nvidia support it
 		if (!GLLoader::nvidia_buggy_driver)
@@ -71,11 +71,11 @@ namespace PboPool {
 			BindPbo();
 
 			if (m_texture_storage) {
-				gl_BufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
-				m_map[m_current_pbo] = (char*)gl_MapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
+				glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
+				m_map[m_current_pbo] = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
 				m_fence[m_current_pbo] = 0;
 			} else {
-				gl_BufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, GL_STREAM_COPY);
+				glBufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, GL_STREAM_COPY);
 				m_map[m_current_pbo] = NULL;
 			}
 
@@ -118,7 +118,7 @@ namespace PboPool {
 			BindPbo();
 
 			// Be sure the map is aligned
-			map = (char*)gl_MapBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size, flags);
+			map = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size, flags);
 		}
 
 		return map;
@@ -126,9 +126,9 @@ namespace PboPool {
 
 	void Unmap() {
 		if (m_texture_storage) {
-			gl_FlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
+			glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
 		} else {
-			gl_UnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+			glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 		}
 	}
 
@@ -141,19 +141,19 @@ namespace PboPool {
 			for (size_t i = 0; i < countof(m_pool); i++) {
 				m_map[i] = NULL;
 				m_offset[i] = 0;
-				gl_DeleteSync(m_fence[i]);
+				glDeleteSync(m_fence[i]);
 
 				// Don't know if we must do it
-				gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
-				gl_UnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
+				glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 			}
-			gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		}
-		gl_DeleteBuffers(countof(m_pool), m_pool);
+		glDeleteBuffers(countof(m_pool), m_pool);
 	}
 
 	void BindPbo() {
-		gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[m_current_pbo]);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[m_current_pbo]);
 	}
 
 	void NextPbo() {
@@ -163,15 +163,15 @@ namespace PboPool {
 	}
 
 	void NextPboWithSync() {
-		m_fence[m_current_pbo] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		m_fence[m_current_pbo] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 		NextPbo();
 		if (m_fence[m_current_pbo]) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
-			GLenum status = gl_ClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+			GLenum status = glClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #else
-			gl_ClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+			glClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #endif
-			gl_DeleteSync(m_fence[m_current_pbo]);
+			glDeleteSync(m_fence[m_current_pbo]);
 			m_fence[m_current_pbo] = 0;
 
 #ifdef ENABLE_OGL_DEBUG_FENCE
@@ -183,7 +183,7 @@ namespace PboPool {
 	}
 
 	void UnbindPbo() {
-		gl_BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	}
 
 	void EndTransfer() {
@@ -290,12 +290,12 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
-			gl_CreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
-			gl_TextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
+			glTextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
 			if (m_format == GL_R8) {
 				// Emulate DX behavior, beside it avoid special code in shader to differentiate
 				// palette texture from a GL_RGBA target or a GL_R texture.
-				gl_TextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
+				glTextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
 			}
 			break;
 		case GSTexture::Backbuffer:
@@ -325,8 +325,8 @@ GSTextureOGL::~GSTextureOGL()
 
 void GSTextureOGL::Invalidate()
 {
-	if (m_dirty && gl_InvalidateTexImage) {
-		gl_InvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
+	if (m_dirty && glInvalidateTexImage) {
+		glInvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
 		m_dirty = false;
 	}
 }
@@ -360,7 +360,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 	PboPool::Unmap();
 
-	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
+	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 
 	// FIXME OGL4: investigate, only 1 unpack buffer always bound
 	PboPool::UnbindPbo();
@@ -376,7 +376,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 
-	gl_TextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
+	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
 
 	// FIXME useful?
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior
@@ -396,17 +396,17 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 #if 0
 	// Maybe it is as good as the code below. I don't know
 
-	gl_GetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
+	glGetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
 
 #else
 
 	// Bind the texture to the read framebuffer to avoid any disturbance
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-	gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
 	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, m_local_buffer);
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 #endif
 
@@ -540,16 +540,16 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	if (IsBackbuffer()) {
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	} else if(IsDss()) {
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
-		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image);
 
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 		fmt = GSPng::DEPTH_PNG;
 	} else if(m_format == GL_R32I) {
-		gl_GetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
+		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
 
 		fmt = GSPng::R32I_PNG;
 
@@ -557,9 +557,9 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		status = false;
 
 	} else {
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
-		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 		if (m_format == GL_RGBA8) {
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
@@ -579,7 +579,7 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 			status = false;
 		}
 
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
 #ifdef ENABLE_OGL_PNG

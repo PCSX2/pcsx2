@@ -158,6 +158,9 @@ struct MemoryCardFileEntry {
 
 	static const u32 DefaultDirMode = Mode_Read | Mode_Write | Mode_Execute | Mode_Directory | Mode_Unknown0x0400 | Mode_Used;
 	static const u32 DefaultFileMode = Mode_Read | Mode_Write | Mode_Execute | Mode_File | Mode_Unknown0x0080 | Mode_Unknown0x0400 | Mode_Used;
+
+	// used in the cluster entry of empty files on real memory cards, as far as we know
+	static const u32 EmptyFileCluster = 0xFFFFFFFFu;
 };
 #pragma pack(pop)
 
@@ -256,7 +259,7 @@ public:
 	static const u32 NextDataClusterMask = 0x7FFFFFFFu;
 	static const u32 DataClusterInUseMask = 0x80000000u;
 
-	static const int FramesAfterWriteUntilFlush = 60;
+	static const int FramesAfterWriteUntilFlush = 2;
 
 protected:
 	union superBlockUnion {

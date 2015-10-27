@@ -30,6 +30,8 @@
 #include <wx/dir.h>
 
 
+static wxDataFormat drag_drop_format(L"PCSX2McdDragDrop");
+
 bool CopyDirectory( const wxString& from, const wxString& to );
 bool RemoveDirectory( const wxString& dirname );
 
@@ -188,6 +190,8 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 	);
 
 	m_listview = NULL;
+	s_leftside_buttons = NULL;
+	s_rightside_buttons = NULL;
 
 	m_btn_Refresh = new wxButton( this, wxID_ANY, _("Refresh list") );
 
@@ -261,76 +265,6 @@ void Panels::BaseMcdListPanel::AppStatusEvent_OnSettingsApplied()
 	}
 }
 
-// --------------------------------------------------------------------------------------
-//  McdDataObject
-// --------------------------------------------------------------------------------------
-class WXDLLEXPORT McdDataObject : public wxDataObjectSimple
-{
-	DECLARE_NO_COPY_CLASS(McdDataObject)
-
-protected:
-	int  m_viewIndex;
-
-public:
-	McdDataObject(int viewIndex = -1)
-#ifdef __linux__
-		// XXX: On linux drag and drop doesn't work. I think wxDF_PRIVATE is a MS extension.
-		// Besides it will raise on assertion on wx3.0.
-		//
-		// wxDF_FILENAME returns the filename of the memory card dropped. Maybe code can be updated
-		// to use it. However Model/view stuff is not my cup of tea so I will
-		// let others improve it on linux. --Greg
-		: wxDataObjectSimple( /*wxDF_FILENAME*/ )
-#else
-		: wxDataObjectSimple( wxDF_PRIVATE )
-#endif
-	{
-		m_viewIndex = viewIndex;
-	}
-
-	uint GetViewIndex() const
-	{
-		pxAssertDev( m_viewIndex >= 0, "memory card view-Index is uninitialized (invalid drag&drop object state)" );
-		return (uint)m_viewIndex;
-	}
-
-	size_t GetDataSize() const
-	{
-		return sizeof(u32);
-	}
-
-	bool GetDataHere(void *buf) const
-	{
-		*(u32*)buf = GetViewIndex();
-		return true;
-	}
-
-	virtual bool SetData(size_t len, const void *buf)
-	{
-		if( !pxAssertDev( len == sizeof(u32), "Data length mismatch on memory card drag&drop operation." ) ) return false;
-
-		m_viewIndex = *(u32*)buf;
-		return true;//( (uint)m_viewIndex < 8 );		// sanity check (unsigned, so that -1 also is invalid) :)
-	}
-
-	// Must provide overloads to avoid hiding them (and warnings about it)
-	virtual size_t GetDataSize(const wxDataFormat&) const
-	{
-		return GetDataSize();
-	}
-
-	virtual bool GetDataHere(const wxDataFormat&, void *buf) const
-	{
-		return GetDataHere(buf);
-	}
-
-	virtual bool SetData(const wxDataFormat&, size_t len, const void *buf)
-	{
-		return SetData(len, buf);
-	}
-};
-
-
 class McdDropTarget : public wxDropTarget
 {
 protected:
@@ -340,52 +274,11 @@ public:
 	McdDropTarget( BaseMcdListView* listview=NULL )
 	{
 		m_listview = listview;
-		SetDataObject(new McdDataObject());
+		SetDataObject(new wxCustomDataObject(drag_drop_format));
 	}
 
-	// these functions are called when data is moved over position (x, y) and
-	// may return either wxDragCopy, wxDragMove or wxDragNone depending on
-	// what would happen if the data were dropped here.
-	//
-	// the last parameter is what would happen by default and is determined by
-	// the platform-specific logic (for example, under Windows it's wxDragCopy
-	// if Ctrl key is pressed and wxDragMove otherwise) except that it will
-	// always be wxDragNone if the carried data is in an unsupported format.
-
-
-	// called when the mouse moves in the window - shouldn't take long to
-	// execute or otherwise mouse movement would be too slow.
-	virtual wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def)
-	{
-		int flags = 0;
-		int viewIndex = m_listview->HitTest( wxPoint(x,y), flags);
-		m_listview->SetTargetedItem( viewIndex );
-
-		// can always drop. non item target is the filesystem placeholder. //if( wxNOT_FOUND == viewIndex ) return wxDragNone;
-
-		return def;
-	}
-
-	virtual void OnLeave()
-	{
-		m_listview->SetTargetedItem( wxNOT_FOUND );
-	}
-
-	// this function is called when data is dropped at position (x, y) - if it
-	// returns true, OnData() will be called immediately afterwards which will
-	// allow to retrieve the data dropped.
-	virtual bool OnDrop(wxCoord x, wxCoord y)
-	{
-		int flags = 0;
-		int viewIndex = m_listview->HitTest( wxPoint(x,y), flags);
-		return true;// can always drop. non item target is the filesystem placeholder.//( wxNOT_FOUND != viewIndex );
-	}
-
-	// may be called *only* from inside OnData() and will fill m_dataObject
-	// with the data from the drop source if it returns true
 	virtual wxDragResult OnData(wxCoord x, wxCoord y, wxDragResult def)
 	{
-		m_listview->SetTargetedItem( wxNOT_FOUND );
 		int flags = 0;
 
 		int destViewIndex = m_listview->HitTest( wxPoint(x,y), flags);
@@ -395,8 +288,13 @@ public:
 		if ( !GetData() )
 			return wxDragNone;
 
-		McdDataObject *dobj = (McdDataObject *)GetDataObject();
-		int sourceViewIndex = dobj->GetViewIndex();
+		wxCustomDataObject *dobj = static_cast<wxCustomDataObject *>(GetDataObject());
+
+		if (dobj->GetDataSize() != sizeof(int))
+			return wxDragNone;
+
+		int sourceViewIndex;
+		dobj->GetDataHere(&sourceViewIndex);
 
 		wxDragResult result = OnDropMcd(
 			m_listview->GetMcdProvider().GetCardForViewIndex( sourceViewIndex ),
@@ -618,9 +516,6 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 {
 	_parent::Apply();
 
-	ScopedCoreThreadClose closed_core;
-	closed_core.AllowResume();
-
 	int used=0;
 	Console.WriteLn( L"Apply Memory cards:" );
 	for( uint slot=0; slot<8; ++slot )
@@ -736,8 +631,6 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 		return;
 	}
 
-	ScopedCoreThreadClose closed_core;
-
 	Dialogs::CreateMemoryCardDialog dialog( this, m_FolderPicker->GetPath(), L"my memory card" );
 	wxWindowID result = dialog.ShowModal();
 
@@ -756,7 +649,6 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 
 	Apply();
 	RefreshSelections();
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
@@ -764,8 +656,6 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
 		Console.WriteLn( "Error: Aborted: Convert mcd invoked but but a file is not associated." );
 		return;
 	}
-
-	ScopedCoreThreadClose closed_core;
 
 	AppConfig::McdOptions config;
 	config.Filename = card.Filename.GetFullName();
@@ -778,8 +668,6 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
 		Apply();
 		RefreshSelections();
 	}
-
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
@@ -804,7 +692,6 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 
 	if( result )
 	{
-		ScopedCoreThreadClose closed_core;
 	
 		wxFileName fullpath( m_FolderPicker->GetPath() + card.Filename.GetFullName());
 
@@ -818,7 +705,6 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 		}
 
 		RefreshSelections();
-		closed_core.AllowResume();
 	}
 
 }
@@ -873,7 +759,6 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		wxFileName destfile( basepath + dest.Filename);
 
 		ScopedBusyCursor doh( Cursor_ReallyBusy );
-		ScopedCoreThreadClose closed_core;
 
 		if( !(    ( srcfile.FileExists() && wxCopyFile( srcfile.GetFullPath(), destfile.GetFullPath(), true ) )
 			   || ( !srcfile.FileExists() && CopyDirectory( srcfile.GetFullPath(), destfile.GetFullPath() ) ) ) )
@@ -886,8 +771,7 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 			wxString content;
 
 			Msgbox::Alert( heading + L"\n\n" + content, _("Copy failed!") );
-			
-			closed_core.AllowResume();
+
 			return false;
 		}
 
@@ -903,7 +787,6 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 
 		Apply();
 		DoRefresh();
-		closed_core.AllowResume();
 		return true;
 }
 
@@ -940,8 +823,6 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 		break;
 	}
 
-	ScopedCoreThreadClose closed_core;
-
 	bool origEnabled=card.IsEnabled;
 	card.IsEnabled=false;
 	Apply();
@@ -950,8 +831,7 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 		card.IsEnabled=origEnabled;
 		Apply();
 		Msgbox::Alert( _("Error: Rename could not be completed.\n"), _("Rename memory card") );
-	
-		closed_core.AllowResume();
+
 		return;
 	}
 
@@ -960,7 +840,6 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 	Apply();
 
 	RefreshSelections();
-	closed_core.AllowResume();
 }
 
 void Panels::MemoryCardListPanel_Simple::OnCreateOrDeleteCard(wxCommandEvent& evt)
@@ -1121,11 +1000,12 @@ void Panels::MemoryCardListPanel_Simple::OnListDrag(wxListEvent& evt)
 	int selectionViewIndex = m_listview->GetFirstSelected();
 
 	if( selectionViewIndex < 0 ) return;
-	McdDataObject my_data( selectionViewIndex );
+	wxCustomDataObject my_data(drag_drop_format);
+	my_data.SetData(sizeof(int), &selectionViewIndex);
 
 	wxDropSource dragSource( m_listview );
 	dragSource.SetData( my_data );
-	/*wxDragResult result = */dragSource.DoDragDrop( wxDrag_AllowMove );
+	/*wxDragResult result = */dragSource.DoDragDrop( wxDrag_DefaultMove );
 }
 
 void Panels::MemoryCardListPanel_Simple::OnListSelectionChanged(wxListEvent& evt)

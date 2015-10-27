@@ -155,12 +155,14 @@ GSdxApp::GSdxApp()
 	m_gs_aspectratio.push_back(GSSetting(1, "4:3", ""));
 	m_gs_aspectratio.push_back(GSSetting(2, "16:9", ""));
 
-	m_gs_upscale_multiplier.push_back(GSSetting(1, "Custom", ""));
+	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(3, "3x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(4, "4x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", ""));
+	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", ""));
+	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", ""));
 
 	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
@@ -241,13 +243,13 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 	m_configuration_map["inifile"] = inifile_value;
 
 	// Load config from file
-	char value[255];
-	char key[255];
+	char value[256];
+	char key[256];
 	FILE* f = fopen(lpFileName, "r");
 
 	if (f == NULL) return; // FIXME print a nice message
 
-	while( fscanf(f, "%s = %s\n", key, value) != EOF ) {
+	while( fscanf(f, "%255s = %255s\n", key, value) != EOF ) {
 		std::string key_s(key);
 		std::string value_s(value);
 		m_configuration_map[key_s] = value_s;

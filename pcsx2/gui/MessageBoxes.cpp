@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
+#include "MSWstuff.h"
 #include "Dialogs/ModalPopups.h"
 
 using namespace Threading;
@@ -36,7 +37,7 @@ static int pxMessageDialog( const wxString& caption, const wxString& content, co
 	// And in either case the emulation should be paused/suspended for the user.
 
 	wxDialogWithHelpers dialog( NULL, caption );
-	dialog.SetMinWidth( (content.Length() > 256) ? 525 : 460 );
+	dialog.SetMinWidth( ((content.Length() > 256) ? 525 : 460) * MSW_GetDPIScale() );
 	dialog += dialog.Heading( content )	| StdExpand();
 	return pxIssueConfirmation( dialog, buttons );
 }

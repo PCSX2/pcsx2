@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="ReleaseAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Add all the projects that use the non-standard configurations here. -->
+  <ItemGroup>
+    <TargetsSetCPU Include="plugins\GSdx"/>
+  </ItemGroup>
+  <!-- Add all the solutions here. -->
+  <ItemGroup>
+    <SolutionSet Include="$(MSBuildProjectDirectory)\PCSX2_suite.sln" />
+    <!--SolutionSet Include="$(MSBuildProjectDirectory)\old_plugins.sln" /-->
+    <ProjectSetCPU Include="$(MSBuildProjectDirectory)\PCSX2_suite.sln" />
+  </ItemGroup>
+  <!-- Add common build  properties here. -->
+  <PropertyGroup>
+    <CreateHardLinksIfPossible>true</CreateHardLinksIfPossible>
+    <CompileFastPlz>BuildInParallel=True;
+      CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=$(CreateHardLinksIfPossible);
+      CreateHardLinksForCopyAdditionalFilesIfPossible=$(CreateHardLinksIfPossible);
+      CreateHardLinksForCopyLocalIfPossible=$(CreateHardLinksIfPossible);
+      CreateHardLinksForPublishFilesIfPossible=$(CreateHardLinksIfPossible);
+    </CompileFastPlz>
+  </PropertyGroup>
+  <!-- Add all the custom targets here. -->
+  <Target Name="CleanBloat" AfterTargets="InternalBuild">
+    <ItemGroup>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.bsc"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.exp"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.ilk"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.iobj"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.ipdb"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.lib"/>
+      <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.pdb"/>
+    </ItemGroup>
+    <Delete Files="@(BloatToDelete)" />
+  </Target>
+  <Target Name="CleanCruft">
+    <ItemGroup>
+      <CruftToDelete Include="$(MSBuildProjectDirectory)\**\svnrev.h"/>
+      <CruftToDelete Include="$(MSBuildProjectDirectory)\**\*.CppClean.log" />
+    </ItemGroup>
+    <Delete Files="@(CruftToDelete)" />
+  </Target>
+  <Target Name="InternalBuild" AfterTargets="DebugAll;DevelAll;ReleaseAll">
+    <MSBuild Projects="@(SolutionSet)" BuildInParallel="false" Properties="Configuration=$(BaseConfiguration)" Targets="Clean" />
+    <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="false" Properties="Configuration=%(ConfigCPU.Identity)" Targets="Clean" />
+    <CallTarget Targets="CleanCruft" />
+    <MSBuild Projects="@(SolutionSet)" BuildInParallel="false" Properties="Configuration=$(BaseConfiguration);$(CompileFastPlz)" Targets="Build" />
+    <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="true" Properties="Configuration=%(ConfigCPU.Identity);BuildProjectReferences=false;$(CompileFastPlz)" Targets="@(TargetsSetCPU)" />
+  </Target>
+  <Target Name="DebugAll">
+    <PropertyGroup>
+      <BaseConfiguration>Debug</BaseConfiguration>
+    </PropertyGroup>
+    <ItemGroup>
+      <ConfigCPU Include="Debug"/>
+      <!--ConfigCPU Include="Debug AVX;Debug AVX2;Debug SSE4;Debug SSSE3"/-->
+    </ItemGroup>
+  </Target>
+  <Target Name="DevelAll">
+    <PropertyGroup>
+      <BaseConfiguration>Devel</BaseConfiguration>
+    </PropertyGroup>
+    <ItemGroup>
+      <ConfigCPU Include="Devel"/>
+      <!--ConfigCPU Include="Devel AVX;Devel AVX2;Devel SSE4;Devel SSSE3"/-->
+    </ItemGroup>
+  </Target>
+  <Target Name="ReleaseAll">
+    <PropertyGroup>
+      <BaseConfiguration>Release</BaseConfiguration>
+    </PropertyGroup>
+    <ItemGroup>
+      <ConfigCPU Include="Release AVX;Release AVX2;Release SSE4;Release SSSE3"/>
+    </ItemGroup>
+  </Target>
+</Project>

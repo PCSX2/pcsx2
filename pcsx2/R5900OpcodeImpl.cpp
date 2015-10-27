@@ -879,42 +879,92 @@ void SYSCALL()
 		call = cpuRegs.GPR.n.v1.UC[0];
 
 	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
-	if (call == 13) {
-		DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
-	}
 
-	if (call == 0x7c)
-	{
-		if(cpuRegs.GPR.n.a0.UL[0] == 0x10)
-		{
-			eeConLog( ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))) );
-		}
-		else
-			__Deci2Call( cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]) );
-	}
+	switch (call) {
+		case 2: {
+					const char* inter = (cpuRegs.GPR.n.a0.UL[0] & 1) ? "Interlaced" : "Progressive";
+					const char* field = (cpuRegs.GPR.n.a2.UL[0] & 1) ? "FRAME" : "FIELD";
+					std::string mode;
+					// Warning info might be incorrect!
+					switch (cpuRegs.GPR.n.a1.UC[0]) {
+						case 0x2:  mode = "NTSC 640x448 @ 59.940 (59.82)"; break;
 
-	// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
-	if (SysTraceActive(EE.Bios) && (call == 0x77))
-	{
-		t_sif_dma_transfer *dmat;
-		//struct t_sif_cmd_header	*hdr;
-		//struct t_sif_rpc_bind *bind;
-		//struct t_rpc_server_data *server;
-		int n_transfer;
-		u32 addr;
-		//int sid;
+						case 0x3:  mode = "PAL  640x512 @ 50.000 (49.76)"; break;
 
-		n_transfer = cpuRegs.GPR.n.a1.UL[0] - 1;
-		if (n_transfer >= 0)
-		{
-			addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
-			dmat = (t_sif_dma_transfer*)PSM(addr);
+						case 0x1A: mode = "VESA 640x480 @ 59.940"; break;
+						case 0x1B: mode = "VESA 640x480 @ 72.809"; break;
+						case 0x1C: mode = "VESA 640x480 @ 75.000"; break;
+						case 0x1D: mode = "VESA 640x480 @ 85.008"; break;
 
-			BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x",
-				R5900::bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
-				dmat->size, dmat->attr,
-				dmat->dest, dmat->src);
-		}
+						case 0x2A: mode = "VESA 800x600 @ 56.250"; break;
+						case 0x2B: mode = "VESA 800x600 @ 60.317"; break;
+						case 0x2C: mode = "VESA 800x600 @ 72.188"; break;
+						case 0x2D: mode = "VESA 800x600 @ 75.000"; break;
+						case 0x2E: mode = "VESA 800x600 @ 85.061"; break;
+
+						case 0x3B: mode = "VESA 1024x768 @ 60.004"; break;
+						case 0x3C: mode = "VESA 1024x768 @ 70.069"; break;
+						case 0x3D: mode = "VESA 1024x768 @ 75.029"; break;
+						case 0x3E: mode = "VESA 1024x768 @ 84.997"; break;
+
+						case 0x4A: mode = "VESA 1280x1024 @ 63.981"; break;
+						case 0x4B: mode = "VESA 1280x1024 @ 79.976"; break;
+
+						case 0x50: mode = "HDTV   720x480 @ 59.94"; break;
+						case 0x51: mode = "HDTV 1920x1080 @ 60.00"; break;
+						case 0x52: mode = "HDTV  1280x720 @ ?????"; break;
+
+						case 0x72: mode = "DVD NTSC 640x448 @ ????"; break;
+
+						default: DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+					}
+					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+				}
+				break;
+
+		case 13:
+			DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+			break;
+
+		case 0x7c:
+			{
+				if(cpuRegs.GPR.n.a0.UL[0] == 0x10)
+				{
+					eeConLog( ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))) );
+				}
+				else
+					__Deci2Call( cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]) );
+			}
+			break;
+
+		case 0x77:
+			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
+			if (SysTraceActive(EE.Bios))
+			{
+				t_sif_dma_transfer *dmat;
+				//struct t_sif_cmd_header	*hdr;
+				//struct t_sif_rpc_bind *bind;
+				//struct t_rpc_server_data *server;
+				int n_transfer;
+				u32 addr;
+				//int sid;
+
+				n_transfer = cpuRegs.GPR.n.a1.UL[0] - 1;
+				if (n_transfer >= 0)
+				{
+					addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
+					dmat = (t_sif_dma_transfer*)PSM(addr);
+
+					BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x",
+							R5900::bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
+							dmat->size, dmat->attr,
+							dmat->dest, dmat->src);
+				}
+			}
+			break;
+
+		default:
+			break;
 	}
 
 	cpuRegs.pc -= 4;

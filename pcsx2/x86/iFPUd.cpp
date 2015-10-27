@@ -594,7 +594,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
+	if (t1reg == -1) {Console.Error("FPU: DIV Allocation Error!"); return;}
 	if (tempReg == -1) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -934,7 +934,7 @@ void recSQRT_S_xmm(int info)
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 	if (tempReg == -1) {Console.Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	if (t1reg == -1) {Console.Error("FPU: SQRT Allocation Error!");}
+	if (t1reg == -1) {Console.Error("FPU: SQRT Allocation Error!"); return;}
 	//Console.WriteLn("FPU: SQRT");
 
 	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
@@ -994,7 +994,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u32 *pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {Console.Error("FPU: RSQRT Allocation Error!");}
+	if (t1reg == -1) {Console.Error("FPU: RSQRT Allocation Error!"); return;}
 	if (tempReg == -1) {Console.Error("FPU: RSQRT Allocation Error!"); tempReg = EAX;}
 
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags

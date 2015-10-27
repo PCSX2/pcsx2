@@ -163,7 +163,10 @@ ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
 
 ConsoleLogFrame::ColorArray::~ColorArray() throw()
 {
-	Cleanup();
+	try {
+		Cleanup();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void ConsoleLogFrame::ColorArray::Create( int fontsize )
@@ -948,7 +951,10 @@ void ConsoleLogFrame::DoFlushEvent( bool isPending )
 		} while( --m_WaitingThreadsForFlush > 0 );
 
 		int count = m_sem_QueueFlushed.Count();
-		while( count < 0 ) m_sem_QueueFlushed.Post();
+		while( count < 0 ) {
+			m_sem_QueueFlushed.Post();
+			count = m_sem_QueueFlushed.Count();
+		}
 	}
 
 	m_pendingFlushMsg = isPending;

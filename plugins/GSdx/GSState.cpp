@@ -23,10 +23,6 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-#ifdef __linux__
-#include <sys/stat.h> // mkdir
-#endif
-
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 static int s_crc_hack_level = 3;
@@ -46,7 +42,7 @@ GSState::GSState()
 	, m_frameskip(0)
 	, m_crcinited(false)
 {
-	m_nativeres = !!theApp.GetConfig("nativeres", 1);
+	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 
 	s_n     = 0;
@@ -59,8 +55,8 @@ GSState::GSState()
 	s_savel = theApp.GetConfig("savel", 5000);
 #ifdef __linux__
 	if (s_dump) {
-		mkdir("/tmp/GS_HW_dump", 0777);
-		mkdir("/tmp/GS_SW_dump", 0777);
+		GSmkdir("/tmp/GS_HW_dump");
+		GSmkdir("/tmp/GS_SW_dump");
 	}
 #endif
 
@@ -465,11 +461,9 @@ bool GSState::IsEnabled(int i)
 	return false;
 }
 
-float GSState::GetFPS()
+float GSState::GetTvRefreshRate()
 {
-	float base_rate = ((m_regs->SMODE1.CMOD & 1) ? 25 : (30/1.001f));
-
-	return base_rate * (m_regs->SMODE2.INT ? 2 : 1);
+	return (m_regs->SMODE1.CMOD & 1) ? 50 : (60/1.001f);
 }
 
 // GIFPackedRegHandler*
@@ -1463,7 +1457,7 @@ void GSState::FlushPrim()
 				__assume(0);
 			}
 				
-			ASSERT(unused < GSUtil::GetVertexCount(PRIM->PRIM));
+			ASSERT((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
 
 		if(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt < 3 && GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt < 3)
@@ -1873,8 +1867,6 @@ template void GSState::Transfer<1>(const uint8* mem, uint32 size);
 template void GSState::Transfer<2>(const uint8* mem, uint32 size);
 template void GSState::Transfer<3>(const uint8* mem, uint32 size);
 
-static hash_map<uint64, uint64> s_tags;
-
 template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 {
 	GSPerfMonAutoTimer pmat(&m_perfmon);
@@ -1888,16 +1880,6 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 		if(path.nloop == 0)
 		{
 			path.SetTag(mem);
-
-			if(0)
-			{
-				GIFTag* t = (GIFTag*)mem;
-				uint64 hash;
-				if(t->NREG < 8) hash = t->u32[2] & ((1 << t->NREG * 4) - 1);
-				else if(t->NREG < 16) {hash = t->u32[2]; ((uint32*)&hash)[1] = t->u32[3] & ((1 << (t->NREG - 8) * 4) - 1);}
-				else hash = t->u64[1];
-				s_tags[hash] += path.nloop * path.nreg;
-			}
 
 			mem += sizeof(GIFTag);
 			size--;
@@ -3000,6 +2982,7 @@ bool GSState::IsMipMapActive()
 GSState::GSTransferBuffer::GSTransferBuffer()
 {
 	x = y = 0;
+	overflow = false;
 	start = end = total = 0;
 	buff = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 }
@@ -4145,7 +4128,7 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}		
-		else if(fi.TME && (fi.FBP >=0x0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
+		else if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
 		{
 			skip = 1;
 		}
@@ -5115,7 +5098,7 @@ bool GSC_AlpineRacer3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(!fi.TME && fi.FBP == 0 && fi.TBP0>=0 && (fi.TPSM >= 0 ) && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
+		if(!fi.TME && fi.FBP == 0 && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
 		{
 			skip = 2;
 		}
@@ -5181,7 +5164,7 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP >= 0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
+		if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
 		{
 			skip = 1; //fi.FBMSK==0
 		}
@@ -5252,7 +5235,7 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP==0x0000 && fi.TBP0==0x3980 && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.TPSM ==0  && fi.FBMSK == 0x0)
+		if(fi.TME && fi.FBP==0x0000 && fi.TBP0==0x3980 && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
 		{
 			skip = 1;
 		}

@@ -312,8 +312,9 @@ class GSDeviceOGL : public GSDevice
 				uint32 tau:1;
 				uint32 tav:1;
 				uint32 ltf:1;
+				uint32 aniso:1;
 
-				uint32 _free:29;
+				uint32 _free:28;
 			};
 
 			uint32 key;
@@ -390,7 +391,6 @@ class GSDeviceOGL : public GSDevice
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
-	bool m_free_window;			
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
@@ -440,13 +440,12 @@ class GSDeviceOGL : public GSDevice
 
 	GLuint m_vs[1<<5];
 	GLuint m_gs[1<<2];
-	GLuint m_ps_ss[1<<3];
+	GLuint m_ps_ss[1<<4];
 	GSDepthStencilOGL* m_om_dss[1<<4];
 	hash_map<uint64, GLuint > m_ps;
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
-	GLuint m_rt_ss;
 
 	GSUniformBufferOGL* m_vs_cb;
 	GSUniformBufferOGL* m_ps_cb;
@@ -474,7 +473,8 @@ class GSDeviceOGL : public GSDevice
 	virtual ~GSDeviceOGL();
 
 	static void CheckDebugLog();
-	static void DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
+	// Used by OpenGL, so the same calling convention is required.
+	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
 
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }
@@ -534,7 +534,7 @@ class GSDeviceOGL : public GSDevice
 	GLuint CompileVS(VSSelector sel, int logz);
 	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);
-	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
+	GLuint CreateSampler(bool bilinear, bool tau, bool tav, bool aniso = false);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 

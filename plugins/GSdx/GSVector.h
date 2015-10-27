@@ -5592,7 +5592,7 @@ public:
 	{
 		ASSERT(i < 8);
 
-		return extract<i / 4>().extract32<i & 3>();
+		return extract<i / 4>().template extract32<i & 3>();
 	}
 
 	template<int i> __forceinline GSVector8 insert(__m128 m) const

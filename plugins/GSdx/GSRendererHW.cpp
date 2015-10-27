@@ -35,53 +35,41 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
-	if (m_upscale_multiplier == 1 && !m_nativeres) { //Custom
+	if (!m_upscale_multiplier) { //Custom Resolution
 		m_width = theApp.GetConfig("resx", m_width);
 		m_height = theApp.GetConfig("resy", m_height);
 	}
 
-	if (m_upscale_multiplier == 1) {
+	if (m_upscale_multiplier == 1) { // hacks are only needed for upscaling issues.
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = 0;
 	}
 
 }
 
-void GSRendererHW::SetScaling() {
+void GSRendererHW::SetScaling()
+{
+	int buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
 
-	m_buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
-	
 	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
 
-	if (!m_nativeres && m_width < (m_buffer_size * m_upscale_multiplier)){
+	// Also don't change the size for custom resolution (m_upscale_multiplier = 0).
+	if (m_upscale_multiplier && m_width < (buffer_size * m_upscale_multiplier)) {
 		m_tc->RemovePartial();
-	}
-	else {
+	} else {
 		return;
 	}
 
-	m_height = m_buffer_size < 1024 ? 512 : 1024;
-	
-	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", m_upscale_multiplier);
+	m_height = buffer_size < 1024 ? 512 : 1024;
 
-	if (m_upscale_multiplier == 1 && !m_nativeres) { //Custom
-		m_width = theApp.GetConfig("resx", m_width);
-		m_height = theApp.GetConfig("resy", m_height);
-	}
-		
-	if (m_upscale_multiplier > 1)
-	{
-		if (m_upscale_multiplier > 6)
-		{
-			m_upscale_multiplier = 1; // use the normal upscale math
-		}
-
-		m_width = m_buffer_size * m_upscale_multiplier;
+	if (m_upscale_multiplier > 1) {
+		m_width = buffer_size * m_upscale_multiplier;
 		m_height *= m_upscale_multiplier;
 	}
 	
 	
-	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
+	if (m_upscale_multiplier)
+		printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
@@ -103,12 +91,22 @@ bool GSRendererHW::CanUpscale()
 		return false;
 	}
 
-	return !m_nativeres && m_regs->PMODE.EN != 0; // upscale ratio depends on the display size, with no output it may not be set correctly (ps2 logo to game transition)
+	return m_upscale_multiplier!=1 && m_regs->PMODE.EN != 0; // upscale ratio depends on the display size, with no output it may not be set correctly (ps2 logo to game transition)
 }
 
 int GSRendererHW::GetUpscaleMultiplier()
 {
-	return m_upscale_multiplier;
+	// Custom resolution (currently 0) needs an upscale multiplier of 1.
+	return m_upscale_multiplier ? m_upscale_multiplier : 1;
+}
+
+GSVector2i GSRendererHW::GetInternalResolution() {
+	GSVector2i dr(GetDisplayRect().width(), GetDisplayRect().height());
+
+	if (m_upscale_multiplier)
+		return GSVector2i(dr.x * m_upscale_multiplier, dr.y * m_upscale_multiplier);
+	else
+		return GSVector2i(m_width, m_height);
 }
 
 void GSRendererHW::Reset()
@@ -464,7 +462,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds_tex->Save(root_hw+s);
+			if (ds_tex)
+				ds_tex->Save(root_hw+s);
 		}
 
 		s_n++;
@@ -597,7 +596,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
-			ds_tex->Save(root_hw+s);
+			if (ds_tex)
+				ds_tex->Save(root_hw+s);
 		}
 
 		s_n++;

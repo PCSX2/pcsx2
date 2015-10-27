@@ -469,7 +469,8 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 	mVUopU(mVU, 0);
 	mVUcheckBadOp(mVU);
 	if (curI & _Ebit_)  { eBitPass1(mVU, branch); DevCon.Warning("E Bit on single instruction");}
-	if (curI & _DTbit_) { branch = 4; DevCon.Warning("D Bit on single instruction");}
+	if (curI & _Dbit_) { mVUup.dBit = true; }
+	if (curI & _Tbit_) { mVUup.tBit = true; }
 	if (curI & _Mbit_)  { mVUup.mBit = true; DevCon.Warning("M Bit on single instruction");}
 	if (curI & _Ibit_)  { mVUlow.isNOP = true; mVUup.iBit = true; DevCon.Warning("I Bit on single instruction");}
 	else			    { incPC(-1); mVUopL(mVU, 0); incPC(1); }
@@ -499,7 +500,7 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 
 	mVUincCycles(mVU, 1); //Just incase the is XGKick
 	if (mVUinfo.doXGKICK) {
-		mVU_XGKICK_DELAY(mVU, true);
+		mVU_XGKICK_DELAY(mVU);
 	}
 
 	return thisPtr;
@@ -624,7 +625,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 		}
 
 		if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 
 		if (isEvilBlock) {

@@ -783,7 +783,7 @@ void BNE( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "bnez", rs);
 	else
-		disBranch(output, "bne", rt, rs);
+		disBranch(output, "bne", rs, rt);
 }
 
 void BLEZ( std::string& output )   { disBranch(output, "blez", DECODE_RS); }
@@ -847,7 +847,7 @@ void BNEL( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "bnezl", rs);
 	else
-		disBranch(output, "bnel", rt, rs);
+		disBranch(output, "bnel", rs, rt);
 }
 
 void BLEZL( std::string& output )  { disBranch(output, "blezl", DECODE_RS); }
@@ -868,6 +868,9 @@ void disMemAccess( std::string& output, const char* name, int cop = 0)
 		break;
 	case 2:
 		rt = COP2_REG_FP[DECODE_FT];
+		break;
+	default:
+		rt = "???";
 		break;
 	}
 

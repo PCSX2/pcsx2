@@ -148,14 +148,14 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				// should it do the logic for both 16 and 32, or not do logic at all?
 
 				psxCounters[cntidx].mode &= ~0x1800;
-				psxCounters[cntidx].mode |= 0x400;
 			break;
 
 			case 0x8:
 				ret = psxCounters[cntidx].target;
 			break;
-
+			
 			default:
+				DevCon.Warning("Unknown 16bit counter read %x", addr);
 				ret = psxHu32(addr);
 			break;
 		}
@@ -184,7 +184,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				// should it do the logic for both 16 and 32, or not do logic at all?
 
 				psxCounters[cntidx].mode &= ~0x1800;
-				psxCounters[cntidx].mode |= 0x400;
 			break;
 
 			case 0x8:
@@ -196,6 +195,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			default:
+				DevCon.Warning("Unknown 32bit counter read %x", addr);
 				ret = psxHu32(addr);
 			break;
 		}

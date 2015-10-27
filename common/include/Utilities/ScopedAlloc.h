@@ -51,8 +51,11 @@
 // aligned_malloc: Implement/declare linux equivalents here!
 #if !defined(_MSC_VER)
 extern void* __fastcall _aligned_malloc(size_t size, size_t align);
-extern void* __fastcall _aligned_realloc(void* handle, size_t size, size_t align);
+extern void* __fastcall pcsx2_aligned_realloc(void* handle, size_t new_size, size_t align, size_t old_size);
 extern void _aligned_free(void* pmem);
+#else
+#define pcsx2_aligned_realloc(handle, new_size, align, old_size) \
+	_aligned_realloc(handle, new_size, align)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -245,8 +248,8 @@ public:
 
 	virtual void Resize( size_t newsize )
 	{
-		this->m_size		= newsize;
-		this->m_buffer	= (T*)_aligned_realloc(this->m_buffer, newsize * sizeof(T), align);
+		this->m_buffer = (T*)pcsx2_aligned_realloc(this->m_buffer, newsize * sizeof(T), align, this->m_size * sizeof(T));
+		this->m_size = newsize;
 
 		if (!this->m_buffer)
 			throw Exception::OutOfMemory(L"ScopedAlignedAlloc::Resize");

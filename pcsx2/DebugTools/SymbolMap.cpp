@@ -241,6 +241,7 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 
 	ModuleEntry mod;
 	strncpy(mod.name, name, ARRAY_SIZE(mod.name));
+	mod.name[ARRAY_SIZE(mod.name) - 1] = 0;
 	mod.start = address;
 	mod.size = size;
 	mod.index = (int)modules.size() + 1;
@@ -340,11 +341,8 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 	if (existing != functions.end()) {
 		existing->second.size = size;
 		if (existing->second.module != moduleIndex) {
-			FunctionEntry func = existing->second;
-			func.start = relAddress;
-			func.module = moduleIndex;
-			functions.erase(existing);
-			functions[symbolKey] = func;
+			existing->second.start = relAddress;
+			existing->second.module = moduleIndex;
 		}
 
 		// Refresh the active item if it exists.
@@ -539,11 +537,8 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 		// We leave an existing label alone, rather than overwriting.
 		// But we'll still upgrade it to the correct module / relative address.
 		if (existing->second.module != moduleIndex) {
-			LabelEntry label = existing->second;
-			label.addr = relAddress;
-			label.module = moduleIndex;
-			labels.erase(existing);
-			labels[symbolKey] = label;
+			existing->second.addr = relAddress;
+			existing->second.module = moduleIndex;
 
 			// Refresh the active item if it exists.
 			auto active = activeLabels.find(address);
@@ -575,8 +570,8 @@ void SymbolMap::SetLabelName(const char* name, u32 address, bool updateImmediate
 		auto symbolKey = std::make_pair(labelInfo->second.module, labelInfo->second.addr);
 		auto label = labels.find(symbolKey);
 		if (label != labels.end()) {
-			strcpy(label->second.name,name);
-			label->second.name[127] = 0;
+			strncpy(label->second.name, name, ARRAY_SIZE(label->second.name));
+			label->second.name[ARRAY_SIZE(label->second.name) - 1] = 0;
 
 			// Allow the caller to skip this as it causes extreme startup slowdown
 			// when this gets called for every function identified by the function replacement code.
@@ -645,11 +640,8 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 		existing->second.size = size;
 		existing->second.type = type;
 		if (existing->second.module != moduleIndex) {
-			DataEntry entry = existing->second;
-			entry.module = moduleIndex;
-			entry.start = relAddress;
-			data.erase(existing);
-			data[symbolKey] = entry;
+			existing->second.module = moduleIndex;
+			existing->second.start = relAddress;
 		}
 
 		// Refresh the active item if it exists.

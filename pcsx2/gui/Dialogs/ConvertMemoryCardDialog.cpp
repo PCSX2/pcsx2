@@ -17,6 +17,8 @@
 #include "ConfigurationDialog.h"
 #include "System.h"
 
+#include "MSWstuff.h"
+
 #include "MemoryCardFile.h"
 #include "MemoryCardFolder.h"
 #include <wx/ffile.h>
@@ -35,7 +37,7 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 	, m_mcdPath( mcdPath )
 	, m_mcdSourceFilename( mcdSourceConfig.Filename.GetFullName() )
 {
-	SetMinWidth( 472 );
+	SetMinWidth( 472 * MSW_GetDPIScale());
 
 	CreateControls( mcdSourceConfig.Type );
 
@@ -51,13 +53,12 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 	s_padding += Heading( wxString( _( "Convert: " ) ) + ( mcdPath + m_mcdSourceFilename ).GetFullPath() ).Unwrapped() | pxSizerFlags::StdExpand();
 
 	wxBoxSizer& s_filename( *new wxBoxSizer( wxHORIZONTAL ) );
-	s_filename += Heading( _( "To: " ) ).SetMinWidth( 50 );
-	m_text_filenameInput->SetMinSize( wxSize( 250, 20 ) );
+	s_filename += Heading( _( "To: " ) ).Unwrapped().Align(wxALIGN_RIGHT) | pxProportion(1);
 	m_text_filenameInput->SetValue( wxFileName( m_mcdSourceFilename ).GetName() + L"_converted" );
-	s_filename += m_text_filenameInput;
-	s_filename += Heading( L".ps2" );
+	s_filename += m_text_filenameInput | pxProportion(2);
+	s_filename += Heading( L".ps2" ).Align(wxALIGN_LEFT) | pxProportion(1);
 
-	s_padding += s_filename | wxALIGN_LEFT;
+	s_padding += s_filename | pxSizerFlags::StdExpand();
 
 	s_padding += m_radio_CardType | pxSizerFlags::StdExpand();
 
@@ -73,6 +74,8 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 
 	Connect( wxID_OK, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConvertMemoryCardDialog::OnOk_Click ) );
 	Connect( m_text_filenameInput->GetId(), wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ConvertMemoryCardDialog::OnOk_Click ) );
+
+	SetSizerAndFit(GetSizer());
 
 	m_text_filenameInput->SetFocus();
 	m_text_filenameInput->SelectAll();

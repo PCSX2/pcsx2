@@ -1333,6 +1333,12 @@ wxString wxGetOsDescription()
                             break;
                     }
                     break;
+
+                case 10:
+                    str = wxIsWindowsServer() == 1
+                            ? _("Windows Server 10")
+                            : _("Windows 10");
+                    break;
             }
 
             if ( str.empty() )
@@ -1490,13 +1496,13 @@ wxWinVersion wxGetWinVersion()
                             return wxWinVersion_8;
 
                         case 3:
-                            // For now, map to wxWinVersion_8. In case program
-                            // does not have a manifest indicating 8.1
-                            // support, Windows already performs this mapping
-                            // for us.
-                            return wxWinVersion_8;
+                            return wxWinVersion_8_1;
+
                     }
                     break;
+
+                case 10:
+                    return wxWinVersion_10;
             }
         default:
             // Do nothing just to silence GCC warning

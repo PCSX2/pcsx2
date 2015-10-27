@@ -44,7 +44,7 @@ option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
 option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
-option(SDL2_API "Use SDL2 on spu2x and onepad (experimental/wxWidget mustn't be built with SDL1.2 support")
+option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
 option(WX28_API "Force wxWidget 2.8 lib (deprecated)")
 option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
 
@@ -231,7 +231,7 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-set(COMMON_FLAG "-pipe -std=c++11 -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp")
+set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
 endif()
@@ -264,9 +264,6 @@ endif()
 
 if (USE_ASAN)
     set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer ${DBG} -DASAN_WORKAROUND")
-    if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-        set(ASAN_FLAG "${ASAN_FLAG} -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2")
-    endif()
 else()
     set(ASAN_FLAG "")
 endif()
@@ -282,7 +279,7 @@ endif()
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG}")
 # c++ only flags
-set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
+set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 
 #-------------------------------------------------------------------------------
 # Allow user to set some default flags

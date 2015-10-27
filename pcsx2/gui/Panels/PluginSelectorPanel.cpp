@@ -227,7 +227,7 @@ protected:
 IMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog)
 
 ApplyPluginsDialog::ApplyPluginsDialog( BaseApplicableConfigPanel* panel )
-	: WaitForTaskDialog( _("Applying settings...") )
+: WaitForTaskDialog(_("Applying settings...")), m_panel(NULL)
 {
 	GetSysExecutorThread().PostEvent( new SysExecEvent_ApplyPlugins( this, m_sync ) );
 }
@@ -546,7 +546,7 @@ void Panels::PluginSelectorPanel::DoRefresh()
 	wxCommandEvent evt( pxEVT_ShowStatusBar );
 	GetEventHandler()->AddPendingEvent( evt );
 
-	m_EnumeratorThread.Delete() = new EnumThread( *this );
+	m_EnumeratorThread.Reassign(new EnumThread( *this ));
 
 	if( DisableThreading )
 		m_EnumeratorThread->DoNextPlugin( 0 );

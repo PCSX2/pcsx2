@@ -116,6 +116,10 @@ using namespace std;
 using namespace stdext;
 #endif
 
+#ifdef __linux__
+#include <sys/stat.h> // mkdir
+#endif
+
 #ifdef _WINDOWS
 
 	// Note use GL/glcorearb.h on the future
@@ -228,7 +232,13 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
+// GCC removes the variable as dead code and generates some warnings.
+// Stack is automatically realigned due to SSE/AVX operations
+#ifdef __GNUC__
+#define ALIGN_STACK(n) (void)0;
+#else
 #define ALIGN_STACK(n) __aligned(int, n) __dummy;
+#endif
 
 #ifndef RESTRICT
 
@@ -483,7 +493,7 @@ extern void vmfree(void* ptr, size_t size);
 #endif
 
 #define GL_INSERT(type, code, sev, ...) \
-	do if (gl_DebugMessageInsert) gl_DebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); while(0);
+	do if (glDebugMessageInsert) glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); while(0);
 
 // Except apple any sane driver support this extension
 #if defined(_DEBUG)
@@ -493,8 +503,8 @@ extern void vmfree(void* ptr, size_t size);
 #endif
 
 #if defined(ENABLE_OGL_DEBUG)
-#define GL_PUSH(...)	do if (gl_PushDebugGroup) gl_PushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
-#define GL_POP()        do if (gl_PopDebugGroup) gl_PopDebugGroup(); while(0);
+#define GL_PUSH(...)	do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
+#define GL_POP()        do if (glPopDebugGroup) glPopDebugGroup(); while(0);
 #define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
 #define GL_PERF(...)	GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else

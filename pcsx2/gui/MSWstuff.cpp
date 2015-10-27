@@ -28,11 +28,13 @@ void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter )
 #endif
 }
 
+// Text scales automatically on Windows but that's about it. The dialog widths
+// and images need to be scaled manually.
 float MSW_GetDPIScale()
 {
 #ifdef __WXMSW__
 	HDC screen = GetDC(0);
-	float scale = GetDeviceCaps(screen, LOGPIXELSX) / 96.0;
+	float scale = GetDeviceCaps(screen, LOGPIXELSX) / 96.0; // 96.0 dpi = 100% scale
 	ReleaseDC(NULL, screen);
 
 	return scale;

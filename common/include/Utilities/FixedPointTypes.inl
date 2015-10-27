@@ -33,13 +33,13 @@ FixedInt<Precision>::FixedInt( int signedval )
 template< int Precision >
 FixedInt<Precision>::FixedInt( double doubval )
 {
-	Raw = (int)(doubval * (double)Precision);
+	Raw = lround(doubval * (double)Precision);
 }
 
 template< int Precision >
 FixedInt<Precision>::FixedInt( float floval )
 {
-	Raw = (int)(floval * (float)Precision);
+	Raw = lroundf(floval * (float)Precision);
 }
 
 template< int Precision >

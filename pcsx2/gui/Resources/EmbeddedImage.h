@@ -26,8 +26,7 @@ class IEmbeddedImage
 {
 public:
 	virtual const wxImage& Get()=0;
-	virtual wxImage Rescale( int width, int height )=0;
-	virtual wxImage Resample( int width, int height )=0;
+	virtual wxImage Scale( int width, int height )=0;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +58,7 @@ protected:
 			m_Image.LoadFile( joe, ImageType::GetFormat() );
 
 			if( m_ResampleTo.IsFullySpecified() && ( m_ResampleTo.GetWidth() != m_Image.GetWidth() || m_ResampleTo.GetHeight() != m_Image.GetHeight() ) )
-				m_Image = m_Image.ResampleBox( m_ResampleTo.GetWidth(), m_ResampleTo.GetHeight() );
+				m_Image.Rescale( m_ResampleTo.GetWidth(), m_ResampleTo.GetHeight(), wxIMAGE_QUALITY_HIGH );
 		}
 	}
 
@@ -107,31 +106,15 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Performs a pixel resize of the loaded image and returns a new image handle (EmbeddedImage
-	// is left unmodified).  Useful for creating ugly versions of otherwise nice graphics.  Do
-	// us all a favor and use Resample() instead.
+	// is left unmodified).
 	//
-	// (this method included for sake of completeness only).
-	//
-	wxImage Rescale( int width, int height )
-	{
-		_loadImage();
-		if( width != m_Image.GetWidth() || height != m_Image.GetHeight() )
-			return m_Image.Rescale( width, height );
-		else
-			return m_Image;
-	}
 
-	// ------------------------------------------------------------------------
-	// Implementation Note: This function uses wxWidgets ResampleBox method to resize the image.
-	// wxWidgets ResampleBicubic appears to be buggy and produces fairly poor results when down-
-	// sampling images (basically resembles a pixel resize).  ResampleBox produces much cleaner
-	// results.
-	//
-	wxImage Resample( int width, int height )
+	wxImage Scale( int width, int height )
 	{
 		_loadImage();
+		// Not strictly necessary - wxWidgets does the dimensions check anyway.
 		if( width != m_Image.GetWidth() || height != m_Image.GetHeight() )
-			return m_Image.ResampleBox( width, height );
+			return m_Image.Scale( width, height, wxIMAGE_QUALITY_HIGH );
 		else
 			return m_Image;
 	}

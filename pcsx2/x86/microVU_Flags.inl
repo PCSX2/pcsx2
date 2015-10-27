@@ -362,15 +362,16 @@ void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v) {
 		mVUopU(mVU, 3);
 		found |= (mVUregs.needExactMatch&8)>>3;
 		mVUregs.needExactMatch &= 7;
-		if (  curI & _Ebit_  )	{ branch = 1; }
-		if (  curI & _DTbit_ )	{ branch = 6; }
+		if ( curI & _Ebit_  )	{ branch = 1; }
+		if ( curI & _Tbit_ ) { branch = 6; } 
+		if ( (curI & _Dbit_) && doDBitHandling ) { branch = 6; }
 		if (!(curI & _Ibit_) )	{ incPC(-1); mVUopL(mVU, 3); incPC(1); }
 		
 		// if (mVUbranch&&(branch>=3)&&(branch<=5)) { DevCon.Error("Double Branch [%x]", xPC); mVUregs.needExactMatch |= 7; break; }
 		
 		if		(branch >= 2)	{ shortBranch(); }
 		else if (branch == 1)	{ branch = 2; }
-		if		(mVUbranch)		{ branch = ((mVUbranch>8)?(5):((mVUbranch<3)?3:4)); incPC(-1); aBranchAddr = branchAddr; incPC(1); mVUbranch = 0; }
+		if		(mVUbranch)		{ branch = ((mVUbranch>8)?(5):((mVUbranch<3)?3:4)); incPC(-1); aBranchAddr = branchAddr(mVU); incPC(1); mVUbranch = 0; }
 		incPC(1);
 		if ((mVUregs.needExactMatch&7)==7) break;
 	}
@@ -404,8 +405,8 @@ void mVUsetFlagInfo(mV) {
 	int ffOpt = doFullFlagOpt;
 	if (mVUbranch <= 2) { // B/BAL
 		incPC(-1);
-		mVUflagPass (mVU, branchAddr);
-		checkFFblock(mVU, branchAddr, ffOpt);
+		mVUflagPass (mVU, branchAddr(mVU));
+		checkFFblock(mVU, branchAddr(mVU), ffOpt);
 		incPC(1);
 
 		mVUregs.needExactMatch &= 0x7;
@@ -415,8 +416,8 @@ void mVUsetFlagInfo(mV) {
 	}
 	else if (mVUbranch <= 8) { // Conditional Branch
 		incPC(-1); // Branch Taken
-		mVUflagPass (mVU, branchAddr);
-		checkFFblock(mVU, branchAddr, ffOpt);
+		mVUflagPass (mVU, branchAddr(mVU));
+		checkFFblock(mVU, branchAddr(mVU), ffOpt);
 		int backupFlagInfo     = mVUregs.needExactMatch;
 		mVUregs.needExactMatch = 0;
 		

@@ -13,10 +13,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2014-04-06 15:57:21 +0000 (Sun, 06 Apr 2014) $
+// Last changed  : $Date: 2015-08-09 00:00:15 +0300 (Sun, 09 Aug 2015) $
 // File revision : $Revision: 4 $
 //
-// $Id: TDStretch.h 195 2014-04-06 15:57:21Z oparviai $
+// $Id: TDStretch.h 226 2015-08-08 21:00:15Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -112,39 +112,46 @@ class TDStretch : public FIFOProcessor
 protected:
     int channels;
     int sampleReq;
-    float tempo;
 
-    SAMPLETYPE *pMidBuffer;
-    SAMPLETYPE *pMidBufferUnaligned;
     int overlapLength;
     int seekLength;
     int seekWindowLength;
-    int overlapDividerBits;
+    int overlapDividerBitsNorm;
+    int overlapDividerBitsPure;
     int slopingDivider;
-    float nominalSkip;
-    float skipFract;
-    FIFOSampleBuffer outputBuffer;
-    FIFOSampleBuffer inputBuffer;
-    bool bQuickSeek;
-
     int sampleRate;
     int sequenceMs;
     int seekWindowMs;
     int overlapMs;
+
+    unsigned long maxnorm;
+    float maxnormf;
+
+    double tempo;
+    double nominalSkip;
+    double skipFract;
+
+    bool bQuickSeek;
     bool bAutoSeqSetting;
     bool bAutoSeekSetting;
+
+    SAMPLETYPE *pMidBuffer;
+    SAMPLETYPE *pMidBufferUnaligned;
+
+    FIFOSampleBuffer outputBuffer;
+    FIFOSampleBuffer inputBuffer;
 
     void acceptNewOverlapLength(int newOverlapLength);
 
     virtual void clearCrossCorrState();
     void calculateOverlapLength(int overlapMs);
 
-    virtual double calcCrossCorr(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm) const;
-    virtual double calcCrossCorrAccumulate(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm) const;
+    virtual double calcCrossCorr(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm);
+    virtual double calcCrossCorrAccumulate(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm);
 
     virtual int seekBestOverlapPositionFull(const SAMPLETYPE *refPos);
     virtual int seekBestOverlapPositionQuick(const SAMPLETYPE *refPos);
-    int seekBestOverlapPosition(const SAMPLETYPE *refPos);
+    virtual int seekBestOverlapPosition(const SAMPLETYPE *refPos);
 
     virtual void overlapStereo(SAMPLETYPE *output, const SAMPLETYPE *input) const;
     virtual void overlapMono(SAMPLETYPE *output, const SAMPLETYPE *input) const;
@@ -154,6 +161,8 @@ protected:
     void overlap(SAMPLETYPE *output, const SAMPLETYPE *input, uint ovlPos) const;
 
     void calcSeqParameters();
+    void adaptNormalizer();
+
 
     /// Changes the tempo of the given sound samples.
     /// Returns amount of samples returned in the "output" buffer.
@@ -182,7 +191,7 @@ public:
 
     /// Sets new target tempo. Normal tempo = 'SCALE', smaller values represent slower 
     /// tempo, larger faster tempo.
-    void setTempo(float newTempo);
+    void setTempo(double newTempo);
 
     /// Returns nonzero if there aren't any samples available for outputting.
     virtual void clear();
@@ -249,8 +258,8 @@ public:
     class TDStretchMMX : public TDStretch
     {
     protected:
-        double calcCrossCorr(const short *mixingPos, const short *compare, double &norm) const;
-        double calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm) const;
+        double calcCrossCorr(const short *mixingPos, const short *compare, double &norm);
+        double calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm);
         virtual void overlapStereo(short *output, const short *input) const;
         virtual void clearCrossCorrState();
     };
@@ -262,8 +271,8 @@ public:
     class TDStretchSSE : public TDStretch
     {
     protected:
-        double calcCrossCorr(const float *mixingPos, const float *compare, double &norm) const;
-        double calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm) const;
+        double calcCrossCorr(const float *mixingPos, const float *compare, double &norm);
+        double calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm);
     };
 
 #endif /// SOUNDTOUCH_ALLOW_SSE

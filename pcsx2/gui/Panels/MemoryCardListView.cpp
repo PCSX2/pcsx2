@@ -40,15 +40,6 @@ IMcdList& BaseMcdListView::GetMcdProvider()
 	return *m_CardProvider;
 }
 
-void BaseMcdListView::SetTargetedItem( int sel )
-{
-	if( m_TargetedItem == sel ) return;
-
-	if( m_TargetedItem >= 0 ) RefreshItem( m_TargetedItem );
-	m_TargetedItem = sel;
-	RefreshItem( sel );
-}
-
 void BaseMcdListView::LoadSaveColumns( IniInterface& ini )
 {
 	FastFormatUnicode label;
@@ -159,8 +150,8 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 		case McdColS_Size:			return prefix + ( !it.IsPresent ? L"" : (it.IsPSX? pxsFmt( L"%u MBit", it.SizeInMB ) : ( it.SizeInMB > 0 ? pxsFmt( L"%u MiB", it.SizeInMB ) : L"Auto" ) ) );
 		case McdColS_Formatted:		return prefix + ( !it.IsPresent ? L"" : ( it.IsFormatted ? _("Yes") : _("No")) );
 		case McdColS_Type:			return prefix + ( !it.IsPresent ? L"" : ( it.IsPSX? _("PSX") : _("PS2")) );
-		case McdColS_DateModified:	return prefix + ( !it.IsPresent ? L"" : it.DateModified.FormatDate() );
-		case McdColS_DateCreated:	return prefix + ( !it.IsPresent ? L"" : it.DateCreated.FormatDate() );
+		case McdColS_DateModified:	return prefix + ( !it.IsPresent || !it.DateModified.IsValid() ? L"" : it.DateModified.FormatDate() );
+		case McdColS_DateCreated:	return prefix + ( !it.IsPresent || !it.DateCreated.IsValid() ? L"" : it.DateCreated.FormatDate() );
 
 		case McdColS_Filename:
 		{
@@ -218,9 +209,6 @@ wxListItemAttr* MemoryCardListView_Simple::OnGetItemAttr(long item) const
 
 	if( it.Slot==-1 || it.IsPresent && !it.IsEnabled)
 		m_ItemAttr.SetTextColour( *wxLIGHT_GREY );
-/*
-	if( m_TargetedItem == item )
-		m_ItemAttr.SetBackgroundColour( wxColour(L"Wheat") );
-*/
+
 	return &m_ItemAttr;
 }

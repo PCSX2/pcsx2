@@ -237,11 +237,8 @@ public:
 	IDirect3DDevice9* operator->() {return m_dev;}
 	operator IDirect3DDevice9*() {return m_dev;}
 
-	void CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
-	void CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps);
-
-	void CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
-	void CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps);
+	void CompileShader(const char *source, size_t size, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
+	void CompileShader(const char *source, size_t size, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps);
 
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
 	void SetupGS(GSSelector sel) {}

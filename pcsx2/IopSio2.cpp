@@ -156,7 +156,7 @@ void sio2_serialIn(u8 value){
 	if (sio2.cmdlength) sio2.cmdlength--;
 	sioWrite8(value);
 
-	if (sio2.packet.sendSize > BUFSIZE) {//asadr
+	if (sio2.packet.sendSize >= BUFSIZE) {//asadr
 		Console.Warning("*PCSX2*: sendSize >= %d", BUFSIZE);
 	} else {
 		sio2.buf[sio2.packet.sendSize] = sioRead8();
@@ -183,7 +183,7 @@ void sio2_fifoIn(u8 value){
 	if (sio2.cmdlength) sio2.cmdlength--;
 	SIODMAWrite(value);
 
-	if (sio2.packet.sendSize > BUFSIZE) {//asadr
+	if (sio2.packet.sendSize >= BUFSIZE) {//asadr
 		Console.WriteLn("*PCSX2*: sendSize >= %d", BUFSIZE);
 	} else {
 		sio2.buf[sio2.packet.sendSize] = sioRead8();

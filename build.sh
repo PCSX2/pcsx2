@@ -22,6 +22,7 @@ cleanBuild=0
 useClang=0
 # 0 => no, 1 => yes, 2 => force yes
 useCross=2
+CoverityBuild=0
 
 for ARG in "$@"; do
     case "$ARG" in
@@ -33,7 +34,7 @@ for ARG in "$@"; do
         --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
-        --sdl2              ) flags+=(-DSDL2_API=TRUE) ;;
+        --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
         --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
         --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28              ) flags+=(-DWX28_API=TRUE) ;;
@@ -41,6 +42,7 @@ for ARG in "$@"; do
         --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
         --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
+        --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         -D*                 ) flags+=($ARG) ;;
 
         *)
@@ -55,17 +57,20 @@ for ARG in "$@"; do
             echo "--no-simd       : Only allow sse2"
             echo
             echo "** Developer option **"
-            echo "--wx28          : Force wxWidget 2.8"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl/GSdx plugins)"
-            echo "--sdl2          : Build with SDL2 (crashes if wx is linked to SDL1.2)"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
+            echo
+            echo "** Distribution Compatibilities **"
+            echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
+            echo "--wx28          : Force wxWidget 2.8"
             echo
             echo "** Expert Developer option **"
             echo "--gtk3          : replace GTK2 by GTK3"
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
             echo "--asan          : Enable Address sanitizer"
+            echo "--coverity      : Do a build for coverity (require the tool)"
 
             exit 1
     esac
@@ -74,6 +79,8 @@ done
 root=$PWD/$(dirname "$0")
 log=$root/install_log.txt
 build=$root/build
+coverity_dir=cov-int
+coverity_result=pcsx2-coverity.xz
 
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
@@ -116,7 +123,13 @@ else
     ncpu=$(grep -w -c processor /proc/cpuinfo)
 fi
 
-make -j"$ncpu" 2>&1 | tee -a $log
-make install 2>&1 | tee -a $log
+if [[ "$CoverityBuild" -eq 1 ]]; then
+    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a $log
+    # Warning: $coverity_dir must be the root directory
+    (cd $build; tar caf $coverity_result $coverity_dir)
+else
+    make -j"$ncpu" 2>&1 | tee -a $log
+    make install 2>&1 | tee -a $log
+fi
 
 exit 0

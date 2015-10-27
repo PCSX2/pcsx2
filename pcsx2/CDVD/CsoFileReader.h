@@ -37,8 +37,12 @@ class CsoFileReader : public AsyncFileReader
 	DeclareNoncopyableObject(CsoFileReader);
 public:
 	CsoFileReader(void) :
+		m_frameSize(0),
+		m_frameShift(0),
+		m_indexShift(0),
 		m_readBuffer(0),
 		m_zlibBuffer(0),
+		m_zlibBufferFrame(0),
 		m_index(0),
 		m_totalSize(0),
 		m_src(0),

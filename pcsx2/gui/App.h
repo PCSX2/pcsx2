@@ -38,6 +38,7 @@ BEGIN_DECLARE_EVENT_TYPES()
 	DECLARE_EVENT_TYPE( pxEvt_LoadPluginsComplete, -1 )
 	DECLARE_EVENT_TYPE( pxEvt_LogicalVsync, -1 )
 	DECLARE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec, -1 )
+	DECLARE_EVENT_TYPE( pxEvt_SetSettingsPage, -1 )
 END_DECLARE_EVENT_TYPES()
 
 // This is used when the GS plugin is handling its own window.  Messages from the PAD
@@ -219,10 +220,12 @@ struct AppImageIds
 
 		ToolbarIds()
 		{
-			Settings	= Play	=
-			PluginVideo	=
-			PluginAudio	=
-			PluginPad	= -1;
+			Settings    = -1;
+			Play        = -1;
+			Resume      = -1;
+			PluginVideo = -1;
+			PluginAudio = -1;
+			PluginPad   = -1;
 		}
 	} Toolbars;
 };
@@ -242,6 +245,7 @@ public:
 	ScopedPtr<wxImageList>		ToolbarImages;
 	ScopedPtr<wxIconBundle>		IconBundle;
 	ScopedPtr<wxBitmap>			Bitmap_Logo;
+	ScopedPtr<wxBitmap>			ScreenshotBitmap;
 	ScopedPtr<AppGameDatabase>	GameDB;
 
 	pxAppResources();
@@ -260,8 +264,6 @@ protected:
 	u64 m_fpsqueue[FramerateQueueDepth];
 	int m_fpsqueue_writepos;
 	uint m_initpause;
-
-	uint m_FrameCounter;
 
 public:
 	FramerateManager() { Reset(); }
@@ -512,7 +514,7 @@ public:
 
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
-	DisassemblyDialog*	GetDisassemblyPtr() const	{ return m_id_Disassembler ? (DisassemblyDialog*)wxWindow::FindWindowById( m_id_Disassembler ) : NULL; }
+	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 	
 	void enterDebugMode();
 	void leaveDebugMode();
@@ -559,6 +561,7 @@ public:
 	pxAppResources&		GetResourceCache();
 	const wxIconBundle&	GetIconBundle();
 	const wxBitmap&		GetLogoBitmap();
+	const wxBitmap&		GetScreenshotBitmap();
 	wxImageList&		GetImgList_Config();
 	wxImageList&		GetImgList_Toolbars();
 
@@ -686,6 +689,42 @@ wxWindow* AppOpenDialog( wxWindow* parent=NULL )
 	window->Show();
 	window->SetFocus();
 	return window;
+}
+
+// --------------------------------------------------------------------------------------
+//  AppOpenModalDialog
+// --------------------------------------------------------------------------------------
+// Returns the ID of the button used to close the dialog.
+//
+template<typename DialogType>
+int AppOpenModalDialog(wxString panel_name, wxWindow* parent = NULL)
+{
+	if (wxWindow* window = wxFindWindowByName(L"Dialog:" + DialogType::GetNameStatic()))
+	{
+		window->SetFocus();
+		if (wxDialog* dialog = wxDynamicCast(window, wxDialog))
+		{
+			// Switch to the requested panel.
+			if (panel_name != wxEmptyString) {
+				wxCommandEvent evt(pxEvt_SetSettingsPage);
+				evt.SetString(panel_name);
+				dialog->GetEventHandler()->ProcessEvent(evt);
+			}
+
+			// It's legal to call ShowModal on a non-modal dialog, therefore making
+			// it modal in nature for the needs of whatever other thread of action wants
+			// to block against it:
+			if (!dialog->IsModal())
+			{
+				int result = dialog->ShowModal();
+				dialog->Destroy();
+				return result;
+			}
+		}
+		pxFailDev("Can only show wxDialog class windows as modal!");
+		return wxID_CANCEL;
+	} else
+		return DialogType(parent).ShowModal();
 }
 
 extern pxDoAssertFnType AppDoAssert;

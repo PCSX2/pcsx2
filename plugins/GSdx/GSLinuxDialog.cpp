@@ -271,28 +271,13 @@ GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int 
 	return table;
 }
 
-void populate_res_table(GtkWidget* res_table)
-{
-	GtkWidget* native_label     = gtk_label_new("Original PS2 Resolution: ");
-	GtkWidget* native_res_check = CreateCheckBox("Native", "nativeres");
-
-	GtkWidget* fsaa_label     = gtk_label_new("Or Use Scaling:");
-	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 2);
-
-	GtkWidget* resxy_label = gtk_label_new("Custom Resolution:");
-	GtkWidget* resx_spin   = CreateSpinButton(256, 8192, "resx", 1024);
-	GtkWidget* resy_spin   = CreateSpinButton(256, 8192, "resy", 1024);
-
-	s_table_line = 0;
-	InsertWidgetInTable(res_table, native_label, native_res_check);
-	InsertWidgetInTable(res_table, fsaa_label, fsaa_combo_box);
-	InsertWidgetInTable(res_table, resxy_label, resx_spin, resy_spin);
-}
-
 void populate_hw_table(GtkWidget* hw_table)
 {
 	GtkWidget* filter_label     = gtk_label_new ("Texture Filtering:");
 	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
+
+	GtkWidget* fsaa_label     = gtk_label_new("Internal Resolution:");
+	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 1);
 
 	GtkWidget* af_label     = gtk_label_new("Anisotropic Filtering:");
 	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 0);
@@ -319,9 +304,10 @@ void populate_hw_table(GtkWidget* hw_table)
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, paltex_check, tc_depth_check);
 	InsertWidgetInTable(hw_table, acc_date_check);
-	InsertWidgetInTable(hw_table, acc_bld_label, acc_bld_combo_box);
+	InsertWidgetInTable(hw_table, fsaa_label, fsaa_combo_box);
 	InsertWidgetInTable(hw_table, filter_label, filter_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
+	InsertWidgetInTable(hw_table, acc_bld_label, acc_bld_combo_box);
 	InsertWidgetInTable(hw_table, crc_label, crc_combo_box);
 }
 
@@ -523,9 +509,8 @@ bool RunLinuxDialog()
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* res_table    = CreateTableInBox(central_box , "OpenGL Internal Resolution"           , 3  , 3);
 	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 8  , 2);
-	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 5  , 2);
+	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 3  , 2);
 
 	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 9 , 2);
@@ -537,7 +522,6 @@ bool RunLinuxDialog()
 	// Populate all the tables
 	populate_main_table(main_table);
 
-	populate_res_table(res_table);
 	populate_shader_table(shader_table);
 	populate_hw_table(hw_table);
 	populate_sw_table(sw_table);

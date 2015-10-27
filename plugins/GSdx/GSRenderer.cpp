@@ -25,18 +25,24 @@
 #include <X11/keysym.h>
 #endif
 
+const unsigned int s_interlace_nb = 8;
+const unsigned int s_post_shader_nb = 5;
+const unsigned int s_aspect_ratio_nb = 3;
+
 GSRenderer::GSRenderer()
 	: m_shader(0)
 	, m_shift_key(false)
 	, m_control_key(false)
+	, m_framelimit(false)
+	, m_texture_shuffle(false)
 	, m_wnd(NULL)
 	, m_dev(NULL)
 {
 	m_GStitleInfoBuffer[0] = 0;
 
-	m_interlace = theApp.GetConfig("interlace", 7);
-	m_aspectratio = theApp.GetConfig("aspectratio", 1);
-	m_shader = theApp.GetConfig("TVShader", 0);
+	m_interlace = theApp.GetConfig("interlace", 7) % s_interlace_nb;
+	m_aspectratio = theApp.GetConfig("aspectratio", 1) % s_aspect_ratio_nb;
+	m_shader = theApp.GetConfig("TVShader", 0) % s_post_shader_nb;
 	m_filter = theApp.GetConfig("filter", 1);
 	m_vsync = !!theApp.GetConfig("vsync", 0);
 	m_aa1 = !!theApp.GetConfig("aa1", 0);
@@ -358,7 +364,7 @@ void GSRenderer::VSync(int field)
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
-				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetFPS()),
+				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
 				theApp.m_gs_aspectratio[m_aspectratio].name.c_str(),
@@ -533,7 +539,10 @@ bool GSRenderer::MakeSnapshot(const string& path)
 
 bool GSRenderer::BeginCapture()
 {
-	return m_capture.BeginCapture(GetFPS());
+	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
+	float aspect = (float)disp.width() / max(1, disp.height());
+
+	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect);
 }
 
 void GSRenderer::EndCapture()
@@ -543,9 +552,6 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
-	const unsigned int interlace_nb = 8;
-	const unsigned int post_shader_nb = 5;
-	const unsigned int aspect_ratio_nb = 3;
 #ifdef _WINDOWS
 	if(e->type == KEYPRESS)
 	{
@@ -555,15 +561,15 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case VK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case VK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case VK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			printf("GSdx: Set shader to: %d.\n", (int)m_shader);
 			theApp.SetConfig("TVShader", (int)m_shader);
 			return;
@@ -594,15 +600,15 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case XK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 			fprintf(stderr, "GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case XK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case XK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			theApp.SetConfig("TVShader", (int)m_shader);
 			fprintf(stderr,"GSdx: Set shader %d.\n", (int)m_shader);
 			return;

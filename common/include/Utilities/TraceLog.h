@@ -77,7 +77,7 @@ public:
 	bool			Enabled;
 
 protected:
-	BaseTraceLogSource() {}
+	BaseTraceLogSource() : m_Descriptor(NULL), Enabled(false) {}
 
 public:
 	TraceLog_ImplementBaseAPI(BaseTraceLogSource)
@@ -159,7 +159,7 @@ public:
 	ConsoleColors	DefaultColor;
 
 protected:
-	ConsoleLogSource() {}
+	ConsoleLogSource() : DefaultColor(Color_Gray) {}
 
 public:
 	ConsoleLog_ImplementBaseAPI(ConsoleLogSource)

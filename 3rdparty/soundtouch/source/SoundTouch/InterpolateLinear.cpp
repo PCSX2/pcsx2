@@ -8,7 +8,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// $Id: InterpolateLinear.cpp 180 2014-01-06 19:16:02Z oparviai $
+// $Id: InterpolateLinear.cpp 225 2015-07-26 14:45:48Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -170,9 +170,9 @@ int InterpolateLinearInteger::transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE 
 
 // Sets new target iRate. Normal iRate = 1.0, smaller values represent slower 
 // iRate, larger faster iRates.
-void InterpolateLinearInteger::setRate(float newRate)
+void InterpolateLinearInteger::setRate(double newRate)
 {
-    iRate = (int)(newRate * SCALE + 0.5f);
+    iRate = (int)(newRate * SCALE + 0.5);
     TransposerBase::setRate(newRate);
 }
 
@@ -190,7 +190,7 @@ InterpolateLinearFloat::InterpolateLinearFloat() : TransposerBase()
     // Notice: use local function calling syntax for sake of clarity, 
     // to indicate the fact that C++ constructor can't call virtual functions.
     resetRegisters();
-    setRate(1.0f);
+    setRate(1.0);
 }
 
 
@@ -275,12 +275,13 @@ int InterpolateLinearFloat::transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *s
     i = 0;
     while (srcCount < srcSampleEnd)
     {
-        float temp, vol1;
+        float temp, vol1, fract_float;
     
-        vol1 = (1.0f- fract);
+        vol1 = (float)(1.0 - fract);
+		fract_float = (float)fract;
         for (int c = 0; c < numChannels; c ++)
         {
-            temp = vol1 * src[c] + fract * src[c + numChannels];
+			temp = vol1 * src[c] + fract_float * src[c + numChannels];
             *dest = (SAMPLETYPE)temp;
             dest ++;
         }

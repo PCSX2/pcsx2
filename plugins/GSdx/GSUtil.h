@@ -65,3 +65,6 @@ public:
 #endif
 };
 
+#ifdef __linux__
+void GSmkdir(const char* dir);
+#endif
