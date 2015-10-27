@@ -35,6 +35,7 @@ GSState::GSState()
 	, m_init_read_fifo_supported(false)
 	, m_q(1.0f)
 	, m_texflush(true)
+	, m_renderered_size(0)
 	, m_vt(this)
 	, m_regs(NULL)
 	, m_crc(0)
@@ -419,6 +420,12 @@ GSVector2i GSState::GetDeviceSize(int i)
 	int w = r.width();
 	int h = r.height();
 
+	if (m_renderered_size.height() >= 224) {
+		h = std::min(h, m_renderered_size.height());
+		h &= ~0x1F;
+
+	}
+#if 0
 	switch (m_regs->SMODE1.CMOD) {
 		case 0: // VESA
 			break;
@@ -441,9 +448,11 @@ GSVector2i GSState::GetDeviceSize(int i)
 			else
 				h = 512;
 			break;
+		default:
+			break;
 	}
+#endif
 
-#if 0
 	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
 	{
 		h /= 2;
@@ -454,7 +463,7 @@ GSVector2i GSState::GetDeviceSize(int i)
 	}*/
 
 	//Fixme : Just slightly better than the hack above
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
+	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 288)
 	{
 		if (IsEnabled(0) || IsEnabled(1))
 		{
@@ -463,12 +472,10 @@ GSVector2i GSState::GetDeviceSize(int i)
 	}
 
 	//Fixme: These games elude the code above, worked with the old hack
-	// GREG note: Maybe the IsEnabled is a bad idea
 	else if(m_game.title == CRC::SilentHill2 || m_game.title == CRC::SilentHill3)
 	{
 		h /= 2; 
 	}
-#endif
 
 	return GSVector2i(w, h);
 
@@ -1494,6 +1501,9 @@ void GSState::FlushPrim()
 			// FIXME: berserk fpsm = 27 (8H)
 
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+
+			GSVector4i bbox    = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
+			m_renderered_size = m_renderered_size.runion(bbox.rintersect(GSVector4i(m_context->scissor.in)));
 
 			Draw();
 

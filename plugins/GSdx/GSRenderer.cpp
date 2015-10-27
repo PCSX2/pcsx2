@@ -522,6 +522,9 @@ void GSRenderer::VSync(int field)
 			}
 		}
 	}
+
+	// Clean display cache size
+	m_renderered_size = GSVector4i(0);
 }
 
 bool GSRenderer::MakeSnapshot(const string& path)
