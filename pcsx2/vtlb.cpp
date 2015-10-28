@@ -410,13 +410,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 		throw Exception::CancelInstruction();
 	}
 
-	// The exception terminate the program on linux which is very annoying
-	// Just disable it for the moment
-#ifdef __linux__
-	if (0)
-#else
 	if( IsDevBuild )
-#endif
 		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
 	else
 	{

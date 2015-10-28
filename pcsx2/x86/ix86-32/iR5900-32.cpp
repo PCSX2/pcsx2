@@ -837,6 +837,7 @@ static void recExecute()
 	if( !setjmp( m_SetJmp_StateCheck ) )
 	{
 		eeRecIsReset = false;
+		ScopedBool executing(eeCpuExecuting);
 
 		// Important! Most of the console logging and such has cancel points in it.  This is great
 		// in Windows, where SEH lets us safely kill a thread from anywhere we want.  This is bad
