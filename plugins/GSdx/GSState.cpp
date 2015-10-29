@@ -423,12 +423,19 @@ GSVector2i GSState::GetDeviceSize(int i)
 
 	if (m_renderered_size.height() >= 224) {
 		h = std::min(h, m_renderered_size.height());
-		h &= ~0x1F;
+		// Round to 32 pixels. Round a bit above in case the game
+		// didn't renderer in the few latest lines (GitarooMan)
+		// Warning don't round to much above otherwise it will be bad
+		// on Devil May Cry 3...
+		h = (h+15) & ~0x1F;
 
 	}
 
 	if (m_crtc_size) {
-		if (m_crtc_size < h) {
+		// If h is much bigger than m_crtc_size, it probably means that
+		// some kind of interlacing is enabled. In this case divide
+		// m_crtc_size by 2.
+		if ((m_crtc_size - 32) <= h) {
 			h = m_crtc_size;
 		} else {
 			h = m_crtc_size / 2;
