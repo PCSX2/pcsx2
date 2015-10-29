@@ -477,7 +477,7 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 	pc += 8;
 
 	if (ptr[1] & 0x40000000) { // EOP
-		branch |= 8;
+		g_branch |= 8;
 	}
 
 	VU->code = ptr[1];
@@ -557,7 +557,7 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 		info->cycle = vucycle;
 
 		if (lregs->pipe == VUPIPE_BRANCH) {
-			branch |= 1;
+			g_branch |= 1;
 		}
 
 		if (lregs->VIwrite & (1 << REG_Q)) {

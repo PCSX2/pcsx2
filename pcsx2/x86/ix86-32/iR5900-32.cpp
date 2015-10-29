@@ -56,7 +56,7 @@ static __aligned16 uptr hwLUT[_64kb];
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
 
 u32 pc;			         // recompiler pc
-int branch;		         // set for branch
+int g_branch;	         // set for branch
 
 __aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
@@ -347,7 +347,7 @@ void recBranchCall( void (*func)() )
 	MOV32RtoM( (uptr)&g_nextEventCycle, EAX );
 
 	recCall(func);
-	branch = 2;
+	g_branch = 2;
 }
 
 void recCall( void (*func)() )
@@ -747,7 +747,7 @@ static void recResetRaw()
 	recConstBufPtr = recConstBuf;
 	x86FpuState = FPU_STATE;
 
-	branch = 0;
+	g_branch = 0;
 }
 
 static void recShutdown()
@@ -869,7 +869,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
 	xJMP( DispatcherReg );
 	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
+	//g_branch = 2;
 }
 
 ////////////////////////////////////////////////////
@@ -882,7 +882,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
 	xJMP( DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
+	//g_branch = 2;
 }
 
 void recClear(u32 addr, u32 size)
@@ -966,7 +966,7 @@ static int *s_pCode;
 
 void SetBranchReg( u32 reg )
 {
-	branch = 1;
+	g_branch = 1;
 
 	if( reg != 0xffffffff ) {
 //		if( GPR_IS_CONST1(reg) )
@@ -1020,7 +1020,7 @@ void SetBranchReg( u32 reg )
 
 void SetBranchImm( u32 imm )
 {
-	branch = 1;
+	g_branch = 1;
 
 	pxAssert( imm );
 
@@ -1197,7 +1197,7 @@ static u32 eeScaleBlockCycles()
 //
 //   noDispatch - When set true, then jump to Dispatcher.  Used by the recs
 //   for blocks which perform exception checks without branching (it's enabled by
-//   setting "branch = 2";
+//   setting "g_branch = 2";
 static void iBranchTest(u32 newpc)
 {
 	_DynGen_StackFrameCheck();
@@ -1685,7 +1685,7 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 		xMOV(eax, ptr32[&cpuRegs.GPR.n.ra.UL[0]]);
 		xMOV(ptr32[&cpuRegs.pc], eax);
 		iBranchTest();
-		branch = 1;
+		g_branch = 1;
 		pc = s_nEndBlock;
 		Console.WriteLn(Color_StrongGreen, "sceMpegIsEnd pattern found! Recompiling skip video fix...");
 		return 1;
@@ -1744,7 +1744,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	if (HWADDR(startpc) == ElfEntry)
 		xCALL(eeGameStarting);
 
-	branch = 0;
+	g_branch = 0;
 
 	// reset recomp state variables
 	s_nBlockCycles = 0;
@@ -2145,7 +2145,7 @@ StartRecomp:
 	if (doRecompilation) {
 		// Finally: Generate x86 recompiled code!
 		g_pCurInstInfo = s_pInstCache;
-		while (!branch && pc < s_nEndBlock) {
+		while (!g_branch && pc < s_nEndBlock) {
 			recompileNextInstruction(0);		// For the love of recursion, batman!
 		}
 	}
@@ -2193,7 +2193,7 @@ StartRecomp:
 	if( !(pc&0x10000000) )
 		maxrecmem = std::max( (pc&~0xa0000000), maxrecmem );
 
-	if( branch == 2 )
+	if( g_branch == 2 )
 	{
 		// Branch type 2 - This is how I "think" this works (air):
 		// Performs a branch/event test but does not actually "break" the block.
@@ -2206,10 +2206,10 @@ StartRecomp:
 	}
 	else
 	{
-		if( branch )
+		if( g_branch )
 			pxAssert( !willbranch3 );
 
-		if( willbranch3 || !branch) {
+		if( willbranch3 || !g_branch) {
 
 			iFlushCall(FLUSH_EVERYTHING);
 
