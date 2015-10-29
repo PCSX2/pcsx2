@@ -71,9 +71,8 @@ void MSW_OutputDebugString( const wxString& text )
 	static bool hasDebugger = wxIsDebuggerRunning();
 	if( hasDebugger ) OutputDebugString( text );
 #else
-	// send them to stderr
-	wxPrintf(L"%s", text.c_str());
-	fflush(stderr);
+	fputs(text.utf8_str(), stdout);
+	fflush(stdout);
 #endif
 }
 
@@ -105,43 +104,43 @@ const IConsoleWriter ConsoleWriter_Null =
 // --------------------------------------------------------------------------------------
 
 #ifdef __linux__
-static __fi const wxChar* GetLinuxConsoleColor(ConsoleColors color)
+static __fi const char* GetLinuxConsoleColor(ConsoleColors color)
 {
     switch(color)
     {
         case Color_Black:
-        case Color_StrongBlack: return L"\033[30m\033[1m";
+        case Color_StrongBlack: return "\033[30m\033[1m";
 
-        case Color_Red: return L"\033[31m";
-        case Color_StrongRed: return L"\033[31m\033[1m";
+        case Color_Red: return "\033[31m";
+        case Color_StrongRed: return "\033[31m\033[1m";
 
-        case Color_Green: return L"\033[32m";
-        case Color_StrongGreen: return L"\033[32m\033[1m";
+        case Color_Green: return "\033[32m";
+        case Color_StrongGreen: return "\033[32m\033[1m";
 
-        case Color_Yellow: return L"\033[33m";
-        case Color_StrongYellow: return L"\033[33m\033[1m";
+        case Color_Yellow: return "\033[33m";
+        case Color_StrongYellow: return "\033[33m\033[1m";
 
-        case Color_Blue: return L"\033[34m";
-        case Color_StrongBlue: return L"\033[34m\033[1m";
+        case Color_Blue: return "\033[34m";
+        case Color_StrongBlue: return "\033[34m\033[1m";
 
         // No orange, so use magenta.
         case Color_Orange:
-        case Color_Magenta: return L"\033[35m";
+        case Color_Magenta: return "\033[35m";
         case Color_StrongOrange:
-        case Color_StrongMagenta: return L"\033[35m\033[1m";
+        case Color_StrongMagenta: return "\033[35m\033[1m";
 
-        case Color_Cyan: return L"\033[36m";
-        case Color_StrongCyan: return L"\033[36m\033[1m";
+        case Color_Cyan: return "\033[36m";
+        case Color_StrongCyan: return "\033[36m\033[1m";
 
         // Use 'white' instead of grey.
         case Color_Gray:
-        case Color_White: return L"\033[37m";
+        case Color_White: return "\033[37m";
         case Color_StrongGray:
-        case Color_StrongWhite: return L"\033[37m\033[1m";
+        case Color_StrongWhite: return "\033[37m\033[1m";
 
         // On some other value being passed, clear any formatting.
         case Color_Default:
-        default: return L"\033[0m";
+        default: return "\033[0m";
     }
 }
 #endif
@@ -166,8 +165,7 @@ static void __concall ConsoleStdout_Newline()
 static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 {
 #ifdef __linux__
-	wxPrintf(L"\033[0m");
-	wxPrintf(GetLinuxConsoleColor(color));
+	fprintf(stdout, "\033[0m%s", GetLinuxConsoleColor(color));
 	fflush(stdout);
 #endif
 }
@@ -175,7 +173,9 @@ static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 static void __concall ConsoleStdout_SetTitle( const wxString& title )
 {
 #ifdef __linux__
-	wxPrintf(L"\033]0;%s\007", title.c_str());
+	fputs("\033]0;", stdout);
+	fputs(title.utf8_str(), stdout);
+	fputs("\007", stdout);
 #endif
 }
 
