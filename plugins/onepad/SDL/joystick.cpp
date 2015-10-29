@@ -20,6 +20,7 @@
  */
 
 #include "joystick.h"
+#include <signal.h> // sigaction
 
 //////////////////////////
 // Joystick definitions //
@@ -51,6 +52,11 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 		// Tell SDL to catch event even if the windows isn't focussed
 		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_HAPTIC|SDL_INIT_EVENTS) < 0) return;
+		// WTF! Give me back the control of my system
+		struct sigaction action;
+		action.sa_handler = SIG_DFL;
+		sigaction(SIGINT, &action, NULL);
+		sigaction(SIGTERM, &action, NULL);
 #else
 		if (SDL_Init(SDL_INIT_JOYSTICK) < 0) return;
 #endif
