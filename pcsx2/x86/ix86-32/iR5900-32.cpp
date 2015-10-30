@@ -704,12 +704,6 @@ static void recAlloc()
 	x86FpuState = FPU_STATE;
 }
 
-struct ManualPageTracking
-{
-	u16 page;
-	u8  counter;
-};
-
 static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
 static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 
