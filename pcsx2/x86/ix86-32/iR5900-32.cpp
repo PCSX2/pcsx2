@@ -881,6 +881,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	//g_branch = 2;
 }
 
+// Size is in dwords (4 bytes)
 void recClear(u32 addr, u32 size)
 {
 	// necessary since recompiler doesn't call femms/emms

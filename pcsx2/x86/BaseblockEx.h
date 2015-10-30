@@ -60,6 +60,12 @@ class BaseBlockArray {
 		blocks = newMem;
 		pxAssert(blocks != NULL);
 	}
+
+	void reserve(u32 size)
+	{
+		resize(size);
+		_Reserved = size;
+	}
 public:
 	~BaseBlockArray()
 	{
@@ -80,6 +86,7 @@ public:
 			reserve(_Reserved + 0x2000); // some games requires even more!
 		}
 
+		// Insert the the new BASEBLOCKEX by startpc order
 		int imin = 0, imax = _Size, imid;
 
 		while (imin < imax) {
@@ -106,12 +113,6 @@ public:
 		return &blocks[imin];
 	}
 
-	void reserve(u32 size)
-	{
-		resize(size);
-		_Reserved = size;
-	}
-
 	__fi BASEBLOCKEX &operator[](int idx) const
 	{
 		return *(blocks + idx);
@@ -125,11 +126,6 @@ public:
 	__fi u32 size() const
 	{
 		return _Size;
-	}
-
-	__fi void erase(s32 first)
-	{
-		return erase(first, first + 1);
 	}
 
 	__fi void erase(s32 first, s32 last)
@@ -161,12 +157,6 @@ public:
 	{
 	}
 
-	BaseBlocks(uptr recompiler_) :
-		recompiler(recompiler_),
-		blocks(0x4000)
-	{
-	}
-
 	void SetJITCompile( void (*recompiler_)() )
 	{
 		recompiler = (uptr)recompiler_;
@@ -174,7 +164,7 @@ public:
 
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr);
 	int LastIndex (u32 startpc) const;
-	BASEBLOCKEX* GetByX86(uptr ip);
+	//BASEBLOCKEX* GetByX86(uptr ip);
 
 	__fi int Index (u32 startpc) const
 	{
