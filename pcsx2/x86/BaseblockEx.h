@@ -31,14 +31,15 @@ struct BASEBLOCK
 // extra block info (only valid for start of fn)
 struct BASEBLOCKEX
 {
-	u32 startpc;
+	u32  startpc;
 	uptr fnptr;
-	u16 size;	// size in dwords
-	u16 x86size;
+	u16  size;	 // The size in dwords (equivalent to the number of instructions)
+	u16  x86size; // The size in byte of the translated x86 instructions
 
 #ifdef PCSX2_DEVBUILD
-	u32 visited; // number of times called
-	u64 ltime; // regs it assumes to have set already
+	// Could be useful to instrument the block
+	//u32 visited; // number of times called
+	//u64 ltime; // regs it assumes to have set already
 #endif
 
 };
@@ -60,11 +61,6 @@ class BaseBlockArray {
 		pxAssert(blocks != NULL);
 	}
 public:
-	BaseBlockArray() : _Reserved(0),
-		_Size(0)
-	{
-	}
-
 	~BaseBlockArray()
 	{
 		if(blocks) {
@@ -75,10 +71,7 @@ public:
 	BaseBlockArray (s32 size) : _Reserved(0),
 		_Size(0), blocks(NULL)
 	{
-		if(size > 0) {
-			resize(size);
-		}
-		_Reserved = size;
+		reserve(size);
 	}
 
 	BASEBLOCKEX *insert(u32 startpc, uptr fnptr)
@@ -164,16 +157,14 @@ protected:
 public:
 	BaseBlocks() :
 		recompiler(0)
-	,	blocks(0)
+	,	blocks(0x4000)
 	{
-		blocks.reserve(0x4000);
 	}
 
 	BaseBlocks(uptr recompiler_) :
 		recompiler(recompiler_),
-		blocks(0)
+		blocks(0x4000)
 	{
-		blocks.reserve(0x4000);
 	}
 
 	void SetJITCompile( void (*recompiler_)() )

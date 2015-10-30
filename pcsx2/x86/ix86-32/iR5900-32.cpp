@@ -861,6 +861,8 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	// Note: technically the address is 0x8000_0180 (or 0x180)
+	// (if CPU is booted)
 	xJMP( DispatcherReg );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
