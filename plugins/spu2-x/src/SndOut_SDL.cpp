@@ -27,11 +27,7 @@
  * build wx without sdl support, though) and onepad at the time of writing this. */
 #include <SDL.h>
 #include <SDL_audio.h>
-#if SDL_MAJOR_VERSION >= 2
-typedef StereoOut32 StereoOut_SDL;
-#else
 typedef StereoOut16 StereoOut_SDL;
-#endif
 
 namespace {
 	/* Since spu2 only ever outputs stereo, we don't worry about emitting surround sound
@@ -42,12 +38,7 @@ namespace {
 	 * sample count and SDL may provide otherwise. Pulseaudio will cut this value in half if
 	 * PA_STREAM_ADJUST_LATENCY is set in the backened, for example. */
 	const Uint16 desiredSamples = 1024;
-	const Uint16 format =
-#if SDL_MAJOR_VERSION >= 2
-		AUDIO_S32SYS;
-#else
-		AUDIO_S16SYS;
-#endif
+	const Uint16 format = AUDIO_S16SYS;
 
 	Uint16 samples = desiredSamples;
 
