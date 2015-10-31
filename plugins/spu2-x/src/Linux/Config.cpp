@@ -130,7 +130,7 @@ void ReadSettings()
 #if SDL_MAJOR_VERSION >= 2
 	// YES It sucks ...
 	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-		if (!temp.Cmp(SDL_GetAudioDriver(i)))
+		if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
 			SdlOutputAPI = i;
 	}
 #endif
@@ -364,7 +364,7 @@ void DisplayDialog()
 		if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
 			SdlOutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box));
 			// YES It sucks ...
-			SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI)));
+			SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI), wxConvUTF8));
 		}
 #endif
 

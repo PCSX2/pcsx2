@@ -133,19 +133,19 @@ struct SDLAudioMod : public SndOutModule {
 	}
 
 	void WriteSettings() const {
-		CfgWriteStr(L"SDL", L"HostApi", m_api);
+		CfgWriteStr(L"SDL", L"HostApi", wxString(m_api.c_str(), wxConvUTF8));
 	};
 
 	void SetApiSettings(wxString api) {
 #if SDL_MAJOR_VERSION >= 2
 		// Validate the api name
 		bool valid = false;
-		std::string api_name = std::string(api);
+		std::string api_name = std::string(api.utf8_str());
 		for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
 			valid |= (api_name.compare(SDL_GetAudioDriver(i)) == 0);
 		}
 		if (valid) {
-			m_api = api;
+			m_api = api.utf8_str();
 		} else {
 			std::cerr	<< "SDL audio driver configuration is invalid!" << std::endl
 						<< "It will be replaced by pulseaudio!" << std::endl;
