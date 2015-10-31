@@ -238,6 +238,9 @@ public:
 
 extern IConsoleWriter	Console;
 
+#ifdef __linux__
+extern void Console_SetStdout(FILE *fp);
+#endif
 extern void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp=NULL );
 extern const wxString& ConsoleBuffer_Get();
 extern void ConsoleBuffer_Clear();
