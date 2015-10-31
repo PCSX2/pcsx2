@@ -874,6 +874,9 @@
     <ClCompile Include="..\Optimus.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
+      <Filter>AppHost\Linux</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">

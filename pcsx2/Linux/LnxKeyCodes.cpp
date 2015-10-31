@@ -294,13 +294,3 @@ int TranslateGDKtoWXK( u32 keysym )
 
     return key_code;
 }
-
-// NewPipeRedir .. Homeless function for now .. This is as good a spot as any.
-//   Eventually we might be so fancy as to have a linux console pipe to our own console
-//   window, same as the Win32 one.  Not sure how doable it is, and it's not as urgent
-//   anyway since Linux has better generic console support and commandline piping.
-//
-PipeRedirectionBase* NewPipeRedir( FILE* stdstream )
-{
-	return NULL;
-}
