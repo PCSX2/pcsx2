@@ -1122,10 +1122,10 @@ static u32 scaleBlockCycles_helper()
 	// caused by sync hacks and such, since games seem to care a lot more about
 	// these small blocks having accurate cycle counts.
 
-	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate == 0) )
+	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate > 99) ) // use default cycle rate if users set more than 99 in INI file.
 		return s_nBlockCycles >> 3;
 
-	uint scalarLow, scalarMid, scalarHigh;
+	uint scalarLow = 0, scalarMid = 0, scalarHigh = 0;
 
 	// Note: larger blocks get a smaller scalar, to help keep
 	// them from becoming "too fat" and delaying branch tests.
@@ -1160,9 +1160,10 @@ static u32 scaleBlockCycles_helper()
 		break;
 
 		// Added insane rates on popular request (rama)
-		// This allows higher values to be set at INI, higher values follows same series as case 0 and case 1.
+		// This allows higher values to be set at INI, Scalar values follow Arithmetic progression on increment to cyclerate.
 		default:
-			if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
+			if (EmuConfig.Speedhacks.EECycleRate > 2)
+			{
 				scalarLow = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
 				scalarMid = 5 + (2*EmuConfig.Speedhacks.EECycleRate);
 				scalarHigh = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
