@@ -931,6 +931,12 @@ int mmap_GetRamPageInfo( u32 paddr )
 	if (rampage >= Ps2MemSize::MainRam)
 		return -1; //not in ram, no tracking done ...
 
+	// EE Kernel is static (but uses a static zone in the
+	// middle to save the register context. Let's keep the
+	// first two pages as unchecked
+	if (rampage < 0x2000)
+		return -1;
+
 	rampage >>= 12;
 	return ( m_PageProtectInfo[rampage].Mode == ProtMode_Manual ) ? 1 : 0;
 }

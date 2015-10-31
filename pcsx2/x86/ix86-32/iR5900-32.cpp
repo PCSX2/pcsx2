@@ -2079,6 +2079,14 @@ StartRecomp:
 			break;
 
         default:
+			if (startpc == 0x81fc0)
+			{
+				// Idle loop (i.e. an empty while(1))
+				// Thread data are stored in 0x81000 so there is always write in this page.
+				// Just take a short-cut
+				break;
+			}
+
 			xMOV( ecx, inpage_ptr );
 			xMOV( edx, pgsz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
@@ -2103,7 +2111,7 @@ StartRecomp:
 
 			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
 
-			if (startpc != 0x81fc0 && manual_counter[inpage_ptr >> 12] <= 3)
+			if (manual_counter[inpage_ptr >> 12] <= 3)
 			{
 				// Counted blocks add a weighted (by block size) value into manual_page each time they're
 				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
