@@ -243,7 +243,7 @@ set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
 set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value ")
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=4 ")
+set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=2 ")
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
