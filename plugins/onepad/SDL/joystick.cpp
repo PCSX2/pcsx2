@@ -53,7 +53,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 		if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_HAPTIC|SDL_INIT_EVENTS) < 0) return;
 		// WTF! Give me back the control of my system
-		struct sigaction action;
+		struct sigaction action = { 0 };
 		action.sa_handler = SIG_DFL;
 		sigaction(SIGINT, &action, NULL);
 		sigaction(SIGTERM, &action, NULL);
