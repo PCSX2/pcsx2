@@ -575,11 +575,11 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;
-			printf("GSdx: (Software) aa1 is now %s.\n", m_aa1 ? "enabled" : "disabled");
+			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case VK_INSERT:
 			m_mipmap = !m_mipmap;
-			printf("GSdx: (Software) mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
 			return;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;
@@ -601,7 +601,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		{
 		case XK_F5:
 			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
-			fprintf(stderr, "GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
+			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case XK_F6:
 			if( m_wnd->IsManaged() )
@@ -610,19 +610,19 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		case XK_F7:
 			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			theApp.SetConfig("TVShader", (int)m_shader);
-			fprintf(stderr,"GSdx: Set shader %d.\n", (int)m_shader);
+			printf("GSdx: Set shader %d.\n", (int)m_shader);
 			return;
 		case XK_Delete:
 			m_aa1 = !m_aa1;
-			fprintf(stderr,"GSdx: (Software) aa1 is now %s.\n", m_aa1 ? "enabled" : "disabled");
+			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case XK_Insert:
 			m_mipmap = !m_mipmap;
-			fprintf(stderr,"GSdx: (Software) mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
 			return;
 		case XK_Prior:
 			m_fxaa = !m_fxaa;
-			fprintf(stderr,"GSdx: fxaa is now %s.\n", m_fxaa ? "enabled" : "disabled");
+			printf("GSdx: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
 			return;
 		case XK_Home:
 			m_shaderfx = !m_shaderfx;
