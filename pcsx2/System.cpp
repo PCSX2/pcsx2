@@ -100,7 +100,7 @@ void RecompiledCodeReserve::OnCommittedBlock( void* block )
 		// the assembly dump more cleanly.  We don't clear the block on Release builds since
 		// it can add a noticeable amount of overhead to large block recompilations.
 
-		memset_sse_a<0xcc>( block, m_blocksize * __pagesize );
+		memset(block, 0xCC, m_blocksize * __pagesize);
 	}
 }
 
