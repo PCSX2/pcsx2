@@ -32,6 +32,15 @@ static DeclareTls(ConsoleColors) conlog_Color( DefaultConsoleColor );
 static wxString	m_buffer;		// used by ConsoleBuffer
 static Mutex	m_bufferlock;	// used by ConsoleBuffer
 
+#ifdef __linux__
+static FILE *stdout_fp = stdout;
+
+void Console_SetStdout(FILE *fp)
+{
+	stdout_fp = fp;
+}
+#endif
+
 // This function re-assigns the console log writer(s) to the specified target.  It makes sure
 // to flush any contents from the buffered console log (which typically accumulates due to
 // log suspension during log file/window re-init operations) into the new log.
@@ -71,10 +80,11 @@ void MSW_OutputDebugString( const wxString& text )
 	static bool hasDebugger = wxIsDebuggerRunning();
 	if( hasDebugger ) OutputDebugString( text );
 #else
-	fputs(text.utf8_str(), stdout);
-	fflush(stdout);
+	fputs(text.utf8_str(), stdout_fp);
+	fflush(stdout_fp);
 #endif
 }
+
 
 // --------------------------------------------------------------------------------------
 //  ConsoleNull
@@ -165,17 +175,17 @@ static void __concall ConsoleStdout_Newline()
 static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 {
 #ifdef __linux__
-	fprintf(stdout, "\033[0m%s", GetLinuxConsoleColor(color));
-	fflush(stdout);
+	fprintf(stdout_fp, "\033[0m%s", GetLinuxConsoleColor(color));
+	fflush(stdout_fp);
 #endif
 }
 
 static void __concall ConsoleStdout_SetTitle( const wxString& title )
 {
 #ifdef __linux__
-	fputs("\033]0;", stdout);
-	fputs(title.utf8_str(), stdout);
-	fputs("\007", stdout);
+	fputs("\033]0;", stdout_fp);
+	fputs(title.utf8_str(), stdout_fp);
+	fputs("\007", stdout_fp);
 #endif
 }
 

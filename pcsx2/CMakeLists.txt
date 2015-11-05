@@ -394,6 +394,7 @@ set(pcsx2IPUHeaders
 
 # Linux sources
 set(pcsx2LinuxSources
+	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
     Linux/LnxFlatFileReader.cpp
     )
