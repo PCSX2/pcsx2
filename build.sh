@@ -74,7 +74,7 @@ for ARG in "$@"; do
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"
-            echo "--cppcheck	  : Do a cppcheck analysis. Results can be found in build directory"
+            echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
 
             exit 1
