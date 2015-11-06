@@ -159,6 +159,7 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
+	CheckDlgButton(m_hWnd, IDC_MIPMAP, theApp.GetConfig("mipmap", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 
@@ -193,6 +194,7 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_TC_DEPTH);
 	AddTooltip(IDC_AFCOMBO);
 	AddTooltip(IDC_AA1);
+	AddTooltip(IDC_MIPMAP);
 	AddTooltip(IDC_SWTHREADS);
 	AddTooltip(IDC_SWTHREADS_EDIT);
 	AddTooltip(IDC_SHADEBOOST);
@@ -303,6 +305,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
+			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP));
 			theApp.SetConfig("resx", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
@@ -620,6 +623,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_OFFSETHACK, theApp.GetConfig("UserHacks_HalfPixelOffset", 0));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfig("UserHacks_WildHack", 0));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
+	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfig("preload_frame_with_gs_data", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
 
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
@@ -651,6 +655,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_TCOFFSETX2);
 	AddTooltip(IDC_TCOFFSETY);
 	AddTooltip(IDC_TCOFFSETY2);
+	AddTooltip(IDC_PRELOAD_GS);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -683,6 +688,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
+			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
