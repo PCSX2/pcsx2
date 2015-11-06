@@ -1854,7 +1854,7 @@ void GSLocalMemory::ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& 
 
 			if(!cr.rempty())
 			{
-				(this->*rtx)(off, cr, dst + (cr.left - r.left) * sizeof(32), dstpitch, TEXA);
+				(this->*rtx)(off, cr, dst + (cr.left - r.left) * sizeof(uint32), dstpitch, TEXA);
 			}
 		}
 	}
