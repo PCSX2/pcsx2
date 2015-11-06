@@ -358,7 +358,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return DefWindowProc( hWnd, msg, wParam, lParam );
 }
 
-s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
+s32 CALLBACK GSopen(void *pDsp, const char *Title, int multithread) {
 
 	g_GSMultiThreaded = multithread;
 

@@ -121,7 +121,7 @@ EXPORT_C_(void) GSshutdown()
 	GSLog::Close();
 }
 
-EXPORT_C_(s32) GSopen(void *pDsp, char *Title, int multithread)
+EXPORT_C_(s32) GSopen(void *pDsp, const char *Title, int multithread)
 {
 	int err = 0;
 	GSLog::WriteLn("GS open.");

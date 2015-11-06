@@ -282,7 +282,7 @@ __forceinline void InitMisc()
 	ResetRegs();
 }
 
-EXPORT_C_(s32) GSopen(void *pDsp, char *Title, int multithread)
+EXPORT_C_(s32) GSopen(void *pDsp, const char *Title, int multithread)
 {
 	FUNCLOG
 
