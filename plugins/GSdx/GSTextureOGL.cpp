@@ -253,6 +253,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			m_int_type      = (m_format == GL_R16UI) ? GL_UNSIGNED_SHORT : GL_SHORT;
 			m_int_alignment = 8;
 			m_int_shift     = 3;
+			break;
 
 			// 4 channel float
 		case GL_RGBA32F:
