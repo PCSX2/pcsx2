@@ -552,7 +552,7 @@ void SSE_DIVSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, co
 // Micro VU - Custom Quick Search
 //------------------------------------------------------------------
 
-static __pagealigned u8 mVUsearchXMM[__pagesize];
+__pagealigned u8 mVUsearchXMM[__pagesize];
 
 // Generates a custom optimized block-search function
 // Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)

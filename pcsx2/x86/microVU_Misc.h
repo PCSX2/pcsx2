@@ -183,17 +183,10 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 // Define mVUquickSearch
 //------------------------------------------------------------------
-#ifndef __linux__
 extern __pagealigned u8 mVUsearchXMM[__pagesize];
 typedef u32 (__fastcall *mVUCall)(void*, void*);
 #define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xf)
 #define mVUemitSearch() { mVUcustomSearch(); }
-#else
-// Note: GCC builds crash with custom search function, because
-// they're not guaranteeing 16-byte alignment on the structs :(
-#define mVUquickSearch(dest, src, size) (!memcmp(dest, src, size))
-#define mVUemitSearch()
-#endif
 //------------------------------------------------------------------
 
 // Misc Macros...
