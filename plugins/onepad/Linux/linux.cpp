@@ -164,9 +164,9 @@ EXPORT_C_(void) PADupdate(int pad)
 	// be fired after a couple of minute.
 	// Emulate an user activity
 	static int count = 0;
+	count++;
 	if ((count & 0xFFF) == 0) {
 		// 1 call every 4096 Vsync is enough
-		count++;
 		XResetScreenSaver(GSdsp);
 	}
 
