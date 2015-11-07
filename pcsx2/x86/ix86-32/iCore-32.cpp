@@ -279,7 +279,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 
 			if( x86reg >= 0 ) {
 				// requested specific reg, so return that instead
-				if( i != x86reg ) {
+				if( i != (uint)x86reg ) {
 					if( x86regs[i].mode & MODE_READ ) readfromreg = i;
 					mode |= x86regs[i].mode&MODE_WRITE;
 					x86regs[i].inuse = 0;
