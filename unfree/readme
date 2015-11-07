@@ -4,3 +4,12 @@ Every time, you copy files into it, please update this readme to explain that
 * What are the license issue?
 * Why the files are useful for the project?
 * What are the solution to improve the situation in the future?
+
+
+-----------------------------------------------------------------------
+fps2bios:
+* Code is likely free but main authors didn't put any license
+=> zerofrog & Ian Brown (bigianb on github)
+* The initial goal was an implementation of a GPL compatible bios (so it is likely free)
+* Code won't be integrated this way but it remains a valuable source of information
+-----------------------------------------------------------------------
