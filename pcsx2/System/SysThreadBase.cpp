@@ -93,9 +93,8 @@ void SysThreadBase::Suspend( bool isBlocking )
 
 		switch( m_ExecMode )
 		{
-			// FIXME what to do for this case
-			// case ExecMode_NoThreadYet:
-
+			// Invalid thread state, nothing to suspend
+			case ExecMode_NoThreadYet:
 			// Check again -- status could have changed since above.
 			case ExecMode_Closed: return;
 

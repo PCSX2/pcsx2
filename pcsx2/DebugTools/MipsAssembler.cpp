@@ -691,6 +691,8 @@ void CMipsInstruction::encodeNormal()
 
 	switch (immediateType)
 	{
+	case MIPS_NOIMMEDIATE:
+		break;
 	case MIPS_IMMEDIATE5:
 	case MIPS_IMMEDIATE20:
 		encoding |= immediate.value << 6;
