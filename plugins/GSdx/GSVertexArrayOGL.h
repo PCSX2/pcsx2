@@ -253,6 +253,9 @@ class GSVertexBufferStateOGL {
 	GLuint m_va;
 	GLenum m_topology;
 
+	// No copy constructor please
+	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
+
 public:
 	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
 	{

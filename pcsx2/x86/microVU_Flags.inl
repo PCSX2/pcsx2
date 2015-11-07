@@ -99,7 +99,7 @@ void sortFullFlag(int* fFlag, int* bFlag) {
 __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 	int endPC  = iPC;
 	u32 aCount = 0; // Amount of instructions needed to get valid mac flag instances for block linking
-	bool writeProtect = false;
+	//bool writeProtect = false;
 
 	// Ensure last ~4+ instructions update mac/status flags (if next block's first 4 instructions will read them)
 	for(int i = mVUcount; i > 0; i--, aCount++) {
@@ -107,12 +107,12 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 
 			if (__Mac) {
 				mFLAG.doFlag = true;
-				writeProtect = true;
+				//writeProtect = true;
 			}
 
 			if (__Status) {
 				sFLAG.doNonSticky = true;
-				writeProtect = true;
+				//writeProtect = true;
 			}
 
 			if (aCount >= 3){

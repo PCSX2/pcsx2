@@ -282,7 +282,6 @@
     <ClInclude Include="..\Linux\Config.h" />
     <ClInclude Include="..\Linux\Dialogs.h" />
     <ClInclude Include="Dialogs.h" />
-    <ClInclude Include="Hyperlinks.h" />
     <ClInclude Include="WinConfig.h" />
     <ClInclude Include="..\PS2E-spu2.h" />
     <ClInclude Include="resource.h" />
@@ -421,16 +420,6 @@
     </ClCompile>
     <ClCompile Include="ConfigDebug.cpp" />
     <ClCompile Include="ConfigSoundtouch.cpp" />
-    <ClCompile Include="Hyperlinks.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="RealtimeDebugger.cpp" />
     <ClCompile Include="UIHelpers.cpp" />
     <ClCompile Include="..\PS2E-spu2.cpp" />

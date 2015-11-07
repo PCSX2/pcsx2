@@ -23,11 +23,15 @@ useClang=0
 # 0 => no, 1 => yes, 2 => force yes
 useCross=2
 CoverityBuild=0
+cppcheck=0
+clangTidy=0
 
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
-        --clang             ) useClang=1; ;;
+        --clang-tidy        ) flags+=(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON); clangTidy=1 ;;
+        --clang             ) useClang=1 ;;
+        --cppcheck          ) cppcheck=1 ;;
         --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
         --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
         --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
@@ -69,8 +73,12 @@ for ARG in "$@"; do
             echo "--gtk3          : replace GTK2 by GTK3"
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
+            echo
+            echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"
-            echo "--coverity      : Do a build for coverity (require the tool)"
+            echo "--clang-tidy    : Do a clang-tidy analysis. Results can be found in build directory"
+            echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
+            echo "--coverity      : Do a build for coverity"
 
             exit 1
     esac
@@ -123,13 +131,69 @@ else
     ncpu=$(grep -w -c processor /proc/cpuinfo)
 fi
 
-if [[ "$CoverityBuild" -eq 1 ]]; then
+############################################################
+# CPP check build
+############################################################
+if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
+    summary=cpp_check_summary.log
+    rm -f $summary
+    touch $summary
+
+    define="-U_WINDOWS -U_M_AMD64 -U_MSC_VER -UWIN32"
+    #define="-D__linux__ -U_WINDOWS -U_M_AMD64 -U_MSC_VER -UWIN32"
+    check="--enable=warning,style,missingInclude"
+    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
+    do
+        flat_d=`echo $d | sed -e 's@/@_@'`
+        log=cpp_check__${flat_d}.log
+        rm -f $log
+
+        cppcheck $check -j $ncpu --platform=unix32 $define $root/$d |& tee $log
+        # Create a small summary (warning it might miss some issues)
+        fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" $log >> $summary
+    done
+    exit 0
+fi
+
+############################################################
+# Clang tidy build
+############################################################
+if [[ "$clangTidy" -eq 1 ]] && [[ -x `which clang-tidy` ]]; then
+    compile_json=compile_commands.json
+    cpp_list=cpp_file.txt
+    summary=clang_tidy_summary.txt
+    rm -f $summary
+    touch $summary
+
+    grep '"file"' $compile_json | sed -e 's/"//g' | sed -e 's/^\s*file\s*:\s*//' > $cpp_list
+
+    for cpp in `cat $cpp_list`
+    do
+        # Check all, likely severals millions of log...
+        #clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
+
+        # Don't check header, don't check google/llvm coding conventions
+        echo "$count/$total"
+        clang-tidy -p $compile_json $cpp -checks='*,-llvm-*,-google-*'  >> $summary
+    done
+
+    exit 0
+fi
+
+############################################################
+# Coverity build
+############################################################
+if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
     cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a $log
     # Warning: $coverity_dir must be the root directory
     (cd $build; tar caf $coverity_result $coverity_dir)
-else
-    make -j"$ncpu" 2>&1 | tee -a $log
-    make install 2>&1 | tee -a $log
+    exit 0
 fi
+
+############################################################
+# Real build
+############################################################
+make -j"$ncpu" 2>&1 | tee -a $log
+make install 2>&1 | tee -a $log
 
 exit 0

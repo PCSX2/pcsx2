@@ -930,7 +930,7 @@ void GSRendererCL::Enqueue()
 	{
 		printf("%s (%d)\n", err.what(), err.err());
 
-		delete [] data;
+		delete data;
 	}
 
 	m_jobs.clear();

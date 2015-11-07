@@ -109,12 +109,12 @@ void MainEmuFrame::OnCloseWindow(wxCloseEvent& evt)
 
 	CoreThread.Suspend();
 
-	bool isClosing = false;
+	//bool isClosing = false;
 
 	if( !evt.CanVeto() )
 	{
 		// Mandatory destruction...
-		isClosing = true;
+		//isClosing = true;
 	}
 	else
 	{

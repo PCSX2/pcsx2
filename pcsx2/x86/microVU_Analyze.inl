@@ -295,15 +295,17 @@ __ri void flagSet(mV, bool setMacFlag) {
 	for (int i = mVUcount, j = 0; i > 0; i--, j++) {
 		j += mVUstall;
 		incPC(-2);
-		if (sFLAG.doFlag && (j >= 3)) {
-			
-			if (setMacFlag) { mFLAG.doFlag = 1; }
-			sFLAG.doNonSticky = 1; 
+
+		if (calcOPS >= 4 && mVUup.VF_write.reg) break;
+
+		if (sFLAG.doFlag && (j >= 3))
+		{
+			if (setMacFlag) mFLAG.doFlag = 1;
+			sFLAG.doNonSticky = 1;
 			calcOPS++;
 		}
-		if (calcOPS >= 4) break;
 	}
-	
+
 	iPC = curPC;
 	setCode();
 }

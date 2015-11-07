@@ -339,9 +339,6 @@ class pxMessageOutputMessageBox : public wxMessageOutput
 public:
 	pxMessageOutputMessageBox() { }
 
-#if wxMAJOR_VERSION < 3
-	virtual void Printf(const wxChar* format, ...);
-#endif
 	// DoPrintf in wxMessageOutputBase (wxWidgets 3.0) uses this.
 	virtual void Output(const wxString &out);
 };
@@ -352,19 +349,6 @@ public:
 // wxMessageOutputMessageBox::PrintF is only used in like two places, so we can just check for the
 // commandline window using an identifier we know is contained in it, and then format our own window
 // display. :D  --air
-
-#if wxMAJOR_VERSION < 3
-void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	wxString out;
-	out.PrintfV(format, args);
-	va_end(args);
-
-	Output(out);
-}
-#endif
 
 void pxMessageOutputMessageBox::Output(const wxString& out)
 {

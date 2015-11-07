@@ -58,6 +58,9 @@ protected:
 
 		try
 		{
+			if (ConnectNamedPipe(m_outpipe, nullptr) == 0 && GetLastError() != ERROR_PIPE_CONNECTED)
+				throw Exception::RuntimeError().SetDiagMsg(L"ConnectNamedPipe failed.");
+
 			char s8_Buf[2049];
 			DWORD u32_Read = 0;
 
@@ -128,13 +131,7 @@ class WinPipeRedirection : public PipeRedirectionBase
 	DeclareNoncopyableObject( WinPipeRedirection );
 
 protected:
-	DWORD		m_stdhandle;
-	FILE*		m_stdfp;
-	FILE		m_stdfp_copy;
-
 	HANDLE		m_readpipe;
-	HANDLE		m_writepipe;
-	int			m_crtFile;
 	FILE*		m_fp;
 
 	WinPipeThread m_Thread;
@@ -147,49 +144,32 @@ public:
 };
 
 WinPipeRedirection::WinPipeRedirection( FILE* stdstream )
-	: m_Thread( m_readpipe, (stdstream == stderr) ? Color_Red : Color_Black )
+	: m_readpipe(INVALID_HANDLE_VALUE)
+	, m_fp(nullptr)
+	, m_Thread(m_readpipe, (stdstream == stderr) ? Color_Red : Color_Black)
 {
-	m_stdhandle		= ( stdstream == stderr ) ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE;
-	m_stdfp			= stdstream;
-	m_stdfp_copy	= *stdstream;
-
-	m_readpipe		= INVALID_HANDLE_VALUE;
-	m_writepipe		= INVALID_HANDLE_VALUE;
-	m_crtFile		= -1;
-	m_fp			= NULL;
-
 	pxAssert( (stdstream == stderr) || (stdstream == stdout) );
 
 	try
 	{
-		if( 0 == CreatePipe( &m_readpipe, &m_writepipe, NULL, 0 ) )
-			throw Exception::WinApiError().SetDiagMsg(L"CreatePipe failed.");
+		// freopen requires a pathname, so a named pipe must be used. The
+		// pathname needs to be unique to allow multiple instances of PCSX2 to
+		// work properly.
+		const wxString stream_name(stdstream == stderr ? L"stderr" : L"stdout");
+		const wxString pipe_name(wxString::Format(L"\\\\.\\pipe\\pcsx2_%s%d", stream_name, GetCurrentProcessId()));
 
-		if( 0 == SetStdHandle( m_stdhandle, m_writepipe ) )
-			throw Exception::WinApiError().SetDiagMsg(L"SetStdHandle failed.");
-
-		// Note: Don't use GetStdHandle to "confirm" the handle.
-		//
-		// Under Windows7, and possibly Vista, GetStdHandle for STDOUT will return NULL
-		// after it's been assigned a custom write pipe (this differs from XP, which
-		// returns the assigned handle).  Amusingly, the GetStdHandle succeeds for STDERR
-		// and also tends to succeed when the app is run from the MSVC debugger.
-		//
-		// Fortunately, there's no need to use GetStdHandle anyway, so long as SetStdHandle
-		// didn't error.
-
-		m_crtFile = _open_osfhandle( (intptr_t)m_writepipe, _O_TEXT );
-		if( m_crtFile == -1 )
-			throw Exception::RuntimeError().SetDiagMsg( L"_open_osfhandle returned -1." );
-
-		m_fp = _fdopen( m_crtFile, "w" );
-		if( m_fp == NULL )
-			throw Exception::RuntimeError().SetDiagMsg( L"_fdopen returned NULL." );
-
-		*m_stdfp = *m_fp;		// omg hack.  but it works >_<
-		setvbuf( stdstream, NULL, _IONBF, 0 );
+		m_readpipe = CreateNamedPipe(pipe_name, PIPE_ACCESS_INBOUND, 0, 1, 2048, 2048, 0, nullptr);
+		if (m_readpipe == INVALID_HANDLE_VALUE)
+			throw Exception::WinApiError().SetDiagMsg(L"CreateNamedPipe failed.");
 
 		m_Thread.Start();
+
+		// Binary flag set to prevent multiple \r characters before each \n.
+		m_fp = _wfreopen(pipe_name, L"wb", stdstream);
+		if (m_fp == nullptr)
+			throw Exception::RuntimeError().SetDiagMsg(L"_wfreopen returned NULL.");
+
+		setvbuf(stdstream, nullptr, _IONBF, 0);
 	}
 	catch( Exception::BaseThreadError& ex )
 	{
@@ -222,40 +202,15 @@ WinPipeRedirection::~WinPipeRedirection()
 
 void WinPipeRedirection::Cleanup() throw()
 {
-	// restore the old handle we so graciously hacked earlier ;)
-	//  (or don't and suffer CRT crashes!  ahaha!)
-
-	if( m_stdfp != NULL )
-		*m_stdfp = m_stdfp_copy;
-
 	// Cleanup Order Notes:
 	//  * The redirection thread is most likely blocking on ReadFile(), so we can't Cancel yet, lest we deadlock --
 	//    Closing the writepipe (either directly or through the fp/crt handles) issues an EOF to the thread,
 	//    so it's safe to Cancel afterward.
-	//
-	//  * The seemingly redundant series of checks here are designed to handle cases where the pipe init fails
-	//    mid-init (in which case the writepipe might be allocated while the fp/crtFile are still invalid, etc).
 
 	if( m_fp != NULL )
 	{
 		fclose( m_fp );
 		m_fp = NULL;
-
-		m_crtFile	= -1;						// crtFile is closed implicitly when closing m_fp
-		m_writepipe = INVALID_HANDLE_VALUE;		// same for the write end of the pipe
-	}
-
-	if( m_crtFile != -1 )
-	{
-		_close( m_crtFile );
-		m_crtFile	= -1;						// m_file is closed implicitly when closing crtFile
-		m_writepipe = INVALID_HANDLE_VALUE;		// same for the write end of the pipe (I assume)
-	}
-
-	if( m_writepipe != INVALID_HANDLE_VALUE )
-	{
-		CloseHandle( m_writepipe );
-		m_writepipe = INVALID_HANDLE_VALUE;
 	}
 
 	m_Thread.Cancel();

@@ -1026,32 +1026,26 @@ u8 cdvdRead(u8 key)
 		case 0x04:  // NCOMMAND
 			CDVD_LOG("cdvdRead04(NCMD) %x", cdvd.nCommand);
 			return cdvd.nCommand;
-			break;
 
 		case 0x05: // N-READY
 			CDVD_LOG("cdvdRead05(NReady) %x", cdvd.Ready);
 			return cdvd.Ready;
-			break;
 
 		case 0x06:  // ERROR
 			CDVD_LOG("cdvdRead06(Error) %x", cdvd.Error);
 			return cdvd.Error;
-			break;
 
 		case 0x07:  // BREAK
 			CDVD_LOG("cdvdRead07(Break) %x", 0);
 			return 0;
-			break;
 
 		case 0x08:  // STATUS
 			CDVD_LOG("cdvdRead08(Status) %x", cdvd.Status);
 			return cdvd.Status;
-			break;
 
 		case 0x0A:  // STATUS
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
 			return cdvd.Status;
-			break;
 
 		case 0x0B: // TRAY-STATE (if tray has been opened)
 		{
@@ -1060,52 +1054,42 @@ u8 cdvdRead(u8 key)
 				return 1;
 			else
 				return 0;
-			break;
 		}
 		case 0x0C: // CRT MINUTE
 			CDVD_LOG("cdvdRead0C(Min) %x", itob((u8)(cdvd.Sector/(60*75))));
 			return itob((u8)(cdvd.Sector/(60*75)));
-			break;
 
 		case 0x0D: // CRT SECOND
 			CDVD_LOG("cdvdRead0D(Sec) %x", itob((u8)((cdvd.Sector/75)%60)+2));
 			return itob((u8)((cdvd.Sector/75)%60)+2);
-			break;
 
 		case 0x0E:  // CRT FRAME
 			CDVD_LOG("cdvdRead0E(Frame) %x", itob((u8)(cdvd.Sector%75)));
 			return itob((u8)(cdvd.Sector%75));
-			break;
 
 		case 0x0F: // TYPE
 			CDVD_LOG("cdvdRead0F(Disc Type) %x", cdvd.Type);
 			cdvdGetDiskType();
 			return cdvd.Type;
-			break;
 
 		case 0x13: // UNKNOWN
 			CDVD_LOG("cdvdRead13(Unknown) %x", 4);
 			return 4;
-			break;
 
 		case 0x15: // RSV
 			CDVD_LOG("cdvdRead15(RSV)");
 			return 0x01; // | 0x80 for ATAPI mode
-			break;
 
 		case 0x16: // SCOMMAND
 			CDVD_LOG("cdvdRead16(SCMD) %x", cdvd.sCommand);
 			return cdvd.sCommand;
-			break;
 
 		case 0x17:  // SREADY
 			CDVD_LOG("cdvdRead17(SReady) %x", cdvd.sDataIn);
 			return cdvd.sDataIn;
-			break;
 
 		case 0x18:
 			return cdvdRead18();
-			break;
 
 		case 0x20:
 		case 0x21:
@@ -1117,7 +1101,6 @@ u8 cdvdRead(u8 key)
 
 			CDVD_LOG("cdvdRead%d(Key%d) %x", key, temp, cdvd.Key[temp]);
 			return cdvd.Key[temp];
-			break;
 		}
 		case 0x28:
 		case 0x29:
@@ -1129,7 +1112,6 @@ u8 cdvdRead(u8 key)
 
 			CDVD_LOG("cdvdRead%d(Key%d) %x", key, temp, cdvd.Key[temp]);
 			return cdvd.Key[temp];
-			break;
 		}
 
 		case 0x30:
@@ -1142,33 +1124,28 @@ u8 cdvdRead(u8 key)
 
 			CDVD_LOG("cdvdRead%d(Key%d) %x", key, temp, cdvd.Key[temp]);
 			return cdvd.Key[temp];
-			break;
 		}
 
 		case 0x38: 		// valid parts of key data (first and last are valid)
 			CDVD_LOG("cdvdRead38(KeysValid) %x", cdvd.Key[15]);
 
 			return cdvd.Key[15];
-			break;
 
 		case 0x39:	// KEY-XOR
 			CDVD_LOG("cdvdRead39(KeyXor) %x", cdvd.KeyXor);
 
 			return cdvd.KeyXor;
-			break;
 
 		case 0x3A: 	// DEC_SET
 			CDVD_LOG("cdvdRead3A(DecSet) %x", cdvd.decSet);
 
 			return cdvd.decSet;
-			break;
 
 		default:
 			// note: notify the console since this is a potentially serious emulation problem:
 			PSXHW_LOG("*Unknown 8bit read at address 0x1f4020%x", key);
 			Console.Error( "IOP Unknown 8bit read from addr 0x1f4020%x", key );
 			return 0;
-			break;
 	}
 }
 

@@ -468,7 +468,7 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 	mVUincCycles(mVU, 1);
 	mVUopU(mVU, 0);
 	mVUcheckBadOp(mVU);
-	if (curI & _Ebit_)  { eBitPass1(mVU, branch); DevCon.Warning("E Bit on single instruction");}
+	if (curI & _Ebit_)  { eBitPass1(mVU, g_branch); DevCon.Warning("E Bit on single instruction");}
 	if (curI & _Dbit_) { mVUup.dBit = true; }
 	if (curI & _Tbit_) { mVUup.tBit = true; }
 	if (curI & _Mbit_)  { mVUup.mBit = true; DevCon.Warning("M Bit on single instruction");}
