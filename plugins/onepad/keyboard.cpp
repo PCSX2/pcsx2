@@ -120,11 +120,11 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 			break;
 
 		case FocusIn:
-			XAutoRepeatOff(GSdsp);
+			//XAutoRepeatOff(GSdsp);
 			break;
 
 		case FocusOut:
-			XAutoRepeatOn(GSdsp);
+			//XAutoRepeatOn(GSdsp);
 			break;
 
 		case ButtonPress:
