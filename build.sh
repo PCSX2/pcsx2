@@ -139,8 +139,11 @@ if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
     rm -f $summary
     touch $summary
 
-    define="-U_WINDOWS -U_M_AMD64 -U_MSC_VER -UWIN32"
-    #define="-D__linux__ -U_WINDOWS -U_M_AMD64 -U_MSC_VER -UWIN32"
+    for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
+        __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG
+    do
+        define="$define -U$undef"
+    done
     check="--enable=warning,style,missingInclude"
     for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
     do
