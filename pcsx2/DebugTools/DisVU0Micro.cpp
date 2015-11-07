@@ -19,7 +19,7 @@
 #include "Debug.h"
 
 static char ostr[1024];
-static char ostr_tmp[32];
+#define ostrA (ostr + strlen(ostr))
 
 // Type deffinition of our functions
 #define DisFInterface  (u32 code, u32 pc)
@@ -31,7 +31,7 @@ typedef char* (*TdisR5900F)DisFInterface;
 // These macros are used to assemble the disassembler functions
 #define MakeDisF(fn, b) \
 	char* fn DisFInterface { \
-		sprintf (ostr_tmp, "%8.8x %8.8x:", pc, code); \
+		sprintf (ostr, "%8.8x %8.8x:", pc, code); \
 		b; \
 		return ostr; \
 	}
@@ -44,22 +44,22 @@ typedef char* (*TdisR5900F)DisFInterface;
 #define _Is_ (_Fs_ & 15)
 #define _Id_ (_Fd_ & 15)
 
-#define dName(i)	sprintf(ostr, "%s %-7s,", ostr_tmp, i)
-#define dNameU(i)	{ char op[256]; sprintf(op, "%s.%s%s%s%s", i, _X ? "x" : "", _Y ? "y" : "", _Z ? "z" : "", _W ? "w" : ""); sprintf(ostr, "%s %-7s,", ostr_tmp, op); }
+#define dName(i)	sprintf(ostrA, " %-7s,", i)
+#define dNameU(i)	{ char op[256]; sprintf(op, "%s.%s%s%s%s", i, _X ? "x" : "", _Y ? "y" : "", _Z ? "z" : "", _W ? "w" : ""); sprintf(ostrA, " %-7s,", op); }
 
 
-#define dCP2128f(i)		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (%s),", ostr_tmp, VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
-#define dCP232x(i)		sprintf(ostr, "%s x=%f (%s),", ostr_tmp, VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
-#define dCP232y(i)		sprintf(ostr, "%s y=%f (%s),", ostr_tmp, VU0.VF[i].f.y, R5900::COP2_REG_FP[i])
-#define dCP232z(i)		sprintf(ostr, "%s z=%f (%s),", ostr_tmp, VU0.VF[i].f.z, R5900::COP2_REG_FP[i])
-#define dCP232w(i)		sprintf(ostr, "%s w=%f (%s),", ostr_tmp, VU0.VF[i].f.w, R5900::COP2_REG_FP[i])
-#define dCP2ACCf()		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (ACC),", ostr_tmp, VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
-#define dCP232i(i)		sprintf(ostr, "%s %8.8x (%s),", ostr_tmp, VU0.VI[i].UL, R5900::COP2_REG_CTL[i])
-#define dCP232iF(i)		sprintf(ostr, "%s %f (%s),", ostr_tmp, VU0.VI[i].F, R5900::COP2_REG_CTL[i])
-#define dCP232f(i, j)	sprintf(ostr, "%s Q %s=%f (%s),", ostr_tmp, R5900::COP2_VFnames[j], VU0.VF[i].F[j], R5900::COP2_REG_FP[i])
-#define dImm5()			sprintf(ostr, "%s %d,", ostr_tmp, (code >> 6) & 0x1f)
-#define dImm11()		sprintf(ostr, "%s %d,", ostr_tmp, code & 0x7ff)
-#define dImm15()		sprintf(ostr, "%s %d,", ostr_tmp, ( ( code >> 10 ) & 0x7800 ) | ( code & 0x7ff ))
+#define dCP2128f(i)		sprintf(ostrA, " w=%f z=%f y=%f x=%f (%s),", VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
+#define dCP232x(i)		sprintf(ostrA, " x=%f (%s),", VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
+#define dCP232y(i)		sprintf(ostrA, " y=%f (%s),", VU0.VF[i].f.y, R5900::COP2_REG_FP[i])
+#define dCP232z(i)		sprintf(ostrA, " z=%f (%s),", VU0.VF[i].f.z, R5900::COP2_REG_FP[i])
+#define dCP232w(i)		sprintf(ostrA, " w=%f (%s),", VU0.VF[i].f.w, R5900::COP2_REG_FP[i])
+#define dCP2ACCf()		sprintf(ostrA, " w=%f z=%f y=%f x=%f (ACC),", VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
+#define dCP232i(i)		sprintf(ostrA, " %8.8x (%s),", VU0.VI[i].UL, R5900::COP2_REG_CTL[i])
+#define dCP232iF(i)		sprintf(ostrA, " %f (%s),", VU0.VI[i].F, R5900::COP2_REG_CTL[i])
+#define dCP232f(i, j)	sprintf(ostrA, " Q %s=%f (%s),", R5900::COP2_VFnames[j], VU0.VF[i].F[j], R5900::COP2_REG_FP[i])
+#define dImm5()			sprintf(ostrA, " %d,", (code >> 6) & 0x1f)
+#define dImm11()		sprintf(ostrA, " %d,", code & 0x7ff)
+#define dImm15()		sprintf(ostrA, " %d,", ( ( code >> 10 ) & 0x7800 ) | ( code & 0x7ff ))
 
 #define _X ((code>>24) & 0x1)
 #define _Y ((code>>23) & 0x1)
