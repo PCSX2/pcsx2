@@ -265,6 +265,11 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
 
 	m_check_vuThread->Enable(hacksEnabled); // MTVU is unaffected by presets
+
+	// Layout necessary to ensure changed slider text gets re-aligned properly
+	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
+	// paint event to be sent on Windows)
+	Layout();
 }
 
 void Panels::SpeedHacksPanel::AppStatusEvent_OnSettingsApplied()
@@ -295,9 +300,6 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
-
-	// Layout necessary to ensure changed slider text gets re-aligned properly
-	Layout();
 
 	//Console.WriteLn("SpeedHacksPanel::ApplyConfigToGui: EnabledPresets: %s", configToApply.EnablePresets?"true":"false");
 }
