@@ -193,8 +193,12 @@ _vifT void vifUnpackSetup(const u32 *data) {
 		vifX.cmd = 0;
         return; // Skipping write and 0 write-cycles, so do nothing!
 	}
-
+	GetVifX.unpackcalls++;
 	
+	if (GetVifX.unpackcalls > 3)
+	{
+		vifExecQueue(idx);
+	}
 	//if (!idx) vif0FLUSH(); // Only VU0?
 
 	vifX.usn   = (vifXRegs.code >> 14) & 0x01;
