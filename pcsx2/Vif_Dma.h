@@ -80,7 +80,7 @@ struct vifStruct {
 	tVIF_CTRL vifstalled;
 	bool stallontag;
 	bool waitforvu;
-
+	int unpackcalls;
 	// GS registers used for calculating the size of the last local->host transfer initiated on the GS
 	// Transfer size calculation should be restricted to GS emulation in the future
 	tBITBLTBUF BITBLTBUF;

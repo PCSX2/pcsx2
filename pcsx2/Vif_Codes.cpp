@@ -100,6 +100,7 @@ static __fi void vuExecMicro(int idx, u32 addr) {
 
 	GetVifX.queued_program = true;
 	GetVifX.queued_pc = addr;
+	GetVifX.unpackcalls = 0;
 }
 
 void ExecuteVU(int idx)

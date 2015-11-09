@@ -358,5 +358,7 @@ void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 		m_span->ApplyConfigToGui( configToApply, true );
 		m_fpan->ApplyConfigToGui( configToApply, true );
 	}
+
+	Layout();
 }
 

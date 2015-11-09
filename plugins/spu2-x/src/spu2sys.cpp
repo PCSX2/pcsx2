@@ -306,10 +306,10 @@ void V_Core::UpdateEffectsBufferSize()
 
 void V_Voice::QueueStart()
 {
-	if (Cycles - PlayCycle < 4)
+	if (Cycles - PlayCycle < delayCycles)
 	{
 		// Required by The Legend of Spyro: The Eternal Night (probably the other two legend games too)
-		ConLog(" *** KeyOn after less than 4 T disregarded.\n");
+		ConLog(" *** KeyOn after less than %d T disregarded.\n", delayCycles);
 		return;
 	}
 	PlayCycle = Cycles;
@@ -317,7 +317,7 @@ void V_Voice::QueueStart()
 
 bool V_Voice::Start()
 {
-	if((Cycles-PlayCycle)>=4)
+	if((Cycles-PlayCycle)>= delayCycles)
 	{
 		if(StartA&7)
 		{

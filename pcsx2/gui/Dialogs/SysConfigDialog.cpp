@@ -236,7 +236,7 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 }
 
 Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  650 )
+	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  750 )
 {
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 

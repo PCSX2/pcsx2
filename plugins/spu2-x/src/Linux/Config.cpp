@@ -63,6 +63,7 @@ float VolumeAdjustBR;
 float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
+int delayCycles;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
@@ -112,6 +113,7 @@ void ReadSettings()
 	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
 	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
 	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
+	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 
 
 	wxString temp;
@@ -180,6 +182,7 @@ void WriteSettings()
 	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
 	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
+	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 	PortaudioOut->WriteSettings();
 	SDLOut->WriteSettings();

@@ -146,6 +146,8 @@ void Panels::GameFixesPanel::EnableStuff( AppConfig* configToUse )
 	if( !configToUse ) configToUse = g_Conf;
 	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
 		m_checkbox[i]->Enable(m_check_Enable->GetValue() && !configToUse->EnablePresets);
+
+	Layout();
 }
 
 void Panels::GameFixesPanel::OnEnable_Toggled( wxCommandEvent& evt )
