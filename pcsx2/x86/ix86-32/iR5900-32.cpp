@@ -1122,11 +1122,11 @@ static u32 scaleblockcycles()
 	if (cyclerate == 0 || lowcycles || cyclerate > 99 || cyclerate < -2)
 		scale_cycles = s_nBlockCycles >> 3; // Default cycle rate
 
-	else if (cyclerate < 0)
-		scale_cycles = s_nBlockCycles >> (3 - cyclerate);
-
 	else if (cyclerate > 0)
-		scale_cycles = ((5 + (2 * cyclerate)) * s_nBlockCycles) >> 5;
+		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
+
+	else if (cyclerate < 0)
+		scale_cycles = ((5 + (-2 * cyclerate)) * s_nBlockCycles) >> 5;
 
 	// Ensure block cycle count is never less than 1.
 	return (scale_cycles < 1) ? 1 : scale_cycles;

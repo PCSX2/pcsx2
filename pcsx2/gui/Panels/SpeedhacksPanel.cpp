@@ -24,25 +24,24 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 	switch( val )
 	{
 		case -2:
-			return pxEt( L"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT."
+			return pxEt(L"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
 			);
 
 		case -1:
-			return pxEt( L"-1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS."
+			return pxEt(L"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
 			);
 
 		case 0:
-			return pxEt( L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
+			return pxEt(L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
 			);
 
 		case 1:
-			return pxEt( L"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
+			return pxEt( L"1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS."
 			);
 
 		case 2:
-			return pxEt( L"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
+			return pxEt(L"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT."
 			);
-
 		default:
 			break;
 	}
@@ -123,7 +122,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_msg_eecycle->SetForegroundColour( wxColour( L"Red" ) );
 	m_msg_eecycle->SetHeight(5);
 
-	const wxChar* ee_tooltip = pxEt( L"Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, lower values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
+	const wxChar* ee_tooltip = pxEt( L"Setting lower values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, higher values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
 	);
 
 	pxSetToolTip( m_slider_eecycle, ee_tooltip );
