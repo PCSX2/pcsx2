@@ -54,6 +54,7 @@ class GSDevice11 : public GSDeviceDX
 	CComPtr<ID3D11Buffer> m_ib_old;
 
 	bool m_srv_changed, m_ss_changed;
+	int spritehack;
 
 	struct
 	{

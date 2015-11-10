@@ -110,6 +110,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	scd.Windowed = TRUE;
 
+	spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
 	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
@@ -1267,8 +1268,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = -0.01f;
-		vp.TopLeftY = -0.01f;
+		vp.TopLeftX = (spritehack > 0) ? 0.0f : -0.01f;
+		vp.TopLeftY = (spritehack > 0) ? 0.0f : -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
