@@ -418,9 +418,7 @@ u8  _PADpoll(u8 value)
 				if (padVibF[curPad][2] != vib_small)
 				{
 					padVibF[curPad][2] = vib_small;
-					// SetDeviceForceS (padVibC[curPad], vib_small);
-					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
-					gamePad->Rumble(0,curPad);
+					GamePad::DoRumble(0, curPad);
 				}
 
 				/* Big Motor */
@@ -429,9 +427,7 @@ u8  _PADpoll(u8 value)
 				if (padVibF[curPad][3] != vib_big)
 				{
 					padVibF[curPad][3] = vib_big;
-					// SetDeviceForceB (padVibC[curPad], vib_big);
-					GamePad* gamePad = s_vgamePad[conf->get_joyid(curPad)];
-					gamePad->Rumble(1,curPad);
+					GamePad::DoRumble(1, curPad);
 				}
 
 				return padID[curPad];

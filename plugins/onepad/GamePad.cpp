@@ -23,12 +23,27 @@ void GamePad::EnumerateGamePads(vector<GamePad*>& vgamePad)
 	JoystickInfo::EnumerateJoysticks(vgamePad);
 #endif
 }
+
 void GamePad::UpdateReleaseState()
 {
 #ifdef  SDL_BUILD
 	JoystickInfo::UpdateReleaseState();
 #endif
 }
+
+/**
+ * Safely dispatch to the Rumble method above
+ **/
+void GamePad::DoRumble(int type, int pad)
+{
+	u32 id = conf->get_joyid(pad);
+	if (GamePadIdWithinBounds(id)) {
+		GamePad* gamePad = s_vgamePad[id];
+		if (gamePad)
+			gamePad->Rumble(type, pad);
+	}
+}
+
 /**
  * Update state of every attached devices
  **/
