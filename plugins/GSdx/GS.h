@@ -216,6 +216,40 @@ enum GS_AFAIL
 	AFAIL_RGB_ONLY	= 3,
 };
 
+enum class GSRendererType : int8_t
+{
+	Undefined = -1,
+
+	DX9_HW = 0,
+	DX9_SW = 1,
+	DX9_OpenCL = 14,
+	DX9_Null = 2,
+
+	DX1011_HW = 3,
+	DX1011_SW = 4,
+	DX1011_OpenCL = 15,
+	DX1011_Null = 5,
+
+	Null_HW = 9,
+	Null_SW = 10,
+	Null_OpenCL = 16,
+	Null_Null = 11,
+
+	OGL_HW = 12,
+	OGL_SW = 13,
+	OGL_OpenCL = 17,
+
+#ifdef _WINDOWS
+	Default = DX9_HW
+#else
+	// Use ogl renderer as default otherwise it crash at startup
+	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
+	Default = OGL_HW
+#endif
+
+};
+
+
 #define REG32(name) \
 union name			\
 {					\
