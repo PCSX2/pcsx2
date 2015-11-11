@@ -247,6 +247,11 @@ public:
 		m_blocksize = (bytes + __pagesize - 1) / __pagesize;
 		return m_blocksize * __pagesize;
 	}
+
+	virtual void Reset()
+	{
+		_parent::Reset();
+	}
 	
 protected:
 
