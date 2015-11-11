@@ -196,6 +196,10 @@ GSdxApp::GSdxApp()
 	m_gs_acc_blend_level.push_back(GSSetting(4, "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(5, "Ultra", "Ultra Slow"));
 
+	m_gs_crtc_size.push_back(GSSetting(0, "Auto", "Recommended"));
+	m_gs_crtc_size.push_back(GSSetting(448, "448", ""));
+	m_gs_crtc_size.push_back(GSSetting(512, "512", ""));
+
 	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));

@@ -35,6 +35,7 @@ GSState::GSState()
 	, m_init_read_fifo_supported(false)
 	, m_q(1.0f)
 	, m_texflush(true)
+	, m_renderered_size(0)
 	, m_vt(this)
 	, m_regs(NULL)
 	, m_crc(0)
@@ -44,6 +45,7 @@ GSState::GSState()
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
+	m_crtc_size = theApp.GetConfig("crtc_size", 0);
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);
@@ -379,11 +381,13 @@ GSVector4i GSState::GetFrameRect(int i)
 	int w = r.width();
 	int h = r.height();
 
+#if 0
 	//Fixme: These games have an extra black bar at bottom of screen
 	if((m_game.title == CRC::DevilMayCry3 || m_game.title == CRC::SkyGunner) && (m_game.region == CRC::US || m_game.region == CRC::JP))
 	{
 		h = 448; //
 	}
+#endif
 	
 	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
 
@@ -417,6 +421,55 @@ GSVector2i GSState::GetDeviceSize(int i)
 	int w = r.width();
 	int h = r.height();
 
+	if (m_renderered_size.height() >= 224) {
+		h = std::min(h, m_renderered_size.height());
+		// Round to 32 pixels. Round a bit above in case the game
+		// didn't renderer in the few latest lines (GitarooMan)
+		// Warning don't round to much above otherwise it will be bad
+		// on Devil May Cry 3...
+		h = (h+15) & ~0x1F;
+
+	}
+
+	if (m_crtc_size) {
+		// If h is much bigger than m_crtc_size, it probably means that
+		// some kind of interlacing is enabled. In this case divide
+		// m_crtc_size by 2.
+		if ((m_crtc_size - 32) <= h) {
+			h = m_crtc_size;
+		} else {
+			h = m_crtc_size / 2;
+		}
+	}
+
+#if 0
+	switch (m_regs->SMODE1.CMOD) {
+		case 0: // VESA
+			break;
+		case 1:
+			ASSERT(0);
+			break;
+		case 2: // NTSC
+			if (h < 448)
+				h = 224; // KOF2000. Strangely FFMD is set without INT
+			else if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+				h = 224;
+			else
+				h = 448;
+			break;
+		case 3: // PAL
+			if (h < 512)
+				h = 256;
+			else if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+				h = 256;
+			else
+				h = 512;
+			break;
+		default:
+			break;
+	}
+#endif
+
 	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
 	{
 		h /= 2;
@@ -427,7 +480,7 @@ GSVector2i GSState::GetDeviceSize(int i)
 	}*/
 
 	//Fixme : Just slightly better than the hack above
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
+	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 288)
 	{
 		if (IsEnabled(0) || IsEnabled(1))
 		{
@@ -1465,6 +1518,9 @@ void GSState::FlushPrim()
 			// FIXME: berserk fpsm = 27 (8H)
 
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+
+			GSVector4i bbox    = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
+			m_renderered_size = m_renderered_size.runion(bbox.rintersect(GSVector4i(m_context->scissor.in)));
 
 			Draw();
 

@@ -430,14 +430,17 @@ void populate_hack_table(GtkWidget* hack_table)
 
 void populate_main_table(GtkWidget* main_table)
 {
-	GtkWidget* render_label     = gtk_label_new ("Renderer:");
-	GtkWidget* render_combo_box = CreateRenderComboBox();
+	GtkWidget* render_label        = gtk_label_new ("Renderer:");
+	GtkWidget* render_combo_box    = CreateRenderComboBox();
 	GtkWidget* interlace_label     = gtk_label_new ("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
+	GtkWidget* crtc_size_label     = gtk_label_new("CRTC resolution:");
+	GtkWidget* crtc_size_combo_box = CreateComboBoxFromVector(theApp.m_gs_crtc_size, "crtc_size", 0);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
+	InsertWidgetInTable(main_table, crtc_size_label, crtc_size_combo_box);
 }
 
 void populate_debug_table(GtkWidget* debug_table)

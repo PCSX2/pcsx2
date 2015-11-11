@@ -151,6 +151,8 @@ protected:
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
 	bool m_texflush;
+	GSVector4i m_renderered_size;
+	int m_crtc_size;
 	
 	struct 
 	{
