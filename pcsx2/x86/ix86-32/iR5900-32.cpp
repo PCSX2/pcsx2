@@ -1639,6 +1639,87 @@ void __fastcall dyna_page_reset(u32 start,u32 sz)
 	mmap_MarkCountedRamPage( start );
 }
 
+static void memory_protect_recompiled_code(u32 startpc, u32 size)
+{
+	u32 inpage_ptr = HWADDR(startpc);
+	u32 inpage_sz  = size*4;
+
+	// note: blocks are guaranteed to reside within the confines of a single page.
+
+	const int PageType = mmap_GetRamPageInfo( inpage_ptr );
+	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
+	const u32 pgsz = inpage_sz;
+
+    switch (PageType)
+    {
+        case -1:
+            break;
+
+        case 0:
+			mmap_MarkCountedRamPage( inpage_ptr );
+			manual_page[inpage_ptr >> 12] = 0;
+			break;
+
+        default:
+			xMOV( ecx, inpage_ptr );
+			xMOV( edx, pgsz / 4 );
+			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
+
+			u32 lpc = inpage_ptr;
+			u32 stg = pgsz;
+
+			while(stg>0)
+			{
+				xCMP( ptr32[PSM(lpc)], *(u32*)PSM(lpc) );
+				xJNE(DispatchBlockDiscard);
+
+				stg -= 4;
+				lpc += 4;
+			}
+
+			// Tweakpoint!  3 is a 'magic' number representing the number of times a counted block
+			// is re-protected before the recompiler gives up and sets it up as an uncounted (permanent)
+			// manual block.  Higher thresholds result in more recompilations for blocks that share code
+			// and data on the same page.  Side effects of a lower threshold: over extended gameplay
+			// with several map changes, a game's overall performance could degrade.
+
+			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
+
+			if (startpc != 0x81fc0 && manual_counter[inpage_ptr >> 12] <= 3)
+			{
+				// Counted blocks add a weighted (by block size) value into manual_page each time they're
+				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
+				// that whatever forced it to be manually-checked before was a 1-time deal.
+
+				// Counted blocks have a secondary threshold check in manual_counter, which forces a block
+				// to 'uncounted' mode if it's recompiled several times.  This protects against excessive
+				// recompilation of blocks that reside on the same codepage as data.
+
+				// fixme? Currently this algo is kinda dumb and results in the forced recompilation of a
+				// lot of blocks before it decides to mark a 'busy' page as uncounted.  There might be
+				// be a more clever approach that could streamline this process, by doing a first-pass
+				// test using the vtlb memory protection (without recompilation!) to reprotect a counted
+				// block.  But unless a new algo is relatively simple in implementation, it's probably
+				// not worth the effort (tests show that we have lots of recompiler memory to spare, and
+				// that the current amount of recompilation is fairly cheap).
+
+				xADD(ptr16[&manual_page[inpage_ptr >> 12]], size);
+				xJC(DispatchPageReset);
+
+				// note: clearcnt is measured per-page, not per-block!
+				ConsoleColorScope cs( Color_Gray );
+				eeRecPerfLog.Write( "Manual block @ %08X : size =%3d  page/offs = 0x%05X/0x%03X  inpgsz = %d  clearcnt = %d",
+					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz, manual_counter[inpage_ptr >> 12] );
+			}
+			else
+			{
+				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
+					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, pgsz, inpage_sz );
+			}
+            break;
+	}
+}
+
 // Skip MPEG Game-Fix
 bool skipMPEG_By_Pattern(u32 sPC) {
 
@@ -2031,84 +2112,8 @@ StartRecomp:
 	if (dumplog & 1) iDumpBlock(startpc, recPtr);
 #endif
 
-	u32 sz = (s_nEndBlock-startpc) >> 2;
-	u32 inpage_ptr = HWADDR(startpc);
-	u32 inpage_sz  = sz*4;
-
-	// note: blocks are guaranteed to reside within the confines of a single page.
-
-	const int PageType = mmap_GetRamPageInfo( inpage_ptr );
-	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
-	const u32 pgsz = inpage_sz;
-
-    switch (PageType)
-    {
-        case -1:
-            break;
-
-        case 0:
-			mmap_MarkCountedRamPage( inpage_ptr );
-			manual_page[inpage_ptr >> 12] = 0;
-			break;
-
-        default:
-			xMOV( ecx, inpage_ptr );
-			xMOV( edx, pgsz / 4 );
-			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
-
-			u32 lpc = inpage_ptr;
-			u32 stg = pgsz;
-
-			while(stg>0)
-			{
-				xCMP( ptr32[PSM(lpc)], *(u32*)PSM(lpc) );
-				xJNE(DispatchBlockDiscard);
-
-				stg -= 4;
-				lpc += 4;
-			}
-
-			// Tweakpoint!  3 is a 'magic' number representing the number of times a counted block
-			// is re-protected before the recompiler gives up and sets it up as an uncounted (permanent)
-			// manual block.  Higher thresholds result in more recompilations for blocks that share code
-			// and data on the same page.  Side effects of a lower threshold: over extended gameplay
-			// with several map changes, a game's overall performance could degrade.
-
-			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
-
-			if (startpc != 0x81fc0 && manual_counter[inpage_ptr >> 12] <= 3)
-			{
-				// Counted blocks add a weighted (by block size) value into manual_page each time they're
-				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
-				// that whatever forced it to be manually-checked before was a 1-time deal.
-
-				// Counted blocks have a secondary threshold check in manual_counter, which forces a block
-				// to 'uncounted' mode if it's recompiled several times.  This protects against excessive
-				// recompilation of blocks that reside on the same codepage as data.
-
-				// fixme? Currently this algo is kinda dumb and results in the forced recompilation of a
-				// lot of blocks before it decides to mark a 'busy' page as uncounted.  There might be
-				// be a more clever approach that could streamline this process, by doing a first-pass
-				// test using the vtlb memory protection (without recompilation!) to reprotect a counted
-				// block.  But unless a new algo is relatively simple in implementation, it's probably
-				// not worth the effort (tests show that we have lots of recompiler memory to spare, and
-				// that the current amount of recompilation is fairly cheap).
-
-				xADD(ptr16[&manual_page[inpage_ptr >> 12]], sz);
-				xJC(DispatchPageReset);
-
-				// note: clearcnt is measured per-page, not per-block!
-				ConsoleColorScope cs( Color_Gray );
-				eeRecPerfLog.Write( "Manual block @ %08X : size =%3d  page/offs = 0x%05X/0x%03X  inpgsz = %d  clearcnt = %d",
-					startpc, sz, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz, manual_counter[inpage_ptr >> 12] );
-			}
-			else
-			{
-				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
-					startpc, sz, inpage_ptr>>12, inpage_ptr&0xfff, pgsz, inpage_sz );
-			}
-            break;
-	}
+	// Detect and handle self-modified code
+	memory_protect_recompiled_code(startpc, (s_nEndBlock-startpc) >> 2);
 
 	// Skip Recompilation if sceMpegIsEnd Pattern detected
 	bool doRecompilation = !skipMPEG_By_Pattern(startpc);
