@@ -68,7 +68,6 @@ static bool s_vsync = false;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
-static const char *s_type_log ="";
 bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
 
 EXPORT_C_(uint32) PS2EgetLibType()
@@ -209,27 +208,30 @@ static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads
 			s_gs = NULL;
 		}
 
+		const char* renderer_fullname = "";
+		const char* renderer_mode = "";
+
 		switch (renderer)
 		{		
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::Null_SW:
 		case GSRendererType::OGL_SW:
-			s_type_log = "(Software mode)";
+			renderer_mode = "(Software mode)";
 			break;
 		case GSRendererType::DX9_Null:
 		case GSRendererType::DX1011_Null:
 		case GSRendererType::Null_Null:
-			s_type_log = "(Null mode)";
+			renderer_mode = "(Null mode)";
 			break;
 		case GSRendererType::DX9_OpenCL:
 		case GSRendererType::DX1011_OpenCL:
 		case GSRendererType::Null_OpenCL:
 		case GSRendererType::OGL_OpenCL:
-			s_type_log = "(OpenCL)";
+			renderer_mode = "(OpenCL)";
 			break;
 		default:
-			s_type_log = "(Hardware mode)";
+			renderer_mode = "(Hardware mode)";
 			break;
 		}
 
@@ -243,7 +245,7 @@ static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads
 		case GSRendererType::DX9_OpenCL:
 			dev = new GSDevice9();
 			s_renderer_name = " D3D9";
-			printf("\n Current Renderer: Direct3D9%s \n", s_type_log);
+			renderer_fullname = "Direct3D9";
 			break;
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
@@ -251,7 +253,7 @@ static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads
 		case GSRendererType::DX1011_OpenCL:
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
-			printf("\n Current Renderer: Direct3D11%s \n", s_type_log);
+			renderer_fullname = "Direct3D11";
 			break;
 #endif
 		case GSRendererType::Null_HW:
@@ -259,15 +261,19 @@ static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads
 		case GSRendererType::Null_Null:
 		case GSRendererType::Null_OpenCL:
 			dev = new GSDeviceNull();
+			s_renderer_name = " Null";
+			renderer_fullname = "Null";
 			break;
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
 		case GSRendererType::OGL_OpenCL:
 			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
-			printf("\n Current Renderer: OpenGL%s \n", s_type_log);
+			renderer_fullname = "OpenGL";
 			break;
 		}
+
+		printf("Current Renderer: %s %s\n", renderer_fullname, renderer_mode);
 
 		if (dev == NULL)
 		{
@@ -304,7 +310,7 @@ static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads
 			case GSRendererType::DX1011_Null:
 			case GSRendererType::Null_Null:
 				s_gs = new GSRendererNull();
-					s_renderer_type = " Null";
+				s_renderer_type = " Null";
 				break;
 			case GSRendererType::DX9_OpenCL:
 			case GSRendererType::DX1011_OpenCL:
