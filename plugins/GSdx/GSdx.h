@@ -51,11 +51,9 @@ public:
 
 	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
 
+	template<typename T> T GetConfig(const char* entry, T value);
 	string GetConfig(const char* entry, const char* value);
-	void SetConfig(const char* entry, const char* value);
-	int GetConfig(const char* entry, int value);
-	void SetConfig(const char* entry, int value);
-
+	template<typename T> void SetConfig(const char* entry, T value);
 	void SetConfigDir(const char* dir);
 
 	vector<GSSetting> m_gs_renderers;
@@ -76,6 +74,28 @@ public:
 	vector<GSSetting> m_gpu_aspectratio;
 	vector<GSSetting> m_gpu_scale;
 };
+
+// Generic methods need to move to the header to allow definition on demand
+template< typename T >
+T GSdxApp::GetConfig(const char* entry, T value)
+{
+	return static_cast<T>(GetConfig(entry, static_cast<int>(value)));
+}
+
+template<typename T>
+void GSdxApp::SetConfig(const char* entry, T value)
+{
+	SetConfig(entry, static_cast<int>(value));
+}
+
+template<> string GSdxApp::GetConfig<string>(const char* entry, string value);
+template<> int GSdxApp::GetConfig<int>(const char* entry, int value);
+template<> bool GSdxApp::GetConfig<bool>(const char* entry, bool value);
+
+template<> void GSdxApp::SetConfig<const char*>(const char* entry, const char* value);
+template<> void GSdxApp::SetConfig<char*>(const char* entry, char* value);
+template<> void GSdxApp::SetConfig<int>(const char* entry, int value);
+template<> void GSdxApp::SetConfig<bool>(const char* entry, bool value);
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};
