@@ -62,23 +62,6 @@ __aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 bool g_cpuFlushedPC, g_cpuFlushedCode, g_recompilingDelaySlot, g_maySignalException;
 
-// --------------------------------------------------------------------------------------
-//  R5900LutReserve_RAM
-// --------------------------------------------------------------------------------------
-class R5900LutReserve_RAM : public SpatialArrayReserve
-{
-	typedef SpatialArrayReserve _parent;
-
-public:
-	R5900LutReserve_RAM( const wxString& name )
-		: _parent( name )
-	{
-	}
-
-protected:
-	void OnCommittedBlock( void* block );
-};
-
 
 ////////////////////////////////////////////////////////////////
 // Static Private Variables - R5900 Dynarec
@@ -87,8 +70,9 @@ protected:
 static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
 
 static RecompiledCodeReserve* recMem = NULL;
-static SpatialArrayReserve* recRAMCopy = NULL;
-static R5900LutReserve_RAM* recLutReserve_RAM = NULL;
+static u8* recRAMCopy = NULL;
+static u8* recLutReserve_RAM = NULL;
+static const size_t recLutSize = Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1;
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -590,11 +574,6 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
-void R5900LutReserve_RAM::OnCommittedBlock( void* block )
-{
-	_parent::OnCommittedBlock(block);
-	ClearRecLUT((BASEBLOCK*)block, __pagesize * m_blocksize);
-}
 
 static void recThrowHardwareDeficiency( const wxChar* extFail )
 {
@@ -634,24 +613,18 @@ static void recAlloc()
 {
 	if (!recRAMCopy)
 	{
-		recRAMCopy	= new SpatialArrayReserve( L"R5900 RAM copy" );
-		recRAMCopy->SetBlockSize(_16kb);
-		recRAMCopy->Reserve(Ps2MemSize::MainRam);
+		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 	}
 	
 	if (!recRAM)
 	{
-		recLutReserve_RAM	= new R5900LutReserve_RAM( L"R5900 RAM LUT" );
-		recLutReserve_RAM->SetBlockSize(_16kb);
-		recLutReserve_RAM->Reserve(Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1);
+		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
 	}
 
-	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM->GetPtr();
+	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;
 	recRAM		= basepos; basepos += (Ps2MemSize::MainRam / 4);
 	recROM		= basepos; basepos += (Ps2MemSize::Rom / 4);
 	recROM1		= basepos; basepos += (Ps2MemSize::Rom1 / 4);
-
-	pxAssert(recLutReserve_RAM->GetPtrEnd() == (u8*)basepos);
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
@@ -722,8 +695,8 @@ static void recResetRaw()
 	Console.WriteLn( Color_StrongBlack, "EE/iR5900-32 Recompiler Reset" );
 
 	recMem->Reset();
-	recRAMCopy->Reset();
-	recLutReserve_RAM->Reset();
+	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
+	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
 
 	maxrecmem = 0;
 
@@ -747,8 +720,8 @@ static void recResetRaw()
 static void recShutdown()
 {
 	safe_delete( recMem );
-	safe_delete( recRAMCopy );
-	safe_delete( recLutReserve_RAM );
+	safe_aligned_free( recRAMCopy );
+	safe_aligned_free( recLutReserve_RAM );
 
 	recBlocks.Reset();
 
@@ -2168,7 +2141,7 @@ StartRecomp:
 			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
 				break;
 
-			if (memcmp(&(*recRAMCopy)[oldBlock->startpc / 4], PSM(oldBlock->startpc),
+			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
 			           oldBlock->size * 4))
 			{
 				recClear(startpc, (pc - startpc) / 4);
@@ -2178,7 +2151,7 @@ StartRecomp:
 			}
 		}
 
-		memcpy(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
 	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);
