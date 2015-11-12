@@ -179,7 +179,7 @@ EXPORT_C GSclose()
 	}
 }
 
-static int _GSopen(void** dsp, char* title, GSRendererType renderer, int threads = -1)
+static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
 
@@ -528,7 +528,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	}
 	stored_toggle_state = toggle_state;
 
-	int retval = _GSopen(dsp, NULL, renderer);
+	int retval = _GSopen(dsp, "", renderer);
 
 	if (s_gs != NULL)
 		s_gs->SetAspectRatio(0);	 // PCSX2 manages the aspect ratios
@@ -538,7 +538,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	return retval;
 }
 
-EXPORT_C_(int) GSopen(void** dsp, char* title, int mt)
+EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 {
 	/*
 	if(!XInitThreads()) return -1;

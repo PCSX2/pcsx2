@@ -34,7 +34,7 @@ LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int GSOpenWindow(void *pDsp, char *Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					GetModuleHandle(NULL), NULL, NULL, NULL, NULL,

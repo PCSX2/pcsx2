@@ -1449,7 +1449,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : ZTST_ALWAYS;
-		gd.sel.zoverflow = GSVector4i(m_vt.m_max.p).z == 0x80000000;
+		gd.sel.zoverflow = (uint32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
 	}
 
 	#if _M_SSE >= 0x501

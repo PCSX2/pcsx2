@@ -47,7 +47,7 @@ protected:
 		fprintf(stderr,"* SPU2-X:Iz in your internal callback.\n");
 
 		avail = snd_pcm_avail_update( handle );
-		while (avail >= period_time )
+		while (avail >= (int)period_time )
 		{
 			StereoOut16 buff[PacketsPerBuffer * SndOutPacketSize];
 			StereoOut16* p1 = buff;

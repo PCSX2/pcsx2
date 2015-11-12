@@ -20,7 +20,7 @@ Display *display;
 int screen;
 GtkScrolledWindow *win;
 
-int GSOpenWindow(void *pDsp, char *Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
 	display = XOpenDisplay(0);
 	screen = DefaultScreen(display);

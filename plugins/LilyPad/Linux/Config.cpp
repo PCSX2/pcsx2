@@ -168,7 +168,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
 	if (!config.multipleBinding) {
 		for (int port2=0; port2<2; port2++) {
 			for (int slot2=0; slot2<4; slot2++) {
-				if (port2==port && slot2 == slot) continue;
+				if (port2==(int)port && slot2 == (int)slot) continue;
 				PadBindings *p = dev->pads[port2]+slot2;
 				for (int i=0; i < p->numBindings; i++) {
 					Binding *b = p->bindings+i;
@@ -220,7 +220,7 @@ void CALLBACK PADsetSettingsDir( const char *dir )
 int SaveSettings(wchar_t *file=0) {
 	CfgHelper cfg;
 
-	for (int i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
+	for (size_t i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
 		 cfg.WriteBool(L"General Settings", BoolOptionsInfo[i].name, config.bools[i]);
 	}
 	cfg.WriteInt(L"General Settings", L"Close Hacks", config.closeHacks);
@@ -305,7 +305,7 @@ int LoadSettings(int force, wchar_t *file) {
 
 	CfgHelper cfg;
 
-	for (int i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
+	for (size_t i=0; i<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); i++) {
 		config.bools[i] = cfg.ReadBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue);
 	}
 

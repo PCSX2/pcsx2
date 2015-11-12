@@ -100,12 +100,10 @@ remove_not_yet_free_plugin()
 remove_remaining_non_free_file()
 {
     echo "Remove remaining non free file. TODO UPSTREAM"
+    rm -fr $LOCAL_REPO/unfree
     rm -fr $LOCAL_REPO/plugins/GSdx/baseclasses
     rm -f  $LOCAL_REPO/plugins/zzogl-pg/opengl/Win32/aviUtil.h
-    rm -f  $LOCAL_REPO/plugins/spu2-x/src/Windows/Hyperlinks.h
-    rm -f  $LOCAL_REPO/plugins/spu2-x/src/Windows/Hyperlinks.cpp
     rm -f  $LOCAL_REPO/common/src/Utilities/x86/MemcpyFast.cpp
-    rm -f  $LOCAL_REPO/common/include/comptr.h
 }
 remove_dot_git()
 {
