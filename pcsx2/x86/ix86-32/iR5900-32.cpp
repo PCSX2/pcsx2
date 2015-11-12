@@ -33,6 +33,7 @@
 #include "Elfheader.h"
 
 #include "../DebugTools/Breakpoints.h"
+#include "Patch.h"
 
 #if !PCSX2_SEH
 #	include <csetjmp>
@@ -1739,8 +1740,17 @@ static void __fastcall recRecompile( const u32 startpc )
 	}
 
 	// this is the only way patches get applied, doesn't depend on a hack
-	if (HWADDR(startpc) == ElfEntry)
+	if (HWADDR(startpc) == ElfEntry) {
 		xCALL(eeGameStarting);
+		// Apply patch as soon as possible. Normally it is done in
+		// eeGameStarting but first block is already compiled.
+		//
+		// First tentative was to call eeGameStarting directly (not through the
+		// recompiler) but it crashes some games (GT4, DMC3). It is either a
+		// thread issue or linked to the various components reset.
+		if (EmuConfig.EnablePatches) ApplyPatch(0);
+		if (EmuConfig.EnableCheats)  ApplyCheat(0);
+	}
 
 	g_branch = 0;
 
