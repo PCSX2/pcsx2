@@ -379,10 +379,9 @@ GSVector4i GSState::GetFrameRect(int i)
 	int w = r.width();
 	int h = r.height();
 
-	//Fixme: These games have an extra black bar at bottom of screen
-	if((m_game.title == CRC::DevilMayCry3 || m_game.title == CRC::SkyGunner) && (m_game.region == CRC::US || m_game.region == CRC::JP))
+	if (m_regs->SMODE1.CMOD == 2 && h > 448) // NTSC: limit games to 448, higher value causes black borders on few games
 	{
-		h = 448; //
+		h = 448;
 	}
 	
 	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
