@@ -1646,21 +1646,22 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 
 	// note: blocks are guaranteed to reside within the confines of a single page.
 
-	const int PageType = mmap_GetRamPageInfo( inpage_ptr );
+	const vtlb_ProtectionMode PageType = mmap_GetRamPageInfo( inpage_ptr );
 	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
 	const u32 pgsz = inpage_sz;
 
     switch (PageType)
     {
-        case -1:
+        case ProtMode_NotRequired:
             break;
 
-        case 0:
+		case ProtMode_None:
+        case ProtMode_Write:
 			mmap_MarkCountedRamPage( inpage_ptr );
 			manual_page[inpage_ptr >> 12] = 0;
 			break;
 
-        default:
+        case ProtMode_Manual:
 			xMOV( ecx, inpage_ptr );
 			xMOV( edx, pgsz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard

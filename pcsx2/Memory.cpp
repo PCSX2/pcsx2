@@ -891,13 +891,6 @@ void eeMemoryReserve::Release()
 // code below.
 //
 
-enum vtlb_ProtectionMode
-{
-	ProtMode_None = 0,		// page is 'unaccounted' -- neither protected nor unprotected
-	ProtMode_Write,			// page is under write protection (exception handler)
-	ProtMode_Manual			// page is under manual protection (self-checked at execution)
-};
-
 struct vtlb_PageProtectionInfo
 {
 	// Ram De-mapping -- used to convert fully translated/mapped offsets (which reside with
@@ -914,12 +907,10 @@ static __aligned16 vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::MainRam
 
 
 // returns:
-//  -1 - unchecked block (resides in ROM, thus is integrity is constant)
-//   0 - page is using Write protection
-//   1 - page is using manual protection (recompiler must include execution-time
-//       self-checking of block integrity)
+//  ProtMode_NotRequired - unchecked block (resides in ROM, thus is integrity is constant)
+//  Or the current mode
 //
-int mmap_GetRamPageInfo( u32 paddr )
+vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr )
 {
 	pxAssert( eeMem );
 
@@ -929,10 +920,11 @@ int mmap_GetRamPageInfo( u32 paddr )
 	uptr rampage = ptr - (uptr)eeMem->Main;
 
 	if (rampage >= Ps2MemSize::MainRam)
-		return -1; //not in ram, no tracking done ...
+		return ProtMode_NotRequired; //not in ram, no tracking done ...
 
 	rampage >>= 12;
-	return ( m_PageProtectInfo[rampage].Mode == ProtMode_Manual ) ? 1 : 0;
+
+	return m_PageProtectInfo[rampage].Mode;
 }
 
 // paddr - physically mapped PS2 address
