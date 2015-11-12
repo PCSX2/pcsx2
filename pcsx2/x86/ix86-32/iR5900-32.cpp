@@ -1740,7 +1740,7 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (HWADDR(startpc) == ElfEntry)
-		eeGameStarting();
+		xCALL(eeGameStarting);
 
 	g_branch = 0;
 
