@@ -1644,11 +1644,12 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 	u32 inpage_ptr = HWADDR(startpc);
 	u32 inpage_sz  = size*4;
 
-	// note: blocks are guaranteed to reside within the confines of a single page.
+	// The kernel context register is stored @ 0x800010C0-0x80001300
+	// The EENULL thread context register is stored @ 0x81000-....
+	bool contains_thread_stack = ((startpc >> 12) == 0x81) || ((startpc >> 12) == 0x80001);
 
-	const vtlb_ProtectionMode PageType = mmap_GetRamPageInfo( inpage_ptr );
-	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
-	const u32 pgsz = inpage_sz;
+	// note: blocks are guaranteed to reside within the confines of a single page.
+	const vtlb_ProtectionMode PageType = contains_thread_stack ? ProtMode_Manual : mmap_GetRamPageInfo( inpage_ptr );
 
     switch (PageType)
     {
@@ -1663,11 +1664,11 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 
         case ProtMode_Manual:
 			xMOV( ecx, inpage_ptr );
-			xMOV( edx, pgsz / 4 );
+			xMOV( edx, inpage_sz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
 
 			u32 lpc = inpage_ptr;
-			u32 stg = pgsz;
+			u32 stg = inpage_sz;
 
 			while(stg>0)
 			{
@@ -1686,7 +1687,7 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 
 			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
 
-			if (startpc != 0x81fc0 && manual_counter[inpage_ptr >> 12] <= 3)
+			if (!contains_thread_stack && manual_counter[inpage_ptr >> 12] <= 3)
 			{
 				// Counted blocks add a weighted (by block size) value into manual_page each time they're
 				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
@@ -1715,7 +1716,7 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 			else
 			{
 				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
-					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, pgsz, inpage_sz );
+					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz );
 			}
             break;
 	}
