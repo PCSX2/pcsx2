@@ -123,10 +123,10 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns for some games.";
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
+#endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
-#endif
 		case IDC_MIPMAP:
 			return "Enables mipmapping, which some games require to render correctly. Turn off only for debug purposes.";
 		default:

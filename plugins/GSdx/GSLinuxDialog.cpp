@@ -399,6 +399,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_tco_label      = gtk_label_new("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align sprite hack", "UserHacks_align_sprite_X");
+	GtkWidget* preload_gs_check    = CreateCheckBox("Preload Frame", "preload_frame_with_gs_data");
 
 	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
 	GtkWidget* hack_sprite_label   = gtk_label_new("Alpha-Sprite Hack:");
@@ -416,15 +417,16 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_tco_entry, IDC_TCOFFSETX);
 	AddTooltip(align_sprite_check, IDC_ALIGN_SPRITE);
 	AddTooltip(stretch_hack_label, stretch_hack_box, IDC_ROUND_SPRITE);
+	AddTooltip(preload_gs_check, IDC_PRELOAD_GS);
 
 
 	s_table_line = 0;
 	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
+	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
-	InsertWidgetInTable(hack_table , hack_offset_check);
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
 }
 
