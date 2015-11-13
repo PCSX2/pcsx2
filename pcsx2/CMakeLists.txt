@@ -371,7 +371,7 @@ set(pcsx2GuiResources
     ${res_bin}/ConfigIcon_Plugins.h
     ${res_bin}/ConfigIcon_Speedhacks.h
     ${res_bin}/ConfigIcon_Video.h
-    ${res_bin}/Dualshock.h
+    ${res_bin}/Logo.h
     ${res_bin}/Breakpoint_Active.h
     ${res_bin}/Breakpoint_Inactive.h
     )
@@ -646,10 +646,8 @@ include_directories(
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
 
-add_custom_command(OUTPUT  "${res_bin}/Dualshock.h"  COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/Dualshock.jpg" "${res_bin}/Dualshock" )
-
 foreach(res_file IN ITEMS
-        AppIcon16 AppIcon32 AppIcon64 BackgroundLogo ButtonIcon_Camera
+        AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo ButtonIcon_Camera
         ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
         ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
