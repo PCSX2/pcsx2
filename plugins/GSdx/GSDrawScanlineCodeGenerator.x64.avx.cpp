@@ -1664,8 +1664,8 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 		mov(rax, r8);
 		and(rax, 3);
 		shl(rax, 5);
-		vpaddw(xmm2, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx[0])]);
-		vpaddw(xmm3, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx[1])]);
+		vpaddw(xmm2, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx) + sizeof(GSVector4i) * 0]);
+		vpaddw(xmm3, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx) + sizeof(GSVector4i) * 1]);
 	}
 
 	// GSVector4i fs = c[0].upl16(c[1]).pu16(c[0].uph16(c[1]));
