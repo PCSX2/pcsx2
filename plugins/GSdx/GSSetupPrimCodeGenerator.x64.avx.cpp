@@ -95,7 +95,9 @@ void GSSetupPrimCodeGenerator::Depth()
 				vcvttps2dq(xmm2, xmm2);
 				vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
-				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].f)], xmm2);
+
+				const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].f) + (i * sizeof(GSScanlineLocalData::d[0]));
+				vmovdqa(ptr[r8 + variableOffset], xmm2);
 			}
 		}
 
@@ -115,7 +117,9 @@ void GSSetupPrimCodeGenerator::Depth()
 				// m_local.d[i].z = dz * m_shift[i];
 
 				vmulps(xmm1, xmm0, Xmm(4 + i));
-				vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].z)], xmm1);
+
+				const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].z) + (i * sizeof(GSScanlineLocalData::d[0]));
+				vmovdqa(ptr[r8 + variableOffset], xmm1);
 			}
 		}
 	}
@@ -219,21 +223,28 @@ void GSSetupPrimCodeGenerator::Texture()
 
 				vcvttps2dq(xmm2, xmm2);
 
+				const size_t variableOffsetS = offsetof(GSScanlineLocalData, d[0].s) + (i * sizeof(GSScanlineLocalData::d[0]));
+				const size_t variableOffsetT = offsetof(GSScanlineLocalData, d[0].t) + (i * sizeof(GSScanlineLocalData::d[0]));
+
 				switch(j)
 				{
-				case 0: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].s)], xmm2); break;
-				case 1: vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].t)], xmm2); break;
+				case 0: vmovdqa(ptr[r8 + variableOffsetS], xmm2); break;
+				case 1: vmovdqa(ptr[r8 + variableOffsetT], xmm2); break;
 				}
 			}
 			else
 			{
 				// m_local.d[i].s/t/q = v;
 
+				const size_t variableOffsetS = offsetof(GSScanlineLocalData, d[0].s) + (i * sizeof(GSScanlineLocalData::d[0]));
+				const size_t variableOffsetT = offsetof(GSScanlineLocalData, d[0].t) + (i * sizeof(GSScanlineLocalData::d[0]));
+				const size_t variableOffsetQ = offsetof(GSScanlineLocalData, d[0].q) + (i * sizeof(GSScanlineLocalData::d[0]));
+
 				switch(j)
 				{
-				case 0: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].s)], xmm2); break;
-				case 1: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].t)], xmm2); break;
-				case 2: vmovaps(ptr[r8 + offsetof(GSScanlineLocalData, d[i].q)], xmm2); break;
+				case 0: vmovaps(ptr[r8 + variableOffsetS], xmm2); break;
+				case 1: vmovaps(ptr[r8 + variableOffsetT], xmm2); break;
+				case 2: vmovaps(ptr[r8 + variableOffsetQ], xmm2); break;
 				}
 			}
 		}
@@ -286,7 +297,9 @@ void GSSetupPrimCodeGenerator::Color()
 			// m_local.d[i].rb = r.upl16(b);
 
 			vpunpcklwd(xmm0, xmm1);
-			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].rb)], xmm0);
+
+			const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].rb) + (i * sizeof(GSScanlineLocalData::d[0]));
+			vmovdqa(ptr[r8 + variableOffset], xmm0);
 		}
 
 		// GSVector4 c = dscan.c;
@@ -316,7 +329,9 @@ void GSSetupPrimCodeGenerator::Color()
 			// m_local.d[i].ga = g.upl16(a);
 
 			vpunpcklwd(xmm0, xmm1);
-			vmovdqa(ptr[r8 + offsetof(GSScanlineLocalData, d[i].ga)], xmm0);
+
+			const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].ga) + (i * sizeof(GSScanlineLocalData::d[0]));
+			vmovdqa(ptr[r8 + variableOffset], xmm0);
 		}
 	}
 	else
