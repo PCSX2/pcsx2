@@ -36,7 +36,7 @@ void GSSetupPrimCodeGenerator::Generate()
 
 	mov(r8, (size_t)&m_local);
 
-	if((m_en.z || m_en.f) && !m_sel.sprite || m_en.t || m_en.c && m_sel.iip)
+	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
 		mov(rax, (size_t)&m_shift[0]);
 
@@ -67,7 +67,7 @@ void GSSetupPrimCodeGenerator::Depth()
 		return;
 	}
 
-	if(!m_sel.sprite)
+	if(m_sel.prim != GS_SPRITE_CLASS)
 	{
 		// GSVector4 p = dscan.p;
 
