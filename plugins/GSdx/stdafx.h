@@ -75,6 +75,11 @@ typedef uint64 uptr;
 typedef uint32 uptr;
 #endif
 
+
+// xbyak compatibilities
+typedef int64 sint64;
+#define MIE_INTEGER_TYPE_DEFINED
+
 // stdc
 
 #include <stddef.h>

@@ -130,7 +130,7 @@ enum {
 	DEFAULT_MAX_CODE_SIZE = 4096,
 	VERSION = 0x4840 /* 0xABCD = A.BC(D) */
 };
-/*
+
 #ifndef MIE_INTEGER_TYPE_DEFINED
 #define MIE_INTEGER_TYPE_DEFINED
 #ifdef _MSC_VER
@@ -144,7 +144,7 @@ typedef unsigned int uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 #endif
-*/
+
 #ifndef MIE_ALIGN
 	#ifdef _MSC_VER
 		#define MIE_ALIGN(x) __declspec(align(x))
