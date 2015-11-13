@@ -1113,6 +1113,10 @@ void iFlushCall(int flushtype)
 //	}
 //}
 
+// Note: scaleblockcycles() scales s_nBlockCycles respective to the EECycleRate value for manipulating the cycles of current block recompiling.
+// s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
+// Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.
+
 static u32 scaleblockcycles()
 {
 	bool lowcycles = (s_nBlockCycles <= 40);
