@@ -105,7 +105,6 @@ typedef void DynGenFunc();
 static DynGenFunc* iopDispatcherEvent		= NULL;
 static DynGenFunc* iopDispatcherReg			= NULL;
 static DynGenFunc* iopJITCompile			= NULL;
-static DynGenFunc* iopJITCompileInBlock		= NULL;
 static DynGenFunc* iopEnterRecompiledCode	= NULL;
 static DynGenFunc* iopExitRecompiledCode	= NULL;
 
@@ -130,13 +129,6 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	xJMP( ptr32[ecx+ebx] );
 
-	return (DynGenFunc*)retval;
-}
-
-static DynGenFunc* _DynGen_JITCompileInBlock()
-{
-	u8* retval = xGetPtr();
-	xJMP( (void*)iopJITCompile );
 	return (DynGenFunc*)retval;
 }
 
@@ -200,7 +192,6 @@ static void _DynGen_Dispatchers()
 	iopDispatcherReg	= _DynGen_DispatcherReg();
 
 	iopJITCompile			= _DynGen_JITCompile();
-	iopJITCompileInBlock	= _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode	= _DynGen_EnterRecompiledCode();
 
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ExecOnly() );
@@ -1058,8 +1049,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
 
-	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile
-		|| s_pCurBlock->GetFnptr() == (uptr)iopJITCompileInBlock);
+	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile);
 
 	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
 
@@ -1096,8 +1086,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	while(1) {
 		BASEBLOCK* pblock = PSX_GETBLOCK(i);
 		if (i != startpc
-		 && pblock->GetFnptr() != (uptr)iopJITCompile
-		 && pblock->GetFnptr() != (uptr)iopJITCompileInBlock) {
+		 && pblock->GetFnptr() != (uptr)iopJITCompile) {
 			// branch = 3
 			willbranch3 = 1;
 			s_nEndBlock = i;
@@ -1210,11 +1199,6 @@ StartRecomp:
 
 	pxAssert( (psxpc-startpc)>>2 <= 0xffff );
 	s_pCurBlockEx->size = (psxpc-startpc)>>2;
-
-	for(i = 1; i < (u32)s_pCurBlockEx->size; ++i) {
-		if (s_pCurBlock[i].GetFnptr() == (uptr)iopJITCompile)
-			s_pCurBlock[i].SetFnptr((uptr)iopJITCompileInBlock);
-	}
 
 	if( !(psxpc&0x10000000) )
 		g_psxMaxRecMem = std::max( (psxpc&~0xa0000000), g_psxMaxRecMem );
