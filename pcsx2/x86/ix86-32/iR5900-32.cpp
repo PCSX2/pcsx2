@@ -473,6 +473,15 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	return (DynGenFunc*)retval;
 }
 
+static DynGenFunc* _DynGen_DispatcherEvent()
+{
+	u8* retval = xGetPtr();
+
+	xCALL( recEventTest );
+
+	return (DynGenFunc*)retval;
+}
+
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
 	pxAssertDev( DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
@@ -566,8 +575,7 @@ static void _DynGen_Dispatchers()
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	DispatcherEvent = (DynGenFunc*)xGetPtr();
-	xCALL( recEventTest );
+	DispatcherEvent = _DynGen_DispatcherEvent();
 	DispatcherReg	= _DynGen_DispatcherReg();
 
 	JITCompile           = _DynGen_JITCompile();
