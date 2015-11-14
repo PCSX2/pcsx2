@@ -190,6 +190,80 @@ public:
 		return (*this)[Index(startpc)];
 	}
 
+	__fi void DeleteIdx(u32 idx) {
+		auto range = links.equal_range(blocks[idx].startpc);
+		for (linkiter_t i = range.first; i != range.second; ++i) {
+			*(u32*)i->second = recompiler - (i->second + 4);
+		}
+
+		if( IsDevBuild )
+		{
+			// Clear the first instruction to 0xcc (breakpoint), as a way to assert if some
+			// static jumps get left behind to this block.  Note: Do not clear more than the
+			// first byte, since this code is called during exception handlers and event handlers
+			// both of which expect to be able to return to the recompiled code.
+
+			BASEBLOCKEX effu( blocks[idx] );
+			memset( (void*)effu.fnptr, 0xcc, 1 );
+		}
+	}
+
+	__fi bool RemoveRange(u32 end_page_search, u32 startpc, u32 endpc, BASEBLOCK* bb)
+	{
+		bool removed = false;
+		if (blocks.size() == 0) return removed;
+
+		u32 page  = end_page_search & ~0xFFF;
+		int first = -1;
+		int last  = -1;
+		int idx   = LastIndex(end_page_search);
+		// First block is already past current search. (idx is likely 0)
+		if (blocks[idx].startpc > end_page_search) return removed;
+
+		while (idx >= 0) {
+			u32 b_startpc = blocks[idx].startpc;
+			u32 b_endpc   = blocks[idx].startpc + blocks[idx].size;
+			pxAssert(b_startpc <= endpc);
+
+			// Limit the search to a single page
+			u32 b_page = b_startpc & ~0xFFF;
+			if (b_page != page) {
+				// If we have a massive block that spawn on multiple page, set the removed
+				// flag to true (i.e. RemoveRange need to be run again on the previous page)
+				removed |= (b_endpc >= startpc);
+				break;
+			}
+
+			if (b_endpc >= startpc) { // Overlap detected. Clear both link and recLUT
+				removed = true;
+				DeleteIdx(idx);
+				bb[(b_startpc & 0xFFF) / 4].SetFnptr(recompiler);
+
+				// Update erase block pointer
+				first = idx;
+				if (last == -1)
+					last = idx;
+
+			} else { // Not contiguous
+				// Flush pending erase
+				if (last != -1 && first != -1)
+					blocks.erase(first, last+1);
+
+				// Clear erase block pointer
+				last  = -1;
+				first = -1;
+			}
+
+			idx--;
+		}
+
+		// Remaining pending erase
+		if (last != -1 && first != -1)
+			blocks.erase(first, last+1);
+
+		return removed;
+	}
+
 	__fi void Remove(int first, int last)
 	{
 		pxAssert(first <= last);
