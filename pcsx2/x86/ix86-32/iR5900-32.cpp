@@ -767,79 +767,9 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 // Size is in dwords (4 bytes)
 void recClear(u32 addr, u32 size)
 {
-#if 1
-
 	addr = HWADDR(addr);
 	u32 end = addr + size * 4 - 4;
 	recBlocks.RemoveRange(end, addr, end, PC_GETBLOCK(addr & ~0xFFF));
-
-#else
-	if ((addr) >= maxrecmem || !(recLUT[(addr) >> 16] + (addr & ~0xFFFFUL)))
-		return;
-	addr = HWADDR(addr);
-
-	int blockidx = recBlocks.LastIndex(addr + size * 4 - 4);
-
-	if (blockidx == -1)
-		return;
-
-	u32 lowerextent = (u32)-1, upperextent = 0, ceiling = (u32)-1;
-
-	BASEBLOCKEX* pexblock = recBlocks[blockidx + 1];
-	if (pexblock)
-		ceiling = pexblock->startpc;
-
-	int toRemoveLast = blockidx;
-
-	while (pexblock = recBlocks[blockidx]) {
-		u32 blockstart = pexblock->startpc;
-		u32 blockend = pexblock->startpc + pexblock->size * 4;
-		BASEBLOCK* pblock = PC_GETBLOCK(blockstart);
-
-		if (pblock == s_pCurBlock) {
-			if(toRemoveLast != blockidx) {
-				recBlocks.Remove((blockidx + 1), toRemoveLast);
-			}
-			toRemoveLast = --blockidx;
-			continue;
-		}
-
-		if (blockend <= addr) {
-			lowerextent = std::max(lowerextent, blockend);
-			break;
-		}
-
-		lowerextent = std::min(lowerextent, blockstart);
-		upperextent = std::max(upperextent, blockend);
-		// This might end up inside a block that doesn't contain the clearing range,
-		// so set it to recompile now.  This will become JITCompile if we clear it.
-		pblock->SetFnptr((uptr)JITCompileInBlock);
-
-		blockidx--;
-	}
-
-	if(toRemoveLast != blockidx) {
-		recBlocks.Remove((blockidx + 1), toRemoveLast);
-	}
-
-	upperextent = std::min(upperextent, ceiling);
-
-	for (int i = 0; pexblock = recBlocks[i]; i++) {
-		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))
-			continue;
-		u32 blockend = pexblock->startpc + pexblock->size * 4;
-		if (pexblock->startpc >= addr && pexblock->startpc < addr + size * 4
-		 || pexblock->startpc < addr && blockend > addr) {
-			if( !IsDevBuild )
-				Console.Error( "Impossible block clearing failure" );
-			else
-				pxFailDev( "Impossible block clearing failure" );
-		}
-	}
-
-	if (upperextent > lowerextent)
-		ClearRecLUT(PC_GETBLOCK(lowerextent), upperextent - lowerextent);
-#endif
 }
 
 

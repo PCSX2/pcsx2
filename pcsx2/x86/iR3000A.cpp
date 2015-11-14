@@ -91,10 +91,6 @@ static u32 psxdump = 0;
 
 #define PSX_GETBLOCK(x) PC_GETBLOCK_(x, psxRecLUT)
 
-#define PSXREC_CLEARM(mem) \
-	(((mem) < g_psxMaxRecMem && (psxRecLUT[(mem) >> 16] + (mem))) ? \
-		psxRecClearMem(mem) : 4)
-
 // =====================================================================================================
 //  Dynamically Compiled Dispatchers - R3000A style
 // =====================================================================================================
@@ -788,63 +784,8 @@ static __noinline s32 recExecuteBlock( s32 eeCycles )
 	return iopBreak + iopCycleEE;
 }
 
-// Returns the offset to the next instruction after any cleared memory
-static __fi u32 psxRecClearMem(u32 pc)
-{
-	BASEBLOCK* pblock;
-
-	pblock = PSX_GETBLOCK(pc);
-	// if ((u8*)iopJITCompile == pblock->GetFnptr())
-	if (pblock->GetFnptr() == (uptr)iopJITCompile)
-		return 4;
-
-	pc = HWADDR(pc);
-
-	u32 lowerextent = pc, upperextent = pc + 4;
-	int blockidx = recBlocks.Index(pc);
-	pxAssert(blockidx != -1);
-
-	while (BASEBLOCKEX* pexblock = recBlocks[blockidx - 1]) {
-		if (pexblock->startpc + pexblock->size * 4 <= lowerextent)
-			break;
-
-		lowerextent = std::min(lowerextent, pexblock->startpc);
-		blockidx--;
-	}
-
-	int toRemoveFirst = blockidx;
-
-	while (BASEBLOCKEX* pexblock = recBlocks[blockidx]) {
-		if (pexblock->startpc >= upperextent)
-			break;
-
-		lowerextent = std::min(lowerextent, pexblock->startpc);
-		upperextent = std::max(upperextent, pexblock->startpc + pexblock->size * 4);
-
-		blockidx++;
-	}
-
-	if(toRemoveFirst != blockidx) {
-		recBlocks.Remove(toRemoveFirst, (blockidx - 1));
-	}
-
-	blockidx=0;
-	while(BASEBLOCKEX* pexblock = recBlocks[blockidx++])
-	{
-		if (pc >= pexblock->startpc && pc < pexblock->startpc + pexblock->size * 4) {
-			DevCon.Error("Impossible block clearing failure");
-			pxFailDev( "Impossible block clearing failure" );
-		}
-	}
-
-	iopClearRecLUT(PSX_GETBLOCK(lowerextent), (upperextent - lowerextent) / 4);
-
-	return upperextent - pc;
-}
-
 static __fi void recClearIOP(u32 Addr, u32 Size)
 {
-#if 1
 	u32 pc       = HWADDR(Addr);
 	u32 end      = pc + Size * 4 - 4;
 	u32 real_end = end;
@@ -863,12 +804,6 @@ static __fi void recClearIOP(u32 Addr, u32 Size)
 		if (end == 0) return;
 		end -= 4;
 	} while (removed);
-
-#else
-	u32 pc = Addr;
-	while (pc < Addr + Size*4)
-		pc += PSXREC_CLEARM(pc);
-#endif
 }
 
 void psxSetBranchReg(u32 reg)
