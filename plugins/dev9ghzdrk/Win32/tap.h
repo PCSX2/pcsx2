@@ -31,6 +31,7 @@ class TAPAdapter : public NetAdapter
 public:
 	TAPAdapter();
 	virtual bool blocks();
+	virtual bool isInitialised();
 	//gets a packet.rv :true success
 	virtual bool recv(NetPacket* pkt);
 	//sends the packet and deletes it when done (if successful).rv :true success

@@ -175,16 +175,25 @@ UINT DEV9ThreadProc() {
 }*/
 NetAdapter* GetNetAdapter()
 {
+	NetAdapter* na;
 	if(config.Eth[0]=='p')
 	{
-		return new PCAPAdapter();
+		na = new PCAPAdapter();
 	}
 	else if (config.Eth[0]=='t')
 	{
-		return new TAPAdapter();
+		na = new TAPAdapter();
 	}
 	else
 		return 0;
+
+
+	if (!na->isInitialised())
+	{
+		delete na;
+		return 0;
+	}
+	return na;
 }
 s32  _DEV9open() 
 {

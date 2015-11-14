@@ -117,9 +117,12 @@ int pcap_io_init(char *adapter)
 							 errbuf			// error buffer
 							 )) == NULL)
 	{
+		fprintf(stderr, errbuf);
 		fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", adapter);
 		return -1;
 	}
+
+	
 
 	dlt = pcap_datalink(adhandle);
 	dlt_name = (char*)pcap_datalink_val_to_name(dlt);
@@ -326,7 +329,8 @@ void pcap_io_close()
 		fclose(packet_log);
 	if(dump_pcap)
 		pcap_dump_close(dump_pcap);
-	pcap_close(adhandle);  
+	if (adhandle)
+		pcap_close(adhandle);  
 	pcap_io_running=0;
 }
 
@@ -428,6 +432,10 @@ PCAPAdapter::PCAPAdapter()
 bool PCAPAdapter::blocks()
 {
 	return false;
+}
+bool PCAPAdapter::isInitialised()
+{
+	return pcap_io_running;
 }
 //gets a packet.rv :true success
 bool PCAPAdapter::recv(NetPacket* pkt)
