@@ -22,15 +22,12 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
-endif()
-
 if ("${PGO}" STREQUAL "generate")
-    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-generate)
+    set(pcsx2FinalFlags -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")
-    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-use)
+    set(pcsx2FinalFlags -fprofile-use)
+else()
+    set(pcsx2FinalFlags "")
 endif()
 
 # Debug - Build
