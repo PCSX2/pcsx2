@@ -276,6 +276,13 @@ if(NOT DEFINED OPTIMIZATION_FLAG)
     endif()
 endif()
 
+if (NOT DEFINED PGO)
+    set(PGO "none")
+    set(GCOV_LIBRARIES "")
+else()
+    set(GCOV_LIBRARIES "-lgcov")
+endif()
+
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG}")
 # c++ only flags

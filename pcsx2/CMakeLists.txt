@@ -27,6 +27,12 @@ if(NOT USE_CLANG)
 	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
 endif()
 
+if ("${PGO}" STREQUAL "generate")
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-generate)
+elseif("${PGO}" STREQUAL "use")
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-use)
+endif()
+
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
@@ -628,19 +634,20 @@ set(pcsx2FinalSources
 )
 
 set(pcsx2FinalLibs
-	Utilities
-	x86emitter
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ZLIB_LIBRARIES}
+    Utilities
+    x86emitter
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
+    ${GCOV_LIBRARIES}
 )
 
 # additonal include directories
 include_directories(
-					gui
-					x86
-                    ${CMAKE_BINARY_DIR}/pcsx2/gui
+    gui
+    x86
+    ${CMAKE_BINARY_DIR}/pcsx2/gui
 )
 
 ### Generate the resources files
