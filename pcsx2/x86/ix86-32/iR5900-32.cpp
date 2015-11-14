@@ -73,7 +73,6 @@ eeProfiler EE::Profiler;
 static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
 
 static RecompiledCodeReserve* recMem = NULL;
-static u8* recRAMCopy = NULL;
 static u8* recLutReserve_RAM = NULL;
 static const size_t recLutSize = Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1;
 
@@ -492,11 +491,6 @@ static void recReserve()
 
 static void recAlloc()
 {
-	if (!recRAMCopy)
-	{
-		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
-	}
-
 	if (!recRAM)
 	{
 		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
@@ -581,7 +575,6 @@ static void recResetRaw()
 
 	recMem->Reset();
 	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
-	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
 
 	maxrecmem = 0;
 
@@ -606,7 +599,6 @@ static void recResetRaw()
 static void recShutdown()
 {
 	safe_delete( recMem );
-	safe_aligned_free( recRAMCopy );
 	safe_aligned_free( recLutReserve_RAM );
 
 	recBlocks.Reset();
@@ -1960,33 +1952,6 @@ StartRecomp:
 
 	pxAssert( (pc-startpc)>>2 <= 0xffff );
 	s_pCurBlockEx->size = (pc-startpc)>>2;
-
-	if (HWADDR(pc) <= Ps2MemSize::MainRam) {
-		BASEBLOCKEX *oldBlock;
-		int i;
-
-		i = recBlocks.LastIndex(HWADDR(pc) - 4);
-		while (oldBlock = recBlocks[i--]) {
-			if (oldBlock == s_pCurBlockEx)
-				continue;
-			if (oldBlock->startpc >= HWADDR(pc))
-				continue;
-			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
-				break;
-
-			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
-			           oldBlock->size * 4))
-			{
-				recClear(startpc, (pc - startpc) / 4);
-				s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
-				pxAssert(s_pCurBlockEx->startpc == HWADDR(startpc));
-				break;
-			}
-		}
-
-		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
-	}
-
 	s_pCurBlock->SetFnptr((uptr)recPtr);
 
 	if( !(pc&0x10000000) )
