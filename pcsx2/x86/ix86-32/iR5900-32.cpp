@@ -767,6 +767,13 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 // Size is in dwords (4 bytes)
 void recClear(u32 addr, u32 size)
 {
+#if 1
+
+	addr = HWADDR(addr);
+	u32 end = addr + size * 4 - 4;
+	recBlocks.RemoveRange(end, addr, end, PC_GETBLOCK(addr & ~0xFFF));
+
+#else
 	if ((addr) >= maxrecmem || !(recLUT[(addr) >> 16] + (addr & ~0xFFFFUL)))
 		return;
 	addr = HWADDR(addr);
@@ -832,6 +839,7 @@ void recClear(u32 addr, u32 size)
 
 	if (upperextent > lowerextent)
 		ClearRecLUT(PC_GETBLOCK(lowerextent), upperextent - lowerextent);
+#endif
 }
 
 
