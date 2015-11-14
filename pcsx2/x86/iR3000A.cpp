@@ -844,9 +844,31 @@ static __fi u32 psxRecClearMem(u32 pc)
 
 static __fi void recClearIOP(u32 Addr, u32 Size)
 {
+#if 1
+	u32 pc       = HWADDR(Addr);
+	u32 end      = pc + Size * 4 - 4;
+	u32 real_end = end;
+	while ((end & ~0xFFF) >= (pc & ~0xFFF)) {
+		recBlocks.RemoveRange(end, pc, real_end, PSX_GETBLOCK(end & ~0xFFF));
+		end &= ~0xFFF;
+		if (end == 0) return;
+		end -= 4;
+	}
+
+	// Check previous pages in case of overlap block
+	bool removed;
+	do {
+		removed = recBlocks.RemoveRange(end, pc, real_end, PSX_GETBLOCK(end & ~0xFFF));
+		end &= ~0xFFF;
+		if (end == 0) return;
+		end -= 4;
+	} while (removed);
+
+#else
 	u32 pc = Addr;
 	while (pc < Addr + Size*4)
 		pc += PSXREC_CLEARM(pc);
+#endif
 }
 
 void psxSetBranchReg(u32 reg)
