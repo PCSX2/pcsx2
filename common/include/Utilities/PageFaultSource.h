@@ -247,6 +247,11 @@ public:
 		m_blocksize = (bytes + __pagesize - 1) / __pagesize;
 		return m_blocksize * __pagesize;
 	}
+
+	virtual void Reset()
+	{
+		_parent::Reset();
+	}
 	
 protected:
 
@@ -264,72 +269,6 @@ protected:
 	virtual void OnCommittedBlock( void* block )=0;
 
 	virtual void CommitBlocks( uptr page, uint blocks );
-};
-
-// --------------------------------------------------------------------------------------
-//  SpatialArrayReserve
-// --------------------------------------------------------------------------------------
-// A spatial array is one where large areas of the memory reserve will remain unused during
-// process execution.  Only areas put to use will be committed to virtual memory.
-//
-// Spatial array efficiency depends heavily on selecting the right parameters for the array's
-// primary intended use.  Memory in a spatial array is arranged by blocks, with each block
-// containing some number of pages (pages are 4096 bytes each on most platforms).  When the
-// array is accessed, the entire block containing the addressed memory will be committed at
-// once.  Blocks can be a single page in size (4096 bytes), though this is highly discouraged
-// due to overhead and fragmentation penalties.
-//
-// Balancing block sizes:
-//   Larger blocks are good for reducing memory fragmentation and block-tracking overhead, but
-//   can also result in a lot of otherwise unused memory being committed to memory.  Smaller
-//   blocks are good for arrays that will tend toward more sequential behavior, as they reduce
-//   the amount of unused memory being committed.  However, since every block requires a
-//   tracking entry, assigning small blocks to a very large array can result in quite a bit of
-//   unwanted overhead.  Furthermore, if the array is accessed randomly, system physical memory
-//   will become very fragmented, which will also hurt performance.
-//
-// By default, the base block size is based on a heuristic that balances the size of the spatial
-// array reserve against a best-guess performance profile for the target platform.
-//
-class SpatialArrayReserve : public BaseVmReserveListener
-{
-	typedef BaseVmReserveListener _parent;
-
-protected:
-	uint			m_numblocks;
-
-	// Array of block bits, each bit indicating if the block has been committed to memory
-	// or not.  The array length is typically determined via ((numblocks+7) / 8), though the
-	// actual array size may be larger in order to accommodate 32-bit or 128-bit accelerated
-	// operations.
-	ScopedAlignedAlloc<u8,16>	m_blockbits;
-
-public:
-	SpatialArrayReserve( const wxString& name );
-
-	virtual void* Reserve( size_t size = 0, uptr base = 0, uptr upper_bounds = 0 );
-	virtual void Reset();
-	virtual bool TryResize( uint newsize );
-
-	void OnCommittedBlock( void* block );
-	
-	SpatialArrayReserve& SetBlockCount( uint blocks );
-	SpatialArrayReserve& SetBlockSizeInPages( uint bytes );
-
-	uptr SetBlockSize( uptr bytes );
-
-	operator void*()				{ return m_baseptr; }
-	operator const void*() const	{ return m_baseptr; }
-
-	operator u8*()				{ return (u8*)m_baseptr; }
-	operator const u8*() const	{ return (u8*)m_baseptr; }
-	
-	using _parent::operator[];
-
-protected:
-	void ReprotectCommittedBlocks( const PageProtectionMode& newmode );
-	void DoCommitAndProtect( uptr page );
-	uint _calcBlockBitArrayLength() const;
 };
 
 #ifdef __linux__

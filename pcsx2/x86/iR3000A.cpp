@@ -757,7 +757,7 @@ static const uint m_recBlockAllocSize =
 
 static void recReserveCache()
 {
-	if (!recMem) recMem = new RecompiledCodeReserve(L"R3000A Recompiler Cache", _1mb * 2);
+	if (!recMem) recMem = new RecompiledCodeReserve(L"R3000A Recompiler Cache", _8mb);
 	recMem->SetProfilerName("IOPrec");
 
 	while (!recMem->IsOk())

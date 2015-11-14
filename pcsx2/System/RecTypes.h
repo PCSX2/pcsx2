@@ -42,6 +42,7 @@ public:
 
 	virtual void* Reserve( size_t size, uptr base=0, uptr upper_bounds=0 );
 	virtual void OnCommittedBlock( void* block );
+	virtual void Reset();
 
 	virtual RecompiledCodeReserve& SetProfilerName( const wxString& shortname );
 	virtual RecompiledCodeReserve& SetProfilerName( const char* shortname )

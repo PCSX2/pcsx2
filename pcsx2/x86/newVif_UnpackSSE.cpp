@@ -417,7 +417,7 @@ void VifUnpackSSE_Init()
 
 	DevCon.WriteLn( "Generating SSE-optimized unpacking functions for VIF interpreters..." );
 
-	nVifUpkExec = new RecompiledCodeReserve(L"VIF SSE-optimized Unpacking Functions");
+	nVifUpkExec = new RecompiledCodeReserve(L"VIF SSE-optimized Unpacking Functions", _64kb);
 	nVifUpkExec->SetProfilerName("iVIF-SSE");
 	nVifUpkExec->SetBlockSize( 1 );
 	nVifUpkExec->Reserve( _64kb );

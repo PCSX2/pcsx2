@@ -73,7 +73,21 @@ void* RecompiledCodeReserve::Reserve( size_t size, uptr base, uptr upper_bounds 
 {
 	if (!_parent::Reserve(size, base, upper_bounds)) return NULL;
 	_registerProfiler();
+
+	// Pre-Allocate the first block (to reduce the number of segmentation fault
+	// in debugger)
+	DoCommitAndProtect(0);
+
 	return m_baseptr;
+}
+
+void RecompiledCodeReserve::Reset()
+{
+	_parent::Reset();
+
+	// Pre-Allocate the first block (to reduce the number of segmentation fault
+	// in debugger)
+	DoCommitAndProtect(0);
 }
 
 
