@@ -231,6 +231,8 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
+option(USE_LTO "Enable LTO optimization (will likely break the build)")
+
 set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
@@ -252,6 +254,18 @@ if (USE_CLANG)
     set(DBG "-g")
 else()
     set(DBG "-ggdb")
+endif()
+
+if (USE_LTO)
+    #gcc --print-file-name=liblto_plugin.so
+    #set(LTO_FLAGS "-fuse-linker-plugin -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    #set(LTO_FLAGS "-fuse-linker-plugin  -fuse-ld=gold -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    set(LTO_FLAGS "-fuse-linker-plugin  -fuse-ld=gold -flto=4")
+    #set(LINK_FLAGS "--plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    set(USER_CMAKE_LD_FLAGS "--plugin /usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    set(DBG "") # not supported with LTO
+else()
+    set(LTO_FLAGS "")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -284,7 +298,7 @@ else()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 
