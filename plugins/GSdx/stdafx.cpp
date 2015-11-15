@@ -111,8 +111,8 @@ void vmfree(void* ptr, size_t size)
 
 void* _aligned_malloc(size_t size, size_t alignment)
 {
-	void* ret;
-	posix_memalign(&return, a, size);
+	void *ret = 0;
+	posix_memalign(&ret, alignment, size);
 	return ret;
 }
 

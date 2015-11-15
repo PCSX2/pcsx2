@@ -50,7 +50,7 @@ void GSTextureCache9::Read(Target* t, const GSVector4i& r)
 		return;
 	}
 
-	if(!t->m_dirty.empty())
+	if (!t->m_dirty.empty() || (r.width() == 0 && r.height() == 0))
 	{
 		return;
 	}

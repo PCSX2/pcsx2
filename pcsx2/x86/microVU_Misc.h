@@ -76,7 +76,6 @@ static const uint _Ebit_ = 1 << 30;
 static const uint _Mbit_ = 1 << 29;
 static const uint _Dbit_ = 1 << 28;
 static const uint _Tbit_ = 1 << 27;
-static const uint _DTbit_ = 0; //( _Dbit_ | _Tbit_ ) // ToDo: Implement this stuff...
 
 static const uint divI = 0x1040000;
 static const uint divD = 0x2080000;
@@ -184,17 +183,10 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 // Define mVUquickSearch
 //------------------------------------------------------------------
-#ifndef __linux__
 extern __pagealigned u8 mVUsearchXMM[__pagesize];
 typedef u32 (__fastcall *mVUCall)(void*, void*);
 #define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xf)
 #define mVUemitSearch() { mVUcustomSearch(); }
-#else
-// Note: GCC builds crash with custom search function, because
-// they're not guaranteeing 16-byte alignment on the structs :(
-#define mVUquickSearch(dest, src, size) (!memcmp(dest, src, size))
-#define mVUemitSearch()
-#endif
 //------------------------------------------------------------------
 
 // Misc Macros...
@@ -233,19 +225,11 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 #define shuffleSS(x) ((x==1)?(0x27):((x==2)?(0xc6):((x==4)?(0xe1):(0xe4))))
 #define clampE       CHECK_VU_EXTRA_OVERFLOW
 #define varPrint(x)  DevCon.WriteLn(#x " = %d", (int)x)
+#define islowerOP    ((iPC & 1) == 0)
 
 #define blockCreate(addr) {												\
 	if  (!mVUblocks[addr]) mVUblocks[addr] = new microBlockManager();	\
 }
-
-#define branchAddr (																	\
-	pxAssertDev((iPC & 1) == 0, "microVU: Expected Lower Op for valid branch addr."),	\
-	((((iPC + 2)  + (_Imm11_ * 2)) & mVU.progMemMask) * 4)								\
-)
-#define branchAddrN (																	\
-	pxAssertDev((iPC & 1) == 0, "microVU: Expected Lower Op for valid branch addr."),	\
-	((((iPC + 4)  + (_Imm11_ * 2)) & mVU.progMemMask) * 4)								\
-)
 
 // Fetches the PC and instruction opcode relative to the current PC.  Used to rewind and
 // fast-forward the IR state while calculating VU pipeline conditions (branches, writebacks, etc)

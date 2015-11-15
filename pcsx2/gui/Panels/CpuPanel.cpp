@@ -74,8 +74,9 @@ void Panels::BaseAdvancedCpuOptions::OnRestoreDefaults(wxCommandEvent& evt)
 
 void Panels::BaseAdvancedCpuOptions::RestoreDefaults()
 {
-	m_RoundModePanel->SetSelection( 3 );		// Roundmode chop
-	m_ClampModePanel->SetSelection( 1 );		// clamp mode normal
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 }
 
 Panels::AdvancedOptionsFPU::AdvancedOptionsFPU( wxWindow* parent )
@@ -260,8 +261,9 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 
 void Panels::CpuPanelEE::OnRestoreDefaults(wxCommandEvent &evt)
 {
-	m_panel_RecEE->SetSelection( m_panel_RecEE->GetButton(1)->IsEnabled() ? 1 : 0 );
-	m_panel_RecIOP->SetSelection( m_panel_RecIOP->GetButton(1)->IsEnabled() ? 1 : 0 );
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 
 	if( BaseAdvancedCpuOptions* opts = (BaseAdvancedCpuOptions*)FindWindowByName(L"AdvancedOptionsFPU") )
 		opts->RestoreDefaults();
@@ -334,8 +336,9 @@ void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 
 void Panels::CpuPanelVU::OnRestoreDefaults(wxCommandEvent &evt)
 {
-	m_panel_VU0->SetSelection( m_panel_VU0->GetButton(1)->IsEnabled() ? 1 : 0 );
-	m_panel_VU1->SetSelection( m_panel_VU1->GetButton(1)->IsEnabled() ? 1 : 0 );
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 
 	if( BaseAdvancedCpuOptions* opts = (BaseAdvancedCpuOptions*)FindWindowByName(L"AdvancedOptionsVU") )
 		opts->RestoreDefaults();

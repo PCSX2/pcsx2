@@ -114,10 +114,12 @@ extern "C" unsigned __int64 __xgetbv(int);
 #	define pxDevelCode(code)
 #endif
 
-#if !defined(PCSX2_DEBUG) && !defined(PCSX2_DEVEL)
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
 #	define pxReleaseCode(code)
+#	define pxNonReleaseCode(code)	code
 #else
 #	define pxReleaseCode(code)		code
+#	define pxNonReleaseCode(code)
 #endif
 
 // --------------------------------------------------------------------------------------

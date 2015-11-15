@@ -48,7 +48,10 @@ protected:
 public:
 	AppGameDatabase() {}
 	virtual ~AppGameDatabase() throw() {
-		Console.WriteLn( "(GameDB) Unloading..." );
+		try {
+			Console.WriteLn( "(GameDB) Unloading..." );
+		}
+		DESTRUCTOR_CATCHALL
 	}
 
 	AppGameDatabase& LoadFromFile(const wxString& file = Path::Combine( PathDefs::GetProgramDataDir(), wxFileName(L"GameIndex.dbf") ), const wxString& key = L"Serial" );

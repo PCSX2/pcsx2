@@ -224,7 +224,7 @@ bool GSUtil::CheckSSE()
 	return true;
 }
 
-#define OCL_PROGRAM_VERSION 1
+#define OCL_PROGRAM_VERSION 3
 
 #ifdef ENABLE_OPENCL
 void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
@@ -413,6 +413,14 @@ D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter *adapter, D3D_DRIVER
 	hr = D3D11CreateDevice(adapter, type, NULL, 0, NULL, 0, D3D11_SDK_VERSION, NULL, &level, NULL);
 
 	return SUCCEEDED(hr) ? level : (D3D_FEATURE_LEVEL)0;
+}
+
+#else
+
+void GSmkdir(const char* dir)
+{
+	if (mkdir(dir, 0777))
+		fprintf(stderr, "Failed to create directory: %s\n", dir);
 }
 
 #endif

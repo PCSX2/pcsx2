@@ -22,9 +22,7 @@
 #include "stdafx.h"
 #include "GSCapture.h"
 #include "GSPng.h"
-#ifdef __linux__
-#include <sys/stat.h> // mkdir
-#endif
+#include "GSUtil.h"
 
 #ifdef _WINDOWS
 
@@ -391,13 +389,10 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps)
+bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float aspect)
 {
-#ifdef _CX11_
+	printf("Recomended resolution: %d x %d, DAR for muxing: %.4f\n", recomendedResolution.x, recomendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
-#else
-	GSAutoLock lock(&m_lock);
-#endif
 
 	ASSERT(fps != 0);
 
@@ -485,7 +480,7 @@ bool GSCapture::BeginCapture(float fps)
 
 #elif __linux__
 	// Note I think it doesn't support multiple depth creation
-	mkdir(m_out_dir.c_str(), 0777);
+	GSmkdir(m_out_dir.c_str());
 
 	// Really cheap recording
 	m_frame = 0;
@@ -508,11 +503,7 @@ bool GSCapture::BeginCapture(float fps)
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
-#ifdef _CX11_
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
-#else
-	GSAutoLock lock(&m_lock);
-#endif
 
 	if(bits == NULL || pitch == 0)
 	{
@@ -545,11 +536,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 bool GSCapture::EndCapture()
 {
-#ifdef _CX11_
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
-#else
-	GSAutoLock lock(&m_lock);
-#endif
 
 #ifdef _WINDOWS
 

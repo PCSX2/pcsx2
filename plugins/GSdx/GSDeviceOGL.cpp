@@ -39,18 +39,23 @@ static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
+static const uint32 g_convert_index       = 15;
 
 bool GSDeviceOGL::m_debug_gl_call = false;
 int  GSDeviceOGL::s_n = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
-	: m_free_window(false)
-	  , m_window(NULL)
-	  , m_fbo(0)
-	  , m_fbo_read(0)
-	  , m_va(NULL)
-	  , m_shader(NULL)
+	: m_msaa(0)
+	, m_window(NULL)
+	, m_fbo(0)
+	, m_fbo_read(0)
+	, m_va(NULL)
+	, m_apitrace(0)
+	, m_palette_ss(0)
+	, m_vs_cb(NULL)
+	, m_ps_cb(NULL)
+	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
 	memset(&m_interlace, 0, sizeof(m_interlace));
@@ -58,7 +63,8 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_fxaa, 0, sizeof(m_fxaa));
 	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
 	memset(&m_date, 0, sizeof(m_date));
-	memset(&m_state, 0, sizeof(m_state));
+	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
+	memset(&m_om_dss, 0, sizeof(m_om_dss));
 	GLState::Clear();
 
 	// Reset the debug file
@@ -89,7 +95,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		m_shader->Delete(m_merge_obj.ps[i]);
 	delete (m_merge_obj.cb);
-	delete (m_merge_obj.bs);
 
 	// Clean m_interlace
 	for (size_t i = 0; i < countof(m_interlace.ps); i++)
@@ -102,7 +107,7 @@ GSDeviceOGL::~GSDeviceOGL()
 		m_shader->Delete(m_convert.ps[i]);
 	delete m_convert.dss;
 	delete m_convert.dss_write;
-	delete m_convert.bs;
+	delete m_convert.cb;
 
 	// Clean m_fxaa
 	delete m_fxaa.cb;
@@ -114,7 +119,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Clean m_date
 	delete m_date.dss;
-	delete m_date.bs;
 
 	// Clean shadeboost
 	delete m_shadeboost.cb;
@@ -122,27 +126,24 @@ GSDeviceOGL::~GSDeviceOGL()
 
 
 	// Clean various opengl allocation
-	gl_DeleteFramebuffers(1, &m_fbo);
-	gl_DeleteFramebuffers(1, &m_fbo_read);
+	glDeleteFramebuffers(1, &m_fbo);
+	glDeleteFramebuffers(1, &m_fbo_read);
 
 	// Delete HW FX
 	delete m_vs_cb;
 	delete m_ps_cb;
-	gl_DeleteSamplers(1, &m_palette_ss);
+	glDeleteSamplers(1, &m_palette_ss);
 	m_shader->Delete(m_apitrace);
 
-	for (uint32 key = 0; key < VSSelector::size(); key++) m_shader->Delete(m_vs[key]);
-	m_shader->Delete(m_gs);
+	for (uint32 key = 0; key < countof(m_vs); key++) m_shader->Delete(m_vs[key]);
+	for (uint32 key = 0; key < countof(m_gs); key++) m_shader->Delete(m_gs[key]);
 	for (auto it = m_ps.begin(); it != m_ps.end() ; it++) m_shader->Delete(it->second);
 
 	m_ps.clear();
 
-	gl_DeleteSamplers(PSSamplerSelector::size(), m_ps_ss);
+	glDeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++) delete m_om_dss[key];
-
-	for (auto it = m_om_bs.begin(); it != m_om_bs.end(); it++) delete it->second;
-	m_om_bs.clear();
+	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
 
 	PboPool::Destroy();
 
@@ -190,41 +191,62 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		if (!GLLoader::check_gl_supported_extension()) return false;
 	}
 
-	GL_PUSH("GSDeviceOGL::Create");
-
 	m_window = wnd;
 
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfig("debug_opengl", 0) && gl_DebugMessageCallback) {
-		gl_DebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	if (theApp.GetConfig("debug_opengl", 0)) {
+		if (glDebugMessageCallback) {
+			glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		}
+		if (glDebugMessageControl) {
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+			// Useless info message on Nvidia driver
+			GLuint ids[] = {0x20004};
+			glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, countof(ids), ids, false);
+		}
 	}
 #endif
+
+	// WARNING it must be done after the control setup (at least on MESA)
+	GL_PUSH("GSDeviceOGL::Create");
 
 	// ****************************************************************
 	// Various object
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Various");
+
 	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
-	gl_GenFramebuffers(1, &m_fbo);
-	gl_GenFramebuffers(1, &m_fbo_read);
+	glGenFramebuffers(1, &m_fbo);
+	// Always write to the first buffer
+	OMSetFBO(m_fbo);
+	GLenum target[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, target);
+	OMSetFBO(0);
+
+	glGenFramebuffers(1, &m_fbo_read);
 	// Always read from the first buffer
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+	GL_POP();
 
 	// ****************************************************************
 	// Vertex buffer state
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Vertex Buffer");
+
 	ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
 	GSInputLayoutOGL il_convert[] =
 	{
 		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
 		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
-		{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
+		{4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
 		{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
 		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
 		{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
@@ -233,22 +255,32 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	};
 	m_va = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
 
+	GL_POP();
 	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
-	for (uint32 key = 0; key < PSSamplerSelector::size(); key++)
+	GL_PUSH("GSDeviceOGL::Sampler");
+
+	for (uint32 key = 0; key < countof(m_ps_ss); key++) {
 		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+	}
+
+	GL_POP();
 
 	// ****************************************************************
 	// convert
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Convert");
+
+	m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
+	// Upload once and forget about it
+	ConvertConstantBuffer cb;
+	cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
+	m_convert.cb->upload(&cb);
+
 	m_convert.vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 		m_convert.ps[i] = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
-
-	// Note the following object are initialized to 0 so disabled.
-	// Note: maybe enable blend with a factor of 1
-	// m_convert.dss, m_convert.bs
 
 	PSSamplerSelector point;
 	m_convert.pt = GetSamplerID(point);
@@ -257,34 +289,42 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	bilinear.ltf = true;
 	m_convert.ln = GetSamplerID(bilinear);
 
-	m_convert.bs  = new GSBlendStateOGL();
 	m_convert.dss = new GSDepthStencilOGL();
 	m_convert.dss_write = new GSDepthStencilOGL();
 	m_convert.dss_write->EnableDepth();
 	m_convert.dss_write->SetDepth(GL_ALWAYS, true);
 
+	GL_POP();
+
 	// ****************************************************************
 	// merge
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Merge");
+
 	m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
 
 	for(size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		m_merge_obj.ps[i] = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
 
-	m_merge_obj.bs = new GSBlendStateOGL();
-	m_merge_obj.bs->EnableBlend();
-	m_merge_obj.bs->SetRGB(GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_POP();
 
 	// ****************************************************************
 	// interlace
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Interlace");
+
 	m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 		m_interlace.ps[i] = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+
+	GL_POP();
+
 	// ****************************************************************
 	// Shade boost
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Shadeboost");
+
 	m_shadeboost.cb = new GSUniformBufferOGL(g_shadeboost_cb_index, sizeof(ShadeBoostConstantBuffer));
 
 	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
@@ -296,9 +336,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	m_shadeboost.ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
 
+	GL_POP();
+
 	// ****************************************************************
 	// rasterization configuration
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Rasterization");
+
 #ifdef ONLY_LINES
 	glLineWidth(5.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -310,16 +354,18 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glDisable(GL_MULTISAMPLE);
 	glDisable(GL_DITHER); // Honestly I don't know!
 
+	GL_POP();
+
 	// ****************************************************************
 	// DATE
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::Date");
 
 	m_date.dss = new GSDepthStencilOGL();
 	m_date.dss->EnableStencil();
 	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
 
-	m_date.bs = new GSBlendStateOGL();
-
+	GL_POP();
 	// ****************************************************************
 	// Use DX coordinate convention
 	// ****************************************************************
@@ -332,19 +378,28 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// gl_position.z could range from [0, 1]
 	if (GLLoader::found_GL_ARB_clip_control) {
 		// Change depth convention
-		gl_ClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	}
 
 	// ****************************************************************
 	// HW renderer shader
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::CreateTextureFX");
+
 	CreateTextureFX();
+
+	GL_POP();
 
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
+	GL_PUSH("GSDeviceOGL::PBO");
+
 	PboPool::Init();
 
+	GL_POP();
+
+	// Done !
 	GL_POP();
 
 	// ****************************************************************
@@ -362,7 +417,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	ASSERT(sizeof(PSSamplerSelector) == 4);
 	ASSERT(sizeof(OMDepthStencilSelector) == 4);
 	ASSERT(sizeof(OMColorMaskSelector) == 4);
-	ASSERT(sizeof(OMBlendSelector) == 4);
 
 	return true;
 }
@@ -410,6 +464,13 @@ void GSDeviceOGL::DrawPrimitive()
 	AfterDraw();
 }
 
+void GSDeviceOGL::DrawPrimitive(int offset, int count)
+{
+	BeforeDraw();
+	m_va->DrawPrimitive(offset, count);
+	AfterDraw();
+}
+
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	BeforeDraw();
@@ -428,6 +489,8 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
@@ -445,12 +508,12 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
 		// 0 will select the first drawbuffer ie GL_BACK
-		gl_ClearBufferfv(GL_COLOR, 0, c.v);
+		glClearBufferfv(GL_COLOR, 0, c.v);
 	} else {
 		OMSetFBO(m_fbo);
 		OMAttachRt(T);
 
-		gl_ClearBufferfv(GL_COLOR, 0, c.v);
+		glClearBufferfv(GL_COLOR, 0, c.v);
 
 	}
 
@@ -465,12 +528,16 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 {
+	if (!t) return;
+
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 	ClearRenderTarget(t, color);
 }
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear RTi %d", T->GetID());
@@ -485,15 +552,26 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	OMSetFBO(m_fbo);
 	OMAttachRt(T);
 
-	gl_ClearBufferiv(GL_COLOR, 0, col);
+	// Blending is not supported when you render to an Integer texture
+	if (GLState::blend) {
+		glDisable(GL_BLEND);
+	}
+
+	glClearBufferiv(GL_COLOR, 0, col);
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+
+	if (GLState::blend) {
+		glEnable(GL_BLEND);
+	}
 
 	GL_POP();
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear Depth %d", T->GetID());
@@ -504,10 +582,10 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 	if (GLState::depth_mask) {
-		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &c);
 	} else {
 		glDepthMask(true);
-		gl_ClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &c);
 		glDepthMask(false);
 	}
 	glEnable(GL_SCISSOR_TEST);
@@ -517,6 +595,8 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
+	if (!t) return;
+
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear Stencil %d", T->GetID());
@@ -527,49 +607,47 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	OMAttachDs(T);
 	GLint color = c;
 
-	gl_ClearBufferiv(GL_STENCIL, 0, &color);
+	glClearBufferiv(GL_STENCIL, 0, &color);
 
 	GL_POP();
 }
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 {
-	return CreateSampler(sel.ltf, sel.tau, sel.tav);
+	return CreateSampler(sel.ltf, sel.tau, sel.tav, sel.aniso);
 }
 
-GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
+GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 {
 	GL_PUSH("Create Sampler");
 
 	GLuint sampler;
-	gl_GenSamplers(1, &sampler);
+	glGenSamplers(1, &sampler);
 	if (bilinear) {
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	} else {
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		gl_SamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
 	if (tau)
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	else
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	if (tav)
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	else
-		gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	gl_SamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	gl_SamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
-	gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
+	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
+	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
-	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0)) {
-		int anisotropy = theApp.GetConfig("MaxAnisotropy", 1);
-		if (anisotropy > 1) // 1 is the default in opengl so don't do anything
-			gl_SamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
-	}
+	int anisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && aniso)
+		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
 	GL_POP();
 	return sampler;
@@ -586,7 +664,11 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	// Clean with the max signed value
 	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
-	gl_BindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+	glBindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+#ifdef ENABLE_OGL_DEBUG
+	// Help to see the texture in apitrace
+	PSSetShaderResource(2, m_date.t);
+#endif
 }
 
 void GSDeviceOGL::RecycleDateTexture()
@@ -601,7 +683,7 @@ void GSDeviceOGL::RecycleDateTexture()
 
 void GSDeviceOGL::Barrier(GLbitfield b)
 {
-	gl_MemoryBarrier(b);
+	glMemoryBarrier(b);
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -618,9 +700,11 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
 }
 
 /* Note: must be here because tfx_glsl is static */
-GLuint GSDeviceOGL::CompileGS()
+GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
-	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, "");
+	std::string macro = format("#define GS_POINT %d\n", sel.point);
+
+	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -629,8 +713,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
 		+ format("#define PS_WMS %d\n", sel.wms)
 		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_FMT %d\n", sel.fmt)
-		+ format("#define PS_IFMT %d\n", sel.ifmt)
+		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
 		+ format("#define PS_DFMT %d\n", sel.dfmt)
 		+ format("#define PS_AEM %d\n", sel.aem)
 		+ format("#define PS_TFX %d\n", sel.tfx)
@@ -639,17 +722,189 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_FOG %d\n", sel.fog)
 		+ format("#define PS_CLR1 %d\n", sel.clr1)
 		+ format("#define PS_FBA %d\n", sel.fba)
-		+ format("#define PS_AOUT %d\n", sel.aout)
 		+ format("#define PS_LTF %d\n", sel.ltf)
 		+ format("#define PS_COLCLIP %d\n", sel.colclip)
 		+ format("#define PS_DATE %d\n", sel.date)
 		+ format("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
 		//+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
-		+ format("#define PS_BLEND %d\n", sel.blend)
+		+ format("#define PS_BLEND_A %d\n", sel.blend_a)
+		+ format("#define PS_BLEND_B %d\n", sel.blend_b)
+		+ format("#define PS_BLEND_C %d\n", sel.blend_c)
+		+ format("#define PS_BLEND_D %d\n", sel.blend_d)
 		+ format("#define PS_IIP %d\n", sel.iip)
+		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
+		+ format("#define PS_READ_BA %d\n", sel.read_ba)
+		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
+		+ format("#define PS_FBMASK %d\n", sel.fbmask)
+		+ format("#define PS_HDR %d\n", sel.hdr)
+		+ format("#define PS_PABE %d\n", sel.pabe);
 		;
 
 	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
+}
+
+void GSDeviceOGL::SelfShaderTest()
+{
+#define RUN_TEST \
+	do { \
+		GLuint p = CompilePS(sel); \
+		nb_shader++; \
+		perf += m_shader->DumpAsm(file, p); \
+		m_shader->Delete(p); \
+	} while(0);
+
+#define PRINT_TEST(s) \
+	do { \
+		fprintf(stderr, "%s %d instructions for %d shaders (mean of %4.2f)\n", \
+				s, perf, nb_shader, (float)perf/(float)nb_shader); \
+		all += perf; \
+		perf = 0; \
+		nb_shader = 0; \
+	} while(0);
+
+	int nb_shader = 0;
+	int perf = 0;
+	int all = 0;
+	// Test: SW blending
+	for (int colclip = 0; colclip < 2; colclip++) {
+		for (int fmt = 0; fmt < 3; fmt++) {
+			for (int i = 0; i < 3; i++) {
+				PSSelector sel;
+				sel.atst = 1;
+				sel.tfx = 4;
+
+				int ib = (i + 1) % 3;
+				sel.blend_a = i;
+				sel.blend_b = ib;;
+				sel.blend_c = i;
+				sel.blend_d = i;
+				sel.colclip = colclip;
+				sel.dfmt    = fmt;
+
+				std::string file = format("Shader_Blend_%d_%d_%d_%d__Cclip_%d__Dfmt_%d.glsl.asm",
+						i, ib, i, i, colclip, fmt);
+				RUN_TEST;
+			}
+		}
+	}
+	PRINT_TEST("Blend");
+
+	// Test: alpha test
+	for (int atst = 0; atst < 8; atst++) {
+		PSSelector sel;
+		sel.tfx = 4;
+
+		sel.atst = atst;
+		std::string file = format("Shader_Atst_%d.glsl.asm", atst);
+		RUN_TEST;
+	}
+	PRINT_TEST("Alpha Tst");
+
+	// Test: fbmask/fog/shuffle/read_ba
+	for (int read_ba = 0; read_ba < 2; read_ba++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.fog = 1;
+		sel.fbmask = 1;
+		sel.shuffle = 1;
+		sel.read_ba = read_ba;
+
+		std::string file = format("Shader_Fog__Fbmask__Shuffle__Read_ba_%d.glsl.asm", read_ba);
+		RUN_TEST;
+	}
+	PRINT_TEST("Fbmask/fog/shuffle/read_ba");
+
+	// Test: Date
+	for (int date = 1; date < 7; date++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.date = date;
+		std::string file = format("Shader_Date_%d.glsl.asm", date);
+		RUN_TEST;
+	}
+	PRINT_TEST("Date");
+
+	// Test: FBA
+	for (int fmt = 0; fmt < 3; fmt++) {
+		PSSelector sel;
+		sel.tfx = 4;
+		sel.atst = 1;
+
+		sel.fba = 1;
+		sel.dfmt = fmt;
+		sel.clr1 = 1;
+		std::string file = format("Shader_Fba__Clr1__Dfmt_%d.glsl.asm", fmt);
+		RUN_TEST;
+	}
+	PRINT_TEST("Fba/Clr1/Dfmt");
+
+	// Test: Fst/Tc/IIP
+	{
+		PSSelector sel;
+		sel.tfx = 1;
+		sel.atst = 1;
+
+		sel.fst = 0;
+		sel.iip = 1;
+		sel.tcoffsethack = 1;
+
+		std::string file = format("Shader_Fst__TC__Iip.glsl.asm");
+		RUN_TEST;
+	}
+	PRINT_TEST("Fst/Tc/IIp");
+
+	// Test: tfx/tcc
+	for (int tfx = 0; tfx < 5; tfx++) {
+		for (int tcc = 0; tcc < 2; tcc++) {
+			PSSelector sel;
+			sel.atst = 1;
+			sel.fst = 1;
+
+			sel.tfx = tfx;
+			sel.tcc = tcc;
+			std::string file = format("Shader_Tfx_%d__Tcc_%d.glsl.asm", tfx, tcc);
+			RUN_TEST;
+		}
+	}
+	PRINT_TEST("Tfx/Tcc");
+
+	// Test: Texture Sampling
+	for (int fmt = 0; fmt < 16; fmt++) {
+		if ((fmt & 3) == 3) continue;
+
+		for (int ltf = 0; ltf < 2; ltf++) {
+			for (int aem = 0; aem < 2; aem++) {
+				for (int wms = 1; wms < 4; wms++) {
+					for (int wmt = 1; wmt < 4; wmt++) {
+						PSSelector sel;
+						sel.atst = 1;
+						sel.tfx  = 1;
+						sel.tcc  = 1;
+						sel.fst = 1;
+
+						sel.ltf     = ltf;
+						sel.aem     = aem;
+						sel.tex_fmt = fmt;
+						sel.wms     = wms;
+						sel.wmt     = wmt;
+						std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d.glsl.asm",
+								ltf, aem, fmt, wms, wmt);
+						RUN_TEST;
+					}
+				}
+			}
+		}
+	}
+	PRINT_TEST("Texture Sampling");
+
+	fprintf(stderr, "\nTotal %d\n", all);
+
+#undef RUN_TEST
+#undef PRINT_TEST
 }
 
 GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, bool msaa, int format)
@@ -690,10 +945,37 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 	return dst;
 }
 
+// Copy a sub part of texture (same as below but force a conversion)
+void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin)
+{
+	ASSERT(sTex && dTex);
+	if (!(sTex && dTex))
+		return;
+
+	const GLuint& sid = sTex->GetID();
+	const GLuint& did = dTex->GetID();
+
+	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
+	if (at_origin)
+		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
+	else
+		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+	GL_POP();
+}
+
 // Copy a sub part of a texture into another
 void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 {
 	ASSERT(sTex && dTex);
+	if (!(sTex && dTex))
+		return;
 
 	const GLuint& sid = sTex->GetID();
 	const GLuint& did = dTex->GetID();
@@ -701,20 +983,14 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
 	if (GLLoader::found_GL_ARB_copy_image) {
-		gl_CopyImageSubData( sid, GL_TEXTURE_2D,
+		glCopyImageSubData( sid, GL_TEXTURE_2D,
 				0, r.x, r.y, 0,
 				did, GL_TEXTURE_2D,
 				0, 0, 0, 0,
 				r.width(), r.height(), 1);
 	} else {
-
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-
-		gl_FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-
-		gl_CopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
-
-		gl_BindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		// Slower copy (conversion is done)
+		CopyRectConv(sTex, dTex, r, true);
 	}
 
 	GL_POP();
@@ -727,10 +1003,10 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, ps, m_convert.bs, linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, m_NO_BLEND, linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, bool linear)
 {
 	if(!sTex || !dTex)
 	{
@@ -738,7 +1014,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[12]);
+	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
+		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -754,10 +1031,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	GSVector2i ds = dTex->GetSize();
 
-	// WARNING: setup of the program must be done first. So you can setup
-	// 1/ subroutine uniform
-	// 2/ bindless texture uniform
-	// 3/ others uniform?
 	m_shader->VS(m_convert.vs);
 	m_shader->GS(0);
 	m_shader->PS(ps);
@@ -767,15 +1040,16 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	if (draw_in_depth)
-		OMSetDepthStencilState(m_convert.dss_write, 0);
+		OMSetDepthStencilState(m_convert.dss_write);
 	else
-		OMSetDepthStencilState(m_convert.dss, 0);
+		OMSetDepthStencilState(m_convert.dss);
 
-	OMSetBlendState(bs, 0);
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
 	else
 		OMSetRenderTargets(dTex, NULL);
+
+	OMSetBlendState(bs);
 	OMSetColorMaskState();
 
 	// ************************************
@@ -822,13 +1096,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Texture
 	// ************************************
 
-	if (GLLoader::found_GL_ARB_bindless_texture) {
-		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(sTex)->GetHandle(linear ? m_convert.ln : m_convert.pt) , 0};
-		m_shader->PS_ressources(handle);
-	} else {
-		PSSetShaderResource(0, sTex);
-		PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
-	}
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
 
 	// ************************************
 	// Draw
@@ -861,7 +1130,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex,
 	{
 		m_merge_obj.cb->upload(&c.v);
 
-		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_merge_obj.bs);
+		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_MERGE_BLEND);
 	}
 
 	GL_POP();
@@ -996,28 +1265,23 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 {
 	GL_PUSH("DATE First Pass");
 
-	GSTexture* t = NULL;
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	BeginScene();
 
 	ClearStencil(ds, 0);
 
-	// WARNING: setup of the program must be done first. So you can setup
-	// 1/ subroutine uniform
-	// 2/ bindless texture uniform
-	// 3/ others uniform?
 	m_shader->VS(m_convert.vs);
 	m_shader->GS(0);
-	m_shader->PS(m_convert.ps[datm ? 2 : 3]);
+	m_shader->PS(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
 
 	// om
 
-	OMSetDepthStencilState(m_date.dss, 1);
-	OMSetBlendState(m_date.bs, 0);
-	// normally ok without any RT if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
-	OMSetRenderTargets(t, ds, &GLState::scissor);
-	OMSetColorMaskState(); // TODO: likely useless
+	OMSetDepthStencilState(m_date.dss);
+	if (GLState::blend) {
+		glDisable(GL_BLEND);
+	}
+	OMSetRenderTargets(NULL, ds, &GLState::scissor);
 
 	// ia
 
@@ -1027,17 +1291,14 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// Texture
 
-	if (GLLoader::found_GL_ARB_bindless_texture) {
-		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(rt)->GetHandle(m_convert.pt) , 0};
-		m_shader->PS_ressources(handle);
-	} else {
-		PSSetShaderResource(0, rt);
-		PSSetSamplerState(m_convert.pt);
-	}
+	PSSetShaderResource(0, rt);
+	PSSetSamplerState(m_convert.pt);
 
-	OMSetWriteBuffer(GL_NONE);
 	DrawPrimitive();
-	OMSetWriteBuffer();
+
+	if (GLState::blend) {
+		glEnable(GL_BLEND);
+	}
 
 	EndScene();
 
@@ -1066,10 +1327,14 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	GLuint id = sr ? sr->GetID() : 0;
-	if (GLState::tex_unit[i] != id) {
-		GLState::tex_unit[i] = id;
-		gl_BindTextureUnit(i, id);
+	ASSERT(i < (int)countof(GLState::tex_unit));
+	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
+	if (sr) {
+		GLuint id = sr->GetID();
+		if (GLState::tex_unit[i] != id) {
+			GLState::tex_unit[i] = id;
+			glBindTextureUnit(i, id);
+		}
 	}
 }
 
@@ -1083,7 +1348,7 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 {
 	if (GLState::ps_ss != ss) {
 		GLState::ps_ss = ss;
-		gl_BindSampler(0, ss);
+		glBindSampler(0, ss);
 	}
 }
 
@@ -1099,7 +1364,7 @@ void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 
 	if (GLState::rt != id) {
 		GLState::rt = id;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
 	}
 }
 
@@ -1115,7 +1380,7 @@ void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 
 	if (GLState::ds != id) {
 		GLState::ds = id;
-		gl_FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
 	}
 }
 
@@ -1123,25 +1388,14 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo)
 {
 	if (GLState::fbo != fbo) {
 		GLState::fbo = fbo;
-		gl_BindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
 }
 
-void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
+void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss)
 {
-	GLenum target[1] = {buffer};
-	gl_DrawBuffers(1, target);
-}
-
-void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
-{
-	// State is checkd inside the object but worst case is 11 comparaisons !
-	if (m_state.dss != dss) {
-		m_state.dss = dss;
-
-		dss->SetupDepth();
-		dss->SetupStencil();
-	}
+	dss->SetupDepth();
+	dss->SetupStencil();
 }
 
 void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
@@ -1149,26 +1403,49 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	if (sel.wrgba != GLState::wrgba) {
 		GLState::wrgba = sel.wrgba;
 
-		gl_ColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
+		glColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
 	}
 }
 
-void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
+void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is_blend_constant)
 {
-	// SW date might change the enable state without updating the object
-	// Time to remove this micro-optimization
-#if 0
-	// State is checkd inside the object but worst case is 8 comparaisons
-	if (m_state.bs != bs || m_state.bf != bf)
-	{
-		m_state.bs = bs;
-		m_state.bf = bf;
+	if (blend_index) {
+		if (!GLState::blend) {
+			GLState::blend = true;
+			glEnable(GL_BLEND);
+		}
 
-		bs->SetupBlend(bf);
+		if (is_blend_constant && GLState::bf != blend_factor) {
+			GLState::bf = blend_factor;
+			float bf = (float)blend_factor / 128.0f;
+			gl_BlendColor(bf, bf, bf, bf);
+		}
+
+		const OGLBlend& b = m_blendMapOGL[blend_index];
+
+		if (GLState::eq_RGB != b.op) {
+			GLState::eq_RGB = b.op;
+			if (glBlendEquationSeparateiARB)
+				glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
+			else
+				glBlendEquationSeparate(b.op, GL_FUNC_ADD);
+		}
+
+		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
+			GLState::f_sRGB = b.src;
+			GLState::f_dRGB = b.dst;
+			if (glBlendFuncSeparateiARB)
+				glBlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
+			else
+				glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
+		}
+
+	} else {
+		if (GLState::blend) {
+			GLState::blend = false;
+			glDisable(GL_BLEND);
+		}
 	}
-#else
-		bs->SetupBlend(bf);
-#endif
 }
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
@@ -1181,7 +1458,6 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 		if (rt) {
 			OMAttachRt(RT);
 		} else {
-			// Note: NULL rt is only used in DATE so far.
 			OMAttachRt();
 		}
 
@@ -1197,10 +1473,11 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	}
 
 
-	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
+	GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
 	if(GLState::viewport != size)
 	{
 		GLState::viewport = size;
+		// FIXME ViewportIndexedf or ViewportIndexedfv (GL4.1)
 		glViewport(0, 0, size.x, size.y);
 	}
 
@@ -1209,6 +1486,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if(!GLState::scissor.eq(r))
 	{
 		GLState::scissor = r;
+		// FIXME ScissorIndexedv (GL4.1)
 		glScissor( r.x, r.y, r.width(), r.height() );
 	}
 }
@@ -1226,7 +1504,7 @@ void GSDeviceOGL::CheckDebugLog()
 	int lengths[16] = {};
 	char* messageLog = new char[bufsize];
 
-	unsigned int retVal = gl_GetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
+	unsigned int retVal = glGetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
 
 	if(retVal > 0)
 	{
@@ -1276,7 +1554,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 
 	#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
-	if (!(gl_type == GL_DEBUG_TYPE_OTHER_ARB && gl_severity == GL_DEBUG_SEVERITY_NOTIFICATION)) {
+	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
 		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 	}
 	#endif
@@ -1284,7 +1562,16 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	if (m_debug_gl_file)
 		fprintf(m_debug_gl_file,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 
-	ASSERT(sev_counter < 5);
+#ifdef _DEBUG
+	if (sev_counter >= 5) {
+		// Close the file to flush the content on disk before exiting.
+		if (m_debug_gl_file) {
+			fclose(m_debug_gl_file);
+			m_debug_gl_file = NULL;
+		}
+		ASSERT(0);
+	}
+#endif
 }
 
 // (A - B) * C + D
@@ -1300,6 +1587,11 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 // 1201 Cd*(1 + As) => Source * Dest color + Dest * Source alpha
 // 1211 Cd*(1 + Ad) => Source * Dest color + Dest * Dest alpha
 // 1221 Cd*(1 + F) => Source * Dest color + Dest * Factor
+
+// Special blending method table:
+// # (tricky) => 1 * Cd + Cd * F => Use (Cd, F) as factor of color (1, Cd)
+// * (bogus) => C * (1 + F ) + ... => factor is always bigger than 1 (except above case)
+// ? => Cs * F + Cd => do the multiplication in shader and addition in blending unit. It is an optimization
 
 // Copy Dx blend table and convert it to ogl
 #define D3DBLENDOP_ADD			GL_FUNC_ADD
@@ -1317,87 +1609,91 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
 #define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
 
-const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
+const int GSDeviceOGL::m_NO_BLEND = 0;
+const int GSDeviceOGL::m_MERGE_BLEND = 3*3*3*3;
+
+const GSDeviceOGL::OGLBlend GSDeviceOGL::m_blendMapOGL[3*3*3*3 + 1] =
 {
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0002: (Cs - Cs)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0012: (Cs - Cs)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0020: (Cs - Cs)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0021: (Cs - Cs)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0022: (Cs - Cs)*F  +  0 ==> 0
-	{ A_MAX | 4          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	{ 13                 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_INVSRCALPHA}    , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
-	{ 14                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
-	{ A_MAX | 5          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	{ 15                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_INVDESTALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
-	{ 16                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
-	{ A_MAX | 6          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	{ 17                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_INVBLENDFACTOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	{ 18                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	{ NO_BAR | A_MAX | 7 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	{ 19                 , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
-	{ NO_BAR | 20        , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 0202: (Cs -  0)*As +  0 ==> Cs*As
-	{ A_MAX | 8          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	{ 21                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
-	{ 22                 , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
-	{ NO_BAR| A_MAX | 9  , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	{ 23                 , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	{ NO_BAR | 24        , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
-	{ 25                 , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_SRCALPHA}       , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
-	{ A_MAX | 10         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	{ 26                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
-	{ 27                 , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_DESTALPHA}      , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
-	{ A_MAX | 11         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	{ 28                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
-	{ 29                 , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_BLENDFACTOR}    , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	{ A_MAX | 12         , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	{ 30                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1100: (Cd - Cd)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1101: (Cd - Cd)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1102: (Cd - Cd)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1112: (Cd - Cd)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1120: (Cd - Cd)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1121: (Cd - Cd)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1122: (Cd - Cd)*F  +  0 ==> 0
-	{ 31                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
-	{ C_CLR | 55         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_SRCALPHA}       , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As) // ffxii main menu background
-	{ 32                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 1202: (Cd -  0)*As +  0 ==> Cd*As
-	{ 33                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
-	{ C_CLR | 56         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_DESTALPHA}      , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
-	{ 34                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_DESTALPHA}      , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
-	{  35                , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	{ C_CLR | 57         , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_BLENDFACTOR}    , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	{ 36                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_BLENDFACTOR}    , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
-	{ NO_BAR | 37        , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_ZERO}           , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
-	{ 38                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
-	{ NO_BAR | 39        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
-	{ 40                 , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_ZERO}           , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
-	{ 41                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
-	{ 42                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
-	{ NO_BAR | 43        , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_ZERO}           , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	{ 44                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	{ NO_BAR | 45        , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	{ 46                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
-	{ 47                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVSRCALPHA}    , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
-	{ 48                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
-	{ 49                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
-	{ 50                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVDESTALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
-	{ 51                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
-	{ 52                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	{ 53                 , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVBLENDFACTOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	{ 54                 , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2200: (0  -  0)*As + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2201: (0  -  0)*As + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2202: (0  -  0)*As +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2210: (0  -  0)*Ad + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2211: (0  -  0)*Ad + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2212: (0  -  0)*Ad +  0 ==> 0
-	{ NO_BAR | 1         , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2220: (0  -  0)*F  + Cs ==> Cs
-	{ 2                  , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2221: (0  -  0)*F  + Cd ==> Cd
-	{ NO_BAR | 3         , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2222: (0  -  0)*F  +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0002: (Cs - Cs)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0012: (Cs - Cs)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 0020: (Cs - Cs)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 0021: (Cs - Cs)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 0022: (Cs - Cs)*F  +  0 ==> 0
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_INVSRCALPHA}    , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_INVDESTALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
+	{ BLEND_A_MAX                , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_INVBLENDFACTOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
+	{ BLEND_NO_BAR | BLEND_A_MAX , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
+	{ BLEND_ACCU                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , //?0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 0202: (Cs -  0)*As +  0 ==> Cs*As
+	{ BLEND_A_MAX                , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
+	{ BLEND_NO_BAR | BLEND_A_MAX , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
+	{ BLEND_ACCU                 , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ONE}            , //?0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_SRCALPHA}       , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ONE}            , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_SRCALPHA}       , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_DESTALPHA}      , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_DESTALPHA}      , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_BLENDFACTOR}    , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
+	{ BLEND_A_MAX                , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ONE}            , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_BLENDFACTOR}    , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1100: (Cd - Cd)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1101: (Cd - Cd)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1102: (Cd - Cd)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1112: (Cd - Cd)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 1120: (Cd - Cd)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 1121: (Cd - Cd)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 1122: (Cd - Cd)*F  +  0 ==> 0
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_SRCALPHA}       , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As) // ffxii main menu background
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 1202: (Cd -  0)*As +  0 ==> Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_DESTALPHA}      , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_DESTALPHA}      , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
+	{ BLEND_C_CLR                , D3DBLENDOP_ADD         , D3DBLEND_DESTCOLOR      , D3DBLEND_BLENDFACTOR}    , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_BLENDFACTOR}    , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVSRCALPHA    , D3DBLEND_ZERO}           , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
+	{ BLEND_ACCU                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
+	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_SRCALPHA       , D3DBLEND_ZERO}           , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_INVDESTALPHA   , D3DBLEND_ZERO}           , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ONE}            , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
+	{ 0                          , D3DBLENDOP_REVSUBTRACT , D3DBLEND_DESTALPHA      , D3DBLEND_ZERO}           , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_INVBLENDFACTOR , D3DBLEND_ZERO}           , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
+	{ BLEND_ACCU                 , D3DBLENDOP_REVSUBTRACT , D3DBLEND_ONE            , D3DBLEND_ONE}            , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_REVSUBTRACT , D3DBLEND_BLENDFACTOR    , D3DBLEND_ZERO}           , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_SRCALPHA}       , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVSRCALPHA}    , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ZERO           , D3DBLEND_SRCALPHA}       , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVDESTALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_DESTALPHA}      , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_INVBLENDFACTOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
+	{ 0                          , D3DBLENDOP_SUBTRACT    , D3DBLEND_ONE            , D3DBLEND_BLENDFACTOR}    , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2200: (0  -  0)*As + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2201: (0  -  0)*As + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2202: (0  -  0)*As +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2210: (0  -  0)*Ad + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2211: (0  -  0)*Ad + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2212: (0  -  0)*Ad +  0 ==> 0
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ONE            , D3DBLEND_ZERO}           , // 2220: (0  -  0)*F  + Cs ==> Cs
+	{ 0                          , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ONE}            , // 2221: (0  -  0)*F  + Cd ==> Cd
+	{ BLEND_NO_BAR               , D3DBLENDOP_ADD         , D3DBLEND_ZERO           , D3DBLEND_ZERO}           , // 2222: (0  -  0)*F  +  0 ==> 0
+	{ 0                          , D3DBLENDOP_ADD         , GL_SRC_ALPHA            , GL_ONE_MINUS_SRC_ALPHA}  , // extra for merge operation
 };

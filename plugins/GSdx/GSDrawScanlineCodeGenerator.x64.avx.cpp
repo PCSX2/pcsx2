@@ -23,7 +23,7 @@
 #include "GSDrawScanlineCodeGenerator.h"
 #include "GSVertexSW.h"
 
-#if _M_SSE >= 0x500 && (defined(_M_AMD64) || defined(_WIN64))
+#if _M_SSE == 0x500 && (defined(_M_AMD64) || defined(_WIN64))
 
 #error TODO
 
@@ -254,14 +254,14 @@ void GSDrawScanlineCodeGenerator::Init()
 	mov(rax, (size_t)m_local.gd->fzbc);
 	lea(rdi, ptr[rax + rbx * 2]);
 
-	if(!m_sel.sprite && (m_sel.fwrite && m_sel.fge || m_sel.zb) || m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip))
+	if(m_sel.prim != GS_SPRITE_CLASS && (m_sel.fwrite && m_sel.fge || m_sel.zb) || m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip))
 	{
 		// edx = &m_local.d[skip]
 
 		lea(rdx, ptr[rdx * 8 + r11 + offsetof(GSScanlineLocalData, d)]);
 	}
 
-	if(!m_sel.sprite)
+	if(m_sel.prim != GS_SPRITE_CLASS)
 	{
 		if(m_sel.fwrite && m_sel.fge || m_sel.zb)
 		{
@@ -326,7 +326,7 @@ void GSDrawScanlineCodeGenerator::Init()
 
 				vpaddd(xmm10, ptr[rdx + offsetof(GSScanlineLocalData::skip, s)]);
 
-				if(!m_sel.sprite || m_sel.mmin)
+				if(m_sel.prim != GS_SPRITE_CLASS || m_sel.mmin)
 				{
 					vpaddd(xmm11, ptr[rdx + offsetof(GSScanlineLocalData::skip, t)]);
 				}
@@ -397,7 +397,7 @@ void GSDrawScanlineCodeGenerator::Step()
 
 	add(rdi, 8);
 
-	if(!m_sel.sprite)
+	if(m_sel.prim != GS_SPRITE_CLASS)
 	{
 		// z += m_local.d4.z;
 
@@ -436,7 +436,7 @@ void GSDrawScanlineCodeGenerator::Step()
 				vpshufd(xmm1, xmm0, _MM_SHUFFLE(0, 0, 0, 0));
 				vpaddd(xmm10, xmm1);
 
-				if(!m_sel.sprite || m_sel.mmin)
+				if(m_sel.prim != GS_SPRITE_CLASS || m_sel.mmin)
 				{
 					vpshufd(xmm1, xmm0, _MM_SHUFFLE(1, 1, 1, 1));
 					vpaddd(xmm11, xmm1);
@@ -519,7 +519,7 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 	// GSVector4i zs = zi;
 
-	if(!m_sel.sprite)
+	if(m_sel.prim != GS_SPRITE_CLASS)
 	{
 		if(m_sel.zoverflow)
 		{
@@ -571,13 +571,13 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zoverflow || m_sel.zpsm == 0)
 		{
-			// GSVector4i off = GSVector4i::x80000000();
+			// GSVector4i o = GSVector4i::x80000000();
 
 			vpcmpeqd(xmm2, xmm2);
 			vpslld(xmm2, 31);
 
-			// GSVector4i zso = zs - off;
-			// GSVector4i zdo = zd - off;
+			// GSVector4i zso = zs - o;
+			// GSVector4i zdo = zd - o;
 
 			vpsubd(xmm0, xmm2);
 			vpsubd(xmm1, xmm2);
@@ -652,7 +652,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		vpshufhw(xmm6, xmm6, _MM_SHUFFLE(2, 2, 0, 0));
 		vpsrlw(xmm6, 1);
 
-		if(!m_sel.sprite)
+		if(m_sel.prim != GS_SPRITE_CLASS)
 		{
 			// GSVector4i vf = v.xxzzlh().srl16(1);
 
@@ -1326,7 +1326,9 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha()
 		if(m_sel.fpsm == 2)
 		{
 			vpxor(xmm0, xmm0);
-			vpsrld(xmm1, xmm6, 15);
+			//vpsrld(xmm1, xmm6, 15);
+			vpslld(xmm1, xmm6, 16);
+			vpsrad(xmm1, 31);
 			vpcmpeqd(xmm1, xmm0);
 		}
 		else
@@ -1662,8 +1664,8 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 		mov(rax, r8);
 		and(rax, 3);
 		shl(rax, 5);
-		vpaddw(xmm2, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx[0])]);
-		vpaddw(xmm3, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx[1])]);
+		vpaddw(xmm2, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx) + sizeof(GSVector4i) * 0]);
+		vpaddw(xmm3, ptr[r12 + rax + offsetof(GSScanlineGlobalData, dimx) + sizeof(GSVector4i) * 1]);
 	}
 
 	// GSVector4i fs = c[0].upl16(c[1]).pu16(c[0].uph16(c[1]));

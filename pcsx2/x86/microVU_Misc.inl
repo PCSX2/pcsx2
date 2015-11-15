@@ -255,6 +255,19 @@ static void __fc mVUwarningRegAccess(u32 prog, u32 pc) {
 	Console.Error("microVU0 Warning: Accessing VU1 Regs! [%04x] [%x]", pc, prog);
 }
 
+static inline u32 branchAddrN(const mV)
+{
+	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
+	return ((((iPC + 4) + (_Imm11_ * 2)) & mVU.progMemMask) * 4);
+}
+
+
+static inline u32 branchAddr(const mV)
+{
+	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
+	return ((((iPC + 2) + (_Imm11_ * 2)) & mVU.progMemMask) * 4);
+}
+
 static void __fc mVUwaitMTVU() {
 	if (IsDevBuild) DevCon.WriteLn("microVU0: Waiting on VU1 thread to access VU1 regs!");
 	if (THREAD_VU1) vu1Thread.WaitVU();
@@ -539,7 +552,7 @@ void SSE_DIVSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, co
 // Micro VU - Custom Quick Search
 //------------------------------------------------------------------
 
-static __pagealigned u8 mVUsearchXMM[__pagesize];
+__pagealigned u8 mVUsearchXMM[__pagesize];
 
 // Generates a custom optimized block-search function
 // Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)

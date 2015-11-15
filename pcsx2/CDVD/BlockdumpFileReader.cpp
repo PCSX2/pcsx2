@@ -45,7 +45,12 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 	return isbd;
 }
 
-BlockdumpFileReader::BlockdumpFileReader(void)
+BlockdumpFileReader::BlockdumpFileReader(void) :
+	m_file(NULL),
+	m_blocks(0),
+	m_blockofs(0),
+	m_dtablesize(0),
+	m_lresult(0)
 {
 }
 
@@ -85,20 +90,19 @@ bool BlockdumpFileReader::Open(const wxString& fileName)
 
 	m_file->SeekI(BlockDumpHeaderSize);
 
-	ScopedPtr<u8> buffer;
 	u32 bs = 1024*1024;
 	u32 off = 0;
 	u32 has = 0;
 	int i = 0;
 
-	buffer = new u8[bs];
+	ScopedArray<u8> buffer(bs);
 	do {
-		m_file->Read(buffer, bs);
+		m_file->Read(buffer.GetPtr(), bs);
 		has = m_file->LastRead();
 
 		while (i < m_dtablesize && off < has)
 		{
-			m_dtable[i++] = *(u32*)(buffer + off);
+			m_dtable[i++] = *(u32*)(buffer.GetPtr() + off);
 			off += 4;
 			off += m_blocksize;
 		}

@@ -292,14 +292,16 @@ void _recvuFMACAdd(VURegs * VU, int reg, int xyzw) {
 		break;
 	}
 
-	if (i==8) Console.Error("*PCSX2*: error , out of fmacs");
+	if (i==8) {
+		Console.Error("*PCSX2*: error , out of fmacs");
 //	VUM_LOG("adding FMAC pipe[%d]; reg %d", i, reg);
-
-	VU->fmac[i].enable = 1;
-	VU->fmac[i].sCycle = vucycle;
-	VU->fmac[i].Cycle = 3;
-	VU->fmac[i].xyzw = xyzw;
-	VU->fmac[i].reg = reg;
+	} else {
+		VU->fmac[i].enable = 1;
+		VU->fmac[i].sCycle = vucycle;
+		VU->fmac[i].Cycle = 3;
+		VU->fmac[i].xyzw = xyzw;
+		VU->fmac[i].reg = reg;
+	}
 }
 
 void _recvuFDIVAdd(VURegs * VU, int cycles) {
@@ -325,12 +327,14 @@ void _recvuIALUAdd(VURegs * VU, int reg, int cycles) {
 		break;
 	}
 
-	if (i==8) Console.Error("*PCSX2*: error , out of ialus");
-
-	VU->ialu[i].enable = 1;
-	VU->ialu[i].sCycle = vucycle;
-	VU->ialu[i].Cycle = cycles;
-	VU->ialu[i].reg = reg;
+	if (i==8) {
+		Console.Error("*PCSX2*: error , out of ialus");
+	} else {
+		VU->ialu[i].enable = 1;
+		VU->ialu[i].sCycle = vucycle;
+		VU->ialu[i].Cycle = cycles;
+		VU->ialu[i].reg = reg;
+	}
 }
 
 void _recvuTestIALUStalls(VURegs * VU, _VURegsNum *VUregsn) {
@@ -473,7 +477,7 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 	pc += 8;
 
 	if (ptr[1] & 0x40000000) { // EOP
-		branch |= 8;
+		g_branch |= 8;
 	}
 
 	VU->code = ptr[1];
@@ -553,7 +557,7 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 		info->cycle = vucycle;
 
 		if (lregs->pipe == VUPIPE_BRANCH) {
-			branch |= 1;
+			g_branch |= 1;
 		}
 
 		if (lregs->VIwrite & (1 << REG_Q)) {

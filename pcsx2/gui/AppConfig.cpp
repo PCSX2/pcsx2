@@ -72,6 +72,18 @@ namespace PathDefs
 			return retval;
 		}
 
+		const wxDirName& Bios()
+		{
+			static const wxDirName retval(L"bios");
+			return retval;
+		}
+
+		const wxDirName& Cheats()
+		{
+			static const wxDirName retval(L"cheats");
+			return retval;
+		}
+
 		const wxDirName& CheatsWS()
 		{
 			static const wxDirName retval(L"cheats_ws");
@@ -184,12 +196,12 @@ namespace PathDefs
 
 	wxDirName GetBios()
 	{
-		return GetDocuments() + wxDirName( L"bios" );
+		return GetDocuments() + Base::Bios();;
 	}
 
 	wxDirName GetCheats()
 	{
-		return AppRoot() + wxDirName( L"cheats" );
+		return GetDocuments() + Base::Cheats();
 	}
 
 	wxDirName GetCheatsWS()
@@ -674,6 +686,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
+	Templates		.LoadSave( ini );
 
 	ini.Flush();
 }
@@ -722,6 +735,7 @@ AppConfig::FolderOptions::FolderOptions()
 	, MemoryCards	( PathDefs::GetMemoryCards() )
 	, Langs			( PathDefs::GetLangs() )
 	, Logs			( PathDefs::GetLogs() )
+	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
 
 	, RunIso( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
@@ -913,6 +927,34 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
+}
+
+AppConfig::UiTemplateOptions::UiTemplateOptions()
+{
+	LimiterUnlimited	= L"Max";
+	LimiterTurbo		= L"Turbo";
+	LimiterSlowmo		= L"Slowmo";
+	LimiterNormal		= L"Normal";
+	OutputFrame			= L"Frame";
+	OutputField			= L"Field";
+	OutputProgressive	= L"Progressive";
+	OutputInterlaced	= L"Interlaced";
+	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodec} | ${cpuusage}";
+}
+
+void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"UiTemplates");
+
+	IniEntry(LimiterUnlimited);
+	IniEntry(LimiterTurbo);
+	IniEntry(LimiterSlowmo);
+	IniEntry(LimiterNormal);
+	IniEntry(OutputFrame);
+	IniEntry(OutputField);
+	IniEntry(OutputProgressive);
+	IniEntry(OutputInterlaced);
+	IniEntry(TitleTemplate);
 }
 
 int AppConfig::GetMaxPresetIndex()

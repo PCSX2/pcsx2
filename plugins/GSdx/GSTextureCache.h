@@ -40,6 +40,7 @@ public:
 		GIFRegTEXA m_TEXA;
 		int m_age;
 		uint8* m_temp;
+		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);
@@ -57,7 +58,6 @@ public:
 
 	public:
 		GSTexture* m_palette;
-		bool m_alpha_palette; // in opengl palette value is either in red or alpha channel
 		bool m_initpalette;
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
 		uint32* m_clut;
@@ -81,9 +81,11 @@ public:
 		bool m_used;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid;
+		bool m_depth_supported;
+		bool m_dirty_alpha;
 
 	public:
-		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp);
+		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
 
 		virtual void Update();
 	};
@@ -110,7 +112,10 @@ protected:
 	list<Target*> m_dst[2];
 	bool m_paltex;
 	int m_spritehack;
+	bool m_preload_frame;
 	uint8* m_temp;
+	bool m_can_convert_depth;
+	int m_crc_hack_level;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
@@ -123,6 +128,8 @@ protected:
 	virtual void Read(Target* t, const GSVector4i& r) = 0;
 #endif
 
+	virtual bool CanConvertDepth() { return m_can_convert_depth; }
+
 public:
 	GSTextureCache(GSRenderer* r);
 	virtual ~GSTextureCache();
@@ -134,11 +141,18 @@ public:
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
 
+	void InvalidateVideoMemType(int type, uint32 bp);
 	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;
+
+	const char* to_string(int type) {
+		return (type == DepthStencil) ? "Depth" : "Color";
+	}
+
+	void PrintMemoryUsage();
 };

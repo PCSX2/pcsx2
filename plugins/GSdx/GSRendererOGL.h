@@ -29,20 +29,39 @@
 
 class GSRendererOGL : public GSRendererHW
 {
-	private:
-		GSVector2 m_pixelcenter;
-		int  m_accurate_blend;
-		bool m_accurate_date;
-		bool m_accurate_colclip;
+	enum PRIM_OVERLAP {
+		PRIM_OVERLAP_UNKNOW,
+		PRIM_OVERLAP_YES,
+		PRIM_OVERLAP_NO
+	};
 
-		bool UserHacks_AlphaHack;
-		bool UserHacks_AlphaStencil;
+	enum ACC_BLEND {
+		ACC_BLEND_NONE = 0,
+		ACC_BLEND_FREE = 1,
+		ACC_BLEND_SPRITE = 2,
+		ACC_BLEND_CCLIP_DALPHA = 3,
+		ACC_BLEND_FULL = 4,
+		ACC_BLEND_ULTRA = 5
+	};
+
+	private:
+		bool m_accurate_date;
+		int m_sw_blending;
+		PRIM_OVERLAP m_prim_overlap;
+
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
+
+		GSDeviceOGL::VSConstantBuffer vs_cb;
+		GSDeviceOGL::PSConstantBuffer ps_cb;
+
+		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 
 	protected:
 		void EmulateGS();
 		void SetupIA();
+		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
+		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
 
 	public:
 		GSRendererOGL();
@@ -52,7 +71,7 @@ class GSRendererOGL : public GSRendererHW
 
 		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 
-		bool PrimitiveOverlap();
+		PRIM_OVERLAP PrimitiveOverlap();
 
 		void SendDraw(bool require_barrier);
 };

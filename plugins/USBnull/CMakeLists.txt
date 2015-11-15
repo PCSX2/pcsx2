@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output USBnull-0.7.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	set(USBnullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(USBnullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(USBnullFinalFlags ${OptimizationFlags})
-
-endif()
+set(USBnullFinalFlags "")
 
 # USBnull sources
 set(USBnullSources

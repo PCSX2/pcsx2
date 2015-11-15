@@ -7,7 +7,7 @@ endif()
 
 
 # plugin name
-set(Output GSdx-0.1.16)
+set(Output GSdx-1.0.0)
 
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
@@ -18,17 +18,14 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
-set(OptimizationFlags -O2)
-
-
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEVEL)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -W)
 
 endif()
 
@@ -51,10 +48,6 @@ endif()
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
-    if (_M_X86_32 AND NOT USE_ASAN)
-        # Someone need to seriously test the build of GSdx without this option
-        set(GSdxFinalFlags ${GSdxFinalFlags} -mpreferred-stack-boundary=2)
-    endif()
 endif()
 
 set(GSdxSources
@@ -80,6 +73,7 @@ set(GSdxSources
     GSDeviceSW.cpp
     GSDeviceNull.cpp
     GSDirtyRect.cpp
+    GSDrawingContext.cpp
     GSDrawScanline.cpp
     GSDrawScanlineCodeGenerator.cpp
     GSDrawScanlineCodeGenerator.x86.avx.cpp

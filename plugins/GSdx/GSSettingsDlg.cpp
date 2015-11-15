@@ -28,9 +28,10 @@
 #include "resource.h"
 #include "GSSetting.h"
 
-GSSettingsDlg::GSSettingsDlg(bool isOpen2)
-	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
-	, m_IsOpen2(isOpen2)
+
+GSSettingsDlg::GSSettingsDlg()
+       : GSDialog(IDD_CONFIG)
+       
 {
 #ifdef ENABLE_OPENCL
 	list<OCLDeviceDesc> ocldevs;
@@ -50,8 +51,6 @@ void GSSettingsDlg::OnInit()
 {
 	__super::OnInit();
 
-	m_modes.clear();
-
 	CComPtr<IDirect3D9> d3d9;
 
 	d3d9.Attach(Direct3DCreate9(D3D_SDK_VERSION));
@@ -62,39 +61,7 @@ void GSSettingsDlg::OnInit()
 	{
 		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
 	}
-
-	if(!m_IsOpen2)
-	{
-		D3DDISPLAYMODE mode;
-		memset(&mode, 0, sizeof(mode));
-		m_modes.push_back(mode);
-
-		ComboBoxAppend(IDC_RESOLUTION, "Please select...", (LPARAM)&m_modes.back(), true);
-
-		if(d3d9)
-		{
-			uint32 w = theApp.GetConfig("ModeWidth", 0);
-			uint32 h = theApp.GetConfig("ModeHeight", 0);
-			uint32 hz = theApp.GetConfig("ModeRefreshRate", 0);
-
-			uint32 n = d3d9->GetAdapterModeCount(D3DADAPTER_DEFAULT, D3DFMT_R5G6B5);
-
-			for(uint32 i = 0; i < n; i++)
-			{
-				if(S_OK == d3d9->EnumAdapterModes(D3DADAPTER_DEFAULT, D3DFMT_R5G6B5, i, &mode))
-				{
-					m_modes.push_back(mode);
-
-					string str = format("%dx%d %dHz", mode.Width, mode.Height, mode.RefreshRate);
-
-					ComboBoxAppend(IDC_RESOLUTION, str.c_str(), (LPARAM)&m_modes.back(), w == mode.Width && h == mode.Height && hz == mode.RefreshRate);
-				}
-			}
-		}
-	}
-
-	adapters.clear();
-
+        adapters.clear();
 	adapters.push_back(Adapter("Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_HARDWARE)));
 	adapters.push_back(Adapter("Reference Device", "ref", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_REFERENCE)));
 
@@ -180,23 +147,21 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
 
 	UpdateRenderers();
-	
+
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfig("Interlace", 7)); // 7 = "auto", detects interlace based on SMODE2 register
-	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gs_aspectratio, theApp.GetConfig("AspectRatio", 1));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfig("upscale_multiplier", 1));
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfig("MaxAnisotropy", 0));
+	ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, theApp.GetConfig("filter", 2));
+	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfig("accurate_blending_unit", 1));
+	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfig("crc_hack_level", 3));
 
-	CheckDlgButton(m_hWnd, IDC_WINDOWED, theApp.GetConfig("windowed", 1));
-	CheckDlgButton(m_hWnd, IDC_FILTER, theApp.GetConfig("filter", 2));
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfig("paltex", 0));
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
-	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
-	CheckDlgButton(m_hWnd, IDC_ANISOTROPIC, theApp.GetConfig("AnisotropicFiltering", 0));
-	CheckDlgButton(m_hWnd, IDC_ACCURATE_BLEND, theApp.GetConfig("accurate_blend", 1));
+	CheckDlgButton(m_hWnd, IDC_MIPMAP, theApp.GetConfig("mipmap", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
-	CheckDlgButton(m_hWnd, IDC_ACCURATE_COLCLIP, theApp.GetConfig("accurate_colclip", 0));
+	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 
 	// Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
@@ -206,10 +171,11 @@ void GSSettingsDlg::OnInit()
 
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfig("shaderfx", 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_glsl", "shaders\\GSdx.fx").c_str());
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_conf", "shaders\\GSdx_FX_Settings.ini").c_str());
 	
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfig("UserHacks", 0));
-	
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_SETRANGE, 0, MAKELPARAM(8192, 256));
 	SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("resx", 1024), 0));
@@ -217,9 +183,25 @@ void GSSettingsDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_SETRANGE, 0, MAKELPARAM(8192, 256));
 	SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("resy", 1024), 0));
 
-
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETRANGE, 0, MAKELPARAM(16, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("extrathreads", 0), 0));
+
+	AddTooltip(IDC_FILTER);
+	AddTooltip(IDC_CRC_LEVEL);
+	AddTooltip(IDC_PALTEX);
+	AddTooltip(IDC_ACCURATE_DATE);
+	AddTooltip(IDC_ACCURATE_BLEND_UNIT);
+	AddTooltip(IDC_TC_DEPTH);
+	AddTooltip(IDC_AFCOMBO);
+	AddTooltip(IDC_AA1);
+	AddTooltip(IDC_MIPMAP);
+	AddTooltip(IDC_SWTHREADS);
+	AddTooltip(IDC_SWTHREADS_EDIT);
+	AddTooltip(IDC_SHADEBOOST);
+	AddTooltip(IDC_SHADER_FX);
+	AddTooltip(IDC_FXAA);
+	AddTooltip(IDC_FBA);
+	AddTooltip(IDC_LOGZ);
 
 	UpdateControls();
 }
@@ -237,19 +219,13 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			break;
 		case IDC_RENDERER:
 		case IDC_UPSCALE_MULTIPLIER:
+		case IDC_FILTER:
 			if (code == CBN_SELCHANGE)
 				UpdateControls();
 			break;
-		case IDC_NATIVERES:
 		case IDC_SHADEBOOST:
-		case IDC_FILTER:
-			if (code == BN_CLICKED)
-				UpdateControls();
-			break;
-		case IDC_ANISOTROPIC:
-			if (code == BN_CLICKED)
-				UpdateControls();
-			break;
+		case IDC_SHADER_FX:
+		case IDC_PALTEX:
 		case IDC_HACKS_ENABLED:
 			if (code == BN_CLICKED)
 				UpdateControls();
@@ -261,6 +237,14 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		case IDC_HACKSBUTTON:
 			if (code == BN_CLICKED)
 				HacksDlg.DoModal();
+			break;
+		case IDC_SHADER_FX_BUTTON:
+			if (code == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_EDIT, "Select External Shader");
+			break;
+		case IDC_SHADER_FX_CONF_BUTTON:
+			if (code == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_CONF_EDIT, "Select External Shader Config");
 			break;
 		case IDOK:
 		{
@@ -278,15 +262,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				}
 			}
 
-			if(!m_IsOpen2 && ComboBoxGetSelData(IDC_RESOLUTION, data))
-			{
-				const D3DDISPLAYMODE* mode = (D3DDISPLAYMODE*)data;
-
-				theApp.SetConfig("ModeWidth", (int)mode->Width);
-				theApp.SetConfig("ModeHeight", (int)mode->Height);
-				theApp.SetConfig("ModeRefreshRate", (int)mode->RefreshRate);
-			}
-
 			if(ComboBoxGetSelData(IDC_RENDERER, data))
 			{
 				theApp.SetConfig("Renderer", (int)data);
@@ -295,11 +270,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if(ComboBoxGetSelData(IDC_INTERLACE, data))
 			{
 				theApp.SetConfig("Interlace", (int)data);
-			}
-
-			if(ComboBoxGetSelData(IDC_ASPECTRATIO, data))
-			{
-				theApp.SetConfig("AspectRatio", (int)data);
 			}
 
 			if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, data))
@@ -311,30 +281,36 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("upscale_multiplier", 1);
 			}
 
+			if (ComboBoxGetSelData(IDC_FILTER, data))
+			{
+				theApp.SetConfig("filter", (int)data);
+			}
+
+			if(ComboBoxGetSelData(IDC_ACCURATE_BLEND_UNIT, data))
+			{
+				theApp.SetConfig("accurate_blending_unit", (int)data);
+			}
+
+			if (ComboBoxGetSelData(IDC_CRC_LEVEL, data))
+			{
+				theApp.SetConfig("crc_hack_level", (int)data);
+			}
+
 			if(ComboBoxGetSelData(IDC_AFCOMBO, data))
 			{
 				theApp.SetConfig("MaxAnisotropy", (int)data);
 			}
 
-			if(GetId() == IDD_CONFIG) // TODO: other options may not be present in IDD_CONFIG2 as well
-			{
-				theApp.SetConfig("windowed", (int)IsDlgButtonChecked(m_hWnd, IDC_WINDOWED));			
-			}
-
-			theApp.SetConfig("filter", (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
-			theApp.SetConfig("nativeres", (int)IsDlgButtonChecked(m_hWnd, IDC_NATIVERES));
+			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP));
 			theApp.SetConfig("resx", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
-			theApp.SetConfig("AnisotropicFiltering", (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC));
-			theApp.SetConfig("accurate_blend", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_BLEND));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
-			theApp.SetConfig("accurate_colclip", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_COLCLIP));
-			
+			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 
 			// Shade Boost
 			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
@@ -346,8 +322,17 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
 			
 			// External FX Shader(OpenGL)
-			theApp.SetConfig("shaderfx_conf", "shaders/GSdx_FX_Settings.ini");
-			theApp.SetConfig("shaderfx_glsl", "shaders/GSdx.fx");
+			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
+			char *buffer = new char[length];
+
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_conf", buffer);
+
+			delete [] buffer;
 
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 		}
@@ -371,14 +356,16 @@ void GSSettingsDlg::UpdateRenderers()
 
 	vector<GSSetting> renderers;
 
-	unsigned renderer_setting = theApp.GetConfig("Renderer", 0);
-	unsigned renderer_sel = 0;
+	GSRendererType renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	GSRendererType renderer_sel = GSRendererType::Default;
 
 	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		if(r.id >= 3 && r.id <= 5 || r.id == 15)
+		GSRendererType renderer = static_cast<GSRendererType>(r.id);
+
+		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
 
@@ -387,69 +374,97 @@ void GSSettingsDlg::UpdateRenderers()
 
 		renderers.push_back(r);
 
-		if(r.id == renderer_setting)
+		if (static_cast<GSRendererType>(r.id) == renderer_setting)
 		{
 			renderer_sel = renderer_setting;
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, renderers, renderer_sel);
+	ComboBoxInit(IDC_RENDERER, renderers, static_cast<uint32>(renderer_sel));
 }
 
 void GSSettingsDlg::UpdateControls()
 {
 	INT_PTR i;
 
-	int scaling = 1; // in case reading the combo doesn't work, enable the custom res control anyway
+	int integer_scaling = 0; // in case reading the combo doesn't work, enable the custom res control anyway
 
 	if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, i))
 	{
-		scaling = (int)i;
+		integer_scaling = (int)i;
 	}
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		bool dx9 = i >= 0 && i <= 2 || i == 14;
-		bool dx11 = i >= 3 && i <= 5 || i == 15;
-		bool ogl = i >= 12 && i <= 13 || i == 17;
-		bool hw = i == 0 || i == 3 || i == 12;
-		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
-		bool ocl = i >= 14 && i <= 17;
+		GSRendererType renderer = static_cast<GSRendererType>(i);
 
-		bool native = !!IsDlgButtonChecked(m_hWnd, IDC_NATIVERES);
+		bool dx9 = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX9_Null || renderer == GSRendererType::DX9_OpenCL;
+		bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL;
+		bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+
+		bool hw = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW || renderer == GSRendererType::Null_HW;
+		//bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW  || renderer == GSRendererType::Null_SW
+		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::Null_OpenCL || renderer == GSRendererType::OGL_OpenCL;
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGOGL), ogl ? SW_SHOW : SW_HIDE);
+
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9? SW_SHOW: SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 ? SW_SHOW : SW_HIDE);
+
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl ? SW_SHOW : SW_HIDE);
+
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_WINDOWED), dx9);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !native && scaling == 1);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw && !native);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_NATIVERES), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw && !integer_scaling);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ANISOTROPIC), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), (int)IsDlgButtonChecked(m_hWnd, IDC_FILTER) && (int)IsDlgButtonChecked(m_hWnd, IDC_ANISOTROPIC) && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND), ogl && hw);
+
+		INT_PTR filter;
+		if (ComboBoxGetSelData(IDC_FILTER, filter))
+		{
+			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
+		}
+		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_COLCLIP), ogl && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
+		
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw); // Let uers set software params regardless of renderer used 
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
 		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
 
-
-		// Shade Boost
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED);
-
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw /*&& IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED) == BST_CHECKED*/);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 	}
+
+	// External shader
+	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_BUTTON), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_BUTTON), external_shader_selected);
+
+	// Shade Boost
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED);
 }
 
 // Shade Boost Dialog
@@ -567,8 +582,13 @@ GSHacksDlg::GSHacksDlg() :
 }
 
 void GSHacksDlg::OnInit()
-{					
-	bool dx9 = (int)SendMessage(GetDlgItem(GetParent(m_hWnd), IDC_RENDERER), CB_GETCURSEL, 0, 0) / 3 == 0;
+{
+	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
+	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
+	// It can only be accessed with a HW renderer, so this is sufficient.
+	bool dx9 = renderer == GSRendererType::DX9_HW;
+	// bool dx11 = renderer == GSRendererType::DX1011_HW;
+	bool ogl = renderer == GSRendererType::OGL_HW;
 	unsigned short cb = 0;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)
@@ -603,20 +623,15 @@ void GSHacksDlg::OnInit()
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_SETCURSEL, msaa2cb[min(theApp.GetConfig("UserHacks_MSAA", 0), 16)], 0);
 
-	char crctext[5][32] = { "None", "Minimal", "Partial", "Full", "Agressive" };
-	for (unsigned short i = 0; i < 5; i++){
-		SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_ADDSTRING, 0, (LPARAM)crctext[i]);
-	}
-	
-	SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_SETCURSEL, theApp.GetConfig("crc_hack_level", 3), 0);
-
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfig("UserHacks_AlphaHack", 0));
 	CheckDlgButton(m_hWnd, IDC_OFFSETHACK, theApp.GetConfig("UserHacks_HalfPixelOffset", 0));
-	CheckDlgButton(m_hWnd, IDC_SPRITEHACK, theApp.GetConfig("UserHacks_SpriteHack", 0));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfig("UserHacks_WildHack", 0));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
-	CheckDlgButton(m_hWnd, IDC_ROUND_SPRITE, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
+	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfig("preload_frame_with_gs_data", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
+
+	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
+	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfig("UserHacks_SpriteHack", 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("UserHacks_SkipDraw", 0), 0));
@@ -627,8 +642,24 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM((theApp.GetConfig("UserHacks_TCOffset", 0) >> 16) & 0xFFFF, 0));
 
-	// Hacks descriptions
-	SetWindowText(GetDlgItem(m_hWnd, IDC_HACK_DESCRIPTION), "Hover over an item to get a description.");
+	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
+	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
+
+	AddTooltip(IDC_SKIPDRAWHACKEDIT);
+	AddTooltip(IDC_SKIPDRAWHACK);
+	AddTooltip(IDC_ALPHAHACK);
+	AddTooltip(IDC_OFFSETHACK);
+	AddTooltip(IDC_SPRITEHACK);
+	AddTooltip(IDC_WILDHACK);
+	AddTooltip(IDC_MSAACB);
+	AddTooltip(IDC_ALPHASTENCIL);
+	AddTooltip(IDC_ALIGN_SPRITE);
+	AddTooltip(IDC_ROUND_SPRITE);
+	AddTooltip(IDC_TCOFFSETX);
+	AddTooltip(IDC_TCOFFSETX2);
+	AddTooltip(IDC_TCOFFSETY);
+	AddTooltip(IDC_TCOFFSETY2);
+	AddTooltip(IDC_PRELOAD_GS);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -638,28 +669,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {	    
 	switch(message)
 	{
-	case WM_SETCURSOR:
-	{
-		bool updateText = true;
-
-		POINT pos;
-		GetCursorPos(&pos);
-		ScreenToClient(m_hWnd, &pos);
-
-		HWND hoveredwnd = ChildWindowFromPointEx(m_hWnd, pos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
-
-		if (hoveredwnd != hovered_window)
-			hovered_window = hoveredwnd;
-		else
-			break;
-
-		const char *helpstr = dialog_message(GetDlgCtrlID(hoveredwnd), &updateText);
-
-		if(updateText)
-			SetWindowText(GetDlgItem(m_hWnd, IDC_HACK_DESCRIPTION), helpstr);
-
-	} break;
-
 	case WM_COMMAND:
 	{
 		int id = LOWORD(wParam);
@@ -668,15 +677,22 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK: 
 		{
+			INT_PTR data;
+			if (ComboBoxGetSelData(IDC_ROUND_SPRITE, data))
+			{
+				theApp.SetConfig("UserHacks_round_sprite_offset", (int)data);
+			}
+			if (ComboBoxGetSelData(IDC_SPRITEHACK, data))
+			{
+				theApp.SetConfig("UserHacks_SpriteHack", (int)data);
+			}
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
-			theApp.SetConfig("crc_hack_level", (int)SendMessage(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), CB_GETCURSEL, 0, 0));
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
 			theApp.SetConfig("UserHacks_HalfPixelOffset", (int)IsDlgButtonChecked(m_hWnd, IDC_OFFSETHACK));
-			theApp.SetConfig("UserHacks_SpriteHack", (int)IsDlgButtonChecked(m_hWnd, IDC_SPRITEHACK));
 			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
-			theApp.SetConfig("UserHacks_round_sprite_offset", (int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_SPRITE));
+			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;

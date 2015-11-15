@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 150206\n"
+"Project-Id-Version: PCSX2 - 150922\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-02-06 16:19+0100\n"
-"PO-Revision-Date: 2015-02-06 16:25+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"PO-Revision-Date: 2015-09-22 15:36+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -39,7 +39,7 @@ msgstr ""
 "PlayStation®One speldiskar stödjes icke av PCSX2. Om Ni vill emulera PSX-"
 "spel får Ni använda en särskild PSX-emulator, såsom ePSXe eller PCSX."
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -53,7 +53,7 @@ msgstr ""
 " spärrad växlingsfil används, eller av att ett annat program tar för sig "
 "mycket minne."
 
-#: pcsx2/System.cpp:355
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -68,7 +68,7 @@ msgid ""
 "have been disabled:"
 msgstr ""
 "Varning: Några av de konfigurerade PS2 omkompilerarna \n"
-" misslyckades att köras igång och har blivit spärrade:"
+" kunde inte köras igång och har blivit spärrade:"
 
 #: pcsx2/gui/AppInit.cpp:204
 msgid ""
@@ -80,17 +80,17 @@ msgstr ""
 "de förbättrar oftast emuleringshastigheten avsevärt. Ni kanske måste "
 "återmöjliggöra omkompilerarna ovanför egenhändigt, om Ni löser fel."
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
 "count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
 "PCSX2 kräver PS2 BIOS för att köras. Av juridiska skäl *måste* Ni anskaffa "
-"ett BIOS från en faktisk PS2 enhet som Ni äger (tillåns gäller inte). "
-"Undersök FAQ'er och Guider för ytterligare information."
+"ett BIOS från en faktisk PS2 enhet som Ni äger (tillåns gäller inte). Öga "
+"igenom FAQ'er och Guider för ytterligare information."
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -115,13 +115,46 @@ msgstr ""
 "självt. Om Ni inte har upphöjd Behörighet för Er dator, får Ni byta till "
 "AnvändarnivåDokument-läge (klicka på knappen nedanför)."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+"Bemärk att slutfilen måhända inte innehåller alla sparningar, beroende på "
+"hur många som är med i käll-Minneskortet."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+"VARNING: Omvandling av Minneskort kan ta en stund! Stäng inte emulatorn "
+"under omvandlingsprocessen, även om den ej längre svarar."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr "Omvandla detta Minneskort till en standard 8 MB Minneskort .ps2 fil."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr "Omvandla detta Minneskort till en 16 MB Minneskort .ps2 fil."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr "Omvandla detta Minneskort till en 32 MB Minneskort .ps2 fil."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr "Omvandla detta Minneskort till en 64 MB Minneskort .ps2 fil."
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
 msgstr ""
-"NTFS-komprimering kan ändras egenhändigt \n"
-" när som helst genom Egenskaper \n"
+"NTFS-komprimering kan när som helst \n"
+" ändras egenhändigt genom Egenskaper \n"
 " hos Windows Utforskaren."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:49
@@ -151,8 +184,8 @@ msgid ""
 msgstr ""
 "Denna Dialog kommer att hjälpleda Er genom konfigurering av "
 "InsticksProgram, \n"
-" Minneskort och BIOS. Ifall detta är första gången Ni installerar %s, \n"
-" Anrådes Ni att undersöka ''Läs mig'' och ''KonfigurationsVägledningen''."
+" Minneskort och BIOS. Om detta är första gången Ni installerar %s, \n"
+" Anrådes Ni att öga igenom ''Läs mig'' och ''KonfigurationsVägledningen''."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:139
 msgid ""
@@ -197,6 +230,16 @@ msgstr ""
 "Undviker förstörelse av Minneskort genom att tvinga spel att återindexera "
 "kortinnehåll efter att ha laddat Sparpunkt. Måhända inte förenligt med alla "
 "spel (''Guitar Hero'')."
+
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
+"(Endast Mapp-typ) Återindexera MineskortsInnehåll var gång den körandes "
+"mjukvaran ändras. Detta förhindrar Minneskortet att få slut på plats för "
+"sparningar."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -278,7 +321,7 @@ msgstr ""
 " framsteg kommer att gå förlorade. \n"
 "Är Ni säker?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:112
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -300,7 +343,7 @@ msgstr ""
 "\n"
 "Är Ni helt säker?"
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -311,6 +354,13 @@ msgstr ""
 " och återmöjliggöra sockeln när som helst genom ''Konfig > Minneskort'' i "
 "Huvudmenyn."
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+"(MappMkort) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: "
+"%s"
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -319,7 +369,7 @@ msgstr ""
 "Välj ett giltligt BIOS. Är Ni oförmögen att göra detta \n"
 " så tryck ''Avbryt'' för att stänga KonfigurationsDialogen."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr ""
 "EE = Emotion Engine = Rörelse Motor = PS2 CPU'n \n"
@@ -327,7 +377,7 @@ msgstr ""
 "\n"
 "Bemärk: De flesta spel har det fint med FörvalsSättningarna."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr ""
 "VM = Virtual Machine = Virtuell Maskin \n"
@@ -400,7 +450,7 @@ msgid ""
 "emulation. You can still toggle fullscreen display at any time using alt-"
 "enter."
 msgstr ""
-"Möjliggör automatiskt lägesbyte till Helskärm när emulering börjar eller "
+"Möjliggör automatiskt lägesbyte till Helskärm när emulering påbörjas eller "
 "återupptas. \n"
 "Ni kan fortfarande växla mellan Helskärm och Fönsterläge genom att trycka "
 "''Alt'' + ''Enter''."
@@ -459,12 +509,14 @@ msgstr ""
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
-"Det är i allmänhet bättre att spärra denna tillämpning, och att möjliggöra "
-"''Automatiska Spelfixar'' \n"
+"Det är i allmänhet bättre att ha denna tillämpning spärrad, och att isället "
+"möjliggöra ''Automatiska Spelfixar'' \n"
 " i Huvudmenyn (''Automatiska'' innebär: Tillämpar särskilt utvalda och "
-"beprövade lösningar för särskilda spel)."
+"beprövade lösningar för särskilda spel).\n"
+"Egna Spelfixar ökar INTE prestandan, utan kan måhända istället minska den."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
@@ -477,10 +529,10 @@ msgstr ""
 "De kan dock vålla förenlighets- och/eller prestandaproblem. \n"
 "Ni får stänga av Spelfixar egenhändigt när Ni byter spel. \n"
 "\n"
-"Det bästa sättet att försäkra Er om att alla egenhändiga \n"
+"Det bästa sättet att försäkra Er om att alla Egna \n"
 " Spelfixar är helt spärrade, är att ha denna Avmarkerad."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -490,14 +542,14 @@ msgstr ""
 "All data på detta kort kommer att förloras! \n"
 "Är Ni helt säker?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Misslyckades: Dubblering är endast tillåtet till en tom PS2-sockel, eller "
 "till filsystemet."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Misslyckades: MålMinneskortet '%s' används för närvarande."
@@ -566,8 +618,8 @@ msgstr ""
 "Varning! Att byta InsticksProgram kräver en full nedstängning \n"
 " och återställning av PS2's Virtuella Maskin. \n"
 "PCSX2 kommer att försöka att spara och återställa tillståndet, \n"
-" men om de nyligen valda InsticksProgramen är oförenliga \n"
-" kan detta misslyckas, och alla nuvarande framsteg går förlorade. \n"
+" men om de nyligen valda InsticksProgramen är oförenliga kan detta \n"
+" misslyckas, och alla nuvarande framsteg går således förlorade. \n"
 "\n"
 "Är Ni säker att Ni vill tillämpa ändringarna nu?"
 
@@ -740,7 +792,7 @@ msgstr ""
 "fråga \n"
 " med det här (ofta markerat som behövande ''läge 1'' eller ''långsam DVD'')."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
@@ -749,7 +801,7 @@ msgstr ""
 " spärrad så kommer lägena Turbo & Nedsatt \n"
 " heller inte att vara tillgängliga."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -758,15 +810,15 @@ msgstr ""
 " så är precist bildöverhoppande ouppnåeligt. \n"
 "Att tillämpa det kan vålla rejäla grafikfel för vissa spel."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
-"Tillämpa detta ifall Ni tror att MTGS-trådsyncen \n"
+"Tillämpa detta ifall Ni tror att MTGS-trådsynken \n"
 " vållar braker eller grafiska fel."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "
@@ -805,7 +857,7 @@ msgstr ""
 " den mängd särskilda minne som krävs, och kommer inte vara tillgänglig för "
 "bruk. \n"
 "Detta är inte ett kritiskt fel eftersom sVU är föråldrat, \n"
-" och följdaktligen borde Ni hur som helst använda Er av microVU istället."
+" och följaktligen borde Ni hur som helst använda Er av microVU istället."
 
 #~ msgid ""
 #~ "Warning: Your computer does not support SSE2, which is required by many "

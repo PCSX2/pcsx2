@@ -90,7 +90,8 @@ void InputIsoFile::BeginRead2(uint lsn)
 
 int InputIsoFile::FinishRead3(u8* dst, uint mode)
 {
-	int _offset, length;
+	int _offset = 0;
+	int length = 0;
 	int ret = 0;
 
 	if(m_current_lsn < 0)
@@ -178,7 +179,10 @@ void InputIsoFile::_init()
 	
 	m_read_inprogress = false;
 	m_read_count = 0;
+	ReadUnit = 0;
+	m_current_lsn = -1;
 	m_read_lsn = -1;
+	m_reader = NULL;
 }
 
 // Tests the specified filename to see if it is a supported ISO type.  This function typically

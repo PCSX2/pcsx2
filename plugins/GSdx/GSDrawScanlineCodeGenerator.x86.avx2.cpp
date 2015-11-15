@@ -661,13 +661,13 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 
 		if(m_sel.zoverflow || m_sel.zpsm == 0)
 		{
-			// GSVector8i off = GSVector8i::x80000000();
+			// GSVector8i o = GSVector8i::x80000000();
 
 			vpcmpeqd(temp1, temp1);
 			vpslld(temp1, 31);
 
-			// GSVector8i zso = zs - off;
-			// GSVector8i zdo = zd - off;
+			// GSVector8i zso = zs - o;
+			// GSVector8i zdo = zd - o;
 
 			vpsubd(ymm0, temp1);
 			vpsubd(ymm1, temp1);
@@ -2295,7 +2295,9 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha()
 		if(m_sel.fpsm == 2)
 		{
 			vpxor(ymm0, ymm0);
-			vpsrld(ymm1, ymm2, 15);
+			//vpsrld(ymm1, ymm2, 15);
+			vpslld(ymm1, ymm2, 16);
+			vpsrad(ymm1, 31);
 			vpcmpeqd(ymm1, ymm0);
 		}
 		else

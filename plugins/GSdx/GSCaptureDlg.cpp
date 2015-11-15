@@ -64,7 +64,7 @@ void GSCaptureDlg::OnInit()
 
 	m_codecs.clear();
 
-	string selected = theApp.GetConfig("CaptureVideoCodecDisplayName", "");
+	_bstr_t selected = theApp.GetConfig("CaptureVideoCodecDisplayName", "").c_str();
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
 
@@ -110,7 +110,7 @@ void GSCaptureDlg::OnInit()
 
 		string s(c.FriendlyName.begin(), c.FriendlyName.end());
 
-		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), s == selected);
+		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
 	}
 	EndEnumSysDev
 }
@@ -199,9 +199,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 		if (ris != 2)
 		{
-			wstring s = wstring(c.DisplayName);
-
-			theApp.SetConfig("CaptureVideoCodecDisplayName", string(s.begin(), s.end()).c_str());
+			theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
 		}
 		else
 		{

@@ -46,8 +46,8 @@ __ri void vifExecQueue(int idx)
 	if (!idx) startcycles = VU0.cycle;
 	else      startcycles = VU1.cycle;
 
-	if (!idx) vu0ExecMicro(GetVifX.queued_pc);
-	else	  vu1ExecMicro(GetVifX.queued_pc);
+	if (!idx) vu0ExecMicro(vif0.queued_pc);
+	else	  vu1ExecMicro(vif1.queued_pc);
 
 	///NOTE: Shadowman 2 has SPS with this, uncommenting the correct code fixes it
 	if (!idx) { startcycles = ((VU0.cycle-startcycles) + ( vif0ch.qwc - (vif0.vifpacketsize >> 2) )); CPU_INT(VIF_VU0_FINISH, 1/*startcycles * BIAS*/); }
@@ -100,6 +100,7 @@ static __fi void vuExecMicro(int idx, u32 addr) {
 
 	GetVifX.queued_program = true;
 	GetVifX.queued_pc = addr;
+	GetVifX.unpackcalls = 0;
 }
 
 void ExecuteVU(int idx)
@@ -278,6 +279,7 @@ vifOp(vifCode_Mark) {
 static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	VURegs& VUx = idx ? VU1 : VU0;
 	vifStruct& vifX = GetVifX;
+	u16 vuMemSize = idx ? 0x4000 : 0x1000;
 	pxAssert(VUx.Micro > 0);
 
 	vifExecQueue(idx);
@@ -290,14 +292,14 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	
 
 	// Don't forget the Unsigned designator for these checks
-	if((addr + size *4) > (idx ? 0x4000U : 0x1000U))
+	if((addr + size *4) > vuMemSize)
 	{
 		//DevCon.Warning("Handling split MPG");
-		if (!idx)  CpuVU0->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
-		else	   CpuVU1->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
+		if (!idx)  CpuVU0->Clear(addr, vuMemSize - addr);
+		else	   CpuVU1->Clear(addr, vuMemSize - addr);
 		
-		memcpy(VUx.Micro + addr, data, (idx ? 0x4000 : 0x1000) - addr);
-		size -= ((idx ? 0x4000 : 0x1000) - addr) / 4;
+		memcpy(VUx.Micro + addr, data, vuMemSize - addr);
+		size -= (vuMemSize - addr) / 4;
 		memcpy(VUx.Micro, data, size);
 
 		vifX.tag.addr = size * 4;
@@ -446,7 +448,7 @@ vifOp(vifCode_Nop) {
 
 		//If the top bit was set to interrupt, we don't want it to take commands from a bad code if it's interpreted as a nop by us.
 		//Onimusha - Blade Warriors
-		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0)
+		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0 && vifXch.qwc > 0 /*Not tag*/)
 		{
 			GetVifX.irq = 0;
 		}

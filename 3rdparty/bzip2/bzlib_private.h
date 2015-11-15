@@ -8,8 +8,8 @@
    This file is part of bzip2/libbzip2, a program and library for
    lossless, block-sorting data compression.
 
-   bzip2/libbzip2 version 1.0.4 of 20 December 2006
-   Copyright (C) 1996-2006 Julian Seward <jseward@bzip.org>
+   bzip2/libbzip2 version 1.0.6 of 6 September 2010
+   Copyright (C) 1996-2010 Julian Seward <jseward@bzip.org>
 
    Please read the WARNING, DISCLAIMER and PATENTS sections in the
    README file.
@@ -36,7 +36,7 @@
 
 /*-- General stuff. --*/
 
-#define BZ_VERSION  "1.0.4, 20-Dec-2006"
+#define BZ_VERSION  "1.0.6, 6-Sept-2010"
 
 typedef char            Char;
 typedef unsigned char   Bool;
@@ -442,11 +442,15 @@ typedef
 /*-- Macros for decompression. --*/
 
 #define BZ_GET_FAST(cccc)                     \
+    /* c_tPos is unsigned, hence test < 0 is pointless. */ \
+    if (s->tPos >= (UInt32)100000 * (UInt32)s->blockSize100k) return True; \
     s->tPos = s->tt[s->tPos];                 \
     cccc = (UChar)(s->tPos & 0xff);           \
     s->tPos >>= 8;
 
 #define BZ_GET_FAST_C(cccc)                   \
+    /* c_tPos is unsigned, hence test < 0 is pointless. */ \
+    if (c_tPos >= (UInt32)100000 * (UInt32)ro_blockSize100k) return True; \
     c_tPos = c_tt[c_tPos];                    \
     cccc = (UChar)(c_tPos & 0xff);            \
     c_tPos >>= 8;
@@ -469,8 +473,10 @@ typedef
    (((UInt32)s->ll16[i]) | (GET_LL4(i) << 16))
 
 #define BZ_GET_SMALL(cccc)                            \
-      cccc = BZ2_indexIntoF ( s->tPos, s->cftab );    \
-      s->tPos = GET_LL(s->tPos);
+    /* c_tPos is unsigned, hence test < 0 is pointless. */ \
+    if (s->tPos >= (UInt32)100000 * (UInt32)s->blockSize100k) return True; \
+    cccc = BZ2_indexIntoF ( s->tPos, s->cftab );    \
+    s->tPos = GET_LL(s->tPos);
 
 
 /*-- externs for decompression. --*/

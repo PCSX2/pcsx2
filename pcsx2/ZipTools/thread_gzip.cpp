@@ -24,12 +24,15 @@
 
 BaseCompressThread::~BaseCompressThread() throw()
 {
-	_parent::Cancel();
-	if( m_PendingSaveFlag )
-	{
-		wxGetApp().ClearPendingSave();
-		m_PendingSaveFlag = false;
+	try {
+		_parent::Cancel();
+		if( m_PendingSaveFlag )
+		{
+			wxGetApp().ClearPendingSave();
+			m_PendingSaveFlag = false;
+		}
 	}
+	DESTRUCTOR_CATCHALL
 }
 
 void BaseCompressThread::SetPendingSave()

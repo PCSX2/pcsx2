@@ -107,12 +107,11 @@ void pxRadioPanel::Realize()
 
 void pxRadioPanel::_setToolTipImmediate( int idx, const wxString &tip )
 {
-	const wxString wrapped( pxFormatToolTipText(this, tip) );
 	if( wxRadioButton* woot = m_objects[idx].LabelObj )
-		woot->SetToolTip( wrapped );
+		woot->SetToolTip(tip);
 
 	if( pxStaticText* woot = m_objects[idx].SubTextObj )
-		woot->SetToolTip( wrapped );
+		woot->SetToolTip(tip);
 }
 
 // The SetToolTip API provided by this function applies the tooltip to both the radio
@@ -149,6 +148,8 @@ void pxRadioPanel::_RealizeDefaultOption()
 	}
 }
 
+// Highlights (bold) the text of the default radio.
+// Not intended for restoring default value at later time.
 pxRadioPanel& pxRadioPanel::SetDefaultItem( int idx )
 {
 	if( idx == m_DefaultIdx ) return *this;

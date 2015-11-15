@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
+#include "Utilities/MathUtils.h"
 
 namespace R5900 {
 namespace Interpreter {
@@ -145,30 +146,13 @@ namespace MMI {
 
 //*****************MMI OPCODES*********************************
 
-static __fi void _PLZCW(int n)
-{
-	// This function counts the number of "like" bits in the source register, starting
-	// with the MSB and working its way down, and returns the result MINUS ONE.
-	// So 0xff00 would return 7, not 8.
-
-	int c = 0;
-	s32 i = cpuRegs.GPR.r[_Rs_].SL[n];
-
-	// Negate the source based on the sign bit.  This allows us to use a simple
-	// unified bit test of the MSB for either condition.
-	if( i >= 0 ) i = ~i;
-
-	// shift first, compare, then increment.  This excludes the sign bit from our final count.
-	while( i <<= 1, i < 0 ) c++;
-
-	cpuRegs.GPR.r[_Rd_].UL[n] = c;
-}
-
 void PLZCW() {
-    if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
-	_PLZCW (0);
-	_PLZCW (1);
+	// Return the leading sign bits, excluding the original bit
+	cpuRegs.GPR.r[_Rd_].UL[0] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[0]) - 1;
+	cpuRegs.GPR.r[_Rd_].UL[1] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[1]) - 1;
 }
 
 __fi void PMFHL_CLAMP(u16& dst, s32 src)
@@ -199,18 +183,20 @@ void PMFHL() {
 		case 0x02: // SLW
 			{
 				s64 TempS64 = ((u64)cpuRegs.HI.UL[0] << 32) | (u64)cpuRegs.LO.UL[0];
+											
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[0] = (s64)cpuRegs.LO.SL[0];
 				}
 
 				TempS64 = ((u64)cpuRegs.HI.UL[2] << 32) | (u64)cpuRegs.LO.UL[2];
+
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[1] = (s64)cpuRegs.LO.SL[2];

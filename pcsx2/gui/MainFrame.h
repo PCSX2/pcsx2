@@ -47,22 +47,12 @@ protected:
 	// A list of menu items belonging to this plugin's menu.
 	MenuItemAddonList	m_PluginMenuItems;
 
-	// Base index for inserting items, usually points to the position
-	// after the heading entry and separator.
-	int					m_InsertIndexBase;
-
-	// Current index for inserting menu items; increments with each item
-	// added by a plugin.
-	int					m_InsertIndexCur;
-
 public:
-	PluginsEnum_t		PluginId;
 	wxMenu&				MyMenu;
+	PluginsEnum_t		PluginId;
 
 public:
-	PerPluginMenuInfo() : MyMenu( *new wxMenu() )
-	{
-	}
+	PerPluginMenuInfo() : MyMenu(*new wxMenu()), PluginId (PluginId_Count) {}
 
 	virtual ~PerPluginMenuInfo() throw();
 

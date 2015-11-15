@@ -58,6 +58,7 @@ float VolumeAdjustBR;
 float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
+int delayCycles;
 
 bool postprocess_filter_enabled = 1;
 bool postprocess_filter_dealias = false;
@@ -114,6 +115,7 @@ void ReadSettings()
 	VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
 	VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
 	VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
+	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 	VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
 	VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
 	VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
@@ -198,6 +200,7 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
 	CfgWriteInt(L"OUTPUT",L"SpeakerConfiguration", numSpeakers);
 	CfgWriteInt( L"OUTPUT", L"DplDecodingLevel", dplLevel);
+	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 	if( Config_WaveOut.Device.empty() ) Config_WaveOut.Device = L"default";
 	CfgWriteStr(L"WAVEOUT",L"Device",Config_WaveOut.Device);
@@ -344,6 +347,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						curpos = (int)res;
 						swprintf_s(temp,L"%d ms (avg)",curpos);
 						SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);
+						bool soundtouch = sMode == 0;
+						EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), soundtouch);
 					}
 				}
 				break;
@@ -356,14 +361,6 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				HANDLE_CHECK(IDC_EFFECTS_DISABLE,EffectsDisabled);
 				HANDLE_CHECK(IDC_DEALIASFILTER,postprocess_filter_dealias);
 				HANDLE_CHECK(IDC_DSP_ENABLE,dspPluginEnabled);
-				
-				// Fixme : Eh, how to update this based on drop list selections? :p
-				// IDC_TS_ENABLE already deleted!
-
-				//HANDLE_CHECKNB(IDC_TS_ENABLE,timeStretchEnabled);
-				//	EnableWindow( GetDlgItem( hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH ), timeStretchEnabled );
-				break;
-
 				HANDLE_CHECKNB(IDC_DEBUG_ENABLE,DebugEnabled);
 					DebugConfig::EnableControls( hWnd );
 					EnableWindow( GetDlgItem( hWnd, IDC_OPEN_CONFIG_DEBUG ), DebugEnabled );

@@ -37,7 +37,7 @@ void SysMessage(char *fmt, ...) {
 	va_start(list,fmt);
 	vsprintf(tmp,fmt,list);
 	va_end(list);
-	MessageBox(0, tmp, "Dev9linuz Msg", 0);
+	MessageBox(0, tmp, "Dev9 Msg", 0);
 }
 
 void OnInitDialog(HWND hW) {
@@ -77,8 +77,30 @@ void OnInitDialog(HWND hW) {
 
 void OnOk(HWND hW) {
 	int i = ComboBox_GetCurSel(GetDlgItem(hW, IDC_ETHDEV));
-	char* ptr=(char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV),i);
-	strcpy(config.Eth, ptr);
+	if (i == -1)
+	{
+		//adapter not selected
+		if (Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
+		{
+			//Trying to use an ethernet without
+			//selected adapter, we can't have that
+			SysMessage("Please select an ethernet adapter");
+			return;
+		}
+		else 
+		{
+			//user not planning on using
+			//ethernet anyway
+			strcpy(config.Eth, ETH_DEF);
+		}
+	}
+	else 
+	{
+		//adapter is selected
+		char* ptr = (char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV), i);
+		strcpy(config.Eth, ptr);
+	}
+	
 	Edit_GetText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	config.ethEnable = Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED));

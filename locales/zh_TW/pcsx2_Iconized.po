@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.1.0 Rev 5863\n"
+"Project-Id-Version: PCSX2 1.3.1 1201\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
-"PO-Revision-Date: 2014-03-04 08:55+0800\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"PO-Revision-Date: 2015-10-05 12:17+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
 "Language: \n"
@@ -35,7 +35,7 @@ msgstr ""
 "PCSX2 不支援 Playstation 遊戲光碟。\n"
 "若您想要模擬 PS 遊戲，您必須下載 PS 模擬器，譬如 ePSXe 或 PCSX。"
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -46,7 +46,7 @@ msgstr ""
 "此錯誤可能由低水平的虛擬記憶體資源引起，譬如分頁檔案小或沒有分頁檔案，\n"
 "或由另一個獨占大量記憶體的程式引起。"
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -60,7 +60,7 @@ msgid ""
 "have been disabled:"
 msgstr "警告：某些指定的 PS2 反編譯裝置初始化失敗，並且被停用："
 
-#: pcsx2/gui/AppInit.cpp:194
+#: pcsx2/gui/AppInit.cpp:204
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -69,7 +69,7 @@ msgstr ""
 "注意：反編譯裝置並非執行 PCSX2 所必須的，但反編譯裝置大幅提升遊戲速度。\n"
 "若錯誤已經解決，您可能必須手動重新啟用上面列出的反編譯裝置。"
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -78,7 +78,7 @@ msgstr ""
 "PCSX2 需要 PS2 BIOS 才能運行遊戲。出於法律上的原因，您「必須」從您自己的 PS2 "
 "真實遊戲主機獲取 BIOS（借的 PS2 不算）。進一步的說明請洽 FAQ 和指南。"
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -102,7 +102,36 @@ msgstr ""
 "若您在這台電腦上沒有更高的權限，則需要切換至【我的文件】模式（按下方的按"
 "鈕）。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -177,6 +206,14 @@ msgstr ""
 "讀取即時存檔之後，透過強行讓遊戲重新索引記憶卡的內容，避免記憶卡損壞。\n"
 "可能無法和所有遊戲都相容（已知「吉他英雄」不相容）。"
 
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
+"（類型限資料夾）每次更換遊戲重新索引記憶卡的內容，防止出現記憶卡容量不足。"
+
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
 msgid ""
@@ -243,7 +280,7 @@ msgstr ""
 "重置當前的 PS2 虛擬機狀態；\n"
 "所有當前的遊戲進展將會丟失。您確定嗎？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -262,7 +299,7 @@ msgstr ""
 "\n"
 "（注意：各個插件自身的設定不受影響）"
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -273,6 +310,11 @@ msgstr ""
 "您可以在任何時候，透過「PCSX2 主選單 => 設定 => 記憶卡」糾正這一問題並重新啟"
 "用記憶卡。"
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -281,11 +323,11 @@ msgstr ""
 "請選擇一個有效的 BIOS。\n"
 "若您無法作出有效的選擇，那就按【取消】關閉設定視窗。"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr "注意：大多數遊戲只需使用預設設定即可。"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr "注意：大多數遊戲只需使用預設設定即可。"
 
@@ -401,39 +443,32 @@ msgstr ""
 " * 變形金剛"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
 "因為預設勾選『 主選單 -> 檔案 -> 自動使用遊戲修正 』，在運行相應的遊戲時會自"
-"動套用相應的遊戲修正，\n"
-"所以不推薦手動設定遊戲修正。\n"
+"動套用相應的遊戲修正，所以不推薦手動設定遊戲修正。手動設定遊戲修正不會提高遊"
+"戲速度，實際上可能會降低遊戲速度。\n"
 "\n"
-"遊戲修正能夠修復在一些遊戲裡不正確的模擬。但會引起其他遊戲出現相容性或效能問"
-"題。\n"
 "如果是手動設定遊戲修正，變更所玩的遊戲後，您需要手動關閉已啟用的遊戲修正、或"
 "乾脆關閉手動設定遊戲修正。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
-"因為預設勾選『 主選單 -> 檔案 -> 自動使用遊戲修正 』，在運行相應的遊戲時會自"
-"動套用相應的遊戲修正，\n"
-"所以不推薦手動設定遊戲修正。\n"
+"遊戲修正能夠修復在一些遊戲裡不正確的模擬。\n"
+"但會引起其他遊戲出現相容性或效能問題。\n"
 "\n"
-"遊戲修正能夠修復在一些遊戲裡不正確的模擬。但會引起其他遊戲出現相容性或效能問"
-"題。\n"
-"如果是手動設定遊戲修正，變更所玩的遊戲後，您需要手動關閉已啟用的遊戲修正、或"
-"乾脆關閉手動設定遊戲修正。"
+"最安全的狀態就是確保完全停用所有遊戲修正。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -442,12 +477,12 @@ msgstr ""
 "您即將刪除已格式化的記憶卡 %s。\n"
 "該記憶卡的全部資料將會丟失！您真的確定嗎？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "失敗：僅允許建立副本至空的記憶卡插口或檔案系統。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "失敗：目標記憶卡 %s 使用中。"
@@ -666,13 +701,13 @@ msgstr ""
 "查閱 HDLoader 相容性列表，以確定已知使用這個選項會出現問題的遊戲。\n"
 "通常是有注明需要 mode 1（模式 1）或 slow DVD（慢速 DVD）的遊戲。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
 msgstr "注意：當畫框限制停用時，渦輪加速和慢動作無法使用。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -681,7 +716,7 @@ msgstr ""
 "由於 PS2 的硬體設計，精確的跳框是不可能的。\n"
 "啟用跳框將導致一些遊戲出現嚴重的圖形錯誤。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -689,7 +724,7 @@ msgstr ""
 "啟用這個選項，若您認為多執行緒圖形模式執行緒的同步正在導致模擬器當掉或圖形錯"
 "誤。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

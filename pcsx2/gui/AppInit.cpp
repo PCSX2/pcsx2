@@ -374,7 +374,10 @@ public:
 
 	virtual ~GameDatabaseLoaderThread() throw()
 	{
-		_parent::Cancel();
+		try {
+			_parent::Cancel();
+		}
+		DESTRUCTOR_CATCHALL
 	}
 
 protected:
@@ -410,7 +413,12 @@ bool Pcsx2App::OnInit()
     wxInitAllImageHandlers();
 
 	Console.WriteLn("Applying operating system default language...");
-	i18n_SetLanguage( wxLANGUAGE_DEFAULT );
+	{
+		// The PCSX2 log system hasn't been set up yet, so error messages might
+		// pop up that could cause some alarm amongst users. Let's avoid that.
+		wxDoNotLogInThisScope please;
+		i18n_SetLanguage(wxLANGUAGE_DEFAULT);
+	}
 
 	Console.WriteLn("Command line parsing...");
 	if( !_parent::OnInit() ) return false;
@@ -692,10 +700,13 @@ Pcsx2App::Pcsx2App()
 
 	m_PendingSaves			= 0;
 	m_ScheduledTermination	= false;
+	m_UseGUI				= true;
+	m_NoGuiExitPrompt		= true;
 
 	m_id_MainFrame		= wxID_ANY;
 	m_id_GsFrame		= wxID_ANY;
 	m_id_ProgramLogBox	= wxID_ANY;
+	m_id_Disassembler	= wxID_ANY;
 	m_ptr_ProgramLog	= NULL;
 
 	SetAppName( L"PCSX2" );

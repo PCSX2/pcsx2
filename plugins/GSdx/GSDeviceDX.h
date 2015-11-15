@@ -76,7 +76,6 @@ public:
 				uint32 fst:1;
 				uint32 logz:1;
 				uint32 rtcopy:1;
-				uint32 wildhack:2;
 			};
 
 			uint32 key;
@@ -179,6 +178,8 @@ public:
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;
+				uint32 shuffle:1;
+				uint32 read_ba:1;
 			};
 
 			uint32 key;

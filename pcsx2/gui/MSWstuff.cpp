@@ -14,15 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSFrame.h"
 
 #include "MSWstuff.h"
-#include <wx/listbook.h>
-#include <wx/listctrl.h>
 
 #ifdef __WXMSW__
 #	include <wx/msw/wrapwin.h>		// needed for OutputDebugString
-#	include <commctrl.h>
 #endif
 
 void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter )
@@ -32,25 +28,17 @@ void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter )
 #endif
 }
 
-void MSW_ListView_SetIconSpacing( wxListbook& listbook, int width )
+// Text scales automatically on Windows but that's about it. The dialog widths
+// and images need to be scaled manually.
+float MSW_GetDPIScale()
 {
 #ifdef __WXMSW__
-	// Depending on Windows version and user appearance settings, the default icon spacing can be
-	// way over generous.  This little bit of Win32-specific code ensures proper icon spacing, scaled
-	// to the size of the frame's ideal width.
+	HDC screen = GetDC(0);
+	float scale = GetDeviceCaps(screen, LOGPIXELSX) / 96.0; // 96.0 dpi = 100% scale
+	ReleaseDC(NULL, screen);
 
-	if (listbook.GetPageCount())
-	{
-		ListView_SetIconSpacing( (HWND)listbook.GetListView()->GetHWND(),
-			(width / listbook.GetPageCount()) - 4, g_Conf->Listbook_ImageSize+32		// y component appears to be ignored
-		);
-	}
+	return scale;
+#else
+	return 1.0;
 #endif
 }
-
-void MSW_ListView_SetIconSpacing( wxListbook* listbook, int width )
-{
-	if( listbook == NULL ) return;
-	MSW_ListView_SetIconSpacing( *listbook, width );
-}
-

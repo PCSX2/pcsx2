@@ -288,26 +288,24 @@ __fi void mVUanalyzeR2(mV, int Ft, bool canBeNOP) {
 //------------------------------------------------------------------
 __ri void flagSet(mV, bool setMacFlag) {
 	int curPC = iPC;
-	bool calcOPS = false;
+	int calcOPS = 0;
 		
 	//Check which ops need to do the flag settings, also check for runs of ops as they can do multiple calculations to get the sticky status flags (VP2)
+	//Make sure we get the last 4 calculations (Bloody Roar 3, possibly others)
 	for (int i = mVUcount, j = 0; i > 0; i--, j++) {
 		j += mVUstall;
 		incPC(-2);
-		if (sFLAG.doFlag && (j >= 3)) {
-			//Calculation only ops write to VF00
-			if (calcOPS == true && (mVUup.VF_write.reg != 0))
-				break;
 
-			if (setMacFlag) { mFLAG.doFlag = 1; break; }
-			else { sFLAG.doNonSticky = 1; }
-			calcOPS = true;
-		}
-		else {
-			if (calcOPS == true)
-				break;
+		if (calcOPS >= 4 && mVUup.VF_write.reg) break;
+
+		if (sFLAG.doFlag && (j >= 3))
+		{
+			if (setMacFlag) mFLAG.doFlag = 1;
+			sFLAG.doNonSticky = 1;
+			calcOPS++;
 		}
 	}
+
 	iPC = curPC;
 	setCode();
 }

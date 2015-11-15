@@ -173,7 +173,7 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 			m_local.d8.stq = dt8;
 		}
 
-		GSVector8 dTex(dscan.t);
+		GSVector8 dt(dscan.t);
 
 		for(int j = 0, k = sel.fst ? 2 : 3; j < k; j++)
 		{
@@ -181,9 +181,9 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 			switch(j)
 			{
-			case 0: dstq = dTex.xxxx(); break;
-			case 1: dstq = dTex.yyyy(); break;
-			case 2: dstq = dTex.zzzz(); break;
+			case 0: dstq = dt.xxxx(); break;
+			case 1: dstq = dt.yyyy(); break;
+			case 2: dstq = dt.zzzz(); break;
 			}
 
 			for(int i = 0; i < 8; i++)
@@ -221,12 +221,12 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 			GSVector8 dc(dscan.c);
 
-			GSVector8 dRect = dc.xxxx();
+			GSVector8 dr = dc.xxxx();
 			GSVector8 db = dc.zzzz();
 
 			for(int i = 0; i < 8; i++)
 			{
-				GSVector8i r = GSVector8i(dRect * shift[1 + i]).ps32();
+				GSVector8i r = GSVector8i(dr * shift[1 + i]).ps32();
 				GSVector8i b = GSVector8i(db * shift[1 + i]).ps32();
 
 				m_local.d[i].rb = r.upl16(b);
@@ -367,12 +367,12 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 		{
 			m_local.d4.c = GSVector4i(dscan.c * shift[0]).xzyw().ps32();
 
-			GSVector4 dRect = dscan.c.xxxx();
+			GSVector4 dr = dscan.c.xxxx();
 			GSVector4 db = dscan.c.zzzz();
 
 			for(int i = 0; i < 4; i++)
 			{
-				GSVector4i r = GSVector4i(dRect * shift[1 + i]).ps32();
+				GSVector4i r = GSVector4i(dr * shift[1 + i]).ps32();
 				GSVector4i b = GSVector4i(db * shift[1 + i]).ps32();
 
 				m_local.d[i].rb = r.upl16(b);
@@ -1148,7 +1148,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.srl32(15) == GSVector8i::zero();
+						// test |= fd.srl32(15) == GSVector8i::zero();
+						test |= fd.sll32(16).sra32(31) == GSVector8i::zero();
 					}
 					else
 					{
@@ -1159,7 +1160,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.sll32(16).sra32(31);
+						test |= fd.sll32(16).sra32(31); // == GSVector8i::xffffffff();
 					}
 					else
 					{
@@ -2264,7 +2265,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.srl32(15) == GSVector4i::zero();
+						// test |= fd.srl32(15) == GSVector4i::zero();
+						test |= fd.sll32(16).sra32(31) == GSVector4i::zero();
 					}
 					else
 					{
@@ -2275,7 +2277,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(sel.fpsm == 2)
 					{
-						test |= fd.sll32(16).sra32(31);
+						test |= fd.sll32(16).sra32(31); // == GSVector4i::xffffffff();
 					}
 					else
 					{

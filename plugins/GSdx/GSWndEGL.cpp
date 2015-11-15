@@ -58,7 +58,7 @@ void GSWndEGL::CreateContext(int major, int minor)
 	eglChooseConfig(m_eglDisplay, attrList, &eglConfig, 1, &numConfigs);
 	if ( numConfigs == 0 )
 	{
-		fprintf(stderr,"EGL: Failed to get a frame buffer config!\n");
+		fprintf(stderr,"EGL: Failed to get a frame buffer config! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
 	}
 
@@ -283,11 +283,15 @@ void GSWndEGL::OpenEGLDisplay()
 {
 	// Create an EGL display from the native display
 	m_eglDisplay = eglGetDisplay((EGLNativeDisplayType)m_NativeDisplay);
-	if ( m_eglDisplay == EGL_NO_DISPLAY )
+	if ( m_eglDisplay == EGL_NO_DISPLAY ) {
+		fprintf(stderr,"EGL: Failed to open a display! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
+	}
 
-	if ( !eglInitialize(m_eglDisplay, NULL, NULL) )
+	if ( !eglInitialize(m_eglDisplay, NULL, NULL) ) {
+		fprintf(stderr,"EGL: Failed to initialize the display! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
+	}
 }
 
 #endif

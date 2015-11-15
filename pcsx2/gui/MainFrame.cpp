@@ -109,12 +109,12 @@ void MainEmuFrame::OnCloseWindow(wxCloseEvent& evt)
 
 	CoreThread.Suspend();
 
-	bool isClosing = false;
+	//bool isClosing = false;
 
 	if( !evt.CanVeto() )
 	{
 		// Mandatory destruction...
-		isClosing = true;
+		//isClosing = true;
 	}
 	else
 	{
@@ -348,7 +348,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	// ------------------------------------------------------------------------
 
-	wxSize backsize( m_background.GetSize() );
+	// The background logo and its window size are different on Windows. Use the
+	// background logo size, which is what it'll eventually be resized to.
+	wxSize backsize(m_background.GetBitmap().GetWidth(), m_background.GetBitmap().GetHeight());
 
 	wxString wintitle;
 	if( PCSX2_isReleaseVersion )
@@ -359,7 +361,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	else
 	{
 		// beta / development editions, which feature revision number and compile date.
-#ifndef openSUSE
+#ifndef DISABLE_BUILD_DATE
 		wintitle.Printf( L"%s  %d.%d.%d-%lld%s (git)  %s", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV, SVN_MODS ? L"m" : wxEmptyString, fromUTF8(__DATE__).c_str() );
 #else
@@ -385,6 +387,10 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	wxBoxSizer& joe( *new wxBoxSizer( wxVERTICAL ) );
 	joe.Add( &m_background );
 	SetSizerAndFit( &joe );
+	// Makes no sense, but this is needed for the window size to be correct for
+	// 200% DPI on Windows. The SetSizerAndFit is supposed to be doing the exact
+	// same thing.
+	GetSizer()->SetSizeHints(this);
 
 	// Use default window position if the configured windowpos is invalid (partially offscreen)
 	if( g_Conf->MainGuiPosition == wxDefaultPosition || !pxIsValidWindowPosition( *this, g_Conf->MainGuiPosition) )
@@ -538,12 +544,15 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 MainEmuFrame::~MainEmuFrame() throw()
 {
-	if( m_RestartEmuOnDelete )
-	{
-		sApp.SetExitOnFrameDelete( false );
-		sApp.PostAppMethod( &Pcsx2App::DetectCpuAndUserMode );
-		sApp.WipeUserModeSettings();
+	try {
+		if( m_RestartEmuOnDelete )
+		{
+			sApp.SetExitOnFrameDelete( false );
+			sApp.PostAppMethod( &Pcsx2App::DetectCpuAndUserMode );
+			sApp.WipeUserModeSettings();
+		}
 	}
+	DESTRUCTOR_CATCHALL
 }
 
 void MainEmuFrame::DoGiveHelp(const wxString& text, bool show)

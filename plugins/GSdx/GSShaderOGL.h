@@ -25,14 +25,6 @@ class GSShaderOGL {
 	GLuint m_pipeline;
 	hash_map<uint64, GLuint > m_single_prog;
 	const bool m_debug_shader;
-	GLuint m_vs_sub_count;
-	GLuint m_ps_sub_count;
-
-	GLuint m_vs_sub[1];
-	GLuint m_ps_sub[5];
-
-	void SetupSubroutineUniform();
-	void SetupRessources();
 
 	bool ValidateShader(GLuint p);
 	bool ValidateProgram(GLuint p);
@@ -46,14 +38,14 @@ class GSShaderOGL {
 	~GSShaderOGL();
 
 	void GS(GLuint s);
-	void PS(GLuint s, GLuint sub_count = 0);
-	void PS_subroutine(GLuint *sub);
-	void PS_ressources(GLuint64 handle[2]);
-	void VS(GLuint s, GLuint sub_count = 0);
-	void VS_subroutine(GLuint *sub);
+	void PS(GLuint s);
+	void VS(GLuint s);
 
 	void UseProgram();
 
 	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+
+	int DumpAsm(const std::string& file, GLuint p);
+
 	void Delete(GLuint s);
 };

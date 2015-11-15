@@ -282,6 +282,19 @@ namespace Implementations
 	void Sys_Suspend()
 	{
 		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		if (gsframe && gsframe->IsShown() && gsframe->IsFullScreen()) {
+			// On some cases, probably due to driver bugs, if we don't exit fullscreen then
+			// the content stays on screen. Try to prevent that by first exiting fullscreen,
+			// but don't update the internal PCSX2 state/config, and PCSX2 will restore
+			// fullscreen correctly when emulation resumes according to its state/config.
+			// This is similar to what LilyPad's "Safe fullscreen exit on escape" hack does,
+			// and thus hopefully makes LilyPad's hack redundant.
+			gsframe->ShowFullScreen(false, false);
+		}
+
+		CoreThread.Suspend();
+
+		gsframe = wxGetApp().GetGsFramePtr(); // just in case suspend removes this window
 		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc) {
 			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
 			// However, by default suspend just hides the gs window, so PCSX2 will not exit
@@ -291,8 +304,8 @@ namespace Implementations
 			// So if we're set to close on esc and nogui:
 			// If the user didn't specify --noguiprompt - exit immediately.
 			// else prompt to either exit or abort the suspend.
-			if (!wxGetApp().ExitPromptWithNoGUI() // the user specified to exit immediately
-				|| (wxOK == wxMessageBox(_("Exit PCSX2?"),
+			if (!wxGetApp().ExitPromptWithNoGUI() // configured to exit without a dialog
+				|| (wxOK == wxMessageBox(_("Exit PCSX2?"), // or confirmed exit at the dialog
 										 L"PCSX2",
 										 wxICON_WARNING | wxOK | wxCANCEL)))
 			{
@@ -303,16 +316,17 @@ namespace Implementations
 			else
 			{
 				// aborting suspend request
-				// TODO: It's likely that if we were full screen before showing the
-				// prompt then we're now not in full screen anymore. It would have
-				// been ideal to restore full screen, but the full screen flow is complex
-				// and specifically gsframe->IsFullScreen() is always false when we enter
-				// this function - even if we were full screen before displaying the prompt.
+				// Note: if we didn't want to suspend emulation for this confirmation dialog,
+				// and if LilyPad has "Safe fullscreen exit on ESC", then pressing ESC would
+				// have exited fullscreen without PCSX2 knowing about it, and since it's not
+				// suspended it would not re-init the fullscreen state if the confirmation is
+				// aborted. On such case we'd have needed to set the gsframe fullscreen mode
+				// here according to g_Conf->GSWindow.IsFullscreen
+				CoreThread.Resume();
 				return;
 			}
 		}
 
-		CoreThread.Suspend();
 		sMainFrame.SetFocus();
 	}
 
@@ -383,8 +397,38 @@ namespace Implementations
 		g_Pcsx2Recording ^= 1;
 
 		GetMTGS().WaitGS();		// make sure GS is in sync with the audio stream when we start.
-		if( GSsetupRecording != NULL ) GSsetupRecording(g_Pcsx2Recording, NULL);
-		if( SPU2setupRecording != NULL ) SPU2setupRecording(g_Pcsx2Recording, NULL);
+		if (g_Pcsx2Recording) {
+			// start recording
+
+			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
+			// (the GSdx dialog is already properly modal for the GS window)
+			bool needsMainFrameEnable = false;
+			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled()) {
+				needsMainFrameEnable = true;
+				GetMainFramePtr()->Disable();
+			}
+
+			if (GSsetupRecording) {
+				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
+				if (GSsetupRecording(g_Pcsx2Recording, NULL)) {
+					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+				} else {
+					// recording dialog canceled by the user. align our state
+					g_Pcsx2Recording ^= 1;
+				}
+			} else {
+				// the GS doesn't support recording.
+				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+			}
+
+			if (GetMainFramePtr() && needsMainFrameEnable)
+				GetMainFramePtr()->Enable();
+
+		} else {
+			// stop recording
+			if (GSsetupRecording) GSsetupRecording(g_Pcsx2Recording, NULL);
+			if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+		}
 	}
 
 	void Cpu_DumpRegisters()
@@ -566,6 +610,16 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 		{
 			// ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
+			if (acode.keycode >= 'A' && acode.keycode <= 'Z') {
+				// Note that this needs to match the key event codes at Pcsx2App::PadKeyDispatch
+				// Our canonical representation is the char code (at lower case if
+				// applicable) with a separate modifier indicator, including shift.
+				// The parser deviates from this by setting the keycode to upper case if
+				// modifiers are used with plain letters. Luckily, it sets the modifiers
+				// correctly, including shift (for letters without modifiers it parses lower case).
+				// So we only need to change upper case letters to lower case.
+				acode.keycode += 'a' - 'A';
+			}
 			if (_acode.ToString() != acode.ToString()) {
 				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
 					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
@@ -607,7 +661,39 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	}
 	else
 	{
-		operator[](acode.val32) = result;
+		if (!strcmp("Sys_TakeSnapshot", searchfor)) {
+			// Sys_TakeSnapshot is special in a bad way. On its own it creates a screenshot
+			// but GSdx also checks whether shift or ctrl are held down, and for each of
+			// them it does a different thing (gs dumps). So we need to map a shortcut and
+			// also the same shortcut with shift and the same with ctrl to the same function.
+			// So make sure the shortcut doesn't include shift or ctrl, and then add two more
+			// which are derived from it.
+			// Also, looking at the GSdx code, it seems that it never cares about both shift
+			// and ctrl held together, but PCSX2 traditionally mapped f8, shift-f8 and ctrl-shift-f8
+			// to Sys_TakeSnapshot, so let's not change it - we'll keep adding only shift and
+			// ctrl-shift to the base shortcut.
+			if (acode.cmd || acode.shift) {
+				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
+					WX_STR(acode.ToString()));
+			}
+			else {
+				KeyAcceleratorCode shifted(acode); shifted.Shift();
+				KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
+				operator[](acode.val32) = result;
+				operator[](shifted.val32) = result;
+				operator[](controlledShifted.val32) = result;
+
+				if (_acode.val32 != acode.val32) { // overriding default
+					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
+						WX_STR(shifted.ToString()),
+						WX_STR(controlledShifted.ToString())
+						);
+				}
+			}
+		}
+		else {
+			operator[](acode.val32) = result;
+		}
 	}
 }
 
@@ -628,6 +714,9 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	typedef KeyAcceleratorCode AAC;
 
 	if( !GlobalAccels ) GlobalAccels = new AcceleratorDictionary;
+
+	// Why do we even have those here? all of them seem to be overridden
+	// by GSPanel::m_Accels ( GSPanel::InitDefaultAccelerators() )
 
 	GlobalAccels->Map( AAC( WXK_F1 ),			"States_FreezeCurrentSlot" );
 	GlobalAccels->Map( AAC( WXK_F3 ),			"States_DefrostCurrentSlot" );

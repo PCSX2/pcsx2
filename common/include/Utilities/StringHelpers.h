@@ -21,11 +21,15 @@
 
 #include <wx/tokenzr.h>
 
+#if _WIN32
+	#define WX_STR(str) (str.wc_str())
+#else
 // Stupid wx3.0 doesn't support c_str for vararg function
 #if wxMAJOR_VERSION >= 3
 	#define WX_STR(str) (static_cast<const char*>(str.c_str()))
 #else
 	#define WX_STR(str) (str.c_str())
+#endif
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -141,7 +145,6 @@ class FastFormatAscii
 protected:
 	ScopedAlignedAlloc<char,16>*	m_dest;
 	bool				m_deleteDest;
-	uint				m_Length;
 	
 public:
 	FastFormatAscii();
@@ -151,7 +154,6 @@ public:
 
 	void Clear();
 	bool IsEmpty() const;
-	uint Length() const { return m_Length; }
 
 	const char* c_str() const		{ return m_dest->GetPtr(); }
 	operator const char*() const	{ return m_dest->GetPtr(); }

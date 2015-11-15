@@ -63,7 +63,7 @@ BEGIN
     LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
     LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,236,146,20
     CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,86,58,9
-    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP,6,213,119,55,WS_EX_CLIENTEDGE
+    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,213,119,55,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,149,84,12
     PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,167,108,14
     CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,153,104,10,NOT WS_TABSTOP

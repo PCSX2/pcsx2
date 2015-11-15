@@ -42,7 +42,7 @@ my $gsdx_out = File::Spec->catdir($gsdx_path, "glsl_source.h");
 
 # Just a hack to reuse glsl2h function easily
 $gsdx_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "GSdx", "res", "glsl");
-my @tfx_res = qw/tfx_fs.glsl tfx_fs_subroutine.glsl/;
+my @tfx_res = qw/tfx_fs.glsl/;
 my $tfx_all = File::Spec->catdir($gsdx_path, "tfx_fs_all.glsl");
 
 my @gsdx_res = qw/convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx_vgs.glsl tfx_fs_all.glsl fxaa.fx/;

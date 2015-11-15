@@ -13,10 +13,6 @@ endif()
 
 
 set(CommonFlags
-    # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
-    # Disable this optimization for the moment
-    -fno-omit-frame-pointer
-    # END GCC-4.6
     -fno-strict-aliasing
     -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -26,11 +22,15 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-set(OptimizationFlags -O2)
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+endif()
+
+if ("${PGO}" STREQUAL "generate")
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-generate)
+elseif("${PGO}" STREQUAL "use")
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -fprofile-use)
 endif()
 
 # Debug - Build
@@ -38,10 +38,10 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags})
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
 
 endif()
 
@@ -271,8 +271,8 @@ set(pcsx2GuiSources
 	gui/Panels/MemoryCardListView.cpp
 	gui/Panels/ThemeSelectorPanel.cpp
 	gui/Dialogs/BaseConfigurationDialog.cpp
-	gui/Dialogs/BiosSelectorDialog.cpp
 	gui/Dialogs/ConfirmationDialogs.cpp
+	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
 	gui/Dialogs/GameDatabaseDialog.cpp
@@ -297,6 +297,7 @@ set(pcsx2GuiSources
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
 	gui/MemoryCardFile.cpp
+	gui/MemoryCardFolder.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/MemoryCardListPanel.cpp
 	gui/MessageBoxes.cpp
@@ -349,6 +350,7 @@ set(pcsx2GuiHeaders
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MemoryCardFile.h
+	gui/MemoryCardFolder.h
 	gui/MSWstuff.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
@@ -398,6 +400,7 @@ set(pcsx2IPUHeaders
 
 # Linux sources
 set(pcsx2LinuxSources
+	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
     Linux/LnxFlatFileReader.cpp
     )
@@ -631,19 +634,20 @@ set(pcsx2FinalSources
 )
 
 set(pcsx2FinalLibs
-	Utilities
-	x86emitter
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ZLIB_LIBRARIES}
+    Utilities
+    x86emitter
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
+    ${GCOV_LIBRARIES}
 )
 
 # additonal include directories
 include_directories(
-					gui
-					x86
-                    ${CMAKE_BINARY_DIR}/pcsx2/gui
+    gui
+    x86
+    ${CMAKE_BINARY_DIR}/pcsx2/gui
 )
 
 ### Generate the resources files

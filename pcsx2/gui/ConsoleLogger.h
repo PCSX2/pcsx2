@@ -57,7 +57,11 @@ public:
 	pxLogConsole() {}
 
 protected:
+#if wxMAJOR_VERSION >= 3
+	virtual void DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info);
+#else
 	virtual void DoLog(wxLogLevel level, const wxChar *szString, time_t t);
+#endif
 };
 
 
@@ -161,7 +165,7 @@ protected:
 		ConsoleColors	color;
 		int				startpoint;
 
-		ColorSection() {}
+		ColorSection() : color(Color_Default), startpoint(0) {}
 		ColorSection( ConsoleColors _color, int msgptr ) : color(_color), startpoint(msgptr) { }
 	};
 

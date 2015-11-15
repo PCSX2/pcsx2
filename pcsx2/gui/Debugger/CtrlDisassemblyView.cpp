@@ -126,7 +126,7 @@ public:
 		textControl->SetFocus();
 		textControl->SetFocusFromKbd();
 	}
-	wxString getText() { return textControl->GetLabel(); }
+	wxString getText() { return textControl->GetValue(); }
 
 private:
 	NonAutoSelectTextCtrl* textControl;
@@ -827,6 +827,7 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 					return;
 				gotoAddress(addr);
 			}
+			break;
 		default:
 			evt.Skip();
 			break;

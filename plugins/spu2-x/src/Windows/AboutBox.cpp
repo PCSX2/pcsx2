@@ -19,7 +19,6 @@
 #include "Dialogs.h"
 
 #include "svnrev.h"
-#include "Hyperlinks.h"
 
 static LRESULT WINAPI AboutProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -27,9 +26,6 @@ static LRESULT WINAPI AboutProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		case WM_INITDIALOG:
 		{
-			ConvertStaticToHyperlink( hDlg, IDC_LINK_GOOGLECODE );
-			ConvertStaticToHyperlink( hDlg, IDC_LINK_WEBSITE );
-
 			wchar_t outstr[256];
 			if( IsDevBuild )
 				swprintf_s( outstr, L"Build %lld -- Compiled on " _T(__DATE__), SVN_REV );

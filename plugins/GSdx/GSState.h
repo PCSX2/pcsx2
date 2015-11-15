@@ -184,6 +184,7 @@ protected:
 	void GetAlphaMinMax();
 	bool TryAlphaTest(uint32& fm, uint32& zm);
 	bool IsOpaque();
+	bool IsMipMapActive();
 
 public:
 	GIFPath m_path[4];
@@ -201,6 +202,7 @@ public:
 	CRC::Game m_game;
 	GSDump m_dump;
 	bool m_nativeres;
+	bool m_mipmap;
 
 	int s_n;
 	bool s_dump;
@@ -223,7 +225,7 @@ public:
 
 	bool IsEnabled(int i);
 
-	float GetFPS();
+	float GetTvRefreshRate();
 
 	virtual void Reset();
 	virtual void Flush();

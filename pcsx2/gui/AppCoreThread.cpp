@@ -31,6 +31,7 @@
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"
+#include "Sio.h"
 
 __aligned16 SysMtgsThread mtgsThread;
 __aligned16 AppCoreThread CoreThread;
@@ -88,7 +89,10 @@ AppCoreThread::AppCoreThread() : SysCoreThread()
 
 AppCoreThread::~AppCoreThread() throw()
 {
-	_parent::Cancel();		// use parent's, skips thread affinity check.
+	try {
+		_parent::Cancel();		// use parent's, skips thread affinity check.
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 static void _Cancel()
@@ -344,6 +348,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	wxString gameName;
 	wxString gameCompat;
+	wxString gameMemCardFilter;
 
 	int numberLoadedCheats;
 	int numberLoadedWideScreenPatches;
@@ -368,6 +373,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				gameName   = game.getString("Name");
 				gameName  += L" (" + game.getString("Region") + L")";
 				gameCompat = L" [Status = "+compatToStringWX(compat)+L"]";
+				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
 			if (EmuConfig.EnablePatches) {
@@ -380,6 +386,12 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				}
 			}
 		}
+	}
+
+	if (!gameMemCardFilter.IsEmpty()) {
+		sioSetGameSerial(gameMemCardFilter);
+	} else {
+		sioSetGameSerial(curGameKey);
 	}
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
@@ -513,6 +525,7 @@ void AppCoreThread::GameStartingInThread()
 	m_ExecMode = ExecMode_Paused;
 	OnResumeReady();
 	_reset_stuff_as_needed();
+	ClearMcdEjectTimeoutNow(); // probably safe to do this when a game boots, eliminates annoying prompts
 	m_ExecMode = ExecMode_Opened;
 	
 	_parent::GameStartingInThread();
@@ -724,8 +737,11 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 ScopedCoreThreadClose::~ScopedCoreThreadClose() throw()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsFullyClosed = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsFullyClosed = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me )
@@ -751,8 +767,11 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 ScopedCoreThreadPause::~ScopedCoreThreadPause() throw()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsPaused = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsPaused = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPopup::ScopedCoreThreadPopup()

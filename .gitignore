@@ -11,19 +11,34 @@
 *.dsp
 *.dsw
 *.bsc
-*.mo
+*.aps
+*.exe
 
 *.trace
-*.asm
 *.dump
+
+*.asm
+!/pcsx2/IPU/yuv2rgb.asm
+!/pcsx2/x86/ix86-32/aVif_proc-32.asm
+!/plugins/CDVDpeops/i386.asm
+!/plugins/zerogs/dx/x86-32.asm
+!/plugins/zerogs/dx/x86-64.asm
+!/plugins/zerogs/opengl/x86-32.asm
+!/plugins/zzogl-pg/opengl/x86-32.asm
+
+**/Win32/Release*
+**/Win32/Debug*
+**/Win32/Devel*
+**/x64/Release*
+**/x64/Debug*
+**/x64/Devel*
 
 _ReSharper.*
 pcsx2.snapshot_*
-postBuild.inc.cmd
-postBuild.cmd
 svnrev.h
 
-build
+/build
+/obj-*
 
 .DS_Store
 Thumbs.db
@@ -37,12 +52,17 @@ Devel
 
 oprofile_data/
 
-/BuildLog.htm
-/UpgradeLog.XML
-/UpgradeLog2.XML
-/UpgradeLog3.XML
+# Visual Studio upgrades
+/Backup*
+/UpgradeLog*.htm
 
-/bin/pcsx2*
+/bin/**/*.dll
+/bin/**/*.exp
+/bin/**/*.ilk
+/bin/**/*.lib
+/bin/**/*.pdb
+/bin/PCSX2
+/bin/*ReplayLoader
 /bin/bios
 /bin/dumps
 /bin/help
@@ -56,9 +76,7 @@ oprofile_data/
 /ipch
 /nsis/output/
 
-/3rdparty/soundtouch/Win32
-/3rdparty/bzip2/Win32
-/3rdparty/libjpeg/Win32
+!/3rdparty/libjpeg/change.log
 /3rdparty/portaudio/portaudio-2.0.pc
 /3rdparty/portaudio/bin
 /3rdparty/portaudio/bin-*
@@ -67,26 +85,14 @@ oprofile_data/
 /3rdparty/portaudio/config.*
 /3rdparty/portaudio/lib-stamp
 /3rdparty/portaudio/Makefile
-/3rdparty/portaudio/build/*
 /3rdparty/portaudio/bindings
 /3rdparty/portaudio/test
 /3rdparty/portaudio/testcvs
-/3rdparty/portaudio/build/msvc/Win32
-/3rdparty/portaudio/build/msvc/Release (NO ASIO)
-/3rdparty/portaudio/build/msvc/x64
 /3rdparty/portaudio/src/hostapi/asio/ASIOSDK/common
 /3rdparty/portaudio/src/hostapi/asio/ASIOSDK/host
 /3rdparty/portaudio/src/hostapi/wasapi/mingw-include
-/3rdparty/w32pthreads/Win32
-/3rdparty/wxWidgets/deps
-/3rdparty/wxWidgets/build/msw/Win32
-/3rdparty/wxWidgets/lib/vc_lib/msw/wx/setup.h
-/3rdparty/wxWidgets/lib/vc_lib/mswd/wx/setup.h
-/3rdparty/wxWidgets/lib/vc_lib/mswd/wx/msw/rcdefs.h
-/3rdparty/zlib/Win32
-/common/deps
-/common/build/Utilities/Win32
-/common/build/x86emitter/Win32
+/3rdparty/**/include/wx/setup.h
+/3rdparty/**/wx/msw/rcdefs.h
 /nsis/svnrev_cdvdiso.nsh
 /nsis/svnrev_gsdx.nsh
 /nsis/svnrev_lilypad.nsh
@@ -94,43 +100,13 @@ oprofile_data/
 /nsis/svnrev_spu2x.nsh
 /nsis/svnrev_zerogs.nsh
 /nsis/svnrev_zerospu2.nsh
-/nsis/vcredist_x86.exe
-/nsis/vcredist_2008_sp1_x86.exe
-/nsis/vcredist_2010_x86.exe
-/nsis/dxwebsetup.exe
-/pcsx2/gui/Resources/Thumbs.db
 /pcsx2/gui/Resources/*.h
-/pcsx2/windows/VCprojects/Win32
-/plugins/CDVDiso/src/Windows/Win32
-/plugins/CDVDnull/Windows/Win32
-/plugins/CDVDolio/Win32
-/plugins/CDVDolio/x64
+!/pcsx2/gui/Resources/EmbeddedImage.h
 /plugins/CDVDolio/Template
-/plugins/CDVDolio/Debug SSE4
-/plugins/FWnull/Windows/Win32
-/plugins/GSdx/Win32
-/plugins/GSdx/Release SSE2
-/plugins/GSdx/x64
 /plugins/GSdx/Template
-/plugins/GSnull/Windows/Win32
-/plugins/LilyPad/Win32
-/plugins/LilyPad/x64
-/plugins/PadNull/Windows/Win32
-/plugins/SSSPSXPAD/Win32
-/plugins/USBnull/Windows/Win32
 /plugins/USBqemu/Win32/bin
-/plugins/USBqemu/Win32/Win32
-/plugins/cdvdGigaherz/src/Windows/Win32
-/plugins/dev9null/Windows/Win32
-/plugins/spu2-x/src/Windows/Win32
-/plugins/xpad/Win32
-/plugins/xpad/x64
 /plugins/xpad/Template
-/plugins/zerogs/dx/Windows/Win32
-/plugins/zerospu2/Windows/Win32
 /plugins/zerospu2/Windows/dsound51.cpp
-/plugins/zzogl-pg/opengl/Win32/Win32
-/plugins/zzogl-pg-cg/opengl/Win32/Win32
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj

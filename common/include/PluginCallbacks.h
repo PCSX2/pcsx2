@@ -1104,7 +1104,14 @@ typedef struct _PS2E_ComponentAPI_Mcd
 
 	u64 (PS2E_CALLBACK* McdGetCRC)( PS2E_THISPTR thisptr, uint port, uint slot );
 
-	void* reserved[8];
+	// McdNextFrame
+	// Inform the memory card that a frame of emulation time has passed.
+	// Used by the FolderMemoryCard to find a good time to flush written data to the host file system.
+	void (PS2E_CALLBACK* McdNextFrame)( PS2E_THISPTR thisptr, uint port, uint slot );
+
+	void (PS2E_CALLBACK* McdReIndex)( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter );
+
+	void* reserved[6];
 
 } PS2E_ComponentAPI_Mcd;
 

@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output dev9null-0.5.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(dev9nullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(dev9nullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(dev9nullFinalFlags ${OptimizationFlags})
-
-endif()
+set(dev9nullFinalFlags "")
 
 # dev9null sources
 set(dev9nullSources

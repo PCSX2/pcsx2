@@ -92,12 +92,12 @@ void GSRendererSW::VSync(int field)
 	{
 		fprintf(s_fp, "%lld\n", m_perfmon.GetFrame());
 
-		GSVector4i dRect = GetDisplayRect();
+		GSVector4i dr = GetDisplayRect();
 		GSVector4i fr = GetFrameRect();
 		GSVector2i ds = GetDeviceSize();
 
-		fprintf(s_fp, "dRect %d %d %d %d, fr %d %d %d %d, ds %d %d\n",
-			dRect.x, dRect.y, dRect.z, dRect.w,
+		fprintf(s_fp, "dr %d %d %d %d, fr %d %d %d %d, ds %d %d\n",
+			dr.x, dr.y, dr.z, dr.w,
 			fr.x, fr.y, fr.z, fr.w,
 			ds.x, ds.y);
 
@@ -447,7 +447,8 @@ void GSRendererSW::Draw()
 	sd->bbox = bbox;
 	sd->frame = m_perfmon.GetFrame();
 
-	if(!GetScanlineGlobalData(sd)) {
+	if(!GetScanlineGlobalData(sd))
+	{
 		s_n += 3; // Keep it sync with HW renderer
 		return;
 	}
@@ -516,10 +517,14 @@ void GSRendererSW::Draw()
 		Sync(2);
 
 		uint64 frame = m_perfmon.GetFrame();
+		// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
+		// It will breaks the few games that really uses 16 bits RT
+		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
 
 		string s;
 
-		if (s_n >= s_saven) {
+		if(s_n >= s_saven)
+		{
 			// Dump Register state
 			s = format("%05d_context.txt", s_n);
 
@@ -529,8 +534,13 @@ void GSRendererSW::Draw()
 
 		if(s_savet && s_n >= s_saven && PRIM->TME)
 		{
-			s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
+			if (texture_shuffle) {
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_tex_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
+			}
 
+			s = format("%05d_f%lld_tex_%05x_%d.bmp", s_n, frame, (int)m_context->TEX0.TBP0, (int)m_context->TEX0.PSM);
 			m_mem.SaveBMP(root_sw+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
 
@@ -538,8 +548,14 @@ void GSRendererSW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
 
+			if (texture_shuffle) {
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+			}
+
+			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
 			m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
@@ -558,8 +574,13 @@ void GSRendererSW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
+			if (texture_shuffle) {
+				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
+				s = format("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+			}
 
+			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, m_context->FRAME.Block(), m_context->FRAME.PSM);
 			m_mem.SaveBMP(root_sw+s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
@@ -572,7 +593,8 @@ void GSRendererSW::Draw()
 
 		s_n++;
 
-		if ((s_n - s_saven) > s_savel) {
+		if(s_savel > 0 && (s_n - s_saven) > s_savel)
+		{
 			s_dump = 0;
 		}
 	}
@@ -1092,19 +1114,23 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.tfx = TFX_DECAL;
 			}
 
-			GSTextureCacheSW::Texture* t = m_tc->Lookup(context->TEX0, env.TEXA);
+			bool mipmap = IsMipMapActive();
 
-			if(t == NULL) {ASSERT(0); return false;}
+			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
 			GSVector4i r;
 
-			GetTextureMinMax(r, context->TEX0, context->CLAMP, gd.sel.ltf);
+			GetTextureMinMax(r, TEX0, context->CLAMP, gd.sel.ltf);
+
+			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
+
+			if(t == NULL) {ASSERT(0); return false;}
 
 			data->SetSource(t, r, 0);
 
 			gd.sel.tw = t->m_tw - 3;
 
-			if(m_mipmap && context->TEX1.MXL > 0 && context->TEX1.MMIN >= 2 && context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0)
+			if(mipmap)
 			{
 				// TEX1.MMIN
 				// 000 p
@@ -1171,7 +1197,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.k = GSVector4((float)k);
 				}
 
-				GIFRegTEX0 MIP_TEX0 = context->TEX0;
+				GIFRegTEX0 MIP_TEX0 = TEX0;
 				GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
 				GSVector4 tmin = m_vt.m_min.t;
@@ -1300,8 +1326,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				}
 			}
 
-			uint16 tw = 1u << context->TEX0.TW;
-			uint16 th = 1u << context->TEX0.TH;
+			uint16 tw = 1u << TEX0.TW;
+			uint16 th = 1u << TEX0.TH;
 
 			switch(context->CLAMP.WMS)
 			{
@@ -1423,7 +1449,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : ZTST_ALWAYS;
-		gd.sel.zoverflow = GSVector4i(m_vt.m_max.p).z == 0x80000000;
+		gd.sel.zoverflow = (uint32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
 	}
 
 	#if _M_SSE >= 0x501
@@ -1508,6 +1534,8 @@ GSRendererSW::SharedData::SharedData(GSRendererSW* parent)
 	: m_parent(parent)
 	, m_fb_pages(NULL)
 	, m_zb_pages(NULL)
+	, m_fpsm(0)
+	, m_zpsm(0)
 	, m_using_pages(false)
 	, m_syncpoint(SyncNone)
 {
@@ -1544,12 +1572,12 @@ void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const 
 	{
 		//TransactionScope scope(s_lock);
 
-		if(global.sel.fb)
+		if(global.sel.fb && fb_pages != NULL)
 		{
 			m_parent->UsePages(fb_pages, 0);
 		}
 
-		if(global.sel.zb)
+		if(global.sel.zb && zb_pages != NULL)
 		{
 			m_parent->UsePages(zb_pages, 1);
 		}

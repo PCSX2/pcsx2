@@ -30,91 +30,15 @@
 #include "GLState.h"
 
 // A couple of flag to determine the blending behavior
-#define A_MAX	(0x100)	 // Impossible blending uses coeff bigger than 1
-#define C_CLR	(0x200)	 // Clear color blending (use directly the destination color as blending factor)
-#define NO_BAR  (0x400)  // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_A_MAX		(0x100) // Impossible blending uses coeff bigger than 1
+#define BLEND_C_CLR		(0x200) // Clear color blending (use directly the destination color as blending factor)
+#define BLEND_NO_BAR	(0x400) // don't require texture barrier for the blending (because the RT is not used)
+#define BLEND_ACCU		(0x800) // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
 #endif
-
-class GSBlendStateOGL {
-	// Note: You can also select the index of the draw buffer for which to set the blend setting
-	// We will keep basic the first try
-	bool   m_enable;
-	GLenum m_equation_RGB;
-	GLenum m_func_sRGB;
-	GLenum m_func_dRGB;
-	bool   m_constant_factor;
-
-public:
-
-	GSBlendStateOGL() : m_enable(false)
-		, m_equation_RGB(0)
-		, m_func_sRGB(0)
-		, m_func_dRGB(0)
-		, m_constant_factor(false)
-	{}
-
-	void SetRGB(GLenum op, GLenum src, GLenum dst)
-	{
-		m_equation_RGB = op;
-		m_func_sRGB = src;
-		m_func_dRGB = dst;
-		if (IsConstant(src) || IsConstant(dst)) m_constant_factor = true;
-	}
-
-	void RevertOp()
-	{
-		if(m_equation_RGB == GL_FUNC_ADD)
-			m_equation_RGB = GL_FUNC_REVERSE_SUBTRACT;
-		else if(m_equation_RGB == GL_FUNC_REVERSE_SUBTRACT)
-			m_equation_RGB = GL_FUNC_ADD;
-	}
-
-	void EnableBlend() { m_enable = true;}
-
-	bool IsConstant(GLenum factor) { return ((factor == GL_CONSTANT_COLOR) || (factor == GL_ONE_MINUS_CONSTANT_COLOR)); }
-
-	bool HasConstantFactor() { return m_constant_factor; }
-
-	void SetupBlend(float factor)
-	{
-		if (GLState::blend != m_enable) {
-			GLState::blend = m_enable;
-			if (m_enable)
-				glEnable(GL_BLEND);
-			else
-				glDisable(GL_BLEND);
-		}
-
-		if (m_enable) {
-			if (HasConstantFactor()) {
-				if (GLState::bf != factor) {
-					GLState::bf = factor;
-					gl_BlendColor(factor, factor, factor, 0);
-				}
-			}
-
-			if (GLState::eq_RGB != m_equation_RGB) {
-				GLState::eq_RGB = m_equation_RGB;
-				if (gl_BlendEquationSeparateiARB)
-					gl_BlendEquationSeparateiARB(0, m_equation_RGB, GL_FUNC_ADD);
-				else
-					gl_BlendEquationSeparate(m_equation_RGB, GL_FUNC_ADD);
-			}
-			if (GLState::f_sRGB != m_func_sRGB || GLState::f_dRGB != m_func_dRGB) {
-				GLState::f_sRGB = m_func_sRGB;
-				GLState::f_dRGB = m_func_dRGB;
-				if (gl_BlendFuncSeparateiARB)
-					gl_BlendFuncSeparateiARB(0, m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
-				else
-					gl_BlendFuncSeparate(m_func_sRGB, m_func_dRGB, GL_ONE, GL_ZERO);
-			}
-		}
-	}
-};
 
 class GSDepthStencilOGL {
 	bool m_depth_enable;
@@ -229,7 +153,6 @@ class GSDeviceOGL : public GSDevice
 			{
 				uint32 wildhack:1;
 				uint32 bppz:2;
-				// Next param will be handle by subroutine
 				uint32 tme:1;
 				uint32 fst:1;
 
@@ -239,13 +162,31 @@ class GSDeviceOGL : public GSDevice
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
+	};
 
-		static uint32 size() { return 1 << 5; }
+	struct GSSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 sprite:1;
+				uint32 point:1;
+
+				uint32 _free:30;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key;}
+
+		GSSelector() : key(0) {}
+		GSSelector(uint32 k) : key(k) {}
 	};
 
 	__aligned(struct, 32) PSConstantBuffer
@@ -254,22 +195,24 @@ class GSDeviceOGL : public GSDevice
 		GSVector4 WH;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
+		GSVector4i FbMask;
 		GSVector4 AlphaCoeff;
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
-		GSVector4 TC_OffsetHack;
+		GSVector4 TC_OH_TS;
 
 		PSConstantBuffer()
 		{
 			FogColor_AREF = GSVector4::zero();
-			HalfTexel = GSVector4::zero();
-			WH = GSVector4::zero();
-			MinMax = GSVector4::zero();
-			MinF_TA = GSVector4::zero();
-			MskFix = GSVector4i::zero();
-			AlphaCoeff = GSVector4::zero();
-			TC_OffsetHack = GSVector4::zero();
+			HalfTexel     = GSVector4::zero();
+			WH            = GSVector4::zero();
+			MinMax        = GSVector4::zero();
+			MinF_TA       = GSVector4::zero();
+			MskFix        = GSVector4i::zero();
+			AlphaCoeff    = GSVector4::zero();
+			TC_OH_TS      = GSVector4::zero();
+			FbMask        = GSVector4i::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -277,9 +220,9 @@ class GSDeviceOGL : public GSDevice
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			// if WH matches both HalfTexel and TC_OffsetHack do too
+			// if WH matches both HalfTexel and TC_OH_TS do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue())
 			{
 				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
@@ -287,6 +230,7 @@ class GSDeviceOGL : public GSDevice
 				a[2] = b[2];
 				a[3] = b[3];
 				a[4] = b[4];
+				a[5] = b[5];
 
 				return true;
 			}
@@ -297,39 +241,57 @@ class GSDeviceOGL : public GSDevice
 
 	struct PSSelector
 	{
+		// Performance note: there are too many shader combinations
+		// It might hurt the performance due to frequent toggling worse it could consume
+		// a lots of memory.
 		union
 		{
 			struct
 			{
-				uint32 fst:1;
-				uint32 fmt:3;
+				// *** Word 1
+				// Format
+				uint32 tex_fmt:4;
+				uint32 dfmt:2;
+				// Alpha extension/Correction
 				uint32 aem:1;
-				uint32 fog:1;
-				uint32 clr1:1;
 				uint32 fba:1;
-				uint32 aout:1;
-				uint32 date:3;
-				uint32 tcoffsethack:1;
-				//uint32 point_sampler:1; Not tested, so keep the bit for blend
+				// Fog
+				uint32 fog:1;
+				// Flat/goround shading
 				uint32 iip:1;
-				// Next param will be handle by subroutine (broken currently)
-				uint32 colclip:2;
+				// Pixel test
+				uint32 date:3;
 				uint32 atst:3;
-
+				// Color sampling
+				uint32 fst:1; // Investigate to do it on the VS
 				uint32 tfx:3;
 				uint32 tcc:1;
 				uint32 wms:2;
 				uint32 wmt:2;
 				uint32 ltf:1;
-				uint32 ifmt:2;
+				// Shuffle and fbmask effect
+				uint32 shuffle:1;
+				uint32 read_ba:1;
+				uint32 write_rg:1;
+				uint32 fbmask:1;
 
 				uint32 _free1:2;
 
-				// Word 2
-				uint32 blend:8;
-				uint32 dfmt:2;
+				// *** Word 2
+				// Blend and Colclip
+				uint32 blend_a:2;
+				uint32 blend_b:2;
+				uint32 blend_c:2;
+				uint32 blend_d:2;
+				uint32 clr1:1; // useful?
+				uint32 pabe:1;
+				uint32 hdr:1;
+				uint32 colclip:1;
 
-				uint32 _free2:22;
+				// Hack
+				uint32 tcoffsethack:1;
+
+				uint32 _free2:19;
 			};
 
 			uint64 key;
@@ -350,20 +312,18 @@ class GSDeviceOGL : public GSDevice
 				uint32 tau:1;
 				uint32 tav:1;
 				uint32 ltf:1;
+				uint32 aniso:1;
 
-				uint32 _free:29;
+				uint32 _free:28;
 			};
 
 			uint32 key;
 		};
 
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x7;}
+		operator uint32() {return key;}
 
 		PSSamplerSelector() : key(0) {}
 		PSSamplerSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 3; }
 	};
 
 	struct OMDepthStencilSelector
@@ -375,21 +335,18 @@ class GSDeviceOGL : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
-				uint32 alpha_stencil:1;
 
-				uint32 _free:27;
+				uint32 _free:28;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0x1f;}
+		operator uint32() {return key;}
 
 		OMDepthStencilSelector() : key(0) {}
 		OMDepthStencilSelector(uint32 k) : key(k) {}
-
-		static uint32 size() { return 1 << 5; }
 	};
 
 	struct OMColorMaskSelector
@@ -421,47 +378,10 @@ class GSDeviceOGL : public GSDevice
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
-	struct OMBlendSelector
-	{
-		union
-		{
-			struct
-			{
-				uint32 abe:1;
-				uint32 a:2;
-				uint32 b:2;
-				uint32 c:2;
-				uint32 d:2;
-				uint32 negative:1;
-
-				uint32 _free:22;
-			};
-
-			struct
-			{
-				uint32 _abe:1;
-				uint32 abcd:8;
-				uint32 _negative:1;
-
-				uint32 _free2:22;
-			};
-
-			uint32 key;
-		};
-
-		// FIXME is the & useful ?
-		operator uint32() {return key & 0x3ff;}
-
-		OMBlendSelector() : key(0) {}
-
-		bool IsCLR1() const
-		{
-			return (key & 0x19f) == 0x93; // abe == 1 && a == 1 && b == 2 && d == 1
-		}
-	};
-
-	struct D3D9Blend {int bogus, op, src, dst;};
-	static const D3D9Blend m_blendMapD3D9[3*3*3*3];
+	struct OGLBlend {uint16 bogus, op, src, dst;};
+	static const OGLBlend m_blendMapOGL[3*3*3*3 + 1];
+	static const int m_NO_BLEND;
+	static const int m_MERGE_BLEND;
 
 	static int s_n;
 
@@ -471,7 +391,6 @@ class GSDeviceOGL : public GSDevice
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
-	bool m_free_window;			
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
@@ -482,7 +401,6 @@ class GSDeviceOGL : public GSDevice
 	struct {
 		GLuint ps[2];				 // program object
 		GSUniformBufferOGL* cb;		 // uniform buffer object
-		GSBlendStateOGL* bs;
 	} m_merge_obj;
 
 	struct {
@@ -492,12 +410,12 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GLuint vs;		// program object
-		GLuint ps[13];	// program object
+		GLuint ps[18];	// program object
 		GLuint ln;		// sampler object
 		GLuint pt;		// sampler object
 		GSDepthStencilOGL* dss;
 		GSDepthStencilOGL* dss_write;
-		GSBlendStateOGL* bs;
+		GSUniformBufferOGL* cb;
 	} m_convert;
 
 	struct {
@@ -512,7 +430,6 @@ class GSDeviceOGL : public GSDevice
 
 	struct {
 		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
 		GSTexture* t;
 	} m_date;
 
@@ -521,22 +438,14 @@ class GSDeviceOGL : public GSDevice
 		GSUniformBufferOGL *cb;
 	} m_shadeboost;
 
-	struct {
-		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
-		float bf; // blend factor
-	} m_state;
-
-	GLuint m_vs[1<<6];
-	GLuint m_gs;
-	GLuint m_ps_ss[1<<3];
-	GSDepthStencilOGL* m_om_dss[1<<6];
+	GLuint m_vs[1<<5];
+	GLuint m_gs[1<<2];
+	GLuint m_ps_ss[1<<4];
+	GSDepthStencilOGL* m_om_dss[1<<4];
 	hash_map<uint64, GLuint > m_ps;
-	hash_map<uint32, GSBlendStateOGL* > m_om_bs;
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
-	GLuint m_rt_ss;
 
 	GSUniformBufferOGL* m_vs_cb;
 	GSUniformBufferOGL* m_ps_cb;
@@ -564,7 +473,8 @@ class GSDeviceOGL : public GSDevice
 	virtual ~GSDeviceOGL();
 
 	static void CheckDebugLog();
-	static void DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
+	// Used by OpenGL, so the same calling convention is required.
+	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
 
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }
@@ -575,6 +485,7 @@ class GSDeviceOGL : public GSDevice
 	void SetVSync(bool enable);
 
 	void DrawPrimitive();
+	void DrawPrimitive(int offset, int count);
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 	void BeforeDraw();
@@ -596,9 +507,10 @@ class GSDeviceOGL : public GSDevice
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
+	void CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, bool linear = true);
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, GSBlendStateOGL* bs, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, bool linear = true);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 
@@ -612,30 +524,30 @@ class GSDeviceOGL : public GSDevice
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 
-	void OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref);
-	void OMSetBlendState(GSBlendStateOGL* bs, float bf);
+	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
+	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
-	void OMSetWriteBuffer(GLenum buffer = GL_COLOR_ATTACHMENT0);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
 
 	void CreateTextureFX();
 	GLuint CompileVS(VSSelector sel, int logz);
-	GLuint CompileGS();
+	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);
-	GLuint CreateSampler(bool bilinear, bool tau, bool tav);
+	GLuint CreateSampler(bool bilinear, bool tau, bool tav, bool aniso = false);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
-	GSBlendStateOGL* CreateBlend(OMBlendSelector bsel, float afix);
+
+	void SelfShaderTest();
 
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupVS(VSSelector sel);
-	void SetupGS(bool enable);
+	void SetupGS(GSSelector sel);
 	void SetupPS(PSSelector sel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
-	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending =  false);
+	void SetupOM(OMDepthStencilSelector dssel);
 	GLuint GetSamplerID(PSSamplerSelector ssel);
 	GLuint GetPaletteSamplerID();
 

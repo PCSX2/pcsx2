@@ -23,7 +23,7 @@
 #include "DirectInput.h"
 #include "KeyboardHook.h"
 #include "RawInput.h"
-#include "XInput.h"
+#include "XInputEnum.h"
 #include "HidDevice.h"
 #include "DualShock3.h"
 

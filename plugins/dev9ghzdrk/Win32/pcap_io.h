@@ -143,7 +143,7 @@ typedef struct _full_arp_packet
 
 extern mac_address virtual_mac;
 extern mac_address broadcast_mac;
-
+extern mac_address gateway_mac;
 extern ip_address virtual_ip;
 
 #define mac_compare(a,b) (memcmp(&(a),&(b),6))

@@ -444,8 +444,10 @@ void DisassemblyFunction::generateBranchLines()
 	};
 
 	LaneInfo lanes[NUM_LANES];
-	for (int i = 0; i < NUM_LANES; i++)
+	for (int i = 0; i < NUM_LANES; i++) {
 		lanes[i].used = false;
+		lanes[i].end = 0;
+	}
 
 	u32 end = address+size;
 
@@ -643,6 +645,7 @@ void DisassemblyFunction::load()
 					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sh",immediate,rt,2);
 					funcPos += 4;
+					break;
 				case 0x2B:	// sw
 					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sw",immediate,rt,4);
@@ -989,6 +992,8 @@ void DisassemblyData::createLines()
 				}
 				break;
 			default:
+				// Avoid a call to strlen with random data
+				buffer[0] = 0;
 				break;
 			}
 

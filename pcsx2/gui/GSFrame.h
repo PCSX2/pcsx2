@@ -95,7 +95,7 @@ protected:
 	CpuUsageProvider		m_CpuUsage;
 
 public:
-	GSFrame(wxWindow* parent, const wxString& title);
+	GSFrame( const wxString& title);
 	virtual ~GSFrame() throw();
 
 	GSPanel* GetViewport();
@@ -103,7 +103,7 @@ public:
 	bool Show( bool shown=true );
 	wxStaticText* GetLabel_OutputDisabled() const;
 
-	bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
+	bool ShowFullScreen(bool show, bool updateConfig = true);
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );

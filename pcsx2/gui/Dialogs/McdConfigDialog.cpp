@@ -40,6 +40,12 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 		)
 	);
 
+	m_folderAutoIndex = new pxCheckBox( this,
+		_( "Automatically manage saves based on running game" ),
+		pxE( L"(Folder type only) Re-index memory card content every time the running software changes. This prevents the memory card from running out of space for saves."
+		)
+	);
+
 	//m_check_SavestateBackup = new pxCheckBox( this, pxsFmt(_("Backup existing Savestate when creating a new one")) );
 /*
 	for( uint i=0; i<2; ++i )
@@ -63,7 +69,8 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 	*this += 4;
 	*this	+= new wxStaticLine( this )	| StdExpand();
 
-	*this += m_check_Ejection;	
+	*this += m_check_Ejection | StdExpand();
+	*this += m_folderAutoIndex | StdExpand();
 }
 
 void Panels::McdConfigPanel_Toggles::Apply()
@@ -73,6 +80,7 @@ void Panels::McdConfigPanel_Toggles::Apply()
 
 	//g_Conf->EmuOptions.BackupSavestate			= m_check_SavestateBackup->GetValue();
 	g_Conf->EmuOptions.McdEnableEjection		= m_check_Ejection->GetValue();
+	g_Conf->EmuOptions.McdFolderAutoManage		= m_folderAutoIndex->GetValue();
 }
 
 void Panels::McdConfigPanel_Toggles::AppStatusEvent_OnSettingsApplied()
@@ -82,6 +90,7 @@ void Panels::McdConfigPanel_Toggles::AppStatusEvent_OnSettingsApplied()
 
 	//m_check_SavestateBackup ->SetValue( g_Conf->EmuOptions.BackupSavestate );
 	m_check_Ejection		->SetValue( g_Conf->EmuOptions.McdEnableEjection );
+	m_folderAutoIndex		->SetValue( g_Conf->EmuOptions.McdFolderAutoManage );
 }
 
 
@@ -92,7 +101,6 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 	: BaseConfigurationDialog( parent, _("MemoryCard Manager"), 600 )
 {
 	m_panel_mcdlist	= new MemoryCardListPanel_Simple( this );
-	m_needs_suspending = false;
 
 	wxFlexGridSizer* s_flex=new wxFlexGridSizer(3,1, 0, 0);
 	s_flex->AddGrowableCol(0);
@@ -143,30 +151,3 @@ void Dialogs::McdConfigDialog::OnMultitapClicked( wxCommandEvent& evt )
 		m_panel_mcdlist->SetMultitapEnabled( (int)box->GetClientData(), box->IsChecked() );
 }
 */
-bool Dialogs::McdConfigDialog::Show( bool show )
-{
-	// Suspend the emulation before any file operations on the memory cards can be done.
-	if( show && CoreThread.IsRunning() )
-	{
-		m_needs_suspending = true;
-		CoreThread.Suspend();
-	}
-	else if( !show && m_needs_suspending == true )
-	{
-		m_needs_suspending = false;
-		CoreThread.Resume();
-	}
-
-	if( show && m_panel_mcdlist )
-		m_panel_mcdlist->OnShown();
-
-	return _parent::Show( show );
-}
-
-int Dialogs::McdConfigDialog::ShowModal()
-{
-	if( m_panel_mcdlist )
-		m_panel_mcdlist->OnShown();
-
-	return _parent::ShowModal();
-}

@@ -77,7 +77,7 @@ int windowThreadId = 0;
 int updateQueued = 0;
 #endif
 
-int bufSize = 0;
+u32 bufSize = 0;
 unsigned char outBuf[50];
 unsigned char inBuf[50];
 
@@ -126,7 +126,7 @@ void DEBUG_NEW_SET() {
 	if (config.debug && bufSize>1) {
 		HANDLE hFile = CreateFileA("logs\\padLog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0);
 		if (hFile != INVALID_HANDLE_VALUE) {
-			int i;
+			u32 i;
 			char temp[1500];
 			char *end = temp;
 			sprintf(end, "%02X (%02X) ", inBuf[0], inBuf[1]);
@@ -980,6 +980,8 @@ ExtraWndProcResult HideCursorProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 }
 
 char restoreFullScreen = 0;
+// This hack sends ALT+ENTER to the window to toggle fullscreen.
+// PCSX2 doesn't need it (it exits full screen on ESC on its own).
 DWORD WINAPI MaximizeWindowThreadProc(void *lpParameter) {
 	Sleep(100);
 	keybd_event(VK_LMENU, MapVirtualKey(VK_LMENU, MAPVK_VK_TO_VSC), 0, 0);

@@ -60,6 +60,13 @@ void SetForceMcdEjectTimeoutNow()
 				mcds[port][slot].ForceEjection_Timeout = FORCED_MCD_EJECTION_MAX_TRIES;
 }
 
+void ClearMcdEjectTimeoutNow()
+{
+	for( u8 port=0; port<2; ++port ) 
+			for( u8 slot=0; slot<4; ++slot )
+				mcds[port][slot].ForceEjection_Timeout = 0;
+}
+
 // SIO Inline'd IRQs : Calls the SIO interrupt handlers directly instead of
 // feeding them through the IOP's branch test. (see SIO.H for details)
 
@@ -869,6 +876,28 @@ void sioWrite8(u8 value)
 void SIODMAWrite(u8 value)
 {
 	sioWrite8inl(value);
+}
+
+void sioNextFrame() {
+	for ( uint port = 0; port < 2; ++port ) {
+		for ( uint slot = 0; slot < 4; ++slot ) {
+			mcds[port][slot].NextFrame();
+		}
+	}
+}
+
+// Used to figure out when a new game boots, so that memory cards can re-index themselves and only load data relevant to that game.
+wxString SioCurrentGameSerial = L"";
+void sioSetGameSerial( const wxString& serial ) {
+	if ( serial == SioCurrentGameSerial ) { return; }
+	SioCurrentGameSerial = serial;
+
+	for ( uint port = 0; port < 2; ++port ) {
+		for ( uint slot = 0; slot < 4; ++slot ) {
+			mcds[port][slot].ReIndex( serial );
+		}
+	}
+	SetForceMcdEjectTimeoutNow();
 }
 
 void SaveStateBase::sioFreeze()

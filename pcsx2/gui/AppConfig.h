@@ -98,6 +98,14 @@ enum AspectRatioType
 	AspectRatio_MaxCount
 };
 
+enum MemoryCardType
+{
+	MemoryCard_None,
+	MemoryCard_File,
+	MemoryCard_Folder,
+	MemoryCard_MaxCount
+};
+
 // =====================================================================================================
 //  Pcsx2 Application Configuration. 
 // =====================================================================================================
@@ -182,6 +190,7 @@ public:
 	{
 		wxFileName	Filename;	// user-configured location of this memory card
 		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
+		MemoryCardType Type;	// the memory card implementation that should be used
 	};
 
 	// ------------------------------------------------------------------------
@@ -230,6 +239,21 @@ public:
 		
 		void LoadSave( IniInterface& conf );
 		void SanityCheck();
+	};
+
+	struct UiTemplateOptions {
+		UiTemplateOptions();
+		void LoadSave(IniInterface& conf);
+
+		wxString LimiterUnlimited;
+		wxString LimiterTurbo;
+		wxString LimiterSlowmo;
+		wxString LimiterNormal;
+		wxString OutputFrame;
+		wxString OutputField;
+		wxString OutputProgressive;
+		wxString OutputInterlaced;
+		wxString TitleTemplate;
 	};
 
 public:
@@ -302,6 +326,7 @@ public:
 	FilenameOptions			BaseFilenames;
 	GSWindowOptions			GSWindow;
 	FramerateOptions		Framerate;
+	UiTemplateOptions		Templates;
 	
 	// PCSX2-core emulation options, which are passed to the emu core prior to initiating
 	// an emulation session.  Note these are the options saved into the GUI ini file and

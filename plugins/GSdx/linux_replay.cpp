@@ -21,22 +21,46 @@
 #include "stdafx.h"
 #include <dlfcn.h>
 
+static void* handle;
+
 void help()
 {
 	fprintf(stderr, "Loader gs file\n");
 	fprintf(stderr, "ARG1 GSdx plugin\n");
 	fprintf(stderr, "ARG2 .gs file\n");
 	fprintf(stderr, "ARG3 Ini directory\n");
+	if (handle) {
+		dlclose(handle);
+	}
 	exit(1);
+}
+
+char* read_env(const char* var) {
+	char* v = getenv(var);
+	if (!v) {
+		fprintf(stderr, "Failed to get %s\n", var);
+		help();
+	}
+	return v;
 }
 
 int main ( int argc, char *argv[] )
 {
-	if (argc < 3) help();
+	if (argc < 1) help();
 
-	void *handle = dlopen(argv[1], RTLD_LAZY|RTLD_GLOBAL);
+	char* plugin;
+	char* gs;
+	if (argc > 2) {
+		plugin = argv[1];
+		gs = argv[2];
+	} else {
+		plugin = read_env("GSDUMP_SO");
+		gs = argv[1];
+	}
+
+	handle = dlopen(plugin, RTLD_LAZY|RTLD_GLOBAL);
 	if (handle == NULL) {
-		fprintf(stderr, "Failed to dlopen plugin %s\n", argv[1]);
+		fprintf(stderr, "Failed to dlopen plugin %s\n", plugin);
 		help();
 	}
 
@@ -46,16 +70,17 @@ int main ( int argc, char *argv[] )
 	*(void**)(&GSsetSettingsDir_ptr) = dlsym(handle, "GSsetSettingsDir");
 	*(void**)(&GSReplay_ptr) = dlsym(handle, "GSReplay");
 
-	if ( argc == 4) {
+	if (argc == 2) {
+		char *ini = read_env("GSDUMP_CONF");
+
+		GSsetSettingsDir_ptr(ini);
+
+	} else if (argc == 4) {
 		(void)GSsetSettingsDir_ptr(argv[3]);
+
 	} else if ( argc == 3) {
 #ifdef XDG_STD
-		char *val = getenv("HOME");
-		if (val == NULL) {
-			dlclose(handle);
-			fprintf(stderr, "Failed to get the home dir\n");
-			help();
-		}
+		char *val = read_env("HOME");
 
 		std::string ini_dir(val);
 		ini_dir += "/.config/pcsx2/inis";
@@ -63,11 +88,13 @@ int main ( int argc, char *argv[] )
 		GSsetSettingsDir_ptr(ini_dir.c_str());
 #else
 		fprintf(stderr, "default ini dir only supported on XDG\n");
-		dlclose(handle);
 		help();
 #endif
 	}
 
-	GSReplay_ptr(argv[2], 12);
-	dlclose(handle);
+	GSReplay_ptr(gs, 12);
+
+	if (handle) {
+		dlclose(handle);
+	}
 }

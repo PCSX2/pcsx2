@@ -18,47 +18,32 @@
 
 #include "PrecompiledHeader.h"
 
-struct AlignedMallocHeader
-{
-	size_t size;		// size of the allocated buffer (minus alignment and header)
-	void* baseptr;	// offset of the original allocated pointer
-};
-
-static const uint headsize = sizeof(AlignedMallocHeader);
-
-void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
+void* __fastcall _aligned_malloc(size_t size, size_t align)
 {
 	pxAssert( align < 0x10000 );
-#ifdef _WIN32
-	return _aligned_malloc(size, align);
-#elif defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
+#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	return aligned_alloc(align, size);
 #else
-	void *result=0;
-	posix_memalign(&result, alignment, size);
+	void *result = 0;
+	posix_memalign(&result, align, size);
 	return result;
 #endif
 }
 
-void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
+void* __fastcall pcsx2_aligned_realloc(void* handle, size_t new_size, size_t align, size_t old_size)
 {
 	pxAssert( align < 0x10000 );
 
-	void* newbuf = pcsx2_aligned_malloc( size, align );
+	void* newbuf = _aligned_malloc(new_size, align);
 
-	if( handle != NULL )
-	{
-		memcpy_fast( newbuf, handle, size );
-		pcsx2_aligned_free(handle);
+	if (newbuf != NULL && handle != NULL) {
+		memcpy(newbuf, handle, std::min(old_size, new_size));
+		_aligned_free(handle);
 	}
 	return newbuf;
 }
 
-__fi void pcsx2_aligned_free(void* pmem)
+__fi void _aligned_free(void* pmem)
 {
-#ifdef _WIN32
-	_aligned_free(pmem);
-#else
 	free(pmem);
-#endif
 }

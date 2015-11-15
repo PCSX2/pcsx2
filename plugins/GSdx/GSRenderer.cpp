@@ -25,22 +25,27 @@
 #include <X11/keysym.h>
 #endif
 
+const unsigned int s_interlace_nb = 8;
+const unsigned int s_post_shader_nb = 5;
+const unsigned int s_aspect_ratio_nb = 3;
+
 GSRenderer::GSRenderer()
 	: m_shader(0)
 	, m_shift_key(false)
 	, m_control_key(false)
+	, m_framelimit(false)
+	, m_texture_shuffle(false)
 	, m_wnd(NULL)
 	, m_dev(NULL)
 {
 	m_GStitleInfoBuffer[0] = 0;
 
-	m_interlace = theApp.GetConfig("interlace", 7);
-	m_aspectratio = theApp.GetConfig("aspectratio", 1);
-	m_shader = theApp.GetConfig("TVShader", 0);
+	m_interlace = theApp.GetConfig("interlace", 7) % s_interlace_nb;
+	m_aspectratio = theApp.GetConfig("aspectratio", 1) % s_aspect_ratio_nb;
+	m_shader = theApp.GetConfig("TVShader", 0) % s_post_shader_nb;
 	m_filter = theApp.GetConfig("filter", 1);
 	m_vsync = !!theApp.GetConfig("vsync", 0);
 	m_aa1 = !!theApp.GetConfig("aa1", 0);
-	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 	m_fxaa = !!theApp.GetConfig("fxaa", 0);
 	m_shaderfx = !!theApp.GetConfig("shaderfx", 0);
 	m_shadeboost = !!theApp.GetConfig("ShadeBoost", 0);
@@ -92,7 +97,7 @@ bool GSRenderer::Merge(int field)
 	bool en[2];
 
 	GSVector4i fr[2];
-	GSVector4i dRect[2];
+	GSVector4i dr[2];
 
 	int baseline = INT_MAX;
 
@@ -103,11 +108,11 @@ bool GSRenderer::Merge(int field)
 		if(en[i])
 		{
 			fr[i] = GetFrameRect(i);
-			dRect[i] = GetDisplayRect(i);
+			dr[i] = GetDisplayRect(i);
 
-			baseline = min(dRect[i].top, baseline);
+			baseline = min(dr[i].top, baseline);
 
-			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dRect[i].x,dRect[i].y,dRect[i].z,dRect[i].w);
+			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 		}
 	}
 
@@ -132,15 +137,15 @@ bool GSRenderer::Merge(int field)
 
 	if(samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
 	{
-		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dRect[0].eq(dRect[1] + GSVector4i(0, 0, 0, 1))
-		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dRect[1].eq(dRect[0] + GSVector4i(0, 0, 0, 1)))
+		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dr[0].eq(dr[1] + GSVector4i(0, 0, 0, 1))
+		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dr[1].eq(dr[0] + GSVector4i(0, 0, 0, 1)))
 		{
 			// persona 4:
 			//
 			// fr[0] = 0 0 640 448
 			// fr[1] = 0 1 640 448
-			// dRect[0] = 159 50 779 498
-			// dRect[1] = 159 50 779 497
+			// dr[0] = 159 50 779 498
+			// dr[1] = 159 50 779 497
 			//
 			// second image shifted up by 1 pixel and blended over itself
 			//
@@ -148,29 +153,29 @@ bool GSRenderer::Merge(int field)
 			//
 			// fr[0] = 0 1 512 448
 			// fr[1] = 0 0 512 448
-			// dRect[0] = 127 50 639 497
-			// dRect[1] = 127 50 639 498
+			// dr[0] = 127 50 639 497
+			// dr[1] = 127 50 639 498
 			//
 			// same just the first image shifted
 
 			int top = min(fr[0].top, fr[1].top);
-			int bottom = max(dRect[0].bottom, dRect[1].bottom);
+			int bottom = max(dr[0].bottom, dr[1].bottom);
 
 			fr[0].top = top;
 			fr[1].top = top;
-			dRect[0].bottom = bottom;
-			dRect[1].bottom = bottom;
+			dr[0].bottom = bottom;
+			dr[1].bottom = bottom;
 
 			// blurdetected = true;
 		}
-		else if(dRect[0].eq(dRect[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
+		else if(dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
 		{
 			// dq5:
 			//
 			// fr[0] = 0 1 512 445
 			// fr[1] = 0 0 512 444
-			// dRect[0] = 127 50 639 494
-			// dRect[1] = 127 50 639 494
+			// dr[0] = 127 50 639 494
+			// dr[1] = 127 50 639 494
 
 			int top = min(fr[0].top, fr[1].top);
 			int bottom = min(fr[0].bottom, fr[1].bottom);
@@ -210,7 +215,7 @@ bool GSRenderer::Merge(int field)
 
 		// overscan hack
 
-		if(dRect[i].height() > 512) // hmm
+		if(dr[i].height() > 512) // hmm
 		{
 			int y = GetDeviceSize(i).y;
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD) y /= 2;
@@ -223,9 +228,9 @@ bool GSRenderer::Merge(int field)
 
 		GSVector2 off(0, 0);
 
-		if(dRect[i].top - baseline >= 4) // 2?
+		if(dr[i].top - baseline >= 4) // 2?
 		{
-			off.y = tex[i]->GetScale().y * (dRect[i].top - baseline);
+			off.y = tex[i]->GetScale().y * (dr[i].top - baseline);
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{
@@ -359,7 +364,7 @@ void GSRenderer::VSync(int field)
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
-				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetFPS()),
+				m_perfmon.GetFrame(), r.width(), r.height(), fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
 				theApp.m_gs_aspectratio[m_aspectratio].name.c_str(),
@@ -410,11 +415,7 @@ void GSRenderer::VSync(int field)
 			// be noticeable).  Besides, these locks are extremely short -- overhead of conditional
 			// is way more expensive than just waiting for the CriticalSection in 1 of 10,000,000 tries. --air
 
-#ifdef _CX11_
 			std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
-#else
-			GSAutoLock lock(&m_pGSsetTitle_Crit);
-#endif
 
 			strncpy(m_GStitleInfoBuffer, s.c_str(), countof(m_GStitleInfoBuffer) - 1);
 
@@ -538,7 +539,10 @@ bool GSRenderer::MakeSnapshot(const string& path)
 
 bool GSRenderer::BeginCapture()
 {
-	return m_capture.BeginCapture(GetFPS());
+	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
+	float aspect = (float)disp.width() / max(1, disp.height());
+
+	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect);
 }
 
 void GSRenderer::EndCapture()
@@ -548,9 +552,6 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
-	const unsigned int interlace_nb = 8;
-	const unsigned int post_shader_nb = 5;
-	const unsigned int aspect_ratio_nb = 3;
 #ifdef _WINDOWS
 	if(e->type == KEYPRESS)
 	{
@@ -560,25 +561,25 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case VK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case VK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case VK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			printf("GSdx: Set shader to: %d.\n", (int)m_shader);
 			theApp.SetConfig("TVShader", (int)m_shader);
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;
-			printf("GSdx: (Software) aa1 is now %s.\n", m_aa1 ? "enabled" : "disabled");
+			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case VK_INSERT:
 			m_mipmap = !m_mipmap;
-			printf("GSdx: (Software) mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
 			return;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;
@@ -599,29 +600,29 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		switch(e->key)
 		{
 		case XK_F5:
-			m_interlace = (m_interlace + interlace_nb + step) % interlace_nb;
-			fprintf(stderr, "GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
+			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
+			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case XK_F6:
 			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + aspect_ratio_nb + step) % aspect_ratio_nb;
+				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 			return;
 		case XK_F7:
-			m_shader = (m_shader + post_shader_nb + step) % post_shader_nb;
+			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			theApp.SetConfig("TVShader", (int)m_shader);
-			fprintf(stderr,"GSdx: Set shader %d.\n", (int)m_shader);
+			printf("GSdx: Set shader %d.\n", (int)m_shader);
 			return;
 		case XK_Delete:
 			m_aa1 = !m_aa1;
-			fprintf(stderr,"GSdx: (Software) aa1 is now %s.\n", m_aa1 ? "enabled" : "disabled");
+			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case XK_Insert:
 			m_mipmap = !m_mipmap;
-			fprintf(stderr,"GSdx: (Software) mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
 			return;
 		case XK_Prior:
 			m_fxaa = !m_fxaa;
-			fprintf(stderr,"GSdx: fxaa is now %s.\n", m_fxaa ? "enabled" : "disabled");
+			printf("GSdx: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
 			return;
 		case XK_Home:
 			m_shaderfx = !m_shaderfx;

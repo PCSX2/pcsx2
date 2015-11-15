@@ -42,8 +42,14 @@ PipeRedirectionBase::~PipeRedirectionBase() throw() {}
 
 // ----------------------------------------------------------------------------
 //
+#if wxMAJOR_VERSION < 3
 void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 {
+	wxString message(szString);
+#else
+void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info)
+{
+#endif
 	switch ( level )
 	{
 		case wxLOG_Trace:
@@ -51,7 +57,7 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 		{
 			wxString str;
 			TimeStamp( &str );
-			MSW_OutputDebugString( str + szString + L"\n" );
+			MSW_OutputDebugString( str + message + L"\n" );
 		}
 		break;
 
@@ -70,15 +76,15 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 			// fallthrough!
 
 		case wxLOG_Message:
-			Console.WriteLn( L"[wx] %ls", szString );
+			Console.WriteLn( L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Error:
-			Console.Error( L"[wx] %ls", szString );
+			Console.Error(L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Warning:
-			Console.Warning( L"[wx] %ls", szString );
+			Console.Warning(L"[wx] %s", WX_STR(message));
 		break;
 	}
 }
@@ -157,7 +163,10 @@ ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
 
 ConsoleLogFrame::ColorArray::~ColorArray() throw()
 {
-	Cleanup();
+	try {
+		Cleanup();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void ConsoleLogFrame::ColorArray::Create( int fontsize )
@@ -429,7 +438,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	menuFontSizes.Append( MenuId_FontSize_Small,	_("Small"),	_t("Fits a lot of log in a microcosmically small area."),
 		wxITEM_RADIO )->Check( options.FontSize == 7 );
-	menuFontSizes.Append( MenuId_FontSize_Normal,	_("Normal"),_t("It's what I use (the programmer guy)."),
+	menuFontSizes.Append( MenuId_FontSize_Normal,	_("Normal font"),_t("It's what I use (the programmer guy)."),
 		wxITEM_RADIO )->Check( options.FontSize == 8 );
 	menuFontSizes.Append( MenuId_FontSize_Large,	_("Large"),	_t("Its nice and readable."),
 		wxITEM_RADIO )->Check( options.FontSize == 10 );
@@ -758,10 +767,9 @@ void ConsoleLogFrame::OnCloseWindow(wxCloseEvent& event)
 		// instead of closing just hide the window to be able to Show() it later
 		Show( false );
 
-		// Can't do this via a Connect() on the MainFrame because Close events are not commands,
-		// and thus do not propagate up/down the event chain.
-		if( wxWindow* main = GetParent() )
-			wxStaticCast( main, MainEmuFrame )->OnLogBoxHidden();
+		// In the nogui case there might not be a Main frame window.
+		if (MainEmuFrame* mainframe = GetMainFramePtr())
+			mainframe->OnLogBoxHidden();
 	}
 	else
 	{
@@ -943,7 +951,10 @@ void ConsoleLogFrame::DoFlushEvent( bool isPending )
 		} while( --m_WaitingThreadsForFlush > 0 );
 
 		int count = m_sem_QueueFlushed.Count();
-		while( count < 0 ) m_sem_QueueFlushed.Post();
+		while( count < 0 ) {
+			m_sem_QueueFlushed.Post();
+			count = m_sem_QueueFlushed.Count();
+		}
 	}
 
 	m_pendingFlushMsg = isPending;

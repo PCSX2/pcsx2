@@ -15,6 +15,14 @@ else(GLSL_API)
 	set(msg_dep_zzogl       "check these libraries -> glew (>=1.6), jpeg (>=6.2), opengl, X11, nvidia-cg-toolkit (>=2.1), pcsx2 common libs")
 endif()
 
+macro(print_dep str dep)
+    if (PACKAGE_MODE)
+        message(FATAL_ERROR "${str}:${dep}")
+    else()
+        message(STATUS "${str}:${dep}")
+    endif()
+endmacro(print_dep)
+
 #-------------------------------------------------------------------------------
 #								Pcsx2 core & common libs
 #-------------------------------------------------------------------------------
@@ -43,8 +51,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
     set(common_libs FALSE)
 else()
     set(common_libs FALSE)
-    message(STATUS "Skip build of common libraries: miss some dependencies")
-    message(STATUS "${msg_dep_common_libs}")
+    print_dep("Skip build of common libraries: miss some dependencies" "${msg_dep_common_libs}")
 endif()
 
 #---------------------------------------
@@ -62,14 +69,12 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
     set(pcsx2_core FALSE)
 else()
     set(pcsx2_core FALSE)
-    message(STATUS "Skip build of pcsx2 core: miss some dependencies")
-    message(STATUS "${msg_dep_pcsx2}")
+    print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
 # Linux need also gtk2
 if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
     set(pcsx2_core FALSE)
-    message(STATUS "Skip build of pcsx2 core: miss some dependencies")
-    message(STATUS "${msg_dep_pcsx2}")
+    print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
 
 
@@ -102,8 +107,7 @@ if(EXTRA_PLUGINS)
         set(CDVDiso FALSE)
     else()
         set(CDVDiso FALSE)
-        message(STATUS "Skip build of CDVDiso: miss some dependencies")
-        message(STATUS "${msg_dep_cdvdiso}")
+        print_dep("Skip build of CDVDiso: miss some dependencies" "${msg_dep_cdvdiso}")
     endif()
 endif()
 
@@ -150,8 +154,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
     set(GSdx FALSE)
 else()
     set(GSdx FALSE)
-    message(STATUS "Skip build of GSdx: miss some dependencies")
-    message(STATUS "${msg_dep_gsdx}")
+    print_dep("Skip build of GSdx: miss some dependencies" "${msg_dep_gsdx}")
 endif()
 #---------------------------------------
 
@@ -170,8 +173,7 @@ if(EXTRA_PLUGINS)
         set(zerogs FALSE)
     else()
         set(zerogs FALSE)
-        message(STATUS "Skip build of zerogs: miss some dependencies")
-        message(STATUS "${msg_dep_zerogs}")
+        print_dep("Skip build of zerogs: miss some dependencies" "${msg_dep_zerogs}")
     endif()
 endif()
 #---------------------------------------
@@ -193,8 +195,7 @@ if(EXTRA_PLUGINS)
         set(zzogl FALSE)
     else()
         set(zzogl FALSE)
-        message(STATUS "Skip build of zzogl: miss some dependencies")
-        message(STATUS "${msg_dep_zzogl}")
+        print_dep("Skip build of zzogl: miss some dependencies" "${msg_dep_zzogl}")
     endif()
 endif()
 #---------------------------------------
@@ -211,8 +212,11 @@ endif()
 #			LilyPad
 # requires: -X11
 #---------------------------------------
-if(GTKn_FOUND AND X11_FOUND)
-    set(LilyPad TRUE)
+# Not ready to be packaged
+if(EXTRA_PLUGINS OR NOT PACKAGE_MODE)
+    if(GTKn_FOUND AND X11_FOUND)
+        set(LilyPad TRUE)
+    endif()
 endif()
 #---------------------------------------
 
@@ -228,8 +232,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
 else()
 	set(onepad FALSE)
-    message(STATUS "Skip build of onepad: miss some dependencies")
-    message(STATUS "${msg_dep_onepad}")
+    print_dep("Skip build of onepad: miss some dependencies" "${msg_dep_onepad}")
 endif()
 #---------------------------------------
 
@@ -256,8 +259,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)
 else()
 	set(spu2-x FALSE)
-    message(STATUS "Skip build of spu2-x: miss some dependencies")
-    message(STATUS "${msg_dep_spu2x}")
+    print_dep("Skip build of spu2-x: miss some dependencies" "${msg_dep_spu2x}")
 endif()
 #---------------------------------------
 
@@ -278,8 +280,7 @@ if(EXTRA_PLUGINS)
         set(zerospu2 FALSE)
     else()
         set(zerospu2 FALSE)
-        message(STATUS "Skip build of zerospu2: miss some dependencies")
-        message(STATUS "${msg_dep_zerospu2}")
+        print_dep("Skip build of zerospu2: miss some dependencies" "${msg_dep_zerospu2}")
     endif()
 endif()
 #---------------------------------------

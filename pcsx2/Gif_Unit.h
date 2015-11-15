@@ -133,6 +133,12 @@ struct GS_SIGNAL {
 	void Reset() { memzero(*this); }
 };
 
+struct GS_FINISH {
+	bool gsFINISHFired;
+
+	void Reset() { memzero(*this); }
+};
+
 static __fi void incTag(u32& offset, u32& size, u32 incAmount) {
 	size   += incAmount;
 	offset += incAmount;
@@ -413,6 +419,7 @@ struct Gif_Path {
 struct Gif_Unit {
 	Gif_Path   gifPath[3];
 	GS_SIGNAL  gsSIGNAL; // Stalling Signal
+	GS_FINISH  gsFINISH; // Finish Signal
 	tGIF_STAT& stat;
 	GIF_TRANSFER_TYPE lastTranType; // Last Transfer Type
 
@@ -427,6 +434,7 @@ struct Gif_Unit {
 		GUNIT_WARN(Color_Red, "Gif Unit Reset!!! [soft=%d]", softReset);
 		ResetRegs();
 		gsSIGNAL.Reset();
+		gsFINISH.Reset();
 		gifPath[0].Reset(softReset);
 		gifPath[1].Reset(softReset);
 		gifPath[2].Reset(softReset);

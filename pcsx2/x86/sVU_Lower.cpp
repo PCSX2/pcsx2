@@ -1847,9 +1847,9 @@ void recVUMI_ESIN( VURegs *VU, int info )
 	//Console.WriteLn("recVUMI_ESIN");
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
-			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
+			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S); break;
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S); break;
+			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S); break;
 		}
 		FLD32((uptr)&s_tempmem[_Fsf_]);
 	}
@@ -1878,9 +1878,9 @@ void recVUMI_EATAN( VURegs *VU, int info )
 	//Console.WriteLn("recVUMI_EATAN");
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
-			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
+			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S); break;
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);  break;
+			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S); break;
 		}
 		FLD32((uptr)&s_tempmem[_Fsf_]);
 	}
@@ -1910,9 +1910,9 @@ void recVUMI_EEXP( VURegs *VU, int info )
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
-			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
+		case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S); break;
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S); break;
+			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S); break;
 		}
 		FMUL32((uptr)&s_tempmem[_Fsf_]);
 	}

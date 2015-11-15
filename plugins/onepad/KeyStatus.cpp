@@ -69,7 +69,7 @@ void KeyStatus::press(u32 pad, u32 index, s32 value)
 		// Normal mode : expect value 0  -> 80 -> FF
 		// Reverse mode: expect value FF -> 7F -> 0
 		u8 force = (value / 256);
-		if (analog_is_reversed(index)) analog_set(pad, index, 0x7F - force);
+		if (analog_is_reversed(pad,index)) analog_set(pad, index, 0x7F - force);
 		else						   analog_set(pad, index, 0x80 + force);
 	}
 }
@@ -117,25 +117,25 @@ void KeyStatus::analog_set(u32 pad, u32 index, u8 value)
 	}
 }
 
-bool KeyStatus::analog_is_reversed(u32 index)
+bool KeyStatus::analog_is_reversed(u32 pad, u32 index)
 {
 	switch (index)
 	{
 		case PAD_L_RIGHT:
 		case PAD_L_LEFT:
-			return ((conf->options & PADOPTION_REVERSELX) != 0);
+			return (conf->pad_options[pad].reverse_lx);
 
 		case PAD_R_LEFT:
 		case PAD_R_RIGHT:
-			return ((conf->options & PADOPTION_REVERSERX) != 0);
+			return (conf->pad_options[pad].reverse_rx);
 
 		case PAD_L_UP:
 		case PAD_L_DOWN:
-			return ((conf->options & PADOPTION_REVERSELY) != 0);
+			return (conf->pad_options[pad].reverse_ly);
 
 		case PAD_R_DOWN:
 		case PAD_R_UP:
-			return ((conf->options & PADOPTION_REVERSERY) != 0);
+			return (conf->pad_options[pad].reverse_ry);
 
 		default: return false;
 	}

@@ -54,17 +54,44 @@ __fi void psxHw4Write8(u32 add, u8 value)
 
 void psxDmaInterrupt(int n)
 {
-	if (HW_DMA_ICR & (1 << (16 + n)))
+	if(n == 33) {
+		for (int i = 0; i < 6; i++) {
+			if (HW_DMA_ICR & (1 << (16 + i))) {
+				if (HW_DMA_ICR & (1 << (24 + i))) {
+					if (HW_DMA_ICR & (1 << 23)) {
+						HW_DMA_ICR |= 0x80000000; //Set master IRQ condition met						
+					}
+					psxRegs.CP0.n.Cause &= ~0x7C;
+					iopIntcIrq(3);
+					break;
+				}
+			}
+		}
+	} else if (HW_DMA_ICR & (1 << (16 + n)))
 	{
-		HW_DMA_ICR|= (1 << (24 + n));
-		psxRegs.CP0.n.Cause |= 1 << (9 + n);
-		iopIntcIrq( 3 );
+		HW_DMA_ICR |= (1 << (24 + n));
+		if (HW_DMA_ICR & (1 << 23)) {
+			HW_DMA_ICR |= 0x80000000; //Set master IRQ condition met
+		}
+		iopIntcIrq(3);
 	}
 }
 
 void psxDmaInterrupt2(int n)
 {
-	if (HW_DMA_ICR2 & (1 << (16 + n)))
+	if (n == 33) {
+		for (int i = 0; i < 6; i++) {
+			if (HW_DMA_ICR2 & (1 << (16 + i))) {
+				if (HW_DMA_ICR2 & (1 << (24 + i))) {
+					if (HW_DMA_ICR2 & (1 << 23)) {
+						HW_DMA_ICR2 |= 0x80000000; //Set master IRQ condition met
+					}
+					iopIntcIrq(3);					
+					break;
+				}
+			}
+		}
+	} else if (HW_DMA_ICR2 & (1 << (16 + n)))
 	{
 /*		if (HW_DMA_ICR2 & (1 << (24 + n))) {
 			Console.WriteLn("*PCSX2*: HW_DMA_ICR2 n=%d already set", n);
@@ -73,7 +100,9 @@ void psxDmaInterrupt2(int n)
 			Console.WriteLn("*PCSX2*: psxHu32(0x1070) 8 already set (n=%d)", n);
 		}*/
 		HW_DMA_ICR2|= (1 << (24 + n));
-		psxRegs.CP0.n.Cause |= 1 << (16 + n);
-		iopIntcIrq( 3 );
+		if (HW_DMA_ICR2 & (1 << 23)) {
+			HW_DMA_ICR2 |= 0x80000000; //Set master IRQ condition met
+		}
+		iopIntcIrq(3);
 	}
 }

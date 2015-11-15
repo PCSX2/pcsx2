@@ -30,7 +30,7 @@ static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) 
 
 void mVUreserveCache(microVU& mVU) {
 
-	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index));
+	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
 	
 	mVU.cache = mVU.index ?

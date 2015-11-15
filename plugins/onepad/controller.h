@@ -19,9 +19,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __CONTROLLER_H__
-#define __CONTROLLER_H__
-
+#pragma once
+#include <string.h> // for memset
 #ifdef __linux__
 #define MAX_KEYS 24
 #else
@@ -55,23 +54,37 @@ extern int hat_to_key(int dir, int axis_id);
 
 extern int PadEnum[2][2];
 
-struct PADconf
+class PADconf
 {
+	u32 ff_intensity;
+	u32 sensibility;
 	public:
+	union {
+		struct {
+			u32 forcefeedback :1;
+			u32 reverse_lx :1;
+			u32 reverse_ly :1;
+			u32 reverse_rx :1;
+			u32 reverse_ry :1;
+			u32 mouse_l :1;
+			u32 mouse_r :1;
+			u32 sixaxis_usb :1;
+			u32 _free : 8; // The 8 remaining bits are unused, do what you wish with them ;)
+		} pad_options[2]; // One for each pads
+		u32 packed_options; // Only first 8 bits of each 16 bits series are really used, rest is padding
+	};
+
 	u32 keys[2][MAX_KEYS];
 	u32 log;
-	u32 options;  // upper 16 bits are for pad2
-	u32 sensibility;
 	u32 joyid_map;
-	u32 ff_intensity;
 	map<u32,u32> keysym_map[2];
 
 	PADconf() { init(); }
 
 	void init() {
 		memset(&keys, 0, sizeof(keys));
-		log = options = joyid_map = 0;
-		ff_intensity = 100;
+		log = packed_options = joyid_map = 0;
+		ff_intensity = 0x7FFF; // set it at max value by default
 		sensibility = 500;
 		for (int pad = 0; pad < 2 ; pad++)
 			keysym_map[pad].clear();
@@ -87,6 +100,43 @@ struct PADconf
 		int shift = 8 * pad;
 		return ((joyid_map >> shift) & 0xFF);
 	}
+	
+	/**
+	 * Return (a copy of) private memner ff_instensity
+	 **/
+	u32 get_ff_intensity()
+	{
+		return ff_intensity;
+	}
+
+	/**
+	 * Set intensity while checking that the new value is within
+	 * valid range, more than 0x7FFF will cause pad not to rumble(and less than 0 is obviously bad)
+	 **/
+	void set_ff_intensity(u32 new_intensity)
+	{
+		if(new_intensity < 0x7FFF && new_intensity >= 0)
+		{
+			ff_intensity = new_intensity;
+		}
+	}
+
+	/**
+	 * Set sensibility value, sensibility is not yet implemented(and will probably be after evdev)
+	 * However, there will be an upper range too, less than 0 is an obvious wrong
+	 * Anyway, we are doing object oriented code, members are definitely not supposed to be public
+	 **/
+	void set_sensibility(u32 new_sensibility)
+	{
+		if(sensibility > 0)
+		{
+			sensibility = new_sensibility;
+		}
+	}
+
+	u32 get_sensibility()
+	{
+		return sensibility;
+	}
 };
 extern PADconf *conf;
-#endif

@@ -48,7 +48,7 @@ using namespace std;
 #include "PS2Edefs.h"
 
 #ifdef __linux__
-#include "joystick.h"
+#include "GamePad.h"
 #endif
 #include "bitwise.h"
 #include "controller.h"

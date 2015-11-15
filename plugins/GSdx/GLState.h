@@ -30,11 +30,11 @@ namespace GLState {
 	extern GSVector4i scissor;
 
 	extern bool blend;
-	extern GLenum eq_RGB;
-	extern GLenum f_sRGB;
-	extern GLenum f_dRGB;
+	extern uint16 eq_RGB;
+	extern uint16 f_sRGB;
+	extern uint16 f_dRGB;
+	extern uint8 bf;
 	extern uint32 wrgba;
-	extern float bf;
 
 	extern bool depth;
 	extern GLenum depth_func;
@@ -58,9 +58,6 @@ namespace GLState {
 	extern GLuint vs;
 	extern GLuint program; // monolith program (when sso isn't supported)
 	extern bool dirty_prog;
-	extern bool dirty_subroutine_vs;
-	extern bool dirty_subroutine_ps;
-	extern bool dirty_ressources;
 
 	extern void Clear();
 }

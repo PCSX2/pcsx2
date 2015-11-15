@@ -50,17 +50,17 @@ MakeDisF(dis##VU##MI_RGET, 		dNameU("RGET");    dCP232i(REG_R); dCP2128f(_Ft_);)
 MakeDisF(dis##VU##MI_RNEXT, 	dNameU("RNEXT");   dCP232i(REG_R); dCP2128f(_Ft_);) \
 MakeDisF(dis##VU##MI_RXOR, 		dNameU("RXOR");    dCP232i(REG_R); dCP232f(_Fs_, _Fsf_);) \
 MakeDisF(dis##VU##MI_WAITQ, 	dName("WAITQ");  ) \
-MakeDisF(dis##VU##MI_FSAND, 	dName("FSAND");   dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostr, "%s %.3x,", ostr, code&0xfff); ) \
-MakeDisF(dis##VU##MI_FSEQ, 		dName("FSEQ");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostr, "%s %.3x,", ostr, code&0xfff);) \
-MakeDisF(dis##VU##MI_FSOR, 		dName("FSOR");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostr, "%s %.3x,", ostr, code&0xfff);) \
+MakeDisF(dis##VU##MI_FSAND, 	dName("FSAND");   dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff); ) \
+MakeDisF(dis##VU##MI_FSEQ, 		dName("FSEQ");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff);) \
+MakeDisF(dis##VU##MI_FSOR, 		dName("FSOR");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff);) \
 MakeDisF(dis##VU##MI_FSSET, 	dName("FSSET");   dCP232i(REG_STATUS_FLAG);) \
 MakeDisF(dis##VU##MI_FMAND, 	dName("FMAND");   dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_FMEQ, 		dName("FMEQ");    dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_FMOR, 		dName("FMOR");    dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
-MakeDisF(dis##VU##MI_FCAND, 	dName("FCAND");   dCP232i(1);    sprintf(ostr, "%s %8.8x,", ostr, code&0xffffff); ) \
+MakeDisF(dis##VU##MI_FCAND, 	dName("FCAND");   dCP232i(1);    sprintf(ostrA, " %8.8x,", code&0xffffff); ) \
 MakeDisF(dis##VU##MI_FCEQ, 		dName("FCEQ");    dCP232i(1);    dCP232i(REG_CLIP_FLAG);) \
 MakeDisF(dis##VU##MI_FCOR, 		dName("FCOR");    dCP232i(1);    dCP232i(REG_CLIP_FLAG);) \
-MakeDisF(dis##VU##MI_FCSET, 	dName("FCSET");   dCP232i(REG_CLIP_FLAG); sprintf(ostr, "%s %.6x,", ostr, code&0xffffff); ) \
+MakeDisF(dis##VU##MI_FCSET, 	dName("FCSET");   dCP232i(REG_CLIP_FLAG); sprintf(ostrA, " %.6x,", code&0xffffff); ) \
 MakeDisF(dis##VU##MI_FCGET, 	dName("FCGET");   dCP232i(_It_); dCP232i(REG_CLIP_FLAG);) \
 MakeDisF(dis##VU##MI_IBEQ, 		dName("IBEQ");    dImm11(); dCP232i(_It_); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_IBGEZ, 	dName("IBEZ");    dImm11(); dCP232i(_It_); dCP232i(_Is_);) \

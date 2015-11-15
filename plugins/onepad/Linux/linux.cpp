@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "onepad.h"
 #include "keyboard.h"
 
@@ -74,34 +74,34 @@ void _PADclose()
 {
 	SetAutoRepeat(true);
 
-	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
+	vector<GamePad*>::iterator it = s_vgamePad.begin();
 
 	// Delete everything in the vector vjoysticks.
-	while (it != s_vjoysticks.end())
+	while (it != s_vgamePad.end())
 	{
 		delete *it;
 		it ++;
 	}
 
-	s_vjoysticks.clear();
+	s_vgamePad.clear();
 }
 
 void PollForJoystickInput(int cpad)
 {
 	int joyid = conf->get_joyid(cpad);
-	if (!JoystickIdWithinBounds(joyid)) return;
+	if (!GamePadIdWithinBounds(joyid)) return;
 
-	SDL_JoystickUpdate();
+	GamePad::UpdateGamePadState();
 	for (int i = 0; i < MAX_KEYS; i++)
 	{
-		JoystickInfo* pjoy = s_vjoysticks[joyid];
+		GamePad* gamePad = s_vgamePad[joyid];
 
 		switch (type_of_joykey(cpad, i))
 		{
 			case PAD_JOYBUTTONS:
 				{
 
-					int value = SDL_JoystickGetButton((pjoy)->GetJoy(), key_to_button(cpad, i));
+					int value = gamePad->GetButton(key_to_button(cpad, i));
 					if (value)
 						key_status->press(cpad, i);
 					else
@@ -111,7 +111,7 @@ void PollForJoystickInput(int cpad)
 				}
 			case PAD_HAT:
 				{
-					int value = SDL_JoystickGetHat((pjoy)->GetJoy(), key_to_axis(cpad, i));
+					int value = gamePad->GetHat(key_to_axis(cpad, i));
 
 					// key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
 					// key_to_hat_dir. SDL_JoystickGetHat handles diagonal too (2 bits) so you must check the intersection
@@ -125,12 +125,12 @@ void PollForJoystickInput(int cpad)
 				}
 			case PAD_AXIS:
 				{
-					int value = pjoy->GetAxisFromKey(cpad, i);
+					int value = gamePad->GetAxisFromKey(cpad, i);
 					bool sign = key_to_axis_sign(cpad, i);
 					bool full_axis = key_to_axis_type(cpad, i);
 
 					if (IsAnalogKey(i)) {
-						if (abs(value) > pjoy->GetDeadzone())
+						if (abs(value) > gamePad->GetDeadzone())
 							key_status->press(cpad, i, value);
 						else
 							key_status->release(cpad, i);
@@ -138,15 +138,15 @@ void PollForJoystickInput(int cpad)
 					} else {
 						if (full_axis) {
 							value += 0x8000;
-							if (value > pjoy->GetDeadzone())
+							if (value > gamePad->GetDeadzone())
 								key_status->press(cpad, i, min(value/256 , 0xFF));
 							else
 								key_status->release(cpad, i);
 
 						} else {
-							if (sign && (-value > pjoy->GetDeadzone()))
+							if (sign && (-value > gamePad->GetDeadzone()))
 								key_status->press(cpad, i, min(-value /128, 0xFF));
-							else if (!sign && (value > pjoy->GetDeadzone()))
+							else if (!sign && (value > gamePad->GetDeadzone()))
 								key_status->press(cpad, i, min(value /128, 0xFF));
 							else
 								key_status->release(cpad, i);
@@ -160,6 +160,16 @@ void PollForJoystickInput(int cpad)
 
 EXPORT_C_(void) PADupdate(int pad)
 {
+	// Gamepad inputs don't count as an activity. Therefore screensaver will
+	// be fired after a couple of minute.
+	// Emulate an user activity
+	static int count = 0;
+	count++;
+	if ((count & 0xFFF) == 0) {
+		// 1 call every 4096 Vsync is enough
+		XResetScreenSaver(GSdsp);
+	}
+
 	// Actually PADupdate is always call with pad == 0. So you need to update both
 	// pads -- Gregory
 	for (int cpad = 0; cpad < 2; cpad++) {

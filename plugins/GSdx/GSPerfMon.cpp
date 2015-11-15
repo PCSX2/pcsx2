@@ -35,6 +35,7 @@ GSPerfMon::GSPerfMon()
 
 void GSPerfMon::Put(counter_t c, double val)
 {
+#ifndef DISABLE_PERF_MON
 	if(c == Frame)
 	{
 #ifdef __linux__
@@ -60,10 +61,12 @@ void GSPerfMon::Put(counter_t c, double val)
 	{
 		m_counters[c] += val;
 	}
+#endif
 }
 
 void GSPerfMon::Update()
 {
+#ifndef DISABLE_PERF_MON
 	if(m_count > 0)
 	{
 		for(size_t i = 0; i < countof(m_counters); i++)
@@ -75,25 +78,30 @@ void GSPerfMon::Update()
 	}
 
 	memset(m_counters, 0, sizeof(m_counters));
+#endif
 }
 
 void GSPerfMon::Start(int timer)
 {
+#ifndef DISABLE_PERF_MON
 	m_start[timer] = __rdtsc();
 
 	if(m_begin[timer] == 0)
 	{
 		m_begin[timer] = m_start[timer];
 	}
+#endif
 }
 
 void GSPerfMon::Stop(int timer)
 {
+#ifndef DISABLE_PERF_MON
 	if(m_start[timer] > 0)
 	{
 		m_total[timer] += __rdtsc() - m_start[timer];
 		m_start[timer] = 0;
 	}
+#endif
 }
 
 int GSPerfMon::CPU(int timer, bool reset)

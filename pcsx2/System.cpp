@@ -73,7 +73,21 @@ void* RecompiledCodeReserve::Reserve( size_t size, uptr base, uptr upper_bounds 
 {
 	if (!_parent::Reserve(size, base, upper_bounds)) return NULL;
 	_registerProfiler();
+
+	// Pre-Allocate the first block (to reduce the number of segmentation fault
+	// in debugger)
+	DoCommitAndProtect(0);
+
 	return m_baseptr;
+}
+
+void RecompiledCodeReserve::Reset()
+{
+	_parent::Reset();
+
+	// Pre-Allocate the first block (to reduce the number of segmentation fault
+	// in debugger)
+	DoCommitAndProtect(0);
 }
 
 
@@ -100,7 +114,7 @@ void RecompiledCodeReserve::OnCommittedBlock( void* block )
 		// the assembly dump more cleanly.  We don't clear the block on Release builds since
 		// it can add a noticeable amount of overhead to large block recompilations.
 
-		memset_sse_a<0xcc>( block, m_blocksize * __pagesize );
+		memset(block, 0xCC, m_blocksize * __pagesize);
 	}
 }
 
@@ -196,7 +210,7 @@ void SysLogMachineCaps()
 	if ( !PCSX2_isReleaseVersion )
 	{
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s"
-#ifndef openSUSE
+#ifndef DISABLE_BUILD_DATE
 			"- compiled on " __DATE__
 #endif
 			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
@@ -205,7 +219,7 @@ void SysLogMachineCaps()
 	}
 	else { // shorter release version string
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
-#ifndef openSUSE
+#ifndef DISABLE_BUILD_DATE
 			"- compiled on " __DATE__
 #endif
 			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
@@ -322,8 +336,11 @@ CpuInitializer< CpuType >::CpuInitializer()
 template< typename CpuType >
 CpuInitializer< CpuType >::~CpuInitializer() throw()
 {
-	if (MyCpu)
-		MyCpu->Shutdown();
+	try {
+		if (MyCpu)
+			MyCpu->Shutdown();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 // --------------------------------------------------------------------------------------
@@ -366,7 +383,10 @@ SysMainMemory::SysMainMemory()
 
 SysMainMemory::~SysMainMemory() throw()
 {
-	ReleaseAll();
+	try {
+		ReleaseAll();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysMainMemory::ReserveAll()

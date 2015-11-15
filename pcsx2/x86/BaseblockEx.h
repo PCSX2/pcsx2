@@ -22,7 +22,7 @@
 // addressable memory.  Yay!
 struct BASEBLOCK
 {
-	u32 m_pFnptr;
+	uptr m_pFnptr;
 
 	const __inline uptr GetFnptr() const { return m_pFnptr; }
 	void __inline SetFnptr( uptr ptr ) { m_pFnptr = ptr; }
@@ -31,14 +31,15 @@ struct BASEBLOCK
 // extra block info (only valid for start of fn)
 struct BASEBLOCKEX
 {
-	u32 startpc;
+	u32  startpc;
 	uptr fnptr;
-	u16 size;	// size in dwords
-	u16 x86size;
+	u16  size;	 // The size in dwords (equivalent to the number of instructions)
+	u16  x86size; // The size in byte of the translated x86 instructions
 
 #ifdef PCSX2_DEVBUILD
-	u32 visited; // number of times called
-	u64 ltime; // regs it assumes to have set already
+	// Could be useful to instrument the block
+	//u32 visited; // number of times called
+	//u64 ltime; // regs it assumes to have set already
 #endif
 
 };
@@ -59,12 +60,13 @@ class BaseBlockArray {
 		blocks = newMem;
 		pxAssert(blocks != NULL);
 	}
-public:
-	BaseBlockArray() : _Reserved(0),
-		_Size(0)
-	{
-	}
 
+	void reserve(u32 size)
+	{
+		resize(size);
+		_Reserved = size;
+	}
+public:
 	~BaseBlockArray()
 	{
 		if(blocks) {
@@ -73,12 +75,9 @@ public:
 	}
 
 	BaseBlockArray (s32 size) : _Reserved(0),
-		_Size(0)
+		_Size(0), blocks(NULL)
 	{
-		if(size > 0) {
-			resize(size);
-		}
-		_Reserved = size;
+		reserve(size);
 	}
 
 	BASEBLOCKEX *insert(u32 startpc, uptr fnptr)
@@ -87,6 +86,7 @@ public:
 			reserve(_Reserved + 0x2000); // some games requires even more!
 		}
 
+		// Insert the the new BASEBLOCKEX by startpc order
 		int imin = 0, imax = _Size, imid;
 
 		while (imin < imax) {
@@ -113,12 +113,6 @@ public:
 		return &blocks[imin];
 	}
 
-	void reserve(u32 size)
-	{
-		resize(size);
-		_Reserved = size;
-	}
-
 	__fi BASEBLOCKEX &operator[](int idx) const
 	{
 		return *(blocks + idx);
@@ -132,11 +126,6 @@ public:
 	__fi u32 size() const
 	{
 		return _Size;
-	}
-
-	__fi void erase(s32 first)
-	{
-		return erase(first, first + 1);
 	}
 
 	__fi void erase(s32 first, s32 last)
@@ -164,16 +153,8 @@ protected:
 public:
 	BaseBlocks() :
 		recompiler(0)
-	,	blocks(0)
+	,	blocks(0x4000)
 	{
-		blocks.reserve(0x4000);
-	}
-
-	BaseBlocks(uptr recompiler_) :
-		recompiler(recompiler_),
-		blocks(0)
-	{
-		blocks.reserve(0x4000);
 	}
 
 	void SetJITCompile( void (*recompiler_)() )
@@ -183,7 +164,7 @@ public:
 
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr);
 	int LastIndex (u32 startpc) const;
-	BASEBLOCKEX* GetByX86(uptr ip);
+	//BASEBLOCKEX* GetByX86(uptr ip);
 
 	__fi int Index (u32 startpc) const
 	{

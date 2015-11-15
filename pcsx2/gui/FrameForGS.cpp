@@ -30,8 +30,10 @@ static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceler
 
 void GSPanel::InitDefaultAccelerators()
 {
-	// Note!  These don't really work yet due to some hacks to get things working for
-	// old legacy PAD plugins.  (the global accelerator tables are used instead) --air
+	// Note: these override GlobalAccels ( Pcsx2App::InitDefaultGlobalAccelerators() )
+	// For plain letters or symbols, replace e.g. WXK_F1 with e.g. wxKeyCode('q') or wxKeyCode('-')
+	// For plain letter keys with shift, use e.g. AAC( wxKeyCode('q') ).Shift() and NOT wxKeyCode('Q')
+	// For a symbol with shift (e.g. '_' which is '-' with shift) use AAC( wxKeyCode('-') ).Shift()
 
 	typedef KeyAcceleratorCode AAC;
 
@@ -65,9 +67,7 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_NUMPAD_DIVIDE ).Cmd().Alt(),	"GSwindow_OffsetReset" );
 
 	m_Accels->Map( AAC( WXK_ESCAPE ),			"Sys_Suspend" );
-	m_Accels->Map( AAC( WXK_F8 ),				"Sys_TakeSnapshot" );
-	m_Accels->Map( AAC( WXK_F8 ).Shift(),		"Sys_TakeSnapshot");
-	m_Accels->Map( AAC( WXK_F8 ).Shift().Cmd(),	"Sys_TakeSnapshot");
+	m_Accels->Map( AAC( WXK_F8 ),				"Sys_TakeSnapshot" ); // also shift and ctrl-shift will be added automatically
 	m_Accels->Map( AAC( WXK_F9 ),				"Sys_RenderswitchToggle");
 
 	m_Accels->Map( AAC( WXK_F10 ),				"Sys_LoggingToggle" );
@@ -92,6 +92,7 @@ GSPanel::GSPanel( wxWindow* parent )
 
 	InitDefaultAccelerators();
 
+	SetBackgroundColour(wxColour((unsigned long)0));
 	if( g_Conf->GSWindow.AlwaysHideMouse )
 	{
 		SetCursor( wxCursor(wxCURSOR_BLANK) );
@@ -400,8 +401,8 @@ void GSPanel::OnLeftDclick(wxMouseEvent& evt)
 static const uint TitleBarUpdateMs = 333;
 
 
-GSFrame::GSFrame(wxWindow* parent, const wxString& title)
-	: wxFrame(parent, wxID_ANY, title, g_Conf->GSWindow.WindowPos)
+GSFrame::GSFrame( const wxString& title)
+	: wxFrame(NULL, wxID_ANY, title, g_Conf->GSWindow.WindowPos)
 	, m_timer_UpdateTitle( this )
 {
 	SetIcons( wxGetApp().GetIconBundle() );
@@ -440,12 +441,12 @@ void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 	Hide();		// and don't close it.
 }
 
-bool GSFrame::ShowFullScreen(bool show, long style)
+bool GSFrame::ShowFullScreen(bool show, bool updateConfig)
 {
 	/*if( show != IsFullScreen() )
 		Console.WriteLn( Color_StrongMagenta, "(gsFrame) Switching to %s mode...", show ? "Fullscreen" : "Windowed" );*/
 
-	if( g_Conf->GSWindow.IsFullscreen != show )
+	if (updateConfig && g_Conf->GSWindow.IsFullscreen != show)
 	{
 		g_Conf->GSWindow.IsFullscreen = show;
 		wxGetApp().PostIdleMethod( AppSaveSettings );
@@ -554,49 +555,59 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
 #endif
+	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
 	double fps = wxGetApp().FpsManager.GetFramerate();
+	// The "not PAL" case covers both Region_NTSC and Region_NTSC_PROGRESSIVE
+	float per = gsRegionMode == Region_PAL ? (fps * 100) / EmuConfig.GS.FrameratePAL.ToFloat() : (fps * 100) / EmuConfig.GS.FramerateNTSC.ToFloat();
 
 	char gsDest[128];
+	gsDest[0] = 0; // No need to set whole array to NULL.
 	GSgetTitleInfo2( gsDest, sizeof(gsDest) );
 
-	const wxChar* limiterStr = L"None";
+	wxString limiterStr = templates.LimiterUnlimited;
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
 		switch( g_LimiterMode )
 		{
-			case Limit_Nominal:	limiterStr = L"Normal"; break;
-			case Limit_Turbo:	limiterStr = L"Turbo"; break;
-			case Limit_Slomo:	limiterStr = L"Slomo"; break;
+			case Limit_Nominal:	limiterStr = templates.LimiterNormal; break;
+			case Limit_Turbo:	limiterStr = templates.LimiterTurbo; break;
+			case Limit_Slomo:	limiterStr = templates.LimiterSlowmo; break;
 		}
 	}
 
 	FastFormatUnicode cpuUsage;
 	if (m_CpuUsage.IsImplemented()) {
 		m_CpuUsage.UpdateStats();
-		if (THREAD_VU1) { // Display VU thread's usage
-			cpuUsage.Write(L" | EE: %3d%% | GS: %3d%% | VU: %3d%% | UI: %3d%%",
-				m_CpuUsage.GetEEcorePct(),	m_CpuUsage.GetGsPct(),
-				m_CpuUsage.GetVUPct(),		m_CpuUsage.GetGuiPct());
-		}
-		else {
-			cpuUsage.Write(L" | EE: %3d%% | GS: %3d%% | UI: %3d%%",
-				m_CpuUsage.GetEEcorePct(),	m_CpuUsage.GetGsPct(),
-				m_CpuUsage.GetGuiPct());
-		}
+
+		cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
+		cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
+
+		if (THREAD_VU1)
+			cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
+
+		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct());)
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
+	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
+	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
+	//This is a lie, but Field mode is essentially not interlaced, will probably be 1/2 FPS
+	wxString omodec = ((smode2 & 3) == 1) ? templates.OutputProgressive : omodei;
 
-	SetTitle( pxsFmt( L"%s | %ls (%ls) | Limiter: %ls | fps: %6.02f%ls | State %d",
-		WX_STR(fromUTF8(gsDest)),
-		(smode2 & 1) ? L"Interlaced" : L"Progressive",
-		(smode2 & 2) ? L"frame" : L"field",
-		limiterStr, fps, cpuUsage.c_str(), States_GetCurrentSlot() )
-	);
+	wxString title = templates.TitleTemplate;
+	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
+	title.Replace(L"${limiter}",	limiterStr);
+	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(per)));
+	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
+	title.Replace(L"${cpuusage}",	cpuUsage);
+	title.Replace(L"${omodef}",		omodef);
+	title.Replace(L"${omodei}",		omodei);
+	title.Replace(L"${omodec}",		omodec);
+	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
 
-	//States_GetCurrentSlot()
+	SetTitle(title);
 }
 
 void GSFrame::OnActivate( wxActivateEvent& evt )

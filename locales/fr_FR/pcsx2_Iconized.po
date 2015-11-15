@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
 "PO-Revision-Date: 2012-03-08 11:33-0000\n"
 "Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
 "Language-Team: goldeng <odakawoi@yahoo.fr>\n"
@@ -41,7 +41,7 @@ msgstr ""
 "voulez émuler des jeux PSX, veuillez télécharger un émulateur PS1 dédié (par "
 "exemple, ePSXe ou PCSX) !"
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 #, fuzzy
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -55,7 +55,7 @@ msgstr ""
 "Vous pouvez également essayer de réduire la taille du cache par défaut "
 "allouée au recompiler PCSX2."
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -72,7 +72,7 @@ msgstr ""
 "Attention ! Certaines fonctions du recompiler PCSX2 n'ont pas pu être "
 "initialisées et ont, par conséquent, été désactivées :"
 
-#: pcsx2/gui/AppInit.cpp:194
+#: pcsx2/gui/AppInit.cpp:204
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -83,7 +83,7 @@ msgstr ""
 "globales. Si vous êtes parvenus à résoudre des problèmes en désactivant le "
 "recompiler, vous devrez le réactiver manuellement."
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -98,7 +98,7 @@ msgstr ""
 "Veuillez consulter la FAQ ou les guides disponibles pour plus de "
 "renseignements."
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -124,7 +124,36 @@ msgstr ""
 "d'un accès au compte administrateur, vous aurez besoin de faire appel au "
 "mode User Documents (cliquez sur le bouton ci-dessous)."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -208,6 +237,13 @@ msgstr ""
 "Cette option peut être incompatible avec certains jeux (Guitar Hero, par "
 "exemple) !"
 
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
+
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
 msgid ""
@@ -290,7 +326,7 @@ msgstr ""
 "virtuelle PS2 : toutes les données en cours seront perdues.\n"
 "Êtes-vous sûr de vouloir réaliser cette opération ?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -312,7 +348,7 @@ msgstr ""
 "Êtes-vous sûr de vouloir procéder à cette manipulation ?\n"
 "PS. Les paramètres des plugins individuels ne seront pas affectés."
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -324,6 +360,11 @@ msgstr ""
 "et relancer la carte mémoire à l'aide du menu principal (Configuration -> "
 "Cartes mémoire)."
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -332,13 +373,13 @@ msgstr ""
 "Veuillez choisir un BIOS valide. Si vous ne possédez pas un tel fichier, "
 "cliquez sur Annuler pour fermer le panneau de configuration."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr ""
 "Rappel : La plupart des jeux fonctionneront correctement à l'aide du "
 "paramétrage par défaut."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr ""
 "Rappel : La plupart des jeux fonctionneront correctement à l'aide du "
@@ -473,7 +514,8 @@ msgstr ""
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
 "Les patchs peuvent corriger des problèmes liés à l'émulation de titres "
 "spécifiques.\n"
@@ -501,7 +543,7 @@ msgstr ""
 "dans le menu \"Système\" de l'émulateur plutôt que d'utiliser celle-ci.\n"
 "(\"Patchs automatiques\" : utilise uniquement le patch associé au jeu émulé)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, fuzzy, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -511,14 +553,14 @@ msgstr ""
 "les données présentes sur la carte seront perdues !\n"
 "Êtes-vous sûr de réaliser cette manipulation ?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Erreur : Le port-PS2 concerné est occupé par un autre service, empêchant la "
 "copie."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, fuzzy, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr ""
@@ -744,7 +786,7 @@ msgstr ""
 "rencontrent habituellement des problèmes avec lui (le plus souvent, "
 "repérables par l'indication \"mode 1\" ou \"slow DVD\")."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
@@ -752,7 +794,7 @@ msgstr ""
 "Si le Famelimiting est désactivé, les modes Turbo et Slow Motion ne seront "
 "plus disponibles."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -761,7 +803,7 @@ msgstr ""
 "L'activation de cette option pourrait entraîner des bugs graphiques "
 "conséquents dans certains jeux."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -769,7 +811,7 @@ msgstr ""
 "Activez cette option si vous pensez que le processus SyncMTGS cause des bugs "
 "graphiques ou crashs récurents."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

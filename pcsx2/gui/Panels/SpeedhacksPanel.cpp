@@ -23,16 +23,24 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 {
 	switch( val )
 	{
+		case -2:
+			return pxEt( L"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT."
+			);
+
+		case -1:
+			return pxEt( L"-1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS."
+			);
+
+		case 0:
+			return pxEt( L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
+			);
+
 		case 1:
-			return pxEt( L"1 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
+			return pxEt( L"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
 			);
 
 		case 2:
-			return pxEt( L"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
-			);
-
-		case 3:
-			return pxEt( L"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
+			return pxEt( L"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
 			);
 
 		default:
@@ -108,14 +116,14 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 1, 1, 3,
+	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -2, 2,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
 	m_msg_eecycle->SetForegroundColour( wxColour( L"Red" ) );
-	m_msg_eecycle->SetHeight(3);
+	m_msg_eecycle->SetHeight(5);
 
-	const wxChar* ee_tooltip = pxEt( L"Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware."
+	const wxChar* ee_tooltip = pxEt( L"Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, lower values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
 	);
 
 	pxSetToolTip( m_slider_eecycle, ee_tooltip );
@@ -131,7 +139,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_msg_vustealer = new pxStaticHeading(m_vuSliderPanel);
 	m_msg_vustealer->SetForegroundColour( wxColour( L"Red" ) );
-	m_msg_vustealer->SetHeight(3);
+	m_msg_vustealer->SetHeight(5);
 
 	const wxChar* vu_tooltip = pxEt( L"This slider controls the amount of cycles the VU unit steals from the EmotionEngine.  Higher values increase the number of cycles stolen from the EE for each VU microprogram the game runs."
 	);
@@ -197,13 +205,13 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*m_vuSliderPanel += m_slider_vustealer | sliderFlags;
 	*m_vuSliderPanel += m_msg_vustealer | sliderFlags;
 
-	*vuHacksPanel	+= m_check_vuFlagHack;
-	*vuHacksPanel	+= m_check_vuThread;
+	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
+	*vuHacksPanel += m_check_vuThread | StdExpand();
 	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
-	*miscHacksPanel	+= m_check_intc;
-	*miscHacksPanel	+= m_check_waitloop;
-	*miscHacksPanel	+= m_check_fastCDVD;
+	*miscHacksPanel	+= m_check_intc | StdExpand();
+	*miscHacksPanel	+= m_check_waitloop | StdExpand();
+	*miscHacksPanel	+= m_check_fastCDVD | StdExpand();
 
 	*left	+= m_eeSliderPanel | StdExpand();
 	*left	+= miscHacksPanel	| StdExpand();
@@ -219,19 +227,12 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*s_table+= left				| pxExpand;
 	*s_table+= right			| pxExpand;
 
-	*this	+= m_check_Enable;
+	*this	+= m_check_Enable | StdExpand();
 	*this	+= new wxStaticLine( this )	| pxExpand.Border(wxLEFT | wxRIGHT, 20);
 	*this	+= StdPadding;
 	*this	+= s_table					| pxExpand;
 
 	// ------------------------------------------------------------------------
-
-	Connect( wxEVT_SCROLL_PAGEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_PAGEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEUP,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_LINEDOWN,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_TOP,		wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
-	Connect( wxEVT_SCROLL_BOTTOM,	wxScrollEventHandler( SpeedHacksPanel::Slider_Click ) );
 
 	Connect( m_slider_eecycle->GetId(),		wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::EECycleRate_Scroll ) );
 	Connect( m_slider_vustealer->GetId(),	wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::VUCycleRate_Scroll ) );
@@ -264,6 +265,11 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
 
 	m_check_vuThread->Enable(hacksEnabled); // MTVU is unaffected by presets
+
+	// Layout necessary to ensure changed slider text gets re-aligned properly
+	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
+	// paint event to be sent on Windows)
+	Layout();
 }
 
 void Panels::SpeedHacksPanel::AppStatusEvent_OnSettingsApplied()
@@ -279,7 +285,7 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	// First, set the values of the widgets (checked/unchecked etc).
 	m_check_Enable->SetValue(configToApply.EnableSpeedHacks);
 
-	m_slider_eecycle	->SetValue( opts.EECycleRate + 1 );
+	m_slider_eecycle	->SetValue( opts.EECycleRate );
 	m_slider_vustealer	->SetValue( opts.VUCycleSteal );
 
 	SetEEcycleSliderMsg();
@@ -295,9 +301,6 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
 
-	// Layout necessary to ensure changed slider text gets re-aligned properly
-	Layout();
-
 	//Console.WriteLn("SpeedHacksPanel::ApplyConfigToGui: EnabledPresets: %s", configToApply.EnablePresets?"true":"false");
 }
 
@@ -309,7 +312,7 @@ void Panels::SpeedHacksPanel::Apply()
 
 	Pcsx2Config::SpeedhackOptions& opts( g_Conf->EmuOptions.Speedhacks );
 
-	opts.EECycleRate		= m_slider_eecycle->GetValue()-1;
+	opts.EECycleRate		= m_slider_eecycle->GetValue();
 	opts.VUCycleSteal		= m_slider_vustealer->GetValue();
 
 	opts.WaitLoop			= m_check_waitloop->GetValue();
@@ -341,30 +344,6 @@ void Panels::SpeedHacksPanel::Defaults_Click( wxCommandEvent& evt )
 	currentConfigWithHacksReset.EnablePresets=false;//speed hacks gui depends on preset, apply it as if presets are disabled
 	ApplyConfigToGui( currentConfigWithHacksReset );
 	evt.Skip();
-}
-
-void Panels::SpeedHacksPanel::Slider_Click(wxScrollEvent &event) {
-	wxSlider* slider = (wxSlider*) event.GetEventObject();
-	int value = slider->GetValue();
-	int eventType = event.GetEventType();
-	if (eventType == wxEVT_SCROLL_PAGEUP || eventType == wxEVT_SCROLL_LINEUP) {
-		if (value > slider->GetMin()) {
-			slider->SetValue(value-1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_TOP) {
-		slider->SetValue(slider->GetMin());
-	}
-	else if (eventType == wxEVT_SCROLL_PAGEDOWN || eventType == wxEVT_SCROLL_LINEDOWN) {
-		if (value < slider->GetMax()) {
-			slider->SetValue(value+1);
-		}
-	}
-	else if (eventType == wxEVT_SCROLL_BOTTOM) {
-		slider->SetValue(slider->GetMax());
-	}
-
-	event.Skip();
 }
 
 void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)

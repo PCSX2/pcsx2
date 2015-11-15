@@ -69,4 +69,7 @@ public:
 	bool LikelyOffset;
 	float OffsetHack_modx;
 	float OffsetHack_mody;
+
+	// Typical size of a RGBA texture
+	virtual uint32 GetMemUsage() { return m_size.x * m_size.y * 4; }
 };

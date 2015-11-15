@@ -29,49 +29,50 @@ static const uint32 g_gs_cb_index = 22;
 
 void GSDeviceOGL::CreateTextureFX()
 {
-	GL_PUSH("CreateTextureFX");
-
 	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(false, false, false);
-	gl_BindSampler(1, m_palette_ss);
+	glBindSampler(1, m_palette_ss);
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
-	m_gs = CompileGS();
+	GL_PUSH("Compile GS");
 
-	int logz = theApp.GetConfig("logz", 1);
-	// Don't do it in debug build, so it can still be tested
-#ifndef _DEBUG
-	if (GLLoader::found_GL_ARB_clip_control && logz) {
-		fprintf(stderr, "Your driver supports advance depth. Logz will be disabled\n");
-		logz = 0;
-	} else if (!GLLoader::found_GL_ARB_clip_control && !logz) {
-		fprintf(stderr, "Your driver DOESN'T support advance depth (GL_ARB_clip_control)\n It is higly recommmended to enable logz\n");
+	for (uint32 key = 0; key < countof(m_gs); key++) {
+		GSSelector sel(key);
+		if (sel.point == sel.sprite)
+			m_gs[key] = 0;
+		else
+			m_gs[key] = CompileGS(GSSelector(key));
 	}
-#endif
-	for (uint32 key = 0; key < VSSelector::size(); key++) {
+
+	GL_POP();
+
+	GL_PUSH("Compile VS");
+
+	for (uint32 key = 0; key < countof(m_vs); key++) {
 		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
 		if (sel.wildhack && (!sel.tme || !sel.fst))
 			m_vs[key] = 0;
 		else
-			m_vs[key] = CompileVS(sel, logz);
+			m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
 	}
+
+	GL_POP();
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
 	// to the mask.
 	glStencilMask(0xFF);
-	for (uint32 key = 0; key < OMDepthStencilSelector::size(); key++)
+	for (uint32 key = 0; key < countof(m_om_dss); key++) {
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
+	}
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
-
-	GL_POP();
 }
 
 GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
@@ -81,7 +82,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	if (dssel.date)
 	{
 		dss->EnableStencil();
-		dss->SetStencil(GL_EQUAL, dssel.alpha_stencil ? GL_ZERO : GL_KEEP);
+		dss->SetStencil(GL_EQUAL, GL_KEEP);
 	}
 
 	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
@@ -100,42 +101,9 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, float afix)
-{
-	GSBlendStateOGL* bs = new GSBlendStateOGL();
-
-	if(bsel.abe)
-	{
-		int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
-
-		bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, m_blendMapD3D9[i].dst);
-
-		if (m_blendMapD3D9[i].bogus & A_MAX) {
-			if (!theApp.GetConfig("accurate_blend", 1)) {
-				bs->EnableBlend();
-				if (bsel.a == 0)
-					bs->SetRGB(m_blendMapD3D9[i].op, GL_ONE, m_blendMapD3D9[i].dst);
-				else
-					bs->SetRGB(m_blendMapD3D9[i].op, m_blendMapD3D9[i].src, GL_ONE);
-			}
-
-			const string afixstr = format("%f", afix);
-			const char *col[3] = {"Cs", "Cd", "0"};
-			const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
-		} else {
-			bs->EnableBlend();
-		}
-
-		// Not very good but I don't wanna write another 81 row table
-		if(bsel.negative) bs->RevertOp();
-	}
-
-	return bs;
-}
-
 void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
 {
+	GL_PUSH("UBO");
 	if(m_vs_cb_cache.Update(vs_cb)) {
 		m_vs_cb->upload(vs_cb);
 	}
@@ -143,64 +111,21 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 	if(m_ps_cb_cache.Update(ps_cb)) {
 		m_ps_cb->upload(ps_cb);
 	}
+	GL_POP();
 }
 
 void GSDeviceOGL::SetupVS(VSSelector sel)
 {
-	if (GLLoader::found_GL_ARB_shader_subroutine) {
-		GLuint sub[1];
-		sub[0] = sel.tme ? 1 + (uint32)sel.fst : 0;
-		m_shader->VS_subroutine(sub);
-		// Handle by subroutine useless now
-		sel.tme = 0;
-		sel.fst = 0;
-	}
-
-	m_shader->VS(m_vs[sel], 1);
+	m_shader->VS(m_vs[sel]);
 }
 
-void GSDeviceOGL::SetupGS(bool enable)
+void GSDeviceOGL::SetupGS(GSSelector sel)
 {
-	if (enable)
-		m_shader->GS(m_gs);
-	else
-		m_shader->GS(0);
+	m_shader->GS(m_gs[sel]);
 }
 
 void GSDeviceOGL::SetupPS(PSSelector sel)
 {
-	if (GLLoader::found_GL_ARB_shader_subroutine) {
-		GLuint tfx = sel.tfx > 3 ? 19 : 11 + (uint32)sel.tfx + (uint32)sel.tcc*4;
-
-		GLuint colclip = 8 + (uint32)sel.colclip;
-
-		GLuint clamp = 
-			(sel.wms == 2 && sel.wmt == 2) ? 20 :
-			(sel.wms == 2)                 ? 21 :
-			(sel.wmt == 2)                 ? 22 : 23;
-
-		GLuint wrap = 
-			(sel.wms == 2 && sel.wmt == 2) ? 24 :
-			(sel.wms == 3 && sel.wmt == 3) ? 25 :
-			(sel.wms == 2 && sel.wmt == 3) ? 26 :
-			(sel.wms == 3 && sel.wmt == 2) ? 27 :
-			(sel.wms == 2)                 ? 28 :
-			(sel.wmt == 3)                 ? 29 :
-			(sel.wms == 3)                 ? 30 :
-			(sel.wmt == 2)                 ? 31 : 32;
-
-		GLuint sub[5] = {sel.atst, colclip, tfx, clamp, wrap};
-
-		m_shader->PS_subroutine(sub);
-		// Handle by subroutine useless now
-		sel.atst = 0;
-		sel.colclip = 0;
-		sel.tfx = 0;
-		sel.tcc = 0;
-		// sel.wms = 0;
-		// sel.wmt = 0;
-	}
-
 	// *************************************************************
 	// Static
 	// *************************************************************
@@ -217,7 +142,7 @@ void GSDeviceOGL::SetupPS(PSSelector sel)
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	m_shader->PS(ps, 3);
+	m_shader->PS(ps);
 }
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)
@@ -235,37 +160,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 	return m_palette_ss;
 }
 
-void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, float afix, bool sw_blending)
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
-	GSDepthStencilOGL* dss = m_om_dss[dssel];
-
-	OMSetDepthStencilState(dss, 1);
-
-	if (sw_blending) {
-		if (GLState::blend) {
-			GLState::blend = false;
-			glDisable(GL_BLEND);
-		}
-		// No hardware blending thank
-		return;
-	}
-
-	// *************************************************************
-	// Static
-	// *************************************************************
-	auto j = m_om_bs.find(bsel);
-	GSBlendStateOGL* bs;
-
-	if(j == m_om_bs.end())
-	{
-		bs = CreateBlend(bsel, afix);
-		m_om_bs[bsel] = bs;
-	} else {
-		bs = j->second;
-	}
-
-	// *************************************************************
-	// Dynamic
-	// *************************************************************
-	OMSetBlendState(bs, afix);
+	OMSetDepthStencilState(m_om_dss[dssel]);
 }

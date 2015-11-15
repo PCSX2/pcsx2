@@ -14,21 +14,7 @@ endif()
 
 # plugin name
 set(Output spu2x-2.0.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(spu2xFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(spu2xFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(spu2xFinalFlags ${OptimizationFlags})
-
-endif()
+set(spu2xFinalFlags "")
 
 # spu2x sources
 set(spu2xSources

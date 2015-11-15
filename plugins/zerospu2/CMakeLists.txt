@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output zerospu2)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(zerospu2FinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(zerospu2FinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(zerospu2FinalFlags ${OptimizationFlags})
-
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(zerospu2FinalFlags "")
 
 # zerospu2 sources
 set(zerospu2Sources

@@ -241,6 +241,8 @@ public:
 	void McdSave( uint port, uint slot, const u8 *src, u32 adr, int size );
 	void McdEraseBlock( uint port, uint slot, u32 adr );
 	u64  McdGetCRC( uint port, uint slot );
+	void McdNextFrame( uint port, uint slot );
+	void McdReIndex( uint port, uint slot, const wxString& filter );
 
 	friend class SysCorePlugins;
 };
@@ -296,7 +298,7 @@ protected:
 	volatile u32				m_mcdOpen;
 
 public:		// hack until we unsuck plugins...
-	ScopedPtr<PluginStatus_t>	m_info[PluginId_Count];
+	ScopedPtr<PluginStatus_t>	m_info[PluginId_AllocCount];
 
 public:
 	SysCorePlugins();

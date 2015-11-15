@@ -30,7 +30,6 @@ namespace Panels
 }
 
 BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_SetSettingsPage, -1 )
 	DECLARE_EVENT_TYPE( pxEvt_SomethingChanged, -1 );
 END_DECLARE_EVENT_TYPES()
 
@@ -70,13 +69,10 @@ namespace Dialogs
 		}
 
 	protected:
-		void OnSettingsApplied( wxCommandEvent& evt );
-
 		void OnOk_Click( wxCommandEvent& evt );
 		void OnCancel_Click( wxCommandEvent& evt );
 		void OnApply_Click( wxCommandEvent& evt );
 		void OnScreenshot_Click( wxCommandEvent& evt );
-		void OnCloseWindow( wxCloseEvent& evt );
 
 		void OnSetSettingsPage( wxCommandEvent& evt );
 		void OnSomethingChanged( wxCommandEvent& evt );
@@ -159,16 +155,12 @@ namespace Dialogs
 
 	protected:
 		Panels::BaseMcdListPanel*	m_panel_mcdlist;
-		bool m_needs_suspending;
 
 	public:
 		virtual ~McdConfigDialog() throw() {}
 		McdConfigDialog(wxWindow* parent=NULL);
 		static wxString GetNameStatic() { return L"McdConfig"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
-
-		virtual bool Show( bool show=true );
-		virtual int ShowModal();
 
 	protected:
 		virtual wxString& GetConfSettingsTabName() const { return g_Conf->McdSettingsTabName; }
@@ -208,31 +200,6 @@ namespace Dialogs
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  BiosSelectorDialog
-	// --------------------------------------------------------------------------------------
-	class BiosSelectorDialog : public BaseApplicableDialog
-	{
-		typedef BaseApplicableDialog _parent;
-
-	protected:
-		Panels::BaseSelectorPanel*	m_selpan;
-
-	public:
-		virtual ~BiosSelectorDialog()  throw() {}
-		BiosSelectorDialog( wxWindow* parent=NULL );
-
-		static wxString GetNameStatic() { return L"BiosSelector"; }
-		wxString GetDialogName() const { return GetNameStatic(); }
-
-		virtual bool Show( bool show=true );
-		virtual int ShowModal();
-
-	protected:
-		void OnOk_Click( wxCommandEvent& evt );
-		void OnDoubleClicked( wxCommandEvent& evt );
-	};
-
-	// --------------------------------------------------------------------------------------
 	//  CreateMemoryCardDialog
 	// --------------------------------------------------------------------------------------
 	class CreateMemoryCardDialog : public wxDialogWithHelpers
@@ -262,5 +229,27 @@ namespace Dialogs
 	protected:
 		void CreateControls();
 		void OnOk_Click( wxCommandEvent& evt );
+	};
+
+	// --------------------------------------------------------------------------------------
+	//  ConvertMemoryCardDialog
+	// --------------------------------------------------------------------------------------
+	class ConvertMemoryCardDialog : public wxDialogWithHelpers
+	{
+	protected:
+		wxDirName     m_mcdPath;
+		wxString      m_mcdSourceFilename;
+		wxTextCtrl*   m_text_filenameInput;
+		pxRadioPanel* m_radio_CardType;
+
+	public:
+		virtual ~ConvertMemoryCardDialog()  throw() {}
+		ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const AppConfig::McdOptions& mcdSourceConfig );
+	
+	protected:
+		void CreateControls( const MemoryCardType sourceType );
+		void OnOk_Click( wxCommandEvent& evt );
+		bool ConvertToFile( const wxFileName& sourcePath, const wxFileName& targetPath, const u32 sizeInMB );
+		bool ConvertToFolder( const wxFileName& sourcePath, const wxFileName& targetPath );
 	};
 }

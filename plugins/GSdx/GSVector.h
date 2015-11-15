@@ -2431,6 +2431,8 @@ public:
 	static const GSVector4 m_four;
 	static const GSVector4 m_x4b000000;
 	static const GSVector4 m_x4f800000;
+	static const GSVector4 m_max;
+	static const GSVector4 m_min;
 
 	__forceinline GSVector4()
 	{
@@ -2908,6 +2910,11 @@ public:
 		#endif
 	}
 
+	__forceinline GSVector4 replace_nan(const GSVector4& v) const
+	{
+		return v.blend32(*this, *this == *this);
+	}
+
 	template<int src, int dst> __forceinline GSVector4 insert32(const GSVector4& v) const
 	{
 		// TODO: use blendps when src == dst
@@ -2979,9 +2986,9 @@ public:
 	// Code extract:
 	// union { int i; float f; } __tmp;
 
-GSVector.h:2977:40: error: declaration of ‘int GSVector4::extract32() const::<anonymous union>::i’
+GSVector.h:2977:40: error: declaration of 'int GSVector4::extract32() const::<anonymous union>::i'
    return _mm_extract_ps(m, i);
-GSVector.h:2973:15: error:  shadows template parm ‘int i’
+GSVector.h:2973:15: error:  shadows template parm 'int i'
   template<int i> __forceinline int extract32() const
 #endif
 
@@ -5134,6 +5141,8 @@ public:
 	static const GSVector8 m_x80000000;
 	static const GSVector8 m_x4b000000;
 	static const GSVector8 m_x4f800000;
+	static const GSVector8 m_max;
+	static const GSVector8 m_min;
 
 	__forceinline GSVector8() 
 	{
@@ -5519,6 +5528,10 @@ public:
 		return _mm256_testz_ps(m, m) != 0;
 	}
 	
+	__forceinline GSVector8 replace_nan(const GSVector8& v) const
+	{
+		return v.blend32(*this, *this == *this);
+	}
 
 	template<int src, int dst> __forceinline GSVector8 insert32(const GSVector8& v) const
 	{
@@ -5579,7 +5592,7 @@ public:
 	{
 		ASSERT(i < 8);
 
-		return extract<i / 4>().extract32<i & 3>();
+		return extract<i / 4>().template extract32<i & 3>();
 	}
 
 	template<int i> __forceinline GSVector8 insert(__m128 m) const

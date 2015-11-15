@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "App.h"
 #include "CDVD/CDVD.h"
 #include "GS.h"
 
@@ -37,7 +38,9 @@ void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent &event)
 {
-	AppOpenDialog<McdConfigDialog>( this );
+	ScopedCoreThreadClose closed_core;
+	closed_core.AllowResume();
+	AppOpenModalDialog<McdConfigDialog>(wxEmptyString, this);
 }
 
 void MainEmuFrame::Menu_GameDatabase_Click(wxCommandEvent &event)
@@ -147,7 +150,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
 
-		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"), L"DragDrop.BootSwapIso" );
+		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if( result == wxID_CANCEL )
 		{
 			core_control.AllowResume();
@@ -193,7 +196,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 			_("Do you want to swap discs or boot the new image (system reset)?")
 		);
 
-		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"), L"DragDrop.BootSwapIso" );
+		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 
 		if( result == wxID_CANCEL )
 		{

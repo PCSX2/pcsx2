@@ -164,14 +164,8 @@ _vifT int nVifUnpack(const u8* data) {
 				--vifRegs.num;
 				++vif.cl;
 
-				if (isFill) {
-					if (vif.cl <= vifRegs.cycle.cl)			size -= vSize;
-					else if (vif.cl == vifRegs.cycle.wl)	vif.cl = 0;
-				}
-				else {
-					size -= vSize;
-					if (vif.cl >= vifRegs.cycle.wl) vif.cl = 0;
-				}
+				if (vif.cl <= vifRegs.cycle.cl)			size -= vSize;
+				else if (vif.cl == vifRegs.cycle.wl)	vif.cl = 0;
 			}
 			DevCon.Warning("Fill!! Partial num left = %x, guessed %x", vifRegs.num, guessedsize);
 		}

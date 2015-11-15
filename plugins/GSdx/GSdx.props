@@ -13,10 +13,6 @@
       <AdditionalLibraryDirectories>./vtune;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DelayLoadDLLs>d3d9.dll;d3dx9_41.dll;d3d10.dll;d3d10_1.dll;d3dx10_41.dll;d3d11.dll;d3d11_beta.dll;d3dx11_41.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
     <PreBuildEvent>
       <Command>"$(SolutionDir)common\vsprops\preBuild.cmd" "$(ProjectDir)."</Command>
     </PreBuildEvent>

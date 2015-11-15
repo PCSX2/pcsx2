@@ -75,9 +75,8 @@ pxCheckBox& pxCheckBox::SetSubPadding( int pad )
 // performs word wrapping on platforms that need it (eg mswindows).
 pxCheckBox& pxCheckBox::SetToolTip( const wxString& tip )
 {
-	const wxString wrapped( pxFormatToolTipText(this, tip) );
-	pxSetToolTip( m_checkbox, wrapped );
-	pxSetToolTip( m_subtext, wrapped );
+	pxSetToolTip( m_checkbox, tip );
+	pxSetToolTip( m_subtext, tip );
 	return *this;
 }
 

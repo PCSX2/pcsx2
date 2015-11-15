@@ -21,7 +21,7 @@
 #include "Dialogs.h"
 
 #include <xaudio2.h>
-#include "../../common/include/comptr.h"
+#include <atlcomcli.h>
 
 namespace Exception
 {

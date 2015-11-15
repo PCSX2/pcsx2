@@ -24,7 +24,7 @@
 
 #if defined(__linux__)
 GSWndOGL::GSWndOGL()
-	: m_NativeWindow(0), m_NativeDisplay(NULL), m_swapinterval(NULL)
+	: m_NativeWindow(0), m_NativeDisplay(NULL), m_context(0), m_swapinterval(NULL)
 {
 }
 

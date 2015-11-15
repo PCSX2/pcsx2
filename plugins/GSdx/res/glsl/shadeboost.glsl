@@ -4,6 +4,9 @@
 ** Contrast, saturation, brightness
 ** Code of this function is from TGM's shader pack
 ** http://irrlicht.sourceforge.net/phpBB2/viewtopic.php?t=21057
+** TGM's author comment about the license (included in the previous link)
+** "do with it, what you want! its total free!
+** (but would be nice, if you say that you used my shaders  :wink: ) but not necessary"
 */
 
 struct vertex_basic
@@ -30,11 +33,7 @@ layout(std140, binding = 12) uniform cb12
     vec4 BGColor;
 };
 
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 
 // For all settings: 1.0 = 100% 0.5=50% 1.5 = 150% 
 vec4 ContrastSaturationBrightness(vec4 color)

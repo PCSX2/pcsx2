@@ -21,7 +21,7 @@
 
 #pragma once
 
-#define PLUGIN_VERSION 16
+#define PLUGIN_VERSION 0
 
 #define VM_SIZE 4194304
 #define PAGE_SIZE 8192
@@ -215,6 +215,40 @@ enum GS_AFAIL
 	AFAIL_ZB_ONLY	= 2,
 	AFAIL_RGB_ONLY	= 3,
 };
+
+enum class GSRendererType : int8_t
+{
+	Undefined = -1,
+
+	DX9_HW = 0,
+	DX9_SW = 1,
+	DX9_OpenCL = 14,
+	DX9_Null = 2,
+
+	DX1011_HW = 3,
+	DX1011_SW = 4,
+	DX1011_OpenCL = 15,
+	DX1011_Null = 5,
+
+	Null_HW = 9,
+	Null_SW = 10,
+	Null_OpenCL = 16,
+	Null_Null = 11,
+
+	OGL_HW = 12,
+	OGL_SW = 13,
+	OGL_OpenCL = 17,
+
+#ifdef _WINDOWS
+	Default = DX9_HW
+#else
+	// Use ogl renderer as default otherwise it crash at startup
+	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
+	Default = OGL_HW
+#endif
+
+};
+
 
 #define REG32(name) \
 union name			\
@@ -523,6 +557,7 @@ REG_END2
 	// opaque => output will be Cs/As
 	__forceinline bool IsOpaque() const {return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80);}
 	__forceinline bool IsOpaque(int amin, int amax) const {return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80);}
+	__forceinline bool IsCd() { return (A == B) && (D == 1);}
 REG_END2
 
 REG64_(GIFReg, BITBLTBUF)

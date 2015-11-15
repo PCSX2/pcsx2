@@ -35,6 +35,7 @@ GSDevice::GSDevice()
 	, m_fxaa(NULL)
 	, m_shadeboost(NULL)
 	, m_1x1(NULL)
+	, m_current(NULL)
 	, m_frame(0)
 {
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -112,7 +113,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 
 	if(m_current)
 	{
-		static int s_shader[5] = {0, 5, 6, 8, 9}; // FIXME
+		static int s_shader[5] = {ShaderConvert_COPY, ShaderConvert_SCANLINE,
+			ShaderConvert_DIAGONAL_FILTER, ShaderConvert_TRIANGULAR_FILTER,
+			ShaderConvert_COMPLEX_FILTER}; // FIXME
 
 		Present(m_current, m_backbuffer, GSVector4(r), s_shader[shader]);
 	}
@@ -146,6 +149,20 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 	return CreateSurface(type, w, h, msaa, format);
 }
 
+void GSDevice::PrintMemoryUsage()
+{
+#ifdef ENABLE_OGL_DEBUG
+	uint32 pool = 0;
+	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); i++)
+	{
+		GSTexture* t = *i;
+		if (t)
+			pool += t->GetMemUsage();
+	}
+	GL_PERF("MEM: Surface Pool %dMB", pool >> 20u);
+#endif
+}
+
 void GSDevice::EndScene()
 {
 	m_vertex.start += m_vertex.count;
@@ -158,6 +175,15 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
+		// FIXME: WARNING: Broken Texture Cache reuse render target without any
+		// cleaning (or uploading of correct gs mem data) Ofc it is wrong. If
+		// blending is enabled, rendering would be completely broken. However
+		// du to wrong invalidation of the TC it is sometimes better to reuse
+		// (partially) wrong data...
+		//
+		// Invalidating the data might be even worse. I'm not sure invalidating data really
+		// help on the perf. But people reports better perf on BDG2 (memory intensive) on OpenGL.
+		// It could be the reason.
 		t->Invalidate();
 
 		t->last_frame_used = m_frame;

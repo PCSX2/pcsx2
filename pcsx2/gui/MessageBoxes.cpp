@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
+#include "MSWstuff.h"
 #include "Dialogs/ModalPopups.h"
 
 using namespace Threading;
@@ -36,7 +37,7 @@ static int pxMessageDialog( const wxString& caption, const wxString& content, co
 	// And in either case the emulation should be paused/suspended for the user.
 
 	wxDialogWithHelpers dialog( NULL, caption );
-	dialog.SetMinWidth( (content.Length() > 256) ? 525 : 460 );
+	dialog.SetMinWidth( ((content.Length() > 256) ? 525 : 460) * MSW_GetDPIScale() );
 	dialog += dialog.Heading( content )	| StdExpand();
 	return pxIssueConfirmation( dialog, buttons );
 }
@@ -181,30 +182,12 @@ namespace Msgbox
 	// true if OK, false if cancel.
 	bool OkCancel( const wxString& text, const wxString& caption, int icon )
 	{
-		MsgButtons buttons( MsgButtons().OKCancel() );
-
-		if( wxThread::IsMain() )
-		{
-			return wxID_OK == pxMessageDialog( caption, text, buttons );
-		}
-		else
-		{
-			return wxID_OK == ShowModal( caption, text, buttons );
-		}
+		return ShowModal(caption, text, MsgButtons().OKCancel()) == wxID_OK;
 	}
 
 	bool YesNo( const wxString& text, const wxString& caption, int icon )
 	{
-		MsgButtons buttons( MsgButtons().YesNo() );
-
-		if( wxThread::IsMain() )
-		{
-			return wxID_YES == pxMessageDialog( caption, text, buttons );
-		}
-		else
-		{
-			return wxID_YES == ShowModal( caption, text, buttons );
-		}
+		return ShowModal(caption, text, MsgButtons().YesNo()) == wxID_YES;
 	}
 
 	int Assertion( const wxString& text, const wxString& stacktrace )

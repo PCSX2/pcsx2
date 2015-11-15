@@ -113,13 +113,13 @@ bool GPURenderer::Merge()
 
 	GSVector2i s = st[0]->GetSize();
 
-	GSVector4 sRect[2];
-	GSVector4 dRect[2];
+	GSVector4 sr[2];
+	GSVector4 dr[2];
 
-	sRect[0] = GSVector4(0, 0, 1, 1);
-	dRect[0] = GSVector4(0, 0, s.x, s.y);
+	sr[0] = GSVector4(0, 0, 1, 1);
+	dr[0] = GSVector4(0, 0, s.x, s.y);
 
-	m_dev->Merge(st, sRect, dRect, s, 1, 1, GSVector4(0, 0, 0, 1));
+	m_dev->Merge(st, sr, dr, s, 1, 1, GSVector4(0, 0, 0, 1));
 
 	if(m_shadeboost)
 	{

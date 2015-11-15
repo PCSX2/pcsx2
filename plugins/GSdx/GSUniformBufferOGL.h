@@ -31,13 +31,13 @@ extern uint64 g_uniform_upload_byte;
 class GSUniformBufferOGL {
 	GLuint buffer;		// data object
 	GLuint index;		// GLSL slot
-	uint32   size;	    // size of the data
+	uint32 size;	    // size of the data
 
 public:
 	GSUniformBufferOGL(GLuint index, uint32 size) : index(index)
 												  , size(size)
 	{
-		gl_GenBuffers(1, &buffer);
+		glGenBuffers(1, &buffer);
 		bind();
 		allocate();
 		attach();
@@ -47,13 +47,13 @@ public:
 	{
 		if (GLState::ubo != buffer) {
 			GLState::ubo = buffer;
-			gl_BindBuffer(GL_UNIFORM_BUFFER, buffer);
+			glBindBuffer(GL_UNIFORM_BUFFER, buffer);
 		}
 	}
 
 	void allocate()
 	{
-		gl_BufferData(GL_UNIFORM_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
 	}
 
 	void attach()
@@ -61,7 +61,7 @@ public:
 		// From the opengl manpage:
 		// glBindBufferBase also binds buffer to the generic buffer binding point specified by target
 		GLState::ubo = buffer;
-		gl_BindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
 	}
 
 	void upload(const void* src)
@@ -70,13 +70,86 @@ public:
 		// glMapBufferRange allow to set various parameter but the call is
 		// synchronous whereas glBufferSubData could be asynchronous.
 		// TODO: investigate the extension ARB_invalidate_subdata
-		gl_BufferSubData(GL_UNIFORM_BUFFER, 0, size, src);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, size, src);
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_uniform_upload_byte += size;
 #endif
 	}
 
 	~GSUniformBufferOGL() {
-		gl_DeleteBuffers(1, &buffer);
+		glDeleteBuffers(1, &buffer);
 	}
 };
+
+#define UBO_BUFFER_SIZE (4*1024*1024)
+
+class GSUniformBufferStorageOGL {
+	GLuint buffer;		// data object
+	GLuint index;		// GLSL slot
+	uint32 size;	    // size of the data
+	uint8* m_buffer_ptr;
+	uint32 m_offset;
+
+public:
+	GSUniformBufferStorageOGL(GLuint index, uint32 size) : index(index)
+												  , size(size), m_offset(0)
+	{
+		glGenBuffers(1, &buffer);
+		bind();
+		allocate();
+		attach();
+	}
+
+	void bind()
+	{
+		if (GLState::ubo != buffer) {
+			GLState::ubo = buffer;
+			glBindBuffer(GL_UNIFORM_BUFFER, buffer);
+		}
+	}
+
+	void allocate()
+	{
+		const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT /*| GL_MAP_COHERENT_BIT */;
+		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
+		const GLbitfield create_flags = common_flags /*| GL_CLIENT_STORAGE_BIT */;
+
+		GLsizei buffer_size = UBO_BUFFER_SIZE;
+		glBufferStorage(GL_UNIFORM_BUFFER, buffer_size, NULL, create_flags);
+		m_buffer_ptr = (uint8*) glMapBufferRange(GL_UNIFORM_BUFFER, 0, buffer_size, map_flags);
+		ASSERT(m_buffer_ptr);
+	}
+
+	void attach()
+	{
+		// From the opengl manpage:
+		// glBindBufferBase also binds buffer to the generic buffer binding point specified by target
+		GLState::ubo = buffer;
+		//glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+		glBindBufferRange(GL_UNIFORM_BUFFER, index, buffer, m_offset, size);
+	}
+
+	void upload(const void* src)
+	{
+#ifdef ENABLE_OGL_DEBUG_MEM_BW
+		g_uniform_upload_byte += size;
+#endif
+
+		memcpy(m_buffer_ptr + m_offset, src, size);
+
+		attach();
+		glFlushMappedBufferRange(GL_UNIFORM_BUFFER, m_offset, size);
+
+		m_offset = (m_offset + size + 255u) & ~0xFF;
+		if (m_offset >= UBO_BUFFER_SIZE)
+			m_offset = 0;
+	}
+
+	~GSUniformBufferStorageOGL() {
+		bind();
+		glUnmapBuffer(GL_UNIFORM_BUFFER);
+		glDeleteBuffers(1, &buffer);
+	}
+};
+
+#undef UBO_BUFFER_SIZE

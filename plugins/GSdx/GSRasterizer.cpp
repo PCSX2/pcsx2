@@ -828,13 +828,13 @@ void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const uint32* index)
 
 	GSVertexSW dv = v[1] - v[0];
 
-	GSVector4 dTex = dv.t / dv.p.xyxy();
+	GSVector4 dt = dv.t / dv.p.xyxy();
 
 	GSVertexSW dedge;
 	GSVertexSW dscan;
 
-	dedge.t = GSVector4::zero().insert32<1, 1>(dTex);
-	dscan.t = GSVector4::zero().insert32<0, 0>(dTex);
+	dedge.t = GSVector4::zero().insert32<1, 1>(dt);
+	dscan.t = GSVector4::zero().insert32<0, 0>(dt);
 
 	GSVector4 prestep = GSVector4(r.left, r.top) - scan.p;
 
@@ -876,9 +876,9 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 	if(orientation)
 	{
 		GSVector4 tbf = v0.p.yyyy(v1.p).ceil(); // t t b b
-		GSVector4 tbmax = tbf.max(m_fscissor_y); // max(t, sTex) max(t, sb) max(b, sTex) max(b, sb)
-		GSVector4 tbmin = tbf.min(m_fscissor_y); // min(t, sTex) min(t, sb) min(b, sTex) min(b, sb)
-		GSVector4i tb = GSVector4i(tbmax.xzyw(tbmin)); // max(t, sTex) max(b, sb) min(t, sTex) min(b, sb)
+		GSVector4 tbmax = tbf.max(m_fscissor_y); // max(t, st) max(t, sb) max(b, st) max(b, sb)
+		GSVector4 tbmin = tbf.min(m_fscissor_y); // min(t, st) min(t, sb) min(b, st) min(b, sb)
+		GSVector4i tb = GSVector4i(tbmax.xzyw(tbmin)); // max(t, st) max(b, sb) min(t, st) min(b, sb)
 
 		int top, bottom;
 
@@ -886,7 +886,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 
 		if((dv.p >= GSVector4::zero()).mask() & 2)
 		{
-			top = tb.extract32<0>(); // max(t, sTex)
+			top = tb.extract32<0>(); // max(t, st)
 			bottom = tb.extract32<3>(); // min(b, sb)
 
 			if(top >= bottom) return;
@@ -898,7 +898,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		}
 		else
 		{
-			top = tb.extract32<1>(); // max(b, sTex)
+			top = tb.extract32<1>(); // max(b, st)
 			bottom = tb.extract32<2>(); // min(t, sb)
 
 			if(top >= bottom) return;
@@ -962,9 +962,9 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 	else
 	{
 		GSVector4 lrf = v0.p.xxxx(v1.p).ceil(); // l l r r
-		GSVector4 lrmax = lrf.max(m_fscissor_x); // max(l, sl) max(l, sRect) max(r, sl) max(r, sRect)
-		GSVector4 lrmin = lrf.min(m_fscissor_x); // min(l, sl) min(l, sRect) min(r, sl) min(r, sRect)
-		GSVector4i lr = GSVector4i(lrmax.xzyw(lrmin)); // max(l, sl) max(r, sl) min(l, sRect) min(r, sRect)
+		GSVector4 lrmax = lrf.max(m_fscissor_x); // max(l, sl) max(l, sr) max(r, sl) max(r, sr)
+		GSVector4 lrmin = lrf.min(m_fscissor_x); // min(l, sl) min(l, sr) min(r, sl) min(r, sr)
+		GSVector4i lr = GSVector4i(lrmax.xzyw(lrmin)); // max(l, sl) max(r, sl) min(l, sr) min(r, sr)
 
 		int left, right;
 
@@ -973,7 +973,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		if((dv.p >= GSVector4::zero()).mask() & 1)
 		{
 			left = lr.extract32<0>(); // max(l, sl)
-			right = lr.extract32<3>(); // min(r, sRect)
+			right = lr.extract32<3>(); // min(r, sr)
 
 			if(left >= right) return;
 
@@ -985,7 +985,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 		else
 		{
 			left = lr.extract32<1>(); // max(r, sl)
-			right = lr.extract32<2>(); // min(l, sRect)
+			right = lr.extract32<2>(); // min(l, sr)
 
 			if(left >= right) return;
 
@@ -1234,7 +1234,6 @@ void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
 }
 
 // GSRasterizerList::GSWorkerSpin
-#ifdef ENABLE_BOOST
 GSRasterizerList::GSWorkerSpin::GSWorkerSpin(GSRasterizer* r)
 	: GSJobQueueSpin<shared_ptr<GSRasterizerData>, 256>()
 	, m_r(r)
@@ -1257,4 +1256,3 @@ void GSRasterizerList::GSWorkerSpin::Process(shared_ptr<GSRasterizerData>& item)
 {
 	m_r->Draw(item.get());
 }
-#endif

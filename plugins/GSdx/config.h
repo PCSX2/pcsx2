@@ -45,6 +45,10 @@
 #endif
 //#define ENABLE_OGL_DEBUG_MEM_BW // compute the quantity of data transfered (debug purpose)
 
+#if defined(__linux__) && !(defined(_DEBUG) || defined(_DEVEL))
+#define DISABLE_PERF_MON // Burn cycle for nothing in release mode
+#endif
+
 #ifdef _WINDOWS
 //#define ENABLE_OPENCL
 #endif

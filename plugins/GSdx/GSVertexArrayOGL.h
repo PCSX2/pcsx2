@@ -55,16 +55,16 @@ class GSBufferOGL {
 		, m_target(target)
 		, m_buffer_storage(GLLoader::found_GL_ARB_buffer_storage)
 	{
-		gl_GenBuffers(1, &m_buffer_name);
+		glGenBuffers(1, &m_buffer_name);
 		// Opengl works best with 1-4MB buffer.
 		// Warning m_limit is the number of object (not the size in Bytes)
 		m_limit = 8 * 1024 * 1024 / m_stride;
 
-		if (m_buffer_storage) {
-			for (size_t i = 0; i < 5; i++) {
-				m_fence[i] = 0;
-			}
+		for (size_t i = 0; i < 5; i++) {
+			m_fence[i] = 0;
+		}
 
+		if (m_buffer_storage) {
 			// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
 			// => bigger buffer => less sync
 			bind();
@@ -73,8 +73,8 @@ class GSBufferOGL {
 			const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 			const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-			gl_BufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
-			m_buffer_ptr = (uint8*) gl_MapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
+			glBufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
+			m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
 			if (!m_buffer_ptr) {
 				fprintf(stderr, "Failed to map buffer\n");
 				throw GSDXError();
@@ -87,13 +87,13 @@ class GSBufferOGL {
 	~GSBufferOGL() {
 		if (m_buffer_storage) {
 			for (size_t i = 0; i < 5; i++) {
-				gl_DeleteSync(m_fence[i]);
+				glDeleteSync(m_fence[i]);
 			}
 			// Don't know if we must do it
 			bind();
-			gl_UnmapBuffer(m_target);
+			glUnmapBuffer(m_target);
 		}
-		gl_DeleteBuffers(1, &m_buffer_name);
+		glDeleteBuffers(1, &m_buffer_name);
 	}
 
 	void allocate() { allocate(m_limit); }
@@ -103,13 +103,13 @@ class GSBufferOGL {
 		if (!m_buffer_storage) {
 			m_start = 0;
 			m_limit = new_limit;
-			gl_BufferData(m_target,  m_limit * m_stride, NULL, GL_STREAM_DRAW);
+			glBufferData(m_target,  m_limit * m_stride, NULL, GL_STREAM_DRAW);
 		}
 	}
 
 	void bind()
 	{
-		gl_BindBuffer(m_target, m_buffer_name);
+		glBindBuffer(m_target, m_buffer_name);
 	}
 
 	void subdata_upload(const void* src)
@@ -128,7 +128,7 @@ class GSBufferOGL {
 			allocate(m_limit);
 		}
 
-		gl_BufferSubData(m_target,  m_stride * m_start,  m_stride * m_count, src);
+		glBufferSubData(m_target,  m_stride * m_start,  m_stride * m_count, src);
 	}
 
 	void map_upload(const void* src)
@@ -146,7 +146,7 @@ class GSBufferOGL {
 #endif
 			ASSERT(current_chunk > 0 && current_chunk < 5);
 			if (m_fence[current_chunk] == 0) {
-				m_fence[current_chunk] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+				m_fence[current_chunk] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			}
 
 			// Wrap at startup
@@ -156,14 +156,14 @@ class GSBufferOGL {
 			// Only check first chunk
 			if (m_fence[0]) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
-				GLenum status = gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				GLenum status = glClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 				if (status != GL_ALREADY_SIGNALED) {
 					fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
 				}
 #else
-				gl_ClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				glClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #endif
-				gl_DeleteSync(m_fence[0]);
+				glDeleteSync(m_fence[0]);
 				m_fence[0] = 0;
 			}
 		}
@@ -176,14 +176,14 @@ class GSBufferOGL {
 			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
 #endif
 			ASSERT(c > 0 && c < 5);
-			m_fence[c-1] = gl_FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			m_fence[c-1] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			if (m_fence[c]) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
-				GLenum status = gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				GLenum status = glClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #else
-				gl_ClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				glClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #endif
-				gl_DeleteSync(m_fence[c]);
+				glDeleteSync(m_fence[c]);
 				m_fence[c] = 0;
 
 #ifdef ENABLE_OGL_DEBUG_FENCE
@@ -197,7 +197,7 @@ class GSBufferOGL {
 		void* dst = m_buffer_ptr + offset;
 
 		memcpy(dst, src, length);
-		gl_FlushMappedBufferRange(m_target, offset, length);
+		glFlushMappedBufferRange(m_target, offset, length);
 	}
 
 	void upload(const void* src, uint32 count)
@@ -226,14 +226,20 @@ class GSBufferOGL {
 		glDrawArrays(mode, m_start, m_count);
 	}
 
+	void Draw(GLenum mode, int offset, int count)
+	{
+		glDrawArrays(mode, m_start + offset, count);
+	}
+
+
 	void Draw(GLenum mode, GLint basevertex)
 	{
-		gl_DrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride), basevertex);
+		glDrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride), basevertex);
 	}
 
 	void Draw(GLenum mode, GLint basevertex, int offset, int count)
 	{
-		gl_DrawElementsBaseVertex(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * m_stride), basevertex);
+		glDrawElementsBaseVertex(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * m_stride), basevertex);
 	}
 
 	size_t GetStart() { return m_start; }
@@ -247,11 +253,14 @@ class GSVertexBufferStateOGL {
 	GLuint m_va;
 	GLenum m_topology;
 
+	// No copy constructor please
+	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
+
 public:
-	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL)
+	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
 	{
-		gl_GenVertexArrays(1, &m_va);
-		gl_BindVertexArray(m_va);
+		glGenVertexArrays(1, &m_va);
+		glBindVertexArray(m_va);
 
 		m_vb = new GSBufferOGL(GL_ARRAY_BUFFER, stride);
 		m_ib = new GSBufferOGL(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32));
@@ -267,7 +276,7 @@ public:
 	void bind()
 	{
 		// Note: index array are part of the VA state so it need to be bound only once.
-		gl_BindVertexArray(m_va);
+		glBindVertexArray(m_va);
 		if (m_vb)
 			m_vb->bind();
 	}
@@ -276,19 +285,19 @@ public:
 	{
 		for (uint32 i = 0; i < layout_nbr; i++) {
 			// Note this function need both a vertex array object and a GL_ARRAY_BUFFER buffer
-			gl_EnableVertexAttribArray(i);
+			glEnableVertexAttribArray(i);
 			switch (layout[i].type) {
 				case GL_UNSIGNED_SHORT:
 				case GL_UNSIGNED_INT:
 					if (layout[i].normalize) {
-						gl_VertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+						glVertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
 					} else {
-						// Rule: when shader use integral (not normalized) you must use gl_VertexAttribIPointer (note the extra I)
-						gl_VertexAttribIPointer(i, layout[i].size, layout[i].type, layout[i].stride, layout[i].offset);
+						// Rule: when shader use integral (not normalized) you must use glVertexAttribIPointer (note the extra I)
+						glVertexAttribIPointer(i, layout[i].size, layout[i].type, layout[i].stride, layout[i].offset);
 					}
 					break;
 				default:
-					gl_VertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+					glVertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
 					break;
 			}
 		}
@@ -301,6 +310,8 @@ public:
 	}
 
 	void DrawPrimitive() { m_vb->Draw(m_topology); }
+
+	void DrawPrimitive(int offset, int count) { m_vb->Draw(m_topology, offset, count); }
 
 	void DrawIndexedPrimitive() { m_ib->Draw(m_topology, m_vb->GetStart() ); }
 
@@ -316,7 +327,7 @@ public:
 
 	~GSVertexBufferStateOGL()
 	{
-		gl_DeleteVertexArrays(1, &m_va);
+		glDeleteVertexArrays(1, &m_va);
 		delete m_vb;
 		delete m_ib;
 	}

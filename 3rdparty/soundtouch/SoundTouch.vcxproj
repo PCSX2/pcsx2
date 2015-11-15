@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|Win32">
+      <Configuration>Devel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|x64">
+      <Configuration>Devel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}</ProjectGuid>
+    <ProjectName>SoundTouch</ProjectName>
+    <RootNamespace>SoundTouch</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)_xp</PlatformToolset>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'!='Debug'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\DefaultProjectRootDir.props" />
+    <Import Project="..\3rdparty.props" />
+    <Import Condition="'$(Configuration)'!='Release'" Project="..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Condition="'$(Configuration)'=='Debug'" Project="..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="'$(Configuration)'=='Devel'" Project="..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="'$(Configuration)'=='Release'" Project="..\..\common\vsprops\CodeGen_Release.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)soundtouch;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\SoundStretch\WavFile.cpp" />
+    <ClCompile Include="source\SoundTouch\AAFilter.cpp" />
+    <ClCompile Include="source\SoundTouch\BPMDetect.cpp" />
+    <ClCompile Include="source\SoundTouch\cpu_detect_x86.cpp" />
+    <ClCompile Include="source\SoundTouch\FIFOSampleBuffer.cpp" />
+    <ClCompile Include="source\SoundTouch\FIRFilter.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateCubic.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateLinear.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateShannon.cpp" />
+    <ClCompile Include="source\SoundTouch\mmx_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\PeakFinder.cpp" />
+    <ClCompile Include="source\SoundTouch\RateTransposer.cpp" />
+    <ClCompile Include="source\SoundTouch\SoundTouch.cpp" />
+    <ClCompile Include="source\SoundTouch\sse_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\TDStretch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="soundtouch\BPMDetect.h" />
+    <ClInclude Include="soundtouch\FIFOSampleBuffer.h" />
+    <ClInclude Include="soundtouch\FIFOSamplePipe.h" />
+    <ClInclude Include="soundtouch\SoundTouch.h" />
+    <ClInclude Include="soundtouch\STTypes.h" />
+    <ClInclude Include="source\SoundStretch\WavFile.h" />
+    <ClInclude Include="source\SoundTouch\AAFilter.h" />
+    <ClInclude Include="source\SoundTouch\cpu_detect.h" />
+    <ClInclude Include="source\SoundTouch\FIRFilter.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateCubic.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateLinear.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateShannon.h" />
+    <ClInclude Include="source\SoundTouch\PeakFinder.h" />
+    <ClInclude Include="source\SoundTouch\RateTransposer.h" />
+    <ClInclude Include="source\SoundTouch\TDStretch.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -1,6 +1,6 @@
 disassembly view:
      
-    ctrg+g          goto
+    ctrl+g          goto
     ctrl+e          edit breakpoint
     ctrl+d          enable/disable breakpoint
     ctrl+b          add breakpoint
@@ -18,7 +18,7 @@ disassembly view:
      
 memory view:
      
-    ctrg+g          goto
+    ctrl+g          goto
     ctrl+b          add breakpoint
     left            move cursor back one byte/nibble
     right           move cursor ahead one byte/nibble

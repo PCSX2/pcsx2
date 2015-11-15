@@ -33,6 +33,7 @@
 #include "Elfheader.h"
 
 #include "../DebugTools/Breakpoints.h"
+#include "Patch.h"
 
 #if !PCSX2_SEH
 #	include <csetjmp>
@@ -56,28 +57,11 @@ static __aligned16 uptr hwLUT[_64kb];
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
 
 u32 pc;			         // recompiler pc
-int branch;		         // set for branch
+int g_branch;	         // set for branch
 
 __aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 bool g_cpuFlushedPC, g_cpuFlushedCode, g_recompilingDelaySlot, g_maySignalException;
-
-// --------------------------------------------------------------------------------------
-//  R5900LutReserve_RAM
-// --------------------------------------------------------------------------------------
-class R5900LutReserve_RAM : public SpatialArrayReserve
-{
-	typedef SpatialArrayReserve _parent;
-
-public:
-	R5900LutReserve_RAM( const wxString& name )
-		: _parent( name )
-	{
-	}
-
-protected:
-	void OnCommittedBlock( void* block );
-};
 
 
 ////////////////////////////////////////////////////////////////
@@ -87,8 +71,9 @@ protected:
 static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
 
 static RecompiledCodeReserve* recMem = NULL;
-static SpatialArrayReserve* recRAMCopy = NULL;
-static R5900LutReserve_RAM* recLutReserve_RAM = NULL;
+static u8* recRAMCopy = NULL;
+static u8* recLutReserve_RAM = NULL;
+static const size_t recLutSize = Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1;
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -347,7 +332,7 @@ void recBranchCall( void (*func)() )
 	MOV32RtoM( (uptr)&g_nextEventCycle, EAX );
 
 	recCall(func);
-	branch = 2;
+	g_branch = 2;
 }
 
 void recCall( void (*func)() )
@@ -361,6 +346,8 @@ void recCall( void (*func)() )
 // =====================================================================================================
 
 static void __fastcall recRecompile( const u32 startpc );
+static void __fastcall dyna_block_discard(u32 start,u32 sz);
+static void __fastcall dyna_page_reset(u32 start,u32 sz);
 
 static u32 s_store_ebp, s_store_esp;
 
@@ -375,6 +362,8 @@ static DynGenFunc* JITCompile			= NULL;
 static DynGenFunc* JITCompileInBlock	= NULL;
 static DynGenFunc* EnterRecompiledCode	= NULL;
 static DynGenFunc* ExitRecompiledCode	= NULL;
+static DynGenFunc* DispatchBlockDiscard = NULL;
+static DynGenFunc* DispatchPageReset    = NULL;
 
 static void recEventTest()
 {
@@ -468,6 +457,15 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	return (DynGenFunc*)retval;
 }
 
+static DynGenFunc* _DynGen_DispatcherEvent()
+{
+	u8* retval = xGetPtr();
+
+	xCALL( recEventTest );
+
+	return (DynGenFunc*)retval;
+}
+
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
 	pxAssertDev( DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
@@ -505,8 +503,10 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
 	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
 
-	xMOV( ptr[&s_store_esp], esp );
-	xMOV( ptr[&s_store_ebp], ebp );
+	if (EmuConfig.Cpu.Recompiler.StackFrameChecks) {
+		xMOV( ptr[&s_store_esp], esp );
+		xMOV( ptr[&s_store_ebp], ebp );
+	}
 
 	xJMP( DispatcherReg );
 
@@ -531,6 +531,22 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	return (DynGenFunc*)retval;
 }
 
+static DynGenFunc* _DynGen_DispatchBlockDiscard()
+{
+	u8* retval = xGetPtr();
+	xCALL(dyna_block_discard);
+	xJMP(ExitRecompiledCode);
+	return (DynGenFunc*)retval;
+}
+
+static DynGenFunc* _DynGen_DispatchPageReset()
+{
+	u8* retval = xGetPtr();
+	xCALL(dyna_page_reset);
+	xJMP(ExitRecompiledCode);
+	return (DynGenFunc*)retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
@@ -543,13 +559,14 @@ static void _DynGen_Dispatchers()
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	DispatcherEvent = (DynGenFunc*)xGetPtr();
-	xCALL( recEventTest );
+	DispatcherEvent = _DynGen_DispatcherEvent();
 	DispatcherReg	= _DynGen_DispatcherReg();
 
-	JITCompile			= _DynGen_JITCompile();
-	JITCompileInBlock	= _DynGen_JITCompileInBlock();
-	EnterRecompiledCode	= _DynGen_EnterRecompiledCode();
+	JITCompile           = _DynGen_JITCompile();
+	JITCompileInBlock    = _DynGen_JITCompileInBlock();
+	EnterRecompiledCode  = _DynGen_EnterRecompiledCode();
+	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
+	DispatchPageReset    = _DynGen_DispatchPageReset();
 
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
 
@@ -559,7 +576,6 @@ static void _DynGen_Dispatchers()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-static void __fastcall dyna_block_discard(u32 start,u32 sz);
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
@@ -567,11 +583,6 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
-void R5900LutReserve_RAM::OnCommittedBlock( void* block )
-{
-	_parent::OnCommittedBlock(block);
-	ClearRecLUT((BASEBLOCK*)block, __pagesize * m_blocksize);
-}
 
 static void recThrowHardwareDeficiency( const wxChar* extFail )
 {
@@ -582,7 +593,7 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 
 static void recReserveCache()
 {
-	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _1mb * 4);
+	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _16mb);
 	recMem->SetProfilerName("EErec");
 
 	while (!recMem->IsOk())
@@ -611,24 +622,18 @@ static void recAlloc()
 {
 	if (!recRAMCopy)
 	{
-		recRAMCopy	= new SpatialArrayReserve( L"R5900 RAM copy" );
-		recRAMCopy->SetBlockSize(_16kb);
-		recRAMCopy->Reserve(Ps2MemSize::MainRam);
+		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 	}
 	
 	if (!recRAM)
 	{
-		recLutReserve_RAM	= new R5900LutReserve_RAM( L"R5900 RAM LUT" );
-		recLutReserve_RAM->SetBlockSize(_16kb);
-		recLutReserve_RAM->Reserve(Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1);
+		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
 	}
 
-	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM->GetPtr();
+	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;
 	recRAM		= basepos; basepos += (Ps2MemSize::MainRam / 4);
 	recROM		= basepos; basepos += (Ps2MemSize::Rom / 4);
 	recROM1		= basepos; basepos += (Ps2MemSize::Rom1 / 4);
-
-	pxAssert(recLutReserve_RAM->GetPtrEnd() == (u8*)basepos);
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
@@ -681,12 +686,6 @@ static void recAlloc()
 	x86FpuState = FPU_STATE;
 }
 
-struct ManualPageTracking
-{
-	u16 page;
-	u8  counter;
-};
-
 static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
 static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 
@@ -705,12 +704,12 @@ static void recResetRaw()
 	Console.WriteLn( Color_StrongBlack, "EE/iR5900-32 Recompiler Reset" );
 
 	recMem->Reset();
-	recRAMCopy->Reset();
-	recLutReserve_RAM->Reset();
+	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
+	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
 
 	maxrecmem = 0;
 
-	memset(recConstBuf, 0, RECCONSTBUF_SIZE * sizeof(recConstBuf));
+	memset(recConstBuf, 0, RECCONSTBUF_SIZE * sizeof(*recConstBuf));
 
 	if( s_pInstCache )
 		memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
@@ -724,14 +723,14 @@ static void recResetRaw()
 	recConstBufPtr = recConstBuf;
 	x86FpuState = FPU_STATE;
 
-	branch = 0;
+	g_branch = 0;
 }
 
 static void recShutdown()
 {
 	safe_delete( recMem );
-	safe_delete( recRAMCopy );
-	safe_delete( recLutReserve_RAM );
+	safe_aligned_free( recRAMCopy );
+	safe_aligned_free( recLutReserve_RAM );
 
 	recBlocks.Reset();
 
@@ -814,6 +813,7 @@ static void recExecute()
 	if( !setjmp( m_SetJmp_StateCheck ) )
 	{
 		eeRecIsReset = false;
+		ScopedBool executing(eeCpuExecuting);
 
 		// Important! Most of the console logging and such has cancel points in it.  This is great
 		// in Windows, where SEH lets us safely kill a thread from anywhere we want.  This is bad
@@ -843,9 +843,11 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	// Note: technically the address is 0x8000_0180 (or 0x180)
+	// (if CPU is booted)
 	xJMP( DispatcherReg );
 	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
+	//g_branch = 2;
 }
 
 ////////////////////////////////////////////////////
@@ -858,9 +860,10 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
 	xJMP( DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
+	//g_branch = 2;
 }
 
+// Size is in dwords (4 bytes)
 void recClear(u32 addr, u32 size)
 {
 	// necessary since recompiler doesn't call femms/emms
@@ -942,7 +945,7 @@ static int *s_pCode;
 
 void SetBranchReg( u32 reg )
 {
-	branch = 1;
+	g_branch = 1;
 
 	if( reg != 0xffffffff ) {
 //		if( GPR_IS_CONST1(reg) )
@@ -996,7 +999,7 @@ void SetBranchReg( u32 reg )
 
 void SetBranchImm( u32 imm )
 {
-	branch = 1;
+	g_branch = 1;
 
 	pxAssert( imm );
 
@@ -1101,41 +1104,51 @@ static u32 scaleBlockCycles_helper()
 	// caused by sync hacks and such, since games seem to care a lot more about
 	// these small blocks having accurate cycle counts.
 
-	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate == 0) )
+	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate > 99) ) // use default cycle rate if users set more than 99 in INI file.
 		return s_nBlockCycles >> 3;
 
-	uint scalarLow, scalarMid, scalarHigh;
+	uint scalarLow = 0, scalarMid = 0, scalarHigh = 0;
 
 	// Note: larger blocks get a smaller scalar, to help keep
 	// them from becoming "too fat" and delaying branch tests.
 
 	switch( EmuConfig.Speedhacks.EECycleRate )
 	{
-		case 0:	return s_nBlockCycles >> 3;
+		case -2:
+			scalarLow = 1;
+			scalarMid = 1;
+			scalarHigh = 1;
+		break;
 
-		case 1:		// Sync hack x1.5!
+		case -1:
+			scalarLow = 2;
+			scalarMid = 2;
+			scalarHigh = 1;
+		break;
+
+		case 0:
+			return s_nBlockCycles >> 3; // Default cyclerate
+
+		case 1:
 			scalarLow = 5;
 			scalarMid = 7;
 			scalarHigh = 5;
 		break;
 
-		case 2:		// Sync hack x2
+		case 2:
 			scalarLow = 7;
 			scalarMid = 9;
 			scalarHigh = 7;
 		break;
 
 		// Added insane rates on popular request (rama)
-		//jNO_DEFAULT
+		// This allows higher values to be set at INI, Scalar values follow Arithmetic progression on increment to cyclerate.
 		default:
-			scalarLow = 2;
-			scalarMid = 3;
-			scalarHigh = 2;
-			
-			if (EmuConfig.Speedhacks.EECycleRate > 2 && EmuConfig.Speedhacks.EECycleRate < 100) {
-				scalarLow *= EmuConfig.Speedhacks.EECycleRate;
-				scalarMid *= EmuConfig.Speedhacks.EECycleRate;
-				scalarHigh *= EmuConfig.Speedhacks.EECycleRate;
+			if (EmuConfig.Speedhacks.EECycleRate > 2)
+			{
+				scalarLow = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
+				scalarMid = 5 + (2*EmuConfig.Speedhacks.EECycleRate);
+				scalarHigh = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
 			}
 	}
 
@@ -1164,7 +1177,7 @@ static u32 eeScaleBlockCycles()
 //
 //   noDispatch - When set true, then jump to Dispatcher.  Used by the recs
 //   for blocks which perform exception checks without branching (it's enabled by
-//   setting "branch = 2";
+//   setting "g_branch = 2";
 static void iBranchTest(u32 newpc)
 {
 	_DynGen_StackFrameCheck();
@@ -1476,7 +1489,17 @@ void recompileNextInstruction(int delayslot)
 	else {
 		//If the COP0 DIE bit is disabled, cycles should be doubled.
 		s_nBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
-		opcode.recompile();
+		try {
+			opcode.recompile();
+		} catch (Exception::FailedToAllocateRegister&) {
+			// Fall back to the interpreter
+			recCall(opcode.interpret);
+#if 0
+			// TODO: Free register ?
+			//	_freeXMMregs();
+			//	_freeMMXregs();
+#endif
+		}
 	}
 
 	if( !delayslot ) {
@@ -1613,15 +1636,6 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
 	eeRecPerfLog.Write( Color_StrongGray, "Clearing Manual Block @ 0x%08X  [size=%d]", start, sz*4);
 	recClear(start, sz);
-
-	// Stack trick: This function was invoked via a direct jmp, so manually pop the
-	// EBP/stackframe before issuing a RET, else esp/ebp will be incorrect.
-
-#ifdef _MSC_VER
-	__asm leave __asm jmp [ExitRecompiledCode]
-#else
-	__asm__ __volatile__( "leave\n jmp *%[exitRec]\n" : : [exitRec] "m" (ExitRecompiledCode) : );
-#endif
 }
 
 // called when a page under manual protection has been run enough times to be a candidate
@@ -1632,12 +1646,89 @@ void __fastcall dyna_page_reset(u32 start,u32 sz)
 	recClear(start & ~0xfffUL, 0x400);
 	manual_counter[start >> 12]++;
 	mmap_MarkCountedRamPage( start );
+}
 
-#ifdef _MSC_VER
-	__asm leave __asm jmp [ExitRecompiledCode]
-#else
-	__asm__ __volatile__( "leave\n jmp *%[exitRec]\n" : : [exitRec] "m" (ExitRecompiledCode) : );
-#endif
+static void memory_protect_recompiled_code(u32 startpc, u32 size)
+{
+	u32 inpage_ptr = HWADDR(startpc);
+	u32 inpage_sz  = size*4;
+
+	// The kernel context register is stored @ 0x800010C0-0x80001300
+	// The EENULL thread context register is stored @ 0x81000-....
+	bool contains_thread_stack = ((startpc >> 12) == 0x81) || ((startpc >> 12) == 0x80001);
+
+	// note: blocks are guaranteed to reside within the confines of a single page.
+	const vtlb_ProtectionMode PageType = contains_thread_stack ? ProtMode_Manual : mmap_GetRamPageInfo( inpage_ptr );
+
+    switch (PageType)
+    {
+        case ProtMode_NotRequired:
+            break;
+
+		case ProtMode_None:
+        case ProtMode_Write:
+			mmap_MarkCountedRamPage( inpage_ptr );
+			manual_page[inpage_ptr >> 12] = 0;
+			break;
+
+        case ProtMode_Manual:
+			xMOV( ecx, inpage_ptr );
+			xMOV( edx, inpage_sz / 4 );
+			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
+
+			u32 lpc = inpage_ptr;
+			u32 stg = inpage_sz;
+
+			while(stg>0)
+			{
+				xCMP( ptr32[PSM(lpc)], *(u32*)PSM(lpc) );
+				xJNE(DispatchBlockDiscard);
+
+				stg -= 4;
+				lpc += 4;
+			}
+
+			// Tweakpoint!  3 is a 'magic' number representing the number of times a counted block
+			// is re-protected before the recompiler gives up and sets it up as an uncounted (permanent)
+			// manual block.  Higher thresholds result in more recompilations for blocks that share code
+			// and data on the same page.  Side effects of a lower threshold: over extended gameplay
+			// with several map changes, a game's overall performance could degrade.
+
+			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
+
+			if (!contains_thread_stack && manual_counter[inpage_ptr >> 12] <= 3)
+			{
+				// Counted blocks add a weighted (by block size) value into manual_page each time they're
+				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
+				// that whatever forced it to be manually-checked before was a 1-time deal.
+
+				// Counted blocks have a secondary threshold check in manual_counter, which forces a block
+				// to 'uncounted' mode if it's recompiled several times.  This protects against excessive
+				// recompilation of blocks that reside on the same codepage as data.
+
+				// fixme? Currently this algo is kinda dumb and results in the forced recompilation of a
+				// lot of blocks before it decides to mark a 'busy' page as uncounted.  There might be
+				// be a more clever approach that could streamline this process, by doing a first-pass
+				// test using the vtlb memory protection (without recompilation!) to reprotect a counted
+				// block.  But unless a new algo is relatively simple in implementation, it's probably
+				// not worth the effort (tests show that we have lots of recompiler memory to spare, and
+				// that the current amount of recompilation is fairly cheap).
+
+				xADD(ptr16[&manual_page[inpage_ptr >> 12]], size);
+				xJC(DispatchPageReset);
+
+				// note: clearcnt is measured per-page, not per-block!
+				ConsoleColorScope cs( Color_Gray );
+				eeRecPerfLog.Write( "Manual block @ %08X : size =%3d  page/offs = 0x%05X/0x%03X  inpgsz = %d  clearcnt = %d",
+					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz, manual_counter[inpage_ptr >> 12] );
+			}
+			else
+			{
+				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
+					startpc, size, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz );
+			}
+            break;
+	}
 }
 
 // Skip MPEG Game-Fix
@@ -1657,7 +1748,7 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 		xMOV(eax, ptr32[&cpuRegs.GPR.n.ra.UL[0]]);
 		xMOV(ptr32[&cpuRegs.pc], eax);
 		iBranchTest();
-		branch = 1;
+		g_branch = 1;
 		pc = s_nEndBlock;
 		Console.WriteLn(Color_StrongGreen, "sceMpegIsEnd pattern found! Recompiling skip video fix...");
 		return 1;
@@ -1713,10 +1804,19 @@ static void __fastcall recRecompile( const u32 startpc )
 	}
 
 	// this is the only way patches get applied, doesn't depend on a hack
-	if (HWADDR(startpc) == ElfEntry)
+	if (HWADDR(startpc) == ElfEntry) {
 		xCALL(eeGameStarting);
+		// Apply patch as soon as possible. Normally it is done in
+		// eeGameStarting but first block is already compiled.
+		//
+		// First tentative was to call eeGameStarting directly (not through the
+		// recompiler) but it crashes some games (GT4, DMC3). It is either a
+		// thread issue or linked to the various components reset.
+		if (EmuConfig.EnablePatches) ApplyPatch(0);
+		if (EmuConfig.EnableCheats)  ApplyCheat(0);
+	}
 
-	branch = 0;
+	g_branch = 0;
 
 	// reset recomp state variables
 	s_nBlockCycles = 0;
@@ -2032,84 +2132,8 @@ StartRecomp:
 	if (dumplog & 1) iDumpBlock(startpc, recPtr);
 #endif
 
-	u32 sz = (s_nEndBlock-startpc) >> 2;
-	u32 inpage_ptr = HWADDR(startpc);
-	u32 inpage_sz  = sz*4;
-
-	// note: blocks are guaranteed to reside within the confines of a single page.
-
-	const int PageType = mmap_GetRamPageInfo( inpage_ptr );
-	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
-	const u32 pgsz = inpage_sz;
-
-    switch (PageType)
-    {
-        case -1:
-            break;
-
-        case 0:
-			mmap_MarkCountedRamPage( inpage_ptr );
-			manual_page[inpage_ptr >> 12] = 0;
-			break;
-
-        default:
-			xMOV( ecx, inpage_ptr );
-			xMOV( edx, pgsz / 4 );
-			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
-
-			u32 lpc = inpage_ptr;
-			u32 stg = pgsz;
-
-			while(stg>0)
-			{
-				xCMP( ptr32[PSM(lpc)], *(u32*)PSM(lpc) );
-				xJNE( dyna_block_discard );
-
-				stg -= 4;
-				lpc += 4;
-			}
-
-			// Tweakpoint!  3 is a 'magic' number representing the number of times a counted block
-			// is re-protected before the recompiler gives up and sets it up as an uncounted (permanent)
-			// manual block.  Higher thresholds result in more recompilations for blocks that share code
-			// and data on the same page.  Side effects of a lower threshold: over extended gameplay
-			// with several map changes, a game's overall performance could degrade.
-
-			// (ideally, perhaps, manual_counter should be reset to 0 every few minutes?)
-
-			if (startpc != 0x81fc0 && manual_counter[inpage_ptr >> 12] <= 3)
-			{
-				// Counted blocks add a weighted (by block size) value into manual_page each time they're
-				// run.  If the block gets run a lot, it resets and re-protects itself in the hope
-				// that whatever forced it to be manually-checked before was a 1-time deal.
-
-				// Counted blocks have a secondary threshold check in manual_counter, which forces a block
-				// to 'uncounted' mode if it's recompiled several times.  This protects against excessive
-				// recompilation of blocks that reside on the same codepage as data.
-
-				// fixme? Currently this algo is kinda dumb and results in the forced recompilation of a
-				// lot of blocks before it decides to mark a 'busy' page as uncounted.  There might be
-				// be a more clever approach that could streamline this process, by doing a first-pass
-				// test using the vtlb memory protection (without recompilation!) to reprotect a counted
-				// block.  But unless a new algo is relatively simple in implementation, it's probably
-				// not worth the effort (tests show that we have lots of recompiler memory to spare, and
-				// that the current amount of recompilation is fairly cheap).
-
-				xADD(ptr16[&manual_page[inpage_ptr >> 12]], sz);
-				xJC( dyna_page_reset );
-
-				// note: clearcnt is measured per-page, not per-block!
-				ConsoleColorScope cs( Color_Gray );
-				eeRecPerfLog.Write( "Manual block @ %08X : size =%3d  page/offs = 0x%05X/0x%03X  inpgsz = %d  clearcnt = %d",
-					startpc, sz, inpage_ptr>>12, inpage_ptr&0xfff, inpage_sz, manual_counter[inpage_ptr >> 12] );
-			}
-			else
-			{
-				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
-					startpc, sz, inpage_ptr>>12, inpage_ptr&0xfff, pgsz, inpage_sz );
-			}
-            break;
-	}
+	// Detect and handle self-modified code
+	memory_protect_recompiled_code(startpc, (s_nEndBlock-startpc) >> 2);
 
 	// Skip Recompilation if sceMpegIsEnd Pattern detected
 	bool doRecompilation = !skipMPEG_By_Pattern(startpc);
@@ -2117,7 +2141,7 @@ StartRecomp:
 	if (doRecompilation) {
 		// Finally: Generate x86 recompiled code!
 		g_pCurInstInfo = s_pInstCache;
-		while (!branch && pc < s_nEndBlock) {
+		while (!g_branch && pc < s_nEndBlock) {
 			recompileNextInstruction(0);		// For the love of recursion, batman!
 		}
 	}
@@ -2142,7 +2166,7 @@ StartRecomp:
 			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
 				break;
 
-			if (memcmp(&(*recRAMCopy)[oldBlock->startpc / 4], PSM(oldBlock->startpc),
+			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
 			           oldBlock->size * 4))
 			{
 				recClear(startpc, (pc - startpc) / 4);
@@ -2152,7 +2176,7 @@ StartRecomp:
 			}
 		}
 
-		memcpy(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
 	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);
@@ -2165,7 +2189,7 @@ StartRecomp:
 	if( !(pc&0x10000000) )
 		maxrecmem = std::max( (pc&~0xa0000000), maxrecmem );
 
-	if( branch == 2 )
+	if( g_branch == 2 )
 	{
 		// Branch type 2 - This is how I "think" this works (air):
 		// Performs a branch/event test but does not actually "break" the block.
@@ -2178,10 +2202,10 @@ StartRecomp:
 	}
 	else
 	{
-		if( branch )
+		if( g_branch )
 			pxAssert( !willbranch3 );
 
-		if( willbranch3 || !branch) {
+		if( willbranch3 || !g_branch) {
 
 			iFlushCall(FLUSH_EVERYTHING);
 

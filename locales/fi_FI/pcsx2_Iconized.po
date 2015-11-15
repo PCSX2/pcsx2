@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
+"POT-Creation-Date: 2015-10-23 19:59+0200\n"
 "PO-Revision-Date: 2012-05-20 13:26+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: kmartimo <kimmo.martimo@gmail.com>\n"
@@ -41,7 +41,7 @@ msgstr ""
 "PCSX2 ei tue Playstationin pelilevyjä. Jos haluat emuloida PSX-pelejä, sinun "
 "täytyy ladata PSX-emulaattori, kuten ePSXe tai PCSX."
 
-#: pcsx2/System.cpp:114
+#: pcsx2/System.cpp:115
 #, fuzzy
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -56,7 +56,7 @@ msgstr ""
 "yrittää vähentää oletusarvoisia välimuistin kokoja kaikille PCSX2:den "
 "uudelleenkääntäjille. Asetukset löytyvät isäntäasetuksista."
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:359
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -72,7 +72,7 @@ msgstr ""
 "Varoitus: Joidenkin määriteltyjen PCSX2-uudelleenkääntäjien alustus "
 "epäonnistui ja ne on poistettu käytöstä:"
 
-#: pcsx2/gui/AppInit.cpp:194
+#: pcsx2/gui/AppInit.cpp:204
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -83,7 +83,7 @@ msgstr ""
 "manuaalisesti ottamaan käyttöön yllä listatut uudelleenkääntäjät, jos saat "
 "virheet ratkaistua."
 
-#: pcsx2/gui/AppMain.cpp:539
+#: pcsx2/gui/AppMain.cpp:148
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -93,7 +93,7 @@ msgstr ""
 "*täytyy* hankkia BIOS-tiedosto omistamastasi PS2-järjestelmästä (lainaamista "
 "ei lasketa). Lisätietoja löydät UKK:sta (FAQ) ja oppaista."
 
-#: pcsx2/gui/AppMain.cpp:619
+#: pcsx2/gui/AppMain.cpp:690
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -119,7 +119,36 @@ msgstr ""
 "tällä tietokoneella, sinun tarvitsee siirtyä Käyttäjän Tiedostot -tilaan "
 "(paina allaolevaa nappia)."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
+msgid ""
+"Please note that the resulting file may not actually contain all saves, "
+"depending on how many are in the source memory card."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
+msgid ""
+"WARNING: Converting a memory card may take a while! Please do not close the "
+"emulator during the conversion process, even if the emulator is no longer "
+"responding to input."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -201,6 +230,13 @@ msgstr ""
 "muistikortin sisällöntilatallennuksesta ladattaessa.  Ei ole välttämättä "
 "yhteensopiva kaikkien pelien kanssa (Guitar Hero)."
 
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
+msgid ""
+"(Folder type only) Re-index memory card content every time the running "
+"software changes. This prevents the memory card from running out of space "
+"for saves."
+msgstr ""
+
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
 msgid ""
@@ -281,7 +317,7 @@ msgstr ""
 "Tämä toiminto resetoi olemassaolevan PS2-virtuaalikoneen tilan; kaikki "
 "nykyiset tiedot menetetään.  Oletko varma?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -302,7 +338,7 @@ msgstr ""
 "\n"
 "(huom. liitännäisten asetuksia ei poisteta)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:80
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -314,6 +350,11 @@ msgstr ""
 "ja ottaa se uudestaan käyttöön milloin tahansa valikosta Asetukset: "
 "Muistikortit."
 
+#: pcsx2/gui/MemoryCardFolder.h:512
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -322,11 +363,11 @@ msgstr ""
 "Ole hyvä ja valitse kelvollinen BIOS. Jos et pysty tekemään kelvollista "
 "valintaa, paina Peruuta sulkeaksesi konfiguraatiopaneelin."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:111
+#: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
 msgstr "Huomautus: Useimmat pelit toimivat hyvin oletusasetuksilla."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:177
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "Notice: Most games are fine with the default options."
 msgstr "Huomautus: Useimmat pelit toimivat hyvin oletusasetuksilla."
 
@@ -452,7 +493,8 @@ msgstr ""
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
+"fixes for specific games). Manual game fixes will NOT increase your "
+"performance. In fact they may decrease it."
 msgstr ""
 "Pelikorjaukset voivat kiertää virheellisen emulaation vaikutuksia joissakin "
 "peleissä.\n"
@@ -480,7 +522,7 @@ msgstr ""
 "('Automaattinen' tarkoittaa: valikoivasti käytä tiettyjä testattuja "
 "korjauksia tietyille peleille)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -489,14 +531,14 @@ msgstr ""
 "Olet poistamassa alustettua muistikorttia '%s'. Kaikki tämän kortin "
 "sisältämät tiedot menetetään!  Oletko aivan varma?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Epäonnistui: Kopiointi sallitaan vain tyhjään PS2-muistikorttipaikkaan tai "
 "tiedostojärjestelmään."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Epäonnistui: Kohdemuistikortti '%s' on käytössä."
@@ -725,7 +767,7 @@ msgstr ""
 "Tarkista HDLoaderin yhteensopivuuslistasta tunnetut pelit, jotka eivät toimi "
 "tämän kanssa. (Usein merkitty tarvitsemaan 'mode 1' tai 'slow DVD'"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:37
+#: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
@@ -733,7 +775,7 @@ msgstr ""
 "Huomioi, että kun nopeusrajoitus on poistettu käytöstä, nopeutus- ja "
 "hidastustilat eivät myöskään ole saatavilla."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:225
+#: pcsx2/gui/Panels/VideoPanel.cpp:216
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -742,7 +784,7 @@ msgstr ""
 "on mahdotonta. Sen ottaminen käyttöön aiheuttaa vakavia grafiikkavirheitä "
 "joissain peleissä."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:302
+#: pcsx2/gui/Panels/VideoPanel.cpp:293
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -750,7 +792,7 @@ msgstr ""
 "Ota tämä käyttöön jos epäilet MTGS:n säiesynkronoinnin aiheuttavan "
 "kaatumisia tai grafiikkavirheitä."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

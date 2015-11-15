@@ -24,16 +24,13 @@ layout(std140, binding = 10) uniform cb10
     vec4 BGColor;
 };
 
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 
 void ps_main0()
 {
     vec4 c = texture(TextureSampler, PSin_t);
-    c.a = min(c.a * 2.0, 1.0);
+    // Note: clamping will be done by fixed unit
+    c.a *= 2.0f;
     SV_Target0 = c;
 }
 

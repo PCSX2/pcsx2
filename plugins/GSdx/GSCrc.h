@@ -61,7 +61,6 @@ public:
 		ResidentEvil4,
 		Spartan,
 		AceCombat4,
-		Drakengard2,
 		Tekken5,
 		IkkiTousen,
 		GodOfWar,
@@ -97,11 +96,9 @@ public:
 		Sly3,
 		Sly2,
 		ShadowofRome,
-		ArctheLad,
 		DemonStone,
 		BigMuthaTruckers,
 		TimeSplitters2,
-		ReZ,
 		LordOfTheRingsTwoTowers,
 		LordOfTheRingsThirdAge,
 		RedDeadRevolver,
@@ -175,6 +172,7 @@ public:
 		UrbanReign,
 		SteambotChronicles,
 		SacredBlaze,
+		SuperManReturns,
 		TitleCount,
 	};
 

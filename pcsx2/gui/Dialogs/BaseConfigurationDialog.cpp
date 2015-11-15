@@ -22,9 +22,6 @@
 #include "ModalPopups.h"
 #include "Panels/ConfigurationPanels.h"
 
-#include "Resources/EmbeddedImage.h"
-#include "Resources/ButtonIcon_Camera.h"
-
 #include <wx/artprov.h>
 #include <wx/filepicker.h>
 #include <wx/listbook.h>
@@ -37,12 +34,9 @@ DEFINE_EVENT_TYPE( pxEvt_SomethingChanged )
 using namespace Panels;
 
 // configure the orientation of the listbox based on the platform
+// For now, they're all on the left.
+static const int s_orient = wxLB_LEFT;
 
-#if defined(__WXMAC__) || defined(__WXMSW__)
-	static const int s_orient = wxBK_TOP;
-#else
-	static const int s_orient = wxBK_LEFT;
-#endif
 
 class ScopedOkButtonDisabler
 {
@@ -135,7 +129,9 @@ void BaseApplicableDialog::OnSettingsApplied( wxCommandEvent& evt )
 Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, const wxString& title, int idealWidth )
 	: _parent( parent, title )
 {
-	SetMinWidth( idealWidth );
+	float scale = MSW_GetDPIScale();
+
+	SetMinWidth( scale * idealWidth );
 	m_listbook = NULL;
 	m_allowApplyActivation = true;
 
@@ -143,8 +139,6 @@ Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, con
 	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnCancel_Click ) );
 	Connect( wxID_APPLY,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnApply_Click ) );
 	Connect( wxID_SAVE,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnScreenshot_Click ) );
-
-	Connect(				wxEVT_CLOSE_WINDOW,				wxCloseEventHandler(BaseConfigurationDialog::OnCloseWindow) );
 
 	Connect( pxEvt_SetSettingsPage, wxCommandEventHandler( BaseConfigurationDialog::OnSetSettingsPage ) );
 
@@ -190,7 +184,7 @@ void Dialogs::BaseConfigurationDialog::AddOkCancel( wxSizer* sizer )
 	if( wxWindow* apply = FindWindow( wxID_APPLY ) ) apply->Disable();
 	SomethingChanged_StateModified_IsChanged();
 
-	wxBitmapButton& screenshotButton( *new wxBitmapButton( this, wxID_SAVE, EmbeddedImage<res_ButtonIcon_Camera>().Get() ) );
+	wxBitmapButton& screenshotButton(*new wxBitmapButton(this, wxID_SAVE, wxGetApp().GetScreenshotBitmap()));
 	screenshotButton.SetToolTip( _("Saves a snapshot of this settings panel to a PNG file.") );
 
 	*m_extraButtonSizer += screenshotButton|pxMiddle;
@@ -229,14 +223,6 @@ void Dialogs::BaseConfigurationDialog::OnSomethingChanged( wxCommandEvent& evt )
 	if ((evt.GetId() != wxID_OK) && (evt.GetId() != wxID_CANCEL) && (evt.GetId() != wxID_APPLY))
 		SomethingChanged();
 }
-
-
-void Dialogs::BaseConfigurationDialog::OnCloseWindow( wxCloseEvent& evt )
-{
-	if( !IsModal() ) Destroy();
-	evt.Skip();
-}
-
 
 void Dialogs::BaseConfigurationDialog::AllowApplyActivation( bool allow )
 {
@@ -280,7 +266,6 @@ void Dialogs::BaseConfigurationDialog::OnApply_Click( wxCommandEvent& evt )
 	SomethingChanged_StateModified_IsChanged();
 }
 
-//avih: FIXME: ? for some reason, this OnCancel_Click is called twice when clicking cancel or closing the dialog (Jake's code?).
 void Dialogs::BaseConfigurationDialog::OnCancel_Click( wxCommandEvent& evt )
 {
 	//same as for Ok/Apply: let SysConfigDialog clean-up the presets and derivatives (menu system) if needed.
@@ -312,12 +297,15 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	if( !filename.IsEmpty() )
 	{
 		ScopedBusyCursor busy( Cursor_ReallyBusy );
+#ifdef __WXMSW__
+		// HACK: This works around an actual wx3.0 bug at the cost of icon
+		// quality. See http://trac.wxwidgets.org/ticket/14403 .
+		wxImage image = memBmp.ConvertToImage();
+		if (image.HasAlpha())
+			image.ClearAlpha();
+		image.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#else
 		memBmp.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#endif
 	}
-}
-
-void Dialogs::BaseConfigurationDialog::OnSettingsApplied( wxCommandEvent& evt )
-{
-	evt.Skip();
-	MSW_ListView_SetIconSpacing( m_listbook, GetClientSize().GetWidth() );
 }

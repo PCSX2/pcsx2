@@ -8,21 +8,7 @@ endif()
 
 # plugin name
 set(Output GSnull)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSnullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(GSnullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(GSnullFinalFlags ${OptimizationFlags})
-
-endif()
+set(GSnullFinalFlags "")
 
 # GSnull sources
 set(GSnullSources

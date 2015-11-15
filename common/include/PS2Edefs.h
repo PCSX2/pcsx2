@@ -241,7 +241,7 @@ extern "C" {
 // basic funcs
 
 s32  CALLBACK GSinit();
-s32  CALLBACK GSopen(void *pDsp, char *Title, int multithread);
+s32  CALLBACK GSopen(void *pDsp, const char *Title, int multithread);
 void CALLBACK GSclose();
 void CALLBACK GSshutdown();
 void CALLBACK GSsetSettingsDir( const char* dir );
@@ -572,7 +572,7 @@ typedef void (CALLBACK* _PS2EsetEmuVersion)(const char* emuId, u32 version);		//
 // GS
 // NOTE: GSreadFIFOX/GSwriteCSR functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
-typedef s32  (CALLBACK* _GSopen)(void *pDsp, char *Title, int multithread);
+typedef s32  (CALLBACK* _GSopen)(void *pDsp, const char *Title, int multithread);
 typedef s32  (CALLBACK* _GSopen2)( void *pDsp, u32 flags );
 typedef void (CALLBACK* _GSvsync)(int field);
 typedef void (CALLBACK* _GSgifTransfer)(const u32 *pMem, u32 size);

@@ -223,9 +223,9 @@ void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
 			reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ);
 			if( reghi >= 0 ) {
 				if( xmmregs[reghi].mode & MODE_WRITE ) SSE2_MOVQ_XMM_to_M64(hiaddr-8, reghi);
+				xmmregs[reghi].inuse = 0;
 			}
-
-			xmmregs[reghi].inuse = 0;
+						
 			MOVQRtoM(hiaddr, mmreg);
 		}
 		else {
@@ -272,13 +272,13 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
 
 		if( !upper && (reghi = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE)) >= 0 ) {
-			MOVQMtoR(reghi, (uptr)recGetImm64(res >> 63 ? -1 : 0, res >> 32));
+			MOVQMtoR(reghi, (uptr)recGetImm64((res >> 63) ? -1 : 0, res >> 32));
 		}
 		else {
 			reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
 
 			if( reghi >= 0 ) {
-				u32* ptr = recGetImm64(res >> 63 ? -1 : 0, res >> 32);
+				u32* ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
 				if( upper ) SSE_MOVHPS_M64_to_XMM(reghi, (uptr)ptr);
 				else SSE_MOVLPS_M64_to_XMM(reghi, (uptr)ptr);
 			}
