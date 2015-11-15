@@ -352,7 +352,7 @@ bool GSUtil::CheckDirectX()
 
 		if(MessageBox(NULL, "You need to update some directx libraries, would you like to do it now?", "GSdx", MB_YESNO) == IDYES)
 		{
-			const char* url = "http://www.microsoft.com/downloads/details.aspx?FamilyId=2DA43D38-DB71-4C1B-BC6A-9B6652CD92A3";
+			const char* url = "https://www.microsoft.com/en-us/download/details.aspx?id=8109";
 
 			ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
 		}
