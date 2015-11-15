@@ -1051,10 +1051,12 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile);
 
-	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+	if (IsDevBuild) {
+		s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+		pxAssert(!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc));
+	}
 
-	if(!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc))
-		s_pCurBlockEx = recBlocks.New(HWADDR(startpc), (uptr)recPtr);
+	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), (uptr)recPtr);
 
 	psxbranch = 0;
 
