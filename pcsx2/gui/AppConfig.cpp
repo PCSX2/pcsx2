@@ -239,7 +239,7 @@ namespace PathDefs
 
 	wxDirName GetThemes()
 	{
-		return AppRoot() + Base::Themes();
+		return GetDocuments() + Base::Themes();
 	}
 
 	wxDirName GetSettings()

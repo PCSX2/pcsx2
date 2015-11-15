@@ -43,26 +43,16 @@
 const wxImage& LoadImageAny(
 	wxImage& dest, bool useTheme, wxFileName& base, const wxChar* filename, IEmbeddedImage& onFail )
 {
-	if( useTheme )
+	if (useTheme && base.DirExists())
 	{
-		base.SetName( filename );
+		wxFileName pathname(base.GetFullPath(), filename);
 
-		base.SetExt( L"png" );
-		if( base.FileExists() )
+		const wxChar* extensions[3] = {L"png", L"jpg", L"bmp"};
+		for (size_t i = 0; i < sizeof(extensions)/sizeof(extensions[0]); ++i)
 		{
-			if( dest.LoadFile( base.GetFullPath() ) ) return dest;
-		}
-
-		base.SetExt( L"jpg" );
-		if( base.FileExists() )
-		{
-			if( dest.LoadFile( base.GetFullPath() ) ) return dest;
-		}
-
-		base.SetExt( L"bmp" );
-		if( base.FileExists() )
-		{
-			if( dest.LoadFile( base.GetFullPath() ) ) return dest;
+			pathname.SetExt(extensions[i]);
+			if (pathname.FileExists() && dest.LoadFile(pathname.GetFullPath()))
+				return dest;
 		}
 	}
 
@@ -122,13 +112,14 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	ScopedPtr<wxBitmap>& logo( GetResourceCache().Bitmap_Logo );
 	if( logo ) return *logo;
 
-	wxFileName mess;
+	wxFileName themeDirectory;
 	bool useTheme = (g_Conf->DeskTheme != L"default");
 
 	if( useTheme )
 	{
-		wxDirName theme( PathDefs::GetThemes() + g_Conf->DeskTheme );
-		wxFileName zipped( theme.GetFilename() );
+		themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
+#if 0
+		wxFileName zipped(themeDirectory);
 
 		zipped.SetExt( L"zip" );
 		if( zipped.FileExists() )
@@ -139,14 +130,12 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 
 			Console.Error( "Loading themes from zipfile is not supported yet.\nFalling back on default theme." );
 		}
-
-		// Overrides zipfile settings (fix when zipfile support added)
-		mess = theme.ToString();
+#endif
 	}
 
 	wxImage img;
 	EmbeddedImage<res_BackgroundLogo> temp;	// because gcc can't allow non-const temporaries.
-	LoadImageAny( img, useTheme, mess, L"BackgroundLogo", temp );
+	LoadImageAny(img, useTheme, themeDirectory, L"BackgroundLogo", temp);
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 	logo = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
 
@@ -158,18 +147,17 @@ const wxBitmap& Pcsx2App::GetScreenshotBitmap()
 	ScopedPtr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
 	if (screenshot) return *screenshot;
 
-	wxFileName mess;
+	wxFileName themeDirectory;
 	bool useTheme = (g_Conf->DeskTheme != L"default");
 
 	if (useTheme)
 	{
-		wxDirName theme(PathDefs::GetThemes() + g_Conf->DeskTheme);
-		mess = theme.ToString();
+		themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
 	}
 
 	wxImage img;
 	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
-	LoadImageAny(img, useTheme, mess, L"ButtonIcon_Camera", temp);
+	LoadImageAny(img, useTheme, themeDirectory, L"ButtonIcon_Camera", temp);
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 	screenshot = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
 
@@ -183,13 +171,12 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	{
 		int image_size = MSW_GetDPIScale() * g_Conf->Listbook_ImageSize;
 		images = new wxImageList(image_size, image_size);
-		wxFileName mess;
+		wxFileName themeDirectory;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
 
 		if( useTheme )
 		{
-			wxDirName theme( PathDefs::GetThemes() + g_Conf->DeskTheme );
-			mess = theme.ToString();
+			themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
 		}
 
 		wxImage img;
@@ -206,7 +193,7 @@ wxImageList& Pcsx2App::GetImgList_Config()
 		#define FancyLoadMacro( name ) \
 		{ \
 			EmbeddedImage<res_ConfigIcon_##name> temp; \
-			LoadImageAny(img, useTheme, mess, L"ConfigIcon_" wxT(#name), temp); \
+			LoadImageAny(img, useTheme, themeDirectory, L"ConfigIcon_" wxT(#name), temp); \
 			img.Rescale(image_size, image_size, wxIMAGE_QUALITY_HIGH); \
 			m_Resources->ImageId.Config.name = images->Add(img); \
 		}
