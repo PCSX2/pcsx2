@@ -142,6 +142,10 @@ void FolderMemoryCard::LoadMemoryCardData( const u32 sizeInClusters, const bool 
 		CreateRootDir();
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
 		AddFolder( rootDirEntry, m_folderName.GetPath(), nullptr, enableFiltering, filter );
+		
+		#ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
+		WriteToFile( m_folderName.GetFullPath().RemoveLast() + L"-debug_" +  wxDateTime::Now().Format( L"%Y-%m-%d-%H-%M-%S" ) + L"_load.ps2" );
+		#endif
 	}
 }
 
@@ -842,6 +846,10 @@ void FolderMemoryCard::NextFrame() {
 void FolderMemoryCard::Flush() {
 	if ( m_cache.empty() ) { return; }
 
+	#ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
+	WriteToFile( m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format( L"%Y-%m-%d-%H-%M-%S" ) + L"_pre-flush.ps2" );
+	#endif
+
 	Console.WriteLn( L"(FolderMcd) Writing data for slot %u to file system...", m_slot );
 	const u64 timeFlushStart = wxGetLocalTimeMillis().GetValue();
 
@@ -900,6 +908,10 @@ void FolderMemoryCard::Flush() {
 
 	const u64 timeFlushEnd = wxGetLocalTimeMillis().GetValue();
 	Console.WriteLn( L"(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart );
+
+	#ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
+	WriteToFile( m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format( L"%Y-%m-%d-%H-%M-%S" ) + L"_post-flush.ps2" );
+	#endif
 }
 
 bool FolderMemoryCard::FlushPage( const u32 page ) {
@@ -1342,6 +1354,20 @@ void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 	ecc[2] &= 0x7f;
 
 	return;
+}
+
+void FolderMemoryCard::WriteToFile( const wxString& filename ) {
+	wxFFile targetFile( filename, L"wb" );
+
+	u8 buffer[FolderMemoryCard::PageSizeRaw];
+	u32 adr = 0;
+	while ( adr < GetSizeInClusters() * FolderMemoryCard::ClusterSizeRaw ) {
+		Read( buffer, adr, FolderMemoryCard::PageSizeRaw );
+		targetFile.Write( buffer, FolderMemoryCard::PageSizeRaw );
+		adr += FolderMemoryCard::PageSizeRaw;
+	}
+
+	targetFile.Close();
 }
 
 

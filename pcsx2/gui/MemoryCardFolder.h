@@ -24,6 +24,8 @@
 #include "PluginCallbacks.h"
 #include "AppConfig.h"
 
+//#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
+
 // --------------------------------------------------------------------------------------
 //  Superblock Header Struct
 // --------------------------------------------------------------------------------------
@@ -347,6 +349,8 @@ public:
 	void NextFrame();
 
 	static void CalculateECC( u8* ecc, const u8* data );
+
+	void WriteToFile( const wxString& filename );
 
 protected:
 	// initializes memory card data, as if it was fresh from the factory
