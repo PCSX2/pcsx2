@@ -31,9 +31,9 @@ else()
     list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 endif()
 
-if(GTK3_API)
+if(GTK3_API AND NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-else()
+elseif(NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
 endif()
 

@@ -71,8 +71,8 @@ else()
     set(pcsx2_core FALSE)
     print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
-# Linux need also gtk2
-if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
+# Linux, BSD, use gtk2, but not OSX
+if(UNIX AND pcsx2_core AND NOT GTKn_FOUND AND NOT APPLE)
     set(pcsx2_core FALSE)
     print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
@@ -253,7 +253,7 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+if(ALSA_FOUND OR PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)
