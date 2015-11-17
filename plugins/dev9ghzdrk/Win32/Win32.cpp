@@ -204,6 +204,7 @@ s32  _DEV9open()
 	if (!na)
 	{
 		emu_printf("Failed to GetNetAdapter()\n");
+		config.ethEnable = false;
 	}
 	else
 	{
