@@ -904,6 +904,7 @@ void FolderMemoryCard::Flush() {
 	}
 
 	m_lastAccessedFile.FlushAll();
+	m_lastAccessedFile.ClearMetadataWriteState();
 	m_oldDataCache.clear();
 
 	const u64 timeFlushEnd = wxGetLocalTimeMillis().GetValue();
@@ -1516,6 +1517,10 @@ void FileAccessHelper::FlushAll() {
 	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
 		it->second.fileHandle->Flush();
 	}
+}
+
+void FileAccessHelper::ClearMetadataWriteState() {
+	m_lastWrittenFileRef = nullptr;
 }
 
 bool FileAccessHelper::CleanMemcardFilename( char* name ) {

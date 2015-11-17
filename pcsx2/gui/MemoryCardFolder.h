@@ -229,6 +229,9 @@ public:
 	// Flush the written data of all open files to the file system
 	void FlushAll();
 
+	// Force metadata to be written on next file access, not sure if this is necessary but it can't hurt.
+	void ClearMetadataWriteState();
+
 	// removes characters from a PS2 file name that would be illegal in a Windows file system
 	// returns true if any changes were made
 	static bool CleanMemcardFilename( char* name );
