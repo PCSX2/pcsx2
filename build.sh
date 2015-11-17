@@ -162,7 +162,7 @@ if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
         log=cpp_check__${flat_d}.log
         rm -f $log
 
-        cppcheck $check -j $ncpu --platform=unix32 $define $root/$d |& tee $log
+        cppcheck $check -j $ncpu --platform=unix32 $define $root/$d 2>&1 | tee $log
         # Create a small summary (warning it might miss some issues)
         fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" $log >> $summary
     done
