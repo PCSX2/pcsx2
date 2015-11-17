@@ -26,6 +26,21 @@ CoverityBuild=0
 cppcheck=0
 clangTidy=0
 
+if [[ $(uname -s) == 'Darwin' ]]; then
+    ncpu=$(sysctl -n hw.ncpu)
+    release=$(uname -r)
+    if [[ ${release:0:2} -lt 13 ]]; then
+        echo "This old OSX version is not supported! Build will fail."
+        toolfile=cmake/darwin-compiler-i386-clang.cmake
+    else
+        echo "Using Mavericks build with C++11 support."
+        toolfile=cmake/darwin13-compiler-i386-clang.cmake
+    fi
+else
+    ncpu=$(grep -w -c processor /proc/cpuinfo)
+    toolfile=cmake/linux-compiler-i386-multilib.cmake
+fi
+
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
@@ -44,7 +59,7 @@ for ARG in "$@"; do
         --wx28              ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;
         --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake); useCross=1; ;;
+        --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile); useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         -D*                 ) flags+=($ARG) ;;
@@ -98,7 +113,7 @@ fi
 
 if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
     echo "Forcing cross compilation."
-    flags+=(-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake)
+    flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile)
 elif [[ "$useCross" -ne 1 ]]; then
     useCross=0
 fi
@@ -125,11 +140,7 @@ else
     cmake "${flags[@]}" $root 2>&1 | tee -a $log
 fi
 
-if [[ $(uname -s) == 'Darwin' ]]; then
-    ncpu=$(sysctl -n hw.ncpu)
-else
-    ncpu=$(grep -w -c processor /proc/cpuinfo)
-fi
+
 
 ############################################################
 # CPP check build
