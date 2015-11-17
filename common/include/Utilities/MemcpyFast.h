@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifdef __linux__
+#if defined(__POSIX__)
 #	include "lnx_memzero.h"
 #else
 #	include "win_memzero.h"
