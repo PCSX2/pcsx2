@@ -246,6 +246,9 @@ void _DEV9irq(int cause, int cycles)
 
 
 u8  CALLBACK DEV9read8(u32 addr) {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u8 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -311,6 +314,9 @@ u8  CALLBACK DEV9read8(u32 addr) {
 
 u16 CALLBACK DEV9read16(u32 addr)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u16 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -373,6 +379,9 @@ u16 CALLBACK DEV9read16(u32 addr)
 
 u32 CALLBACK DEV9read32(u32 addr)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u32 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -405,6 +414,9 @@ u32 CALLBACK DEV9read32(u32 addr)
 
 void CALLBACK DEV9write8(u32 addr,  u8 value) 
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -512,6 +524,9 @@ void CALLBACK DEV9write8(u32 addr,  u8 value)
 
 void CALLBACK DEV9write16(u32 addr, u16 value) 
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -552,6 +567,9 @@ void CALLBACK DEV9write16(u32 addr, u16 value)
 
 void CALLBACK DEV9write32(u32 addr, u32 value) 
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -586,6 +604,9 @@ void CALLBACK DEV9write32(u32 addr, u32 value)
 
 void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size) 
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	DEV9_LOG("*DEV9readDMA8Mem: size %x\n", size);
 	emu_printf("rDMA\n");
 	
@@ -597,6 +618,9 @@ void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size)
 
 void CALLBACK DEV9writeDMA8Mem(u32* pMem, int size) 
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	DEV9_LOG("*DEV9writeDMA8Mem: size %x\n", size);
 	emu_printf("wDMA\n");
 	
