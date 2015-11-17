@@ -31,6 +31,57 @@ namespace Threading
 //  Mutex Implementations
 // --------------------------------------------------------------------------------------
 
+#if defined(_WIN32) || (defined(_POSIX_TIMEOUTS) && _POSIX_TIMEOUTS >= 200112L)
+// good, we have pthread_mutex_timedlock
+#define xpthread_mutex_timedlock pthread_mutex_timedlock
+#else
+// We have to emulate pthread_mutex_timedlock(). This could be a serious
+// performance drain if its used a lot.
+
+#include <sys/time.h>  // gettimeofday()
+
+// sleep for 10ms at a time
+#define TIMEDLOCK_EMU_SLEEP_NS 10000000ULL
+
+// Original POSIX docs:
+//
+// The pthread_mutex_timedlock() function shall lock the mutex object
+// referenced by mutex. If the mutex is already locked, the calling thread
+// shall block until the mutex becomes available as in the
+// pthread_mutex_lock() function. If the mutex cannot be locked without
+// waiting for another thread to unlock the mutex, this wait shall be
+// terminated when the specified timeout expires.
+//
+// This is an implementation that emulates pthread_mutex_timedlock() via
+// pthread_mutex_trylock().
+static int xpthread_mutex_timedlock(
+		pthread_mutex_t *mutex,
+		const struct timespec *abs_timeout)
+{
+	int err = 0;
+
+	while ((err = pthread_mutex_trylock(mutex)) == EBUSY) {
+		// acquiring lock failed, sleep some
+		struct timespec ts;
+		ts.tv_sec = 0;
+		ts.tv_nsec = TIMEDLOCK_EMU_SLEEP_NS;
+		int status;
+		while ((status = nanosleep(&ts, &ts)) == -1);
+
+		// check if the timeout has expired, gettimeofday() is implemented
+		// efficiently (in userspace) on OSX
+		struct timeval now;
+		int res = gettimeofday(&now, NULL);
+		if (abs_timeout->tv_sec == 0 || now.tv_sec > abs_timeout->tv_sec ||
+				(u64) now.tv_usec * 1000ULL > (u64) abs_timeout->tv_nsec) {
+			return ETIMEDOUT;
+		}
+	}
+
+	return err;
+}
+#endif
+
 Threading::Mutex::Mutex()
 {
 	pthread_mutex_init( &m_mutex, NULL );
@@ -125,7 +176,7 @@ bool Threading::Mutex::AcquireWithoutYield( const wxTimeSpan& timeout )
 {
 	wxDateTime megafail( wxDateTime::UNow() + timeout );
 	const timespec fail = { megafail.GetTicks(), megafail.GetMillisecond() * 1000000 };
-	return pthread_mutex_timedlock( &m_mutex, &fail ) == 0;
+	return xpthread_mutex_timedlock( &m_mutex, &fail ) == 0;
 }
 
 void Threading::Mutex::Release()

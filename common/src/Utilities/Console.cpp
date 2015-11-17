@@ -32,7 +32,7 @@ static DeclareTls(ConsoleColors) conlog_Color( DefaultConsoleColor );
 static wxString	m_buffer;		// used by ConsoleBuffer
 static Mutex	m_bufferlock;	// used by ConsoleBuffer
 
-#ifdef __linux__
+#ifdef __POSIX__
 static FILE *stdout_fp = stdout;
 
 void Console_SetStdout(FILE *fp)
