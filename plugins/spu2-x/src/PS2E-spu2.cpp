@@ -20,6 +20,10 @@
 #include "Dma.h"
 #include "Dialogs.h"
 
+#ifdef __POSIX__
+#include "PS2Eext.h"
+#endif
+
 #include "svnrev.h"
 
 #ifdef _MSC_VER
@@ -446,7 +450,7 @@ EXPORT_C_(s32) SPU2open(void *pDsp)
 	{
 		SndBuffer::Init();
 		
-#ifndef __linux__
+#ifndef __POSIX__
 		DspLoadLibrary(dspPlugin,dspPluginModule);
 #endif
 		WaveDump::Open();
@@ -467,7 +471,7 @@ EXPORT_C_(void) SPU2close()
 
 	FileLog("[%10d] SPU2 Close\n",Cycles);
 
-#ifndef __linux__
+#ifndef __POSIX__
 	DspCloseLibrary();
 #endif
 

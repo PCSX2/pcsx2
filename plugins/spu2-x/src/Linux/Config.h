@@ -18,7 +18,10 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
+#ifdef __linux__
 #include <gtk/gtk.h>
+#endif
+
 #include <string>
 #include <wx/fileconf.h>
 

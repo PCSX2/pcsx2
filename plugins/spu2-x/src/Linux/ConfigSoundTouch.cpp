@@ -71,8 +71,10 @@ namespace SoundtouchCfg
 		CfgWriteInt( L"SOUNDTOUCH", L"OverlapMS", OverlapMS );
 	}
 
+#ifdef __linux__
 	static GtkWidget *seq_label, *seek_label, *over_label;
 	static GtkWidget *seq_slide, *seek_slide, *over_slide;
+
 
 	void restore_defaults()
 	{
@@ -80,6 +82,7 @@ namespace SoundtouchCfg
 		gtk_range_set_value(GTK_RANGE(seek_slide), 20);
 		gtk_range_set_value(GTK_RANGE(over_slide), 10);
 	}
+
 
 	void DisplayDialog()
 	{
@@ -158,4 +161,15 @@ namespace SoundtouchCfg
 
 		WriteSettings();
 	}
+#else
+    void DisplayDialog()
+    {
+        
+    }
+
+    void restore_defaults()
+    {
+        
+    }
+#endif
 }

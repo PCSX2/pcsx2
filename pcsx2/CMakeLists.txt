@@ -66,7 +66,7 @@ set(pcsx2Sources
 	FiFo.cpp
 	FPU.cpp
 	Gif.cpp
-    Gif_Logger.cpp
+	Gif_Logger.cpp
 	Gif_Unit.cpp
 	GS.cpp
 	GSState.cpp
@@ -85,9 +85,9 @@ set(pcsx2Sources
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
-    MTVU.cpp
-    MultipartFileReader.cpp
-    OutputIsoFile.cpp
+	MTVU.cpp
+	MultipartFileReader.cpp
+	OutputIsoFile.cpp
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp
@@ -152,7 +152,7 @@ set(pcsx2Headers
 	IopMem.h
 	IopSio2.h
 #	Mdec.h
-    MTVU.h
+	MTVU.h
 	Memory.h
 	MemoryTypes.h
 	NakedAsm.h
@@ -405,6 +405,12 @@ set(pcsx2LinuxSources
     Linux/LnxFlatFileReader.cpp
     )
 
+set(pcsx2OSXSources
+#	Linux/LnxConsolePipe.cpp
+#	Linux/LnxKeyCodes.cpp
+	Darwin/DarwinFlatFileReader.cpp
+	)
+
 # Linux headers
 set(pcsx2LinuxHeaders
 	)
@@ -591,7 +597,7 @@ set(Common
 	${pcsx2CDVDHeaders}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
-    ${pcsx2GuiResources}
+	${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
 	${pcsx2IPUSources}
 	${pcsx2IPUHeaders}
@@ -623,9 +629,10 @@ if(Windows)
 endif()
 
 # MacOSX
-if(MacOSX)
+if(APPLE)
 	set(Platform
-		)
+		${pcsx2OSXSources}
+		${pcsx2LinuxHeaders})
 endif()
 
 set(pcsx2FinalSources

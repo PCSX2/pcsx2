@@ -17,6 +17,8 @@
 
  //  Adapted from ZeroSPU2 code by Zerofrog. Heavily modified by Arcum42.
 
+#ifdef __linux__
+
 #include <alsa/asoundlib.h>
 
 #include "Global.h"
@@ -260,3 +262,5 @@ public:
 } static Alsa;
 
 SndOutModule *AlsaOut = &Alsa;
+
+#endif

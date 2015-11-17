@@ -141,7 +141,9 @@ void ReadSettings()
 	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 
 	PortaudioOut->ReadSettings();
+#ifndef __APPLE__
 	SDLOut->ReadSettings();
+#endif
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
 
@@ -185,7 +187,9 @@ void WriteSettings()
 	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 	PortaudioOut->WriteSettings();
+#ifndef __APPLE__
 	SDLOut->WriteSettings();
+#endif
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }
@@ -200,6 +204,7 @@ void debug_dialog()
 	DebugConfig::DisplayDialog();
 }
 
+#ifdef __linux__
 void DisplayDialog()
 {
     int return_value;
@@ -379,6 +384,12 @@ void DisplayDialog()
 
     gtk_widget_destroy (dialog);
 }
+#else
+void DisplayDialog()
+{
+    
+}
+#endif
 
 void configure()
 {

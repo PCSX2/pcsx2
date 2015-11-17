@@ -17,9 +17,11 @@
 
  // To be continued...
 
- #include "Dialogs.h"
-#include <gtk/gtk.h>
+#include "Dialogs.h"
 #include <cstring>
+
+#ifdef __linux__
+#include <gtk/gtk.h>
 
 void SysMessage(const char *fmt, ...)
 {
@@ -59,6 +61,7 @@ void SysMessage(const wchar_t *fmt, ...)
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 }
+#endif
 
 void DspUpdate()
 {

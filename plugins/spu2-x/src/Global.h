@@ -68,7 +68,11 @@ static __forceinline T GetClamped( T src, T min, T max )
 	return std::min( std::max( src, min ), max );
 }
 
+#ifdef __WXMAC__
+#include "PS2Eext.h"
+#else
 extern void SysMessage(const char *fmt, ...);
+#endif
 extern void SysMessage(const wchar_t *fmt, ...);
 
 //////////////////////////////////////////////////////////////
