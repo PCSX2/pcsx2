@@ -18,7 +18,7 @@
 #include "CompressedFileReaderUtils.h"
 #include "CsoFileReader.h"
 #include "Pcsx2Types.h"
-#ifdef __linux__
+#ifdef __POSIX__
 #include <zlib.h>
 #else
 #include <zlib/zlib.h>
