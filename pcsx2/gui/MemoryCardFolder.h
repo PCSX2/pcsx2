@@ -202,13 +202,18 @@ struct MemoryCardFileMetadataReference {
 	void GetInternalPath( std::string* fileName ) const;
 };
 
+struct MemoryCardFileHandleStructure {
+	MemoryCardFileMetadataReference* fileRef;
+	wxFFile* fileHandle;
+};
+
 // --------------------------------------------------------------------------------------
 //  FileAccessHelper
 // --------------------------------------------------------------------------------------
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
 class FileAccessHelper {
 protected:
-	std::map<std::string, wxFFile*> m_files;
+	std::map<std::string, MemoryCardFileHandleStructure> m_files;
 	MemoryCardFileMetadataReference* m_lastWrittenFileRef; // we remember this to reduce redundant metadata checks/writes
 
 public:

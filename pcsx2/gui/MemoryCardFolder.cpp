@@ -109,8 +109,8 @@ void FolderMemoryCard::Close( bool flush ) {
 
 	m_cache.clear();
 	m_oldDataCache.clear();
-	m_fileMetadataQuickAccess.clear();
 	m_lastAccessedFile.CloseAll();
+	m_fileMetadataQuickAccess.clear();
 }
 
 void FolderMemoryCard::LoadMemoryCardData( const u32 sizeInClusters, const bool enableFiltering, const wxString& filter ) {
@@ -1399,7 +1399,10 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 	std::string internalPath;
 	fileRef->GetInternalPath( &internalPath );
-	m_files.emplace( internalPath, file );
+	MemoryCardFileHandleStructure handleStruct;
+	handleStruct.fileHandle = file;
+	handleStruct.fileRef = fileRef;
+	m_files.emplace( internalPath, handleStruct );
 
 	if ( writeMetadata ) {
 		fn.AppendDir( L"_pcsx2_meta" );
@@ -1465,7 +1468,10 @@ wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileM
 			}
 		}
 
-		return it->second;
+		// update the fileRef in the map since it might have been modified or deleted
+		it->second.fileRef = fileRef;
+
+		return it->second.fileHandle;
 	} else {
 		return this->Open( folderName, fileRef, writeMetadata );
 	}
@@ -1489,9 +1495,9 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 	fn.Normalize();
 	wxString pathNormalized = fn.GetFullPath();
 	for ( auto it = m_files.begin(); it != m_files.end(); ) {
-		wxString openPath = it->second->GetName();
+		wxString openPath = it->second.fileHandle->GetName();
 		if ( openPath.StartsWith( pathNormalized ) ) {
-			CloseFileHandle( it->second, nullptr );
+			CloseFileHandle( it->second.fileHandle, it->second.fileRef->entry );
 			it = m_files.erase( it );
 		} else {
 			++it;
@@ -1501,14 +1507,14 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 
 void FileAccessHelper::CloseAll() {
 	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
-		CloseFileHandle( it->second, nullptr );
+		CloseFileHandle( it->second.fileHandle, it->second.fileRef->entry );
 	}
 	m_files.clear();
 }
 
 void FileAccessHelper::FlushAll() {
 	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
-		it->second->Flush();
+		it->second.fileHandle->Flush();
 	}
 }
 
