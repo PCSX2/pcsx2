@@ -197,6 +197,9 @@ struct MemoryCardFileMetadataReference {
 
 	// returns true if filename was modified and metadata containing the actual filename should be written
 	bool GetPath( wxFileName* fileName ) const;
+
+	// gives the internal memory card file system path, not to be used for writes to the host file system
+	void GetInternalPath( std::string* fileName ) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -205,7 +208,7 @@ struct MemoryCardFileMetadataReference {
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
 class FileAccessHelper {
 protected:
-	std::map<const MemoryCardFileEntry* const, wxFFile*> m_files;
+	std::map<std::string, wxFFile*> m_files;
 	MemoryCardFileMetadataReference* m_lastWrittenFileRef; // we remember this to reduce redundant metadata checks/writes
 
 public:

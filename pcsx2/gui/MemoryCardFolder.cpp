@@ -1396,7 +1396,10 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 	const MemoryCardFileEntry* const entry = fileRef->entry;
 	wxFFile* file = new wxFFile( filename, L"r+b" );
-	m_files.emplace( entry, file );
+
+	std::string internalPath;
+	fileRef->GetInternalPath( &internalPath );
+	m_files.emplace( internalPath, file );
 
 	if ( writeMetadata ) {
 		fn.AppendDir( L"_pcsx2_meta" );
@@ -1444,7 +1447,9 @@ void FileAccessHelper::WriteMetadata( bool metadataIsNonstandard, wxFileName& me
 }
 
 wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
-	auto it = m_files.find( fileRef->entry );
+	std::string internalPath;
+	fileRef->GetInternalPath( &internalPath );
+	auto it = m_files.find( internalPath );
 	if ( it != m_files.end() ) {
 		// we already have a handle to this file
 
@@ -1486,7 +1491,7 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 	for ( auto it = m_files.begin(); it != m_files.end(); ) {
 		wxString openPath = it->second->GetName();
 		if ( openPath.StartsWith( pathNormalized ) ) {
-			CloseFileHandle( it->second, it->first );
+			CloseFileHandle( it->second, nullptr );
 			it = m_files.erase( it );
 		} else {
 			++it;
@@ -1496,7 +1501,7 @@ void FileAccessHelper::CloseMatching( const wxString& path ) {
 
 void FileAccessHelper::CloseAll() {
 	for ( auto it = m_files.begin(); it != m_files.end(); ++it ) {
-		CloseFileHandle( it->second, it->first );
+		CloseFileHandle( it->second, nullptr );
 	}
 	m_files.clear();
 }
@@ -1547,6 +1552,17 @@ bool MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) const {
 	return parentCleaned || localCleaned;
 }
 
+void MemoryCardFileMetadataReference::GetInternalPath( std::string* fileName ) const {
+	if ( parent ) {
+		parent->GetInternalPath( fileName );
+	}
+
+	fileName->append( (const char*)entry->entry.data.name );
+
+	if ( entry->IsDir() ) {
+		fileName->append( "/" );
+	}
+}
 
 FolderMemoryCardAggregator::FolderMemoryCardAggregator() {
 	for ( uint i = 0; i < TotalCardSlots; ++i ) {
