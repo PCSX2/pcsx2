@@ -439,7 +439,6 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 
 	if (tempecx != ECX)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); tempecx = ECX;}
 	if (temp2 == -1)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); temp2 = EAX;}
-	if (xmmtemp == -1)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); xmmtemp = XMM0;}
 
 	SSE2_MOVD_XMM_to_R(tempecx, regd);
 	SSE2_MOVD_XMM_to_R(temp2, regt);
