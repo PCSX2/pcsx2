@@ -15,14 +15,24 @@
 
 #pragma once
 
+#if defined(__linux__) && defined(__clang__)
+
+[[deprecated]] const int DISP32 = 5;	// maps to EBP
+
+[[deprecated]] const int EAX = 0;
+[[deprecated]] const int EBX = 3;
+[[deprecated]] const int ECX = 1;
+[[deprecated]] const int EDX = 2;
+[[deprecated]] const int ESI = 6;
+[[deprecated]] const int EDI = 7;
+[[deprecated]] const int EBP = 5;
+[[deprecated]] const int ESP = 4;
+
+#else
+
 //#define SIB 4		// maps to ESP
 //#define SIBDISP 5	// maps to EBP
 #define DISP32 5	// maps to EBP
-
-// general types
-typedef int x86IntRegType;
-typedef int x86MMXRegType;
-typedef int x86SSERegType;
 
 #define EAX 0
 #define EBX 3
@@ -32,3 +42,10 @@ typedef int x86SSERegType;
 #define EDI 7
 #define EBP 5
 #define ESP 4
+
+#endif
+
+// general types
+typedef int x86IntRegType;
+typedef int x86MMXRegType;
+typedef int x86SSERegType;
