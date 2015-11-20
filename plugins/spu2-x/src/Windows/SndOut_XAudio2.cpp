@@ -233,6 +233,7 @@ private:
 
 	};
 
+	HMODULE xAudio2DLL;
 	CComPtr<IXAudio2> pXAudio2;
 	IXAudio2MasteringVoice* pMasteringVoice;
 	BaseStreamingVoice* voiceContext;
@@ -244,6 +245,16 @@ public:
 		HRESULT hr;
 
 		jASSUME( pXAudio2 == NULL );
+
+		// On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
+		// Maintain an extra library reference so it can't do so. Does not
+		// affect XAudio 2.8+, but that's Win8+. See
+		// http://blogs.msdn.com/b/chuckw/archive/2015/10/09/known-issues-xaudio-2-7.aspx
+#ifdef _DEBUG
+		xAudio2DLL = LoadLibrary(L"XAudioD2_7.dll");
+#else
+		xAudio2DLL = LoadLibrary(L"XAudio2_7.dll");
+#endif
 
 		//
 		// Initialize XAudio2
@@ -375,6 +386,11 @@ public:
 
 		pXAudio2.Release();
 		CoUninitialize();
+
+		if (xAudio2DLL) {
+			FreeLibrary(xAudio2DLL);
+			xAudio2DLL = nullptr;
+		}
 	}
 
 	virtual void Configure(uptr parent)
