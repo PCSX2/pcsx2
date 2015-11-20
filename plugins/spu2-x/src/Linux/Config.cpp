@@ -63,7 +63,7 @@ float VolumeAdjustBR;
 float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
-int delayCycles;
+unsigned int delayCycles;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
