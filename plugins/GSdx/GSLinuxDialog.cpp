@@ -341,7 +341,6 @@ void populate_sw_table(GtkWidget* sw_table)
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
 	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
-	GtkWidget* spin_thread_check= CreateCheckBox("Disable thread sleeping (6+ cores CPU)", "spin_thread");
 
 	AddTooltip(aa_check, IDC_AA1);
 	AddTooltip(mipmap_check, IDC_MIPMAP);
@@ -350,7 +349,6 @@ void populate_sw_table(GtkWidget* sw_table)
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
 	InsertWidgetInTable(sw_table , aa_check, mipmap_check);
-	InsertWidgetInTable(sw_table , spin_thread_check , spin_thread_check);
 }
 
 void populate_shader_table(GtkWidget* shader_table)

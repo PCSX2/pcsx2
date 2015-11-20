@@ -1232,27 +1232,3 @@ void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
 {
 	m_r->Draw(item.get());
 }
-
-// GSRasterizerList::GSWorkerSpin
-GSRasterizerList::GSWorkerSpin::GSWorkerSpin(GSRasterizer* r)
-	: GSJobQueueSpin<shared_ptr<GSRasterizerData>, 256>()
-	, m_r(r)
-{
-}
-
-GSRasterizerList::GSWorkerSpin::~GSWorkerSpin()
-{
-	Wait();
-
-	delete m_r;
-}
-
-int GSRasterizerList::GSWorkerSpin::GetPixels(bool reset)
-{
-	return m_r->GetPixels(reset);
-}
-
-void GSRasterizerList::GSWorkerSpin::Process(shared_ptr<GSRasterizerData>& item)
-{
-	m_r->Draw(item.get());
-}

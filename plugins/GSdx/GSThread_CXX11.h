@@ -82,7 +82,6 @@ public:
 
 #endif
 
-// To allow switching between queue dynamically
 template<class T> class IGSJobQueue : public GSThread
 {
 public:
@@ -97,9 +96,6 @@ public:
 	virtual int GetPixels(bool reset) = 0;
 };
 
-// This queue doesn't reserve any thread. It would be nicer for 2c/4c CPU.
-// pros: no hard limit on thread numbers
-// cons: less performance by thread
 template<class T, int CAPACITY> class GSJobQueue : public IGSJobQueue<T>
 {
 protected:
@@ -187,156 +183,3 @@ public:
 		this->Process(item);
 	}
 };
-
-
-// This queue reserves 'only' RENDERING threads mostly the same performance as a no reservation queue if the CPU is fast enough
-// pros: nearly best fps by thread
-// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 6/8 cores CPU.
-// Note: I'm not sure of the source of the speedup
-//		1/ It could be related to less MT logic (lock, cond var)
-//		2/ But I highly suspect that waking up thread is rather slow.  My guess
-//		is that low power feature (like C state) increases latency. In this case
-//		gain will be smaller if PCSX2 is running or in limited core CPU (<=4)
-template<class T, int CAPACITY> class GSJobQueueSpin : public IGSJobQueue<T>
-{
-protected:
-	std::atomic<int16_t> m_count;
-	std::atomic<bool> m_exit;
-	ringbuffer_base<T, CAPACITY> m_queue;
-
-	std::mutex m_lock;
-	std::condition_variable m_empty;
-
-	void ThreadProc() {
-		std::unique_lock<std::mutex> l(m_lock, defer_lock);
-
-		while (true) {
-
-			while (m_count == 0) {
-				if (m_exit.load(memory_order_acquire)) return;
-				std::this_thread::yield();
-			}
-
-			int16_t consumed = 0;
-			for (int16_t nb = m_count; nb >= 0; nb--) {
-				if (m_queue.consume_one(*this))
-					consumed++;
-			}
-
-			l.lock();
-
-			m_count -= consumed;
-
-			l.unlock();
-
-			if (m_count <= 0)
-				m_empty.notify_one();
-
-		}
-	}
-
-public:
-	GSJobQueueSpin() :
-		m_count(0),
-		m_exit(false)
-	{
-		this->CreateThread();
-	};
-
-	virtual ~GSJobQueueSpin() {
-		m_exit.store(true, memory_order_release);
-		this->CloseThread();
-	}
-
-	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
-
-		return m_count == 0;
-	}
-
-	void Push(const T& item) {
-		while(!m_queue.push(item))
-			std::this_thread::yield();
-
-		m_count++;
-	}
-
-	void Wait() {
-		if (m_count > 0) {
-			std::unique_lock<std::mutex> l(m_lock);
-			while (m_count > 0) {
-				m_empty.wait(l);
-			}
-		}
-
-		ASSERT(m_count == 0);
-	}
-
-	void operator() (T& item) {
-		this->Process(item);
-	}
-};
-
-// This queue reserves RENDERING threads + GS threads onto dedicated CPU
-// pros: best fps by thread
-// cons: requires (1 + eThreads) cores for GS emulation only ! Reserved to 8 cores CPU.
-#if 0
-
-template<class T> class GSJobQueue : public IGSJobQueue<T>
-{
-protected:
-	std::atomic<int16_t> m_count;
-	std::atomic<bool> m_exit;
-	boost::lockfree::spsc_queue<T, boost::lockfree::capacity<255> > m_queue;
-
-	void ThreadProc() {
-		while (true) {
-			while (m_count == 0) {
-				if (m_exit.load(memory_order_acquire)) return;
-				std::this_thread::yield();
-			}
-
-			m_count -= m_queue.consume_all(*this);
-		}
-	}
-
-public:
-	GSJobQueue() :
-		m_count(0),
-		m_exit(false)
-	{
-		CreateThread();
-	};
-
-	virtual ~GSJobQueue() {
-		m_exit = true;
-		CloseThread();
-	}
-
-	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
-
-		return m_count == 0;
-	}
-
-	void Push(const T& item) {
-		m_count++;
-		while(!m_queue.push(item))
-			std::this_thread::yield();
-	}
-
-	void Wait() {
-		while (m_count > 0)
-			std::this_thread::yield();
-
-		ASSERT(m_count == 0);
-	}
-
-	virtual void Process(T& item) = 0;
-
-	void operator() (T& item) {
-		this->Process(item);
-	}
-};
-
-#endif
