@@ -362,6 +362,9 @@ void populate_shader_table(GtkWidget* shader_table)
 	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
 	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
 
+	GtkWidget* tv_shader_label  = gtk_label_new("TV shader:");
+	GtkWidget* tv_shader        = CreateComboBoxFromVector(theApp.m_gs_tv_shaders, "TVShader");
+
 	// Shadeboost scale
 	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness", 50);
 	GtkWidget* sb_brightness_label = gtk_label_new("Shade Boost Brightness");
@@ -385,6 +388,7 @@ void populate_shader_table(GtkWidget* shader_table)
 	InsertWidgetInTable(shader_table , shaderfx_check);
 	InsertWidgetInTable(shader_table , shader_label        , shader);
 	InsertWidgetInTable(shader_table , shader_conf_label   , shader_conf);
+	InsertWidgetInTable(shader_table , tv_shader_label, tv_shader);
 }
 
 void populate_hack_table(GtkWidget* hack_table)

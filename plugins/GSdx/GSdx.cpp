@@ -196,6 +196,12 @@ GSdxApp::GSdxApp()
 	m_gs_acc_blend_level.push_back(GSSetting(4, "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(5, "Ultra", "Ultra Slow"));
 
+	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
+	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
+	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
+	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
+	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
+
 	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
 	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));
