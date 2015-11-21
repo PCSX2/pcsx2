@@ -206,7 +206,6 @@ bool JoystickInfo::Init(int id)
 	// FIXME: people need to restart the plugin to take the option into account.
 	bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
 	if (found_hack != string::npos && numaxes > 4  && hack_enabled) {
-		fprintf(stderr, "ONEPAD HACK IS enabled");
 		numbuttons = 4; // (select, start, l3, r3)
 		// Enable this hack in bluetooth too. It avoid to restart the onepad gui
 		numbuttons += 4; // the 4 hat buttons
