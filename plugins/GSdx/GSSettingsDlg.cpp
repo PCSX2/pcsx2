@@ -162,17 +162,6 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_MIPMAP, theApp.GetConfig("mipmap", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
-
-	// Shade Boost
-	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
-
-	// FXAA shader
-	CheckDlgButton(m_hWnd, IDC_FXAA, theApp.GetConfig("Fxaa", 0));
-
-	// External FX shader
-	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfig("shaderfx", 0));
-	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_glsl", "shaders\\GSdx.fx").c_str());
-	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_conf", "shaders\\GSdx_FX_Settings.ini").c_str());
 	
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfig("UserHacks", 0));
@@ -197,9 +186,6 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_MIPMAP);
 	AddTooltip(IDC_SWTHREADS);
 	AddTooltip(IDC_SWTHREADS_EDIT);
-	AddTooltip(IDC_SHADEBOOST);
-	AddTooltip(IDC_SHADER_FX);
-	AddTooltip(IDC_FXAA);
 	AddTooltip(IDC_FBA);
 	AddTooltip(IDC_LOGZ);
 
@@ -223,8 +209,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if (code == CBN_SELCHANGE)
 				UpdateControls();
 			break;
-		case IDC_SHADEBOOST:
-		case IDC_SHADER_FX:
 		case IDC_PALTEX:
 		case IDC_HACKS_ENABLED:
 			if (code == BN_CLICKED)
@@ -232,19 +216,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			break;
 		case IDC_SHADEBUTTON:
 			if (code == BN_CLICKED)
-				ShadeBoostDlg.DoModal();
+				ShaderDlg.DoModal();
 			break;
 		case IDC_HACKSBUTTON:
 			if (code == BN_CLICKED)
 				HacksDlg.DoModal();
-			break;
-		case IDC_SHADER_FX_BUTTON:
-			if (code == BN_CLICKED)
-				OpenFileDialog(IDC_SHADER_FX_EDIT, "Select External Shader");
-			break;
-		case IDC_SHADER_FX_CONF_BUTTON:
-			if (code == BN_CLICKED)
-				OpenFileDialog(IDC_SHADER_FX_CONF_EDIT, "Select External Shader Config");
 			break;
 		case IDOK:
 		{
@@ -311,29 +287,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
-
-			// Shade Boost
-			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
-
-			// FXAA shader
-			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
-
-			// External FX Shader
-			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
-			
-			// External FX Shader(OpenGL)
-			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
-			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
-			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
-			char *buffer = new char[length];
-
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_conf", buffer);
-
-			delete [] buffer;
-
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 		}
 		break;
@@ -454,35 +407,41 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 	}
 
-	// External shader
-	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_TEXT), external_shader_selected);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), external_shader_selected);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_BUTTON), external_shader_selected);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_TEXT), external_shader_selected);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), external_shader_selected);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_BUTTON), external_shader_selected);
-
-	// Shade Boost
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED);
 }
 
-// Shade Boost Dialog
+// Shader Configuration Dialog
 
-GSShadeBostDlg::GSShadeBostDlg() : 
-	GSDialog(IDD_SHADEBOOST)
+GSShaderDlg::GSShaderDlg() :
+	GSDialog(IDD_SHADER)
 {}
 
-void GSShadeBostDlg::OnInit()
+void GSShaderDlg::OnInit()
 {
+	//TV Shader
+	ComboBoxInit(IDC_TVSHADER, theApp.m_gs_tv_shaders, theApp.GetConfig("TVshader", 0));
+
+	//Shade Boost
+	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
 	contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
 	brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
 	saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
 
+	// External FX shader
+	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfig("shaderfx", 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_glsl", "shaders\\GSdx.fx").c_str());
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfig("shaderfx_conf", "shaders\\GSdx_FX_Settings.ini").c_str());
+
+	// FXAA shader
+	CheckDlgButton(m_hWnd, IDC_FXAA, theApp.GetConfig("Fxaa", 0));
+
+	AddTooltip(IDC_SHADEBOOST);
+	AddTooltip(IDC_SHADER_FX);
+	AddTooltip(IDC_FXAA);
+
 	UpdateControls();
 }
 
-void GSShadeBostDlg::UpdateControls()
+void GSShaderDlg::UpdateControls()
 {
 	SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
@@ -500,9 +459,25 @@ void GSShadeBostDlg::UpdateControls()
 	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
 	sprintf(text, "%d", contrast);
 	SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
+
+	// Shader Settings
+	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
+	bool shadeboost_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED;
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SATURATION_TEXT), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_TEXT), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CONTRAST_TEXT), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_BUTTON), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_TEXT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), external_shader_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_BUTTON), external_shader_selected);
 }
 
-bool GSShadeBostDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
+bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
@@ -543,21 +518,60 @@ bool GSShadeBostDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 		switch(id)
 		{
-		case IDOK: 
+		case IDOK:
 		{
+			INT_PTR data;
+			//TV Shader
+			if (ComboBoxGetSelData(IDC_TVSHADER, data))
+			{
+				theApp.SetConfig("TVshader", (int)data);
+			}
+			// Shade Boost
+			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
 			theApp.SetConfig("ShadeBoost_Contrast", contrast);
 			theApp.SetConfig("ShadeBoost_Brightness", brightness);
 			theApp.SetConfig("ShadeBoost_Saturation", saturation);
+
+			// FXAA shader
+			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
+
+			// External FX Shader
+			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
+
+			// External FX Shader(OpenGL)
+			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
+			char *buffer = new char[length];
+
+
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
+			theApp.SetConfig("shaderfx_conf", buffer);
+			delete[] buffer;
+
 			EndDialog(m_hWnd, id);		
 		} break;
-
-		case IDRESET:
-		{
-			contrast = 50;
-			brightness = 50;
-			saturation = 50;
-
+		case IDC_SHADEBOOST:
 			UpdateControls();
+		case IDC_SHADER_FX:
+			if (HIWORD(wParam) == BN_CLICKED)
+				UpdateControls();
+			break;
+		case IDC_SHADER_FX_BUTTON:
+			if (HIWORD(wParam) == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_EDIT, "Select External Shader");
+			break;
+
+		case IDC_SHADER_FX_CONF_BUTTON:
+			if (HIWORD(wParam) == BN_CLICKED)
+				OpenFileDialog(IDC_SHADER_FX_CONF_EDIT, "Select External Shader Config");
+			break;
+
+		case IDCANCEL:
+		{
+			EndDialog(m_hWnd, IDCANCEL);
 		} break;
 		}
 
