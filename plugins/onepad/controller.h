@@ -61,15 +61,16 @@ class PADconf
 	public:
 	union {
 		struct {
-			u32 forcefeedback :1;
-			u32 reverse_lx :1;
-			u32 reverse_ly :1;
-			u32 reverse_rx :1;
-			u32 reverse_ry :1;
-			u32 mouse_l :1;
-			u32 mouse_r :1;
-			u32 sixaxis_usb :1;
-			u32 _free : 8; // The 8 remaining bits are unused, do what you wish with them ;)
+			u16 forcefeedback :1;
+			u16 reverse_lx :1;
+			u16 reverse_ly :1;
+			u16 reverse_rx :1;
+			u16 reverse_ry :1;
+			u16 mouse_l :1;
+			u16 mouse_r :1;
+			u16 sixaxis_usb :1;
+			u16 sixaxis_pressure :1;
+			u16 _free : 7; // The 8 remaining bits are unused, do what you wish with them ;)
 		} pad_options[2]; // One for each pads
 		u32 packed_options; // Only first 8 bits of each 16 bits series are really used, rest is padding
 	};

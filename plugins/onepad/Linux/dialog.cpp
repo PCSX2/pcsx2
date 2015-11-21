@@ -475,7 +475,7 @@ button_positions b_pos[MAX_KEYS] =
 };
 
 // Warning position is important and must match the order of the PadOptions structure
-#define CHECK_NBR 8
+#define CHECK_NBR 9
 button_positions check_pos[CHECK_NBR] =
 {
 	{ "Enable force feedback", 40, 400},
@@ -485,7 +485,8 @@ button_positions check_pos[CHECK_NBR] =
 	{ "Reverse Ry", 368, 328},
 	{ "Use mouse for left analog joy", 40, 352},
 	{ "Use mouse for right analog joy", 368, 352},
-	{ "Hack: Sixaxis/DS3 plugged in USB", 368, 400}
+	{ "Hack: Sixaxis/DS3 plugged in USB", 368, 400},
+	{ "Hack: Sixaxis/DS3 pressure", 368, 424}
 };
 
 GtkWidget *create_notebook_page_dialog(int page, dialog_buttons btn[MAX_KEYS], dialog_checkbox checkbox[CHECK_NBR])

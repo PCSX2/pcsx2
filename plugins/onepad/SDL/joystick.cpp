@@ -203,7 +203,10 @@ bool JoystickInfo::Init(int id)
 	// Keep the 4 hat buttons too (usb driver). (left pressure does not work with recent kernel). Moreover the pressure
 	// work sometime on half axis neg others time in fulll axis. So better keep them as button for the moment
 	u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
-	if (found_hack != string::npos && numaxes > 4) {
+	// FIXME: people need to restart the plugin to take the option into account.
+	bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
+	if (found_hack != string::npos && numaxes > 4  && hack_enabled) {
+		fprintf(stderr, "ONEPAD HACK IS enabled");
 		numbuttons = 4; // (select, start, l3, r3)
 		// Enable this hack in bluetooth too. It avoid to restart the onepad gui
 		numbuttons += 4; // the 4 hat buttons
@@ -276,10 +279,11 @@ bool JoystickInfo::PollButtons(u32 &pkey)
 
 bool JoystickInfo::PollAxes(u32 &pkey)
 {
+	u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
+
 	for (int i = 0; i < GetNumAxes(); ++i)
 	{
 		// Sixaxis, dualshock3 hack
-		u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
 		if (found_hack != string::npos) {
 			// The analog mode of the hat button is quite erratic. Values can be in half- axis
 			// or full axis... So better keep them as button for the moment -- gregory
@@ -316,7 +320,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 			}
 
 			if ((!is_full_axis && abs(value) > half_axis_ceil)
-					|| (is_full_axis && value > full_axis_ceil)) 
+					|| (is_full_axis && value > full_axis_ceil))
 			{
 				bool sign = (value < 0);
 				pkey = axis_to_key(is_full_axis, sign, i);
