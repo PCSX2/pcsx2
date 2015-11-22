@@ -77,7 +77,7 @@ GtkWidget* CreateRenderComboBox()
 		if(!s->note.empty()) label += format(" (%s)", s->note.c_str());
 
 		// Add some tags to ease users selection
-		switch (static_cast<GSRendererType>(s->id)) {
+		switch (static_cast<GSRendererType>(s->value)) {
 			// Supported opengl
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
@@ -122,15 +122,15 @@ void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 	vector<GSSetting>* s = (vector<GSSetting>*)g_object_get_data(G_OBJECT(combo), "Settings");
 
 	try {
-		theApp.SetConfig((char*)user_data, s->at(p).id);
+		theApp.SetConfig((char*)user_data, s->at(p).value);
 	} catch (...) {
 	}
 }
 
-GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int opt_default = 0)
+GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int32_t opt_default = 0)
 {
 	GtkWidget* combo_box = gtk_combo_box_text_new();
-	int opt_value        = theApp.GetConfig(opt_name, opt_default);
+	int32_t opt_value    = theApp.GetConfig(opt_name, opt_default);
 	int opt_position     = 0;
 
 	for(size_t i = 0; i < s.size(); i++)
@@ -141,7 +141,7 @@ GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_
 
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), label.c_str());
 
-		if ((int)s[i].id == opt_value)
+		if (s[i].value == opt_value)
 			opt_position = i;
 	}
 
