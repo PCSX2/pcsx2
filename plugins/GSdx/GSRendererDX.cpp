@@ -27,13 +27,13 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 	: GSRendererHW(tc)
 	, m_pixelcenter(pixelcenter)
 {
-	m_logz = !!theApp.GetConfig("logz", 0);
-	m_fba = !!theApp.GetConfig("fba", 1);
+	m_logz = theApp.GetConfig("logz", false);
+	m_fba = theApp.GetConfig("fba", true);
 
-	UserHacks_AlphaHack = !!theApp.GetConfig("UserHacks_AlphaHack", 0) && !!theApp.GetConfig("UserHacks", 0);
-	UserHacks_AlphaStencil = !!theApp.GetConfig("UserHacks_AlphaStencil", 0) && !!theApp.GetConfig("UserHacks", 0);
+	UserHacks_AlphaHack = theApp.GetConfig("UserHacks_AlphaHack", false) && theApp.GetConfig("UserHacks", false);
+	UserHacks_AlphaStencil = theApp.GetConfig("UserHacks_AlphaStencil", false) && theApp.GetConfig("UserHacks", false);
 
-	UserHacks_TCOffset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_TCOffset", 0) : 0;
+	UserHacks_TCOffset = theApp.GetConfig("UserHacks", false) ? theApp.GetConfig("UserHacks_TCOffset", 0) : 0;
 	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 }

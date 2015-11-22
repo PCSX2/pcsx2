@@ -43,14 +43,14 @@ GSState::GSState()
 	, m_crcinited(false)
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
-	m_mipmap = !!theApp.GetConfig("mipmap", 1);
+	m_mipmap = theApp.GetConfig("mipmap", true);
 
 	s_n     = 0;
-	s_dump  = !!theApp.GetConfig("dump", 0);
-	s_save  = !!theApp.GetConfig("save", 0);
-	s_savet = !!theApp.GetConfig("savet", 0);
-	s_savez = !!theApp.GetConfig("savez", 0);
-	s_savef = !!theApp.GetConfig("savef", 0);
+	s_dump  = theApp.GetConfig("dump", false);
+	s_save = theApp.GetConfig("save", false);
+	s_savet = theApp.GetConfig("savet", false);
+	s_savez = theApp.GetConfig("savez", false);
+	s_savef = theApp.GetConfig("savef", false);
 	s_saven = theApp.GetConfig("saven", 0);
 	s_savel = theApp.GetConfig("savel", 5000);
 #ifdef __linux__
@@ -68,7 +68,7 @@ GSState::GSState()
 	//s_saven = 0;
 	//s_savel = 0;
 
-	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
+	UserHacks_WildHack = theApp.GetConfig("UserHacks", false) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
 	s_crc_hack_level = m_crc_hack_level;
 

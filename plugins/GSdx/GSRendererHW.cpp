@@ -31,9 +31,9 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_tc(tc)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
-	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
-	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
+	m_userhacks_skipdraw = theApp.GetConfig("UserHacks", false) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
+	m_userhacks_align_sprite_X = theApp.GetConfig("UserHacks_align_sprite_X", false) && theApp.GetConfig("UserHacks", false);
+	m_userhacks_round_sprite_offset = theApp.GetConfig("UserHacks", false) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 
 	if (!m_upscale_multiplier) { //Custom Resolution
 		m_width = theApp.GetConfig("resx", m_width);

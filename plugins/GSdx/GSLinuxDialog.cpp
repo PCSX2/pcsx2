@@ -53,15 +53,15 @@ void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
 	if (gtk_combo_box_get_active(combo) == -1) return;
 
 	switch (gtk_combo_box_get_active(combo)) {
-	case 0: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_SW)); break;
-	case 1: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_OpenCL)); break;
-	case 2: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_Null)); break;
-	case 3: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_HW)); break;
-	case 4: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	case 5: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_OpenCL)); break;
+	case 0: theApp.SetConfig("Renderer", GSRendererType::Null_SW); break;
+	case 1: theApp.SetConfig("Renderer", GSRendererType::Null_OpenCL); break;
+	case 2: theApp.SetConfig("Renderer", GSRendererType::Null_Null); break;
+	case 3: theApp.SetConfig("Renderer", GSRendererType::OGL_HW); break;
+	case 4: theApp.SetConfig("Renderer", GSRendererType::OGL_SW); break;
+	case 5: theApp.SetConfig("Renderer", GSRendererType::OGL_OpenCL); break;
 
 				// Fallback to SW opengl
-	default: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
+	default: theApp.SetConfig("Renderer", GSRendererType::OGL_SW); break;
 	}
 }
 
@@ -98,7 +98,7 @@ GtkWidget* CreateRenderComboBox()
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
 	}
 
-	switch (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)))) {
+	switch (theApp.GetConfig("Renderer", GSRendererType::Default)) {
 	case GSRendererType::Null_SW:		renderer_box_position = 0; break;
 	case GSRendererType::Null_OpenCL:	renderer_box_position = 1; break;
 	case GSRendererType::Null_Null:		renderer_box_position = 2; break;

@@ -185,7 +185,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 	if(renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+		renderer = theApp.GetConfig("Renderer", GSRendererType::Default);
 	}
 
 	if(threads == -1)
@@ -496,7 +496,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+		renderer = theApp.GetConfig("Renderer", GSRendererType::Default);
 	}
 	else if (stored_toggle_state != toggle_state)
 	{
@@ -552,7 +552,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 
 	// Legacy GUI expects to acquire vsync from the configuration files.
 
-	s_vsync = !!theApp.GetConfig("vsync", 0);
+	s_vsync = theApp.GetConfig("vsync", false);
 
 	if(mt == 2)
 	{
@@ -570,7 +570,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 	{
 		// normal init
 
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+		renderer = theApp.GetConfig("Renderer", GSRendererType::Default);
 	}
 
 	*dsp = NULL;
@@ -1085,7 +1085,7 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 		uint8 regs[0x2000];
 		GSsetBaseMem(regs);
 
-		s_vsync = !!theApp.GetConfig("vsync", 0);
+		s_vsync = theApp.GetConfig("vsync", false);
 
 		HWND hWnd = NULL;
 
@@ -1531,7 +1531,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	GSRendererType m_renderer;
 	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
-	m_renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	m_renderer = theApp.GetConfig("Renderer", GSRendererType::Default);
 	// alternatively:
 	// m_renderer = static_cast<GSRendererType>(renderer);
 
@@ -1553,7 +1553,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	GSsetBaseMem(regs);
 
-	s_vsync = !!theApp.GetConfig("vsync", 0);
+	s_vsync = theApp.GetConfig("vsync", false);
 
 	void* hWnd = NULL;
 
