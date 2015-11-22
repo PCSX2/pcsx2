@@ -350,7 +350,7 @@ static class XPadPlugin
 		switch(index)
 		{
 		case 0:
-			m_pad->m_small = value == 1 ? 128 : 0; // RE4 map menu, value = 2
+			m_pad->m_small = (value&1) * 128;
 			break;
 		case 1:
 			m_pad->m_large = value;

@@ -489,7 +489,7 @@ u8  _PADpoll(u8 value)
 		case CMD_READ_DATA_AND_VIBRATE:
 
 			if (curByte == padVib0[curPad])
-				padVibF[curPad][0] = value;
+				padVibF[curPad][0] = value&1;
 			if (curByte == padVib1[curPad])
 				padVibF[curPad][1] = value;
 			break;
