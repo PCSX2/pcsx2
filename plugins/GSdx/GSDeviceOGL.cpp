@@ -72,7 +72,7 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
 	#endif
 
-	m_debug_gl_call =  theApp.GetConfig("debug_opengl", 0);
+	m_debug_gl_call =  theApp.GetConfig("debug_opengl", false);
 }
 
 GSDeviceOGL::~GSDeviceOGL()
