@@ -28,6 +28,8 @@
 #include "sVU_Debug.h"
 #include "sVU_zerorec.h"
 
+using namespace x86Emitter;
+
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)

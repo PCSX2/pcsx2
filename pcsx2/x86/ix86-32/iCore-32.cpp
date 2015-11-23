@@ -22,6 +22,7 @@
 #include "x86emitter/x86emitter.h"
 #include "R3000A.h"
 
+using namespace x86Emitter;
 
 // yay sloppy crap needed until we can remove dependency on this hippopotamic
 // landmass of shared code. (air)

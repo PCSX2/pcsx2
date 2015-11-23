@@ -20,6 +20,8 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
+using namespace x86Emitter;
+
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
 namespace R5900 {
