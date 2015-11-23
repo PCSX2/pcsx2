@@ -72,7 +72,7 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
 	#endif
 
-	m_debug_gl_call =  theApp.GetConfig("debug_opengl", 0);
+	m_debug_gl_call =  theApp.GetConfig("debug_opengl", false);
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -219,7 +219,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	GL_PUSH("GSDeviceOGL::Various");
 
-	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
+	m_shader = new GSShaderOGL(theApp.GetConfig("debug_glsl_shader", false));
 
 	glGenFramebuffers(1, &m_fbo);
 	// Always write to the first buffer

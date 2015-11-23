@@ -110,7 +110,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	scd.Windowed = TRUE;
 
-	spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
+	spritehack = theApp.GetConfig("UserHacks", false) ? theApp.GetConfig("UserHacks_SpriteHack", false) : false;
 	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a

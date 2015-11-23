@@ -356,14 +356,14 @@ void GSSettingsDlg::UpdateRenderers()
 
 	vector<GSSetting> renderers;
 
-	GSRendererType renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	GSRendererType renderer_setting = theApp.GetConfig("Renderer", GSRendererType::Default);
 	GSRendererType renderer_sel = GSRendererType::Default;
 
 	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		GSRendererType renderer = static_cast<GSRendererType>(r.id);
+		GSRendererType renderer = static_cast<GSRendererType>(r.value);
 
 		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
 		{
@@ -374,13 +374,13 @@ void GSSettingsDlg::UpdateRenderers()
 
 		renderers.push_back(r);
 
-		if (static_cast<GSRendererType>(r.id) == renderer_setting)
+		if (static_cast<GSRendererType>(r.value) == renderer_setting)
 		{
 			renderer_sel = renderer_setting;
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, renderers, static_cast<uint32>(renderer_sel));
+	ComboBoxInit(IDC_RENDERER, renderers, static_cast<int32_t>(renderer_sel));
 }
 
 void GSSettingsDlg::UpdateControls()

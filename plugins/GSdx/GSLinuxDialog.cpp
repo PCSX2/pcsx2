@@ -53,15 +53,15 @@ void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
 	if (gtk_combo_box_get_active(combo) == -1) return;
 
 	switch (gtk_combo_box_get_active(combo)) {
-	case 0: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_SW)); break;
-	case 1: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_OpenCL)); break;
-	case 2: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_Null)); break;
-	case 3: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_HW)); break;
-	case 4: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	case 5: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_OpenCL)); break;
+	case 0: theApp.SetConfig("Renderer", GSRendererType::Null_SW); break;
+	case 1: theApp.SetConfig("Renderer", GSRendererType::Null_OpenCL); break;
+	case 2: theApp.SetConfig("Renderer", GSRendererType::Null_Null); break;
+	case 3: theApp.SetConfig("Renderer", GSRendererType::OGL_HW); break;
+	case 4: theApp.SetConfig("Renderer", GSRendererType::OGL_SW); break;
+	case 5: theApp.SetConfig("Renderer", GSRendererType::OGL_OpenCL); break;
 
 				// Fallback to SW opengl
-	default: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
+	default: theApp.SetConfig("Renderer", GSRendererType::OGL_SW); break;
 	}
 }
 
@@ -77,7 +77,7 @@ GtkWidget* CreateRenderComboBox()
 		if(!s->note.empty()) label += format(" (%s)", s->note.c_str());
 
 		// Add some tags to ease users selection
-		switch (static_cast<GSRendererType>(s->id)) {
+		switch (static_cast<GSRendererType>(s->value)) {
 			// Supported opengl
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
@@ -98,7 +98,7 @@ GtkWidget* CreateRenderComboBox()
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
 	}
 
-	switch (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)))) {
+	switch (theApp.GetConfig("Renderer", GSRendererType::Default)) {
 	case GSRendererType::Null_SW:		renderer_box_position = 0; break;
 	case GSRendererType::Null_OpenCL:	renderer_box_position = 1; break;
 	case GSRendererType::Null_Null:		renderer_box_position = 2; break;
@@ -122,15 +122,15 @@ void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 	vector<GSSetting>* s = (vector<GSSetting>*)g_object_get_data(G_OBJECT(combo), "Settings");
 
 	try {
-		theApp.SetConfig((char*)user_data, s->at(p).id);
+		theApp.SetConfig((char*)user_data, s->at(p).value);
 	} catch (...) {
 	}
 }
 
-GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int opt_default = 0)
+GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int32_t opt_default = 0)
 {
 	GtkWidget* combo_box = gtk_combo_box_text_new();
-	int opt_value        = theApp.GetConfig(opt_name, opt_default);
+	int32_t opt_value    = theApp.GetConfig(opt_name, opt_default);
 	int opt_position     = 0;
 
 	for(size_t i = 0; i < s.size(); i++)
@@ -141,7 +141,7 @@ GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_
 
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), label.c_str());
 
-		if ((int)s[i].id == opt_value)
+		if (s[i].value == opt_value)
 			opt_position = i;
 	}
 

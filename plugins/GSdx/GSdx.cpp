@@ -128,20 +128,20 @@ GSdxApp::GSdxApp()
 	m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	"Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),			"Direct3D9",	"Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_OpenCL),		"Direct3D9",	"OpenCL"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null),		"Direct3D9",	"Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW),		"Direct3D",		"Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW),		"Direct3D",		"Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D",		"OpenCL"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null),	"Direct3D",		"Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW),		"Null",			"Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_OpenCL),	"Null",			"OpenCL"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null),		"Null",			"Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW),			"OpenGL",		"Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW),			"OpenGL",		"Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX9_HW,			"Direct3D9",	"Hardware"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX9_SW,			"Direct3D9",	"Software"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX9_OpenCL,		"Direct3D9",	"OpenCL"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX9_Null,		"Direct3D9",	"Null"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX1011_HW,		"Direct3D",		"Hardware"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX1011_SW,		"Direct3D",		"Software"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX1011_OpenCL,	"Direct3D",		"OpenCL"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::DX1011_Null,		"Direct3D",		"Null"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::Null_SW,			"Null",			"Software"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::Null_OpenCL,		"Null",			"OpenCL"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::Null_Null,		"Null",			"Null"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::OGL_HW,			"OpenGL",		"Hardware"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::OGL_SW,			"OpenGL",		"Software"));
+	m_gs_renderers.push_back(GSSetting(GSRendererType::OGL_OpenCL,		"OpenGL",		"OpenCL"));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
@@ -290,30 +290,57 @@ void GSdxApp::SetConfigDir(const char* dir)
 	}
 }
 
+template<>
+int GSdxApp::GetConfig<int>(const char* entry, int value)
+{
+	return GetPrivateProfileInt(m_section.c_str(), entry, value, m_ini.c_str());
+}
+
+template<>
+bool GSdxApp::GetConfig<bool>(const char* entry, bool value)
+{
+	return GetConfig(entry, value ? 1 : 0) != 0;
+}
+
+template<>
+string GSdxApp::GetConfig<string>(const char* entry, string value)
+{
+	return GSdxApp::GetConfig(entry, value.c_str());
+}
+
 string GSdxApp::GetConfig(const char* entry, const char* value)
 {
-	char buff[4096] = {0};
+	char buff[4096] = { 0 };
 
 	GetPrivateProfileString(m_section.c_str(), entry, value, buff, countof(buff), m_ini.c_str());
 
 	return string(buff);
 }
 
-void GSdxApp::SetConfig(const char* entry, const char* value)
-{
-	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
-}
-
-int GSdxApp::GetConfig(const char* entry, int value)
-{
-	return GetPrivateProfileInt(m_section.c_str(), entry, value, m_ini.c_str());
-}
-
-void GSdxApp::SetConfig(const char* entry, int value)
+template<>
+void GSdxApp::SetConfig<int>(const char* entry, int value)
 {
 	char buff[32] = {0};
 
 	sprintf(buff, "%d", value);
 
 	SetConfig(entry, buff);
+}
+
+template<>
+void GSdxApp::SetConfig<bool>(const char* entry, bool value)
+{
+	SetConfig(entry, value ? 1 : 0);
+}
+
+template<>
+void GSdxApp::SetConfig<const char*>(const char* entry, const char* value)
+{
+	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
+}
+
+template<>
+void GSdxApp::SetConfig<char*>(const char* entry, char* value)
+{
+	SetConfig(entry, (const char*)value);
 }
