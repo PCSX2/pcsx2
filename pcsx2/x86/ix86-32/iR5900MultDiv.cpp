@@ -260,9 +260,9 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 			reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
 
 			if( reglo >= 0 ) {
-				u32* ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
-				if( upper ) SSE_MOVHPS_M64_to_XMM(reglo, (uptr)ptr);
-				else SSE_MOVLPS_M64_to_XMM(reglo, (uptr)ptr);
+				u32* mem_ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
+				if( upper ) SSE_MOVHPS_M64_to_XMM(reglo, (uptr)mem_ptr);
+				else SSE_MOVLPS_M64_to_XMM(reglo, (uptr)mem_ptr);
 			}
 			else {
 				MOV32ItoM(loaddr, res & 0xffffffff);
@@ -280,9 +280,9 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 			reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
 
 			if( reghi >= 0 ) {
-				u32* ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
-				if( upper ) SSE_MOVHPS_M64_to_XMM(reghi, (uptr)ptr);
-				else SSE_MOVLPS_M64_to_XMM(reghi, (uptr)ptr);
+				u32* mem_ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
+				if( upper ) SSE_MOVHPS_M64_to_XMM(reghi, (uptr)mem_ptr);
+				else SSE_MOVLPS_M64_to_XMM(reghi, (uptr)mem_ptr);
 			}
 			else {
 				_deleteEEreg(XMMGPR_HI, 0);
