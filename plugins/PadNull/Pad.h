@@ -28,12 +28,6 @@
 #include "PadLinux.h"
 #endif
 
-/*#ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
-#else
-#define EXPORT_C_(type) extern "C" type
-#endif*/
-
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
 #else
@@ -52,7 +46,6 @@ extern FILE *padLog;
 extern keyEvent event;
 
 extern void __Log(char *fmt, ...);
-extern void SysMessage(char *fmt, ...);
 extern void SaveConfig();
 extern void LoadConfig();
 

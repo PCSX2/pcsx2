@@ -17,12 +17,10 @@
  */
 
 #include <string>
-using namespace std;
 
 #include "Pad.h"
-#include "Config.h"
 
-extern string s_strIniPath;
+extern std::string s_strIniPath;
 PluginConf Ini;
 
 EXPORT_C_(void) PADabout()

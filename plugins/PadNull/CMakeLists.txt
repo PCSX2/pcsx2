@@ -24,7 +24,6 @@ set(PadNullLinuxSources
 
 # PadNull Linux headers
 set(PadNullLinuxHeaders
-	Linux/Config.h
 	Linux/PadLinux.h)
 
 # PadNull Windows sources
