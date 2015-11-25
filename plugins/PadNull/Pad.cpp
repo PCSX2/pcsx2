@@ -92,7 +92,7 @@ bool OpenLog() {
     if (padLog != NULL)
         setvbuf(padLog, NULL,  _IONBF, 0);
     else {
-        SysMessage("Can't create log file %s\n", LogFile.c_str());
+        fprintf(stderr, "Can't create log file %s\n", LogFile.c_str());
         result = false;
     }
 	PAD_LOG("PADinit\n");
