@@ -151,6 +151,7 @@ EXPORT_C_(keyEvent*) PADkeyEvent()
 
 	s_event = event;
 	event.evt = 0;
+	event.key = 0;
 
 	return &s_event;
 }
