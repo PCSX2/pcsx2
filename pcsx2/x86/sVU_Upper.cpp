@@ -339,10 +339,10 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 
 	xMOV(ptr[&tempECX], ecx);
 
-	int temp1 = ECX; //receives regd
+	int temp1 = ecx.GetId(); //receives regd
 	int temp2 = ALLOCTEMPX86(0);
 
-	if (temp2 == ECX)
+	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
 		_freeX86reg(ecx);
@@ -434,10 +434,10 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 
 	xMOV(ptr[&tempECX], ecx);
 
-	int temp1 = ECX; //receives regd
+	int temp1 = ecx.GetId(); //receives regd
 	int temp2 = ALLOCTEMPX86(0);
 
-	if (temp2 == ECX)
+	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
 		_freeX86reg(ecx);

@@ -984,10 +984,10 @@ void psxSetBranchReg(u32 reg)
 
 		psxRecompileNextInstruction(1);
 
-		if( x86regs[ESI].inuse ) {
-			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
+		if( x86regs[esi.GetId()].inuse ) {
+			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
 			xMOV(ptr[&psxRegs.pc], esi);
-			x86regs[ESI].inuse = 0;
+			x86regs[esi.GetId()].inuse = 0;
 			#ifdef PCSX2_DEBUG
 			xOR( esi, esi );
 			#endif
