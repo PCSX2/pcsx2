@@ -751,11 +751,11 @@ void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw)
 {
 	switch (xyzw) {
 		case 0: SSE_MOVSS_XMM_to_XMM(dstreg, srcreg); break;
-		case 1: if ( x86caps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0));
+		case 1: if ( x86caps.hasStreamingSIMD4Extensions ) xINSERTPS(xRegisterSSE(dstreg), xRegisterSSE(srcreg), _MM_MK_INSERTPS_NDX(1, 0, 0));
 				else SSE2_PSHUFLW_XMM_to_XMM(dstreg, srcreg, 0xee);
 				break;
 		case 2: SSE_MOVHLPS_XMM_to_XMM(dstreg, srcreg); break;
-		case 3: if ( x86caps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0));
+		case 3: if ( x86caps.hasStreamingSIMD4Extensions ) xINSERTPS(xRegisterSSE(dstreg), xRegisterSSE(srcreg), _MM_MK_INSERTPS_NDX(3, 0, 0));
 				else { SSE_MOVHLPS_XMM_to_XMM(dstreg, srcreg); SSE2_PSHUFLW_XMM_to_XMM(dstreg, dstreg, 0xee); }
 				break;
 	}

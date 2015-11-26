@@ -535,20 +535,23 @@ void recVUMI_MFIR( VURegs *VU, int info )
 	_deleteX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, 1);
 
 	if( _XYZW_SS ) {
-		SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Is_, 1)-2);
+		xMOVDZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(VU_VI_ADDR(_Is_, 1)-2)]);
+
 		_vuFlipRegSS(VU, EEREC_T);
 		SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
 		SSE_MOVSS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
 		_vuFlipRegSS(VU, EEREC_T);
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Is_, 1)-2);
+		xMOVDZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(VU_VI_ADDR(_Is_, 1)-2)]);
+
 		SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
 		SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
-		SSE2_MOVD_M32_to_XMM(EEREC_T, VU_VI_ADDR(_Is_, 1)-2);
+		xMOVDZX(xRegisterSSE(EEREC_T), ptr[(void*)(VU_VI_ADDR(_Is_, 1)-2)]);
+
 		SSE2_PSRAD_I8_to_XMM(EEREC_T, 16);
 		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0);
 	}
@@ -1011,7 +1014,7 @@ void recVUMI_ILW(VURegs *VU, int info)
 	itreg = ALLOCVI(_It_, MODE_WRITE);
 
 	if ( _Is_ == 0 ) {
-		MOVZX32M16toR( itreg, (uptr)GET_VU_MEM(VU, (int)imm * 16 + off) );
+		xMOVZX(xRegister32(itreg), ptr16[GET_VU_MEM(VU, (int)imm * 16 + off)]);
 	}
 	else {
 		int isreg = ALLOCVI(_Is_, MODE_READ);
@@ -1079,7 +1082,7 @@ void recVUMI_ILWR( VURegs *VU, int info )
 	}
 	else {
 		int isreg = ALLOCVI(_Is_, MODE_READ);
-		MOVZX32Rm16toR(itreg, recVUTransformAddr(isreg, VU, _Is_, 0), (uptr)VU->Mem + off);
+		xMOVZX(xRegister32(itreg), ptr16[xAddressReg( recVUTransformAddr(isreg, VU, _Is_, 0) ) + (uptr)VU->Mem + off]);
 	}
 }
 //------------------------------------------------------------------
@@ -1481,7 +1484,7 @@ void recVUMI_FCSET( VURegs *VU, int info )
 {
 	u32 addr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	//Console.WriteLn("recVUMI_FCSET");
-	MOV32ItoM(addr ? addr : VU_VI_ADDR(REG_CLIP_FLAG, 2), VU->code&0xffffff );
+	xMOV(ptr32[(u32*)(addr ? addr : VU_VI_ADDR(REG_CLIP_FLAG, 2))], VU->code&0xffffff);
 
 	if( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) )
 		MOV32ItoM( VU_VI_ADDR(REG_CLIP_FLAG, 1), VU->code&0xffffff );
