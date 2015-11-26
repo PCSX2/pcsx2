@@ -574,9 +574,9 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 void _psxFlushCall(int flushtype)
 {
 	// x86-32 ABI : These registers are not preserved across calls:
-	_freeX86reg( EAX );
-	_freeX86reg( ECX );
-	_freeX86reg( EDX );
+	_freeX86reg( eax );
+	_freeX86reg( ecx );
+	_freeX86reg( edx );
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();

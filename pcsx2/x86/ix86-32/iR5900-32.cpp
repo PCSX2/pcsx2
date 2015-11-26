@@ -1044,9 +1044,9 @@ void LoadBranchState()
 void iFlushCall(int flushtype)
 {
 	// Free registers that are not saved across function calls (x86-32 ABI):
-	_freeX86reg(EAX);
-	_freeX86reg(ECX);
-	_freeX86reg(EDX);
+	_freeX86reg(eax);
+	_freeX86reg(ecx);
+	_freeX86reg(edx);
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC) {
 		xMOV(ptr32[&cpuRegs.pc], pc);

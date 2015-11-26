@@ -126,6 +126,7 @@ void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);
 void _clearNeededX86regs();
+void _freeX86reg(const x86Emitter::xRegister32& x86reg);
 void _freeX86reg(int x86reg);
 void _freeX86regs();
 void _flushCachedRegs();

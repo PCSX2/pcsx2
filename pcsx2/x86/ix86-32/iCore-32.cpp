@@ -442,6 +442,12 @@ void _deleteX86reg(int type, int reg, int flush)
 	}
 }
 
+// Temporary solution to support eax/ebx... type
+void _freeX86reg(const x86Emitter::xRegister32& x86reg)
+{
+	_freeX86reg(x86reg.GetId());
+}
+
 void _freeX86reg(int x86reg)
 {
 	pxAssert( x86reg >= 0 && x86reg < (int)iREGCNT_GPR );

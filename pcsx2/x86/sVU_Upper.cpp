@@ -345,7 +345,7 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 	if (temp2 == ECX)
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ECX);
+		_freeX86reg(ecx);
 	}
 
 	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
@@ -440,7 +440,7 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 	if (temp2 == ECX)
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ECX);
+		_freeX86reg(ecx);
 	}
 
 	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
