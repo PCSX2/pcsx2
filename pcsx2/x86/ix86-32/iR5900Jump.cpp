@@ -96,7 +96,7 @@ void recJALR()
 {
 	int newpc = pc + 4;
 	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_eeMoveGPRtoR(ESI, _Rs_);
+	_eeMoveGPRtoR(esi, _Rs_);
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		xMOV(ecx, esi);

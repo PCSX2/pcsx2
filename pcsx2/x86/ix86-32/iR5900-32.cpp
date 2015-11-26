@@ -152,24 +152,24 @@ u32* _eeGetConstReg(int reg)
 	return &cpuRegs.GPR.r[ reg ].UL[0];
 }
 
-void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
+void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( fromgpr == 0 )
-		xXOR(xRegister32(to), xRegister32(to ));	// zero register should use xor, thanks --air
+		xXOR(to, to);	// zero register should use xor, thanks --air
 	else if( GPR_IS_CONST1(fromgpr) )
-		xMOV(xRegister32(to), g_cpuConstRegs[fromgpr].UL[0] );
+		xMOV(to, g_cpuConstRegs[fromgpr].UL[0] );
 	else {
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
-			xMOVD(xRegister32(to), xRegisterSSE(mmreg));
+			xMOVD(to, xRegisterSSE(mmreg));
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
-			xMOVD(xRegister32(to), xRegisterMMX(mmreg));
+			xMOVD(to, xRegisterMMX(mmreg));
 			SetMMXstate();
 		}
 		else {
-			xMOV(xRegister32(to), ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
+			xMOV(to, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
 		}
 	}
 }
@@ -964,7 +964,7 @@ void SetBranchReg( u32 reg )
 //			}
 //		}
 		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_eeMoveGPRtoR(ESI, reg);
+		_eeMoveGPRtoR(esi, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
 			xMOV(ecx, esi);
@@ -1268,7 +1268,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ECX, (op >> 21) & 0x1F);
+	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
 	if ((s16)op != 0)
 		xADD(ecx, (s16)op);
 	if (bits == 128)

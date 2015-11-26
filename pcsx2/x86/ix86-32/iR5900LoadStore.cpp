@@ -129,7 +129,7 @@ void recLoad64( u32 bits, bool sign )
 	else
 	{
 		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 		if (bits == 128)		// force 16 byte alignment on 128 bit reads
@@ -163,7 +163,7 @@ void recLoad32( u32 bits, bool sign )
 	else
 	{
 		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_ );
 
@@ -202,7 +202,7 @@ void recStore(u32 bits)
 
         if (bits < 64)
         {
-                _eeMoveGPRtoR(EDX, _Rt_);
+                _eeMoveGPRtoR(edx, _Rt_);
         }
         else if (bits == 128 || bits == 64)
         {
@@ -223,7 +223,7 @@ void recStore(u32 bits)
         }
         else
         {
-                _eeMoveGPRtoR(ECX, _Rs_);
+                _eeMoveGPRtoR(ecx, _Rs_);
                 if (_Imm_ != 0)
                         xADD(ecx, _Imm_);
                 if (bits == 128)
@@ -261,7 +261,7 @@ void recLWL()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -307,7 +307,7 @@ void recLWR()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -355,7 +355,7 @@ void recSWL()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -378,12 +378,12 @@ void recSWL()
 		// mask write and OR -> edx
 		xMOV(ecx, 24);
 		xSUB(ecx, edi);
-		_eeMoveGPRtoR(EAX, _Rt_);
+		_eeMoveGPRtoR(eax, _Rt_);
 		xSHR(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -403,7 +403,7 @@ void recSWR()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -426,12 +426,12 @@ void recSWR()
 	{
 		// mask write and OR -> edx
 		xMOV(ecx, edi);
-		_eeMoveGPRtoR(EAX, _Rt_);
+		_eeMoveGPRtoR(eax, _Rt_);
 		xSHL(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -501,7 +501,7 @@ void recLWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -528,7 +528,7 @@ void recSWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -568,7 +568,7 @@ void recLQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -593,7 +593,7 @@ void recSQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
