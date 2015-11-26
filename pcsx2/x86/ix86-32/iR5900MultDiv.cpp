@@ -254,7 +254,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
 		if( !upper && (reglo = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE)) >= 0 ) {
-			MOVQMtoR(reglo, (uptr)recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res));
+			xMOVQ(xRegisterMMX(reglo), ptr[recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res)]);
 		}
 		else {
 			reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
@@ -274,7 +274,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
 
 		if( !upper && (reghi = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE)) >= 0 ) {
-			MOVQMtoR(reghi, (uptr)recGetImm64((res >> 63) ? -1 : 0, res >> 32));
+			xMOVQ(xRegisterMMX(reghi), ptr[recGetImm64((res >> 63) ? -1 : 0, res >> 32)]);
 		}
 		else {
 			reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);

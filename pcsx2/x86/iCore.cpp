@@ -218,13 +218,13 @@ int _checkXMMreg(int type, int reg, int mode)
 
 			if ( !(xmmregs[i].mode & MODE_READ) ) {
 				if (mode & MODE_READ) {
-					SSEX_MOVDQA_M128_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
+					xMOVDQA(xRegisterSSE(i), ptr[_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0)]);
 				}
 				else if (mode & MODE_READHALF) {
 					if( g_xmmtypes[i] == XMMT_INT )
-						SSE2_MOVQ_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
+						xMOVQZX(xRegisterSSE(i), ptr[(void*)(uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0)]);
 					else
-						SSE_MOVLPS_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
+						xMOVL.PS(xRegisterSSE(i), ptr[(void*)(uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0)]);
 				}
 			}
 
