@@ -256,7 +256,7 @@ void recMTC0()
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
-				_eeMoveGPRtoR(ECX, _Rt_);
+				_eeMoveGPRtoR(ecx, _Rt_);
 				xCALL( WriteCP0Status );
 			break;
 
