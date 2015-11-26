@@ -539,13 +539,13 @@ void _psxDeleteReg(int reg, int flush)
 	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
-void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
+void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		xMOV(xRegister32(to), g_psxConstRegs[fromgpr] );
+		xMOV(to, g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		xMOV(xRegister32(to), ptr[&psxRegs.GPR.r[ fromgpr ] ]);
+		xMOV(to, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
 	}
 }
 
@@ -980,7 +980,7 @@ void psxSetBranchReg(u32 reg)
 
 	if( reg != 0xffffffff ) {
 		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_psxMoveGPRtoR(ESI, reg);
+		_psxMoveGPRtoR(esi, reg);
 
 		psxRecompileNextInstruction(1);
 
