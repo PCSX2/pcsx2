@@ -437,9 +437,6 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
-	if (tempecx != ECX)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); tempecx = ECX;}
-	if (temp2 == -1)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); temp2 = EAX;}
-
 	xMOVD(xRegister32(tempecx), xRegisterSSE(regd));
 	xMOVD(xRegister32(temp2), xRegisterSSE(regt));
 
@@ -585,7 +582,6 @@ static void (*recComOpXMM_to_XMM_REV[] )(x86SSERegType, x86SSERegType) = { //rev
 int recCommutativeOp(int info, int regd, int op)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.WriteLn("FPU: CommutativeOp Allocation Error!");}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -742,7 +738,6 @@ void recC_EQ_xmm(int info)
 		default:
 			Console.WriteLn(Color_Magenta, "recC_EQ_xmm: Default");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg < 0) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -822,7 +817,6 @@ void recC_LE_xmm(int info )
 		default: // Untested and incorrect, but this case is never reached AFAIK (cottonvibes)
 			Console.WriteLn(Color_Magenta, "recC_LE_xmm: Default");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg < 0) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -898,7 +892,6 @@ void recC_LT_xmm(int info)
 		default:
 			Console.WriteLn(Color_Magenta, "recC_LT_xmm: Default");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg < 0) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -988,8 +981,6 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	//if (t1reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
-	if (tempReg == -1) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1045,7 +1036,6 @@ void recDIV_S_xmm(int info)
 {
 	bool roundmodeFlag = false;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
     //Console.WriteLn("DIV");
 
 	if( CHECK_FPUNEGDIVHACK )
@@ -1548,7 +1538,6 @@ void recSUBhelper(int regd, int regt)
 void recSUBop(int info, int regd)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.Error("FPU: SUB Allocation Error!");}
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 
@@ -1636,7 +1625,6 @@ void recSQRT_S_xmm(int info)
 
 	if (CHECK_FPU_EXTRA_FLAGS) {
 		int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-		if (tempReg == -1) {Console.Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
 
 		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1673,8 +1661,6 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	u8 *qjmp1, *qjmp2;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	//if (t1reg == -1) {Console.Error("FPU: RSQRT Allocation Error!");}
-	if (tempReg == -1) {Console.Error("FPU: RSQRT Allocation Error!"); tempReg = EAX;}
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1743,7 +1729,6 @@ void recRSQRT_S_xmm(int info)
 	// Should this do the same, or should Full mode leave roundmode alone? --air
 
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-	//if (t0reg == -1) {Console.Error("FPU: RSQRT Allocation Error!");}
 	//Console.WriteLn("FPU: RSQRT");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
