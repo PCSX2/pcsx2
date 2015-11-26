@@ -348,9 +348,6 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
-	if (tempecx != ECX)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); tempecx = ECX;}
-	if (temp2 == -1)	{ Console.Error("FPU: ADD/SUB Allocation Error!"); temp2 = EAX;}
-
 	xMOVD(xRegister32(tempecx), xRegisterSSE(tempd));
 	xMOVD(xRegister32(temp2), xRegisterSSE(tempt));
 
@@ -593,8 +590,6 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {Console.Error("FPU: DIV Allocation Error!"); return;}
-	if (tempReg == -1) {Console.Error("FPU: DIV Allocation Error!"); tempReg = EAX;}
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -651,7 +646,6 @@ static __aligned16 SSE_MXCSR roundmode_nearest, roundmode_neg;
 void recDIV_S_xmm(int info)
 {
 	bool roundmodeFlag = false;
-    //if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
     //Console.WriteLn("DIV");
 
 	if( CHECK_FPUNEGDIVHACK )
@@ -931,9 +925,7 @@ void recSQRT_S_xmm(int info)
 	u8 *pjmp;
 	int roundmodeFlag = 0;
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (tempReg == -1) {Console.Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	if (t1reg == -1) {Console.Error("FPU: SQRT Allocation Error!"); return;}
 	//Console.WriteLn("FPU: SQRT");
 
 	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
@@ -993,8 +985,6 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u32 *pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {Console.Error("FPU: RSQRT Allocation Error!"); return;}
-	if (tempReg == -1) {Console.Error("FPU: RSQRT Allocation Error!"); tempReg = EAX;}
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
