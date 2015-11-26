@@ -83,10 +83,10 @@ void _eeOnLoadWrite(u32 reg)
 	if( regt >= 0 ) {
 		if( xmmregs[regt].mode & MODE_WRITE ) {
 			if( reg != _Rs_ ) {
-				SSE2_PUNPCKHQDQ_XMM_to_XMM(regt, regt);
-				SSE2_MOVQ_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+				xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
+				xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 			}
-			else SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+			else xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 		}
 		xmmregs[regt].inuse = 0;
 	}
@@ -165,7 +165,7 @@ void recLoad32( u32 bits, bool sign )
 		// Load ECX with the source memory address that we're reading from.
 		_eeMoveGPRtoR(ECX, _Rs_);
 		if (_Imm_ != 0)
-			ADD32ItoR( ECX, _Imm_ );
+			xADD(ecx, _Imm_ );
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);

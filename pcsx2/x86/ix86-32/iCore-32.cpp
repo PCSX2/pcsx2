@@ -169,8 +169,8 @@ void _flushCachedRegs()
 void _flushConstReg(int reg)
 {
 	if( GPR_IS_CONST1( reg ) && !(g_cpuFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
+		xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], g_cpuConstRegs[reg].UL[0]);
+		xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[1]], g_cpuConstRegs[reg].UL[1]);
 		g_cpuFlushedConstReg |= (1<<reg);
 		if (reg == 0) DevCon.Warning("Flushing r0!");
 	}
@@ -192,11 +192,11 @@ void _flushConstRegs()
 		if (g_cpuConstRegs[i].SL[j] != 0) continue;
 
 		if (eaxval != 0) {
-			XOR32RtoR(EAX, EAX);
+			xXOR(eax, eax);
 			eaxval = 0;
 		}
 
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
+		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
 		done[j] |= 1<<i;
 		zero_cnt++;
 	}
@@ -208,15 +208,15 @@ void _flushConstRegs()
 		if (g_cpuConstRegs[i].SL[j] != -1) continue;
 
 		if (eaxval > 0) {
-			XOR32RtoR(EAX, EAX);
+			xXOR(eax, eax);
 			eaxval = 0;
 		}
 		if (eaxval == 0) {
-			NOT32R(EAX);
+			xNOT(eax);
 			eaxval = -1;
 		}
 
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
+		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
 		done[j + 2] |= 1<<i;
 		minusone_cnt++;
 	}
@@ -232,9 +232,9 @@ void _flushConstRegs()
 		if (GPR_IS_CONST1(i)) {
 			if (!(g_cpuFlushedConstReg&(1<<i))) {
 				if (!(done[0] & (1<<i)))
-					MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+					xMOV(ptr32[&cpuRegs.GPR.r[i].UL[0]], g_cpuConstRegs[i].UL[0]);
 				if (!(done[1] & (1<<i)))
-					MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+					xMOV(ptr32[&cpuRegs.GPR.r[i].UL[1]], g_cpuConstRegs[i].UL[1]);
 
 				g_cpuFlushedConstReg |= 1<<i;
 			}
@@ -302,9 +302,9 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 				if( type == X86TYPE_GPR ) _flushConstReg(reg);
 
 				if( X86_ISVI(type) && reg < 16 )
-					MOVZX32M16toR(i, _x86GetAddr(type, reg));
+					xMOVZX(xRegister32(i), ptr16[(u16*)(_x86GetAddr(type, reg))]);
 				else
-					MOV32MtoR(i, _x86GetAddr(type, reg));
+					xMOV(xRegister32(i), ptr[(void*)(_x86GetAddr(type, reg))]);
 
 				x86regs[i].mode |= MODE_READ;
 			}
@@ -328,12 +328,12 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 
 	if( mode & MODE_READ ) {
 		if( readfromreg >= 0 )
-			MOV32RtoR(x86reg, readfromreg);
+			xMOV(xRegister32(x86reg), xRegister32(readfromreg));
 		else {
 			if( type == X86TYPE_GPR ) {
 
 				if( reg == 0 ) {
-					XOR32RtoR(x86reg, x86reg);
+					xXOR(xRegister32(x86reg), xRegister32(x86reg));
 				}
 				else {
 					_flushConstReg(reg);
@@ -349,11 +349,11 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 			else {
 				if( X86_ISVI(type) && reg < 16 ) {
 					if( reg == 0 )
-						XOR32RtoR(x86reg, x86reg);
+						xXOR(xRegister32(x86reg), xRegister32(x86reg));
 					else
-						MOVZX32M16toR(x86reg, _x86GetAddr(type, reg));
+						xMOVZX(xRegister32(x86reg), ptr16[(u16*)(_x86GetAddr(type, reg))]);
 				}
-				else MOV32MtoR(x86reg, _x86GetAddr(type, reg));
+				else xMOV(xRegister32(x86reg), ptr[(void*)(_x86GetAddr(type, reg))]);
 			}
 		}
 	}
@@ -370,9 +370,9 @@ int _checkX86reg(int type, int reg, int mode)
 
 			if( !(x86regs[i].mode & MODE_READ) && (mode&MODE_READ) ) {
 				if( X86_ISVI(type) )
-					MOVZX32M16toR(i, _x86GetAddr(type, reg));
+					xMOVZX(xRegister32(i), ptr16[(u16*)(_x86GetAddr(type, reg))]);
 				else
-					MOV32MtoR(i, _x86GetAddr(type, reg));
+					xMOV(xRegister32(i), ptr[(void*)(_x86GetAddr(type, reg))]);
 			}
 
 			x86regs[i].mode |= mode;
@@ -424,9 +424,9 @@ void _deleteX86reg(int type, int reg, int flush)
 					if( x86regs[i].mode & MODE_WRITE) {
 
 						if( X86_ISVI(type) && x86regs[i].reg < 16 )
-							MOV16RtoM(_x86GetAddr(type, x86regs[i].reg), i);
+							xMOV(ptr[(void*)(_x86GetAddr(type, x86regs[i].reg))], xRegister16(i));
 						else
-							MOV32RtoM(_x86GetAddr(type, x86regs[i].reg), i);
+							xMOV(ptr[(void*)(_x86GetAddr(type, x86regs[i].reg))], xRegister32(i));
 
 						// get rid of MODE_WRITE since don't want to flush again
 						x86regs[i].mode &= ~MODE_WRITE;
@@ -450,10 +450,10 @@ void _freeX86reg(int x86reg)
 		x86regs[x86reg].mode &= ~MODE_WRITE;
 
 		if( X86_ISVI(x86regs[x86reg].type) && x86regs[x86reg].reg < 16 ) {
-			MOV16RtoM(_x86GetAddr(x86regs[x86reg].type, x86regs[x86reg].reg), x86reg);
+			xMOV(ptr[(void*)(_x86GetAddr(x86regs[x86reg].type, x86regs[x86reg].reg))], xRegister16(x86reg));
 		}
 		else
-			MOV32RtoM(_x86GetAddr(x86regs[x86reg].type, x86regs[x86reg].reg), x86reg);
+			xMOV(ptr[(void*)(_x86GetAddr(x86regs[x86reg].type, x86regs[x86reg].reg))], xRegister32(x86reg));
 	}
 
 	x86regs[x86reg].inuse = 0;
@@ -573,14 +573,14 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 				SetMMXstate();
 				if( reg == MMX_GPR ) {
 					// moving in 0s
-					PXORRtoR(i, i);
+					xPXOR(xRegisterMMX(i), xRegisterMMX(i));
 				}
 				else {
 					if( MMX_ISGPR(reg) ) _flushConstReg(reg-MMX_GPR);
 					if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) )
-						MOVDMtoMMX(i, (uptr)_MMXGetAddr(reg));
+						xMOVDZX(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
 					else
-						MOVQMtoR(i, (uptr)_MMXGetAddr(reg));
+						xMOVQ(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
 				}
 
 				mmxregs[i].mode |= MODE_READ;
@@ -604,14 +604,14 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 	SetMMXstate();
 	if( reg == MMX_GPR ) {
 		// moving in 0s
-		PXORRtoR(mmxreg, mmxreg);
+		xPXOR(xRegisterMMX(mmxreg), xRegisterMMX(mmxreg));
 	}
 	else {
 		int xmmreg;
 		if( MMX_ISGPR(reg) && (xmmreg = _checkXMMreg(XMMTYPE_GPRREG, reg-MMX_GPR, 0)) >= 0 ) {
-			SSE_MOVHPS_XMM_to_M64((uptr)_MMXGetAddr(reg)+8, xmmreg);
+			xMOVH.PS(ptr[(void*)((uptr)_MMXGetAddr(reg)+8)], xRegisterSSE(xmmreg));
 			if( mode & MODE_READ )
-				SSE2_MOVDQ2Q_XMM_to_MM(mmxreg, xmmreg);
+				xMOVQ(xRegisterMMX(mmxreg), xRegisterSSE(xmmreg));
 
 			if( xmmregs[xmmreg].mode & MODE_WRITE )
 				mmxregs[mmxreg].mode |= MODE_WRITE;
@@ -625,10 +625,10 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 			}
 
 			if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) ) {
-				MOVDMtoMMX(mmxreg, (uptr)_MMXGetAddr(reg));
+				xMOVDZX(xRegisterMMX(mmxreg), ptr[(_MMXGetAddr(reg))]);
 			}
 			else if( mode & MODE_READ ) {
-				MOVQMtoR(mmxreg, (uptr)_MMXGetAddr(reg));
+				xMOVQ(xRegisterMMX(mmxreg), ptr[(_MMXGetAddr(reg))]);
 			}
 		}
 	}
@@ -646,14 +646,14 @@ int _checkMMXreg(int reg, int mode)
 
 				if( reg == MMX_GPR ) {
 					// moving in 0s
-					PXORRtoR(i, i);
+					xPXOR(xRegisterMMX(i), xRegisterMMX(i));
 				}
 				else {
 					if (MMX_ISGPR(reg) && (mode&(MODE_READHALF|MODE_READ))) _flushConstReg(reg-MMX_GPR);
 					if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) )
-						MOVDMtoMMX(i, (uptr)_MMXGetAddr(reg));
+						xMOVDZX(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
 					else
-						MOVQMtoR(i, (uptr)_MMXGetAddr(reg));
+						xMOVQ(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
 				}
 				SetMMXstate();
 			}
@@ -711,9 +711,9 @@ void _deleteMMXreg(int reg, int flush)
 						pxAssert( mmxregs[i].reg != MMX_GPR );
 
 						if( MMX_IS32BITS(reg) )
-							MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
+							xMOVD(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
 						else
-							MOVQRtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
+							xMOVQ(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
 						SetMMXstate();
 
 						// get rid of MODE_WRITE since don't want to flush again
@@ -783,9 +783,9 @@ void _freeMMXreg(u32 mmxreg)
 		pxAssert( mmxregs[mmxreg].reg != MMX_GPR );
 
 		if( MMX_IS32BITS(mmxregs[mmxreg].reg) )
-			MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
+			xMOVD(ptr[(_MMXGetAddr(mmxregs[mmxreg].reg))], xRegisterMMX(mmxreg));
 		else
-			MOVQRtoM((uptr)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
+			xMOVQ(ptr[(_MMXGetAddr(mmxregs[mmxreg].reg))], xRegisterMMX(mmxreg));
 
 		SetMMXstate();
 	}
@@ -812,7 +812,7 @@ void _moveMMXreg(int mmxreg)
 	// move
 	mmxregs[i] = mmxregs[mmxreg];
 	mmxregs[mmxreg].inuse = 0;
-	MOVQRtoR(i, mmxreg);
+	xMOVQ(xRegisterMMX(i), xRegisterMMX(mmxreg));
 }
 
 // write all active regs
@@ -830,9 +830,9 @@ void _flushMMXregs()
 			pxAssert( mmxregs[i].reg != MMX_GPR );
 
 			if( MMX_IS32BITS(mmxregs[i].reg) )
-				MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
+				xMOVD(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
 			else
-				MOVQRtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
+				xMOVQ(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
 			SetMMXstate();
 
 			mmxregs[i].mode &= ~MODE_WRITE;
@@ -859,27 +859,27 @@ void SetFPUstate() {
 	_freeMMXreg(7);
 
 	if (x86FpuState == MMX_STATE) {
-		EMMS();
+		xEMMS();
 		x86FpuState = FPU_STATE;
 	}
 }
 
 void _signExtendSFtoM(u32 mem)
 {
-	LAHF();
-	SAR16ItoR(EAX, 15);
-	CWDE();
-	MOV32RtoM(mem, EAX );
+	xLAHF();
+	xSAR(ax, 15);
+	xCWDE();
+	xMOV(ptr[(void*)(mem)], eax);
 }
 
 int _signExtendMtoMMX(x86MMXRegType to, u32 mem)
 {
 	int t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
 
-	MOVDMtoMMX(t0reg, mem);
-	MOVQRtoR(to, t0reg);
-	PSRADItoR(t0reg, 31);
-	PUNPCKLDQRtoR(to, t0reg);
+	xMOVDZX(xRegisterMMX(t0reg), ptr[(void*)(mem)]);
+	xMOVQ(xRegisterMMX(to), xRegisterMMX(t0reg));
+	xPSRA.D(xRegisterMMX(t0reg), 31);
+	xPUNPCK.LDQ(xRegisterMMX(to), xRegisterMMX(t0reg));
 	_freeMMXreg(t0reg);
 
 	return to;
@@ -892,7 +892,7 @@ int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32
 	if( to == from ) return _signExtendGPRtoMMX(to, gprreg, 0);
 	if( !(g_pCurInstInfo->regs[gprfromreg]&EEINST_LASTUSE) ) {
 		if( EEINST_ISLIVE64(gprfromreg) ) {
-			MOVQRtoR(to, from);
+			xMOVQ(xRegisterMMX(to), xRegisterMMX(from));
 			return _signExtendGPRtoMMX(to, gprreg, 0);
 		}
 	}
@@ -900,10 +900,10 @@ int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32
 	// from is free for use
 	SetMMXstate();
 
-	MOVQRtoR(to, from);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], from);
-	PSRADItoR(from, 31);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], from);
+	xMOVQ(xRegisterMMX(to), xRegisterMMX(from));
+	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[0]], xRegisterMMX(from));
+	xPSRA.D(xRegisterMMX(from), 31);
+	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[1]], xRegisterMMX(from));
 	mmxregs[to].inuse = 0;
 
 	return -1;
@@ -915,10 +915,10 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)
 
 	SetMMXstate();
 
-	if( shift > 0 ) PSRADItoR(to, shift);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], to);
-	PSRADItoR(to, 31);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], to);
+	if( shift > 0 ) xPSRA.D(xRegisterMMX(to), shift);
+	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[0]], xRegisterMMX(to));
+	xPSRA.D(xRegisterMMX(to), 31);
+	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[1]], xRegisterMMX(to));
 	mmxregs[to].inuse = 0;
 
 	return -1;
@@ -934,12 +934,12 @@ static const __aligned16 u32 s_ones[2] = {0xffffffff, 0xffffffff};
 void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op)
 {
 	switch(op) {
-		case 0: PANDRtoR(to, from); break;
-		case 1: PORRtoR(to, from); break;
-		case 2: PXORRtoR(to, from); break;
+		case 0: xPAND(xRegisterMMX(to), xRegisterMMX(from)); break;
+		case 1: xPOR(xRegisterMMX(to), xRegisterMMX(from)); break;
+		case 2: xPXOR(xRegisterMMX(to), xRegisterMMX(from)); break;
 		case 3:
-			PORRtoR(to, from);
-			PXORMtoR(to, (uptr)&s_ones[0]);
+			xPOR(xRegisterMMX(to), xRegisterMMX(from));
+			xPXOR(xRegisterMMX(to), ptr[&s_ones[0]]);
 			break;
 	}
 }
@@ -947,12 +947,12 @@ void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op)
 void LogicalOpMtoR(x86MMXRegType to, uptr from, int op)
 {
 	switch(op) {
-		case 0: PANDMtoR(to, from); break;
-		case 1: PORMtoR(to, from); break;
-		case 2: PXORMtoR(to, from); break;
+		case 0: xPAND(xRegisterMMX(to), ptr[(void*)(from)]); break;
+		case 1: xPOR(xRegisterMMX(to), ptr[(void*)(from)]); break;
+		case 2: xPXOR(xRegisterMMX(to), ptr[(void*)(from)]); break;
 		case 3:
-			PORRtoR(to, from);
-			PXORMtoR(to, (uptr)&s_ones[0]);
+			xPOR(xRegisterMMX(to), xRegisterMMX(from));
+			xPXOR(xRegisterMMX(to), ptr[&s_ones[0]]);
 			break;
 	}
 }
@@ -960,39 +960,39 @@ void LogicalOpMtoR(x86MMXRegType to, uptr from, int op)
 void LogicalOp32RtoM(uptr to, x86IntRegType from, int op)
 {
 	switch(op) {
-		case 0: AND32RtoM(to, from); break;
-		case 1: OR32RtoM(to, from); break;
-		case 2: XOR32RtoM(to, from); break;
-		case 3: OR32RtoM(to, from); break;
+		case 0: xAND(ptr[(void*)(to)], xRegister32(from)); break;
+		case 1: xOR(ptr[(void*)(to)], xRegister32(from)); break;
+		case 2: xXOR(ptr[(void*)(to)], xRegister32(from)); break;
+		case 3: xOR(ptr[(void*)(to)], xRegister32(from)); break;
 	}
 }
 
 void LogicalOp32MtoR(x86IntRegType to, uptr from, int op)
 {
 	switch(op) {
-		case 0: AND32MtoR(to, from); break;
-		case 1: OR32MtoR(to, from); break;
-		case 2: XOR32MtoR(to, from); break;
-		case 3: OR32MtoR(to, from); break;
+		case 0: xAND(xRegister32(to), ptr[(void*)(from)]); break;
+		case 1: xOR(xRegister32(to), ptr[(void*)(from)]); break;
+		case 2: xXOR(xRegister32(to), ptr[(void*)(from)]); break;
+		case 3: xOR(xRegister32(to), ptr[(void*)(from)]); break;
 	}
 }
 
 void LogicalOp32ItoR(x86IntRegType to, u32 from, int op)
 {
 	switch(op) {
-		case 0: AND32ItoR(to, from); break;
-		case 1: OR32ItoR(to, from); break;
-		case 2: XOR32ItoR(to, from); break;
-		case 3: OR32ItoR(to, from); break;
+		case 0: xAND(xRegister32(to), from); break;
+		case 1: xOR(xRegister32(to), from); break;
+		case 2: xXOR(xRegister32(to), from); break;
+		case 3: xOR(xRegister32(to), from); break;
 	}
 }
 
 void LogicalOp32ItoM(uptr to, u32 from, int op)
 {
 	switch(op) {
-		case 0: AND32ItoM(to, from); break;
-		case 1: OR32ItoM(to, from); break;
-		case 2: XOR32ItoM(to, from); break;
-		case 3: OR32ItoM(to, from); break;
+		case 0: xAND(ptr32[(u32*)(to)], from); break;
+		case 1: xOR(ptr32[(u32*)(to)], from); break;
+		case 2: xXOR(ptr32[(u32*)(to)], from); break;
+		case 3: xOR(ptr32[(u32*)(to)], from); break;
 	}
 }

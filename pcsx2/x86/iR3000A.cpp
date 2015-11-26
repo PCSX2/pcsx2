@@ -485,7 +485,7 @@ int _psxFlushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-psxpc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+			xMOV(ptr32[&psxRegs.GPR.r[i]], g_psxConstRegs[i]);
 			g_psxFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -502,7 +502,7 @@ void _psxFlushCachedRegs()
 void _psxFlushConstReg(int reg)
 {
 	if( PSX_IS_CONST1( reg ) && !(g_psxFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((uptr)&psxRegs.GPR.r[reg], g_psxConstRegs[reg]);
+		xMOV(ptr32[&psxRegs.GPR.r[reg]], g_psxConstRegs[reg]);
 		g_psxFlushedConstReg |= (1<<reg);
 	}
 }
@@ -518,7 +518,7 @@ void _psxFlushConstRegs()
 		if( g_psxHasConstReg & (1<<i) ) {
 
 			if( !(g_psxFlushedConstReg&(1<<i)) ) {
-				MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+				xMOV(ptr32[&psxRegs.GPR.r[i]], g_psxConstRegs[i]);
 				g_psxFlushedConstReg |= 1<<i;
 			}
 
@@ -542,32 +542,32 @@ void _psxDeleteReg(int reg, int flush)
 void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoR( to, g_psxConstRegs[fromgpr] );
+		xMOV(xRegister32(to), g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(to, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		xMOV(xRegister32(to), ptr[&psxRegs.GPR.r[ fromgpr ] ]);
 	}
 }
 
 void _psxMoveGPRtoM(u32 to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoM( to, g_psxConstRegs[fromgpr] );
+		xMOV(ptr32[(u32*)(to)], g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoM(to, EAX );
+		xMOV(eax, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
+		xMOV(ptr[(void*)(to)], eax);
 	}
 }
 
 void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoRm( to, g_psxConstRegs[fromgpr] );
+		xMOV(ptr32[xAddressReg(to)], g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoRm(to, EAX );
+		xMOV(eax, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
+		xMOV(ptr[xAddressReg(to)], eax);
 	}
 }
 
@@ -655,8 +655,8 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
     if ( ! _Rt_ ) {
 		// check for iop module import table magic
         if (psxRegs.code >> 16 == 0x2400) {
-			MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-			MOV32ItoM( (uptr)&psxRegs.pc, psxpc );
+			xMOV(ptr32[&psxRegs.code], psxRegs.code );
+			xMOV(ptr32[&psxRegs.pc], psxpc );
 			_psxFlushCall(FLUSH_NODESTROY);
 
 			const char *libname = irxImportLibname(psxpc);
@@ -986,15 +986,15 @@ void psxSetBranchReg(u32 reg)
 
 		if( x86regs[ESI].inuse ) {
 			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-			MOV32RtoM((uptr)&psxRegs.pc, ESI);
+			xMOV(ptr[&psxRegs.pc], esi);
 			x86regs[ESI].inuse = 0;
 			#ifdef PCSX2_DEBUG
 			xOR( esi, esi );
 			#endif
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&g_recWriteback);
-			MOV32RtoM((uptr)&psxRegs.pc, EAX);
+			xMOV(eax, ptr[&g_recWriteback]);
+			xMOV(ptr[&psxRegs.pc], eax);
 
 			#ifdef PCSX2_DEBUG
 			xOR( eax, eax );
@@ -1020,7 +1020,7 @@ void psxSetBranchImm( u32 imm )
 	pxAssert( imm );
 
 	// end the current block
-	MOV32ItoM( (uptr)&psxRegs.pc, imm );
+	xMOV(ptr32[&psxRegs.pc], imm );
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
 
@@ -1105,19 +1105,19 @@ static void checkcodefn()
 
 void rpsxSYSCALL()
 {
-	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-	MOV32ItoM((uptr)&psxRegs.pc, psxpc - 4);
+	xMOV(ptr32[&psxRegs.code], psxRegs.code );
+	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
 	xMOV( ecx, 0x20 );			// exception code
 	xMOV( edx, psxbranch==1 );	// branch delay slot?
 	xCALL( psxException );
 
-	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
+	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
 
-	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 
 	// jump target for skipping blockCycle updates
@@ -1128,18 +1128,18 @@ void rpsxSYSCALL()
 
 void rpsxBREAK()
 {
-	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-	MOV32ItoM((uptr)&psxRegs.pc, psxpc - 4);
+	xMOV(ptr32[&psxRegs.code], psxRegs.code );
+	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
 	xMOV( ecx, 0x24 );			// exception code
 	xMOV( edx, psxbranch==1 );	// branch delay slot?
 	xCALL( psxException );
 
-	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
+	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1154,7 +1154,7 @@ void psxRecompileNextInstruction(int delayslot)
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
 	if( IsDebugBuild )
-		MOV32ItoR(EAX, psxpc);
+		xMOV(eax, psxpc);
 
 	psxRegs.code = iopMemRead32( psxpc );
 	s_psxBlockCycles++;
@@ -1393,14 +1393,14 @@ StartRecomp:
 		if( psxbranch ) pxAssert( !willbranch3 );
 		else
 		{
-			ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-			SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+			xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 		}
 
 		if (willbranch3 || !psxbranch) {
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
-			MOV32ItoM((uptr)&psxRegs.pc, psxpc);
+			xMOV(ptr32[&psxRegs.pc], psxpc);
 			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
 			psxbranch = 3;
 		}

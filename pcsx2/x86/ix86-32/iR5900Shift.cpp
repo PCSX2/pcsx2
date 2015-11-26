@@ -64,15 +64,15 @@ void recSLLs_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	if ( sa != 0 )
 	{
-		SHL32ItoR( EAX, sa );
+		xSHL(eax, sa );
 	}
 
-	CDQ( );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ( );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 void recSLL_(int info)
@@ -92,12 +92,12 @@ void recSRLs_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-	if ( sa != 0 ) SHR32ItoR( EAX, sa);
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if ( sa != 0 ) xSHR(eax, sa);
 
-	CDQ( );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ( );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 void recSRL_(int info)
@@ -117,12 +117,12 @@ void recSRAs_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-	if ( sa != 0 ) SAR32ItoR( EAX, sa);
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if ( sa != 0 ) xSAR(eax, sa);
 
-	CDQ();
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ();
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 void recSRA_(int info)
@@ -149,8 +149,8 @@ void recDSLLs_(int info, int sa)
 	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 	SetMMXstate();
 
-	if( rtreg != rdreg ) MOVQRtoR(rdreg, rtreg);
-	PSLLQItoR(rdreg, sa);
+	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
+	xPSLL.Q(xRegisterMMX(rdreg), sa);
 }
 
 void recDSLL_(int info)
@@ -177,8 +177,8 @@ void recDSRLs_(int info, int sa)
 	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 	SetMMXstate();
 
-	if( rtreg != rdreg ) MOVQRtoR(rdreg, rtreg);
-	PSRLQItoR(rdreg, sa);
+	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
+	xPSRL.Q(xRegisterMMX(rdreg), sa);
 }
 
 void recDSRL_(int info)
@@ -205,19 +205,19 @@ void recDSRAs_(int info, int sa)
 	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 	SetMMXstate();
 
-	if( rtreg != rdreg ) MOVQRtoR(rdreg, rtreg);
+	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
 
     if ( sa != 0 ) {
 		t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-		MOVQRtoR(t0reg, rtreg);
+		xMOVQ(xRegisterMMX(t0reg), xRegisterMMX(rtreg));
 
 		// it is a signed shift
-		PSRADItoR(t0reg, sa);
-		PSRLQItoR(rdreg, sa);
+		xPSRA.D(xRegisterMMX(t0reg), sa);
+		xPSRL.Q(xRegisterMMX(rdreg), sa);
 
-		PUNPCKHDQRtoR(t0reg, t0reg); // shift to lower
+		xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
 		// take lower dword of rdreg and lower dword of t0reg
-		PUNPCKLDQRtoR(rdreg, t0reg);
+		xPUNPCK.LDQ(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
 
 		_freeMMXreg(t0reg);
 	}
@@ -240,13 +240,13 @@ void recDSLL32s_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	if ( sa != 0 )
 	{
-		SHL32ItoR( EAX, sa );
+		xSHL(eax, sa );
 	}
-	MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], 0 );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EAX );
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], 0 );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], eax);
 
 }
 
@@ -267,11 +267,11 @@ void recDSRL32s_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] );
-	if ( sa != 0 ) SHR32ItoR( EAX, sa );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+	if ( sa != 0 ) xSHR(eax, sa );
 
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], 0 );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], 0 );
 }
 
 void recDSRL32_(int info)
@@ -291,12 +291,12 @@ void recDSRA32s_(int info, int sa)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] );
-	CDQ( );
-	if ( sa != 0 ) SAR32ItoR( EAX, sa );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+	xCDQ( );
+	if ( sa != 0 ) xSAR(eax, sa );
 
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 
 }
 
@@ -325,12 +325,12 @@ int recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp, int 
 	SetMMXstate();
 
 	*rstemp = _allocMMXreg(-1, MMX_TEMP, 0);
-	MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
-	AND32ItoR(EAX, shift64?0x3f:0x1f);
-	MOVD32RtoMMX(*rstemp, EAX);
+	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+	xAND(eax, shift64?0x3f:0x1f);
+	xMOVDZX(xRegisterMMX(*rstemp), eax);
 	*rsreg = *rstemp;
 
-	if( *rtreg != *rdreg ) MOVQRtoR(*rdreg, *rtreg);
+	if( *rtreg != *rdreg ) xMOVQ(xRegisterMMX(*rdreg), xRegisterMMX(*rtreg));
 	return 1;
 }
 
@@ -341,9 +341,9 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp, int shift6
 	SetMMXstate();
 
 	*rstemp = _allocMMXreg(-1, MMX_TEMP, 0);
-	MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
-	AND32ItoR(EAX, shift64?0x3f:0x1f);
-	MOVD32RtoMMX(*rstemp, EAX);
+	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+	xAND(eax, shift64?0x3f:0x1f);
+	xMOVDZX(xRegisterMMX(*rstemp), eax);
 	*rsreg = *rstemp;
 
 	_flushConstReg(_Rt_);
@@ -362,27 +362,27 @@ void recSLLV_consts(int info)
 
 void recSLLV_constt(int info)
 {
-	MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
-	MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-	AND32ItoR( ECX, 0x1f );
-	SHL32CLtoR( EAX );
+	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+	xAND(ecx, 0x1f );
+	xSHL(eax, cl);
 
 	eeSignExtendTo(_Rd_);
 }
 
 void recSLLV_(int info)
 {
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	if ( _Rs_ != 0 )
 	{
-		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		AND32ItoR( ECX, 0x1f );
-		SHL32CLtoR( EAX );
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xAND(ecx, 0x1f );
+		xSHL(eax, cl);
 	}
-	CDQ();
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ();
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 EERECOMPILE_CODE0(SLLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
@@ -400,27 +400,27 @@ void recSRLV_consts(int info)
 
 void recSRLV_constt(int info)
 {
-	MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
-	MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-	AND32ItoR( ECX, 0x1f );
-	SHR32CLtoR( EAX );
+	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+	xAND(ecx, 0x1f );
+	xSHR(eax, cl);
 
 	eeSignExtendTo(_Rd_);
 }
 
 void recSRLV_(int info)
 {
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	if ( _Rs_ != 0 )
 	{
-		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		AND32ItoR( ECX, 0x1f );
-		SHR32CLtoR( EAX );
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xAND(ecx, 0x1f );
+		xSHR(eax, cl);
 	}
-	CDQ( );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ( );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 EERECOMPILE_CODE0(SRLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
@@ -438,27 +438,27 @@ void recSRAV_consts(int info)
 
 void recSRAV_constt(int info)
 {
-	MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
-	MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-	AND32ItoR( ECX, 0x1f );
-	SAR32CLtoR( EAX );
+	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+	xAND(ecx, 0x1f );
+	xSAR(eax, cl);
 
 	eeSignExtendTo(_Rd_);
 }
 
 void recSRAV_(int info)
 {
-	MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	if ( _Rs_ != 0 )
 	{
-		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		AND32ItoR( ECX, 0x1f );
-		SAR32CLtoR( EAX );
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xAND(ecx, 0x1f );
+		xSAR(eax, cl);
 	}
-	CDQ( );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+	xCDQ( );
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 EERECOMPILE_CODE0(SRAV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
@@ -481,8 +481,8 @@ void recDSLLV_constt(int info)
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp, 1);
 
-	MOVQMtoR(rdreg, (uptr)&cpuRegs.GPR.r[_Rt_]);
-	PSLLQRtoR(rdreg, rsreg);
+	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+	xPSLL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
 	if( rstemp != -1 ) _freeMMXreg(rstemp);
 }
 
@@ -491,7 +491,7 @@ void recDSLLV_(int info)
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp, 1);
 
-	PSLLQRtoR(rdreg, rsreg);
+	xPSLL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
 	if( rstemp != -1 ) _freeMMXreg(rstemp);
 }
 
@@ -515,8 +515,8 @@ void recDSRLV_constt(int info)
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp, 1);
 
-	MOVQMtoR(rdreg, (uptr)&cpuRegs.GPR.r[_Rt_]);
-	PSRLQRtoR(rdreg, rsreg);
+	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
 	if( rstemp != -1 ) _freeMMXreg(rstemp);
 }
 
@@ -525,7 +525,7 @@ void recDSRLV_(int info)
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp, 1);
 
-	PSRLQRtoR(rdreg, rsreg);
+	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
 	if( rstemp != -1 ) _freeMMXreg(rstemp);
 }
 
@@ -552,24 +552,24 @@ void recDSRAV_constt(int info)
 
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp, 1);
 
-	MOVQMtoR(rdreg, (uptr)&cpuRegs.GPR.r[_Rt_]);
-	PXORRtoR(t0reg, t0reg);
+	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+	xPXOR(xRegisterMMX(t0reg), xRegisterMMX(t0reg));
 
 	// calc high bit
-	MOVQRtoR(t1reg, rdreg);
-	PCMPGTDRtoR(t0reg, rdreg);
-	PUNPCKHDQRtoR(t0reg, t0reg); // shift to lower
+	xMOVQ(xRegisterMMX(t1reg), xRegisterMMX(rdreg));
+	xPCMP.GTD(xRegisterMMX(t0reg), xRegisterMMX(rdreg));
+	xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
 
 	// shift highest bit, 64 - eax
-	MOV32ItoR(EAX, 64);
-	MOVD32RtoMMX(t1reg, EAX);
-	PSUBDRtoR(t1reg, rsreg);
+	xMOV(eax, 64);
+	xMOVDZX(xRegisterMMX(t1reg), eax);
+	xPSUB.D(xRegisterMMX(t1reg), xRegisterMMX(rsreg));
 
 	// right logical shift
-	PSRLQRtoR(rdreg, rsreg);
-	PSLLQRtoR(t0reg, t1reg); // highest bits
+	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
+	xPSLL.Q(xRegisterMMX(t0reg), xRegisterMMX(t1reg)); // highest bits
 
-	PORRtoR(rdreg, t0reg);
+	xPOR(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
 
 	_freeMMXreg(t0reg);
 	_freeMMXreg(t1reg);
@@ -583,23 +583,23 @@ void recDSRAV_(int info)
 	t1reg = _allocMMXreg(-1, MMX_TEMP, 0);
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp, 1);
 
-	PXORRtoR(t0reg, t0reg);
+	xPXOR(xRegisterMMX(t0reg), xRegisterMMX(t0reg));
 
 	// calc high bit
-	MOVQRtoR(t1reg, rdreg);
-	PCMPGTDRtoR(t0reg, rdreg);
-	PUNPCKHDQRtoR(t0reg, t0reg); // shift to lower
+	xMOVQ(xRegisterMMX(t1reg), xRegisterMMX(rdreg));
+	xPCMP.GTD(xRegisterMMX(t0reg), xRegisterMMX(rdreg));
+	xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
 
 	// shift highest bit, 64 - eax
-	MOV32ItoR(EAX, 64);
-	MOVD32RtoMMX(t1reg, EAX);
-	PSUBDRtoR(t1reg, rsreg);
+	xMOV(eax, 64);
+	xMOVDZX(xRegisterMMX(t1reg), eax);
+	xPSUB.D(xRegisterMMX(t1reg), xRegisterMMX(rsreg));
 
 	// right logical shift
-	PSRLQRtoR(rdreg, rsreg);
-	PSLLQRtoR(t0reg, t1reg); // highest bits
+	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
+	xPSLL.Q(xRegisterMMX(t0reg), xRegisterMMX(t1reg)); // highest bits
 
-	PORRtoR(rdreg, t0reg);
+	xPOR(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
 
 	_freeMMXreg(t0reg);
 	_freeMMXreg(t1reg);
