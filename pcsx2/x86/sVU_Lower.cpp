@@ -683,7 +683,7 @@ void _loadEAX(VURegs *VU, int x86reg, uptr offset, int info)
 //------------------------------------------------------------------
 int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 {
-	if( x86reg == EAX ) {
+	if( x86reg == eax.GetId() ) {
 		if (imm) xADD(xRegister32(x86reg), imm);
 	}
 	else {
@@ -713,7 +713,7 @@ int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 		xSHL(eax, 4); // multiply by 16 (shift left by 4)
 	}
 
-	return EAX;
+	return eax.GetId();
 }
 //------------------------------------------------------------------
 

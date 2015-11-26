@@ -122,7 +122,7 @@ int _getFreeX86reg(int mode)
 
 	for (uint i=0; i<iREGCNT_GPR; i++) {
 		int reg = (g_x86checknext+i)%iREGCNT_GPR;
-		if( reg == 0 || reg == ESP || reg == EBP ) continue;
+		if( reg == 0 || reg == esp.GetId() || reg == ebp.GetId() ) continue;
 		if( reg >= maxreg ) continue;
 		//if( (mode&MODE_NOFRAME) && reg==EBP ) continue;
 
@@ -133,7 +133,7 @@ int _getFreeX86reg(int mode)
 	}
 
 	for (int i=1; i<maxreg; i++) {
-		if( i == ESP  || i==EBP ) continue;
+		if( i == esp.GetId()  || i==ebp.GetId()) continue;
 		//if( (mode&MODE_NOFRAME) && i==EBP ) continue;
 
 		if (x86regs[i].needed) continue;
@@ -247,7 +247,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 {
 	uint i;
 	pxAssertDev( reg >= 0 && reg < 32, "Register index out of bounds." );
-	pxAssertDev( x86reg != ESP && x86reg != EBP, "Allocation of ESP/EBP is not allowed!" );
+	pxAssertDev( x86reg != esp.GetId() && x86reg != ebp.GetId(), "Allocation of ESP/EBP is not allowed!" );
 
 	// don't alloc EAX and ESP,EBP if MODE_NOFRAME
 	int oldmode = mode;
@@ -276,7 +276,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 		}
 
 		for (i=1; i<maxreg; i++) {
-			if ( i == ESP || i == EBP ) continue;
+			if ( i == esp.GetId() || i == ebp.GetId() ) continue;
 			if (!x86regs[i].inuse || x86regs[i].type != type || x86regs[i].reg != reg) continue;
 
 			if( i >= maxreg ) {

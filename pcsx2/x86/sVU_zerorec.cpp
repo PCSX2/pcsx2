@@ -3058,9 +3058,9 @@ void VuBaseBlock::Recompile()
 					if (s_JumpX86 == i && x86regs[s_JumpX86].inuse)
 					{
 						x86regs[s_JumpX86].inuse = 0;
-						x86regs[EAX].inuse = 1;
+						x86regs[eax.GetId()].inuse = 1;
 						xMOV(eax, xRegister32(s_JumpX86));
-						s_JumpX86 = EAX;
+						s_JumpX86 = eax.GetId();
 					}
 
 					if (x86regs[i].inuse)
