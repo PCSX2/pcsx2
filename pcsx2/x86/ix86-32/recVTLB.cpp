@@ -72,7 +72,7 @@ static void iMOV128_SSE( const xIndirectVoid& destRm, const xIndirectVoid& srcRm
 // if neither MMX nor SSE is available to the task.
 //
 // Optimizations: This method uses MMX is the cpu is in MMX mode, or SSE if it's in FPU
-// mode (saving on potential EMMS uses).
+// mode (saving on potential xEMMS uses).
 //
 static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcRm )
 {
