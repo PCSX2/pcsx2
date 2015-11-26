@@ -287,13 +287,29 @@ void rpsxLogicalOp(int info, int op)
 	if( _Rd_ == _Rs_ || _Rd_ == _Rt_ ) {
 		int vreg = _Rd_ == _Rs_ ? _Rt_ : _Rs_;
 		xMOV(ecx, ptr[&psxRegs.GPR.r[vreg]]);
-		LogicalOp32RtoM((uptr)&psxRegs.GPR.r[_Rd_], ECX, op);
+
+		switch(op) {
+			case 0: xAND(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 1: xOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 2: xXOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 3: xOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			default: pxAssert(0);
+		}
+
 		if( op == 3 )
 			xNOT(ptr32[&psxRegs.GPR.r[_Rd_]]);
 	}
 	else {
 		xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-		LogicalOp32MtoR(ECX, (uptr)&psxRegs.GPR.r[_Rt_], op);
+
+		switch(op) {
+			case 0: xAND(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
+			case 1: xOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
+			case 2: xXOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
+			case 3: xOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
+			default: pxAssert(0);
+		}
+
 		if( op == 3 )
 			xNOT(ecx);
 		xMOV(ptr[&psxRegs.GPR.r[_Rd_]], ecx);

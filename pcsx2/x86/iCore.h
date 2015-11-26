@@ -363,25 +363,4 @@ extern u16 x86FpuState;
 // used when regs aren't going to be changed be callee
 #define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
 
-
-//////////////////////////////////////////////////////////////////////////
-// Utility Functions -- that should probably be part of the Emitter.
-
-// op = 0, and
-// op = 1, or
-// op = 2, xor
-// op = 3, nor (the 32bit versoins only do OR)
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-
-extern void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
-extern void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
-extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoM(uptr to, u32 from, int op);
-
-#ifdef ARITHMETICIMM_RECOMPILE
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-#endif
-
 #endif

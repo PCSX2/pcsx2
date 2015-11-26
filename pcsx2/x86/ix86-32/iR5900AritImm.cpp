@@ -195,13 +195,25 @@ void recLogicalOpI(int info, int op)
 	if ( _ImmU_ != 0 )
 	{
 		if( _Rt_ == _Rs_ ) {
-			LogicalOp32ItoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _ImmU_, op);
+			switch(op) {
+				case 0: xAND(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
+				case 1: xOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
+				case 2: xXOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
+				default: pxAssert(0);
+			}
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 			if( op != 0 )
 				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-			LogicalOp32ItoR( EAX, _ImmU_, op);
+
+			switch(op) {
+				case 0: xAND(eax, _ImmU_); break;
+				case 1: xOR(eax, _ImmU_); break;
+				case 2: xXOR(eax, _ImmU_); break;
+				default: pxAssert(0);
+			}
+
 			if( op != 0 )
 				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
 			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
