@@ -169,18 +169,6 @@ emitterT u32* JMP32( uptr to )
 	return (u32*)(x86Ptr - 4 );
 }
 
-/* jmp r32/r64 */
-emitterT void JMPR( x86IntRegType to )
-{
-	xJMP( xRegister32(to) );
-}
-
-// jmp m32
-emitterT void JMP32M( uptr to )
-{
-	xJMP( ptr32[(u32*)to] );
-}
-
 /* jp rel8 */
 emitterT u8* JP8( u8 to ) {
 	return J8Rel( 0x7A, to );

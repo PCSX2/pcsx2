@@ -3113,9 +3113,9 @@ void VuBaseBlock::Recompile()
 				SuperVUTestVU0Condition(0);
 
 				if (s_JumpX86 == -1)
-					JMP32M((uptr)&g_recWriteback);
+					xJMP(ptr32[&g_recWriteback]);
 				else
-					JMPR(s_JumpX86);
+					xJMP(xRegister32(s_JumpX86));
 
 				break;
 			case 4: // jalr
@@ -3132,7 +3132,7 @@ void VuBaseBlock::Recompile()
 					// already onto stack
 					xCALL((void*)(uptr)SuperVUGetProgram);
 					xADD(esp, 8);
-					JMPR(EAX);
+					xJMP(eax);
 					break;
 				}
 
