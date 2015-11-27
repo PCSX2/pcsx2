@@ -706,7 +706,7 @@ static void rpsxLW()
 	xAND(ecx, 0x1fffff);
 	xADD(ecx, (uptr)iopMem->Main);
 
-	xMOV(ecx, ptr[xAddressReg(ECX )]);
+	xMOV(ecx, ptr[ecx]);
 	xMOV(ptr[&psxRegs.GPR.r[_Rt_]], ecx);
 
 	x86SetJ8(j8Ptr[1]);
