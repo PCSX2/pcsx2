@@ -344,8 +344,8 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they are floats
 {
-	int tempecx = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd
-	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
+	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
+	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(tempd));
@@ -589,7 +589,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u8 *pjmp1, *pjmp2;
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -924,7 +924,7 @@ void recSQRT_S_xmm(int info)
 {
 	u8 *pjmp;
 	int roundmodeFlag = 0;
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: SQRT");
 
@@ -984,7 +984,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u8 *qjmp1, *qjmp2;
 	u32 *pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 

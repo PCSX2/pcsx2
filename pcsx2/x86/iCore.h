@@ -121,7 +121,7 @@ extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 uptr _x86GetAddr(int type, int reg);
 void _initX86regs();
 int  _getFreeX86reg(int mode);
-int  _allocX86reg(int x86reg, int type, int reg, int mode);
+int  _allocX86reg(x86Emitter::xRegister32 x86reg, int type, int reg, int mode);
 void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);

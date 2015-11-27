@@ -243,11 +243,11 @@ void _flushConstRegs()
 	}
 }
 
-int _allocX86reg(int x86reg, int type, int reg, int mode)
+int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
 {
 	uint i;
 	pxAssertDev( reg >= 0 && reg < 32, "Register index out of bounds." );
-	pxAssertDev( x86reg != esp.GetId() && x86reg != ebp.GetId(), "Allocation of ESP/EBP is not allowed!" );
+	pxAssertDev( x86reg != esp && x86reg != ebp, "Allocation of ESP/EBP is not allowed!" );
 
 	// don't alloc EAX and ESP,EBP if MODE_NOFRAME
 	int oldmode = mode;
@@ -287,9 +287,9 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 				break;
 			}
 
-			if( x86reg >= 0 ) {
+			if( !x86reg.IsEmpty() ) {
 				// requested specific reg, so return that instead
-				if( i != (uint)x86reg ) {
+				if( i != (uint)x86reg.GetId() ) {
 					if( x86regs[i].mode & MODE_READ ) readfromreg = i;
 					mode |= x86regs[i].mode&MODE_WRITE;
 					x86regs[i].inuse = 0;
@@ -315,32 +315,32 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 		}
 	}
 
-	if (x86reg == -1)
-		x86reg = _getFreeX86reg(oldmode);
+	if (x86reg.IsEmpty())
+		x86reg = xRegister32(_getFreeX86reg(oldmode));
 	else
 		_freeX86reg(x86reg);
 
-	x86regs[x86reg].type = type;
-	x86regs[x86reg].reg = reg;
-	x86regs[x86reg].mode = mode;
-	x86regs[x86reg].needed = 1;
-	x86regs[x86reg].inuse = 1;
+	x86regs[x86reg.GetId()].type = type;
+	x86regs[x86reg.GetId()].reg = reg;
+	x86regs[x86reg.GetId()].mode = mode;
+	x86regs[x86reg.GetId()].needed = 1;
+	x86regs[x86reg.GetId()].inuse = 1;
 
 	if( mode & MODE_READ ) {
 		if( readfromreg >= 0 )
-			xMOV(xRegister32(x86reg), xRegister32(readfromreg));
+			xMOV(x86reg, xRegister32(readfromreg));
 		else {
 			if( type == X86TYPE_GPR ) {
 
 				if( reg == 0 ) {
-					xXOR(xRegister32(x86reg), xRegister32(x86reg));
+					xXOR(x86reg, x86reg);
 				}
 				else {
 					_flushConstReg(reg);
 					_deleteMMXreg(MMX_GPR+reg, 1);
 					_deleteGPRtoXMMreg(reg, 1);
 
-					_eeMoveGPRtoR(xRegister32(x86reg), reg);
+					_eeMoveGPRtoR(x86reg, reg);
 
 					_deleteMMXreg(MMX_GPR+reg, 0);
 					_deleteGPRtoXMMreg(reg, 0);
@@ -349,16 +349,18 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 			else {
 				if( X86_ISVI(type) && reg < 16 ) {
 					if( reg == 0 )
-						xXOR(xRegister32(x86reg), xRegister32(x86reg));
+						xXOR(x86reg, x86reg);
 					else
-						xMOVZX(xRegister32(x86reg), ptr16[(u16*)(_x86GetAddr(type, reg))]);
+						xMOVZX(x86reg, ptr16[(u16*)(_x86GetAddr(type, reg))]);
 				}
-				else xMOV(xRegister32(x86reg), ptr[(void*)(_x86GetAddr(type, reg))]);
+				else xMOV(x86reg, ptr[(void*)(_x86GetAddr(type, reg))]);
 			}
 		}
 	}
 
-	return x86reg;
+	// Need to port all the code
+	// return x86reg;
+	return x86reg.GetId();
 }
 
 int _checkX86reg(int type, int reg, int mode)
