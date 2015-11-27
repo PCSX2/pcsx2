@@ -948,7 +948,7 @@ void rpsxJR()
 void rpsxJALR()
 {
 	// jalr Rs
-	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_psxMoveGPRtoR(esi, _Rs_);
 
 	if ( _Rd_ )

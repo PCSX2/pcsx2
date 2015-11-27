@@ -1021,7 +1021,7 @@ int _allocCheckFPUtoXMM(EEINST* pinst, int fpureg, int mode)
 int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode)
 {
 	if( pinst->regs[gprreg] & EEINST_USED )
-        return _allocX86reg(-1, X86TYPE_GPR, gprreg, mode);
+        return _allocX86reg(xEmptyReg, X86TYPE_GPR, gprreg, mode);
 
 	return _checkX86reg(X86TYPE_GPR, gprreg, mode);
 }

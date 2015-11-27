@@ -433,8 +433,8 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int regd, int regt, int issub)
 {
-	int tempecx = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd
-	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
+	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
+	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(regd));
@@ -737,7 +737,7 @@ void recC_EQ_xmm(int info)
 			break;
 		default:
 			Console.WriteLn(Color_Magenta, "recC_EQ_xmm: Default");
-			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -816,7 +816,7 @@ void recC_LE_xmm(int info )
 			break;
 		default: // Untested and incorrect, but this case is never reached AFAIK (cottonvibes)
 			Console.WriteLn(Color_Magenta, "recC_LE_xmm: Default");
-			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -891,7 +891,7 @@ void recC_LT_xmm(int info)
 			break;
 		default:
 			Console.WriteLn(Color_Magenta, "recC_LT_xmm: Default");
-			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 			xMOV(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Fs_]]);
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -980,7 +980,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u8 *pjmp1, *pjmp2;
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1624,7 +1624,7 @@ void recSQRT_S_xmm(int info)
 	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Ft_]]);
 
 	if (CHECK_FPU_EXTRA_FLAGS) {
-		int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+		int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1660,7 +1660,7 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	u32 *pjmp32;
 	u8 *qjmp1, *qjmp2;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 

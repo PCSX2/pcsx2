@@ -979,7 +979,7 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_psxMoveGPRtoR(esi, reg);
 
 		psxRecompileNextInstruction(1);

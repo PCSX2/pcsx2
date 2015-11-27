@@ -963,7 +963,7 @@ void SetBranchReg( u32 reg )
 //				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_eeMoveGPRtoR(esi, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {

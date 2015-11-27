@@ -83,8 +83,8 @@ void VU_MERGE_REGS_SAFE(int dest, int src, int xyzw);
 }
 
 // use for allocating vi regs
-#define ALLOCTEMPX86(mode) _allocX86reg(-1, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
-#define ALLOCVI(vi, mode) _allocX86reg(-1, X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), vi, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
+#define ALLOCTEMPX86(mode) _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
+#define ALLOCVI(vi, mode) _allocX86reg(xEmptyReg, X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), vi, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
 #define ADD_VI_NEEDED(vi) _addNeededX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), vi);
 
 #define SWAP(x, y) *(u32*)&y ^= *(u32*)&x ^= *(u32*)&y ^= *(u32*)&x;
