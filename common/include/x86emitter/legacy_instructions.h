@@ -45,10 +45,6 @@ ATTR_DEP extern u8*  JMP8( u8 to );
 
 // jmp rel32
 ATTR_DEP extern u32* JMP32( uptr to );
-// jmp r32 (r64 if __x86_64__)
-ATTR_DEP extern void JMPR( x86IntRegType to );
-// jmp m32
-ATTR_DEP extern void JMP32M( uptr to );
 
 // jp rel8
 ATTR_DEP extern u8*  JP8( u8 to );
