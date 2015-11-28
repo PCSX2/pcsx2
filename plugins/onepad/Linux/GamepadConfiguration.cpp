@@ -48,11 +48,18 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
         wxPoint(20, 20) // Position
     );
 
-    this->cb_hack_sixaxis = new wxCheckBox(
+    this->cb_hack_sixaxis_usb = new wxCheckBox(
         this->pan_gamepad_config, // Parent
         wxID_ANY, // ID
-        _T("&Hack Sixaxis/DS3 plugged in USB"), // Label
+        _T("&Hack: Sixaxis/DS3 plugged in USB"), // Label
         wxPoint(20, 40) // Position
+    );
+
+    this->cb_hack_sixaxis_pressure = new wxCheckBox(
+        this->pan_gamepad_config, // Parent
+        wxID_ANY, // ID
+        _T("&Hack: Sixaxis/DS3 pressure"), // Label
+        wxPoint(20, 60) // Position
     );
 
     wxString txt_rumble = wxT("Rumble intensity");
@@ -60,7 +67,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
         this->pan_gamepad_config, // Parent
         wxID_ANY, // ID
         txt_rumble, // Text which must be displayed
-        wxPoint(20, 70), // Position
+        wxPoint(20, 90), // Position
         wxDefaultSize // Size
     );
 
@@ -70,7 +77,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
         0, // value
         0, // min value 0x0000
         0x7FFF,  // max value 0x7FFF
-        wxPoint(150, 63), // Position
+        wxPoint(150, 83), // Position
         wxSize(200, 30) // Size
     );
 
@@ -79,7 +86,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
         this->pan_gamepad_config, // Parent
         wxID_ANY, // ID
         txt_joystick, // Text which must be displayed
-        wxPoint(20, 100), // Position
+        wxPoint(20, 120), // Position
         wxDefaultSize // Size
     );
 
@@ -89,7 +96,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
         0, // value
         0, // min value
         100,  // max value
-        wxPoint(150, 93), // Position
+        wxPoint(150, 113), // Position
         wxSize(200, 30) // Size
     );
 
@@ -97,7 +104,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
       this->pan_gamepad_config, // Parent
       wxID_ANY, // ID
       _T("&OK"), // Label
-      wxPoint(250, 130), // Position
+      wxPoint(250, 160), // Position
       wxSize(60,25) // Size
     );
 
@@ -105,7 +112,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
       this->pan_gamepad_config, // Parent
       wxID_ANY, // ID
       _T("&Cancel"), // Label
-      wxPoint(320, 130), // Position
+      wxPoint(320, 160), // Position
       wxSize(60,25) // Size
     );
 
@@ -242,9 +249,13 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent& event)
             this->sl_rumble_intensity->Disable();
         }
     }
-    else if(cb_id == this->cb_hack_sixaxis->GetId())
+    else if(cb_id == this->cb_hack_sixaxis_usb->GetId())
     {
-        conf->pad_options[this->pad_id].sixaxis_usb = (this->cb_hack_sixaxis->GetValue())?(u32)1:(u32)0;
+        conf->pad_options[this->pad_id].sixaxis_usb = (this->cb_hack_sixaxis_usb->GetValue())?(u32)1:(u32)0;
+    }
+    else if(cb_id == this->cb_hack_sixaxis_pressure->GetId())
+    {
+        conf->pad_options[this->pad_id].sixaxis_pressure = (this->cb_hack_sixaxis_pressure->GetValue())?(u32)1:(u32)0;
     }
 }
 
@@ -256,7 +267,7 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent& event)
 void GamepadConfiguration::reset()
 {
     this->cb_rumble->SetValue(this->init_rumble);
-    this->cb_hack_sixaxis->SetValue(this->init_hack_sixaxis);
+    this->cb_hack_sixaxis_usb->SetValue(this->init_hack_sixaxis);
     this->sl_rumble_intensity->SetValue(this->init_rumble_intensity);
     this->sl_joystick_sensibility->SetValue(this->init_joystick_sensibility);
 }
@@ -269,7 +280,7 @@ void GamepadConfiguration::repopulate()
     this->cb_rumble->SetValue(val);
     val = conf->pad_options[this->pad_id].sixaxis_usb;
     this->init_hack_sixaxis = val;
-    this->cb_hack_sixaxis->SetValue(val);
+    this->cb_hack_sixaxis_usb->SetValue(val);
     int tmp = conf->get_ff_intensity();
     this->sl_rumble_intensity->SetValue(tmp);
     this->init_rumble_intensity = tmp;

@@ -35,7 +35,7 @@
 class GamepadConfiguration : public wxFrame
 {
     wxPanel* pan_gamepad_config;
-    wxCheckBox *cb_rumble, *cb_hack_sixaxis;
+    wxCheckBox *cb_rumble, *cb_hack_sixaxis_usb, *cb_hack_sixaxis_pressure;
     wxSlider *sl_rumble_intensity, *sl_joystick_sensibility;
     wxButton *bt_ok, *bt_cancel;
     wxStaticText *lbl_rumble_intensity, *lbl_joystick_sensibility;
