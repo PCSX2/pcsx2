@@ -208,6 +208,14 @@ void x86capabilities::Identify()
 		Flags2		=  regs[ 2 ];
 	}
 
+	if ( cmds >= 0x00000007 )
+	{
+		// Note: ECX must be 0. I did it directly in the __cpuid asm instrinsic
+		__cpuid( regs, 0x00000007 );
+
+		SEFlag = regs[ 1 ];
+	}
+
 	__cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 	if ( cmds >= 0x80000001 )
@@ -271,6 +279,7 @@ void x86capabilities::Identify()
 		{
 			hasAVX								= ( Flags2 >> 28 ) & 1; //avx
 			hasFMA								= ( Flags2 >> 12 ) & 1; //fma
+			hasAVX2								= ( SEFlag >>  5 ) & 1; //avx2
 		}
 	}
 

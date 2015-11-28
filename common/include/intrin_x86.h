@@ -96,7 +96,8 @@ static __inline__ __attribute__((always_inline)) s32 _InterlockedIncrement(volat
 /*** System information ***/
 static __inline__ __attribute__((always_inline)) void __cpuid(int CPUInfo[], const int InfoType)
 {
-	__asm__ __volatile__("cpuid" : "=a" (CPUInfo[0]), "=b" (CPUInfo[1]), "=c" (CPUInfo[2]), "=d" (CPUInfo[3]) : "a" (InfoType));
+	// ECX allow to select the leaf. Leaf 0 is the one that you want to get, so I just xor the register
+	__asm__ __volatile__("xor %%ecx, %%ecx\n" "cpuid": "=a" (CPUInfo[0]), "=b" (CPUInfo[1]), "=c" (CPUInfo[2]), "=d" (CPUInfo[3]) : "a" (InfoType));
 }
 
 static __inline__ __attribute__((always_inline)) unsigned long long __xgetbv(unsigned int index)

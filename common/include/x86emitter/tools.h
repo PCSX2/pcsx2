@@ -44,6 +44,7 @@ public:
 	u32 Flags2;			// More Feature Flags
 	u32 EFlags;			// Extended Feature Flags
 	u32 EFlags2;		// Extended Feature Flags pg2
+	u32 SEFlag;			// Structured Extended Feature Flags Enumeration
 
 	char VendorName[16];	// Vendor/Creator ID
 	char FamilyName[50];    // the original cpu name
@@ -88,6 +89,7 @@ public:
 	u32 hasStreamingSIMD4Extensions					:1;
 	u32 hasStreamingSIMD4Extensions2				:1;
 	u32 hasAVX										:1;
+	u32 hasAVX2										:1;
 	u32 hasFMA										:1;
 
 	// AMD-specific CPU Features
