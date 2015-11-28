@@ -114,7 +114,6 @@ public:
 
 	u32 CalculateMHz() const;
 
-	void SIMD_ExceptionTest();
 	void SIMD_EstablishMXCSRmask();
 
 protected:

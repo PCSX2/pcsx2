@@ -52,5 +52,3 @@ public:
 //
 
 extern bool CanEmitShit();
-extern bool CanTestInstructionSets();
-extern bool _test_instruction( void* pfnCall );

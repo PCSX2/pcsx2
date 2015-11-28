@@ -39,17 +39,6 @@ void x86capabilities::CountLogicalCores()
 	LogicalCores = CPUs;
 }
 
-bool _test_instruction( void* pfnCall )
-{
-	__try {
-		u128 regsave;
-		((void (__fastcall *)(void*))pfnCall)( &regsave );
-	}
-	__except(EXCEPTION_EXECUTE_HANDLER) { return false; }
-
-	return true;
-}
-
 bool CanEmitShit()
 {
 	// Under Windows, pre 0.9.6 versions of PCSX2 may not initialize the TLS
@@ -63,11 +52,6 @@ bool CanEmitShit()
 #endif
 
 	return true;
-}
-
-bool CanTestInstructionSets()
-{
-	return CanEmitShit();
 }
 
 SingleCoreAffinity::SingleCoreAffinity()

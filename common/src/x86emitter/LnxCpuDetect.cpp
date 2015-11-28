@@ -35,18 +35,6 @@ bool CanEmitShit()
 	return true;
 }
 
-bool CanTestInstructionSets()
-{
-	// Not implemented yet for linux.  (see cpudetect_internal.h for details)
-	return false;
-}
-
-bool _test_instruction( void* pfnCall )
-{
-	// Not implemented yet for linux.  (see cpudetect_internal.h for details)
-	return false;
-}
-
 // Not implemented yet for linux (see cpudetect_internal.h for details)
 SingleCoreAffinity::SingleCoreAffinity() {}
 SingleCoreAffinity::~SingleCoreAffinity() throw() {}
