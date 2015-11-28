@@ -22,7 +22,6 @@ using namespace x86Emitter;
 __aligned16 x86capabilities x86caps;
 
 // Recompiled code buffer for SSE and MXCSR feature testing.
-static __pagealigned u8 recSSE[__pagesize];
 static __pagealigned u8 targetFXSAVE[512];
 
 static const char* bool_to_char( bool testcond )
@@ -34,6 +33,7 @@ static const char* bool_to_char( bool testcond )
 // MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
 // moved the recSSE[] array to a global static (it was local to cpudetectInit).  Commented
 // here in case the nutty crash ever re-surfaces. >_<
+// Note: recSSE was deleted
 void x86capabilities::SIMD_EstablishMXCSRmask()
 {
 	if( !hasStreamingSIMDExtensions ) return;
@@ -48,32 +48,9 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 
 		MXCSR_Mask.bitmask = 0xFFFF;	// SSE2 features added
 	}
-#ifdef _M_X86_64
-#ifdef _MSC_VER
-	// Use the intrinsic that is provided with MSVC 2012
+
+	// Work for recent enough GCC/CLANG/MSVC 2012
 	_fxsave(&targetFXSAVE);
-#else
-	// GCC path is supported since GCC 4.6.x
-	__asm __volatile ("fxsave %0" : "+m" (targetFXSAVE));
-#endif
-#else
-	// Grab the MXCSR mask the x86_32 way.
-	//
-	// the fxsave buffer must be 16-byte aligned to avoid GPF.  I just save it to an
-	// unused portion of recSSE, since it has plenty of room to spare.
-
-	if( !CanEmitShit() ) return;
-
-	HostSys::MemProtectStatic( recSSE, PageAccess_ReadWrite() );
-
-	xSetPtr( recSSE );
-	xFXSAVE( ptr[&targetFXSAVE] );
-	xRET();
-
-	HostSys::MemProtectStatic( recSSE, PageAccess_ExecOnly() );
-
-	CallAddress( recSSE );
-#endif
 
 	u32 result = (u32&)targetFXSAVE[28];			// bytes 28->32 are the MXCSR_Mask.
 	if( result != 0 )

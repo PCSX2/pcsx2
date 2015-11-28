@@ -39,21 +39,6 @@ void x86capabilities::CountLogicalCores()
 	LogicalCores = CPUs;
 }
 
-bool CanEmitShit()
-{
-	// Under Windows, pre 0.9.6 versions of PCSX2 may not initialize the TLS
-	// register (FS register), so plugins (DLLs) using our x86emitter in multithreaded
-	// mode will just crash/fail if it tries to do the instruction set tests.
-
-#if x86EMIT_MULTITHREADED
-	static __threadlocal int tls_failcheck;
-	__try { tls_failcheck = 1; }
-	__except(EXCEPTION_EXECUTE_HANDLER) { return false; }
-#endif
-
-	return true;
-}
-
 SingleCoreAffinity::SingleCoreAffinity()
 {
 	s_threadId	= NULL;
