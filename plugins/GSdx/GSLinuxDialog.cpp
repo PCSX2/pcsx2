@@ -258,18 +258,22 @@ GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, con
 
 static int s_table_line = 0;
 static void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = NULL, GtkWidget *third = NULL) {
+	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+	guint l_xpad = GTK_IS_CHECK_BUTTON(left) ? 0 : 22;
+	guint r_xpad = 0;
+	guint ypad = 0;
 	if (!left) {
-		gtk_table_attach_defaults(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	} else if (!right) {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
 	} else if (right == left) {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	} else {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1);
-		gtk_table_attach_defaults(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
+		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	}
 	if (third) {
-		gtk_table_attach_defaults(GTK_TABLE(table), third, 2, 3, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), third, 2, 3, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	}
 	s_table_line++;
 }
@@ -525,15 +529,15 @@ bool RunLinuxDialog()
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 8  , 2);
+	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
-	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 3  , 2);
+	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
-	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 9 , 2);
-	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 8 , 2);
+	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 7 , 2);
+	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 6 , 2);
 
-	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 3  , 3);
-	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 5  , 3);
+	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
+	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
 	// Populate all the tables
 	populate_main_table(main_table);
