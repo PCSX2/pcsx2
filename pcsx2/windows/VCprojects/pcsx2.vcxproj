@@ -389,7 +389,7 @@
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Dualshock.jpg">
+    <CustomBuild Include="..\..\gui\Resources\Logo.png">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)

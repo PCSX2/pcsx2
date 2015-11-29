@@ -20,7 +20,7 @@
 #include "Dialogs/ModalPopups.h"
 
 #include "Resources/EmbeddedImage.h"
-#include "Resources/Dualshock.h"
+#include "Resources/Logo.h"
 
 #include <wx/mstream.h>
 #include <wx/hyperlink.h>
@@ -31,15 +31,15 @@ using namespace pxSizerFlags;
 //  AboutBoxDialog  Implementation
 // --------------------------------------------------------------------------------------
 
-Dialogs::AboutBoxDialog::AboutBoxDialog( wxWindow* parent )
-	: wxDialogWithHelpers( parent, AddAppName(_("About %s")), pxDialogFlags().Resize().MinWidth( 460 ) )
-	, m_bitmap_dualshock( this, wxID_ANY, wxBitmap( EmbeddedImage<res_Dualshock>().Get() ),
-		wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN
-	)
+Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
+	: wxDialogWithHelpers(parent, AddAppName(_("About %s")), pxDialogFlags())
+	, m_bitmap_logo(this, wxID_ANY, wxBitmap(EmbeddedImage<res_Logo>().Get()),
+		wxDefaultPosition, wxDefaultSize
+		)
 {
 	// [TODO] : About box should be upgraded to use scrollable read-only text boxes.
-	
-	wxString LabelAuthors = wxsFormat(
+
+	wxString developsString = wxsFormat(
 		L"Arcum42, avih, Refraction, drk||raziel, cottonvibes, gigaherz, "
 		L"rama, Jake.Stine, saqib, pseudonym, gregory.hainaut"
 		L"\n\n"
@@ -54,62 +54,52 @@ Dialogs::AboutBoxDialog::AboutBoxDialog( wxWindow* parent )
 		L"%s: CKemu, Falcon4ever",
 		_("Previous versions"), _("Betatesting"), _("Webmasters"));
 
-
-	wxString LabelGreets = wxsFormat( 
+	wxString contribsString = wxsFormat(
 		L"Hiryu and Sjeep (libcdvd / iso filesystem), nneeve (fpu and vu), n1ckname (compilation guides), Shadow Lady"
 		L"\n\n"
-			L"%s: ChickenLiver (Lilypad), Efp (efp), "
+		L"%s: ChickenLiver (Lilypad), Efp (efp), "
 		L"Gabest (Gsdx, Cdvdolio, Xpad),  Zeydlitz (ZZogl)"
 		L"\n\n"
-			L"%s: black_wd, Belmont, BGome, _Demo_, Dreamtime, "
-			L"F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
-			_("Plugin Specialists"), _("Special thanks to"));
+		L"%s: black_wd, Belmont, BGome, _Demo_, Dreamtime, "
+		L"F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
+		_("Plugin Specialists"), _("Special thanks to"));
 
-	// This sizer holds text of the authors and a logo!
-	wxFlexGridSizer& AuthLogoSizer = *new wxFlexGridSizer( 2, 0, StdPadding );
-	AuthLogoSizer.AddGrowableCol(0, 4);
-	AuthLogoSizer.AddGrowableCol(1, 3);
+	wxFlexGridSizer& boxesContainer = *new wxFlexGridSizer(2, 0, StdPadding);
+	boxesContainer.AddGrowableCol(0, 1);
+	boxesContainer.AddGrowableCol(1, 1);
 
-	// this sizer holds text of the contributors/testers, and a ps2 image!
-	wxBoxSizer& ContribSizer = *new wxBoxSizer( wxHORIZONTAL );
+	wxStaticBoxSizer& developsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
+	wxStaticBoxSizer& contribsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
 
-	wxStaticBoxSizer& aboutUs	= *new wxStaticBoxSizer( wxVERTICAL, this );
-	wxStaticBoxSizer& contribs	= *new wxStaticBoxSizer( wxVERTICAL, this );
+	pxStaticText& developsText = Text(developsString).SetMinWidth(240);
+	pxStaticText& contribsText = Text(contribsString).SetMinWidth(240);
 
-	pxStaticText& label_auth	= Text( LabelAuthors ).SetMinWidth(240);
-	pxStaticText& label_greets	= Text( LabelGreets ).SetMinWidth(200);
+	developsBox += Heading(_("Developers")).Bold() | StdExpand();
+	developsBox += developsText | StdExpand();
+	contribsBox += Heading(_("Contributors")).Bold() | StdExpand();
+	contribsBox += contribsText | StdExpand();
 
-	aboutUs		+= Heading(_("Developers")).Bold()	| StdExpand();
-	aboutUs		+= label_auth						| StdExpand();
-	contribs	+= Heading(_("Contributors")).Bold()	| StdExpand();
-	contribs	+= label_greets						| StdExpand();
+	boxesContainer += developsBox | StdExpand();
+	boxesContainer += contribsBox | StdExpand();
 
-	AuthLogoSizer	+= aboutUs		| StdExpand();
-	AuthLogoSizer	+= contribs		| StdExpand();
+	// Main layout
+	*this += m_bitmap_logo | StdCenter();
 
-	ContribSizer	+= pxStretchSpacer( 1 );
-	ContribSizer	+= m_bitmap_dualshock	| StdSpace();
-	ContribSizer	+= pxStretchSpacer( 1 );
+	*this += Text(_("PlayStation 2 Emulator"));
 
-	// Main (top-level) layout
-
-	*this	+= StdPadding;
-	*this	+= Text(wxGetApp().GetAppName()).Bold();
-	*this	+= Text(_("A Playstation 2 Emulator"));
-	*this	+= AuthLogoSizer						| StdExpand();
-
-	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
 		_("PCSX2 Official Website and Forums"), L"http://www.pcsx2.net"
-	) | pxProportion(1).Center().Border( wxALL, 3 );
+		) | pxProportion(1).Center().Border(wxALL, 3);
 
-	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
 		_("PCSX2 Official Git Repository at GitHub"), L"https://github.com/PCSX2/pcsx2"
-	) | pxProportion(1).Center().Border( wxALL, 3 );
+		) | pxProportion(1).Center().Border(wxALL, 3);
 
-	*this	+= ContribSizer											| StdExpand();
-	*this	+= new wxButton( this, wxID_OK, _("I've seen enough"))	| StdCenter();
+	*this += boxesContainer | StdCenter();
 
-	int bestHeight = GetBestSize().GetHeight();
-	if( bestHeight < 400 ) bestHeight = 400;
-	SetMinHeight( bestHeight );
+	wxButton& closeButton = *new wxButton(this, wxID_OK, _("I've seen enough"));
+	closeButton.SetFocus();
+	*this += closeButton | StdCenter();
+
+	SetSizerAndFit(GetSizer());
 }

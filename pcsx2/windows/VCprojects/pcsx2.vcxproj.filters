@@ -1380,9 +1380,6 @@
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Dualshock.jpg">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
@@ -1390,6 +1387,9 @@
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
+      <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Logo.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
   </ItemGroup>
