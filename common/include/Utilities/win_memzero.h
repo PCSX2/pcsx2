@@ -58,134 +58,14 @@
 
 #define MZFbytes (_bytes)
 
-// An optimized memset for 8 bit destination data.
-template< u8 data, size_t _bytes >
+// Code is only called in the init so no need to bother with ASM
+template< u8 data, size_t bytes >
 static __fi void memset_8( void *dest )
 {
-	if( MZFbytes == 0 ) return;
-
-	if( (MZFbytes & 0x3) != 0 )
-	{
-		// unaligned data length.  No point in doing an optimized inline version (too complicated!)
-		// So fall back on the compiler implementation:
-
-		memset( dest, data, MZFbytes );
-		return;
-	}
-
-	/*static const size_t remainder = MZFbytes & 127;
-	static const size_t bytes128 = MZFbytes / 128;
-	if( bytes128 > 32 )
-	{
-		// This function only works on 128-bit alignments.
-		pxAssume( (MZFbytes & 0xf) == 0 );
-		pxAssume( ((uptr)dest & 0xf) == 0 );
-
-		__asm
-		{
-			mov eax,bytes128
-			mov ecx,dest
-			movss xmm0,data
-
-			align 16
-
-		_loop_8:
-			movaps [ecx],xmm0;
-			movaps [ecx+0x10],xmm0;
-			movaps [ecx+0x20],xmm0;
-			movaps [ecx+0x30],xmm0;
-			movaps [ecx+0x40],xmm0;
-			movaps [ecx+0x50],xmm0;
-			movaps [ecx+0x60],xmm0;
-			movaps [ecx+0x70],xmm0;
-			sub ecx,-128
-			dec eax;
-			jnz _loop_8;
-		}
-		if( remainder != 0 )
-		{
-			// Copy the remainder in reverse (using the decrementing eax as our indexer)
-			__asm
-			{
-				mov eax, remainder
-
-			_loop_10:
-				movaps [ecx+eax],xmm0;
-				sub eax,16;
-				jnz _loop_10;
-			}
-		}
-	}*/
-
-	// This function only works on 32-bit alignments of data copied.
-	pxAssume( (MZFbytes & 0x3) == 0 );
-
-	enum
-	{
-		remdat = MZFbytes >> 2,
-		data32 = data + (data<<8) + (data<<16) + (data<<24)
-	};
-
-	// macro to execute the x86/32 "stosd" copies.
-	switch( remdat )
-	{
-		case 1:
-			*(u32*)dest = data32;
-		return;
-
-		case 2:
-			((u32*)dest)[0] = data32;
-			((u32*)dest)[1] = data32;
-		return;
-
-		case 3:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		case 4:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		case 5:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-				stosd;
-			}
-		return;
-
-		default:
-			__asm
-			{
-				mov ecx, remdat;
-				mov edi, dest;
-				mov eax, data32;
-				rep stosd;
-			}
-		return;
-	}
+	memset(dest, data, bytes);
 }
 
+// This is unused on Windows.
 template< u32 data, size_t MZFbytes >
 static __fi void memset_32( void *dest )
 {
@@ -285,6 +165,7 @@ static __fi void memset8( T& object )
 }
 
 // This method clears an object with the given 32 bit value.
+// This is also unused.
 template< u32 data, typename T >
 static __fi void memset32( T& object )
 {
