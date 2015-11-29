@@ -264,7 +264,7 @@ public:
 		return removed;
 	}
 
-	void Link(u32 pc, s32* jumpptr);
+	void Link(u32 pc, BASEBLOCK* dst_block, s32* jumpptr);
 
 	__fi void Reset()
 	{

@@ -65,7 +65,6 @@ u32 g_iopCyclePenalty;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 
 static u32 s_nEndBlock = 0; // what psxpc the current block ends
@@ -847,7 +846,7 @@ void psxSetBranchImm( u32 imm )
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
 
-	recBlocks.Link(HWADDR(imm), xJcc32());
+	recBlocks.Link(HWADDR(imm), PSX_GETBLOCK(HWADDR(imm)), xJcc32());
 }
 
 static __fi u32 psxScaleBlockCycles()
@@ -1047,9 +1046,13 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	x86Align(16);
 	recPtr = x86Ptr;
 
-	s_pCurBlock = PSX_GETBLOCK(startpc);
+	{ // Update the function pointer of the current base block
+		BASEBLOCK* cur_base_block = PSX_GETBLOCK(startpc);
 
-	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile);
+		pxAssert(cur_base_block->GetFnptr() == (uptr)iopJITCompile);
+
+		cur_base_block->SetFnptr((uptr)recPtr);
+	}
 
 	if (IsDevBuild) {
 		s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
@@ -1060,7 +1063,6 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 	psxbranch = 0;
 
-	s_pCurBlock->SetFnptr( (uptr)x86Ptr );
 	s_psxBlockCycles = 0;
 
 	// reset recomp state variables
@@ -1224,7 +1226,7 @@ StartRecomp:
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			xMOV(ptr32[&psxRegs.pc], psxpc);
-			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
+			recBlocks.Link(HWADDR(s_nEndBlock), PSX_GETBLOCK(HWADDR(s_nEndBlock)), xJcc32() );
 			psxbranch = 3;
 		}
 	}
@@ -1240,7 +1242,6 @@ StartRecomp:
 
 	pxAssert( (g_psxHasConstReg&g_psxFlushedConstReg) == g_psxHasConstReg );
 
-	s_pCurBlock = NULL;
 	s_pCurBlockEx = NULL;
 }
 

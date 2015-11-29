@@ -89,7 +89,6 @@ static u32 *recConstBufPtr = NULL;
 EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 u32 s_nEndBlock = 0; // what pc the current block ends
 u32 s_branchTo;
@@ -969,7 +968,7 @@ static void iBranchTest(u32 newpc)
 		if (newpc == 0xffffffff)
 			xJS( DispatcherReg );
 		else
-			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
+			recBlocks.Link(HWADDR(newpc), PC_GETBLOCK(HWADDR(newpc)), xJcc32(Jcc_Signed));
 
 		xJMP( (void*)DispatcherEvent );
 	}
@@ -1561,9 +1560,14 @@ static void __fastcall recRecompile( const u32 startpc )
 		DbgCon.WriteLn("Compiling block @ 0x%08x", startpc);
 #endif
 
-	s_pCurBlock = PC_GETBLOCK(startpc);
+	{ // Update the function pointer of the current base block
+		BASEBLOCK* cur_base_block = PC_GETBLOCK(startpc);
 
-	pxAssert(s_pCurBlock->GetFnptr() == (uptr)JITCompile);
+		pxAssert(cur_base_block->GetFnptr() == (uptr)JITCompile);
+
+		cur_base_block->SetFnptr((uptr)recPtr);
+	}
+
 
 #ifdef PCSX2_DEBUG
 	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
@@ -1956,7 +1960,6 @@ StartRecomp:
 
 	pxAssert( (pc-startpc)>>2 <= 0xffff );
 	s_pCurBlockEx->size = (pc-startpc)>>2;
-	s_pCurBlock->SetFnptr((uptr)recPtr);
 
 	if( !(pc&0x10000000) )
 		maxrecmem = std::max( (pc&~0xa0000000), maxrecmem );
@@ -1994,7 +1997,7 @@ StartRecomp:
 			{
 				xMOV( ptr32[&cpuRegs.pc], pc );
 				xADD( ptr32[&cpuRegs.cycle], scaleblockcycles() );
-				recBlocks.Link( HWADDR(pc), xJcc32() );
+				recBlocks.Link( HWADDR(pc), PC_GETBLOCK(HWADDR(pc)), xJcc32() );
 			}
 		}
 	}
@@ -2017,7 +2020,6 @@ StartRecomp:
 
 	pxAssert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
 
-	s_pCurBlock = NULL;
 	s_pCurBlockEx = NULL;
 }
 
