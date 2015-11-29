@@ -24,11 +24,6 @@ __aligned16 x86capabilities x86caps;
 // Recompiled code buffer for SSE and MXCSR feature testing.
 static __pagealigned u8 targetFXSAVE[512];
 
-static const char* bool_to_char( bool testcond )
-{
-	return testcond ? "true" : "false";
-}
-
 // Warning!  We've had problems with the MXCSR detection code causing stack corruption in
 // MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
 // moved the recSSE[] array to a global static (it was local to cpudetectInit).  Commented
