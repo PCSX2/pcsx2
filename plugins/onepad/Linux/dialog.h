@@ -61,27 +61,29 @@ enum gui_buttons {
 #define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
 #define GAMEPAD_NUMBER 2 // numbers of gamepad
 #define UPDATE_TIME 5
+#define DEFAULT_WIDTH 1000
+#define DEFAULT_HEIGHT 740
 
 class Dialog : public wxFrame
 {
     // Panels
-    opPanel* pan_tabs[GAMEPAD_NUMBER]; // Gamepad Tabs box
+    opPanel* m_pan_tabs[GAMEPAD_NUMBER]; // Gamepad Tabs box
     // Notebooks
-    wxNotebook* tab_gamepad; // Joysticks Tabs
+    wxNotebook* m_tab_gamepad; // Joysticks Tabs
     // Buttons
-    wxButton* bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGHT]; // Joystick button use to modify the button mapping
+    wxButton* m_bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGHT]; // Joystick button use to modify the button mapping
     // Contain all simulated key
-    u32 simulatedKeys[GAMEPAD_NUMBER][MAX_KEYS];
+    u32 m_simulatedKeys[GAMEPAD_NUMBER][MAX_KEYS];
     // Timer
-    wxTimer time_update_gui;
+    wxTimer m_time_update_gui;
     // Check if the gui must display feddback image
-    bool pressed[GAMEPAD_NUMBER][NB_IMG];
+    bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
     // Map the key pressed with the feedback image id
-    std::map<u32,int> map_images[GAMEPAD_NUMBER];
+    std::map<u32,int> m_map_images[GAMEPAD_NUMBER];
 
     // Frame
-    GamepadConfiguration* frm_gamepad_config; // Gamepad Configuration frame
-    JoystickConfiguration* frm_joystick_config; // Joystick Configuration frame
+    GamepadConfiguration* m_frm_gamepad_config; // Gamepad Configuration frame
+    JoystickConfiguration* m_frm_joystick_config; // Joystick Configuration frame
 
     // methods
     void config_key(int, int);

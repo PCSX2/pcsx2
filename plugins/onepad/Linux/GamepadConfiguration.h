@@ -34,15 +34,15 @@
 
 class GamepadConfiguration : public wxFrame
 {
-    wxPanel* pan_gamepad_config;
-    wxCheckBox *cb_rumble, *cb_hack_sixaxis_usb, *cb_hack_sixaxis_pressure;
-    wxSlider *sl_rumble_intensity, *sl_joystick_sensibility;
-    wxButton *bt_ok, *bt_cancel;
-    wxStaticText *lbl_rumble_intensity, *lbl_joystick_sensibility;
+    wxPanel* m_pan_gamepad_config;
+    wxCheckBox *m_cb_rumble, *m_cb_hack_sixaxis_usb, *m_cb_hack_sixaxis_pressure;
+    wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
+    wxButton *m_bt_ok, *m_bt_cancel;
+    wxStaticText *m_lbl_rumble_intensity, *m_lbl_joystick_sensibility;
 
-    int pad_id;
-    u32 init_rumble_intensity, init_joystick_sensibility;
-    bool init_rumble, init_hack_sixaxis;
+    int m_pad_id;
+    u32 m_init_rumble_intensity, m_init_joystick_sensibility;
+    bool m_init_rumble, m_init_hack_sixaxis, m_init_hack_sixaxis_pressure;
 
     // methods
     void repopulate();

@@ -34,33 +34,33 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
                         )
 {
 
-    this->pad_id = pad;
-    this->isForLeftJoystick = left;
-    this->pan_joystick_config = new wxPanel(
+    m_pad_id = pad;
+    m_isForLeftJoystick = left;
+    m_pan_joystick_config = new wxPanel(
         this, // Parent
         wxID_ANY, // ID
         wxDefaultPosition, // Prosition
         wxSize(300, 200) // Size
     );
 
-    if(this->isForLeftJoystick)
+    if(m_isForLeftJoystick)
     {
-        this->cb_reverse_Lx = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_reverse_Lx = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Reverse Lx"), // Label
             wxPoint(20, 20) // Position
         );
 
-        this->cb_reverse_Ly = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_reverse_Ly = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Reverse Ly"), // Label
             wxPoint(20, 40) // Position
         );
 
-        this->cb_mouse_Ljoy = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_mouse_Ljoy = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Use mouse for left analog joystick"), // Label
             wxPoint(20, 60) // Position
@@ -68,38 +68,38 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
     }
     else
     {
-        this->cb_reverse_Rx = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_reverse_Rx = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Reverse Rx"), // Label
             wxPoint(20, 20) // Position
         );
 
-        this->cb_reverse_Ry = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_reverse_Ry = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Reverse Ry"), // Label
             wxPoint(20, 40) // Position
         );
 
-        this->cb_mouse_Rjoy = new wxCheckBox(
-            this->pan_joystick_config, // Parent
+        m_cb_mouse_Rjoy = new wxCheckBox(
+            m_pan_joystick_config, // Parent
             wxID_ANY, // ID
             _T("Use mouse for right analog joystick"), // Label
             wxPoint(20, 60) // Position
         );
     }
 
-    this->bt_ok = new wxButton(
-      this->pan_joystick_config, // Parent
+    m_bt_ok = new wxButton(
+      m_pan_joystick_config, // Parent
       wxID_ANY, // ID
       _T("&OK"), // Label
       wxPoint(250, 130), // Position
       wxSize(60,25) // Size
     );
 
-    this->bt_cancel = new wxButton(
-      this->pan_joystick_config, // Parent
+    m_bt_cancel = new wxButton(
+      m_pan_joystick_config, // Parent
       wxID_ANY, // ID
       _T("&Cancel"), // Label
       wxPoint(320, 130), // Position
@@ -107,16 +107,23 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
     );
 
     // Connect the buttons to the OnButtonClicked Event
-    this->Connect(
+    Connect(
         wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(JoystickConfiguration::OnButtonClicked)
     );
 
     // Connect the checkboxes to the OnCheckboxClicked Event
-    this->Connect(
-        wxEVT_CHECKBOX,
-        wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
-    );
+    #if wxMAJOR_VERSION >= 3
+        Connect(
+            wxEVT_CHECKBOX,
+            wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
+        );
+    #else
+        Connect(
+            wxEVT_COMMAND_CHECKBOX_CLICKED,
+            wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
+        );
+    #endif
 }
 
 /**
@@ -125,26 +132,26 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
 */
 void JoystickConfiguration::InitJoystickConfiguration()
 {
-    this->repopulate(); // Set label and fit simulated key array
+    repopulate(); // Set label and fit simulated key array
     /*
      * Check if there exist at least one pad available
      * if the pad id is 0, you need at least 1 gamepad connected,
      * if the pad id is 1, you need at least 2 gamepad connected,
      * Prevent to use a none initialized value on s_vgamePad (core dump)
     */
-    if(s_vgamePad.size() < this->pad_id+1)
+    if(s_vgamePad.size() < m_pad_id+1)
     {
-        wxMessageBox("No gamepad detected.");
+        wxMessageBox(L"No gamepad detected.");
         // disable all checkbox
-        if(this->isForLeftJoystick)
+        if(m_isForLeftJoystick)
         {
-            this->cb_reverse_Lx->Disable();
-            this->cb_reverse_Ly->Disable();
+            m_cb_reverse_Lx->Disable();
+            m_cb_reverse_Ly->Disable();
         }
         else
         {
-            this->cb_reverse_Rx->Disable();
-            this->cb_reverse_Ry->Disable();
+            m_cb_reverse_Rx->Disable();
+            m_cb_reverse_Ry->Disable();
         }
     }
 }
@@ -161,14 +168,14 @@ void JoystickConfiguration::OnButtonClicked(wxCommandEvent &event)
     // Affichage d'un message à chaque clic sur le bouton
     wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId(); // get the real ID
-    if(bt_id == this->bt_ok->GetId()) // If the button ID is equals to the Ok button ID
+    if(bt_id == m_bt_ok->GetId()) // If the button ID is equals to the Ok button ID
     {
-        this->Close(); // Close the window
+        Close(); // Close the window
     }
-    else if(bt_id == this->bt_cancel->GetId()) // If the button ID is equals to the cancel button ID
+    else if(bt_id == m_bt_cancel->GetId()) // If the button ID is equals to the cancel button ID
     {
-        this->reset(); // reinitialize the value of each parameters
-        this->Close(); // Close the window
+        reset(); // reinitialize the value of each parameters
+        Close(); // Close the window
     }
 }
 
@@ -180,40 +187,40 @@ void JoystickConfiguration::OnCheckboxChange(wxCommandEvent& event)
     wxCheckBox* cb_tmp = (wxCheckBox*) event.GetEventObject(); // get the slider object
     int cb_id = cb_tmp->GetId();
     bool val;
-    if(this->isForLeftJoystick)
+    if(m_isForLeftJoystick)
     {
-        if(cb_id == this->cb_reverse_Ly->GetId())
+        if(cb_id == m_cb_reverse_Ly->GetId())
         {
-            val = this->cb_reverse_Ly->GetValue();
-            conf->pad_options[this->pad_id].reverse_ly = val;
+            val = m_cb_reverse_Ly->GetValue();
+            conf->pad_options[m_pad_id].reverse_ly = val;
         }
-        else if(cb_id == this->cb_reverse_Lx->GetId())
+        else if(cb_id == m_cb_reverse_Lx->GetId())
         {
-            val = this->cb_reverse_Lx->GetValue();
-            conf->pad_options[this->pad_id].reverse_lx = val;
+            val = m_cb_reverse_Lx->GetValue();
+            conf->pad_options[m_pad_id].reverse_lx = val;
         }
-        else if(cb_id == this->cb_mouse_Ljoy->GetId())
+        else if(cb_id == m_cb_mouse_Ljoy->GetId())
         {
-            val = this->cb_mouse_Ljoy->GetValue();
-            conf->pad_options[this->pad_id].mouse_l = val;
+            val = m_cb_mouse_Ljoy->GetValue();
+            conf->pad_options[m_pad_id].mouse_l = val;
         }
     }
     else
     {
-        if(cb_id == this->cb_reverse_Ry->GetId())
+        if(cb_id == m_cb_reverse_Ry->GetId())
         {
-            val = this->cb_reverse_Ry->GetValue();
-            conf->pad_options[this->pad_id].reverse_ry = val;
+            val = m_cb_reverse_Ry->GetValue();
+            conf->pad_options[m_pad_id].reverse_ry = val;
         }
-        else if(cb_id == this->cb_reverse_Rx->GetId())
+        else if(cb_id == m_cb_reverse_Rx->GetId())
         {
-            val = this->cb_reverse_Rx->GetValue();
-            conf->pad_options[this->pad_id].reverse_rx = val;
+            val = m_cb_reverse_Rx->GetValue();
+            conf->pad_options[m_pad_id].reverse_rx = val;
         }
-        else if(cb_id == this->cb_mouse_Rjoy->GetId())
+        else if(cb_id == m_cb_mouse_Rjoy->GetId())
         {
-            val = this->cb_mouse_Rjoy->GetValue();
-            conf->pad_options[this->pad_id].mouse_r = val;
+            val = m_cb_mouse_Rjoy->GetValue();
+            conf->pad_options[m_pad_id].mouse_r = val;
         }
     }
 }
@@ -225,17 +232,17 @@ void JoystickConfiguration::OnCheckboxChange(wxCommandEvent& event)
 // Reset checkbox and slider values
 void JoystickConfiguration::reset()
 {
-    if(this->isForLeftJoystick)
+    if(m_isForLeftJoystick)
     {
-        this->cb_reverse_Lx->SetValue(this->init_reverse_Lx);
-        this->cb_reverse_Ly->SetValue(this->init_reverse_Ly);
-        this->cb_mouse_Ljoy->SetValue(this->init_mouse_Ljoy);
+        m_cb_reverse_Lx->SetValue(m_init_reverse_Lx);
+        m_cb_reverse_Ly->SetValue(m_init_reverse_Ly);
+        m_cb_mouse_Ljoy->SetValue(m_init_mouse_Ljoy);
     }
     else
     {
-        this->cb_reverse_Rx->SetValue(this->init_reverse_Rx);
-        this->cb_reverse_Ry->SetValue(this->init_reverse_Ry);
-        this->cb_mouse_Rjoy->SetValue(this->init_mouse_Rjoy);
+        m_cb_reverse_Rx->SetValue(m_init_reverse_Rx);
+        m_cb_reverse_Ry->SetValue(m_init_reverse_Ry);
+        m_cb_mouse_Rjoy->SetValue(m_init_mouse_Rjoy);
     }
 }
 
@@ -243,32 +250,32 @@ void JoystickConfiguration::reset()
 void JoystickConfiguration::repopulate()
 {
     bool val;
-    if(this->isForLeftJoystick)
+    if(m_isForLeftJoystick)
     {
-        val = conf->pad_options[this->pad_id].reverse_lx;
-        this->init_reverse_Lx = val;
-        this->cb_reverse_Lx->SetValue(val);
+        val = conf->pad_options[m_pad_id].reverse_lx;
+        m_init_reverse_Lx = val;
+        m_cb_reverse_Lx->SetValue(val);
 
-        val = conf->pad_options[this->pad_id].reverse_ly;
-        this->init_reverse_Ly = val;
-        this->cb_reverse_Ly->SetValue(val);
+        val = conf->pad_options[m_pad_id].reverse_ly;
+        m_init_reverse_Ly = val;
+        m_cb_reverse_Ly->SetValue(val);
 
-        val = conf->pad_options[this->pad_id].mouse_l;
-        this->init_mouse_Ljoy = val;
-        this->cb_mouse_Ljoy->SetValue(val);
+        val = conf->pad_options[m_pad_id].mouse_l;
+        m_init_mouse_Ljoy = val;
+        m_cb_mouse_Ljoy->SetValue(val);
     }
     else
     {
-        val = conf->pad_options[this->pad_id].reverse_rx;
-        this->init_reverse_Rx = val;
-        this->cb_reverse_Rx->SetValue(val);
+        val = conf->pad_options[m_pad_id].reverse_rx;
+        m_init_reverse_Rx = val;
+        m_cb_reverse_Rx->SetValue(val);
 
-        val = conf->pad_options[this->pad_id].reverse_ry;
-        this->init_reverse_Ry = val;
-        this->cb_reverse_Ry->SetValue(val);
+        val = conf->pad_options[m_pad_id].reverse_ry;
+        m_init_reverse_Ry = val;
+        m_cb_reverse_Ry->SetValue(val);
 
-        val = conf->pad_options[this->pad_id].mouse_r;
-        this->init_mouse_Rjoy = val;
-        this->cb_mouse_Rjoy->SetValue(val);
+        val = conf->pad_options[m_pad_id].mouse_r;
+        m_init_mouse_Rjoy = val;
+        m_cb_mouse_Rjoy->SetValue(val);
     }
 }

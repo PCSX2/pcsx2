@@ -34,16 +34,16 @@
 
 class JoystickConfiguration : public wxFrame
 {
-    wxPanel* pan_joystick_config;
-    wxCheckBox *cb_reverse_Lx, *cb_reverse_Ly, *cb_reverse_Rx, *cb_reverse_Ry,
-        *cb_mouse_Ljoy, // Use mouse for left joystick
-        *cb_mouse_Rjoy; // Use mouse for right joystick
-    wxButton *bt_ok, *bt_cancel;
+    wxPanel* m_pan_joystick_config;
+    wxCheckBox *m_cb_reverse_Lx, *m_cb_reverse_Ly, *m_cb_reverse_Rx, *m_cb_reverse_Ry,
+        *m_cb_mouse_Ljoy, // Use mouse for left joystick
+        *m_cb_mouse_Rjoy; // Use mouse for right joystick
+    wxButton *m_bt_ok, *m_bt_cancel;
 
-    int pad_id;
+    int m_pad_id;
     // isForLeftJoystick -> true is for Left Joystick, false is for Right Joystick
-    bool init_reverse_Lx, init_reverse_Ly, init_reverse_Rx, init_reverse_Ry,
-        init_mouse_Ljoy, init_mouse_Rjoy, isForLeftJoystick;
+    bool m_init_reverse_Lx, m_init_reverse_Ly, m_init_reverse_Rx, m_init_reverse_Ry,
+        m_init_mouse_Ljoy, m_init_mouse_Rjoy, m_isForLeftJoystick;
 
     // methods
     void repopulate();

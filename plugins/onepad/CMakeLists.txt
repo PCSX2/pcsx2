@@ -65,16 +65,16 @@ set(onepadLinuxSources
 	${linux_sources}/ini.cpp
 	${linux_sources}/dialog.cpp
 	${linux_sources}/linux.cpp
-    ${linux_sources}/opPanel.cpp
-    ${linux_sources}/GamepadConfiguration.cpp
-    ${linux_headers}/JoystickConfiguration.cpp)
+	${linux_sources}/opPanel.cpp
+	${linux_sources}/GamepadConfiguration.cpp
+	${linux_headers}/JoystickConfiguration.cpp)
 
 # onepad Linux headers
 set(onepadLinuxHeaders
 	${linux_headers}/linux.h
-    ${linux_headers}/opPanel.h
-    ${linux_headers}/GamepadConfiguration.h
-    ${linux_headers}/JoystickConfiguration.h)
+	${linux_headers}/opPanel.h
+	${linux_headers}/GamepadConfiguration.h
+	${linux_headers}/JoystickConfiguration.h)
 
 # onepad Windows sources
 set(onepadWindowsSources
@@ -107,7 +107,7 @@ set(onepadFinalSources
 	${onepadHeaders}
 	${onepadLinuxSources}
 	${onepadLinuxHeaders}
-    ${onepadGuiResources}
+	${onepadGuiResources}
 )
 
 include_directories(
