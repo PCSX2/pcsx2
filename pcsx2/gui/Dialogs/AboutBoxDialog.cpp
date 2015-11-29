@@ -95,7 +95,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog( wxWindow* parent )
 
 	*this	+= StdPadding;
 	*this	+= Text(wxGetApp().GetAppName()).Bold();
-	*this	+= Text(_("A Playstation 2 Emulator"));
+	*this	+= Text(_("A PlayStation 2 Emulator"));
 	*this	+= AuthLogoSizer						| StdExpand();
 
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
