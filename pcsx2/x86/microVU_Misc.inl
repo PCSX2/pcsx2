@@ -291,12 +291,19 @@ __fi void mVUaddrFix(mV, const x32& gprReg)
 				xPUSH(gprT1);
 				xPUSH(gprT2);
 				xPUSH(gprT3);
+				// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
+#ifdef __GNUC__
+				xSUB(esp, 4);
+#endif
 				if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
 					xMOV (gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
 					xMOV (gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
 					xCALL(mVUwarningRegAccess);
 				}
 				xCALL(mVUwaitMTVU);
+#ifdef __GNUC__
+				xADD(esp, 4);
+#endif
 				xPOP (gprT3);
 				xPOP (gprT2);
 				xPOP (gprT1);
