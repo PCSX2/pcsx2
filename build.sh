@@ -85,8 +85,8 @@ for ARG in "$@"; do
 done
 
 root=$PWD/$(dirname "$0")
-log=$root/install_log.txt
-build=$root/build
+log="$root/install_log.txt"
+build="$root/build"
 coverity_dir=cov-int
 coverity_result=pcsx2-coverity.xz
 
@@ -103,7 +103,7 @@ elif [[ "$useCross" -ne 1 ]]; then
     useCross=0
 fi
 
-echo "Building pcsx2 with ${flags[*]}" | tee $log
+echo "Building pcsx2 with ${flags[*]}" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
@@ -117,12 +117,12 @@ cd $build
 
 if [[ "$useClang" -eq 1 ]]; then
     if [[ "$useCross" -eq 0 ]]; then
-        CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+        CC=clang CXX=clang++ cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     else
-        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" $root 2>&1 | tee -a $log
+        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     fi
 else
-    cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
 fi
 
 if [[ $(uname -s) == 'Darwin' ]]; then
@@ -149,11 +149,11 @@ if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
     do
         flat_d=`echo $d | sed -e 's@/@_@'`
         log=cpp_check__${flat_d}.log
-        rm -f $log
+        rm -f "$log"
 
-        cppcheck $check -j $ncpu --platform=unix32 $define $root/$d |& tee $log
+        cppcheck $check -j $ncpu --platform=unix32 $define "$root/$d" |& tee "$log"
         # Create a small summary (warning it might miss some issues)
-        fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" $log >> $summary
+        fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" "$log" >> $summary
     done
     exit 0
 fi
@@ -187,7 +187,7 @@ fi
 # Coverity build
 ############################################################
 if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
-    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a $log
+    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd $build; tar caf $coverity_result $coverity_dir)
     exit 0
@@ -196,7 +196,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-make -j"$ncpu" 2>&1 | tee -a $log
-make install 2>&1 | tee -a $log
+make -j"$ncpu" 2>&1 | tee -a "$log"
+make install 2>&1 | tee -a "$log"
 
 exit 0
