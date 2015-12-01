@@ -126,7 +126,7 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
-            set(ARCH_FLAG "-msse -msse2 -march=i686")
+            set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
         else()
             # AVX requires some fix of the ABI (mangling) (default 2)
             # Note: V6 requires GCC 4.7
@@ -148,7 +148,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
-            set(ARCH_FLAG "-msse -msse2")
+            set(ARCH_FLAG "-msse -msse2 -mfxsr")
         else()
             #set(ARCH_FLAG "-march=native -fabi-version=6")
             set(ARCH_FLAG "-march=native")
