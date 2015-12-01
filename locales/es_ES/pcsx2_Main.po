@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2015-10-23 19:59+0200\n"
-"PO-Revision-Date: 2015-09-14 12:51+0200\n"
+"PO-Revision-Date: 2015-11-08 00:55+0100\n"
 "Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -272,12 +272,12 @@ msgstr ""
 #: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
 msgstr ""
-"Registra solo los accesos a registro desconocidos, no ubicados o no "
+"Registra únicamente los accesos a registro desconocidos, no ubicados o no "
 "implementados."
 
 #: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
 msgid "Logs only DMA-related registers."
-msgstr "Registra solo los registros relacionados con DMA."
+msgstr "Registra únicamente los registros relacionados con DMA."
 
 #: pcsx2/SourceLog.cpp:205
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
@@ -459,13 +459,13 @@ msgstr "Oculta la interfaz mientras se ejecute un juego"
 #: pcsx2/gui/AppInit.cpp:234
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
+"En caso de utilizar nogui: Preguntar antes de salir durante una suspensión."
 
 #: pcsx2/gui/AppInit.cpp:236
 msgid "executes an ELF image"
 msgstr "Ejecuta una imagen ELF"
 
 #: pcsx2/gui/AppInit.cpp:237
-#, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
 "Carga una bandeja de DVD vacía, sirve para entrar al menú del sistema de PS2"
@@ -629,8 +629,8 @@ msgstr ""
 msgid ""
 "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr ""
-"¡Aviso!  No se han cargado los plugins del sistema.  PCSX2 puede no "
-"funcionar."
+"¡Aviso!  No se han cargado los plugins del sistema.  Puede que PCSX2 no "
+"funcione."
 
 #: pcsx2/gui/AppMain.cpp:173 pcsx2/gui/AppMain.cpp:178
 msgid "PS2 BIOS Error"
@@ -641,11 +641,9 @@ msgid "Press Ok to go to the BIOS Configuration Panel."
 msgstr "Pulsa en Aceptar para ir al panel de configuración de BIOS."
 
 #: pcsx2/gui/AppMain.cpp:196
-#, fuzzy
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
 msgstr ""
-"¡Aviso!  No se han cargado los plugins del sistema.  PCSX2 puede no "
-"funcionar."
+"¡Aviso!  No se ha seleccionado una BIOS válida.  Puede que PCSX2 no funcione."
 
 #: pcsx2/gui/AppMain.cpp:386
 #, c-format
@@ -733,9 +731,8 @@ msgid "It's what I use (the programmer guy)."
 msgstr "Es lo que suelo utilizar (el programador)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
-#, fuzzy
 msgid "Normal font"
-msgstr "Normal"
+msgstr "Fuente normal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:443
 msgid "Its nice and readable."
@@ -845,14 +842,12 @@ msgid "Disables all log source filters."
 msgstr "Desactiva todos los filtros de fuentes del registro."
 
 #: pcsx2/gui/ConsoleLogger.cpp:485
-#, fuzzy
 msgid "Restore Default"
 msgstr "Reiniciar ajustes predeterminados"
 
 #: pcsx2/gui/ConsoleLogger.cpp:485
-#, fuzzy
 msgid "Restore default source filters."
-msgstr "Activa todos los filtros de fuentes de registro."
+msgstr "Recupera los filtros predeterminados."
 
 #: pcsx2/gui/ConsoleLogger.cpp:487
 msgid "&Log"
@@ -955,12 +950,12 @@ msgstr "Ignorar"
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
 msgid "Retry"
-msgstr ""
+msgstr "Reintentar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
 msgid "Abort"
-msgstr ""
+msgstr "Abortar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
@@ -968,44 +963,45 @@ msgstr "Reiniciar"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
-msgstr ""
+msgstr "Convierte una tarjeta de memoria a un formato distinto"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
-msgstr ""
+msgstr "Convertir"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr ""
+msgstr "Convertir:"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr ""
+msgstr "A:"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
-msgstr ""
+msgstr "Archivo de 8 MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "16MB File"
-msgstr ""
+msgstr "Archivo de 16 MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "32MB File"
-msgstr ""
+msgstr "Archivo de 32 MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "64MB File"
-msgstr ""
+msgstr "Archivo de 64 MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
 msgstr ""
+"Convierte esta tarjeta de memoria a una carpeta de partidas guardadas "
+"individuales."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-#, fuzzy
 msgid "Folder"
-msgstr "Carpetas"
+msgstr "Carpeta"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
@@ -1017,17 +1013,17 @@ msgstr "Error (%s)"
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:123
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
-#, fuzzy
 msgid "Convert memory card"
-msgstr "Crear tarjeta de memoria"
+msgstr "Convertir tarjeta de memoria"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
-msgstr ""
+msgstr "¡No hay soporte para este tipo de destino!"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
 msgstr ""
+"La conversión de la tarjeta de memoria ha fallado por un motivo desconocido."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
@@ -1058,9 +1054,8 @@ msgid "Create memory card"
 msgstr "Crear tarjeta de memoria"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The directory for the memory card could not be created."
-msgstr "Error: No se ha podido crear la tarjeta de memoria."
+msgstr "Error: No se ha podido crear la carpeta para la tarjeta de memoria."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:178
 msgid "Error: The memory card could not be created."
@@ -1135,11 +1130,13 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Folder [experimental]"
-msgstr ""
+msgstr "Carpeta (experimental)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Store memory card contents in the host filesystem instead of a file."
 msgstr ""
+"Almacena los contenidos de la tarjeta de memoria en el sistema de archivos "
+"anfitrión en vez de en un archivo."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:227
 msgid ""
@@ -1148,6 +1145,11 @@ msgid ""
 "files in and out of the memory card with your standard file explorer. This "
 "is still experimental, so use at your own risk!"
 msgstr ""
+"Gestiona de forma automática los contenidos de las tarjetas de memoria para "
+"que la consola sólo vea archivos relacionados con el software que se esté "
+"ejecutando. Permite arrastrar archivos desde la tarjeta de memoria y hacia "
+"ella a través de tu explorador de archivos estándar. ¡Aún es experimental, "
+"así que utilízalo bajo tu responsabilidad!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
@@ -1168,7 +1170,7 @@ msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
 msgstr ""
-"Cambia el idioma solo si es necesario.\n"
+"Cambia el idioma sólo si es necesario.\n"
 "El idioma predeterminado del sistema debería bastar para la mayoría de "
 "sistemas operativos."
 
@@ -1217,6 +1219,8 @@ msgstr "Autoexpulsar tarjetas de memoria al cargar guardados rápidos"
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
 msgstr ""
+"Gestiona de forma automática las partidas guardadas según el juego que se "
+"esté ejecutando"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -1335,7 +1339,7 @@ msgstr "¡Se ha desactivado la salida de GS!"
 
 #: pcsx2/gui/GlobalCommands.cpp:308
 msgid "Exit PCSX2?"
-msgstr ""
+msgstr "¿Abandonar PCSX2?"
 
 #: pcsx2/gui/GlobalCommands.cpp:461 pcsx2/gui/MainFrame.cpp:425
 msgid "Save state"
@@ -1768,6 +1772,8 @@ msgstr "Todos los archivos (*.*)"
 #: pcsx2/gui/MainMenuClicks.cpp:281
 msgid "Select disc image, compressed disc image, or block-dump..."
 msgstr ""
+"Selecciona una imagen de disco, una imagen comprimida o un volcado de "
+"bloques..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:298
 msgid "Select ELF file..."
@@ -1944,7 +1950,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr "Muy lento; solo útil para realizar diagnósticos."
+msgstr "Muy lento; sólo útil para realizar diagnósticos."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
@@ -2167,10 +2173,9 @@ msgstr ""
 "Ignorar dirección del bus en transferencia de Path3: Utilizar en Hot Wheels."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
-#, fuzzy
 msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr ""
-"Cambiar a renderizado por software de GSdx cuando se reproduzca una FMV"
+"Cambiar al renderizado por software de GSdx cuando se reproduzca una FMV"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
@@ -2224,9 +2229,8 @@ msgid "Create ..."
 msgstr "Crear..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
-#, fuzzy
 msgid "Convert ..."
-msgstr "Insertar..."
+msgstr "Convertir..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:407
 msgid "Card: "
@@ -2377,9 +2381,8 @@ msgid "Delete card"
 msgstr "Borrar tarjeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
-#, fuzzy
 msgid "Convert card"
-msgstr "Insertar tarjeta"
+msgstr "Convertir tarjeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1034
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1038
@@ -2750,7 +2753,7 @@ msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
-"Usar solo para evitar posibles fallos en el MTGS ya que puede ser muy lento."
+"Usar sólo para evitar posibles fallos en el MTGS ya que puede ser muy lento."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:289
 msgid "Disable all GS output"

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
-"PO-Revision-Date: 2015-09-14 12:35+0200\n"
+"POT-Creation-Date: 2015-11-08 00:47+0100\n"
+"PO-Revision-Date: 2015-11-08 00:57+0100\n"
 "Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -119,6 +119,9 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"Ten en cuenta que el archivo resultante podría no tener todas las partidas "
+"guardadas, según la cantidad de partidas que haya en la tarjeta de memoria "
+"original."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -126,22 +129,27 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"AVISO: ¡La conversión de una tarjeta de memoria puede tardar un buen rato! "
+"No cierres el emulador durante el proceso de conversión, aunque deje de "
+"responder."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Convierte esta tarjeta de memoria a un archivo .ps2 de Memory Card estándar "
+"de 8 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Convierte esta tarjeta de memoria a un archivo .ps2 de 16 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Convierte esta tarjeta de memoria a un archivo .ps2 de 32 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Convierte esta tarjeta de memoria a un archivo .ps2 de 64 MB."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -232,6 +240,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Solo para tipos de carpetas) Vuelve a indizar el contenido de la tarjeta de "
+"memoria cada vez que se cambia el software ejecutado. Esto evita que la "
+"tarjeta de memoria se quede sin espacio."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -346,7 +357,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:512
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
+msgstr "(FolderMcd) Tarjeta de memoria llena, no se ha podido añadir: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
@@ -485,17 +496,18 @@ msgstr ""
 " * Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Es mejor activar 'Arreglos para juegos automáticos' en el menú principal y "
-"dejar esta sección en blanco.\n"
+"Lo mejor es activar 'Arreglos para juegos automáticos' en el menú principal "
+"y dejar esta sección en blanco.\n"
 "('Automático' significa utilizar de forma selectiva arreglos ya probados "
-"para juegos concretos)"
+"para juegos concretos)\n"
+"Los arreglos para juegos manuales NO mejorarán el rendimiento, de hecho, "
+"podrían empeorarlo."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
@@ -550,10 +562,10 @@ msgid ""
 "option only affects Standard Paths which are set to use the installation "
 "default value."
 msgstr ""
-"Puedes cambiar la ubicación preferida para los documentos de usuario de "
-"PCSX2 aquí (incluye tarjetas de memoria, capturas de pantalla, configuración "
-"y guardados rápidos). Esta opción solo afecta a las carpetas estándar, que "
-"se utilizarán según la configuración de instalación predeterminada."
+"Aquí puedes cambiar la ubicación preferida para los documentos de usuario de "
+"PCSX2 (incluye tarjetas de memoria, capturas de pantalla, configuración y "
+"guardados rápidos). Esta opción afecta a las carpetas estándar, que se "
+"utilizarán según la configuración de instalación predeterminada."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid ""
@@ -699,7 +711,7 @@ msgid ""
 "time. This is safe most of the time, and Super VU does something similar by "
 "default."
 msgstr ""
-"Actualiza las etiquetas de estado solo en los bloques que podrán leerse, en "
+"Actualiza las etiquetas de estado sólo en los bloques que podrán leerse, en "
 "lugar de hacerlo constantemente.  Generalmente es la opción más segura, y "
 "SuperVU ya hace algo parecido de forma predeterminada."
 
@@ -710,7 +722,7 @@ msgid ""
 "incompatible and may hang. In the case of GS limited games, it may be a "
 "slowdown (especially on dual core CPUs)."
 msgstr ""
-"Ejecuta VU1 en un hilo dedicado (solo microVU1). Suele aumentar la velocidad "
+"Ejecuta VU1 en un hilo dedicado (sólo microVU1). Suele aumentar la velocidad "
 "en CPUs de tres núcleos o más. Opción segura para la mayoría de los juegos, "
 "pero algunos no son compatibles y pueden bloquear el emulador.  En el caso "
 "de los juegos limitados por GS, podría ralentizarlos (sobre todo en CPUs de "
