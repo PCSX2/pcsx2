@@ -24,24 +24,30 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 	switch( val )
 	{
 		case -2:
-			return pxEt(L"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
-			);
-
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs.");
+		}
 		case -1:
-			return pxEt(L"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
-			);
-
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility.");
+		}
 		case 0:
-			return pxEt(L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
-			);
-
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(14,158,19)); // Dark Green
+			return pxEt(L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine.");
+		}
 		case 1:
-			return pxEt( L"1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS."
-			);
-
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS.");
+		}
 		case 2:
-			return pxEt(L"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT."
-			);
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
+		}
 		default:
 			break;
 	}
@@ -54,21 +60,26 @@ const wxChar* Panels::SpeedHacksPanel::GetVUcycleSliderMsg( int val )
 	switch( val )
 	{
 		case 0:
-			return pxEt( L"0 - Disables VU Cycle Stealing.  Most compatible setting!"
-			);
-
+		{
+			m_msg_vustealer->SetForegroundColour(wxColour(14,158,19)); // Dark Green
+			return pxEt(L"0 - Disables VU Cycle Stealing.  Most compatible setting!");
+		}
 		case 1:
-			return pxEt( L"1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most games."
-			);
-
+		{
+			m_msg_vustealer->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most games.");
+		}
 		case 2:
-			return pxEt( L"2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant speedups in some games."
-			);
-
+		{
+			m_msg_vustealer->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant speedups in some games.");
+		}
 		case 3:
+		{
 			// TODO: Mention specific games that benefit from this setting here.
-			return pxEt( L"3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause flickering visuals or slowdown in most games."
-			);
+			m_msg_vustealer->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause flickering visuals or slowdown in most games.");
+		}
 		default:
 			break;
 	}
@@ -119,7 +130,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
-	m_msg_eecycle->SetForegroundColour( wxColour( L"Red" ) );
 	m_msg_eecycle->SetHeight(5);
 
 	const wxChar* ee_tooltip = pxEt( L"Setting lower values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, higher values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
@@ -137,7 +147,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 		wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_vustealer = new pxStaticHeading(m_vuSliderPanel);
-	m_msg_vustealer->SetForegroundColour( wxColour( L"Red" ) );
 	m_msg_vustealer->SetHeight(5);
 
 	const wxChar* vu_tooltip = pxEt( L"This slider controls the amount of cycles the VU unit steals from the EmotionEngine.  Higher values increase the number of cycles stolen from the EE for each VU microprogram the game runs."
