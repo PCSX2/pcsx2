@@ -810,6 +810,9 @@ static void recExecute()
 	m_cpuException	= NULL;
 	m_Exception		= NULL;
 
+	// setjmp will save the register context and will return 0
+	// A call to longjmp will restore the context (included the eip/rip)
+	// but will return the longjmp 2nd parameter (here 1)
 	if( !setjmp( m_SetJmp_StateCheck ) )
 	{
 		eeRecIsReset = false;
