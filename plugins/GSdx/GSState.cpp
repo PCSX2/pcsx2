@@ -369,10 +369,10 @@ GSVector4i GSState::GetDisplayRect(int i)
 }
 
 // There's a problem when games expand/shrink and relocate the visible area since GSdx doesn't support
-// moving the output area. (Disgaea 2 intro FMV when upscaling is used, also those games hackfixed below.)
+// moving the output area. (Disgaea 2 intro FMV when upscaling is used). 
 GSVector4i GSState::GetFrameRect(int i)
 {
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
+	if (i < 0) i = IsEnabled(1) ? 1 : 0;
 
 	GSVector4i r = GetDisplayRect(i);
 
@@ -383,18 +383,18 @@ GSVector4i GSState::GetFrameRect(int i)
 	{
 		h = 448;
 	}
-	
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
 
-	//Breaks Disgaea2 FMV borders
+	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
+
+	//watch Disgaea2 FMV borders when changing
 	r.left = m_regs->DISP[i].DISPFB.DBX;
 	r.top = m_regs->DISP[i].DISPFB.DBY;
 	r.right = r.left + w;
 	r.bottom = r.top + h;
-	
+
 	/*static GSVector4i old_r = (GSVector4i) 0;
 	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
-		printf("w %d  h %d  left %d  top %d  right %d  bottom %d\n",w,h,r.left,r.top,r.right,r.bottom);
+	printf("w %d  h %d  left %d  top %d  right %d  bottom %d\n",w,h,r.left,r.top,r.right,r.bottom);
 	}
 	old_r = r;*/
 
