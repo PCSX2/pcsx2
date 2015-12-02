@@ -85,7 +85,14 @@ namespace x86Emitter
 
 	extern const xImpl_BitScan		xBSF,	xBSR;
 
-	extern const xImpl_JmpCall		xJMP,	xCALL;
+	extern const xImpl_JmpCall		xJMP;
+#ifdef __x86_64__
+	// 32 bits Call won't be compatible in 64 bits (different ABI)
+	// Just a reminder to port the code
+	[[deprecated]] extern const xImpl_JmpCall		xCALL;
+#else
+	extern const xImpl_JmpCall		xCALL;
+#endif
 
 	// ------------------------------------------------------------------------
 	extern const xImpl_CMov
@@ -170,6 +177,23 @@ namespace x86Emitter
 
 	extern void xINT( u8 imm );
 	extern void xINTO();
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Helper function to handle the various functions ABI
+	extern void xFastCall(void* func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg);
+	extern void xFastCall(void* func, const xRegisterSSE& a1, const xRegisterSSE& a2);
+	extern void xFastCall(void* func, u32 a1, u32 a2);
+	extern void xFastCall(void* func, u32 a1);
+
+	extern void xStdCall(void* func, u32 a1);
+
+	class xScopedStackFrame
+	{
+		bool m_base_frame;
+
+		xScopedStackFrame(bool base_frame);
+		~xScopedStackFrame();
+	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// JMP / Jcc Instructions!
