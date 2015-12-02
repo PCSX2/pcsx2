@@ -571,7 +571,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		case VK_F7:
 			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
 			printf("GSdx: Set shader to: %d.\n", (int)m_shader);
-			theApp.SetConfig("TVShader", (int)m_shader);
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;
@@ -609,7 +608,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			return;
 		case XK_F7:
 			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
-			theApp.SetConfig("TVShader", (int)m_shader);
 			printf("GSdx: Set shader %d.\n", (int)m_shader);
 			return;
 		case XK_Delete:
