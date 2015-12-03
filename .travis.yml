@@ -1,0 +1,23 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+matrix:
+  include:
+# Version 5 seems to be whatever is latest - for now it's 5.2
+    - env: VERSION=5
+      compiler: gcc
+      os: linux
+    - env: VERSION=4.9
+      compiler: gcc
+      os: linux
+    - env: VERSION=3.7
+      compiler: clang
+      os: linux
+
+before_install:
+  - ./travis.sh before_install
+
+script:
+  - ./travis.sh script
