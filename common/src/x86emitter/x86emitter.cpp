@@ -1023,122 +1023,98 @@ __emitinline void xRestoreReg( const xRegisterSSE& dest )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Helper function to handle the various functions ABI
-
-__emitinline void xFastCall(void *func, const xRegister32& a1, const xRegister32& a2)
-{
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
-	if (!a1.IsEmpty())
-		xMOV(ecx, a1);
-
-	if (!a2.IsEmpty())
-		xMOV(edx, a2);
-
-	xCALL(func);
-#endif
-}
-
-__emitinline void xFastCall(void *func, const xRegisterSSE& a1, const xRegisterSSE& a2)
-{
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
-	xMOVD(ecx, a1);
-	xMOVD(edx, a2);
-
-	xCALL(func);
-#endif
-}
-
-__emitinline void xFastCall(void *func, u32 a1, u32 a2)
-{
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
-	xMOV(ecx, a1);
-	xMOV(edx, a2);
-
-	xCALL(func);
-#endif
-}
-
-__emitinline void xFastCall(void *func, u32 a1)
-{
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
-	xMOV(ecx, a1);
-
-	xCALL(func);
-#endif
-}
-
-__emitinline void xStdCall(void *func, u32 a1)
-{
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
-	// GCC note: unlike C call, GCC doesn't requires
-	// strict 16B alignment on std call
-	xPUSH(a1);
-	xCALL(func);
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
 // Helper object to handle ABI frame
+#ifdef __GNUC__
 
-xScopedStackFrame::xScopedStackFrame(bool base_frame)
+#ifdef __x86_64__
+// GCC ensures/requires stack to be 16 bytes aligned (but when?)
+#define ALIGN_STACK(v) xADD(rsp, v)
+#else
+// GCC ensures/requires stack to be 16 bytes aligned before the call
+// Call will store 4 bytes. EDI/ESI/EBX will take another 12 bytes.
+// EBP will take 4 bytes if m_base_frame is enabled
+#define ALIGN_STACK(v) xADD(esp, v)
+#endif
+
+#else
+
+#define ALIGN_STACK(v)
+
+#endif
+
+xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, int offset)
 {
 	m_base_frame = base_frame;
+	m_save_base_pointer = save_base_pointer;
+	m_offset = offset;
 
 #ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
+
+	m_offset += 8; // Call stores the return address (4 bytes)
+
+	// Note rbp can surely be optimized in 64 bits
+	if (m_base_frame) {
+		xPUSH( rbp );
+		xMOV( rbp, rsp );
+		m_offset += 8;
+	} else if (m_save_base_pointer) {
+		xPUSH( rbp );
+		m_offset += 8;
+	}
+
+	xPUSH( rbx );
+	xPUSH( r12 );
+	xPUSH( r13 );
+	xPUSH( r14 );
+	xPUSH( r15 );
+	m_offset += 40;
+
 #else
+
+	m_offset += 4; // Call stores the return address (4 bytes)
 
 	// Create a new frame
 	if (m_base_frame) {
 		xPUSH( ebp );
 		xMOV( ebp, esp );
+		m_offset += 4;
+	} else if (m_save_base_pointer) {
+		xPUSH( ebp );
+		m_offset += 4;
 	}
 
 	// Save the register context
 	xPUSH( edi );
 	xPUSH( esi );
 	xPUSH( ebx );
-
-#ifdef __GNUC__
-	// Realign the stack to 16 byte
-	if (m_base_frame) {
-		xSUB( esp, 12);
-	}
-#endif
+	m_offset += 12;
 
 #endif
+
+	ALIGN_STACK(-(16 - m_offset % 16));
 }
 
 xScopedStackFrame::~xScopedStackFrame()
 {
-#ifdef __x86_64__
-	// NEW ABI
-	pxAssert(0);
-#else
+	ALIGN_STACK(16 - m_offset % 16);
 
-#ifdef __GNUC__
-	// Restore the stack (due to the above alignment)
-	// Potentially it can be restored from ebp
+#ifdef __x86_64__
+
+	// Restore the register context
+	xPOP( r15 );
+	xPOP( r14 );
+	xPOP( r13 );
+	xPOP( r12 );
+	xPOP( rbx );
+
+	// Destroy the frame
 	if (m_base_frame) {
-		xADD( esp, 12);
+		xLEAVE();
+	} else if (m_save_base_pointer) {
+		xPOP( rbp );
 	}
-#endif
+
+#else
 
 	// Restore the register context
 	xPOP( ebx );
@@ -1148,6 +1124,8 @@ xScopedStackFrame::~xScopedStackFrame()
 	// Destroy the frame
 	if (m_base_frame) {
 		xLEAVE();
+	} else if (m_save_base_pointer) {
+		xPOP( ebp );
 	}
 
 #endif

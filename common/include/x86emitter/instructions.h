@@ -93,6 +93,7 @@ namespace x86Emitter
 #else
 	extern const xImpl_JmpCall		xCALL;
 #endif
+	extern const xImpl_FastCall		xFastCall;
 
 	// ------------------------------------------------------------------------
 	extern const xImpl_CMov
@@ -183,19 +184,15 @@ namespace x86Emitter
 	extern void xINTO();
 
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// Helper function to handle the various functions ABI
-	extern void xFastCall(void* func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg);
-	extern void xFastCall(void* func, const xRegisterSSE& a1, const xRegisterSSE& a2);
-	extern void xFastCall(void* func, u32 a1, u32 a2);
-	extern void xFastCall(void* func, u32 a1);
-
-	extern void xStdCall(void* func, u32 a1);
-
+	// Helper object to handle the various functions ABI
 	class xScopedStackFrame
 	{
 		bool m_base_frame;
+		bool m_save_base_pointer;
+		int  m_offset;
 
-		xScopedStackFrame(bool base_frame);
+		public:
+		xScopedStackFrame(bool base_frame, bool save_base_pointer = false, int offset = 0);
 		~xScopedStackFrame();
 	};
 
