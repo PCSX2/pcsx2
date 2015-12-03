@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: 2014-07-21 00:30+0700\n"
 "Last-Translator: blackb1rd <blackb1rd@riseup.net>\n"
 "Language-Team: xyteton <xyteton@hotmail.com>, blackb1rd <blackb1rd@riseup."
@@ -93,7 +93,7 @@ msgstr "กำลังรองาน..."
 msgid "Includes idle event processing and some other uncommon event usages."
 msgstr "รวมถึงการประมวลผลของเหตุการณ์ที่ไม่ได้ใช้งาน และการใช้สอยของเหตุการณ์ที่ไม่ปกติอื่นๆ"
 
-#: pcsx2/CDVD/InputIsoFile.cpp:249
+#: pcsx2/CDVD/InputIsoFile.cpp:252
 msgid "Unrecognized ISO image file format"
 msgstr "ไม่รู้จักรูปแบบไฟล์อิเมจ ISO นี้"
 
@@ -383,7 +383,7 @@ msgstr "รีคอมไพเลอร์ PCSX2 ผิดพลาด"
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "ตัวเลือกทั้งหมดเพื่อช่วงเวลาปัจจุบันเท่านั้น และจะไม่ถูกบันทึก \n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:374
+#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "ไฟล์ Iso"
 
@@ -586,28 +586,28 @@ msgstr "กด ตกลง เพื่อไปยังผังการก�
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
 msgstr "คำเตือน! ปลั๊กอินระบบยังไม่ถูกโหลด, PCSX2 อาจไม่สามารถจะทำได้"
 
-#: pcsx2/gui/AppMain.cpp:386
+#: pcsx2/gui/AppMain.cpp:370
 #, c-format
 msgid "%s Commandline Options"
 msgstr "ตัวเลือก Commandline %s "
 
-#: pcsx2/gui/AppMain.cpp:687
+#: pcsx2/gui/AppMain.cpp:671
 msgid "PCSX2 Unresponsive Thread"
 msgstr "สายงานไม่ตอบสนอง PCSX2"
 
-#: pcsx2/gui/AppMain.cpp:694
+#: pcsx2/gui/AppMain.cpp:678
 msgid "Terminate"
 msgstr "สิ้นสุด"
 
-#: pcsx2/gui/AppMain.cpp:1070
+#: pcsx2/gui/AppMain.cpp:1054
 msgid "Executing PS2 Virtual Machine..."
 msgstr "กำลังปฏิบัติการเครื่องเสมือน PS2..."
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse for an Iso that is not in your recent history."
 msgstr "มองหา Iso ที่ไม่อยู่ในประวัติล่าสุดของคุณ"
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse..."
 msgstr "มองหา..."
 
@@ -812,36 +812,37 @@ msgstr "เวอร์ชันก่อนหน้า"
 msgid "Webmasters"
 msgstr "ผู้ดูแลเว็บ"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Plugin Specialists"
 msgstr "ผู้เชี่ยวชาญด้านปลั๊กอิน"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Special thanks to"
 msgstr "ขอขอบคุณ"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Developers"
 msgstr "ผู้พัฒนา"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
 msgid "Contributors"
 msgstr "ผู้ช่วยเหลือ"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
-msgid "A Playstation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#, fuzzy
+msgid "PlayStation 2 Emulator"
 msgstr "ตัวจำลองเครื่องเล่น Playstation 2"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
 msgid "PCSX2 Official Website and Forums"
 msgstr "เว็บไซต์ทางการและบอร์ดอภิปรายของ PCSX2 "
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "แหล่งเก็บข้อมูล Git แบบทางการของ PCSX2 ที่ GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
 msgid "I've seen enough"
 msgstr "ฉันเห็นพอแล้ว"
 
@@ -936,7 +937,7 @@ msgstr "โฟลเดอร์"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:818
 #, c-format
 msgid "Error (%s)"
 msgstr "ผิดพลาด (%s)"
@@ -1740,27 +1741,27 @@ msgstr "ระบบปฏิบัติการได้ป้องกัน
 msgid "Cannot apply settings..."
 msgstr "ไม่สามารถใช้งานการตั้งค่าได้..."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:107
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:103
 msgid "BIOS Search Path:"
 msgstr "เส้นทางค้นหาไบออส:"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "Select folder with PS2 BIOS roms"
 msgstr "เลือกโฟลเดอร์ที่มีรอมของไบออส PS2"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:111
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr "คลิกปุ่ม มองหา เพื่อเลือกโฟลเดอร์อื่นที่ PCXS2 จะมองหารอมของไบออส PS2"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:196
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
 msgid "Refresh list"
 msgstr "รีเฟรซรายการ"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:119
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
 msgid "Select a BIOS rom:"
 msgstr "เลือกรอมของไบออส:"
 
@@ -1854,7 +1855,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "เฉพาะอินเตอร์พรีเตอร์; มีไว้เพื่อวินิจฉัย"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
 msgid "Restore Defaults"
 msgstr "คืนสู่ค่าตั้งต้น"
 
@@ -2078,87 +2079,87 @@ msgstr ""
 msgid "Select folder with PS2 memory cards"
 msgstr "เลือกโฟลเดอร์ที่มีการ์ดความจำ PS2"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Eject"
 msgstr "ถอดออก"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
 msgid "Duplicate ..."
 msgstr "ทำสำเนา..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
 msgid "Rename ..."
 msgstr "เปลี่ยนชื่อ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:396
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:465
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Create ..."
 msgstr "สร้าง..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
 #, fuzzy
 msgid "Convert ..."
 msgstr "ใส่..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:407
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
 msgstr "การ์ด:"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:464
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:502
 msgid "Create a new memory card."
 msgstr "สร้างการ์ดความจำใหม่"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:478
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Rename this memory card ..."
 msgstr "เปลี่ยนชื่อการ์ดความจำนี้..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Insert ..."
 msgstr "ใส่..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Eject the card from this port"
 msgstr "ถอดการ์ดออกจากพอร์ตนี้"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Insert this card to a port ..."
 msgstr "ใส่การ์ดนี้สู่พอร์ต..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:487
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid "Create a duplicate of this memory card ..."
 msgstr "สร้างสำเนาของการ์ดความจำนี้..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Delete"
 msgstr "ลบ"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "ลบการ์ดความจำนี้จากดิสก์แบบถาวร (เนื้อหาทั้งหมดจะสูญหาย)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card and assign it to this Port."
 msgstr "สร้างการ์ดความจำใหม่และกำหนดมันสำหรับพอร์ตนี้"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:688
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:690
 msgid "Delete memory file?"
 msgstr "ลบไฟล์ความจำ?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:747
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:749
 msgid "Duplicate memory card"
 msgstr "ทำสำเนาการ์ดความจำ"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
 msgid "Failed: Can only duplicate an existing card."
 msgstr "ล้มเหลว: สามารถทำสำเนาเฉพาะการ์ดที่มีอยู่"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
@@ -2166,25 +2167,25 @@ msgstr ""
 "เลือกชื่อสำหรับสำเนา\n"
 "( '.ps2' จะถูกเพิ่มอัตโนมัติ)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:746
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:748
 #, c-format
 msgid "Failed: %s"
 msgstr "ล้มเหลว: %s"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 msgid "Copy failed!"
 msgstr "คัดลอกล้มเหลว!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:778
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:780
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr "การ์ดความจำ '%s' ถูกทำสำเนาเป็น '%s'."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
 msgid "Success"
 msgstr "สำเร็จ"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:802
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
@@ -2193,72 +2194,72 @@ msgstr ""
 "เลือกชื่อใหม่สำหรับการ์ดความจำ '%s'\n"
 "( '.ps2' จะถูกเพิ่มอัตโนมัติ)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:817
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:807
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:819
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Rename memory card"
 msgstr "เปลี่ยนชื่อการ์ดความจำ"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Error: Rename could not be completed.\n"
 msgstr "ผิดพลาด: เปลี่ยนชื่อไม่สำเร็จ \n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:931
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:933
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "พอร์ต-%u / Multitap-%u--Port-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:932
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:934
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "             Multitap-%u--Port-%u"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:957
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Empty"
 msgstr "ว่าง"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:965
 #, c-format
 msgid "Select a target port for '%s'"
 msgstr "เลือกพอร์ตเป้าหมายสำหรับ  '%s'"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:964
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:966
 msgid "Insert card"
 msgstr "ใส่การ์ด"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Eject card"
 msgstr "ถอดการ์ด"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Insert card ..."
 msgstr "ใส่การ์ด..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
 msgid "Duplicate card ..."
 msgstr "ทำสำเนาการ์ด..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
 msgid "Rename card ..."
 msgstr "เปลี่ยนชื่อการ์ด..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
 msgid "Delete card"
 msgstr "ลบการ์ด"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
 #, fuzzy
 msgid "Convert card"
 msgstr "ใส่การ์ด"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1034
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1038
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
 msgid "Create a new card ..."
 msgstr "สร้างการ์ดใหม่"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1042
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1044
 msgid "Refresh List"
 msgstr "รีเฟรซรายการ"
 
@@ -2431,80 +2432,80 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "กำลังทำงานให้สำเร็จ..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
 msgid "Enable speedhacks"
 msgstr "เปิดการทำงาน speedhack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "ทางที่ปลอดภัยและง่าย ในการสร้างความมั่นใจว่า speedhack ทั้งหมดไม่ถูกใช้งานอย่างสมบูรณ์"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
 msgstr "รีเซ็ตตัวเลือก speedhack ทั้งหมดเป็นค่าตั้งต้น, ซึ่งต่อมาคือเป็นการปิดมันทั้งหมด"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "อัตรารอบหมุน EE [ไม่แนะนำ]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "การขโมยรอบหมุน VU [ไม่แนะนำ]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
 msgid "microVU Hacks"
 msgstr "microVU Hacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr "เพิ่มความเร็วได้ดีและเข้ากันได้สูง; อาจเกิดกราฟิกที่ไม่ดี... [แนะนำ]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Multi-Threaded microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr "เพิ่มความเร็วได้ดีและเข้ากันได้สูง;  อาจเกิดการแฮง... [แนะนำ ถ้ามีคอร์ 3+]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "Other Hacks"
 msgstr "Hack อื่น ๆ"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid "Enable INTC Spin Detection"
 msgstr "ใช้การตรวจจับ Spin INTC"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr "เพิ่มความเร็วมหาศาลสำหรับบางเกม, แทบไม่มีผลข้างเคียงเรื่องความเข้ากันได้ [แนะนำ]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "Enable Wait Loop Detection"
 msgstr "เปิดการทำงานการตวจจับ Wait Loop"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr "เพิ่มความเร็วขึ้นปานกลางสำหรับบางเกม, ไม่มีผลข้างเคียงที่ทราบแล้ว [แนะนำ]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Enable fast CDVD"
 msgstr "เปิดการทำงาน fast CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "เข้าถึงดิสก์รวดเร็ว, เวลาโหลดน้อยกว่า [ไม่แนะนำ]"
 
@@ -2676,7 +2677,7 @@ msgstr ""
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "ไฟล์ไบออสที่กำหนดไม่มีอยู่ โปรดกำหนดใหม่"
 
-#: pcsx2/x86/ix86-32/iR5900-32.cpp:580
+#: pcsx2/x86/ix86-32/iR5900-32.cpp:591
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "

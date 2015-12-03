@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,11 +30,11 @@ msgstr ""
 msgid "Playstation game discs are not supported by PCSX2.  If you want to emulate PSX games then you'll have to download a PSX-specific emulator, such as ePSXe or PCSX."
 msgstr ""
 
-#: pcsx2/System.cpp:115
+#: pcsx2/System.cpp:129
 msgid "This recompiler was unable to reserve contiguous memory required for internal caches.  This error can be caused by low virtual memory resources, such as a small or disabled swapfile, or by another program that is hogging a lot of memory."
 msgstr ""
 
-#: pcsx2/System.cpp:359
+#: pcsx2/System.cpp:374
 msgid "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close out some memory hogging background tasks and try again."
 msgstr ""
 
@@ -50,7 +50,7 @@ msgstr ""
 msgid "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
 
-#: pcsx2/gui/AppMain.cpp:690
+#: pcsx2/gui/AppMain.cpp:674
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -188,7 +188,7 @@ msgstr ""
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid "Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."
 msgstr ""
 
@@ -275,16 +275,16 @@ msgid ""
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:686
 #, c-format
 msgid "You are about to delete the formatted memory card '%s'. All data on this card will be lost!  Are you absolutely and quite positively sure?"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
 msgid "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:767
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr ""
@@ -322,62 +322,72 @@ msgid "All plugins must have valid selections for %s to run.  If you are unable 
 msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
-msgid "1 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
+msgid ""
+"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\n"
+"This setting can cause games to FAIL TO BOOT."
 msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
-msgid "2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
+msgid "-1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS."
 msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
-msgid "3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
+msgid "0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+msgid "1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:54
-msgid "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most games."
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:43
+msgid "2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs."
 msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
+msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:62
+msgid "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most games."
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:66
 msgid "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant speedups in some games."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:63
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:71
 msgid "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause flickering visuals or slowdown in most games."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:88
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
 msgid "Speedhacks usually improve emulation speed, but can cause glitches, broken audio, and false FPS readings.  When having emulation problems, disable this panel first."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
-msgid "Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware."
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
+msgid "Setting higher values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, lower values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:136
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid "This slider controls the amount of cycles the VU unit steals from the EmotionEngine.  Higher values increase the number of cycles stolen from the EE for each VU microprogram the game runs."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "Updates Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time, and Super VU does something similar by default."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with 3 or more cores. This is safe for most games, but a few games are incompatible and may hang. In the case of GS limited games, it may be a slowdown (especially on dual core CPUs)."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid "This hack works best for games that use the INTC Status register to wait for vsyncs, which includes primarily non-3D RPG titles. Games that do not use this method of vsync will see little or no speedup from this hack."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
 msgid "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this hack attempts to detect loops whose bodies are guaranteed to result in the same machine state for every iteration until a scheduled event triggers emulation of another unit.  After a single iteration of such loops, we advance to the time of the next event or the end of the processor's timeslice, whichever comes first."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Check HDLoader compatibility lists for known games that have issues with this. (Often marked as needing 'mode 1' or 'slow DVD'"
 msgstr ""
 
@@ -400,7 +410,7 @@ msgid ""
 "Warning: This option can be enabled on-the-fly but typically cannot be disabled on-the-fly (video will typically be garbage)."
 msgstr ""
 
-#: pcsx2/vtlb.cpp:832
+#: pcsx2/vtlb.cpp:826
 msgid "Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources."
 msgstr ""
 

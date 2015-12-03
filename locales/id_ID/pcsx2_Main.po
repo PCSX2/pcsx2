@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: 2012-05-04 22:04+0700\n"
 "Last-Translator: \n"
 "Language-Team: ikazu <ikazu.kevin@gmail.com>\n"
@@ -97,7 +97,7 @@ msgstr ""
 "Menyertakan kejadian idle saat pemrosesan dan beberapa kejadian dengan "
 "penggunaan yang tak lazim."
 
-#: pcsx2/CDVD/InputIsoFile.cpp:249
+#: pcsx2/CDVD/InputIsoFile.cpp:252
 msgid "Unrecognized ISO image file format"
 msgstr "Format ISO tak dikenali"
 
@@ -411,7 +411,7 @@ msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Semua opsi hanya untuk sesi yang sedang berjalan dan tidak akan disimpan.\n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:374
+#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "IsoFile"
 
@@ -621,28 +621,28 @@ msgstr ""
 "Peringatan! Plugin Sistem belum dijalankan. PCSX2 mungkin tidak bisa "
 "beroperasi."
 
-#: pcsx2/gui/AppMain.cpp:386
+#: pcsx2/gui/AppMain.cpp:370
 #, c-format
 msgid "%s Commandline Options"
 msgstr "%s Opsi Commandline"
 
-#: pcsx2/gui/AppMain.cpp:687
+#: pcsx2/gui/AppMain.cpp:671
 msgid "PCSX2 Unresponsive Thread"
 msgstr "Trit PCSX2 Tidakrespon"
 
-#: pcsx2/gui/AppMain.cpp:694
+#: pcsx2/gui/AppMain.cpp:678
 msgid "Terminate"
 msgstr "Gagalkan"
 
-#: pcsx2/gui/AppMain.cpp:1070
+#: pcsx2/gui/AppMain.cpp:1054
 msgid "Executing PS2 Virtual Machine..."
 msgstr "Sedang eksekusi Mesin Virtual PS2..."
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse for an Iso that is not in your recent history."
 msgstr "Temukan Iso yang tidak berada di riwayat."
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse..."
 msgstr "Temukan..."
 
@@ -851,36 +851,37 @@ msgstr "Versi Sebelum"
 msgid "Webmasters"
 msgstr "Webmaster"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Plugin Specialists"
 msgstr "Spesialis Plugin"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Special thanks to"
 msgstr "Terimakasih khusus buat"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Developers"
 msgstr "Para pengembang"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
 msgid "Contributors"
 msgstr "Para kontributor"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
-msgid "A Playstation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#, fuzzy
+msgid "PlayStation 2 Emulator"
 msgstr "Sebuah Emulator Playstation 2"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
 msgid "PCSX2 Official Website and Forums"
 msgstr "Laman dan Forum Resmi PCSX2"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "Repository Svn Resmi PCSX2 di GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
 msgid "I've seen enough"
 msgstr "Saya telah cukup melihat"
 
@@ -978,7 +979,7 @@ msgstr "Folder"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:818
 #, c-format
 msgid "Error (%s)"
 msgstr "Gagal (%s)"
@@ -1798,15 +1799,15 @@ msgstr "Sistem Operasi mencegah file ini dibuat"
 msgid "Cannot apply settings..."
 msgstr "Gagal terapkan aturan..."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:107
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:103
 msgid "BIOS Search Path:"
 msgstr "Lokasi Pencarian BIOS:"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "Select folder with PS2 BIOS roms"
 msgstr "Pilih folder dengan rom BIOS PS2"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:111
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
@@ -1814,13 +1815,13 @@ msgstr ""
 "Klik tombol Temukan untuk memilih folder berbeda dimana PCSX2 akan mencari "
 "rom BIOS PS2."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:196
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
 msgid "Refresh list"
 msgstr "Ulangmuat"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:119
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
 msgid "Select a BIOS rom:"
 msgstr "Pilih sebuah rom BIOS:"
 
@@ -1917,7 +1918,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "Interpreter saja; tersedia untuk diagnosa"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
 msgid "Restore Defaults"
 msgstr "Restorasi Semula"
 
@@ -2149,87 +2150,87 @@ msgstr ""
 msgid "Select folder with PS2 memory cards"
 msgstr "Pilih folder dengan memory card PS2"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Eject"
 msgstr "Keluarkan"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
 msgid "Duplicate ..."
 msgstr "Duplikat ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
 msgid "Rename ..."
 msgstr "Rename ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:396
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:465
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Create ..."
 msgstr "Buat ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
 #, fuzzy
 msgid "Convert ..."
 msgstr "Masukkan ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:407
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
 msgstr "Card:"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:464
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:502
 msgid "Create a new memory card."
 msgstr "Buat sebuah memory card baru."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:478
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Rename this memory card ..."
 msgstr "Rename memory card ini ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Insert ..."
 msgstr "Masukkan ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Eject the card from this port"
 msgstr "Keluarin card dari port ini"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Insert this card to a port ..."
 msgstr "Masukkan card ini ke port ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:487
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid "Create a duplicate of this memory card ..."
 msgstr "Buat duplikat dari memory card ini ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Delete"
 msgstr "Hapus"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "Hapus memory card dari disk secara permanen (konten akan hilang)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card and assign it to this Port."
 msgstr "Buat sebuah memory card baru dan masukkan ke Port ini."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:688
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:690
 msgid "Delete memory file?"
 msgstr "Hapus file memory?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:747
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:749
 msgid "Duplicate memory card"
 msgstr "Duplikat memory card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
 msgid "Failed: Can only duplicate an existing card."
 msgstr "Gagal: Hanya bisa menduplikat card yang sudah ada."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
@@ -2237,25 +2238,25 @@ msgstr ""
 "Pilih sebuah nama untuk duplikat\n"
 "('.ps2' akan otomatis ditambah)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:746
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:748
 #, c-format
 msgid "Failed: %s"
 msgstr "Gagal: %s"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 msgid "Copy failed!"
 msgstr "Gagal salin!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:778
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:780
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr "Memory card '%s' telah diduplikat ke '%s'."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
 msgid "Success"
 msgstr "Sukses"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:802
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
@@ -2264,72 +2265,72 @@ msgstr ""
 "Pilih sebuah nama untnuk memory card '%s'\n"
 "('.ps2' akan otomatis ditambah)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:817
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:807
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:819
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Rename memory card"
 msgstr "Rename memory card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Error: Rename could not be completed.\n"
 msgstr "Gagal: Rename tidak dapat dilaksanakan.\n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:931
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:933
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "Port-%u / Multitap-%u--Port-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:932
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:934
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "             Multitap-%u--Port-%u"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:957
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Empty"
 msgstr "Kosong"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:965
 #, c-format
 msgid "Select a target port for '%s'"
 msgstr "Pilih port tujuan untuk '%s'"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:964
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:966
 msgid "Insert card"
 msgstr "Masukkan card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Eject card"
 msgstr "Keluarin card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Insert card ..."
 msgstr "Masukkan card ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
 msgid "Duplicate card ..."
 msgstr "Gandakan card ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
 msgid "Rename card ..."
 msgstr "Rename card ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
 msgid "Delete card"
 msgstr "Hapus card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
 #, fuzzy
 msgid "Convert card"
 msgstr "Masukkan card"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1034
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1038
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
 msgid "Create a new card ..."
 msgstr "Buat sebuah card baru ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1042
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1044
 msgid "Refresh List"
 msgstr "Ulangmuat"
 
@@ -2502,16 +2503,16 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Menyelesaikan tugas..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
 msgid "Enable speedhacks"
 msgstr "Aktifkan speedhacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "Metode aman untuk memastikan semua speedhack nonaktif."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
@@ -2519,34 +2520,34 @@ msgstr ""
 "Mereset semua opsi speedhack ke semula, yang menyebabkan mereka semua "
 "NONAKTIF."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cyclerate [Tidak Direkomendasikan]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU Cycle Stealing [Tidak direkomendasikan]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
 msgid "microVU Hacks"
 msgstr "Hack microVU"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
 msgid "mVU Flag Hack"
 msgstr "Flag Hack mVU"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Peningkatan kecepatan baik dan kompatibilitas tinggi; bisa bikin grafis "
 "hancur... [Direkomendasikan]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Multi-Threaded microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2554,15 +2555,15 @@ msgstr ""
 "Peningkatan baik kecepatan dan kompatibilitas; bisa bikin hang... "
 "[Direkomendasikan bila jumlah core 3+)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "Other Hacks"
 msgstr "Hack lain"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid "Enable INTC Spin Detection"
 msgstr "Aktifkan INTC Spin Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2570,22 +2571,22 @@ msgstr ""
 "Peningkatan besar kecepatan untuk beberapa game, dengan hampir tidak ada "
 "pengaruh terhadap kompatibilitas. [Direkomendasikan]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "Enable Wait Loop Detection"
 msgstr "Aktifkan Deteksi Wait Loop"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Peningkatan menengah pada kecepatan beberapa game, dengan tidak ada "
 "pengaruh. [Direkomendasikan]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Enable fast CDVD"
 msgstr "Aktifkan fast CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Akses disc cepat, lama loading berkurang. [Tidak direkomendasikan]"
 
@@ -2767,7 +2768,7 @@ msgstr ""
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "File konfigurasi BIOS tidak ada. Silakan ulang konfigurasi."
 
-#: pcsx2/x86/ix86-32/iR5900-32.cpp:580
+#: pcsx2/x86/ix86-32/iR5900-32.cpp:591
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
