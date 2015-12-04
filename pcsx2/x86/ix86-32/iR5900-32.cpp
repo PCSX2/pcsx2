@@ -372,50 +372,6 @@ static void recEventTest()
 	_cpuEventTest_Shared();
 }
 
-// parameters:
-//   espORebp - 0 for ESP, or 1 for EBP.
-//   regval   - current value of the register at the time the fault was detected (predates the
-//      stackframe setup code in this function)
-static void __fastcall StackFrameCheckFailed( int espORebp, int regval )
-{
-	pxFailDev( wxsFormat( L"(R5900 Recompiler Stackframe) Sanity check failed on %s\n\tCurrent=%d; Saved=%d",
-		(espORebp==0) ? L"ESP" : L"EBP", regval, (espORebp==0) ? s_store_esp : s_store_ebp )
-	);
-
-	// Note: The recompiler will attempt to recover ESP and EBP after returning from this function,
-	// so typically selecting Continue/Ignore/Cancel for this assertion should allow PCSX2 to con-
-	// tinue to run with some degree of stability.
-}
-
-static void _DynGen_StackFrameCheck()
-{
-	if( !EmuConfig.Cpu.Recompiler.StackFrameChecks ) return;
-
-	// --------- EBP Here -----------
-
-	xCMP( ebp, ptr[&s_store_ebp] );
-	xForwardJE8 skipassert_ebp;
-
-	xMOV( ecx, 1 );						// 1 specifies EBP
-	xMOV( edx, ebp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( ebp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
-
-	skipassert_ebp.SetTarget();
-
-	// --------- ESP There -----------
-
-	xCMP( esp, ptr[&s_store_esp] );
-	xForwardJE8 skipassert_esp;
-
-	xXOR( ecx, ecx );					// 0 specifies ESP
-	xMOV( edx, esp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( esp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
-
-	skipassert_esp.SetTarget();
-}
-
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
@@ -423,7 +379,6 @@ static DynGenFunc* _DynGen_JITCompile()
 	pxAssertMsg( DispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetAlignedCallTarget();
-	_DynGen_StackFrameCheck();
 
 	xMOV( ecx, ptr[&cpuRegs.pc] );
 	xCALL( recRecompile );
@@ -448,7 +403,6 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();		// fallthrough target, can't align it!
-	_DynGen_StackFrameCheck();
 
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
@@ -471,63 +425,18 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
 	pxAssertDev( DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
-	
+
 	u8* retval = xGetAlignedCallTarget();
 
-	// "standard" frame pointer setup for aligned stack: Record the original
-	//   esp into ebp, and then align esp.  ebp references the original esp base
-	//   for the duration of our function, and is used to restore the original
-	//   esp before returning from the function
+	{ // Properly scope the frame prologue/epilogue
+		xScopedStackFrame frame(IsDevBuild);
 
-	xPUSH( ebp );
-	xMOV( ebp, esp );
-	xAND( esp, -0x10 );
+		xJMP(DispatcherReg);
 
-	// First 0x10 is for esi, edi, etc. Second 0x10 is for the return address and ebp.  The
-	// third 0x10 is an optimization for C-style CDECL calls we might make from the recompiler
-	// (parameters for those calls can be stored there!)  [currently no cdecl functions are
-	//  used -- we do everything through __fastcall)
-
-	static const int cdecl_reserve = 0x00;
-	xSUB( esp, 0x20 + cdecl_reserve );
-
-	xMOV( ptr[ebp-12], edi );
-	xMOV( ptr[ebp-8], esi );
-	xMOV( ptr[ebp-4], ebx );
-
-	// Simulate a CALL function by pushing the call address and EBP onto the stack.
-	// (the dummy address here is filled in later right before we generate the LEAVE code)
-	xMOV( ptr32[esp+0x0c+cdecl_reserve], 0xdeadbeef );
-	uptr& imm = *(uptr*)(xGetPtr()-4);
-
-	// This part simulates the "normal" stackframe prep of "push ebp, mov ebp, esp"
-	// It is done here because we can't really generate that stuff from the Dispatchers themselves.
-	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
-	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
-
-	if (EmuConfig.Cpu.Recompiler.StackFrameChecks) {
-		xMOV( ptr[&s_store_esp], esp );
-		xMOV( ptr[&s_store_ebp], ebp );
+		// Save an exit point
+		ExitRecompiledCode = (DynGenFunc*)xGetPtr();
 	}
 
-	xJMP( DispatcherReg );
-
-	xAlignCallTarget();
-
-	// This dummy CALL is unreachable code that some debuggers (MSVC2008) need in order to
-	// unwind the stack properly.  This is effectively the call that we simulate above.
-	if( IsDevBuild ) xCALL( DispatcherReg );
-
-	imm = (uptr)xGetPtr();
-	ExitRecompiledCode = (DynGenFunc*)xGetPtr();
-
-	xLEAVE();
-
-	xMOV( edi, ptr[ebp-12] );
-	xMOV( esi, ptr[ebp-8] );
-	xMOV( ebx, ptr[ebp-4] );
-
-	xLEAVE();
 	xRET();
 
 	return (DynGenFunc*)retval;
@@ -1149,8 +1058,6 @@ static u32 scaleblockcycles()
 //   setting "g_branch = 2";
 static void iBranchTest(u32 newpc)
 {
-	_DynGen_StackFrameCheck();
-
 	// Check the Event scheduler if our "cycle target" has been reached.
 	// Equiv code to:
 	//    cpuRegs.cycle += blockcycles;

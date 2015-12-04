@@ -120,50 +120,6 @@ static void recEventTest()
 	_cpuEventTest_Shared();
 }
 
-// parameters:
-//   espORebp - 0 for ESP, or 1 for EBP.
-//   regval   - current value of the register at the time the fault was detected (predates the
-//      stackframe setup code in this function)
-static void __fastcall StackFrameCheckFailed( int espORebp, int regval )
-{
-	pxFailDev( pxsFmt( L"(R3000A Recompiler Stackframe) Sanity check failed on %ls\n\tCurrent=%d; Saved=%d",
-		(espORebp==0) ? L"ESP" : L"EBP", regval, (espORebp==0) ? s_store_esp : s_store_ebp )
-	);
-
-	// Note: The recompiler will attempt to recover ESP and EBP after returning from this function,
-	// so typically selecting Continue/Ignore/Cancel for this assertion should allow PCSX2 to con-
-	// tinue to run with some degree of stability.
-}
-
-static void _DynGen_StackFrameCheck()
-{
-	if( !IsDevBuild ) return;
-
-	// --------- EBP Here -----------
-
-	xCMP( ebp, ptr[&s_store_ebp] );
-	xForwardJE8 skipassert_ebp;
-
-	xMOV( ecx, 1 );					// 1 specifies EBP
-	xMOV( edx, ebp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( ebp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
-
-	skipassert_ebp.SetTarget();
-
-	// --------- ESP There -----------
-
-	xCMP( esp, ptr[&s_store_esp] );
-	xForwardJE8 skipassert_esp;
-
-	xXOR( ecx, ecx );				// 0 specifies ESP
-	xMOV( edx, esp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( esp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
-
-	skipassert_esp.SetTarget();
-}
-
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
@@ -171,7 +127,6 @@ static DynGenFunc* _DynGen_JITCompile()
 	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetPtr();
-	_DynGen_StackFrameCheck();
 
 	xMOV( ecx, ptr[&psxRegs.pc] );
 	xCALL( iopRecRecompile );
@@ -196,7 +151,6 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
-	_DynGen_StackFrameCheck();
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
@@ -210,128 +164,21 @@ static DynGenFunc* _DynGen_DispatcherReg()
 // --------------------------------------------------------------------------------------
 //  EnterRecompiledCode  - dynamic compilation stub!
 // --------------------------------------------------------------------------------------
-
-// In Release Builds this literally generates the following code:
-//   push edi
-//   push esi
-//   push ebx
-//   jmp DispatcherReg
-//   pop ebx
-//   pop esi
-//   pop edi
-//
-// See notes on why this works in both GCC (aligned stack!) and other compilers (not-so-
-// aligned stack!).  In debug/dev builds the code gen is more complicated, as it constructs
-// ebp stackframe mess, which allows for a complete backtrace from debug breakpoints (yay).
-//
-// Also, if you set PCSX2_IOP_FORCED_ALIGN_STACK to 1, the codegen for MSVC becomes slightly
-// more complicated since it has to perform a full stack alignment on entry.
-//
-
-#if defined(__GNUG__) || defined(__DARWIN__)
-#	define PCSX2_ASSUME_ALIGNED_STACK		1
-#else
-#	define PCSX2_ASSUME_ALIGNED_STACK		0
-#endif
-
-// Set to 0 for a speedup in release builds.
-// [doesn't apply to GCC/Mac, which must always align]
-#define PCSX2_IOP_FORCED_ALIGN_STACK		0 //1
-
-
-// For overriding stackframe generation options in Debug builds (possibly useful for troubleshooting)
-// Typically this value should be the same as IsDevBuild.
-static const bool GenerateStackFrame = IsDevBuild;
-
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
-	u8* retval = xGetPtr();
-
-	bool allocatedStack = GenerateStackFrame || PCSX2_IOP_FORCED_ALIGN_STACK;
-
 	// Optimization: The IOP never uses stack-based parameter invocation, so we can avoid
 	// allocating any room on the stack for it (which is important since the IOP's entry
 	// code gets invoked quite a lot).
 
-	if( allocatedStack )
-	{
-		xPUSH( ebp );
-		xMOV( ebp, esp );
-		xAND( esp, -0x10 );
+	u8* retval = xGetPtr();
 
-		xSUB( esp, 0x20 );
+	{ // Properly scope the frame prologue/epilogue
+		xScopedStackFrame frame(IsDevBuild);
 
-		xMOV( ptr[ebp-12], edi );
-		xMOV( ptr[ebp-8], esi );
-		xMOV( ptr[ebp-4], ebx );
-	}
-	else
-	{
-		// GCC Compiler:
-		//   The frame pointer coming in from the EE's event test can be safely assumed to be
-		//   aligned, since GCC always aligns stackframes.  While handy in x86-64, where CALL + PUSH EBP
-		//   results in a neatly realigned stack on entry to every function, unfortunately in x86-32
-		//   this is usually worthless because CALL+PUSH leaves us 8 byte aligned instead (fail).  So
-		//   we have to do the usual set of stackframe alignments and simulated callstack mess
-		//   *regardless*.
+		xJMP(iopDispatcherReg);
 
-		// MSVC/Intel compilers:
-		//   The PCSX2_IOP_FORCED_ALIGN_STACK setting is 0, so we don't care.  Just push regs like
-		//   the good old days!  (stack alignment will be indeterminate)
-
-		xPUSH( edi );
-		xPUSH( esi );
-		xPUSH( ebx );
-
-		allocatedStack = false;
-	}
-
-	uptr* imm = NULL;
-	if( allocatedStack )
-	{
-		if( GenerateStackFrame )
-		{
-			// Simulate a CALL function by pushing the call address and EBP onto the stack.
-			// This retains proper stacktrace and stack unwinding (handy in devbuilds!)
-
-			xMOV( ptr32[esp+0x0c], 0xffeeff );
-			imm = (uptr*)(xGetPtr()-4);
-
-			// This part simulates the "normal" stackframe prep of "push ebp, mov ebp, esp"
-			xMOV( ptr32[esp+0x08], ebp );
-			xLEA( ebp, ptr32[esp+0x08] );
-		}
-	}
-
-	if( IsDevBuild )
-	{
-		xMOV( ptr[&s_store_esp], esp );
-		xMOV( ptr[&s_store_ebp], ebp );
-	}
-
-	xJMP( iopDispatcherReg );
-	if( imm != NULL )
-		*imm = (uptr)xGetPtr();
-
-	// ----------------------
-	// ---->  Cleanup!  ---->
-
-	iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
-
-	if( allocatedStack )
-	{
-		// pop the nested "simulated call" stackframe, if needed:
-		if( GenerateStackFrame ) xLEAVE();
-		xMOV( edi, ptr[ebp-12] );
-		xMOV( esi, ptr[ebp-8] );
-		xMOV( ebx, ptr[ebp-4] );
-		xLEAVE();
-	}
-	else
-	{
-		xPOP( ebx );
-		xPOP( esi );
-		xPOP( edi );
+		// Save an exit point
+		iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
 	}
 
 	xRET();
