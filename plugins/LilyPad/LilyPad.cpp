@@ -1330,7 +1330,7 @@ u8 CALLBACK PADpoll(u8 value) {
 			// READ_DATA_AND_VIBRATE
 			case 0x42:
 				if (query.lastByte == pad->vibrateI[0]) {
-					SetVibrate(query.port, query.slot, 1, 255*(0!=value));
+					SetVibrate(query.port, query.slot, 1, 255*(value&1));
 				}
 				else if (query.lastByte == pad->vibrateI[1]) {
 					SetVibrate(query.port, query.slot, 0, value);
