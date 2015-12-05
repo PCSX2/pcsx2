@@ -198,7 +198,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 HalfFrame = Frame / 2;
 	u64 Blank = (Frame / scansPerFrame) * 22; // PAL VBlank Period is roughly 22 HSyncs
 
-	if (scansPerFrame == SCANLINES_TOTAL_NTSC)
+	if (gsRegionMode == Region_NTSC)
 		Blank = (Frame / scansPerFrame) * 26;		// NTSC VBlank Period is roughly 26 HSyncs, so we update
 
 	//I would have suspected this to be Frame - Blank, but that seems to completely freak it out
