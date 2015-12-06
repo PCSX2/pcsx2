@@ -61,6 +61,7 @@ set(UtilitiesSources
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
+	Perf.cpp
 	pxCheckBox.cpp
 	pxRadioPanel.cpp
 	pxStaticText.cpp
