@@ -2183,6 +2183,13 @@ StartRecomp:
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;
 
+#if 0
+	// Example: Dump both x86/EE code
+	if (startpc == 0x456630) {
+		iDumpBlock(s_pCurBlockEx->startpc, s_pCurBlockEx->size*4, s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size);
+	}
+#endif
+
 	recPtr = xGetPtr();
 
 	pxAssert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
