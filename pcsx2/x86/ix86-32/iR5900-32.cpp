@@ -41,6 +41,7 @@
 
 
 #include "Utilities/MemsetFast.inl"
+#include "Utilities/Perf.h"
 
 
 using namespace x86Emitter;
@@ -574,6 +575,8 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( JITCompile );
+
+	Perf::any.map((uptr)&eeRecDispatchers, 4096, "EE Dispatcher");
 }
 
 
@@ -699,6 +702,8 @@ static bool eeCpuExecuting = false;
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
+	Perf::ee.reset();
+
 	EE::Profiler.Reset();
 
 	recAlloc();
@@ -744,6 +749,9 @@ static void recShutdown()
 	safe_aligned_free( recConstBuf );
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
+
+	// FIXME Warning thread unsafe
+	Perf::dump();
 }
 
 static void recResetEE()
@@ -840,6 +848,9 @@ static void recExecute()
 
 	if(m_cpuException)	m_cpuException->Rethrow();
 	if(m_Exception)		m_Exception->Rethrow();
+
+	// FIXME Warning thread unsafe
+	Perf::dump();
 #endif
 
 	EE::Profiler.Print();
@@ -2198,6 +2209,7 @@ StartRecomp:
 		iDumpBlock(s_pCurBlockEx->startpc, s_pCurBlockEx->size*4, s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size);
 	}
 #endif
+	Perf::ee.map(s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
 
 	recPtr = xGetPtr();
 

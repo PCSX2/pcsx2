@@ -18,6 +18,8 @@
 #include "PrecompiledHeader.h"
 #include "microVU.h"
 
+#include "Utilities/Perf.h"
+
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
@@ -73,6 +75,9 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 
 	// Restore reserve to uncommitted state
 	if (resetReserve) mVU.cache_reserve->Reset();
+
+	if (mVU.index) Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU1 Dispatcher");
+	else           Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU0 Dispatcher");
 	
 	x86SetPtr(mVU.dispCache);
 	mVUdispatcherA(mVU);
