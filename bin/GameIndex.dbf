@@ -4585,6 +4585,16 @@ Compat = 5
 Serial = SCUS-97146
 Name   = Disney's Treasure Planet
 Region = NTSC-U
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
+---------------------------------------------
+Serial = SCES-51177
+Name   = Disney's Treasure Planet
+Region = PAL
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
 Serial = SCUS-97147
 Name   = Cool Boarders 2001 [Demo]
@@ -7105,6 +7115,15 @@ Region = PAL-M5
 Serial = SLES-50252
 Name   = Penny Racers
 Region = PAL-M3
+[patches = FBE2613D]
+	//Patched by Prafull
+	//Fixes vsync issues
+	patch=0,EE,001a66ac,word,03e00008
+	//Avoid hang at first loading screen
+	patch=0,EE,001a6688,word,00000000
+	//Skips movies
+	patch=0,EE,001b1b00,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLES-50253
 Name   = Modern Groove - Ministry of Sound Edition
@@ -8372,6 +8391,12 @@ Serial = SLES-50874
 Name   = F1 2002
 Region = PAL-M4
 Compat = 3
+[patches = A0ED2D23]
+	//Patched by Prafull
+	//Fixes controller issue but skips videos
+	patch=0,EE,002d8568,word,03e00008
+	patch=0,EE,002d856c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50875
 Name   = F1 2002
@@ -36840,6 +36865,11 @@ Compat = 5
 Serial = SLUS-20726
 Name   = ESPN - NBA Basketball
 Region = NTSC-U
+[patches = A13E5DD5]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,003161c0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20727
 Name   = ESPN - NFL Football
@@ -37745,6 +37775,11 @@ Compat = 4
 Serial = SLUS-20920
 Name   = ESPN - NBA 2K5
 Region = NTSC-U
+[patches = 903C7BC5]
+	//Patched by Prafull
+	//avoid hanging at loading screen
+	patch=0,EE,003bc800,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20921
 Name   = ESPN - NHL 2K5
@@ -39286,6 +39321,11 @@ Compat = 2
 Serial = SLUS-21233
 Name   = NBA 2K6
 Region = NTSC-U
+[patches = E5C65369]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,004413a8,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21234
 Name   = NHL 2K6
@@ -39295,6 +39335,11 @@ Compat = 2
 Serial = SLUS-21235
 Name   = MLB 2k6
 Region = NTSC-U
+[patches = 88BB9A5C]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,003c4280,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21236
 Name   = Tokyo Xtreme Racer Drift
@@ -40230,6 +40275,11 @@ Compat = 5
 Serial = SLUS-21424
 Name   = NBA 2K7
 Region = NTSC-U
+[patches = F5AEDCC3]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,0044ef60,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21425
 Name   = NHL 2K7
