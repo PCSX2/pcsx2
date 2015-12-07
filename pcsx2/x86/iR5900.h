@@ -21,6 +21,7 @@
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
+#include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
 extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))

@@ -63,6 +63,7 @@ __aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 bool g_cpuFlushedPC, g_cpuFlushedCode, g_recompilingDelaySlot, g_maySignalException;
 
+eeProfiler EE::Profiler;
 
 ////////////////////////////////////////////////////////////////
 // Static Private Variables - R5900 Dynarec
@@ -698,6 +699,8 @@ static bool eeCpuExecuting = false;
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
+	EE::Profiler.Reset();
+
 	recAlloc();
 
 	if( AtomicExchange( eeRecIsReset, true ) ) return;
@@ -838,6 +841,8 @@ static void recExecute()
 	if(m_cpuException)	m_cpuException->Rethrow();
 	if(m_Exception)		m_Exception->Rethrow();
 #endif
+
+	EE::Profiler.Print();
 }
 
 ////////////////////////////////////////////////////
