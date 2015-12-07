@@ -15,6 +15,10 @@
 
 #pragma once
 
+// Keep my nice alignment please!
+#define MOVZ MOVZtemp
+#define MOVN MOVNtemp
+
 enum class eeOpcode {
 	// Core
 	special , regimm , J    , JAL   , BEQ  , BNE  , BLEZ  , BGTZ  ,
@@ -96,6 +100,9 @@ enum class eeOpcode {
 
 	LAST
 };
+
+#undef MOVZ
+#undef MOVN
 
 static const char eeOpcodeName[][16] = {
 	// "Core"

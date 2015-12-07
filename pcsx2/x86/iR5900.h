@@ -134,12 +134,14 @@ typedef void (*R5900FNPTR_INFO)(int info);
 #define EERECOMPILE_CODE0(fn, xmminfo) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
 }
 
 #define EERECOMPILE_CODEX(codename, fn) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	codename(rec##fn##_const, rec##fn##_); \
 }
 

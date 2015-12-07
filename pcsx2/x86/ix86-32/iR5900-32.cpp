@@ -848,6 +848,8 @@ static void recExecute()
 ////////////////////////////////////////////////////
 void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
+	EE::Profiler.EmitOp(eeOpcode::SYSCALL);
+
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
 	xCMP(ptr32[&cpuRegs.pc], pc);
@@ -863,6 +865,8 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 ////////////////////////////////////////////////////
 void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
+	EE::Profiler.EmitOp(eeOpcode::BREAK);
+
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 
 	xCMP(ptr32[&cpuRegs.pc], pc);
