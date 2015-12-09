@@ -255,12 +255,16 @@ template< typename T > void xWrite( T val );
 
 		bool IsEmpty() const		{ return Id < 0 ; }
 		bool IsInvalid() const		{ return Id == xRegId_Invalid; }
+		bool IsExtended() const		{ return Id > 7; } // Register 8-15 need an extra bit to be selected
+		bool IsMem() const			{ return false; }
+		bool IsReg() const			{ return true; }
 
 		// Returns true if the register is a valid accumulator: Eax, Ax, Al, XMM0.
 		bool IsAccumulator() const	{ return Id == 0; }
 
 		// returns true if the register is a valid MMX or XMM register.
 		bool IsSIMD() const { return GetOperandSize() == 8 || GetOperandSize() == 16; }
+		bool IsWideSIMD() const { return GetOperandSize() == 32; }
 
 		bool operator==( const xRegisterBase& src ) const	{ return (Id == src.Id); }
 		bool operator!=( const xRegisterBase& src ) const	{ return (Id != src.Id); }
@@ -690,6 +694,8 @@ template< typename T > void xWrite( T val );
 		xIndirectVoid& Add( s32 imm );
 
 		bool IsByteSizeDisp() const { return is_s8( Displacement ); }
+		bool IsMem() const			{ return true; }
+		bool IsReg() const			{ return false; }
 
 		operator xAddressVoid()
 		{
