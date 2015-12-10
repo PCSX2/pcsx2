@@ -95,6 +95,14 @@ void pxFitToDigits( wxWindow* win, int digits )
 	win->SetMinSize( wxSize( ex+10, wxDefaultCoord ) );		// +10 for text control borders/insets and junk.
 }
 
+void pxFitToDigits(wxWindow* win, int digits, int height)
+{
+	int ex;
+	win->GetTextExtent(wxString(L'0', digits + 1), &ex, NULL);
+	win->SetMinSize(wxSize(ex + 10, height));		// +10 for text control borders/insets and junk.
+}
+
+
 void pxFitToDigits( wxSpinCtrl* win, int digits )
 {
 	// HACK!!  The better way would be to create a pxSpinCtrl class that extends wxSpinCtrl and thus

@@ -785,6 +785,7 @@ public:
 // they're usually way over-sized.
 
 extern void pxFitToDigits( wxWindow* win, int digits );
+extern void pxFitToDigits(wxWindow* win, int digits, int height);
 extern void pxFitToDigits( wxSpinCtrl* win, int digits );
 extern wxTextCtrl* CreateNumericalTextCtrl( wxWindow* parent, int digits, long flags = wxTE_RIGHT );
 
