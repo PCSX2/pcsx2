@@ -19,8 +19,8 @@
 	_freeXMMregs(/*&VU*/); \
 	_freeMMXregs(); \
 	SetFPUstate();) \
-	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
-	CALLFunc((uptr)VU##MI_##f); \
+	xMOV(ptr32[&VU.code], (u32)VU.code); \
+	xCALL((void*)(uptr)VU##MI_##f); \
 }
 
 #define REC_VUOPs(VU, f) { \
@@ -28,12 +28,12 @@
 	_freeMMXregs(); \
 	SetFPUstate();) \
 	if (VU==&VU1) {  \
-		MOV32ItoM((uptr)&VU1.code, (u32)VU1.code); \
-		CALLFunc((uptr)VU1MI_##f); \
+		xMOV(ptr32[&VU1.code], (u32)VU1.code); \
+		xCALL((void*)(uptr)VU1MI_##f); \
 	}  \
 	else {  \
-		MOV32ItoM((uptr)&VU0.code, (u32)VU0.code); \
-		CALLFunc((uptr)VU0MI_##f); \
+		xMOV(ptr32[&VU0.code], (u32)VU0.code); \
+		xCALL((void*)(uptr)VU0MI_##f); \
 	}  \
 }
 
@@ -41,16 +41,16 @@
 	_freeXMMregs(/*&VU*/); \
 	_freeMMXregs(); \
 	SetFPUstate(); \
-	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
-	CALLFunc((uptr)VU##MI_##f); \
+	xMOV(ptr32[&VU.code], (u32)VU.code); \
+	xCALL((void*)(uptr)VU##MI_##f); \
 }
 
 #define REC_VUBRANCH(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
 	_freeMMXregs(); \
 	SetFPUstate(); \
-	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
-	MOV32ItoM((uptr)&VU.VI[REG_TPC].UL, (u32)pc); \
-	CALLFunc((uptr)VU##MI_##f); \
+	xMOV(ptr32[&VU.code], (u32)VU.code); \
+	xMOV(ptr32[&VU.VI[REG_TPC].UL], (u32)pc); \
+	xCALL((void*)(uptr)VU##MI_##f); \
 	branch = 1; \
 }

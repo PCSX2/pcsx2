@@ -109,10 +109,10 @@ int psxRecMemConstRead8(u32 x86reg, u32 mem, u32 sign)
 			return psxHw4ConstRead8(x86reg, mem&0x1fffffff, sign);
 
 		case 0x1000:
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9read8);
-			if( sign ) MOVSX32R8toR(x86reg, EAX);
-			else MOVZX32R8toR(x86reg, EAX);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9read8);
+			if( sign ) xMOVSX(xRegister32(x86reg), al);
+			else xMOVZX(xRegister32(x86reg), al);
 			return 0;
 
 		default:
@@ -201,10 +201,10 @@ int psxRecMemConstRead16(u32 x86reg, u32 mem, u32 sign)
 			{
 				case 0x40:
 					_eeReadConstMem16(x86reg, (u32)PS2MEM_HW+0xF240, sign);
-					OR32ItoR(x86reg, 0x0002);
+					xOR(xRegister32(x86reg), 0x0002);
 					break;
 				case 0x60:
-					XOR32RtoR(x86reg, x86reg);
+					xXOR(xRegister32(x86reg), xRegister32(x86reg));
 					break;
 				default:
 					_eeReadConstMem16(x86reg, (u32)PS2MEM_HW+0xf200+(mem&0xf0), sign);
@@ -213,17 +213,17 @@ int psxRecMemConstRead16(u32 x86reg, u32 mem, u32 sign)
 			return 0;
 
 		case 0x1f90:
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)SPU2read);
-			if( sign ) MOVSX32R16toR(x86reg, EAX);
-			else MOVZX32R16toR(x86reg, EAX);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)SPU2read);
+			if( sign ) xMOVSX(xRegister32(x86reg), ax);
+			else xMOVZX(xRegister32(x86reg), ax);
 			return 0;
 
 		case 0x1000:
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9read16);
-			if( sign ) MOVSX32R16toR(x86reg, EAX);
-			else MOVZX32R16toR(x86reg, EAX);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9read16);
+			if( sign ) xMOVSX(xRegister32(x86reg), ax);
+			else xMOVZX(xRegister32(x86reg), ax);
 			return 0;
 
 		default:
@@ -311,10 +311,10 @@ int psxRecMemConstRead32(u32 x86reg, u32 mem)
 			{
 				case 0x40:
 					_eeReadConstMem32(x86reg, (u32)PS2MEM_HW+0xF240);
-					OR32ItoR(x86reg, 0xf0000002);
+					xOR(xRegister32(x86reg), 0xf0000002);
 					break;
 				case 0x60:
-					XOR32RtoR(x86reg, x86reg);
+					xXOR(xRegister32(x86reg), xRegister32(x86reg));
 					break;
 				default:
 					_eeReadConstMem32(x86reg, (u32)PS2MEM_HW+0xf200+(mem&0xf0));
@@ -323,16 +323,16 @@ int psxRecMemConstRead32(u32 x86reg, u32 mem)
 			return 0;
 
 		case 0x1000:
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9read32);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9read32);
 			return 1;
 
 		default:
 			if( mem == 0xfffe0130 )
-				MOV32MtoR(x86reg, (uptr)&writectrl);
+				xMOV(xRegister32(x86reg), ptr[&writectrl]);
 			else {
-				XOR32RtoR(x86reg, x86reg);
-				CMP32ItoM((uptr)&g_psxWriteOk, 0);
+				xXOR(xRegister32(x86reg), xRegister32(x86reg));
+				xCMP(ptr32[&g_psxWriteOk], 0);
 				CMOVNE32MtoR(x86reg, (u32)PSXM(mem));
 			}
 
@@ -406,8 +406,8 @@ int psxRecMemConstWrite8(u32 mem, int mmreg)
 
 		case 0x1000:
 			_recPushReg(mmreg);
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9write8);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9write8);
 			return 0;
 
 		default:
@@ -533,34 +533,34 @@ int psxRecMemConstWrite16(u32 mem, int mmreg)
 					_eeMoveMMREGtoR(EAX, mmreg);
 
 					assert( mmreg != EBX );
-					MOV16MtoR(EBX, (u32)PS2MEM_HW+0xf240);
-					TEST16ItoR(EAX, 0xa0);
+					xMOV(bx, ptr[(void*)((u32)PS2MEM_HW+0xf240)]);
+					xTEST(ax, 0xa0);
 					j8Ptr[0] = JZ8(0);
 
-					AND16ItoR(EBX, 0x0fff);
-					OR16ItoR(EBX, 0x2000);
+					xAND(bx, 0x0fff);
+					xOR(bx, 0x2000);
 
 					x86SetJ8(j8Ptr[0]);
 
-					AND16ItoR(EAX, 0xf0);
-					TEST16RtoR(EAX, 0xf0);
+					xAND(ax, 0xf0);
+					xTEST(ax, xRegister16(0xf0));
 					j8Ptr[0] = JZ8(0);
 
-					NOT32R(EAX);
-					AND16RtoR(EBX, EAX);
+					xNOT(eax);
+					xAND(bx, ax);
 					j8Ptr[1] = JMP8(0);
 
 					x86SetJ8(j8Ptr[0]);
-					OR16RtoR(EBX, EAX);
+					xOR(bx, ax);
 
 					x86SetJ8(j8Ptr[1]);
 
-					MOV16RtoM((u32)PS2MEM_HW+0xf240, EBX);
+					xMOV(ptr[(void*)((u32)PS2MEM_HW+0xf240)], bx);
 
 					return 0;
 				}
 				case 0x60:
-					MOV32ItoM((u32)(PS2MEM_HW+0xf260), 0);
+					xMOV(ptr32[(u32*)((u32)(PS2MEM_HW+0xf260))], 0);
 					return 0;
 				default:
 					assert(0);
@@ -569,14 +569,14 @@ int psxRecMemConstWrite16(u32 mem, int mmreg)
 
 		case 0x1f90:
 			_recPushReg(mmreg);
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)SPU2write);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)SPU2write);
 			return 0;
 
 		case 0x1000:
 			_recPushReg(mmreg);
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9write16);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9write16);
 			return 0;
 
 		default:
@@ -735,11 +735,11 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 					// write to ps2 mem
 					// delete x86reg
 					if( IS_PSXCONSTREG(mmreg) ) {
-						AND32ItoM((u32)PS2MEM_HW+0xf220, ~g_psxConstRegs[(mmreg>>16)&0x1f]);
+						xAND(ptr32[(u32*)((u32)PS2MEM_HW+0xf220)], ~g_psxConstRegs[(mmreg>>16)&0x1f]);
 					}
 					else {
-						NOT32R(mmreg);
-						AND32RtoM((u32)PS2MEM_HW+0xf220, mmreg);
+						xNOT(xRegister32(mmreg));
+						xAND(ptr[(void*)((u32)PS2MEM_HW+0xf220)], xRegister32(mmreg));
 					}
 					return 0;
 				case 0x30:
@@ -753,34 +753,34 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 
 					_eeMoveMMREGtoR(EAX, mmreg);
 
-					MOV16MtoR(EBX, (u32)PS2MEM_HW+0xf240);
-					TEST16ItoR(EAX, 0xa0);
+					xMOV(bx, ptr[(void*)((u32)PS2MEM_HW+0xf240)]);
+					xTEST(ax, 0xa0);
 					j8Ptr[0] = JZ8(0);
 
-					AND16ItoR(EBX, 0x0fff);
-					OR16ItoR(EBX, 0x2000);
+					xAND(bx, 0x0fff);
+					xOR(bx, 0x2000);
 
 					x86SetJ8(j8Ptr[0]);
 
-					AND16ItoR(EAX, 0xf0);
-					TEST16RtoR(EAX, 0xf0);
+					xAND(ax, 0xf0);
+					xTEST(ax, xRegister16(0xf0));
 					j8Ptr[0] = JZ8(0);
 
-					NOT32R(EAX);
-					AND16RtoR(EBX, EAX);
+					xNOT(eax);
+					xAND(bx, ax);
 					j8Ptr[1] = JMP8(0);
 
 					x86SetJ8(j8Ptr[0]);
-					OR16RtoR(EBX, EAX);
+					xOR(bx, ax);
 
 					x86SetJ8(j8Ptr[1]);
 
-					MOV16RtoM((u32)PS2MEM_HW+0xf240, EBX);
+					xMOV(ptr[(void*)((u32)PS2MEM_HW+0xf240)], bx);
 
 					return 0;
 				}
 				case 0x60:
-					MOV32ItoM((u32)(PS2MEM_HW+0xf260), 0);
+					xMOV(ptr32[(u32*)((u32)(PS2MEM_HW+0xf260))], 0);
 					return 0;
 				default:
 					assert(0);
@@ -789,8 +789,8 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 
 		case 0x1000:
 			_recPushReg(mmreg);
-			PUSH32I(mem&0x1fffffff);
-			CALLFunc((uptr)DEV9write32);
+			xPUSH(mem&0x1fffffff);
+			xCALL((void*)(uptr)DEV9write32);
 			return 0;
 
 		case 0x1ffe:
@@ -805,11 +805,11 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 						case 0xc00: case 0xc04:
 						case 0xcc0: case 0xcc4:
 						case 0x0c4:
-							MOV32ItoM((uptr)&g_psxWriteOk, 0);
+							xMOV(ptr32[&g_psxWriteOk], 0);
 							break;
 						case 0x1e988:
 						case 0x1edd8:
-							MOV32ItoM((uptr)&g_psxWriteOk, 1);
+							xMOV(ptr32[&g_psxWriteOk], 1);
 							break;
 						default:
 							assert(0);
@@ -817,25 +817,25 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 				}
 				else {
 					// not ok
-					CMP32ItoR(mmreg, 0x800);
+					xCMP(xRegister32(mmreg), 0x800);
 					ptrs[0] = JE8(0);
-					CMP32ItoR(mmreg, 0x804);
+					xCMP(xRegister32(mmreg), 0x804);
 					ptrs[1] = JE8(0);
-					CMP32ItoR(mmreg, 0xc00);
+					xCMP(xRegister32(mmreg), 0xc00);
 					ptrs[2] = JE8(0);
-					CMP32ItoR(mmreg, 0xc04);
+					xCMP(xRegister32(mmreg), 0xc04);
 					ptrs[3] = JE8(0);
-					CMP32ItoR(mmreg, 0xcc0);
+					xCMP(xRegister32(mmreg), 0xcc0);
 					ptrs[4] = JE8(0);
-					CMP32ItoR(mmreg, 0xcc4);
+					xCMP(xRegister32(mmreg), 0xcc4);
 					ptrs[5] = JE8(0);
-					CMP32ItoR(mmreg, 0x0c4);
+					xCMP(xRegister32(mmreg), 0x0c4);
 					ptrs[6] = JE8(0);
 
 					// ok
-					CMP32ItoR(mmreg, 0x1e988);
+					xCMP(xRegister32(mmreg), 0x1e988);
 					ptrs[7] = JE8(0);
-					CMP32ItoR(mmreg, 0x1edd8);
+					xCMP(xRegister32(mmreg), 0x1edd8);
 					ptrs[8] = JE8(0);
 
 					x86SetJ8(ptrs[0]);
@@ -845,12 +845,12 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 					x86SetJ8(ptrs[4]);
 					x86SetJ8(ptrs[5]);
 					x86SetJ8(ptrs[6]);
-					MOV32ItoM((uptr)&g_psxWriteOk, 0);
+					xMOV(ptr32[&g_psxWriteOk], 0);
 					ptrs[0] = JMP8(0);
 
 					x86SetJ8(ptrs[7]);
 					x86SetJ8(ptrs[8]);
-					MOV32ItoM((uptr)&g_psxWriteOk, 1);
+					xMOV(ptr32[&g_psxWriteOk], 1);
 
 					x86SetJ8(ptrs[0]);
 				}
@@ -858,7 +858,7 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 			return 0;
 
 		default:
-			TEST8ItoM((uptr)&g_psxWriteOk, 1);
+			xTEST(ptr8[(u8*)((uptr)&g_psxWriteOk)], 1);
 			j8Ptr[0] = JZ8(0);
 			_eeWriteConstMem32((u32)PSXM(mem), mmreg);
 			x86SetJ8(j8Ptr[0]);

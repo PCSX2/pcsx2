@@ -152,24 +152,24 @@ u32* _eeGetConstReg(int reg)
 	return &cpuRegs.GPR.r[ reg ].UL[0];
 }
 
-void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
+void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( fromgpr == 0 )
-		XOR32RtoR( to, to );	// zero register should use xor, thanks --air
+		xXOR(to, to);	// zero register should use xor, thanks --air
 	else if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoR( to, g_cpuConstRegs[fromgpr].UL[0] );
+		xMOV(to, g_cpuConstRegs[fromgpr].UL[0] );
 	else {
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
-			SSE2_MOVD_XMM_to_R(to, mmreg);
+			xMOVD(to, xRegisterSSE(mmreg));
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
-			MOVD32MMXtoR(to, mmreg);
+			xMOVD(to, xRegisterMMX(mmreg));
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(to, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			xMOV(to, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
 		}
 	}
 }
@@ -177,20 +177,20 @@ void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
 void _eeMoveGPRtoM(u32 to, int fromgpr)
 {
 	if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoM( to, g_cpuConstRegs[fromgpr].UL[0] );
+		xMOV(ptr32[(u32*)(to)], g_cpuConstRegs[fromgpr].UL[0] );
 	else {
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
-			SSEX_MOVD_XMM_to_M32(to, mmreg);
+			xMOVSS(ptr[(void*)(to)], xRegisterSSE(mmreg));
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM(to, mmreg);
+			xMOVD(ptr[(void*)(to)], xRegisterMMX(mmreg));
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
-			MOV32RtoM(to, EAX );
+			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
+			xMOV(ptr[(void*)(to)], eax);
 		}
 	}
 }
@@ -198,20 +198,20 @@ void _eeMoveGPRtoM(u32 to, int fromgpr)
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 {
 	if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoRm( to, g_cpuConstRegs[fromgpr].UL[0] );
+		xMOV(ptr32[xAddressReg(to)], g_cpuConstRegs[fromgpr].UL[0] );
 	else {
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
-			SSEX_MOVD_XMM_to_Rm(to, mmreg);
+			xMOVSS(ptr[xAddressReg(to)], xRegisterSSE(mmreg));
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			MOVD32MMXtoRm(to, mmreg);
+			xMOVD(ptr[xAddressReg(to)], xRegisterMMX(mmreg));
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
-			MOV32RtoRm( to, EAX );
+			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
+			xMOV(ptr[xAddressReg(to)], eax);
 		}
 	}
 }
@@ -270,8 +270,8 @@ int _flushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+			xMOV(ptr32[&cpuRegs.GPR.r[i].UL[0]], g_cpuConstRegs[i].UL[0]);
+			xMOV(ptr32[&cpuRegs.GPR.r[i].UL[1]], g_cpuConstRegs[i].UL[1]);
 			g_cpuFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -328,8 +328,8 @@ void recBranchCall( void (*func)() )
 	// In order to make sure a branch test is performed, the nextBranchCycle is set
 	// to the current cpu cycle.
 
-	MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
-	MOV32RtoM( (uptr)&g_nextEventCycle, EAX );
+	xMOV(eax, ptr[&cpuRegs.cycle ]);
+	xMOV(ptr[&g_nextEventCycle], eax);
 
 	recCall(func);
 	g_branch = 2;
@@ -843,9 +843,9 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
-	CMP32ItoM((uptr)&cpuRegs.pc, pc);
+	xCMP(ptr32[&cpuRegs.pc], pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	xADD(ptr32[&cpuRegs.cycle], eeScaleBlockCycles());
 	// Note: technically the address is 0x8000_0180 (or 0x180)
 	// (if CPU is booted)
 	xJMP( DispatcherReg );
@@ -858,9 +858,9 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 
-	CMP32ItoM((uptr)&cpuRegs.pc, pc);
+	xCMP(ptr32[&cpuRegs.pc], pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	xADD(ptr32[&cpuRegs.cycle], eeScaleBlockCycles());
 	xJMP( DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
@@ -952,24 +952,24 @@ void SetBranchReg( u32 reg )
 
 	if( reg != 0xffffffff ) {
 //		if( GPR_IS_CONST1(reg) )
-//			MOV32ItoM( (uptr)&cpuRegs.pc, g_cpuConstRegs[reg].UL[0] );
+//			xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[reg].UL[0] );
 //		else {
 //			int mmreg;
 //
 //			if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0 ) {
-//				SSE_MOVSS_XMM_to_M32((u32)&cpuRegs.pc, mmreg);
+//				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //			}
 //			else if( (mmreg = _checkMMXreg(MMX_GPR+reg, MODE_READ)) >= 0 ) {
-//				MOVDMMXtoM((u32)&cpuRegs.pc, mmreg);
+//				xMOVD(ptr[&cpuRegs.pc], xRegisterMMX(mmreg));
 //				SetMMXstate();
 //			}
 //			else {
-//				MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ reg ].UL[ 0 ] );
-//				MOV32RtoM((u32)&cpuRegs.pc, EAX);
+//				xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ reg ].UL[ 0 ] )]);
+//				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_eeMoveGPRtoR(ESI, reg);
+		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_eeMoveGPRtoR(esi, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
 			xMOV(ecx, esi);
@@ -979,20 +979,20 @@ void SetBranchReg( u32 reg )
 
 		recompileNextInstruction(1);
 
-		if( x86regs[ESI].inuse ) {
-			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-			MOV32RtoM((uptr)&cpuRegs.pc, ESI);
-			x86regs[ESI].inuse = 0;
+		if( x86regs[esi.GetId()].inuse ) {
+			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+			xMOV(ptr[&cpuRegs.pc], esi);
+			x86regs[esi.GetId()].inuse = 0;
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&g_recWriteback);
-			MOV32RtoM((uptr)&cpuRegs.pc, EAX);
+			xMOV(eax, ptr[&g_recWriteback]);
+			xMOV(ptr[&cpuRegs.pc], eax);
 		}
 	}
 
-//	CMP32ItoM((u32)&cpuRegs.pc, 0);
+//	xCMP(ptr32[&cpuRegs.pc], 0);
 //	j8Ptr[5] = JNE8(0);
-//	CALLFunc((uptr)tempfn);
+//	xCALL((void*)(uptr)tempfn);
 //	x86SetJ8( j8Ptr[5] );
 
 	iFlushCall(FLUSH_EVERYTHING);
@@ -1044,9 +1044,9 @@ void LoadBranchState()
 void iFlushCall(int flushtype)
 {
 	// Free registers that are not saved across function calls (x86-32 ABI):
-	_freeX86reg(EAX);
-	_freeX86reg(ECX);
-	_freeX86reg(EDX);
+	_freeX86reg(eax);
+	_freeX86reg(ecx);
+	_freeX86reg(edx);
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC) {
 		xMOV(ptr32[&cpuRegs.pc], pc);
@@ -1078,7 +1078,7 @@ void iFlushCall(int flushtype)
 		_flushConstRegs();
 
 	if (x86FpuState==MMX_STATE) {
-		EMMS();
+		xEMMS();
 		x86FpuState=FPU_STATE;
 	}
 }
@@ -1322,7 +1322,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ECX, (op >> 21) & 0x1F);
+	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
 	if ((s16)op != 0)
 		xADD(ecx, (s16)op);
 	if (bits == 128)
@@ -1426,7 +1426,7 @@ void recompileNextInstruction(int delayslot)
 	pxAssert(s_pCode);
 	
 	if( IsDebugBuild )
-		MOV32ItoR(EAX, pc);		// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
+		xMOV(eax, pc);		// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
 
 	cpuRegs.code = *(int *)s_pCode;
 
@@ -1850,7 +1850,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			AtomicExchange( eeRecNeedsReset, true );
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			MOV32MtoR(ECX, (uptr)&cpuRegs.GPR.n.a0.UL[ 0 ] );
+			xMOV(ecx, ptr[&cpuRegs.GPR.n.a0.UL[ 0 ] ]);
 			xCALL(GoemonUnloadTlb);
 		}
 	}

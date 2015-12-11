@@ -23,12 +23,3 @@
 typedef int x86IntRegType;
 typedef int x86MMXRegType;
 typedef int x86SSERegType;
-
-#define EAX 0
-#define EBX 3
-#define ECX 1
-#define EDX 2
-#define ESI 6
-#define EDI 7
-#define EBP 5
-#define ESP 4

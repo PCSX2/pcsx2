@@ -69,8 +69,8 @@ void recJAL()
 	}
 	else
 	{
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc + 4);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+		xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
+		xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
 	}
 
 	recompileNextInstruction(1);
@@ -95,8 +95,8 @@ void recJR()
 void recJALR()
 {
 	int newpc = pc + 4;
-	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_eeMoveGPRtoR(ESI, _Rs_);
+	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	_eeMoveGPRtoR(esi, _Rs_);
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		xMOV(ecx, esi);
@@ -106,20 +106,20 @@ void recJALR()
 	// uncomment when there are NO instructions that need to call interpreter
 //	int mmreg;
 //	if( GPR_IS_CONST1(_Rs_) )
-//		MOV32ItoM( (u32)&cpuRegs.pc, g_cpuConstRegs[_Rs_].UL[0] );
+//		xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[_Rs_].UL[0] );
 //	else {
 //		int mmreg;
 //
 //		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-//			SSE_MOVSS_XMM_to_M32((u32)&cpuRegs.pc, mmreg);
+//			xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //		}
 //		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-//			MOVDMMXtoM((u32)&cpuRegs.pc, mmreg);
+//			xMOVD(ptr[&cpuRegs.pc], xRegisterMMX(mmreg));
 //			SetMMXstate();
 //		}
 //		else {
-//			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-//			MOV32RtoM((u32)&cpuRegs.pc, EAX);
+//			xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] )]);
+//			xMOV(ptr[&cpuRegs.pc], eax);
 //		}
 //	}
 
@@ -135,8 +135,8 @@ void recJALR()
 		}
 		else
 		{
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], newpc);
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], newpc);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
 		}
 	}
 
@@ -144,14 +144,14 @@ void recJALR()
 	_clearNeededXMMregs();
 	recompileNextInstruction(1);
 
-	if( x86regs[ESI].inuse ) {
-		pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-		MOV32RtoM((uptr)&cpuRegs.pc, ESI);
-		x86regs[ESI].inuse = 0;
+	if( x86regs[esi.GetId()].inuse ) {
+		pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+		xMOV(ptr[&cpuRegs.pc], esi);
+		x86regs[esi.GetId()].inuse = 0;
 	}
 	else {
-		MOV32MtoR(EAX, (uptr)&g_recWriteback);
-		MOV32RtoM((uptr)&cpuRegs.pc, EAX);
+		xMOV(eax, ptr[&g_recWriteback]);
+		xMOV(ptr[&cpuRegs.pc], eax);
 	}
 
 	SetBranchReg(0xffffffff);

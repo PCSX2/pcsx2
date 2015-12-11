@@ -268,6 +268,7 @@ template< typename T > void xWrite( T val );
 		// Diagnostics -- returns a string representation of this register.  Return string
 		// is a valid non-null string for any Id, valid or invalid.  No assertions are generated.
 		const char* GetName();
+		int GetId() const { return Id; }
 	};
 
 	class xRegisterInt : public xRegisterBase

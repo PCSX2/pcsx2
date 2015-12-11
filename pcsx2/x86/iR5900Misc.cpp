@@ -68,15 +68,15 @@ namespace OpcodeImpl {
 
 ////////////////////////////////////////////////////
 //static void recCACHE() {
-//	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-//	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+//	xMOV(ptr32[&cpuRegs.code], cpuRegs.code );
+//	xMOV(ptr32[&cpuRegs.pc], pc );
 //	iFlushCall(FLUSH_EVERYTHING);
-//	CALLFunc( (uptr)CACHE );
+//	xCALL((void*)(uptr)CACHE );
 //	//branch = 2;
 //
-//	CMP32ItoM((int)&cpuRegs.pc, pc);
+//	xCMP(ptr32[(u32*)((int)&cpuRegs.pc)], pc);
 //	j8Ptr[0] = JE8(0);
-//	RET();
+//	xRET();
 //	x86SetJ8(j8Ptr[0]);
 //}
 
@@ -96,17 +96,17 @@ void recMFSA()
 
 	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 	if( mmreg >= 0 ) {
-		SSE_MOVLPS_M64_to_XMM(mmreg, (uptr)&cpuRegs.sa);
+		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
 	}
 	else if( (mmreg = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) >= 0 ) {
-		MOVDMtoMMX(mmreg, (uptr)&cpuRegs.sa);
+		xMOVDZX(xRegisterMMX(mmreg), ptr[&cpuRegs.sa]);
 		SetMMXstate();
 	}
 	else {
-		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
+		xMOV(eax, ptr[&cpuRegs.sa]);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
 	}
 }
 
@@ -114,50 +114,50 @@ void recMFSA()
 void recMTSA()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, g_cpuConstRegs[_Rs_].UL[0] & 0xf );
+		xMOV(ptr32[&cpuRegs.sa], g_cpuConstRegs[_Rs_].UL[0] & 0xf );
 	}
 	else {
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-			SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.sa, mmreg);
+			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM((uptr)&cpuRegs.sa, mmreg);
+			xMOVD(ptr[&cpuRegs.sa], xRegisterMMX(mmreg));
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
-			MOV32RtoM((uptr)&cpuRegs.sa, EAX);
+			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+			xMOV(ptr[&cpuRegs.sa], eax);
 		}
-		AND32ItoM((uptr)&cpuRegs.sa, 0xf);
+		xAND(ptr32[&cpuRegs.sa], 0xf);
 	}
 }
 
 void recMTSAB()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) );
+		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) );
 	}
 	else {
-		_eeMoveGPRtoR(EAX, _Rs_);
-		AND32ItoR(EAX, 0xF);
-		XOR32ItoR(EAX, _Imm_&0xf);
-		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
+		_eeMoveGPRtoR(eax, _Rs_);
+		xAND(eax, 0xF);
+		xXOR(eax, _Imm_&0xf);
+		xMOV(ptr[&cpuRegs.sa], eax);
 	}
 }
 
 void recMTSAH()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
+		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
 	}
 	else {
-		_eeMoveGPRtoR(EAX, _Rs_);
-		AND32ItoR(EAX, 0x7);
-		XOR32ItoR(EAX, _Imm_&0x7);
-		SHL32ItoR(EAX, 1);
-		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
+		_eeMoveGPRtoR(eax, _Rs_);
+		xAND(eax, 0x7);
+		xXOR(eax, _Imm_&0x7);
+		xSHL(eax, 1);
+		xMOV(ptr[&cpuRegs.sa], eax);
 	}
 }
 
@@ -200,10 +200,10 @@ void recMTSAH()
 	// Suikoden 3 uses it a lot
 	void recCACHE() //Interpreter only!
 	{
-	   //MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
-	   //MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+	   //xMOV(ptr32[&cpuRegs.code], (u32)cpuRegs.code );
+	   //xMOV(ptr32[&cpuRegs.pc], (u32)pc );
 	   //iFlushCall(FLUSH_EVERYTHING);
-	   //CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::CACHE );
+	   //xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::CACHE );
 	   //branch = 2;
 	}
 

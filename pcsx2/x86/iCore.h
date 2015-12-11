@@ -121,11 +121,12 @@ extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 uptr _x86GetAddr(int type, int reg);
 void _initX86regs();
 int  _getFreeX86reg(int mode);
-int  _allocX86reg(int x86reg, int type, int reg, int mode);
+int  _allocX86reg(x86Emitter::xRegister32 x86reg, int type, int reg, int mode);
 void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);
 void _clearNeededX86regs();
+void _freeX86reg(const x86Emitter::xRegister32& x86reg);
 void _freeX86reg(int x86reg);
 void _freeX86regs();
 void _flushCachedRegs();
@@ -361,26 +362,5 @@ extern u16 x86FpuState;
 #define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
 // used when regs aren't going to be changed be callee
 #define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
-
-
-//////////////////////////////////////////////////////////////////////////
-// Utility Functions -- that should probably be part of the Emitter.
-
-// op = 0, and
-// op = 1, or
-// op = 2, xor
-// op = 3, nor (the 32bit versoins only do OR)
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-
-extern void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
-extern void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
-extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoM(uptr to, u32 from, int op);
-
-#ifdef ARITHMETICIMM_RECOMPILE
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-#endif
 
 #endif

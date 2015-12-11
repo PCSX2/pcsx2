@@ -176,7 +176,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		if (t1reg < 0) {
 			//Console.WriteLn( "VU ALLOCATION ERROR: Temp reg can't be allocated!!!!" );
 			t1reg = (reg == 0) ? 1 : 0; // Make t1reg != reg
-			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg ); // Backup data to temp address
+			xMOVAPS(ptr[TEMPXMMData], xRegisterSSE(t1reg )); // Backup data to temp address
 			t1regBoolean = 1;
 		}
 		else t1regBoolean = 0;
@@ -186,9 +186,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		t1regBoolean = 2;
 	}
 
-	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw
-	MOV32MtoR(x86statflag, prevstataddr); // Load the previous status in to x86statflag
-	AND16ItoR(x86statflag, 0xff0); // Keep Sticky and D/I flags
+	xSHUF.PS(xRegisterSSE(reg), xRegisterSSE(reg), 0x1B); // Flip wzyx to xyzw
+	xMOV(xRegister32(x86statflag), ptr[(void*)(prevstataddr)]); // Load the previous status in to x86statflag
+	xAND(xRegister16(x86statflag), 0xff0); // Keep Sticky and D/I flags
 
 
 	if (CHECK_VU_EXTRA_FLAGS) { // Checks all flags
@@ -197,54 +197,54 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		//-------------------------Check for Overflow flags------------------------------
 
-		//SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		//SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+		//xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg)); // Clear t1reg
+		//xCMPUNORD.PS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // If reg == NaN then set Vector to 0xFFFFFFFF
 
-		//SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
-		//SSE_MINPS_M128_to_XMM(t1reg, (uptr)g_maxvals);
-		//SSE_MAXPS_M128_to_XMM(t1reg, (uptr)g_minvals);
-		//SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
+		//xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(reg));
+		//xMIN.PS(xRegisterSSE(t1reg), ptr[g_maxvals]);
+		//xMAX.PS(xRegisterSSE(t1reg), ptr[g_minvals]);
+		//xCMPNE.PS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // If they're not equal, then overflow has occured
 
-		SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)VU_Zero_Helper_Mask);
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow)
+		xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(reg));
+		xAND.PS(xRegisterSSE(t1reg), ptr[VU_Zero_Helper_Mask]);
+		xCMPEQ.PS(xRegisterSSE(t1reg), ptr[VU_Pos_Infinity]); // If infinity, then overflow has occured (NaN's don't report as overflow)
 
-		SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the previous calculation
+		xMOVMSKPS(xRegister32(x86macflag), xRegisterSSE(t1reg)); // Move the sign bits of the previous calculation
 
-		AND16ItoR(x86macflag, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
+		xAND(xRegister16(x86macflag), _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x208); // OS, O flags
-			SHL16ItoR(x86macflag, 12);
+			xOR(xRegister16(x86statflag), 0x208); // OS, O flags
+			xSHL(xRegister16(x86macflag), 12);
 			if (_XYZW_SS) pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
 		//-------------------------Check for Underflow flags------------------------------
 
-		SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
+		xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // t1reg <- reg
 
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask1[ 0 ]);
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
+		xAND.PS(xRegisterSSE(t1reg), ptr[&VU_Underflow_Mask1[ 0 ]]);
+		xCMPEQ.PS(xRegisterSSE(t1reg), ptr[&VU_Zero_Mask[ 0 ]]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
 
-		SSE_ANDPS_XMM_to_XMM(t1reg, reg);
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask2[ 0 ]);
-		SSE_CMPNEPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
+		xAND.PS(xRegisterSSE(t1reg), xRegisterSSE(reg));
+		xAND.PS(xRegisterSSE(t1reg), ptr[&VU_Underflow_Mask2[ 0 ]]);
+		xCMPNE.PS(xRegisterSSE(t1reg), ptr[&VU_Zero_Mask[ 0 ]]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
 
-		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
+		xMOVMSKPS(eax, xRegisterSSE(t1reg)); // Move the sign bits of the previous calculation
 
-		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
+		xAND(ax, _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x104); // US, U flags
-			SHL16ItoR(EAX, 8);
-			OR32RtoR(x86macflag, EAX);
+			xOR(xRegister16(x86statflag), 0x104); // US, U flags
+			xSHL(ax, 8);
+			xOR(xRegister32(x86macflag), eax);
 		x86SetJ8(pjmp);
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
 		if (CHECK_VU_UNDERFLOW) {  // Sets underflow/denormals to zero
-			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg (t1reg = denormals are positive zero)
+			xANDN.PS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // t1reg = !t1reg & reg (t1reg = denormals are positive zero)
 			VU_MERGE_REGS_SAFE(t1reg, reg, (15 - flipMask[_X_Y_Z_W])); // Send t1reg the vectors that shouldn't be modified (since reg was flipped, we need a mask to get the unmodified vectors)
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
-			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]); // Only keep the sign bit for each vector
-			SSE_ORPS_XMM_to_XMM(reg, t1reg); // Denormals are Signed Zero, and unmodified vectors stay the same!
+			xAND.PS(xRegisterSSE(reg), ptr[&VU_Signed_Zero_Mask[ 0 ]]); // Only keep the sign bit for each vector
+			xOR.PS(xRegisterSSE(reg), xRegisterSSE(t1reg)); // Denormals are Signed Zero, and unmodified vectors stay the same!
 		}
 
 		if (_XYZW_SS) x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
@@ -253,26 +253,26 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		//-------------------------Check for Signed flags------------------------------
 
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
-		SSE_MOVMSKPS_XMM_to_R32(x86temp, t1reg); // Used for Zero Flag Calculation
+		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg)); // Clear t1reg
+		xCMPEQ.PS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // Set all F's if each vector is zero
+		xMOVMSKPS(xRegister32(x86temp), xRegisterSSE(t1reg)); // Used for Zero Flag Calculation
 
-		SSE_MOVMSKPS_XMM_to_R32(EAX, reg); // Move the sign bits of the t1reg
+		xMOVMSKPS(eax, xRegisterSSE(reg)); // Move the sign bits of the t1reg
 
-		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+		xAND(ax, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x82); // SS, S flags
-			SHL16ItoR(EAX, 4);
-			OR32RtoR(x86macflag, EAX);
+			xOR(xRegister16(x86statflag), 0x82); // SS, S flags
+			xSHL(ax, 4);
+			xOR(xRegister32(x86macflag), eax);
 			if (_XYZW_SS) pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
 		x86SetJ8(pjmp);
 
 		//-------------------------Check for Zero flags------------------------------
 
-		AND16ItoR(x86temp, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+		xAND(xRegister16(x86temp), _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x41); // ZS, Z flags
-			OR32RtoR(x86macflag, x86temp);
+			xOR(xRegister16(x86statflag), 0x41); // ZS, Z flags
+			xOR(xRegister32(x86macflag), xRegister32(x86temp));
 		x86SetJ8(pjmp);
 
 		_freeX86reg(x86temp);
@@ -284,38 +284,38 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		//-------------------------Check for Signed flags------------------------------
 
 		// The following code makes sure the Signed Bit isn't set with Negative Zero
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
-		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Used for Zero Flag Calculation
-		SSE_ANDNPS_XMM_to_XMM(t1reg, reg);
+		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg)); // Clear t1reg
+		xCMPEQ.PS(xRegisterSSE(t1reg), xRegisterSSE(reg)); // Set all F's if each vector is zero
+		xMOVMSKPS(eax, xRegisterSSE(t1reg)); // Used for Zero Flag Calculation
+		xANDN.PS(xRegisterSSE(t1reg), xRegisterSSE(reg));
 
-		SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the t1reg
+		xMOVMSKPS(xRegister32(x86macflag), xRegisterSSE(t1reg)); // Move the sign bits of the t1reg
 
-		AND16ItoR(x86macflag, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+		xAND(xRegister16(x86macflag), _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x82); // SS, S flags
-			SHL16ItoR(x86macflag, 4);
+			xOR(xRegister16(x86statflag), 0x82); // SS, S flags
+			xSHL(xRegister16(x86macflag), 4);
 			if (_XYZW_SS) pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
 		x86SetJ8(pjmp);
 
 		//-------------------------Check for Zero flags------------------------------
 
-		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+		xAND(ax, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR16ItoR(x86statflag, 0x41); // ZS, Z flags
-			OR32RtoR(x86macflag, EAX);
+			xOR(xRegister16(x86statflag), 0x41); // ZS, Z flags
+			xOR(xRegister32(x86macflag), eax);
 		x86SetJ8(pjmp);
 	}
 	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
 
 	if (_XYZW_SS) x86SetJ8(pjmp2); // If we skipped the Zero Flag Checking, return here
 
-	if		(t1regBoolean == 2) SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx (have to do this because reg != EEREC_TEMP)
-	else if (t1regBoolean == 1) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData ); // Restore data from temo address
+	if		(t1regBoolean == 2) xSHUF.PS(xRegisterSSE(reg), xRegisterSSE(reg), 0x1B); // Flip back reg to wzyx (have to do this because reg != EEREC_TEMP)
+	else if (t1regBoolean == 1) xMOVAPS(xRegisterSSE(t1reg), ptr[TEMPXMMData ]); // Restore data from temo address
 	else	_freeXMMreg(t1reg); // Free temp reg
 
-	MOV16RtoM(macaddr, x86macflag);
-	MOV16RtoM(stataddr, x86statflag);
+	xMOV(ptr[(void*)(macaddr)], xRegister16(x86macflag));
+	xMOV(ptr[(void*)(stataddr)], xRegister16(x86statflag));
 
 	_freeX86reg(x86macflag);
 	_freeX86reg(x86statflag);
@@ -337,65 +337,65 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 {
 	u8 *localptr[4][8];
 
-	MOV32RtoM((uptr)&tempECX, ECX);
+	xMOV(ptr[&tempECX], ecx);
 
-	int temp1 = ECX; //receives regd
+	int temp1 = ecx.GetId(); //receives regd
 	int temp2 = ALLOCTEMPX86(0);
 
-	if (temp2 == ECX)
+	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ECX);
+		_freeX86reg(ecx);
 	}
 
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
+	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
+	xMOVAPS(ptr[&VU_addsub_reg[1][0]], xRegisterSSE(regt));
 
-	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[0][0], regd);
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[1][0], regd);
-	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]);
+	xPCMP.EQB(xRegisterSSE(regd), xRegisterSSE(regd));
+	xMOVAPS(ptr[&VU_addsuband[0][0]], xRegisterSSE(regd));
+	xMOVAPS(ptr[&VU_addsuband[1][0]], xRegisterSSE(regd));
+	xMOVAPS(xRegisterSSE(regd), ptr[&VU_addsub_reg[0][0]]);
 
-	SSE2_PSLLD_I8_to_XMM(regd, 1);
-	SSE2_PSLLD_I8_to_XMM(regt, 1);
+	xPSLL.D(xRegisterSSE(regd), 1);
+	xPSLL.D(xRegisterSSE(regt), 1);
 
-	SSE2_PSRLD_I8_to_XMM(regd, 24);
-	SSE2_PSRLD_I8_to_XMM(regt, 24);
+	xPSRL.D(xRegisterSSE(regd), 24);
+	xPSRL.D(xRegisterSSE(regt), 24);
 
-	SSE2_PSUBD_XMM_to_XMM(regd, regt);
+	xPSUB.D(xRegisterSSE(regd), xRegisterSSE(regt));
 
 #define PERFORM(i) \
 	\
-	SSE_PEXTRW_XMM_to_R32(temp1, regd, i*2); \
-	MOVSX32R16toR(temp1, temp1); \
-	CMP32ItoR(temp1, 25);\
+	xPEXTR.W(xRegister32(temp1), xRegisterSSE(regd), i*2); \
+	xMOVSX(xRegister32(temp1), xRegister16(temp1)); \
+	xCMP(xRegister32(temp1), 25);\
 	localptr[i][0] = JGE8(0);\
-	CMP32ItoR(temp1, 0);\
+	xCMP(xRegister32(temp1), 0);\
 	localptr[i][1] = JG8(0);\
 	localptr[i][2] = JE8(0);\
-	CMP32ItoR(temp1, -25);\
+	xCMP(xRegister32(temp1), -25);\
 	localptr[i][3] = JLE8(0);\
 	\
-	NEG32R(temp1); \
-	DEC32R(temp1);\
-	MOV32ItoR(temp2, 0xffffffff); \
-	SHL32CLtoR(temp2); \
-	MOV32RtoM((uptr)&VU_addsuband[0][i], temp2);\
+	xNEG(xRegister32(temp1)); \
+	xDEC(xRegister32(temp1));\
+	xMOV(xRegister32(temp2), 0xffffffff); \
+	xSHL(xRegister32(temp2), cl); \
+	xMOV(ptr[&VU_addsuband[0][i]], xRegister32(temp2));\
 	localptr[i][4] = JMP8(0);\
 	\
 	x86SetJ8(localptr[i][0]);\
-	MOV32ItoM((uptr)&VU_addsuband[1][i], 0x80000000);\
+	xMOV(ptr32[&VU_addsuband[1][i]], 0x80000000);\
 	localptr[i][5] = JMP8(0);\
 	\
 	x86SetJ8(localptr[i][1]);\
-	DEC32R(temp1);\
-	MOV32ItoR(temp2, 0xffffffff);\
-	SHL32CLtoR(temp2); \
-	MOV32RtoM((uptr)&VU_addsuband[1][i], temp2);\
+	xDEC(xRegister32(temp1));\
+	xMOV(xRegister32(temp2), 0xffffffff);\
+	xSHL(xRegister32(temp2), cl); \
+	xMOV(ptr[&VU_addsuband[1][i]], xRegister32(temp2));\
 	localptr[i][6] = JMP8(0);\
 	\
 	x86SetJ8(localptr[i][3]);\
-	MOV32ItoM((uptr)&VU_addsuband[0][i], 0x80000000);\
+	xMOV(ptr32[&VU_addsuband[0][i]], 0x80000000);\
 	localptr[i][7] = JMP8(0);\
 	\
 	x86SetJ8(localptr[i][2]);\
@@ -411,20 +411,20 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 	PERFORM(3);
 #undef PERFORM
 
-	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]);
-	SSE_MOVAPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]);
+	xMOVAPS(xRegisterSSE(regd), ptr[&VU_addsub_reg[0][0]]);
+	xMOVAPS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]);
 
-	SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsuband[0][0]);
-	SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsuband[1][0]);
+	xAND.PS(xRegisterSSE(regd), ptr[&VU_addsuband[0][0]]);
+	xAND.PS(xRegisterSSE(regt), ptr[&VU_addsuband[1][0]]);
 
-	if (is_sub)	SSE_SUBPS_XMM_to_XMM(regd, regt);
-	else		SSE_ADDPS_XMM_to_XMM(regd, regt);
+	if (is_sub)	xSUB.PS(xRegisterSSE(regd), xRegisterSSE(regt));
+	else		xADD.PS(xRegisterSSE(regd), xRegisterSSE(regt));
 
-	SSE_MOVAPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]);
+	xMOVAPS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]);
 
 	_freeX86reg(temp2);
 
-	MOV32MtoR(ECX, (uptr)&tempECX);
+	xMOV(ecx, ptr[&tempECX]);
 }
 
 void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
@@ -432,101 +432,101 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 	u8 *localptr[8];
 	u32 addrt = regt; //for case is_mem
 
-	MOV32RtoM((uptr)&tempECX, ECX);
+	xMOV(ptr[&tempECX], ecx);
 
-	int temp1 = ECX; //receives regd
+	int temp1 = ecx.GetId(); //receives regd
 	int temp2 = ALLOCTEMPX86(0);
 
-	if (temp2 == ECX)
+	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ECX);
+		_freeX86reg(ecx);
 	}
 
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
-	if (!is_mem) SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
+	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
+	if (!is_mem) xMOVAPS(ptr[&VU_addsub_reg[1][0]], xRegisterSSE(regt));
 
-	SSE2_MOVD_XMM_to_R(temp1, regd);
-	SHR32ItoR(temp1, 23);
+	xMOVD(xRegister32(temp1), xRegisterSSE(regd));
+	xSHR(xRegister32(temp1), 23);
 
 	if (is_mem) {
-		MOV32MtoR(temp2, addrt);
-		MOV32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
-		SHR32ItoR(temp2, 23);
+		xMOV(xRegister32(temp2), ptr[(void*)(addrt)]);
+		xMOV(ptr[&VU_addsub_reg[1][0]], xRegister32(temp2));
+		xSHR(xRegister32(temp2), 23);
 	}
 	else {
-		SSE2_MOVD_XMM_to_R(temp2, regt);
-		SHR32ItoR(temp2, 23);
+		xMOVD(xRegister32(temp2), xRegisterSSE(regt));
+		xSHR(xRegister32(temp2), 23);
 	}
 
-	AND32ItoR(temp1, 0xff);
-	AND32ItoR(temp2, 0xff);
+	xAND(xRegister32(temp1), 0xff);
+	xAND(xRegister32(temp2), 0xff);
 
-	SUB32RtoR(temp1, temp2); //temp1 = exponent difference
+	xSUB(xRegister32(temp1), xRegister32(temp2)); //temp1 = exponent difference
 
-	CMP32ItoR(temp1, 25);
+	xCMP(xRegister32(temp1), 25);
 	localptr[0] = JGE8(0);
-	CMP32ItoR(temp1, 0);
+	xCMP(xRegister32(temp1), 0);
 	localptr[1] = JG8(0);
 	localptr[2] = JE8(0);
-	CMP32ItoR(temp1, -25);
+	xCMP(xRegister32(temp1), -25);
 	localptr[3] = JLE8(0);
 
-	NEG32R(temp1);
-	DEC32R(temp1);
-	MOV32ItoR(temp2, 0xffffffff);
-	SHL32CLtoR(temp2);
-	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	xNEG(xRegister32(temp1));
+	xDEC(xRegister32(temp1));
+	xMOV(xRegister32(temp2), 0xffffffff);
+	xSHL(xRegister32(temp2), cl);
+	xPCMP.EQB(xRegisterSSE(regd), xRegisterSSE(regd));
 	if (is_mem) {
-		SSE_PINSRW_R32_to_XMM(regd, temp2, 0);
-		SHR32ItoR(temp2, 16);
-		SSE_PINSRW_R32_to_XMM(regd, temp2, 1);
+		xPINSR.W(xRegisterSSE(regd), xRegister32(temp2), 0);
+		xSHR(xRegister32(temp2), 16);
+		xPINSR.W(xRegisterSSE(regd), xRegister32(temp2), 1);
 	}
 	else {
-		SSE2_MOVD_R_to_XMM(regt, temp2);
-		SSE_MOVSS_XMM_to_XMM(regd, regt);
-		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		xMOVDZX(xRegisterSSE(regt), xRegister32(temp2));
+		xMOVSS(xRegisterSSE(regd), xRegisterSSE(regt));
+		xPCMP.EQB(xRegisterSSE(regt), xRegisterSSE(regt));
 	}
 	localptr[4] = JMP8(0);
 
 	x86SetJ8(localptr[0]);
-	MOV32ItoR(temp2, 0x80000000);
+	xMOV(xRegister32(temp2), 0x80000000);
 	if (is_mem)
-		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+		xAND(ptr[&VU_addsub_reg[1][0]], xRegister32(temp2));
 	else {
-		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
-		SSE2_MOVD_R_to_XMM(regd, temp2);
-		SSE_MOVSS_XMM_to_XMM(regt, regd);
+		xPCMP.EQB(xRegisterSSE(regt), xRegisterSSE(regt));
+		xMOVDZX(xRegisterSSE(regd), xRegister32(temp2));
+		xMOVSS(xRegisterSSE(regt), xRegisterSSE(regd));
 	}
-	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	xPCMP.EQB(xRegisterSSE(regd), xRegisterSSE(regd));
 	localptr[5] = JMP8(0);
 
 	x86SetJ8(localptr[1]);
-	DEC32R(temp1);
-	MOV32ItoR(temp2, 0xffffffff);
-	SHL32CLtoR(temp2);
+	xDEC(xRegister32(temp1));
+	xMOV(xRegister32(temp2), 0xffffffff);
+	xSHL(xRegister32(temp2), cl);
 	if (is_mem)
-		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+		xAND(ptr[&VU_addsub_reg[1][0]], xRegister32(temp2));
 	else {
-		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
-		SSE2_MOVD_R_to_XMM(regd, temp2);
-		SSE_MOVSS_XMM_to_XMM(regt, regd);
+		xPCMP.EQB(xRegisterSSE(regt), xRegisterSSE(regt));
+		xMOVDZX(xRegisterSSE(regd), xRegister32(temp2));
+		xMOVSS(xRegisterSSE(regt), xRegisterSSE(regd));
 	}
-	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	xPCMP.EQB(xRegisterSSE(regd), xRegisterSSE(regd));
 	localptr[6] = JMP8(0);
 
 	x86SetJ8(localptr[3]);
-	MOV32ItoR(temp2, 0x80000000);
-	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	xMOV(xRegister32(temp2), 0x80000000);
+	xPCMP.EQB(xRegisterSSE(regd), xRegisterSSE(regd));
 	if (is_mem) {
-		SSE_PINSRW_R32_to_XMM(regd, temp2, 0);
-		SHR32ItoR(temp2, 16);
-		SSE_PINSRW_R32_to_XMM(regd, temp2, 1);
+		xPINSR.W(xRegisterSSE(regd), xRegister32(temp2), 0);
+		xSHR(xRegister32(temp2), 16);
+		xPINSR.W(xRegisterSSE(regd), xRegister32(temp2), 1);
 	}
 	else {
-		SSE2_MOVD_R_to_XMM(regt, temp2);
-		SSE_MOVSS_XMM_to_XMM(regd, regt);
-		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		xMOVDZX(xRegisterSSE(regt), xRegister32(temp2));
+		xMOVSS(xRegisterSSE(regd), xRegisterSSE(regt));
+		xPCMP.EQB(xRegisterSSE(regt), xRegisterSSE(regt));
 	}
 	localptr[7] = JMP8(0);
 
@@ -538,62 +538,62 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 
 	if (is_mem)
 	{
-		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
+		xAND.PS(xRegisterSSE(regd), ptr[&VU_addsub_reg[0][0]]); //regd contains mask
 
-		if (is_sub)	SSE_SUBSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
-		else		SSE_ADDSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
+		if (is_sub)	xSUB.SS(xRegisterSSE(regd), ptr[&VU_addsub_reg[1][0]]);
+		else		xADD.SS(xRegisterSSE(regd), ptr[&VU_addsub_reg[1][0]]);
 	}
 	else
 	{
-		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
-		SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]); //regt contains mask
+		xAND.PS(xRegisterSSE(regd), ptr[&VU_addsub_reg[0][0]]); //regd contains mask
+		xAND.PS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]); //regt contains mask
 
-		if (is_sub)	SSE_SUBSS_XMM_to_XMM(regd, regt);
-		else		SSE_ADDSS_XMM_to_XMM(regd, regt);
+		if (is_sub)	xSUB.SS(xRegisterSSE(regd), xRegisterSSE(regt));
+		else		xADD.SS(xRegisterSSE(regd), xRegisterSSE(regt));
 
-		SSE_MOVAPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]);
+		xMOVAPS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]);
 	}
 
 	_freeX86reg(temp2);
 
-	MOV32MtoR(ECX, (uptr)&tempECX);
+	xMOV(ecx, ptr[&tempECX]);
 }
 
 void SSE_ADDPS_XMM_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB(regd, regt, 0, info);
 	}
-	else SSE_ADDPS_XMM_to_XMM(regd, regt);
+	else xADD.PS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 void SSE_SUBPS_XMM_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB(regd, regt, 1, info);
 	}
-	else SSE_SUBPS_XMM_to_XMM(regd, regt);
+	else xSUB.PS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 void SSE_ADDSS_XMM_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB_SS(regd, regt, 0, 0, info);
 	}
-	else SSE_ADDSS_XMM_to_XMM(regd, regt);
+	else xADD.SS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 void SSE_SUBSS_XMM_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB_SS(regd, regt, 1, 0, info);
 	}
-	else SSE_SUBSS_XMM_to_XMM(regd, regt);
+	else xSUB.SS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 void SSE_ADDSS_M32_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB_SS(regd, regt, 0, 1, info);
 	}
-	else SSE_ADDSS_M32_to_XMM(regd, regt);
+	else xADD.SS(xRegisterSSE(regd), ptr[(void*)(regt)]);
 }
 void SSE_SUBSS_M32_to_XMM_custom(int info, int regd, int regt) {
 	if (CHECK_VUADDSUBHACK) {
 		VU_ADD_SUB_SS(regd, regt, 1, 1, info);
 	}
-	else SSE_SUBSS_M32_to_XMM(regd, regt);
+	else xSUB.SS(xRegisterSSE(regd), ptr[(void*)(regt)]);
 }
 //------------------------------------------------------------------
 
@@ -615,11 +615,11 @@ void recVUMI_ABS(VURegs *VU, int info)
 
 	if ((_X_Y_Z_W == 0x8) || (_X_Y_Z_W == 0xf)) {
 		VU_MERGE_REGS(EEREC_T, EEREC_S);
-		SSE_ANDPS_M128_to_XMM(EEREC_T, (uptr)&const_abs_table[ _X_Y_Z_W ][ 0 ] );
+		xAND.PS(xRegisterSSE(EEREC_T), ptr[&const_abs_table[ _X_Y_Z_W ][ 0 ] ]);
 	}
 	else { // Use a temp reg because VU_MERGE_REGS() modifies source reg!
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_abs_table[ _X_Y_Z_W ][ 0 ] );
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xAND.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_abs_table[ _X_Y_Z_W ][ 0 ] ]);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 }
@@ -638,10 +638,10 @@ void recVUMI_ADD(VURegs *VU, int info)
 
 	if ( _Fs_ == 0 && _Ft_ == 0 ) { // if adding VF00 with VF00, then the result is always 0,0,0,2
 		if ( _X_Y_Z_W != 0xf ) {
-			SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_two);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[s_two]);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
-		else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_two);
+		else xMOVAPS(xRegisterSSE(EEREC_D), ptr[s_two]);
 	}
 	else {
 		if (CHECK_VU_EXTRA_OVERFLOW) {
@@ -649,24 +649,24 @@ void recVUMI_ADD(VURegs *VU, int info)
 			if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 		}
 		if( _X_Y_Z_W == 8 ) { // If only adding x, then we can do a Scalar Add
-			if (EEREC_D == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
-			else if (EEREC_D == EEREC_T) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (EEREC_D == EEREC_S) xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T) xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) { // If xyzw != 1111, then we have to use a temp reg
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else { // All xyzw being modified (xyzw == 1111)
-			if (EEREC_D == EEREC_S) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_T);
-			else if (EEREC_D == EEREC_T) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (EEREC_D == EEREC_S) xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T) xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 	}
@@ -687,24 +687,24 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 	if ( _XYZW_SS ) {
 		if ( EEREC_D == EEREC_TEMP ) {
 			_vuFlipRegSS(VU, EEREC_S);
-			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-			SSE_ADDSS_M32_to_XMM(EEREC_D, addr);
+			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			xADD.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_S);
 			_vuFlipRegSS(VU, EEREC_D); // have to flip over EEREC_D for computing flags!
 		}
 		else if ( EEREC_D == EEREC_S ) {
 			_vuFlipRegSS(VU, EEREC_D);
-			SSE_ADDSS_M32_to_XMM(EEREC_D, addr);
+			xADD.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_D);
 		}
 		else {
 			if ( _X ) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				SSE_ADDSS_M32_to_XMM_custom(info, EEREC_D, addr);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 				SSE_ADDPS_XMM_to_XMM_custom(info, EEREC_TEMP, EEREC_S);
 				VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 			}
@@ -712,21 +712,21 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 	}
 	else {
 		if ( (_X_Y_Z_W != 0xf) || (EEREC_D == EEREC_S) || (EEREC_D == EEREC_TEMP) ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 		}
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			if ( EEREC_D == EEREC_TEMP ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
-			else if ( EEREC_D == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			if ( EEREC_D == EEREC_TEMP ) xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			else if ( EEREC_D == EEREC_S ) xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_D, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_D, 0x00);
-				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x00);
+				xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -747,23 +747,23 @@ void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 	if ( _Ft_ == 0 && xyzw < 3 ) { // just move since adding zero
 		if ( _X_Y_Z_W == 0x8 ) { VU_MERGE_REGS(EEREC_D, EEREC_S); }
 		else if ( _X_Y_Z_W != 0xf ) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
-		else SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
+		else xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
 	else if ( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP) ) {
 		if ( xyzw == 0 ) {
-			if ( EEREC_D == EEREC_T ) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if ( EEREC_D == EEREC_T ) xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 		else {
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			xADD.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 	else if( _Fs_ == 0 && !_W ) { // just move
@@ -773,13 +773,13 @@ void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 	else {
 		if ( _X_Y_Z_W != 0xf ) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			if( EEREC_D == EEREC_TEMP )	  { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S); }
-			else if( EEREC_D == EEREC_S ) { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP); }
-			else { _unpackVF_xyzw(EEREC_D, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S); }
+			if( EEREC_D == EEREC_TEMP )	  { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S)); }
+			else if( EEREC_D == EEREC_S ) { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP)); }
+			else { _unpackVF_xyzw(EEREC_D, EEREC_T, xyzw); xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S)); }
 		}
 	}
 flagUpdate:
@@ -808,25 +808,25 @@ void recVUMI_ADDA(VURegs *VU, int info)
 	}
 
 	if( _X_Y_Z_W == 8 ) {
-		if (EEREC_ACC == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);	// Can this case happen? (cottonvibes)
-		else if (EEREC_ACC == EEREC_T) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_S); // Can this case happen?
+		if (EEREC_ACC == EEREC_S) xADD.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));	// Can this case happen? (cottonvibes)
+		else if (EEREC_ACC == EEREC_T) xADD.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S)); // Can this case happen?
 		else {
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xADD.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 		VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 	}
 	else {
-		if( EEREC_ACC == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_T); // Can this case happen?
-		else if( EEREC_ACC == EEREC_T ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_S); // Can this case happen?
+		if( EEREC_ACC == EEREC_S ) xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T)); // Can this case happen?
+		else if( EEREC_ACC == EEREC_T ) xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S)); // Can this case happen?
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 	}
 flagUpdate:
@@ -846,38 +846,38 @@ void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 		assert( EEREC_ACC != EEREC_TEMP );
 		if( EEREC_ACC == EEREC_S ) {
 			_vuFlipRegSS(VU, EEREC_ACC);
-			SSE_ADDSS_M32_to_XMM(EEREC_ACC, addr);
+			xADD.SS(xRegisterSSE(EEREC_ACC), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_ACC);
 		}
 		else {
 			if( _X ) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-				SSE_ADDSS_M32_to_XMM(EEREC_ACC, addr);
+				xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+				xADD.SS(xRegisterSSE(EEREC_ACC), ptr[(void*)(addr)]);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+				xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 			}
 		}
 	}
 	else {
 		if( _X_Y_Z_W != 0xf || EEREC_ACC == EEREC_S ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 		}
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 		}
 		else {
-			if( EEREC_ACC == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			if( EEREC_ACC == EEREC_S ) xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_ACC, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_ACC, EEREC_ACC, 0x00);
-				SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_ACC), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_ACC), 0x00);
+				xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -897,17 +897,17 @@ void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 	if( _X_Y_Z_W == 8 ) {
 		assert( EEREC_ACC != EEREC_T );
 		if( xyzw == 0 ) {
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xADD.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 		else {
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
 			if( _Fs_ == 0 ) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-				SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+				xADD.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 	}
@@ -916,14 +916,14 @@ void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 		}
 		else {
-			if( EEREC_ACC == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			if( EEREC_ACC == EEREC_S ) xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 			else {
 				_unpackVF_xyzw(EEREC_ACC, EEREC_T, xyzw);
-				SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
+				xADD.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -950,8 +950,8 @@ void recVUMI_SUB(VURegs *VU, int info)
 	if ( !_Fd_ ) info = (info & ~PROCESS_EE_SET_D(0xf)) | PROCESS_EE_SET_D(EEREC_TEMP);
 
 	if( EEREC_S == EEREC_T ) {
-		if (_X_Y_Z_W != 0xf) SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&SSEmovMask[15-_X_Y_Z_W][0]);
-		else SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
+		if (_X_Y_Z_W != 0xf) xAND.PS(xRegisterSSE(EEREC_D), ptr[(&SSEmovMask[15-_X_Y_Z_W][0])]);
+		else xXOR.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 	}
 	else if( _X_Y_Z_W == 8 ) {
 		if (CHECK_VU_EXTRA_OVERFLOW) {
@@ -959,19 +959,19 @@ void recVUMI_SUB(VURegs *VU, int info)
 			if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 		}
 		if (EEREC_D == EEREC_S) {
-			if (_Ft_) SSE_SUBSS_XMM_to_XMM(EEREC_D, EEREC_T);
+			if (_Ft_) xSUB.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 		else if (EEREC_D == EEREC_T) {
 			if (_Ft_) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-				SSE_SUBSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+				xSUB.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
-			else SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			else xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
 		else {
-			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-			if (_Ft_) SSE_SUBSS_XMM_to_XMM(EEREC_D, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			if (_Ft_) xSUB.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 	}
 	else {
@@ -980,21 +980,21 @@ void recVUMI_SUB(VURegs *VU, int info)
 			if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 		}
 		if (_X_Y_Z_W != 0xf) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( ( _Ft_ > 0 ) || _W ) SSE_SUBPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			if( ( _Ft_ > 0 ) || _W ) xSUB.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			if (EEREC_D == EEREC_S) SSE_SUBPS_XMM_to_XMM(EEREC_D, EEREC_T);
+			if (EEREC_D == EEREC_S) xSUB.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			else if (EEREC_D == EEREC_T) {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 	}
@@ -1015,59 +1015,59 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 	if( _XYZW_SS ) {
 		if( EEREC_D == EEREC_TEMP ) {
 			_vuFlipRegSS(VU, EEREC_S);
-			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-			SSE_SUBSS_M32_to_XMM(EEREC_D, addr);
+			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			xSUB.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_S);
 			_vuFlipRegSS(VU, EEREC_D);
 		}
 		else if( EEREC_D == EEREC_S ) {
 			_vuFlipRegSS(VU, EEREC_D);
-			SSE_SUBSS_M32_to_XMM(EEREC_D, addr);
+			xSUB.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_D);
 		}
 		else {
 			if( _X ) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_SUBSS_M32_to_XMM(EEREC_D, addr);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xSUB.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 			}
 			else {
 				_vuMoveSS(VU, EEREC_TEMP, EEREC_S);
 				_vuFlipRegSS(VU, EEREC_D);
-				SSE_SUBSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xSUB.SS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 				_vuFlipRegSS(VU, EEREC_D);
 			}
 		}
 	}
 	else {
-		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-		SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+		xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+		xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 
 		if (_X_Y_Z_W != 0xf) {
 			int t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) {
-				SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_D, t1reg);
 				_freeXMMreg(t1reg);
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 			}
 		}
 		else {
 			if( EEREC_D == EEREC_TEMP ) {
-				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_D), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 	}
@@ -1087,23 +1087,23 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 
 	if ( _X_Y_Z_W == 8 ) {
 		if ( (xyzw == 0) && (_Ft_ == _Fs_) ) {
-			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&SSEmovMask[7][0]);
+			xAND.PS(xRegisterSSE(EEREC_D), ptr[&SSEmovMask[7][0]]);
 		}
 		else if ( EEREC_D == EEREC_TEMP ) {
-			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			if ( (_Ft_ > 0) || (xyzw == 3) ) {
 				_vuFlipRegSS_xyzw(EEREC_T, xyzw);
-				SSE_SUBSS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xSUB.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 				_vuFlipRegSS_xyzw(EEREC_T, xyzw);
 			}
 		}
 		else {
 			if ( (_Ft_ > 0) || (xyzw == 3) ) {
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_SUBSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xSUB.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
-			else SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			else xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
 	}
 	else {
@@ -1113,27 +1113,27 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 			int t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) {
-				SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_D, t1reg);
 				_freeXMMreg(t1reg);
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 			}
 		}
 		else {
 			if( EEREC_D == EEREC_TEMP ) {
-				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_D), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 	}
@@ -1163,37 +1163,37 @@ void recVUMI_SUBA(VURegs *VU, int info)
 	}
 
 	if( EEREC_S == EEREC_T ) {
-		if (_X_Y_Z_W != 0xf) SSE_ANDPS_M128_to_XMM(EEREC_ACC, (uptr)&SSEmovMask[15-_X_Y_Z_W][0]);
-		else SSE_XORPS_XMM_to_XMM(EEREC_ACC, EEREC_ACC);
+		if (_X_Y_Z_W != 0xf) xAND.PS(xRegisterSSE(EEREC_ACC), ptr[(&SSEmovMask[15-_X_Y_Z_W][0])]);
+		else xXOR.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_ACC));
 	}
 	else if( _X_Y_Z_W == 8 ) {
-		if (EEREC_ACC == EEREC_S) SSE_SUBSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+		if (EEREC_ACC == EEREC_S) xSUB.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		else if (EEREC_ACC == EEREC_T) {
-			SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_SUBSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			xMOVSS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xSUB.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 		}
 		else {
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_SUBPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xSUB.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 		VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 	}
 	else {
-		if( EEREC_ACC == EEREC_S ) SSE_SUBPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+		if( EEREC_ACC == EEREC_S ) xSUB.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		else if( EEREC_ACC == EEREC_T ) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_SUBPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xSUB.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
+			xMOVAPS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 	}
 flagUpdate:
@@ -1211,47 +1211,47 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 	if( _XYZW_SS ) {
 		if( EEREC_ACC == EEREC_S ) {
 			_vuFlipRegSS(VU, EEREC_ACC);
-			SSE_SUBSS_M32_to_XMM(EEREC_ACC, addr);
+			xSUB.SS(xRegisterSSE(EEREC_ACC), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_ACC);
 		}
 		else {
 			if( _X ) {
-				SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-				SSE_SUBSS_M32_to_XMM(EEREC_ACC, addr);
+				xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+				xSUB.SS(xRegisterSSE(EEREC_ACC), ptr[(void*)(addr)]);
 			}
 			else {
 				_vuMoveSS(VU, EEREC_TEMP, EEREC_S);
 				_vuFlipRegSS(VU, EEREC_ACC);
-				SSE_SUBSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+				xSUB.SS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 				_vuFlipRegSS(VU, EEREC_ACC);
 			}
 		}
 	}
 	else {
-		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-		SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+		xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+		xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 
 		if (_X_Y_Z_W != 0xf) {
 			int t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) {
-				SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_ACC, t1reg);
 				_freeXMMreg(t1reg);
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 			}
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBPS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
@@ -1267,13 +1267,13 @@ void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 
 	if( _X_Y_Z_W == 8 ) {
 		if( xyzw == 0 ) {
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_T));
 		}
 		else {
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBSS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			xMOVSS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.SS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 	else {
@@ -1283,22 +1283,22 @@ void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 			int t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) {
-				SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_S);
-				SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+				xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
+				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_ACC, t1reg);
 				_freeXMMreg(t1reg);
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+				xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 			}
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
-			SSE_SUBPS_XMM_to_XMM(EEREC_ACC, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_S));
+			xSUB.PS(xRegisterSSE(EEREC_ACC), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
@@ -1325,34 +1325,34 @@ void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 	}
 
 	if (_X_Y_Z_W == 1 && (_Ft_ == 0 || _Fs_==0) ) { // W
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, _Ft_ ? EEREC_T : EEREC_S);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(_Ft_ ? EEREC_T : EEREC_S));
 		VU_MERGE_REGS(regd, EEREC_TEMP);
 	}
 	else if( _Fd_ == _Fs_ && _Fs_ == _Ft_ && _XYZW_SS ) {
 		_vuFlipRegSS(VU, EEREC_D);
-		SSE_MULSS_XMM_to_XMM(EEREC_D, EEREC_D);
+		xMUL.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		_vuFlipRegSS(VU, EEREC_D);
 	}
 	else if( _X_Y_Z_W == 8 ) {
-		if (regd == EEREC_S) SSE_MULSS_XMM_to_XMM(regd, EEREC_T);
-		else if (regd == EEREC_T) SSE_MULSS_XMM_to_XMM(regd, EEREC_S);
+		if (regd == EEREC_S) xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
+		else if (regd == EEREC_T) xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 		else {
-			SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_T);
+			xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 		VU_MERGE_REGS(regd, EEREC_TEMP);
 	}
 	else {
-		if (regd == EEREC_S) SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
-		else if (regd == EEREC_T) SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+		if (regd == EEREC_S) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
+		else if (regd == EEREC_T) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 		else {
-			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
+			xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 		}
 	}
 }
@@ -1368,46 +1368,46 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 	if( _XYZW_SS ) {
 		if( regd == EEREC_TEMP ) {
 			_vuFlipRegSS(VU, EEREC_S);
-			SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULSS_M32_to_XMM(regd, addr);
+			xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.SS(xRegisterSSE(regd), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, EEREC_S);
 			_vuFlipRegSS(VU, regd);
 		}
 		else if( regd == EEREC_S ) {
 			_vuFlipRegSS(VU, regd);
-			SSE_MULSS_M32_to_XMM(regd, addr);
+			xMUL.SS(xRegisterSSE(regd), ptr[(void*)(addr)]);
 			_vuFlipRegSS(VU, regd);
 		}
 		else {
 			if( _X ) {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				SSE_MULSS_M32_to_XMM(regd, addr);
+				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+				xMUL.SS(xRegisterSSE(regd), ptr[(void*)(addr)]);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-				SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+				xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(regd, EEREC_TEMP);
 			}
 		}
 	}
 	else {
 		if( _X_Y_Z_W != 0xf || regd == EEREC_TEMP || regd == EEREC_S ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 		}
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 		else {
-			if( regd == EEREC_TEMP ) SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
-			else if (regd == EEREC_S) SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
+			if( regd == EEREC_TEMP ) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			else if (regd == EEREC_S) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			else {
-				SSE_MOVSS_M32_to_XMM(regd, addr);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x00);
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMOVSSZX(xRegisterSSE(regd), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(regd), xRegisterSSE(regd), 0x00);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -1426,39 +1426,39 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 	if( _Ft_ == 0 ) {
 		if( xyzw < 3 ) {
 			if (_X_Y_Z_W != 0xf) {
-				SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 				VU_MERGE_REGS(regd, EEREC_TEMP);
 			}
-			else SSE_XORPS_XMM_to_XMM(regd, regd);
+			else xXOR.PS(xRegisterSSE(regd), xRegisterSSE(regd));
 		}
 		else {
 			assert(xyzw==3);
 			if (_X_Y_Z_W != 0xf) {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				VU_MERGE_REGS(regd, EEREC_TEMP);
 			}
-			else SSE_MOVAPS_XMM_to_XMM(regd, EEREC_S);
+			else xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 		}
 	}
 	else if( _X_Y_Z_W == 8 ) {
 		if( regd == EEREC_TEMP ) {
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 		}
 		else {
 			if( xyzw == 0 ) {
 				if( regd == EEREC_T ) {
-					SSE_MULSS_XMM_to_XMM(regd, EEREC_S);
+					xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				}
 				else {
-					SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-					SSE_MULSS_XMM_to_XMM(regd, EEREC_T);
+					xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+					xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 				}
 			}
 			else {
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				SSE_MULSS_XMM_to_XMM(regd, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 	}
@@ -1467,15 +1467,15 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 		else {
-			if( regd == EEREC_TEMP ) SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
-			else if (regd == EEREC_S) SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
+			if( regd == EEREC_TEMP ) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			else if (regd == EEREC_S) xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			else {
 				_unpackVF_xyzw(regd, EEREC_T, xyzw);
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -1563,58 +1563,58 @@ void recVUMI_MADD_toD(VURegs *VU, int regd, int info)
 
 	if( _X_Y_Z_W == 8 ) {
 		if( regd == EEREC_ACC ) {
-			SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MULSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVSS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMUL.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_TEMP);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 		else if (regd == EEREC_T) {
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else if (regd == EEREC_S) {
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_T);
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else {
-			SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_T);
+			xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 		if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-		SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+		xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 
 		VU_MERGE_REGS(regd, EEREC_TEMP);
 	}
 	else {
 		if( regd == EEREC_ACC ) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(regd, EEREC_TEMP);
+			xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 		else if (regd == EEREC_T) {
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else if (regd == EEREC_S) {
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
+			xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 	}
 }
@@ -1632,46 +1632,46 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 		if( _Fs_ == 0 ) {
 			// do nothing if regd == ACC (ACCx <= ACCx + 0.0 * *addr)
 			if( regd != EEREC_ACC ) {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_ACC);
+				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 			return;
 		}
 
 		if( regd == EEREC_ACC ) {
 			assert( EEREC_TEMP < iREGCNT_XMM );
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_MULSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xMUL.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_TEMP);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 		else if( regd == EEREC_S ) {
-			SSE_MULSS_M32_to_XMM(regd, addr);
+			xMUL.SS(xRegisterSSE(regd), ptr[(void*)(addr)]);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else {
-			SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULSS_M32_to_XMM(regd, addr);
+			xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.SS(xRegisterSSE(regd), ptr[(void*)(addr)]);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 	}
 	else {
 		if( _Fs_ == 0 ) {
 			if( regd == EEREC_ACC ) { // ACCxyz is unchanged, ACCw <= ACCw + *addr
 				if( _W ) { // if _W is zero, do nothing
-					SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr); // { *addr, 0, 0, 0 }
-					SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x27); // { 0, 0, 0, *addr }
-					SSE_ADDPS_XMM_to_XMM(regd, EEREC_TEMP); // { ACCx, ACCy, ACCz, ACCw + *addr }
+					xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]); // { *addr, 0, 0, 0 }
+					xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x27); // { 0, 0, 0, *addr }
+					xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP)); // { ACCx, ACCy, ACCz, ACCw + *addr }
 				}
 			}
 			else { // DESTxyz <= ACCxyz, DESTw <= ACCw + *addr
 				if( _W ) {
-					SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr); // { *addr, 0, 0, 0 }
-					SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x27); // { 0, 0, 0, *addr }
-					SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC); // { ACCx, ACCy, ACCz, ACCw + *addr }
+					xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]); // { *addr, 0, 0, 0 }
+					xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x27); // { 0, 0, 0, *addr }
+					xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC)); // { ACCx, ACCy, ACCz, ACCw + *addr }
 				}
-				else SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+				else xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 				VU_MERGE_REGS(regd, EEREC_TEMP);
 			}
 
@@ -1679,39 +1679,39 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 		}
 
 		if( _X_Y_Z_W != 0xf || regd == EEREC_ACC || regd == EEREC_TEMP || regd == EEREC_S ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 		}
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 		else {
 			if( regd == EEREC_ACC ) {
-				SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_TEMP);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			}
 			else if( regd == EEREC_S ) {
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 			else if( regd == EEREC_TEMP ) {
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(regd, addr);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x00);
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMOVSSZX(xRegisterSSE(regd), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(regd), xRegisterSSE(regd), 0x00);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 		}
 	}
@@ -1733,24 +1733,24 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		if( xyzw == 3 ) {
 			// just add
 			if( _X_Y_Z_W == 8 ) {
-				if( regd == EEREC_S ) SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+				if( regd == EEREC_S ) xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 				else {
-					SSE_MOVSS_XMM_to_XMM(regd, EEREC_ACC);
-					SSE_ADDSS_XMM_to_XMM(regd, EEREC_S);
+					xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+					xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				}
 			}
 			else {
 				if( _X_Y_Z_W != 0xf ) {
-					SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-					SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+					xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+					xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 
 					VU_MERGE_REGS(regd, EEREC_TEMP);
 				}
 				else {
-					if( regd == EEREC_S ) SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+					if( regd == EEREC_S ) xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 					else {
-						SSE_MOVAPS_XMM_to_XMM(regd, EEREC_ACC);
-						SSE_ADDPS_XMM_to_XMM(regd, EEREC_S);
+						xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+						xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 					}
 				}
 			}
@@ -1758,10 +1758,10 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		else {
 			// just move acc to regd
 			if( _X_Y_Z_W != 0xf ) {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+				xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 				VU_MERGE_REGS(regd, EEREC_TEMP);
 			}
-			else SSE_MOVAPS_XMM_to_XMM(regd, EEREC_ACC);
+			else xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 
 		return;
@@ -1771,25 +1771,25 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
 
 		if( regd == EEREC_ACC ) {
-			SSE_MULSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_TEMP);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 		else if( regd == EEREC_S ) {
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_TEMP);
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else if( regd == EEREC_TEMP ) {
-			SSE_MULSS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_ACC);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 		}
 		else {
-			SSE_MOVSS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_MULSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xMUL.SS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, 8); }
-			SSE_ADDSS_XMM_to_XMM(regd, EEREC_TEMP);
+			xADD.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 	else {
@@ -1798,33 +1798,33 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		}
 
 		if (_X_Y_Z_W != 0xf) {
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 		else {
 			if( regd == EEREC_ACC ) {
-				SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_TEMP);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			}
 			else if( regd == EEREC_S ) {
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 			else if( regd == EEREC_TEMP ) {
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 			else {
 				_unpackVF_xyzw(regd, EEREC_T, xyzw);
-				SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+				xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-				SSE_ADDPS_XMM_to_XMM(regd, EEREC_ACC);
+				xADD.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
 			}
 		}
 	}
@@ -1933,51 +1933,51 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 	if (_X_Y_Z_W != 0xf) {
 		int t1reg = _vuGetTempXMMreg(info);
 
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 		if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
 
 		if( t1reg >= 0 ) {
-			SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_ACC);
-			SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_ACC));
+			xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 			VU_MERGE_REGS(regd, t1reg);
 			_freeXMMreg(t1reg);
 		}
 		else {
-			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+			xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 	}
 	else {
 		if( regd == EEREC_S ) {
 			assert( regd != EEREC_ACC );
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xXOR.PS(xRegisterSSE(regd), ptr[&const_clip[4]]);
 		}
 		else if( regd == EEREC_T ) {
 			assert( regd != EEREC_ACC );
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xXOR.PS(xRegisterSSE(regd), ptr[&const_clip[4]]);
 		}
 		else if( regd == EEREC_TEMP ) {
-			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_S);
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
+			xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xXOR.PS(xRegisterSSE(regd), ptr[&const_clip[4]]);
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_TEMP);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 }
@@ -1989,47 +1989,47 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 	if (_X_Y_Z_W != 0xf) {
 		int t1reg = _vuGetTempXMMreg(info);
 
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 		if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
 
 		if( t1reg >= 0 ) {
-			SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_ACC);
-			SSE_SUBPS_XMM_to_XMM(t1reg, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_ACC));
+			xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 			if ( regd != EEREC_TEMP ) { VU_MERGE_REGS(regd, t1reg); }
-			else SSE_MOVAPS_XMM_to_XMM(regd, t1reg);
+			else xMOVAPS(xRegisterSSE(regd), xRegisterSSE(t1reg));
 
 			_freeXMMreg(t1reg);
 		}
 		else {
-			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+			xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+			xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
 	}
 	else {
 		if( regd == EEREC_ACC ) {
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_TEMP);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 		else if( regd == EEREC_S ) {
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xXOR.PS(xRegisterSSE(regd), ptr[&const_clip[4]]);
 		}
 		else if( regd == EEREC_TEMP ) {
-			SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
+			xMUL.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xXOR.PS(xRegisterSSE(regd), ptr[&const_clip[4]]);
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVAPS(xRegisterSSE(regd), xRegisterSSE(EEREC_ACC));
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, EEREC_TEMP, _X_Y_Z_W ); }
-			SSE_SUBPS_XMM_to_XMM(regd, EEREC_TEMP);
+			xSUB.PS(xRegisterSSE(regd), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 }
@@ -2042,8 +2042,8 @@ void recVUMI_MSUB_iq_toD(VURegs *VU, int regd, int addr, int info)
 		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 		vuFloat3(addr);
 	}
-	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-	SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
+	xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+	xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
 	recVUMI_MSUB_temp_toD(VU, regd, info);
 }
 
@@ -2192,7 +2192,7 @@ void MINMAXlogical(VURegs *VU, int info, int min, int mode, uptr addr = 0, int x
 		t1regbool = 1;
 		for (t1reg = 0; ( (t1reg == EEREC_D) || (t1reg == EEREC_S) || (mode != 1 && t1reg == EEREC_T)
 			|| (t1reg == EEREC_TEMP) ); t1reg++); // Find unused reg (For first temp reg)
-		SSE_MOVAPS_XMM_to_M128((uptr)temp_loc, t1reg); // Backup t1reg XMM reg
+		xMOVAPS(ptr[temp_loc], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 	}
 	int t2regbool = -1;
 	int t2reg = EEREC_TEMP;
@@ -2205,66 +2205,66 @@ void MINMAXlogical(VURegs *VU, int info, int min, int mode, uptr addr = 0, int x
 			t2regbool = 1;
 			for (t2reg = 0; ( (t2reg == EEREC_D) || (t2reg == EEREC_S) || (mode != 1 && t2reg == EEREC_T) ||
 					(t2reg == t1reg) || (t2reg == EEREC_TEMP) ); t2reg++); // Find unused reg (For second temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)temp_loc2, t2reg); // Backup t2reg XMM reg
+			xMOVAPS(ptr[temp_loc2], xRegisterSSE(t2reg)); // Backup t2reg XMM reg
 		}
 	}
 
 	if (_X || _Y)
 	{
-		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0x50);
-		SSE2_PAND_M128_to_XMM(t1reg, (uptr)special_mask);
-		SSE2_POR_M128_to_XMM(t1reg, (uptr)special_mask2);
+		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S), 0x50);
+		xPAND(xRegisterSSE(t1reg), ptr[special_mask]);
+		xPOR(xRegisterSSE(t1reg), ptr[special_mask2]);
 		if (mode == 0)
-			SSE2_PSHUFD_XMM_to_XMM(t2reg, EEREC_T, 0x50);
+			xPSHUF.D(xRegisterSSE(t2reg), xRegisterSSE(EEREC_T), 0x50);
 		else if (mode == 1)
 		{
-			SSE2_MOVD_M32_to_XMM(t2reg, addr);
-			SSE2_PSHUFD_XMM_to_XMM(t2reg, t2reg, 0x00);
+			xMOVDZX(xRegisterSSE(t2reg), ptr[(void*)(addr)]);
+			xPSHUF.D(xRegisterSSE(t2reg), xRegisterSSE(t2reg), 0x00);
 		}
 		else if (mode == 2)
 			_unpackVF_xyzw(t2reg, EEREC_T, xyzw);
-		SSE2_PAND_M128_to_XMM(t2reg, (uptr)special_mask);
-		SSE2_POR_M128_to_XMM(t2reg, (uptr)special_mask2);
+		xPAND(xRegisterSSE(t2reg), ptr[special_mask]);
+		xPOR(xRegisterSSE(t2reg), ptr[special_mask2]);
 		if (min)
-			SSE2_MINPD_XMM_to_XMM(t1reg, t2reg);
+			xMIN.PD(xRegisterSSE(t1reg), xRegisterSSE(t2reg));
 		else
-			SSE2_MAXPD_XMM_to_XMM(t1reg, t2reg);
-		SSE2_PSHUFD_XMM_to_XMM(t1reg, t1reg, 0x88);
+			xMAX.PD(xRegisterSSE(t1reg), xRegisterSSE(t2reg));
+		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(t1reg), 0x88);
 		VU_MERGE_REGS_CUSTOM(EEREC_D, t1reg, 0xc & _X_Y_Z_W);
 	}
 
 	if (_Z || _W)
 	{
-		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0xfa);
-		SSE2_PAND_M128_to_XMM(t1reg, (uptr)special_mask);
-		SSE2_POR_M128_to_XMM(t1reg, (uptr)special_mask2);
+		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S), 0xfa);
+		xPAND(xRegisterSSE(t1reg), ptr[special_mask]);
+		xPOR(xRegisterSSE(t1reg), ptr[special_mask2]);
 		if (mode == 0)
-			SSE2_PSHUFD_XMM_to_XMM(t2reg, EEREC_T, 0xfa);
+			xPSHUF.D(xRegisterSSE(t2reg), xRegisterSSE(EEREC_T), 0xfa);
 		else if (mode == 1)
 		{
-			SSE2_MOVD_M32_to_XMM(t2reg, addr);
-			SSE2_PSHUFD_XMM_to_XMM(t2reg, t2reg, 0x00);
+			xMOVDZX(xRegisterSSE(t2reg), ptr[(void*)(addr)]);
+			xPSHUF.D(xRegisterSSE(t2reg), xRegisterSSE(t2reg), 0x00);
 		}
 		else if (mode == 2)
 			_unpackVF_xyzw(t2reg, EEREC_T, xyzw);
-		SSE2_PAND_M128_to_XMM(t2reg, (uptr)special_mask);
-		SSE2_POR_M128_to_XMM(t2reg, (uptr)special_mask2);
+		xPAND(xRegisterSSE(t2reg), ptr[special_mask]);
+		xPOR(xRegisterSSE(t2reg), ptr[special_mask2]);
 		if (min)
-			SSE2_MINPD_XMM_to_XMM(t1reg, t2reg);
+			xMIN.PD(xRegisterSSE(t1reg), xRegisterSSE(t2reg));
 		else
-			SSE2_MAXPD_XMM_to_XMM(t1reg, t2reg);
-		SSE2_PSHUFD_XMM_to_XMM(t1reg, t1reg, 0x88);
+			xMAX.PD(xRegisterSSE(t1reg), xRegisterSSE(t2reg));
+		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(t1reg), 0x88);
 		VU_MERGE_REGS_CUSTOM(EEREC_D, t1reg, 0x3 & _X_Y_Z_W);
 	}
 
 	if (t1regbool == 0)
 		_freeXMMreg(t1reg);
 	else if (t1regbool == 1)
-		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)temp_loc); // Restore t1reg XMM reg
+		xMOVAPS(xRegisterSSE(t1reg), ptr[temp_loc]); // Restore t1reg XMM reg
 	if (t2regbool == 0)
 		_freeXMMreg(t2reg);
 	else if (t2regbool == 1)
-		SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)temp_loc2); // Restore t2reg XMM reg
+		xMOVAPS(xRegisterSSE(t2reg), ptr[temp_loc2]); // Restore t2reg XMM reg
 }
 
 //------------------------------------------------------------------
@@ -2285,25 +2285,25 @@ void recVUMI_MAX(VURegs *VU, int info)
 		if (_Ft_) vuFloat4_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 
 		if( _X_Y_Z_W == 8 ) {
-			if (EEREC_D == EEREC_S) SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_T);
-			else if (EEREC_D == EEREC_T) SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (EEREC_D == EEREC_S) xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T) xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MAXPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMAX.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			if( EEREC_D == EEREC_S ) SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_T);
-			else if( EEREC_D == EEREC_T ) SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if( EEREC_D == EEREC_S ) xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if( EEREC_D == EEREC_T ) xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 	}
@@ -2324,8 +2324,8 @@ void recVUMI_MAX_iq(VURegs *VU, uptr addr, int info)
 		if( _XYZW_SS ) {
 			if( EEREC_D == EEREC_TEMP ) {
 				_vuFlipRegSS(VU, EEREC_S);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MAXSS_M32_to_XMM(EEREC_D, addr);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMAX.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				_vuFlipRegSS(VU, EEREC_S);
 
 				// have to flip over EEREC_D if computing flags!
@@ -2334,39 +2334,39 @@ void recVUMI_MAX_iq(VURegs *VU, uptr addr, int info)
 			}
 			else if( EEREC_D == EEREC_S ) {
 				_vuFlipRegSS(VU, EEREC_D);
-				SSE_MAXSS_M32_to_XMM(EEREC_D, addr);
+				xMAX.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				_vuFlipRegSS(VU, EEREC_D);
 			}
 			else {
 				if( _X ) {
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-					SSE_MAXSS_M32_to_XMM(EEREC_D, addr);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+					xMAX.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				}
 				else {
 					_vuMoveSS(VU, EEREC_TEMP, EEREC_S);
 					_vuFlipRegSS(VU, EEREC_D);
-					SSE_MAXSS_M32_to_XMM(EEREC_TEMP, addr);
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+					xMAX.SS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 					_vuFlipRegSS(VU, EEREC_D);
 				}
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-			SSE_MAXPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+			xMAX.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			if(EEREC_D == EEREC_S) {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-				SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+				xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_D, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_D, 0x00);
-				SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x00);
+				xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -2381,26 +2381,26 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 	{
 		if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP)) {
 			if( xyzw < 3 ) {
-				SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xXOR.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)s_fones);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[s_fones]);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
 			if( xyzw < 3 ) {
-				if( _X_Y_Z_W & 1 ) SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[0]); // w included, so insert the whole reg
-				else SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // w not included, can zero out
+				if( _X_Y_Z_W & 1 ) xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[(&VU->VF[0].UL[0])]); // w included, so insert the whole reg
+				else xXOR.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP)); // w not included, can zero out
 			}
-			else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_fones);
+			else xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[s_fones]);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			//If VF0.w isnt chosen as the constant, then its going to be MAX( 0, VF0 ), so the result is VF0
-			if( xyzw < 3 ) { SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]); }
-			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_fones);
+			if( xyzw < 3 ) { xMOVAPS(xRegisterSSE(EEREC_D), ptr[(&VU->VF[0].UL[0])]); }
+			else xMOVAPS(xRegisterSSE(EEREC_D), ptr[s_fones]);
 		}
 		return;
 	}
@@ -2414,32 +2414,32 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 
 		if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP)) {
 			if( xyzw == 0 ) {
-				if( EEREC_D == EEREC_S ) SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_T);
-				else if( EEREC_D == EEREC_T ) SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				if( EEREC_D == EEREC_S ) xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+				else if( EEREC_D == EEREC_T ) xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				else {
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-					SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_T);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+					xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 				}
 			}
 			else {
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MAXSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMAX.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_MAXPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMAX.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			if (EEREC_D == EEREC_S) {
 				_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
 				_unpackVF_xyzw(EEREC_D, EEREC_T, xyzw);
-				SSE_MAXPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMAX.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -2470,31 +2470,31 @@ void recVUMI_MINI(VURegs *VU, int info)
 		if (_Ft_) vuFloat4_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 
 		if( _X_Y_Z_W == 8 ) {
-			if (EEREC_D == EEREC_S) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
-			else if (EEREC_D == EEREC_T) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (EEREC_D == EEREC_S) xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T) xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MINPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMIN.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			if( EEREC_D == EEREC_S ) {
 				//ClampUnordered(EEREC_T, EEREC_TEMP, 0); // need for GT4 vu0rec
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 			else if( EEREC_D == EEREC_T ) {
 				//ClampUnordered(EEREC_S, EEREC_TEMP, 0); // need for GT4 vu0rec
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 			else {
-				SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
+				xMOVAPS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 	}
@@ -2516,8 +2516,8 @@ void recVUMI_MINI_iq(VURegs *VU, uptr addr, int info)
 		if( _XYZW_SS ) {
 			if( EEREC_D == EEREC_TEMP ) {
 				_vuFlipRegSS(VU, EEREC_S);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MINSS_M32_to_XMM(EEREC_D, addr);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMIN.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				_vuFlipRegSS(VU, EEREC_S);
 
 				// have to flip over EEREC_D if computing flags!
@@ -2526,39 +2526,39 @@ void recVUMI_MINI_iq(VURegs *VU, uptr addr, int info)
 			}
 			else if( EEREC_D == EEREC_S ) {
 				_vuFlipRegSS(VU, EEREC_D);
-				SSE_MINSS_M32_to_XMM(EEREC_D, addr);
+				xMIN.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				_vuFlipRegSS(VU, EEREC_D);
 			}
 			else {
 				if( _X ) {
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-					SSE_MINSS_M32_to_XMM(EEREC_D, addr);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+					xMIN.SS(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
 				}
 				else {
 					_vuMoveSS(VU, EEREC_TEMP, EEREC_S);
 					_vuFlipRegSS(VU, EEREC_D);
-					SSE_MINSS_M32_to_XMM(EEREC_TEMP, addr);
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+					xMIN.SS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 					_vuFlipRegSS(VU, EEREC_D);
 				}
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-			SSE_MINPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+			xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+			xMIN.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			if(EEREC_D == EEREC_S) {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0x00);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_D, addr);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_D, 0x00);
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMOVSSZX(xRegisterSSE(EEREC_D), ptr[(void*)(addr)]);
+				xSHUF.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x00);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -2574,14 +2574,14 @@ void recVUMI_MINI_xyzw(VURegs *VU, int xyzw, int info)
 		if( _X_Y_Z_W == 0xf )
 		{
 			//If VF0.w is the constant, the result will match VF0, else its all 0's
-			if(xyzw == 3) SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]);
-			else SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
+			if(xyzw == 3) xMOVAPS(xRegisterSSE(EEREC_D), ptr[(&VU->VF[0].UL[0])]);
+			else xXOR.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
 		else
 		{
 			//If VF0.w is the constant, the result will match VF0, else its all 0's
-			if(xyzw == 3) SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[0]);
-			else SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			if(xyzw == 3) xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[(&VU->VF[0].UL[0])]);
+			else xXOR.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		return;
@@ -2595,32 +2595,32 @@ void recVUMI_MINI_xyzw(VURegs *VU, int xyzw, int info)
 
 		if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP)) {
 			if( xyzw == 0 ) {
-				if( EEREC_D == EEREC_S ) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
-				else if( EEREC_D == EEREC_T ) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				if( EEREC_D == EEREC_S ) xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+				else if( EEREC_D == EEREC_T ) xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				else {
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-					SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
+					xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+					xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 				}
 			}
 			else {
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+				xMIN.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 		}
 		else if (_X_Y_Z_W != 0xf) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			SSE_MINPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMIN.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			if (EEREC_D == EEREC_S) {
 				_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_TEMP));
 			}
 			else {
 				_unpackVF_xyzw(EEREC_D, EEREC_T, xyzw);
-				SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_S);
+				xMIN.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
 	}
@@ -2645,16 +2645,16 @@ void recVUMI_OPMULA( VURegs *VU, int info )
 		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, 0xE);
 	}
 
-	SSE_MOVAPS_XMM_to_XMM( EEREC_TEMP, EEREC_S );
-	SSE_SHUFPS_XMM_to_XMM( EEREC_T, EEREC_T, 0xD2 );		// EEREC_T = WYXZ
-	SSE_SHUFPS_XMM_to_XMM( EEREC_TEMP, EEREC_TEMP, 0xC9 );	// EEREC_TEMP = WXZY
-	SSE_MULPS_XMM_to_XMM( EEREC_TEMP, EEREC_T );
+	xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S ));
+	xSHUF.PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T), 0xD2 );		// EEREC_T = WYXZ
+	xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0xC9 );	// EEREC_TEMP = WXZY
+	xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T ));
 
 	VU_MERGE_REGS_CUSTOM(EEREC_ACC, EEREC_TEMP, 14);
 
 	// revert EEREC_T
 	if( EEREC_T != EEREC_ACC )
-		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0xC9);
+		xSHUF.PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T), 0xC9);
 
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
@@ -2673,18 +2673,18 @@ void recVUMI_OPMSUB( VURegs *VU, int info )
 	}
 
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
-	SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-	SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0xD2);			// EEREC_T = WYXZ
-	SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0xC9);	// EEREC_TEMP = WXZY
-	SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
+	xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+	xSHUF.PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T), 0xD2);			// EEREC_T = WYXZ
+	xSHUF.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP), 0xC9);	// EEREC_TEMP = WXZY
+	xMUL.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_T));
 
 	// negate and add
-	SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
-	SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
+	xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
+	xADD.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_ACC));
 	VU_MERGE_REGS_CUSTOM(EEREC_D, EEREC_TEMP, 14);
 
 	// revert EEREC_T
-	if( EEREC_T != EEREC_D ) SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0xC9);
+	if( EEREC_T != EEREC_D ) xSHUF.PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T), 0xC9);
 
 	recUpdateFlags(VU, EEREC_D, info);
 }
@@ -2713,23 +2713,23 @@ void recVUMI_FTOI_Saturate(int rec_s, int rec_t, int rec_tmp1, int rec_tmp2)
 	//Console.WriteLn ("recVUMI_FTOI_Saturate");
 	//Duplicate the xor'd sign bit to the whole value
 	//FFFF FFFF for positive,  0 for negative
-	SSE_MOVAPS_XMM_to_XMM(rec_tmp1, rec_s);
-	SSE2_PXOR_M128_to_XMM(rec_tmp1, (uptr)&const_clip[4]);
-	SSE2_PSRAD_I8_to_XMM(rec_tmp1, 31);
+	xMOVAPS(xRegisterSSE(rec_tmp1), xRegisterSSE(rec_s));
+	xPXOR(xRegisterSSE(rec_tmp1), ptr[&const_clip[4]]);
+	xPSRA.D(xRegisterSSE(rec_tmp1), 31);
 
 	//Create mask: 0 where !=8000 0000
-	SSE_MOVAPS_XMM_to_XMM(rec_tmp2, rec_t);
-	SSE2_PCMPEQD_M128_to_XMM(rec_tmp2, (uptr)&const_clip[4]);
+	xMOVAPS(xRegisterSSE(rec_tmp2), xRegisterSSE(rec_t));
+	xPCMP.EQD(xRegisterSSE(rec_tmp2), ptr[&const_clip[4]]);
 
 	//AND the mask w/ the edit values
-	SSE_ANDPS_XMM_to_XMM(rec_tmp1, rec_tmp2);
+	xAND.PS(xRegisterSSE(rec_tmp1), xRegisterSSE(rec_tmp2));
 
 	//if v==8000 0000 && positive -> 8000 0000 + FFFF FFFF -> 7FFF FFFF
 	//if v==8000 0000 && negative -> 8000 0000 + 0 -> 8000 0000
 	//if v!=8000 0000 -> v+0 (masked from the and)
 
 	//Add the values as needed
-	SSE2_PADDD_XMM_to_XMM(rec_t, rec_tmp1);
+	xPADD.D(xRegisterSSE(rec_t), xRegisterSSE(rec_tmp1));
 }
 //------------------------------------------------------------------
 
@@ -2748,44 +2748,44 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 	//Console.WriteLn ("recVUMI_FTOI0");
 
 	if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 		vuFloat_useEAX( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+		xCVTTPS2DQ(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 
 		t1reg = _vuGetTempXMMreg(info);
 
 		if( t1reg >= 0 ) { // If theres a temp XMM reg available
 			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 				; // Find unused reg (For second temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+			xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t2reg)); // Backup XMM reg
 
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
 			_freeXMMreg(t1reg); // Free temp reg
 		}
 		else { // No temp reg available
 			for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 				; // Find unused reg (For first temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+			xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 				; // Find unused reg (For second temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+			xMOVAPS(ptr[FTIO_Temp2], xRegisterSSE(t2reg)); // Backup t2reg XMM reg
 
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-			SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
-			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+			xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
+			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp2]); // Restore t2reg XMM reg
 		}
 
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
 		if (EEREC_T != EEREC_S) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
+			xMOVAPS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
 			vuFloat_useEAX( info, EEREC_T, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
+			xCVTTPS2DQ(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T));
 
 			t1reg = _vuGetTempXMMreg(info);
 
@@ -2796,46 +2796,46 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 					; // Find unused reg
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
+				xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
 			}
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 			vuFloat_useEAX( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			xCVTTPS2DQ(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 
 			t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
 				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg)); t2reg++)
 					; // Find unused reg (For second temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t2reg)); // Backup XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
 				_freeXMMreg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 					; // Find unused reg (For first temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 					; // Find unused reg (For second temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp2], xRegisterSSE(t2reg)); // Backup t2reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
-				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+				xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
+				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp2]); // Restore t2reg XMM reg
 			}
 
-			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 }
@@ -2848,46 +2848,46 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 
 	//Console.WriteLn ("recVUMI_FTOIX");
 	if (_X_Y_Z_W != 0xf) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
 		vuFloat_useEAX( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+		xCVTTPS2DQ(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 
 		t1reg = _vuGetTempXMMreg(info);
 
 		if( t1reg >= 0 ) { // If theres a temp XMM reg available
 			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP)  || (t2reg == t1reg)); t2reg++)
 				; // Find unused reg (For second temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+			xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t2reg)); // Backup XMM reg
 
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
 			_freeXMMreg(t1reg); // Free temp reg
 		}
 		else { // No temp reg available
 			for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 				; // Find unused reg (For first temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+			xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 				; // Find unused reg (For second temp reg)
-			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+			xMOVAPS(ptr[FTIO_Temp2], xRegisterSSE(t2reg)); // Backup t2reg XMM reg
 
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-			SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
-			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+			xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
+			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp2]); // Restore t2reg XMM reg
 		}
 
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
 		if (EEREC_T != EEREC_S) {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
-			SSE_MULPS_M128_to_XMM(EEREC_T, addr);
+			xMOVAPS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(EEREC_T), ptr[(void*)(addr)]);
 			vuFloat_useEAX( info, EEREC_T, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
+			xCVTTPS2DQ(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_T));
 
 			t1reg = _vuGetTempXMMreg(info);
 
@@ -2898,47 +2898,47 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 					; // Find unused reg
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
+				xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
 			}
 		}
 		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+			xMOVAPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+			xMUL.PS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
 			vuFloat_useEAX( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			xCVTTPS2DQ(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_TEMP));
 
 			t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
 				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg)); t2reg++)
 					; // Find unused reg (For second temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t2reg)); // Backup XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
 				_freeXMMreg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
 					; // Find unused reg (For first temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp1], xRegisterSSE(t1reg)); // Backup t1reg XMM reg
 
 				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 					; // Find unused reg (For second temp reg)
-				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+				xMOVAPS(ptr[FTIO_Temp2], xRegisterSSE(t2reg)); // Backup t2reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
-				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
-				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+				xMOVAPS(xRegisterSSE(t1reg), ptr[FTIO_Temp1]); // Restore t1reg XMM reg
+				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp2]); // Restore t2reg XMM reg
 			}
 
-			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
+			xMOVAPS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_TEMP));
 		}
 	}
 }
@@ -2958,13 +2958,13 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 
 	//Console.WriteLn ("recVUMI_ITOF0");
 	if (_X_Y_Z_W != 0xf) {
-		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+		xCVTDQ2PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 		vuFloat_useEAX( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
 	}
 	else {
-		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
+		xCVTDQ2PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
 		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 	}
 }
@@ -2975,15 +2975,15 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 
 	//Console.WriteLn ("recVUMI_ITOFX");
 	if (_X_Y_Z_W != 0xf) {
-		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+		xCVTDQ2PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
 		vuFloat_useEAX( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
 	}
 	else {
-		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
-		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
+		xCVTDQ2PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
+		xMUL.PS(xRegisterSSE(EEREC_T), ptr[(void*)(addr)]);
 		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 	}
 }
@@ -3014,8 +3014,8 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	//Flush the clip flag before processing, incase of double clip commands (GoW)
 
 	if( prevclipaddr != (uptr)&VU->VI[REG_CLIP_FLAG] ) {
-		MOV32MtoR(EAX, prevclipaddr);
-		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+		xMOV(eax, ptr[(void*)(prevclipaddr)]);
+		xMOV(ptr[(&VU->VI[REG_CLIP_FLAG])], eax);
 	}
 
 	assert( clipaddr != 0 );
@@ -3030,40 +3030,40 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	_freeXMMreg(t2reg); // but if they've been used since then, then free them. (just doing this incase :p (cottonvibes))
 
 	if( _Ft_ == 0 ) {
-		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]); // all 1s
-		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&s_fones[4]);
+		xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[&s_fones[0]]); // all 1s
+		xMOVAPS(xRegisterSSE(t1reg), ptr[&s_fones[4]]);
 	}
 	else {
 		_unpackVF_xyzw(EEREC_TEMP, EEREC_T, 3);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[0]);
-		SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_TEMP);
-		SSE_ORPS_M128_to_XMM(t1reg, (uptr)&const_clip[4]);
+		xAND.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[0]]);
+		xMOVAPS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
+		xOR.PS(xRegisterSSE(t1reg), ptr[&const_clip[4]]);
 	}
 
-	MOV32MtoR(EAX, prevclipaddr);
+	xMOV(eax, ptr[(void*)(prevclipaddr)]);
 
-	SSE_CMPNLEPS_XMM_to_XMM(t1reg, EEREC_S);  //-w, -z, -y, -x
-	SSE_CMPLTPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); //+w, +z, +y, +x
+	xCMPNLE.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));  //-w, -z, -y, -x
+	xCMPLT.PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S)); //+w, +z, +y, +x
 
-	SHL32ItoR(EAX, 6);
+	xSHL(eax, 6);
 
-	SSE_MOVAPS_XMM_to_XMM(t2reg, EEREC_TEMP); //t2 = +w, +z, +y, +x
-	SSE_UNPCKLPS_XMM_to_XMM(EEREC_TEMP, t1reg); //EEREC_TEMP = -y,+y,-x,+x
-	SSE_UNPCKHPS_XMM_to_XMM(t2reg, t1reg); //t2reg = -w,+w,-z,+z
-	SSE_MOVMSKPS_XMM_to_R32(x86temp2, EEREC_TEMP); // -y,+y,-x,+x
-	SSE_MOVMSKPS_XMM_to_R32(x86temp1, t2reg); // -w,+w,-z,+z
+	xMOVAPS(xRegisterSSE(t2reg), xRegisterSSE(EEREC_TEMP)); //t2 = +w, +z, +y, +x
+	xUNPCK.LPS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(t1reg)); //EEREC_TEMP = -y,+y,-x,+x
+	xUNPCK.HPS(xRegisterSSE(t2reg), xRegisterSSE(t1reg)); //t2reg = -w,+w,-z,+z
+	xMOVMSKPS(xRegister32(x86temp2), xRegisterSSE(EEREC_TEMP)); // -y,+y,-x,+x
+	xMOVMSKPS(xRegister32(x86temp1), xRegisterSSE(t2reg)); // -w,+w,-z,+z
 
-	AND8ItoR(x86temp1, 0x3);
-	SHL8ItoR(x86temp1, 4);
-	OR8RtoR(EAX, x86temp1);
-	AND8ItoR(x86temp2, 0xf);
-	OR8RtoR(EAX, x86temp2);
-	AND32ItoR(EAX, 0xffffff);
+	xAND(xRegister8(x86temp1), 0x3);
+	xSHL(xRegister8(x86temp1), 4);
+	xOR(al, xRegister8(x86temp1));
+	xAND(xRegister8(x86temp2), 0xf);
+	xOR(al, xRegister8(x86temp2));
+	xAND(eax, 0xffffff);
 
-	MOV32RtoM(clipaddr, EAX);
+	xMOV(ptr[(void*)(clipaddr)], eax);
 
 	if (( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) )  //Instantly update the flag if its called from elsewhere (unlikely, but ok)
-		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+		xMOV(ptr[(&VU->VI[REG_CLIP_FLAG])], eax);
 
 	_freeX86reg(x86temp1);
 	_freeX86reg(x86temp2);
