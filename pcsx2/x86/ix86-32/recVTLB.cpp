@@ -161,6 +161,9 @@ namespace vtlb_private
 	//
 	static uptr* DynGen_PrepRegs()
 	{
+		// Warning dirty ebx (in case someone got the very bad idea to move this code)
+		EE::Profiler.EmitMem();
+
 		xMOV( eax, ecx );
 		xSHR( eax, VTLB_PAGE_BITS );
 		xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
@@ -370,6 +373,8 @@ void vtlb_DynGenRead32(u32 bits, bool sign)
 // recompiler if the TLB is changed.
 void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 {
+	EE::Profiler.EmitConstMem(addr_const);
+
 	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
 	s32 ppf = addr_const + vmv_ptr;
 	if( ppf >= 0 )
@@ -416,6 +421,8 @@ void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 //
 void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 {
+	EE::Profiler.EmitConstMem(addr_const);
+
 	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
 	s32 ppf = addr_const + vmv_ptr;
 	if( ppf >= 0 )
@@ -506,6 +513,8 @@ void vtlb_DynGenWrite(u32 sz)
 // recompiler if the TLB is changed.
 void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 {
+	EE::Profiler.EmitConstMem(addr_const);
+
 	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
 	s32 ppf = addr_const + vmv_ptr;
 	if( ppf >= 0 )
