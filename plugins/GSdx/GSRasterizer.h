@@ -214,6 +214,14 @@ public:
 		}
 		else
 		{
+			// 1 ERT means that the rendering is handled by one (async) thread. This is similar to 0 ERT where the
+			// rendering is done by the main (sync) thread. Expected behaviour is that if I increase ERT more threads
+			// will handle the rendering. To meet this expectation the number of threads is automatically increased by
+			// one if extra rendering threads are used.
+			// 1 ERT is additionally never a smart choice. Due to sync overhead it should always be outperformed by
+			//  0 ERT or - at best - be as fast.
+			threads++;
+
 			GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
 
 			for(int i = 0; i < threads; i++)
