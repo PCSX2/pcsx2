@@ -108,7 +108,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 #endif
 
 	int renderer = theApp.GetConfig("Renderer", 1);
-	int threads = theApp.GetConfig("extrathreads", 0);
+	int threads = theApp.GetConfig("extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
 
 	switch(renderer)
 	{
