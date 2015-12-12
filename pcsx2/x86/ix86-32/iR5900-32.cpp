@@ -110,7 +110,7 @@ static u32 dumplog = 0;
 
 static void iBranchTest(u32 newpc = 0xffffffff);
 static void ClearRecLUT(BASEBLOCK* base, int count);
-static u32 eeScaleBlockCycles();
+static u32 scaleblockcycles();
 
 void _eeFlushAllUnused()
 {
@@ -845,7 +845,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	ADD32ItoM((uptr)&cpuRegs.cycle, scaleblockcycles());
 	// Note: technically the address is 0x8000_0180 (or 0x180)
 	// (if CPU is booted)
 	xJMP( DispatcherReg );
@@ -860,7 +860,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	ADD32ItoM((uptr)&cpuRegs.cycle, scaleblockcycles());
 	xJMP( DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
@@ -1098,76 +1098,27 @@ void iFlushCall(int flushtype)
 //	}
 //}
 
+// Note: scaleblockcycles() scales s_nBlockCycles respective to the EECycleRate value for manipulating the cycles of current block recompiling.
+// s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
+// Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.
 
-static u32 scaleBlockCycles_helper()
+static u32 scaleblockcycles()
 {
-	// Note: s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
+	bool lowcycles = (s_nBlockCycles <= 40);
+	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	u32 scale_cycles = 0;
 
-	// Let's not scale blocks under 5-ish cycles.  This fixes countless "problems"
-	// caused by sync hacks and such, since games seem to care a lot more about
-	// these small blocks having accurate cycle counts.
+	if (cyclerate == 0 || lowcycles || cyclerate > 99 || cyclerate < -2)
+		scale_cycles = s_nBlockCycles >> 3; // Default cycle rate
 
-	if( s_nBlockCycles <= (5<<3) || (EmuConfig.Speedhacks.EECycleRate > 99) ) // use default cycle rate if users set more than 99 in INI file.
-		return s_nBlockCycles >> 3;
+	else if (cyclerate > 0)
+		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
 
-	uint scalarLow = 0, scalarMid = 0, scalarHigh = 0;
+	else if (cyclerate < 0)
+		scale_cycles = ((5 + (-2 * cyclerate)) * s_nBlockCycles) >> 5;
 
-	// Note: larger blocks get a smaller scalar, to help keep
-	// them from becoming "too fat" and delaying branch tests.
-
-	switch( EmuConfig.Speedhacks.EECycleRate )
-	{
-		case -2:
-			scalarLow = 1;
-			scalarMid = 1;
-			scalarHigh = 1;
-		break;
-
-		case -1:
-			scalarLow = 2;
-			scalarMid = 2;
-			scalarHigh = 1;
-		break;
-
-		case 0:
-			return s_nBlockCycles >> 3; // Default cyclerate
-
-		case 1:
-			scalarLow = 5;
-			scalarMid = 7;
-			scalarHigh = 5;
-		break;
-
-		case 2:
-			scalarLow = 7;
-			scalarMid = 9;
-			scalarHigh = 7;
-		break;
-
-		// Added insane rates on popular request (rama)
-		// This allows higher values to be set at INI, Scalar values follow Arithmetic progression on increment to cyclerate.
-		default:
-			if (EmuConfig.Speedhacks.EECycleRate > 2)
-			{
-				scalarLow = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
-				scalarMid = 5 + (2*EmuConfig.Speedhacks.EECycleRate);
-				scalarHigh = 3 + (2*EmuConfig.Speedhacks.EECycleRate);
-			}
-	}
-
-	const u32 temp = s_nBlockCycles * (
-		(s_nBlockCycles <= (10<<3)) ? scalarLow :
-		((s_nBlockCycles > (21<<3)) ? scalarHigh : scalarMid )
-	);
-
-	return temp >> (3+2);
-}
-
-static u32 eeScaleBlockCycles()
-{
-	// Ensures block cycles count is never less than 1:
-	u32 retval = scaleBlockCycles_helper();
-	return (retval < 1) ? 1 : retval;
+	// Ensure block cycle count is never less than 1.
+	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
 
@@ -1193,7 +1144,7 @@ static void iBranchTest(u32 newpc)
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
 		xMOV(eax, ptr32[&g_nextEventCycle]);
-		xADD(ptr32[&cpuRegs.cycle], eeScaleBlockCycles());
+		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
 		xCMP(eax, ptr32[&cpuRegs.cycle]);
 		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
 		xMOV(ptr32[&cpuRegs.cycle], eax);
@@ -1203,7 +1154,7 @@ static void iBranchTest(u32 newpc)
 	else
 	{
 		xMOV(eax, ptr[&cpuRegs.cycle]);
-		xADD(eax, eeScaleBlockCycles());
+		xADD(eax, scaleblockcycles());
 		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
 		xSUB(eax, ptr[&g_nextEventCycle]);
 
@@ -2224,7 +2175,7 @@ StartRecomp:
 			else
 			{
 				xMOV( ptr32[&cpuRegs.pc], pc );
-				xADD( ptr32[&cpuRegs.cycle], eeScaleBlockCycles() );
+				xADD( ptr32[&cpuRegs.cycle], scaleblockcycles() );
 				recBlocks.Link( HWADDR(pc), xJcc32() );
 			}
 		}
