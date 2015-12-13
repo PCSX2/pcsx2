@@ -547,6 +547,36 @@ void vtlb_DynGenRead32(u32 bits, bool sign)
 	*writeback = (uptr)xGetPtr();
 }
 
+void vtlb_DynGenReadReg32(u32 bits, bool sign, u32 likely_addr)
+{
+	pxAssume( bits <= 32 );
+	pxAssume( (likely_addr >> 28) == 1 || (likely_addr >> 28) == 0xb); // only EE register space
+
+	int szidx = 0;
+	switch( bits )
+	{
+		case 8:		szidx=0;	break;
+		case 16:	szidx=1;	break;
+		case 32:	szidx=2;	break;
+		case 64:	szidx=3;	break;
+		case 128:	szidx=4;	break;
+		jNO_DEFAULT;
+	}
+
+	// I want to go home
+	xMOV(ebx, 0xdeadbeef);
+	uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+	xCMP(ecx, likely_addr);
+	xJNE(GetFullTlbDispatcherPtr(0, szidx, sign));
+
+	// Read to a known reg constant
+	vtlb_DynGenRead32_Const(bits, sign, likely_addr);
+
+	// Return address of the random addr path
+	*writeback = (uptr)xGetPtr();
+}
+
 // ------------------------------------------------------------------------
 // Wrapper to the different load implementation
 void vtlb_DynGenRead(u32 likely_address, u32 bits, bool sign)
