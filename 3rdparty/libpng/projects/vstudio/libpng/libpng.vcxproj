@@ -169,6 +169,11 @@
     <ClCompile Include="..\..\..\pngwtran.c" />
     <ClCompile Include="..\..\..\pngwutil.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
