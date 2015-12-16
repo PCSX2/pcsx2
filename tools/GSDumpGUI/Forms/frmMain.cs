@@ -293,19 +293,22 @@ namespace GSDumpGUI
         {
             if (lstDumps.SelectedIndex != -1)
             {
+                String [] Extensions = new String[] { ".png", ".bmp" };
                 String DumpFileName = lstDumps.SelectedItem.ToString().Split(new char[] { '|' })[0];
                 String Filename = Path.GetDirectoryName(Properties.Settings.Default.DumpDir + "\\") + 
-                                  "\\" + Path.GetFileNameWithoutExtension(DumpFileName) + ".bmp";
-                if (File.Exists(Filename))
+                                  "\\" + Path.GetFileNameWithoutExtension(DumpFileName);
+
+                foreach (String Extension in Extensions)
                 {
-                    pctBox.Image = Image.FromFile(Filename);
-                    pctBox.Cursor = Cursors.Hand;
+                    if (File.Exists(Filename + Extension))
+                    {
+                        pctBox.Load(Filename + Extension);
+                        pctBox.Cursor = Cursors.Hand;
+                        return;
+                    }
                 }
-                else
-                {
-                    pctBox.Image = NoImage;
-                    pctBox.Cursor = Cursors.Default;
-                }
+                pctBox.Image = NoImage;
+                pctBox.Cursor = Cursors.Default;
             }
         }
 
@@ -313,10 +316,7 @@ namespace GSDumpGUI
         {
             if (pctBox.Cursor == Cursors.Hand)
             {
-                String DumpFileName = lstDumps.SelectedItem.ToString().Split(new char[] { '|' })[0];
-                String Filename = Path.GetDirectoryName(Properties.Settings.Default.DumpDir + "\\") +
-                                  "\\" + Path.GetFileNameWithoutExtension(DumpFileName) + ".bmp";
-                Process.Start(Filename);
+                Process.Start(pctBox.ImageLocation);
             }
         }
 
