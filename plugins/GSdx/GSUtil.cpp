@@ -25,6 +25,8 @@
 #include "xbyak/xbyak_util.h"
 
 #ifdef _WIN32
+#include "GSDeviceDX.h"
+#include <VersionHelpers.h>
 #include "svnrev.h"
 #else
 #define SVN_REV 0
@@ -324,43 +326,22 @@ string GSUtil::GetDeviceUniqueName(cl::Device& device)
 
 bool GSUtil::CheckDirectX()
 {
-	OSVERSIONINFOEX version;
-	memset(&version, 0, sizeof(version));
-	version.dwOSVersionInfoSize = sizeof(version);
-
-	if(GetVersionEx((OSVERSIONINFO*)&version))
+	if (GSDeviceDX::LoadD3DCompiler())
 	{
-		printf("Windows %d.%d.%d", version.dwMajorVersion, version.dwMinorVersion, version.dwBuildNumber);
+		GSDeviceDX::FreeD3DCompiler();
+		return true;
+	}
 
-		if(version.wServicePackMajor > 0)
+	// User's system is likely broken if it fails and is Windows 8.1 or greater.
+	if (!IsWindows8Point1OrGreater())
+	{
+		printf("Cannot find d3dcompiler_43.dll\n");
+		if (MessageBox(nullptr, TEXT("You need to update some DirectX libraries, would you like to do it now?"), TEXT("GSdx"), MB_YESNO) == IDYES)
 		{
-			printf(" (%s %d.%d)", version.szCSDVersion, version.wServicePackMajor, version.wServicePackMinor);
+			ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/en-us/download/details.aspx?id=8109"), nullptr, nullptr, SW_SHOWNORMAL);
 		}
-
-		printf("\n");
 	}
-
-	string d3dx9_dll = format("d3dx9_%d.dll", D3DX_SDK_VERSION);
-
-	if(HINSTANCE hDll = LoadLibrary(d3dx9_dll.c_str()))
-	{
-		FreeLibrary(hDll);
-	}
-	else
-	{
-		printf("Cannot find %s\n", d3dx9_dll.c_str());
-
-		if(MessageBox(NULL, "You need to update some directx libraries, would you like to do it now?", "GSdx", MB_YESNO) == IDYES)
-		{
-			const char* url = "https://www.microsoft.com/en-us/download/details.aspx?id=8109";
-
-			ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
-		}
-
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 // ---------------------------------------------------------------------------------

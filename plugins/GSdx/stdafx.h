@@ -40,7 +40,6 @@
 #include <d3dcompiler.h>
 #include <d3d11.h>
 #include <d3d9.h>
-#include <d3dx9.h>
 #include <comutil.h>
 #include <atlcomcli.h>
 
