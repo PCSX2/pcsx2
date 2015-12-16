@@ -288,7 +288,7 @@ bool GSRendererCS::CreateDevice(GSDevice* dev_unk)
 
 	// PS
 
-	D3D11_SHADER_MACRO macro[] =
+	D3D_SHADER_MACRO macro[] =
 	{
 		{NULL, NULL},
 	};
@@ -297,7 +297,7 @@ bool GSRendererCS::CreateDevice(GSDevice* dev_unk)
 	{
 		vector<unsigned char> shader;
 		theApp.LoadResource(IDR_CS_FX, shader);
-		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", "ps_main0", macro, &m_ps0);
+		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "ps_main0", macro, &m_ps0);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -514,7 +514,7 @@ void GSRendererCS::Draw()
 			str[0] = format("%d", vs_sel.tme);
 			str[1] = format("%d", vs_sel.fst);
 
-			D3D11_SHADER_MACRO macro[] =
+			D3D_SHADER_MACRO macro[] =
 			{
 				{"VS_TME", str[0].c_str()},
 				{"VS_FST", str[1].c_str()},
@@ -534,7 +534,7 @@ void GSRendererCS::Draw()
 
 			vector<unsigned char> shader;
 			theApp.LoadResource(IDR_CS_FX, shader);
-			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
+			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
 
 			m_vs[vs_sel] = vs;
 		}
@@ -571,7 +571,7 @@ void GSRendererCS::Draw()
 			str[0] = format("%d", gs_sel.iip);
 			str[1] = format("%d", j == 0 ? gs_sel.prim : GS_SPRITE_CLASS);
 
-			D3D11_SHADER_MACRO macro[] =
+			D3D_SHADER_MACRO macro[] =
 			{
 				{"GS_IIP", str[0].c_str()},
 				{"GS_PRIM", str[1].c_str()},
@@ -580,7 +580,7 @@ void GSRendererCS::Draw()
 
 			vector<unsigned char> shader;
 			theApp.LoadResource(IDR_CS_FX, shader);
-			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", "gs_main", macro, &gs[j]);
+			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "gs_main", macro, &gs[j]);
 
 			m_gs[gs_sel] = gs[j];
 		}
@@ -611,7 +611,7 @@ void GSRendererCS::Draw()
 		str[1] = format("%d", context->FRAME.PSM);
 		str[2] = format("%d", context->ZBUF.PSM);
 
-		D3D11_SHADER_MACRO macro[] =
+		D3D_SHADER_MACRO macro[] =
 		{
 			{"PS_BATCH_SIZE", str[0].c_str()},
 			{"PS_FPSM", str[1].c_str()},
@@ -621,7 +621,7 @@ void GSRendererCS::Draw()
 
 		vector<unsigned char> shader;
 		theApp.LoadResource(IDR_CS_FX, shader);
-		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", "ps_main1", macro, &ps[1]);
+		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "ps_main1", macro, &ps[1]);
 
 		m_ps1[ps_sel] = ps[1];
 	}
