@@ -167,7 +167,8 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	*this	+= (m_advancedOptsFpu = new AdvancedOptionsFPU( this ))	| StdExpand();
 
 	*this	+= 12;
-	*this	+= new wxButton( this, wxID_DEFAULT, _("Restore Defaults"))  | StdButton();
+	m_button_RestoreDefaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
+	*this += m_button_RestoreDefaults | StdButton();
 
 	Connect( wxID_DEFAULT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CpuPanelEE::OnRestoreDefaults ) );
 }
@@ -221,7 +222,8 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 	*this	+= ( m_advancedOptsVu=new AdvancedOptionsVU( this ))	| StdExpand();
 
 	*this	+= 12;
-	*this	+= new wxButton( this, wxID_DEFAULT, _("Restore Defaults") ) | StdButton();
+	m_button_RestoreDefaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
+	*this += m_button_RestoreDefaults | StdButton();
 
 	Connect( wxID_DEFAULT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CpuPanelVU::OnRestoreDefaults ) );
 }
@@ -250,8 +252,8 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_RecIOP->Enable(!configToApply.EnablePresets);
 
 	m_check_EECacheEnable ->SetValue(recOps.EnableEECache);
-
-	this->Enable(!configToApply.EnablePresets);
+	m_check_EECacheEnable->Enable(!configToApply.EnablePresets);
+	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
@@ -323,9 +325,9 @@ void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
 #endif
 
-	this->Enable(!configToApply.EnablePresets);
 	m_panel_VU0->Enable(!configToApply.EnablePresets);
 	m_panel_VU1->Enable(!configToApply.EnablePresets);
+	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if ( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
