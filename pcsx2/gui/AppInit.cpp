@@ -18,6 +18,7 @@
 #include "AppAccelerators.h"
 #include "ConsoleLogger.h"
 #include "MSWstuff.h"
+#include "MTVU.h" // for thread cancellation on shutdown
 
 #include "Utilities/IniInterface.h"
 #include "DebugTools/Debug.h"
@@ -715,7 +716,10 @@ Pcsx2App::Pcsx2App()
 
 Pcsx2App::~Pcsx2App()
 {
-	pxDoAssert = pxAssertImpl_LogIt;
+	pxDoAssert = pxAssertImpl_LogIt;	
+	if (THREAD_VU1) {
+		vu1Thread.Cancel();
+	}
 }
 
 void Pcsx2App::CleanUp()
