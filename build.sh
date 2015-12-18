@@ -93,7 +93,7 @@ coverity_result=pcsx2-coverity.xz
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
-    rm -fr $build/*
+    rm -fr "$build"/*
 fi
 
 if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
@@ -107,13 +107,13 @@ echo "Building pcsx2 with ${flags[*]}" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
-if [[ -L $build  ]]; then
-    build=`readlink $build`
+if [[ -L "$build"  ]]; then
+    build=`readlink "$build"`
 fi
 
-mkdir -p $build
+mkdir -p "$build"
 # Cmake will generate file inside $CWD. It would be nicer if an option to cmake can be provided.
-cd $build
+cd "$build"
 
 if [[ "$useClang" -eq 1 ]]; then
     if [[ "$useCross" -eq 0 ]]; then
@@ -189,7 +189,7 @@ fi
 if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
     cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
-    (cd $build; tar caf $coverity_result $coverity_dir)
+    (cd "$build"; tar caf $coverity_result $coverity_dir)
     exit 0
 fi
 
