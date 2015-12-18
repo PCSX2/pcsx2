@@ -829,13 +829,15 @@ static wxString GetHostVmErrorMsg()
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
+template<class VM>
+VtlbMemoryReserve<VM>::VtlbMemoryReserve( const wxString& name, size_t size )
 	: m_reserve( name, size )
 {
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Reserve( sptr hostptr )
+template<class VM>
+void VtlbMemoryReserve<VM>::Reserve( sptr hostptr )
 {
 	if (!m_reserve.ReserveAt( hostptr ))
 	{
@@ -845,7 +847,8 @@ void VtlbMemoryReserve::Reserve( sptr hostptr )
 	}
 }
 
-void VtlbMemoryReserve::Commit()
+template<class VM>
+void VtlbMemoryReserve<VM>::Commit()
 {
 	if (IsCommitted()) return;
 	if (!m_reserve.Commit())
@@ -856,23 +859,31 @@ void VtlbMemoryReserve::Commit()
 	}
 }
 
-void VtlbMemoryReserve::Reset()
+template<class VM>
+void VtlbMemoryReserve<VM>::Reset()
 {
 	Commit();
 	memzero_sse_a(m_reserve.GetPtr(), m_reserve.GetCommittedBytes());
 }
 
-void VtlbMemoryReserve::Decommit()
+template<class VM>
+void VtlbMemoryReserve<VM>::Decommit()
 {
 	m_reserve.Reset();
 }
 
-void VtlbMemoryReserve::Release()
+template<class VM>
+void VtlbMemoryReserve<VM>::Release()
 {
 	m_reserve.Release();
 }
 
-bool VtlbMemoryReserve::IsCommitted() const
+template<class VM>
+bool VtlbMemoryReserve<VM>::IsCommitted() const
 {
 	return !!m_reserve.GetCommittedPageCount();
 }
+
+// Please Mr compiler generate me the code
+template class VtlbMemoryReserve<VirtualMemoryReserve>;
+template class VtlbMemoryReserve<VirtualSharedMemoryReserve>;

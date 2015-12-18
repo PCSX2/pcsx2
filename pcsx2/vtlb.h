@@ -92,10 +92,11 @@ extern void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const );
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve
 // --------------------------------------------------------------------------------------
+template<class VM>
 class VtlbMemoryReserve
 {
 protected:
-	VirtualMemoryReserve	m_reserve;
+	VM	m_reserve;
 
 public:
 	VtlbMemoryReserve( const wxString& name, size_t size );
@@ -117,9 +118,17 @@ public:
 // --------------------------------------------------------------------------------------
 //  eeMemoryReserve
 // --------------------------------------------------------------------------------------
-class eeMemoryReserve : public VtlbMemoryReserve
+#if VTLB_UsePageFaulting
+class eeMemoryReserve : public VtlbMemoryReserve<VirtualSharedMemoryReserve>
+#else
+class eeMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
+#endif
 {
-	typedef VtlbMemoryReserve _parent;
+#if VTLB_UsePageFaulting
+	typedef VtlbMemoryReserve<VirtualSharedMemoryReserve> _parent;
+#else
+	typedef VtlbMemoryReserve<VirtualMemoryReserve> _parent;
+#endif
 
 public:
 	eeMemoryReserve();
@@ -138,7 +147,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  iopMemoryReserve
 // --------------------------------------------------------------------------------------
-class iopMemoryReserve : public VtlbMemoryReserve
+class iopMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
 {
 	typedef VtlbMemoryReserve _parent;
 
@@ -159,7 +168,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  vuMemoryReserve
 // --------------------------------------------------------------------------------------
-class vuMemoryReserve : public VtlbMemoryReserve
+class vuMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
 {
 	typedef VtlbMemoryReserve _parent;
 
