@@ -62,6 +62,9 @@ typedef u128 mem128_t;
 
 // The order of the components in this struct *matter* -- it has been laid out so that the
 // full breadth of PS2 RAM and ROM mappings are directly supported.
+#ifdef __x86_64__
+
+// A piles of crap that need to be done correctly
 struct EEVM_MemoryAllocMess
 {
 	u8 (&Main)[Ps2MemSize::MainRam];				// Main memory (hard-wired to 32MB)
@@ -78,6 +81,49 @@ struct EEVM_MemoryAllocMess
 	u8 _padding4[0x1fc00000-(0x1e040000+Ps2MemSize::Rom2)];
 	u8 (&ROM)[Ps2MemSize::Rom];				// Boot rom (4MB)
 };
+
+#else
+
+struct EEVM_MemoryAllocMess
+{
+	// 0x0... to 0x1...
+	u8 Main[Ps2MemSize::MainRam];				// Main memory (hard-wired to 32MB)
+
+	// 0x1... to 0x2...
+	u8 _pad_hw_reg[_32mb];
+
+	// 0x2... to 0x4...
+	u8 Main_uncached[Ps2MemSize::MainRam];
+	u8 Main_uncached_acc[Ps2MemSize::MainRam];
+
+	// 0x4... to 0x7...
+	u8 _pad4[_32mb];
+	u8 _pad5[_32mb];
+	u8 _pad6[_32mb];
+
+	// 0x7... to 0x7...
+	u8 Scratch[Ps2MemSize::Scratch];		// Scratchpad!
+
+	// FIXME might need a protection in case of Scratchpad overflow
+
+	// Put garbadge between Spad and iop reg (save bunch of MB)
+	u8 _pad_align_1mb[_1mb - Ps2MemSize::Scratch];
+	u8 ZeroRead[_1mb];
+	u8 ZeroWrite[_1mb];
+
+	u8 ROM1[Ps2MemSize::Rom1];				// DVD player
+	u8 EROM[Ps2MemSize::ERom];				// DVD player extensions
+	u8 ROM2[Ps2MemSize::Rom2];				// Chinese extensions
+	u8 ROM[Ps2MemSize::Rom];				// Boot rom (4MB)
+
+	u8* _pad_unmapped[22*_1mb + 480*_1kb];
+
+	u8* Main_special[32*_1kb];
+
+	//u8 _pad_iop_reg[_32mb - Ps2MemSize::Scratch - Ps2MemSize::Rom - Ps2MemSize::Rom1 - Ps2MemSize::Rom2 - Ps2MemSize::ERom - 2*_1mb];
+};
+
+#endif
 
 #else
 
