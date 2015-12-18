@@ -87,7 +87,7 @@ done
 root=$PWD/$(dirname "$0")
 log="$root/install_log.txt"
 build="$root/build"
-coverity_dir=cov-int
+coverity_dir="`cov-int`"
 coverity_result=pcsx2-coverity.xz
 
 if [[ "$cleanBuild" -eq 1 ]]; then
@@ -187,9 +187,9 @@ fi
 # Coverity build
 ############################################################
 if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
-    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a "$log"
+    cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
-    (cd "$build"; tar caf $coverity_result $coverity_dir)
+    (cd "$build"; tar caf $coverity_result "$coverity_dir")
     exit 0
 fi
 
