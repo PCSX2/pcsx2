@@ -50,57 +50,50 @@ namespace HostMemoryMap
 	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
 	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
 	// 0x20000000 offset to avoid conflict.
-	static const uptr EEmem		= 0x40000000;
-	static const uptr IOPmem	= 0x44000000;
-	static const uptr VUmem		= 0x48000000;
-	static const uptr EErec		= 0x50000000;
-	static const uptr IOPrec	= 0x54000000;
-	static const uptr VIF0rec	= 0x56000000;
-	static const uptr VIF1rec	= 0x58000000;
-	static const uptr mVU0rec	= 0x5C000000;
-	static const uptr mVU1rec	= 0x60000000;
+	static const int asan_offset = 0x20000000;
 #else
-	// PS2 main memory, SPR, and ROMs
-	static const uptr EEmem		= 0x20000000;
+	static const int asan_offset = 0;
+#endif
 
-	// IOP main memory and ROMs
-	static const uptr IOPmem	= 0x24000000;
-
-	// VU0 and VU1 memory.
-	static const uptr VUmem		= 0x28000000;
+	// PS2 main memory, SPR, and ROMs (256 mb)
+	static const uptr EEmem		= 0x20000000 + asan_offset;
 
 	// EE recompiler code cache area (64mb)
-	static const uptr EErec		= 0x30000000;
-
-	// IOP recompiler code cache area (16 or 32mb)
-	static const uptr IOPrec	= 0x34000000;
-
-	// newVif0 recompiler code cache area (16mb)
-	static const uptr VIF0rec	= 0x36000000;
-
-	// newVif1 recompiler code cache area (32mb)
-	static const uptr VIF1rec	= 0x38000000;
+	static const uptr EErec		= 0x30000000 + asan_offset;
 
 	// microVU1 recompiler code cache area (32 or 64mb)
-	static const uptr mVU0rec	= 0x3C000000;
+	static const uptr mVU0rec	= 0x34000000 + asan_offset;
 
 	// microVU0 recompiler code cache area (64mb)
-	static const uptr mVU1rec	= 0x40000000;
-#endif
-	
+	static const uptr mVU1rec	= 0x38000000 + asan_offset;
+
+	// IOP recompiler code cache area (16 or 32mb)
+	static const uptr IOPrec	= 0x3C000000 + asan_offset;
+
+	// newVif0 recompiler code cache area (16mb) (code seem to use 8mb)
+	static const uptr VIF0rec	= 0x3E000000 + asan_offset;
+
+	// newVif1 recompiler code cache area (16mb) (code seem to use 8mb)
+	static const uptr VIF1rec	= 0x3E800000 + asan_offset;
+
+	// IOP main memory and ROMs (~2.1mb)
+	static const uptr IOPmem	= 0x3F000000 + asan_offset;
+
+	// VU0 and VU1 memory. (40 KB)
+	static const uptr VUmem		= 0x3F800000 + asan_offset;
 }
 
 // --------------------------------------------------------------------------------------
 //  SysMainMemory
 // --------------------------------------------------------------------------------------
-// This class provides the main memory for the virtual machines.  
+// This class provides the main memory for the virtual machines.
 class SysMainMemory
 {
 protected:
 	eeMemoryReserve			m_ee;
 	iopMemoryReserve		m_iop;
 	vuMemoryReserve			m_vu;
-	
+
 public:
 	SysMainMemory();
 	virtual ~SysMainMemory() throw();
