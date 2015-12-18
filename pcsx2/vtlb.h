@@ -111,8 +111,7 @@ public:
 	virtual void Commit();
 	virtual void Reset();
 	virtual void Decommit();
-	virtual void SetBaseAddr( uptr newaddr );
-	
+
 	bool IsCommitted() const;
 };
 

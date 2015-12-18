@@ -835,11 +835,6 @@ VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::SetBaseAddr( uptr newaddr )
-{
-	m_reserve.SetBaseAddr( newaddr );
-}
-
 void VtlbMemoryReserve::Reserve( sptr hostptr )
 {
 	if (!m_reserve.ReserveAt( hostptr ))
