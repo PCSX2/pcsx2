@@ -123,11 +123,19 @@ protected:
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryReserve
 // --------------------------------------------------------------------------------------
-class VirtualMemoryReserve
-{
-	DeclareNoncopyableObject( VirtualMemoryReserve );
+struct MemoryView {
+	u32 virt;
+	uptr x86;
+	uptr size;
+	PageProtectionMode mode;
+};
 
-protected:
+class VirtualMemoryReserveBase
+{
+	DeclareNoncopyableObject( VirtualMemoryReserveBase );
+
+	protected:
+
 	wxString m_name;
 
 	// Default size of the reserve, in bytes.  Can be specified when the object is constructed.
@@ -146,7 +154,90 @@ protected:
 
 	// Protection mode to be applied to committed blocks.
 	PageProtectionMode m_prot_mode;
-	
+
+public:
+	VirtualMemoryReserveBase( const wxString& name=wxEmptyString, size_t size = 0);
+	virtual ~VirtualMemoryReserveBase() throw() {}
+
+	virtual void Reset()   = 0;
+	virtual void Release() = 0;
+	virtual bool Commit()  = 0;
+
+	virtual void* Reserve( size_t size = 0, uptr base = 0, uptr upper_bounds = 0 ) = 0;
+	virtual void* ReserveAt( uptr base = 0, uptr upper_bounds = 0 ) = 0;
+
+	bool IsOk() const { return m_baseptr !=  NULL; }
+	wxString GetName() const { return m_name; }
+
+	uptr GetReserveSizeInBytes() const	{ return m_pages_reserved * __pagesize; }
+	uptr GetReserveSizeInPages() const	{ return m_pages_reserved; }
+	uint GetCommittedPageCount() const	{ return m_pages_commited; }
+	uint GetCommittedBytes() const		{ return m_pages_commited * __pagesize; }
+
+	u8* GetPtr()					{ return (u8*)m_baseptr; }
+	const u8* GetPtr() const		{ return (u8*)m_baseptr; }
+	u8* GetPtrEnd()					{ return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
+	const u8* GetPtrEnd() const		{ return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
+
+	VirtualMemoryReserveBase& SetName( const wxString& newname );
+	VirtualMemoryReserveBase& SetBaseAddr( uptr newaddr );
+	VirtualMemoryReserveBase& SetPageAccessOnCommit( const PageProtectionMode& mode );
+
+	operator void*()				{ return m_baseptr; }
+	operator const void*() const	{ return m_baseptr; }
+
+	operator u8*()					{ return (u8*)m_baseptr; }
+	operator const u8*() const		{ return (u8*)m_baseptr; }
+
+	u8& operator[](uint idx)
+	{
+		pxAssert(idx < (m_pages_reserved * __pagesize));
+		return *((u8*)m_baseptr + idx);
+	}
+
+	const u8& operator[](uint idx) const
+	{
+		pxAssert(idx < (m_pages_reserved * __pagesize));
+		return *((u8*)m_baseptr + idx);
+	}
+};
+
+class VirtualSharedMemoryReserve : public VirtualMemoryReserveBase
+{
+	DeclareNoncopyableObject( VirtualSharedMemoryReserve );
+
+	typedef VirtualMemoryReserveBase _parent;
+
+protected:
+	std::vector<MemoryView> m_shm_views;
+
+public:
+	VirtualSharedMemoryReserve( const wxString& name, size_t size );
+	virtual ~VirtualSharedMemoryReserve() throw()
+	{
+		Release();
+	}
+
+	virtual void* Reserve( size_t size = 0, uptr base = 0, uptr upper_bounds = 0 ) { return NULL;}
+	virtual void* ReserveAt( uptr base = 0, uptr upper_bounds = 0 ) { return NULL;}
+
+	virtual void Reset();
+	virtual void Release();
+	virtual bool Commit();
+
+	void Reserve( const MemoryView& view );
+
+	using _parent::operator[];
+};
+
+class VirtualMemoryReserve : public VirtualMemoryReserveBase
+{
+	DeclareNoncopyableObject( VirtualMemoryReserve );
+
+	typedef VirtualMemoryReserveBase _parent;
+
+protected:
+
 	// Controls write access to the entire reserve.  When true (the default), the reserve
 	// operates normally.  When set to false, all committed blocks are re-protected with
 	// write disabled, and accesses to uncommitted blocks (read or write) will cause a GPF
@@ -168,46 +259,12 @@ public:
 
 	virtual void Reset();
 	virtual void Release();
-	virtual bool TryResize( uint newsize );
 	virtual bool Commit();
-	
+
 	virtual void ForbidModification();
 	virtual void AllowModification();
 
-	bool IsOk() const { return m_baseptr !=  NULL; }
-	wxString GetName() const { return m_name; }
-
-	uptr GetReserveSizeInBytes() const	{ return m_pages_reserved * __pagesize; }
-	uptr GetReserveSizeInPages() const	{ return m_pages_reserved; }
-	uint GetCommittedPageCount() const	{ return m_pages_commited; }
-	uint GetCommittedBytes() const		{ return m_pages_commited * __pagesize; }
-
-	u8* GetPtr()					{ return (u8*)m_baseptr; }
-	const u8* GetPtr() const		{ return (u8*)m_baseptr; }
-	u8* GetPtrEnd()					{ return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
-	const u8* GetPtrEnd() const		{ return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
-
-	VirtualMemoryReserve& SetName( const wxString& newname );
-	VirtualMemoryReserve& SetBaseAddr( uptr newaddr );
-	VirtualMemoryReserve& SetPageAccessOnCommit( const PageProtectionMode& mode );
-
-	operator void*()				{ return m_baseptr; }
-	operator const void*() const	{ return m_baseptr; }
-
-	operator u8*()					{ return (u8*)m_baseptr; }
-	operator const u8*() const		{ return (u8*)m_baseptr; }
-
-	u8& operator[](uint idx)
-	{
-		pxAssert(idx < (m_pages_reserved * __pagesize));
-		return *((u8*)m_baseptr + idx);
-	}
-
-	const u8& operator[](uint idx) const
-	{
-		pxAssert(idx < (m_pages_reserved * __pagesize));
-		return *((u8*)m_baseptr + idx);
-	}
+	using _parent::operator[];
 
 protected:
 	virtual void ReprotectCommittedBlocks( const PageProtectionMode& newmode );

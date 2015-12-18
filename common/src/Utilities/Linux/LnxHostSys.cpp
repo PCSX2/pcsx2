@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
 // the same thing.
@@ -141,7 +142,30 @@ static bool _memprotect( void* baseaddr, size_t size, const PageProtectionMode& 
 	return false;
 }
 
-void* HostSys::MmapReservePtr(void* base, size_t size)
+static int s_shm_fd = -1;
+
+void HostSys::OpenSharedMemory(size_t size)
+{
+	const char* file_name = "/PCSX2.mem";
+	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (s_shm_fd != -1)
+		shm_unlink(file_name); // file is deleted but descriptor is still open
+	else
+		Console.Error("Failed to open %s due to %s", file_name, strerror(errno));
+
+	if (ftruncate(s_shm_fd, size) < 0)
+		Console.Error("Failed to reserve memory due to %s", strerror(errno));
+}
+
+void HostSys::CloseSharedMemory()
+{
+	if (s_shm_fd >= 0) {
+		close(s_shm_fd);
+		s_shm_fd = -1;
+	}
+}
+
+void* HostSys::MmapReservePtr(void* base, size_t size, u32 offset)
 {
 	PageSizeAssertionTest(size);
 
@@ -149,7 +173,10 @@ void* HostSys::MmapReservePtr(void* base, size_t size)
 	// or anonymous source, with PROT_NONE (no-access) permission.  Since the mapping
 	// is completely inaccessible, the OS will simply reserve it and will not put it
 	// against the commit table.
-	return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (offset == ~0u)
+		return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	else
+		return mmap(base, size, PROT_NONE, MAP_SHARED | MAP_FIXED, s_shm_fd, offset);
 }
 
 bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
@@ -168,7 +195,7 @@ bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& m
 	return _memprotect( base, size, mode );
 }
 
-void HostSys::MmapResetPtr(void* base, size_t size)
+void HostSys::MmapResetPtr(void* base, size_t size, u32 offset)
 {
 	// On linux the only way to reset the memory is to unmap and remap it as PROT_NONE.
 	// That forces linux to unload all committed pages and start from scratch.
@@ -180,7 +207,7 @@ void HostSys::MmapResetPtr(void* base, size_t size)
 	// pretty well stops all PCSX2 threads anyway).
 
 	Munmap(base, size);
-	void* result = MmapReservePtr(base, size);
+	void* result = MmapReservePtr(base, size, offset);
 
 	pxAssertRel ((uptr)result == (uptr)base, pxsFmt(
 		"Virtual memory decommit failed: memory at 0x%08X -> 0x%08X could not be remapped.  "
@@ -188,9 +215,9 @@ void HostSys::MmapResetPtr(void* base, size_t size)
 	));
 }
 
-void* HostSys::MmapReserve(uptr base, size_t size)
+void* HostSys::MmapReserve(uptr base, size_t size, u32 offset)
 {
-	return MmapReservePtr((void*)base, size);
+	return MmapReservePtr((void*)base, size, offset);
 }
 
 bool HostSys::MmapCommit(uptr base, size_t size, const PageProtectionMode& mode)
