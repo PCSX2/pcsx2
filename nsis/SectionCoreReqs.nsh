@@ -46,6 +46,11 @@
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
     File                                            ..\bin\docs\*
     !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
+	
+	SetOutPath "$INSTDIR\Shaders"
+    !insertmacro UNINSTALL.LOG_OPEN_INSTALL
+    File                                            ..\bin\shaders\*
+    !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
     
     SetOutPath "$INSTDIR\Plugins"
 	!insertmacro UNINSTALL.LOG_OPEN_INSTALL

@@ -33,6 +33,7 @@
     * Release SSSE3 (only needed if packaging plugins)
     * Release SSE4 (only needed if packaging plugins)
     * Release AVX (only needed if packaging plugins)
+	* Release AVX2 (only needed if packaging plugins)
     * Devel (optional) /* not enabled in the installer either, so need to do that as well */
     
     You may selectively unload plugins you do not wish to package prior to running the NSIS
@@ -50,7 +51,7 @@ The installer will include plugins only if they are present.  If you do not buil
 remove some (or all) plugins before running the nsis script, only PCSX2 and whatever remaining
 plugins will be packaged.
 
-GSdx SSE2, SSSE3, SSE4 and AVX versions are all included into the installer *if* they are present.
+GSdx SSE2, SSSE3, SSE4 and AVX/AVX2 versions are all included into the installer *if* they are present.
 You will need to follow the above instructions and compile all release targets to get all the
 GSdx DLLs.
 

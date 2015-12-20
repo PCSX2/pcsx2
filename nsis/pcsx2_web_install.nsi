@@ -67,7 +67,6 @@ Section "!${APP_NAME} (required)" SEC_CORE
     File                                                   ..\bin\Plugins\cdvdGigaherz.dll
   
     File /nonfatal /oname=lilypad.dll   ..\bin\Plugins\lilypad.dll
-    File                                                   ..\bin\Plugins\PadSSSPSX.dll
     File /nonfatal                                         ..\bin\Plugins\padPokopom.dll
 	
   !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
