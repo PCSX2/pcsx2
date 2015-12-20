@@ -214,6 +214,53 @@ namespace vtlb_private
 		}
 	}
 
+	static void DynGen_OffsetDirectRead( u32 bits, bool sign, bool sp )
+	{
+#ifdef PLEASE_SIGSEGV
+		uptr offset = (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#else
+		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#endif
+
+		switch( bits )
+		{
+			case 0:
+			case 8:
+				if( sign )
+					xMOVSX( eax, ptr8[r + offset] );
+				else
+					xMOVZX( eax, ptr8[r + offset] );
+			break;
+
+			case 1:
+			case 16:
+				if( sign )
+					xMOVSX( eax, ptr16[r + offset] );
+				else
+					xMOVZX( eax, ptr16[r + offset] );
+			break;
+
+			case 2:
+			case 32:
+				xMOV( eax, ptr[r + offset] );
+			break;
+
+			case 3:
+			case 64:
+				iMOV64_Smart( ptr[edx], ptr[r + offset] );
+			break;
+
+			case 4:
+			case 128:
+				iMOV128_SSE( ptr[edx], ptr[r + offset] );
+			break;
+
+			jNO_DEFAULT
+		}
+	}
+
 	// ------------------------------------------------------------------------
 	static void DynGen_DirectWrite( u32 bits )
 	{
@@ -243,6 +290,45 @@ namespace vtlb_private
 			case 4:
 			case 128:
 				iMOV128_SSE( ptr[ecx], ptr[edx] );
+			break;
+		}
+	}
+
+	static void DynGen_OffsetDirectWrite( u32 bits, bool sp )
+	{
+#ifdef PLEASE_SIGSEGV
+		uptr offset = (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#else
+		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#endif
+		switch(bits)
+		{
+			//8 , 16, 32 : data on EDX
+			case 0:
+			case 8:
+				xMOV( ptr[r + offset], dl );
+			break;
+
+			case 1:
+			case 16:
+				xMOV( ptr[r + offset], dx );
+			break;
+
+			case 2:
+			case 32:
+				xMOV( ptr[r + offset], edx );
+			break;
+
+			case 3:
+			case 64:
+				iMOV64_Smart( ptr[r + offset], ptr[edx] );
+			break;
+
+			case 4:
+			case 128:
+				iMOV128_SSE( ptr[r + offset], ptr[edx] );
 			break;
 		}
 	}
