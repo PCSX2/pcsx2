@@ -128,6 +128,7 @@ GSdxApp::GSdxApp()
 	m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 
+#ifdef _WINDOWS
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	"Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),			"Direct3D9",	"Software"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null),		"Direct3D9",	"Null"));
@@ -136,6 +137,7 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null),	"Direct3D",		"Null"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW),		"Null",			"Software"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null),		"Null",			"Null"));
+#endif
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW),			"OpenGL",		"Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW),			"OpenGL",		"Software"));
 #ifdef ENABLE_OPENCL

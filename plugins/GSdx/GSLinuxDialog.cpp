@@ -48,74 +48,6 @@ GtkWidget* left_label(const char* lbl)
 	return w;
 }
 
-void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
-{
-	if (gtk_combo_box_get_active(combo) == -1) return;
-
-	switch (gtk_combo_box_get_active(combo)) {
-	case 0: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_SW)); break;
-	case 1: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_OpenCL)); break;
-	case 2: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_Null)); break;
-	case 3: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_HW)); break;
-	case 4: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	case 5: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_OpenCL)); break;
-
-				// Fallback to SW opengl
-	default: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	}
-}
-
-GtkWidget* CreateRenderComboBox()
-{
-	GtkWidget* render_combo_box = gtk_combo_box_text_new ();
-	int renderer_box_position = 0;
-
-	for(auto s = theApp.m_gs_renderers.begin(); s != theApp.m_gs_renderers.end(); s++)
-	{
-		string label = s->name;
-
-		if(!s->note.empty()) label += format(" (%s)", s->note.c_str());
-
-		// Add some tags to ease users selection
-		switch (static_cast<GSRendererType>(s->id)) {
-			// Supported opengl
-		case GSRendererType::OGL_HW:
-		case GSRendererType::OGL_SW:
-		case GSRendererType::OGL_OpenCL:
-			break;
-
-			// (dev only) for any NULL stuff
-		case GSRendererType::Null_SW:
-		case GSRendererType::Null_OpenCL:
-		case GSRendererType::Null_Null:
-			label += " (debug only)";
-			break;
-
-		default:
-			continue;
-		}
-
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
-	}
-
-	switch (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)))) {
-	case GSRendererType::Null_SW:		renderer_box_position = 0; break;
-	case GSRendererType::Null_OpenCL:	renderer_box_position = 1; break;
-	case GSRendererType::Null_Null:		renderer_box_position = 2; break;
-	case GSRendererType::OGL_HW:		renderer_box_position = 3; break;
-	case GSRendererType::OGL_SW:		renderer_box_position = 4; break;
-	case GSRendererType::OGL_OpenCL:	renderer_box_position = 5; break;
-
-	// Fallback to openGL SW
-	default: renderer_box_position = 4; break;
-	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(render_combo_box), renderer_box_position);
-
-	g_signal_connect(render_combo_box, "changed", G_CALLBACK(CB_ChangedRenderComboBox), NULL);
-
-	return render_combo_box;
-}
-
 void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 {
 	int p = gtk_combo_box_get_active(combo);
@@ -452,7 +384,7 @@ void populate_hack_table(GtkWidget* hack_table)
 void populate_main_table(GtkWidget* main_table)
 {
 	GtkWidget* render_label     = left_label("Renderer:");
-	GtkWidget* render_combo_box = CreateRenderComboBox();
+	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer", static_cast<int>(GSRendererType::Default));
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
 
