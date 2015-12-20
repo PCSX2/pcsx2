@@ -443,6 +443,17 @@ void vtlb_DynGenRead32(u32 bits, bool sign)
 }
 
 // ------------------------------------------------------------------------
+// Wrapper to the different load implementation
+void vtlb_DynGenRead(u32 likely_address, u32 bits, bool sign)
+{
+	if (bits < 64)
+		vtlb_DynGenRead32(bits, sign);
+	else
+		vtlb_DynGenRead64(bits);
+}
+
+
+// ------------------------------------------------------------------------
 // TLB lookup is performed in const, with the assumption that the COP0/TLB will clear the
 // recompiler if the TLB is changed.
 void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
@@ -578,6 +589,12 @@ void vtlb_DynGenWrite(u32 sz)
 	*writeback = (uptr)xGetPtr();
 }
 
+// ------------------------------------------------------------------------
+// Wrapper to the different load implementation
+void vtlb_DynGenWrite(u32 likely_address, u32 bits)
+{
+	vtlb_DynGenWrite(bits);
+}
 
 // ------------------------------------------------------------------------
 // Generates code for a store instruction, where the address is a known constant.
