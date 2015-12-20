@@ -29,10 +29,14 @@
 struct PageFaultInfo
 {
 	uptr	addr;
+	uptr	eip;
+	void*	ctx;
 
-	PageFaultInfo( uptr address )
+	PageFaultInfo( uptr address, uptr eip_reg = 0, void* context = NULL )
 	{
 		addr = address;
+		eip  = eip_reg;
+		ctx  = context;
 	}
 };
 

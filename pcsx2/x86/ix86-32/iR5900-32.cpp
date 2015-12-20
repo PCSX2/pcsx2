@@ -323,6 +323,18 @@ u32* recGetImm64(u32 hi, u32 lo)
 	return imm64;
 }
 
+// Those functions allow to append a new block to handle memory tlb through SIGSEGV
+// FIXME: it would be better to ensure the correctness of the pointer (always point to first
+// free byte) rather to rely on an extra variable.
+void eeSetRecPtr(u8* ptr) {
+	recPtr = ptr;
+}
+
+u8* eeGetRecPtr() {
+	return recPtr;
+}
+
+
 // Use this to call into interpreter functions that require an immediate branchtest
 // to be done afterward (anything that throws an exception or enables interrupts, etc).
 void recBranchCall( void (*func)() )

@@ -1033,15 +1033,110 @@ void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& h
 	handled = true;
 }
 
+using namespace x86Emitter;
 void direct_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& handled )
 {
 	pxAssert( eeMem );
 
-	// get bad virtual address
-	uptr offset = info.addr - (uptr)eeMem->Main;
-	if (offset >= (Ps2MemSize::MainRam + _32mb)) return;
+#if VTLB_UsePageFaulting
+	// get bad virtual address (only HW access must be handled here)
+	uptr offset_ee  = info.addr - (uptr)eeMem->_pad_hw_reg;
+	uptr offset_iop = info.addr - (uptr)eeMem->Scratch;
+	if (offset_ee >= _32mb && offset_iop >= _32mb) {
+		return;
+	}
 
-	//handled = true;
+	u8* x86 = (u8*)info.eip;
+
+	u32 op32 = *(u32*)info.eip;
+	u32 op16 = op32 & 0xFFFF;
+	u32  op8 = op32 & 0xFF;
+
+	// not portable at all (but efficient ^^)
+	// A better solution will be to create a map that used eip as a key
+	// (you know pointer at compilation).
+	// This way you could store severals metadata such as
+	// 1/ tlb dispatcher index (or pointer)
+	// 2/ start of memory operation
+	// 3/ return address
+	//
+	// However it would cost a couple of MB that are barely used
+
+	bool sign = false;
+	int width = 0;
+	int op    = 0;
+	int op_nb = 2;
+
+	if (op16 == 0xBE0F) {
+		// Read 8B sign extended (movsx)
+		sign = true;
+		width = 8;
+	} else if (op16 == 0xBF0F) {
+		// Read 16B sign extended (movsx)
+		sign = true;
+		width = 16;
+	} else if (op16 == 0xB60F) {
+		// Read 8B zero extended (movzx)
+		width = 8;
+	} else if (op16 == 0xB70F) {
+		// Read 16B zero extended (movzx)
+		width = 16;
+	} else if (op8 == 0x8B) {
+		// Read 32B (mov)
+		width = 32;
+		op_nb = 1;
+	} else if (op16 == 0x120F) {
+		// Read 64B (movlps)
+		width = 64;
+	} else if (op16 == 0x280F) {
+		// Read 128B (movaps)
+		width = 128;
+	} else if (op8 == 0x88) {
+		// Write 8B (mov)
+		op = 1;
+		width = 8;
+		op_nb = 1;
+	} else if (op16 == 0x8966) {
+		// Write 16B (mov)
+		op = 1;
+		width = 16;
+	} else if (op8 == 0x89) {
+		// Write 32B (mov)
+		op = 1;
+		width = 32;
+		op_nb = 1;
+	} else if (op16 == 0x130F) {
+		// Write 64B (movlps)
+		op = 1;
+		width = 64;
+	} else if (op16 == 0x290F) {
+		// Write 128B (movaps)
+		op = 1;
+		width = 128;
+	} else {
+		Console.Error("opcode 0x%02x 0x%04x (0x%04x) 0x%08x", op8, op16, op32 & 0xFFFF, op32);
+		Console.Error("Unhandled page fault @ 0x%08x. EIP 0x%08x", info.addr, info.eip);
+		return;
+	}
+
+	s32 absolute_offset = *(s32*)(x86 + op_nb + 1);
+	s32 imm_offset = absolute_offset - (s32)(HostMemoryMap::EEmem);
+
+	// Search the start of the load/store
+	u8* start = x86;
+
+	// Search the end of the load/store
+	u8* end;
+	if (width < 64 || op) {
+		end = x86 + op_nb + 1 + 4; // opcode + modrm + disp32
+	} else {
+		end = x86 + op_nb + 1 + 4 + 3; // opcode + modrm + disp32 + sse move (opcode + modrm)
+	}
+
+	vtlb_rewrite_memory_instruction(start, end, op, width, sign, imm_offset);
+
+	handled = true;
+#endif
 }
 
 // Clears all block tracking statuses, manual protection flags, and write protection.

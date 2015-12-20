@@ -634,10 +634,6 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 		// Warning dirty ebx (in case someone got the very bad idea to move this code)
 		EE::Profiler.EmitMem();
 
-		// Return address for the dispatcher
-		xMOV(ebx, 0xdeadbeef);
-		uptr* writeback = ((uptr*)xGetPtr()) - 1;
-
 #ifdef PLEASE_SIGSEGV
 		xPEXT(eax, ecx, ptr[&compress_address]);
 		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
@@ -645,6 +641,9 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
 #else
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
 
 		xMOV(eax, ecx);
 
@@ -656,9 +655,10 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 		// Ram access let's be bold
 		EE::Profiler.EmitFastMem();
 		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
-#endif
 
 		*writeback = (uptr)xGetPtr();
+#endif
+
 	} else {
 		// Old fashion direct access
 		if (bits < 64)
@@ -829,10 +829,6 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 		// Warning dirty ebx (in case someone got the very bad idea to move this code)
 		EE::Profiler.EmitMem();
 
-		// Return address for the dispatcher
-		xMOV(ebx, 0xdeadbeef);
-		uptr* writeback = ((uptr*)xGetPtr()) - 1;
-
 #ifdef PLEASE_SIGSEGV
 		xPEXT(eax, ecx, ptr[&compress_address]);
 		DynGen_OffsetDirectWrite( bits, zone == 7 );
@@ -840,6 +836,9 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
 #else
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
 
 		xMOV(eax, ecx);
 
@@ -851,8 +850,9 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 		// Ram access let's be bold
 		EE::Profiler.EmitFastMem();
 		DynGen_OffsetDirectWrite( bits, zone == 7 );
-#endif
+
 		*writeback = (uptr)xGetPtr();
+#endif
 	} else {
 		// Old fashion direct access
 		vtlb_DynGenWrite(bits);
@@ -930,6 +930,47 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //							Extra Implementations
+
+void vtlb_rewrite_memory_instruction(u8* start, u8* end, int mode, int width, bool sign, s32 imm_offset)
+{
+	// Rewrite code to
+	// jump(new x86 block); // require 5 bytes
+	pxAssert((end-start) >= 5);
+
+	Console.Error("Rewrite EE %s %s%d (imm %d)",
+			sign ? "signed" : "unsigned", mode ? "store" : "load", width, imm_offset);
+	Console.Error("From 0x%x to 0x%x (%d bytes available)", start, end, end - start);
+
+	u8* recomp = eeGetRecPtr();
+
+	{	// Rewrite current memory access with a jump to a block that will handle the translation
+		xSetPtr((void*)start);
+
+		xJMP(recomp);
+
+		// Help to check x86 code generation
+		for (u8* pad = xGetPtr(); pad < end; pad++) {
+			xINT(3);
+		}
+	}
+
+	{	// Use a full tlb translation
+		xSetPtr(recomp);
+
+		// Inject the return address
+		xMOV(ebx, (uptr)end);
+
+		// Add the immediate offset that was potentially optimized
+		xADD(ecx, imm_offset);
+
+		// Inject the jump to the dispatcher
+		xJMP( GetFullTlbDispatcherPtr( mode, width, sign ) );
+
+		eeSetRecPtr(xGetPtr());
+		xSetPtr(xGetPtr());
+	}
+
+}
 
 //   ecx - virtual address
 //   Returns physical address in eax.

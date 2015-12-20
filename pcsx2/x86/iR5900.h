@@ -29,6 +29,9 @@ extern int g_branch;	         // set for branch (also used by the SuperVU! .. wh
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 
+extern u8* eeGetRecPtr();
+extern void eeSetRecPtr(u8* ptr);
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 

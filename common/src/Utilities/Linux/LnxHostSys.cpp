@@ -36,7 +36,7 @@ extern void SignalExit(int sig);
 static const uptr m_pagemask = getpagesize()-1;
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
-static void SysPageFaultSignalFilter( int signal, siginfo_t *siginfo, void * )
+static void SysPageFaultSignalFilter( int signal, siginfo_t *siginfo, void *cpu_state )
 {
 	// [TODO] : Add a thread ID filter to the Linux Signal handler here.
 	// Rationale: On windows, the __try/__except model allows per-thread specific behavior
@@ -60,7 +60,10 @@ static void SysPageFaultSignalFilter( int signal, siginfo_t *siginfo, void * )
 	// so for now we lock this exception code unless someone can fix this better...
 	Threading::ScopedLock lock(PageFault_Mutex);
 
-	Source_PageFault->Dispatch( PageFaultInfo( (uptr)siginfo->si_addr & ~m_pagemask ) );
+	ucontext *u = (ucontext *)cpu_state;
+	uptr eip = u->uc_mcontext.gregs[REG_EIP];
+
+	Source_PageFault->Dispatch( PageFaultInfo( (uptr)siginfo->si_addr & ~m_pagemask, eip, cpu_state) );
 
 	// resumes execution right where we left off (re-executes instruction that
 	// caused the SIGSEGV).
@@ -68,7 +71,8 @@ static void SysPageFaultSignalFilter( int signal, siginfo_t *siginfo, void * )
 
 	if (!wxThread::IsMain())
 	{
-		pxFailRel(pxsFmt("Unhandled page fault @ 0x%08x", siginfo->si_addr));
+
+		pxFailRel(pxsFmt("Unhandled page fault @ 0x%08x. EIP 0x%x", siginfo->si_addr, eip));
 	}
 
 	// Bad mojo!  Completely invalid address.
