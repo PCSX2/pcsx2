@@ -252,14 +252,18 @@ static __pagealigned u8 m_IndirectDispatchers[__pagesize];
 //
 static u8* GetIndirectDispatcherPtr( int mode, int operandsize, int sign = 0 )
 {
+	assert(mode || operandsize >= 2 ? !sign : true);
+
 	// Each dispatcher is aligned to 64 bytes.  The actual dispatchers are only like
 	// 20-some bytes each, but 64 byte alignment on functions that are called
 	// more frequently than a hot sex hotline at 1:15am is probably a good thing.
 
 	// 7*64? 5 widths with two sign extension modes for 8 and 16 bit reads
 
-	assert(mode || operandsize >= 2 ? !sign : true);
-	return &m_IndirectDispatchers[(mode*(7*64)) + (sign*5*64) + (operandsize*64)];
+	// Gregory: a 32 bytes alignment is likely enough and more cache friendly
+	const int A = 32;
+
+	return &m_IndirectDispatchers[(mode*(7*A)) + (sign*5*A) + (operandsize*A)];
 }
 
 // ------------------------------------------------------------------------
