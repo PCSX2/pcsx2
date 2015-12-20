@@ -240,7 +240,7 @@ enum class GSRendererType : int8_t
 	OGL_OpenCL = 17,
 
 #ifdef _WINDOWS
-	Default = DX9_HW
+	Default = DX1011_HW
 #else
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
