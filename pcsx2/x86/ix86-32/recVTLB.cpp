@@ -317,6 +317,25 @@ static void DynGen_IndirectDispatch( int mode, int bits, bool sign = false )
 }
 
 // ------------------------------------------------------------------------
+// Generates a JAE instruction that targets the appropriate templated instance of
+// the vtlb full tlb Dispatcher.
+//
+static void DynGen_FullTlbDispatch( int mode, int bits, bool sign = false )
+{
+	int szidx = 0;
+	switch( bits )
+	{
+		case 8:		szidx=0;	break;
+		case 16:	szidx=1;	break;
+		case 32:	szidx=2;	break;
+		case 64:	szidx=3;	break;
+		case 128:	szidx=4;	break;
+		jNO_DEFAULT;
+	}
+	xJAE( GetFullTlbDispatcherPtr( mode, szidx, sign ) );
+}
+
+// ------------------------------------------------------------------------
 // Generates the various instances of the indirect dispatchers
 static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 {
