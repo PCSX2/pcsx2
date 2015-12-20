@@ -40,27 +40,25 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	// [TODO] : About box should be upgraded to use scrollable read-only text boxes.
 
 	wxString developsString = wxsFormat(
-		L"Arcum42, avih, Refraction, drk||raziel, cottonvibes, gigaherz, "
-		L"rama, Jake.Stine, saqib, pseudonym, gregory.hainaut"
+		L"avih, Refraction, rama, pseudonym, gregory.hainaut"
 		L"\n\n"
-		L"%s: Alexey silinov, Aumatt, "
+		L"%s: \n"
+		L"Arcum42, Aumatt, drk||raziel, "
+		L"cottonvibes, gigaherz, saqib, "
+		L"Alexey silinov, Aumatt, "
 		L"Florin, goldfinger, Linuzappz, loser, "
-		L"Nachbrenner, shadow, Zerofrog, tmkk"
+		L"Nachbrenner, shadow, Zerofrog, tmkk, Jake.Stine"
 		L"\n\n"
-		L"%s: Bositman, ChaosCode, "
-		L"CKemu, crushtest, GeneralPlot, "
-		L"Krakatos, Parotaku, prafull, Rudy_X"
-		L"\n\n"
-		L"%s: CKemu, Falcon4ever",
-		_("Previous versions"), _("Betatesting"), _("Webmasters"));
+		L"%s:\n"
+		L"CKemu, Falcon4ever, Bositman",
+		_("Previous versions"), _("Webmasters"));
 
 	wxString contribsString = wxsFormat(
-		L"Hiryu and Sjeep (libcdvd / iso filesystem), nneeve (fpu and vu), n1ckname (compilation guides), Shadow Lady"
+		L"%s: \n"
+		L"ChickenLiver(Lilypad), Gabest (Gsdx, Cdvdolio, Xpad)"
 		L"\n\n"
-		L"%s: ChickenLiver (Lilypad), Efp (efp), "
-		L"Gabest (Gsdx, Cdvdolio, Xpad),  Zeydlitz (ZZogl)"
-		L"\n\n"
-		L"%s: black_wd, Belmont, BGome, _Demo_, Dreamtime, "
+		L"%s: \n"
+		L"black_wd, Belmont, BGome, _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady,"
 		L"F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
 		_("Plugin Specialists"), _("Special thanks to"));
 
