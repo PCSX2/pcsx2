@@ -25,6 +25,53 @@
 using namespace vtlb_private;
 using namespace x86Emitter;
 
+//#define PLEASE_SIGSEGV
+//#define FASTER_DIRECT_ACCESS
+
+#ifdef PLEASE_SIGSEGV
+static const bool s_fast_memspace[16] = {
+	true,  // 0:RAM (user)
+	false, // 1:EE REG
+	true,  // 2:RAM (user uncached)
+	true,  // 3:RAM (user uncached)
+	false, // 4:NA
+	false, // 5:NA
+	false, // 6:NA
+	true,  // 7:scratchpad
+	true,  // 8:RAM (kernel)
+	false, // 9:NA
+	true,  // A:RAM (kernel)
+	false, // B:REG (kernel)
+	false, // C:NA
+	false, // D:NA
+	false, // E:NA
+	true,  // F:RAM special
+};
+
+#else
+// true if fast algo is supported on the current memory zone
+static const bool s_fast_memspace[16] = {
+	true,  // 0:RAM (user)
+	false, // 1:EE REG
+	true,  // 2:RAM (user uncached)
+	true,  // 3:RAM (user uncached)
+	false, // 4:NA
+	false, // 5:NA
+	false, // 6:NA
+	true, // 7:scratchpad
+	true,  // 8:RAM (kernel)
+	false, // 9:NA
+	true,  // A:RAM (kernel)
+	false, // B:REG (kernel)
+	false, // C:NA
+	false, // D:NA
+	false, // E:NA
+	false, // F:NA
+};
+#endif
+
+static const u32 compress_address = 0x71FFFFFF;
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // iAllocRegSSE -- allocates an xmm register.  If no xmm register is available, xmm0 is
 // saved into g_globalXMMData and returned as a free register.
@@ -577,14 +624,62 @@ void vtlb_DynGenReadReg32(u32 bits, bool sign, u32 likely_addr)
 	*writeback = (uptr)xGetPtr();
 }
 
+void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
+{
+	u32 zone = likely_addr >> 28;
+
+	if (s_fast_memspace[zone]) {
+		// Shortcut TLB based on the first address
+
+		// Warning dirty ebx (in case someone got the very bad idea to move this code)
+		EE::Profiler.EmitMem();
+
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+#ifdef PLEASE_SIGSEGV
+		xPEXT(eax, ecx, ptr[&compress_address]);
+		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
+
+		// If direct access isn't possible, code won't be executed
+		EE::Profiler.EmitFastMem();
+#else
+
+		xMOV(eax, ecx);
+
+		// Check the memory zone
+		xSUB(eax, zone << 28);
+		xCMP(eax, _32mb);
+		DynGen_FullTlbDispatch(0, bits, sign && bits < 32); // Oh no! need slow path
+
+		// Ram access let's be bold
+		EE::Profiler.EmitFastMem();
+		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
+#endif
+
+		*writeback = (uptr)xGetPtr();
+	} else {
+		// Old fashion direct access
+		if (bits < 64)
+			vtlb_DynGenRead32(bits, sign);
+		else
+			vtlb_DynGenRead64(bits);
+	}
+}
+
 // ------------------------------------------------------------------------
 // Wrapper to the different load implementation
 void vtlb_DynGenRead(u32 likely_address, u32 bits, bool sign)
 {
+#ifdef FASTER_DIRECT_ACCESS
+	vtlb_FastDynGenRead32(bits, sign, likely_address);
+#else
 	if (bits < 64)
 		vtlb_DynGenRead32(bits, sign);
 	else
 		vtlb_DynGenRead64(bits);
+#endif
 }
 
 
@@ -724,11 +819,55 @@ void vtlb_DynGenWrite(u32 sz)
 	*writeback = (uptr)xGetPtr();
 }
 
+void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
+{
+	u32 zone = likely_addr >> 28;
+
+	if (s_fast_memspace[zone]) {
+		// Shortcut TLB based on the first address
+
+		// Warning dirty ebx (in case someone got the very bad idea to move this code)
+		EE::Profiler.EmitMem();
+
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+#ifdef PLEASE_SIGSEGV
+		xPEXT(eax, ecx, ptr[&compress_address]);
+		DynGen_OffsetDirectWrite( bits, zone == 7 );
+
+		// If direct access isn't possible, code won't be executed
+		EE::Profiler.EmitFastMem();
+#else
+
+		xMOV(eax, ecx);
+
+		// Check the memory zone
+		xSUB(eax, zone << 28);
+		xCMP(eax, _32mb);
+		DynGen_FullTlbDispatch(1, bits); // Oh no! need slow path
+
+		// Ram access let's be bold
+		EE::Profiler.EmitFastMem();
+		DynGen_OffsetDirectWrite( bits, zone == 7 );
+#endif
+		*writeback = (uptr)xGetPtr();
+	} else {
+		// Old fashion direct access
+		vtlb_DynGenWrite(bits);
+	}
+}
+
 // ------------------------------------------------------------------------
 // Wrapper to the different load implementation
 void vtlb_DynGenWrite(u32 likely_address, u32 bits)
 {
+#ifdef FASTER_DIRECT_ACCESS
+	vtlb_FastDynGenWrite(bits, likely_address);
+#else
 	vtlb_DynGenWrite(bits);
+#endif
 }
 
 // ------------------------------------------------------------------------
