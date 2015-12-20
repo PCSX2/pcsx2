@@ -179,6 +179,7 @@ namespace vtlb_private
 	{
 		switch( bits )
 		{
+			case 0:
 			case 8:
 				if( sign )
 					xMOVSX( eax, ptr8[ecx] );
@@ -186,6 +187,7 @@ namespace vtlb_private
 					xMOVZX( eax, ptr8[ecx] );
 			break;
 
+			case 1:
 			case 16:
 				if( sign )
 					xMOVSX( eax, ptr16[ecx] );
@@ -193,14 +195,17 @@ namespace vtlb_private
 					xMOVZX( eax, ptr16[ecx] );
 			break;
 
+			case 2:
 			case 32:
 				xMOV( eax, ptr[ecx] );
 			break;
 
+			case 3:
 			case 64:
 				iMOV64_Smart( ptr[edx], ptr[ecx] );
 			break;
 
+			case 4:
 			case 128:
 				iMOV128_SSE( ptr[edx], ptr[ecx] );
 			break;
@@ -215,22 +220,27 @@ namespace vtlb_private
 		switch(bits)
 		{
 			//8 , 16, 32 : data on EDX
+			case 0:
 			case 8:
 				xMOV( ptr[ecx], dl );
 			break;
 
+			case 1:
 			case 16:
 				xMOV( ptr[ecx], dx );
 			break;
 
+			case 2:
 			case 32:
 				xMOV( ptr[ecx], edx );
 			break;
 
+			case 3:
 			case 64:
 				iMOV64_Smart( ptr[ecx], ptr[edx] );
 			break;
 
+			case 4:
 			case 128:
 				iMOV128_SSE( ptr[ecx], ptr[edx] );
 			break;
@@ -264,6 +274,27 @@ static u8* GetIndirectDispatcherPtr( int mode, int operandsize, int sign = 0 )
 	const int A = 32;
 
 	return &m_IndirectDispatchers[(mode*(7*A)) + (sign*5*A) + (operandsize*A)];
+}
+
+static u8* GetFullTlbDispatcherPtr( int mode, int operandsize, int sign = 0 )
+{
+	if (operandsize > 6) {
+		switch(operandsize)
+		{
+			case 8:		operandsize=0;	break;
+			case 16:	operandsize=1;	break;
+			case 32:	operandsize=2;	break;
+			case 64:	operandsize=3;	break;
+			case 128:	operandsize=4;	break;
+						jNO_DEFAULT;
+		}
+	}
+	assert(mode || operandsize >= 2 ? !sign : true);
+
+	// Full TLB dispatcher are bigger than standard dispatcher.
+	const int A = 64;
+
+	return &m_IndirectDispatchers[512 + (mode*(7*A)) + (sign*5*A) + (operandsize*A)];
 }
 
 // ------------------------------------------------------------------------
@@ -318,6 +349,34 @@ static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 	xJMP( ebx );
 }
 
+static void DynGen_FullTlbDispatcher( int mode, int bits, bool sign)
+{
+	// code is a concatenation of DynGen_PrepRegs / DynGen_IndirectDispatch / DynGen_Direct Read|Write
+
+	// In the future, this code will only be called when a direct access is failling (due to SIGSEGV)
+	// It would allow to reduce the code complexity
+
+	// WARNING: only 64 bytes are reserved by handler. Profiler overhead is 14 bytes for EmitSlowMem
+	// + 17 bytes for EmitMem
+	EE::Profiler.EmitSlowMem();
+
+	// Equivalent to DynGen_PrepRegs (without ebx)
+	xMOV( eax, ecx );
+	xSHR( eax, VTLB_PAGE_BITS );
+	xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
+	xADD( ecx, eax );
+
+	xJS( GetIndirectDispatcherPtr( mode, bits, sign ) );
+
+	if (mode == 1)
+		DynGen_DirectWrite( bits );
+	else
+		DynGen_DirectRead( bits, sign );
+
+	// quit dispatcher in case of direct read/write
+	xJMP(ebx);
+}
+
 // One-time initialization procedure.  Multiple subsequent calls during the lifespan of the
 // process will be ignored.
 //
@@ -342,6 +401,10 @@ void vtlb_dynarec_init()
 				xSetPtr( GetIndirectDispatcherPtr( mode, bits, !!sign ) );
 
 				DynGen_IndirectTlbDispatcher( mode, bits, sign );
+
+				xSetPtr( GetFullTlbDispatcherPtr( mode, bits, !!sign ) );
+
+				DynGen_FullTlbDispatcher( mode, bits, sign );
 			}
 		}
 	}
