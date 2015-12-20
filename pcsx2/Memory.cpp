@@ -666,7 +666,14 @@ public:
 	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
 };
 
+class direct_PageFaultHandler : public EventListener_PageFault
+{
+public:
+	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
+};
+
 static mmap_PageFaultHandler* mmap_faultHandler = NULL;
+static direct_PageFaultHandler* direct_faultHandler = NULL;
 
 EEVM_MemoryAllocMess* eeMem = NULL;
 __pagealigned u8 eeHw[Ps2MemSize::Hardware];
@@ -705,20 +712,50 @@ void memBindConditionalHandlers()
 //  eeMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
 eeMemoryReserve::eeMemoryReserve()
-	: _parent( L"EE Main Memory", sizeof(*eeMem) )
+	: _parent( L"EE Main Memory", sizeof(*eeMem) ) // FIXME 3*32 in direct access?
 {
 }
 
 void eeMemoryReserve::Reserve()
 {
+#if VTLB_UsePageFaulting
+	const int extra = 10 * _1mb;
+	const int special = 32 * _1kb;
+
+	const int start = HostMemoryMap::EEmem;
+
+	const MemoryView ee_views[] {
+		{ 0x00000000 , start + 0 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x02000000 , start + 1 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x00000000 , start + 2 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x00000000 , start + 3 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x02000000 , start + 4 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x02000000 , start + 5 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x02000000 , start + 6 * _32mb           , _32mb   , PageAccess_None() }      ,
+		// Scratchpad and ROM and zero stuff
+		{ 0x04000000 , start + 7 * _32mb           , extra   , PageAccess_ReadWrite() } ,
+		// Special Main memory
+		{ 0x00078000 , start + 8 * _32mb - special , special , PageAccess_ReadWrite() } ,
+	};
+	for (size_t v = 0; v < sizeof(ee_views) / sizeof(ee_views[0]); v++)
+		m_reserve.Reserve( ee_views[v] );
+
+#else
+
 	_parent::Reserve(HostMemoryMap::EEmem);
 	//_parent::Reserve(EmuConfig.HostMap.IOP);
+
+#endif
 }
 
 void eeMemoryReserve::Commit()
 {
 	_parent::Commit();
+#if VTLB_UsePageFaulting
+	eeMem = (EEVM_MemoryAllocMess*)HostMemoryMap::EEmem;
+#else
 	eeMem = (EEVM_MemoryAllocMess*)m_reserve.GetPtr();
+#endif
 }
 
 // Resets memory mappings, unmaps TLBs, reloads bios roms, etc.
@@ -728,8 +765,18 @@ void eeMemoryReserve::Reset()
 		pxAssert(Source_PageFault);
 		mmap_faultHandler = new mmap_PageFaultHandler();
 	}
-	
+#if VTLB_UsePageFaulting
+	if (!direct_faultHandler) {
+		direct_faultHandler = new direct_PageFaultHandler();
+	}
+#endif
+
+#if VTLB_UsePageFaulting
+	//m_reserve.Commit();
+	// FIXME std code do a memzero?
+#else
 	_parent::Reset();
+#endif
 
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the
@@ -859,6 +906,7 @@ void eeMemoryReserve::Decommit()
 void eeMemoryReserve::Release()
 {
 	safe_delete(mmap_faultHandler);
+	safe_delete(direct_faultHandler);
 	_parent::Release();
 	eeMem = NULL;
 	vtlb_Term();
@@ -983,6 +1031,17 @@ void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& h
 
 	mmap_ClearCpuBlock( offset );
 	handled = true;
+}
+
+void direct_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& handled )
+{
+	pxAssert( eeMem );
+
+	// get bad virtual address
+	uptr offset = info.addr - (uptr)eeMem->Main;
+	if (offset >= (Ps2MemSize::MainRam + _32mb)) return;
+
+	//handled = true;
 }
 
 // Clears all block tracking statuses, manual protection flags, and write protection.
