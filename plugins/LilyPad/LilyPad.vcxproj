@@ -483,6 +483,7 @@
     <ClInclude Include="WndProcEater.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Default.ini" />
     <None Include="frog.ico" />
     <None Include="LilyPad.def" />
   </ItemGroup>

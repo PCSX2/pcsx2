@@ -142,6 +142,9 @@
     <None Include="LilyPad.def">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Default.ini">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LilyPad.rc">
