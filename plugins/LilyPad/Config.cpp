@@ -321,6 +321,25 @@ void CALLBACK PADsetSettingsDir( const char *dir )
 	wcscat_s(iniFile, L"/LilyPad.ini");
 
 	createIniDir = false;
+
+	FILE *temp = nullptr;
+	_wfopen_s(&temp, iniFile, L"r");
+	if (!temp) { // File not found, possibly.
+		HRSRC res = FindResource(hInst, MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
+		if (!res) return;
+		HGLOBAL data = LoadResource(hInst, res);
+		if (!data) return;
+		size_t size = SizeofResource(hInst, res);
+		u8 *fdata = (u8*)LockResource(data);
+		_wfopen_s(&temp, iniFile, L"w");
+		if (!temp) return;
+		fwrite(fdata, 1, size, temp);
+		fclose(temp);
+	}
+	else {
+		fclose(temp);
+	}
+	
 }
 
 int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFeedbackBinding *&ffb);
