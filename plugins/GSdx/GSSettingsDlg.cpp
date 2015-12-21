@@ -317,16 +317,16 @@ void GSSettingsDlg::UpdateRenderers()
 
 		GSRendererType renderer = static_cast<GSRendererType>(r.id);
 		
-#if 0
-		// This code is disabled so the renderer name doesn't get messed with.
-		// Just call it Direct3D11.
 		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
-
+#if 0
+			// This code is disabled so the renderer name doesn't get messed with.
+			// Just call it Direct3D11.
 			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
-		}
 #endif
+		}
+
 		renderers.push_back(r);
 
 		if (static_cast<GSRendererType>(r.id) == renderer_setting)
