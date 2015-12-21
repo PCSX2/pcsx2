@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: 2014-12-13 23:54+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
@@ -38,7 +38,7 @@ msgstr ""
 "PCSX2 不支持 Playstation 1 游戏。如果您想模拟 PS1 游戏请下载一个 PS1 模拟器，"
 "如 ePSXe 或 PCSX。"
 
-#: pcsx2/System.cpp:115
+#: pcsx2/System.cpp:129
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -48,7 +48,7 @@ msgstr ""
 "重编译器无法保留内部缓存所需的连续内存空间。此错误可能是由虚拟内存资源不足引"
 "起，如交换文件过小或未使用交换文件、某个其它程序正占用过大内存。"
 
-#: pcsx2/System.cpp:359
+#: pcsx2/System.cpp:374
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -79,7 +79,7 @@ msgstr ""
 "PCSX2 需要一个 PS2 BIOS 才可以运行。由于法律问题，您必须从一台属于您的 PS2 实"
 "机中取得一个 BIOS 文件。请参考常见问题及教程以获取进一步的说明。"
 
-#: pcsx2/gui/AppMain.cpp:690
+#: pcsx2/gui/AppMain.cpp:674
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -311,7 +311,7 @@ msgstr ""
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -455,19 +455,19 @@ msgstr ""
 "\n"
 "最安全的方式是不启用任何游戏特殊修正。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:686
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
 "card will be lost!  Are you absolutely and quite positively sure?"
 msgstr "即将删除已格式化的记忆卡 '%s'。此记忆卡中所有数据将丢失! 是否确定?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "失败: 只允许复制到一个空的 PS2 端口或文件系统。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:767
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "失败: 目标记忆卡 '%s' 正在被使用。"
@@ -543,48 +543,64 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
 msgid ""
-"1 - Default cyclerate. This closely matches the actual speed of a real PS2 "
-"EmotionEngine."
-msgstr "1 - 默认周期频率。完全重现 PS2 实机情感引擎的实际速度。"
+"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+"requirements, may noticeably increase in-game FPS.\n"
+"This setting can cause games to FAIL TO BOOT."
+msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
 msgid ""
-"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
+"-1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+"requirements, may increase in-game FPS."
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#, fuzzy
+msgid ""
+"0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
+"EmotionEngine."
+msgstr "1 - 默认周期频率。完全重现 PS2 实机情感引擎的实际速度。"
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#, fuzzy
+msgid ""
+"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr "2 - 将 EE 周期频率减少约 33%。对大多数游戏有轻微提速效果，兼容性较高。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:43
+#, fuzzy
 msgid ""
-"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
+"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
 "3 - 将 EE 周期频率减少约 50%。中等提速效果，但将导致很多 CG 动画中的音频出现"
 "间断。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
 msgstr "0 - 禁用 VU 周期挪用。兼容性最高!"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:54
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:62
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
 msgstr "1 - 轻微 VU 周期挪用。兼容性较低，但对大多数游戏有一定的提速效果。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:66
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
 msgstr "2 - 中等 VU 周期挪用。兼容性更低，但对一些游戏有较大的提速效果。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:63
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:71
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
 msgstr ""
 "3 - 最大的 VU 周期挪用。对大多数游戏将造成图像闪烁或速度拖慢，用途有限。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:88
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -593,16 +609,20 @@ msgstr ""
 "速度 Hack 通常可以提升模拟速度，但也可能导致错误、声音问题或虚帧。如模拟有问"
 "题请先尝试禁用此面板。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
+#, fuzzy
 msgid ""
 "Setting higher values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
-"games that fail to utilize the full potential of the real PS2 hardware."
+"games that fail to utilize the full potential of the real PS2 hardware. "
+"Conversely, lower values effectively increase the clock speed which may "
+"bring about an increase in in-game FPS while also making games more "
+"demanding and possibly causing glitches."
 msgstr ""
 "提高此数值可减少情感引擎的 R5900 CPU 的时钟速度，通常对于未完全使用 PS2 实机"
 "硬件全部潜能的游戏有较大提速效果。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:136
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid ""
 "This slider controls the amount of cycles the VU unit steals from the "
 "EmotionEngine.  Higher values increase the number of cycles stolen from the "
@@ -611,7 +631,7 @@ msgstr ""
 "此选项控制 VU 单元从情感引擎挪用的时钟周期数目。较高数值将增加各个被游戏执行"
 "的 VU 微程序从 EE 挪用的周期数目。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -620,7 +640,7 @@ msgstr ""
 "仅在标志位被读取时更新，而不是总是更新。此选项通常是安全的，Super VU 默认会以"
 "相似的方式处理。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -631,7 +651,7 @@ msgstr ""
 "项对大多数游戏是安全的，但一部分游戏可能不兼容或导致没有响应。对于受限于 GS "
 "的游戏，可能会造成性能下降 (特别是在双核 CPU 上)。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -640,7 +660,7 @@ msgstr ""
 "此选项对于使用 INTC 状态寄存器来等待垂直同步的游戏效果较好，包括一些主要的 "
 "3D RPG 游戏。对于不使用此方法的游戏没有提速效果。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -653,7 +673,7 @@ msgstr ""
 "的模拟单元计划的事件处理过程之前不保证产生相同结果的循环。在一次循环体执行之"
 "后，将下一事件的时间或处理器的时间片结束时间 (孰早) 做出更新。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
@@ -694,7 +714,7 @@ msgstr ""
 "\n"
 "警告: 此选项可以即时启用但通常不能即时关闭 (通常会导致图像损坏)。"
 
-#: pcsx2/vtlb.cpp:832
+#: pcsx2/vtlb.cpp:826
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

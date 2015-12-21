@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: 2014-01-14 19:47+0900\n"
 "Last-Translator: 99skull <99skull@gmail.com>\n"
 "Language-Team: 99skull,p695091 <99skull@gmail.com>\n"
@@ -40,7 +40,7 @@ msgstr ""
 "에뮬레이트하고 싶은 경우 당신은 ePSXe 또는 PCSX와 같은 특정 PSX 에뮬레이터를 "
 "다운로드해야 합니다."
 
-#: pcsx2/System.cpp:115
+#: pcsx2/System.cpp:129
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -51,7 +51,7 @@ msgstr ""
 "오류는 작거나 비활성화된 교체 파일, 또는 메모리를 많이 점유하는 다른 프로그램"
 "에서 가상 메모리 자원 부족으로 인해 발생할 수 있습니다. "
 
-#: pcsx2/System.cpp:359
+#: pcsx2/System.cpp:374
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -86,7 +86,7 @@ msgstr ""
 "시* 자신이 소유한 실제 PS2 유닛에서 바이오스를 얻어야 합니다 (빌린것도 포함되"
 "지 않습니다). 추가 설명에 대한 FAQ 및 안내를 참조하십시오."
 
-#: pcsx2/gui/AppMain.cpp:690
+#: pcsx2/gui/AppMain.cpp:674
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -335,7 +335,7 @@ msgstr ""
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -501,7 +501,7 @@ msgstr ""
 "('자동'의 의미: 특정한 게임을 위해 확실히 검증된 수정을 선택적으로 사용합니"
 "다)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:684
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:686
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -510,12 +510,12 @@ msgstr ""
 "당신은 포맷된 '%s' 메모리 카드를 삭제하려고 합니다. 이 카드의 모든 데이터를 "
 "잃게 됩니다! 정말로 분명히 확실한가요?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "실패: 복사는 오직 비어있는 PS2-포트 또는 파일 시스템에 허용됩니다."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:765
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:767
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "실패: 대상  '%s' 메모리 카드가 사용 중입니다."
@@ -596,34 +596,50 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
 msgid ""
-"1 - Default cyclerate. This closely matches the actual speed of a real PS2 "
+"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+"requirements, may noticeably increase in-game FPS.\n"
+"This setting can cause games to FAIL TO BOOT."
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
+msgid ""
+"-1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+"requirements, may increase in-game FPS."
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#, fuzzy
+msgid ""
+"0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
 "1 - 기본 사이클 비율. 이것은 실제 PS2의 이모션엔진에 실제 속도와 가장 가깝습"
 "니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#, fuzzy
 msgid ""
-"2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
+"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
 "2 - 이모션엔진의 사이클 비율을 약 33% 줄입니다. 높은 호환성과 함께 대부분의 "
 "게임에 가벼운 속도 상승을 줍니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:43
+#, fuzzy
 msgid ""
-"3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
+"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
 "3 - 이모션엔진의 사이클 비율을 약 50% 줄입니다. 적당한 속도 상승을 주지만, 많"
 "은 FMV에서 오디오의 말더듬 *원인*이 됩니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
 msgstr ""
 "0 - 벡터 유닛 사이클 훔치기를 비활성화합니다. 가장 호환성이 좋은 설정입니다!"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:54
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:62
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
@@ -631,7 +647,7 @@ msgstr ""
 "1 - 가벼운 벡터 유닛 사이클 훔치기. 더 낮은 호환성이지만, 대부분의 게임에 약"
 "간의 속도 상승을 줍니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:66
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
@@ -639,7 +655,7 @@ msgstr ""
 "2 - 적당한 벡터 유닛 사이클 훔치기. 보다 더 낮은 호환성이지만, 일부 게임에서 "
 "상당한 속도 상승을 줍니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:63
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:71
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
@@ -647,7 +663,7 @@ msgstr ""
 "3 - 최대 벡터 유닛 사이클 훔치기. 유용성이 제한되는 동안, 이것은 대부분의 게"
 "임에서 깜빡이는 비주얼 또는 둔화의 원인이 됩니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:88
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -657,17 +673,21 @@ msgstr ""
 "FPS 검출의 원인이 될 수 있습니다. 에뮬레이션 문제가 발생할 때, 먼저 이 패널"
 "을 비활성화하십시오."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
+#, fuzzy
 msgid ""
 "Setting higher values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
-"games that fail to utilize the full potential of the real PS2 hardware."
+"games that fail to utilize the full potential of the real PS2 hardware. "
+"Conversely, lower values effectively increase the clock speed which may "
+"bring about an increase in in-game FPS while also making games more "
+"demanding and possibly causing glitches."
 msgstr ""
 "이 슬라이더에서 높은 값을 설정하면 효과적으로 이모션엔진의 R5900 코어 cpu 클"
 "럭 속도를 감소시키고 일반적으로 실제 PS2의 하드웨어 잠재력 활용에 실패하지만 "
 "게임에 큰 속도 상승을 제공합니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:136
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid ""
 "This slider controls the amount of cycles the VU unit steals from the "
 "EmotionEngine.  Higher values increase the number of cycles stolen from the "
@@ -677,7 +697,7 @@ msgstr ""
 "은 값은 각각의 벡터 유닛 마이크로 프로그램이 게임 실행을 위해 이모션엔진에서 "
 "훔친 사이클 수를 증가 시킵니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -686,7 +706,7 @@ msgstr ""
 "항상 업데이트하지 않고 읽어지는 블록에만 상태 플래그를 업데이트 합니다. 이것"
 "은 대부분의 경우 안전하며, 슈퍼 벡터 유닛은 기본적으로 비슷한 동작을 합니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -698,7 +718,7 @@ msgstr ""
 "간의 게임이 호환되지 않으며 걸릴지 모릅니다. GS가 제한된 게임의 경우는, 둔화"
 "될지도 모릅니다 (특히 듀얼코어 CPU에...)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -708,7 +728,7 @@ msgstr ""
 "레지스터를 사용하는 게임에 가장 적합합니다. 이런 수직동기 방법을 사용하지 않"
 "는 게임은 이 핵으로 속도 상승을 거의 볼 수 없습니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -723,7 +743,7 @@ msgstr ""
 "다. 이러한 루프의 단일 반복 뒤에, 다음 이벤트 시간까지 먼저 도착하는 프로세서"
 "의 타임 슬라이스의 끝으로 이동합니다."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
@@ -772,7 +792,7 @@ msgstr ""
 "경고: 이 옵션은 그때 그때 활성화할 수 있지만 일반적으로 그때 그때 비활성화를 "
 "할 수 없습니다 (비디오는 일반적으로 쓰레기가 될 겁니다)"
 
-#: pcsx2/vtlb.cpp:832
+#: pcsx2/vtlb.cpp:826
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

@@ -48,74 +48,6 @@ GtkWidget* left_label(const char* lbl)
 	return w;
 }
 
-void CB_ChangedRenderComboBox(GtkComboBox *combo, gpointer user_data)
-{
-	if (gtk_combo_box_get_active(combo) == -1) return;
-
-	switch (gtk_combo_box_get_active(combo)) {
-	case 0: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_SW)); break;
-	case 1: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_OpenCL)); break;
-	case 2: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::Null_Null)); break;
-	case 3: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_HW)); break;
-	case 4: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	case 5: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_OpenCL)); break;
-
-				// Fallback to SW opengl
-	default: theApp.SetConfig("Renderer", static_cast<int>(GSRendererType::OGL_SW)); break;
-	}
-}
-
-GtkWidget* CreateRenderComboBox()
-{
-	GtkWidget* render_combo_box = gtk_combo_box_text_new ();
-	int renderer_box_position = 0;
-
-	for(auto s = theApp.m_gs_renderers.begin(); s != theApp.m_gs_renderers.end(); s++)
-	{
-		string label = s->name;
-
-		if(!s->note.empty()) label += format(" (%s)", s->note.c_str());
-
-		// Add some tags to ease users selection
-		switch (static_cast<GSRendererType>(s->id)) {
-			// Supported opengl
-		case GSRendererType::OGL_HW:
-		case GSRendererType::OGL_SW:
-		case GSRendererType::OGL_OpenCL:
-			break;
-
-			// (dev only) for any NULL stuff
-		case GSRendererType::Null_SW:
-		case GSRendererType::Null_OpenCL:
-		case GSRendererType::Null_Null:
-			label += " (debug only)";
-			break;
-
-		default:
-			continue;
-		}
-
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(render_combo_box), label.c_str());
-	}
-
-	switch (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)))) {
-	case GSRendererType::Null_SW:		renderer_box_position = 0; break;
-	case GSRendererType::Null_OpenCL:	renderer_box_position = 1; break;
-	case GSRendererType::Null_Null:		renderer_box_position = 2; break;
-	case GSRendererType::OGL_HW:		renderer_box_position = 3; break;
-	case GSRendererType::OGL_SW:		renderer_box_position = 4; break;
-	case GSRendererType::OGL_OpenCL:	renderer_box_position = 5; break;
-
-	// Fallback to openGL SW
-	default: renderer_box_position = 4; break;
-	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(render_combo_box), renderer_box_position);
-
-	g_signal_connect(render_combo_box, "changed", G_CALLBACK(CB_ChangedRenderComboBox), NULL);
-
-	return render_combo_box;
-}
-
 void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 {
 	int p = gtk_combo_box_get_active(combo);
@@ -258,18 +190,22 @@ GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, con
 
 static int s_table_line = 0;
 static void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = NULL, GtkWidget *third = NULL) {
+	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+	guint l_xpad = GTK_IS_CHECK_BUTTON(left) ? 0 : 22;
+	guint r_xpad = 0;
+	guint ypad = 0;
 	if (!left) {
-		gtk_table_attach_defaults(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	} else if (!right) {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
 	} else if (right == left) {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	} else {
-		gtk_table_attach_defaults(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1);
-		gtk_table_attach_defaults(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
+		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	}
 	if (third) {
-		gtk_table_attach_defaults(GTK_TABLE(table), third, 2, 3, s_table_line, s_table_line+1);
+		gtk_table_attach(GTK_TABLE(table), third, 2, 3, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
 	}
 	s_table_line++;
 }
@@ -448,7 +384,7 @@ void populate_hack_table(GtkWidget* hack_table)
 void populate_main_table(GtkWidget* main_table)
 {
 	GtkWidget* render_label     = left_label("Renderer:");
-	GtkWidget* render_combo_box = CreateRenderComboBox();
+	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer", static_cast<int>(GSRendererType::Default));
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
 
@@ -525,15 +461,15 @@ bool RunLinuxDialog()
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 8  , 2);
+	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
-	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 3  , 2);
+	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
-	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 9 , 2);
-	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 8 , 2);
+	GtkWidget* hack_table   = CreateTableInBox(advance_box , "Hacks"                                , 7 , 2);
+	GtkWidget* gl_table     = CreateTableInBox(advance_box , "OpenGL Very Advanced Custom Settings" , 6 , 2);
 
-	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 3  , 3);
-	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 5  , 3);
+	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
+	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
 	// Populate all the tables
 	populate_main_table(main_table);

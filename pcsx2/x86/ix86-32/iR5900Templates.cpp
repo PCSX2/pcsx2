@@ -32,6 +32,8 @@
 
 #include "vtlb.h"
 
+using namespace x86Emitter;
+
 ////////////////////
 // Code Templates //
 ////////////////////

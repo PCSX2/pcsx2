@@ -13,54 +13,35 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-
 #include "../Pad.h"
 
-extern HINSTANCE hInst;
+extern std::string s_strIniPath;
+
 void SaveConfig()
 {
+	const std::string iniFile = s_strIniPath + "/Padnull.ini";
 
-    Config *Conf1 = &conf;
-	char *szTemp;
-	char szIniFile[256], szValue[256];
-
-	GetModuleFileName(GetModuleHandle((LPCSTR)hInst), szIniFile, 256);
-	szTemp = strrchr(szIniFile, '\\');
-
-	if(!szTemp) return;
-	strcpy(szTemp, "\\inis\\fwnull.ini");
-	sprintf(szValue,"%u",Conf1->Log);
-    WritePrivateProfileString("Interface", "Logging",szValue,szIniFile);
-
-}
-
-void LoadConfig() {
-   FILE *fp;
-
-
-    Config *Conf1 = &conf;
-	char *szTemp;
-	char szIniFile[256], szValue[256];
-
-	GetModuleFileName(GetModuleHandle((LPCSTR)hInst), szIniFile, 256);
-	szTemp = strrchr(szIniFile, '\\');
-
-	if(!szTemp) return ;
-	strcpy(szTemp, "\\inis\\fwnull.ini");
-    fp=fopen("inis\\fwnull.ini","rt");//check if firewirenull.ini really exists
-	if (!fp)
+	PluginConf ini;
+	if (!ini.Open(iniFile, READ_FILE))
 	{
-		CreateDirectory("inis",NULL);
-        memset(&conf, 0, sizeof(conf));
-        conf.Log = 0;//default value
+		printf("failed to open %s\n", iniFile.c_str());
 		SaveConfig();//save and return
-		return ;
+		return;
 	}
-	fclose(fp);
-	GetPrivateProfileString("Interface", "Logging", NULL, szValue, 20, szIniFile);
-	Conf1->Log = strtoul(szValue, NULL, 10);
-	return ;
-
+	conf.Log = ini.ReadInt("logging", 0);
+	ini.Close();
 }
 
+void LoadConfig()
+{
+	const std::string iniFile(s_strIniPath + "/Padnull.ini");
+
+	PluginConf ini;
+	if (!ini.Open(iniFile, WRITE_FILE))
+	{
+		printf("failed to open %s\n", iniFile.c_str());
+		return;
+	}
+	ini.WriteInt("logging", conf.Log);
+	ini.Close();
+}

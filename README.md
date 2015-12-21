@@ -19,7 +19,7 @@ Installers and binaries for both Windows and Linux are available from **[our hom
 * 512MB RAM (note Vista needs at least 2GB to run reliably)
 
 ## Recommended
-* Windows Vista / Windows 7 (32bit or 64bit) with the [latest DirectX](http://www.microsoft.com/en-us/download/details.aspx?id=35)
+* Windows Vista / Windows 7 (32bit or 64bit) with the [latest DirectX](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
 * CPU: Intel Core 2 Duo @ 3.2ghz or better
 * GPU: 8800gt or better (for Direct3D10 support)
 * RAM: 1GB on Linux/Windows XP, 2GB or more on Vista

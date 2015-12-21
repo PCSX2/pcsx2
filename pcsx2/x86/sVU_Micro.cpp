@@ -28,6 +28,8 @@
 #include "sVU_Debug.h"
 #include "sVU_zerorec.h"
 
+using namespace x86Emitter;
+
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
@@ -468,19 +470,19 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 {
 	_VURegsNum* lregs;
 	_VURegsNum* uregs;
-	int *ptr;
+	int *code_ptr;
 
 	lregs = pCodeRegs;
 	uregs = pCodeRegs+1;
 
-	ptr = (int*)&VU->Micro[pc];
+	code_ptr = (int*)&VU->Micro[pc];
 	pc += 8;
 
-	if (ptr[1] & 0x40000000) { // EOP
+	if (code_ptr[1] & 0x40000000) { // EOP
 		g_branch |= 8;
 	}
 
-	VU->code = ptr[1];
+	VU->code = code_ptr[1];
 	if (VU == &VU1) VU1regs_UPPER_OPCODE[VU->code & 0x3f](uregs);
 	else VU0regs_UPPER_OPCODE[VU->code & 0x3f](uregs);
 
@@ -543,13 +545,13 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 	if (uregs->VIread & (1 << REG_P)) { info->p |= 2; assert( VU == &VU1 ); }
 
 	// check upper flags
-	if (ptr[1] & 0x80000000) { // I flag
+	if (code_ptr[1] & 0x80000000) { // I flag
 		info->cycle = vucycle;
 		memzero(*lregs);
 	}
 	else {
 
-		VU->code = ptr[0];
+		VU->code = code_ptr[0];
 		if (VU == &VU1) VU1regs_LOWER_OPCODE[VU->code >> 25](lregs);
 		else VU0regs_LOWER_OPCODE[VU->code >> 25](lregs);
 

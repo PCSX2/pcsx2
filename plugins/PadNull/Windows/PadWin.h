@@ -13,12 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PADLINUX_H__
-#define __PADLINUX_H__
+#ifndef PADWIN_H
+#define PADWIN_H
 
 #include "../Pad.h"
 #include <windows.h>
-#include <windowsx.h>
 
 void _PadUpdate(int pad);
 s32  _PADOpen(void *pDsp);

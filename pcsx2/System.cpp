@@ -267,6 +267,7 @@ void SysLogMachineCaps()
 	if( x86caps.hasStreamingSIMD4Extensions )		features[0].Add( L"SSE4.1" );
 	if( x86caps.hasStreamingSIMD4Extensions2 )		features[0].Add( L"SSE4.2" );
 	if( x86caps.hasAVX )							features[0].Add( L"AVX" );
+	if( x86caps.hasAVX2 )							features[0].Add( L"AVX2" );
 	if( x86caps.hasFMA)								features[0].Add( L"FMA" );
 
 	if( x86caps.hasMultimediaExtensionsExt )		features[1].Add( L"MMX2  " );

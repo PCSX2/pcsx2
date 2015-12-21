@@ -30,7 +30,7 @@
 ;   uninstall folders.  
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "1.2.1.0"
+  !define APP_VERSION      "1.4.0"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION}"

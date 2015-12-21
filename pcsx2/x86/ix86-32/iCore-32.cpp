@@ -22,6 +22,7 @@
 #include "x86emitter/x86emitter.h"
 #include "R3000A.h"
 
+using namespace x86Emitter;
 
 // yay sloppy crap needed until we can remove dependency on this hippopotamic
 // landmass of shared code. (air)
@@ -190,7 +191,10 @@ void _flushConstRegs()
 		if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1<<i)) continue;
 		if (g_cpuConstRegs[i].SL[j] != 0) continue;
 
-		if (eaxval != 0) XOR32RtoR(EAX, EAX), eaxval = 0;
+		if (eaxval != 0) {
+			XOR32RtoR(EAX, EAX);
+			eaxval = 0;
+		}
 
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
 		done[j] |= 1<<i;
@@ -203,8 +207,14 @@ void _flushConstRegs()
 		if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1<<i)) continue;
 		if (g_cpuConstRegs[i].SL[j] != -1) continue;
 
-		if (eaxval > 0) XOR32RtoR(EAX, EAX), eaxval = 0;
-		if (eaxval == 0) NOT32R(EAX), eaxval = -1;
+		if (eaxval > 0) {
+			XOR32RtoR(EAX, EAX);
+			eaxval = 0;
+		}
+		if (eaxval == 0) {
+			NOT32R(EAX);
+			eaxval = -1;
+		}
 
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
 		done[j + 2] |= 1<<i;

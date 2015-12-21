@@ -39,37 +39,6 @@ void x86capabilities::CountLogicalCores()
 	LogicalCores = CPUs;
 }
 
-bool _test_instruction( void* pfnCall )
-{
-	__try {
-		u128 regsave;
-		((void (__fastcall *)(void*))pfnCall)( &regsave );
-	}
-	__except(EXCEPTION_EXECUTE_HANDLER) { return false; }
-
-	return true;
-}
-
-bool CanEmitShit()
-{
-	// Under Windows, pre 0.9.6 versions of PCSX2 may not initialize the TLS
-	// register (FS register), so plugins (DLLs) using our x86emitter in multithreaded
-	// mode will just crash/fail if it tries to do the instruction set tests.
-
-#if x86EMIT_MULTITHREADED
-	static __threadlocal int tls_failcheck;
-	__try { tls_failcheck = 1; }
-	__except(EXCEPTION_EXECUTE_HANDLER) { return false; }
-#endif
-
-	return true;
-}
-
-bool CanTestInstructionSets()
-{
-	return CanEmitShit();
-}
-
 SingleCoreAffinity::SingleCoreAffinity()
 {
 	s_threadId	= NULL;

@@ -357,9 +357,9 @@ namespace GLLoader {
 		}
 
 		if (!found) {
-			fprintf(stderr, "INFO: %s is NOT SUPPORTED\n", name.c_str());
+			fprintf(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
 		} else {
-			fprintf(stderr, "INFO: %s is available\n", name.c_str());
+			fprintf(stdout, "INFO: %s is available\n", name.c_str());
 		}
 
 		std::string opt("override_");
@@ -384,7 +384,7 @@ namespace GLLoader {
 		while (s[v] != '\0' && s[v-1] != ' ') v++;
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
-		fprintf(stderr, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
+		fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
@@ -455,7 +455,6 @@ namespace GLLoader {
 		}
 
 		bool status = true;
-		fprintf(stderr, "\n");
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
@@ -492,7 +491,19 @@ namespace GLLoader {
 			theApp.SetConfig("accurate_date", 0);
 		}
 
-		fprintf(stderr, "\n");
+#ifdef _WINDOWS
+		if (status) {
+			if (intel_buggy_driver) {
+				fprintf(stderr, "OpenGL renderer isn't compatible with SandyBridge/IvyBridge GPU due to issues. Sorry.\n"
+						"Tip:Try it on Linux");
+			}
+			if (fglrx_buggy_driver) {
+				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.");
+			}
+		}
+#endif
+
+		fprintf(stdout, "\n");
 
 		return status;
 	}

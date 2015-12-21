@@ -939,7 +939,7 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputField			= L"Field";
 	OutputProgressive	= L"Progressive";
 	OutputInterlaced	= L"Interlaced";
-	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodec} | ${cpuusage}";
+	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -1048,7 +1048,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 2);
 		
 		case 4 :	//set EE cyclerate to 2 clicks (maximum)
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 2);
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -2);
 
 		case 3 :	//Set VU cycle steal to 1 click, set VU clamp mode to 'none'
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 1);
@@ -1058,7 +1058,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 
 		//best balanced hacks combo?
 		case 2 :	//set EE cyclerate to 1 click.
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 1);
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -1);
 					// EE timing hack appears to break the BIOS text and cause slowdowns in a few titles.
 					//EnableGameFixes = true;
 					//EmuOptions.Gamefixes.EETimingHack = true;

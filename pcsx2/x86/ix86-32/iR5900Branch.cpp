@@ -22,7 +22,7 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
-namespace Interp = R5900::Interpreter::OpcodeImpl;
+using namespace x86Emitter;
 
 namespace R5900 {
 namespace Dynarec {

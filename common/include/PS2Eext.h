@@ -35,9 +35,15 @@
 
 //#include "PS2Edefs.h"
 
+#if !defined(_MSC_VER) || !defined(UNICODE)
 static void SysMessage(const char *fmt, ...);
 static void __forceinline PluginNullConfigure(std::string desc, s32 &log);
 static void __forceinline PluginNullAbout(const char *aboutText);
+#else
+static void SysMessage(const wchar_t *fmt, ...);
+static void __forceinline PluginNullConfigure(std::wstring desc, s32 &log);
+static void __forceinline PluginNullAbout(const wchar_t *aboutText);
+#endif
 
 enum FileMode
 {
@@ -97,6 +103,7 @@ struct PluginLog
         if (WriteToConsole) fprintf(stdout, "\n");
     }
 
+#if !defined(_MSC_VER) || !defined(UNICODE)
     void Message(const char *fmt, ...)
     {
         va_list list;
@@ -110,6 +117,21 @@ struct PluginLog
 
         SysMessage(buf);
     }
+#else
+	void Message(const wchar_t *fmt, ...)
+	{
+		va_list list;
+		wchar_t buf[256];
+
+		if (LogFile == NULL) return;
+
+		va_start(list, fmt);
+		vswprintf(buf, 256, fmt, list);
+		va_end(list);
+
+		SysMessage(buf);
+	}
+#endif
 };
 
 struct PluginConf
@@ -148,7 +170,7 @@ struct PluginConf
 
         if (ConfFile)
 			if (fscanf(ConfFile, buf.c_str(), &value) < 0)
-				SysMessage("Somethings got wrong when option was read\n");
+				fprintf(stderr, "Error reading %s\n", item.c_str());
 
         return value;
     }
@@ -225,6 +247,8 @@ static void __forceinline PluginNullAbout(const char *aboutText)
 
 #define usleep(x)	Sleep(x / 1000)
 
+#ifndef UNICODE
+
 static void __forceinline SysMessage(const char *fmt, ...)
 {
     va_list list;
@@ -247,6 +271,32 @@ static void __forceinline PluginNullAbout(const char *aboutText)
 {
     SysMessage(aboutText);
 }
+#else
+
+static void __forceinline SysMessage(const wchar_t *fmt, ...)
+{
+	va_list list;
+	wchar_t tmp[512];
+	va_start(list, fmt);
+	vswprintf(tmp, 512, fmt, list);
+	va_end(list);
+	MessageBox(GetActiveWindow(), tmp, L"Message", MB_SETFOREGROUND | MB_OK);
+}
+
+static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
+{
+	/* To do: Write a dialog box that displays a dialog box with the text in desc,
+	and a check box that says "Logging", checked if log !=0, and set log to
+	1 if it is checked on return, and 0 if it isn't. */
+	SysMessage(L"This space intentionally left blank.");
+}
+
+static void __forceinline PluginNullAbout(const wchar_t *aboutText)
+{
+	SysMessage(aboutText);
+}
+
+#endif
 
 #define ENTRY_POINT \
 HINSTANCE hInst; \

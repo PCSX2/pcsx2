@@ -22,23 +22,13 @@ using namespace x86Emitter;
 __aligned16 x86capabilities x86caps;
 
 // Recompiled code buffer for SSE and MXCSR feature testing.
-static __pagealigned u8 recSSE[__pagesize];
 static __pagealigned u8 targetFXSAVE[512];
-
-#ifdef __linux__
-#	include <sys/time.h>
-#	include <errno.h>
-#endif
-
-static const char* bool_to_char( bool testcond )
-{
-	return testcond ? "true" : "false";
-}
 
 // Warning!  We've had problems with the MXCSR detection code causing stack corruption in
 // MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
 // moved the recSSE[] array to a global static (it was local to cpudetectInit).  Commented
 // here in case the nutty crash ever re-surfaces. >_<
+// Note: recSSE was deleted
 void x86capabilities::SIMD_EstablishMXCSRmask()
 {
 	if( !hasStreamingSIMDExtensions ) return;
@@ -53,32 +43,9 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 
 		MXCSR_Mask.bitmask = 0xFFFF;	// SSE2 features added
 	}
-#ifdef _M_X86_64
-#ifdef _MSC_VER
-	// Use the intrinsic that is provided with MSVC 2012
+
+	// Work for recent enough GCC/CLANG/MSVC 2012
 	_fxsave(&targetFXSAVE);
-#else
-	// GCC path is supported since GCC 4.6.x
-	__asm __volatile ("fxsave %0" : "+m" (targetFXSAVE));
-#endif
-#else
-	// Grab the MXCSR mask the x86_32 way.
-	//
-	// the fxsave buffer must be 16-byte aligned to avoid GPF.  I just save it to an
-	// unused portion of recSSE, since it has plenty of room to spare.
-
-	if( !CanEmitShit() ) return;
-
-	HostSys::MemProtectStatic( recSSE, PageAccess_ReadWrite() );
-
-	xSetPtr( recSSE );
-	xFXSAVE( ptr[&targetFXSAVE] );
-	xRET();
-
-	HostSys::MemProtectStatic( recSSE, PageAccess_ExecOnly() );
-
-	CallAddress( recSSE );
-#endif
 
 	u32 result = (u32&)targetFXSAVE[28];			// bytes 28->32 are the MXCSR_Mask.
 	if( result != 0 )
@@ -236,6 +203,14 @@ void x86capabilities::Identify()
 		Flags2		=  regs[ 2 ];
 	}
 
+	if ( cmds >= 0x00000007 )
+	{
+		// Note: ECX must be 0 for AVX2 detection.
+		__cpuidex( regs, 0x00000007, 0 );
+
+		SEFlag = regs[ 1 ];
+	}
+
 	__cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 	if ( cmds >= 0x80000001 )
@@ -295,10 +270,11 @@ void x86capabilities::Identify()
 	
 	if((Flags2 >> 27) & 1) // OSXSAVE
 	{
-		if((__xgetbv(0) & 6) == 6) // XFEATURE_ENABLED_MASK[2:1] = '11b' (XMM state and YMM state are enabled by OS).
+		if((_xgetbv(0) & 6) == 6) // XFEATURE_ENABLED_MASK[2:1] = '11b' (XMM state and YMM state are enabled by OS).
 		{
 			hasAVX								= ( Flags2 >> 28 ) & 1; //avx
 			hasFMA								= ( Flags2 >> 12 ) & 1; //fma
+			hasAVX2								= ( SEFlag >>  5 ) & 1; //avx2
 		}
 	}
 
@@ -322,77 +298,3 @@ u32 x86capabilities::CalculateMHz() const
 	else
 		return (u32)( _CPUSpeedHz( span / 500 ) / 2000 );
 }
-
-// Special extended version of SIMD testning, which uses exceptions to double-check the presence
-// of SSE2/3/4 instructions.  Useful if you don't trust cpuid (at least one report of an invalid
-// cpuid has been reported on a Core2 Quad -- the user fixed it by clearing his CMOS).
-//
-// Results of CPU
-void x86capabilities::SIMD_ExceptionTest()
-{
-	HostSys::MemProtectStatic( recSSE, PageAccess_ReadWrite() );
-
-	//////////////////////////////////////////////////////////////////////////////////////////
-	// SIMD Instruction Support Detection (Second Pass)
-	//
-
-	if( CanTestInstructionSets() )
-	{
-		xSetPtr( recSSE );
-		xMOVDQU( ptr[ecx], xmm1 );
-		xMOVSLDUP( xmm1, xmm0 );
-		xMOVDQU( xmm1, ptr[ecx] );
-		xRET();
-
-		u8* funcSSSE3 = xGetPtr();
-		xMOVDQU( ptr[ecx], xmm1 );
-		xPABS.W( xmm1, xmm0 );
-		xMOVDQU( xmm1, ptr[ecx] );
-		xRET();
-
-		u8* funcSSE41 = xGetPtr();
-		xMOVDQU( ptr[ecx], xmm1 );
-		xBLEND.VPD( xmm1, xmm0 );
-		xMOVDQU( xmm1, ptr[ecx] );
-		xRET();
-
-		HostSys::MemProtectStatic( recSSE, PageAccess_ExecOnly() );
-
-		bool sse3_result = _test_instruction( recSSE );  // sse3
-		bool ssse3_result = _test_instruction( funcSSSE3 );
-		bool sse41_result = _test_instruction( funcSSE41 );
-
-		// Test for and log any irregularities here.
-		// We take the instruction test result over cpuid since (in theory) it should be a
-		// more reliable gauge of the cpu's actual ability.  But since a difference in bit
-		// and actual ability may represent a cmos/bios problem, we report it to the user.
-
-		if( sse3_result != !!hasStreamingSIMD3Extensions )
-		{
-			Console.Warning( "SSE3 Detection Inconsistency: cpuid=%s, test_result=%s",
-				bool_to_char( !!hasStreamingSIMD3Extensions ), bool_to_char( sse3_result ) );
-
-			hasStreamingSIMD3Extensions = sse3_result;
-		}
-
-		if( ssse3_result != !!hasSupplementalStreamingSIMD3Extensions )
-		{
-			Console.Warning( "SSSE3 Detection Inconsistency: cpuid=%s, test_result=%s",
-				bool_to_char( !!hasSupplementalStreamingSIMD3Extensions ), bool_to_char( ssse3_result ) );
-
-			hasSupplementalStreamingSIMD3Extensions = ssse3_result;
-		}
-
-		if( sse41_result != !!hasStreamingSIMD4Extensions )
-		{
-			Console.Warning( "SSE4 Detection Inconsistency: cpuid=%s, test_result=%s",
-				bool_to_char( !!hasStreamingSIMD4Extensions ), bool_to_char( sse41_result ) );
-
-			hasStreamingSIMD4Extensions = sse41_result;
-		}
-
-	}
-
-	SIMD_EstablishMXCSRmask();
-}
-

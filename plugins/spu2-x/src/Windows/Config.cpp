@@ -137,12 +137,15 @@ void ReadSettings()
 
 	wchar_t omodid[128];
 
-	if ( IsVistaOrGreater2() ) {		// XA2 for WinXP, morder modern gets Portaudio
-		CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, PortaudioOut->GetIdent());
-	}
-	else {
+	// portaudio occasionally has issues selecting the proper default audio device.
+	// let's use xaudio2 until this is sorted (rama)
+
+//	if ( IsVistaOrGreater2() ) {		// XA2 for WinXP, morder modern gets Portaudio
+//		CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, PortaudioOut->GetIdent());
+//	}
+//	else {
 		CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent());
-	}
+//	}
 
 	// find the driver index of this module:
 	OutputModule = FindOutputModuleById( omodid );

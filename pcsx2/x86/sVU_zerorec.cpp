@@ -2855,12 +2855,12 @@ void SuperVUTestVU0Condition(u32 incstack)
 
 	if (incstack)
 	{
-		u8* ptr = JB8(0);
+		u8* jptr = JB8(0);
 		ADD32ItoR(ESP, incstack);
 		//CALLFunc((u32)timeout);
 		JMP32((uptr)SuperVUEndProgram - ((uptr)x86Ptr + 5));
 
-		x86SetJ8(ptr);
+		x86SetJ8(jptr);
 	}
 	else JAE32((uptr)SuperVUEndProgram - ((uptr)x86Ptr + 6));
 }
@@ -3266,19 +3266,19 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 {
 	//static PCSX2_ALIGNED16(VECTOR _VF);
 	//static PCSX2_ALIGNED16(VECTOR _VFc);
-	u32 *ptr;
+	u32 *code_ptr;
 	u8* pjmp;
 	int vfregstore = 0;
 
 	pxAssert(s_pCurInst == this);
 	s_WriteToReadQ = 0;
 
-	ptr = (u32*) & VU->Micro[ pc ];
+	code_ptr = (u32*) & VU->Micro[ pc ];
 
 	if (type & INST_Q_READ)
-		SuperVUFlush(0, (ptr[0] == 0x800003bf) || !!(regs[0].VIwrite & (1 << REG_Q)));
+		SuperVUFlush(0, (code_ptr[0] == 0x800003bf) || !!(regs[0].VIwrite & (1 << REG_Q)));
 	if (type & INST_P_READ)
-		SuperVUFlush(1, (ptr[0] == 0x800007bf) || !!(regs[0].VIwrite & (1 << REG_P)));
+		SuperVUFlush(1, (code_ptr[0] == 0x800007bf) || !!(regs[0].VIwrite & (1 << REG_P)));
 
 	if (type & INST_DUMMY)
 	{
@@ -3590,43 +3590,43 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 	}
 #endif
 
-	if (s_vu == 0 && (ptr[1] & 0x20000000))   // M flag
+	if (s_vu == 0 && (code_ptr[1] & 0x20000000))   // M flag
 	{
 		OR8ItoM((uptr)&VU->flags, VUFLAG_MFLAGSET);
 	}
-	if (ptr[1] & 0x10000000)   // D flag
+	if (code_ptr[1] & 0x10000000)   // D flag
 	{
 		TEST32ItoM((uptr)&VU0.VI[REG_FBRST].UL, s_vu ? 0x400 : 0x004);
-		u8* ptr = JZ8(0);
+		u8* jptr = JZ8(0);
 		OR32ItoM((uptr)&VU0.VI[REG_VPU_STAT].UL, s_vu ? 0x200 : 0x002);
 		xMOV( ecx, s_vu ? INTC_VU1 : INTC_VU0 );
 		xCALL( hwIntcIrq );
-		x86SetJ8(ptr);
+		x86SetJ8(jptr);
 	}
-	if (ptr[1] & 0x08000000)   // T flag
+	if (code_ptr[1] & 0x08000000)   // T flag
 	{
 		TEST32ItoM((uptr)&VU0.VI[REG_FBRST].UL, s_vu ? 0x800 : 0x008);
-		u8* ptr = JZ8(0);
+		u8* jptr = JZ8(0);
 		OR32ItoM((uptr)&VU0.VI[REG_VPU_STAT].UL, s_vu ? 0x400 : 0x004);
 		xMOV( ecx, s_vu ? INTC_VU1 : INTC_VU0 );
 		xCALL( hwIntcIrq );
-		x86SetJ8(ptr);
+		x86SetJ8(jptr);
 	}
 
 	// check upper flags
-	if (ptr[1] & 0x80000000)   // I flag
+	if (code_ptr[1] & 0x80000000)   // I flag
 	{
 
 		pxAssert(!(regs[0].VIwrite & ((1 << REG_Q) | (1 << REG_P))));
 
-		VU->code = ptr[1];
+		VU->code = code_ptr[1];
 		s_vuInfo = SetCachedRegs(1, vuxyz);
 		if (s_JumpX86 > 0) x86regs[s_JumpX86].needed = 1;
 		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;
 
 		recVU_UPPER_OPCODE[ VU->code & 0x3f ](VU, s_vuInfo);
 
-		s_PrevIWrite = (uptr)ptr;
+		s_PrevIWrite = (uptr)code_ptr;
 		_clearNeededXMMregs();
 		_clearNeededX86regs();
 	}
@@ -3639,7 +3639,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			itinst2 = itinst;
 			++itinst2;
 			u32 cacheq = (itinst2 == s_pCurBlock->insts.end());
-			u32* codeptr2 = ptr + 2;
+			u32* codeptr2 = code_ptr + 2;
 
 			while (itinst2 != s_pCurBlock->insts.end())
 			{
@@ -3758,9 +3758,9 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		}
 
 		// waitq
-		if (ptr[0] == 0x800003bf) SuperVUFlush(0, 1);
+		if (code_ptr[0] == 0x800003bf) SuperVUFlush(0, 1);
 		// waitp
-		if (ptr[0] == 0x800007bf) SuperVUFlush(1, 1);
+		if (code_ptr[0] == 0x800007bf) SuperVUFlush(1, 1);
 
 #ifdef PCSX2_DEVBUILD
 		if (regs[1].VIread & regs[0].VIwrite & ~((1 << REG_Q) | (1 << REG_P) | (1 << REG_VF0_FLAG) | (1 << REG_ACC_FLAG)))
@@ -3773,7 +3773,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		if (vfwrite[1] >= 0 && xmmregs[vfwrite[1]].inuse && xmmregs[vfwrite[1]].type == XMMTYPE_VFREG && xmmregs[vfwrite[1]].reg == regs[1].VFwrite)
 			modewrite = xmmregs[vfwrite[1]].mode & MODE_WRITE;
 
-		VU->code = ptr[1];
+		VU->code = code_ptr[1];
 		s_vuInfo = SetCachedRegs(1, vuxyz);
 
 		if (vfwrite[1] >= 0)
@@ -3811,7 +3811,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			s_PrevStatusWrite = pStatusWrite;
 		}
 
-		VU->code = ptr[0];
+		VU->code = code_ptr[0];
 		s_vuInfo = SetCachedRegs(0, vuxyz);
 
 		if (vfregstore)

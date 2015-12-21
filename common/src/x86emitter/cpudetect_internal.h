@@ -37,20 +37,3 @@ public:
 	SingleCoreAffinity();
 	virtual ~SingleCoreAffinity() throw();
 };
-
-// --------------------------------------------------------------------------------------
-//  SIMD "Manual" Detection, using Invalid Instruction Checks
-// --------------------------------------------------------------------------------------
-//
-// Note: This API doesn't support GCC/Linux.  Looking online it seems the only
-// way to simulate the Microsoft SEH model is to use unix signals, and the 'sigaction'
-// function specifically.  A linux coder could implement this using sigaction at a later
-// date, however its not really a big deal:  CPUID should be 99-100% accurate, as no modern
-// software would work on the CPU if it mis-reported capabilities.  However there are known
-// cases of a CPU failing to report supporting instruction sets it does in fact support.
-// This secondary test fixes such cases (although apparently a CMOS reset does as well).
-//
-
-extern bool CanEmitShit();
-extern bool CanTestInstructionSets();
-extern bool _test_instruction( void* pfnCall );

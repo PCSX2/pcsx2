@@ -13,25 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <windows.h>
-#include <windowsx.h>
-
 
 #include "resource.h"
 #include "../Pad.h"
 
 HINSTANCE hInst;
-
-void SysMessage(char *fmt, ...) {
-	va_list list;
-	char tmp[512];
-
-	va_start(list,fmt);
-	vsprintf(tmp,fmt,list);
-	va_end(list);
-	MessageBox(0, tmp, "Pad Plugin Msg", 0);
-}
 
 BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 

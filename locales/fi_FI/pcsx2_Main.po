@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-10-23 19:59+0200\n"
+"POT-Creation-Date: 2015-12-03 09:11+0100\n"
 "PO-Revision-Date: 2012-05-20 13:27+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: quarterlife <kimmo.martimo@gmail.com>\n"
@@ -100,7 +100,7 @@ msgstr ""
 "Sisältää tyhjäkäynnin tapahtumaprosessoinnin ja muita harvinaisia "
 "tapahtumakäyttöjä."
 
-#: pcsx2/CDVD/InputIsoFile.cpp:249
+#: pcsx2/CDVD/InputIsoFile.cpp:252
 msgid "Unrecognized ISO image file format"
 msgstr "Tuntematon ISO-levykuvaformaatti"
 
@@ -427,7 +427,7 @@ msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Kaikki valinnat ovat vain nykyiselle istunnolla ja niitä ei tallenneta.\n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:374
+#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "IsoFile"
 
@@ -643,28 +643,28 @@ msgstr ""
 "Varoitus!  Järjestelmäliitännäisiä ei ole ladattu.  PCSX2 ei mahdollisesti "
 "toimi."
 
-#: pcsx2/gui/AppMain.cpp:386
+#: pcsx2/gui/AppMain.cpp:370
 #, c-format
 msgid "%s Commandline Options"
 msgstr "%s komentorivivalinnat"
 
-#: pcsx2/gui/AppMain.cpp:687
+#: pcsx2/gui/AppMain.cpp:671
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 säie ei vastaa"
 
-#: pcsx2/gui/AppMain.cpp:694
+#: pcsx2/gui/AppMain.cpp:678
 msgid "Terminate"
 msgstr "Lopeta"
 
-#: pcsx2/gui/AppMain.cpp:1070
+#: pcsx2/gui/AppMain.cpp:1054
 msgid "Executing PS2 Virtual Machine..."
 msgstr "Suoritetaan PS2-virtuaalikonetta..."
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse for an Iso that is not in your recent history."
 msgstr "Selaa valitaksesi Iso-tiedosto, joka ei ole lähihistoriassasi."
 
-#: pcsx2/gui/AppRes.cpp:75
+#: pcsx2/gui/AppRes.cpp:65
 msgid "Browse..."
 msgstr "Selaa..."
 
@@ -874,36 +874,37 @@ msgstr "Edelliset versiot"
 msgid "Webmasters"
 msgstr "Sivujen ylläpitäjät"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Plugin Specialists"
 msgstr "Liitännäisasiantuntijat"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
 msgid "Special thanks to"
 msgstr "Erityiskiitokset"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Developers"
 msgstr "Kehittäjät"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
 msgid "Contributors"
 msgstr "Osallistujat"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
-msgid "A Playstation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#, fuzzy
+msgid "PlayStation 2 Emulator"
 msgstr "Playstation 2 -emulaattori"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
 msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 viralliset sivut ja foorumit"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "PCSX2 virallinen Svn-varasto GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
 msgid "I've seen enough"
 msgstr "Olen nähnyt tarpeeksi"
 
@@ -1001,7 +1002,7 @@ msgstr "Kansiot"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:818
 #, c-format
 msgid "Error (%s)"
 msgstr "Virhe (%s)"
@@ -1829,28 +1830,28 @@ msgstr "Käyttöjärjestelmä estää tämän tiedoston luonnin"
 msgid "Cannot apply settings..."
 msgstr "Ei pysty ottamaan asetuksia käyttöön..."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:107
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:103
 msgid "BIOS Search Path:"
 msgstr "BIOS-hakupolku:"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "Select folder with PS2 BIOS roms"
 msgstr "Valitse PS2 BIOS-kuvat sisältävä kansio"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:111
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr ""
 "Paina Selaa-nappia valitaksesi kansion mistä PCSX2 etsii PS2 BIOS-kuvia."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:196
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
 msgid "Refresh list"
 msgstr "Päivitä lista"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:119
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
 msgid "Select a BIOS rom:"
 msgstr "Valitse BIOS-kuva:"
 
@@ -1948,7 +1949,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "Vain tulkille, pelkästään vianmääritystä varten"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
 msgid "Restore Defaults"
 msgstr "Palauta oletusasetukset"
 
@@ -2187,87 +2188,87 @@ msgstr ""
 msgid "Select folder with PS2 memory cards"
 msgstr "Valitse PS2-muistikortit sisältävä kansio"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Eject"
 msgstr "Poista käytöstä"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
 msgid "Duplicate ..."
 msgstr "Kopioi ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
 msgid "Rename ..."
 msgstr "Uudelleennimeä ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:396
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:465
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Create ..."
 msgstr "Luo ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
 #, fuzzy
 msgid "Convert ..."
 msgstr "Aseta ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:407
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
 msgstr "Kortti:"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:464
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:502
 msgid "Create a new memory card."
 msgstr "Luo uusi muistikortti."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:478
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Rename this memory card ..."
 msgstr "Uudelleennimeä tämä muistikortti ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Insert ..."
 msgstr "Aseta ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Eject the card from this port"
 msgstr "Poistaa muistikortin tästä muistikorttipaikasta"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:483
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Insert this card to a port ..."
 msgstr "Aseta tämä muistikortti muistikorttipaikkaan ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:487
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid "Create a duplicate of this memory card ..."
 msgstr "Tee kopio tästä muistikortista ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Delete"
 msgstr "Poista"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "Poistaa muistikortin peruuttamattomasti (kaikki sisältö menetetään)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card and assign it to this Port."
 msgstr "Luo uusi muistikortti ja aseta se tähän muistikorttipaikkaan."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:688
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:690
 msgid "Delete memory file?"
 msgstr "Poistetaanko muistikorttitiedosto?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:747
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:749
 msgid "Duplicate memory card"
 msgstr "Luo kopio muistikortista"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:715
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
 msgid "Failed: Can only duplicate an existing card."
 msgstr "Epäonnistui: vain olemassaolevia muistikortteja voi kopioida."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:733
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
@@ -2275,25 +2276,25 @@ msgstr ""
 "Valitse kopion nimi\n"
 "( '.ps2' lisätään automaattisesti)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:746
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:748
 #, c-format
 msgid "Failed: %s"
 msgstr "Epäonnistui: %s"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 msgid "Copy failed!"
 msgstr "Kopiointi epäonnistui!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:778
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:780
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr "Muistikortti '%s' kopioitiin muistikorttiin '%s'."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
 msgid "Success"
 msgstr "Onnistuminen"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:802
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
@@ -2302,72 +2303,72 @@ msgstr ""
 "Valitse uusi nimi muistikortille '%s'\n"
 "( '.ps2' lisätään automaattisesti)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:817
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:807
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:819
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Rename memory card"
 msgstr "Uudelleennimeä muistikortti"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:831
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Error: Rename could not be completed.\n"
 msgstr "Virhe: Uudelleennimeämistä ei voitu suorittaa.\n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:931
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:933
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "Paikka-%u / Multitap-%u--Paikka-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:932
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:934
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "             Multitap-%u--Paikka-%u"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:957
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Empty"
 msgstr "Tyhjä"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:965
 #, c-format
 msgid "Select a target port for '%s'"
 msgstr "Valitse kohdepaikka muistikortille '%s'"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:964
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:966
 msgid "Insert card"
 msgstr "Aseta muistikorttipaikkaan"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Eject card"
 msgstr "Poista muistikorttipaikasta"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Insert card ..."
 msgstr "Aseta muistikortti ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
 msgid "Duplicate card ..."
 msgstr "Kopio muistikortti ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
 msgid "Rename card ..."
 msgstr "Uudelleennimeä muistikortti ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
 msgid "Delete card"
 msgstr "Poista muistikortti"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
 #, fuzzy
 msgid "Convert card"
 msgstr "Aseta muistikorttipaikkaan"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1034
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1038
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
 msgid "Create a new card ..."
 msgstr "Luo uusi muistikortti ..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1042
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1044
 msgid "Refresh List"
 msgstr "Päivitä lista"
 
@@ -2540,18 +2541,18 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Suoritetaan tehtäviä..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
 msgid "Enable speedhacks"
 msgstr "Ota käyttöön nopeusviritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
 "Turvallinen ja helppo tapa varmistaa, että kaikki nopeusviritelmät ovat "
 "poistettu täysin käytöstä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
@@ -2559,34 +2560,34 @@ msgstr ""
 "Palauttaa kaikki nopeusviritelmäasetukset oletuksiinsa, siis ottaa ne kaikki "
 "POIS käytöstä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE syklinopeus [Ei suositella]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU-syklivarastaminen [Ei suositella]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
 msgid "microVU Hacks"
 msgstr "microVU viritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
 msgid "mVU Flag Hack"
 msgstr "mVU lippuviritelmä"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Hyvä nopeuslisä ja suuri yhteensopivuus; saattaa aiheuttaa "
 "grafiikkavirheitä... [Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Monisäikeistetty microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2594,15 +2595,15 @@ msgstr ""
 "Hyvä nopeuslisä ja suuri yhteensopivuus; saattaa aiheuttaa jumiutumista... "
 "[Suositeltu jos 3 tai enemmän suoritinydintä]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "Other Hacks"
 msgstr "Muut viritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid "Enable INTC Spin Detection"
 msgstr "Ota käyttöön INTC-pyörimisen havaitseminen"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2610,22 +2611,22 @@ msgstr ""
 "Massiivinen nopeuslisä joillekkin peleille, melkein olemattomat "
 "sivuvaikutukset yhteensopivuudelle. [Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "Enable Wait Loop Detection"
 msgstr "Ota käyttöön odotussilmukan havaitseminen"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Maltillinen nopeuslisä joillekin peleille, ei tunnettuja sivuvaikutuksia. "
 "[Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Enable fast CDVD"
 msgstr "Ota käyttöön nopea CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Nopea levyn luku, vähentää latausaikoja. [Ei suositella]"
 
@@ -2814,7 +2815,7 @@ msgstr ""
 "Valittua BIOS-tiedostoa ei ole olemassa.  Ole hyvä ja tee asetukset "
 "uudelleen."
 
-#: pcsx2/x86/ix86-32/iR5900-32.cpp:580
+#: pcsx2/x86/ix86-32/iR5900-32.cpp:591
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "

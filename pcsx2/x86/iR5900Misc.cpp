@@ -19,6 +19,7 @@
 #include "iR5900.h"
 #include "R5900OpcodeTables.h"
 
+using namespace x86Emitter;
 
 namespace R5900 {
 namespace Dynarec {

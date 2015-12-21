@@ -496,7 +496,12 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+#ifdef _WIN32
+		GSRendererType default_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_HW : GSRendererType::DX9_HW;
+#else
+		GSRendererType default_renderer = GSRendererType::Default;
+#endif
+		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(default_renderer)));
 	}
 	else if (stored_toggle_state != toggle_state)
 	{

@@ -1022,4 +1022,135 @@ __emitinline void xRestoreReg( const xRegisterSSE& dest )
 	xMOVDQA( dest, ptr[&xmm_data[dest.Id*2]] );
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// Helper function to handle the various functions ABI
+
+__emitinline void xFastCall(void *func, const xRegister32& a1, const xRegister32& a2)
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+	if (!a1.IsEmpty())
+		xMOV(ecx, a1);
+
+	if (!a2.IsEmpty())
+		xMOV(edx, a2);
+
+	xCALL(func);
+#endif
 }
+
+__emitinline void xFastCall(void *func, const xRegisterSSE& a1, const xRegisterSSE& a2)
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+	xMOVD(ecx, a1);
+	xMOVD(edx, a2);
+
+	xCALL(func);
+#endif
+}
+
+__emitinline void xFastCall(void *func, u32 a1, u32 a2)
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+	xMOV(ecx, a1);
+	xMOV(edx, a2);
+
+	xCALL(func);
+#endif
+}
+
+__emitinline void xFastCall(void *func, u32 a1)
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+	xMOV(ecx, a1);
+
+	xCALL(func);
+#endif
+}
+
+__emitinline void xStdCall(void *func, u32 a1)
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+	// GCC note: unlike C call, GCC doesn't requires
+	// strict 16B alignment on std call
+	xPUSH(a1);
+	xCALL(func);
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Helper object to handle ABI frame
+
+xScopedStackFrame::xScopedStackFrame(bool base_frame)
+{
+	m_base_frame = base_frame;
+
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+
+	// Create a new frame
+	if (m_base_frame) {
+		xPUSH( ebp );
+		xMOV( ebp, esp );
+	}
+
+	// Save the register context
+	xPUSH( edi );
+	xPUSH( esi );
+	xPUSH( ebx );
+
+#ifdef __GNUC__
+	// Realign the stack to 16 byte
+	if (m_base_frame) {
+		xSUB( esp, 12);
+	}
+#endif
+
+#endif
+}
+
+xScopedStackFrame::~xScopedStackFrame()
+{
+#ifdef __x86_64__
+	// NEW ABI
+	pxAssert(0);
+#else
+
+#ifdef __GNUC__
+	// Restore the stack (due to the above alignment)
+	// Potentially it can be restored from ebp
+	if (m_base_frame) {
+		xADD( esp, 12);
+	}
+#endif
+
+	// Restore the register context
+	xPOP( ebx );
+	xPOP( esi );
+	xPOP( edi );
+
+	// Destroy the frame
+	if (m_base_frame) {
+		xLEAVE();
+	}
+
+#endif
+}
+
+}	// End namespace x86Emitter

@@ -22,6 +22,8 @@
 #include "VU.h"
 #include "R3000A.h"
 
+using namespace x86Emitter;
+
 __tls_emit u8  *j8Ptr[32];
 __tls_emit u32 *j32Ptr[32];
 

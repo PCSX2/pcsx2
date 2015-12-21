@@ -177,6 +177,7 @@ namespace Panels
 		pxRadioPanel*		m_panel_RecIOP;
 		pxCheckBox*			m_check_EECacheEnable;
 		AdvancedOptionsFPU*	m_advancedOptsFpu;
+		wxButton *m_button_RestoreDefaults;
 
 	public:
 		CpuPanelEE( wxWindow* parent );
@@ -196,6 +197,7 @@ namespace Panels
 		pxRadioPanel*				m_panel_VU0;
 		pxRadioPanel*				m_panel_VU1;
 		Panels::AdvancedOptionsVU*	m_advancedOptsVu;
+		wxButton *m_button_RestoreDefaults;
 
 	public:
 		CpuPanelVU( wxWindow* parent );

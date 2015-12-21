@@ -587,14 +587,12 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 		if (THREAD_VU1)
 			cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
 
-		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct());)
+		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
-	//This is a lie, but Field mode is essentially not interlaced, will probably be 1/2 FPS
-	wxString omodec = ((smode2 & 3) == 1) ? templates.OutputProgressive : omodei;
 
 	wxString title = templates.TitleTemplate;
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
@@ -604,7 +602,6 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
-	title.Replace(L"${omodec}",		omodec);
 	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
 
 	SetTitle(title);
