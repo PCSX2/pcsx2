@@ -2,22 +2,17 @@
 ; PCSX2 Full/Complete Install Package!
 ; (a NSIS installer script)
 ;
-; Copyright 2009-2014  PCSX2 Dev Team
+; Copyright 2009-2015  PCSX2 Dev Team
 ;
-
-!ifndef INC_CRT_2008
-  ; Set to 0 to disable inclusion of Visual Studio 2008 SP1 CRT Redists
-  !define INC_CRT_2008  0
-!endif
-
-!ifndef INC_CRT_2010
-  ; Set to 0 to disable inclusion of Visual Studio 2010 SP1 CRT Redists
-  !define INC_CRT_2010  0
-!endif
 
 !ifndef INC_CRT_2013
   ; Set to 0 to disable inclusion of Visual Studio 2013 SP1 CRT Redists
   !define INC_CRT_2013  1
+!endif
+
+!ifndef INC_CRT_2015
+  ; Set to 0 to disable inclusion of Visual Studio 2013 SP1 CRT Redists
+  !define INC_CRT_2015  1
 !endif
 
 ShowInstDetails nevershow
@@ -90,68 +85,6 @@ SectionEnd
 
 !include "SectionShortcuts.nsh"
 
-; -----------------------------------------------------------------------
-; MSVC Redistributable - required if the user does not already have it
-; Note: if your NSIS generates an error here it means you need to download the latest
-; visual studio redist package from microsoft.
-;
-; IMPORTANT: Online references for how to detect the presence of the VS2008 redists LIE.
-; None of the methods are reliable, because the registry keys placed by the MSI installer
-; vary depending on operating system *and* MSI installer version (youch).
-;
-!if ${INC_CRT_2008} > 0
-Section "Microsoft Visual C++ 2008 SP1 Redist"  SEC_CRT2008
-
-  SectionIn RO
-
-  ; Downloaded from:
-  ;  http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe
- 
-  SetOutPath "$TEMP"
-  File "vcredist_2008_sp1_x86.exe"
-  DetailPrint "Running Visual C++ 2008 SP1 Redistributable Setup..."
-  ExecWait '"$TEMP\vcredist_2008_sp1_x86.exe" /qb'
-  DetailPrint "Finished Visual C++ 2008 SP1 Redistributable Setup"
-  
-  Delete "$TEMP\vcredist_2008_sp1_x86.exe"
-
-SectionEnd
-!endif
-
-!if ${INC_CRT_2010} > 0
-Section "Microsoft Visual C++ 2010 SP1 Redist" SEC_CRT2010
-
-  ;SectionIn RO
-
-  ; Detection made easy: Unlike previous redists, VC2010 now generates a 
-  ; independent key for checking availability.
-  
-  ; These locations are current as of Jan. 2014. The code below might not work anymore (rama)
-  ; HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\VC\Runtimes\x86  for x64 Windows
-  ; HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\10.0\VC\Runtimes\x86  for x86 Windows
-  ; Downloaded from:
-  ;   http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe
-
-  ClearErrors
-  ReadRegDword $R0 HKLM "SOFTWARE\Microsoft\VisualStudio\10.0\VC\VCRedist\x86" "Installed"
-  IfErrors 0 +2
-  DetailPrint "Visual C++ 2010 Redistributable registry key was not found; assumed to be uninstalled."
-  StrCmp $R0 "1" 0 +3
-    DetailPrint "Visual C++ 2010 Redistributable is already installed; skipping!"
-    Goto done
-
-  SetOutPath "$TEMP"
-  File "vcredist_2010_sp1_x86.exe"
-  DetailPrint "Running Visual C++ 2010 SP1 Redistributable Setup..."
-  ExecWait '"$TEMP\vcredist_2010_sp1_x86.exe" /qb'
-  DetailPrint "Finished Visual C++ 2010 SP1 Redistributable Setup"
-  
-  Delete "$TEMP\vcredist_2010_sp1_x86.exe"
-
-done:
-SectionEnd
-!endif
-
 !if ${INC_CRT_2013} > 0
 Section "Microsoft Visual C++ 2013 Redist" SEC_CRT2013
 
@@ -186,6 +119,45 @@ Section "Microsoft Visual C++ 2013 Redist" SEC_CRT2013
   DetailPrint "Finished Visual C++ 2013 Redistributable Setup"
   
   Delete "$TEMP\vcredist_2013_x86.exe"
+
+done:
+SectionEnd
+!endif
+
+!if ${INC_CRT_2015} > 0
+Section "Microsoft Visual C++ 2015 Redist" SEC_CRT2015
+
+  ;SectionIn RO
+
+  ; Detection made easy: Unlike previous redists, VC2015 now generates a platform
+  ; independent key for checking availability.
+  ; HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86  for x64 Windows
+  ; HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86  for x86 Windows
+  
+  ; Downloaded from:
+  ;   https://www.microsoft.com/en-us/download/details.aspx?id=49984
+
+  ClearErrors
+  
+  ${If} ${RunningX64}
+  	ReadRegDword $R0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
+	${Else}
+		ReadRegDword $R0 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
+	${EndIf}
+	
+  IfErrors 0 +2
+  DetailPrint "Visual C++ 2015 Redistributable registry key was not found; assumed to be uninstalled."
+  StrCmp $R0 "1" 0 +3
+    DetailPrint "Visual C++ 2015 Redistributable is already installed; skipping!"
+    Goto done
+
+  SetOutPath "$TEMP"
+  File "vcredist_2015_Update_1_x86.exe"
+  DetailPrint "Running Visual C++ 2015 Redistributable Setup..."
+  ExecWait '"$TEMP\vcredist_2015_Update_1_x86.exe" /qb'
+  DetailPrint "Finished Visual C++ 2015 Redistributable Setup"
+  
+  Delete "$TEMP\vcredist_2015_Update_1_x86.exe"
 
 done:
 SectionEnd
@@ -229,16 +201,12 @@ LangString DESC_DIRECTX    ${LANG_ENGLISH} "Only uncheck this if you are quite c
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STARTMENU}   $(DESC_STARTMENU)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP}     $(DESC_DESKTOP)
 
-!if ${INC_CRT_2008} > 0
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CRT2008}     $(DESC_CRT2008)
-!endif
-
-!if ${INC_CRT_2010} > 0
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CRT2010}     $(DESC_CRT2010)
-!endif
-
 !if ${INC_CRT_2013} > 0
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CRT2013}     $(DESC_CRT2013)
+!endif
+
+!if ${INC_CRT_2015} > 0
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CRT2015}     $(DESC_CRT2015)
 !endif
 
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIRECTX}     $(DESC_DIRECTX)
