@@ -1,15 +1,15 @@
 # Brazilian Portuguese Translation for pcsx2 (Main)
 # Copyright (C) 2015 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013, 2014, 2015.
+# Rafael Fontenelle <rffontenelle@gmail.com>, 2011, 2012, 2013, 2014, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: pcsx2 main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
-"PO-Revision-Date: 2015-07-18 17:17-0300\n"
-"Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
+"POT-Creation-Date: 2015-12-22 10:08-0200\n"
+"PO-Revision-Date: 2015-12-22 11:04-0200\n"
+"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 1.8.6\n"
 
 #: common/include/Utilities/Exceptions.h:202
 msgid "No reason given."
@@ -730,9 +730,8 @@ msgid "It's what I use (the programmer guy)."
 msgstr "É o que eu uso (o programador)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
-#, fuzzy
 msgid "Normal font"
-msgstr "Normal"
+msgstr "Fonte normal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:443
 msgid "Its nice and readable."
@@ -895,9 +894,8 @@ msgid "Contributors"
 msgstr "Contribuidores"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
-#, fuzzy
 msgid "PlayStation 2 Emulator"
-msgstr "Um emulador de Playstation 2"
+msgstr "Emulador de Playstation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
 msgid "PCSX2 Official Website and Forums"
@@ -953,12 +951,12 @@ msgstr "Ignorar"
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
 msgid "Retry"
-msgstr ""
+msgstr "Tentar novamente"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
 msgid "Abort"
-msgstr ""
+msgstr "Abortar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
@@ -966,44 +964,43 @@ msgstr "Redefinir"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
-msgstr ""
+msgstr "Conversão de cartão de memória para um formato diferente"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
-msgstr ""
+msgstr "Converter"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr ""
+msgstr "Converter: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr ""
+msgstr "Para: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
-msgstr ""
+msgstr "Arquivo de 8MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "16MB File"
-msgstr ""
+msgstr "Arquivo de 16MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "32MB File"
-msgstr ""
+msgstr "Arquivo de 32MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "64MB File"
-msgstr ""
+msgstr "Arquivo de 64MB"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr ""
+msgstr "Converte este cartão de memória para uma pasta com seus saves."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-#, fuzzy
 msgid "Folder"
-msgstr "Pastas"
+msgstr "Pasta"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
@@ -1015,17 +1012,16 @@ msgstr "Erro (%s)"
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:123
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
-#, fuzzy
 msgid "Convert memory card"
-msgstr "Criar cartão de memória"
+msgstr "Converter cartão de memória"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
-msgstr ""
+msgstr "Sem suporte a este tipo de alvo!"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
-msgstr ""
+msgstr "A conversão de cartão de memória falhou por motivos desconhecidos."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
@@ -1056,9 +1052,8 @@ msgid "Create memory card"
 msgstr "Criar cartão de memória"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The directory for the memory card could not be created."
-msgstr "Erro: O cartão de memória não pôde ser criado."
+msgstr "Erro: O diretório do cartão de memória não pôde ser criado."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:178
 msgid "Error: The memory card could not be created."
@@ -1132,11 +1127,13 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Folder [experimental]"
-msgstr ""
+msgstr "Pasta [experimental]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Store memory card contents in the host filesystem instead of a file."
 msgstr ""
+"Armazena o conteúdo de cartão de memória no sistema de arquivos hospedeiro, "
+"ao invés de um arquivo."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:227
 msgid ""
@@ -1145,6 +1142,11 @@ msgid ""
 "files in and out of the memory card with your standard file explorer. This "
 "is still experimental, so use at your own risk!"
 msgstr ""
+"Gerencia automaticamente o conteúdo de cartão de memória de forma que o "
+"console vê apenas arquivos relacionados ao software atualmente em execução. "
+"Permite que você arraste-e-solte arquivos para dentro e para fora do cartão "
+"de memória com seu navegador de arquivos padrão. Isso ainda é experimental, "
+"então use por sua própria conta e risco!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
@@ -1212,7 +1214,7 @@ msgstr "Auto-ejetar cartões de memória quando estiver carregando savestates"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
-msgstr ""
+msgstr "Gerenciar automaticamente saves baseado no jogo"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -2225,9 +2227,8 @@ msgid "Create ..."
 msgstr "Criar..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
-#, fuzzy
 msgid "Convert ..."
-msgstr "Inserir ..."
+msgstr "Converter ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
@@ -2378,9 +2379,8 @@ msgid "Delete card"
 msgstr "Deletar cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
-#, fuzzy
 msgid "Convert card"
-msgstr "Inserir cartão"
+msgstr "Converter cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
