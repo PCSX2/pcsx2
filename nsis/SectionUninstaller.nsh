@@ -1,8 +1,7 @@
 ; =======================================================================
 ;                           Un.Installer Sections
 ; =======================================================================
-; (currently web and main installers share the same uninstaller behavior.  This
-;  may change in the future, though I doubt it.)
+
 
 ; -----------------------------------------------------------------------
 Section "Un.Program and Plugins ${APP_NAME}"

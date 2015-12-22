@@ -7,7 +7,7 @@
 
 !ifndef INC_CRT_2013
   ; Set to 0 to disable inclusion of Visual Studio 2013 SP1 CRT Redists
-  !define INC_CRT_2013  1
+  !define INC_CRT_2013  0
 !endif
 
 !ifndef INC_CRT_2015
@@ -191,9 +191,8 @@ LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, plugins, 
 LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the start menu (all users)."
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
 
-LangString DESC_CRT2008    ${LANG_ENGLISH} "Required by the PCSX2 binaries packaged in this installer."
-LangString DESC_CRT2010    ${LANG_ENGLISH} "Required by the PCSX2 binaries packaged in this installer."
 LangString DESC_CRT2013    ${LANG_ENGLISH} "Required by the PCSX2 binaries packaged in this installer."
+LangString DESC_CRT2015    ${LANG_ENGLISH} "Required by the PCSX2 binaries packaged in this installer."
 LangString DESC_DIRECTX    ${LANG_ENGLISH} "Only uncheck this if you are quite certain your Direct3D runtimes are up to date."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN

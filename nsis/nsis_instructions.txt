@@ -6,22 +6,9 @@
  * Install NSIS Script: Advanced Uninstall Log (you can find it on NSIS wiki)
    ( Currently at http://nsis.sourceforge.net/Advanced_Uninstall_Log_NSIS_Header )
 
-/*******
- -- Not needed as we now build using VS2013 --:
-* Download the Visual C++ 2008 SP1 Redistributable and save it to this nsis/ folder under the name:
-     vcredist_2008_sp1_x86.exe ( http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe )
-*******/
-
-/*******
- -- Not needed as we now build using VS2013 --:
- * Download the Visual C++ 2010 SP1 Redistributable and save it to this nsis/ folder.
-   ( http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe )
-   Rename the download to "vcredist_2010_sp1_x86.exe".
-*******/
-
-  * Download the Visual C++ 2013 Redistributable and save it to this nsis/ folder.
-   ( http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe )
-   Rename the download to "vcredist_2013_x86.exe".
+  * Download the Visual C++ 2015 Redistributable and save it to this nsis/ folder.
+   ( https://www.microsoft.com/en-us/download/details.aspx?id=49984 )
+   Rename the download to "vcredist_2015_Update_1_x86".
    
  * Download the DirectX Web Installer (dxwebsetup.exe) from Microsoft's website and save it to
    this nsis/ folder.  (currently required, might be made optional later).
@@ -39,7 +26,7 @@
     You may selectively unload plugins you do not wish to package prior to running the NSIS
     script.
 
- * Compile scripts (pcsx2_web_install.nsi and pcsx2_full_install.nsi)!
+ * Compile script (pcsx2_full_install.nsi)!
    Output executables will be generated to the output/ folder.
  
  
