@@ -346,6 +346,14 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 		Startup.IsoFile		= parser.GetParam( 0 );
 		Startup.SysAutoRun	= true;
 	}
+	else
+	{
+		wxString elf_file;
+		if (parser.Found(L"elf", &elf_file) && !elf_file.IsEmpty()) {
+			Startup.SysAutoRunElf = true;
+			Startup.ElfFile = elf_file;
+		}
+	}
 	
 	if( parser.Found(L"usecd") )
 	{
@@ -484,6 +492,15 @@ bool Pcsx2App::OnInit()
 			g_Conf->EmuOptions.UseBOOT2Injection = !Startup.NoFastBoot;
 			SysUpdateIsoSrcFile( Startup.IsoFile );
 			sApp.SysExecute( Startup.CdvdSource );
+		}
+		else if ( Startup.SysAutoRunElf )
+		{
+			g_Conf->EmuOptions.UseBOOT2Injection = true;
+			// Enable iop/ee logging
+			SysConsole.eeConsole.Enabled = true;
+			SysConsole.iopConsole.Enabled = true;
+
+			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
 		}
 	}
 	// ----------------------------------------------------------------------------

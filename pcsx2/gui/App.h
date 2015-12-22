@@ -290,11 +290,14 @@ public:
 	// is set to ISO.
 	wxString		IsoFile;
 
+	wxString		ElfFile;
+
 	// Specifies the CDVD source type to use when AutoRunning
 	CDVD_SourceType CdvdSource;
 
 	// Indicates if PCSX2 should autorun the configured CDVD source and/or ISO file.
 	bool			SysAutoRun;
+	bool			SysAutoRunElf;
 
 	StartupOptions()
 	{
@@ -303,7 +306,10 @@ public:
 		PortableMode			= false;
 		NoFastBoot				= false;
 		SysAutoRun				= false;
+		SysAutoRunElf			= false;
 		CdvdSource				= CDVDsrc_NoDisc;
+		IsoFile					= "";
+		ElfFile					= "";
 	}
 };
 
