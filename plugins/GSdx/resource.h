@@ -68,25 +68,26 @@
 #define IDC_AFCOMBO_TEXT                2063
 #define IDC_AFCOMBO                     2064
 #define IDC_OPENCL_DEVICE               2065
-#define IDC_ACCURATE_BLEND_UNIT         2066
-#define IDC_ACCURATE_DATE               2067
-#define IDC_ROUND_SPRITE                2068
-#define IDC_ALIGN_SPRITE                2069
-#define IDC_CRC_LEVEL                   2070
-#define IDC_CRC_LEVEL_TEXT              2071
-#define IDC_TC_DEPTH                    2072
-#define IDC_COLORSPACE                  2073
-#define IDC_SHADER_FX_EDIT              2074
-#define IDC_SHADER_FX_CONF_EDIT         2075
-#define IDC_SHADER_FX_BUTTON            2076
-#define IDC_SHADER_FX_CONF_BUTTON       2077
-#define IDC_SHADER_FX_TEXT              2078
-#define IDC_SHADER_FX_CONF_TEXT         2079
-#define IDC_CUSTOM_TEXT                 2080
-#define IDC_UPSCALE_MULTIPLIER_TEXT     2081
-#define IDC_MIPMAP                      2082
-#define IDC_PRELOAD_GS                  2083
-#define IDC_TVSHADER                    2084
+#define IDC_OPENCL_TEXT                 2066
+#define IDC_ACCURATE_BLEND_UNIT         2067
+#define IDC_ACCURATE_DATE               2068
+#define IDC_ROUND_SPRITE                2069
+#define IDC_ALIGN_SPRITE                2070
+#define IDC_CRC_LEVEL                   2071
+#define IDC_CRC_LEVEL_TEXT              2072
+#define IDC_TC_DEPTH                    2073
+#define IDC_COLORSPACE                  2074
+#define IDC_SHADER_FX_EDIT              2075
+#define IDC_SHADER_FX_CONF_EDIT         2076
+#define IDC_SHADER_FX_BUTTON            2077
+#define IDC_SHADER_FX_CONF_BUTTON       2078
+#define IDC_SHADER_FX_TEXT              2079
+#define IDC_SHADER_FX_CONF_TEXT         2080
+#define IDC_CUSTOM_TEXT                 2081
+#define IDC_UPSCALE_MULTIPLIER_TEXT     2082
+#define IDC_MIPMAP                      2083
+#define IDC_PRELOAD_GS                  2084
+#define IDC_TVSHADER                    2085
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -105,7 +106,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2085
+#define _APS_NEXT_CONTROL_VALUE         2086
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
