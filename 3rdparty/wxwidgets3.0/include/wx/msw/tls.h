@@ -34,7 +34,14 @@ public:
     // get the key value, there is no error return
     void *Get() const
     {
-        return ::TlsGetValue(m_slot);
+        // Exceptionally, TlsGetValue() calls SetLastError() even on success
+        // which means it overwrites the previous value. This is undesirable
+        // here, so explicitly preserve the last error here.
+        const DWORD dwLastError = ::GetLastError();
+        void* const value = ::TlsGetValue(m_slot);
+        if (dwLastError)
+            ::SetLastError(dwLastError);
+        return value;
     }
 
     // change the key value, return true if ok
