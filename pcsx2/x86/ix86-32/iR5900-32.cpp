@@ -1297,8 +1297,11 @@ void recompileNextInstruction(int delayslot)
 	s_pCode = (int *)PSM( pc );
 	pxAssert(s_pCode);
 
+	// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
+	if( IsDevBuild )
+		xNOP();
 	if( IsDebugBuild )
-		xMOV(eax, pc);		// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
+		xMOV(eax, pc);
 
 	cpuRegs.code = *(int *)s_pCode;
 
