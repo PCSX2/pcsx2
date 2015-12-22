@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2012-05-20 13:27+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: quarterlife <kimmo.martimo@gmail.com>\n"
@@ -409,7 +409,7 @@ msgstr ""
 msgid "Loading PS2 system plugins..."
 msgstr "Ladataan PS2-järjestelmäliitännäisiä..."
 
-#: pcsx2/gui/AppInit.cpp:49
+#: pcsx2/gui/AppInit.cpp:50
 #, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
@@ -418,100 +418,100 @@ msgstr ""
 "SSE-laajennoksia ei ole saatavilla.  PCSX2 vaatii suorittimelta SSE-"
 "käskykantatuen."
 
-#: pcsx2/gui/AppInit.cpp:138
+#: pcsx2/gui/AppInit.cpp:139
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 Uudelleenkääntäjän virhe(et)"
 
-#: pcsx2/gui/AppInit.cpp:217
+#: pcsx2/gui/AppInit.cpp:218
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Kaikki valinnat ovat vain nykyiselle istunnolla ja niitä ei tallenneta.\n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
+#: pcsx2/gui/AppInit.cpp:228 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "IsoFile"
 
-#: pcsx2/gui/AppInit.cpp:228
+#: pcsx2/gui/AppInit.cpp:229
 msgid "displays this list of command line options"
 msgstr "näyttää tämän listan komentorivivalitsimia"
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:230
 msgid "forces the program log/console to be visible"
 msgstr "pakottaa ohjelman lokin/konsolin näkyväksi"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:231
 msgid "use fullscreen GS mode"
 msgstr "käytä koko näytön GS-tilaa"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use windowed GS mode"
 msgstr "käytä ikkunoitua GS-tilaa"
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:234
 msgid "disables display of the gui while running games"
 msgstr "poistaa graafisen käyttöliittymän käytöstä pelejä pelattaessa"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:235
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:237
 msgid "executes an ELF image"
 msgstr "suorittaa ELF-tiedoston"
 
-#: pcsx2/gui/AppInit.cpp:237
+#: pcsx2/gui/AppInit.cpp:238
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
 "käynnistää tyhjällä dvd-levykelkalla; käytä päästäksesi PS2:n "
 "järjestelmävalikkoon"
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:239
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr "käynnistää CDVD-liitännäiseltä (ohittaa IsoFile-valitsimen)"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:241
 msgid "disables all speedhacks"
 msgstr "poistaa kaikki nopeusviritelmät käytöstä"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:242
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr ""
 "käytä määriteltyä, pilkulla tai putkella eroteltua, listaa pelikorjauksista."
 
-#: pcsx2/gui/AppInit.cpp:242
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables fast booting"
 msgstr "poistaa nopean käynnistyken käytöstä"
 
-#: pcsx2/gui/AppInit.cpp:244
+#: pcsx2/gui/AppInit.cpp:245
 msgid "changes the configuration file path"
 msgstr "vaihtaa asetustiedoston polun"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:246
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "määrittää käytettävän PCSX2-asetustiedoston"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:247
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "pakottaa %s:n käynnistämään ensimmäisen käyttökerran asetusvelhon"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:248
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr ""
 "ottaa käytöön siirrettävän tilan (vaatii järjestelmänvalvoja/root-oikeudet)"
 
-#: pcsx2/gui/AppInit.cpp:251
+#: pcsx2/gui/AppInit.cpp:252
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "määrittää tiedoston jota käytetään %s-liitännäisenä"
 
-#: pcsx2/gui/AppInit.cpp:299
+#: pcsx2/gui/AppInit.cpp:300
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Liittännäisen ohitusvirhe - %s"
 
-#: pcsx2/gui/AppInit.cpp:302
+#: pcsx2/gui/AppInit.cpp:303
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -522,92 +522,92 @@ msgstr ""
 "ole kelvollinen %s-liitännäinen:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Paina OK käyttääksesi oletuksena määriteltyä liitännäistä, tai Peruuta "
 "sulkeaksesi %s:den."
 
-#: pcsx2/gui/AppInit.cpp:497
+#: pcsx2/gui/AppInit.cpp:515
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2-virhe: Laitteisto puutteellinen"
 
-#: pcsx2/gui/AppInit.cpp:497 pcsx2/gui/AppInit.cpp:509
+#: pcsx2/gui/AppInit.cpp:515 pcsx2/gui/AppInit.cpp:527
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Paina OK sulkeaksesi %s:den."
 
-#: pcsx2/gui/AppInit.cpp:510
+#: pcsx2/gui/AppInit.cpp:528
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kriittinen virhe"
 
-#: pcsx2/gui/AppInit.cpp:680
+#: pcsx2/gui/AppInit.cpp:698
 msgid "OK"
 msgstr "OK"
 
-#: pcsx2/gui/AppInit.cpp:681
+#: pcsx2/gui/AppInit.cpp:699
 msgid "&OK"
 msgstr "&OK"
 
-#: pcsx2/gui/AppInit.cpp:682
+#: pcsx2/gui/AppInit.cpp:700
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: pcsx2/gui/AppInit.cpp:683
+#: pcsx2/gui/AppInit.cpp:701
 msgid "&Cancel"
 msgstr "&Peruuta"
 
-#: pcsx2/gui/AppInit.cpp:684
+#: pcsx2/gui/AppInit.cpp:702
 msgid "&Apply"
 msgstr "&Käytä"
 
-#: pcsx2/gui/AppInit.cpp:685
+#: pcsx2/gui/AppInit.cpp:703
 msgid "&Next >"
 msgstr "&Seuraava >"
 
-#: pcsx2/gui/AppInit.cpp:686
+#: pcsx2/gui/AppInit.cpp:704
 msgid "< &Back"
 msgstr "< &Edellinen"
 
-#: pcsx2/gui/AppInit.cpp:687
+#: pcsx2/gui/AppInit.cpp:705
 msgid "&Back"
 msgstr "&Edellinen"
 
-#: pcsx2/gui/AppInit.cpp:688
+#: pcsx2/gui/AppInit.cpp:706
 msgid "&Finish"
 msgstr "&Valmis"
 
-#: pcsx2/gui/AppInit.cpp:689
+#: pcsx2/gui/AppInit.cpp:707
 msgid "&Yes"
 msgstr "&Kyllä"
 
-#: pcsx2/gui/AppInit.cpp:690
+#: pcsx2/gui/AppInit.cpp:708
 msgid "&No"
 msgstr "&Ei"
 
-#: pcsx2/gui/AppInit.cpp:691
+#: pcsx2/gui/AppInit.cpp:709
 msgid "Browse"
 msgstr "Selaa"
 
-#: pcsx2/gui/AppInit.cpp:692
+#: pcsx2/gui/AppInit.cpp:710
 msgid "&Save"
 msgstr "&Tallenna"
 
-#: pcsx2/gui/AppInit.cpp:693
+#: pcsx2/gui/AppInit.cpp:711
 msgid "Save &As..."
 msgstr "Tallenna &nimellä..."
 
-#: pcsx2/gui/AppInit.cpp:694
+#: pcsx2/gui/AppInit.cpp:712
 msgid "&Help"
 msgstr "&Ohje"
 
-#: pcsx2/gui/AppInit.cpp:695
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&Home"
 msgstr "&Koti"
 
-#: pcsx2/gui/AppInit.cpp:697
+#: pcsx2/gui/AppInit.cpp:715
 msgid "Show about dialog"
 msgstr "Näytä tietoja-ikkuna"
 
@@ -862,49 +862,45 @@ msgstr ""
 msgid "About %s"
 msgstr "Tietoja %s"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Betatesting"
-msgstr "Betatestaus"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
 msgstr "Edelliset versiot"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Webmasters"
 msgstr "Sivujen ylläpitäjät"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Plugin Specialists"
 msgstr "Liitännäisasiantuntijat"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
 msgstr "Erityiskiitokset"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
 msgstr "Kehittäjät"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Contributors"
 msgstr "Osallistujat"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
 #, fuzzy
 msgid "PlayStation 2 Emulator"
 msgstr "Playstation 2 -emulaattori"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 viralliset sivut ja foorumit"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "PCSX2 virallinen Svn-varasto GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
 msgstr "Olen nähnyt tarpeeksi"
 
@@ -1908,7 +1904,7 @@ msgid "Extra"
 msgstr "Ylimääräinen"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
-#: pcsx2/gui/Panels/CpuPanel.cpp:183
+#: pcsx2/gui/Panels/CpuPanel.cpp:184
 msgid "Interpreter"
 msgstr "Tulkki"
 
@@ -1948,12 +1944,12 @@ msgstr "Ota käyttöön EE-välimuisti (hitaampi)"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "Vain tulkille, pelkästään vianmääritystä varten"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:225
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "Restore Defaults"
 msgstr "Palauta oletusasetukset"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:184
+#: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
@@ -1961,22 +1957,22 @@ msgstr ""
 "Vektoriyksikkötulkki. Hidas eikä kovin yhteensopiva. Käytä vain "
 "vianmääritykseen."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:186
+#: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
 msgstr "microVU-uudelleenkääntäjä"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:187
+#: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
 "Uusi vektoriyksikön uudelleenkääntäjä paljon paremmalla yhteensopivuudella. "
 "Suositeltu."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:190
+#: pcsx2/gui/Panels/CpuPanel.cpp:191
 msgid "superVU Recompiler [legacy]"
 msgstr "superVU-uudelleenkääntäjä [vanha]"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:191
+#: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr ""
@@ -2541,18 +2537,18 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Suoritetaan tehtäviä..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:105
 msgid "Enable speedhacks"
 msgstr "Ota käyttöön nopeusviritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
 "Turvallinen ja helppo tapa varmistaa, että kaikki nopeusviritelmät ovat "
 "poistettu täysin käytöstä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
@@ -2560,34 +2556,34 @@ msgstr ""
 "Palauttaa kaikki nopeusviritelmäasetukset oletuksiinsa, siis ottaa ne kaikki "
 "POIS käytöstä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE syklinopeus [Ei suositella]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU-syklivarastaminen [Ei suositella]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"
 msgstr "microVU viritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid "mVU Flag Hack"
 msgstr "mVU lippuviritelmä"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Hyvä nopeuslisä ja suuri yhteensopivuus; saattaa aiheuttaa "
 "grafiikkavirheitä... [Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:166
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Monisäikeistetty microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2595,15 +2591,15 @@ msgstr ""
 "Hyvä nopeuslisä ja suuri yhteensopivuus; saattaa aiheuttaa jumiutumista... "
 "[Suositeltu jos 3 tai enemmän suoritinydintä]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Other Hacks"
 msgstr "Muut viritelmät"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
 msgid "Enable INTC Spin Detection"
 msgstr "Ota käyttöön INTC-pyörimisen havaitseminen"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2611,22 +2607,22 @@ msgstr ""
 "Massiivinen nopeuslisä joillekkin peleille, melkein olemattomat "
 "sivuvaikutukset yhteensopivuudelle. [Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:183
 msgid "Enable Wait Loop Detection"
 msgstr "Ota käyttöön odotussilmukan havaitseminen"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Maltillinen nopeuslisä joillekin peleille, ei tunnettuja sivuvaikutuksia. "
 "[Suositeltu]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:186
 msgid "Enable fast CDVD"
 msgstr "Ota käyttöön nopea CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Nopea levyn luku, vähentää latausaikoja. [Ei suositella]"
 
@@ -2831,6 +2827,9 @@ msgid ""
 msgstr ""
 "%s laajennoksia ei löytynyt.  microVU vaatii suorittimen, jossa on MMX-, "
 "SSE- ja SSE2-laajennokset."
+
+#~ msgid "Betatesting"
+#~ msgstr "Betatestaus"
 
 #~ msgid "BIOS Selector"
 #~ msgstr "BIOS-valitsin"

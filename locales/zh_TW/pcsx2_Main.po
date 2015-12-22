@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.1 1201\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2015-10-05 11:58+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -358,101 +358,101 @@ msgstr "覆寫現存的設定檔失敗；沒有權限。"
 msgid "Loading PS2 system plugins..."
 msgstr "載入 PS2 系統插件..."
 
-#: pcsx2/gui/AppInit.cpp:49
+#: pcsx2/gui/AppInit.cpp:50
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE2 instruction set."
 msgstr "SSE2 不可用。PCSX2 要求 CPU 支援 SSE2。"
 
-#: pcsx2/gui/AppInit.cpp:138
+#: pcsx2/gui/AppInit.cpp:139
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 反編譯錯誤"
 
-#: pcsx2/gui/AppInit.cpp:217
+#: pcsx2/gui/AppInit.cpp:218
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "全部選項僅用於當前的作業並且不會被儲存。\n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
+#: pcsx2/gui/AppInit.cpp:228 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "ISO 檔案"
 
-#: pcsx2/gui/AppInit.cpp:228
+#: pcsx2/gui/AppInit.cpp:229
 msgid "displays this list of command line options"
 msgstr "顯示此命令列選項的列表"
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:230
 msgid "forces the program log/console to be visible"
 msgstr "強制程式日誌 / 主控台可見"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:231
 msgid "use fullscreen GS mode"
 msgstr "使用全螢幕模式"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use windowed GS mode"
 msgstr "使用視窗模式"
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:234
 msgid "disables display of the gui while running games"
 msgstr "運行遊戲時，不顯示模擬器介面"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:235
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:237
 msgid "executes an ELF image"
 msgstr "執行 ELF 映像"
 
-#: pcsx2/gui/AppInit.cpp:237
+#: pcsx2/gui/AppInit.cpp:238
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr "從空的 dvd 托盤啟動；用於進入 PS2 系統選單"
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:239
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr "從光碟插件啟動（覆寫【ISO 檔案】參數）"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:241
 msgid "disables all speedhacks"
 msgstr "停用全部 speedhacks"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:242
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr "使用指定的遊戲修正列表以逗號或豎線分隔。"
 
-#: pcsx2/gui/AppInit.cpp:242
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables fast booting"
 msgstr "停用快速啟動"
 
-#: pcsx2/gui/AppInit.cpp:244
+#: pcsx2/gui/AppInit.cpp:245
 msgid "changes the configuration file path"
 msgstr "變更設定檔的路徑"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:246
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "指定欲使用的 PCSX2 設定檔"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:247
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "強制 %s 啟動首次執行精靈"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:248
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "可攜式軟體模式（需要管理員權限）"
 
-#: pcsx2/gui/AppInit.cpp:251
+#: pcsx2/gui/AppInit.cpp:252
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "指定欲使用的檔案作為 %s 插件"
 
-#: pcsx2/gui/AppInit.cpp:299
+#: pcsx2/gui/AppInit.cpp:300
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "插件覆寫錯誤 - %s"
 
-#: pcsx2/gui/AppInit.cpp:302
+#: pcsx2/gui/AppInit.cpp:303
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -462,90 +462,90 @@ msgstr ""
 "%s 插件覆寫錯誤！下列檔案不存在或不是有效的 %s 插件：\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr "按【確定】使用預設所選擇的插件，或按【取消】關閉 %s。"
 
-#: pcsx2/gui/AppInit.cpp:497
+#: pcsx2/gui/AppInit.cpp:515
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 錯誤：硬體缺陷"
 
-#: pcsx2/gui/AppInit.cpp:497 pcsx2/gui/AppInit.cpp:509
+#: pcsx2/gui/AppInit.cpp:515 pcsx2/gui/AppInit.cpp:527
 #, c-format
 msgid "Press OK to close %s."
 msgstr "按【確定】關閉 %s。"
 
-#: pcsx2/gui/AppInit.cpp:510
+#: pcsx2/gui/AppInit.cpp:528
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s 嚴重錯誤"
 
-#: pcsx2/gui/AppInit.cpp:680
+#: pcsx2/gui/AppInit.cpp:698
 msgid "OK"
 msgstr "確定"
 
-#: pcsx2/gui/AppInit.cpp:681
+#: pcsx2/gui/AppInit.cpp:699
 msgid "&OK"
 msgstr "確定"
 
-#: pcsx2/gui/AppInit.cpp:682
+#: pcsx2/gui/AppInit.cpp:700
 msgid "Cancel"
 msgstr "取消"
 
-#: pcsx2/gui/AppInit.cpp:683
+#: pcsx2/gui/AppInit.cpp:701
 msgid "&Cancel"
 msgstr "取消"
 
-#: pcsx2/gui/AppInit.cpp:684
+#: pcsx2/gui/AppInit.cpp:702
 msgid "&Apply"
 msgstr "套用"
 
-#: pcsx2/gui/AppInit.cpp:685
+#: pcsx2/gui/AppInit.cpp:703
 msgid "&Next >"
 msgstr "下一步 >"
 
-#: pcsx2/gui/AppInit.cpp:686
+#: pcsx2/gui/AppInit.cpp:704
 msgid "< &Back"
 msgstr "< 上一步"
 
-#: pcsx2/gui/AppInit.cpp:687
+#: pcsx2/gui/AppInit.cpp:705
 msgid "&Back"
 msgstr "上一步"
 
-#: pcsx2/gui/AppInit.cpp:688
+#: pcsx2/gui/AppInit.cpp:706
 msgid "&Finish"
 msgstr "完成"
 
-#: pcsx2/gui/AppInit.cpp:689
+#: pcsx2/gui/AppInit.cpp:707
 msgid "&Yes"
 msgstr "是"
 
-#: pcsx2/gui/AppInit.cpp:690
+#: pcsx2/gui/AppInit.cpp:708
 msgid "&No"
 msgstr "否"
 
-#: pcsx2/gui/AppInit.cpp:691
+#: pcsx2/gui/AppInit.cpp:709
 msgid "Browse"
 msgstr "瀏覽"
 
-#: pcsx2/gui/AppInit.cpp:692
+#: pcsx2/gui/AppInit.cpp:710
 msgid "&Save"
 msgstr "儲存檔案"
 
-#: pcsx2/gui/AppInit.cpp:693
+#: pcsx2/gui/AppInit.cpp:711
 msgid "Save &As..."
 msgstr "另存新檔..."
 
-#: pcsx2/gui/AppInit.cpp:694
+#: pcsx2/gui/AppInit.cpp:712
 msgid "&Help"
 msgstr "說明"
 
-#: pcsx2/gui/AppInit.cpp:695
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&Home"
 msgstr "家"
 
-#: pcsx2/gui/AppInit.cpp:697
+#: pcsx2/gui/AppInit.cpp:715
 msgid "Show about dialog"
 msgstr "顯示關於視窗"
 
@@ -789,48 +789,44 @@ msgstr "視窗"
 msgid "About %s"
 msgstr "關於 %s"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Betatesting"
-msgstr "測試人員"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
 msgstr "早期版本的開發人員"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Webmasters"
 msgstr "網站管理員"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Plugin Specialists"
 msgstr "插件作者"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
 msgstr "特別感謝"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
 msgstr "開發人員"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Contributors"
 msgstr "有貢獻的人"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
 #, fuzzy
 msgid "PlayStation 2 Emulator"
 msgstr "Playstation 2 模擬器"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 官方網站和官方討論區"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "PCSX2 官方 GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
 msgstr "確定"
 
@@ -1807,7 +1803,7 @@ msgid "Extra"
 msgstr "額外"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
-#: pcsx2/gui/Panels/CpuPanel.cpp:183
+#: pcsx2/gui/Panels/CpuPanel.cpp:184
 msgid "Interpreter"
 msgstr "直譯器"
 
@@ -1843,31 +1839,31 @@ msgstr "啟用快取 - 僅用於直譯器！（速度更慢）"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "用於診斷"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:225
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "Restore Defaults"
 msgstr "還原成預設值"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:184
+#: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
 msgstr "向量單元直譯器。速度慢而且相容性不是非常好。僅用於診斷。"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:186
+#: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
 msgstr "microVU 反編譯"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:187
+#: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr "新式的向量單元反編譯大幅改善相容性。推薦。"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:190
+#: pcsx2/gui/Panels/CpuPanel.cpp:191
 msgid "superVU Recompiler [legacy]"
 msgstr "superVU 反編譯【舊式】"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:191
+#: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "對於診斷 microVU 的程式錯誤或夾持模式的問題是有用的。"
@@ -2428,38 +2424,38 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "正在完成任務..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:105
 msgid "Enable speedhacks"
 msgstr "啟用速度駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "安全且舒適的狀態就是確保完全停用所有的速度駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
 msgstr "所有的速度駭客選項重設為預設值，結果是關掉全部速度駭客選項。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cyclerate【不推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU Cycle Stealing【不推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"
 msgstr "microVU 駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
@@ -2467,11 +2463,11 @@ msgstr ""
 "圖像變得糟糕...\n"
 "【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:166
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU（多執行緒 microVU1）"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2480,15 +2476,15 @@ msgstr ""
 "遊戲停止回應...\n"
 "【推薦 3 核或更多核的 CPU 使用】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Other Hacks"
 msgstr "其他駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
 msgid "Enable INTC Spin Detection"
 msgstr "Enable INTC Spin Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2496,22 +2492,22 @@ msgstr ""
 "對於一些遊戲有巨大的速度提升，\n"
 "幾乎沒有相容性副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:183
 msgid "Enable Wait Loop Detection"
 msgstr "Enable Wait Loop Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "對於一些遊戲有適度的速度提升，\n"
 "沒有已知的副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:186
 msgid "Enable fast CDVD"
 msgstr "Enable fast CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "快速讀取光碟，減少載入時間【不推薦】"
 
@@ -2697,6 +2693,9 @@ msgstr "%s 指令集未找到。R5900-32 反編譯裝置要求 CPU 支援 SSE2�
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr "%s 指令集未找到。microVU 要求 CPU 支援 SSE2。"
+
+#~ msgid "Betatesting"
+#~ msgstr "測試人員"
 
 #~ msgid "BIOS Selector"
 #~ msgstr "選擇 BIOS"

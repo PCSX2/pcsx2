@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2012-05-23 10:01+0800\n"
 "Last-Translator: \n"
 "Language-Team: kohaku2421 <kohaku2421@gmail.com>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "PCSX2 gagal utk menempah memori utk PS2 virtual machine. Tutup aplikasi yg "
 "banyak menggunakan memori kemudian cuba lagi."
 
-#: pcsx2/gui/AppInit.cpp:146
+#: pcsx2/gui/AppInit.cpp:147
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -68,7 +68,7 @@ msgstr ""
 "Amaran: Sesetengah PS2 recompiler yg tlh di konfigurasi gagal utk dimulakan "
 "dan tlh dimatikan."
 
-#: pcsx2/gui/AppInit.cpp:204
+#: pcsx2/gui/AppInit.cpp:205
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -326,7 +326,7 @@ msgstr ""
 "\n"
 "(nota: tidak termasuk seting utk plugin)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:522
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -338,7 +338,7 @@ msgstr ""
 "dan menghidupkannya semula pada bila-bila masa dgn Konfig:Kad Memori drpd "
 "menu utama."
 
-#: pcsx2/gui/MemoryCardFolder.h:512
+#: pcsx2/gui/MemoryCardFolder.h:527
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
@@ -355,7 +355,7 @@ msgstr ""
 msgid "Notice: Most games are fine with the default options. "
 msgstr "Notis: Kebanyakan game berfungsi dgn baik pada opsyen asal."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:178
+#: pcsx2/gui/Panels/CpuPanel.cpp:179
 msgid "Notice: Most games are fine with the default options."
 msgstr "Notis: Kebanyakan game berfungsi dgn baik pada opsyen asal."
 
@@ -605,49 +605,49 @@ msgstr ""
 "gagal utk membuat pilihan yg sah kerana kehilangan plugin atau pemasangan %s "
 "yg tidak lengkap, maka tekan Batal utk menutup panel Kofigurasi."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
+#, fuzzy
 msgid ""
-"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
-"requirements, may noticeably increase in-game FPS.\n"
-"This setting can cause games to FAIL TO BOOT."
+"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
+"cause stuttering audio on many FMVs."
 msgstr ""
+"Mengurangkan cyclerate EE sebanyak 50%. Lebih banyak pertambahan kelajuan, "
+"tetapi *akan* menyebabkan stuttering audio dlm banyak FMV."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
+#, fuzzy
 msgid ""
-"-1 - Increases the EE's cyclerate by about 33%. Increases hardware "
-"requirements, may increase in-game FPS."
+"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
+"with high compatibility."
 msgstr ""
+"Mengurangkan cyclerate EE sebanyak 33%. Sedikit pertambahan kelajuan utk "
+"kebanyakan game dgn kestabilan tinggi."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
 #, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr "Cyclerate asal. Ini sgt menyamai kelajuan EmotionEngine PS2 sebenar."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
 msgid ""
-"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
-"with high compatibility."
+"1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+"requirements, may increase in-game FPS."
 msgstr ""
-"Mengurangkan cyclerate EE sebanyak 33%. Sedikit pertambahan kelajuan utk "
-"kebanyakan game dgn kestabilan tinggi."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:43
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
-"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
-"cause stuttering audio on many FMVs."
+"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+"requirements, may noticeably increase in-game FPS.\n"
+"This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"Mengurangkan cyclerate EE sebanyak 50%. Lebih banyak pertambahan kelajuan, "
-"tetapi *akan* menyebabkan stuttering audio dlm banyak FMV."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
 msgstr "Mematikan VU Cycle Stealing. Seting paling stabil!"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:62
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:70
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
@@ -655,7 +655,7 @@ msgstr ""
 "Sedikit VU Cycle Stealing. Merendahkan kestabilan, tetapi sedikit "
 "pertambahan kelajuan bagi kebanyakan game."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:66
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:75
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
@@ -663,7 +663,7 @@ msgstr ""
 "VU Cycle Stealing sederhana. Merendahkan lagi kestabilan, tetapi sangat "
 "meningkatkan kelajuan dlm sesetengah game."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:71
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
@@ -671,7 +671,7 @@ msgstr ""
 "VU Cycle Stealing maksimum. Kegunaannya terhad, kerana ia akan menyebabkan "
 "flickering atau slowdown dlm kebayakan game."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:106
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -681,13 +681,13 @@ msgstr ""
 "glitch, audio pelik, dan bacaan FPS palsu. Apabila menghadapi masalah "
 "emulation, matikan panel ini dahulu."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
 #, fuzzy
 msgid ""
-"Setting higher values on this slider effectively reduces the clock speed of "
+"Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
 "games that fail to utilize the full potential of the real PS2 hardware. "
-"Conversely, lower values effectively increase the clock speed which may "
+"Conversely, higher values effectively increase the clock speed which may "
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
@@ -695,7 +695,7 @@ msgstr ""
 "EmotionEngine R5900 dgn efektif, dan akan memberi banyak peningkatan "
 "kelajuan pada game yg gagal menggunakan potensi penuh perkakasan sebenar PS2."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
 "This slider controls the amount of cycles the VU unit steals from the "
 "EmotionEngine.  Higher values increase the number of cycles stolen from the "
@@ -705,7 +705,7 @@ msgstr ""
 "lebih tinggi menambah cycle curian drpd EE bg setiap microprogram VU yg "
 "dijalankan game."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -714,7 +714,7 @@ msgstr ""
 "Megemaskini Status Flag pada blok yg akan membacanya sahaja, drpd sepanjang "
 "masa. Seting ini selamat dan SuperVU melakukan perkara yg sama pada asalnya."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -727,7 +727,7 @@ msgstr ""
 "hang. Dalam kes game yg dihadkan GSnya, ia akan menyebabkan slowdown "
 "(terutamanya dual core CPU)."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -738,7 +738,7 @@ msgstr ""
 "menggunakan teknik vsync ini akan mendapat sedikit atau tiada pertambahan "
 "kelajuan."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -753,7 +753,7 @@ msgstr ""
 "loop tersebut, kita mempercepatkan masa untuk acara seterusnya atau "
 "penghujung masa pemproses, mana-mana yg datang dahulu."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"

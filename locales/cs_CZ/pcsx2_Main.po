@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2012-09-09 20:41+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
@@ -389,7 +389,7 @@ msgstr "Nelze přepsat existující soubor nastavení; oprávnění bylo zamítn
 msgid "Loading PS2 system plugins..."
 msgstr "Nahrávám systémové zásuvné moduly PS2..."
 
-#: pcsx2/gui/AppInit.cpp:49
+#: pcsx2/gui/AppInit.cpp:50
 #, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
@@ -398,97 +398,97 @@ msgstr ""
 "Rozšíření SSE nejsou dostupná. PCSX2 vyžaduje procesor, který podporuje "
 "instrukční sadu SSE."
 
-#: pcsx2/gui/AppInit.cpp:138
+#: pcsx2/gui/AppInit.cpp:139
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "Chyba/y Rekompilátoru PCSX2"
 
-#: pcsx2/gui/AppInit.cpp:217
+#: pcsx2/gui/AppInit.cpp:218
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "Všechny volby jsou pouze pro současnou relaci a nebudou uloženy.\n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
+#: pcsx2/gui/AppInit.cpp:228 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "Soubor ISO"
 
-#: pcsx2/gui/AppInit.cpp:228
+#: pcsx2/gui/AppInit.cpp:229
 msgid "displays this list of command line options"
 msgstr "zobrazí tento seznam voleb příkazového řádku"
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:230
 msgid "forces the program log/console to be visible"
 msgstr "donutí, aby záznam programu/konzola byly viditelné"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:231
 msgid "use fullscreen GS mode"
 msgstr "použít GS režim na celou obrazovku"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use windowed GS mode"
 msgstr "použít režim GS v okně"
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:234
 msgid "disables display of the gui while running games"
 msgstr "zakáže zobrazení rozhraní, když hry běží"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:235
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:237
 msgid "executes an ELF image"
 msgstr "spustí obraz ELF"
 
-#: pcsx2/gui/AppInit.cpp:237
+#: pcsx2/gui/AppInit.cpp:238
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
 "zavede prázdnou mechaniku dvd; použijte pro vstup do systémového menu PS2"
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:239
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr "zavádí ze zásuvného modulu CDVD (potlačí parametr IsoFile)"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:241
 msgid "disables all speedhacks"
 msgstr "zakáže všechny hacky rychlosti"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:242
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr "použít seznam oprav her určených čárkami nebo svislými čárami."
 
-#: pcsx2/gui/AppInit.cpp:242
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables fast booting"
 msgstr "zakáže rychlé zavádění"
 
-#: pcsx2/gui/AppInit.cpp:244
+#: pcsx2/gui/AppInit.cpp:245
 msgid "changes the configuration file path"
 msgstr "změní cestu k souboru s nastavením"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:246
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "určuje, který soubor s nastavením PCSX2 použít"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:247
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "donutí %s spustit Průvodce Prvním Spuštěním"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:248
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr ""
 "povolí operace přenosného režimu (vyžaduje administrátorský/kořenový přístup)"
 
-#: pcsx2/gui/AppInit.cpp:251
+#: pcsx2/gui/AppInit.cpp:252
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "určete soubor, který použít jako zásuvný modul %s"
 
-#: pcsx2/gui/AppInit.cpp:299
+#: pcsx2/gui/AppInit.cpp:300
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Chyba Potlačení Zásuvného Modulu - %s"
 
-#: pcsx2/gui/AppInit.cpp:302
+#: pcsx2/gui/AppInit.cpp:303
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -499,92 +499,92 @@ msgstr ""
 "platný modul %s:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Stiskněte OK pro použití výchozího nastaveného zásuvného modulu, nebo Zrušit "
 "pro zavření %s."
 
-#: pcsx2/gui/AppInit.cpp:497
+#: pcsx2/gui/AppInit.cpp:515
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "Chyba PCSX2: Hardwarová Vada"
 
-#: pcsx2/gui/AppInit.cpp:497 pcsx2/gui/AppInit.cpp:509
+#: pcsx2/gui/AppInit.cpp:515 pcsx2/gui/AppInit.cpp:527
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Stiskněte OK pro uzavření %s."
 
-#: pcsx2/gui/AppInit.cpp:510
+#: pcsx2/gui/AppInit.cpp:528
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritická Chyba"
 
-#: pcsx2/gui/AppInit.cpp:680
+#: pcsx2/gui/AppInit.cpp:698
 msgid "OK"
 msgstr "OK"
 
-#: pcsx2/gui/AppInit.cpp:681
+#: pcsx2/gui/AppInit.cpp:699
 msgid "&OK"
 msgstr "&OK"
 
-#: pcsx2/gui/AppInit.cpp:682
+#: pcsx2/gui/AppInit.cpp:700
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: pcsx2/gui/AppInit.cpp:683
+#: pcsx2/gui/AppInit.cpp:701
 msgid "&Cancel"
 msgstr "&Zrušit"
 
-#: pcsx2/gui/AppInit.cpp:684
+#: pcsx2/gui/AppInit.cpp:702
 msgid "&Apply"
 msgstr "&Použít"
 
-#: pcsx2/gui/AppInit.cpp:685
+#: pcsx2/gui/AppInit.cpp:703
 msgid "&Next >"
 msgstr "&Další >"
 
-#: pcsx2/gui/AppInit.cpp:686
+#: pcsx2/gui/AppInit.cpp:704
 msgid "< &Back"
 msgstr "< &Zpět"
 
-#: pcsx2/gui/AppInit.cpp:687
+#: pcsx2/gui/AppInit.cpp:705
 msgid "&Back"
 msgstr "&Zpět"
 
-#: pcsx2/gui/AppInit.cpp:688
+#: pcsx2/gui/AppInit.cpp:706
 msgid "&Finish"
 msgstr "&Dokončit"
 
-#: pcsx2/gui/AppInit.cpp:689
+#: pcsx2/gui/AppInit.cpp:707
 msgid "&Yes"
 msgstr "&Ano"
 
-#: pcsx2/gui/AppInit.cpp:690
+#: pcsx2/gui/AppInit.cpp:708
 msgid "&No"
 msgstr "&Ne"
 
-#: pcsx2/gui/AppInit.cpp:691
+#: pcsx2/gui/AppInit.cpp:709
 msgid "Browse"
 msgstr "Procházet"
 
-#: pcsx2/gui/AppInit.cpp:692
+#: pcsx2/gui/AppInit.cpp:710
 msgid "&Save"
 msgstr "&Uložit"
 
-#: pcsx2/gui/AppInit.cpp:693
+#: pcsx2/gui/AppInit.cpp:711
 msgid "Save &As..."
 msgstr "Uložit &Jako..."
 
-#: pcsx2/gui/AppInit.cpp:694
+#: pcsx2/gui/AppInit.cpp:712
 msgid "&Help"
 msgstr "&Nápověda"
 
-#: pcsx2/gui/AppInit.cpp:695
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&Home"
 msgstr "&Domů"
 
-#: pcsx2/gui/AppInit.cpp:697
+#: pcsx2/gui/AppInit.cpp:715
 msgid "Show about dialog"
 msgstr "Zobrazí dialogové okno O Programu "
 
@@ -841,49 +841,45 @@ msgstr ""
 msgid "About %s"
 msgstr "O %s"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Betatesting"
-msgstr "Beta testeři"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
 msgstr "Předchozí verze"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Webmasters"
 msgstr "Správci Int. Stránek"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Plugin Specialists"
 msgstr "Odborníci Zásuvných Modulů"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
 msgstr "Zvláštní poděkování"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
 msgstr "Vývojáři"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Contributors"
 msgstr "Přispěvatelé"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
 #, fuzzy
 msgid "PlayStation 2 Emulator"
 msgstr "Emulátor Playstation 2"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "Officiální stránka a Fóra PCSX2"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "Oficiální úložiště Svn PCSX2 na GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
 msgstr "Už jsem viděl dost"
 
@@ -1882,7 +1878,7 @@ msgid "Extra"
 msgstr "Extra"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
-#: pcsx2/gui/Panels/CpuPanel.cpp:183
+#: pcsx2/gui/Panels/CpuPanel.cpp:184
 msgid "Interpreter"
 msgstr "Převaděč"
 
@@ -1920,12 +1916,12 @@ msgstr "Povolit Vyr. Paměť EE (Pomalejší)"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "Pouze převaděč; pro diagnostické účely"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:225
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "Restore Defaults"
 msgstr "Obnovit Výchozí"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:184
+#: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
@@ -1933,22 +1929,22 @@ msgstr ""
 "Převaděč Vektorové Jednotky. Pomalý a ne moc kompatibilní. Používaný pouze "
 "pro diagnostiku."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:186
+#: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
 msgstr "Rekompilátor mikroVJ"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:187
+#: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
 "Nový rekompilátor Vektorové Jednotky s mnohem lepší kompatibilitou. "
 "Doporučeno."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:190
+#: pcsx2/gui/Panels/CpuPanel.cpp:191
 msgid "superVU Recompiler [legacy]"
 msgstr "Rekompilátor superVJ [zastaralé]"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:191
+#: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr ""
@@ -2514,18 +2510,18 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Dokončuji úkoly..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:105
 msgid "Enable speedhacks"
 msgstr "Povolit hacky rychlosti"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
 "Bezpečný a jednoduchý způsob, jak se ujistit, že všechny hacky rychlosti "
 "jsou úplně zakázané."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
@@ -2533,34 +2529,34 @@ msgstr ""
 "Resetuje všechny volby hacků rychlosti na jejich výchozí hodnoty, což "
 "následně všechny VYPNE."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "Množství Cyklů EE [Nedoporučeno]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "Krádež Cyklů VJ [Nedoporučeno]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"
 msgstr "Hacky mikroVJ"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid "mVU Flag Hack"
 msgstr "Hack Příznaku mVJ"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Dobré Zrychlení a Vysoká Kompatibilita; může způsobit grafické chyby... "
 "[Doporučeno]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:166
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "VVVJ (Vícevláknová mikroVJ1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2568,15 +2564,15 @@ msgstr ""
 "Dobré Zrychlení a Vysoká Kompatibilita; může způsobit zaseknutí... "
 "[Doporučeno při 3+ více jádrech]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Other Hacks"
 msgstr "Jiné Hacky"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
 msgid "Enable INTC Spin Detection"
 msgstr "Povolit Zjištění Otáčení KPŘE"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2584,22 +2580,22 @@ msgstr ""
 "Velké zrychlení v některých hrách bez jakýchkoliv vedlejších účinků na "
 "kompatibilitu. [Doporučeno]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:183
 msgid "Enable Wait Loop Detection"
 msgstr "Povolit Zjištění Čekací Smyčky"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Mírné zrychlení v některých hrách bez žádných známých vedlejších účinků. "
 "[Doporučeno]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:186
 msgid "Enable fast CDVD"
 msgstr "Zapnout rychlé CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Rychlý přístup k disku, menší doba nahrávání. [Nedoporučeno]"
 
@@ -2799,6 +2795,9 @@ msgid ""
 msgstr ""
 "Rozšíření %s nenalezeno. mikroVJ vyžaduje, aby hostitelský procesor měl "
 "rozšíření MMX, SSE, a SSE2."
+
+#~ msgid "Betatesting"
+#~ msgstr "Beta testeři"
 
 #~ msgid "BIOS Selector"
 #~ msgstr "Výběr BIOSu"

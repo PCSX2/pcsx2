@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pcsx2\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2014-01-31 11:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
@@ -376,7 +376,7 @@ msgstr ""
 msgid "Loading PS2 system plugins..."
 msgstr "Lade PS2 Systemplugins..."
 
-#: pcsx2/gui/AppInit.cpp:49
+#: pcsx2/gui/AppInit.cpp:50
 #, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
@@ -385,100 +385,100 @@ msgstr ""
 "SSE Erweiterungen nicht verfügbar. PCSX2 benötigt einen Prozessor, der über "
 "SSE verfügt."
 
-#: pcsx2/gui/AppInit.cpp:138
+#: pcsx2/gui/AppInit.cpp:139
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 Recompiler Fehler"
 
-#: pcsx2/gui/AppInit.cpp:217
+#: pcsx2/gui/AppInit.cpp:218
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Alle Optionen sind nur für die aktuelle Sitzung und werden nicht "
 "gespeichert. \n"
 
-#: pcsx2/gui/AppInit.cpp:227 pcsx2/gui/AppMain.cpp:358
+#: pcsx2/gui/AppInit.cpp:228 pcsx2/gui/AppMain.cpp:358
 msgid "IsoFile"
 msgstr "IsoDatei"
 
-#: pcsx2/gui/AppInit.cpp:228
+#: pcsx2/gui/AppInit.cpp:229
 msgid "displays this list of command line options"
 msgstr "Zeigt eine Liste der verfügbaren Kommandozeilenoptionen."
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:230
 msgid "forces the program log/console to be visible"
 msgstr "Macht Konsole ständig sichtbar"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:231
 msgid "use fullscreen GS mode"
 msgstr "Benutze Vollbild GS Modus"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use windowed GS mode"
 msgstr "Benutze Fenster GS Modus"
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:234
 msgid "disables display of the gui while running games"
 msgstr "Deaktiviere GUI Anzeige während Spiele laufen"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:235
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:237
 msgid "executes an ELF image"
 msgstr "Führt eine ELF Datei aus"
 
-#: pcsx2/gui/AppInit.cpp:237
+#: pcsx2/gui/AppInit.cpp:238
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
 "Bootet mit einem lehren DVD Laufwerk. Benutze dies, um in das PS2 Systemmenü "
 "zu gelangen."
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:239
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr "Bootet vom CDVD Plugin (override des IsoFile Parameters)"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:241
 msgid "disables all speedhacks"
 msgstr "Deaktiviert alle Speedhacks"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:242
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr ""
 "Benutze die spezifizierte Komma oder Pipe-getrennte Liste von Spielefixes."
 
-#: pcsx2/gui/AppInit.cpp:242
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables fast booting"
 msgstr "Deaktiviert schnelles Booten"
 
-#: pcsx2/gui/AppInit.cpp:244
+#: pcsx2/gui/AppInit.cpp:245
 msgid "changes the configuration file path"
 msgstr "Ändert den Pfad zu den Konfigurationsdateien"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:246
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "Spezifiziert die zu benutzende PCSX2 Konfigurationsdatei"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:247
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "Lässt %s den Konfigurationshelfer starten"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:248
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "Aktiviert den portablen Installationsmodus (benötigt Adminrechte)."
 
-#: pcsx2/gui/AppInit.cpp:251
+#: pcsx2/gui/AppInit.cpp:252
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "Wähle die Datei, welche als %s Plugin genutzt werden soll"
 
-#: pcsx2/gui/AppInit.cpp:299
+#: pcsx2/gui/AppInit.cpp:300
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Plugin Override Fehler - %s"
 
-#: pcsx2/gui/AppInit.cpp:302
+#: pcsx2/gui/AppInit.cpp:303
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -489,92 +489,92 @@ msgstr ""
 "ungültig: %s Plugin:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Drücke OK um das Standardplugin zu benutzen, oder Abbrechen um %s zu "
 "schließen."
 
-#: pcsx2/gui/AppInit.cpp:497
+#: pcsx2/gui/AppInit.cpp:515
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 Fehler: Hardwareproblem"
 
-#: pcsx2/gui/AppInit.cpp:497 pcsx2/gui/AppInit.cpp:509
+#: pcsx2/gui/AppInit.cpp:515 pcsx2/gui/AppInit.cpp:527
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Wähle OK um %s zu schließen."
 
-#: pcsx2/gui/AppInit.cpp:510
+#: pcsx2/gui/AppInit.cpp:528
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritischer Fehler"
 
-#: pcsx2/gui/AppInit.cpp:680
+#: pcsx2/gui/AppInit.cpp:698
 msgid "OK"
 msgstr "OK"
 
-#: pcsx2/gui/AppInit.cpp:681
+#: pcsx2/gui/AppInit.cpp:699
 msgid "&OK"
 msgstr "&OK"
 
-#: pcsx2/gui/AppInit.cpp:682
+#: pcsx2/gui/AppInit.cpp:700
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: pcsx2/gui/AppInit.cpp:683
+#: pcsx2/gui/AppInit.cpp:701
 msgid "&Cancel"
 msgstr "&Abbrechen"
 
-#: pcsx2/gui/AppInit.cpp:684
+#: pcsx2/gui/AppInit.cpp:702
 msgid "&Apply"
 msgstr "&Anwenden"
 
-#: pcsx2/gui/AppInit.cpp:685
+#: pcsx2/gui/AppInit.cpp:703
 msgid "&Next >"
 msgstr "&Weiter >"
 
-#: pcsx2/gui/AppInit.cpp:686
+#: pcsx2/gui/AppInit.cpp:704
 msgid "< &Back"
 msgstr "< &Zurück"
 
-#: pcsx2/gui/AppInit.cpp:687
+#: pcsx2/gui/AppInit.cpp:705
 msgid "&Back"
 msgstr "&Zurück"
 
-#: pcsx2/gui/AppInit.cpp:688
+#: pcsx2/gui/AppInit.cpp:706
 msgid "&Finish"
 msgstr "&Fertigstellen"
 
-#: pcsx2/gui/AppInit.cpp:689
+#: pcsx2/gui/AppInit.cpp:707
 msgid "&Yes"
 msgstr "&Ja"
 
-#: pcsx2/gui/AppInit.cpp:690
+#: pcsx2/gui/AppInit.cpp:708
 msgid "&No"
 msgstr "&Nein"
 
-#: pcsx2/gui/AppInit.cpp:691
+#: pcsx2/gui/AppInit.cpp:709
 msgid "Browse"
 msgstr "Suche"
 
-#: pcsx2/gui/AppInit.cpp:692
+#: pcsx2/gui/AppInit.cpp:710
 msgid "&Save"
 msgstr "&Speichern"
 
-#: pcsx2/gui/AppInit.cpp:693
+#: pcsx2/gui/AppInit.cpp:711
 msgid "Save &As..."
 msgstr "Speichern &als..."
 
-#: pcsx2/gui/AppInit.cpp:694
+#: pcsx2/gui/AppInit.cpp:712
 msgid "&Help"
 msgstr "&Hilfe"
 
-#: pcsx2/gui/AppInit.cpp:695
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&Home"
 msgstr "&Home"
 
-#: pcsx2/gui/AppInit.cpp:697
+#: pcsx2/gui/AppInit.cpp:715
 msgid "Show about dialog"
 msgstr "Zeige About Dialog"
 
@@ -826,49 +826,45 @@ msgstr ""
 msgid "About %s"
 msgstr "Über %s"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Betatesting"
-msgstr "Betatesting"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
 msgstr "Vorherige Versionen"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Webmasters"
 msgstr "Webmasters"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Plugin Specialists"
 msgstr "Plugin Spezialisten"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:65
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
 msgstr "Vielen Dank an"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
 msgstr "Entwickler"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Contributors"
 msgstr "Mithelfer"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:88
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
 #, fuzzy
 msgid "PlayStation 2 Emulator"
 msgstr "Ein Playstation 2 Emulator"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:91
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 offizielle Webseite und Foren (Englisch)"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:95
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "Offizielles PCSX2 SVN Repository auf GitHub"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:100
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
 msgstr "Danke, habe genug gesehen"
 
@@ -1862,7 +1858,7 @@ msgid "Extra"
 msgstr "Extra"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
-#: pcsx2/gui/Panels/CpuPanel.cpp:183
+#: pcsx2/gui/Panels/CpuPanel.cpp:184
 msgid "Interpreter"
 msgstr "Interpreter"
 
@@ -1898,33 +1894,33 @@ msgstr "Aktiviere EE Cacheemulation - Nur für Interpreter"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "Ziemlich langsam, nur zu Diagnosezwecken verwenden."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:224
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:107
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:225
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "Restore Defaults"
 msgstr "Standardeinstellung"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:184
+#: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
 msgstr ""
 "Vector Unit Interpreter. Langsam, Fehlerhaft und generell nicht empfohlen."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:186
+#: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
 msgstr "microVU Recompiler [empfohlen]"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:187
+#: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
 "Neuer Vector Unit Recompiler mit verbesserter Kompatibilität. Empfohlen."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:190
+#: pcsx2/gui/Panels/CpuPanel.cpp:191
 msgid "superVU Recompiler [legacy]"
 msgstr "superVU Recompiler [veraltet]"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:191
+#: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "Nützlich, um Bugs oder Probleme im mVU Recompiler zu finden."
@@ -2480,62 +2476,62 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Beende Aufgaben..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:95
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:105
 msgid "Enable speedhacks"
 msgstr "Aktiviere Speedhacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
 "Eine einfache Möglichkeit sicherzugehen, dass alle Hacks deaktiviert sind."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:108
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
 msgstr "Stellt die Standardeinstellungen wieder her (alles deaktiviert)."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cyclerate [nicht empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU Cycle Stealing [nicht empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:153
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"
 msgstr "microVU Hacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:155
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr "Guter FPS Anstieg, gute Kompatibilität [empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:158
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:166
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Multi-Threaded microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:159
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr "Guter FPS Anstieg, gute Kompatibilität [empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Other Hacks"
 msgstr "Andere Hacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
 msgid "Enable INTC Spin Detection"
 msgstr "Aktiviere INTC Warteschleifenerkennung"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2543,20 +2539,20 @@ msgstr ""
 "Gute Geschwindigkeitsverbesserung, fast keine "
 "Kompatibilitätseinschränkungen. [empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:183
 msgid "Enable Wait Loop Detection"
 msgstr "Aktiviere erkennen von Warteschleifen"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr "Leichte Geschwindigkeitsverbesserung in einigen Spielen [empfohlen]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:186
 msgid "Enable fast CDVD"
 msgstr "Aktiviere schnelles CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Schnellerer Diskzugriff, kürzere Ladezeiten [nicht empfohlen]"
 
@@ -2753,6 +2749,9 @@ msgid ""
 msgstr ""
 "%s Erweiterungen nicht gefunden. MicroVU benötigt einen Prozessor mit MMX, "
 "SSE und SSE2 Erweiterungen."
+
+#~ msgid "Betatesting"
+#~ msgstr "Betatesting"
 
 #~ msgid "BIOS Selector"
 #~ msgstr "BIOS Wählen"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-03 09:11+0100\n"
+"POT-Creation-Date: 2015-12-22 16:57+0100\n"
 "PO-Revision-Date: 2012-03-08 11:33-0000\n"
 "Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
 "Language-Team: goldeng <odakawoi@yahoo.fr>\n"
@@ -64,7 +64,7 @@ msgstr ""
 "l'émulation d'une machine virtuelle PS2. Mettez fin aux processus en cours "
 "qui nécessitent beaucoup de mémoire (CTRL + ALT + Suppr) puis réessayez."
 
-#: pcsx2/gui/AppInit.cpp:146
+#: pcsx2/gui/AppInit.cpp:147
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -72,7 +72,7 @@ msgstr ""
 "Attention ! Certaines fonctions du recompiler PCSX2 n'ont pas pu être "
 "initialisées et ont, par conséquent, été désactivées :"
 
-#: pcsx2/gui/AppInit.cpp:204
+#: pcsx2/gui/AppInit.cpp:205
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -348,7 +348,7 @@ msgstr ""
 "Êtes-vous sûr de vouloir procéder à cette manipulation ?\n"
 "PS. Les paramètres des plugins individuels ne seront pas affectés."
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:507
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:522
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -360,7 +360,7 @@ msgstr ""
 "et relancer la carte mémoire à l'aide du menu principal (Configuration -> "
 "Cartes mémoire)."
 
-#: pcsx2/gui/MemoryCardFolder.h:512
+#: pcsx2/gui/MemoryCardFolder.h:527
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
@@ -379,7 +379,7 @@ msgstr ""
 "Rappel : La plupart des jeux fonctionneront correctement à l'aide du "
 "paramétrage par défaut."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:178
+#: pcsx2/gui/Panels/CpuPanel.cpp:179
 msgid "Notice: Most games are fine with the default options."
 msgstr ""
 "Rappel : La plupart des jeux fonctionneront correctement à l'aide du "
@@ -646,20 +646,25 @@ msgstr ""
 "installation incomplète de %s alors cliquer sur Annuler pour fermer le "
 "paneau de Configuration"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
+#, fuzzy
 msgid ""
-"-2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
-"requirements, may noticeably increase in-game FPS.\n"
-"This setting can cause games to FAIL TO BOOT."
+"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
+"cause stuttering audio on many FMVs."
 msgstr ""
+"3 - Diminue l'EE Cyclerate d'environ 50% : amélioration modérée des "
+"performances, mais le son de certaines cinématiques sera insupportable."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
+#, fuzzy
 msgid ""
-"-1 - Increases the EE's cyclerate by about 33%. Increases hardware "
-"requirements, may increase in-game FPS."
+"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
+"with high compatibility."
 msgstr ""
+"2 - Diminue l'EE Cyclerate d'envion 33% : amélioration sensible des "
+"performances et compatibilité élevée."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
 #, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
@@ -668,30 +673,25 @@ msgstr ""
 "1 - Cyclerate par défaut : la vitesse d'émulation est équivalente à celle "
 "d'une véritable console Playstation 2."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
 msgid ""
-"1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
-"with high compatibility."
+"1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+"requirements, may increase in-game FPS."
 msgstr ""
-"2 - Diminue l'EE Cyclerate d'envion 33% : amélioration sensible des "
-"performances et compatibilité élevée."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:43
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
-"2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
-"cause stuttering audio on many FMVs."
+"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+"requirements, may noticeably increase in-game FPS.\n"
+"This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"3 - Diminue l'EE Cyclerate d'environ 50% : amélioration modérée des "
-"performances, mais le son de certaines cinématiques sera insupportable."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
 msgstr ""
 "0 - Désactive le VU Cycle Stealing : compatibilité maximale, évidemment !"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:62
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:70
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
@@ -699,7 +699,7 @@ msgstr ""
 "1 - VU Cycle Stealing léger : faible compatibilité mais une amélioration "
 "sensible des performances pour certains jeux."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:66
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:75
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
@@ -707,7 +707,7 @@ msgstr ""
 "2 - VU Cycle Stealing modéré : très faible compatibilité, mais une "
 "amélioration significative des performances pour certains jeux."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:71
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
@@ -715,7 +715,7 @@ msgstr ""
 "3 - VU Cycle Stealing maximal : relativement inutile puisqu'il engendre des "
 "ralentissements et des bugs graphiques dans la plupart des jeux."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:106
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -726,13 +726,13 @@ msgstr ""
 "des FPS. Si vous rencontrez des soucis lors de l'émulation d'un jeu, cette "
 "option est la première à désactiver."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
 #, fuzzy
 msgid ""
-"Setting higher values on this slider effectively reduces the clock speed of "
+"Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
 "games that fail to utilize the full potential of the real PS2 hardware. "
-"Conversely, lower values effectively increase the clock speed which may "
+"Conversely, higher values effectively increase the clock speed which may "
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
@@ -741,7 +741,7 @@ msgstr ""
 "pour les jeux incapables d'utiliser tout le potentiel des composants de la "
 "Playstation 2."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:144
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
 "This slider controls the amount of cycles the VU unit steals from the "
 "EmotionEngine.  Higher values increase the number of cycles stolen from the "
@@ -751,7 +751,7 @@ msgstr ""
 "au système EmotionEngine. Une valeur élevée augmente le nombre emprunté à "
 "l'EE pour chaque microprogramme VU que le jeu utilise."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -761,7 +761,7 @@ msgstr ""
 "qu'ils ne soient lus en permanence. Cette option n'occasionne aucun problème "
 "en général, et le Super VU fait la même chose par défaut."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -776,7 +776,7 @@ msgstr ""
 "De plus, les processeurs dual-core souffriront de ralentissements "
 "conséquents."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -787,7 +787,7 @@ msgstr ""
 "2D. Les jeux qui n'utilisent pas cette méthode connaîtront une légère "
 "amélioration des performances."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -797,7 +797,7 @@ msgid ""
 "timeslice, whichever comes first."
 msgstr "Vise surtout l'EE idle loop à l'adresse 0x81FC0 du kernel."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
