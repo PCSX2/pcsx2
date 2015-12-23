@@ -23,6 +23,7 @@
 #elif defined(__APPLE__)
 #	include <aio.h>
 #endif
+#include <memory>
 
 class AsyncFileReader
 {
@@ -147,12 +148,12 @@ class BlockdumpFileReader : public AsyncFileReader
 	wxFileInputStream* m_file;
 
 	// total number of blocks in the ISO image (including all parts)
-	u32			m_blocks;
-	s32			m_blockofs;
+	u32 m_blocks;
+	s32 m_blockofs;
 
 	// index table
-	ScopedArray<u32>	m_dtable;
-	int					m_dtablesize;
+	std::unique_ptr<u32[]> m_dtable;
+	int m_dtablesize;
 
 	int m_lresult;
 

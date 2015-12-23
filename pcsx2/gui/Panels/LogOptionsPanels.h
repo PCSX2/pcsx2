@@ -17,6 +17,7 @@
 
 #include "AppCommon.h"
 #include "ApplyState.h"
+#include <memory>
 
 namespace Panels
 {
@@ -79,7 +80,7 @@ namespace Panels
 
 		pxCheckBox*			m_masterEnabler;
 
-		ScopedArray<pxCheckBox*> m_checks;
+		std::unique_ptr<pxCheckBox*[]> m_checks;
 
 	public:
 		LogOptionsPanel( wxWindow* parent );

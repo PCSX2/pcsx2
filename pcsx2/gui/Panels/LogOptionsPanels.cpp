@@ -203,7 +203,7 @@ static bool traceLogEnabled( const wxString& ident )
 // --------------------------------------------------------------------------------------
 Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	: BaseApplicableConfigPanel( parent )
-	, m_checks( traceLogCount )
+	, m_checks( new pxCheckBox*[traceLogCount] )
 {
 	wxStaticBoxSizer&	s_misc		= *new wxStaticBoxSizer( wxHORIZONTAL, this, L"Misc" );
 

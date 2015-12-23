@@ -86,7 +86,7 @@ bool BlockdumpFileReader::Open(const wxString& fileName)
 	pxAssert( (datalen % (m_blocksize + 4)) == 0);
 
 	m_dtablesize	= datalen / (m_blocksize + 4);
-	m_dtable		= new u32[m_dtablesize];
+	m_dtable		= std::unique_ptr<u32[]>(new u32[m_dtablesize]);
 
 	m_file->SeekI(BlockDumpHeaderSize);
 
@@ -95,14 +95,14 @@ bool BlockdumpFileReader::Open(const wxString& fileName)
 	u32 has = 0;
 	int i = 0;
 
-	ScopedArray<u8> buffer(bs);
+	std::unique_ptr<u8[]> buffer(new u8[bs]);
 	do {
-		m_file->Read(buffer.GetPtr(), bs);
+		m_file->Read(buffer.get(), bs);
 		has = m_file->LastRead();
 
 		while (i < m_dtablesize && off < has)
 		{
-			m_dtable[i++] = *(u32*)(buffer.GetPtr() + off);
+			m_dtable[i++] = *reinterpret_cast<u32*>(buffer.get() + off);
 			off += 4;
 			off += m_blocksize;
 		}

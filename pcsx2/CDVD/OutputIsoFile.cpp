@@ -114,7 +114,7 @@ void OutputIsoFile::WriteSector(const u8* src, uint lsn)
 
 void OutputIsoFile::Close()
 {
-	m_dtable.Delete();
+	m_dtable.reset(nullptr);
 
 	_init();
 }

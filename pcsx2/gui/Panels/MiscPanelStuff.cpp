@@ -21,6 +21,7 @@
 
 #include "ps2/BiosTools.h"
 
+#include <memory>
 #include <wx/stdpaths.h>
 
 using namespace Dialogs;
@@ -107,13 +108,13 @@ Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool s
 	i18n_EnumeratePackages( m_langs );
 
 	int size = m_langs.size();
-	ScopedArray<wxString> compiled( size );
+	std::unique_ptr<wxString[]> compiled( new wxString[size] );
 
 	for( int i=0; i<size; ++i )
 		compiled[i].Printf( L"%s", m_langs[i].englishName.c_str() );
 
 	m_picker = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-		size, compiled.GetPtr(), wxCB_READONLY);
+		size, compiled.get(), wxCB_READONLY);
 
 	*this	+= 5;
 	*this	+= m_picker | pxSizerFlags::StdSpace();
