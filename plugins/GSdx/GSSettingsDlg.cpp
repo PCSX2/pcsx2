@@ -358,7 +358,7 @@ void GSSettingsDlg::UpdateControls()
 		bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
 
 		bool hw = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW || renderer == GSRendererType::Null_HW;
-		//bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW  || renderer == GSRendererType::Null_SW
+		bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW  || renderer == GSRendererType::Null_SW;
 		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::Null_OpenCL || renderer == GSRendererType::OGL_OpenCL;
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
@@ -404,9 +404,12 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
 		
-		//EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw); // Let uers set software params regardless of renderer used 
-		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
-		//EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
+		// Software mode settings
+		EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP), sw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_TEXT), sw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
 
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
