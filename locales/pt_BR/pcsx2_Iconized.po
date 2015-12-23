@@ -1,15 +1,15 @@
 # Brazilian Portuguese Translation for pcsx2 (Iconized)
 # Copyright (C) 2015 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013, 2014, 2015.
+# Rafael Fontenelle <rffontenelle@gmail.com>, 2011, 2012, 2013, 2014, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: pcsx2 iconized master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-22 16:57+0100\n"
-"PO-Revision-Date: 2015-07-18 17:02-0300\n"
-"Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
+"POT-Creation-Date: 2015-12-22 10:08-0200\n"
+"PO-Revision-Date: 2015-12-22 10:49-0200\n"
+"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 1.8.6\n"
 
 #: common/src/Utilities/Exceptions.cpp:275
 msgid ""
@@ -120,6 +120,9 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"Por favor, note que o arquivo resultante pode não exatamente conter todos os "
+"saves, dependendo de quantos estiverem armazenados no cartão de memória "
+"original."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -127,22 +130,33 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"AVISO: Converter um cartão de memória pode levar um tempo! Por favor, não "
+"feche o emulador durante o processo de conversão, mesmo se o emulador não "
+"estiver mais respondendo aos comandos do teclado, mouse, etc."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Converte este cartão de memória para um arquivo padrão de cartão de memória "
+"(.ps2) de 8 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
 msgstr ""
+"Converte este cartão de memória para um arquivo padrão de cartão de memória "
+"(.ps2) de 16 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
 msgstr ""
+"Converte este cartão de memória para um arquivo padrão de cartão de memória "
+"(.ps2) de 32 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr ""
+"Converte este cartão de memória para um arquivo padrão de cartão de memória "
+"(.ps2) de 64 MB."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -232,6 +246,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Tipo pasta apenas) Indexa novamente o conteúdo do cartão de memória a cada "
+"alteração do software em execução. Isso evita que o cartão de memória de "
+"ficar sem espaço para saves."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -352,6 +369,8 @@ msgstr ""
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
+"(Pasta Cart.Mem.) Cartão de memória está cheio, não foi possível adicionar: "
+"%s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
@@ -610,30 +629,27 @@ msgstr ""
 "Configurações."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - Reduz a frequência de ciclo do EE em mais ou menos 55%. Aceleração "
-"moderada, mas *vai* causar falhas de áudio em muitos FMVs."
+"-2 - Reduz a frequência de ciclo do EE em mais ou menos 33%. Aceleração "
+"moderada, mas *vai* causar desordem no áudio em vários FMVs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"2 - Reduz a frequência de ciclo do EE em mais ou menos 33%. Aceleração suave "
-"para a maioria dos jogos com alta compatibilidade."
+"-1 - Reduz a frequência de ciclo do EE em mais ou menos 33%. Aceleração "
+"suave para a maioria dos jogos com alta compatibilidade."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
-"1 - Frequência de ciclo normal. Isso quase corresponde com a real velocidade "
+"0 - Frequência de ciclo padrão. Isso quase corresponde com a real velocidade "
 "de uma EmotionEngine real de PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
@@ -641,6 +657,8 @@ msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - Aumenta a frequência de ciclo do EE em mais ou menos 33%. Aumenta os "
+"requisitos de hardware, pode aumentar o FPS durante o jogo."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -648,6 +666,10 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - Aumenta a frequência de ciclo do EE em mais ou menos 50%. Aumenta "
+"consideravelmente os requisitos de hardware, pode aumentar visivelmente o "
+"FPS durante o jogo..\n"
+"Essa configuração causar nos jogos uma FALHA PARA INICIAR."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -688,7 +710,6 @@ msgstr ""
 "problemas de emulação, primeiro desabilite esse painel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -697,10 +718,13 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Definir valores mais altos nesse slider reduz efetivamente a velocidade de "
+"Definir valores menores nesse slider reduz efetivamente a velocidade do "
 "clock da CPU núcleo R5900 da EmotionEngine e normalmente traz grande "
 "aceleração para jogos que falham em utilizar todo potencial do hardware de "
-"PS real."
+"PS real. Por outro lado, valores maiores aumentam efetivamente a velocidade "
+"do clock, o que pode resultar em algum aumento no FPS do jogo, ao mesmo "
+"tempo que faz com que os jogos demandem mais e possivelmente causem falhas "
+"nos gráficos."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
