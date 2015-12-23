@@ -889,6 +889,7 @@ msgstr "Desenvolvedores"
 msgid "Contributors"
 msgstr "Contribuidores"
 
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
 msgid "PlayStation 2 Emulator"
 msgstr "Emulador de Playstation 2"
 

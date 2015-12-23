@@ -632,39 +632,38 @@ msgstr ""
 "per chiudere il pannello di configurazione."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - Riduce EE Cyclerate di circa il 50%.\n"
+"-2 - Riduce EE Cyclerate di circa il 50%.\n"
 "Aumento di velocità moderato, ma di sicuro causerà audio singhiozzante in "
 "molti FMV."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"2 - Riduce EE Cyclerate di circa il 33%.\n"
+"-1 - Riduce EE Cyclerate di circa il 33%.\n"
 "Aumento di velocità contenuto per la maggior parte dei giochi mantenendo "
 "buona compatibilità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
-"1 - Cyclerate predefinito.\n"
-"Eguaglia accuratamente la velocità dell'EmotionEngine di una vera PS2."
+"0 - Cyclerate predefinito.\n"
+"Eguaglia accuratamente la velocità dell'originale EmotionEngine di una PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
 msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - Aumenta EE cyclerate di circa il 33%.\n"
+"I requisiti hardware aumentano, può aumentare gli FPS all'interno del gioco."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -672,6 +671,10 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - Aumenta EE cyclerate di circa il 50%.\n"
+"I requisiti hardware aumentano fortemente, gli FPS all'interno del gioco "
+"aumentano in modo sensibile.\n"
+"Alcuni giochi potrebbero NON AVVIARSI con questa impostazione."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -718,7 +721,6 @@ msgstr ""
 "opzioni in questo pannello."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -727,10 +729,14 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Impostando i valori più elevati di questo slider di fatto si riduce la "
-"frequenza della CPU core R5900 dell'EmotionEngine portando a grossi aumenti "
-"di velocità in quei giochi che non riescono ad utilizzare il pieno "
-"potenziale dell'hardware della PS2."
+"Impostando questo slider su valori più bassi si riduce effettivamente la "
+"frequenza della CPU core R5900 dell'EmotionEngine, portando solitamente ad "
+"un miglioramento delle prestazioni nell'emulazione dei giochi che non "
+"riescono a sfruttare appieno l'hardware della vera PS2. All'opposto, "
+"impostando valori più elevati, si va ad incrementare la frequenza della CPU "
+"emulata permettendo un incremento potenziale degli FPS all'interno dei "
+"giochi, al costo di una di requisiti d'emulazione più esigenti e possibili "
+"glitch."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
@@ -869,3 +875,20 @@ msgstr ""
 "disponibile all'utilizzo. Questo non è un errore critico, dato che il "
 "ricompilatore superVU è obsoleto e in ogni caso dovresti utilizzare "
 "microVU. :)"
+
+#~ msgid ""
+#~ "Setting lower values on this slider effectively reduces the clock speed "
+#~ "of the EmotionEngine's R5900 CPU core, and typically brings big speedups "
+#~ "to games that fail to utilize the full potential of the real PS2 "
+#~ "hardware. Conversely, higher values effectively increase the clock speed "
+#~ "which may bring about an increase in in-game FPS while also making games "
+#~ "more demanding and possibly causing glitches."
+#~ msgstr ""
+#~ "Impostando questo slider su valori più bassi viene ridotta la frequenza "
+#~ "del core CPU R5900 dell'EmotionEngine. In questo modo si può riscontrare "
+#~ "un aumento della velocità di emulazione nei giochi che non usavano fino "
+#~ "in fondo l'hardware originale della PS2.\n"
+#~ "Viceversa, valori più elevati vanno ad incrementare la frequenza della "
+#~ "CPU emulata offrendo un possibile aumento degli FPS all'interno dei "
+#~ "giochi, al costo di possibili glitch e requisiti di emulazione più "
+#~ "esigenti."
