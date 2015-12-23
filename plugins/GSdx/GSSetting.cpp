@@ -110,7 +110,7 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Internal GS feature. Reduces edge aliasing of lines and triangles when the game requests it.";
 		case IDC_SWTHREADS:
 		case IDC_SWTHREADS_EDIT:
-			return "Increases number of threads used for rendering. Optimal setting depends on CPU.";
+			return "Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging)";
 		case IDC_SHADEBOOST:
 			return "Allows brightness, contrast and saturation to be manually adjusted.";
 		case IDC_SHADER_FX:
