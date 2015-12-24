@@ -197,6 +197,13 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 	float tempoAdjust=bufferFullness/dynamicTargetFullness;
 	float avgerage = addToAvg(tempoAdjust);
 	tempoAdjust = avgerage;
+
+	// Dampen the adjustment to avoid overshoots (this means the average will compensate to the other side).
+	// This is different than simply bigger averaging window since bigger window also has bigger "momentum",
+	// so it's slower to slow down when it gets close to the equilibrium state and can therefore resonate.
+	// The dampening (sqrt was chosen for no very good reason) manages to mostly prevent that.
+	tempoAdjust = sqrt(tempoAdjust);
+
 	tempoAdjust = GetClamped( tempoAdjust, 0.05f, 10.0f);
   
   if (tempoAdjust < 1)
