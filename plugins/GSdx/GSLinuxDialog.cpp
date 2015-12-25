@@ -286,7 +286,7 @@ void populate_gl_table(GtkWidget* gl_table)
 void populate_sw_table(GtkWidget* sw_table)
 {
 	GtkWidget* threads_label = left_label("Extra rendering threads:");
-	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads", 0);
+	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
 	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
