@@ -308,8 +308,6 @@ public:
 		SysAutoRun				= false;
 		SysAutoRunElf			= false;
 		CdvdSource				= CDVDsrc_NoDisc;
-		IsoFile					= "";
-		ElfFile					= "";
 	}
 };
 
