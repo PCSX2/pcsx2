@@ -129,21 +129,25 @@ GSdxApp::GSdxApp()
 	m_section = "Settings";
 
 #ifdef _WINDOWS
-	// GPU accelerated options come first
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	""));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW),		"Direct3D11",	""));
-#endif
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW),			"OpenGL",		""));
 
-	// Software renderer variants come second
-#ifdef _WINDOWS
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),		"Software Renderer",	"Direct3D9"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW),	"Software Renderer",	"Direct3D11"));
+
+#ifdef _DEBUG
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null), "Direct3D9", "Null"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null), "Direct3D11", "Null"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
 #endif
+#endif
+
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW),			"OpenGL",		""));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW),		"Software Renderer",	"OpenGL"));
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "Null", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "None", "Core Benchmark"));
+
 #ifdef ENABLE_OPENCL
 	// OpenCL stuff goes last
 	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
@@ -151,14 +155,6 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D11",	"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_OpenCL),	"Null",			"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
-#endif
-
-#ifdef _DEBUG
-	// Every other option gets relegated to debug builds
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null), "Direct3D9", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null), "Direct3D11", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "Null", "Null"));
 #endif
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
