@@ -16,6 +16,7 @@
 #pragma once
 
 #include "App.h"
+#include <array>
 
 BEGIN_DECLARE_EVENT_TYPES()
 	DECLARE_EVENT_TYPE(pxEvt_DockConsole, -1)
@@ -137,15 +138,11 @@ protected:
 		DeclareNoncopyableObject(ColorArray);
 
 	protected:
-		SafeArray<wxTextAttr>	m_table;
-		wxTextAttr				m_color_default;
+		std::array<wxTextAttr, ConsoleColors_Count> m_table;
 
 	public:
 		virtual ~ColorArray() throw();
 		ColorArray( int fontsize=8 );
-
-		void Create( int fontsize );
-		void Cleanup();
 
 		void SetFont( const wxFont& font );
 		void SetFont( int fontsize );

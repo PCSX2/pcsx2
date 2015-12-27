@@ -156,20 +156,15 @@ static bool OpenLogFile(wxFile& file, wxString& filename, wxWindow *parent)
 //   (actual font used is the system-selected fixed-width font)
 //
 ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
-	: m_table( ConsoleColors_Count )
 {
-	Create( fontsize );
+	SetFont( fontsize );
 }
 
 ConsoleLogFrame::ColorArray::~ColorArray() throw()
 {
-	try {
-		Cleanup();
-	}
-	DESTRUCTOR_CATCHALL
 }
 
-void ConsoleLogFrame::ColorArray::Create( int fontsize )
+void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
 {
 	const wxFont fixed( pxGetFixedFont( fontsize ) );
 	const wxFont fixedB( pxGetFixedFont( fontsize+1, wxBOLD ) );
@@ -178,30 +173,11 @@ void ConsoleLogFrame::ColorArray::Create( int fontsize )
 	//const wxFont fixedB( fontsize, wxMODERN, wxNORMAL, wxBOLD );
 
 	// Standard R, G, B format:
-	new (&m_table[Color_Default])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Black])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Red])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Green])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Blue])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Magenta])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Orange])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Gray])			wxTextAttr( wxNullColour, wxNullColour, fixed );
+	for (size_t i = 0; i < Color_StrongBlack; ++i)
+		m_table[i].SetFont(fixed);
 
-	new (&m_table[Color_Cyan])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Yellow])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_White])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-
-	new (&m_table[Color_StrongBlack])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongRed])		wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongGreen])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongBlue])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongMagenta])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongOrange])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongGray])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-
-	new (&m_table[Color_StrongCyan])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongYellow])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongWhite])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
+	for (size_t i = Color_StrongBlack; i < ConsoleColors_Count; ++i)
+		m_table[i].SetFont(fixedB);
 
 	SetColorScheme_Light();
 }
@@ -262,26 +238,11 @@ void ConsoleLogFrame::ColorArray::SetColorScheme_Light()
 	m_table[Color_StrongWhite]	.SetTextColour(wxColor( 160, 160, 160 ));
 }
 
-void ConsoleLogFrame::ColorArray::Cleanup()
-{
-	// The contents of m_table were created with placement new, and must be
-	// disposed of manually:
-
-	for( int i=0; i<ConsoleColors_Count; ++i )
-		m_table[i].~wxTextAttr();
-}
-
 // fixme - not implemented yet.
 void ConsoleLogFrame::ColorArray::SetFont( const wxFont& font )
 {
 	//for( int i=0; i<ConsoleColors_Count; ++i )
 	//	m_table[i].SetFont( font );
-}
-
-void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
-{
-	Cleanup();
-	Create( fontsize );
 }
 
 enum MenuIDs_t
