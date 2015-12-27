@@ -21,7 +21,7 @@ set -e
 ######################################################################
 # Script configuration
 ######################################################################
-VERSION=1.3.0
+VERSION=1.4.0
 COPYRIGHT="PCSX2 Dev Team"
 BUG_MAIL="https://github.com/PCSX2/pcsx2/issues"
 

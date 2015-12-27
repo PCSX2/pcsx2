@@ -31,7 +31,7 @@ EOF
 
 # Default value
 GIT_SHA1=0;
-BRANCH="master"
+BRANCH="1.4.x"
 while [ -n "$1" ]; do
 case $1 in
     -help|-h   ) help;shift 1;;
