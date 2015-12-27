@@ -39,9 +39,9 @@ void psxBGEZ()         // Branch if Rs >= 0
 
 void psxBGEZAL()   // Branch if Rs >= 0 and link
 {
+	_SetLink(31);
 	if (_i32(_rRs_) >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -62,9 +62,9 @@ void psxBLTZ()          // Branch if Rs <  0
 
 void psxBLTZAL()    // Branch if Rs <  0 and link
 {
+	_SetLink(31);
 	if (_i32(_rRs_) < 0)
 		{
-			_SetLink(31);
 			doBranch(_BranchTarget_);
 		}
 }
