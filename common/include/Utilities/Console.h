@@ -21,7 +21,9 @@ enum ConsoleColors
 {
 	Color_Current = -1,
 
-	Color_Black = 0,
+	Color_Default = 0,
+
+	Color_Black,
 	Color_Green,
 	Color_Red,
 	Color_Blue,
@@ -46,8 +48,6 @@ enum ConsoleColors
 	Color_StrongCyan,
 	Color_StrongYellow,
 	Color_StrongWhite,
-
-    Color_Default,
 
 	ConsoleColors_Count
 };
