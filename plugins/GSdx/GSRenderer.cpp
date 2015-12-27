@@ -242,6 +242,12 @@ bool GSRenderer::Merge(int field)
 
 		fs.x = max(fs.x, (int)(dst[i].z + 0.5f));
 		fs.y = max(fs.y, (int)(dst[i].w + 0.5f));
+		// Fixing Time Crisis 2, 3 split screen view. Without this only the 1p screen is visible.
++		if(src[i].right - src[i].left == 0.5) {
++			src[i].left = 0;
++			src[i].right = 1;
++			dst[i].top += dst[i].bottom*0.25;
++			dst[i].bottom -= dst[i].bottom*0.25;
 	}
 
 	ds = fs;
