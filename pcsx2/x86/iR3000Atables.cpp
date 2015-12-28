@@ -1163,13 +1163,12 @@ void rpsxBLTZAL()
 	_psxDeleteReg(31, 0);
 	_psxFlushAllUnused();
 
+	PSX_SET_CONST(31);
+	g_psxConstRegs[31] = psxpc + 4;
+
 	if( PSX_IS_CONST1(_Rs_) ) {
 		if( (int)g_psxConstRegs[_Rs_] >= 0 )
 			branchTo = psxpc+4;
-		else {
-			PSX_SET_CONST(_Rt_);
-			g_psxConstRegs[31] = psxpc+4;
-		}
 
 		psxRecompileNextInstruction(1);
 		psxSetBranchImm( branchTo );
@@ -1181,7 +1180,6 @@ void rpsxBLTZAL()
 
 	psxSaveBranchState();
 
-	MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
 	psxRecompileNextInstruction(1);
 
 	psxSetBranchImm(psxpc);
@@ -1205,11 +1203,12 @@ void rpsxBGEZAL()
 	_psxDeleteReg(31, 0);
 	_psxFlushAllUnused();
 
+	PSX_SET_CONST(31);
+	g_psxConstRegs[31] = psxpc + 4;
+
 	if( PSX_IS_CONST1(_Rs_) ) {
 		if( (int)g_psxConstRegs[_Rs_] < 0 )
 			branchTo = psxpc+4;
-		else
-			MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
 
 		psxRecompileNextInstruction(1);
 		psxSetBranchImm( branchTo );
@@ -1218,8 +1217,6 @@ void rpsxBGEZAL()
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
 	u32* pjmp = JGE32(0);
-
-	MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
 
 	psxSaveBranchState();
 	psxRecompileNextInstruction(1);
