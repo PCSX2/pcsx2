@@ -37,8 +37,10 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	m_preload_frame = userhacks && theApp.GetConfig("preload_frame_with_gs_data", 0);
 	m_can_convert_depth = s_IS_OPENGL && theApp.GetConfig("texture_cache_depth", 1);
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
-	
-	m_temp = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
+
+	// In theory 4MB is enough but 8MB is safer for overflow
+	// Test: onimusha 3 PAL 60Hz
+	m_temp = (uint8*)_aligned_malloc(2 * 1024 * 1024 * sizeof(uint32), 32);
 }
 
 GSTextureCache::~GSTextureCache()
