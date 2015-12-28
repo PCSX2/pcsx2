@@ -220,9 +220,15 @@ void CtrlRegisterList::render(wxDC& dc)
 
 		if (currentRows[category] == i)
 		{
-			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
+			dc.SetBrush(wxBrush(wxColor(0xFFFFCFC8)));
 			dc.SetPen(wxPen(wxColor(0xFFFFEFE8)));
 			dc.DrawRectangle(0,y,size.x,rowHeight);
+		} else if (i % 2)
+		{
+			wxColor color = wxColor(237,242,255,255);
+			dc.SetBrush(wxBrush(color));
+			dc.SetPen(wxPen(color));
+			dc.DrawRectangle(0, y, size.x, rowHeight);
 		}
 
 		const char* name = cpu->getRegisterName(category,i);
