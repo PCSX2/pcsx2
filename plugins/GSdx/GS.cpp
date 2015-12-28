@@ -190,7 +190,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 	if(threads == -1)
 	{
-		threads = theApp.GetConfig("extrathreads", 0);
+		threads = theApp.GetConfig("extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
 	}
 
 	GSWnd* wnd[2] = { NULL, NULL };

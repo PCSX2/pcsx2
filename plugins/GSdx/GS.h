@@ -1280,3 +1280,7 @@ enum {FREEZE_LOAD=0, FREEZE_SAVE=1, FREEZE_SIZE=2};
 struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
+
+// default gs config settings
+#define DEFAULT_EXTRA_RENDERING_THREADS 2
+
