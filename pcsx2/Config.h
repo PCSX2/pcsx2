@@ -414,13 +414,16 @@ struct Pcsx2Config
 
 		u8 FontWidth;
 		u8 FontHeight;
+		u32 WindowWidth;
+		u32 WindowHeight;
 
 		DebugOptions();
 		void LoadSave( IniInterface& conf );
 		
 		bool operator ==( const DebugOptions& right ) const
 		{
-			return OpEqu( bitset ) && OpEqu( FontWidth ) && OpEqu( FontHeight );
+			return OpEqu( bitset ) && OpEqu( FontWidth ) && OpEqu( FontHeight )
+				&& OpEqu( WindowWidth ) && OpEqu( WindowHeight );
 		}
 
 		bool operator !=( const DebugOptions& right ) const
