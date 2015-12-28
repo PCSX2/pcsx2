@@ -379,6 +379,8 @@ Pcsx2Config::DebugOptions::DebugOptions()
 	ShowDebuggerOnStart = false;
 	FontWidth = 8;
 	FontHeight = 12;
+	WindowWidth = 0;
+	WindowHeight = 0;
 }
 
 void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
@@ -388,6 +390,8 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 	IniBitBool( ShowDebuggerOnStart );
 	IniBitfield(FontWidth);
 	IniBitfield(FontHeight);
+	IniBitfield(WindowWidth);
+	IniBitfield(WindowHeight);
 }
 
 

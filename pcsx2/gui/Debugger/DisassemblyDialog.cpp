@@ -39,6 +39,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
+   EVT_SIZE(DisassemblyDialog::onSizeEvent)
    EVT_CLOSE( DisassemblyDialog::onClose )
 END_EVENT_TABLE()
 
@@ -217,6 +218,8 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
 	currentCpu(NULL)
 {
+	int width = g_Conf->EmuOptions.Debugger.WindowWidth;
+	int height = g_Conf->EmuOptions.Debugger.WindowHeight;
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
 	wxPanel *panel = new wxPanel(this, wxID_ANY, 
@@ -267,7 +270,21 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
+	if (width != 0 && height != 0)
+		SetSize(width,height);
+
 	setDebugMode(true,true);
+}
+
+void DisassemblyDialog::onSizeEvent(wxSizeEvent& event)
+{
+	if (event.GetEventType() == wxEVT_SIZE)
+	{
+		g_Conf->EmuOptions.Debugger.WindowWidth = event.GetSize().x;
+		g_Conf->EmuOptions.Debugger.WindowHeight = event.GetSize().y;
+	}
+
+	event.Skip();
 }
 
 #ifdef WIN32
