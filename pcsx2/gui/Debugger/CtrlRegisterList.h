@@ -15,50 +15,75 @@
 
 #pragma once
 #include <wx/wx.h>
-#include <wx/notebook.h>
-#include <wx/grid.h>
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 
-class CtrlRegisterList : public wxWindow
+class CtrlRegisterList: public wxWindow
 {
 public:
-    CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu);
+	CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu);
+	
+	void paintEvent(wxPaintEvent & evt);
+	void mouseEvent(wxMouseEvent& evt);
+	void keydownEvent(wxKeyEvent& evt);
+	void onPopupClick(wxCommandEvent& evt);
+	void redraw();
+	DECLARE_EVENT_TABLE()
 
-    // Event handlers
-    void paintEvent(wxPaintEvent & evt);
-    void onPopupClick(wxCommandEvent& evt);
-    void gridEvent(wxGridEvent& evt);
-    void categoryChangedEvent(wxBookCtrlEvent& evt);
-    void keydownEvent(wxKeyEvent& evt);
-    DECLARE_EVENT_TABLE()
+	virtual wxSize GetMinClientSize() const
+	{
+		int columnChars = 0;
+		int maxWidth = 0;
+		int maxRows = 0;
+
+		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+		{
+			int bits = std::min<u32>(maxBits,cpu->getRegisterSize(i));
+			int start = startPositions[i];
+			
+			int w = start+(bits/4) * charWidth;
+			if (bits > 32)
+				w += (bits/32)*2-2;
+
+			maxWidth = std::max<int>(maxWidth,w);
+			columnChars += strlen(cpu->getRegisterCategoryName(i))+1;
+			maxRows = std::max<int>(maxRows,cpu->getRegisterCount(i));
+		}
+
+		maxWidth = std::max<int>(columnChars*charWidth,maxWidth+4);
+
+		return wxSize(maxWidth,(maxRows+1)*rowHeight);
+	}
+
+	virtual wxSize DoGetBestClientSize() const
+	{
+		return GetMinClientSize();
+	}
 private:
-    enum RegisterChangeMode { LOWER64, UPPER64, CHANGE32 };
+	enum RegisterChangeMode { LOWER64, UPPER64, CHANGE32 };
 
-    void refreshChangedRegs();
+	void render(wxDC& dc);
+	void refreshChangedRegs();
+	void setCurrentRow(int row);
+	void changeValue(RegisterChangeMode mode);
 
-    void changeValue(RegisterChangeMode mode, int cat, int reg);
-    void updateHandler();
-    void updateValues(int cat);
-    void updateSize(int cat);
-    int getCurrentCategory() const;
-    void postEvent(wxEventType type, wxString text);
-    void postEvent(wxEventType type, int value);
+	void postEvent(wxEventType type, wxString text);
+	void postEvent(wxEventType type, int value);
 
-    struct ChangedReg
-    {
-        u128 oldValue;
-        bool changed[4];
-        ChangedReg() { memset(this, 0, sizeof(*this)); }
-    };
+	struct ChangedReg
+	{
+		u128 oldValue;
+		bool changed[4];
+	};
 
+	std::vector<ChangedReg*> changedCategories;
+	std::vector<int> startPositions;
+	std::vector<int> currentRows;
 
-    std::vector<std::vector<ChangedReg>> changedCategories;
-
-    DebugInterface* cpu;                        // Used to get register values and other info from the emu
-    u32 lastPc, lastCycles;
-    int maxBits;                                // maximum number of bits beings displayed
-    bool needsSizeUpdating, needsValueUpdating; // flags set in events to signal that values/sizes should be updated on the next display
-    wxNotebook* registerCategories;             // Occupies this entire window. Is the tabbed window for selecting register categories.
-    std::vector<wxGrid*> registerGrids;         // Grids displaying register values for each of the tabs.
+	DebugInterface* cpu;
+	int rowHeight,charWidth;
+	u32 lastPc;
+	int category;
+	int maxBits;
 };
