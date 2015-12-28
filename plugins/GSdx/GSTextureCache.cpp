@@ -345,7 +345,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				int max_page = (MAX_PAGES - page0);
 				int max_h = 32 * max_page / TEX0.TBW;
 				// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
-				max_h = std::min(max_h, TEX0.TBW * 64);
+				max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
 				dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
 				dst->Update();
