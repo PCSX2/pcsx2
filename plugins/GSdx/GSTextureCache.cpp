@@ -338,7 +338,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		if (s_IS_OPENGL) {
 			if (m_preload_frame) {
 				GL_INS("Preloading the RT DATA");
-				dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, h), TEX0.PSM));
+				// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
+				int page0 = TEX0.TBP0 >> 5;
+				int max_page = (MAX_PAGES - page0);
+				int max_h = 32 * max_page / TEX0.TBW;
+				// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
+				max_h = std::min(max_h, TEX0.TBW * 64);
+
+				dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
 				dst->Update();
 			} else {
 #ifdef ENABLE_OGL_DEBUG
