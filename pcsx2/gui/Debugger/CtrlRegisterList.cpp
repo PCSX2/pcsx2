@@ -19,6 +19,7 @@
 
 #include "DebugEvents.h"
 #include "AppConfig.h"
+#include "DisassemblyDialog.h"
 
 BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_PAINT(CtrlRegisterList::paintEvent)
@@ -43,8 +44,8 @@ enum DisassemblyMenuIdentifiers
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_NONE), cpu(_cpu)
 {
-	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight+2;
-	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
+	rowHeight = getDebugFontHeight()+2;
+	charWidth = getDebugFontWidth();
 	category  = 0;
 	maxBits   = 128;
 	lastPc    = 0xFFFFFFFF;
