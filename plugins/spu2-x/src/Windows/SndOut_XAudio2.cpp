@@ -232,8 +232,9 @@ private:
 		}
 
 	};
-
+#if _WIN32_WINNT < 0x602
 	HMODULE xAudio2DLL;
+#endif
 	CComPtr<IXAudio2> pXAudio2;
 	IXAudio2MasteringVoice* pMasteringVoice;
 	BaseStreamingVoice* voiceContext;
@@ -245,7 +246,7 @@ public:
 		HRESULT hr;
 
 		jASSUME( pXAudio2 == NULL );
-
+#if _WIN32_WINNT < 0x602
 		// On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
 		// Maintain an extra library reference so it can't do so. Does not
 		// affect XAudio 2.8+, but that's Win8+. See
@@ -255,6 +256,7 @@ public:
 #else
 		xAudio2DLL = LoadLibrary(L"XAudio2_7.dll");
 #endif
+#endif
 
 		//
 		// Initialize XAudio2
@@ -262,8 +264,10 @@ public:
 		CoInitializeEx( NULL, COINIT_MULTITHREADED );
 
 		UINT32 flags = 0;
+#if _WIN32_WINNT < 0x602
 		if( IsDebugBuild )
 			flags |= XAUDIO2_DEBUG_ENGINE;
+#endif
 
 		try
 		{
@@ -273,9 +277,10 @@ public:
 					"Ensure that you have the latest DirectX runtimes installed, or use \n"
 					"DirectX / WaveOut drivers instead.  Error Details:"
 				);
-
+#if _WIN32_WINNT < 0x602
 			XAUDIO2_DEVICE_DETAILS deviceDetails;
 			pXAudio2->GetDeviceDetails( 0, &deviceDetails );
+#endif
 
 			// Stereo Expansion was planned to grab the currently configured number of
 			// Speakers from Windows's audio config.
@@ -291,8 +296,10 @@ public:
 				default: speakers = 2;
 			}
 
+#if _WIN32_WINNT < 0x602
 			// Any windows driver should support stereo at the software level, I should think!
 			jASSUME( deviceDetails.OutputFormat.Format.nChannels > 1 );
+#endif
 
 			//
 			// Create a mastering voice
@@ -387,10 +394,12 @@ public:
 		pXAudio2.Release();
 		CoUninitialize();
 
+#if _WIN32_WINNT < 0x602
 		if (xAudio2DLL) {
 			FreeLibrary(xAudio2DLL);
 			xAudio2DLL = nullptr;
 		}
+#endif
 	}
 
 	virtual void Configure(uptr parent)
