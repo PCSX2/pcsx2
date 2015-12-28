@@ -42,7 +42,7 @@ namespace PboPool {
 	uint32 m_size;
 	bool   m_texture_storage;
 	GLsync m_fence[PBO_POOL_SIZE];
-	const uint32 m_pbo_size = 4*1024*1024;
+	const uint32 m_pbo_size = 8*1024*1024;
 
 	// Option for buffer storage
 	// XXX: actually does I really need coherent and barrier???
