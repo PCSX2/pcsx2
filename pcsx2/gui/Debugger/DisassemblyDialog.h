@@ -23,12 +23,23 @@
 #include "CtrlMemView.h"
 #include "DebugEvents.h"
 #include "DebuggerLists.h"
+#include "../MSWstuff.h"
 
 class DebuggerHelpDialog: public wxDialog
 {
 public:
 	DebuggerHelpDialog(wxWindow* parent);
 };
+
+inline int getDebugFontWidth()
+{
+	return (int) ceil(g_Conf->EmuOptions.Debugger.FontWidth*MSW_GetDPIScale());
+}
+
+inline int getDebugFontHeight()
+{
+	return (int)ceil(g_Conf->EmuOptions.Debugger.FontHeight*MSW_GetDPIScale());
+}
 
 class CpuTabPage: public wxPanel
 {

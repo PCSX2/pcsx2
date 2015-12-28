@@ -23,6 +23,7 @@
 #include "BreakpointWindow.h"
 #include "AppConfig.h"
 #include "System.h"
+#include "DisassemblyDialog.h"
 
 #include <wx/mstream.h>
 #include <wx/clipbrd.h>
@@ -147,8 +148,8 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x100000;
-	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight+2;
-	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
+	rowHeight = getDebugFontHeight()+2;
+	charWidth = getDebugFontWidth();
 	displaySymbols = true;
 	visibleRows = 1;
 
