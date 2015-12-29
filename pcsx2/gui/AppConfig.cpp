@@ -56,7 +56,8 @@ namespace PathDefs
 
 		const wxDirName& Settings()
 		{
-			static const wxDirName retval( L"inis" );
+			static const wxDirName retval(wxsFormat(L"inis_%d.%d.%d",
+			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo));
 			return retval;
 		}
 
