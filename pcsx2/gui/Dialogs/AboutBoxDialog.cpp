@@ -50,7 +50,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		L"Nachbrenner, shadow, Zerofrog, tmkk, Jake.Stine"
 		L"\n\n"
 		L"%s:\n"
-		L"CKemu, Falcon4ever, Bositman",
+		L"Falcon4ever, Bositman",
 		_("Previous versions"), _("Webmasters"));
 
 	wxString contribsString = wxsFormat(
@@ -58,8 +58,8 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		L"ChickenLiver(Lilypad), Gabest (Gsdx, Cdvdolio, Xpad)"
 		L"\n\n"
 		L"%s: \n"
-		L"black_wd, Belmont, BGome, _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady,"
-		L"F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
+		L"Ckemu, Prafull, General Plot, KrossX, ssakash, turtleli, Blyss Sarania, micove, black_wd, Belmont, BGome,"
+		L" _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady, F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
 		_("Plugin Specialists"), _("Special thanks to"));
 
 	wxFlexGridSizer& boxesContainer = *new wxFlexGridSizer(2, 0, StdPadding);
