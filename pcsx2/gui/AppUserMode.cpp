@@ -290,12 +290,16 @@ void Pcsx2App::EstablishAppUserMode()
 	// the installation ini file, which can be either the portable install (useful for admins)
 	// or the registry/user local documents position.
 
+	int version;
+	conf_install->Read( L"Version" , &version ,0 );
+
 	bool runWiz;
 	conf_install->Read( L"RunWizard", &runWiz, true );
 
 	App_LoadInstallSettings( conf_install );
+	int pcsx2Ver = PCSX2_VersionHi * 100 + PCSX2_VersionMid * 10 + PCSX2_VersionLo;
 
-	if( !Startup.ForceWizard && !runWiz )
+	if( !Startup.ForceWizard && !runWiz && version == pcsx2Ver )
 	{
 		AppConfig_OnChangedSettingsFolder( false );
 		return;
@@ -310,5 +314,6 @@ void Pcsx2App::EstablishAppUserMode()
 
 	// Wizard completed successfully, so let's not torture the user with this crap again!
 	conf_install->Write( L"RunWizard", false );
+	conf_install->Write( L"Version", pcsx2Ver );
 }
 
