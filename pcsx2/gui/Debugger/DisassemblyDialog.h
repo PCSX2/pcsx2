@@ -112,6 +112,7 @@ private:
 	CpuTabPage* eeTab;
 	CpuTabPage* iopTab;
 	CpuTabPage* currentCpu;
+	wxNotebook* middleBook;
 
 	wxBoxSizer* topSizer;
 	wxButton* breakRunButton;
