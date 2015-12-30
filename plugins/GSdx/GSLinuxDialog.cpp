@@ -307,7 +307,7 @@ void populate_shader_table(GtkWidget* shader_table)
 	GtkWidget* shader_label      = left_label("External shader glsl");
 	GtkWidget* shader_conf_label = left_label("External shader conf");
 
-	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "shadeboost");
+	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "ShadeBoost");
 	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
 	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
 
