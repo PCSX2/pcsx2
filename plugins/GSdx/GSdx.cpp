@@ -142,6 +142,9 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null), "Direct3D11", "Null"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
 #endif
+#else // Linux
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
