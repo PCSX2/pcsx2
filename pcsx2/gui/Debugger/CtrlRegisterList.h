@@ -19,41 +19,25 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 
-class CtrlRegisterList: public wxWindow
+class CtrlRegisterList: public wxScrolledWindow
 {
 public:
 	CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu);
 	
-	void paintEvent(wxPaintEvent & evt);
 	void mouseEvent(wxMouseEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
 	void onPopupClick(wxCommandEvent& evt);
+	void sizeEvent(wxSizeEvent& evt);
 	void redraw();
 	DECLARE_EVENT_TABLE()
-
+	
 	virtual wxSize GetMinClientSize() const
 	{
-		int columnChars = 0;
-		int maxWidth = 0;
-		int maxRows = 0;
+		wxSize optimalSize = getOptimalSize();
+		if (GetWindowStyle() & wxVSCROLL)
+			optimalSize.x += wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
 
-		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
-		{
-			int bits = std::min<u32>(maxBits,cpu->getRegisterSize(i));
-			int start = startPositions[i];
-			
-			int w = start+(bits/4) * charWidth;
-			if (bits > 32)
-				w += (bits/32)*2-2;
-
-			maxWidth = std::max<int>(maxWidth,w);
-			columnChars += strlen(cpu->getRegisterCategoryName(i))+1;
-			maxRows = std::max<int>(maxRows,cpu->getRegisterCount(i));
-		}
-
-		maxWidth = std::max<int>(columnChars*charWidth,maxWidth+4);
-
-		return wxSize(maxWidth,(maxRows+1)*rowHeight);
+		return wxSize(optimalSize.x,0);
 	}
 
 	virtual wxSize DoGetBestClientSize() const
@@ -63,10 +47,11 @@ public:
 private:
 	enum RegisterChangeMode { LOWER64, UPPER64, CHANGE32 };
 
-	void render(wxDC& dc);
+	void OnDraw(wxDC& dc);
 	void refreshChangedRegs();
 	void setCurrentRow(int row);
 	void changeValue(RegisterChangeMode mode);
+	wxSize getOptimalSize() const;
 
 	void postEvent(wxEventType type, wxString text);
 	void postEvent(wxEventType type, int value);
