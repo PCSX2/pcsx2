@@ -129,11 +129,13 @@ GSdxApp::GSdxApp()
 	m_section = "Settings";
 
 #ifdef _WINDOWS
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW),		"Direct3D11",	""));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D11", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	"Hardware"));
 
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),		"Software Renderer",	"Direct3D9"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW),	"Software Renderer",	"Direct3D11"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW), "Direct3D11", "Software"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),		"Direct3D9",	"Software"));
 
 #ifdef _DEBUG
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null), "Direct3D9", "Null"));
@@ -141,9 +143,6 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
 #endif
 #endif
-
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW),			"OpenGL",		""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW),		"Software Renderer",	"OpenGL"));
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "None", "Core Benchmark"));
