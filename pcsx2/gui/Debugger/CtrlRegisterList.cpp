@@ -22,7 +22,7 @@
 #include "DisassemblyDialog.h"
 
 BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
-	EVT_PAINT(CtrlRegisterList::paintEvent)
+	EVT_SIZE(CtrlRegisterList::sizeEvent)
 	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_UP(CtrlRegisterList::mouseEvent)
@@ -42,7 +42,7 @@ enum DisassemblyMenuIdentifiers
 
 
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_NONE), cpu(_cpu)
+	: wxScrolledWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_NONE|wxVSCROLL), cpu(_cpu)
 {
 	rowHeight = getDebugFontHeight()+2;
 	charWidth = getDebugFontWidth();
@@ -71,6 +71,35 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 
 	SetDoubleBuffered(true);
 	SetInitialSize(ClientToWindowSize(GetMinClientSize()));
+
+	wxSize actualSize = getOptimalSize();
+	SetVirtualSize(actualSize);
+	SetScrollbars(1, rowHeight, actualSize.x, actualSize.y / rowHeight, 0, 0);
+}
+
+wxSize CtrlRegisterList::getOptimalSize() const
+{
+	int columnChars = 0;
+	int maxWidth = 0;
+	int maxRows = 0;
+
+	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+	{
+		int bits = std::min<u32>(maxBits, cpu->getRegisterSize(i));
+		int start = startPositions[i];
+
+		int w = start + (bits / 4) * charWidth;
+		if (bits > 32)
+			w += (bits / 32) * 2 - 2;
+
+		maxWidth = std::max<int>(maxWidth, w);
+		columnChars += strlen(cpu->getRegisterCategoryName(i)) + 1;
+		maxRows = std::max<int>(maxRows, cpu->getRegisterCount(i));
+	}
+
+	maxWidth = std::max<int>(columnChars*charWidth, maxWidth + 4);
+
+	return wxSize(maxWidth, (maxRows + 1)*rowHeight);
 }
 
 void CtrlRegisterList::postEvent(wxEventType type, wxString text)
@@ -136,16 +165,15 @@ void CtrlRegisterList::refreshChangedRegs()
 	lastPc = cpu->getPC();
 }
 
-void CtrlRegisterList::paintEvent(wxPaintEvent & evt)
-{
-	wxPaintDC dc(this);
-	render(dc);
-}
-
 void CtrlRegisterList::redraw()
 {
-	wxClientDC dc(this);
-	render(dc);
+	Update();
+}
+
+void CtrlRegisterList::sizeEvent(wxSizeEvent& evt)
+{
+	Refresh();
+	evt.Skip();
 }
 
 void drawU32Text(wxDC& dc, u32 value, int x, int y)
@@ -155,7 +183,7 @@ void drawU32Text(wxDC& dc, u32 value, int x, int y)
 	dc.DrawText(wxString(str,wxConvUTF8),x,y);
 }
 
-void CtrlRegisterList::render(wxDC& dc)
+void CtrlRegisterList::OnDraw(wxDC& dc)
 {
 	#ifdef WIN32
 	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
@@ -171,7 +199,7 @@ void CtrlRegisterList::render(wxDC& dc)
 	dc.SetBrush(wxBrush(white));
 	dc.SetPen(wxPen(white));
 
-	wxSize size = GetSize();
+	wxSize size = GetClientSize();
 	dc.DrawRectangle(0,0,size.x,size.y);
 
 	refreshChangedRegs();
@@ -442,10 +470,16 @@ void CtrlRegisterList::setCurrentRow(int row)
 
 void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 {
+	int xOffset, yOffset;
+	((wxScrolledWindow*) this)->GetViewStart(&xOffset, &yOffset);
+
+	wxClientDC dc(this);
+	wxPoint pos = evt.GetPosition();
+	int x = dc.DeviceToLogicalX(pos.x) + xOffset;
+	int y = dc.DeviceToLogicalY(pos.y) + yOffset;
+
 	if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
-		int y = evt.GetPosition().y;
-
 		if (y >= rowHeight)
 		{
 			int row = (y-rowHeight)/rowHeight;
@@ -489,9 +523,6 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 
 	if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT) || evt.ButtonIsDown(wxMOUSE_BTN_RIGHT))
 	{
-		int x = evt.GetPosition().x;
-		int y = evt.GetPosition().y;
-
 		if (y < rowHeight)
 		{
 			int piece = GetSize().x/cpu->getRegisterCategoryCount();
@@ -521,7 +552,7 @@ void CtrlRegisterList::keydownEvent(wxKeyEvent& evt)
 		setCurrentRow(std::max<int>(currentRows[category]-1,0));
 		break;
 	case WXK_DOWN:
-		setCurrentRow(std::min<int>(currentRows[category]+1,cpu->getRegisterCount(category)));
+		setCurrentRow(std::min<int>(currentRows[category]+1,cpu->getRegisterCount(category)-1));
 		break;
 	case WXK_TAB:
 		category = (category+1) % cpu->getRegisterCategoryCount();
