@@ -20,6 +20,7 @@
 
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
+#include "DisassemblyDialog.h"
 #include <wchar.h>
 #include <wx/clipbrd.h>
 
@@ -55,8 +56,8 @@ enum MemoryViewMenuIdentifiers
 CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxVSCROLL), cpu(_cpu)
 {
-	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight;
-	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
+	rowHeight = getDebugFontHeight();
+	charWidth = getDebugFontWidth();
 	windowStart = 0x480000;
 	curAddress = windowStart;
 	rowSize = 16;

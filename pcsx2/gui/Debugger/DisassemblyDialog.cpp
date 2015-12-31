@@ -39,6 +39,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
+   EVT_SIZE(DisassemblyDialog::onSizeEvent)
    EVT_CLOSE( DisassemblyDialog::onClose )
 END_EVENT_TABLE()
 
@@ -176,7 +177,7 @@ void CpuTabPage::update()
 {
 	breakpointList->reloadBreakpoints();
 
-	if (threadList != NULL)
+	if (threadList != NULL && cpu->isAlive())
 	{
 		threadList->reloadThreads();
 
@@ -217,6 +218,8 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
 	currentCpu(NULL)
 {
+	int width = g_Conf->EmuOptions.Debugger.WindowWidth;
+	int height = g_Conf->EmuOptions.Debugger.WindowHeight;
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
 	wxPanel *panel = new wxPanel(this, wxID_ANY, 
@@ -252,7 +255,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
 
 	// create middle part of the window
-	wxNotebook* middleBook = new wxNotebook(panel,wxID_ANY);  
+	middleBook = new wxNotebook(panel,wxID_ANY);  
 	middleBook->SetBackgroundColour(wxColour(0xFFF0F0F0));
 	eeTab = new CpuTabPage(middleBook,&r5900Debug);
 	iopTab = new CpuTabPage(middleBook,&r3000Debug);
@@ -267,7 +270,21 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
+	if (width != 0 && height != 0)
+		SetSize(width,height);
+
 	setDebugMode(true,true);
+}
+
+void DisassemblyDialog::onSizeEvent(wxSizeEvent& event)
+{
+	if (event.GetEventType() == wxEVT_SIZE)
+	{
+		g_Conf->EmuOptions.Debugger.WindowWidth = event.GetSize().x;
+		g_Conf->EmuOptions.Debugger.WindowHeight = event.GetSize().y;
+	}
+
+	event.Skip();
 }
 
 #ifdef WIN32
@@ -469,7 +486,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
 		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
-		if (cpu != NULL && cpu == currentCpu->getCpu())
+		if (cpu != NULL && currentCpu != NULL && cpu == currentCpu->getCpu())
 			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
@@ -568,6 +585,19 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 	if (running)
 	{
+		if (currentCpu == NULL)
+		{
+			wxWindow* currentPage = middleBook->GetCurrentPage();
+
+			if (currentPage == eeTab)
+				currentCpu = eeTab;
+			else if (currentPage == iopTab)
+				currentCpu = iopTab;
+
+			if (currentCpu != NULL)
+				currentCpu->update();
+		}
+
 		if (debugMode)
 		{
 			CBreakPoints::ClearTemporaryBreakPoints();
@@ -596,6 +626,12 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 			stepOverButton->Enable(false);
 			stepOutButton->Enable(false);
 		}
+	} else {
+		breakRunButton->SetLabel(L"Run");
+		stepIntoButton->Enable(false);
+		stepOverButton->Enable(false);
+		stepOutButton->Enable(false);
+		currentCpu = NULL;
 	}
 
 	update();

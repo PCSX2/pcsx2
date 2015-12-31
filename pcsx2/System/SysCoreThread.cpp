@@ -134,6 +134,7 @@ void SysCoreThread::Reset()
 	GetVmMemory().DecommitAll();
 	SysClearExecutionCache();
 	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
+	g_FrameCount = 0;
 }
 
 
