@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2015-12-22 16:57+0100\n"
-"PO-Revision-Date: 2012-09-09 20:43+0100\n"
+"PO-Revision-Date: 2015-12-31 01:13+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
 "Language: cs\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Virtaal 0.7.1-rc1\n"
+"X-Generator: Poedit 1.8.5\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -116,6 +116,8 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"Prosím mějte na vědomí, že výsledný soubor nemusí obsahovat všechny uložené "
+"pozice podle toho, kolik jich je na zdrojové paměťové kartě."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -123,22 +125,29 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"POZOR: Převod paměťové karty může chvíli trvat! Prosím, nezavírejte emulátor "
+"během průběhu konverze i když nebude nějakou dobu reagovat na vstup."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Převést tuto paměťovou kartu na běžný soubor paměťové karty .ps2 o velikosti "
+"8 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
 msgstr ""
+"Převést tuto paměťovou kartu na soubor paměťové karty .ps2 o velikosti 16 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
 msgstr ""
+"Převést tuto paměťovou kartu na soubor paměťové karty .ps2 o velikosti 32 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr ""
+"Převést tuto paměťovou kartu na soubor paměťové karty .ps2 o velikosti 64 MB."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -226,6 +235,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Jen pro typ složka) Znovu indexuje obsah paměťové karty pokaždé, když ji "
+"změní běžící program. To zamezí možnosti, že by na paměťové kartě došlo "
+"místo pro uložené pozice."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -336,7 +348,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:527
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
+msgstr "(FolderMcd) Paměťová karta je plná, nemohu přidat: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
@@ -469,20 +481,18 @@ msgstr ""
 "* Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Opravy her můžou obejít špatnou emulaci v některých hrách.\n"
-"Můžou ale také způsobit problémy s kompatibilitou a výkonem, takže nejsou "
-"doporučeny.\n"
-"Opravy her jsou použity automaticky, takže zde nic nemusíte nastavovat."
+"Je lepší povolit 'Automatické Herní Záplaty' v hlavní nabídce a ponechat "
+"tuto stránku prázdnou. ('Automatické' znamená: selektivní použití "
+"specifických a otestovaných oprav v daných hrách). Ruční opravy NEZVÝŠÍ "
+"výkon. Vlastně jej mohou snížit."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
@@ -490,9 +500,9 @@ msgid ""
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
 "Opravy her můžou obejít špatnou emulaci v některých hrách.\n"
-"Můžou ale také způsobit problémy s kompatibilitou a výkonem, takže nejsou "
-"doporučeny.\n"
-"Opravy her jsou použity automaticky, takže zde nic nemusíte nastavovat."
+"Můžou ale také způsobit problémy s kompatibilitou a výkonem\n"
+"\n"
+"Nejbezpečnější je ujistit se, že všechny opravy her jsou kompletně vypnuté."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:686
 #, c-format
@@ -593,30 +603,27 @@ msgstr ""
 "%s, pak stiskněte Zrušit pro uzavření panelu Nastavení."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"Sníží množství cyklů EE asi o 50%. Průměrné zrychlení, ale *způsobí* "
-"zadrhování zvuku ve spoustě FMV."
+"-2 - Sníží množství cyklů EE asi o 50%. Průměrné zrychlení, ale *způsobí* "
+"zadrhávání zvuku ve spoustě FMV."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"Sníží množství cyklů EE asi o 33%. Mírné zrychlení ve většině her s vysokou "
-"kompatibilitou."
+"-1 - Sníží množství cyklů EE asi o 33%. Mírné zrychlení ve většině her s "
+"vysokou kompatibilitou."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
-"Výchozí množství cyklů. Toto se blíže shoduje se skutečnou rychlostí "
+"0 - Výchozí množství cyklů. Toto se nejblíže shoduje se skutečnou rychlostí "
 "opravdového EmotionEngine PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
@@ -624,6 +631,8 @@ msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - Zvýší počet EE cyklů o 33%. Zvýší hardwarové nároky, ale může také "
+"zvýšit FPS ve hře."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -631,6 +640,9 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - Zvýší počet EE cyklů o 50%. Podstatně zvýší hardwarové nároky, ale může "
+"znatelně zvýšit FPS ve hře.\n"
+"Toto nastavení může způsobit, že HRY SE NEMUSÍ SPUSTIT."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -671,7 +683,6 @@ msgstr ""
 "panel zakažte nejdříve."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -680,9 +691,11 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Nastavením vyšších hodnot na tomto šoupátku účinně sníží rychlost hodin "
-"jádra R5900 procesoru EmotionEngine a typicky přináší velké zrychlení hrám, "
-"které nemohou využívat plný potenciál skutečného hardwaru PS2. "
+"Nastavení nižších hodnot na tomto posuvníku efektivně sníží rychlost "
+"procesoru EmotionEngine R5900 a typicky přinese velké zrychlení ve hrách, "
+"které nedokážou využít plný potenciál opravdového hardwaru PS2. Naopak vyšší "
+"hodnoty efektivně zvýší rychlost, což může zvýšit FPS ve hře, ale taky budou "
+"hry náročnější na výkon a možná se objeví problémy."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""

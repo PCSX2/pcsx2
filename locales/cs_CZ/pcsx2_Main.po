@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2015-12-22 16:57+0100\n"
-"PO-Revision-Date: 2012-09-09 20:41+0100\n"
+"PO-Revision-Date: 2015-12-31 01:17+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
 "Language: cs\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Virtaal 0.7.1-rc1\n"
+"X-Generator: Poedit 1.8.5\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -390,13 +390,12 @@ msgid "Loading PS2 system plugins..."
 msgstr "Nahrávám systémové zásuvné moduly PS2..."
 
 #: pcsx2/gui/AppInit.cpp:50
-#, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE2 instruction set."
 msgstr ""
-"Rozšíření SSE nejsou dostupná. PCSX2 vyžaduje procesor, který podporuje "
-"instrukční sadu SSE."
+"Rozšíření SSE2 nejsou dostupná. PCSX2 vyžaduje procesor, který podporuje "
+"instrukční sadu SSE2."
 
 #: pcsx2/gui/AppInit.cpp:139
 msgid "PCSX2 Recompiler Error(s)"
@@ -439,10 +438,9 @@ msgid "executes an ELF image"
 msgstr "spustí obraz ELF"
 
 #: pcsx2/gui/AppInit.cpp:238
-#, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
-"zavede prázdnou mechaniku dvd; použijte pro vstup do systémového menu PS2"
+"zavede prázdnou mechaniku DVD; použijte pro vstup do systémového menu PS2"
 
 #: pcsx2/gui/AppInit.cpp:239
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
@@ -614,11 +612,8 @@ msgid "Press Ok to go to the BIOS Configuration Panel."
 msgstr "Stiskněte OK pro přechod na Panel nastavení BIOSu."
 
 #: pcsx2/gui/AppMain.cpp:196
-#, fuzzy
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
-msgstr ""
-"Varování! Systémové zásuvné moduly nebyly načteny. PCSX2 může být "
-"nepoužitelný."
+msgstr "Varování! Správný BIOS nebyl vybrán. PCSX2 nemusí být provozuschopné."
 
 #: pcsx2/gui/AppMain.cpp:370
 #, c-format
@@ -704,7 +699,6 @@ msgid "It's what I use (the programmer guy)."
 msgstr "To, co používám já (programátor)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
-#, fuzzy
 msgid "Normal font"
 msgstr "Normální"
 
@@ -815,14 +809,13 @@ msgid "Disables all log source filters."
 msgstr "Zakáže všechny filtry zdroje záznamů."
 
 #: pcsx2/gui/ConsoleLogger.cpp:485
-#, fuzzy
 msgid "Restore Default"
 msgstr "Obnovit Výchozí"
 
 #: pcsx2/gui/ConsoleLogger.cpp:485
 #, fuzzy
 msgid "Restore default source filters."
-msgstr "Povolí všechny filtry zdroje záznamů."
+msgstr "Obnovit výchozí filtry zdrojů."
 
 #: pcsx2/gui/ConsoleLogger.cpp:487
 msgid "&Log"
@@ -833,8 +826,9 @@ msgid "&Sources"
 msgstr "&Zdroje"
 
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:223
+#, fuzzy
 msgid "panel"
-msgstr ""
+msgstr "panel"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -866,18 +860,16 @@ msgid "Contributors"
 msgstr "Přispěvatelé"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
-#, fuzzy
 msgid "PlayStation 2 Emulator"
-msgstr "Emulátor Playstation 2"
+msgstr "Emulátor PlayStation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "Officiální stránka a Fóra PCSX2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "Oficiální úložiště Svn PCSX2 na GitHub"
+msgstr "Oficiální repozitář Git PCSX2 na GitHubu"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
@@ -923,12 +915,12 @@ msgstr "Ignorovat"
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
 msgid "Retry"
-msgstr ""
+msgstr "Znovu"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
 msgid "Abort"
-msgstr ""
+msgstr "Zrušit"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
@@ -936,44 +928,45 @@ msgstr "Resetovat"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
-msgstr ""
+msgstr "Převést paměťovou kartu do jiného formátu"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
-msgstr ""
+msgstr "Převést"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr ""
+msgstr "Převést:"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr ""
+msgstr "Do:"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
-msgstr ""
+msgstr "8MB Soubor"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "16MB File"
-msgstr ""
+msgstr "16MB Soubor"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "32MB File"
-msgstr ""
+msgstr "32MB Soubor"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "64MB File"
-msgstr ""
+msgstr "64MB Soubor"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
 msgstr ""
+"Převést tuto paměťovou kartu na složku obsahující individuální uložené "
+"pozice."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-#, fuzzy
 msgid "Folder"
-msgstr "Adresáře"
+msgstr "Složka"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
@@ -985,17 +978,16 @@ msgstr "Chyba (%s)"
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:123
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
-#, fuzzy
 msgid "Convert memory card"
-msgstr "Vytvořit paměťovou kartu"
+msgstr "Převést paměťovou kartu"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
-msgstr ""
+msgstr "Cílový typ není podporován!"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
-msgstr ""
+msgstr "Převod paměťové karty selhal z neznámých důvodů."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
@@ -1026,9 +1018,8 @@ msgid "Create memory card"
 msgstr "Vytvořit paměťovou kartu"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The directory for the memory card could not be created."
-msgstr "Chyba: Paměťová karta nemohla být vytvořena."
+msgstr "Chyba: Složka paměťové karty nemohla být vytvořena."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:178
 msgid "Error: The memory card could not be created."
@@ -1101,11 +1092,13 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Folder [experimental]"
-msgstr ""
+msgstr "Složka [experimentální]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
 msgid "Store memory card contents in the host filesystem instead of a file."
 msgstr ""
+"Uložit obsah paměťové karty na hostitelský systém souborů místo jednoho "
+"souboru."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:227
 msgid ""
@@ -1114,6 +1107,10 @@ msgid ""
 "files in and out of the memory card with your standard file explorer. This "
 "is still experimental, so use at your own risk!"
 msgstr ""
+"Automaticky spravuje obsah paměťové karty tak, že jen konzole vidí soubory "
+"vztahující se k aktuálně spuštěnému programu. Umožní vám to přetahovat "
+"soubory z a do paměťové karty prostřednictvím běžného správce souborů. To je "
+"stále experimentální, takže to používejte na vlastní zodpovědnost."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
@@ -1181,7 +1178,7 @@ msgstr "Automaticky vyjmout paměťové karty při nahrávání uložených stav
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
-msgstr ""
+msgstr "Automaticky spravuje uložené pozice podle právě spuštěné hry"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -1300,7 +1297,7 @@ msgstr "Výstup GS je Zakázán!"
 
 #: pcsx2/gui/GlobalCommands.cpp:308
 msgid "Exit PCSX2?"
-msgstr ""
+msgstr "Ukončit PCSX2?"
 
 #: pcsx2/gui/GlobalCommands.cpp:461 pcsx2/gui/MainFrame.cpp:425
 msgid "Save state"
@@ -1440,9 +1437,8 @@ msgid "Enable Cheats"
 msgstr "Povolit Cheaty"
 
 #: pcsx2/gui/MainFrame.cpp:438
-#, fuzzy
 msgid "Enable Widescreen Patches"
-msgstr "Povolit Záplaty"
+msgstr "Povolit Záplaty pro širokoúhlé displeje"
 
 #: pcsx2/gui/MainFrame.cpp:441
 msgid "Enable Host Filesystem"
@@ -1713,9 +1709,9 @@ msgid "Blockdumps (%s)"
 msgstr "Výpisy bloků (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:275
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed (%s)"
-msgstr "Výpisy bloků (%s)"
+msgstr "Komprimováno (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:278 pcsx2/gui/MainMenuClicks.cpp:299
 msgid "All Files (*.*)"
@@ -1723,7 +1719,7 @@ msgstr "Všechny soubory (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:281
 msgid "Select disc image, compressed disc image, or block-dump..."
-msgstr ""
+msgstr "Vyberte obraz disku, komprimovaný obraz disku a nebo block-dump..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:298
 msgid "Select ELF file..."
@@ -2108,23 +2104,23 @@ msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr "Simulovat čtení dopředu VIF1 FIFO. Opravuje pomalé načítání her."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
-msgstr "Odložit zdržení VIF1 (VIF1 FIFO) - Pro SOCOM 2 HUD."
+msgstr ""
+"Odložit zdržení VIF1 (VIF1 FIFO) - Pro opravu zaseknutí během načítání SOCOM "
+"2 HUD a Spy Hunter."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 msgstr "Nevšímat si směru řadiče v převodu Path3 - Použito pro Hotwheels"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
-#, fuzzy
 msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr "Přepnout na softwarové vykreslování GSdx při přehrávání FMV"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr ""
+msgstr "Přednačíst TLB hack pro zabránění minutí tlb v Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
@@ -2174,9 +2170,8 @@ msgid "Create ..."
 msgstr "Vytvořit ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
-#, fuzzy
 msgid "Convert ..."
-msgstr "Vložit ..."
+msgstr "Převést ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
@@ -2326,9 +2321,8 @@ msgid "Delete card"
 msgstr "Smazat kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
-#, fuzzy
 msgid "Convert card"
-msgstr "Vložit kartu"
+msgstr "Převést kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
@@ -2356,8 +2350,9 @@ msgid "Formatted"
 msgstr "Formátována"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:104
+#, fuzzy
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
 msgid "Last Modified"
@@ -2376,14 +2371,12 @@ msgid "Yes"
 msgstr "Ano"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
-#, fuzzy
 msgid "PS2"
-msgstr "SZS"
+msgstr "PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
-#, fuzzy
 msgid "PSX"
-msgstr "SZS"
+msgstr "PSX"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
@@ -2780,21 +2773,20 @@ msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "Nastavený soubor BIOSu neexistuje. Prosím nastavte znovu."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:591
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"Rozšíření %s nenalezeno. Rekompilátor R5900-32 potřebuje hostitelský "
-"procesor s rozšířením MMX, SSE, a SSE2."
+"Rozšíření %s nenalezeno. Rekompilátor R5900-32 potřebuje hostitelské CPU s "
+"rozšířením SSE2."
 
 #: pcsx2/x86/microVU.cpp:28
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"Rozšíření %s nenalezeno. mikroVJ vyžaduje, aby hostitelský procesor měl "
-"rozšíření MMX, SSE, a SSE2."
+"Rozšíření %s nenalezeno. microVU potřebuje hostitelské CPU s rozšířením SSE2."
 
 #~ msgid "Betatesting"
 #~ msgstr "Beta testeři"
