@@ -48,9 +48,11 @@ class GSRendererOGL : public GSRendererHW
 		bool m_accurate_date;
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
+		bool m_unsafe_fbmask;
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
+		bool UserHacks_unsafe_fbmask;
 
 		GSDeviceOGL::VSConstantBuffer vs_cb;
 		GSDeviceOGL::PSConstantBuffer ps_cb;
