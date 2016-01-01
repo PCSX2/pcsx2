@@ -478,7 +478,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 	wxClientDC dc(this);
 	wxPoint pos = evt.GetPosition();
 	int x = dc.DeviceToLogicalX(pos.x) + xOffset;
-	int y = dc.DeviceToLogicalY(pos.y) + yOffset;
+	int y = dc.DeviceToLogicalY(pos.y) + yOffset * rowHeight;
 
 	if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
