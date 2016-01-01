@@ -124,7 +124,7 @@ void GSWndOGL::CheckContext()
 	int glxMajorVersion, glxMinorVersion;
 	glXQueryVersion(m_NativeDisplay, &glxMajorVersion, &glxMinorVersion);
 	if (glXIsDirect(m_NativeDisplay, m_context))
-		fprintf(stderr, "glX-Version %d.%d with Direct Rendering\n", glxMajorVersion, glxMinorVersion);
+		fprintf(stdout, "glX-Version %d.%d with Direct Rendering\n", glxMajorVersion, glxMinorVersion);
 	else {
 		fprintf(stderr, "glX-Version %d.%d with Indirect Rendering !!! It won't support properly opengl\n", glxMajorVersion, glxMinorVersion);
 		throw GSDXRecoverableError();

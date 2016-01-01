@@ -329,7 +329,7 @@ namespace GLLoader {
 
 
 	// GL4 hardware (due to proprietary driver limitation)
-	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
+	bool found_GL_ARB_separate_shader_objects = false; // Issue with Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
@@ -337,8 +337,8 @@ namespace GLLoader {
 	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
 	bool found_GL_ARB_gpu_shader5 = false;
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
-	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
 	// DX10 GPU limited driver
+	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
 	bool found_GL_ARB_draw_buffers_blend = false;
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
@@ -434,7 +434,8 @@ namespace GLLoader {
 				// GL4.1
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
-					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n");
+					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n"
+							"Note the extension was fixed on Mesa 11.1, you will need a manual overwrite to use it\n");
 				}
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
