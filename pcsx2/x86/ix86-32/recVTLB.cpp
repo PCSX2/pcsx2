@@ -627,8 +627,11 @@ void vtlb_DynGenReadReg32(u32 bits, bool sign, u32 likely_addr)
 void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 {
 	u32 zone = likely_addr >> 28;
+	// Detection isn't perfect and the rom code uses various register
+	// Code is barely executed, let's avoid plenty of SIGSEGV to ease debug
+	bool rom_code = cpuRegs.pc > 0x90000000;
 
-	if (s_fast_memspace[zone]) {
+	if (s_fast_memspace[zone] && !rom_code) {
 		// Shortcut TLB based on the first address
 
 		// Warning dirty ebx (in case someone got the very bad idea to move this code)
@@ -822,8 +825,11 @@ void vtlb_DynGenWrite(u32 sz)
 void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 {
 	u32 zone = likely_addr >> 28;
+	// Detection isn't perfect and the rom code uses various register
+	// Code is barely executed, let's avoid plenty of SIGSEGV to ease debug
+	bool rom_code = cpuRegs.pc > 0x90000000;
 
-	if (s_fast_memspace[zone]) {
+	if (s_fast_memspace[zone] && !rom_code) {
 		// Shortcut TLB based on the first address
 
 		// Warning dirty ebx (in case someone got the very bad idea to move this code)
