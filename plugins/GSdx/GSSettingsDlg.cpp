@@ -308,7 +308,13 @@ void GSSettingsDlg::UpdateRenderers()
 
 	vector<GSSetting> renderers;
 
-	GSRendererType renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	GSRendererType renderer_setting;
+
+	if (ComboBoxGetSelData(IDC_RENDERER, i))
+		renderer_setting = static_cast<GSRendererType>(i);
+	else
+		renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+
 	GSRendererType renderer_sel = GSRendererType::Default;
 
 	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
