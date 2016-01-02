@@ -102,11 +102,9 @@ const char* dialog_message(int ID, bool* updateText) {
 				"High:\nExtend it to destination alpha blending and color wrapping. (help shadow and fog effect). A good CPU is required.\n\n"
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug.\n\n"
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug.";
-#ifdef __linux__
 		case IDC_UNSAFE_FBMASK:
 			return "Relies on undefined hardware behavior to accelerate accurate blending operation.\n\n"
 				"It provides a major boost on the Xenosaga Series.\n";
-#endif
 		case IDC_TC_DEPTH:
 			return "Allows the conversion of Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
 		case IDC_AFCOMBO:

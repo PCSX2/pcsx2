@@ -658,6 +658,8 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfig("UserHacks_AlphaStencil", 0));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfig("preload_frame_with_gs_data", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
+	CheckDlgButton(m_hWnd, IDC_UNSAFE_FBMASK, theApp.GetConfig("UserHacks_unsafe_fbmask", 0));
+
 
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfig("UserHacks_SpriteHack", 0));
@@ -673,6 +675,8 @@ void GSHacksDlg::OnInit()
 
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
+	ShowWindow(GetDlgItem(m_hWnd, IDC_UNSAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
+
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
@@ -689,6 +693,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_TCOFFSETY);
 	AddTooltip(IDC_TCOFFSETY2);
 	AddTooltip(IDC_PRELOAD_GS);
+	AddTooltip(IDC_UNSAFE_FBMASK);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -723,6 +728,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
+			theApp.SetConfig("UserHacks_unsafe_fbmask", (int)IsDlgButtonChecked(m_hWnd, IDC_UNSAFE_FBMASK));
+
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
 						 TCOFFSET |= (SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0) & 0xFFFF) << 16;
