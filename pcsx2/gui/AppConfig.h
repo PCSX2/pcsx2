@@ -253,6 +253,7 @@ public:
 		wxString OutputField;
 		wxString OutputProgressive;
 		wxString OutputInterlaced;
+		wxString Paused;
 		wxString TitleTemplate;
 	};
 

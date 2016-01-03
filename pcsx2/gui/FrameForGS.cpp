@@ -622,6 +622,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
 	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
+	if (CoreThread.IsPaused())
+		title = templates.Paused + title;
 
 	SetTitle(title);
 }
