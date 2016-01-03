@@ -63,7 +63,7 @@ protected:
 	void OnResize(wxSizeEvent& event);
 	void OnMouseEvent( wxMouseEvent& evt );
 	void OnHideMouseTimeout( wxTimerEvent& evt );
-	void OnKeyDown( wxKeyEvent& evt );
+	void OnKeyDownOrUp( wxKeyEvent& evt );
 	void OnFocus( wxFocusEvent& evt );
 	void OnFocusLost( wxFocusEvent& evt );
 	void CoreThread_OnResumed();

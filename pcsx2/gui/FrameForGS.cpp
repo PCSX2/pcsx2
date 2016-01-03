@@ -101,8 +101,8 @@ GSPanel::GSPanel( wxWindow* parent )
 
 	Connect(wxEVT_CLOSE_WINDOW,		wxCloseEventHandler	(GSPanel::OnCloseWindow));
 	Connect(wxEVT_SIZE,				wxSizeEventHandler	(GSPanel::OnResize));
-	Connect(wxEVT_KEY_UP,			wxKeyEventHandler	(GSPanel::OnKeyDown));
-	Connect(wxEVT_KEY_DOWN,			wxKeyEventHandler	(GSPanel::OnKeyDown));
+	Connect(wxEVT_KEY_UP,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
+	Connect(wxEVT_KEY_DOWN,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
 
 	Connect(wxEVT_SET_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocus));
 	Connect(wxEVT_KILL_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocusLost));
@@ -263,7 +263,7 @@ void GSPanel::OnHideMouseTimeout( wxTimerEvent& evt )
 	m_CursorShown = false;
 }
 
-void GSPanel::OnKeyDown( wxKeyEvent& evt )
+void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 {
 
 	// HACK: Legacy PAD plugins expect PCSX2 to ignore keyboard messages on the GS Window while
@@ -286,6 +286,25 @@ void GSPanel::OnKeyDown( wxKeyEvent& evt )
 
 		PADWriteEvent(event);
 	}
+#endif
+
+#ifdef __WXMSW__
+	// Not sure what happens on Linux, but on windows this method is called only when emulation
+	// is paused and the GS window is not hidden (and therefore the event doesn't arrive from
+	// the pad plugin and doesn't go through Pcsx2App::PadKeyDispatch). On such case (paused).
+	// It needs to handle two issues:
+	// 1. It's called both for key down and key up (linux apparently needs it this way) - but we
+	//    don't want to execute the command twice (normally commands execute on key down only).
+	// 2. It has wx keycode which is upper case for ascii chars, but our command handlers expect
+	//    lower case for non-special keys.
+
+	// ignore key up events
+	if (evt.GetEventType() == wxEVT_KEY_UP)
+		return;
+
+	// Make ascii keys lower case - this apparently works correctly also with modifiers (shift included)
+	if (evt.m_keyCode >= 'A' && evt.m_keyCode <= 'Z')
+		evt.m_keyCode += (int)'a' - 'A';
 #endif
 
 	if( (PADopen != NULL) && CoreThread.IsOpen() ) return;
