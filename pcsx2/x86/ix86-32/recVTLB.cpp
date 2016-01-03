@@ -673,8 +673,10 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 
 // ------------------------------------------------------------------------
 // Wrapper to the different load implementation
-void vtlb_DynGenRead(u32 likely_address, u32 bits, bool sign)
+void vtlb_DynGenRead(u32 likely_address, s16 imm, u32 bits, bool sign)
 {
+	xADD(ecx, imm);
+
 #ifdef FASTER_DIRECT_ACCESS
 	vtlb_FastDynGenRead32(bits, sign, likely_address);
 #else
@@ -867,8 +869,10 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 
 // ------------------------------------------------------------------------
 // Wrapper to the different load implementation
-void vtlb_DynGenWrite(u32 likely_address, u32 bits)
+void vtlb_DynGenWrite(u32 likely_address, s16 imm, u32 bits)
 {
+	xADD(ecx, imm);
+
 #ifdef FASTER_DIRECT_ACCESS
 	vtlb_FastDynGenWrite(bits, likely_address);
 #else

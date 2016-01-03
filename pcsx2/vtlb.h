@@ -82,8 +82,8 @@ extern void __fastcall vtlb_memWrite(u32 mem, DataType value);
 extern void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value);
 extern void __fastcall vtlb_memWrite128(u32 mem, const mem128_t* value);
 
-extern void vtlb_DynGenWrite(u32 likely_address, u32 sz);
-extern void vtlb_DynGenRead(u32 likely_address, u32 bits, bool sign = false);
+extern void vtlb_DynGenWrite(u32 likely_address, s16 imm, u32 sz);
+extern void vtlb_DynGenRead(u32 likely_address, s16 imm, u32 bits, bool sign = false);
 
 extern void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const );
 extern void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const );
