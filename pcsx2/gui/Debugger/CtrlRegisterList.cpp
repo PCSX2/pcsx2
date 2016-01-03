@@ -64,7 +64,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 			maxLen = std::max<int>(maxLen,strlen(cpu->getRegisterName(i,k)));
 		}
 
-		int x = 17+(maxLen+3)*charWidth;
+		int x = 17+(maxLen+2)*charWidth;
 		startPositions.push_back(x);
 		currentRows.push_back(0);
 	}
@@ -193,47 +193,50 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 	#endif
 	dc.SetFont(font);
 	
-	// clear background
-	wxColor white = wxColor(0xFFFFFFFF);
-
-	dc.SetBrush(wxBrush(white));
-	dc.SetPen(wxPen(white));
-
-	wxSize size = GetClientSize();
-	dc.DrawRectangle(0,0,size.x,size.y);
-
 	refreshChangedRegs();
 
 	wxColor colorChanged = wxColor(0xFF0000FF);
 	wxColor colorUnchanged = wxColor(0xFF004000);
 	wxColor colorNormal = wxColor(0xFF600000);
 
+	int startRow;
+	GetViewStart(nullptr,&startRow);
+	int endRow = startRow + ceil(float(GetClientSize().y) / rowHeight);
+
 	// draw categories
-	int piece = size.x/cpu->getRegisterCategoryCount();
-	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+	int width = GetClientSize().x;
+	if (startRow == 0)
 	{
-		const char* name = cpu->getRegisterCategoryName(i);
-
-		int x = i*piece;
-
-		if (i == category)
+		int piece = width /cpu->getRegisterCategoryCount();
+		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 		{
-			dc.SetBrush(wxBrush(wxColor(0xFF70FF70)));
-			dc.SetPen(wxPen(wxColor(0xFF000000)));
-		} else {
-			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
-			dc.SetPen(wxPen(wxColor(0xFF000000)));
-		}
+			const char* name = cpu->getRegisterCategoryName(i);
 
-		if (i == cpu->getRegisterCategoryCount()-1)
-			piece += size.x-piece*cpu->getRegisterCategoryCount()-1;
+			int x = i*piece;
+
+			if (i == category)
+			{
+				dc.SetBrush(wxBrush(wxColor(0xFF70FF70)));
+				dc.SetPen(wxPen(wxColor(0xFF000000)));
+			} else {
+				dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
+				dc.SetPen(wxPen(wxColor(0xFF000000)));
+			}
+
+			if (i == cpu->getRegisterCategoryCount()-1)
+				piece += width-piece*cpu->getRegisterCategoryCount()-1;
 		
-		dc.DrawRectangle(x,0,piece+1,rowHeight);
+			dc.DrawRectangle(x,0,piece+1,rowHeight);
 
-		// center text
-		x += (piece-strlen(name)*charWidth)/2;
-		dc.DrawText(wxString(name,wxConvUTF8),x,2);
+			// center text
+			x += (piece-strlen(name)*charWidth)/2;
+			dc.DrawText(wxString(name,wxConvUTF8),x,2);
+		}
 	}
+
+	// skip the tab row
+	startRow = std::max<int>(0,startRow-1);
+	endRow = std::min<int>(cpu->getRegisterCount(category)-1,endRow-1);
 
 	int nameStart = 17;
 	int valueStart = startPositions[category];
@@ -242,23 +245,22 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 	int registerBits = cpu->getRegisterSize(category);
 	DebugInterface::RegisterType type = cpu->getRegisterType(category);
 
-	for (int i = 0; i < cpu->getRegisterCount(category); i++)
+	for (int i = startRow; i <= endRow; i++)
 	{
 		int x = valueStart;
 		int y = rowHeight*(i+1);
 
+		wxColor backgroundColor;
 		if (currentRows[category] == i)
-		{
-			dc.SetBrush(wxBrush(wxColor(0xFFFFCFC8)));
-			dc.SetPen(wxPen(wxColor(0xFFFFEFE8)));
-			dc.DrawRectangle(0,y,size.x,rowHeight);
-		} else if (i % 2)
-		{
-			wxColor color = wxColor(237,242,255,255);
-			dc.SetBrush(wxBrush(color));
-			dc.SetPen(wxPen(color));
-			dc.DrawRectangle(0, y, size.x, rowHeight);
-		}
+			backgroundColor = wxColor(0xFFFFCFC8);
+		else if (i % 2)
+			backgroundColor = wxColor(237, 242, 255, 255);
+		else
+			backgroundColor = wxColor(0xFFFFFFFF);
+
+		dc.SetBrush(backgroundColor);
+		dc.SetPen(backgroundColor);
+		dc.DrawRectangle(0, y, width, rowHeight);
 
 		const char* name = cpu->getRegisterName(category,i);
 		dc.SetTextForeground(colorNormal);
@@ -275,7 +277,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 			case 128:
 				{
 					int startIndex = std::min<int>(3,maxBits/32-1);
-					int actualX = size.x-4-(startIndex+1)*(8*charWidth+2);
+					int actualX = width-4-(startIndex+1)*(8*charWidth+2);
 					x = std::max<int>(actualX,x);
 
 					if (startIndex != 3)
@@ -377,10 +379,10 @@ void CtrlRegisterList::changeValue(RegisterChangeMode mode)
 			oldValue._u64[0] = newValue;
 			break;
 		case UPPER64:
-			oldValue._u64[1] = newValue; 
+			oldValue._u64[1] = newValue;
 			break;
 		case CHANGE32:
-			oldValue._u32[0] = newValue; 
+			oldValue._u32[0] = newValue;
 			break;
 		}
 
@@ -476,7 +478,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 	wxClientDC dc(this);
 	wxPoint pos = evt.GetPosition();
 	int x = dc.DeviceToLogicalX(pos.x) + xOffset;
-	int y = dc.DeviceToLogicalY(pos.y) + yOffset;
+	int y = dc.DeviceToLogicalY(pos.y) + yOffset * rowHeight;
 
 	if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
