@@ -624,7 +624,7 @@ void vtlb_DynGenReadReg32(u32 bits, bool sign, u32 likely_addr)
 	*writeback = (uptr)xGetPtr();
 }
 
-void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
+void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr, s16 imm)
 {
 	u32 zone = likely_addr >> 28;
 	// Detection isn't perfect and the rom code uses various register
@@ -638,12 +638,16 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 		EE::Profiler.EmitMem();
 
 #ifdef PLEASE_SIGSEGV
+		xADD(ecx, imm);
+
 		xPEXT(eax, ecx, ptr[&compress_address]);
 		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
 
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
 #else
+		xADD(ecx, imm);
+
 		// Return address for the dispatcher
 		xMOV(ebx, 0xdeadbeef);
 		uptr* writeback = ((uptr*)xGetPtr()) - 1;
@@ -663,6 +667,8 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 #endif
 
 	} else {
+		xADD(ecx, imm);
+
 		// Old fashion direct access
 		if (bits < 64)
 			vtlb_DynGenRead32(bits, sign);
@@ -675,11 +681,12 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr)
 // Wrapper to the different load implementation
 void vtlb_DynGenRead(u32 likely_address, s16 imm, u32 bits, bool sign)
 {
-	xADD(ecx, imm);
 
 #ifdef FASTER_DIRECT_ACCESS
-	vtlb_FastDynGenRead32(bits, sign, likely_address);
+	vtlb_FastDynGenRead32(bits, sign, likely_address, imm);
 #else
+	xADD(ecx, imm);
+
 	if (bits < 64)
 		vtlb_DynGenRead32(bits, sign);
 	else
@@ -824,7 +831,7 @@ void vtlb_DynGenWrite(u32 sz)
 	*writeback = (uptr)xGetPtr();
 }
 
-void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
+void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr, s16 imm)
 {
 	u32 zone = likely_addr >> 28;
 	// Detection isn't perfect and the rom code uses various register
@@ -838,12 +845,16 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 		EE::Profiler.EmitMem();
 
 #ifdef PLEASE_SIGSEGV
+		xADD(ecx, imm);
+
 		xPEXT(eax, ecx, ptr[&compress_address]);
 		DynGen_OffsetDirectWrite( bits, zone == 7 );
 
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
 #else
+		xADD(ecx, imm);
+
 		// Return address for the dispatcher
 		xMOV(ebx, 0xdeadbeef);
 		uptr* writeback = ((uptr*)xGetPtr()) - 1;
@@ -862,6 +873,8 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 		*writeback = (uptr)xGetPtr();
 #endif
 	} else {
+		xADD(ecx, imm);
+
 		// Old fashion direct access
 		vtlb_DynGenWrite(bits);
 	}
@@ -871,11 +884,11 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr)
 // Wrapper to the different load implementation
 void vtlb_DynGenWrite(u32 likely_address, s16 imm, u32 bits)
 {
+#ifdef FASTER_DIRECT_ACCESS
+	vtlb_FastDynGenWrite(bits, likely_address, imm);
+#else
 	xADD(ecx, imm);
 
-#ifdef FASTER_DIRECT_ACCESS
-	vtlb_FastDynGenWrite(bits, likely_address);
-#else
 	vtlb_DynGenWrite(bits);
 #endif
 }
