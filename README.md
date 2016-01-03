@@ -30,3 +30,9 @@ Installers and binaries for both Windows and Linux are available from **[our hom
 
 | ![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009") | ![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") | ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
 |:----:|:----:|:----:|
+
+# Quality Assurance
+
+* Linux build status: [![Travis Build Status](https://travis-ci.org/PCSX2/pcsx2.svg?branch=master)](https://travis-ci.org/PCSX2/pcsx2)
+* Window build status: [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/gregory32/pcsx2/branch/master?svg=true)](https://ci.appveyor.com/project/gregory38/pcsx2/branch/master)
+* Coverity status: [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
