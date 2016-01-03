@@ -327,12 +327,24 @@ namespace Implementations
 			}
 		}
 
-		sMainFrame.SetFocus();
+		if (g_Conf->GSWindow.CloseOnEsc)
+			sMainFrame.SetFocus();
 	}
 
 	void Sys_Resume()
 	{
 		CoreThread.Resume();
+	}
+
+	void Sys_SuspendResume()
+	{
+		if (CoreThread.HasPendingStateChangeRequest())
+			return;
+
+		if (CoreThread.IsPaused())
+			Sys_Resume();
+		else
+			Sys_Suspend();
 	}
 
 	void Sys_TakeSnapshot()
@@ -546,8 +558,8 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 	{	"GSwindow_OffsetXplus",		Implementations::GSwindow_OffsetXplus, NULL, NULL, },
 	{	"GSwindow_OffsetReset",		Implementations::GSwindow_OffsetReset, NULL, NULL, },
 
-	{	"Sys_Suspend",
-		Implementations::Sys_Suspend,
+	{	"Sys_SuspendResume",
+		Implementations::Sys_SuspendResume,
 		NULL,
 		NULL,
 	},

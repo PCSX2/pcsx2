@@ -46,7 +46,9 @@ Framelimiter_MasterToggle         = F4
 
 FullscreenToggle                  = Alt-ENTER
 
-Sys_Suspend                       = ESC
+# Note: toggles suspend, but can resume only if the GS window is not set to hide
+# when paused (Emu options -> GS window), and when the GS window is focused.
+Sys_SuspendResume                 = ESC
 
 # Screenshot. Note: must not include shift or ctrl. With these held - it will
 # create debug GS dump. The two other shortcuts will be added automatically.
