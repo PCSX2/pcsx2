@@ -107,18 +107,6 @@ Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
 ---------------------------------------------
-Serial = PBPX-95205
-Name   = Playstation 2 - Demo Disc 2000
-Region = PAL-Unk
----------------------------------------------
-Serial = SCED-51657
-Name   = Official Playstation Magazine - Demo Disc 33
-Region = PAL-Unk
-Compat = 5
-[patches = 90C0E5F1]
-	comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
-[/patches]
----------------------------------------------
 Serial = PBPX-95201
 Name   = Dead or Alive 2
 Region = NTSC-J
@@ -127,6 +115,10 @@ Compat = 5
 	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
 	patch=0,EE,00290408,word,24060000
 [/patches]
+---------------------------------------------
+Serial = PBPX-95205
+Name   = Playstation 2 - Demo Disc 2000
+Region = PAL-Unk
 ---------------------------------------------
 Serial = PBPX-95503
 Name   = Gran Turismo 3 - A-Spec [PS2 Bundle]
@@ -1133,6 +1125,14 @@ Serial = SCED-51537
 Name   = Official PlayStation 2 Magazine Demo 37
 Region = PAL-M5
 ---------------------------------------------
+Serial = SCED-51657
+Name   = Official Playstation Magazine - Demo Disc 33
+Region = PAL-Unk
+Compat = 5
+[patches = 90C0E5F1]
+	comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
+[/patches]
+---------------------------------------------
 Serial = SCED-52436
 Name   = Playstation2 UK Demo 7-2004
 Region = PAL-Unk
@@ -1618,6 +1618,13 @@ Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
 ---------------------------------------------
+Serial = SCES-51177
+Name   = Disney's Treasure Planet
+Region = PAL
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
+---------------------------------------------
 Serial = SCES-51179
 Name   = This is Football 2003
 Region = PAL-E
@@ -1725,6 +1732,7 @@ Region = PAL-M5
 Serial = SCES-51684
 Name   = World Rally Championship 3
 Region = PAL-M8
+Compat = 5
 XgKickHack = 1
 [patches = 80802EA9]
 comment= Patch By Prafull
@@ -4589,13 +4597,6 @@ EETimingHack = 1 // Fixes hang before going ingame
 eeRoundMode = 0 // Fixes characters flying into sky
 eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
-Serial = SCES-51177
-Name   = Disney's Treasure Planet
-Region = PAL
-EETimingHack = 1 // Fixes hang before going ingame
-eeRoundMode = 0 // Fixes characters flying into sky
-eeClampMode = 3 // Required to load areas correctly
----------------------------------------------
 Serial = SCUS-97147
 Name   = Cool Boarders 2001 [Demo]
 Region = NTSC-U
@@ -7115,6 +7116,7 @@ Region = PAL-M5
 Serial = SLES-50252
 Name   = Penny Racers
 Region = PAL-M3
+Compat = 5
 [patches = FBE2613D]
 	//Patched by Prafull
 	//Fixes vsync issues
@@ -8390,7 +8392,7 @@ Region = PAL-M5
 Serial = SLES-50874
 Name   = F1 2002
 Region = PAL-M4
-Compat = 3
+Compat = 5
 [patches = A0ED2D23]
 	//Patched by Prafull
 	//Fixes controller issue but skips videos
@@ -11301,7 +11303,7 @@ Compat = 5
 Serial = SLES-52298
 Name   = IndyCar Series 2005
 Region = PAL-M5
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52308
 Name   = Karaoke Stage
@@ -15397,6 +15399,7 @@ Region = PAL-M6
 Serial = SLES-54151
 Name   = Let's Make a Soccer Team!
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-54152
 Name   = Ant Bully, The
@@ -34626,7 +34629,7 @@ Compat = 4
 Serial = SLUS-20225
 Name   = Gadget Racers
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = 03854A28]
 	//Patched by Prafull
 	//Fixes vsync issues
@@ -34684,7 +34687,7 @@ Region = NTSC-U
 Serial = SLUS-20235
 Name   = Superman - Shadow of Apokolips
 Region = NTSC-U
-Compat = 3
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20236
 Name   = Taz Wanted
@@ -36193,7 +36196,7 @@ Compat = 5
 Serial = SLUS-20573
 Name   = Sims, The
 Region = NTSC-U
-Compat = 5
+Compat = 4
 ---------------------------------------------
 Serial = SLUS-20574
 Name   = NCAA March Madness 2003
@@ -36467,7 +36470,7 @@ Compat = 5
 Serial = SLUS-20637
 Name   = Chessmaster (Online)
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20638
 Name   = Backyard Wrestling - Don't Try This At Home
@@ -37377,7 +37380,7 @@ Compat = 5
 Serial = SLUS-20842
 Name   = Sims, The - Bustin' Out
 Region = NTSC-U
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20843
 Name   = Dead to Rights II
@@ -37765,7 +37768,7 @@ Compat = 5
 Serial = SLUS-20919
 Name   = ESPN - NFL 2K5
 Region = NTSC-U
-Compat = 4
+Compat = 5
 [patches = 42F9D5AF]
 	//Patched by Prafull
 	//Fixes random hangs
@@ -39311,7 +39314,7 @@ Compat = 5
 Serial = SLUS-21232
 Name   = College Hoops 2K6
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = A60E027C]
 	//Patched by Prafull
 	//This fixes random hangs and makes the game playable
@@ -39335,6 +39338,7 @@ Compat = 2
 Serial = SLUS-21235
 Name   = MLB 2k6
 Region = NTSC-U
+Compat = 5
 [patches = 88BB9A5C]
 	//Patched by Prafull
 	//Avoid hang at start
@@ -40284,7 +40288,7 @@ Region = NTSC-U
 Serial = SLUS-21425
 Name   = NHL 2K7
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = 478EFBDB]
 	//Patched by Prafull
 	//Avoid hang at start
@@ -40785,7 +40789,7 @@ Region = NTSC-U
 Serial = SLUS-21563
 Name   = Horsez
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21564
 Name   = Atelier Iris 3: Grand Phantasm
@@ -41115,7 +41119,7 @@ eeRoundMode = 0
 Serial = SLUS-21632
 Name   = NHL 2K8
 Region = NTSC-U
-Compat = 3
+Compat = 5
 [patches = 77B49EF8]
 //Patched by Prafull-thanks to harsh
 //Avoid hang at start
@@ -41338,6 +41342,7 @@ Compat = 5
 Serial = SLUS-21680
 Name   = Harvey Birdman - Attorney at Law
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21681
 Name   = Boogie
@@ -42330,7 +42335,7 @@ Compat = 5
 Serial = SLUS-21914
 Name   = NHL 2K10
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = 82CA153C]
 	//Patched by Prafull
 	//Fix hanging problem
