@@ -940,7 +940,7 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputProgressive	= L"Progressive";
 	OutputInterlaced	= L"Interlaced";
 	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"${pause}Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
