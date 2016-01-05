@@ -206,7 +206,9 @@ public:
 //  Handy Human-readable constants for common immediate values (_16kb -> _4gb)
 
 static const sptr _1kb		= 1024 * 1;
+static const sptr _4kb		= _1kb * 4;
 static const sptr _16kb		= _1kb * 16;
+static const sptr _32kb		= _1kb * 32;
 static const sptr _64kb		= _1kb * 64;
 static const sptr _128kb	= _1kb * 128;
 static const sptr _256kb	= _1kb * 256;
