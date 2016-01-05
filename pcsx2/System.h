@@ -50,13 +50,17 @@ namespace HostMemoryMap
 	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
 	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
 	// 0x20000000 offset to avoid conflict.
-	static const int asan_offset = 0x20000000;
+	static const int asan_offset = 0x40000000;
 #else
 	static const int asan_offset = 0;
 #endif
 
 	// PS2 main memory, SPR, and ROMs (256 mb)
+#if VTLB_UsePageFaulting
+	static const uptr EEmem		= 0x20000000 - _32kb + asan_offset;
+#else
 	static const uptr EEmem		= 0x20000000 + asan_offset;
+#endif
 
 	// EE recompiler code cache area (64mb)
 	static const uptr EErec		= 0x30000000 + asan_offset;

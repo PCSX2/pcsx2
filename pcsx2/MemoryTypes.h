@@ -86,6 +86,9 @@ struct EEVM_MemoryAllocMess
 
 struct EEVM_MemoryAllocMess
 {
+	// Small trick to do add the immediate offset after the PEXT instruction
+	u8 wrap_4g[_32kb];
+
 	// 0x0... to 0x1...
 	u8 Main[Ps2MemSize::MainRam];				// Main memory (hard-wired to 32MB)
 

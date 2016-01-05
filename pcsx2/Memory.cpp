@@ -722,7 +722,7 @@ void eeMemoryReserve::Reserve()
 	const int extra = 10 * _1mb;
 	const int special = 32 * _1kb;
 
-	const int start = HostMemoryMap::EEmem;
+	const int start = HostMemoryMap::EEmem + _32kb;
 
 	const MemoryView ee_views[] {
 		{ 0x00000000 , start + 0 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
@@ -734,8 +734,9 @@ void eeMemoryReserve::Reserve()
 		{ 0x02000000 , start + 6 * _32mb           , _32mb   , PageAccess_None() }      ,
 		// Scratchpad and ROM and zero stuff
 		{ 0x04000000 , start + 7 * _32mb           , extra   , PageAccess_ReadWrite() } ,
-		// Special Main memory
+		// Special Main memory (+ an extra trick)
 		{ 0x00078000 , start + 8 * _32mb - special , special , PageAccess_ReadWrite() } ,
+		{ 0x00078000 , start - _32kb               , _32kb   , PageAccess_ReadWrite() } ,
 	};
 	for (size_t v = 0; v < sizeof(ee_views) / sizeof(ee_views[0]); v++)
 		m_reserve.Reserve( ee_views[v] );
@@ -1120,7 +1121,7 @@ void direct_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool&
 	}
 
 	s32 absolute_offset = *(s32*)(x86 + op_nb + 1);
-	s32 imm_offset = absolute_offset - (s32)(HostMemoryMap::EEmem);
+	s32 imm_offset = absolute_offset - (s32)(HostMemoryMap::EEmem + _32kb);
 
 	// Search the start of the load/store
 	u8* start = x86;

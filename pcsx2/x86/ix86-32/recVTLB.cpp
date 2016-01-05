@@ -261,7 +261,7 @@ namespace vtlb_private
 		}
 	}
 
-	static void DynGen_OffsetDirectRead( u32 bits, bool sign, bool sp )
+	static void DynGen_OffsetDirectRead( s16 imm, u32 bits, bool sign, bool sp )
 	{
 #ifdef PLEASE_SIGSEGV
 		uptr offset = (uptr)&eeMem->Main[0];
@@ -270,7 +270,7 @@ namespace vtlb_private
 		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
 		const xAddressReg& r = eax;
 #endif
-
+		offset += imm;
 		switch( bits )
 		{
 			case 0:
@@ -341,7 +341,7 @@ namespace vtlb_private
 		}
 	}
 
-	static void DynGen_OffsetDirectWrite( u32 bits, bool sp )
+	static void DynGen_OffsetDirectWrite( s16 imm, u32 bits, bool sp )
 	{
 #ifdef PLEASE_SIGSEGV
 		uptr offset = (uptr)&eeMem->Main[0];
@@ -350,6 +350,7 @@ namespace vtlb_private
 		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
 		const xAddressReg& r = eax;
 #endif
+		offset += imm;
 		switch(bits)
 		{
 			//8 , 16, 32 : data on EDX
@@ -638,10 +639,8 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr, s16 imm)
 		EE::Profiler.EmitMem();
 
 #ifdef PLEASE_SIGSEGV
-		xADD(ecx, imm);
-
 		xPEXT(eax, ecx, ptr[&compress_address]);
-		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
+		DynGen_OffsetDirectRead(imm, bits, sign, zone == 7);
 
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
@@ -661,7 +660,7 @@ void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr, s16 imm)
 
 		// Ram access let's be bold
 		EE::Profiler.EmitFastMem();
-		DynGen_OffsetDirectRead( bits, sign, zone == 7 );
+		DynGen_OffsetDirectRead(0, bits, sign, zone == 7);
 
 		*writeback = (uptr)xGetPtr();
 #endif
@@ -845,10 +844,8 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr, s16 imm)
 		EE::Profiler.EmitMem();
 
 #ifdef PLEASE_SIGSEGV
-		xADD(ecx, imm);
-
 		xPEXT(eax, ecx, ptr[&compress_address]);
-		DynGen_OffsetDirectWrite( bits, zone == 7 );
+		DynGen_OffsetDirectWrite(imm, bits, zone == 7);
 
 		// If direct access isn't possible, code won't be executed
 		EE::Profiler.EmitFastMem();
@@ -868,7 +865,7 @@ void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr, s16 imm)
 
 		// Ram access let's be bold
 		EE::Profiler.EmitFastMem();
-		DynGen_OffsetDirectWrite( bits, zone == 7 );
+		DynGen_OffsetDirectWrite(0, bits, zone == 7);
 
 		*writeback = (uptr)xGetPtr();
 #endif
