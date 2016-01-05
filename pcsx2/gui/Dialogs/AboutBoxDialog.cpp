@@ -58,7 +58,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		L"ChickenLiver(Lilypad), Gabest (Gsdx, Cdvdolio, Xpad)"
 		L"\n\n"
 		L"%s: \n"
-		L"Ckemu, Prafull, General Plot, KrossX, ssakash, turtleli, Blyss Sarania, micove, black_wd, Belmont, BGome,"
+		L"Ckemu, Prafull, General Plot, KrossX, Devina, ssakash, turtleli, Blyss Sarania, micove, black_wd, Belmont, BGome,"
 		L" _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady, F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
 		_("Plugin Specialists"), _("Special thanks to"));
 
