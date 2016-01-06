@@ -24,4 +24,5 @@ As a first step, please review these links as they'll help you understand how th
 
 ## Tasks
 * [Todo List](https://github.com/PCSX2/pcsx2/wiki/Contributing-(TODO-List))
+* [Issues](https://github.com/PCSX2/pcsx2/issues)
 * [A collection of ideas to improve GSdx OGL](https://github.com/PCSX2/pcsx2/wiki/Todo-List)
