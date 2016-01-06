@@ -1,6 +1,7 @@
 [Please read me before posting any issue](https://github.com/PCSX2/pcsx2/wiki/How-to-create-useful-and-valid-issues)
 
-If you want to contribute be sure to check those links
-  1. [TODO list](https://github.com/PCSX2/pcsx2/wiki/Idea-of-contribution-%28aka-todo-list%29)
+After reading the above, if you still wish to contribute, please check out these links all found on the [wiki](https://github.com/PCSX2/pcsx2/wiki):
+  1. [Contributing (TODO List)](https://github.com/PCSX2/pcsx2/wiki/Contributing-(TODO-List))
   2. [wxWidgets coding stategies](https://github.com/PCSX2/pcsx2/wiki/wxWidgets-Coding-Strategies)
-  3. [Coding style](https://github.com/PCSX2/pcsx2/wiki/Code-Formatting-Guidelines)
+  3. [Code Formatting Guidelines](https://github.com/PCSX2/pcsx2/wiki/Code-Formatting-Guidelines)
+  4. [Commenting Etiquette](https://github.com/PCSX2/pcsx2/wiki/Commenting-Etiquette)
