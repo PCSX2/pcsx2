@@ -1522,7 +1522,7 @@ void GSDeviceOGL::CheckDebugLog()
 // Note: used as a callback of DebugMessageCallback. Don't change the signature
 void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam)
 {
-	std::string message(gl_message, gl_length);
+	std::string message(gl_message, gl_length >= 0 ? gl_length : strlen(gl_message));
 	std::string type, severity, source;
 	static int sev_counter = 0;
 	switch(gl_type) {
