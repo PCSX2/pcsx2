@@ -89,6 +89,7 @@
 #define IDC_MIPMAP                      2084
 #define IDC_PRELOAD_GS                  2085
 #define IDC_TVSHADER                    2086
+#define IDC_UNSAFE_FBMASK               2087
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -107,7 +108,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2087
+#define _APS_NEXT_CONTROL_VALUE         2088
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif

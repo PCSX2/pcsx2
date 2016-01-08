@@ -34,6 +34,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
+	UserHacks_unsafe_fbmask  = theApp.GetConfig("UserHacks_unsafe_fbmask", false);
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 
@@ -41,6 +42,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
+		UserHacks_unsafe_fbmask  = false;
 	}
 }
 
@@ -299,10 +301,37 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 		ps_sel.fbmask = m_sw_blending && (~ff_fbmask & ~zero_fbmask & 0xF);
 
 		if (ps_sel.fbmask) {
-			GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
 			ps_cb.FbMask = fbmask_v.u8to32();
-			require_barrier = true;
+			// Only alpha is special here, I think we can take a very unsafe shortcut
+			// Alpha isn't blended on the GS but directly copyied into the RT.
+			//
+			// Behavior is clearly undefined however there is a high probability that
+			// it will work. Masked bit will be constant and normally the same everywhere
+			// RT/FS output/Cached value.
+			//
+			// Just to be sure let's add a new safe hack for unsafe access :)
+			//
+			// Here the GL spec quote to emphasize the unexpected behavior.
+			/*
+			   - If a texel has been written, then in order to safely read the result
+			   a texel fetch must be in a subsequent Draw separated by the command
+
+			   void TextureBarrier(void);
+
+			   TextureBarrier() will guarantee that writes have completed and caches
+			   have been invalidated before subsequent Draws are executed.
+			 */
+			if (!(~ff_fbmask & ~zero_fbmask & 0x7) && UserHacks_unsafe_fbmask) {
+				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				m_unsafe_fbmask = true;
+				require_barrier = false;
+			} else {
+				// The safe and accurate path (but slow)
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				require_barrier = true;
+			}
 		}
 	}
 
@@ -358,7 +387,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS;
-		case ACC_BLEND_FREE:            sw_blending |= ps_sel.fbmask || impossible_or_free_blend;
+		case ACC_BLEND_FREE:            sw_blending |= (ps_sel.fbmask  && !m_unsafe_fbmask) || impossible_or_free_blend; // blending is only free when we use slow fbmask
 		default:                        sw_blending |= accumulation_blend;
 	}
 	// SW Blending
@@ -566,7 +595,12 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (!require_barrier) {
+	if (!require_barrier && m_unsafe_fbmask) {
+		// Not safe but still worth to take some precautions.
+		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
+		glTextureBarrier();
+		dev->DrawIndexedPrimitive();
+	} else if (!require_barrier) {
 		dev->DrawIndexedPrimitive();
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
@@ -621,6 +655,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE_GL45 = false;
 
 	bool require_barrier = false; // For accurate option
+	m_unsafe_fbmask = false;
 
 	ASSERT(m_dev != NULL);
 
