@@ -44,6 +44,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # variable with all sources of this library
 set(UtilitiesSources
+	VirtualMemory.cpp
 	AlignedMalloc.cpp
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
@@ -57,8 +58,6 @@ set(UtilitiesSources
 	HashTools.cpp
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
-	Linux/LnxMisc.cpp
-	Linux/LnxThreads.cpp
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
@@ -68,12 +67,10 @@ set(UtilitiesSources
 	pxStreams.cpp
 	pxTranslate.cpp
 	pxWindowTextWriter.cpp
-	Semaphore.cpp
 	StringHelpers.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
 	vssprintf.cpp
-	VirtualMemory.cpp
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
@@ -112,7 +109,22 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
-	PrecompiledHeader.h)
+	PrecompiledHeader.h
+)
+
+if(APPLE)
+	LIST(APPEND UtilitiesSources
+		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
+		Darwin/DarwinSemaphore.cpp
+	)
+else()
+	LIST(APPEND UtilitiesSources
+		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
+		Semaphore.cpp
+	)
+endif()
 
 set(UtilitiesFinalSources
 	${UtilitiesSources}

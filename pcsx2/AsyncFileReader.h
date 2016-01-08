@@ -18,8 +18,10 @@
 #ifdef WIN32
 #	include <Windows.h>
 #	undef Yield
-#else
+#elif defined(__linux__)
 #	include <libaio.h>
+#elif defined(__APPLE__)
+#	include <aio.h>
 #endif
 
 class AsyncFileReader
@@ -70,9 +72,12 @@ class FlatFileReader : public AsyncFileReader
 	HANDLE hEvent;
 
 	bool asyncInProgress;
-#else
+#elif defined(__linux__)
 	int m_fd; // FIXME don't know if overlap as an equivalent on linux
 	io_context_t m_aio_context;
+#elif defined(__POSIX__)
+	int m_fd; // TODO OSX don't know if overlap as an equivalent on OSX
+	struct aiocb m_aio_context;
 #endif
 
 	bool shareWrite;

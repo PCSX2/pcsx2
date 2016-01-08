@@ -31,6 +31,8 @@ endmacro(print_dep)
 #-------------------------------------------------------------------------------
 if (GTK2_FOUND OR GTK3_FOUND)
     set(GTKn_FOUND TRUE)
+elseif(APPLE) # Not we have but that we don't change all if(gtkn) entries
+    set(GTKn_FOUND TRUE)
 else()
     set(GTKn_FOUND FALSE)
 endif()
@@ -71,8 +73,8 @@ else()
     set(pcsx2_core FALSE)
     print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
-# Linux need also gtk2
-if(UNIX AND pcsx2_core AND NOT GTKn_FOUND)
+# Linux, BSD, use gtk2, but not OSX
+if(UNIX AND pcsx2_core AND NOT GTKn_FOUND AND NOT APPLE)
     set(pcsx2_core FALSE)
     print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
 endif()
@@ -253,7 +255,8 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+if((APPLE AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+    OR (LINUX AND ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs))
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)

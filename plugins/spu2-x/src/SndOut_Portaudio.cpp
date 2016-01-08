@@ -588,6 +588,9 @@ public:
 #ifdef __linux__
 		// By default on linux use the ALSA API (+99% users) -- Gregory
 		CfgReadStr( L"PORTAUDIO", L"HostApi", api, L"ALSA" );
+#elif defined(__APPLE__)
+		// Suppose OSX only has CoreAudio...
+		CfgReadStr( L"PORTAUDIO", L"HostApi", api, L"CoreAudio" );
 #else
 		CfgReadStr( L"PORTAUDIO", L"HostApi", api, L"WASAPI" );
 #endif

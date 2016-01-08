@@ -58,7 +58,13 @@ void yuv2rgb_reference(void)
 		}
 }
 
-#ifdef _M_X86_32
+// TODO OSX optimize me
+#ifdef __APPLE__
+void yuv2rgb_sse2() {
+	yuv2rgb_reference();
+}
+
+#elif defined(_M_X86_32)
 // Everything below is bit accurate to the IPU specification (except maybe rounding).
 // Know the specification before you touch it.
 #define SSE_BYTES(x) {x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x}

@@ -271,7 +271,7 @@ protected:
 	virtual void CommitBlocks( uptr page, uint blocks );
 };
 
-#ifdef __linux__
+#ifdef __POSIX__
 
 #	define PCSX2_PAGEFAULT_PROTECT
 #	define PCSX2_PAGEFAULT_EXCEPT

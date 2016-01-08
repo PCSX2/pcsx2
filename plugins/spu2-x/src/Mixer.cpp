@@ -270,6 +270,20 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
+#if defined(__clang__)
+#include <limits.h>
+static s32 rotr(u32 x, u32 s)
+{
+	//return (x >> s) | (x << (32 - s));
+	return (x >> s) | (x << (sizeof(x) * CHAR_BIT - s));
+}
+
+static s32 rotl(u32 x, u32 s)
+{
+	//return (x << s) | (x >> (32 - s));
+	return (x << s) | (x >> (sizeof(x) * CHAR_BIT - s));
+}
+#endif
 
 static s32 __forceinline GetNoiseValues()
 {
@@ -292,7 +306,7 @@ static s32 __forceinline GetNoiseValues()
 		ROR eax,3
 		MOV Seed,eax
 	}
-#else
+#elif !defined(__clang__) // Linux with GCC
 	__asm__ (
 		".intel_syntax\n"
 		"MOV %%eax,%1\n"
@@ -307,6 +321,14 @@ static s32 __forceinline GetNoiseValues()
 		".att_syntax\n" : "=r"(Seed) :"r"(Seed)
 		: "%eax", "%esi"
 		);
+#else // Clang and others
+	s32 s = rotr(Seed,5);
+	s ^= 0x9a;
+	s32 k = rotl(s,2);
+	k+=s;
+	k^=s;
+	k = rotr(k,3);
+	Seed=k;
 #endif
 	return retval;
 }
@@ -819,7 +841,7 @@ static int p_cachestat_counter=0;
 
 // Gcc does not want to inline it when lto is enabled because some functions growth too much.
 // The function is big enought to see any speed impact. -- Gregory
-#ifndef __linux__
+#ifndef __POSIX__
 __forceinline
 #endif
 void Mix()
