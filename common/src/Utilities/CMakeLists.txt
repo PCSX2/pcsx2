@@ -12,14 +12,6 @@ set(CommonFlags
 	-fno-strict-aliasing
     )
 
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
-	)
-endif(NOT USE_CLANG) 
-
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	
