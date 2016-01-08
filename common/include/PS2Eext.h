@@ -27,7 +27,7 @@
 
 #define EXPORT_C_(type) extern "C" type CALLBACK
 
-#elif defined(GTK_MAJOR_VERSION)
+#elif defined(__linux__)
 
 #include <gtk/gtk.h>
 #include <cstring>
@@ -190,7 +190,7 @@ struct PluginConf
     }
 };
 
-#if defined(GTK_MAJOR_VERSION)
+#if defined(__linux__)
 
 static void SysMessage(const char *fmt, ...)
 {
