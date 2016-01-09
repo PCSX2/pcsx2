@@ -571,11 +571,6 @@ set(pcsx2x86Headers
 	x86/newVif_UnpackSSE.h
 	)
 
-# colect .asm files
-set(pcsx2AsmFiles
-	IPU/yuv2rgb.asm
-	x86/ix86-32/aVif_proc-32.asm)
-
 # collect .S files
 if (NOT DISABLE_SVU)
     set(pcsx2SSources x86/aVUzerorec.S)
