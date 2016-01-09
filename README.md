@@ -4,22 +4,20 @@ PCSX2 is an open-source PlayStation 2 emulator. Its purpose is to mimic the the 
 
 The PCSX2 project has been running for more than ten years. Once only able to run a few public domain demos, recent versions enable many games to work at full speed, including popular titles such as *Final Fantasy X* or *Devil May Cry 3*. Visit the *[PCSX2 homepage](http://pcsx2.net)* to check the latest compatibility status of games (with more than 2000 titles tested), or ask your doubts in the *[Official forums](http://forums.pcsx2.net/)*.
 
-The latest officially released version is *1.4.0*.
-Installers and binaries for both Windows and Linux are available from **[our homepage](http://pcsx2.net/)**.
-
-| ![KOF 2002](https://dl.dropboxusercontent.com/u/743491/PCSX2/KoF2002.jpg "KOF 2002") | ![Final Fantasy XII](https://dl.dropboxusercontent.com/u/743491/PCSX2/FinalFantasyXII.jpg "Final Fantasy XII") | ![Odin Sphere](https://dl.dropboxusercontent.com/u/743491/PCSX2/OdinSphere.jpg "Odin Sphere")
-|:----:|:----:|:----:|
+The latest officially released stable version is *1.4.0*.
+Installers and binaries for both Windows and Linux are available from **[our website](http://pcsx2.net/)**.
+Development builds are also available from **[our website](http://pcsx2.net/download/development/git.html)**.
 
 # System Requirements
 
 ## Minimum
-* OS: Windows or Linux
+* OS: Windows or GNU/Linux
 * CPU: Any that supports SSE2 (Pentium 4 and up, Athlon64 and up)
 * GPU: Any that supports Pixel Shader model 2.0, except Nvidia FX series (broken SM2.0, too slow anyway)
 * 512MB RAM (Note: Vista and up needs at least 2GB to run reliably)
 
 ## Recommended
-* OS: Windows Vista/7/8/8.1/10 (32-bit or 64-bit) with the [latest DirectX](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
+* OS: Windows Vista/7/8/8.1/10 (32-bit or 64-bit) with the [latest DirectX](https://www.microsoft.com/en-us/download/details.aspx?id=8109) or GNU/Linux
 * CPU: Intel Core 2 Duo @ 3.2ghz or better
 * GPU: 8800gt or better (for Direct3D10 support)
 * RAM: 1GB on Linux/Windows XP, 2GB or more on Vista and up
@@ -27,9 +25,6 @@ Installers and binaries for both Windows and Linux are available from **[our hom
 **Note**: Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PlayStation 2 console to use the emulator.
 
 **Note:** PCSX2 mainly takes advantage of 2 CPU cores. As of r4865 PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on dual core CPUs) it may be a slowdown.
-
-| ![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009") | ![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") | ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
-|:----:|:----:|:----:|
 
 # Quality Assurance
 
