@@ -14,7 +14,15 @@ endif()
 
 # plugin name
 set(Output spu2x-2.0.0)
-set(spu2xFinalFlags "")
+if (Linux)
+	if (SDL2_API)
+		set(spu2xFinalFlags "-DSPU2X_SDL2")
+	else()
+		set(spu2xFinalFlags "-DSPU2X_SDL")
+	endif()
+else()
+	set(spu2xFinalFlags "")
+endif()
 
 # spu2x sources
 set(spu2xSources

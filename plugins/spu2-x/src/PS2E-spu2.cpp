@@ -20,7 +20,7 @@
 #include "Dma.h"
 #include "Dialogs.h"
 
-#ifdef __POSIX__
+#ifdef __APPLE__
 #include "PS2Eext.h"
 #endif
 
