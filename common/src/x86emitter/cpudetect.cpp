@@ -278,6 +278,9 @@ void x86capabilities::Identify()
 		}
 	}
 
+	hasBMI1 = ( SEFlag >>  3 ) & 1;
+	hasBMI2 = ( SEFlag >>  8 ) & 1;
+
 	// Ones only for AMDs:
 	hasMultimediaExtensionsExt					= ( EFlags >> 22 ) & 1; //mmx2
 	hasAMD64BitArchitecture						= ( EFlags >> 29 ) & 1; //64bit cpu
