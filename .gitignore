@@ -18,8 +18,6 @@
 *.dump
 
 *.asm
-!/pcsx2/IPU/yuv2rgb.asm
-!/pcsx2/x86/ix86-32/aVif_proc-32.asm
 !/plugins/CDVDpeops/i386.asm
 !/plugins/zerogs/dx/x86-32.asm
 !/plugins/zerogs/dx/x86-64.asm
