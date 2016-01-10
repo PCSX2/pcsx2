@@ -25,6 +25,12 @@ namespace x86Emitter {
 	// Using GCC's always_inline attribute fixes it.  This differs from __fi in that it
 	// inlines *even in debug builds* which is (usually) undesirable.
 	//  ... except when it avoids compiler bugs.
+
+	// Note: I try with -fabi-version=6 without success
+	// {standard input}: Assembler messages:
+	// {standard input}:30773: Error: symbol `_ZNK10x86Emitter13xImpl_JmpCallclIFvvEEEvPT_' is already defined
+	// pcsx2/CMakeFiles/PCSX2.dir/build.make:4550: recipe for target 'pcsx2/CMakeFiles/PCSX2.dir/x86/ix86-32/iR5900-32.cpp.o' failed
+
 #	define __always_inline_tmpl_fail	__attribute__((always_inline))
 #else
 #	define __always_inline_tmpl_fail
