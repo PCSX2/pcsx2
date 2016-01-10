@@ -25,8 +25,8 @@
 using namespace vtlb_private;
 using namespace x86Emitter;
 
-//#define PLEASE_SIGSEGV
-//#define FASTER_DIRECT_ACCESS
+#define PLEASE_SIGSEGV
+#define FASTER_DIRECT_ACCESS
 
 #ifdef PLEASE_SIGSEGV
 static const bool s_fast_memspace[16] = {

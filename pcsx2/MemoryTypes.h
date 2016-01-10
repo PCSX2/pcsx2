@@ -56,7 +56,7 @@ typedef u128 mem128_t;
 // Note that support for this feature may not be doable under x86/32 platforms, due to the
 // 2gb/3gb limit of Windows XP (the 3gb feature will make it slightly more feasible at least).
 //
-#define VTLB_UsePageFaulting 0
+#define VTLB_UsePageFaulting 1
 
 #if VTLB_UsePageFaulting
 
