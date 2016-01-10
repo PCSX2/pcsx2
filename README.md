@@ -29,15 +29,17 @@ Development builds are also available from **[our website](http://pcsx2.net/down
 * GPU: DirectX 11 GPU or greater
 * RAM: 4GB or more
 
-**NOTE 1**: PCSX2 1.4.0 is the last version to support Windows XP. Windows XP is no longer getting updates (including security-related udpates), and graphics drivers for Windows XP are older and no longer maintained.
+## Notes
 
-**NOTE 2**: If you have Windows Vista, make sure you have fully updated Windows and have the latest drivers to ensure maximum stability. Having a newer GPU is also recommended so you have the latest drivers.
+- PCSX2 1.4.0 is the last version to support Windows XP. Windows XP is no longer getting updates (including security-related udpates), and graphics drivers for Windows XP are older and no longer maintained.
 
-**NOTE 3**: Make sure to update your OS, drivers, and [DirectX](https://www.microsoft.com/en-us/download/details.aspx?id=8109) (if applicable) to make sure you have the best experience possible.
+- If you have Windows Vista, make sure you have fully updated Windows and have the latest drivers to ensure maximum stability. Having a newer GPU is also recommended so you have the latest drivers.
 
-**NOTE 4**: Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PlayStation 2 console to use the emulator.
+- Make sure to update your OS, drivers, and [DirectX](https://www.microsoft.com/en-us/download/details.aspx?id=8109) (if applicable) to make sure you have the best experience possible.
 
-**NOTE 5**: PCSX2 mainly takes advantage of 2 CPU cores. As of r4865 PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on dual-core CPUs) it may be a slowdown.
+- Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PlayStation 2 console to use the emulator.
+
+- PCSX2 mainly takes advantage of 2 CPU cores. As of r4865 PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on dual-core CPUs) it may be a slowdown.
 
 ![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009")
 ![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
