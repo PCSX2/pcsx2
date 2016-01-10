@@ -41,6 +41,7 @@
 
 
 #include "Utilities/MemsetFast.inl"
+#include "Utilities/Perf.h"
 
 
 using namespace x86Emitter;
@@ -63,6 +64,7 @@ __aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 bool g_cpuFlushedPC, g_cpuFlushedCode, g_recompilingDelaySlot, g_maySignalException;
 
+eeProfiler EE::Profiler;
 
 ////////////////////////////////////////////////////////////////
 // Static Private Variables - R5900 Dynarec
@@ -573,6 +575,8 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( JITCompile );
+
+	Perf::any.map((uptr)&eeRecDispatchers, 4096, "EE Dispatcher");
 }
 
 
@@ -698,6 +702,10 @@ static bool eeCpuExecuting = false;
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
+	Perf::ee.reset();
+
+	EE::Profiler.Reset();
+
 	recAlloc();
 
 	if( AtomicExchange( eeRecIsReset, true ) ) return;
@@ -741,6 +749,9 @@ static void recShutdown()
 	safe_aligned_free( recConstBuf );
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
+
+	// FIXME Warning thread unsafe
+	Perf::dump();
 }
 
 static void recResetEE()
@@ -837,12 +848,19 @@ static void recExecute()
 
 	if(m_cpuException)	m_cpuException->Rethrow();
 	if(m_Exception)		m_Exception->Rethrow();
+
+	// FIXME Warning thread unsafe
+	Perf::dump();
 #endif
+
+	EE::Profiler.Print();
 }
 
 ////////////////////////////////////////////////////
 void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
+	EE::Profiler.EmitOp(eeOpcode::SYSCALL);
+
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
 	xCMP(ptr32[&cpuRegs.pc], pc);
@@ -858,6 +876,8 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 ////////////////////////////////////////////////////
 void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
+	EE::Profiler.EmitOp(eeOpcode::BREAK);
+
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 
 	xCMP(ptr32[&cpuRegs.pc], pc);
@@ -2182,6 +2202,14 @@ StartRecomp:
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;
+
+#if 0
+	// Example: Dump both x86/EE code
+	if (startpc == 0x456630) {
+		iDumpBlock(s_pCurBlockEx->startpc, s_pCurBlockEx->size*4, s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size);
+	}
+#endif
+	Perf::ee.map(s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
 
 	recPtr = xGetPtr();
 

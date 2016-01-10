@@ -41,6 +41,9 @@
     <ClCompile Include="..\..\src\Utilities\PathUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\Perf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

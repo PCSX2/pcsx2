@@ -84,7 +84,9 @@ void recLUI()
 		xCDQ();
 		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
-	}	
+	}
+
+	EE::Profiler.EmitOp(eeOpcode::LUI);
 }
 
 ////////////////////////////////////////////////////
@@ -285,21 +287,25 @@ void recMTHILO(int hi)
 void recMFHI()
 {
 	recMFHILO(1);
+	EE::Profiler.EmitOp(eeOpcode::MFHI);
 }
 
 void recMFLO()
 {
 	recMFHILO(0);
+	EE::Profiler.EmitOp(eeOpcode::MFLO);
 }
 
 void recMTHI()
 {
 	recMTHILO(1);
+	EE::Profiler.EmitOp(eeOpcode::MTHI);
 }
 
 void recMTLO()
 {
 	recMTHILO(0);
+	EE::Profiler.EmitOp(eeOpcode::MTLO);
 }
 
 ////////////////////////////////////////////////////
@@ -407,21 +413,25 @@ void recMTHILO1(int hi)
 void recMFHI1()
 {
 	recMFHILO1(1);
+	EE::Profiler.EmitOp(eeOpcode::MFHI1);
 }
 
 void recMFLO1()
 {
 	recMFHILO1(0);
+	EE::Profiler.EmitOp(eeOpcode::MFLO1);
 }
 
 void recMTHI1()
 {
 	recMTHILO1(1);
+	EE::Profiler.EmitOp(eeOpcode::MTHI1);
 }
 
 void recMTLO1()
 {
 	recMTHILO1(0);
+	EE::Profiler.EmitOp(eeOpcode::MTLO1);
 }
 
 //// MOVZ

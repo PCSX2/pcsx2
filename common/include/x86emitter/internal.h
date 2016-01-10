@@ -71,5 +71,73 @@ namespace x86Emitter {
 	template< typename T1, typename T2 > __emitinline
 		void xOpWrite0F( u16 opcode, const T1& param1, const T2& param2, u8 imm8 )	{ xOpWrite0F( 0, opcode, param1, param2, imm8 ); }
 
+	// VEX 2 Bytes Prefix
+	template< typename T1, typename T2, typename T3 > __emitinline
+		void xOpWriteC5( u8 prefix, u8 opcode, const T1& param1, const T2& param2, const T3& param3 )
+	{
+		pxAssert( prefix == 0 || prefix == 0x66 || prefix == 0xF3 || prefix == 0xF2 );
+
+		const xRegisterInt& reg = param1.IsReg() ? param1 : param2;
+
+#ifdef __x86_64__
+		u8 nR = reg.IsExtended() ? 0x00 : 0x80;
+#else
+		u8 nR = 0x80;
+#endif
+		u8 L = reg.IsWideSIMD() ? 4 : 0;
+
+		u8 nv = (~param2.GetId() & 0xF) << 3;
+
+		u8 p =
+			prefix == 0xF2 ? 3 :
+			prefix == 0xF3 ? 2 :
+			prefix == 0x66 ? 1 : 0;
+
+		xWrite8( 0xC5 );
+		xWrite8( nR | nv | L | p );
+		xWrite8( opcode );
+		EmitSibMagic( param1, param3 );
+	}
+
+	// VEX 3 Bytes Prefix
+	template< typename T1, typename T2, typename T3 > __emitinline
+		void xOpWriteC4( u8 prefix, u8 mb_prefix, u8 opcode, const T1& param1, const T2& param2, const T3& param3, int w = -1 )
+	{
+		pxAssert( prefix == 0 || prefix == 0x66 || prefix == 0xF3 || prefix == 0xF2 );
+		pxAssert( mb_prefix == 0x0F || mb_prefix == 0x38 || mb_prefix == 0x3A );
+
+		const xRegisterInt& reg = param1.IsReg() ? param1 : param2;
+
+#ifdef __x86_64__
+		u8 nR = reg.IsExtended() ? 0x00 : 0x80;
+		u8 nB = param3.IsExtended() ? 0x00 : 0x20;
+		u8 nX = 0x40; // likely unused so hardwired to disabled
+#else
+		u8 nR = 0x80;
+		u8 nB = 0x20;
+		u8 nX = 0x40;
+#endif
+		u8 L = reg.IsWideSIMD() ? 4 : 0;
+		u8 W = (w == -1) ? (reg.GetOperandSize() == 8 ? 0x80 : 0) : // autodetect the size
+			0x80 * w; // take directly the W value
+
+		u8 nv = (~param2.GetId() & 0xF) << 3;
+
+		u8 p =
+			prefix == 0xF2 ? 3 :
+			prefix == 0xF3 ? 2 :
+			prefix == 0x66 ? 1 : 0;
+
+		u8 m =
+			mb_prefix == 0x3A ? 3 :
+			mb_prefix == 0x38 ? 2 : 1;
+
+		xWrite8( 0xC4 );
+		xWrite8( nR | nX | nB | m );
+		xWrite8( W | nv | L | p );
+		xWrite8( opcode );
+		EmitSibMagic( param1, param3 );
+	}
+
 }
 

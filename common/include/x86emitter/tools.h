@@ -90,6 +90,8 @@ public:
 	u32 hasStreamingSIMD4Extensions2				:1;
 	u32 hasAVX										:1;
 	u32 hasAVX2										:1;
+	u32 hasBMI1										:1;
+	u32 hasBMI2										:1;
 	u32 hasFMA										:1;
 
 	// AMD-specific CPU Features

@@ -197,6 +197,69 @@ void iDumpVU1Registers()
 #endif
 }
 
+// This function is close of iDumpBlock but it doesn't rely too much on
+// global variable. Beside it doesn't print the flag info.
+//
+// However you could call it anytime to dump any block. And we have both
+// x86 and EE disassembly code
+void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
+{
+	u32 ee_end = ee_pc + ee_size;
+
+	DbgCon.WriteLn( Color_Gray, "dump block %x:%x (x86:0x%x)", ee_pc, ee_end, x86_pc );
+
+	g_Conf->Folders.Logs.Mkdir();
+	wxString dump_filename = Path::Combine( g_Conf->Folders.Logs, wxsFormat(L"R5900dump_%.8X:%.8X.txt", ee_pc, ee_end) );
+	AsciiFile eff( dump_filename, L"w" );
+
+	// Print register content to detect the memory access type. Warning value are taken
+	// during the call of this function. There aren't the real value of the block.
+	eff.Printf("Dump register data: 0x%x\n", (uptr)&cpuRegs.GPR.r[0].UL[0]);
+	for (int reg = 0; reg < 32; reg++) {
+		// Only lower 32 bits (enough for address)
+		eff.Printf("\t%2s <= 0x%08x_%08x\n", R5900::GPR_REG[reg], cpuRegs.GPR.r[reg].UL[1],cpuRegs.GPR.r[reg].UL[0]);
+	}
+	eff.Printf("\n");
+
+
+	if (!symbolMap.GetLabelString(ee_pc).empty())
+	{
+		eff.Printf( "%s\n", symbolMap.GetLabelString(ee_pc).c_str() );
+	}
+
+	for ( u32 i = ee_pc; i < ee_end; i += 4 )
+	{
+		std::string output;
+		//TLB Issue disR5900Fasm( output, memRead32( i ), i, false );
+		disR5900Fasm( output, psMu32(i), i, false );
+		eff.Printf( "0x%.X : %s\n", i, output.c_str() );
+	}
+
+	// Didn't find (search) a better solution
+	eff.Printf( "\nRaw x86 dump (https://www.onlinedisassembler.com/odaweb/):\n");
+	u8* x86 = (u8*)x86_pc;
+	for (u32 i = 0; i < x86_size; i++) {
+		eff.Printf("%.2X", x86[i]);
+	}
+	eff.Printf("\n\n");
+
+	eff.Close(); // Close the file so it can be appended by objdump
+
+	// handy but slow solution (system call)
+#ifdef __linux__
+	wxString obj_filename = Path::Combine(g_Conf->Folders.Logs, wxString(L"objdump_tmp.o"));
+	wxFFile objdump(obj_filename , L"wb");
+	objdump.Write(x86, x86_size);
+	objdump.Close();
+
+	std::system(
+			wxsFormat("objdump -D -b binary -mi386 --disassembler-options=intel --no-show-raw-insn --adjust-vma=%d %s >> %s",
+				(u32) x86_pc, WX_STR(obj_filename), WX_STR(dump_filename))
+			);
+#endif
+}
+
+
 // Originally from iR5900-32.cpp
 void iDumpBlock( int startpc, u8 * ptr )
 {

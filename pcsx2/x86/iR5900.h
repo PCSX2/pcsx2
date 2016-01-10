@@ -21,6 +21,7 @@
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
+#include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
 extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
@@ -133,12 +134,14 @@ typedef void (*R5900FNPTR_INFO)(int info);
 #define EERECOMPILE_CODE0(fn, xmminfo) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
 }
 
 #define EERECOMPILE_CODEX(codename, fn) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	codename(rec##fn##_const, rec##fn##_); \
 }
 

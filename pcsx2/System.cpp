@@ -27,6 +27,7 @@
 #include "System/RecTypes.h"
 
 #include "Utilities/MemsetFast.inl"
+#include "Utilities/Perf.h"
 
 
 // --------------------------------------------------------------------------------------
@@ -56,6 +57,9 @@ void RecompiledCodeReserve::_registerProfiler()
 	if (m_profiler_name.IsEmpty() || !IsOk()) return;
 	ProfilerRegisterSource( m_profiler_name, m_baseptr, GetReserveSizeInBytes() );
 	m_profiler_registered = true;
+
+	// Could potentially be integrated into ProfilerRegisterSource
+	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.ToUTF8());
 }
 
 void RecompiledCodeReserve::_termProfiler()

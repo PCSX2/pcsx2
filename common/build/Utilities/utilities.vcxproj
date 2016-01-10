@@ -117,6 +117,7 @@
     <ClCompile Include="..\..\src\Utilities\VirtualMemory.cpp" />
     <ClCompile Include="..\..\src\Utilities\x86\MemcpyFast.cpp" />
     <ClCompile Include="..\..\src\Utilities\PathUtils.cpp" />
+    <ClCompile Include="..\..\src\Utilities\Perf.cpp" />
     <ClCompile Include="..\..\src\Utilities\PrecompiledHeader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">Create</PrecompiledHeader>

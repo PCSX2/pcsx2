@@ -403,6 +403,8 @@ EERECOMPILE_CODE0(BNEL, XMMINFO_READS|XMMINFO_READT);
 ////////////////////////////////////////////////////
 void recBLTZAL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLTZAL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeOnWriteReg(31, 0);
@@ -442,6 +444,8 @@ void recBLTZAL()
 ////////////////////////////////////////////////////
 void recBGEZAL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGEZAL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeOnWriteReg(31, 0);
@@ -481,6 +485,8 @@ void recBGEZAL()
 ////////////////////////////////////////////////////
 void recBLTZALL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLTZALL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeOnWriteReg(31, 0);
@@ -515,6 +521,8 @@ void recBLTZALL()
 ////////////////////////////////////////////////////
 void recBGEZALL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGEZALL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeOnWriteReg(31, 0);
@@ -550,6 +558,8 @@ void recBGEZALL()
 //// BLEZ
 void recBLEZ()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLEZ);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -596,6 +606,8 @@ void recBLEZ()
 //// BGTZ
 void recBGTZ()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGTZ);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -642,6 +654,8 @@ void recBGTZ()
 ////////////////////////////////////////////////////
 void recBLTZ()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLTZ);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -675,6 +689,8 @@ void recBLTZ()
 ////////////////////////////////////////////////////
 void recBGEZ()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGEZ);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -708,6 +724,8 @@ void recBGEZ()
 ////////////////////////////////////////////////////
 void recBLTZL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLTZL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -738,6 +756,8 @@ void recBLTZL()
 ////////////////////////////////////////////////////
 void recBGEZL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGEZL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -775,6 +795,8 @@ void recBGEZL()
 ////////////////////////////////////////////////////
 void recBLEZL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BLEZL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
@@ -819,6 +841,8 @@ void recBLEZL()
 ////////////////////////////////////////////////////
 void recBGTZL()
 {
+	EE::Profiler.EmitOp(eeOpcode::BGTZL);
+
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
 	_eeFlushAllUnused();
