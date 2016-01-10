@@ -1,13 +1,13 @@
 # PCSX2
 
-PCSX2 is an open-source PlayStation 2 emulator. It's purpose is to mimic the PS2 hardware, using a combination of MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PlayStation 2 games on your PC, with many additional features and benefits.
+PCSX2 is an open-source PlayStation 2 emulator. It's purpose is to emulate the PS2 hardware, using a combination of MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PlayStation 2 games on your PC, with many additional features and benefits.
 
 # Project details
 
 The PCSX2 project has been running for more than ten years. Once only able to run a few public domain demos, newer versions enable many games to work at full speed, including popular titles such as *Final Fantasy X* or *Devil May Cry 3*. Visit the *[PCSX2 homepage](http://pcsx2.net)* to check the latest compatibility status of games (with more than 2000 titles tested), or ask your doubts in the *[Official forums](http://forums.pcsx2.net/)*.
 
 The latest officially released stable version is *1.4.0*.
-Installers and binaries for both Windows and Linux are available from **[our website](http://pcsx2.net/)**.
+Installers and binaries for both Windows and Linux are available from **[our website](http://pcsx2.net/download.html)**.
 
 Development builds are also available from **[our website](http://pcsx2.net/download/development/git.html)**.
 
