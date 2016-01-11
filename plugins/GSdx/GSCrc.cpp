@@ -474,6 +474,7 @@ CRC::Game CRC::m_games[] =
 	{0x2615F542, FrontMission5, JP, 0}, 
 	{0xF60255AC, FrontMission5, JP, 0},
 	{0xCB783836, FrontMission5, JP, 0},
+	{0xB7532DF6, FrontMission5, JP, 0},
 	{0xAEDAEE99, GodHand, JP, 0}, 
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
