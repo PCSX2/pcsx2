@@ -39,7 +39,7 @@ Development builds are also available from **[our website](http://pcsx2.net/down
 
 - Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PlayStation 2 console to use the emulator.
 
-- PCSX2 mainly takes advantage of 2 CPU cores. As of r4865 PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on dual-core CPUs) it may be a slowdown.
+- PCSX2 mainly takes advantage of 2 CPU cores. As of [commit r4865] (https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on dual-core CPUs) it may be a slowdown.
 
 ![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009")
 ![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
