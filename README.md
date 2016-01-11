@@ -2,7 +2,7 @@
 
 PCSX2 is an open-source PlayStation 2 emulator. Its purpose is to emulate the PS2 hardware, using a combination of MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PlayStation 2 games on your PC, with many additional features and benefits.
 
-# Project details
+# Project Details
 
 The PCSX2 project has been running for more than ten years. Once only able to run a few public domain demos, newer versions enable many games to work at full speed, including popular titles such as *Final Fantasy X* or *Devil May Cry 3*. Visit the *[PCSX2 homepage](http://pcsx2.net)* to check the latest compatibility status of games (with more than 2000 titles tested), or ask your doubts in the *[Official forums](http://forums.pcsx2.net/)*.
 
@@ -15,7 +15,7 @@ Development builds are also available from **[our website](http://pcsx2.net/down
 ![Final Fantasy XII](https://dl.dropboxusercontent.com/u/743491/PCSX2/FinalFantasyXII.jpg "Final Fantasy XII")
 ![Odin Sphere](https://dl.dropboxusercontent.com/u/743491/PCSX2/OdinSphere.jpg "Odin Sphere")
 
-# System requirements
+# System Requirements
 
 ## Minimum
 * OS: Windows Vista or newer or GNU/Linux (32-bit or 64-bit)
@@ -44,7 +44,7 @@ Development builds are also available from **[our website](http://pcsx2.net/down
 ![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009")
 ![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
 
-# Quality assurance
+# Quality Assurance
 
 **Build** | **Status**
 --------|--------
