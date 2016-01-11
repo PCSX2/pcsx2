@@ -49,6 +49,7 @@ class GSRendererOGL : public GSRendererHW
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
 		bool m_unsafe_fbmask;
+		vector<size_t> m_drawlist;
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;

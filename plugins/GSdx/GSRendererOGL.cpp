@@ -31,6 +31,9 @@ GSRendererOGL::GSRendererOGL()
 
 	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
 
+	// Hope nothing requires too many draw calls.
+	m_drawlist.reserve(2048);
+
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
@@ -488,6 +491,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
 	GSVertex* v = m_vertex.buff;
 
+	m_drawlist.clear();
 	size_t i = 0;
 	while (i < count) {
 		// In order to speed up comparison a bounding-box is accumulated. It removes a
@@ -544,6 +548,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 			}
 			j += 2;
 		}
+		m_drawlist.push_back((j - i) >> 1); // Sprite count
 		i = j;
 	}
 
@@ -615,6 +620,13 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
+	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
+		size_t nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6;
+		for (size_t count, p = 0, n = 0; n < m_drawlist.size(); p += count, ++n) {
+			count = m_drawlist[n] * nb_vertex;
+			glTextureBarrier();
+			dev->DrawIndexedPrimitive(p, count);
+		}
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
@@ -622,7 +634,6 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		switch (m_vt.m_primclass) {
 			case GS_TRIANGLE_CLASS: nb_vertex = 3; break;
 			case GS_POINT_CLASS:	nb_vertex = 1; break;
-			case GS_SPRITE_CLASS:	nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6; break;
 			default: nb_vertex = 2; break;
 		}
 
