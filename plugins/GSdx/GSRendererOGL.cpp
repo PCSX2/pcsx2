@@ -622,11 +622,30 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		dev->DrawIndexedPrimitive();
 	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
 		size_t nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6;
+
+		GL_PUSH("Split the draw (SPRITE)");
+
+#if defined(_DEBUG)
+		// Check how draw call is split.
+		map<size_t, size_t> frequency;
+		for (const auto& it: m_drawlist)
+			++frequency[it];
+
+		string message;
+		for (const auto& it: frequency)
+			message += " " + to_string(it.first) + "(" + to_string(it.second) + ")";
+
+		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
+			m_index.tail / nb_vertex, m_drawlist.size(), message.c_str());
+#endif
+
 		for (size_t count, p = 0, n = 0; n < m_drawlist.size(); p += count, ++n) {
 			count = m_drawlist[n] * nb_vertex;
 			glTextureBarrier();
 			dev->DrawIndexedPrimitive(p, count);
 		}
+
+		GL_POP();
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
