@@ -485,59 +485,68 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 
 	// Check intersection of sprite primitive only
 	size_t count = m_vertex.next;
-	GSVertex* v = &m_vertex.buff[0];
+	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
+	GSVertex* v = m_vertex.buff;
 
-	// In order to speed up comparaison a boundind-box is accumulated. It removes a
-	// loop so code is much faster (check game virtua fighter). Besides it allow to check
-	// properly the Y order.
-	GSVector4i all;
-	//FIXME better vector operation
-	if (v[1].XYZ.Y < v[0].XYZ.Y) {
-		all.y = v[1].XYZ.Y;
-		all.w = v[0].XYZ.Y;
-	} else {
-		all.y = v[0].XYZ.Y;
-		all.w = v[1].XYZ.Y;
-	}
-	if (v[1].XYZ.X < v[0].XYZ.X) {
-		all.x = v[1].XYZ.X;
-		all.z = v[0].XYZ.X;
-	} else {
-		all.x = v[0].XYZ.X;
-		all.z = v[1].XYZ.X;
-	}
-
-	for(size_t i = 2; i < count; i += 2) {
-		GSVector4i sprite;
+	size_t i = 0;
+	while (i < count) {
+		// In order to speed up comparison a bounding-box is accumulated. It removes a
+		// loop so code is much faster (check game virtua fighter). Besides it allow to check
+		// properly the Y order.
+		GSVector4i all;
 		//FIXME better vector operation
 		if (v[i+1].XYZ.Y < v[i+0].XYZ.Y) {
-			sprite.y = v[i+1].XYZ.Y;
-			sprite.w = v[i+0].XYZ.Y;
+			all.y = v[i+1].XYZ.Y;
+			all.w = v[i+0].XYZ.Y;
 		} else {
-			sprite.y = v[i+0].XYZ.Y;
-			sprite.w = v[i+1].XYZ.Y;
+			all.y = v[i+0].XYZ.Y;
+			all.w = v[i+1].XYZ.Y;
 		}
 		if (v[i+1].XYZ.X < v[i+0].XYZ.X) {
-			sprite.x = v[i+1].XYZ.X;
-			sprite.z = v[i+0].XYZ.X;
+			all.x = v[i+1].XYZ.X;
+			all.z = v[i+0].XYZ.X;
 		} else {
-			sprite.x = v[i+0].XYZ.X;
-			sprite.z = v[i+1].XYZ.X;
+			all.x = v[i+0].XYZ.X;
+			all.z = v[i+1].XYZ.X;
 		}
 
-		// Be sure to get vertex in good order, otherwise .r* function doesn't
-		// work as expected.
-		ASSERT(sprite.x <= sprite.z);
-		ASSERT(sprite.y <= sprite.w);
-		ASSERT(all.x <= all.z);
-		ASSERT(all.y <= all.w);
+		size_t j = i + 2;
+		while (j < count) {
+			GSVector4i sprite;
+			//FIXME better vector operation
+			if (v[j+1].XYZ.Y < v[j+0].XYZ.Y) {
+				sprite.y = v[j+1].XYZ.Y;
+				sprite.w = v[j+0].XYZ.Y;
+			} else {
+				sprite.y = v[j+0].XYZ.Y;
+				sprite.w = v[j+1].XYZ.Y;
+			}
+			if (v[j+1].XYZ.X < v[j+0].XYZ.X) {
+				sprite.x = v[j+1].XYZ.X;
+				sprite.z = v[j+0].XYZ.X;
+			} else {
+				sprite.x = v[j+0].XYZ.X;
+				sprite.z = v[j+1].XYZ.X;
+			}
 
-		if (all.rintersect(sprite).rempty()) {
-			all = all.runion(sprite);
-		} else {
-			return PRIM_OVERLAP_YES;
+			// Be sure to get vertex in good order, otherwise .r* function doesn't
+			// work as expected.
+			ASSERT(sprite.x <= sprite.z);
+			ASSERT(sprite.y <= sprite.w);
+			ASSERT(all.x <= all.z);
+			ASSERT(all.y <= all.w);
+
+			if (all.rintersect(sprite).rempty()) {
+				all = all.runion(sprite);
+			} else {
+				overlap = PRIM_OVERLAP_YES;
+				break;
+			}
+			j += 2;
 		}
+		i = j;
 	}
+
 #if 0
 	// Old algo: less constraint but O(n^2) instead of O(n) as above
 
@@ -580,7 +589,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 #endif
 
 	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
-	return PRIM_OVERLAP_NO;
+	return overlap;
 }
 
 GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize)
