@@ -33,11 +33,6 @@ using x86Emitter::xWrite64;
 
 #define MEMADDR(addr, oplen)	(addr)
 
-// Recent GCC define the macro in x86intrin.h
-#ifndef _MM_MK_INSERTPS_NDX
-#define _MM_MK_INSERTPS_NDX(srcField, dstField, zeroMask) (((srcField)<<6) | ((dstField)<<4) | (zeroMask))
-#endif
-
 extern void ModRM( uint mod, uint reg, uint rm );
 extern void SibSB( uint ss, uint index, uint base );
 extern void SET8R( int cc, int to );

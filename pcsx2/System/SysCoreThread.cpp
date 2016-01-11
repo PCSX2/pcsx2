@@ -35,7 +35,7 @@
 #	include <wx/msw/wrapwin.h>
 #endif
 
-#include <xmmintrin.h>
+#include "x86emitter/x86_intrin.h"
 
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *External Thread* Implementations

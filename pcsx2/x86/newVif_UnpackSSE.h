@@ -19,8 +19,7 @@
 #include "Vif_Dma.h"
 #include "newVif.h"
 
-#include <xmmintrin.h>
-#include <emmintrin.h>
+#include "x86emitter/x86_intrin.h"
 
 using namespace x86Emitter;
 

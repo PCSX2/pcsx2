@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2016  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,22 +13,20 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 
-#include "PrecompiledHeader.h"
-#include "x86emitter/x86_intrin.h"
+// Because nobody can't agree on a single name !
+#if defined(__GNUG__)
 
-SSE_MXCSR g_sseMXCSR	= { DEFAULT_sseMXCSR };
-SSE_MXCSR g_sseVUMXCSR	= { DEFAULT_sseVUMXCSR };
+#include "x86intrin.h"
 
-// SetCPUState -- for assignment of SSE roundmodes and clampmodes.
-//
-void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR)
-{
-	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+#else
 
-	g_sseMXCSR		= sseMXCSR.ApplyReserveMask();
-	g_sseVUMXCSR	= sseVUMXCSR.ApplyReserveMask();
+#include "Intrin.h"
 
-	_mm_setcsr( g_sseMXCSR.bitmask );
-}
+#endif
 
+// Not correctly defined in GCC4.8 and below ! (dunno for VS)
+#ifndef _MM_MK_INSERTPS_NDX
+#define _MM_MK_INSERTPS_NDX(srcField, dstField, zeroMask) (((srcField)<<6) | ((dstField)<<4) | (zeroMask))
+#endif

@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "xmmintrin.h"
+#include "x86emitter/x86_intrin.h"
 #pragma once
 
 // Create some typecast operators for SIMD operations.  For some reason MSVC needs a
