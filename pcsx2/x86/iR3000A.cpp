@@ -128,8 +128,7 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetPtr();
 
-	xMOV( ecx, ptr[&psxRegs.pc] );
-	xCALL( iopRecRecompile );
+	xFastCall(iopRecRecompile, ptr[&psxRegs.pc] );
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
@@ -199,7 +198,7 @@ static void _DynGen_Dispatchers()
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
 	iopDispatcherEvent = (DynGenFunc*)xGetPtr();
-	xCALL( recEventTest );
+	xFastCall(recEventTest );
 	iopDispatcherReg	= _DynGen_DispatcherReg();
 
 	iopJITCompile			= _DynGen_JITCompile();
@@ -523,11 +522,11 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 			}
 
 			if (debug)
-				xCALL(debug);
+				xFastCall(debug);
 #endif
 			irxHLE hle = irxImportHLE(libname, index);
 			if (hle) {
-				xCALL(hle);
+				xFastCall(hle);
 				xCMP(eax, 0);
 				xJNE(iopDispatcherReg);
 			}
@@ -907,7 +906,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xSUB(ptr32[&iopCycleEE], eax);
 		xJLE(iopExitRecompiledCode);
 
-		xCALL(iopEventTest);
+		xFastCall(iopEventTest);
 
 		if( newpc != 0xffffffff )
 		{
@@ -929,7 +928,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xSUB(eax, ptr32[&g_iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
-		xCALL(iopEventTest);
+		xFastCall(iopEventTest);
 
 		if( newpc != 0xffffffff ) {
 			xCMP(ptr32[&psxRegs.pc], newpc);
@@ -964,9 +963,9 @@ void rpsxSYSCALL()
 	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
-	xMOV( ecx, 0x20 );			// exception code
-	xMOV( edx, psxbranch==1 );	// branch delay slot?
-	xCALL( psxException );
+	//xMOV( ecx, 0x20 );			// exception code
+	//xMOV( edx, psxbranch==1 );	// branch delay slot?
+	xFastCall(psxException, 0x20, psxbranch == 1 );
 
 	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
@@ -987,9 +986,9 @@ void rpsxBREAK()
 	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
-	xMOV( ecx, 0x24 );			// exception code
-	xMOV( edx, psxbranch==1 );	// branch delay slot?
-	xCALL( psxException );
+	//xMOV( ecx, 0x24 );			// exception code
+	//xMOV( edx, psxbranch==1 );	// branch delay slot?
+	xFastCall(psxException, 0x24, psxbranch == 1 );
 
 	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
@@ -1102,8 +1101,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 	if( IsDebugBuild )
 	{
-		xMOV(ecx, psxpc);
-		xCALL(PreBlockCheck);
+		xFastCall(PreBlockCheck, psxpc);
 	}
 
 	// go until the next branch

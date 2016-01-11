@@ -57,8 +57,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
-			if (!isVU1) xCALL(mVU0clearlpStateJIT);
-			else		xCALL(mVU1clearlpStateJIT);
+			if (!isVU1) xFastCall(mVU0clearlpStateJIT);
+			else		xFastCall(mVU1clearlpStateJIT);
 		}
 	}
 
@@ -117,9 +117,9 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1)
-				xCALL(mVU0clearlpStateJIT);
+				xFastCall(mVU0clearlpStateJIT);
 			else
-				xCALL(mVU1clearlpStateJIT);
+				xFastCall(mVU1clearlpStateJIT);
 		}
 	}
 
@@ -192,8 +192,8 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 		xJMP(mVU.exitFunct);
 	}
 	
-	if (!mVU.index) xCALL(mVUcompileJIT<0>); //(u32 startPC, uptr pState)
-	else			xCALL(mVUcompileJIT<1>);
+	if (!mVU.index) xFastCall(mVUcompileJIT<0>, gprT2, gprT3); //(u32 startPC, uptr pState)
+	else			xFastCall(mVUcompileJIT<1>, gprT2, gprT3);
 
 	mVUrestoreRegs(mVU);
 	xJMP(gprT1);  // Jump to rec-code address

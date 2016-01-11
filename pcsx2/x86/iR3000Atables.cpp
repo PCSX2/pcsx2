@@ -32,7 +32,7 @@ extern u32 g_psxMaxRecMem;
 static void rpsx##f() { \
 	xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
 	_psxFlushCall(FLUSH_EVERYTHING); \
-	xCALL((void*)(uptr)psx##f); \
+	xFastCall((void*)(uptr)psx##f); \
 	PSX_DEL_CONST(_Rt_); \
 /*	branch = 2; */\
 }
@@ -626,7 +626,7 @@ static void rpsxLB()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xCALL( iopMemRead8 );		// returns value in EAX
+	xFastCall(iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -642,7 +642,7 @@ static void rpsxLBU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xCALL( iopMemRead8 );		// returns value in EAX
+	xFastCall(iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -658,7 +658,7 @@ static void rpsxLH()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xCALL( iopMemRead16 );		// returns value in EAX
+	xFastCall(iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -674,7 +674,7 @@ static void rpsxLHU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xCALL( iopMemRead16 );		// returns value in EAX
+	xFastCall(iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -695,7 +695,7 @@ static void rpsxLW()
 	xTEST(ecx, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xCALL( iopMemRead32 );		// returns value in EAX
+	xFastCall(iopMemRead32, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -721,7 +721,7 @@ static void rpsxSB()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xCALL( iopMemWrite8 );
+	xFastCall(iopMemWrite8, ecx, edx );
 }
 
 static void rpsxSH()
@@ -732,7 +732,7 @@ static void rpsxSH()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xCALL( iopMemWrite16 );
+	xFastCall(iopMemWrite16, ecx, edx );
 }
 
 static void rpsxSW()
@@ -743,7 +743,7 @@ static void rpsxSW()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xCALL( iopMemWrite32 );
+	xFastCall(iopMemWrite32, ecx, edx );
 }
 
 //// SLL
@@ -1371,7 +1371,7 @@ void rpsxRFE()
 	// Test the IOP's INTC status, so that any pending ints get raised.
 
 	_psxFlushCall(0);
-	xCALL((void*)(uptr)&iopTestIntc );
+	xFastCall((void*)(uptr)&iopTestIntc );
 }
 
 // R3000A tables

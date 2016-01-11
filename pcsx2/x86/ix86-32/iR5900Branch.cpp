@@ -396,7 +396,7 @@ EERECOMPILE_CODE0(BNEL, XMMINFO_READS|XMMINFO_READT);
 //	xMOV(ptr32[(u32*)((int)&cpuRegs.code)], cpuRegs.code );
 //	xMOV(ptr32[(u32*)((int)&cpuRegs.pc)], pc );
 //	iFlushCall(FLUSH_EVERYTHING);
-//	xCALL((void*)(int)BLTZAL );
+//	xFastCall((void*)(int)BLTZAL );
 //	branch = 2;
 //}
 

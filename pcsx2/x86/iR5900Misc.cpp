@@ -71,7 +71,7 @@ namespace OpcodeImpl {
 //	xMOV(ptr32[&cpuRegs.code], cpuRegs.code );
 //	xMOV(ptr32[&cpuRegs.pc], pc );
 //	iFlushCall(FLUSH_EVERYTHING);
-//	xCALL((void*)(uptr)CACHE );
+//	xFastCall((void*)(uptr)CACHE );
 //	//branch = 2;
 //
 //	xCMP(ptr32[(u32*)((int)&cpuRegs.pc)], pc);
@@ -203,7 +203,7 @@ void recMTSAH()
 	   //xMOV(ptr32[&cpuRegs.code], (u32)cpuRegs.code );
 	   //xMOV(ptr32[&cpuRegs.pc], (u32)pc );
 	   //iFlushCall(FLUSH_EVERYTHING);
-	   //xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::CACHE );
+	   //xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::CACHE );
 	   //branch = 2;
 	}
 

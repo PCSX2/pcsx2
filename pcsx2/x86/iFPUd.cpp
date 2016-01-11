@@ -89,20 +89,6 @@ namespace DOUBLE {
 #define FPUflagSO	0X00000010
 #define FPUflagSU	0X00000008
 
-#define REC_FPUBRANCH(f) \
-	void f(); \
-	void rec##f() { \
-	iFlushCall(FLUSH_INTERPRETER); \
-	xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
-	branch = 2; \
-}
-
-#define REC_FPUFUNC(f) \
-	void f(); \
-	void rec##f() { \
-	iFlushCall(FLUSH_INTERPRETER); \
-	xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
-}
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -416,7 +402,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 	{
 		xMOVD(ecx, xRegisterSSE(sreg));
 		xMOVD(edx, xRegisterSSE(treg));
-		xCALL((void*)(uptr)&FPU_MUL_HACK ); //returns the hacked result or 0
+		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
 		xTEST(eax, eax);
 		noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);
