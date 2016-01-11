@@ -103,6 +103,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("Preload TLB hack to avoid tlb miss on Goemon"),
 			wxEmptyString
+		},
+		{
+			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
+			wxEmptyString
 		}
 	};
 

@@ -255,7 +255,16 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 	if(!quick.prog) { // If null, we need to search for new program
 		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
-			if (mVUcmpProg(mVU, *it[0], 0)) {
+			bool b = mVUcmpProg(mVU, *it[0], 0);
+			if (EmuConfig.Gamefixes.ScarfaceIbit) {
+				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) && ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
+					b = true;
+					mVU.prog.cleared = 0;
+					mVU.prog.cur = it[0];
+					mVU.prog.isSame = 1;
+				}
+			}
+			if (b) {
 				quick.block = it[0]->block[startPC/8];
 				quick.prog  = it[0];
 				list->erase(it);

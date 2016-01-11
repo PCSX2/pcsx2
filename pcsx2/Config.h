@@ -58,6 +58,7 @@ enum GamefixId
 	Fix_GIFReverse,
 	Fix_FMVinSoftware,
 	Fix_GoemonTlbMiss,
+	Fix_ScarfaceIbit,
 
 	GamefixId_COUNT
 };
@@ -350,7 +351,8 @@ struct Pcsx2Config
 				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 				GIFReverseHack  :1,		// Allows PATH3 to continue even if the FIFO is reversed.
 				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
-				GoemonTlbHack:1;		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation
 		BITFIELD_END
 
 		GamefixOptions();

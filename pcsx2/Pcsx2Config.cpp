@@ -319,7 +319,7 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_GIFReverse:	GIFReverseHack		= enabled;  break;
 		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
 		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
-
+		case Fix_ScarfaceIbit:  ScarfaceIbit        = enabled;  break;
 		jNO_DEFAULT;
 	}
 }
@@ -345,7 +345,7 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_GIFReverse:	return GIFReverseHack;
 		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
 		case Fix_GoemonTlbMiss: return GoemonTlbHack;
-		
+		case Fix_ScarfaceIbit:  return ScarfaceIbit;
 		jNO_DEFAULT;
 	}
 	return false;		// unreachable, but we still need to suppress warnings >_<
@@ -371,6 +371,7 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( GIFReverseHack );
 	IniBitBool( FMVinSoftwareHack );
 	IniBitBool( GoemonTlbHack );
+	IniBitBool( ScarfaceIbit );
 }
 
 
