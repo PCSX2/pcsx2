@@ -1032,8 +1032,12 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 			*/
 			Rd.UD[0] = cpuRegs.GPR.r[_Rt_].UD[1] >> (sa_amt - 64);
 			Rd.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0] >> (sa_amt - 64);
-			Rd.UD[0]|= cpuRegs.GPR.r[_Rs_].UD[0] << (128 - sa_amt);
-			Rd.UD[1]|= cpuRegs.GPR.r[_Rs_].UD[1] << (128 - sa_amt);
+			if (sa_amt != 64) {
+				// A 64 bit shift is equivalent to a 0 bit shift because value is masked
+				// on 6 bits
+				Rd.UD[0]|= cpuRegs.GPR.r[_Rs_].UD[0] << (128u - sa_amt);
+				Rd.UD[1]|= cpuRegs.GPR.r[_Rs_].UD[1] << (128u - sa_amt);
+			}
 			cpuRegs.GPR.r[_Rd_] = Rd;
 		}
 	}
