@@ -257,6 +257,7 @@ const wxChar *const tbl_GamefixNames[] =
 	L"GIFReverse",
 	L"FMVinSoftware",
 	L"GoemonTlb",
+	L"ScarfaceIbit"
 };
 
 const __fi wxChar* EnumToString( GamefixId id )
