@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-01-11 21:00+0100\n"
-"PO-Revision-Date: 2016-01-11 22:38+0100\n"
+"PO-Revision-Date: 2016-01-12 09:46+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -338,27 +338,27 @@ msgstr ""
 
 #: pcsx2/gui/AppConfig.cpp:909
 msgid "Safest"
-msgstr ""
+msgstr "El mes segur"
 
 #: pcsx2/gui/AppConfig.cpp:910
 msgid "Safe (faster)"
-msgstr ""
+msgstr "segur (més ràpid)"
 
 #: pcsx2/gui/AppConfig.cpp:911
 msgid "Balanced"
-msgstr ""
+msgstr "Equilibrat"
 
 #: pcsx2/gui/AppConfig.cpp:912
 msgid "Aggressive"
-msgstr ""
+msgstr "Agresiu"
 
 #: pcsx2/gui/AppConfig.cpp:913
 msgid "Aggressive plus"
-msgstr ""
+msgstr "Més agresiu"
 
 #: pcsx2/gui/AppConfig.cpp:914
 msgid "Mostly Harmful"
-msgstr ""
+msgstr "Sobretot perjudicial"
 
 #: pcsx2/gui/AppConfig.cpp:1074 pcsx2/gui/AppConfig.cpp:1080
 msgid "Failed to overwrite existing settings file; permission was denied."
@@ -963,7 +963,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
 msgid "Language selector"
-msgstr ""
+msgstr "Selector d'idioma"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
 msgid ""
@@ -973,7 +973,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
 msgid "Welcome to PCSX2!"
-msgstr ""
+msgstr "Benvingut a PCSX2"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:103
 msgid "Configuration Guides (online)"
@@ -1050,7 +1050,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:134
 msgid "Preset:"
-msgstr ""
+msgstr "Preajust:"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:212
 #, c-format
@@ -1084,7 +1084,7 @@ msgstr "Reparacións de jocs"
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:237
 #, c-format
 msgid "Components Selectors - %s"
-msgstr ""
+msgstr "Selector de components - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:244
 msgid "Plugins"
@@ -1092,11 +1092,11 @@ msgstr "Extensións"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:245
 msgid "BIOS"
-msgstr ""
+msgstr "BIOS"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:246
 msgid "Folders"
-msgstr ""
+msgstr "Carpetes"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:257
 #, c-format
@@ -1603,27 +1603,29 @@ msgstr ""
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:107
 msgid "BIOS Search Path:"
-msgstr ""
+msgstr "Directori de Busca de BIOS:"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
 msgid "Select folder with PS2 BIOS roms"
-msgstr ""
+msgstr "Selecciona una carpeta on hi han les roms de BIOS de PS2"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr ""
+"Feu clic al botó Neavegar per seleccionar una carpeta diferent, on PCSX2 "
+"buscarà les roms de BIOS de PS2."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:171
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
 msgid "Refresh list"
-msgstr ""
+msgstr "Refresca la llista"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:119
 msgid "Select a BIOS rom:"
-msgstr ""
+msgstr "Selecciona una rom de BIOS"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:24
 msgid "Round Mode"
@@ -1745,11 +1747,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:155
 msgid "Use default setting"
-msgstr ""
+msgstr "Utilitza la opció per defecte"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:174
 msgid "Open in Explorer"
-msgstr ""
+msgstr "Obriu en el explorador"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:175
 msgid "Open an explorer window to this folder."
@@ -1778,39 +1780,39 @@ msgstr "Pantalla Panoràmica (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
-msgstr ""
+msgstr "Desactiva el redimensionament del marge de la finestra"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
-msgstr ""
+msgstr "Amaga sempre el cursor"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
-msgstr ""
+msgstr "Amaga la finestra quan està pausat"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
-msgstr ""
+msgstr "Per defecte obre en mode pantalla complerta"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
-msgstr ""
+msgstr "Espera a VSync per refrescar"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Double-click toggles fullscreen mode"
-msgstr ""
+msgstr "Amb doble click obres el mode pantalla complerta"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:85
 msgid "Aspect Ratio:"
-msgstr ""
+msgstr "Radi d'aspecte:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:87
 msgid "Custom Window Size:"
-msgstr ""
+msgstr "Tamany personalitzat de la finestra:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:90
 msgid "Zoom:"
-msgstr ""
+msgstr "Zoom:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:166
 msgid ""
@@ -2176,7 +2178,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:118
 msgid "Apply"
-msgstr ""
+msgstr "Aplicar"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:119
 msgid "Make this language my default right now!"
@@ -2184,7 +2186,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Savestates:"
-msgstr ""
+msgstr "Estats de guardat:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Savestates"
@@ -2192,7 +2194,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
 msgid "Snapshots:"
-msgstr ""
+msgstr "Instantànies:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:47
 msgid "Select a folder for Snapshots"
@@ -2200,7 +2202,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Logs/Dumps:"
-msgstr ""
+msgstr "Registres/Volcats:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for logs/dumps"
@@ -2224,7 +2226,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:352
 msgid "Plugins Search Path:"
-msgstr ""
+msgstr "Directori de Busca de extensions:"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:353
 msgid "Select a folder with PCSX2 plugins"
@@ -2232,11 +2234,13 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:366
 msgid "Configure..."
-msgstr ""
+msgstr "Configurar..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:375
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr ""
+"Feu clic al botó Navegar per seleccionar una carpeta diferent per extensions "
+"PCSX2."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:474
 #, c-format
@@ -2258,7 +2262,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid "Enable speedhacks"
-msgstr ""
+msgstr "Activa els hacks de velocitat"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
 msgid ""
@@ -2273,65 +2277,73 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid "EE Cyclerate [Not Recommended]"
-msgstr ""
+msgstr "Radi de cicles en EE [No Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "VU Cycle Stealing [Not Recommended]"
-msgstr ""
+msgstr "Robament de cicles en VU [No Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
 msgid "microVU Hacks"
-msgstr ""
+msgstr "Hacks de MiscroVU"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
 msgid "mVU Flag Hack"
-msgstr ""
+msgstr "Hack de bandera de mVU"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
+"Bon augment de velocitat i alta compatibilitat; pot causar mals gràfics... "
+"[Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
 msgid "MTVU (Multi-Threaded microVU1)"
-msgstr ""
+msgstr "MTVU (Multi-Threaded microVU1)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
+"Bon augment de velocitat i alta compatibilitat; potser pot fer penjar el "
+"pcsx2... [Recomanat si tens més de 3 Nuclis]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
 msgid "Other Hacks"
-msgstr ""
+msgstr "Altres hacks"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid "Enable INTC Spin Detection"
-msgstr ""
+msgstr "Activa la detecció de voltes de INTC"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
+"Enorme augment de velocitat per a alguns jocs, casi sense problemas de "
+"compatibilitat. [Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid "Enable Wait Loop Detection"
-msgstr ""
+msgstr "Activa la espera de detecció de bucles"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
+"Moderat augment de velocitat per a alguns jocs, sense efectes secundaris "
+"coneguts. [Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "Enable fast CDVD"
-msgstr ""
+msgstr "Habilitar CDVD Ràpid"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr ""
+msgstr "Accés al disc ràpid, menys temps de càrrega. [No Recomanat]"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:37
 msgid "Themes Search Path:"
