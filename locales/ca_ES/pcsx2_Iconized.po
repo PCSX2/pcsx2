@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-01-12 09:55+0100\n"
-"PO-Revision-Date: 2016-01-12 10:09+0100\n"
+"PO-Revision-Date: 2016-01-12 10:41+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: \n"
 "Language: ca_ES\n"
@@ -172,6 +172,9 @@ msgid ""
 "after loading from savestates.  May not be compatible with all games (Guitar "
 "Hero)."
 msgstr ""
+"Evita la corrupció targeta de memòria, forçant els jocs per a tornar a "
+"indexar el contingut de la targeta després de carregar des de estats "
+"guardats. Pot no ser compatible amb tots els jocs (Guitar Hero)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -179,6 +182,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Només tipus de carpeta) el contingut de targetes de memòria tornar a  ser "
+"indexat cada vegada que els produeixen canvis en l'execució del seftware. "
+"Això evita que la targeta de memòria es quedi sense espai per al guardat."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format

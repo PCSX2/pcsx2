@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-01-12 09:54+0100\n"
-"PO-Revision-Date: 2016-01-12 10:24+0100\n"
+"PO-Revision-Date: 2016-01-12 10:43+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: \n"
 "Language: ca_ES\n"
@@ -1106,25 +1106,29 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr ""
+msgstr "Auto-Extreu les targetes de memoria quan carregues un estat guardat"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
 msgstr ""
+"Gestiona automàticament els guardats segons el joc que estigui funcionant"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
-msgstr ""
+msgstr "Gestor de Targetes de Memòria"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
+msgstr "Deixa anar targetes \"a\" o \"desde\" els Ports de la PS2"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
+"\n"
+"Nota: \"Duplicar/Canviar el nom/Crear/Eliminar\" NO serà revertit amb "
+"\"Cancel·lar\"."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -2051,34 +2055,34 @@ msgstr ""
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Eject"
-msgstr ""
+msgstr "Extreure"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
 msgid "Duplicate ..."
-msgstr ""
+msgstr "Duplicar ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:395
 msgid "Rename ..."
-msgstr ""
+msgstr "Canviar de nom ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:396
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:465
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Create ..."
-msgstr ""
+msgstr "Crear ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:397
 msgid "Convert ..."
-msgstr ""
+msgstr "Convertir ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
-msgstr ""
+msgstr "Targeta:"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:502
 msgid "Create a new memory card."
-msgstr ""
+msgstr "Crea una nova targeta de memòria"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Rename this memory card ..."
@@ -2086,7 +2090,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Insert ..."
-msgstr ""
+msgstr "Inserta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Eject the card from this port"
@@ -2102,7 +2106,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Delete"
-msgstr ""
+msgstr "Elimina"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Permanently delete this memory card from disk (all contents are lost)"
@@ -2182,101 +2186,101 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Empty"
-msgstr ""
+msgstr "Buit"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:965
 #, c-format
 msgid "Select a target port for '%s'"
-msgstr ""
+msgstr "Sel·lecciona un port per '%s'"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:966
 msgid "Insert card"
-msgstr ""
+msgstr "Inserta la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Eject card"
-msgstr ""
+msgstr "Treu la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Insert card ..."
-msgstr ""
+msgstr "Inserta la targeta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1028
 msgid "Duplicate card ..."
-msgstr ""
+msgstr "Duplica la targeta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
 msgid "Rename card ..."
-msgstr ""
+msgstr "Canviar el nom de la targeta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
 msgid "Delete card"
-msgstr ""
+msgstr "Eliminar la targeta..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1032
 msgid "Convert card"
-msgstr ""
+msgstr "Converteix la targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1036
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1040
 msgid "Create a new card ..."
-msgstr ""
+msgstr "Crear una nova targeta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1044
 msgid "Refresh List"
-msgstr ""
+msgstr "Refresca la llista"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
-msgstr ""
+msgstr "Port de PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:101
 msgid "Card (file) name"
-msgstr ""
+msgstr "Nom de Tarjeta (Arxiu)"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:102
 msgid "Card size"
-msgstr ""
+msgstr "Tamany de la Targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:103
 msgid "Formatted"
-msgstr ""
+msgstr "Formatada"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:104
 msgid "Type"
-msgstr ""
+msgstr "Tipus"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
 msgid "Last Modified"
-msgstr ""
+msgstr "Modificat per últim cop"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:106
 msgid "Created on"
-msgstr ""
+msgstr "Creat a"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "Yes"
-msgstr ""
+msgstr "Si"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 msgid "PS2"
-msgstr ""
+msgstr "PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 msgid "PSX"
-msgstr ""
+msgstr "PSX"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
-msgstr ""
+msgstr "[-- Targetes sense utilizar --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:167
 msgid "[-- No unused cards --]"
-msgstr ""
+msgstr "[-- Sense targetes sense utilizar --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
 msgid "Usermode Selection"
