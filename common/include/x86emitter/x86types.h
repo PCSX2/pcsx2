@@ -696,6 +696,7 @@ template< typename T > void xWrite( T val );
 		bool IsByteSizeDisp() const { return is_s8( Displacement ); }
 		bool IsMem() const			{ return true; }
 		bool IsReg() const			{ return false; }
+		bool IsExtended() const		{ return false; } // Non sense but ease template
 
 		operator xAddressVoid()
 		{
