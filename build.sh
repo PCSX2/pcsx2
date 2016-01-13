@@ -100,15 +100,15 @@ for ARG in "$@"; do
 done
 
 root=$PWD/$(dirname "$0")
-log=$root/install_log.txt
-build=$root/build
-coverity_dir=cov-int
+log="$root/install_log.txt"
+build="$root/build"
+coverity_dir="`cov-int`"
 coverity_result=pcsx2-coverity.xz
 
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
-    rm -fr $build/*
+    rm -fr "$build"/*
 fi
 
 if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
@@ -118,26 +118,26 @@ elif [[ "$useCross" -ne 1 ]]; then
     useCross=0
 fi
 
-echo "Building pcsx2 with ${flags[*]}" | tee $log
+echo "Building pcsx2 with ${flags[*]}" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
-if [[ -L $build  ]]; then
-    build=`readlink $build`
+if [[ -L "$build"  ]]; then
+    build=`readlink "$build"`
 fi
 
-mkdir -p $build
+mkdir -p "$build"
 # Cmake will generate file inside $CWD. It would be nicer if an option to cmake can be provided.
-cd $build
+cd "$build"
 
 if [[ "$useClang" -eq 1 ]]; then
     if [[ "$useCross" -eq 0 ]]; then
-        CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
+        CC=clang CXX=clang++ cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     else
-        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" $root 2>&1 | tee -a $log
+        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     fi
 else
-    cmake "${flags[@]}" $root 2>&1 | tee -a $log
+    cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
 fi
 
 
@@ -160,11 +160,11 @@ if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
     do
         flat_d=`echo $d | sed -e 's@/@_@'`
         log=cpp_check__${flat_d}.log
-        rm -f $log
+        rm -f "$log"
 
-        cppcheck $check -j $ncpu --platform=unix32 $define $root/$d 2>&1 | tee $log
+        cppcheck $check -j $ncpu --platform=unix32 $define "$root/$d" 2>&1 | tee "$log"
         # Create a small summary (warning it might miss some issues)
-        fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" $log >> $summary
+        fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" "$log" >> $summary
     done
     exit 0
 fi
@@ -198,16 +198,16 @@ fi
 # Coverity build
 ############################################################
 if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
-    cov-build --dir $coverity_dir make -j"$ncpu" 2>&1 | tee -a $log
+    cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
-    (cd $build; tar caf $coverity_result $coverity_dir)
+    (cd "$build"; tar caf $coverity_result "$coverity_dir")
     exit 0
 fi
 
 ############################################################
 # Real build
 ############################################################
-make -j"$ncpu" 2>&1 | tee -a $log
-make install 2>&1 | tee -a $log
+make -j"$ncpu" 2>&1 | tee -a "$log"
+make install 2>&1 | tee -a "$log"
 
 exit 0
