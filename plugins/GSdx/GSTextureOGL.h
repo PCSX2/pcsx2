@@ -31,7 +31,7 @@ namespace PboPool {
 
 	char* Map(uint32 size);
 	void Unmap();
-	uint32 Offset();
+	uptr Offset();
 	void EndTransfer();
 
 	void Init();

@@ -36,7 +36,7 @@ extern uint64 g_real_texture_upload_byte;
 namespace PboPool {
 
 	GLuint m_pool[PBO_POOL_SIZE];
-	uint32 m_offset[PBO_POOL_SIZE];
+	uptr m_offset[PBO_POOL_SIZE];
 	char*  m_map[PBO_POOL_SIZE];
 	uint32 m_current_pbo = 0;
 	uint32 m_size;
@@ -132,7 +132,7 @@ namespace PboPool {
 		}
 	}
 
-	uint32 Offset() {
+	uptr Offset() {
 		return m_offset[m_current_pbo];
 	}
 
