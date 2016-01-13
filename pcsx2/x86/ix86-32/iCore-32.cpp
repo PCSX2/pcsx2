@@ -872,7 +872,7 @@ void SetFPUstate() {
 	}
 }
 
-void _signExtendSFtoM(u32 mem)
+void _signExtendSFtoM(uptr mem)
 {
 	xLAHF();
 	xSAR(ax, 15);
@@ -880,7 +880,7 @@ void _signExtendSFtoM(u32 mem)
 	xMOV(ptr[(void*)(mem)], eax);
 }
 
-int _signExtendMtoMMX(x86MMXRegType to, u32 mem)
+int _signExtendMtoMMX(x86MMXRegType to, uptr mem)
 {
 	int t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
 
