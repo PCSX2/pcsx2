@@ -26,6 +26,12 @@ CoverityBuild=0
 cppcheck=0
 clangTidy=0
 
+root=$PWD/$(dirname "$0")
+log="$root/install_log.txt"
+build="$root/build"
+coverity_dir="cov-int"
+coverity_result=pcsx2-coverity.xz
+
 if [[ $(uname -s) == 'Darwin' ]]; then
     ncpu=$(sysctl -n hw.ncpu)
     release=$(uname -r)
@@ -47,10 +53,10 @@ for ARG in "$@"; do
         --clang-tidy        ) flags+=(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON); clangTidy=1 ;;
         --clang             ) useClang=1 ;;
         --cppcheck          ) cppcheck=1 ;;
-        --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
-        --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
+        --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel)   build="$root/build_dev";;
+        --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug)   build="$root/build_dbg";;
+        --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) build="$root/build_rel";;
         --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
-        --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
         --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
@@ -98,12 +104,6 @@ for ARG in "$@"; do
             exit 1
     esac
 done
-
-root=$PWD/$(dirname "$0")
-log="$root/install_log.txt"
-build="$root/build"
-coverity_dir="`cov-int`"
-coverity_result=pcsx2-coverity.xz
 
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
