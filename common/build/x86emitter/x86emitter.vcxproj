@@ -101,6 +101,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\x86emitter\bmi.cpp" />
     <ClCompile Include="..\..\src\x86emitter\cpudetect.cpp" />
     <ClCompile Include="..\..\src\x86emitter\fpu.cpp" />
     <ClCompile Include="..\..\src\x86emitter\groups.cpp" />
@@ -123,6 +124,7 @@
     <ClCompile Include="..\..\src\x86emitter\WinCpuDetect.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\x86emitter\implement\bmi.h" />
     <ClInclude Include="..\..\src\x86emitter\cpudetect_internal.h" />
     <ClInclude Include="..\..\include\x86emitter\instructions.h" />
     <ClInclude Include="..\..\include\x86emitter\internal.h" />

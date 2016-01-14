@@ -765,6 +765,7 @@
     <ClInclude Include="..\..\x86\microVU_IR.h" />
     <ClInclude Include="..\..\x86\microVU_Misc.h" />
     <ClInclude Include="..\..\x86\microVU_Profiler.h" />
+    <ClInclude Include="..\..\x86\R5900_Profiler.h" />
     <ClInclude Include="..\..\x86\sVU_Debug.h" />
     <ClInclude Include="..\..\x86\sVU_Micro.h" />
     <ClInclude Include="..\..\x86\sVU_zerorec.h" />

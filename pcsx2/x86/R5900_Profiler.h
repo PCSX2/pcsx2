@@ -96,7 +96,25 @@ enum class eeOpcode {
 	/*,*/     /*,*/    PEXCH  , PCPYH  ,
 	/*,*/     /*,*/    PEXCW  , /*,*/
 
-	// ADD COP0/1 ??
+	// ADD COP0 ??
+
+	// "COP1"
+    MFC1,  /* , */  CFC1, /* , */ MTC1, /* , */ CTC1 , /* , */
+
+	// "COP1 BC1"
+	BC1F, BC1T, BC1FL, BC1TL,  /* , */   /* , */   /* , */   /* , */
+
+	// "COP1 S"
+	ADD_F, SUB_F, MUL_F, DIV_F, SQRT_F, ABS_F, MOV_F, NEG_F,
+	/* , */   /* , */   /* , */   /* , */   /* , */    /* , */   /* , */   /* , */
+	/* , */   /* , */   /* , */   /* , */   /* , */    /* , */   RSQRT_F, /* , */
+	ADDA_F, SUBA_F, MULA_F,  /* , */   MADD_F, MSUB_F, MADDA_F, MSUBA_F,
+	/* , */   /* , */   /* , */   /* , */   CVTW,   /* , */   /* , */   /* , */
+	MAX_F, MIN_F,   /* , */   /* , */   /* , */    /* , */   /* , */   /* , */
+	CF_F,   /* , */   CEQ_F,  /* , */   CLT_F,   /* , */   CLE_F,  /* , */
+
+	// "COP1 W"
+	CVTS_F,  /* , */   /* , */   /* , */   /* , */   /* , */   /* , */   /* , */
 
 	LAST
 };
@@ -180,6 +198,24 @@ static const char eeOpcodeName[][16] = {
 	/* , */     /* , */    /* , */    /* , */
 	/* , */     /* , */    "PEXCH"  , "PCPYH"  ,
 	/* , */     /* , */    "PEXCW"  , /* , */
+
+	// "COP1"
+	"MFC1"   ,  /* , */    "CFC1"   , /* , */   "MTC1" ,   /* , */   "CTC1" ,   /* , */
+	
+	// "COP1 BC1"
+	"BC1F" ,   "BC1T" ,   "BC1FL" ,   "BC1TL" ,    /* , */   /* , */   /* , */   /* , */
+
+	// "COP1 S"
+	"ADD_F" ,   "SUB_F" ,   "MUL_F" ,   "DIV_F" ,   "SQRT_F" ,   "ABS_F" ,   "MOV_F" ,   "NEG_F" ,
+	/* , */   /* , */   /* , */   /* , */   /* , */    /* , */   /* , */   /* , */
+	/* , */   /* , */   /* , */   /* , */   /* , */    /* , */   "RSQRT_F" , /* , */
+	"ADDA_F" ,  "SUBA_F" ,  "MULA_F" ,  /* , */   "MADD_F" ,   "MSUB_F" ,  "MADDA_F" , "MSUBA_F" ,
+	/* , */   /* , */   /* , */   /* , */   "CVTW" ,   /* , */   /* , */   /* , */
+	"MAX_F" ,   "MIN_F" ,   /* , */   /* , */   /* , */    /* , */   /* , */   /* , */
+	"C.F" ,   /* , */   "C.EQ" ,  /* , */   "C.LT" ,   /* , */   "C.LE" ,  /* , */
+
+	// "COP1 W"
+	"CVTS_F" ,  /* , */   /* , */   /* , */   /* , */   /* , */   /* , */   /* , */
 
 	"!"
 };

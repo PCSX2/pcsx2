@@ -63,6 +63,9 @@
     <ClCompile Include="..\..\src\x86emitter\WinCpuDetect.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\x86emitter\bmi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\x86emitter\cpudetect_internal.h">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\x86emitter\implement\simd_shufflepack.h">
       <Filter>Header Files\Implement_Simd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\x86emitter\implement\bmi.h">
+      <Filter>Header Files\Implement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
