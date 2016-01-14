@@ -239,15 +239,7 @@ public:
 
 		if(i == 0xffff)
 		{
-			#if _M_SSE >= 0x401
-
-			return min_i32(a).upl64(max_i32(a).srl<8>());
-
-			#else
-
-			return GSVector4i(min(x, a.x), min(y, a.y), max(z, a.z), max(w, a.w));
-
-			#endif
+			return runion_ordered(a);
 		}
 
 		if((i & 0x00ff) == 0x00ff)
@@ -261,6 +253,19 @@ public:
 		}
 
 		return GSVector4i::zero();
+	}
+
+	__forceinline GSVector4i runion_ordered(const GSVector4i& a) const
+	{
+		#if _M_SSE >= 0x401
+
+		return min_i32(a).upl64(max_i32(a).srl<8>());
+
+		#else
+
+		return GSVector4i(min(x, a.x), min(y, a.y), max(z, a.z), max(w, a.w));
+
+		#endif
 	}
 
 	__forceinline GSVector4i rintersect(const GSVector4i& a) const
