@@ -120,10 +120,6 @@ using namespace std;
 using namespace stdext;
 #endif
 
-#ifdef __linux__
-#include <sys/stat.h> // mkdir
-#endif
-
 #ifdef _WINDOWS
 
 	// Note use GL/glcorearb.h on the future
@@ -195,6 +191,8 @@ using namespace stdext;
 	#include <GL/glext.h>
 	#include "GLLoader.h"
 
+	#include <sys/stat.h> // mkdir
+
 	#define DIRECTORY_SEPARATOR '/'
 
 #endif
@@ -205,6 +203,8 @@ using namespace stdext;
 
     #define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
     #define EXPORT_C EXPORT_C_(void)
+
+    #define ALIGN_STACK(n) __aligned(int, n) __dummy;
 
 #else
 
@@ -221,7 +221,17 @@ using namespace stdext;
         // #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
         #define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
 
+        // GCC removes the variable as dead code and generates some warnings.
+        // Stack is automatically realigned due to SSE/AVX operations
+        #define ALIGN_STACK(n) (void)0;
+
+    #else
+
+        // TODO Check clang behavior
+        #define ALIGN_STACK(n) __aligned(int, n) __dummy;
+
     #endif
+
 
 #endif
 
@@ -235,14 +245,6 @@ struct aligned_free_first {template<class T> void operator()(T& p) {_aligned_fre
 struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_free(p.second);}};
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-
-// GCC removes the variable as dead code and generates some warnings.
-// Stack is automatically realigned due to SSE/AVX operations
-#ifdef __GNUC__
-#define ALIGN_STACK(n) (void)0;
-#else
-#define ALIGN_STACK(n) __aligned(int, n) __dummy;
-#endif
 
 #ifndef RESTRICT
 
@@ -284,7 +286,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 #endif
 
 // sse
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__x86_64__)
 // Convert gcc see define into GSdx (windows) define
 #if defined(__AVX2__)
 	#define _M_SSE 0x501
@@ -301,6 +303,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 #elif defined(__SSE__)
 	#define _M_SSE 0x100
 #endif
+
 #endif
 
 #if !defined(_M_SSE) && (!defined(_WINDOWS) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
