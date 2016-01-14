@@ -92,7 +92,7 @@ static const __aligned16 u32 s_pos[4] = { 0x7fffffff, 0xffffffff, 0xffffffff, 0x
 	void f(); \
 	void rec##f() { \
 	iFlushCall(FLUSH_INTERPRETER); \
-	xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
+	xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
 	branch = 2; \
 }
 
@@ -100,7 +100,7 @@ static const __aligned16 u32 s_pos[4] = { 0x7fffffff, 0xffffffff, 0xffffffff, 0x
 	void f(); \
 	void rec##f() { \
 	iFlushCall(FLUSH_INTERPRETER); \
-	xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
+	xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
 }
 //------------------------------------------------------------------
 
@@ -550,7 +550,7 @@ void FPU_MUL(int regd, int regt, bool reverseOperands)
 	{
 		xMOVD(ecx, xRegisterSSE(reverseOperands ? regt : regd));
 		xMOVD(edx, xRegisterSSE(reverseOperands ? regd : regt));
-		xCALL((void*)(uptr)&FPU_MUL_HACK ); //returns the hacked result or 0
+		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
 		xTEST(eax, eax);
 		noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);

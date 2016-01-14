@@ -80,10 +80,8 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 	else           Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU0 Dispatcher");
 	
 	x86SetPtr(mVU.dispCache);
-	mVUdispatcherA(mVU);
-	mVUdispatcherB(mVU);
-	mVUdispatcherC(mVU);
-	mVUdispatcherD(mVU);
+	mVUdispatcherAB(mVU);
+	mVUdispatcherCD(mVU);
 	mVUemitSearch();
 
 	// Clear All Program Data

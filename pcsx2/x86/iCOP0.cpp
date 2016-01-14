@@ -112,7 +112,7 @@ void recDI()
 	//xMOV(eax, ptr[&cpuRegs.cycle ]);
 	//xMOV(ptr[&g_nextBranchCycle], eax);
 
-	//xCALL((void*)(uptr)Interp::DI );
+	//xFastCall((void*)(uptr)Interp::DI );
 
 	xMOV(eax, ptr[&cpuRegs.CP0.n.Status]);
 	xTEST(eax, 0x20006); // EXL | ERL | EDI
@@ -170,12 +170,12 @@ void recMFC0()
 
 			case 1:
 				iFlushCall(FLUSH_INTERPRETER);
-				xCALL( COP0_UpdatePCCR );
+				xFastCall(COP0_UpdatePCCR );
 				xMOV(eax, ptr[&cpuRegs.PERF.n.pcr0]);
 				break;
 			case 3:
 				iFlushCall(FLUSH_INTERPRETER);
-				xCALL( COP0_UpdatePCCR );
+				xFastCall(COP0_UpdatePCCR );
 				xMOV(eax, ptr[&cpuRegs.PERF.n.pcr1]);
 			break;
 		}
@@ -207,8 +207,7 @@ void recMTC0()
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
-				xMOV( ecx, g_cpuConstRegs[_Rt_].UL[0] );
-				xCALL( WriteCP0Status );
+				xFastCall(WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0] );
 			break;
 
 			case 9:
@@ -222,9 +221,9 @@ void recMTC0()
 				{
 					case 0:
 						iFlushCall(FLUSH_INTERPRETER);
-						xCALL( COP0_UpdatePCCR );
+						xFastCall(COP0_UpdatePCCR );
 						xMOV( ptr32[&cpuRegs.PERF.n.pccr], g_cpuConstRegs[_Rt_].UL[0] );
-						xCALL( COP0_DiagnosticPCCR );
+						xFastCall(COP0_DiagnosticPCCR );
 					break;
 
 					case 1:
@@ -257,7 +256,7 @@ void recMTC0()
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
 				_eeMoveGPRtoR(ecx, _Rt_);
-				xCALL( WriteCP0Status );
+				xFastCall(WriteCP0Status, ecx );
 			break;
 
 			case 9:
@@ -271,9 +270,9 @@ void recMTC0()
 				{
 					case 0:
 						iFlushCall(FLUSH_INTERPRETER);
-						xCALL( COP0_UpdatePCCR );
+						xFastCall(COP0_UpdatePCCR );
 						_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pccr, _Rt_);
-						xCALL( COP0_DiagnosticPCCR );
+						xFastCall(COP0_DiagnosticPCCR );
 					break;
 
 					case 1:

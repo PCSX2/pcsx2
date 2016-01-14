@@ -42,6 +42,8 @@ void xImpl_JmpCall::operator()( const xIndirect16& src ) const			{ xOpWrite( 0x6
 const xImpl_JmpCall xJMP	= { true };
 const xImpl_JmpCall xCALL	= { false };
 
+const xImpl_FastCall xFastCall = { };
+
 void xSmartJump::SetTarget()
 {
 	u8* target = xGetPtr();

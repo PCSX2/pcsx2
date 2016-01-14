@@ -340,7 +340,7 @@ void recBranchCall( void (*func)() )
 void recCall( void (*func)() )
 {
 	iFlushCall(FLUSH_INTERPRETER);
-	xCALL(func);
+	xFastCall(func);
 }
 
 // =====================================================================================================
@@ -372,50 +372,6 @@ static void recEventTest()
 	_cpuEventTest_Shared();
 }
 
-// parameters:
-//   espORebp - 0 for ESP, or 1 for EBP.
-//   regval   - current value of the register at the time the fault was detected (predates the
-//      stackframe setup code in this function)
-static void __fastcall StackFrameCheckFailed( int espORebp, int regval )
-{
-	pxFailDev( wxsFormat( L"(R5900 Recompiler Stackframe) Sanity check failed on %s\n\tCurrent=%d; Saved=%d",
-		(espORebp==0) ? L"ESP" : L"EBP", regval, (espORebp==0) ? s_store_esp : s_store_ebp )
-	);
-
-	// Note: The recompiler will attempt to recover ESP and EBP after returning from this function,
-	// so typically selecting Continue/Ignore/Cancel for this assertion should allow PCSX2 to con-
-	// tinue to run with some degree of stability.
-}
-
-static void _DynGen_StackFrameCheck()
-{
-	if( !EmuConfig.Cpu.Recompiler.StackFrameChecks ) return;
-
-	// --------- EBP Here -----------
-
-	xCMP( ebp, ptr[&s_store_ebp] );
-	xForwardJE8 skipassert_ebp;
-
-	xMOV( ecx, 1 );						// 1 specifies EBP
-	xMOV( edx, ebp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( ebp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
-
-	skipassert_ebp.SetTarget();
-
-	// --------- ESP There -----------
-
-	xCMP( esp, ptr[&s_store_esp] );
-	xForwardJE8 skipassert_esp;
-
-	xXOR( ecx, ecx );					// 0 specifies ESP
-	xMOV( edx, esp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( esp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
-
-	skipassert_esp.SetTarget();
-}
-
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
@@ -423,10 +379,8 @@ static DynGenFunc* _DynGen_JITCompile()
 	pxAssertMsg( DispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetAlignedCallTarget();
-	_DynGen_StackFrameCheck();
 
-	xMOV( ecx, ptr[&cpuRegs.pc] );
-	xCALL( recRecompile );
+	xFastCall(recRecompile, ptr[&cpuRegs.pc] );
 
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
@@ -448,7 +402,6 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();		// fallthrough target, can't align it!
-	_DynGen_StackFrameCheck();
 
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
@@ -463,7 +416,7 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 {
 	u8* retval = xGetPtr();
 
-	xCALL( recEventTest );
+	xFastCall(recEventTest );
 
 	return (DynGenFunc*)retval;
 }
@@ -471,63 +424,18 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
 	pxAssertDev( DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
-	
+
 	u8* retval = xGetAlignedCallTarget();
 
-	// "standard" frame pointer setup for aligned stack: Record the original
-	//   esp into ebp, and then align esp.  ebp references the original esp base
-	//   for the duration of our function, and is used to restore the original
-	//   esp before returning from the function
+	{ // Properly scope the frame prologue/epilogue
+		xScopedStackFrame frame(IsDevBuild);
 
-	xPUSH( ebp );
-	xMOV( ebp, esp );
-	xAND( esp, -0x10 );
+		xJMP(DispatcherReg);
 
-	// First 0x10 is for esi, edi, etc. Second 0x10 is for the return address and ebp.  The
-	// third 0x10 is an optimization for C-style CDECL calls we might make from the recompiler
-	// (parameters for those calls can be stored there!)  [currently no cdecl functions are
-	//  used -- we do everything through __fastcall)
-
-	static const int cdecl_reserve = 0x00;
-	xSUB( esp, 0x20 + cdecl_reserve );
-
-	xMOV( ptr[ebp-12], edi );
-	xMOV( ptr[ebp-8], esi );
-	xMOV( ptr[ebp-4], ebx );
-
-	// Simulate a CALL function by pushing the call address and EBP onto the stack.
-	// (the dummy address here is filled in later right before we generate the LEAVE code)
-	xMOV( ptr32[esp+0x0c+cdecl_reserve], 0xdeadbeef );
-	uptr& imm = *(uptr*)(xGetPtr()-4);
-
-	// This part simulates the "normal" stackframe prep of "push ebp, mov ebp, esp"
-	// It is done here because we can't really generate that stuff from the Dispatchers themselves.
-	xMOV( ptr32[esp+0x08+cdecl_reserve], ebp );
-	xLEA( ebp, ptr32[esp+0x08+cdecl_reserve] );
-
-	if (EmuConfig.Cpu.Recompiler.StackFrameChecks) {
-		xMOV( ptr[&s_store_esp], esp );
-		xMOV( ptr[&s_store_ebp], ebp );
+		// Save an exit point
+		ExitRecompiledCode = (DynGenFunc*)xGetPtr();
 	}
 
-	xJMP( DispatcherReg );
-
-	xAlignCallTarget();
-
-	// This dummy CALL is unreachable code that some debuggers (MSVC2008) need in order to
-	// unwind the stack properly.  This is effectively the call that we simulate above.
-	if( IsDevBuild ) xCALL( DispatcherReg );
-
-	imm = (uptr)xGetPtr();
-	ExitRecompiledCode = (DynGenFunc*)xGetPtr();
-
-	xLEAVE();
-
-	xMOV( edi, ptr[ebp-12] );
-	xMOV( esi, ptr[ebp-8] );
-	xMOV( ebx, ptr[ebp-4] );
-
-	xLEAVE();
 	xRET();
 
 	return (DynGenFunc*)retval;
@@ -537,7 +445,7 @@ static DynGenFunc* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
 	xEMMS();
-	xCALL(dyna_block_discard);
+	xFastCall(dyna_block_discard);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
@@ -546,7 +454,7 @@ static DynGenFunc* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
 	xEMMS();
-	xCALL(dyna_page_reset);
+	xFastCall(dyna_page_reset);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
@@ -1007,7 +915,7 @@ void SetBranchReg( u32 reg )
 
 //	xCMP(ptr32[&cpuRegs.pc], 0);
 //	j8Ptr[5] = JNE8(0);
-//	xCALL((void*)(uptr)tempfn);
+//	xFastCall((void*)(uptr)tempfn);
 //	x86SetJ8( j8Ptr[5] );
 
 	iFlushCall(FLUSH_EVERYTHING);
@@ -1149,8 +1057,6 @@ static u32 scaleblockcycles()
 //   setting "g_branch = 2";
 static void iBranchTest(u32 newpc)
 {
-	_DynGen_StackFrameCheck();
-
 	// Check the Event scheduler if our "cycle target" has been reached.
 	// Equiv code to:
 	//    cpuRegs.cycle += blockcycles;
@@ -1294,11 +1200,11 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xCALL(standardizeBreakpointAddress);
+	xFastCall(standardizeBreakpointAddress, ecx);
 	xMOV(ecx,eax);
 	xMOV(edx,eax);
 	xADD(edx,bits/8);
-	
+
 	// ecx = access address
 	// edx = access address+size
 
@@ -1313,11 +1219,11 @@ void recMemcheck(u32 op, u32 bits, bool store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
-		
+
 		xMOV(eax,standardizeBreakpointAddress(checks[i].end));
 		xCMP(ecx,eax);				// address < end
 		xForwardJGE8 next1;			// if address >= end then goto next1
-		
+
 		xMOV(eax,standardizeBreakpointAddress(checks[i].start));
 		xCMP(eax,edx);				// start < address+size
 		xForwardJGE8 next2;			// if start >= address+size then goto next2
@@ -1325,10 +1231,10 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		// hit the breakpoint
 		if (checks[i].result & MEMCHECK_LOG) {
 			xMOV(edx, store);
-			xCALL(&dynarecMemLogcheck);
+			xFastCall(dynarecMemLogcheck, ecx, edx);
 		}
 		if (checks[i].result & MEMCHECK_BREAK) {
-			xCALL(&dynarecMemcheck);
+			xFastCall(dynarecMemcheck);
 		}
 
 		next1.SetTarget();
@@ -1341,7 +1247,7 @@ void encodeBreakpoint()
 	if (isBreakpointNeeded(pc) != 0)
 	{
 		iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
-		xCALL(&dynarecCheckBreakpoint);
+		xFastCall(dynarecCheckBreakpoint);
 	}
 }
 
@@ -1390,7 +1296,7 @@ void recompileNextInstruction(int delayslot)
 
 	s_pCode = (int *)PSM( pc );
 	pxAssert(s_pCode);
-	
+
 	if( IsDebugBuild )
 		xMOV(eax, pc);		// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
 
@@ -1753,7 +1659,7 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	if (0x8000d618 == startpc)
 		DbgCon.WriteLn("Compiling block @ 0x%08x", startpc);
-	
+
 	s_pCurBlock = PC_GETBLOCK(startpc);
 
 	pxAssert(s_pCurBlock->GetFnptr() == (uptr)JITCompile
@@ -1767,14 +1673,14 @@ static void __fastcall recRecompile( const u32 startpc )
 	pxAssert(s_pCurBlockEx);
 
 	if (g_SkipBiosHack && HWADDR(startpc) == EELOAD_START) {
-		xCALL(eeloadReplaceOSDSYS);
+		xFastCall(eeloadReplaceOSDSYS);
 		xCMP(ptr32[&cpuRegs.pc], startpc);
 		xJNE(DispatcherReg);
 	}
 
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (HWADDR(startpc) == ElfEntry) {
-		xCALL(eeGameStarting);
+		xFastCall(eeGameStarting);
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
 		//
@@ -1804,20 +1710,18 @@ static void __fastcall recRecompile( const u32 startpc )
 		// [TODO] : These must be enabled from the GUI or INI to be used, otherwise the
 		// code that calls PreBlockCheck will not be generated.
 
-		xMOV(ecx, pc);
-		xCALL(PreBlockCheck);
+		xFastCall(PreBlockCheck, pc);
 	}
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		if (pc == 0x33ad48 || pc == 0x35060c) {
 			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
-			xCALL(GoemonPreloadTlb);
+			xFastCall(GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			AtomicExchange( eeRecNeedsReset, true );
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			xMOV(ecx, ptr[&cpuRegs.GPR.n.a0.UL[ 0 ] ]);
-			xCALL(GoemonUnloadTlb);
+			xFastCall(GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
 
@@ -1838,7 +1742,7 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	while(1) {
 		BASEBLOCK* pblock = PC_GETBLOCK(i);
-		
+
 		// stop before breakpoints
 		if (isBreakpointNeeded(i) != 0 || isMemcheckNeeded(i) != 0)
 		{

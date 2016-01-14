@@ -68,5 +68,134 @@ struct xImpl_JmpCall
 	}
 };
 
+// yes it is awful. Due to template code is in a header with a nice circular dep.
+extern const xImpl_Mov			xMOV;
+extern const xImpl_JmpCall		xCALL;
+
+struct xImpl_FastCall
+{
+	// FIXME: current 64 bits is mostly a copy/past potentially it would require to push/pop
+	// some registers. But I think it is enough to handle the first call.
+
+
+	// Type unsafety is nice
+#ifdef __x86_64__
+
+#define XFASTCALL \
+	xCALL(func);
+
+#define XFASTCALL1 \
+	xMOV(rdi, a1); \
+	xCALL(func);
+
+#define XFASTCALL2 \
+	xMOV(rdi, a1); \
+	xMOV(rsi, a2); \
+	xCALL(func);
+
+#else
+
+#define XFASTCALL \
+	xCALL(func);
+
+#define XFASTCALL1 \
+	xMOV(ecx, a1); \
+	xCALL(func);
+
+#define XFASTCALL2 \
+	xMOV(ecx, a1); \
+	xMOV(edx, a2); \
+	xCALL(func);
+
+#endif
+
+	template< typename T > __fi __always_inline_tmpl_fail
+	void operator()( T* func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const
+	{
+#ifdef __x86_64__
+		if (a1.IsEmpty()) {
+			XFASTCALL;
+		} else if (a2.IsEmpty()) {
+			XFASTCALL1;
+		} else {
+			XFASTCALL2;
+		}
+#else
+		if (a1.IsEmpty()) {
+			XFASTCALL;
+		} else if (a2.IsEmpty()) {
+			XFASTCALL1;
+		} else {
+			XFASTCALL2;
+		}
+#endif
+	}
+
+	template< typename T > __fi __always_inline_tmpl_fail
+	void operator()( T* func, u32 a1, const xRegister32& a2) const
+	{
+#ifdef __x86_64__
+		XFASTCALL2;
+#else
+		XFASTCALL2;
+#endif
+	}
+
+	template< typename T > __fi __always_inline_tmpl_fail
+	void operator()( T* func, const xIndirectVoid& a1) const
+	{
+#ifdef __x86_64__
+		XFASTCALL1;
+#else
+		XFASTCALL1;
+#endif
+	}
+
+	template< typename T > __fi __always_inline_tmpl_fail
+	void operator()( T* func, u32 a1, u32 a2) const
+	{
+#ifdef __x86_64__
+		XFASTCALL2;
+#else
+		XFASTCALL2;
+#endif
+	}
+
+	template< typename T > __fi __always_inline_tmpl_fail
+	void operator()( T* func, u32 a1) const
+	{
+#ifdef __x86_64__
+		XFASTCALL1;
+#else
+		XFASTCALL1;
+#endif
+	}
+
+	void operator()(const xIndirect32& func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const
+	{
+#ifdef __x86_64__
+		if (a1.IsEmpty()) {
+			XFASTCALL;
+		} else if (a2.IsEmpty()) {
+			XFASTCALL1;
+		} else {
+			XFASTCALL2;
+		}
+#else
+		if (a1.IsEmpty()) {
+			XFASTCALL;
+		} else if (a2.IsEmpty()) {
+			XFASTCALL1;
+		} else {
+			XFASTCALL2;
+		}
+#endif
+	}
+
+#undef XFASTCALL
+#undef XFASTCALL1
+#undef XFASTCALL2
+};
+
 }	// End namespace x86Emitter
 

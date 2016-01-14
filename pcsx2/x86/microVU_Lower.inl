@@ -1219,8 +1219,7 @@ static __fi void mVU_XGKICK_DELAY(mV) {
 	xMOV  (ptr32[&mVU.resumePtrXG], (uptr)xGetPtr() + 10 + 6);
 	xJcc32(Jcc_NotZero, (uptr)mVU.exitFunctXG - ((uptr)xGetPtr()+6));
 #endif
-	xMOV(gprT2, ptr32[&mVU.VIxgkick]);
-	xCALL(mVU_XGKICK_);
+	xFastCall(mVU_XGKICK_, ptr32[&mVU.VIxgkick]);
 	mVUrestoreRegs(mVU);
 }
 

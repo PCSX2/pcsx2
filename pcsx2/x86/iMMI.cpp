@@ -185,7 +185,7 @@ void recPMFHL()
 			// fall to interp
 			_deleteEEreg(_Rd_, 0);
 			iFlushCall(FLUSH_INTERPRETER); // since calling CALLFunc
-			xCALL((void*)(uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
+			xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
 			break;
 
 		case 0x03: // LH

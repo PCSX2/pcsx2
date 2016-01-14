@@ -314,7 +314,7 @@ void vtlb_dynarec_init()
 
 				// jump to the indirect handler, which is a __fastcall C++ function.
 				// [ecx is address, edx is data]
-				xCALL( ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]] );
+				xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
 
 				if (!mode)
 				{
@@ -410,8 +410,7 @@ void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xMOV( ecx, paddr );
-		xCALL( vtlbdata.RWFT[szidx][0][handler] );
+		xFastCall( vtlbdata.RWFT[szidx][0][handler], paddr );
 	}
 }
 
@@ -474,8 +473,7 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 		else
 		{
 			iFlushCall(FLUSH_FULLVTLB);
-			xMOV( ecx, paddr );
-			xCALL( vtlbdata.RWFT[szidx][0][handler] );
+			xFastCall( vtlbdata.RWFT[szidx][0][handler], paddr );
 
 			// perform sign extension on the result:
 
@@ -565,8 +563,7 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xMOV( ecx, paddr );
-		xCALL( vtlbdata.RWFT[szidx][1][handler] );
+		xFastCall( vtlbdata.RWFT[szidx][1][handler], paddr, edx );
 	}
 }
 
