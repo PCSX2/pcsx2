@@ -151,10 +151,10 @@ namespace x86Emitter
 	extern void xPOP( const xIndirectVoid& from );
 	extern void xPUSH( const xIndirectVoid& from );
 
-	extern void xPOP( xRegister32 from );
+	extern void xPOP( xRegister32or64 from );
 
 	extern void xPUSH( u32 imm );
-	extern void xPUSH( xRegister32 from );
+	extern void xPUSH( xRegister32or64 from );
 
 	// pushes the EFLAGS register onto the stack
 	extern void xPUSHFD();

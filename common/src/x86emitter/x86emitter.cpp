@@ -1034,10 +1034,10 @@ __emitinline void xPUSH( const xIndirectVoid& from )
 	EmitSibMagic( 6, from );
 }
 
-__fi void xPOP( xRegister32 from )		{ xWrite8( 0x58 | from.Id ); }
+__fi void xPOP( xRegister32or64 from )		{ xWrite8( 0x58 | from->Id ); }
 
 __fi void xPUSH( u32 imm )				{ xWrite8( 0x68 ); xWrite32( imm ); }
-__fi void xPUSH( xRegister32 from )	{ xWrite8( 0x50 | from.Id ); }
+__fi void xPUSH( xRegister32or64 from )	{ xWrite8( 0x50 | from->Id ); }
 
 // pushes the EFLAGS register onto the stack
 __fi void xPUSHFD()					{ xWrite8( 0x9C ); }
