@@ -205,6 +205,7 @@ template< typename T > void xWrite( T val );
 		virtual uint GetOperandSize() const=0;
 
 		bool Is8BitOp() const		{ return GetOperandSize() == 1; }
+		u8   GetPrefix16() const	{ return GetOperandSize() == 2 ? 0x66 : 0; }
 		void prefix16() const		{ if( GetOperandSize() == 2 ) xWrite8( 0x66 ); }
 
 		void xWriteImm( int imm ) const
