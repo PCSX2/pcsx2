@@ -321,8 +321,9 @@ static __fi bool NeedsSibMagic( const xIndirectVoid& info )
 //
 void EmitSibMagic( uint regfield, const xIndirectVoid& info )
 {
+	// 3 bits also on x86_64 (so max is 8)
+	// We might need to mask it on x86_64
 	pxAssertDev( regfield < 8, "Invalid x86 register identifier." );
-
 	int displacement_size = (info.Displacement == 0) ? 0 :
 		( ( info.IsByteSizeDisp() ) ? 1 : 2 );
 
@@ -402,6 +403,53 @@ void EmitSibMagic( const xRegisterBase& reg1, const void* src )
 void EmitSibMagic( const xRegisterBase& reg1, const xIndirectVoid& sib )
 {
 	EmitSibMagic( reg1.Id, sib );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 )
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = 0;
+	u8 b = reg2.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1, const void* src )
+{
+	pxAssert(0); //see fixme
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = 0;
+	u8 b = 0; // FIXME src.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib )
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = sib.Index.IsExtended() << 1;
+	u8 b = sib.Base.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1)
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = 0;
+	u8 x = 0;
+	u8 b = reg1.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xIndirectVoid& sib)
+{
+	u8 w = sib.Base.IsWide() << 3;
+	u8 r = 0;
+	u8 x = 0;
+	u8 b = sib.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
 }
 
 // --------------------------------------------------------------------------------------
