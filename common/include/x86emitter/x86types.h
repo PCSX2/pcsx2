@@ -831,7 +831,7 @@ template< typename T > void xWrite( T val );
 	typedef xIndirect<u8> xIndirect8;
 
 	// --------------------------------------------------------------------------------------
-	//  xIndirect32orLass  -  base class 32, 16, and 8 bit operand types
+	//  xIndirect32orLess  -  base class 64, 32, 16, and 8 bit operand types
 	// --------------------------------------------------------------------------------------
 	class xIndirect32orLess : public xIndirectVoid
 	{
@@ -844,6 +844,7 @@ template< typename T > void xWrite( T val );
 		xIndirect32orLess( const xIndirect8& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
 		xIndirect32orLess( const xIndirect16& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
 		xIndirect32orLess( const xIndirect32& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect32orLess( const xIndirect64& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
 
 		uint GetOperandSize() const { return m_OpSize; }
 
