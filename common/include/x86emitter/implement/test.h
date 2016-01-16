@@ -61,11 +61,12 @@ struct xImpl_Group8
 {
 	G8Type	InstType;
 
-	void operator()( const xRegister32& bitbase, const xRegister32& bitoffset ) const;
-	void operator()( const xRegister16& bitbase, const xRegister16& bitoffset ) const;
-	void operator()( const xRegister16or32& bitbase, u8 bitoffset ) const;
+	void operator()( const xRegister16or32or64& bitbase, const xRegister16or32or64& bitoffset ) const;
+	void operator()( const xRegister16or32or64& bitbase, u8 bitoffset ) const;
 
-	void operator()( const xIndirectVoid& bitbase, const xRegister16or32& bitoffset ) const;
+	void operator()( const xIndirectVoid& bitbase, const xRegister16or32or64& bitoffset ) const;
+
+	void operator()( const xIndirect64& bitbase, u8 bitoffset ) const;
 	void operator()( const xIndirect32& bitbase, u8 bitoffset ) const;
 	void operator()( const xIndirect16& bitbase, u8 bitoffset ) const;
 };

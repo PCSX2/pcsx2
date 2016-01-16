@@ -259,19 +259,22 @@ const xImpl_iMul xMUL = { { 0x00, 0x59 }, { 0x66, 0x59 }, { 0xf3, 0x59 }, { 0xf2
 //  Group 8 Instructions
 // =====================================================================================================
 
-void xImpl_Group8::operator()( const xRegister32& bitbase, const xRegister32& bitoffset ) const	{ xOpWrite0F( 0xa3 | (InstType << 3), bitbase, bitoffset ); }
-void xImpl_Group8::operator()( const xRegister16& bitbase, const xRegister16& bitoffset ) const	{ xOpWrite0F( 0x66, 0xa3 | (InstType << 3), bitbase, bitoffset ); }
+void xImpl_Group8::operator()( const xRegister16or32or64& bitbase, const xRegister16or32or64& bitoffset ) const	{
+	pxAssert( bitbase->GetOperandSize() == bitoffset->GetOperandSize() );
+	xOpWrite0F( bitbase->GetPrefix16(), 0xa3 | (InstType << 3), bitbase, bitoffset );
+}
+void xImpl_Group8::operator()( const xIndirect64& bitbase, u8 bitoffset ) const					{ xOpWrite0F( 0xba, InstType, bitbase, bitoffset ); }
 void xImpl_Group8::operator()( const xIndirect32& bitbase, u8 bitoffset ) const					{ xOpWrite0F( 0xba, InstType, bitbase, bitoffset ); }
 void xImpl_Group8::operator()( const xIndirect16& bitbase, u8 bitoffset ) const					{ xOpWrite0F( 0x66, 0xba, InstType, bitbase, bitoffset ); }
 
-void xImpl_Group8::operator()( const xRegister16or32& bitbase, u8 bitoffset ) const
+void xImpl_Group8::operator()( const xRegister16or32or64& bitbase, u8 bitoffset ) const
 {
-	xOpWrite0F( (bitbase->GetOperandSize() == 2) ? 0x66 : 0x00, 0xba, InstType, bitbase, bitoffset );
+	xOpWrite0F( bitbase->GetPrefix16(), 0xba, InstType, bitbase, bitoffset );
 }
 
-void xImpl_Group8::operator()( const xIndirectVoid& bitbase, const xRegister16or32& bitoffset ) const
+void xImpl_Group8::operator()( const xIndirectVoid& bitbase, const xRegister16or32or64& bitoffset ) const
 {
-	xOpWrite0F( (bitoffset->GetOperandSize() == 2) ? 0x66 : 0x00, 0xa3 | (InstType << 3), bitoffset, bitbase );
+	xOpWrite0F( bitoffset->GetPrefix16(), 0xa3 | (InstType << 3), bitoffset, bitbase );
 }
 
 const xImpl_Group8	xBT		= { G8Type_BT };
