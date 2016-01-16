@@ -421,20 +421,28 @@ template< typename T > void xWrite( T val );
 	// --------------------------------------------------------------------------------------
 	//  xAddressReg
 	// --------------------------------------------------------------------------------------
-	// Use 32 bit registers as our index registers (for ModSib-style memory address calculations).
-	// This type is implicitly exchangeable with xRegister32.
+	// Use 32/64 bit registers as our index registers (for ModSib-style memory address calculations).
+	// This type is implicitly exchangeable with xRegister32/64.
 	//
 	// Only xAddressReg provides operators for constructing xAddressInfo types.  These operators
-	// could have been added to xRegister32 directly instead, however I think this design makes
+	// could have been added to xRegister32/64 directly instead, however I think this design makes
 	// more sense and allows the programmer a little more type protection if needed.
 	//
-	class xAddressReg : public xRegister32
+
+#ifdef __x86_64__
+#define xRegisterLong xRegister64
+#else
+#define xRegisterLong xRegister32
+#endif
+
+	class xAddressReg : public xRegisterLong
 	{
 	public:
-		xAddressReg(): xRegister32() {}
-		xAddressReg( const xAddressReg& src ) : xRegister32( src.Id ) {}
-		xAddressReg( const xRegister32& src ) : xRegister32( src ) {}
-		explicit xAddressReg( int regId ) : xRegister32( regId ) {}
+		xAddressReg(): xRegisterLong() {}
+		xAddressReg( const xAddressReg& src ) : xRegisterLong( src.Id ) {}
+		xAddressReg( const xRegister32& src ) : xRegisterLong( src.Id ) {}
+		xAddressReg( const xRegister64& src ) : xRegisterLong( src.Id ) {}
+		explicit xAddressReg( int regId ) : xRegisterLong( regId ) {}
 
 		// Returns true if the register is the stack pointer: ESP.
 		bool IsStackPointer() const { return Id == 4; }
@@ -444,14 +452,9 @@ template< typename T > void xWrite( T val );
 		xAddressVoid operator+( const void* right ) const;
 		xAddressVoid operator-( s32 right ) const;
 		xAddressVoid operator-( const void* right ) const;
-		xAddressVoid operator*( u32 factor ) const;
+		xAddressVoid operator*( int factor ) const;
 		xAddressVoid operator<<( u32 shift ) const;
 
-		/*xAddressReg& operator=( const xRegister32& src )
-		{
-			Id = src.Id;
-			return *this;
-		}*/
 	};
 
 	// --------------------------------------------------------------------------------------
