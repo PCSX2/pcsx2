@@ -922,22 +922,11 @@ __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_
 // =====================================================================================================
 //  TEST / INC / DEC
 // =====================================================================================================
-void xImpl_Test::operator()( const xRegister8& to, const xRegister8& from ) const
+void xImpl_Test::operator()( const xRegisterInt& to, const xRegisterInt& from ) const
 {
-	xWrite8( 0x84 );
-	EmitSibMagic( from, to );
-}
-
-void xImpl_Test::operator()( const xRegister16& to, const xRegister16& from ) const
-{
+	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
 	to.prefix16();
-	xWrite8( 0x85 );
-	EmitSibMagic( from, to );
-}
-
-void xImpl_Test::operator()( const xRegister32& to, const xRegister32& from ) const
-{
-	xWrite8( 0x85 );
+	xWrite8( to.Is8BitOp() ? 0x84 : 0x85 );
 	EmitSibMagic( from, to );
 }
 
@@ -963,11 +952,13 @@ void xImpl_Test::operator()( const xRegisterInt& to, int imm ) const
 	to.xWriteImm( imm );
 }
 
-void xImpl_BitScan::operator()( const xRegister32& to, const xRegister32& from ) const		{ xOpWrite0F( Opcode, to, from ); }
-void xImpl_BitScan::operator()( const xRegister16& to, const xRegister16& from ) const		{ xOpWrite0F( 0x66, Opcode, to, from ); }
-void xImpl_BitScan::operator()( const xRegister16or32& to, const xIndirectVoid& sibsrc ) const
+void xImpl_BitScan::operator()( const xRegister16or32or64& to, const xRegister16or32or64& from ) const {
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	xOpWrite0F( from->GetPrefix16(), Opcode, to, from );
+}
+void xImpl_BitScan::operator()( const xRegister16or32or64& to, const xIndirectVoid& sibsrc ) const
 {
-	xOpWrite0F( (to->GetOperandSize() == 2) ? 0x66 : 0x00, Opcode, to, sibsrc );
+	xOpWrite0F( to->GetPrefix16(), Opcode, to, sibsrc );
 }
 
 void xImpl_IncDec::operator()( const xRegisterInt& to ) const
