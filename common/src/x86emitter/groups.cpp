@@ -106,9 +106,7 @@ static void _g1_EmitOp( G1Type InstType, const xRegisterInt& to, int imm )
 }
 
 #define ImplementGroup1( g1type, insttype ) \
- 	void g1type::operator()( const xRegister8& to, const xRegister8& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
-	void g1type::operator()( const xRegister16& to, const xRegister16& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
-	void g1type::operator()( const xRegister32& to, const xRegister32& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
+	void g1type::operator()( const xRegisterInt& to, const xRegisterInt& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
 	void g1type::operator()( const xIndirectVoid& to, const xRegisterInt& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
 	void g1type::operator()( const xRegisterInt& to, const xIndirectVoid& from ) const		{ _g1_EmitOp( insttype, to, from ); } \
 	void g1type::operator()( const xRegisterInt& to, int imm ) const					{ _g1_EmitOp( insttype, to, imm ); } \

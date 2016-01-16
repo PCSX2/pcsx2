@@ -38,9 +38,7 @@ struct xImpl_Group1
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
@@ -91,9 +89,7 @@ struct xImpl_G1Logic
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
@@ -112,9 +108,7 @@ struct xImpl_G1Arith
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
@@ -131,9 +125,7 @@ struct xImpl_G1Arith
 // ------------------------------------------------------------------------
 struct xImpl_G1Compare
 {
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
