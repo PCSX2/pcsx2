@@ -907,11 +907,15 @@ static void EmitLeaMagic( const xRegisterInt& to, const xIndirectVoid& src, bool
 	}
 }
 
-__emitinline void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags )
+__emitinline void xLEA( xRegister64 to, const xIndirectVoid& src, bool preserve_flags )
 {
 	EmitLeaMagic( to, src, preserve_flags );
 }
 
+__emitinline void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags )
+{
+	EmitLeaMagic( to, src, preserve_flags );
+}
 
 __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_flags )
 {
@@ -1077,10 +1081,10 @@ __fi void xINT( u8 imm )
 
 __fi void xINTO()	{ xWrite8(0xce); }
 
-__emitinline void xBSWAP( const xRegister32& to )
+__emitinline void xBSWAP( const xRegister32or64& to )
 {
 	xWrite8( 0x0F );
-	xWrite8( 0xC8 | to.Id );
+	xWrite8( 0xC8 | to->Id );
 }
 
 static __aligned16 u64 xmm_data[iREGCNT_XMM*2];

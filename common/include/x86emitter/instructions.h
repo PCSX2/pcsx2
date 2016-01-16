@@ -134,13 +134,14 @@ namespace x86Emitter
 	// These are all defined inline or in ix86.cpp.
 	//
 
-	extern void xBSWAP( const xRegister32& to );
+	extern void xBSWAP( const xRegister32or64& to );
 
 	// ----- Lea Instructions (Load Effective Address) -----
 	// Note: alternate (void*) forms of these instructions are not provided since those
 	// forms are functionally equivalent to Mov reg,imm, and thus better written as MOVs
 	// instead.
 
+	extern void xLEA( xRegister64 to, const xIndirectVoid& src, bool preserve_flags=false );
 	extern void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags=false );
 	extern void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_flags=false );
 
