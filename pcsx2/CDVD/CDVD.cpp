@@ -1143,9 +1143,10 @@ u8 cdvdRead(u8 key)
 
 		default:
 			// note: notify the console since this is a potentially serious emulation problem:
+			// return -1 (all bits set) instead of 0, improves chances of the software being happy
 			PSXHW_LOG("*Unknown 8bit read at address 0x1f4020%x", key);
 			Console.Error( "IOP Unknown 8bit read from addr 0x1f4020%x", key );
-			return 0;
+			return -1;
 	}
 }
 
