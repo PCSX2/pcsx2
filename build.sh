@@ -118,6 +118,14 @@ elif [[ "$useCross" -ne 1 ]]; then
     useCross=0
 fi
 
+# Helper to easily switch wx-config on my system
+if [[ "$useCross" -eq 0 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+    sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
+fi
+if [[ "$useCross" -eq 2 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+    sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
+fi
+
 echo "Building pcsx2 with ${flags[*]}" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
