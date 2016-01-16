@@ -168,10 +168,17 @@ void SysMtgsThread::PostVsyncStart()
 	m_sem_Vsync.WaitNoCancel();
 }
 
-struct PacketTagType
+union PacketTagType
 {
-	u32 command;
-	u32 data[3];
+	struct {
+		u32 command;
+		u32 data[3];
+	};
+	struct {
+		u32 _command;
+		u32 _data[1];
+		uptr pointer;
+	};
 };
 
 static void dummyIrqCallback()
@@ -456,7 +463,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 						case GS_RINGTYPE_FREEZE:
 						{
-							MTGS_FreezeData* data = (MTGS_FreezeData*)(*(uptr*)&tag.data[1]);
+							MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
 							int mode = tag.data[0];
 							data->retval = GetCorePlugins().DoFreeze( PluginId_GS, mode, data->fdata );
 						}
@@ -486,13 +493,13 @@ void SysMtgsThread::ExecuteTaskInThread()
 						case GS_RINGTYPE_INIT_READ_FIFO1:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Fifo1" );
 							if (GSinitReadFIFO)
-								GSinitReadFIFO( (u64*)tag.data[1]);
+								GSinitReadFIFO( (u64*)tag.pointer);
 						break;
 
 						case GS_RINGTYPE_INIT_READ_FIFO2:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Fifo2, size=%d", tag.data[0] );
 							if (GSinitReadFIFO2)
-								GSinitReadFIFO2( (u64*)tag.data[1], tag.data[0]);
+								GSinitReadFIFO2( (u64*)tag.pointer, tag.data[0]);
 						break;
 
 #ifdef PCSX2_DEVBUILD
@@ -823,7 +830,7 @@ void SysMtgsThread::SendPointerPacket( MTGS_RingCommand type, u32 data0, void* d
 
 	tag.command = type;
 	tag.data[0] = data0;
-	*(uptr*)&tag.data[1] = (uptr)data1;
+	tag.pointer = (uptr)data1;
 
 	_FinishSimplePacket();
 }

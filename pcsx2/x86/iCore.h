@@ -186,12 +186,12 @@ u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
 
-void _signExtendSFtoM(u32 mem);
+void _signExtendSFtoM(uptr mem);
 
 // returns new index of reg, lower 32 bits already in mmx
 // shift is used when the data is in the top bits of the mmx reg to begin with
 // a negative shift is for sign extension
-int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns true if reg destroyed
+int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy); // returns true if reg destroyed
 
 //////////////////////
 // Instruction Info //
@@ -311,7 +311,7 @@ u8 _hasFreeMMXreg();
 void _freeMMXregs();
 int _getNumMMXwrite();
 
-int _signExtendMtoMMX(x86MMXRegType to, u32 mem);
+int _signExtendMtoMMX(x86MMXRegType to, uptr mem);
 int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32 gprfromreg);
 int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
 

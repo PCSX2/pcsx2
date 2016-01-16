@@ -963,7 +963,7 @@ void _freeXMMregs()
 	}
 }
 
-int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy)
+int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy)
 {
 	int t0reg;
 	g_xmmtypes[from] = XMMT_INT;

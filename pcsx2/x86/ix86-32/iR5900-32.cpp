@@ -176,7 +176,7 @@ void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 	}
 }
 
-void _eeMoveGPRtoM(u32 to, int fromgpr)
+void _eeMoveGPRtoM(uptr to, int fromgpr)
 {
 	if( GPR_IS_CONST1(fromgpr) )
 		xMOV(ptr32[(u32*)(to)], g_cpuConstRegs[fromgpr].UL[0] );

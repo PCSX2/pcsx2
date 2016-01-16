@@ -398,7 +398,8 @@ void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
 	}
 }
 
-void _psxMoveGPRtoM(u32 to, int fromgpr)
+#if 0
+void _psxMoveGPRtoM(uptr to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
 		xMOV(ptr32[(u32*)(to)], g_psxConstRegs[fromgpr] );
@@ -408,7 +409,9 @@ void _psxMoveGPRtoM(u32 to, int fromgpr)
 		xMOV(ptr[(void*)(to)], eax);
 	}
 }
+#endif
 
+#if 0
 void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
@@ -419,6 +422,7 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 		xMOV(ptr[xAddressReg(to)], eax);
 	}
 }
+#endif
 
 void _psxFlushCall(int flushtype)
 {
