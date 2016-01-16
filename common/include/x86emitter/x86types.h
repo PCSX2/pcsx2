@@ -250,7 +250,9 @@ template< typename T > void xWrite( T val );
 		explicit xRegisterBase( int regId )
 		{
 			Id = regId;
-			pxAssert( (Id >= xRegId_Empty) && (Id < 8) );
+			// Note: to avoid tons of ifdef, the 32 bits build will instantiate
+			// all 16x64 bits registers.
+			pxAssert( (Id >= xRegId_Empty) && (Id < 16) );
 		}
 
 		bool IsEmpty() const		{ return Id < 0 ; }
@@ -283,8 +285,6 @@ template< typename T > void xWrite( T val );
 		xRegisterInt() {}
 		explicit xRegisterInt( const xRegisterBase& src ) : _parent( src ) {}
 		explicit xRegisterInt( int regId ) : _parent( regId ) { }
-
-		bool IsSIMD() const { return false; }
 
 		bool operator==( const xRegisterInt& src ) const	{ return Id == src.Id && (GetOperandSize() == src.GetOperandSize()); }
 		bool operator!=( const xRegisterInt& src ) const	{ return !operator==(src); }
@@ -569,7 +569,7 @@ template< typename T > void xWrite( T val );
 
 		/*xAddressInfo( const xAddressVoid& src )
 			: _parent( src ) {}*/
-		
+
 		explicit xAddressInfo( const xAddressReg& index, int displacement=0 )
 			: _parent( index, displacement ) {}
 
@@ -709,8 +709,8 @@ template< typename T > void xWrite( T val );
 	protected:
 		void Reduce();
 	};
-	
-	template< typename OperandType >	
+
+	template< typename OperandType >
 	class xIndirect : public xIndirectVoid
 	{
 		typedef xIndirectVoid _parent;
