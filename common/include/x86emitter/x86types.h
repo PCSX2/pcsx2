@@ -15,10 +15,16 @@
 
 #pragma once
 
+#ifdef __x86_64__
+static const uint iREGCNT_XMM = 16;
+static const uint iREGCNT_GPR = 16;
+static const uint iREGCNT_MMX = 8; // FIXME: port the code and remove MMX
+#else
 // Register counts for x86/32 mode:
 static const uint iREGCNT_XMM = 8;
 static const uint iREGCNT_GPR = 8;
 static const uint iREGCNT_MMX = 8;
+#endif
 
 enum XMMSSEType
 {
@@ -69,13 +75,6 @@ extern void xWrite8( u8 val );
 extern void xWrite16( u16 val );
 extern void xWrite32( u32 val );
 extern void xWrite64( u64 val );
-
-extern const char *const x86_regnames_gpr8[8];
-extern const char *const x86_regnames_gpr16[8];
-extern const char *const x86_regnames_gpr32[8];
-
-extern const char *const x86_regnames_sse[8];
-extern const char *const x86_regnames_mmx[8];
 
 extern const char* xGetRegName( int regid, int operandSize );
 
@@ -264,8 +263,17 @@ template< typename T > void xWrite( T val );
 		// Returns true if the register is a valid accumulator: Eax, Ax, Al, XMM0.
 		bool IsAccumulator() const	{ return Id == 0; }
 
-		// returns true if the register is a valid MMX or XMM register.
+		// IsSIMD: returns true if the register is a valid MMX or XMM register.
+		// IsWide: return true if the register is 64 bits (requires a wide op on the rex prefix)
+#ifdef __x86_64__
+		// No MMX on 64 bits, let's directly uses GPR
+		bool IsSIMD() const { return GetOperandSize() == 16; }
+		bool IsWide() const { return GetOperandSize() == 8; }
+#else
 		bool IsSIMD() const { return GetOperandSize() == 8 || GetOperandSize() == 16; }
+		bool IsWide() const { return false; } // no 64 bits GPR
+#endif
+		// return true if the register is a valid YMM register
 		bool IsWideSIMD() const { return GetOperandSize() == 32; }
 
 		bool operator==( const xRegisterBase& src ) const	{ return (Id == src.Id); }
@@ -291,7 +299,7 @@ template< typename T > void xWrite( T val );
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  xRegister8/16/32  -  Represents a basic 8/16/32 bit GPR on the x86
+	//  xRegister8/16/32/64  -  Represents a basic 8/16/32/64 bit GPR on the x86
 	// --------------------------------------------------------------------------------------
 	class xRegister8 : public xRegisterInt
 	{
@@ -335,6 +343,20 @@ template< typename T > void xWrite( T val );
 		bool operator!=( const xRegister32& src ) const	{ return this->Id != src.Id; }
 	};
 
+	class xRegister64 : public xRegisterInt
+	{
+		typedef xRegisterInt _parent;
+
+		public:
+		xRegister64(): _parent() {}
+		explicit xRegister64( int regId ) : _parent( regId ) {}
+
+		virtual uint GetOperandSize() const { return 8; }
+
+		bool operator==( const xRegister64& src ) const	{ return this->Id == src.Id; }
+		bool operator!=( const xRegister64& src ) const	{ return this->Id != src.Id; }
+	};
+
 	// --------------------------------------------------------------------------------------
 	//  xRegisterMMX/SSE  -  Represents either a 64 bit or 128 bit SIMD register
 	// --------------------------------------------------------------------------------------
@@ -346,7 +368,11 @@ template< typename T > void xWrite( T val );
 		typedef xRegisterBase _parent;
 
 	public:
-		xRegisterMMX(): _parent() {}
+		xRegisterMMX(): _parent() {
+#ifdef __x86_64__
+			pxAssert(0); // Sorry but code must be ported
+#endif
+		}
 		//xRegisterMMX( const xRegisterBase& src ) : _parent( src ) {}
 		explicit xRegisterMMX( int regId ) : _parent( regId ) {}
 
@@ -443,6 +469,7 @@ template< typename T > void xWrite( T val );
 			return xRegister16( xRegId_Empty );
 		}
 
+		// FIXME remove it in x86 64
 		operator xRegisterMMX() const
 		{
 			return xRegisterMMX( xRegId_Empty );
@@ -459,6 +486,7 @@ template< typename T > void xWrite( T val );
 		}
 	};
 
+	// FIXME This one is likely useless and superseeded by the future xRegister16or32or64
 	class xRegister16or32
 	{
 	protected:
@@ -467,6 +495,41 @@ template< typename T > void xWrite( T val );
 	public:
 		xRegister16or32( const xRegister32& src ) : m_convtype( src ) {}
 		xRegister16or32( const xRegister16& src ) : m_convtype( src ) {}
+
+		operator const xRegisterBase&() const { return m_convtype; }
+
+		const xRegisterInt* operator->() const
+		{
+			return &m_convtype;
+		}
+	};
+
+	class xRegister16or32or64
+	{
+	protected:
+		const xRegisterInt&		m_convtype;
+
+	public:
+		xRegister16or32or64( const xRegister64& src ) : m_convtype( src ) {}
+		xRegister16or32or64( const xRegister32& src ) : m_convtype( src ) {}
+		xRegister16or32or64( const xRegister16& src ) : m_convtype( src ) {}
+
+		operator const xRegisterBase&() const { return m_convtype; }
+
+		const xRegisterInt* operator->() const
+		{
+			return &m_convtype;
+		}
+	};
+
+	class xRegister32or64
+	{
+	protected:
+		const xRegisterInt&		m_convtype;
+
+	public:
+		xRegister32or64( const xRegister64& src ) : m_convtype( src ) {}
+		xRegister32or64( const xRegister32& src ) : m_convtype( src ) {}
 
 		operator const xRegisterBase&() const { return m_convtype; }
 
@@ -502,7 +565,7 @@ template< typename T > void xWrite( T val );
 
 	const xRegisterSSE& xRegisterSSE::GetInstance(uint id)
 	{
-		static const xRegisterSSE *const m_tbl_xmmRegs[iREGCNT_XMM] = 
+		static const xRegisterSSE *const m_tbl_xmmRegs[] =
 		{
 			&xmm0, &xmm1, 
 			&xmm2, &xmm3, 
@@ -523,7 +586,7 @@ template< typename T > void xWrite( T val );
 		xAddressReg	Base;			// base register (no scale)
 		xAddressReg	Index;			// index reg gets multiplied by the scale
 		int			Factor;			// scale applied to the index register, in factor form (not a shift!)
-		s32			Displacement;	// address displacement
+		s32			Displacement;	// address displacement // 4B max even on 64 bits
 
 	public:
 		xAddressVoid( const xAddressReg& base, const xAddressReg& index, int factor=1, s32 displacement=0 );
@@ -683,7 +746,8 @@ template< typename T > void xWrite( T val );
 		xAddressReg Base;         // base register (no scale)
 		xAddressReg Index;        // index reg gets multiplied by the scale
 		uint        Scale;        // scale applied to the index register, in scale/shift form
-		sptr        Displacement; // offset applied to the Base/Index registers.
+		s32         Displacement; // offset applied to the Base/Index registers.
+								  // Displacement is 8/32 bits even on x86_64
 
 	public:
 		explicit xIndirectVoid( s32 disp );
