@@ -991,28 +991,27 @@ void xImpl_IncDec::operator()( const xIndirect32orLess& to ) const
 	EmitSibMagic( isDec ? 1 : 0, to );
 }
 
-void xImpl_DwordShift::operator()( const xRegister32& to,	const xRegister32& from, const xRegisterCL& /* clreg */ ) const	{ xOpWrite0F( OpcodeBase+1, to, from ); }
-void xImpl_DwordShift::operator()( const xRegister16& to,	const xRegister16& from, const xRegisterCL& /* clreg */ ) const	{ xOpWrite0F( 0x66, OpcodeBase+1, to, from ); }
-void xImpl_DwordShift::operator()( const xRegister32& to,	const xRegister32& from, u8 shiftcnt ) const
-{
-	if( shiftcnt != 0 )
-		xOpWrite0F( OpcodeBase, to, from, shiftcnt );
-}
-void xImpl_DwordShift::operator()( const xRegister16& to,	const xRegister16& from, u8 shiftcnt ) const
-{
-	if( shiftcnt != 0 )
-		xOpWrite0F( 0x66, OpcodeBase, to, from, shiftcnt );
+void xImpl_DwordShift::operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, const xRegisterCL& /* clreg */ ) const	{
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	xOpWrite0F( from->GetPrefix16(), OpcodeBase+1, to, from );
 }
 
-void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32& from, const xRegisterCL& /* clreg */ ) const
+void xImpl_DwordShift::operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, u8 shiftcnt ) const
 {
-	xOpWrite0F( (from->GetOperandSize() == 2) ? 0x66 : 0x00, OpcodeBase + 1, from, dest );
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	if( shiftcnt != 0 )
+		xOpWrite0F( from->GetPrefix16(), OpcodeBase, to, from, shiftcnt );
 }
 
-void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32& from, u8 shiftcnt ) const
+void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32or64& from, const xRegisterCL& /* clreg */ ) const
+{
+	xOpWrite0F( from->GetPrefix16(), OpcodeBase + 1, from, dest );
+}
+
+void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32or64& from, u8 shiftcnt ) const
 {
 	if( shiftcnt != 0 )
-		xOpWrite0F( (from->GetOperandSize() == 2) ? 0x66 : 0x00, OpcodeBase, from, dest, shiftcnt );
+		xOpWrite0F( from->GetPrefix16(), OpcodeBase, from, dest, shiftcnt );
 }
 
 const xImpl_Test		xTEST	= { };
