@@ -388,7 +388,7 @@ void _psxDeleteReg(int reg, int flush)
 	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
-void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
+void _psxMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
 		xMOV(to, g_psxConstRegs[fromgpr] );

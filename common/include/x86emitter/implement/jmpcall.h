@@ -110,7 +110,7 @@ struct xImpl_FastCall
 #endif
 
 	template< typename T > __fi __always_inline_tmpl_fail
-	void operator()( T* func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const
+	void operator()( T* func, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
 	{
 #ifdef __x86_64__
 		if (a1.IsEmpty()) {
@@ -132,7 +132,7 @@ struct xImpl_FastCall
 	}
 
 	template< typename T > __fi __always_inline_tmpl_fail
-	void operator()( T* func, u32 a1, const xRegister32& a2) const
+	void operator()( T* func, u32 a1, const xRegisterLong& a2) const
 	{
 #ifdef __x86_64__
 		XFASTCALL2;
@@ -171,7 +171,7 @@ struct xImpl_FastCall
 #endif
 	}
 
-	void operator()(const xIndirect32& func, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const
+	void operator()(const xIndirect32& func, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
 	{
 #ifdef __x86_64__
 		if (a1.IsEmpty()) {

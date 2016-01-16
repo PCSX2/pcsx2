@@ -243,7 +243,7 @@ void _flushConstRegs()
 	}
 }
 
-int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
+int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 {
 	uint i;
 	pxAssertDev( reg >= 0 && reg < 32, "Register index out of bounds." );
@@ -316,7 +316,7 @@ int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
 	}
 
 	if (x86reg.IsEmpty())
-		x86reg = xRegister32(_getFreeX86reg(oldmode));
+		x86reg = xRegisterLong(_getFreeX86reg(oldmode));
 	else
 		_freeX86reg(x86reg);
 
@@ -445,7 +445,7 @@ void _deleteX86reg(int type, int reg, int flush)
 }
 
 // Temporary solution to support eax/ebx... type
-void _freeX86reg(const x86Emitter::xRegister32& x86reg)
+void _freeX86reg(const x86Emitter::xRegisterLong& x86reg)
 {
 	_freeX86reg(x86reg.GetId());
 }

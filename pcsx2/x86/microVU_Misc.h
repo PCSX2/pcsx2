@@ -18,7 +18,7 @@
 using namespace x86Emitter;
 
 typedef xRegisterSSE xmm;
-typedef xRegister32 x32;
+typedef xRegisterLong x32;
 
 struct microVU;
 

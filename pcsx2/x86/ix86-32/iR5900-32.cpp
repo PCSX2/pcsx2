@@ -154,7 +154,7 @@ u32* _eeGetConstReg(int reg)
 	return &cpuRegs.GPR.r[ reg ].UL[0];
 }
 
-void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
+void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 {
 	if( fromgpr == 0 )
 		xXOR(to, to);	// zero register should use xor, thanks --air
