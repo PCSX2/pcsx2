@@ -546,11 +546,19 @@ template< typename T > void xWrite( T val );
 
 	extern const xRegisterSSE
 		xmm0, xmm1, xmm2, xmm3,
-		xmm4, xmm5, xmm6, xmm7;
+		xmm4, xmm5, xmm6, xmm7,
+		xmm8, xmm9, xmm10, xmm11,
+		xmm12, xmm13, xmm14, xmm15;
 
 	extern const xRegisterMMX
 		mm0, mm1, mm2, mm3,
 		mm4, mm5, mm6, mm7;
+
+	extern const xAddressReg
+		rax, rbx, rcx, rdx,
+		rsi, rdi, rbp, rsp,
+		r8, r9, r10, r11,
+		r12, r13, r14, r15;
 
 	extern const xAddressReg
 		eax, ebx, ecx, edx,
@@ -570,10 +578,10 @@ template< typename T > void xWrite( T val );
 	{
 		static const xRegisterSSE *const m_tbl_xmmRegs[] =
 		{
-			&xmm0, &xmm1, 
-			&xmm2, &xmm3, 
-			&xmm4, &xmm5,
-			&xmm6, &xmm7
+			&xmm0, &xmm1, &xmm2, &xmm3,
+			&xmm4, &xmm5, &xmm6, &xmm7,
+			&xmm8, &xmm9, &xmm10, &xmm11,
+			&xmm12, &xmm13, &xmm14, &xmm15
 		};
 
 		pxAssert(id < iREGCNT_XMM);
