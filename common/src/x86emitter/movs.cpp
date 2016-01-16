@@ -89,7 +89,7 @@ void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) c
 	}
 }
 
-void xImpl_Mov::operator()( const xIndirect32orLess& dest, int imm ) const
+void xImpl_Mov::operator()( const xIndirect64orLess& dest, int imm ) const
 {
 	dest.prefix16();
 	xWrite8( dest.Is8BitOp() ? 0xc6 : 0xc7 );

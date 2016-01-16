@@ -831,9 +831,9 @@ template< typename T > void xWrite( T val );
 	typedef xIndirect<u8> xIndirect8;
 
 	// --------------------------------------------------------------------------------------
-	//  xIndirect32orLess  -  base class 64, 32, 16, and 8 bit operand types
+	//  xIndirect64orLess  -  base class 64, 32, 16, and 8 bit operand types
 	// --------------------------------------------------------------------------------------
-	class xIndirect32orLess : public xIndirectVoid
+	class xIndirect64orLess : public xIndirectVoid
 	{
 		typedef xIndirectVoid _parent;
 
@@ -841,18 +841,18 @@ template< typename T > void xWrite( T val );
 		uint	m_OpSize;
 
 	public:
-		xIndirect32orLess( const xIndirect8& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
-		xIndirect32orLess( const xIndirect16& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
-		xIndirect32orLess( const xIndirect32& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
-		xIndirect32orLess( const xIndirect64& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect8& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect16& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect32& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect64& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
 
 		uint GetOperandSize() const { return m_OpSize; }
 
 	protected:
-		//xIndirect32orLess( const xAddressVoid& src ) : _parent( src ) {}
+		//xIndirect64orLess( const xAddressVoid& src ) : _parent( src ) {}
 
-		explicit xIndirect32orLess( s32 disp ) : _parent( disp ) {}
-		xIndirect32orLess( xAddressReg base, xAddressReg index, int scale=0, s32 displacement=0 ) :
+		explicit xIndirect64orLess( s32 disp ) : _parent( disp ) {}
+		xIndirect64orLess( xAddressReg base, xAddressReg index, int scale=0, s32 displacement=0 ) :
 			_parent( base, index, scale, displacement ) {}
 	};
 

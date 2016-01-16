@@ -934,7 +934,7 @@ void xImpl_Test::operator()( const xRegisterInt& to, const xRegisterInt& from ) 
 	EmitSibMagic( from, to );
 }
 
-void xImpl_Test::operator()( const xIndirect32orLess& dest, int imm ) const
+void xImpl_Test::operator()( const xIndirect64orLess& dest, int imm ) const
 {
 	dest.prefix16();
 	xWrite8( dest.Is8BitOp() ? 0xf6 : 0xf7 );
@@ -979,7 +979,7 @@ void xImpl_IncDec::operator()( const xRegisterInt& to ) const
 	}
 }
 
-void xImpl_IncDec::operator()( const xIndirect32orLess& to ) const
+void xImpl_IncDec::operator()( const xIndirect64orLess& to ) const
 {
 	to.prefix16();
 	xWrite8( to.Is8BitOp() ? 0xfe : 0xff );

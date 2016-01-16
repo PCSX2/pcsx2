@@ -26,7 +26,7 @@ namespace x86Emitter {
 struct xImpl_Test
 {
 	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
-	void operator()( const xIndirect32orLess& dest, int imm ) const;
+	void operator()( const xIndirect64orLess& dest, int imm ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
 };
 

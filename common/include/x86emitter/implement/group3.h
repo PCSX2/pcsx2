@@ -35,7 +35,7 @@ struct xImpl_Group3
 	G3Type	InstType;
 
 	void operator()( const xRegisterInt& from ) const;
-	void operator()( const xIndirect32orLess& from ) const;
+	void operator()( const xIndirect64orLess& from ) const;
 
 #if 0
 	template< typename T >
@@ -57,7 +57,7 @@ struct xImpl_MulDivBase
 	u16		OpcodeSSE;
 
 	void operator()( const xRegisterInt& from ) const;
-	void operator()( const xIndirect32orLess& from ) const;
+	void operator()( const xIndirect64orLess& from ) const;
 
 	const xImplSimd_DestRegSSE	PS;
 	const xImplSimd_DestRegSSE	PD;
@@ -71,7 +71,7 @@ struct xImpl_MulDivBase
 struct xImpl_iDiv
 {
 	void operator()( const xRegisterInt& from ) const;
-	void operator()( const xIndirect32orLess& from ) const;
+	void operator()( const xIndirect64orLess& from ) const;
 
 	const xImplSimd_DestRegSSE	PS;
 	const xImplSimd_DestRegSSE	PD;
@@ -86,7 +86,7 @@ struct xImpl_iDiv
 struct xImpl_iMul
 {
 	void operator()( const xRegisterInt& from ) const;
-	void operator()( const xIndirect32orLess& from ) const;
+	void operator()( const xIndirect64orLess& from ) const;
 
 	// The following iMul-specific forms are valid for 16 and 32 bit register operands only!
 

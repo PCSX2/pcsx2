@@ -44,7 +44,7 @@ struct xImpl_JmpCall
 	bool	isJmp;
 
 	void operator()( const xRegisterInt& absreg ) const;
-	void operator()( const xIndirect32orLess& src ) const;
+	void operator()( const xIndirect64orLess& src ) const;
 
 	// Special form for calling functions.  This form automatically resolves the
 	// correct displacement based on the size of the instruction being generated.
