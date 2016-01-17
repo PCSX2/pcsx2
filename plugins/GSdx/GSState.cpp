@@ -379,12 +379,15 @@ GSVector4i GSState::GetFrameRect(int i)
 	int w = r.width();
 	int h = r.height();
 
-	if (m_regs->SMODE1.CMOD == 2 && h > 448) // NTSC: limit games to 448, higher value causes black borders on few games
-	{
-		h = 448;
-	}
+//  NTSC: Saturate higher height values for games which have CRTC width lower than 640.
+//  Some NTSC mode games request higher height values for accurate display size / position when width is 640
+//  Testcases : PS logo (640x512) , Resident Evil:CVX (640x480). potentially more test cases...
 
-	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
+	if (m_regs->SMODE1.CMOD == 2 && h > 448 && w < 640)
+		h = 448;
+
+	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
+		h >>= 1;
 
 	//watch Disgaea2 FMV borders when changing
 	r.left = m_regs->DISP[i].DISPFB.DBX;
@@ -462,6 +465,9 @@ bool GSState::IsEnabled(int i)
 
 float GSState::GetTvRefreshRate()
 {
+  // TODO: Frequencies for VESA / DTV : http://users.neoscientists.org/~blue/ps2videomodes.txt
+  // SMODE1 PLL Loop divider (LC) could be used for detection of other video modes. CMOD's only useful for NTSC/PAL.(2/3)
+
 	return (m_regs->SMODE1.CMOD & 1) ? 50 : (60/1.001f);
 }
 
