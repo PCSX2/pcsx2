@@ -921,29 +921,21 @@ __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_
 void xImpl_Test::operator()( const xRegisterInt& to, const xRegisterInt& from ) const
 {
 	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
-	to.prefix16();
-	xWrite8( to.Is8BitOp() ? 0x84 : 0x85 );
-	EmitSibMagic( from, to );
+	xOpWrite( to.GetPrefix16(), to.Is8BitOp() ? 0x84 : 0x85, from, to );
 }
 
 void xImpl_Test::operator()( const xIndirect64orLess& dest, int imm ) const
 {
-	dest.prefix16();
-	xWrite8( dest.Is8BitOp() ? 0xf6 : 0xf7 );
-	EmitSibMagic( 0, dest );
+	xOpWrite( dest.GetPrefix16(), dest.Is8BitOp() ? 0xf6 : 0xf7, 0, dest );
 	dest.xWriteImm( imm );
 }
 
 void xImpl_Test::operator()( const xRegisterInt& to, int imm ) const
 {
-	to.prefix16();
-
-	if( to.IsAccumulator() )
-		xWrite8( to.Is8BitOp() ? 0xa8 : 0xa9 );
-	else
-	{
-		xWrite8( to.Is8BitOp() ? 0xf6 : 0xf7 );
-		EmitSibMagic( 0, to );
+	if( to.IsAccumulator() ) {
+		xOpAccWrite( to.GetPrefix16(), to.Is8BitOp() ? 0xa8 : 0xa9, 0, to );
+	} else {
+		xOpWrite( to.GetPrefix16(), to.Is8BitOp() ? 0xf6 : 0xf7, 0, to );
 	}
 	to.xWriteImm( imm );
 }
@@ -961,8 +953,8 @@ void xImpl_IncDec::operator()( const xRegisterInt& to ) const
 {
 	if( to.Is8BitOp() )
 	{
-		xWrite8( 0xfe );
-		EmitSibMagic( isDec ? 1 : 0, to );
+		u8 regfield = isDec ? 1 : 0;
+		xOpWrite( to.GetPrefix16(), 0xfe, regfield, to);
 	}
 	else
 	{
