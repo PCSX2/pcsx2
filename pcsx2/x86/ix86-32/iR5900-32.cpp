@@ -1031,7 +1031,7 @@ static u32 scaleblockcycles()
 	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
 	u32 scale_cycles = 0;
 
-	if (cyclerate == 0 || lowcycles || cyclerate > 99 || cyclerate < -2)
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 2)
 		scale_cycles = s_nBlockCycles >> 3; // Default cycle rate
 
 	else if (cyclerate > 0)
