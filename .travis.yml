@@ -5,16 +5,21 @@ dist: trusty
 
 matrix:
   include:
-# Version 5 seems to be whatever is latest - for now it's 5.2
-    - env: VERSION=5
+# Version 5 seems to be whatever is latest - for now it's 5.3
+    - env: VERSION=5 BITS=32
       compiler: gcc
       os: linux
-    - env: VERSION=4.9
+    - env: VERSION=4.9 BITS=32
       compiler: gcc
       os: linux
-    - env: VERSION=3.7
+    - env: VERSION=3.7 BITS=32
       compiler: clang
       os: linux
+    - env: VERSION=4.9 BITS=64
+      compiler: gcc
+      os: linux
+  allow_failures:
+    - env: VERSION=4.9 BITS=64
 
 before_install:
   - ./travis.sh before_install

@@ -2,7 +2,7 @@
 
 set -ex
 
-linux_before_install() {
+linux_32_before_install() {
 	# Build worker is 64-bit only by default it seems.
 	sudo dpkg --add-architecture i386
 
@@ -52,7 +52,7 @@ linux_before_install() {
 	sudo dpkg --force-all -i $(ls | grep 'libpng++-dev')
 }
 
-linux_script() {
+linux_32_script() {
 	mkdir build
 	cd build
 
@@ -68,10 +68,56 @@ linux_script() {
 	make -j3 install
 }
 
+
+linux_64_before_install() {
+	# Compilers
+	if [ "${CXX}" = "clang++" ]; then
+		sudo apt-key adv --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key
+		sudo add-apt-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-${VERSION} main"
+		COMPILER_PACKAGE="clang-${VERSION}"
+	fi
+	if [ "${CXX}" = "g++" ]; then
+		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+		COMPILER_PACKAGE="g++-${VERSION}"
+	fi
+
+	sudo apt-get -qq update
+
+	# libgl1-mesa-dev, liblzma-dev, libxext-dev, zlib1g-dev already installed on
+	# build worker, I put these here in case the build image changes.
+	sudo apt-get -qq -y install \
+		libaio-dev \
+		libasound2-dev \
+		libgtk2.0-dev \
+		libpng++-dev \
+		libpng12-dev \
+		libsdl2-dev \
+		libsoundtouch-dev \
+		libwxgtk3.0-dev \
+		portaudio19-dev \
+		${COMPILER_PACKAGE}
+}
+
+
+linux_64_script() {
+	mkdir build
+	cd build
+
+	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
+	cmake \
+		-DCMAKE_BUILD_TYPE=Devel \
+		-DBUILD_REPLAY_LOADERS=TRUE \
+		-DCMAKE_BUILD_PO=FALSE \
+		..
+
+	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
+	make -j3 install
+}
+
 # Just in case I do manual testing and accidentally insert "rm -rf /"
 case "${1}" in
 before_install|script)
-	${TRAVIS_OS_NAME}_${1}
+	${TRAVIS_OS_NAME}_${BITS}_${1}
 	;;
 *)
 	echo "Unknown command" && false
