@@ -58,6 +58,14 @@ namespace x86Emitter {
 		EmitSibMagic( param1, param2 );
 	}
 
+	template< typename T1, typename T2 > __emitinline
+		void xOpAccWrite( u8 prefix, u8 opcode, const T1& param1, const T2& param2 )
+	{
+		if( prefix != 0 ) xWrite8( prefix );
+
+		xWrite8( opcode );
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// emitter helpers for xmm instruction with prefixes, most of which are using
