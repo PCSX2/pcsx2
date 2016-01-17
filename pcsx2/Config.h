@@ -578,7 +578,7 @@ TraceLogFilters&				SetTraceConfig();
 // This disables the exception normally caused by trying to load PS1
 // games. Note: currently PS1 games will error out even without this
 // commented, so this is for development purposes only.
-#define ENABLE_LOADING_PS1_GAMES 0
+#define ENABLE_LOADING_PS1_GAMES 1
 
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!
