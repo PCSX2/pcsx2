@@ -267,34 +267,6 @@ void EmitSibMagic( uint regfield, const void* address )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// emitter helpers for xmm instruction with prefixes, most of which are using
-// the basic opcode format (items inside braces denote optional or conditional
-// emission):
-//
-//   [Prefix] / 0x0f / [OpcodePrefix] / Opcode / ModRM+[SibSB]
-//
-// Prefixes are typically 0x66, 0xf2, or 0xf3.  OpcodePrefixes are either 0x38 or
-// 0x3a [and other value will result in assertion failue].
-//
-__emitinline void xOpWrite0F( u8 prefix, u16 opcode, int instId, const xIndirectVoid& sib )
-{
-	SimdPrefix( prefix, opcode );
-	EmitSibMagic( instId, sib );
-}
-
-__emitinline void xOpWrite0F( u8 prefix, u16 opcode, int instId, const void* data )
-{
-	SimdPrefix( prefix, opcode );
-	EmitSibMagic( instId, data );
-}
-
-__emitinline void xOpWrite0F( u16 opcode, int instId, const xIndirectVoid& sib )
-{
-	xOpWrite0F( 0, opcode, instId, sib );
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
 // returns TRUE if this instruction requires SIB to be encoded, or FALSE if the
 // instruction ca be encoded as ModRm alone.
 static __fi bool NeedsSibMagic( const xIndirectVoid& info )

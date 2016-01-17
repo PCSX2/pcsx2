@@ -58,6 +58,17 @@ namespace x86Emitter {
 		EmitSibMagic( param1, param2 );
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// emitter helpers for xmm instruction with prefixes, most of which are using
+	// the basic opcode format (items inside braces denote optional or conditional
+	// emission):
+	//
+	//   [Prefix] / 0x0f / [OpcodePrefix] / Opcode / ModRM+[SibSB]
+	//
+	// Prefixes are typically 0x66, 0xf2, or 0xf3.  OpcodePrefixes are either 0x38 or
+	// 0x3a [and other value will result in assertion failue].
+	//
 	template< typename T1, typename T2 > __emitinline
 		void xOpWrite0F( u8 prefix, u16 opcode, const T1& param1, const T2& param2 )
 	{
