@@ -50,10 +50,10 @@ namespace x86Emitter {
 	template< typename T1, typename T2 > __emitinline
 		void xOpWrite( u8 prefix, u8 opcode, const T1& param1, const T2& param2 )
 	{
-		if( prefix != 0 )
-			xWrite16( (opcode<<8) | prefix );
-		else
-			xWrite8( opcode );
+		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
+
+		xWrite8( opcode );
 
 		EmitSibMagic( param1, param2 );
 	}
@@ -62,6 +62,7 @@ namespace x86Emitter {
 		void xOpAccWrite( u8 prefix, u8 opcode, const T1& param1, const T2& param2 )
 	{
 		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
 
 		xWrite8( opcode );
 	}
@@ -80,7 +81,11 @@ namespace x86Emitter {
 	template< typename T1, typename T2 > __emitinline
 		void xOpWrite0F( u8 prefix, u16 opcode, const T1& param1, const T2& param2 )
 	{
-		SimdPrefix( prefix, opcode );
+		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
+
+		SimdPrefix( 0, opcode );
+
 		EmitSibMagic( param1, param2 );
 	}
 
