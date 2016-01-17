@@ -994,6 +994,10 @@ void xImpl_IncDec::operator()( const xRegisterInt& to ) const
 	}
 	else
 	{
+#ifdef __x86_64__
+		pxAssertMsg(0, "Single Byte INC/DEC aren't valid in 64 bits."
+				"You need to use the ModR/M form (FF/0 FF/1 opcodes)");
+#endif
 		to.prefix16();
 		xWrite8( (isDec ? 0x48 : 0x40) | to.Id );
 	}
