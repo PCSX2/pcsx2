@@ -31,6 +31,9 @@ GSRendererOGL::GSRendererOGL()
 
 	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
 
+	// Hope nothing requires too many draw calls.
+	m_drawlist.reserve(2048);
+
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
@@ -485,59 +488,47 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 
 	// Check intersection of sprite primitive only
 	size_t count = m_vertex.next;
-	GSVertex* v = &m_vertex.buff[0];
+	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
+	GSVertex* v = m_vertex.buff;
 
-	// In order to speed up comparaison a boundind-box is accumulated. It removes a
-	// loop so code is much faster (check game virtua fighter). Besides it allow to check
-	// properly the Y order.
-	GSVector4i all;
-	//FIXME better vector operation
-	if (v[1].XYZ.Y < v[0].XYZ.Y) {
-		all.y = v[1].XYZ.Y;
-		all.w = v[0].XYZ.Y;
-	} else {
-		all.y = v[0].XYZ.Y;
-		all.w = v[1].XYZ.Y;
-	}
-	if (v[1].XYZ.X < v[0].XYZ.X) {
-		all.x = v[1].XYZ.X;
-		all.z = v[0].XYZ.X;
-	} else {
-		all.x = v[0].XYZ.X;
-		all.z = v[1].XYZ.X;
-	}
+	m_drawlist.clear();
+	size_t i = 0;
+	while (i < count) {
+		// In order to speed up comparison a bounding-box is accumulated. It removes a
+		// loop so code is much faster (check game virtua fighter). Besides it allow to check
+		// properly the Y order.
 
-	for(size_t i = 2; i < count; i += 2) {
-		GSVector4i sprite;
-		//FIXME better vector operation
-		if (v[i+1].XYZ.Y < v[i+0].XYZ.Y) {
-			sprite.y = v[i+1].XYZ.Y;
-			sprite.w = v[i+0].XYZ.Y;
-		} else {
-			sprite.y = v[i+0].XYZ.Y;
-			sprite.w = v[i+1].XYZ.Y;
+		// .x = min(v[i].XYZ.X, v[i+1].XYZ.X)
+		// .y = min(v[i].XYZ.Y, v[i+1].XYZ.Y)
+		// .z = max(v[i].XYZ.X, v[i+1].XYZ.X)
+		// .w = max(v[i].XYZ.Y, v[i+1].XYZ.Y)
+		GSVector4i all = GSVector4i(v[i].m[1]).upl16(GSVector4i(v[i+1].m[1])).upl16().xzyw();
+		all = all.xyxy().blend(all.zwzw(), all > all.zwxy());
+
+		size_t j = i + 2;
+		while (j < count) {
+			GSVector4i sprite = GSVector4i(v[j].m[1]).upl16(GSVector4i(v[j+1].m[1])).upl16().xzyw();
+			sprite = sprite.xyxy().blend(sprite.zwzw(), sprite > sprite.zwxy());
+
+			// Be sure to get vertex in good order, otherwise .r* function doesn't
+			// work as expected.
+			ASSERT(sprite.x <= sprite.z);
+			ASSERT(sprite.y <= sprite.w);
+			ASSERT(all.x <= all.z);
+			ASSERT(all.y <= all.w);
+
+			if (all.rintersect(sprite).rempty()) {
+				all = all.runion_ordered(sprite);
+			} else {
+				overlap = PRIM_OVERLAP_YES;
+				break;
+			}
+			j += 2;
 		}
-		if (v[i+1].XYZ.X < v[i+0].XYZ.X) {
-			sprite.x = v[i+1].XYZ.X;
-			sprite.z = v[i+0].XYZ.X;
-		} else {
-			sprite.x = v[i+0].XYZ.X;
-			sprite.z = v[i+1].XYZ.X;
-		}
-
-		// Be sure to get vertex in good order, otherwise .r* function doesn't
-		// work as expected.
-		ASSERT(sprite.x <= sprite.z);
-		ASSERT(sprite.y <= sprite.w);
-		ASSERT(all.x <= all.z);
-		ASSERT(all.y <= all.w);
-
-		if (all.rintersect(sprite).rempty()) {
-			all = all.runion(sprite);
-		} else {
-			return PRIM_OVERLAP_YES;
-		}
+		m_drawlist.push_back((j - i) >> 1); // Sprite count
+		i = j;
 	}
+
 #if 0
 	// Old algo: less constraint but O(n^2) instead of O(n) as above
 
@@ -580,7 +571,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 #endif
 
 	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
-	return PRIM_OVERLAP_NO;
+	return overlap;
 }
 
 GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize)
@@ -606,6 +597,32 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
+	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
+		size_t nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6;
+
+		GL_PUSH("Split the draw (SPRITE)");
+
+#if defined(_DEBUG)
+		// Check how draw call is split.
+		map<size_t, size_t> frequency;
+		for (const auto& it: m_drawlist)
+			++frequency[it];
+
+		string message;
+		for (const auto& it: frequency)
+			message += " " + to_string(it.first) + "(" + to_string(it.second) + ")";
+
+		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
+			m_index.tail / nb_vertex, m_drawlist.size(), message.c_str());
+#endif
+
+		for (size_t count, p = 0, n = 0; n < m_drawlist.size(); p += count, ++n) {
+			count = m_drawlist[n] * nb_vertex;
+			glTextureBarrier();
+			dev->DrawIndexedPrimitive(p, count);
+		}
+
+		GL_POP();
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
@@ -613,7 +630,6 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 		switch (m_vt.m_primclass) {
 			case GS_TRIANGLE_CLASS: nb_vertex = 3; break;
 			case GS_POINT_CLASS:	nb_vertex = 1; break;
-			case GS_SPRITE_CLASS:	nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6; break;
 			default: nb_vertex = 2; break;
 		}
 
