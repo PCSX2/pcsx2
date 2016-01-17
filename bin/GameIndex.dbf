@@ -12217,6 +12217,7 @@ Region = PAL-E
 Serial = SLES-52694
 Name   = BDFL Manager 2005
 Region = PAL-G
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLES-52695
 Name   = Roger Lemerre - La Selection des Champions
