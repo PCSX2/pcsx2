@@ -31,11 +31,12 @@ namespace x86Emitter {
 	extern void EmitSibMagic( const xRegisterBase& reg1, const void* src );
 	extern void EmitSibMagic( const xRegisterBase& reg1, const xIndirectVoid& sib );
 
-	void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 );
-	void EmitRex( const xRegisterBase& reg1, const void* src );
-	void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib );
-	void EmitRex( const xRegisterBase& reg1 );
-	void EmitRex( const xIndirectVoid& sib );
+	extern void EmitRex( uint regfield, const void* address );
+	extern void EmitRex( uint regfield, const xIndirectVoid& info );
+	extern void EmitRex( uint reg1, const xRegisterBase& reg2 );
+	extern void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 );
+	extern void EmitRex( const xRegisterBase& reg1, const void* src );
+	extern void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib );
 
 	extern void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from );
 
