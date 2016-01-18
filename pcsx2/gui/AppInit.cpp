@@ -496,9 +496,6 @@ bool Pcsx2App::OnInit()
 		else if ( Startup.SysAutoRunElf )
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			// Enable iop/ee logging
-			SysConsole.eeConsole.Enabled = true;
-			SysConsole.iopConsole.Enabled = true;
 
 			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
 		}
