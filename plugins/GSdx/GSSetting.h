@@ -25,16 +25,16 @@
 
 struct GSSetting
 {
-	uint32 id;
+	int32_t value;
 	std::string name;
 	std::string note;
 
-
-	GSSetting(uint32 id, const char* name, const char* note)
+	template< typename T>
+	explicit GSSetting(T value, const char* name, const char* note) :
+		value(static_cast<int32_t>(value)),
+		name(name),
+		note(note)
 	{
-		this->id = id;
-		this->name = name;
-		this->note = note;
 	}
 };
 

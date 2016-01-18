@@ -321,8 +321,8 @@ void GSSettingsDlg::UpdateRenderers()
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		GSRendererType renderer = static_cast<GSRendererType>(r.id);
-		
+		GSRendererType renderer = static_cast<GSRendererType>(r.value);
+
 		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
@@ -335,13 +335,13 @@ void GSSettingsDlg::UpdateRenderers()
 
 		renderers.push_back(r);
 
-		if (static_cast<GSRendererType>(r.id) == renderer_setting)
+		if (static_cast<GSRendererType>(r.value) == renderer_setting)
 		{
 			renderer_sel = renderer_setting;
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, renderers, static_cast<uint32>(renderer_sel));
+	ComboBoxInit(IDC_RENDERER, renderers, static_cast<int32_t>(renderer_sel));
 }
 
 void GSSettingsDlg::UpdateControls()
