@@ -18,7 +18,7 @@ sub help {
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff);
 
 $o_max_cpu = 1;
 $o_timeout = 20;
@@ -29,6 +29,7 @@ my $status = Getopt::Long::GetOptions(
     'exe=s'         => \$o_exe,
     'help'          => \$o_help,
     'timeout=i'     => \$o_timeout,
+    'show_diff'     => \$o_show_diff,
     'suite=s'       => \$o_suite,
 );
 
@@ -89,6 +90,9 @@ collect_result();
 print "\n\n Status | =================  Test ======================\n";
 foreach my $test (sort(keys(%$g_test_db))) {
     my $info = $g_test_db->{$test};
+    my $out = $info->{"OUT"};
+    my $exp = $info->{"EXPECTED"};
+
     if ($info->{"STATUS"} == 0) {
         print color('bold green');
         print "   OK   | $test\n";
@@ -98,6 +102,11 @@ foreach my $test (sort(keys(%$g_test_db))) {
     } else {
         print color('bold red');
         print "   KO   | $test\n";
+        if ($o_show_diff) {
+            print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
+            system("diff -u $out $exp");
+            print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
+        }
     }
 }
 print color('reset');
