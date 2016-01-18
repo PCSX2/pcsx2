@@ -13,19 +13,39 @@ use Cwd 'abs_path';
 use Term::ANSIColor;
 
 sub help {
-    # always useful
+    my $msg = << 'EOS';
+
+    The script run_test.pl is a test runner that work in conjunction with ps2autotests (https://github.com/unknownbrackets/ps2autotests)
+
+    Mandatory Option
+        --exe <STRING>   : the PCSX2 binary that you want to test
+        --cfg <STRING>   : a path to the a default ini configuration of PCSX2
+        --suite <STRING> : a path to ps2autotests test (root directory)
+
+    Optional Option
+        --cpu=1          : the number of parallel tests launched. Might create additional issue
+        --timeout=20     : a global timeout for hang tests
+        --show_diff      : show debug information
+
+        --debug_me       : print script info
+EOS
+    print $msg;
+
     exit
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me);
 
 $o_max_cpu = 1;
 $o_timeout = 20;
+$o_help = 0;
+$o_debug_me = 0;
 
 my $status = Getopt::Long::GetOptions(
     'cfg=s'         => \$o_cfg,
     'cpu=i'         => \$o_max_cpu,
+    'debug_me'      => \$o_debug_me,
     'exe=s'         => \$o_exe,
     'help'          => \$o_help,
     'timeout=i'     => \$o_timeout,
@@ -36,7 +56,7 @@ my $status = Getopt::Long::GetOptions(
 #####################################################
 # Check option
 #####################################################
-unless ($status) {
+if (not $status or $o_help) {
     help();
 }
 
@@ -51,10 +71,11 @@ unless (defined $o_exe) {
 }
 
 unless (defined $o_cfg) {
-    print "Error: require a deafult cfg directory\n";
+    print "Error: require a default cfg directory\n";
     help();
 }
 
+$o_exe = abs_path($o_exe);
 $o_cfg = abs_path($o_cfg);
 $mt_timeout = $o_timeout;
 
@@ -67,6 +88,7 @@ $mt_timeout = $o_timeout;
 my $g_test_db;
 print "INFO: search tests in $o_suite and run them in $o_max_cpu CPU)\n";
 find({ wanted => \&add_test_cmd_for_elf, no_chdir => 1 },  $o_suite);
+print "\n";
 
 # Round 2: Run the tests (later in thread)
 foreach my $test (keys(%$g_test_db)) {
@@ -87,9 +109,10 @@ wait_all_threads();
 collect_result();
 
 # Pretty print
-print "\n\n Status | =================  Test ======================\n";
+print "\n\n Status | ===========================  Test ================================\n";
 foreach my $test (sort(keys(%$g_test_db))) {
     my $info = $g_test_db->{$test};
+    my $cfg = $info->{"CFG_DIR"};
     my $out = $info->{"OUT"};
     my $exp = $info->{"EXPECTED"};
 
@@ -104,6 +127,7 @@ foreach my $test (sort(keys(%$g_test_db))) {
         print "   KO   | $test\n";
         if ($o_show_diff) {
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
+            print test_cmd($test, $cfg) . "\n\n";
             system("diff -u $out $exp");
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
         }
@@ -138,7 +162,7 @@ sub add_test_cmd_for_elf {
     #return 0 unless ($file =~ /branchdelay/);
 
     my $dir = $File::Find::dir;
-    print "INFO: found $file in $dir\n";
+    print "INFO: found $file in $dir\n" if $o_debug_me;
 
     $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/\.elf/_cfg/r;
     $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/\.elf/.expected/r;
@@ -191,9 +215,9 @@ sub run_elf {
     my $dump = 0;
     open(my $run, ">$out") or die "Impossible to open $!";
 
-    # FIXME timeout
-    my $pid = open(my $log, "$o_exe --elf $elf --cfgpath=$cfg |") or die "Impossible to pipe $!";
-    print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n";
+    my $command = test_cmd($elf, $cfg);
+    my $pid = open(my $log, "$command |") or die "Impossible to pipe $!";
+    print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n" if $o_debug_me;
 
     # Kill me
     $SIG{'KILL'} = sub {
@@ -215,10 +239,16 @@ sub run_elf {
         }
         if ($line =~ /-- TEST END/) {
             $dump = 0;
-            print "Info kill process $pid\n";
+            print "INFO: kill process $pid\n" if $o_debug_me;
             kill 'KILL', $pid;
         }
     }
+}
+
+sub test_cmd {
+    my $elf = shift;
+    my $cfg = shift;
+    return "$o_exe --elf $elf --cfgpath=$cfg"
 }
 
 #####################################################
