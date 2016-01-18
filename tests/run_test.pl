@@ -119,12 +119,14 @@ foreach my $test (sort(keys(%$g_test_db))) {
     if ($info->{"STATUS"} == 0) {
         print color('bold green');
         print "   OK   | $test\n";
-    } elsif ($info->{"STATUS"} == 0xBADBEEF) {
-        print color('bold blue');
-        print "  Tout  | $test\n";
     } else {
-        print color('bold red');
-        print "   KO   | $test\n";
+        if ($info->{"STATUS"} == 0xBADBEEF) {
+            print color('bold blue');
+            print "  Tout  | $test\n";
+        } else {
+            print color('bold red');
+            print "   KO   | $test\n";
+        }
         if ($o_show_diff) {
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
             print test_cmd($test, $cfg) . "\n\n";
