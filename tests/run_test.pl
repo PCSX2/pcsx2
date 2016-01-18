@@ -27,6 +27,8 @@ sub help {
         --timeout=20     : a global timeout for hang tests
         --show_diff      : show debug information
 
+        --test=<REGEXP>  : filter test based on their names
+
         --debug_me       : print script info
 EOS
     print $msg;
@@ -35,12 +37,13 @@ EOS
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name);
 
 $o_max_cpu = 1;
 $o_timeout = 20;
 $o_help = 0;
 $o_debug_me = 0;
+$o_test_name = ".*";
 
 my $status = Getopt::Long::GetOptions(
     'cfg=s'         => \$o_cfg,
@@ -48,6 +51,7 @@ my $status = Getopt::Long::GetOptions(
     'debug_me'      => \$o_debug_me,
     'exe=s'         => \$o_exe,
     'help'          => \$o_help,
+    'testname=s'    => \$o_test_name,
     'timeout=i'     => \$o_timeout,
     'show_diff'     => \$o_show_diff,
     'suite=s'       => \$o_suite,
@@ -160,6 +164,7 @@ sub collect_result {
 sub add_test_cmd_for_elf {
     my $file = $_;
     return 0 unless ($file =~ /\.elf/);
+    return 0 unless ($file =~ /$o_test_name/i);
     # Fast test
     #return 0 unless ($file =~ /branchdelay/);
 
