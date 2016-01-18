@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use threads;
+use threads::shared;
 
 use Getopt::Long;
 use File::Find;
@@ -16,16 +17,24 @@ sub help {
     exit
 }
 
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu);
+my $mt_timeout :shared;
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout);
+
 $o_max_cpu = 1;
+$o_timeout = 20;
+
 my $status = Getopt::Long::GetOptions(
-    'cfg=s'   => \$o_cfg,
-    'cpu=i'   => \$o_max_cpu,
-    'exe=s'   => \$o_exe,
-    'help'    => \$o_help,
-    'suite=s' => \$o_suite,
+    'cfg=s'         => \$o_cfg,
+    'cpu=i'         => \$o_max_cpu,
+    'exe=s'         => \$o_exe,
+    'help'          => \$o_help,
+    'timeout=i'     => \$o_timeout,
+    'suite=s'       => \$o_suite,
 );
 
+#####################################################
+# Check option
+#####################################################
 unless ($status) {
     help();
 }
@@ -44,8 +53,14 @@ unless (defined $o_cfg) {
     print "Error: require a deafult cfg directory\n";
     help();
 }
-$o_cfg = abs_path($o_cfg);
 
+$o_cfg = abs_path($o_cfg);
+$mt_timeout = $o_timeout;
+
+
+#####################################################
+# Run
+#####################################################
 
 # Round 1: Collect the tests
 my $g_test_db;
@@ -58,7 +73,9 @@ foreach my $test (keys(%$g_test_db)) {
     while( scalar(threads->list() >= $o_max_cpu) ) {
         if (close_joinnable_threads() == 0) {
             sleep(1); # test are often fast so 1s is more than enough
+            $mt_timeout--;
         }
+        kill_thread_if_timeout()
     }
 
     create_thread($test);
@@ -72,27 +89,36 @@ collect_result();
 print "\n\n Status | =================  Test ======================\n";
 foreach my $test (sort(keys(%$g_test_db))) {
     my $info = $g_test_db->{$test};
-    if ($info->{"STATUS"} != 0) {
-        print color('bold red');
-        print "   KO   | $test\n";
-    } else {
+    if ($info->{"STATUS"} == 0) {
         print color('bold green');
         print "   OK   | $test\n";
+    } elsif ($info->{"STATUS"} == 0xBADBEEF) {
+        print color('bold blue');
+        print "  Tout  | $test\n";
+    } else {
+        print color('bold red');
+        print "   KO   | $test\n";
     }
 }
 print color('reset');
 print "\n";
 
 #####################################################
-
+# Sub helper
+#####################################################
 sub collect_result {
     foreach my $test (keys(%$g_test_db)) {
         my $info = $g_test_db->{$test};
         my $out = $info->{"OUT"};
         my $exp = $info->{"EXPECTED"};
 
-        system("diff $out $exp -q");
-        $info->{"STATUS"} = $?; # not thread safe
+        return unless (-s $out);
+
+        my $end = `tail -1 $out`;
+        if ($end =~ /-- TEST END/) {
+            system("diff $out $exp -q");
+            $info->{"STATUS"} = $?; # potentially not thread safe
+        }
     }
 }
 
@@ -108,6 +134,7 @@ sub add_test_cmd_for_elf {
     $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/\.elf/_cfg/r;
     $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/\.elf/.expected/r;
     $g_test_db->{$File::Find::name}->{"OUT"} = $File::Find::name =~ s/\.elf/.PCSX2.out/r;
+    $g_test_db->{$File::Find::name}->{"STATUS"} = 0xBADBEEF;
 
     return 1;
 }
@@ -159,7 +186,17 @@ sub run_elf {
     my $pid = open(my $log, "$o_exe --elf $elf --cfgpath=$cfg |") or die "Impossible to pipe $!";
     print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n";
 
+    # Kill me
+    $SIG{'KILL'} = sub {
+        # FIXME doesn't work (no print, neither kill)
+        print "ERROR: timeout detected on pid $pid.\n";
+        kill 'KILL', $pid;
+        threads->exit();
+    };
+
     while ($line = <$log>) {
+        $mt_timeout = $o_timeout; # Keep me alive
+
         $line =~ s/\e\[\d+(?>(;\d+)*)m//g;
         if ($line =~ /-- TEST BEGIN/) {
             $dump = 1;
@@ -199,8 +236,24 @@ sub close_joinnable_threads {
 }
 
 sub wait_all_threads {
-    foreach my $thr (threads->list()) {
-        $thr->join();
-        $g_counter--;
+    # wait free CPU slot
+    while( scalar(threads->list() > 0) and $mt_timeout > 0) {
+        if (close_joinnable_threads() == 0) {
+            sleep(1); # test are often fast so 1s is more than enough
+            $mt_timeout--;
+        }
+    }
+
+    kill_thread_if_timeout()
+}
+
+sub kill_thread_if_timeout {
+    if ($mt_timeout <= 0) {
+        foreach my $thr (threads->list()) {
+            # Farewell my friend
+            print "ERROR: send kill on timeout process\n";
+            $thr->kill('KILL')->detach();
+        }
+        $mt_timeout = 100;
     }
 }
