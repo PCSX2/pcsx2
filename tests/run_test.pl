@@ -9,6 +9,7 @@ use File::Find;
 use File::Spec;
 use Cwd;
 use Cwd 'abs_path';
+use Term::ANSIColor;
 
 sub help {
     # always useful
@@ -19,7 +20,7 @@ my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu);
 $o_max_cpu = 1;
 my $status = Getopt::Long::GetOptions(
     'cfg=s'   => \$o_cfg,
-    'cpu'     => \$o_max_cpu, # FIXME not tested
+    'cpu=i'   => \$o_max_cpu,
     'exe=s'   => \$o_exe,
     'help'    => \$o_help,
     'suite=s' => \$o_suite,
@@ -48,28 +49,51 @@ $o_cfg = abs_path($o_cfg);
 
 # Round 1: Collect the tests
 my $g_test_db;
-print "Info: search test in $o_suite\n";
+print "INFO: search tests in $o_suite and run them in $o_max_cpu CPU)\n";
 find({ wanted => \&add_test_cmd_for_elf, no_chdir => 1 },  $o_suite);
 
 # Round 2: Run the tests (later in thread)
-foreach my $t (keys(%$g_test_db)) {
+foreach my $test (keys(%$g_test_db)) {
     # wait free CPU slot
     while( scalar(threads->list() >= $o_max_cpu) ) {
         if (close_joinnable_threads() == 0) {
-            sleep(5);
+            sleep(1); # test are often fast so 1s is more than enough
         }
     }
 
-    create_thread($t);
+    create_thread($test);
 }
 wait_all_threads();
 
-# Round 3: Collect the results
+# Round 3: Collect the results (not thread safe)
+collect_result();
+
+# Pretty print
+print "\n\n Status | =================  Test ======================\n";
+foreach my $test (sort(keys(%$g_test_db))) {
+    my $info = $g_test_db->{$test};
+    if ($info->{"STATUS"} != 0) {
+        print color('bold red');
+        print "   KO   | $test\n";
+    } else {
+        print color('bold green');
+        print "   OK   | $test\n";
+    }
+}
+print color('reset');
+print "\n";
 
 #####################################################
 
-
 sub collect_result {
+    foreach my $test (keys(%$g_test_db)) {
+        my $info = $g_test_db->{$test};
+        my $out = $info->{"OUT"};
+        my $exp = $info->{"EXPECTED"};
+
+        system("diff $out $exp -q");
+        $info->{"STATUS"} = $?; # not thread safe
+    }
 }
 
 sub add_test_cmd_for_elf {
@@ -133,7 +157,7 @@ sub run_elf {
 
     # FIXME timeout
     my $pid = open(my $log, "$o_exe --elf $elf --cfgpath=$cfg |") or die "Impossible to pipe $!";
-    print "Info:  Execute $elf (PID=$pid) with cfg ($cfg)\n";
+    print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n";
 
     while ($line = <$log>) {
         $line =~ s/\e\[\d+(?>(;\d+)*)m//g;
