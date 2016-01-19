@@ -23,7 +23,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalLibraryDirectories>$(VTUNE_AMPLIFIER_XE_2015_DIR)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)deps\$(Platform)\Release;$(VTUNE_AMPLIFIER_XE_2015_DIR)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>"$(SvnCommonDir)\vsprops\preBuild.cmd" "$(ProjectRootDir)"</Command>
