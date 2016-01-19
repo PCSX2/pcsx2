@@ -27,11 +27,11 @@
 #include <time.h>
 #include <wx/datetime.h>
 #include <exception>
+#include <memory>
 
 #include "IsoFS/IsoFS.h"
 #include "IsoFS/IsoFSCDVD.h"
 #include "CDVDisoReader.h"
-#include "Utilities/ScopedPtr.h"
 
 #include "DebugTools/SymbolMap.h"
 #include "AppConfig.h"
@@ -82,14 +82,14 @@ static int CheckDiskTypeFS(int baseType)
 
 		int size = file.getLength();
 
-		ScopedArray<char> buffer((int)file.getLength()+1);
-		file.read((u8*)(buffer.GetPtr()),size);
+		std::unique_ptr<char[]> buffer(new char[file.getLength() + 1]);
+		file.read(buffer.get(),size);
 		buffer[size]='\0';
 
-		char* pos = strstr(buffer.GetPtr(), "BOOT2");
+		char* pos = strstr(buffer.get(), "BOOT2");
 		if (pos == NULL)
 		{
-			pos = strstr(buffer.GetPtr(), "BOOT");
+			pos = strstr(buffer.get(), "BOOT");
 			if (pos == NULL)  return CDVD_TYPE_ILLEGAL;
 			return CDVD_TYPE_PSCD;
 		}

@@ -17,6 +17,7 @@
 
 #include "App.h"
 #include <array>
+#include <memory>
 
 BEGIN_DECLARE_EVENT_TYPES()
 	DECLARE_EVENT_TYPE(pxEvt_DockConsole, -1)
@@ -213,12 +214,6 @@ protected:
 	// (alternatively you can enable Disasm logging in any recompiler and achieve
 	// a similar effect)
 	ScopedPtr<ConsoleTestThread>	m_threadlogger;
-
-	// ----------------------------------------------------------------------------
-	//  Window and Menu Object Handles
-	// ----------------------------------------------------------------------------
-
-	ScopedArray<wxMenuItem*>	m_sourceChecks;
 
 public:
 	// ctor & dtor
