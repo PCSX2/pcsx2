@@ -8,6 +8,8 @@ use threads::shared;
 use Getopt::Long;
 use File::Find;
 use File::Spec;
+use File::Copy::Recursive qw(fcopy rcopy dircopy);
+use Tie::File;
 use Cwd;
 use Cwd 'abs_path';
 use Term::ANSIColor;
@@ -81,6 +83,7 @@ unless (defined $o_cfg) {
 
 $o_exe = abs_path($o_exe);
 $o_cfg = abs_path($o_cfg);
+$o_suite = abs_path($o_suite);
 $mt_timeout = $o_timeout;
 
 
@@ -120,11 +123,11 @@ foreach my $test (sort(keys(%$g_test_db))) {
     my $out = $info->{"OUT"};
     my $exp = $info->{"EXPECTED"};
 
-    if ($info->{"STATUS"} == 0) {
+    if ($info->{"STATUS"} eq "OK") {
         print color('bold green');
         print "   OK   | $test\n";
     } else {
-        if ($info->{"STATUS"} == 0xBADBEEF) {
+        if ($info->{"STATUS"} eq "T") {
             print color('bold blue');
             print "  Tout  | $test\n";
         } else {
@@ -134,7 +137,7 @@ foreach my $test (sort(keys(%$g_test_db))) {
         if ($o_show_diff) {
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
             print test_cmd($test, $cfg) . "\n\n";
-            system("diff -u $out $exp");
+            diff($exp, $out, 0);
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
         }
     }
@@ -151,13 +154,7 @@ sub collect_result {
         my $out = $info->{"OUT"};
         my $exp = $info->{"EXPECTED"};
 
-        return unless (-s $out);
-
-        my $end = `tail -1 $out`;
-        if ($end =~ /-- TEST END/) {
-            system("diff $out $exp -q");
-            $info->{"STATUS"} = $?; # potentially not thread safe
-        }
+        $info->{"STATUS"} = diff($exp, $out, 1); # potentially not thread safe
     }
 }
 
@@ -174,7 +171,7 @@ sub add_test_cmd_for_elf {
     $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/\.elf/_cfg/r;
     $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/\.elf/.expected/r;
     $g_test_db->{$File::Find::name}->{"OUT"} = $File::Find::name =~ s/\.elf/.PCSX2.out/r;
-    $g_test_db->{$File::Find::name}->{"STATUS"} = 0xBADBEEF;
+    $g_test_db->{$File::Find::name}->{"STATUS"} = "T";
 
     return 1;
 }
@@ -191,8 +188,9 @@ sub run_thread {
 sub generate_cfg {
     my $out_dir = shift;
 
-    #system("rm -fr $out_dir");
-    system("cp -a --remove-destination --no-target-directory $o_cfg $out_dir");
+    local $File::Copy::Recursive::RMTrgDir = 2;
+    dircopy($o_cfg, $out_dir) or die "Failed to copy directory: $!\n";
+
     # Enable the logging to get the trace log
     my $ui_ini = File::Spec->catfile($out_dir, "PCSX2_ui.ini");
     my $vm_ini = File::Spec->catfile($out_dir, "PCSX2_vm.ini");
@@ -206,11 +204,24 @@ sub generate_cfg {
     # FIXME add clamping / rounding option
     # FIXME need separate cfg dir !
 
-    foreach my $option (keys(%sed)) {
-        my $v = $sed{$option};
-        system("sed -i -e 's/$option=.*/$option=$v/' $ui_ini");
-        system("sed -i -e 's/$option=.*/$option=$v/' $vm_ini");
+    tie my @ui, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_ui.ini") or die "Fail to tie PCSX2_ui.ini $!\n";
+    tie my @vm, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_vm.ini") or die "Fail to tie PCSX2_vm.ini $!\n";
+
+    for (@ui) {
+        foreach my $option (keys(%sed)) {
+            my $v = $sed{$option};
+            s/$option=.*/$option=$v/;
+        }
     }
+    for (@vm) {
+        foreach my $option (keys(%sed)) {
+            my $v = $sed{$option};
+            s/$option=.*/$option=$v/;
+        }
+    }
+
+    untie @ui;
+    untie @vm;
 }
 
 sub run_elf {
@@ -256,6 +267,34 @@ sub test_cmd {
     my $elf = shift;
     my $cfg = shift;
     return "$o_exe --elf $elf --cfgpath=$cfg"
+}
+
+sub diff {
+    my $ref_ = shift;
+    my $out_ = shift;
+    my $quiet = shift;
+
+    open (my $ref_h, "<$ref_");
+    my @ref = <$ref_h>;
+
+    open (my $out_h, "<$out_");
+    my @out = <$out_h>;
+
+    return "T" if (scalar(@out) < 2);
+    return "T" if ($out[-1] !~ /-- TEST END/);
+    return "KO" if ((scalar(@out) != scalar(ref)) and $quiet);
+
+    my $status = "OK";
+    for (my $l = 0; $l < scalar(@ref); $l++) {
+        if ($ref[$l] ne $out[$l]) {
+            $status = "KO";
+            if ($o_show_diff and not $quiet) {
+                print "EXPECTED: $ref[$l]";
+                print "BUT  GOT: $out[$l]";
+            }
+        }
+    }
+    return $status;
 }
 
 #####################################################
