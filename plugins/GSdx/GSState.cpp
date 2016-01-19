@@ -364,6 +364,9 @@ GSVector4i GSState::GetDisplayRect(int i)
 	r.right = r.left + width;
 	r.bottom = r.top + height;
 
+	// Useful for debugging games:
+	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
+
 	return r;
 }
 
