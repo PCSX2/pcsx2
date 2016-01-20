@@ -146,10 +146,6 @@ ATTR_DEP extern u32*  JS32( u32 to );
 // FPU instructions
 //******************
 
-// fild m32 to fpu reg stack
-ATTR_DEP extern void FILD32( u32 from );
-// fistp m32 from fpu reg stack
-ATTR_DEP extern void FISTP32( u32 from );
 // fld m32 to fpu reg stack
 ATTR_DEP extern void FLD32( u32 from );
 // fld st(i)
@@ -158,94 +154,30 @@ ATTR_DEP extern void FLD(int st);
 ATTR_DEP extern void FLD1();
 // fld1 (push log_2 e on the stack)
 ATTR_DEP extern void FLDL2E();
-// fst m32 from fpu reg stack
-ATTR_DEP extern void FST32( u32 to );
 // fstp m32 from fpu reg stack
 ATTR_DEP extern void FSTP32( u32 to );
 // fstp st(i)
 ATTR_DEP extern void FSTP(int st);
 
-// fldcw fpu control word from m16
-ATTR_DEP extern void FLDCW( u32 from );
-// fstcw fpu control word to m16
-ATTR_DEP extern void FNSTCW( u32 to );
-ATTR_DEP extern void FXAM();
-ATTR_DEP extern void FDECSTP();
 // frndint
 ATTR_DEP extern void FRNDINT();
 ATTR_DEP extern void FXCH(int st);
 ATTR_DEP extern void F2XM1();
 ATTR_DEP extern void FSCALE();
 
-// fadd ST(src) to fpu reg stack ST(0)
-ATTR_DEP extern void FADD32Rto0( x86IntRegType src );
 // fadd ST(0) to fpu reg stack ST(src)
 ATTR_DEP extern void FADD320toR( x86IntRegType src );
 // fsub ST(src) to fpu reg stack ST(0)
 ATTR_DEP extern void FSUB32Rto0( x86IntRegType src );
-// fsub ST(0) to fpu reg stack ST(src)
-ATTR_DEP extern void FSUB320toR( x86IntRegType src );
-// fsubp -> subtract ST(0) from ST(1), store in ST(1) and POP stack
-ATTR_DEP extern void FSUBP( void );
-// fmul ST(src) to fpu reg stack ST(0)
-ATTR_DEP extern void FMUL32Rto0( x86IntRegType src );
-// fmul ST(0) to fpu reg stack ST(src)
-ATTR_DEP extern void FMUL320toR( x86IntRegType src );
-// fdiv ST(src) to fpu reg stack ST(0)
-ATTR_DEP extern void FDIV32Rto0( x86IntRegType src );
-// fdiv ST(0) to fpu reg stack ST(src)
-ATTR_DEP extern void FDIV320toR( x86IntRegType src );
-// fdiv ST(0) to fpu reg stack ST(src), pop stack, store in ST(src)
-ATTR_DEP extern void FDIV320toRP( x86IntRegType src );
 
-// fadd m32 to fpu reg stack
-ATTR_DEP extern void FADD32( u32 from );
-// fsub m32 to fpu reg stack
-ATTR_DEP extern void FSUB32( u32 from );
 // fmul m32 to fpu reg stack
 ATTR_DEP extern void FMUL32( u32 from );
 // fdiv m32 to fpu reg stack
 ATTR_DEP extern void FDIV32( u32 from );
-// fcomi st, st( i)
-ATTR_DEP extern void FCOMI( x86IntRegType src );
-// fcomip st, st( i)
-ATTR_DEP extern void FCOMIP( x86IntRegType src );
-// fucomi st, st( i)
-ATTR_DEP extern void FUCOMI( x86IntRegType src );
-// fucomip st, st( i)
-ATTR_DEP extern void FUCOMIP( x86IntRegType src );
-// fcom m32 to fpu reg stack
-ATTR_DEP extern void FCOM32( u32 from );
-// fabs fpu reg stack
-ATTR_DEP extern void FABS( void );
-// fsqrt fpu reg stack
-ATTR_DEP extern void FSQRT( void );
 // ftan fpu reg stack
 ATTR_DEP extern void FPATAN( void );
 // fsin fpu reg stack
 ATTR_DEP extern void FSIN( void );
-// fchs fpu reg stack
-ATTR_DEP extern void FCHS( void );
-
-// fcmovb fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVB32( x86IntRegType from );
-// fcmove fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVE32( x86IntRegType from );
-// fcmovbe fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVBE32( x86IntRegType from );
-// fcmovu fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVU32( x86IntRegType from );
-// fcmovnb fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVNB32( x86IntRegType from );
-// fcmovne fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVNE32( x86IntRegType from );
-// fcmovnbe fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVNBE32( x86IntRegType from );
-// fcmovnu fpu reg to fpu reg stack
-ATTR_DEP extern void FCMOVNU32( x86IntRegType from );
-ATTR_DEP extern void FCOMP32( u32 from );
-ATTR_DEP extern void FNSTSWtoAX( void );
-
 
 //*********************
 // SSE   instructions *
