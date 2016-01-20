@@ -74,6 +74,7 @@ set(pcsx2Sources
 	IopBios.cpp
 	IopCounters.cpp
 	IopDma.cpp
+	IopGte.cpp
 	IopHw.cpp
 	IopIrq.cpp
 	IopMem.cpp
@@ -144,7 +145,8 @@ set(pcsx2Headers
 	IopBios.h
 	IopCommon.h
 	IopCounters.h
-	IopDma.h
+	IopDma.h	
+	IopGte.h
 	IopHw.h
 	IopMem.h
 	IopSio2.h

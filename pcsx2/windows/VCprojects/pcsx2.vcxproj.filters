@@ -877,6 +877,9 @@
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <Filter>AppHost\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\IopGte.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1313,6 +1316,9 @@
     </ClInclude>
     <ClInclude Include="..\..\x86\R5900_Profiler.h">
       <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IopGte.h">
+      <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

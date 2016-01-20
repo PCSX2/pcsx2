@@ -440,6 +440,7 @@
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\Panels\GameDatabasePanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -735,6 +736,7 @@
     <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />

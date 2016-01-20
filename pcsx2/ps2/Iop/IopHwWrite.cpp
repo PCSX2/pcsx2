@@ -341,14 +341,18 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			// ------------------------------------------------------------------------
 			//
-			/*
-			mcase(0x1f801088):	// DMA0 CHCR -- MDEC IN [ignored]
-				DmaExec(0);
+			
+			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN [ignored]
+				//DmaExec(0);
+				DevCon.Warning("MDEC IN (DMA0) Started"); //Can be disabled later, need to see when this is used.
+				HW_DMA0_CHCR &= ~0x01000000;
 			break;
 
 			mcase(0x1f801098):	// DMA1 CHCR -- MDEC OUT [ignored]
-				DmaExec(1);
-			break;*/
+				//DmaExec(1);
+				DevCon.Warning("MDEC IN (DMA1) Started"); //Can be disabled later, need to see when this is used.
+				HW_DMA1_CHCR &= ~0x01000000;
+			break;
 			mcase(0x1f8010ac):
 				DevCon.Warning("SIF2 IOP TADR?? write");
 				psxHu(addr) = val;
@@ -405,6 +409,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				psxHu(addr) = val;
 				DmaExec2(10);
 			break;
+
 
 			mcase(0x1f801548):	// DMA11 CHCR -- SIO2 IN
 				psxHu(addr) = val;
