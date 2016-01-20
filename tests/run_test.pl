@@ -41,11 +41,19 @@ EOS
 my $mt_timeout :shared;
 my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name);
 
+# default value
 $o_max_cpu = 1;
 $o_timeout = 20;
 $o_help = 0;
 $o_debug_me = 0;
 $o_test_name = ".*";
+$o_exe = File::Spec->catfile("bin", "PCSX2");
+if (exists $ENV{"PS2_AUTOTESTS_ROOT"}) {
+    $o_suite = $ENV{"PS2_AUTOTESTS_ROOT"};
+}
+if (exists $ENV{"PS2_AUTOTESTS_CFG"}) {
+    $o_cfg = $ENV{"PS2_AUTOTESTS_CFG"};
+}
 
 my $status = Getopt::Long::GetOptions(
     'cfg=s'         => \$o_cfg,
@@ -68,16 +76,13 @@ if (not $status or $o_help) {
 
 unless (defined $o_suite) {
     print "Error: require a test suite directory\n";
-    help();
-}
-
-unless (defined $o_exe) {
-    print "Error: require a PCSX2 exe\n";
+    print "Note: you could use either use --suite or the env variable \$PS2_AUTOTESTS_ROOT\n";
     help();
 }
 
 unless (defined $o_cfg) {
     print "Error: require a default cfg directory\n";
+    print "Note: you could use either use --cfg or the env variable \$PS2_AUTOTESTS_CFG\n";
     help();
 }
 
@@ -86,6 +91,20 @@ $o_cfg = abs_path($o_cfg);
 $o_suite = abs_path($o_suite);
 $mt_timeout = $o_timeout;
 
+unless (-d $o_suite) {
+    print "Error: --suite option requires a directory\n";
+    help();
+}
+
+unless (-x $o_exe) {
+    print "Error: --exe option requires an executable\n";
+    help();
+}
+
+unless (-d $o_cfg) {
+    print "Error: --cfg option requires a directory\n";
+    help();
+}
 
 #####################################################
 # Run
@@ -282,7 +301,7 @@ sub diff {
 
     return "T" if (scalar(@out) < 2);
     return "T" if ($out[-1] !~ /-- TEST END/);
-    return "KO" if ((scalar(@out) != scalar(ref)) and $quiet);
+    return "KO" if ((scalar(@out) != scalar(@ref)) and $quiet);
 
     my $status = "OK";
     for (my $l = 0; $l < scalar(@ref); $l++) {
@@ -290,7 +309,7 @@ sub diff {
             $status = "KO";
             if ($o_show_diff and not $quiet) {
                 print "EXPECTED: $ref[$l]";
-                print "BUT  GOT: $out[$l]";
+                print "BUT GOT : $out[$l]";
             }
         }
     }
