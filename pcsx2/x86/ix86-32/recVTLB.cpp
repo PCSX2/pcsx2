@@ -285,6 +285,39 @@ static void DynGen_IndirectDispatch( int mode, int bits, bool sign = false )
 	xJS( GetIndirectDispatcherPtr( mode, szidx, sign ) );
 }
 
+// ------------------------------------------------------------------------
+// Generates the various instances of the indirect dispatchers
+static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
+{
+	xMOVZX( eax, al );
+	xSUB( ecx, 0x80000000 );
+	xSUB( ecx, eax );
+
+	// jump to the indirect handler, which is a __fastcall C++ function.
+	// [ecx is address, edx is data]
+	xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
+
+	if (!mode)
+	{
+		if (bits == 0)
+		{
+			if (sign)
+				xMOVSX(eax, al);
+			else
+				xMOVZX(eax, al);
+		}
+		else if (bits == 1)
+		{
+			if (sign)
+				xMOVSX(eax, ax);
+			else
+				xMOVZX(eax, ax);
+		}
+	}
+
+	xJMP( ebx );
+}
+
 // One-time initialization procedure.  Multiple subsequent calls during the lifespan of the
 // process will be ignored.
 //
@@ -308,33 +341,7 @@ void vtlb_dynarec_init()
 			{
 				xSetPtr( GetIndirectDispatcherPtr( mode, bits, !!sign ) );
 
-				xMOVZX( eax, al );
-				xSUB( ecx, 0x80000000 );
-				xSUB( ecx, eax );
-
-				// jump to the indirect handler, which is a __fastcall C++ function.
-				// [ecx is address, edx is data]
-				xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
-
-				if (!mode)
-				{
-					if (bits == 0)
-					{
-						if (sign)
-							xMOVSX(eax, al);
-						else
-							xMOVZX(eax, al);
-					}
-					else if (bits == 1)
-					{
-						if (sign)
-							xMOVSX(eax, ax);
-						else
-							xMOVZX(eax, ax);
-					}
-				}
-
-				xJMP( ebx );
+				DynGen_IndirectTlbDispatcher( mode, bits, sign );
 			}
 		}
 	}
