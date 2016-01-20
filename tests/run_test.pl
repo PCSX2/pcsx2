@@ -22,20 +22,29 @@ sub help {
     The script run_test.pl is a test runner that work in conjunction with ps2autotests (https://github.com/unknownbrackets/ps2autotests)
 
     Mandatory Option
-        --exe <STRING>   : the PCSX2 binary that you want to test
-        --cfg <STRING>   : a path to the a default ini configuration of PCSX2
-        --suite <STRING> : a path to ps2autotests test (root directory)
+        --exe <STRING>          : the PCSX2 binary that you want to test
+        --cfg <STRING>          : a path to the a default ini configuration of PCSX2
+        --suite <STRING>        : a path to ps2autotests test (root directory)
 
     Optional Option
-        --cpu=1          : the number of parallel tests launched. Might create additional issue
-        --timeout=20     : a global timeout for hang tests
-        --show_diff      : show debug information
+        --cpu=1                 : the number of parallel tests launched. Might create additional issue
+        --timeout=20            : a global timeout for hang tests
+        --show_diff             : show debug information
 
-        --test=<REGEXP>  : filter test based on their names
-        --regression     : blacklist test that are known to be broken
+        --test=<REGEXP>         : filter test based on their names
+        --regression            : blacklist test that are known to be broken
+        --option <KEY>=<VAL>    : overload PCSX2 configuration option
 
-        --debug_me       : print script info
-        --dry_run        : don't launch PCSX2
+        --debug_me              : print script info
+        --dry_run               : don't launch PCSX2
+
+    PCSX2 option
+        EnableEE=disabled                 : Use EE interpreter
+        EnableIOP=disabled                : Use IOP interpreter
+        EnableVU0=disabled                : Use VU0 interpreter
+        EnableVU1=disabled                : Use VU1 interpreter
+        FPU.Roundmode=3                   : EE FPU round mode
+        VU.Roundmode=3                    : VU round mode
 
 EOS
     print $msg;
@@ -44,7 +53,7 @@ EOS
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run, %o_pcsx2_opt);
 
 # default value
 $o_max_cpu = 1;
@@ -68,6 +77,7 @@ my $status = Getopt::Long::GetOptions(
     'dry_run'       => \$o_dry_run,
     'exe=s'         => \$o_exe,
     'help'          => \$o_help,
+    'option=s'      => \%o_pcsx2_opt,
     'regression'    => \$o_regression,
     'testname=s'    => \$o_test_name,
     'timeout=i'     => \$o_timeout,
@@ -251,6 +261,10 @@ sub generate_cfg {
     # FIXME add interpreter vs recompiler
     # FIXME add clamping / rounding option
     # FIXME need separate cfg dir !
+    foreach my $k (keys(%o_pcsx2_opt)) {
+        my $v = $o_pcsx2_opt{$k};
+        $sed{$k} = $v;
+    }
 
     tie my @ui, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_ui.ini") or die "Fail to tie PCSX2_ui.ini $!\n";
     tie my @vm, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_vm.ini") or die "Fail to tie PCSX2_vm.ini $!\n";
