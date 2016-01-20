@@ -6,6 +6,7 @@ use threads;
 use threads::shared;
 
 use Getopt::Long;
+use File::Basename;
 use File::Find;
 use File::Spec;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
@@ -13,6 +14,7 @@ use Tie::File;
 use Cwd;
 use Cwd 'abs_path';
 use Term::ANSIColor;
+use Data::Dumper;
 
 sub help {
     my $msg = << 'EOS';
@@ -30,8 +32,11 @@ sub help {
         --show_diff      : show debug information
 
         --test=<REGEXP>  : filter test based on their names
+        --regression     : blacklist test that are known to be broken
 
         --debug_me       : print script info
+        --dry_run        : don't launch PCSX2
+
 EOS
     print $msg;
 
@@ -39,13 +44,14 @@ EOS
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run);
 
 # default value
 $o_max_cpu = 1;
 $o_timeout = 20;
 $o_help = 0;
 $o_debug_me = 0;
+$o_dry_run = 0;
 $o_test_name = ".*";
 $o_exe = File::Spec->catfile("bin", "PCSX2");
 if (exists $ENV{"PS2_AUTOTESTS_ROOT"}) {
@@ -59,8 +65,10 @@ my $status = Getopt::Long::GetOptions(
     'cfg=s'         => \$o_cfg,
     'cpu=i'         => \$o_max_cpu,
     'debug_me'      => \$o_debug_me,
+    'dry_run'       => \$o_dry_run,
     'exe=s'         => \$o_exe,
     'help'          => \$o_help,
+    'regression'    => \$o_regression,
     'testname=s'    => \$o_test_name,
     'timeout=i'     => \$o_timeout,
     'show_diff'     => \$o_show_diff,
@@ -104,6 +112,24 @@ unless (-x $o_exe) {
 unless (-d $o_cfg) {
     print "Error: --cfg option requires a directory\n";
     help();
+}
+
+my %blacklist;
+if (defined $o_regression) {
+    # Blacklist bad test
+    $blacklist{"branchdelay"} = 1;
+    $blacklist{"arithmetic"} = 1;
+    $blacklist{"branchdelay"} = 1;
+    $blacklist{"compare"} = 1;
+    $blacklist{"fcr"} = 1;
+    $blacklist{"muldiv"} = 1;
+    $blacklist{"sqrt"} = 1;
+    $blacklist{"chain"} = 1;
+    $blacklist{"interleave"} = 1;
+    $blacklist{"normal"} = 1;
+    $blacklist{"mode"} = 1;
+    $blacklist{"stcycl"} = 1;
+    $blacklist{"triace"} = 1;
 }
 
 #####################################################
@@ -181,11 +207,14 @@ sub add_test_cmd_for_elf {
     my $file = $_;
     return 0 unless ($file =~ /\.elf/);
     return 0 unless ($file =~ /$o_test_name/i);
+
+    my($test, $dir_, $suffix) = fileparse($file, qw/.elf/);
+    return 0 if (exists $blacklist{$test});
     # Fast test
     #return 0 unless ($file =~ /branchdelay/);
 
     my $dir = $File::Find::dir;
-    print "INFO: found $file in $dir\n" if $o_debug_me;
+    print "INFO: found test $test in $dir\n" if $o_debug_me or $o_dry_run;
 
     $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/\.elf/_cfg/r;
     $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/\.elf/.expected/r;
@@ -248,6 +277,8 @@ sub run_elf {
     my $cfg = shift;
     my $out = shift;
 
+    return if $o_dry_run; # Not real
+
     my $line;
     my $dump = 0;
     open(my $run, ">$out") or die "Impossible to open $!";
@@ -296,7 +327,7 @@ sub diff {
     open (my $ref_h, "<$ref_");
     my @ref = <$ref_h>;
 
-    open (my $out_h, "<$out_");
+    open (my $out_h, "<$out_") or return "T";
     my @out = <$out_h>;
 
     return "T" if (scalar(@out) < 2);
