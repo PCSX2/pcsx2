@@ -152,16 +152,20 @@ const xRegister8
 
 const xRegisterCL cl;
 
-const char *const x86_regnames_gpr8[8] =
+const char *const x86_regnames_gpr8[] =
 {
 	"al", "cl", "dl", "bl",
 	"ah", "ch", "dh", "bh"
+	"b8",  "b9",  "b10", "b11",
+	"b12", "b13", "b14", "b15"
 };
 
 const char *const x86_regnames_gpr16[] =
 {
 	"ax", "cx", "dx", "bx",
 	"sp", "bp", "si", "di"
+	"h8",  "h9",  "h10", "h11",
+	"h12", "h13", "h14", "h15"
 };
 
 const char *const x86_regnames_gpr32[] =
@@ -169,23 +173,23 @@ const char *const x86_regnames_gpr32[] =
 	"eax", "ecx", "edx", "ebx",
 	"esp", "ebp", "esi", "edi",
 	"e8",  "e9",  "e10", "e11",
-    "e12", "e13", "e14", "e15"
+	"e12", "e13", "e14", "e15"
 };
 
 const char *const x86_regnames_gpr64[] =
 {
 	"rax", "rcx", "rdx", "rbx",
 	"rsp", "rbp", "rsi", "rdi",
-    "r8" , "r9" , "r10", "r11",
-    "r12", "r13", "r14", "r15"
+	"r8" , "r9" , "r10", "r11",
+	"r12", "r13", "r14", "r15"
 };
 
 const char *const x86_regnames_sse[] =
 {
 	"xmm0", "xmm1", "xmm2", "xmm3",
 	"xmm4", "xmm5", "xmm6", "xmm7",
-    "xmm8", "xmm9", "xmm10", "xmm11",
-    "xmm12", "xmm13", "xmm14", "xmm15"
+	"xmm8", "xmm9", "xmm10", "xmm11",
+	"xmm12", "xmm13", "xmm14", "xmm15"
 };
 
 const char *const x86_regnames_mmx[] =
@@ -201,7 +205,7 @@ const char* xRegisterBase::GetName()
 
 	// bad error?  Return a "big" error string.  Might break formatting of register tables
 	// but that's the least of your worries if you see this baby.
-	if( Id >= 8 || Id <= -3 ) return "!Register index out of range!";
+	if( Id >= iREGCNT_GPR || Id < 0 ) return "!Register index out of range!";
 
 	switch( GetOperandSize() )
 	{
