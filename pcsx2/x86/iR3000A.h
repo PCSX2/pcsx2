@@ -48,7 +48,7 @@ void _psxFlushCall(int flushtype);
 
 void _psxOnWriteReg(int reg);
 
-void _psxMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
+void _psxMoveGPRtoR(const x86Emitter::xRegisterLong& to, int fromgpr);
 #if 0
 void _psxMoveGPRtoM(uptr to, int fromgpr);
 void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr);

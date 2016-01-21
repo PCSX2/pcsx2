@@ -38,14 +38,12 @@ struct xImpl_Group1
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
-	void operator()( const xIndirect32orLess& to, int imm ) const;
+	void operator()( const xIndirect64orLess& to, int imm ) const;
 
 #if 0
 	// ------------------------------------------------------------------------
@@ -91,15 +89,13 @@ struct xImpl_G1Logic
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
 
-	void operator()( const xIndirect32orLess& to, int imm ) const;
+	void operator()( const xIndirect64orLess& to, int imm ) const;
 
 	xImplSimd_DestRegSSE PS;			// packed single precision
 	xImplSimd_DestRegSSE PD;			// packed double precision
@@ -112,15 +108,13 @@ struct xImpl_G1Arith
 {
 	G1Type	InstType;
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
 
-	void operator()( const xIndirect32orLess& to, int imm ) const;
+	void operator()( const xIndirect64orLess& to, int imm ) const;
 
 	xImplSimd_DestRegSSE PS;			// packed single precision
 	xImplSimd_DestRegSSE PD;			// packed double precision
@@ -131,15 +125,13 @@ struct xImpl_G1Arith
 // ------------------------------------------------------------------------
 struct xImpl_G1Compare
 {
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 
 	void operator()( const xIndirectVoid& to, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& from ) const;
 	void operator()( const xRegisterInt& to, int imm ) const;
 
-	void operator()( const xIndirect32orLess& to, int imm ) const;
+	void operator()( const xIndirect64orLess& to, int imm ) const;
 
 	xImplSimd_DestSSE_CmpImm	PS;
 	xImplSimd_DestSSE_CmpImm	PD;

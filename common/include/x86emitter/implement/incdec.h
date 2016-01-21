@@ -28,7 +28,7 @@ struct xImpl_IncDec
 	bool	isDec;
 
 	void operator()( const xRegisterInt& to ) const;
-	void operator()( const xIndirect32orLess& to ) const;
+	void operator()( const xIndirect64orLess& to ) const;
 };
 
 }	// End namespace x86Emitter

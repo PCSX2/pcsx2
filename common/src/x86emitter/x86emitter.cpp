@@ -110,13 +110,27 @@ const xRegisterSSE
 	xmm0( 0 ), xmm1( 1 ),
 	xmm2( 2 ), xmm3( 3 ),
 	xmm4( 4 ), xmm5( 5 ),
-	xmm6( 6 ), xmm7( 7 );
+	xmm6( 6 ), xmm7( 7 ),
+	xmm8( 8 ), xmm9( 9 ),
+	xmm10( 10 ), xmm11( 11 ),
+	xmm12( 12 ), xmm13( 13 ),
+	xmm14( 14 ), xmm15( 15 );
 
 const xRegisterMMX
 	mm0( 0 ), mm1( 1 ),
 	mm2( 2 ), mm3( 3 ),
 	mm4( 4 ), mm5( 5 ),
 	mm6( 6 ), mm7( 7 );
+
+const xAddressReg
+	rax( 0 ), rbx( 3 ),
+	rcx( 1 ), rdx( 2 ),
+	rsp( 4 ), rbp( 5 ),
+	rsi( 6 ), rdi( 7 ),
+	r8( 8 ) , r9( 9 ) ,
+	r10( 10 ), r11( 11 ),
+	r12( 12 ), r13( 13 ),
+	r14( 14 ), r15( 15 );
 
 const xAddressReg
 	eax( 0 ), ebx( 3 ),
@@ -144,25 +158,37 @@ const char *const x86_regnames_gpr8[8] =
 	"ah", "ch", "dh", "bh"
 };
 
-const char *const x86_regnames_gpr16[8] =
+const char *const x86_regnames_gpr16[] =
 {
 	"ax", "cx", "dx", "bx",
 	"sp", "bp", "si", "di"
 };
 
-const char *const x86_regnames_gpr32[8] =
+const char *const x86_regnames_gpr32[] =
 {
 	"eax", "ecx", "edx", "ebx",
-	"esp", "ebp", "esi", "edi"
+	"esp", "ebp", "esi", "edi",
+	"e8",  "e9",  "e10", "e11",
+    "e12", "e13", "e14", "e15"
 };
 
-const char *const x86_regnames_sse[8] =
+const char *const x86_regnames_gpr64[] =
+{
+	"rax", "rcx", "rdx", "rbx",
+	"rsp", "rbp", "rsi", "rdi",
+    "r8" , "r9" , "r10", "r11",
+    "r12", "r13", "r14", "r15"
+};
+
+const char *const x86_regnames_sse[] =
 {
 	"xmm0", "xmm1", "xmm2", "xmm3",
-	"xmm4", "xmm5", "xmm6", "xmm7"
+	"xmm4", "xmm5", "xmm6", "xmm7",
+    "xmm8", "xmm9", "xmm10", "xmm11",
+    "xmm12", "xmm13", "xmm14", "xmm15"
 };
 
-const char *const x86_regnames_mmx[8] =
+const char *const x86_regnames_mmx[] =
 {
 	"mm0", "mm1", "mm2", "mm3",
 	"mm4", "mm5", "mm6", "mm7"
@@ -182,7 +208,11 @@ const char* xRegisterBase::GetName()
 		case 1: return x86_regnames_gpr8[ Id ];
 		case 2: return x86_regnames_gpr16[ Id ];
 		case 4: return x86_regnames_gpr32[ Id ];
+#ifdef __x86_64__
+		case 8: return x86_regnames_gpr64[ Id ];
+#else
 		case 8: return x86_regnames_mmx[ Id ];
+#endif
 		case 16: return x86_regnames_sse[ Id ];
 	}
 
@@ -291,8 +321,9 @@ static __fi bool NeedsSibMagic( const xIndirectVoid& info )
 //
 void EmitSibMagic( uint regfield, const xIndirectVoid& info )
 {
+	// 3 bits also on x86_64 (so max is 8)
+	// We might need to mask it on x86_64
 	pxAssertDev( regfield < 8, "Invalid x86 register identifier." );
-
 	int displacement_size = (info.Displacement == 0) ? 0 :
 		( ( info.IsByteSizeDisp() ) ? 1 : 2 );
 
@@ -372,6 +403,53 @@ void EmitSibMagic( const xRegisterBase& reg1, const void* src )
 void EmitSibMagic( const xRegisterBase& reg1, const xIndirectVoid& sib )
 {
 	EmitSibMagic( reg1.Id, sib );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 )
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = 0;
+	u8 b = reg2.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1, const void* src )
+{
+	pxAssert(0); //see fixme
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = 0;
+	u8 b = 0; // FIXME src.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib )
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = reg1.IsExtended() << 2;
+	u8 x = sib.Index.IsExtended() << 1;
+	u8 b = sib.Base.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xRegisterBase& reg1)
+{
+	u8 w = reg1.IsWide() << 3;
+	u8 r = 0;
+	u8 x = 0;
+	u8 b = reg1.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
+}
+
+void EmitRex( const xIndirectVoid& sib)
+{
+	u8 w = sib.Base.IsWide() << 3;
+	u8 r = 0;
+	u8 x = 0;
+	u8 b = sib.IsExtended();
+	xWrite8( 0x40 | w | r | x | b );
 }
 
 // --------------------------------------------------------------------------------------
@@ -471,7 +549,7 @@ xAddressVoid xAddressReg::operator-( const void* right ) const
 	return xAddressVoid( *this, -(sptr)right );
 }
 
-xAddressVoid xAddressReg::operator*( u32 factor ) const
+xAddressVoid xAddressReg::operator*( int factor ) const
 {
 	pxAssertMsg( Id != -1, "Uninitialized x86 register." );
 	return xAddressVoid( xEmptyReg, *this, factor );
@@ -499,7 +577,7 @@ xAddressVoid::xAddressVoid( const xAddressReg& base, const xAddressReg& index, i
 	pxAssertMsg( index.Id != xRegId_Invalid, "Uninitialized x86 register." );
 }
 
-xAddressVoid::xAddressVoid( const xAddressReg& index, int displacement )
+xAddressVoid::xAddressVoid( const xAddressReg& index, s32 displacement )
 {
 	Base         = xEmptyReg;
 	Index        = index;
@@ -522,7 +600,12 @@ xAddressVoid::xAddressVoid( const void* displacement )
 	Base         = xEmptyReg;
 	Index        = xEmptyReg;
 	Factor       = 0;
-	Displacement = (sptr)displacement;
+#ifdef __x86_64__
+	pxAssert(0);
+	//Displacement = (s32)displacement;
+#else
+	Displacement = (s32)displacement;
+#endif
 }
 
 xAddressVoid& xAddressVoid::Add( const xAddressReg& src )
@@ -684,7 +767,7 @@ void xIndirectVoid::Reduce()
 			Base = Index;
 			Scale = 3;
 		break;
-		
+
 		jNO_DEFAULT
 	}
 }
@@ -824,11 +907,15 @@ static void EmitLeaMagic( const xRegisterInt& to, const xIndirectVoid& src, bool
 	}
 }
 
-__emitinline void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags )
+__emitinline void xLEA( xRegister64 to, const xIndirectVoid& src, bool preserve_flags )
 {
 	EmitLeaMagic( to, src, preserve_flags );
 }
 
+__emitinline void xLEA( xRegister32 to, const xIndirectVoid& src, bool preserve_flags )
+{
+	EmitLeaMagic( to, src, preserve_flags );
+}
 
 __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_flags )
 {
@@ -839,26 +926,15 @@ __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_
 // =====================================================================================================
 //  TEST / INC / DEC
 // =====================================================================================================
-void xImpl_Test::operator()( const xRegister8& to, const xRegister8& from ) const
+void xImpl_Test::operator()( const xRegisterInt& to, const xRegisterInt& from ) const
 {
-	xWrite8( 0x84 );
-	EmitSibMagic( from, to );
-}
-
-void xImpl_Test::operator()( const xRegister16& to, const xRegister16& from ) const
-{
+	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
 	to.prefix16();
-	xWrite8( 0x85 );
+	xWrite8( to.Is8BitOp() ? 0x84 : 0x85 );
 	EmitSibMagic( from, to );
 }
 
-void xImpl_Test::operator()( const xRegister32& to, const xRegister32& from ) const
-{
-	xWrite8( 0x85 );
-	EmitSibMagic( from, to );
-}
-
-void xImpl_Test::operator()( const xIndirect32orLess& dest, int imm ) const
+void xImpl_Test::operator()( const xIndirect64orLess& dest, int imm ) const
 {
 	dest.prefix16();
 	xWrite8( dest.Is8BitOp() ? 0xf6 : 0xf7 );
@@ -880,11 +956,13 @@ void xImpl_Test::operator()( const xRegisterInt& to, int imm ) const
 	to.xWriteImm( imm );
 }
 
-void xImpl_BitScan::operator()( const xRegister32& to, const xRegister32& from ) const		{ xOpWrite0F( Opcode, to, from ); }
-void xImpl_BitScan::operator()( const xRegister16& to, const xRegister16& from ) const		{ xOpWrite0F( 0x66, Opcode, to, from ); }
-void xImpl_BitScan::operator()( const xRegister16or32& to, const xIndirectVoid& sibsrc ) const
+void xImpl_BitScan::operator()( const xRegister16or32or64& to, const xRegister16or32or64& from ) const {
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	xOpWrite0F( from->GetPrefix16(), Opcode, to, from );
+}
+void xImpl_BitScan::operator()( const xRegister16or32or64& to, const xIndirectVoid& sibsrc ) const
 {
-	xOpWrite0F( (to->GetOperandSize() == 2) ? 0x66 : 0x00, Opcode, to, sibsrc );
+	xOpWrite0F( to->GetPrefix16(), Opcode, to, sibsrc );
 }
 
 void xImpl_IncDec::operator()( const xRegisterInt& to ) const
@@ -901,35 +979,34 @@ void xImpl_IncDec::operator()( const xRegisterInt& to ) const
 	}
 }
 
-void xImpl_IncDec::operator()( const xIndirect32orLess& to ) const
+void xImpl_IncDec::operator()( const xIndirect64orLess& to ) const
 {
 	to.prefix16();
 	xWrite8( to.Is8BitOp() ? 0xfe : 0xff );
 	EmitSibMagic( isDec ? 1 : 0, to );
 }
 
-void xImpl_DwordShift::operator()( const xRegister32& to,	const xRegister32& from, const xRegisterCL& /* clreg */ ) const	{ xOpWrite0F( OpcodeBase+1, to, from ); }
-void xImpl_DwordShift::operator()( const xRegister16& to,	const xRegister16& from, const xRegisterCL& /* clreg */ ) const	{ xOpWrite0F( 0x66, OpcodeBase+1, to, from ); }
-void xImpl_DwordShift::operator()( const xRegister32& to,	const xRegister32& from, u8 shiftcnt ) const
-{
-	if( shiftcnt != 0 )
-		xOpWrite0F( OpcodeBase, to, from, shiftcnt );
-}
-void xImpl_DwordShift::operator()( const xRegister16& to,	const xRegister16& from, u8 shiftcnt ) const
-{
-	if( shiftcnt != 0 )
-		xOpWrite0F( 0x66, OpcodeBase, to, from, shiftcnt );
+void xImpl_DwordShift::operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, const xRegisterCL& /* clreg */ ) const	{
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	xOpWrite0F( from->GetPrefix16(), OpcodeBase+1, to, from );
 }
 
-void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32& from, const xRegisterCL& /* clreg */ ) const
+void xImpl_DwordShift::operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, u8 shiftcnt ) const
 {
-	xOpWrite0F( (from->GetOperandSize() == 2) ? 0x66 : 0x00, OpcodeBase + 1, from, dest );
+	pxAssert( to->GetOperandSize() == from->GetOperandSize() );
+	if( shiftcnt != 0 )
+		xOpWrite0F( from->GetPrefix16(), OpcodeBase, to, from, shiftcnt );
 }
 
-void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32& from, u8 shiftcnt ) const
+void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32or64& from, const xRegisterCL& /* clreg */ ) const
+{
+	xOpWrite0F( from->GetPrefix16(), OpcodeBase + 1, from, dest );
+}
+
+void xImpl_DwordShift::operator()( const xIndirectVoid& dest, const xRegister16or32or64& from, u8 shiftcnt ) const
 {
 	if( shiftcnt != 0 )
-		xOpWrite0F( (from->GetOperandSize() == 2) ? 0x66 : 0x00, OpcodeBase, from, dest, shiftcnt );
+		xOpWrite0F( from->GetPrefix16(), OpcodeBase, from, dest, shiftcnt );
 }
 
 const xImpl_Test		xTEST	= { };
@@ -961,10 +1038,10 @@ __emitinline void xPUSH( const xIndirectVoid& from )
 	EmitSibMagic( 6, from );
 }
 
-__fi void xPOP( xRegister32 from )		{ xWrite8( 0x58 | from.Id ); }
+__fi void xPOP( xRegister32or64 from )		{ xWrite8( 0x58 | from->Id ); }
 
 __fi void xPUSH( u32 imm )				{ xWrite8( 0x68 ); xWrite32( imm ); }
-__fi void xPUSH( xRegister32 from )	{ xWrite8( 0x50 | from.Id ); }
+__fi void xPUSH( xRegister32or64 from )	{ xWrite8( 0x50 | from->Id ); }
 
 // pushes the EFLAGS register onto the stack
 __fi void xPUSHFD()					{ xWrite8( 0x9C ); }
@@ -1004,10 +1081,10 @@ __fi void xINT( u8 imm )
 
 __fi void xINTO()	{ xWrite8(0xce); }
 
-__emitinline void xBSWAP( const xRegister32& to )
+__emitinline void xBSWAP( const xRegister32or64& to )
 {
 	xWrite8( 0x0F );
-	xWrite8( 0xC8 | to.Id );
+	xWrite8( 0xC8 | to->Id );
 }
 
 static __aligned16 u64 xmm_data[iREGCNT_XMM*2];

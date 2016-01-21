@@ -104,7 +104,7 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegisterLong& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void eeSignExtendTo(int gpr, bool onlyupper=false);

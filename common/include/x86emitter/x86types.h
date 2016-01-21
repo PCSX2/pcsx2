@@ -15,10 +15,16 @@
 
 #pragma once
 
+#ifdef __x86_64__
+static const uint iREGCNT_XMM = 16;
+static const uint iREGCNT_GPR = 16;
+static const uint iREGCNT_MMX = 8; // FIXME: port the code and remove MMX
+#else
 // Register counts for x86/32 mode:
 static const uint iREGCNT_XMM = 8;
 static const uint iREGCNT_GPR = 8;
 static const uint iREGCNT_MMX = 8;
+#endif
 
 enum XMMSSEType
 {
@@ -69,13 +75,6 @@ extern void xWrite8( u8 val );
 extern void xWrite16( u16 val );
 extern void xWrite32( u32 val );
 extern void xWrite64( u64 val );
-
-extern const char *const x86_regnames_gpr8[8];
-extern const char *const x86_regnames_gpr16[8];
-extern const char *const x86_regnames_gpr32[8];
-
-extern const char *const x86_regnames_sse[8];
-extern const char *const x86_regnames_mmx[8];
 
 extern const char* xGetRegName( int regid, int operandSize );
 
@@ -206,6 +205,7 @@ template< typename T > void xWrite( T val );
 		virtual uint GetOperandSize() const=0;
 
 		bool Is8BitOp() const		{ return GetOperandSize() == 1; }
+		u8   GetPrefix16() const	{ return GetOperandSize() == 2 ? 0x66 : 0; }
 		void prefix16() const		{ if( GetOperandSize() == 2 ) xWrite8( 0x66 ); }
 
 		void xWriteImm( int imm ) const
@@ -250,7 +250,9 @@ template< typename T > void xWrite( T val );
 		explicit xRegisterBase( int regId )
 		{
 			Id = regId;
-			pxAssert( (Id >= xRegId_Empty) && (Id < 8) );
+			// Note: to avoid tons of ifdef, the 32 bits build will instantiate
+			// all 16x64 bits registers.
+			pxAssert( (Id >= xRegId_Empty) && (Id < 16) );
 		}
 
 		bool IsEmpty() const		{ return Id < 0 ; }
@@ -262,8 +264,17 @@ template< typename T > void xWrite( T val );
 		// Returns true if the register is a valid accumulator: Eax, Ax, Al, XMM0.
 		bool IsAccumulator() const	{ return Id == 0; }
 
-		// returns true if the register is a valid MMX or XMM register.
+		// IsSIMD: returns true if the register is a valid MMX or XMM register.
+		// IsWide: return true if the register is 64 bits (requires a wide op on the rex prefix)
+#ifdef __x86_64__
+		// No MMX on 64 bits, let's directly uses GPR
+		bool IsSIMD() const { return GetOperandSize() == 16; }
+		bool IsWide() const { return GetOperandSize() == 8; }
+#else
 		bool IsSIMD() const { return GetOperandSize() == 8 || GetOperandSize() == 16; }
+		bool IsWide() const { return false; } // no 64 bits GPR
+#endif
+		// return true if the register is a valid YMM register
 		bool IsWideSIMD() const { return GetOperandSize() == 32; }
 
 		bool operator==( const xRegisterBase& src ) const	{ return (Id == src.Id); }
@@ -284,14 +295,12 @@ template< typename T > void xWrite( T val );
 		explicit xRegisterInt( const xRegisterBase& src ) : _parent( src ) {}
 		explicit xRegisterInt( int regId ) : _parent( regId ) { }
 
-		bool IsSIMD() const { return false; }
-
 		bool operator==( const xRegisterInt& src ) const	{ return Id == src.Id && (GetOperandSize() == src.GetOperandSize()); }
 		bool operator!=( const xRegisterInt& src ) const	{ return !operator==(src); }
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  xRegister8/16/32  -  Represents a basic 8/16/32 bit GPR on the x86
+	//  xRegister8/16/32/64  -  Represents a basic 8/16/32/64 bit GPR on the x86
 	// --------------------------------------------------------------------------------------
 	class xRegister8 : public xRegisterInt
 	{
@@ -335,6 +344,20 @@ template< typename T > void xWrite( T val );
 		bool operator!=( const xRegister32& src ) const	{ return this->Id != src.Id; }
 	};
 
+	class xRegister64 : public xRegisterInt
+	{
+		typedef xRegisterInt _parent;
+
+		public:
+		xRegister64(): _parent() {}
+		explicit xRegister64( int regId ) : _parent( regId ) {}
+
+		virtual uint GetOperandSize() const { return 8; }
+
+		bool operator==( const xRegister64& src ) const	{ return this->Id == src.Id; }
+		bool operator!=( const xRegister64& src ) const	{ return this->Id != src.Id; }
+	};
+
 	// --------------------------------------------------------------------------------------
 	//  xRegisterMMX/SSE  -  Represents either a 64 bit or 128 bit SIMD register
 	// --------------------------------------------------------------------------------------
@@ -346,7 +369,11 @@ template< typename T > void xWrite( T val );
 		typedef xRegisterBase _parent;
 
 	public:
-		xRegisterMMX(): _parent() {}
+		xRegisterMMX(): _parent() {
+#ifdef __x86_64__
+			pxAssert(0); // Sorry but code must be ported
+#endif
+		}
 		//xRegisterMMX( const xRegisterBase& src ) : _parent( src ) {}
 		explicit xRegisterMMX( int regId ) : _parent( regId ) {}
 
@@ -395,20 +422,28 @@ template< typename T > void xWrite( T val );
 	// --------------------------------------------------------------------------------------
 	//  xAddressReg
 	// --------------------------------------------------------------------------------------
-	// Use 32 bit registers as our index registers (for ModSib-style memory address calculations).
-	// This type is implicitly exchangeable with xRegister32.
+	// Use 32/64 bit registers as our index registers (for ModSib-style memory address calculations).
+	// This type is implicitly exchangeable with xRegister32/64.
 	//
 	// Only xAddressReg provides operators for constructing xAddressInfo types.  These operators
-	// could have been added to xRegister32 directly instead, however I think this design makes
+	// could have been added to xRegister32/64 directly instead, however I think this design makes
 	// more sense and allows the programmer a little more type protection if needed.
 	//
-	class xAddressReg : public xRegister32
+
+#ifdef __x86_64__
+#define xRegisterLong xRegister64
+#else
+#define xRegisterLong xRegister32
+#endif
+
+	class xAddressReg : public xRegisterLong
 	{
 	public:
-		xAddressReg(): xRegister32() {}
-		xAddressReg( const xAddressReg& src ) : xRegister32( src.Id ) {}
-		xAddressReg( const xRegister32& src ) : xRegister32( src ) {}
-		explicit xAddressReg( int regId ) : xRegister32( regId ) {}
+		xAddressReg(): xRegisterLong() {}
+		xAddressReg( const xAddressReg& src ) : xRegisterLong( src.Id ) {}
+		xAddressReg( const xRegister32& src ) : xRegisterLong( src.Id ) {}
+		xAddressReg( const xRegister64& src ) : xRegisterLong( src.Id ) {}
+		explicit xAddressReg( int regId ) : xRegisterLong( regId ) {}
 
 		// Returns true if the register is the stack pointer: ESP.
 		bool IsStackPointer() const { return Id == 4; }
@@ -418,14 +453,9 @@ template< typename T > void xWrite( T val );
 		xAddressVoid operator+( const void* right ) const;
 		xAddressVoid operator-( s32 right ) const;
 		xAddressVoid operator-( const void* right ) const;
-		xAddressVoid operator*( u32 factor ) const;
+		xAddressVoid operator*( int factor ) const;
 		xAddressVoid operator<<( u32 shift ) const;
 
-		/*xAddressReg& operator=( const xRegister32& src )
-		{
-			Id = src.Id;
-			return *this;
-		}*/
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -443,6 +473,7 @@ template< typename T > void xWrite( T val );
 			return xRegister16( xRegId_Empty );
 		}
 
+		// FIXME remove it in x86 64
 		operator xRegisterMMX() const
 		{
 			return xRegisterMMX( xRegId_Empty );
@@ -459,6 +490,7 @@ template< typename T > void xWrite( T val );
 		}
 	};
 
+	// FIXME This one is likely useless and superseeded by the future xRegister16or32or64
 	class xRegister16or32
 	{
 	protected:
@@ -476,15 +508,58 @@ template< typename T > void xWrite( T val );
 		}
 	};
 
+	class xRegister16or32or64
+	{
+	protected:
+		const xRegisterInt&		m_convtype;
+
+	public:
+		xRegister16or32or64( const xRegister64& src ) : m_convtype( src ) {}
+		xRegister16or32or64( const xRegister32& src ) : m_convtype( src ) {}
+		xRegister16or32or64( const xRegister16& src ) : m_convtype( src ) {}
+
+		operator const xRegisterBase&() const { return m_convtype; }
+
+		const xRegisterInt* operator->() const
+		{
+			return &m_convtype;
+		}
+	};
+
+	class xRegister32or64
+	{
+	protected:
+		const xRegisterInt&		m_convtype;
+
+	public:
+		xRegister32or64( const xRegister64& src ) : m_convtype( src ) {}
+		xRegister32or64( const xRegister32& src ) : m_convtype( src ) {}
+
+		operator const xRegisterBase&() const { return m_convtype; }
+
+		const xRegisterInt* operator->() const
+		{
+			return &m_convtype;
+		}
+	};
+
 	extern const xRegisterEmpty xEmptyReg;
 
 	extern const xRegisterSSE
 		xmm0, xmm1, xmm2, xmm3,
-		xmm4, xmm5, xmm6, xmm7;
+		xmm4, xmm5, xmm6, xmm7,
+		xmm8, xmm9, xmm10, xmm11,
+		xmm12, xmm13, xmm14, xmm15;
 
 	extern const xRegisterMMX
 		mm0, mm1, mm2, mm3,
 		mm4, mm5, mm6, mm7;
+
+	extern const xAddressReg
+		rax, rbx, rcx, rdx,
+		rsi, rdi, rbp, rsp,
+		r8, r9, r10, r11,
+		r12, r13, r14, r15;
 
 	extern const xAddressReg
 		eax, ebx, ecx, edx,
@@ -502,12 +577,12 @@ template< typename T > void xWrite( T val );
 
 	const xRegisterSSE& xRegisterSSE::GetInstance(uint id)
 	{
-		static const xRegisterSSE *const m_tbl_xmmRegs[iREGCNT_XMM] = 
+		static const xRegisterSSE *const m_tbl_xmmRegs[] =
 		{
-			&xmm0, &xmm1, 
-			&xmm2, &xmm3, 
-			&xmm4, &xmm5,
-			&xmm6, &xmm7
+			&xmm0, &xmm1, &xmm2, &xmm3,
+			&xmm4, &xmm5, &xmm6, &xmm7,
+			&xmm8, &xmm9, &xmm10, &xmm11,
+			&xmm12, &xmm13, &xmm14, &xmm15
 		};
 
 		pxAssert(id < iREGCNT_XMM);
@@ -523,7 +598,7 @@ template< typename T > void xWrite( T val );
 		xAddressReg	Base;			// base register (no scale)
 		xAddressReg	Index;			// index reg gets multiplied by the scale
 		int			Factor;			// scale applied to the index register, in factor form (not a shift!)
-		s32			Displacement;	// address displacement
+		s32			Displacement;	// address displacement // 4B max even on 64 bits
 
 	public:
 		xAddressVoid( const xAddressReg& base, const xAddressReg& index, int factor=1, s32 displacement=0 );
@@ -569,7 +644,7 @@ template< typename T > void xWrite( T val );
 
 		/*xAddressInfo( const xAddressVoid& src )
 			: _parent( src ) {}*/
-		
+
 		explicit xAddressInfo( const xAddressReg& index, int displacement=0 )
 			: _parent( index, displacement ) {}
 
@@ -683,7 +758,8 @@ template< typename T > void xWrite( T val );
 		xAddressReg Base;         // base register (no scale)
 		xAddressReg Index;        // index reg gets multiplied by the scale
 		uint        Scale;        // scale applied to the index register, in scale/shift form
-		sptr        Displacement; // offset applied to the Base/Index registers.
+		s32         Displacement; // offset applied to the Base/Index registers.
+								  // Displacement is 8/32 bits even on x86_64
 
 	public:
 		explicit xIndirectVoid( s32 disp );
@@ -709,8 +785,8 @@ template< typename T > void xWrite( T val );
 	protected:
 		void Reduce();
 	};
-	
-	template< typename OperandType >	
+
+	template< typename OperandType >
 	class xIndirect : public xIndirectVoid
 	{
 		typedef xIndirectVoid _parent;
@@ -755,9 +831,9 @@ template< typename T > void xWrite( T val );
 	typedef xIndirect<u8> xIndirect8;
 
 	// --------------------------------------------------------------------------------------
-	//  xIndirect32orLass  -  base class 32, 16, and 8 bit operand types
+	//  xIndirect64orLess  -  base class 64, 32, 16, and 8 bit operand types
 	// --------------------------------------------------------------------------------------
-	class xIndirect32orLess : public xIndirectVoid
+	class xIndirect64orLess : public xIndirectVoid
 	{
 		typedef xIndirectVoid _parent;
 
@@ -765,17 +841,18 @@ template< typename T > void xWrite( T val );
 		uint	m_OpSize;
 
 	public:
-		xIndirect32orLess( const xIndirect8& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
-		xIndirect32orLess( const xIndirect16& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
-		xIndirect32orLess( const xIndirect32& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect8& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect16& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect32& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
+		xIndirect64orLess( const xIndirect64& src ) : _parent( src ) { m_OpSize = src.GetOperandSize(); }
 
 		uint GetOperandSize() const { return m_OpSize; }
 
 	protected:
-		//xIndirect32orLess( const xAddressVoid& src ) : _parent( src ) {}
+		//xIndirect64orLess( const xAddressVoid& src ) : _parent( src ) {}
 
-		explicit xIndirect32orLess( s32 disp ) : _parent( disp ) {}
-		xIndirect32orLess( xAddressReg base, xAddressReg index, int scale=0, s32 displacement=0 ) :
+		explicit xIndirect64orLess( s32 disp ) : _parent( disp ) {}
+		xIndirect64orLess( xAddressReg base, xAddressReg index, int scale=0, s32 displacement=0 ) :
 			_parent( base, index, scale, displacement ) {}
 	};
 

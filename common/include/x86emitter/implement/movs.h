@@ -29,13 +29,10 @@ struct xImpl_Mov
 {
 	xImpl_Mov() {} // Satisfy GCC's whims.
 
-	void operator()( const xRegister8& to, const xRegister8& from ) const;
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
-
+	void operator()( const xRegisterInt& to, const xRegisterInt& from ) const;
 	void operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const;
 	void operator()( const xRegisterInt& to, const xIndirectVoid& src ) const;
-	void operator()( const xIndirect32orLess& dest, int imm ) const;
+	void operator()( const xIndirect64orLess& dest, int imm ) const;
 	void operator()( const xRegisterInt& to, int imm, bool preserve_flags=false ) const;
 
 #if 0
@@ -88,12 +85,8 @@ struct xImpl_Mov
 struct xImpl_CMov
 {
 	JccComparisonType	ccType;
-
-	void operator()( const xRegister32& to, const xRegister32& from ) const;
-	void operator()( const xRegister32& to, const xIndirectVoid& sibsrc ) const;
-
-	void operator()( const xRegister16& to, const xRegister16& from ) const;
-	void operator()( const xRegister16& to, const xIndirectVoid& sibsrc ) const;
+	void operator()( const xRegister16or32or64& to, const xRegister16or32or64& from ) const;
+	void operator()( const xRegister16or32or64& to, const xIndirectVoid& sibsrc ) const;
 
 	//void operator()( const xDirectOrIndirect32& to, const xDirectOrIndirect32& from );
 	//void operator()( const xDirectOrIndirect16& to, const xDirectOrIndirect16& from ) const;
@@ -119,10 +112,10 @@ struct xImpl_MovExtend
 {
 	bool	SignExtend;
 
-	void operator()( const xRegister16or32& to, const xRegister8& from ) const;
-	void operator()( const xRegister16or32& to, const xIndirect8& sibsrc ) const;
-	void operator()( const xRegister32& to, const xRegister16& from ) const;
-	void operator()( const xRegister32& to, const xIndirect16& sibsrc ) const;
+	void operator()( const xRegister16or32or64& to, const xRegister8& from ) const;
+	void operator()( const xRegister16or32or64& to, const xIndirect8& sibsrc ) const;
+	void operator()( const xRegister32or64& to, const xRegister16& from ) const;
+	void operator()( const xRegister32or64& to, const xIndirect16& sibsrc ) const;
 
 	//void operator()( const xRegister32& to, const xDirectOrIndirect16& src ) const;
 	//void operator()( const xRegister16or32& to, const xDirectOrIndirect8& src ) const;
