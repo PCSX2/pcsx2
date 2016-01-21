@@ -40,9 +40,7 @@ void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from )
 
 	if( to == from ) return;	// ignore redundant MOVs.
 
-	from.prefix16();
-	xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-	EmitSibMagic( from, to );
+	xOpWrite( from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from, to );
 }
 
 void xImpl_Mov::operator()( const xRegisterInt& to, const xRegisterInt& from ) const
@@ -53,47 +51,47 @@ void xImpl_Mov::operator()( const xRegisterInt& to, const xRegisterInt& from ) c
 
 void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const
 {
-	from.prefix16();
-
 	// mov eax has a special from when writing directly to a DISP32 address
 	// (sans any register index/base registers).
 
 	if( from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty() )
 	{
-		xWrite8( from.Is8BitOp() ? 0xa2 : 0xa3 );
+		// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
+#ifdef __x86_64__
+		pxAssert(0);
+#endif
+		xOpAccWrite( from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from.Id, dest );
 		xWrite32( dest.Displacement );
 	}
 	else
 	{
-		xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-		EmitSibMagic( from.Id, dest );
+		xOpWrite( from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from.Id, dest );
 	}
 }
 
 void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) const
 {
-	to.prefix16();
-
 	// mov eax has a special from when reading directly from a DISP32 address
 	// (sans any register index/base registers).
 
 	if( to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty() )
 	{
-		xWrite8( to.Is8BitOp() ? 0xa0 : 0xa1 );
+		// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
+#ifdef __x86_64__
+		pxAssert(0);
+#endif
+		xOpAccWrite( to.GetPrefix16(), to.Is8BitOp() ? 0xa0 : 0xa1, to, src );
 		xWrite32( src.Displacement );
 	}
 	else
 	{
-		xWrite8( to.Is8BitOp() ? 0x8a : 0x8b );
-		EmitSibMagic( to, src );
+		xOpWrite( to.GetPrefix16(), to.Is8BitOp() ? 0x8a : 0x8b, to, src );
 	}
 }
 
 void xImpl_Mov::operator()( const xIndirect64orLess& dest, int imm ) const
 {
-	dest.prefix16();
-	xWrite8( dest.Is8BitOp() ? 0xc6 : 0xc7 );
-	EmitSibMagic( 0, dest );
+	xOpWrite( dest.GetPrefix16(), dest.Is8BitOp() ? 0xc6 : 0xc7, 0, dest );
 	dest.xWriteImm( imm );
 }
 
@@ -106,9 +104,8 @@ void xImpl_Mov::operator()( const xRegisterInt& to, int imm, bool preserve_flags
 	else
 	{
 		// Note: MOV does not have (reg16/32,imm8) forms.
-
-		to.prefix16();
-		xWrite8( (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id );
+		u8 opcode = (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id;
+		xOpAccWrite( to.GetPrefix16(), opcode, 0, to);
 		to.xWriteImm( imm );
 	}
 }

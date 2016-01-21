@@ -31,11 +31,12 @@ namespace x86Emitter {
 	extern void EmitSibMagic( const xRegisterBase& reg1, const void* src );
 	extern void EmitSibMagic( const xRegisterBase& reg1, const xIndirectVoid& sib );
 
-	void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 );
-	void EmitRex( const xRegisterBase& reg1, const void* src );
-	void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib );
-	void EmitRex( const xRegisterBase& reg1 );
-	void EmitRex( const xIndirectVoid& sib );
+	extern void EmitRex( uint regfield, const void* address );
+	extern void EmitRex( uint regfield, const xIndirectVoid& info );
+	extern void EmitRex( uint reg1, const xRegisterBase& reg2 );
+	extern void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 );
+	extern void EmitRex( const xRegisterBase& reg1, const void* src );
+	extern void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib );
 
 	extern void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from );
 
@@ -49,18 +50,42 @@ namespace x86Emitter {
 	template< typename T1, typename T2 > __emitinline
 		void xOpWrite( u8 prefix, u8 opcode, const T1& param1, const T2& param2 )
 	{
-		if( prefix != 0 )
-			xWrite16( (opcode<<8) | prefix );
-		else
-			xWrite8( opcode );
+		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
+
+		xWrite8( opcode );
 
 		EmitSibMagic( param1, param2 );
 	}
 
 	template< typename T1, typename T2 > __emitinline
+		void xOpAccWrite( u8 prefix, u8 opcode, const T1& param1, const T2& param2 )
+	{
+		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
+
+		xWrite8( opcode );
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// emitter helpers for xmm instruction with prefixes, most of which are using
+	// the basic opcode format (items inside braces denote optional or conditional
+	// emission):
+	//
+	//   [Prefix] / 0x0f / [OpcodePrefix] / Opcode / ModRM+[SibSB]
+	//
+	// Prefixes are typically 0x66, 0xf2, or 0xf3.  OpcodePrefixes are either 0x38 or
+	// 0x3a [and other value will result in assertion failue].
+	//
+	template< typename T1, typename T2 > __emitinline
 		void xOpWrite0F( u8 prefix, u16 opcode, const T1& param1, const T2& param2 )
 	{
-		SimdPrefix( prefix, opcode );
+		if( prefix != 0 ) xWrite8( prefix );
+		EmitRex( param1, param2 );
+
+		SimdPrefix( 0, opcode );
+
 		EmitSibMagic( param1, param2 );
 	}
 

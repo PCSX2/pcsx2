@@ -90,6 +90,9 @@ namespace x86Emitter {
 //
 __emitinline void SimdPrefix( u8 prefix, u16 opcode )
 {
+#ifdef __x86_64__
+	pxAssertMsg(prefix == 0, "REX prefix must be just before the opcode");
+#endif
 	const bool is16BitOpcode = ((opcode & 0xff) == 0x38) || ((opcode & 0xff) == 0x3a);
 
 	// If the lower byte is not a valid prefix and the upper byte is non-zero it
@@ -220,15 +223,13 @@ void _SimdShiftHelper::operator()( const xRegisterMMX& to, const xIndirectVoid& 
 
 void _SimdShiftHelper::operator()( const xRegisterSSE& to, u8 imm8 ) const
 {
-	SimdPrefix( 0x66, OpcodeImm );
-	EmitSibMagic( (int)Modcode, to );
+	xOpWrite0F( 0x66, OpcodeImm, (int)Modcode, to );
 	xWrite8( imm8 );
 }
 
 void _SimdShiftHelper::operator()( const xRegisterMMX& to, u8 imm8 ) const
 {
-	SimdPrefix( 0x00, OpcodeImm );
-	EmitSibMagic( (int)Modcode, to );
+	xOpWrite0F( 0x00, OpcodeImm, (int)Modcode, to );
 	xWrite8( imm8 );
 }
 
@@ -747,8 +748,7 @@ IMPLEMENT_xMOVS( SD, 0xf2 )
 
 __fi void xMOVNTDQA( const xRegisterSSE& to, const xIndirectVoid& from )
 {
-	xWrite32( 0x2A380f66 );
-	EmitSibMagic( to.Id, from );
+	xOpWrite0F( 0x66, 0x2a38, to.Id, from);
 }
 
 __fi void xMOVNTDQA( const xIndirectVoid& to, const xRegisterSSE& from )	{ xOpWrite0F( 0x66, 0xe7, from, to ); }
@@ -833,31 +833,27 @@ __fi void xEMMS()	{ xWrite16( 0x770F ); }
 // Store Streaming SIMD Extension Control/Status to Mem32.
 __emitinline void xSTMXCSR( const xIndirect32& dest )
 {
-	SimdPrefix( 0, 0xae );
-	EmitSibMagic( 3, dest );
+	xOpWrite0F( 0, 0xae, 3, dest );
 }
 
 // Load Streaming SIMD Extension Control/Status from Mem32.
 __emitinline void xLDMXCSR( const xIndirect32& src )
 {
-	SimdPrefix( 0, 0xae );
-	EmitSibMagic( 2, src );
+	xOpWrite0F( 0, 0xae, 2, src );
 }
 
 // Save x87 FPU, MMX Technology, and SSE State to buffer
 // Target buffer must be at least 512 bytes in length to hold the result.
 __emitinline void xFXSAVE( const xIndirectVoid& dest )
 {
-	SimdPrefix( 0, 0xae );
-	EmitSibMagic( 0, dest );
+	xOpWrite0F( 0, 0xae, 0, dest );
 }
 
 // Restore x87 FPU, MMX , XMM, and MXCSR State.
 // Source buffer should be 512 bytes in length.
 __emitinline void xFXRSTOR( const xIndirectVoid& src )
 {
-	SimdPrefix( 0, 0xae );
-	EmitSibMagic( 1, src );
+	xOpWrite0F( 0, 0xae, 1, src );
 }
 
 }

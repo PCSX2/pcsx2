@@ -267,34 +267,6 @@ void EmitSibMagic( uint regfield, const void* address )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// emitter helpers for xmm instruction with prefixes, most of which are using
-// the basic opcode format (items inside braces denote optional or conditional
-// emission):
-//
-//   [Prefix] / 0x0f / [OpcodePrefix] / Opcode / ModRM+[SibSB]
-//
-// Prefixes are typically 0x66, 0xf2, or 0xf3.  OpcodePrefixes are either 0x38 or
-// 0x3a [and other value will result in assertion failue].
-//
-__emitinline void xOpWrite0F( u8 prefix, u16 opcode, int instId, const xIndirectVoid& sib )
-{
-	SimdPrefix( prefix, opcode );
-	EmitSibMagic( instId, sib );
-}
-
-__emitinline void xOpWrite0F( u8 prefix, u16 opcode, int instId, const void* data )
-{
-	SimdPrefix( prefix, opcode );
-	EmitSibMagic( instId, data );
-}
-
-__emitinline void xOpWrite0F( u16 opcode, int instId, const xIndirectVoid& sib )
-{
-	xOpWrite0F( 0, opcode, instId, sib );
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
 // returns TRUE if this instruction requires SIB to be encoded, or FALSE if the
 // instruction ca be encoded as ModRm alone.
 static __fi bool NeedsSibMagic( const xIndirectVoid& info )
@@ -406,51 +378,71 @@ void EmitSibMagic( const xRegisterBase& reg1, const xIndirectVoid& sib )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
+__emitinline static void EmitRex(bool w, bool r, bool x, bool b)
+{
+#ifdef __x86_64__
+	u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
+	if (rex != 0x40)
+		xWrite8(rex);
+#endif
+}
+
+void EmitRex( uint regfield, const void* address )
+{
+	pxAssert(0);
+	bool w = false;
+	bool r = false;
+	bool x = false;
+	bool b = false;
+	EmitRex(w, r, x, b);
+}
+
+void EmitRex( uint regfield, const xIndirectVoid& info )
+{
+	bool w = info.Base.IsWide();
+	bool r = false;
+	bool x = false;
+	bool b = info.IsExtended();
+	EmitRex(w, r, x, b);
+}
+
+void EmitRex( uint reg1, const xRegisterBase& reg2 )
+{
+	bool w = reg2.IsWide();
+	bool r = false;
+	bool x = false;
+	bool b = reg2.IsExtended();
+	EmitRex(w, r, x, b);
+}
+
 void EmitRex( const xRegisterBase& reg1, const xRegisterBase& reg2 )
 {
-	u8 w = reg1.IsWide() << 3;
-	u8 r = reg1.IsExtended() << 2;
-	u8 x = 0;
-	u8 b = reg2.IsExtended();
-	xWrite8( 0x40 | w | r | x | b );
+	bool w = reg1.IsWide();
+	bool r = reg1.IsExtended();
+	bool x = false;
+	bool b = reg2.IsExtended();
+	EmitRex(w, r, x, b);
 }
 
 void EmitRex( const xRegisterBase& reg1, const void* src )
 {
 	pxAssert(0); //see fixme
-	u8 w = reg1.IsWide() << 3;
-	u8 r = reg1.IsExtended() << 2;
-	u8 x = 0;
-	u8 b = 0; // FIXME src.IsExtended();
-	xWrite8( 0x40 | w | r | x | b );
+	bool w = reg1.IsWide();
+	bool r = reg1.IsExtended();
+	bool x = false;
+	bool b = false; // FIXME src.IsExtended();
+	EmitRex(w, r, x, b);
 }
 
 void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib )
 {
-	u8 w = reg1.IsWide() << 3;
-	u8 r = reg1.IsExtended() << 2;
-	u8 x = sib.Index.IsExtended() << 1;
+	u8 w = reg1.IsWide();
+	u8 r = reg1.IsExtended();
+	u8 x = sib.Index.IsExtended();
 	u8 b = sib.Base.IsExtended();
-	xWrite8( 0x40 | w | r | x | b );
+	EmitRex(w, r, x, b);
 }
 
-void EmitRex( const xRegisterBase& reg1)
-{
-	u8 w = reg1.IsWide() << 3;
-	u8 r = 0;
-	u8 x = 0;
-	u8 b = reg1.IsExtended();
-	xWrite8( 0x40 | w | r | x | b );
-}
-
-void EmitRex( const xIndirectVoid& sib)
-{
-	u8 w = sib.Base.IsWide() << 3;
-	u8 r = 0;
-	u8 x = 0;
-	u8 b = sib.IsExtended();
-	xWrite8( 0x40 | w | r | x | b );
-}
 
 // --------------------------------------------------------------------------------------
 //  xSetPtr / xAlignPtr / xGetPtr / xAdvancePtr
@@ -929,29 +921,21 @@ __emitinline void xLEA( xRegister16 to, const xIndirectVoid& src, bool preserve_
 void xImpl_Test::operator()( const xRegisterInt& to, const xRegisterInt& from ) const
 {
 	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
-	to.prefix16();
-	xWrite8( to.Is8BitOp() ? 0x84 : 0x85 );
-	EmitSibMagic( from, to );
+	xOpWrite( to.GetPrefix16(), to.Is8BitOp() ? 0x84 : 0x85, from, to );
 }
 
 void xImpl_Test::operator()( const xIndirect64orLess& dest, int imm ) const
 {
-	dest.prefix16();
-	xWrite8( dest.Is8BitOp() ? 0xf6 : 0xf7 );
-	EmitSibMagic( 0, dest );
+	xOpWrite( dest.GetPrefix16(), dest.Is8BitOp() ? 0xf6 : 0xf7, 0, dest );
 	dest.xWriteImm( imm );
 }
 
 void xImpl_Test::operator()( const xRegisterInt& to, int imm ) const
 {
-	to.prefix16();
-
-	if( to.IsAccumulator() )
-		xWrite8( to.Is8BitOp() ? 0xa8 : 0xa9 );
-	else
-	{
-		xWrite8( to.Is8BitOp() ? 0xf6 : 0xf7 );
-		EmitSibMagic( 0, to );
+	if( to.IsAccumulator() ) {
+		xOpAccWrite( to.GetPrefix16(), to.Is8BitOp() ? 0xa8 : 0xa9, 0, to );
+	} else {
+		xOpWrite( to.GetPrefix16(), to.Is8BitOp() ? 0xf6 : 0xf7, 0, to );
 	}
 	to.xWriteImm( imm );
 }
@@ -969,11 +953,15 @@ void xImpl_IncDec::operator()( const xRegisterInt& to ) const
 {
 	if( to.Is8BitOp() )
 	{
-		xWrite8( 0xfe );
-		EmitSibMagic( isDec ? 1 : 0, to );
+		u8 regfield = isDec ? 1 : 0;
+		xOpWrite( to.GetPrefix16(), 0xfe, regfield, to);
 	}
 	else
 	{
+#ifdef __x86_64__
+		pxAssertMsg(0, "Single Byte INC/DEC aren't valid in 64 bits."
+				"You need to use the ModR/M form (FF/0 FF/1 opcodes)");
+#endif
 		to.prefix16();
 		xWrite8( (isDec ? 0x48 : 0x40) | to.Id );
 	}
