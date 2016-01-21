@@ -356,15 +356,15 @@ void(*psxCP0[32])() = {
 	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
 };
 
-void(*psxCP2[64])() = {
-	psxBASIC, gteRTPS, psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
-	psxNULL , psxNULL , psxNULL , psxNULL, gteOP, psxNULL , psxNULL , psxNULL, // 08
-	gteDPCS, gteINTPL, gteMVMVA, gteNCDS, gteCDP, psxNULL , gteNCDT, psxNULL, // 10
-	psxNULL , psxNULL , psxNULL , gteNCCS, gteCC, psxNULL , gteNCS, psxNULL, // 18
-	gteNCT, psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
-	gteSQR, gteDCPL, gteDPCT, psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28
-	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
-	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL  , psxNULL  , psxNULL  // 38
+void (*psxCP2[64])() = {
+	psxBASIC, gteRTPS , psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
+	psxNULL , psxNULL , psxNULL , psxNULL, gteOP  , psxNULL , psxNULL , psxNULL, // 08
+	gteDPCS , gteINTPL, gteMVMVA, gteNCDS, gteCDP , psxNULL , gteNCDT , psxNULL, // 10
+	psxNULL , psxNULL , psxNULL , gteNCCS, gteCC  , psxNULL , gteNCS  , psxNULL, // 18
+	gteNCT  , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
+	gteSQR  , gteDCPL , gteDPCT , psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28 
+	gteRTPT , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
+	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT  // 38
 };
 
 void(*psxCP2BSC[32])() = {
