@@ -315,6 +315,7 @@ public:
 
 	wxString				CurrentIso;
 	wxString				CurrentELF;
+	wxString				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2

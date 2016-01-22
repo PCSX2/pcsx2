@@ -659,6 +659,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	CurrentIso = res.GetFullPath();
 
 	IniEntry( CurrentELF );
+	IniEntry( CurrentIRX );
 
 	IniEntry( EnableSpeedHacks );
 	IniEntry( EnableGameFixes );

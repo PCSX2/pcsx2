@@ -211,7 +211,7 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 
 		wxFile fp( Bios1 );
 		fp.Read( dest, std::min<s64>( _size, filesize ) );
-		
+
 		// Checksum for ROM1, ROM2, EROM?  Rama says no, Gigaherz says yes.  I'm not sure either way.  --air
 		//ChecksumIt( BiosChecksum, dest );
 	}
@@ -224,6 +224,26 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 		Console.Warning(L"BIOS Warning: %s could not be read (permission denied?)", ext);
 		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 		Console.Indent().WriteLn(L"File size: %llu", filesize);
+	}
+}
+
+static void LoadIrx( const wxString& filename, u8* dest )
+{
+	s64 filesize = 0;
+	try
+	{
+		wxFile irx(filename);
+		if( (filesize=Path::GetFileSize( filename ) ) <= 0 ) {
+			Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+			return;
+		}
+
+		irx.Read( dest, filesize );
+	}
+	catch (Exception::BadStream& ex)
+	{
+		Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 	}
 }
 
@@ -267,7 +287,7 @@ void LoadBIOS()
 
 		pxInputStream memfp( Bios, new wxMemoryInputStream( eeMem->ROM, sizeof(eeMem->ROM) ) );
 		LoadBiosVersion( memfp, BiosVersion, BiosDescription, biosZone );
-		
+
 		Console.SetTitle( pxsFmt( L"Running BIOS (%s v%u.%u)",
 			WX_STR(biosZone), BiosVersion >> 8, BiosVersion & 0xff
 		));
@@ -277,6 +297,9 @@ void LoadBIOS()
 		LoadExtraRom( L"rom1", eeMem->ROM1 );
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
+
+		if (g_Conf->CurrentIRX.Length() > 3)
+			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
 
 		CurrentBiosInformation = NULL;
 		for (size_t i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)

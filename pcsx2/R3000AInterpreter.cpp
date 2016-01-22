@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "App.h" // For host irx injection hack
 
 using namespace R3000A;
 
@@ -127,6 +128,14 @@ void psxJALR()
 
 static __fi void execI()
 {
+	// Inject IRX hack
+	if (psxRegs.pc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
+		if (iopMemRead32(0x20018) == 0x1F) {
+			// FIXME do I need to increase the module count (0x1F -> 0x20)
+			iopMemWrite32(0x20094, 0xbffc0000);
+		}
+	}
+
 	psxRegs.code = iopMemRead32(psxRegs.pc);
 
 		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));

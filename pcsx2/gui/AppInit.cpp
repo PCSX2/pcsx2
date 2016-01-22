@@ -235,6 +235,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"noguiprompt",	_("when nogui - prompt before exiting on suspend") );
 
 	parser.AddOption( wxEmptyString,L"elf",			_("executes an ELF image"), wxCMD_LINE_VAL_STRING );
+	parser.AddOption( wxEmptyString,L"irx",			_("executes an IRX image"), wxCMD_LINE_VAL_STRING );
 	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty DVD tray; use to enter the PS2 system menu") );
 	parser.AddSwitch( wxEmptyString,L"usecd",		_("boots from the CDVD plugin (overrides IsoFile parameter)") );
 
@@ -352,9 +353,12 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 		if (parser.Found(L"elf", &elf_file) && !elf_file.IsEmpty()) {
 			Startup.SysAutoRunElf = true;
 			Startup.ElfFile = elf_file;
+		} else if (parser.Found(L"irx", &elf_file) && !elf_file.IsEmpty()) {
+			Startup.SysAutoRunIrx = true;
+			Startup.ElfFile = elf_file;
 		}
 	}
-	
+
 	if( parser.Found(L"usecd") )
 	{
 		Startup.CdvdSource	= CDVDsrc_Plugin;
@@ -480,8 +484,11 @@ bool Pcsx2App::OnInit()
 		AllocateCoreStuffs();
 		if( m_UseGUI ) OpenMainFrame();
 
-		
+
 		(new GameDatabaseLoaderThread())->Start();
+
+		// By default no IRX injection
+		g_Conf->CurrentIRX = "";
 
 		if( Startup.SysAutoRun )
 		{
@@ -497,6 +504,15 @@ bool Pcsx2App::OnInit()
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
+			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
+		}
+		else if (Startup.SysAutoRunIrx )
+		{
+			g_Conf->EmuOptions.UseBOOT2Injection = true;
+
+			g_Conf->CurrentIRX = Startup.ElfFile;
+
+			// FIXME: ElfFile is an irx it will crash
 			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
 		}
 	}

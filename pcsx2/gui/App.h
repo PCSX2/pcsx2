@@ -298,6 +298,7 @@ public:
 	// Indicates if PCSX2 should autorun the configured CDVD source and/or ISO file.
 	bool			SysAutoRun;
 	bool			SysAutoRunElf;
+	bool			SysAutoRunIrx;
 
 	StartupOptions()
 	{
@@ -306,7 +307,7 @@ public:
 		PortableMode			= false;
 		NoFastBoot				= false;
 		SysAutoRun				= false;
-		SysAutoRunElf			= false;
+		SysAutoRunIrx			= false;
 		CdvdSource				= CDVDsrc_NoDisc;
 	}
 };
