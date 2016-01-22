@@ -25,7 +25,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEVEL)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -W)
+    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -W -Wno-unused-parameter)
 
 endif()
 
