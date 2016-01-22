@@ -18,8 +18,6 @@ matrix:
     - env: VERSION=4.9 BITS=64
       compiler: gcc
       os: linux
-  allow_failures:
-    - env: VERSION=4.9 BITS=64
 
 before_install:
   - ./travis.sh before_install
