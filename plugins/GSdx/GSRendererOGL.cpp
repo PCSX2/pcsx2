@@ -389,7 +389,10 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 										sw_blending |= (ALPHA.A != ALPHA.B) &&
 												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
-		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS;
+										// Initial idea was to enable accurate blending for sprite rendering to handle
+										// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
+										// In order to keep it fast, let's limit it to smaller draw call.
+		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
 		case ACC_BLEND_FREE:            sw_blending |= (ps_sel.fbmask  && !m_unsafe_fbmask) || impossible_or_free_blend; // blending is only free when we use slow fbmask
 		default:                        sw_blending |= accumulation_blend;
 	}
