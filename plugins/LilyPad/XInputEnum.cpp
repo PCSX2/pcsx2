@@ -21,13 +21,52 @@
 #include "InputManager.h"
 #include "XInputEnum.h"
 
+// Extra enum
+#define XINPUT_GAMEPAD_GUIDE 0x0400
+
+typedef struct
+{
+	float SCP_UP;
+	float SCP_RIGHT;
+	float SCP_DOWN;
+	float SCP_LEFT;
+
+	float SCP_LX;
+	float SCP_LY;
+
+	float SCP_L1;
+	float SCP_L2;
+	float SCP_L3;
+
+	float SCP_RX;
+	float SCP_RY;
+
+	float SCP_R1;
+	float SCP_R2;
+	float SCP_R3;
+
+	float SCP_T;
+	float SCP_C;
+	float SCP_X;
+	float SCP_S;
+
+	float SCP_SELECT;
+	float SCP_START;
+
+	float SCP_PS;
+
+} SCP_EXTN;
+
+
 // This way, I don't require that XInput junk be installed.
-typedef void (CALLBACK *_XInputEnable)(BOOL enable);
-typedef DWORD (CALLBACK *_XInputGetState)(DWORD dwUserIndex, XINPUT_STATE* pState);
-typedef DWORD (CALLBACK *_XInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+typedef void(CALLBACK *_XInputEnable)(BOOL enable);
+typedef DWORD(CALLBACK *_XInputGetStateEx)(DWORD dwUserIndex, XINPUT_STATE* pState);
+typedef DWORD(CALLBACK *_XInputGetExtended)(DWORD dwUserIndex, SCP_EXTN* pPressure);
+typedef DWORD(CALLBACK *_XInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
 
 _XInputEnable pXInputEnable = 0;
-_XInputGetState pXInputGetState = 0;
+_XInputGetStateEx pXInputGetStateEx = 0;
+_XInputGetExtended pXInputGetExtended = 0;
 _XInputSetState pXInputSetState = 0;
 
 static int xInputActiveCount = 0;
@@ -55,15 +94,10 @@ public:
 		memset(&xInputVibration, 0, sizeof(xInputVibration));
 		this->index = index;
 		int i;
-		for (i=0; i<14; i++) {
-			// The i > 9 accounts for the 2 bit skip in button flags.
-			AddPhysicalControl(PSHBTN, i + 2*(i > 9), 0);
+		for (i=0; i<17; i++) { // Skip empty bit
+			AddPhysicalControl(PRESSURE_BTN, i + (i > 10), 0);
 		}
-		for (i=14; i<16; i++) {
-			// The i > 9 accounts for the 2 bit skip in button flags.
-			AddPhysicalControl(PRESSURE_BTN, i + 2*(i > 9), 0);
-		}
-		for (; i<20; i++) {
+		for (; i<21; i++) {
 			AddPhysicalControl(ABSAXIS, i + 2, 0);
 		}
 		AddFFAxis(L"Slow Motor", 0);
@@ -83,6 +117,7 @@ public:
 			L"Right Thumb",
 			L"Left Shoulder",
 			L"Right Shoulder",
+			L"Guide",
 			L"A",
 			L"B",
 			L"X",
@@ -95,7 +130,7 @@ public:
 			L"Right Thumb Y",
 		};
 		unsigned int i = (unsigned int) (c - physicalControls);
-		if (i < 20) {
+		if (i < 21) {
 			return (wchar_t*)names[i];
 		}
 		return Device::GetPhysicalControlName(c);
@@ -115,20 +150,45 @@ public:
 	int Update() {
 		if (!active) return 0;
 		XINPUT_STATE state;
-		if (ERROR_SUCCESS != pXInputGetState(index, &state)) {
+		if (ERROR_SUCCESS != pXInputGetStateEx(index, &state)) {
 			Deactivate();
 			return 0;
 		}
-		int buttons = state.Gamepad.wButtons;
-		for (int i=0; i<14; i++) {
-			physicalControlState[i] = ((buttons >> physicalControls[i].id)&1)<<16;
+		SCP_EXTN pressure;
+		if (!pXInputGetExtended || (ERROR_SUCCESS != pXInputGetExtended(index, &pressure))) {
+			int buttons = state.Gamepad.wButtons;
+			for (int i = 0; i < 15; i++) {
+				physicalControlState[i] = ((buttons >> physicalControls[i].id) & 1) << 16;
+			}
+			physicalControlState[15] = (int)(state.Gamepad.bLeftTrigger * 257.005);
+			physicalControlState[16] = (int)(state.Gamepad.bRightTrigger * 257.005);
+			physicalControlState[17] = ShortToAxis(state.Gamepad.sThumbLX);
+			physicalControlState[18] = ShortToAxis(state.Gamepad.sThumbLY);
+			physicalControlState[19] = ShortToAxis(state.Gamepad.sThumbRX);
+			physicalControlState[20] = ShortToAxis(state.Gamepad.sThumbRY);
+		} else {
+			physicalControlState[0] = (int)(pressure.SCP_UP * FULLY_DOWN);
+			physicalControlState[1] = (int)(pressure.SCP_DOWN * FULLY_DOWN);
+			physicalControlState[2] = (int)(pressure.SCP_LEFT * FULLY_DOWN);
+			physicalControlState[3] = (int)(pressure.SCP_RIGHT * FULLY_DOWN);
+			physicalControlState[4] = (int)(pressure.SCP_START * FULLY_DOWN);
+			physicalControlState[5] = (int)(pressure.SCP_SELECT * FULLY_DOWN);
+			physicalControlState[6] = (int)(pressure.SCP_L3 * FULLY_DOWN);
+			physicalControlState[7] = (int)(pressure.SCP_R3 * FULLY_DOWN);
+			physicalControlState[8] = (int)(pressure.SCP_L1 * FULLY_DOWN);
+			physicalControlState[9] = (int)(pressure.SCP_R1 * FULLY_DOWN);
+			physicalControlState[10] = (int)(pressure.SCP_PS * FULLY_DOWN);
+			physicalControlState[11] = (int)(pressure.SCP_X * FULLY_DOWN);
+			physicalControlState[12] = (int)(pressure.SCP_C * FULLY_DOWN);
+			physicalControlState[13] = (int)(pressure.SCP_S * FULLY_DOWN);
+			physicalControlState[14] = (int)(pressure.SCP_T * FULLY_DOWN);
+			physicalControlState[15] = (int)(pressure.SCP_L2 * FULLY_DOWN);
+			physicalControlState[16] = (int)(pressure.SCP_R2 * FULLY_DOWN);
+			physicalControlState[17] = (int)(pressure.SCP_LX * FULLY_DOWN);
+			physicalControlState[18] = (int)(pressure.SCP_LY * FULLY_DOWN);
+			physicalControlState[19] = (int)(pressure.SCP_RX * FULLY_DOWN);
+			physicalControlState[20] = (int)(pressure.SCP_RY * FULLY_DOWN);
 		}
-		physicalControlState[14] = (((int)state.Gamepad.bLeftTrigger) + (state.Gamepad.bLeftTrigger>>7)) << 8;
-		physicalControlState[15] = (((int)state.Gamepad.bRightTrigger) + (state.Gamepad.bRightTrigger>>7)) << 8;
-		physicalControlState[16] = ShortToAxis(state.Gamepad.sThumbLX);
-		physicalControlState[17] = ShortToAxis(state.Gamepad.sThumbLY);
-		physicalControlState[18] = ShortToAxis(state.Gamepad.sThumbRX);
-		physicalControlState[19] = ShortToAxis(state.Gamepad.sThumbRY);
 		return 1;
 	}
 
@@ -202,7 +262,9 @@ void EnumXInputDevices() {
 		}
 		if (hMod) {
 			if ((pXInputEnable = (_XInputEnable) GetProcAddress(hMod, "XInputEnable")) &&
-				(pXInputGetState = (_XInputGetState) GetProcAddress(hMod, "XInputGetState"))) {
+				((pXInputGetStateEx = (_XInputGetStateEx) GetProcAddress(hMod, (LPCSTR)100)) || // Try Ex version first
+				 (pXInputGetStateEx = (_XInputGetStateEx) GetProcAddress(hMod, "XinputGetState")))) {
+					pXInputGetExtended = (_XInputGetExtended)GetProcAddress(hMod, "XInputGetExtended");
 					pXInputSetState = (_XInputSetState) GetProcAddress(hMod, "XInputSetState");
 			}
 		}
