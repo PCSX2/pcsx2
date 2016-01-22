@@ -44,6 +44,7 @@
 #include <cstring>		// string.h under c++
 #include <cstdio>		// stdio.h under c++
 #include <cstdlib>
+#include <cinttypes>	// Printf format
 
 // ... and include some ANSI/POSIX C libs that are useful too, just for good measure.
 // (these compile lightning fast with or without PCH, but they never change so

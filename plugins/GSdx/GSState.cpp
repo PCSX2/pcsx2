@@ -2372,7 +2372,7 @@ void GSState::GrowVertexBuffer()
 
 	if(vertex == NULL || index == NULL)
 	{
-		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", sizeof(GSVertex) * maxcount, sizeof(uint32) * maxcount * 3);
+		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", (int)sizeof(GSVertex) * maxcount, (int)sizeof(uint32) * maxcount * 3);
 		throw GSDXError();
 	}
 

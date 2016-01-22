@@ -125,7 +125,7 @@ protected:
 
 		if(vertices == NULL)
 		{
-			printf("GSdx: failed to allocate %d bytes for verticles.\n", sizeof(Vertex) * maxcount);
+			printf("GSdx: failed to allocate %d bytes for verticles.\n", (int)sizeof(Vertex) * maxcount);
 			throw GSDXError();
 		}
 

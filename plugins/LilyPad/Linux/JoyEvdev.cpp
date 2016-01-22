@@ -88,7 +88,7 @@ JoyEvdev::JoyEvdev(int fd, bool ds3, const wchar_t *id) : Device(LNX_JOY, OTHER,
 		}
 	}
 
-	fprintf(stderr, "New device created. Found axe:%d, buttons:%d, m_rel:%d\n\n", m_abs.size(), m_btn.size(), m_rel.size());
+	fprintf(stderr, "New device created. Found axe:%zu, buttons:%zu, m_rel:%zu\n\n", m_abs.size(), m_btn.size(), m_rel.size());
 }
 
 JoyEvdev::~JoyEvdev() {
