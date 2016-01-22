@@ -307,6 +307,7 @@ public:
 		PortableMode			= false;
 		NoFastBoot				= false;
 		SysAutoRun				= false;
+		SysAutoRunElf			= false;
 		SysAutoRunIrx			= false;
 		CdvdSource				= CDVDsrc_NoDisc;
 	}
