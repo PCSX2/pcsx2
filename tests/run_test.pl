@@ -260,9 +260,15 @@ sub run_thread {
 sub generate_cfg {
     my $out_dir = shift;
 
-    print "Info: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
+    my $win_out_dir = $out_dir;
+    if ($o_cygwin) {
+        $win_out_dir = `cygpath -w $win_out_dir`;
+        chomp($win_out_dir);
+    }
+
+    print "Info: Copy dir $o_cfg to $win_out_dir\n" if $o_debug_me;
     local $File::Copy::Recursive::RMTrgDir = 2;
-    dircopy($o_cfg, $out_dir) or die "Failed to copy directory: $!\n";
+    dircopy($o_cfg, $win_out_dir) or die "Failed to copy directory: $!\n";
 
     # Enable the logging to get the trace log
     my $ui_ini = File::Spec->catfile($out_dir, "PCSX2_ui.ini");
