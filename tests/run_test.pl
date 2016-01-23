@@ -258,6 +258,7 @@ sub run_thread {
 sub generate_cfg {
     my $out_dir = shift;
 
+    print "Info: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
     local $File::Copy::Recursive::RMTrgDir = 2;
     dircopy($o_cfg, $out_dir) or die "Failed to copy directory: $!\n";
 
