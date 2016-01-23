@@ -215,10 +215,12 @@ sub collect_result {
 
 sub add_test_cmd_for_elf {
     my $file = $_;
-    return 0 unless ($file =~ /\.elf/);
+    my $ext = "\.(elf|irx)";
+
+    return 0 unless ($file =~ /$ext/);
     return 0 unless ($file =~ /$o_test_name/i);
 
-    my($test, $dir_, $suffix) = fileparse($file, qw/.elf/);
+    my($test, $dir_, $suffix) = fileparse($file, qw/.elf .irx/);
     return 0 if (exists $blacklist{$test});
     # Fast test
     #return 0 unless ($file =~ /branchdelay/);
@@ -226,9 +228,9 @@ sub add_test_cmd_for_elf {
     my $dir = $File::Find::dir;
     print "INFO: found test $test in $dir\n" if $o_debug_me or $o_dry_run;
 
-    $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/\.elf/_cfg/r;
-    $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/\.elf/.expected/r;
-    $g_test_db->{$File::Find::name}->{"OUT"} = $File::Find::name =~ s/\.elf/.PCSX2.out/r;
+    $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/$ext/_cfg/r;
+    $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/$ext/.expected/r;
+    $g_test_db->{$File::Find::name}->{"OUT"} = $File::Find::name =~ s/$ext/.PCSX2.out/r;
     $g_test_db->{$File::Find::name}->{"STATUS"} = "T";
 
     return 1;
@@ -330,7 +332,11 @@ sub run_elf {
 sub test_cmd {
     my $elf = shift;
     my $cfg = shift;
-    return "$o_exe --elf $elf --cfgpath=$cfg"
+    if ($elf =~ /\.elf/) {
+        return "$o_exe --elf $elf --cfgpath=$cfg"
+    } else {
+        return "$o_exe --irx $elf --cfgpath=$cfg"
+    }
 }
 
 sub diff {
@@ -350,7 +356,7 @@ sub diff {
 
     my $status = "OK";
     for (my $l = 0; $l < scalar(@ref); $l++) {
-        if ($ref[$l] ne $out[$l]) {
+        if (chomp($ref[$l]) ne chomp($out[$l])) {
             $status = "KO";
             if ($o_show_diff and not $quiet) {
                 print "EXPECTED: $ref[$l]";
