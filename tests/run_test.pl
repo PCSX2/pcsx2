@@ -10,7 +10,6 @@ use File::Basename;
 use File::Find;
 use File::Spec;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
-use File::Which;
 use Tie::File;
 use Cwd;
 use Cwd 'abs_path';
@@ -75,6 +74,7 @@ if (exists $ENV{"PS2_AUTOTESTS_CFG"}) {
 my $status = Getopt::Long::GetOptions(
     'cfg=s'         => \$o_cfg,
     'cpu=i'         => \$o_max_cpu,
+    'cygwin'        => \$o_cygwin,
     'debug_me'      => \$o_debug_me,
     'dry_run'       => \$o_dry_run,
     'exe=s'         => \$o_exe,
@@ -126,9 +126,10 @@ unless (-d $o_cfg) {
     help();
 }
 
-if (defined(which("cygpath"))) {
-    $o_cygwin = 1;
-}
+#if (`uname -a` =~ /cygwin/) {
+#    print "Info: CYGWIN env detected\n";
+#    $o_cygwin = 1;
+#}
 
 if ($o_cygwin) {
     $o_cfg = `cygpath -w $o_cfg`;
