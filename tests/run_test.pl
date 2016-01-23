@@ -215,7 +215,7 @@ sub collect_result {
 
 sub add_test_cmd_for_elf {
     my $file = $_;
-    my $ext = "\.(elf|irx)";
+    my $ext = "\\.(elf|irx)";
 
     return 0 unless ($file =~ /$ext/);
     return 0 unless ($file =~ /$o_test_name/i);
