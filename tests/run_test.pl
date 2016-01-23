@@ -10,6 +10,7 @@ use File::Basename;
 use File::Find;
 use File::Spec;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
+use File::Which;
 use Tie::File;
 use Cwd;
 use Cwd 'abs_path';
@@ -53,9 +54,10 @@ EOS
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run, %o_pcsx2_opt);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run, %o_pcsx2_opt, $o_cygwin);
 
 # default value
+$o_cygwin = 0;
 $o_max_cpu = 1;
 $o_timeout = 20;
 $o_help = 0;
@@ -122,6 +124,14 @@ unless (-x $o_exe) {
 unless (-d $o_cfg) {
     print "Error: --cfg option requires a directory\n";
     help();
+}
+
+if (defined(which("cygpath"))) {
+    $o_cygwin = 1;
+}
+
+if ($o_cygwin) {
+    $o_cfg = `cygpath -w $o_cfg`;
 }
 
 my %blacklist;
@@ -332,6 +342,12 @@ sub run_elf {
 sub test_cmd {
     my $elf = shift;
     my $cfg = shift;
+
+    if ($o_cygwin) {
+        $elf = `cygpath -w $elf`;
+        $cfg = `cygpath -w $cfg`;
+    }
+
     if ($elf =~ /\.elf/) {
         return "$o_exe --elf $elf --cfgpath=$cfg"
     } else {
