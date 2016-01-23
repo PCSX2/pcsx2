@@ -133,6 +133,7 @@ unless (-d $o_cfg) {
 
 if ($o_cygwin) {
     $o_cfg = `cygpath -w $o_cfg`;
+    chomp($o_cfg);
 }
 
 my %blacklist;
@@ -348,6 +349,8 @@ sub test_cmd {
     if ($o_cygwin) {
         $elf = `cygpath -w $elf`;
         $cfg = `cygpath -w $cfg`;
+        chomp($elf);
+        chomp($cfg);
     }
 
     if ($elf =~ /\.elf/) {
