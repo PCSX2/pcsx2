@@ -131,8 +131,6 @@ unless (-d $o_cfg) {
 #    $o_cygwin = 1;
 #}
 
-$o_cfg = cyg_abs_path($o_cfg);
-
 my %blacklist;
 if (defined $o_regression) {
     # Blacklist bad test
@@ -267,8 +265,6 @@ sub run_thread {
 
 sub generate_cfg {
     my $out_dir = shift;
-
-    $out_dir = cyg_abs_path($out_dir);
 
     print "Info: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
     local $File::Copy::Recursive::RMTrgDir = 2;
