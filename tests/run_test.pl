@@ -5,6 +5,7 @@ use warnings;
 use threads;
 use threads::shared;
 
+use Cwd;
 use Getopt::Long;
 use File::Basename;
 use File::Find;
@@ -155,10 +156,14 @@ if (defined $o_regression) {
 #####################################################
 
 # Round 1: Collect the tests
+my $cwd = getcwd();
+
 my $g_test_db;
 print "INFO: search tests in $o_suite and run them in $o_max_cpu CPU)\n";
 find({ wanted => \&add_test_cmd_for_elf, no_chdir => 1 },  $o_suite);
 print "\n";
+
+chdir($cwd); # Just to be sure
 
 # Round 2: Run the tests (later in thread)
 foreach my $test (keys(%$g_test_db)) {
@@ -215,9 +220,7 @@ sub cyg_abs_path {
     my $p = shift;
     my $ap = abs_path($o_suite);
     if ($o_cygwin) {
-        $ap = `cygpath -w $ap`;
-        chomp($ap);
-        $ap =~ s/\\/\\\\/g;
+        $ap =~ s/\/cygdrive\/(\w)/$1:/;
     }
     return $ap;
 }
