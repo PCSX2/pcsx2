@@ -63,7 +63,7 @@ $o_bad = 0;
 $o_regression = 0;
 $o_cygwin = 0;
 $o_max_cpu = 1;
-$o_timeout = 20;
+$o_timeout = 30;
 $o_help = 0;
 $o_debug_me = 0;
 $o_dry_run = 0;
@@ -326,13 +326,14 @@ sub run_elf {
 
     my $line;
     my $dump = 0;
+    my $cancel = 0;
     open(my $run, ">$out") or die "Impossible to open $!";
 
     my $command = test_cmd($elf, $cfg);
     print "EXEC: $command\n" if $o_debug_me;
     return unless ($command ne "");
 
-    my $pid = open(my $log, "$command |") or die "Impossible to pipe $!";
+    my $pid = open(my $log, "timeout $o_timeout $command |") or die "Impossible to pipe $!";
     #print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n" if $o_debug_me;
 
     # Kill me
@@ -343,7 +344,7 @@ sub run_elf {
         threads->exit();
     };
 
-    while ($line = <$log>) {
+    while (not $cancel and $line = <$log>) {
         $mt_timeout = $o_timeout; # Keep me alive
 
         $line =~ s/\e\[\d+(?>(;\d+)*)m//g;
@@ -355,8 +356,10 @@ sub run_elf {
         }
         if ($line =~ /-- TEST END/) {
             $dump = 0;
+            $cancel = 1;
             print "INFO: kill process $pid\n" if $o_debug_me;
-            kill 'KILL', $pid;
+            kill 'KILL', -$pid;
+            #system("kill -9 -- -$pid");
         }
     }
 }
@@ -446,7 +449,7 @@ sub kill_thread_if_timeout {
         foreach my $thr (threads->list()) {
             # Farewell my friend
             print "ERROR: send kill on timeout process\n";
-            $thr->kill('KILL')->detach();
+            $thr->kill('KILL')->join();
         }
         $mt_timeout = 100;
     }
