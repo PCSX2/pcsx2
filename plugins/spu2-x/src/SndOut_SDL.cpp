@@ -47,15 +47,15 @@ namespace {
 	void callback_fillBuffer(void *userdata, Uint8 *stream, int len) {
 		Uint16 sdl_samples = samples;
 
-		// Length should always be samples in bytes.
-		assert(len / sizeof(StereoOut_SDL) == samples);
-
 #if SDL_MAJOR_VERSION >= 2
 		memset(stream, 0, len);
-#if SDL_PATCHLEVEL >= 4
+		// As of SDL 2.0.4 the buffer is too small to contains all samples
+		// len is 2048, samples is 1024 and sizeof(StereoOut_SDL) is 4
 		sdl_samples = len / sizeof(StereoOut_SDL);
 #endif
-#endif
+
+		// Length should always be samples in bytes.
+		assert(len / sizeof(StereoOut_SDL) == sdl_samples);
 
 		for(Uint16 i = 0; i < sdl_samples; i += SndOutPacketSize)
 			SndBuffer::ReadSamples(&buffer[i]);
