@@ -90,7 +90,7 @@ my $status = Getopt::Long::GetOptions(
 
 # Auto detect cygwin mess
 if (-e "/cygdrive") {
-    print "Info: CYGWIN OS detected. Update path accordingly\n";
+    print "INFO: CYGWIN OS detected. Update path accordingly\n";
     $o_cygwin = 1;
 }
 
@@ -218,11 +218,10 @@ print "\n";
 #####################################################
 sub cyg_abs_path {
     my $p = shift;
-    my $ap = abs_path($o_suite);
     if ($o_cygwin) {
-        $ap =~ s/\/cygdrive\/(\w)/$1:/;
+        $p =~ s/\/cygdrive\/(\w)/$1:/;
     }
-    return $ap;
+    return $p;
 }
 
 sub collect_result {
@@ -250,10 +249,10 @@ sub add_test_cmd_for_elf {
     my $dir = $File::Find::dir;
     print "INFO: found test $test in $dir\n" if $o_debug_me or $o_dry_run;
 
-    $g_test_db->{$File::Find::name}->{"CFG_DIR"} = $File::Find::name =~ s/$ext/_cfg/r;
-    $g_test_db->{$File::Find::name}->{"EXPECTED"} = $File::Find::name =~ s/$ext/.expected/r;
-    $g_test_db->{$File::Find::name}->{"OUT"} = $File::Find::name =~ s/$ext/.PCSX2.out/r;
-    $g_test_db->{$File::Find::name}->{"STATUS"} = "T";
+    $g_test_db->{$file}->{"CFG_DIR"}  = $file =~ s/$ext/_cfg/r;
+    $g_test_db->{$file}->{"EXPECTED"} = $file =~ s/$ext/.expected/r;
+    $g_test_db->{$file}->{"OUT"}      = $file =~ s/$ext/.PCSX2.out/r;
+    $g_test_db->{$file}->{"STATUS"}   = "T";
 
     return 1;
 }
@@ -270,7 +269,7 @@ sub run_thread {
 sub generate_cfg {
     my $out_dir = shift;
 
-    print "Info: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
+    print "INFO: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
     local $File::Copy::Recursive::RMTrgDir = 2;
     dircopy($o_cfg, $out_dir) or die "Failed to copy directory: $!\n";
 
@@ -319,8 +318,11 @@ sub run_elf {
     open(my $run, ">$out") or die "Impossible to open $!";
 
     my $command = test_cmd($elf, $cfg);
+    print "EXEC: $command\n" if $o_debug_me;
+    return unless ($command ne "");
+
     my $pid = open(my $log, "$command |") or die "Impossible to pipe $!";
-    print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n" if $o_debug_me;
+    #print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n" if $o_debug_me;
 
     # Kill me
     $SIG{'KILL'} = sub {
@@ -357,8 +359,11 @@ sub test_cmd {
 
     if ($elf =~ /\.elf/) {
         return "$o_exe --elf $elf --cfgpath=$cfg"
-    } else {
+    } elsif ($elf =~ /\.irx/) {
         return "$o_exe --irx $elf --cfgpath=$cfg"
+    } else {
+        print "ERROR: bad command parameters $elf $cfg\n";
+        return "";
     }
 }
 
