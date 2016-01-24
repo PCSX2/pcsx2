@@ -88,7 +88,7 @@ my $status = Getopt::Long::GetOptions(
 );
 
 # Auto detect cygwin mess
-if (-e "/cydrive") {
+if (-e "/cygdrive") {
     print "Info: CYGWIN OS detected. Update path accordingly\n";
     $o_cygwin = 1;
 }
