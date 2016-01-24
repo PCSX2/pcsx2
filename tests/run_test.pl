@@ -87,6 +87,12 @@ my $status = Getopt::Long::GetOptions(
     'suite=s'       => \$o_suite,
 );
 
+# Auto detect cygwin mess
+if (-e "/cydrive") {
+    print "Info: CYGWIN OS detected. Update path accordingly\n";
+    $o_cygwin = 1;
+}
+
 #####################################################
 # Check option
 #####################################################
@@ -125,11 +131,6 @@ unless (-d $o_cfg) {
     print "Error: --cfg option requires a directory\n";
     help();
 }
-
-#if (`uname -a` =~ /cygwin/) {
-#    print "Info: CYGWIN env detected\n";
-#    $o_cygwin = 1;
-#}
 
 my %blacklist;
 if (defined $o_regression) {
