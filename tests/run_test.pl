@@ -33,7 +33,9 @@ sub help {
         --show_diff             : show debug information
 
         --test=<REGEXP>         : filter test based on their names
+        --bad                   : only run blacklisted tests
         --regression            : blacklist test that are known to be broken
+
         --option <KEY>=<VAL>    : overload PCSX2 configuration option
 
         --debug_me              : print script info
@@ -54,9 +56,11 @@ EOS
 }
 
 my $mt_timeout :shared;
-my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run, %o_pcsx2_opt, $o_cygwin);
+my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_debug_me, $o_test_name, $o_regression, $o_dry_run, %o_pcsx2_opt, $o_cygwin, $o_bad);
 
 # default value
+$o_bad = 0;
+$o_regression = 0;
 $o_cygwin = 0;
 $o_max_cpu = 1;
 $o_timeout = 20;
@@ -73,6 +77,7 @@ if (exists $ENV{"PS2_AUTOTESTS_CFG"}) {
 }
 
 my $status = Getopt::Long::GetOptions(
+    'bad'           => \$o_bad,
     'cfg=s'         => \$o_cfg,
     'cpu=i'         => \$o_max_cpu,
     'cygwin'        => \$o_cygwin,
@@ -134,7 +139,7 @@ unless (-d $o_cfg) {
 }
 
 my %blacklist;
-if (defined $o_regression) {
+if ($o_regression or $o_bad) {
     # Blacklist bad test
     $blacklist{"branchdelay"} = 1;
     $blacklist{"arithmetic"} = 1;
@@ -149,6 +154,11 @@ if (defined $o_regression) {
     $blacklist{"mode"} = 1;
     $blacklist{"stcycl"} = 1;
     $blacklist{"triace"} = 1;
+    # IRX
+    $blacklist{"lsu"} = 1;
+    $blacklist{"register"} = 1;
+    $blacklist{"release"} = 1;
+    $blacklist{"stat"} = 1;
 }
 
 #####################################################
@@ -242,7 +252,8 @@ sub add_test_cmd_for_elf {
     return 0 unless ($file =~ /$o_test_name/i);
 
     my($test, $dir_, $suffix) = fileparse($file, qw/.elf .irx/);
-    return 0 if (exists $blacklist{$test});
+    return 0 if ($o_regression and exists $blacklist{$test});
+    return 0 if ($o_bad and not exists $blacklist{$test});
     # Fast test
     #return 0 unless ($file =~ /branchdelay/);
 
