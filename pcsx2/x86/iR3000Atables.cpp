@@ -498,6 +498,19 @@ void rpsxDIV_const()
 {
 	u32 lo, hi;
 
+	/*
+	 * Normally, when 0x80000000(−2147483648), the signed minimum value, is divided by 0xFFFFFFFF(−1), the
+	 * 	operation will result in overflow. However, in this instruction an overflow exception does not occur and the
+	 * 	result will be as follows:
+	 * 	Quotient: 0x80000000 (−2147483648), and remainder: 0x00000000 (0)
+	 */
+	// Of course x86 cpu does overflow !
+	if (g_psxConstRegs[_Rs_] == 0x80000000u && g_psxConstRegs[_Rt_] == 0xFFFFFFFFu) {
+		xMOV(ptr32[&psxRegs.GPR.n.hi], 0);
+		xMOV(ptr32[&psxRegs.GPR.n.lo], 0x80000000);
+		return;
+	}
+
 	if (g_psxConstRegs[_Rt_] != 0) {
 		lo = *(int*)&g_psxConstRegs[_Rs_] / *(int*)&g_psxConstRegs[_Rt_];
 		hi = *(int*)&g_psxConstRegs[_Rs_] % *(int*)&g_psxConstRegs[_Rt_];
