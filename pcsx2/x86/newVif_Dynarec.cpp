@@ -236,6 +236,11 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 		else {
 			dstIndirect += (16 * skipSize);
 			vCL = 0;
+			// FIXME
+			// temporary code to avoid an infinite loop until the code is correctly fixed
+			if (blockSize == cycleSize && cycleSize == 0)
+				break;
+			// END FIXME
 		}
 	}
 
@@ -257,6 +262,9 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 		// Accounting for skipping mode: Subtract the last skip cycle, since the skipped part of the run
 		// shouldn't count as wrapped data.  Otherwise, a trailing skip can cause the emu to drop back
 		// to the interpreter. -- Refraction (test with MGS3)
+		// FIXME temporary solution to avoid a crash
+		if (wl == 0) wl = 1;
+		// END FIXME
 		uint skipSize  = (cl - wl) * 16;
 		uint blocks    = v.block.num / wl;
 		length += (blocks-1) * skipSize;
