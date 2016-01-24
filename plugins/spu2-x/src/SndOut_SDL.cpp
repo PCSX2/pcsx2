@@ -45,13 +45,19 @@ namespace {
 	std::unique_ptr<StereoOut_SDL[]> buffer;
 
 	void callback_fillBuffer(void *userdata, Uint8 *stream, int len) {
+		Uint16 sdl_samples = samples;
+
 		// Length should always be samples in bytes.
 		assert(len / sizeof(StereoOut_SDL) == samples);
+
 #if SDL_MAJOR_VERSION >= 2
 		memset(stream, 0, len);
+#if SDL_PATCHLEVEL >= 4
+		sdl_samples = len / sizeof(StereoOut_SDL);
+#endif
 #endif
 
-		for(Uint16 i = 0; i < samples; i += SndOutPacketSize)
+		for(Uint16 i = 0; i < sdl_samples; i += SndOutPacketSize)
 			SndBuffer::ReadSamples(&buffer[i]);
 		SDL_MixAudio(stream, (Uint8*) buffer.get() , len, SDL_MIX_MAXVOLUME);
 	}
@@ -103,6 +109,8 @@ struct SDLAudioMod : public SndOutModule {
 		if(samples != spec.samples || buffer == NULL)
 			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
 		if(samples != spec.samples) {
+			fprintf(stderr, "SPU2-X: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
+
 			// Samples must always be a multiple of packet size.
 			assert(spec.samples % SndOutPacketSize == 0);
 			samples = spec.samples;
