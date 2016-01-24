@@ -131,10 +131,7 @@ unless (-d $o_cfg) {
 #    $o_cygwin = 1;
 #}
 
-if ($o_cygwin) {
-    $o_cfg = `cygpath -w $o_cfg`;
-    chomp($o_cfg);
-}
+$o_cfg = cyg_abs_path($o_cfg);
 
 my %blacklist;
 if (defined $o_regression) {
@@ -215,6 +212,17 @@ print "\n";
 #####################################################
 # Sub helper
 #####################################################
+sub cyg_abs_path {
+    my $p = shift;
+    my $ap = abs_path($o_suite);
+    if ($o_cygwin) {
+        $ap = `cygpath -w $ap`;
+        chomp($ap);
+        $ap =~ s/\\/\\\\/g;
+    }
+    return $ap;
+}
+
 sub collect_result {
     foreach my $test (keys(%$g_test_db)) {
         my $info = $g_test_db->{$test};
@@ -260,19 +268,11 @@ sub run_thread {
 sub generate_cfg {
     my $out_dir = shift;
 
-    my $win_out_dir = $out_dir;
-    if ($o_cygwin) {
-        $win_out_dir = `cygpath -w $win_out_dir`;
-        chomp($win_out_dir);
-    }
+    $out_dir = cyg_abs_path($out_dir);
 
-    print "Info: Copy dir $o_cfg to $win_out_dir\n" if $o_debug_me;
+    print "Info: Copy dir $o_cfg to $out_dir\n" if $o_debug_me;
     local $File::Copy::Recursive::RMTrgDir = 2;
-    dircopy($o_cfg, $win_out_dir) or die "Failed to copy directory: $!\n";
-
-    # Enable the logging to get the trace log
-    my $ui_ini = File::Spec->catfile($out_dir, "PCSX2_ui.ini");
-    my $vm_ini = File::Spec->catfile($out_dir, "PCSX2_vm.ini");
+    dircopy($o_cfg, $out_dir) or die "Failed to copy directory: $!\n";
 
     my %sed;
     # Enable logging for test
@@ -352,12 +352,8 @@ sub test_cmd {
     my $elf = shift;
     my $cfg = shift;
 
-    if ($o_cygwin) {
-        $elf = `cygpath -w $elf`;
-        $cfg = `cygpath -w $cfg`;
-        chomp($elf);
-        chomp($cfg);
-    }
+    $elf = cyg_abs_path($elf);
+    $cfg = cyg_abs_path($cfg);
 
     if ($elf =~ /\.elf/) {
         return "$o_exe --elf $elf --cfgpath=$cfg"
