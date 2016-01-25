@@ -236,11 +236,6 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 		else {
 			dstIndirect += (16 * skipSize);
 			vCL = 0;
-			// FIXME
-			// temporary code to avoid an infinite loop until the code is correctly fixed
-			if (blockSize == cycleSize && cycleSize == 0)
-				break;
-			// END FIXME
 		}
 	}
 
@@ -253,18 +248,14 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	vifStruct&    vif        = MTVU_VifX;
 	const VURegs& VU         = vuRegs[idx];
 	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
-
+	
 	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
 	u8*  endmem   = VU.Mem + vuMemLimit;
 	uint length   = (v.block.num > 0) ? (v.block.num * 16) : 4096; // 0 = 256
 
+	//wl = wl ? wl : 256; //0 is taken as 256 (KH2)
+	//if (wl == 256) isFill = true;
 	if (!isFill) {
-		// Accounting for skipping mode: Subtract the last skip cycle, since the skipped part of the run
-		// shouldn't count as wrapped data.  Otherwise, a trailing skip can cause the emu to drop back
-		// to the interpreter. -- Refraction (test with MGS3)
-		// FIXME temporary solution to avoid a crash
-		if (wl == 0) wl = 1;
-		// END FIXME
 		uint skipSize  = (cl - wl) * 16;
 		uint blocks    = v.block.num / wl;
 		length += (blocks-1) * skipSize;
@@ -321,7 +312,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	v.block.num     = (u8&)vifRegs.num;
 	v.block.mode    = (u8&)vifRegs.mode;
 	v.block.cl      = vifRegs.cycle.cl;
-	v.block.wl      = vifRegs.cycle.wl;
+	v.block.wl      = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
 	v.block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 
 	if ((upkType & 0xf) != 9)

@@ -188,11 +188,6 @@ _vifT void vifUnpackSetup(const u32 *data) {
 
 	vifStruct& vifX = GetVifX;
 
-	if ((vifXRegs.cycle.wl == 0) && (vifXRegs.cycle.wl < vifXRegs.cycle.cl)) {
-        //DevCon.WriteLn("Vif%d CL %d, WL %d Mode %x Mask %x Num %x", idx, vifXRegs.cycle.cl, vifXRegs.cycle.wl, vifXRegs.mode, vifXRegs.mask, (vifXRegs.code >> 16) & 0xff);
-		vifX.cmd = 0;
-        return; // Skipping write and 0 write-cycles, so do nothing!
-	}
 	GetVifX.unpackcalls++;
 	
 	if (GetVifX.unpackcalls > 3)
@@ -216,12 +211,14 @@ _vifT void vifUnpackSetup(const u32 *data) {
 
 	const u8& gsize = nVifT[vifX.cmd & 0x0f];
 
-	if (vifXRegs.cycle.wl <= vifXRegs.cycle.cl) {
+	uint wl = vifXRegs.cycle.wl ? vifXRegs.cycle.wl : 256;
+
+	if (wl <= vifXRegs.cycle.cl) { //Skipping write
 		vifX.tag.size = ((vifNum * gsize) + 3) / 4;
 	}
-	else {
-		int n = vifXRegs.cycle.cl * (vifNum / vifXRegs.cycle.wl) +
-		        _limit(vifNum % vifXRegs.cycle.wl, vifXRegs.cycle.cl);
+	else { //Filling write
+		int n = vifXRegs.cycle.cl * (vifNum / wl) +
+		        _limit(vifNum % wl, vifXRegs.cycle.cl);
 
 		vifX.tag.size = ((n * gsize) + 3) >> 2;
 	}

@@ -111,10 +111,11 @@ _vifT int nVifUnpack(const u8* data) {
 	vifStruct&    vif     = GetVifX;
 	VIFregisters& vifRegs = vifXRegs;
 
+	const uint wl     = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
 	const uint ret    = aMin(vif.vifpacketsize, vif.tag.size);
-	const bool isFill = (vifRegs.cycle.cl < vifRegs.cycle.wl);
+	const bool isFill = (vifRegs.cycle.cl < wl);
 	s32		   size   = ret << 2;
-
+	
 	if (ret == vif.tag.size) { // Full Transfer
 		if (v.bSize) { // Last transfer was partial
 			memcpy(&v.buffer[v.bSize], data, size);
@@ -252,7 +253,7 @@ __ri void __fastcall _nVifUnpackLoop(const u8* data) {
 	const UNPACKFUNCTYPE ft = VIFfuncTable[idx][doMode ? vifRegs.mode : 0][ ((usn*2*16) + upkNum) ];
 
 	pxAssume (vif.cl == 0);
-	pxAssume (vifRegs.cycle.wl > 0);
+	//pxAssume (vifRegs.cycle.wl > 0);
 
 	do {
 		u8* dest = getVUptr(idx, vif.tag.addr);
