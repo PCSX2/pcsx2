@@ -98,7 +98,7 @@ public:
 		: m_plugpath( plugpath )
 	{
 		if( !m_plugin.Load( m_plugpath ) )
-			throw Exception::BadStream( m_plugpath ).SetBothMsgs(L"File is not a valid dynamic library.");
+			throw Exception::BadStream();
 
 		wxDoNotLogInThisScope please;
 		m_GetLibType		= (_PS2EgetLibType)m_plugin.GetSymbol( L"PS2EgetLibType" );
@@ -721,11 +721,6 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 	EnumeratedPluginInfo& result( m_EnumeratorThread->Results[evtidx] );
 
-	if( result.TypeMask == 0 )
-	{
-		Console.Error( L"Some kinda plugin failure: " + (*m_FileList)[evtidx] );
-	}
-
 	const PluginInfo* pi = tbl_PluginInfo; do
 	{
 		const PluginsEnum_t pid = pi->id;
@@ -785,9 +780,14 @@ void Panels::PluginSelectorPanel::EnumThread::DoNextPlugin( int curidx )
 			}
 		} while( ++pi, pi->shortname != NULL );
 	}
-	catch( Exception::BadStream& ex )
+	catch (Exception::NotEnumerablePlugin& ex)
 	{
-		Console.Warning( ex.FormatDiagnosticMessage() );
+		Console.Warning(ex.FormatDiagnosticMessage());
+	}
+	// wx3.0 provides an error message if the library fails to load - we don't
+	// need to provide one ourselves
+	catch (Exception::BadStream&)
+	{
 	}
 
 	wxCommandEvent yay( pxEvt_EnumeratedNext );
