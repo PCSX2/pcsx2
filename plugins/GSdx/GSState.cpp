@@ -354,7 +354,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	GSVector4i r;
 
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && m_regs->SMODE1.CMOD!=0) // Vmode's other than NTSC/PAL need height value over 640.
+	if (height > 640 && !Vmode_VESA)
 	{
 		height /= 2;
 	}
@@ -385,7 +385,7 @@ GSVector4i GSState::GetFrameRect(int i)
 //  Some NTSC mode games request higher height values for accurate display size / position when width is 640
 //  Testcases : PS logo (640x512) , Resident Evil:CVX (640x480). potentially more test cases...
 
-	if (m_regs->SMODE1.CMOD == 2 && h > 448 && w < 640)
+	if (Vmode_NTSC && h > 448 && w < 640)
 		h = 448;
 
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
@@ -470,7 +470,7 @@ float GSState::GetTvRefreshRate()
   // TODO: Frequencies for VESA / DTV : http://users.neoscientists.org/~blue/ps2videomodes.txt
   // SMODE1 PLL Loop divider (LC) could be used for detection of other video modes. CMOD's only useful for NTSC/PAL.(2/3)
 
-	return (m_regs->SMODE1.CMOD & 1) ? 50 : (60/1.001f);
+	return (Vmode_PAL) ? 50 : (60/1.001f);
 }
 
 // GIFPackedRegHandler*
