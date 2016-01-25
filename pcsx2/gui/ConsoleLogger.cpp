@@ -691,7 +691,8 @@ void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 
 void ConsoleLogFrame::OnResize( wxSizeEvent& evt )
 {
-	m_conf.DisplaySize = GetSize();
+	if (!ConsoleLogFrame::IsMaximized())
+		m_conf.DisplaySize = GetSize();
 	evt.Skip();
 }
 
