@@ -117,7 +117,7 @@ protected:
 	std::unique_ptr<u32[]> m_dtable;
 	int m_dtablesize;
 
-	ScopedPtr<wxFileOutputStream>	m_outstream;
+	std::unique_ptr<wxFileOutputStream>	m_outstream;
 		
 public:	
 	OutputIsoFile();

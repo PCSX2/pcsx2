@@ -199,6 +199,7 @@ public:
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <memory>
 
 #include "Pcsx2Defs.h"
 

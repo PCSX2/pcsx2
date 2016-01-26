@@ -17,6 +17,7 @@
 #include "IopCommon.h"
 #include "AppConfig.h"
 
+#include <memory>
 #include <ctype.h>
 #include <wx/datetime.h>
 
@@ -341,8 +342,6 @@ static __fi ElfObject* loadElf( const wxString filename )
 
 static __fi void _reloadElfInfo(wxString elfpath)
 {
-	ScopedPtr<ElfObject> elfptr;
-
 	// Now's a good time to reload the ELF info...
     ScopedLock locker( Mutex_NewDiskCB );
 
@@ -357,7 +356,7 @@ static __fi void _reloadElfInfo(wxString elfpath)
 	if (fname.Matches(L"????_???.??*"))
 		DiscSerial = fname(0,4) + L"-" + fname(5,3) + fname(9,2);
 
-	elfptr = loadElf(elfpath);
+	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath));
 
 	elfptr->loadHeaders();
 	ElfCRC = elfptr->getCRC();
