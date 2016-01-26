@@ -251,7 +251,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 // Doesn't modify values - only locks(gray out)/unlocks as necessary.
 void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 {
-	if( !configToUse ) configToUse = g_Conf;
+	if (!configToUse) configToUse = g_Conf.get();
 
 	bool hasPreset = configToUse->EnablePresets;
 	bool hacksEnabled = configToUse->EnableSpeedHacks;

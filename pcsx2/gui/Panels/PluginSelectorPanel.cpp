@@ -17,6 +17,7 @@
 
 #include <wx/dynlib.h>
 #include <wx/dir.h>
+#include <memory>
 
 #include "App.h"
 #include "AppSaveStates.h"
@@ -256,7 +257,7 @@ void SysExecEvent_ApplyPlugins::InvokeEvent()
 {
 	ScopedCoreThreadPause paused_core;
 
-	ScopedPtr< VmStateBuffer > buffer;
+	std::unique_ptr<VmStateBuffer> buffer;
 	
 	if( SysHasValidState() )
 	{
@@ -268,7 +269,8 @@ void SysExecEvent_ApplyPlugins::InvokeEvent()
 		// FIXME : We only actually have to save plugins here, except the recovery code
 		// in SysCoreThread isn't quite set up yet to handle that (I think...) --air
 
-		memSavingState saveme( *(buffer.Reassign(new VmStateBuffer(L"StateBuffer_ApplyNewPlugins"))) );
+		buffer.reset(new VmStateBuffer(L"StateBuffer_ApplyNewPlugins"));
+		memSavingState saveme(buffer.get());
 		
 		saveme.FreezeAll();
 	}
@@ -546,7 +548,7 @@ void Panels::PluginSelectorPanel::DoRefresh()
 	wxCommandEvent evt( pxEVT_ShowStatusBar );
 	GetEventHandler()->AddPendingEvent( evt );
 
-	m_EnumeratorThread.Reassign(new EnumThread( *this ));
+	m_EnumeratorThread.reset(new EnumThread(*this));
 
 	if( DisableThreading )
 		m_EnumeratorThread->DoNextPlugin( 0 );
@@ -563,11 +565,11 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 	// re-enumerate plugins, and if anything changed then we need to wipe
 	// the contents of the combo boxes and re-enumerate everything.
 
-	// Impl Note: ScopedPtr used so that resources get cleaned up if an exception
+	// Impl Note: unique_ptr used so that resources get cleaned up if an exception
 	// occurs during file enumeration.
-	ScopedPtr<wxArrayString> pluginlist( new wxArrayString() );
+	std::unique_ptr<wxArrayString> pluginlist(new wxArrayString());
 
-	int pluggers = EnumeratePluginsInFolder( m_ComponentBoxes->GetPluginsPath(), pluginlist );
+	int pluggers = EnumeratePluginsInFolder(m_ComponentBoxes->GetPluginsPath(), pluginlist.get());
 
 	if( !m_FileList || (*pluginlist != *m_FileList) )
 		validated = false;
@@ -578,7 +580,7 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 		return validated;
 	}
 
-	m_FileList.SwapPtr( pluginlist );
+	m_FileList.swap(pluginlist);
 
 	// set the gague length a little shorter than the plugin count.  2 reasons:
 	//  * some of the plugins might be duds.
@@ -699,7 +701,7 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 	// The thread can get canceled and replaced with a new thread, which means all
 	// pending messages should be ignored.
-	if( m_EnumeratorThread != (EnumThread*)evt.GetClientData() ) return;
+	if (m_EnumeratorThread.get() != (EnumThread*)evt.GetClientData()) return;
 
 	const size_t evtidx = evt.GetExtraLong();
 

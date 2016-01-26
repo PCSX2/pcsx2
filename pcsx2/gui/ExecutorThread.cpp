@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
+#include <memory>
 
 using namespace pxSizerFlags;
 
@@ -197,7 +198,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
     pxEvtList::iterator node;
     while( node = list.begin(), node != list.end() )
     {
-        ScopedPtr<SysExecEvent> deleteMe(*node);
+        std::unique_ptr<SysExecEvent> deleteMe(*node);
 
 		list.erase( node );
 		if( !m_Quitting || deleteMe->IsCriticalEvent() )
@@ -210,7 +211,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 
 			synclock.Release();
 
-			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Executing... [%s]%s",
+			pxEvtLog.Write( this, deleteMe.get(), wxsFormat(L"Executing... [%s]%s",
 				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString).wc_str()
 			);
 
@@ -223,7 +224,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 			}
 
 			u64 qpc_end = GetCPUTicks();
-			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Event completed in %ums",
+			pxEvtLog.Write( this, deleteMe.get(), wxsFormat(L"Event completed in %ums",
 				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency())).wc_str()
 			);
 
@@ -232,7 +233,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 		}
 		else
 		{
-			pxEvtLog.Write( this, deleteMe, L"Skipping Event: %s" );
+			pxEvtLog.Write( this, deleteMe.get(), L"Skipping Event: %s" );
 			deleteMe->PostResult();
 		}
 	}
@@ -263,7 +264,7 @@ void pxEvtQueue::AddPendingEvent( SysExecEvent& evt )
 //
 void pxEvtQueue::PostEvent( SysExecEvent* evt )
 {
-	ScopedPtr<SysExecEvent> sevt( evt );
+	std::unique_ptr<SysExecEvent> sevt(evt);
 	if( !sevt ) return;
 
 	if( m_Quitting )
@@ -276,7 +277,7 @@ void pxEvtQueue::PostEvent( SysExecEvent* evt )
 	
 	pxEvtLog.Write( this, evt, pxsFmt(L"Posting event! (pending=%d, idle=%d)", m_pendingEvents.size(), m_idleEvents.size()) );
 
-	m_pendingEvents.push_back( sevt.DetachPtr() );
+	m_pendingEvents.push_back( sevt.release() );
 	if( m_pendingEvents.size() == 1)
 		m_wakeup.Post();
 }
@@ -340,7 +341,7 @@ void pxEvtQueue::ProcessEvent( SysExecEvent* evt )
 	}
 	else
 	{
-		ScopedPtr<SysExecEvent> deleteMe( evt );
+		std::unique_ptr<SysExecEvent> deleteMe(evt);
 		deleteMe->_DoInvokeEvent();
 	}
 }
@@ -452,9 +453,9 @@ void WaitingForThreadedTaskDialog::OnTerminateApp_Clicked( wxCommandEvent& evt )
 // --------------------------------------------------------------------------------------
 //  ExecutorThread Implementations
 // --------------------------------------------------------------------------------------
-ExecutorThread::ExecutorThread( pxEvtQueue* evthandler )
+ExecutorThread::ExecutorThread(pxEvtQueue* evthandler)
+	: m_EvtHandler(evthandler)
 {
-	m_EvtHandler = evthandler;
 }
 
 bool ExecutorThread::IsRunning() const
@@ -507,7 +508,7 @@ void ExecutorThread::ProcessEvent( SysExecEvent* evt )
 		m_EvtHandler->ProcessEvent( evt );
 	else
 	{
-		ScopedPtr<SysExecEvent> deleteMe( evt );
+		std::unique_ptr<SysExecEvent> deleteMe(evt);
 		deleteMe->_DoInvokeEvent();
 	}
 }

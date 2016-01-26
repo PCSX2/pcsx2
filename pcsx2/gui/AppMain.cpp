@@ -71,7 +71,7 @@ DEFINE_EVENT_TYPE( pxEvt_LogicalVsync );
 
 DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
 
-ScopedPtr<AppConfig>	g_Conf;
+std::unique_ptr<AppConfig> g_Conf;
 
 static bool HandlePluginError( BaseException& ex )
 {
@@ -904,7 +904,7 @@ void Pcsx2App::PostIdleAppMethod( FnPtr_Pcsx2App method )
 
 SysMainMemory& Pcsx2App::GetVmReserve()
 {
-	if (!m_VmReserve) m_VmReserve = new SysMainMemory();
+	if (!m_VmReserve) m_VmReserve = std::unique_ptr<SysMainMemory>(new SysMainMemory());
 	return *m_VmReserve;
 }
 

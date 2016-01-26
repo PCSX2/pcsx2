@@ -18,6 +18,7 @@
 
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
+#include <memory>
 
 
 enum LimiterModeType
@@ -39,7 +40,7 @@ class GSPanel : public wxWindow
 	typedef wxWindow _parent;
 
 protected:
-	ScopedPtr<AcceleratorDictionary>	m_Accels;
+	std::unique_ptr<AcceleratorDictionary> m_Accels;
 
 	wxTimer					m_HideMouseTimer;
 	bool					m_CursorShown;

@@ -702,13 +702,13 @@ void BaseScopedCoreThread::DoResume()
 //  handle the code directly).
 bool BaseScopedCoreThread::PostToSysExec( BaseSysExecEvent_ScopedCore* msg )
 {
-	ScopedPtr<BaseSysExecEvent_ScopedCore> smsg( msg );
+	std::unique_ptr<BaseSysExecEvent_ScopedCore> smsg( msg );
 	if( !smsg || GetSysExecutorThread().IsSelf()) return false;
 
 	msg->SetSyncState(m_sync);
 	msg->SetResumeStates(m_sync_resume, m_mtx_resume);
 
-	GetSysExecutorThread().PostEvent( smsg.DetachPtr() );
+	GetSysExecutorThread().PostEvent( smsg.release() );
 	m_sync.WaitForResult();
 	m_sync.RethrowException();
 
@@ -781,9 +781,9 @@ ScopedCoreThreadPopup::ScopedCoreThreadPopup()
 	// is maximized or fullscreen.
 
 	if( !GSopen2 )
-		m_scoped_core = new ScopedCoreThreadClose();
+		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadClose());
 	else
-		m_scoped_core = new ScopedCoreThreadPause();
+		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadPause());
 };
 
 void ScopedCoreThreadPopup::AllowResume()

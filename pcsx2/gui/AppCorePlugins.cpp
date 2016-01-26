@@ -416,14 +416,17 @@ protected:
 //  Public API / Interface
 // --------------------------------------------------------------------------------------
 
-int EnumeratePluginsInFolder( const wxDirName& searchpath, wxArrayString* dest )
+int EnumeratePluginsInFolder(const wxDirName& searchpath, wxArrayString* dest)
 {
 	if (!searchpath.Exists()) return 0;
 
-	ScopedPtr<wxArrayString> placebo;
+	std::unique_ptr<wxArrayString> placebo;
 	wxArrayString* realdest = dest;
-	if( realdest == NULL )
-		placebo = realdest = new wxArrayString();		// placebo is our /dev/null -- gets deleted when done
+	if (realdest == NULL)
+	{
+		placebo = std::unique_ptr<wxArrayString>(new wxArrayString());
+		realdest = placebo.get();
+	}
 
 #ifdef __WXMSW__
 	// Windows pretty well has a strict "must end in .dll" rule.
@@ -558,12 +561,13 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 
 	if( CorePlugins.AreLoaded() )
 	{
-		ScopedPtr<VmStateBuffer> plugstore;
+		std::unique_ptr<VmStateBuffer> plugstore;
 
 		if( CoreThread.HasActiveMachine() )
 		{
 			Console.WriteLn( Color_Green, L"Suspending single plugin: " + tbl_PluginInfo[m_pid].GetShortname() );
-			memSavingState save( plugstore=new VmStateBuffer(L"StateCopy_SinglePlugin") );
+			plugstore = std::unique_ptr<VmStateBuffer>(new VmStateBuffer(L"StateCopy_SinglePlugin"));
+			memSavingState save( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, save );
 		}
 			
@@ -573,7 +577,7 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 		if( plugstore )
 		{
 			Console.WriteLn( Color_Green, L"Recovering single plugin: " + tbl_PluginInfo[m_pid].GetShortname() );
-			memLoadingState load( plugstore );
+			memLoadingState load( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, load );
 			// GS plugin suspend / resume hack. Removed in r4363, hopefully never to return :p
 			//GetCorePlugins().Close( m_pid );		// hack for stupid GS plugins.

@@ -24,6 +24,7 @@
 
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // PathDefs Namespace -- contains default values for various pcsx2 path names and locations.
@@ -1242,7 +1243,7 @@ static void LoadUiSettings()
 	ConLog_LoadSaveSettings( loader );
 	SysTraceLog_LoadSaveSettings( loader );
 
-	g_Conf = new AppConfig();
+	g_Conf = std::unique_ptr<AppConfig>(new AppConfig());
 	g_Conf->LoadSave( loader );
 
 	if( !wxFile::Exists( g_Conf->CurrentIso ) )
@@ -1256,8 +1257,8 @@ static void LoadVmSettings()
 	// Load virtual machine options and apply some defaults overtop saved items, which
 	// are regulated by the PCSX2 UI.
 
-	ScopedPtr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniLoader vmloader( vmini );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	IniLoader vmloader( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmloader );
 	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 
@@ -1293,8 +1294,8 @@ static void SaveUiSettings()
 
 static void SaveVmSettings()
 {
-	ScopedPtr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniSaver vmsaver( vmini );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	IniSaver vmsaver( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmsaver );
 
 	sApp.DispatchVmSettingsEvent( vmsaver );
@@ -1302,15 +1303,15 @@ static void SaveVmSettings()
 
 static void SaveRegSettings()
 {
-	ScopedPtr<wxConfigBase> conf_install;
+	std::unique_ptr<wxConfigBase> conf_install;
 
 	if (InstallationMode == InstallMode_Portable) return;
 
 	// sApp. macro cannot be use because you need the return value of OpenInstallSettingsFile method
-	if( Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance() ) conf_install = (*__app_).OpenInstallSettingsFile();
+	if( Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance() ) conf_install = std::unique_ptr<wxConfigBase>((*__app_).OpenInstallSettingsFile());
 	conf_install->SetRecordDefaults(false);
 
-	App_SaveInstallSettings( conf_install );
+	App_SaveInstallSettings( conf_install.get() );
 }
 
 void AppSaveSettings()

@@ -23,6 +23,7 @@
 #include "MSWstuff.h"
 
 #include <wx/utils.h>
+#include <memory>
 
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
 
@@ -37,7 +38,7 @@ void GSPanel::InitDefaultAccelerators()
 
 	typedef KeyAcceleratorCode AAC;
 
-	if( !m_Accels ) m_Accels = new AcceleratorDictionary;
+	if (!m_Accels) m_Accels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
 
 	m_Accels->Map( AAC( WXK_F1 ),				"States_FreezeCurrentSlot" );
 	m_Accels->Map( AAC( WXK_F3 ),				"States_DefrostCurrentSlot");

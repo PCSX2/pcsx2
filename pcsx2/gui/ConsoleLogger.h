@@ -100,7 +100,7 @@ class pxLogTextCtrl : public wxTextCtrl,
 	public EventListener_Plugins
 {
 protected:
-	ScopedPtr<ScopedCoreThreadPause> m_IsPaused;
+	std::unique_ptr<ScopedCoreThreadPause> m_IsPaused;
 	bool m_FreezeWrites;
 
 public:
@@ -213,7 +213,7 @@ protected:
 	// Threaded log spammer, useful for testing console logging performance.
 	// (alternatively you can enable Disasm logging in any recompiler and achieve
 	// a similar effect)
-	ScopedPtr<ConsoleTestThread>	m_threadlogger;
+	std::unique_ptr<ConsoleTestThread> m_threadlogger;
 
 public:
 	// ctor & dtor

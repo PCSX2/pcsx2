@@ -19,6 +19,7 @@
 
 #include <wx/fileconf.h>
 #include <wx/apptrait.h>
+#include <memory>
 
 #include "pxEventThread.h"
 
@@ -241,12 +242,12 @@ class pxAppResources
 public:
 	AppImageIds					ImageId;
 
-	ScopedPtr<wxImageList>		ConfigImages;
-	ScopedPtr<wxImageList>		ToolbarImages;
-	ScopedPtr<wxIconBundle>		IconBundle;
-	ScopedPtr<wxBitmap>			Bitmap_Logo;
-	ScopedPtr<wxBitmap>			ScreenshotBitmap;
-	ScopedPtr<AppGameDatabase>	GameDB;
+	std::unique_ptr<wxImageList>		ConfigImages;
+	std::unique_ptr<wxImageList>		ToolbarImages;
+	std::unique_ptr<wxIconBundle>		IconBundle;
+	std::unique_ptr<wxBitmap>			Bitmap_Logo;
+	std::unique_ptr<wxBitmap>			ScreenshotBitmap;
+	std::unique_ptr<AppGameDatabase>	GameDB;
 
 	pxAppResources();
 	virtual ~pxAppResources() throw();
@@ -469,28 +470,28 @@ protected:
 
 public:
 	FramerateManager				FpsManager;
-	ScopedPtr<CommandDictionary>	GlobalCommands;
-	ScopedPtr<AcceleratorDictionary> GlobalAccels;
+	std::unique_ptr<CommandDictionary> GlobalCommands;
+	std::unique_ptr<AcceleratorDictionary> GlobalAccels;
 
 	StartupOptions					Startup;
 	CommandlineOverrides			Overrides;
 
-	ScopedPtr<wxTimer>				m_timer_Termination;
+	std::unique_ptr<wxTimer> m_timer_Termination;
 
 protected:
-	ScopedPtr<PipeRedirectionBase>	m_StdoutRedirHandle;
-	ScopedPtr<PipeRedirectionBase>	m_StderrRedirHandle;
+	std::unique_ptr<PipeRedirectionBase> m_StdoutRedirHandle;
+	std::unique_ptr<PipeRedirectionBase> m_StderrRedirHandle;
 
-	ScopedPtr<RecentIsoList>		m_RecentIsoList;
-	ScopedPtr<pxAppResources>		m_Resources;
+	std::unique_ptr<RecentIsoList> m_RecentIsoList;
+	std::unique_ptr<pxAppResources> m_Resources;
 
 public:
 	// Executor Thread for complex VM/System tasks.  This thread is used to execute such tasks
 	// in parallel to the main message pump, to allow the main pump to run without fear of
 	// blocked threads stalling the GUI.
 	ExecutorThread					SysExecutorThread;
-	ScopedPtr<SysCpuProviderPack>	m_CpuProviders;
-	ScopedPtr<SysMainMemory>	m_VmReserve;
+	std::unique_ptr<SysCpuProviderPack> m_CpuProviders;
+	std::unique_ptr<SysMainMemory> m_VmReserve;
 
 protected:
 	wxWindowID			m_id_MainFrame;

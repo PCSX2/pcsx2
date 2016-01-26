@@ -20,6 +20,7 @@
 #ifdef __WXMSW__
 #	include <wx/msw/wrapwin.h>		// needed for windows-specific rich text messages to make scrolling not lame
 #endif
+#include <memory>
 
 void pxLogTextCtrl::DispatchEvent( const CoreThreadStatus& status )
 {
@@ -65,7 +66,7 @@ void pxLogTextCtrl::OnThumbTrack(wxScrollWinEvent& evt)
 	//Console.Warning( "Thumb Tracking!!!" );
 	m_FreezeWrites = true;
 	if( !m_IsPaused )
-		m_IsPaused = new ScopedCoreThreadPause();
+		m_IsPaused = std::unique_ptr<ScopedCoreThreadPause>(new ScopedCoreThreadPause());
 
 	evt.Skip();
 }
@@ -77,7 +78,7 @@ void pxLogTextCtrl::OnThumbRelease(wxScrollWinEvent& evt)
 	if( m_IsPaused )
 	{
 		m_IsPaused->AllowResume();
-		m_IsPaused.Delete();
+		m_IsPaused = nullptr;
 	}
 	evt.Skip();
 }
