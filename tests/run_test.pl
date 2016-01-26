@@ -457,7 +457,8 @@ sub diff {
     my $status = "OK";
     my $show = 10;
     for (my $l = 0; $l < scalar(@ref); $l++) {
-        #$out[$l] =~ s/\r$//g;
+        $ref[$l] =~ s/\r//g;
+        $out[$l] =~ s/\r//g;
 
         if ($ref[$l] ne $out[$l]) {
             $status = "KO";
