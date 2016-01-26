@@ -68,6 +68,13 @@ public:
 		const __m128i* endpos = (__m128i*)&bucket.Chain[bucket.Size];
 		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
 
+#ifdef __x86_64__
+		pxAssertMsg(0, "Code is likely not compatible with 64 bits\n"
+				"Vif structure is 16 bytes in ia32 bits but contains an uptr to the x86 buffer. So 20 bytes in x64\n"
+				"Code below increments the iterator by 16 bytes, potentially we could put the x86 buffer in the first 2GB\n"
+				"Another improvement could be a port to std::unordered_map");
+#endif
+
 		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; ++chainpos ) {
 			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
 			int result = _mm_movemask_ps( (cast_m128) _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) );
