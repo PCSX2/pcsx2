@@ -229,6 +229,12 @@ public:
 	{
 		ConsoleColorScope cs(conColor);
 		Console.WriteRaw( msg );
+#ifdef __linux__
+		// Buffered output isn't compatible with the testsuite. The end of test
+		// doesn't always get flushed. Let's just flush all the output if EE/IOP
+		// print anything.
+		fflush(NULL);
+#endif
 		return false;
 	}
 
