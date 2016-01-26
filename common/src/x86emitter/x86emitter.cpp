@@ -205,7 +205,7 @@ const char* xRegisterBase::GetName()
 
 	// bad error?  Return a "big" error string.  Might break formatting of register tables
 	// but that's the least of your worries if you see this baby.
-	if( Id >= iREGCNT_GPR || Id < 0 ) return "!Register index out of range!";
+	if( Id >= (int)iREGCNT_GPR || Id < 0 ) return "!Register index out of range!";
 
 	switch( GetOperandSize() )
 	{
