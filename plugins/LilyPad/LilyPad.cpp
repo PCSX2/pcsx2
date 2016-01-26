@@ -1212,6 +1212,11 @@ u8 CALLBACK PADpoll(u8 value) {
 				b1 -= ((sum->sticks[0].horiz > 0) << 5);
 				b1 -= ((sum->sticks[0].vert  > 0) << 6);
 				b1 -= ((sum->sticks[0].horiz < 0) << 7);
+
+				//Left, Right and Down are always pressed.
+				if (config.padConfigs[query.port][query.slot].type == PopnPad)
+					b1=b1 & 0x1f;
+
 				query.response[3] = b1;
 				query.response[4] = b2;
 

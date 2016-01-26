@@ -23,8 +23,12 @@ extern u8 ps2e;
 enum PadType {
 	DisabledPad,
 	Dualshock2Pad,
-	GuitarPad
+	GuitarPad,
+	PopnPad
 };
+
+const int numPadTypes= 4;
+extern const wchar_t *padTypes[numPadTypes];
 
 struct PadConfig {
 	PadType type;
