@@ -58,12 +58,13 @@ _vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 // nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
 //             used as the hash bucket selector.
 struct __aligned16 nVifBlock {
-	u8   num;		// [00] Num  Field
 	u8   upkType;	// [01] Unpack Type [usn*1:mask*1:upk*4]
-	u8   mode;		// [02] Mode Field
+	u8   num;		// [00] Num  Field
 	u16   cl;		// [03] CL   Field
+	u16   wl;		// [08] WL   Field	
+	u8   mode;		// [02] Mode Field	
 	u32  mask;		// [04] Mask Field
-	u16   wl;		// [08] WL   Field
+	
 	u8   aligned;   // [09] Packet Alignment
 	u8	 padding[2];// [10] through [11]
 	uptr startPtr;	// [12] Start Ptr of RecGen Code
