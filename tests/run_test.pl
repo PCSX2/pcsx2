@@ -214,7 +214,9 @@ foreach my $test (sort(keys(%$g_test_db))) {
         }
         if ($o_show_diff) {
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
-            print test_cmd($test, $cfg) . "\n\n";
+            print test_cmd($test, $cfg) . "\n";
+            print "vi -d $exp $out\n";
+            print "\n";
             diff($exp, $out, 0);
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
         }
@@ -237,10 +239,44 @@ sub cyg_abs_path {
 sub collect_result {
     foreach my $test (keys(%$g_test_db)) {
         my $info = $g_test_db->{$test};
+        my $cfg = $info->{"CFG_DIR"};
         my $out = $info->{"OUT"};
         my $exp = $info->{"EXPECTED"};
 
+        extract_test_log(File::Spec->catfile($cfg, "emuLog.txt"), $out);
         $info->{"STATUS"} = diff($exp, $out, 1); # potentially not thread safe
+    }
+}
+
+sub extract_test_log {
+    my $in = shift;
+    my $out = shift;
+
+    return unless (-e $in);
+
+    open(my $emulog, "<$in");
+    my @all_data = <$emulog>;
+
+    open(my $short_log, ">$out") or die "Impossible to open $!";
+
+    my $dump = 0;
+    foreach my $line (@all_data) {
+        # Remove color
+        $line =~ s/\e\[\d+(?>(;\d+)*)m//g;
+
+        if ($line =~ /-- TEST BEGIN/) {
+            $dump = 1;
+        }
+        if ($dump == 1) {
+            chomp($line);
+            $line =~ s/\r$//g;
+
+            print $short_log "$line\n";
+        }
+        if ($line =~ /-- TEST END/) {
+            $dump = 0;
+            last;
+        }
     }
 }
 
@@ -286,9 +322,13 @@ sub generate_cfg {
 
     my %sed;
     # Enable logging for test
-    $sed{".EEout"} = "enabled";
+    $sed{".EEout"}  = "enabled";
     $sed{".IOPout"} = "enabled";
-    $sed{"ConsoleToStdio"} = "enabled";
+    # Redirect log file in the unique cfg dir
+    #$sed{"ConsoleToStdio"} = "enabled"; # was to redirect stdio (but windows...) # Still requires to force the flush
+    $sed{"Logs"}           = cyg_abs_path($out_dir);
+    $sed{"UseDefaultLogs"} = "disabled";
+
     # FIXME add interpreter vs recompiler
     # FIXME add clamping / rounding option
     # FIXME need separate cfg dir !
@@ -322,46 +362,62 @@ sub run_elf {
     my $cfg = shift;
     my $out = shift;
 
-    return if $o_dry_run; # Not real
-
-    my $line;
-    my $dump = 0;
-    my $cancel = 0;
-    open(my $run, ">$out") or die "Impossible to open $!";
-
+    ######################################################################
+    # FORK test
+    ######################################################################
     my $command = test_cmd($elf, $cfg);
-    print "EXEC: $command\n" if $o_debug_me;
+    print "FORK $command\n" if $o_debug_me;
     return unless ($command ne "");
 
-    my $pid = open(my $log, "timeout $o_timeout $command |") or die "Impossible to pipe $!";
-    #print "INFO:  Execute $elf (PID=$pid) with cfg ($cfg)\n" if $o_debug_me;
+    my $pid = 0;
+    my $log_file = File::Spec->catfile($cfg, "emuLog.txt");
+
+    if ($o_dry_run) {
+        print "INFO-DRY: fork process $pid\n";
+        # Delete old log
+        unlink($out) or die "Impossible to open $!";
+        return;
+    }
+
+    $pid = open(my $fork, "|$command ") or die "Impossible to fork $!";
+    print "INFO: fork process $pid\n";
 
     # Kill me
     $SIG{'KILL'} = sub {
-        # FIXME doesn't work (no print, neither kill)
         print "ERROR: timeout detected on pid $pid.\n";
-        kill 'KILL', $pid;
+        unless ($o_dry_run) {
+            kill 'KILL', $pid;
+        }
         threads->exit();
     };
 
-    while (not $cancel and $line = <$log>) {
-        $mt_timeout = $o_timeout; # Keep me alive
+    ######################################################################
+    # Parse test log
+    ######################################################################
+    my $try = ($o_timeout > 3) ? $o_timeout - 3 : 1;
+    while ($try > 0) {
+        sleep(1);
+        $try--;
 
-        $line =~ s/\e\[\d+(?>(;\d+)*)m//g;
-        if ($line =~ /-- TEST BEGIN/) {
-            $dump = 1;
-        }
-        if ($dump == 1) {
-            print $run $line;
-        }
-        if ($line =~ /-- TEST END/) {
-            $dump = 0;
-            $cancel = 1;
-            print "INFO: kill process $pid\n" if $o_debug_me;
-            kill 'KILL', -$pid;
-            #system("kill -9 -- -$pid");
+        open(my $emulog, "<$log_file") or next;
+        my @all_data = <$emulog>;
+        close($emulog);
+
+        foreach my $line (@all_data) {
+            if ($line =~ /-- TEST END/) {
+                $try = 0;
+            }
         }
     }
+
+    ######################################################################
+    # Test done
+    ######################################################################
+    # Kill the process
+    print "INFO: kill process $pid\n" if $o_debug_me;
+    kill 'TERM', $pid;
+
+    threads->exit();
 }
 
 sub test_cmd {
@@ -388,21 +444,27 @@ sub diff {
 
     open (my $ref_h, "<$ref_");
     my @ref = <$ref_h>;
+    chomp(@ref);
 
     open (my $out_h, "<$out_") or return "T";
     my @out = <$out_h>;
+    chomp(@out);
 
     return "T" if (scalar(@out) < 2);
     return "T" if ($out[-1] !~ /-- TEST END/);
     return "KO" if ((scalar(@out) != scalar(@ref)) and $quiet);
 
     my $status = "OK";
+    my $show = 10;
     for (my $l = 0; $l < scalar(@ref); $l++) {
-        if (chomp($ref[$l]) ne chomp($out[$l])) {
+        #$out[$l] =~ s/\r$//g;
+
+        if ($ref[$l] ne $out[$l]) {
             $status = "KO";
-            if ($o_show_diff and not $quiet) {
-                print "EXPECTED: $ref[$l]";
-                print "BUT GOT : $out[$l]";
+            if ($o_show_diff and not $quiet and $show > 0) {
+                print "EXPECTED: \"$ref[$l]\"\n";
+                print "BUT GOT : \"$out[$l]\"\n";
+                $show--;
             }
         }
     }
