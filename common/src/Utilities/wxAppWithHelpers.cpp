@@ -55,14 +55,14 @@ void BaseDeletableObject::DoDeletion()
 
 void SynchronousActionState::SetException( const BaseException& ex )
 {
-	m_exception = ex.Clone();
+	m_exception = ScopedExcept(ex.Clone());
 }
 
 void SynchronousActionState::SetException( BaseException* ex )
 {
 	if( !m_posted )
 	{
-		m_exception = ex;
+		m_exception = ScopedExcept(ex);
 	}
 	else if( wxTheApp )
 	{
