@@ -712,7 +712,9 @@ static void rpsxLW()
 	xADD(ecx, (uptr)iopMem->Main);
 
 	xMOV(ecx, ptr[ecx]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rt_]], ecx);
+	if (_Rt_) {
+		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], ecx);
+	}
 
 	x86SetJ8(j8Ptr[1]);
 	PSX_DEL_CONST(_Rt_);
