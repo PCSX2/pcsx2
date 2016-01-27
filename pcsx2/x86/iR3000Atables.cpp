@@ -506,9 +506,16 @@ void rpsxDIV_const()
 	 */
 	// Of course x86 cpu does overflow !
 	if (g_psxConstRegs[_Rs_] == 0x80000000u && g_psxConstRegs[_Rt_] == 0xFFFFFFFFu) {
+		// FIXME depends if div/divu
 		xMOV(ptr32[&psxRegs.GPR.n.hi], 0);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], 0x80000000);
 		return;
+	}
+
+	if (g_psxConstRegs[_Rt_] == 0) {
+		// FIXME
+		// hi must be rs
+		// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise if rs < 0 and sign
 	}
 
 	if (g_psxConstRegs[_Rt_] != 0) {
@@ -522,6 +529,15 @@ void rpsxDIV_const()
 void rpsxDIVsuperconsts(int info, int sign)
 {
 	u32 imm = g_psxConstRegs[_Rs_];
+
+	if (imm == 0x80000000u) {
+		// FIXME if RT is 0xFFFFFFFFu
+		// hi must be 0
+		// lo must be 0x80000000
+		// FIXME depends if div/divu
+		//
+		// Otherwise standard division
+	}
 
 	if( imm ) {
 		// Lo/Hi = Rs / Rt (signed)
@@ -549,12 +565,22 @@ void rpsxDIVsuperconsts(int info, int sign)
 		xXOR(eax, eax);
 		xMOV(ptr[&psxRegs.GPR.n.hi], eax);
 		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
+		// FIXME lo must be 0xFFFF_FFFFF if rt is 0
 	}
 }
 
 void rpsxDIVsuperconstt(int info, int sign)
 {
 	u32 imm = g_psxConstRegs[_Rt_];
+
+	if (imm == 0xFFFFFFFFu) {
+		// FIXME if RS is 0x80000000
+		// hi must be 0
+		// lo must be 0x80000000
+		// FIXME depends if div/divu
+		//
+		// Otherwise standard division
+	}
 
 	if( imm ) {
 		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
@@ -573,6 +599,10 @@ void rpsxDIVsuperconstt(int info, int sign)
 
 		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
 		xMOV(ptr[&psxRegs.GPR.n.hi], edx);
+	} else {
+		// FIXME
+		// hi must be rs
+		// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise if rs < 0 and sign
 	}
 }
 
@@ -596,6 +626,15 @@ void rpsxDIVsuper(int info, int sign)
 	xMOV(ptr[&psxRegs.GPR.n.lo], eax);
 	xMOV(ptr[&psxRegs.GPR.n.hi], edx);
 	x86SetJ8(j8Ptr[0]);
+
+	// FIXME if RS is 0x80000000 and RT is 0xFFFF_FFFFF
+	// hi must be 0
+	// lo must be 0x80000000
+	// FIXME depends if div/divu
+
+	// FIXME
+	// hi must be rs
+	// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise
 }
 
 void rpsxDIV_consts(int info) { rpsxDIVsuperconsts(info, 1); }

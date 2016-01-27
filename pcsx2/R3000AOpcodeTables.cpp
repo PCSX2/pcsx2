@@ -71,14 +71,36 @@ void psxSLTU() 	{ if (!_Rd_) return; _rRd_ = _u32(_rRs_) < _u32(_rRt_); }	// Rd 
 * Format:  OP rs, rt                                     *
 *********************************************************/
 void psxDIV() {
-	if (_rRt_ != 0) {
+	if (_rRt_ == 0) {
+		// Division by 0
+		_rLo_ = _i32(_rRs_) < 0 ? 1 : 0xFFFFFFFFu;
+		_rHi_ = _rRs_;
+
+	} else if (_rRs_ == 0x80000000u && _rRt_ == 0xFFFFFFFFu) {
+		// x86 overflow
+		_rLo_ = 0x80000000u;
+		_rHi_ = 0;
+
+	} else {
+		// Normal behavior
 		_rLo_ = _i32(_rRs_) / _i32(_rRt_);
 		_rHi_ = _i32(_rRs_) % _i32(_rRt_);
 	}
 }
 
 void psxDIVU() {
-	if (_rRt_ != 0) {
+	if (_rRt_ == 0) {
+		// Division by 0
+		_rLo_ = 0xFFFFFFFFu;
+		_rHi_ = _rRs_;
+
+	} else if (_rRs_ == 0x80000000u && _rRt_ == 0xFFFFFFFFu) {
+		// x86 overflow
+		_rLo_ = 0;
+		_rHi_ = 0x80000000u;
+
+	} else {
+		// Normal behavior
 		_rLo_ = _rRs_ / _rRt_;
 		_rHi_ = _rRs_ % _rRt_;
 	}
