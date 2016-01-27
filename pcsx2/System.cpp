@@ -291,8 +291,8 @@ template< typename CpuType >
 class CpuInitializer
 {
 public:
-	ScopedPtr<CpuType>			MyCpu;
-	ScopedExcept	ExThrown;
+	std::unique_ptr<CpuType> MyCpu;
+	ScopedExcept ExThrown;
 	
 	CpuInitializer();
 	virtual ~CpuInitializer() throw();
@@ -302,8 +302,8 @@ public:
 		return !!MyCpu;
 	}
 
-	CpuType* GetPtr() { return MyCpu.GetPtr(); }
-	const CpuType* GetPtr() const { return MyCpu.GetPtr(); }
+	CpuType* GetPtr() { return MyCpu.get(); }
+	const CpuType* GetPtr() const { return MyCpu.get(); }
 
 	operator CpuType*() { return GetPtr(); }
 	operator const CpuType*() const { return GetPtr(); }
@@ -318,19 +318,19 @@ template< typename CpuType >
 CpuInitializer< CpuType >::CpuInitializer()
 {
 	try {
-		MyCpu = new CpuType();
+		MyCpu = std::unique_ptr<CpuType>(new CpuType());
 		MyCpu->Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
 	{
 		Console.Error( L"CPU provider error:\n\t" + ex.FormatDiagnosticMessage() );
-		MyCpu = NULL;
+		MyCpu = nullptr;
 		ExThrown = ScopedExcept(ex.Clone());
 	}
 	catch( std::runtime_error& ex )
 	{
 		Console.Error( L"CPU provider error (STL Exception)\n\tDetails:" + fromUTF8( ex.what() ) );
-		MyCpu = NULL;
+		MyCpu = nullptr;
 		ExThrown = ScopedExcept(new Exception::RuntimeError(ex));
 	}
 }
@@ -485,7 +485,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
 	ConsoleIndentScope indent(1);
 
-	CpuProviders = new CpuInitializerSet();
+	CpuProviders = std::unique_ptr<CpuInitializerSet>(new CpuInitializerSet());
 
 	try {
 		recCpu.Reserve();

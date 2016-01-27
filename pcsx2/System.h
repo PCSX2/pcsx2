@@ -135,7 +135,7 @@ protected:
 	ScopedExcept m_RecExceptionIOP;
 
 public:
-	ScopedPtr<CpuInitializerSet> CpuProviders;
+	std::unique_ptr<CpuInitializerSet> CpuProviders;
 
 	SysCpuProviderPack();
 	virtual ~SysCpuProviderPack() throw();

@@ -79,8 +79,8 @@ class ArchiveEntryList
 	DeclareNoncopyableObject( ArchiveEntryList );
 
 protected:
-	std::vector<ArchiveEntry>		m_list;
-	ScopedPtr<ArchiveDataBuffer>	m_data;
+	std::vector<ArchiveEntry> m_list;
+	std::unique_ptr<ArchiveDataBuffer> m_data;
 
 public:
 	virtual ~ArchiveEntryList() throw() {}
@@ -89,22 +89,21 @@ public:
 
 	ArchiveEntryList( ArchiveDataBuffer* data )
 	{
-		m_data = data;
 	}
 
 	ArchiveEntryList( ArchiveDataBuffer& data )
+		: m_data(&data)
 	{
-		m_data = &data;
 	}
 	
 	const VmStateBuffer* GetBuffer() const
 	{
-		return m_data;
+		return m_data.get();
 	}
 
 	VmStateBuffer* GetBuffer()
 	{
-		return m_data;
+		return m_data.get();
 	}
 	
 	u8* GetPtr( uint idx )

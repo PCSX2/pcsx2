@@ -18,12 +18,12 @@
 
 #include <wx/dir.h>
 #include <wx/file.h>
+#include <memory>
 
 #include "GS.h"
 #include "Gif.h"
 #include "CDVD/CDVDisoReader.h"
 
-#include "Utilities/ScopedPtr.h"
 #include "Utilities/pxStreams.h"
 
 #include "svnrev.h"
@@ -991,7 +991,7 @@ void SysCorePlugins::Load( PluginsEnum_t pid, const wxString& srcfile )
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
 	Console.Indent().WriteLn( L"Binding %4s: %s ", WX_STR(tbl_PluginInfo[pid].GetShortname()), WX_STR(srcfile) );
-	m_info[pid] = new PluginStatus_t( pid, srcfile );
+	m_info[pid] = std::unique_ptr<PluginStatus_t>(new PluginStatus_t(pid, srcfile));
 }
 
 void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
@@ -1056,7 +1056,7 @@ void SysCorePlugins::Unload(PluginsEnum_t pid)
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
-	m_info[pid].Delete();
+	m_info[pid] = nullptr;
 }
 
 void SysCorePlugins::Unload()
