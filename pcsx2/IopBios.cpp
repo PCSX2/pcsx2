@@ -29,7 +29,7 @@
 #define USE_HOST_REWRITE 1
 
 #if USE_HOST_REWRITE
-#	ifdef WIN32
+#	ifdef _WIN32
 		// disable this if you DON'T want "host:/usr/local/" paths
 		// to get rewritten into host:/
 #		define HOST_REWRITE_USR_LOCAL 1

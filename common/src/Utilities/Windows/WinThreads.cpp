@@ -111,7 +111,7 @@ void Threading::pxThread::_DoSetThreadName( const char* name )
 {
 	// This feature needs Windows headers and MSVC's SEH support:
 
-#if defined(_WINDOWS_) && defined(_MSC_VER)
+#if defined(_WIN32) && defined(_MSC_VER)
 
 	// This code sample was borrowed form some obscure MSDN article.
 	// In a rare bout of sanity, it's an actual Microsoft-published hack

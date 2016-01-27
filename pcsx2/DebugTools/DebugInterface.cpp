@@ -32,7 +32,7 @@ extern AppCoreThread CoreThread;
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 

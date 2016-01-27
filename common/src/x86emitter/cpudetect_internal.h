@@ -28,7 +28,7 @@ class SingleCoreAffinity
 {
 protected:
 
-#ifdef _WINDOWS_
+#ifdef _WIN32
 	HANDLE	s_threadId;
 	DWORD	s_oldmask;
 #endif

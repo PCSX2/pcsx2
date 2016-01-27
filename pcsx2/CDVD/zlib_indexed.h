@@ -115,7 +115,7 @@ Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
 #define WINSIZE 32768U     /* sliding window size */
 #define CHUNK (64 * 1024)  /* file input buffer size */
 
-#ifdef WIN32
+#ifdef _WIN32
 #    pragma pack(push, indexData, 1)
 #endif
 
@@ -126,7 +126,7 @@ struct point {
     int bits;           /* number of bits (1-7) from byte at in - 1, or 0 */
     unsigned char window[WINSIZE];  /* preceding 32K of uncompressed data */
 }
-#ifndef WIN32
+#ifndef _WIN32
 __attribute__((packed))
 #endif
 ;
@@ -142,14 +142,14 @@ struct access {
     s32 span;           /* once the index is built, holds the span size used to build it */
     PX_off_t uncompressed_size; /* filled by build_index */
 }
-#ifndef WIN32
+#ifndef _WIN32
 __attribute__((packed))
 #endif
 ;
 
 typedef struct access Access;
 
-#ifdef WIN32
+#ifdef _WIN32
 #    pragma pack(pop, indexData)
 #endif
 

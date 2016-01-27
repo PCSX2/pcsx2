@@ -69,7 +69,7 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	hexStart = addressStart + 9*charWidth;
 	asciiStart = hexStart + (rowSize*3+1)*charWidth;
 
-	#ifdef WIN32
+	#ifdef _WIN32
 	font = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
 	underlineFont = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,true,L"Lucida Console");
 	#else

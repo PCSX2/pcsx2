@@ -23,7 +23,7 @@
 // windows and *nix and work with non-english file names.
 // Maybe some day we'll convert all file related ops to wxWidgets, which means also the
 // instances at zlib_indexed.h (which use plain stdio FILE*)
-#ifdef WIN32
+#ifdef _WIN32
 #   define PX_wfilename(name_wxstr) (name_wxstr.wc_str())
 #   define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
 #else
@@ -31,7 +31,7 @@
 #   define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #	define PX_fseeko _fseeki64
 #   define PX_ftello _ftelli64
 #	define PX_off_t  s64        /* __int64 */

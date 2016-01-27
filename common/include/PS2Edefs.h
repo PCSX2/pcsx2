@@ -220,7 +220,9 @@ typedef struct _GSdriverInfo {
 	void *common;
 } GSdriverInfo;
 
-#ifdef _WINDOWS_
+#ifdef _WIN32
+// TODO: Only GSNull uses this? Yet it doesn't seem to be used by PCSX2.
+#include <windows.h>
 typedef struct _winInfo { // unsupported values must be set to zero
 	HWND hWnd;
 	HMENU hMenu;

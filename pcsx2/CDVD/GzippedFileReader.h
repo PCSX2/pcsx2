@@ -77,7 +77,7 @@ private:
 
 	ChunksCache m_cache;
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Used by async prefetch
 	HANDLE hOverlappedFile;
 	OVERLAPPED asyncOperationContext;

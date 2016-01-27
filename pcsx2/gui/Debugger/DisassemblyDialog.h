@@ -89,7 +89,7 @@ public:
 	void reset();
 	void setDebugMode(bool debugMode, bool switchPC);
 	
-#ifdef WIN32
+#ifdef _WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 

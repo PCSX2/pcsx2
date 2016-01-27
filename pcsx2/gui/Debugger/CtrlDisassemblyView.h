@@ -30,7 +30,7 @@ public:
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
 	void focusEvent(wxFocusEvent& evt) { Refresh(); };
-#ifdef WIN32
+#ifdef _WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 

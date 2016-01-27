@@ -200,7 +200,7 @@ void GzippedFileReader::InitZstates() {
 	m_zstates = new Czstate[size]();
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 void GzippedFileReader::AsyncPrefetchReset() {};
 void GzippedFileReader::AsyncPrefetchOpen() {};
 void GzippedFileReader::AsyncPrefetchClose() {};
@@ -275,7 +275,7 @@ void GzippedFileReader::AsyncPrefetchCancel()
 
 	asyncInProgress = false;
 };
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
 // TODO: do better than just checking existance and extension
 bool GzippedFileReader::CanHandle(const wxString& fileName) {

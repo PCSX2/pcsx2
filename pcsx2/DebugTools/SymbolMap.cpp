@@ -20,7 +20,7 @@
 
 SymbolMap symbolMap;
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 

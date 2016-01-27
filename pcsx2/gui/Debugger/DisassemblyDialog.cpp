@@ -23,7 +23,7 @@
 #include "BreakpointWindow.h"
 #include "PathDefs.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
@@ -287,7 +287,7 @@ void DisassemblyDialog::onSizeEvent(wxSizeEvent& event)
 	event.Skip();
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 WXLRESULT DisassemblyDialog::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
 {
 	switch (nMsg)

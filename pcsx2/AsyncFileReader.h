@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifdef WIN32
+#ifdef _WIN32
 #	include <Windows.h>
 #	undef Yield
 #elif defined(__linux__)
@@ -65,7 +65,7 @@ class FlatFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject( FlatFileReader );
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hOverlappedFile;
 
 	OVERLAPPED asyncOperationContext;

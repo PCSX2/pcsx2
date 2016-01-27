@@ -184,7 +184,7 @@ typedef union _s128_t
 // The best would be to port all _InterlockedExchange function to use
 // Theading::Atomic* function. Unfortunately Win version is not happy, until
 // code is properly fixed let's use a basic type alias.
-#ifdef WIN32
+#ifdef _WIN32
 typedef long vol_t;
 #else
 typedef s32 vol_t;
