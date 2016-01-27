@@ -30,7 +30,7 @@
 
  * OSflags:
 	__linux__ (linux OS)
-	__WIN32__ (win32 OS)
+	_WIN32 (win32 OS)
 
  * common return values (for ie. GSinit):
 	 0 - success
@@ -170,7 +170,7 @@ typedef struct {
 	void *common;
 } GSdriverInfo;
 
-#ifdef __WIN32__
+#ifdef _WIN32
 typedef struct { // unsupported values must be set to zero
 	HWND hWnd;
 	HMENU hMenu;
@@ -208,7 +208,7 @@ void CALLBACK GSmakeSnapshot(char *path);
 void CALLBACK GSirqCallback(void (*callback)());
 void CALLBACK GSprintf(int timeout, char *fmt, ...);
 void CALLBACK GSgetDriverInfo(GSdriverInfo *info);
-#ifdef __WIN32__
+#ifdef _WIN32
 s32  CALLBACK GSsetWindowInfo(winInfo *info);
 #endif
 s32  CALLBACK GSfreeze(int mode, freezeData *data);
@@ -425,7 +425,7 @@ typedef void (CALLBACK* _GSkeyEvent)(keyEvent* ev);
 typedef void (CALLBACK* _GSirqCallback)(void (*callback)());
 typedef void (CALLBACK* _GSprintf)(int timeout, char *fmt, ...);
 typedef void (CALLBACK* _GSgetDriverInfo)(GSdriverInfo *info);
-#ifdef __WIN32__
+#ifdef _WIN32
 typedef s32  (CALLBACK* _GSsetWindowInfo)(winInfo *info);
 #endif
 typedef void (CALLBACK* _GSmakeSnapshot)(char *path);
@@ -565,7 +565,7 @@ _GSmakeSnapshot	   GSmakeSnapshot;
 _GSirqCallback 	   GSirqCallback;
 _GSprintf      	   GSprintf;
 _GSgetDriverInfo   GSgetDriverInfo;
-#ifdef __WIN32__
+#ifdef _WIN32
 _GSsetWindowInfo   GSsetWindowInfo;
 #endif
 _GSfreeze          GSfreeze;

@@ -32,7 +32,7 @@
 #include "smap.h"
 #include "ata.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #pragma warning(disable:4244)
 
 HINSTANCE hInst=NULL;

@@ -29,7 +29,7 @@
 #include "PS2Eext.h"
 #include "net.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 #define usleep(x)	Sleep(x / 1000)
 #include <windows.h>
