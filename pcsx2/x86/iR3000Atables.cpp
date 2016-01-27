@@ -506,16 +506,9 @@ void rpsxDIV_const()
 	 */
 	// Of course x86 cpu does overflow !
 	if (g_psxConstRegs[_Rs_] == 0x80000000u && g_psxConstRegs[_Rt_] == 0xFFFFFFFFu) {
-		// FIXME depends if div/divu
 		xMOV(ptr32[&psxRegs.GPR.n.hi], 0);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], 0x80000000);
 		return;
-	}
-
-	if (g_psxConstRegs[_Rt_] == 0) {
-		// FIXME
-		// hi must be rs
-		// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise if rs < 0 and sign
 	}
 
 	if (g_psxConstRegs[_Rt_] != 0) {
@@ -523,97 +516,61 @@ void rpsxDIV_const()
 		hi = *(int*)&g_psxConstRegs[_Rs_] % *(int*)&g_psxConstRegs[_Rt_];
 		xMOV(ptr32[&psxRegs.GPR.n.hi], hi);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], lo);
-	}
-}
-
-void rpsxDIVsuperconsts(int info, int sign)
-{
-	u32 imm = g_psxConstRegs[_Rs_];
-
-	if (imm == 0x80000000u) {
-		// FIXME if RT is 0xFFFFFFFFu
-		// hi must be 0
-		// lo must be 0x80000000
-		// FIXME depends if div/divu
-		//
-		// Otherwise standard division
-	}
-
-	if( imm ) {
-		// Lo/Hi = Rs / Rt (signed)
-		xMOV(ecx, ptr[&psxRegs.GPR.r[_Rt_]]);
-		xCMP(ecx, 0);
-		j8Ptr[0] = JE8(0);
-		xMOV(eax, imm);
-
-
-		if( sign ) {
-		xCDQ();
-		xDIV(ecx);
-		}
-		else {
-			xXOR(edx, edx);
-			xUDIV(ecx);
-		}
-
-
-		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-		xMOV(ptr[&psxRegs.GPR.n.hi], edx);
-		x86SetJ8(j8Ptr[0]);
-	}
-	else {
-		xXOR(eax, eax);
-		xMOV(ptr[&psxRegs.GPR.n.hi], eax);
-		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-		// FIXME lo must be 0xFFFF_FFFFF if rt is 0
-	}
-}
-
-void rpsxDIVsuperconstt(int info, int sign)
-{
-	u32 imm = g_psxConstRegs[_Rt_];
-
-	if (imm == 0xFFFFFFFFu) {
-		// FIXME if RS is 0x80000000
-		// hi must be 0
-		// lo must be 0x80000000
-		// FIXME depends if div/divu
-		//
-		// Otherwise standard division
-	}
-
-	if( imm ) {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-		xMOV(ecx, imm);
-		//xCDQ();
-
-		if( sign ) {
-			xCDQ();
-			xDIV(ecx);
-		}
-		else {
-			xXOR(edx, edx);
-			xUDIV(ecx);
-		}
-
-
-		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-		xMOV(ptr[&psxRegs.GPR.n.hi], edx);
 	} else {
-		// FIXME
-		// hi must be rs
-		// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise if rs < 0 and sign
+		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
+		if (g_psxConstRegs[_Rs_] & 0x80000000u) {
+			xMOV(ptr32[&psxRegs.GPR.n.lo], 0x1);
+		} else {
+			xMOV(ptr32[&psxRegs.GPR.n.lo], 0xFFFFFFFFu);
+		}
 	}
 }
 
-void rpsxDIVsuper(int info, int sign)
+void rpsxDIVsuper(int info, int sign, int process = 0)
 {
 	// Lo/Hi = Rs / Rt (signed)
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xCMP(ecx, 0);
-	j8Ptr[0] = JE8(0);
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
+	if( process & PROCESS_CONSTT )
+		xMOV(ecx, g_psxConstRegs[_Rt_]);
+	else
+		xMOV(ecx, ptr[&psxRegs.GPR.r[_Rt_]]);
 
+	if( process & PROCESS_CONSTS )
+		xMOV(eax, g_psxConstRegs[_Rs_]);
+	else
+		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
+
+	u8 *end1;
+	if (sign)  //test for overflow (x86 will just throw an exception)
+	{
+		xCMP(eax, 0x80000000 );
+		u8 *cont1 = JNE8(0);
+		xCMP(ecx, 0xffffffff );
+		u8 *cont2 = JNE8(0);
+		//overflow case:
+		xXOR(edx, edx); //EAX remains 0x80000000
+		end1 = JMP8(0);
+
+		x86SetJ8(cont1);
+		x86SetJ8(cont2);
+	}
+
+	xCMP(ecx, 0 );
+	u8 *cont3 = JNE8(0);
+
+	//divide by zero
+	xMOV(edx, eax);
+	if (sign) //set EAX to (EAX < 0)?1:-1
+	{
+		xSAR(eax, 31 ); //(EAX < 0)?-1:0
+		xSHL(eax, 1 ); //(EAX < 0)?-2:0
+		xNOT(eax); //(EAX < 0)?1:-1
+	}
+	else
+		xMOV(eax, 0xffffffff );
+	u8 *end2 = JMP8(0);
+
+	// Normal division
+	x86SetJ8(cont3);
 	if( sign ) {
 		xCDQ();
 		xDIV(ecx);
@@ -623,22 +580,15 @@ void rpsxDIVsuper(int info, int sign)
 		xUDIV(ecx);
 	}
 
+	if (sign) x86SetJ8( end1 );
+	x86SetJ8( end2 );
+
 	xMOV(ptr[&psxRegs.GPR.n.lo], eax);
 	xMOV(ptr[&psxRegs.GPR.n.hi], edx);
-	x86SetJ8(j8Ptr[0]);
-
-	// FIXME if RS is 0x80000000 and RT is 0xFFFF_FFFFF
-	// hi must be 0
-	// lo must be 0x80000000
-	// FIXME depends if div/divu
-
-	// FIXME
-	// hi must be rs
-	// lo must be 0xFFFF_FFFFF is rs >= 0, 0x1 otherwise
 }
 
-void rpsxDIV_consts(int info) { rpsxDIVsuperconsts(info, 1); }
-void rpsxDIV_constt(int info) { rpsxDIVsuperconstt(info, 1); }
+void rpsxDIV_consts(int info) { rpsxDIVsuper(info, 1, PROCESS_CONSTS); }
+void rpsxDIV_constt(int info) { rpsxDIVsuper(info, 1, PROCESS_CONSTT); }
 void rpsxDIV_(int info) { rpsxDIVsuper(info, 1); }
 
 PSXRECOMPILE_CONSTCODE3_PENALTY(DIV, 1, psxInstCycles_Div);
@@ -653,11 +603,14 @@ void rpsxDIVU_const()
 		hi = g_psxConstRegs[_Rs_] % g_psxConstRegs[_Rt_];
 		xMOV(ptr32[&psxRegs.GPR.n.hi], hi);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], lo);
+	} else {
+		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
+		xMOV(ptr32[&psxRegs.GPR.n.lo], 0xFFFFFFFFu);
 	}
 }
 
-void rpsxDIVU_consts(int info) { rpsxDIVsuperconsts(info, 0); }
-void rpsxDIVU_constt(int info) { rpsxDIVsuperconstt(info, 0); }
+void rpsxDIVU_consts(int info) { rpsxDIVsuper(info, 0, PROCESS_CONSTS); }
+void rpsxDIVU_constt(int info) { rpsxDIVsuper(info, 0, PROCESS_CONSTT); }
 void rpsxDIVU_(int info) { rpsxDIVsuper(info, 0); }
 
 PSXRECOMPILE_CONSTCODE3_PENALTY(DIVU, 1, psxInstCycles_Div);
