@@ -94,11 +94,6 @@ void psxDIVU() {
 		_rLo_ = 0xFFFFFFFFu;
 		_rHi_ = _rRs_;
 
-	} else if (_rRs_ == 0x80000000u && _rRt_ == 0xFFFFFFFFu) {
-		// x86 overflow
-		_rLo_ = 0;
-		_rHi_ = 0x80000000u;
-
 	} else {
 		// Normal behavior
 		_rLo_ = _rRs_ / _rRt_;
