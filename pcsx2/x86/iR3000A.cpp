@@ -229,9 +229,11 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	wxString filename( Path::Combine( g_Conf->Folders.Logs, wxsFormat( L"psxdump%.8X.txt", startpc ) ) );
 	AsciiFile f( filename, L"w" );
 
-	/*for ( i = startpc; i < s_nEndBlock; i += 4 ) {
-		f.Printf("%s\n", disR3000Fasm( iopMemRead32( i ), i ) );
-	}*/
+	f.Printf("Dump PSX register data: 0x%x\n\n", (uptr)&psxRegs);
+
+	for ( i = startpc; i < s_nEndBlock; i += 4 ) {
+		f.Printf("%s\n", disR3000AF( iopMemRead32( i ), i ) );
+	}
 
 	// write the instruction info
 	f.Printf("\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE0, EEINST_LASTUSE, EEINST_USED);
@@ -270,21 +272,17 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		}
 		f.Printf("\n");
 	}
+	f.Close();
 
 #ifdef __linux__
-	char command[256];
 	// dump the asm
 	{
 		AsciiFile f2( L"mydump1", L"w" );
 		f2.Write( ptr, (uptr)x86Ptr - (uptr)ptr );
 	}
-	wxCharBuffer buf( filename.ToUTF8() );
-	const char* filenamea = buf.data();
-	sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 | cat %s - > tempdump", filenamea );
-	system( command );
-    sprintf( command, "mv tempdump %s", filenamea );
-    system( command );
-    //f = fopen( filename.c_str(), "a+" );
+
+	std::system( wxsFormat("objdump -D -b binary -mi386 -M intel --no-show-raw-insn --adjust-vma=%d %s >> %s; rm %s",
+				(u32)ptr, "mydump1", WX_STR(filename), "mydump1") );
 #endif
 }
 
@@ -1011,8 +1009,10 @@ void psxRecompileNextInstruction(int delayslot)
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
-	if( IsDebugBuild )
+	if( IsDebugBuild ) {
+		xNOP();
 		xMOV(eax, psxpc);
+	}
 
 	psxRegs.code = iopMemRead32( psxpc );
 	s_psxBlockCycles++;
@@ -1219,8 +1219,8 @@ StartRecomp:
 	if( IsDebugBuild )
 	{
 		for(i = 0; i < ArraySize(s_psxrecblocks); ++i) {
-		if( startpc == s_psxrecblocks[i] ) {
-			iIopDumpBlock(startpc, recPtr);
+			if( startpc == s_psxrecblocks[i] ) {
+				iIopDumpBlock(startpc, recPtr);
 			}
 		}
 
