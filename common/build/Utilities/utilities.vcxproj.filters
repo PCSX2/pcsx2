@@ -201,9 +201,6 @@
     <ClInclude Include="..\..\include\Utilities\SafeArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\ScopedPtr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\StringHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
