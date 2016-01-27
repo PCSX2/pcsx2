@@ -28,7 +28,7 @@
 #if wxUSE_GUI
 
 #include "Dependencies.h"
-#include "ScopedPtr.h"
+#include <memory>
 #include <stack>
 
 #include <wx/wx.h>
@@ -741,7 +741,7 @@ public:
 class MoreStockCursors
 {
 protected:
-	ScopedPtr<wxCursor>	m_arrowWait;
+	std::unique_ptr<wxCursor> m_arrowWait;
 
 public:
 	MoreStockCursors() { }

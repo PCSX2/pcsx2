@@ -246,5 +246,4 @@ extern wxString fromAscii( const char* src );
 
 #include "Utilities/Assertions.h"
 #include "Utilities/Exceptions.h"
-#include "Utilities/ScopedPtr.h"
 #include "Utilities/ScopedAlloc.h"

@@ -562,7 +562,7 @@ void ScopedBusyCursor::SetManualBusyCursor( BusyCursorType busytype )
 const wxCursor& MoreStockCursors::GetArrowWait()
 {
 	if( !m_arrowWait )
-		m_arrowWait = new wxCursor( wxCURSOR_ARROWWAIT );
+		m_arrowWait = std::unique_ptr<wxCursor>(new wxCursor( wxCURSOR_ARROWWAIT ));
 	return *m_arrowWait;
 }
 

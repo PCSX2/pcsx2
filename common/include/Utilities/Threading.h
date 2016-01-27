@@ -24,7 +24,6 @@
 #endif
 
 #include "Pcsx2Defs.h"
-#include "ScopedPtr.h"
 #include "TraceLog.h"
 
 #undef Yield		// release the burden of windows.h global namespace spam.

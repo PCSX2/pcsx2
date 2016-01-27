@@ -47,9 +47,9 @@ wxFileOffset pxStreamBase::Length() const
 // Interface for reading data from a gzip stream.
 //
 
-pxInputStream::pxInputStream(const wxString& filename, ScopedPtr<wxInputStream>& input)
+pxInputStream::pxInputStream(const wxString& filename, std::unique_ptr<wxInputStream>& input)
 	: pxStreamBase( filename )
-	, m_stream_in( input.DetachPtr() )
+	, m_stream_in( std::move(input) )
 {
 }
 
@@ -59,7 +59,7 @@ pxInputStream::pxInputStream(const wxString& filename, wxInputStream* input)
 {
 }
 
-wxStreamBase* pxInputStream::GetWxStreamBase() const { return m_stream_in.GetPtr(); }
+wxStreamBase* pxInputStream::GetWxStreamBase() const { return m_stream_in.get(); }
 
 wxFileOffset pxInputStream::Tell() const
 {
@@ -71,16 +71,16 @@ wxFileOffset pxInputStream::Seek( wxFileOffset ofs, wxSeekMode mode )
 	return m_stream_in->SeekI(ofs, mode);
 }
 
-void pxInputStream::SetStream( const wxString& filename, ScopedPtr<wxInputStream>& stream )
+void pxInputStream::SetStream( const wxString& filename, std::unique_ptr<wxInputStream>& stream )
 {
 	m_filename = filename;
-	m_stream_in = stream.DetachPtr();
+	m_stream_in = std::move(stream);
 }
 
 void pxInputStream::SetStream( const wxString& filename, wxInputStream* stream )
 {
 	m_filename = filename;
-	m_stream_in = stream;
+	m_stream_in = std::unique_ptr<wxInputStream>(stream);
 }
 
 void pxInputStream::Read( void* dest, size_t size )
@@ -108,9 +108,9 @@ void pxInputStream::Read( void* dest, size_t size )
 // --------------------------------------------------------------------------------------
 //  pxOutputStream
 // --------------------------------------------------------------------------------------
-pxOutputStream::pxOutputStream(const wxString& filename, ScopedPtr<wxOutputStream>& output)
+pxOutputStream::pxOutputStream(const wxString& filename, std::unique_ptr<wxOutputStream>& output)
 	: pxStreamBase( filename )
-	, m_stream_out( output.DetachPtr() )
+	, m_stream_out( std::move(output) )
 {
 	
 }
@@ -121,7 +121,7 @@ pxOutputStream::pxOutputStream(const wxString& filename, wxOutputStream* output)
 {
 }
 
-wxStreamBase* pxOutputStream::GetWxStreamBase() const { return m_stream_out.GetPtr(); }
+wxStreamBase* pxOutputStream::GetWxStreamBase() const { return m_stream_out.get(); }
 
 wxFileOffset pxOutputStream::Tell() const
 {
@@ -133,16 +133,16 @@ wxFileOffset pxOutputStream::Seek( wxFileOffset ofs, wxSeekMode mode )
 	return m_stream_out->SeekO( ofs, mode );
 }
 
-void pxOutputStream::SetStream( const wxString& filename, ScopedPtr<wxOutputStream>& stream )
+void pxOutputStream::SetStream( const wxString& filename, std::unique_ptr<wxOutputStream>& stream )
 {
 	m_filename = filename;
-	m_stream_out = stream.DetachPtr();
+	m_stream_out = std::move(stream);
 }
 
 void pxOutputStream::SetStream( const wxString& filename, wxOutputStream* stream )
 {
 	m_filename = filename;
-	m_stream_out = stream;
+	m_stream_out = std::unique_ptr<wxOutputStream>(stream);
 }
 
 
