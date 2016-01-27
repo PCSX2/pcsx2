@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndDX.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 GSWndDX::GSWndDX()
 	: m_hWnd(NULL)
 	, m_frame(true)

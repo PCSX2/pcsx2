@@ -444,7 +444,7 @@ void GSRenderer::VSync(int field)
 	{
 		bool shift = false;
 
-		#ifdef _WINDOWS
+		#ifdef _WIN32
 
 		shift = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
 
@@ -481,7 +481,7 @@ void GSRenderer::VSync(int field)
 		{
             bool control = false;
 
-            #ifdef _WINDOWS
+            #ifdef _WIN32
 
             control = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
 
@@ -552,7 +552,7 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
-#ifdef _WINDOWS
+#ifdef _WIN32
 	if(e->type == KEYPRESS)
 	{
 

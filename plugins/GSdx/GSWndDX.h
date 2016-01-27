@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWnd.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 class GSWndDX : public GSWnd
 {
 	HWND m_hWnd;

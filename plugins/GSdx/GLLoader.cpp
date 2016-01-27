@@ -495,7 +495,7 @@ namespace GLLoader {
 			theApp.SetConfig("accurate_date", 0);
 		}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 		if (status) {
 			if (intel_buggy_driver) {
 				fprintf(stderr, "OpenGL renderer isn't compatible with SandyBridge/IvyBridge GPU due to issues. Sorry.\n"

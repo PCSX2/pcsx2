@@ -25,7 +25,7 @@
 
 static void* s_hModule;
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -128,7 +128,7 @@ GSdxApp::GSdxApp()
 	m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D11", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	"Hardware"));

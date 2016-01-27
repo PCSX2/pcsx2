@@ -297,7 +297,7 @@ public:
 
 	GSVector4i fit(int preset) const;
 
-	#ifdef _WINDOWS
+	#ifdef _WIN32
 
 	__forceinline operator LPCRECT() const
 	{

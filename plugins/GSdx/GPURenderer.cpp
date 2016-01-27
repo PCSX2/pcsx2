@@ -23,7 +23,7 @@
 #include "GPURenderer.h"
 #include "GSdx.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 map<HWND, GPURenderer*> GPURenderer::m_wnd2gpu;
 
@@ -41,7 +41,7 @@ GPURenderer::GPURenderer(GSDevice* dev)
 	m_scale = m_mem.GetScale();
 	m_shadeboost = !!theApp.GetConfig("ShadeBoost", 0);
 
-	#ifdef _WINDOWS
+	#ifdef _WIN32
 
 	m_hWnd = NULL;
 	m_wndproc = NULL;
@@ -53,7 +53,7 @@ GPURenderer::GPURenderer(GSDevice* dev)
 
 GPURenderer::~GPURenderer()
 {
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	if(m_wndproc)
 	{
@@ -67,7 +67,7 @@ GPURenderer::~GPURenderer()
 
 bool GPURenderer::Create(void* hWnd)
 {
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	// TODO: move subclassing inside GSWnd::Attach
 
@@ -147,7 +147,7 @@ void GPURenderer::VSync()
 
 	// m_env.STATUS.LCF = ~m_env.STATUS.LCF; // ?
 
-	#ifdef _WINDOWS
+	#ifdef _WIN32
 
 	if(!IsWindow(m_hWnd)) return;
 
@@ -224,7 +224,7 @@ bool GPURenderer::MakeSnapshot(const string& path)
 	return false;
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 LRESULT CALLBACK GPURenderer::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

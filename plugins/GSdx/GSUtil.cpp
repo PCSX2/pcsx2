@@ -24,7 +24,7 @@
 #include "GSUtil.h"
 #include "xbyak/xbyak_util.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include "svnrev.h"
 #else
 #define SVN_REV 0
@@ -41,7 +41,7 @@ const char* GSUtil::GetLibName()
 	{
 		str = "GSdx";
 
-		#ifdef _WINDOWS
+		#ifdef _WIN32
 		str += format(" %lld", SVN_REV);
 		if(SVN_MODS) str += "m";
 		#endif
@@ -320,7 +320,7 @@ string GSUtil::GetDeviceUniqueName(cl::Device& device)
 }
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 bool GSUtil::CheckDirectX()
 {

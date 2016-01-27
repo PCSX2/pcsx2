@@ -428,7 +428,7 @@ bool GSAdapter::operator==(const GSAdapter &desc_dxgi) const
 		&& rev == desc_dxgi.rev;
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 GSAdapter::GSAdapter(const DXGI_ADAPTER_DESC1 &desc_dxgi)
 	: vendor(desc_dxgi.VendorId)
 	, device(desc_dxgi.DeviceId)

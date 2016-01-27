@@ -21,7 +21,7 @@
 
 #include "GSWnd.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 class GSWndWGL : public GSWndGL
 {

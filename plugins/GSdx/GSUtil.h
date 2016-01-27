@@ -55,7 +55,7 @@ public:
 	static string GetDeviceUniqueName(cl::Device& device);
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	static bool CheckDirectX();
 	static bool CheckDXGI();

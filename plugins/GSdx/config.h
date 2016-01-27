@@ -49,7 +49,7 @@
 #define DISABLE_PERF_MON // Burn cycle for nothing in release mode
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 //#define ENABLE_OPENCL
 #endif
 

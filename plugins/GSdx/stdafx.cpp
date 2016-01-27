@@ -59,7 +59,7 @@ string format(const char* fmt, ...)
 	return s;
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 void* vmalloc(size_t size, bool code)
 {

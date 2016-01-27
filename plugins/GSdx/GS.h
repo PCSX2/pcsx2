@@ -239,7 +239,7 @@ enum class GSRendererType : int8_t
 	OGL_SW = 13,
 	OGL_OpenCL = 17,
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 	Default = DX9_HW
 #else
 	// Use ogl renderer as default otherwise it crash at startup

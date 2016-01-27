@@ -24,7 +24,7 @@
 #include "GSPng.h"
 #include "GSUtil.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 //
 // GSSource
@@ -398,7 +398,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 
 	EndCapture();
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	GSCaptureDlg dlg;
 
@@ -512,7 +512,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return false;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(m_src)
 	{
@@ -538,7 +538,7 @@ bool GSCapture::EndCapture()
 {
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(m_src)
 	{

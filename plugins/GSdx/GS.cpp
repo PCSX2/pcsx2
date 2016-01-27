@@ -29,7 +29,7 @@
 #include "GSRendererOGL.h"
 #include "GSRendererCL.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include "GSRendererDX9.h"
 #include "GSRendererDX11.h"
@@ -123,7 +123,7 @@ EXPORT_C_(int) GSinit()
 		return -1;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -147,7 +147,7 @@ EXPORT_C GSshutdown()
 
 	s_renderer = GSRendererType::Undefined;
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(SUCCEEDED(s_hr))
 	{
@@ -238,7 +238,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		switch (renderer)
 		{
 		default:
-#ifdef _WINDOWS
+#ifdef _WIN32
 		case GSRendererType::DX9_HW:
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX9_Null:
@@ -285,7 +285,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			switch (renderer)
 			{
 			default:
-#ifdef _WINDOWS
+#ifdef _WIN32
 			case GSRendererType::DX9_HW:
 				s_gs = (GSRenderer*)new GSRendererDX9();
 				s_renderer_type = " HW";
@@ -332,7 +332,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 		if (s_gs->m_wnd == NULL)
 		{
-#ifdef _WINDOWS
+#ifdef _WIN32
 			switch (renderer)
 			{
 			case GSRendererType::OGL_HW:
@@ -403,7 +403,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			return -1;
 		}
 #endif
-#ifdef _WINDOWS
+#ifdef _WIN32
 		if(!s_gs->CreateWnd(title, w, h))
 		{
 			GSclose();
@@ -448,7 +448,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			}
 		}
 #endif
-#ifdef _WINDOWS
+#ifdef _WIN32
 		try
 		{
 			s_gs->m_wnd->Attach(*dsp, false);
@@ -563,7 +563,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 	{
 		// pcsx2 sent a switch renderer request
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 		renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_SW : GSRendererType::DX9_SW;
 
@@ -719,7 +719,7 @@ EXPORT_C GSvsync(int field)
 {
 	try
 	{
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 		if(s_gs->m_wnd->IsManaged())
 		{
@@ -806,7 +806,7 @@ EXPORT_C GSconfigure()
 	{
 		if(!GSUtil::CheckSSE()) return;
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 		GSDialog::InitCommonControls();
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
@@ -842,7 +842,7 @@ EXPORT_C_(int) GStest()
 		return -1;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -993,7 +993,7 @@ EXPORT_C GSsetFrameLimit(int limit)
 	}
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include <io.h>
 #include <fcntl.h>

@@ -24,7 +24,7 @@
 #include "GPUState.h"
 #include "GSVertexList.h"
 #include "GSDevice.h"
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include "GSWndDX.h"
 #endif
 
@@ -46,7 +46,7 @@ protected:
 	virtual void ResetDevice() {}
 	virtual GSTexture* GetOutput() = 0;
 
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	HWND m_hWnd;
 	WNDPROC m_wndproc;

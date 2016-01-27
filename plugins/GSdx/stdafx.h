@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include "targetver.h"
 
@@ -109,7 +109,7 @@ using namespace std;
 
 #include <memory>
 
-#if _MSC_VER >= 1800 || !defined(_WINDOWS)
+#if _MSC_VER >= 1800 || !defined(_WIN32)
 #include <unordered_map>
 #include <unordered_set>
 #define hash_map unordered_map
@@ -120,7 +120,7 @@ using namespace std;
 using namespace stdext;
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	// Note use GL/glcorearb.h on the future
 	#include <GL/gl.h>
@@ -306,7 +306,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #endif
 
-#if !defined(_M_SSE) && (!defined(_WINDOWS) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+#if !defined(_M_SSE) && (!defined(_WIN32) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 
 	#define _M_SSE 0x200
 
@@ -487,7 +487,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	#ifdef ENABLE_VTUNE
 
@@ -522,7 +522,7 @@ extern void vmfree(void* ptr, size_t size);
 #endif
 
 // Helper path to dump texture
-#ifdef _WINDOWS
+#ifdef _WIN32
 const std::string root_sw("c:\\temp1\\_");
 const std::string root_hw("c:\\temp2\\_");
 #else

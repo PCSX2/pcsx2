@@ -216,7 +216,7 @@ struct GSAdapter
 		return (std::string)*this == s;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 	GSAdapter(const DXGI_ADAPTER_DESC1 &desc_dxgi);
 	GSAdapter(const D3DADAPTER_IDENTIFIER9 &desc_d3d9);
 #endif

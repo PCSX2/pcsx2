@@ -24,7 +24,7 @@
 
 GSThread::GSThread()
 {
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	m_ThreadId = 0;
 	m_hThread = NULL;
@@ -39,7 +39,7 @@ GSThread::~GSThread()
 	CloseThread();
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 DWORD WINAPI GSThread::StaticThreadProc(void* lpParam)
 {
@@ -63,7 +63,7 @@ void* GSThread::StaticThreadProc(void* param)
 
 void GSThread::CreateThread()
 {
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	m_hThread = ::CreateThread(NULL, 0, StaticThreadProc, (void*)this, 0, &m_ThreadId);
 
@@ -81,7 +81,7 @@ void GSThread::CreateThread()
 
 void GSThread::CloseThread()
 {
-    #ifdef _WINDOWS
+    #ifdef _WIN32
 
 	if(m_hThread != NULL)
 	{

@@ -85,7 +85,7 @@ void GSTextureSW::Unmap()
 	m_mapped = 0;
 }
 
-#ifndef _WINDOWS
+#ifndef _WIN32
 
 #pragma pack(push, 1)
 

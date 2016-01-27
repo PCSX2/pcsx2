@@ -36,7 +36,7 @@ public:
 
     void* GetModuleHandlePtr();
 
-#ifdef _WINDOWS
+#ifdef _WIN32
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
 #endif
 

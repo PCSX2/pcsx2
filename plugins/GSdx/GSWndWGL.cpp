@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndWGL.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 GSWndWGL::GSWndWGL()
 	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
 {

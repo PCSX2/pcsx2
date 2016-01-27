@@ -25,7 +25,7 @@
 #include "GPURendererSW.h"
 #include "GSDeviceNull.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include "GPUSettingsDlg.h"
 #include "GSDevice9.h"
@@ -73,7 +73,7 @@ EXPORT_C_(int32) GPUclose()
 
 	s_gpu = NULL;
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(SUCCEEDED(s_hr))
 	{
@@ -96,7 +96,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 		return -1;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -113,7 +113,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 	switch(renderer)
 	{
 	default:
-	#ifdef _WINDOWS
+	#ifdef _WIN32
 	case 0: s_gpu = new GPURendererSW(new GSDevice9(), threads); break;
 	case 1: s_gpu = new GPURendererSW(new GSDevice11(), threads); break;
 	#endif
@@ -133,7 +133,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 
 EXPORT_C_(int32) GPUconfigure()
 {
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	GPUSettingsDlg dlg;
 
