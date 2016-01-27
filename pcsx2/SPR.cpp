@@ -34,10 +34,10 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 	{
 		if (madr < 0x11004000)
 		{
-			if(isWrite == true) 
+			if(isWrite == true)
 			{
 				DbgCon.Warning("scratch pad clearing vu0");
-			
+
 				CpuVU0->Clear(madr&0xfff, qwc * 16);
 			}
 
@@ -47,8 +47,8 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 			}
 		}
 		else if (madr >= 0x11008000 && madr < 0x1100c000)
-		{			
-			if(isWrite == true) 
+		{
+			if(isWrite == true)
 			{
 				DbgCon.Warning("scratch pad clearing vu1");
 
@@ -87,16 +87,18 @@ int  _SPR0chain()
 			spr0ch.madr += partialqwc << 4;
 			spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 			spr0ch.sadr += partialqwc << 4;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 			spr0ch.qwc -= partialqwc;
-			
+
 			spr0finished = true;
 	}
 	else
 	{
-			
+
 			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 			//the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
+			pxAssertMsg((spr0ch.sadr + partialqwc*16) < 0x4000, "TODO: Copy must be wrapped");
 			memcpy(pMem, &psSu128(spr0ch.sadr), partialqwc*16);
 
 			// clear VU mem also!
@@ -104,11 +106,12 @@ int  _SPR0chain()
 
 			spr0ch.madr += partialqwc << 4;
 			spr0ch.sadr += partialqwc << 4;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 			spr0ch.qwc -= partialqwc;
 
 	}
 
-	
+
 
 	return (partialqwc); // bus is 1/2 the ee speed
 }
@@ -151,10 +154,12 @@ void _SPR0interleave()
 			case MFD_RESERVED:
 				// clear VU mem also!
 				TestClearVUs(spr0ch.madr, spr0ch.qwc, true);
+				pxAssertMsg((spr0ch.sadr + spr0ch.qwc*16) < 0x4000, "TODO: Copy must be wrapped");
 				memcpy(pMem, &psSu128(spr0ch.sadr), spr0ch.qwc*16);
 				break;
  		}
 		spr0ch.sadr += spr0ch.qwc * 16;
+		spr0ch.sadr &= 0x3FFF; // Limited to 16K
 		spr0ch.madr += (sqwc + spr0ch.qwc) * 16;
 	}
 
@@ -194,6 +199,7 @@ static __fi void _dmaSPR0()
 			// Destination Chain Mode
 			ptag = (tDMA_TAG*)&psSu32(spr0ch.sadr);
 			spr0ch.sadr += 16;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 
 			spr0ch.unsafeTransfer(ptag);
 
@@ -251,8 +257,8 @@ static __fi void _dmaSPR0()
 
 void SPRFROMinterrupt()
 {
-	
-	if (!spr0finished || spr0ch.qwc > 0) 
+
+	if (!spr0finished || spr0ch.qwc > 0)
 	{
 		_dmaSPR0();
 
@@ -284,7 +290,7 @@ void SPRFROMinterrupt()
 					break;
 			}
 		}
-		
+
 		return;
 	}
 
@@ -300,10 +306,10 @@ void dmaSPR0()   // fromSPR
 	SPR_LOG("dmaSPR0 chcr = %lx, madr = %lx, qwc  = %lx, sadr = %lx",
 	        spr0ch.chcr._u32, spr0ch.madr, spr0ch.qwc, spr0ch.sadr);
 
-	
+
 	spr0finished = false; //Init
 
-	if(spr0ch.chcr.MOD == CHAIN_MODE && spr0ch.qwc > 0) 
+	if(spr0ch.chcr.MOD == CHAIN_MODE && spr0ch.qwc > 0)
 	{
 		//DevCon.Warning(L"SPR0 QWC on Chain " + spr0ch.chcr.desc());
 		if (spr0ch.chcr.tag().ID == TAG_END) // but not TAG_REFE?
@@ -322,8 +328,10 @@ __fi static void SPR1transfer(const void* data, int qwc)
 		TestClearVUs(spr1ch.madr, spr1ch.qwc, false);
 	}
 
+	pxAssertMsg((spr1ch.sadr + qwc*16) < 0x4000, "TODO: Copy must be wrapped");
 	memcpy(&psSu128(spr1ch.sadr), data, qwc*16);
 	spr1ch.sadr += qwc * 16;
+	spr1ch.sadr &= 0x3FFF; // Limited to 16K
 }
 
 
@@ -346,19 +354,19 @@ int  _SPR1chain()
 	spr1ch.qwc -= partialqwc;
 
 	hwDmacSrcTadrInc(spr1ch);
-	
+
 	return (partialqwc);
 }
 
 __fi void SPR1chain()
 {
 	int cycles = 0;
-	if(!CHECK_IPUWAITHACK) 
+	if(!CHECK_IPUWAITHACK)
 	{
 		cycles =  _SPR1chain() * BIAS;
 		CPU_INT(DMAC_TO_SPR, cycles);
 	}
-	else 
+	else
 	{
 		 _SPR1chain();
 		CPU_INT(DMAC_TO_SPR, 8);
@@ -381,8 +389,10 @@ void _SPR1interleave()
 		spr1ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr1ch.qwc;
 		pMem = SPRdmaGetAddr(spr1ch.madr, false);
+		pxAssertMsg((spr1ch.sadr + spr1ch.qwc*16) < 0x4000, "TODO: Copy must be wrapped");
 		memcpy(&psSu128(spr1ch.sadr), pMem, spr1ch.qwc*16);
 		spr1ch.sadr += spr1ch.qwc * 16;
+		spr1ch.sadr &= 0x3FFF; // Limited to 16K
 		spr1ch.madr += (sqwc + spr1ch.qwc) * 16;
 	}
 
@@ -465,10 +475,10 @@ void dmaSPR1()   // toSPR
 	        "        tadr = 0x%x, sadr = 0x%x",
 	        spr1ch.chcr._u32, spr1ch.madr, spr1ch.qwc,
 	        spr1ch.tadr, spr1ch.sadr);
-	
+
 	spr1finished = false; //Init
-	
-	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0) 
+
+	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0)
 	{
 		//DevCon.Warning(L"SPR1 QWC on Chain " + spr1ch.chcr.desc());
 		if ((spr1ch.chcr.tag().ID == TAG_END) || (spr1ch.chcr.tag().ID == TAG_REFE) || (spr1ch.chcr.tag().IRQ && spr1ch.chcr.TIE))

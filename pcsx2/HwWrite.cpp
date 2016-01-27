@@ -47,7 +47,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 #if PSX_EXTRALOGS
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("32bit Write to SIF Register %x value %x", mem, value);
 	//if ((mem & 0x1000ff00) == 0x1000f200) DevCon.Warning("Write to SIF Register %x value %x", mem, value);
-#endif	
+#endif
 	switch (page)
 	{
 		case 0x00:	if (!rcntWrite32<0x00>(mem, value)) return;	break;
@@ -131,7 +131,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		case 0x0e:
 			if (!dmacWrite32<page>(mem, value)) return;
 		break;
-		
+
 		case 0x0f:
 		{
 			switch( HELPSWITCH(mem) )
@@ -231,10 +231,10 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				// (unhandled so fall through to default)
 
 			}
-		}	
+		}
 		break;
 	}
-	
+
 	psHu32(mem) = value;
 }
 
