@@ -925,7 +925,7 @@ void rpsxMFLO()
 void rpsxMTLO()
 {
 	if( PSX_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
+		xMOV(ptr32[&psxRegs.GPR.n.lo], g_psxConstRegs[_Rs_]);
 	}
 	else {
 		_psxDeleteReg(_Rs_, 1);
