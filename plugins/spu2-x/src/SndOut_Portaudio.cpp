@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #include "pa_win_wasapi.h"
 #endif
 
@@ -246,7 +246,7 @@ public:
 				break;
 			}
 
-#ifdef __WIN32__
+#ifdef _WIN32
 			PaWasapiStreamInfo info = {
 				sizeof(PaWasapiStreamInfo),
 				paWASAPI,
@@ -344,7 +344,7 @@ public:
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
-#ifdef WIN32
+#ifdef _WIN32
 private:
 	
 	bool _ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
@@ -666,7 +666,7 @@ int PaCallback( const void *inputBuffer, void *outputBuffer,
 	return PA.ActualPaCallback->ReadSamples(inputBuffer,outputBuffer,framesPerBuffer,timeInfo,statusFlags,userData);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 BOOL CALLBACK Portaudio::ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	return PA._ConfigProc( hWnd, uMsg, wParam, lParam );

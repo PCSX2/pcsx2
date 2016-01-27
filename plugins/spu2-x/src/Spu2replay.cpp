@@ -109,7 +109,7 @@ bool Running = false;
 
 int conprintf(const char* fmt, ...)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	char s[1024];
 	va_list list;
 
@@ -156,7 +156,7 @@ void dummy7()
 u64 HighResFrequency()
 {
 	u64 freq;
-#ifdef WIN32
+#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
 #else
 	// TODO
@@ -167,7 +167,7 @@ u64 HighResFrequency()
 u64 HighResCounter()
 {
 	u64 time;
-#ifdef WIN32
+#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER*)&time);
 #else
 	// TODO
@@ -203,7 +203,7 @@ u32 WaitSync( u32 TargetCycle )
 	return delta;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 {
 	Running = false;
@@ -219,7 +219,7 @@ EXPORT_C_(void) s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdS
 
 	Running = true;
 
-#ifdef WIN32
+#ifdef _WIN32
 	AllocConsole();
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 	
@@ -309,7 +309,7 @@ Finish:
 
 	conprintf("Finished playing %s file (%d cycles, %d events).",filename,CurrentIOPCycle,events);
 
-#ifdef WIN32
+#ifdef _WIN32
 	FreeConsole();
 #endif
 
