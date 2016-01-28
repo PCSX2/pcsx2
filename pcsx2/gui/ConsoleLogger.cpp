@@ -510,6 +510,8 @@ void ConsoleLogFrame::OnEnableAllLogging(wxCommandEvent& evt)
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = true;
 	}
+	DevConWriterEnabled = true;
+	g_Conf->EmuOptions.CdvdVerboseReads = true;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -523,6 +525,8 @@ void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = false;
 	}
+	DevConWriterEnabled = false;
+	g_Conf->EmuOptions.CdvdVerboseReads = false;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -536,6 +540,8 @@ void ConsoleLogFrame::OnSetDefaultLogging(wxCommandEvent& evt)
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = ConLogDefaults[i];
 	}
+	DevConWriterEnabled = false;
+	g_Conf->EmuOptions.CdvdVerboseReads = false;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -691,7 +697,8 @@ void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 
 void ConsoleLogFrame::OnResize( wxSizeEvent& evt )
 {
-	m_conf.DisplaySize = GetSize();
+	if (!ConsoleLogFrame::IsMaximized())
+		m_conf.DisplaySize = GetSize();
 	evt.Skip();
 }
 
