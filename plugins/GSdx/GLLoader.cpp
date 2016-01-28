@@ -436,9 +436,10 @@ namespace GLLoader {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
 					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n"
 #ifdef __linux__
-							"Note the extension will be fixed on Mesa 11.2 you will need a manual overwrite to use it\n"
+							"Note the extension will be fixed on Mesa 11.2 or 11.1.2.\n"
 #endif
-							"AMD is working on it!\n");
+							"AMD proprietary driver => https://community.amd.com/thread/194895\n"
+							"If you want to try it, you can set the variable override_GL_ARB_separate_shader_objects to 1 in the ini file\n");
 				}
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
