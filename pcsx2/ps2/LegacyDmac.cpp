@@ -374,6 +374,20 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			return false;
 		}
 
+		icase(fromSPR_MADR)
+		{
+			// SPR bit is fixed at 0 for this channel
+			psHu32(mem) = value & 0x7FFFFFFF;
+			return false;
+		}
+
+		icase(toSPR_MADR)
+		{
+			// SPR bit is fixed at 0 for this channel
+			psHu32(mem) = value & 0x7FFFFFFF;
+			return false;
+		}
+
 		icase(fromSPR_SADR)
 		{
 			// Address must be QW aligned and fit in the 16K range of SPR
