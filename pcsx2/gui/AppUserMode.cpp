@@ -175,7 +175,6 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 					dialog2 += dialog2.Heading( _("Try to remove the file called \"portable.ini\" from your installation directory manually." ) );
 					dialog2 += 6;
 					pxIssueConfirmation( dialog2, MsgButtons().OK() );
-					conf_portable.DetachPtr(); // Not sure but can't hurt
 					
 					return NULL;
 			}
