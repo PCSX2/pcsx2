@@ -66,6 +66,36 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 	}
 }
 
+static void memcpy_to_spr(u32 dst, u8* src, size_t size)
+{
+	dst &= _16kb - 1;
+
+	if (dst + size >= _16kb) {
+		size_t end = _16kb - dst;
+		memcpy(&psSu128(dst), src, end);
+
+		src += end;
+		memcpy(&psSu128(0)  , src, size - end);
+	} else {
+		memcpy(&psSu128(dst), src, size);
+	}
+}
+
+static void memcpy_from_spr(u8* dst, u32 src, size_t size)
+{
+	src &= _16kb - 1;
+
+	if (src + size >= _16kb) {
+		size_t end = _16kb - src;
+		memcpy(dst, &psSu128(src), end);
+
+		dst += end;
+		memcpy(dst, &psSu128(0)  , size - end);
+	} else {
+		memcpy(dst, &psSu128(src), size);
+	}
+}
+
 int  _SPR0chain()
 {
 	tDMA_TAG *pMem;
@@ -98,8 +128,7 @@ int  _SPR0chain()
 			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 			//the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
-			pxAssertMsg((spr0ch.sadr + partialqwc*16) < 0x4000, "TODO: Copy must be wrapped");
-			memcpy(pMem, &psSu128(spr0ch.sadr), partialqwc*16);
+			memcpy_from_spr((u8*)pMem, spr0ch.sadr, partialqwc*16);
 
 			// clear VU mem also!
 			TestClearVUs(spr0ch.madr, partialqwc, true);
@@ -154,8 +183,7 @@ void _SPR0interleave()
 			case MFD_RESERVED:
 				// clear VU mem also!
 				TestClearVUs(spr0ch.madr, spr0ch.qwc, true);
-				pxAssertMsg((spr0ch.sadr + spr0ch.qwc*16) < 0x4000, "TODO: Copy must be wrapped");
-				memcpy(pMem, &psSu128(spr0ch.sadr), spr0ch.qwc*16);
+				memcpy_from_spr((u8*)pMem, spr0ch.sadr, spr0ch.qwc*16);
 				break;
  		}
 		spr0ch.sadr += spr0ch.qwc * 16;
@@ -328,8 +356,7 @@ __fi static void SPR1transfer(const void* data, int qwc)
 		TestClearVUs(spr1ch.madr, spr1ch.qwc, false);
 	}
 
-	pxAssertMsg((spr1ch.sadr + qwc*16) < 0x4000, "TODO: Copy must be wrapped");
-	memcpy(&psSu128(spr1ch.sadr), data, qwc*16);
+	memcpy_to_spr(spr1ch.sadr, (u8*)data, qwc*16);
 	spr1ch.sadr += qwc * 16;
 	spr1ch.sadr &= 0x3FFF; // Limited to 16K
 }
@@ -389,8 +416,7 @@ void _SPR1interleave()
 		spr1ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr1ch.qwc;
 		pMem = SPRdmaGetAddr(spr1ch.madr, false);
-		pxAssertMsg((spr1ch.sadr + spr1ch.qwc*16) < 0x4000, "TODO: Copy must be wrapped");
-		memcpy(&psSu128(spr1ch.sadr), pMem, spr1ch.qwc*16);
+		memcpy_to_spr(spr1ch.sadr, (u8*)pMem, spr1ch.qwc*16);
 		spr1ch.sadr += spr1ch.qwc * 16;
 		spr1ch.sadr &= 0x3FFF; // Limited to 16K
 		spr1ch.madr += (sqwc + spr1ch.qwc) * 16;
