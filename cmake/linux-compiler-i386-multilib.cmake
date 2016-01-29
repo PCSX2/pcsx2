@@ -20,11 +20,12 @@ endif()
 if(EXISTS /usr/lib/i386-linux-gnu)
     set(CMAKE_SYSTEM_IGNORE_PATH
         /lib             /lib64             /lib32
-        /usr/lib         /usr/lib64         /usr/lib32
+        /usr/lib64         /usr/lib32
         /usr/local/lib   /usr/local/lib64   /usr/local/lib32)
     list(APPEND CMAKE_LIBRARY_PATH /usr/local/lib/i386-linux-gnu)
     list(APPEND CMAKE_LIBRARY_PATH /usr/lib/i386-linux-gnu)
     list(APPEND CMAKE_LIBRARY_PATH /lib/i386-linux-gnu)
+    list(APPEND CMAKE_LIBRARY_PATH /usr/lib/i686/nosegneg)
 elseif(EXISTS /usr/lib32)
     set(CMAKE_SYSTEM_IGNORE_PATH
         /lib             /lib64
