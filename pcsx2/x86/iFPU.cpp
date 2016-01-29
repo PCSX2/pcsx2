@@ -93,7 +93,7 @@ static const __aligned16 u32 s_pos[4] = { 0x7fffffff, 0xffffffff, 0xffffffff, 0x
 	void rec##f() { \
 	iFlushCall(FLUSH_INTERPRETER); \
 	xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
-	branch = 2; \
+	g_branch = 2; \
 }
 
 #define REC_FPUFUNC(f) \
