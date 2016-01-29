@@ -223,8 +223,12 @@ void C_LT() {
 }
 
 void CFC1() {
-	if ( !_Rt_ || ( (_Fs_ != 0) && (_Fs_ != 31) ) ) return;
-	cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[_Fs_];	// force sign extension to 64 bit
+	if ( !_Rt_ ) return;
+
+	if (_Fs_ >= 16)
+		cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[31];	// force sign extension to 64 bit
+	else
+		cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[0];	// force sign extension to 64 bit
 }
 
 void CTC1() {

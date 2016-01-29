@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-   
+
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
@@ -72,7 +72,7 @@ void cpuReset()
 	cpuRegs.CP0.n.Config	= 0x440;
 	cpuRegs.CP0.n.Status.val= 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
 	cpuRegs.CP0.n.PRid		= 0x00002e20; // PRevID = Revision ID, same as R5900
-	fpuRegs.fprc[0]			= 0x00002e00; // fpu Revision..
+	fpuRegs.fprc[0]			= 0x00002e30; // fpu Revision..
 	fpuRegs.fprc[31]		= 0x01000001; // fpu Status/Control
 
 	g_nextEventCycle = cpuRegs.cycle + 4;
@@ -82,7 +82,7 @@ void cpuReset()
 	hwReset();
 	rcntInit();
 	psxReset();
-	
+
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 

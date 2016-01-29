@@ -48,6 +48,8 @@ sub help {
         EnableVU1=disabled                : Use VU1 interpreter
         FPU.Roundmode=3                   : EE FPU round mode
         VU.Roundmode=3                    : VU round mode
+        fpuExtraOverflow=enabled          : Full EE FPU
+        fpuFullMode=enabled               : Full EE FPU
 
 EOS
     print $msg;
@@ -152,7 +154,6 @@ if ($o_regression or $o_bad) {
     $blacklist{"arithmetic"} = 1;
     $blacklist{"branchdelay"} = 1;
     $blacklist{"compare"} = 1;
-    $blacklist{"fcr"} = 1;
     $blacklist{"muldiv"} = 1;
     $blacklist{"sqrt"} = 1;
     # IOP

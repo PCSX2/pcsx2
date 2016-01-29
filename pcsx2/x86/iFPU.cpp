@@ -114,15 +114,18 @@ static const __aligned16 u32 s_pos[4] = { 0x7fffffff, 0xffffffff, 0xffffffff, 0x
 //------------------------------------------------------------------
 void recCFC1(void)
 {
-	if ( !_Rt_ || ( (_Fs_ != 0) && (_Fs_ != 31) ) ) return;
+	if ( !_Rt_  ) return;
 	EE::Profiler.EmitOp(eeOpcode::CFC1);
 
 	_eeOnWriteReg(_Rt_, 1);
 
-	xMOV(eax, ptr[&fpuRegs.fprc[ _Fs_ ] ]);
+	if (_Fs_ >= 16)
+		xMOV(eax, ptr[&fpuRegs.fprc[31] ]);
+	else
+		xMOV(eax, ptr[&fpuRegs.fprc[0] ]);
 	_deleteEEreg(_Rt_, 0);
 
-	if (_Fs_ == 31)
+	if (_Fs_ >= 16)
 	{
 		xAND(eax, 0x0083c078); //remove always-zero bits
 		xOR(eax, 0x01000001); //set always-one bits
