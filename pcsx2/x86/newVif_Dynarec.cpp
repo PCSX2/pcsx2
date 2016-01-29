@@ -257,7 +257,7 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	//if (wl == 256) isFill = true;
 	if (!isFill) {
 		uint skipSize  = (cl - wl) * 16;
-		uint blocks    = v.block.num / wl;
+		uint blocks    = (v.block.num + (wl-1)) / wl; //Need to round up num's to calculate skip size correctly.
 		length += (blocks-1) * skipSize;
 	}
 
