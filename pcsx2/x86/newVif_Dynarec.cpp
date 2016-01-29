@@ -118,14 +118,29 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const {
 		if (m5 < 0xf) 
 		{			
 			xPXOR(xmmTemp, xmmTemp);
-			mergeVectors(xmmTemp, xmmRow, xmmTemp, m5);
-			xPADD.D(regX, xmmTemp);
-			if (doMode==2) mergeVectors(xmmRow, regX, xmmTemp, m5);
+			if (doMode == 3)
+			{
+				mergeVectors(xmmRow, regX, xmmTemp, m5);
+			}
+			else
+			{
+				mergeVectors(xmmTemp, xmmRow, xmmTemp, m5);
+				xPADD.D(regX, xmmTemp);
+				if (doMode == 2) mergeVectors(xmmRow, regX, xmmTemp, m5);
+			}
+			
 		}
 		else
 		{
-			xPADD.D(regX, xmmRow);
-			if (doMode==2){ xMOVAPS(xmmRow, regX); }
+			if (doMode == 3)
+			{
+				xMOVAPS(xmmRow, regX);
+			}
+			else
+			{
+				xPADD.D(regX, xmmRow);
+				if (doMode == 2) { xMOVAPS(xmmRow, regX); }
+			}
 		}
 	}
 	xMOVAPS(ptr32[dstIndirect], regX);
@@ -135,7 +150,7 @@ void VifUnpackSSE_Dynarec::writeBackRow() const {
 	const int idx = v.idx;
 	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], xmmRow);
 
-	DevCon.WriteLn("nVif: writing back row reg! [doMode = 2]");
+	DevCon.WriteLn("nVif: writing back row reg! [doMode = %d]", doMode);
 	// ToDo: Do we need to write back to vifregs.rX too!? :/
 }
 
@@ -239,7 +254,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 		}
 	}
 
-	if (doMode==2) writeBackRow();
+	if (doMode>=2) writeBackRow();
 	xRET();
 }
 
