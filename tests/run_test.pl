@@ -146,22 +146,27 @@ if ($o_regression or $o_bad) {
     #$o_pcsx2_opt{"fpuExtraOverflow"} = "enabled";
     #$o_pcsx2_opt{"fpuFullMode"} = "enabled";
 
+    # EE
     $blacklist{"branchdelay"} = 1;
+    # EE fpu
     $blacklist{"arithmetic"} = 1;
+    $blacklist{"branchdelay"} = 1;
     $blacklist{"compare"} = 1;
     $blacklist{"fcr"} = 1;
     $blacklist{"muldiv"} = 1;
     $blacklist{"sqrt"} = 1;
-    $blacklist{"normal"} = 1;
-    $blacklist{"mode"} = 1;
-    $blacklist{"stcycl"} = 1;
-    $blacklist{"triace"} = 1;
-    # IRX
+    # IOP
     $blacklist{"lsudelay"} = 1;
+    # Dma vif
+    $blacklist{"stmod"} = 1;
+    $blacklist{"stcycl"} = 1;
+    # Kernel IOP
     $blacklist{"register"} = 1;
     $blacklist{"receive"} = 1;
     $blacklist{"stat"} = 1;
     $blacklist{"send"} = 1;
+    # VU
+    $blacklist{"triace"} = 1;
 }
 
 #####################################################
