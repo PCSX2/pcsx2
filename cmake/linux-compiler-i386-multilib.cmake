@@ -35,6 +35,12 @@ elseif(EXISTS /usr/lib32)
     list(APPEND CMAKE_LIBRARY_PATH /usr/local/lib32)
     list(APPEND CMAKE_LIBRARY_PATH /usr/lib32)
     list(APPEND CMAKE_LIBRARY_PATH /lib32)
+elseif(EXISTS /usr/lib/i686)
+    set(CMAKE_SYSTEM_IGNORE_PATH
+        /lib64             /lib32
+        /usr/lib64         /usr/lib32
+        /usr/local/lib64   /usr/local/lib32)
+    list(APPEND CMAKE_LIBRARY_PATH /usr/lib/i686/nosegneg)
 else()
     set(CMAKE_SYSTEM_IGNORE_PATH
         /lib64
