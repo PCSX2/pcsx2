@@ -49,6 +49,7 @@ else(WIN32) # Unix based OS
 	# find Cg libraries
 	# Cg library
 	find_library(CG_LIBRARY NAMES Cg PATHS
+				 /lib
 				 /usr/include
 				 /usr/local/lib
 				 /opt/nvidia-cg-toolkit/lib	
@@ -57,6 +58,7 @@ else(WIN32) # Unix based OS
 
 	# Cg GL library
 	find_library(CG_GL_LIBRARY NAMES CgGL PATHS
+				 /lib
 				 /usr/include
 				 /usr/local/lib
 				 /opt/nvidia-cg-toolkit/lib
