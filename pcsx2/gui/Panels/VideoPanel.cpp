@@ -231,10 +231,12 @@ void Panels::FrameSkipPanel::ApplyConfigToGui( AppConfig& configToApply, int fla
 	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
-	m_radio_SkipMode	->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
+	m_radio_SkipMode->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
 
-	m_spin_FramesToDraw	->SetValue( gsconf.FramesToDraw );
-	m_spin_FramesToSkip	->SetValue( gsconf.FramesToSkip );
+	m_spin_FramesToDraw->SetValue( gsconf.FramesToDraw );
+	m_spin_FramesToDraw->Enable(!configToApply.EnablePresets);
+	m_spin_FramesToSkip->SetValue( gsconf.FramesToSkip );
+	m_spin_FramesToSkip->Enable(!configToApply.EnablePresets);
 
 	this->Enable(!configToApply.EnablePresets);
 }
