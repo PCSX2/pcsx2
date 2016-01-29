@@ -60,6 +60,7 @@ static __ri void writeXYZW(u32 offnum, u32 &dest, u32 data) {
 			switch (mode) {
 				case 1:  dest = data + vif.MaskRow._u32[offnum]; break;
 				case 2:  dest = setVifRow(vif, offnum, vif.MaskRow._u32[offnum] + data); break;
+				case 3:  dest = setVifRow(vif, offnum, data); break;
 				default: dest = data; break;
 			}
 			break;
@@ -165,18 +166,20 @@ static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
 	UnpackFuncSet( V4, idx, mode, u, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 1 ), UnpackV4_5set(idx, 1)
 
-__aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][3][4 * 4 * 2 * 2] =
+__aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =
 {
 	{
 		{ UnpackModeSet(0,0) },
 		{ UnpackModeSet(0,1) },
-		{ UnpackModeSet(0,2) }
+		{ UnpackModeSet(0,2) },
+		{ UnpackModeSet(0,3) }
 	},
 
 	{
 		{ UnpackModeSet(1,0) },
 		{ UnpackModeSet(1,1) },
-		{ UnpackModeSet(1,2) }
+		{ UnpackModeSet(1,2) },
+		{ UnpackModeSet(1,3) }
 	}
 };
 
