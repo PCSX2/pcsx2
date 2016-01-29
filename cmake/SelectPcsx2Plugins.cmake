@@ -256,7 +256,7 @@ endif()
 #           -common_libs
 #---------------------------------------
 if((APPLE AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
-    OR (Linux AND ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs))
+    OR ((Linux OR UNIX) AND ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs))
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)
