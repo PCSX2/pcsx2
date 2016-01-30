@@ -281,8 +281,8 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		f2.Write( ptr, (uptr)x86Ptr - (uptr)ptr );
 	}
 
-	std::system( wxsFormat("objdump -D -b binary -mi386 -M intel --no-show-raw-insn %s >> %s; rm %s",
-				"mydump1", WX_STR(filename), "mydump1") );
+	std::system( wxsFormat( L"objdump -D -b binary -mi386 -M intel --no-show-raw-insn %s >> %s; rm %s",
+				"mydump1", WX_STR(filename), "mydump1").mb_str() );
 #endif
 }
 
