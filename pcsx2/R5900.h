@@ -186,10 +186,25 @@ union GPR_reg64 {
 	s8  SC[8];
 };
 
-union FPRreg {
-	float f;
-	u32 UL;
-	s32 SL;				// signed 32bit used for sign extension in interpreters.
+// Note: undefined result if double and float are mixed...
+struct FPRreg {
+	// Float for speed and compatibility with old code
+	union {
+		float f;
+		u32 UL;
+		s32 SL;				// signed 32bit used for sign extension in interpreters.
+	};
+
+	u32 IsDoubleCached;
+
+	// Double for accurate value
+	union {
+		double d;
+		u64 UD;
+		s64 SD;
+		u32	UL_[2];
+		s32 SL_[2];
+	};
 };
 
 struct fpuRegisters {

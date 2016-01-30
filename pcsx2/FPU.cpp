@@ -18,8 +18,16 @@
 
 #include <cmath>
 
+#define DOUBLE_FPU
+
 // Helper Macros
 //****************************************************************
+
+const double d_DMAX = 6.8056469327705772e+38;
+const double d_DMIN = 1.1754943508222875e-38;
+
+const u32 u32_FMAX = 0x7FFFFFFFu;
+const u32 u32_FMIN = 0x00800000u;
 
 // IEEE 754 Values
 #define PosInfinity 0x7f800000
@@ -38,6 +46,38 @@
 #define _Ft_         ( ( cpuRegs.code >> 16 ) & 0x1F )
 #define _Fs_         ( ( cpuRegs.code >> 11 ) & 0x1F )
 #define _Fd_         ( ( cpuRegs.code >>  6 ) & 0x1F )
+
+// Zero Check
+#define IsZeroFloat(reg)  !((reg.UL)     & 0x7F800000)
+#define IsZeroDouble(reg) !((reg.UL_[1]) & 0x7FF80000)
+#define _FtIsZero_     IsZeroFloat(fpuRegs.fpr[ _Ft_ ])
+#define _FsIsZero_     IsZeroFloat(fpuRegs.fpr[ _Fs_ ])
+#define _FdIsZero_     IsZeroFloat(fpuRegs.fpr[ _Fd_ ])
+#define _FAIsZero_     IsZeroFloat(fpuRegs.ACC)
+
+// Ref
+#define _FtRef_     fpuRegs.fpr[ _Ft_ ]
+#define _FsRef_     fpuRegs.fpr[ _Fs_ ]
+#define _FdRef_     fpuRegs.fpr[ _Fd_ ]
+#define _FARef_     fpuRegs.ACC
+
+// Double
+#define _FtVald_     fpuRegs.fpr[ _Ft_ ].d
+#define _FsVald_     fpuRegs.fpr[ _Fs_ ].d
+#define _FdVald_     fpuRegs.fpr[ _Fd_ ].d
+#define _FAVald_     fpuRegs.ACC.d
+
+// U64's
+#define _FtValUd_    fpuRegs.fpr[ _Ft_ ].UD
+#define _FsValUd_    fpuRegs.fpr[ _Fs_ ].UD
+#define _FdValUd_    fpuRegs.fpr[ _Fd_ ].UD
+#define _FAValUd_    fpuRegs.ACC.UD
+
+// S64's - useful for ensuring sign extension when needed.
+#define _FtValSd_    fpuRegs.fpr[ _Ft_ ].SD
+#define _FsValSd_    fpuRegs.fpr[ _Fs_ ].SD
+#define _FdValSd_    fpuRegs.fpr[ _Fd_ ].SD
+#define _FAValSd_    fpuRegs.ACC.SD
 
 // Floats
 #define _FtValf_     fpuRegs.fpr[ _Ft_ ].f
@@ -155,6 +195,70 @@ bool checkDivideByZero(u32& xReg, u32 yDivisorReg, u32 zDividendReg, u32 cFlagsT
       intDoBranch( _BranchTarget_ );            \
    } else cpuRegs.pc += 4;
 
+static inline void u32_to_reg(FPRreg& reg)
+{
+#ifdef __x86_64__
+	pxAssert(0);
+#else
+	const u32 exp_correction = ((1023-127)<<20);
+	const u32 msb_mask = 0x8FFFFFFF;
+
+	u32 exp  = reg.UL & 0x7F800000;
+
+	if (exp == 0) {
+		reg.UL_[1] = reg.UL & 0x80000000;
+		reg.UL_[0] = 0;
+	} else {
+		u32 rot = _rotr(reg.UL, 3);
+
+		reg.UL_[1] = _pdep_u32(rot, msb_mask) + exp_correction;
+		reg.UL_[0] = rot & 0xE0000000; // Inject 29 '0' in the mantissa
+	}
+
+#if 0
+  u32 exman0 = rotate_right(source, 3);
+  u32 exman_high = exman0 & 0x0FFFFFFF;
+  u32 exman_low = exman0 & 0xE0000000;
+  result_high = sign_high + exman_high + EXPONENT_CORRECTION_HIGH;
+  result_low = exman_low;
+
+#endif
+
+#if 0
+[15:16:13] <gigaherz> u32 sign_high = source&0x80000000;
+[15:16:25] <gigaherz> u32 exman_high = (source&0x7fffffff) >> 3;
+[15:16:47] <gigaherz> u32 exman_low = (source&0x7fffffff) << 29;
+[15:16:57] <gigaherz> u32 result_high = sign_high
+[15:17:14] <gigaherz> u32 result_high = sign_high + exman_high + EXPONENT_CORRECTION_HIGH;
+[15:17:30] <gigaherz> u32 result_low = exman_low;
+
+	reg.UL_[1] = _pdep_u32(f >> 3, msb_mask); // Inject three '0' in exponent
+	reg.UL_[0] = f << 29; // Inject 29 '0' in the mantissa
+#endif
+
+#endif
+}
+
+static inline u32 reg_to_u32(const FPRreg& reg)
+{
+#ifdef __x86_64__
+	pxAssert(0);
+#else
+	const u32 exp_correction = ((1023-127)<<20);
+	const u32 msb_mask = 0x8FFFFFFF;
+
+	u32 exp  = reg.UL_[1] & 0x7FF80000;
+
+	if (exp == 0) {
+		return reg.UL_[1] & 0x80000000;
+	} else {
+		u32 msb = _pext_u32(reg.UL_[1] - exp_correction, msb_mask) << 3;
+		u32 lsb = reg.UL_[0] >> 29;
+		return msb | lsb;
+	}
+#endif
+}
+
 namespace R5900 {
 namespace Interpreter {
 namespace OpcodeImpl {
@@ -181,21 +285,94 @@ float fpuDouble(u32 f)
 	}
 }
 
+void upcast_reg(FPRreg& reg)
+{
+	if (!reg.IsDoubleCached) {
+		reg.IsDoubleCached = 1;
+		u32_to_reg(reg); // FIXME inline code
+	}
+}
+
+// FIXME use template for flags
+void downcast_reg(FPRreg& reg, u32 flags_to_set)
+{
+	reg.IsDoubleCached = 1;
+
+	// Save and delete the sign
+	u32 sign = reg.UL_[1] & 0x80000000;
+	reg.UL_[1] &= ~0x80000000;
+
+	if (IsZeroDouble(reg)) {
+		reg.f = 0; // Flush denormal to 0
+		reg.UD = 0;
+	} else {
+		if (reg.d > d_DMAX) { // overflow
+			//Console.Warning( "FPU OVERFLOW !!!!!!!!!!!!!" );
+			reg.d = d_DMAX;
+			reg.UL = u32_FMAX;
+			_ContVal_ |= (FPUflagSO | FPUflagO) & flags_to_set;
+		} else if (reg.d < d_DMIN) { // underflow
+			//Console.Warning( "FPU UNDERFLOW !!!!!!!!!!!!!" );
+			reg.UL = 0;
+			reg.UD = 0;
+			_ContVal_ |= (FPUflagSU | FPUflagU) & flags_to_set;
+		} else { // Normal number
+			reg.UL = reg_to_u32(reg); // FIXME inline code
+		}
+	}
+
+	// Restore the sign
+	reg.UL_[1] |= sign;
+	reg.UL |= sign;
+}
+
 void ABS_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValUl_ = _FsValUl_ & 0x7fffffff;
 	clearFPUFlags( FPUflagO | FPUflagU );
+#endif
 }
 
 void ADD_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_  = fpuDouble( _FsValUl_ ) + fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void ADDA_S() {
+#ifdef DOUBLE_FPU
+	// TEST
+	u32 fmax = 0x7FFFFFFF;
+	FPRreg temp_a = {0};
+	temp_a.UL = fmax;
+	u32_to_reg(temp_a);
+	u32 fmax_ = reg_to_u32(temp_a);
+
+	u32 fmin = 0x00800000;
+	FPRreg temp_i = {0};
+	temp_i.UL = fmin;
+	u32_to_reg(temp_i);
+	u32 fmin_ = reg_to_u32(temp_i);
+	// END test
+
+	upcast_reg(_FdRef_);
+	upcast_reg(_FsRef_);
+
+	_FAVald_  = _FsVald_ + _FtVald_;
+
+	downcast_reg(_FARef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
+
+#else
 	_FAValf_  = fpuDouble( _FsValUl_ ) + fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void BC1F() {
@@ -215,19 +392,35 @@ void BC1TL() {
 }
 
 void C_EQ() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	C_cond_S(==);
+#endif
 }
 
 void C_F() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	clearFPUFlags( FPUflagC ); //clears C regardless
+#endif
 }
 
 void C_LE() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	C_cond_S(<=);
+#endif
 }
 
 void C_LT() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	C_cond_S(<);
+#endif
 }
 
 void CFC1() {
@@ -245,21 +438,33 @@ void CTC1() {
 }
 
 void CVT_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_ = (float)_FsValSl_;
 	_FdValf_ = fpuDouble( _FdValUl_ );
+#endif
 }
 
 void CVT_W() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	if ( ( _FsValUl_ & 0x7F800000 ) <= 0x4E800000 ) { _FdValSl_ = (s32)_FsValf_; }
 	else if ( ( _FsValUl_ & 0x80000000 ) == 0 ) { _FdValUl_ = 0x7fffffff; }
 	else { _FdValUl_ = 0x80000000; }
+#endif
 }
 
 void DIV_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	if (checkDivideByZero( _FdValUl_, _FtValUl_, _FsValUl_, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
 	_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, 0)) return;
 	checkUnderflow( _FdValUl_, 0);
+#endif
 }
 
 /*	The Instruction Set manual has an overly complicated way of
@@ -267,74 +472,128 @@ void DIV_S() {
 	method provides a similar outcome and is faster. (cottonvibes)
 */
 void MADD_S() {
+#ifdef DOUBLE_FPU
+	upcast_reg(_FARef_);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FdVald_ = _FsVald_ * _FtVald_ + _FAVald_;
+
+	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
+
+#else
 	FPRreg temp;
 	temp.f = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	_FdValf_  = fpuDouble( _FAValUl_ ) + fpuDouble( temp.UL );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void MADDA_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FAValf_ += fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void MAX_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_  = std::max( _FsValf_, _FtValf_ );
 	clearFPUFlags( FPUflagO | FPUflagU );
+#endif
 }
 
 void MFC1() {
 	if ( !_Rt_ ) return;
+
 	cpuRegs.GPR.r[_Rt_].SD[0] = _FsValSl_;		// sign extension into 64bit
 }
 
 void MIN_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_  = std::min( _FsValf_, _FtValf_ );
 	clearFPUFlags( FPUflagO | FPUflagU );
+#endif
 }
 
 void MOV_S() {
+#ifdef DOUBLE_FPU
+	_FdValUd_ = _FsValUd_;
+#else
 	_FdValUl_ = _FsValUl_;
+#endif
 }
 
 void MSUB_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	FPRreg temp;
 	temp.f = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	_FdValf_  = fpuDouble( _FAValUl_ ) - fpuDouble( temp.UL );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void MSUBA_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FAValf_ -= fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void MTC1() {
 	_FsValUl_ = cpuRegs.GPR.r[_Rt_].UL[0];
+#ifdef DOUBLE_FPU
+	fpuRegs.fpr[_Rs_].IsDoubleCached = 0;
+#endif
 }
 
 void MUL_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void MULA_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FAValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void NEG_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValUl_  = (_FsValUl_ ^ 0x80000000);
 	clearFPUFlags( FPUflagO | FPUflagU );
+#endif
 }
 
 void RSQRT_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	FPRreg temp;
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
 		_ContVal_ |= FPUflagD | FPUflagSD;
@@ -350,9 +609,13 @@ void RSQRT_S() {
 
 	if (checkOverflow( _FdValUl_, 0)) return;
 	checkUnderflow( _FdValUl_, 0);
+#endif
 }
 
 void SQRT_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
 		_FdValUl_ = 0;// result is 0
 	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
@@ -361,18 +624,27 @@ void SQRT_S() {
 	} else
 		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
 	clearFPUFlags( FPUflagD );
+#endif
 }
 
 void SUB_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FdValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 void SUBA_S() {
+#ifdef DOUBLE_FPU
+	pxAssert(0);
+#else
 	_FAValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
+#endif
 }
 
 }	// End Namespace COP1
@@ -387,13 +659,18 @@ void LWC1() {
 	u32 addr;
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
 	if (addr & 0x00000003) { Console.Error( "FPU (LWC1 Opcode): Invalid Unaligned Memory Address" ); return; }  // Should signal an exception?
+
 	fpuRegs.fpr[_Rt_].UL = memRead32(addr);
+#ifdef DOUBLE_FPU
+	fpuRegs.fpr[_Rt_].IsDoubleCached = 0;
+#endif
 }
 
 void SWC1() {
 	u32 addr;
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
 	if (addr & 0x00000003) { Console.Error( "FPU (SWC1 Opcode): Invalid Unaligned Memory Address" ); return; }  // Should signal an exception?
+
 	memWrite32(addr, fpuRegs.fpr[_Rt_].UL);
 }
 
