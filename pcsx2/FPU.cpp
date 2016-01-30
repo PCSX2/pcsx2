@@ -345,12 +345,13 @@ void RSQRT_S() {
 }
 
 void SQRT_S() {
-	if ( ( _FtValUl_ & 0xFF800000 ) == 0x80000000 ) { _FdValUl_ = 0x80000000; } // If Ft = -0
+	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
+		_FdValUl_ = 0;// result is 0
 	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
 		_ContVal_ |= FPUflagI | FPUflagSI;
 		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
-	}
-	else { _FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); } // If Ft is Positive
+	} else
+		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
 	clearFPUFlags( FPUflagD );
 }
 
