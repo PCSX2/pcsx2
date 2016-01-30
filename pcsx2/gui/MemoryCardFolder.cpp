@@ -1530,9 +1530,9 @@ bool FileAccessHelper::CleanMemcardFilename( char* name ) {
 	const char illegalChars[] = { '\\', '%', ':', '|', '"', '<', '>' };
 	bool cleaned = false;
 
+	const size_t filenameLength = strlen( name );
 	for ( size_t i = 0; i < sizeof( illegalChars ); ++i ) {
-		// this sizeof looks really odd but I couldn't get MemoryCardFileEntry::entry.data.name (or variants) working, feel free to replace with something equivalent but nicer looking
-		for ( size_t j = 0; j < sizeof( ( (MemoryCardFileEntry*)0 )->entry.data.name ); ++j ) {
+		for ( size_t j = 0; j < filenameLength; ++j ) {
 			if ( name[j] == illegalChars[i] ) {
 				name[j] = '_';
 				cleaned = true;
@@ -1540,9 +1540,28 @@ bool FileAccessHelper::CleanMemcardFilename( char* name ) {
 		}
 	}
 
+	cleaned = CleanMemcardFilenameEndDotOrSpace( name, filenameLength ) || cleaned;
+
 	return cleaned;
 }
 
+bool FileAccessHelper::CleanMemcardFilenameEndDotOrSpace( char* name, size_t length ) {
+	// Windows truncates dots and spaces at the end of filenames, so make sure that doesn't happen
+	bool cleaned = false;
+	for ( size_t j = length; j > 0; --j ) {
+		switch ( name[j - 1] ) {
+		case ' ':
+		case '.':
+			name[j - 1] = '_';
+			cleaned = true;
+			break;
+		default:
+			return cleaned;
+		}
+	}
+
+	return cleaned;
+}
 
 bool MemoryCardFileMetadataReference::GetPath( wxFileName* fileName ) const {
 	bool parentCleaned = false;

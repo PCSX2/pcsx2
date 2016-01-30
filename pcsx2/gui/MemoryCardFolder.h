@@ -237,6 +237,9 @@ public:
 	static bool CleanMemcardFilename( char* name );
 
 protected:
+	// helper function for CleanMemcardFilename()
+	static bool CleanMemcardFilenameEndDotOrSpace( char* name, size_t length );
+
 	// Open a new file and remember it for later
 	wxFFile* Open( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false );
 	// Close a file and delete its handle
