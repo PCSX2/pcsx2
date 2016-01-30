@@ -154,13 +154,11 @@ if ($o_regression or $o_bad) {
     $blacklist{"arithmetic"} = 1;
     $blacklist{"branchdelay"} = 1;
     $blacklist{"compare"} = 1;
+    $blacklist{"fcr"} = 1;
     $blacklist{"muldiv"} = 1;
     $blacklist{"sqrt"} = 1;
     # IOP
     $blacklist{"lsudelay"} = 1;
-    # Dma vif
-    $blacklist{"stmod"} = 1;
-    $blacklist{"stcycl"} = 1;
     # Kernel IOP
     $blacklist{"register"} = 1;
     $blacklist{"receive"} = 1;
@@ -346,24 +344,31 @@ sub generate_cfg {
         $sed{$k} = $v;
     }
 
-    tie my @ui, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_ui.ini") or die "Fail to tie PCSX2_ui.ini $!\n";
-    tie my @vm, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_vm.ini") or die "Fail to tie PCSX2_vm.ini $!\n";
-
+    tie my @ui, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_ui.ini") or die "Fail to tie $!\n";
     for (@ui) {
         foreach my $option (keys(%sed)) {
             my $v = $sed{$option};
             s/$option=.*/$option=$v/;
         }
     }
+    untie @ui;
+
+    tie my @vm, 'Tie::File', File::Spec->catfile($out_dir, "PCSX2_vm.ini") or die "Fail to tie $!\n";
     for (@vm) {
         foreach my $option (keys(%sed)) {
             my $v = $sed{$option};
             s/$option=.*/$option=$v/;
         }
     }
-
-    untie @ui;
     untie @vm;
+
+    # Disable sound emulation (avoid spurious "ALSA lib pcm.c:7843:(snd_pcm_recover) underrun occurred")
+    tie my @spu, 'Tie::File', File::Spec->catfile($out_dir, "spu2-x.ini") or die "Fail to tie $!\n";
+    for (@spu) {
+        s/Output_Module=.*/Output_Module=nullout/;
+    }
+    untie @spu;
+
 }
 
 sub run_elf {
