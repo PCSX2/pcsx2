@@ -483,7 +483,7 @@ set(pcsx2WindowsSources
 	windows/DwmSetup.cpp
 	windows/ini.cpp
 	windows/PatchBrowser.cpp
-	windows/SampleProf.cp
+	windows/SamplProf.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinSysExec.cpp)
