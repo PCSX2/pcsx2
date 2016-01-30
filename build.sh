@@ -62,7 +62,6 @@ for ARG in "$@"; do
         --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
         --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
         --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
-        --wx28              ) flags+=(-DWX28_API=TRUE) ;;
         --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;
         --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
         --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile); useCross=1; ;;
@@ -88,7 +87,6 @@ for ARG in "$@"; do
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
-            echo "--wx28          : Force wxWidget 2.8"
             echo
             echo "** Expert Developer option **"
             echo "--gtk3          : replace GTK2 by GTK3"

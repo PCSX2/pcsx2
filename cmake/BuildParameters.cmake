@@ -45,7 +45,6 @@ option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
-option(WX28_API "Force wxWidget 2.8 lib (deprecated)")
 option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
 
 if(PACKAGE_MODE)
