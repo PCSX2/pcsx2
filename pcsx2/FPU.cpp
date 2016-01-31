@@ -596,7 +596,25 @@ void NEG_S() {
 
 void RSQRT_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	if (_FtIsZero_) { // division by 0
+		_ContVal_ |= FPUflagD | FPUflagSD;
+		_FdValUl_ = ( _FsValUl_ & 0x80000000 ) | u32_FMAX;
+		return;
+	}
+
+	upcast_reg(_FsRef_);
+	upcast_reg(_FtRef_);
+
+	if ( _FtValUl_ & 0x80000000 ) { // Negative number
+		_ContVal_ |= FPUflagI | FPUflagSI;
+	}
+
+	double temp = sqrt( fabs( _FtVald_ ) );
+
+	_FdVald_ = _FsVald_ / temp;
+
+	downcast_reg(_FdRef_, 0);
+
 #else
 	FPRreg temp;
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
@@ -617,8 +635,18 @@ void RSQRT_S() {
 }
 
 void SQRT_S() {
+	// Note spec says that sqrt(-0) == -0 but tests show the contrary. Who trust !
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+
+	if ( _FtValUl_ & 0x80000000 ) { // Negative number
+		_ContVal_ |= FPUflagI | FPUflagSI;
+	}
+
+	_FdVald_ = sqrt( fabs( _FtVald_ ) );
+
+	downcast_reg(_FdRef_, 0);
+
 #else
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
 		_FdValUl_ = 0;// result is 0
@@ -627,8 +655,9 @@ void SQRT_S() {
 		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
 	} else
 		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
-	clearFPUFlags( FPUflagD );
 #endif
+
+	clearFPUFlags( FPUflagD );
 }
 
 void SUB_S() {
