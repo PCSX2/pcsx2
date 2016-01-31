@@ -35,6 +35,8 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef BRANCH_RECOMPILE
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 REC_SYS(BEQ);
 REC_SYS(BEQL);
 REC_SYS(BNE);
