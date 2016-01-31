@@ -328,16 +328,24 @@ void downcast_reg(FPRreg& reg, u32 flags_to_set)
 
 void ABS_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	// Note: do it also on the cache value
+	_FdRef_ = _FsRef_;
+	_FdRef_.UL_[1] &= 0x7FFFFFFF;
+	_FdRef_.UL &= 0x7FFFFFFF;
 #else
 	_FdValUl_ = _FsValUl_ & 0x7fffffff;
-	clearFPUFlags( FPUflagO | FPUflagU );
 #endif
+	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
 void ADD_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FdVald_  = _FsVald_ + _FtVald_;
+
+	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FdValf_  = fpuDouble( _FsValUl_ ) + fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
@@ -521,11 +529,29 @@ void MADDA_S() {
 
 void MAX_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+#if 1
+	s32 ft = _FtValSl_ ^ ((u32)((_FtValSl_) >> 31) >> 1u);
+	s32 fs = _FsValSl_ ^ ((u32)((_FsValSl_) >> 31) >> 1u);
+
+	s32 fd = std::max(ft, fs);
+
+	_FdValSl_ = fd ^ ((u32)((fd) >> 31) >> 1u);
+#endif
+#if 0
+	// Extra version, less computing but 2 jump
+	if (_FtValUl_ & _FsValUl_ & 0x80000000u) {
+		_FdValSl_ = std::min(_FsValSl_, _FtValSl_);
+	} else {
+		_FdValSl_ = std::max(_FsValSl_, _FtValSl_);
+	}
+#endif
+
+	fpuRegs.fpr[_Rd_].IsDoubleCached = 0;
+
 #else
 	_FdValf_  = std::max( _FsValf_, _FtValf_ );
-	clearFPUFlags( FPUflagO | FPUflagU );
 #endif
+	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
 void MFC1() {
@@ -536,11 +562,30 @@ void MFC1() {
 
 void MIN_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+#if 1
+	s32 ft = _FtValSl_ ^ ((u32)((_FtValSl_) >> 31) >> 1u);
+	s32 fs = _FsValSl_ ^ ((u32)((_FsValSl_) >> 31) >> 1u);
+
+	s32 fd = std::min(ft, fs);
+
+	_FdValSl_ = fd ^ ((u32)((fd) >> 31) >> 1u);
+#endif
+#if 0
+	// Extra version, less computing but 2 jump
+	if (_FtValUl_ & _FsValUl_ & 0x80000000u) {
+		_FdValSl_ = std::max(_FsValSl_, _FtValSl_);
+	} else {
+		_FdValSl_ = std::min(_FsValSl_, _FtValSl_);
+	}
+#endif
+
+	fpuRegs.fpr[_Rd_].IsDoubleCached = 0;
+
+
 #else
 	_FdValf_  = std::min( _FsValf_, _FtValf_ );
-	clearFPUFlags( FPUflagO | FPUflagU );
 #endif
+	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
 void MOV_S() {
@@ -628,7 +673,10 @@ void MULA_S() {
 
 void NEG_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	// Note: do it also on the cache value
+	_FdRef_ = _FsRef_;
+	_FdRef_.UL_[1] ^= 0x80000000;
+	_FdRef_.UL ^= 0x80000000;
 #else
 	_FdValUl_  = (_FsValUl_ ^ 0x80000000);
 	clearFPUFlags( FPUflagO | FPUflagU );
@@ -704,7 +752,13 @@ void SQRT_S() {
 
 void SUB_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FdVald_  = _FsVald_ - _FtVald_;
+
+	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
+
 #else
 	_FdValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
@@ -714,7 +768,12 @@ void SUB_S() {
 
 void SUBA_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FAVald_  = _FsVald_ - _FtVald_;
+
+	downcast_reg(_FARef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FAValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
