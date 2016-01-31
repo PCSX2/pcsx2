@@ -347,21 +347,7 @@ void ADD_S() {
 
 void ADDA_S() {
 #ifdef DOUBLE_FPU
-	// TEST
-	u32 fmax = 0x7FFFFFFF;
-	FPRreg temp_a = {0};
-	temp_a.UL = fmax;
-	u32_to_reg(temp_a);
-	u32 fmax_ = reg_to_u32(temp_a);
-
-	u32 fmin = 0x00800000;
-	FPRreg temp_i = {0};
-	temp_i.UL = fmin;
-	u32_to_reg(temp_i);
-	u32 fmin_ = reg_to_u32(temp_i);
-	// END test
-
-	upcast_reg(_FdRef_);
+	upcast_reg(_FtRef_);
 	upcast_reg(_FsRef_);
 
 	_FAVald_  = _FsVald_ + _FtVald_;
@@ -462,7 +448,26 @@ void CVT_W() {
 
 void DIV_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	if (_FtIsZero_) { // division by 0
+		if (_FsIsZero_) { // but operand is 0
+			_ContVal_ |= FPUflagI | FPUflagSI;
+		} else {
+			_ContVal_ |= FPUflagD | FPUflagSD;
+		}
+
+		_FdValUl_ = ( ( _FsValUl_ ^ _FtValUl_) & 0x80000000 ) | u32_FMAX;
+		_FdRef_.IsDoubleCached = 0; // Or I can set the max value in double too
+
+		return;
+	}
+
+	upcast_reg(_FsRef_);
+	upcast_reg(_FtRef_);
+
+	_FdVald_ = _FsVald_ / _FtVald_;
+
+	downcast_reg(_FdRef_, 0);
+
 #else
 	if (checkDivideByZero( _FdValUl_, _FtValUl_, _FsValUl_, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
 	_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( _FtValUl_ );
@@ -481,7 +486,9 @@ void MADD_S() {
 	upcast_reg(_FtRef_);
 	upcast_reg(_FsRef_);
 
-	_FdVald_ = _FsVald_ * _FtVald_ + _FAVald_;
+	double mult = _FsVald_ * _FtVald_;
+
+	_FdVald_ = mult + _FAVald_;
 
 	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 
@@ -496,7 +503,15 @@ void MADD_S() {
 
 void MADDA_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FARef_);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	double mult = _FsVald_ * _FtVald_;
+
+	_FAVald_ = mult + _FAVald_;
+
+	downcast_reg(_FARef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FAValf_ += fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
@@ -530,7 +545,7 @@ void MIN_S() {
 
 void MOV_S() {
 #ifdef DOUBLE_FPU
-	_FdValUd_ = _FsValUd_;
+	_FdRef_ = _FsRef_;
 #else
 	_FdValUl_ = _FsValUl_;
 #endif
@@ -538,7 +553,15 @@ void MOV_S() {
 
 void MSUB_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FARef_);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	double mult = _FsVald_ * _FtVald_;
+
+	_FdVald_ = _FAVald_ - mult;
+
+	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	FPRreg temp;
 	temp.f = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
@@ -550,7 +573,15 @@ void MSUB_S() {
 
 void MSUBA_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FARef_);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	double mult = _FsVald_ * _FtVald_;
+
+	_FAVald_ = _FAVald_ - mult;
+
+	downcast_reg(_FARef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FAValf_ -= fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
@@ -567,7 +598,12 @@ void MTC1() {
 
 void MUL_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FdVald_ = _FsVald_ * _FtVald_;
+
+	downcast_reg(_FdRef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FdValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
@@ -577,7 +613,12 @@ void MUL_S() {
 
 void MULA_S() {
 #ifdef DOUBLE_FPU
-	pxAssert(0);
+	upcast_reg(_FtRef_);
+	upcast_reg(_FsRef_);
+
+	_FAVald_ = _FsVald_ * _FtVald_;
+
+	downcast_reg(_FARef_, FPUflagO | FPUflagSO | FPUflagU | FPUflagSU);
 #else
 	_FAValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
@@ -599,6 +640,7 @@ void RSQRT_S() {
 	if (_FtIsZero_) { // division by 0
 		_ContVal_ |= FPUflagD | FPUflagSD;
 		_FdValUl_ = ( _FsValUl_ & 0x80000000 ) | u32_FMAX;
+		_FdRef_.IsDoubleCached = 0; // Or I can set the max value in double too
 		return;
 	}
 
