@@ -433,8 +433,12 @@ void CFC1() {
 }
 
 void CTC1() {
-	if ( _Fs_ >= 16 )
-		fpuRegs.fprc[31] = cpuRegs.GPR.r[_Rt_].UL[0];
+	if ( _Fs_ < 16 ) return;
+
+	u32 v = cpuRegs.GPR.r[_Rt_].UL[0];
+	v &= 0x0083c078; // set always-zero bits
+	v |= 0x01000001; // set always-one bits
+	fpuRegs.fprc[31] = v;
 }
 
 void CVT_S() {
