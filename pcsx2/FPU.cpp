@@ -433,8 +433,8 @@ void CFC1() {
 }
 
 void CTC1() {
-	if ( _Fs_ != 31 ) return;
-	fpuRegs.fprc[_Fs_] = cpuRegs.GPR.r[_Rt_].UL[0];
+	if ( _Fs_ >= 16 )
+		fpuRegs.fprc[31] = cpuRegs.GPR.r[_Rt_].UL[0];
 }
 
 void CVT_S() {
