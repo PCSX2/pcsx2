@@ -320,7 +320,7 @@ float fpuDouble(u32 f)
 
 void upcast_reg(FPRreg& reg)
 {
-	if (!reg.IsDoubleCached) {
+	if (true || !reg.IsDoubleCached) {
 		reg.IsDoubleCached = 1;
 		u32_to_reg(reg); // FIXME inline code
 	}
