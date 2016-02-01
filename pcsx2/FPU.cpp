@@ -206,6 +206,8 @@ static inline void u32_to_reg(FPRreg& reg)
 #ifdef __x86_64__
 	pxAssert(0);
 #else
+
+
 	const u32 exp_correction = ((1023-127)<<20);
 	const u32 msb_mask = 0x8FFFFFFF;
 
@@ -215,11 +217,22 @@ static inline void u32_to_reg(FPRreg& reg)
 		reg.UL_[1] = reg.UL & 0x80000000;
 		reg.UL_[0] = 0;
 	} else {
+		u32 sign = reg.UL & 0x80000000;
+
 		u32 rot = _rotr(reg.UL, 3);
+#if 0
+		// Require BMI2 but fast
 
 		reg.UL_[1] = _pdep_u32(rot, msb_mask) + exp_correction;
 		reg.UL_[0] = rot & 0xE0000000; // Inject 29 '0' in the mantissa
+#else
+		u32 msb = rot & 0x0FFFFFFF;
+		reg.UL_[1] = sign | (msb + exp_correction);
+		reg.UL_[0] = rot & 0xE0000000;
+#endif
 	}
+
+
 
 #if 0
   u32 exman0 = rotate_right(source, 3);
@@ -250,18 +263,27 @@ static inline u32 reg_to_u32(const FPRreg& reg)
 #ifdef __x86_64__
 	pxAssert(0);
 #else
+
+#if 0
+	// Require BMI2 but fast and issue on rounding
+
 	const u32 exp_correction = ((1023-127)<<20);
 	const u32 msb_mask = 0x8FFFFFFF;
 
-	u32 exp  = reg.UL_[1] & 0x7FF80000;
+	u32 msb = _pext_u32(reg.UL_[1] - exp_correction, msb_mask) << 3;
+	u32 lsb = reg.UL_[0] >> 29;
+	return msb | lsb;
+#else
 
-	if (exp == 0) {
-		return reg.UL_[1] & 0x80000000;
-	} else {
-		u32 msb = _pext_u32(reg.UL_[1] - exp_correction, msb_mask) << 3;
-		u32 lsb = reg.UL_[0] >> 29;
-		return msb | lsb;
-	}
+	// Slower path
+	const u32 EXPONENT_CORRECTION_2 = (1023-127);
+
+	u32 sign = reg.UL_[1] & 0x80000000;
+	u32 exponent = ((reg.UL_[1] >> 20) & 0x7FF) - EXPONENT_CORRECTION_2;
+	u32 mantissa = (reg.UD >> 29) & 0x007FFFFF;
+	return sign | (exponent << 23) | mantissa;
+#endif
+
 #endif
 }
 
