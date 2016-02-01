@@ -18,12 +18,30 @@
 // Because nobody can't agree on a single name !
 #if defined(__GNUG__)
 
+// Yes there are several files for the same features!
+// x86intrin.h which is the general include provided by the compiler
+// intrin_x86.h which is a compatibility layer (as this file) but with a BSD license
+// x86_intrin.h, this file, which is another compatibility layer
 #include "x86intrin.h"
+#include "intrin_x86.h"
 
 #else
 
 #include "Intrin.h"
 
+#endif
+
+#if defined(__clang__)
+// Seriously what is so complicated to provided this bunch of intrinsics in clangs.
+static unsigned int _rotr(unsigned int x, int s)
+{
+	return (x >> s) | (x << (32 - s));
+}
+
+static unsigned int _rotl(unsigned int x, int s)
+{
+	return (x << s) | (x >> (32 - s));
+}
 #endif
 
 // Not correctly defined in GCC4.8 and below ! (dunno for VS)
