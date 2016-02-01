@@ -349,22 +349,24 @@ void GSState::ResetHandlers()
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-	int height = m_regs->DISP[i].DISPLAY.DH + 1;
-	int width = m_regs->DISP[i].DISPLAY.DW + 1;
+	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
+	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
 	GSVector4i r;
 
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640) 
+	if (height > 640 && !Vmode_VESA)
 	{
 		height /= 2;
 	}
 
-	
 	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
 	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + width / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.bottom = r.top + height / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	
+	r.right = r.left + width;
+	r.bottom = r.top + height;
+
+	// Useful for debugging games:
+	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
+
 	return r;
 }
 
@@ -383,7 +385,7 @@ GSVector4i GSState::GetFrameRect(int i)
 //  Some NTSC mode games request higher height values for accurate display size / position when width is 640
 //  Testcases : PS logo (640x512) , Resident Evil:CVX (640x480). potentially more test cases...
 
-	if (m_regs->SMODE1.CMOD == 2 && h > 448 && w < 640)
+	if (Vmode_NTSC && h > 448 && w < 640)
 		h = 448;
 
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
@@ -468,7 +470,7 @@ float GSState::GetTvRefreshRate()
   // TODO: Frequencies for VESA / DTV : http://users.neoscientists.org/~blue/ps2videomodes.txt
   // SMODE1 PLL Loop divider (LC) could be used for detection of other video modes. CMOD's only useful for NTSC/PAL.(2/3)
 
-	return (m_regs->SMODE1.CMOD & 1) ? 50 : (60/1.001f);
+	return (Vmode_PAL) ? 50 : (60/1.001f);
 }
 
 // GIFPackedRegHandler*

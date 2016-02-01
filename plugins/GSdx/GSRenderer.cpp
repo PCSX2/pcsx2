@@ -218,7 +218,6 @@ bool GSRenderer::Merge(int field)
 		if(dr[i].height() > 512) // hmm
 		{
 			int y = GetDeviceSize(i).y;
-			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD) y /= 2;
 			r.bottom = r.top + y;
 		}
 

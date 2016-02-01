@@ -1284,3 +1284,7 @@ enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
 // default gs config settings
 #define DEFAULT_EXTRA_RENDERING_THREADS 2
 
+// GS Video modes macros
+#define Vmode_VESA (m_regs->SMODE1.CMOD == 0)
+#define Vmode_NTSC (m_regs->SMODE1.CMOD == 2)
+#define Vmode_PAL  (m_regs->SMODE1.CMOD == 3)
