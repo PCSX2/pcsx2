@@ -26,6 +26,36 @@
 
 /* Can be made faster by not converting stuff back and forth between instructions. */
 
+/*
+   Solution to investigate do the float operation without any cast/clamping. Then
+   check if result is nan/infinite, fallback on double if yes. Otherwise go on.
+   It would avoid costly conversion but it would create a stall on the result.
+
+   Underflow handling might be tricky to implement. Note underflow => zero as result.
+ */
+#if 0
+// Potentially instead to mask the signed bit, we can also mask
+// the mantissa. Then ~x will be zero if NaN/infinite
+
+
+// SSE 4.1
+bool has_infinity(const __m256 &x) {
+	__m256 s   = _mm256_andnot_ps(_mm256_set1_ps(-0.0), x);
+	__m256 cmp = _mm256_cmp_ps(s,_mm256_set1_ps(1.0f/0.0f),0);
+	__m256i cmpi = _mm256_castps_si256(cmp);
+	return !_mm256_testz_si256(cmpi,cmpi);
+}
+
+bool has_infinity(__m256 x){
+    const __m256 SIGN_MASK = _mm256_set1_ps(-0.0);
+    const __m256 INF = _mm256_set1_ps(std::numeric_limits<float>::infinity());
+
+    x = _mm256_andnot_ps(SIGN_MASK, x);
+    x = _mm256_cmp_ps(x, INF, _CMP_EQ_OQ);
+    return _mm256_movemask_ps(x) != 0;
+}
+
+#endif
 
 //----------------------------------------------------------------
 // FPU emulation status:
@@ -362,7 +392,7 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	xCMP(xRegister32(tempecx), -25);
 	j8Ptr[3] = JLE8(0);
 
-	//diff = -24 .. -1 , expd < expt
+	// exponent diff = -24 .. -1 , expd < expt
 	xNEG(xRegister32(tempecx));
 	xDEC(xRegister32(tempecx));
 	xMOV(xRegister32(temp2), 0xffffffff);
@@ -371,13 +401,13 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	xAND.PS(xRegisterSSE(tempd), xRegisterSSE(xmmtemp));
 	j8Ptr[4] = JMP8(0);
 
+	// exponent diff = 25 .. 255 , expt < expd
 	x86SetJ8(j8Ptr[0]);
-	//diff = 25 .. 255 , expt < expd
 	xAND.PS(xRegisterSSE(tempt), ptr[s_const.neg]);
 	j8Ptr[5] = JMP8(0);
 
+	// exponent diff = 1 .. 24, expt < expd
 	x86SetJ8(j8Ptr[1]);
-	//diff = 1 .. 24, expt < expd
 	xDEC(xRegister32(tempecx));
 	xMOV(xRegister32(temp2), 0xffffffff);
 	xSHL(xRegister32(temp2), cl); //temp2 = 0xffffffff << tempecx
@@ -385,13 +415,13 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	xAND.PS(xRegisterSSE(tempt), xRegisterSSE(xmmtemp));
 	j8Ptr[6] = JMP8(0);
 
+	// exponent diff = -255 .. -25, expd < expt
 	x86SetJ8(j8Ptr[3]);
-	//diff = -255 .. -25, expd < expt
 	xAND.PS(xRegisterSSE(tempd), ptr[s_const.neg]);
 	j8Ptr[7] = JMP8(0);
 
+	// exponent diff == 0
 	x86SetJ8(j8Ptr[2]);
-	//diff == 0
 
 	x86SetJ8(j8Ptr[4]);
 	x86SetJ8(j8Ptr[5]);
