@@ -229,25 +229,28 @@ __emitinline void xJcc(JccComparisonType comparison, const void *target)
 
 xForwardJumpBase::xForwardJumpBase(uint opsize, JccComparisonType cctype)
 {
-    pxAssert(opsize == 1 || opsize == 4);
-    pxAssertDev(cctype != Jcc_Unknown, "Invalid ForwardJump conditional type.");
+	pxAssert( opsize == 1 || opsize == 4 );
+	pxAssertDev( cctype != Jcc_Unknown, "Invalid ForwardJump conditional type." );
+	if (cctype == Jcc_NOP) return;
 
-    BasePtr = (s8 *)xGetPtr() +
-              ((opsize == 1) ? 2 :                           // j8's are always 2 bytes.
-                   ((cctype == Jcc_Unconditional) ? 5 : 6)); // j32's are either 5 or 6 bytes
+	BasePtr = (s8*)xGetPtr() +
+		((opsize == 1) ? 2 :					// j8's are always 2 bytes.
+		((cctype==Jcc_Unconditional) ? 5 : 6 ));	// j32's are either 5 or 6 bytes
 
-    if (opsize == 1)
-        xWrite8((cctype == Jcc_Unconditional) ? 0xeb : (0x70 | cctype));
-    else {
-        if (cctype == Jcc_Unconditional)
-            xWrite8(0xe9);
-        else {
-            xWrite8(0x0f);
-            xWrite8(0x80 | cctype);
-        }
-    }
+	if( opsize == 1 )
+		xWrite8( (cctype == Jcc_Unconditional) ? 0xeb : (0x70 | cctype) );
+	else
+	{
+		if( cctype == Jcc_Unconditional )
+			xWrite8( 0xe9 );
+		else
+		{
+			xWrite8( 0x0f );
+			xWrite8( 0x80 | cctype );
+		}
+	}
 
-    xAdvancePtr(opsize);
+	xAdvancePtr( opsize );
 }
 
 void xForwardJumpBase::_setTarget(uint opsize) const

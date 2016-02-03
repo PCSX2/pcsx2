@@ -126,44 +126,47 @@ static const bool AlwaysUseMovaps = false;
 #define __emitinline __fi
 #endif
 
-// ModRM 'mod' field enumeration.   Provided mostly for reference:
-enum ModRm_ModField {
-    Mod_NoDisp = 0, // effective address operation with no displacement, in the form of [reg] (or uses special Disp32-only encoding in the case of [ebp] form)
-    Mod_Disp8,      // effective address operation with 8 bit displacement, in the form of [reg+disp8]
-    Mod_Disp32,     // effective address operation with 32 bit displacement, in the form of [reg+disp32],
-    Mod_Direct,     // direct reg/reg operation
-};
+	// ModRM 'mod' field enumeration.   Provided mostly for reference:
+	enum ModRm_ModField
+	{
+		Mod_NoDisp = 0,		// effective address operation with no displacement, in the form of [reg] (or uses special Disp32-only encoding in the case of [ebp] form)
+		Mod_Disp8,			// effective address operation with 8 bit displacement, in the form of [reg+disp8]
+		Mod_Disp32,			// effective address operation with 32 bit displacement, in the form of [reg+disp32],
+		Mod_Direct,			// direct reg/reg operation
+	};
 
-// ----------------------------------------------------------------------------
-// JccComparisonType - enumerated possibilities for inspired code branching!
-//
-enum JccComparisonType {
-    Jcc_Unknown = -2,
-    Jcc_Unconditional = -1,
-    Jcc_Overflow = 0x0,
-    Jcc_NotOverflow = 0x1,
-    Jcc_Below = 0x2,
-    Jcc_Carry = 0x2,
-    Jcc_AboveOrEqual = 0x3,
-    Jcc_NotCarry = 0x3,
-    Jcc_Zero = 0x4,
-    Jcc_Equal = 0x4,
-    Jcc_NotZero = 0x5,
-    Jcc_NotEqual = 0x5,
-    Jcc_BelowOrEqual = 0x6,
-    Jcc_Above = 0x7,
-    Jcc_Signed = 0x8,
-    Jcc_Unsigned = 0x9,
-    Jcc_ParityEven = 0xa,
-    Jcc_ParityOdd = 0xb,
-    Jcc_Less = 0xc,
-    Jcc_GreaterOrEqual = 0xd,
-    Jcc_LessOrEqual = 0xe,
-    Jcc_Greater = 0xf,
-};
+	// ----------------------------------------------------------------------------
+	// JccComparisonType - enumerated possibilities for inspired code branching!
+	//
+	enum JccComparisonType
+	{
+		Jcc_NOP    			= -3,
+		Jcc_Unknown			= -2,
+		Jcc_Unconditional	= -1,
+		Jcc_Overflow		= 0x0,
+		Jcc_NotOverflow		= 0x1,
+		Jcc_Below			= 0x2,
+		Jcc_Carry			= 0x2,
+		Jcc_AboveOrEqual	= 0x3,
+		Jcc_NotCarry		= 0x3,
+		Jcc_Zero			= 0x4,
+		Jcc_Equal			= 0x4,
+		Jcc_NotZero			= 0x5,
+		Jcc_NotEqual		= 0x5,
+		Jcc_BelowOrEqual	= 0x6,
+		Jcc_Above			= 0x7,
+		Jcc_Signed			= 0x8,
+		Jcc_Unsigned		= 0x9,
+		Jcc_ParityEven		= 0xa,
+		Jcc_ParityOdd		= 0xb,
+		Jcc_Less			= 0xc,
+		Jcc_GreaterOrEqual	= 0xd,
+		Jcc_LessOrEqual		= 0xe,
+		Jcc_Greater			= 0xf,
+	};
 
-// Not supported yet:
-//E3 cb 	JECXZ rel8 	Jump short if ECX register is 0.
+	// Not supported yet:
+	//E3 cb 	JECXZ rel8 	Jump short if ECX register is 0.
 
 // ----------------------------------------------------------------------------
 // SSE2_ComparisonType - enumerated possibilities for SIMD data comparison!
