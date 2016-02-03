@@ -433,10 +433,40 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	_freeX86reg(tempecx);
 }
 
-void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
+void FPU_MUL(int info, int regd, int sreg, int treg, bool acc, bool fast_path = false)
 {
-	u8 *noHack;
-	u32 *endMul = nullptr;
+	u8 *noHack   = nullptr;
+	u32 *endMul  = nullptr;
+
+	// Try a standard float operation. If the result is not a number, fallback to the
+	// double conversion. Note currently the fast path doesn't support the underflow flags
+	// but results are correct.
+	const xRegisterSSE out(fast_path ? _allocTempXMMreg(XMMT_FPS, -1) : regd);
+	if (fast_path) {
+		const xRegisterSSE flt(_allocTempXMMreg(XMMT_FPS, -1));
+		// Left treg/sreg untouched in case of the double fallback is executed
+		// Warning regd can be sreg/treg
+		xMOVSS(flt, xRegisterSSE(sreg));
+		xMUL.SS(flt, xRegisterSSE(treg));
+		xMOVSS(out, flt);
+
+		if( x86caps.hasStreamingSIMD4Extensions ) {
+			xANDN.PS(flt, ptr[s_const.pos_inf]);
+			xPTEST(flt, flt);
+		} else {
+			const xRegisterLong cmp(_allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0));
+			xAND.PS(flt, ptr[s_const.pos_inf]);
+			xCMP.PS(flt, ptr[s_const.pos_inf], SSE2_Equal);
+			xMOVMSKPS(cmp, flt);
+			xTEST(cmp, cmp);
+			_freeX86reg(cmp);
+		}
+
+		_freeXMMreg(flt.GetId());
+	}
+
+	// result is sane float just end the nightmare
+	xForwardJump32 good_float(fast_path ? Jcc_NotZero : Jcc_NOP);
 
 	if (CHECK_FPUMULHACK)
 	{
@@ -445,7 +475,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
 		xTEST(eax, eax);
 		noHack = JZ8(0);
-			xMOVDZX(xRegisterSSE(regd), eax);
+			xMOVDZX(out, eax);
 			endMul = JMP32(0);
 		x86SetJ8(noHack);
 	}
@@ -453,10 +483,16 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 	ToDouble(sreg); ToDouble(treg);
 	xMUL.SD(xRegisterSSE(sreg), xRegisterSSE(treg));
 	ToPS2FPU(sreg, true, treg, acc);
-	xMOVSS(xRegisterSSE(regd), xRegisterSSE(sreg));
+	xMOVSS(out, xRegisterSSE(sreg));
 
 	if (CHECK_FPUMULHACK)
 		x86SetJ32(endMul);
+
+	if (fast_path) {
+		good_float.SetTarget();
+		xMOVSS(xRegisterSSE(regd), out);
+		_freeXMMreg(out.GetId());
+	}
 }
 
 //------------------------------------------------------------------
@@ -903,7 +939,7 @@ void recMUL_S_xmm(int info)
 	int sreg, treg;
 	ALLOC_S(sreg); ALLOC_T(treg);
 
-	FPU_MUL(info, EEREC_D, sreg, treg, false);
+	FPU_MUL(info, EEREC_D, sreg, treg, false, true);
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
@@ -915,7 +951,7 @@ void recMULA_S_xmm(int info)
 	int sreg, treg;
 	ALLOC_S(sreg); ALLOC_T(treg);
 
-	FPU_MUL(info, EEREC_ACC, sreg, treg, true);
+	FPU_MUL(info, EEREC_ACC, sreg, treg, true, true);
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
