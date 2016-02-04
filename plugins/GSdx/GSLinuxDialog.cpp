@@ -9,7 +9,6 @@
  *
  *  This Program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -451,10 +450,10 @@ bool RunLinuxDialog()
 		NULL);
 
 	// The main area for the whole dialog box.
-	GtkWidget* main_box    = gtk_vbox_new(false, 5);
-	GtkWidget* central_box = gtk_vbox_new(false, 5);
+	GtkWidget* main_box     = gtk_vbox_new(false, 5);
+	GtkWidget* central_box  = gtk_vbox_new(false, 5);
 	GtkWidget* advanced_box = gtk_vbox_new(false, 5);
-	GtkWidget* debug_box   = gtk_vbox_new(false, 5);
+	GtkWidget* debug_box    = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
 	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
@@ -467,8 +466,8 @@ bool RunLinuxDialog()
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
-	GtkWidget* hack_table   = CreateTableInBox(advanced_box , "Hacks"                                , 7 , 2);
-	GtkWidget* gl_table     = CreateTableInBox(advanced_box , "OpenGL Very Advanced Custom Settings" , 6 , 2);
+	GtkWidget* hack_table   = CreateTableInBox(advanced_box, "Hacks"                                , 7 , 2);
+	GtkWidget* gl_table     = CreateTableInBox(advanced_box, "OpenGL Very Advanced Custom Settings" , 6 , 2);
 
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
@@ -488,9 +487,9 @@ bool RunLinuxDialog()
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box, gtk_label_new("Global Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Global Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box  , gtk_label_new("Debug/Recording Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording Settings"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
