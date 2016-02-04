@@ -81,10 +81,6 @@ void GenericListView::keydownEvent(wxKeyEvent& evt)
 	int sel = GetFirstSelected();
 	switch (evt.GetKeyCode())
 	{
-	case WXK_DELETE:
-		if (sel+1 == GetItemCount())
-			Select(sel-1);
-		break;
 	case WXK_UP:
 		if (sel > 0)
 			Select(sel-1);
