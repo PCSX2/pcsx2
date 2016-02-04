@@ -103,6 +103,7 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 
 	// test if should write xmm, mirror to mmx code
 	if( g_pCurInstInfo->info & EEINST_XMM ) {
+		pxAssert(0);
 
 		if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) _addNeededGPRtoXMMreg(XMMGPR_LO);
 		if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) _addNeededGPRtoXMMreg(XMMGPR_HI);
@@ -276,6 +277,7 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 
 	// test if should write xmm, mirror to mmx code
 	if( g_pCurInstInfo->info & EEINST_XMM ) {
+		pxAssert(0);
 
 		// no const regs
 		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
@@ -335,6 +337,7 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 
 	// test if should write xmm, mirror to mmx code
 	if( g_pCurInstInfo->info & EEINST_XMM ) {
+		pxAssert(0);
 
 		// no const regs
 		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
