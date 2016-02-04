@@ -163,9 +163,14 @@ void MainEmuFrame::OnMoveAround( wxMoveEvent& evt )
 
 	if( g_Conf->ProgLogBox.AutoDock )
 	{
-		g_Conf->ProgLogBox.DisplayPosition = GetRect().GetTopRight();
-		if( ConsoleLogFrame* proglog = wxGetApp().GetProgramLog() )
-			proglog->SetPosition( g_Conf->ProgLogBox.DisplayPosition );
+		if (ConsoleLogFrame* proglog = wxGetApp().GetProgramLog())
+		{
+			if (!proglog->IsMaximized())
+			{
+				g_Conf->ProgLogBox.DisplayPosition = GetRect().GetTopRight();
+				proglog->SetPosition(g_Conf->ProgLogBox.DisplayPosition);
+			}
+		}
 	}
 
 	evt.Skip();
