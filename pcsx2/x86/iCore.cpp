@@ -47,12 +47,15 @@ _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 
 static int s_xmmchecknext = 0;
 
+// Clear current register mapping structure
+// Clear allocation counter
 void _initXMMregs() {
 	memzero( xmmregs );
 	g_xmmAllocCounter = 0;
 	s_xmmchecknext = 0;
 }
 
+// Get a pointer to the physical register (GPR / FPU / VU etc..)
 __fi void* _XMMGetAddr(int type, int reg, VURegs *VU)
 {
 	switch (type) {
@@ -79,6 +82,14 @@ __fi void* _XMMGetAddr(int type, int reg, VURegs *VU)
 	return NULL;
 }
 
+// Get the index of a free register
+// Step1: check any available register (inuse == 0)
+// Step2: check registers that are not live (both EEINST_LIVE* are cleared)
+// Step3: check registers that won't use SSE in the future (likely broken as EEINST_XMM isn't set properly)
+// Step4: take a randome register
+//
+// Note: I don't understand why we don't check register that aren't useful anymore
+// (i.e EEINST_USED is cleared)
 int  _getFreeXMMreg()
 {
 	int i, tempi;
@@ -140,6 +151,7 @@ int  _getFreeXMMreg()
 	throw Exception::FailedToAllocateRegister();
 }
 
+// Reserve a XMM register for temporary operation.
 int _allocTempXMMreg(XMMSSEType type, int xmmreg) {
 	if (xmmreg == -1)
 		xmmreg = _getFreeXMMreg();
@@ -155,6 +167,7 @@ int _allocTempXMMreg(XMMSSEType type, int xmmreg) {
 	return xmmreg;
 }
 
+#ifndef DISABLE_SVU
 int _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode) {
 	int i;
 	int readfromreg = -1;
@@ -208,7 +221,14 @@ int _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode) {
 
 	return xmmreg;
 }
+#endif
 
+// Search register "reg" of type "type" which is inuse
+// If register doesn't have the read flag but mode is read
+// then populate the register from the memory
+// Note: There is a special HALF mode (to handle low 64 bits copy) but it seems to be unused
+//
+// So basically it is mostly used to set the mode of the register, and load value if we need to read it
 int _checkXMMreg(int type, int reg, int mode)
 {
 	int i;
@@ -238,6 +258,7 @@ int _checkXMMreg(int type, int reg, int mode)
 	return -1;
 }
 
+#ifndef DISABLE_SVU
 int _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode) {
 	int i;
 	int readfromreg = -1;
@@ -294,7 +315,15 @@ int _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode) {
 
 	return xmmreg;
 }
+#endif
 
+// Fully allocate a FPU register
+// first trial:
+//     search an already reserved reg then populate it if we read it
+// Second trial:
+//     reserve a new reg, then populate it if we read it
+//
+// Note: FPU are always in XMM register
 int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 	int i;
 
@@ -332,6 +361,8 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 	return xmmreg;
 }
 
+// In short try to allocate a GPR register. Code is an uterly mess
+// due to XMM/MMX/X86 crazyness !
 int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 {
 	int i;
@@ -439,6 +470,8 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 	return xmmreg;
 }
 
+// Same code as _allocFPtoXMMreg but for the FPU ACC register
+// (seriously boy you could have factorized it)
 int _allocFPACCtoXMMreg(int xmmreg, int mode)
 {
 	int i;
@@ -477,6 +510,7 @@ int _allocFPACCtoXMMreg(int xmmreg, int mode)
 	return xmmreg;
 }
 
+#ifndef DISABLE_SVU
 void _addNeededVFtoXMMreg(int vfreg) {
 	int i;
 
@@ -489,7 +523,10 @@ void _addNeededVFtoXMMreg(int vfreg) {
 		xmmregs[i].needed = 1;
 	}
 }
+#endif
 
+// Mark reserved GPR reg as needed. It won't be evicted anymore.
+// You must use _clearNeededXMMregs to clear the flag
 void _addNeededGPRtoXMMreg(int gprreg)
 {
 	int i;
@@ -505,6 +542,7 @@ void _addNeededGPRtoXMMreg(int gprreg)
 	}
 }
 
+#ifndef DISABLE_SVU
 void _addNeededACCtoXMMreg() {
 	int i;
 
@@ -517,7 +555,10 @@ void _addNeededACCtoXMMreg() {
 		break;
 	}
 }
+#endif
 
+// Mark reserved FPU reg as needed. It won't be evicted anymore.
+// You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPtoXMMreg(int fpreg) {
 	int i;
 
@@ -532,6 +573,8 @@ void _addNeededFPtoXMMreg(int fpreg) {
 	}
 }
 
+// Mark reserved FPU ACC reg as needed. It won't be evicted anymore.
+// You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPACCtoXMMreg() {
 	int i;
 
@@ -545,6 +588,8 @@ void _addNeededFPACCtoXMMreg() {
 	}
 }
 
+// Clear needed flags of all registers
+// Written register will set MODE_READ (aka data is valid, no need to load it)
 void _clearNeededXMMregs() {
 	int i;
 
@@ -564,6 +609,7 @@ void _clearNeededXMMregs() {
 	}
 }
 
+#ifndef DISABLE_SVU
 void _deleteVFtoXMMreg(int reg, int vu, int flush)
 {
 	int i;
@@ -634,7 +680,9 @@ void _deleteVFtoXMMreg(int reg, int vu, int flush)
 		}
 	}
 }
+#endif
 
+#if 0
 void _deleteACCtoXMMreg(int vu, int flush)
 {
 	int i;
@@ -695,8 +743,11 @@ void _deleteACCtoXMMreg(int vu, int flush)
 		}
 	}
 }
+#endif
 
-// when flush is 1 or 2, only commits the reg to mem (still leave its xmm entry)
+// Flush is 0: _freeXMMreg. Flush in memory if MODE_WRITE. Clear inuse
+// Flush is 1: Flush in memory. But register is still valid
+// Flush is 2: like 0 ...
 void _deleteGPRtoXMMreg(int reg, int flush)
 {
 	int i;
@@ -731,6 +782,9 @@ void _deleteGPRtoXMMreg(int reg, int flush)
 	}
 }
 
+// Flush is 0: _freeXMMreg. Flush in memory if MODE_WRITE. Clear inuse
+// Flush is 1: Flush in memory. But register is still valid
+// Flush is 2: drop register content
 void _deleteFPtoXMMreg(int reg, int flush)
 {
 	int i;
@@ -758,6 +812,9 @@ void _deleteFPtoXMMreg(int reg, int flush)
 	}
 }
 
+// Free cached register
+// Step 1: flush content in memory if MODE_WRITE
+// Step 2: clear 'inuse' field
 void _freeXMMreg(u32 xmmreg)
 {
 	pxAssert( xmmreg < iREGCNT_XMM );
@@ -871,6 +928,7 @@ void _freeXMMreg(u32 xmmreg)
 	xmmregs[xmmreg].inuse = 0;
 }
 
+// Return the number of inuse XMM register that have the MODE_WRITE flag
 int _getNumXMMwrite()
 {
 	int num = 0, i;
@@ -881,6 +939,9 @@ int _getNumXMMwrite()
 	return num;
 }
 
+// Step1: check any available register (inuse == 0)
+// Step2: check registers that are not live (both EEINST_LIVE* are cleared)
+// Step3: check registers that are not useful anymore (EEINST_USED cleared)
 u8 _hasFreeXMMreg()
 {
 	int i;
@@ -911,6 +972,7 @@ u8 _hasFreeXMMreg()
 	return 0;
 }
 
+#if 0
 void _moveXMMreg(int xmmreg)
 {
 	int i;
@@ -931,7 +993,9 @@ void _moveXMMreg(int xmmreg)
 	xmmregs[xmmreg].inuse = 0;
 	xMOVDQA(xRegisterSSE(i), xRegisterSSE(xmmreg));
 }
+#endif
 
+// Flush in memory all inuse registers but registers are still valid
 void _flushXMMregs()
 {
 	int i;
@@ -949,6 +1013,7 @@ void _flushXMMregs()
 	}
 }
 
+// Flush in memory all inuse registers. All registers are invalid
 void _freeXMMregs()
 {
 	int i;
@@ -1004,6 +1069,8 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy)
 	pxAssume( false );
 }
 
+// Seem related to the mix between XMM/x86 in order to avoid a couple of move
+// But it is quite obscure !!!
 int _allocCheckGPRtoXMM(EEINST* pinst, int gprreg, int mode)
 {
 	if( pinst->regs[gprreg] & EEINST_XMM ) return _allocGPRtoXMMreg(-1, gprreg, mode);
@@ -1011,6 +1078,8 @@ int _allocCheckGPRtoXMM(EEINST* pinst, int gprreg, int mode)
 	return _checkXMMreg(XMMTYPE_GPRREG, gprreg, mode);
 }
 
+// Seem related to the mix between XMM/x86 in order to avoid a couple of move
+// But it is quite obscure !!!
 int _allocCheckFPUtoXMM(EEINST* pinst, int fpureg, int mode)
 {
 	if( pinst->fpuregs[fpureg] & EEINST_XMM ) return _allocFPtoXMMreg(-1, fpureg, mode);
@@ -1050,6 +1119,7 @@ u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg)
 	return 0;
 }
 
+#if 0
 u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg)
 {
 	u32 i, inst = 1;
@@ -1068,6 +1138,7 @@ u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg)
 
 	return 0;
 }
+#endif
 
 void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 {

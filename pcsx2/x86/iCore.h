@@ -163,19 +163,14 @@ struct _xmmregs {
 void _initXMMregs();
 int  _getFreeXMMreg();
 int  _allocTempXMMreg(XMMSSEType type, int xmmreg);
-int  _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
 int  _allocFPtoXMMreg(int xmmreg, int fpreg, int mode);
 int  _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode);
-int  _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
 int  _allocFPACCtoXMMreg(int xmmreg, int mode);
 int  _checkXMMreg(int type, int reg, int mode);
-void _addNeededVFtoXMMreg(int vfreg);
-void _addNeededACCtoXMMreg();
 void _addNeededFPtoXMMreg(int fpreg);
 void _addNeededFPACCtoXMMreg();
 void _addNeededGPRtoXMMreg(int gprreg);
 void _clearNeededXMMregs();
-void _deleteVFtoXMMreg(int reg, int vu, int flush);
 //void _deleteACCtoXMMreg(int vu, int flush);
 void _deleteGPRtoXMMreg(int reg, int flush);
 void _deleteFPtoXMMreg(int reg, int flush);
@@ -185,6 +180,13 @@ void _flushXMMregs();
 u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
+#ifndef DISABLE_SVU
+int  _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
+int  _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
+void _addNeededVFtoXMMreg(int vfreg);
+void _addNeededACCtoXMMreg();
+void _deleteVFtoXMMreg(int reg, int vu, int flush);
+#endif
 
 void _signExtendSFtoM(uptr mem);
 
@@ -196,6 +198,18 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy); // returns t
 //////////////////////
 // Instruction Info //
 //////////////////////
+// Liveness information for the noobs :)
+// Let's take I instructions that read from RN register set and write to
+// WN register set.
+// 1/ EEINST_USED will be set in register N of instruction I1, if and only if RN or WN is used in the insruction I2 with I2 >= I1.
+// In others words, it will be set on [I0, ILast] with ILast the last instruction that use the register.
+// 2/ EEINST_LASTUSE will be set in register N the last instruction that use the register.
+// Note: EEINST_USED will be cleared after EEINST_LASTUSE
+// My guess: both variable allow to detect register that can be flushed for free
+//
+// 3/ EEINST_LIVE* is cleared when register is written. And set again when register is read.
+// My guess: the purpose is to detect the usage hole in the flow
+
 #define EEINST_LIVE0	1	// if var is ever used (read or write)
 #define EEINST_LIVE2	4	// if cur var's next 64 bits are needed
 #define EEINST_LASTUSE	8	// if var isn't written/read anymore
@@ -227,7 +241,7 @@ extern void _recClearInst(EEINST* pinst);
 // returns the number of insts + 1 until written (0 if not written)
 extern u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 // returns the number of insts + 1 until used (0 if not used)
-extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+//extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 extern void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 
 static __fi bool EEINST_ISLIVE64(u32 reg)	{ return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0)); }
