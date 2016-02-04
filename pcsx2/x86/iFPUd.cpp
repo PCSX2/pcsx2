@@ -84,6 +84,7 @@ using namespace x86Emitter;
 
 // Add/Sub opcodes produce the same results as the ps2
 #define FPU_CORRECT_ADD_SUB 1
+#define FAST_FPU_CORRECT_ADD_SUB 0
 
 #ifdef FPU_RECOMPILE
 
@@ -368,11 +369,21 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 // The difference of the exponents = the amount that the smaller operand will be shifted right by.
 // Modification - the PS2 uses a single guard bit? (Coded by Nneeve)
 //------------------------------------------------------------------
-void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they are floats
+void FPU_ADD_SUB(int tempd, int tempt, int op) //tempd and tempt are overwritten, they are floats
 {
 	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
+
+#if FAST_FPU_CORRECT_ADD_SUB
+	// Code is quite costly. It can avoided 50% of the time (if operation repartition is uniform)
+	if( x86caps.hasStreamingSIMD4Extensions ) {
+		xMOVSS(xRegisterSSE(xmmtemp), xRegisterSSE(tempd));
+		xPXOR(xRegisterSSE(xmmtemp), xRegisterSSE(tempd));
+		xPTEST(xRegisterSSE(xmmtemp), ptr[s_const.neg]);
+	}
+	xForwardJump32 end(!x86caps.hasStreamingSIMD4Extensions ? Jcc_NOP : !op ? Jcc_NotZero : Jcc_Zero);
+#endif
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(tempd));
 	xMOVD(xRegister32(temp2), xRegisterSSE(tempt));
@@ -427,6 +438,11 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	x86SetJ8(j8Ptr[5]);
 	x86SetJ8(j8Ptr[6]);
 	x86SetJ8(j8Ptr[7]);
+#if FAST_FPU_CORRECT_ADD_SUB
+	if( x86caps.hasStreamingSIMD4Extensions ) {
+		end.SetTarget();
+	}
+#endif
 
 	_freeXMMreg(xmmtemp);
 	_freeX86reg(temp2);
@@ -507,7 +523,7 @@ void recFPUOp(int info, int regd, int op, bool acc)
 	ALLOC_S(sreg); ALLOC_T(treg);
 
 	if (FPU_CORRECT_ADD_SUB)
-		FPU_ADD_SUB(sreg, treg);
+		FPU_ADD_SUB(sreg, treg, op);
 
 	ToDouble(sreg); ToDouble(treg);
 
@@ -784,7 +800,7 @@ void recMaddsub(int info, int regd, int op, bool acc)
 	GET_ACC(treg);
 
 	if (FPU_CORRECT_ADD_SUB)
-		FPU_ADD_SUB(treg, sreg); //might be problematic for something!!!!
+		FPU_ADD_SUB(treg, sreg, op); //might be problematic for something!!!!
 
 	//          TEST FOR ACC/MUL OVERFLOWS, PROPOGATE THEM IF THEY OCCUR
 
