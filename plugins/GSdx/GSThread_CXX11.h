@@ -35,7 +35,7 @@ protected:
 // For the moment let's keep pthread but uses new std object (mutex, cond_var)
 //#define _STD_THREAD_
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 class GSThread : public IGSThread
 {
