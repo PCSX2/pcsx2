@@ -691,13 +691,14 @@ void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 			m_conf.AutoDock = true;
 		}
 	}
-	m_conf.DisplayPosition = GetPosition();
+	if (!IsMaximized())
+		m_conf.DisplayPosition = GetPosition();
 	evt.Skip();
 }
 
 void ConsoleLogFrame::OnResize( wxSizeEvent& evt )
 {
-	if (!ConsoleLogFrame::IsMaximized())
+	if (!IsMaximized())
 		m_conf.DisplaySize = GetSize();
 	evt.Skip();
 }
