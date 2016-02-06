@@ -4378,7 +4378,7 @@ bool GSC_Castlevania(const GSFrameInfo& fi, int& skip) // DX ONLY
 	return true;
 }
 
-bool GSC_Black(const GSFrameInfo& fi, int& skip)
+bool GSC_Black(const GSFrameInfo& fi, int& skip) // DX ONLY
 {
 	if(skip == 0)
 	{
@@ -5435,7 +5435,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		if (s_crc_hack_level > 1) {
 			map[CRC::AceCombat4] = GSC_AceCombat4;
 			map[CRC::AlpineRacer3] = GSC_AlpineRacer3;
-			map[CRC::Black] = GSC_Black;
 			map[CRC::BlackHawkDown] = GSC_BlackHawkDown;
 			map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 			map[CRC::BullyCC] = GSC_BullyCC; // Bully is fixed, maybe this one too?
@@ -5564,6 +5563,10 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 
 			// Deprecated hack could be removed (Cutie)
 			map[CRC::Grandia3] = GSC_Grandia3;
+
+			// At least a part of the CRC is fixed with texture shuffle.
+			// The status of post-processing effect is unknown
+			map[CRC::Black] = GSC_Black;
 		}
 	}
 
