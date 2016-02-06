@@ -424,6 +424,12 @@ void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
 
 void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 {
+	// Note: do it first.
+	// 1/ It doesn't work in SSE if you did it in the end (I suspect
+	// a conflict with _allocGPRtoXMMreg when rt==rd)
+	// 2/ CPU has minimum cycle delay between read/write
+	_flushConstReg(_Rt_);
+
 #if NO_MMX
 	_addNeededGPRtoXMMreg(_Rd_);
 	*rdreg = _allocGPRtoXMMreg(-1, _Rd_, MODE_WRITE);
@@ -433,9 +439,6 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	xAND(eax, 0x3f);
 	xMOVDZX(xRegisterSSE(*rstemp), eax);
-	*rsreg = *rstemp;
-
-	_flushConstReg(_Rt_);
 #else
 	_addNeededMMXreg(MMX_GPR+_Rd_);
 	*rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
@@ -445,10 +448,8 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	xAND(eax, 0x3f);
 	xMOVDZX(xRegisterMMX(*rstemp), eax);
-	*rsreg = *rstemp;
-
-	_flushConstReg(_Rt_);
 #endif
+	*rsreg = *rstemp;
 }
 
 //// SLLV
@@ -591,7 +592,7 @@ void recDSLLV_constt(int info)
 	// The others possibility could be a read back of the upper 64 bits
 	// (better use of register but code will likely be flushed after anyway)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	_deleteGPRtoXMMreg(_Rt_, 3);
+	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
 #else
 
@@ -651,7 +652,7 @@ void recDSRLV_constt(int info)
 	// The others possibility could be a read back of the upper 64 bits
 	// (better use of register but code will likely be flushed after anyway)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	_deleteGPRtoXMMreg(_Rt_, 3);
+	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
 #else
 	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
