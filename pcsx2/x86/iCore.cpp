@@ -748,6 +748,7 @@ void _deleteACCtoXMMreg(int vu, int flush)
 // Flush is 0: _freeXMMreg. Flush in memory if MODE_WRITE. Clear inuse
 // Flush is 1: Flush in memory. But register is still valid
 // Flush is 2: like 0 ...
+// Flush is 3: drop register content
 void _deleteGPRtoXMMreg(int reg, int flush)
 {
 	int i;
@@ -774,6 +775,10 @@ void _deleteGPRtoXMMreg(int reg, int flush)
 
 					if( flush == 2 )
 						xmmregs[i].inuse = 0;
+					break;
+
+				case 3:
+					xmmregs[i].inuse = 0;
 					break;
 			}
 
