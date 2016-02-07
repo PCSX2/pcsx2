@@ -20,7 +20,7 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
-#define NO_MMX 0
+#define NO_MMX 1
 
 using namespace x86Emitter;
 
