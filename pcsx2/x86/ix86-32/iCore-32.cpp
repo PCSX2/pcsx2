@@ -502,33 +502,6 @@ __fi void* _MMXGetAddr(int reg)
 
 int _checkMMXreg(int reg, int mode)
 {
-	uint i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].inuse && mmxregs[i].reg == reg ) {
-
-			if( !(mmxregs[i].mode & MODE_READ) && (mode&MODE_READ) ) {
-
-				if( reg == MMX_GPR ) {
-					// moving in 0s
-					xPXOR(xRegisterMMX(i), xRegisterMMX(i));
-				}
-				else {
-					if (MMX_ISGPR(reg) && (mode&(MODE_READHALF|MODE_READ))) _flushConstReg(reg-MMX_GPR);
-					if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) )
-						xMOVDZX(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
-					else
-						xMOVQ(xRegisterMMX(i), ptr[(_MMXGetAddr(reg))]);
-				}
-				SetMMXstate();
-			}
-
-			mmxregs[i].mode |= mode;
-			mmxregs[i].counter = g_mmxAllocCounter++;
-			mmxregs[i].needed = 1;
-			return i;
-		}
-	}
-
 	return -1;
 }
 
@@ -548,45 +521,11 @@ void _clearNeededMMXregs()
 
 void _deleteMMXreg(int reg, int flush)
 {
-	uint i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-
-		if (mmxregs[i].inuse && mmxregs[i].reg == reg ) {
-
-			switch(flush) {
-				case 0: // frees all of the reg
-					_freeMMXreg(i);
-					break;
-				case 1: // flushes all of the reg
-					if( mmxregs[i].mode & MODE_WRITE) {
-						pxAssert( mmxregs[i].reg != MMX_GPR );
-
-						if( MMX_IS32BITS(reg) )
-							xMOVD(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
-						else
-							xMOVQ(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
-						SetMMXstate();
-
-						// get rid of MODE_WRITE since don't want to flush again
-						mmxregs[i].mode &= ~MODE_WRITE;
-						mmxregs[i].mode |= MODE_READ;
-					}
-					return;
-				case 2: // just stops using the reg (no flushing)
-					mmxregs[i].inuse = 0;
-					break;
-			}
-			return;
-		}
-	}
 }
 
 int _getNumMMXwrite()
 {
 	uint num = 0, i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if( mmxregs[i].inuse && (mmxregs[i].mode&MODE_WRITE) ) ++num;
-	}
 
 	return num;
 }

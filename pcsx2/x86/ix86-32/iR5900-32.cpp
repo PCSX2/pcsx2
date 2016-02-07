@@ -247,20 +247,6 @@ int _flushXMMunused()
 
 int _flushMMXunused()
 {
-	u32 i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (!mmxregs[i].inuse || mmxregs[i].needed || !(mmxregs[i].mode&MODE_WRITE) ) continue;
-
-		if( MMX_ISGPR(mmxregs[i].reg) ) {
-			//if( !(g_pCurInstInfo->regs[mmxregs[i].reg-MMX_GPR]&EEINST_USED) ) {
-			if( !_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, mmxregs[i].reg-MMX_GPR) ) {
-				_freeMMXreg(i);
-				mmxregs[i].inuse = 1;
-				return 1;
-			}
-		}
-	}
-
 	return 0;
 }
 
