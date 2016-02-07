@@ -72,7 +72,7 @@ static void iMOV128_SSE( const xIndirectVoid& destRm, const xIndirectVoid& srcRm
 //
 static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcRm )
 {
-	if( (x86FpuState == FPU_STATE) && _hasFreeXMMreg() )
+	if( _hasFreeXMMreg() )
 	{
 		// Move things using MOVLPS:
 		xRegisterSSE reg( _allocTempXMMreg( XMMT_INT, -1 ) );

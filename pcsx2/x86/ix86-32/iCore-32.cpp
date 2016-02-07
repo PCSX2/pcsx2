@@ -28,7 +28,6 @@ using namespace x86Emitter;
 // landmass of shared code. (air)
 extern u32 g_psxConstRegs[32];
 
-u16 x86FpuState;
 static u16 g_mmxAllocCounter = 0;
 
 // X86 caching
@@ -486,13 +485,6 @@ int _getNumMMXwrite()
 	uint num = 0, i;
 
 	return num;
-}
-
-void SetFPUstate() {
-	if (x86FpuState == MMX_STATE) {
-		xEMMS();
-		x86FpuState = FPU_STATE;
-	}
 }
 
 void _signExtendSFtoM(uptr mem)

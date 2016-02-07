@@ -98,7 +98,6 @@ static bool s_nBlockFF;
 
 // save states for branches
 GPR_reg64 s_saveConstRegs[32];
-static u16 s_savex86FpuState;
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
 static EEINST* s_psaveInstInfo = NULL;
 
@@ -417,7 +416,6 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static DynGenFunc* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
-	xEMMS();
 	xFastCall(dyna_block_discard);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
@@ -426,7 +424,6 @@ static DynGenFunc* _DynGen_DispatchBlockDiscard()
 static DynGenFunc* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
-	xEMMS();
 	xFastCall(dyna_page_reset);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
@@ -569,8 +566,6 @@ static void recAlloc()
 	// No errors.. Proceed with initialization:
 
 	_DynGen_Dispatchers();
-
-	x86FpuState = FPU_STATE;
 }
 
 static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
@@ -612,7 +607,6 @@ static void recResetRaw()
 
 	recPtr = *recMem;
 	recConstBufPtr = recConstBuf;
-	x86FpuState = FPU_STATE;
 
 	g_branch = 0;
 }
@@ -906,7 +900,6 @@ void SetBranchImm( u32 imm )
 
 void SaveBranchState()
 {
-	s_savex86FpuState = x86FpuState;
 	s_savenBlockCycles = s_nBlockCycles;
 	memcpy(s_saveConstRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
 	s_saveHasConstReg = g_cpuHasConstReg;
@@ -920,7 +913,6 @@ void SaveBranchState()
 
 void LoadBranchState()
 {
-	x86FpuState = s_savex86FpuState;
 	s_nBlockCycles = s_savenBlockCycles;
 
 	memcpy(g_cpuConstRegs, s_saveConstRegs, sizeof(g_cpuConstRegs));
@@ -963,11 +955,6 @@ void iFlushCall(int flushtype)
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_flushConstRegs();
-
-	if (x86FpuState==MMX_STATE) {
-		xEMMS();
-		x86FpuState=FPU_STATE;
-	}
 }
 
 //void testfpu()
@@ -1658,7 +1645,6 @@ static void __fastcall recRecompile( const u32 startpc )
 	// reset recomp state variables
 	s_nBlockCycles = 0;
 	pc = startpc;
-	x86FpuState = FPU_STATE;
 	g_cpuHasConstReg = g_cpuFlushedConstReg = 1;
 	pxAssert( g_cpuConstRegs[0].UD[0] == 0 );
 
@@ -2064,7 +2050,6 @@ StartRecomp:
 
 	pxAssert( xGetPtr() < recMem->GetPtrEnd() );
 	pxAssert( recConstBufPtr < recConstBuf + RECCONSTBUF_SIZE );
-	pxAssert( x86FpuState == 0 );
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;

@@ -271,12 +271,6 @@ int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 ////////////////////////////////////////////////////////////////////////////////
 //   MMX (64-bit) Register Allocation Tools
 
-#define FPU_STATE 0
-#define MMX_STATE 1
-
-void SetMMXstate();
-void SetFPUstate();
-
 // max is 0x7f, when 0x80 is set, need to flush reg
 //#define MMX_GET_CACHE(ptr, index) ((u8*)ptr)[index]
 //#define MMX_SET_CACHE(ptr, ind3, ind2, ind1, ind0) ((u32*)ptr)[0] = (ind3<<24)|(ind2<<16)|(ind1<<8)|ind0;
@@ -316,7 +310,6 @@ u8 _hasFreeMMXreg();
 int _getNumMMXwrite();
 
 extern _mmxregs mmxregs[iREGCNT_MMX], s_saveMMXregs[iREGCNT_MMX];
-extern u16 x86FpuState;
 
 // extern void iDumpRegisters(u32 startpc, u32 temp);
 

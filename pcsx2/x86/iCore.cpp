@@ -1138,7 +1138,3 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 		pxAssume( false );
 	}
 }
-
-void SetMMXstate() {
-	x86FpuState = MMX_STATE;
-}

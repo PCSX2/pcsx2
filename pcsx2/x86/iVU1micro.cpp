@@ -112,7 +112,7 @@ namespace VU1micro
 	void recAlloc()									{ SuperVUAlloc(1); initVUrec(&VU1, 1); }
 	void __fastcall recClear(u32 Addr, u32 Size)	{ SuperVUClear(Addr, Size, 1); clearVUrec(Addr, Size, 1); }
 	void recShutdown()								{ SuperVUDestroy(1); closeVUrec(1); }
-	static void recReset()							{ SuperVUReset(1); resetVUrec(1); x86FpuState = FPU_STATE; }
+	static void recReset()							{ SuperVUReset(1); resetVUrec(1); }
 	static void recStep()							{}
 
 	static void recExecuteBlock(void)
@@ -257,7 +257,6 @@ namespace VU1micro
 	static void recReset() {
 		if (useMVU1) resetVUrec(1);
 		else		 SuperVUReset(1);
-		x86FpuState = FPU_STATE;
 	}
 
 	static void recStep() {}
