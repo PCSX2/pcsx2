@@ -69,7 +69,7 @@ void _flushEEreg(int reg)
 int eeProcessHILO(int reg, int mode, int mmx)
 {
 	// Fixme: MMX problem
-    int usemmx = 0/*mmx && _hasFreeMMXreg()*/;
+    int usemmx = 0;
 	if( (usemmx || _hasFreeXMMreg()) || !(g_pCurInstInfo->regs[reg]&EEINST_LASTUSE) ) {
 		return _allocGPRtoXMMreg(-1, reg, mode);
 	}

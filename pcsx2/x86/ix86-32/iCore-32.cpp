@@ -591,36 +591,6 @@ int _getNumMMXwrite()
 	return num;
 }
 
-u8 _hasFreeMMXreg()
-{
-	uint i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (!mmxregs[i].inuse) return 1;
-	}
-
-	// check for dead regs
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].needed) continue;
-		if (MMX_ISGPR(mmxregs[i].reg)) {
-			if( !EEINST_ISLIVE64(mmxregs[i].reg-MMX_GPR) ) {
-				return 1;
-			}
-		}
-	}
-
-	// check for dead regs
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].needed) continue;
-		if (MMX_ISGPR(mmxregs[i].reg)) {
-			if( !(g_pCurInstInfo->regs[mmxregs[i].reg-MMX_GPR]&EEINST_USED) ) {
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-
 void _freeMMXreg(u32 mmxreg)
 {
 	pxAssert( mmxreg < iREGCNT_MMX );
@@ -643,27 +613,6 @@ void _freeMMXreg(u32 mmxreg)
 
 	mmxregs[mmxreg].mode &= ~MODE_WRITE;
 	mmxregs[mmxreg].inuse = 0;
-}
-
-void _moveMMXreg(int mmxreg)
-{
-	uint i;
-	if( !mmxregs[mmxreg].inuse ) return;
-
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].inuse) continue;
-		break;
-	}
-
-	if( i == iREGCNT_MMX ) {
-		_freeMMXreg(mmxreg);
-		return;
-	}
-
-	// move
-	mmxregs[i] = mmxregs[mmxreg];
-	mmxregs[mmxreg].inuse = 0;
-	xMOVQ(xRegisterMMX(i), xRegisterMMX(mmxreg));
 }
 
 // write all active regs

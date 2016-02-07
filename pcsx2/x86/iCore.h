@@ -316,7 +316,6 @@ int _checkMMXreg(int reg, int mode);
 void _clearNeededMMXregs();
 void _deleteMMXreg(int reg, int flush);
 void _freeMMXreg(u32 mmxreg);
-void _moveMMXreg(int mmxreg); // instead of freeing, moves it to a diff location
 void _flushMMXregs();
 u8 _hasFreeMMXreg();
 void _freeMMXregs();
