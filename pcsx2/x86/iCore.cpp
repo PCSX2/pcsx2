@@ -435,8 +435,6 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 			xMOVDQA(xRegisterSSE(xmmreg), ptr[&cpuRegs.GPR.r[gprreg].UL[0]]);
 		}
 	}
-	else
-	_deleteMMXreg(MMX_GPR+gprreg, 0);
 
 	return xmmreg;
 }

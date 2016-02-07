@@ -51,7 +51,6 @@ void _deleteEEreg(int reg, int flush)
 	}
 	GPR_DEL_CONST(reg);
 	_deleteGPRtoXMMreg(reg, flush ? 0 : 2);
-	_deleteMMXreg(MMX_GPR+reg, flush ? 0 : 2);
 }
 
 void _flushEEreg(int reg)
@@ -62,7 +61,6 @@ void _flushEEreg(int reg)
 		return;
 	}
 	_deleteGPRtoXMMreg(reg, 1);
-	_deleteMMXreg(MMX_GPR + reg, 1);
 }
 
 // if not mmx, then xmm
@@ -90,7 +88,6 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 
 	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
 		if( xmminfo & XMMINFO_WRITED ) {
-			_deleteMMXreg(MMX_GPR+_Rd_, 2);
 			_deleteGPRtoXMMreg(_Rd_, 2);
 		}
 		if( xmminfo&XMMINFO_WRITED ) GPR_SET_CONST(_Rd_);
@@ -134,7 +131,6 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 						_freeXMMreg(mmreg1);
 						if( GPR_IS_CONST1(_Rs_) ) info &= ~PROCESS_EE_MODEWRITET;
 						else info &= ~PROCESS_EE_MODEWRITES;
-						_deleteMMXreg(MMX_GPR+_Rd_, 2);
 						xmmregs[mmreg1].inuse = 1;
 						xmmregs[mmreg1].reg = _Rd_;
 						xmmregs[mmreg1].mode = moded;
@@ -184,7 +180,6 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 						if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_)) ) {
 							_freeXMMreg(mmreg2);
 							info &= ~PROCESS_EE_MODEWRITET;
-							_deleteMMXreg(MMX_GPR+_Rd_, 2);
 							xmmregs[mmreg2].inuse = 1;
 							xmmregs[mmreg2].reg = _Rd_;
 							xmmregs[mmreg2].mode = moded;
@@ -193,7 +188,6 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 						else if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_)) ) {
 							_freeXMMreg(mmreg1);
 							info &= ~PROCESS_EE_MODEWRITES;
-							_deleteMMXreg(MMX_GPR+_Rd_, 2);
 							xmmregs[mmreg1].inuse = 1;
 							xmmregs[mmreg1].reg = _Rd_;
 							xmmregs[mmreg1].mode = moded;
@@ -229,19 +223,13 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 	_deleteGPRtoXMMreg(_Rt_, 1);
 	if( xmminfo&XMMINFO_WRITED )
 		_deleteGPRtoXMMreg(_Rd_, (xmminfo&XMMINFO_READD)?0:2);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	if( xmminfo&XMMINFO_WRITED )
-		_deleteMMXreg(MMX_GPR+_Rd_, (xmminfo&XMMINFO_READD)?0:2);
 
 	// don't delete, fn will take care of them
 //	if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
 //		_deleteGPRtoXMMreg(XMMGPR_LO, (xmminfo&XMMINFO_READLO)?1:0);
-//		_deleteMMXreg(MMX_GPR+MMX_LO, (xmminfo&XMMINFO_READLO)?1:0);
 //	}
 //	if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
 //		_deleteGPRtoXMMreg(XMMGPR_HI, (xmminfo&XMMINFO_READHI)?1:0);
-//		_deleteMMXreg(MMX_GPR+MMX_HI, (xmminfo&XMMINFO_READHI)?1:0);
 //	}
 
 	if( GPR_IS_CONST1(_Rs_) ) {
@@ -267,7 +255,6 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 	if ( ! _Rt_ ) return;
 
 	if( GPR_IS_CONST1(_Rs_) ) {
-		_deleteMMXreg(MMX_GPR+_Rt_, 2);
 		_deleteGPRtoXMMreg(_Rt_, 2);
 		GPR_SET_CONST(_Rt_);
 		constcode();
@@ -292,7 +279,6 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 				if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
 					_freeXMMreg(mmreg1);
 					info &= ~PROCESS_EE_MODEWRITES;
-					_deleteMMXreg(MMX_GPR+_Rt_, 2);
 					xmmregs[mmreg1].inuse = 1;
 					xmmregs[mmreg1].reg = _Rt_;
 					xmmregs[mmreg1].mode = MODE_WRITE|MODE_READ;
@@ -313,8 +299,6 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 	// regular x86
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 2);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 2);
 
 	noconstcode(0);
 	GPR_DEL_CONST(_Rt_);
@@ -327,7 +311,6 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 	if ( ! _Rd_ ) return;
 
 	if( GPR_IS_CONST1(_Rt_) ) {
-		_deleteMMXreg(MMX_GPR+_Rd_, 2);
 		_deleteGPRtoXMMreg(_Rd_, 2);
 		GPR_SET_CONST(_Rd_);
 		constcode();
@@ -352,7 +335,6 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 				if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rt_) ) {
 					_freeXMMreg(mmreg1);
 					info &= ~PROCESS_EE_MODEWRITET;
-					_deleteMMXreg(MMX_GPR+_Rd_, 2);
 					xmmregs[mmreg1].inuse = 1;
 					xmmregs[mmreg1].reg = _Rd_;
 					xmmregs[mmreg1].mode = MODE_WRITE|MODE_READ;
@@ -373,8 +355,6 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 	// regular x86
 	_deleteGPRtoXMMreg(_Rt_, 1);
 	_deleteGPRtoXMMreg(_Rd_, 2);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rd_, 2);
 
 	noconstcode(0);
 	GPR_DEL_CONST(_Rd_);
@@ -419,9 +399,6 @@ void eeRecompileCodeConst0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R59
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
 	_deleteGPRtoXMMreg(_Rd_, 0);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rd_, 0);
 
 	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
 		GPR_SET_CONST(_Rd_);
@@ -575,7 +552,6 @@ int eeRecompileCodeXMM(int xmminfo)
 		if( regd < 0 ) {
 			if( !(xmminfo&XMMINFO_READD) && (xmminfo & XMMINFO_READT) && (_Rt_ == 0 || (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_)) ) {
 				_freeXMMreg(EEREC_T);
-				_deleteMMXreg(MMX_GPR+_Rd_, 2);
 				xmmregs[EEREC_T].inuse = 1;
 				xmmregs[EEREC_T].reg = _Rd_;
 				xmmregs[EEREC_T].mode = readd;
@@ -583,7 +559,6 @@ int eeRecompileCodeXMM(int xmminfo)
 			}
 			else if( !(xmminfo&XMMINFO_READD) && (xmminfo & XMMINFO_READS) && (_Rs_ == 0 || (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_)) ) {
 				_freeXMMreg(EEREC_S);
-				_deleteMMXreg(MMX_GPR+_Rd_, 2);
 				xmmregs[EEREC_S].inuse = 1;
 				xmmregs[EEREC_S].reg = _Rd_;
 				xmmregs[EEREC_S].mode = readd;
@@ -663,7 +638,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 					_freeXMMreg(mmregt);
 					info &= ~PROCESS_EE_MODEWRITET;
 				}
-				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
 				xmmregs[mmregt].inuse = 1;
 				xmmregs[mmregt].reg = 0;
 				xmmregs[mmregt].mode = readacc;
@@ -675,7 +649,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 					_freeXMMreg(mmregs);
 					info &= ~PROCESS_EE_MODEWRITES;
 				}
-				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
 				xmmregs[mmregs].inuse = 1;
 				xmmregs[mmregs].reg = 0;
 				xmmregs[mmregs].mode = readacc;
@@ -699,7 +672,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 					_freeXMMreg(mmregt);
 					info &= ~PROCESS_EE_MODEWRITET;
 				}
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
 				xmmregs[mmregt].inuse = 1;
 				xmmregs[mmregt].reg = _Fd_;
 				xmmregs[mmregt].mode = readd;
@@ -710,7 +682,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 					_freeXMMreg(mmregs);
 					info &= ~PROCESS_EE_MODEWRITES;
 				}
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
 				xmmregs[mmregs].inuse = 1;
 				xmmregs[mmregs].reg = _Fd_;
 				xmmregs[mmregs].mode = readd;
@@ -719,7 +690,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 			else if( (xmminfo&XMMINFO_READACC) && mmregacc >= 0 && (FPUINST_LASTUSE(XMMFPU_ACC) || !FPUINST_ISLIVE(XMMFPU_ACC)) ) {
 				if( FPUINST_ISLIVE(XMMFPU_ACC) )
 					_freeXMMreg(mmregacc);
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
 				xmmregs[mmregacc].inuse = 1;
 				xmmregs[mmregacc].reg = _Fd_;
 				xmmregs[mmregacc].mode = readd;

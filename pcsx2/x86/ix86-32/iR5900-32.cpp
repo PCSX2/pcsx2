@@ -127,7 +127,6 @@ void _eeFlushAllUnused()
 
 		if( i < 32 && GPR_IS_CONST1(i) ) _flushConstReg(i);
 		else {
-			_deleteMMXreg(MMX_GPR+i, 1);
 			_deleteGPRtoXMMreg(i, 1);
 		}
 	}

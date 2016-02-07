@@ -337,12 +337,10 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 				}
 				else {
 					_flushConstReg(reg);
-					_deleteMMXreg(MMX_GPR+reg, 1);
 					_deleteGPRtoXMMreg(reg, 1);
 
 					_eeMoveGPRtoR(x86reg, reg);
 
-					_deleteMMXreg(MMX_GPR+reg, 0);
 					_deleteGPRtoXMMreg(reg, 0);
 				}
 			}
@@ -512,10 +510,6 @@ void _clearNeededMMXregs()
 			mmxregs[i].needed = 0;
 		}
 	}
-}
-
-void _deleteMMXreg(int reg, int flush)
-{
 }
 
 int _getNumMMXwrite()

@@ -65,8 +65,6 @@ void recWritebackHILO(int info, int writed, int upper)
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
 
-		_deleteMMXreg(XMMGPR_LO, 2);
-
 		if( (reglo = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_LO, MODE_READ)) >= 0 ) {
 			if( xmmregs[reglo].mode & MODE_WRITE ) {
 				if( upper ) xMOVQ(ptr[(void*)(loaddr-8)], xRegisterSSE(reglo));
@@ -107,8 +105,6 @@ void recWritebackHILO(int info, int writed, int upper)
 	}
 
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
-		_deleteMMXreg(XMMGPR_HI, 2);
-
 		if( (reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ)) >= 0 ) {
 			if( xmmregs[reghi].mode & MODE_WRITE ) {
 				if( upper ) xMOVQ(ptr[(void*)(hiaddr-8)], xRegisterSSE(reghi));
@@ -525,8 +521,6 @@ void recMADD()
 	_deleteEEreg(XMMGPR_HI, 1);
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
@@ -597,8 +591,6 @@ void recMADDU()
 	_deleteEEreg(XMMGPR_HI, 1);
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
@@ -667,8 +659,6 @@ void recMADD1()
 	_deleteEEreg(XMMGPR_HI, 1);
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
@@ -739,8 +729,6 @@ void recMADDU1()
 	_deleteEEreg(XMMGPR_HI, 1);
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );

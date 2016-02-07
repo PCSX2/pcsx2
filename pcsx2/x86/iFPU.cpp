@@ -157,7 +157,6 @@ void recCTC1()
 		else
 		{
 			_deleteGPRtoXMMreg(_Rt_, 1);
-			_deleteMMXreg(MMX_GPR+_Rt_, 1);
 
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
