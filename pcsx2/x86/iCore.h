@@ -312,8 +312,6 @@ struct _mmxregs {
 };
 
 void _initMMXregs();
-int  _getFreeMMXreg();
-int  _allocMMXreg(int MMXreg, int reg, int mode);
 int _checkMMXreg(int reg, int mode);
 void _clearNeededMMXregs();
 void _deleteMMXreg(int reg, int flush);
