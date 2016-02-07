@@ -133,42 +133,32 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
-		if( !upper && (reglo = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE)) >= 0 ) {
-			xMOVQ(xRegisterMMX(reglo), ptr[recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res)]);
+		reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
+
+		if( reglo >= 0 ) {
+			u32* mem_ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
+			if( upper ) xMOVH.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
+			else xMOVL.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
 		}
 		else {
-			reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
-
-			if( reglo >= 0 ) {
-				u32* mem_ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
-				if( upper ) xMOVH.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
-				else xMOVL.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
-			}
-			else {
-				xMOV(ptr32[(u32*)(loaddr)], res & 0xffffffff);
-				xMOV(ptr32[(u32*)(loaddr+4)], (res&0x80000000)?0xffffffff:0);
-			}
+			xMOV(ptr32[(u32*)(loaddr)], res & 0xffffffff);
+			xMOV(ptr32[(u32*)(loaddr+4)], (res&0x80000000)?0xffffffff:0);
 		}
 	}
 
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
 
-		if( !upper && (reghi = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE)) >= 0 ) {
-			xMOVQ(xRegisterMMX(reghi), ptr[recGetImm64((res >> 63) ? -1 : 0, res >> 32)]);
+		reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
+
+		if( reghi >= 0 ) {
+			u32* mem_ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
+			if( upper ) xMOVH.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
+			else xMOVL.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
 		}
 		else {
-			reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
-
-			if( reghi >= 0 ) {
-				u32* mem_ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
-				if( upper ) xMOVH.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
-				else xMOVL.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
-			}
-			else {
-				_deleteEEreg(XMMGPR_HI, 0);
-				xMOV(ptr32[(u32*)(hiaddr)], res >> 32);
-				xMOV(ptr32[(u32*)(hiaddr+4)], (res>>63)?0xffffffff:0);
-			}
+			_deleteEEreg(XMMGPR_HI, 0);
+			xMOV(ptr32[(u32*)(hiaddr)], res >> 32);
+			xMOV(ptr32[(u32*)(hiaddr+4)], (res>>63)?0xffffffff:0);
 		}
 	}
 

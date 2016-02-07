@@ -121,10 +121,6 @@ void recJALR()
 //		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 //			xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //		}
-//		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-//			xMOVD(ptr[&cpuRegs.pc], xRegisterMMX(mmreg));
-//			SetMMXstate();
-//		}
 //		else {
 //			xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] )]);
 //			xMOV(ptr[&cpuRegs.pc], eax);

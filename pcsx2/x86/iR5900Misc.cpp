@@ -98,10 +98,6 @@ void recMFSA()
 	if( mmreg >= 0 ) {
 		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
 	}
-	else if( (mmreg = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) >= 0 ) {
-		xMOVDZX(xRegisterMMX(mmreg), ptr[&cpuRegs.sa]);
-		SetMMXstate();
-	}
 	else {
 		xMOV(eax, ptr[&cpuRegs.sa]);
 		_deleteEEreg(_Rd_, 0);
@@ -121,10 +117,6 @@ void recMTSA()
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-			xMOVD(ptr[&cpuRegs.sa], xRegisterMMX(mmreg));
-			SetMMXstate();
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);

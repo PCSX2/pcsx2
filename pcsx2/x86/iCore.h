@@ -312,7 +312,6 @@ struct _mmxregs {
 };
 
 void _initMMXregs();
-int _checkMMXreg(int reg, int mode);
 void _clearNeededMMXregs();
 void _deleteMMXreg(int reg, int flush);
 void _freeMMXreg(u32 mmxreg);
@@ -320,8 +319,6 @@ void _flushMMXregs();
 u8 _hasFreeMMXreg();
 void _freeMMXregs();
 int _getNumMMXwrite();
-
-int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
 
 // returns new index of reg, lower 32 bits already in mmx
 // shift is used when the data is in the top bits of the mmx reg to begin with

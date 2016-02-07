@@ -500,11 +500,6 @@ __fi void* _MMXGetAddr(int reg)
 	return NULL;
 }
 
-int _checkMMXreg(int reg, int mode)
-{
-	return -1;
-}
-
 void _clearNeededMMXregs()
 {
 	uint i;
@@ -624,9 +619,4 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)
 	mmxregs[to].inuse = 0;
 
 	return -1;
-}
-
-int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode)
-{
-	return _checkMMXreg(MMX_GPR+reg, mode);
 }

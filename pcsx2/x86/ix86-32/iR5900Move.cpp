@@ -116,69 +116,21 @@ void recMFHILO(int hi)
 			}
 		}
 		else {
-			regd = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rd_, MODE_WRITE);
-
-			if( regd >= 0 ) {
-				xMOVQ(xRegisterMMX(regd), xRegisterSSE(reghi));
-			}
-			else {
-				_deleteEEreg(_Rd_, 0);
-				xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]], xRegisterSSE(reghi));
-			}
+			_deleteEEreg(_Rd_, 0);
+			xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]], xRegisterSSE(reghi));
 		}
 	}
 	else {
-		reghi = _checkMMXreg(MMX_GPR+xmmhilo, MODE_READ);
-
-		if( reghi >= 0 ) {
-
-			if( regd >= 0 ) {
-				if( EEINST_ISLIVE2(_Rd_) ) {
-					if( xmmregs[regd].mode & MODE_WRITE ) {
-						xMOVH.PS(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 2 ]], xRegisterSSE(regd));
-					}
-					xmmregs[regd].inuse = 0;
-					xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]], xRegisterMMX(reghi));
-				}
-				else {
-					SetMMXstate();
-					xMOVQ(xRegisterSSE(regd), xRegisterMMX(reghi));
-					xmmregs[regd].mode |= MODE_WRITE;
-				}
-			}
-			else {
-				regd = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rd_, MODE_WRITE);
-				SetMMXstate();
-
-				if( regd >= 0 ) {
-					xMOVQ(xRegisterMMX(regd), xRegisterMMX(reghi));
-				}
-				else {
-					_deleteEEreg(_Rd_, 0);
-					xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]], xRegisterMMX(reghi));
-				}
-			}
+		if( regd >= 0 ) {
+			if( EEINST_ISLIVE2(_Rd_) ) xMOVL.PS(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 0 ] : (uptr)&cpuRegs.LO.UD[ 0 ])]);
+			else xMOVQZX(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 0 ] : (uptr)&cpuRegs.LO.UD[ 0 ])]);
 		}
 		else {
-			if( regd >= 0 ) {
-				if( EEINST_ISLIVE2(_Rd_) ) xMOVL.PS(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 0 ] : (uptr)&cpuRegs.LO.UD[ 0 ])]);
-				else xMOVQZX(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 0 ] : (uptr)&cpuRegs.LO.UD[ 0 ])]);
-			}
-			else {
-				regd = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rd_, MODE_WRITE);
-
-				if( regd >= 0 ) {
-					SetMMXstate();
-					xMOVQ(xRegisterMMX(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 0 ] : (uptr)&cpuRegs.LO.UD[ 0 ])]);
-				}
-				else {
-					_deleteEEreg(_Rd_, 0);
-					xMOV(eax, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 0 ] : (uptr)&cpuRegs.LO.UL[ 0 ])]);
-					xMOV(edx, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 1 ] : (uptr)&cpuRegs.LO.UL[ 1 ])]);
-					xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-					xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-				}
-			}
+			_deleteEEreg(_Rd_, 0);
+			xMOV(eax, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 0 ] : (uptr)&cpuRegs.LO.UL[ 0 ])]);
+			xMOV(edx, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 1 ] : (uptr)&cpuRegs.LO.UL[ 1 ])]);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 		}
 	}
 }
@@ -209,76 +161,27 @@ void recMTHILO(int hi)
 
 		}
 		else {
-			regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ);
-
-			if( regs >= 0 ) {
-
-				if( EEINST_ISLIVE2(xmmhilo) ) {
-					if( xmmregs[reghi].mode & MODE_WRITE ) {
-						xMOVH.PS(ptr[(void*)(addrhilo+8)], xRegisterSSE(reghi));
-					}
-					xmmregs[reghi].inuse = 0;
-					xMOVQ(ptr[(void*)(addrhilo)], xRegisterMMX(regs));
-				}
-				else {
-					SetMMXstate();
-					xMOVQ(xRegisterSSE(reghi), xRegisterMMX(regs));
-					xmmregs[reghi].mode |= MODE_WRITE;
-				}
-			}
-			else {
-				_flushConstReg(_Rs_);
-				xMOVL.PS(xRegisterSSE(reghi), ptr[&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]]);
-				xmmregs[reghi].mode |= MODE_WRITE;
-			}
+			_flushConstReg(_Rs_);
+			xMOVL.PS(xRegisterSSE(reghi), ptr[&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]]);
+			xmmregs[reghi].mode |= MODE_WRITE;
 		}
 	}
 	else {
-		reghi = _allocCheckGPRtoMMX(g_pCurInstInfo, xmmhilo, MODE_WRITE);
-
-		if( reghi >= 0 ) {
-			if( regs >= 0 ) {
-				//SetMMXstate();
-				xMOVQ(xRegisterMMX(reghi), xRegisterSSE(regs));
-			}
-			else {
-				regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_WRITE);
-
-				if( regs >= 0 ) {
-					SetMMXstate();
-					xMOVQ(xRegisterMMX(reghi), xRegisterMMX(regs));
-				}
-				else {
-					_flushConstReg(_Rs_);
-					xMOVQ(xRegisterMMX(reghi), ptr[&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]]);
-				}
-			}
+		if( regs >= 0 ) {
+			xMOVQ(ptr[(void*)(addrhilo)], xRegisterSSE(regs));
 		}
 		else {
-			if( regs >= 0 ) {
-				xMOVQ(ptr[(void*)(addrhilo)], xRegisterSSE(regs));
+			if( GPR_IS_CONST1(_Rs_) ) {
+				xMOV(ptr32[(u32*)(addrhilo)], g_cpuConstRegs[_Rs_].UL[0] );
+				xMOV(ptr32[(u32*)(addrhilo+4)], g_cpuConstRegs[_Rs_].UL[1] );
 			}
 			else {
-				regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_WRITE);
-
-				if( regs >= 0 ) {
-					SetMMXstate();
-					xMOVQ(ptr[(void*)(addrhilo)], xRegisterMMX(regs));
-				}
-				else {
-					if( GPR_IS_CONST1(_Rs_) ) {
-						xMOV(ptr32[(u32*)(addrhilo)], g_cpuConstRegs[_Rs_].UL[0] );
-						xMOV(ptr32[(u32*)(addrhilo+4)], g_cpuConstRegs[_Rs_].UL[1] );
-					}
-					else {
-						_eeMoveGPRtoR(ecx, _Rs_);
-						_flushEEreg(_Rs_);
-						xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-						xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-						xMOV(ptr[(void*)(addrhilo)], eax);
-						xMOV(ptr[(void*)(addrhilo+4)], edx);
-					}
-				}
+				_eeMoveGPRtoR(ecx, _Rs_);
+				_flushEEreg(_Rs_);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+				xMOV(ptr[(void*)(addrhilo)], eax);
+				xMOV(ptr[(void*)(addrhilo+4)], edx);
 			}
 		}
 	}
@@ -345,19 +248,11 @@ void recMFHILO1(int hi)
 			xmmregs[regd].mode |= MODE_WRITE;
 		}
 		else {
-			regd = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rd_, MODE_WRITE);
-
-			if( regd >= 0 ) {
-				SetMMXstate();
-				xMOVQ(xRegisterMMX(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 1 ] : (uptr)&cpuRegs.LO.UD[ 1 ])]);
-			}
-			else {
-				_deleteEEreg(_Rd_, 0);
-				xMOV(eax, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 2 ] : (uptr)&cpuRegs.LO.UL[ 2 ])]);
-				xMOV(edx, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 3 ] : (uptr)&cpuRegs.LO.UL[ 3 ])]);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-			}
+			_deleteEEreg(_Rd_, 0);
+			xMOV(eax, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 2 ] : (uptr)&cpuRegs.LO.UL[ 2 ])]);
+			xMOV(edx, ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UL[ 3 ] : (uptr)&cpuRegs.LO.UL[ 3 ])]);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 		}
 	}
 }
@@ -387,24 +282,16 @@ void recMTHILO1(int hi)
 			xMOVQ(ptr[(void*)(addrhilo+8)], xRegisterSSE(regs));
 		}
 		else {
-			regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_WRITE);
-
-			if( regs >= 0 ) {
-				SetMMXstate();
-				xMOVQ(ptr[(void*)(addrhilo+8)], xRegisterMMX(regs));
+			if( GPR_IS_CONST1(_Rs_) ) {
+				xMOV(ptr32[(u32*)(addrhilo+8)], g_cpuConstRegs[_Rs_].UL[0] );
+				xMOV(ptr32[(u32*)(addrhilo+12)], g_cpuConstRegs[_Rs_].UL[1] );
 			}
 			else {
-				if( GPR_IS_CONST1(_Rs_) ) {
-					xMOV(ptr32[(u32*)(addrhilo+8)], g_cpuConstRegs[_Rs_].UL[0] );
-					xMOV(ptr32[(u32*)(addrhilo+12)], g_cpuConstRegs[_Rs_].UL[1] );
-				}
-				else {
-					_flushEEreg(_Rs_);
-					xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-					xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-					xMOV(ptr[(void*)(addrhilo+8)], eax);
-					xMOV(ptr[(void*)(addrhilo+12)], edx);
-				}
+				_flushEEreg(_Rs_);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+				xMOV(ptr[(void*)(addrhilo+8)], eax);
+				xMOV(ptr[(void*)(addrhilo+12)], edx);
 			}
 		}
 	}

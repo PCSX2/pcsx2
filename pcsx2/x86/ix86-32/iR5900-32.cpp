@@ -166,10 +166,6 @@ void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
 			xMOVD(to, xRegisterSSE(mmreg));
 		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
-			xMOVD(to, xRegisterMMX(mmreg));
-			SetMMXstate();
-		}
 		else {
 			xMOV(to, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
 		}
@@ -185,10 +181,6 @@ void _eeMoveGPRtoM(uptr to, int fromgpr)
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[(void*)(to)], xRegisterSSE(mmreg));
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			xMOVD(ptr[(void*)(to)], xRegisterMMX(mmreg));
-			SetMMXstate();
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
@@ -206,10 +198,6 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[xAddressReg(to)], xRegisterSSE(mmreg));
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			xMOVD(ptr[xAddressReg(to)], xRegisterMMX(mmreg));
-			SetMMXstate();
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
@@ -867,10 +855,6 @@ void SetBranchReg( u32 reg )
 //
 //			if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0 ) {
 //				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
-//			}
-//			else if( (mmreg = _checkMMXreg(MMX_GPR+reg, MODE_READ)) >= 0 ) {
-//				xMOVD(ptr[&cpuRegs.pc], xRegisterMMX(mmreg));
-//				SetMMXstate();
 //			}
 //			else {
 //				xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ reg ].UL[ 0 ] )]);
