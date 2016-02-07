@@ -49,27 +49,29 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 void GSRendererHW::SetScaling()
 {
-	int buffer_size = max(m_context->FRAME.FBW * 64, m_regs->DISP[m_regs->PMODE.EN1 == 1 ? 0 : 1].DISPFB.FBW * 64);
+	int crtc_width = GetDisplayRect().width();
+	int crtc_height = GetDisplayRect().height();
 
-	//Only increase the buffer size, don't make it smaller, it breaks games (GH3)
+	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
+	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
+	// In such cases, let's just use the CRTC width.
+	int fb_width = max((int)m_context->FRAME.FBW * 64, crtc_width);
 
-	// Also don't change the size for custom resolution (m_upscale_multiplier = 0).
-	if (m_upscale_multiplier && m_width < (buffer_size * m_upscale_multiplier)) {
-		m_tc->RemovePartial();
-	} else {
+	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
+	// from physical units of the display rectangle in case the game uses a heigher value of height.
+	int fb_height = (fb_width < 1024) ? max(512, crtc_height) : 1024;
+	bool good_rt_size = m_width == (fb_width * m_upscale_multiplier) && m_height == (fb_height * m_upscale_multiplier);
+	bool initialized_register_state = ((m_context->FRAME.FBW * 64) > 1) && (crtc_height > 1);
+
+	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
+	// don't resize until the display rectangle and register states are stabilized.
+	if ( m_upscale_multiplier <= 1 || good_rt_size || !initialized_register_state)
 		return;
-	}
 
-	m_height = buffer_size < 1024 ? 512 : 1024;
-
-	if (m_upscale_multiplier > 1) {
-		m_width = buffer_size * m_upscale_multiplier;
-		m_height *= m_upscale_multiplier;
-	}
-	
-	
-	if (m_upscale_multiplier)
-		printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
+	m_tc->RemovePartial();
+	m_width = fb_width * m_upscale_multiplier;
+	m_height = fb_height * m_upscale_multiplier;
+	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
