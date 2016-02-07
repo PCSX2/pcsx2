@@ -456,47 +456,24 @@ void recMOVZtemp_consts(int info)
 
 void recMOVZtemp_constt(int info)
 {
-	// Fixme: MMX problem
-	if(0/* _hasFreeXMMreg() */) {
-		int t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-		xMOVQ(xRegisterMMX(t0reg), ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(t0reg));
-		_freeMMXreg(t0reg);
-	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-	}
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+	xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 void recMOVZtemp_(int info)
 {
-	int t0reg = -1;
-
-	// Fixme: MMX problem
-	if(0/* _hasFreeXMMreg() */)
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-
 	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	xOR(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
 	j8Ptr[ 0 ] = JNZ8( 0 );
 
-	if( t0reg >= 0 ) {
-		xMOVQ(xRegisterMMX(t0reg), ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(t0reg));
-		_freeMMXreg(t0reg);
-	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-	}
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+	xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 
 	x86SetJ8( j8Ptr[ 0 ] );
-	SetMMXstate();
 }
 
 EERECOMPILE_CODE0(MOVZtemp, XMMINFO_READS|XMMINFO_READD|XMMINFO_READD|XMMINFO_WRITED);
@@ -535,48 +512,24 @@ void recMOVNtemp_consts(int info)
 
 void recMOVNtemp_constt(int info)
 {
-	// Fixme: MMX problem
-	if(0/* _hasFreeXMMreg() */) {
-		int t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-		xMOVQ(xRegisterMMX(t0reg), ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(t0reg));
-		_freeMMXreg(t0reg);
-	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-	}
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+	xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 }
 
 void recMOVNtemp_(int info)
 {
-	int t0reg=-1;
-
-	// Fixme: MMX problem
-	if(0/* _hasFreeXMMreg() */)
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-
 	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	xOR(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
 	j8Ptr[ 0 ] = JZ8( 0 );
 
-	if( t0reg >= 0 ) {
-		xMOVQ(xRegisterMMX(t0reg), ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(t0reg));
-		_freeMMXreg(t0reg);
-	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-	}
+	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+	xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
 
 	x86SetJ8( j8Ptr[ 0 ] );
-
-	SetMMXstate();
 }
 
 EERECOMPILE_CODE0(MOVNtemp, XMMINFO_READS|XMMINFO_READD|XMMINFO_READD|XMMINFO_WRITED);

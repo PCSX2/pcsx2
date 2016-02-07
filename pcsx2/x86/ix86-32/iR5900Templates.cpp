@@ -71,7 +71,6 @@ int eeProcessHILO(int reg, int mode, int mmx)
 	// Fixme: MMX problem
     int usemmx = 0/*mmx && _hasFreeMMXreg()*/;
 	if( (usemmx || _hasFreeXMMreg()) || !(g_pCurInstInfo->regs[reg]&EEINST_LASTUSE) ) {
-		//if( usemmx ) return _allocMMXreg(-1, MMX_GPR+reg, mode);
 		return _allocGPRtoXMMreg(-1, reg, mode);
 	}
 

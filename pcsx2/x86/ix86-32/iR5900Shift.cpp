@@ -20,8 +20,6 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
-#define NO_MMX 1
-
 using namespace x86Emitter;
 
 namespace R5900 {
@@ -145,7 +143,6 @@ void recDSLLs_(int info, int sa)
 	int rtreg, rdreg;
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-#if NO_MMX
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -160,16 +157,6 @@ void recDSLLs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	_addNeededMMXreg(MMX_GPR+_Rt_);
-	_addNeededMMXreg(MMX_GPR+_Rd_);
-	rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_READ);
-	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-	SetMMXstate();
-
-	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
-	xPSLL.Q(xRegisterMMX(rdreg), sa);
-#endif
 }
 
 void recDSLL_(int info)
@@ -190,7 +177,6 @@ void recDSRLs_(int info, int sa)
 	int rtreg, rdreg;
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-#if NO_MMX
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -205,16 +191,6 @@ void recDSRLs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	_addNeededMMXreg(MMX_GPR+_Rt_);
-	_addNeededMMXreg(MMX_GPR+_Rd_);
-	rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_READ);
-	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-	SetMMXstate();
-
-	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
-	xPSRL.Q(xRegisterMMX(rdreg), sa);
-#endif
 }
 
 void recDSRL_(int info)
@@ -235,7 +211,6 @@ void recDSRAs_(int info, int sa)
 	int rtreg, rdreg, t0reg;
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-#if NO_MMX
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -270,30 +245,6 @@ void recDSRAs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	_addNeededMMXreg(MMX_GPR+_Rt_);
-	_addNeededMMXreg(MMX_GPR+_Rd_);
-	rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_READ);
-	rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-	SetMMXstate();
-
-	if( rtreg != rdreg ) xMOVQ(xRegisterMMX(rdreg), xRegisterMMX(rtreg));
-
-    if ( sa != 0 ) {
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-		xMOVQ(xRegisterMMX(t0reg), xRegisterMMX(rtreg));
-
-		// it is a signed shift
-		xPSRA.D(xRegisterMMX(t0reg), sa);
-		xPSRL.Q(xRegisterMMX(rdreg), sa);
-
-		xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
-		// take lower dword of rdreg and lower dword of t0reg
-		xPUNPCK.LDQ(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
-
-		_freeMMXreg(t0reg);
-	}
-#endif
 }
 
 void recDSRA_(int info)
@@ -391,7 +342,6 @@ void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
 {
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-#if NO_MMX
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	*rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -405,21 +355,6 @@ void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
 	*rsreg = *rstemp;
 
 	if( *rtreg != *rdreg ) xMOVDQA(xRegisterSSE(*rdreg), xRegisterSSE(*rtreg));
-#else
-	_addNeededMMXreg(MMX_GPR+_Rt_);
-	_addNeededMMXreg(MMX_GPR+_Rd_);
-	*rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_READ);
-	*rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-	SetMMXstate();
-
-	*rstemp = _allocMMXreg(-1, MMX_TEMP, 0);
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-	xAND(eax, 0x3f);
-	xMOVDZX(xRegisterMMX(*rstemp), eax);
-	*rsreg = *rstemp;
-
-	if( *rtreg != *rdreg ) xMOVQ(xRegisterMMX(*rdreg), xRegisterMMX(*rtreg));
-#endif
 }
 
 void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
@@ -430,7 +365,6 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 	// 2/ CPU has minimum cycle delay between read/write
 	_flushConstReg(_Rt_);
 
-#if NO_MMX
 	_addNeededGPRtoXMMreg(_Rd_);
 	*rdreg = _allocGPRtoXMMreg(-1, _Rd_, MODE_WRITE);
 
@@ -439,16 +373,6 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	xAND(eax, 0x3f);
 	xMOVDZX(xRegisterSSE(*rstemp), eax);
-#else
-	_addNeededMMXreg(MMX_GPR+_Rd_);
-	*rdreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-	SetMMXstate();
-
-	*rstemp = _allocMMXreg(-1, MMX_TEMP, 0);
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-	xAND(eax, 0x3f);
-	xMOVDZX(xRegisterMMX(*rstemp), eax);
-#endif
 	*rsreg = *rstemp;
 }
 
@@ -583,7 +507,6 @@ void recDSLLV_constt(int info)
 {
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
-#if NO_MMX
 	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
 	xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
@@ -594,12 +517,6 @@ void recDSLLV_constt(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-
-	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPSLL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 void recDSLLV_(int info)
@@ -607,7 +524,6 @@ void recDSLLV_(int info)
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
-#if NO_MMX
 	xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
 
@@ -617,10 +533,6 @@ void recDSLLV_(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	xPSLL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 EERECOMPILE_CODE0(DSLLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
@@ -643,7 +555,6 @@ void recDSRLV_constt(int info)
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
 
-#if NO_MMX
 	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
 	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
@@ -654,11 +565,6 @@ void recDSRLV_constt(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 void recDSRLV_(int info)
@@ -666,7 +572,6 @@ void recDSRLV_(int info)
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
-#if NO_MMX
 	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
 
@@ -676,10 +581,6 @@ void recDSRLV_(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
-#else
-	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 EERECOMPILE_CODE0(DSRLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
@@ -700,7 +601,6 @@ void recDSRAV_consts(int info)
 void recDSRAV_constt(int info)
 {
 	int rsreg, rdreg, rstemp = -1, t0reg, t1reg;
-#if NO_MMX
 	t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -734,41 +634,11 @@ void recDSRAV_constt(int info)
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
-#else
-	t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-	t1reg = _allocMMXreg(-1, MMX_TEMP, 0);
-
-	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
-
-	xMOVQ(xRegisterMMX(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPXOR(xRegisterMMX(t0reg), xRegisterMMX(t0reg));
-
-	// calc high bit
-	xMOVQ(xRegisterMMX(t1reg), xRegisterMMX(rdreg));
-	xPCMP.GTD(xRegisterMMX(t0reg), xRegisterMMX(rdreg));
-	xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
-
-	// shift highest bit, 64 - eax
-	xMOV(eax, 64);
-	xMOVDZX(xRegisterMMX(t1reg), eax);
-	xPSUB.D(xRegisterMMX(t1reg), xRegisterMMX(rsreg));
-
-	// right logical shift
-	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	xPSLL.Q(xRegisterMMX(t0reg), xRegisterMMX(t1reg)); // highest bits
-
-	xPOR(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
-
-	_freeMMXreg(t0reg);
-	_freeMMXreg(t1reg);
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 void recDSRAV_(int info)
 {
 	int rsreg, rtreg, rdreg, rstemp = -1, t0reg, t1reg;
-#if NO_MMX
 	t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	t1reg = _allocTempXMMreg(XMMT_INT, -1);
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
@@ -801,33 +671,6 @@ void recDSRAV_(int info)
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
 	if( rstemp != -1 ) _freeXMMreg(rstemp);
-#else
-	t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-	t1reg = _allocMMXreg(-1, MMX_TEMP, 0);
-	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
-
-	xPXOR(xRegisterMMX(t0reg), xRegisterMMX(t0reg));
-
-	// calc high bit
-	xMOVQ(xRegisterMMX(t1reg), xRegisterMMX(rdreg));
-	xPCMP.GTD(xRegisterMMX(t0reg), xRegisterMMX(rdreg));
-	xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(t0reg)); // shift to lower
-
-	// shift highest bit, 64 - eax
-	xMOV(eax, 64);
-	xMOVDZX(xRegisterMMX(t1reg), eax);
-	xPSUB.D(xRegisterMMX(t1reg), xRegisterMMX(rsreg));
-
-	// right logical shift
-	xPSRL.Q(xRegisterMMX(rdreg), xRegisterMMX(rsreg));
-	xPSLL.Q(xRegisterMMX(t0reg), xRegisterMMX(t1reg)); // highest bits
-
-	xPOR(xRegisterMMX(rdreg), xRegisterMMX(t0reg));
-
-	_freeMMXreg(t0reg);
-	_freeMMXreg(t1reg);
-	if( rstemp != -1 ) _freeMMXreg(rstemp);
-#endif
 }
 
 EERECOMPILE_CODE0(DSRAV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);

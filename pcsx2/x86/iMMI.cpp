@@ -244,47 +244,6 @@ void recPMTHL()
 	_clearNeededXMMregs();
 }
 
-// MMX helper routines
-/*#define MMX_ALLOC_TEMP1(code) { \
-		int t0reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-} \
-
-#define MMX_ALLOC_TEMP2(code) { \
-		int t0reg, t1reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-} \
-
-#define MMX_ALLOC_TEMP3(code) { \
-		int t0reg, t1reg, t2reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t2reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-		_freeMMXreg(t2reg); \
-} \
-
-#define MMX_ALLOC_TEMP4(code) { \
-		int t0reg, t1reg, t2reg, t3reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t2reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t3reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-		_freeMMXreg(t2reg); \
-		_freeMMXreg(t3reg); \
-} \*/
-
 ////////////////////////////////////////////////////
 void recPSRLH()
 {

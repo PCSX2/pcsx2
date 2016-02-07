@@ -314,7 +314,6 @@ struct _mmxregs {
 void _initMMXregs();
 int  _getFreeMMXreg();
 int  _allocMMXreg(int MMXreg, int reg, int mode);
-void _addNeededMMXreg(int reg);
 int _checkMMXreg(int reg, int mode);
 void _clearNeededMMXregs();
 void _deleteMMXreg(int reg, int flush);
@@ -325,8 +324,6 @@ u8 _hasFreeMMXreg();
 void _freeMMXregs();
 int _getNumMMXwrite();
 
-int _signExtendMtoMMX(x86MMXRegType to, uptr mem);
-int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32 gprfromreg);
 int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
 
 // returns new index of reg, lower 32 bits already in mmx

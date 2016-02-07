@@ -676,19 +676,6 @@ int _checkMMXreg(int reg, int mode)
 	return -1;
 }
 
-void _addNeededMMXreg(int reg)
-{
-	uint i;
-
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].inuse == 0) continue;
-		if (mmxregs[i].reg != reg) continue;
-
-		mmxregs[i].counter = g_mmxAllocCounter++;
-		mmxregs[i].needed = 1;
-	}
-}
-
 void _clearNeededMMXregs()
 {
 	uint i;
@@ -878,43 +865,6 @@ void _signExtendSFtoM(uptr mem)
 	xSAR(ax, 15);
 	xCWDE();
 	xMOV(ptr[(void*)(mem)], eax);
-}
-
-int _signExtendMtoMMX(x86MMXRegType to, uptr mem)
-{
-	int t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-
-	xMOVDZX(xRegisterMMX(t0reg), ptr[(void*)(mem)]);
-	xMOVQ(xRegisterMMX(to), xRegisterMMX(t0reg));
-	xPSRA.D(xRegisterMMX(t0reg), 31);
-	xPUNPCK.LDQ(xRegisterMMX(to), xRegisterMMX(t0reg));
-	_freeMMXreg(t0reg);
-
-	return to;
-}
-
-int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32 gprfromreg)
-{
-	pxAssert( to >= 0 && from >= 0 );
-
-	if( to == from ) return _signExtendGPRtoMMX(to, gprreg, 0);
-	if( !(g_pCurInstInfo->regs[gprfromreg]&EEINST_LASTUSE) ) {
-		if( EEINST_ISLIVE64(gprfromreg) ) {
-			xMOVQ(xRegisterMMX(to), xRegisterMMX(from));
-			return _signExtendGPRtoMMX(to, gprreg, 0);
-		}
-	}
-
-	// from is free for use
-	SetMMXstate();
-
-	xMOVQ(xRegisterMMX(to), xRegisterMMX(from));
-	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[0]], xRegisterMMX(from));
-	xPSRA.D(xRegisterMMX(from), 31);
-	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[1]], xRegisterMMX(from));
-	mmxregs[to].inuse = 0;
-
-	return -1;
 }
 
 int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)

@@ -125,126 +125,6 @@ void recWritebackHILO(int info, int writed, int upper)
 	}
 }
 
-void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
-{
-	int regd, t0reg, t1reg = -1;
-	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
-	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
-
-	SetMMXstate();
-
-	t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
-	xMOVQ(xRegisterMMX(t0reg), xRegisterMMX(regsource));
-	xPSRA.D(xRegisterMMX(t0reg), 31); // shift in 0s
-
-	if( (g_pCurInstInfo->regs[XMMGPR_LO] & testlive) || (writed && _Rd_) ) {
-		if( (g_pCurInstInfo->regs[XMMGPR_HI] & testlive) )
-		{
-			if( !_hasFreeMMXreg() ) {
-				if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive )
-					_deleteMMXreg(MMX_GPR+MMX_HI, 2);
-			}
-
-			t1reg = _allocMMXreg(-1, MMX_TEMP, 0);
-			xMOVQ(xRegisterMMX(t1reg), xRegisterMMX(regsource));
-		}
-
-		xPUNPCK.LDQ(xRegisterMMX(regsource), xRegisterMMX(t0reg));
-	}
-
-	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
-		int reglo;
-		if( !upper && (reglo = _allocCheckGPRtoMMX(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE)) >= 0 ) {
-			xMOVQ(xRegisterMMX(reglo), xRegisterMMX(regsource));
-		}
-		else {
-			reglo = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_LO, MODE_READ);
-
-			xMOVQ(ptr[(void*)(loaddr)], xRegisterMMX(regsource));
-
-			if( reglo >= 0 ) {
-				if( xmmregs[reglo].mode & MODE_WRITE ) {
-					if( upper ) xMOVQ(ptr[(void*)(loaddr-8)], xRegisterSSE(reglo));
-					else xMOVH.PS(ptr[(void*)(loaddr+8)], xRegisterSSE(reglo));
-				}
-				xmmregs[reglo].inuse = 0;
-				reglo = -1;
-			}
-		}
-	}
-
-	if ( writed && _Rd_ )
-	{
-		regd = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rd_, MODE_WRITE);
-
-		if( regd >= 0 ) {
-			if( regd != regsource ) xMOVQ(xRegisterMMX(regd), xRegisterMMX(regsource));
-		}
-		else {
-			regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ);
-
-			if( regd >= 0 ) {
-				if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
-					// lo written
-					xMOVL.PS(xRegisterSSE(regd), ptr[(void*)(loaddr)]);
-					xmmregs[regd].mode |= MODE_WRITE;
-				}
-				else {
-					xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(regsource));
-
-					if( xmmregs[regd].mode & MODE_WRITE ) {
-						xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rd_].UL[2]], xRegisterSSE(regd));
-					}
-
-					xmmregs[regd].inuse = 0;
-				}
-			}
-			else {
-				xMOVQ(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], xRegisterMMX(regsource));
-			}
-		}
-	}
-
-	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
-
-		int mmreg = -1, reghi;
-
-		if( t1reg >= 0 ) {
-			xPUNPCK.HDQ(xRegisterMMX(t1reg), xRegisterMMX(t0reg));
-			mmreg = t1reg;
-		}
-		else {
-			// can't modify regsource
-			xPUNPCK.HDQ(xRegisterMMX(t0reg), xRegisterMMX(regsource));
-			mmreg = t0reg;
-			xPSHUF.W(xRegisterMMX(t0reg), xRegisterMMX(t0reg), 0x4e);
-		}
-
-		if( upper ) {
-			reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ);
-			if( reghi >= 0 ) {
-				if( xmmregs[reghi].mode & MODE_WRITE ) xMOVQ(ptr[(void*)(hiaddr-8)], xRegisterSSE(reghi));
-				xmmregs[reghi].inuse = 0;
-			}
-						
-			xMOVQ(ptr[(void*)(hiaddr)], xRegisterMMX(mmreg));
-		}
-		else {
-			_deleteGPRtoXMMreg(XMMGPR_HI, 2);
-			_deleteMMXreg(MMX_GPR+MMX_HI, 2);
-			mmxregs[mmreg].mode = MODE_WRITE;
-			mmxregs[mmreg].reg = MMX_GPR+MMX_HI;
-
-			if( t1reg >= 0 ) t1reg = -1;
-			else t0reg = -1;
-		}
-	}
-
-	if( t0reg >= 0 ) _freeMMXreg(t0reg&0xf);
-	if( t1reg >= 0 ) _freeMMXreg(t1reg&0xf);
-}
-
 void recWritebackConstHILO(u64 res, int writed, int upper)
 {
 	int reglo, reghi;
@@ -323,63 +203,18 @@ void recMULTsuper(int info, int upper, int process)
 	recWritebackHILO(info, 1, upper);
 }
 
-//void recMULT_process(int info, int process)
-//{
-//	if( EEINST_ISLIVE64(XMMGPR_HI) ) {
-//		recMULTsuper(info, 0, process);
-//	}
-//	else {
-//		// EEREC_D isn't set
-//		int mmregd;
-//
-//		if( _Rd_ ) {
-//			assert(EEREC_D == 0);
-//			mmregd = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE);
-//
-//			if( mmregd < 0 ) {
-//				if( !(process&PROCESS_CONSTS) && ((g_pCurInstInfo->regs[_Rs_]&EEINST_LASTUSE)||!EEINST_ISLIVE64(_Rs_)) ) {
-//					_freeMMXreg(EEREC_S);
-//					_deleteGPRtoXMMreg(_Rd_, 2);
-//					mmxregs[EEREC_S].inuse = 1;
-//					mmxregs[EEREC_S].reg = _Rd_;
-//					mmxregs[EEREC_S].mode = MODE_WRITE;
-//					mmregd = EEREC_S;
-//				}
-//				else if( !(process&PROCESS_CONSTT) && ((g_pCurInstInfo->regs[_Rt_]&EEINST_LASTUSE)||!EEINST_ISLIVE64(_Rt_)) ) {
-//					_freeMMXreg(EEREC_T);
-//					_deleteGPRtoXMMreg(_Rd_, 2);
-//					mmxregs[EEREC_T].inuse = 1;
-//					mmxregs[EEREC_T].reg = _Rd_;
-//					mmxregs[EEREC_T].mode = MODE_WRITE;
-//					mmregd = EEREC_T;
-//				}
-//				else mmregd = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-//			}
-//
-//			info |= PROCESS_EE_SET_D(mmregd);
-//		}
-//		recMULTUsuper(info, 0, process);
-//	}
-//
-//	// sometimes _Rd_ can be const
-//	if( _Rd_ ) _eeOnWriteReg(_Rd_, 1);
-//}
-
 void recMULT_(int info)
 {
-	//recMULT_process(info, 0);
 	recMULTsuper(info, 0, 0);
 }
 
 void recMULT_consts(int info)
 {
-	//recMULT_process(info, PROCESS_CONSTS);
 	recMULTsuper(info, 0, PROCESS_CONSTS);
 }
 
 void recMULT_constt(int info)
 {
-	//recMULT_process(info, PROCESS_CONSTT);
 	recMULTsuper(info, 0, PROCESS_CONSTT);
 }
 
