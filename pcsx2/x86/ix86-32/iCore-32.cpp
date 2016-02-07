@@ -519,30 +519,6 @@ int _getNumMMXwrite()
 	return num;
 }
 
-void _freeMMXreg(u32 mmxreg)
-{
-	pxAssert( mmxreg < iREGCNT_MMX );
-	if (!mmxregs[mmxreg].inuse) return;
-
-	if (mmxregs[mmxreg].mode & MODE_WRITE ) {
-		// Not sure if this line is accurate, since if the 32 was 34, it would be MMX_ISGPR.
-		if ( /*mmxregs[mmxreg].reg >= MMX_GPR &&*/ mmxregs[mmxreg].reg < MMX_GPR+32 ) // Checking if a u32 is >=0 is pointless.
-			pxAssert( !(g_cpuHasConstReg & (1<<(mmxregs[mmxreg].reg-MMX_GPR))) );
-
-		pxAssert( mmxregs[mmxreg].reg != MMX_GPR );
-
-		if( MMX_IS32BITS(mmxregs[mmxreg].reg) )
-			xMOVD(ptr[(_MMXGetAddr(mmxregs[mmxreg].reg))], xRegisterMMX(mmxreg));
-		else
-			xMOVQ(ptr[(_MMXGetAddr(mmxregs[mmxreg].reg))], xRegisterMMX(mmxreg));
-
-		SetMMXstate();
-	}
-
-	mmxregs[mmxreg].mode &= ~MODE_WRITE;
-	mmxregs[mmxreg].inuse = 0;
-}
-
 // write all active regs
 void _flushMMXregs()
 {
@@ -569,23 +545,7 @@ void _flushMMXregs()
 	}
 }
 
-void _freeMMXregs()
-{
-	uint i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].inuse == 0) continue;
-
-		pxAssert( mmxregs[i].reg != MMX_TEMP );
-		pxAssert( mmxregs[i].mode & MODE_READ );
-
-		_freeMMXreg(i);
-	}
-}
-
 void SetFPUstate() {
-	_freeMMXreg(6);
-	_freeMMXreg(7);
-
 	if (x86FpuState == MMX_STATE) {
 		xEMMS();
 		x86FpuState = FPU_STATE;

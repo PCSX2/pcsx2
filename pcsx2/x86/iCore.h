@@ -313,10 +313,8 @@ struct _mmxregs {
 
 void _initMMXregs();
 void _clearNeededMMXregs();
-void _freeMMXreg(u32 mmxreg);
 void _flushMMXregs();
 u8 _hasFreeMMXreg();
-void _freeMMXregs();
 int _getNumMMXwrite();
 
 // returns new index of reg, lower 32 bits already in mmx

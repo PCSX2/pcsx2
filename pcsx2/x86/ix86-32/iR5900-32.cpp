@@ -961,9 +961,7 @@ void iFlushCall(int flushtype)
 	else if( flushtype & FLUSH_FLUSH_XMM)
 		_flushXMMregs();
 
-	if( flushtype & FLUSH_FREE_MMX )
-		_freeMMXregs();
-	else if( flushtype & FLUSH_FLUSH_MMX)
+	if( flushtype & FLUSH_FLUSH_MMX)
 		_flushMMXregs();
 
 	if( flushtype & FLUSH_CACHED_REGS )
@@ -1344,7 +1342,6 @@ void recompileNextInstruction(int delayslot)
 #if 0
 			// TODO: Free register ?
 			//	_freeXMMregs();
-			//	_freeMMXregs();
 #endif
 		}
 	}
@@ -1369,7 +1366,6 @@ void recompileNextInstruction(int delayslot)
 	_clearNeededXMMregs();
 
 //	_freeXMMregs();
-//	_freeMMXregs();
 //	_flushCachedRegs();
 //	g_cpuHasConstReg = 1;
 
