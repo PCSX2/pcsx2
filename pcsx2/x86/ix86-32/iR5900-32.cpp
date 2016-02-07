@@ -231,11 +231,6 @@ int _flushXMMunused()
 	return 0;
 }
 
-int _flushMMXunused()
-{
-	return 0;
-}
-
 int _flushUnusedConstReg()
 {
 	int i;
@@ -906,8 +901,6 @@ void SaveBranchState()
 	s_saveFlushedConstReg = g_cpuFlushedConstReg;
 	s_psaveInstInfo = g_pCurInstInfo;
 
-	// save all mmx regs
-	memcpy(s_saveMMXregs, mmxregs, sizeof(mmxregs));
 	memcpy(s_saveXMMregs, xmmregs, sizeof(xmmregs));
 }
 
@@ -920,8 +913,6 @@ void LoadBranchState()
 	g_cpuFlushedConstReg = s_saveFlushedConstReg;
 	g_pCurInstInfo = s_psaveInstInfo;
 
-	// restore all mmx regs
-	memcpy(mmxregs, s_saveMMXregs, sizeof(mmxregs));
 	memcpy(xmmregs, s_saveXMMregs, sizeof(xmmregs));
 }
 
@@ -1267,15 +1258,6 @@ void recompileNextInstruction(int delayslot)
 
 	g_pCurInstInfo++;
 
-	for(i = 0; i < iREGCNT_MMX; ++i) {
-		if( mmxregs[i].inuse ) {
-			pxAssert( MMX_ISGPR(mmxregs[i].reg) );
-			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, XMMTYPE_GPRREG, mmxregs[i].reg-MMX_GPR);
-			if( count > 0 ) mmxregs[i].counter = 1000-count;
-			else mmxregs[i].counter = 0;
-		}
-	}
-
 	for(i = 0; i < iREGCNT_XMM; ++i) {
 		if( xmmregs[i].inuse ) {
 			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, xmmregs[i].type, xmmregs[i].reg);
@@ -1332,7 +1314,7 @@ void recompileNextInstruction(int delayslot)
 		if( s_bFlushReg ) {
 			//if( !_flushUnusedConstReg() ) {
 				int flushed = 0;
-				if( _getNumMMXwrite() > 3 ) flushed = _flushMMXunused();
+				if( false ) flushed = 0; // old mmx path. I don't understand why flushed isn't set in the line below
 				if( !flushed && _getNumXMMwrite() > 2 ) _flushXMMunused();
 				s_bFlushReg = !flushed;
 //			}
@@ -1650,7 +1632,6 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	_initX86regs();
 	_initXMMregs();
-	_initMMXregs();
 
 	if( EmuConfig.Cpu.Recompiler.PreBlockCheckEE )
 	{

@@ -28,8 +28,6 @@ using namespace x86Emitter;
 // landmass of shared code. (air)
 extern u32 g_psxConstRegs[32];
 
-static u16 g_mmxAllocCounter = 0;
-
 // X86 caching
 static int g_x86checknext;
 
@@ -469,23 +467,7 @@ void _freeX86regs()
 		_freeX86reg(i);
 }
 
-// MMX Caching
-_mmxregs mmxregs[8], s_saveMMXregs[8];
-static int s_mmxchecknext = 0;
-
-void _initMMXregs()
-{
-	memzero(mmxregs);
-	g_mmxAllocCounter = 0;
-	s_mmxchecknext = 0;
-}
-
-int _getNumMMXwrite()
-{
-	uint num = 0, i;
-
-	return num;
-}
+// Misc
 
 void _signExtendSFtoM(uptr mem)
 {

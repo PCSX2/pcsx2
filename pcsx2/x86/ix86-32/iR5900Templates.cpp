@@ -75,8 +75,9 @@ int eeProcessHILO(int reg, int mode, int mmx)
 	return -1;
 }
 
-#define PROCESS_EE_SETMODES(mmreg) ((mmxregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITES:0)
-#define PROCESS_EE_SETMODET(mmreg) ((mmxregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITET:0)
+// Strangely this code is used on NOT-MMX path ...
+#define PROCESS_EE_SETMODES(mmreg) (/*(mmxregs[mmreg].mode&MODE_WRITE)*/ false ?PROCESS_EE_MODEWRITES:0)
+#define PROCESS_EE_SETMODET(mmreg) (/*(mmxregs[mmreg].mode&MODE_WRITE)*/ false ?PROCESS_EE_MODEWRITET:0)
 
 // ignores XMMINFO_READS, XMMINFO_READT, and XMMINFO_READD_LO from xmminfo
 // core of reg caching

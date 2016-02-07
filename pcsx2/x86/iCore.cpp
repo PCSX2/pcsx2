@@ -33,7 +33,7 @@ u16 g_xmmAllocCounter = 0;
 EEINST* g_pCurInstInfo = NULL;
 
 // used to make sure regs don't get changed while in recompiler
-// use FreezeMMXRegs, FreezeXMMRegs
+// use FreezeXMMRegs
 u32 g_recWriteback = 0;
 
 _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
