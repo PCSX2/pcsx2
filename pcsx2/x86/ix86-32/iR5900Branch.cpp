@@ -186,7 +186,6 @@ void recSetBranchEQ(int info, int bne, int process)
 		}
 	}
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 }
 
@@ -211,7 +210,6 @@ void recSetBranchL(int ltz)
 	if( ltz ) j32Ptr[ 0 ] = JGE32( 0 );
 	else j32Ptr[ 0 ] = JL32( 0 );
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 }
 
@@ -586,7 +584,6 @@ void recBLEZ()
 
 	x86SetJ8( j8Ptr[ 0 ] );
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 
 	SaveBranchState();
@@ -634,7 +631,6 @@ void recBGTZ()
 
 	x86SetJ8( j8Ptr[ 0 ] );
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 
 	SaveBranchState();
@@ -807,7 +803,6 @@ void recBLEZL()
 		if( !(g_cpuConstRegs[_Rs_].SD[0] <= 0) )
 			SetBranchImm( pc + 4);
 		else {
-			_clearNeededMMXregs();
 			_clearNeededXMMregs();
 			recompileNextInstruction(1);
 			SetBranchImm( branchTo );
@@ -826,7 +821,6 @@ void recBLEZL()
 
 	x86SetJ32( j32Ptr[ 0 ] );
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 
 	SaveBranchState();
@@ -853,7 +847,6 @@ void recBGTZL()
 		if( !(g_cpuConstRegs[_Rs_].SD[0] > 0) )
 			SetBranchImm( pc + 4);
 		else {
-			_clearNeededMMXregs();
 			_clearNeededXMMregs();
 			recompileNextInstruction(1);
 			SetBranchImm( branchTo );
@@ -872,7 +865,6 @@ void recBGTZL()
 
 	x86SetJ32( j32Ptr[ 0 ] );
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 
 	SaveBranchState();

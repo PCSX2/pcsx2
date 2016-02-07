@@ -312,14 +312,8 @@ struct _mmxregs {
 };
 
 void _initMMXregs();
-void _clearNeededMMXregs();
 u8 _hasFreeMMXreg();
 int _getNumMMXwrite();
-
-// returns new index of reg, lower 32 bits already in mmx
-// shift is used when the data is in the top bits of the mmx reg to begin with
-// a negative shift is for sign extension
-extern int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
 
 extern _mmxregs mmxregs[iREGCNT_MMX], s_saveMMXregs[iREGCNT_MMX];
 extern u16 x86FpuState;

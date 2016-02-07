@@ -481,36 +481,6 @@ void _initMMXregs()
 	s_mmxchecknext = 0;
 }
 
-__fi void* _MMXGetAddr(int reg)
-{
-	pxAssert( reg != MMX_TEMP );
-
-	if( reg == MMX_LO ) return &cpuRegs.LO;
-	if( reg == MMX_HI ) return &cpuRegs.HI;
-	if( reg == MMX_FPUACC ) return &fpuRegs.ACC;
-
-	if( reg >= MMX_GPR && reg < MMX_GPR+32 ) return &cpuRegs.GPR.r[reg&31];
-	if( reg >= MMX_FPU && reg < MMX_FPU+32 ) return &fpuRegs.fpr[reg&31];
-	if( reg >= MMX_COP0 && reg < MMX_COP0+32 ) return &cpuRegs.CP0.r[reg&31];
-
-	pxAssume( false );
-	return NULL;
-}
-
-void _clearNeededMMXregs()
-{
-	uint i;
-
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if( mmxregs[i].needed ) {
-			// setup read to any just written regs
-			if( mmxregs[i].inuse && (mmxregs[i].mode&MODE_WRITE) )
-				mmxregs[i].mode |= MODE_READ;
-			mmxregs[i].needed = 0;
-		}
-	}
-}
-
 int _getNumMMXwrite()
 {
 	uint num = 0, i;
@@ -531,19 +501,4 @@ void _signExtendSFtoM(uptr mem)
 	xSAR(ax, 15);
 	xCWDE();
 	xMOV(ptr[(void*)(mem)], eax);
-}
-
-int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)
-{
-	pxAssert( to >= 0 && shift >= 0 );
-
-	SetMMXstate();
-
-	if( shift > 0 ) xPSRA.D(xRegisterMMX(to), shift);
-	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[0]], xRegisterMMX(to));
-	xPSRA.D(xRegisterMMX(to), 31);
-	xMOVD(ptr[&cpuRegs.GPR.r[gprreg].UL[1]], xRegisterMMX(to));
-	mmxregs[to].inuse = 0;
-
-	return -1;
 }

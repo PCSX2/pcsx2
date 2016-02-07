@@ -144,7 +144,6 @@ void recJALR()
 		}
 	}
 
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 	recompileNextInstruction(1);
 
