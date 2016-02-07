@@ -961,9 +961,6 @@ void iFlushCall(int flushtype)
 	else if( flushtype & FLUSH_FLUSH_XMM)
 		_flushXMMregs();
 
-	if( flushtype & FLUSH_FLUSH_MMX)
-		_flushMMXregs();
-
 	if( flushtype & FLUSH_CACHED_REGS )
 		_flushConstRegs();
 

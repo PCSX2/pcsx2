@@ -162,7 +162,6 @@ int _getFreeX86reg(int mode)
 void _flushCachedRegs()
 {
 	_flushConstRegs();
-	_flushMMXregs();
 	_flushXMMregs();
 }
 
@@ -517,32 +516,6 @@ int _getNumMMXwrite()
 	uint num = 0, i;
 
 	return num;
-}
-
-// write all active regs
-void _flushMMXregs()
-{
-	uint i;
-
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (mmxregs[i].inuse == 0) continue;
-
-		if( mmxregs[i].mode & MODE_WRITE ) {
-			pxAssert( !(g_cpuHasConstReg & (1<<mmxregs[i].reg)) );
-			pxAssert( mmxregs[i].reg != MMX_TEMP );
-			pxAssert( mmxregs[i].mode & MODE_READ );
-			pxAssert( mmxregs[i].reg != MMX_GPR );
-
-			if( MMX_IS32BITS(mmxregs[i].reg) )
-				xMOVD(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
-			else
-				xMOVQ(ptr[(_MMXGetAddr(mmxregs[i].reg))], xRegisterMMX(i));
-			SetMMXstate();
-
-			mmxregs[i].mode &= ~MODE_WRITE;
-			mmxregs[i].mode |= MODE_READ;
-		}
-	}
 }
 
 void SetFPUstate() {

@@ -313,7 +313,6 @@ struct _mmxregs {
 
 void _initMMXregs();
 void _clearNeededMMXregs();
-void _flushMMXregs();
 u8 _hasFreeMMXreg();
 int _getNumMMXwrite();
 
