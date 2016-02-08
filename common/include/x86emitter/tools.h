@@ -73,7 +73,6 @@ public:
 	u32 hasCFLUSHInstruction						:1;
 	u32 hasDebugStore								:1;
 	u32 hasACPIThermalMonitorAndClockControl		:1;
-	u32 hasMultimediaExtensions						:1;
 	u32 hasFastStreamingSIMDExtensionsSaveRestore	:1;
 	u32 hasStreamingSIMDExtensions					:1;
 	u32 hasStreamingSIMD2Extensions					:1;
@@ -95,10 +94,7 @@ public:
 	u32 hasFMA										:1;
 
 	// AMD-specific CPU Features
-	u32 hasMultimediaExtensionsExt					:1;
 	u32 hasAMD64BitArchitecture						:1;
-	u32 has3DNOWInstructionExtensionsExt			:1;
-	u32 has3DNOWInstructionExtensions				:1;
 	u32 hasStreamingSIMD4ExtensionsA				:1;
 
 	// Core Counts!
