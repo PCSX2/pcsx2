@@ -18,12 +18,10 @@
 #ifdef __x86_64__
 static const uint iREGCNT_XMM = 16;
 static const uint iREGCNT_GPR = 16;
-static const uint iREGCNT_MMX = 8; // FIXME: port the code and remove MMX
 #else
 // Register counts for x86/32 mode:
 static const uint iREGCNT_XMM = 8;
 static const uint iREGCNT_GPR = 8;
-static const uint iREGCNT_MMX = 8;
 #endif
 
 enum XMMSSEType
@@ -233,7 +231,7 @@ template< typename T > void xWrite( T val );
 	// --------------------------------------------------------------------------------------
 	//  xRegisterBase  -  type-unsafe x86 register representation.
 	// --------------------------------------------------------------------------------------
-	// Unless doing some fundamental stuff, use the friendly xRegister32/16/8 and xRegisterSSE/MMX
+	// Unless doing some fundamental stuff, use the friendly xRegister32/16/8 and xRegisterSSE
 	// instead, which are built using this class and provide strict register type safety when
 	// passed into emitter instructions.
 	//
@@ -264,14 +262,13 @@ template< typename T > void xWrite( T val );
 		// Returns true if the register is a valid accumulator: Eax, Ax, Al, XMM0.
 		bool IsAccumulator() const	{ return Id == 0; }
 
-		// IsSIMD: returns true if the register is a valid MMX or XMM register.
+		// IsSIMD: returns true if the register is a valid XMM register.
+		bool IsSIMD() const { return GetOperandSize() == 16; }
+
 		// IsWide: return true if the register is 64 bits (requires a wide op on the rex prefix)
 #ifdef __x86_64__
-		// No MMX on 64 bits, let's directly uses GPR
-		bool IsSIMD() const { return GetOperandSize() == 16; }
 		bool IsWide() const { return GetOperandSize() == 8; }
 #else
-		bool IsSIMD() const { return GetOperandSize() == 8 || GetOperandSize() == 16; }
 		bool IsWide() const { return false; } // no 64 bits GPR
 #endif
 		// return true if the register is a valid YMM register
@@ -359,29 +356,10 @@ template< typename T > void xWrite( T val );
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  xRegisterMMX/SSE  -  Represents either a 64 bit or 128 bit SIMD register
+	//  xRegisterSSE  -  Represents either a 64 bit or 128 bit SIMD register
 	// --------------------------------------------------------------------------------------
-	// This register type is provided to allow legal syntax for instructions that accept either
-	// an XMM or MMX register as a parameter, but do not allow for a GPR.
-
-	class xRegisterMMX : public xRegisterBase
-	{
-		typedef xRegisterBase _parent;
-
-	public:
-		xRegisterMMX(): _parent() {
-#ifdef __x86_64__
-			pxAssert(0); // Sorry but code must be ported
-#endif
-		}
-		//xRegisterMMX( const xRegisterBase& src ) : _parent( src ) {}
-		explicit xRegisterMMX( int regId ) : _parent( regId ) {}
-
-		virtual uint GetOperandSize() const { return 8; }
-
-		bool operator==( const xRegisterMMX& src ) const	{ return this->Id == src.Id; }
-		bool operator!=( const xRegisterMMX& src ) const	{ return this->Id != src.Id; }
-	};
+	// This register type is provided to allow legal syntax for instructions that accept
+	// an XMM register as a parameter, but do not allow for a GPR.
 
 	class xRegisterSSE : public xRegisterBase
 	{
@@ -473,12 +451,6 @@ template< typename T > void xWrite( T val );
 			return xRegister16( xRegId_Empty );
 		}
 
-		// FIXME remove it in x86 64
-		operator xRegisterMMX() const
-		{
-			return xRegisterMMX( xRegId_Empty );
-		}
-
 		operator xRegisterSSE() const
 		{
 			return xRegisterSSE( xRegId_Empty );
@@ -550,10 +522,6 @@ template< typename T > void xWrite( T val );
 		xmm4, xmm5, xmm6, xmm7,
 		xmm8, xmm9, xmm10, xmm11,
 		xmm12, xmm13, xmm14, xmm15;
-
-	extern const xRegisterMMX
-		mm0, mm1, mm2, mm3,
-		mm4, mm5, mm6, mm7;
 
 	extern const xAddressReg
 		rax, rbx, rcx, rdx,
@@ -943,7 +911,6 @@ template< typename T > void xWrite( T val );
 	typedef xDirectOrIndirect<xRegister8,xIndirect8>		xDirectOrIndirect8;
 	typedef xDirectOrIndirect<xRegister16,xIndirect16>		xDirectOrIndirect16;
 	typedef xDirectOrIndirect<xRegister32,xIndirect32>		xDirectOrIndirect32;
-	typedef xDirectOrIndirect<xRegisterMMX,xIndirect64>	xDirectOrIndirect64;
 	typedef xDirectOrIndirect<xRegisterSSE,xIndirect128>	xDirectOrIndirect128;
 #endif
 

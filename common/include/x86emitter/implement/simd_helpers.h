@@ -56,17 +56,8 @@ struct xImplSimd_DestSSE_CmpImm
 	void operator()( const xRegisterSSE& to, const xIndirectVoid& from, SSE2_ComparisonType imm ) const;
 };
 
-struct xImplSimd_DestRegImmMMX
-{
-	u8		Prefix;
-	u16		Opcode;
-
-	void operator()( const xRegisterMMX& to, const xRegisterMMX& from, u8 imm ) const;
-	void operator()( const xRegisterMMX& to, const xIndirectVoid& from, u8 imm ) const;
-};
-
 // ------------------------------------------------------------------------
-// For implementing MMX/SSE operations that have reg,reg/rm forms only,
+// For implementing SSE operations that have reg,reg/rm forms only,
 // but accept either MM or XMM destinations (most PADD/PSUB and other P arithmetic ops).
 //
 struct xImplSimd_DestRegEither
@@ -76,9 +67,6 @@ struct xImplSimd_DestRegEither
 
 	void operator()( const xRegisterSSE& to, const xRegisterSSE& from ) const;
 	void operator()( const xRegisterSSE& to, const xIndirectVoid& from ) const;
-
-	void operator()( const xRegisterMMX& to, const xRegisterMMX& from ) const;
-	void operator()( const xRegisterMMX& to, const xIndirectVoid& from ) const;
 };
 
 }	// end namespace x86Emitter

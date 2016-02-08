@@ -116,12 +116,6 @@ const xRegisterSSE
 	xmm12( 12 ), xmm13( 13 ),
 	xmm14( 14 ), xmm15( 15 );
 
-const xRegisterMMX
-	mm0( 0 ), mm1( 1 ),
-	mm2( 2 ), mm3( 3 ),
-	mm4( 4 ), mm5( 5 ),
-	mm6( 6 ), mm7( 7 );
-
 const xAddressReg
 	rax( 0 ), rbx( 3 ),
 	rcx( 1 ), rdx( 2 ),
@@ -192,12 +186,6 @@ const char *const x86_regnames_sse[] =
 	"xmm12", "xmm13", "xmm14", "xmm15"
 };
 
-const char *const x86_regnames_mmx[] =
-{
-	"mm0", "mm1", "mm2", "mm3",
-	"mm4", "mm5", "mm6", "mm7"
-};
-
 const char* xRegisterBase::GetName()
 {
 	if( Id == xRegId_Invalid ) return "invalid";
@@ -214,8 +202,6 @@ const char* xRegisterBase::GetName()
 		case 4: return x86_regnames_gpr32[ Id ];
 #ifdef __x86_64__
 		case 8: return x86_regnames_gpr64[ Id ];
-#else
-		case 8: return x86_regnames_mmx[ Id ];
 #endif
 		case 16: return x86_regnames_sse[ Id ];
 	}
