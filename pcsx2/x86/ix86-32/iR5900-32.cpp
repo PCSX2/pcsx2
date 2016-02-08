@@ -1006,21 +1006,6 @@ void iFlushCall(int flushtype)
 	}
 }
 
-//void testfpu()
-//{
-//	int i;
-//	for(i = 0; i < 32; ++i ) {
-//		if( fpuRegs.fpr[i].UL== 0x7f800000 || fpuRegs.fpr[i].UL == 0xffc00000) {
-//			Console.WriteLn("bad fpu: %x %x %x", i, cpuRegs.cycle, g_lastpc);
-//		}
-//
-//		if( VU0.VF[i].UL[0] == 0xffc00000 || //(VU0.VF[i].UL[1]&0xffc00000) == 0xffc00000 ||
-//			VU0.VF[i].UL[0] == 0x7f800000) {
-//			Console.WriteLn("bad vu0: %x %x %x", i, cpuRegs.cycle, g_lastpc);
-//		}
-//	}
-//}
-
 // Note: scaleblockcycles() scales s_nBlockCycles respective to the EECycleRate value for manipulating the cycles of current block recompiling.
 // s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 // Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.

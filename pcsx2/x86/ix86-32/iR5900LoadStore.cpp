@@ -26,9 +26,6 @@ using namespace x86Emitter;
 #define REC_STORES
 #define REC_LOADS
 
-// Implemented at the bottom of the module:
-void SetFastMemory(int bSetFast);
-
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
@@ -95,11 +92,6 @@ void _eeOnLoadWrite(u32 reg)
 using namespace Interpreter::OpcodeImpl;
 
 __aligned16 u32 dummyValue[4];
-
-void SetFastMemory(int bSetFast)
-{
-	// nothing
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -637,5 +629,3 @@ void recSQC2()
 
 using namespace R5900::Dynarec;
 using namespace R5900::Dynarec::OpcodeImpl;
-
-void SetFastMemory(int bSetFast) {}
