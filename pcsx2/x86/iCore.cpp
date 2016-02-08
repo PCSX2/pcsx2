@@ -33,7 +33,7 @@ u16 g_xmmAllocCounter = 0;
 EEINST* g_pCurInstInfo = NULL;
 
 // used to make sure regs don't get changed while in recompiler
-// use FreezeMMXRegs, FreezeXMMRegs
+// use FreezeXMMRegs
 u32 g_recWriteback = 0;
 
 _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
@@ -373,8 +373,6 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 		if (xmmregs[i].type != XMMTYPE_GPRREG) continue;
 		if (xmmregs[i].reg != gprreg) continue;
 
-		pxAssert( _checkMMXreg(MMX_GPR|gprreg, mode) == -1 );
-
 		g_xmmtypes[i] = XMMT_INT;
 
 		if (!(xmmregs[i].mode & MODE_READ) && (mode & MODE_READ))
@@ -432,40 +430,11 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 		else
 		{
 			// DOX86
-			int mmxreg;
-
 			if (mode & MODE_READ) _flushConstReg(gprreg);
 
-			mmxreg = _checkMMXreg(MMX_GPR+gprreg, 0);
-
-			if (mmxreg >= 0 )
-			{
-				// transfer
-				SetMMXstate();
-				xMOVQ(xRegisterSSE(xmmreg), xRegisterMMX(mmxreg));
-				xPUNPCK.LQDQ(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg));
-				xPUNPCK.HQDQ(xRegisterSSE(xmmreg), ptr[&cpuRegs.GPR.r[gprreg].UL[0]]);
-
-				if (mmxregs[mmxreg].mode & MODE_WRITE )
-				{
-					// instead of setting to write, just flush to mem
-					if  (!(mode & MODE_WRITE))
-					{
-						SetMMXstate();
-						xMOVQ(ptr[&cpuRegs.GPR.r[gprreg].UL[0]], xRegisterMMX(mmxreg));
-					}
-					//xmmregs[xmmreg].mode |= MODE_WRITE;
-				}
-
-				// don't flush
-				mmxregs[mmxreg].inuse = 0;
-			}
-			else
-				xMOVDQA(xRegisterSSE(xmmreg), ptr[&cpuRegs.GPR.r[gprreg].UL[0]]);
+			xMOVDQA(xRegisterSSE(xmmreg), ptr[&cpuRegs.GPR.r[gprreg].UL[0]]);
 		}
 	}
-	else
-	_deleteMMXreg(MMX_GPR+gprreg, 0);
 
 	return xmmreg;
 }
@@ -1168,8 +1137,4 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 		}
 		pxAssume( false );
 	}
-}
-
-void SetMMXstate() {
-	x86FpuState = MMX_STATE;
 }

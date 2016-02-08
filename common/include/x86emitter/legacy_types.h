@@ -21,5 +21,4 @@
 
 // general types
 typedef int x86IntRegType;
-typedef int x86MMXRegType;
 typedef int x86SSERegType;

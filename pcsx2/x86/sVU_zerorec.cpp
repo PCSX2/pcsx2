@@ -2545,7 +2545,6 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 	// Could clear allocation info to prevent possibly bad data being used in other parts of pcsx2;
 	// not doing this because it's slow and not needed (rama)
 	// _initXMMregs();
-	// _initMMXregs();
 	// _initX86regs();
 }
 

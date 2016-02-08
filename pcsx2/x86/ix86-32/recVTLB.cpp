@@ -68,15 +68,11 @@ static void iMOV128_SSE( const xIndirectVoid& destRm, const xIndirectVoid& srcRm
 	xMOVDQA( destRm, reg );
 }
 
-// Moves 64 bits of data from point B to point A, using either MMX, SSE, or x86 registers
-// if neither MMX nor SSE is available to the task.
-//
-// Optimizations: This method uses MMX is the cpu is in MMX mode, or SSE if it's in FPU
-// mode (saving on potential xEMMS uses).
+// Moves 64 bits of data from point B to point A, using either SSE, or x86 registers
 //
 static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcRm )
 {
-	if( (x86FpuState == FPU_STATE) && _hasFreeXMMreg() )
+	if( _hasFreeXMMreg() )
 	{
 		// Move things using MOVLPS:
 		xRegisterSSE reg( _allocTempXMMreg( XMMT_INT, -1 ) );
@@ -86,20 +82,10 @@ static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcR
 		return;
 	}
 
-	if( _hasFreeMMXreg() )
-	{
-		xRegisterMMX reg( _allocMMXreg(-1, MMX_TEMP, 0) );
-		xMOVQ( reg, srcRm );
-		xMOVQ( destRm, reg );
-		_freeMMXreg( reg.Id );
-	}
-	else
-	{
-		xMOV( eax, srcRm );
-		xMOV( destRm, eax );
-		xMOV( eax, srcRm+4 );
-		xMOV( destRm+4, eax );
-	}
+	xMOV( eax, srcRm );
+	xMOV( destRm, eax );
+	xMOV( eax, srcRm+4 );
+	xMOV( destRm+4, eax );
 }
 
 /*

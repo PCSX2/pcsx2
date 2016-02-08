@@ -96,12 +96,10 @@ struct xImplSimd_PMinMax
 {
 	// Compare packed unsigned byte integers in dest to src and store packed min/max
 	// values in dest.
-	// Operation can be performed on either MMX or SSE operands.
 	const xImplSimd_DestRegEither UB;
 
 	// Compare packed signed word integers in dest to src and store packed min/max
 	// values in dest.
-	// Operation can be performed on either MMX or SSE operands.
 	const xImplSimd_DestRegEither SW;
 
 	// [SSE-4.1] Compare packed signed byte integers in dest to src and store

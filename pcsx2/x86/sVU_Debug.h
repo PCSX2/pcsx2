@@ -17,16 +17,12 @@
 
 #define REC_VUOP(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
-	_freeMMXregs(); \
-	SetFPUstate();) \
 	xMOV(ptr32[&VU.code], (u32)VU.code); \
 	xCALL((void*)(uptr)VU##MI_##f); \
 }
 
 #define REC_VUOPs(VU, f) { \
 	_freeXMMregs(); \
-	_freeMMXregs(); \
-	SetFPUstate();) \
 	if (VU==&VU1) {  \
 		xMOV(ptr32[&VU1.code], (u32)VU1.code); \
 		xCALL((void*)(uptr)VU1MI_##f); \
@@ -39,16 +35,12 @@
 
 #define REC_VUOPFLAGS(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
-	_freeMMXregs(); \
-	SetFPUstate(); \
 	xMOV(ptr32[&VU.code], (u32)VU.code); \
 	xCALL((void*)(uptr)VU##MI_##f); \
 }
 
 #define REC_VUBRANCH(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
-	_freeMMXregs(); \
-	SetFPUstate(); \
 	xMOV(ptr32[&VU.code], (u32)VU.code); \
 	xMOV(ptr32[&VU.VI[REG_TPC].UL], (u32)pc); \
 	xCALL((void*)(uptr)VU##MI_##f); \

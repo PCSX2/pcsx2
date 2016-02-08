@@ -274,9 +274,6 @@ void SysLogMachineCaps()
 	if( x86caps.hasAVX2 )							features[0].Add( L"AVX2" );
 	if( x86caps.hasFMA)								features[0].Add( L"FMA" );
 
-	if( x86caps.hasMultimediaExtensionsExt )		features[1].Add( L"MMX2  " );
-	if( x86caps.has3DNOWInstructionExtensions )		features[1].Add( L"3DNOW " );
-	if( x86caps.has3DNOWInstructionExtensionsExt )	features[1].Add( L"3DNOW2" );
 	if( x86caps.hasStreamingSIMD4ExtensionsA )		features[1].Add( L"SSE4a " );
 
 	const wxString result[2] =

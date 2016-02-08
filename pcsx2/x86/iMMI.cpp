@@ -57,7 +57,6 @@ REC_FUNC_DEL( PSLLW, _Rd_ );
 
 void recPLZCW()
 {
-	bool isXMMreg = false;
 	int regs = -1;
 
 	if ( ! _Rd_ ) return;
@@ -80,11 +79,6 @@ void recPLZCW()
 
 	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 		xMOVD(eax, xRegisterSSE(regs));
-		isXMMreg = true;
-	}
-	else if( (regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-		xMOVD(eax, xRegisterMMX(regs));
-		SetMMXstate();
 	}
 	else {
 		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
@@ -119,17 +113,9 @@ void recPLZCW()
 	// second word
 
 	if( regs >= 0) {
-		// Check if it was an XMM reg or MMX reg
-		if (isXMMreg) {
-			xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
-			xMOVD(eax, xRegisterSSE(regs&0xf));
-			xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
-		} else {
-			xPSHUF.W(xRegisterMMX(regs&0xf), xRegisterMMX(regs&0xf), 0x4e);
-			xMOVD(eax, xRegisterMMX(regs&0xf));
-			xPSHUF.W(xRegisterMMX(regs&0xf), xRegisterMMX(regs&0xf), 0x4e);
-			SetMMXstate();
-		}
+		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
+		xMOVD(eax, xRegisterSSE(regs&0xf));
+		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
 	}
 	else {
 		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
@@ -243,47 +229,6 @@ void recPMTHL()
 
 	_clearNeededXMMregs();
 }
-
-// MMX helper routines
-/*#define MMX_ALLOC_TEMP1(code) { \
-		int t0reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-} \
-
-#define MMX_ALLOC_TEMP2(code) { \
-		int t0reg, t1reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-} \
-
-#define MMX_ALLOC_TEMP3(code) { \
-		int t0reg, t1reg, t2reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t2reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-		_freeMMXreg(t2reg); \
-} \
-
-#define MMX_ALLOC_TEMP4(code) { \
-		int t0reg, t1reg, t2reg, t3reg; \
-		t0reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t1reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t2reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		t3reg = _allocMMXreg(-1, MMX_TEMP, 0); \
-		code; \
-		_freeMMXreg(t0reg); \
-		_freeMMXreg(t1reg); \
-		_freeMMXreg(t2reg); \
-		_freeMMXreg(t3reg); \
-} \*/
 
 ////////////////////////////////////////////////////
 void recPSRLH()

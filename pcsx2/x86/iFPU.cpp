@@ -156,21 +156,10 @@ void recCTC1()
 
 		else
 		{
-			mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ);
+			_deleteGPRtoXMMreg(_Rt_, 1);
 
-			if ( mmreg >= 0 )
-			{
-				xMOVD(ptr[&fpuRegs.fprc[ _Fs_ ]], xRegisterMMX(mmreg));
-				SetMMXstate();
-			}
-			else
-			{
-				_deleteGPRtoXMMreg(_Rt_, 1);
-				_deleteMMXreg(MMX_GPR+_Rt_, 1);
-
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-				xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
-			}
+			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
 		}
 	}
 }
@@ -194,49 +183,27 @@ void recMFC1()
 	if( regs >= 0 )
 	{
 		_deleteGPRtoXMMreg(_Rt_, 2);
-		regt = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_WRITE);
-
-		if( regt >= 0 )
-		{
-			xMOVQ(xRegisterMMX(regt), xRegisterSSE(regs));
-			_signExtendGPRtoMMX(regt, _Rt_, 0);
-		}
-		else
-		{
-			_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
-		}
+		_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
 	}
 	else
 	{
-		regs = _checkMMXreg(MMX_FPU+_Fs_, MODE_READ);
+		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
-		if( regs >= 0 )
+		if( regt >= 0 )
 		{
-			// convert to mmx reg
-			mmxregs[regs].reg = MMX_GPR+_Rt_;
-			mmxregs[regs].mode |= MODE_READ|MODE_WRITE;
-			_signExtendGPRtoMMX(regs, _Rt_, 0);
-		}
-		else
-		{
-			regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
-
-			if( regt >= 0 )
+			if( xmmregs[regt].mode & MODE_WRITE )
 			{
-				if( xmmregs[regt].mode & MODE_WRITE )
-				{
-					xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(regt));
-				}
-				xmmregs[regt].inuse = 0;
+				xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(regt));
 			}
-
-			_deleteEEreg(_Rt_, 0);
-			xMOV(eax, ptr[&fpuRegs.fpr[ _Fs_ ].UL ]);
-
-			xCDQ( );
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+			xmmregs[regt].inuse = 0;
 		}
+
+		_deleteEEreg(_Rt_, 0);
+		xMOV(eax, ptr[&fpuRegs.fpr[ _Fs_ ].UL ]);
+
+		xCDQ( );
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
 	}
 }
 
@@ -279,35 +246,16 @@ void recMTC1()
 		}
 		else
 		{
-			int mmreg2;
+			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
 
-			mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ);
-			mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-
-			if( mmreg >= 0 )
+			if( mmreg2 >= 0 )
 			{
-				if( mmreg2 >= 0 )
-				{
-					SetMMXstate();
-					xMOVQ(xRegisterSSE(mmreg2), xRegisterMMX(mmreg));
-				}
-				else
-				{
-					SetMMXstate();
-					xMOVD(ptr[&fpuRegs.fpr[ _Fs_ ].UL], xRegisterMMX(mmreg));
-				}
+				xMOVSSZX(xRegisterSSE(mmreg2), ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
 			}
 			else
 			{
-				if( mmreg2 >= 0 )
-				{
-					xMOVSSZX(xRegisterSSE(mmreg2), ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-				}
-				else
-				{
-					xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-					xMOV(ptr[&fpuRegs.fpr[ _Fs_ ].UL], eax);
-				}
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
+				xMOV(ptr[&fpuRegs.fpr[ _Fs_ ].UL], eax);
 			}
 		}
 	}

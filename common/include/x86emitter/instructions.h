@@ -339,22 +339,10 @@ namespace x86Emitter
 	extern void xMOVDZX( const xRegisterSSE& to, const xRegister32or64& from );
 	extern void xMOVDZX( const xRegisterSSE& to, const xIndirectVoid& src );
 
-	extern void xMOVDZX( const xRegisterMMX& to, const xRegister32or64& from );
-	extern void xMOVDZX( const xRegisterMMX& to, const xIndirectVoid& src );
-
 	extern void xMOVD( const xRegister32or64& to, const xRegisterSSE& from );
 	extern void xMOVD( const xIndirectVoid& dest, const xRegisterSSE& from );
 
-	extern void xMOVD( const xRegister32or64& to, const xRegisterMMX& from );
-	extern void xMOVD( const xIndirectVoid& dest, const xRegisterMMX& from );
-
-	extern void xMOVQ( const xRegisterMMX& to, const xRegisterMMX& from );
-	extern void xMOVQ( const xRegisterMMX& to, const xRegisterSSE& from );
-	extern void xMOVQ( const xRegisterSSE& to, const xRegisterMMX& from );
-
 	extern void xMOVQ( const xIndirectVoid& dest, const xRegisterSSE& from );
-	extern void xMOVQ( const xIndirectVoid& dest, const xRegisterMMX& from );
-	extern void xMOVQ( const xRegisterMMX& to, const xIndirectVoid& src );
 
 	extern void xMOVQZX( const xRegisterSSE& to, const xIndirectVoid& src );
 	extern void xMOVQZX( const xRegisterSSE& to, const xRegisterSSE& from );
@@ -372,17 +360,13 @@ namespace x86Emitter
 
 	extern void xMOVNTPD( const xIndirectVoid& to, const xRegisterSSE& from );
 	extern void xMOVNTPS( const xIndirectVoid& to, const xRegisterSSE& from );
-	extern void xMOVNTQ( const xIndirectVoid& to, const xRegisterMMX& from );
 
 	extern void xMOVMSKPS( const xRegister32or64& to, const xRegisterSSE& from );
 	extern void xMOVMSKPD( const xRegister32or64& to, const xRegisterSSE& from );
 
 	extern void xMASKMOV( const xRegisterSSE& to, const xRegisterSSE& from );
-	extern void xMASKMOV( const xRegisterMMX& to, const xRegisterMMX& from );
 	extern void xPMOVMSKB( const xRegister32or64& to, const xRegisterSSE& from );
-	extern void xPMOVMSKB( const xRegister32or64& to, const xRegisterMMX& from );
 	extern void xPALIGNR( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8 );
-	extern void xPALIGNR( const xRegisterMMX& to, const xRegisterMMX& from, u8 imm8 );
 
 	// ------------------------------------------------------------------------
 
@@ -455,29 +439,21 @@ namespace x86Emitter
 
 	extern void xCVTPD2DQ( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTPD2DQ( const xRegisterSSE& to, const xIndirect128& from );
-	extern void xCVTPD2PI( const xRegisterMMX& to, const xRegisterSSE& from );
-	extern void xCVTPD2PI( const xRegisterMMX& to, const xIndirect128& from );
 	extern void xCVTPD2PS( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTPD2PS( const xRegisterSSE& to, const xIndirect128& from );
 
-	extern void xCVTPI2PD( const xRegisterSSE& to, const xRegisterMMX& from );
 	extern void xCVTPI2PD( const xRegisterSSE& to, const xIndirect64& from );
-	extern void xCVTPI2PS( const xRegisterSSE& to, const xRegisterMMX& from );
 	extern void xCVTPI2PS( const xRegisterSSE& to, const xIndirect64& from );
 
 	extern void xCVTPS2DQ( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTPS2DQ( const xRegisterSSE& to, const xIndirect128& from );
 	extern void xCVTPS2PD( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTPS2PD( const xRegisterSSE& to, const xIndirect64& from );
-	extern void xCVTPS2PI( const xRegisterMMX& to, const xRegisterSSE& from );
-	extern void xCVTPS2PI( const xRegisterMMX& to, const xIndirect64& from );
 
 	extern void xCVTSD2SI( const xRegister32or64& to, const xRegisterSSE& from );
 	extern void xCVTSD2SI( const xRegister32or64& to, const xIndirect64& from );
 	extern void xCVTSD2SS( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTSD2SS( const xRegisterSSE& to, const xIndirect64& from );
-	extern void xCVTSI2SD( const xRegisterMMX& to, const xRegister32or64& from );
-	extern void xCVTSI2SD( const xRegisterMMX& to, const xIndirect32& from );
 	extern void xCVTSI2SS( const xRegisterSSE& to, const xRegister32or64& from );
 	extern void xCVTSI2SS( const xRegisterSSE& to, const xIndirect32& from );
 
@@ -488,12 +464,8 @@ namespace x86Emitter
 
 	extern void xCVTTPD2DQ( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTTPD2DQ( const xRegisterSSE& to, const xIndirect128& from );
-	extern void xCVTTPD2PI( const xRegisterMMX& to, const xRegisterSSE& from );
-	extern void xCVTTPD2PI( const xRegisterMMX& to, const xIndirect128& from );
 	extern void xCVTTPS2DQ( const xRegisterSSE& to, const xRegisterSSE& from );
 	extern void xCVTTPS2DQ( const xRegisterSSE& to, const xIndirect128& from );
-	extern void xCVTTPS2PI( const xRegisterMMX& to, const xRegisterSSE& from );
-	extern void xCVTTPS2PI( const xRegisterMMX& to, const xIndirect64& from );
 
 	extern void xCVTTSD2SI( const xRegister32or64& to, const xRegisterSSE& from );
 	extern void xCVTTSD2SI( const xRegister32or64& to, const xIndirect64& from );

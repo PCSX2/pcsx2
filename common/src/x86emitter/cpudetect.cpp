@@ -250,7 +250,6 @@ void x86capabilities::Identify()
 	hasCFLUSHInstruction						= ( Flags >> 19 ) & 1;
 	hasDebugStore								= ( Flags >> 21 ) & 1;
 	hasACPIThermalMonitorAndClockControl		= ( Flags >> 22 ) & 1;
-	hasMultimediaExtensions						= ( Flags >> 23 ) & 1; //mmx
 	hasFastStreamingSIMDExtensionsSaveRestore	= ( Flags >> 24 ) & 1;
 	hasStreamingSIMDExtensions					= ( Flags >> 25 ) & 1; //sse
 	hasStreamingSIMD2Extensions					= ( Flags >> 26 ) & 1; //sse2
@@ -282,10 +281,7 @@ void x86capabilities::Identify()
 	hasBMI2 = ( SEFlag >>  8 ) & 1;
 
 	// Ones only for AMDs:
-	hasMultimediaExtensionsExt					= ( EFlags >> 22 ) & 1; //mmx2
 	hasAMD64BitArchitecture						= ( EFlags >> 29 ) & 1; //64bit cpu
-	has3DNOWInstructionExtensionsExt			= ( EFlags >> 30 ) & 1; //3dnow+
-	has3DNOWInstructionExtensions				= ( EFlags >> 31 ) & 1; //3dnow
 	hasStreamingSIMD4ExtensionsA				= ( EFlags2 >> 6 ) & 1; //INSERTQ / EXTRQ / MOVNT
 
 	isIdentified = true;

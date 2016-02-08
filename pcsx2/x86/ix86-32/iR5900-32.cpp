@@ -98,7 +98,6 @@ static bool s_nBlockFF;
 
 // save states for branches
 GPR_reg64 s_saveConstRegs[32];
-static u16 s_savex86FpuState;
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
 static EEINST* s_psaveInstInfo = NULL;
 
@@ -127,7 +126,6 @@ void _eeFlushAllUnused()
 
 		if( i < 32 && GPR_IS_CONST1(i) ) _flushConstReg(i);
 		else {
-			_deleteMMXreg(MMX_GPR+i, 1);
 			_deleteGPRtoXMMreg(i, 1);
 		}
 	}
@@ -166,10 +164,6 @@ void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
 			xMOVD(to, xRegisterSSE(mmreg));
 		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
-			xMOVD(to, xRegisterMMX(mmreg));
-			SetMMXstate();
-		}
 		else {
 			xMOV(to, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
 		}
@@ -185,10 +179,6 @@ void _eeMoveGPRtoM(uptr to, int fromgpr)
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[(void*)(to)], xRegisterSSE(mmreg));
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			xMOVD(ptr[(void*)(to)], xRegisterMMX(mmreg));
-			SetMMXstate();
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
@@ -206,10 +196,6 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[xAddressReg(to)], xRegisterSSE(mmreg));
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			xMOVD(ptr[xAddressReg(to)], xRegisterMMX(mmreg));
-			SetMMXstate();
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
@@ -237,25 +223,6 @@ int _flushXMMunused()
 			if( !_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, xmmregs[i].reg) ) {
 				_freeXMMreg(i);
 				xmmregs[i].inuse = 1;
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-
-int _flushMMXunused()
-{
-	u32 i;
-	for (i=0; i<iREGCNT_MMX; i++) {
-		if (!mmxregs[i].inuse || mmxregs[i].needed || !(mmxregs[i].mode&MODE_WRITE) ) continue;
-
-		if( MMX_ISGPR(mmxregs[i].reg) ) {
-			//if( !(g_pCurInstInfo->regs[mmxregs[i].reg-MMX_GPR]&EEINST_USED) ) {
-			if( !_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, mmxregs[i].reg-MMX_GPR) ) {
-				_freeMMXreg(i);
-				mmxregs[i].inuse = 1;
 				return 1;
 			}
 		}
@@ -444,7 +411,6 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static DynGenFunc* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
-	xEMMS();
 	xFastCall(dyna_block_discard);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
@@ -453,7 +419,6 @@ static DynGenFunc* _DynGen_DispatchBlockDiscard()
 static DynGenFunc* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
-	xEMMS();
 	xFastCall(dyna_page_reset);
 	xJMP(ExitRecompiledCode);
 	return (DynGenFunc*)retval;
@@ -596,8 +561,6 @@ static void recAlloc()
 	// No errors.. Proceed with initialization:
 
 	_DynGen_Dispatchers();
-
-	x86FpuState = FPU_STATE;
 }
 
 static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
@@ -639,7 +602,6 @@ static void recResetRaw()
 
 	recPtr = *recMem;
 	recConstBufPtr = recConstBuf;
-	x86FpuState = FPU_STATE;
 
 	g_branch = 0;
 }
@@ -882,10 +844,6 @@ void SetBranchReg( u32 reg )
 //			if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0 ) {
 //				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //			}
-//			else if( (mmreg = _checkMMXreg(MMX_GPR+reg, MODE_READ)) >= 0 ) {
-//				xMOVD(ptr[&cpuRegs.pc], xRegisterMMX(mmreg));
-//				SetMMXstate();
-//			}
 //			else {
 //				xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ reg ].UL[ 0 ] )]);
 //				xMOV(ptr[&cpuRegs.pc], eax);
@@ -937,21 +895,17 @@ void SetBranchImm( u32 imm )
 
 void SaveBranchState()
 {
-	s_savex86FpuState = x86FpuState;
 	s_savenBlockCycles = s_nBlockCycles;
 	memcpy(s_saveConstRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
 	s_saveHasConstReg = g_cpuHasConstReg;
 	s_saveFlushedConstReg = g_cpuFlushedConstReg;
 	s_psaveInstInfo = g_pCurInstInfo;
 
-	// save all mmx regs
-	memcpy(s_saveMMXregs, mmxregs, sizeof(mmxregs));
 	memcpy(s_saveXMMregs, xmmregs, sizeof(xmmregs));
 }
 
 void LoadBranchState()
 {
-	x86FpuState = s_savex86FpuState;
 	s_nBlockCycles = s_savenBlockCycles;
 
 	memcpy(g_cpuConstRegs, s_saveConstRegs, sizeof(g_cpuConstRegs));
@@ -959,8 +913,6 @@ void LoadBranchState()
 	g_cpuFlushedConstReg = s_saveFlushedConstReg;
 	g_pCurInstInfo = s_psaveInstInfo;
 
-	// restore all mmx regs
-	memcpy(mmxregs, s_saveMMXregs, sizeof(mmxregs));
 	memcpy(xmmregs, s_saveXMMregs, sizeof(xmmregs));
 }
 
@@ -992,18 +944,8 @@ void iFlushCall(int flushtype)
 	else if( flushtype & FLUSH_FLUSH_XMM)
 		_flushXMMregs();
 
-	if( flushtype & FLUSH_FREE_MMX )
-		_freeMMXregs();
-	else if( flushtype & FLUSH_FLUSH_MMX)
-		_flushMMXregs();
-
 	if( flushtype & FLUSH_CACHED_REGS )
 		_flushConstRegs();
-
-	if (x86FpuState==MMX_STATE) {
-		xEMMS();
-		x86FpuState=FPU_STATE;
-	}
 }
 
 // Note: scaleblockcycles() scales s_nBlockCycles respective to the EECycleRate value for manipulating the cycles of current block recompiling.
@@ -1301,15 +1243,6 @@ void recompileNextInstruction(int delayslot)
 
 	g_pCurInstInfo++;
 
-	for(i = 0; i < iREGCNT_MMX; ++i) {
-		if( mmxregs[i].inuse ) {
-			pxAssert( MMX_ISGPR(mmxregs[i].reg) );
-			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, XMMTYPE_GPRREG, mmxregs[i].reg-MMX_GPR);
-			if( count > 0 ) mmxregs[i].counter = 1000-count;
-			else mmxregs[i].counter = 0;
-		}
-	}
-
 	for(i = 0; i < iREGCNT_XMM; ++i) {
 		if( xmmregs[i].inuse ) {
 			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, xmmregs[i].type, xmmregs[i].reg);
@@ -1330,7 +1263,6 @@ void recompileNextInstruction(int delayslot)
 					case 0: case 1: case 2: case 3: case 0x10: case 0x11: case 0x12: case 0x13:
 						Console.Warning("branch %x in delay slot!", cpuRegs.code);
 						_clearNeededX86regs();
-						_clearNeededMMXregs();
 						_clearNeededXMMregs();
 						return;
 				}
@@ -1339,7 +1271,6 @@ void recompileNextInstruction(int delayslot)
 			case 2: case 3: case 4: case 5: case 6: case 7: case 0x14: case 0x15: case 0x16: case 0x17:
 				Console.Warning("branch %x in delay slot!", cpuRegs.code);
 				_clearNeededX86regs();
-				_clearNeededMMXregs();
 				_clearNeededXMMregs();
 				return;
 		}
@@ -1360,7 +1291,6 @@ void recompileNextInstruction(int delayslot)
 #if 0
 			// TODO: Free register ?
 			//	_freeXMMregs();
-			//	_freeMMXregs();
 #endif
 		}
 	}
@@ -1369,7 +1299,7 @@ void recompileNextInstruction(int delayslot)
 		if( s_bFlushReg ) {
 			//if( !_flushUnusedConstReg() ) {
 				int flushed = 0;
-				if( _getNumMMXwrite() > 3 ) flushed = _flushMMXunused();
+				if( false ) flushed = 0; // old mmx path. I don't understand why flushed isn't set in the line below
 				if( !flushed && _getNumXMMwrite() > 2 ) _flushXMMunused();
 				s_bFlushReg = !flushed;
 //			}
@@ -1381,11 +1311,9 @@ void recompileNextInstruction(int delayslot)
 
 	//CHECK_XMMCHANGED();
 	_clearNeededX86regs();
-	_clearNeededMMXregs();
 	_clearNeededXMMregs();
 
 //	_freeXMMregs();
-//	_freeMMXregs();
 //	_flushCachedRegs();
 //	g_cpuHasConstReg = 1;
 
@@ -1684,13 +1612,11 @@ static void __fastcall recRecompile( const u32 startpc )
 	// reset recomp state variables
 	s_nBlockCycles = 0;
 	pc = startpc;
-	x86FpuState = FPU_STATE;
 	g_cpuHasConstReg = g_cpuFlushedConstReg = 1;
 	pxAssert( g_cpuConstRegs[0].UD[0] == 0 );
 
 	_initX86regs();
 	_initXMMregs();
-	_initMMXregs();
 
 	if( EmuConfig.Cpu.Recompiler.PreBlockCheckEE )
 	{
@@ -2090,7 +2016,6 @@ StartRecomp:
 
 	pxAssert( xGetPtr() < recMem->GetPtrEnd() );
 	pxAssert( recConstBufPtr < recConstBuf + RECCONSTBUF_SIZE );
-	pxAssert( x86FpuState == 0 );
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;

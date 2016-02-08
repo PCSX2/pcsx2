@@ -268,77 +268,6 @@ int _allocCheckFPUtoXMM(EEINST* pinst, int fpureg, int mode);
 // allocates only if later insts use this register
 int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 
-////////////////////////////////////////////////////////////////////////////////
-//   MMX (64-bit) Register Allocation Tools
-
-#define FPU_STATE 0
-#define MMX_STATE 1
-
-void SetMMXstate();
-void SetFPUstate();
-
-// max is 0x7f, when 0x80 is set, need to flush reg
-//#define MMX_GET_CACHE(ptr, index) ((u8*)ptr)[index]
-//#define MMX_SET_CACHE(ptr, ind3, ind2, ind1, ind0) ((u32*)ptr)[0] = (ind3<<24)|(ind2<<16)|(ind1<<8)|ind0;
-#define MMX_GPR 0
-#define MMX_HI	XMMGPR_HI
-#define MMX_LO	XMMGPR_LO
-#define MMX_FPUACC 34
-#define MMX_FPU	64
-#define MMX_COP0 96
-#define MMX_TEMP 0x7f
-
-static __fi bool MMX_IS32BITS(s32 x)
-{
-	return (((x >= MMX_FPU) && (x < MMX_COP0 + 32)) || (x == MMX_FPUACC));
-}
-
-static __fi bool MMX_ISGPR(s32 x)
-{
-	return ((x >= MMX_GPR) && (x < MMX_GPR + 34));
-}
-
-static __fi bool MMX_ISGPR(u32 x)
-{
-	return (x < MMX_GPR + 34);
-}
-
-struct _mmxregs {
-	u8 inuse;
-	u8 reg; // value of 0 - not used
-	u8 mode;
-	u8 needed;
-	u16 counter;
-};
-
-void _initMMXregs();
-int  _getFreeMMXreg();
-int  _allocMMXreg(int MMXreg, int reg, int mode);
-void _addNeededMMXreg(int reg);
-int _checkMMXreg(int reg, int mode);
-void _clearNeededMMXregs();
-void _deleteMMXreg(int reg, int flush);
-void _freeMMXreg(u32 mmxreg);
-void _moveMMXreg(int mmxreg); // instead of freeing, moves it to a diff location
-void _flushMMXregs();
-u8 _hasFreeMMXreg();
-void _freeMMXregs();
-int _getNumMMXwrite();
-
-int _signExtendMtoMMX(x86MMXRegType to, uptr mem);
-int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32 gprfromreg);
-int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
-
-// returns new index of reg, lower 32 bits already in mmx
-// shift is used when the data is in the top bits of the mmx reg to begin with
-// a negative shift is for sign extension
-extern int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
-
-extern _mmxregs mmxregs[iREGCNT_MMX], s_saveMMXregs[iREGCNT_MMX];
-extern u16 x86FpuState;
-
-// extern void iDumpRegisters(u32 startpc, u32 temp);
-
 //////////////////////////////////////////////////////////////////////////
 // iFlushCall / _psxFlushCall Parameters
 
@@ -357,8 +286,6 @@ extern u16 x86FpuState;
 #define FLUSH_CACHED_REGS	0x001
 #define FLUSH_FLUSH_XMM		0x002
 #define FLUSH_FREE_XMM		0x004	// both flushes and frees
-#define FLUSH_FLUSH_MMX		0x008
-#define FLUSH_FREE_MMX		0x010	// both flushes and frees
 #define FLUSH_FLUSH_ALLX86	0x020	// flush x86
 #define FLUSH_FREE_TEMPX86	0x040	// flush and free temporary x86 regs
 #define FLUSH_FREE_ALLX86	0x080	// free all x86 regs
@@ -372,9 +299,9 @@ extern u16 x86FpuState;
 #define FLUSH_INTERPRETER	0xfff
 #define FLUSH_FULLVTLB FLUSH_NOCONST
 
-// no freeing, used when callee won't destroy mmx/xmm regs
-#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
+// no freeing, used when callee won't destroy xmm regs
+#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_ALLX86)
 // used when regs aren't going to be changed be callee
-#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
+#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_TEMPX86)
 
 #endif
