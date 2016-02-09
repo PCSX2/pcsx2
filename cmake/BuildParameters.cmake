@@ -232,7 +232,9 @@ endif()
 #-------------------------------------------------------------------------------
 option(USE_LTO "Enable LTO optimization (will likely break the build)")
 
-set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp")
+# Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
+# Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
+set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
 endif()

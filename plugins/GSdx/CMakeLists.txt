@@ -11,7 +11,6 @@ set(Output GSdx-1.0.0)
 
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
-    -mfpmath=sse
     -fno-strict-aliasing
     -Wno-unknown-pragmas
     -Wno-parentheses
