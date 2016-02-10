@@ -153,6 +153,10 @@ size_t CBreakPoints::FindMemCheck(u32 start, u32 end)
 bool CBreakPoints::IsAddressBreakPoint(u32 addr)
 {
 	size_t bp = FindBreakpoint(addr);
+	if (bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled)
+		return true;
+	// Check again for overlapping temp breakpoint
+	bp = FindBreakpoint(addr, true, true);
 	return bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled;
 }
 
