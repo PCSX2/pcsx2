@@ -178,7 +178,7 @@ union GPR_reg64 {
 	u64 UD[1];      //64 bits
 	s64 SD[1];
 	u32 UL[2];
-	s32 SL[3];
+	s32 SL[2];
 	u16 US[4];
 	s16 SS[4];
 	u8  UC[8];
