@@ -500,6 +500,9 @@ void recSDR()
 
 void recLWC1()
 {
+#ifndef FPU_RECOMPILE
+	recCall(::R5900::Interpreter::OpcodeImpl::LWC1);
+#else
 	_deleteFPtoXMMreg(_Rt_, 2);
 
 	if (GPR_IS_CONST1(_Rs_))
@@ -521,12 +524,16 @@ void recLWC1()
 	xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
 
 	EE::Profiler.EmitOp(eeOpcode::LWC1);
+#endif
 }
 
-////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 void recSWC1()
 {
+#ifndef FPU_RECOMPILE
+	recCall(::R5900::Interpreter::OpcodeImpl::SWC1);
+#else
 	_deleteFPtoXMMreg(_Rt_, 1);
 
 	xMOV(edx, ptr32[&fpuRegs.fpr[_Rt_].UL] );
@@ -548,6 +555,7 @@ void recSWC1()
 	}
 
 	EE::Profiler.EmitOp(eeOpcode::SWC1);
+#endif
 }
 
 ////////////////////////////////////////////////////
