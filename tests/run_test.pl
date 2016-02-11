@@ -64,7 +64,7 @@ my ($o_suite, $o_help, $o_exe, $o_cfg, $o_max_cpu, $o_timeout, $o_show_diff, $o_
 $o_bad = 0;
 $o_regression = 0;
 $o_cygwin = 0;
-$o_max_cpu = 1;
+$o_max_cpu = 8;
 $o_timeout = 30;
 $o_help = 0;
 $o_debug_me = 0;
@@ -113,6 +113,9 @@ unless (defined $o_suite) {
     print "Note: you could use either use --suite or the env variable \$PS2_AUTOTESTS_ROOT\n";
     help();
 }
+
+# Default value if the dir exists
+$o_cfg = "bin/inis" if (not defined $o_cfg and -d "bin/inis");
 
 unless (defined $o_cfg) {
     print "Error: require a default cfg directory\n";
@@ -221,7 +224,8 @@ foreach my $test (sort(keys(%$g_test_db))) {
         }
         if ($o_show_diff) {
             print color('bold magenta'); print "-----------------------------------------------------------------------\n"; print color('reset');
-            print test_cmd($test, $cfg) . "\n";
+            # Easy copy/past to rerun the test in gdb. Yes lazy guy detected :p
+            print "gdb -ex=r --args " . test_cmd($test, $cfg) . "\n";
             print "vi -d $exp $out\n";
             print "\n";
             diff($exp, $out, 0);
