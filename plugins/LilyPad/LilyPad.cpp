@@ -1213,7 +1213,7 @@ u8 CALLBACK PADpoll(u8 value) {
 				b1 -= ((sum->sticks[0].vert  > 0) << 6);
 				b1 -= ((sum->sticks[0].horiz < 0) << 7);
 
-				//Left, Right and Down are always pressed.
+				//Left, Right and Down are always pressed on Pop'n Music controller.
 				if (config.padConfigs[query.port][query.slot].type == PopnPad)
 					b1=b1 & 0x1f;
 

@@ -1446,7 +1446,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 				case PSN_SETACTIVE:
 					return 0;
 				case PSN_APPLY:
-					SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_NOERROR);
+					SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return 1;
 				}
 				break;
@@ -1504,9 +1504,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 						const static unsigned int axisUIDs[3] = {UID_AXIS_NEG, UID_AXIS_POS, UID_AXIS};
 						int uid = dev->virtualControls[b->controlIndex].uid;
 						uid = (uid&0x00FFFFFF) | axisUIDs[cbsel];
-						Binding backup = *b;
 						DeleteSelected(port, slot);
-						int index = BindCommand(dev, uid, port, slot, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
+						int index = BindCommand(dev, uid, port, slot, b->command, b->sensitivity, b->turbo, b->deadZone);
 						ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
 						PropSheet_Changed(hWndProp, hWnd);
 					}
@@ -2023,10 +2022,10 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				case PSN_APPLY:
 					selected = 0;
 					if (SaveSettings()) {
-						SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
+						SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
 						return 0;
 					}
-					SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_NOERROR);
+					SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return 1;
 				}
 			}
