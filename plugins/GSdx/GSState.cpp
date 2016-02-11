@@ -354,7 +354,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	GSVector4i r;
 
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && !Vmode_VESA)
+	if (height > 640 && !Vmode_VESA_DTV)
 	{
 		height /= 2;
 	}
