@@ -6,16 +6,18 @@ linux_32_before_install() {
 	# Build worker is 64-bit only by default it seems.
 	sudo dpkg --add-architecture i386
 
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key
 		sudo add-apt-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		# g++-4.8-multilib is necessary for compiler dependencies. Well, I think
-		# the specific dependency is probably lib32gcc-4.8-dev.
-		COMPILER_PACKAGE="clang-${VERSION} g++-4.8-multilib"
+		# g++-4.9-multilib is necessary for compiler dependencies. 4.8 currently
+		# has dependency issues, but 4.9 from the toolchain repo seems to work
+		# fine, so let's just use that.
+		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib"
 	fi
 	if [ "${CXX}" = "g++" ]; then
-		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 		COMPILER_PACKAGE="g++-${VERSION}-multilib"
 	fi
 
