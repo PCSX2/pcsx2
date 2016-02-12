@@ -370,8 +370,6 @@ GSVector4i GSState::GetDisplayRect(int i)
 	return r;
 }
 
-// There's a problem when games expand/shrink and relocate the visible area since GSdx doesn't support
-// moving the output area. (Disgaea 2 intro FMV when upscaling is used). 
 GSVector4i GSState::GetFrameRect(int i)
 {
 	if (i < 0) i = IsEnabled(1) ? 1 : 0;
@@ -391,7 +389,6 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
 		h >>= 1;
 
-	//watch Disgaea2 FMV borders when changing
 	r.left = m_regs->DISP[i].DISPFB.DBX;
 	r.top = m_regs->DISP[i].DISPFB.DBY;
 	r.right = r.left + w;
