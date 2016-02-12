@@ -2112,7 +2112,8 @@ float3 ToSrgb(float3 c)
 
 float3 Fetch(float2 pos, float2 off)
 {
-    float2 res = (screenSize * ResolutionScale);
+    float2 crtRes = float2(CRTSizeX, CRTSizeY);
+    float2 res = (crtRes * ResolutionScale);
     pos = floor(pos * res + off) / res;
     if(max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5) { return float3(0.0, 0.0, 0.0); }
 
@@ -2121,7 +2122,8 @@ float3 Fetch(float2 pos, float2 off)
 
 float2 Dist(float2 pos)
 {
-    float2 res = (screenSize * ResolutionScale);
+    float2 crtRes = float2(CRTSizeX, CRTSizeY);
+    float2 res = (crtRes * ResolutionScale);
     pos = (pos * res);
     return -((pos - floor(pos)) - float2(0.5, 0.5));
 }
@@ -2256,10 +2258,21 @@ float4 LottesCRTPass(float4 color, float2 texcoord, float4 fragcoord)
 {
     #if GLSL == 1
     fragcoord = gl_FragCoord;
+    float2 inSize = textureSize(TextureSampler, 0);
+    #else
+    float2 inSize;
+    Texture.GetDimensions(inSize.x, inSize.y);
     #endif
 
-    float2 pos = Warp(texcoord);
+    
+
+    float2 pos = Warp(fragcoord.xy / inSize);
+
+    #if ShadowMask == 0
+    color.rgb = Tri(pos);
+    #else
     color.rgb = Tri(pos) * Mask(fragcoord.xy);
+    #endif
     color.rgb = ToSrgb(color.rgb);
     color.a = 1.0;
 
@@ -2284,7 +2297,7 @@ float rand(float2 pos)
 
 bool is_within_threshold(float3 original, float3 other)
 {
-	#if GLSL == 1
+    #if GLSL == 1
     bvec3 cond = notEqual(max(abs(original - other) - DebandThreshold, float3(0.0, 0.0, 0.0)), float3(0.0, 0.0, 0.0));
     return !any(cond).x;
     #else
