@@ -88,6 +88,7 @@ public:
 	ArchiveEntryList() {}
 
 	ArchiveEntryList( ArchiveDataBuffer* data )
+		: m_data(data)
 	{
 	}
 
