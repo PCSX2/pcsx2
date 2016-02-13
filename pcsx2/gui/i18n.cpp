@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "i18n.h"
 #include "AppConfig.h"
-
 #include "Utilities/SafeArray.h"
+#include <memory>
 
 // Some of the codes provided by wxWidgets are 'obsolete' -- effectively replaced by more specific
 // region-qualified language codes.  This function can be used to filter them out.
@@ -80,9 +80,9 @@ static void i18n_DoPackageCheck( wxLanguage wxLangId, LangPackList& langs, bool&
 	// note: wx preserves the current locale for us, so creating a new locale and deleting
 	// will not affect program status.
 #if wxMAJOR_VERSION < 3
-	ScopedPtr<wxLocale> locale( new wxLocale( wxLangId, wxLOCALE_CONV_ENCODING ) );
+	std::unique_ptr<wxLocale> locale(new wxLocale(wxLangId, wxLOCALE_CONV_ENCODING));
 #else
-	ScopedPtr<wxLocale> locale( new wxLocale( wxLangId, 0 ) );
+	std::unique_ptr<wxLocale> locale(new wxLocale(wxLangId, 0));
 #endif
 
 	// Force the msgIdLanguage param to wxLANGUAGE_UNKNOWN to disable wx's automatic english
@@ -304,7 +304,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	if (!info) return false;
 	if (wxGetLocale() && (info->Language == wxGetLocale()->GetLanguage())) return true;
 	
-	ScopedPtr<wxLocale> locale( new wxLocale(info->Language) );
+	std::unique_ptr<wxLocale> locale(new wxLocale(info->Language));
 
 	if( !locale->IsOk() )
 	{
@@ -325,7 +325,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	// English/US is built in, so no need to load MO/PO files.
 	if( pxIsEnglish(wxLangId) )
 	{
-		locale.DetachPtr();
+		locale.release();
 		return true;
 	}
 	
@@ -356,7 +356,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		return false;
 	}
 
-	locale.DetachPtr();
+	locale.release();
 	return true;
 }
 

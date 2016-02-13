@@ -18,6 +18,7 @@
 
 #include "IsoFS.h"
 #include "IsoFile.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////
 // IsoDirectory
@@ -172,7 +173,7 @@ IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
 	wxFileName parts( filePath, wxPATH_DOS );
 	IsoFileDescriptor info;
 	const IsoDirectory* dir = this;
-	ScopedPtr<IsoDirectory> deleteme;
+	std::unique_ptr<IsoDirectory> deleteme;
 
 	// walk through path ("." and ".." entries are in the directories themselves, so even if the
 	// path included . and/or .., it still works)
@@ -182,7 +183,8 @@ IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
 		info = dir->GetEntry(parts.GetDirs()[i]);
 		if(info.IsFile()) throw Exception::FileNotFound( filePath );
 
-		dir = deleteme = new IsoDirectory(internalReader, info);
+		deleteme.reset(new IsoDirectory(internalReader, info));
+		dir = deleteme.get();
 	}
 
 	if( !parts.GetFullName().IsEmpty() )

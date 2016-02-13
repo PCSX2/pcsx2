@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Assertions.h"
-#include "ScopedPtr.h"
+#include <memory>
 
 // Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
 void pxTrap();
@@ -108,7 +108,7 @@ namespace Exception
 		virtual BaseException* Clone() const=0;
 	};
 
-	typedef ScopedPtr<BaseException> ScopedExcept;
+	typedef std::unique_ptr<BaseException> ScopedExcept;
 
 	// --------------------------------------------------------------------------------------
 	//  Ps2Generic Exception

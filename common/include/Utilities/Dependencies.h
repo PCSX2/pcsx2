@@ -199,6 +199,7 @@ public:
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <memory>
 
 #include "Pcsx2Defs.h"
 
@@ -245,5 +246,4 @@ extern wxString fromAscii( const char* src );
 
 #include "Utilities/Assertions.h"
 #include "Utilities/Exceptions.h"
-#include "Utilities/ScopedPtr.h"
 #include "Utilities/ScopedAlloc.h"

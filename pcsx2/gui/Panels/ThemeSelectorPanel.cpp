@@ -21,6 +21,7 @@
 #include <wx/filepicker.h>
 #include <wx/listbox.h>
 #include <wx/zipstrm.h>
+#include <memory>
 
 using namespace pxSizerFlags;
 
@@ -73,20 +74,20 @@ bool Panels::ThemeSelectorPanel::ValidateEnumerationStatus()
 {
 	bool validated = true;
 
-	// Impl Note: ScopedPtr used so that resources get cleaned up if an exception
+	// Impl Note: unique_ptr used so that resources get cleaned up if an exception
 	// occurs during file enumeration.
-	ScopedPtr<wxArrayString> themelist( new wxArrayString() );
+	std::unique_ptr<wxArrayString> themelist(new wxArrayString());
 
 	if( m_FolderPicker->GetPath().Exists() )
 	{
-		wxDir::GetAllFiles( m_FolderPicker->GetPath().ToString(), themelist, L"*.zip;*.p2ui", wxDIR_FILES );
-		wxDir::GetAllFiles( m_FolderPicker->GetPath().ToString(), themelist, L"*.*", wxDIR_DIRS );
+		wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), themelist.get(), L"*.zip;*.p2ui", wxDIR_FILES);
+		wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), themelist.get(), L"*.*", wxDIR_DIRS);
 	}
 
 	if( !m_ThemeList || (*themelist != *m_ThemeList) )
 		validated = false;
 
-	m_ThemeList.SwapPtr( themelist );
+	m_ThemeList.swap(themelist);
 
 	return validated;
 }

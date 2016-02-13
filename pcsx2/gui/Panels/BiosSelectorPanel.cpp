@@ -22,6 +22,7 @@
 #include <wx/dir.h>
 #include <wx/filepicker.h>
 #include <wx/listbox.h>
+#include <memory>
 
 using namespace pxSizerFlags;
 
@@ -150,17 +151,17 @@ bool Panels::BiosSelectorPanel::ValidateEnumerationStatus()
 {
 	bool validated = true;
 
-	// Impl Note: ScopedPtr used so that resources get cleaned up if an exception
+	// Impl Note: unique_ptr used so that resources get cleaned up if an exception
 	// occurs during file enumeration.
-	ScopedPtr<wxArrayString> bioslist( new wxArrayString() );
+	std::unique_ptr<wxArrayString> bioslist(new wxArrayString());
 
 	if( m_FolderPicker->GetPath().Exists() )
-		wxDir::GetAllFiles( m_FolderPicker->GetPath().ToString(), bioslist, L"*.*", wxDIR_FILES );
+		wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), bioslist.get(), L"*.*", wxDIR_FILES);
 
 	if( !m_BiosList || (*bioslist != *m_BiosList) )
 		validated = false;
 
-	m_BiosList.SwapPtr( bioslist );
+	m_BiosList.swap(bioslist);
 
 	return validated;
 }

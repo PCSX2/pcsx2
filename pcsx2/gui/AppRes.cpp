@@ -20,6 +20,7 @@
 #include <wx/zipstrm.h>
 #include <wx/wfstream.h>
 #include <wx/imaglist.h>
+#include <memory>
 
 #include "MSWstuff.h"
 
@@ -61,9 +62,9 @@ const wxImage& LoadImageAny(
 
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {
-	Menu = new wxMenu();
+	Menu = std::unique_ptr<wxMenu>(new wxMenu());
 	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an Iso that is not in your recent history.") );
-	Manager = new RecentIsoManager( Menu, firstIdForMenuItems_or_wxID_ANY );
+	Manager = std::unique_ptr<RecentIsoManager>(new RecentIsoManager( Menu.get(), firstIdForMenuItems_or_wxID_ANY ));
 }
 
 pxAppResources::pxAppResources()
@@ -74,13 +75,13 @@ pxAppResources::~pxAppResources() throw() {}
 
 wxMenu& Pcsx2App::GetRecentIsoMenu()
 {
-	if (!m_RecentIsoList) m_RecentIsoList = new RecentIsoList( MenuId_RecentIsos_reservedStart );
+	if (!m_RecentIsoList) m_RecentIsoList = std::unique_ptr<RecentIsoList>(new RecentIsoList( MenuId_RecentIsos_reservedStart ));
 	return *m_RecentIsoList->Menu;
 }
 
 RecentIsoManager& Pcsx2App::GetRecentIsoManager()
 {
-	if (!m_RecentIsoList) m_RecentIsoList = new RecentIsoList( MenuId_RecentIsos_reservedStart );
+	if (!m_RecentIsoList) m_RecentIsoList = std::unique_ptr<RecentIsoList>(new RecentIsoList( MenuId_RecentIsos_reservedStart ));
 	return *m_RecentIsoList->Manager;
 }
 
@@ -88,17 +89,17 @@ pxAppResources& Pcsx2App::GetResourceCache()
 {
 	ScopedLock lock( m_mtx_Resources );
 	if( !m_Resources )
-		m_Resources = new pxAppResources();
+		m_Resources = std::unique_ptr<pxAppResources>(new pxAppResources());
 
 	return *m_Resources;
 }
 
 const wxIconBundle& Pcsx2App::GetIconBundle()
 {
-	ScopedPtr<wxIconBundle>& bundle( GetResourceCache().IconBundle );
+	std::unique_ptr<wxIconBundle>& bundle( GetResourceCache().IconBundle );
 	if( !bundle )
 	{
-		bundle = new wxIconBundle();
+		bundle = std::unique_ptr<wxIconBundle>(new wxIconBundle());
 		bundle->AddIcon( EmbeddedImage<res_AppIcon32>().GetIcon() );
 		bundle->AddIcon( EmbeddedImage<res_AppIcon64>().GetIcon() );
 		bundle->AddIcon( EmbeddedImage<res_AppIcon16>().GetIcon() );
@@ -109,7 +110,7 @@ const wxIconBundle& Pcsx2App::GetIconBundle()
 
 const wxBitmap& Pcsx2App::GetLogoBitmap()
 {
-	ScopedPtr<wxBitmap>& logo( GetResourceCache().Bitmap_Logo );
+	std::unique_ptr <wxBitmap>& logo(GetResourceCache().Bitmap_Logo);
 	if( logo ) return *logo;
 
 	wxFileName themeDirectory;
@@ -137,14 +138,14 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	EmbeddedImage<res_BackgroundLogo> temp;	// because gcc can't allow non-const temporaries.
 	LoadImageAny(img, useTheme, themeDirectory, L"BackgroundLogo", temp);
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
-	logo = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
+	logo = std::unique_ptr<wxBitmap>(new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH)));
 
 	return *logo;
 }
 
 const wxBitmap& Pcsx2App::GetScreenshotBitmap()
 {
-	ScopedPtr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
+	std::unique_ptr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
 	if (screenshot) return *screenshot;
 
 	wxFileName themeDirectory;
@@ -159,18 +160,18 @@ const wxBitmap& Pcsx2App::GetScreenshotBitmap()
 	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
 	LoadImageAny(img, useTheme, themeDirectory, L"ButtonIcon_Camera", temp);
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
-	screenshot = new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH));
+	screenshot = std::unique_ptr<wxBitmap>(new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH)));
 
 	return *screenshot;
 }
 
 wxImageList& Pcsx2App::GetImgList_Config()
 {
-	ScopedPtr<wxImageList>& images( GetResourceCache().ConfigImages );
+	std::unique_ptr<wxImageList>& images( GetResourceCache().ConfigImages );
 	if( !images )
 	{
 		int image_size = MSW_GetDPIScale() * g_Conf->Listbook_ImageSize;
-		images = new wxImageList(image_size, image_size);
+		images = std::unique_ptr<wxImageList>(new wxImageList(image_size, image_size));
 		wxFileName themeDirectory;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
 
@@ -213,12 +214,12 @@ wxImageList& Pcsx2App::GetImgList_Config()
 // This stuff seems unused?
 wxImageList& Pcsx2App::GetImgList_Toolbars()
 {
-	ScopedPtr<wxImageList>& images( GetResourceCache().ToolbarImages );
+	std::unique_ptr<wxImageList>& images( GetResourceCache().ToolbarImages );
 
 	if( !images )
 	{
 		const int imgSize = g_Conf->Toolbar_ImageSize ? 64 : 32;
-		images = new wxImageList( imgSize, imgSize );
+		images = std::unique_ptr<wxImageList>(new wxImageList(imgSize, imgSize));
 		wxFileName mess;
 		bool useTheme = (g_Conf->DeskTheme != L"default");
 

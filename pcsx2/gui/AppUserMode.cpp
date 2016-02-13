@@ -129,7 +129,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 		// mode.  In order to determine our read/write permissions to the PCSX2, we must try to
 		// modify the configured documents folder, and catch any ensuing error.
 
-		ScopedPtr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
+		std::unique_ptr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
 		conf_portable->SetRecordDefaults(false);
 
 		while( true )
@@ -187,7 +187,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 		InstallationMode = InstallMode_Portable;
 		DocsFolderMode = DocsFolder_Custom;
 		CustomDocumentsFolder = portableDocsFolder;
-		return conf_portable.DetachPtr();
+		return conf_portable.release();
 	}
 	
 	return NULL;
@@ -200,13 +200,13 @@ void Pcsx2App::WipeUserModeSettings()
 	{
 		// Remove the portable.ini entry "RunWizard" conforming to this instance of PCSX2.
 		wxFileName portableIniFile( GetPortableIniPath() );
-		ScopedPtr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
+		std::unique_ptr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
 		conf_portable->DeleteEntry(L"RunWizard");
 	}
 	else 
 	{
 		// Remove the registry entry "RunWizard" conforming to this instance of PCSX2.
-		ScopedPtr<wxConfigBase> conf_install( OpenInstallSettingsFile() );
+		std::unique_ptr<wxConfigBase> conf_install( OpenInstallSettingsFile() );
 		conf_install->DeleteEntry(L"RunWizard");
 	}
 }
@@ -237,10 +237,10 @@ wxConfigBase* Pcsx2App::OpenInstallSettingsFile()
 	// the old system (CWD-based ini file mess) in favor of a system that simply stores
 	// most core application-level settings in the registry.
 
-	ScopedPtr<wxConfigBase> conf_install;
+	std::unique_ptr<wxConfigBase> conf_install;
 
 #ifdef __WXMSW__
-	conf_install = new wxRegConfig();
+	conf_install = std::unique_ptr<wxConfigBase>(new wxRegConfig());
 #else
 	// FIXME!!  Linux / Mac
 	// Where the heck should this information be stored?
@@ -255,31 +255,31 @@ wxConfigBase* Pcsx2App::OpenInstallSettingsFile()
 
 	wxFileName usermodefile( GetAppName() + L"-reg.ini" );
 	usermodefile.SetPath( usrlocaldir.ToString() );
-	conf_install = OpenFileConfig( usermodefile.GetFullPath() );
+	conf_install = std::unique_ptr<wxConfigBase>(OpenFileConfig( usermodefile.GetFullPath() ));
 #endif
 
-	return conf_install.DetachPtr();
+	return conf_install.release();
 }
 
 
 void Pcsx2App::ForceFirstTimeWizardOnNextRun()
 {
-	ScopedPtr<wxConfigBase> conf_install;
+	std::unique_ptr<wxConfigBase> conf_install;
 
-	conf_install = TestForPortableInstall();
+	conf_install = std::unique_ptr<wxConfigBase>(TestForPortableInstall());
 	if (!conf_install)
-		conf_install = OpenInstallSettingsFile();
+		conf_install = std::unique_ptr<wxConfigBase>(OpenInstallSettingsFile());
 
 	conf_install->Write( L"RunWizard", true );
 }
 
 void Pcsx2App::EstablishAppUserMode()
 {
-	ScopedPtr<wxConfigBase> conf_install;
+	std::unique_ptr<wxConfigBase> conf_install;
 
-	conf_install = TestForPortableInstall();
+	conf_install = std::unique_ptr<wxConfigBase>(TestForPortableInstall());
 	if (!conf_install)
-		conf_install = OpenInstallSettingsFile();	
+		conf_install = std::unique_ptr<wxConfigBase>(OpenInstallSettingsFile());
 
 	conf_install->SetRecordDefaults(false);
 
@@ -292,7 +292,7 @@ void Pcsx2App::EstablishAppUserMode()
 	bool runWiz;
 	conf_install->Read( L"RunWizard", &runWiz, true );
 
-	App_LoadInstallSettings( conf_install );
+	App_LoadInstallSettings( conf_install.get() );
 
 	if( !Startup.ForceWizard && !runWiz )
 	{
@@ -303,7 +303,7 @@ void Pcsx2App::EstablishAppUserMode()
 	DoFirstTimeWizard();
 
 	// Save user's new settings
-	App_SaveInstallSettings( conf_install );
+	App_SaveInstallSettings( conf_install.get() );
 	AppConfig_OnChangedSettingsFolder( true );
 	AppSaveSettings();
 

@@ -147,7 +147,7 @@ void Panels::GameFixesPanel::Apply()
 
 void Panels::GameFixesPanel::EnableStuff( AppConfig* configToUse )
 {
-	if( !configToUse ) configToUse = g_Conf;
+	if (!configToUse) configToUse = g_Conf.get();
 	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
 		m_checkbox[i]->Enable(m_check_Enable->GetValue() && !configToUse->EnablePresets);
 

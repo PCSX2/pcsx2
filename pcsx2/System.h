@@ -135,7 +135,7 @@ protected:
 	ScopedExcept m_RecExceptionIOP;
 
 public:
-	ScopedPtr<CpuInitializerSet> CpuProviders;
+	std::unique_ptr<CpuInitializerSet> CpuProviders;
 
 	SysCpuProviderPack();
 	virtual ~SysCpuProviderPack() throw();
@@ -150,8 +150,8 @@ public:
 	bool IsRecAvailable_EE() const		{ return !m_RecExceptionEE; }
 	bool IsRecAvailable_IOP() const		{ return !m_RecExceptionIOP; }
 
-	BaseException* GetException_EE() const	{ return m_RecExceptionEE; }
-	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP; }
+	BaseException* GetException_EE() const	{ return m_RecExceptionEE.get(); }
+	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP.get(); }
 
 	bool IsRecAvailable_MicroVU0() const;
 	bool IsRecAvailable_MicroVU1() const;

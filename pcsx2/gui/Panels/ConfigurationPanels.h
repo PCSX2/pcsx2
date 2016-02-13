@@ -23,6 +23,7 @@
 
 #include <wx/statline.h>
 #include <wx/dnd.h>
+#include <memory>
 
 #include "AppCommon.h"
 #include "ApplyState.h"
@@ -492,9 +493,9 @@ namespace Panels
 		typedef BaseSelectorPanel _parent;
 
 	protected:
-		ScopedPtr<wxArrayString>	m_ThemeList;
-		wxListBox*					m_ComboBox;
-		DirPickerPanel*				m_FolderPicker;
+		std::unique_ptr<wxArrayString> m_ThemeList;
+		wxListBox* m_ComboBox;
+		DirPickerPanel* m_FolderPicker;
 
 	public:
 		virtual ~ThemeSelectorPanel() throw();
@@ -513,9 +514,9 @@ namespace Panels
 	class BiosSelectorPanel : public BaseSelectorPanel
 	{
 	protected:
-		ScopedPtr<wxArrayString>	m_BiosList;
-		wxListBox*					m_ComboBox;
-		DirPickerPanel*				m_FolderPicker;
+		std::unique_ptr<wxArrayString> m_BiosList;
+		wxListBox* m_ComboBox;
+		DirPickerPanel* m_FolderPicker;
 
 	public:
 		BiosSelectorPanel( wxWindow* parent );
@@ -620,8 +621,8 @@ namespace Panels
 		ComboBoxPanel*	m_ComponentBoxes;
 		bool			m_Canceled;
 
-		ScopedPtr<wxArrayString>	m_FileList;	// list of potential plugin files
-		ScopedPtr<EnumThread>		m_EnumeratorThread;
+		std::unique_ptr<wxArrayString>	m_FileList;	// list of potential plugin files
+		std::unique_ptr<EnumThread>		m_EnumeratorThread;
 
 	public:
 		virtual ~PluginSelectorPanel() throw();

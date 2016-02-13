@@ -18,6 +18,7 @@
 #include "AppForwardDefs.h"
 #include "PathDefs.h"
 #include "CDVD/CDVDaccess.h"
+#include <memory>
 
 enum DocsModeType
 {
@@ -383,4 +384,4 @@ extern void RelocateLogfile();
 extern void AppConfig_OnChangedSettingsFolder( bool overwrite =  false );
 extern wxConfigBase* GetAppConfig();
 
-extern ScopedPtr<AppConfig> g_Conf;
+extern std::unique_ptr<AppConfig> g_Conf;

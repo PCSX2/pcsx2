@@ -16,6 +16,7 @@
 #pragma once
 
 #include "wx/filefn.h"
+#include <memory>
 
 // --------------------------------------------------------------------------------------
 //  pxStreamBase
@@ -55,19 +56,19 @@ class pxOutputStream : public pxStreamBase
 	DeclareNoncopyableObject(pxOutputStream);
 
 protected:
-	ScopedPtr<wxOutputStream>	m_stream_out;
+	std::unique_ptr<wxOutputStream>	m_stream_out;
 
 public:
-	pxOutputStream(const wxString& filename, ScopedPtr<wxOutputStream>& output);
+	pxOutputStream(const wxString& filename, std::unique_ptr<wxOutputStream>& output);
 	pxOutputStream(const wxString& filename, wxOutputStream* output);
 
 	virtual ~pxOutputStream() throw() {}
 	virtual void Write( const void* data, size_t size );
 	
-	void SetStream( const wxString& filename, ScopedPtr<wxOutputStream>& stream );
+	void SetStream( const wxString& filename, std::unique_ptr<wxOutputStream>& stream );
 	void SetStream( const wxString& filename, wxOutputStream* stream );
 
-	void Close() { m_stream_out.Delete(); }
+	void Close() { m_stream_out = nullptr; }
 
 	virtual wxStreamBase* GetWxStreamBase() const;
 
@@ -89,19 +90,19 @@ class pxInputStream : public pxStreamBase
 	DeclareNoncopyableObject(pxInputStream);
 
 protected:
-	ScopedPtr<wxInputStream>	m_stream_in;
+	std::unique_ptr<wxInputStream>	m_stream_in;
 
 public:
-	pxInputStream(const wxString& filename, ScopedPtr<wxInputStream>& input);
+	pxInputStream(const wxString& filename, std::unique_ptr<wxInputStream>& input);
 	pxInputStream(const wxString& filename, wxInputStream* input);
 
 	virtual ~pxInputStream() throw() {}
 	virtual void Read( void* dest, size_t size );
 	
-	void SetStream( const wxString& filename, ScopedPtr<wxInputStream>& stream );
+	void SetStream( const wxString& filename, std::unique_ptr<wxInputStream>& stream );
 	void SetStream( const wxString& filename, wxInputStream* stream );
 
-	void Close() { m_stream_in.Delete(); }
+	void Close() { m_stream_in = nullptr; }
 
 	virtual wxStreamBase* GetWxStreamBase() const;
 

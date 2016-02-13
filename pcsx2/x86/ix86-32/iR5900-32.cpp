@@ -641,9 +641,9 @@ void recStep()
 
 #if !PCSX2_SEH
 #	define SETJMP_CODE(x)  x
-	static jmp_buf		m_SetJmp_StateCheck;
-	static ScopedPtr<BaseR5900Exception>	m_cpuException;
-	static ScopedExcept			m_Exception;
+	static jmp_buf m_SetJmp_StateCheck;
+	static std::unique_ptr<BaseR5900Exception> m_cpuException;
+	static ScopedExcept m_Exception;
 #else
 #	define SETJMP_CODE(x)
 #endif
@@ -2045,7 +2045,7 @@ static void recThrowException( const BaseR5900Exception& ex )
 	ex.Rethrow();
 #else
 	if (!eeCpuExecuting) ex.Rethrow();
-	m_cpuException = ex.Clone();
+	m_cpuException = std::unique_ptr<BaseR5900Exception>(ex.Clone());
 	recExitExecution();
 #endif
 }
@@ -2056,7 +2056,7 @@ static void recThrowException( const BaseException& ex )
 	ex.Rethrow();
 #else
 	if (!eeCpuExecuting) ex.Rethrow();
-	m_Exception = ex.Clone();
+	m_Exception = ScopedExcept(ex.Clone());
 	recExitExecution();
 #endif
 }

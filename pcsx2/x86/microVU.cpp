@@ -67,7 +67,7 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 	if (!mVU.dispCache) throw Exception::OutOfMemory (mVU.index ? L"Micro VU1 Dispatcher" : L"Micro VU0 Dispatcher");
 	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
 
-	mVU.regAlloc = new microRegAlloc(mVU.index);
+	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
 
 // Resets Rec Data

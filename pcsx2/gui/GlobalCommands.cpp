@@ -711,7 +711,7 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 
 void Pcsx2App::BuildCommandHash()
 {
-	if( !GlobalCommands ) GlobalCommands = new CommandDictionary;
+	if( !GlobalCommands ) GlobalCommands = std::unique_ptr<CommandDictionary>(new CommandDictionary);
 
 	const GlobalCommandDescriptor* curcmd = CommandDeclarations;
 	while( curcmd->Invoke != NULL )
@@ -725,7 +725,7 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 {
 	typedef KeyAcceleratorCode AAC;
 
-	if( !GlobalAccels ) GlobalAccels = new AcceleratorDictionary;
+	if( !GlobalAccels ) GlobalAccels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
 
 	// Why do we even have those here? all of them seem to be overridden
 	// by GSPanel::m_Accels ( GSPanel::InitDefaultAccelerators() )

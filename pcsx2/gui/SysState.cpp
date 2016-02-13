@@ -25,6 +25,7 @@
 #include "Utilities/pxStreams.h"
 
 #include <wx/wfstream.h>
+#include <memory>
 
 // Used to hold the current state backup (fullcopy of PS2 memory and plugin states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
@@ -422,7 +423,7 @@ protected:
 	void InvokeEvent()
 	{
 		// Provisionals for scoped cleanup, in case of exception:
-		ScopedPtr<ArchiveEntryList> elist( m_src_list );
+		std::unique_ptr<ArchiveEntryList> elist(m_src_list);
 
 		wxString tempfile( m_filename + L".tmp" );
 
@@ -437,7 +438,7 @@ protected:
 		pxYield(4);
 
 		// Write the version and screenshot:
-		ScopedPtr<pxOutputStream> out( new pxOutputStream(tempfile, new wxZipOutputStream(woot)) );
+		std::unique_ptr<pxOutputStream> out(new pxOutputStream(tempfile, new wxZipOutputStream(woot)));
 		wxZipOutputStream* gzfp = (wxZipOutputStream*)out->GetWxStreamBase();
 
 		{
@@ -448,7 +449,7 @@ protected:
 			gzfp->CloseEntry();
 		}
 
-		ScopedPtr<wxImage> m_screenshot;
+		std::unique_ptr<wxImage> m_screenshot;
 		
 		if (m_screenshot)
 		{
@@ -460,14 +461,14 @@ protected:
 		}
 
 		(*new VmStateCompressThread())
-			.SetSource(elist)
-			.SetOutStream(out)
+			.SetSource(elist.get())
+			.SetOutStream(out.get())
 			.SetFinishedPath(m_filename)
 			.Start();
 
 		// No errors?  Release cleanup handlers:			
-		elist.DetachPtr();
-		out.DetachPtr();
+		elist.release();
+		out.release();
 	}
 	
 	void CleanupEvent()
@@ -506,12 +507,12 @@ protected:
 
 		// Ugh.  Exception handling made crappy because wxWidgets classes don't support scoped pointers yet.
 
-		ScopedPtr<wxFFileInputStream> woot( new wxFFileInputStream(m_filename) );
+		std::unique_ptr<wxFFileInputStream> woot(new wxFFileInputStream(m_filename));
 		if (!woot->IsOk())
 			throw Exception::CannotCreateStream( m_filename ).SetDiagMsg(L"Cannot open file for reading.");
 
-		ScopedPtr<pxInputStream> reader( new pxInputStream(m_filename, new wxZipInputStream(woot)) );
-		woot.DetachPtr();
+		std::unique_ptr<pxInputStream> reader(new pxInputStream(m_filename, new wxZipInputStream(woot.get())));
+		woot.release();
 
 		if (!reader->IsOk())
 		{
@@ -528,14 +529,14 @@ protected:
 		//bool foundScreenshot = false;
 		//bool foundEntry[numSavestateEntries] = false;
 
-		ScopedPtr<wxZipEntry> foundInternal;
-		ScopedPtr<wxZipEntry> foundEntry[NumSavestateEntries];
+		std::unique_ptr<wxZipEntry> foundInternal;
+		std::unique_ptr<wxZipEntry> foundEntry[NumSavestateEntries];
 
 		while(true)
 		{
 			Threading::pxTestCancel();
 
-			ScopedPtr<wxZipEntry> entry( gzreader->GetNextEntry() );
+			std::unique_ptr<wxZipEntry> entry(gzreader->GetNextEntry());
 			if (!entry) break;
 
 			if (entry->GetName().CmpNoCase(EntryFilename_StateVersion) == 0)
@@ -549,7 +550,7 @@ protected:
 			if (entry->GetName().CmpNoCase(EntryFilename_InternalStructures) == 0)
 			{
 				DevCon.WriteLn( Color_Green, L" ... found '%s'", EntryFilename_InternalStructures);
-				foundInternal = entry.DetachPtr();
+				foundInternal = std::move(entry);
 				continue;
 			}
 
@@ -565,7 +566,7 @@ protected:
 				if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
 				{
 					DevCon.WriteLn( Color_Green, L" ... found '%s'", WX_STR(SavestateEntries[i]->GetFilename()) );
-					foundEntry[i] = entry.DetachPtr();
+					foundEntry[i] = std::move(entry);
 					break;
 				}
 			}
@@ -633,12 +634,12 @@ void StateCopy_SaveToFile( const wxString& file )
 {
 	UI_DisableStateActions();
 
-	ScopedPtr<ArchiveEntryList>	ziplist	(new ArchiveEntryList( new VmStateBuffer( L"Zippable Savestate" ) ));
+	std::unique_ptr<ArchiveEntryList> ziplist(new ArchiveEntryList(new VmStateBuffer(L"Zippable Savestate")));
 	
-	GetSysExecutorThread().PostEvent(new SysExecEvent_DownloadState	( ziplist ));
-	GetSysExecutorThread().PostEvent(new SysExecEvent_ZipToDisk		( ziplist, file ));
+	GetSysExecutorThread().PostEvent(new SysExecEvent_DownloadState(ziplist.get()));
+	GetSysExecutorThread().PostEvent(new SysExecEvent_ZipToDisk(ziplist.get(), file));
 	
-	ziplist.DetachPtr();
+	ziplist.release();
 }
 
 void StateCopy_LoadFromFile( const wxString& file )

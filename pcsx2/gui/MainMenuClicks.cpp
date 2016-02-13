@@ -93,7 +93,7 @@ static void WipeSettings()
 	//wxRmdir( GetSettingsFolder().ToString() );
 
 	wxGetApp().GetRecentIsoManager().Clear();
-	g_Conf = new AppConfig();
+	g_Conf = std::unique_ptr<AppConfig>(new AppConfig());
 	sMainFrame.RemoveCdvdMenu();
 
 	sApp.WipeUserModeSettings();

@@ -17,7 +17,7 @@
 
 #include "Utilities/PersistentThread.h"
 #include "Utilities/pxEvents.h"
-
+#include <memory>
 
 // TODO!!  Make the system defined in this header system a bit more generic, and then move
 // it to the Utilities library.
@@ -266,8 +266,8 @@ class ExecutorThread : public Threading::pxThread
 	typedef Threading::pxThread _parent;
 
 protected:
-	ScopedPtr<wxTimer>		m_ExecutorTimer;
-	ScopedPtr<pxEvtQueue>	m_EvtHandler;
+	std::unique_ptr<wxTimer> m_ExecutorTimer;
+	std::unique_ptr<pxEvtQueue> m_EvtHandler;
 
 public:
 	ExecutorThread( pxEvtQueue* evtandler = NULL );

@@ -237,7 +237,7 @@ public:
 struct ScopedCoreThreadPopup : public IScopedCoreThread
 {
 protected:
-	ScopedPtr<BaseScopedCoreThread>		m_scoped_core;
+	std::unique_ptr<BaseScopedCoreThread>		m_scoped_core;
 
 public:
 	ScopedCoreThreadPopup();

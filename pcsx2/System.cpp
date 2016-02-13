@@ -291,8 +291,8 @@ template< typename CpuType >
 class CpuInitializer
 {
 public:
-	ScopedPtr<CpuType>			MyCpu;
-	ScopedExcept	ExThrown;
+	std::unique_ptr<CpuType> MyCpu;
+	ScopedExcept ExThrown;
 	
 	CpuInitializer();
 	virtual ~CpuInitializer() throw();
@@ -302,8 +302,8 @@ public:
 		return !!MyCpu;
 	}
 
-	CpuType* GetPtr() { return MyCpu.GetPtr(); }
-	const CpuType* GetPtr() const { return MyCpu.GetPtr(); }
+	CpuType* GetPtr() { return MyCpu.get(); }
+	const CpuType* GetPtr() const { return MyCpu.get(); }
 
 	operator CpuType*() { return GetPtr(); }
 	operator const CpuType*() const { return GetPtr(); }
@@ -318,20 +318,20 @@ template< typename CpuType >
 CpuInitializer< CpuType >::CpuInitializer()
 {
 	try {
-		MyCpu = new CpuType();
+		MyCpu = std::unique_ptr<CpuType>(new CpuType());
 		MyCpu->Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
 	{
 		Console.Error( L"CPU provider error:\n\t" + ex.FormatDiagnosticMessage() );
-		MyCpu = NULL;
-		ExThrown = ex.Clone();
+		MyCpu = nullptr;
+		ExThrown = ScopedExcept(ex.Clone());
 	}
 	catch( std::runtime_error& ex )
 	{
 		Console.Error( L"CPU provider error (STL Exception)\n\tDetails:" + fromUTF8( ex.what() ) );
-		MyCpu = NULL;
-		ExThrown = new Exception::RuntimeError(ex);
+		MyCpu = nullptr;
+		ExThrown = ScopedExcept(new Exception::RuntimeError(ex));
 	}
 }
 
@@ -485,14 +485,14 @@ SysCpuProviderPack::SysCpuProviderPack()
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
 	ConsoleIndentScope indent(1);
 
-	CpuProviders = new CpuInitializerSet();
+	CpuProviders = std::unique_ptr<CpuInitializerSet>(new CpuInitializerSet());
 
 	try {
 		recCpu.Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
 	{
-		m_RecExceptionEE = ex.Clone();
+		m_RecExceptionEE = ScopedExcept(ex.Clone());
 		Console.Error( L"EE Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
 		recCpu.Shutdown();
 	}
@@ -502,7 +502,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	}
 	catch( Exception::RuntimeError& ex )
 	{
-		m_RecExceptionIOP = ex.Clone();
+		m_RecExceptionIOP = ScopedExcept(ex.Clone());
 		Console.Error( L"IOP Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
 		psxRec.Shutdown();
 	}
@@ -518,14 +518,14 @@ SysCpuProviderPack::SysCpuProviderPack()
 
 bool SysCpuProviderPack::IsRecAvailable_MicroVU0() const { return CpuProviders->microVU0.IsAvailable(); }
 bool SysCpuProviderPack::IsRecAvailable_MicroVU1() const { return CpuProviders->microVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown; }
-BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown; }
+BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown.get(); }
+BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown.get(); }
 
 #ifndef DISABLE_SVU
 bool SysCpuProviderPack::IsRecAvailable_SuperVU0() const { return CpuProviders->superVU0.IsAvailable(); }
 bool SysCpuProviderPack::IsRecAvailable_SuperVU1() const { return CpuProviders->superVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_SuperVU0() const { return CpuProviders->superVU0.ExThrown; }
-BaseException* SysCpuProviderPack::GetException_SuperVU1() const { return CpuProviders->superVU1.ExThrown; }
+BaseException* SysCpuProviderPack::GetException_SuperVU0() const { return CpuProviders->superVU0.ExThrown.get(); }
+BaseException* SysCpuProviderPack::GetException_SuperVU1() const { return CpuProviders->superVU1.ExThrown.get(); }
 #endif
 
 

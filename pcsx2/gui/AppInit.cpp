@@ -29,6 +29,7 @@
 #include <wx/cmdline.h>
 #include <wx/intl.h>
 #include <wx/stdpaths.h>
+#include <memory>
 
 using namespace pxSizerFlags;
 
@@ -128,7 +129,7 @@ void Pcsx2App::AllocateCoreStuffs()
 		// FIXME : Some or all of SysCpuProviderPack should be run from the SysExecutor thread,
 		// so that the thread is safely blocked from being able to start emulation.
 
-		m_CpuProviders = new SysCpuProviderPack();
+		m_CpuProviders = std::unique_ptr<SysCpuProviderPack>(new SysCpuProviderPack());
 
 		if( m_CpuProviders->HadSomeFailures( g_Conf->EmuOptions.Cpu.Recompiler ) )
 		{
@@ -422,7 +423,7 @@ bool Pcsx2App::OnInit()
 	pxDoAssert		= AppDoAssert;
 	pxDoOutOfMemory	= SysOutOfMemory_EmergencyResponse;
 
-	g_Conf = new AppConfig();
+	g_Conf = std::unique_ptr<AppConfig>(new AppConfig());
     wxInitAllImageHandlers();
 
 	Console.WriteLn("Applying operating system default language...");
@@ -472,7 +473,7 @@ bool Pcsx2App::OnInit()
 		// PCSX2 has a lot of event handling logistics, so we *cannot* depend on wxWidgets automatic event
 		// loop termination code.  We have a much safer system in place that continues to process messages
 		// until all "important" threads are closed out -- not just until the main frame is closed(-ish).
-		m_timer_Termination = new wxTimer( this, wxID_ANY );
+		m_timer_Termination = std::unique_ptr<wxTimer>(new wxTimer( this, wxID_ANY ));
 		Connect( m_timer_Termination->GetId(), wxEVT_TIMER, wxTimerEventHandler(Pcsx2App::OnScheduledTermination) );
 		SetExitOnFrameDelete( false );
 

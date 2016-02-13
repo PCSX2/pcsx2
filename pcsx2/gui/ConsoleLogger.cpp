@@ -1174,16 +1174,16 @@ void Pcsx2App::EnableAllLogging()
 
 	if( emuLog )
 	{
-		if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = NewPipeRedir(stdout);
-		if( !m_StderrRedirHandle ) m_StderrRedirHandle = NewPipeRedir(stderr);
+		if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stdout));
+		if( !m_StderrRedirHandle ) m_StderrRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stderr));
 		newHandler = logBoxOpen ? (IConsoleWriter*)&ConsoleWriter_WindowAndFile : (IConsoleWriter*)&ConsoleWriter_File;
 	}
 	else
 	{
 		if( logBoxOpen )
 		{
-			if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = NewPipeRedir(stdout);
-			if( !m_StderrRedirHandle ) m_StderrRedirHandle = NewPipeRedir(stderr);
+			if (!m_StdoutRedirHandle) m_StdoutRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stdout));
+			if (!m_StderrRedirHandle) m_StderrRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stderr));
 			newHandler = &ConsoleWriter_Window;
 		}
 		else

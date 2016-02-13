@@ -182,7 +182,6 @@
     <ClInclude Include="..\..\include\Utilities\pxStaticText.h" />
     <ClInclude Include="..\..\include\Utilities\RedtapeWindows.h" />
     <ClInclude Include="..\..\include\Utilities\SafeArray.h" />
-    <ClInclude Include="..\..\include\Utilities\ScopedPtr.h" />
     <ClInclude Include="..\..\include\Utilities\StringHelpers.h" />
     <ClInclude Include="..\..\include\Utilities\win_memzero.h" />
     <ClInclude Include="..\..\include\Utilities\wxAppWithHelpers.h" />

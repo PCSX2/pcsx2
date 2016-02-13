@@ -16,6 +16,7 @@
 #pragma once
 
 #include "AppEventListeners.h"
+#include <memory>
 
 class BaseCpuUsageProvider
 {
@@ -35,7 +36,7 @@ public:
 class CpuUsageProvider : public BaseCpuUsageProvider
 {
 protected:
-	ScopedPtr<BaseCpuUsageProvider>		m_Implementation;
+	std::unique_ptr<BaseCpuUsageProvider> m_Implementation;
 
 public:
 	CpuUsageProvider();

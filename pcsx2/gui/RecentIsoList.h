@@ -72,8 +72,8 @@ protected:
 // --------------------------------------------------------------------------------------
 struct RecentIsoList
 {
-	ScopedPtr<RecentIsoManager>		Manager;
-	ScopedPtr<wxMenu>				Menu;
+	std::unique_ptr<RecentIsoManager>		Manager;
+	std::unique_ptr<wxMenu>				Menu;
 
 	RecentIsoList(int firstIdForMenuItems_or_wxID_ANY);
 	virtual ~RecentIsoList() throw() { }

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <list>
+#include <memory>
 
 #include "GS.h"
 
@@ -24,7 +25,7 @@
 // GS Playback
 int g_SaveGSStream = 0; // save GS stream; 1 - prepare, 2 - save
 int g_nLeftGSFrames = 0; // when saving, number of frames left
-static ScopedPtr<memSavingState> g_fGSSave;
+static std::unique_ptr<memSavingState> g_fGSSave;
 
 // fixme - need to take this concept and make it MTGS friendly.
 #ifdef _STGS_GSSTATE_CODE
@@ -77,7 +78,7 @@ __fi void GSVSYNC(void) {
 	Console.WriteLn( L"\t%s", file.c_str() );
 
 	SafeArray<u8> buf;
-	g_fGSSave = new memSavingState( buf );
+	g_fGSSave = std::unique_ptr<memSavingState>(new memSavingState( buf ));
 
 	g_SaveGSStream = 1;
 	g_nLeftGSFrames = 2;
