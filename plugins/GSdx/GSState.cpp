@@ -354,7 +354,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	GSVector4i r;
 
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && !Vmode_VESA)
+	if (height > 640 && !Vmode_VESA_DTV)
 	{
 		height /= 2;
 	}
@@ -370,8 +370,6 @@ GSVector4i GSState::GetDisplayRect(int i)
 	return r;
 }
 
-// There's a problem when games expand/shrink and relocate the visible area since GSdx doesn't support
-// moving the output area. (Disgaea 2 intro FMV when upscaling is used). 
 GSVector4i GSState::GetFrameRect(int i)
 {
 	if (i < 0) i = IsEnabled(1) ? 1 : 0;
@@ -391,7 +389,6 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
 		h >>= 1;
 
-	//watch Disgaea2 FMV borders when changing
 	r.left = m_regs->DISP[i].DISPFB.DBX;
 	r.top = m_regs->DISP[i].DISPFB.DBY;
 	r.right = r.left + w;
@@ -467,10 +464,33 @@ bool GSState::IsEnabled(int i)
 
 float GSState::GetTvRefreshRate()
 {
-  // TODO: Frequencies for VESA / DTV : http://users.neoscientists.org/~blue/ps2videomodes.txt
-  // SMODE1 PLL Loop divider (LC) could be used for detection of other video modes. CMOD's only useful for NTSC/PAL.(2/3)
+	float vertical_frequency = 0;
 
-	return (Vmode_PAL) ? 50 : (60/1.001f);
+	switch (m_regs->SMODE1.CMOD)
+	{
+		case 0:
+		{
+			if (Vmode_VESA_1A)			vertical_frequency = 59.94f;
+			if (Vmode_VESA_1C)			vertical_frequency = 75;
+			if (Vmode_VESA_2B)			vertical_frequency = 60.317f;
+			if (Vmode_VESA_2D)			vertical_frequency = 75;
+			if (Vmode_VESA_3B)			vertical_frequency = 60.004f;
+			if (Vmode_VESA_3D)			vertical_frequency = 75.029f;
+			if (Vmode_VESA_4A)			vertical_frequency = 60.020f;
+			if (Vmode_VESA_4B)			vertical_frequency = 75.025f;
+			if (Vmode_DTV_480P)			vertical_frequency = 59.94f;
+			if (Vmode_DTV_720P_1080I)	vertical_frequency = 60;
+			break;
+		}
+
+		case 2: vertical_frequency = (60 / 1.001f); //NTSC
+			break;
+		case 3: vertical_frequency = 50;			//PAL
+			break;
+		default: ASSERT(0);
+	}
+
+	return vertical_frequency;
 }
 
 // GIFPackedRegHandler*
