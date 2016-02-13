@@ -15,9 +15,6 @@
  *  with PCSX2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Includes Windows.h, has inlined versions of memory allocation and
-// string comparison functions needed to avoid using CRT.  This reduces
-// dll size by over 100k while avoiding any dependencies on updated CRT dlls.
 #pragma once
 
 #ifdef __linux__
@@ -91,15 +88,6 @@ extern Window  GSwin;
 
 
 #define DIRECTINPUT_VERSION 0x0800
-
-#ifdef NO_CRT
-#define _CRT_ALLOCATION_DEFINED
-
-inline void * malloc(size_t size);
-inline void * calloc(size_t num, size_t size);
-inline void free(void * mem);
-inline void * realloc(void *mem, size_t size);
-#endif
 
 #define UNICODE
 
@@ -189,59 +177,3 @@ EXPORT_C_(s32) PADfreeze(int mode, freezeData *data);
 EXPORT_C_(s32) PADsetSlot(u8 port, u8 slot);
 EXPORT_C_(s32) PADqueryMtap(u8 port);
 EXPORT_C_(void) PADsetSettingsDir(const char *dir);
-
-#ifdef NO_CRT
-
-#define wcsdup MyWcsdup
-#define wcsicmp MyWcsicmp
-
-inline void * malloc(size_t size) {
-	return HeapAlloc(GetProcessHeap(), 0, size);
-}
-
-inline void * calloc(size_t num, size_t size) {
-	size *= num;
-	void *out = malloc(size);
-	if (out) memset(out, 0, size);
-	return out;
-}
-
-inline void free(void * mem) {
-	if (mem) HeapFree(GetProcessHeap(), 0, mem);
-}
-
-inline void * realloc(void *mem, size_t size) {
-	if (!mem) {
-		return malloc(size);
-	}
-
-	if (!size) {
-		free(mem);
-		return 0;
-	}
-	return HeapReAlloc(GetProcessHeap(), 0, mem, size);
-}
-
-inline void * __cdecl operator new(size_t lSize) {
-	return HeapAlloc(GetProcessHeap(), 0, lSize);
-}
-
-inline void __cdecl operator delete(void *pBlock) {
-	HeapFree(GetProcessHeap(), 0, pBlock);
-}
-
-inline wchar_t * __cdecl wcsdup(const wchar_t *in) {
-	size_t size = sizeof(wchar_t) * (1+wcslen(in));
-	wchar_t *out = (wchar_t*) malloc(size);
-	if (out)
-		memcpy(out, in, size);
-	return out;
-}
-
-inline int __cdecl wcsicmp(const wchar_t *s1, const wchar_t *s2) {
-	int res = CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE, s1, -1, s2, -1);
-	if (res) return res-2;
-	return res;
-}
-
-#endif

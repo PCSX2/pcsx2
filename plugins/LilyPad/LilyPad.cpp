@@ -710,9 +710,7 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type) {
 #ifdef _MSC_VER
 // Used in about and config screens.
 void GetNameAndVersionString(wchar_t *out) {
-#ifdef NO_CRT
-	wsprintfW(out, L"LilyPad %i.%i.%i", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF);
-#elif defined(PCSX2_DEBUG)
+#if defined(PCSX2_DEBUG)
 	wsprintfW(out, L"LilyPad Debug %i.%i.%i (%lld)", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF, SVN_REV);
 #else
 	wsprintfW(out, L"LilyPad %i.%i.%i (%lld)", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF, SVN_REV);
@@ -721,9 +719,7 @@ void GetNameAndVersionString(wchar_t *out) {
 #endif
 
 char* CALLBACK PSEgetLibName() {
-#ifdef NO_CRT
-	return "LilyPad";
-#elif defined(PCSX2_DEBUG)
+#if defined(PCSX2_DEBUG)
 	static char version[50];
 	sprintf(version, "LilyPad Debug (%lld)", SVN_REV);
 	return version;
@@ -1655,16 +1651,3 @@ s32 CALLBACK PADsetSlot(u8 port, u8 slot) {
 	// return pads[port][slot].enabled | !slot;
 	return 1;
 }
-
-// Little funkiness to handle rounding floating points to ints without the C runtime.
-// Unfortunately, means I can't use /GL optimization option when NO_CRT is defined.
-#ifdef NO_CRT
-extern "C" long _cdecl _ftol();
-extern "C" long _cdecl _ftol2_sse() {
-	return _ftol();
-}
-extern "C" long _cdecl _ftol2() {
-	return _ftol();
-}
-#endif
-
