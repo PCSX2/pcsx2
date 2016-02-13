@@ -23,7 +23,7 @@
 #endif
 
 #if defined(SHADER_MODEL) && (SHADER_MODEL <= 0x300)
-#error GSdx FX is not compatible with GSdx9. Use GSdx OGL or DX10/11.
+#error GSdx FX is not compatible with the D3D9 backend. Use OpenGL or D3D10|11.
 #endif
 
 /*------------------------------------------------------------------------------
@@ -2112,9 +2112,8 @@ float3 ToSrgb(float3 c)
 
 float3 Fetch(float2 pos, float2 off)
 {
-    float2 crtRes = float2(CRTSizeX, CRTSizeY);
-    float2 res = (crtRes * ResolutionScale);
-    pos = floor(pos * res + off) / res;
+    float2 res = (screenSize * ResolutionScale);
+    pos = round(pos * res + off) / res;
     if(max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5) { return float3(0.0, 0.0, 0.0); }
 
     return ToLinear(sample_tex(TextureSampler, pos.xy).rgb);
@@ -2123,8 +2122,9 @@ float3 Fetch(float2 pos, float2 off)
 float2 Dist(float2 pos)
 {
     float2 crtRes = float2(CRTSizeX, CRTSizeY);
-    float2 res = (crtRes * ResolutionScale);
+    float2 res = (crtRes * MaskResolutionScale);
     pos = (pos * res);
+
     return -((pos - floor(pos)) - float2(0.5, 0.5));
 }
 
@@ -2133,7 +2133,7 @@ float Gaus(float pos, float scale)
     return exp2(scale * pos * pos);
 }
 
-float3 Horz3(float2 pos,float off)
+float3 Horz3(float2 pos, float off)
 {
     float3 b = Fetch(pos,float2(-1.0, off));
     float3 c = Fetch(pos,float2( 0.0, off));
@@ -2142,36 +2142,36 @@ float3 Horz3(float2 pos,float off)
 
     // Convert distance to weight.
     float scale = FilterCRTAmount;
-    float wb=Gaus(dst-1.0, scale);
-    float wc=Gaus(dst+0.0, scale);
-    float wd=Gaus(dst+1.0, scale);
+    float wb = Gaus(dst-1.0, scale);
+    float wc = Gaus(dst+0.0, scale);
+    float wd = Gaus(dst+1.0, scale);
 
     return (b*wb+c*wc+d*wd)/(wb+wc+wd);
 }
 
-float3 Horz5(float2 pos,float off)
+float3 Horz5(float2 pos, float off)
 {
     float3 a = Fetch(pos, float2(-2.0, off));
     float3 b = Fetch(pos, float2(-1.0, off));
     float3 c = Fetch(pos, float2( 0.0, off));
     float3 d = Fetch(pos, float2( 1.0, off));
     float3 e = Fetch(pos, float2( 2.0, off));
-    float dst=Dist(pos).x;
+    float dst = Dist(pos).x;
 
     // Convert distance to weight.
     float scale = FilterCRTAmount;
 
-    float wa=Gaus(dst-2.0, scale);
-    float wb=Gaus(dst-1.0, scale);
-    float wc=Gaus(dst+0.0, scale);
-    float wd=Gaus(dst+1.0, scale);
-    float we=Gaus(dst+2.0, scale);
+    float wa = Gaus(dst-2.0, scale);
+    float wb = Gaus(dst-1.0, scale);
+    float wc = Gaus(dst+0.0, scale);
+    float wd = Gaus(dst+1.0, scale);
+    float we = Gaus(dst+2.0, scale);
 
     return (a*wa+b*wb+c*wc+d*wd+e*we)/(wa+wb+wc+wd+we);
 }
 
 // Return scanline weight.
-float Scan(float2 pos,float off)
+float Scan(float2 pos, float off)
 {
     float dst = Dist(pos).y;
     return Gaus(dst+off, ScanBrightness);
@@ -2194,7 +2194,7 @@ float2 Warp(float2 pos)
 {
     pos = pos * 2.0-1.0;    
     pos *= float2(1.0 + (pos.y*pos.y) * (HorizontalWarp), 1.0 + (pos.x*pos.x) * (VerticalWarp));
-    return pos * 0.5+0.5;
+    return pos * 0.5 + 0.5;
 }
 
 float3 Mask(float2 pos)
@@ -2239,7 +2239,7 @@ float3 Mask(float2 pos)
 
     return mask;
     
-    #elif MaskingType == 4
+    #else
     // VGA style shadow mask.
     pos.xy = floor(pos.xy*float2(1.0, 0.5));
     pos.x += pos.y*3.0;
@@ -2264,11 +2264,9 @@ float4 LottesCRTPass(float4 color, float2 texcoord, float4 fragcoord)
     Texture.GetDimensions(inSize.x, inSize.y);
     #endif
 
-    
-
     float2 pos = Warp(fragcoord.xy / inSize);
 
-    #if ShadowMask == 0
+    #if UseShadowMask == 0
     color.rgb = Tri(pos);
     #else
     color.rgb = Tri(pos) * Mask(fragcoord.xy);
