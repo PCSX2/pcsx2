@@ -214,7 +214,7 @@ public:
 			newVibration[1] = 65535;
 		}
 		if (newVibration[0] || newVibration[1] || newVibration[0] != xInputVibration.wLeftMotorSpeed || newVibration[1] != xInputVibration.wRightMotorSpeed) {
-			XINPUT_VIBRATION newv = {newVibration[0], newVibration[1]};
+			XINPUT_VIBRATION newv = {(WORD)newVibration[0], (WORD)newVibration[1]};
 			if (ERROR_SUCCESS == pXInputSetState(index, &newv)) {
 				xInputVibration = newv;
 			}

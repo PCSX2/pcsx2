@@ -73,11 +73,11 @@ struct Binding {
 	unsigned char turbo;
 };
 
-#define UID_AXIS (1<<31)
+#define UID_AXIS (1U<<31)
 #define UID_POV  (1<<30)
 
-#define UID_AXIS_POS (1<<24)
-#define UID_AXIS_NEG (2<<24)
+#define UID_AXIS_POS (1U<<24)
+#define UID_AXIS_NEG (2U<<24)
 #define UID_POV_N    (3<<24)
 #define UID_POV_E    (4<<24)
 #define UID_POV_S    (5<<24)

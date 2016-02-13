@@ -30,6 +30,14 @@
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "RawInput.h"
 
+//max len 24 wchar_t
+const wchar_t *padTypes[] = {
+	L"Unplugged",
+	L"Dualshock 2",
+	L"Guitar" ,
+	L"Pop'n Music controller"
+};
+
 // Hacks or configurations which PCSX2 needs with a specific value
 void PCSX2_overrideConfig(GeneralConfig& config_in_out) {
 	config_in_out.disableScreenSaver = 0; // Not required - handled internally by PCSX2
@@ -1438,7 +1446,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 				case PSN_SETACTIVE:
 					return 0;
 				case PSN_APPLY:
-					SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_NOERROR);
+					SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return 1;
 				}
 				break;
@@ -1496,9 +1504,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 						const static unsigned int axisUIDs[3] = {UID_AXIS_NEG, UID_AXIS_POS, UID_AXIS};
 						int uid = dev->virtualControls[b->controlIndex].uid;
 						uid = (uid&0x00FFFFFF) | axisUIDs[cbsel];
-						Binding backup = *b;
 						DeleteSelected(port, slot);
-						int index = BindCommand(dev, uid, port, slot, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
+						int index = BindCommand(dev, uid, port, slot, b->command, b->sensitivity, b->turbo, b->deadZone);
 						ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
 						PropSheet_Changed(hWndProp, hWnd);
 					}
@@ -1710,10 +1717,13 @@ void UpdatePadPages() {
 			psp.pfnDlgProc = DialogProc;
 			psp.lParam = port | (slot<<1);
 			psp.pszTitle = title;
-			if (config.padConfigs[port][slot].type != GuitarPad)
-				psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG);
-			else
+			if (config.padConfigs[port][slot].type == GuitarPad)
 				psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_GUITAR);
+			else if (config.padConfigs[port][slot].type == PopnPad)
+				psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_POPN);
+			else
+				psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG);
+
 			pages[count] = CreatePropertySheetPage(&psp);
 			if (pages[count]) count++;
 		}
@@ -1753,10 +1763,10 @@ void UpdatePadList(HWND hWnd) {
 	int slot;
 	int port;
 	int index = 0;
-	wchar_t *padTypes[] = {L"Unplugged", L"Dualshock 2", L"Guitar"};
+
 	for (port=0; port<2; port++) {
 		for (slot = 0; slot<4; slot++) {
-			wchar_t text[20];
+			wchar_t text[25];
 			if (!GetPadString(text, port, slot)) continue;
 			LVITEM item;
 			item.iItem = index;
@@ -1771,8 +1781,8 @@ void UpdatePadList(HWND hWnd) {
 			}
 
 			item.iSubItem = 1;
-			if (2 < (unsigned int)config.padConfigs[port][slot].type) config.padConfigs[port][slot].type = Dualshock2Pad;
-			item.pszText = padTypes[config.padConfigs[port][slot].type];
+			if (numPadTypes - 1 < (unsigned int)config.padConfigs[port][slot].type) config.padConfigs[port][slot].type = Dualshock2Pad;
+			wcsncpy(item.pszText, padTypes[config.padConfigs[port][slot].type], 25);
 			//if (!slot && !config.padConfigs[port][slot].type)
 			//	item.pszText = L"Unplugged (Kinda)";
 
@@ -1833,9 +1843,9 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				selected = 0;
 				ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER);
 				SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
-				SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) L"Unplugged");
-				SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) L"Dualshock 2");
-				SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) L"Guitar");
+				for (int i = 0; i < numPadTypes; i++)
+					SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) padTypes[i]);
+
 
 				if (ps2e) {
 					// This disabled some widgets which are not required for PCSX2.
@@ -2012,10 +2022,10 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				case PSN_APPLY:
 					selected = 0;
 					if (SaveSettings()) {
-						SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
+						SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
 						return 0;
 					}
-					SetWindowLong(hWnd, DWL_MSGRESULT, PSNRET_NOERROR);
+					SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return 1;
 				}
 			}
