@@ -81,6 +81,9 @@ void GSWndOGL::CreateContext(int major, int minor)
 		GLX_CONTEXT_MINOR_VERSION_ARB, minor,
 #ifdef ENABLE_OGL_DEBUG
 		GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+#else
+		// Open Source isn't happy with an unsupported flags...
+		//GLX_CONTEXT_FLAGS_ARB, GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR,
 #endif
 		GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
 		None
