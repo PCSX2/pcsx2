@@ -753,6 +753,7 @@ inline void StopVibrate() {
 inline void ResetVibrate(int port, int slot) {
 	SetVibrate(port, slot, 0, 0);
 	SetVibrate(port, slot, 1, 0);
+	// FIXME: I think this is broken on 64-bits.
 	((int*)(pads[port][slot].vibrate))[0] = 0xFFFFFF5A;
 	((int*)(pads[port][slot].vibrate))[1] = 0xFFFFFFFF;
 }
@@ -790,7 +791,7 @@ struct QueryInfo {
 	u8 numBytes;
 	u8 queryDone;
 	u8 response[42];
-} query = {0,0,0,0, 0,0xFF, 0xF3};
+} query = {0, 0, 0, 0, 0, 0xFF, {0xF3}};
 
 #ifdef _MSC_VER
 int saveStateIndex = 0;

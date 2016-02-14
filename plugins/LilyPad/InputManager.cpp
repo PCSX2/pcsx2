@@ -38,7 +38,7 @@ InputDeviceManager::~InputDeviceManager() {
 	ClearDevices();
 }
 
-Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wchar_t *instanceID, wchar_t *productID) {
+Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wchar_t *instanceID, const wchar_t *productID) {
 	memset(pads, 0, sizeof(pads));
 	this->api = api;
 	type = d;
@@ -322,7 +322,9 @@ wchar_t *GetDefaultControlName(unsigned short id, int type) {
 	else if (type & POV) {
 		wsprintfW(name, L"POV %i", id);
 	}
-	else return L"Unknown";
+	else {
+		wcscpy(name, L"Unknown");
+	}
 	return name;
 }
 

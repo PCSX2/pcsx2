@@ -270,7 +270,7 @@ public:
 	void AddFFAxis(const wchar_t *displayName, int id);
 	void AddFFEffectType(const wchar_t *displayName, const wchar_t *effectID, EffectType type);
 
-	Device(DeviceAPI, DeviceType, const wchar_t *displayName, const wchar_t *instanceID = 0, wchar_t *deviceID = 0);
+	Device(DeviceAPI, DeviceType, const wchar_t *displayName, const wchar_t *instanceID = 0, const wchar_t *deviceID = 0);
 	virtual ~Device();
 
 	// Allocates memory for old and new state, sets everything to 0.
@@ -319,7 +319,7 @@ public:
 	// Note:  Only used externally for binding, so if override the other one, can assume
 	// all other forces are currently 0.
 	inline virtual void SetEffect(ForceFeedbackBinding *binding, unsigned char force) {}
-	inline virtual void SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
+	virtual void SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
 
 	// Called after reading.  Basically calls FlipState().
 	// Some device types (Those that don't incrementally update)
