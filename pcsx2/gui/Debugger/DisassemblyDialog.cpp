@@ -458,6 +458,8 @@ void DisassemblyDialog::stepOut()
 {
 	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
 		return;
+	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
+	CBreakPoints::SetSkipFirst(r5900Debug.getPC());
 
 	u32 addr = currentCpu->getStepOutAddress();
 	if (addr == (u32)-1)
