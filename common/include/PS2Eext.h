@@ -281,7 +281,7 @@ static void SysMessage(const wchar_t *fmt, ...)
 
 static void __forceinline PluginNullConfigure(std::string desc, int &log)
 {
-    SysMessage("This space intentionally left blank.");
+    SysMessage("This space is intentionally left blank.");
 }
 
 static void __forceinline PluginNullAbout(const char *aboutText)
