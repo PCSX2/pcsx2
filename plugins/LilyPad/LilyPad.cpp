@@ -19,6 +19,9 @@
 
 // For escape timer, so as not to break GSDX+DX9.
 #include <time.h>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 #include "resource.h"
 #include "InputManager.h"
 #include "Config.h"
@@ -109,55 +112,48 @@ int IsWindowMaximized (HWND hWnd) {
 #endif
 
 void DEBUG_TEXT_OUT(const char *text) {
-#ifdef _MSC_VER
-	if (config.debug) {
-		HANDLE hFile = CreateFileA("logs\\padLog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0);
-		if (hFile != INVALID_HANDLE_VALUE) {
-			DWORD junk;
-			WriteFile(hFile, text, strlen(text), &junk, 0);
-			CloseHandle(hFile);;
-		}
-	}
-#endif
+	if (!config.debug)
+		return;
+
+	std::ofstream file("logs/padLog.txt", std::ios::app);
+	if (!file.good())
+		return;
+	file << text;
 }
 
 void DEBUG_NEW_SET() {
-#ifdef _MSC_VER
-	if (config.debug && bufSize>1) {
-		HANDLE hFile = CreateFileA("logs\\padLog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, 0, OPEN_ALWAYS, 0, 0);
-		if (hFile != INVALID_HANDLE_VALUE) {
-			u32 i;
-			char temp[1500];
-			char *end = temp;
-			sprintf(end, "%02X (%02X) ", inBuf[0], inBuf[1]);
-			end += 8;
-			for (i=2; i<bufSize; i++) {
-				sprintf(end, "%02X ", inBuf[i]);
-				end += 3;
+	if (config.debug && bufSize > 1) {
+		std::ofstream file("logs/padLog.txt", std::ios::app);
+		if (file.good()) {
+			std::stringstream stream;
+			stream.setf(std::ios::hex, std::ios::basefield);
+			stream.setf(std::ios::uppercase);
+			stream.fill('0');
+
+			unsigned char *buffer[2] = {inBuf, outBuf};
+			for (const auto &buf : buffer) {
+				// Port/FF
+				stream << std::setw(2) << int(buf[0]);
+				// Active slots/Enabled (only relevant for multitap)
+				stream << " (" << std::setw(2) << int(buf[1]) << ')';
+
+				// Command/Response
+				for (u32 n = 2; n < bufSize; ++n)
+					stream << ' ' << std::setw(2) << int(buf[n]);
+				stream << '\n';
 			}
-			end[-1] = '\n';
-			sprintf(end, "%02X (%02X) ", outBuf[0], outBuf[1]);
-			end += 8;
-			for (i=2; i<bufSize; i++) {
-				sprintf(end, "%02X ", outBuf[i]);
-				end+=3;
-			}
-			end[-1] = '\n';
-			end++[0] = '\n';
-			DWORD junk;
-			WriteFile(hFile, temp, end-temp, &junk, 0);
-			CloseHandle(hFile);;
+			stream << '\n';
+			file << stream.rdbuf();
 		}
 	}
 	bufSize = 0;
-#endif
 }
 
 inline void DEBUG_IN(unsigned char c) {
-	if (bufSize < sizeof(inBuf)-1) inBuf[bufSize] = c;
+	if (bufSize < sizeof(inBuf)) inBuf[bufSize] = c;
 }
 inline void DEBUG_OUT(unsigned char c) {
-	if (bufSize < sizeof(outBuf)-1) outBuf[bufSize++] = c;
+	if (bufSize < sizeof(outBuf)) outBuf[bufSize++] = c;
 }
 
 struct Stick {
