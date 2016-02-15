@@ -511,7 +511,8 @@ void ConsoleLogFrame::OnEnableAllLogging(wxCommandEvent& evt)
 			log->Enabled = true;
 	}
 	DevConWriterEnabled = true;
-	g_Conf->EmuOptions.CdvdVerboseReads = true;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = true;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -526,7 +527,8 @@ void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 			log->Enabled = false;
 	}
 	DevConWriterEnabled = false;
-	g_Conf->EmuOptions.CdvdVerboseReads = false;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = false;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -541,7 +543,8 @@ void ConsoleLogFrame::OnSetDefaultLogging(wxCommandEvent& evt)
 			log->Enabled = ConLogDefaults[i];
 	}
 	DevConWriterEnabled = false;
-	g_Conf->EmuOptions.CdvdVerboseReads = false;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = false;
 
 	OnLoggingChanged();
 	evt.Skip();
