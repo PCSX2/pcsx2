@@ -1262,14 +1262,15 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
 	if(m_state.viewport != size)
 	{
+		bool isNative = theApp.GetConfig("upscale_multiplier", 1) == 1;
 		m_state.viewport = size;
 
 		D3D11_VIEWPORT vp;
 
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = (spritehack > 0) ? 0.0f : -0.01f;
-		vp.TopLeftY = (spritehack > 0) ? 0.0f : -0.01f;
+		vp.TopLeftX = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftY = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
