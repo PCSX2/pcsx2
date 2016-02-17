@@ -351,7 +351,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align sprite hack", "UserHacks_align_sprite_X");
 	GtkWidget* preload_gs_check    = CreateCheckBox("Preload Frame", "preload_frame_with_gs_data");
-	GtkWidget* hack_unsafe_fbmask  = CreateCheckBox("Fast Accurate Blending", "UserHacks_unsafe_fbmask");
+	GtkWidget* hack_safe_fbmask    = CreateCheckBox("Safe Accurate Blending", "UserHacks_safe_fbmask");
 
 	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
 	GtkWidget* hack_sprite_label   = left_label("Alpha-Sprite Hack:");
@@ -376,7 +376,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
 	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
-	InsertWidgetInTable(hack_table , hack_unsafe_fbmask);
+	InsertWidgetInTable(hack_table , hack_safe_fbmask);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);

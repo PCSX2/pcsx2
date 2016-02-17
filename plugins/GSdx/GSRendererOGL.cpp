@@ -37,7 +37,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
-	UserHacks_unsafe_fbmask  = theApp.GetConfig("UserHacks_unsafe_fbmask", false);
+	UserHacks_safe_fbmask    = theApp.GetConfig("UserHacks_safe_fbmask", false);
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 
@@ -45,7 +45,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
-		UserHacks_unsafe_fbmask  = false;
+		UserHacks_safe_fbmask    = false;
 	}
 }
 
@@ -324,7 +324,7 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 			   TextureBarrier() will guarantee that writes have completed and caches
 			   have been invalidated before subsequent Draws are executed.
 			 */
-			if (!(~ff_fbmask & ~zero_fbmask & 0x7) && UserHacks_unsafe_fbmask) {
+			if (!(~ff_fbmask & ~zero_fbmask & 0x7) && !UserHacks_safe_fbmask) {
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
 				m_unsafe_fbmask = true;
