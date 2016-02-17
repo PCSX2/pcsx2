@@ -28,12 +28,12 @@
 
 in SHADER
 {
-    vec4 t;
+    vec4 t_float;
+    vec4 t_int;
     vec4 c;
     flat vec4 fc;
 } PSin;
 
-#define PSin_t (PSin.t)
 #define PSin_c (PSin.c)
 #define PSin_fc (PSin.fc)
 
@@ -206,13 +206,8 @@ mat4 sample_4p(vec4 u)
     return c;
 }
 
-vec4 sample_color(vec2 st, float q)
+vec4 sample_color(vec2 st)
 {
-    //FIXME: maybe we can set gl_Position.w = q in VS
-#if (PS_FST == 0)
-    st /= q;
-#endif
-
 #if (PS_TCOFFSETHACK == 1)
     st += TC_OffsetHack.xy;
 #endif
@@ -362,7 +357,13 @@ void fog(inout vec4 C, float f)
 
 vec4 ps_color()
 {
-    vec4 T = sample_color(PSin_t.xy, PSin_t.w);
+    //FIXME: maybe we can set gl_Position.w = q in VS
+#if (PS_FST == 0)
+    vec4 T = sample_color(PSin.t_float.xy / PSin.t_float.w);
+#else
+    // Note xy are normalized coordinate
+    vec4 T = sample_color(PSin.t_int.xy);
+#endif
 
 #if PS_IIP == 1
     vec4 C = tfx(T, PSin_c);
@@ -372,7 +373,7 @@ vec4 ps_color()
 
     atst(C);
 
-    fog(C, PSin_t.z);
+    fog(C, PSin.t_float.z);
 
 #if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
     C.rgb = vec3(255.0f);

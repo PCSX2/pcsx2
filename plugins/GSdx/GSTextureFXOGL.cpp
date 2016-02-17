@@ -53,12 +53,8 @@ void GSDeviceOGL::CreateTextureFX()
 	GL_PUSH("Compile VS");
 
 	for (uint32 key = 0; key < countof(m_vs); key++) {
-		// wildhack is only useful if both TME and FST are enabled.
 		VSSelector sel(key);
-		if (sel.wildhack && (!sel.tme || !sel.fst))
-			m_vs[key] = 0;
-		else
-			m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
+		m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
 	}
 
 	GL_POP();
