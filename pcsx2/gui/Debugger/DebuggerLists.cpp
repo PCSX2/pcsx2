@@ -255,9 +255,10 @@ wxString BreakpointList::getColumnText(int item, int col) const
 			if (isMemory) {
 				dest.Write(L"-");
 			} else {
+				if (!cpu->isAlive())
+					break;
 				char temp[256];
-				if(cpu->isAlive())
-					disasm->getOpcodeText(displayedBreakPoints_[index].addr, temp);
+				disasm->getOpcodeText(displayedBreakPoints_[index].addr, temp);
 				dest.Write("%s",temp);
 			}
 		}
@@ -688,9 +689,10 @@ wxString StackFramesList::getColumnText(int item, int col) const
 		break;
 	case SF_CUROPCODE:
 		{
+			if (!cpu->isAlive())
+				break;
 			char temp[512];
-			if (cpu->isAlive())
-				disassembly->getOpcodeText(frame.pc,temp);
+			disassembly->getOpcodeText(frame.pc,temp);
 			dest.Write("%s",temp);
 		}
 		break;
