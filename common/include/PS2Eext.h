@@ -313,7 +313,7 @@ static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
 	/* To do: Write a dialog box that displays a dialog box with the text in desc,
 	   and a check box that says "Logging", checked if log !=0, and set log to
 	   1 if it is checked on return, and 0 if it isn't. */
-    SysMessage("This space intentionally left blank.");
+    SysMessage("This space is intentionally left blank.");
 }
 
 static void __forceinline PluginNullAbout(const char *aboutText)
@@ -337,7 +337,7 @@ static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
 	/* To do: Write a dialog box that displays a dialog box with the text in desc,
 	and a check box that says "Logging", checked if log !=0, and set log to
 	1 if it is checked on return, and 0 if it isn't. */
-	SysMessage(L"This space intentionally left blank.");
+	SysMessage(L"This space is intentionally left blank.");
 }
 
 static void __forceinline PluginNullAbout(const wchar_t *aboutText)
