@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2015-12-22 16:57+0100\n"
-"PO-Revision-Date: 2016-02-18 13:55+0100\n"
+"PO-Revision-Date: 2016-02-18 14:38+0100\n"
 "Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
 "Language-Team: goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
 "Language: fr\n"
@@ -195,7 +195,7 @@ msgstr ""
 
 #: pcsx2/PluginManager.cpp:1378
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "Echec de l'initialisation du plugin interne de la Memory Card."
+msgstr "Echec de l'initialisation du plugin interne de carte mémoire."
 
 #: pcsx2/PluginManager.cpp:1775
 msgid "Unloaded Plugin"
