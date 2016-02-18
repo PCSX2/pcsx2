@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2015-12-22 16:57+0100\n"
-"PO-Revision-Date: 2014-01-06 09:06+0100\n"
+"PO-Revision-Date: 2016-02-18 21:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: ..\\..\\\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Poedit-Basepath: ../..\n"
+"X-Generator: Poedit 1.8.7\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -109,6 +109,9 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"Bitte beachte, dass die resultierende Datei möglicherweise nicht alle "
+"Speicherstände besitzt. Dies ist abhängig von der Anzahl der Speicherstände "
+"in der ursprünglichen Memory Card."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -116,22 +119,26 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"ACHTUNG: Das Konvertieren einer Memory Card dauert eine Weile! Bitte "
+"schließe den Emulator während des Konvertiervorgangs nicht, selbst wenn der "
+"Emulator nicht auf Eingaben reagieren sollte."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Konvertiere diese Memory Card in eine Standard 8 MB Memory Card .ps2 Datei."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Konvertiere diese Memory Card in eine 16 MB Memory Card .ps2 Datei."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Konvertiere diese Memory Card in eine 32 MB Memory Card .ps2 Datei."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "Konvertiere diese Memory Card in eine 64 MB Memory Card .ps2 Datei."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -211,6 +218,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Ordner Typ) Reindiziere jedesmal den Memory Card Inhalt, wenn sich die "
+"laufende Software ändert. Das verhindert, dass der Memory Card der "
+"Speicherplatz für neue Speicherstände ausgeht."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -307,6 +317,8 @@ msgstr ""
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
+"(FolderMcd) Memory Card ist voll. Folgendes konnte nicht hinzugefügt werden: "
+"%s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
