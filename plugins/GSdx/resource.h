@@ -89,7 +89,7 @@
 #define IDC_MIPMAP                      2084
 #define IDC_PRELOAD_GS                  2085
 #define IDC_TVSHADER                    2086
-#define IDC_UNSAFE_FBMASK               2087
+#define IDC_SAFE_FBMASK                 2087
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
