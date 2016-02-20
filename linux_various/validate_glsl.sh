@@ -73,7 +73,7 @@ head()
 {
     \rm -f $TEST
     touch $TEST
-    echo "#version $GL_VERSION\n" >> $TEST
+    echo "#version $GL_VERSION" >> $TEST
 }
 
 tail()
@@ -91,7 +91,7 @@ vertex_test()
 {
     head
     echo "#define VERTEX_SHADER 1" >> $TEST
-    echo $MACRO >> $TEST
+    echo -e $MACRO >> $TEST
     tail
 
     echo "Vertex check with macro : $MACRO"
@@ -103,9 +103,9 @@ fragment_test()
 {
     head
     echo "#define FRAGMENT_SHADER 1" >> $TEST
-    echo "$MACRO" >> $TEST
+    echo -e "$MACRO" >> $TEST
     echo "Fragment check with macro : "
-    echo "$MACRO"
+    echo -e "$MACRO"
 
     tail
     $FRAG $ENTRY $TEST

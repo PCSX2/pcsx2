@@ -778,8 +778,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// vs
 
-	vs_sel.tme = PRIM->TME;
-	vs_sel.fst = PRIM->FST;
 	vs_sel.wildhack = (UserHacks_WildHack && !isPackedUV_HackFlag) ? 1 : 0;
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values

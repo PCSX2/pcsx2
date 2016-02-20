@@ -45,12 +45,12 @@ layout(location = 7) in vec4  i_f;
 
 out SHADER
 {
-    vec4 t;
+    vec4 t_float;
+    vec4 t_int;
     vec4 c;
     flat vec4 fc;
 } VSout;
 
-#define VSout_t (VSout.t)
 #define VSout_c (VSout.c)
 #define VSout_fc (VSout.fc)
 
@@ -70,27 +70,22 @@ const float exp_min31 = exp2(-31.0f);
 
 void texture_coord()
 {
-    if(VS_TME != 0)
-    {
-        if(VS_FST != 0)
-        {
-            if (VS_WILDHACK == 1) {
-                VSout_t.xy = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) * TextureScale;
-            } else {
-                VSout_t.xy = vec2(i_uv) * TextureScale;
-            }
-            VSout_t.w = 1.0f;
-        }
-        else
-        {
-            VSout_t.xy = i_st;
-            VSout_t.w = i_q;
-        }
+    // Float coordinate
+    VSout.t_float.xy = i_st;
+    VSout.t_float.w  = i_q;
+
+    // Integer coordinate
+    // => normalized
+    if (VS_WILDHACK == 1) {
+        VSout.t_int.xy = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) * TextureScale;
+    } else {
+        VSout.t_int.xy = vec2(i_uv) * TextureScale;
     }
-    else
-    {
-        VSout_t.xy = vec2(0.0f, 0.0f);
-        VSout_t.w = 1.0f;
+    // => integral
+    if (VS_WILDHACK == 1) {
+        VSout.t_int.zw = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF));
+    } else {
+        VSout.t_int.zw = vec2(i_uv);
     }
 }
 
@@ -133,7 +128,7 @@ void vs_main()
 
     VSout_c = i_c;
     VSout_fc = i_c;
-    VSout_t.z = i_f.x;
+    VSout.t_float.z = i_f.x; // pack for with texture
 }
 
 #endif
@@ -160,14 +155,16 @@ out gl_PerVertex {
 
 in SHADER
 {
-    vec4 t;
+    vec4 t_float;
+    vec4 t_int;
     vec4 c;
     flat vec4 fc;
 } GSin[];
 
 out SHADER
 {
-    vec4 t;
+    vec4 t_float;
+    vec4 t_int;
     vec4 c;
     flat vec4 fc;
 } GSout;
@@ -180,26 +177,24 @@ layout(std140, binding = 22) uniform cb22
 
 struct vertex
 {
-    vec4 t;
+    vec4 t_float;
+    vec4 t_int;
     vec4 c;
 };
 
 void out_vertex(in vertex v)
 {
-    GSout.t = v.t;
-    GSout.c = v.c;
-    gl_PrimitiveID = gl_PrimitiveIDIn;
-    EmitVertex();
-}
-
-void out_flat()
-{
+    GSout.t_float  = v.t_float;
+    GSout.t_int    = v.t_int;
+    GSout.c        = v.c;
     // Flat output
 #if GS_POINT == 1
-    GSout.fc = GSin[0].fc;
+    GSout.fc       = GSin[0].fc;
 #else
-    GSout.fc = GSin[1].fc;
+    GSout.fc       = GSin[1].fc;
 #endif
+    gl_PrimitiveID = gl_PrimitiveIDIn;
+    EmitVertex();
 }
 
 #if GS_POINT == 1
@@ -214,11 +209,11 @@ void gs_main()
     // left top     => GSin[0];
     // right bottom => GSin[1];
 #if GS_POINT == 1
-    vertex rb = vertex(GSin[0].t, GSin[0].c);
+    vertex rb = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
 #else
-    vertex rb = vertex(GSin[1].t, GSin[1].c);
+    vertex rb = vertex(GSin[1].t_float, GSin[1].t_int, GSin[1].c);
 #endif
-    vertex lt = vertex(GSin[0].t, GSin[0].c);
+    vertex lt = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
 
 #if GS_POINT == 1
     vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
@@ -233,19 +228,21 @@ void gs_main()
     // flat depth
     lt_p.z = rb_p.z;
     // flat fog and texture perspective
-    lt.t.zw = rb.t.zw;
+    lt.t_float.zw = rb.t_float.zw;
     // flat color
     lt.c = rb.c;
 #endif
 
     // Swap texture and position coordinate
     vertex lb = rb;
-    lb.t.x = lt.t.x;
+    lb.t_int.x = lt.t_int.x;
+    lb.t_int.z = lt.t_int.z;
     lb_p.x = lt_p.x;
 
     vertex rt = rb;
     rt_p.y = lt_p.y;
-    rt.t.y = lt.t.y;
+    rt.t_int.y = lt.t_int.y;
+    rt.t_int.w = lt.t_int.w;
 
 
     // Triangle 1
@@ -256,7 +253,6 @@ void gs_main()
     out_vertex(lb);
 
     gl_Position = rt_p;
-    out_flat();
     out_vertex(rt);
     EndPrimitive();
 
@@ -268,7 +264,6 @@ void gs_main()
     out_vertex(rt);
 
     gl_Position = rb_p;
-    out_flat();
     out_vertex(rb);
     EndPrimitive();
 }
