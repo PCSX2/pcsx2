@@ -55,7 +55,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 
 	wxString contribsString = wxsFormat(
 		L"%s: \n"
-		L"ChickenLiver(Lilypad), Gabest (Gsdx, Cdvdolio, Xpad)"
+		L"ChickenLiver(Lilypad), Gabest (GSdx, Cdvdolio, Xpad)"
 		L"\n\n"
 		L"%s: \n"
 		L"Ckemu, Prafull, General Plot, KrossX, Devina, ssakash, turtleli, Blyss Sarania, micove, black_wd, Belmont, BGome,"
