@@ -421,117 +421,12 @@ void GSTextureOGL::Unmap()
 {
 }
 
-#ifndef _WIN32
-
-#pragma pack(push, 1)
-
-struct BITMAPFILEHEADER
-{
-	uint16 bfType;
-	uint32 bfSize;
-	uint16 bfReserved1;
-	uint16 bfReserved2;
-	uint32 bfOffBits;
-};
-
-struct BITMAPINFOHEADER
-{
-	uint32 biSize;
-	int32 biWidth;
-	int32 biHeight;
-	uint16 biPlanes;
-	uint16 biBitCount;
-	uint32 biCompression;
-	uint32 biSizeImage;
-	int32 biXPelsPerMeter;
-	int32 biYPelsPerMeter;
-	uint32 biClrUsed;
-	uint32 biClrImportant;
-};
-
-#define BI_RGB 0
-
-#pragma pack(pop)
-
-#endif
-void GSTextureOGL::Save(const string& fn, const void* image, uint32 pitch)
-{
-	// Build a BMP file
-	FILE* fp = fopen(fn.c_str(), "wb");
-	if (fp == NULL)
-		return;
-
-	BITMAPINFOHEADER bih;
-
-	memset(&bih, 0, sizeof(bih));
-
-	bih.biSize = sizeof(bih);
-	bih.biWidth = m_size.x;
-	bih.biHeight = m_size.y;
-	bih.biPlanes = 1;
-	bih.biBitCount = 32;
-	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_size.x * m_size.y << 2;
-
-	BITMAPFILEHEADER bfh;
-
-	memset(&bfh, 0, sizeof(bfh));
-
-	uint8* bfType = (uint8*)&bfh.bfType;
-
-	// bfh.bfType = 'MB';
-	bfType[0] = 0x42;
-	bfType[1] = 0x4d;
-	bfh.bfOffBits = sizeof(bfh) + sizeof(bih);
-	bfh.bfSize = bfh.bfOffBits + bih.biSizeImage;
-	bfh.bfReserved1 = bfh.bfReserved2 = 0;
-
-	fwrite(&bfh, 1, sizeof(bfh), fp);
-	fwrite(&bih, 1, sizeof(bih), fp);
-
-	uint8* data = (uint8*)image + (m_size.y - 1) * pitch;
-
-	for(int h = m_size.y; h > 0; h--, data -= pitch)
-	{
-		if (false && IsDss()) {
-			// Only get the depth and convert it to an integer
-			uint8* better_data = data;
-			for (int w = m_size.x; w > 0; w--, better_data += 8) {
-				float* input = (float*)better_data;
-				// FIXME how to dump 32 bits value into 8bits component color
-				GLuint depth_integer = (GLuint)(*input * (float)UINT_MAX);
-				uint8 r = (depth_integer >>  0) & 0xFF;
-				uint8 g = (depth_integer >>  8) & 0xFF;
-				uint8 b = (depth_integer >> 16) & 0xFF;
-				uint8 a = (depth_integer >> 24) & 0xFF;
-
-				fwrite(&r, 1, 1, fp);
-				fwrite(&g, 1, 1, fp);
-				fwrite(&b, 1, 1, fp);
-				fwrite(&a, 1, 1, fp);
-			}
-		} else {
-			// swap red and blue
-			uint8* better_data = data;
-			for (int w = m_size.x; w > 0; w--, better_data += 4) {
-				uint8 red = better_data[2];
-				better_data[2] = better_data[0];
-				better_data[0] = red;
-				fwrite(better_data, 1, 4, fp);
-			}
-		}
-	}
-
-	fclose(fp);
-}
-
 bool GSTextureOGL::Save(const string& fn, bool dds)
 {
 	// Collect the texture data
 	uint32 pitch = 4 * m_size.x;
 	uint32 buf_size = pitch * m_size.y * 2;// Note *2 for security (depth/stencil)
 	std::unique_ptr<uint8[]> image(new uint8[buf_size]);
-	bool status = true;
 #ifdef ENABLE_OGL_DEBUG
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
 #else
@@ -553,10 +448,6 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
 
 		fmt = GSPng::R32I_PNG;
-
-		// Not supported in Save function
-		status = false;
-
 	} else {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
@@ -569,27 +460,17 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		{
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
 			fmt = GSPng::R16I_PNG;
-			// Not supported in Save function
-			status = false;
 		}
 		else if (m_format == GL_R8)
 		{
 			fmt = GSPng::R8I_PNG;
 			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
-			// Not supported in Save function
-			status = false;
 		}
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
-#ifdef ENABLE_OGL_PNG
-	status = GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch);
-#else
-	if (status) Save(fn, image.get(), pitch);
-#endif
-
-	return status;
+	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch);
 }
 
 uint32 GSTextureOGL::GetMemUsage()

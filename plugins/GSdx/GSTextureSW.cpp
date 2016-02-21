@@ -85,45 +85,9 @@ void GSTextureSW::Unmap()
 	m_mapped.clear();
 }
 
-#ifndef _WIN32
-
-#pragma pack(push, 1)
-
-struct BITMAPFILEHEADER
-{
-	uint16 bfType;
-	uint32 bfSize;
-	uint16 bfReserved1;
-	uint16 bfReserved2;
-	uint32 bfOffBits;
-};
-
-struct BITMAPINFOHEADER
-{
-	uint32 biSize;
-	int32 biWidth;
-	int32 biHeight;
-	uint16 biPlanes;
-	uint16 biBitCount;
-	uint32 biCompression;
-	uint32 biSizeImage;
-	int32 biXPelsPerMeter;
-	int32 biYPelsPerMeter;
-	uint32 biClrUsed;
-	uint32 biClrImportant;
-};
-
-#define BI_RGB 0
-
-#pragma pack(pop)
-
-#endif
-
 bool GSTextureSW::Save(const string& fn, bool dds)
 {
 	if(dds) return false; // not implemented
-
-#ifdef ENABLE_OGL_PNG
 
 #ifdef ENABLE_OGL_DEBUG
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
@@ -131,59 +95,4 @@ bool GSTextureSW::Save(const string& fn, bool dds)
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
 	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch);
-
-#else
-	if(FILE* fp = fopen(fn.c_str(), "wb"))
-	{
-		BITMAPINFOHEADER bih;
-
-		memset(&bih, 0, sizeof(bih));
-
-		bih.biSize = sizeof(bih);
-		bih.biWidth = m_size.x;
-		bih.biHeight = m_size.y;
-		bih.biPlanes = 1;
-		bih.biBitCount = 32;
-		bih.biCompression = BI_RGB;
-		bih.biSizeImage = m_size.x * m_size.y << 2;
-
-		BITMAPFILEHEADER bfh;
-
-		memset(&bfh, 0, sizeof(bfh));
-
-		uint8* bfType = (uint8*)&bfh.bfType;
-
-		// bfh.bfType = 'MB';
-		bfType[0] = 0x42;
-		bfType[1] = 0x4d;
-		bfh.bfOffBits = sizeof(bfh) + sizeof(bih);
-		bfh.bfSize = bfh.bfOffBits + bih.biSizeImage;
-		bfh.bfReserved1 = bfh.bfReserved2 = 0;
-
-		fwrite(&bfh, 1, sizeof(bfh), fp);
-		fwrite(&bih, 1, sizeof(bih), fp);
-
-		uint8* data = (uint8*)m_data + (m_size.y - 1) * m_pitch;
-
-		for(int h = m_size.y; h > 0; h--, data -= m_pitch)
-		{
-			for(int i = 0; i < m_size.x; i++)
-			{
-				uint32 c = ((uint32*)data)[i];
-
-				c = (c & 0xff00ff00) | ((c & 0x00ff0000) >> 16) | ((c & 0x000000ff) << 16);
-
-				fwrite(&c, 1, sizeof(c), fp);
-			}
-
-			// fwrite(data, 1, m_size.x << 2, fp); // TODO: swap red-blue?
-		}
-
-		fclose(fp);
-
-		return true;
-	}
-
-	return false;
-#endif
 }

@@ -106,7 +106,6 @@ namespace GSPng {
 
     bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, bool rb_swapped)
     {
-#ifdef ENABLE_OGL_PNG
         std::string root = file;
         root.replace(file.length() - 4, 4, "");
 
@@ -124,9 +123,6 @@ namespace GSPng {
 
         filename = root + pixel[fmt].extension[1];
         return SaveFile(filename, fmt, image, row.get(), w, h, pitch);
-#else
-        return false;
-#endif
     }
 
     Transaction::Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch)

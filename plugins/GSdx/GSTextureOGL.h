@@ -64,7 +64,6 @@ class GSTextureOGL : public GSTexture
 		bool Map(GSMap& m, const GSVector4i* r = NULL);
 		void Unmap();
 		bool Save(const string& fn, bool dds = false);
-		void Save(const string& fn, const void* image, uint32 pitch);
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }
