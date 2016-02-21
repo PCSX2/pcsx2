@@ -14619,6 +14619,7 @@ Region = PAL-E
 Serial = SLES-53747
 Name   = Ed, Edd, 'n Eddy - The Misadventure
 Region = PAL-E
+eeRoundMode = 2
 ---------------------------------------------
 Serial = SLES-53748
 Name   = Quest for Sleeping Beauty
@@ -39471,6 +39472,7 @@ Serial = SLUS-21260
 Name   = Ed, Edd, 'n Eddy - The Mis-Edventures
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2
 ---------------------------------------------
 Serial = SLUS-21261
 Name   = Shadow the Hedgehog
