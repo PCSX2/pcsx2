@@ -55,7 +55,8 @@ for ARG in "$@"; do
         --cppcheck          ) cppcheck=1 ;;
         --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel)   build="$root/build_dev";;
         --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug)   build="$root/build_dbg";;
-        --release           ) flags+=(-DCMAKE_BUILD_TYPE=Release) build="$root/build_rel";;
+        --rel|--release     ) flags+=(-DCMAKE_BUILD_TYPE=Release) build="$root/build_rel";;
+        --prof              ) flags+=(-DCMAKE_BUILD_TYPE=Prof)    build="$root/build_prof";;
         --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
         --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
         --egl               ) flags+=(-DEGL_API=TRUE) ;;
@@ -74,6 +75,7 @@ for ARG in "$@"; do
             echo "** User options **"
             echo "--dev / --devel : Build PCSX2 as a Development build."
             echo "--debug         : Build PCSX2 as a Debug build."
+            echo "--prof          : Build PCSX2 as a Profiler build (release + debug symbol)."
             echo "--release       : Build PCSX2 as a Release build."
             echo
             echo "--clean         : Do a clean build."

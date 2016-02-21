@@ -277,6 +277,9 @@ elseif(CMAKE_BUILD_TYPE MATCHES "Devel")
     set(DEBUG_FLAG "${DBG} -DNDEBUG -DPCSX2_DEVBUILD -D_DEVEL")
 elseif(CMAKE_BUILD_TYPE MATCHES "Release")
     set(DEBUG_FLAG "-DNDEBUG")
+elseif(CMAKE_BUILD_TYPE MATCHES "Prof")
+    # Keep frame pointer and debug information for profiler tool
+    set(DEBUG_FLAG "${DBG} -DNDEBUG")
 endif()
 
 if (USE_ASAN)
