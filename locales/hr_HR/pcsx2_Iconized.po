@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-22 16:57+0100\n"
+"POT-Creation-Date: 2016-02-21 11:51+0100\n"
 "PO-Revision-Date: 2014-01-04 17:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Nema dovoljno virtualne memorije, ili je potrebna memorija već rezervirana "
 "od strane drugih procesa, usluga, ili DLLova."
 
-#: pcsx2/CDVD/CDVD.cpp:398
+#: pcsx2/CDVD/CDVD.cpp:397
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -41,7 +41,7 @@ msgstr ""
 "PCSX2 ne podržava Play Station 1 diskove.  Ako želite emulirat PSX igre "
 "treba da skinete emulator za PSX, poput ePSXe ili PCSX."
 
-#: pcsx2/System.cpp:129
+#: pcsx2/System.cpp:133
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -53,7 +53,7 @@ msgstr ""
 "memorijom, poput isključene ili male veličine swap datoteke, ili drugim "
 "programom koji guta puno memorije."
 
-#: pcsx2/System.cpp:374
+#: pcsx2/System.cpp:375
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -61,7 +61,7 @@ msgstr ""
 "PCSX2 nemože dodijeliti dovoljno memorije potrebne za PS2 virtualni stroj. "
 "Zatvorite pozadinske programe koji troše memoriju i pokušajte ponovno."
 
-#: pcsx2/gui/AppInit.cpp:147
+#: pcsx2/gui/AppInit.cpp:148
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -69,7 +69,7 @@ msgstr ""
 "Upozorenje: Neki konfigurirani PS2 rekompajleri se nisu uspjeli pokrenuti te "
 "su isključeni:"
 
-#: pcsx2/gui/AppInit.cpp:205
+#: pcsx2/gui/AppInit.cpp:206
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -79,7 +79,7 @@ msgstr ""
 "značajno poboljšavaju brzinu emulacije. Možda ćete morati ponovno uključiti "
 "navedene rekompajlere, ako riješite probleme."
 
-#: pcsx2/gui/AppMain.cpp:148
+#: pcsx2/gui/AppMain.cpp:161
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -89,7 +89,7 @@ msgstr ""
 "dobiti iz PS2 konzole u vašem vlasništvu (posuđena se ne računa).  Molimo "
 "pogledajte Najčešća pitanja ili Vodiče za daljnje upute."
 
-#: pcsx2/gui/AppMain.cpp:674
+#: pcsx2/gui/AppMain.cpp:689
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -326,7 +326,7 @@ msgstr ""
 "\n"
 "(napomena: ovo ne utječe na postavke za dodatke)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:522
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:525
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -337,12 +337,12 @@ msgstr ""
 "i ponovno ga omogućiti u bilo koje vrijeme koristeći Konfiguracija:"
 "Memorijske kartice u glavnom izborniku."
 
-#: pcsx2/gui/MemoryCardFolder.h:527
+#: pcsx2/gui/MemoryCardFolder.h:530
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -472,7 +472,7 @@ msgstr ""
 " * Test Drive Unlimited\n"
 " * Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 #, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
@@ -487,7 +487,7 @@ msgstr ""
 "izborniku, i ostaviti ovu stranicu praznom. \n"
 "('Automatske' znači: biranje testiranih zakrpa za pojedine igre)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 #, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
@@ -523,7 +523,7 @@ msgstr ""
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Neuspjelo: Odabrana memorijska kartica '%s' je u upotrebi."
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:35
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
 "Please select your preferred default location for PCSX2 user-level documents "
 "below (includes memory cards, screenshots, settings, and savestates).  These "
@@ -535,7 +535,7 @@ msgstr ""
 "stanja).  Ove lokacije mapa mogu biti promjenjene bilo kada koristeći tablu "
 "za Izbor Dodataka/BIOS-a."
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:38
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:39
 msgid ""
 "You can change the preferred default location for PCSX2 user-level documents "
 "here (includes memory cards, screenshots, settings, and savestates).  This "
@@ -572,7 +572,7 @@ msgstr ""
 "PCSX2 sprema datoteke dnevnika i dijagnostičke ispise u ovu mapu.  Većina "
 "dodataka će se držati ove mape, ali neki stariji dodaci će je zanemariti."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:243
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -588,7 +588,7 @@ msgstr ""
 "\n"
 "Jeste li sigurni da želite primjeniti postavke sada?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:455
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -774,7 +774,7 @@ msgstr ""
 "nemoguće. Njegovo omogućavanje će uzrokovati ozbiljne pogreške na slici u "
 "nekim igrama."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:293
+#: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -782,7 +782,7 @@ msgstr ""
 "Omogućite ovo ako mislite da MTGS thread sync uzrokuje rušenja i grafičke "
 "pogreške."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:296
+#: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

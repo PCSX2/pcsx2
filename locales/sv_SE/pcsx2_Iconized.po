@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 - 150922\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-22 16:57+0100\n"
+"POT-Creation-Date: 2016-02-21 11:51+0100\n"
 "PO-Revision-Date: 2015-09-22 15:36+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
@@ -30,7 +30,7 @@ msgstr ""
 " eller så har den nödvändiga tilldelningen av Virtuellt Minne \n"
 " redan blivit reserverat av andra processer, tjänster eller DLL'er."
 
-#: pcsx2/CDVD/CDVD.cpp:398
+#: pcsx2/CDVD/CDVD.cpp:397
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -39,7 +39,7 @@ msgstr ""
 "PlayStation®One speldiskar stödjes icke av PCSX2. Om Ni vill emulera PSX-"
 "spel får Ni använda en särskild PSX-emulator, såsom ePSXe eller PCSX."
 
-#: pcsx2/System.cpp:129
+#: pcsx2/System.cpp:133
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -53,7 +53,7 @@ msgstr ""
 " spärrad växlingsfil används, eller av att ett annat program tar för sig "
 "mycket minne."
 
-#: pcsx2/System.cpp:374
+#: pcsx2/System.cpp:375
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -62,7 +62,7 @@ msgstr ""
 " för PS2's Virtuella Maskin. Stäng minneskrävande \n"
 " bakgrundsprogram och försök igen."
 
-#: pcsx2/gui/AppInit.cpp:147
+#: pcsx2/gui/AppInit.cpp:148
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -70,7 +70,7 @@ msgstr ""
 "Varning: Några av de konfigurerade PS2 omkompilerarna \n"
 " kunde inte köras igång och har blivit spärrade:"
 
-#: pcsx2/gui/AppInit.cpp:205
+#: pcsx2/gui/AppInit.cpp:206
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -80,7 +80,7 @@ msgstr ""
 "de förbättrar oftast emuleringshastigheten avsevärt. Ni kanske måste "
 "återmöjliggöra omkompilerarna ovanför egenhändigt, om Ni löser fel."
 
-#: pcsx2/gui/AppMain.cpp:148
+#: pcsx2/gui/AppMain.cpp:161
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -90,7 +90,7 @@ msgstr ""
 "ett BIOS från en faktisk PS2 enhet som Ni äger (tillåns gäller inte). Öga "
 "igenom FAQ'er och Guider för ytterligare information."
 
-#: pcsx2/gui/AppMain.cpp:674
+#: pcsx2/gui/AppMain.cpp:689
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -343,7 +343,7 @@ msgstr ""
 "\n"
 "Är Ni helt säker?"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:522
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:525
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -354,14 +354,14 @@ msgstr ""
 " och återmöjliggöra sockeln när som helst genom ''Konfig > Minneskort'' i "
 "Huvudmenyn."
 
-#: pcsx2/gui/MemoryCardFolder.h:527
+#: pcsx2/gui/MemoryCardFolder.h:530
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 "(MappMkort) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: "
 "%s"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -505,7 +505,7 @@ msgstr ""
 " * ''Test Drive Unlimited'' \n"
 " * ''Transformers''"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
@@ -518,7 +518,7 @@ msgstr ""
 "beprövade lösningar för särskilda spel).\n"
 "Egna Spelfixar ökar INTE prestandan, utan kan måhända istället minska den."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
@@ -554,7 +554,7 @@ msgstr ""
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Misslyckades: MålMinneskortet '%s' används för närvarande."
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:35
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
 "Please select your preferred default location for PCSX2 user-level documents "
 "below (includes memory cards, screenshots, settings, and savestates).  These "
@@ -565,7 +565,7 @@ msgstr ""
 " (innefattar Minneskort, Skärmbilder, Inställningar, & Sparpunkter). \n"
 "Detta kan Ni ändra närsomhelst genom dialogen SystemInställningar."
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:38
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:39
 msgid ""
 "You can change the preferred default location for PCSX2 user-level documents "
 "here (includes memory cards, screenshots, settings, and savestates).  This "
@@ -606,7 +606,7 @@ msgstr ""
 "De flesta InsticksProgram ansluter sig till denna Mapp, men en del äldre kan "
 "förbise den."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:243
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -623,7 +623,7 @@ msgstr ""
 "\n"
 "Är Ni säker att Ni vill tillämpa ändringarna nu?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:455
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -830,7 +830,7 @@ msgstr ""
 " så är precist bildöverhoppande ouppnåeligt. \n"
 "Att tillämpa det kan vålla rejäla grafikfel för vissa spel."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:293
+#: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -838,7 +838,7 @@ msgstr ""
 "Tillämpa detta ifall Ni tror att MTGS-trådsynken \n"
 " vållar braker eller grafiska fel."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:296
+#: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

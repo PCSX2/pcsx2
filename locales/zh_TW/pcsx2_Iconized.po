@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.1 1201\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-22 16:57+0100\n"
+"POT-Creation-Date: 2016-02-21 11:51+0100\n"
 "PO-Revision-Date: 2015-10-05 12:17+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -26,7 +26,7 @@ msgstr ""
 "可用的虛擬記憶體不足，\n"
 "或必備的虛擬記憶體映射已經被其他處理程序、服務，或 DLL 保留。"
 
-#: pcsx2/CDVD/CDVD.cpp:398
+#: pcsx2/CDVD/CDVD.cpp:397
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -35,7 +35,7 @@ msgstr ""
 "PCSX2 不支援 Playstation 遊戲光碟。\n"
 "若您想要模擬 PS 遊戲，您必須下載 PS 模擬器，譬如 ePSXe 或 PCSX。"
 
-#: pcsx2/System.cpp:129
+#: pcsx2/System.cpp:133
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -46,7 +46,7 @@ msgstr ""
 "此錯誤可能由低水平的虛擬記憶體資源引起，譬如分頁檔案小或沒有分頁檔案，\n"
 "或由另一個獨占大量記憶體的程式引起。"
 
-#: pcsx2/System.cpp:374
+#: pcsx2/System.cpp:375
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -54,13 +54,13 @@ msgstr ""
 "PCSX2 無法分配 PS2 虛擬機需要的記憶體。\n"
 "關閉一些獨占記憶體的背景工作並再次嘗試。"
 
-#: pcsx2/gui/AppInit.cpp:147
+#: pcsx2/gui/AppInit.cpp:148
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
 msgstr "警告：某些指定的 PS2 反編譯裝置初始化失敗，並且被停用："
 
-#: pcsx2/gui/AppInit.cpp:205
+#: pcsx2/gui/AppInit.cpp:206
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -69,7 +69,7 @@ msgstr ""
 "注意：反編譯裝置並非執行 PCSX2 所必須的，但反編譯裝置大幅提升遊戲速度。\n"
 "若錯誤已經解決，您可能必須手動重新啟用上面列出的反編譯裝置。"
 
-#: pcsx2/gui/AppMain.cpp:148
+#: pcsx2/gui/AppMain.cpp:161
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -78,7 +78,7 @@ msgstr ""
 "PCSX2 需要 PS2 BIOS 才能運行遊戲。出於法律上的原因，您「必須」從您自己的 PS2 "
 "真實遊戲主機獲取 BIOS（借的 PS2 不算）。進一步的說明請洽 FAQ 和指南。"
 
-#: pcsx2/gui/AppMain.cpp:674
+#: pcsx2/gui/AppMain.cpp:689
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -299,7 +299,7 @@ msgstr ""
 "\n"
 "（注意：各個插件自身的設定不受影響）"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:522
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:525
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -310,12 +310,12 @@ msgstr ""
 "您可以在任何時候，透過「PCSX2 主選單 => 設定 => 記憶卡」糾正這一問題並重新啟"
 "用記憶卡。"
 
-#: pcsx2/gui/MemoryCardFolder.h:527
+#: pcsx2/gui/MemoryCardFolder.h:530
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -442,7 +442,7 @@ msgstr ""
 " * 車魂：無限賽\n"
 " * 變形金剛"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
@@ -456,7 +456,7 @@ msgstr ""
 "如果是手動設定遊戲修正，變更所玩的遊戲後，您需要手動關閉已啟用的遊戲修正、或"
 "乾脆關閉手動設定遊戲修正。"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
@@ -487,7 +487,7 @@ msgstr "失敗：僅允許建立副本至空的記憶卡插口或檔案系統。
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "失敗：目標記憶卡 %s 使用中。"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:35
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
 "Please select your preferred default location for PCSX2 user-level documents "
 "below (includes memory cards, screenshots, settings, and savestates).  These "
@@ -498,7 +498,7 @@ msgstr ""
 "（包括：記憶卡、遊戲擷圖、設定檔、即時存檔）\n"
 "這些資料夾位置能夠在任何時候透過【插件 / BIOS】設定視窗覆寫。"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:38
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:39
 msgid ""
 "You can change the preferred default location for PCSX2 user-level documents "
 "here (includes memory cards, screenshots, settings, and savestates).  This "
@@ -535,7 +535,7 @@ msgstr ""
 "大多數插件也使用這個資料夾儲存自己的日誌，\n"
 "但是一些較老的插件可能忽略這個資料夾。"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:243
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -550,7 +550,7 @@ msgstr ""
 "\n"
 "您確定您想要現在套用變更嗎？"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:455
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -736,7 +736,7 @@ msgstr ""
 "由於 PS2 的硬體設計，精確的跳框是不可能的。\n"
 "啟用跳框將導致一些遊戲出現嚴重的圖形錯誤。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:293
+#: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -744,7 +744,7 @@ msgstr ""
 "啟用這個選項，若您認為多執行緒圖形模式執行緒的同步正在導致模擬器當掉或圖形錯"
 "誤。"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:296
+#: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "

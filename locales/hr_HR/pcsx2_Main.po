@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2015-12-22 16:57+0100\n"
+"POT-Creation-Date: 2016-02-21 11:51+0100\n"
 "PO-Revision-Date: 2014-01-04 17:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Ukoliko se učitava sa ISO slike, ova pogreška može biti uzrokovana od "
 "nepodržanog ISO tipa slike ili pogreške u ISO slici."
 
-#: pcsx2/MTGS.cpp:859
+#: pcsx2/MTGS.cpp:866
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
@@ -376,31 +376,31 @@ msgstr ""
 "Spremljeno stanje nije ispravno spremljeno. Privremena datoteka je stvorena "
 "ali nije mogla biti premještena na svoje odredište."
 
-#: pcsx2/gui/AppConfig.cpp:969
+#: pcsx2/gui/AppConfig.cpp:973
 msgid "Safest"
 msgstr "Najsigurnije"
 
-#: pcsx2/gui/AppConfig.cpp:970
+#: pcsx2/gui/AppConfig.cpp:974
 msgid "Safe (faster)"
 msgstr "Sigurno (brže)"
 
-#: pcsx2/gui/AppConfig.cpp:971
+#: pcsx2/gui/AppConfig.cpp:975
 msgid "Balanced"
 msgstr "Uravnoteženo"
 
-#: pcsx2/gui/AppConfig.cpp:972
+#: pcsx2/gui/AppConfig.cpp:976
 msgid "Aggressive"
 msgstr "Agresivno"
 
-#: pcsx2/gui/AppConfig.cpp:973
+#: pcsx2/gui/AppConfig.cpp:977
 msgid "Aggressive plus"
 msgstr "Dodatno agresivno"
 
-#: pcsx2/gui/AppConfig.cpp:974
+#: pcsx2/gui/AppConfig.cpp:978
 msgid "Mostly Harmful"
 msgstr "Uglavnom štetno"
 
-#: pcsx2/gui/AppConfig.cpp:1134 pcsx2/gui/AppConfig.cpp:1140
+#: pcsx2/gui/AppConfig.cpp:1138 pcsx2/gui/AppConfig.cpp:1144
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "Promjena postavki nije uspjela; pristup nije dopušten."
 
@@ -408,7 +408,7 @@ msgstr "Promjena postavki nije uspjela; pristup nije dopušten."
 msgid "Loading PS2 system plugins..."
 msgstr "Učitavanje dodataka PS2 sustava..."
 
-#: pcsx2/gui/AppInit.cpp:50
+#: pcsx2/gui/AppInit.cpp:51
 #, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
@@ -417,100 +417,105 @@ msgstr ""
 "SSE ekstenzije nisu dostupne. PCSX zahtjeva procesor koji podržava SSE set "
 "instrukcija."
 
-#: pcsx2/gui/AppInit.cpp:139
+#: pcsx2/gui/AppInit.cpp:140
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "Pogreška/e PCSX2 Recompiler-a"
 
-#: pcsx2/gui/AppInit.cpp:218
+#: pcsx2/gui/AppInit.cpp:219
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "Sve opcije su za trenutnu sesiju i neće biti spremljene.\n"
 
-#: pcsx2/gui/AppInit.cpp:228 pcsx2/gui/AppMain.cpp:358
+#: pcsx2/gui/AppInit.cpp:229 pcsx2/gui/AppMain.cpp:373
 msgid "IsoFile"
 msgstr "IsoDatoteka"
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:230
 msgid "displays this list of command line options"
 msgstr "prikazuje popis opcija komandnog retka"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:231
 msgid "forces the program log/console to be visible"
 msgstr "omogućava vidljivost programskog dnevnika/konzole"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use fullscreen GS mode"
 msgstr "prikaz slike preko punog ekrana"
 
-#: pcsx2/gui/AppInit.cpp:232
+#: pcsx2/gui/AppInit.cpp:233
 msgid "use windowed GS mode"
 msgstr "prikaz slike unutar prozora"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:235
 msgid "disables display of the gui while running games"
 msgstr "onemogućavanje prikaza korisničkog sučelja za vrijeme igre"
 
-#: pcsx2/gui/AppInit.cpp:235
+#: pcsx2/gui/AppInit.cpp:236
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:237
+#: pcsx2/gui/AppInit.cpp:238
 msgid "executes an ELF image"
 msgstr "pokreće ELF sliku"
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:239
+#, fuzzy
+msgid "executes an IRX image"
+msgstr "pokreće ELF sliku"
+
+#: pcsx2/gui/AppInit.cpp:240
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
 "pokreće sustav bez učitavanja igre; koristi se za ulazak u izbornik PS2 "
 "sustava"
 
-#: pcsx2/gui/AppInit.cpp:239
+#: pcsx2/gui/AppInit.cpp:241
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr ""
 "pokreće sustav koristeći CDVD dodatak (zanemaruje parametar IsoDatoteka)"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables all speedhacks"
 msgstr "onemogućuje sve trikove za brzinu"
 
-#: pcsx2/gui/AppInit.cpp:242
+#: pcsx2/gui/AppInit.cpp:244
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr "korištenje određenih zakrpa za igru koji se moraju ručno unijeti."
 
-#: pcsx2/gui/AppInit.cpp:243
+#: pcsx2/gui/AppInit.cpp:245
 msgid "disables fast booting"
 msgstr "onemogućuje brzo pokretanje sustava"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:247
 msgid "changes the configuration file path"
 msgstr "mijenja putanju konfiguracijske datoteke"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:248
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "odabir PCSX2 konfiguracijske datoteke"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:249
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "%s pokreće Početnog Čarobnjaka"
 
-#: pcsx2/gui/AppInit.cpp:248
+#: pcsx2/gui/AppInit.cpp:250
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr ""
 "omogućuje prijenosni način rada (zahtjeva administratorska/korijenska "
 "dopuštenja)"
 
-#: pcsx2/gui/AppInit.cpp:252
+#: pcsx2/gui/AppInit.cpp:254
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "odabir %s dodatka"
 
-#: pcsx2/gui/AppInit.cpp:300
+#: pcsx2/gui/AppInit.cpp:302
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Pogreška u dodatku - %s"
 
-#: pcsx2/gui/AppInit.cpp:303
+#: pcsx2/gui/AppInit.cpp:305
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -521,96 +526,96 @@ msgstr ""
 "dodatak:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:310
+#: pcsx2/gui/AppInit.cpp:312
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Pritisnite U redu za korištenje zadanog konfiguriranog dodatka, ili "
 "Poništiti da bi zatvorili %s."
 
-#: pcsx2/gui/AppInit.cpp:515
+#: pcsx2/gui/AppInit.cpp:529
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 Pogreška: Nedostatak Hardvera"
 
-#: pcsx2/gui/AppInit.cpp:515 pcsx2/gui/AppInit.cpp:527
+#: pcsx2/gui/AppInit.cpp:529 pcsx2/gui/AppInit.cpp:541
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Pritisnite U redu da bi zatvorili %s."
 
-#: pcsx2/gui/AppInit.cpp:528
+#: pcsx2/gui/AppInit.cpp:542
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritična Pogreška"
 
-#: pcsx2/gui/AppInit.cpp:698
+#: pcsx2/gui/AppInit.cpp:712
 msgid "OK"
 msgstr "U redu"
 
-#: pcsx2/gui/AppInit.cpp:699
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&OK"
 msgstr "&U redu"
 
-#: pcsx2/gui/AppInit.cpp:700
+#: pcsx2/gui/AppInit.cpp:714
 msgid "Cancel"
 msgstr "Poništiti"
 
-#: pcsx2/gui/AppInit.cpp:701
+#: pcsx2/gui/AppInit.cpp:715
 msgid "&Cancel"
 msgstr "&Poništiti"
 
-#: pcsx2/gui/AppInit.cpp:702
+#: pcsx2/gui/AppInit.cpp:716
 msgid "&Apply"
 msgstr "&Primijeniti"
 
-#: pcsx2/gui/AppInit.cpp:703
+#: pcsx2/gui/AppInit.cpp:717
 msgid "&Next >"
 msgstr "&Sljedeće >"
 
-#: pcsx2/gui/AppInit.cpp:704
+#: pcsx2/gui/AppInit.cpp:718
 msgid "< &Back"
 msgstr "< &Natrag"
 
-#: pcsx2/gui/AppInit.cpp:705
+#: pcsx2/gui/AppInit.cpp:719
 msgid "&Back"
 msgstr "&Natrag"
 
-#: pcsx2/gui/AppInit.cpp:706
+#: pcsx2/gui/AppInit.cpp:720
 msgid "&Finish"
 msgstr "&Završiti"
 
-#: pcsx2/gui/AppInit.cpp:707
+#: pcsx2/gui/AppInit.cpp:721
 msgid "&Yes"
 msgstr "&Da"
 
-#: pcsx2/gui/AppInit.cpp:708
+#: pcsx2/gui/AppInit.cpp:722
 msgid "&No"
 msgstr "&Ne"
 
-#: pcsx2/gui/AppInit.cpp:709
+#: pcsx2/gui/AppInit.cpp:723
 msgid "Browse"
 msgstr "Pregled"
 
-#: pcsx2/gui/AppInit.cpp:710
+#: pcsx2/gui/AppInit.cpp:724
 msgid "&Save"
 msgstr "&Spremiti"
 
-#: pcsx2/gui/AppInit.cpp:711
+#: pcsx2/gui/AppInit.cpp:725
 msgid "Save &As..."
 msgstr "Spremiti &Kao..."
 
-#: pcsx2/gui/AppInit.cpp:712
+#: pcsx2/gui/AppInit.cpp:726
 msgid "&Help"
 msgstr "&Pomoć"
 
-#: pcsx2/gui/AppInit.cpp:713
+#: pcsx2/gui/AppInit.cpp:727
 msgid "&Home"
 msgstr "&Na početnu"
 
-#: pcsx2/gui/AppInit.cpp:715
+#: pcsx2/gui/AppInit.cpp:729
 msgid "Show about dialog"
 msgstr "Prikaz PCSX2 autora i zahvale"
 
-#: pcsx2/gui/AppMain.cpp:68
+#: pcsx2/gui/AppMain.cpp:81
 msgid ""
 "\n"
 "\n"
@@ -620,48 +625,48 @@ msgstr ""
 "\n"
 "Pritisnite U redu za prikaz Konfiguracijske Table Dodatka."
 
-#: pcsx2/gui/AppMain.cpp:125 pcsx2/gui/AppMain.cpp:139
+#: pcsx2/gui/AppMain.cpp:138 pcsx2/gui/AppMain.cpp:152
 msgid ""
 "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr ""
 "Upozorenje! Dodaci sustava nisu učitani. Moguće je da PCSX2 nije upotrebljiv."
 
-#: pcsx2/gui/AppMain.cpp:173 pcsx2/gui/AppMain.cpp:178
+#: pcsx2/gui/AppMain.cpp:186 pcsx2/gui/AppMain.cpp:191
 msgid "PS2 BIOS Error"
 msgstr "Pogreška PS2 BIOS-a"
 
-#: pcsx2/gui/AppMain.cpp:173
+#: pcsx2/gui/AppMain.cpp:186
 msgid "Press Ok to go to the BIOS Configuration Panel."
 msgstr "Pritisnite U redu za otvaranje Konfiguracijske Table BIOS-a."
 
-#: pcsx2/gui/AppMain.cpp:196
+#: pcsx2/gui/AppMain.cpp:209
 #, fuzzy
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
 msgstr ""
 "Upozorenje! Dodaci sustava nisu učitani. Moguće je da PCSX2 nije upotrebljiv."
 
-#: pcsx2/gui/AppMain.cpp:370
+#: pcsx2/gui/AppMain.cpp:385
 #, c-format
 msgid "%s Commandline Options"
 msgstr "%s Opcije Komandnog retka"
 
-#: pcsx2/gui/AppMain.cpp:671
+#: pcsx2/gui/AppMain.cpp:686
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 Thread ne reagira"
 
-#: pcsx2/gui/AppMain.cpp:678
+#: pcsx2/gui/AppMain.cpp:693
 msgid "Terminate"
 msgstr "Okončati"
 
-#: pcsx2/gui/AppMain.cpp:1054
+#: pcsx2/gui/AppMain.cpp:1069
 msgid "Executing PS2 Virtual Machine..."
 msgstr "Izvršavanje PS2 Virtualnog Stroja..."
 
-#: pcsx2/gui/AppRes.cpp:65
+#: pcsx2/gui/AppRes.cpp:66
 msgid "Browse for an Iso that is not in your recent history."
 msgstr "Pronaći Iso datoteku koja nije nedavno otvarana."
 
-#: pcsx2/gui/AppRes.cpp:65
+#: pcsx2/gui/AppRes.cpp:66
 msgid "Browse..."
 msgstr "Pregledati..."
 
@@ -711,148 +716,148 @@ msgstr "Nije moguće primjeniti nove postavke, neka od postavki je neispravna."
 msgid "Save log question"
 msgstr "Pitanje o spremanju dnevnika"
 
-#: pcsx2/gui/ConsoleLogger.cpp:439
+#: pcsx2/gui/ConsoleLogger.cpp:400
 msgid "Fits a lot of log in a microcosmically small area."
 msgstr "Sprema veliku količinu dnevnika u mali prostor."
 
-#: pcsx2/gui/ConsoleLogger.cpp:439
+#: pcsx2/gui/ConsoleLogger.cpp:400
 msgid "Small"
 msgstr "Mali"
 
-#: pcsx2/gui/ConsoleLogger.cpp:441
+#: pcsx2/gui/ConsoleLogger.cpp:402
 msgid "It's what I use (the programmer guy)."
 msgstr "To je ono što ja koristim (programer)."
 
-#: pcsx2/gui/ConsoleLogger.cpp:441
+#: pcsx2/gui/ConsoleLogger.cpp:402
 #, fuzzy
 msgid "Normal font"
 msgstr "Normalan"
 
-#: pcsx2/gui/ConsoleLogger.cpp:443
+#: pcsx2/gui/ConsoleLogger.cpp:404
 msgid "Its nice and readable."
 msgstr "Lijepo je i čitljivo."
 
-#: pcsx2/gui/ConsoleLogger.cpp:443
+#: pcsx2/gui/ConsoleLogger.cpp:404
 msgid "Large"
 msgstr "Velik"
 
-#: pcsx2/gui/ConsoleLogger.cpp:445
+#: pcsx2/gui/ConsoleLogger.cpp:406
 msgid "Huge"
 msgstr "Ogroman"
 
-#: pcsx2/gui/ConsoleLogger.cpp:445
+#: pcsx2/gui/ConsoleLogger.cpp:406
 msgid "In case you have a really high res display."
 msgstr "Za slučaj da imate monitor visoke rezolucije."
 
-#: pcsx2/gui/ConsoleLogger.cpp:449
+#: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Default soft-tone color scheme."
 msgstr "Zadana shema mekih boja."
 
-#: pcsx2/gui/ConsoleLogger.cpp:449
+#: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Light theme"
 msgstr "Svjetla tema"
 
-#: pcsx2/gui/ConsoleLogger.cpp:450
+#: pcsx2/gui/ConsoleLogger.cpp:411
 msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
 msgstr ""
 "Klasična shema s crnom bojom za ljude koji vole da im se tekst ureže u oči."
 
-#: pcsx2/gui/ConsoleLogger.cpp:450
+#: pcsx2/gui/ConsoleLogger.cpp:411
 msgid "Dark theme"
 msgstr "Tamna tema"
 
-#: pcsx2/gui/ConsoleLogger.cpp:453
+#: pcsx2/gui/ConsoleLogger.cpp:414
 msgid "Always on Top"
 msgstr "Uvijek na Vrhu"
 
-#: pcsx2/gui/ConsoleLogger.cpp:454
+#: pcsx2/gui/ConsoleLogger.cpp:415
 msgid ""
 "When checked the log window will be visible over other foreground windows."
 msgstr ""
 "Kada je uključeno prozor sa dnevnikom će biti vidljiv iza prozora u prvom "
 "planu."
 
-#: pcsx2/gui/ConsoleLogger.cpp:456
+#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "&Save..."
 msgstr "&Spremiti..."
 
-#: pcsx2/gui/ConsoleLogger.cpp:456
+#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Save log contents to file"
 msgstr "Spremiti sadržaj dnevnika u datoteku"
 
-#: pcsx2/gui/ConsoleLogger.cpp:457
+#: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "C&lear"
 msgstr "Is&prazniti"
 
-#: pcsx2/gui/ConsoleLogger.cpp:457
+#: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Clear the log window contents"
 msgstr "Isprazniti sadržaj dnevnika u prozoru"
 
-#: pcsx2/gui/ConsoleLogger.cpp:459 pcsx2/gui/Dialogs/SysConfigDialog.cpp:268
+#: pcsx2/gui/ConsoleLogger.cpp:420 pcsx2/gui/Dialogs/SysConfigDialog.cpp:268
 msgid "Appearance"
 msgstr "Izgled"
 
-#: pcsx2/gui/ConsoleLogger.cpp:461
+#: pcsx2/gui/ConsoleLogger.cpp:422
 msgid "&Close"
 msgstr "&Zatvoriti"
 
-#: pcsx2/gui/ConsoleLogger.cpp:461
+#: pcsx2/gui/ConsoleLogger.cpp:422
 msgid "Close this log window; contents are preserved"
 msgstr "Zatvoriti prozor s dnevnikom; sadržaj se sačuva"
 
-#: pcsx2/gui/ConsoleLogger.cpp:465
+#: pcsx2/gui/ConsoleLogger.cpp:426
 msgid "Dev/Verbose"
 msgstr "Dev/Verbose"
 
-#: pcsx2/gui/ConsoleLogger.cpp:465
+#: pcsx2/gui/ConsoleLogger.cpp:426
 msgid "Shows PCSX2 developer logs"
 msgstr "Prikaz PCSX2 dnevnika za razvojni tim"
 
-#: pcsx2/gui/ConsoleLogger.cpp:466
+#: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "CDVD reads"
 msgstr "CDVD očitavanje"
 
-#: pcsx2/gui/ConsoleLogger.cpp:466
+#: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Shows disk read activity"
 msgstr "Aktivnost čitanja diska"
 
-#: pcsx2/gui/ConsoleLogger.cpp:483
+#: pcsx2/gui/ConsoleLogger.cpp:444
 msgid "Enable all"
 msgstr "Omogućiti sve"
 
-#: pcsx2/gui/ConsoleLogger.cpp:483
+#: pcsx2/gui/ConsoleLogger.cpp:444
 msgid "Enables all log source filters."
 msgstr "Uključuje sve izvore prikaza u dnevniku."
 
-#: pcsx2/gui/ConsoleLogger.cpp:484
+#: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Disable all"
 msgstr "Onemogućiti sve"
 
-#: pcsx2/gui/ConsoleLogger.cpp:484
+#: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Disables all log source filters."
 msgstr "Isključuje sve izvore prikaza u dnevniku."
 
-#: pcsx2/gui/ConsoleLogger.cpp:485
+#: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
 msgid "Restore Default"
 msgstr "Vratiti Zadane postavke"
 
-#: pcsx2/gui/ConsoleLogger.cpp:485
+#: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
 msgid "Restore default source filters."
 msgstr "Uključuje sve izvore prikaza u dnevniku."
 
-#: pcsx2/gui/ConsoleLogger.cpp:487
+#: pcsx2/gui/ConsoleLogger.cpp:448
 msgid "&Log"
 msgstr "&Dnevnik"
 
-#: pcsx2/gui/ConsoleLogger.cpp:488
+#: pcsx2/gui/ConsoleLogger.cpp:449
 msgid "&Sources"
 msgstr "&Izvori prikaza"
 
-#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:223
+#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:226
 msgid "panel"
 msgstr ""
 
@@ -1297,24 +1302,24 @@ msgstr "Mape"
 msgid "Appearance/Themes - %s"
 msgstr "Izgled/Teme - %s"
 
-#: pcsx2/gui/ExecutorThread.cpp:40
+#: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "Dnevnici događaja u obliku u kojem ih prima PS2 virtualni stroj."
 
-#: pcsx2/gui/ExecutorThread.cpp:430
+#: pcsx2/gui/ExecutorThread.cpp:431
 msgid "Press Cancel to attempt to cancel the action."
 msgstr "Pritisni Poništiti da bi se pokušala poništiti radnja."
 
-#: pcsx2/gui/ExecutorThread.cpp:431
+#: pcsx2/gui/ExecutorThread.cpp:432
 #, c-format
 msgid "Press Terminate to kill %s immediately."
 msgstr "Pritisnite Okončati da bi odmah prekinuli %s ."
 
-#: pcsx2/gui/ExecutorThread.cpp:434
+#: pcsx2/gui/ExecutorThread.cpp:435
 msgid "Terminate App"
 msgstr "Okončati aplikaciju"
 
-#: pcsx2/gui/FrameForGS.cpp:411
+#: pcsx2/gui/FrameForGS.cpp:431
 msgid "GS Output is Disabled!"
 msgstr "GS Izlaz je Isključen!"
 
@@ -1322,44 +1327,44 @@ msgstr "GS Izlaz je Isključen!"
 msgid "Exit PCSX2?"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:461 pcsx2/gui/MainFrame.cpp:425
+#: pcsx2/gui/GlobalCommands.cpp:473 pcsx2/gui/MainFrame.cpp:430
 msgid "Save state"
 msgstr "Spremljeno stanje"
 
-#: pcsx2/gui/GlobalCommands.cpp:462
+#: pcsx2/gui/GlobalCommands.cpp:474
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Sprema stanje virtualnog stroja u trenutni slot."
 
-#: pcsx2/gui/GlobalCommands.cpp:467 pcsx2/gui/MainFrame.cpp:424
+#: pcsx2/gui/GlobalCommands.cpp:479 pcsx2/gui/MainFrame.cpp:429
 msgid "Load state"
 msgstr "Učitaj spremljeno stanje"
 
-#: pcsx2/gui/GlobalCommands.cpp:468
+#: pcsx2/gui/GlobalCommands.cpp:480
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Učitava stanje virtualnog stroja iz trenutnog slota."
 
-#: pcsx2/gui/GlobalCommands.cpp:473
+#: pcsx2/gui/GlobalCommands.cpp:485
 msgid "Load State Backup"
 msgstr "Učitaj rezervno spremljeno stanje"
 
-#: pcsx2/gui/GlobalCommands.cpp:474
+#: pcsx2/gui/GlobalCommands.cpp:486
 msgid "Loads virtual machine state backup for current slot."
 msgstr ""
 "Učitava rezervno spremljeno stanje virtualnog stroja iz trenutnog slota."
 
-#: pcsx2/gui/GlobalCommands.cpp:479
+#: pcsx2/gui/GlobalCommands.cpp:491
 msgid "Cycle to next slot"
 msgstr "Prebaci na idući slot"
 
-#: pcsx2/gui/GlobalCommands.cpp:480
+#: pcsx2/gui/GlobalCommands.cpp:492
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Prebaci trenutni slot za +1!"
 
-#: pcsx2/gui/GlobalCommands.cpp:485
+#: pcsx2/gui/GlobalCommands.cpp:497
 msgid "Cycle to prev slot"
 msgstr "Prebaci na predhodni slot"
 
-#: pcsx2/gui/GlobalCommands.cpp:486
+#: pcsx2/gui/GlobalCommands.cpp:498
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Prebaci trenutni slot za -1!"
 
@@ -1403,269 +1408,269 @@ msgstr "Slot %d"
 msgid "Backup"
 msgstr "Sigurnosna kopija"
 
-#: pcsx2/gui/MainFrame.cpp:327
+#: pcsx2/gui/MainFrame.cpp:332
 msgid "Show Console"
 msgstr "Prikaz konzole"
 
-#: pcsx2/gui/MainFrame.cpp:328
+#: pcsx2/gui/MainFrame.cpp:333
 msgid "Console to Stdio"
 msgstr "Konzola za standardne ulaze i izlaze"
 
-#: pcsx2/gui/MainFrame.cpp:341
+#: pcsx2/gui/MainFrame.cpp:346
 msgid "&System"
 msgstr "&Sustav"
 
-#: pcsx2/gui/MainFrame.cpp:342
+#: pcsx2/gui/MainFrame.cpp:347
 msgid "CD&VD"
 msgstr "CD&VD"
 
-#: pcsx2/gui/MainFrame.cpp:343
+#: pcsx2/gui/MainFrame.cpp:348
 msgid "&Config"
 msgstr "&Konfiguracija"
 
-#: pcsx2/gui/MainFrame.cpp:344
+#: pcsx2/gui/MainFrame.cpp:349
 msgid "&Misc"
 msgstr "&Ostalo"
 
-#: pcsx2/gui/MainFrame.cpp:345
+#: pcsx2/gui/MainFrame.cpp:350
 msgid "&Debug"
 msgstr "&Pronalazak grešaka"
 
-#: pcsx2/gui/MainFrame.cpp:410 pcsx2/gui/MainFrame.cpp:412
-#: pcsx2/gui/MainFrame.cpp:418
+#: pcsx2/gui/MainFrame.cpp:415 pcsx2/gui/MainFrame.cpp:417
+#: pcsx2/gui/MainFrame.cpp:423
 msgid "Initializing..."
 msgstr "Inicijalizacija..."
 
-#: pcsx2/gui/MainFrame.cpp:414
+#: pcsx2/gui/MainFrame.cpp:419
 msgid "Run ELF..."
 msgstr "Pokrenuti ELF..."
 
-#: pcsx2/gui/MainFrame.cpp:415
+#: pcsx2/gui/MainFrame.cpp:420
 msgid "For running raw PS2 binaries directly"
 msgstr "Za direktno pokretanje PS2 binarni datoteka"
 
-#: pcsx2/gui/MainFrame.cpp:427
+#: pcsx2/gui/MainFrame.cpp:432
 msgid "Backup before save"
 msgstr "Napraviti sigurnosnu kopiju prije spremanja"
 
-#: pcsx2/gui/MainFrame.cpp:432
+#: pcsx2/gui/MainFrame.cpp:437
 msgid "Automatic Gamefixes"
 msgstr "Automatske Zakrpe za igru"
 
-#: pcsx2/gui/MainFrame.cpp:433
+#: pcsx2/gui/MainFrame.cpp:438
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr "Automatska primjena potrebnih Zakrpa za igru u problematičnim igrama"
 
-#: pcsx2/gui/MainFrame.cpp:435
+#: pcsx2/gui/MainFrame.cpp:440
 msgid "Enable Cheats"
 msgstr "Uključiti Šifre za igru"
 
-#: pcsx2/gui/MainFrame.cpp:438
+#: pcsx2/gui/MainFrame.cpp:443
 #, fuzzy
 msgid "Enable Widescreen Patches"
 msgstr "Omogućiti zakrpe za široki ekran"
 
-#: pcsx2/gui/MainFrame.cpp:441
+#: pcsx2/gui/MainFrame.cpp:446
 msgid "Enable Host Filesystem"
 msgstr "Omogućiti pokretanje demo datoteka"
 
-#: pcsx2/gui/MainFrame.cpp:446
+#: pcsx2/gui/MainFrame.cpp:451
 msgid "Shutdown"
 msgstr "Prekid rada"
 
-#: pcsx2/gui/MainFrame.cpp:447
+#: pcsx2/gui/MainFrame.cpp:452
 msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "Briše sva interna stanja virtualnog stroja i gasi dodatke."
 
-#: pcsx2/gui/MainFrame.cpp:449
+#: pcsx2/gui/MainFrame.cpp:454
 msgid "Exit"
 msgstr "Izlaz"
 
-#: pcsx2/gui/MainFrame.cpp:450
+#: pcsx2/gui/MainFrame.cpp:455
 #, c-format
 msgid "Closing %s may be hazardous to your health"
 msgstr "Zatvaranje %s može biti opasno za zdravlje"
 
-#: pcsx2/gui/MainFrame.cpp:457
+#: pcsx2/gui/MainFrame.cpp:462
 msgid "Iso Selector"
 msgstr "Odabir ISO slike"
 
-#: pcsx2/gui/MainFrame.cpp:458
+#: pcsx2/gui/MainFrame.cpp:463
 msgid "Plugin Menu"
 msgstr "Odabir dodataka"
 
-#: pcsx2/gui/MainFrame.cpp:461
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "Iso"
 msgstr "Iso"
 
-#: pcsx2/gui/MainFrame.cpp:461
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "Makes the specified ISO image the CDVD source."
 msgstr "Pravi posebnu ISO sliku za CDVD izvor."
 
-#: pcsx2/gui/MainFrame.cpp:462
+#: pcsx2/gui/MainFrame.cpp:467
 msgid "Plugin"
 msgstr "Dodatak"
 
-#: pcsx2/gui/MainFrame.cpp:462
+#: pcsx2/gui/MainFrame.cpp:467
 msgid "Uses an external plugin as the CDVD source."
 msgstr "Koristi vanjski dodatak za čitanje CDVD izvora."
 
-#: pcsx2/gui/MainFrame.cpp:463
+#: pcsx2/gui/MainFrame.cpp:468
 msgid "No disc"
 msgstr "Bez diska"
 
-#: pcsx2/gui/MainFrame.cpp:463
+#: pcsx2/gui/MainFrame.cpp:468
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr "Koristite ovo za ulaz u BIOS postave PS2-ke."
 
-#: pcsx2/gui/MainFrame.cpp:471
+#: pcsx2/gui/MainFrame.cpp:476
 msgid "Emulation &Settings"
 msgstr "Postavke &Emulacije"
 
-#: pcsx2/gui/MainFrame.cpp:472
+#: pcsx2/gui/MainFrame.cpp:477
 msgid "&Memory cards"
 msgstr "&Memorijske kartice"
 
-#: pcsx2/gui/MainFrame.cpp:473
+#: pcsx2/gui/MainFrame.cpp:478
 msgid "&Plugin/BIOS Selector"
 msgstr "&Odabir Dodataka/BIOS-a"
 
-#: pcsx2/gui/MainFrame.cpp:474 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
+#: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
 msgstr "Uređivač Baze podataka za igre"
 
-#: pcsx2/gui/MainFrame.cpp:480
+#: pcsx2/gui/MainFrame.cpp:485
 msgid "&Video (GS)"
 msgstr "&Slika (GS)"
 
-#: pcsx2/gui/MainFrame.cpp:481
+#: pcsx2/gui/MainFrame.cpp:486
 msgid "&Audio (SPU2)"
 msgstr "&Zvuk (SPU2)"
 
-#: pcsx2/gui/MainFrame.cpp:482
+#: pcsx2/gui/MainFrame.cpp:487
 msgid "&Controllers (PAD)"
 msgstr "&Kontroleri (PAD)"
 
-#: pcsx2/gui/MainFrame.cpp:483
+#: pcsx2/gui/MainFrame.cpp:488
 msgid "Dev9"
 msgstr "Dev9"
 
-#: pcsx2/gui/MainFrame.cpp:484
+#: pcsx2/gui/MainFrame.cpp:489
 msgid "USB"
 msgstr "USB"
 
-#: pcsx2/gui/MainFrame.cpp:485
+#: pcsx2/gui/MainFrame.cpp:490
 msgid "Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:491
+#: pcsx2/gui/MainFrame.cpp:496
 msgid "Multitap 1"
 msgstr "Multitap 1"
 
-#: pcsx2/gui/MainFrame.cpp:492
+#: pcsx2/gui/MainFrame.cpp:497
 msgid "Multitap 2"
 msgstr "Multitap 2"
 
-#: pcsx2/gui/MainFrame.cpp:495
+#: pcsx2/gui/MainFrame.cpp:500
 msgid "Clear all settings..."
 msgstr "Poništiti sve postavke..."
 
-#: pcsx2/gui/MainFrame.cpp:496
+#: pcsx2/gui/MainFrame.cpp:501
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "Poništava sve postavke %s i ponovno pokreće čarobnjaka."
 
-#: pcsx2/gui/MainFrame.cpp:518
+#: pcsx2/gui/MainFrame.cpp:523
 msgid "About..."
 msgstr "O programu..."
 
-#: pcsx2/gui/MainFrame.cpp:523
+#: pcsx2/gui/MainFrame.cpp:528
 msgid "Open Debug Window..."
 msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:526
+#: pcsx2/gui/MainFrame.cpp:531
 msgid "Logging..."
 msgstr "Zapisivanje..."
 
-#: pcsx2/gui/MainFrame.cpp:608
+#: pcsx2/gui/MainFrame.cpp:613
 msgid "Pause"
 msgstr "Pauza"
 
-#: pcsx2/gui/MainFrame.cpp:609
+#: pcsx2/gui/MainFrame.cpp:614
 msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "Pauzira PS2 emulaciju i zadržava trenutno stanje."
 
-#: pcsx2/gui/MainFrame.cpp:616
+#: pcsx2/gui/MainFrame.cpp:621
 msgid "Resume"
 msgstr "Nastaviti"
 
-#: pcsx2/gui/MainFrame.cpp:617
+#: pcsx2/gui/MainFrame.cpp:622
 msgid "Resumes the suspended emulation state."
 msgstr "Nastavlja obustavljenu emulaciju."
 
-#: pcsx2/gui/MainFrame.cpp:621
+#: pcsx2/gui/MainFrame.cpp:626
 msgid "Pause/Resume"
 msgstr "Pauziraj/Nastavi"
 
-#: pcsx2/gui/MainFrame.cpp:622
+#: pcsx2/gui/MainFrame.cpp:627
 msgid "No emulation state is active; cannot suspend or resume."
 msgstr ""
 "Nijedno emulacijsko stanje nije aktivno; nije moguće obustaviti ili "
 "nastaviti."
 
-#: pcsx2/gui/MainFrame.cpp:631
+#: pcsx2/gui/MainFrame.cpp:636
 msgid "Restart"
 msgstr "Ponovo pokrenuti"
 
-#: pcsx2/gui/MainFrame.cpp:632
+#: pcsx2/gui/MainFrame.cpp:637
 msgid "Simulates hardware reset of the PS2 virtual machine."
 msgstr "Simulira hardversko resetovanje PS2 virtualnog stroja."
 
-#: pcsx2/gui/MainFrame.cpp:637
+#: pcsx2/gui/MainFrame.cpp:642
 msgid "No emulation state is active; boot something first."
 msgstr "Nijedno emulacijsko stanje nije aktivno; potrebno nešto pokrenuti."
 
-#: pcsx2/gui/MainFrame.cpp:645
+#: pcsx2/gui/MainFrame.cpp:650
 msgid "Reboot CDVD (full)"
 msgstr "Ponovno pokretanje CDVDa (puno)"
 
-#: pcsx2/gui/MainFrame.cpp:646
+#: pcsx2/gui/MainFrame.cpp:651
 msgid "Hard reset of the active VM."
 msgstr "Ponovno pokretanje virtualnog stroja."
 
-#: pcsx2/gui/MainFrame.cpp:650
+#: pcsx2/gui/MainFrame.cpp:655
 msgid "Boot CDVD (full)"
 msgstr "Pokreni CDVD (puno)"
 
-#: pcsx2/gui/MainFrame.cpp:651
+#: pcsx2/gui/MainFrame.cpp:656
 msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "Pokretanje virtualnog stroja koristeći trenutni DVD ili Iso izvor"
 
-#: pcsx2/gui/MainFrame.cpp:659
+#: pcsx2/gui/MainFrame.cpp:664
 msgid "Reboot CDVD (fast)"
 msgstr "Ponovno pokreni CDVD (brzo)"
 
-#: pcsx2/gui/MainFrame.cpp:660
+#: pcsx2/gui/MainFrame.cpp:665
 msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "Ponovno pokretanje koristeći brzo POKRETANJE (preskače logoe)"
 
-#: pcsx2/gui/MainFrame.cpp:664
+#: pcsx2/gui/MainFrame.cpp:669
 msgid "Boot CDVD (fast)"
 msgstr "Pokreni CDVD (brzo)"
 
-#: pcsx2/gui/MainFrame.cpp:665
+#: pcsx2/gui/MainFrame.cpp:670
 msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "Korištenje brzog pokretanja za preskakanje PS2 i drugih logoa"
 
-#: pcsx2/gui/MainFrame.cpp:745 pcsx2/gui/MainFrame.cpp:780
+#: pcsx2/gui/MainFrame.cpp:750 pcsx2/gui/MainFrame.cpp:785
 msgid "No plugin loaded"
 msgstr "Dodatak nije učitan"
 
-#: pcsx2/gui/MainFrame.cpp:750
+#: pcsx2/gui/MainFrame.cpp:755
 msgid "Core GS Settings..."
 msgstr "Temeljne GS Postavke..."
 
-#: pcsx2/gui/MainFrame.cpp:751
+#: pcsx2/gui/MainFrame.cpp:756
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
@@ -1673,19 +1678,19 @@ msgstr ""
 "Promjena emulacijskih postavki hardvera kojima upravlja PCSX2 virtualni "
 "stroj."
 
-#: pcsx2/gui/MainFrame.cpp:753
+#: pcsx2/gui/MainFrame.cpp:758
 msgid "Window Settings..."
 msgstr "Postavke Prozora..."
 
-#: pcsx2/gui/MainFrame.cpp:754
+#: pcsx2/gui/MainFrame.cpp:759
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Promjena izgleda prozora, uključujući omjer slike."
 
-#: pcsx2/gui/MainFrame.cpp:761
+#: pcsx2/gui/MainFrame.cpp:766
 msgid "Plugin Settings..."
 msgstr "Postavke Dodatka..."
 
-#: pcsx2/gui/MainFrame.cpp:762
+#: pcsx2/gui/MainFrame.cpp:767
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
 msgstr "Otvara dijaloški okvir sa naprednim postavkama za %s dodatak ."
@@ -1824,15 +1829,15 @@ msgstr "Operativni sustav spriječava stvaranje ove datoteke"
 msgid "Cannot apply settings..."
 msgstr "Nije moguće primjeniti postavke..."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:103
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "BIOS Search Path:"
 msgstr "Putanja do BIOS-a:"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:105
 msgid "Select folder with PS2 BIOS roms"
 msgstr "Odaberite mapu sa PS2 BIOS datotekom"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:111
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:112
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
@@ -1840,13 +1845,13 @@ msgstr ""
 "Pritisnite dugme Pregled za odabir druge mape u kojoj će PCSX2 potražiti "
 "BIOS datoteku."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:114
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:196
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:48
 msgid "Refresh list"
 msgstr "Osviježi popis"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:116
 msgid "Select a BIOS rom:"
 msgstr "Odaberite BIOS datoteku:"
 
@@ -2155,7 +2160,12 @@ msgstr "Prebaciti na GSdx softversko prikazivanje kada se izvodi FMV (video)"
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:115
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:108
+msgid ""
+"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgstr ""
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
 msgstr "Omogućiti ručne zakrpe za igre [Nije preporučeno]"
 
@@ -2420,23 +2430,23 @@ msgstr "[-- Nekorištene kartice --]"
 msgid "[-- No unused cards --]"
 msgstr "[-- Nema nekorištenih kartica --]"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:34
 msgid "Usermode Selection"
 msgstr "Odabir Načina rada"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:44
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:45
 msgid "User Documents (recommended)"
 msgstr "Korisnički Dokumenti (preporučeno)"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:45
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:46
 msgid "Location: "
 msgstr "Lokacija: "
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:49
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
 msgstr "Vlastita mapa:"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:51
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:52
 msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
@@ -2444,16 +2454,16 @@ msgstr ""
 "Ove postavke mogu zahtjevati administratorske ovlasti od vašeg operativnog "
 "sustava, zavisno od toga kako je konfiguriran sustav."
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:60
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
 msgid "Select a document root for %s"
 msgstr "Izaberite lokaciju dokumenta za %s"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:124
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
 msgid "Apply"
 msgstr "Primjeniti"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:126
 msgid "Make this language my default right now!"
 msgstr "Postaviti ovaj jezik kao zadani!"
 
@@ -2481,44 +2491,44 @@ msgstr "Dnevnici/Ispisi:"
 msgid "Select a folder for logs/dumps"
 msgstr "Odabir mape za dnevnike/ispise"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:230
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:231
 msgid "Applying settings..."
 msgstr "Primjena postavki..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:241
 msgid "Shutdown PS2 virtual machine?"
 msgstr "Ugasiti PS2 virtualni stroj?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:316
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:318
 msgid "I'm givin' her all she's got, Captain!"
 msgstr "Sakupljam sve što ima, Kapetane!"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:318
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:320
 msgid "Enumerating available plugins..."
 msgstr "Nabrajanje dostupnih dodataka..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:352
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:354
 msgid "Plugins Search Path:"
 msgstr "Putanja do Dodataka:"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:353
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:355
 msgid "Select a folder with PCSX2 plugins"
 msgstr "Odabrati mapu sa PCSX2 dodacima"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:366
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:368
 msgid "Configure..."
 msgstr "Konfiguracija..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:375
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:377
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr "Pritisnite dugme Pregled za odabir druge mape sa PCSX2 dodacima."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:474
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:476
 #, c-format
 msgid "Please select a valid plugin for the %s."
 msgstr "Molimo izaberite važeći dodatak za %s."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:512
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:514
 #, c-format
 msgid ""
 "The selected %s plugin failed to load.\n"
@@ -2531,7 +2541,7 @@ msgstr ""
 "Razlog: %s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:719
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:721
 msgid "Completing tasks..."
 msgstr "Završavanje zadataka..."
 
@@ -2621,22 +2631,22 @@ msgstr "Omogućiti brzi CDVD"
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Brzi pristup disku, manje vrijeme učitavanja. [Nije Preporučeno]"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:37
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
 msgid "Themes Search Path:"
 msgstr "Putanja za teme:"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:39
 msgid "Select folder containing PCSX2 visual themes"
 msgstr "Odabrati mapu sa PCSX2 vizualnim temama"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:45
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:46
 msgid ""
 "Click the Browse button to select a different folder containing PCSX2 visual "
 "themes."
 msgstr ""
 "Pritisnite dugme Pregled za odabir druge mape sa PCSX2 vizualnim temama."
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:49
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:50
 msgid "Select a visual theme:"
 msgstr "Odabrati vizualnu temu:"
 
@@ -2709,22 +2719,22 @@ msgstr "Iscrtati slike"
 msgid "Frames to Skip"
 msgstr "Preskočiti slike"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:285
+#: pcsx2/gui/Panels/VideoPanel.cpp:287
 msgid "Use Synchronized MTGS"
 msgstr "Korištenje Usklađenog MTGS-a"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:286
+#: pcsx2/gui/Panels/VideoPanel.cpp:288
 msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
 "Samo za pronalaženje potencijalnih grešaka u MTGS-u, jer je veoma sporo."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:289
+#: pcsx2/gui/Panels/VideoPanel.cpp:291
 msgid "Disable all GS output"
 msgstr "Onemogućiti sav GS izlaz (prikaz)"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:290
+#: pcsx2/gui/Panels/VideoPanel.cpp:292
 msgid ""
 "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
 "components."
@@ -2732,28 +2742,28 @@ msgstr ""
 "Onemogućava sve aktivnost GS dodatka; idealno za mjerenje učinaka komponenti "
 "EE jezge."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:305
+#: pcsx2/gui/Panels/VideoPanel.cpp:307
 msgid "Frame Skipping"
 msgstr "Preskakanje Sličica"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:308
+#: pcsx2/gui/Panels/VideoPanel.cpp:310
 msgid "Framelimiter"
 msgstr "Upravljanje brojem sličica"
 
-#: pcsx2/gui/SysState.cpp:283
+#: pcsx2/gui/SysState.cpp:284
 msgid "Cannot load this savestate.  The state is an unsupported version."
 msgstr "Nije moguće učitati spremljeno stanje.  Njegova verzija nije podržana."
 
-#: pcsx2/gui/SysState.cpp:290
+#: pcsx2/gui/SysState.cpp:291
 msgid "Cannot load this savestate. The state is an unsupported version."
 msgstr "Nije moguće učitati spremljeno stanje. Njegova verzija nije podržana."
 
-#: pcsx2/gui/SysState.cpp:326
+#: pcsx2/gui/SysState.cpp:327
 msgid "There is no active virtual machine state to download or save."
 msgstr ""
 "Nema aktivnog stanja virtualnog stroja koje se može preuzeti ili spremiti."
 
-#: pcsx2/gui/SysState.cpp:520
+#: pcsx2/gui/SysState.cpp:521
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
@@ -2763,13 +2773,13 @@ msgstr ""
 "Moguće da je stvoren sa starijom verzijom PCSX2 koja se ne podržava više, "
 "ili sadrži grešku."
 
-#: pcsx2/gui/SysState.cpp:579
+#: pcsx2/gui/SysState.cpp:580
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
 "Datoteka nije važeće PCSX2 spremljeno stanje.  Vidjeti datoteku dnevnika za "
 "detalje."
 
-#: pcsx2/gui/SysState.cpp:598
+#: pcsx2/gui/SysState.cpp:599
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
@@ -2786,7 +2796,7 @@ msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr ""
 "Odabrana BIOS datoteka nije valjani PS2 BIOS.  Molimo ponovno konfigurirajte."
 
-#: pcsx2/ps2/BiosTools.cpp:250
+#: pcsx2/ps2/BiosTools.cpp:270
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
@@ -2794,12 +2804,12 @@ msgstr ""
 "Nije moguće učitati PS2 BIOS.  BIOS nije konfiguriran, ili konfiguracija "
 "sadrži pogreške.  Molimo ponovno konfigurirajte."
 
-#: pcsx2/ps2/BiosTools.cpp:257
+#: pcsx2/ps2/BiosTools.cpp:277
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr ""
 "Konfigurirana BIOS datoteka ne postoji.  Molimo ponovno konfigurirajte."
 
-#: pcsx2/x86/ix86-32/iR5900-32.cpp:591
+#: pcsx2/x86/ix86-32/iR5900-32.cpp:470
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
@@ -2808,7 +2818,7 @@ msgstr ""
 "%s Nastavci nisu pronađeni.  R5900-32 rekompajler zahtjeva procesor sa MMX, "
 "SSE, i SSE2 nastavcima."
 
-#: pcsx2/x86/microVU.cpp:28
+#: pcsx2/x86/microVU.cpp:30
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
