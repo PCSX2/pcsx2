@@ -20,143 +20,120 @@
 
 #include "stdafx.h"
 #include "GSPng.h"
+#include <zlib.h>
+#include <png.h>
+
+struct {
+    int type;
+    int bytes_per_pixel_in;
+    int bytes_per_pixel_out;
+    int channel_bit_depth;
+    const char *extension[2];
+} static const pixel[GSPng::Format::COUNT] = {
+    {PNG_COLOR_TYPE_RGBA, 4, 4, 8 , {"_full.png",     nullptr}},         // RGBA_PNG
+    {PNG_COLOR_TYPE_RGB , 4, 3, 8 , {".png",          nullptr}},         // RGB_PNG
+    {PNG_COLOR_TYPE_RGB , 4, 3, 8 , {".png",          "_alpha.png"}},    // RGB_A_PNG
+    {PNG_COLOR_TYPE_GRAY, 4, 1, 8 , {"_alpha.png",    nullptr}},         // ALPHA_PNG
+    {PNG_COLOR_TYPE_GRAY, 4, 2, 16, {"_lsb.png",      "_msb.png"}},      // DEPTH_PNG
+    {PNG_COLOR_TYPE_GRAY, 1, 1, 8 , {"_R8I.png",      nullptr}},         // R8I_PNG
+    {PNG_COLOR_TYPE_GRAY, 2, 2, 16, {"_R16I.png",     nullptr}},         // R16I_PNG
+    {PNG_COLOR_TYPE_GRAY, 4, 2, 16, {"_R32I_lsb.png", "_R32I_msb.png"}}, // R32I_PNG
+};
 
 namespace GSPng {
 
-    // FIXME gray_pixel_16 doesn't work. Integer image and depth image are all black
-    // Maybe I can't open them correctly
-    // A better solution must be found!
-    void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
+    bool SaveFile(const string& file, Format fmt, uint8* image, uint8* row,
+        int width, int height, int pitch,
+        bool rb_swapped = false, bool first_image = false)
+    {
+        int channel_bit_depth = pixel[fmt].channel_bit_depth;
+        int bytes_per_pixel_in = pixel[fmt].bytes_per_pixel_in;
+
+        int type = first_image ? pixel[fmt].type : PNG_COLOR_TYPE_GRAY;
+        int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
+        int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
+
+        FILE *fp = fopen(file.c_str(), "wb");
+        if (fp == nullptr)
+            return false;
+
+        png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+        png_infop info_ptr = nullptr;
+
+        bool success = false;
+        try {
+            if (png_ptr == nullptr)
+                throw GSDXRecoverableError();
+
+            info_ptr = png_create_info_struct(png_ptr);
+            if (info_ptr == nullptr)
+                throw GSDXRecoverableError();
+
+            if (setjmp(png_jmpbuf(png_ptr)))
+                throw GSDXRecoverableError();
+
+            png_init_io(png_ptr, fp);
+            png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+            png_set_IHDR(png_ptr, info_ptr, width, height, channel_bit_depth, type,
+                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+            png_write_info(png_ptr, info_ptr);
+
+            if (channel_bit_depth > 8)
+                png_set_swap(png_ptr);
+            if (rb_swapped && type != PNG_COLOR_TYPE_GRAY)
+                png_set_bgr(png_ptr);
+
+            for (int y = 0; y < height; ++y, image += pitch) {
+                for (int x = 0; x < width; ++x)
+                    for (int i = 0; i < bytes_per_pixel_out; ++i)
+                        row[bytes_per_pixel_out * x + i] = image[bytes_per_pixel_in * x + i + offset];
+                png_write_row(png_ptr, row);
+            }
+            png_write_end(png_ptr, nullptr);
+
+            success = true;
+        }
+        catch (GSDXRecoverableError&) {
+            fprintf(stderr, "Failed to write image %s\n", file.c_str());
+        }
+
+        if (png_ptr)
+            png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : nullptr);
+        fclose(fp);
+
+        return success;
+    }
+
+    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, bool rb_swapped)
     {
 #ifdef ENABLE_OGL_PNG
         std::string root = file;
-        root.replace(file.length()-4, 4, "");
+        root.replace(file.length() - 4, 4, "");
 
-        uint8* data = (uint8*)image;
+        ASSERT(fmt >= Format::START && fmt < Format::COUNT);
 
-        switch (fmt) {
-            case R8I_PNG:
-                {
-                    png::image<png::gray_pixel> img(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img[y][x] = png::gray_pixel(data[x]);
-                        }
-                    }
-                    img.write(root + "_R8.png");
-                }
-                break;
+        std::unique_ptr<uint8[]> row(new uint8[pixel[fmt].bytes_per_pixel_out * w]);
 
-            case R16I_PNG:
-                {
-                    png::image<png::gray_pixel_16> img(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img[y][x] = png::gray_pixel_16(data[2*x]);
-                        }
-                    }
-                    img.write(root + "_R16.png");
-                }
-                break;
+        std::string filename = root + pixel[fmt].extension[0];
+        if (!SaveFile(filename, fmt, image, row.get(), w, h, pitch, rb_swapped, true))
+            return false;
 
-            case R32I_PNG:
-                {
-                    png::image<png::gray_pixel_16> img_msb(w, h);
-                    png::image<png::gray_pixel_16> img_lsb(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img_msb[y][x] = png::gray_pixel_16(data[2*x]);
-                            img_lsb[y][x] = png::gray_pixel_16(data[2*x+2]);
-                        }
-                    }
-                    img_msb.write(root + "_R32I_msb.png");
-                    img_lsb.write(root + "_R32I_lsb.png");
-                }
-                break;
+        // Second image
+        if (pixel[fmt].extension[1] == nullptr)
+            return true;
 
-            case DEPTH_PNG:
-                {
-                    png::image<png::gray_pixel_16> img_msb(w, h);
-                    png::image<png::gray_pixel_16> img_lsb(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            // TODO packed or not
-                            uint32 depth = data[4*x]; //floorf((float)data[2*x] * exp2f(32));
-
-                            png::gray_pixel_16 msb(depth >> 16);
-                            png::gray_pixel_16 lsb((depth >> 16) ? 0xFFFF : depth & 0xFFFF);
-
-                            img_msb[y][x] = msb;
-                            img_lsb[y][x] = lsb;
-                        }
-                    }
-                    img_msb.write(root + "_msb.png");
-                    img_lsb.write(root + "_lsb.png");
-                }
-                break;
-
-            case ALPHA_PNG:
-                {
-                    png::image<png::gray_pixel> img_alpha(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img_alpha[y][x] = png::gray_pixel(data[4*x+3]);
-                        }
-                    }
-                    img_alpha.write(root + "_alpha.png");
-                }
-                break;
-
-            case RGB_PNG:
-                {
-                    png::image<png::rgb_pixel>  img_opaque(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img_opaque[y][x] = png::rgb_pixel(data[4*x+0], data[4*x+1], data[4*x+2]);
-                        }
-                    }
-                    img_opaque.write(root + ".png");
-                }
-                break;
-
-            case RGBA_PNG:
-                {
-                    png::image<png::rgba_pixel>  img(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img[y][x] = png::rgba_pixel(data[4*x+0], data[4*x+1], data[4*x+2], data[4*x+3]);
-                        }
-                    }
-                    img.write(root + "_full.png");
-                }
-                break;
-
-            case RGB_A_PNG:
-                {
-                    png::image<png::rgb_pixel>  img_opaque(w, h);
-                    png::image<png::gray_pixel> img_alpha(w, h);
-                    for(int y = 0; y < h; y++, data += pitch) {
-                        for (int x = 0; x < w; x++) {
-                            img_opaque[y][x] = png::rgb_pixel(data[4*x+0], data[4*x+1], data[4*x+2]);
-                            img_alpha[y][x]  = png::gray_pixel(data[4*x+3]);
-                        }
-                    }
-                    img_opaque.write(root + ".png");
-                    img_alpha.write(root + "_alpha.png");
-                }
-                break;
-
-            default:
-                ASSERT(0);
-        }
+        filename = root + pixel[fmt].extension[1];
+        return SaveFile(filename, fmt, image, row.get(), w, h, pitch);
+#else
+        return false;
 #endif
     }
 
-    Transaction::Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch)
+    Transaction::Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch)
         : m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch)
     {
         // Note: yes it would be better to use shared pointer
-        m_image = (char*)_aligned_malloc(pitch*h, 32);
+        m_image = (uint8*)_aligned_malloc(pitch*h, 32);
         if (m_image)
             memcpy(m_image, image, pitch*h);
     }

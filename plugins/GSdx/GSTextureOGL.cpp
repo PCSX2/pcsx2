@@ -530,7 +530,7 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	// Collect the texture data
 	uint32 pitch = 4 * m_size.x;
 	uint32 buf_size = pitch * m_size.y * 2;// Note *2 for security (depth/stencil)
-	char* image = (char*)malloc(buf_size);
+	std::unique_ptr<uint8[]> image(new uint8[buf_size]);
 	bool status = true;
 #ifdef ENABLE_OGL_DEBUG
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
@@ -539,18 +539,18 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 #endif
 
 	if (IsBackbuffer()) {
-		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
 	} else if(IsDss()) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
-		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image);
+		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 		fmt = GSPng::DEPTH_PNG;
 	} else if(m_format == GL_R32I) {
-		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image);
+		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
 
 		fmt = GSPng::R32I_PNG;
 
@@ -563,11 +563,11 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 		if (m_format == GL_RGBA8) {
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image);
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
 		}
 		else if (m_format == GL_R16UI)
 		{
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image);
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
 			fmt = GSPng::R16I_PNG;
 			// Not supported in Save function
 			status = false;
@@ -575,7 +575,7 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		else if (m_format == GL_R8)
 		{
 			fmt = GSPng::R8I_PNG;
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image);
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
 			// Not supported in Save function
 			status = false;
 		}
@@ -584,11 +584,10 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 	}
 
 #ifdef ENABLE_OGL_PNG
-	GSPng::Save(fmt, fn, image, m_size.x, m_size.y, pitch);
+	status = GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch);
 #else
-	if (status) Save(fn, image, pitch);
+	if (status) Save(fn, image.get(), pitch);
 #endif
-	free(image);
 
 	return status;
 }

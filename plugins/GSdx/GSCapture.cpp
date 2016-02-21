@@ -524,8 +524,8 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 #elif __linux__
 
 	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
-	//GSPng::Save(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch);
-	m_workers[m_frame%m_threads]->Push(shared_ptr<GSPng::Transaction>(new GSPng::Transaction(GSPng::RGB_PNG, out_file, (char*)bits, m_size.x, m_size.y, pitch)));
+	//GSPng::Save(GSPng::RGB_PNG, out_file, (uint8*)bits, m_size.x, m_size.y, pitch);
+	m_workers[m_frame%m_threads]->Push(shared_ptr<GSPng::Transaction>(new GSPng::Transaction(GSPng::RGB_PNG, out_file, static_cast<const uint8*>(bits), m_size.x, m_size.y, pitch)));
 
 	m_frame++;
 

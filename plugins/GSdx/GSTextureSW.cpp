@@ -130,8 +130,7 @@ bool GSTextureSW::Save(const string& fn, bool dds)
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
-	GSPng::Save(fmt, fn, (char*)m_data, m_size.x, m_size.y, m_pitch);
-	return true;
+	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch);
 
 #else
 	if(FILE* fp = fopen(fn.c_str(), "wb"))
