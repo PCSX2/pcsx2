@@ -178,7 +178,7 @@ namespace Panels
 		pxRadioPanel*		m_panel_RecIOP;
 		pxCheckBox*			m_check_EECacheEnable;
 		AdvancedOptionsFPU*	m_advancedOptsFpu;
-		wxButton *m_button_RestoreDefaults;
+		wxButton*			m_button_RestoreDefaults;
 
 	public:
 		CpuPanelEE( wxWindow* parent );
@@ -190,6 +190,7 @@ namespace Panels
 
 	protected:
 		void OnRestoreDefaults( wxCommandEvent& evt );
+		void EECache_Event( wxCommandEvent& evt );
 	};
 
 	class CpuPanelVU : public BaseApplicableConfigPanel_SpecificConfig

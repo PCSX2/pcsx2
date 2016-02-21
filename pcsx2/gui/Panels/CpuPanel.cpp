@@ -171,6 +171,7 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	*this += m_button_RestoreDefaults | StdButton();
 
 	Connect( wxID_DEFAULT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CpuPanelEE::OnRestoreDefaults ) );
+	Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &CpuPanelEE::EECache_Event, this);
 }
 
 Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
@@ -233,7 +234,7 @@ void Panels::CpuPanelEE::Apply()
 	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
 	recOps.EnableEE		  = !!m_panel_RecEE->GetSelection();
 	recOps.EnableIOP	  = !!m_panel_RecIOP->GetSelection();
-	recOps.EnableEECache  = m_check_EECacheEnable	->GetValue();
+	recOps.EnableEECache  = m_check_EECacheEnable->GetValue();
 }
 
 void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
@@ -251,8 +252,9 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_RecEE->Enable(!configToApply.EnablePresets);
 	m_panel_RecIOP->Enable(!configToApply.EnablePresets);
 
-	m_check_EECacheEnable ->SetValue(recOps.EnableEECache);
-	m_check_EECacheEnable->Enable(!configToApply.EnablePresets);
+	//EECache option is exclusive to the EE Interpreter.
+	m_check_EECacheEnable->SetValue(recOps.EnableEECache);
+	m_check_EECacheEnable->Enable(!configToApply.EnablePresets && m_panel_RecEE->GetSelection() == 0);
 	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
@@ -427,4 +429,10 @@ void Panels::AdvancedOptionsVU::ApplyConfigToGui( AppConfig& configToApply, int 
 	else								m_ClampModePanel->SetSelection( 0 );
 
 	this->Enable(!configToApply.EnablePresets);
+}
+
+void Panels::CpuPanelEE::EECache_Event(wxCommandEvent& event)
+{
+	m_check_EECacheEnable->Enable(m_panel_RecEE->GetSelection() == 0);
+	event.Skip();
 }
