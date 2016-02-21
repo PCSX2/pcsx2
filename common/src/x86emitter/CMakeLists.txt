@@ -8,37 +8,11 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 set(Output x86emitter)
 
-set(CommonFlags 
+set(CommonFlags
 	-fno-strict-aliasing
     )
 
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	# add defines
-	set(x86emitterFinalFlags
-		${x86emitterFinalFlags}
-		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	# add defines
-	set(x86emitterFinalFlags
-		${x86emitterFinalFlags}
-		${CommonFlags} -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	
-	# add defines
-	set(x86emitterFinalFlags
-		${x86emitterFinalFlags}
-		${CommonFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(x86emitterFinalFlags ${CommonFlags})
 
 # variable with all sources of this library
 set(x86emitterSources

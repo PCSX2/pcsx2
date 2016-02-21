@@ -30,23 +30,10 @@ else()
     set(pcsx2FinalFlags "")
 endif()
 
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
-
-endif()
+set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
 
 if(XDG_STD)
-    set(pcsx2FinalFlags
-		${pcsx2FinalFlags}
-		-DXDG_STD
-	)
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
 endif()
 
 set(Output PCSX2)

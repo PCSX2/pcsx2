@@ -9,11 +9,7 @@ endif()
 # plugin name
 set(Output LilyPad-0.11.0)
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(lilypadFinalFlags "-DPCSX2_DEBUG")
-else()
-    set(lilypadFinalFlags "")
-endif()
+set(lilypadFinalFlags "")
 
 # lilypad sources
 set(lilypadSources

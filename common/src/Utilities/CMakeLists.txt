@@ -8,39 +8,11 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 set(Output Utilities)
 
-set(CommonFlags 
+set(CommonFlags
 	-fno-strict-aliasing
     )
 
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(UtilitiesFinalFlags ${CommonFlags})
 
 # variable with all sources of this library
 set(UtilitiesSources

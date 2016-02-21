@@ -17,16 +17,7 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -D_DEVEL)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags ${GSdxFinalFlags} ${CommonFlags} -W -Wno-unused-parameter)
-
-endif()
+set(GSdxFinalFlags ${CommonFlags})
 
 if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
