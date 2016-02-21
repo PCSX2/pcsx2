@@ -359,7 +359,7 @@ vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
 #if (PS_FST == 0)
-    vec4 T = sample_color(PSin.t_float.xy / PSin.t_float.w);
+    vec4 T = sample_color(PSin.t_float.xy / vec2(PSin.t_float.w));
 #else
     // Note xy are normalized coordinate
     vec4 T = sample_color(PSin.t_int.xy);

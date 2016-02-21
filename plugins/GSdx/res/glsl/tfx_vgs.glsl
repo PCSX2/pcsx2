@@ -70,23 +70,16 @@ const float exp_min31 = exp2(-31.0f);
 
 void texture_coord()
 {
+    vec2 uv = (VS_WILDHACK == 1) ? vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) : vec2(i_uv);
+
     // Float coordinate
     VSout.t_float.xy = i_st;
     VSout.t_float.w  = i_q;
 
-    // Integer coordinate
-    // => normalized
-    if (VS_WILDHACK == 1) {
-        VSout.t_int.xy = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) * TextureScale;
-    } else {
-        VSout.t_int.xy = vec2(i_uv) * TextureScale;
-    }
-    // => integral
-    if (VS_WILDHACK == 1) {
-        VSout.t_int.zw = vec2(i_uv &  uvec2(0x3FEF, 0x3FEF));
-    } else {
-        VSout.t_int.zw = vec2(i_uv);
-    }
+    // Integer coordinate => normalized
+    VSout.t_int.xy = uv * TextureScale;
+    // Integer coordinate => integral
+    VSout.t_int.zw = uv;
 }
 
 void vs_main()
@@ -234,16 +227,17 @@ void gs_main()
 #endif
 
     // Swap texture and position coordinate
-    vertex lb = rb;
-    lb.t_int.x = lt.t_int.x;
-    lb.t_int.z = lt.t_int.z;
-    lb_p.x = lt_p.x;
+    vertex lb    = rb;
+    lb.t_float.x = lt.t_float.x;
+    lb.t_int.x   = lt.t_int.x;
+    lb.t_int.z   = lt.t_int.z;
+    lb_p.x       = lt_p.x;
 
-    vertex rt = rb;
-    rt_p.y = lt_p.y;
-    rt.t_int.y = lt.t_int.y;
-    rt.t_int.w = lt.t_int.w;
-
+    vertex rt    = rb;
+    rt_p.y       = lt_p.y;
+    rt.t_float.y = lt.t_float.y;
+    rt.t_int.y   = lt.t_int.y;
+    rt.t_int.w   = lt.t_int.w;
 
     // Triangle 1
     gl_Position = lt_p;
