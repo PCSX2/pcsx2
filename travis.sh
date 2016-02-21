@@ -48,10 +48,6 @@ linux_32_before_install() {
 		portaudio19-dev:i386 \
 		zlib1g-dev:i386 \
 		${COMPILER_PACKAGE}
-
-	# libpng++-dev is noarch but doesn't install nicely.
-	apt-get download libpng++-dev
-	sudo dpkg --force-all -i $(ls | grep 'libpng++-dev')
 }
 
 linux_32_script() {
@@ -91,7 +87,6 @@ linux_64_before_install() {
 		libaio-dev \
 		libasound2-dev \
 		libgtk2.0-dev \
-		libpng++-dev \
 		libpng12-dev \
 		libsdl2-dev \
 		libsoundtouch-dev \
