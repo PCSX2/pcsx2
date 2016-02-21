@@ -242,9 +242,8 @@ void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
 	ApplyConfigToGui( *g_Conf );
 }
 
-void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags ){
-	m_panel_RecEE->Enable(true);
-
+void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
+{
 	const Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
 	m_panel_RecEE->SetSelection( (int)recOps.EnableEE );
 	m_panel_RecIOP->SetSelection( (int)recOps.EnableIOP );
@@ -295,17 +294,10 @@ void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
 
 void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	m_panel_VU0->Enable(true);
-	m_panel_VU1->Enable(true);
 
-	m_panel_VU0->EnableItem( 1, true);
-#ifndef DISABLE_SVU
-	m_panel_VU0->EnableItem( 2, true);
-#endif
-
-	m_panel_VU1->EnableItem( 1, true);
-#ifndef DISABLE_SVU
-	m_panel_VU1->EnableItem( 2, true);
+#ifdef DISABLE_SVU
+	m_panel_VU0->EnableItem( 2, false);
+	m_panel_VU1->EnableItem( 2, false);
 #endif
 
 	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
