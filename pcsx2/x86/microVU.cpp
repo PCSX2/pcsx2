@@ -297,22 +297,22 @@ void recMicroVU0::Vsync() throw() { mVUvsyncUpdate(microVU0); }
 void recMicroVU1::Vsync() throw() { mVUvsyncUpdate(microVU1); }
 
 void recMicroVU0::Reserve() {
-	if (AtomicExchange(m_Reserved, 1) == 0)
+	if (m_Reserved.exchange(1) == 0)
 		mVUinit(microVU0, 0);
 }
 void recMicroVU1::Reserve() {
-	if (AtomicExchange(m_Reserved, 1) == 0) {
+	if (m_Reserved.exchange(1) == 0) {
 		mVUinit(microVU1, 1);
 		vu1Thread.Start();
 	}
 }
 
 void recMicroVU0::Shutdown() throw() {
-	if (AtomicExchange(m_Reserved, 0) == 1)
+	if (m_Reserved.exchange(0) == 1)
 		mVUclose(microVU0);
 }
 void recMicroVU1::Shutdown() throw() {
-	if (AtomicExchange(m_Reserved, 0) == 1) {
+	if (m_Reserved.exchange(0) == 1) {
 		vu1Thread.WaitVU();
 		mVUclose(microVU1);
 	}
