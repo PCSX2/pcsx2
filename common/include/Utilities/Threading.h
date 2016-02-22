@@ -402,15 +402,11 @@ namespace Threading
 // Note that the isLockedBool should only be used as an indicator for the locked status,
 // and not actually depended on for thread synchronization...
 
-	struct ScopedLockBool {	
+	struct ScopedLockBool {
 		ScopedLock m_lock;
-		volatile __aligned(4) bool& m_bool;
+		std::atomic<bool>& m_bool;
 
-#ifdef __linux__
-		ScopedLockBool(Mutex& mutexToLock, volatile bool& isLockedBool)
-#else
-		ScopedLockBool(Mutex& mutexToLock, volatile __aligned(4) bool& isLockedBool)
-#endif
+		ScopedLockBool(Mutex& mutexToLock, std::atomic<bool>& isLockedBool)
 			: m_lock(mutexToLock),
 			  m_bool(isLockedBool) {
 			m_bool = m_lock.IsLocked();
