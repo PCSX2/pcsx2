@@ -63,7 +63,7 @@ public:
 	};
 
 protected:
-	volatile ExecutionMode	m_ExecMode;
+	std::atomic<ExecutionMode>	m_ExecMode;
 
 	// This lock is used to avoid simultaneous requests to Suspend/Resume/Pause from
 	// contending threads.
@@ -71,7 +71,7 @@ protected:
 
 	// Used to wake up the thread from sleeping when it's in a suspended state.
 	Semaphore			m_sem_Resume;
-	
+
 	// Used to synchronize inline changes from paused to suspended status.
 	Semaphore			m_sem_ChangingExecMode;
 
@@ -79,7 +79,7 @@ protected:
 	// Issue a Wait against this mutex for performing actions that require the thread
 	// to be suspended.
 	Mutex				m_RunningLock;
-	
+
 public:
 	explicit SysThreadBase();
 	virtual ~SysThreadBase() throw();
@@ -99,7 +99,7 @@ public:
 
 	bool IsClosing() const
 	{
-		return !IsRunning() || (m_ExecMode <= ExecMode_Closed) || (m_ExecMode == ExecMode_Closing); 
+		return !IsRunning() || (m_ExecMode <= ExecMode_Closed) || (m_ExecMode == ExecMode_Closing);
 	}
 
 	bool HasPendingStateChangeRequest() const
@@ -107,7 +107,7 @@ public:
 		return m_ExecMode >= ExecMode_Closing;
 	}
 
-	ExecutionMode GetExecutionMode() const { return m_ExecMode; }
+	ExecutionMode GetExecutionMode() const { return m_ExecMode.load(); }
 	Mutex& ExecutionModeMutex() { return m_ExecModeMutex; }
 
 	virtual void Suspend( bool isBlocking = true );
@@ -172,10 +172,10 @@ protected:
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets
 	// set false when plugins are shutdown, the corethread is canceled, or when an error
 	// occurs while trying to upload a new state into the VM.
-	volatile bool	m_hasActiveMachine;
+	std::atomic<bool> m_hasActiveMachine;
 
 	wxString		m_elf_override;
-	
+
 	SSE_MXCSR		m_mxcsr_saved;
 
 public:
@@ -198,10 +198,10 @@ public:
 	virtual void UploadStateCopy( const VmStateBuffer& copy );
 
 	virtual bool HasActiveMachine() const { return m_hasActiveMachine; }
-	
+
 	virtual const wxString& GetElfOverride() const { return m_elf_override; }
 	virtual void SetElfOverride( const wxString& elf );
-	
+
 protected:
 	void _reset_stuff_as_needed();
 
