@@ -29,7 +29,6 @@ namespace GSPng {
         RGB_PNG,
         RGB_A_PNG,
         ALPHA_PNG,
-        DEPTH_PNG,
         R8I_PNG,
         R16I_PNG,
         R32I_PNG,

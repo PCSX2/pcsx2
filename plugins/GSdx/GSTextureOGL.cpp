@@ -443,7 +443,7 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
-		fmt = GSPng::DEPTH_PNG;
+		fmt = GSPng::RGB_A_PNG;
 	} else if(m_format == GL_R32I) {
 		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
 
