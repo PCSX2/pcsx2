@@ -1213,7 +1213,7 @@ void SysCorePlugins::Open()
 
 	if (GSopen2) GetMTGS().WaitForOpen();
 
-	if( !AtomicExchange( m_mcdOpen, true ) )
+	if( !m_mcdOpen.exchange(true) )
 	{
 		DbgCon.Indent().WriteLn( "Opening Memorycards");
 		OpenPlugin_Mcd();
@@ -1313,7 +1313,7 @@ void SysCorePlugins::Close()
 
 	Console.WriteLn( Color_StrongBlue, "Closing plugins..." );
 
-	if( AtomicExchange( m_mcdOpen, false ) )
+	if( m_mcdOpen.exchange(false) )
 	{
 		DbgCon.Indent().WriteLn( "Closing Memorycards");
 		ClosePlugin_Mcd();

@@ -295,7 +295,7 @@ protected:
 	Threading::MutexRecursive	m_mtx_PluginStatus;
 
 	// Lovely hack until the new PS2E API is completed.
-	volatile u32				m_mcdOpen;
+	std::atomic<bool>			m_mcdOpen;
 
 public:		// hack until we unsuck plugins...
 	std::unique_ptr<PluginStatus_t>	m_info[PluginId_AllocCount];
