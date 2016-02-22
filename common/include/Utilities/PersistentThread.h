@@ -103,8 +103,8 @@ namespace Threading
 		MutexRecursive	m_mtx_start;	// used to lock the Start() code from starting simultaneous threads accidentally.
 		Mutex		m_mtx_ThreadName;
 
-		volatile vol_t m_detached;		// a boolean value which indicates if the m_thread handle is valid
-		volatile s32 m_running;		// set true by Start(), and set false by Cancel(), Block(), etc.
+		std::atomic<bool> m_detached;		// a boolean value which indicates if the m_thread handle is valid
+		std::atomic<bool> m_running;		// set true by Start(), and set false by Cancel(), Block(), etc.
 
 		// exception handle, set non-NULL if the thread terminated with an exception
 		// Use RethrowException() to re-throw the exception using its original exception type.
@@ -243,8 +243,8 @@ namespace Threading
 	class BaseTaskThread : public pxThread
 	{
 	protected:
-		volatile bool m_Done;
-		volatile bool m_TaskPending;
+		std::atomic<bool> m_Done;
+		std::atomic<bool> m_TaskPending;
 		Semaphore m_post_TaskComplete;
 		Mutex m_lock_TaskComplete;
 

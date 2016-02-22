@@ -291,7 +291,7 @@ bool Threading::pxThread::Detach()
 {
 	AffinityAssert_DisallowFromSelf(pxDiagSpot);
 
-	if( _InterlockedExchange( &m_detached, true ) ) return false;
+	if( m_detached.exchange(true) ) return false;
 	pthread_detach( m_thread );
 	return true;
 }
@@ -386,7 +386,7 @@ bool Threading::pxThread::IsSelf() const
 
 bool Threading::pxThread::IsRunning() const
 {
-    return !!m_running;
+    return m_running;
 }
 
 void Threading::pxThread::AddListener( EventListener_Thread& evt )
@@ -669,7 +669,7 @@ void Threading::pxThread::OnCleanupInThread()
 
 	m_native_handle = 0;
 	m_native_id		= 0;
-	
+
 	m_evtsrc_OnDelete.Dispatch( 0 );
 }
 
