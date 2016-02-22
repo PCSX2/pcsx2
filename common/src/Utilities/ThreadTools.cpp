@@ -828,24 +828,6 @@ __fi s32 Threading::AtomicDecrement(volatile s32& Target) {
 	return _InterlockedExchangeAdd((volatile vol_t*)&Target, -1);
 }
 
-__fi void* Threading::_AtomicExchangePointer(volatile uptr& target, uptr value)
-{
-#ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
-	return (void*)_InterlockedExchange64((volatile s64*)&target, value);
-#else
-	return (void*)_InterlockedExchange((volatile vol_t*)&target, value);
-#endif
-}
-
-__fi void* Threading::_AtomicCompareExchangePointer(volatile uptr& target, uptr value, uptr comparand)
-{
-#ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
-	return (void*)_InterlockedCompareExchange64((volatile s64*)&target, value, comparand);
-#else
-	return (void*)_InterlockedCompareExchange((volatile vol_t*)&target, value, comparand);
-#endif
-}
-
 // --------------------------------------------------------------------------------------
 //  BaseThreadError
 // --------------------------------------------------------------------------------------

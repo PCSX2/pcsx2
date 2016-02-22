@@ -190,7 +190,7 @@ public:
 // (I think it's unsigned int vs signed int)
 #include <wx/filefn.h>
 #define HAVE_MODE_T
-#endif 
+#endif
 
 #include <stdexcept>
 #include <cstring>		// string.h under c++
@@ -200,6 +200,7 @@ public:
 #include <list>
 #include <algorithm>
 #include <memory>
+#include <atomic>
 
 #include "Pcsx2Defs.h"
 
