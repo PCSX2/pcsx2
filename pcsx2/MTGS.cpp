@@ -78,10 +78,10 @@ void SysMtgsThread::OnStart()
 	m_packet_size		= 0;
 	m_packet_writepos	= 0;
 
-	m_QueuedFrameCount	= 0;
+	m_QueuedFrameCount    = 0;
 	m_VsyncSignalListener = false;
-	m_SignalRingEnable	= 0;
-	m_SignalRingPosition= 0;
+	m_SignalRingEnable    = false;
+	m_SignalRingPosition  = 0;
 
 	m_CopyDataTally		= 0;
 
@@ -155,13 +155,13 @@ void SysMtgsThread::PostVsyncStart()
 	// in the ringbuffer.  The queue limit is disabled when both FrameLimiting and Vsync are
 	// disabled, since the queue can have perverse effects on framerate benchmarking.
 
-	// Edit: It's possible that MTGS is that much faster than the GS plugin that it creates so much lag, 
+	// Edit: It's possible that MTGS is that much faster than the GS plugin that it creates so much lag,
 	// a game becomes uncontrollable (software rendering for example).
 	// For that reason it's better to have the limit always in place, at the cost of a few max FPS in benchmarks.
 	// If those are needed back, it's better to increase the VsyncQueueSize via PCSX_vm.ini.
 	// (The Xenosaga engine is known to run into this, due to it throwing bulks of data in one frame followed by 2 empty frames.)
 
-	if ((AtomicIncrement(m_QueuedFrameCount) < EmuConfig.GS.VsyncQueueSize) /*|| (!EmuConfig.GS.VsyncEnable && !EmuConfig.GS.FrameLimitEnable)*/) return;
+	if ((m_QueuedFrameCount.fetch_add(1) < EmuConfig.GS.VsyncQueueSize) /*|| (!EmuConfig.GS.VsyncEnable && !EmuConfig.GS.FrameLimitEnable)*/) return;
 
 	m_VsyncSignalListener = true;
 	//Console.WriteLn( Color_Blue, "(EEcore Sleep) Vsync\t\tringpos=0x%06x, writepos=0x%06x", volatize(m_ReadPos), m_WritePos );
@@ -238,7 +238,7 @@ void SysMtgsThread::OpenPlugin()
 	GSsetGameCRC( ElfCRC, 0 );
 }
 
-struct RingBufferLock {	
+struct RingBufferLock {
 	ScopedLock     m_lock1;
 	ScopedLock     m_lock2;
 	SysMtgsThread& m_mtgs;
@@ -446,8 +446,8 @@ void SysMtgsThread::ExecuteTaskInThread()
 							if( (GSopen2 == NULL) && (PADupdate != NULL) )
 								PADupdate(0);
 
-							AtomicDecrement( m_QueuedFrameCount );
-							if (!!AtomicExchange(m_VsyncSignalListener, false))
+							m_QueuedFrameCount.fetch_sub(1);
+							if (m_VsyncSignalListener.exchange(false))
 								m_sem_Vsync.Post();
 
 							busy.Release();
@@ -522,16 +522,16 @@ void SysMtgsThread::ExecuteTaskInThread()
 			{
 				pxAssert( m_WritePos == newringpos );
 			}
-			
+
 			m_ReadPos = newringpos;
 
-			if( m_SignalRingEnable != 0 )
+			if( m_SignalRingEnable )
 			{
 				// The EEcore has requested a signal after some amount of processed data.
-				if( AtomicExchangeSub( m_SignalRingPosition, ringposinc ) <= 0 )
+				if( m_SignalRingPosition.fetch_sub( ringposinc ) <= 0 )
 				{
 					// Make sure to post the signal after the m_ReadPos has been updated...
-					AtomicExchange( m_SignalRingEnable, 0 );
+					m_SignalRingEnable = false;
 					m_sem_OnRingReset.Post();
 					continue;
 				}
@@ -544,14 +544,14 @@ void SysMtgsThread::ExecuteTaskInThread()
 		// won't sleep the eternity, even if SignalRingPosition didn't reach 0 for some reason.
 		// Important: Need to unlock the MTGS busy signal PRIOR, so that EEcore SetEvent() calls
 		// parallel to this handler aren't accidentally blocked.
-		if( AtomicExchange( m_SignalRingEnable, 0 ) != 0 )
+		if( m_SignalRingEnable.exchange(false) )
 		{
-			//Console.Warning( "(MTGS Thread) Dangling RingSignal on empty buffer!  signalpos=0x%06x", AtomicExchange( m_SignalRingPosition, 0 ) );
-			AtomicExchange( m_SignalRingPosition, 0 );
+			//Console.Warning( "(MTGS Thread) Dangling RingSignal on empty buffer!  signalpos=0x%06x", m_SignalRingPosition.exchange(0) ) );
+			m_SignalRingPosition = 0;
 			m_sem_OnRingReset.Post();
 		}
 
-		if (!!AtomicExchange(m_VsyncSignalListener, false))
+		if (m_VsyncSignalListener.exchange(false))
 			m_sem_Vsync.Post();
 
 		//Console.Warning( "(MTGS Thread) Nothing to do!  ringpos=0x%06x", m_ReadPos );
@@ -617,7 +617,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 			// hence it has been avoided...
 		}
 	}
-	
+
 	if (syncRegs) {
 		ScopedLock lock(m_mtx_WaitGS);
 		// Completely synchronize GS and MTGS register states.
@@ -719,7 +719,7 @@ void SysMtgsThread::GenericStall( uint size )
 			//Console.WriteLn( Color_Blue, "(EEcore Sleep) PrepDataPacker \tringpos=0x%06x, writepos=0x%06x, signalpos=0x%06x", readpos, writepos, m_SignalRingPosition );
 
 			while(true) {
-				AtomicExchange( m_SignalRingEnable, 1 );
+				m_SignalRingEnable = true;
 				SetEvent();
 				m_sem_OnRingReset.WaitWithoutYield();
 				readpos = volatize(m_ReadPos);
@@ -729,7 +729,7 @@ void SysMtgsThread::GenericStall( uint size )
 					freeroom = readpos - writepos;
 				else
 					freeroom = RingBufferSize - (writepos - readpos);
-					
+
 				if (freeroom > size) break;
 			}
 
