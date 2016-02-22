@@ -803,31 +803,6 @@ __fi s32 Threading::AtomicExchange( volatile s32& Target, s32 value ) {
 	return _InterlockedExchange( (volatile vol_t*)&Target, value );
 }
 
-__fi u32 Threading::AtomicExchangeAdd( volatile u32& Target, u32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
-}
-__fi s32 Threading::AtomicExchangeAdd( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
-}
-
-__fi s32 Threading::AtomicExchangeSub( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -value );
-}
-
-__fi u32 Threading::AtomicIncrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
-}
-__fi s32 Threading::AtomicIncrement( volatile s32& Target) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
-}
-
-__fi u32 Threading::AtomicDecrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -1 );
-}
-__fi s32 Threading::AtomicDecrement(volatile s32& Target) {
-	return _InterlockedExchangeAdd((volatile vol_t*)&Target, -1);
-}
-
 // --------------------------------------------------------------------------------------
 //  BaseThreadError
 // --------------------------------------------------------------------------------------

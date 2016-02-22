@@ -158,7 +158,7 @@ namespace Threading
 
 	// For use in spin/wait loops.
 	extern void SpinWait();
-	
+
 	// Use prior to committing data to another thread
 	extern void StoreFence();
 
@@ -181,16 +181,6 @@ namespace Threading
 	extern s32 AtomicRead( volatile s32& Target );
 	extern u32 AtomicExchange( volatile u32& Target, u32 value );
 	extern s32 AtomicExchange( volatile s32& Target, s32 value );
-	extern u32 AtomicExchangeAdd( volatile u32& Target, u32 value );
-	extern s32 AtomicExchangeAdd( volatile s32& Target, s32 value );
-	extern s32 AtomicExchangeSub( volatile s32& Target, s32 value );
-	extern u32 AtomicIncrement( volatile u32& Target );
-	extern s32 AtomicIncrement( volatile s32& Target );
-	extern u32 AtomicDecrement( volatile u32& Target );
-	extern s32 AtomicDecrement( volatile s32& Target );
-
-	extern bool AtomicBitTestAndReset( volatile u32& bitset, u8 bit );
-	extern bool AtomicBitTestAndReset( volatile s32& bitset, u8 bit );
 
 	// pthread Cond is an evil api that is not suited for Pcsx2 needs.
 	// Let's not use it. Use mutexes and semaphores instead to create waits. (Air)
