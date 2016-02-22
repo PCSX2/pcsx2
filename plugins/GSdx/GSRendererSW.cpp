@@ -45,8 +45,12 @@ GSRendererSW::GSRendererSW(int threads)
 
 	m_output = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 
-	memset(m_fzb_pages, 0, sizeof(m_fzb_pages));
-	memset(m_tex_pages, 0, sizeof(m_tex_pages));
+	for (uint32 i = 0; i < countof(m_fzb_pages); i++) {
+		m_fzb_pages[i] = 0;
+	}
+	for (uint32 i = 0; i < countof(m_tex_pages); i++) {
+		m_tex_pages[i] = 0;
+	}
 
 	#define InitCVB(P) \
 		m_cvb[P][0][0] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0>; \
@@ -749,60 +753,44 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	}
 }
 
-__forceinline void Increment16(volatile short* lpAddend)
+void GSRendererSW::UsePages(const uint32* pages, const int type)
 {
-	// (*lpAddend)++;
-
-	_InterlockedIncrement16(lpAddend);
-}
-
-__forceinline void Decrement16(volatile short* lpAddend)
-{
-	// (*lpAddend)--;
-
-	_InterlockedDecrement16(lpAddend);
-}
-	
-void GSRendererSW::UsePages(const uint32* pages, int type)
-{
-	if(type < 2)
-	{
-		for(const uint32* p = pages; *p != GSOffset::EOP; p++)
-		{
-			ASSERT(((short*)&m_fzb_pages[*p])[type] < SHRT_MAX);
-
-			Increment16((short*)&m_fzb_pages[*p] + type);
-		}
-	}
-	else
-	{
-		for(const uint32* p = pages; *p != GSOffset::EOP; p++)
-		{
-			ASSERT(m_tex_pages[*p] < SHRT_MAX);
-
-			Increment16((short*)&m_tex_pages[*p]);
+	for(const uint32* p = pages; *p != GSOffset::EOP; p++) {
+		switch (type) {
+			case 0:
+				ASSERT((m_fzb_pages[*p] & 0xFFFF) < USHRT_MAX);
+				m_fzb_pages[*p] += 1;
+				break;
+			case 1:
+				ASSERT((m_fzb_pages[*p] >> 16) < USHRT_MAX);
+				m_fzb_pages[*p] += 0x10000;
+				break;
+			case 2:
+				ASSERT(m_tex_pages[*p] < USHRT_MAX);
+				m_tex_pages[*p] += 1;
+				break;
+			default:break;
 		}
 	}
 }
 
-void GSRendererSW::ReleasePages(const uint32* pages, int type)
+void GSRendererSW::ReleasePages(const uint32* pages, const int type)
 {
-	if(type < 2)
-	{
-		for(const uint32* p = pages; *p != GSOffset::EOP; p++)
-		{
-			ASSERT(((short*)&m_fzb_pages[*p])[type] > 0);
-
-			Decrement16((short*)&m_fzb_pages[*p] + type);
-		}
-	}
-	else
-	{
-		for(const uint32* p = pages; *p != GSOffset::EOP; p++)
-		{
-			ASSERT(m_tex_pages[*p] > 0);
-
-			Decrement16((short*)&m_tex_pages[*p]);
+	for(const uint32* p = pages; *p != GSOffset::EOP; p++) {
+		switch (type) {
+			case 0:
+				ASSERT((m_fzb_pages[*p] & 0xFFFF) > 0);
+				m_fzb_pages[*p] -= 1;
+				break;
+			case 1:
+				ASSERT((m_fzb_pages[*p] >> 16) > 0);
+				m_fzb_pages[*p] -= 0x10000;
+				break;
+			case 2:
+				ASSERT(m_tex_pages[*p] > 0);
+				m_tex_pages[*p] -= 1;
+				break;
+			default:break;
 		}
 	}
 }
