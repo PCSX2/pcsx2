@@ -222,23 +222,24 @@ namespace Threading
 	class NonblockingMutex
 	{
 	protected:
-		volatile int val;
+		std::atomic_flag val;
 
 	public:
-		NonblockingMutex() : val( false ) {}
+		NonblockingMutex() { val.clear(); }
 		virtual ~NonblockingMutex() throw() {}
 
 		bool TryAcquire() throw()
 		{
-			return !AtomicExchange( val, true );
+			return !val.test_and_set();
 		}
 
+		// Can be done with a TryAcquire/Release but it is likely better to do it outside of the object
 		bool IsLocked()
-		{ return !!val; }
+		{ pxAssertMsg(0, "IsLocked isn't supported for NonblockingMutex"); return false; }
 
 		void Release()
 		{
-			AtomicExchange( val, false );
+			val.clear();
 		}
 	};
 
