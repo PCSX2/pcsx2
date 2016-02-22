@@ -1319,11 +1319,11 @@ void AppSaveSettings()
 	// If multiple SaveSettings messages are requested, we want to ignore most of them.
 	// Saving settings once when the GUI is idle should be fine. :)
 
-	static u32 isPosted = false;
+	static std::atomic<bool> isPosted(false);
 
 	if( !wxThread::IsMain() )
 	{
-		if( !AtomicExchange(isPosted, true) )
+		if( !isPosted.exchange(true) )
 			wxGetApp().PostIdleMethod( AppSaveSettings );
 
 		return;
@@ -1335,7 +1335,7 @@ void AppSaveSettings()
 	SaveVmSettings();
 	SaveRegSettings(); // save register because of PluginsFolder change
 
-	AtomicExchange( isPosted, false );
+	isPosted = false;
 }
 
 

@@ -77,7 +77,7 @@ class ConsoleTestThread : public Threading::pxThread
 	typedef pxThread _parent;
 
 protected:
-	volatile bool m_done;
+	std::atomic<bool> m_done;
 	void ExecuteTaskInThread();
 
 public:
@@ -176,22 +176,22 @@ protected:
 
 	int				m_flushevent_counter;
 	bool			m_FlushRefreshLocked;
-	
+
 	// ----------------------------------------------------------------------------
 	//  Queue State Management Vars
 	// ----------------------------------------------------------------------------
 
 	// Boolean indicating if a flush message is already in the Main message queue.  Used
 	// to prevent spamming the main thread with redundant messages.
-	volatile bool			m_pendingFlushMsg;
+	std::atomic<bool>			m_pendingFlushMsg;
 
 	// This is a counter of the number of threads waiting for the Queue to flush.
-	volatile int			m_WaitingThreadsForFlush;
+	std::atomic<int>			m_WaitingThreadsForFlush;
 
 	// Indicates to the main thread if a child thread is actively writing to the log.  If
 	// true the main thread will sleep briefly to allow the child a chance to accumulate
 	// more messages (helps avoid rapid successive flushes on high volume logging).
-	volatile bool			m_ThreadedLogInQueue;
+	std::atomic<bool>			m_ThreadedLogInQueue;
 
 	// Used by threads waiting on the queue to flush.
 	Semaphore				m_sem_QueueFlushed;
@@ -258,6 +258,6 @@ protected:
 	void OnMoveAround( wxMoveEvent& evt );
 	void OnResize( wxSizeEvent& evt );
 	void OnActivate( wxActivateEvent& evt );
-	
+
 	void OnLoggingChanged();
 };

@@ -204,11 +204,13 @@ protected:
 	Threading::MutexRecursive	m_mtx_pending;
 	Threading::Semaphore		m_wakeup;
 	wxThreadIdType				m_OwnerThreadId;
-	volatile u32				m_Quitting;
+	std::atomic<bool>			m_Quitting;
 
 	// Used for performance measuring the execution of individual events,
 	// and also for detecting deadlocks during message processing.
-	volatile u64				m_qpc_Start;
+	// Clang-3.7 failed to link (maybe 64 bits atomic isn't supported on 32 bits)
+	// std::atomic<unsigned long long>				m_qpc_Start;
+	u64				m_qpc_Start;
 
 public:
 	pxEvtQueue();

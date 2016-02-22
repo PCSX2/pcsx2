@@ -158,7 +158,7 @@ void SysExecEvent::PostResult() const
 // --------------------------------------------------------------------------------------
 pxEvtQueue::pxEvtQueue()
 {
-	AtomicExchange( m_Quitting, false );
+	m_Quitting = false;
 	m_qpc_Start = 0;
 }
 
@@ -171,7 +171,7 @@ pxEvtQueue::pxEvtQueue()
 void pxEvtQueue::ShutdownQueue()
 {
 	if( m_Quitting ) return;
-	AtomicExchange( m_Quitting, true );
+	m_Quitting = true;
 	m_wakeup.Post();
 }
 

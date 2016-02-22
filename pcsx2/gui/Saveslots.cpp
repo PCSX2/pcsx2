@@ -40,7 +40,7 @@ bool States_isSlotUsed(int num)
 
 // FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
 // complete thread to manage queuing savestate tasks, and zipping states to disk.  --air
-static volatile u32 IsSavingOrLoading = false;
+static std::atomic<bool> IsSavingOrLoading(false);
 
 class SysExecEvent_ClearSavingLoadingFlag : public SysExecEvent
 {
@@ -57,7 +57,7 @@ public:
 protected:
 	void InvokeEvent()
 	{
-		AtomicExchange(IsSavingOrLoading, false);
+		IsSavingOrLoading = false;
 	}
 };
 
@@ -73,7 +73,7 @@ void States_FreezeCurrentSlot()
 		return;
 	}
 
-	if( wxGetApp().HasPendingSaves() || AtomicExchange(IsSavingOrLoading, true) )
+	if( wxGetApp().HasPendingSaves() || IsSavingOrLoading.exchange(true) )
 	{
 		Console.WriteLn( "Load or save action is already pending." );
 		return;
@@ -94,7 +94,7 @@ void _States_DefrostCurrentSlot( bool isFromBackup )
 		return;
 	}
 
-	if( AtomicExchange(IsSavingOrLoading, true) )
+	if( IsSavingOrLoading.exchange(true) )
 	{
 		Console.WriteLn( "Load or save action is already pending." );
 		return;
