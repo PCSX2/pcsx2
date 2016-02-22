@@ -118,14 +118,14 @@ void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path) {
 	}
 	else {
 		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
-		AtomicExchangeAdd(gifUnit.gifPath[path].readAmount, gsPack.size);
+		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
 		GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET,  gsPack.offset, gsPack.size, path);
 	}
 }
 
 void Gif_AddBlankGSPacket(u32 size, GIF_PATH path) {
 	//DevCon.WriteLn("Adding Blank Gif Packet [size=%x]", size);
-	AtomicExchangeAdd(gifUnit.gifPath[path].readAmount, size);
+	gifUnit.gifPath[path].readAmount.fetch_add(size);
 	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, ~0u, size, path);
 }
 

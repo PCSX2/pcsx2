@@ -153,7 +153,7 @@ struct Gif_Path_MTVU {
 };
 
 struct Gif_Path {
-	__aligned(4) volatile s32 readAmount; // Amount of data MTGS still needs to read
+	std::atomic<int> readAmount; // Amount of data MTGS still needs to read
 	u8* buffer;		  // Path packet buffer
 	u32 buffSize;	  // Full size of buffer
 	u32 buffLimit;	  // Cut off limit to wrap around
@@ -195,7 +195,7 @@ struct Gif_Path {
 	}
 
 	bool isMTVU() const           { return !idx && THREAD_VU1; }
-	s32 getReadAmount()           { return AtomicRead(readAmount) + gsPack.readAmount; }
+	s32 getReadAmount()           { return readAmount.load() + gsPack.readAmount; }
 	bool hasDataRemaining() const { return curOffset < curSize; }
 	bool isDone() const           { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
@@ -380,7 +380,7 @@ struct Gif_Path {
 	void FinishGSPacketMTVU() {
 		if (1) {
 			ScopedLock lock(mtvu.gsPackMutex);
-			AtomicExchangeAdd(readAmount, gsPack.size + gsPack.readAmount);
+			readAmount.fetch_add(gsPack.size + gsPack.readAmount);
 			mtvu.gsPackQueue.push_back(gsPack);
 		}
 		gsPack.Reset();
