@@ -68,7 +68,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 	if(m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
 	{
-		while(m_mapped.test_and_set()) {}
+		if (!m_mapped.test_and_set())
 		{
 			m.bits = (uint8*)m_data + ((m_pitch * r2.top + r2.left) << 2);
 			m.pitch = m_pitch;
