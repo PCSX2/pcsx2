@@ -42,7 +42,7 @@ struct {
 namespace GSPng {
 
     bool SaveFile(const string& file, Format fmt, uint8* image, uint8* row,
-        int width, int height, int pitch,
+        int width, int height, int pitch, int compression,
         bool rb_swapped = false, bool first_image = false)
     {
         int channel_bit_depth = pixel[fmt].channel_bit_depth;
@@ -71,8 +71,11 @@ namespace GSPng {
             if (setjmp(png_jmpbuf(png_ptr)))
                 throw GSDXRecoverableError();
 
+            if (compression < 0 || compression > Z_BEST_COMPRESSION)
+                compression = Z_BEST_SPEED;
+
             png_init_io(png_ptr, fp);
-            png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+            png_set_compression_level(png_ptr, compression);
             png_set_IHDR(png_ptr, info_ptr, width, height, channel_bit_depth, type,
                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
             png_write_info(png_ptr, info_ptr);
@@ -91,8 +94,7 @@ namespace GSPng {
             png_write_end(png_ptr, nullptr);
 
             success = true;
-        }
-        catch (GSDXRecoverableError&) {
+        } catch (GSDXRecoverableError&) {
             fprintf(stderr, "Failed to write image %s\n", file.c_str());
         }
 
@@ -103,7 +105,7 @@ namespace GSPng {
         return success;
     }
 
-    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, bool rb_swapped)
+    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped)
     {
         std::string root = file;
         root.replace(file.length() - 4, 4, "");
@@ -113,7 +115,7 @@ namespace GSPng {
         std::unique_ptr<uint8[]> row(new uint8[pixel[fmt].bytes_per_pixel_out * w]);
 
         std::string filename = root + pixel[fmt].extension[0];
-        if (!SaveFile(filename, fmt, image, row.get(), w, h, pitch, rb_swapped, true))
+        if (!SaveFile(filename, fmt, image, row.get(), w, h, pitch, compression, rb_swapped, true))
             return false;
 
         // Second image
@@ -121,11 +123,11 @@ namespace GSPng {
             return true;
 
         filename = root + pixel[fmt].extension[1];
-        return SaveFile(filename, fmt, image, row.get(), w, h, pitch);
+        return SaveFile(filename, fmt, image, row.get(), w, h, pitch, compression);
     }
 
-    Transaction::Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch)
-        : m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch)
+    Transaction::Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch, int compression)
+        : m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch), m_compression(compression)
     {
         // Note: yes it would be better to use shared pointer
         m_image = (uint8*)_aligned_malloc(pitch*h, 32);
@@ -141,7 +143,7 @@ namespace GSPng {
 
     void Worker::Process(shared_ptr<Transaction>& item)
     {
-        Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch);
+        Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch, item->m_compression);
     }
 
 }

@@ -109,6 +109,8 @@ using namespace std;
 
 #include <memory>
 
+#include <zlib.h>
+
 #if _MSC_VER >= 1800 || !defined(_WIN32)
 #include <unordered_map>
 #include <unordered_set>

@@ -93,7 +93,7 @@ void GSTexture11::Unmap()
 	}
 }
 
-bool GSTexture11::Save(const string& fn, bool dds)
+bool GSTexture11::Save(const string& fn, bool user_image, bool dds)
 {
 	CComPtr<ID3D11Texture2D> res;
 	D3D11_TEXTURE2D_DESC desc;
@@ -179,7 +179,8 @@ bool GSTexture11::Save(const string& fn, bool dds)
 		return false;
 	}
 
-	bool success = GSPng::Save(format, fn, static_cast<uint8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch);
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	bool success = GSPng::Save(format, fn, static_cast<uint8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, compression);
 
 	m_ctx->Unmap(res, 0);
 

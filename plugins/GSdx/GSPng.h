@@ -44,12 +44,13 @@ namespace GSPng {
 			int m_w;
 			int m_h;
 			int m_pitch;
+			int m_compression;
 
-			Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch);
+			Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch, int compression);
 			~Transaction();
 	};
 
-    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, bool rb_swapped = false);
+    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
 
 	class Worker : public GSJobQueue<shared_ptr<Transaction>, 16 >
 	{

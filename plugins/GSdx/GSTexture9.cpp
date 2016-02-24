@@ -142,7 +142,7 @@ void GSTexture9::Unmap()
 	}
 }
 
-bool GSTexture9::Save(const string& fn, bool dds)
+bool GSTexture9::Save(const string& fn, bool user_image, bool dds)
 {
 	bool rb_swapped = true;
 	CComPtr<IDirect3DSurface9> surface;
@@ -201,7 +201,8 @@ bool GSTexture9::Save(const string& fn, bool dds)
 		return false;
 	}
 
-	bool success = GSPng::Save(format, fn, static_cast<uint8*>(slr.pBits), desc.Width, desc.Height, slr.Pitch, rb_swapped);
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	bool success = GSPng::Save(format, fn, static_cast<uint8*>(slr.pBits), desc.Width, desc.Height, slr.Pitch, compression, rb_swapped);
 
 	surface->UnlockRect();
 	return success;

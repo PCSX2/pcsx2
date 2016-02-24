@@ -45,6 +45,7 @@ class GSCapture
 	#elif __linux__
 
 	vector<GSPng::Worker*> m_workers;
+	int m_compression_level;
 
 	#endif
 

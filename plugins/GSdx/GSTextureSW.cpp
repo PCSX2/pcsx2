@@ -85,7 +85,7 @@ void GSTextureSW::Unmap()
 	m_mapped.clear();
 }
 
-bool GSTextureSW::Save(const string& fn, bool dds)
+bool GSTextureSW::Save(const string& fn, bool user_image, bool dds)
 {
 	if(dds) return false; // not implemented
 
@@ -94,5 +94,6 @@ bool GSTextureSW::Save(const string& fn, bool dds)
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
-	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch);
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }

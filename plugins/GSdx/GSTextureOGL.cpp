@@ -421,7 +421,7 @@ void GSTextureOGL::Unmap()
 {
 }
 
-bool GSTextureOGL::Save(const string& fn, bool dds)
+bool GSTextureOGL::Save(const string& fn, bool user_image, bool dds)
 {
 	// Collect the texture data
 	uint32 pitch = 4 * m_size.x;
@@ -470,7 +470,8 @@ bool GSTextureOGL::Save(const string& fn, bool dds)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
-	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch);
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch, compression);
 }
 
 uint32 GSTextureOGL::GetMemUsage()

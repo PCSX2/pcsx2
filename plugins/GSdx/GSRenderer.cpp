@@ -469,7 +469,7 @@ void GSRenderer::VSync(int field)
 
 		if(GSTexture* t = m_dev->GetCurrent())
 		{
-			t->Save(m_snapshot + ".bmp");
+			t->Save(m_snapshot + ".bmp", true);
 		}
 
 		m_snapshot.clear();
