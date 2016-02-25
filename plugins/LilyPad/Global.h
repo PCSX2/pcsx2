@@ -86,11 +86,6 @@ extern Window  GSwin;
 
 #endif
 
-
-#define DIRECTINPUT_VERSION 0x0800
-
-#define UNICODE
-
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
