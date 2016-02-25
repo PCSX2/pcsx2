@@ -24,17 +24,6 @@
 #include "WindowsKeyboard.h"
 #include "WindowsMouse.h"
 
-
-typedef BOOL (CALLBACK *_RegisterRawInputDevices)(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize);
-typedef UINT (CALLBACK *_GetRawInputDeviceInfo)(HANDLE hDevice, UINT uiCommand, LPVOID pData, PUINT pcbSize);
-typedef UINT (CALLBACK *_GetRawInputData)(HRAWINPUT hRawInput, UINT uiCommand, LPVOID pData, PUINT pcbSize, UINT cbSizeHeader);
-typedef UINT (CALLBACK *_GetRawInputDeviceList)(PRAWINPUTDEVICELIST pRawInputDeviceList, PUINT puiNumDevices, UINT cbSize);
-
-_RegisterRawInputDevices pRegisterRawInputDevices = 0;
-_GetRawInputDeviceInfo pGetRawInputDeviceInfo = 0;
-_GetRawInputData pGetRawInputData = 0;
-_GetRawInputDeviceList pGetRawInputDeviceList = 0;
-
 ExtraWndProcResult RawInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output);
 
 int GetRawKeyboards(HWND hWnd) {
@@ -44,7 +33,7 @@ int GetRawKeyboards(HWND hWnd) {
 	Rid.dwFlags = 0;
 	Rid.usUsagePage = 0x01;
 	Rid.usUsage = 0x06;
-	return pRegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+	return RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 }
 
 void ReleaseRawKeyboards() {
@@ -54,7 +43,7 @@ void ReleaseRawKeyboards() {
 	Rid.dwFlags = RIDEV_REMOVE;
 	Rid.usUsagePage = 0x01;
 	Rid.usUsage = 0x06;
-	pRegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+	RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 }
 
 int GetRawMice(HWND hWnd) {
@@ -64,7 +53,7 @@ int GetRawMice(HWND hWnd) {
 	Rid.dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
 	Rid.usUsagePage = 0x01;
 	Rid.usUsage = 0x02;
-	return pRegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+	return RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 }
 
 void ReleaseRawMice() {
@@ -74,7 +63,7 @@ void ReleaseRawMice() {
 	Rid.dwFlags = RIDEV_REMOVE;
 	Rid.usUsagePage = 0x01;
 	Rid.usUsage = 0x02;
-	pRegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+	RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 }
 
 // Count of active raw keyboard devices.
@@ -176,10 +165,10 @@ public:
 
 ExtraWndProcResult RawInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output) {
 	if (uMsg == WM_INPUT) {
-		if (GET_RAWINPUT_CODE_WPARAM (wParam) == RIM_INPUT && pGetRawInputData) {
+		if (GET_RAWINPUT_CODE_WPARAM (wParam) == RIM_INPUT) {
 			RAWINPUT in;
 			unsigned int size = sizeof(RAWINPUT);
-			if (0 < pGetRawInputData((HRAWINPUT)lParam, RID_INPUT, &in, &size, sizeof(RAWINPUTHEADER))) {
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, &in, &size, sizeof(RAWINPUTHEADER)) > 0) {
 				for (int i=0; i<dm->numDevices; i++) {
 					Device *dev = dm->devices[i];
 					if (dev->api != RAW || !dev->active) continue;
@@ -239,27 +228,9 @@ ExtraWndProcResult RawInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	return CONTINUE_BLISSFULLY;
 }
 
-int InitializeRawInput() {
-	static int RawInputFailed = 0;
-	if (RawInputFailed) return 0;
-	if (!pGetRawInputDeviceList) {
-		HMODULE user32 = LoadLibrary(L"user32.dll");
-		if (!user32 ||
-			!(pRegisterRawInputDevices = (_RegisterRawInputDevices) GetProcAddress(user32, "RegisterRawInputDevices")) ||
-			!(pGetRawInputDeviceInfo = (_GetRawInputDeviceInfo) GetProcAddress(user32, "GetRawInputDeviceInfoW")) ||
-			!(pGetRawInputData = (_GetRawInputData) GetProcAddress(user32, "GetRawInputData")) ||
-			!(pGetRawInputDeviceList = (_GetRawInputDeviceList) GetProcAddress(user32, "GetRawInputDeviceList"))) {
-				FreeLibrary(user32);
-				RawInputFailed = 1;
-				return 0;
-		}
-	}
-	return 1;
-}
-
 void EnumRawInputDevices() {
 	int count = 0;
-	if (InitializeRawInput() && pGetRawInputDeviceList(0, (unsigned int*)&count, sizeof(RAWINPUTDEVICELIST)) != (UINT)-1 && count > 0) {
+	if (GetRawInputDeviceList(0, (unsigned int*)&count, sizeof(RAWINPUTDEVICELIST)) != (UINT)-1 && count > 0) {
 		wchar_t *instanceID = (wchar_t *) malloc(41000*sizeof(wchar_t));
 		wchar_t *keyName = instanceID + 11000;
 		wchar_t *displayName = keyName + 10000;
@@ -268,7 +239,7 @@ void EnumRawInputDevices() {
 		RAWINPUTDEVICELIST *list = (RAWINPUTDEVICELIST*) malloc(sizeof(RAWINPUTDEVICELIST) * count);
 		int keyboardCount = 1;
 		int mouseCount = 1;
-		count = pGetRawInputDeviceList(list, (unsigned int*)&count, sizeof(RAWINPUTDEVICELIST));
+		count = GetRawInputDeviceList(list, (unsigned int*)&count, sizeof(RAWINPUTDEVICELIST));
 
 		// Not necessary, but reminder that count is -1 on failure.
 		if (count > 0) {
@@ -276,7 +247,7 @@ void EnumRawInputDevices() {
 				if (list[i].dwType != RIM_TYPEKEYBOARD && list[i].dwType != RIM_TYPEMOUSE) continue;
 
 				UINT bufferLen = 10000;
-				int nameLen = pGetRawInputDeviceInfo(list[i].hDevice, RIDI_DEVICENAME, instanceID, &bufferLen);
+				int nameLen = GetRawInputDeviceInfo(list[i].hDevice, RIDI_DEVICENAME, instanceID, &bufferLen);
 				if (nameLen >= 4) {
 					// nameLen includes terminating null.
 					nameLen--;

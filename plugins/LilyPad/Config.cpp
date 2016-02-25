@@ -934,11 +934,6 @@ int LoadSettings(int force, wchar_t *file) {
 	if (!config.vistaVolume) config.volume = 100;
 	if (config.vistaVolume) SetVolume(config.volume);
 
-	if (!InitializeRawInput()) {
-		if (config.keyboardApi == RAW) config.keyboardApi = WM;
-		if (config.mouseApi == RAW) config.mouseApi = WM;
-	}
-
 	if (config.debug) {
 		CreateDirectory(L"logs", 0);
 	}
@@ -1883,10 +1878,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 		if (config.mouseApi < 0 || config.mouseApi > 3) config.mouseApi = NO_API;
 		CheckRadioButton(hWnd, IDC_M_DISABLE, IDC_M_RAW, IDC_M_DISABLE + config.mouseApi);
 
-		if (!InitializeRawInput()) {
-			EnableWindow(GetDlgItem(hWnd, IDC_KB_RAW), 0);
-			EnableWindow(GetDlgItem(hWnd, IDC_M_RAW), 0);
-		}
 		break;
 	case WM_DEVICECHANGE:
 		if (wParam == DBT_DEVNODES_CHANGED) {
