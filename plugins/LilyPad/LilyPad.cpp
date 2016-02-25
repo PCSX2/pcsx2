@@ -753,9 +753,9 @@ inline void StopVibrate() {
 inline void ResetVibrate(int port, int slot) {
 	SetVibrate(port, slot, 0, 0);
 	SetVibrate(port, slot, 1, 0);
-	// FIXME: I think this is broken on 64-bits.
-	((int*)(pads[port][slot].vibrate))[0] = 0xFFFFFF5A;
-	((int*)(pads[port][slot].vibrate))[1] = 0xFFFFFFFF;
+	pads[port][slot].vibrate[0] = 0x5A;
+	for (int i = 1; i < 8; ++i)
+		pads[port][slot].vibrate[i] = 0xFF;
 }
 
 void ResetPad(int port, int slot) {
