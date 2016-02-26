@@ -1,11 +1,10 @@
-# Copyright (C) 2011 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 150922\n"
+"Project-Id-Version: PCSX2 - 160226\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2016-02-21 11:51+0100\n"
-"PO-Revision-Date: 2015-09-22 15:36+0100\n"
+"POT-Creation-Date: 2016-02-26 04:31+0100\n"
+"PO-Revision-Date: 2016-02-26 22:48+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -15,8 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-Basepath: .\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.8.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -208,7 +206,7 @@ msgid ""
 msgstr ""
 "Befintliga %s-inställningar har hittats i "
 "KonfigurationsInställningsMappen. \n"
-"Vill Ni importera dessa inställningar och överskriva %s's Förval med dem? \n"
+"Vill Ni importera dessa inställningar och överskriva %s's förval med dem? \n"
 "\n"
 "(eller tryck ''Avbryt'' för att välja en annan Mapp)"
 
@@ -219,7 +217,7 @@ msgid ""
 msgstr ""
 "NTFS-komprimering är inbyggt, snabbt, och helt \n"
 " tillförlitligt; det komprimerar vanligtvis Minneskort \n"
-" mycket bra (denna tillämpning Anrådes tydligt)."
+" mycket bra (denna tillämpning Anrådes bestämt)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:39
 msgid ""
@@ -256,7 +254,7 @@ msgid ""
 "configured settings.  These command line options will not be reflected in "
 "the Settings dialog, and will be disabled if you apply any changes here."
 msgstr ""
-"Varning! Ni tillämpar PCSX2 med InstruktionsMöjligheter som åsidosätter Era "
+"Varning! Ni kör PCSX2 med InstruktionsMöjligheter som åsidosätter Era "
 "KonfigurationsInställningar. Detta åskådliggörs inte i InställningsDialogen, "
 "och kommer att spärras om Ni tillämpar några förändringar här."
 
@@ -267,7 +265,7 @@ msgid ""
 "not be reflected in the settings dialog, and will be disabled when you apply "
 "settings changes here."
 msgstr ""
-"Varning! Ni tillämpar PCSX2 med InstruktionsMöjligheter som åsidosätter Era "
+"Varning! Ni kör PCSX2 med InstruktionsMöjligheter som åsidosätter Era "
 "Insticks- och/eller MappKonfigurations- Inställningar. Detta åskådliggörs "
 "inte i InställningsDialogen, och kommer att spärras om Ni tillämpar "
 "InställningsFörändringar här."
@@ -289,7 +287,7 @@ msgstr ""
 "farten. \n"
 "Spelfixar som till vetskap är viktiga (''Patchar'') tillämpas automatiskt. \n"
 "\n"
-"Förinställningsinfo: \n"
+"FörinställningsInfo: \n"
 " 1 -     Det riktigaste emuleringen, men också den långsammaste. \n"
 " 3 --> Försöker balansera hastighet med förenlighet. \n"
 " 4 -     Några mer aggresiva fixar. \n"
@@ -354,13 +352,6 @@ msgstr ""
 " och återmöjliggöra sockeln när som helst genom ''Konfig > Minneskort'' i "
 "Huvudmenyn."
 
-#: pcsx2/gui/MemoryCardFolder.h:530
-#, c-format
-msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
-"(MappMkort) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: "
-"%s"
-
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
@@ -375,15 +366,15 @@ msgstr ""
 "EE = Emotion Engine = Rörelse Motor = PS2 CPU'n \n"
 "IOP = Input/Output Processor = In/Ut Processor \n"
 "\n"
-"Bemärk: De flesta spel har det fint med FörvalsSättningarna."
+"Bemärk: De flesta spel har det fint med förvalssättningarna."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:179
+#: pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
 msgstr ""
 "VM = Virtual Machine = Virtuell Maskin \n"
 "VU = Vector Unit = Vektor Enhet \n"
 "\n"
-"Bemärk: De flesta spel har det fint med FörvalsSättningarna."
+"Bemärk: De flesta spel har det fint med förvalssättningarna."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:69
 msgid ""
@@ -396,7 +387,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "När markerad kommer denna Mapp automatiskt att fungera enligt \n"
-" Förvalen förknippade med PCSX2's nuvarande AnvändarInställningar."
+" förvalen förknippade med PCSX2's nuvarande AnvändarInställningar."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:54
 msgid ""
@@ -574,9 +565,10 @@ msgid ""
 msgstr ""
 "Ni kan ändra det föredragna förvalsmålet för PCSX2's AnvändarnivåDokument "
 "här \n"
-" (innefattar Minneskort, Skärmbilder, Inställningar, & Sparpunkter). \n"
+" (vilket innefattar Minneskort, Skärmbilder, Inställningar, & "
+"Sparpunkter). \n"
 "Detta påverkar bara StandardFilvägarna, vilka ställs in för att använda "
-"InstallationsFörvalen."
+"installationsförvalen."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid ""
@@ -638,32 +630,29 @@ msgstr ""
 "KonfigurationsDialogen."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - Minskar EE'ns cykelgrad med ungefär 50%. \n"
+"-2 - Minskar EE'ns cykelgrad med ungefär 50%. \n"
 "Måttfull uppsnabbning, men *kommer* att \n"
 " vålla stamningsljud för många FMV'er."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"2 - Minskar EE'ns cykelgrad med ungefär 33%. \n"
+"-1 - Minskar EE'ns cykelgrad med ungefär 33%. \n"
 "Mild uppsnabbning och hög förenlighet \n"
 " för de flesta spel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
-"1 - Förvalscykelgrad. \n"
+"0 - Förvalscykelgrad. \n"
 "Detta överensstämmer nästan med den \n"
 " faktiska hastigheten för en PS2 EE."
 
@@ -672,6 +661,8 @@ msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - Ökar EE'ns cykelgrad med ungefär 33%. \n"
+"Ökar hårdvarukrav, men kan likaså öka FPS i spel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -679,6 +670,10 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - Ökar EE'ns cykelgrad med ungefär 50%. \n"
+"Ökar markant hårdvarukrav, men kan likaså öka \n"
+"FPS i spel. Denna inställning kan orsaka \n"
+"att spel INTE LYCKAS KÖRA IGÅNG. "
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -725,7 +720,6 @@ msgstr ""
 "gör vid emuleringsproblem."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -734,10 +728,12 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Att sätta ett högre värde genom denna manick minskar \n"
+"Att sätta ett lägre värde genom denna manick minskar \n"
 " verkningsfullt klockhastigheten hos EE'ns R5900 kärn-CPU, \n"
 " och ger oftast en hög hastghetsökning åt spel som är oförmögna \n"
-" att nyttja möjligheterna med PS2's verkliga hårdvara fullt ut."
+" att nyttja möjligheterna med PS2's verkliga hårdvara fullt ut. \n"
+"Omvänt ökar ett höre värde klockhastigheten vilket kan öka FPS i spel, \n"
+" men även göra spel mer hårdvarukrävande och vålla trassel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
@@ -878,6 +874,12 @@ msgstr ""
 "bruk. \n"
 "Detta är inte ett kritiskt fel eftersom sVU är föråldrat, \n"
 " och följaktligen borde Ni hur som helst använda Er av microVU istället."
+
+#: pcsx2/gui/MemoryCardFolder.h:530
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+"(MappMcd) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: %s"
 
 #~ msgid ""
 #~ "Warning: Your computer does not support SSE2, which is required by many "
