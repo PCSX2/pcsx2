@@ -97,13 +97,7 @@ extern Window  GSwin;
 #endif
 
 #ifdef _MSC_VER
-// Actually works with 0x0400, but need 0x500 to get XBUTTON defines,
-// 0x501 to get raw input structures, and 0x0600 to get WM_MOUSEHWHEEL.
-#define WINVER 0x0600
-#define _WIN32_WINNT WINVER
-#define __MSCW32__
-
-
+#define _WIN32_WINNT 0x0600
 #include <windows.h>
 
 #ifdef PCSX2_DEBUG

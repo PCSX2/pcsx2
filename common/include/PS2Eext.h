@@ -21,6 +21,9 @@
 #include <cstdarg>
 
 #if defined(_MSC_VER)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>

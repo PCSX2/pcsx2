@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
 #include "CDVD.h"
 #pragma warning(disable:4200)
 #pragma pack(1)

@@ -8,8 +8,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_WIN32_WINNT=0x500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
