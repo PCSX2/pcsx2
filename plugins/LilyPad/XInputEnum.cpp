@@ -16,6 +16,7 @@
  */
 
 #include "Global.h"
+#include <VersionHelpers.h>
 #include <xinput.h>
 #include "VKey.h"
 #include "InputManager.h"
@@ -248,18 +249,21 @@ public:
 };
 
 void EnumXInputDevices() {
-	int i;
 	wchar_t temp[30];
 	if (!pXInputSetState) {
 		// Also used as flag to indicute XInput not installed, so
 		// don't repeatedly try to load it.
 		if (pXInputEnable) return;
 
-		HMODULE hMod = 0;
-		for (i=3; i>= 0; i--) {
-			wsprintfW(temp, L"xinput1_%i.dll", i);
-			if (hMod = LoadLibraryW(temp)) break;
+		const DWORD flags = LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32;
+
+		// Prefer XInput 1.3 since SCP only has an XInput 1.3 wrapper right now.
+		// FIXME: Missing FreeLibrary call.
+		HMODULE hMod = LoadLibraryEx(L"xinput1_3.dll", nullptr, flags);
+		if (hMod == nullptr && IsWindows8OrGreater()) {
+			hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, flags);
 		}
+
 		if (hMod) {
 			if ((pXInputEnable = (_XInputEnable) GetProcAddress(hMod, "XInputEnable")) &&
 				((pXInputGetStateEx = (_XInputGetStateEx) GetProcAddress(hMod, (LPCSTR)100)) || // Try Ex version first
@@ -274,7 +278,7 @@ void EnumXInputDevices() {
 		}
 	}
 	pXInputEnable(1);
-	for (i=0; i<4; i++) {
+	for (int i = 0; i < 4; i++) {
 		wsprintfW(temp, L"XInput Pad %i", i);
 		dm->AddDevice(new XInputDevice(i, temp));
 	}
