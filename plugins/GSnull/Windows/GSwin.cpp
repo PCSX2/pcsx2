@@ -68,8 +68,3 @@ void GSProcessMessages()
 void HandleKeyEvent(keyEvent *ev)
 {
 }
-
-EXPORT_C_(s32) GSsetWindowInfo(winInfo *info)
-{
-	return 0;
-}

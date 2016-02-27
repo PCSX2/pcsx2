@@ -33,7 +33,6 @@ EXPORTS
 	GSreset					@28
 	GSwriteCSR				@29
 	GSgetDriverInfo			@30
-	GSsetWindowInfo			@31
 	GSfreeze				@32
 	GSconfigure				@33
 	GSabout					@34
