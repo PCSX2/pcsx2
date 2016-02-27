@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-02-21 11:51+0100\n"
-"PO-Revision-Date: 2016-02-19 12:30+0100\n"
+"PO-Revision-Date: 2016-02-27 09:57+0100\n"
 "Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
 "Language-Team: goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
 "Language: fr\n"
@@ -195,7 +195,7 @@ msgstr ""
 
 #: pcsx2/PluginManager.cpp:1378
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "Echec de l'initialisation du plugin interne de carte mémoire."
+msgstr "Échec de l'initialisation du plugin interne de carte mémoire."
 
 #: pcsx2/PluginManager.cpp:1775
 msgid "Unloaded Plugin"
@@ -463,9 +463,8 @@ msgid "executes an ELF image"
 msgstr "exécute un fichier ELF"
 
 #: pcsx2/gui/AppInit.cpp:239
-#, fuzzy
 msgid "executes an IRX image"
-msgstr "exécute un fichier ELF"
+msgstr "exécute une image IRX"
 
 #: pcsx2/gui/AppInit.cpp:240
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
@@ -635,7 +634,7 @@ msgstr ""
 
 #: pcsx2/gui/AppMain.cpp:186 pcsx2/gui/AppMain.cpp:191
 msgid "PS2 BIOS Error"
-msgstr "Erreur ! BIOS PS2"
+msgstr "Erreur de BIOS PS2"
 
 #: pcsx2/gui/AppMain.cpp:186
 msgid "Press Ok to go to the BIOS Configuration Panel."
@@ -751,7 +750,7 @@ msgstr "Grand"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
 msgid "In case you have a really high res display."
-msgstr "Au cas où vous utiliseriez une résolution d'écran VRAIMENT élevée."
+msgstr "Au cas où vous utiliseriez une résolution d'écran très élevée."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Default soft-tone color scheme."
@@ -773,7 +772,7 @@ msgstr "Thème \"Dark\""
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
 msgid "Always on Top"
-msgstr "Toujours au-dessus"
+msgstr "Toujours visible"
 
 #: pcsx2/gui/ConsoleLogger.cpp:415
 msgid ""
@@ -1197,7 +1196,7 @@ msgstr "Importer"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
 msgid "Overwrite"
-msgstr "Ecraser"
+msgstr "Écraser"
 
 #: pcsx2/gui/Dialogs/LogOptionsDialog.cpp:27
 msgid "Trace Logging"
@@ -1241,7 +1240,7 @@ msgstr "%s est lancé depuis un nouveau dossier et nécessite d'être configuré
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
 msgid "PCSX2 Thread is not responding"
-msgstr "Le programme PCSX2 ne répond pas"
+msgstr "Le processus PCSX2 ne répond pas"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
@@ -1309,7 +1308,7 @@ msgstr "Apparence / Thèmes - %s"
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr ""
-"Enregistre les évènements comme s'ils se déroulaient sur une vraie PS2."
+"Enregistre les événements comme s'ils se déroulaient sur une vraie PS2."
 
 #: pcsx2/gui/ExecutorThread.cpp:431
 msgid "Press Cancel to attempt to cancel the action."
@@ -1389,7 +1388,7 @@ msgstr ""
 
 #: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:350
 msgid "Confirm PS2 Reset"
-msgstr "Confirmer la réinitialisation de la PS2"
+msgstr "Confirmer le reset de la PS2"
 
 #: pcsx2/gui/IsoDropTarget.cpp:89
 #, c-format
@@ -1542,7 +1541,7 @@ msgstr "&Choix des Plugins/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
-msgstr "Editeur de base de données"
+msgstr "Éditeur de base de données"
 
 #: pcsx2/gui/MainFrame.cpp:485
 msgid "&Video (GS)"
@@ -1689,7 +1688,7 @@ msgstr "Paramètres du mode fenêtré..."
 
 #: pcsx2/gui/MainFrame.cpp:759
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr "Modifie la fenêtre et l'apparence, notamment l'aspect ratio."
+msgstr "Modifie la fenêtre et l'apparence dont le ratio d'aspect (4:3, 16:9)."
 
 #: pcsx2/gui/MainFrame.cpp:766
 msgid "Plugin Settings..."
@@ -1711,12 +1710,12 @@ msgstr "Confirmer le changement d'image ISO"
 #: pcsx2/gui/MainMenuClicks.cpp:151
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr ""
-"Voulez-vous changer de disque ou lancer une nouvelle image-disque "
-"(réinitilisation du système) ?"
+"Voulez-vous simplement échanger les disques ou redémarrer le système pour "
+"lancer le nouveau disque ?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:153 pcsx2/gui/MainMenuClicks.cpp:199
 msgid "Swap Disc"
-msgstr "Changer de disque"
+msgstr "Échanger"
 
 #: pcsx2/gui/MainMenuClicks.cpp:189
 msgid "Confirm CDVD source change"
@@ -1730,8 +1729,8 @@ msgstr "Vous avez choisi de changer le CDVD %s pour %s."
 #: pcsx2/gui/MainMenuClicks.cpp:196
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr ""
-"Voulez-vous changer de disque ou démarrer une nouvelle image-disque "
-"(réinitilisation du système) ?"
+"Voulez-vous simplement échanger les disques ou redémarrer le système pour "
+"lancer le nouveau disque ?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:266
 #, c-format
@@ -1760,7 +1759,7 @@ msgstr "Tous les fichiers (*.*)"
 #: pcsx2/gui/MainMenuClicks.cpp:281
 msgid "Select disc image, compressed disc image, or block-dump..."
 msgstr ""
-"Sélectionnez une image disque, une image disque compressée ou une sauvegarde "
+"Sélectionnez une image-disque, une image-disque compressée ou une sauvegarde "
 "de bloc..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:298
@@ -1773,14 +1772,14 @@ msgstr "Fichier ISO introuvable !"
 
 #: pcsx2/gui/MainMenuClicks.cpp:326
 msgid "An error occurred while trying to open the file:"
-msgstr "Une erreur s'est produite alors que le fichier tentait d'être ouvert :"
+msgstr "Une erreur s'est produite lors de l'ouverture du fichier :"
 
 #: pcsx2/gui/MainMenuClicks.cpp:327
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr ""
-"Erreur ! Le fichier ISO configuré n'existe pas. Cliquez sur OK pour choisir "
+"Erreur : le fichier ISO configuré n'existe pas. Cliquez sur OK pour choisir "
 "un autre ISO."
 
 #: pcsx2/gui/MainMenuClicks.cpp:398
@@ -1900,7 +1899,7 @@ msgstr "Options du recompilateur EE/FPU"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:88 pcsx2/gui/Panels/CpuPanel.cpp:103
 msgid "Extra + Preserve Sign"
-msgstr "Extra + Preserve Sign"
+msgstr "Extra + Garder le signe"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:89
 msgid "Full"
@@ -1936,7 +1935,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr "Relativement lent : à utiliser uniquement à des fins de diagnostique."
+msgstr "Relativement lent : à utiliser uniquement à des fins de diagnostics."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
@@ -1964,7 +1963,7 @@ msgid ""
 "diagnostics."
 msgstr ""
 "Interpréteur Vector Unit. Lent et rarement compatible. A n'utiliser que pour "
-"des diagnostiques."
+"des diagnostics."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
@@ -2020,11 +2019,11 @@ msgstr "Window/Screen"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:31
 msgid "Standard (4:3)"
-msgstr "Format classique (4/3)"
+msgstr "Normal (4:3)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:32
 msgid "Widescreen (16:9)"
-msgstr "Format large (16/9)"
+msgstr "Écran large (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
@@ -2044,7 +2043,7 @@ msgstr "Lancer le plein-écran par défaut"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
-msgstr "Attendre le rafraîchissement Vsync (synchronisation verticale)"
+msgstr "Attendre le rafraîchissement VSync (synchronisation verticale)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Double-click toggles fullscreen mode"
@@ -2052,7 +2051,7 @@ msgstr "Un double-clic pemet de basculer vers le mode plein-écran"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:85
 msgid "Aspect Ratio:"
-msgstr "Résolution d'affichage :"
+msgstr "Ratio d'aspect :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:87
 msgid "Custom Window Size:"
@@ -2169,9 +2168,12 @@ msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr "Précharger le hack TLB pour éviter un manque de TLB dans Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
+#, fuzzy
 msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
+"Hack bit VU I: éviter une recompilation constante (Scarface The World is "
+"Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
@@ -2297,7 +2299,7 @@ msgstr "Échec : %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 msgid "Copy failed!"
-msgstr "La copie a échoué ! (bad trip)"
+msgstr "Échec de la copie !"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:780
 #, c-format
@@ -2306,7 +2308,7 @@ msgstr "Carte mémoire '%s' dupliquée sous le nom '%s'."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
 msgid "Success"
-msgstr "Opération réalisée avec succès !"
+msgstr "Terminé"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
 #, c-format
@@ -2559,7 +2561,7 @@ msgstr "Activer les speedhacks"
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
-"La manière la plus simple de s'assurer que les speedhacks ont été "
+"Une manière facile et sûre de s'assurer que les speedhacks ont été "
 "complètement désactivés."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
@@ -2603,7 +2605,7 @@ msgid ""
 "cores]"
 msgstr ""
 "Bonnes performances et compatibilité élevée, mais pourrait occasionner des "
-"\"tremblements\" à l'écran... [Recommandé pour Proc. 3/+ coeurs]"
+"\"tremblements\" à l'écran... [Recommandé pour Proc. 3+ coeurs]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid "Other Hacks"
@@ -2689,7 +2691,7 @@ msgstr "Framerate en mode NTSC :"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
-msgstr "FPS (IPS)"
+msgstr "FPS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
@@ -2705,7 +2707,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:173
 msgid "Disabled [default]"
-msgstr "Désactivé [défaut]"
+msgstr "Désactivé [par défaut]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:177
 msgid "Skip when on Turbo only (TAB to enable)"
@@ -2725,21 +2727,23 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:206
 msgid "Frames to Draw"
-msgstr "frames à afficher"
+msgstr "Frames à rendre"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:211
 msgid "Frames to Skip"
-msgstr "frames à ignorer"
+msgstr "Frames à ignorer"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:287
 msgid "Use Synchronized MTGS"
-msgstr "Utiliser la MTGS synchonisé"
+msgstr "Utiliser le MTGS synchronisé"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:288
 msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
-msgstr "Permet d'enrayer des bugs potentiels liés au MTGS."
+msgstr ""
+"Permet uniquement de détecter des bugs potentiels liés au MTGS, puisque "
+"c'est très lent."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:291
 msgid "Disable all GS output"
@@ -2764,7 +2768,7 @@ msgstr "Framelimiter"
 #: pcsx2/gui/SysState.cpp:284
 msgid "Cannot load this savestate.  The state is an unsupported version."
 msgstr ""
-"Impossible de charger la sauvegarde. Elle n'est pas supportée par cette "
+"Impossible de charger la sauvegarde.  Elle n'est pas supportée par cette "
 "version du logiciel."
 
 #: pcsx2/gui/SysState.cpp:291
@@ -2783,9 +2787,9 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"La sauvegarde ne peut pas être chargée car elle ne fait pas l'objet d'une "
-"archive gzip valide. Elle a peut-être été créée à partir d'une version de "
-"PCSX2 antérieure, ou bien elle est corrompue."
+"La sauvegarde ne peut pas être chargée car elle n'est pas une archive gzip "
+"valide. Elle a peut-être été créée par une ancienne version de PCSX2, ou "
+"bien elle est corrompue."
 
 #: pcsx2/gui/SysState.cpp:580
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
@@ -2803,7 +2807,7 @@ msgstr ""
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
-msgstr "(défaut)"
+msgstr " (défaut)"
 
 #: pcsx2/ps2/BiosTools.cpp:89 pcsx2/ps2/BiosTools.cpp:157
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
@@ -2815,12 +2819,14 @@ msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
-"Le BIOS PS2 n'a pas pu être chargé. Le BIOS n'a pas été configuré, ou ses "
-"paramètres ne sont pas validés. Merci de le reconfigurer."
+"Le BIOS PS2 n'a pas pu être chargé. Le BIOS n'a pas été configuré, ou la "
+"configuration a été corrompue. Merci de le reconfigurer."
 
 #: pcsx2/ps2/BiosTools.cpp:277
 msgid "The configured BIOS file does not exist.  Please re-configure."
-msgstr "Le fichier de configuation du BIOS n'existe pas. Merci d'en créer un."
+msgstr ""
+"Le fichier de configuration du BIOS n'existe pas. Merci de reconfigurer le "
+"BIOS."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:470
 #, c-format
@@ -2828,16 +2834,16 @@ msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"%s extensions n'ont pas été trouvées. Le recompilateur R5900-32 nécessite un "
-"CPU qui gère les extensions SSE2."
+"%s extensions non trouvées. Le recompilateur R5900-32 nécessite un CPU qui "
+"gère les extensions SSE2."
 
 #: pcsx2/x86/microVU.cpp:30
 #, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"%s extensions non trouvées. microVU nécessite un CPU qui gère les extensions "
-"SSE2."
+"%s extensions non trouvées.  microVU nécessite un CPU qui gère les "
+"extensions SSE2."
 
 #~ msgid "Betatesting"
 #~ msgstr "Beta-test"
