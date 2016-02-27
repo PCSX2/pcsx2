@@ -37,22 +37,14 @@
 #include <commdlg.h>
 #include <shellapi.h>
 #include <xinput.h>
+
 #include <assert.h>
-
-// stdc
-
-#include <math.h>
 #include <time.h>
-#include <intrin.h>
 
-#include <string>
 #include <vector>
 #include <list>
-#include <map>
 
 using namespace std;
-
-extern string format(const char* fmt, ...);
 
 // syntactic sugar
 
@@ -83,12 +75,3 @@ typedef signed long long int64;
 		#define RESTRICT
 	#endif
 #endif
-
-#if defined(_DEBUG) && defined(_MSC_VER)
-	#define ASSERT assert
-#else
-	#define ASSERT(exp) ((void)0)
-#endif
-
-
-

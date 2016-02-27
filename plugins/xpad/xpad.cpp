@@ -561,7 +561,7 @@ public:
 			ret = (value == 'B' || value == 'C') ? m_pad->GetId() : 0xf3;
 			break;
 		case 2:
-			ASSERT(value == 0);
+			assert(value == 0);
 			ret = 'Z';
 			break;
 		default:

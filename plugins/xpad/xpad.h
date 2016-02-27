@@ -78,7 +78,7 @@ struct KeyEvent
 class CCritSec
 {
     CCritSec(const CCritSec &refCritSec);
-    CCritSec &operator=(const CCritSec &refCritSec);
+    CCritSec &operator=(const CCritSec &refCritSec) = delete;
 
     CRITICAL_SECTION m_CritSec;
 
@@ -93,7 +93,7 @@ public:
 class CAutoLock
 {
     CAutoLock(const CAutoLock &refAutoLock);
-    CAutoLock &operator=(const CAutoLock &refAutoLock);
+    CAutoLock &operator=(const CAutoLock &refAutoLock) = delete;
 
 protected:
     CCritSec * m_pLock;
