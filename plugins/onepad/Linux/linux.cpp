@@ -172,7 +172,7 @@ EXPORT_C_(void) PADupdate(int pad)
 
 	// Actually PADupdate is always call with pad == 0. So you need to update both
 	// pads -- Gregory
-	for (int cpad = 0; cpad < 2; cpad++) {
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
 		// Poll keyboard/mouse event
 		key_status->keyboard_state_acces(cpad);
 		PollForX11KeyboardInput(cpad);

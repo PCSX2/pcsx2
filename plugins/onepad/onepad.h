@@ -22,6 +22,8 @@
 #ifndef __PAD_H__
 #define __PAD_H__
 
+#define GAMEPAD_NUMBER 2 // numbers of gamepad
+
 #include <stdio.h>
 #include <assert.h>
 #include <queue>

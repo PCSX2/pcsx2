@@ -260,7 +260,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_KEYDOWN:
 			if (lParam & 0x40000000) return TRUE;
 
-			for (int pad = 0; pad < 2; ++pad)
+			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
 			{
 				for (int i = 0; i < MAX_KEYS; i++)
 				{
@@ -277,7 +277,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case WM_KEYUP:
-			for (int pad = 0; pad < 2; ++pad)
+			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
 			{
 				for (int i = 0; i < MAX_KEYS; i++)
 				{
@@ -304,7 +304,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return GSwndProc(hWnd, msg, wParam, lParam);
 	}
 
-	for (int pad = 0; pad < 2; ++pad)
+	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
 		key_status->commit_status(pad);
 
 	return TRUE;

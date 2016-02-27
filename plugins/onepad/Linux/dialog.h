@@ -59,7 +59,6 @@ enum gui_buttons {
 };
 
 #define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
-#define GAMEPAD_NUMBER 2 // numbers of gamepad
 #define UPDATE_TIME 5
 #define DEFAULT_WIDTH 1000
 #define DEFAULT_HEIGHT 740

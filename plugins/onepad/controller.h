@@ -52,7 +52,7 @@ extern int button_to_key(int button_id);
 extern int axis_to_key(int full_axis, int sign, int axis_id);
 extern int hat_to_key(int dir, int axis_id);
 
-extern int PadEnum[2][2];
+//extern int PadEnum[2][2]; // never used
 
 class PADconf
 {
@@ -71,14 +71,14 @@ class PADconf
 			u16 sixaxis_usb :1;
 			u16 sixaxis_pressure :1;
 			u16 _free : 7; // The 8 remaining bits are unused, do what you wish with them ;)
-		} pad_options[2]; // One for each pads
+		} pad_options[GAMEPAD_NUMBER]; // One for each pads
 		u32 packed_options; // Only first 8 bits of each 16 bits series are really used, rest is padding
 	};
 
-	u32 keys[2][MAX_KEYS];
+	u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
 	u32 log;
 	u32 joyid_map;
-	map<u32,u32> keysym_map[2];
+	map<u32,u32> keysym_map[GAMEPAD_NUMBER];
 
 	PADconf() { init(); }
 
@@ -87,8 +87,11 @@ class PADconf
 		log = packed_options = joyid_map = 0;
 		ff_intensity = 0x7FFF; // set it at max value by default
 		sensibility = 500;
-		for (int pad = 0; pad < 2 ; pad++)
+		for (int pad = 0; pad < GAMEPAD_NUMBER ; pad++)
+		{
 			keysym_map[pad].clear();
+		    set_joyid((u32)pad, (u32)pad); // define id mapping for each gamepad
+		}
 	}
 
 	void set_joyid(u32 pad, u32 joy_id) {

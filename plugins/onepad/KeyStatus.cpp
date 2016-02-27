@@ -23,7 +23,7 @@
 
 void KeyStatus::Init()
 {
-	for (int pad = 0; pad < 2; pad++) {
+	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
 		m_button[pad] = 0xFFFF;
 		m_internal_button_kbd[pad] = 0xFFFF;
 		m_internal_button_joy[pad] = 0xFFFF;

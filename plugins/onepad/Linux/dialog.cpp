@@ -240,10 +240,10 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
     {
         // Tabs panels
         m_pan_tabs[i] = new opPanel(
-        m_tab_gamepad,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+            m_tab_gamepad,
+            wxID_ANY,
+            wxDefaultPosition,
+            wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
         );
         // Add new page
         // Define label
@@ -258,14 +258,14 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
 
         for(int j=0; j<BUTTONS_LENGHT; ++j)
         {
-          // Gamepad buttons
-          m_bt_gamepad[i][j] = new wxButton(
-            m_pan_tabs[i], // Parent
-            wxID_HIGHEST+j+1, // ID
-            _T("Undefined"), // Label
-            wxPoint(padding[j][2], padding[j][3]), // Position
-            wxSize(padding[j][0], padding[j][1]) // Size
-          );
+            // Gamepad buttons
+            m_bt_gamepad[i][j] = new wxButton(
+                m_pan_tabs[i], // Parent
+                wxID_HIGHEST+j+1, // ID
+                _T("Undefined"), // Label
+                wxPoint(padding[j][2], padding[j][3]), // Position
+                wxSize(padding[j][0], padding[j][1]) // Size
+            );
         }
         // Redefine others gui buttons label
         m_bt_gamepad[i][JoyL_config]->SetLabel(_T("&Left Joystick Config"));
