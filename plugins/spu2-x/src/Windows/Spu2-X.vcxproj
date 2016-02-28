@@ -64,7 +64,6 @@
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
     <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
     <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
@@ -73,7 +72,6 @@
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
     <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'" Label="PropertySheets">
@@ -83,7 +81,6 @@
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
     <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
     <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
@@ -93,7 +90,6 @@
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
     <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\..\common\vsprops\wxWidgetsGui.props" />
     <Import Project="..\..\..\..\common\vsprops\pthreads.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -143,7 +139,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dev.lib;x86emitter-dev.lib;utilities-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -178,7 +174,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -214,7 +210,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -253,7 +249,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dbg.lib;x86emitter-dbg.lib;utilities-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -453,16 +449,8 @@
     <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
       <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\common\build\Utilities\utilities.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\build\x86emitter\x86emitter.vcxproj">
-      <Project>{a51123f5-9505-4eae-85e7-d320290a272c}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
