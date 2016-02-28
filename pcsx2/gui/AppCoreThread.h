@@ -123,12 +123,12 @@ class AppCoreThread : public SysCoreThread
 	typedef SysCoreThread _parent;
 
 protected:
-	volatile bool m_resetCdvd;
-	
+	std::atomic<bool> m_resetCdvd;
+
 public:
 	AppCoreThread();
 	virtual ~AppCoreThread() throw();
-	
+
 	void ResetCdvd() { m_resetCdvd = true; }
 
 	virtual void Suspend( bool isBlocking=false );

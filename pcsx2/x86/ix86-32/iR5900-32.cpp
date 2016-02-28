@@ -566,8 +566,8 @@ static void recAlloc()
 static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
 static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 
-static u32 eeRecIsReset = false;
-static u32 eeRecNeedsReset = false;
+static std::atomic<bool> eeRecIsReset(false);
+static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
 
 ////////////////////////////////////////////////////
@@ -579,8 +579,8 @@ static void recResetRaw()
 
 	recAlloc();
 
-	if( AtomicExchange( eeRecIsReset, true ) ) return;
-	AtomicExchange( eeRecNeedsReset, false );
+	if( eeRecIsReset.exchange(true) ) return;
+	eeRecNeedsReset = false;
 
 	Console.WriteLn( Color_StrongBlack, "EE/iR5900-32 Recompiler Reset" );
 
@@ -628,7 +628,7 @@ static void recResetEE()
 {
 	if (eeCpuExecuting)
 	{
-		AtomicExchange( eeRecNeedsReset, true );
+		eeRecNeedsReset = true;
 		return;
 	}
 
@@ -1561,11 +1561,11 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	// if recPtr reached the mem limit reset whole mem
 	if (recPtr >= (recMem->GetPtrEnd() - _64kb)) {
-		AtomicExchange( eeRecNeedsReset, true );
+		eeRecNeedsReset = true;
 	}
 	else if ((recConstBufPtr - recConstBuf) >= RECCONSTBUF_SIZE - 64) {
 		Console.WriteLn("EE recompiler stack reset");
-		AtomicExchange( eeRecNeedsReset, true );
+		eeRecNeedsReset = true;
 	}
 
 	if (eeRecNeedsReset) recResetRaw();
@@ -1633,7 +1633,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			xFastCall(GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
-			AtomicExchange( eeRecNeedsReset, true );
+			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
 			xFastCall(GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
 		}

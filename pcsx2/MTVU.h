@@ -30,8 +30,8 @@ class VU_Thread : public pxThread {
 	static const s32 buffer_size = (_1mb * 16) / sizeof(s32);
 	static const u32 buffer_mask = buffer_size - 1;
 	__aligned(4) u32 buffer[buffer_size];
-	__aligned(4) volatile s32  read_pos; // Only modified by VU thread
-	__aligned(4) volatile bool isBusy;   // Is thread processing data?
+	__aligned(4) std::atomic<int> read_pos; // Only modified by VU thread
+	__aligned(4) std::atomic<bool> isBusy;   // Is thread processing data?
 	__aligned(4) s32  write_pos;    // Only modified by EE thread
 	__aligned(4) s32  write_offset; // Only modified by EE thread
 	__aligned(4) Mutex     mtxBusy;

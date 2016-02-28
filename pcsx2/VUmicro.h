@@ -49,7 +49,7 @@ class BaseCpuProvider
 protected:
 	// allocation counter for multiple calls to Reserve.  Most implementations should utilize
 	// this variable for sake of robustness.
-	u32		m_Reserved;
+	std::atomic<int>		m_Reserved;
 
 public:
 	// this boolean indicates to some generic logging facilities if the VU's registers
@@ -68,7 +68,7 @@ public:
 	{
 		try {
 			if( m_Reserved != 0 )
-				Console.Warning( "Cleanup miscount detected on CPU provider.  Count=%d", m_Reserved );
+				Console.Warning( "Cleanup miscount detected on CPU provider.  Count=%d", m_Reserved.load() );
 		}
 		DESTRUCTOR_CATCHALL
 	}

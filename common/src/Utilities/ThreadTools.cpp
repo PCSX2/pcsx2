@@ -291,7 +291,7 @@ bool Threading::pxThread::Detach()
 {
 	AffinityAssert_DisallowFromSelf(pxDiagSpot);
 
-	if( _InterlockedExchange( &m_detached, true ) ) return false;
+	if( m_detached.exchange(true) ) return false;
 	pthread_detach( m_thread );
 	return true;
 }
@@ -386,7 +386,7 @@ bool Threading::pxThread::IsSelf() const
 
 bool Threading::pxThread::IsRunning() const
 {
-    return !!m_running;
+    return m_running;
 }
 
 void Threading::pxThread::AddListener( EventListener_Thread& evt )
@@ -669,7 +669,7 @@ void Threading::pxThread::OnCleanupInThread()
 
 	m_native_handle = 0;
 	m_native_id		= 0;
-	
+
 	m_evtsrc_OnDelete.Dispatch( 0 );
 }
 
@@ -801,49 +801,6 @@ __fi u32 Threading::AtomicExchange(volatile u32& Target, u32 value ) {
 }
 __fi s32 Threading::AtomicExchange( volatile s32& Target, s32 value ) {
 	return _InterlockedExchange( (volatile vol_t*)&Target, value );
-}
-
-__fi u32 Threading::AtomicExchangeAdd( volatile u32& Target, u32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
-}
-__fi s32 Threading::AtomicExchangeAdd( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, value );
-}
-
-__fi s32 Threading::AtomicExchangeSub( volatile s32& Target, s32 value ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -value );
-}
-
-__fi u32 Threading::AtomicIncrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
-}
-__fi s32 Threading::AtomicIncrement( volatile s32& Target) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, 1 );
-}
-
-__fi u32 Threading::AtomicDecrement( volatile u32& Target ) {
-	return _InterlockedExchangeAdd( (volatile vol_t*)&Target, -1 );
-}
-__fi s32 Threading::AtomicDecrement(volatile s32& Target) {
-	return _InterlockedExchangeAdd((volatile vol_t*)&Target, -1);
-}
-
-__fi void* Threading::_AtomicExchangePointer(volatile uptr& target, uptr value)
-{
-#ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
-	return (void*)_InterlockedExchange64((volatile s64*)&target, value);
-#else
-	return (void*)_InterlockedExchange((volatile vol_t*)&target, value);
-#endif
-}
-
-__fi void* Threading::_AtomicCompareExchangePointer(volatile uptr& target, uptr value, uptr comparand)
-{
-#ifdef _M_X86_64		// high-level atomic ops, please leave these 64 bit checks in place.
-	return (void*)_InterlockedCompareExchange64((volatile s64*)&target, value, comparand);
-#else
-	return (void*)_InterlockedCompareExchange((volatile vol_t*)&target, value, comparand);
-#endif
 }
 
 // --------------------------------------------------------------------------------------

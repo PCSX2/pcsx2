@@ -27,25 +27,23 @@ class ScopedPtrMT
 {
 	DeclareNoncopyableObject(ScopedPtrMT);
 
-	typedef T* TPtr;
-
 protected:
-	volatile TPtr		m_ptr;
+	std::atomic<T*>		m_ptr;
 	Threading::Mutex	m_mtx;
 
 public:
 	typedef T element_type;
 
-	wxEXPLICIT ScopedPtrMT(T * ptr = NULL)
+	wxEXPLICIT ScopedPtrMT(T * ptr = nullptr)
 	{
 		m_ptr = ptr;
 	}
 
 	~ScopedPtrMT() throw() { _Delete_unlocked(); }
 
-	ScopedPtrMT& Reassign(T * ptr = NULL)
+	ScopedPtrMT& Reassign(T * ptr = nullptr)
 	{
-		TPtr doh = (TPtr)Threading::AtomicExchangePointer( m_ptr, ptr );
+		T* doh = m_ptr.exchange(ptr);
 		if ( ptr != doh ) delete doh;
 		return *this;
 	}
@@ -55,19 +53,17 @@ public:
 		ScopedLock lock( m_mtx );
 		_Delete_unlocked();
 	}
-	
+
 	// Removes the pointer from scoped management, but does not delete!
-	// (ScopedPtr will be NULL after this method)
+	// (ScopedPtr will be nullptr after this method)
 	T *DetachPtr()
 	{
 		ScopedLock lock( m_mtx );
 
-		T *ptr = m_ptr;
-		m_ptr = NULL;
-		return ptr;
+		return m_ptr.exchange(nullptr);
 	}
 
-	// Returns the managed pointer.  Can return NULL as a valid result if the ScopedPtrMT
+	// Returns the managed pointer.  Can return nullptr as a valid result if the ScopedPtrMT
 	// has no object in management.
 	T* GetPtr() const
 	{
@@ -77,6 +73,7 @@ public:
 	void SwapPtr(ScopedPtrMT& other)
 	{
 		ScopedLock lock( m_mtx );
+		m_ptr.exchange(other.m_ptr.exchange(m_ptr.load()));
 		T * const tmp = other.m_ptr;
 		other.m_ptr = m_ptr;
 		m_ptr = tmp;
@@ -91,7 +88,7 @@ public:
 
 	bool operator!() const throw()
 	{
-		return m_ptr == NULL;
+		return m_ptr.load() == nullptr;
 	}
 
 	// Equality
@@ -106,7 +103,7 @@ public:
 		return !operator==(pT);
 	}
 
-	// Convenient assignment operator.  ScopedPtrMT = NULL will issue an automatic deletion
+	// Convenient assignment operator.  ScopedPtrMT = nullptr will issue an automatic deletion
 	// of the managed pointer.
 	ScopedPtrMT& operator=( T* src )
 	{
@@ -120,16 +117,16 @@ public:
 	}
 
 	// Dereference operator, returns a handle to the managed pointer.
-	// Generates a debug assertion if the object is NULL!
+	// Generates a debug assertion if the object is nullptr!
 	T& operator*() const
 	{
-		pxAssert(m_ptr != NULL);
+		pxAssert(m_ptr != nullptr);
 		return *m_ptr;
 	}
 
 	T* operator->() const
 	{
-		pxAssert(m_ptr != NULL);
+		pxAssert(m_ptr != nullptr);
 		return m_ptr;
 	}
 	#endif
@@ -137,7 +134,6 @@ public:
 protected:
 	void _Delete_unlocked() throw()
 	{
-		delete m_ptr;
-		m_ptr = NULL;
+		delete m_ptr.exchange(nullptr);
 	}
 };

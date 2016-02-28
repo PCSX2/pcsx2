@@ -23,7 +23,7 @@
 
 namespace Threading
 {
-	static vol_t				_attr_refcount = 0;
+	static std::atomic<int>		_attr_refcount(0);
 	static pthread_mutexattr_t	_attr_recursive;
 }
 
@@ -120,7 +120,7 @@ Threading::Mutex::~Mutex() throw()
 
 Threading::MutexRecursive::MutexRecursive() : Mutex( false )
 {
-	if( _InterlockedIncrement( &_attr_refcount ) == 1 )
+	if( _attr_refcount.fetch_add(1) == 1 )
 	{
 		if( 0 != pthread_mutexattr_init( &_attr_recursive ) )
 			throw Exception::OutOfMemory(L"Recursive mutexing attributes");
@@ -134,7 +134,7 @@ Threading::MutexRecursive::MutexRecursive() : Mutex( false )
 
 Threading::MutexRecursive::~MutexRecursive() throw()
 {
-	if( _InterlockedDecrement( &_attr_refcount ) == 0 )
+	if( _attr_refcount.fetch_sub(1) == 0 )
 		pthread_mutexattr_destroy( &_attr_recursive );
 }
 

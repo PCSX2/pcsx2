@@ -111,7 +111,7 @@ protected:
 class BaseDeletableObject : public virtual IDeletableObject
 {
 protected:
-	volatile vol_t	m_IsBeingDeleted;
+	std::atomic<bool>	m_IsBeingDeleted;
 
 public:
 	BaseDeletableObject();

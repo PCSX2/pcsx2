@@ -91,7 +91,7 @@ void SysThreadBase::Suspend( bool isBlocking )
 	{
 		ScopedLock locker( m_ExecModeMutex );
 
-		switch( m_ExecMode )
+		switch( m_ExecMode.load() )
 		{
 			// Invalid thread state, nothing to suspend
 			case ExecMode_NoThreadYet:
@@ -196,7 +196,7 @@ void SysThreadBase::Resume()
 	// sanity checks against m_ExecMode/m_Running status, and if something doesn't feel
 	// right, we should abort; the user may have canceled the action before it even finished.
 
-	switch( m_ExecMode )
+	switch( m_ExecMode.load() )
 	{
 		case ExecMode_Opened: return;
 
@@ -267,7 +267,7 @@ void SysThreadBase::OnResumeInThread( bool isSuspended ) {}
 //   continued execution unimpeded.
 bool SysThreadBase::StateCheckInThread()
 {
-	switch( m_ExecMode )
+	switch( m_ExecMode.load() )
 	{
 
 	#ifdef PCSX2_DEVBUILD		// optimize out handlers for these cases in release builds.

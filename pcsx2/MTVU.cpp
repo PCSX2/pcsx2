@@ -47,7 +47,7 @@ static void MTVU_Unpack(void* data, VIFregisters& vifRegs)
 }
 
 // Called on Saving/Loading states...
-void SaveStateBase::mtvuFreeze() 
+void SaveStateBase::mtvuFreeze()
 {
 	FreezeTag("MTVU");
 	pxAssert(vu1Thread.IsDone());
@@ -142,7 +142,7 @@ void VU_Thread::ExecuteRingBuffer()
 					break;
 				}
 				case MTVU_NULL_PACKET:
-					AtomicExchange(read_pos, 0);
+					read_pos = 0;
 					break;
 				jNO_DEFAULT;
 			}
@@ -187,7 +187,7 @@ void VU_Thread::ReserveSpace(s32 size)
 // Use this when reading read_pos from ee thread
 __fi s32 VU_Thread::GetReadPos()
 {
-	return AtomicRead(read_pos);
+	return read_pos.load();
 }
 // Use this when reading write_pos from vu thread
 __fi s32 VU_Thread::GetWritePos()
@@ -202,8 +202,7 @@ __fi u32* VU_Thread::GetWritePtr()
 
 __fi void VU_Thread::incReadPos(s32 offset)
 { // Offset in u32 sizes
-	s32 temp = (read_pos + offset) & buffer_mask;
-	AtomicExchange(read_pos, temp);
+	read_pos = (read_pos + offset) & buffer_mask;
 }
 __fi void VU_Thread::incWritePos()
 { // Adds write_offset

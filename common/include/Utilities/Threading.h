@@ -158,7 +158,7 @@ namespace Threading
 
 	// For use in spin/wait loops.
 	extern void SpinWait();
-	
+
 	// Use prior to committing data to another thread
 	extern void StoreFence();
 
@@ -181,22 +181,6 @@ namespace Threading
 	extern s32 AtomicRead( volatile s32& Target );
 	extern u32 AtomicExchange( volatile u32& Target, u32 value );
 	extern s32 AtomicExchange( volatile s32& Target, s32 value );
-	extern u32 AtomicExchangeAdd( volatile u32& Target, u32 value );
-	extern s32 AtomicExchangeAdd( volatile s32& Target, s32 value );
-	extern s32 AtomicExchangeSub( volatile s32& Target, s32 value );
-	extern u32 AtomicIncrement( volatile u32& Target );
-	extern s32 AtomicIncrement( volatile s32& Target );
-	extern u32 AtomicDecrement( volatile u32& Target );
-	extern s32 AtomicDecrement( volatile s32& Target );
-
-	extern bool AtomicBitTestAndReset( volatile u32& bitset, u8 bit );
-	extern bool AtomicBitTestAndReset( volatile s32& bitset, u8 bit );
-
-	extern void* _AtomicExchangePointer( volatile uptr& target, uptr value );
-	extern void* _AtomicCompareExchangePointer( volatile uptr& target, uptr value, uptr comparand );
-
-#define AtomicExchangePointer( dest, src )				_AtomicExchangePointer( (uptr&)dest, (uptr)src )
-#define AtomicCompareExchangePointer( dest, comp, src )	_AtomicExchangePointer( (uptr&)dest, (uptr)comp, (uptr)src )
 
 	// pthread Cond is an evil api that is not suited for Pcsx2 needs.
 	// Let's not use it. Use mutexes and semaphores instead to create waits. (Air)
@@ -228,23 +212,24 @@ namespace Threading
 	class NonblockingMutex
 	{
 	protected:
-		volatile int val;
+		std::atomic_flag val;
 
 	public:
-		NonblockingMutex() : val( false ) {}
+		NonblockingMutex() { val.clear(); }
 		virtual ~NonblockingMutex() throw() {}
 
 		bool TryAcquire() throw()
 		{
-			return !AtomicExchange( val, true );
+			return !val.test_and_set();
 		}
 
+		// Can be done with a TryAcquire/Release but it is likely better to do it outside of the object
 		bool IsLocked()
-		{ return !!val; }
+		{ pxAssertMsg(0, "IsLocked isn't supported for NonblockingMutex"); return false; }
 
 		void Release()
 		{
-			AtomicExchange( val, false );
+			val.clear();
 		}
 	};
 
@@ -407,15 +392,11 @@ namespace Threading
 // Note that the isLockedBool should only be used as an indicator for the locked status,
 // and not actually depended on for thread synchronization...
 
-	struct ScopedLockBool {	
+	struct ScopedLockBool {
 		ScopedLock m_lock;
-		volatile __aligned(4) bool& m_bool;
+		std::atomic<bool>& m_bool;
 
-#ifdef __linux__
-		ScopedLockBool(Mutex& mutexToLock, volatile bool& isLockedBool)
-#else
-		ScopedLockBool(Mutex& mutexToLock, volatile __aligned(4) bool& isLockedBool)
-#endif
+		ScopedLockBool(Mutex& mutexToLock, std::atomic<bool>& isLockedBool)
 			: m_lock(mutexToLock),
 			  m_bool(isLockedBool) {
 			m_bool = m_lock.IsLocked();

@@ -270,12 +270,12 @@ public:
 	__aligned(4) uint m_ReadPos;	// cur pos gs is reading from
 	__aligned(4) uint m_WritePos;	// cur pos ee thread is writing to
 
-	volatile bool	m_RingBufferIsBusy;
-	volatile u32	m_SignalRingEnable;
-	volatile s32	m_SignalRingPosition;
+	std::atomic<bool>	m_RingBufferIsBusy;
+	std::atomic<bool>	m_SignalRingEnable;
+	std::atomic<int>	m_SignalRingPosition;
 
-	volatile s32	m_QueuedFrameCount;
-	volatile u32	m_VsyncSignalListener;
+	std::atomic<int>	m_QueuedFrameCount;
+	std::atomic<bool>	m_VsyncSignalListener;
 
 	Mutex			m_mtx_RingBufferBusy;  // Is obtained while processing ring-buffer data
 	Mutex			m_mtx_RingBufferBusy2; // This one gets released on semaXGkick waiting...
@@ -291,8 +291,8 @@ public:
 	// has more than one command in it when the thread is kicked.
 	int				m_CopyDataTally;
 
-	Semaphore		m_sem_OpenDone;
-	volatile bool	m_PluginOpened;
+	Semaphore			m_sem_OpenDone;
+	std::atomic<bool>	m_PluginOpened;
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
