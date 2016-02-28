@@ -86,6 +86,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
 endif()
 
 #-------------------------------------------------------------------------------
+
 # Install some files to ease package creation
 if(PACKAGE_MODE)
     if(NOT DISABLE_CHEATS_ZIP)
@@ -107,6 +108,12 @@ if(PACKAGE_MODE)
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_Readme.pdf"   DESTINATION "${DOC_DIR}")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man1/")
     if(NOT DISABLE_PCSX2_WRAPPER)
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/PCSX2-linux.sh"          DESTINATION "${BIN_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${BIN_DIR}")
+    endif()
+
+else()
+    if(NOT DISABLE_PCSX2_WRAPPER)
+        # special case to avoid having linux files in windows
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
     endif()
 endif()
