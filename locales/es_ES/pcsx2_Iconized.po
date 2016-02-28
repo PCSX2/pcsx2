@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-02-21 11:51+0100\n"
-"PO-Revision-Date: 2015-11-08 00:57+0100\n"
-"Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
+"PO-Revision-Date: 2016-02-28 22:49+0100\n"
+"Last-Translator: Víctor González <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -623,30 +623,27 @@ msgstr ""
 "%s esté incompleta, pulsa en Cancelar para cerrar el panel de configuración."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - Reduce la tasa de ciclos del EE a un 50%.  Subida de velocidad moderada, "
+"-2 - Reduce la tasa de ciclos del EE un 50%.  Subida de velocidad moderada, "
 "pero causará sonido entrecortado en FMVs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"2 - Reduce la tasa de ciclos del EE a un 33%.  Ligera subida de velocidad "
+"-1 - Reduce la tasa de ciclos del EE un 33%.  Ligera subida de velocidad "
 "para la mayoría de los juegos y alta compatibilidad."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
-"1 - Tasa de ciclos predeterminada. Lo más parecido a la velocidad de un "
+"1 - Tasa de ciclos predeterminada. Es casi la misma velocidad de un "
 "EmotionEngine real de PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
@@ -654,6 +651,8 @@ msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - Aumenta la tasa de ciclos del EE un 33%. Aumenta los requisitos de "
+"hardware, podría aumentar los FPS del juego."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -661,6 +660,9 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - Aumenta la tasa de ciclos del EE un 50%. Aumenta considerablemente los "
+"requisitos de hardware, podría aumentar los FPS del juego.\n"
+"Este ajuste puede provocar que los juegos NO ARRANQUEN."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -701,7 +703,6 @@ msgstr ""
 "de FPS.  Si tienes problemas de emulación, empieza desactivando este panel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -710,10 +711,12 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Si asignas un valor alto con esta opción reducirás la velocidad de reloj "
-"real de la CPU del núcleo R5900 del EmotionEngine, y generalmente aumenta la "
-"velocidad de los juegos que no utilizan el potencial del hardware de PS2 "
-"real."
+"Si asignas un valor bajo con esta opción reducirás la velocidad del reloj de "
+"la CPU del núcleo R5900 del EmotionEngine, lo que generalmente aumenta la "
+"velocidad de los juegos que no utilizan todo el potencial del hardware real "
+"de PS2. Por el contrario, un valor alto aumentará la velocidad del reloj, lo "
+"que puede aumentar los FPS del juego pero también puede necesitar más "
+"recursos y provocar defectos."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""
