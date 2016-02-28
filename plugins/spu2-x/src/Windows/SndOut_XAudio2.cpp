@@ -17,7 +17,6 @@
 
 #include "Global.h"
 
-#define _WIN32_DCOM
 #include "Dialogs.h"
 
 #include <xaudio2.h>
@@ -25,7 +24,7 @@
 
 namespace Exception
 {
-	class XAudio2Error : public std::runtime_error
+	class XAudio2_27Error : public std::runtime_error
 	{
 	protected:
 		static const char* SomeKindaErrorString( HRESULT hr )
@@ -50,8 +49,8 @@ namespace Exception
 			return m_Message.c_str();
 		}
 
-		virtual ~XAudio2Error() throw() {}
-		XAudio2Error( const HRESULT result, const std::string& msg ) :
+		virtual ~XAudio2_27Error() throw() {}
+		XAudio2_27Error( const HRESULT result, const std::string& msg ) :
 			runtime_error( msg ),
 			ErrorCode( result ),
 			m_Message()
@@ -65,7 +64,7 @@ namespace Exception
 
 static const double SndOutNormalizer = (double)(1UL<<(SndOutVolumeShift+16));
 
-class XAudio2Mod: public SndOutModule
+class XAudio2_27_Mod: public SndOutModule
 {
 private:
 	static const int PacketsPerBuffer = 8;
@@ -132,7 +131,7 @@ private:
 			if( FAILED(hr = pXAudio2->CreateSourceVoice( &pSourceVoice, (WAVEFORMATEX*)&wfx,
 				XAUDIO2_VOICE_NOSRC, 1.0f, this ) ) )
 			{
-				throw Exception::XAudio2Error( hr, "XAudio2 CreateSourceVoice failure." );
+				throw Exception::XAudio2_27Error( hr, "XAudio2 CreateSourceVoice failure." );
 			}
 
 			InitializeCriticalSection( &cs );
@@ -232,9 +231,8 @@ private:
 		}
 
 	};
-#if _WIN32_WINNT < 0x602
+
 	HMODULE xAudio2DLL;
-#endif
 	CComPtr<IXAudio2> pXAudio2;
 	IXAudio2MasteringVoice* pMasteringVoice;
 	BaseStreamingVoice* voiceContext;
@@ -246,7 +244,7 @@ public:
 		HRESULT hr;
 
 		jASSUME( pXAudio2 == NULL );
-#if _WIN32_WINNT < 0x602
+
 		// On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
 		// Maintain an extra library reference so it can't do so. Does not
 		// affect XAudio 2.8+, but that's Win8+. See
@@ -256,7 +254,6 @@ public:
 #else
 		xAudio2DLL = LoadLibrary(L"XAudio2_7.dll");
 #endif
-#endif
 
 		//
 		// Initialize XAudio2
@@ -264,29 +261,26 @@ public:
 		CoInitializeEx( NULL, COINIT_MULTITHREADED );
 
 		UINT32 flags = 0;
-#if _WIN32_WINNT < 0x602
 		if( IsDebugBuild )
 			flags |= XAUDIO2_DEBUG_ENGINE;
-#endif
 
 		try
 		{
 			if ( FAILED(hr = XAudio2Create( &pXAudio2, flags ) ) )
-				throw Exception::XAudio2Error( hr,
+				throw Exception::XAudio2_27Error( hr,
 					"Failed to init XAudio2 engine.  XA2 may not be available on your system.\n"
 					"Ensure that you have the latest DirectX runtimes installed, or use \n"
 					"DirectX / WaveOut drivers instead.  Error Details:"
 				);
-#if _WIN32_WINNT < 0x602
+
 			XAUDIO2_DEVICE_DETAILS deviceDetails;
 			pXAudio2->GetDeviceDetails( 0, &deviceDetails );
-#endif
 
 			// Stereo Expansion was planned to grab the currently configured number of
 			// Speakers from Windows's audio config.
 			// This doesn't always work though, so let it be a user configurable option.
 
-			int speakers;		
+			int speakers;
 			switch(numSpeakers) // speakers = (numSpeakers + 1) *2; ?
 			{
 				case 0: speakers = 2; break; // Stereo
@@ -296,10 +290,8 @@ public:
 				default: speakers = 2;
 			}
 
-#if _WIN32_WINNT < 0x602
 			// Any windows driver should support stereo at the software level, I should think!
 			jASSUME( deviceDetails.OutputFormat.Format.nChannels > 1 );
-#endif
 
 			//
 			// Create a mastering voice
@@ -360,7 +352,7 @@ public:
 
 			voiceContext->Init( pXAudio2 );
 		}
-		catch( Exception::XAudio2Error& ex )
+		catch( Exception::XAudio2_27Error& ex )
 		{
 			SysMessage( ex.CMessage() );
 			pXAudio2.Release();
@@ -394,18 +386,16 @@ public:
 		pXAudio2.Release();
 		CoUninitialize();
 
-#if _WIN32_WINNT < 0x602
 		if (xAudio2DLL) {
 			FreeLibrary(xAudio2DLL);
 			xAudio2DLL = nullptr;
 		}
-#endif
 	}
 
 	virtual void Configure(uptr parent)
 	{
 	}
-	
+
 	s32  Test() const
 	{
 		return 0;
@@ -424,7 +414,7 @@ public:
 
 	const wchar_t* GetLongName() const
 	{
-		return L"XAudio 2 (Recommended)";
+		return L"XAudio 2.7 (Recommended)";
 	}
 
 	void ReadSettings()
@@ -441,4 +431,4 @@ public:
 
 } static XA2;
 
-SndOutModule *XAudio2Out = &XA2;
+SndOutModule *XAudio2_27_Out = &XA2;

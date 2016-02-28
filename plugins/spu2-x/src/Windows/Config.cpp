@@ -127,7 +127,7 @@ void ReadSettings()
 	// let's use xaudio2 until this is sorted (rama)
 
 //	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, PortaudioOut->GetIdent());
-	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent());
+	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2_27_Out->GetIdent());
 
 	// find the driver index of this module:
 	OutputModule = FindOutputModuleById( omodid );
