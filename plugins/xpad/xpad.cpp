@@ -23,6 +23,10 @@
 #include "xpad.h"
 #include <VersionHelpers.h>
 
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0602 // Required for XInputEnable definition
+#include <xinput.h>
+
 static HMODULE s_hModule;
 static HMODULE s_xInputDll;
 static decltype(&XInputEnable) pXInputEnable;
