@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-02-21 11:51+0100\n"
-"PO-Revision-Date: 2015-11-08 00:55+0100\n"
-"Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
+"PO-Revision-Date: 2016-02-28 22:50+0100\n"
+"Last-Translator: Víctor González <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -466,9 +466,8 @@ msgid "executes an ELF image"
 msgstr "Ejecuta una imagen ELF"
 
 #: pcsx2/gui/AppInit.cpp:239
-#, fuzzy
 msgid "executes an IRX image"
-msgstr "Ejecuta una imagen ELF"
+msgstr "Ejecuta una imagen IRX"
 
 #: pcsx2/gui/AppInit.cpp:240
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
@@ -896,9 +895,8 @@ msgid "Contributors"
 msgstr "Contribuyentes"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
-#, fuzzy
 msgid "PlayStation 2 Emulator"
-msgstr "Un emulador de PlayStation 2"
+msgstr "Emulador de PlayStation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
@@ -2187,6 +2185,8 @@ msgstr "Precargar el hack TLB para evitar perder el tlb en Goemon"
 msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
+"Hack del bit I de la VU para evitar una recompilación constante (Scarface "
+"The World Is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
