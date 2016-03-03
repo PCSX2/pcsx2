@@ -21,6 +21,9 @@ linux_32_before_install() {
 		COMPILER_PACKAGE="g++-${VERSION}-multilib"
 	fi
 
+	# apt-get update fails because Chrome is 64-bit only.
+	sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+
 	sudo apt-get -qq update
 
 	# The 64-bit versions of the first 7 dependencies are part of the initial
