@@ -88,6 +88,16 @@ PFNGLCLIENTWAITSYNCPROC                glClientWaitSync                    = NUL
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange            = NULL;
 PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+// Query object
+PFNGLBEGINQUERYPROC                    glBeginQuery                        = NULL;
+PFNGLENDQUERYPROC                      glEndQuery                          = NULL;
+PFNGLGETQUERYIVPROC                    glGetQueryiv                        = NULL;
+PFNGLGETQUERYOBJECTIVPROC              glGetQueryObjectiv                  = NULL;
+PFNGLGETQUERYOBJECTUIVPROC             glGetQueryObjectuiv                 = NULL;
+PFNGLQUERYCOUNTERPROC                  glQueryCounter                      = NULL;
+PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v                = NULL;
+PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v               = NULL;
+PFNGLGETINTEGER64VPROC                 glGetInteger64v                     = NULL;
 // GL4.0
 // GL4.1
 PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline               = NULL;

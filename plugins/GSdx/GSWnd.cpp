@@ -81,6 +81,16 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(glDeleteSync) = GetProcAddress("glDeleteSync");
 	*(void**)&(glClientWaitSync) = GetProcAddress("glClientWaitSync");
 	*(void**)&(glFlushMappedBufferRange) = GetProcAddress("glFlushMappedBufferRange");
+	// Query object
+	*(void**)&(glBeginQuery) = GetProcAddress("glBeginQuery");
+	*(void**)&(glEndQuery) = GetProcAddress("glEndQuery");
+	*(void**)&(glGetQueryiv) = GetProcAddress("glGetQueryiv");
+	*(void**)&(glGetQueryObjectiv) = GetProcAddress("glGetQueryObjectiv");
+	*(void**)&(glGetQueryObjectuiv) = GetProcAddress("glGetQueryObjectuiv");
+	*(void**)&(glQueryCounter) = GetProcAddress("glQueryCounter");
+	*(void**)&(glGetQueryObjecti64v) = GetProcAddress("glGetQueryObjecti64v");
+	*(void**)&(glGetQueryObjectui64v) = GetProcAddress("glGetQueryObjectui64v");
+	*(void**)&(glGetInteger64v) = GetProcAddress("glGetInteger64v");
 	// GL4.0
 	*(void**)&(glBlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB", true);
 	*(void**)&(glBlendFuncSeparateiARB) = GetProcAddress("glBlendFuncSeparateiARB", true);

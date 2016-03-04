@@ -263,6 +263,16 @@ extern   PFNGLCLIENTWAITSYNCPROC                glClientWaitSync;
 extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange;
 extern   PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate;
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
+// Query object
+extern   PFNGLBEGINQUERYPROC                    glBeginQuery;
+extern   PFNGLENDQUERYPROC                      glEndQuery;
+extern   PFNGLGETQUERYIVPROC                    glGetQueryiv;
+extern   PFNGLGETQUERYOBJECTIVPROC              glGetQueryObjectiv;
+extern   PFNGLGETQUERYOBJECTUIVPROC             glGetQueryObjectuiv;
+extern   PFNGLQUERYCOUNTERPROC                  glQueryCounter;
+extern   PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v;
+extern   PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v;
+extern   PFNGLGETINTEGER64VPROC                 glGetInteger64v;
 // GL4.0
 // GL4.1
 extern   PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline;
