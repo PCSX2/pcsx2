@@ -4,7 +4,6 @@
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
     <OutDir>$(SolutionDir)bin\$(PcsxSubsection)\</OutDir>
     <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
