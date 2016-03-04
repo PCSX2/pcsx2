@@ -1088,8 +1088,23 @@ void dynarecCheckBreakpoint()
  	if (CBreakPoints::CheckSkipFirst(pc) != 0)
 		return;
 
-	auto cond = CBreakPoints::GetBreakPointCondition(pc);
-	if (cond && !cond->Evaluate())
+	int bpFlags = isBreakpointNeeded(pc);
+	bool hit = false;
+	//check breakpoint at current pc
+	if (bpFlags & 1) {
+		auto cond = CBreakPoints::GetBreakPointCondition(pc);
+		if (cond == NULL || cond->Evaluate()) {
+			hit = true;
+		}
+	}
+	//check breakpoint in delay slot
+	if (bpFlags & 2) {
+		auto cond = CBreakPoints::GetBreakPointCondition(pc + 4);
+		if (cond == NULL || cond->Evaluate())
+			hit = true;
+	}
+
+	if (!hit)
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);

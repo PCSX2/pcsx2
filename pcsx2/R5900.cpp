@@ -602,17 +602,19 @@ inline bool isBranchOrJump(u32 addr)
 
 // The next two functions return 0 if no breakpoint is needed,
 // 1 if it's needed on the current pc, 2 if it's needed in the delay slot
+// 3 if needed in both
 
 int isBreakpointNeeded(u32 addr)
 {
+	int bpFlags = 0;
 	if (CBreakPoints::IsAddressBreakPoint(addr))
-		return 1;
+		bpFlags += 1;
 
 	// there may be a breakpoint in the delay slot
 	if (isBranchOrJump(addr) && CBreakPoints::IsAddressBreakPoint(addr+4))
-		return 2;
+		bpFlags += 2;
 
-	return 0;
+	return bpFlags;
 }
 
 int isMemcheckNeeded(u32 pc)
