@@ -919,9 +919,9 @@ void SYSCALL()
 						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; break;
 						case 0x73: mode = "DVD PAL/480P 720x480 @ ??.???"; break;
 
-						default: DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+						default: Console.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
 					}
-					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+					Console.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
 				}
 				break;
 
