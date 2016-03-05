@@ -913,7 +913,8 @@ void SYSCALL()
 						case 0x50: mode = "HDTV   720x480 @ 59.94"; break;
 						case 0x51: mode = "HDTV 1920x1080 @ 60.00"; break;
 						case 0x52: mode = "HDTV  1280x720 @ ??.???"; break;
-						// TODO: Videomodetest.ELF reported 0x53 and 0x54 for two video modes. however no info on the docs.
+						case 0x53: mode = "HDTV   768x576 @ ??.???"; break;
+						case 0x54: mode = "HDTV 1920x1080 @ ??.???"; break;
 
 						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; break;
 						case 0x73: mode = "DVD PAL/480P 720x480 @ ??.???"; break;
