@@ -662,48 +662,69 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && bp < t->m_TEX0.TBP0)
-			{
-				uint32 rowsize = bw * 8192;
-				uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
-
-				if(rowsize > 0 && offset % rowsize == 0)
+			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM)) {
+				if (bp < t->m_TEX0.TBP0)
 				{
+					uint32 rowsize = bw * 8192;
+					uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
+
+					if(rowsize > 0 && offset % rowsize == 0)
+					{
+						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+						if(r.bottom > y)
+						{
+							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+									t->m_texture ? t->m_texture->GetID() : 0,
+									t->m_TEX0.TBP0);
+							// TODO: do not add this rect above too
+							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
+							t->m_TEX0.TBW = bw;
+							continue;
+						}
+					}
+				}
+
+				// FIXME: this code "fixes" black FMV issue with rule of rose.
+				// Code is completely hardcoded so maybe not the best solution. Besides I don't
+				// know the full impact of it.
+				// Let's keep this code for the future
+#if 0
+				if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
+				{
+					GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0);
+
+					uint32 rowsize = bw * 8192u;
+					uint32 offset = 0x200 * 256u;
 					int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-					if(r.bottom > y)
-					{
-						GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+					t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
+					t->m_TEX0.TBW = bw;
+					continue;
+				}
+#endif
+#if 1
+				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
+				if (t->m_TEX0.TBW == bw && t->Inside(bp, psm, rect)) {
+					uint32 rowsize = bw * 8192u;
+					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
+
+					if(rowsize > 0 && offset % rowsize == 0) {
+						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
-						// TODO: do not add this rect above too
-						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
+
+						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
 						t->m_TEX0.TBW = bw;
 						continue;
 					}
 				}
-			}
-
-			// FIXME: this code "fixes" black FMV issue with rule of rose.
-			// Code is completely hardcoded so maybe not the best solution. Besides I don't
-			// know the full impact of it.
-			// Let's keep this code for the future
-#if 0
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
-			{
-				GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
-						t->m_texture ? t->m_texture->GetID() : 0,
-						t->m_TEX0.TBP0);
-
-				uint32 rowsize = bw * 8192u;
-				uint32 offset = 0x200 * 256u;
-				int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-				t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
-				t->m_TEX0.TBW = bw;
-				continue;
-			}
 #endif
+			}
 		}
 	}
 }
@@ -1600,13 +1621,13 @@ void GSTextureCache::Target::Update()
 	// Copy the new GS memory content into the destination texture.
 	if(m_type == RenderTarget)
 	{
-		GL_INS("ERROR: Update RenderTarget");
+		GL_INS("ERROR: Update RenderTarget 0x%x", m_TEX0.TBP0);
 
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 	}
 	else if(m_type == DepthStencil)
 	{
-		GL_INS("ERROR: Update DepthStencil");
+		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
 
 		// FIXME linear or not?
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
@@ -1615,14 +1636,27 @@ void GSTextureCache::Target::Update()
 	m_renderer->m_dev->Recycle(t);
 }
 
-void GSTextureCache::Target::UpdateValidity(const GSVector4i& r)
+void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
-	m_valid = m_valid.runion(r);
+	m_valid = m_valid.runion(rect);
 
-	// TODO: assumption: format is 32 bits
 	uint32 nb_block = m_TEX0.TBW * m_valid.height();
+	if (m_TEX0.PSM == PSM_PSMCT16)
+		nb_block >>= 1;
+
 	m_end_block = m_TEX0.TBP0 + nb_block;
 	//fprintf(stderr, "S: 0x%x E:0x%x\n", m_TEX0.TBP0, m_end_block);
+}
+
+bool GSTextureCache::Target::Inside(uint32 bp, uint32 psm, const GSVector4i& rect)
+{
+	uint32 nb_block = rect.height() * rect.width();
+	if (m_TEX0.PSM == PSM_PSMCT16)
+		nb_block >>= 7;
+	else
+		nb_block >>= 6;
+
+	return bp > m_TEX0.TBP0 && (bp + nb_block) < m_end_block;
 }
 
 // GSTextureCache::SourceMap

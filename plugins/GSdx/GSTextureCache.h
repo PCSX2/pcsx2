@@ -88,7 +88,8 @@ public:
 	public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
 
-		void UpdateValidity(const GSVector4i& r);
+		void UpdateValidity(const GSVector4i& rect);
+		bool Inside(uint32 bp, uint32 psm, const GSVector4i& rect);
 
 		virtual void Update();
 	};
