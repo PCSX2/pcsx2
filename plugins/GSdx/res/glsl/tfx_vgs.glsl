@@ -16,15 +16,13 @@ layout(std140, binding = 21) uniform cb21
 
     vec4 WH;
 
-    vec2 _pad0;
     vec2 TA;
+    float _pad0;
+    float Af;
 
     uvec4 MskFix;
 
     uvec4 FbMask;
-
-    vec3 _pad1;
-    float Af;
 
     vec4 HalfTexel;
 

@@ -460,7 +460,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
-			ps_cb.AlphaCoeff.a = (float)ALPHA.FIX / 128.0f;
+			ps_cb.TA_Af.a = (float)ALPHA.FIX / 128.0f;
 		}
 
 		// No need to flush for every primitive
@@ -901,8 +901,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.aem     = m_env.TEXA.AEM;
 			ASSERT(tex->m_target);
 
+			// Shuffle is a 16 bits format, so aem is always required
 			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
-			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+			ta /= 255.0f;
+			// FIXME rely on compiler for the optimization
+			ps_cb.TA_Af.x = ta.x;
+			ps_cb.TA_Af.y = ta.y;
 
 			// FIXME: it is likely a bad idea to do the bilinear interpolation here
 			// bilinear &= m_vt.IsLinear();
@@ -915,8 +919,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.tex_fmt = cpsm.fmt;
 			ps_sel.aem     = m_env.TEXA.AEM;
 
-			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
-			ps_cb.MinF_TA = ta.xyxy() / 255.0f;
+			// Don't upload AEM if format is 32 bits
+			if (cpsm.fmt) {
+				GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+				ta /= 255.0f;
+				// FIXME rely on compiler for the optimization
+				ps_cb.TA_Af.x = ta.x;
+				ps_cb.TA_Af.y = ta.y;
+			}
 
 			// Select the index format
 			if (tex->m_palette) {
