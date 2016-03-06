@@ -424,7 +424,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		{
 			dst = t;
 
-			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x)", w, h, dst->m_texture->GetID(), bp);
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
 
 			break;
 		}
@@ -434,7 +434,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			if(t->m_TEX0.TBP0 <= bp && bp < t->m_TEX0.TBP0 + 0xe00UL && (!dst || t->m_TEX0.TBP0 >= dst->m_TEX0.TBP0))
 			{
-				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0);
+				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x -> 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block);
 				dst = t;
 			}
 		}
@@ -1613,6 +1613,16 @@ void GSTextureCache::Target::Update()
 	}
 
 	m_renderer->m_dev->Recycle(t);
+}
+
+void GSTextureCache::Target::UpdateValidity(const GSVector4i& r)
+{
+	m_valid = m_valid.runion(r);
+
+	// TODO: assumption: format is 32 bits
+	uint32 nb_block = m_TEX0.TBW * m_valid.height();
+	m_end_block = m_TEX0.TBP0 + nb_block;
+	//fprintf(stderr, "S: 0x%x E:0x%x\n", m_TEX0.TBP0, m_end_block);
 }
 
 // GSTextureCache::SourceMap

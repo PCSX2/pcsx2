@@ -83,9 +83,12 @@ public:
 		GSVector4i m_valid;
 		bool m_depth_supported;
 		bool m_dirty_alpha;
+		uint32 m_end_block; // Hint of the target area
 
 	public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
+
+		void UpdateValidity(const GSVector4i& r);
 
 		virtual void Update();
 	};
