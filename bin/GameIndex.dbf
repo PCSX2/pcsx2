@@ -11701,16 +11701,20 @@ Name   = Neo Contra
 Region = PAL-M3
 Compat = 4
 [patches = EEE2F6A3]
-	//comment=Patches By Nachbrenner and Prafull
+	comment=Patches By Nachbrenner and Prafull
 	
 	//fix IPU busy! ingame
 	patch=0,EE,003a9a88,word,03e00008
 	patch=0,EE,003a9a8c,word,00000000
 	patch=0,EE,003a9b60,word,03e00008
 	patch=0,EE,003a9b64,word,00000000
-	comment= Patch By Prafull
 	//Game should work, avoid pressing start to pause the game
 	patch=1,EE,00100530,word,00000000
+	//New patch fixes most issues
+	patch=0,EE,003a9b20,word,00000000
+	//Fix hang at Level 4
+	patch=0,EE,0037b764,word,03e00008
+	patch=0,EE,0037b768,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52511
@@ -12786,6 +12790,11 @@ Region = PAL-M5
 Serial = SLES-52943
 Name   = ESPN NFL 2K5
 Region = PAL-E
+[patches = 7D5403E1]
+	//Patched by Prafull
+	//Fixes random hangs
+	patch=0,EE,0043c930,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52944
 Name   = Robotech - Invasion
@@ -35650,6 +35659,12 @@ EETimingHack = 1
 Serial = SLUS-20455
 Name   = F1 2002
 Region = NTSC-U
+[patches = 8FF059A1]
+	//Patched by Prafull
+	//Fixes controller issue but skips videos
+	patch=0,EE,002d8c58,word,03e00008
+	patch=0,EE,002d8c5c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20456
 Name   = Soccer Mania
@@ -36878,6 +36893,11 @@ Region = NTSC-U
 Serial = SLUS-20727
 Name   = ESPN - NFL Football
 Region = NTSC-U
+[patches = 56920AD1]
+	//Patched by Prafull
+	//Fixes random hangs
+	patch=0,EE,003bb900,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20728
 Name   = ESPN - NHL Hockey
@@ -37789,6 +37809,11 @@ Serial = SLUS-20921
 Name   = ESPN - NHL 2K5
 Region = NTSC-U
 Compat = 2
+[patches = 9B6E69EC]
+	//Patched by Prafull
+	//Avoid hang at start
+	patch=0,EE,003ed218,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20922
 Name   = ESPN - College Hoops 2K5
@@ -37989,16 +38014,19 @@ Region = NTSC-U
 Compat = 4
 [patches = 08901101]
 	
-	comment=Patches By Nachbrenner
+	comment=Patches By Nachbrenner and prafull
 	
 	//fix IPU busy! ingame
 	patch=0,EE,003a9538,word,03e00008
 	patch=0,EE,003a953c,word,00000000
-	
 	patch=0,EE,003a9460,word,03e00008
 	patch=0,EE,003a9464,word,00000000
 	patch=1,EE,00100530,word,00000000
-	
+	//New patch fixes most issues
+	patch=0,EE,003a94f8,word,00000000
+	//Fix hang at Level 4
+	patch=0,EE,0037b1a4,word,03e00008
+	patch=0,EE,0037b1a8,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20962
