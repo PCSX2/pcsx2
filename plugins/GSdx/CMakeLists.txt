@@ -31,10 +31,6 @@ if(LIBLZMA_FOUND)
 	set(GSdxFinalFlags ${GSdxFinalFlags} -DLZMA_SUPPORTED)
 endif()
 
-if(PNGPP_FOUND)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DPNGPP_SUPPORTED)
-endif()
-
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)

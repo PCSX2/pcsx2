@@ -40,7 +40,7 @@ public:
 	bool Update(const GSVector4i& r, const void* data, int pitch);
 	bool Map(GSMap& m, const GSVector4i* r);
 	void Unmap();
-	bool Save(const string& fn, bool dds = false);
+	bool Save(const string& fn, bool user_image = false, bool dds = false);
 
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();

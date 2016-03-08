@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSTexture11.h"
+#include "GSPng.h"
 
 GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 	: m_texture(texture)
@@ -92,62 +93,98 @@ void GSTexture11::Unmap()
 	}
 }
 
-bool GSTexture11::Save(const string& fn, bool dds)
+bool GSTexture11::Save(const string& fn, bool user_image, bool dds)
 {
-	CComPtr<ID3D11Resource> res;
+	CComPtr<ID3D11Texture2D> res;
+	D3D11_TEXTURE2D_DESC desc;
 
-	if(m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
+	m_texture->GetDesc(&desc);
+
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.BindFlags = 0;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, &res);
+	if (FAILED(hr))
 	{
-		HRESULT hr;
+		return false;
+	}
 
-		D3D11_TEXTURE2D_DESC desc;
+	m_ctx->CopyResource(res, m_texture);
 
-		memset(&desc, 0, sizeof(desc));
-
-		m_texture->GetDesc(&desc);
-
-		desc.Usage = D3D11_USAGE_STAGING;
-		desc.BindFlags = 0;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-
-		CComPtr<ID3D11Texture2D> src, dst;
-
-		hr = m_dev->CreateTexture2D(&desc, NULL, &src);
-
-		m_ctx->CopyResource(src, m_texture);
+	if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
+	{
+		CComPtr<ID3D11Texture2D> dst;
 
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_WRITE;
 
-		hr = m_dev->CreateTexture2D(&desc, NULL, &dst);
+		hr = m_dev->CreateTexture2D(&desc, nullptr, &dst);
+		if (FAILED(hr))
+		{
+			return false;
+		}
 
 		D3D11_MAPPED_SUBRESOURCE sm, dm;
 
-		hr = m_ctx->Map(src, 0, D3D11_MAP_READ, 0, &sm);
-		hr = m_ctx->Map(dst, 0, D3D11_MAP_WRITE, 0, &dm);
-
-		uint8* s = (uint8*)sm.pData;
-		uint8* d = (uint8*)dm.pData;
-
-		for(uint32 y = 0; y < desc.Height; y++, s += sm.RowPitch, d += dm.RowPitch)
+		hr = m_ctx->Map(res, 0, D3D11_MAP_READ, 0, &sm);
+		if (FAILED(hr))
 		{
-			for(uint32 x = 0; x < desc.Width; x++)
+			return false;
+		}
+		hr = m_ctx->Map(dst, 0, D3D11_MAP_WRITE, 0, &dm);
+		if (FAILED(hr))
+		{
+			m_ctx->Unmap(res, 0);
+			return false;
+		}
+
+		uint8* s = static_cast<uint8*>(sm.pData);
+		uint8* d = static_cast<uint8*>(dm.pData);
+
+		for (uint32 y = 0; y < desc.Height; y++, s += sm.RowPitch, d += dm.RowPitch)
+		{
+			for (uint32 x = 0; x < desc.Width; x++)
 			{
-				((uint32*)d)[x] = (uint32)(ldexpf(((float*)s)[x*2], 32));
+				reinterpret_cast<uint32*>(d)[x] = static_cast<uint32>(ldexpf(reinterpret_cast<float*>(s)[x*2], 32));
 			}
 		}
 
-		m_ctx->Unmap(src, 0);
+		m_ctx->Unmap(res, 0);
 		m_ctx->Unmap(dst, 0);
 
 		res = dst;
 	}
-	else
+
+	res->GetDesc(&desc);
+
+	GSPng::Format format;
+	switch (desc.Format)
 	{
-		res = m_texture;
+	case DXGI_FORMAT_A8_UNORM:
+		format = GSPng::R8I_PNG;
+		break;
+	case DXGI_FORMAT_R8G8B8A8_UNORM:
+		format = dds ? GSPng::RGBA_PNG : (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL ? GSPng::RGB_A_PNG : GSPng::RGB_PNG);
+		break;
+	default:
+		fprintf(stderr, "DXGI_FORMAT %d not saved to image\n", desc.Format);
+		return false;
 	}
 
-	return SUCCEEDED(D3DX11SaveTextureToFile(m_ctx, res, dds ? D3DX11_IFF_DDS : D3DX11_IFF_BMP, fn.c_str()));
+	D3D11_MAPPED_SUBRESOURCE sm;
+	hr = m_ctx->Map(res, 0, D3D11_MAP_READ, 0, &sm);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	bool success = GSPng::Save(format, fn, static_cast<uint8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, compression);
+
+	m_ctx->Unmap(res, 0);
+
+	return success;
 }
 
 GSTexture11::operator ID3D11Texture2D*()

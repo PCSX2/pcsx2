@@ -20,21 +20,19 @@
 
 #pragma once
 
-#ifdef ENABLE_OGL_PNG
-#include "png++/png.hpp"
-#endif
 #include "GSThread_CXX11.h"
 
 namespace GSPng {
     enum Format {
-        RGBA_PNG,
+        START = 0,
+        RGBA_PNG = 0,
         RGB_PNG,
         RGB_A_PNG,
         ALPHA_PNG,
-        DEPTH_PNG,
         R8I_PNG,
         R16I_PNG,
         R32I_PNG,
+        COUNT
     };
 
 	class Transaction
@@ -42,16 +40,17 @@ namespace GSPng {
 		public:
 			Format m_fmt;
 			const std::string m_file;
-			char* m_image;
+			uint8* m_image;
 			int m_w;
 			int m_h;
 			int m_pitch;
+			int m_compression;
 
-			Transaction(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch);
+			Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch, int compression);
 			~Transaction();
 	};
 
-    void Save(GSPng::Format fmt, const string& file, char* image, int w, int h, int pitch);
+    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
 
 	class Worker : public GSJobQueue<shared_ptr<Transaction>, 16 >
 	{

@@ -46,7 +46,7 @@ public:
 	virtual bool Update(const GSVector4i& r, const void* data, int pitch) = 0;
 	virtual bool Map(GSMap& m, const GSVector4i* r = NULL) = 0;
 	virtual void Unmap() = 0;
-	virtual bool Save(const string& fn, bool dds = false) = 0;
+	virtual bool Save(const string& fn, bool user_image = false, bool dds = false) = 0;
 	virtual void Invalidate() {}
 	virtual uint32 GetID() { return 0; }
 

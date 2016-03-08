@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSTexture9.h"
+#include "GSPng.h"
 
 GSTexture9::GSTexture9(IDirect3DSurface9* surface)
 {
@@ -141,58 +142,70 @@ void GSTexture9::Unmap()
 	}
 }
 
-bool GSTexture9::Save(const string& fn, bool dds)
+bool GSTexture9::Save(const string& fn, bool user_image, bool dds)
 {
+	bool rb_swapped = true;
 	CComPtr<IDirect3DSurface9> surface;
 
-	if(m_desc.Usage & D3DUSAGE_DEPTHSTENCIL)
+	D3DSURFACE_DESC desc;
+	m_surface->GetDesc(&desc);
+
+	if (m_desc.Usage & D3DUSAGE_DEPTHSTENCIL && desc.Format != D3DFMT_D32F_LOCKABLE)
 	{
-		HRESULT hr;
+		return false;
+	}
 
-		D3DSURFACE_DESC desc;
-
-		m_surface->GetDesc(&desc);
-
-		if(desc.Format != D3DFMT_D32F_LOCKABLE)
-			return false;
-
-		hr = m_dev->CreateOffscreenPlainSurface(desc.Width, desc.Height, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &surface, NULL);
-
-		D3DLOCKED_RECT slr, dlr;
-
-		hr = m_surface->LockRect(&slr, NULL, 0);
-		hr = surface->LockRect(&dlr, NULL, 0);
-
-		uint8* s = (uint8*)slr.pBits;
-		uint8* d = (uint8*)dlr.pBits;
-
-		for(uint32 y = 0; y < desc.Height; y++, s += slr.Pitch, d += dlr.Pitch)
-		{
-			for(uint32 x = 0; x < desc.Width; x++)
-			{
-				((float*)d)[x] = ((float*)s)[x];
-			}
-		}
-
-		m_surface->UnlockRect();
-		surface->UnlockRect();
+	if (desc.Format == D3DFMT_A8 || desc.Pool == D3DPOOL_MANAGED || desc.Usage == D3DUSAGE_DEPTHSTENCIL)
+	{
+		surface = m_surface;
+		rb_swapped = false;
 	}
 	else
 	{
-		surface = m_surface;
+		HRESULT hr;
+
+		hr = m_dev->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &surface, nullptr);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		hr = m_dev->GetRenderTargetData(m_surface, surface);
+		if (FAILED(hr))
+		{
+			return false;
+		}
 	}
 
-	if(surface != NULL)
+	GSPng::Format format;
+	switch (desc.Format)
 	{
-		return SUCCEEDED(D3DXSaveSurfaceToFile(fn.c_str(), dds ? D3DXIFF_DDS : D3DXIFF_BMP, surface, NULL, NULL));
+	case D3DFMT_A8:
+		format = GSPng::R8I_PNG;
+		break;
+	case D3DFMT_A8R8G8B8:
+		format = dds? GSPng::RGBA_PNG : GSPng::RGB_PNG;
+		break;
+	case D3DFMT_D32F_LOCKABLE:
+		format = GSPng::RGB_A_PNG;
+		break;
+	default:
+		fprintf(stderr, "D3DFMT %d not saved to image\n", desc.Format);
+		return false;
 	}
-/*
-	if(CComQIPtr<IDirect3DTexture9> texture = surface)
+
+	D3DLOCKED_RECT slr;
+	HRESULT hr = surface->LockRect(&slr, nullptr, 0);
+	if (FAILED(hr))
 	{
-		return SUCCEEDED(D3DXSaveTextureToFile(fn.c_str(), dds ? D3DXIFF_DDS : D3DXIFF_BMP, texture, NULL));
+		return false;
 	}
-*/
-	return false;
+
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	bool success = GSPng::Save(format, fn, static_cast<uint8*>(slr.pBits), desc.Width, desc.Height, slr.Pitch, compression, rb_swapped);
+
+	surface->UnlockRect();
+	return success;
 }
 
 GSTexture9::operator IDirect3DSurface9*()
