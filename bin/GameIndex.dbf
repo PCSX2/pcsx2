@@ -11701,15 +11701,7 @@ Name   = Neo Contra
 Region = PAL-M3
 Compat = 4
 [patches = EEE2F6A3]
-	comment=Patches By Nachbrenner and Prafull
-	
-	//fix IPU busy! ingame
-	patch=0,EE,003a9a88,word,03e00008
-	patch=0,EE,003a9a8c,word,00000000
-	patch=0,EE,003a9b60,word,03e00008
-	patch=0,EE,003a9b64,word,00000000
-	//Game should work, avoid pressing start to pause the game
-	patch=1,EE,00100530,word,00000000
+	comment=Patches By Prafull
 	//New patch fixes most issues
 	patch=0,EE,003a9b20,word,00000000
 	//Fix hang at Level 4
@@ -38013,15 +38005,7 @@ Name   = Neo Contra
 Region = NTSC-U
 Compat = 4
 [patches = 08901101]
-	
-	comment=Patches By Nachbrenner and prafull
-	
-	//fix IPU busy! ingame
-	patch=0,EE,003a9538,word,03e00008
-	patch=0,EE,003a953c,word,00000000
-	patch=0,EE,003a9460,word,03e00008
-	patch=0,EE,003a9464,word,00000000
-	patch=1,EE,00100530,word,00000000
+	comment=Patches by prafull
 	//New patch fixes most issues
 	patch=0,EE,003a94f8,word,00000000
 	//Fix hang at Level 4
