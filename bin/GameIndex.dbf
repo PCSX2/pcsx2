@@ -5180,6 +5180,12 @@ Serial = SCUS-97328
 Name   = Gran Turismo 4
 Region = NTSC-U
 Compat = 5
+//[patches = 77E61C8A]
+//
+//Fixes black screen bug that prevents game from loading
+//patch=1,EE,00100D84,word,24100001 
+//[/patches]
+//
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
 // allows car imports from GT3 or something
