@@ -49,29 +49,29 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 void GSRendererHW::SetScaling()
 {
-	int crtc_width = GetDisplayRect().width();
-	int crtc_height = GetDisplayRect().height();
+	GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
 
 	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
 	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
 	// In such cases, let's just use the CRTC width.
-	int fb_width = max((int)m_context->FRAME.FBW * 64, crtc_width);
-
+	int fb_width = max({ (int)m_context->FRAME.FBW * 64, crtc_size.x , 512 });
 	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
 	// from physical units of the display rectangle in case the game uses a heigher value of height.
-	int fb_height = (fb_width < 1024) ? max(512, crtc_height) : 1024;
-	bool good_rt_size = m_width == (fb_width * m_upscale_multiplier) && m_height == (fb_height * m_upscale_multiplier);
-	bool initialized_register_state = ((m_context->FRAME.FBW * 64) > 1) && (crtc_height > 1);
+	int fb_height = (fb_width < 1024) ? max(512, crtc_size.y) : 1024;
+
+	int upscaled_fb_w = fb_width * m_upscale_multiplier;
+	int upscaled_fb_h = fb_height * m_upscale_multiplier;
+	bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
-	if ( m_upscale_multiplier <= 1 || good_rt_size || !initialized_register_state)
+	if ( m_upscale_multiplier <= 1 || good_rt_size)
 		return;
 
 	m_tc->RemovePartial();
-	m_width = fb_width * m_upscale_multiplier;
-	m_height = fb_height * m_upscale_multiplier;
-	printf("Frame buffer size set to  %dx%d (%dx%d)\n", (m_width / m_upscale_multiplier), (m_height / m_upscale_multiplier), m_width, m_height);
+	m_width = upscaled_fb_w;
+	m_height = upscaled_fb_h;
+	printf("Frame buffer size set to  %dx%d (%dx%d)\n", fb_width, fb_height , m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
