@@ -173,6 +173,7 @@ public:
 		SteambotChronicles,
 		SacredBlaze,
 		SuperManReturns,
+		PrinceOfPersiaWarriorWithin,
 		TitleCount,
 	};
 

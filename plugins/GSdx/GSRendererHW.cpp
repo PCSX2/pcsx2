@@ -658,6 +658,7 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::PrinceOfPersiaWarriorWithin, CRC::RegionCount, &GSRendererHW::OI_POPWW));
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
@@ -1246,6 +1247,17 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
 
 	return false;
+}
+
+bool GSRendererHW::OI_POPWW(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	uint32 FBP = m_context->FRAME.Block();
+	uint32 FBMSK = m_context->FRAME.FBMSK;
+
+	if(FBMSK != 0xff000000 && FBMSK != 0 && FBP < 0x02300)
+		return false;
+
+	return true;
 }
 
 
