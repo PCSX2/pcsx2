@@ -282,6 +282,10 @@ extern   PFNGLGETPROGRAMPIPELINEIVPROC          glGetProgramPipelineiv;
 extern   PFNGLVALIDATEPROGRAMPIPELINEPROC       glValidateProgramPipeline;
 extern   PFNGLGETPROGRAMPIPELINEINFOLOGPROC     glGetProgramPipelineInfoLog;
 extern   PFNGLGETPROGRAMBINARYPROC              glGetProgramBinary;
+extern   PFNGLVIEWPORTINDEXEDFPROC              glViewportIndexedf;
+extern   PFNGLVIEWPORTINDEXEDFVPROC             glViewportIndexedfv;
+extern   PFNGLSCISSORINDEXEDPROC                glScissorIndexed;
+extern   PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv;
 // NO GL4.1
 extern   PFNGLUSEPROGRAMPROC                    glUseProgram;
 extern   PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog;

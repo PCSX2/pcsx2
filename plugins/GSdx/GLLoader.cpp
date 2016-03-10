@@ -107,6 +107,10 @@ PFNGLGETPROGRAMPIPELINEIVPROC          glGetProgramPipelineiv              = NUL
 PFNGLVALIDATEPROGRAMPIPELINEPROC       glValidateProgramPipeline           = NULL;
 PFNGLGETPROGRAMPIPELINEINFOLOGPROC     glGetProgramPipelineInfoLog         = NULL;
 PFNGLGETPROGRAMBINARYPROC              glGetProgramBinary                  = NULL;
+PFNGLVIEWPORTINDEXEDFPROC              glViewportIndexedf                  = NULL;
+PFNGLVIEWPORTINDEXEDFVPROC             glViewportIndexedfv                 = NULL;
+PFNGLSCISSORINDEXEDPROC                glScissorIndexed                    = NULL;
+PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv                   = NULL;
 // NO GL4.1
 PFNGLUSEPROGRAMPROC                    glUseProgram                        = NULL;
 PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog                  = NULL;
@@ -352,7 +356,7 @@ namespace GLLoader {
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
-	// FIXME add GL_ARB_viewport_array
+	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
 
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
@@ -443,6 +447,7 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
+				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
 					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n"
@@ -478,6 +483,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
 		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
+		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
 		// GL4.2
 		status &= status_and_override(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");

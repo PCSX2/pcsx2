@@ -105,6 +105,10 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(glUseProgramStages) = GetProcAddress("glUseProgramStages", true);
 	*(void**)&(glProgramUniform1i) = GetProcAddress("glProgramUniform1i", true); // but no GL4.2
 	*(void**)&(glGetProgramBinary) = GetProcAddress("glGetProgramBinary", true);
+	*(void**)&(glViewportIndexedf) = GetProcAddress("glViewportIndexedf", true);
+	*(void**)&(glViewportIndexedfv) = GetProcAddress("glViewportIndexedfv", true);
+	*(void**)&(glScissorIndexed) = GetProcAddress("glScissorIndexed", true);
+	*(void**)&(glScissorIndexedv) = GetProcAddress("glScissorIndexedv", true);
 	// NO GL4.1
 	*(void**)&(glDeleteProgram) = GetProcAddress("glDeleteProgram");
 	*(void**)&(glDeleteShader) = GetProcAddress("glDeleteShader");
