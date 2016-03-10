@@ -1501,13 +1501,15 @@ Name   = SOCOM - U.S. Navy SEALs [Beta & Full Release]
 Region = PAL-M6
 ---------------------------------------------
 Serial = SCES-50934
-Name   = World Rally Championship II Extreme
+Name   = WRC II Extreme
 Region = PAL-M7
 Compat = 5
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCES-50935
-Name   = World Rally Championship II Extreme
+Name   = WRC II Extreme
 Region = PAL-Unk
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCES-50956
 Name   = Ferrari F355 Challenge
