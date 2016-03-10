@@ -1732,7 +1732,7 @@ Name   = My Street
 Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-51684
-Name   = World Rally Championship 3
+Name   = WRC 3
 Region = PAL-M8
 Compat = 5
 XgKickHack = 1
@@ -1881,7 +1881,7 @@ Name   = Forbidden Siren - Viviendo la Pesadilla
 Region = PAL-S
 ---------------------------------------------
 Serial = SCES-52389
-Name   = World Rally Championship 4
+Name   = WRC 4
 Region = PAL-M8
 Compat = 1
 ---------------------------------------------
@@ -2139,7 +2139,7 @@ Compat = 5
 eeClampMode = 1
 ---------------------------------------------
 Serial = SCES-53247
-Name   = WRC - World Rally Championship - Rally Evolved
+Name   = WRC Rally Evolved
 Region = PAL-M8
 Compat = 5
 XgKickHack = 1			//SPS.
@@ -23110,7 +23110,7 @@ Name   = Winning Post 6 Maximum 2004
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65583
-Name   = World Rally Championship 3
+Name   = WRC 3
 Region = NTSC-J
 Compat = 4
 XgKickHack = 1
@@ -24588,7 +24588,7 @@ Name   = Kenka Banchou
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65975
-Name   = World Rally Championship 4
+Name   = WRC 4
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65976
@@ -25881,7 +25881,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-66334
-Name   = WRC - World Rally Championship 4 [Spike the Best]
+Name   = WRC 4 [Spike the Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66336
@@ -28707,7 +28707,7 @@ Name   = Samurai Complete Edition [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74406
-Name   = WRC - World Rally Chanpionship [PlayStation 2 The Best]
+Name   = World Rally Chanpionship [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74407
@@ -30379,7 +30379,7 @@ Name   = Air Ranger 2 - Rescue Helicopter
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25099
-Name   = WRC - World Rally Championship
+Name   = World Rally Championship
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25100
@@ -35508,7 +35508,7 @@ Region = NTSC-U
 Compat = 2
 ---------------------------------------------
 Serial = SLUS-20419
-Name   = WRC - World Rally Championship
+Name   = World Rally Championship
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20420
