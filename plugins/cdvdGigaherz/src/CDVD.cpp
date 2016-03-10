@@ -290,18 +290,18 @@ s32  CALLBACK CDVDgetDualInfo(s32* dualType, u32* _layer1start)
 	{
 	case 1:
 		*dualType = 1;
-		*_layer1start = src->GetLayerBreakAddress();
-		return 1;
+		*_layer1start = src->GetLayerBreakAddress() + 1;
+		return 0;
 	case 2:
 		*dualType = 2;
-		*_layer1start = src->GetLayerBreakAddress();
-		return 1;
+		*_layer1start = src->GetLayerBreakAddress() + 1;
+		return 0;
 	case 0:
 		*dualType = 0;
 		*_layer1start = 0;
-		return 1;
+		return 0;
 	}
-	return 0;
+	return -1;
 }
 
 int lastReadInNewDiskCB=0;

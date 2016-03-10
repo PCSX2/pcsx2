@@ -579,7 +579,7 @@ s32 IOCtlSrc::GetMediaType()
 			{
 				//PTP
 				mediaTypeCached = true;
-				mediaType = 2;
+				mediaType = 1;
 				return mediaType;
 			}
 
