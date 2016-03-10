@@ -338,20 +338,21 @@ namespace GLLoader {
 	bool in_replayer           = false;
 
 
-	// GL4 hardware (due to proprietary driver limitation)
-	bool found_GL_ARB_separate_shader_objects = false; // Issue with Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
-	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
-	bool found_GL_ARB_buffer_storage = false;
-	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
-	bool found_GL_ARB_gpu_shader5 = false;
-	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
-	// DX10 GPU limited driver
-	bool found_GL_ARB_texture_barrier = false; // Well maybe supported by older hardware I don't know
-	bool found_GL_ARB_draw_buffers_blend = false;
+	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	// DX10 GPU limited driver (SW)
+	bool found_GL_ARB_copy_image = false;
+	bool found_GL_ARB_texture_barrier = false;
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
+	bool found_GL_ARB_separate_shader_objects = false; // Issue with Catalyst...
+	bool found_GL_ARB_buffer_storage = false;
+	// DX11 GPU
+	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
+	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
+	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
+	// FIXME add GL_ARB_viewport_array
 
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
