@@ -560,6 +560,16 @@ void GSRendererHW::Draw()
 
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
+	// Help to detect rendering outside of the framebuffer
+#if _DEBUG
+	if (m_upscale_multiplier * r.z > m_width) {
+		GL_INS("ERROR: RT width is too small only %d but require %d", m_width, m_upscale_multiplier * r.z);
+	}
+	if (m_upscale_multiplier * r.w > m_height) {
+		GL_INS("ERROR: RT height is too small only %d but require %d", m_height, m_upscale_multiplier * r.w);
+	}
+#endif
+
 	if(fm != 0xffffffff && rt)
 	{
 		rt->m_valid = rt->m_valid.runion(r);
