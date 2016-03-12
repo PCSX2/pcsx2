@@ -34,11 +34,11 @@ __aligned(struct, 32) GSVertex
 	{
 		struct
 		{
-			GIFRegST ST;
-			GIFRegRGBAQ RGBAQ;
-			GIFRegXYZ XYZ;
-			union {uint32 UV; struct {uint16 U, V;};};
-			uint32 FOG;
+			GIFRegST ST; // S:0, T:4
+			GIFRegRGBAQ RGBAQ; // RGBA:8, Q:12
+			GIFRegXYZ XYZ; // XY:16, Z:20
+			union {uint32 UV; struct {uint16 U, V;};}; // UV:24
+			uint32 FOG; // FOG:28
 		};
 
 		__m128i m[2];
