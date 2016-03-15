@@ -428,18 +428,15 @@ s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
 	return 0;
 }
 
-u32 layer1start=-1;
-
 s32 CALLBACK CDVDgetTOC(u8* tocBuff)
 {
 	//return src->ReadTOC((char*)toc,2048);
 	//that didn't work too well...
 
-	if(curDiskType==CDVD_TYPE_NODISC)
+	if (curDiskType == CDVD_TYPE_NODISC)
 		return -1;
 
-	if((curDiskType == CDVD_TYPE_DVDV) ||
-	   (curDiskType == CDVD_TYPE_PS2DVD))
+	if (curDiskType == CDVD_TYPE_DETCTDVDS || curDiskType == CDVD_TYPE_DETCTDVDD)
 	{
 		memset(tocBuff, 0, 2048);
 
@@ -465,7 +462,7 @@ s32 CALLBACK CDVDgetTOC(u8* tocBuff)
 		}
 		else if(mt==1) //PTP
 		{
-			layer1start = src->GetLayerBreakAddress() + 0x30000;
+			u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
 			// dual sided
 			tocBuff[ 0] = 0x24;
@@ -489,7 +486,7 @@ s32 CALLBACK CDVDgetTOC(u8* tocBuff)
 		}
 		else //OTP
 		{
-			layer1start = src->GetLayerBreakAddress() + 0x30000;
+			u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
 			// dual sided
 			tocBuff[ 0] = 0x24;
@@ -512,11 +509,7 @@ s32 CALLBACK CDVDgetTOC(u8* tocBuff)
 			tocBuff[27] = (layer1start>> 0)&0xff;
 		}
 	}
-	else if(curDiskType == CDVD_TYPE_CDDA ||
-			curDiskType == CDVD_TYPE_PS2CDDA ||
-			curDiskType == CDVD_TYPE_PS2CD ||
-			curDiskType == CDVD_TYPE_PSCDDA ||
-			curDiskType == CDVD_TYPE_PSCD)
+	else if (curDiskType == CDVD_TYPE_DETCTCD)
 	{
 		// cd toc
 		// (could be replaced by 1 command that reads the full toc)
