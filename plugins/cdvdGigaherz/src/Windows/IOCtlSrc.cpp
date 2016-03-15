@@ -454,34 +454,21 @@ s32 IOCtlSrc::GetLayerBreakAddress()
 	dvdrs.LayerNumber=0;
 	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
 	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
+		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
-			layerBreakCached = true;
-			layerBreak = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
-			return layerBreak;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
-
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				layerBreakCached = true;
-				layerBreak = s1;
-				return layerBreak;
-			}
-
-			// single layer
-			layerBreakCached = true;
 			layerBreak = 0;
-			return layerBreak;
 		}
+		else if (dld.ld.TrackPath == 0) // PTP
+		{
+			layerBreak = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
+		}
+		else // OTP
+		{
+			layerBreak = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
+		}
+
+		layerBreakCached = true;
+		return layerBreak;
 	}
 
 	//if not a cd, and fails, assume single layer
@@ -561,32 +548,21 @@ s32 IOCtlSrc::GetMediaType()
 	dvdrs.LayerNumber=0;
 	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
 	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
+		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
-			mediaTypeCached = true;
-			mediaType = 2;
-			return mediaType;
-		}
-		else //PTP or single layer
-		{
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				mediaTypeCached = true;
-				mediaType = 1;
-				return mediaType;
-			}
-
-			// single layer
-			mediaTypeCached = true;
 			mediaType = 0;
-			return mediaType;
 		}
+		else if (dld.ld.TrackPath == 0) // PTP
+		{
+			mediaType = 1;
+		}
+		else // OTP
+		{
+			mediaType = 2;
+		}
+
+		mediaTypeCached = true;
+		return mediaType;
 	}
 
 	//if not a cd, and fails, assume single layer
