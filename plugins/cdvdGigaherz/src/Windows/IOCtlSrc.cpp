@@ -24,6 +24,7 @@
 #include "rosddk/ntddscsi.h"
 #pragma warning(default:4200)
 #include <stddef.h>
+#include <intrin.h>
 
 template<class T>
 bool ApiErrorCheck(T t,T okValue,bool cmpEq)
@@ -404,11 +405,11 @@ s32 IOCtlSrc::GetSectorCount()
 	{
 		if(dld.ld.EndLayerZeroSector>0) // OTP?
 		{
-			sectors1 = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
+			sectors1 = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 		}
 		else //PTP or single layer
 		{
-			sectors1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
+			sectors1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 		}
 		dvdrs.BlockByteOffset.QuadPart=0;
 		dvdrs.Format=DvdPhysicalDescriptor;
@@ -420,11 +421,11 @@ s32 IOCtlSrc::GetSectorCount()
 			//sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
 			if(dld.ld.EndLayerZeroSector>0) // OTP?
 			{
-				sectors1 += dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
+				sectors1 += _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 			}
 			else //PTP
 			{
-				sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
+				sectors1 += _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 			}
 		}
 
@@ -456,12 +457,12 @@ s32 IOCtlSrc::GetLayerBreakAddress()
 		if(dld.ld.EndLayerZeroSector>0) // OTP?
 		{
 			layerBreakCached = true;
-			layerBreak = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
+			layerBreak = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 			return layerBreak;
 		}
 		else //PTP or single layer
 		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
+			u32 s1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
 
 			dvdrs.BlockByteOffset.QuadPart=0;
 			dvdrs.Format=DvdPhysicalDescriptor;
@@ -568,8 +569,6 @@ s32 IOCtlSrc::GetMediaType()
 		}
 		else //PTP or single layer
 		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
 			dvdrs.BlockByteOffset.QuadPart=0;
 			dvdrs.Format=DvdPhysicalDescriptor;
 			dvdrs.SessionId=sessID;
