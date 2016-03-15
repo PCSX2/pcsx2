@@ -35,18 +35,18 @@ typedef struct
 class KeyStatus
 {
 	private:
-		u16 m_button[2];
-		u16 m_internal_button_kbd[2];
-		u16 m_internal_button_joy[2];
+		u16 m_button[GAMEPAD_NUMBER];
+		u16 m_internal_button_kbd[GAMEPAD_NUMBER];
+		u16 m_internal_button_joy[GAMEPAD_NUMBER];
 
-		u8 m_button_pressure[2][MAX_KEYS];
-		u8 m_internal_button_pressure[2][MAX_KEYS];
+		u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
+		u8 m_internal_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
 
-		bool m_state_acces[2];
+		bool m_state_acces[GAMEPAD_NUMBER];
 
-		PADAnalog m_analog[2];
-		PADAnalog m_internal_analog_kbd[2];
-		PADAnalog m_internal_analog_joy[2];
+		PADAnalog m_analog[GAMEPAD_NUMBER];
+		PADAnalog m_internal_analog_kbd[GAMEPAD_NUMBER];
+		PADAnalog m_internal_analog_joy[GAMEPAD_NUMBER];
 
 		void analog_set(u32 pad, u32 index, u8 value);
 		bool analog_is_reversed(u32 pad, u32 index);

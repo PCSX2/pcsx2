@@ -20,7 +20,6 @@
  */
 
 #include <string.h>
-#include <gtk/gtk.h>
 
 #include "GamePad.h"
 #include "keyboard.h"
@@ -134,7 +133,7 @@ void SaveConfig()
 	fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
 	fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
-	for (int pad = 0; pad < 2; pad++)
+	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
 		for (int key = 0; key < MAX_KEYS; key++)
 		{
@@ -143,7 +142,7 @@ void SaveConfig()
 	}
 
 	map<u32,u32>::iterator it;
-	for (int pad = 0; pad < 2 ; pad++)
+	for (int pad = 0; pad < GAMEPAD_NUMBER ; pad++)
 		for (it = conf->keysym_map[pad].begin(); it != conf->keysym_map[pad].end(); ++it)
 				fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it->first, it->second);
 
@@ -182,7 +181,7 @@ void LoadConfig()
 	if (fscanf(f, "ff_intensity = %d\n", &value) == 0) goto error;
 	conf->set_ff_intensity(value);
 
-	for (int pad = 0; pad < 2; pad++)
+	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
 		for (int key = 0; key < MAX_KEYS; key++)
 		{

@@ -19,7 +19,7 @@
 
 #include "Dialogs/ModalPopups.h"
 
-#include "Resources/EmbeddedImage.h"
+#include "Utilities/EmbeddedImage.h"
 #include "Resources/Logo.h"
 
 #include <wx/mstream.h>

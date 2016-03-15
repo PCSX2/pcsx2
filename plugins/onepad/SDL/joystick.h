@@ -52,7 +52,7 @@ class JoystickInfo : GamePad
 
 		JoystickInfo(const JoystickInfo&);             // copy constructor
 		JoystickInfo& operator=(const JoystickInfo&); // assignment
-    
+
 		void Destroy();
 		// opens handles to all possible joysticks
 		static void EnumerateJoysticks(vector<GamePad*>& vjoysticks);
@@ -61,7 +61,7 @@ class JoystickInfo : GamePad
 
 		bool Init(int id); // opens a handle and gets information
 
-		void TestForce();
+		bool TestForce(float);
 
 		bool PollButtons(u32 &pkey);
 		bool PollAxes(u32 &pkey);

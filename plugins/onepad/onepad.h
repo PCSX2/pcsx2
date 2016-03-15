@@ -22,6 +22,8 @@
 #ifndef __PAD_H__
 #define __PAD_H__
 
+#define GAMEPAD_NUMBER 2 // numbers of gamepad
+
 #include <stdio.h>
 #include <assert.h>
 #include <queue>
@@ -97,30 +99,30 @@ enum PadCommands
 
 enum gamePadValues
 {
-	PAD_L2 = 0,
-	PAD_R2,
-	PAD_L1,
-	PAD_R1,
-	PAD_TRIANGLE,
-	PAD_CIRCLE,
-	PAD_CROSS,
-	PAD_SQUARE,
-	PAD_SELECT,
-	PAD_L3,
-	PAD_R3,
-	PAD_START,
-	PAD_UP,
-	PAD_RIGHT,
-	PAD_DOWN,
-	PAD_LEFT,
-	PAD_L_UP,
-	PAD_L_RIGHT,
-	PAD_L_DOWN,
-	PAD_L_LEFT,
-	PAD_R_UP,
-	PAD_R_RIGHT,
-	PAD_R_DOWN,
-	PAD_R_LEFT
+	PAD_L2 = 0, // L2 button
+	PAD_R2, // R2 button
+	PAD_L1, // L1 button
+	PAD_R1, // R1 button
+	PAD_TRIANGLE, // Triangle button ▲
+	PAD_CIRCLE, // Circle button ●
+	PAD_CROSS, // Cross button ✖
+	PAD_SQUARE, // Square button ■
+	PAD_SELECT, // Select button
+	PAD_L3, // Left joystick button (L3)
+	PAD_R3, // Right joystick button (R3)
+	PAD_START, // Start button
+	PAD_UP, // Directional pad ↑
+	PAD_RIGHT, // Directional pad →
+	PAD_DOWN, // Directional pad ↓
+	PAD_LEFT, // Directional pad ←
+	PAD_L_UP, // Left joystick (Up) ↑
+	PAD_L_RIGHT, // Left joystick (Right) →
+	PAD_L_DOWN, // Left joystick (Down) ↓
+	PAD_L_LEFT, // Left joystick (Left) ←
+	PAD_R_UP, // Right joystick (Up) ↑
+	PAD_R_RIGHT, // Right joystick (Right) →
+	PAD_R_DOWN, // Right joystick (Down) ↓
+	PAD_R_LEFT // Right joystick (Left) ←
 };
 
 extern keyEvent event;
