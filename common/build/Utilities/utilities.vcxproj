@@ -159,6 +159,7 @@
     <None Include="..\..\include\Utilities\TlsVariable.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />

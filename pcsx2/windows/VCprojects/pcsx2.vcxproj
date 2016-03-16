@@ -882,7 +882,6 @@
     <ClInclude Include="..\..\gui\AppSaveStates.h" />
     <ClInclude Include="..\..\gui\ConsoleLogger.h" />
     <ClInclude Include="..\..\gui\CpuUsageProvider.h" />
-    <ClInclude Include="..\..\gui\Resources\EmbeddedImage.h" />
     <ClInclude Include="..\..\gui\GSFrame.h" />
     <ClInclude Include="..\..\gui\IsoDropTarget.h" />
     <ClInclude Include="..\..\gui\MainFrame.h" />
