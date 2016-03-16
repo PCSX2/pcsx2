@@ -17,18 +17,9 @@
  #ifndef __CDVD_H__
 #define __CDVD_H__
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #define CDVDdefs
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
-
-#ifdef _MSC_VER
-#include <windows.h>
-#include <windowsx.h>
-#endif
 
 /*#ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK

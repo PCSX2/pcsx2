@@ -31,14 +31,13 @@
 
 #ifdef _WIN32
 
-// Force availability of to WinNT APIs (change to 0x600 to disable XP-specific APIs)
-#ifndef WINVER
-#define WINVER 0x0501
-#define _WIN32_WINNT 0x0501
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
 #endif
 
 #include <windows.h>
 
+// TODO: I think NOMINMAX above takes care of this already. So these can probably be removed.
 // disable Windows versions of min/max -- we'll use the typesafe STL versions instead.
 #undef min
 #undef max
