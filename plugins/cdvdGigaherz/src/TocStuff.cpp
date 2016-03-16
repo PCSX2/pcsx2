@@ -19,49 +19,33 @@ toc_data cdtoc;
 
 s32 cdvdParseTOC()
 {
-	memset(&cdtoc,0,sizeof(cdtoc));
+	memset(&cdtoc, 0, sizeof(cdtoc));
 
 	s32 len = src->GetSectorCount();
 
 	tracks[0].length = len;
-	tracks[0].start_lba=0;
-	tracks[0].type=0;
-	tracks[1].start_lba=0;
+	tracks[0].start_lba = 0;
+	tracks[0].type = 0;
+	tracks[1].start_lba = 0;
 
-	if(len<=0)
+	if (len <= 0)
 	{
-		curDiskType=CDVD_TYPE_NODISC;
-		tracks[0].length=0;
-		strack=1;
-		etrack=0;
+		curDiskType = CDVD_TYPE_NODISC;
+		tracks[0].length = 0;
+		strack = 1;
+		etrack = 0;
 		return 0;
 	}
 
-	s32 lastaddr = src->GetLayerBreakAddress();
+	s32 mt = src->GetMediaType();
 
-
-	if(lastaddr>=0)
+	if (mt >= 0)
 	{
-		if((lastaddr > 0)&&(tracks[0].length>lastaddr))
-		{
-			tracks[1].length=lastaddr+1;
-			tracks[1].type=0;
+		tracks[1].length = tracks[0].length;
+		tracks[1].type = 0;
 
-			tracks[2].start_lba = tracks[1].length;
-			tracks[2].length    = tracks[0].length-tracks[1].length;
-			tracks[2].type=0;
-
-			strack=1;
-			etrack=2;
-		}
-		else
-		{
-			tracks[1].length=tracks[0].length;
-			tracks[1].type=0;
-
-			strack=1;
-			etrack=1;
-		}
+		strack = 1;
+		etrack = 1;
 	}
 	else
 	{
@@ -81,8 +65,6 @@ s32 cdvdParseTOC()
 
 			//return 0;
 		}
-
-#define btoi(b) ((b>>4)*10+(b&0xF))
 
 		int length = (cdtoc.Length[0]<<8) | cdtoc.Length[1];
 		int descriptors = length/sizeof(cdtoc.Descriptors[0]);

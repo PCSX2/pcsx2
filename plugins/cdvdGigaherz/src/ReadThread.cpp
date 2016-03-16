@@ -445,8 +445,8 @@ s32 cdvdRefreshData()
 
 	switch(curDiskType)
 	{
-		case CDVD_TYPE_DETCTDVDD: diskTypeName="Single-Layer DVD"; break;
-		case CDVD_TYPE_DETCTDVDS: diskTypeName="Double-Layer DVD"; break;
+		case CDVD_TYPE_DETCTDVDD: diskTypeName="Double-Layer DVD"; break;
+		case CDVD_TYPE_DETCTDVDS: diskTypeName="Single-Layer DVD"; break;
 		case CDVD_TYPE_DETCTCD:   diskTypeName="CD-ROM"; break;
 		case CDVD_TYPE_NODISC:    diskTypeName="No Disc"; break;
 	}

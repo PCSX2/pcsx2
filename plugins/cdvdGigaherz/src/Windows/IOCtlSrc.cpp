@@ -24,6 +24,7 @@
 #include "rosddk/ntddscsi.h"
 #pragma warning(default:4200)
 #include <stddef.h>
+#include <intrin.h>
 
 template<class T>
 bool ApiErrorCheck(T t,T okValue,bool cmpEq)
@@ -296,6 +297,8 @@ s32 IOCtlSrc::Reopen()
 		if(device==INVALID_HANDLE_VALUE)
 			return -1;
 	}
+	// Dual layer DVDs cannot read from layer 1 without this ioctl
+	DeviceIoControl(device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
 
 	sessID=0;
 	DeviceIoControl(device,IOCTL_DVD_START_SESSION,NULL,0,&sessID,sizeof(DVD_SESSION_ID), &size, NULL);
@@ -394,37 +397,28 @@ s32 IOCtlSrc::GetSectorCount()
 		}
 	}
 
-	int sectors1=-1;
-
 	dvdrs.BlockByteOffset.QuadPart=0;
 	dvdrs.Format=DvdPhysicalDescriptor;
 	dvdrs.SessionId=sessID;
 	dvdrs.LayerNumber=0;
 	if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
 	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
+		s32 sectors1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
+		if (dld.ld.NumberOfLayers == 1) // PTP, OTP
 		{
-			sectors1 = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-		}
-		else //PTP or single layer
-		{
-			sectors1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-		}
-		dvdrs.BlockByteOffset.QuadPart=0;
-		dvdrs.Format=DvdPhysicalDescriptor;
-		dvdrs.SessionId=sessID;
-		dvdrs.LayerNumber=1;
-		if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-		{
-			// PTP second layer
-			//sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
-			if(dld.ld.EndLayerZeroSector>0) // OTP?
+			if (dld.ld.TrackPath == 0) // PTP
 			{
-				sectors1 += dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
+				dvdrs.LayerNumber = 1;
+				if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr) != 0)
+				{
+					sectors1 += _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
+				}
 			}
-			else //PTP
+			else // OTP
 			{
-				sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
+				// sectors = end_sector - (~end_sector_l0 & 0xFFFFFF) + end_sector_l0 - start_sector
+				dld.ld.EndLayerZeroSector = _byteswap_ulong(dld.ld.EndLayerZeroSector);
+				sectors1 += dld.ld.EndLayerZeroSector - (~dld.ld.EndLayerZeroSector & 0x00FFFFFF) + 1;
 			}
 		}
 
@@ -453,34 +447,21 @@ s32 IOCtlSrc::GetLayerBreakAddress()
 	dvdrs.LayerNumber=0;
 	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
 	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
+		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
-			layerBreakCached = true;
-			layerBreak = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-			return layerBreak;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				layerBreakCached = true;
-				layerBreak = s1;
-				return layerBreak;
-			}
-
-			// single layer
-			layerBreakCached = true;
 			layerBreak = 0;
-			return layerBreak;
 		}
+		else if (dld.ld.TrackPath == 0) // PTP
+		{
+			layerBreak = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
+		}
+		else // OTP
+		{
+			layerBreak = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
+		}
+
+		layerBreakCached = true;
+		return layerBreak;
 	}
 
 	//if not a cd, and fails, assume single layer
@@ -560,34 +541,21 @@ s32 IOCtlSrc::GetMediaType()
 	dvdrs.LayerNumber=0;
 	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
 	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
+		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
-			mediaTypeCached = true;
-			mediaType = 2;
-			return mediaType;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				mediaTypeCached = true;
-				mediaType = 2;
-				return mediaType;
-			}
-
-			// single layer
-			mediaTypeCached = true;
 			mediaType = 0;
-			return mediaType;
 		}
+		else if (dld.ld.TrackPath == 0) // PTP
+		{
+			mediaType = 1;
+		}
+		else // OTP
+		{
+			mediaType = 2;
+		}
+
+		mediaTypeCached = true;
+		return mediaType;
 	}
 
 	//if not a cd, and fails, assume single layer
