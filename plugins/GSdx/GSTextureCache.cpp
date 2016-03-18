@@ -37,6 +37,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	m_preload_frame = userhacks && theApp.GetConfig("preload_frame_with_gs_data", 0);
 	m_can_convert_depth = s_IS_OPENGL && theApp.GetConfig("texture_cache_depth", 1);
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+	m_disable_partial_invalidation = userhacks && theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0);
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
@@ -577,24 +578,29 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 				if(!s->m_target)
 				{
-					// Invalidate data of input texture
-					if(s->m_repeating)
-					{
-						vector<GSVector2i>& l = s->m_p2t[page];
-
-						for(vector<GSVector2i>::iterator k = l.begin(); k != l.end(); k++)
+					if (m_disable_partial_invalidation && s->m_repeating) {
+						m_src.RemoveAt(s);
+					} else {
+						// Invalidate data of input texture
+						if(s->m_repeating)
 						{
-							valid[k->x] &= k->y;
+							// Note: very hot path on snowbling engine game
+							vector<GSVector2i>& l = s->m_p2t[page];
+
+							for(vector<GSVector2i>::iterator k = l.begin(); k != l.end(); k++)
+							{
+								valid[k->x] &= k->y;
+							}
 						}
-					}
-					else
-					{
-						valid[page] = 0;
-					}
+						else
+						{
+							valid[page] = 0;
+						}
 
-					s->m_complete = false;
+						s->m_complete = false;
 
-					found |= b;
+						found |= b;
+					}
 				}
 				else
 				{
