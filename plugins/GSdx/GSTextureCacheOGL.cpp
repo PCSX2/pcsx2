@@ -83,8 +83,9 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 	if(GSTexture* offscreen = m_renderer->m_dev->CopyOffscreen(t->m_texture, src, r.width(), r.height(), fmt, ps_shader))
 	{
 		GSTexture::GSMap m;
+		GSVector4i r_offscreen(0, 0, r.width(), r.height());
 
-		if(offscreen->Map(m))
+		if(offscreen->Map(m, &r_offscreen))
 		{
 			// TODO: block level write
 

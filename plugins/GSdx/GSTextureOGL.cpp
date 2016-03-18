@@ -396,6 +396,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 
 #if 0
 	// Maybe it is as good as the code below. I don't know
+	// With openGL 4.5 you can use glGetTextureSubImage
 
 	glGetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
 
@@ -406,7 +407,11 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
-	glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, m_local_buffer);
+	if (r)
+		glReadPixels(r->x, r->y, r->width(), r->height(), m_int_format, m_int_type, m_local_buffer);
+	else
+		glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, m_local_buffer);
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 #endif
