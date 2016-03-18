@@ -197,7 +197,7 @@ namespace PboPool {
 // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_dirty(false), m_clean(false), m_local_buffer(NULL)
+	: m_pbo_size(0), m_dirty(false), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -334,6 +334,9 @@ void GSTextureOGL::Invalidate()
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
+	// Done in map/unmap directly
+	ASSERT(0);
+
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
 	GL_PUSH("Upload Texture %d", m_texture_id);
 
@@ -388,42 +391,79 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 {
-	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
-	if (m_type != GSTexture::Offscreen) return false;
+	if (!r) return false;
 
-	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
-	// architecture is waiting the data right now.
+	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
+	if (m_type == GSTexture::Offscreen) {
+		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
+		// architecture is waiting the data right now.
 
 #if 0
-	// Maybe it is as good as the code below. I don't know
-	// With openGL 4.5 you can use glGetTextureSubImage
+		// Maybe it is as good as the code below. I don't know
+		// With openGL 4.5 you can use glGetTextureSubImage
 
-	glGetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
+		glGetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
 
 #else
 
-	// Bind the texture to the read framebuffer to avoid any disturbance
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
+		// Bind the texture to the read framebuffer to avoid any disturbance
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-	glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
-	if (r)
+		glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
 		glReadPixels(r->x, r->y, r->width(), r->height(), m_int_format, m_int_type, m_local_buffer);
-	else
-		glReadPixels(0, 0, m_size.x, m_size.y, m_int_format, m_int_type, m_local_buffer);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 #endif
 
-	m.bits = m_local_buffer;
-	m.pitch = m_size.x << m_int_shift;
+		m.bits = m_local_buffer;
+		m.pitch = m_size.x << m_int_shift;
 
-	return true;
+		return true;
+	} else if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget) {
+		GL_PUSH("Upload Texture %d", m_texture_id); // POP is in Unmap
+
+		m_dirty = true;
+		m_clean = false;
+
+		uint32 row_byte = r->width() << m_int_shift;
+		uint32 map_size = r->height() * row_byte;
+
+		m.bits = (uint8*)PboPool::Map(map_size);
+		m.pitch = row_byte;
+
+#ifdef ENABLE_OGL_DEBUG_MEM_BW
+	g_real_texture_upload_byte += map_size;
+#endif
+
+		// Save the area for the unmap
+		m_r_x = r->x;
+		m_r_y = r->y;
+		m_r_w = r->width();
+		m_r_h = r->height();
+
+		return true;
+	}
+
+	return false;
 }
 
 void GSTextureOGL::Unmap()
 {
+	if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget) {
+
+		PboPool::Unmap();
+
+		glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, m_r_x, m_r_y, m_r_w, m_r_h, m_int_format, m_int_type, (const void*)PboPool::Offset());
+
+		// FIXME OGL4: investigate, only 1 unpack buffer always bound
+		PboPool::UnbindPbo();
+
+		PboPool::EndTransfer();
+
+		GL_POP(); // PUSH is in Map
+	}
 }
 
 bool GSTextureOGL::Save(const string& fn, bool user_image, bool dds)

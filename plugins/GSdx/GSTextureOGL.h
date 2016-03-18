@@ -48,6 +48,13 @@ class GSTextureOGL : public GSTexture
 		bool m_clean;
 
 		uint8* m_local_buffer;
+		// Avoid alignment constrain
+		//GSVector4i m_r;
+		int m_r_x;
+		int m_r_y;
+		int m_r_w;
+		int m_r_h;
+
 
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
