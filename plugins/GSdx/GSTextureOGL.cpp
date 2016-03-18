@@ -334,25 +334,50 @@ void GSTextureOGL::Invalidate()
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
-	// Done in map/unmap directly
-	ASSERT(0);
-
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
-	GL_PUSH("Upload Texture %d", m_texture_id);
+
+	// Default upload path for the texture is the Map/Unmap
+	// This path is mostly used for palette. But also for texture that could
+	// overflow the pbo buffer
+	// Data upload is rather small typically 64B or 1024B. So don't bother with PBO
+	// and directly send the data to the GL synchronously
 
 	m_dirty = true;
 	m_clean = false;
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
-
-	char* src = (char*)data;
 	uint32 row_byte = r.width() << m_int_shift;
 	uint32 map_size = r.height() * row_byte;
-	char* map = PboPool::Map(map_size);
-
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	g_real_texture_upload_byte += map_size;
 #endif
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
+
+#if 0
+	if (r.height() == 1) {
+		// Palette data. Transfer is small either 64B or 1024B.
+		// Sometimes it is faster, sometimes slower.
+		glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
+		return true;
+	}
+#endif
+
+	GL_PUSH("Upload Texture %d", m_texture_id);
+
+	// The easy solution without PBO
+#if 0
+	// Likely a bad texture
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
+
+	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
+
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior
+#endif
+
+	// The complex solution with PBO
+#if 1
+	char* src = (char*)data;
+	char* map = PboPool::Map(map_size);
 
 	// PERF: slow path of the texture upload. Dunno if we could do better maybe check if TC can keep row_byte == pitch
 	// Note: row_byte != pitch
@@ -370,23 +395,11 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	PboPool::UnbindPbo();
 
 	PboPool::EndTransfer();
+#endif
 
 	GL_POP();
-	return true;
-
-	// For reference, standard upload without pbo (Used to crash on FGLRX)
-#if 0
-	// pitch is in byte wherease GL_UNPACK_ROW_LENGTH is in pixel
-	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
-
-	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
-
-	// FIXME useful?
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior
 
 	return true;
-#endif
 }
 
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
