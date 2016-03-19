@@ -50,7 +50,7 @@ protected:
 	bool m_shadeboost;
 	bool m_texture_shuffle;
 
-	virtual GSTexture* GetOutput(int i) = 0;
+	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 
 public:
 	GSWnd* m_wnd;

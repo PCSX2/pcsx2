@@ -251,7 +251,7 @@ protected:
 	void Reset();
 	void VSync(int field);
 	void ResetDevice();
-	GSTexture* GetOutput(int i);
+	GSTexture* GetOutput(int i, int& y_offset);
 
 	void Draw();
 	void Sync(int reason);

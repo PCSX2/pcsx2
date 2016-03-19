@@ -151,7 +151,7 @@ void GSRendererHW::ResetDevice()
 	GSRenderer::ResetDevice();
 }
 
-GSTexture* GSRendererHW::GetOutput(int i)
+GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 {
 	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 
@@ -168,6 +168,13 @@ GSTexture* GSRendererHW::GetOutput(int i)
 	if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GetFrameRect(i).bottom))
 	{
 		t = rt->m_texture;
+
+		int delta = TEX0.TBP0 - rt->m_TEX0.TBP0;
+		if (delta > 0) {
+			ASSERT(DISPFB.PSM == PSM_PSMCT32 || DISPFB.PSM == PSM_PSMCT24);
+			y_offset = delta / DISPFB.FBW;
+			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
+		}
 
 #ifndef NDEBUG
 		if(s_dump)

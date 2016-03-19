@@ -36,7 +36,7 @@ protected:
 	{
 	}
 
-	GSTexture* GetOutput(int i) 
+	GSTexture* GetOutput(int i, int& y_offset)
 	{
 		return NULL;
 	}

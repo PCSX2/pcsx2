@@ -157,7 +157,7 @@ void GSRendererCL::ResetDevice()
 	}
 }
 
-GSTexture* GSRendererCL::GetOutput(int i)
+GSTexture* GSRendererCL::GetOutput(int i, int& y_offset)
 {
 	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 

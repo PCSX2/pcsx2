@@ -231,7 +231,7 @@ void GSRendererSW::ResetDevice()
 	}
 }
 
-GSTexture* GSRendererSW::GetOutput(int i)
+GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 {
 	Sync(1);
 

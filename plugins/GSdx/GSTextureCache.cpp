@@ -416,6 +416,52 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	Target* dst = NULL;
 
+#if 0
+	// Dump the list of targets for debug
+	for(auto t : m_dst[RenderTarget]) {
+		GL_INS("TC: frame 0x%x -> 0x%x : %d (age %d)", t->m_TEX0.TBP0, t->m_end_block, t->m_texture->GetID(), t->m_age);
+	}
+#endif
+
+	// Let's try to find a perfect frame that contains valid data
+	for(auto t : m_dst[RenderTarget]) {
+		if(bp == t->m_TEX0.TBP0 && t->m_end_block > bp) {
+			dst = t;
+
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+
+			break;
+		}
+	}
+
+	// 2nd try ! Try to find a frame that include the bp
+	if (dst == NULL) {
+		for(auto t : m_dst[RenderTarget]) {
+			if (t->m_TEX0.TBP0 < bp && bp < t->m_end_block) {
+				dst = t;
+
+				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block);
+
+				break;
+			}
+		}
+	}
+
+	// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
+	if (dst == NULL) {
+		for(auto t : m_dst[RenderTarget]) {
+			if(bp == t->m_TEX0.TBP0) {
+				dst = t;
+
+				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+
+				break;
+			}
+		}
+	}
+
+
+#if 0
 	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++)
 	{
 		Target* t = *i;
@@ -439,6 +485,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			}
 		}
 	}
+#endif
 
 	if(dst == NULL)
 	{
