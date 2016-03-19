@@ -129,18 +129,14 @@ protected:
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
-#ifndef DISABLE_HW_TEXTURE_CACHE
-	virtual void Read(Target* t, const GSVector4i& r) = 0;
-#endif
 
 	virtual bool CanConvertDepth() { return m_can_convert_depth; }
 
 public:
 	GSTextureCache(GSRenderer* r);
 	virtual ~GSTextureCache();
-#ifdef DISABLE_HW_TEXTURE_CACHE
 	virtual void Read(Target* t, const GSVector4i& r) = 0;
-#endif
+	virtual void Read(Source* t, const GSVector4i& r) = 0;
 	void RemoveAll();
 	void RemovePartial();
 
