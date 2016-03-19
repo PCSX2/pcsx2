@@ -34,6 +34,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
+	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
 
 	if (!m_upscale_multiplier) { //Custom Resolution
 		m_width = theApp.GetConfig("resx", m_width);
@@ -488,6 +489,10 @@ void GSRendererHW::Draw()
 		return;
 	}
 
+	if (!m_userhacks_disable_gs_mem_clear) {
+		OI_GsMemClear();
+	}
+
 	// skip alpha test if possible
 
 	GIFRegTEST TEST = context->TEST;
@@ -746,6 +751,32 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 		}
 	}
 	return true;
+}
+
+// Note: hack is safe, but it could impact the perf a little (normally games do only a couple of clear by frame)
+void GSRendererHW::OI_GsMemClear()
+{
+	// Rectangle draw without texture
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE) {
+		// 0 clear
+		if (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) {
+			GL_INS("OI_GsMemClear");
+			GSOffset* off = m_context->offset.fb;
+			GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+
+			// Based on WritePixel32
+			for(int y = r.top; y < r.bottom; y++)
+			{
+				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
+				int* RESTRICT col = off->pixel.col[0];
+
+				for(int x = r.left; x < r.right; x++)
+				{
+					d[col[x]] = 0; // Here the constant color
+				}
+			}
+		}
+	}
 }
 
 // OI (others input?/implementation?) hacks replace current draw call

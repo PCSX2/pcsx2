@@ -38,12 +38,16 @@ private:
 	int m_userhacks_skipdraw;
 
 	bool m_userhacks_align_sprite_X;
+	bool m_userhacks_disable_gs_mem_clear;
 
 	#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	typedef void (GSRendererHW::*OO_Ptr)();
 	typedef bool (GSRendererHW::*CU_Ptr)();
+
+	// Require special argument
+	void OI_GsMemClear(); // always on
 
 	bool OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
