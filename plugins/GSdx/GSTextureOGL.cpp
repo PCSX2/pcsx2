@@ -63,9 +63,6 @@ namespace PboPool {
 	void Init() {
 		glGenBuffers(countof(m_pool), m_pool);
 		m_texture_storage  = GLLoader::found_GL_ARB_buffer_storage;
-		// Code is really faster on MT driver. So far only nvidia support it
-		if (!GLLoader::nvidia_buggy_driver)
-			m_texture_storage  &= (theApp.GetConfig("ogl_texture_storage", 0) == 1);
 
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();
