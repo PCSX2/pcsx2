@@ -132,6 +132,10 @@ EXPORT_C_(int) GSinit()
 		return -1;
 	}
 
+	if (!GSDeviceDX::LoadD3DCompiler())
+	{
+		return -1;
+	}
 #endif
 
 	return 0;
@@ -155,6 +159,8 @@ EXPORT_C GSshutdown()
 
 		s_hr = E_FAIL;
 	}
+
+	GSDeviceDX::FreeD3DCompiler();
 
 #endif
 }
