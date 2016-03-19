@@ -851,6 +851,30 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	// TODO: ds
 }
 
+// Hack: remove Target that are strictly included in current rt. Typically uses for FMV
+// For example, game is rendered at 0x800->0x1000, fmv will be uploaded to 0x0->0x2800
+// FIXME In theory, we ought to report the data from the sub rt to the main rt. But let's
+// postpone it for later.
+void GSTextureCache::InvalidateVideoMemSubTarget(GSTextureCache::Target* rt)
+{
+	if (!rt)
+		return;
+
+	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); ) {
+		list<Target*>::iterator j = i++;
+		Target* t = *j;
+
+		if ((t->m_TEX0.TBP0 > rt->m_TEX0.TBP0) && (t->m_end_block < rt->m_end_block) && (t->m_TEX0.TBW == rt->m_TEX0.TBW)
+				&& (t->m_TEX0.TBP0 < t->m_end_block)) {
+			GL_INS("InvalidateVideoMemSubTarget: rt 0x%x -> 0x%x, sub rt 0x%x -> 0x%x",
+					rt->m_TEX0.TBP0, rt->m_end_block, t->m_TEX0.TBP0, t->m_end_block);
+
+			m_dst[RenderTarget].erase(j);
+			delete t;
+		}
+	}
+}
+
 void GSTextureCache::IncAge()
 {
 	int maxage = m_src.m_used ? 3 : 30;

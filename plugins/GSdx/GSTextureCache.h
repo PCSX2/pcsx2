@@ -145,6 +145,7 @@ public:
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
 
 	void InvalidateVideoMemType(int type, uint32 bp);
+	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
 
