@@ -197,7 +197,7 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	// printf("[%d] InvalidateLocalMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.SBP, (int)BITBLTBUF.SPSM);
 
 	if(clut) return; // FIXME
-		
+
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
 }
 
@@ -383,7 +383,7 @@ void GSRendererHW::Draw()
 	if(PRIM->TME)
 	{
 		/*
-		
+
 		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
 
 		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
@@ -484,9 +484,20 @@ void GSRendererHW::Draw()
 	}
 #endif
 
+	// The rectangle of the draw
+	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
 	{
 		s_n += 1; // keep counter sync
+		GL_INS("Warning skipping a draw call (%d)", s_n);
+		GL_POP();
+		return;
+	}
+
+	if (!OI_BlitFMV(rt, tex, r)) {
+		s_n += 1; // keep counter sync
+		GL_INS("Warning skipping a draw call (%d)", s_n);
 		GL_POP();
 		return;
 	}
@@ -564,8 +575,6 @@ void GSRendererHW::Draw()
 	context->ZBUF = ZBUF;
 
 	//
-
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
 	// Help to detect rendering outside of the framebuffer
 #if _DEBUG
@@ -815,6 +824,71 @@ void GSRendererHW::OI_GsMemClear()
 	}
 }
 
+bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)
+{
+	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && PRIM->TME && !PRIM->ABE) {
+		GL_PUSH("OI_BlitFMV");
+
+		GL_INS("OI_BlitFMV");
+
+		// The draw is done past the RT at the location of the texture. To avoid various upscaling mess
+		// We will blit the data from the top to the bottom of the texture manually.
+
+		// Expected memory representation
+		// -----------------------------------------------------------------
+		// RT (2 half frame)
+		// -----------------------------------------------------------------
+		// Top of Texture (full height frame)
+		//
+		// Bottom of Texture (half height frame, will be the copy of Top texture after the draw)
+		// -----------------------------------------------------------------
+
+		// sRect is the top of texture
+		int tw = (int)(1 << m_context->TEX0.TW);
+		int th = (int)(1 << m_context->TEX0.TH);
+		GSVector4 sRect;
+		sRect.x = m_vt.m_min.t.x / tw;
+		sRect.y = m_vt.m_min.t.y / th;
+		sRect.z = m_vt.m_max.t.x / tw;
+		sRect.w = m_vt.m_max.t.y / th;
+
+		// Compute the Bottom of texture rectangle
+		ASSERT(m_context->TEX0.TBP0 > m_context->FRAME.Block());
+		int offset = (m_context->TEX0.TBP0 - m_context->FRAME.Block()) / m_context->TEX0.TBW;
+		GSVector4i r_texture(r_draw);
+		r_texture.y -= offset;
+		r_texture.w -= offset;
+
+		GSVector4 dRect(r_texture);
+
+		// Do the blit. With a Copy mess to avoid issue with limited API (dx)
+		// m_dev->StretchRect(tex->m_texture, sRect, tex->m_texture, dRect);
+		GSVector4i r_full(0, 0, tw, th);
+		if (GSTexture* rt = m_dev->CreateRenderTarget(tw, th, false)) {
+			m_dev->CopyRect(tex->m_texture, rt, r_full);
+
+			m_dev->StretchRect(tex->m_texture, sRect, rt, dRect);
+
+			m_dev->CopyRect(rt, tex->m_texture, r_full);
+
+			m_dev->Recycle(rt);
+		}
+
+		// Copy back the texture into the GS mem. I don't know why but it will be
+		// reuploaded again later
+		m_tc->Read(tex, r_texture);
+
+		m_tc->InvalidateVideoMemSubTarget(_rt);
+
+		GL_POP();
+
+		return false; // skip current draw
+	}
+
+	// Nothing to see keep going
+	return true;
+}
+
 // OI (others input?/implementation?) hacks replace current draw call
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
@@ -848,9 +922,9 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 				{
 					int x = (v->XYZ.X - ox) >> 4;
 					int y = (v->XYZ.Y - oy) >> 4;
-					
+
 					if (x < 0 || x >= 448 || y < 0 || y >= (int)lines) return false; // le sigh
-					
+
 					video[(y << 8) + (y << 7) + (y << 6) + x] = v->RGBAQ.u32[0];
 				}
 
@@ -936,7 +1010,7 @@ bool GSRendererHW::OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 	}
 
 	m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, m_vt.m_primclass);
-	
+
 	return true;
 }
 
@@ -977,7 +1051,7 @@ bool GSRendererHW::OI_SimpsonsGame(GSTexture* rt, GSTexture* ds, GSTextureCache:
 		// instead of just simply drawing a full height 512x512 sprite to clear the z buffer,
 		// it uses a 512x256 sprite only, yet it is still able to fill the whole surface with zeros,
 		// how? by using a render target that overlaps with the lower half of the z buffer...
-		
+
 		// TODO: tony hawk pro skater 4 same problem, the empty half is not visible though, painted over fully
 
 		m_dev->ClearDepth(ds, 0);
