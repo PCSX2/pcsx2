@@ -41065,6 +41065,7 @@ Serial = SLUS-21616
 Name   = Tony Hawk's Proving Ground
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21618
 Name   = Plan, The
