@@ -8731,6 +8731,7 @@ Serial = SLES-51044
 Name   = Burnout 2 - Point of Impact
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 1		//bright lights in cars
 ---------------------------------------------
 Serial = SLES-51045
 Name   = Legends of Wrestling II
@@ -10106,6 +10107,11 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-51720
+Name   = Disney's Extreme Skate Adventure
+Region = PAL-E
+vuRoundMode = 0
+---------------------------------------------
+Serial = SLES-51721
 Name   = Disney's Extreme Skate Adventure
 Region = PAL-E
 vuRoundMode = 0
@@ -14137,10 +14143,12 @@ Serial = SLES-53534
 Name   = Tony Hawk's American Wasteland
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-53535
 Name   = Tony Hawk's American Wasteland
 Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-53536
 Name   = London Racer - Police Madness
@@ -40397,6 +40405,7 @@ Serial = SLUS-21444
 Name   = Tony Hawk's Project 8
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21445
 Name   = Ar tonelico: Melody of Elemia
@@ -40457,6 +40466,7 @@ Serial = SLUS-21456
 Name   = Tony Hawk's Downhill Jam
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21457
 Name   = World Championship Paintball
@@ -41059,6 +41069,7 @@ Serial = SLUS-21616
 Name   = Tony Hawk's Proving Ground
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21618
 Name   = Plan, The
