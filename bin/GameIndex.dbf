@@ -10110,6 +10110,12 @@ Name   = Disney's Extreme Skate Adventure
 Region = PAL-E
 vuRoundMode = 0
 ---------------------------------------------
+---------------------------------------------
+Serial = SLES-51721
+Name   = Disney's Extreme Skate Adventure
+Region = PAL-E
+vuRoundMode = 0
+---------------------------------------------
 Serial = SLES-51723
 Name   = Hobbit, The
 Region = PAL-M5
