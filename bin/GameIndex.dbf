@@ -40405,6 +40405,7 @@ Serial = SLUS-21444
 Name   = Tony Hawk's Project 8
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21445
 Name   = Ar tonelico: Melody of Elemia
