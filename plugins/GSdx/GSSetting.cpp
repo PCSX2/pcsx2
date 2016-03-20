@@ -131,6 +131,11 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
 		case IDC_MIPMAP:
 			return "Enables mipmapping, which some games require to render correctly. Turn off only for debug purposes.";
+#ifdef __linux__
+		case IDC_FAST_TC_INV:
+			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
+				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
+#endif
 		default:
 			if (updateText)
 				*updateText = false;
