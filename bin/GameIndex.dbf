@@ -16831,10 +16831,12 @@ Serial = SLES-54963
 Name   = Tony Hawks - Proving Ground
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54964
 Name   = Tony Hawk's Proving Ground
 Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54975
 Name   = George Of The Jungle
