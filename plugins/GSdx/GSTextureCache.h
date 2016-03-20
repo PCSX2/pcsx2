@@ -116,7 +116,7 @@ protected:
 	uint8* m_temp;
 	bool m_can_convert_depth;
 	int m_crc_hack_level;
-	bool m_disable_partial_invalidation;
+	static bool m_disable_partial_invalidation;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);

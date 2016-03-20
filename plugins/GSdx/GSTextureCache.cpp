@@ -23,6 +23,7 @@
 #include "GSTextureCache.h"
 
 bool s_IS_OPENGL = false;
+bool GSTextureCache::m_disable_partial_invalidation = false;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
@@ -743,10 +744,14 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
-				if (r.x == 0 && r.y == 0) // Full screen read?
-					Read(t, t->m_valid);
-				else // Block level read?
+				if (GSTextureCache::m_disable_partial_invalidation) {
 					Read(t, r.rintersect(t->m_valid));
+				} else {
+					if (r.x == 0 && r.y == 0) // Full screen read?
+						Read(t, t->m_valid);
+					else // Block level read?
+						Read(t, r.rintersect(t->m_valid));
+				}
 			}
 		}
 	}
