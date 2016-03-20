@@ -40464,6 +40464,7 @@ Serial = SLUS-21456
 Name   = Tony Hawk's Downhill Jam
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
 ---------------------------------------------
 Serial = SLUS-21457
 Name   = World Championship Paintball
