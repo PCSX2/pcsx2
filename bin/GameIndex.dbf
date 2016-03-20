@@ -8731,6 +8731,7 @@ Serial = SLES-51044
 Name   = Burnout 2 - Point of Impact
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 1 //bright lights in cars
 ---------------------------------------------
 Serial = SLES-51045
 Name   = Legends of Wrestling II
