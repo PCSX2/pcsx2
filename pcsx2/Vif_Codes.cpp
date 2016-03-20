@@ -374,6 +374,7 @@ vifOp(vifCode_MSCAL) {
 				//Warship Gunner 2 has a rather big dislike for the delays
 				if(((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
 				{ 
+					//Snowblind games only use MSCAL, so other MS kicks force the program directly.
 					vifExecQueue(idx);
 				}
 			}
@@ -399,6 +400,7 @@ vifOp(vifCode_MSCALF) {
 			vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
 			vifX.cmd = 0;
 			vifX.pass = 0;
+			vifExecQueue(idx);
 		}
 	}
 	pass3 { VifCodeLog("MSCALF"); }
@@ -414,6 +416,7 @@ vifOp(vifCode_MSCNT) {
 			vuExecMicro(idx, -1);
 			vifX.cmd = 0;
 			vifX.pass = 0;
+			vifExecQueue(idx);
 		}
 	}
 	pass3 { VifCodeLog("MSCNT"); }
