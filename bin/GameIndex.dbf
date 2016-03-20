@@ -14143,10 +14143,12 @@ Serial = SLES-53534
 Name   = Tony Hawk's American Wasteland
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-53535
 Name   = Tony Hawk's American Wasteland
 Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-53536
 Name   = London Racer - Police Madness
