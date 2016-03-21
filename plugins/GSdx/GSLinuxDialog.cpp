@@ -432,10 +432,13 @@ void populate_record_table(GtkWidget* record_table)
 	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads", 4);
 	GtkWidget* out_dir_label = left_label("Output Directory:");
 	GtkWidget* out_dir       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select a directory", "capture_out_dir", "/tmp");
+	GtkWidget* png_label     = left_label("PNG Compression Level:");
+	GtkWidget* png_level     = CreateSpinButton(1, 9, "png_compression_level", 1);
 
 	InsertWidgetInTable(record_table , capture_check);
 	InsertWidgetInTable(record_table , resxy_label   , resx_spin      , resy_spin);
 	InsertWidgetInTable(record_table , threads_label , threads_spin);
+	InsertWidgetInTable(record_table , png_label     , png_level);
 	InsertWidgetInTable(record_table , out_dir_label , out_dir);
 }
 
