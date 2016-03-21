@@ -2168,12 +2168,12 @@ Compat = 5
 Serial = SCES-53286
 Name   = Jak X - Combat Racing
 Region = PAL-M7
+// reads Ratchet Gladiator data
+MemCardFilter = SCES-53286/SCES-53285
 [patches = df659e77]
 	comment=patched by Ge-Force
 	patch=1,EE,00275CF7,word,00000000
 [/patches]
-// reads Ratchet Gladiator data
-MemCardFilter = SCES-53286/SCES-53285
 ---------------------------------------------
 Serial = SCES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
