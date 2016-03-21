@@ -8953,6 +8953,11 @@ Region = PAL-E
 Compat = 5
 vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
+Serial = SLES-51131
+Name   = Tony Hawk's Pro Skater 4
+Region = PAL-F
+vuRoundMode = 0		//Crashes without.
+---------------------------------------------
 Serial = SLES-51132
 Name   = Tony Hawk's Pro Skater 4
 Region = PAL-G
