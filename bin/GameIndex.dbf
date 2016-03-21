@@ -5498,6 +5498,10 @@ Name   = Jak X - Combat Racing
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SCUS-97429/SCUS-97465
+[patches = 3091e6fb]
+	comment=patched by Ge-Force
+	patch=1,EE,00275C67,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97430
 Name   = Hot Shots Golf FORE! [Regular Demo]
