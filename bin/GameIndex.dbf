@@ -15966,6 +15966,13 @@ Serial = SLES-54389
 Name   = Tony Hawk's Project 8
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0		//Crashes without.
+---------------------------------------------
+Serial = SLES-54390
+Name   = Tony Hawk's Project 8
+Region = PAL-M4
+Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-54393
 Name   = Pippa Funnell - Take the Reins
