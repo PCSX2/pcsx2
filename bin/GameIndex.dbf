@@ -10113,7 +10113,7 @@ vuRoundMode = 0
 ---------------------------------------------
 Serial = SLES-51721
 Name   = Disney's Extreme Skate Adventure
-Region = PAL-E
+Region = PAL-M4
 vuRoundMode = 0
 ---------------------------------------------
 Serial = SLES-51723
@@ -15966,6 +15966,13 @@ Serial = SLES-54389
 Name   = Tony Hawk's Project 8
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0		//Crashes without.
+---------------------------------------------
+Serial = SLES-54390
+Name   = Tony Hawk's Project 8
+Region = PAL-M4
+Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-54393
 Name   = Pippa Funnell - Take the Reins
@@ -16831,10 +16838,12 @@ Serial = SLES-54963
 Name   = Tony Hawks - Proving Ground
 Region = PAL-E
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54964
 Name   = Tony Hawk's Proving Ground
 Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54975
 Name   = George Of The Jungle
@@ -22541,6 +22550,7 @@ Region = NTSC-J
 Serial = SLPM-65419
 Name   = Tony Hawk's Pro Skater 2003
 Region = NTSC-J
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLPM-65420
 Name   = Dabitsuku 3 - Let's Become a Derby Owner
