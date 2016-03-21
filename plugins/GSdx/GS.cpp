@@ -901,7 +901,7 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 		return 0;
 	}
 #ifdef __linux__
-	if (theApp.GetConfig("capture_enabled", 0)) {
+	if (!theApp.GetConfig("capture_enabled", 0)) {
 		printf("GSdx: Recording is disabled\n");
 		return 0;
 	}

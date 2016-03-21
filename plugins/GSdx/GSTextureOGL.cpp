@@ -399,9 +399,9 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	return true;
 }
 
-bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
+bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 {
-	if (!r) return false;
+	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 
 	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
 	if (m_type == GSTexture::Offscreen) {
@@ -421,7 +421,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
 		glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
-		glReadPixels(r->x, r->y, r->width(), r->height(), m_int_format, m_int_type, m_local_buffer);
+		glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m_local_buffer);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -437,8 +437,8 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 		m_dirty = true;
 		m_clean = false;
 
-		uint32 row_byte = r->width() << m_int_shift;
-		uint32 map_size = r->height() * row_byte;
+		uint32 row_byte = r.width() << m_int_shift;
+		uint32 map_size = r.height() * row_byte;
 
 		m.bits = (uint8*)PboPool::Map(map_size);
 		m.pitch = row_byte;
@@ -448,10 +448,10 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* r)
 #endif
 
 		// Save the area for the unmap
-		m_r_x = r->x;
-		m_r_y = r->y;
-		m_r_w = r->width();
-		m_r_h = r->height();
+		m_r_x = r.x;
+		m_r_y = r.y;
+		m_r_w = r.width();
+		m_r_h = r.height();
 
 		return true;
 	}
