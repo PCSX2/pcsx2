@@ -4374,11 +4374,6 @@ Serial = SCPS-56015
 Name   = Ninja Assault
 Region = NTSC-J
 ---------------------------------------------
-Serial = SCUS-21295
-Name   = Tony Hawk's American Wasteland Collector's Edition
-Region = NTSC-U
-Compat = 5
----------------------------------------------
 Serial = SCUS-21494
 Name   = Need for Speed Carbon Collector's Edition
 Region = NTSC-U
@@ -39686,6 +39681,8 @@ Region = NTSC-U
 Serial = SLUS-21295
 Name   = Tony Hawk's American Wasteland [Collector's Edition]
 Region = NTSC-U
+Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLUS-21296
 Name   = Dance Factory
