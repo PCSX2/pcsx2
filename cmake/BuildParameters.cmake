@@ -64,6 +64,10 @@ if(PACKAGE_MODE)
         set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/PCSX2")
     endif()
 
+    if(NOT DEFINED MAN_DIR)
+        set(MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man")
+    endif()
+
     # Compile all source codes with those defines
     add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR} -DDOC_DIR_COMPILATION=${DOC_DIR})
 endif()
