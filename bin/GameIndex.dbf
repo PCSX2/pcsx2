@@ -10381,9 +10381,10 @@ Region = PAL-F
 vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-51852
-Name   = Thug MOTX [Demo]
+Name   = Tony Hawk's Underground
 Region = PAL-G
 Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-51853
 Name   = Tony Hawk's Underground
