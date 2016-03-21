@@ -2170,7 +2170,6 @@ Name   = Jak X - Combat Racing
 Region = PAL-M7
 [patches = df659e77]
 	comment=patched by Ge-Force
-	//fix delay slot violation
 	patch=1,EE,00275CF7,word,00000000
 [/patches]
 // reads Ratchet Gladiator data
