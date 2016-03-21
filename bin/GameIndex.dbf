@@ -16512,6 +16512,16 @@ Name   = Shadow Hearts - From the New World
 Region = PAL-E
 Compat = 5
 ---------------------------------------------
+Serial = SLES-54714
+Name   = Tony Hawk's Downhill Jam
+Region = PAL-E
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
+Serial = SLES-54715
+Name   = Tony Hawk's Downhill Jam
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
 Serial = SLES-54717
 Name   = Power Volleyball
 Region = PAL-E
