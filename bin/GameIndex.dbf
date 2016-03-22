@@ -6908,6 +6908,14 @@ Region = PAL-E
 Serial = SLES-50176
 Name   = Oni
 Region = PAL-F
+[patches = F77639F1]
+
+		comment=patches by Nachbrenner
+		
+		//skip "branch if copro 0 condition false"
+		patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+		
+[/patches]
 ---------------------------------------------
 Serial = SLES-50177
 Name   = Oni
@@ -6921,6 +6929,14 @@ Compat = 5
 	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
 	
 [/patches]
+---------------------------------------------
+Serial = SLES-50178
+Name   = Oni
+Region = PAL-I
+---------------------------------------------
+Serial = SLES-50179
+Name   = Oni
+Region = PAL-S
 ---------------------------------------------
 Serial = SLES-50182
 Name   = MTV Music Generator 2
