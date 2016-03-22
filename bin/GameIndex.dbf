@@ -2170,6 +2170,10 @@ Name   = Jak X - Combat Racing
 Region = PAL-M7
 // reads Ratchet Gladiator data
 MemCardFilter = SCES-53286/SCES-53285
+[patches = df659e77]
+	comment=patched by Ge-Force
+	patch=1,EE,00275CF7,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
@@ -4374,15 +4378,16 @@ Serial = SCPS-56015
 Name   = Ninja Assault
 Region = NTSC-J
 ---------------------------------------------
-Serial = SCUS-21295
-Name   = Tony Hawk's American Wasteland Collector's Edition
-Region = NTSC-U
-Compat = 5
----------------------------------------------
 Serial = SCUS-21494
 Name   = Need for Speed Carbon Collector's Edition
 Region = NTSC-U
 Compat = 5
+---------------------------------------------
+Serial = SCUS-21295
+Name   = Tony Hawk's American Wasteland Collector's Edition
+Region = NTSC-U
+Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -5499,6 +5504,10 @@ Name   = Jak X - Combat Racing
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SCUS-97429/SCUS-97465
+[patches = 3091e6fb]
+	comment=patched by Ge-Force
+	patch=1,EE,00275C67,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97430
 Name   = Hot Shots Golf FORE! [Regular Demo]
@@ -8953,6 +8962,11 @@ Region = PAL-E
 Compat = 5
 vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
+Serial = SLES-51131
+Name   = Tony Hawk's Pro Skater 4
+Region = PAL-F
+vuRoundMode = 0		//Crashes without.
+---------------------------------------------
 Serial = SLES-51132
 Name   = Tony Hawk's Pro Skater 4
 Region = PAL-G
@@ -10386,9 +10400,10 @@ Region = PAL-F
 vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-51852
-Name   = Thug MOTX [Demo]
+Name   = Tony Hawk's Underground
 Region = PAL-G
 Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLES-51853
 Name   = Tony Hawk's Underground
@@ -16511,6 +16526,16 @@ Serial = SLES-54711
 Name   = Shadow Hearts - From the New World
 Region = PAL-E
 Compat = 5
+---------------------------------------------
+Serial = SLES-54714
+Name   = Tony Hawk's Downhill Jam
+Region = PAL-E
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
+Serial = SLES-54715
+Name   = Tony Hawk's Downhill Jam
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54717
 Name   = Power Volleyball
@@ -39231,6 +39256,7 @@ Serial = SLUS-21208
 Name   = Tony Hawk's American Wasteland
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21209
 Name   = Urban Reign
@@ -39676,6 +39702,8 @@ Region = NTSC-U
 Serial = SLUS-21295
 Name   = Tony Hawk's American Wasteland [Collector's Edition]
 Region = NTSC-U
+Compat = 5
+vuRoundMode = 0		//Crashes without.
 ---------------------------------------------
 Serial = SLUS-21296
 Name   = Dance Factory
