@@ -3132,7 +3132,8 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
 		{
-			skip = 26; //27
+			if (Dx_only) // Feel like texture shuffle but not sure
+				skip = 26; //27
 		}
 		else if(!fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
 		{
@@ -3154,13 +3155,15 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
 		{
-			if(fi.FBMSK == 0x00000)
-			{
-				skip = 28; // outline
-			}
-			if(fi.FBMSK == 0x00FFFFFF)
-			{
-				skip = 1;
+			if (Dx_only) { // Ought to be fine with blending accuracy (fbmask?)
+				if(fi.FBMSK == 0x00000)
+				{
+					skip = 28; // outline
+				}
+				if(fi.FBMSK == 0x00FFFFFF)
+				{
+					skip = 1;
+				}
 			}
 		}
 		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
@@ -3168,8 +3171,6 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 			// Texture shuffling must work on openGL
 			if (Dx_only)
 				skip = 5;
-			else
-				return false;
 		}
 		else if(fi.TME && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
