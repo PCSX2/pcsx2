@@ -191,6 +191,20 @@ if [[ "$clangTidy" -eq 1 ]] && [[ -x `which clang-tidy` ]]; then
 
     for cpp in `cat $cpp_list`
     do
+        # Example:
+        # clang-tidy-3.8 -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
+        # List of modernize check
+        # modernize-loop-convert
+        # modernize-make-unique
+        # modernize-pass-by-value
+        # modernize-redundant-void-arg
+        # modernize-replace-auto-ptr
+        # modernize-shrink-to-fit
+        # modernize-use-auto
+        # modernize-use-default
+        # modernize-use-nullptr
+        # modernize-use-override
+
         # Check all, likely severals millions of log...
         #clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
 
