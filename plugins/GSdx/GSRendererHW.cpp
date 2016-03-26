@@ -757,23 +757,24 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 void GSRendererHW::OI_GsMemClear()
 {
 	// Rectangle draw without texture
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE) {
-		// 0 clear
-		if (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) {
-			GL_INS("OI_GsMemClear");
-			GSOffset* off = m_context->offset.fb;
-			GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE // Direct write
+			&& !m_context->TEST.ATE // no alpha test
+			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+			&& (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) // Constant 0 write
+			) {
+		GL_INS("OI_GsMemClear");
+		GSOffset* off = m_context->offset.fb;
+		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 
-			// Based on WritePixel32
-			for(int y = r.top; y < r.bottom; y++)
+		// Based on WritePixel32
+		for(int y = r.top; y < r.bottom; y++)
+		{
+			uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
+			int* RESTRICT col = off->pixel.col[0];
+
+			for(int x = r.left; x < r.right; x++)
 			{
-				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
-				int* RESTRICT col = off->pixel.col[0];
-
-				for(int x = r.left; x < r.right; x++)
-				{
-					d[col[x]] = 0; // Here the constant color
-				}
+				d[col[x]] = 0; // Here the constant color
 			}
 		}
 	}
