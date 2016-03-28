@@ -21,8 +21,17 @@
 
 #include "stdafx.h"
 #include "xpad.h"
+#include <VersionHelpers.h>
+
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0602 // Required for XInputEnable definition
+#include <xinput.h>
 
 static HMODULE s_hModule;
+static HMODULE s_xInputDll;
+static decltype(&XInputEnable) pXInputEnable;
+static decltype(&XInputGetState) pXInputGetState;
+static decltype(&XInputSetState) pXInputSetState;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -133,7 +142,7 @@ public:
 		{
 			memset(&m_state, 0, sizeof(m_state));
 
-			m_connected = XInputGetState(m_pad, &m_state) == S_OK; // ERROR_DEVICE_NOT_CONNECTED is not an error, SUCCEEDED(...) won't work here
+			m_connected = pXInputGetState(m_pad, &m_state) == S_OK; // ERROR_DEVICE_NOT_CONNECTED is not an error, SUCCEEDED(...) won't work here
 
 			m_lastpoll = now;
 		}
@@ -147,7 +156,7 @@ public:
 	{
 		if(m_vibration.wLeftMotorSpeed != vibration.wLeftMotorSpeed || m_vibration.wRightMotorSpeed != vibration.wRightMotorSpeed)
 		{
-			XInputSetState(m_pad, &vibration);
+			pXInputSetState(m_pad, &vibration);
 
 			m_vibration = vibration;
 		}
@@ -634,16 +643,41 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 EXPORT_C_(UINT32) PADinit(UINT32 flags)
 {
+	DWORD loadFlags = LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32;
+
+	s_xInputDll = LoadLibraryEx(L"xinput1_3.dll", nullptr, loadFlags);
+	if (s_xInputDll == nullptr && IsWindows8OrGreater())
+	{
+		s_xInputDll = LoadLibraryEx(L"XInput1_4.dll", nullptr, loadFlags);
+	}
+	if (s_xInputDll == nullptr)
+	{
+		return 1;
+	}
+
+	if (!(pXInputEnable = reinterpret_cast<decltype(&XInputEnable)>(GetProcAddress(s_xInputDll, "XInputEnable")))
+		|| !(pXInputSetState = reinterpret_cast<decltype(&XInputSetState)>(GetProcAddress(s_xInputDll, "XInputSetState")))
+		|| !(pXInputGetState = reinterpret_cast<decltype(&XInputGetState)>(GetProcAddress(s_xInputDll, "XInputGetState"))))
+	{
+		FreeLibrary(s_xInputDll);
+		s_xInputDll = nullptr;
+		return 1;
+	}
 	return 0;
 }
 
 EXPORT_C PADshutdown()
 {
+	if (s_xInputDll)
+	{
+		FreeLibrary(s_xInputDll);
+		s_xInputDll = nullptr;
+	}
 }
 
 EXPORT_C_(UINT32) PADopen(void* pDsp)
 {
-	XInputEnable(TRUE);
+	pXInputEnable(TRUE);
 
 	if(s_nRefs == 0)
 	{
@@ -671,7 +705,7 @@ EXPORT_C PADclose()
 		}
 	}
 
-	XInputEnable(FALSE);
+	pXInputEnable(FALSE);
 }
 
 EXPORT_C_(UINT32) CALLBACK PADquery()
