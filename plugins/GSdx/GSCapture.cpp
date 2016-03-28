@@ -382,6 +382,9 @@ GSCapture::GSCapture()
 {
 	m_out_dir = theApp.GetConfig("capture_out_dir", "/tmp/GSdx_Capture");
 	m_threads = theApp.GetConfig("capture_threads", 4);
+#ifdef __linux__
+	m_compression_level = theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+#endif
 }
 
 GSCapture::~GSCapture()
@@ -488,14 +491,9 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 	m_size.x = theApp.GetConfig("capture_resx", 1280);
 	m_size.y = theApp.GetConfig("capture_resy", 1024);
 
-	m_compression_level = theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
-
-#ifdef __linux__
 	for(int i = 0; i < m_threads; i++) {
 		m_workers.push_back(new GSPng::Worker());
 	}
-#endif
-
 #endif
 
 	m_capturing = true;
