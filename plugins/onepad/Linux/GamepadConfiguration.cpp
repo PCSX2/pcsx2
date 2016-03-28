@@ -139,6 +139,8 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
             wxCommandEventHandler(GamepadConfiguration::OnCheckboxChange)
         );
     #endif
+
+	repopulate();
 }
 
 /**

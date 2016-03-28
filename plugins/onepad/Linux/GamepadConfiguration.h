@@ -38,7 +38,7 @@ class GamepadConfiguration : public wxFrame
     wxCheckBox *m_cb_rumble, *m_cb_hack_sixaxis_usb, *m_cb_hack_sixaxis_pressure;
     wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
     wxButton *m_bt_ok, *m_bt_cancel;
-    wxStaticText *m_lbl_rumble_intensity, *m_lbl_joystick_sensibility;
+    wxStaticText *m_lbl_rumble_intensity;
 
     int m_pad_id;
     u32 m_init_rumble_intensity, m_init_joystick_sensibility;
