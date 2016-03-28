@@ -74,7 +74,7 @@ public:
 	s32  Save		( uint slot, const u8 *src, u32 adr, int size );
 	s32  EraseBlock	( uint slot, u32 adr );
 	u64  GetCRC		( uint slot );
-	
+
 protected:
 	bool Seek( wxFFile& f, u32 adr );
 	bool Create( const wxString& mcdFile, uint sizeInMB );
@@ -143,6 +143,7 @@ wxString FileMcd_GetDefaultName(uint slot)
 FileMemoryCard::FileMemoryCard()
 {
 	memset8<0xff>( m_effeffs );
+	m_chkaddr = 0;
 }
 
 void FileMemoryCard::Open()
