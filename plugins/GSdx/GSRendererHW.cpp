@@ -58,7 +58,16 @@ void GSRendererHW::SetScaling()
 	int fb_width = max({ (int)m_context->FRAME.FBW * 64, crtc_size.x , 512 });
 	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
 	// from physical units of the display rectangle in case the game uses a heigher value of height.
-	int fb_height = (fb_width < 1024) ? max(512, crtc_size.y) : 1024;
+	//
+	// Gregory: the framebuffer must have enough room to draw
+	// * at least 2 frames such as FMV (see OI_BlitFMV)
+	// * high resolution game such as snowblind engine game
+	//
+	// Autodetection isn't a good idea because it will create flickering
+	// If memory consumption is an issue, there are 2 possibilities
+	// * 1/ Avoid to create hundreds of RT
+	// * 2/ Use sparse texture (requires recent HW)
+	int fb_height = (fb_width < 1024) ? 1280 : 1024;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
