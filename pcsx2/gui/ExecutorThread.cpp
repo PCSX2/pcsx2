@@ -148,7 +148,7 @@ void SysExecEvent::_DoInvokeEvent()
 // Posts an empty result to the invoking context/thread of this message, if one exists.
 // If the invoking thread posted the event in non-blocking fashion then no action is
 // taken.
-void SysExecEvent::PostResult() const 
+void SysExecEvent::PostResult() const
 {
 	if( m_sync ) m_sync->PostResult();
 }
@@ -156,10 +156,9 @@ void SysExecEvent::PostResult() const
 // --------------------------------------------------------------------------------------
 //  pxEvtQueue Implementations
 // --------------------------------------------------------------------------------------
-pxEvtQueue::pxEvtQueue()
+pxEvtQueue::pxEvtQueue() :
+	m_OwnerThreadId(), m_Quitting(false), m_qpc_Start(0)
 {
-	m_Quitting = false;
-	m_qpc_Start = 0;
 }
 
 // Puts the event queue into Shutdown mode, which does *not* immediately stop nor cancel
