@@ -832,6 +832,11 @@ static void PS2E_CALLBACK pcsx2_OSD_WriteLn( int icon, const char* msg )
 // ---------------------------------------------------------------------------------
 //  PluginStatus_t Implementations
 // ---------------------------------------------------------------------------------
+SysCorePlugins::SysCorePlugins() :
+	m_mcdPlugin(NULL), m_SettingsFolder(), m_LogFolder(), m_mtx_PluginStatus(), m_mcdOpen(false)
+{
+}
+
 SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxString& srcfile )
 	: Filename( srcfile )
 {
@@ -970,10 +975,6 @@ void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 // =====================================================================================
 //  SysCorePlugins Implementations
 // =====================================================================================
-
-SysCorePlugins::SysCorePlugins()
-{
-}
 
 SysCorePlugins::~SysCorePlugins() throw()
 {
