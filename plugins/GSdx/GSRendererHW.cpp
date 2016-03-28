@@ -766,16 +766,47 @@ void GSRendererHW::OI_GsMemClear()
 		GSOffset* off = m_context->offset.fb;
 		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 
-		// Based on WritePixel32
-		for(int y = r.top; y < r.bottom; y++)
-		{
-			uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
-			int* RESTRICT col = off->pixel.col[0];
+		int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-			for(int x = r.left; x < r.right; x++)
+		if (format == 0) {
+			// Based on WritePixel32
+			for(int y = r.top; y < r.bottom; y++)
 			{
-				d[col[x]] = 0; // Here the constant color
+				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
+				int* RESTRICT col = off->pixel.col[0];
+
+				for(int x = r.left; x < r.right; x++)
+				{
+					d[col[x]] = 0; // Here the constant color
+				}
 			}
+		} else if (format == 1) {
+			// Based on WritePixel24
+			for(int y = r.top; y < r.bottom; y++)
+			{
+				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
+				int* RESTRICT col = off->pixel.col[0];
+
+				for(int x = r.left; x < r.right; x++)
+				{
+					d[col[x]] &= 0xff000000; // Clear the color
+				}
+			}
+		} else if (format == 2) {
+			; // Hack is used for FMV which are likely 24/32 bits. Let's keep the for reference
+#if 0
+			// Based on WritePixel16
+			for(int y = r.top; y < r.bottom; y++)
+			{
+				uint32* RESTRICT d = &m_mem.m_vm16[off->pixel.row[y]];
+				int* RESTRICT col = off->pixel.col[0];
+
+				for(int x = r.left; x < r.right; x++)
+				{
+					d[col[x]] = 0; // Here the constant color
+				}
+			}
+#endif
 		}
 	}
 }
