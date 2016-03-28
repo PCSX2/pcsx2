@@ -22,13 +22,11 @@
 
 #include "PrecompiledHeader.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-
 #include "CDVDisoReader.h"
-
 #include "AsyncFileReader.h"
+
+#include <cstring>
+#include <array>
 
 static InputIsoFile iso;
 
@@ -130,122 +128,54 @@ s32 CALLBACK ISOgetTD(u8 Track, cdvdTD *Buffer)
 	return 0;
 }
 
-#include "gui/App.h"
-#include "Utilities/HashMap.h"
-
-static bool testForPartitionInfo( const u8 (&tempbuffer)[CD_FRAMESIZE_RAW] )
+static bool testForPrimaryVolumeDescriptor(const std::array<u8, CD_FRAMESIZE_RAW>& buffer)
 {
-	const int off = iso.GetBlockOffset();
+	const std::array<u8, 6> identifier = {1, 'C', 'D', '0', '0', '1'};
 
-	// test for: CD001
-	return (
-		(tempbuffer[off+1] == 0x43) &&
-		(tempbuffer[off+2] == 0x44) &&
-		(tempbuffer[off+3] == 0x30) &&
-		(tempbuffer[off+4] == 0x30) &&
-		(tempbuffer[off+5] == 0x31)
-	);
+	return std::equal(identifier.begin(), identifier.end(), buffer.begin() + iso.GetBlockOffset());
 }
 
 static void FindLayer1Start()
 {
-	if (iso.GetBlockCount() < 0x230540) return;
-	if (layer1start != -1) return;
-	if (layer1searched) return;
+	if (layer1searched)
+		return;
 
-	Console.WriteLn("isoFile: searching for layer1...");
 	layer1searched = true;
 
-	int blockresult = -1;
+	std::array<u8, CD_FRAMESIZE_RAW> buffer;
 
-	// Check the ini file cache first:
-	// Cache is stored in LayerBreakCache.ini, and is associated by hex-encoded hash key of the
-	// complete filename/path of the iso file. :)
-
-	wxString layerCacheFile( Path::Combine(GetSettingsFolder().ToString(), L"LayerBreakCache.ini") );
-	wxFileConfig layerCacheIni( wxEmptyString, wxEmptyString, layerCacheFile, wxEmptyString, wxCONFIG_USE_RELATIVE_PATH );
-
-	FastFormatUnicode cacheKey;
-	cacheKey.Write( L"%X", HashTools::Hash( (s8*)iso.GetFilename().wx_str(), iso.GetFilename().Length() * sizeof(wxChar) ) );
-
-	blockresult = layerCacheIni.Read( cacheKey, -1 );
-	if( blockresult != -1 )
+	// The ISO9660 primary volume descriptor for layer 0 is located at sector 16
+	iso.ReadSync(buffer.data(), 16);
+	if (!testForPrimaryVolumeDescriptor(buffer))
 	{
-		u8 tempbuffer[CD_FRAMESIZE_RAW];
-		iso.ReadSync(tempbuffer, blockresult);
-
-		if( testForPartitionInfo( tempbuffer ) )
-		{
-			Console.WriteLn( "isoFile: loaded second layer from settings cache, sector=0x%08x", blockresult );
-			layer1start = blockresult;
-		}
-		else
-		{
-			Console.Warning( "isoFile: second layer info in the settings cache appears to be obsolete or invalid.  Ignoring..." );
-		}
-	}
-	else
-	{
-		DevCon.WriteLn( "isoFile: no cached info for second layer found." );
+		Console.Error("isoFile: Invalid layer0 Primary Volume Descriptor");
+		return;
 	}
 
-	if( layer1start == -1 )
+	// The volume space size (sector count) is located at bytes 80-87 - 80-83
+	// is the little endian size, 84-87 is the big endian size.
+	const int offset = iso.GetBlockOffset();
+	uint blockresult = buffer[offset + 80]
+		+ (buffer[offset + 81] << 8)
+		+ (buffer[offset + 82] << 16)
+		+ (buffer[offset + 83] << 24);
+
+	// If the ISO sector count is larger than the volume size, then we should
+	// have a dual layer DVD. Layer 1 is on a different volume.
+	if (blockresult < iso.GetBlockCount())
 	{
+		// The layer 1 start LSN contains the primary volume descriptor for layer 1.
+		// The check might be a bit unnecessary though.
+		if (iso.ReadSync(buffer.data(), blockresult) == -1)
+			return;
 
-		// Layer sizes are arbitrary, and either layer could be the smaller (GoW and Rogue Galaxy
-		// both have Layer1 larger than Layer0 for example), so we have to brute-force the search
-		// from some arbitrary start position.
-		//
-		// Method: Inside->out.  We start at the middle of the image and work our way out toward
-		// both the beginning and end of the image at the same time.  Most images have the layer
-		// break quite close to the middle of the image, so this should be pretty fast in most cases.
-
-		// [TODO] Layer searching can be slow, especially for compressed disc images, so it would
-		// be quite courteous to pop up a status dialog bar that lets the user know that it's
-		// thinking.  Since we're not on the GUI thread, we'll need to establish some messages
-		// to create the window and pass progress increments back to it.
-
-
-		uint midsector = (iso.GetBlockCount() / 2) & ~0xf;
-		uint deviation = 0;
-
-		while( (layer1start == -1) && (deviation < midsector-16) )
+		if (!testForPrimaryVolumeDescriptor(buffer))
 		{
-			u8 tempbuffer[CD_FRAMESIZE_RAW];
-			iso.ReadSync(tempbuffer, midsector-deviation);
-
-			if(testForPartitionInfo( tempbuffer ))
-				layer1start = midsector-deviation;
-			else
-			{
-				iso.ReadSync(tempbuffer, midsector+deviation);
-				if( testForPartitionInfo( tempbuffer ) )
-					layer1start = midsector+deviation;
-			}
-
-			if( layer1start != -1 )
-			{
-				const int blockofs = iso.GetBlockOffset();
-				if( !pxAssertDev( tempbuffer[blockofs] == 0x01, "Layer1-Detect: CD001 tag found, but the partition type is invalid." ) )
-				{
-					Console.Error( "isoFile: Invalid partition type on layer 1!? (type=0x%x)", tempbuffer[blockofs] );
-				}
-			}
-			deviation += 16;
+			Console.Error("isoFile: Invalid layer1 Primary Volume Descriptor");
+			return;
 		}
-
-		if( layer1start == -1 )
-		{
-			Console.Error("isoFile: Couldn't find layer1... iso image is probably corrupt or incomplete.");
-		}
-		else
-		{
-			Console.WriteLn( Color_Blue, "isoFile: second layer found at sector 0x%08x", layer1start);
-
-			// Save layer information to configuration:
-
-			layerCacheIni.Write( cacheKey, layer1start );
-		}
+		layer1start = blockresult;
+		Console.WriteLn(Color_Blue, "isoFile: second layer found at sector 0x%08x", layer1start);
 	}
 }
 
