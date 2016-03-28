@@ -423,7 +423,7 @@ struct Gif_Unit {
 	tGIF_STAT& stat;
 	GIF_TRANSFER_TYPE lastTranType; // Last Transfer Type
 
-	Gif_Unit() : stat(gifRegs.stat) {
+	Gif_Unit() : gsSIGNAL(), gsFINISH(), stat(gifRegs.stat), lastTranType(GIF_TRANS_INVALID) {
 		gifPath[0].Init(GIF_PATH_1, _1mb*9, _1mb  + _1kb);
 		gifPath[1].Init(GIF_PATH_2, _1mb*9, _1mb  + _1kb);
 		gifPath[2].Init(GIF_PATH_3, _1mb*9, _1mb  + _1kb);
