@@ -24,6 +24,26 @@ __aligned16 x86capabilities x86caps;
 // Recompiled code buffer for SSE and MXCSR feature testing.
 static __pagealigned u8 targetFXSAVE[512];
 
+x86capabilities::x86capabilities() :
+	isIdentified(false),
+	VendorID(x86Vendor_Unknown),
+	FamilyID(0),
+	Model(0),
+	TypeID(0),
+	StepID(0),
+	Flags(0),
+	Flags2(0),
+	EFlags(0),
+	EFlags2(0),
+	SEFlag(0),
+	AllCapabilities(0),
+	PhysicalCores(0),
+	LogicalCores(0)
+{
+	memzero(VendorName);
+	memzero(FamilyName);
+}
+
 // Warning!  We've had problems with the MXCSR detection code causing stack corruption in
 // MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
 // moved the recSSE[] array to a global static (it was local to cpudetectInit).  Commented
@@ -146,7 +166,7 @@ void x86capabilities::CountCores()
 	CountLogicalCores();
 }
 
-static const char* tbl_x86vendors[] = 
+static const char* tbl_x86vendors[] =
 {
 	"GenuineIntel",
 	"AuthenticAMD",
@@ -266,7 +286,7 @@ void x86capabilities::Identify()
 	hasSupplementalStreamingSIMD3Extensions		= ( Flags2 >> 9 ) & 1; //ssse3
 	hasStreamingSIMD4Extensions					= ( Flags2 >> 19 ) & 1; //sse4.1
 	hasStreamingSIMD4Extensions2				= ( Flags2 >> 20 ) & 1; //sse4.2
-	
+
 	if((Flags2 >> 27) & 1) // OSXSAVE
 	{
 		if((_xgetbv(0) & 6) == 6) // XFEATURE_ENABLED_MASK[2:1] = '11b' (XMM state and YMM state are enabled by OS).

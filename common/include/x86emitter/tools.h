@@ -53,60 +53,62 @@ public:
 	//   x86 CPU Capabilities Section (all boolean flags!)
 	// ----------------------------------------------------------------------------
 
-	u32 hasFloatingPointUnit						:1;
-	u32 hasVirtual8086ModeEnhancements				:1;
-	u32 hasDebuggingExtensions						:1;
-	u32 hasPageSizeExtensions						:1;
-	u32 hasTimeStampCounter							:1;
-	u32 hasModelSpecificRegisters					:1;
-	u32 hasPhysicalAddressExtension					:1;
-	u32 hasCOMPXCHG8BInstruction					:1;
-	u32 hasAdvancedProgrammableInterruptController	:1;
-	u32 hasSEPFastSystemCall						:1;
-	u32 hasMemoryTypeRangeRegisters					:1;
-	u32 hasPTEGlobalFlag							:1;
-	u32 hasMachineCheckArchitecture					:1;
-	u32 hasConditionalMoveAndCompareInstructions	:1;
-	u32 hasFGPageAttributeTable						:1;
-	u32 has36bitPageSizeExtension					:1;
-	u32 hasProcessorSerialNumber					:1;
-	u32 hasCFLUSHInstruction						:1;
-	u32 hasDebugStore								:1;
-	u32 hasACPIThermalMonitorAndClockControl		:1;
-	u32 hasFastStreamingSIMDExtensionsSaveRestore	:1;
-	u32 hasStreamingSIMDExtensions					:1;
-	u32 hasStreamingSIMD2Extensions					:1;
-	u32 hasSelfSnoop								:1;
+	union {
+		struct {
+			u32 hasFloatingPointUnit						:1;
+			u32 hasVirtual8086ModeEnhancements				:1;
+			u32 hasDebuggingExtensions						:1;
+			u32 hasPageSizeExtensions						:1;
+			u32 hasTimeStampCounter							:1;
+			u32 hasModelSpecificRegisters					:1;
+			u32 hasPhysicalAddressExtension					:1;
+			u32 hasCOMPXCHG8BInstruction					:1;
+			u32 hasAdvancedProgrammableInterruptController	:1;
+			u32 hasSEPFastSystemCall						:1;
+			u32 hasMemoryTypeRangeRegisters					:1;
+			u32 hasPTEGlobalFlag							:1;
+			u32 hasMachineCheckArchitecture					:1;
+			u32 hasConditionalMoveAndCompareInstructions	:1;
+			u32 hasFGPageAttributeTable						:1;
+			u32 has36bitPageSizeExtension					:1;
+			u32 hasProcessorSerialNumber					:1;
+			u32 hasCFLUSHInstruction						:1;
+			u32 hasDebugStore								:1;
+			u32 hasACPIThermalMonitorAndClockControl		:1;
+			u32 hasFastStreamingSIMDExtensionsSaveRestore	:1;
+			u32 hasStreamingSIMDExtensions					:1;
+			u32 hasStreamingSIMD2Extensions					:1;
+			u32 hasSelfSnoop								:1;
 
-	// is TRUE for both multi-core and Hyperthreaded CPUs.
-	u32 hasMultiThreading							:1;
+			// is TRUE for both multi-core and Hyperthreaded CPUs.
+			u32 hasMultiThreading							:1;
 
-	u32 hasThermalMonitor							:1;
-	u32 hasIntel64BitArchitecture					:1;
-	u32 hasStreamingSIMD3Extensions					:1;
-	u32 hasSupplementalStreamingSIMD3Extensions		:1;
-	u32 hasStreamingSIMD4Extensions					:1;
-	u32 hasStreamingSIMD4Extensions2				:1;
-	u32 hasAVX										:1;
-	u32 hasAVX2										:1;
-	u32 hasBMI1										:1;
-	u32 hasBMI2										:1;
-	u32 hasFMA										:1;
+			u32 hasThermalMonitor							:1;
+			u32 hasIntel64BitArchitecture					:1;
+			u32 hasStreamingSIMD3Extensions					:1;
+			u32 hasSupplementalStreamingSIMD3Extensions		:1;
+			u32 hasStreamingSIMD4Extensions					:1;
+			u32 hasStreamingSIMD4Extensions2				:1;
+			u32 hasAVX										:1;
+			u32 hasAVX2										:1;
+			u32 hasBMI1										:1;
+			u32 hasBMI2										:1;
+			u32 hasFMA										:1;
 
-	// AMD-specific CPU Features
-	u32 hasAMD64BitArchitecture						:1;
-	u32 hasStreamingSIMD4ExtensionsA				:1;
+			// AMD-specific CPU Features
+			u32 hasAMD64BitArchitecture						:1;
+			u32 hasStreamingSIMD4ExtensionsA				:1;
+		};
+
+		u32 AllCapabilities;
+	};
 
 	// Core Counts!
 	u32 PhysicalCores;
 	u32 LogicalCores;
 
 public:
-	x86capabilities()
-	{
-		isIdentified = false;
-		VendorID = x86Vendor_Unknown;
-	}
+	x86capabilities();
 
 	void Identify();
 	void CountCores();
