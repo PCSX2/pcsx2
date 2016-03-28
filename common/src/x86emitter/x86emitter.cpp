@@ -149,7 +149,7 @@ const xRegisterCL cl;
 const char *const x86_regnames_gpr8[] =
 {
 	"al", "cl", "dl", "bl",
-	"ah", "ch", "dh", "bh"
+	"ah", "ch", "dh", "bh",
 	"b8",  "b9",  "b10", "b11",
 	"b12", "b13", "b14", "b15"
 };
@@ -157,7 +157,7 @@ const char *const x86_regnames_gpr8[] =
 const char *const x86_regnames_gpr16[] =
 {
 	"ax", "cx", "dx", "bx",
-	"sp", "bp", "si", "di"
+	"sp", "bp", "si", "di",
 	"h8",  "h9",  "h10", "h11",
 	"h12", "h13", "h14", "h15"
 };
