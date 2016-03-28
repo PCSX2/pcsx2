@@ -166,7 +166,7 @@ struct Gif_Path {
 	GIF_PATH_STATE state; // Path State
 	Gif_Path_MTVU  mtvu;  // Must be last for saved states
 
-	Gif_Path()  {}
+	Gif_Path()  { Reset(); }
 	~Gif_Path() { _aligned_free(buffer); }
 
 	void Init(GIF_PATH _idx, u32 _buffSize, u32 _buffSafeZone) {
