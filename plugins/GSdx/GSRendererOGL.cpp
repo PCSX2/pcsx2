@@ -40,6 +40,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_safe_fbmask    = theApp.GetConfig("UserHacks_safe_fbmask", false);
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
+	m_unsafe_fbmask = false;
 
 	if (!theApp.GetConfig("UserHacks", 0)) {
 		UserHacks_TCOffset       = 0;
