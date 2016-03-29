@@ -270,6 +270,14 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 		gf++;
 	}
 
+	if (game.keyExists("MTVUSpeedHack"))
+	{
+		bool MTVU = !!game.getInt("MTVUSpeedHack");
+		PatchesCon->WriteLn("(GameDB) Changing MTVU speed hack [mode=%d]", MTVU);
+		dest.Speedhacks.vuThread = MTVU;
+		gf++;
+	}
+
 	for( GamefixId id=GamefixId_FIRST; id<pxEnumEnd; ++id )
 	{
 		wxString key( EnumToString(id) );
