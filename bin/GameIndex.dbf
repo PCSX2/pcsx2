@@ -14661,6 +14661,7 @@ Region = PAL-E
 Serial = SLES-53747
 Name   = Ed, Edd, 'n Eddy - The Misadventure
 Region = PAL-E
+eeRoundMode = 2		//fixes missing text
 ---------------------------------------------
 Serial = SLES-53748
 Name   = Quest for Sleeping Beauty
@@ -37765,6 +37766,12 @@ Serial = SLUS-20904
 Name   = SpongeBob Squarepants - The Movie
 Region = NTSC-U
 Compat = 5
+[patches = 536FEB77]
+comment= Patch By Prafull
+// fix hang at loading screen
+patch=1,EE,0010f3e0,word,00000000
+comment= this disc has the same crc as SLES-52895.
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20905
 Name   = Incredibles, The
@@ -39545,6 +39552,7 @@ Serial = SLUS-21260
 Name   = Ed, Edd, 'n Eddy - The Mis-Edventures
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2		//fixes missing text
 ---------------------------------------------
 Serial = SLUS-21261
 Name   = Shadow the Hedgehog
