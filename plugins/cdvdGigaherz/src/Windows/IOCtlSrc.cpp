@@ -14,15 +14,12 @@
  */
 
 #include "../CDVD.h"
-#pragma warning(disable:4200)
-#pragma pack(1)
+
 #include <winioctl.h>
-#include "rosddk/ntddcdvd.h"
-#include "rosddk/ntddcdrm.h"
-#include "rosddk/ntddscsi.h"
-#pragma warning(default:4200)
-#include <stddef.h>
-#include <intrin.h>
+#include <ntddcdvd.h>
+#include <ntddcdrm.h>
+#include <cstddef>
+#include <cstdlib>
 
 template<class T>
 bool ApiErrorCheck(T t,T okValue,bool cmpEq)
@@ -336,6 +333,12 @@ struct mycrap
 {
 	DWORD shit;
 	DVD_LAYER_DESCRIPTOR ld;
+	// The IOCTL_DVD_READ_STRUCTURE expects a size of at least 22 bytes when
+	// reading the dvd physical layer descriptor
+	// 4 bytes header
+	// 17 bytes for the layer descriptor
+	// 1 byte of the media specific data for no reason whatsoever...
+	UCHAR fixup;
 };
 
 DVD_READ_STRUCTURE dvdrs;

@@ -14,14 +14,9 @@
  */
 
 #include "CDVD.h"
-#pragma warning(disable:4200)
-#pragma pack(1)
-#include <winioctl.h>
-#include "rosddk/ntddcdvd.h"
-#include "rosddk/ntddcdrm.h"
-#include "rosddk/ntddscsi.h"
-#pragma warning(default:4200)
-#include <stddef.h>
+
+#include <ntddcdrm.h>
+#include <cstddef>
 
 #include "ReaderModules.h"
 #include "SectorConverters.h"

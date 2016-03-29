@@ -117,10 +117,6 @@
     <ClInclude Include="..\ReaderModules.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\SectorConverters.h" />
-    <ClInclude Include="rosddk\ntddcdrm.h" />
-    <ClInclude Include="rosddk\ntddcdvd.h" />
-    <ClInclude Include="rosddk\ntddscsi.h" />
-    <ClInclude Include="rosddk\ntddstor.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cdvdGigaherz.rc" />

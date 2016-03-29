@@ -12,9 +12,6 @@
       <UniqueIdentifier>{6c12b075-7b05-42ce-8628-c668f325f4ce}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
-    <Filter Include="Header Files\rosddk">
-      <UniqueIdentifier>{48ccf9e7-ebd6-41ff-bf33-0e964046bb00}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{a80698fd-3734-41c4-b7e8-6b96b34633e0}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
@@ -61,18 +58,6 @@
     </ClInclude>
     <ClInclude Include="..\SectorConverters.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddcdrm.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddcdvd.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddscsi.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddstor.h">
-      <Filter>Header Files\rosddk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
