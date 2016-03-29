@@ -286,7 +286,6 @@ void VU_Thread::WaitVU()
 	for(;;) {
 		if (IsDone()) break;
 		//DevCon.WriteLn("WaitVU()");
-		pxAssert(THREAD_VU1);
 		KickStart();
 		ScopedLock lock(mtxBusy);
 	}
