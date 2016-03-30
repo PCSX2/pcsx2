@@ -830,6 +830,87 @@ static void PS2E_CALLBACK pcsx2_OSD_WriteLn( int icon, const char* msg )
 }
 
 // ---------------------------------------------------------------------------------
+// DynamicStaticLibrary
+// ---------------------------------------------------------------------------------
+StaticLibrary::StaticLibrary(PluginsEnum_t _pid) : pid(_pid)
+{
+}
+
+bool StaticLibrary::Load(const wxString& name)
+{
+	return true;
+}
+
+void* StaticLibrary::GetSymbol(const wxString &name)
+{
+#define RETURN_SYMBOL(s) if (name == #s) return (void*)&s;
+
+#define RETURN_COMMON_SYMBOL(p) \
+	RETURN_SYMBOL(p##init) \
+	RETURN_SYMBOL(p##close) \
+	RETURN_SYMBOL(p##shutdown) \
+	RETURN_SYMBOL(p##keyEvent) \
+	RETURN_SYMBOL(p##setSettingsDir) \
+	RETURN_SYMBOL(p##setLogDir) \
+	RETURN_SYMBOL(p##freeze) \
+	RETURN_SYMBOL(p##test) \
+	RETURN_SYMBOL(p##configure) \
+	RETURN_SYMBOL(p##about)
+
+#ifdef BUILTIN_GS_PLUGIN
+	RETURN_COMMON_SYMBOL(GS);
+#endif
+#ifdef BUILTIN_PAD_PLUGIN
+	RETURN_COMMON_SYMBOL(PAD);
+#endif
+#ifdef BUILTIN_SPU2_PLUGIN
+	RETURN_COMMON_SYMBOL(SPU2);
+#endif
+#ifdef BUILTIN_CDVD_PLUGIN
+	RETURN_COMMON_SYMBOL(CDVD);
+#endif
+#ifdef BUILTIN_DEV9_PLUGIN
+	RETURN_COMMON_SYMBOL(DEV9);
+#endif
+#ifdef BUILTIN_USB_PLUGIN
+	RETURN_COMMON_SYMBOL(USB);
+#endif
+#ifdef BUILTIN_FW_PLUGIN
+	RETURN_COMMON_SYMBOL(FW);
+#endif
+
+
+#undef RETURN_COMMON_SYMBOL
+#undef RETURN_SYMBOL
+
+	return NULL;
+}
+
+bool StaticLibrary::HasSymbol(const wxString &name)
+{
+	return false;
+}
+
+DynamicLibrary::DynamicLibrary() : Lib()
+{
+}
+
+bool DynamicLibrary::Load(const wxString& name)
+{
+	return Lib.Load(name);
+}
+
+void* DynamicLibrary::GetSymbol(const wxString &name)
+{
+	return Lib.GetSymbol(name);
+}
+
+bool DynamicLibrary::HasSymbol(const wxString &name)
+{
+	return Lib.HasSymbol(name);
+}
+
+// ---------------------------------------------------------------------------------
 //  PluginStatus_t Implementations
 // ---------------------------------------------------------------------------------
 SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxString& srcfile )
@@ -839,57 +920,65 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 
 	IsInitialized	= false;
 	IsOpened		= false;
-
-	if( Filename.IsEmpty() )
-		throw Exception::PluginInitError( pid ).SetDiagMsg( L"Empty plugin filename" );
-
-	if( !wxFile::Exists( Filename ) )
-		throw Exception::PluginLoadError( pid ).SetStreamName(srcfile)
-			.SetBothMsgs(pxL("The configured %s plugin file was not found"));
-
-	if( !Lib.Load( Filename ) )
-		throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-			.SetBothMsgs(pxL("The configured %s plugin file is not a valid dynamic library"));
+	IsStatic		= false;
+	Lib				= new DynamicLibrary();
 
 
-	// Try to enumerate the new v2.0 plugin interface first.
-	// If that fails, fall back on the old style interface.
+	if (IsStatic) {
+		BindCommon( pid );
 
-	//m_libs[i].GetSymbol( L"PS2E_InitAPI" );		// on the TODO list!
+	} else {
+		if( Filename.IsEmpty() )
+			throw Exception::PluginInitError( pid ).SetDiagMsg( L"Empty plugin filename" );
 
-	
-	// 2.0 API Failed; Enumerate the Old Stuff! -->
+		if( !wxFile::Exists( Filename ) )
+			throw Exception::PluginLoadError( pid ).SetStreamName(srcfile)
+				.SetBothMsgs(pxL("The configured %s plugin file was not found"));
 
-	_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib.GetSymbol( L"PS2EgetLibName" );
-	_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib.GetSymbol( L"PS2EgetLibVersion2" );
+		if( !Lib->Load( Filename ) )
+			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
+				.SetBothMsgs(pxL("The configured %s plugin file is not a valid dynamic library"));
 
-	if( GetLibName == NULL || GetLibVersion2 == NULL )
-		throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-			.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
-			.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
 
-	// Only Windows GSdx uses this. Should be removed in future after GSdx no longer relies on it to show the new config dialog.
+		// Try to enumerate the new v2.0 plugin interface first.
+		// If that fails, fall back on the old style interface.
+
+		//m_libs[i].GetSymbol( L"PS2E_InitAPI" );		// on the TODO list!
+
+
+		// 2.0 API Failed; Enumerate the Old Stuff! -->
+
+		_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib->GetSymbol( L"PS2EgetLibName" );
+		_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib->GetSymbol( L"PS2EgetLibVersion2" );
+
+		if( GetLibName == NULL || GetLibVersion2 == NULL )
+			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
+				.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
+				.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
+
+		// Only Windows GSdx uses this. Should be removed in future after GSdx no longer relies on it to show the new config dialog.
 #ifdef _WIN32
-	// Since only Windows Gsdx has this symbol, that means every other plugin is going to cause error messages to be logged.
-	// Let's not do that for a hack function.
-	if (Lib.HasSymbol(L"PS2EsetEmuVersion")) {
-		_PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)Lib.GetSymbol(L"PS2EsetEmuVersion");
-		if (SetEmuVersion)
-			SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
-	}
+		// Since only Windows Gsdx has this symbol, that means every other plugin is going to cause error messages to be logged.
+		// Let's not do that for a hack function.
+		if (Lib->HasSymbol(L"PS2EsetEmuVersion")) {
+			_PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)Lib->GetSymbol(L"PS2EsetEmuVersion");
+			if (SetEmuVersion)
+				SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
+		}
 #endif
 
-	Name = fromUTF8( GetLibName() );
-	int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
-	Version.Printf( L"%d.%d.%d", (version>>8)&0xff, version&0xff, (version>>24)&0xff );
+		Name = fromUTF8( GetLibName() );
+		int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
+		Version.Printf( L"%d.%d.%d", (version>>8)&0xff, version&0xff, (version>>24)&0xff );
 
+		// Bind Required Functions
+		// (generate critical error if binding fails)
 
-	// Bind Required Functions
-	// (generate critical error if binding fails)
+		BindCommon( pid );
+		BindRequired( pid );
+		BindOptional( pid );
+	}
 
-	BindCommon( pid );
-	BindRequired( pid );
-	BindOptional( pid );
 
 	// Run Plugin's Functionality Test.
 	// A lot of plugins don't bother to implement this function and return 0 (success)
@@ -911,7 +1000,7 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 
 	while( current->MethodName != NULL )
 	{
-		*target = (VoidMethod*)Lib.GetSymbol( current->GetMethodName( pid ) );
+		*target = (VoidMethod*)Lib->GetSymbol( current->GetMethodName( pid ) );
 
 		if( *target == NULL )
 			*target = current->Fallback;
@@ -931,13 +1020,12 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 {
 	const LegacyApi_ReqMethod* current = s_MethMessReq[pid];
-	const wxDynamicLibrary& lib = Lib;
 
 	wxDoNotLogInThisScope please;
 
 	while( current->MethodName != NULL )
 	{
-		*(current->Dest) = (VoidMethod*)lib.GetSymbol( current->GetMethodName() );
+		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 
 		if( *(current->Dest) == NULL )
 			*(current->Dest) = current->Fallback;
@@ -956,13 +1044,12 @@ void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 {
 	const LegacyApi_OptMethod* current = s_MethMessOpt[pid];
-	const wxDynamicLibrary& lib = Lib;
 
 	wxDoNotLogInThisScope please;
 
 	while( current->MethodName != NULL )
 	{
-		*(current->Dest) = (VoidMethod*)lib.GetSymbol( current->GetMethodName() );
+		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 		current++;
 	}
 }
