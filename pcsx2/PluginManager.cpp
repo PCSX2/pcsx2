@@ -153,6 +153,7 @@ static void CALLBACK fallback_configure() {}
 static void CALLBACK fallback_about() {}
 static s32  CALLBACK fallback_test() { return 0; }
 
+#ifndef BUILTIN_GS_PLUGIN
 _GSvsync           GSvsync;
 _GSopen            GSopen;
 _GSopen2           GSopen2;
@@ -179,6 +180,7 @@ _GSsetExclusive		GSsetExclusive;
 _GSsetupRecording	GSsetupRecording;
 _GSreset			GSreset;
 _GSwriteCSR			GSwriteCSR;
+#endif
 
 static void CALLBACK GS_makeSnapshot(const char *path) {}
 static void CALLBACK GS_setGameCRC(u32 crc, int gameopts) {}
@@ -269,6 +271,7 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 }
 
 // PAD
+#ifndef BUILTIN_PAD_PLUGIN
 _PADinit           PADinit;
 _PADopen           PADopen;
 _PADstartPoll      PADstartPoll;
@@ -279,10 +282,12 @@ _PADkeyEvent       PADkeyEvent;
 _PADsetSlot        PADsetSlot;
 _PADqueryMtap      PADqueryMtap;
 _PADWriteEvent	   PADWriteEvent;
+#endif
 
 static void PAD_update( u32 padslot ) { }
 
 // SPU2
+#ifndef BUILTIN_SPU2_PLUGIN
 _SPU2open          SPU2open;
 _SPU2write         SPU2write;
 _SPU2reset         SPU2reset;
@@ -307,9 +312,11 @@ _SPU2irqCallback   SPU2irqCallback;
 
 _SPU2setClockPtr   SPU2setClockPtr;
 _SPU2async         SPU2async;
+#endif
 
 
 // DEV9
+#ifndef BUILTIN_DEV9_PLUGIN
 _DEV9open          DEV9open;
 _DEV9read8         DEV9read8;
 _DEV9read16        DEV9read16;
@@ -328,8 +335,10 @@ _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
 _DEV9irqCallback   DEV9irqCallback;
 _DEV9irqHandler    DEV9irqHandler;
 _DEV9async         DEV9async;
+#endif
 
 // USB
+#ifndef BUILTIN_USB_PLUGIN
 _USBopen           USBopen;
 _USBread8          USBread8;
 _USBread16         USBread16;
@@ -342,12 +351,15 @@ _USBasync          USBasync;
 _USBirqCallback    USBirqCallback;
 _USBirqHandler     USBirqHandler;
 _USBsetRAM         USBsetRAM;
+#endif
 
 // FW
+#ifndef BUILTIN_FW_PLUGIN
 _FWopen            FWopen;
 _FWread32          FWread32;
 _FWwrite32         FWwrite32;
 _FWirqCallback     FWirqCallback;
+#endif
 
 DEV9handler dev9Handler;
 USBhandler usbHandler;
@@ -920,9 +932,38 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 
 	IsInitialized	= false;
 	IsOpened		= false;
-	IsStatic		= false;
-	Lib				= new DynamicLibrary();
 
+	switch (_pid) {
+#ifdef BUILTIN_GS_PLUGIN
+		case PluginId_GS:
+#endif
+#ifdef BUILTIN_PAD_PLUGIN
+		case PluginId_PAD:
+#endif
+#ifdef BUILTIN_SPU2_PLUGIN
+		case PluginId_SPU2:
+#endif
+#ifdef BUILTIN_CDVD_PLUGIN
+		case PluginId_CDVD:
+#endif
+#ifdef BUILTIN_DEV9_PLUGIN
+		case PluginId_DEV9:
+#endif
+#ifdef BUILTIN_USB_PLUGIN
+		case PluginId_USB:
+#endif
+#ifdef BUILTIN_FW_PLUGIN
+		case PluginId_FW:
+#endif
+		case PluginId_Count:
+			IsStatic	= true;
+			Lib			= new StaticLibrary(_pid);
+			break;
+		default:
+			IsStatic	= false;
+			Lib			= new DynamicLibrary();
+			break;
+	}
 
 	if (IsStatic) {
 		BindCommon( pid );

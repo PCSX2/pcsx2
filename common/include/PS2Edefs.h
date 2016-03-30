@@ -228,7 +228,7 @@ extern "C" {
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef GSdefs
+#if defined(GSdefs) || defined(BUILTIN_GS_PLUGIN)
 
 // basic funcs
 
@@ -287,7 +287,7 @@ s32  CALLBACK GStest();
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef PADdefs
+#if defined(PADdefs) || defined(BUILTIN_PAD_PLUGIN)
 
 // basic funcs
 
@@ -334,7 +334,7 @@ s32  CALLBACK PADtest();
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef SPU2defs
+#if defined(SPU2defs) || defined(BUILTIN_SPU2_PLUGIN)
 
 // basic funcs
 
@@ -396,7 +396,7 @@ s32  CALLBACK SPU2test();
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef CDVDdefs
+#if defined(CDVDdefs) || defined(BUILTIN_CDVD_PLUGIN)
 
 // basic funcs
 
@@ -445,7 +445,7 @@ s32  CALLBACK CDVDgetDualInfo(s32* dualType, u32* _layer1start);
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef DEV9defs
+#if defined(DEV9defs) || defined(BUILTIN_DEV9_PLUGIN)
 
 // basic funcs
 
@@ -490,7 +490,7 @@ s32  CALLBACK DEV9test();
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef USBdefs
+#if defined(USBdefs) || defined(BUILTIN_USB_PLUGIN)
 
 // basic funcs
 
@@ -528,7 +528,7 @@ s32  CALLBACK USBtest();
 
 // if this file is included with this define
 // the next api will not be skipped by the compiler
-#ifdef FWdefs
+#if defined(BUILTIN_FW_PLUGIN) || defined(BUILTIN_FW_PLUGIN)
 // basic funcs
 
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
@@ -722,6 +722,7 @@ typedef void (CALLBACK* _FWirqCallback)(void (*callback)());
 #ifdef PLUGINfuncs
 
 // GS
+#ifndef BUILTIN_GS_PLUGIN
 extern _GSopen            GSopen;
 extern _GSopen2           GSopen2;
 extern _GSvsync           GSvsync;
@@ -749,8 +750,10 @@ extern _GSsetVsync	      GSsetVsync;
 extern _GSsetupRecording  GSsetupRecording;
 extern _GSreset			  GSreset;
 extern _GSwriteCSR		  GSwriteCSR;
+#endif
 
 // PAD
+#ifndef BUILTIN_PAD_PLUGIN
 extern _PADopen           PADopen;
 extern _PADstartPoll      PADstartPoll;
 extern _PADpoll           PADpoll;
@@ -761,8 +764,10 @@ extern _PADgsDriverInfo   PADgsDriverInfo;
 extern _PADsetSlot        PADsetSlot;
 extern _PADqueryMtap      PADqueryMtap;
 extern _PADWriteEvent     PADWriteEvent;
+#endif
 
 // SPU2
+#ifndef BUILTIN_SPU2_PLUGIN
 extern _SPU2open          SPU2open;
 extern _SPU2reset         SPU2reset;
 extern _SPU2write         SPU2write;
@@ -794,8 +799,10 @@ extern _SPU2setClockPtr   SPU2setClockPtr;
 extern _SPU2setTimeStretcher SPU2setTimeStretcher;
 
 extern _SPU2async         SPU2async;
+#endif
 
 // DEV9
+#ifndef BUILTIN_DEV9_PLUGIN
 extern _DEV9open          DEV9open;
 extern _DEV9read8         DEV9read8;
 extern _DEV9read16        DEV9read16;
@@ -814,8 +821,10 @@ extern _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
 extern _DEV9irqCallback   DEV9irqCallback;
 extern _DEV9irqHandler    DEV9irqHandler;
 extern _DEV9async         DEV9async;
+#endif
 
 // USB
+#ifndef BUILTIN_USB_PLUGIN
 extern _USBopen           USBopen;
 extern _USBread8          USBread8;
 extern _USBread16         USBread16;
@@ -828,12 +837,15 @@ extern _USBasync          USBasync;
 extern _USBirqCallback    USBirqCallback;
 extern _USBirqHandler     USBirqHandler;
 extern _USBsetRAM         USBsetRAM;
+#endif
 
 // FW
+#ifndef BUILTIN_FW_PLUGIN
 extern _FWopen            FWopen;
 extern _FWread32          FWread32;
 extern _FWwrite32         FWwrite32;
 extern _FWirqCallback     FWirqCallback;
+#endif
 
 #endif
 
