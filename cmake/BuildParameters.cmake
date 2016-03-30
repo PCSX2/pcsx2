@@ -83,6 +83,40 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 #-------------------------------------------------------------------------------
+# Select the support of plugin
+#-------------------------------------------------------------------------------
+option(BUILTIN_GS           "Disable support of GS plugin (developer option)")
+option(BUILTIN_PAD          "Disable support of PAD plugin (developer option)")
+option(BUILTIN_SPU2         "Disable support of SPU2 plugin (developer option)")
+option(BUILTIN_USB          "Disable support of USB plugin (developer option)")
+option(BUILTIN_FW           "Disable support of FW plugin (developer option)")
+option(BUILTIN_DEV9         "Disable support of DEV9 plugin (developer option)")
+option(BUILTIN_CDVD         "Disable support of CDVD plugin (developer option)")
+
+set(PLUGIN_SUPPORT "")
+if(BUILTIN_GS)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_GS_PLUGIN")
+endif()
+if(BUILTIN_PAD)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_PAD_PLUGIN")
+endif()
+if(BUILTIN_SPU2)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_SPU2_PLUGIN")
+endif()
+if(BUILTIN_USB)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_USB_PLUGIN")
+endif()
+if(BUILTIN_FW)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_FW_PLUGIN")
+endif()
+if(BUILTIN_DEV)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_DEV_PLUGIN")
+endif()
+if(BUILTIN_CDVD)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_CDVD_PLUGIN")
+endif()
+
+#-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
 option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
@@ -312,7 +346,7 @@ else()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 

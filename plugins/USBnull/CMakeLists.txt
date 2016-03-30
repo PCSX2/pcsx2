@@ -50,4 +50,8 @@ set(USBnullFinalLibs
 	${GTK2_LIBRARIES}
 )
 
-add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+if(BUILTIN_USB)
+    add_pcsx2_lib(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+else()
+    add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+endif()
