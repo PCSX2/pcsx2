@@ -161,7 +161,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				//    because of the previous draw call format
 				//
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
-				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+				uint32 t_psm = (t->m_dirty_alpha && t->m_TEX0.PSM == PSM_PSMCT24) ? PSM_PSMCT32 : t->m_TEX0.PSM;
+				//uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
 					if (!s_IS_OPENGL && (psm == PSM_PSMT8)) {
@@ -286,7 +287,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst->Update();
 
-		dst->m_dirty_alpha |= (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+		//dst->m_dirty_alpha |= (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+		dst->m_dirty_alpha |= (TEX0.PSM == PSM_PSMCT32);
 
 	} else if (CanConvertDepth()) {
 
@@ -1529,7 +1531,9 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 {
 	m_TEX0 = TEX0;
 	m_32_bits_fmt |= !(TEX0.PSM & 2);
-	m_dirty_alpha = (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+
+	//m_dirty_alpha |= (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+	m_dirty_alpha = (TEX0.PSM == PSM_PSMCT32);
 
 	m_valid = GSVector4i::zero();
 }
