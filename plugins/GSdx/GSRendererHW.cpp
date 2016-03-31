@@ -169,6 +169,7 @@ GSTexture* GSRendererHW::GetOutput(int i)
 	{
 		t = rt->m_texture;
 
+#ifndef NDEBUG
 		if(s_dump)
 		{
 			if(s_savef && s_n >= s_saven)
@@ -177,7 +178,8 @@ GSTexture* GSRendererHW::GetOutput(int i)
 			}
 		}
 
-		s_n++; // Alaways increment it
+		s_n++;
+#endif
 	}
 
 	return t;
@@ -424,6 +426,7 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || !(context->FRAME.PSM & 0x2);
 	}
 
+#ifndef NDEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -476,11 +479,10 @@ void GSRendererHW::Draw()
 
 		s_n++;
 
-#ifdef ENABLE_OGL_DEBUG
 	} else {
 		s_n += 2;
-#endif
 	}
+#endif
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
 	{
@@ -600,6 +602,7 @@ void GSRendererHW::Draw()
 		(this->*m_hacks.m_oo)();
 	}
 
+#ifndef NDEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -628,14 +631,13 @@ void GSRendererHW::Draw()
 		{
 			s_dump = 0;
 		}
-#ifdef ENABLE_OGL_DEBUG
 	} else {
 		s_n += 1;
-#endif
 	}
+#endif
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
-	
+
 	if (rt)
 		m_tc->Read(rt, r);
 
