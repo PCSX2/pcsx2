@@ -424,6 +424,8 @@ void GSRendererHW::Draw()
 		// Otherwise set or clear the flag (Code in texture cache only set the flag)
 		// Note: it is important to clear the flag when RT is used as a real 16 bits target.
 		rt->m_32_bits_fmt = m_texture_shuffle || !(context->FRAME.PSM & 0x2);
+		// As 32 bits format, the alpha channel will be written.
+		rt->m_dirty_alpha |= m_texture_shuffle;
 	}
 
 #ifndef NDEBUG
