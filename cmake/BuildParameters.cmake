@@ -173,7 +173,7 @@ endif()
 # Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
 # Ensure that the value set by the User is correct to avoid some bad behavior later
 #-------------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
 	set(CMAKE_BUILD_TYPE Devel)
 	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
 endif()
@@ -283,7 +283,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES "Release")
     set(DEBUG_FLAG "-DNDEBUG")
 elseif(CMAKE_BUILD_TYPE MATCHES "Prof")
     # Keep frame pointer and debug information for profiler tool
-    set(DEBUG_FLAG "${DBG} -DNDEBUG")
+    set(DEBUG_FLAG "-g -fno-omit-frame-pointer -DNDEBUG")
 endif()
 
 if (USE_ASAN)
