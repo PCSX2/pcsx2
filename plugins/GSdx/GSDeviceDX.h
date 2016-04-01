@@ -278,6 +278,12 @@ protected:
 	uint32 m_msaa;
 	DXGI_SAMPLE_DESC m_msaa_desc;
 
+	static HMODULE s_d3d_compiler_dll;
+	static decltype(&D3DCompile) s_pD3DCompile;
+	// Older version doesn't support D3D_COMPILE_STANDARD_FILE_INCLUDE, which
+	// could be useful for external shaders.
+	static bool s_old_d3d_compiler_dll;
+
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
 
 public:
@@ -296,6 +302,9 @@ public:
 
 	virtual bool HasStencil() = 0;
 	virtual bool HasDepth32() = 0;
+
+	static bool LoadD3DCompiler();
+	static void FreeD3DCompiler();
 
 	template<class T> void PrepareShaderMacro(vector<T>& dst, const T* src)
 	{
