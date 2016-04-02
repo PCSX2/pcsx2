@@ -768,7 +768,7 @@ void GSDevice11::InitExternalFX()
 			if (fshader.good())
 			{
 				shader << fshader.rdbuf();
-				CompileShader(shader.str().c_str(), shader.str().length(), shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", nullptr, &m_shaderfx.ps);
+				CompileShader(shader.str().c_str(), shader.str().length(), shader_name.c_str(), nullptr, "ps_main", nullptr, &m_shaderfx.ps);
 			}
 			else
 			{
