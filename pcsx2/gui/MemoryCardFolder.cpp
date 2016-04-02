@@ -42,11 +42,11 @@ void FolderMemoryCard::InitializeInternalData() {
 	memset( &m_backupBlock2, 0xFF, sizeof( m_backupBlock2 ) );
 	m_cache.clear();
 	m_oldDataCache.clear();
+	m_lastAccessedFile.CloseAll();
 	m_fileMetadataQuickAccess.clear();
 	m_timeLastWritten = 0;
 	m_isEnabled = false;
 	m_framesUntilFlush = 0;
-	m_lastAccessedFile.CloseAll();
 	m_performFileWrites = true;
 }
 
