@@ -1109,7 +1109,7 @@ typedef struct _PS2E_ComponentAPI_Mcd
 	// Used by the FolderMemoryCard to find a good time to flush written data to the host file system.
 	void (PS2E_CALLBACK* McdNextFrame)( PS2E_THISPTR thisptr, uint port, uint slot );
 
-	void (PS2E_CALLBACK* McdReIndex)( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter );
+	bool (PS2E_CALLBACK* McdReIndex)( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter );
 
 	void* reserved[6];
 

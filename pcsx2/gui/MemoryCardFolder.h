@@ -327,6 +327,10 @@ protected:
 	// if set to false, nothing is actually written to the file system while flushing, and data is discarded instead
 	bool m_performFileWrites;
 
+	// currently active filter settings
+	bool m_filteringEnabled;
+	wxString m_filteringString;
+
 public:
 	FolderMemoryCard();
 	virtual ~FolderMemoryCard() throw() {}
@@ -340,6 +344,11 @@ public:
 	void Open( const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites = false );
 	// Close the memory card and flush changes to the file system. Set flush to false to not store changes.
 	void Close( bool flush = true );
+
+	// Closes and reopens card with given filter options if they differ from the current ones (returns true),
+	// or does nothing if they match already (returns false).
+	// Does nothing and returns false when called on a closed memory card.
+	bool ReIndex( bool enableFiltering, const wxString& filter );
 
 	s32  IsPresent() const;
 	void GetSizeInfo( PS2E_McdSizeInfo& outways ) const;
@@ -562,5 +571,5 @@ public:
 	s32  EraseBlock( uint slot, u32 adr );
 	u64  GetCRC( uint slot );
 	void NextFrame( uint slot );
-	void ReIndex( uint slot, const bool enableFiltering, const wxString& filter );
+	bool ReIndex( uint slot, const bool enableFiltering, const wxString& filter );
 };

@@ -70,8 +70,8 @@ void SysPluginBindings::McdNextFrame( uint port, uint slot ) {
 	Mcd->McdNextFrame( (PS2E_THISPTR) Mcd, port, slot );
 }
 
-void SysPluginBindings::McdReIndex( uint port, uint slot, const wxString& filter ) {
-	Mcd->McdReIndex( (PS2E_THISPTR) Mcd, port, slot, filter );
+bool SysPluginBindings::McdReIndex( uint port, uint slot, const wxString& filter ) {
+	return Mcd->McdReIndex( (PS2E_THISPTR) Mcd, port, slot, filter );
 }
 
 // ----------------------------------------------------------------------------
