@@ -108,12 +108,13 @@ private:
 class DisassemblyMacro: public DisassemblyEntry
 {
 public:
-	DisassemblyMacro(DebugInterface* _cpu, u32 _address): cpu(_cpu), address(_address) { };
+	DisassemblyMacro(DebugInterface* _cpu, u32 _address):
+		cpu(_cpu), type(MACRO_LI), name(), immediate(0), address(_address), numOpcodes(0), rt(0), dataSize(0) { };
 	virtual ~DisassemblyMacro() { };
-	
+
 	void setMacroLi(u32 _immediate, u8 _rt);
 	void setMacroMemory(std::string _name, u32 _immediate, u8 _rt, int _dataSize);
-	
+
 	virtual void recheck() { };
 	virtual int getNumLines() { return 1; };
 	virtual int getLineNum(u32 address, bool findStart) { return 0; };
@@ -122,7 +123,7 @@ public:
 	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols) ;
 private:
 	enum MacroType { MACRO_LI, MACRO_MEMORYIMM };
-	
+
 	DebugInterface* cpu;
 	MacroType type;
 	std::string name;
@@ -139,7 +140,7 @@ class DisassemblyData: public DisassemblyEntry
 public:
 	DisassemblyData(DebugInterface* _cpu, u32 _address, u32 _size, DataType _type);
 	virtual ~DisassemblyData() { };
-	
+
 	virtual void recheck();
 	virtual int getNumLines() { return (int)lines.size(); };
 	virtual int getLineNum(u32 address, bool findStart);
@@ -155,7 +156,7 @@ private:
 		u32 size;
 		int lineNum;
 	};
-	
+
 	DebugInterface* cpu;
 	u32 address;
 	u32 size;
@@ -170,7 +171,7 @@ class DisassemblyComment: public DisassemblyEntry
 public:
 	DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _size, std::string name, std::string param);
 	virtual ~DisassemblyComment() { };
-	
+
 	virtual void recheck() { };
 	virtual int getNumLines() { return 1; };
 	virtual int getLineNum(u32 address, bool findStart) { return 0; };

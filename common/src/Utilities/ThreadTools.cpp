@@ -172,12 +172,12 @@ void Threading::pxThread::_pt_callback_cleanup( void* handle )
 
 Threading::pxThread::pxThread( const wxString& name )
 	: m_name( name )
+	, m_thread()
+	, m_native_id(0)
+	, m_native_handle(0)
+	, m_detached(true)		// start out with m_thread in detached/invalid state
+	, m_running(false)
 {
-	m_detached	= true;		// start out with m_thread in detached/invalid state
-	m_running	= false;
-
-	m_native_id		= 0;
-	m_native_handle	= 0;
 }
 
 // This destructor performs basic "last chance" cleanup, which is a blocking join

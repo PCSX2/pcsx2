@@ -367,9 +367,11 @@ bool MipsCheckImmediate(const char* Source, DebugInterface* cpu, int& dest, int&
 	return true;
 }
 
-CMipsInstruction::CMipsInstruction(DebugInterface* cpu)
+CMipsInstruction::CMipsInstruction(DebugInterface* cpu) :
+	Opcode(), NoCheckError(false), Loaded(false), RamPos(0),
+	registers(), immediateType(MIPS_NOIMMEDIATE), immediate(),
+	vfpuSize(0), encoding(0), error()
 {
-	Loaded = false;
 	this->cpu = cpu;
 }
 

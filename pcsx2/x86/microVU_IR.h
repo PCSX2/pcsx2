@@ -240,6 +240,7 @@ protected:
 public:
 	microRegAlloc(int _index) {
 		index = _index;
+		reset();
 	}
 
 	// Fully resets the regalloc by clearing all cached data
