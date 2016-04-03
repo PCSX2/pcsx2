@@ -666,7 +666,14 @@ public:
 	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
 };
 
+class direct_PageFaultHandler : public EventListener_PageFault
+{
+public:
+	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
+};
+
 static mmap_PageFaultHandler* mmap_faultHandler = NULL;
+static direct_PageFaultHandler* direct_faultHandler = NULL;
 
 EEVM_MemoryAllocMess* eeMem = NULL;
 __pagealigned u8 eeHw[Ps2MemSize::Hardware];
@@ -705,20 +712,51 @@ void memBindConditionalHandlers()
 //  eeMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
 eeMemoryReserve::eeMemoryReserve()
-	: _parent( L"EE Main Memory", sizeof(*eeMem) )
+	: _parent( L"EE Main Memory", sizeof(*eeMem) ) // FIXME 3*32 in direct access?
 {
 }
 
 void eeMemoryReserve::Reserve()
 {
+#if VTLB_UsePageFaulting
+	const int extra = 10 * _1mb;
+	const int special = 32 * _1kb;
+
+	const int start = HostMemoryMap::EEmem + _32kb;
+
+	const MemoryView ee_views[] {
+		{ 0x00000000 , start + 0 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x02000000 , start + 1 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x00000000 , start + 2 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x00000000 , start + 3 * _32mb           , _32mb   , PageAccess_ReadWrite() } ,
+		{ 0x02000000 , start + 4 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x02000000 , start + 5 * _32mb           , _32mb   , PageAccess_None() }      ,
+		{ 0x02000000 , start + 6 * _32mb           , _32mb   , PageAccess_None() }      ,
+		// Scratchpad and ROM and zero stuff
+		{ 0x04000000 , start + 7 * _32mb           , extra   , PageAccess_ReadWrite() } ,
+		// Special Main memory (+ an extra trick)
+		{ 0x00078000 , start + 8 * _32mb - special , special , PageAccess_ReadWrite() } ,
+		{ 0x00078000 , start - _32kb               , _32kb   , PageAccess_ReadWrite() } ,
+	};
+	for (size_t v = 0; v < sizeof(ee_views) / sizeof(ee_views[0]); v++)
+		m_reserve.Reserve( ee_views[v] );
+
+#else
+
 	_parent::Reserve(HostMemoryMap::EEmem);
 	//_parent::Reserve(EmuConfig.HostMap.IOP);
+
+#endif
 }
 
 void eeMemoryReserve::Commit()
 {
 	_parent::Commit();
+#if VTLB_UsePageFaulting
+	eeMem = (EEVM_MemoryAllocMess*)HostMemoryMap::EEmem;
+#else
 	eeMem = (EEVM_MemoryAllocMess*)m_reserve.GetPtr();
+#endif
 }
 
 // Resets memory mappings, unmaps TLBs, reloads bios roms, etc.
@@ -728,8 +766,18 @@ void eeMemoryReserve::Reset()
 		pxAssert(Source_PageFault);
 		mmap_faultHandler = new mmap_PageFaultHandler();
 	}
-	
+#if VTLB_UsePageFaulting
+	if (!direct_faultHandler) {
+		direct_faultHandler = new direct_PageFaultHandler();
+	}
+#endif
+
+#if VTLB_UsePageFaulting
+	//m_reserve.Commit();
+	// FIXME std code do a memzero?
+#else
 	_parent::Reset();
+#endif
 
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the
@@ -859,6 +907,7 @@ void eeMemoryReserve::Decommit()
 void eeMemoryReserve::Release()
 {
 	safe_delete(mmap_faultHandler);
+	safe_delete(direct_faultHandler);
 	_parent::Release();
 	eeMem = NULL;
 	vtlb_Term();
@@ -983,6 +1032,112 @@ void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& h
 
 	mmap_ClearCpuBlock( offset );
 	handled = true;
+}
+
+using namespace x86Emitter;
+void direct_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& handled )
+{
+	pxAssert( eeMem );
+
+#if VTLB_UsePageFaulting
+	// get bad virtual address (only HW access must be handled here)
+	uptr offset_ee  = info.addr - (uptr)eeMem->_pad_hw_reg;
+	uptr offset_iop = info.addr - (uptr)eeMem->Scratch;
+	if (offset_ee >= _32mb && offset_iop >= _32mb) {
+		return;
+	}
+
+	u8* x86 = (u8*)info.eip;
+
+	u32 op32 = *(u32*)info.eip;
+	u32 op16 = op32 & 0xFFFF;
+	u32  op8 = op32 & 0xFF;
+
+	// not portable at all (but efficient ^^)
+	// A better solution will be to create a map that used eip as a key
+	// (you know pointer at compilation).
+	// This way you could store severals metadata such as
+	// 1/ tlb dispatcher index (or pointer)
+	// 2/ start of memory operation
+	// 3/ return address
+	//
+	// However it would cost a couple of MB that are barely used
+
+	bool sign = false;
+	int width = 0;
+	int op    = 0;
+	int op_nb = 2;
+
+	if (op16 == 0xBE0F) {
+		// Read 8B sign extended (movsx)
+		sign = true;
+		width = 8;
+	} else if (op16 == 0xBF0F) {
+		// Read 16B sign extended (movsx)
+		sign = true;
+		width = 16;
+	} else if (op16 == 0xB60F) {
+		// Read 8B zero extended (movzx)
+		width = 8;
+	} else if (op16 == 0xB70F) {
+		// Read 16B zero extended (movzx)
+		width = 16;
+	} else if (op8 == 0x8B) {
+		// Read 32B (mov)
+		width = 32;
+		op_nb = 1;
+	} else if (op16 == 0x120F) {
+		// Read 64B (movlps)
+		width = 64;
+	} else if (op16 == 0x280F) {
+		// Read 128B (movaps)
+		width = 128;
+	} else if (op8 == 0x88) {
+		// Write 8B (mov)
+		op = 1;
+		width = 8;
+		op_nb = 1;
+	} else if (op16 == 0x8966) {
+		// Write 16B (mov)
+		op = 1;
+		width = 16;
+	} else if (op8 == 0x89) {
+		// Write 32B (mov)
+		op = 1;
+		width = 32;
+		op_nb = 1;
+	} else if (op16 == 0x130F) {
+		// Write 64B (movlps)
+		op = 1;
+		width = 64;
+	} else if (op16 == 0x290F) {
+		// Write 128B (movaps)
+		op = 1;
+		width = 128;
+	} else {
+		Console.Error("opcode 0x%02x 0x%04x (0x%04x) 0x%08x", op8, op16, op32 & 0xFFFF, op32);
+		Console.Error("Unhandled page fault @ 0x%08x. EIP 0x%08x", info.addr, info.eip);
+		return;
+	}
+
+	s32 absolute_offset = *(s32*)(x86 + op_nb + 1);
+	s32 imm_offset = absolute_offset - (s32)(HostMemoryMap::EEmem + _32kb);
+
+	// Search the start of the load/store
+	u8* start = x86;
+
+	// Search the end of the load/store
+	u8* end;
+	if (width < 64 || op) {
+		end = x86 + op_nb + 1 + 4; // opcode + modrm + disp32
+	} else {
+		end = x86 + op_nb + 1 + 4 + 3; // opcode + modrm + disp32 + sse move (opcode + modrm)
+	}
+
+	vtlb_rewrite_memory_instruction(start, end, op, width, sign, imm_offset);
+
+	handled = true;
+#endif
 }
 
 // Clears all block tracking statuses, manual protection flags, and write protection.

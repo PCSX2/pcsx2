@@ -83,6 +83,19 @@ static void _g1_EmitOp( G1Type InstType, const xRegisterInt& to, const xIndirect
 
 static void _g1_EmitOp( G1Type InstType, const xRegisterInt& to, int imm )
 {
+	// If immediate is 0, we can take a shortcut.
+	if (imm == 0) {
+		switch (InstType) {
+			case G1Type_OR:
+			case G1Type_XOR:
+			case G1Type_ADD:
+			case G1Type_SUB:
+				return;
+			default:
+				break;
+		}
+	}
+
 	if( !to.Is8BitOp() && is_s8( imm ) )
 	{
 		xOpWrite( to.GetPrefix16(), 0x83, InstType, to );

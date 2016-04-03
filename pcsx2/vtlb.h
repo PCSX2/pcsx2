@@ -82,21 +82,23 @@ extern void __fastcall vtlb_memWrite(u32 mem, DataType value);
 extern void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value);
 extern void __fastcall vtlb_memWrite128(u32 mem, const mem128_t* value);
 
-extern void vtlb_DynGenWrite(u32 sz);
-extern void vtlb_DynGenRead32(u32 bits, bool sign);
-extern void vtlb_DynGenRead64(u32 sz);
+extern void vtlb_DynGenWrite(u32 likely_address, s16 imm, u32 sz);
+extern void vtlb_DynGenRead(u32 likely_address, s16 imm, u32 bits, bool sign = false);
 
 extern void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const );
 extern void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const );
 extern void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const );
 
+extern void vtlb_rewrite_memory_instruction(u8* start, u8* end, int mode, int bits, bool sign, s32 imm_offset);
+
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve
 // --------------------------------------------------------------------------------------
+template<class VM>
 class VtlbMemoryReserve
 {
 protected:
-	VirtualMemoryReserve	m_reserve;
+	VM	m_reserve;
 
 public:
 	VtlbMemoryReserve( const wxString& name, size_t size );
@@ -118,9 +120,17 @@ public:
 // --------------------------------------------------------------------------------------
 //  eeMemoryReserve
 // --------------------------------------------------------------------------------------
-class eeMemoryReserve : public VtlbMemoryReserve
+#if VTLB_UsePageFaulting
+class eeMemoryReserve : public VtlbMemoryReserve<VirtualSharedMemoryReserve>
+#else
+class eeMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
+#endif
 {
-	typedef VtlbMemoryReserve _parent;
+#if VTLB_UsePageFaulting
+	typedef VtlbMemoryReserve<VirtualSharedMemoryReserve> _parent;
+#else
+	typedef VtlbMemoryReserve<VirtualMemoryReserve> _parent;
+#endif
 
 public:
 	eeMemoryReserve();
@@ -139,7 +149,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  iopMemoryReserve
 // --------------------------------------------------------------------------------------
-class iopMemoryReserve : public VtlbMemoryReserve
+class iopMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
 {
 	typedef VtlbMemoryReserve _parent;
 
@@ -160,7 +170,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  vuMemoryReserve
 // --------------------------------------------------------------------------------------
-class vuMemoryReserve : public VtlbMemoryReserve
+class vuMemoryReserve : public VtlbMemoryReserve<VirtualMemoryReserve>
 {
 	typedef VtlbMemoryReserve _parent;
 

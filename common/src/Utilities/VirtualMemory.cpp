@@ -68,9 +68,9 @@ void SrcType_PageFault::_DispatchRaw( ListenerIterator iter, const ListenerItera
 }
 
 // --------------------------------------------------------------------------------------
-//  VirtualMemoryReserve  (implementations)
+//  VirtualMemoryReserveBase  (implementations)
 // --------------------------------------------------------------------------------------
-VirtualMemoryReserve::VirtualMemoryReserve( const wxString& name, size_t size )
+VirtualMemoryReserveBase::VirtualMemoryReserveBase( const wxString& name, size_t size )
 	: m_name( name )
 {
 	m_defsize			= size;
@@ -78,17 +78,17 @@ VirtualMemoryReserve::VirtualMemoryReserve( const wxString& name, size_t size )
 	m_pages_commited	= 0;
 	m_pages_reserved	= 0;
 	m_baseptr			= NULL;
+
 	m_prot_mode			= PageAccess_None();
-	m_allow_writes		= true;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetName( const wxString& newname )
+VirtualMemoryReserveBase& VirtualMemoryReserveBase::SetName( const wxString& newname )
 {
 	m_name = newname;
 	return *this;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetBaseAddr( uptr newaddr )
+VirtualMemoryReserveBase& VirtualMemoryReserveBase::SetBaseAddr( uptr newaddr )
 {
 	if (!pxAssertDev(!m_pages_reserved, "Invalid object state: you must release the virtual memory reserve prior to changing its base address!")) return *this;
 
@@ -96,10 +96,19 @@ VirtualMemoryReserve& VirtualMemoryReserve::SetBaseAddr( uptr newaddr )
 	return *this;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetPageAccessOnCommit( const PageProtectionMode& mode )
+VirtualMemoryReserveBase& VirtualMemoryReserveBase::SetPageAccessOnCommit( const PageProtectionMode& mode )
 {
 	m_prot_mode = mode;
 	return *this;
+}
+
+// --------------------------------------------------------------------------------------
+//  VirtualMemoryReserve  (implementations)
+// --------------------------------------------------------------------------------------
+VirtualMemoryReserve::VirtualMemoryReserve( const wxString& name, size_t size )
+	: VirtualMemoryReserveBase(name, size)
+{
+	m_allow_writes		= true;
 }
 
 // Notes:
@@ -202,58 +211,75 @@ void VirtualMemoryReserve::AllowModification()
 void VirtualMemoryReserve::ForbidModification()
 {
 	m_allow_writes = false;
-	HostSys::MemProtect(m_baseptr, m_pages_commited*__pagesize, PageProtectionMode(m_prot_mode).Write(false));	
+	HostSys::MemProtect(m_baseptr, m_pages_commited*__pagesize, PageProtectionMode(m_prot_mode).Write(false));
 }
 
-
-// If growing the array, or if shrinking the array to some point that's still *greater* than the
-// committed memory range, then attempt a passive "on-the-fly" resize that maps/unmaps some portion
-// of the reserve.
-//
-// If the above conditions are not met, or if the map/unmap fails, this method returns false.
-// The caller will be responsible for manually resetting the reserve.
-//
-// Parameters:
-//  newsize - new size of the reserved buffer, in bytes.
-bool VirtualMemoryReserve::TryResize( uint newsize )
+// --------------------------------------------------------------------------------------
+//  VirtualSharedMemoryReserve  (implementations)
+// --------------------------------------------------------------------------------------
+VirtualSharedMemoryReserve::VirtualSharedMemoryReserve( const wxString& name, size_t size )
+	: VirtualMemoryReserveBase(name, size)
 {
-	uint newPages = (newsize + __pagesize - 1) / __pagesize;
+	m_shm_views.clear();
 
-	if (newPages > m_pages_reserved)
-	{
-		uint toReservePages = newPages - m_pages_reserved;
-		uint toReserveBytes = toReservePages * __pagesize;
+	m_pages_commited	= 0;
+	m_pages_reserved	= 0;
 
-		DevCon.WriteLn( L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
-
-		m_baseptr = (void*)HostSys::MmapReserve((uptr)GetPtrEnd(), toReserveBytes);
-
-		if (!m_baseptr)
-		{
-			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!");
-			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr+toReserveBytes);
-		}
-
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
-			m_baseptr, (uptr)m_baseptr+toReserveBytes, toReserveBytes / _1mb);
-	}
-	else if (newPages < m_pages_reserved)
-	{
-		if (m_pages_commited > newsize) return false;
-
-		uint toRemovePages = m_pages_reserved - newPages;
-		uint toRemoveBytes = toRemovePages * __pagesize;
-
-		DevCon.WriteLn( L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
-
-		HostSys::MmapResetPtr(GetPtrEnd(), toRemoveBytes);
-
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
-			m_baseptr, (uptr)m_baseptr+toRemoveBytes, toRemoveBytes / _1mb);
-	}
-
-	return true;
+	HostSys::OpenSharedMemory(size);
 }
+
+void VirtualSharedMemoryReserve::Release()
+{
+	for (auto& view : m_shm_views) {
+		HostSys::Munmap(view.x86, view.size);
+	}
+	m_shm_views.clear();
+
+	HostSys::CloseSharedMemory();
+}
+
+void VirtualSharedMemoryReserve::Reserve( const MemoryView& view )
+{
+	// only reserve
+	void *result = HostSys::MmapReserve(view.x86, view.size, view.virt);
+
+	pxAssertRel ((uptr)result == view.x86, pxsFmt(
+		"Virtual shared memory reservation failed: memory at 0x%08X -> 0x%08X."
+		, view.x86, (uptr)view.x86 + view.size
+	));
+
+	m_pages_reserved += (view.size + __pagesize-4) / __pagesize;
+
+	m_shm_views.push_back(view);
+}
+
+bool VirtualSharedMemoryReserve::Commit()
+{
+	if (!m_pages_reserved) return false;
+	if (!pxAssert(!m_pages_commited)) return true;
+
+	bool status = true;
+	for (auto& view : m_shm_views) {
+		status |= HostSys::MmapCommitPtr((void*)view.x86, view.size, view.mode);
+
+		if (!view.mode.IsNone())
+			m_pages_commited += (view.size + __pagesize-4) / __pagesize;
+	}
+	return status;
+}
+
+void VirtualSharedMemoryReserve::Reset()
+{
+	if (!m_pages_commited) return;
+
+	for (auto& view : m_shm_views) {
+		HostSys::MemProtect((void*)view.x86, view.size, PageAccess_None());
+		HostSys::MmapResetPtr((void*)view.x86, view.size, view.virt);
+	}
+
+	m_pages_commited = 0;
+}
+
 
 // --------------------------------------------------------------------------------------
 //  BaseVmReserveListener  (implementations)

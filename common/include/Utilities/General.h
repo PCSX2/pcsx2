@@ -218,13 +218,16 @@ static __fi PageProtectionMode PageAccess_Any()
 // platform prior to wxWidgets .. it should prolly be removed -- air)
 namespace HostSys
 {
-	void* MmapReserve(uptr base, size_t size);
+	void OpenSharedMemory(size_t size);
+	void CloseSharedMemory();
+
+	void* MmapReserve(uptr base, size_t size, u32 offset = ~0u);
 	bool MmapCommit(uptr base, size_t size, const PageProtectionMode& mode);
 	void MmapReset(uptr base, size_t size);
 
-	void* MmapReservePtr(void* base, size_t size);
+	void* MmapReservePtr(void* base, size_t size, u32 offset = ~0u);
 	bool MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode);
-	void MmapResetPtr(void* base, size_t size);
+	void MmapResetPtr(void* base, size_t size, u32 offset = ~0u);
 
 	// Maps a block of memory for use as a recompiled code buffer.
 	// Returns NULL on allocation failure.

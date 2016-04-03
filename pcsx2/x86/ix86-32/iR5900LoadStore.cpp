@@ -122,16 +122,19 @@ void recLoad64( u32 bits, bool sign )
 	{
 		// Load ECX with the source memory address that we're reading from.
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
-		if (bits == 128)		// force 16 byte alignment on 128 bit reads
-			xAND(ecx, ~0x0F);
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(bits);
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		if (bits == 128) {		// force 16 byte alignment on 128 bit reads
+			xADD(ecx, _Imm_);
+			xAND(ecx, ~0x0F);
+			vtlb_DynGenRead(likely_addr, 0, bits);
+		} else {
+			vtlb_DynGenRead(likely_addr, _Imm_, bits);
+		}
 	}
 }
 
@@ -156,14 +159,14 @@ void recLoad32( u32 bits, bool sign )
 	{
 		// Load ECX with the source memory address that we're reading from.
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_ );
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 
 		iFlushCall(FLUSH_FULLVTLB);
-		vtlb_DynGenRead32(bits, sign);
+
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		vtlb_DynGenRead(likely_addr, _Imm_, bits, sign);
 	}
 
 	if (_Rt_)
@@ -216,14 +219,17 @@ void recStore(u32 bits)
         else
         {
                 _eeMoveGPRtoR(ecx, _Rs_);
-                if (_Imm_ != 0)
-                        xADD(ecx, _Imm_);
-                if (bits == 128)
-                        xAND(ecx, ~0x0F);
 
                 iFlushCall(FLUSH_FULLVTLB);
 
-				vtlb_DynGenWrite(bits);
+				u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+				if (bits == 128) {		// force 16 byte alignment on 128 bit write
+					xADD(ecx, _Imm_);
+					xAND(ecx, ~0x0F);
+					vtlb_DynGenWrite(likely_addr, 0, bits);
+				} else {
+					vtlb_DynGenWrite(likely_addr, _Imm_, bits);
+				}
         }
 }
 
@@ -250,6 +256,8 @@ void recSD()  { recStore(64);  EE::Profiler.EmitOp(eeOpcode::SD);}
 void recLWL()
 {
 #ifdef REC_LOADS
+	u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
@@ -263,7 +271,7 @@ void recLWL()
 	xSHL(edi, 3);
 
 	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenRead(likely_addr, 0, 32, false);
 
 	if (!_Rt_)
 		return;
@@ -298,6 +306,8 @@ void recLWL()
 void recLWR()
 {
 #ifdef REC_LOADS
+	u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
@@ -311,7 +321,7 @@ void recLWR()
 	xSHL(edi, 3);
 
 	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenRead(likely_addr, 0, 32, false);
 
 	if (!_Rt_)
 		return;
@@ -349,6 +359,8 @@ void recLWR()
 void recSWL()
 {
 #ifdef REC_STORES
+	u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+
 	iFlushCall(FLUSH_FULLVTLB);
 
 	_eeMoveGPRtoR(ecx, _Rs_);
@@ -361,7 +373,7 @@ void recSWL()
 	xSHL(edi, 3);
 
 	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenRead(likely_addr, 0, 32, false);
 
 	// mask read -> edx
 	xMOV(ecx, edi);
@@ -384,7 +396,7 @@ void recSWL()
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
 
-	vtlb_DynGenWrite(32);
+	vtlb_DynGenWrite(likely_addr, 0, 32);
 #else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -399,6 +411,8 @@ void recSWL()
 void recSWR()
 {
 #ifdef REC_STORES
+	u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+
 	iFlushCall(FLUSH_FULLVTLB);
 
 	_eeMoveGPRtoR(ecx, _Rs_);
@@ -411,7 +425,7 @@ void recSWR()
 	xSHL(edi, 3);
 
 	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenRead(likely_addr, 0, 32, false);
 
 	// mask read -> edx
 	xMOV(ecx, 24);
@@ -434,7 +448,7 @@ void recSWR()
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
 
-	vtlb_DynGenWrite(32);
+	vtlb_DynGenWrite(likely_addr, 0, 32);
 #else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -513,12 +527,11 @@ void recLWC1()
 	else
 	{
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead32(32, false);
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		vtlb_DynGenRead(likely_addr, _Imm_, 32, false);
 	}
 
 	xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
@@ -546,12 +559,11 @@ void recSWC1()
 	else
 	{
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenWrite(32);
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		vtlb_DynGenWrite(likely_addr, _Imm_, 32);
 	}
 
 	EE::Profiler.EmitOp(eeOpcode::SWC1);
@@ -591,12 +603,11 @@ void recLQC2()
 	else
 	{
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(128);
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		vtlb_DynGenRead(likely_addr, _Imm_, 128);
 	}
 
 	EE::Profiler.EmitOp(eeOpcode::LQC2);
@@ -620,12 +631,11 @@ void recSQC2()
 	else
 	{
 		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenWrite(128);
+		u32 likely_addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+		vtlb_DynGenWrite(likely_addr, _Imm_, 128);
 	}
 
 	EE::Profiler.EmitOp(eeOpcode::SQC2);

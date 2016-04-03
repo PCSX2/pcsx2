@@ -25,6 +25,53 @@
 using namespace vtlb_private;
 using namespace x86Emitter;
 
+#define PLEASE_SIGSEGV
+#define FASTER_DIRECT_ACCESS
+
+#ifdef PLEASE_SIGSEGV
+static const bool s_fast_memspace[16] = {
+	true,  // 0:RAM (user)
+	false, // 1:EE REG
+	true,  // 2:RAM (user uncached)
+	true,  // 3:RAM (user uncached)
+	false, // 4:NA
+	false, // 5:NA
+	false, // 6:NA
+	true,  // 7:scratchpad
+	true,  // 8:RAM (kernel)
+	false, // 9:NA
+	true,  // A:RAM (kernel)
+	false, // B:REG (kernel)
+	false, // C:NA
+	false, // D:NA
+	false, // E:NA
+	true,  // F:RAM special
+};
+
+#else
+// true if fast algo is supported on the current memory zone
+static const bool s_fast_memspace[16] = {
+	true,  // 0:RAM (user)
+	false, // 1:EE REG
+	true,  // 2:RAM (user uncached)
+	true,  // 3:RAM (user uncached)
+	false, // 4:NA
+	false, // 5:NA
+	false, // 6:NA
+	true, // 7:scratchpad
+	true,  // 8:RAM (kernel)
+	false, // 9:NA
+	true,  // A:RAM (kernel)
+	false, // B:REG (kernel)
+	false, // C:NA
+	false, // D:NA
+	false, // E:NA
+	false, // F:NA
+};
+#endif
+
+static const u32 compress_address = 0x71FFFFFF;
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // iAllocRegSSE -- allocates an xmm register.  If no xmm register is available, xmm0 is
 // saved into g_globalXMMData and returned as a free register.
@@ -165,6 +212,7 @@ namespace vtlb_private
 	{
 		switch( bits )
 		{
+			case 0:
 			case 8:
 				if( sign )
 					xMOVSX( eax, ptr8[ecx] );
@@ -172,6 +220,7 @@ namespace vtlb_private
 					xMOVZX( eax, ptr8[ecx] );
 			break;
 
+			case 1:
 			case 16:
 				if( sign )
 					xMOVSX( eax, ptr16[ecx] );
@@ -179,16 +228,66 @@ namespace vtlb_private
 					xMOVZX( eax, ptr16[ecx] );
 			break;
 
+			case 2:
 			case 32:
 				xMOV( eax, ptr[ecx] );
 			break;
 
+			case 3:
 			case 64:
 				iMOV64_Smart( ptr[edx], ptr[ecx] );
 			break;
 
+			case 4:
 			case 128:
 				iMOV128_SSE( ptr[edx], ptr[ecx] );
+			break;
+
+			jNO_DEFAULT
+		}
+	}
+
+	static void DynGen_OffsetDirectRead( s16 imm, u32 bits, bool sign, bool sp )
+	{
+#ifdef PLEASE_SIGSEGV
+		uptr offset = (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#else
+		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#endif
+		offset += imm;
+		switch( bits )
+		{
+			case 0:
+			case 8:
+				if( sign )
+					xMOVSX( eax, ptr8[r + offset] );
+				else
+					xMOVZX( eax, ptr8[r + offset] );
+			break;
+
+			case 1:
+			case 16:
+				if( sign )
+					xMOVSX( eax, ptr16[r + offset] );
+				else
+					xMOVZX( eax, ptr16[r + offset] );
+			break;
+
+			case 2:
+			case 32:
+				xMOV( eax, ptr[r + offset] );
+			break;
+
+			case 3:
+			case 64:
+				iMOV64_Smart( ptr[edx], ptr[r + offset] );
+			break;
+
+			case 4:
+			case 128:
+				iMOV128_SSE( ptr[edx], ptr[r + offset] );
 			break;
 
 			jNO_DEFAULT
@@ -201,24 +300,69 @@ namespace vtlb_private
 		switch(bits)
 		{
 			//8 , 16, 32 : data on EDX
+			case 0:
 			case 8:
 				xMOV( ptr[ecx], dl );
 			break;
 
+			case 1:
 			case 16:
 				xMOV( ptr[ecx], dx );
 			break;
 
+			case 2:
 			case 32:
 				xMOV( ptr[ecx], edx );
 			break;
 
+			case 3:
 			case 64:
 				iMOV64_Smart( ptr[ecx], ptr[edx] );
 			break;
 
+			case 4:
 			case 128:
 				iMOV128_SSE( ptr[ecx], ptr[edx] );
+			break;
+		}
+	}
+
+	static void DynGen_OffsetDirectWrite( s16 imm, u32 bits, bool sp )
+	{
+#ifdef PLEASE_SIGSEGV
+		uptr offset = (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#else
+		uptr offset = sp ? (uptr)&eeMem->Scratch[0] : (uptr)&eeMem->Main[0];
+		const xAddressReg& r = eax;
+#endif
+		offset += imm;
+		switch(bits)
+		{
+			//8 , 16, 32 : data on EDX
+			case 0:
+			case 8:
+				xMOV( ptr[r + offset], dl );
+			break;
+
+			case 1:
+			case 16:
+				xMOV( ptr[r + offset], dx );
+			break;
+
+			case 2:
+			case 32:
+				xMOV( ptr[r + offset], edx );
+			break;
+
+			case 3:
+			case 64:
+				iMOV64_Smart( ptr[r + offset], ptr[edx] );
+			break;
+
+			case 4:
+			case 128:
+				iMOV128_SSE( ptr[r + offset], ptr[edx] );
 			break;
 		}
 	}
@@ -252,6 +396,27 @@ static u8* GetIndirectDispatcherPtr( int mode, int operandsize, int sign = 0 )
 	return &m_IndirectDispatchers[(mode*(7*A)) + (sign*5*A) + (operandsize*A)];
 }
 
+static u8* GetFullTlbDispatcherPtr( int mode, int operandsize, int sign = 0 )
+{
+	if (operandsize > 6) {
+		switch(operandsize)
+		{
+			case 8:		operandsize=0;	break;
+			case 16:	operandsize=1;	break;
+			case 32:	operandsize=2;	break;
+			case 64:	operandsize=3;	break;
+			case 128:	operandsize=4;	break;
+						jNO_DEFAULT;
+		}
+	}
+	assert(mode || operandsize >= 2 ? !sign : true);
+
+	// Full TLB dispatcher are bigger than standard dispatcher.
+	const int A = 64;
+
+	return &m_IndirectDispatchers[512 + (mode*(7*A)) + (sign*5*A) + (operandsize*A)];
+}
+
 // ------------------------------------------------------------------------
 // Generates a JS instruction that targets the appropriate templated instance of
 // the vtlb Indirect Dispatcher.
@@ -269,6 +434,25 @@ static void DynGen_IndirectDispatch( int mode, int bits, bool sign = false )
 		jNO_DEFAULT;
 	}
 	xJS( GetIndirectDispatcherPtr( mode, szidx, sign ) );
+}
+
+// ------------------------------------------------------------------------
+// Generates a JAE instruction that targets the appropriate templated instance of
+// the vtlb full tlb Dispatcher.
+//
+static void DynGen_FullTlbDispatch( int mode, int bits, bool sign = false )
+{
+	int szidx = 0;
+	switch( bits )
+	{
+		case 8:		szidx=0;	break;
+		case 16:	szidx=1;	break;
+		case 32:	szidx=2;	break;
+		case 64:	szidx=3;	break;
+		case 128:	szidx=4;	break;
+		jNO_DEFAULT;
+	}
+	xJAE( GetFullTlbDispatcherPtr( mode, szidx, sign ) );
 }
 
 // ------------------------------------------------------------------------
@@ -304,6 +488,34 @@ static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 	xJMP( ebx );
 }
 
+static void DynGen_FullTlbDispatcher( int mode, int bits, bool sign)
+{
+	// code is a concatenation of DynGen_PrepRegs / DynGen_IndirectDispatch / DynGen_Direct Read|Write
+
+	// In the future, this code will only be called when a direct access is failling (due to SIGSEGV)
+	// It would allow to reduce the code complexity
+
+	// WARNING: only 64 bytes are reserved by handler. Profiler overhead is 14 bytes for EmitSlowMem
+	// + 17 bytes for EmitMem
+	EE::Profiler.EmitSlowMem();
+
+	// Equivalent to DynGen_PrepRegs (without ebx)
+	xMOV( eax, ecx );
+	xSHR( eax, VTLB_PAGE_BITS );
+	xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
+	xADD( ecx, eax );
+
+	xJS( GetIndirectDispatcherPtr( mode, bits, sign ) );
+
+	if (mode == 1)
+		DynGen_DirectWrite( bits );
+	else
+		DynGen_DirectRead( bits, sign );
+
+	// quit dispatcher in case of direct read/write
+	xJMP(ebx);
+}
+
 // One-time initialization procedure.  Multiple subsequent calls during the lifespan of the
 // process will be ignored.
 //
@@ -328,6 +540,10 @@ void vtlb_dynarec_init()
 				xSetPtr( GetIndirectDispatcherPtr( mode, bits, !!sign ) );
 
 				DynGen_IndirectTlbDispatcher( mode, bits, sign );
+
+				xSetPtr( GetFullTlbDispatcherPtr( mode, bits, !!sign ) );
+
+				DynGen_FullTlbDispatcher( mode, bits, sign );
 			}
 		}
 	}
@@ -364,6 +580,105 @@ void vtlb_DynGenRead32(u32 bits, bool sign)
 
 	*writeback = (uptr)xGetPtr();
 }
+
+void vtlb_DynGenReadReg32(u32 bits, bool sign, u32 likely_addr)
+{
+	pxAssume( bits <= 32 );
+	pxAssume( (likely_addr >> 28) == 1 || (likely_addr >> 28) == 0xb); // only EE register space
+
+	int szidx = 0;
+	switch( bits )
+	{
+		case 8:		szidx=0;	break;
+		case 16:	szidx=1;	break;
+		case 32:	szidx=2;	break;
+		case 64:	szidx=3;	break;
+		case 128:	szidx=4;	break;
+		jNO_DEFAULT;
+	}
+
+	// I want to go home
+	xMOV(ebx, 0xdeadbeef);
+	uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+	xCMP(ecx, likely_addr);
+	xJNE(GetFullTlbDispatcherPtr(0, szidx, sign));
+
+	// Read to a known reg constant
+	vtlb_DynGenRead32_Const(bits, sign, likely_addr);
+
+	// Return address of the random addr path
+	*writeback = (uptr)xGetPtr();
+}
+
+void vtlb_FastDynGenRead32(u32 bits, bool sign, u32 likely_addr, s16 imm)
+{
+	u32 zone = likely_addr >> 28;
+	// Detection isn't perfect and the rom code uses various register
+	// Code is barely executed, let's avoid plenty of SIGSEGV to ease debug
+	bool rom_code = cpuRegs.pc > 0x90000000;
+
+	if (s_fast_memspace[zone] && !rom_code) {
+		// Shortcut TLB based on the first address
+
+		// Warning dirty ebx (in case someone got the very bad idea to move this code)
+		EE::Profiler.EmitMem();
+
+#ifdef PLEASE_SIGSEGV
+		xPEXT(eax, ecx, ptr[&compress_address]);
+		DynGen_OffsetDirectRead(imm, bits, sign, zone == 7);
+
+		// If direct access isn't possible, code won't be executed
+		EE::Profiler.EmitFastMem();
+#else
+		xADD(ecx, imm);
+
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+		xMOV(eax, ecx);
+
+		// Check the memory zone
+		xSUB(eax, zone << 28);
+		xCMP(eax, _32mb);
+		DynGen_FullTlbDispatch(0, bits, sign && bits < 32); // Oh no! need slow path
+
+		// Ram access let's be bold
+		EE::Profiler.EmitFastMem();
+		DynGen_OffsetDirectRead(0, bits, sign, zone == 7);
+
+		*writeback = (uptr)xGetPtr();
+#endif
+
+	} else {
+		xADD(ecx, imm);
+
+		// Old fashion direct access
+		if (bits < 64)
+			vtlb_DynGenRead32(bits, sign);
+		else
+			vtlb_DynGenRead64(bits);
+	}
+}
+
+// ------------------------------------------------------------------------
+// Wrapper to the different load implementation
+void vtlb_DynGenRead(u32 likely_address, s16 imm, u32 bits, bool sign)
+{
+
+#ifdef FASTER_DIRECT_ACCESS
+	vtlb_FastDynGenRead32(bits, sign, likely_address, imm);
+#else
+	xADD(ecx, imm);
+
+	if (bits < 64)
+		vtlb_DynGenRead32(bits, sign);
+	else
+		vtlb_DynGenRead64(bits);
+#endif
+}
+
 
 // ------------------------------------------------------------------------
 // TLB lookup is performed in const, with the assumption that the COP0/TLB will clear the
@@ -501,6 +816,65 @@ void vtlb_DynGenWrite(u32 sz)
 	*writeback = (uptr)xGetPtr();
 }
 
+void vtlb_FastDynGenWrite(u32 bits, u32 likely_addr, s16 imm)
+{
+	u32 zone = likely_addr >> 28;
+	// Detection isn't perfect and the rom code uses various register
+	// Code is barely executed, let's avoid plenty of SIGSEGV to ease debug
+	bool rom_code = cpuRegs.pc > 0x90000000;
+
+	if (s_fast_memspace[zone] && !rom_code) {
+		// Shortcut TLB based on the first address
+
+		// Warning dirty ebx (in case someone got the very bad idea to move this code)
+		EE::Profiler.EmitMem();
+
+#ifdef PLEASE_SIGSEGV
+		xPEXT(eax, ecx, ptr[&compress_address]);
+		DynGen_OffsetDirectWrite(imm, bits, zone == 7);
+
+		// If direct access isn't possible, code won't be executed
+		EE::Profiler.EmitFastMem();
+#else
+		xADD(ecx, imm);
+
+		// Return address for the dispatcher
+		xMOV(ebx, 0xdeadbeef);
+		uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+		xMOV(eax, ecx);
+
+		// Check the memory zone
+		xSUB(eax, zone << 28);
+		xCMP(eax, _32mb);
+		DynGen_FullTlbDispatch(1, bits); // Oh no! need slow path
+
+		// Ram access let's be bold
+		EE::Profiler.EmitFastMem();
+		DynGen_OffsetDirectWrite(0, bits, zone == 7);
+
+		*writeback = (uptr)xGetPtr();
+#endif
+	} else {
+		xADD(ecx, imm);
+
+		// Old fashion direct access
+		vtlb_DynGenWrite(bits);
+	}
+}
+
+// ------------------------------------------------------------------------
+// Wrapper to the different load implementation
+void vtlb_DynGenWrite(u32 likely_address, s16 imm, u32 bits)
+{
+#ifdef FASTER_DIRECT_ACCESS
+	vtlb_FastDynGenWrite(bits, likely_address, imm);
+#else
+	xADD(ecx, imm);
+
+	vtlb_DynGenWrite(bits);
+#endif
+}
 
 // ------------------------------------------------------------------------
 // Generates code for a store instruction, where the address is a known constant.
@@ -562,6 +936,47 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //							Extra Implementations
+
+void vtlb_rewrite_memory_instruction(u8* start, u8* end, int mode, int width, bool sign, s32 imm_offset)
+{
+	// Rewrite code to
+	// jump(new x86 block); // require 5 bytes
+	pxAssert((end-start) >= 5);
+
+	Console.Error("Rewrite EE %s %s%d (imm %d)",
+			sign ? "signed" : "unsigned", mode ? "store" : "load", width, imm_offset);
+	Console.Error("From 0x%x to 0x%x (%d bytes available)", start, end, end - start);
+
+	u8* recomp = eeGetRecPtr();
+
+	{	// Rewrite current memory access with a jump to a block that will handle the translation
+		xSetPtr((void*)start);
+
+		xJMP(recomp);
+
+		// Help to check x86 code generation
+		for (u8* pad = xGetPtr(); pad < end; pad++) {
+			xINT(3);
+		}
+	}
+
+	{	// Use a full tlb translation
+		xSetPtr(recomp);
+
+		// Inject the return address
+		xMOV(ebx, (uptr)end);
+
+		// Add the immediate offset that was potentially optimized
+		xADD(ecx, imm_offset);
+
+		// Inject the jump to the dispatcher
+		xJMP( GetFullTlbDispatcherPtr( mode, width, sign ) );
+
+		eeSetRecPtr(xGetPtr());
+		xSetPtr(xGetPtr());
+	}
+
+}
 
 //   ecx - virtual address
 //   Returns physical address in eax.
