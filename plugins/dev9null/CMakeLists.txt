@@ -47,4 +47,8 @@ set(dev9nullFinalLibs
 	${GTK2_LIBRARIES}
 )
 
-add_pcsx2_plugin(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+if(BUILTIN_DEV9)
+    add_pcsx2_lib(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+else()
+    add_pcsx2_plugin(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+endif()
