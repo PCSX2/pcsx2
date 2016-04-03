@@ -717,8 +717,10 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	//uint32 bw = off->bw;
 
 	// No depth handling please.
-	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
+	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S) {
+		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported");
 		return;
+	}
 
 	// This is a shorter but potentially slower version of the below, commented out code.
 	// It works for all the games mentioned below and fixes a couple of other ones as well
@@ -753,6 +755,8 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 						Read(t, r.rintersect(t->m_valid));
 				}
 			}
+		} else {
+			GL_INS("ERROR: InvalidateLocalMem target is a depth format");
 		}
 	}
 
