@@ -35,8 +35,8 @@ struct GSInputLayoutOGL {
 	const GLvoid* offset;
 };
 
+template<int STRIDE>
 class GSBufferOGL {
-	const size_t m_stride;
 	size_t m_start;
 	size_t m_count;
 	size_t m_limit;
@@ -47,9 +47,8 @@ class GSBufferOGL {
 	GLsync m_fence[5];
 
 	public:
-	GSBufferOGL(GLenum target, size_t stride) :
-		m_stride(stride)
-		, m_start(0)
+	GSBufferOGL(GLenum target)
+		: m_start(0)
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
@@ -58,7 +57,7 @@ class GSBufferOGL {
 		glGenBuffers(1, &m_buffer_name);
 		// Opengl works best with 1-4MB buffer.
 		// Warning m_limit is the number of object (not the size in Bytes)
-		m_limit = 8 * 1024 * 1024 / m_stride;
+		m_limit = 8 * 1024 * 1024 / STRIDE;
 
 		for (size_t i = 0; i < 5; i++) {
 			m_fence[i] = 0;
@@ -73,8 +72,8 @@ class GSBufferOGL {
 			const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 			const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-			glBufferStorage(m_target, m_stride*m_limit, NULL, create_flags );
-			m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, m_stride*m_limit, map_flags);
+			glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags );
+			m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
 			if (!m_buffer_ptr) {
 				fprintf(stderr, "Failed to map buffer\n");
 				throw GSDXError();
@@ -103,7 +102,7 @@ class GSBufferOGL {
 		if (!m_buffer_storage) {
 			m_start = 0;
 			m_limit = new_limit;
-			glBufferData(m_target,  m_limit * m_stride, NULL, GL_STREAM_DRAW);
+			glBufferData(m_target,  m_limit * STRIDE, NULL, GL_STREAM_DRAW);
 		}
 	}
 
@@ -116,11 +115,11 @@ class GSBufferOGL {
 	{
 		// Current GPU buffer is really too small need to allocate a new one
 		if (m_count > m_limit) {
-			//fprintf(stderr, "Allocate a new buffer\n %d", m_stride);
+			//fprintf(stderr, "Allocate a new buffer\n %d", STRIDE);
 			allocate(std::max<int>(m_count * 3 / 2, m_limit));
 
 		} else if (m_count > (m_limit - m_start) ) {
-			//fprintf(stderr, "Orphan the buffer %d\n", m_stride);
+			//fprintf(stderr, "Orphan the buffer %d\n", STRIDE);
 
 			// Not enough left free room. Just go back at the beginning
 			m_start = 0;
@@ -128,15 +127,15 @@ class GSBufferOGL {
 			allocate(m_limit);
 		}
 
-		glBufferSubData(m_target,  m_stride * m_start,  m_stride * m_count, src);
+		glBufferSubData(m_target,  STRIDE * m_start,  STRIDE * m_count, src);
 	}
 
 	void map_upload(const void* src)
 	{
 		ASSERT(m_count < m_limit);
 
-		size_t offset = m_start*m_stride;
-		size_t length = m_count*m_stride;
+		size_t offset = m_start * STRIDE;
+		size_t length = m_count * STRIDE;
 
 		if (m_count > (m_limit - m_start) ) {
 			size_t current_chunk = offset >> 21;
@@ -203,7 +202,7 @@ class GSBufferOGL {
 	void upload(const void* src, uint32 count)
 	{
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-		g_vertex_upload_byte += count*m_stride;
+		g_vertex_upload_byte += count * STRIDE;
 #endif
 
 		m_count = count;
@@ -234,12 +233,12 @@ class GSBufferOGL {
 
 	void Draw(GLenum mode, GLint basevertex)
 	{
-		glDrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * m_stride), basevertex);
+		glDrawElementsBaseVertex(mode, m_count, GL_UNSIGNED_INT, (void*)(m_start * STRIDE), basevertex);
 	}
 
 	void Draw(GLenum mode, GLint basevertex, int offset, int count)
 	{
-		glDrawElementsBaseVertex(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * m_stride), basevertex);
+		glDrawElementsBaseVertex(mode, count, GL_UNSIGNED_INT, (void*)((m_start + offset) * STRIDE), basevertex);
 	}
 
 	size_t GetStart() { return m_start; }
@@ -247,8 +246,8 @@ class GSBufferOGL {
 };
 
 class GSVertexBufferStateOGL {
-	GSBufferOGL *m_vb;
-	GSBufferOGL *m_ib;
+	GSBufferOGL<sizeof(GSVertexPT1)> *m_vb;
+	GSBufferOGL<sizeof(uint32)> *m_ib;
 
 	GLuint m_va;
 	GLenum m_topology;
@@ -257,13 +256,13 @@ class GSVertexBufferStateOGL {
 	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
 
 public:
-	GSVertexBufferStateOGL(size_t stride, GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
+	GSVertexBufferStateOGL(GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
 	{
 		glGenVertexArrays(1, &m_va);
 		glBindVertexArray(m_va);
 
-		m_vb = new GSBufferOGL(GL_ARRAY_BUFFER, stride);
-		m_ib = new GSBufferOGL(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32));
+		m_vb = new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER);
+		m_ib = new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER);
 
 		m_vb->bind();
 		m_ib->bind();
