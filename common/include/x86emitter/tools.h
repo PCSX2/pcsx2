@@ -100,7 +100,7 @@ public:
 			u32 hasStreamingSIMD4ExtensionsA				:1;
 		};
 
-		u32 AllCapabilities;
+		u64 AllCapabilities;
 	};
 
 	// Core Counts!
