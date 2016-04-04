@@ -114,7 +114,7 @@ public:
 	bool IsMaskEnable() { return m_depth_mask != GL_FALSE; }
 };
 
-class GSDeviceOGL : public GSDevice
+class GSDeviceOGL final : public GSDevice
 {
 	public:
 	__aligned(struct, 32) VSConstantBuffer

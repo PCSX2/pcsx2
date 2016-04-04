@@ -25,7 +25,7 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-class GSWndOGL : public GSWndGL
+class GSWndOGL final : public GSWndGL
 {
 	Window     m_NativeWindow;
 	Display*   m_NativeDisplay;

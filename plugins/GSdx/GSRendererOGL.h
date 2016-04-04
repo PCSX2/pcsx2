@@ -27,7 +27,7 @@
 #include "GSTextureCacheOGL.h"
 #include "GSVertexHW.h"
 
-class GSRendererOGL : public GSRendererHW
+class GSRendererOGL final : public GSRendererHW
 {
 	enum PRIM_OVERLAP {
 		PRIM_OVERLAP_UNKNOW,

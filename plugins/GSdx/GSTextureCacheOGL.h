@@ -25,7 +25,7 @@
 #include "GSTextureCache.h"
 #include "GSDeviceOGL.h"
 
-class GSTextureCacheOGL : public GSTextureCache
+class GSTextureCacheOGL final : public GSTextureCache
 {
 protected:
 	int Get8bitFormat() { return GL_R8;}

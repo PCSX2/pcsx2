@@ -38,7 +38,7 @@ namespace PboPool {
 	void Destroy();
 }
 
-class GSTextureOGL : public GSTexture
+class GSTextureOGL final : public GSTexture
 {
 	private:
 		GLuint m_texture_id;	 // the texture id
