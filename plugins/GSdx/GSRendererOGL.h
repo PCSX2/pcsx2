@@ -60,7 +60,7 @@ class GSRendererOGL : public GSRendererHW
 
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 
-	protected:
+	private:
 		void EmulateGS();
 		void SetupIA();
 		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
@@ -72,7 +72,7 @@ class GSRendererOGL : public GSRendererHW
 
 		bool CreateDevice(GSDevice* dev);
 
-		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
 
 		PRIM_OVERLAP PrimitiveOverlap();
 

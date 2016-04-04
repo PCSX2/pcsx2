@@ -66,16 +66,16 @@ class GSTextureOGL : public GSTexture
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
 		virtual ~GSTextureOGL();
 
-		void Invalidate();
-		bool Update(const GSVector4i& r, const void* data, int pitch);
-		bool Map(GSMap& m, const GSVector4i* r = NULL);
-		void Unmap();
-		bool Save(const string& fn, bool user_image = false, bool dds = false);
+		void Invalidate() final;
+		bool Update(const GSVector4i& r, const void* data, int pitch) final;
+		bool Map(GSMap& m, const GSVector4i* r = NULL) final;
+		void Unmap() final;
+		bool Save(const string& fn, bool user_image = false, bool dds = false) final;
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }
 
-		uint32 GetID() { return m_texture_id; }
+		uint32 GetID() final { return m_texture_id; }
 		bool HasBeenCleaned() { return m_clean; }
 		void WasAttached() { m_clean = false; m_dirty = true; }
 		void WasCleaned() { m_clean = true; }
