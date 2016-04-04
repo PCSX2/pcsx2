@@ -664,7 +664,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 	// Clean with the max signed value
 	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
 
-	glBindImageTexture(2, m_date.t->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
+	glBindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #ifdef ENABLE_OGL_DEBUG
 	// Help to see the texture in apitrace
 	PSSetShaderResource(2, m_date.t);
@@ -950,8 +950,8 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 	if (!(sTex && dTex))
 		return;
 
-	const GLuint& sid = sTex->GetID();
-	const GLuint& did = dTex->GetID();
+	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
+	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
 
 	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
 
@@ -975,8 +975,8 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	if (!(sTex && dTex))
 		return;
 
-	const GLuint& sid = sTex->GetID();
-	const GLuint& did = dTex->GetID();
+	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
+	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
 
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
@@ -1328,7 +1328,7 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 	ASSERT(i < (int)countof(GLState::tex_unit));
 	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
 	if (sr) {
-		GLuint id = sr->GetID();
+		GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
 		if (GLState::tex_unit[i] != id) {
 			GLState::tex_unit[i] = id;
 			glBindTextureUnit(i, id);
