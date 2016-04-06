@@ -643,12 +643,13 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 EXPORT_C_(UINT32) PADinit(UINT32 flags)
 {
-	DWORD loadFlags = LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32;
-
-	s_xInputDll = LoadLibraryEx(L"xinput1_3.dll", nullptr, loadFlags);
+	// Use LoadLibrary and not LoadLibraryEx for XInput 1.3, since some
+	// Windows 7 systems have issues with it.
+	// TODO: Only load XInput 1.4 for Windows 8+? Or implement the SCP extension?
+	s_xInputDll = LoadLibrary(L"xinput1_3.dll");
 	if (s_xInputDll == nullptr && IsWindows8OrGreater())
 	{
-		s_xInputDll = LoadLibraryEx(L"XInput1_4.dll", nullptr, loadFlags);
+		s_xInputDll = LoadLibraryEx(L"XInput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 	if (s_xInputDll == nullptr)
 	{

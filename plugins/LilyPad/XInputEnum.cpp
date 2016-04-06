@@ -255,13 +255,13 @@ void EnumXInputDevices() {
 		// don't repeatedly try to load it.
 		if (pXInputEnable) return;
 
-		const DWORD flags = LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32;
-
 		// Prefer XInput 1.3 since SCP only has an XInput 1.3 wrapper right now.
+		// Also use LoadLibrary and not LoadLibraryEx for XInput 1.3, since some
+		// Windows 7 systems have issues with it.
 		// FIXME: Missing FreeLibrary call.
-		HMODULE hMod = LoadLibraryEx(L"xinput1_3.dll", nullptr, flags);
+		HMODULE hMod = LoadLibrary(L"xinput1_3.dll");
 		if (hMod == nullptr && IsWindows8OrGreater()) {
-			hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, flags);
+			hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 		}
 
 		if (hMod) {

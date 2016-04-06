@@ -57,7 +57,9 @@ bool GSDeviceDX::LoadD3DCompiler()
 	else
 	{
 		if (!IsWindows8Point1OrGreater())
-			s_d3d_compiler_dll = LoadLibraryEx("D3DCompiler_43.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+			// Use LoadLibrary instead of LoadLibraryEx, some Windows 7 systems
+			// have issues with it.
+			s_d3d_compiler_dll = LoadLibrary("D3DCompiler_43.dll");
 
 		if (s_d3d_compiler_dll == nullptr)
 			return false;
