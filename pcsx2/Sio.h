@@ -87,8 +87,8 @@ struct _mcd
 		SysPlugins.McdNextFrame( port, slot );
 	}
 
-	void ReIndex(const wxString& filter = L"") {
-		SysPlugins.McdReIndex( port, slot, filter );
+	bool ReIndex(const wxString& filter = L"") {
+		return SysPlugins.McdReIndex( port, slot, filter );
 	}
 };
 

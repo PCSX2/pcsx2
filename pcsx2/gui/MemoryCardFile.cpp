@@ -563,17 +563,17 @@ static void PS2E_CALLBACK FileMcd_NextFrame( PS2E_THISPTR thisptr, uint port, ui
 	}
 }
 
-static void PS2E_CALLBACK FileMcd_ReIndex( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter ) {
+static bool PS2E_CALLBACK FileMcd_ReIndex( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter ) {
 	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
 	switch ( g_Conf->Mcd[combinedSlot].Type ) {
 	//case MemoryCardType::MemoryCard_File:
-	//	thisptr->impl.ReIndex( combinedSlot, filter );
+	//	return thisptr->impl.ReIndex( combinedSlot, filter );
 	//	break;
 	case MemoryCardType::MemoryCard_Folder:
-		thisptr->implFolder.ReIndex( combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter );
+		return thisptr->implFolder.ReIndex( combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter );
 		break;
 	default:
-		return;
+		return false;
 	}
 }
 
