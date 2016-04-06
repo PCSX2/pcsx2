@@ -429,21 +429,9 @@ GSVector2i GSState::GetDeviceSize(int i)
 
 	//Fixme : Just slightly better than the hack above
 	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
-	{
-		if (IsEnabled(0) || IsEnabled(1))
-		{
-			h >>= 1;
-		}
-	}
-
-	//Fixme: These games elude the code above, worked with the old hack
-	else if(m_game.title == CRC::SilentHill2 || m_game.title == CRC::SilentHill3)
-	{
-		h /= 2; 
-	}
+		h >>= 1;
 
 	return GSVector2i(w, h);
-
 }
 
 bool GSState::IsEnabled(int i)

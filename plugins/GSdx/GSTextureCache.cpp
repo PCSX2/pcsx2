@@ -368,7 +368,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	{
 		int multiplier = m_renderer->GetUpscaleMultiplier();
 
-		if(multiplier > 1) // it's limited to a maximum of 4 on reading the config
+		if(multiplier > 1)
 		{
 			dst->m_texture->SetScale(GSVector2((float)multiplier, (float)multiplier));
 		}
@@ -378,11 +378,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			int ww = (int)(fr.left + m_renderer->GetDisplayRect().width());
 			int hh = (int)(fr.top + m_renderer->GetDisplayRect().height());
-
-			if(hh <= m_renderer->GetDeviceSize().y / 2)
-			{
-				hh *= 2;
-			}
 
 			// Gregory: I'm sure this sillyness is related to the usage of a 32bits
 			// buffer as a 16 bits format. In this case the height of the buffer is
@@ -395,7 +390,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				hh = 512;
 			}
 
-			if(ww > 0 && hh > 0)
+			if(ww && hh)
 			{
 				dst->m_texture->SetScale(GSVector2((float)w / ww, (float)h / hh));
 			}
