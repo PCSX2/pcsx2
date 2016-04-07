@@ -811,12 +811,6 @@ EXPORT_C GSconfigure()
 		GSDialog::InitCommonControls();
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
-			if(s_gs != NULL && s_gs->m_wnd->IsManaged())
-			{
-				// Legacy apps like gsdxgui expect this...
-
-				GSshutdown();
-			}
 			// Force a reload of the gs state
 			s_renderer = GSRendererType::Undefined;
 		}
