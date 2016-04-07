@@ -229,7 +229,6 @@ extern   PFNGLFRAMEBUFFERRENDERBUFFERPROC       glFramebufferRenderbuffer;
 extern   PFNGLFRAMEBUFFERTEXTURE2DPROC          glFramebufferTexture2D;
 extern   PFNGLGENBUFFERSPROC                    glGenBuffers;
 extern   PFNGLGENFRAMEBUFFERSPROC               glGenFramebuffers;
-extern   PFNGLGENSAMPLERSPROC                   glGenSamplers;
 extern   PFNGLGENVERTEXARRAYSPROC               glGenVertexArrays;
 extern   PFNGLGETBUFFERPARAMETERIVPROC          glGetBufferParameteriv;
 extern   PFNGLGETDEBUGMESSAGELOGARBPROC         glGetDebugMessageLogARB;
@@ -271,7 +270,6 @@ extern   PFNGLGETINTEGER64VPROC                 glGetInteger64v;
 // GL4.1
 extern   PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline;
 extern   PFNGLDELETEPROGRAMPIPELINESPROC        glDeleteProgramPipelines;
-extern   PFNGLGENPROGRAMPIPELINESPROC           glGenProgramPipelines;
 extern   PFNGLGETPROGRAMPIPELINEIVPROC          glGetProgramPipelineiv;
 extern   PFNGLVALIDATEPROGRAMPIPELINEPROC       glValidateProgramPipeline;
 extern   PFNGLGETPROGRAMPIPELINEINFOLOGPROC     glGetProgramPipelineInfoLog;

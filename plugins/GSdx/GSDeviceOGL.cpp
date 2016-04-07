@@ -619,7 +619,7 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 	GL_PUSH("Create Sampler");
 
 	GLuint sampler;
-	glGenSamplers(1, &sampler);
+	glCreateSamplers(1, &sampler);
 	if (bilinear) {
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

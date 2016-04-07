@@ -54,7 +54,6 @@ PFNGLFRAMEBUFFERRENDERBUFFERPROC       glFramebufferRenderbuffer           = NUL
 PFNGLFRAMEBUFFERTEXTURE2DPROC          glFramebufferTexture2D              = NULL;
 PFNGLGENBUFFERSPROC                    glGenBuffers                        = NULL;
 PFNGLGENFRAMEBUFFERSPROC               glGenFramebuffers                   = NULL;
-PFNGLGENSAMPLERSPROC                   glGenSamplers                       = NULL;
 PFNGLGENVERTEXARRAYSPROC               glGenVertexArrays                   = NULL;
 PFNGLGETBUFFERPARAMETERIVPROC          glGetBufferParameteriv              = NULL;
 PFNGLGETDEBUGMESSAGELOGARBPROC         glGetDebugMessageLogARB             = NULL;
@@ -95,7 +94,6 @@ PFNGLGETINTEGER64VPROC                 glGetInteger64v                     = NUL
 // GL4.0
 // GL4.1
 PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline               = NULL;
-PFNGLGENPROGRAMPIPELINESPROC           glGenProgramPipelines               = NULL;
 PFNGLDELETEPROGRAMPIPELINESPROC        glDeleteProgramPipelines            = NULL;
 PFNGLGETPROGRAMPIPELINEIVPROC          glGetProgramPipelineiv              = NULL;
 PFNGLVALIDATEPROGRAMPIPELINEPROC       glValidateProgramPipeline           = NULL;

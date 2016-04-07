@@ -60,7 +60,6 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glFramebufferTexture2D);
 	GL_EXT_LOAD(glGenBuffers);
 	GL_EXT_LOAD(glGenFramebuffers);
-	GL_EXT_LOAD(glGenSamplers);
 	GL_EXT_LOAD(glGenVertexArrays);
 	GL_EXT_LOAD(glGetBufferParameteriv);
 	GL_EXT_LOAD(glGetDebugMessageLogARB);
@@ -102,7 +101,6 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glCreateShaderProgramv);
 	GL_EXT_LOAD(glBindProgramPipeline);
 	GL_EXT_LOAD(glDeleteProgramPipelines);
-	GL_EXT_LOAD(glGenProgramPipelines);
 	GL_EXT_LOAD(glGetProgramPipelineiv);
 	GL_EXT_LOAD(glGetProgramPipelineInfoLog);
 	GL_EXT_LOAD(glValidateProgramPipeline);

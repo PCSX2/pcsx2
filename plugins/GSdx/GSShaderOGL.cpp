@@ -28,7 +28,7 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_debug_shader(debug)
 {
 	m_single_prog.clear();
-	glGenProgramPipelines(1, &m_pipeline);
+	glCreateProgramPipelines(1, &m_pipeline);
 	glBindProgramPipeline(m_pipeline);
 }
 
