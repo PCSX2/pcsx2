@@ -471,7 +471,7 @@ void ps_blend(inout vec4 Color, float As)
 
 void ps_main()
 {
-#if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2) && !defined(DISABLE_GL42_image)
+#if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2)
 
 #if PS_WRITE_RG == 1
     // Pseudo 16 bits access.
@@ -489,7 +489,7 @@ void ps_main()
 #endif
 
     if (bad) {
-#if PS_DATE >= 5
+#if PS_DATE >= 5 || defined(DISABLE_GL42_image)
         discard;
 #else
         imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
