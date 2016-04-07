@@ -376,10 +376,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// because of -1 we loose lot of precision for small GS value
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
-	if (GLLoader::found_GL_ARB_clip_control) {
-		// Change depth convention
-		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-	}
+	// Change depth convention
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
 	// HW renderer shader
@@ -687,10 +685,9 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 }
 
 /* Note: must be here because tfx_glsl is static */
-GLuint GSDeviceOGL::CompileVS(VSSelector sel, int logz)
+GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
 	std::string macro = format("#define VS_BPPZ %d\n", sel.bppz)
-		+ format("#define VS_LOGZ %d\n", logz)
 		+ format("#define VS_WILDHACK %d\n", sel.wildhack)
 		;
 

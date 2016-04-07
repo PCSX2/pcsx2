@@ -210,9 +210,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	} else {
 		header += "#define DISABLE_GL42_image\n";
 	}
-	if (GLLoader::found_GL_ARB_clip_control) {
-		header += "#define ZERO_TO_ONE_DEPTH\n";
-	}
 
 	// Stupid GL implementation (can't use GL_ES)
 	// AMD/nvidia define it to 0

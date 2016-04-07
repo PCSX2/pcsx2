@@ -495,7 +495,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
-		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
+		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
 

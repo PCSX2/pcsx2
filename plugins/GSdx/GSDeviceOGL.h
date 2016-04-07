@@ -527,7 +527,7 @@ class GSDeviceOGL final : public GSDevice
 
 
 	void CreateTextureFX();
-	GLuint CompileVS(VSSelector sel, int logz);
+	GLuint CompileVS(VSSelector sel);
 	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);
 	GLuint CreateSampler(bool bilinear, bool tau, bool tav, bool aniso = false);

@@ -54,7 +54,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 	for (uint32 key = 0; key < countof(m_vs); key++) {
 		VSSelector sel(key);
-		m_vs[key] = CompileVS(sel, !GLLoader::found_GL_ARB_clip_control);
+		m_vs[key] = CompileVS(sel);
 	}
 
 	GL_POP();

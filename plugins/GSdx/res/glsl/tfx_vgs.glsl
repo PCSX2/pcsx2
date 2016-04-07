@@ -60,11 +60,7 @@ out gl_PerVertex {
 #endif
 };
 
-#ifdef ZERO_TO_ONE_DEPTH
 const float exp_min32 = exp2(-32.0f);
-#else
-const float exp_min31 = exp2(-31.0f);
-#endif
 
 void texture_coord()
 {
@@ -99,19 +95,7 @@ void vs_main()
     p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
     p.xy = p.xy * VertexScale - VertexOffset;
     p.w = 1.0f;
-#ifdef ZERO_TO_ONE_DEPTH
-    if(VS_LOGZ == 1) {
-        p.z = max(0.0f, log2(float(z))) / 32.0f;
-    } else {
-        p.z = float(z) * exp_min32;
-    }
-#else
-    if(VS_LOGZ == 1) {
-        p.z = max(0.0f, log2(float(z))) / 31.0f - 1.0f;
-    } else {
-        p.z = float(z) * exp_min31 - 1.0f;
-    }
-#endif
+    p.z = float(z) * exp_min32;
 
     gl_Position = p;
 
