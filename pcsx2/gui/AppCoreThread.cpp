@@ -350,10 +350,6 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	wxString gameCompat;
 	wxString gameMemCardFilter;
 
-	int numberLoadedCheats;
-	int numberLoadedWideScreenPatches;
-	int numberDbfCheatsLoaded;
-
 	if (ElfCRC) gameCRC.Printf( L"%8.8x", ElfCRC );
 	if (!DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial  + L"]";
 
@@ -368,7 +364,8 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase() )
 		{
 			Game_Data game;
-			if (GameDB->findGame(game, curGameKey)) {
+			if (GameDB->findGame(game, curGameKey))
+			{
 				int compat = game.getInt("Compat");
 				gameName   = game.getString("Name");
 				gameName  += L" (" + game.getString("Region") + L")";
@@ -376,23 +373,23 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
-			if (EmuConfig.EnablePatches) {
-				if (int patches = InitPatches(gameCRC, game)) {
+			if (EmuConfig.EnablePatches)
+			{
+				if (int patches = InitPatches(gameCRC, game))
+				{
 					gamePatch.Printf(L" [%d Patches]", patches);
 					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
 				}
-				if (int fixes = loadGameSettings(fixup, game)) {
+				if (int fixes = loadGameSettings(fixup, game))
 					gameFixes.Printf(L" [%d Fixes]", fixes);
-				}
 			}
 		}
 	}
 
-	if (!gameMemCardFilter.IsEmpty()) {
+	if (!gameMemCardFilter.IsEmpty())
 		sioSetGameSerial(gameMemCardFilter);
-	} else {
+	else
 		sioSetGameSerial(curGameKey);
-	}
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
 	{
@@ -406,42 +403,35 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	ResetCheatsCount();
 
 	//Till the end of this function, entry CRC will be 00000000
-	if (!gameCRC.Length()) {
-		if (EmuConfig.EnableWideScreenPatches || EmuConfig.EnableCheats) {
-			Console.WriteLn(Color_Gray, "Patches: No CRC, using 00000000 instead.");
-		}
+	if (!gameCRC.Length())
+	{
+		Console.WriteLn(Color_Gray, "Patches: No CRC found, using 00000000 instead.");
 		gameCRC = L"00000000";
 	}
 
 	// regular cheat patches
-	if (EmuConfig.EnableCheats) {
-		if (numberLoadedCheats = LoadCheats(gameCRC, GetCheatsFolder(), L"Cheats")) {
-			gameCheats.Printf(L" [%d Cheats]", numberLoadedCheats);
-		}
-	}
+	if (EmuConfig.EnableCheats)
+		gameCheats.Printf(L" [%d Cheats]", LoadCheats(gameCRC, GetCheatsFolder(), L"Cheats"));
 
 	// wide screen patches
-	if (EmuConfig.EnableWideScreenPatches) {
-		if (numberLoadedWideScreenPatches = LoadCheats(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks")) {
+	if (EmuConfig.EnableWideScreenPatches)
+	{
+		if (int numberLoadedWideScreenPatches = LoadCheats(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 		}
-		else {
+		else
+		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
-
-			if (numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive)) {
-				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
-				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
-			}
+			int numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive);
+			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
+			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
 	}
 
 	wxString consoleTitle = gameName + gameSerial;
-	if (!gameSerial.IsEmpty()) {
-		consoleTitle += L" [" + gameCRC.MakeUpper() + L"]";
-	}
-	consoleTitle += gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
-
+	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	Console.SetTitle(consoleTitle);
 
 	// Re-entry guard protects against cases where code wants to manually set core settings
