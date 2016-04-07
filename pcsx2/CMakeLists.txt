@@ -631,7 +631,7 @@ set(pcsx2FinalLibs
 )
 
 if(BUILTIN_GS)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx-1.0.0")
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
 endif()
 if(BUILTIN_PAD)
     set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")

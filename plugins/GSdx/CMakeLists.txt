@@ -6,8 +6,8 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-# plugin name
-set(Output GSdx-1.0.0)
+# plugin name (no version number to ease future version bump and bisect)
+set(Output GSdx)
 
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
