@@ -30,6 +30,8 @@ struct DisassemblyLineInfo
 	std::string name;
 	std::string params;
 	u32 totalSize;
+
+	DisassemblyLineInfo() : type(DISTYPE_OTHER), info(), name(), params(), totalSize() {}
 };
 
 enum LineType { LINE_UP, LINE_DOWN };

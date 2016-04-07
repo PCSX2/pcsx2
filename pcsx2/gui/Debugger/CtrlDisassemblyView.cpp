@@ -383,7 +383,7 @@ int getBackgroundColor(unsigned int address)
 std::set<std::string> CtrlDisassemblyView::getSelectedLineArguments() {
 	std::set<std::string> args;
 
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	for (u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 4) {
 		manager.getLine(addr, displaySymbols, line);
 		size_t p = 0, nextp = line.params.find(',');
@@ -489,7 +489,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	unsigned int address = windowStart;
 
 	const std::set<std::string> currentArguments = getSelectedLineArguments();
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	for (int i = 0; i < visibleRows+1; i++)
 	{
 		manager.getLine(address,displaySymbols,line);
@@ -603,7 +603,7 @@ void CtrlDisassemblyView::calculatePixelPositions()
 
 void CtrlDisassemblyView::followBranch()
 {
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	manager.getLine(curAddress,true,line);
 
 	if (line.type == DISTYPE_OPCODE || line.type == DISTYPE_MACRO)
@@ -966,7 +966,7 @@ void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
 void CtrlDisassemblyView::updateStatusBarText()
 {
 	char text[512];
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	manager.getLine(curAddress,true,line);
 	
 	text[0] = 0;
@@ -1175,7 +1175,7 @@ std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
 
 	u32 disAddress = start;
 	bool previousLabel = true;
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	while (disAddress < start+size)
 	{
 		char addressText[64],buffer[512];
@@ -1293,7 +1293,7 @@ void CtrlDisassemblyView::editBreakpoint()
 
 void CtrlDisassemblyView::getOpcodeText(u32 address, char* dest)
 {
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	address = manager.getStartAddress(address);
 	manager.getLine(address,displaySymbols,line);
 	sprintf(dest,"%s  %s",line.name.c_str(),line.params.c_str());
