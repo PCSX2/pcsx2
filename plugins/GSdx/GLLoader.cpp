@@ -133,6 +133,7 @@ PFNGLCLEARNAMEDFRAMEBUFFERUIVPROC      glClearNamedFramebufferuiv          = NUL
 PFNGLNAMEDFRAMEBUFFERTEXTUREPROC       glNamedFramebufferTexture           = NULL;
 PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC   glNamedFramebufferDrawBuffers       = NULL;
 PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC    glNamedFramebufferReadBuffer        = NULL;
+PFNGLNAMEDFRAMEBUFFERPARAMETERIPROC    glNamedFramebufferParameteri        = NULL;
 PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC   glCheckNamedFramebufferStatus       = NULL;
 
 PFNGLCREATEBUFFERSPROC                 glCreateBuffers                     = NULL;

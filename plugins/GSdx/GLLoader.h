@@ -308,6 +308,7 @@ extern PFNGLCLEARNAMEDFRAMEBUFFERUIVPROC        glClearNamedFramebufferuiv;
 extern PFNGLNAMEDFRAMEBUFFERTEXTUREPROC         glNamedFramebufferTexture;
 extern PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC     glNamedFramebufferDrawBuffers;
 extern PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC      glNamedFramebufferReadBuffer;
+extern PFNGLNAMEDFRAMEBUFFERPARAMETERIPROC      glNamedFramebufferParameteri;
 extern PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC     glCheckNamedFramebufferStatus;
 
 extern PFNGLCREATEBUFFERSPROC                   glCreateBuffers;

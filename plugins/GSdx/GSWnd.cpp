@@ -142,6 +142,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glNamedFramebufferTexture);
 	GL_EXT_LOAD(glNamedFramebufferDrawBuffers);
 	GL_EXT_LOAD(glNamedFramebufferReadBuffer);
+	GL_EXT_LOAD_OPT(glNamedFramebufferParameteri);
 	GL_EXT_LOAD(glCheckNamedFramebufferStatus);
 
 	GL_EXT_LOAD(glCreateBuffers);
