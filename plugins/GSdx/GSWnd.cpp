@@ -169,7 +169,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glCreateProgramPipelines);
 
 	GL_EXT_LOAD_OPT(glClipControl);
-	GL_EXT_LOAD_OPT(glTextureBarrier);
+	GL_EXT_LOAD(glTextureBarrier);
 
 	if (glCreateFramebuffers == NULL) {
 		Emulate_DSA::Init();

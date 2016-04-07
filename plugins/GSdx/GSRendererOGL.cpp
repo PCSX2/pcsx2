@@ -55,14 +55,6 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	if (!GSRenderer::CreateDevice(dev))
 		return false;
 
-	// No sw blending if not supported (Intel GPU)
-	if (!GLLoader::found_GL_ARB_texture_barrier) {
-		fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. You can't emulate correctly the GS blending unit! Sorry!\n");
-		m_accurate_date = false;
-		m_sw_blending = 0;
-	}
-
-
 	return true;
 }
 
@@ -592,13 +584,11 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 
 	if (!require_barrier && m_unsafe_fbmask) {
 		// Not safe but still worth to take some precautions.
-		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else if (!require_barrier) {
 		dev->DrawIndexedPrimitive();
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
-		ASSERT(GLLoader::found_GL_ARB_texture_barrier);
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
@@ -682,7 +672,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
 
-	if ((DATE || m_sw_blending) && GLLoader::found_GL_ARB_texture_barrier && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if ((DATE || m_sw_blending) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
 	} else {
@@ -698,7 +688,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 
-	if (DATE && GLLoader::found_GL_ARB_texture_barrier) {
+	if (DATE) {
 		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo

@@ -497,7 +497,7 @@ namespace GLLoader {
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
-		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
+		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
 
 		if (!found_GL_ARB_direct_state_access) {
 			Emulate_DSA::Init();
@@ -505,12 +505,6 @@ namespace GLLoader {
 		if (glBindTextureUnit == NULL) {
 			fprintf(stderr, "FATAL ERROR !!!! Failed to setup DSA function pointer!!!\n");
 			status = false;
-		}
-
-		if (!found_GL_ARB_texture_barrier) {
-			fprintf(stderr, "Error GL_ARB_texture_barrier is not supported by your driver. You can't emulate correctly the GS blending unit! Sorry!\n");
-			theApp.SetConfig("accurate_blending_unit", 0);
-			theApp.SetConfig("accurate_date", 0);
 		}
 
 #ifdef _WIN32
