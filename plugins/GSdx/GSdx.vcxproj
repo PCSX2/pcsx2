@@ -2082,7 +2082,9 @@
     <ResourceCompile Include="GSdx.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\logo-null.bmp" />
     <Image Include="res\logo-ogl.bmp" />
+    <Image Include="res\logo11.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">

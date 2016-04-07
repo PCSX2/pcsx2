@@ -774,5 +774,11 @@
     <Image Include="res\logo-ogl.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\logo11.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\logo-null.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

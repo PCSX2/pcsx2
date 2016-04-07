@@ -82,7 +82,9 @@ IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 
 IDB_LOGO9               BITMAP                  "res\\logo9.bmp"
 IDB_LOGO10              BITMAP                  "res\\logo10.bmp"
+IDB_LOGO11              BITMAP                  "res\\logo11.bmp"
 IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
+IDB_NULL                BITMAP                  "res\\logo-null.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -200,9 +202,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "GSdx Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         IDB_LOGO10,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,35,6,173,42
-    CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_REALSIZECONTROL,34,6,175,44
-    CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,34,6,175,44
+    CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
+    CONTROL         IDB_LOGO10,IDC_LOGO10,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
+    CONTROL         IDB_LOGO11,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
+    CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
+    CONTROL         IDB_NULL,IDC_NULL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     LTEXT           "Adapter:",IDC_STATIC,6,57,30,8
     COMBOBOX        IDC_ADAPTER,71,55,166,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Renderer:",IDC_STATIC,6,72,34,8
