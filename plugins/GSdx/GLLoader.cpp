@@ -166,11 +166,6 @@ namespace GLLoader {
 	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
 	// DX10 GPU limited driver (SW)
 	bool found_GL_ARB_copy_image = false;
-	bool found_GL_ARB_texture_barrier = false;
-	bool found_GL_ARB_clip_control = false;
-	bool found_GL_ARB_direct_state_access = false;
-	bool found_GL_ARB_separate_shader_objects = false;
-	bool found_GL_ARB_buffer_storage = false;
 	// DX11 GPU
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
@@ -178,8 +173,13 @@ namespace GLLoader {
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
 
 	// Mandatory
-	bool found_GL_ARB_texture_storage = false;
+	bool found_GL_ARB_buffer_storage = false;
+	bool found_GL_ARB_clip_control = false;
+	bool found_GL_ARB_direct_state_access = false;
+	bool found_GL_ARB_separate_shader_objects = false;
 	bool found_GL_ARB_shading_language_420pack = false;
+	bool found_GL_ARB_texture_barrier = false;
+	bool found_GL_ARB_texture_storage = false;
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
