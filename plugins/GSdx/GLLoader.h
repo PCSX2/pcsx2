@@ -197,7 +197,6 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 // Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
 // (maybe gl.h is outdated, or my setup is wrong)
 // Anyway, let's just keep the mangled function pointer for those 2 functions.
-extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
 extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
 
 extern   PFNGLATTACHSHADERPROC                  glAttachShader;
@@ -284,7 +283,6 @@ extern   PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv;
 // GL4.2
 extern   PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture;
 extern   PFNGLMEMORYBARRIERPROC                 glMemoryBarrier;
-extern   PFNGLTEXSTORAGE2DPROC                  glTexStorage2D;
 extern   PFNGLPOPDEBUGGROUPPROC                 glPopDebugGroup;
 // GL4.3
 extern   PFNGLCOPYIMAGESUBDATAPROC              glCopyImageSubData;
@@ -328,12 +326,6 @@ extern PFNGLCREATEPROGRAMPIPELINESPROC          glCreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     glClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
-
-namespace Emulate_DSA {
-	extern void SetFramebufferTarget(GLenum target);
-	extern void SetBufferTarget(GLenum target);
-	extern void Init();
-}
 
 namespace GLLoader {
 	bool check_gl_version(int major, int minor);

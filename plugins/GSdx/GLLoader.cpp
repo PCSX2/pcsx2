@@ -22,7 +22,6 @@
 #include "GLLoader.h"
 #include "GSdx.h"
 
-PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                    = NULL;
 PFNGLBLENDCOLORPROC                    gl_BlendColor                       = NULL;
 
 PFNGLATTACHSHADERPROC                  glAttachShader                      = NULL;
@@ -116,7 +115,6 @@ PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl               = NUL
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 glMemoryBarrier                     = NULL;
-PFNGLTEXSTORAGE2DPROC                  glTexStorage2D                      = NULL;
 // GL4.4
 PFNGLCLEARTEXIMAGEPROC                 glClearTexImage                     = NULL;
 PFNGLBUFFERSTORAGEPROC                 glBufferStorage                     = NULL;
@@ -153,176 +151,6 @@ PFNGLCREATEPROGRAMPIPELINESPROC        glCreateProgramPipelines            = NUL
 
 PFNGLCLIPCONTROLPROC                   glClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
-
-namespace Emulate_DSA {
-	// Texture entry point
-	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
-		gl_ActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_2D, texture);
-	}
-
-	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
-		glGenTextures(1, textures);
-	}
-
-	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
-		BindTextureUnit(7, texture);
-		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
-	}
-
-	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
-		BindTextureUnit(7, texture);
-		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
-	}
-
-	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
-		BindTextureUnit(7, texture);
-		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
-	}
-
-	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
-		BindTextureUnit(7, texture);
-		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
-	}
-
-	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
-		BindTextureUnit(7, texture);
-		glTexParameteri(GL_TEXTURE_2D, pname, param);
-	}
-
-	// Framebuffer entry point
-	GLenum fb_target = 0;
-	void SetFramebufferTarget(GLenum target) {
-		fb_target = target;
-	}
-
-	void APIENTRY CreateFramebuffers(GLsizei n, GLuint *framebuffers) {
-		glGenFramebuffers(n, framebuffers);
-	}
-
-	void APIENTRY ClearNamedFramebufferfv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat *value) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glClearBufferfv(buffer, drawbuffer, value);
-	}
-
-	void APIENTRY ClearNamedFramebufferiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint *value) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glClearBufferiv(buffer, drawbuffer, value);
-	}
-
-	void APIENTRY ClearNamedFramebufferuiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint *value) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glClearBufferuiv(buffer, drawbuffer, value);
-	}
-
-	void APIENTRY NamedFramebufferTexture(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glFramebufferTexture2D(fb_target, attachment, GL_TEXTURE_2D, texture, level);
-	}
-
-	void APIENTRY NamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum *bufs) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glDrawBuffers(n, bufs);
-	}
-
-	void APIENTRY NamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
-		glBindFramebuffer(fb_target, framebuffer);
-		glReadBuffer(src);
-		glBindFramebuffer(fb_target, 0);
-	}
-
-	GLenum APIENTRY CheckNamedFramebufferStatus(GLuint framebuffer, GLenum target) {
-		glBindFramebuffer(fb_target, framebuffer);
-		return glCheckFramebufferStatus(fb_target);
-	}
-
-	// Buffer entry point
-	GLenum buffer_target = 0;
-	void SetBufferTarget(GLenum target) {
-		buffer_target = target;
-	}
-
-	void APIENTRY CreateBuffers(GLsizei n, GLuint *buffers) {
-		glGenBuffers(1, buffers);
-	}
-
-	void APIENTRY NamedBufferStorage(GLuint buffer, buffer_proc_t size, const void *data, GLbitfield flags) {
-		glBindBuffer(buffer_target, buffer);
-		glBufferStorage(buffer_target, size, data, flags);
-	}
-
-	void APIENTRY NamedBufferData(GLuint buffer, buffer_proc_t size, const void *data, GLenum usage) {
-		glBindBuffer(buffer_target, buffer);
-		glBufferData(buffer_target, size, data, usage);
-	}
-
-	void APIENTRY NamedBufferSubData(GLuint buffer, GLintptr offset, buffer_proc_t size, const void *data) {
-		glBindBuffer(buffer_target, buffer);
-		glBufferSubData(buffer_target, offset, size, data);
-	}
-
-	void *APIENTRY MapNamedBuffer(GLuint buffer, GLenum access) {
-		glBindBuffer(buffer_target, buffer);
-		return glMapBuffer(buffer_target, access);
-	}
-
-	void *APIENTRY MapNamedBufferRange(GLuint buffer, GLintptr offset, buffer_proc_t length, GLbitfield access) {
-		glBindBuffer(buffer_target, buffer);
-		return glMapBufferRange(buffer_target, offset, length, access);
-	}
-
-	GLboolean APIENTRY UnmapNamedBuffer(GLuint buffer) {
-		glBindBuffer(buffer_target, buffer);
-		return glUnmapBuffer(buffer_target);
-	}
-
-	void APIENTRY FlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, buffer_proc_t length) {
-		glBindBuffer(buffer_target, buffer);
-		glFlushMappedBufferRange(buffer_target, offset, length);
-	}
-
-	// Misc entry point
-	// (only purpose is to have a consistent API otherwise it is useless)
-	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
-		glGenProgramPipelines(n, pipelines);
-	}
-
-	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
-		glGenSamplers(n, samplers);
-	}
-
-	// Replace function pointer to emulate DSA behavior
-	void Init() {
-		fprintf(stderr, "DSA is not supported. Replacing the GL function pointer to emulate it\n");
-		glBindTextureUnit             = BindTextureUnit;
-		glCreateTextures              = CreateTexture;
-		glTextureStorage2D            = TextureStorage;
-		glTextureSubImage2D           = TextureSubImage;
-		glCopyTextureSubImage2D       = CopyTextureSubImage;
-		glGetTextureImage             = GetTexureImage;
-		glTextureParameteri           = TextureParameteri;
-
-		glCreateFramebuffers          = CreateFramebuffers;
-		glClearNamedFramebufferfv     = ClearNamedFramebufferfv;
-		glClearNamedFramebufferiv     = ClearNamedFramebufferiv;
-		glClearNamedFramebufferuiv    = ClearNamedFramebufferuiv;
-		glNamedFramebufferDrawBuffers = NamedFramebufferDrawBuffers;
-		glNamedFramebufferReadBuffer  = NamedFramebufferReadBuffer;
-		glCheckNamedFramebufferStatus = CheckNamedFramebufferStatus;
-
-		glCreateBuffers               = CreateBuffers;
-		glNamedBufferStorage          = NamedBufferStorage;
-		glNamedBufferData             = NamedBufferData;
-		glNamedBufferSubData          = NamedBufferSubData;
-		glMapNamedBuffer              = MapNamedBuffer;
-		glMapNamedBufferRange         = MapNamedBufferRange;
-		glUnmapNamedBuffer            = UnmapNamedBuffer;
-		glFlushMappedNamedBufferRange = FlushMappedNamedBufferRange;
-
-		glCreateProgramPipelines      = CreateProgramPipelines;
-		glCreateSamplers              = CreateSamplers;
-	}
-}
 
 namespace GLLoader {
 
@@ -479,16 +307,8 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
-		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
+		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
-
-		if (!found_GL_ARB_direct_state_access) {
-			Emulate_DSA::Init();
-		}
-		if (glBindTextureUnit == NULL) {
-			fprintf(stderr, "FATAL ERROR !!!! Failed to setup DSA function pointer!!!\n");
-			status = false;
-		}
 
 #ifdef _WIN32
 		if (status) {
