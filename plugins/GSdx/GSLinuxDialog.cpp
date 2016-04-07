@@ -261,26 +261,14 @@ void populate_hw_table(GtkWidget* hw_table)
 
 void populate_gl_table(GtkWidget* gl_table)
 {
-	GtkWidget* gl_bs_label = left_label("Buffer Storage:");
-	GtkWidget* gl_bs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_buffer_storage", -1);
-	GtkWidget* gl_sso_label = left_label("Separate Shader:");
-	GtkWidget* gl_sso_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_separate_shader_objects", -1);
 	GtkWidget* gl_gs_label = left_label("Geometry Shader:");
 	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
 	GtkWidget* gl_ils_label = left_label("Image Load Store:");
 	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store", -1);
-	GtkWidget* gl_cc_label = left_label("Clip Control (depth accuracy):");
-	GtkWidget* gl_cc_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_clip_control", -1);
-	GtkWidget* gl_tb_label = left_label("Texture Barrier:");
-	GtkWidget* gl_tb_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_texture_barrier", -1);
 
 	s_table_line = 0;
 	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
-	InsertWidgetInTable(gl_table , gl_bs_label  , gl_bs_combo);
-	InsertWidgetInTable(gl_table , gl_sso_label , gl_sso_combo);
 	InsertWidgetInTable(gl_table , gl_ils_label , gl_ils_combo);
-	InsertWidgetInTable(gl_table , gl_cc_label  , gl_cc_combo);
-	InsertWidgetInTable(gl_table , gl_tb_label  , gl_tb_combo);
 }
 
 void populate_sw_table(GtkWidget* sw_table)
