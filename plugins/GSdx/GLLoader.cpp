@@ -312,10 +312,6 @@ namespace GLLoader {
 
 #ifdef _WIN32
 		if (status) {
-			if (intel_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer isn't compatible with SandyBridge/IvyBridge GPU due to issues. Sorry.\n"
-						"Tip:Try it on Linux");
-			}
 			if (fglrx_buggy_driver) {
 				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.");
 			}
