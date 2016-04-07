@@ -43,7 +43,6 @@ class GSBufferOGL {
 	const  GLenum m_target;
 	GLuint m_buffer_name;
 	uint8*  m_buffer_ptr;
-	const bool m_buffer_storage;
 	GLsync m_fence[5];
 
 	public:
@@ -52,7 +51,6 @@ class GSBufferOGL {
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
-		, m_buffer_storage(GLLoader::found_GL_ARB_buffer_storage)
 	{
 		glGenBuffers(1, &m_buffer_name);
 		// Opengl works best with 1-4MB buffer.
@@ -63,71 +61,35 @@ class GSBufferOGL {
 			m_fence[i] = 0;
 		}
 
-		if (m_buffer_storage) {
-			// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
-			// => bigger buffer => less sync
-			bind();
-			// coherency will be done by flushing
-			const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
-			const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
-			const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
+		// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
+		// => bigger buffer => less sync
+		bind();
+		// coherency will be done by flushing
+		const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
+		const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-			glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags );
-			m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
-			if (!m_buffer_ptr) {
-				fprintf(stderr, "Failed to map buffer\n");
-				throw GSDXError();
-			}
-		} else {
-			m_buffer_ptr = NULL;
+		glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags );
+		m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
+		if (!m_buffer_ptr) {
+			fprintf(stderr, "Failed to map buffer\n");
+			throw GSDXError();
 		}
 	}
 
 	~GSBufferOGL() {
-		if (m_buffer_storage) {
-			for (size_t i = 0; i < 5; i++) {
-				glDeleteSync(m_fence[i]);
-			}
-			// Don't know if we must do it
-			bind();
-			glUnmapBuffer(m_target);
+		for (size_t i = 0; i < 5; i++) {
+			glDeleteSync(m_fence[i]);
 		}
+		// Don't know if we must do it
+		bind();
+		glUnmapBuffer(m_target);
 		glDeleteBuffers(1, &m_buffer_name);
-	}
-
-	void allocate() { allocate(m_limit); }
-
-	void allocate(size_t new_limit)
-	{
-		if (!m_buffer_storage) {
-			m_start = 0;
-			m_limit = new_limit;
-			glBufferData(m_target,  m_limit * STRIDE, NULL, GL_STREAM_DRAW);
-		}
 	}
 
 	void bind()
 	{
 		glBindBuffer(m_target, m_buffer_name);
-	}
-
-	void subdata_upload(const void* src)
-	{
-		// Current GPU buffer is really too small need to allocate a new one
-		if (m_count > m_limit) {
-			//fprintf(stderr, "Allocate a new buffer\n %d", STRIDE);
-			allocate(std::max<int>(m_count * 3 / 2, m_limit));
-
-		} else if (m_count > (m_limit - m_start) ) {
-			//fprintf(stderr, "Orphan the buffer %d\n", STRIDE);
-
-			// Not enough left free room. Just go back at the beginning
-			m_start = 0;
-			// Orphan the buffer to avoid synchronization
-			allocate(m_limit);
-		}
-
-		glBufferSubData(m_target,  STRIDE * m_start,  STRIDE * m_count, src);
 	}
 
 	void map_upload(const void* src)
@@ -207,11 +169,7 @@ class GSBufferOGL {
 
 		m_count = count;
 
-		if (m_buffer_storage) {
-			map_upload(src);
-		} else {
-			subdata_upload(src);
-		}
+		map_upload(src);
 	}
 
 	void EndScene()
@@ -267,8 +225,6 @@ public:
 		m_vb->bind();
 		m_ib->bind();
 
-		m_vb->allocate();
-		m_ib->allocate();
 		set_internal_format(layout, layout_nbr);
 	}
 

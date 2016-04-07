@@ -40,7 +40,6 @@ namespace PboPool {
 	char*  m_map[PBO_POOL_SIZE];
 	uint32 m_current_pbo = 0;
 	uint32 m_size;
-	bool   m_texture_storage;
 	GLsync m_fence[PBO_POOL_SIZE];
 	const uint32 m_pbo_size = 8*1024*1024;
 
@@ -62,19 +61,13 @@ namespace PboPool {
 	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
 		glGenBuffers(countof(m_pool), m_pool);
-		m_texture_storage  = GLLoader::found_GL_ARB_buffer_storage;
 
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();
 
-			if (m_texture_storage) {
-				glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
-				m_map[m_current_pbo] = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
-				m_fence[m_current_pbo] = 0;
-			} else {
-				glBufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, GL_STREAM_COPY);
-				m_map[m_current_pbo] = NULL;
-			}
+			glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
+			m_map[m_current_pbo] = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
+			m_fence[m_current_pbo] = 0;
 
 			NextPbo();
 		}
@@ -89,44 +82,22 @@ namespace PboPool {
 			fprintf(stderr, "BUG: PBO too small %d but need %d\n", m_pbo_size, m_size);
 		}
 
-		if (m_texture_storage) {
-			if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
-				//NextPbo(); // For test purpose
-				NextPboWithSync();
-			}
-
-			// Note: texsubimage will access currently bound buffer
-			// Pbo ready let's get a pointer
-			BindPbo();
-
-			map = m_map[m_current_pbo] + m_offset[m_current_pbo];
-
-		} else {
-			GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
-
-			if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
-				NextPbo();
-
-				flags &= ~GL_MAP_INVALIDATE_RANGE_BIT;
-				flags |= GL_MAP_INVALIDATE_BUFFER_BIT;
-			}
-
-			// Pbo ready let's get a pointer
-			BindPbo();
-
-			// Be sure the map is aligned
-			map = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size, flags);
+		if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
+			//NextPbo(); // For test purpose
+			NextPboWithSync();
 		}
+
+		// Note: texsubimage will access currently bound buffer
+		// Pbo ready let's get a pointer
+		BindPbo();
+
+		map = m_map[m_current_pbo] + m_offset[m_current_pbo];
 
 		return map;
 	}
 
 	void Unmap() {
-		if (m_texture_storage) {
-			glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
-		} else {
-			glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-		}
+		glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
 	}
 
 	uptr Offset() {
@@ -134,18 +105,16 @@ namespace PboPool {
 	}
 
 	void Destroy() {
-		if (m_texture_storage) {
-			for (size_t i = 0; i < countof(m_pool); i++) {
-				m_map[i] = NULL;
-				m_offset[i] = 0;
-				glDeleteSync(m_fence[i]);
+		for (size_t i = 0; i < countof(m_pool); i++) {
+			m_map[i] = NULL;
+			m_offset[i] = 0;
+			glDeleteSync(m_fence[i]);
 
-				// Don't know if we must do it
-				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
-				glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-			}
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+			// Don't know if we must do it
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
+			glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 		}
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		glDeleteBuffers(countof(m_pool), m_pool);
 	}
 

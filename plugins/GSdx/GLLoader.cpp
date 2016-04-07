@@ -475,7 +475,7 @@ namespace GLLoader {
 		// GL4.3
 		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image");
 		// GL4.4
-		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
+		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
