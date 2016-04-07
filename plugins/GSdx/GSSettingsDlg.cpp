@@ -676,7 +676,8 @@ void GSHacksDlg::OnInit()
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_SAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
-
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
