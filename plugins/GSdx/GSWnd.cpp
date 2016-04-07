@@ -100,15 +100,14 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glBlendEquationSeparateiARB);
 	GL_EXT_LOAD_OPT(glBlendFuncSeparateiARB);
 	// GL4.1
-	GL_EXT_LOAD_OPT(glCreateShaderProgramv);
-	GL_EXT_LOAD_OPT(glBindProgramPipeline);
-	GL_EXT_LOAD_OPT(glDeleteProgramPipelines);
-	GL_EXT_LOAD_OPT(glGenProgramPipelines);
-	GL_EXT_LOAD_OPT(glGetProgramPipelineiv);
-	GL_EXT_LOAD_OPT(glGetProgramPipelineInfoLog);
-	GL_EXT_LOAD_OPT(glValidateProgramPipeline);
-	GL_EXT_LOAD_OPT(glUseProgramStages);
-	GL_EXT_LOAD_OPT(glProgramUniform1i); // but no GL4.2
+	GL_EXT_LOAD(glCreateShaderProgramv);
+	GL_EXT_LOAD(glBindProgramPipeline);
+	GL_EXT_LOAD(glDeleteProgramPipelines);
+	GL_EXT_LOAD(glGenProgramPipelines);
+	GL_EXT_LOAD(glGetProgramPipelineiv);
+	GL_EXT_LOAD(glGetProgramPipelineInfoLog);
+	GL_EXT_LOAD(glValidateProgramPipeline);
+	GL_EXT_LOAD(glUseProgramStages);
 	GL_EXT_LOAD_OPT(glGetProgramBinary);
 	GL_EXT_LOAD_OPT(glViewportIndexedf);
 	GL_EXT_LOAD_OPT(glViewportIndexedfv);
@@ -116,13 +115,6 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glScissorIndexedv);
 	// NO GL4.1
 	GL_EXT_LOAD(glDeleteProgram);
-	GL_EXT_LOAD(glDeleteShader);
-	GL_EXT_LOAD(glCompileShader);
-	GL_EXT_LOAD(glCreateProgram);
-	GL_EXT_LOAD(glCreateShader);
-	GL_EXT_LOAD(glUseProgram);
-	GL_EXT_LOAD(glGetShaderInfoLog);
-	GL_EXT_LOAD(glLinkProgram);
 	// GL4.2
 	GL_EXT_LOAD_OPT(glBindImageTexture);
 	GL_EXT_LOAD_OPT(glMemoryBarrier);

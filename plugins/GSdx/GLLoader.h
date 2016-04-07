@@ -215,16 +215,12 @@ extern   PFNGLCHECKFRAMEBUFFERSTATUSPROC        glCheckFramebufferStatus;
 extern   PFNGLCLEARBUFFERFVPROC                 glClearBufferfv;
 extern   PFNGLCLEARBUFFERIVPROC                 glClearBufferiv;
 extern   PFNGLCLEARBUFFERUIVPROC                glClearBufferuiv;
-extern   PFNGLCOMPILESHADERPROC                 glCompileShader;
 extern   PFNGLCOLORMASKIPROC                    glColorMaski;
-extern   PFNGLCREATEPROGRAMPROC                 glCreateProgram;
-extern   PFNGLCREATESHADERPROC                  glCreateShader;
 extern   PFNGLCREATESHADERPROGRAMVPROC          glCreateShaderProgramv;
 extern   PFNGLDELETEBUFFERSPROC                 glDeleteBuffers;
 extern   PFNGLDELETEFRAMEBUFFERSPROC            glDeleteFramebuffers;
 extern   PFNGLDELETEPROGRAMPROC                 glDeleteProgram;
 extern   PFNGLDELETESAMPLERSPROC                glDeleteSamplers;
-extern   PFNGLDELETESHADERPROC                  glDeleteShader;
 extern   PFNGLDELETEVERTEXARRAYSPROC            glDeleteVertexArrays;
 extern   PFNGLDETACHSHADERPROC                  glDetachShader;
 extern   PFNGLDRAWBUFFERSPROC                   glDrawBuffers;
@@ -244,7 +240,6 @@ extern   PFNGLGETPROGRAMIVPROC                  glGetProgramiv;
 extern   PFNGLGETSHADERIVPROC                   glGetShaderiv;
 extern   PFNGLGETSTRINGIPROC                    glGetStringi;
 extern   PFNGLISFRAMEBUFFERPROC                 glIsFramebuffer;
-extern   PFNGLLINKPROGRAMPROC                   glLinkProgram;
 extern   PFNGLMAPBUFFERPROC                     glMapBuffer;
 extern   PFNGLMAPBUFFERRANGEPROC                glMapBufferRange;
 extern   PFNGLPROGRAMPARAMETERIPROC             glProgramParameteri;
@@ -286,10 +281,6 @@ extern   PFNGLVIEWPORTINDEXEDFPROC              glViewportIndexedf;
 extern   PFNGLVIEWPORTINDEXEDFVPROC             glViewportIndexedfv;
 extern   PFNGLSCISSORINDEXEDPROC                glScissorIndexed;
 extern   PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv;
-// NO GL4.1
-extern   PFNGLUSEPROGRAMPROC                    glUseProgram;
-extern   PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog;
-extern   PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i;
 // GL4.2
 extern   PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture;
 extern   PFNGLMEMORYBARRIERPROC                 glMemoryBarrier;
@@ -356,7 +347,6 @@ namespace GLLoader {
 	extern bool in_replayer;
 
 	// GL
-	extern bool found_GL_ARB_separate_shader_objects;
 	extern bool found_GL_ARB_copy_image;
 	extern bool found_geometry_shader;
 	extern bool found_GL_ARB_gpu_shader5;

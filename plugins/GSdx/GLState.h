@@ -56,8 +56,6 @@ namespace GLState {
 	extern GLuint ps;
 	extern GLuint gs;
 	extern GLuint vs;
-	extern GLuint program; // monolith program (when sso isn't supported)
-	extern bool dirty_prog;
 
 	extern void Clear();
 }

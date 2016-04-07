@@ -41,15 +41,11 @@ PFNGLCLEARBUFFERFVPROC                 glClearBufferfv                     = NUL
 PFNGLCLEARBUFFERIVPROC                 glClearBufferiv                     = NULL;
 PFNGLCLEARBUFFERUIVPROC                glClearBufferuiv                    = NULL;
 PFNGLCOLORMASKIPROC                    glColorMaski                        = NULL;
-PFNGLCOMPILESHADERPROC                 glCompileShader                     = NULL;
-PFNGLCREATEPROGRAMPROC                 glCreateProgram                     = NULL;
-PFNGLCREATESHADERPROC                  glCreateShader                      = NULL;
 PFNGLCREATESHADERPROGRAMVPROC          glCreateShaderProgramv              = NULL;
 PFNGLDELETEBUFFERSPROC                 glDeleteBuffers                     = NULL;
 PFNGLDELETEFRAMEBUFFERSPROC            glDeleteFramebuffers                = NULL;
 PFNGLDELETEPROGRAMPROC                 glDeleteProgram                     = NULL;
 PFNGLDELETESAMPLERSPROC                glDeleteSamplers                    = NULL;
-PFNGLDELETESHADERPROC                  glDeleteShader                      = NULL;
 PFNGLDELETEVERTEXARRAYSPROC            glDeleteVertexArrays                = NULL;
 PFNGLDETACHSHADERPROC                  glDetachShader                      = NULL;
 PFNGLDRAWBUFFERSPROC                   glDrawBuffers                       = NULL;
@@ -69,7 +65,6 @@ PFNGLGETPROGRAMIVPROC                  glGetProgramiv                      = NUL
 PFNGLGETSHADERIVPROC                   glGetShaderiv                       = NULL;
 PFNGLGETSTRINGIPROC                    glGetStringi                        = NULL;
 PFNGLISFRAMEBUFFERPROC                 glIsFramebuffer                     = NULL;
-PFNGLLINKPROGRAMPROC                   glLinkProgram                       = NULL;
 PFNGLMAPBUFFERPROC                     glMapBuffer                         = NULL;
 PFNGLMAPBUFFERRANGEPROC                glMapBufferRange                    = NULL;
 PFNGLPROGRAMPARAMETERIPROC             glProgramParameteri                 = NULL;
@@ -111,10 +106,6 @@ PFNGLVIEWPORTINDEXEDFPROC              glViewportIndexedf                  = NUL
 PFNGLVIEWPORTINDEXEDFVPROC             glViewportIndexedfv                 = NULL;
 PFNGLSCISSORINDEXEDPROC                glScissorIndexed                    = NULL;
 PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv                   = NULL;
-// NO GL4.1
-PFNGLUSEPROGRAMPROC                    glUseProgram                        = NULL;
-PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog                  = NULL;
-PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i                  = NULL;
 // GL4.3
 PFNGLCOPYIMAGESUBDATAPROC              glCopyImageSubData                  = NULL;
 PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage                = NULL;
@@ -350,7 +341,7 @@ namespace GLLoader {
 	bool found_GL_ARB_texture_barrier = false;
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
-	bool found_GL_ARB_separate_shader_objects = false; // Issue with Catalyst...
+	bool found_GL_ARB_separate_shader_objects = false;
 	bool found_GL_ARB_buffer_storage = false;
 	// DX11 GPU
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
@@ -448,15 +439,7 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
 				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
-				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
-					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
-					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n"
-#ifdef __linux__
-							"Note the extension will be fixed on Mesa 11.2 or 11.1.2.\n"
-#endif
-							"AMD proprietary driver => https://community.amd.com/thread/194895\n"
-							"If you want to try it, you can set the variable override_GL_ARB_separate_shader_objects to 1 in the ini file\n");
-				}
+				if (ext.compare("GL_ARB_separate_shader_objects") == 0) found_GL_ARB_separate_shader_objects = true;
 				// GL4.2
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
 				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
@@ -484,7 +467,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
-		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects");
+		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects", true);
 		// GL4.2
 		status &= status_and_override(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
 		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);

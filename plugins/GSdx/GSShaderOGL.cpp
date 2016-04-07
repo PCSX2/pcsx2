@@ -28,16 +28,13 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_debug_shader(debug)
 {
 	m_single_prog.clear();
-	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		glGenProgramPipelines(1, &m_pipeline);
-		glBindProgramPipeline(m_pipeline);
-	}
+	glGenProgramPipelines(1, &m_pipeline);
+	glBindProgramPipeline(m_pipeline);
 }
 
 GSShaderOGL::~GSShaderOGL()
 {
-	if (GLLoader::found_GL_ARB_separate_shader_objects)
-		glDeleteProgramPipelines(1, &m_pipeline);
+	glDeleteProgramPipelines(1, &m_pipeline);
 
 	for (auto it = m_single_prog.begin(); it != m_single_prog.end() ; it++) glDeleteProgram(it->second);
 	m_single_prog.clear();
@@ -48,9 +45,7 @@ void GSShaderOGL::VS(GLuint s)
 	if (GLState::vs != s)
 	{
 		GLState::vs = s;
-		GLState::dirty_prog = true;
-		if (GLLoader::found_GL_ARB_separate_shader_objects)
-			glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
+		glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
 	}
 }
 
@@ -64,10 +59,7 @@ void GSShaderOGL::PS(GLuint s)
 	{
 		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = s;
-		GLState::dirty_prog = true;
-		if (GLLoader::found_GL_ARB_separate_shader_objects) {
-			glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
-		}
+		glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
 	}
 }
 
@@ -76,31 +68,8 @@ void GSShaderOGL::GS(GLuint s)
 	if (GLState::gs != s)
 	{
 		GLState::gs = s;
-		GLState::dirty_prog = true;
-		if (GLLoader::found_GL_ARB_separate_shader_objects)
-			glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
+		glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
 	}
-}
-
-bool GSShaderOGL::ValidateShader(GLuint s)
-{
-	if (!m_debug_shader) return true;
-
-	GLint status = 0;
-	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
-	if (status) return true;
-
-	GLint log_length = 0;
-	glGetShaderiv(s, GL_INFO_LOG_LENGTH, &log_length);
-	if (log_length > 0) {
-		char* log = new char[log_length];
-		glGetShaderInfoLog(s, log_length, NULL, log);
-		fprintf(stderr, "%s", log);
-		delete[] log;
-	}
-	fprintf(stderr, "\n");
-
-	return false;
 }
 
 bool GSShaderOGL::ValidateProgram(GLuint p)
@@ -148,62 +117,14 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 	return false;
 }
 
-GLuint GSShaderOGL::LinkNewProgram()
-{
-	GLuint p = glCreateProgram();
-	if (GLState::vs) glAttachShader(p, GLState::vs);
-	if (GLState::ps) glAttachShader(p, GLState::ps);
-	if (GLState::gs) glAttachShader(p, GLState::gs);
-
-	glLinkProgram(p);
-
-	ValidateProgram(p);
-
-	return p;
-}
-
-void GSShaderOGL::UseProgram()
-{
-	if (GLState::dirty_prog) {
-		if (!GLLoader::found_GL_ARB_separate_shader_objects) {
-			hash_map<uint64, GLuint >::iterator it;
-			// Note: shader are integer lookup pointer. They start from 1 and incr
-			// every time you create a new shader OR a new program.
-			// Note2: vs & gs are precompiled at startup. FGLRX and radeon got value < 128. GS has only 2 programs
-			// We migth be able to pack the value in a 32bits int
-			// I would need to check the behavior on Nvidia (pause/resume).
-			uint64 sel = (uint64)GLState::vs << 40 | (uint64)GLState::gs << 20 | GLState::ps;
-			it = m_single_prog.find(sel);
-			if (it == m_single_prog.end()) {
-				GLState::program = LinkNewProgram();
-				m_single_prog[sel] = GLState::program;
-
-				ValidateProgram(GLState::program);
-
-				glUseProgram(GLState::program);
-			} else {
-				GLuint prog = it->second;
-				if (prog != GLState::program) {
-					GLState::program = prog;
-					glUseProgram(GLState::program);
-				}
-			}
-		}
-	}
-
-	GLState::dirty_prog = false;
-}
-
 std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro)
 {
 	std::string header;
 	header = "#version 330 core\n";
 	// Need GL version 420
 	header += "#extension GL_ARB_shading_language_420pack: require\n";
-	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		// Need GL version 410
-		header += "#extension GL_ARB_separate_shader_objects: require\n";
-	}
+	// Need GL version 410
+	header += "#extension GL_ARB_separate_shader_objects: require\n";
 	if (GLLoader::found_GL_ARB_shader_image_load_store) {
 		// Need GL version 420
 		header += "#extension GL_ARB_shader_image_load_store: require\n";
@@ -263,19 +184,9 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	sources[0] = header.append(glsl_h_code).c_str();
 #endif
 
-	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		program = glCreateShaderProgramv(type, shader_nb, sources);
-	} else {
-		program = glCreateShader(type);
-		glShaderSource(program, shader_nb, sources, NULL);
-		glCompileShader(program);
-	}
+	program = glCreateShaderProgramv(type, shader_nb, sources);
 
-	bool status;
-	if (GLLoader::found_GL_ARB_separate_shader_objects)
-		status = ValidateProgram(program);
-	else
-		status = ValidateShader(program);
+	bool status = ValidateProgram(program);
 
 	if (!status) {
 		// print extra info
@@ -347,9 +258,5 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 
 void GSShaderOGL::Delete(GLuint s)
 {
-	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		glDeleteProgram(s);
-	} else {
-		glDeleteShader(s);
-	}
+	glDeleteProgram(s);
 }

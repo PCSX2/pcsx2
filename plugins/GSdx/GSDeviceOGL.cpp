@@ -448,7 +448,6 @@ void GSDeviceOGL::Flip()
 
 void GSDeviceOGL::BeforeDraw()
 {
-	m_shader->UseProgram();
 }
 
 void GSDeviceOGL::AfterDraw()
