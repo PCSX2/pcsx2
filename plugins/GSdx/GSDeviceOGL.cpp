@@ -1382,7 +1382,7 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo)
 {
 	if (GLState::fbo != fbo) {
 		GLState::fbo = fbo;
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 	}
 }
 
