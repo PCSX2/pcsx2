@@ -618,12 +618,15 @@ GSHacksDlg::GSHacksDlg() :
 void GSHacksDlg::OnInit()
 {
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
+	HWND hwnd_upscaling = GetDlgItem(GetParent(m_hWnd), IDC_UPSCALE_MULTIPLIER);
 	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
+	unsigned short upscaling_multiplier = static_cast<unsigned short>(SendMessage(hwnd_upscaling, CB_GETITEMDATA, SendMessage(hwnd_upscaling, CB_GETCURSEL, 0, 0), 0));
+	unsigned short cb = 0;
+
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool dx9 = renderer == GSRendererType::DX9_HW;
-	// bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
-	unsigned short cb = 0;
+	bool native = upscaling_multiplier == 1;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)
 	{
@@ -683,6 +686,13 @@ void GSHacksDlg::OnInit()
 	ShowWindow(GetDlgItem(m_hWnd, IDC_SAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE_TEXT), !native);
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
