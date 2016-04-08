@@ -311,9 +311,14 @@ void GSSettingsDlg::UpdateRenderers()
 	GSRendererType renderer_setting;
 
 	if (ComboBoxGetSelData(IDC_RENDERER, i))
+	{
 		renderer_setting = static_cast<GSRendererType>(i);
+	}
 	else
-		renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	{
+		GSRendererType best_renderer = (level >= D3D_FEATURE_LEVEL_10_0) ? GSRendererType::DX1011_HW : GSRendererType::DX9_HW;
+		renderer_setting = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(best_renderer)));
+	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
 
@@ -326,11 +331,7 @@ void GSSettingsDlg::UpdateRenderers()
 		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
-#if 0
-			// This code is disabled so the renderer name doesn't get messed with.
-			// Just call it Direct3D11.
 			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
-#endif
 		}
 
 		renderers.push_back(r);
