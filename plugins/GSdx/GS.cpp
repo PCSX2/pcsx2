@@ -216,18 +216,14 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		{		
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
-		case GSRendererType::Null_SW:
 		case GSRendererType::OGL_SW:
 			renderer_mode = "(Software mode)";
 			break;
-		case GSRendererType::DX9_Null:
-		case GSRendererType::DX1011_Null:
-		case GSRendererType::Null_Null:
+		case GSRendererType::Null:
 			renderer_mode = "(Null mode)";
 			break;
 		case GSRendererType::DX9_OpenCL:
 		case GSRendererType::DX1011_OpenCL:
-		case GSRendererType::Null_OpenCL:
 		case GSRendererType::OGL_OpenCL:
 			renderer_mode = "(OpenCL)";
 			break;
@@ -242,7 +238,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #ifdef _WIN32
 		case GSRendererType::DX9_HW:
 		case GSRendererType::DX9_SW:
-		case GSRendererType::DX9_Null:
 		case GSRendererType::DX9_OpenCL:
 			dev = new GSDevice9();
 			s_renderer_name = " D3D9";
@@ -250,17 +245,13 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			break;
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
-		case GSRendererType::DX1011_Null:
 		case GSRendererType::DX1011_OpenCL:
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
 			renderer_fullname = "Direct3D11";
 			break;
 #endif
-		case GSRendererType::Null_HW:
-		case GSRendererType::Null_SW:
-		case GSRendererType::Null_Null:
-		case GSRendererType::Null_OpenCL:
+		case GSRendererType::Null:
 			dev = new GSDeviceNull();
 			s_renderer_name = " Null";
 			renderer_fullname = "Null";
@@ -302,20 +293,16 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				break;
 			case GSRendererType::DX9_SW:
 			case GSRendererType::DX1011_SW:
-			case GSRendererType::Null_SW:
 			case GSRendererType::OGL_SW:
 				s_gs = new GSRendererSW(threads);
 				s_renderer_type = " SW";
 				break;
-			case GSRendererType::DX9_Null:
-			case GSRendererType::DX1011_Null:
-			case GSRendererType::Null_Null:
+			case GSRendererType::Null:
 				s_gs = new GSRendererNull();
 				s_renderer_type = " Null";
 				break;
 			case GSRendererType::DX9_OpenCL:
 			case GSRendererType::DX1011_OpenCL:
-			case GSRendererType::Null_OpenCL:
 			case GSRendererType::OGL_OpenCL:
 #ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();

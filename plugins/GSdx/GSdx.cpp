@@ -137,25 +137,19 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW), "Direct3D11", "Software"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),		"Direct3D9",	"Software"));
 
-#ifdef _DEBUG
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null), "Direct3D9", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null), "Direct3D11", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
-#endif
 #else // Linux
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "None", "Core Benchmark"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "None", "Core Benchmark"));
 
 #ifdef ENABLE_OPENCL
 	// OpenCL stuff goes last
 	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_OpenCL),		"Direct3D9",	"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D11",	"OpenCL"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_OpenCL),	"Null",			"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
 #endif
 

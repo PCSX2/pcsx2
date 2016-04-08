@@ -323,7 +323,7 @@ void GSSettingsDlg::UpdateRenderers()
 
 		GSRendererType renderer = static_cast<GSRendererType>(r.value);
 
-		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::DX1011_OpenCL)
+		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
 #if 0
@@ -366,8 +366,8 @@ void GSSettingsDlg::UpdateControls()
 
 		bool hw = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
 		bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
-		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::Null_OpenCL || renderer == GSRendererType::OGL_OpenCL;
-		bool null = renderer == GSRendererType::Null_HW || renderer == GSRendererType::Null_Null || renderer == GSRendererType::DX1011_Null || renderer == GSRendererType::Null_OpenCL || renderer == GSRendererType::DX9_Null || renderer == GSRendererType::Null_SW;
+		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::OGL_OpenCL;
+		bool null = renderer == GSRendererType::Null;
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), (dx11 && level >= D3D_FEATURE_LEVEL_11_0) ? SW_SHOW : SW_HIDE);
