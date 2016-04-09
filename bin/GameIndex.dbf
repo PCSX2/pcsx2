@@ -1260,14 +1260,6 @@ Name   = Klonoa 2 - Lunatea's Veil
 Region = PAL-M5
 Compat = 5
 eeClampMode = 3		//Objects needed appear in wrong places without it
-[patches = 7EBEEBBD]
-	
-	comment=Patch By CKemu
-	
-	//Skips IUP blitz
-	patch=0,EE,003078F4,word,00000000
-	
-[/patches]
 ---------------------------------------------
 Serial = SCES-50360
 Name   = Twisted Metal - Black
@@ -34355,14 +34347,6 @@ Name   = Klonoa 2 - Lunatea's Veil
 Region = NTSC-U
 Compat = 5
 eeClampMode = 3		//Objects needed appear in wrong places without it
-[patches = 2F56CBC9]
-	
-	comment=patches by nachbrenner
-	
-	//Skip sceIpuSync
-	patch=0,EE,00305b90,word,03e00008
-	
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20152
 Name   = Ace Combat 4 - Shattered Skies
