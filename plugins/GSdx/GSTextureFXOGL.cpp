@@ -110,27 +110,17 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 	GL_POP();
 }
 
-void GSDeviceOGL::SetupVS(VSSelector sel)
-{
-	m_shader->VS(m_vs[sel]);
-}
-
-void GSDeviceOGL::SetupGS(GSSelector sel)
-{
-	m_shader->GS(m_gs[sel]);
-}
-
-void GSDeviceOGL::SetupPS(PSSelector sel)
+void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
 {
 	// *************************************************************
 	// Static
 	// *************************************************************
 	GLuint ps;
-	auto i = m_ps.find(sel);
+	auto i = m_ps.find(psel);
 
 	if (i == m_ps.end()) {
-		ps = CompilePS(sel);
-		m_ps[sel] = ps;
+		ps = CompilePS(psel);
+		m_ps[psel] = ps;
 	} else {
 		ps = i->second;
 	}
@@ -138,7 +128,7 @@ void GSDeviceOGL::SetupPS(PSSelector sel)
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	m_shader->PS(ps);
+	m_shader->Pipeline(m_vs[vsel], m_gs[gsel], ps);
 }
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)

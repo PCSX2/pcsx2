@@ -1025,9 +1025,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	GSVector2i ds = dTex->GetSize();
 
-	m_shader->VS(m_convert.vs);
-	m_shader->GS(0);
-	m_shader->PS(ps);
+	m_shader->Pipeline(m_convert.vs, 0, ps);
 
 	// ************************************
 	// om
@@ -1265,9 +1263,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	ClearStencil(ds, 0);
 
-	m_shader->VS(m_convert.vs);
-	m_shader->GS(0);
-	m_shader->PS(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
+	m_shader->Pipeline(m_convert.vs, 0, m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
 
 	// om
 

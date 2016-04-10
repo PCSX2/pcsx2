@@ -40,35 +40,27 @@ GSShaderOGL::~GSShaderOGL()
 	m_single_prog.clear();
 }
 
-void GSShaderOGL::VS(GLuint s)
+void GSShaderOGL::Pipeline(GLuint vs, GLuint gs, GLuint ps)
 {
-	if (GLState::vs != s)
+	if (GLState::vs != vs)
 	{
-		GLState::vs = s;
-		glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, s);
+		GLState::vs = vs;
+		glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, vs);
 	}
-}
-
-void GSShaderOGL::PS(GLuint s)
-{
+	if (GLState::gs != gs)
+	{
+		GLState::gs = gs;
+		glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, gs);
+	}
 #ifdef _DEBUG
 	if (true)
 #else
-	if (GLState::ps != s)
+	if (GLState::ps != ps)
 #endif
 	{
 		// In debug always sets the program. It allow to replace the program in apitrace easily.
-		GLState::ps = s;
-		glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
-	}
-}
-
-void GSShaderOGL::GS(GLuint s)
-{
-	if (GLState::gs != s)
-	{
-		GLState::gs = s;
-		glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, s);
+		GLState::ps = ps;
+		glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, ps);
 	}
 }
 

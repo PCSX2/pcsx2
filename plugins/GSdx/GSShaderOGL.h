@@ -35,9 +35,7 @@ class GSShaderOGL {
 	GSShaderOGL(bool debug);
 	~GSShaderOGL();
 
-	void GS(GLuint s);
-	void PS(GLuint s);
-	void VS(GLuint s);
+	void Pipeline(GLuint vs, GLuint gs, GLuint ps);
 
 	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
 

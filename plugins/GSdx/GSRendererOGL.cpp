@@ -1022,9 +1022,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
 
-	dev->SetupVS(vs_sel);
-	dev->SetupGS(gs_sel);
-	dev->SetupPS(ps_sel);
+	dev->SetupPipeline(vs_sel, gs_sel, ps_sel);
 
 	// rs
 
@@ -1062,7 +1060,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		glDepthMask(GLState::depth_mask);
 
 		ps_sel.date = 3;
-		dev->SetupPS(ps_sel);
+		dev->SetupPipeline(vs_sel, gs_sel, ps_sel);
 
 		// Be sure that first pass is finished !
 		dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -1096,7 +1094,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.atst = 1;
 		}
 
-		dev->SetupPS(ps_sel);
+		dev->SetupPipeline(vs_sel, gs_sel, ps_sel);
 
 		bool z = om_dssel.zwe;
 		bool r = om_csel.wr;

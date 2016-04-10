@@ -160,7 +160,7 @@ class GSDeviceOGL final : public GSDevice
 			uint32 key;
 		};
 
-		operator uint32() {return key;}
+		operator uint32() const {return key;}
 
 		VSSelector() : key(0) {}
 		VSSelector(uint32 k) : key(k) {}
@@ -181,7 +181,7 @@ class GSDeviceOGL final : public GSDevice
 			uint32 key;
 		};
 
-		operator uint32() {return key;}
+		operator uint32() const {return key;}
 
 		GSSelector() : key(0) {}
 		GSSelector(uint32 k) : key(k) {}
@@ -293,7 +293,7 @@ class GSDeviceOGL final : public GSDevice
 		};
 
 		// FIXME is the & useful ?
-		operator uint64() {return key;}
+		operator uint64() const {return key;}
 
 		PSSelector() : key(0) {}
 	};
@@ -538,9 +538,7 @@ class GSDeviceOGL final : public GSDevice
 
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
-	void SetupVS(VSSelector sel);
-	void SetupGS(GSSelector sel);
-	void SetupPS(PSSelector sel);
+	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel);
