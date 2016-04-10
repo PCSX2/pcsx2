@@ -137,6 +137,9 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
+		case IDC_FORCE_ANISO:
+			return "Force Anisotropic filtering even when it will be mathematically incorrect.\n"
+				"It helps to remove aliasing but it can create glitches around texture boundaries";
 #endif
 		default:
 			if (updateText)

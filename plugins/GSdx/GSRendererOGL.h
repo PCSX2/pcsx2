@@ -46,9 +46,10 @@ class GSRendererOGL final : public GSRendererHW
 
 	private:
 		bool m_accurate_date;
-		int m_sw_blending;
-		PRIM_OVERLAP m_prim_overlap;
+		int  m_sw_blending;
+		bool m_force_aniso;
 		bool m_unsafe_fbmask;
+		PRIM_OVERLAP m_prim_overlap;
 		vector<size_t> m_drawlist;
 
 		unsigned int UserHacks_TCOffset;
