@@ -23,7 +23,6 @@
 
 class GSShaderOGL {
 	GLuint m_pipeline;
-	hash_map<uint64, GLuint > m_single_prog;
 	const bool m_debug_shader;
 
 	bool ValidateProgram(GLuint p);

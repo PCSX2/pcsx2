@@ -27,7 +27,6 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_pipeline(0),
 	m_debug_shader(debug)
 {
-	m_single_prog.clear();
 	glCreateProgramPipelines(1, &m_pipeline);
 	glBindProgramPipeline(m_pipeline);
 }
@@ -35,9 +34,6 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 GSShaderOGL::~GSShaderOGL()
 {
 	glDeleteProgramPipelines(1, &m_pipeline);
-
-	for (auto it = m_single_prog.begin(); it != m_single_prog.end() ; it++) glDeleteProgram(it->second);
-	m_single_prog.clear();
 }
 
 void GSShaderOGL::Pipeline(GLuint vs, GLuint gs, GLuint ps)
