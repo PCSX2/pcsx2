@@ -178,7 +178,7 @@ void ps_main13()
 {
     // Convert a RRGBA texture into a float depth texture
     // FIXME: I'm afraid of the accuracy
-    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f), exp(-8.0f)) * vec4(255.0);
+    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f), exp2(-8.0f)) * vec4(255.0);
     gl_FragDepth = dot(sample_c(), bitSh);
 }
 #endif
@@ -212,7 +212,7 @@ void ps_main16()
 {
     // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
     // FIXME: I'm afraid of the accuracy
-    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-27.0f), exp2(-22.0f), exp(-17.0f));
+    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-27.0f), exp2(-22.0f), exp2(-17.0f));
     // Trunc color to drop useless lsb
     vec4 color = trunc(sample_c() * vec4(255.0f) / vec4(8.0f, 8.0f, 8.0f, 128.0f));
     gl_FragDepth = dot(vec4(color), bitSh);
