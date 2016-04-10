@@ -27,10 +27,9 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_accurate_date = theApp.GetConfig("accurate_date", 0);
-	m_sw_blending   = theApp.GetConfig("accurate_blending_unit", 1);
+	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
 
-	m_force_aniso   = theApp.GetConfig("UserHacks", 0) && theApp.GetConfig("UserHacks_ForceAniso", 0);
+	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
 
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
@@ -988,7 +987,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_ssel.tau   = (m_context->CLAMP.WMS != CLAMP_CLAMP);
 		ps_ssel.tav   = (m_context->CLAMP.WMT != CLAMP_CLAMP);
 		ps_ssel.ltf   = bilinear && simple_sample;
-		ps_ssel.aniso = simple_sample || (m_force_aniso && !tex->m_palette);
+		ps_ssel.aniso = simple_sample;
 
 		// Setup Texture ressources
 		dev->SetupSampler(ps_ssel);
