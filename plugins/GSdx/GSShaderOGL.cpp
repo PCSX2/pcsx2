@@ -53,6 +53,7 @@ GLuint GSShaderOGL::LinkPipeline(GLuint vs, GLuint gs, GLuint ps)
 
 void GSShaderOGL::BindPipeline(GLuint vs, GLuint gs, GLuint ps)
 {
+	BindPipeline(m_pipeline);
 	if (GLState::vs != vs)
 	{
 		GLState::vs = vs;

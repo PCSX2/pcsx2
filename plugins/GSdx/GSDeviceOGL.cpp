@@ -262,9 +262,14 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
 	m_convert.cb->upload(&cb);
 
-	m_convert.vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
-	for(size_t i = 0; i < countof(m_convert.ps); i++)
-		m_convert.ps[i] = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
+	GLuint vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
+	GLuint ps = 0;
+
+	m_convert.vs = vs;
+	for(size_t i = 0; i < countof(m_convert.ps); i++) {
+		ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
+		m_convert.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+	}
 
 	PSSamplerSelector point;
 	m_convert.pt = GetSamplerID(point);
@@ -287,8 +292,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
 
-	for(size_t i = 0; i < countof(m_merge_obj.ps); i++)
-		m_merge_obj.ps[i] = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
+	for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
+		ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
+		m_merge_obj.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+	}
 
 	GL_POP();
 
@@ -299,8 +306,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 	m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
-	for(size_t i = 0; i < countof(m_interlace.ps); i++)
-		m_interlace.ps[i] = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+	for(size_t i = 0; i < countof(m_interlace.ps); i++) {
+		ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+		m_interlace.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+	}
 
 	GL_POP();
 
@@ -318,7 +327,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 		+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
-	m_shadeboost.ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
+	ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
+	m_shadeboost.ps = m_shader->LinkPipeline(vs, 0, ps);
 
 	GL_POP();
 
@@ -1008,7 +1018,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	GSVector2i ds = dTex->GetSize();
 
-	m_shader->BindPipeline(m_convert.vs, 0, ps);
+	m_shader->BindPipeline(ps);
 
 	// ************************************
 	// om
@@ -1144,7 +1154,8 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
-		m_fxaa.ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
+		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
+		m_fxaa.ps = m_shader->LinkPipeline(m_convert.vs, 0, ps);
 	}
 
 	GL_PUSH("DoFxaa");
@@ -1188,7 +1199,8 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 
 		m_shaderfx.cb = new GSUniformBufferOGL(g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
-		m_shaderfx.ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
+		GLuint ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
+		m_shaderfx.ps = m_shader->LinkPipeline(m_convert.vs, 0, ps);
 	}
 
 	GL_PUSH("DoExternalFX");
@@ -1246,7 +1258,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	ClearStencil(ds, 0);
 
-	m_shader->BindPipeline(m_convert.vs, 0, m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
+	m_shader->BindPipeline(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
 
 	// om
 
