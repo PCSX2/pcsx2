@@ -92,38 +92,27 @@ GSDeviceOGL::~GSDeviceOGL()
 	delete (m_va);
 
 	// Clean m_merge_obj
-	for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
-		m_shader->Delete(m_merge_obj.ps[i]);
 	delete (m_merge_obj.cb);
 
 	// Clean m_interlace
-	for (size_t i = 0; i < countof(m_interlace.ps); i++)
-		m_shader->Delete(m_interlace.ps[i]);
 	delete (m_interlace.cb);
 
 	// Clean m_convert
-	m_shader->Delete(m_convert.vs);
-	for (size_t i = 0; i < countof(m_convert.ps); i++)
-		m_shader->Delete(m_convert.ps[i]);
 	delete m_convert.dss;
 	delete m_convert.dss_write;
 	delete m_convert.cb;
 
 	// Clean m_fxaa
 	delete m_fxaa.cb;
-	m_shader->Delete(m_fxaa.ps);
 
 	// Clean m_shaderfx
 	delete m_shaderfx.cb;
-	m_shader->Delete(m_shaderfx.ps);
 
 	// Clean m_date
 	delete m_date.dss;
 
 	// Clean shadeboost
 	delete m_shadeboost.cb;
-	m_shader->Delete(m_shadeboost.ps);
-
 
 	// Clean various opengl allocation
 	glDeleteFramebuffers(1, &m_fbo);
@@ -133,11 +122,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	delete m_vs_cb;
 	delete m_ps_cb;
 	glDeleteSamplers(1, &m_palette_ss);
-	m_shader->Delete(m_apitrace);
-
-	for (uint32 key = 0; key < countof(m_vs); key++) m_shader->Delete(m_vs[key]);
-	for (uint32 key = 0; key < countof(m_gs); key++) m_shader->Delete(m_gs[key]);
-	for (auto it = m_ps.begin(); it != m_ps.end() ; it++) m_shader->Delete(it->second);
 
 	m_ps.clear();
 
@@ -744,7 +728,6 @@ void GSDeviceOGL::SelfShaderTest()
 		GLuint p = CompilePS(sel); \
 		nb_shader++; \
 		perf += m_shader->DumpAsm(file, p); \
-		m_shader->Delete(p); \
 	} while(0);
 
 #define PRINT_TEST(s) \
@@ -1025,7 +1008,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	GSVector2i ds = dTex->GetSize();
 
-	m_shader->Pipeline(m_convert.vs, 0, ps);
+	m_shader->BindPipeline(m_convert.vs, 0, ps);
 
 	// ************************************
 	// om
@@ -1263,7 +1246,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	ClearStencil(ds, 0);
 
-	m_shader->Pipeline(m_convert.vs, 0, m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
+	m_shader->BindPipeline(m_convert.vs, 0, m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0]);
 
 	// om
 

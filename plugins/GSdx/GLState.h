@@ -56,6 +56,7 @@ namespace GLState {
 	extern GLuint ps;
 	extern GLuint gs;
 	extern GLuint vs;
+	extern GLuint pipeline;
 
 	extern void Clear();
 }

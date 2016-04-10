@@ -25,6 +25,9 @@ class GSShaderOGL {
 	GLuint m_pipeline;
 	const bool m_debug_shader;
 
+	std::vector<GLuint> m_prog_to_delete;
+	std::vector<GLuint> m_pipe_to_delete;
+
 	bool ValidateProgram(GLuint p);
 	bool ValidatePipeline(GLuint p);
 
@@ -34,11 +37,11 @@ class GSShaderOGL {
 	GSShaderOGL(bool debug);
 	~GSShaderOGL();
 
-	void Pipeline(GLuint vs, GLuint gs, GLuint ps);
+	void BindPipeline(GLuint vs, GLuint gs, GLuint ps);
+	void BindPipeline(GLuint pipe);
 
 	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+	GLuint LinkPipeline(GLuint vs, GLuint gs, GLuint ps);
 
 	int DumpAsm(const std::string& file, GLuint p);
-
-	void Delete(GLuint s);
 };

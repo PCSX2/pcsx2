@@ -128,7 +128,7 @@ void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, 
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	m_shader->Pipeline(m_vs[vsel], m_gs[gsel], ps);
+	m_shader->BindPipeline(m_vs[vsel], m_gs[gsel], ps);
 }
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)

@@ -27,16 +27,31 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_pipeline(0),
 	m_debug_shader(debug)
 {
-	glCreateProgramPipelines(1, &m_pipeline);
-	glBindProgramPipeline(m_pipeline);
+	// Create a default pipeline
+	m_pipeline = LinkPipeline(0, 0, 0);
+	BindPipeline(m_pipeline);
 }
 
 GSShaderOGL::~GSShaderOGL()
 {
-	glDeleteProgramPipelines(1, &m_pipeline);
+	for (auto p : m_prog_to_delete) glDeleteProgram(p);
+	glDeleteProgramPipelines(m_pipe_to_delete.size(), &m_pipe_to_delete[0]);
 }
 
-void GSShaderOGL::Pipeline(GLuint vs, GLuint gs, GLuint ps)
+GLuint GSShaderOGL::LinkPipeline(GLuint vs, GLuint gs, GLuint ps)
+{
+	GLuint p;
+	glCreateProgramPipelines(1, &p);
+	glUseProgramStages(p, GL_VERTEX_SHADER_BIT, vs);
+	glUseProgramStages(p, GL_GEOMETRY_SHADER_BIT, gs);
+	glUseProgramStages(p, GL_FRAGMENT_SHADER_BIT, ps);
+
+	m_pipe_to_delete.push_back(p);
+
+	return p;
+}
+
+void GSShaderOGL::BindPipeline(GLuint vs, GLuint gs, GLuint ps)
 {
 	if (GLState::vs != vs)
 	{
@@ -57,6 +72,14 @@ void GSShaderOGL::Pipeline(GLuint vs, GLuint gs, GLuint ps)
 		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = ps;
 		glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, ps);
+	}
+}
+
+void GSShaderOGL::BindPipeline(GLuint pipe)
+{
+	if (GLState::pipeline != pipe) {
+		GLState::pipeline = pipe;
+		glBindProgramPipeline(pipe);
 	}
 }
 
@@ -182,6 +205,9 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 		fprintf(stderr, "\n%s", macro_sel.c_str());
 		fprintf(stderr, "\n");
 	}
+
+	m_prog_to_delete.push_back(program);
+
 	return program;
 }
 
@@ -242,9 +268,4 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 	delete[] binary;
 
 	return instructions;
-}
-
-void GSShaderOGL::Delete(GLuint s)
-{
-	glDeleteProgram(s);
 }
