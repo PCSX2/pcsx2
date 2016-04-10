@@ -95,7 +95,7 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
 				"It could be slower when the effects are used.\n\nNote: it requires the OpenGL 4.2 extension GL_ARB_shader_image_load_store.";
 		case IDC_ACCURATE_BLEND_UNIT:
-			return "Control the accuracy level of the GS blending unit emulation. Note: it requires OpenGL 4.5 driver support.\n\n"
+			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty. It is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
@@ -103,9 +103,11 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug.\n\n"
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug.";
 		case IDC_SAFE_FBMASK:
-			return "By default, accurate blending relies on undefined hardware behavior to be fast.\nThis option enables a slower but safer behavior if anyone encounters an issue.\n";
+			return "By default, accurate blending relies on undefined hardware behavior to be fast.\n"
+				"This option enables a slower but safer behavior if anyone encounters an issue.\n";
 		case IDC_TC_DEPTH:
-			return "Allows the conversion of Depth buffer from/to Color buffer. It is used for blur & depth of field effects";
+			return "Disable the support of Depth buffer in the texture cache.\n"
+				"It can help to increase speed but it will likely create various glitches.";
 		case IDC_AFCOMBO:
 			return "Reduces texture aliasing at extreme viewing angles. High performance impact.";
 		case IDC_AA1:

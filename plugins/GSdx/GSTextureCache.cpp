@@ -28,17 +28,25 @@ bool GSTextureCache::m_disable_partial_invalidation = false;
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
-	bool userhacks = !!theApp.GetConfig("UserHacks", 0);
 	s_IS_OPENGL = (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default))) == GSRendererType::OGL_HW);
 
-	m_spritehack = userhacks ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
-	UserHacks_HalfPixelOffset = userhacks && theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
+	if (theApp.GetConfig("UserHacks", 0)) {
+		m_spritehack                   = theApp.GetConfig("UserHacks_SpriteHack", 0);
+		UserHacks_HalfPixelOffset      = theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
+		m_preload_frame                = theApp.GetConfig("preload_frame_with_gs_data", 0);
+		m_disable_partial_invalidation = theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0);
+		m_can_convert_depth            = !theApp.GetConfig("UserHacks_DisableDepthSupport", 0);
+	} else {
+		m_spritehack                   = 0;
+		UserHacks_HalfPixelOffset      = false;
+		m_preload_frame                = false;
+		m_disable_partial_invalidation = false;
+		m_can_convert_depth            = true;
+	}
 
 	m_paltex = !!theApp.GetConfig("paltex", 0);
-	m_preload_frame = userhacks && theApp.GetConfig("preload_frame_with_gs_data", 0);
-	m_can_convert_depth = s_IS_OPENGL && theApp.GetConfig("texture_cache_depth", 1);
+	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
-	m_disable_partial_invalidation = userhacks && theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0);
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
