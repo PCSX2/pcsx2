@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSdx.h"
+#include "GPU.h"
 #include "GSUtil.h"
 #include "GPUSettingsDlg.h"
 #include "resource.h"
@@ -65,7 +66,7 @@ void GPUSettingsDlg::OnInit()
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfig("Renderer", 0));
+	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfig("Renderer", static_cast<int>(GPURendererType::D3D9_SW)));
 	ComboBoxInit(IDC_FILTER, theApp.m_gpu_filter, theApp.GetConfig("filter", 0));
 	ComboBoxInit(IDC_DITHERING, theApp.m_gpu_dithering, theApp.GetConfig("dithering", 1));
 	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gpu_aspectratio, theApp.GetConfig("AspectRatio", 1));
@@ -137,12 +138,16 @@ void GPUSettingsDlg::UpdateControls()
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		bool dx9 = i == 0;
-		bool dx11 = i == 1;
-		bool sw = i >= 0 && i <= 2;
+		GPURendererType renderer = static_cast<GPURendererType>(i);
 
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
+		bool dx9 = renderer == GPURendererType::D3D9_SW;
+		bool dx11 = renderer == GPURendererType::D3D11_SW;
+		bool null = renderer == GPURendererType::NULL_Renderer;
+		bool sw = !null;
+
+		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_NULL), null ? SW_SHOW : SW_HIDE);
 		
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SCALE), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);

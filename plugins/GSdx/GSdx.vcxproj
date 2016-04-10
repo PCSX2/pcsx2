@@ -2085,6 +2085,9 @@
     <Image Include="res\logo-null.bmp" />
     <Image Include="res\logo-ogl.bmp" />
     <Image Include="res\logo11.bmp" />
+    <Image Include="res\psx-logo-null.bmp" />
+    <Image Include="res\psx-logo11.bmp" />
+    <Image Include="res\psx-logo9.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">

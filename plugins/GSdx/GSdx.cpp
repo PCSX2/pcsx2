@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GS.h"
+#include "GPU.h"
 
 static void* s_hModule;
 
@@ -210,11 +211,9 @@ GSdxApp::GSdxApp()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
-	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(3, "Null (Software)", ""));
-	//m_gpu_renderers.push_back(GSSetting(4, "Null (Null)", ""));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D9_SW), "Direct3D9", "Software"));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D11_SW), "Direct3D11", "Software"));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::NULL_Renderer), "Null", ""));
 
 	m_gpu_filter.push_back(GSSetting(0, "Nearest", ""));
 	m_gpu_filter.push_back(GSSetting(1, "Bilinear (polygons only)", ""));

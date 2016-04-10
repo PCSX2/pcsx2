@@ -80,11 +80,17 @@ IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 // Bitmap
 //
 
+// GSDX logos for PCSX2
 IDB_LOGO9               BITMAP                  "res\\logo9.bmp"
 IDB_LOGO10              BITMAP                  "res\\logo10.bmp"
 IDB_LOGO11              BITMAP                  "res\\logo11.bmp"
 IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
 IDB_NULL                BITMAP                  "res\\logo-null.bmp"
+
+// GSDX logos for PS1 Emulators
+IDB_PSX_LOGO9           BITMAP                  "res\\psx-logo9.bmp"
+IDB_PSX_LOGO11          BITMAP                  "res\\psx-logo11.bmp"
+IDB_PSX_NULL            BITMAP                  "res\\psx-logo-null.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -175,7 +181,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Settings..."
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP,7,7,175,44
+    CONTROL         IDB_PSX_LOGO9,IDC_PSX_LOGO9,"Static",SS_BITMAP,7,7,175,42
+    CONTROL         IDB_PSX_LOGO11,IDC_PSX_LOGO11,"Static",SS_BITMAP,7,7,175,42
+    CONTROL         IDB_PSX_NULL,IDC_PSX_NULL,"Static",SS_BITMAP,7,7,175,42
     LTEXT           "Resolution:",IDC_STATIC,7,59,37,8
     COMBOBOX        IDC_RESOLUTION,80,57,102,125,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Renderer:",IDC_STATIC,7,74,34,8
@@ -191,7 +199,6 @@ BEGIN
     CONTROL         "",IDC_SWTHREADS,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,99,161,11,14
     DEFPUSHBUTTON   "OK",IDOK,43,178,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,96,178,50,14
-    CONTROL         IDB_LOGO10,IDC_LOGO11,"Static",SS_BITMAP,7,7,173,42
     LTEXT           "Internal Resolution:",IDC_STATIC,7,135,64,8
     COMBOBOX        IDC_SCALE,80,132,102,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Windowed",IDC_WINDOWED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,157,49,10
