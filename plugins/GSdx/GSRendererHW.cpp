@@ -201,22 +201,22 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
 }
 
-int GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
+uint16 GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
 {
 	float t = (1.0f - alpha) * t0 + alpha * t1;
-	return (int)t & ~0xF; // cheap rounding
+	return (uint16)t & ~0xF; // cheap rounding
 }
 
 float GSRendererHW::alpha0(int L, int X0, int X1)
 {
-	float x = (X0 + 15) & ~0xF; // Round up
-	return (x - X0) / (float)L;
+	int x = (X0 + 15) & ~0xF; // Round up
+	return float(x - X0) / (float)L;
 }
 
 float GSRendererHW::alpha1(int L, int X0, int X1)
 {
-	float x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
-	return (x - X0) / (float)L;
+	int x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
+	return float(x - X0) / (float)L;
 }
 
 template <bool linear>
@@ -234,14 +234,14 @@ void GSRendererHW::RoundSpriteOffset()
 		// Performance note: if it had any impact on perf, someone would port it to SSE (AKA GSVector)
 
 		// Compute the coordinate of first and last texels (in native with a linear filtering)
-		int   ox  = m_context->XYOFFSET.OFX;
-		int   X0  = v[i].XYZ.X   - ox;
-		int   X1  = v[i+1].XYZ.X - ox;
-		int   Lx  = (v[i+1].XYZ.X - v[i].XYZ.X);
-		float ax0 = alpha0(Lx, X0, X1);
-		float ax1 = alpha1(Lx, X0, X1);
-		int   tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
-		int   tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
+		int	   ox  = m_context->XYOFFSET.OFX;
+		int    X0  = v[i].XYZ.X   - ox;
+		int	   X1  = v[i+1].XYZ.X - ox;
+		int	   Lx  = (v[i+1].XYZ.X - v[i].XYZ.X);
+		float  ax0 = alpha0(Lx, X0, X1);
+		float  ax1 = alpha1(Lx, X0, X1);
+		uint16 tx0 = Interpolate_UV(ax0, v[i].U, v[i+1].U);
+		uint16 tx1 = Interpolate_UV(ax1, v[i].U, v[i+1].U);
 #ifdef DEBUG_U
 		if (debug) {
 			fprintf(stderr, "u0:%d and u1:%d\n", v[i].U, v[i+1].U);
@@ -250,14 +250,14 @@ void GSRendererHW::RoundSpriteOffset()
 		}
 #endif
 
-		int   oy  = m_context->XYOFFSET.OFY;
-		int   Y0  = v[i].XYZ.Y   - oy;
-		int   Y1  = v[i+1].XYZ.Y - oy;
-		int   Ly  = (v[i+1].XYZ.Y - v[i].XYZ.Y);
-		float ay0 = alpha0(Ly, Y0, Y1);
-		float ay1 = alpha1(Ly, Y0, Y1);
-		int   ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
-		int   ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
+		int	   oy  = m_context->XYOFFSET.OFY;
+		int	   Y0  = v[i].XYZ.Y   - oy;
+		int	   Y1  = v[i+1].XYZ.Y - oy;
+		int	   Ly  = (v[i+1].XYZ.Y - v[i].XYZ.Y);
+		float  ay0 = alpha0(Ly, Y0, Y1);
+		float  ay1 = alpha1(Ly, Y0, Y1);
+		uint16 ty0 = Interpolate_UV(ay0, v[i].V, v[i+1].V);
+		uint16 ty1 = Interpolate_UV(ay1, v[i].V, v[i+1].V);
 #ifdef DEBUG_V
 		if (debug) {
 			fprintf(stderr, "v0:%d and v1:%d\n", v[i].V, v[i+1].V);
@@ -958,9 +958,9 @@ bool GSRendererHW::OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::So
 		TEX0.TBW = FBW;
 		TEX0.PSM = FPSM;
 
-		if(GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
+		if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture, 0);
 		}
 
 		return false;
@@ -1007,9 +1007,9 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->FRAME.PSM;
 
-			if(GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true))
+			if(GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true))
 			{
-				m_dev->ClearRenderTarget(rt->m_texture, 0);
+				m_dev->ClearRenderTarget(tmp_rt->m_texture, 0);
 			}
 
 			return false;
@@ -1024,9 +1024,9 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->ZBUF.PSM;
 
-			if(GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
+			if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 			{
-				m_dev->ClearDepth(ds->m_texture, 0);
+				m_dev->ClearDepth(tmp_ds->m_texture, 0);
 			}
 
 			return false;
@@ -1235,9 +1235,9 @@ bool GSRendererHW::OI_SMTNocturne(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		TEX0.TBP0 = FBP;
 		TEX0.TBW = FBW;
 		TEX0.PSM = FPSM;
-		if (GSTextureCache::Target* ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
+		if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture, 0);
 		}
 		return false;
 	}

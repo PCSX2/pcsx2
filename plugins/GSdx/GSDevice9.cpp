@@ -977,7 +977,7 @@ void GSDevice9::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	
 	InitExternalFX();
 
-	cb.xyFrame = GSVector2(s.x, s.y);
+	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 

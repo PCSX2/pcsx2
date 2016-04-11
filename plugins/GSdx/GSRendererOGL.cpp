@@ -27,7 +27,7 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_accurate_date   = theApp.GetConfig("accurate_date", 0);
+	m_accurate_date   = !!theApp.GetConfig("accurate_date", 0);
 
 	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
 
@@ -37,7 +37,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
-	UserHacks_safe_fbmask    = theApp.GetConfig("UserHacks_safe_fbmask", false);
+	UserHacks_safe_fbmask    = !!theApp.GetConfig("UserHacks_safe_fbmask", 0);
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	m_unsafe_fbmask = false;
@@ -175,7 +175,7 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 		bool write_ba = (pos > 112 && pos < 136);
 		// Read texture is 8 to 16 pixels (same as above)
 		float tw = (float)(1u << m_context->TEX0.TW);
-		int tex_pos = (PRIM->FST) ? v[0].U : tw * v[0].ST.S;
+		int tex_pos = (PRIM->FST) ? v[0].U : (int)(tw * v[0].ST.S);
 		tex_pos &= 0xFF;
 		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
 
@@ -201,10 +201,10 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-				v[i].XYZ.Y   = tmp.x;
-				v[i].V       = tmp.y;
-				v[i+1].XYZ.Y = tmp.z;
-				v[i+1].V     = tmp.w;
+				v[i].XYZ.Y   = (uint16)tmp.x;
+				v[i].V       = (uint16)tmp.y;
+				v[i+1].XYZ.Y = (uint16)tmp.z;
+				v[i+1].V     = (uint16)tmp.w;
 			}
 		} else {
 			const float offset_8pix = 8.0f / tw;
@@ -228,9 +228,9 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y   = tmp.x;
+				v[i].XYZ.Y   = (uint16)tmp.x;
 				v[i].ST.T   /= 2.0f;
-				v[i+1].XYZ.Y = tmp.y;
+				v[i+1].XYZ.Y = (uint16)tmp.y;
 				v[i+1].ST.T /= 2.0f;
 			}
 		}
@@ -365,7 +365,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 	}
 
 	// Compute the blending equation to detect special case
-	uint8 blend_index  = ((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D;
+	uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	int blend_flag = GSDeviceOGL::m_blendMapOGL[blend_index].bogus;
 
 	// SW Blend is (nearly) free. Let's use it.
@@ -373,7 +373,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 			|| (m_prim_overlap == PRIM_OVERLAP_NO);
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-	bool accumulation_blend = (blend_flag & BLEND_ACCU);
+	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
 	// Warning no break on purpose
 	switch (m_sw_blending) {
@@ -462,7 +462,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		ps_sel.clr1 = !!(blend_flag & BLEND_C_CLR);
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			int hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
+			uint8 hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
 			dev->OMSetBlendState(hacked_blend_index, 128, true);
 		} else {
 			dev->OMSetBlendState(blend_index, ALPHA.FIX, (ALPHA.C == 2));

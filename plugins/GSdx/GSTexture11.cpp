@@ -50,7 +50,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	if(m_dev && m_texture)
 	{
-		D3D11_BOX box = {r.left, r.top, 0, r.right, r.bottom, 1};
+		D3D11_BOX box = { (UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U };
 
 		m_ctx->UpdateSubresource(m_texture, 0, &box, data, pitch, 0);
 

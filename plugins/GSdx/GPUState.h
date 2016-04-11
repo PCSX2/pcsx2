@@ -87,12 +87,14 @@ class GPUState : public GSAlignedClass<32>
 protected:
 
 	int s_n;
+	bool dump_enable = false;
 
 	void Dump(const string& s, uint32 TP, const GSVector4i& r, int inc = true)
 	{
 		//if(m_perfmon.GetFrame() < 1000)
 		//if((m_env.TWIN.u32 & 0xfffff) == 0)
 		//if(!m_env.STATUS.ME && !m_env.STATUS.MD)
+		if(!dump_enable)
 			return;
 
 		if(inc) s_n++;

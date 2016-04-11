@@ -72,7 +72,7 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
 	#endif
 
-	m_debug_gl_call =  theApp.GetConfig("debug_opengl", 0);
+	m_debug_gl_call =  !!theApp.GetConfig("debug_opengl", 0);
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -1039,7 +1039,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	else
 		OMSetRenderTargets(dTex, NULL);
 
-	OMSetBlendState(bs);
+	OMSetBlendState((uint8)bs);
 	OMSetColorMaskState();
 
 	// ************************************
@@ -1219,7 +1219,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	ExternalFXConstantBuffer cb;
 
-	cb.xyFrame = GSVector2(s.x, s.y);
+	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 

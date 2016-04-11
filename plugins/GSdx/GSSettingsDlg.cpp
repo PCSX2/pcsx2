@@ -232,7 +232,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
 			{
-				if ((int)data < m_ocl_devs.size()) {
+				if ((UINT)data < m_ocl_devs.size()) {
 					theApp.SetConfig("ocldev", m_ocl_devs[(int)data].name.c_str());
 				}
 			}

@@ -263,10 +263,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
 			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-			v[i].XYZ.Y = tmp.x;
-			v[i].V = tmp.y;
-			v[i + 1].XYZ.Y = tmp.z;
-			v[i + 1].V = tmp.w;
+			v[i].XYZ.Y = (uint16)tmp.x;
+			v[i].V = (uint16)tmp.y;
+			v[i + 1].XYZ.Y = (uint16)tmp.z;
+			v[i + 1].V = (uint16)tmp.w;
 		}
 
 		// Please bang my head against the wall!

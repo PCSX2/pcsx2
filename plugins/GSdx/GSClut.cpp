@@ -331,7 +331,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	}
 }
 
-void GSClut::GetAlphaMinMax32(int& amin, int& amax)
+void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 {
 	// call only after Read32
 
@@ -394,8 +394,8 @@ void GSClut::GetAlphaMinMax32(int& amin, int& amax)
 		}
 	}
 
-	amin = m_read.amin;
-	amax = m_read.amax;
+	amin_out = m_read.amin;
+	amax_out = m_read.amax;
 }
 
 //
