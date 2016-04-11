@@ -1527,6 +1527,28 @@ void GSState::Write(const uint8* mem, int len)
 
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM];
 
+	/*
+	 *  The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
+	 *
+	 * #Bug number 1. (bad top bar)
+	 * The game saves the depth buffer in the EE but with a resolution of
+	 * 512x255. So it is ending to 0x7F8, ouch it saves the top of the RT too.
+	 *
+	 * #Bug number 2. (darker screen)
+	 * The game will restore the previously saved buffer at position 0x0 to
+	 * 0x7F8.  Because of the extra RT pixels, GSdx will partialy invalidate
+	 * the texture located at 0x700. Next access will generate a cache miss
+	 *
+	 * The no-solution: instead to handle garbage (aka RT) at the end of the
+	 * depth buffer. Let's reduce the size of the transfer
+	 */
+	if (m_game.title == CRC::SMTNocturne) {
+		if (m_env.BITBLTBUF.DBP == 0 && m_env.BITBLTBUF.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
+			h = 224;
+			m_env.TRXREG.RRH = 224;
+		}
+	}
+
 	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
 
 	if(!m_tr.Update(w, h, psm.trbpp, len))
