@@ -360,10 +360,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
 
 	GL_POP();
+
 	// ****************************************************************
 	// Use DX coordinate convention
 	// ****************************************************************
-
 
 	// VS gl_position.z => [-1,-1]
 	// FS depth => [0, 1]
@@ -386,6 +386,11 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Pbo Pool allocation
 	// ****************************************************************
 	GL_PUSH("GSDeviceOGL::PBO");
+
+	// Mesa seems to use it to compute the row length. In our case, we are
+	// tightly packed so don't bother with this parameter and set it to the
+	// minimum alignment (1 byte)
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	PboPool::Init();
 

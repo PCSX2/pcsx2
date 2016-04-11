@@ -158,10 +158,6 @@ namespace PboPool {
 	}
 }
 
-// FIXME: check if it possible to always use those setup by default
-// glPixelStorei(GL_PACK_ALIGNMENT, 1);
-// glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	: m_pbo_size(0), m_dirty(false), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0)
 {
@@ -180,13 +176,11 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_R32I:
 			m_int_format    = GL_RED_INTEGER;
 			m_int_type      = (m_format == GL_R32UI) ? GL_UNSIGNED_INT : GL_INT;
-			m_int_alignment = 4;
 			m_int_shift     = 2;
 			break;
 		case GL_R16UI:
 			m_int_format    = GL_RED_INTEGER;
 			m_int_type      = GL_UNSIGNED_SHORT;
-			m_int_alignment = 2;
 			m_int_shift     = 1;
 			break;
 
@@ -194,7 +188,6 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_R8:
 			m_int_format    = GL_RED;
 			m_int_type      = GL_UNSIGNED_BYTE;
-			m_int_alignment = 1;
 			m_int_shift     = 0;
 			break;
 
@@ -202,13 +195,11 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_RGBA16:
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_UNSIGNED_SHORT;
-			m_int_alignment = 8;
 			m_int_shift     = 3;
 			break;
 		case GL_RGBA8:
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_UNSIGNED_BYTE;
-			m_int_alignment = 4;
 			m_int_shift     = 2;
 			break;
 
@@ -217,7 +208,6 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_RGBA16UI:
 			m_int_format    = GL_RGBA_INTEGER;
 			m_int_type      = (m_format == GL_R16UI) ? GL_UNSIGNED_SHORT : GL_SHORT;
-			m_int_alignment = 8;
 			m_int_shift     = 3;
 			break;
 
@@ -225,13 +215,11 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_RGBA32F:
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_FLOAT;
-			m_int_alignment = 16;
 			m_int_shift     = 4;
 			break;
 		case GL_RGBA16F:
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_HALF_FLOAT;
-			m_int_alignment = 8;
 			m_int_shift     = 3;
 			break;
 
@@ -241,14 +229,12 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			// Backbuffer & dss aren't important
 			m_int_format    = 0;
 			m_int_type      = 0;
-			m_int_alignment = 0;
 			m_int_shift     = 0;
 			break;
 
 		default:
 			m_int_format    = 0;
 			m_int_type      = 0;
-			m_int_alignment = 0;
 			m_int_shift     = 0;
 			ASSERT(0);
 	}
@@ -322,8 +308,6 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	g_real_texture_upload_byte += map_size;
 #endif
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
-
 #if 0
 	if (r.height() == 1) {
 		// Palette data. Transfer is small either 64B or 1024B.
@@ -394,7 +378,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-		glPixelStorei(GL_PACK_ALIGNMENT, m_int_alignment);
 		glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m_local_buffer);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -507,10 +490,10 @@ uint32 GSTextureOGL::GetMemUsage()
 {
 	switch (m_type) {
 		case GSTexture::Offscreen:
-			return m_size.x * m_size.y * (4 + m_int_alignment);
+			return m_size.x * m_size.y * (4 + 4); // Texture + buffer
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
-			return m_size.x * m_size.y * m_int_alignment;
+			return m_size.x * m_size.y * 4;
 		case GSTexture::DepthStencil:
 			return m_size.x * m_size.y * 8;
 		case GSTexture::Backbuffer:

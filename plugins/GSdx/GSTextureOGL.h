@@ -59,7 +59,6 @@ class GSTextureOGL final : public GSTexture
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
 		GLenum m_int_type;
-		uint32 m_int_alignment;
 		uint32 m_int_shift;
 
 	public:
