@@ -30229,14 +30229,6 @@ Name   = Kaze no Klonoa 2 - Sekai ga Nozonda Wasuremono
 Region = NTSC-J
 Compat = 5
 eeClampMode = 3		//Objects needed appear in wrong places without it
-[patches = 1645DE53]
-	
-	comment=Patch by Shadow Lady
-	//For hang in Volk City
-	//Skip sceIpuSync
-	patch=0,EE,003047D0,word,03e00008
-	
-[/patches]
 ---------------------------------------------
 Serial = SLPS-25034
 Name   = Flower, Sun and Rain
