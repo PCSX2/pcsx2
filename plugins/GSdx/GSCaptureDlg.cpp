@@ -181,7 +181,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		m_width = GetTextAsInt(IDC_WIDTH);
 		m_height = GetTextAsInt(IDC_HEIGHT);
 		m_filename = GetText(IDC_FILENAME);
-		ComboBoxGetSelData(IDC_COLORSPACE, (INT_PTR)m_colorspace);
+		ComboBoxGetSelData(IDC_COLORSPACE, (INT_PTR &)m_colorspace);
 
 		Codec c;
 

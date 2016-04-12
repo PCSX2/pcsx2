@@ -25,8 +25,6 @@
 
 #if _M_SSE == 0x500 && (defined(_M_AMD64) || defined(_WIN64))
 
-#error TODO
-
 void GSDrawScanlineCodeGenerator::Generate()
 {
 	// TODO: on linux/mac rsi, rdi, xmm6-xmm15 are all caller saved
