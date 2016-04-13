@@ -891,6 +891,13 @@ public:
 		return GSVector4i(_mm_sll_epi32(m, i));
 	}
 
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i sllv32(__m128i i) const
+	{
+		return GSVector4i(_mm_sllv_epi32(m, i));
+	}
+#endif
+
 	__forceinline GSVector4i sll64(int i) const
 	{
 		return GSVector4i(_mm_slli_epi64(m, i));
@@ -920,6 +927,13 @@ public:
 	{
 		return GSVector4i(_mm_srl_epi32(m, i));
 	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srlv32(__m128i i) const
+	{
+		return GSVector4i(_mm_srlv_epi32(m, i));
+	}
+#endif
 
 	__forceinline GSVector4i srl64(int i) const
 	{
