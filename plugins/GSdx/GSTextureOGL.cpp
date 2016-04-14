@@ -370,8 +370,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 		// Maybe it is as good as the code below. I don't know
 		// With openGL 4.5 you can use glGetTextureSubImage
 
-		glGetTextureImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, 1024*1024*16, m_local_buffer);
-
+		glGetTextureSubImage(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, 0, r.width(), r.height(), 0, m_int_format, m_int_type, m_size.x * m_size.y * 4, m_local_buffer);
 #else
 
 		// Bind the texture to the read framebuffer to avoid any disturbance
