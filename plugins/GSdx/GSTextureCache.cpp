@@ -32,9 +32,9 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 	if (theApp.GetConfig("UserHacks", 0)) {
 		m_spritehack                   = theApp.GetConfig("UserHacks_SpriteHack", 0);
-		UserHacks_HalfPixelOffset      = theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
-		m_preload_frame                = theApp.GetConfig("preload_frame_with_gs_data", 0);
-		m_disable_partial_invalidation = theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0);
+		UserHacks_HalfPixelOffset      = !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
+		m_preload_frame                = !!theApp.GetConfig("preload_frame_with_gs_data", 0);
+		m_disable_partial_invalidation = !!theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0);
 		m_can_convert_depth            = !theApp.GetConfig("UserHacks_DisableDepthSupport", 0);
 	} else {
 		m_spritehack                   = 0;
@@ -299,7 +299,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	} else if (CanConvertDepth()) {
 
 		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
-		GSVector4 sRect(0, 0, 1.0, 1.0);
+		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, w, h);
 
 		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
@@ -1123,7 +1123,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				// which is arbitrary set to 1280 (biggest RT used by GS). h/w are based on the input texture
 				// so the only reliable way to find the real size of the target is to use the TBW value.
 				float real_width = dst->m_TEX0.TBW * 64u * dst->m_texture->GetScale().x;
-				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(real_width/2.0f, 0, real_width, h));
+				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i((int)(real_width/2.0f), 0, (int)real_width, h));
 			} else {
 				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h)); // <= likely wrong dstsize.x could be bigger than w
 			}

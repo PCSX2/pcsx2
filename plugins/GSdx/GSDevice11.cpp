@@ -622,7 +622,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 		return;
 	}
 
-	D3D11_BOX box = {r.left, r.top, 0, r.right, r.bottom, 1};
+	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 
 	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, &box);
 }
@@ -793,8 +793,8 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	InitExternalFX();
 
-	cb.xyFrame = GSVector2(s.x, s.y);
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
+	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
+	cb.rcpFrame = GSVector4(1.0f / (float)s.x, 1.0f / (float)s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
 	m_ctx->UpdateSubresource(m_shaderfx.cb, 0, NULL, &cb, 0, 0);

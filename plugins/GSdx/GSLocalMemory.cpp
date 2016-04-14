@@ -41,7 +41,7 @@
 		for(int x = _r.left; x < _r.right; x += w >> 3) \
 		{ \
 			const uint8* src = BlockPtr(_base + off->block.col[x]); \
-			uint8* dst = &_dst[x * bpp]; \
+			uint8* read_dst = &_dst[x * bpp]; \
 
 #define FOREACH_BLOCK_END }}
 
@@ -1612,7 +1612,7 @@ void GSLocalMemory::ReadTexture32(const GSOffset* RESTRICT off, const GSVector4i
 {
 	FOREACH_BLOCK_START(r, 8, 8, 32)
 	{
-		GSBlock::ReadBlock32(src, dst, dstpitch);
+		GSBlock::ReadBlock32(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1623,7 +1623,7 @@ void GSLocalMemory::ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i
 	{
 		FOREACH_BLOCK_START(r, 8, 8, 32)
 		{
-			GSBlock::ReadAndExpandBlock24<true>(src, dst, dstpitch, TEXA);
+			GSBlock::ReadAndExpandBlock24<true>(src, read_dst, dstpitch, TEXA);
 		}
 		FOREACH_BLOCK_END
 	}
@@ -1631,7 +1631,7 @@ void GSLocalMemory::ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i
 	{
 		FOREACH_BLOCK_START(r, 8, 8, 32)
 		{
-			GSBlock::ReadAndExpandBlock24<false>(src, dst, dstpitch, TEXA);
+			GSBlock::ReadAndExpandBlock24<false>(src, read_dst, dstpitch, TEXA);
 		}
 		FOREACH_BLOCK_END
 	}
@@ -1643,7 +1643,7 @@ void GSLocalMemory::ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i
 	{
 		FOREACH_BLOCK_START(r, 16, 8, 32)
 		{
-			GSBlock::ReadAndExpandBlock16<true>(src, dst, dstpitch, TEXA);
+			GSBlock::ReadAndExpandBlock16<true>(src, read_dst, dstpitch, TEXA);
 		}
 		FOREACH_BLOCK_END
 	}
@@ -1651,7 +1651,7 @@ void GSLocalMemory::ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i
 	{
 		FOREACH_BLOCK_START(r, 16, 8, 32)
 		{
-			GSBlock::ReadAndExpandBlock16<false>(src, dst, dstpitch, TEXA);
+			GSBlock::ReadAndExpandBlock16<false>(src, read_dst, dstpitch, TEXA);
 		}
 		FOREACH_BLOCK_END
 	}
@@ -1663,7 +1663,7 @@ void GSLocalMemory::ReadTexture8(const GSOffset* RESTRICT off, const GSVector4i&
 
 	FOREACH_BLOCK_START(r, 16, 16, 32)
 	{
-		GSBlock::ReadAndExpandBlock8_32(src, dst, dstpitch, pal);
+		GSBlock::ReadAndExpandBlock8_32(src, read_dst, dstpitch, pal);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1674,7 +1674,7 @@ void GSLocalMemory::ReadTexture4(const GSOffset* RESTRICT off, const GSVector4i&
 
 	FOREACH_BLOCK_START(r, 32, 16, 32)
 	{
-		GSBlock::ReadAndExpandBlock4_32(src, dst, dstpitch, pal);
+		GSBlock::ReadAndExpandBlock4_32(src, read_dst, dstpitch, pal);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1685,7 +1685,7 @@ void GSLocalMemory::ReadTexture8H(const GSOffset* RESTRICT off, const GSVector4i
 
 	FOREACH_BLOCK_START(r, 8, 8, 32)
 	{
-		GSBlock::ReadAndExpandBlock8H_32(src, dst, dstpitch, pal);
+		GSBlock::ReadAndExpandBlock8H_32(src, read_dst, dstpitch, pal);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1696,7 +1696,7 @@ void GSLocalMemory::ReadTexture4HL(const GSOffset* RESTRICT off, const GSVector4
 
 	FOREACH_BLOCK_START(r, 8, 8, 32)
 	{
-		GSBlock::ReadAndExpandBlock4HL_32(src, dst, dstpitch, pal);
+		GSBlock::ReadAndExpandBlock4HL_32(src, read_dst, dstpitch, pal);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1707,7 +1707,7 @@ void GSLocalMemory::ReadTexture4HH(const GSOffset* RESTRICT off, const GSVector4
 
 	FOREACH_BLOCK_START(r, 8, 8, 32)
 	{
-		GSBlock::ReadAndExpandBlock4HH_32(src, dst, dstpitch, pal);
+		GSBlock::ReadAndExpandBlock4HH_32(src, read_dst, dstpitch, pal);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1870,7 +1870,7 @@ void GSLocalMemory::ReadTexture8P(const GSOffset* RESTRICT off, const GSVector4i
 {
 	FOREACH_BLOCK_START(r, 16, 16, 8)
 	{
-		GSBlock::ReadBlock8(src, dst, dstpitch);
+		GSBlock::ReadBlock8(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1879,7 +1879,7 @@ void GSLocalMemory::ReadTexture4P(const GSOffset* RESTRICT off, const GSVector4i
 {
 	FOREACH_BLOCK_START(r, 32, 16, 8)
 	{
-		GSBlock::ReadBlock4P(src, dst, dstpitch);
+		GSBlock::ReadBlock4P(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1888,7 +1888,7 @@ void GSLocalMemory::ReadTexture8HP(const GSOffset* RESTRICT off, const GSVector4
 {
 	FOREACH_BLOCK_START(r, 8, 8, 8)
 	{
-		GSBlock::ReadBlock8HP(src, dst, dstpitch);
+		GSBlock::ReadBlock8HP(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1897,7 +1897,7 @@ void GSLocalMemory::ReadTexture4HLP(const GSOffset* RESTRICT off, const GSVector
 {
 	FOREACH_BLOCK_START(r, 8, 8, 8)
 	{
-		GSBlock::ReadBlock4HLP(src, dst, dstpitch);
+		GSBlock::ReadBlock4HLP(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
@@ -1906,7 +1906,7 @@ void GSLocalMemory::ReadTexture4HHP(const GSOffset* RESTRICT off, const GSVector
 {
 	FOREACH_BLOCK_START(r, 8, 8, 8)
 	{
-		GSBlock::ReadBlock4HHP(src, dst, dstpitch);
+		GSBlock::ReadBlock4HHP(src, read_dst, dstpitch);
 	}
 	FOREACH_BLOCK_END
 }
