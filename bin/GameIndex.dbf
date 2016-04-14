@@ -6387,6 +6387,7 @@ Region = PAL-E
 Serial = SLED-51211
 Name   = Burnout 2 - Point of Impact [Demo]
 Region = PAL-Unk
+vuRoundMode = 1		//bright lights in cars
 ---------------------------------------------
 Serial = SLED-51281
 Name   = Haven - Call of the King [Demo]
@@ -12894,6 +12895,7 @@ Serial = SLES-52968
 Name   = Burnout 2 - Point of Impact
 Region = PAL-Unk
 Compat = 5
+vuRoundMode = 1		//bright lights in cars
 ---------------------------------------------
 Serial = SLES-52973
 Name   = Ski Racing 2005
@@ -31265,6 +31267,7 @@ Region = NTSC-J
 Serial = SLPS-25351
 Name   = Burnout 2 - Point of Impact
 Region = NTSC-J
+vuRoundMode = 1		//bright lights in cars
 ---------------------------------------------
 Serial = SLPS-25352
 Name   = Espgaluda
