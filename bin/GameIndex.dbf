@@ -14118,6 +14118,7 @@ Region = PAL-M4
 Serial = SLES-53523
 Name   = Gun
 Region = PAL-M4
+vuRoundMode = 0 //Fixes textures and crashes
 ---------------------------------------------
 Serial = SLES-53524
 Name   = Mortal Kombat - Shaolin Monks
@@ -14410,6 +14411,7 @@ Region = PAL-M5
 Serial = SLES-53647
 Name   = Gun
 Region = PAL-G
+vuRoundMode = 0 //Fixes textures and crashes
 ---------------------------------------------
 Serial = SLES-53651
 Name   = WWII - Soldier
@@ -38921,6 +38923,7 @@ Serial = SLUS-21139
 Name   = Gun
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Fixes textures and crashes
 ---------------------------------------------
 Serial = SLUS-21140
 Name   = Mobile Suit Gundam Seed - Never Ending Tomorrow
