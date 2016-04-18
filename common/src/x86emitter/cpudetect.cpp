@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "cpudetect_internal.h"
 #include "internal.h"
+#include "x86_intrin.h"
 
 using namespace x86Emitter;
 
