@@ -974,16 +974,11 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
-	if (GLLoader::found_GL_ARB_copy_image) {
-		glCopyImageSubData( sid, GL_TEXTURE_2D,
-				0, r.x, r.y, 0,
-				did, GL_TEXTURE_2D,
-				0, 0, 0, 0,
-				r.width(), r.height(), 1);
-	} else {
-		// Slower copy (conversion is done)
-		CopyRectConv(sTex, dTex, r, true);
-	}
+	glCopyImageSubData( sid, GL_TEXTURE_2D,
+			0, r.x, r.y, 0,
+			did, GL_TEXTURE_2D,
+			0, 0, 0, 0,
+			r.width(), r.height(), 1);
 
 	GL_POP();
 }

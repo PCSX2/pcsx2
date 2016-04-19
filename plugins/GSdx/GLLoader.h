@@ -338,7 +338,6 @@ namespace GLLoader {
 	extern bool in_replayer;
 
 	// GL
-	extern bool found_GL_ARB_copy_image;
 	extern bool found_geometry_shader;
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;

@@ -163,8 +163,6 @@ namespace GLLoader {
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
-	// DX10 GPU limited driver (SW)
-	bool found_GL_ARB_copy_image = false;
 	// DX11 GPU
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
@@ -174,6 +172,7 @@ namespace GLLoader {
 	// Mandatory
 	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_clip_control = false;
+	bool found_GL_ARB_copy_image = false;
 	bool found_GL_ARB_direct_state_access = false;
 	bool found_GL_ARB_separate_shader_objects = false;
 	bool found_GL_ARB_shading_language_420pack = false;
@@ -296,7 +295,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
-		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image");
+		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image", true);
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");

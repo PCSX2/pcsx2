@@ -116,7 +116,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glBindImageTexture);
 	GL_EXT_LOAD_OPT(glMemoryBarrier);
 	// GL4.3
-	GL_EXT_LOAD_OPT(glCopyImageSubData);
+	GL_EXT_LOAD(glCopyImageSubData);
 	GL_EXT_LOAD_OPT(glInvalidateTexImage);
 	GL_EXT_LOAD_OPT(glPushDebugGroup);
 	GL_EXT_LOAD_OPT(glPopDebugGroup);
