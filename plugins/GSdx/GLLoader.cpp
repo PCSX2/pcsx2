@@ -231,10 +231,6 @@ namespace GLLoader {
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
-		if (mesa_amd_buggy_driver) {
-			fprintf(stderr, "Buggy driver detected. Geometry shaders will be disabled\n");
-			found_geometry_shader = false;
-		}
 		if (theApp.GetConfig("override_geometry_shader", -1) != -1) {
 			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
 			fprintf(stderr, "Overriding geometry shaders detection\n");
