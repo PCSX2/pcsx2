@@ -63,7 +63,6 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glGenVertexArrays);
 	GL_EXT_LOAD(glGetBufferParameteriv);
 	GL_EXT_LOAD(glGetDebugMessageLogARB);
-	GL_EXT_LOAD_OPT(glDebugMessageCallback);
 	GL_EXT_LOAD(glGetProgramInfoLog);
 	GL_EXT_LOAD(glGetProgramiv);
 	GL_EXT_LOAD(glGetShaderiv);
@@ -118,10 +117,11 @@ void GSWndGL::PopulateGlFunction()
 	// GL4.3
 	GL_EXT_LOAD(glCopyImageSubData);
 	GL_EXT_LOAD_OPT(glInvalidateTexImage);
-	GL_EXT_LOAD_OPT(glPushDebugGroup);
-	GL_EXT_LOAD_OPT(glPopDebugGroup);
-	GL_EXT_LOAD_OPT(glDebugMessageInsert);
-	GL_EXT_LOAD_OPT(glDebugMessageControl);
+	GL_EXT_LOAD(glPushDebugGroup);
+	GL_EXT_LOAD(glPopDebugGroup);
+	GL_EXT_LOAD(glDebugMessageInsert);
+	GL_EXT_LOAD(glDebugMessageControl);
+	GL_EXT_LOAD(glDebugMessageCallback);
 	// GL4.4
 	GL_EXT_LOAD_OPT(glClearTexImage);
 	GL_EXT_LOAD(glBufferStorage);

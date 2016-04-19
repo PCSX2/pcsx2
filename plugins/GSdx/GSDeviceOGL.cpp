@@ -182,16 +182,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
 	if (theApp.GetConfig("debug_opengl", 0)) {
-		if (glDebugMessageCallback) {
-			glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-		}
-		if (glDebugMessageControl) {
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-			// Useless info message on Nvidia driver
-			GLuint ids[] = {0x20004};
-			glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, countof(ids), ids, false);
-		}
+		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+		// Useless info message on Nvidia driver
+		GLuint ids[] = {0x20004};
+		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, countof(ids), ids, false);
 	}
 #endif
 

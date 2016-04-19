@@ -178,6 +178,7 @@ namespace GLLoader {
 	bool found_GL_ARB_shading_language_420pack = false;
 	bool found_GL_ARB_texture_barrier = false;
 	bool found_GL_ARB_texture_storage = false;
+	bool found_GL_KHR_debug = false;
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
@@ -268,6 +269,7 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
 				// GL4.3
 				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
+				if (ext.compare("GL_KHR_debug") == 0) found_GL_KHR_debug = true;
 				// GL4.4
 				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
 				if (ext.compare("GL_ARB_clear_texture") == 0) found_GL_ARB_clear_texture = true;
@@ -296,6 +298,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
 		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image", true);
+		status &= status_and_override(found_GL_KHR_debug, "GL_KHR_debug", true);
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
