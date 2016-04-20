@@ -1513,7 +1513,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB  : type = "Undefined bhv"; break;
 		case GL_DEBUG_TYPE_PORTABILITY_ARB         : type = "Portability"; break;
 		case GL_DEBUG_TYPE_PERFORMANCE_ARB         : type = "Perf"; break;
-		case GL_DEBUG_TYPE_OTHER_ARB               : type = "Others"; break;
+		case GL_DEBUG_TYPE_OTHER_ARB               : type = "Oth"; break;
 		case GL_DEBUG_TYPE_PUSH_GROUP              : return; // Don't print message injected by myself
 		case GL_DEBUG_TYPE_POP_GROUP               : return; // Don't print message injected by myself
 		default                                    : type = "TTT"; break;
@@ -1537,12 +1537,12 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
 	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
-		fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
+		fprintf(stderr,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 	}
 	#endif
 
 	if (m_debug_gl_file)
-		fprintf(m_debug_gl_file,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
+		fprintf(m_debug_gl_file,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 
 #ifdef _DEBUG
 	if (sev_counter >= 5) {
