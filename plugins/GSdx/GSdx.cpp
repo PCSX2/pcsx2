@@ -179,7 +179,9 @@ GSdxApp::GSdxApp()
 	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", ""));
+#ifndef __linux__
 	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", ""));
+#endif
 
 	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
