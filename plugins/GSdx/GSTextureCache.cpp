@@ -380,7 +380,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		{
 			dst->m_texture->SetScale(GSVector2((float)multiplier, (float)multiplier));
 		}
-		else
+		else  // Custom resolution hack
 		{
 			GSVector4i fr = m_renderer->GetFrameRect();
 
