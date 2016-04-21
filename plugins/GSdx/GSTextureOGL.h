@@ -44,7 +44,6 @@ class GSTextureOGL final : public GSTexture
 		GLuint m_texture_id;	 // the texture id
 		int m_pbo_size;
 		GLuint m_fbo_read;
-		bool m_dirty;
 		bool m_clean;
 
 		uint8* m_local_buffer;
@@ -65,7 +64,6 @@ class GSTextureOGL final : public GSTexture
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
 		virtual ~GSTextureOGL();
 
-		void Invalidate() final;
 		bool Update(const GSVector4i& r, const void* data, int pitch) final;
 		bool Map(GSMap& m, const GSVector4i* r = NULL) final;
 		void Unmap() final;
@@ -76,7 +74,7 @@ class GSTextureOGL final : public GSTexture
 
 		uint32 GetID() final { return m_texture_id; }
 		bool HasBeenCleaned() { return m_clean; }
-		void WasAttached() { m_clean = false; m_dirty = true; }
+		void WasAttached() { m_clean = false; }
 		void WasCleaned() { m_clean = true; }
 
 		uint32 GetMemUsage();

@@ -159,7 +159,7 @@ namespace PboPool {
 }
 
 GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_dirty(false), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0)
+	: m_pbo_size(0), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -281,14 +281,6 @@ GSTextureOGL::~GSTextureOGL()
 		_aligned_free(m_local_buffer);
 }
 
-void GSTextureOGL::Invalidate()
-{
-	if (m_dirty && glInvalidateTexImage) {
-		glInvalidateTexImage(m_texture_id, GL_TEX_LEVEL_0);
-		m_dirty = false;
-	}
-}
-
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
@@ -299,7 +291,6 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	// Data upload is rather small typically 64B or 1024B. So don't bother with PBO
 	// and directly send the data to the GL synchronously
 
-	m_dirty = true;
 	m_clean = false;
 
 	uint32 row_byte = r.width() << m_int_shift;
@@ -390,7 +381,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 	} else if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget) {
 		GL_PUSH("Upload Texture %d", m_texture_id); // POP is in Unmap
 
-		m_dirty = true;
 		m_clean = false;
 
 		uint32 row_byte = r.width() << m_int_shift;

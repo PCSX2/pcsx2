@@ -175,17 +175,6 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
-		// FIXME: WARNING: Broken Texture Cache reuse render target without any
-		// cleaning (or uploading of correct gs mem data) Ofc it is wrong. If
-		// blending is enabled, rendering would be completely broken. However
-		// du to wrong invalidation of the TC it is sometimes better to reuse
-		// (partially) wrong data...
-		//
-		// Invalidating the data might be even worse. I'm not sure invalidating data really
-		// help on the perf. But people reports better perf on BDG2 (memory intensive) on OpenGL.
-		// It could be the reason.
-		t->Invalidate();
-
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);

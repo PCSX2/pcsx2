@@ -47,7 +47,6 @@ public:
 	virtual bool Map(GSMap& m, const GSVector4i* r = NULL) = 0;
 	virtual void Unmap() = 0;
 	virtual bool Save(const string& fn, bool user_image = false, bool dds = false) = 0;
-	virtual void Invalidate() {}
 	virtual uint32 GetID() { return 0; }
 
 	GSVector2 GetScale() const {return m_scale;}
