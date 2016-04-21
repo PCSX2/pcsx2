@@ -85,6 +85,75 @@ void GSTextureCache::RemoveAll()
 	}
 }
 
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
+{
+	if (!CanConvertDepth()) return NULL;
+
+	if(GSLocalMemory::m_psm[TEX0.PSM].pal > 0)
+		m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
+
+	Source* src = NULL;
+	Target* dst = NULL;
+
+	// Check only current frame, I guess it is only used as a postprocessing effect
+	uint32 bp = TEX0.TBP0;
+	uint32 psm = TEX0.PSM;
+	for(auto t : m_dst[DepthStencil]) {
+		if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+		{
+			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+			dst = t;
+			break;
+		}
+	}
+
+	if (!dst) {
+		// Retry on the render target (Silent Hill 4)
+		for(auto t : m_dst[RenderTarget]) {
+			if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			{
+				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+				dst = t;
+				break;
+			}
+		}
+	}
+
+	if (dst) {
+		GL_CACHE("TC depth: dst %s hit: %d (0x%x, F:0x%x)", to_string(dst->m_type),
+				dst->m_texture ? dst->m_texture->GetID() : 0,
+				TEX0.TBP0, TEX0.PSM);
+
+		// Create a shared texture source
+		src = new Source(m_renderer, TEX0, TEXA, m_temp);
+		src->m_texture = dst->m_texture;
+		src->m_shared_texture = true;
+		src->m_target = true; // So renderer can check if a conversion is required
+		src->m_32_bits_fmt = dst->m_32_bits_fmt;
+
+		// Insert the texture in the hash set to keep track of it. But don't bother with
+		// texture cache list. It means that a new Source is created everytime we need it.
+		// If it is too expensive, one could cut memory allocation in Source constructor for this
+		// use case.
+
+		m_src.m_surfaces.insert(src);
+	} else {
+		GL_CACHE("TC depth: ERROR miss (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+		// Possible ? In this case we could call LookupSource
+		// Or just put a basic texture
+		// src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
+		// In all cases rendering will be broken
+		//
+		// Note: might worth to check previous frame
+		// Note: otherwise return NULL and skip the draw
+
+		//ASSERT(0);
+		return LookupSource(TEX0, TEXA, r);
+	}
+
+	return src;
+}
+
 GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
@@ -207,6 +276,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
+		// Pure depth texture format will be fetched by LookupDepthSource.
+		// However guess what, some games (GoW) read the depth as a standard
+		// color format (instead of a depth format). All pixels are scrambled
+		// (because color and depth don't have same location). They don't care
+		// pixel will be several draw calls later.
+		//
+		// Sigh... They don't help us.
+
 		if (dst == NULL && CanConvertDepth()) {
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
@@ -217,6 +294,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
+					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
 					dst = t;
 					break;
 				}
