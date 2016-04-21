@@ -111,7 +111,7 @@ public:
 		GSVector2i bs, pgs;
 		int* rowOffset[8];
 		short* blockOffset;
-		uint8 msk;
+		uint8 msk, depth;
 	};
 
 	static psm_t m_psm[64];

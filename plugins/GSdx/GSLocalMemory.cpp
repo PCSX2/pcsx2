@@ -222,6 +222,7 @@ GSLocalMemory::GSLocalMemory()
 		for(int j = 0; j < 8; j++) m_psm[i].rowOffset[j] = rowOffset32;
 		m_psm[i].blockOffset = blockOffset32;
 		m_psm[i].msk = 0xff;
+		m_psm[i].depth = 0;
 	}
 
 	m_psm[PSM_PSMCT16].pa = &GSLocalMemory::PixelAddress16;
@@ -447,6 +448,11 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMT8H].msk = 0xc0;
 	m_psm[PSM_PSMT4HL].msk = 0x40;
 	m_psm[PSM_PSMT4HH].msk = 0x80;
+
+	m_psm[PSM_PSMZ32].depth  = 1;
+	m_psm[PSM_PSMZ24].depth  = 1;
+	m_psm[PSM_PSMZ16].depth  = 1;
+	m_psm[PSM_PSMZ16S].depth = 1;
 }
 
 GSLocalMemory::~GSLocalMemory()
