@@ -424,6 +424,52 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	Target* dst = NULL;
 
+#if 0
+	// Dump the list of targets for debug
+	for(auto t : m_dst[RenderTarget]) {
+		GL_INS("TC: frame 0x%x -> 0x%x : %d (age %d)", t->m_TEX0.TBP0, t->m_end_block, t->m_texture->GetID(), t->m_age);
+	}
+#endif
+
+	// Let's try to find a perfect frame that contains valid data
+	for(auto t : m_dst[RenderTarget]) {
+		if(bp == t->m_TEX0.TBP0 && t->m_end_block > bp) {
+			dst = t;
+
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+
+			break;
+		}
+	}
+
+	// 2nd try ! Try to find a frame that include the bp
+	if (dst == NULL) {
+		for(auto t : m_dst[RenderTarget]) {
+			if (t->m_TEX0.TBP0 < bp && bp < t->m_end_block) {
+				dst = t;
+
+				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block);
+
+				break;
+			}
+		}
+	}
+
+	// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
+	if (dst == NULL) {
+		for(auto t : m_dst[RenderTarget]) {
+			if(bp == t->m_TEX0.TBP0) {
+				dst = t;
+
+				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+
+				break;
+			}
+		}
+	}
+
+
+#if 0
 	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); i++)
 	{
 		Target* t = *i;
@@ -432,7 +478,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		{
 			dst = t;
 
-			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x)", w, h, dst->m_texture->GetID(), bp);
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
 
 			break;
 		}
@@ -442,11 +488,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			if(t->m_TEX0.TBP0 <= bp && bp < t->m_TEX0.TBP0 + 0xe00UL && (!dst || t->m_TEX0.TBP0 >= dst->m_TEX0.TBP0))
 			{
-				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0);
+				GL_CACHE("TC: Lookup Frame %dx%d, close hit: %d (0x%x, took 0x%x -> 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block);
 				dst = t;
 			}
 		}
 	}
+#endif
 
 	if(dst == NULL)
 	{
@@ -670,48 +717,69 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && bp < t->m_TEX0.TBP0)
-			{
-				uint32 rowsize = bw * 8192;
-				uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
-
-				if(rowsize > 0 && offset % rowsize == 0)
+			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM)) {
+				if (bp < t->m_TEX0.TBP0)
 				{
+					uint32 rowsize = bw * 8192;
+					uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
+
+					if(rowsize > 0 && offset % rowsize == 0)
+					{
+						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+						if(r.bottom > y)
+						{
+							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+									t->m_texture ? t->m_texture->GetID() : 0,
+									t->m_TEX0.TBP0);
+							// TODO: do not add this rect above too
+							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
+							t->m_TEX0.TBW = bw;
+							continue;
+						}
+					}
+				}
+
+				// FIXME: this code "fixes" black FMV issue with rule of rose.
+				// Code is completely hardcoded so maybe not the best solution. Besides I don't
+				// know the full impact of it.
+				// Let's keep this code for the future
+#if 0
+				if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
+				{
+					GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0);
+
+					uint32 rowsize = bw * 8192u;
+					uint32 offset = 0x200 * 256u;
 					int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-					if(r.bottom > y)
-					{
-						GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+					t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
+					t->m_TEX0.TBW = bw;
+					continue;
+				}
+#endif
+#if 1
+				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
+				if (t->m_TEX0.TBW == bw && t->Inside(bp, psm, rect)) {
+					uint32 rowsize = bw * 8192u;
+					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
+
+					if(rowsize > 0 && offset % rowsize == 0) {
+						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
-						// TODO: do not add this rect above too
-						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
+
+						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
 						t->m_TEX0.TBW = bw;
 						continue;
 					}
 				}
-			}
-
-			// FIXME: this code "fixes" black FMV issue with rule of rose.
-			// Code is completely hardcoded so maybe not the best solution. Besides I don't
-			// know the full impact of it.
-			// Let's keep this code for the future
-#if 0
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
-			{
-				GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
-						t->m_texture ? t->m_texture->GetID() : 0,
-						t->m_TEX0.TBP0);
-
-				uint32 rowsize = bw * 8192u;
-				uint32 offset = 0x200 * 256u;
-				int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-				t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
-				t->m_TEX0.TBW = bw;
-				continue;
-			}
 #endif
+			}
 		}
 	}
 }
@@ -844,6 +912,30 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 
 	// TODO: ds
+}
+
+// Hack: remove Target that are strictly included in current rt. Typically uses for FMV
+// For example, game is rendered at 0x800->0x1000, fmv will be uploaded to 0x0->0x2800
+// FIXME In theory, we ought to report the data from the sub rt to the main rt. But let's
+// postpone it for later.
+void GSTextureCache::InvalidateVideoMemSubTarget(GSTextureCache::Target* rt)
+{
+	if (!rt)
+		return;
+
+	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); ) {
+		list<Target*>::iterator j = i++;
+		Target* t = *j;
+
+		if ((t->m_TEX0.TBP0 > rt->m_TEX0.TBP0) && (t->m_end_block < rt->m_end_block) && (t->m_TEX0.TBW == rt->m_TEX0.TBW)
+				&& (t->m_TEX0.TBP0 < t->m_end_block)) {
+			GL_INS("InvalidateVideoMemSubTarget: rt 0x%x -> 0x%x, sub rt 0x%x -> 0x%x",
+					rt->m_TEX0.TBP0, rt->m_end_block, t->m_TEX0.TBP0, t->m_end_block);
+
+			m_dst[RenderTarget].erase(j);
+			delete t;
+		}
+	}
 }
 
 void GSTextureCache::IncAge()
@@ -1616,19 +1708,42 @@ void GSTextureCache::Target::Update()
 	// Copy the new GS memory content into the destination texture.
 	if(m_type == RenderTarget)
 	{
-		GL_INS("ERROR: Update RenderTarget");
+		GL_INS("ERROR: Update RenderTarget 0x%x", m_TEX0.TBP0);
 
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 	}
 	else if(m_type == DepthStencil)
 	{
-		GL_INS("ERROR: Update DepthStencil");
+		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
 
 		// FIXME linear or not?
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
 	}
 
 	m_renderer->m_dev->Recycle(t);
+}
+
+void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
+{
+	m_valid = m_valid.runion(rect);
+
+	uint32 nb_block = m_TEX0.TBW * m_valid.height();
+	if (m_TEX0.PSM == PSM_PSMCT16)
+		nb_block >>= 1;
+
+	m_end_block = m_TEX0.TBP0 + nb_block;
+	//fprintf(stderr, "S: 0x%x E:0x%x\n", m_TEX0.TBP0, m_end_block);
+}
+
+bool GSTextureCache::Target::Inside(uint32 bp, uint32 psm, const GSVector4i& rect)
+{
+	uint32 nb_block = rect.height() * rect.width();
+	if (m_TEX0.PSM == PSM_PSMCT16)
+		nb_block >>= 7;
+	else
+		nb_block >>= 6;
+
+	return bp > m_TEX0.TBP0 && (bp + nb_block) < m_end_block;
 }
 
 // GSTextureCache::SourceMap

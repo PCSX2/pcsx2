@@ -83,9 +83,13 @@ public:
 		GSVector4i m_valid;
 		bool m_depth_supported;
 		bool m_dirty_alpha;
+		uint32 m_end_block; // Hint of the target area
 
 	public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
+
+		void UpdateValidity(const GSVector4i& rect);
+		bool Inside(uint32 bp, uint32 psm, const GSVector4i& rect);
 
 		virtual void Update();
 	};
@@ -125,18 +129,14 @@ protected:
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
-#ifndef DISABLE_HW_TEXTURE_CACHE
-	virtual void Read(Target* t, const GSVector4i& r) = 0;
-#endif
 
 	virtual bool CanConvertDepth() { return m_can_convert_depth; }
 
 public:
 	GSTextureCache(GSRenderer* r);
 	virtual ~GSTextureCache();
-#ifdef DISABLE_HW_TEXTURE_CACHE
 	virtual void Read(Target* t, const GSVector4i& r) = 0;
-#endif
+	virtual void Read(Source* t, const GSVector4i& r) = 0;
 	void RemoveAll();
 	void RemovePartial();
 
@@ -145,6 +145,7 @@ public:
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
 
 	void InvalidateVideoMemType(int type, uint32 bp);
+	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
 

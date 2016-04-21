@@ -192,19 +192,22 @@ bool GSRenderer::Merge(int field)
 	GSVector2i ds(0, 0);
 
 	GSTexture* tex[2] = {NULL, NULL};
+	int y_offset[2]   = {0, 0};
 
 	if(samesrc && fr[0].bottom == fr[1].bottom)
 	{
-		tex[0] = GetOutput(0);
-		tex[1] = tex[0]; // saves one texture fetch
+		tex[0]      = GetOutput(0, y_offset[0]);
+		tex[1]      = tex[0]; // saves one texture fetch
+		y_offset[1] = y_offset[0];
 	}
 	else
 	{
-		if(en[0]) tex[0] = GetOutput(0);
-		if(en[1]) tex[1] = GetOutput(1);
+		if(en[0]) tex[0] = GetOutput(0, y_offset[0]);
+		if(en[1]) tex[1] = GetOutput(1, y_offset[1]);
 	}
 
 	GSVector4 src[2];
+	GSVector4 src_hw[2];
 	GSVector4 dst[2];
 
 	for(int i = 0; i < 2; i++)
@@ -224,6 +227,7 @@ bool GSRenderer::Merge(int field)
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
 		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
+		src_hw[i] = (GSVector4(r) + GSVector4 (0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
 		GSVector2 off(0, 0);
 
@@ -264,7 +268,7 @@ bool GSRenderer::Merge(int field)
 
 		GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
 
-		m_dev->Merge(tex, src, dst, fs, slbg, mmod, c);
+		m_dev->Merge(tex, src_hw, dst, fs, slbg, mmod, c);
 
 		if(m_regs->SMODE2.INT && m_interlace > 0)
 		{

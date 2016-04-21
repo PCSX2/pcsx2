@@ -338,7 +338,7 @@ void GSRendererCS::VSync(int field)
 	//printf("%lld\n", m_perfmon.GetFrame());
 }
 
-GSTexture* GSRendererCS::GetOutput(int i)
+GSTexture* GSRendererCS::GetOutput(int i, int& y_offset)
 {
 	// TODO: create a compute shader which unswizzles the frame from m_vm to the output texture
 

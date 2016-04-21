@@ -1417,7 +1417,7 @@ void GSState::FlushWrite()
 	r.bottom = r.top + m_env.TRXREG.RRH;
 
 	InvalidateVideoMem(m_env.BITBLTBUF, r);
-	
+
 	//int y = m_tr.y;
 
 	GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;

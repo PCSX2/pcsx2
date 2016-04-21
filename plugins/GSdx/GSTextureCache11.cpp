@@ -97,3 +97,27 @@ void GSTextureCache11::Read(Target* t, const GSVector4i& r)
 	}
 }
 
+void GSTextureCache11::Read(Source* t, const GSVector4i& r)
+{
+	// FIXME: copy was copyied from openGL. It is unlikely to work.
+
+	const GIFRegTEX0& TEX0 = t->m_TEX0;
+
+	if (GSTexture* offscreen  = m_renderer->m_dev->CreateOffscreen(r.width(), r.height())) {
+		m_renderer->m_dev->CopyRect(t->m_texture, offscreen, r);
+
+		GSTexture::GSMap m;
+		GSVector4i r_offscreen(0, 0, r.width(), r.height());
+
+		if (offscreen->Map(m, &r_offscreen)) {
+			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+
+			m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
+
+			offscreen->Unmap();
+		}
+
+		// FIXME invalidate data
+		m_renderer->m_dev->Recycle(offscreen);
+	}
+}
