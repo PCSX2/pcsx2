@@ -944,8 +944,12 @@ void GSTextureCache::IncAge()
 
 		Source* s = *j;
 
-		if(++s->m_age > maxage)
-		{
+		if(s->m_shared_texture) {
+			// Shared textures are temporary only added in the hash set but not in the texture
+			// cache list therefore you can't use RemoveAt
+			m_src.m_surfaces.erase(s);
+			delete s;
+		} else if(++s->m_age > maxage) {
 			m_src.RemoveAt(s);
 		}
 	}
@@ -1339,7 +1343,7 @@ void GSTextureCache::PrintMemoryUsage()
 	uint32 dss    = 0;
 	for(hash_set<Source*>::iterator i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end(); i++) {
 		Source* s = *i;
-		if (s) {
+		if (s && !s->m_shared_texture) {
 			if (s->m_target)
 				tex_rt += s->m_texture->GetMemUsage();
 			else
@@ -1370,13 +1374,17 @@ GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	, m_age(0)
 	, m_temp(temp)
 	, m_32_bits_fmt(false)
+	, m_shared_texture(false)
 {
 	m_TEX0.TBP0 = 0x3fff;
 }
 
 GSTextureCache::Surface::~Surface()
 {
-	m_renderer->m_dev->Recycle(m_texture);
+	// Shared textures are pointers copy. Therefore no allocation
+	// to recycle.
+	if (!m_shared_texture)
+		m_renderer->m_dev->Recycle(m_texture);
 }
 
 void GSTextureCache::Surface::Update()

@@ -41,6 +41,7 @@ public:
 		int m_age;
 		uint8* m_temp;
 		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
+		bool m_shared_texture;
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);
