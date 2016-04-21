@@ -195,12 +195,13 @@ public:
 	GSDrawingContext* m_context;
 	GSPerfMon m_perfmon;
 	uint32 m_crc;
+	CRC::Game m_game;
+	GSDump m_dump;
 	int m_options;
 	int m_frameskip;
 	bool m_crcinited;
 	bool m_framelimit;
-	CRC::Game m_game;
-	GSDump m_dump;
+	bool m_NTSC_Saturation;
 	bool m_nativeres;
 	bool m_mipmap;
 

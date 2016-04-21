@@ -44,6 +44,7 @@ GSState::GSState()
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
+	m_NTSC_Saturation = !!theApp.GetConfig("NTSC_Saturation", true);
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);
@@ -379,11 +380,10 @@ GSVector4i GSState::GetFrameRect(int i)
 	int w = r.width();
 	int h = r.height();
 
-//  NTSC: Saturate higher height values for games which have CRTC width lower than 640.
-//  Some NTSC mode games request higher height values for accurate display size / position when width is 640
-//  Testcases : PS logo (640x512) , Resident Evil:CVX (640x480). potentially more test cases...
-
-	if (Vmode_NTSC && h > 448 && w < 640)
+//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
+//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
+//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
+	if (Vmode_NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
 		h = 448;
 
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
@@ -429,21 +429,9 @@ GSVector2i GSState::GetDeviceSize(int i)
 
 	//Fixme : Just slightly better than the hack above
 	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
-	{
-		if (IsEnabled(0) || IsEnabled(1))
-		{
-			h >>= 1;
-		}
-	}
-
-	//Fixme: These games elude the code above, worked with the old hack
-	else if(m_game.title == CRC::SilentHill2 || m_game.title == CRC::SilentHill3)
-	{
-		h /= 2; 
-	}
+		h >>= 1;
 
 	return GSVector2i(w, h);
-
 }
 
 bool GSState::IsEnabled(int i)
