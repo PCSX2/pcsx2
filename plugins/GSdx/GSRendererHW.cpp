@@ -398,11 +398,13 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
+		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+
 		/*
 
 		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
 
-		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
+		if(tex_psm.pal > 0)
 		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
@@ -421,7 +423,7 @@ void GSRendererHW::Draw()
 		}
 
 		// FIXME: Could be removed on openGL
-		if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
+		if(tex_psm.pal > 0)
 		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 		}
@@ -430,7 +432,8 @@ void GSRendererHW::Draw()
 		// Initially code also tested the RT but it gives too much false-positive
 		//
 		// Both input and output are 16 bits and texture was initially 32 bits!
-		m_texture_shuffle = (context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
+		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
+			&& (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
 
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
@@ -439,7 +442,7 @@ void GSRendererHW::Draw()
 		// Be sure texture shuffle detection is properly propagated
 		// Otherwise set or clear the flag (Code in texture cache only set the flag)
 		// Note: it is important to clear the flag when RT is used as a real 16 bits target.
-		rt->m_32_bits_fmt = m_texture_shuffle || !(context->FRAME.PSM & 0x2);
+		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
 #ifndef NDEBUG

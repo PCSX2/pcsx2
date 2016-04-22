@@ -282,7 +282,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst = t;
 
-			dst->m_32_bits_fmt |= !(TEX0.PSM & 2);
+			dst->m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].bpp != 16);
 			dst->m_TEX0 = TEX0;
 
 			break;
@@ -1028,7 +1028,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 
-		if (TEX0.PSM < PSM_PSMT8 || TEX0.PSM > PSM_PSMT4HH) {
+		if (GSLocalMemory::m_psm[TEX0.PSM].bpp > 8) {
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		}
 		src->m_target = true;
@@ -1635,7 +1635,7 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
-	m_32_bits_fmt |= !(TEX0.PSM & 2);
+	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].bpp != 16);
 	m_dirty_alpha = (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
 
 	m_valid = GSVector4i::zero();
