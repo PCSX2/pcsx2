@@ -99,7 +99,7 @@ pxStaticText& pxStaticText::Align( wxAlignment align )
 pxStaticText& pxStaticText::Bold()
 {
 	wxFont bold( GetFont() );
-	bold.SetWeight(wxBOLD);
+	bold.SetWeight(wxFONTWEIGHT_BOLD);
 	SetFont( bold );
 	return *this;
 }

@@ -33,7 +33,7 @@ void pxWindowTextWriter::OnFontChanged()
 {
 }
 
-pxWindowTextWriter& pxWindowTextWriter::SetWeight( int weight )
+pxWindowTextWriter& pxWindowTextWriter::SetWeight( wxFontWeight weight )
 {
 	wxFont curfont( m_dc.GetFont() );
 	curfont.SetWeight( weight );
@@ -42,7 +42,7 @@ pxWindowTextWriter& pxWindowTextWriter::SetWeight( int weight )
 	return *this;
 }
 
-pxWindowTextWriter& pxWindowTextWriter::SetStyle( int style )
+pxWindowTextWriter& pxWindowTextWriter::SetStyle( wxFontStyle style )
 {
 	wxFont curfont( m_dc.GetFont() );
 	curfont.SetStyle( style );
@@ -53,8 +53,8 @@ pxWindowTextWriter& pxWindowTextWriter::SetStyle( int style )
 pxWindowTextWriter& pxWindowTextWriter::Normal()
 {
 	wxFont curfont( m_dc.GetFont() );
-	curfont.SetStyle( wxNORMAL );
-	curfont.SetWeight( wxNORMAL );
+	curfont.SetStyle( wxFONTWEIGHT_NORMAL );
+	curfont.SetWeight( wxFONTSTYLE_NORMAL );
 	m_dc.SetFont( curfont );
 
 	return *this;

@@ -430,7 +430,7 @@ GSFrame::GSFrame( const wxString& title)
 
 	wxStaticText* label = new wxStaticText( this, wxID_ANY, _("GS Output is Disabled!") );
 	m_id_OutputDisabled = label->GetId();
-	label->SetFont( wxFont( 20, wxDEFAULT, wxNORMAL, wxBOLD ) );
+	label->SetFont( wxFont( 20, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD ) );
 	label->SetForegroundColour( *wxWHITE );
 
 	AppStatusEvent_OnSettingsApplied();

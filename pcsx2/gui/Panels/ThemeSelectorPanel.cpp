@@ -39,7 +39,7 @@ Panels::ThemeSelectorPanel::ThemeSelectorPanel( wxWindow* parent )
 		_("Select folder containing PCSX2 visual themes")	// dir picker popup label
 		);
 
-	m_ComboBox->SetFont( wxFont( m_ComboBox->GetFont().GetPointSize()+1, wxFONTFAMILY_MODERN, wxNORMAL, wxNORMAL, false, L"Lucida Console" ) );
+	m_ComboBox->SetFont( wxFont( m_ComboBox->GetFont().GetPointSize()+1, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, L"Lucida Console" ) );
 	m_ComboBox->SetMinSize( wxSize( wxDefaultCoord, std::max( m_ComboBox->GetMinSize().GetHeight(), 96 ) ) );
 
 	if (InstallationMode != InstallMode_Portable)

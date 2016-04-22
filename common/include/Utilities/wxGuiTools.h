@@ -702,18 +702,18 @@ public:
 		return *this;
 	}
 
-	pxWindowTextWriter& SetWeight( int weight );
-	pxWindowTextWriter& SetStyle( int style );
+	pxWindowTextWriter& SetWeight( wxFontWeight weight );
+	pxWindowTextWriter& SetStyle( wxFontStyle style );
 	pxWindowTextWriter& Normal();
 
 	pxWindowTextWriter& Bold()
 	{
-		return SetWeight(wxBOLD);
+		return SetWeight(wxFONTWEIGHT_BOLD);
 	}
 
 	pxWindowTextWriter& Italic()
 	{
-		return SetStyle(wxITALIC);
+		return SetStyle(wxFONTSTYLE_ITALIC);
 	}
 
 	pxWindowTextWriter& SetPos( const wxPoint& pos );
@@ -801,7 +801,7 @@ extern int pxGetCharHeight( const wxWindow& wind, int rows=1 );
 
 extern void pxSetToolTip( wxWindow* wind, const wxString& src );
 extern void pxSetToolTip( wxWindow& wind, const wxString& src );
-extern wxFont pxGetFixedFont( int ptsize=8, int weight=wxNORMAL );
+extern wxFont pxGetFixedFont( int ptsize = 8, wxFontWeight weight = wxFONTWEIGHT_NORMAL );
 
 extern pxDialogCreationFlags pxDialogFlags();
 

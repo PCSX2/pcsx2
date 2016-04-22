@@ -141,8 +141,8 @@ void pxRadioPanel::_RealizeDefaultOption()
 	if( m_IsRealized && m_DefaultIdx != -1 )
 	{
 		wxFont def( GetFont() );
-		def.SetWeight( wxBOLD );
-		//def.SetStyle( wxITALIC );
+		def.SetWeight( wxFONTWEIGHT_BOLD );
+		//def.SetStyle( wxFONTSTYLE_ITALIC );
 		m_objects[m_DefaultIdx].LabelObj->SetFont( def );
 		m_objects[m_DefaultIdx].LabelObj->SetForegroundColour( wxColour( 20, 128, 40 ) );
 	}

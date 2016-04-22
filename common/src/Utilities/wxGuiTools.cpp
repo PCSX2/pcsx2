@@ -593,10 +593,10 @@ void pxSetToolTip( wxWindow& wind, const wxString& src )
 }
 
 
-wxFont pxGetFixedFont( int ptsize, int weight )
+wxFont pxGetFixedFont( int ptsize, wxFontWeight weight )
 {
 	return wxFont(
-		ptsize, wxMODERN, wxNORMAL, weight, false
+		ptsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, weight, false
 #ifdef __WXMSW__
 		,L"Lucida Console"		// better than courier new (win32 only)
 #endif
