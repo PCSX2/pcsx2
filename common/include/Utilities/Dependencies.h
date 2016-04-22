@@ -182,9 +182,9 @@ public:
 #include <wx/string.h>
 #include <wx/intl.h>
 #include <wx/log.h>
-
-#if defined(_WIN32) && wxMAJOR_VERSION >= 3
 #include <wx/crt.h>
+
+#if defined(_WIN32)
 // This deals with a mode_t redefinition conflict. The mode_t doesn't seem to be
 // used anywhere in w32pthreads, so I've chosen to use the wxWidgets mode_t
 // (I think it's unsigned int vs signed int)
