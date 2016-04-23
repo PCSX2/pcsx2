@@ -185,7 +185,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
 		}
 
-#ifndef NDEBUG
+#ifdef ENABLE_OGL_DEBUG
 		if(s_dump)
 		{
 			if(s_savef && s_n >= s_saven)
@@ -445,7 +445,7 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
-#ifndef NDEBUG
+#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -632,7 +632,7 @@ void GSRendererHW::Draw()
 		(this->*m_hacks.m_oo)();
 	}
 
-#ifndef NDEBUG
+#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
