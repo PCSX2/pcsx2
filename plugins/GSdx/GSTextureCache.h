@@ -98,6 +98,7 @@ public:
 	{
 	public:
 		hash_set<Source*> m_surfaces;
+		hash_map<uint64, uint32*> m_pages_coverage;
 		list<Source*> m_map[MAX_PAGES];
 		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;
@@ -108,6 +109,8 @@ public:
 		void RemoveAll();
 		void RemovePartial();
 		void RemoveAt(Source* s);
+
+		uint32* GetPagesCoverage(const GIFRegTEX0& TEX0, const GSOffset* off);
 	};
 
 protected:

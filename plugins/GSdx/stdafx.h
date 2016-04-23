@@ -234,15 +234,6 @@ using namespace stdext;
 
 #endif
 
-extern string format(const char* fmt, ...);
-
-struct delete_object {template<class T> void operator()(T& p) {delete p;}};
-struct delete_first {template<class T> void operator()(T& p) {delete p.first;}};
-struct delete_second {template<class T> void operator()(T& p) {delete p.second;}};
-struct aligned_free_object {template<class T> void operator()(T& p) {_aligned_free(p);}};
-struct aligned_free_first {template<class T> void operator()(T& p) {_aligned_free(p.first);}};
-struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_free(p.second);}};
-
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 #ifndef RESTRICT
@@ -408,6 +399,15 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	#endif
 
 #endif
+
+extern string format(const char* fmt, ...);
+
+struct delete_object {template<class T> void operator()(T& p) {delete p;}};
+struct delete_first {template<class T> void operator()(T& p) {delete p.first;}};
+struct delete_second {template<class T> void operator()(T& p) {delete p.second;}};
+struct aligned_free_object {template<class T> void operator()(T& p) {_aligned_free(p);}};
+struct aligned_free_first {template<class T> void operator()(T& p) {_aligned_free(p.first);}};
+struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_free(p.second);}};
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
