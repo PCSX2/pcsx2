@@ -415,7 +415,7 @@ void GSRendererHW::Draw()
 
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
-		tex = m_tc->LookupSource(context->TEX0, env.TEXA, r);
+		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
 
 		if(!tex) {
 			GL_POP();
