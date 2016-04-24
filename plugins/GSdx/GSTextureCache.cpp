@@ -125,7 +125,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 				TEX0.TBP0, TEX0.PSM);
 
 		// Create a shared texture source
-		src = new Source(m_renderer, TEX0, TEXA, m_temp);
+		src = new Source(m_renderer, TEX0, TEXA, m_temp, true);
 		src->m_texture = dst->m_texture;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
@@ -1480,7 +1480,7 @@ void GSTextureCache::Surface::Update()
 
 // GSTextureCache::Source
 
-GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp)
+GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container)
 	: Surface(r, temp)
 	, m_palette(NULL)
 	, m_initpalette(true)
@@ -1492,20 +1492,32 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
-	memset(m_valid, 0, sizeof(m_valid));
+	if (dummy_container) {
+		// Dummy container only contain a m_texture that is a pointer to another source.
 
-	m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
+		m_write.rect = NULL;
+		m_write.count = 0;
 
-	memset(m_clut, 0, 256*sizeof(uint32));
+		m_clut = NULL;
 
-	m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
-	m_write.count = 0;
+		m_repeating = false;
 
-	m_repeating = m_TEX0.IsRepeating();
+	} else {
+		memset(m_valid, 0, sizeof(m_valid));
 
-	if(m_repeating)
-	{
-		m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
+		m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
+
+		memset(m_clut, 0, 256*sizeof(uint32));
+
+		m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
+		m_write.count = 0;
+
+		m_repeating = m_TEX0.IsRepeating();
+
+		if(m_repeating)
+		{
+			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
+		}
 	}
 }
 
