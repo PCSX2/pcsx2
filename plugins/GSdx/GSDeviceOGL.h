@@ -430,7 +430,6 @@ class GSDeviceOGL final : public GSDevice
 
 	struct {
 		GLuint ps;
-		GSUniformBufferOGL *cb;
 	} m_shadeboost;
 
 	GLuint m_vs[1<<3];

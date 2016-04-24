@@ -37,7 +37,6 @@ uint64 g_uniform_upload_byte = 0;
 
 static const uint32 g_merge_cb_index      = 10;
 static const uint32 g_interlace_cb_index  = 11;
-static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
 static const uint32 g_convert_index       = 15;
 static const uint32 g_vs_cb_index         = 20;
@@ -92,13 +91,13 @@ GSDeviceOGL::~GSDeviceOGL()
 	GL_PUSH("GSDeviceOGL destructor");
 
 	// Clean vertex buffer state
-	delete (m_va);
+	delete m_va;
 
 	// Clean m_merge_obj
-	delete (m_merge_obj.cb);
+	delete m_merge_obj.cb;
 
 	// Clean m_interlace
-	delete (m_interlace.cb);
+	delete m_interlace.cb;
 
 	// Clean m_convert
 	delete m_convert.dss;
@@ -113,9 +112,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Clean m_date
 	delete m_date.dss;
-
-	// Clean shadeboost
-	delete m_shadeboost.cb;
 
 	// Clean various opengl allocation
 	glDeleteFramebuffers(1, &m_fbo);
@@ -317,8 +313,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Shade boost
 	// ****************************************************************
 	GL_PUSH("GSDeviceOGL::Shadeboost");
-
-	m_shadeboost.cb = new GSUniformBufferOGL(g_shadeboost_cb_index, sizeof(ShadeBoostConstantBuffer));
 
 	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
 	int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
@@ -1310,13 +1304,6 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 
 	GSVector4 sRect(0, 0, 1, 1);
 	GSVector4 dRect(0, 0, s.x, s.y);
-
-	ShadeBoostConstantBuffer cb;
-
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_shadeboost.cb->upload(&cb);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, true);
 
