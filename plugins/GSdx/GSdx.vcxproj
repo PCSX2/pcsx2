@@ -794,7 +794,6 @@
     <ClCompile Include="GSTextureCacheSW.cpp" />
     <ClCompile Include="GSTextureFX11.cpp" />
     <ClCompile Include="GSTextureFX9.cpp" />
-    <ClCompile Include="GSTextureFXOGL.cpp" />
     <ClCompile Include="GSTextureNull.cpp" />
     <ClCompile Include="GSTextureSW.cpp" />
     <ClCompile Include="GSThread.cpp" />

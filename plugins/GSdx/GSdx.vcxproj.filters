@@ -165,9 +165,6 @@
     <ClCompile Include="GSTextureFX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureFXOGL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GSTextureNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

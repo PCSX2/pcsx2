@@ -95,7 +95,6 @@ set(GSdxSources
     GSTextureCache.cpp
     GSTextureCacheSW.cpp
     GSTextureCacheOGL.cpp
-    GSTextureFXOGL.cpp
     GSTextureOGL.cpp
     GSTextureNull.cpp
     GSTextureSW.cpp

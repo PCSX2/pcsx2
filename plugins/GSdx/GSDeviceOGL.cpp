@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2011-2014 Gregory hainaut
+ *	Copyright (C) 2011-2016 Gregory hainaut
  *	Copyright (C) 2007-2009 Gabest
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -40,6 +40,9 @@ static const uint32 g_interlace_cb_index  = 11;
 static const uint32 g_shadeboost_cb_index = 12;
 static const uint32 g_fx_cb_index         = 14;
 static const uint32 g_convert_index       = 15;
+static const uint32 g_vs_cb_index         = 20;
+static const uint32 g_ps_cb_index         = 21;
+static const uint32 g_gs_cb_index         = 22;
 
 bool GSDeviceOGL::m_debug_gl_call = false;
 int  GSDeviceOGL::s_n = 0;
@@ -415,6 +418,50 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	return true;
 }
 
+void GSDeviceOGL::CreateTextureFX()
+{
+	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
+	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
+
+	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
+	m_palette_ss = CreateSampler(false, false, false);
+	glBindSampler(1, m_palette_ss);
+
+	// Pre compile all Geometry & Vertex Shader
+	// It might cost a seconds at startup but it would reduce benchmark pollution
+	GL_PUSH("Compile GS");
+
+	for (uint32 key = 0; key < countof(m_gs); key++) {
+		GSSelector sel(key);
+		if (sel.point == sel.sprite)
+			m_gs[key] = 0;
+		else
+			m_gs[key] = CompileGS(GSSelector(key));
+	}
+
+	GL_POP();
+
+	GL_PUSH("Compile VS");
+
+	for (uint32 key = 0; key < countof(m_vs); key++) {
+		VSSelector sel(key);
+		m_vs[key] = CompileVS(sel);
+	}
+
+	GL_POP();
+
+	// Enable all bits for stencil operations. Technically 1 bit is
+	// enough but buffer is polluted with noise. Clear will be limited
+	// to the mask.
+	glStencilMask(0xFF);
+	for (uint32 key = 0; key < countof(m_om_dss); key++) {
+		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
+	}
+
+	// Help to debug FS in apitrace
+	m_apitrace = CompilePS(PSSelector());
+}
+
 bool GSDeviceOGL::Reset(int w, int h)
 {
 	if(!GSDevice::Reset(w, h))
@@ -644,6 +691,37 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 
 	GL_POP();
 	return sampler;
+}
+
+GLuint GSDeviceOGL::GetSamplerID(PSSamplerSelector ssel)
+{
+	return m_ps_ss[ssel];
+}
+
+GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
+{
+	GSDepthStencilOGL* dss = new GSDepthStencilOGL();
+
+	if (dssel.date)
+	{
+		dss->EnableStencil();
+		dss->SetStencil(GL_EQUAL, GL_KEEP);
+	}
+
+	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
+	{
+		static const GLenum ztst[] =
+		{
+			GL_NEVER,
+			GL_ALWAYS,
+			GL_GEQUAL,
+			GL_GREATER
+		};
+		dss->EnableDepth();
+		dss->SetDepth(ztst[dssel.ztst], dssel.zwe);
+	}
+
+	return dss;
 }
 
 void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
@@ -1471,6 +1549,55 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 		// FIXME ScissorIndexedv (GL4.1)
 		glScissor( r.x, r.y, r.width(), r.height() );
 	}
+}
+
+void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
+{
+	GL_PUSH("UBO");
+	if(m_vs_cb_cache.Update(vs_cb)) {
+		m_vs_cb->upload(vs_cb);
+	}
+
+	if(m_ps_cb_cache.Update(ps_cb)) {
+		m_ps_cb->upload(ps_cb);
+	}
+	GL_POP();
+}
+
+void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
+{
+	// *************************************************************
+	// Static
+	// *************************************************************
+	GLuint ps;
+	auto i = m_ps.find(psel);
+
+	if (i == m_ps.end()) {
+		ps = CompilePS(psel);
+		m_ps[psel] = ps;
+	} else {
+		ps = i->second;
+	}
+
+	// *************************************************************
+	// Dynamic
+	// *************************************************************
+	m_shader->BindPipeline(m_vs[vsel], m_gs[gsel], ps);
+}
+
+void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)
+{
+	PSSetSamplerState(m_ps_ss[ssel]);
+}
+
+GLuint GSDeviceOGL::GetPaletteSamplerID()
+{
+	return m_palette_ss;
+}
+
+void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
+{
+	OMSetDepthStencilState(m_om_dss[dssel]);
 }
 
 void GSDeviceOGL::CheckDebugLog()
