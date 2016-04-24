@@ -295,8 +295,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
 					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
-					dst = t;
-					break;
+					//dst = t;
+					//break;
+					// Let's fetch a depth format texture. Rational, it will avoid the texture allocation and the
+					// rescaling of the current function.
+					GIFRegTEX0 depth_TEX0;
+					depth_TEX0.u32[0] = TEX0.u32[0] | (0x30u << 20u);
+					depth_TEX0.u32[1] = TEX0.u32[1];
+					return LookupDepthSource(depth_TEX0, TEXA, r);
 				}
 			}
 		}
