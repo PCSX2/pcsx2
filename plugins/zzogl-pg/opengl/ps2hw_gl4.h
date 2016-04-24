@@ -22,7 +22,7 @@
 
 
 
-static const char* ps2hw_gl4_glsl =
+static const char* const ps2hw_gl4_glsl =
 	"//#version 420 Keep it for text editor detection\n"
 	"\n"
 	"//  ZZ Open GL graphics plugin\n"

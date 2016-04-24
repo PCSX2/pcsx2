@@ -1,21 +1,7 @@
 //#version 420 // Keep it for editor detection
 
-struct vertex_basic
-{
-    vec4 p;
-    vec2 t;
-};
-
 
 #ifdef VERTEX_SHADER
-
-out gl_PerVertex {
-    vec4 gl_Position;
-    float gl_PointSize;
-#if !pGL_ES
-    float gl_ClipDistance[1];
-#endif
-};
 
 layout(location = 0) in vec2 POSITION;
 layout(location = 1) in vec2 TEXCOORD0;
@@ -34,13 +20,10 @@ out SHADER
     vec2 t;
 } VSout;
 
-#define VSout_p (VSout.p)
-#define VSout_t (VSout.t)
-
 void vs_main()
 {
-    VSout_p = vec4(POSITION, 0.5f, 1.0f);
-    VSout_t = TEXCOORD0;
+    VSout.p = vec4(POSITION, 0.5f, 1.0f);
+    VSout.t = TEXCOORD0;
     gl_Position = vec4(POSITION, 0.5f, 1.0f); // NOTE I don't know if it is possible to merge POSITION_OUT and gl_Position
 }
 
@@ -54,9 +37,6 @@ in SHADER
     vec2 t;
 } PSin;
 
-#define PSin_p (PSin.p)
-#define PSin_t (PSin.t)
-
 // Give a different name so I remember there is a special case!
 #if defined(ps_main1) || defined(ps_main10)
 layout(location = 0) out uint SV_Target1;
@@ -64,16 +44,9 @@ layout(location = 0) out uint SV_Target1;
 layout(location = 0) out vec4 SV_Target0;
 #endif
 
-layout(binding = 0) uniform sampler2D TextureSampler;
-
-layout(std140, binding = 15) uniform cb15
-{
-    ivec4 ScalingFactor;
-};
-
 vec4 sample_c()
 {
-    return texture(TextureSampler, PSin_t);
+    return texture(TextureSampler, PSin.t);
 }
 
 vec4 ps_crt(uint i)
@@ -365,11 +338,11 @@ void ps_main9()
     vec2 texdim = vec2(textureSize(TextureSampler, 0));
 
     vec4 c;
-    if (dFdy(PSin_t.y) * PSin_t.y > 0.5f) {
+    if (dFdy(PSin.t.y) * PSin.t.y > 0.5f) {
         c = sample_c();
     } else {
-        float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
-        c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
+        float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin.t.y * texdim.y));
+        c =  factor * texture(TextureSampler, vec2(PSin.t.x, (floor(PSin.t.y * texdim.y) + 0.5f) / texdim.y));
     }
 
     SV_Target0 = c;

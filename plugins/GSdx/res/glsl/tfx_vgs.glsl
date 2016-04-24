@@ -1,37 +1,5 @@
 //#version 420 // Keep it for text editor detection
 
-layout(std140, binding = 20) uniform cb20
-{
-    vec2 VertexScale;
-    vec2 VertexOffset;
-    vec2 _removed_TextureScale;
-    vec2 PointSize;
-};
-
-// Warning duplicated in both GLSL file
-layout(std140, binding = 21) uniform cb21
-{
-    vec3 FogColor;
-    float AREF;
-
-    vec4 WH;
-
-    vec2 TA;
-    float _pad0;
-    float Af;
-
-    uvec4 MskFix;
-
-    uvec4 FbMask;
-
-    vec4 HalfTexel;
-
-    vec4 MinMax;
-
-    vec2 TextureScale;
-    vec2 TC_OffsetHack;
-};
-
 #ifdef VERTEX_SHADER
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in vec4  i_c;
@@ -48,17 +16,6 @@ out SHADER
     vec4 c;
     flat vec4 fc;
 } VSout;
-
-#define VSout_c (VSout.c)
-#define VSout_fc (VSout.fc)
-
-out gl_PerVertex {
-    vec4 gl_Position;
-    float gl_PointSize;
-#if !pGL_ES
-    float gl_ClipDistance[1];
-#endif
-};
 
 const float exp_min32 = exp2(-32.0f);
 
@@ -101,32 +58,14 @@ void vs_main()
 
     texture_coord();
 
-    VSout_c = i_c;
-    VSout_fc = i_c;
+    VSout.c = i_c;
+    VSout.fc = i_c;
     VSout.t_float.z = i_f.x; // pack for with texture
 }
 
 #endif
 
 #ifdef GEOMETRY_SHADER
-
-in gl_PerVertex {
-    vec4 gl_Position;
-    float gl_PointSize;
-#if !pGL_ES
-    float gl_ClipDistance[1];
-#endif
-} gl_in[];
-//in int gl_PrimitiveIDIn;
-
-out gl_PerVertex {
-    vec4 gl_Position;
-    float gl_PointSize;
-#if !pGL_ES
-    float gl_ClipDistance[1];
-#endif
-};
-//out int gl_PrimitiveID;
 
 in SHADER
 {
@@ -143,12 +82,6 @@ out SHADER
     vec4 c;
     flat vec4 fc;
 } GSout;
-
-layout(std140, binding = 22) uniform cb22
-{
-    vec4 rt_size;
-};
-
 
 struct vertex
 {

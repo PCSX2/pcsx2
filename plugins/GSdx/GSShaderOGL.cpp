@@ -23,6 +23,8 @@
 #include "GSShaderOGL.h"
 #include "GLState.h"
 
+#include "res/glsl_source.h"
+
 GSShaderOGL::GSShaderOGL(bool debug) :
 	m_pipeline(0),
 	m_debug_shader(debug)
@@ -184,17 +186,14 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 
 	// Note it is better to separate header and source file to have the good line number
 	// in the glsl compiler report
-	const char* sources[2];
+	const int shader_nb = 3;
+	const char* sources[shader_nb];
 
 	std::string header = GenGlslHeader(entry, type, macro_sel);
-	int shader_nb = 1;
-#if 1
+
 	sources[0] = header.c_str();
-	sources[1] = glsl_h_code;
-	shader_nb++;
-#else
-	sources[0] = header.append(glsl_h_code).c_str();
-#endif
+	sources[1] = common_header_glsl;
+	sources[2] = glsl_h_code;
 
 	program = glCreateShaderProgramv(type, shader_nb, sources);
 

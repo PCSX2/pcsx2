@@ -13,14 +13,6 @@
 ------------------------------------------------------------------------------*/
 #if (FXAA_GLSL_130 == 1)
 
-struct vertex_basic
-{
-    vec4 p;
-    vec2 t;
-};
-
-layout(binding = 0) uniform sampler2D TextureSampler;
-
 in SHADER
 {
     vec4 p;

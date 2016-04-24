@@ -45,7 +45,7 @@ $gsdx_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "GSdx", 
 my @tfx_res = qw/tfx_fs.glsl/;
 my $tfx_all = File::Spec->catdir($gsdx_path, "tfx_fs_all.glsl");
 
-my @gsdx_res = qw/convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx_vgs.glsl tfx_fs_all.glsl fxaa.fx/;
+my @gsdx_res = qw/common_header.glsl convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx_vgs.glsl tfx_fs_all.glsl fxaa.fx/;
 concat($gsdx_path, $tfx_all, \@tfx_res);
 
 glsl2h($gsdx_path, $gsdx_out, \@gsdx_res);
@@ -117,7 +117,7 @@ EOS
     foreach my $file (@{$glsl_files}) {
         my $name = $file;
         $name =~ s/\./_/;
-        $data .= "\nstatic const char* $name =\n";
+        $data .= "\nstatic const char* const $name =\n";
 
         open(my $GLSL, File::Spec->catfile($in_dir, $file)) or die "$! : $file";
         my $line;

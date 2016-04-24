@@ -34,14 +34,10 @@ in SHADER
     flat vec4 fc;
 } PSin;
 
-#define PSin_c (PSin.c)
-#define PSin_fc (PSin.fc)
-
 // Same buffer but 2 colors for dual source blending
 layout(location = 0, index = 0) out vec4 SV_Target0;
 layout(location = 0, index = 1) out vec4 SV_Target1;
 
-layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the image below
 
@@ -72,31 +68,6 @@ layout(early_fragment_tests) in;
 #else
 // use basic stencil
 #endif
-
-
-// Warning duplicated in both GLSL file
-layout(std140, binding = 21) uniform cb21
-{
-    vec3 FogColor;
-    float AREF;
-
-    vec4 WH;
-
-    vec2 TA;
-    float _pad0;
-    float Af;
-
-    uvec4 MskFix;
-
-    uvec4 FbMask;
-
-    vec4 HalfTexel;
-
-    vec4 MinMax;
-
-    vec2 TextureScale;
-    vec2 TC_OffsetHack;
-};
 
 vec4 sample_c(vec2 uv)
 {
@@ -364,9 +335,9 @@ vec4 ps_color()
 #endif
 
 #if PS_IIP == 1
-    vec4 C = tfx(T, PSin_c);
+    vec4 C = tfx(T, PSin.c);
 #else
-    vec4 C = tfx(T, PSin_fc);
+    vec4 C = tfx(T, PSin.fc);
 #endif
 
     atst(C);
