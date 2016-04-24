@@ -194,7 +194,7 @@ void GSDevice::AgePool()
 {
 	m_frame++;
 
-	while(m_pool.size() > 20 && m_frame - m_pool.back()->last_frame_used > 10)
+	while(m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
 	{
 		delete m_pool.back();
 
