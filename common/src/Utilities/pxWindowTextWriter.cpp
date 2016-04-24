@@ -53,8 +53,8 @@ pxWindowTextWriter& pxWindowTextWriter::SetStyle( wxFontStyle style )
 pxWindowTextWriter& pxWindowTextWriter::Normal()
 {
 	wxFont curfont( m_dc.GetFont() );
-	curfont.SetStyle( wxFONTWEIGHT_NORMAL );
-	curfont.SetWeight( wxFONTSTYLE_NORMAL );
+	curfont.SetStyle( wxFONTSTYLE_NORMAL );
+	curfont.SetWeight( wxFONTWEIGHT_NORMAL );
 	m_dc.SetFont( curfont );
 
 	return *this;
