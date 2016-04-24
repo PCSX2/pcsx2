@@ -342,8 +342,6 @@ void GSRenderer::VSync(int field)
 
 		double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
 
-		GSVector4i r = GetDisplayRect();
-
 		string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
