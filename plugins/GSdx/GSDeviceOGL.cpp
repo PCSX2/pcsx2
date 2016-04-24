@@ -1182,6 +1182,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex,
 
 	if(sTex[0])
 	{
+		// TODO: potentially we could cache the value to avoid to upload every frame
 		m_merge_obj.cb->upload(&c.v);
 
 		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_MERGE_BLEND);
@@ -1201,6 +1202,7 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	GSVector4 sRect(0, 0, 1, 1);
 	GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
 
+	// TODO: potentially we could cache the value to avoid to upload every frame
 	InterlaceConstantBuffer cb;
 
 	cb.ZrH = GSVector2(0, 1.0f / s.y);
@@ -1283,6 +1285,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	ExternalFXConstantBuffer cb;
 
+	// TODO: potentially we could cache the value to avoid to upload every frame
 	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
