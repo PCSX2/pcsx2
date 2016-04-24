@@ -52,6 +52,12 @@ layout(std140, binding = 11) uniform cb11
     float hH;
 };
 
+layout(std140, binding = 14) uniform cb14
+{
+    vec2 _xyFrame;
+    vec4 _rcpFrame;
+};
+
 layout(std140, binding = 15) uniform cb15
 {
     ivec4 ScalingFactor;

@@ -45,14 +45,6 @@
 #define saturate(x) clamp(x, 0.0, 1.0)
 #define SamplerState sampler2D
 
-struct vertex_basic
-{
-    vec4 p;
-    vec2 t;
-};
-
-layout(binding = 0) uniform sampler2D TextureSampler;
-
 in SHADER
 {
     vec4 p;
@@ -61,11 +53,6 @@ in SHADER
 
 layout(location = 0) out vec4 SV_Target0;
 
-layout(std140, binding = 14) uniform cb10
-{
-    vec2 _xyFrame;
-    vec4 _rcpFrame;
-};
 
 #else
 
