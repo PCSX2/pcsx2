@@ -28,7 +28,7 @@ static const int LATENCY_MAX = 3000;
 static const int LATENCY_MAX = 750;
 #endif
 
-static const int LATENCY_MIN = 40;
+static const int LATENCY_MIN = 15;
 
 int AutoDMAPlayRate[2] = {0,0};
 
