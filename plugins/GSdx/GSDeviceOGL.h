@@ -247,6 +247,7 @@ class GSDeviceOGL final : public GSDevice
 				// Format
 				uint32 tex_fmt:4;
 				uint32 dfmt:2;
+				uint32 depth_fmt:2;
 				// Alpha extension/Correction
 				uint32 aem:1;
 				uint32 fba:1;
@@ -270,7 +271,7 @@ class GSDeviceOGL final : public GSDevice
 				uint32 write_rg:1;
 				uint32 fbmask:1;
 
-				uint32 _free1:2;
+				//uint32 _free1:0;
 
 				// *** Word 2
 				// Blend and Colclip

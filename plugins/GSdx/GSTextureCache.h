@@ -41,6 +41,7 @@ public:
 		int m_age;
 		uint8* m_temp;
 		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
+		bool m_shared_texture;
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);
@@ -68,7 +69,7 @@ public:
 		vector<GSVector2i>* m_p2t;
 
 	public:
-		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp);
+		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);
 		virtual ~Source();
 
 		virtual void Update(const GSVector4i& rect);
@@ -141,6 +142,8 @@ public:
 	void RemovePartial();
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
+	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
+
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
 

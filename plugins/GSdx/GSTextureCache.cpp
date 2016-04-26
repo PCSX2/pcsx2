@@ -85,6 +85,75 @@ void GSTextureCache::RemoveAll()
 	}
 }
 
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
+{
+	if (!CanConvertDepth()) return NULL;
+
+	if(GSLocalMemory::m_psm[TEX0.PSM].pal > 0)
+		m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
+
+	Source* src = NULL;
+	Target* dst = NULL;
+
+	// Check only current frame, I guess it is only used as a postprocessing effect
+	uint32 bp = TEX0.TBP0;
+	uint32 psm = TEX0.PSM;
+	for(auto t : m_dst[DepthStencil]) {
+		if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+		{
+			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+			dst = t;
+			break;
+		}
+	}
+
+	if (!dst) {
+		// Retry on the render target (Silent Hill 4)
+		for(auto t : m_dst[RenderTarget]) {
+			if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			{
+				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+				dst = t;
+				break;
+			}
+		}
+	}
+
+	if (dst) {
+		GL_CACHE("TC depth: dst %s hit: %d (0x%x, F:0x%x)", to_string(dst->m_type),
+				dst->m_texture ? dst->m_texture->GetID() : 0,
+				TEX0.TBP0, TEX0.PSM);
+
+		// Create a shared texture source
+		src = new Source(m_renderer, TEX0, TEXA, m_temp, true);
+		src->m_texture = dst->m_texture;
+		src->m_shared_texture = true;
+		src->m_target = true; // So renderer can check if a conversion is required
+		src->m_32_bits_fmt = dst->m_32_bits_fmt;
+
+		// Insert the texture in the hash set to keep track of it. But don't bother with
+		// texture cache list. It means that a new Source is created everytime we need it.
+		// If it is too expensive, one could cut memory allocation in Source constructor for this
+		// use case.
+
+		m_src.m_surfaces.insert(src);
+	} else {
+		GL_CACHE("TC depth: ERROR miss (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+		// Possible ? In this case we could call LookupSource
+		// Or just put a basic texture
+		// src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
+		// In all cases rendering will be broken
+		//
+		// Note: might worth to check previous frame
+		// Note: otherwise return NULL and skip the draw
+
+		//ASSERT(0);
+		return LookupSource(TEX0, TEXA, r);
+	}
+
+	return src;
+}
+
 GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
@@ -207,6 +276,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
+		// Pure depth texture format will be fetched by LookupDepthSource.
+		// However guess what, some games (GoW) read the depth as a standard
+		// color format (instead of a depth format). All pixels are scrambled
+		// (because color and depth don't have same location). They don't care
+		// pixel will be several draw calls later.
+		//
+		// Sigh... They don't help us.
+
 		if (dst == NULL && CanConvertDepth()) {
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
@@ -217,8 +294,15 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
-					dst = t;
-					break;
+					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
+					//dst = t;
+					//break;
+					// Let's fetch a depth format texture. Rational, it will avoid the texture allocation and the
+					// rescaling of the current function.
+					GIFRegTEX0 depth_TEX0;
+					depth_TEX0.u32[0] = TEX0.u32[0] | (0x30u << 20u);
+					depth_TEX0.u32[1] = TEX0.u32[1];
+					return LookupDepthSource(depth_TEX0, TEXA, r);
 				}
 			}
 		}
@@ -314,14 +398,16 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				dst = CreateTarget(TEX0, w, h, type);
 				dst->m_32_bits_fmt = t->m_32_bits_fmt;
 
+				int shader;
+				bool fmt_16_bits = (GSLocalMemory::m_psm[TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16);
 				if (type == DepthStencil) {
-					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					int shader = ShaderConvert_RGBA8_TO_FLOAT32 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
-					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
+					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
+					shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
 				} else {
-					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x)", w, h, bp, TEX0.PSM);
-					m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, ShaderConvert_FLOAT32_TO_RGBA8, false);
+					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
+					shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
 				}
+				m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
 
 				break;
 			}
@@ -944,8 +1030,12 @@ void GSTextureCache::IncAge()
 
 		Source* s = *j;
 
-		if(++s->m_age > maxage)
-		{
+		if(s->m_shared_texture) {
+			// Shared textures are temporary only added in the hash set but not in the texture
+			// cache list therefore you can't use RemoveAt
+			m_src.m_surfaces.erase(s);
+			delete s;
+		} else if(++s->m_age > maxage) {
 			m_src.RemoveAt(s);
 		}
 	}
@@ -1339,7 +1429,7 @@ void GSTextureCache::PrintMemoryUsage()
 	uint32 dss    = 0;
 	for(hash_set<Source*>::iterator i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end(); i++) {
 		Source* s = *i;
-		if (s) {
+		if (s && !s->m_shared_texture) {
 			if (s->m_target)
 				tex_rt += s->m_texture->GetMemUsage();
 			else
@@ -1370,13 +1460,17 @@ GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	, m_age(0)
 	, m_temp(temp)
 	, m_32_bits_fmt(false)
+	, m_shared_texture(false)
 {
 	m_TEX0.TBP0 = 0x3fff;
 }
 
 GSTextureCache::Surface::~Surface()
 {
-	m_renderer->m_dev->Recycle(m_texture);
+	// Shared textures are pointers copy. Therefore no allocation
+	// to recycle.
+	if (!m_shared_texture)
+		m_renderer->m_dev->Recycle(m_texture);
 }
 
 void GSTextureCache::Surface::Update()
@@ -1386,7 +1480,7 @@ void GSTextureCache::Surface::Update()
 
 // GSTextureCache::Source
 
-GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp)
+GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container)
 	: Surface(r, temp)
 	, m_palette(NULL)
 	, m_initpalette(true)
@@ -1398,20 +1492,32 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
-	memset(m_valid, 0, sizeof(m_valid));
+	if (dummy_container) {
+		// Dummy container only contain a m_texture that is a pointer to another source.
 
-	m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
+		m_write.rect = NULL;
+		m_write.count = 0;
 
-	memset(m_clut, 0, 256*sizeof(uint32));
+		m_clut = NULL;
 
-	m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
-	m_write.count = 0;
+		m_repeating = false;
 
-	m_repeating = m_TEX0.IsRepeating();
+	} else {
+		memset(m_valid, 0, sizeof(m_valid));
 
-	if(m_repeating)
-	{
-		m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
+		m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
+
+		memset(m_clut, 0, 256*sizeof(uint32));
+
+		m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
+		m_write.count = 0;
+
+		m_repeating = m_TEX0.IsRepeating();
+
+		if(m_repeating)
+		{
+			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
+		}
 	}
 }
 

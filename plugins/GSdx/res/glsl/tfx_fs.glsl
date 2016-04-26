@@ -175,6 +175,94 @@ mat4 sample_4p(vec4 u)
     return c;
 }
 
+//////////////////////////////////////////////////////////////////////
+// Depth sampling
+//////////////////////////////////////////////////////////////////////
+vec4 fetch_c(ivec2 uv)
+{
+    return texelFetch(TextureSampler, ivec2(uv), 0);
+}
+
+ivec2 clamp_wrap_uv_depth(ivec2 uv)
+{
+    ivec2 uv_out = uv;
+
+    // Keep the full precision
+    // It allow to multiply the ScalingFactor before the 1/16 coeff
+    ivec4 mask = ivec4(MskFix) << 4;
+
+#if PS_WMS == PS_WMT
+
+#if PS_WMS == 2
+    uv_out = clamp(uv, mask.xy, mask.zw);
+#elif PS_WMS == 3
+    uv_out = (uv & mask.xy) | mask.zw;
+#endif
+
+#else // PS_WMS != PS_WMT
+
+#if PS_WMS == 2
+    uv_out.x = clamp(uv, mask.x, mask.z);
+#elif PS_WMS == 3
+    uv_out.x = (uv.x & mask.x) | mask.z;
+#endif
+
+#if PS_WMT == 2
+    uv_out.y = clamp(uv, mask.y, mask.w);
+#elif PS_WMT == 3
+    uv_out.y = (uv.y & mask.y) | mask.w;
+#endif
+
+#endif
+
+    return uv_out;
+}
+
+vec4 sample_depth(vec2 st)
+{
+    vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScalingFactor.xy) * vec2(1.0f/16.0f);
+    ivec2 uv = ivec2(uv_f);
+
+    vec4 t;
+#if PS_DEPTH_FMT == 1
+    // Based on ps_main11 of convert
+
+    // Convert a GL_FLOAT32 depth texture into a RGBA color texture
+    const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
+    const vec4 bitMsk = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
+
+    vec4 res = fract(vec4(fetch_c(uv).r) * bitSh);
+
+    t = (res - res.xxyz * bitMsk) * 256.0f;
+
+#elif PS_DEPTH_FMT == 2
+    // Based on ps_main12 of convert
+
+    // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+    const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
+    const uvec4 bitMsk = uvec4(0x1F, 0x1F, 0x1F, 0x1);
+    uvec4 color = uvec4(vec4(fetch_c(uv).r) * bitSh) & bitMsk;
+
+    t = vec4(color) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
+
+#elif PS_DEPTH_FMT == 3
+    // Convert a RGBA/RGB5A1 color texture into a RGBA/RGB5A1 color texture
+    t = fetch_c(uv) * 255.0f;
+
+#endif
+
+    // warning t ranges from 0 to 255
+#if (PS_AEM_FMT == FMT_24)
+    t.a = ( (PS_AEM == 0) || any(bvec3(t.rgb))  ) ? 255.0f * TA.x : 0.0f;
+#elif (PS_AEM_FMT == FMT_16)
+    t.a = t.a >= 128.0f ? 255.0f * TA.y : ( (PS_AEM == 0) || any(bvec3(t.rgb)) ) ? 255.0f * TA.x : 0.0f;
+#endif
+
+
+    return t;
+}
+//////////////////////////////////////////////////////////////////////
+
 vec4 sample_color(vec2 st)
 {
 #if (PS_TCOFFSETHACK == 1)
@@ -328,10 +416,17 @@ vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
 #if (PS_FST == 0)
-    vec4 T = sample_color(PSin.t_float.xy / vec2(PSin.t_float.w));
+    vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
 #else
     // Note xy are normalized coordinate
-    vec4 T = sample_color(PSin.t_int.xy);
+    vec2 st = PSin.t_int.xy;
+#endif
+
+#if (PS_DEPTH_FMT > 0)
+    // Integral coordinate
+    vec4 T = sample_depth(PSin.t_int.zw);
+#else
+    vec4 T = sample_color(st);
 #endif
 
 #if PS_IIP == 1

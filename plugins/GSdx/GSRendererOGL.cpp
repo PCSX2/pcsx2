@@ -873,15 +873,20 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (tex)
 	{
-		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
+		//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
+		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2 && !psm.depth;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 		ps_sel.wms = m_context->CLAMP.WMS;
 		ps_sel.wmt = m_context->CLAMP.WMT;
+
+		// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
+		ASSERT(!(psm.depth && m_vt.IsLinear()));
 
 		// Performance note:
 		// 1/ Don't set 0 as it is the default value
@@ -892,6 +897,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.aem     = m_env.TEXA.AEM;
 			ASSERT(tex->m_target);
 
+			// Require a float conversion if the texure is a depth otherwise uses Integral scaling
+			if (psm.depth) {
+				ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 : 1;
+			}
+
 			// Shuffle is a 16 bits format, so aem is always required
 			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 			ta /= 255.0f;
@@ -899,8 +909,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_cb.TA_Af.x = ta.x;
 			ps_cb.TA_Af.y = ta.y;
 
-			// FIXME: it is likely a bad idea to do the bilinear interpolation here
-			// bilinear &= m_vt.IsLinear();
+			// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
+			bilinear &= m_vt.IsLinear();
 
 		} else if (tex->m_target) {
 			// Use an old target. AEM and index aren't resolved it must be done
@@ -932,6 +942,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// Alpha channel of the RT is reinterpreted as an index. Star
 				// Ocean 3 uses it to emulate a stencil buffer.  It is a very
 				// bad idea to force bilinear filtering on it.
+				bilinear &= m_vt.IsLinear();
+			}
+
+			// Depth format
+			if (psm.depth) {
+				// Require a float conversion if the texure is a depth otherwise uses Integral scaling
+				ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 :
+					(psm.bpp == 16) ? 2 : 1;
+				// Don't force interpolation on depth format
 				bilinear &= m_vt.IsLinear();
 			}
 
