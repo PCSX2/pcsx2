@@ -33,6 +33,8 @@
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 
+extern bool switchAR;
+
 static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
 
@@ -175,6 +177,8 @@ namespace Implementations
 	{
 		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
 		wxString arts(L"Not modified");
+		if (art == AspectRatio_Stretch && switchAR) //avoids a double 4:3 when coming from FMV aspect ratio switch
+			art = AspectRatio_4_3;
 		switch( art )
 		{
 			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = L"AspectRatio_4_3"; break;
