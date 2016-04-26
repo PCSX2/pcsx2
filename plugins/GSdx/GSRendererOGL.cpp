@@ -620,12 +620,7 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
-		size_t nb_vertex;
-		switch (m_vt.m_primclass) {
-			case GS_TRIANGLE_CLASS: nb_vertex = 3; break;
-			case GS_POINT_CLASS:	nb_vertex = 1; break;
-			default: nb_vertex = 2; break;
-		}
+		size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
 
 		GL_PUSH("Split the draw");
 
