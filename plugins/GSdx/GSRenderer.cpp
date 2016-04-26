@@ -99,7 +99,7 @@ bool GSRenderer::Merge(int field)
 	GSVector4i fr[2];
 	GSVector4i dr[2];
 
-	int baseline = INT_MAX;
+	GSVector2i baseline = {INT_MAX, INT_MAX};
 
 	for(int i = 0; i < 2; i++)
 	{
@@ -110,7 +110,8 @@ bool GSRenderer::Merge(int field)
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
 
-			baseline = min(dr[i].top, baseline);
+			baseline.x = min(dr[i].left, baseline.x);
+			baseline.y = min(dr[i].top, baseline.y);
 
 			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 		}
@@ -222,9 +223,12 @@ bool GSRenderer::Merge(int field)
 
 		GSVector2 off(0, 0);
 
-		if(dr[i].top - baseline >= 4) // 2?
+		// Time Crisis 2/3 uses two side by side images when in split screen mode.
+		off.x = tex[i]->GetScale().x * (dr[i].left - baseline.x);
+
+		if(dr[i].top - baseline.y >= 4) // 2?
 		{
-			off.y = tex[i]->GetScale().y * (dr[i].top - baseline);
+			off.y = tex[i]->GetScale().y * (dr[i].top - baseline.y);
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{
