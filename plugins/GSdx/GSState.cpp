@@ -515,14 +515,16 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 
 	GSVector4i::storel(&m_v.ST, st);
 
-	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
-	
-	*(int*)&m_q = GSVector4i::store(q); 
+	// character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
+	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero());
+	// Suikoden 4 creates some nan for Q. Let's avoid undefined behavior (See GIFRegHandlerRGBAQ)
+	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
 
-	ASSERT(!std::isnan(m_q)); // See GIFRegHandlerRGBAQ
+	*(int*)&m_q = GSVector4i::store(q);
+
 	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
-	
+
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
 	m_v.ST.S -= 0.02f * m_q / (1 << TEX0.TW);
@@ -732,15 +734,6 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
 
 	m_v.RGBAQ = rgbaq.upl32(q);
-
-	/*
-	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
-	// breaks GSVertexTrace code that rely on min/max.
-	if (std::isnan(m_v.RGBAQ.Q))
-	{
-		m_v.RGBAQ.Q = std::numeric_limits<float>::max();
-	}
-	*/
 }
 
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
