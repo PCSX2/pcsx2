@@ -232,7 +232,7 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 	}
 
 	mVUregs.flagInfo |= ((__Status) ? 0 : (xS << 2));
-	mVUregs.flagInfo |= ((__Mac||1) ? 0 : (xM << 4));
+	mVUregs.flagInfo |= ((__Mac)    ? 0 : (xM << 4));
 	mVUregs.flagInfo |= ((__Clip)   ? 0 : (xC << 6));
 	iPC = endPC;
 
