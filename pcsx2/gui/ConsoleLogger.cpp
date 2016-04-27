@@ -26,15 +26,11 @@
 
 #include <wx/textfile.h>
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_LogWrite, -1)
-	DECLARE_EVENT_TYPE(pxEvt_SetTitleText, -1)
-	DECLARE_EVENT_TYPE(pxEvt_FlushQueue, -1)
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
-DEFINE_EVENT_TYPE(pxEvt_LogWrite)
-DEFINE_EVENT_TYPE(pxEvt_SetTitleText)
-DEFINE_EVENT_TYPE(pxEvt_FlushQueue)
+wxDEFINE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
 // C++ requires abstract destructors to exist, even though they're abstract.
 PipeRedirectionBase::~PipeRedirectionBase() throw() {}
