@@ -34,7 +34,6 @@ END_DECLARE_EVENT_TYPES()
 
 DEFINE_EVENT_TYPE(pxEvt_LogWrite)
 DEFINE_EVENT_TYPE(pxEvt_SetTitleText)
-DEFINE_EVENT_TYPE(pxEvt_DockConsole)
 DEFINE_EVENT_TYPE(pxEvt_FlushQueue)
 
 // C++ requires abstract destructors to exist, even though they're abstract.
@@ -476,7 +475,6 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler		(ConsoleLogFrame::OnActivate) );
 
 	Connect( pxEvt_SetTitleText,	wxCommandEventHandler	(ConsoleLogFrame::OnSetTitle) );
-	Connect( pxEvt_DockConsole,		wxCommandEventHandler	(ConsoleLogFrame::OnDockedMove) );
 	Connect( pxEvt_FlushQueue,		wxCommandEventHandler	(ConsoleLogFrame::OnFlushEvent) );
 
 	Connect( m_timer_FlushUnlocker.GetId(),	wxEVT_TIMER,	wxTimerEventHandler	(ConsoleLogFrame::OnFlushUnlockerTimer) );
@@ -656,23 +654,12 @@ bool ConsoleLogFrame::Newline()
 	return Write( Color_Current, L"\n" );
 }
 
-void ConsoleLogFrame::DockedMove()
-{
-	SetPosition( m_conf.DisplayPosition );
-}
-
 // =================================================================================
 //  Section : Event Handlers
 //    * Misc Window Events (Move, Resize,etc)
 //    * Menu Events
 //    * Logging Events
 // =================================================================================
-
-// Special event received from a window we're docked against.
-void ConsoleLogFrame::OnDockedMove( wxCommandEvent& event )
-{
-	DockedMove();
-}
 
 void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 {

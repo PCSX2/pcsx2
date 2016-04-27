@@ -19,10 +19,6 @@
 #include <array>
 #include <memory>
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_DockConsole, -1)
-END_DECLARE_EVENT_TYPES()
-
 static const bool EnableThreadedLoggingTest = false; //true;
 
 class LogWriteEvent;
@@ -220,8 +216,6 @@ public:
 	ConsoleLogFrame( MainEmuFrame *pParent, const wxString& szTitle, ConLogConfig& options );
 	virtual ~ConsoleLogFrame();
 
-	virtual void DockedMove();
-
 	// Retrieves the current configuration options settings for this box.
 	// (settings change if the user moves the window or changes the font size)
 	const ConLogConfig& GetConfig() const { return m_conf; }
@@ -248,7 +242,6 @@ protected:
 	virtual void OnCloseWindow(wxCloseEvent& event);
 
 	void OnSetTitle( wxCommandEvent& event );
-	void OnDockedMove( wxCommandEvent& event );
 	void OnFlushUnlockerTimer( wxTimerEvent& evt );
 	void OnFlushEvent( wxCommandEvent& event );
 
