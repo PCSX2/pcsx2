@@ -91,7 +91,7 @@ class Dialog : public wxFrame
 
     // Events
     void OnButtonClicked(wxCommandEvent&);
-    void JoystickEvent(wxCommandEvent&);
+    void JoystickEvent(wxTimerEvent&);
 
 public:
     Dialog();

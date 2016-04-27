@@ -280,17 +280,10 @@ Dialog::Dialog() : wxFrame( NULL, // Parent
         m_bt_gamepad[i][Analog]->Disable();
     }
 
-    // Connect the buttons to the OnButtonClicked Event
-    Connect(
-        wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Dialog::OnButtonClicked)
-    );
+    Bind(wxEVT_BUTTON, &Dialog::OnButtonClicked, this);
 
     m_time_update_gui.SetOwner(this);
-    Connect(
-        wxEVT_TIMER,
-        wxCommandEventHandler(Dialog::JoystickEvent)
-    );
+    Bind(wxEVT_TIMER, &Dialog::JoystickEvent, this);
     m_time_update_gui.Start(UPDATE_TIME, wxTIMER_CONTINUOUS);
 
     for(int i=0; i<GAMEPAD_NUMBER; ++i)
@@ -431,7 +424,7 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     }
 }
 
-void Dialog::JoystickEvent(wxCommandEvent& event)
+void Dialog::JoystickEvent(wxTimerEvent& event)
 {
 #ifdef SDL_BUILD
     u32 key;

@@ -106,17 +106,8 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
       wxSize(60,25) // Size
     );
 
-    // Connect the buttons to the OnButtonClicked Event
-    Connect(
-        wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(JoystickConfiguration::OnButtonClicked)
-    );
-
-    // Connect the checkboxes to the OnCheckboxClicked Event
-    Connect(
-        wxEVT_CHECKBOX,
-        wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
-    );
+    Bind(wxEVT_BUTTON, &JoystickConfiguration::OnButtonClicked, this);
+    Bind(wxEVT_CHECKBOX, &JoystickConfiguration::OnCheckboxChange, this);
 }
 
 /**

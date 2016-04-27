@@ -116,24 +116,11 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
       wxSize(60,25) // Size
     );
 
-    // Connect the buttons to the OnButtonClicked Event
-    Connect(
-        wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(GamepadConfiguration::OnButtonClicked)
-    );
-    // Connect the sliders to the OnSliderReleased Event
-    Connect(
-        wxEVT_SCROLL_THUMBRELEASE,
-        wxCommandEventHandler(GamepadConfiguration::OnSliderReleased)
-    );
+    Bind(wxEVT_BUTTON, &GamepadConfiguration::OnButtonClicked, this);
+    Bind(wxEVT_SCROLL_THUMBRELEASE, &GamepadConfiguration::OnSliderReleased, this);
+    Bind(wxEVT_CHECKBOX, &GamepadConfiguration::OnCheckboxChange, this);
 
-    // Connect the checkboxes to the OnCheckboxClicked Event
-    Connect(
-        wxEVT_CHECKBOX,
-        wxCommandEventHandler(GamepadConfiguration::OnCheckboxChange)
-    );
-
-	repopulate();
+    repopulate();
 }
 
 /**
