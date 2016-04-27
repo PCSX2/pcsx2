@@ -37,14 +37,8 @@ PipeRedirectionBase::~PipeRedirectionBase() throw() {}
 
 // ----------------------------------------------------------------------------
 //
-#if wxMAJOR_VERSION < 3
-void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
-{
-	wxString message(szString);
-#else
 void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info)
 {
-#endif
 	switch ( level )
 	{
 		case wxLOG_Trace:

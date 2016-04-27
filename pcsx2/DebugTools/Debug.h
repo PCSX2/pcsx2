@@ -237,12 +237,10 @@ public:
 		return false;
 	}
 
-#if wxMAJOR_VERSION >= 3
 	bool Write( const wxString msg ) const
 	{
 		return Write(msg.wc_str());
 	}
-#endif
 
 };
 

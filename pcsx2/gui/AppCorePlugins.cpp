@@ -437,12 +437,8 @@ int EnumeratePluginsInFolder(const wxDirName& searchpath, wxArrayString* dest)
 	wxString pattern( L"*%s*" );
 #endif
 
-#if wxMAJOR_VERSION >= 3
 	wxDir::GetAllFiles( searchpath.ToString(), realdest, pxsFmt( pattern, WX_STR(wxDynamicLibrary::GetDllExt())), wxDIR_FILES );
-#else
-	wxDir::GetAllFiles( searchpath.ToString(), realdest, pxsFmt( pattern, wxDynamicLibrary::GetDllExt()), wxDIR_FILES );
-#endif
-	
+
 	// SECURITY ISSUE:  (applies primarily to Windows, but is a good idea on any platform)
 	//   The search folder order for plugins can vary across operating systems, and in some poorly designed
 	//   cases (old versions of windows), the search order is a security hazard because it does not

@@ -128,11 +128,7 @@ void RecentIsoManager::Repopulate()
 	// it starts a new group, but it also spews a couple warnings about it in Linux.
 #ifdef __linux__
 	// FIXME is it still useful on v3
-#if wxMAJOR_VERSION >= 3
 	m_Menu->Remove( m_Menu->Append( -1, "dummy" ) );
-#else
-	m_Menu->Remove( m_Menu->Append( -1 ) );
-#endif
 #endif
 	//Note: the internal recent iso list (m_Items) has the most recent item last (also at the INI file)
 	//  but the menu is composed in reverse order such that the most recent item appears at the top.

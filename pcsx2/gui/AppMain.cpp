@@ -41,11 +41,6 @@
 #endif
 
 #ifdef __WXGTK__
-
-#if wxMAJOR_VERSION < 3
-#include <wx/gtk/win_gtk.h> // GTK_PIZZA interface (internal include removed in 3.0)
-#endif
-
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #endif
@@ -463,11 +458,7 @@ public:
 
 };
 
-#if wxMAJOR_VERSION < 3
-wxStandardPathsBase& Pcsx2AppTraits::GetStandardPaths()
-#else
 wxStandardPaths& Pcsx2AppTraits::GetStandardPaths()
-#endif
 {
 	static Pcsx2StandardPaths stdPaths;
 	return stdPaths;
@@ -648,10 +639,10 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// PCSX2. This probably happened in the BIOS error case above as well.
 		// So the idea is to explicitly close the gsFrame before the modal MessageBox appears and
 		// intercepts the close message. Only for wx3.0 though - it sometimes breaks linux wx2.8.
-#if wxMAJOR_VERSION >= 3
+
 		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
 			gsframe->Close();
-#endif
+
 		Console.Error(ex.FormatDiagnosticMessage());
 
 		// Make sure it terminates properly for nogui users.
@@ -969,20 +960,12 @@ void Pcsx2App::OpenGsPanel()
 	// unfortunately it creates a gray box in the middle of the window on some
 	// users.
 
-#if wxMAJOR_VERSION < 3
-	GtkWidget *child_window = gtk_bin_get_child(GTK_BIN(gsFrame->GetViewport()->GetHandle()));
-#else
 	GtkWidget *child_window = GTK_WIDGET(gsFrame->GetViewport()->GetHandle());
-#endif
 
 	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
-#if wxMAJOR_VERSION < 3
-	GdkWindow* draw_window = GTK_PIZZA(child_window)->bin_window;
-#else
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
-#endif
 
 #if GTK_MAJOR_VERSION < 3
 	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
