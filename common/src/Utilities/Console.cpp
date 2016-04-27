@@ -479,7 +479,6 @@ bool IConsoleWriter::Warning( const wxChar* fmt, ... ) const
 	return false;
 }
 
-#if wxMAJOR_VERSION >= 3
 // --------------------------------------------------------------------------------------
 //  Write Variants - Unknown style
 // --------------------------------------------------------------------------------------
@@ -525,7 +524,6 @@ bool IConsoleWriter::Warning( const wxString fmt, ... ) const
 
 	return false;
 }
-#endif
 
 
 // --------------------------------------------------------------------------------------

@@ -34,11 +34,7 @@ public:
 	wxMessageOutput* CreateMessageOutput();
 
 #ifdef wxUSE_STDPATHS
-#if wxMAJOR_VERSION < 3
-	wxStandardPathsBase& GetStandardPaths();
-#else
 	wxStandardPaths& GetStandardPaths();
-#endif
 #endif
 };
 

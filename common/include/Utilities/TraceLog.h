@@ -193,7 +193,6 @@ public:
 		return false;
 	}
 
-#if wxMAJOR_VERSION >= 3
 	bool Write( const wxString fmt, ... ) const
 	{
 		va_list list;
@@ -203,7 +202,6 @@ public:
 
 		return false;
 	}
-#endif
 
 	// Writes to the console using the specified color.  This overrides the default color setting
 	// for this log.
@@ -239,7 +237,6 @@ public:
 		return false;
 	}
 
-#if wxMAJOR_VERSION >= 3
 	bool Warn( const wxString fmt, ... ) const
 	{
 		va_list list;
@@ -249,7 +246,6 @@ public:
 
 		return false;
 	}
-#endif
 
 	// Writes to the console using bold red text -- overrides the log source's default
 	// color settings.
@@ -263,7 +259,6 @@ public:
 		return false;
 	}
 
-#if wxMAJOR_VERSION >= 3
 	bool Error( const wxString fmt, ... ) const
 	{
 		va_list list;
@@ -273,7 +268,6 @@ public:
 
 		return false;
 	}
-#endif
 
 	bool WriteV( const char *fmt, va_list list ) const;
 	bool WriteV( const wxChar *fmt, va_list list ) const;

@@ -140,7 +140,6 @@ __fi void pxOnAssert( const DiagnosticOrigin& origin, const char* msg)
 	pxOnAssert( origin, fromUTF8(msg) );
 }
 
-#if wxMAJOR_VERSION >= 3
 __fi void pxOnAssert( const DiagnosticOrigin& origin, const wxString& msg)
 {
 	pxOnAssert( origin, msg.wc_str() );
@@ -150,7 +149,6 @@ __fi void pxOnAssert( const DiagnosticOrigin& origin, const FastFormatUnicode& m
 {
 	pxOnAssert( origin, msg.c_str());
 }
-#endif
 
 // --------------------------------------------------------------------------------------
 //  BaseException  (implementations)
@@ -160,11 +158,7 @@ BaseException::~BaseException() throw() {}
 
 BaseException& BaseException::SetBothMsgs( const wxChar* msg_diag )
 {
-#if wxMAJOR_VERSION >= 3
 	m_message_user = msg_diag ? wxString(wxGetTranslation( msg_diag )) : wxString("");
-#else
-	m_message_user = msg_diag ? wxGetTranslation( msg_diag ) : wxEmptyString;
-#endif
 	return SetDiagMsg( msg_diag );
 }
 

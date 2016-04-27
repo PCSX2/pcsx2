@@ -25,11 +25,7 @@
 	#define WX_STR(str) (str.wc_str())
 #else
 // Stupid wx3.0 doesn't support c_str for vararg function
-#if wxMAJOR_VERSION >= 3
 	#define WX_STR(str) (static_cast<const char*>(str.c_str()))
-#else
-	#define WX_STR(str) (str.c_str())
-#endif
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -196,9 +192,7 @@ public:
 
 	FastFormatUnicode& Write( const char* fmt, ... );
 	FastFormatUnicode& Write( const wxChar* fmt, ... );
-#if wxMAJOR_VERSION >= 3
 	FastFormatUnicode& Write( const wxString fmt, ... );
-#endif
 	FastFormatUnicode& WriteV( const char* fmt, va_list argptr );
 	FastFormatUnicode& WriteV( const wxChar* fmt, va_list argptr );
 

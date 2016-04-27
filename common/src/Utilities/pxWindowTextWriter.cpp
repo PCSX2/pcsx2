@@ -106,12 +106,10 @@ void pxWindowTextWriter::_DoWriteLn( const wxChar* msg )
 	m_curpos.y += tHeight + m_leading;
 }
 
-#if wxMAJOR_VERSION >= 3
 void pxWindowTextWriter::_DoWriteLn( const wxString msg )
 {
 	_DoWriteLn(msg.wc_str());
 }
-#endif
 
 // Splits incoming multi-line strings into pieces, and dispatches each line individually
 // to the text writer.
@@ -160,10 +158,8 @@ pxWindowTextWriter& pxWindowTextWriter::FormatLn( const wxChar* fmt, ... )
 	return *this;
 }
 
-#if wxMAJOR_VERSION >= 3
 pxWindowTextWriter& pxWindowTextWriter::WriteLn( const wxString fmt )
 {
 	_DoWrite( fmt.wc_str() );
 	return *this;
 }
-#endif
