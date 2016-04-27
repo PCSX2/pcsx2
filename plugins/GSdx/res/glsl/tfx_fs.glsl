@@ -202,13 +202,13 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 #else // PS_WMS != PS_WMT
 
 #if PS_WMS == 2
-    uv_out.x = clamp(uv, mask.x, mask.z);
+    uv_out.x = clamp(uv.x, mask.x, mask.z);
 #elif PS_WMS == 3
     uv_out.x = (uv.x & mask.x) | mask.z;
 #endif
 
 #if PS_WMT == 2
-    uv_out.y = clamp(uv, mask.y, mask.w);
+    uv_out.y = clamp(uv.y, mask.y, mask.w);
 #elif PS_WMT == 3
     uv_out.y = (uv.y & mask.y) | mask.w;
 #endif
