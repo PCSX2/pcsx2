@@ -128,17 +128,10 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
     );
 
     // Connect the checkboxes to the OnCheckboxClicked Event
-    #if wxMAJOR_VERSION >= 3
-        Connect(
-            wxEVT_CHECKBOX,
-            wxCommandEventHandler(GamepadConfiguration::OnCheckboxChange)
-        );
-    #else
-        Connect(
-            wxEVT_COMMAND_CHECKBOX_CLICKED,
-            wxCommandEventHandler(GamepadConfiguration::OnCheckboxChange)
-        );
-    #endif
+    Connect(
+        wxEVT_CHECKBOX,
+        wxCommandEventHandler(GamepadConfiguration::OnCheckboxChange)
+    );
 
 	repopulate();
 }

@@ -113,17 +113,10 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
     );
 
     // Connect the checkboxes to the OnCheckboxClicked Event
-    #if wxMAJOR_VERSION >= 3
-        Connect(
-            wxEVT_CHECKBOX,
-            wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
-        );
-    #else
-        Connect(
-            wxEVT_COMMAND_CHECKBOX_CLICKED,
-            wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
-        );
-    #endif
+    Connect(
+        wxEVT_CHECKBOX,
+        wxCommandEventHandler(JoystickConfiguration::OnCheckboxChange)
+    );
 }
 
 /**

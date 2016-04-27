@@ -632,15 +632,9 @@ void Dialog::config_key(int pad, int key)
     		}
         }
 	}
-    #if wxMAJOR_VERSION >= 3
-        m_bt_gamepad[pad][key]->SetLabel(
-            KeyName(pad, key, m_simulatedKeys[pad][key]).c_str()
-        );
-    #else
-        m_bt_gamepad[pad][key]->SetLabel(
-            wxString(KeyName(pad, key, m_simulatedKeys[pad][key]).c_str(), wxConvUTF8)
-        );
-    #endif
+    m_bt_gamepad[pad][key]->SetLabel(
+        KeyName(pad, key, m_simulatedKeys[pad][key]).c_str()
+    );
 }
 
 void Dialog::clear_key(int pad, int key)
@@ -680,15 +674,9 @@ void Dialog::repopulate()
         {
             if (get_key(gamepad_id, key) != 0)
             {
-                #if wxMAJOR_VERSION >= 3
-                    m_bt_gamepad[gamepad_id][key]->SetLabel(
-                        KeyName(gamepad_id, key).c_str()
-                    );
-                #else
-                    m_bt_gamepad[gamepad_id][key]->SetLabel(
-                        wxString(KeyName(gamepad_id, key).c_str(), wxConvUTF8)
-                    );
-                #endif
+                m_bt_gamepad[gamepad_id][key]->SetLabel(
+                    KeyName(gamepad_id, key).c_str()
+                );
 
                 m_map_images[gamepad_id][get_key(gamepad_id, key)] = key;
             }
@@ -701,15 +689,11 @@ void Dialog::repopulate()
         {
             int keysym = it->first;
             int key = it->second;
-            #if wxMAJOR_VERSION >= 3
-                m_bt_gamepad[gamepad_id][key]->SetLabel(
-                    KeyName(gamepad_id, key, keysym).c_str()
-                );
-            #else
-                m_bt_gamepad[gamepad_id][key]->SetLabel(
-                    wxString(KeyName(gamepad_id, key, keysym).c_str(), wxConvUTF8)
-                );
-            #endif
+
+            m_bt_gamepad[gamepad_id][key]->SetLabel(
+                KeyName(gamepad_id, key, keysym).c_str()
+            );
+
             m_simulatedKeys[gamepad_id][key] = keysym;
             m_map_images[gamepad_id][keysym] = key;
         }
