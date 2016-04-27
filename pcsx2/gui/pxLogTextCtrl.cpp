@@ -37,7 +37,7 @@ void pxLogTextCtrl::DispatchEvent( const PluginEventType& evt )
 
 pxLogTextCtrl::pxLogTextCtrl( wxWindow* parent )
 	: wxTextCtrl( parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2
+		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_NOHIDESEL
 	)
 {
 	m_FreezeWrites			= false;
@@ -93,11 +93,5 @@ void pxLogTextCtrl::ConcludeIssue()
 
 	ScrollLines(1);
 	ShowPosition( GetLastPosition() );
-
-#ifdef __WXMSW__
-	// This is needed to keep the scrolling "nice" when the textbox doesn't
-	// have the focus.
-	::SendMessage((HWND)GetHWND(), WM_VSCROLL, SB_BOTTOM, (LPARAM)NULL);
-#endif
 }
 
