@@ -429,7 +429,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 		if (const BaseTraceLogSource* log = ConLogSources[i])
 		{
 			menuSources.Append( MenuId_LogSource_Start+i, log->GetName(), log->GetDescription(), wxITEM_CHECK );
-			Connect( MenuId_LogSource_Start+i, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnToggleSource));
+			Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Start + i);
 		}
 		else
 			menuSources.AppendSeparator();
@@ -451,29 +451,29 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	// Bind Events:
 
-	Connect( wxID_OPEN,  wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnOpen)  );
-	Connect( wxID_CLOSE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnClose) );
-	Connect( wxID_SAVE,  wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnSave)  );
-	Connect( wxID_CLEAR, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnClear) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnOpen, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClose, this, wxID_CLOSE);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnSave, this, wxID_SAVE);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClear, this, wxID_CLEAR);
 
-	Connect( MenuId_FontSize_Small,		MenuId_FontSize_Huge,		wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnFontSize ) );
-	Connect( MenuId_ColorScheme_Light,	MenuId_ColorScheme_Dark,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleTheme ) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnFontSize, this, MenuId_FontSize_Small, MenuId_FontSize_Huge);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleTheme, this, MenuId_ColorScheme_Light, MenuId_ColorScheme_Dark);
 
-	Connect( MenuId_LogSource_Devel,		wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleSource ) );
-	Connect( MenuId_LogSource_CDVD_Info,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleCDVDInfo ) );
-	Connect( MenuId_LogSource_EnableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnEnableAllLogging ) );
-	Connect( MenuId_LogSource_DisableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnDisableAllLogging ) );
-	Connect( MenuId_LogSource_SetDefault,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnSetDefaultLogging ) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Devel);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleCDVDInfo, this, MenuId_LogSource_CDVD_Info);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnEnableAllLogging, this, MenuId_LogSource_EnableAll);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnDisableAllLogging, this, MenuId_LogSource_DisableAll);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnSetDefaultLogging, this, MenuId_LogSource_SetDefault);
 
-	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler			(ConsoleLogFrame::OnCloseWindow) );
-	Connect( wxEVT_MOVE,			wxMoveEventHandler			(ConsoleLogFrame::OnMoveAround) );
-	Connect( wxEVT_SIZE,			wxSizeEventHandler			(ConsoleLogFrame::OnResize) );
-	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler		(ConsoleLogFrame::OnActivate) );
+	Bind(wxEVT_CLOSE_WINDOW, &ConsoleLogFrame::OnCloseWindow, this);
+	Bind(wxEVT_MOVE, &ConsoleLogFrame::OnMoveAround, this);
+	Bind(wxEVT_SIZE, &ConsoleLogFrame::OnResize, this);
+	Bind(wxEVT_ACTIVATE, &ConsoleLogFrame::OnActivate, this);
 
-	Connect( pxEvt_SetTitleText,	wxCommandEventHandler	(ConsoleLogFrame::OnSetTitle) );
-	Connect( pxEvt_FlushQueue,		wxCommandEventHandler	(ConsoleLogFrame::OnFlushEvent) );
+	Bind(pxEvt_SetTitleText, &ConsoleLogFrame::OnSetTitle, this);
+	Bind(pxEvt_FlushQueue, &ConsoleLogFrame::OnFlushEvent, this);
 
-	Connect( m_timer_FlushUnlocker.GetId(),	wxEVT_TIMER,	wxTimerEventHandler	(ConsoleLogFrame::OnFlushUnlockerTimer) );
+	Bind(wxEVT_TIMER, &ConsoleLogFrame::OnFlushUnlockerTimer, this, m_timer_FlushUnlocker.GetId());
 
 	if( m_threadlogger != NULL )
 		m_threadlogger->Start();
