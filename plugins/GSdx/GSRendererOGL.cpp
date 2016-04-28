@@ -126,6 +126,21 @@ void GSRendererOGL::SetupIA()
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
+	if (m_channel_shuffle) {
+		// Oh a nice hack !
+
+		// Replace current draw with a fullscreen sprite
+
+		GSVertex* s = &m_vertex.buff[0];
+		s[0].XYZ.X = m_context->XYOFFSET.OFX + 0;
+		s[1].XYZ.X = m_context->XYOFFSET.OFX + 16384;
+		s[0].XYZ.Y = m_context->XYOFFSET.OFY + 0;
+		s[1].XYZ.Y = m_context->XYOFFSET.OFY + 16384;
+
+		m_vertex.head = m_vertex.tail = m_vertex.next = 4;
+		m_index.tail = 2;
+	}
+
 	if (!GLLoader::found_geometry_shader)
 		EmulateGS();
 
@@ -748,19 +763,21 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Special Draw Call
 	if (m_channel_shuffle) {
-
 		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
 			GL_INS("Blue channel");
+			ps_sel.channel = 3;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
 			// Read either Red or Green. Let's go for Red ;)
 			// Pop
 			GL_INS("Red channel");
+			ps_sel.channel = 1;
 		} else {
 			GL_INS("channel not supported");
 			ASSERT(0);
 		}
+		glTextureBarrier();
 	}
 
 	//
@@ -1056,8 +1073,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupPipeline(vs_sel, gs_sel, ps_sel);
 
 	// rs
-
-	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * m_context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
+	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
+	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
 	GL_PUSH("IA");
 	SetupIA();
