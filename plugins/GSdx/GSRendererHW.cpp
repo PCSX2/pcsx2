@@ -1438,7 +1438,9 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	// Instead to use a fullscreen rectangle they use a 32 pixels, 4096 pixels with a FBW of 1.
 	// Technically the FB wrap/overlap on itself...
 	GSDrawingContext* ctx = m_context;
+#ifndef NDEBUG
 	GSVertex* v = &m_vertex.buff[0];
+#endif
 
 	if (!(ctx->FRAME.FBP == ctx->ZBUF.ZBP && !PRIM->TME && !ctx->ZBUF.ZMSK && !ctx->FRAME.FBMSK && m_vt.m_eq.rgba == 0xFFFF))
 		return true;
