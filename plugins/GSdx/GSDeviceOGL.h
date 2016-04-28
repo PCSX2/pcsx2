@@ -284,10 +284,13 @@ class GSDeviceOGL final : public GSDevice
 				uint32 hdr:1;
 				uint32 colclip:1;
 
+				// Others ways to fetch the texture
+				uint32 channel:3;
+
 				// Hack
 				uint32 tcoffsethack:1;
 
-				uint32 _free2:19;
+				uint32 _free2:16;
 			};
 
 			uint64 key;

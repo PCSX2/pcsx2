@@ -778,6 +778,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
 		+ format("#define PS_DFMT %d\n", sel.dfmt)
 		+ format("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
+		+ format("#define PS_CHANNEL_FETCH %d\n", sel.channel)
 		+ format("#define PS_AEM %d\n", sel.aem)
 		+ format("#define PS_TFX %d\n", sel.tfx)
 		+ format("#define PS_TCC %d\n", sel.tcc)
@@ -920,42 +921,48 @@ void GSDeviceOGL::SelfShaderTest()
 	PRINT_TEST("Fst/Tc/IIp");
 
 	// Test: tfx/tcc
-	for (int tfx = 0; tfx < 5; tfx++) {
-		for (int tcc = 0; tcc < 2; tcc++) {
-			PSSelector sel;
-			sel.atst = 1;
-			sel.fst = 1;
+	for (int channel = 0; channel < 5; channel++) {
+		for (int tfx = 0; tfx < 5; tfx++) {
+			for (int tcc = 0; tcc < 2; tcc++) {
+				PSSelector sel;
+				sel.atst = 1;
+				sel.fst = 1;
 
-			sel.tfx = tfx;
-			sel.tcc = tcc;
-			std::string file = format("Shader_Tfx_%d__Tcc_%d.glsl.asm", tfx, tcc);
-			RUN_TEST;
+				sel.channel = channel;
+				sel.tfx     = tfx;
+				sel.tcc     = tcc;
+				std::string file = format("Shader_Tfx_%d__Tcc_%d__Channel_%d.glsl.asm", tfx, tcc, channel);
+				RUN_TEST;
+			}
 		}
 	}
-	PRINT_TEST("Tfx/Tcc");
+	PRINT_TEST("Tfx/Tcc/Channel");
 
 	// Test: Texture Sampling
-	for (int fmt = 0; fmt < 16; fmt++) {
-		if ((fmt & 3) == 3) continue;
+	for (int depth = 0; depth < 4; depth++) {
+		for (int fmt = 0; fmt < 16; fmt++) {
+			if ((fmt & 3) == 3) continue;
 
-		for (int ltf = 0; ltf < 2; ltf++) {
-			for (int aem = 0; aem < 2; aem++) {
-				for (int wms = 1; wms < 4; wms++) {
-					for (int wmt = 1; wmt < 4; wmt++) {
-						PSSelector sel;
-						sel.atst = 1;
-						sel.tfx  = 1;
-						sel.tcc  = 1;
-						sel.fst = 1;
+			for (int ltf = 0; ltf < 2; ltf++) {
+				for (int aem = 0; aem < 2; aem++) {
+					for (int wms = 1; wms < 4; wms++) {
+						for (int wmt = 1; wmt < 4; wmt++) {
+							PSSelector sel;
+							sel.atst = 1;
+							sel.tfx  = 1;
+							sel.tcc  = 1;
+							sel.fst = 1;
 
-						sel.ltf     = ltf;
-						sel.aem     = aem;
-						sel.tex_fmt = fmt;
-						sel.wms     = wms;
-						sel.wmt     = wmt;
-						std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d.glsl.asm",
-								ltf, aem, fmt, wms, wmt);
-						RUN_TEST;
+							sel.depth_fmt = depth;
+							sel.ltf       = ltf;
+							sel.aem       = aem;
+							sel.tex_fmt   = fmt;
+							sel.wms       = wms;
+							sel.wmt       = wmt;
+							std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d__DepthFmt_%d.glsl.asm",
+									ltf, aem, fmt, wms, wmt, depth);
+							RUN_TEST;
+						}
 					}
 				}
 			}

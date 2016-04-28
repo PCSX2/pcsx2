@@ -261,6 +261,34 @@ vec4 sample_depth(vec2 st)
 
     return t;
 }
+
+//////////////////////////////////////////////////////////////////////
+// Fetch a Single Channel
+//////////////////////////////////////////////////////////////////////
+vec4 fetch_red()
+{
+    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    return sample_p(rt.r) * 255.0f;
+}
+
+vec4 fetch_blue()
+{
+    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    return sample_p(rt.b) * 255.0f;
+}
+
+vec4 fetch_green()
+{
+    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    return sample_p(rt.g) * 255.0f;
+}
+
+vec4 fetch_alpha()
+{
+    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    return sample_p(rt.a) * 255.0f;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 vec4 sample_color(vec2 st)
@@ -422,7 +450,15 @@ vec4 ps_color()
     vec2 st = PSin.t_int.xy;
 #endif
 
-#if (PS_DEPTH_FMT > 0)
+#if PS_CHANNEL_FETCH == 1
+    vec4 T = fetch_red();
+#elif PS_CHANNEL_FETCH == 2
+    vec4 T = fetch_green();
+#elif PS_CHANNEL_FETCH == 3
+    vec4 T = fetch_blue();
+#elif PS_CHANNEL_FETCH == 4
+    vec4 T = fetch_alpha();
+#elif PS_DEPTH_FMT > 0
     // Integral coordinate
     vec4 T = sample_depth(PSin.t_int.zw);
 #else
