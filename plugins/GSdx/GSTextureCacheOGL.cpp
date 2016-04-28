@@ -64,7 +64,7 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
 			fmt = GL_R16UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+			ps_shader = ShaderConvert_FLOAT32_TO_16_BITS;
 			break;
 
 		default:

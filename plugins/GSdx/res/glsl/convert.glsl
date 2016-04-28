@@ -38,7 +38,7 @@ in SHADER
 } PSin;
 
 // Give a different name so I remember there is a special case!
-#if defined(ps_main1) || defined(ps_main10)
+#if defined(ps_main1) || defined(ps_main10) || defined(ps_main11)
 layout(location = 0) out uint SV_Target1;
 #else
 layout(location = 0) out vec4 SV_Target0;
@@ -124,6 +124,14 @@ void ps_main10()
 #ifdef ps_main11
 void ps_main11()
 {
+    // Convert a GL_FLOAT32 depth texture into a 16 bits UINT texture
+    SV_Target1 = uint(exp2(32.0f) * sample_c().r) & 0xFFFFu;
+}
+#endif
+
+#ifdef ps_main12
+void ps_main12()
+{
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
     const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
     const vec4 bitMsk = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
@@ -134,8 +142,8 @@ void ps_main11()
 }
 #endif
 
-#ifdef ps_main12
-void ps_main12()
+#ifdef ps_main13
+void ps_main13()
 {
     // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
     const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
@@ -146,8 +154,8 @@ void ps_main12()
 }
 #endif
 
-#ifdef ps_main13
-void ps_main13()
+#ifdef ps_main14
+void ps_main14()
 {
     // Convert a RRGBA texture into a float depth texture
     // FIXME: I'm afraid of the accuracy
@@ -156,8 +164,8 @@ void ps_main13()
 }
 #endif
 
-#ifdef ps_main14
-void ps_main14()
+#ifdef ps_main15
+void ps_main15()
 {
     // Same as above but without the alpha channel (24 bits Z)
 
@@ -168,8 +176,8 @@ void ps_main14()
 }
 #endif
 
-#ifdef ps_main15
-void ps_main15()
+#ifdef ps_main16
+void ps_main16()
 {
     // Same as above but without the A/B channels (16 bits Z)
 
@@ -180,8 +188,8 @@ void ps_main15()
 }
 #endif
 
-#ifdef ps_main16
-void ps_main16()
+#ifdef ps_main17
+void ps_main17()
 {
     // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
     // FIXME: I'm afraid of the accuracy
@@ -192,8 +200,8 @@ void ps_main16()
 }
 #endif
 
-#ifdef ps_main17
-void ps_main17()
+#ifdef ps_main18
+void ps_main18()
 {
 
     // Potential speed optimization. There is a high probability that

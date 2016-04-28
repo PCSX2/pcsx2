@@ -38,13 +38,14 @@ enum ShaderConvert {
 	ShaderConvert_TRIANGULAR_FILTER,
 	ShaderConvert_COMPLEX_FILTER,
 	ShaderConvert_FLOAT32_TO_32_BITS = 10,
+	ShaderConvert_FLOAT32_TO_16_BITS,
 	ShaderConvert_FLOAT32_TO_RGBA8,
 	ShaderConvert_FLOAT16_TO_RGB5A1,
-	ShaderConvert_RGBA8_TO_FLOAT32 = 13,
+	ShaderConvert_RGBA8_TO_FLOAT32 = 14,
 	ShaderConvert_RGBA8_TO_FLOAT24,
 	ShaderConvert_RGBA8_TO_FLOAT16,
 	ShaderConvert_RGB5A1_TO_FLOAT16,
-	ShaderConvert_RGBA_TO_8I = 17
+	ShaderConvert_RGBA_TO_8I = 18
 };
 
 #pragma pack(push, 1)
