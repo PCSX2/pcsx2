@@ -379,8 +379,8 @@ void GSRendererHW::Draw()
 		if (m_vertex.next == 4) {
 			// Note potentially we could also check the content of vertex (2nd
 			// sprite must be half of the first one)
-			m_double_downscale = true;
 			GL_INS("Double downscale effect detected");
+			m_double_downscale = true;
 		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f)) {
 			//fprintf(stderr, "delta_p %f %f\n", delta_p.x, delta_p.y);
 			if (m_channel_shuffle) {

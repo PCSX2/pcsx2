@@ -746,6 +746,23 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
+	// Special Draw Call
+	if (m_channel_shuffle) {
+
+		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+			// Read either blue or Alpha. Let's go for Blue ;)
+			// MGS3/Kill Zone
+			GL_INS("Blue channel");
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
+			// Read either Red or Green. Let's go for Red ;)
+			// Pop
+			GL_INS("Red channel");
+		} else {
+			GL_INS("channel not supported");
+			ASSERT(0);
+		}
+	}
+
 	//
 
 	dev->BeginScene();
