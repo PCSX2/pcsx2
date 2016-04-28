@@ -5496,7 +5496,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::Kunoichi] = GSC_Kunoichi;
 			map[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 			map[CRC::Manhunt2] = GSC_Manhunt2;
-			map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3;
 			map[CRC::MidnightClub3] = GSC_MidnightClub3;
 			map[CRC::NanoBreaker] = GSC_NanoBreaker;
 			map[CRC::NarutimateAccel] = GSC_NarutimateAccel;
@@ -5570,6 +5569,9 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 			map[CRC::TenchuFS] = GSC_Tenchu;
 			map[CRC::TenchuWoH] = GSC_Tenchu;
+
+			// Basic Accurate blending + channel effect
+			map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3;
 
 			// Those games might requires accurate fbmask
 			map[CRC::Sly2] = GSC_Sly2;
