@@ -385,6 +385,8 @@ void GSRendererHW::Draw()
 			//fprintf(stderr, "delta_p %f %f\n", delta_p.x, delta_p.y);
 			if (m_channel_shuffle) {
 				GL_INS("Channel shuffle effect detected SKIP");
+				GL_POP();
+				return;
 			} else {
 				GL_INS("Channel shuffle effect detected");
 				m_channel_shuffle = true;
