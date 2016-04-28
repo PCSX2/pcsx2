@@ -861,7 +861,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported (%d,%d to %d,%d)", r.x, r.y, r.z, r.w);
 		for(auto t : m_dst[DepthStencil]) {
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-				Read(t, t->m_valid);
+				Read(t, r.rintersect(t->m_valid));
 				break;
 			}
 		}
@@ -870,7 +870,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 		// already, so you need to check them too
 		for(auto t : m_dst[RenderTarget]) {
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-				Read(t, t->m_valid);
+				Read(t, r.rintersect(t->m_valid));
 				break;
 			}
 		}
@@ -912,7 +912,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 		} else if (m_can_convert_depth) {
 			GL_INS("ERROR: InvalidateLocalMem target is a depth format");
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-				Read(t, t->m_valid);
+				Read(t, r.rintersect(t->m_valid));
 				break;
 			}
 		}
