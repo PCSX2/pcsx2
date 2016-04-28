@@ -89,7 +89,7 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_MEMVIEW_COPYVALUE_128,		L"Copy Value (128 bit)");
 	menu.Append(ID_MEMVIEW_DUMP,				L"Dump...");
 	menu.Enable(ID_MEMVIEW_DUMP,false);
-	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlMemView::onPopupClick, NULL, this);
+	menu.Bind(wxEVT_MENU, &CtrlMemView::onPopupClick, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);

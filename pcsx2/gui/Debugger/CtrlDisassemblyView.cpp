@@ -173,7 +173,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
 	menu.Append(ID_DISASM_RENAMEFUNCTION,			L"Rename Function");
 	menu.Append(ID_DISASM_REMOVEFUNCTION,			L"Remove Function");
-	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
+	menu.Bind(wxEVT_MENU, &CtrlDisassemblyView::onPopupClick, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);

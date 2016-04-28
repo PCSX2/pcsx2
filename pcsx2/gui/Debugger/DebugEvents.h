@@ -17,16 +17,16 @@
 #include <wx/wx.h>
 #include "DebugTools/DebugInterface.h"
 
-DECLARE_LOCAL_EVENT_TYPE( debEVT_SETSTATUSBARTEXT, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_UPDATELAYOUT, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_GOTOINMEMORYVIEW, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_GOTOINDISASM, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_RUNTOPOS, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_MAPLOADED, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_STEPOVER, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_STEPINTO, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_STEPOUT, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_UPDATE, wxNewEventType() )
-DECLARE_LOCAL_EVENT_TYPE( debEVT_BREAKPOINTWINDOW, wxNewEventType() )
+wxDECLARE_EVENT(debEVT_SETSTATUSBARTEXT, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_UPDATELAYOUT, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_GOTOINMEMORYVIEW, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_GOTOINDISASM, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_RUNTOPOS, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_MAPLOADED, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_STEPOVER, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_STEPINTO, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_STEPOUT, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_UPDATE, wxCommandEvent);
+wxDECLARE_EVENT(debEVT_BREAKPOINTWINDOW, wxCommandEvent);
 
 bool executeExpressionWindow(wxWindow* parent, DebugInterface* cpu, u64& dest, const wxString& defaultValue = wxEmptyString);

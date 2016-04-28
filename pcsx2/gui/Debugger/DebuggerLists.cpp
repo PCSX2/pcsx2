@@ -461,7 +461,7 @@ void BreakpointList::showMenu(const wxPoint& pos)
 		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE,	L"Enable");
 		menu.Append(ID_BREAKPOINTLIST_EDIT,				L"Edit");
 		menu.AppendSeparator();
-			
+
 		// check if the breakpoint is enabled
 		bool enabled;
 		if (isMemory)
@@ -474,7 +474,7 @@ void BreakpointList::showMenu(const wxPoint& pos)
 
 	menu.Append(ID_BREAKPOINTLIST_ADDNEW,			L"Add new");
 
-	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&BreakpointList::onPopupClick, NULL, this);
+	menu.Bind(wxEVT_MENU, &BreakpointList::onPopupClick, this);
 	PopupMenu(&menu,pos);
 }
 

@@ -230,26 +230,26 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxBoxSizer* topRowSizer = new wxBoxSizer(wxHORIZONTAL);
 
 	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
-	Connect(breakRunButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onBreakRunClicked));
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakRunClicked, this, breakRunButton->GetId());
 	topRowSizer->Add(breakRunButton,0,wxRIGHT,8);
 
 	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
 	stepIntoButton->Enable(false);
-	Connect( stepIntoButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepIntoClicked ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepIntoClicked, this, stepIntoButton->GetId());
 	topRowSizer->Add(stepIntoButton,0,wxBOTTOM,2);
 
 	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
 	stepOverButton->Enable(false);
-	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOverClicked, this, stepOverButton->GetId());
 	topRowSizer->Add(stepOverButton);
 	
 	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out" );
 	stepOutButton->Enable(false);
-	Connect( stepOutButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOutClicked ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOutClicked, this, stepOutButton->GetId());
 	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
 	
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
-	Connect( breakpointButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onBreakpointClick ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClick, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
 
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
@@ -261,7 +261,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	iopTab = new CpuTabPage(middleBook,&r3000Debug);
 	middleBook->AddPage(eeTab,L"R5900");
 	middleBook->AddPage(iopTab,L"R3000");
-	Connect(middleBook->GetId(),wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,wxCommandEventHandler( DisassemblyDialog::onPageChanging));
+	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &DisassemblyDialog::onPageChanging, this, middleBook->GetId());
 	topSizer->Add(middleBook,3,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
 	currentCpu = eeTab;
 

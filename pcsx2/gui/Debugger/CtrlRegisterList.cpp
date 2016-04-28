@@ -518,7 +518,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			break;
 		}
 
-		menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlRegisterList::onPopupClick, NULL, this);
+		menu.Bind(wxEVT_MENU, &CtrlRegisterList::onPopupClick, this);
 		PopupMenu(&menu,evt.GetPosition());
 		return;
 	}
