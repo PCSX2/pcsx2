@@ -34,43 +34,50 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		return;
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
+	const auto& target_psm = GSLocalMemory::m_psm[TEX0.PSM];
 
-	GLuint fmt;
-	int ps_shader;
-	switch (TEX0.PSM)
-	{
-		case PSM_PSMCT32:
-		case PSM_PSMCT24:
-			fmt = GL_RGBA8;
-			ps_shader = ShaderConvert_COPY;
-			break;
+	GLuint fmt = GL_RGBA8;
+	int ps_shader = ShaderConvert_COPY;
 
-		case PSM_PSMCT16:
-		case PSM_PSMCT16S:
-			fmt = GL_R16UI;
-			ps_shader = ShaderConvert_RGBA8_TO_16_BITS;
-			break;
+	// Not supported. Potentially the same as 32 bits
+	ASSERT(target_psm.bpp > 8);
+	if (target_psm.bpp <= 8) return;
 
-		case PSM_PSMZ32:
-			fmt = GL_R32UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
-			break;
+	if (t->m_type == DepthStencil) {
+		// input is a float format
+		switch(target_psm.bpp) {
+			case 32:
+			case 24:
+				fmt = GL_R32UI;
+				ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+				break;
 
-		case PSM_PSMZ24:
-			fmt = GL_R32UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
-			break;
+			case 16:
+				fmt = GL_R16UI;
+				ps_shader = ShaderConvert_FLOAT32_TO_16_BITS;
+				break;
 
-		case PSM_PSMZ16:
-		case PSM_PSMZ16S:
-			fmt = GL_R16UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_16_BITS;
-			break;
+			default:
+				break;
+		}
+	} else {
+		// input is a nice RGBA8 color
+		switch(target_psm.bpp) {
+			case 32:
+			case 24:
+				fmt = GL_RGBA8;
+				ps_shader = ShaderConvert_COPY;
+				break;
 
-		default:
-			return;
+			case 16:
+				fmt = GL_R16UI;
+				ps_shader = ShaderConvert_RGBA8_TO_16_BITS;
+				break;
+
+			default:
+				break;
+		}
 	}
-
 
 	// Yes lots of logging, but I'm not confident with this code
 	GL_PUSH("Texture Cache Read. Format(0x%x)", TEX0.PSM);
@@ -91,32 +98,20 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 
 			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-			switch(TEX0.PSM)
+			switch(target_psm.bpp)
 			{
-				case PSM_PSMCT32:
+				case 32:
 					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
 					break;
-				case PSM_PSMCT24:
+				case 24:
 					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
 					break;
-				case PSM_PSMCT16:
-				case PSM_PSMCT16S:
-					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
-					break;
-
-				case PSM_PSMZ32:
-					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
-					break;
-				case PSM_PSMZ24:
-					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
-					break;
-				case PSM_PSMZ16:
-				case PSM_PSMZ16S:
+				case 16:
 					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
 					break;
 
 				default:
-					ASSERT(0);
+					break;
 			}
 
 			offscreen->Unmap();

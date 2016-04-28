@@ -852,18 +852,31 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	uint32 bp = off->bp;
 	uint32 psm = off->psm;
 	//uint32 bw = off->bw;
+	const GSLocalMemory::psm_t& read_psm = GSLocalMemory::m_psm[psm];
 
-	// No depth handling please.
-	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S) {
+	// Note: color/depth code could likely be merged.
+
+	// Let's first handle depth format read.
+	if (read_psm.depth && m_can_convert_depth) {
 		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported (%d,%d to %d,%d)", r.x, r.y, r.z, r.w);
-		if (m_can_convert_depth) {
-			for(auto t : m_dst[DepthStencil]) {
-				if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-					// Read the full depth buffer for easy testing
-					Read(t, t->m_valid);
-				}
+		for(auto t : m_dst[DepthStencil]) {
+			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+				Read(t, t->m_valid);
+				break;
 			}
 		}
+
+		// The depth buffer could have been converted to a RenderTarget
+		// already, so you need to check them too
+		for(auto t : m_dst[RenderTarget]) {
+			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+				Read(t, t->m_valid);
+				break;
+			}
+		}
+	}
+	if (read_psm.depth) {
+		// Either the jobs is done above or the depth isn't supported
 		return;
 	}
 
@@ -871,13 +884,8 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	// It works for all the games mentioned below and fixes a couple of other ones as well
 	// (Busen0: Wizardry and Chaos Legion).
 	// Also in a few games the below code ran the Grandia3 case when it shouldn't :p
-	for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); )
-	{
-		list<Target*>::iterator j = i++;
-
-		Target* t = *j;
-
-		if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
+	for(auto t : m_dst[RenderTarget]) {
+		if (GSLocalMemory::m_psm[t->m_TEX0.PSM].depth == 0)
 		{
 			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
@@ -899,9 +907,14 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 					else // Block level read?
 						Read(t, r.rintersect(t->m_valid));
 				}
+				break;
 			}
-		} else {
+		} else if (m_can_convert_depth) {
 			GL_INS("ERROR: InvalidateLocalMem target is a depth format");
+			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+				Read(t, t->m_valid);
+				break;
+			}
 		}
 	}
 
