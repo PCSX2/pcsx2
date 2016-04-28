@@ -42,29 +42,29 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		case PSM_PSMCT32:
 		case PSM_PSMCT24:
 			fmt = GL_RGBA8;
-			ps_shader = 0;
+			ps_shader = ShaderConvert_COPY;
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 			fmt = GL_R16UI;
-			ps_shader = 1;
+			ps_shader = ShaderConvert_RGBA8_TO_16_BITS;
 			break;
 
 		case PSM_PSMZ32:
 			fmt = GL_R32UI;
-			ps_shader = 10;
+			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
 			break;
 
 		case PSM_PSMZ24:
 			fmt = GL_R32UI;
-			ps_shader = 10;
+			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
 			break;
 
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
 			fmt = GL_R16UI;
-			ps_shader = 10;
+			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
 			break;
 
 		default:
