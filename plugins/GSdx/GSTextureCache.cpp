@@ -1864,7 +1864,7 @@ bool GSTextureCache::Target::Inside(uint32 bp, uint32 psm, const GSVector4i& rec
 
 // GSTextureCache::SourceMap
 
-void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* off)
+void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset* off)
 {
 	m_surfaces.insert(s);
 
@@ -1882,48 +1882,6 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 	// Remaining code will compute a list of pages that are dirty (in a similar fashion as GSOffset::GetPages)
 	// (Maybe GetPages could be used instead, perf opt?)
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
-#if 0
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
-
-	GSVector2i bs = (TEX0.TBP0 & 31) == 0 ? psm.pgs : psm.bs;
-
-	int tw = 1 << TEX0.TW;
-	int th = 1 << TEX0.TH;
-
-	for(int y = 0; y < th; y += bs.y)
-	{
-		uint32 base = off->block.row[y >> 3];
-
-		for(int x = 0; x < tw; x += bs.x)
-		{
-			uint32 page = (base + off->block.col[x >> 3]) >> 5;
-
-			if(page < MAX_PAGES)
-			{
-				m_pages[page >> 5] |= 1 << (page & 31);
-			}
-		}
-	}
-
-	for(size_t i = 0; i < countof(m_pages); i++)
-	{
-		if(uint32 p = m_pages[i])
-		{
-			m_pages[i] = 0;
-
-			list<Source*>* m = &m_map[i << 5];
-
-			unsigned long j;
-
-			while(_BitScanForward(&j, p))
-			{
-				p ^= 1 << j;
-
-				m[j].push_front(s);
-			}
-		}
-	}
-#else
 	uint32* pages = GetPagesCoverage(TEX0, off);
 	for(size_t i = 0; i < countof(m_pages); i++)
 	{
@@ -1941,21 +1899,24 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 			}
 		}
 	}
-#endif
 }
 
-uint32* GSTextureCache::SourceMap::GetPagesCoverage(const GIFRegTEX0& TEX0, const GSOffset* off)
+uint32* GSTextureCache::SourceMap::GetPagesCoverage(const GIFRegTEX0& TEX0, GSOffset* off)
 {
-	uint64 hash = TEX0.u64 & 0x3ffffffffull; // TBP0 TBW PSM TW TH
+	// Performance note:
+	// GSOffset is a hash lookup of the following parameter TB0, TBW, PSM
+	// Coverage adds TW and Th (8bits). Therefore GSOffset was extended with a small array.
+	// Avoid the hash map overhead (memory and lookup)
 
-	auto it_pages = m_pages_coverage.find(hash);
+	int index = (TEX0.u64 >> 26) & 0xFF;
 
-	if (it_pages != m_pages_coverage.end()) return it_pages->second;
+	if (off->coverages[index])
+		return off->coverages[index];
 
 	// Aligned on 64 bytes to store the full bitmap in a single cache line
 	uint32* pages = (uint32*)_aligned_malloc(MAX_PAGES/8, 64);
 
-	m_pages_coverage.emplace(hash, pages);
+	off->coverages[index] = pages;
 
 	((GSVector4i*)pages)[0] = GSVector4i::zero();
 	((GSVector4i*)pages)[1] = GSVector4i::zero();
@@ -2000,9 +1961,6 @@ void GSTextureCache::SourceMap::RemoveAll()
 	{
 		m_map[i].clear();
 	}
-
-	for_each(m_pages_coverage.begin(), m_pages_coverage.end(), aligned_free_second());
-	m_pages_coverage.clear();
 }
 
 void GSTextureCache::SourceMap::RemoveAt(Source* s)

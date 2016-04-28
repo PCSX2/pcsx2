@@ -47,6 +47,8 @@ public:
 	Block block;
 	Pixel pixel;
 
+	uint32* coverages[256]; // texture page coverage based on the texture size. Lazy allocated
+
 	GSOffset(uint32 bp, uint32 bw, uint32 psm);
 	virtual ~GSOffset();
 
