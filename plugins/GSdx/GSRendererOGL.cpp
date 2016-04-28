@@ -881,6 +881,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ps_sel.wmt = m_context->CLAMP.WMT;
 
 		// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
+		// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
 		ASSERT(!(psm.depth && m_vt.IsLinear()));
 
 		// Performance note:
