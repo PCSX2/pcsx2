@@ -804,6 +804,8 @@ void GSRendererHW::OI_GsMemClear()
 
 		int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
+		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
+		// linear but the value will be done for all pixels of a block.
 		if (format == 0) {
 			// Based on WritePixel32
 			for(int y = r.top; y < r.bottom; y++)
