@@ -29,6 +29,8 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
+	, m_channel_shuffle(false)
+	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
 	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
@@ -369,6 +371,33 @@ void GSRendererHW::Draw()
 			// Depth will be written through the RT
 			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE)
 			);
+
+	if (PRIM->TME && m_context->FRAME.Block() == m_context->TEX0.TBP0 && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		// Special post-processing effect
+		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
+
+		if (m_vertex.next == 4) {
+			// Note potentially we could also check the content of vertex (2nd
+			// sprite must be half of the first one)
+			m_double_downscale = true;
+			GL_INS("Double downscale effect detected");
+		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f)) {
+			//fprintf(stderr, "delta_p %f %f\n", delta_p.x, delta_p.y);
+			if (m_channel_shuffle) {
+				GL_INS("Channel shuffle effect detected SKIP");
+			} else {
+				GL_INS("Channel shuffle effect detected");
+				m_channel_shuffle = true;
+			}
+		} else {
+			GL_INS("Special post-processing effect not supported");
+			m_channel_shuffle = false;
+			m_double_downscale = false;
+		}
+	} else {
+		m_channel_shuffle = false;
+		m_double_downscale = false;
+	}
 
 	GIFRegTEX0 TEX0;
 

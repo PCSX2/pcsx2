@@ -152,6 +152,9 @@ protected:
 
 	int m_userhacks_round_sprite_offset;
 
+	bool m_channel_shuffle;
+	bool m_double_downscale;
+
 public:
 	GSRendererHW(GSTextureCache* tc);
 	virtual ~GSRendererHW();
