@@ -775,6 +775,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.channel = 1;
 		} else {
 			GL_INS("channel not supported");
+			m_channel_shuffle = false;
 			ASSERT(0);
 		}
 		dev->PSSetShaderResource(4, tex->m_from_target);

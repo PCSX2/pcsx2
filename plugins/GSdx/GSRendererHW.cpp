@@ -479,7 +479,7 @@ void GSRendererHW::Draw()
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
-		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page) {
+		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex) {
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
 		} else {
