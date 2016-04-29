@@ -372,26 +372,26 @@ void GSRendererHW::Draw()
 			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE)
 			);
 
+	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
+	const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
+	bool single_page = (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f);
+
 	if (m_channel_shuffle) {
-		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
-		m_channel_shuffle = PRIM->TME  && (m_context->TEX0.PSM == PSM_PSMT8) && (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f) && (m_vt.m_primclass == GS_SPRITE_CLASS);
+		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
 			GL_INS("Channel shuffle effect detected SKIP");
 			GL_POP();
 			s_n += 3; // Keep it sync with SW renderer
 			return;
 		}
-	} else if (PRIM->TME && m_context->FRAME.Block() == m_context->TEX0.TBP0 && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	} else if (draw_sprite_tex && m_context->FRAME.Block() == m_context->TEX0.TBP0) {
 		// Special post-processing effect
-		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
-
 		if (m_vertex.next == 4) {
 			// Note potentially we could also check the content of vertex (2nd
 			// sprite must be half of the first one)
 			GL_INS("Double downscale effect detected");
 			m_double_downscale = true;
-		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f)) {
-			//fprintf(stderr, "delta_p %f %f\n", delta_p.x, delta_p.y);
+		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
 			if (m_channel_shuffle) {
 				GL_INS("Channel shuffle effect detected SKIP");
 				GL_POP();
@@ -474,13 +474,12 @@ void GSRendererHW::Draw()
 		//
 		// Both input and output are 16 bits and texture was initially 32 bits!
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
-			&& (m_vt.m_primclass == GS_SPRITE_CLASS) && tex->m_32_bits_fmt;
+			&& draw_sprite_tex && tex->m_32_bits_fmt;
 
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
-		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
-		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && ((delta_p.x <= 64.0f) && (delta_p.y <= 32.0f))) {
+		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page) {
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
 		} else {
@@ -595,7 +594,7 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
-	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if ((m_upscale_multiplier > 1) && draw_sprite_tex) {
 		size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
 
