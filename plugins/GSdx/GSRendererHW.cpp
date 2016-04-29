@@ -372,7 +372,16 @@ void GSRendererHW::Draw()
 			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE)
 			);
 
-	if (PRIM->TME && m_context->FRAME.Block() == m_context->TEX0.TBP0 && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+	if (m_channel_shuffle) {
+		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
+		m_channel_shuffle = PRIM->TME  && (m_context->TEX0.PSM == PSM_PSMT8) && (delta_p.x <= 64.0f) && (delta_p.y <= 32.0f) && (m_vt.m_primclass == GS_SPRITE_CLASS);
+		if (m_channel_shuffle) {
+			GL_INS("Channel shuffle effect detected SKIP");
+			GL_POP();
+			s_n += 3; // Keep it sync with SW renderer
+			return;
+		}
+	} else if (PRIM->TME && m_context->FRAME.Block() == m_context->TEX0.TBP0 && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Special post-processing effect
 		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
 
@@ -469,6 +478,14 @@ void GSRendererHW::Draw()
 
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
+
+		GSVector4 delta_p =  m_vt.m_max.p - m_vt.m_min.p;
+		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && ((delta_p.x <= 64.0f) && (delta_p.y <= 32.0f))) {
+			GL_INS("Channel shuffle effect detected (2nd shot)");
+			m_channel_shuffle = true;
+		} else {
+			m_channel_shuffle = false;
+		}
 	}
 	if (rt) {
 		// Be sure texture shuffle detection is properly propagated
