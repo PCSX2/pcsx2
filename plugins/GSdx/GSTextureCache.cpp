@@ -1121,7 +1121,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		if (GSLocalMemory::m_psm[TEX0.PSM].bpp > 8) {
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		}
+
+		// Keep a trace of origin of the texture
 		src->m_target = true;
+		src->m_from_target = dst->m_texture;
 
 		dst->Update();
 
@@ -1488,6 +1491,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_complete(false)
 	, m_spritehack_t(false)
 	, m_p2t(NULL)
+	, m_from_target(NULL)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;

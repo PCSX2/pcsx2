@@ -67,6 +67,10 @@ public:
 		bool m_repeating;
 		bool m_spritehack_t;
 		vector<GSVector2i>* m_p2t;
+		// Keep a trace of the target origin. There is no guarantee that pointer will
+		// still be valid on future. However it ought to be good when the source is created
+		// so it can be used to access un-converted data for the current draw call.
+		GSTexture* m_from_target;
 
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);

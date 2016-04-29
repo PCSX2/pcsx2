@@ -777,7 +777,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			GL_INS("channel not supported");
 			ASSERT(0);
 		}
+		dev->PSSetShaderResource(4, tex->m_from_target);
 		glTextureBarrier();
+	} else {
+#ifdef ENABLE_OGL_DEBUG
+		dev->PSSetShaderResource(4, NULL);
+#endif
 	}
 
 	//

@@ -40,6 +40,7 @@ layout(location = 0, index = 1) out vec4 SV_Target1;
 
 layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the image below
+layout(binding = 4) uniform sampler2D RawTextureSampler;
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
@@ -267,25 +268,25 @@ vec4 sample_depth(vec2 st)
 //////////////////////////////////////////////////////////////////////
 vec4 fetch_red()
 {
-    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
     return sample_p(rt.r) * 255.0f;
 }
 
 vec4 fetch_blue()
 {
-    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
     return sample_p(rt.b) * 255.0f;
 }
 
 vec4 fetch_green()
 {
-    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
     return sample_p(rt.g) * 255.0f;
 }
 
 vec4 fetch_alpha()
 {
-    vec4 rt = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
     return sample_p(rt.a) * 255.0f;
 }
 
