@@ -773,6 +773,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Pop
 			GL_INS("Red channel");
 			ps_sel.channel = 1;
+		} else if (0 && (tex->m_texture->GetType() == GSTexture::DepthStencil) /*&& !(rt->m_32_bits_fmt)*/) {
+			// FIXME add a 16 bit check
+			GL_INS("Urban Chaos Crazyness");
+			ps_sel.urban_chaos_hack = 1;
 		} else {
 			GL_INS("channel not supported");
 			m_channel_shuffle = false;

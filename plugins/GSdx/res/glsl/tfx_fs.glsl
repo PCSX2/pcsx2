@@ -225,7 +225,21 @@ vec4 sample_depth(vec2 st)
     ivec2 uv = ivec2(uv_f);
 
     vec4 t;
-#if PS_DEPTH_FMT == 1
+#if PS_URBAN_CHAOS_HACK == 1
+    // Convert a GL_FLOAT32 to a special color format expected by the game
+    int depth = int(fetch_c(uv).r * exp2(32.0f));
+
+    // Convert lsb based on the palette
+    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);
+
+    // Msb is easier
+    float green = float((depth >> 8) & 0xFF) * 36.0f;
+    green = min(green, 255.0f);
+
+    t.g += green;
+
+
+#elif PS_DEPTH_FMT == 1
     // Based on ps_main11 of convert
 
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
@@ -251,6 +265,7 @@ vec4 sample_depth(vec2 st)
     t = fetch_c(uv) * 255.0f;
 
 #endif
+
 
     // warning t ranges from 0 to 255
 #if (PS_AEM_FMT == FMT_24)
