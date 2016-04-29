@@ -48,8 +48,8 @@ namespace GLState {
 
 	GLuint rt;
 	GLuint ds;
-	GLuint tex_unit[4];
-	GLuint64 tex_handle[4];
+	GLuint tex_unit[8];
+	GLuint64 tex_handle[8];
 
 	GLuint ps;
 	GLuint gs;

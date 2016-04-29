@@ -50,8 +50,8 @@ namespace GLState {
 
 	extern GLuint rt; // render target
 	extern GLuint ds; // Depth-Stencil
-	extern GLuint tex_unit[4]; // shader input texture
-	extern GLuint64 tex_handle[4]; // shader input texture
+	extern GLuint tex_unit[8]; // shader input texture
+	extern GLuint64 tex_handle[8]; // shader input texture
 
 	extern GLuint ps;
 	extern GLuint gs;
