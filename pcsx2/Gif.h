@@ -93,6 +93,20 @@ enum gifstate_t {
 	GIF_STATE_EMPTY = 0x10
 };
 
+struct GIF_Fifo
+{
+	unsigned int data[64]; //16 QW FIFO
+	unsigned int readdata[64]; //16 QW Inline for reading
+	int readpos, writepos;
+
+	int write(u32* pMem, int size);
+	int read(bool calledFromDMA = false);
+
+	void init();
+};
+
+extern GIF_Fifo gif_fifo;
+
 union tGIF_CTRL
 {
 	struct {

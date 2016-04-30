@@ -18,6 +18,7 @@
 #include "Common.h"
 
 #include "GS.h"
+#include "Gif.h"
 #include "Gif_Unit.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
@@ -128,20 +129,28 @@ void __fastcall WriteFIFO_VIF1(const mem128_t *value)
 void __fastcall WriteFIFO_GIF(const mem128_t *value)
 {
 	GUNIT_LOG("WriteFIFO_GIF()");
-	gifUnit.TransferGSPacketData(GIF_TRANS_FIFO, (u8*)value, 16);
+	if (CHECK_GIFFIFOHACK) {
+		gif_fifo.write((u32*)value, 1);
 
-	if(gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
+		gif_fifo.read(true);		
+	}
+	else {
+		gifUnit.TransferGSPacketData(GIF_TRANS_FIFO, (u8*)value, 16);
+	}
+
+	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
 		gifUnit.gifPath[GIF_PATH_3].state = GIF_PATH_IDLE;
 
-	if( gifRegs.stat.APATH == 3 )
+	if (gifRegs.stat.APATH == 3)
 	{
 		gifRegs.stat.APATH = 0;
 		gifRegs.stat.OPH = 0;
 
-		if(gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT) 
+		if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
 		{
-			if(gifUnit.checkPaths(1,1,0)) gifUnit.Execute(false, true);
+			if (gifUnit.checkPaths(1, 1, 0)) gifUnit.Execute(false, true);
 		}
 
 	}
+	
 }

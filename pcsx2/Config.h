@@ -55,7 +55,7 @@ enum GamefixId
 	Fix_DMABusy,
 	Fix_VIFFIFO,
 	Fix_VIF1Stall,
-	Fix_GIFReverse,
+	Fix_GIFFIFO,
 	Fix_FMVinSoftware,
 	Fix_GoemonTlbMiss,
 	Fix_ScarfaceIbit,
@@ -349,7 +349,7 @@ struct Pcsx2Config
 				DMABusyHack		:1,		// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 				VIFFIFOHack		:1,     // Pretends to fill the non-existant VIF FIFO Buffer.
 				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-				GIFReverseHack  :1,		// Allows PATH3 to continue even if the FIFO is reversed.
+				GIFFIFOHack		:1,		// Enabled the GIF FIFO (more correct but slower)
 				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
 				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation
@@ -531,7 +531,7 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_DMABUSYHACK			(EmuConfig.Gamefixes.DMABusyHack)    // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 #define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
 #define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-#define CHECK_GIFREVERSEHACK		(EmuConfig.Gamefixes.GIFReverseHack) // Allows PATH3 to continue even if the FIFO is reversed.
+#define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
 #define CHECK_FMVINSOFTWAREHACK	 	(EmuConfig.Gamefixes.FMVinSoftwareHack) // Toggle in and out of software rendering when an FMV runs.
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)

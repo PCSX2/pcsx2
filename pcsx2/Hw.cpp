@@ -72,7 +72,7 @@ void hwReset()
 	ipuReset();
 	vif0Reset();
 	vif1Reset();
-
+	gif_fifo.init();
 	// needed for legacy DMAC
 	ipuDmaReset();
 }

@@ -93,7 +93,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"),
+			_("Enable the GIF FIFO (slower but needed for Hotwheels, Wallace & Gromit, DJ Hero)"),
 			wxEmptyString
 		},
 		{
