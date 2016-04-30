@@ -129,6 +129,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_texture = dst->m_texture;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
+		src->m_from_target = dst->m_texture; // avoid complex condition on the renderer
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
 		// Insert the texture in the hash set to keep track of it. But don't bother with
