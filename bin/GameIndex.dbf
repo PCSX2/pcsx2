@@ -9499,6 +9499,7 @@ Serial = SLES-51372
 Name   = Wallace & Gromit in Project Zoo
 Region = PAL-E
 Compat = 5
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-51374
 Name   = RoboCop
@@ -10511,6 +10512,7 @@ Compat = 5
 Serial = SLES-51879
 Name   = Hot Wheels World Race
 Region = PAL-E
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-51881
 Name   = Mercedes Bens World Racing
@@ -10772,6 +10774,7 @@ Serial = SLES-51989
 Name   = Wallace & Gromit in Project Zoo
 Region = PAL-M5
 Compat = 5
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-51991
 Name   = Dance UK
@@ -10860,12 +10863,13 @@ Region = PAL-G
 Compat = 5
 [patches = C502AD6E]
 	
-	comment=patches by Nachbrenner
-	
+	//comment=patches by Nachbrenner
+	//No longer required? - Apr 2016
 	//skip sceIpuSync
-	patch=0,EE,00472c78,word,03e00008
+	//patch=0,EE,00472c78,word,03e00008
 	
 [/patches]
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-52028
 Name   = Junior Sports Basketball
@@ -17523,6 +17527,11 @@ OPHFLagHack = 1
 Serial = SLES-55574
 Name   = the Lord of the Rings - Aragorn's Quest
 Region = PAL-M6
+---------------------------------------------
+Serial = SLES-55577
+Name   = DJ Hero
+Region = PAL-M5
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-55578
 Name   = Band Hero
@@ -36578,6 +36587,7 @@ Serial = SLUS-20647
 Name   = Wallace & Gromit in Project Zoo
 Region = NTSC-U
 Compat = 5
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLUS-20648
 Name   = NBA Jam 2004
@@ -36983,7 +36993,7 @@ Serial = SLUS-20737
 Name   = Hot Wheels - World Race
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLUS-20738
 Name   = Van Helsing
@@ -42392,6 +42402,7 @@ Region = NTSC-U
 Serial = SLUS-21909
 Name   = DJ Hero
 Region = NTSC-U
+GIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLUS-21910
 Name   = Marvel Super Hero Squad
