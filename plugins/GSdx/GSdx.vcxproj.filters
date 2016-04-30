@@ -81,6 +81,9 @@
     <ClCompile Include="GSFunctionMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSHwHack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GSLocalMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

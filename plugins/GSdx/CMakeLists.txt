@@ -69,6 +69,7 @@ set(GSdxSources
     GSDrawScanlineCodeGenerator.x64.avx.cpp
     GSDump.cpp
     GSFunctionMap.cpp
+    GSHwHack.cpp
     GSLinuxDialog.cpp
     GSLocalMemory.cpp
 	GSLzma.cpp

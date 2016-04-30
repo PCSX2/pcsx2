@@ -690,6 +690,7 @@
     <ClCompile Include="GSDump.cpp" />
     <ClCompile Include="GSdx.cpp" />
     <ClCompile Include="GSFunctionMap.cpp" />
+    <ClCompile Include="GSHwHack.cpp" />
     <ClCompile Include="GSLocalMemory.cpp" />
     <ClCompile Include="GSPerfMon.cpp" />
     <ClCompile Include="GSPng.cpp" />
