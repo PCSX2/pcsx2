@@ -249,7 +249,7 @@ const wxChar *const tbl_GamefixNames[] =
 	L"DMABusy",
 	L"VIFFIFO",
 	L"VIF1Stall",
-	L"GIFReverse",
+	L"GIFFIFO",
 	L"FMVinSoftware",
 	L"GoemonTlb",
 	L"ScarfaceIbit"
@@ -312,7 +312,7 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_DMABusy:		DMABusyHack			= enabled;  break;
 		case Fix_VIFFIFO:		VIFFIFOHack			= enabled;  break;
 		case Fix_VIF1Stall:		VIF1StallHack		= enabled;  break;
-		case Fix_GIFReverse:	GIFReverseHack		= enabled;  break;
+		case Fix_GIFFIFO:		GIFFIFOHack			= enabled;  break;
 		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
 		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
 		case Fix_ScarfaceIbit:  ScarfaceIbit        = enabled;  break;
@@ -338,7 +338,7 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_DMABusy:		return DMABusyHack;
 		case Fix_VIFFIFO:		return VIFFIFOHack;
 		case Fix_VIF1Stall:		return VIF1StallHack;
-		case Fix_GIFReverse:	return GIFReverseHack;
+		case Fix_GIFFIFO:		return GIFFIFOHack;
 		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
 		case Fix_GoemonTlbMiss: return GoemonTlbHack;
 		case Fix_ScarfaceIbit:  return ScarfaceIbit;
@@ -364,7 +364,7 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( DMABusyHack );
 	IniBitBool( VIFFIFOHack );
 	IniBitBool( VIF1StallHack );
-	IniBitBool( GIFReverseHack );
+	IniBitBool( GIFFIFOHack );
 	IniBitBool( FMVinSoftwareHack );
 	IniBitBool( GoemonTlbHack );
 	IniBitBool( ScarfaceIbit );

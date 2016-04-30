@@ -593,6 +593,9 @@ struct Gif_Unit {
 				}
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
 				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
+				/*if (path.curSize == path.curOffset)
+					curPath = 0;*/
+				
 			}
 
 			if (!gsSIGNAL.queued && !gifPath[0].isDone()) {
@@ -650,13 +653,13 @@ struct Gif_Unit {
 	bool CanDoPath2HL() const {
 		return (stat.APATH == 0 || stat.APATH == 2) && CanDoGif();
 	}
-	// Gif DMA - CHECK_GIFREVERSEHACK is a hack for Hot Wheels.
+	// Gif DMA
 	bool CanDoPath3() const {
 		return((stat.APATH == 0 && !Path3Masked()) || stat.APATH == 3) && CanDoGif();
 	}
 
 	bool CanDoP3Slice()const { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
-	bool CanDoGif() const    { return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
+	bool CanDoGif() const    { return stat.PSE == 0 && stat.DIR == 0 && gsSIGNAL.queued == 0; }
 	//Mask stops the next packet which hasnt started from transferring
 	bool Path3Masked() const { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
 
