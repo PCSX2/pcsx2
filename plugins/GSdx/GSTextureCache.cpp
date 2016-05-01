@@ -85,12 +85,11 @@ void GSTextureCache::RemoveAll()
 	}
 }
 
-GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
 	if (!CanConvertDepth()) return NULL;
 
-	if(GSLocalMemory::m_psm[TEX0.PSM].pal > 0)
-		m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 
 	Source* src = NULL;
 	Target* dst = NULL;
@@ -98,6 +97,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	// Check only current frame, I guess it is only used as a postprocessing effect
 	uint32 bp = TEX0.TBP0;
 	uint32 psm = TEX0.PSM;
+
 	for(auto t : m_dst[DepthStencil]) {
 		if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
@@ -122,23 +122,32 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	if (dst) {
 		GL_CACHE("TC depth: dst %s hit: %d (0x%x, F:0x%x)", to_string(dst->m_type),
 				dst->m_texture ? dst->m_texture->GetID() : 0,
-				TEX0.TBP0, TEX0.PSM);
+				TEX0.TBP0, psm);
 
 		// Create a shared texture source
 		src = new Source(m_renderer, TEX0, TEXA, m_temp, true);
 		src->m_texture = dst->m_texture;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
+		src->m_from_target = dst->m_texture; // avoid complex condition on the renderer
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
 		// Insert the texture in the hash set to keep track of it. But don't bother with
 		// texture cache list. It means that a new Source is created everytime we need it.
 		// If it is too expensive, one could cut memory allocation in Source constructor for this
 		// use case.
+		if (palette) {
+			const uint32* clut = m_renderer->m_mem.m_clut;
+			int size = psm_s.pal * sizeof(clut[0]);
+
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			src->m_palette->Update(GSVector4i(0, 0, psm_s.pal, 1), clut, size);
+			src->m_initpalette = false;
+		}
 
 		m_src.m_surfaces.insert(src);
 	} else {
-		GL_CACHE("TC depth: ERROR miss (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+		GL_CACHE("TC depth: ERROR miss (0x%x, F:0x%x)", TEX0.TBP0, psm);
 		// Possible ? In this case we could call LookupSource
 		// Or just put a basic texture
 		// src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
@@ -156,12 +165,12 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
 {
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
 
 	// Until DX is fixed
 	if (s_IS_OPENGL) {
-		if(psm.pal > 0)
+		if(psm_s.pal > 0)
 			m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
 	} else {
 		GIFRegTEXA plainTEXA;
@@ -188,16 +197,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 		// Target are converted (AEM & palette) on the fly by the GPU. They don't need extra check
 		if (!s->m_target) {
-			// We request a palette texture (psm.pal). If the texture was
+			// We request a palette texture (psm_s.pal). If the texture was
 			// converted by the CPU (s->m_palette == NULL), we need to ensure
 			// palette content is the same.
 			// Note: content of the palette will be uploaded at the end of the function
-			if (psm.pal > 0 && s->m_palette == NULL && !GSVector4i::compare64(clut, s->m_clut, psm.pal * sizeof(clut[0])))
+			if (psm_s.pal > 0 && s->m_palette == NULL && !GSVector4i::compare64(clut, s->m_clut, psm_s.pal * sizeof(clut[0])))
 				continue;
 
 			// We request a 24/16 bit RGBA texture. Alpha expansion was done by
 			// the CPU.  We need to check that TEXA is identical
-			if (psm.pal == 0 && psm.fmt > 0 && s->m_TEXA.u64 != TEXA.u64)
+			if (psm_s.pal == 0 && psm_s.fmt > 0 && s->m_TEXA.u64 != TEXA.u64)
 				continue;
 		}
 
@@ -295,14 +304,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
 					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
-					//dst = t;
-					//break;
 					// Let's fetch a depth format texture. Rational, it will avoid the texture allocation and the
 					// rescaling of the current function.
-					GIFRegTEX0 depth_TEX0;
-					depth_TEX0.u32[0] = TEX0.u32[0] | (0x30u << 20u);
-					depth_TEX0.u32[1] = TEX0.u32[1];
-					return LookupDepthSource(depth_TEX0, TEXA, r);
+					if (psm_s.bpp > 8) {
+						GIFRegTEX0 depth_TEX0;
+						depth_TEX0.u32[0] = TEX0.u32[0] | (0x30u << 20u);
+						depth_TEX0.u32[1] = TEX0.u32[1];
+						return LookupDepthSource(depth_TEX0, TEXA, r);
+					} else {
+						return LookupDepthSource(TEX0, TEXA, r, true);
+					}
 				}
 			}
 		}
@@ -334,11 +345,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	if (src->m_palette)
 	{
-		int size = psm.pal * sizeof(clut[0]);
+		int size = psm_s.pal * sizeof(clut[0]);
 
 		if(src->m_initpalette || !GSVector4i::update(src->m_clut, clut, size))
 		{
-			src->m_palette->Update(GSVector4i(0, 0, psm.pal, 1), src->m_clut, size);
+			src->m_palette->Update(GSVector4i(0, 0, psm_s.pal, 1), src->m_clut, size);
 			src->m_initpalette = false;
 		}
 	}

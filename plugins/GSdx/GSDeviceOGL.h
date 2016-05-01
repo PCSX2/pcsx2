@@ -289,8 +289,9 @@ class GSDeviceOGL final : public GSDevice
 
 				// Hack
 				uint32 tcoffsethack:1;
+				uint32 urban_chaos_hack:1;
 
-				uint32 _free2:16;
+				uint32 _free2:15;
 			};
 
 			uint64 key;

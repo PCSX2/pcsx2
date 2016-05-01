@@ -58,6 +58,18 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	GSDeviceDX* dev = (GSDeviceDX*)m_dev;
 
+	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
+	// reduce memory requirement (and why not a partial port)
+	if (m_channel_shuffle) {
+		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+			;
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
+			;
+		} else {
+			m_channel_shuffle = false;
+		}
+	}
+
 	if(DATE)
 	{
 		if(dev->HasStencil())

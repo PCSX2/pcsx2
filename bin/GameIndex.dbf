@@ -1179,6 +1179,7 @@ Serial = SCES-50004
 Name   = Formula One 2001
 Region = PAL-M6
 Compat = 5
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCES-50005
 Name   = Wipeout Fusion
@@ -1553,6 +1554,7 @@ Region = PAL-Unk
 Serial = SCES-51004
 Name   = Formula One 2002
 Region = PAL-M6
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCES-51039
 Name   = This is Football 2003
@@ -3351,6 +3353,7 @@ Region = NTSC-J
 Serial = SCPS-15019
 Name   = Formula One 2001
 Region = NTSC-J
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCPS-15020
 Name   = Legaia 2 - Duel Saga
@@ -3405,6 +3408,7 @@ Region = NTSC-J
 Serial = SCPS-15032
 Name   = Formula One 2002
 Region = NTSC-J
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCPS-15033
 Name   = Dark Chronicle
@@ -4296,6 +4300,7 @@ Region = NTSC-J
 Serial = SCPS-55047
 Name   = Formula One 2002
 Region = NTSC-J
+XgKickHack = 1
 ---------------------------------------------
 Serial = SCPS-55048
 Name   = Dark Chronicle
@@ -4608,6 +4613,7 @@ Serial = SCUS-97150
 Name   = Formula One 2001
 Region = NTSC-U
 Compat = 3
+XgKickHack = 1
 [patches = 272F1C14]
 	comment=patches by Plot and Ref Skip videos
 	patch=0,EE,0010aafc,word,00000000
@@ -9755,6 +9761,7 @@ Region = PAL-M5
 Serial = SLES-51509
 Name   = World of Outlaws - Sprint Cars
 Region = PAL-E
+XgKickHack = 1
 ---------------------------------------------
 Serial = SLES-51510
 Name   = Dancing Stage Fever MegaMix
@@ -29170,6 +29177,7 @@ Region = NTSC-J
 Serial = SLPS-20120
 Name   = Formula One 2001
 Region = NTSC-J
+XgKickHack = 1
 ---------------------------------------------
 Serial = SLPS-20121
 Name   = Kanon
@@ -34946,6 +34954,7 @@ Compat = 4
 Serial = SLUS-20283
 Name   = World of Outlaws - Sprint Cars 2002
 Region = NTSC-U
+XgKickHack = 1
 ---------------------------------------------
 Serial = SLUS-20284
 Name   = Freaky Flyers

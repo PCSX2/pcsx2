@@ -225,7 +225,21 @@ vec4 sample_depth(vec2 st)
     ivec2 uv = ivec2(uv_f);
 
     vec4 t;
-#if PS_DEPTH_FMT == 1
+#if PS_URBAN_CHAOS_HACK == 1
+    // Convert a GL_FLOAT32 to a special color format expected by the game
+    int depth = int(fetch_c(uv).r * exp2(32.0f));
+
+    // Convert lsb based on the palette
+    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);
+
+    // Msb is easier
+    float green = float((depth >> 8) & 0xFF) * 36.0f;
+    green = min(green, 255.0f);
+
+    t.g += green;
+
+
+#elif PS_DEPTH_FMT == 1
     // Based on ps_main11 of convert
 
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
@@ -252,6 +266,7 @@ vec4 sample_depth(vec2 st)
 
 #endif
 
+
     // warning t ranges from 0 to 255
 #if (PS_AEM_FMT == FMT_24)
     t.a = ( (PS_AEM == 0) || any(bvec3(t.rgb))  ) ? 255.0f * TA.x : 0.0f;
@@ -266,27 +281,47 @@ vec4 sample_depth(vec2 st)
 //////////////////////////////////////////////////////////////////////
 // Fetch a Single Channel
 //////////////////////////////////////////////////////////////////////
+int fetch_raw_depth()
+{
+    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+}
+
+vec4 fetch_raw_color()
+{
+    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+}
+
 vec4 fetch_red()
 {
-    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+#if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
+    int depth = (fetch_raw_depth()) & 0xFF;
+    vec4 rt = vec4(depth) / 255.0f;
+#else
+    vec4 rt = fetch_raw_color();
+#endif
     return sample_p(rt.r) * 255.0f;
 }
 
 vec4 fetch_blue()
 {
-    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+#if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
+    int depth = (fetch_raw_depth() >> 16) & 0xFF;
+    vec4 rt = vec4(depth) / 255.0f;
+#else
+    vec4 rt = fetch_raw_color();
+#endif
     return sample_p(rt.b) * 255.0f;
 }
 
 vec4 fetch_green()
 {
-    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = fetch_raw_color();
     return sample_p(rt.g) * 255.0f;
 }
 
 vec4 fetch_alpha()
 {
-    vec4 rt = texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+    vec4 rt = fetch_raw_color();
     return sample_p(rt.a) * 255.0f;
 }
 
