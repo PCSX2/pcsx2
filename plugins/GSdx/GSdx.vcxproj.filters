@@ -609,5 +609,20 @@
     <Image Include="res\logo-ogl.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\logo11.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\logo-null.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\psx-logo9.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\psx-logo11.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\psx-logo-null.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

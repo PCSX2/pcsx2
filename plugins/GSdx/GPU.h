@@ -264,6 +264,13 @@ REG32_SET(GPUReg)
 	GPURegCLUT CLUT;
 REG_SET_END
 
+enum class GPURendererType : int8
+{
+	D3D9_SW,
+	D3D11_SW,
+	NULL_Renderer,
+};
+
 struct GPUFreezeData
 {
 	uint32 version; // == 1

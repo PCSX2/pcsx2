@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GS.h"
+#include "GPU.h"
 
 static void* s_hModule;
 
@@ -129,33 +130,25 @@ GSdxApp::GSdxApp()
 	m_section = "Settings";
 
 #ifdef _WIN32
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW), "Direct3D9", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D11", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_HW),			"Direct3D9",	"Hardware"));
-
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW), "Direct3D9", "Software"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW), "Direct3D", "Software"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW), "Direct3D11", "Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_SW),		"Direct3D9",	"Software"));
-
-#ifdef _DEBUG
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_Null), "Direct3D9", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_Null), "Direct3D11", "Null"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_SW), "Null", "Software"));
-#endif
 #else // Linux
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_Null), "None", "Core Benchmark"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "None", "Core Benchmark"));
 
 #ifdef ENABLE_OPENCL
 	// OpenCL stuff goes last
 	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_OpenCL),		"Direct3D9",	"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D11",	"OpenCL"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null_OpenCL),	"Null",			"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
 #endif
 
@@ -220,11 +213,9 @@ GSdxApp::GSdxApp()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
-	m_gpu_renderers.push_back(GSSetting(0, "Direct3D9 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(1, "Direct3D11 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(2, "SDL 1.3 (Software)", ""));
-	m_gpu_renderers.push_back(GSSetting(3, "Null (Software)", ""));
-	//m_gpu_renderers.push_back(GSSetting(4, "Null (Null)", ""));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D9_SW), "Direct3D9", "Software"));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D11_SW), "Direct3D11", "Software"));
+	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::NULL_Renderer), "Null", ""));
 
 	m_gpu_filter.push_back(GSSetting(0, "Nearest", ""));
 	m_gpu_filter.push_back(GSSetting(1, "Bilinear (polygons only)", ""));
