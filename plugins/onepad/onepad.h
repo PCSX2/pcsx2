@@ -49,7 +49,7 @@ using namespace std;
 #define PADdefs
 #include "PS2Edefs.h"
 
-#ifdef __linux__
+#if defined(__unix__)
 #include "GamePad.h"
 #endif
 #include "bitwise.h"

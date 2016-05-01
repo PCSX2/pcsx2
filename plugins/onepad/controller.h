@@ -21,11 +21,7 @@
 
 #pragma once
 #include <string.h> // for memset
-#ifdef __linux__
 #define MAX_KEYS 24
-#else
-#define MAX_KEYS 20
-#endif
 
 enum KeyType
 {

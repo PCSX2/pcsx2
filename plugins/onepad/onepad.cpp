@@ -263,7 +263,7 @@ EXPORT_C_(s32) PADopen(void *pDsp)
 	pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
 	mutex_WasInit = true;
 
-#ifdef __linux__
+#if defined(__unix__)
 	GamePad::EnumerateGamePads(s_vgamePad);
 #endif
 	return _PADopen(pDsp);
@@ -595,7 +595,7 @@ EXPORT_C_(keyEvent*) PADkeyEvent()
 	return &s_event;
 }
 
-#ifdef __linux__
+#if defined(__unix__)
 EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
 {
 	// This function call be called before PADopen. Therefore we cann't
