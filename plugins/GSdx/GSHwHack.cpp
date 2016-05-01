@@ -48,6 +48,23 @@ CRC::Region g_crc_region = CRC::NoRegion;
 // (note: could potentially work with latest OpenGL)
 ////////////////////////////////////////////////////////////////////////////////
 
+// Channel effect not properly supported yet
+bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 1315;
+		}
+	}
+	else
+	{
+	}
+
+	return true;
+}
+
 // Potentially partially dx only
 bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 {
@@ -152,6 +169,7 @@ bool GSC_WildArms5(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+// Channel effect not properly supported yet
 bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 {
 	/*
@@ -1745,22 +1763,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1315;
-		}
-	}
-	else
-	{
-	}
-
-	return true;
-}
-
 bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2484,6 +2486,7 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::Genji] = GSC_Genji;
 			map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
 			map[CRC::GetaWay] = GSC_GetaWay;
+			map[CRC::GiTS] = GSC_GiTS;
 			map[CRC::GodHand] = GSC_GodHand;
 			map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
 			map[CRC::HauntingGround] = GSC_HauntingGround;
@@ -2557,7 +2560,6 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 			map[CRC::DemonStone] = GSC_DemonStone;
 			map[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
-			map[CRC::GiTS] = GSC_GiTS;
 			map[CRC::LegoBatman] = GSC_LegoBatman;
 			map[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 			map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
