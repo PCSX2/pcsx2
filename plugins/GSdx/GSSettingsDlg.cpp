@@ -30,8 +30,8 @@
 
 
 GSSettingsDlg::GSSettingsDlg()
-       : GSDialog(IDD_CONFIG)
-       
+	: GSDialog(IDD_CONFIG)
+
 {
 #ifdef ENABLE_OPENCL
 	list<OCLDeviceDesc> ocldevs;
@@ -61,7 +61,7 @@ void GSSettingsDlg::OnInit()
 	{
 		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
 	}
-        adapters.clear();
+	adapters.clear();
 	adapters.push_back(Adapter("Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_HARDWARE)));
 	adapters.push_back(Adapter("Reference Device", "ref", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_REFERENCE)));
 
@@ -75,9 +75,9 @@ void GSSettingsDlg::OnInit()
 				break;
 
 			DXGI_ADAPTER_DESC1 desc;
-			
+
 			HRESULT hr = adapter->GetDesc1(&desc);
-			
+
 			if(S_OK == hr)
 			{
 				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
@@ -160,7 +160,6 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
 	CheckDlgButton(m_hWnd, IDC_MIPMAP, theApp.GetConfig("mipmap", 1));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfig("accurate_date", 0));
-	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("texture_cache_depth", 0));
 	
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfig("UserHacks", 0));
@@ -179,7 +178,6 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_PALTEX);
 	AddTooltip(IDC_ACCURATE_DATE);
 	AddTooltip(IDC_ACCURATE_BLEND_UNIT);
-	AddTooltip(IDC_TC_DEPTH);
 	AddTooltip(IDC_AFCOMBO);
 	AddTooltip(IDC_AA1);
 	AddTooltip(IDC_MIPMAP);
@@ -285,7 +283,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("resy", (int)SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("extrathreads", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
-			theApp.SetConfig("texture_cache_depth", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 		}
 		break;
@@ -413,8 +410,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl && hw);
-		
+
 		// Software mode settings
 		EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP), sw);
@@ -501,32 +497,32 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
-	case WM_HSCROLL:	
-	{											
+	case WM_HSCROLL:
+	{
 		if((HWND)lParam == GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER)) 
-		{	
+		{
 			char text[8] = {0};
 
-			saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);			
-				
+			saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
+
 			sprintf(text, "%d", saturation);
 			SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER)) 
-		{	
+		{
 			char text[8] = {0};
 
-			brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);			
-				
+			brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
+
 			sprintf(text, "%d", brightness);
 			SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER)) 
-		{	
+		{
 			char text[8] = {0};
 
 			contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
-							
+
 			sprintf(text, "%d", contrast);
 			SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
 		}
@@ -571,7 +567,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("shaderfx_conf", buffer);
 			delete[] buffer;
 
-			EndDialog(m_hWnd, id);		
+			EndDialog(m_hWnd, id);
 		} break;
 		case IDC_SHADEBOOST:
 			UpdateControls();
@@ -608,7 +604,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 // Hacks Dialog
 
-GSHacksDlg::GSHacksDlg() : 
+GSHacksDlg::GSHacksDlg() :
 	GSDialog(IDD_HACKS)
 {
 	memset(msaa2cb, 0, sizeof(msaa2cb));
@@ -648,10 +644,10 @@ void GSHacksDlg::OnInit()
 	else for(unsigned short j = 0; j < 5; j++) // TODO: Make the same kind of check for d3d11, eventually....
 	{
 		unsigned short i = j == 0 ? 0 : 1 << j;
-		
+
 		msaa2cb[i] = j;
 		cb2msaa[j] = i;
-		
+
 		char text[32] = {0};
 		sprintf(text, "%dx ", i);
 
@@ -667,7 +663,8 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfig("preload_frame_with_gs_data", 0));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfig("UserHacks_align_sprite_X", 0));
 	CheckDlgButton(m_hWnd, IDC_SAFE_FBMASK, theApp.GetConfig("UserHacks_safe_fbmask", 0));
-
+	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfig("UserHacks_DisableDepthSupport", 0));
+	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfig("UserHacks_DisablePartialInvalidation", 0));
 
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfig("UserHacks_round_sprite_offset", 0));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfig("UserHacks_SpriteHack", 0));
@@ -710,13 +707,15 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_TCOFFSETY2);
 	AddTooltip(IDC_PRELOAD_GS);
 	AddTooltip(IDC_SAFE_FBMASK);
+	AddTooltip(IDC_TC_DEPTH);
+	AddTooltip(IDC_FAST_TC_INV);
 }
 
 void GSHacksDlg::UpdateControls()
 {}
 
 bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
-{	    
+{
 	switch(message)
 	{
 	case WM_COMMAND:
@@ -745,7 +744,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 			theApp.SetConfig("UserHacks_safe_fbmask", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FBMASK));
-
+			theApp.SetConfig("UserHacks_DisableDepthSupport", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
+			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
 						 TCOFFSET |= (SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0) & 0xFFFF) << 16;
