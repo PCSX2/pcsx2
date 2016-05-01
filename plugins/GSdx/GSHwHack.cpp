@@ -154,6 +154,24 @@ bool GSC_WildArms5(const GSFrameInfo& fi, int& skip)
 
 bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 {
+	/*
+	 * The game readback RT as 8 bits index texture to apply a non-linear brightness/gamma correction on all channel
+	 * It could be written in HLE shader as:
+	 * out = blue_lut[in.blue] + green_lut[in.green] + blue_lut[in.blue]
+	 *
+	 * Unlike others games (which do all pages of a channel), man hunt apply the 3 channel corrections by page.
+	 * (in short it is loop index/loop page instead of loop page/loop index)
+	 *
+	 * It is very annoying to detect.So in order to fix the effect the best
+	 * solution will be to implement an alternate draw call and then skip the
+	 * useless gs draw call.
+	 *
+	 * Blue  Palette correction is located @ 0x3C08 (TEX0.CBP of the first draw call that will fire the effect)
+	 * Green Palette correction is located @ 0x3C04
+	 * Blue  Palette correction is located @ 0x3C00
+	 * Either we upload the data as a new texture or we could hardcode them in a shader
+	 *
+	 */
 	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x03c20 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01400 && fi.TPSM == PSM_PSMT8)
