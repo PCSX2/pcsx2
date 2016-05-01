@@ -293,7 +293,7 @@ set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=2 ")
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register -Wno-c++14-extensions")
-    if (NOT APPLE)
+    if (Linux)
         set(COMMON_FLAG "${COMMON_FLAG} -no-integrated-as")
     endif()
     set(DBG "-g -fno-omit-frame-pointer")
