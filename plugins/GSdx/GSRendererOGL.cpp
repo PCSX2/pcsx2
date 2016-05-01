@@ -440,8 +440,8 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 
 	// For stat to optimize accurate option
 #if 0
-	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)",
-			ALPHA.A, ALPHA.B,  ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);
+	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (drawlist %d) (sw %d)",
+			ALPHA.A, ALPHA.B,  ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
 	if (sw_blending) {
 		ps_sel.blend_a = ALPHA.A;
