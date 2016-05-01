@@ -71,7 +71,7 @@ namespace SoundtouchCfg
 		CfgWriteInt( L"SOUNDTOUCH", L"OverlapMS", OverlapMS );
 	}
 
-#ifdef __linux__
+#ifdef __unix__
 	static GtkWidget *seq_label, *seek_label, *over_label;
 	static GtkWidget *seq_slide, *seek_slide, *over_slide;
 
