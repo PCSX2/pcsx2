@@ -773,8 +773,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Pop
 			GL_INS("Red channel");
 			ps_sel.channel = 1;
+		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
+			GL_INS("Urban Chaos Crazyness");
+			ps_sel.urban_chaos_hack = 1;
 		} else {
 			GL_INS("channel not supported");
+			m_channel_shuffle = false;
 			ASSERT(0);
 		}
 		dev->PSSetShaderResource(4, tex->m_from_target);
@@ -981,10 +985,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			}
 
 			// Depth format
-			if (psm.depth) {
-				// Require a float conversion if the texure is a depth otherwise uses Integral scaling
+			if (tex->m_texture->GetType() == GSTexture::DepthStencil) {
+				// Require a float conversion if the texure is a depth format
+				ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;
+
+				// Don't force interpolation on depth format
+				bilinear &= m_vt.IsLinear();
+			} else if (psm.depth) {
+				// Use Integral scaling
 				ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 :
-					(psm.bpp == 16) ? 2 : 1;
+
 				// Don't force interpolation on depth format
 				bilinear &= m_vt.IsLinear();
 			}

@@ -149,7 +149,7 @@ public:
 	void RemovePartial();
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
-	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
+	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
