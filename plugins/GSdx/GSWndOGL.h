@@ -21,7 +21,7 @@
 
 #include "GSWnd.h"
 
-#if defined(__linux__)
+#if defined(__unix__)
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 

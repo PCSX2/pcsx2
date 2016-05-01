@@ -18,7 +18,7 @@
  *
  */
 
-#ifdef __linux__
+#if defined(__unix__)
 
 #ifdef LZMA_SUPPORTED
 #include <lzma.h>

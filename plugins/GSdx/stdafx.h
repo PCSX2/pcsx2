@@ -208,7 +208,9 @@ using namespace stdext;
 
 #else
 
-    #define __fastcall __attribute__((fastcall))
+    #ifndef __fastcall
+        #define __fastcall __attribute__((fastcall))
+    #endif
 
     #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
     #define EXPORT_C EXPORT_C_(void)

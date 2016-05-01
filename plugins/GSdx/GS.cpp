@@ -365,7 +365,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		int w = theApp.GetConfig("ModeWidth", 0);
 		int h = theApp.GetConfig("ModeHeight", 0);
 
-#ifdef __linux__
+#if defined(__unix__)
 		for(uint32 i = 0; i < 2; i++) {
 			try
 			{
@@ -408,7 +408,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	{
 		s_gs->SetMultithreaded(true);
 
-#ifdef __linux__
+#if defined(__unix__)
 		if (s_gs->m_wnd) {
 			// A window was already attached to s_gs so we also
 			// need to restore the window state (Attach)
@@ -510,7 +510,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		}
 
 #endif
-#ifdef __linux__
+#if defined(__unix__)
 		switch(renderer) {
 			// Use alternative renderer (SW if currently using HW renderer, and vice versa)
 		case GSRendererType::OGL_SW: renderer = GSRendererType::OGL_HW; break;
@@ -882,7 +882,7 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 		printf("GSdx: no s_gs for recording\n");
 		return 0;
 	}
-#ifdef __linux__
+#if defined(__unix__)
 	if (!theApp.GetConfig("capture_enabled", 0)) {
 		printf("GSdx: Recording is disabled\n");
 		return 0;
@@ -1497,7 +1497,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 #endif
 
-#ifdef __linux__
+#if defined(__unix__)
 
 #include "GSLzma.h"
 

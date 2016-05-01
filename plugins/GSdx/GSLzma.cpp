@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "GSLzma.h"
 
-#ifdef __linux__
+#if defined(__unix__)
 
 GSDumpFile::GSDumpFile(char* filename) {
 	m_fp = fopen(filename, "rb");
