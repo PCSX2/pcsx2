@@ -87,20 +87,14 @@ public:
 // --------------------------------------------------------------------------------------
 //  pxLogTextCtrl
 // --------------------------------------------------------------------------------------
-class pxLogTextCtrl : public wxTextCtrl,
-	public EventListener_CoreThread,
-	public EventListener_Plugins
+class pxLogTextCtrl : public wxTextCtrl
 {
 protected:
 	std::unique_ptr<ScopedCoreThreadPause> m_IsPaused;
-	bool m_FreezeWrites;
 
 public:
 	pxLogTextCtrl(wxWindow* parent);
 	virtual ~pxLogTextCtrl() throw();
-
-	bool HasWriteLock() const { return m_FreezeWrites; }
-	void ConcludeIssue();
 
 #ifdef __WXMSW__
 	virtual void WriteText(const wxString& text);
@@ -109,10 +103,6 @@ public:
 protected:
 	virtual void OnThumbTrack(wxScrollWinEvent& event);
 	virtual void OnThumbRelease(wxScrollWinEvent& event);
-	virtual void OnResize( wxSizeEvent& evt );
-
-	void DispatchEvent( const CoreThreadStatus& status );
-	void DispatchEvent( const PluginEventType& evt );
 };
 
 // --------------------------------------------------------------------------------------

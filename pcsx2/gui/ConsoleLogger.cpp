@@ -979,8 +979,6 @@ void ConsoleLogFrame::DoFlushQueue()
 
 	if( len > 64 ) m_TextCtrl.Thaw();
 
-	m_TextCtrl.ConcludeIssue();
-
 	m_QueueColorSection.Clear();
 	m_CurQueuePos		= 0;
 }

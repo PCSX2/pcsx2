@@ -17,35 +17,15 @@
 #include "App.h"
 #include "ConsoleLogger.h"
 
-#ifdef __WXMSW__
-#	include <wx/msw/wrapwin.h>		// needed for windows-specific rich text messages to make scrolling not lame
-#endif
 #include <memory>
-
-void pxLogTextCtrl::DispatchEvent( const CoreThreadStatus& status )
-{
-	// See ConcludeIssue for details on WM_VSCROLL
-	if( HasWriteLock() ) return;
-	ConcludeIssue();
-}
-
-void pxLogTextCtrl::DispatchEvent( const PluginEventType& evt )
-{
-	if( HasWriteLock() ) return;
-	ConcludeIssue();
-}
 
 pxLogTextCtrl::pxLogTextCtrl( wxWindow* parent )
 	: wxTextCtrl( parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_NOHIDESEL
 	)
 {
-	m_FreezeWrites			= false;
-
-	Connect( wxEVT_SCROLLWIN_THUMBTRACK,	wxScrollWinEventHandler(pxLogTextCtrl::OnThumbTrack) );
-	Connect( wxEVT_SCROLLWIN_THUMBRELEASE,	wxScrollWinEventHandler(pxLogTextCtrl::OnThumbRelease) );
-
-	Connect( wxEVT_SIZE,					wxSizeEventHandler(pxLogTextCtrl::OnResize) );
+	Bind(wxEVT_SCROLLWIN_THUMBTRACK, &pxLogTextCtrl::OnThumbTrack, this);
+	Bind(wxEVT_SCROLLWIN_THUMBRELEASE, &pxLogTextCtrl::OnThumbRelease, this);
 }
 
 #ifdef __WXMSW__
@@ -56,15 +36,9 @@ void pxLogTextCtrl::WriteText(const wxString& text)
 }
 #endif
 
-void pxLogTextCtrl::OnResize( wxSizeEvent& evt )
-{
-	evt.Skip();
-}
-
 void pxLogTextCtrl::OnThumbTrack(wxScrollWinEvent& evt)
 {
 	//Console.Warning( "Thumb Tracking!!!" );
-	m_FreezeWrites = true;
 	if( !m_IsPaused )
 		m_IsPaused = std::unique_ptr<ScopedCoreThreadPause>(new ScopedCoreThreadPause());
 
@@ -74,7 +48,6 @@ void pxLogTextCtrl::OnThumbTrack(wxScrollWinEvent& evt)
 void pxLogTextCtrl::OnThumbRelease(wxScrollWinEvent& evt)
 {
 	//Console.Warning( "Thumb Releasing!!!" );
-	m_FreezeWrites = false;
 	if( m_IsPaused )
 	{
 		m_IsPaused->AllowResume();
@@ -86,12 +59,3 @@ void pxLogTextCtrl::OnThumbRelease(wxScrollWinEvent& evt)
 pxLogTextCtrl::~pxLogTextCtrl() throw()
 {
 }
-
-void pxLogTextCtrl::ConcludeIssue()
-{
-	if( HasWriteLock() ) return;
-
-	ScrollLines(1);
-	ShowPosition( GetLastPosition() );
-}
-
