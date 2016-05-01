@@ -294,12 +294,6 @@ void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
 
 void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-
-#ifdef DISABLE_SVU
-	m_panel_VU0->EnableItem( 2, false);
-	m_panel_VU1->EnableItem( 2, false);
-#endif
-
 	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
 #ifndef DISABLE_SVU
 	if( recOps.UseMicroVU0 )
