@@ -126,21 +126,6 @@ void GSRendererOGL::SetupIA()
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (m_channel_shuffle) {
-		// Oh a nice hack !
-
-		// Replace current draw with a fullscreen sprite
-
-		GSVertex* s = &m_vertex.buff[0];
-		s[0].XYZ.X = m_context->XYOFFSET.OFX + 0;
-		s[1].XYZ.X = m_context->XYOFFSET.OFX + 16384;
-		s[0].XYZ.Y = m_context->XYOFFSET.OFY + 0;
-		s[1].XYZ.Y = m_context->XYOFFSET.OFY + 16384;
-
-		m_vertex.head = m_vertex.tail = m_vertex.next = 4;
-		m_index.tail = 2;
-	}
-
 	if (!GLLoader::found_geometry_shader)
 		EmulateGS();
 
@@ -682,6 +667,56 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 	dev->s_n = s_n;
 
+	// HLE implementation of the channel selection effect
+	//
+	// Warning it must be done at the begining because it will change the
+	// vertex list (it will interact with PrimitiveOverlap and accurate
+	// blending)
+	//
+	// First let's check we really have a channel shuffle effect
+	if (m_channel_shuffle) {
+		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+			// Read either blue or Alpha. Let's go for Blue ;)
+			// MGS3/Kill Zone
+			GL_INS("Blue channel");
+			ps_sel.channel = 3;
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
+			// Read either Red or Green. Let's go for Red ;)
+			// Pop
+			GL_INS("Red channel");
+			ps_sel.channel = 1;
+		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
+			GL_INS("Urban Chaos Crazyness");
+			ps_sel.urban_chaos_hack = 1;
+		} else {
+			GL_INS("channel not supported");
+			m_channel_shuffle = false;
+			ASSERT(0);
+		}
+	}
+
+	// Effect is really a channel shuffle effect so let's cheat a little
+	if (m_channel_shuffle) {
+		dev->PSSetShaderResource(4, tex->m_from_target);
+		glTextureBarrier();
+
+		// Replace current draw with a fullscreen sprite
+
+		GSVertex* s = &m_vertex.buff[0];
+		s[0].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 0);
+		s[1].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 16384);
+		s[0].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 0);
+		s[1].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 16384);
+
+		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+		m_index.tail = 2;
+
+	} else {
+#ifdef ENABLE_OGL_DEBUG
+		dev->PSSetShaderResource(4, NULL);
+#endif
+	}
+
 	if ((DATE || m_sw_blending) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		// Except 2D games, sprites are often use for special post-processing effect
 		m_prim_overlap = PrimitiveOverlap();
@@ -759,34 +794,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
 		}
-	}
-
-	// Special Draw Call
-	if (m_channel_shuffle) {
-		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
-			// Read either blue or Alpha. Let's go for Blue ;)
-			// MGS3/Kill Zone
-			GL_INS("Blue channel");
-			ps_sel.channel = 3;
-		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
-			// Read either Red or Green. Let's go for Red ;)
-			// Pop
-			GL_INS("Red channel");
-			ps_sel.channel = 1;
-		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
-			GL_INS("Urban Chaos Crazyness");
-			ps_sel.urban_chaos_hack = 1;
-		} else {
-			GL_INS("channel not supported");
-			m_channel_shuffle = false;
-			ASSERT(0);
-		}
-		dev->PSSetShaderResource(4, tex->m_from_target);
-		glTextureBarrier();
-	} else {
-#ifdef ENABLE_OGL_DEBUG
-		dev->PSSetShaderResource(4, NULL);
-#endif
 	}
 
 	//
