@@ -222,6 +222,7 @@ protected:
 
 	void OnToggleTheme(wxCommandEvent& event);
 	void OnFontSize(wxCommandEvent& event);
+	void OnAutoDock(wxCommandEvent& event);
 	void OnToggleSource(wxCommandEvent& event);
 	void OnToggleCDVDInfo(wxCommandEvent& event);
 
