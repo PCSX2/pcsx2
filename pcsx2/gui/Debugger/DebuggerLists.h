@@ -65,6 +65,7 @@ private:
 
 	GenericListViewColumn* columns;
 	wxPoint clickPos;
+	bool dontResizeColumnsInSizeEventHandler;
 };
 
 class BreakpointList: public GenericListView
