@@ -392,15 +392,8 @@ void GSRendererHW::Draw()
 			GL_INS("Double downscale effect detected");
 			m_double_downscale = true;
 		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
-			if (m_channel_shuffle) {
-				GL_INS("Channel shuffle effect detected SKIP");
-				GL_POP();
-				s_n += 3; // Keep it sync with SW renderer
-				return;
-			} else {
-				GL_INS("Channel shuffle effect detected");
-				m_channel_shuffle = true;
-			}
+			GL_INS("Channel shuffle effect detected");
+			m_channel_shuffle = true;
 		} else {
 			GL_INS("Special post-processing effect not supported");
 			m_channel_shuffle = false;
