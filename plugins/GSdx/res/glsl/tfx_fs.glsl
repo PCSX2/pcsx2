@@ -176,14 +176,24 @@ mat4 sample_4p(vec4 u)
     return c;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Depth sampling
-//////////////////////////////////////////////////////////////////////
+int fetch_raw_depth()
+{
+    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+}
+
+vec4 fetch_raw_color()
+{
+    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+}
+
 vec4 fetch_c(ivec2 uv)
 {
     return texelFetch(TextureSampler, ivec2(uv), 0);
 }
 
+//////////////////////////////////////////////////////////////////////
+// Depth sampling
+//////////////////////////////////////////////////////////////////////
 ivec2 clamp_wrap_uv_depth(ivec2 uv)
 {
     ivec2 uv_out = uv;
@@ -226,8 +236,14 @@ vec4 sample_depth(vec2 st)
 
     vec4 t;
 #if PS_URBAN_CHAOS_HACK == 1
-    // Convert a GL_FLOAT32 to a special color format expected by the game
-    int depth = int(fetch_c(uv).r * exp2(32.0f));
+    // Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
+    // So it will do a first channel trick to extract lsb, value is right-shifted.
+    // Then a new channel trick to extract msb which will shifted to the left.
+    // OpenGL uses a FLOAT32 format for the depth so it requires a couple of conversion.
+    // To be faster both steps (msb&lsb) are done in a single pass.
+
+    // Warning: UV can't be used in channel effect
+    int depth = fetch_raw_depth();
 
     // Convert lsb based on the palette
     t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);
@@ -281,16 +297,6 @@ vec4 sample_depth(vec2 st)
 //////////////////////////////////////////////////////////////////////
 // Fetch a Single Channel
 //////////////////////////////////////////////////////////////////////
-int fetch_raw_depth()
-{
-    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
-}
-
-vec4 fetch_raw_color()
-{
-    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
-}
-
 vec4 fetch_red()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
