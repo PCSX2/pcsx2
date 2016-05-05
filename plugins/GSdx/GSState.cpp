@@ -33,6 +33,7 @@ GSState::GSState()
 	, m_irq(NULL)
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
+	, m_gsc(NULL)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -40,7 +41,6 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
-	, m_crcinited(false)
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
@@ -2350,6 +2350,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 	m_crc = crc;
 	m_options = options;
 	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
+	SetupCrcHack();
 }
 
 //
@@ -2367,7 +2368,7 @@ void GSState::UpdateScissor()
 	m_ofxy = m_context->scissor.ofxy;
 }
 
-void GSState::UpdateVertexKick() 
+void GSState::UpdateVertexKick()
 {
 	if(m_frameskip) return;
 

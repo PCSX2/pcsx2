@@ -29,18 +29,6 @@ int s_crc_hack_level = 3;
 #define Aggresive (s_crc_hack_level > 3)
 #define Dx_only   (s_crc_hack_level > 2)
 
-struct GSFrameInfo
-{
-	uint32 FBP;
-	uint32 FPSM;
-	uint32 FBMSK;
-	uint32 TBP0;
-	uint32 TPSM;
-	uint32 TZTST;
-	bool TME;
-};
-
-typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
 CRC::Region g_crc_region = CRC::NoRegion;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2442,6 +2430,158 @@ bool IsInvokedDynamicCrcHack( GSFrameInfo &fi, int& skip, int region, bool &resu
 
 #endif
 
+void GSState::SetupCrcHack()
+{
+	GetSkipCount lut[CRC::TitleCount];
+
+	s_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+
+	memset(lut, 0, sizeof(lut));
+
+	if (s_crc_hack_level > 1) {
+		lut[CRC::AceCombat4] = GSC_AceCombat4;
+		lut[CRC::AlpineRacer3] = GSC_AlpineRacer3;
+		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
+		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
+		lut[CRC::BurnoutDominator] = GSC_Burnout;
+		lut[CRC::BurnoutRevenge] = GSC_Burnout;
+		lut[CRC::BurnoutTakedown] = GSC_Burnout;
+		lut[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
+		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
+		lut[CRC::DBZBT2] = GSC_DBZBT2;
+		lut[CRC::DBZBT3] = GSC_DBZBT3;
+		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
+		lut[CRC::EternalPoison] = GSC_EternalPoison;
+		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
+		lut[CRC::FFVIIDoC] = GSC_FFVIIDoC;
+		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
+		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
+		lut[CRC::FrontMission5] = GSC_FrontMission5;
+		lut[CRC::Genji] = GSC_Genji;
+		lut[CRC::GetaWayBlackMonday] = GSC_GetaWay;
+		lut[CRC::GetaWay] = GSC_GetaWay;
+		lut[CRC::GiTS] = GSC_GiTS;
+		lut[CRC::GodHand] = GSC_GodHand;
+		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
+		lut[CRC::HauntingGround] = GSC_HauntingGround;
+		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
+		lut[CRC::HummerBadlands] = GSC_HummerBadlands;
+		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
+		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
+		lut[CRC::Kunoichi] = GSC_Kunoichi;
+		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
+		lut[CRC::Manhunt2] = GSC_Manhunt2;
+		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
+		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
+		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
+		lut[CRC::Naruto] = GSC_Naruto;
+		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
+		lut[CRC::Onimusha3] = GSC_Onimusha3;
+		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
+		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
+		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
+		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
+		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
+		lut[CRC::SengokuBasara] = GSC_SengokuBasara;
+		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
+		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
+		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
+		lut[CRC::SoulCalibur2] = GSC_SoulCalibur2;
+		lut[CRC::SoulCalibur3] = GSC_SoulCalibur3;
+		lut[CRC::Spartan] = GSC_Spartan;
+		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
+		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
+		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
+		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
+		lut[CRC::Tekken5] = GSC_Tekken5;
+		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
+		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
+		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
+		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
+		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
+		lut[CRC::UrbanReign] = GSC_UrbanReign;
+		lut[CRC::WildArms4] = GSC_WildArms4;
+		lut[CRC::WildArms5] = GSC_WildArms5;
+		lut[CRC::Yakuza2] = GSC_Yakuza2;
+		lut[CRC::Yakuza] = GSC_Yakuza;
+		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
+		// Only Aggresive
+		lut[CRC::FFX2] = GSC_FFX2;
+		lut[CRC::FFX] = GSC_FFX;
+		lut[CRC::FFXII] = GSC_FFXII;
+		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
+		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+		lut[CRC::SoTC] = GSC_SoTC;
+		lut[CRC::SSX3] = GSC_SSX3;
+	}
+
+	// Hack that were fixed on openGL
+	if (Dx_only) {
+		// Depth
+		lut[CRC::Bully] = GSC_Bully;
+		lut[CRC::BullyCC] = GSC_BullyCC;
+		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
+		lut[CRC::ICO] = GSC_ICO;
+		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
+		lut[CRC::Okami] = GSC_Okami;
+		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
+		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
+		lut[CRC::XE3] = GSC_XE3;
+
+		// Not tested but must be fixed with texture shuffle
+		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
+		lut[CRC::DemonStone] = GSC_DemonStone;
+		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
+		lut[CRC::LegoBatman] = GSC_LegoBatman;
+		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
+		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
+		lut[CRC::SFEX3] = GSC_SFEX3;
+		lut[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
+		lut[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
+		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
+		lut[CRC::TenchuFS] = GSC_Tenchu;
+		lut[CRC::TenchuWoH] = GSC_Tenchu;
+
+		// Those games might requires accurate fbmask
+		lut[CRC::Sly2] = GSC_Sly2;
+		lut[CRC::Sly3] = GSC_Sly3;
+
+		// Those games require accurate_colclip (perf)
+		lut[CRC::CastlevaniaCoD] = GSC_Castlevania;
+		lut[CRC::CastlevaniaLoI] = GSC_Castlevania;
+		lut[CRC::GodOfWar] = GSC_GodOfWar;
+
+		// Those games emulate a stencil buffer with the alpha channel of the RT (Slow)
+		lut[CRC::RadiataStories] = GSC_RadiataStories;
+		lut[CRC::StarOcean3] = GSC_StarOcean3;
+		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+
+		// Deprecated hack could be removed (Cutie)
+		lut[CRC::Grandia3] = GSC_Grandia3;
+
+		// At least a part of the CRC is fixed with texture shuffle.
+		// The status of post-processing effect is unknown
+		lut[CRC::Black] = GSC_Black;
+
+		// Channel Effect
+		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
+		lut[CRC::GT3] = GSC_GT3;
+		lut[CRC::GT4] = GSC_GT4;
+		lut[CRC::GTConcept] = GSC_GTConcept;
+		lut[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
+		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
+		lut[CRC::SkyGunner] = GSC_SkyGunner;
+		lut[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
+		lut[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
+		lut[CRC::TouristTrophy] = GSC_TouristTrophy;
+	}
+
+	m_gsc = lut[m_game.title];
+	g_crc_region = m_game.region;
+}
+
 bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 {
 	GSFrameInfo fi;
@@ -2454,166 +2594,10 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TPSM = m_context->TEX0.PSM;
 	fi.TZTST = m_context->TEST.ZTST;
 
-	static GetSkipCount map[CRC::TitleCount];
-
-	if (!m_crcinited)
-	{
-		m_crcinited = true;
-
-		s_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
-
-		memset(map, 0, sizeof(map));
-
-		if (s_crc_hack_level > 1) {
-			map[CRC::AceCombat4] = GSC_AceCombat4;
-			map[CRC::AlpineRacer3] = GSC_AlpineRacer3;
-			map[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-			map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-			map[CRC::BurnoutDominator] = GSC_Burnout;
-			map[CRC::BurnoutRevenge] = GSC_Burnout;
-			map[CRC::BurnoutTakedown] = GSC_Burnout;
-			map[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
-			map[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
-			map[CRC::DBZBT2] = GSC_DBZBT2;
-			map[CRC::DBZBT3] = GSC_DBZBT3;
-			map[CRC::DevilMayCry3] = GSC_DevilMayCry3;
-			map[CRC::EternalPoison] = GSC_EternalPoison;
-			map[CRC::EvangelionJo] = GSC_EvangelionJo;
-			map[CRC::FFVIIDoC] = GSC_FFVIIDoC;
-			map[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-			map[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
-			map[CRC::FrontMission5] = GSC_FrontMission5;
-			map[CRC::Genji] = GSC_Genji;
-			map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
-			map[CRC::GetaWay] = GSC_GetaWay;
-			map[CRC::GiTS] = GSC_GiTS;
-			map[CRC::GodHand] = GSC_GodHand;
-			map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
-			map[CRC::HauntingGround] = GSC_HauntingGround;
-			map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
-			map[CRC::HummerBadlands] = GSC_HummerBadlands;
-			map[CRC::IkkiTousen] = GSC_IkkiTousen;
-			map[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
-			map[CRC::Kunoichi] = GSC_Kunoichi;
-			map[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
-			map[CRC::Manhunt2] = GSC_Manhunt2;
-			map[CRC::MidnightClub3] = GSC_MidnightClub3;
-			map[CRC::NanoBreaker] = GSC_NanoBreaker;
-			map[CRC::NarutimateAccel] = GSC_NarutimateAccel;
-			map[CRC::Naruto] = GSC_Naruto;
-			map[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
-			map[CRC::Onimusha3] = GSC_Onimusha3;
-			map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
-			map[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-			map[CRC::SacredBlaze] = GSC_SacredBlaze;
-			map[CRC::SakuraTaisen] = GSC_SakuraTaisen;
-			map[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
-			map[CRC::SengokuBasara] = GSC_SengokuBasara;
-			map[CRC::ShadowofRome] = GSC_ShadowofRome;
-			map[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-			map[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
-			map[CRC::SoulCalibur2] = GSC_SoulCalibur2;
-			map[CRC::SoulCalibur3] = GSC_SoulCalibur3;
-			map[CRC::Spartan] = GSC_Spartan;
-			map[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
-			map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-			map[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-			map[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
-			map[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
-			map[CRC::Tekken5] = GSC_Tekken5;
-			map[CRC::TimeSplitters2] = GSC_TimeSplitters2;
-			map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
-			map[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
-			map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
-			map[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
-			map[CRC::UrbanReign] = GSC_UrbanReign;
-			map[CRC::WildArms4] = GSC_WildArms4;
-			map[CRC::WildArms5] = GSC_WildArms5;
-			map[CRC::Yakuza2] = GSC_Yakuza2;
-			map[CRC::Yakuza] = GSC_Yakuza;
-			map[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
-			// Only Aggresive
-			map[CRC::FFX2] = GSC_FFX2;
-			map[CRC::FFX] = GSC_FFX;
-			map[CRC::FFXII] = GSC_FFXII;
-			map[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
-			map[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
-			map[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
-			map[CRC::SoTC] = GSC_SoTC;
-			map[CRC::SSX3] = GSC_SSX3;
-		}
-
-		// Hack that were fixed on openGL
-		if (Dx_only) {
-			// Depth
-			map[CRC::Bully] = GSC_Bully;
-			map[CRC::BullyCC] = GSC_BullyCC;
-			map[CRC::GodOfWar2] = GSC_GodOfWar2;
-			map[CRC::ICO] = GSC_ICO;
-			map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
-			map[CRC::Okami] = GSC_Okami;
-			map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
-			map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-			map[CRC::XE3] = GSC_XE3;
-
-			// Not tested but must be fixed with texture shuffle
-			map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
-			map[CRC::DemonStone] = GSC_DemonStone;
-			map[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
-			map[CRC::LegoBatman] = GSC_LegoBatman;
-			map[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
-			map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-			map[CRC::SFEX3] = GSC_SFEX3;
-			map[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
-			map[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
-			map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
-			map[CRC::TenchuFS] = GSC_Tenchu;
-			map[CRC::TenchuWoH] = GSC_Tenchu;
-
-			// Those games might requires accurate fbmask
-			map[CRC::Sly2] = GSC_Sly2;
-			map[CRC::Sly3] = GSC_Sly3;
-
-			// Those games require accurate_colclip (perf)
-			map[CRC::CastlevaniaCoD] = GSC_Castlevania;
-			map[CRC::CastlevaniaLoI] = GSC_Castlevania;
-			map[CRC::GodOfWar] = GSC_GodOfWar;
-
-			// Those games emulate a stencil buffer with the alpha channel of the RT (Slow)
-			map[CRC::RadiataStories] = GSC_RadiataStories;
-			map[CRC::StarOcean3] = GSC_StarOcean3;
-			map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-
-			// Deprecated hack could be removed (Cutie)
-			map[CRC::Grandia3] = GSC_Grandia3;
-
-			// At least a part of the CRC is fixed with texture shuffle.
-			// The status of post-processing effect is unknown
-			map[CRC::Black] = GSC_Black;
-
-			// Channel Effect
-			map[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
-			map[CRC::GT3] = GSC_GT3;
-			map[CRC::GT4] = GSC_GT4;
-			map[CRC::GTConcept] = GSC_GTConcept;
-			map[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
-			map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
-			map[CRC::SkyGunner] = GSC_SkyGunner;
-			map[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
-			map[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
-			map[CRC::TouristTrophy] = GSC_TouristTrophy;
-		}
-	}
-
-	// TODO: just set gsc in SetGameCRC once
-
-	GetSkipCount gsc = map[m_game.title];
-	g_crc_region = m_game.region;
-
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
 #endif
-	if(gsc && !gsc(fi, skip))
+	if(m_gsc && !m_gsc(fi, skip))
 	{
 		return false;
 	}

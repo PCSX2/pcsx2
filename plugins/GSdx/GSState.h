@@ -35,6 +35,19 @@
 #include "GSAlignedClass.h"
 #include "GSDump.h"
 
+struct GSFrameInfo
+{
+	uint32 FBP;
+	uint32 FPSM;
+	uint32 FBMSK;
+	uint32 TBP0;
+	uint32 TPSM;
+	uint32 TZTST;
+	bool TME;
+};
+
+typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
+
 class GSState : public GSAlignedClass<32>
 {
 	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields (the compiler is happy to know that memory writes in-between will not go there)
@@ -141,18 +154,20 @@ class GSState : public GSAlignedClass<32>
 
 protected:
 	bool IsBadFrame(int& skip, int UserHacks_SkipDraw);
+	void SetupCrcHack();
 
 	int UserHacks_WildHack;
 	bool isPackedUV_HackFlag;
 	int m_crc_hack_level;
+	GetSkipCount m_gsc;
 
 	GSVertex m_v;
 	float m_q;
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
 	bool m_texflush;
-	
-	struct 
+
+	struct
 	{
 		GSVertex* buff; 
 		size_t head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
@@ -160,7 +175,7 @@ protected:
 		uint64 xy[4];
 	} m_vertex; 
 
-	struct 
+	struct
 	{
 		uint32* buff; 
 		size_t tail;
@@ -173,7 +188,7 @@ protected:
 
 	void GrowVertexBuffer();
 
-	template<uint32 prim> 
+	template<uint32 prim>
 	void VertexKick(uint32 skip);
 
 	// following functions need m_vt to be initialized
@@ -199,7 +214,6 @@ public:
 	GSDump m_dump;
 	int m_options;
 	int m_frameskip;
-	bool m_crcinited;
 	bool m_framelimit;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
