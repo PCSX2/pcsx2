@@ -153,13 +153,15 @@ class GSState : public GSAlignedClass<32>
 	} m_tr;
 
 protected:
-	bool IsBadFrame(int& skip, int UserHacks_SkipDraw);
+	bool IsBadFrame();
 	void SetupCrcHack();
 
 	int UserHacks_WildHack;
 	bool isPackedUV_HackFlag;
 	int m_crc_hack_level;
 	GetSkipCount m_gsc;
+	int m_skip;
+	int m_userhacks_skipdraw;
 
 	GSVertex m_v;
 	float m_q;

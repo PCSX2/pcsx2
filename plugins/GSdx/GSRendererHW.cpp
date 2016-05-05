@@ -25,7 +25,6 @@
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(1280)
 	, m_height(1024)
-	, m_skip(0)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
@@ -33,7 +32,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
@@ -353,7 +351,7 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
+	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		s_n += 3; // Keep it sync with SW renderer
 		return;

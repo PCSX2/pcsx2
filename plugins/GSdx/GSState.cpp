@@ -34,6 +34,7 @@ GSState::GSState()
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
 	, m_gsc(NULL)
+	, m_skip(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -45,6 +46,7 @@ GSState::GSState()
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 	m_NTSC_Saturation = !!theApp.GetConfig("NTSC_Saturation", true);
+	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);

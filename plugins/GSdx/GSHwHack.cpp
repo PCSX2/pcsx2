@@ -2582,7 +2582,7 @@ void GSState::SetupCrcHack()
 	g_crc_region = m_game.region;
 }
 
-bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
+bool GSState::IsBadFrame()
 {
 	GSFrameInfo fi;
 
@@ -2595,14 +2595,14 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 	fi.TZTST = m_context->TEST.ZTST;
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
-	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
+	bool res=false; if(IsInvokedDynamicCrcHack(fi, m_skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
 #endif
-	if(m_gsc && !m_gsc(fi, skip))
+	if(m_gsc && !m_gsc(fi, m_skip))
 	{
 		return false;
 	}
 
-	if(skip == 0 && (UserHacks_SkipDraw > 0) )
+	if(m_skip == 0 && (m_userhacks_skipdraw > 0) )
 	{
 		if(fi.TME)
 		{
@@ -2610,14 +2610,14 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 			// General, often problematic post processing
 			if (GSLocalMemory::m_psm[fi.TPSM].depth || GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
 			{
-				skip = UserHacks_SkipDraw;
+				m_skip = m_userhacks_skipdraw;
 			}
 		}
 	}
 
-	if(skip > 0)
+	if(m_skip > 0)
 	{
-		skip--;
+		m_skip--;
 
 		return true;
 	}

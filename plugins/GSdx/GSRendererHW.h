@@ -32,10 +32,8 @@ class GSRendererHW : public GSRenderer
 private:
 	int m_width;
 	int m_height;
-	int m_skip;
 	bool m_reset;
 	int m_upscale_multiplier;
-	int m_userhacks_skipdraw;
 
 	bool m_userhacks_align_sprite_X;
 	bool m_userhacks_disable_gs_mem_clear;
