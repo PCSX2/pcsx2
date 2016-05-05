@@ -379,7 +379,7 @@ void GSRendererHW::Draw()
 	if (m_channel_shuffle) {
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
-			GL_INS("Channel shuffle effect detected SKIP");
+			GL_CACHE("Channel shuffle effect detected SKIP");
 			GL_POP();
 			s_n += 3; // Keep it sync with SW renderer
 			return;
