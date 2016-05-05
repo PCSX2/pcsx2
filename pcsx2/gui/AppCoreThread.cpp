@@ -373,7 +373,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
-			if (EmuConfig.EnablePatches)
+			if (fixup.EnablePatches)
 			{
 				if (int patches = InitPatches(gameCRC, game))
 				{
@@ -410,11 +410,11 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	}
 
 	// regular cheat patches
-	if (EmuConfig.EnableCheats)
+	if (fixup.EnableCheats)
 		gameCheats.Printf(L" [%d Cheats]", LoadCheats(gameCRC, GetCheatsFolder(), L"Cheats"));
 
 	// wide screen patches
-	if (EmuConfig.EnableWideScreenPatches)
+	if (fixup.EnableWideScreenPatches)
 	{
 		if (int numberLoadedWideScreenPatches = LoadCheats(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
 		{
