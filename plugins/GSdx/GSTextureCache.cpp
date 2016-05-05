@@ -1536,7 +1536,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 		return;
 	}
 
-	GSVector2i bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
+	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
 
 	int tw = std::max<int>(1 << m_TEX0.TW, bs.x);
 	int th = std::max<int>(1 << m_TEX0.TH, bs.y);
