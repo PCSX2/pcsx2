@@ -249,6 +249,7 @@ public:
 	virtual void FlushPrim();
 	virtual void FlushWrite();
 	virtual void Draw() = 0;
+	virtual void PurgePool() = 0;
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 

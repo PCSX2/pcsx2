@@ -645,3 +645,8 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 	}
 #endif
 }
+
+void GSRenderer::PurgePool()
+{
+	m_dev->PurgePool();
+}

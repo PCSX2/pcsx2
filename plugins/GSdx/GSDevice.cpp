@@ -202,6 +202,17 @@ void GSDevice::AgePool()
 	}
 }
 
+void GSDevice::PurgePool()
+{
+	// OOM emergency. Let's free this useless pool
+	while(m_pool.size() > 0)
+	{
+		delete m_pool.back();
+
+		m_pool.pop_back();
+	}
+}
+
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, bool msaa, int format)
 {
 	return FetchSurface(GSTexture::RenderTarget, w, h, msaa, format);

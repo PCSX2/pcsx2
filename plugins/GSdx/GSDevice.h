@@ -194,6 +194,7 @@ public:
 	bool IsRBSwapped() {return m_rbswapped;}
 
 	void AgePool();
+	void PurgePool();
 
 	virtual void PrintMemoryUsage();
 };

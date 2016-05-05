@@ -1475,7 +1475,15 @@ void GSState::FlushPrim()
 
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-			Draw();
+			try {
+				Draw();
+			} catch (GSDXRecoverableError&) {
+				// could be an unsupported draw call
+			} catch (GSDXErrorOOM&) {
+				// Texture Out Of Memory
+				PurgePool();
+				fprintf(stderr, "GSDX OUT OF MEMORY\n");
+			}
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
