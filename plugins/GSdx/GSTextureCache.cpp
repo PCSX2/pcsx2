@@ -1755,7 +1755,12 @@ void GSTextureCache::Target::Update()
 	// Alternate
 	// 1/ uses multiple vertex rectangle
 
-	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, m_texture->GetSize());
+	GSVector2i t_size = m_texture->GetSize();
+	GSVector2 t_scale = m_texture->GetScale();
+	t_size.x = t_size.x/t_scale.x;
+	t_size.y = t_size.y/t_scale.y;
+
+	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
 
 	if (r.rempty()) return;
 
