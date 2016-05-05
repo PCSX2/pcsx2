@@ -182,8 +182,13 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 		int delta = TEX0.TBP0 - rt->m_TEX0.TBP0;
 		if (delta > 0) {
+			// Code was corrected to use generic format. But I'm not sure behavior is correct.
+			// Let's keep the warning to easily spot game that trigger this code path.
 			ASSERT(DISPFB.PSM == PSM_PSMCT32 || DISPFB.PSM == PSM_PSMCT24);
-			y_offset = delta / DISPFB.FBW;
+
+			int pages = delta >> 5u;
+			int y_pages = pages / DISPFB.FBW;
+			y_offset = y_pages * GSLocalMemory::m_psm[DISPFB.PSM].pgs.y;
 			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
 		}
 

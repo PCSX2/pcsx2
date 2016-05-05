@@ -363,6 +363,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used)
 {
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	uint32 bp = TEX0.TBP0;
 
 	Target* dst = NULL;
@@ -377,7 +378,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst = t;
 
-			dst->m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].bpp != 16);
+			dst->m_32_bits_fmt |= (psm_s.bpp != 16);
 			dst->m_TEX0 = TEX0;
 
 			break;
@@ -389,7 +390,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst->Update();
 
-		dst->m_dirty_alpha |= (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+		dst->m_dirty_alpha |= (psm_s.bpp != 24);
 
 	} else if (CanConvertDepth()) {
 
@@ -410,10 +411,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				dst->m_32_bits_fmt = t->m_32_bits_fmt;
 
 				int shader;
-				bool fmt_16_bits = (GSLocalMemory::m_psm[TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16);
+				bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16);
 				if (type == DepthStencil) {
 					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
-					shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + GSLocalMemory::m_psm[TEX0.PSM].fmt;
+					shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + psm_s.fmt;
 				} else {
 					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
 					shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
@@ -833,28 +834,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				}
 
 				// FIXME: this code "fixes" black FMV issue with rule of rose.
-				// Code is completely hardcoded so maybe not the best solution. Besides I don't
-				// know the full impact of it.
-				// Let's keep this code for the future
-#if 0
-				if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (t->m_TEX0.TBP0 + 0x200 == bp))
-				{
-					GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0);
-
-					uint32 rowsize = bw * 8192u;
-					uint32 offset = 0x200 * 256u;
-					int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-					t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
-					t->m_TEX0.TBW = bw;
-					continue;
-				}
-#endif
 #if 1
 				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
-				if (t->m_TEX0.TBW == bw && t->Inside(bp, psm, rect)) {
+				if (t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect)) {
 					uint32 rowsize = bw * 8192u;
 					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
@@ -1851,15 +1833,11 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	//fprintf(stderr, "S: 0x%x E:0x%x\n", m_TEX0.TBP0, m_end_block);
 }
 
-bool GSTextureCache::Target::Inside(uint32 bp, uint32 psm, const GSVector4i& rect)
+bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
 {
-	uint32 nb_block = rect.height() * rect.width();
-	if (m_TEX0.PSM == PSM_PSMCT16)
-		nb_block >>= 7;
-	else
-		nb_block >>= 6;
+	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.x, rect.y, bp, bw);
 
-	return bp > m_TEX0.TBP0 && (bp + nb_block) < m_end_block;
+	return bp > m_TEX0.TBP0 && block < m_end_block;
 }
 
 // GSTextureCache::SourceMap
