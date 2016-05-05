@@ -124,6 +124,8 @@ void GSRendererOGL::EmulateGS()
 
 void GSRendererOGL::SetupIA()
 {
+	GL_PUSH("IA");
+
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
 	if (!GLLoader::found_geometry_shader)
@@ -615,8 +617,6 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 			glTextureBarrier();
 			dev->DrawIndexedPrimitive(p, count);
 		}
-
-		GL_POP();
 	} else {
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
@@ -630,8 +630,6 @@ void GSRendererOGL::SendDraw(bool require_barrier)
 			glTextureBarrier();
 			dev->DrawIndexedPrimitive(p, nb_vertex);
 		}
-
-		GL_POP();
 	}
 }
 
@@ -1098,9 +1096,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
-	GL_PUSH("IA");
 	SetupIA();
-	GL_POP();
 
 	dev->OMSetColorMaskState(om_csel);
 	dev->SetupOM(om_dssel);
@@ -1134,8 +1130,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Be sure that first pass is finished !
 		dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-		GL_POP();
 	}
 
 	if (ps_sel.hdr) {
@@ -1211,6 +1205,4 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		dev->Recycle(hdr_rt);
 	}
-
-	GL_POP();
 }

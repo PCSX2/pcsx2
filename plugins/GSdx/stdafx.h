@@ -435,11 +435,19 @@ extern void vmfree(void* ptr, size_t size);
 #endif
 
 #if defined(ENABLE_OGL_DEBUG)
-#define GL_PUSH(...)	do glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
+struct GLAutoPop {
+	~GLAutoPop() {
+		glPopDebugGroup();
+	}
+};
+
+#define GL_PUSH_(...)	do glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
+#define GL_PUSH(...)	do glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0); GLAutoPop gl_auto_pop;
 #define GL_POP()        do glPopDebugGroup(); while(0);
 #define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
 #define GL_PERF(...)	GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
+#define GL_PUSH_(...) (0);
 #define GL_PUSH(...) (0);
 #define GL_POP()     (0);
 #define GL_INS(...)  (0);

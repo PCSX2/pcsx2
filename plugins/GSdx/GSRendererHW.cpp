@@ -383,7 +383,6 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
 			GL_CACHE("Channel shuffle effect detected SKIP");
-			GL_POP();
 			s_n += 3; // Keep it sync with SW renderer
 			return;
 		}
@@ -425,7 +424,6 @@ void GSRendererHW::Draw()
 
 	if(!(rt || no_rt) || !(ds || no_ds))
 	{
-		GL_POP();
 		ASSERT(0);
 		return;
 	}
@@ -455,7 +453,6 @@ void GSRendererHW::Draw()
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
 
 		if(!tex) {
-			GL_POP();
 			return;
 		}
 
@@ -554,14 +551,12 @@ void GSRendererHW::Draw()
 	{
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
 	if (!OI_BlitFMV(rt, tex, r)) {
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
@@ -716,8 +711,6 @@ void GSRendererHW::Draw()
 		m_tc->Read(rt, r);
 
 	#endif
-
-	GL_POP();
 }
 
 // hacks
@@ -948,8 +941,6 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		m_tc->Read(tex, r_texture);
 
 		m_tc->InvalidateVideoMemSubTarget(_rt);
-
-		GL_POP();
 
 		return false; // skip current draw
 	}

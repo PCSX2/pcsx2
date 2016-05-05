@@ -293,8 +293,6 @@ bool GSRenderer::Merge(int field)
 		}
 	}
 
-	GL_POP();
-
 	return true;
 }
 

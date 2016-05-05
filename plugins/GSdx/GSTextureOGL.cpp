@@ -343,8 +343,6 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	PboPool::EndTransfer();
 #endif
 
-	GL_POP();
-
 	return true;
 }
 
@@ -379,7 +377,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 
 		return true;
 	} else if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget) {
-		GL_PUSH("Upload Texture %d", m_texture_id); // POP is in Unmap
+		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
 
 		m_clean = false;
 

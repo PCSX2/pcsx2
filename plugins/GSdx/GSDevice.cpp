@@ -121,8 +121,6 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	}
 
 	Flip();
-
-	GL_POP();
 }
 
 void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader)

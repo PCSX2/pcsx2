@@ -133,8 +133,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
 	m_shader = NULL;
-
-	GL_POP();
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
@@ -157,7 +155,6 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 			break;
 	}
 
-	GL_POP();
 	return t;
 }
 
@@ -197,163 +194,165 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Various object
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Various");
+	{
+		GL_PUSH("GSDeviceOGL::Various");
 
-	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
+		m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
-	glGenFramebuffers(1, &m_fbo);
-	// Always write to the first buffer
-	OMSetFBO(m_fbo);
-	GLenum target[1] = {GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, target);
-	OMSetFBO(0);
+		glGenFramebuffers(1, &m_fbo);
+		// Always write to the first buffer
+		OMSetFBO(m_fbo);
+		GLenum target[1] = {GL_COLOR_ATTACHMENT0};
+		glDrawBuffers(1, target);
+		OMSetFBO(0);
 
-	glGenFramebuffers(1, &m_fbo_read);
-	// Always read from the first buffer
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-	GL_POP();
+		glGenFramebuffers(1, &m_fbo_read);
+		// Always read from the first buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
 
 	// ****************************************************************
 	// Vertex buffer state
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Vertex Buffer");
-
-	ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
-	GSInputLayoutOGL il_convert[] =
 	{
-		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
-		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
-		{4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
-		{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
-		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
-		{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
-		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
-		{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } , // Only 1 byte is useful but hardware unit only support 4B
-	};
-	m_va = new GSVertexBufferStateOGL(il_convert, countof(il_convert));
+		GL_PUSH("GSDeviceOGL::Vertex Buffer");
 
-	GL_POP();
+		ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
+		GSInputLayoutOGL il_convert[] =
+		{
+			{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
+			{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
+			{4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
+			{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
+			{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
+			{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
+			{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
+			{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } , // Only 1 byte is useful but hardware unit only support 4B
+		};
+		m_va = new GSVertexBufferStateOGL(il_convert, countof(il_convert));
+	}
+
 	// ****************************************************************
 	// Pre Generate the different sampler object
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Sampler");
+	{
+		GL_PUSH("GSDeviceOGL::Sampler");
 
-	for (uint32 key = 0; key < countof(m_ps_ss); key++) {
-		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+		for (uint32 key = 0; key < countof(m_ps_ss); key++) {
+			m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+		}
 	}
-
-	GL_POP();
 
 	// ****************************************************************
 	// convert
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Convert");
-
-	m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
-	// Upload once and forget about it
-	ConvertConstantBuffer cb;
-	cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
-	m_convert.cb->upload(&cb);
-
-	GLuint vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
+	GLuint vs = 0;
 	GLuint ps = 0;
+	{
+		GL_PUSH("GSDeviceOGL::Convert");
 
-	m_convert.vs = vs;
-	for(size_t i = 0; i < countof(m_convert.ps); i++) {
-		ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
-		m_convert.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
+		// Upload once and forget about it
+		ConvertConstantBuffer cb;
+		cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
+		m_convert.cb->upload(&cb);
+
+		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
+
+		m_convert.vs = vs;
+		for(size_t i = 0; i < countof(m_convert.ps); i++) {
+			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
+			m_convert.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		}
+
+		PSSamplerSelector point;
+		m_convert.pt = GetSamplerID(point);
+
+		PSSamplerSelector bilinear;
+		bilinear.ltf = true;
+		m_convert.ln = GetSamplerID(bilinear);
+
+		m_convert.dss = new GSDepthStencilOGL();
+		m_convert.dss_write = new GSDepthStencilOGL();
+		m_convert.dss_write->EnableDepth();
+		m_convert.dss_write->SetDepth(GL_ALWAYS, true);
 	}
-
-	PSSamplerSelector point;
-	m_convert.pt = GetSamplerID(point);
-
-	PSSamplerSelector bilinear;
-	bilinear.ltf = true;
-	m_convert.ln = GetSamplerID(bilinear);
-
-	m_convert.dss = new GSDepthStencilOGL();
-	m_convert.dss_write = new GSDepthStencilOGL();
-	m_convert.dss_write->EnableDepth();
-	m_convert.dss_write->SetDepth(GL_ALWAYS, true);
-
-	GL_POP();
 
 	// ****************************************************************
 	// merge
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Merge");
+	{
+		GL_PUSH("GSDeviceOGL::Merge");
 
-	m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
+		m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
 
-	for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
-		ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
-		m_merge_obj.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
+			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
+			m_merge_obj.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		}
 	}
-
-	GL_POP();
 
 	// ****************************************************************
 	// interlace
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Interlace");
+	{
+		GL_PUSH("GSDeviceOGL::Interlace");
 
-	m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
+		m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
-	for(size_t i = 0; i < countof(m_interlace.ps); i++) {
-		ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
-		m_interlace.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
+			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+			m_interlace.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+		}
 	}
-
-	GL_POP();
 
 	// ****************************************************************
 	// Shade boost
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Shadeboost");
+	{
+		GL_PUSH("GSDeviceOGL::Shadeboost");
 
-	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
-	int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
-	int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
-	std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
-		+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
-		+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
+		int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
+		int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
+		int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
+		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
+			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
+			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
-	ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
-	m_shadeboost.ps = m_shader->LinkPipeline(vs, 0, ps);
-
-	GL_POP();
+		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
+		m_shadeboost.ps = m_shader->LinkPipeline(vs, 0, ps);
+	}
 
 	// ****************************************************************
 	// rasterization configuration
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Rasterization");
+	{
+		GL_PUSH("GSDeviceOGL::Rasterization");
 
 #ifdef ONLY_LINES
-	glLineWidth(5.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(5.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 #else
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_SCISSOR_TEST);
-	glDisable(GL_MULTISAMPLE);
-	glDisable(GL_DITHER); // Honestly I don't know!
-
-	GL_POP();
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_SCISSOR_TEST);
+		glDisable(GL_MULTISAMPLE);
+		glDisable(GL_DITHER); // Honestly I don't know!
+	}
 
 	// ****************************************************************
 	// DATE
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::Date");
+	{
+		GL_PUSH("GSDeviceOGL::Date");
 
-	m_date.dss = new GSDepthStencilOGL();
-	m_date.dss->EnableStencil();
-	m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
-
-	GL_POP();
+		m_date.dss = new GSDepthStencilOGL();
+		m_date.dss->EnableStencil();
+		m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
+	}
 
 	// ****************************************************************
 	// Use DX coordinate convention
@@ -370,28 +369,21 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// HW renderer shader
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::CreateTextureFX");
-
 	CreateTextureFX();
-
-	GL_POP();
 
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
-	GL_PUSH("GSDeviceOGL::PBO");
+	{
+		GL_PUSH("GSDeviceOGL::PBO");
 
-	// Mesa seems to use it to compute the row length. In our case, we are
-	// tightly packed so don't bother with this parameter and set it to the
-	// minimum alignment (1 byte)
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		// Mesa seems to use it to compute the row length. In our case, we are
+		// tightly packed so don't bother with this parameter and set it to the
+		// minimum alignment (1 byte)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	PboPool::Init();
-
-	GL_POP();
-
-	// Done !
-	GL_POP();
+		PboPool::Init();
+	}
 
 	// ****************************************************************
 	// Finish window setup and backbuffer
@@ -414,6 +406,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 
 void GSDeviceOGL::CreateTextureFX()
 {
+	GL_PUSH("GSDeviceOGL::CreateTextureFX");
+
 	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
 
@@ -423,26 +417,26 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
-	GL_PUSH("Compile GS");
+	{
+		GL_PUSH("Compile GS");
 
-	for (uint32 key = 0; key < countof(m_gs); key++) {
-		GSSelector sel(key);
-		if (sel.point == sel.sprite)
-			m_gs[key] = 0;
-		else
-			m_gs[key] = CompileGS(GSSelector(key));
+		for (uint32 key = 0; key < countof(m_gs); key++) {
+			GSSelector sel(key);
+			if (sel.point == sel.sprite)
+				m_gs[key] = 0;
+			else
+				m_gs[key] = CompileGS(GSSelector(key));
+		}
 	}
 
-	GL_POP();
+	{
+		GL_PUSH("Compile VS");
 
-	GL_PUSH("Compile VS");
-
-	for (uint32 key = 0; key < countof(m_vs); key++) {
-		VSSelector sel(key);
-		m_vs[key] = CompileVS(sel);
+		for (uint32 key = 0; key < countof(m_vs); key++) {
+			VSSelector sel(key);
+			m_vs[key] = CompileVS(sel);
+		}
 	}
-
-	GL_POP();
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
@@ -556,8 +550,6 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	glEnable(GL_SCISSOR_TEST);
 
 	T->WasCleaned();
-
-	GL_POP();
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
@@ -598,8 +590,6 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	if (GLState::blend) {
 		glEnable(GL_BLEND);
 	}
-
-	GL_POP();
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
@@ -623,8 +613,6 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 		glDepthMask(false);
 	}
 	glEnable(GL_SCISSOR_TEST);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
@@ -642,8 +630,6 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	GLint color = c;
 
 	glClearBufferiv(GL_STENCIL, 0, &color);
-
-	GL_POP();
 }
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
@@ -683,7 +669,6 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && aniso)
 		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
-	GL_POP();
 	return sampler;
 }
 
@@ -1036,8 +1021,6 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-	GL_POP();
 }
 
 // Copy a sub part of a texture into another
@@ -1057,8 +1040,6 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 			did, GL_TEXTURE_2D,
 			0, 0, 0, 0,
 			r.width(), r.height(), 1);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
@@ -1172,8 +1153,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	EndScene();
-
-	GL_POP();
 }
 
 void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, bool slbg, bool mmod, const GSVector4& c)
@@ -1196,8 +1175,6 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[2], GSVector4* sRect, GSTexture* dTex,
 
 		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_MERGE_BLEND);
 	}
-
-	GL_POP();
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
@@ -1220,8 +1197,6 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	m_interlace.cb->upload(&cb);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
@@ -1248,8 +1223,6 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	GSVector4 dRect(0, 0, s.x, s.y);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
@@ -1302,8 +1275,6 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	m_shaderfx.cb->upload(&cb);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, true);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
@@ -1318,8 +1289,6 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 	GSVector4 dRect(0, 0, s.x, s.y);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, true);
-
-	GL_POP();
 }
 
 void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
@@ -1360,8 +1329,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	}
 
 	EndScene();
-
-	GL_POP();
 }
 
 void GSDeviceOGL::EndScene()
@@ -1576,7 +1543,6 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 	if(m_ps_cb_cache.Update(ps_cb)) {
 		m_ps_cb->upload(ps_cb);
 	}
-	GL_POP();
 }
 
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
