@@ -718,11 +718,17 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 	if(surface)
 	{
 		t = new GSTexture9(surface);
+		if (t == NULL) {
+			throw GSDXErrorOOM();
+		}
 	}
 
 	if(texture)
 	{
 		t = new GSTexture9(texture);
+		if (t == NULL) {
+			throw GSDXErrorOOM();
+		}
 	}
 
 	if(t)

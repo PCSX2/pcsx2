@@ -142,6 +142,9 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
 	GSTextureOGL* t = NULL;
 	t = new GSTextureOGL(type, w, h, fmt, m_fbo_read);
+	if (t == NULL) {
+		throw GSDXErrorOOM();
+	}
 
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	switch(type)

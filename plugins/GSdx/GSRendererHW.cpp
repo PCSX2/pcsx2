@@ -412,20 +412,22 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
 
-	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
-	GSTexture* rt_tex = rt ? rt->m_texture : NULL;
+	GSTextureCache::Target* rt = NULL;
+	GSTexture* rt_tex = NULL;
+	if (!no_rt) {
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+		rt_tex = rt->m_texture;
+	}
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
-	GSTextureCache::Target* ds = no_ds ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
-	GSTexture* ds_tex = ds ? ds->m_texture : NULL;
-
-	if(!(rt || no_rt) || !(ds || no_ds))
-	{
-		ASSERT(0);
-		return;
+	GSTextureCache::Target* ds = NULL;
+	GSTexture* ds_tex = NULL;
+	if (!no_ds) {
+		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds_tex = ds->m_texture;
 	}
 
 	GSTextureCache::Source* tex = NULL;
@@ -451,10 +453,6 @@ void GSRendererHW::Draw()
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
-
-		if(!tex) {
-			return;
-		}
 
 		// FIXME: Could be removed on openGL
 		if(tex_psm.pal > 0)
