@@ -673,7 +673,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle) {
-		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept) {
+		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy) {
 			GL_INS("Gran Turismo RGB Channel");
 			ps_sel.channel = 7;
 			m_context->TEX0.TFX = TFX_DECAL;
