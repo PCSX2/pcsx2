@@ -385,7 +385,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst->Update();
 
-		dst->m_dirty_alpha |= (psm_s.bpp != 24);
+		dst->m_dirty_alpha |= (psm_s.trbpp != 24);
 
 	} else if (CanConvertDepth()) {
 
@@ -1725,8 +1725,8 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
-	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].bpp != 16);
-	m_dirty_alpha = (TEX0.PSM != PSM_PSMCT24) && (TEX0.PSM != PSM_PSMZ24);
+	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
+	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 
 	m_valid = GSVector4i::zero();
 }
