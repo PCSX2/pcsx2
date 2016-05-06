@@ -121,8 +121,6 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	}
 
 	Flip();
-
-	GL_POP();
 }
 
 void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader)
@@ -195,6 +193,17 @@ void GSDevice::AgePool()
 	m_frame++;
 
 	while(m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
+	{
+		delete m_pool.back();
+
+		m_pool.pop_back();
+	}
+}
+
+void GSDevice::PurgePool()
+{
+	// OOM emergency. Let's free this useless pool
+	while(m_pool.size() > 0)
 	{
 		delete m_pool.back();
 

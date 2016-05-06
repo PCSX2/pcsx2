@@ -33,6 +33,8 @@ GSState::GSState()
 	, m_irq(NULL)
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
+	, m_gsc(NULL)
+	, m_skip(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -40,11 +42,11 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
-	, m_crcinited(false)
 {
 	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
 	m_mipmap = !!theApp.GetConfig("mipmap", 1);
 	m_NTSC_Saturation = !!theApp.GetConfig("NTSC_Saturation", true);
+	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 
 	s_n     = 0;
 	s_dump  = !!theApp.GetConfig("dump", 0);
@@ -1473,7 +1475,15 @@ void GSState::FlushPrim()
 
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-			Draw();
+			try {
+				Draw();
+			} catch (GSDXRecoverableError&) {
+				// could be an unsupported draw call
+			} catch (GSDXErrorOOM&) {
+				// Texture Out Of Memory
+				PurgePool();
+				fprintf(stderr, "GSDX OUT OF MEMORY\n");
+			}
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
@@ -2350,6 +2360,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 	m_crc = crc;
 	m_options = options;
 	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
+	SetupCrcHack();
 }
 
 //
@@ -2367,7 +2378,7 @@ void GSState::UpdateScissor()
 	m_ofxy = m_context->scissor.ofxy;
 }
 
-void GSState::UpdateVertexKick() 
+void GSState::UpdateVertexKick()
 {
 	if(m_frameskip) return;
 

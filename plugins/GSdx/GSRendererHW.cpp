@@ -25,7 +25,6 @@
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(1280)
 	, m_height(1024)
-	, m_skip(0)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
@@ -33,7 +32,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
@@ -353,7 +351,7 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
+	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		s_n += 3; // Keep it sync with SW renderer
 		return;
@@ -385,7 +383,6 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
 			GL_CACHE("Channel shuffle effect detected SKIP");
-			GL_POP();
 			s_n += 3; // Keep it sync with SW renderer
 			return;
 		}
@@ -415,21 +412,22 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
 
-	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
-	GSTexture* rt_tex = rt ? rt->m_texture : NULL;
+	GSTextureCache::Target* rt = NULL;
+	GSTexture* rt_tex = NULL;
+	if (!no_rt) {
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+		rt_tex = rt->m_texture;
+	}
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
-	GSTextureCache::Target* ds = no_ds ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
-	GSTexture* ds_tex = ds ? ds->m_texture : NULL;
-
-	if(!(rt || no_rt) || !(ds || no_ds))
-	{
-		GL_POP();
-		ASSERT(0);
-		return;
+	GSTextureCache::Target* ds = NULL;
+	GSTexture* ds_tex = NULL;
+	if (!no_ds) {
+		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds_tex = ds->m_texture;
 	}
 
 	GSTextureCache::Source* tex = NULL;
@@ -455,11 +453,6 @@ void GSRendererHW::Draw()
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
-
-		if(!tex) {
-			GL_POP();
-			return;
-		}
 
 		// FIXME: Could be removed on openGL
 		if(tex_psm.pal > 0)
@@ -556,14 +549,12 @@ void GSRendererHW::Draw()
 	{
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
 	if (!OI_BlitFMV(rt, tex, r)) {
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
@@ -718,8 +709,6 @@ void GSRendererHW::Draw()
 		m_tc->Read(rt, r);
 
 	#endif
-
-	GL_POP();
 }
 
 // hacks
@@ -950,8 +939,6 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		m_tc->Read(tex, r_texture);
 
 		m_tc->InvalidateVideoMemSubTarget(_rt);
-
-		GL_POP();
 
 		return false; // skip current draw
 	}

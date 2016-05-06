@@ -79,5 +79,6 @@ public:
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};
+struct GSDXErrorOOM : GSDXError {};
 
 extern GSdxApp theApp;

@@ -87,7 +87,7 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
-	if (!CanConvertDepth()) return NULL;
+	if (!CanConvertDepth()) throw GSDXRecoverableError();
 
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 
@@ -332,11 +332,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right);
 
-		if(src == NULL)
-		{
-			return NULL;
-		}
-
 	} else {
 		GL_CACHE("TC: src hit: %d (0x%x, F:0x%x)",
 					src->m_texture ? src->m_texture->GetID() : 0,
@@ -431,9 +426,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, F:0x%x)", to_string(type), w, h, bp, TEX0.PSM);
 
 		dst = CreateTarget(TEX0, w, h, type);
-
-		if(dst == NULL)
-			return NULL;
 
 		// In theory new textures contain invalidated data. Still in theory a new target
 		// must contains the content of the GS memory.
@@ -593,11 +585,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp);
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
-
-		if(dst == NULL)
-		{
-			return NULL;
-		}
 
 		m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
 
@@ -1076,6 +1063,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
+	if (src == NULL) throw GSDXErrorOOM();
 
 	int tw = 1 << TEX0.TW;
 	int th = 1 << TEX0.TH;
@@ -1370,9 +1358,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	if(src->m_texture == NULL)
 	{
-		ASSERT(0);
 		delete src;
-		return NULL;
+		throw GSDXErrorOOM();
 	}
 
 	if(psm.pal > 0)
@@ -1388,6 +1375,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type)
 {
 	Target* t = new Target(m_renderer, TEX0, m_temp, CanConvertDepth());
+	if (t == NULL) throw GSDXErrorOOM();
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
@@ -1406,9 +1394,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	if(t->m_texture == NULL)
 	{
-		ASSERT(0);
 		delete t;
-		return NULL;
+		throw GSDXErrorOOM();
 	}
 
 	m_dst[type].push_front(t);
@@ -1536,7 +1523,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 		return;
 	}
 
-	GSVector2i bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
+	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
 
 	int tw = std::max<int>(1 << m_TEX0.TW, bs.x);
 	int th = std::max<int>(1 << m_TEX0.TH, bs.y);

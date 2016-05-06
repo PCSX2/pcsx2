@@ -293,8 +293,6 @@ bool GSRenderer::Merge(int field)
 		}
 	}
 
-	GL_POP();
-
 	return true;
 }
 
@@ -644,4 +642,9 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		}
 	}
 #endif
+}
+
+void GSRenderer::PurgePool()
+{
+	m_dev->PurgePool();
 }

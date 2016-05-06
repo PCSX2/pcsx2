@@ -79,6 +79,8 @@ public:
 	virtual bool BeginCapture();
 	virtual void EndCapture();
 
+	void PurgePool();
+
 public:
 	std::mutex m_pGSsetTitle_Crit;
 
