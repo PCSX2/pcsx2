@@ -1744,8 +1744,13 @@ void GSTextureCache::Target::Update()
 
 	GSVector2i t_size = m_texture->GetSize();
 	GSVector2 t_scale = m_texture->GetScale();
-	t_size.x = t_size.x/t_scale.x;
-	t_size.y = t_size.y/t_scale.y;
+	t_size.x = (int)((float)t_size.x/t_scale.x);
+	t_size.y = (int)((float)t_size.y/t_scale.y);
+
+	// Don't load above the GS memory
+	int max_y_blocks = (MAX_BLOCKS - m_TEX0.TBP0) / m_TEX0.TBW;
+	int max_y = (max_y_blocks >> 5) * GSLocalMemory::m_psm[m_TEX0.PSM].pgs.y;
+	t_size.y = std::min(t_size.y, max_y);
 
 	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
 
