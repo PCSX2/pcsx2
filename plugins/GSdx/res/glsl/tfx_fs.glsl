@@ -235,7 +235,14 @@ vec4 sample_depth(vec2 st)
     ivec2 uv = ivec2(uv_f);
 
     vec4 t;
-#if PS_URBAN_CHAOS_HACK == 1
+#if PS_TALES_OF_ABYSS_HLE == 1
+    // Warning: UV can't be used in channel effect
+    int depth = fetch_raw_depth();
+
+    // Convert msb based on the palette
+    t = texelFetch(PaletteSampler, ivec2((depth >> 8) & 0xFF, 0), 0) * 255.0f;
+
+#elif PS_URBAN_CHAOS_HLE == 1
     // Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
     // So it will do a first channel trick to extract lsb, value is right-shifted.
     // Then a new channel trick to extract msb which will shifted to the left.

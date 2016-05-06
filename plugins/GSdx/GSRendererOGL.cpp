@@ -678,6 +678,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.channel = 7;
 			m_context->TEX0.TFX = TFX_DECAL;
 			rt = tex->m_from_target;
+		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
+			if (m_game.title == CRC::TalesOfAbyss) {
+				GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
+				ps_sel.tales_of_abyss_hle = 1;
+			} else {
+				GL_INS("Urban Chaos Crazyness (Green extraction)");
+				ps_sel.urban_chaos_hle = 1;
+			}
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
@@ -688,9 +696,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Pop
 			GL_INS("Red channel");
 			ps_sel.channel = 1;
-		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
-			GL_INS("Urban Chaos Crazyness");
-			ps_sel.urban_chaos_hack = 1;
 		} else {
 			GL_INS("channel not supported");
 			m_channel_shuffle = false;
