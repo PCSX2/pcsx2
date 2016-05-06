@@ -439,18 +439,21 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 void MainEmuFrame::Menu_EnablePatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnablePatches = GetMenuBar()->IsChecked( MenuId_EnablePatches );
-    AppSaveSettings();
+	AppApplySettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableCheats_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableCheats  = GetMenuBar()->IsChecked( MenuId_EnableCheats );
-    AppSaveSettings();
+	AppApplySettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableWideScreenPatches  = GetMenuBar()->IsChecked( MenuId_EnableWideScreenPatches );
+	AppApplySettings();
 	AppSaveSettings();
 }
 
