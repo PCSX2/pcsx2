@@ -678,6 +678,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			ps_sel.channel = 7;
 			m_context->TEX0.TFX = TFX_DECAL;
 			rt = tex->m_from_target;
+		} else if (m_game.title == CRC::Tekken5) {
+			GL_INS("Tekken5 RGB Channel");
+			ps_sel.channel = 7;
+			m_context->FRAME.FBMSK = 0xFF000000;
+			// 12 pages: 2 calls by channel, 3 channels, 1 blit
+			// Minus current draw call
+			m_skip = 12 * (3 + 3 + 1) - 1;
+			rt = tex->m_from_target;
 		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
 			if (m_game.title == CRC::TalesOfAbyss) {
 				GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
