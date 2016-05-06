@@ -694,6 +694,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				GL_INS("Urban Chaos Crazyness (Green extraction)");
 				ps_sel.urban_chaos_hle = 1;
 			}
+		} else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3) {
+			// Blood will tell. I think it is channel effect too but again
+			// implemented in a different way. I don't want to add more CRC stuff. So
+			// let's disable channel when the signature is different
+			//
+			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
+			// handled above.
+			GL_INS("maybe not a channel!");
+			m_channel_shuffle = false;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
