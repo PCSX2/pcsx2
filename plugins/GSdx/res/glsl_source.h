@@ -1090,7 +1090,7 @@ static const char* const tfx_fs_all_glsl =
 	"    int depth = fetch_raw_depth();\n"
 	"\n"
 	"    // Convert lsb based on the palette\n"
-	"    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);\n"
+	"    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0) * 255.0f;\n"
 	"\n"
 	"    // Msb is easier\n"
 	"    float green = float((depth >> 8) & 0xFF) * 36.0f;\n"

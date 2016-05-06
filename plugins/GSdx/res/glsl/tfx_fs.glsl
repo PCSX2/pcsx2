@@ -246,7 +246,7 @@ vec4 sample_depth(vec2 st)
     int depth = fetch_raw_depth();
 
     // Convert lsb based on the palette
-    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);
+    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0) * 255.0f;
 
     // Msb is easier
     float green = float((depth >> 8) & 0xFF) * 36.0f;
