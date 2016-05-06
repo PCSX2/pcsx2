@@ -673,7 +673,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle) {
-		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept) {
+			GL_INS("Gran Turismo RGB Channel");
+			ps_sel.channel = 7;
+			m_context->TEX0.TFX = TFX_DECAL;
+			rt = tex->m_from_target;
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
 			GL_INS("Blue channel");

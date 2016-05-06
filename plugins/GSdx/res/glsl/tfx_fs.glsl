@@ -331,6 +331,13 @@ vec4 fetch_alpha()
     return sample_p(rt.a) * 255.0f;
 }
 
+vec4 fetch_rgb()
+{
+    vec4 rt = fetch_raw_color();
+    vec4 c = vec4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0f);
+    return c * 255.0f;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 vec4 sample_color(vec2 st)
@@ -500,6 +507,8 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
+#elif PS_CHANNEL_FETCH == 7
+    vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0
     // Integral coordinate
     vec4 T = sample_depth(PSin.t_int.zw);
