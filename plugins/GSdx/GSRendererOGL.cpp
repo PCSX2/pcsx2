@@ -687,7 +687,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			m_skip = 12 * (3 + 3 + 1) - 1;
 			rt = tex->m_from_target;
 		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
-			if (m_game.title == CRC::TalesOfAbyss) {
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
+			// UC: will copy depth to green channel
+			// ToA: will copy depth to alpha channel
+			if ((m_context->FRAME.FBMSK & 0xFF0000) == 0xFF0000) {
+				// Green channel is masked
 				GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
 				ps_sel.tales_of_abyss_hle = 1;
 			} else {
