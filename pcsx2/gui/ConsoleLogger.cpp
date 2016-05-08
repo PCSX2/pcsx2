@@ -244,6 +244,8 @@ enum MenuIDs_t
 	MenuId_ColorScheme_Light = 0x20,
 	MenuId_ColorScheme_Dark,
 
+	MenuId_AutoDock,
+
 	MenuId_LogSource_EnableAll = 0x30,
 	MenuId_LogSource_DisableAll,
 	MenuId_LogSource_Devel,
@@ -406,6 +408,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
 	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
 	menuLog.AppendSeparator();
+	menuLog.AppendCheckItem(MenuId_AutoDock, _("Autodock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
 	menuLog.AppendSubMenu( &menuAppear, _("Appearance") );
 	menuLog.AppendSeparator();
 	menuLog.Append(wxID_CLOSE,	_("&Close"),		_("Close this log window; contents are preserved"));
@@ -452,6 +455,8 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnFontSize, this, MenuId_FontSize_Small, MenuId_FontSize_Huge);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleTheme, this, MenuId_ColorScheme_Light, MenuId_ColorScheme_Dark);
+
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnAutoDock, this, MenuId_AutoDock);
 
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Devel);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleCDVDInfo, this, MenuId_LogSource_CDVD_Info);
@@ -860,6 +865,13 @@ void ConsoleLogFrame::OnFontSize( wxCommandEvent& evt )
 	// TODO: Process the attributes of each character and upgrade the font size,
 	// while still retaining color and bold settings...  (might be slow but then
 	// it hardly matters being a once-in-a-bluemoon action).
+}
+
+void ConsoleLogFrame::OnAutoDock(wxCommandEvent& evt)
+{
+	if (auto menuBar = GetMenuBar())
+		m_conf.AutoDock = menuBar->IsChecked(MenuId_AutoDock);
+	evt.Skip();
 }
 
 // ----------------------------------------------------------------------------
