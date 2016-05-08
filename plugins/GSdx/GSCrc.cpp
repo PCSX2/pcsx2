@@ -534,6 +534,7 @@ bool IsCrcExcluded(string exclusionList, uint32 crc)
 
 CRC::Game CRC::Lookup(uint32 crc)
 {
+	printf("GSdx Lookup CRC:%X\n", crc);
 	if(m_map.empty())
 	{
 		string exclusions = theApp.GetConfig( "CrcHacksExclusions", "" );
@@ -549,7 +550,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 						, m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
 					crcDups++;
 				}
-				
+
 				m_map[m_games[i].crc] = &m_games[i];
 			}
 			//else
