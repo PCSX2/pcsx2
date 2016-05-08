@@ -673,7 +673,41 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle) {
-		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy) {
+			GL_INS("Gran Turismo RGB Channel");
+			ps_sel.channel = 7;
+			m_context->TEX0.TFX = TFX_DECAL;
+			rt = tex->m_from_target;
+		} else if (m_game.title == CRC::Tekken5) {
+			GL_INS("Tekken5 RGB Channel");
+			ps_sel.channel = 7;
+			m_context->FRAME.FBMSK = 0xFF000000;
+			// 12 pages: 2 calls by channel, 3 channels, 1 blit
+			// Minus current draw call
+			m_skip = 12 * (3 + 3 + 1) - 1;
+			rt = tex->m_from_target;
+		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
+			// UC: will copy depth to green channel
+			// ToA: will copy depth to alpha channel
+			if ((m_context->FRAME.FBMSK & 0xFF0000) == 0xFF0000) {
+				// Green channel is masked
+				GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
+				ps_sel.tales_of_abyss_hle = 1;
+			} else {
+				GL_INS("Urban Chaos Crazyness (Green extraction)");
+				ps_sel.urban_chaos_hle = 1;
+			}
+		} else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3) {
+			// Blood will tell. I think it is channel effect too but again
+			// implemented in a different way. I don't want to add more CRC stuff. So
+			// let's disable channel when the signature is different
+			//
+			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
+			// handled above.
+			GL_INS("maybe not a channel!");
+			m_channel_shuffle = false;
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
 			GL_INS("Blue channel");
@@ -683,9 +717,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Pop
 			GL_INS("Red channel");
 			ps_sel.channel = 1;
-		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
-			GL_INS("Urban Chaos Crazyness");
-			ps_sel.urban_chaos_hack = 1;
 		} else {
 			GL_INS("channel not supported");
 			m_channel_shuffle = false;
