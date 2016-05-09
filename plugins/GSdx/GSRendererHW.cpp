@@ -583,7 +583,9 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
-	if ((m_upscale_multiplier > 1) && draw_sprite_tex) {
+	// Note: first hack corrects both position and texture coordinate
+	// Note: second hack corrects only the texture coordinate
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
 
@@ -608,7 +610,8 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		if (PRIM->FST) {
+		// Noting to do if no texture is sampled
+		if (PRIM->FST && draw_sprite_tex) {
 			if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
 				if (m_vt.IsLinear())
 					RoundSpriteOffset<true>();
