@@ -50,6 +50,7 @@ private:
 	void OnDraw(wxDC& dc);
 	void refreshChangedRegs();
 	void setCurrentRow(int row);
+	void ensureVisible(int index);
 	void changeValue(RegisterChangeMode mode);
 	wxSize getOptimalSize() const;
 

@@ -467,6 +467,7 @@ void CtrlRegisterList::setCurrentRow(int row)
 
 	currentRows[category] = row;
 	postEvent(debEVT_SETSTATUSBARTEXT,text);
+	ensureVisible(currentRows[category] + 1); //offset due to header at scroll position 0
 	Refresh();
 }
 
@@ -546,12 +547,29 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 	}
 }
 
+void CtrlRegisterList::ensureVisible(int index) {
+	//scroll vertically to keep a logical position visible
+	int x, y;
+	GetViewStart(&x, &y);
+	int visibleOffset = floor(float(GetClientSize().y) / rowHeight) - 1;
+	if (index < y)
+		Scroll(x, index);
+	else if (index > y + visibleOffset)
+		Scroll(x, index - visibleOffset);
+}
+
 void CtrlRegisterList::keydownEvent(wxKeyEvent& evt)
 {
 	switch (evt.GetKeyCode())
 	{
 	case WXK_UP:
-		setCurrentRow(std::max<int>(currentRows[category]-1,0));
+		int x, y;
+		GetViewStart(&x, &y);
+		//If at top of rows allow scrolling an extra time to show tab header
+		if (currentRows[category] == 0 && y == 1)
+			Scroll(x, 0);
+		else
+			setCurrentRow(std::max<int>(currentRows[category]-1,0));
 		break;
 	case WXK_DOWN:
 		setCurrentRow(std::min<int>(currentRows[category]+1,cpu->getRegisterCount(category)-1));

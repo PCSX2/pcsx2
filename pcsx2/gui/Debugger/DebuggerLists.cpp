@@ -88,12 +88,16 @@ void GenericListView::keydownEvent(wxKeyEvent& evt)
 	switch (evt.GetKeyCode())
 	{
 	case WXK_UP:
-		if (sel > 0)
+		if (sel > 0) {
 			Select(sel-1);
+			Focus(sel-1);
+		}
 		break;
 	case WXK_DOWN:
-		if (sel+1 < GetItemCount())
+		if (sel+1 < GetItemCount()) {
 			Select(sel+1);
+			Focus(sel+1);
+		}
 		break;
 	}
 
