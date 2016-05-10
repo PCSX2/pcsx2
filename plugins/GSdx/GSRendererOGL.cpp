@@ -730,6 +730,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		glTextureBarrier();
 
 		// Replace current draw with a fullscreen sprite
+		//
+		// Performance GPU note: it could be wise to reduce the size to
+		// the rendered size of the framebuffer
 
 		GSVertex* s = &m_vertex.buff[0];
 		s[0].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 0);
