@@ -54,6 +54,7 @@ class GSRendererOGL final : public GSRendererHW
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
 		bool UserHacks_safe_fbmask;
+		bool UserHacks_merge_sprite;
 
 		GSDeviceOGL::VSConstantBuffer vs_cb;
 		GSDeviceOGL::PSConstantBuffer ps_cb;

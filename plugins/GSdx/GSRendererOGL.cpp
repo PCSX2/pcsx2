@@ -38,6 +38,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_safe_fbmask    = !!theApp.GetConfig("UserHacks_safe_fbmask", 0);
+	UserHacks_merge_sprite   = !!theApp.GetConfig("UserHacks_merge_pp_sprite", 0);
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	m_unsafe_fbmask = false;
@@ -47,6 +48,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
 		UserHacks_safe_fbmask    = false;
+		UserHacks_merge_sprite   = false;
 	}
 }
 
@@ -747,6 +749,42 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #ifdef ENABLE_OGL_DEBUG
 		dev->PSSetShaderResource(4, NULL);
 #endif
+	}
+
+	// Post-processing hack
+	if (UserHacks_merge_sprite) {
+		if (!m_channel_shuffle && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex && tex->m_target && PRIM->FST && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF)) {
+#ifdef ENABLE_OGL_DEBUG
+			const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
+			const GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
+			GL_INS("PP SAMPLER: Dp %f %f Dt %f %f", delta_p.x, delta_p.y, delta_t.x, delta_t.y);
+#endif
+			//fprintf(stderr, "SAMPLER: Dp %f %f Dt %f %f\n", delta_p.x, delta_p.y, delta_t.x, delta_t.y);
+
+			GSVertex* s = &m_vertex.buff[0];
+			//fprintf(stderr, "Before %d %d => %d %d \n", s[0].XYZ.X, s[0].XYZ.Y, s[1].XYZ.Y, s[1].XYZ.Y);
+			//fprintf(stderr, "SAMPLER: p %f %f OFFSET %d\n", m_vt.m_min.p.x, m_vt.m_max.p.x, m_context->XYOFFSET.OFX);
+
+			s[0].XYZ.X = (16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX;
+			s[1].XYZ.X = (16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX;
+			s[0].XYZ.Y = (16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY;
+			s[1].XYZ.Y = (16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY;
+
+			//fprintf(stderr, "After %d %d => %d %d \n", s[0].XYZ.X, s[0].XYZ.Y, s[1].XYZ.Y, s[1].XYZ.Y);
+
+			//fprintf(stderr, "Before %d %d => %d %d \n", s[0].U, s[0].V, s[1].U, s[1].V);
+
+			s[0].U     = 16.0f * m_vt.m_min.t.x;
+			s[0].V     = 16.0f * m_vt.m_min.t.y;
+			s[1].U     = 16.0f * m_vt.m_max.t.x;
+			s[1].V     = 16.0f * m_vt.m_max.t.y;
+
+			//fprintf(stderr, "After %d %d => %d %d \n", s[0].U, s[0].V, s[1].U, s[1].V);
+
+			m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+			m_index.tail = 2;
+			//exit(0);
+		}
 	}
 
 	if ((DATE || m_sw_blending) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
