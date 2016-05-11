@@ -25,6 +25,7 @@
 #include "Gif.h"
 #include "Vif_Dma.h"
 #include <limits.h>
+#include "AppConfig.h"
 
 #include "Utilities/MemsetFast.inl"
 
@@ -50,8 +51,8 @@ int coded_block_pattern = 0;
 u8 indx4[16*16/2];
 
 uint eecount_on_last_vdec = 0;
-bool FMVstarted = 0;
-bool EnableFMV = 0;
+bool FMVstarted = false;
+bool EnableFMV = false;
 
 void tIPU_cmd::clear()
 {
@@ -400,12 +401,12 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 
 static __fi bool ipuVDEC(u32 val)
 {
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
 		static int count = 0;
 		if (count++ > 5) {
-			if (FMVstarted == 0) {
-				EnableFMV = 1;
-				FMVstarted = 1;
+			if (!FMVstarted) {
+				EnableFMV = true;
+				FMVstarted = true;
 			}
 			count = 0;
 		}

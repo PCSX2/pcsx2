@@ -155,11 +155,22 @@ void GSPanel::DoResize()
 
 	double clientAr = (double)client.GetWidth()/(double)client.GetHeight();
 
+	extern AspectRatioType iniAR;
+	extern bool switchAR;
 	double targetAr = clientAr;
-	if( g_Conf->GSWindow.AspectRatio == AspectRatio_4_3 )
-		targetAr = 4.0/3.0;
-	else if( g_Conf->GSWindow.AspectRatio == AspectRatio_16_9 )
-		targetAr = 16.0/9.0;
+
+	if (g_Conf->GSWindow.AspectRatio != iniAR) {
+		switchAR = false;
+	}
+
+	if (!switchAR) {
+		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3)
+			targetAr = 4.0 / 3.0;
+		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
+			targetAr = 16.0 / 9.0;
+	} else {
+		targetAr = 4.0 / 3.0;
+	}
 
 	double arr = targetAr / clientAr;
 
@@ -173,6 +184,8 @@ void GSPanel::DoResize()
 		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
+	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
+		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
 	SetSize( viewport );
 	CenterOnParent();
 	
