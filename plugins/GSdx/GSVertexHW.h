@@ -26,7 +26,7 @@
 
 #pragma pack(push, 1)
 
-__aligned(struct, 32) GSVertexHW9
+struct alignas(32) GSVertexHW9
 {
 	GSVector4 t; 
 	GSVector4 p;

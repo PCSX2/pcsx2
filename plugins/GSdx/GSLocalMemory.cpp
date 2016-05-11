@@ -770,7 +770,7 @@ void GSLocalMemory::WriteImageLeftRight(int l, int r, int y, int h, const uint8*
 template<int psm, int bsx, int bsy, int trbpp>
 void GSLocalMemory::WriteImageTopBottom(int l, int r, int y, int h, const uint8* src, int srcpitch, const GIFRegBITBLTBUF& BITBLTBUF)
 {
-	__aligned(uint8, 32) buff[64]; // merge buffer for one column
+	alignas(32) uint8 buff[64]; // merge buffer for one column
 
 	uint32 bp = BITBLTBUF.DBP;
 	uint32 bw = BITBLTBUF.DBW;
@@ -2055,7 +2055,7 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 		pages = new uint32[limit];
 	}
 
-	__aligned(uint32, 16) tmp[16];
+	alignas(16) uint32 tmp[16];
 
 	((GSVector4i*)tmp)[0] = GSVector4i::zero();
 	((GSVector4i*)tmp)[1] = GSVector4i::zero();

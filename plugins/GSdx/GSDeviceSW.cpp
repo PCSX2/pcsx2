@@ -186,7 +186,7 @@ public:
 	}
 };
 
-__aligned(class, 16) ShaderFactorBlend : public ShaderBase
+class alignas(16) ShaderFactorBlend : public ShaderBase
 {
 	GSVector4i m_f;
 

@@ -197,17 +197,17 @@ using namespace stdext;
 #endif
 
 #ifdef _MSC_VER
-
-    #define __aligned(t, n) __declspec(align(n)) t
+#if _MSC_VER < 1900
+    #define alignas(n) __declspec(align(n))
+#endif
 
     #define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
     #define EXPORT_C EXPORT_C_(void)
 
-    #define ALIGN_STACK(n) __aligned(int, n) __dummy;
+    #define ALIGN_STACK(n) alignas(n) int dummy__;
 
 #else
 
-    #define __aligned(t, n) t __attribute__((aligned(n)))
     #define __fastcall __attribute__((fastcall))
 
     #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
@@ -227,7 +227,7 @@ using namespace stdext;
     #else
 
         // TODO Check clang behavior
-        #define ALIGN_STACK(n) __aligned(int, n) __dummy;
+        #define ALIGN_STACK(n) alignas(n) int dummy__;
 
     #endif
 
