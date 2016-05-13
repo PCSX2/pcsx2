@@ -1499,16 +1499,13 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 #ifdef __linux__
 
-#include <sys/time.h>
-#include <sys/timeb.h>	// ftime(), struct timeb
 #include "GSLzma.h"
 
 inline unsigned long timeGetTime()
 {
-	timeb t;
-	ftime(&t);
-
-	return (unsigned long)(t.time*1000 + t.millitm);
+	struct timespec t;
+	clock_gettime(CLOCK_REALTIME, &t);
+	return (unsigned long)(t.tv_sec*1000 + t.tv_nsec/1000000);
 }
 
 // Note
