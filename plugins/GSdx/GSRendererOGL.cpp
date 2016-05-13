@@ -752,8 +752,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// Post-processing hack
-	if (UserHacks_merge_sprite) {
-		if (!m_channel_shuffle && (m_vt.m_primclass == GS_SPRITE_CLASS) && tex && tex->m_target && PRIM->FST && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF)) {
+	if (UserHacks_merge_sprite && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		if (PRIM->FST && GSLocalMemory::m_psm[tex->m_TEX0.PSM].fmt < 2 && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF)) {
 #ifdef ENABLE_OGL_DEBUG
 			const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
 			const GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
