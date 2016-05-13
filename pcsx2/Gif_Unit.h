@@ -592,12 +592,11 @@ struct Gif_Unit {
 					break; // Not finished with GS packet
 				}
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
-				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
-				/*if (path.curSize == path.curOffset)
-					curPath = 0;*/
+				if (gifPath[curPath].state == GIF_PATH_WAIT || gifPath[curPath].state == GIF_PATH_IDLE) {
+					AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH - 1));
+				}
 				
 			}
-
 			if (!gsSIGNAL.queued && !gifPath[0].isDone()) {
 				stat.APATH = 1;
 				stat.P1Q = 0;
@@ -623,11 +622,10 @@ struct Gif_Unit {
 				break;
 			}
 		}
-
 		//Some loaders/Refresh Rate selectors and things dont issue "End of Packet" commands
 		//So we look and see if the end of the last tag is all there, if so, stick it in the buffer for the GS :)
 		//(Invisible Screens on Terminator 3 and Growlanser 2/3)
-		if(gifPath[curPath].curOffset == gifPath[curPath].curSize) 
+		if(gifPath[curPath].curOffset == gifPath[curPath].curSize)
 		{
 			FlushToMTGS();
 		}
