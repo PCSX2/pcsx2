@@ -201,14 +201,6 @@ __fi void vif1FBRST(u32 value) {
 			}
 		}
 		
-#if USE_OLD_GIF == 1 // ...
-		if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gifch.chcr.STR == true) {
-			DevCon.Warning("VIF Path3 Resume on FBRST MSK = %x", vif1Regs.mskpath3);
-			gifInterrupt();
-			vif1Regs.mskpath3 = false;
-			gifRegs.stat.M3P  = false;
-		}
-#endif
 		GUNIT_WARN(Color_Red, "VIF FBRST Reset MSK = %x", vif1Regs.mskpath3);
 		vif1Regs.mskpath3 = false;
 		gifRegs.stat.M3P  = 0;

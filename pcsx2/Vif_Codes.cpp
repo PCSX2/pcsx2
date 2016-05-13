@@ -407,14 +407,11 @@ vifOp(vifCode_MskPath3) {
 	pass1 {		
 		vif1Regs.mskpath3 = (vif1Regs.code >> 15) & 0x1;
 		gifRegs.stat.M3P  = (vif1Regs.code >> 15) & 0x1;
-		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "disabled" : "enabled");
+		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "masked" : "enabled");
 		if(!vif1Regs.mskpath3) {
-			//if(!gifUnit.gifPath[GIF_PATH_3].isDone() || gifRegs.stat.P3Q || gifRegs.stat.IP3) {
-				GUNIT_WARN("Path3 triggering!");
-				if(CHECK_GIFFIFOHACK)gif_fifo.read(false);
-				else gifInterrupt();
-				GIF_LOG("GIF state on mskpth3 QWC in fifo %x APATH = %x OPH = %x state = %x", gifRegs.stat.FQC, gifRegs.stat.APATH, gifRegs.stat.OPH, gifUnit.gifPath[GIF_PATH_3].state);
-			//}
+			GUNIT_WARN("Path3 triggering!");
+			if(CHECK_GIFFIFOHACK)gif_fifo.read(false);
+			else gifInterrupt();
 		}
 		vif1.cmd = 0;
 		vif1.pass = 0;

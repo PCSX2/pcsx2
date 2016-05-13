@@ -60,25 +60,11 @@ void gsReset()
 static __fi void gsCSRwrite( const tGS_CSR& csr )
 {
 	if (csr.RESET) {
-#if USE_OLD_GIF == 1 // ...
-		// perform a soft reset -- which is a clearing of all GIFpaths -- and fall back to doing
-		// a full reset if the plugin doesn't support soft resets.
-
-		if (GSgifSoftReset != NULL) {
-			GIFPath_Clear( GIF_PATH_1 );
-			GIFPath_Clear( GIF_PATH_2 );
-			GIFPath_Clear( GIF_PATH_3 );
-		}
-		else GetMTGS().SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-
-		SIGNAL_IMR_Pending = false;
-#else
 		GUNIT_WARN("GUNIT_WARN: csr.RESET");
 		//Console.Warning( "csr.RESET" );
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
-#endif
 
 		CSRreg.Reset();
 		GSIMR = 0x7F00;			//This is bits 14-8 thats all that should be 1
