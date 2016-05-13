@@ -21,6 +21,11 @@ float4 sample_c(float2 uv)
 	return Texture.Sample(TextureSampler, uv);
 }
 
+float4 sample_lod(float2 uv, float lod)
+{
+	return Texture.SampleLevel(TextureSampler, uv, lod);
+}
+
 struct PS_INPUT
 {
 	float4 p : SV_Position;
@@ -66,6 +71,11 @@ sampler Texture : register(s0);
 float4 sample_c(float2 uv)
 {
 	return tex2D(Texture, uv);
+}
+
+float4 sample_lod(float2 uv, float lod)
+{
+	return tex2D(Texture, uv, lod);
 }
 
 #endif
@@ -219,6 +229,117 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 	return output;
 }
 
+// Bicubic Scaling
+PS_OUTPUT ps_main10(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 _xyFrame;
+	Texture.GetDimensions(_xyFrame.x, _xyFrame.y);
+	float2 inputSize = float2(1.0 / _xyFrame.x, 1.0 / _xyFrame.y);
+
+	float2 coord_hg = input.t * _xyFrame - 0.5;
+	float2 index = floor(coord_hg);
+	float2 f = coord_hg - index;
+
+	float4x4 M = { -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+		           -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
+
+	M /= 6.0;
+
+	float4 wx = mul(float4(f.x*f.x*f.x, f.x*f.x, f.x, 1.0), M);
+	float4 wy = mul(float4(f.y*f.y*f.y, f.y*f.y, f.y, 1.0), M);
+	float2 w0 = float2(wx.x, wy.x);
+	float2 w1 = float2(wx.y, wy.y);
+	float2 w2 = float2(wx.z, wy.z);
+	float2 w3 = float2(wx.w, wy.w);
+
+	float2 g0 = w0 + w1;
+	float2 g1 = w2 + w3;
+	float2 h0 = w1 / g0 - 1.0;
+	float2 h1 = w3 / g1 + 1.0;
+
+	float2 coord00 = index + h0;
+	float2 coord10 = index + float2(h1.x, h0.y);
+	float2 coord01 = index + float2(h0.x, h1.y);
+	float2 coord11 = index + h1;
+
+	coord00 = (coord00 + 0.5) * inputSize;
+	coord10 = (coord10 + 0.5) * inputSize;
+	coord01 = (coord01 + 0.5) * inputSize;
+	coord11 = (coord11 + 0.5) * inputSize;
+
+	float4 tex00 = sample_lod(coord00, 0.0);
+	float4 tex10 = sample_lod(coord10, 0.0);
+	float4 tex01 = sample_lod(coord01, 0.0);
+	float4 tex11 = sample_lod(coord11, 0.0);
+
+	tex00 = lerp(tex01, tex00, float4(g0.y, g0.y, g0.y, g0.y));
+	tex10 = lerp(tex11, tex10, float4(g0.y, g0.y, g0.y, g0.y));
+
+	float4 res = lerp(tex10, tex00, float4(g0.x, g0.x, g0.x, g0.x));
+
+	output.c = res;
+
+	return output;
+}
+
+// Lanczos Scaling
+float3 PixelPos(float xpos, float ypos)
+{
+	return sample_c(float2(xpos, ypos)).rgb;
+}
+
+float4 WeightQuad(float x)
+{
+#define FIX(c) max(abs(c), 1e-5);
+	const float PI = 3.1415926535897932384626433832795;
+
+	float4 weight = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
+	float4 ret = sin(weight) * sin(weight / 2.0) / (weight * weight);
+
+	return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
+}
+
+float3 LineRun(float ypos, float4 xpos, float4 linetaps)
+{
+	return mul(linetaps, float4x3(
+		PixelPos(xpos.x, ypos),
+		PixelPos(xpos.y, ypos),
+		PixelPos(xpos.z, ypos),
+		PixelPos(xpos.w, ypos)));
+}
+
+PS_OUTPUT ps_main11(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 _xyFrame;
+	Texture.GetDimensions(_xyFrame.x, _xyFrame.y);
+	float2 stepxy = float2(1.0 / _xyFrame.x, 1.0 / _xyFrame.y);
+
+	float2 pos = input.t + stepxy;
+	float2 f = frac(pos / stepxy);
+
+	float2 xystart = (-2.0 - f) * stepxy + pos;
+	float4 xpos = float4(xystart.x,
+	xystart.x + stepxy.x,
+	xystart.x + stepxy.x * 2.0,
+	xystart.x + stepxy.x * 3.0);
+
+	float4 linetaps = WeightQuad(f.x);
+	float4 columntaps = WeightQuad(f.y);
+
+	// final sum and weight normalization
+	output.c = float4(mul(columntaps, float4x3(
+	LineRun(xystart.y, xpos, linetaps),
+	LineRun(xystart.y + stepxy.y, xpos, linetaps),
+	LineRun(xystart.y + stepxy.y * 2.0, xpos, linetaps),
+	LineRun(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
+
+	return output;
+}
+
 #elif SHADER_MODEL <= 0x300
 
 PS_OUTPUT ps_main1(PS_INPUT input)
@@ -319,6 +440,27 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 
 	return output;
 }
+
+// Dummy SM 3.0 Scaling
+PS_OUTPUT ps_main10(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = sample_c(input.t);
+
+	return output;
+}
+
+// Dummy SM 3.0 Scaling
+PS_OUTPUT ps_main11(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = sample_c(input.t);
+
+	return output;
+}
+
 
 #endif
 #endif

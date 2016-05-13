@@ -49,6 +49,16 @@ vec4 sample_c()
     return texture(TextureSampler, PSin.t);
 }
 
+vec4 sample_loc(vec2 t)
+{
+    return texture(TextureSampler, t);
+}
+
+vec4 sample_lod(vec2 t, float lod)
+{
+    return textureLod(TextureSampler, t, lod);
+}
+
 vec4 ps_crt(uint i)
 {
     vec4 mask[4] = vec4[4]
@@ -326,6 +336,107 @@ void ps_main8() // triangular
     vec4 c = ps_crt(((p.x + ((p.y >> 1u) & 1u) * 3u) >> 1u) % 3u);
 
     SV_Target0 = c;
+}
+#endif
+
+#ifdef ps_main18
+void ps_main18()
+{
+    vec2 texSize  = textureSize(TextureSampler, 0);
+    vec2 inputSize = vec2(1.0/texSize.x, 1.0/texSize.y);
+
+    vec2 coord_hg = PSin.t * texSize - 0.5;
+    vec2 index = floor(coord_hg), f = coord_hg - index;
+
+    mat4 M = mat4( -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+				   -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 );
+    M /= 6.0;
+
+    vec4 wx = M * vec4(f.x*f.x*f.x, f.x*f.x, f.x, 1.0);
+    vec4 wy = M * vec4(f.y*f.y*f.y, f.y*f.y, f.y, 1.0);
+    
+    vec2 w0 = vec2(wx.x, wy.x);
+    vec2 w1 = vec2(wx.y, wy.y);
+    vec2 w2 = vec2(wx.z, wy.z);
+    vec2 w3 = vec2(wx.w, wy.w);
+
+    vec2 g0 = w0 + w1;
+    vec2 g1 = w2 + w3;
+    vec2 h0 = w1 / g0 - 1.0;
+    vec2 h1 = w3 / g1 + 1.0;
+
+    vec2 coord00 = index + h0;
+    vec2 coord10 = index + vec2(h1.x, h0.y);
+    vec2 coord01 = index + vec2(h0.x, h1.y);
+    vec2 coord11 = index + h1;
+
+    coord00 = (coord00 + 0.5) * inputSize;
+    coord10 = (coord10 + 0.5) * inputSize;
+    coord01 = (coord01 + 0.5) * inputSize;
+    coord11 = (coord11 + 0.5) * inputSize;
+
+    vec4 tex00 = sample_lod(coord00, 0.0);
+    vec4 tex10 = sample_lod(coord10, 0.0);
+    vec4 tex01 = sample_lod(coord01, 0.0);
+    vec4 tex11 = sample_lod(coord11, 0.0);
+
+    tex00 = mix(tex01, tex00, vec4(g0.y, g0.y, g0.y, g0.y));
+    tex10 = mix(tex11, tex10, vec4(g0.y, g0.y, g0.y, g0.y));
+
+    vec4 res = mix(tex10, tex00, vec4(g0.x, g0.x, g0.x, g0.x));
+
+    SV_Target0 = res;
+}
+#endif
+
+#ifdef ps_main19
+vec3 PixelPos(float xpos, float ypos)
+{
+    return sample_loc(vec2(xpos, ypos)).rgb;
+}
+
+vec4 WeightQuad(float x)
+{
+    #define FIX(c) max(abs(c), 1e-5);
+    const float PI = 3.1415926535897932384626433832795;
+
+    vec4 weight = FIX(PI * vec4(1.0 + x, x, 1.0 - x, 2.0 - x));
+    vec4 ret = sin(weight) * sin(weight / 2.0) / (weight * weight);
+
+    return ret / dot(ret, vec4(1.0, 1.0, 1.0, 1.0));
+}
+
+vec3 LineRun(float ypos, vec4 xpos, vec4 linetaps)
+{
+    return mat4x3(
+    PixelPos(xpos.x, ypos),
+    PixelPos(xpos.y, ypos),
+    PixelPos(xpos.z, ypos),
+    PixelPos(xpos.w, ypos)) * linetaps;
+}
+
+void ps_main19()
+{
+    vec2 inputSize = textureSize(TextureSampler, 0);
+    vec2 stepxy = vec2(1.0/inputSize.x, 1.0/inputSize.y);
+    vec2 pos = PSin.t + stepxy;
+    vec2 f = fract(pos / stepxy);
+
+    vec2 xystart = (-2.0 - f) * stepxy + pos;
+    vec4 xpos = vec4(xystart.x,
+    xystart.x + stepxy.x,
+    xystart.x + stepxy.x * 2.0,
+    xystart.x + stepxy.x * 3.0);
+
+    vec4 linetaps = WeightQuad(f.x);
+    vec4 columntaps = WeightQuad(f.y);
+
+    // final sum and weight normalization
+    SV_Target0 = vec4(mat4x3(
+    LineRun(xystart.y, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y * 2.0, xpos, linetaps),
+    LineRun(xystart.y + stepxy.y * 3.0, xpos, linetaps)) * columntaps, 1.0);
 }
 #endif
 

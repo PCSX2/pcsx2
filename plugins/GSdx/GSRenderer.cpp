@@ -26,7 +26,7 @@
 #endif
 
 const unsigned int s_interlace_nb = 8;
-const unsigned int s_post_shader_nb = 5;
+const unsigned int s_post_shader_nb = 7;
 const unsigned int s_aspect_ratio_nb = 3;
 
 GSRenderer::GSRenderer()

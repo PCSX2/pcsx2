@@ -44,7 +44,9 @@ enum ShaderConvert {
 	ShaderConvert_RGBA8_TO_FLOAT24,
 	ShaderConvert_RGBA8_TO_FLOAT16,
 	ShaderConvert_RGB5A1_TO_FLOAT16,
-	ShaderConvert_RGBA_TO_8I = 17
+	ShaderConvert_RGBA_TO_8I = 17,
+	ShaderConvert_BICUBIC,
+	ShaderConvert_LANCZOS
 };
 
 #pragma pack(push, 1)

@@ -212,6 +212,8 @@ GSdxApp::GSdxApp()
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
+	m_gs_tv_shaders.push_back(GSSetting(5, "Bicubic Scaling", ""));
+	m_gs_tv_shaders.push_back(GSSetting(6, "Lanczos Scaling", ""));
 
 	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D9_SW), "Direct3D9", "Software"));
 	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D11_SW), "Direct3D11", "Software"));

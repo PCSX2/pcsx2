@@ -15,6 +15,9 @@
 *.exe
 *.wav
 
+*.db
+*.opendb
+
 *.trace
 *.dump
 
