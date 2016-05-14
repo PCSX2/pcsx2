@@ -38,7 +38,7 @@ in SHADER
 } PSin;
 
 // Give a different name so I remember there is a special case!
-#if defined(ps_main1) || defined(ps_main10)
+#if defined(ps_main1) || defined(ps_main12)
 layout(location = 0) out uint SV_Target1;
 #else
 layout(location = 0) out vec4 SV_Target0;
@@ -123,16 +123,16 @@ void ps_main1()
 }
 #endif
 
-#ifdef ps_main10
-void ps_main10()
+#ifdef ps_main12
+void ps_main12()
 {
     // Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
     SV_Target1 = uint(exp2(32.0f) * sample_c().r);
 }
 #endif
 
-#ifdef ps_main11
-void ps_main11()
+#ifdef ps_main13
+void ps_main13()
 {
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
     const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
@@ -144,8 +144,8 @@ void ps_main11()
 }
 #endif
 
-#ifdef ps_main12
-void ps_main12()
+#ifdef ps_main14
+void ps_main14()
 {
     // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
     const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
@@ -156,8 +156,8 @@ void ps_main12()
 }
 #endif
 
-#ifdef ps_main13
-void ps_main13()
+#ifdef ps_main15
+void ps_main15()
 {
     // Convert a RRGBA texture into a float depth texture
     // FIXME: I'm afraid of the accuracy
@@ -166,8 +166,8 @@ void ps_main13()
 }
 #endif
 
-#ifdef ps_main14
-void ps_main14()
+#ifdef ps_main16
+void ps_main16()
 {
     // Same as above but without the alpha channel (24 bits Z)
 
@@ -178,8 +178,8 @@ void ps_main14()
 }
 #endif
 
-#ifdef ps_main15
-void ps_main15()
+#ifdef ps_main17
+void ps_main17()
 {
     // Same as above but without the A/B channels (16 bits Z)
 
@@ -190,8 +190,8 @@ void ps_main15()
 }
 #endif
 
-#ifdef ps_main16
-void ps_main16()
+#ifdef ps_main18
+void ps_main18()
 {
     // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
     // FIXME: I'm afraid of the accuracy
@@ -202,8 +202,8 @@ void ps_main16()
 }
 #endif
 
-#ifdef ps_main17
-void ps_main17()
+#ifdef ps_main19
+void ps_main19()
 {
 
     // Potential speed optimization. There is a high probability that
@@ -339,8 +339,8 @@ void ps_main8() // triangular
 }
 #endif
 
-#ifdef ps_main18
-void ps_main18()
+#ifdef ps_main10
+void ps_main10()
 {
     vec2 texSize  = textureSize(TextureSampler, 0);
     vec2 inputSize = vec2(1.0/texSize.x, 1.0/texSize.y);
@@ -389,7 +389,7 @@ void ps_main18()
 }
 #endif
 
-#ifdef ps_main19
+#ifdef ps_main11
 vec3 PixelPos(float xpos, float ypos)
 {
     return sample_loc(vec2(xpos, ypos)).rgb;
@@ -415,7 +415,7 @@ vec3 LineRun(float ypos, vec4 xpos, vec4 linetaps)
     PixelPos(xpos.w, ypos)) * linetaps;
 }
 
-void ps_main19()
+void ps_main11()
 {
     vec2 inputSize = textureSize(TextureSampler, 0);
     vec2 stepxy = vec2(1.0/inputSize.x, 1.0/inputSize.y);

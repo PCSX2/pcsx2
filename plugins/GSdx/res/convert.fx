@@ -72,12 +72,6 @@ float4 sample_c(float2 uv)
 {
 	return tex2D(Texture, uv);
 }
-
-float4 sample_lod(float2 uv, float lod)
-{
-	return tex2D(Texture, uv, lod);
-}
-
 #endif
 
 VS_OUTPUT vs_main(VS_INPUT input)
@@ -229,8 +223,7 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 	return output;
 }
 
-// Bicubic Scaling
-PS_OUTPUT ps_main10(PS_INPUT input)
+PS_OUTPUT ps_main10(PS_INPUT input) // Bicubic Scaling
 {
 	PS_OUTPUT output;
 
@@ -284,8 +277,7 @@ PS_OUTPUT ps_main10(PS_INPUT input)
 	return output;
 }
 
-// Lanczos Scaling
-float3 PixelPos(float xpos, float ypos)
+float3 PixelPos(float xpos, float ypos) // Lanczos Scaling
 {
 	return sample_c(float2(xpos, ypos)).rgb;
 }
