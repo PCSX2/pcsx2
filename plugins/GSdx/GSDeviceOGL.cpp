@@ -1518,7 +1518,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	{
 		GLState::viewport = size;
 		// FIXME ViewportIndexedf or ViewportIndexedfv (GL4.1)
-		glViewport(0, 0, size.x, size.y);
+		glViewportIndexedf(0, 0, 0, size.x, size.y);
 	}
 
 	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
@@ -1527,7 +1527,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	{
 		GLState::scissor = r;
 		// FIXME ScissorIndexedv (GL4.1)
-		glScissor( r.x, r.y, r.width(), r.height() );
+		glScissorIndexed(0, r.x, r.y, r.width(), r.height());
 	}
 }
 
