@@ -62,10 +62,10 @@ class GSRendererOGL final : public GSRendererHW
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 
 	private:
-		void EmulateGS();
-		void SetupIA();
-		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
-		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
+		inline void EmulateGS();
+		inline void SetupIA();
+		inline bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
+		inline bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
 
 	public:
 		GSRendererOGL();
