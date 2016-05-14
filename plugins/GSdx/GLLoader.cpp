@@ -151,6 +151,28 @@ PFNGLCREATEPROGRAMPIPELINESPROC        glCreateProgramPipelines            = NUL
 PFNGLCLIPCONTROLPROC                   glClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
 
+namespace ReplaceGL {
+	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
+	{
+		glBlendEquationSeparate(modeRGB, modeAlpha);
+	}
+
+	void APIENTRY BlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+	{
+		glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+	}
+
+	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
+	{
+		glScissor(left, bottom, width, height);
+	}
+
+	void APIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
+	{
+		glViewport(x, y, w, h);
+	}
+}
+
 namespace GLLoader {
 
 	bool fglrx_buggy_driver    = false;
@@ -314,6 +336,18 @@ namespace GLLoader {
 			}
 		}
 #endif
+
+		if (!found_GL_ARB_viewport_array) {
+			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
+			glScissorIndexed   = ReplaceGL::ScissorIndexed;
+			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+		}
+
+		if (!found_GL_ARB_draw_buffers_blend) {
+			fprintf(stderr, "GL_ARB_draw_buffers_blend: not supported ! function pointer will be replaced\n");
+			glBlendFuncSeparateiARB     = ReplaceGL::BlendFuncSeparateiARB;
+			glBlendEquationSeparateiARB = ReplaceGL::BlendEquationSeparateiARB;
+		}
 
 		fprintf(stdout, "\n");
 

@@ -1455,10 +1455,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 
 		if (GLState::eq_RGB != b.op) {
 			GLState::eq_RGB = b.op;
-			if (glBlendEquationSeparateiARB)
-				glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
-			else
-				glBlendEquationSeparate(b.op, GL_FUNC_ADD);
+			glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
 		}
 
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
@@ -1480,10 +1477,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 			}
 			// AMD DRIVER SUCK
 
-			if (glBlendFuncSeparateiARB)
-				glBlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
-			else
-				glBlendFuncSeparate(src, dst, GL_ONE, GL_ZERO);
+			glBlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {
