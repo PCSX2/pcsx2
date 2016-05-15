@@ -800,12 +800,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	if ((DATE || m_sw_blending) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
-		// Except 2D games, sprites are often use for special post-processing effect
-		m_prim_overlap = PrimitiveOverlap();
-	} else {
-		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
-	}
+	// Always check if primitive overlap. The function will return PRIM_OVERLAP_UNKNOW for non sprite primitive
+	m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
 	if (m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
 		GL_INS("ERROR: Source and Target are the same!");
@@ -827,7 +823,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// texture barrier will split the draw call into n draw call. It is very efficient for
 			// few primitive draws. Otherwise it sucks.
-			if (m_index.tail < 100) {
+			if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
 				require_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
