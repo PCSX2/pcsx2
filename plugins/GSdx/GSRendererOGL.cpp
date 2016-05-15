@@ -658,6 +658,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
+	bool DATE_one  = false;
 
 	bool require_barrier = false; // For accurate option
 	m_unsafe_fbmask = false;
@@ -828,11 +829,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128) {
 				// Only first pixel (write 0) will pass (alpha is 1)
 				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				om_dssel.date_one = 1;
+				DATE_one = true;
 			} else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128) {
 				// Only first pixel (write 1) will pass (alpha is 0)
 				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				om_dssel.date_one = 1;
+				DATE_one = true;
 			} else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
@@ -852,6 +853,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				}
 			}
 		}
+		// Will save my life !
+		ASSERT(!(DATE_GL45 && DATE_one));
+		ASSERT(!(DATE_GL42 && DATE_one));
+		ASSERT(!(DATE_GL42 && DATE_GL45));
 	}
 
 	// Blend
@@ -880,6 +885,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Create an r32ui image that will containt primitive ID
 		if (DATE_GL42) {
 			dev->InitPrimDateTexture(rt, dRect);
+		} else if (DATE_one) {
+			dev->ClearStencil(ds, 1);
 		} else {
 			GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
 			GSVector4 dst = src * 2.0f - 1.0f;
@@ -981,6 +988,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (DATE_GL45) {
 		ps_sel.date = 5 + m_context->TEST.DATM;
+	} else if (DATE_one) {
+		glTextureBarrier();
+		ps_sel.date       = 5 + m_context->TEST.DATM;
+		om_dssel.date     = 1;
+		om_dssel.date_one = 1;
 	} else if (DATE) {
 		if (DATE_GL42)
 			ps_sel.date = 1 + m_context->TEST.DATM;
