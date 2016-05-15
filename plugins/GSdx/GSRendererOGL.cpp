@@ -828,7 +828,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				DATE_GL45 = true;
 				DATE = false;
 			} else {
-				DATE_GL42 = GLLoader::found_GL_ARB_shader_image_load_store;
+				if (GLLoader::found_GL_ARB_shader_image_load_store) {
+					DATE_GL42 = true;
+				} else {
+					require_barrier = true;
+					DATE_GL45 = true;
+					DATE = false;
+				}
 			}
 		}
 	}

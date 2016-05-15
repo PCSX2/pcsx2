@@ -93,7 +93,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It is basically a trade-off between GPU/CPU.";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
-				"It could be slower when the effects are used.\n\nNote: it requires the OpenGL 4.2 extension GL_ARB_shader_image_load_store.";
+				"It could be slower when the effects are used.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\n\n"
