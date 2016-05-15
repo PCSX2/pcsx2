@@ -603,19 +603,28 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 	GL_PUSH("Clear Depth %d", T->GetID());
 
-	OMSetFBO(m_fbo);
-	OMAttachDs(T);
-
-	// TODO: check size of scissor before toggling it
-	glDisable(GL_SCISSOR_TEST);
-	if (GLState::depth_mask) {
-		glClearBufferfv(GL_DEPTH, 0, &c);
+	if (GLLoader::found_GL_ARB_clear_texture) {
+		// Don't bother with Depth_Stencil insanity
+		ASSERT(c == 0.0f);
+		T->Clear(NULL);
 	} else {
-		glDepthMask(true);
-		glClearBufferfv(GL_DEPTH, 0, &c);
-		glDepthMask(false);
+		OMSetFBO(m_fbo);
+		// RT must be detached, if RT is too small, depth won't be fully cleared
+		// AT tolenico 2 map clip bug
+		OMAttachRt(NULL);
+		OMAttachDs(T);
+
+		// TODO: check size of scissor before toggling it
+		glDisable(GL_SCISSOR_TEST);
+		if (GLState::depth_mask) {
+			glClearBufferfv(GL_DEPTH, 0, &c);
+		} else {
+			glDepthMask(true);
+			glClearBufferfv(GL_DEPTH, 0, &c);
+			glDepthMask(false);
+		}
+		glEnable(GL_SCISSOR_TEST);
 	}
-	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
