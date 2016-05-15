@@ -336,8 +336,9 @@ class GSDeviceOGL final : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
+				uint32 date_one:1;
 
-				uint32 _free:28;
+				uint32 _free:27;
 			};
 
 			uint32 key;
@@ -441,7 +442,7 @@ class GSDeviceOGL final : public GSDevice
 	GLuint m_vs[1<<3];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<4];
-	GSDepthStencilOGL* m_om_dss[1<<4];
+	GSDepthStencilOGL* m_om_dss[1<<5];
 	hash_map<uint64, GLuint > m_ps;
 	GLuint m_apitrace;
 

@@ -821,13 +821,28 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			DATE = false;
 		} else if (m_accurate_date && om_csel.wa /* FIXME Check the msb bit of the mask instead + the dfmt*/
 				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
-			// texture barrier will split the draw call into n draw call. It is very efficient for
-			// few primitive draws. Otherwise it sucks.
-			if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
+			// Performance note: check alpha range with GetAlphaMinMax()
+			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
+			// with big upscaling
+			GetAlphaMinMax();
+			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128) {
+				// Only first pixel (write 0) will pass (alpha is 1)
+				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				om_dssel.date_one = 1;
+			} else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128) {
+				// Only first pixel (write 1) will pass (alpha is 0)
+				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				om_dssel.date_one = 1;
+			} else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
+				// texture barrier will split the draw call into n draw call. It is very efficient for
+				// few primitive draws. Otherwise it sucks.
+				GL_PERF("Slower DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				require_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
 			} else {
+				GL_PERF("Slow DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+
 				if (GLLoader::found_GL_ARB_shader_image_load_store) {
 					DATE_GL42 = true;
 				} else {

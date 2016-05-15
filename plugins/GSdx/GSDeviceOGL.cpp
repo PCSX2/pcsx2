@@ -699,7 +699,10 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	if (dssel.date)
 	{
 		dss->EnableStencil();
-		dss->SetStencil(GL_EQUAL, GL_KEEP);
+		if (dssel.date_one)
+			dss->SetStencil(GL_EQUAL, GL_ZERO);
+		else
+			dss->SetStencil(GL_EQUAL, GL_KEEP);
 	}
 
 	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
