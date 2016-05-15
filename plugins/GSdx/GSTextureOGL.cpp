@@ -223,10 +223,15 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			m_int_shift     = 3;
 			break;
 
-			// Special
-		case 0:
+			// Depth buffer
 		case GL_DEPTH32F_STENCIL8:
-			// Backbuffer & dss aren't important
+			m_int_format    = GL_DEPTH_STENCIL;
+			m_int_type      = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+			m_int_shift     = 0;
+			break;
+
+			// Backbuffer
+		case 0:
 			m_int_format    = 0;
 			m_int_type      = 0;
 			m_int_shift     = 0;
@@ -279,6 +284,16 @@ GSTextureOGL::~GSTextureOGL()
 
 	if (m_local_buffer)
 		_aligned_free(m_local_buffer);
+}
+
+void GSTextureOGL::Clear(const void* data)
+{
+	glClearTexImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, data);
+}
+
+void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
+{
+	glClearTexSubImage(m_texture_id, area.x, area.y, 0, area.width(), area.height(), 1, GL_TEX_LEVEL_0, m_int_format, m_int_type, data);
 }
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)

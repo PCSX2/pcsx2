@@ -124,6 +124,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glDebugMessageCallback);
 	// GL4.4
 	GL_EXT_LOAD_OPT(glClearTexImage);
+	GL_EXT_LOAD_OPT(glClearTexSubImage);
 	GL_EXT_LOAD(glBufferStorage);
 
 	// GL4.5

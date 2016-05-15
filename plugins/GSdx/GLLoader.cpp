@@ -115,6 +115,7 @@ PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture                  = NUL
 PFNGLMEMORYBARRIERPROC                 glMemoryBarrier                     = NULL;
 // GL4.4
 PFNGLCLEARTEXIMAGEPROC                 glClearTexImage                     = NULL;
+PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage                  = NULL;
 PFNGLBUFFERSTORAGEPROC                 glBufferStorage                     = NULL;
 
 // GL4.5

@@ -290,6 +290,7 @@ extern   PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert;
 extern   PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 glClearTexImage;
+extern   PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage;
 extern   PFNGLBUFFERSTORAGEPROC                 glBufferStorage;
 
 // GL4.5

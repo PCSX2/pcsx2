@@ -77,5 +77,8 @@ class GSTextureOGL final : public GSTexture
 		void WasAttached() { m_clean = false; }
 		void WasCleaned() { m_clean = true; }
 
+		void Clear(const void* data);
+		void Clear(const void* data, const GSVector4i& area);
+
 		uint32 GetMemUsage();
 };
