@@ -764,7 +764,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// SSE optimization: shuffle m[1] to have (4*32 bits) X, Y, U, V
 			int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 			int first_dpU = v[1].U - v[0].U;
-			for (int i = 0; i < m_vertex.next; i += 2) {
+			for (size_t i = 0; i < m_vertex.next; i += 2) {
 				int dpX = v[i+1].XYZ.X - v[i].XYZ.X;
 				int dpU = v[i+1].U - v[i].U;
 				if (dpX != first_dpX || dpU != first_dpU) {
