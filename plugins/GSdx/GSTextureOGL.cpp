@@ -293,7 +293,7 @@ void GSTextureOGL::Clear(const void* data)
 
 void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
 {
-	glClearTexSubImage(m_texture_id, area.x, area.y, 0, area.width(), area.height(), 1, GL_TEX_LEVEL_0, m_int_format, m_int_type, data);
+	glClearTexSubImage(m_texture_id, GL_TEX_LEVEL_0, area.x, area.y, 0, area.width(), area.height(), 1, m_int_format, m_int_type, data);
 }
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)

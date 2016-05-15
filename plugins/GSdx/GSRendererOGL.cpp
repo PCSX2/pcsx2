@@ -858,7 +858,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Must be done here to avoid any GL state pertubation (clear function...)
 		// Create an r32ui image that will containt primitive ID
 		if (DATE_GL42) {
-			dev->InitPrimDateTexture(rt);
+			dev->InitPrimDateTexture(rt, dRect);
 		} else {
 			GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
 			GSVector4 dst = src * 2.0f - 1.0f;

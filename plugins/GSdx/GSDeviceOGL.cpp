@@ -565,6 +565,9 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 {
+	// Hopefully AMD mesa will support this extension soon
+	ASSERT(!GLLoader::found_GL_ARB_clear_texture);
+
 	if (!t) return;
 
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
@@ -715,7 +718,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
+void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 {
 	const GSVector2i& rtsize = rt->GetSize();
 
@@ -724,7 +727,12 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt)
 		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
 
 	// Clean with the max signed value
-	ClearRenderTarget_i(m_date.t, 0x7FFFFFFF);
+	int max_int = 0x7FFFFFFF;
+	if (GLLoader::found_GL_ARB_clear_texture) {
+		static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
+	} else {
+		ClearRenderTarget_i(m_date.t, max_int);
+	}
 
 	glBindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #ifdef ENABLE_OGL_DEBUG
