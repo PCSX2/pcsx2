@@ -203,12 +203,10 @@ float Dist(float3 pt1, float3 pt2)
     return dot(v,v);
 }
 
-float sigma = BilateralRadius * BilateralRadius / 2.0;
-#define cwght 1.0 + CWGHT * max(1.0, 2.87029746 * sigma + 0.43165242 * BilateralRadius - 0.25219746)
-
 float4 Weight(int i, int j, float3 org, float4x3 A)
 {
     float clr = -BilateralWeight * BilateralWeight;
+    float sigma = BilateralRadius * BilateralRadius / 2.0;
 
     #if GLSL == 1
     float domain[13] = float[](1.0, 
@@ -229,6 +227,9 @@ float4 Weight(int i, int j, float3 org, float4x3 A)
 float3 BilateralFilter(SamplerState bTex, float2 texcoord)
 {
     float4x3 A, B;
+    
+    float sigma = BilateralRadius * BilateralRadius / 2.0;
+    float cwght = 1.0 + CWGHT * max(1.0, 2.87029746 * sigma + 0.43165242 * BilateralRadius - 0.25219746);
     float norm = cwght;
 
     float4 WX, WY, V4 = float4(1.0, 1.0, 1.0, 1.0);
@@ -301,17 +302,17 @@ float4 BilateralPass(float4 color, float2 texcoord)
 
 #if FXAA_HLSL_5 == 1
 struct FxaaTex { SamplerState smpl; Texture2D tex; };
-#define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
-#define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
-#define FxaaTexAlpha4(t, p) t.tex.GatherAlpha(t.smpl, p)
-#define FxaaTexOffAlpha4(t, p, o) t.tex.GatherAlpha(t.smpl, p, o)
+#define FxaaTexTop(t, p) Texture.SampleLevel(t, p, 0.0)
+#define FxaaTexOff(t, p, o, r) Texture.SampleLevel(t, p, 0.0, o)
+#define FxaaTexAlpha4(t, p) Texture.GatherAlpha(t, p)
+#define FxaaTexOffAlpha4(t, p, o) Texture.GatherAlpha(t, p, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
 #elif FXAA_HLSL_4 == 1
 struct FxaaTex { SamplerState smpl; Texture2D tex; };
-#define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
-#define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
+#define FxaaTexTop(t, p) Texture.SampleLevel(t, p, 0.0)
+#define FxaaTexOff(t, p, o, r) Texture.SampleLevel(t, p, 0.0, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 #endif
@@ -351,7 +352,7 @@ float FxaaLuma(float4 rgba)
     return rgba.w;
 }
 
-float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaSubpix, float fxaaEdgeThreshold, float fxaaEdgeThresholdMin)
+float4 FxaaPixelShader(float2 pos, SamplerState tex, float2 fxaaRcpFrame, float fxaaSubpix, float fxaaEdgeThreshold, float fxaaEdgeThresholdMin)
 {
     float2 posM;
     posM.x = pos.x;
@@ -658,16 +659,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 float4 FxaaPass(float4 FxaaColor, float2 texcoord)
 {
-    #if GLSL == 1
     FxaaColor = FxaaPixelShader(texcoord, TextureSampler, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
-    #else
-    
-    FxaaTex tex;
-    tex.tex = Texture;
-    tex.smpl = TextureSampler;
-    
-    FxaaColor = FxaaPixelShader(texcoord, tex, pixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
-    #endif
 
     return FxaaColor;
 }

@@ -235,8 +235,9 @@ PS_OUTPUT ps_main10(PS_INPUT input) // Bicubic Scaling
 	float2 index = floor(coord_hg);
 	float2 f = coord_hg - index;
 
-	float4x4 M = { -1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
-		           -3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
+	float4x4 M = {
+	-1.0, 3.0,-3.0, 1.0, 3.0,-6.0, 3.0, 0.0,
+	-3.0, 0.0, 3.0, 0.0, 1.0, 4.0, 1.0, 0.0 };
 
 	M /= 6.0;
 
@@ -284,7 +285,7 @@ float3 PixelPos(float xpos, float ypos) // Lanczos Scaling
 
 float4 WeightQuad(float x)
 {
-#define FIX(c) max(abs(c), 1e-5);
+	#define FIX(c) max(abs(c), 1e-5);
 	const float PI = 3.1415926535897932384626433832795;
 
 	float4 weight = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
