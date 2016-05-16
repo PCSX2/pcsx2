@@ -326,6 +326,7 @@ extern PFNGLCREATEPROGRAMPIPELINESPROC          glCreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     glClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
+extern PFNGLGETTEXTURESUBIMAGEPROC              glGetTextureSubImage;
 
 namespace GLLoader {
 	bool check_gl_version(int major, int minor);

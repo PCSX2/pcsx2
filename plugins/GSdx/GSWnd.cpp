@@ -160,4 +160,5 @@ void GSWndGL::PopulateGlFunction()
 
 	GL_EXT_LOAD(glClipControl);
 	GL_EXT_LOAD(glTextureBarrier);
+	GL_EXT_LOAD_OPT(glGetTextureSubImage);
 }

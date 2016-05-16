@@ -151,6 +151,7 @@ PFNGLCREATEPROGRAMPIPELINESPROC        glCreateProgramPipelines            = NUL
 
 PFNGLCLIPCONTROLPROC                   glClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
+PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
 
 namespace ReplaceGL {
 	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
@@ -186,6 +187,7 @@ namespace GLLoader {
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
@@ -300,6 +302,7 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
 				if (ext.compare("GL_ARB_texture_barrier") == 0) found_GL_ARB_texture_barrier = true;
+				if (ext.compare("GL_ARB_get_texture_sub_image") == 0) found_GL_ARB_get_texture_sub_image = true;
 
 				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 			}
@@ -329,6 +332,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
+		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 #ifdef _WIN32
 		if (status) {
