@@ -51,14 +51,6 @@ namespace PboPool {
 	const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-	// Perf impact (test was only done on a gs dump):
-	// Normal (fast): Message:Buffer detailed info: Buffer object 9 (bound to
-	//	GL_PIXEL_UNPACK_BUFFER_ARB, usage hint is GL_STREAM_COPY) will use VIDEO
-	//	memory as the source for buffer object operations.
-	//
-	// Persistent (slower): Message:Buffer detailed info: Buffer object 8
-	//	(bound to GL_PIXEL_UNPACK_BUFFER_ARB, usage hint is GL_DYNAMIC_DRAW)
-	//	will use DMA CACHED memory as the source for buffer object operations
 	void Init() {
 		glGenBuffers(countof(m_pool), m_pool);
 
@@ -247,8 +239,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	// Generate & Allocate the buffer
 	switch (m_type) {
 		case GSTexture::Offscreen:
-			// 8B is the worst case for depth/stencil
-			// FIXME I think it is only used for color. So you can save half of the size
+			// Offscreen is only used to read color. So it only requires 4B by pixel
 			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
