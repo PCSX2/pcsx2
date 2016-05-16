@@ -28,9 +28,9 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
 
 	// Load mandatory function pointer
-#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
+#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, false)
 	// Load extra function pointer
-#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, true)
+#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
 
 	GL_EXT_LOAD(glBlendEquationSeparate);
 	GL_EXT_LOAD(glBlendFuncSeparate);
