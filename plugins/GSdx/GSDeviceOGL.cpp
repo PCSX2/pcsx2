@@ -526,9 +526,12 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
 
-	// Performance note: potentially T->Clear() could be used. However the render target
-	// will be used right away as the render target. So in all case, FBO must be binded
-	// and the texture attached too. So using the old/standard path is better.
+	// Performance note: potentially T->Clear() could be used. Main purpose of
+	// Clear() is to avoid the framebuffer setup cost. However, in this context,
+	// the texture 't' will be set as the render target of the framebuffer and
+	// therefore will require a framebuffer setup.
+
+	// So using the old/standard path is faster/better albeit verbose.
 
 	GL_PUSH("Clear RT %d", T->GetID());
 
