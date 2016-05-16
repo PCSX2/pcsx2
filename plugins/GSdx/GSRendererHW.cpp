@@ -745,6 +745,7 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	if (!can_handle_depth)
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 
@@ -1462,6 +1463,38 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	return false;
 }
 
+bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// world map clipping
+	//
+	// The bad draw call is a sprite rendering to clear the z buffer
+
+	/*
+	   Depth buffer description
+	   * width is 10 pages
+	   * texture/scissor size is 640x448
+	   * depth is 16 bits so it writes 70 (10w * 7h) pages of data.
+
+	   following draw calls will use the buffer as 6 pages width with a scissor
+	   test of 384x672. So the above texture can be seen as a
+
+	   * texture width: 6 pages * 64 pixels/page = 384
+	   * texture height: 70/6 pages * 64 pixels/page =746
+
+	   So as you can see the GS issue a write of 640x448 but actually it
+	   expects to clean a 384x746 area. Ideally the fix will transform the
+	   buffer to adapt the page width properly.
+	 */
+
+	GSVertex* v = &m_vertex.buff[0];
+
+	if (m_vertex.next == 2 && !PRIM->TME && m_context->FRAME.FBW == 10 && v->XYZ.Z == 0 && m_context->TEST.ZTST == ZTST_ALWAYS) {
+		GL_INS("OI_ArTonelico2");
+		m_dev->ClearDepth(ds, 0);
+	}
+
+	return true;
+}
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 

@@ -26,6 +26,7 @@
 CRC::Game CRC::m_games[] =
 {
 	{0x00000000, NoTitle, NoRegion, 0},
+	{0xF46142D3, ArTonelico2, NoRegion, 0},
 	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
 	{0x7800DC84, Clannad, JP, PointListPalette},

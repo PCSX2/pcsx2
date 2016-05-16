@@ -27,6 +27,7 @@ public:
 	enum Title
 	{
 		NoTitle,
+		ArTonelico2,
 		MetalSlug6,
 		TomoyoAfter,
 		Clannad,
