@@ -39,11 +39,11 @@
 //#define DISABLE_DATE
 
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#if !defined(NDEBUG) || defined(_DEBUG) || defined(_DEVEL)
 #define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
 //#define ENABLE_OGL_DEBUG_FENCE
-#endif
 //#define ENABLE_OGL_DEBUG_MEM_BW // compute the quantity of data transfered (debug purpose)
+#endif
 
 #if defined(__linux__) && !(defined(_DEBUG) || defined(_DEVEL))
 #define DISABLE_PERF_MON // Burn cycle for nothing in release mode
