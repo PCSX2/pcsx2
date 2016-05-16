@@ -526,6 +526,10 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
 		return;
 
+	// Performance note: potentially T->Clear() could be used. However the render target
+	// will be used right away as the render target. So in all case, FBO must be binded
+	// and the texture attached too. So using the old/standard path is better.
+
 	GL_PUSH("Clear RT %d", T->GetID());
 
 	// TODO: check size of scissor before toggling it
