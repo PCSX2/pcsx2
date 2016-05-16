@@ -355,8 +355,13 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 {
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
+	// Will need some investigation
+	ASSERT(r.width()  != 0);
+	ASSERT(r.height() != 0);
 
-	// LOTS OF CRAP CODE!!!! PLEASE FIX ME !!!
+	uint32 row_byte = r.width() << m_int_shift;
+	m.pitch = row_byte;
+
 	if (m_type == GSTexture::Offscreen) {
 		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
 		// architecture is waiting the data right now.
@@ -379,7 +384,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 #endif
 
 		m.bits = m_local_buffer;
-		m.pitch = m_size.x << m_int_shift;
 
 		return true;
 	} else if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget) {
@@ -387,11 +391,9 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 
 		m_clean = false;
 
-		uint32 row_byte = r.width() << m_int_shift;
 		uint32 map_size = r.height() * row_byte;
 
 		m.bits = (uint8*)PboPool::Map(map_size);
-		m.pitch = row_byte;
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	g_real_texture_upload_byte += map_size;
