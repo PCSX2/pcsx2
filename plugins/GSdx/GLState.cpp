@@ -70,7 +70,7 @@ namespace GLState {
 
 		depth = false;
 		depth_func = 0;
-		depth_mask = false;
+		depth_mask = true;
 
 		stencil = false;
 		stencil_func = 0;
