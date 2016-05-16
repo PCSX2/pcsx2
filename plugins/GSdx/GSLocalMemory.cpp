@@ -2016,10 +2016,20 @@ GSOffset::GSOffset(uint32 _bp, uint32 _bw, uint32 _psm)
 	{
 		pixel.col[i] = GSLocalMemory::m_psm[_psm].rowOffset[i];
 	}
+
+	for(int i = 0; i < 256; i++)
+	{
+		coverages[i] = nullptr;
+	}
 }
 
 GSOffset::~GSOffset()
 {
+	for(int i = 0; i < 256; i++)
+	{
+		_aligned_free(coverages[i]);
+	}
+
 }
 
 uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bbox)
@@ -2030,12 +2040,12 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 
 	if(bbox != NULL) *bbox = r;
 
-	// worst case: 
+	// worst case:
 	// bp page-aligned: (w * h) / (64 * 32)
 	// bp block-aligned: (w * h) / (8 * 8)
 
 	int size = r.width() * r.height();
-	
+
 	int limit = MAX_PAGES + 1;
 
 	if(pages == NULL)
@@ -2058,7 +2068,7 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 	bs.y >>= 3;
 
 	uint32* RESTRICT p = pages;
-	
+
 	for(int y = r.top; y < r.bottom; y += bs.y)
 	{
 		uint32 base = block.row[y];
