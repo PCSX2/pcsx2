@@ -16,15 +16,16 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 
-#warning This reader is not yet implemented. Crash boom bang if used
+#if defined(__APPLE__)
+#warning Tested on FreeBSD, not OS X. Be very afraid.
+#endif
 
 //FlatFileReader::FlatFileReader(void)
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
-	printf("FLATC\n");
 	m_blocksize = 2048;
-	m_fd = 0;
-	//m_aio_context = 0;
+	m_fd = -1;
+	m_read_in_progress = false;
 }
 
 FlatFileReader::~FlatFileReader(void)
@@ -34,79 +35,74 @@ FlatFileReader::~FlatFileReader(void)
 
 bool FlatFileReader::Open(const wxString& fileName)
 {
-    printf("OB\n");
     m_filename = fileName;
-
-    int err = 0; //io_setup(64, &m_aio_context);
-	if (err) return false;
 
     m_fd = wxOpen(fileName, O_RDONLY, 0);
 
-	return (m_fd != 0);
+	return (m_fd != -1);
 }
 
 int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 {
-    printf("RAD\n");
 	BeginRead(pBuffer, sector, count);
 	return FinishRead();
 }
 
 void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
-    printf("RWEADB\n");
-	u64 offset;
-	offset = sector * (u64)m_blocksize + m_dataoffset;
+	u64 offset = sector * (u64)m_blocksize + m_dataoffset;
 
 	u32 bytesToRead = count * m_blocksize;
 
-    struct aiocb iocb;
-    struct aiocb* iocbs = &iocb;
+	m_aiocb = {0};
+	m_aiocb.aio_fildes = m_fd;
+	m_aiocb.aio_offset = offset;
+	m_aiocb.aio_nbytes = bytesToRead;
+	m_aiocb.aio_buf = pBuffer;
 
-    //io_prep_pread(&iocb, m_fd, pBuffer, bytesToRead, offset);
-    //io_submit(m_aio_context, 1, &iocbs);
+	if (aio_read(&m_aiocb) != 0) {
+#if defined(__FreeBSD__)
+		if (errno == ENOSYS)
+			Console.Error("AIO read failed: Check the aio kernel module is loaded");
+		else
+			Console.Error("AIO read failed: error code %d", errno);
+#else
+		Console.Error("AIO read failed: error code %d\n", errno);
+#endif
+		return;
+	}
+	m_read_in_progress = true;
 }
 
 int FlatFileReader::FinishRead(void)
 {
-    printf("FINISH\n");
-	u32 bytes;
+	struct aiocb *aiocb_list[] = {&m_aiocb};
 
-	int min_nr = 1;
-	int max_nr = 1;
-   /* struct io_event* events = new io_event[max_nr];
+	while (aio_suspend(aiocb_list, 1, nullptr) == -1)
+		if (errno != EINTR)
+			break;
 
-	int event = io_getevents(m_aio_context, min_nr, max_nr, events, NULL);
-	if (event < 1) {
-		return -1;
-    }*/
-
-	return 1;
+	m_read_in_progress = false;
+	return aio_return(&m_aiocb) == -1? -1: 1;
 }
 
 void FlatFileReader::CancelRead(void)
 {
-    printf("CANCEL\n");
-	// Will be done when m_aio_context context is destroyed
-	// Note: io_cancel exists but need the iocb structure as parameter
-	// int io_cancel(aio_context_t ctx_id, struct iocb *iocb,
-	//                struct io_event *result);
+	aio_cancel(m_fd, &m_aiocb);
+	m_read_in_progress = false;
 }
 
 void FlatFileReader::Close(void)
 {
-    printf("CLOSE\n");
-	if (m_fd) close(m_fd);
+	if (m_read_in_progress)
+		CancelRead();
+	if (m_fd != -1)
+		close(m_fd);
 
-    //io_destroy(m_aio_context);
-    aio_cancel(m_fd, &m_aio_context);
-
-	m_fd = 0;
-    //m_aio_context = 0;
+	m_fd = -1;
 }
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-    printf("BLOCKS\n");
 	return (int)(Path::GetFileSize(m_filename) / m_blocksize);
 }
