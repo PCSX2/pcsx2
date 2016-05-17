@@ -773,9 +773,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			{
 				if(!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 				{
-					GL_CACHE("TC: Dirty Target(%s) %d (0x%x)", to_string(type),
+					GL_CACHE("TC: Dirty Target(%s) %d (0x%x) r(%d,%d,%d,%d)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0);
+								t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 					t->m_dirty.push_back(GSDirtyRect(r, psm));
 					t->m_TEX0.TBW = bw;
 				}
@@ -1764,6 +1764,18 @@ void GSTextureCache::Target::Update()
 		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
 			m_renderer->m_dev->ClearDepth(m_texture, 0);
 
+		return;
+	} else if (m_type == DepthStencil && r.x == 0 && r.y == 0 && r.width() <= 64 && r.height() <= 32) {
+		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
+		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
+		// page is invalidated. Technically a CRC hack will be better but I don't expect
+		// any games to only upload a single page of data for the depth.
+		//
+		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
+		// could be a gsdx transfer bug too due to unaligned-page transfer.
+		//
+		// So the quick and dirty solution is just to clean the depth buffer.
+		m_renderer->m_dev->ClearDepth(m_texture, 0);
 		return;
 	}
 
