@@ -96,13 +96,7 @@ typedef FnType_Void* Fnptr_Void;
 
 #else	// must be GCC or Clang
 
-#	include <sys/types.h>
-#	include <sys/timeb.h>
-
-// Definitions added Feb 16, 2006 by efp
-#	ifndef __declspec
-#		define __declspec(x)
-#	endif
+#include <sys/types.h>
 
 #endif
 

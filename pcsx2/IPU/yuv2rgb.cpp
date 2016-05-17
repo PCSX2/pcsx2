@@ -58,13 +58,13 @@ void yuv2rgb_reference(void)
 		}
 }
 
+#if defined(_M_X86_32)
 // TODO OSX optimize me
-#ifdef __APPLE__
+#if defined(__clang__) && !defined(__linux__)
 void yuv2rgb_sse2() {
 	yuv2rgb_reference();
 }
-
-#elif defined(_M_X86_32)
+#else
 // Everything below is bit accurate to the IPU specification (except maybe rounding).
 // Know the specification before you touch it.
 #define SSE_BYTES(x) {x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x}
@@ -410,4 +410,5 @@ ihatemsvc:
 #	error Unsupported compiler
 #endif
 }
+#endif
 #endif

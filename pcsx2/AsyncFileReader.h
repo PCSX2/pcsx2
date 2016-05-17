@@ -20,7 +20,7 @@
 #	undef Yield
 #elif defined(__linux__)
 #	include <libaio.h>
-#elif defined(__APPLE__)
+#elif defined(__POSIX__)
 #	include <aio.h>
 #endif
 #include <memory>

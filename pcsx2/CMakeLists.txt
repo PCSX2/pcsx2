@@ -397,6 +397,12 @@ set(pcsx2OSXSources
 	Darwin/DarwinFlatFileReader.cpp
 	)
 
+set(pcsx2FreeBSDSources
+	Linux/LnxConsolePipe.cpp
+	Linux/LnxKeyCodes.cpp
+	Darwin/DarwinFlatFileReader.cpp
+	)
+
 # Linux headers
 set(pcsx2LinuxHeaders
 	)
@@ -612,6 +618,12 @@ endif()
 if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
+		${pcsx2LinuxHeaders})
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+	set(Platform
+		${pcsx2FreeBSDSources}
 		${pcsx2LinuxHeaders})
 endif()
 
