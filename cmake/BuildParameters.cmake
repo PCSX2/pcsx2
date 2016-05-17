@@ -118,6 +118,34 @@ if(BUILTIN_CDVD)
 endif()
 
 #-------------------------------------------------------------------------------
+# if no build type is set, use Devel as default
+# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
+# Ensure that the value set by the User is correct to avoid some bad behavior later
+#-------------------------------------------------------------------------------
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
+	set(CMAKE_BUILD_TYPE Devel)
+	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
+endif()
+# AVX2 doesn't play well with gdb
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    SET(DISABLE_ADVANCE_SIMD ON)
+endif()
+
+# Initially strip was disabled on release build but it is not stackstrace friendly!
+# It only cost several MB so disbable it by default
+option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
+
+if(NOT DEFINED CMAKE_BUILD_PO)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_BUILD_PO TRUE)
+        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    else()
+        set(CMAKE_BUILD_PO FALSE)
+        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    endif()
+endif()
+
+#-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
 option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
@@ -202,31 +230,6 @@ else()
 
     message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
-
-#-------------------------------------------------------------------------------
-# if no build type is set, use Devel as default
-# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
-# Ensure that the value set by the User is correct to avoid some bad behavior later
-#-------------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
-	set(CMAKE_BUILD_TYPE Devel)
-	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
-endif()
-
-# Initially strip was disabled on release build but it is not stackstrace friendly!
-# It only cost several MB so disbable it by default
-option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
-
-if(NOT DEFINED CMAKE_BUILD_PO)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_BUILD_PO TRUE)
-        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    else()
-        set(CMAKE_BUILD_PO FALSE)
-        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    endif()
-endif()
-
 
 #-------------------------------------------------------------------------------
 # Control GCC flags
