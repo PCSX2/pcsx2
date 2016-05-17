@@ -67,7 +67,10 @@ void GSRendererHW::SetScaling()
 	// If memory consumption is an issue, there are 2 possibilities
 	// * 1/ Avoid to create hundreds of RT
 	// * 2/ Use sparse texture (requires recent HW)
-	int fb_height = (fb_width < 1024) ? 1280 : 1024;
+	//
+	// Avoid to alternate between 640x1280 and 1280x1024 on snow blind engine game
+	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
+	int fb_height = 1280;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
