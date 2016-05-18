@@ -778,7 +778,7 @@ __fi void cdvdActionInterrupt()
 			cdvd.Reading = 0;
 			cdvd.Readed = 0;
 			cdvd.Ready  = CDVD_READY2;		// should be CDVD_READY1 or something else?
-			cdvd.Status = CDVD_STATUS_STOP;
+			cdvd.Status = CDVD_STATUS_PAUSE; //Break stops the command in progress it doesn't stop the drive. Formula 2001
 			cdvd.RErr = 0;
 			cdvd.nCommand = 0;
 		break;
