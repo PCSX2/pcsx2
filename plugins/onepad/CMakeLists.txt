@@ -98,6 +98,7 @@ endif()
 
 set(onepadFinalLibs
 	${onepadFinalLibs}
+	${wxWidgets_LIBRARIES}
 	${GTK2_LIBRARIES}
 	${X11_LIBRARIES}
 )

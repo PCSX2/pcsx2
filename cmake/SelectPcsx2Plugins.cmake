@@ -230,7 +230,7 @@ endif()
 # requires: -SDL
 #			-X11
 #---------------------------------------
-if(GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
 	set(onepad TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
