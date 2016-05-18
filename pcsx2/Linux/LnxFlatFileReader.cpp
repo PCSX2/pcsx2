@@ -19,7 +19,7 @@
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
-	m_fd = 0;
+	m_fd = -1;
 	m_aio_context = 0;
 }
 
@@ -37,7 +37,7 @@ bool FlatFileReader::Open(const wxString& fileName)
 
     m_fd = wxOpen(fileName, O_RDONLY, 0);
 
-	return (m_fd != 0);
+	return (m_fd != -1);
 }
 
 int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
@@ -87,11 +87,11 @@ void FlatFileReader::CancelRead(void)
 void FlatFileReader::Close(void)
 {
 
-	if (m_fd) close(m_fd);
+	if (m_fd != -1) close(m_fd);
 
 	io_destroy(m_aio_context);
 
-	m_fd = 0;
+	m_fd = -1;
 	m_aio_context = 0;
 }
 
