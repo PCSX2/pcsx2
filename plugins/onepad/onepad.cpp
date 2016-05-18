@@ -150,7 +150,7 @@ static void InitLibraryName()
 	snprintf(libraryName, 255, "OnePAD %lld%s"
 #	ifdef PCSX2_DEBUG
 	          "-Debug"
-#	else
+#	elif defined(PCSX2_DEVBUILD)
 	          "-Dev"
 #	endif
 	          , SVN_REV,
