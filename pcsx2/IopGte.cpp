@@ -20,6 +20,7 @@
 #include "IopGte.h"
 //#include "R3000A.h"
 #include "IopCommon.h"
+#include "Utilities/MathUtils.h"
 #ifdef GTE_DUMP
 #define G_OP(name,delay) fprintf(gteLog, "* : %08X : %02d : %s\n", psxRegs.code, delay, name);
 #define G_SD(reg)  fprintf(gteLog, "+D%02d : %08X\n", reg, psxRegs.CP2D.r[reg]);
@@ -175,8 +176,6 @@ __inline unsigned long MFC2(int reg) {
 }
 
 __inline void MTC2(unsigned long value, int reg) {
-	int a;
-
 	switch (reg) {
 	case 8: case 9: case 10: case 11:
 		psxRegs.CP2D.r[reg] = (short)value;
@@ -208,58 +207,7 @@ __inline void MTC2(unsigned long value, int reg) {
 
 	case 30:
 		psxRegs.CP2D.r[30] = value;
-
-		a = psxRegs.CP2D.r[30];
-#if defined(_MSC_VER_)
-		if (a > 0) {
-			__asm {
-				mov eax, a;
-				bsr eax, eax;
-				mov a, eax;
-			}
-			psxRegs.CP2D.r[31] = 31 - a;
-		}
-		else if (a < 0) {
-			__asm {
-				mov eax, a;
-				xor eax, 0xffffffff;
-				bsr eax, eax;
-				mov a, eax;
-			}
-			psxRegs.CP2D.r[31] = 31 - a;
-		}
-		else {
-			psxRegs.CP2D.r[31] = 32;
-		}
-#elif defined(__linux__) || defined(__MINGW32__)
-		if (a > 0) {
-			__asm__("bsrl %1, %0\n" : "=r"(a) : "r"(a));
-			psxRegs.CP2D.r[31] = 31 - a;
-		}
-		else if (a < 0) {
-			a ^= 0xffffffff;
-			__asm__("bsrl %1, %0\n" : "=r"(a) : "r"(a));
-			psxRegs.CP2D.r[31] = 31 - a;
-		}
-		else {
-			psxRegs.CP2D.r[31] = 32;
-		}
-#else
-		if (a > 0) {
-			int i;
-			for (i = 31; (a & (1 << i)) == 0 && i >= 0; i--);
-			psxRegs.CP2D.r[31] = 31 - i;
-		}
-		else if (a < 0) {
-			int i;
-			a ^= 0xffffffff;
-			for (i = 31; (a & (1 << i)) == 0 && i >= 0; i--);
-			psxRegs.CP2D.r[31] = 31 - i;
-		}
-		else {
-			psxRegs.CP2D.r[31] = 32;
-		}
-#endif
+		psxRegs.CP2D.r[31] = count_leading_sign_bits(value);
 		break;
 
 	default:
