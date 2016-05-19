@@ -820,8 +820,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			require_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (m_accurate_date && om_csel.wa /* FIXME Check the msb bit of the mask instead + the dfmt*/
-				&& (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
+		} else if (om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
@@ -841,7 +840,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				require_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
-			} else {
+			} else if (m_accurate_date) {
 				GL_PERF("Slow DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 
 				if (GLLoader::found_GL_ARB_shader_image_load_store) {
