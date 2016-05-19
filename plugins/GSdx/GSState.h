@@ -239,8 +239,10 @@ public:
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameRect(int i = -1);
 	GSVector2i GetDeviceSize(int i = -1);
+	GSVideoMode GetVideoMode();
 
 	bool IsEnabled(int i);
+	bool isinterlaced();
 
 	float GetTvRefreshRate();
 
