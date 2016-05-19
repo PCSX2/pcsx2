@@ -1765,7 +1765,7 @@ void GSTextureCache::Target::Update()
 			m_renderer->m_dev->ClearDepth(m_texture, 0);
 
 		return;
-	} else if (m_type == DepthStencil && r.x == 0 && r.y == 0 && r.width() <= 64 && r.height() <= 32) {
+	} else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
 		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
 		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
 		// page is invalidated. Technically a CRC hack will be better but I don't expect
