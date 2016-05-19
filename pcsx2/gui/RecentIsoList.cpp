@@ -55,7 +55,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	{
 		if( (m_Items[i].ItemPtr != NULL) && (m_Items[i].ItemPtr->GetId() == evt.GetId()) ) break;
 	}
-	
+
 	if( i >= m_Items.size() )
 	{
 		evt.Skip();
@@ -76,13 +76,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 
 	ScopedCoreThreadPopup stopped_core;
 
-#ifdef __linux__
-	// Likely not what was intended, but it compiles for the moment...
-	SwapOrReset_Iso( NULL, stopped_core, m_Items[i].Filename, GetMsg_IsoImageChanged());
-#else
-	// Getting a window from the menu?
 	SwapOrReset_Iso( m_Menu->GetWindow(), stopped_core, m_Items[i].Filename, GetMsg_IsoImageChanged());
-#endif
 
 	stopped_core.AllowResume();
 }
@@ -120,16 +114,7 @@ void RecentIsoManager::Repopulate()
 	if( cnt <= 0 ) return;
 
 	m_Separator = m_Menu->AppendSeparator();
-	
-	// From arcum's comment on r5141
-	// What was happening is that when all the radio button menu items in a group are deleted, 
-	// wxwidgets deletes the group, but when you start adding radio menu items again, 
-	// it trys to add them to a group that doesn't exist. Since the group doesn't exist, 
-	// it starts a new group, but it also spews a couple warnings about it in Linux.
-#ifdef __linux__
-	// FIXME is it still useful on v3
-	m_Menu->Remove( m_Menu->Append( -1, "dummy" ) );
-#endif
+
 	//Note: the internal recent iso list (m_Items) has the most recent item last (also at the INI file)
 	//  but the menu is composed in reverse order such that the most recent item appears at the top.
 	for( int i=cnt-1; i>=0; --i )
@@ -180,7 +165,7 @@ void RecentIsoManager::InsertIntoMenu( int id )
 {
 	if( m_Menu == NULL ) return;
 	RecentItem& curitem( m_Items[id] );
-	
+
 	int wxid=wxID_ANY;
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
@@ -241,7 +226,7 @@ void RecentIsoManager::AppStatusEvent_OnUiSettingsLoadSave( const AppSettingsEve
 			wxFileName item_filename = wxFileName(m_Items[i].Filename);
 			ini.Entry( pxsFmt( L"Filename%02d", i ),  item_filename, wxFileName(L""), IsPortable());
 		}
-		
+
 		ini.GetConfig().SetRecordDefaults( true );
 	}
 	else
