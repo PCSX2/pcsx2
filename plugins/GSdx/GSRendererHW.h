@@ -34,6 +34,8 @@ private:
 	int m_height;
 	bool m_reset;
 	int m_upscale_multiplier;
+	int m_custom_width;
+	int m_custom_height;
 
 	bool m_large_framebuffer;
 	bool m_userhacks_align_sprite_X;
@@ -161,7 +163,7 @@ public:
 
 	void SetGameCRC(uint32 crc, int options);
 	bool CanUpscale();
-	int GetUpscaleMultiplier();
+	float GetUpscaleMultiplier();
 	virtual GSVector2i GetInternalResolution();
 	void SetScaling();
 
