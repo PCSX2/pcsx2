@@ -467,6 +467,28 @@ GSVector2i GSState::GetDeviceSize(int i)
 	return DeviceSize;
 }
 
+GSVector2i GSState::GetOutputRect()
+{
+	GSVector2i Merged_Rectangle(GetDisplayRect().width(), GetDisplayRect().height());
+	GSVector4i Rectangle[2] = { GetDisplayRect(0) , GetDisplayRect(1) };
+	int width[2] = { Rectangle[0].width() , Rectangle[1].width() };
+	int height[2] = { Rectangle[0].height() , Rectangle[1].height() };
+	int x_offset[2] = { Rectangle[0].left , Rectangle[1].left };
+	int y_offset[2] = { Rectangle[0].top , Rectangle[1].top };
+
+	if (!(IsEnabled(0) && IsEnabled(1)))
+		return Merged_Rectangle;
+
+	if (width[0] == width[1] && width[0] == std::max(x_offset[0], x_offset[1]) - std::min(x_offset[0], x_offset[1]))
+		Merged_Rectangle.x <<= 1;
+
+	if (height[0] == height[1] && height[0] == std::max(y_offset[0], y_offset[1]) - std::min(y_offset[0], y_offset[1]))
+		Merged_Rectangle.y <<= 1;
+
+	return Merged_Rectangle;
+
+}
+
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
