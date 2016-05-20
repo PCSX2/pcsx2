@@ -201,6 +201,11 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
         endif()
     endif()
 
+    # Don't bother porting SuperVU
+    if (NOT Linux)
+        set(DISABLE_SVU TRUE)
+    endif()
+
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
