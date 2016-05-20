@@ -345,6 +345,14 @@ vec4 fetch_rgb()
     return c * 255.0f;
 }
 
+vec4 fetch_g4b4()
+{
+    vec4 rt = fetch_raw_color() * 255.0f;
+    uint g4 = (uint(rt.g) >> 4u) & 0x0Fu;
+    uint b4 = (uint(rt.b) << 4u) & 0xF0u;
+    return vec4(float(g4 | b4));
+}
+
 //////////////////////////////////////////////////////////////////////
 
 vec4 sample_color(vec2 st)
@@ -514,6 +522,8 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
+#elif PS_CHANNEL_FETCH == 6
+    vec4 T = fetch_g4b4();
 #elif PS_CHANNEL_FETCH == 7
     vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0

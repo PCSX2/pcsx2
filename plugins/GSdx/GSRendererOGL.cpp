@@ -718,8 +718,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
 			// Read either Red or Green. Let's go for Red ;)
 			// Pop
-			GL_INS("Red channel");
-			ps_sel.channel = 1;
+			if (m_context->FRAME.FBMSK == 0xF0FFFFFF) {
+				GL_INS("Terminator 3 G4B4 Channel");
+				ps_sel.channel = 6;
+				m_context->FRAME.FBMSK = 0x00FFFFFF;
+			} else {
+				GL_INS("Red channel");
+				ps_sel.channel = 1;
+			}
 		} else {
 			GL_INS("channel not supported");
 			m_channel_shuffle = false;
