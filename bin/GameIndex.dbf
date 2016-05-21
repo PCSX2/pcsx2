@@ -17539,6 +17539,8 @@ Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
 Region = PAL-M7
 Compat = 5
+vuClampMode = 0
+eeRoundMode = 1
 ---------------------------------------------
 Serial = SLES-55582
 Name   = FIFA 10
@@ -42375,6 +42377,8 @@ Serial = SLUS-21902
 Name   = Bakugan: Battle Brawlers
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0
+eeRoundMode = 1
 ---------------------------------------------
 Serial = SLUS-21904
 Name   = Teenage Mutant Ninja Turtles: Smash-Up
