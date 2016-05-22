@@ -270,7 +270,7 @@ static inline u32 branchAddr(const mV)
 
 static void __fc mVUwaitMTVU() {
 	if (IsDevBuild) DevCon.WriteLn("microVU0: Waiting on VU1 thread to access VU1 regs!");
-	if (THREAD_VU1) vu1Thread.WaitVU();
+	vu1Thread.WaitVU();
 }
 
 // Transforms the Address in gprReg to valid VU0/VU1 Address
@@ -286,7 +286,7 @@ __fi void mVUaddrFix(mV, const x32& gprReg)
 			xAND(gprReg, 0xff); // if !(addr & 0x4000), wrap around
 			xForwardJump32 jmpB;
 		jmpA.SetTarget();
-			if (THREAD_VU1 || (IsDevBuild && !isCOP2)) {
+			if (THREAD_VU1) {
 				mVUbackupRegs(mVU, true);
 				xPUSH(gprT1);
 				xPUSH(gprT2);
@@ -294,10 +294,10 @@ __fi void mVUaddrFix(mV, const x32& gprReg)
 				// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
 #ifdef __GNUC__
 				xSUB(esp, 4);
-#endif
+#endif{
 				if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
-					xMOV (gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
-					xMOV (gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
+					xMOV(gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
+					xMOV(gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
 					xCALL(mVUwarningRegAccess);
 				}
 				xCALL(mVUwaitMTVU);
