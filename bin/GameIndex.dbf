@@ -73,6 +73,7 @@
 -- Speed Hacks (SpeedHackName = <value>)
 ---------------------------------------------
 -- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
+-- MTVUSpeedHack = 1 or 0 // Causes "black screen / crashes" on few games when enabled.
 
 ---------------------------------------------
 -- Memory Card Filter Override (MemCardFilter = s)
@@ -4170,6 +4171,7 @@ Region = NTSC-J
 Serial = SCPS-55010
 Name   = Grandia Extreme
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SCPS-55011
 Name   = Dual Hearts
@@ -4182,6 +4184,7 @@ Region = NTSC-J
 Serial = SCPS-55013
 Name   = Soul Reaver 2 - Legacy of Kain
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SCPS-55014
 Name   = Armored Core 3
@@ -4385,6 +4388,7 @@ Name   = Tony Hawk's American Wasteland Collector's Edition
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -6241,6 +6245,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25055
 Name   = Def Jam - Fight for N.Y.
 Region = NTSC-Unk
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLAJ-25056
 Name   = Shining Tears
@@ -6389,6 +6394,7 @@ Region = PAL-Unk
 Serial = SLED-50884
 Name   = TimeSplitters 2 [Demo]
 Region = PAL-E
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLED-51211
 Name   = Burnout 2 - Point of Impact [Demo]
@@ -6470,6 +6476,7 @@ Region = PAL-E
 Serial = SLED-53953
 Name   = FIFA Street 2 [Demo]
 Region = PAL-E
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLED-54035
 Name   = Play the Best Demos from Atari [Demo]
@@ -6986,6 +6993,7 @@ Serial = SLES-50196
 Name   = Soul Reaver 2 - Legacy of Kain
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-50201
 Name   = Evil Twin - Cyprien's Chronicles
@@ -7696,6 +7704,7 @@ Region = PAL-S
 Serial = SLES-50539
 Name   = James Bond 007 - Agent Under Fire
 Region = PAL-M6
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-50540
 Name   = Simpsons Road Rage
@@ -7964,6 +7973,7 @@ Compat = 5
 Serial = SLES-50683
 Name   = Sled Storm
 Region = PAL-M3
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-50684
 Name   = Medal of Honor - Frontline
@@ -8438,6 +8448,7 @@ Serial = SLES-50877
 Name   = TimeSplitters 2
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-50879
 Name   = Paris-Dakar 2
@@ -8976,16 +8987,19 @@ Name   = Tony Hawk's Pro Skater 4
 Region = PAL-E
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51131
 Name   = Tony Hawk's Pro Skater 4
 Region = PAL-F
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51132
 Name   = Tony Hawk's Pro Skater 4
 Region = PAL-G
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51133
 Name   = Red Faction 2
@@ -9085,6 +9099,7 @@ Serial = SLES-51189
 Name   = MTV's Celebrity Deathmatch
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51191
 Name   = Auto Modellista
@@ -9265,11 +9280,13 @@ Compat = 3
 Serial = SLES-51258
 Name   = James Bond 007 - Nightfire
 Region = PAL-M5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51260
 Name   = James Bond 007 - Nightfire
 Region = PAL-G-S
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51265
 Name   = Dynasty Warriors Tactics
@@ -9505,6 +9522,7 @@ Serial = SLES-51372
 Name   = Wallace & Gromit in Project Zoo
 Region = PAL-E
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51374
 Name   = RoboCop
@@ -9770,6 +9788,7 @@ Compat = 5
 Serial = SLES-51511
 Name   = Crash Nitro Kart
 Region = PAL-M6
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51523
 Name   = Conflict - Desert Storm II
@@ -10188,6 +10207,7 @@ Serial = SLES-51752
 Name   = Tony Hawks Underground
 Region = PAL-Unk
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51753
 Name   = True Crime - Streets of L.A.
@@ -10405,6 +10425,7 @@ Name   = Tony Hawk's Underground
 Region = PAL-E
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51850
 Name   = Basketball Xciting
@@ -10414,22 +10435,26 @@ Serial = SLES-51851
 Name   = Tony Hawk's Underground
 Region = PAL-F
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51852
 Name   = Tony Hawk's Underground
 Region = PAL-G
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51853
 Name   = Tony Hawk's Underground
 Region = PAL-F
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51854
 Name   = Tony Hawk Underground
 Region = PAL-S
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51855
 Name   = Tank Elite
@@ -10497,18 +10522,22 @@ Serial = SLES-51873
 Name   = Medal of Honor - Rising Sun
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51874
 Name   = Medal of Honor - Rising Sun
 Region = PAL-F
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51875
 Name   = Medal of Honor - Rising Sun
 Region = PAL-G
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51876
 Name   = Medal of Honor - Rising Sun
 Region = PAL-F
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51877
 Name   = Bloody Roar 4
@@ -10779,6 +10808,7 @@ Serial = SLES-51989
 Name   = Wallace & Gromit in Project Zoo
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-51991
 Name   = Dance UK
@@ -10865,6 +10895,7 @@ Serial = SLES-52026
 Name   = Wallace & Gromit in Project Zoo
 Region = PAL-G
 Compat = 5
+MTVUSpeedHack = 0
 [patches = C502AD6E]
 	
 	comment=patches by Nachbrenner
@@ -10962,6 +10993,7 @@ Serial = SLES-52095
 Name   = Gradius V
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-52096
 Name   = Firefighter F.D. 18
@@ -11726,6 +11758,7 @@ Serial = SLES-52507
 Name   = Def Jam - Fight for New York
 Region = PAL-E-F
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-52508
 Name   = Obscure
@@ -11945,6 +11978,7 @@ Region = PAL-M5
 Serial = SLES-52576
 Name   = Yu-Gi-Oh! - Capsule Monster Colisee
 Region = PAL-M5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-52579
 Name   = Legends of Wrestling - Showdown
@@ -12975,6 +13009,7 @@ Region = PAL-E
 Serial = SLES-52993
 Name   = TimeSplitters - Future Perfect
 Region = PAL-M5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-52998
 Name   = Sonic Mega Collection Plus
@@ -13803,10 +13838,12 @@ Region = PAL-DU
 Serial = SLES-53374
 Name   = X-Men Legends II - Rise of Apocalypse
 Region = PAL-M3
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53377
 Name   = X-Men Legends II - Rise of Apocalypse
 Region = PAL-I-S
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53380
 Name   = Metal Slug 4
@@ -14030,6 +14067,7 @@ Serial = SLES-53481
 Name   = 10,000 Bullets
 Region = PAL-M5
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53483
 Name   = Magna Carta: Tears of Blood
@@ -14177,11 +14215,13 @@ Name   = Tony Hawk's American Wasteland
 Region = PAL-E
 Compat = 5
 vuRoundMode = 0 //Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53535
 Name   = Tony Hawk's American Wasteland
 Region = PAL-M4
 vuRoundMode = 0 //Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53536
 Name   = London Racer - Police Madness
@@ -14759,10 +14799,12 @@ Serial = SLES-53796
 Name   = FIFA Street 2
 Region = PAL-E
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53797
 Name   = FIFA Street 2
 Region = PAL-M6
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53799
 Name   = Matrix, The - Path of Neo
@@ -15137,6 +15179,7 @@ Region = PAL-S
 Serial = SLES-53982
 Name   = Fight Night Round 3
 Region = PAL-E-F
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-53984
 Name   = Ice Age 2 - The Meltdown
@@ -15392,6 +15435,7 @@ Region = PAL-M6
 Serial = SLES-54123
 Name   = Marvel - Ultimate Alliance
 Region = PAL-E-I
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-54126
 Name   = Family Guy - The Video Game
@@ -16884,11 +16928,13 @@ Name   = Tony Hawks - Proving Ground
 Region = PAL-E
 Compat = 5
 vuRoundMode = 0 //Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-54964
 Name   = Tony Hawk's Proving Ground
 Region = PAL-M4
 vuRoundMode = 0 //Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-54975
 Name   = George Of The Jungle
@@ -17139,6 +17185,7 @@ Region = PAL-E
 Serial = SLES-55216
 Name   = Baroque
 Region = PAL-E
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-55220
 Name   = Summer Athletics
@@ -17545,19 +17592,23 @@ eeRoundMode = 1
 Serial = SLES-55582
 Name   = FIFA 10
 Region = PAL-F-G
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-55583
 Name   = FIFA 10
 Region = PAL-M4	// Eng & Scandinavia
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-55584
 Name   = FIFA 10
 Region = PAL-M5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-55585
 Name   = FIFA 10
 Region = PAL-E
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLES-55588
 Name   = Pro Evolution Soccer 2010
@@ -17875,6 +17926,7 @@ Serial = SLKA-15032
 Name   = Gradius V
 Region = NTSC-K
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLKA-25012
 Name   = Devil May Cry 2 Dante
@@ -18660,6 +18712,7 @@ Compat = 5
 Serial = SLPM-55226
 Name   = FIFA 10: World Class Soccer
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-55244
 Name   = Need for Speed - Undercover [EA:SY! 1980]
@@ -18680,6 +18733,7 @@ Region = NTSC-J
 Serial = SLPM-55271
 Name   = FIFA 10: World Class Soccer (EA:SY! 1980)
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-55276
 Name   = World Soccer Winning Eleven 2011
@@ -20045,6 +20099,7 @@ Serial = SLPM-62462
 Name   = Gradius V
 Region = NTSC-J
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-62463
 Name   = Loop Sequencer - Music Generator
@@ -20647,6 +20702,7 @@ Region = NTSC-J
 Serial = SLPM-62621
 Name   = Gradius V [Konami The Best]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-62622
 Name   = Slotter Up Core 7
@@ -21479,6 +21535,7 @@ Compat = 5
 Serial = SLPM-65082
 Name   = Grandia Extreme [Limited Edition]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65083
 Name   = Houshin Engi 2
@@ -21503,6 +21560,7 @@ MemCardFilter = SLPS-25071/SLPS-25072/SLPM-65086/SLPM-65087
 Serial = SLPM-65089
 Name   = Grandia Extreme
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65090
 Name   = Spy Hunter
@@ -23018,6 +23076,7 @@ Region = NTSC-J
 Serial = SLPM-65538
 Name   = James Bond 007 - Nightfire [EA Best Hits]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65539
 Name   = V-Rally 3
@@ -23303,6 +23362,7 @@ Region = NTSC-J
 Serial = SLPM-65613
 Name   = Yu-Gi-Oh! Capsule Monster Coliseum
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65614
 Name   = Need for Speed Underground [EA Best Hits]
@@ -23823,6 +23883,7 @@ Region = NTSC-J
 Serial = SLPM-65757
 Name   = Medal of Honor - Rising Sun [EA Best Hits]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65758
 Name   = Sonic Mega Collection Plus
@@ -24387,6 +24448,7 @@ Region = NTSC-J
 Serial = SLPM-65907
 Name   = Def Jam Fight for NY
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-65908
 Name   = Shining Force Neo
@@ -24893,6 +24955,7 @@ Region = NTSC-J
 Serial = SLPM-66042
 Name   = Brothers in Arms: Road to Hill 30
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-66043
 Name   = Racing Game - Chuui!
@@ -26299,6 +26362,7 @@ Region = NTSC-J
 Serial = SLPM-66443
 Name   = FIFA Street 2
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-66444
 Name   = Spartan - Total Warrior
@@ -26383,6 +26447,7 @@ Region = NTSC-J
 Serial = SLPM-66463
 Name   = Def Jam - Fight for NY [EA Best Hits]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-66464
 Name   = MVP Baseball 2005 [EA Best Hits]
@@ -26784,6 +26849,7 @@ Region = NTSC-J
 Serial = SLPM-66568
 Name   = Brothers in Arms: Road to Hill 30 [Ubisoft Best]
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-66569
 Name   = Secret of Evangelion
@@ -27450,6 +27516,7 @@ Compat = 5
 Serial = SLPM-66747
 Name   = Baroque
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-66748
 Name   = Mana-Khemia - Gakuen no Renkinjutsu Shitachi
@@ -28360,6 +28427,7 @@ Compat = 5
 Serial = SLPM-67004
 Name   = Medal of Honor - Rising Sun
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPM-67005
 Name   = Lord of the Rings, The - The Return of the King
@@ -30409,6 +30477,7 @@ Region = NTSC-J
 Serial = SLPS-25085
 Name   = Soul Reaver 2 - Legacy of Kain
 Region = NTSC-J
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLPS-25088
 Name   = Final Fantasy X International
@@ -34413,6 +34482,7 @@ Serial = SLUS-20165
 Name   = Legacy of Kain - Soul Reaver 2
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20166
 Name   = ESPN - National Hockey Night
@@ -34861,6 +34931,7 @@ Serial = SLUS-20265
 Name   = James Bond 007 - Agent Under Fire
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20266
 Name   = NASCAR - Thunder 2002
@@ -35080,6 +35151,7 @@ Serial = SLUS-20314
 Name   = TimeSplitters 2
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20315
 Name   = Spyro the Dragon - Enter the Dragonfly
@@ -35306,6 +35378,7 @@ Serial = SLUS-20363
 Name   = Sled Storm
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20364
 Name   = Tiger Woods PGA Tour 2002
@@ -35553,6 +35626,7 @@ Serial = SLUS-20417
 Name   = Grandia Xtreme
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20418
 Name   = Wakeboarding Unleashed featuring Shaun Murray
@@ -35948,6 +36022,7 @@ Name   = Tony Hawk's Pro Skater 4
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20505
 Name   = Mace Griffin - Bounty Hunter
@@ -36288,6 +36363,7 @@ Serial = SLUS-20579
 Name   = James Bond 007 - Nightfire
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20580
 Name   = FIFA Soccer 2003
@@ -36386,6 +36462,7 @@ Serial = SLUS-20604
 Name   = MTV's Celebrity Deathmatch
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20605
 Name   = Big Mutha Truckers
@@ -36589,6 +36666,7 @@ Serial = SLUS-20647
 Name   = Wallace & Gromit in Project Zoo
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20648
 Name   = NBA Jam 2004
@@ -36837,6 +36915,7 @@ Serial = SLUS-20704
 Name   = Backyard Basketball
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20705
 Name   = I-Ninja
@@ -36873,6 +36952,7 @@ Serial = SLUS-20712
 Name   = Gradius V
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20714
 Name   = Red Ninja - End of Honor
@@ -36964,6 +37044,7 @@ Name   = Tony Hawk's Underground
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0			//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20732
 Name   = Drakengard
@@ -37064,6 +37145,7 @@ Serial = SLUS-20753
 Name   = Medal of Honor - Rising Sun
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20754
 Name   = NASCAR Thunder 2004
@@ -37566,6 +37648,7 @@ Compat = 5
 Serial = SLUS-20865
 Name   = Backyard Baseball
 Region = NTSC-U
+MTVUSpeedHack = 0
 // reads Backyard Basketball for bonus unlockable
 MemCardFilter = SLUS-20865/SLUS-20704
 ---------------------------------------------
@@ -37958,6 +38041,7 @@ Serial = SLUS-20940
 Name   = Yu-Gi-Oh! Capsule Monster Coliseum
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-20941
 Name   = Incredible Hulk, The - Ultimate Destruction
@@ -38287,6 +38371,7 @@ Serial = SLUS-21004
 Name   = Def Jam - Fight for NY
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21005
 Name   = Kingdom Hearts II
@@ -38932,6 +39017,7 @@ Serial = SLUS-21138
 Name   = X-Men Legends II - Rise of Apocalypse
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21139
 Name   = Gun
@@ -38978,6 +39064,7 @@ Serial = SLUS-21148
 Name   = TimeSplitters - Future Perfect
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21149
 Name   = Yourself Fitness
@@ -39052,6 +39139,7 @@ Serial = SLUS-21163
 Name   = Brothers in Arms: Road to Hill 30
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21164
 Name   = Namco Museum - 50th Anniversary
@@ -39273,6 +39361,7 @@ Name   = Tony Hawk's American Wasteland
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0 //Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21209
 Name   = Urban Reign
@@ -39721,6 +39810,7 @@ Name   = Tony Hawk's American Wasteland [Collector's Edition]
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21296
 Name   = Dance Factory
@@ -40089,6 +40179,7 @@ Serial = SLUS-21369
 Name   = FIFA Street 2
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21370
 Name   = MegaMan X Collection
@@ -40113,6 +40204,7 @@ Serial = SLUS-21374
 Name   = Marvel - Ultimate Alliance
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21375
 Name   = Torino 2006 - The Official Game of the XX Olympic Winter Games
@@ -40156,6 +40248,7 @@ Serial = SLUS-21383
 Name   = Fight Night - Round 3
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21384
 Name   = Cabela's Alaskan Adventures
@@ -40303,6 +40396,7 @@ Serial = SLUS-21413
 Name   = Thrillville
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21414
 Name   = Delta Force - Team Sabre
@@ -41125,6 +41219,7 @@ Name   = Tony Hawk's Proving Ground
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21618
 Name   = Plan, The
@@ -41567,6 +41662,7 @@ Serial = SLUS-21714
 Name   = Baroque
 Region = NTSC-U
 Compat = 5
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21715
 Name   = Cabela's Moster Bass
@@ -42876,6 +42972,7 @@ Region = NTSC-U
 Serial = SLUS-29053
 Name   = NBA Street Vol.2 [Demo]
 Region = NTSC-U
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-29054
 Name   = Splashdown - Rides Gone Wild [Demo]
@@ -42924,6 +43021,7 @@ Region = NTSC-U
 Serial = SLUS-29068
 Name   = Crash Nitro Kart [Demo]
 Region = NTSC-U
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-29069
 Name   = Prince of Persia - The Sands of Time [Demo]
@@ -43030,6 +43128,7 @@ Region = NTSC-U
 Serial = SLUS-29108
 Name   = Def Jam - Fight For NY [Demo]
 Region = NTSC-U
+MTVUSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-29110
 Name   = Monster Hunter [Public Beta Vol.1 - Ver.1.01]
