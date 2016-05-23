@@ -113,9 +113,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 
 	if(m_current)
 	{
-		static int s_shader[5] = {ShaderConvert_COPY, ShaderConvert_SCANLINE,
+		static int s_shader[7] = {ShaderConvert_COPY, ShaderConvert_SCANLINE,
 			ShaderConvert_DIAGONAL_FILTER, ShaderConvert_TRIANGULAR_FILTER,
-			ShaderConvert_COMPLEX_FILTER}; // FIXME
+			ShaderConvert_COMPLEX_FILTER, ShaderConvert_BICUBIC, ShaderConvert_LANCZOS}; // FIXME
 
 		Present(m_current, m_backbuffer, GSVector4(r), s_shader[shader]);
 	}

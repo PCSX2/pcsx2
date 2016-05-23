@@ -93,7 +93,7 @@ public: // TODO
 	{
 		CComPtr<ID3D11InputLayout> il;
 		CComPtr<ID3D11VertexShader> vs;
-		CComPtr<ID3D11PixelShader> ps[10];
+		CComPtr<ID3D11PixelShader> ps[12];
 		CComPtr<ID3D11SamplerState> ln;
 		CComPtr<ID3D11SamplerState> pt;
 		CComPtr<ID3D11DepthStencilState> dss;
