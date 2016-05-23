@@ -136,6 +136,11 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
+#ifdef __linux__
+		case IDC_LARGE_FB:
+			return "Allocate a large framebuffer to be compliant with GS memory (help FMV flickering).\n"
+				"It increases GPU/memory requirements.";
+#endif
 		default:
 			if (updateText)
 				*updateText = false;

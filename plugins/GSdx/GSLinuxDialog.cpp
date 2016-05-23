@@ -235,6 +235,7 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
+	GtkWidget* large_fb_check   = CreateCheckBox("Large Framebuffer", "large_framebuffer", true);
 
 	GtkWidget* acc_bld_label     = left_label("Blending Unit Accuracy:");
 	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit", 1);
@@ -242,6 +243,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
+	AddTooltip(large_fb_check, IDC_LARGE_FB);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
@@ -249,6 +251,7 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table , paltex_check  , acc_date_check);
+	InsertWidgetInTable(hw_table , large_fb_check);
 	InsertWidgetInTable(hw_table , fsaa_label    , fsaa_combo_box);
 	InsertWidgetInTable(hw_table , filter_label  , filter_combo_box);
 	InsertWidgetInTable(hw_table , af_label      , af_combo_box);

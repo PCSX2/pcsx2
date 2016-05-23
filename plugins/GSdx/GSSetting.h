@@ -74,5 +74,6 @@ enum {
 	IDC_MIPMAP,
 	IDC_PRELOAD_GS,
 	IDC_FAST_TC_INV,
+	IDC_LARGE_FB,
 };
 #endif
