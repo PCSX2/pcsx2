@@ -52,6 +52,24 @@ void GSRendererHW::SetScaling()
 {
 	GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
 
+	// Details of (potential) perf impact of a big framebuffer
+	// 1/ extra memory
+	// 2/ texture cache framebuffer rescaling/copy
+	// 3/ upload of framebuffer (preload hack)
+	// 4/ framebuffer clear (color/depth/stencil)
+	// 5/ read back of the frambuffer
+	// 6/ MSAA
+	//
+	// With the solution
+	// 1/ Nothing to do.Except the texture cache bug (channel shuffle effect)
+	//    most of the market is 1GB of VRAM (and soon 2GB)
+	// 2/ limit rescaling/copy to the valid data of the framebuffer
+	// 3/ ??? no solution so far
+	// 4a/ stencil can be limited to valid data.
+	// 4b/ is it useful to clear color? depth? (in any case, it ought to be few operation)
+	// 5/ limit the read to the valid data
+	// 6/ not support on openGL
+
 	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
 	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
 	// In such cases, let's just use the CRTC width.
@@ -848,6 +866,7 @@ void GSRendererHW::OI_GsMemClear()
 
 		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
 		// linear but the value will be done for all pixels of a block.
+		// FIXME: maybe we could limit the write to the top and bottom row page.
 		if (format == 0) {
 			// Based on WritePixel32
 			for(int y = r.top; y < r.bottom; y++)

@@ -674,6 +674,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// vertex list (it will interact with PrimitiveOverlap and accurate
 	// blending)
 	//
+	//
+	// Uncomment to disable HLE emulation (allow to trace the draw call)
+	// m_channel_shuffle = false;
+
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle) {
 		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy) {
@@ -861,7 +865,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 					DATE = false;
 				}
 			}
+		} else if (!om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
+			// TODO: is it legal ? Likely but it need to be tested carefully
+			// DATE_GL45 = true;
+			// m_unsafe_fbmask = true; << replace it with a cheap barrier
+
 		}
+
 		// Will save my life !
 		ASSERT(!(DATE_GL45 && DATE_one));
 		ASSERT(!(DATE_GL42 && DATE_one));
