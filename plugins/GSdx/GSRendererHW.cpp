@@ -32,6 +32,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
+	m_large_framebuffer = !!theApp.GetConfig("large_framebuffer", 1);
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
@@ -88,7 +89,10 @@ void GSRendererHW::SetScaling()
 	//
 	// Avoid to alternate between 640x1280 and 1280x1024 on snow blind engine game
 	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
-	int fb_height = 1280;
+	//
+	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
+	int fb_height = m_large_framebuffer ? 1280 :
+		(fb_width < 1024) ? max(512, crtc_size.y) : 1024;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
