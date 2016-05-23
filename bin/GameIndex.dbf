@@ -39721,6 +39721,8 @@ Name   = Tony Hawk's American Wasteland [Collector's Edition]
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+// Game saves use the normal edition serial
+MemCardFilter = SLUS-21208
 ---------------------------------------------
 Serial = SLUS-21296
 Name   = Dance Factory
