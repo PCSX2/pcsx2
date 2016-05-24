@@ -56,6 +56,11 @@ public:
 	void SetConfig(const char* entry, const char* value);
 	int GetConfig(const char* entry, int value);
 	void SetConfig(const char* entry, int value);
+	// Avoid issue with overloading
+	int    GetConfigI(const char* entry);
+	bool   GetConfigB(const char* entry);
+	string GetConfigS(const char* entry);
+
 
 	void SetConfigDir(const char* dir);
 

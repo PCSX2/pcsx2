@@ -402,6 +402,11 @@ void GSdxApp::SetConfigDir(const char* dir)
 
 string GSdxApp::GetConfig(const char* entry, const char* value)
 {
+	return GetConfigS(entry);
+}
+
+string GSdxApp::GetConfigS(const char* entry)
+{
 	char buff[4096] = {0};
 	auto def = m_default_configuration.find(entry);
 
@@ -422,6 +427,11 @@ void GSdxApp::SetConfig(const char* entry, const char* value)
 
 int GSdxApp::GetConfig(const char* entry, int value)
 {
+	return GetConfigI(entry);
+}
+
+int GSdxApp::GetConfigI(const char* entry)
+{
 	auto def = m_default_configuration.find(entry);
 
 	if (def != m_default_configuration.end()) {
@@ -430,6 +440,11 @@ int GSdxApp::GetConfig(const char* entry, int value)
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
 		return GetPrivateProfileInt(m_section.c_str(), entry, 0, m_ini.c_str());
 	}
+}
+
+bool GSdxApp::GetConfigB(const char* entry)
+{
+	return !!GetConfigI(entry);
 }
 
 void GSdxApp::SetConfig(const char* entry, int value)
