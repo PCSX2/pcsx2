@@ -27,6 +27,7 @@ class GSdxApp
 {
 	std::string m_ini;
 	std::string m_section;
+	std::map< std::string, std::string > m_default_configuration;
 #if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
 #endif
