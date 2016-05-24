@@ -164,8 +164,8 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 		throw GSDXRecoverableError();
 
 	if(w <= 0 || h <= 0) {
-		w = theApp.GetConfig("ModeWidth", 640);
-		h = theApp.GetConfig("ModeHeight", 480);
+		w = theApp.GetConfigI("ModeWidth");
+		h = theApp.GetConfigI("ModeHeight");
 	}
 
 	m_managed = true;

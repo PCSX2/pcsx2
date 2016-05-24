@@ -1272,9 +1272,6 @@ struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
 
-// default gs config settings
-#define DEFAULT_EXTRA_RENDERING_THREADS 2
-
 enum class GSVideoMode : uint8
 {
 	Unknown,

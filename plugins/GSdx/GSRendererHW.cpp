@@ -31,20 +31,26 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_channel_shuffle(false)
 	, m_double_downscale(false)
 {
-	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_large_framebuffer = !!theApp.GetConfig("large_framebuffer", 1);
-	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
-	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
-	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
+	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
+	m_large_framebuffer  = theApp.GetConfigI("large_framebuffer");
+	if (theApp.GetConfigB("UserHacks")) {
+		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
+		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
+		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
+	} else {
+		m_userhacks_align_sprite_X       = false;
+		m_userhacks_round_sprite_offset  = 0;
+		m_userhacks_disable_gs_mem_clear = false;
+	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
-		m_width = theApp.GetConfig("resx", m_width);
-		m_height = theApp.GetConfig("resy", m_height);
+		m_width  = theApp.GetConfigI("resx");
+		m_height = theApp.GetConfigI("resy");
 	}
 
 	if (m_upscale_multiplier == 1) { // hacks are only needed for upscaling issues.
 		m_userhacks_round_sprite_offset = 0;
-		m_userhacks_align_sprite_X = 0;
+		m_userhacks_align_sprite_X      = 0;
 	}
 
 }
@@ -749,8 +755,8 @@ GSRendererHW::Hacks::Hacks()
 	, m_oo(NULL)
 	, m_cu(NULL)
 {
-	bool is_opengl = (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default))) == GSRendererType::OGL_HW);
-	bool can_handle_depth = (!theApp.GetConfig("UserHacks", 0) || !theApp.GetConfig("UserHacks_DisableDepthSupport", 0)) && is_opengl;
+	bool is_opengl = (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW);
+	bool can_handle_depth = (!theApp.GetConfigB("UserHacks") || !theApp.GetConfigB("UserHacks_DisableDepthSupport")) && is_opengl;
 
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
@@ -796,7 +802,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
 
-	bool hack = theApp.GetConfig("UserHacks_ColorDepthClearOverlap", 0) && theApp.GetConfig("UserHacks", 0);
+	bool hack = theApp.GetConfigB("UserHacks_ColorDepthClearOverlap") && theApp.GetConfigB("UserHacks");
 	if (hack && !m_oi) {
 		// FIXME: Enable this code in the future. I think it could replace
 		// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with

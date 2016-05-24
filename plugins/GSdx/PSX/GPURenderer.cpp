@@ -32,14 +32,14 @@ map<HWND, GPURenderer*> GPURenderer::m_wnd2gpu;
 GPURenderer::GPURenderer(GSDevice* dev)
 	: m_dev(dev)
 {
-	m_filter = theApp.GetConfig("filter", 0);
-	m_dither = theApp.GetConfig("dithering", 1);
-	m_aspectratio = theApp.GetConfig("AspectRatio", 1);
-	m_vsync = !!theApp.GetConfig("vsync", 0);
-	m_fxaa = !!theApp.GetConfig("fxaa", 0);
-	m_shaderfx = !!theApp.GetConfig("shaderfx", 0);
-	m_scale = m_mem.GetScale();
-	m_shadeboost = !!theApp.GetConfig("ShadeBoost", 0);
+	m_filter      = theApp.GetConfigI("filter");
+	m_dither      = theApp.GetConfigI("dithering");
+	m_aspectratio = theApp.GetConfigI("AspectRatio");
+	m_vsync       = theApp.GetConfigB("vsync");
+	m_fxaa        = theApp.GetConfigB("fxaa");
+	m_shaderfx    = theApp.GetConfigB("shaderfx");
+	m_scale       = m_mem.GetScale();
+	m_shadeboost  = theApp.GetConfigB("ShadeBoost");
 
 	#ifdef _WIN32
 

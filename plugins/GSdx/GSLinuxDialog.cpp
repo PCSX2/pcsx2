@@ -59,10 +59,10 @@ void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 	}
 }
 
-GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name, int32_t opt_default = 0)
+GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name)
 {
 	GtkWidget* combo_box = gtk_combo_box_text_new();
-	int32_t opt_value    = theApp.GetConfig(opt_name, opt_default);
+	int32_t opt_value    = theApp.GetConfigI(opt_name);
 	int opt_position     = 0;
 
 	for(size_t i = 0; i < s.size(); i++)
@@ -102,10 +102,10 @@ void CB_EntryActived(GtkEntry *entry, gpointer user_data)
 	theApp.SetConfig((char*)user_data, hex_value);
 }
 
-GtkWidget* CreateTextBox(const char* opt_name, int opt_default = 0) {
+GtkWidget* CreateTextBox(const char* opt_name) {
 	GtkWidget* entry = gtk_entry_new();
 
-	int hex_value = theApp.GetConfig(opt_name, opt_default);
+	int hex_value = theApp.GetConfigI(opt_name);
 
 	gchar* data=(gchar *)g_malloc(sizeof(gchar)*40);
 	sprintf(data,"%X", hex_value);
@@ -124,11 +124,11 @@ void CB_ToggleCheckBox(GtkToggleButton *togglebutton, gpointer user_data)
 	theApp.SetConfig((char*)user_data, (int)gtk_toggle_button_get_active(togglebutton));
 }
 
-GtkWidget* CreateCheckBox(const char* label, const char* opt_name, bool opt_default = false)
+GtkWidget* CreateCheckBox(const char* label, const char* opt_name)
 {
 	GtkWidget* check = gtk_check_button_new_with_label(label);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), theApp.GetConfig(opt_name, opt_default));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), theApp.GetConfigB(opt_name));
 
 	g_signal_connect(check, "toggled", G_CALLBACK(CB_ToggleCheckBox), const_cast<char*>(opt_name));
 
@@ -140,11 +140,11 @@ void CB_SpinButton(GtkSpinButton *spin, gpointer user_data)
 	theApp.SetConfig((char*)user_data, (int)gtk_spin_button_get_value(spin));
 }
 
-GtkWidget* CreateSpinButton(double min, double max, const char* opt_name, int opt_default = 0)
+GtkWidget* CreateSpinButton(double min, double max, const char* opt_name)
 {
 	GtkWidget* spin = gtk_spin_button_new_with_range(min, max, 1);
 
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), theApp.GetConfig(opt_name, opt_default));
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), theApp.GetConfigI(opt_name));
 
 	g_signal_connect(spin, "value-changed", G_CALLBACK(CB_SpinButton), const_cast<char*>(opt_name));
 
@@ -156,7 +156,7 @@ void CB_RangeChanged(GtkRange* range, gpointer user_data)
 	theApp.SetConfig((char*)user_data, (int)gtk_range_get_value(range));
 }
 
-GtkWidget* CreateScale(const char* opt_name, int opt_default = 0)
+GtkWidget* CreateScale(const char* opt_name)
 {
 #if GTK_MAJOR_VERSION < 3
 	GtkWidget* scale = gtk_hscale_new_with_range(0, 200, 10);
@@ -165,7 +165,7 @@ GtkWidget* CreateScale(const char* opt_name, int opt_default = 0)
 #endif
 
 	gtk_scale_set_value_pos(GTK_SCALE(scale), GTK_POS_RIGHT);
-	gtk_range_set_value(GTK_RANGE(scale), theApp.GetConfig(opt_name, opt_default));
+	gtk_range_set_value(GTK_RANGE(scale), theApp.GetConfigI(opt_name));
 
 	g_signal_connect(scale, "value-changed", G_CALLBACK(CB_RangeChanged), const_cast<char*>(opt_name));
 
@@ -177,11 +177,11 @@ void CB_PickFile(GtkFileChooserButton *chooser, gpointer user_data)
 	theApp.SetConfig((char*)user_data, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 }
 
-GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, const char* opt_name, const char* opt_default)
+GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, const char* opt_name)
 {
 	GtkWidget* chooser = gtk_file_chooser_button_new(label, action);
 
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(chooser), theApp.GetConfig(opt_name, opt_default).c_str());
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(chooser), theApp.GetConfigS(opt_name).c_str());
 
 	g_signal_connect(chooser, "file-set", G_CALLBACK(CB_PickFile), const_cast<char*>(opt_name));
 
@@ -222,23 +222,23 @@ GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int 
 void populate_hw_table(GtkWidget* hw_table)
 {
 	GtkWidget* filter_label     = left_label("Texture Filtering:");
-	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter", 2);
+	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter");
 
 	GtkWidget* fsaa_label     = left_label("Internal Resolution:");
-	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier", 1);
+	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier");
 
 	GtkWidget* af_label     = left_label("Anisotropic Filtering:");
-	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy", 0);
+	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy");
 
 	GtkWidget* crc_label     = left_label("Automatic CRC level:");
-	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level", 3);
+	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level");
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date", false);
-	GtkWidget* large_fb_check   = CreateCheckBox("Large Framebuffer", "large_framebuffer", true);
+	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date");
+	GtkWidget* large_fb_check   = CreateCheckBox("Large Framebuffer", "large_framebuffer");
 
 	GtkWidget* acc_bld_label     = left_label("Blending Unit Accuracy:");
-	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit", 1);
+	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit");
 
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
@@ -262,9 +262,9 @@ void populate_hw_table(GtkWidget* hw_table)
 void populate_gl_table(GtkWidget* gl_table)
 {
 	GtkWidget* gl_gs_label = left_label("Geometry Shader:");
-	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader", -1);
+	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader");
 	GtkWidget* gl_ils_label = left_label("Image Load Store:");
-	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store", -1);
+	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store");
 
 	s_table_line = 0;
 	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
@@ -274,10 +274,10 @@ void populate_gl_table(GtkWidget* gl_table)
 void populate_sw_table(GtkWidget* sw_table)
 {
 	GtkWidget* threads_label = left_label("Extra rendering threads:");
-	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
+	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads");
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
-	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap", true);
+	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap");
 
 	AddTooltip(aa_check, IDC_AA1);
 	AddTooltip(mipmap_check, IDC_MIPMAP);
@@ -290,8 +290,8 @@ void populate_sw_table(GtkWidget* sw_table)
 
 void populate_shader_table(GtkWidget* shader_table)
 {
-	GtkWidget* shader            = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select an external shader", "shaderfx_glsl", "dummy.glsl");
-	GtkWidget* shader_conf       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Then select a config", "shaderfx_conf", "dummy.ini");
+	GtkWidget* shader            = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select an external shader", "shaderfx_glsl");
+	GtkWidget* shader_conf       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Then select a config", "shaderfx_conf");
 	GtkWidget* shader_label      = left_label("External shader glsl");
 	GtkWidget* shader_conf_label = left_label("External shader conf");
 
@@ -303,13 +303,13 @@ void populate_shader_table(GtkWidget* shader_table)
 	GtkWidget* tv_shader        = CreateComboBoxFromVector(theApp.m_gs_tv_shaders, "TVShader");
 
 	// Shadeboost scale
-	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness", 50);
+	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness");
 	GtkWidget* sb_brightness_label = left_label("Shade Boost Brightness:");
 
-	GtkWidget* sb_contrast         = CreateScale("ShadeBoost_Contrast", 50);
+	GtkWidget* sb_contrast         = CreateScale("ShadeBoost_Contrast");
 	GtkWidget* sb_contrast_label   = left_label("Shade Boost Contrast:");
 
-	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation", 50);
+	GtkWidget* sb_saturation       = CreateScale("ShadeBoost_Saturation");
 	GtkWidget* sb_saturation_label = left_label("Shade Boost Saturation:");
 
 	AddTooltip(shadeboost_check, IDC_SHADEBOOST);
@@ -380,9 +380,9 @@ void populate_hack_table(GtkWidget* hack_table)
 void populate_main_table(GtkWidget* main_table)
 {
 	GtkWidget* render_label     = left_label("Renderer:");
-	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer", static_cast<int>(GSRendererType::Default));
+	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer");
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
-	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace", 7);
+	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace");
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
@@ -417,14 +417,14 @@ void populate_record_table(GtkWidget* record_table)
 {
 	GtkWidget* capture_check = CreateCheckBox("Enable Recording (with F12)", "capture_enabled");
 	GtkWidget* resxy_label   = left_label("Resolution:");
-	GtkWidget* resx_spin     = CreateSpinButton(256, 8192, "capture_resx", 1280);
-	GtkWidget* resy_spin     = CreateSpinButton(256, 8192, "capture_resy", 1024);
+	GtkWidget* resx_spin     = CreateSpinButton(256, 8192, "capture_resx");
+	GtkWidget* resy_spin     = CreateSpinButton(256, 8192, "capture_resy");
 	GtkWidget* threads_label = left_label("Saving Threads:");
-	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads", 4);
+	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads");
 	GtkWidget* out_dir_label = left_label("Output Directory:");
-	GtkWidget* out_dir       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select a directory", "capture_out_dir", "/tmp");
+	GtkWidget* out_dir       = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select a directory", "capture_out_dir");
 	GtkWidget* png_label     = left_label("PNG Compression Level:");
-	GtkWidget* png_level     = CreateSpinButton(1, 9, "png_compression_level", 1);
+	GtkWidget* png_level     = CreateSpinButton(1, 9, "png_compression_level");
 
 	InsertWidgetInTable(record_table , capture_check);
 	InsertWidgetInTable(record_table , resxy_label   , resx_spin      , resy_spin);
@@ -498,8 +498,8 @@ bool RunLinuxDialog()
 	return_value = gtk_dialog_run (GTK_DIALOG (dialog));
 
 	// Compatibility & not supported option
-	int mode_width = theApp.GetConfig("ModeWidth", 640);
-	int mode_height = theApp.GetConfig("ModeHeight", 480);
+	int mode_width = theApp.GetConfigI("ModeWidth");
+	int mode_height = theApp.GetConfigI("ModeHeight");
 	theApp.SetConfig("ModeHeight", mode_height);
 	theApp.SetConfig("ModeWidth", mode_width);
 	theApp.SetConfig("msaa", 0);

@@ -94,6 +94,6 @@ bool GSTextureSW::Save(const string& fn, bool user_image, bool dds)
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
-	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfigI("png_compression_level");
 	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }

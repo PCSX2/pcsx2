@@ -26,9 +26,9 @@
 GSCaptureDlg::GSCaptureDlg()
 	: GSDialog(IDD_CAPTURE)
 {
-	m_width = theApp.GetConfig("CaptureWidth", 640);
-	m_height = theApp.GetConfig("CaptureHeight", 480);
-	m_filename = theApp.GetConfig("CaptureFileName", "");
+	m_width = theApp.GetConfigI("CaptureWidth");
+	m_height = theApp.GetConfigI("CaptureHeight");
+	m_filename = theApp.GetConfigS("CaptureFileName");
 }
 
 int GSCaptureDlg::GetSelCodec(Codec& c)
@@ -64,7 +64,7 @@ void GSCaptureDlg::OnInit()
 
 	m_codecs.clear();
 
-	_bstr_t selected = theApp.GetConfig("CaptureVideoCodecDisplayName", "").c_str();
+	_bstr_t selected = theApp.GetConfigS("CaptureVideoCodecDisplayName").c_str();
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
 

@@ -34,8 +34,8 @@ const GSVector4i GPULocalMemory::m_rxxx(0x0000001f);
 
 GPULocalMemory::GPULocalMemory()
 {
-	m_scale.x = std::min<int>(std::max<int>(theApp.GetConfig("scale_x", 0), 0), 2);
-	m_scale.y = std::min<int>(std::max<int>(theApp.GetConfig("scale_y", 0), 0), 2);
+	m_scale.x = std::min<int>(std::max<int>(theApp.GetConfigI("scale_x"), 0), 2);
+	m_scale.y = std::min<int>(std::max<int>(theApp.GetConfigI("scale_y"), 0), 2);
 
 	//
 

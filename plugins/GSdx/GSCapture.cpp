@@ -380,10 +380,10 @@ GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
 	  , m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
 {
-	m_out_dir = theApp.GetConfig("capture_out_dir", "/tmp/GSdx_Capture");
-	m_threads = theApp.GetConfig("capture_threads", 4);
+	m_out_dir = theApp.GetConfigS("capture_out_dir");
+	m_threads = theApp.GetConfigI("capture_threads");
 #if defined(__unix__)
-	m_compression_level = theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	m_compression_level = theApp.GetConfigI("png_compression_level");
 #endif
 }
 
@@ -488,8 +488,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 	// Really cheap recording
 	m_frame = 0;
 	// Add option !!!
-	m_size.x = theApp.GetConfig("capture_resx", 1280);
-	m_size.y = theApp.GetConfig("capture_resy", 1024);
+	m_size.x = theApp.GetConfigI("capture_resx");
+	m_size.y = theApp.GetConfigI("capture_resy");
 
 	for(int i = 0; i < m_threads; i++) {
 		m_workers.push_back(new GSPng::Worker());

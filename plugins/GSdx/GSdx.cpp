@@ -400,11 +400,6 @@ void GSdxApp::SetConfigDir(const char* dir)
 	}
 }
 
-string GSdxApp::GetConfig(const char* entry, const char* value)
-{
-	return GetConfigS(entry);
-}
-
 string GSdxApp::GetConfigS(const char* entry)
 {
 	char buff[4096] = {0};
@@ -423,11 +418,6 @@ string GSdxApp::GetConfigS(const char* entry)
 void GSdxApp::SetConfig(const char* entry, const char* value)
 {
 	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
-}
-
-int GSdxApp::GetConfig(const char* entry, int value)
-{
-	return GetConfigI(entry);
 }
 
 int GSdxApp::GetConfigI(const char* entry)

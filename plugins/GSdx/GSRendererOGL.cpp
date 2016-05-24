@@ -27,23 +27,23 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_accurate_date   = !!theApp.GetConfig("accurate_date", 0);
+	m_accurate_date   = theApp.GetConfigB("accurate_date");
 
-	m_sw_blending = theApp.GetConfig("accurate_blending_unit", 1);
+	m_sw_blending = theApp.GetConfigI("accurate_blending_unit");
 
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
-	UserHacks_TCOffset       = theApp.GetConfig("UserHacks_TCOffset", 0);
+	UserHacks_TCOffset       = theApp.GetConfigI("UserHacks_TCOffset");
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
-	UserHacks_safe_fbmask    = !!theApp.GetConfig("UserHacks_safe_fbmask", 0);
-	UserHacks_merge_sprite   = !!theApp.GetConfig("UserHacks_merge_pp_sprite", 0);
+	UserHacks_safe_fbmask    = theApp.GetConfigB("UserHacks_safe_fbmask");
+	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	m_unsafe_fbmask = false;
 
-	if (!theApp.GetConfig("UserHacks", 0)) {
+	if (!theApp.GetConfigB("UserHacks")) {
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;

@@ -52,9 +52,7 @@ public:
 
 	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
 
-	string GetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, const char* value);
-	int GetConfig(const char* entry, int value);
 	void SetConfig(const char* entry, int value);
 	// Avoid issue with overloading
 	int    GetConfigI(const char* entry);

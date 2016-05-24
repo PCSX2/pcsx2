@@ -30,7 +30,7 @@ bool GSDeviceDX::s_old_d3d_compiler_dll;
 
 GSDeviceDX::GSDeviceDX()
 {
-	m_msaa = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_MSAA", 0) : 0;
+	m_msaa = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_MSAA") : 0;
 
 	m_msaa_desc.Count = 1;
 	m_msaa_desc.Quality = 0;
