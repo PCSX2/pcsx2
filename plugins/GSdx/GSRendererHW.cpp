@@ -32,7 +32,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_large_framebuffer = !!theApp.GetConfig("large_framebuffer", 1);
 	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
 	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
@@ -51,48 +50,10 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 void GSRendererHW::SetScaling()
 {
-	GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
-
-	// Details of (potential) perf impact of a big framebuffer
-	// 1/ extra memory
-	// 2/ texture cache framebuffer rescaling/copy
-	// 3/ upload of framebuffer (preload hack)
-	// 4/ framebuffer clear (color/depth/stencil)
-	// 5/ read back of the frambuffer
-	// 6/ MSAA
-	//
-	// With the solution
-	// 1/ Nothing to do.Except the texture cache bug (channel shuffle effect)
-	//    most of the market is 1GB of VRAM (and soon 2GB)
-	// 2/ limit rescaling/copy to the valid data of the framebuffer
-	// 3/ ??? no solution so far
-	// 4a/ stencil can be limited to valid data.
-	// 4b/ is it useful to clear color? depth? (in any case, it ought to be few operation)
-	// 5/ limit the read to the valid data
-	// 6/ not support on openGL
-
-	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
-	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
-	// In such cases, let's just use the CRTC width.
-	int fb_width = max({ (int)m_context->FRAME.FBW * 64, crtc_size.x , 512 });
-	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
-	// from physical units of the display rectangle in case the game uses a heigher value of height.
-	//
-	// Gregory: the framebuffer must have enough room to draw
-	// * at least 2 frames such as FMV (see OI_BlitFMV)
-	// * high resolution game such as snowblind engine game
-	//
-	// Autodetection isn't a good idea because it will create flickering
-	// If memory consumption is an issue, there are 2 possibilities
-	// * 1/ Avoid to create hundreds of RT
-	// * 2/ Use sparse texture (requires recent HW)
-	//
-	// Avoid to alternate between 640x1280 and 1280x1024 on snow blind engine game
-	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
-	//
-	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
-	int fb_height = m_large_framebuffer ? 1280 :
-		(fb_width < 1024) ? max(512, crtc_size.y) : 1024;
+	// Calculate Framebuffer dimensions based on the scissoring test.
+	GSVector2i SCISSOR(m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0, m_context->SCISSOR.SCAY1 - m_context->SCISSOR.SCAY0);
+	int fb_width = (SCISSOR.x) ? SCISSOR.x : 1280;
+	int fb_height = (SCISSOR.y) ? SCISSOR.y : 1024;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
