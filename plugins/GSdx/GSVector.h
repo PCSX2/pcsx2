@@ -90,7 +90,7 @@ class GSVector8i;
 
 #endif
 
-__aligned(class, 16) GSVector4i
+class alignas(16) GSVector4i
 {
 	static const GSVector4i m_xff[17];
 	static const GSVector4i m_x0f[17];
@@ -2421,7 +2421,7 @@ public:
 	__forceinline static GSVector4i x0f(int n) {return m_x0f[n];}
 };
 
-__aligned(class, 16) GSVector4
+class alignas(16) GSVector4
 {
 public:
 	union
@@ -3341,7 +3341,7 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 
 #if _M_SSE >= 0x501
 
-__aligned(class, 32) GSVector8i
+class alignas(32) GSVector8i
 {
 	static const GSVector8i m_xff[33];
 	static const GSVector8i m_x0f[33];
@@ -5133,7 +5133,7 @@ public:
 
 #if _M_SSE >= 0x500
 
-__aligned(class, 32) GSVector8
+class alignas(32) GSVector8
 {
 public:
 	union

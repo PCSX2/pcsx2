@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "GSSetting.h"
-#ifndef __linux__
+#ifdef _WIN32
 #include "resource.h"
 #endif
 

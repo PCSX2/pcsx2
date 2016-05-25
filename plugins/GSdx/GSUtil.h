@@ -65,6 +65,6 @@ public:
 #endif
 };
 
-#ifdef __linux__
+#if defined(__unix__)
 void GSmkdir(const char* dir);
 #endif

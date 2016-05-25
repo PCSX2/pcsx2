@@ -172,7 +172,7 @@ GSdxApp::GSdxApp()
 	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", ""));
 	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", ""));
-#ifndef __linux__
+#ifndef __unix__
 	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", ""));
 #endif
 
@@ -237,7 +237,7 @@ GSdxApp::GSdxApp()
 	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
 }
 
-#ifdef __linux__
+#if defined(__unix__)
 void GSdxApp::ReloadConfig()
 {
 	if (m_configuration_map.empty()) return;

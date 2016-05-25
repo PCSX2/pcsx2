@@ -1101,7 +1101,7 @@ REG128_SET(GIFPackedReg)
 	GIFPackedNOP	NOP;
 REG_SET_END
 
-__aligned(struct, 32) GIFPath
+struct alignas(32) GIFPath
 {
 	GIFTag tag;
 	uint32 nloop;

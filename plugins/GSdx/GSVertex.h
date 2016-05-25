@@ -28,7 +28,7 @@
 
 #pragma pack(push, 1)
 
-__aligned(struct, 32) GSVertex
+struct alignas(32) GSVertex
 {
 	union
 	{
@@ -52,7 +52,7 @@ struct GSVertexP
 	GSVector4 p;
 };
 
-__aligned(struct, 32) GSVertexPT1
+struct alignas(32) GSVertexPT1
 {
 	GSVector4 p;
 	GSVector2 t;

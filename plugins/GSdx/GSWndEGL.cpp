@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndEGL.h"
 
-#if defined(__linux__) && defined(EGL_SUPPORTED)
+#if defined(__unix__) && defined(EGL_SUPPORTED)
 
 GSWndEGL::GSWndEGL()
 	: m_NativeWindow(0), m_NativeDisplay(NULL)

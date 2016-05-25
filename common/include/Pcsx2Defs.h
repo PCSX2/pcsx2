@@ -213,9 +213,12 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 //  GCC / Intel Compilers Section
 // --------------------------------------------------------------------------------------
 
+#ifndef __packed
 #	define __packed			__attribute__((packed))
-
+#endif
+#ifndef __aligned
 #	define __aligned(alig)	__attribute__((aligned(alig)))
+#endif
 #	define __aligned16		__attribute__((aligned(16)))
 #	define __aligned32		__attribute__((aligned(32)))
 #	define __pagealigned	__attribute__((aligned(PCSX2_PAGESIZE)))
@@ -232,14 +235,18 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
+#ifndef __fastcall
 #	define __fastcall		__attribute__((fastcall))
+#endif
 #	define _inline			__inline__ __attribute__((unused))
 #	ifdef NDEBUG
 #		define __forceinline	__attribute__((always_inline,unused))
 #	else
 #		define __forceinline	__attribute__((unused))
 #	endif
+#ifndef __noinline
 #	define __noinline		__attribute__((noinline))
+#endif
 #	define __threadlocal	__thread
 #	define likely(x)		__builtin_expect(!!(x), 1)
 #	define unlikely(x)		__builtin_expect(!!(x), 0)

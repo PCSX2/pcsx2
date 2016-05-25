@@ -56,5 +56,5 @@ public:
 	GPUDrawScanlineCodeGenerator(void* param, uint32 key, void* code, size_t maxsize);
 
 	static const GSVector4i m_test[8];
-	static __aligned(const uint16, 32) m_dither[4][16];
+	alignas(32) static const uint16 m_dither[4][16];
 };

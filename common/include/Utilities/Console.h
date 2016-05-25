@@ -234,7 +234,7 @@ public:
 
 extern IConsoleWriter	Console;
 
-#ifdef __linux__
+#if defined(__unix__)
 extern void Console_SetStdout(FILE *fp);
 #endif
 extern void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp=NULL );

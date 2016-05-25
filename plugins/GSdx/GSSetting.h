@@ -40,7 +40,7 @@ struct GSSetting
 
 const char* dialog_message(int ID, bool* updateText = NULL);
 
-#ifdef __linux__
+#ifndef _WIN32
 enum {
 	IDC_FILTER,
 	IDC_SKIPDRAWHACK,

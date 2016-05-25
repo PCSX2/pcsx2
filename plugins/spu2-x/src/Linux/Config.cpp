@@ -19,8 +19,10 @@
 #include "Dialogs.h"
 #include "Config.h"
 
+#ifdef __linux__
 #include <SDL.h>
 #include <SDL_audio.h>
+#endif
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -121,12 +123,20 @@ void ReadSettings()
 	OutputModule = FindOutputModuleById( temp.c_str() );// find the driver index of this module
 
 	// find current API
+#ifdef __linux__
 	CfgReadStr( L"PORTAUDIO", L"HostApi", temp, L"ALSA" );
 	OutputAPI = -1;
 	if (temp == L"ALSA") OutputAPI = 0;
 	if (temp == L"OSS")  OutputAPI = 1;
 	if (temp == L"JACK") OutputAPI = 2;
+#else
+	CfgReadStr( L"PORTAUDIO", L"HostApi", temp, L"OSS" );
+	OutputAPI = -1;
 
+	if (temp == L"OSS")  OutputAPI = 0;
+#endif
+
+#ifdef __linux__
 	CfgReadStr( L"SDL", L"HostApi", temp, L"pulseaudio" );
 	SdlOutputAPI = -1;
 #if SDL_MAJOR_VERSION >= 2
@@ -136,12 +146,13 @@ void ReadSettings()
 			SdlOutputAPI = i;
 	}
 #endif
+#endif
 
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 300);
 	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 
 	PortaudioOut->ReadSettings();
-#ifndef __APPLE__
+#ifdef __linux__
 	SDLOut->ReadSettings();
 #endif
 	SoundtouchCfg::ReadSettings();
@@ -187,7 +198,7 @@ void WriteSettings()
 	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 	PortaudioOut->WriteSettings();
-#ifndef __APPLE__
+#ifdef __linux__
 	SDLOut->WriteSettings();
 #endif
 	SoundtouchCfg::WriteSettings();
@@ -204,7 +215,7 @@ void debug_dialog()
 	DebugConfig::DisplayDialog();
 }
 
-#ifdef __linux__
+#if defined(__unix__)
 void DisplayDialog()
 {
     int return_value;
@@ -257,16 +268,22 @@ void DisplayDialog()
     mod_box = gtk_combo_box_text_new ();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
+#ifdef __linux__
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
+#endif
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
     api_label = gtk_label_new ("PortAudio API:");
     api_box = gtk_combo_box_text_new ();
+#ifdef __linux__
 	// In order to keep it the menu light, I only put linux major api
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
+#else
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
+#endif
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
 
 #if SDL_MAJOR_VERSION >= 2
@@ -360,12 +377,19 @@ void DisplayDialog()
 
     	if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
 			OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
+#ifdef __linux__
 			switch(OutputAPI) {
 				case 0: PortaudioOut->SetApiSettings(L"ALSA"); break;
 				case 1: PortaudioOut->SetApiSettings(L"OSS"); break;
 				case 2: PortaudioOut->SetApiSettings(L"JACK"); break;
 				default: PortaudioOut->SetApiSettings(L"Unknown");
 			}
+#else
+			switch(OutputAPI) {
+				case 0: PortaudioOut->SetApiSettings(L"OSS"); break;
+				default: PortaudioOut->SetApiSettings(L"Unknown");
+			}
+#endif
 		}
 
 #if SDL_MAJOR_VERSION >= 2

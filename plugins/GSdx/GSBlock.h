@@ -1917,7 +1917,7 @@ public:
 
 		#else
 		
-		__aligned(uint16, 32) block[16 * 8];
+		alignas(32) uint16 block[16 * 8];
 	
 		ReadBlock16(src, (uint8*)block, sizeof(block) / 8);
 
@@ -1976,7 +1976,7 @@ public:
 
 		#else
 
-		__aligned(uint8, 32) block[16 * 16];
+		alignas(32) uint8 block[16 * 16];
 
 		ReadBlock8(src, (uint8*)block, sizeof(block) / 16);
 
@@ -2053,7 +2053,7 @@ public:
 
 		#else
 
-		__aligned(uint8, 32) block[(32 / 2) * 16];
+		alignas(32) uint8 block[(32 / 2) * 16];
 
 		ReadBlock4(src, (uint8*)block, sizeof(block) / 16);
 
@@ -2096,7 +2096,7 @@ public:
 
 		#else
 
-		__aligned(uint32, 32) block[8 * 8];
+		alignas(32) uint32 block[8 * 8];
 
 		ReadBlock32(src, (uint8*)block, sizeof(block) / 8);
 
@@ -2139,7 +2139,7 @@ public:
 
 		#else
 
-		__aligned(uint32, 32) block[8 * 8];
+		alignas(32) uint32 block[8 * 8];
 
 		ReadBlock32(src, (uint8*)block, sizeof(block) / 8);
 
@@ -2182,7 +2182,7 @@ public:
 
 		#else
 
-		__aligned(uint32, 32) block[8 * 8];
+		alignas(32) uint32 block[8 * 8];
 
 		ReadBlock32(src, (uint8*)block, sizeof(block) / 8);
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2016  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,9 +16,6 @@
 #pragma once
 
 extern void yuv2rgb_reference();
-#ifdef _M_X86_32
+
 #define yuv2rgb yuv2rgb_sse2
 extern void yuv2rgb_sse2();
-#else
-#define yuv2rgb yuv2rgb_reference
-#endif

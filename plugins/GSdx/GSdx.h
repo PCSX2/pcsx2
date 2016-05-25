@@ -27,7 +27,7 @@ class GSdxApp
 {
 	std::string m_ini;
 	std::string m_section;
-#ifdef __linux__
+#if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
 #endif
 
@@ -40,7 +40,7 @@ public:
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
 #endif
 
-#ifdef __linux__
+#if defined(__unix__)
 	void BuildConfigurationMap(const char* lpFileName);
 	void ReloadConfig();
 

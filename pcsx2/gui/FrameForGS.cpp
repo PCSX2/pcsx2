@@ -222,7 +222,7 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 		DoShowMouse();
 	}
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -285,7 +285,7 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 	// to the APP level message handler, which in turn routes them right back here -- yes it's
 	// silly, but oh well).
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -367,7 +367,7 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 	else
 		DoShowMouse();
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -385,7 +385,7 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	evt.Skip();
 	m_HasFocus = false;
 	DoShowMouse();
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
