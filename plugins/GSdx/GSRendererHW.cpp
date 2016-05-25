@@ -138,7 +138,7 @@ int GSRendererHW::GetUpscaleMultiplier()
 }
 
 GSVector2i GSRendererHW::GetInternalResolution() {
-	GSVector2i dr(GetDisplayRect().width(), GetDisplayRect().height());
+	GSVector2i dr = GetOutputRect();
 
 	if (m_upscale_multiplier)
 		return GSVector2i(dr.x * m_upscale_multiplier, dr.y * m_upscale_multiplier);

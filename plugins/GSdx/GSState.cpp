@@ -348,52 +348,96 @@ void GSState::ResetHandlers()
 	SetMultithreaded(m_mt);
 }
 
+bool GSState::isinterlaced()
+{
+	return !!m_regs->SMODE2.INT;
+}
+
+GSVideoMode GSState::GetVideoMode()
+{
+	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.
+
+	GSVideoMode videomode = GSVideoMode::Unknown;
+	uint8 Colorburst = m_regs->SMODE1.CMOD; // Subcarrier frequency
+	uint8 PLL_Divider = m_regs->SMODE1.LC; // Phased lock loop divider
+
+	switch (Colorburst)
+	{
+	case 0:
+		if (isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::DTV_1080I;
+
+		else if (!isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::DTV_720P;
+
+		else if (!isinterlaced() && PLL_Divider == 32)
+			videomode = GSVideoMode::DTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
+
+		else
+			videomode = GSVideoMode::VESA;
+		break;
+
+	case 2:
+		videomode = GSVideoMode::NTSC; break;
+
+	case 3:
+		videomode = GSVideoMode::PAL; break;
+	}
+
+	return videomode;
+}
+
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	GSVector4i r;
 
+	GSVideoMode videomode = GetVideoMode();
+	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
+	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / magnification.x;
+	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / magnification.y;
+	
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && !Vmode_VESA_DTV)
+	if (height > 640 && videomode < GSVideoMode::VESA)
 	{
 		height /= 2;
 	}
 
-	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + width;
-	r.bottom = r.top + height;
+	// Set up the display rectangle based on the values obtained from DISPLAY registers
+	GSVector4i rectangle;
+	rectangle.left = m_regs->DISP[i].DISPLAY.DX / magnification.x;
+	rectangle.top = m_regs->DISP[i].DISPLAY.DY / magnification.y;
+	rectangle.right = rectangle.left + width;
+	rectangle.bottom = rectangle.top + height;
 
 	// Useful for debugging games:
 	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
 
-	return r;
+	return rectangle;
 }
 
 GSVector4i GSState::GetFrameRect(int i)
 {
 	if (i < 0) i = IsEnabled(1) ? 1 : 0;
 
-	GSVector4i r = GetDisplayRect(i);
+	GSVector4i rectangle = GetDisplayRect(i);
+	GSVideoMode videomode = GetVideoMode();
 
-	int w = r.width();
-	int h = r.height();
+	int w = rectangle.width();
+	int h = rectangle.height();
 
 //  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
 //  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
 //  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (Vmode_NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
+	if (videomode == GSVideoMode::NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
 		h = 448;
 
-	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
+	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
 		h >>= 1;
 
-	r.left = m_regs->DISP[i].DISPFB.DBX;
-	r.top = m_regs->DISP[i].DISPFB.DBY;
-	r.right = r.left + w;
-	r.bottom = r.top + h;
+	rectangle.left = m_regs->DISP[i].DISPFB.DBX;
+	rectangle.top = m_regs->DISP[i].DISPFB.DBY;
+	rectangle.right = rectangle.left + w;
+	rectangle.bottom = rectangle.top + h;
 
 	/*static GSVector4i old_r = (GSVector4i) 0;
 	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
@@ -401,7 +445,7 @@ GSVector4i GSState::GetFrameRect(int i)
 	}
 	old_r = r;*/
 
-	return r;
+	return rectangle;
 }
 
 GSVector2i GSState::GetDeviceSize(int i)
@@ -414,25 +458,35 @@ GSVector2i GSState::GetDeviceSize(int i)
 
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
 
-	GSVector4i r = GetDisplayRect(i);
+	GSVector4i rectangle = GetDisplayRect(i);
+	GSVector2i DeviceSize(rectangle.width(), rectangle.height());
 
-	int w = r.width();
-	int h = r.height();
+	if(isinterlaced() && m_regs->SMODE2.FFMD && DeviceSize.y > 1)
+		DeviceSize.y >>= 1;
 
-	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
-	{
-		h /= 2;
-	}
-	else
-	{
-		h = (m_regs->SMODE1.CMOD & 1) ? 512 : 448;
-	}*/
+	return DeviceSize;
+}
 
-	//Fixme : Just slightly better than the hack above
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
-		h >>= 1;
+GSVector2i GSState::GetOutputRect()
+{
+	GSVector2i Merged_Rectangle(GetDisplayRect().width(), GetDisplayRect().height());
+	GSVector4i Rectangle[2] = { GetDisplayRect(0) , GetDisplayRect(1) };
+	int width[2] = { Rectangle[0].width() , Rectangle[1].width() };
+	int height[2] = { Rectangle[0].height() , Rectangle[1].height() };
+	int x_offset[2] = { Rectangle[0].left , Rectangle[1].left };
+	int y_offset[2] = { Rectangle[0].top , Rectangle[1].top };
 
-	return GSVector2i(w, h);
+	if (!(IsEnabled(0) && IsEnabled(1)))
+		return Merged_Rectangle;
+
+	if (width[0] == width[1] && width[0] == std::max(x_offset[0], x_offset[1]) - std::min(x_offset[0], x_offset[1]))
+		Merged_Rectangle.x <<= 1;
+
+	if (height[0] == height[1] && height[0] == std::max(y_offset[0], y_offset[1]) - std::min(y_offset[0], y_offset[1]))
+		Merged_Rectangle.y <<= 1;
+
+	return Merged_Rectangle;
+
 }
 
 bool GSState::IsEnabled(int i)
@@ -454,29 +508,24 @@ bool GSState::IsEnabled(int i)
 float GSState::GetTvRefreshRate()
 {
 	float vertical_frequency = 0;
+	GSVideoMode videomode = GetVideoMode();
 
-	switch (m_regs->SMODE1.CMOD)
+	//TODO: Check vertical frequencies for VESA video modes, old ones were untested.
+
+	switch (videomode)
 	{
-		case 0:
-		{
-			if (Vmode_VESA_1A)			vertical_frequency = 59.94f;
-			if (Vmode_VESA_1C)			vertical_frequency = 75;
-			if (Vmode_VESA_2B)			vertical_frequency = 60.317f;
-			if (Vmode_VESA_2D)			vertical_frequency = 75;
-			if (Vmode_VESA_3B)			vertical_frequency = 60.004f;
-			if (Vmode_VESA_3D)			vertical_frequency = 75.029f;
-			if (Vmode_VESA_4A)			vertical_frequency = 60.020f;
-			if (Vmode_VESA_4B)			vertical_frequency = 75.025f;
-			if (Vmode_DTV_480P)			vertical_frequency = 59.94f;
-			if (Vmode_DTV_720P_1080I)	vertical_frequency = 60;
-			break;
-		}
+	case GSVideoMode::NTSC: case GSVideoMode::DTV_480P:
+		vertical_frequency = (60 / 1.001f); break;
 
-		case 2: vertical_frequency = (60 / 1.001f); //NTSC
-			break;
-		case 3: vertical_frequency = 50;			//PAL
-			break;
-		default: ASSERT(0);
+	case GSVideoMode::PAL:
+		vertical_frequency = 50; break;
+
+	case GSVideoMode::DTV_720P: case GSVideoMode::DTV_1080I:
+		vertical_frequency = 60; break;
+
+	default:
+		if (videomode == GSVideoMode::Unknown)
+			ASSERT(0);
 	}
 
 	return vertical_frequency;
