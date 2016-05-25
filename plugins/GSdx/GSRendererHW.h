@@ -35,7 +35,6 @@ private:
 	bool m_reset;
 	int m_upscale_multiplier;
 
-	bool m_large_framebuffer;
 	bool m_userhacks_align_sprite_X;
 	bool m_userhacks_disable_gs_mem_clear;
 
