@@ -79,17 +79,18 @@ typedef int64 sint64;
 
 // stdc
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <math.h>
-#include <float.h>
-#include <time.h>
-#include <limits.h>
+#include <cstddef>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <cmath>
+#include <cfloat>
+#include <ctime>
+#include <climits>
+#include <cstring>
+#include <cassert>
 
 #include <complex>
-#include <cstring>
 #include <string>
 #include <vector>
 #include <list>
@@ -216,8 +217,6 @@ using namespace stdext;
     #define EXPORT_C EXPORT_C_(void)
 
     #ifdef __GNUC__
-
-        #include "assert.h"
         #define __forceinline __inline__ __attribute__((always_inline,unused))
         // #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
         #define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
@@ -260,16 +259,7 @@ using namespace stdext;
 
 #endif
 
-#if defined(_DEBUG) //&& defined(_MSC_VER)
-
-	#include <assert.h>
-	#define ASSERT assert
-
-#else
-
-	#define ASSERT(exp) ((void)0)
-
-#endif
+#define ASSERT assert
 
 #ifdef __x86_64__
 
