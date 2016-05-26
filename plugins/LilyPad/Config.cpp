@@ -43,6 +43,7 @@ void PCSX2_overrideConfig(GeneralConfig& config_in_out) {
 	config_in_out.disableScreenSaver = 0; // Not required - handled internally by PCSX2
 	config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
 	config_in_out.saveStateTitle = 0; // Not required - handled internally by PCSX2
+	config_in_out.closeHacks = 0; // Cannot function when used by PCSX2
 }
 
 // Dialog widgets which should be disabled - mostly matching PCSX2_overrideConfig
@@ -52,6 +53,8 @@ const UINT* PCSX2_disabledWidgets() {
 		IDC_ESCAPE_FULLSCREEN_HACK,
 		IDC_SAVE_STATE_TITLE,
 		IDC_ANALOG_START1, // start in analog mode - only useful for PS1
+		IDC_CLOSE_HACK1,
+		IDC_CLOSE_HACK2,
 		0
 	};
 	return disabledWidgets;
