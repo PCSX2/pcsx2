@@ -578,15 +578,6 @@
   <ItemGroup>
     <ClCompile Include="GLLoader.cpp" />
     <ClCompile Include="GLState.cpp" />
-    <ClCompile Include="GPU.cpp" />
-    <ClCompile Include="GPUDrawScanline.cpp" />
-    <ClCompile Include="GPUDrawScanlineCodeGenerator.cpp" />
-    <ClCompile Include="GPULocalMemory.cpp" />
-    <ClCompile Include="GPURenderer.cpp" />
-    <ClCompile Include="GPURendererSW.cpp" />
-    <ClCompile Include="GPUSettingsDlg.cpp" />
-    <ClCompile Include="GPUSetupPrimCodeGenerator.cpp" />
-    <ClCompile Include="GPUState.cpp" />
     <ClCompile Include="GS.cpp" />
     <ClCompile Include="GSAlignedClass.cpp" />
     <ClCompile Include="GSBlock.cpp" />
@@ -809,6 +800,15 @@
     <ClCompile Include="GSWnd.cpp" />
     <ClCompile Include="GSWndDX.cpp" />
     <ClCompile Include="GSWndWGL.cpp" />
+    <ClCompile Include="PSX\GPU.cpp" />
+    <ClCompile Include="PSX\GPUDrawScanline.cpp" />
+    <ClCompile Include="PSX\GPUDrawScanlineCodeGenerator.cpp" />
+    <ClCompile Include="PSX\GPULocalMemory.cpp" />
+    <ClCompile Include="PSX\GPURenderer.cpp" />
+    <ClCompile Include="PSX\GPURendererSW.cpp" />
+    <ClCompile Include="PSX\GPUSettingsDlg.cpp" />
+    <ClCompile Include="PSX\GPUSetupPrimCodeGenerator.cpp" />
+    <ClCompile Include="PSX\GPUState.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -839,18 +839,6 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="GLLoader.h" />
     <ClInclude Include="GLState.h" />
-    <ClInclude Include="GPU.h" />
-    <ClInclude Include="GPUDrawingEnvironment.h" />
-    <ClInclude Include="GPUDrawScanline.h" />
-    <ClInclude Include="GPUDrawScanlineCodeGenerator.h" />
-    <ClInclude Include="GPULocalMemory.h" />
-    <ClInclude Include="GPURenderer.h" />
-    <ClInclude Include="GPURendererSW.h" />
-    <ClInclude Include="GPUScanlineEnvironment.h" />
-    <ClInclude Include="GPUSettingsDlg.h" />
-    <ClInclude Include="GPUSetupPrimCodeGenerator.h" />
-    <ClInclude Include="GPUState.h" />
-    <ClInclude Include="GPUVertex.h" />
     <ClInclude Include="GS.h" />
     <ClInclude Include="GSAlignedClass.h" />
     <ClInclude Include="GSBlock.h" />
@@ -920,6 +908,18 @@
     <ClInclude Include="GSWnd.h" />
     <ClInclude Include="GSWndDX.h" />
     <ClInclude Include="GSWndWGL.h" />
+    <ClInclude Include="PSX\GPU.h" />
+    <ClInclude Include="PSX\GPUDrawingEnvironment.h" />
+    <ClInclude Include="PSX\GPUDrawScanline.h" />
+    <ClInclude Include="PSX\GPUDrawScanlineCodeGenerator.h" />
+    <ClInclude Include="PSX\GPULocalMemory.h" />
+    <ClInclude Include="PSX\GPURenderer.h" />
+    <ClInclude Include="PSX\GPURendererSW.h" />
+    <ClInclude Include="PSX\GPUScanlineEnvironment.h" />
+    <ClInclude Include="PSX\GPUSettingsDlg.h" />
+    <ClInclude Include="PSX\GPUSetupPrimCodeGenerator.h" />
+    <ClInclude Include="PSX\GPUState.h" />
+    <ClInclude Include="PSX\GPUVertex.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="svnrev.h" />
     <ClInclude Include="resource.h" />

@@ -21,10 +21,10 @@
 
 #include "stdafx.h"
 #include "GSdx.h"
-#include "GPU.h"
 #include "GSUtil.h"
-#include "GPUSettingsDlg.h"
 #include "resource.h"
+#include "GPU.h"
+#include "GPUSettingsDlg.h"
 
 GPUSettingsDlg::GPUSettingsDlg()
 	: GSDialog(IDD_GPUCONFIG)
