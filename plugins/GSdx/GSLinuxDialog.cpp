@@ -417,8 +417,8 @@ void populate_record_table(GtkWidget* record_table)
 {
 	GtkWidget* capture_check = CreateCheckBox("Enable Recording (with F12)", "capture_enabled");
 	GtkWidget* resxy_label   = left_label("Resolution:");
-	GtkWidget* resx_spin     = CreateSpinButton(256, 8192, "capture_resx");
-	GtkWidget* resy_spin     = CreateSpinButton(256, 8192, "capture_resy");
+	GtkWidget* resx_spin     = CreateSpinButton(256, 8192, "CaptureWidth");
+	GtkWidget* resy_spin     = CreateSpinButton(256, 8192, "CaptureHeight");
 	GtkWidget* threads_label = left_label("Saving Threads:");
 	GtkWidget* threads_spin  = CreateSpinButton(1, 32, "capture_threads");
 	GtkWidget* out_dir_label = left_label("Output Directory:");

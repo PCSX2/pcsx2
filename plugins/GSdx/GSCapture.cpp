@@ -488,8 +488,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 	// Really cheap recording
 	m_frame = 0;
 	// Add option !!!
-	m_size.x = theApp.GetConfigI("capture_resx");
-	m_size.y = theApp.GetConfigI("capture_resy");
+	m_size.x = theApp.GetConfigI("CaptureWidth");
+	m_size.y = theApp.GetConfigI("CaptureHeight");
 
 	for(int i = 0; i < m_threads; i++) {
 		m_workers.push_back(new GSPng::Worker());

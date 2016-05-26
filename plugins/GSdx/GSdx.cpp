@@ -258,10 +258,6 @@ GSdxApp::GSdxApp()
 	m_default_configuration["fba"]                                        = "1";
 	m_default_configuration["logz"]                                       = "0";
 #else
-	// FIXME use above option
-	m_default_configuration["capture_resx"]                               = "1280";
-	m_default_configuration["capture_resy"]                               = "1024";
-	//
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
 
