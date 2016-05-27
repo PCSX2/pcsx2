@@ -21,7 +21,6 @@
 #include "DeviceEnumerator.h"
 #include "WindowsMessaging.h"
 #include "DirectInput.h"
-#include "KeyboardHook.h"
 #include "RawInput.h"
 #include "XInputEnum.h"
 #include "HidDevice.h"
@@ -39,7 +38,6 @@ void EnumDevices(int hideDXXinput) {
 	dm = new InputDeviceManager();
 
 #ifdef _MSC_VER
-	EnumHookDevices();
 	EnumWindowsMessagingDevices();
 	EnumRawInputDevices();
 	EnumDualShock3s();

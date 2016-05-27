@@ -253,7 +253,6 @@
     <ClCompile Include="DirectInput.cpp" />
     <ClCompile Include="DualShock3.cpp" />
     <ClCompile Include="HidDevice.cpp" />
-    <ClCompile Include="KeyboardHook.cpp" />
     <ClCompile Include="KeyboardQueue.cpp" />
     <ClCompile Include="RawInput.cpp" />
     <ClCompile Include="WindowsKeyboard.cpp" />
@@ -273,7 +272,6 @@
     <ClInclude Include="DirectInput.h" />
     <ClInclude Include="DualShock3.h" />
     <ClInclude Include="HidDevice.h" />
-    <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="KeyboardQueue.h" />
     <ClInclude Include="RawInput.h" />
     <ClInclude Include="usb.h" />
