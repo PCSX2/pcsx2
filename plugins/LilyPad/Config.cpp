@@ -108,8 +108,6 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
 	{L"Save State in Title", IDC_SAVE_STATE_TITLE, 0}, // Not required for PCSX2
 	{L"GH2", IDC_GH2_HACK, 0},
 	{L"Turbo Key Hack", IDC_TURBO_KEY_HACK, 0},
-
-	{L"Vista Volume", IDC_VISTA_VOLUME, 1},
 };
 
 void Populate(int port, int slot);
@@ -774,18 +772,6 @@ int WritePrivateProfileInt(wchar_t *s1, wchar_t *s2, int v, wchar_t *ini) {
 	return WritePrivateProfileStringW(s1, s2, temp, ini);
 }
 
-void SetVolume(int volume) {
-	if (volume > 100) volume = 100;
-	if (volume < 0) volume = 0;
-	config.volume = volume;
-	unsigned int val = 0xFFFF * volume/100;
-	val = val | (val<<16);
-	for (int i=waveOutGetNumDevs()-1; i>=0; i--) {
-		waveOutSetVolume((HWAVEOUT)i, val);
-	}
-	WritePrivateProfileInt(L"General Settings", L"Volume", config.volume, iniFile);
-}
-
 int SaveSettings(wchar_t *file=0) {
 
 	// Need this either way for saving path.
@@ -817,8 +803,6 @@ int SaveSettings(wchar_t *file=0) {
 
 	WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
 	WritePrivateProfileInt(L"General Settings", L"Mouse Mode", config.mouseApi, file);
-
-	WritePrivateProfileInt(L"General Settings", L"Volume", config.volume, file);
 
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
@@ -926,21 +910,9 @@ int LoadSettings(int force, wchar_t *file) {
 	if (!config.keyboardApi) config.keyboardApi = WM;
 	config.mouseApi = (DeviceAPI) GetPrivateProfileIntW(L"General Settings", L"Mouse Mode", 0, file);
 
-	config.volume = GetPrivateProfileInt(L"General Settings", L"Volume", 100, file);
-	OSVERSIONINFO os;
-	os.dwOSVersionInfoSize = sizeof(os);
-	config.osVersion = 0;
-	if (GetVersionEx(&os)) {
-		config.osVersion = os.dwMajorVersion;
-	}
-	if (config.osVersion < 6) config.vistaVolume = 0;
-	if (!config.vistaVolume) config.volume = 100;
-	if (config.vistaVolume) SetVolume(config.volume);
-
 	if (config.debug) {
 		CreateDirectory(L"logs", 0);
 	}
-
 
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
@@ -1873,9 +1845,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 		CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_CHECKED * (config.closeHacks&1));
 		CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_CHECKED * ((config.closeHacks&2)>>1));
 
-		if (config.osVersion < 6) EnableWindow(GetDlgItem(hWnd, IDC_VISTA_VOLUME), 0);
-
-
 		if (config.keyboardApi < 0 || config.keyboardApi > 3) config.keyboardApi = NO_API;
 		CheckRadioButton(hWnd, IDC_KB_DISABLE, IDC_KB_RAW, IDC_KB_DISABLE + config.keyboardApi);
 		if (config.mouseApi < 0 || config.mouseApi > 3) config.mouseApi = NO_API;
@@ -1965,7 +1934,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 			}
 
 			int mtap = config.multitap[0] + 2*config.multitap[1];
-			int vistaVol = config.vistaVolume;
 
 			for (int j=0; j<sizeof(BoolOptionsInfo)/sizeof(BoolOptionsInfo[0]); j++) {
 				config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
@@ -1973,14 +1941,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 
 			config.closeHacks = (IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK1) == BST_CHECKED) |
 				((IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK2) == BST_CHECKED)<<1);
-
-			if (!config.vistaVolume) {
-				if (vistaVol) {
-					// Restore volume if just disabled.  Don't touch, otherwise, just in case
-					// sound plugin plays with it.
-					SetVolume(100);
-				}
-			}
 
 			for (i=0; i<4; i++) {
 				if (i && IsDlgButtonChecked(hWnd, IDC_KB_DISABLE+i) == BST_CHECKED) {

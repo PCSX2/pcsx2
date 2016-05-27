@@ -208,8 +208,6 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
 	{L"Save State in Title", 0 /*IDC_SAVE_STATE_TITLE*/, 0}, //No longer required, PCSX2 now handles it - avih 2011-05-17
 	{L"GH2", 0 /*IDC_GH2_HACK*/, 0},
 	{L"Turbo Key Hack", 0 /*IDC_TURBO_KEY_HACK*/, 0},
-
-	{L"Vista Volume", 0 /*IDC_VISTA_VOLUME*/, 1},
 };
 
 void CALLBACK PADsetSettingsDir( const char *dir )
@@ -227,8 +225,6 @@ int SaveSettings(wchar_t *file=0) {
 
 	cfg.WriteInt(L"General Settings", L"Keyboard Mode", config.keyboardApi);
 	cfg.WriteInt(L"General Settings", L"Mouse Mode", config.mouseApi);
-
-	cfg.WriteInt(L"General Settings", L"Volume", config.volume);
 
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
@@ -316,8 +312,6 @@ int LoadSettings(int force, wchar_t *file) {
 	config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", LNX_KEYBOARD);
 	if (!config.keyboardApi) config.keyboardApi = LNX_KEYBOARD;
 	config.mouseApi = (DeviceAPI) cfg.ReadInt(L"General Settings", L"Mouse Mode");
-
-	config.volume = cfg.ReadInt(L"General Settings", L"Volume", 100);
 
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {

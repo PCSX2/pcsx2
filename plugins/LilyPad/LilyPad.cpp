@@ -274,7 +274,7 @@ void UpdateEnabledDevices(int updateList = 0) {
 
 		// Disable ignore keyboard if don't have focus or there are no keys to ignore.
 		if (dev->api == IGNORE_KEYBOARD) {
-			if ((!config.vistaVolume && (config.keyboardApi == NO_API || !dev->pads[0][0].numBindings)) || !activeWindow) {
+			if ((config.keyboardApi == NO_API || !dev->pads[0][0].numBindings) || !activeWindow) {
 				dm->DisableDevice(i);
 			}
 			continue;

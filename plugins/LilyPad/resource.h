@@ -41,7 +41,6 @@
 #define IDC_FORCE_HIDE                  1124
 #define IDC_GH2_HACK                    1125
 #define IDC_FORCEFEEDBACK_HACK1         1126
-#define IDC_VISTA_VOLUME                1127
 #define IDC_TURBO_KEY_HACK              1128
 #define IDC_SAVE_STATE_TITLE            1129
 #define IDC_PAD_LIST                    1130
