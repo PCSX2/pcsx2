@@ -32,6 +32,7 @@ class GSUniformBufferOGL {
 	GLuint buffer;		// data object
 	GLuint index;		// GLSL slot
 	uint32 size;	    // size of the data
+	uint8* cache;       // content of the previous upload
 
 public:
 	GSUniformBufferOGL(GLuint index, uint32 size) : index(index)
@@ -41,6 +42,8 @@ public:
 		bind();
 		allocate();
 		attach();
+		cache = (uint8*)_aligned_malloc(size, 32);
+		memset(cache, 0, size);
 	}
 
 	void bind()
@@ -76,8 +79,18 @@ public:
 #endif
 	}
 
-	~GSUniformBufferOGL() {
+	void cache_upload(const void* src)
+	{
+		if (memcmp(cache, src, size) != 0) {
+			memcpy(cache, src, size);
+			upload(src);
+		}
+	}
+
+	~GSUniformBufferOGL()
+	{
 		glDeleteBuffers(1, &buffer);
+		_aligned_free(cache);
 	}
 };
 
