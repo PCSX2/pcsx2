@@ -177,6 +177,7 @@ namespace ReplaceGL {
 
 namespace GLLoader {
 
+	bool legacy_fglrx_buggy_driver = false;
 	bool fglrx_buggy_driver    = false;
 	bool mesa_amd_buggy_driver = false;
 	bool nvidia_buggy_driver   = false;
