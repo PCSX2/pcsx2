@@ -19,12 +19,14 @@
 #include "InputManager.h"
 
 #include "DeviceEnumerator.h"
+#ifdef _WIN32
 #include "WindowsMessaging.h"
 #include "DirectInput.h"
 #include "RawInput.h"
 #include "XInputEnum.h"
 #include "HidDevice.h"
 #include "DualShock3.h"
+#endif
 
 #ifdef __linux__
 #include "Linux/KeyboardMouse.h"
