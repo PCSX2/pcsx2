@@ -25,7 +25,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>"$(SvnCommonDir)\vsprops\preBuild.cmd" "$(ProjectRootDir)"</Command>
+      <Command>"$(SolutionDir)common\vsprops\preBuild.cmd"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\common\include;$(SolutionDir)\3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
