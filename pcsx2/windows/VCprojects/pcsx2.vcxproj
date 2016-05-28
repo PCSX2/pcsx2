@@ -156,15 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
     <None Include="..\..\x86\aVUzerorec.S" />
@@ -183,225 +174,68 @@
     <None Include="..\..\x86\microVU_Upper.inl" />
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl" />
     <CustomBuild Include="..\..\gui\Resources\AppIcon16.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\AppIcon32.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\AppIcon64.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\BackgroundLogo.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ButtonIcon_Camera.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Cpu.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Gamefixes.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_MemoryCard.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Paths.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Plugins.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Speedhacks.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Logo.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -928,24 +762,6 @@
       <Project>{677b7d11-d5e1-40b3-88b1-9a4df83d2213}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\PCSX2.manifest" />
