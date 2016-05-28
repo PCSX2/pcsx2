@@ -46,9 +46,9 @@ void GPUSettingsDlg::OnInit()
 
 		if(CComPtr<IDirect3D9> d3d = Direct3DCreate9(D3D_SDK_VERSION))
 		{
-			uint32 w = theApp.GetConfig("ModeWidth", 0);
-			uint32 h = theApp.GetConfig("ModeHeight", 0);
-			uint32 hz = theApp.GetConfig("ModeRefreshRate", 0);
+			uint32 w = theApp.GetConfigI("ModeWidth");
+			uint32 h = theApp.GetConfigI("ModeHeight");
+			uint32 hz = theApp.GetConfigI("ModeRefreshRate");
 
 			uint32 n = d3d->GetAdapterModeCount(D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8);
 
@@ -66,16 +66,16 @@ void GPUSettingsDlg::OnInit()
 		}
 	}
 
-	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfig("Renderer", static_cast<int>(GPURendererType::D3D9_SW)));
-	ComboBoxInit(IDC_FILTER, theApp.m_gpu_filter, theApp.GetConfig("filter", 0));
-	ComboBoxInit(IDC_DITHERING, theApp.m_gpu_dithering, theApp.GetConfig("dithering", 1));
-	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gpu_aspectratio, theApp.GetConfig("AspectRatio", 1));
-	ComboBoxInit(IDC_SCALE, theApp.m_gpu_scale, theApp.GetConfig("scale_x", 0) | (theApp.GetConfig("scale_y", 0) << 2));
+	ComboBoxInit(IDC_RENDERER, theApp.m_gpu_renderers, theApp.GetConfigI("Renderer"));
+	ComboBoxInit(IDC_FILTER, theApp.m_gpu_filter, theApp.GetConfigI("filter"));
+	ComboBoxInit(IDC_DITHERING, theApp.m_gpu_dithering, theApp.GetConfigI("dithering"));
+	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gpu_aspectratio, theApp.GetConfigI("AspectRatio"));
+	ComboBoxInit(IDC_SCALE, theApp.m_gpu_scale, theApp.GetConfigI("scale_x") | (theApp.GetConfigI("scale_y") << 2));
 
-	CheckDlgButton(m_hWnd, IDC_WINDOWED, theApp.GetConfig("windowed", 1));
+	CheckDlgButton(m_hWnd, IDC_WINDOWED, theApp.GetConfigB("windowed"));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETRANGE, 0, MAKELPARAM(16, 0));
-	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfig("extrathreads", DEFAULT_EXTRA_RENDERING_THREADS), 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("extrathreads"), 0));
 
 	UpdateControls();
 }

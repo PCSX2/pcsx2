@@ -186,12 +186,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 	if(renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	}
 
 	if(threads == -1)
 	{
-		threads = theApp.GetConfig("extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
+		threads = theApp.GetConfigI("extrathreads");
 	}
 
 	GSWnd* wnd[2] = { NULL, NULL };
@@ -362,8 +362,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	{
 		// old-style API expects us to create and manage our own window:
 
-		int w = theApp.GetConfig("ModeWidth", 0);
-		int h = theApp.GetConfig("ModeHeight", 0);
+		int w = theApp.GetConfigI("ModeWidth");
+		int h = theApp.GetConfigI("ModeHeight");
 
 #if defined(__unix__)
 		for(uint32 i = 0; i < 2; i++) {
@@ -465,7 +465,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		return -1;
 	}
 
-	if (renderer == GSRendererType::OGL_HW && theApp.GetConfig("debug_glsl_shader", 0) == 2) {
+	if (renderer == GSRendererType::OGL_HW && theApp.GetConfigI("debug_glsl_shader") == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
 		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
 		printf("\nGSdx: test OpenGL shader done. It will now exit\n");
@@ -484,12 +484,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
 	{
-#ifdef _WIN32
-		GSRendererType default_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_HW : GSRendererType::DX9_HW;
-#else
-		GSRendererType default_renderer = GSRendererType::Default;
-#endif
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(default_renderer)));
+		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	}
 	else if (stored_toggle_state != toggle_state)
 	{
@@ -545,7 +540,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 
 	// Legacy GUI expects to acquire vsync from the configuration files.
 
-	s_vsync = !!theApp.GetConfig("vsync", 0);
+	s_vsync = !!theApp.GetConfigI("vsync");
 
 	if(mt == 2)
 	{
@@ -563,7 +558,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 	{
 		// normal init
 
-		renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	}
 
 	*dsp = NULL;
@@ -883,7 +878,7 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 		return 0;
 	}
 #if defined(__unix__)
-	if (!theApp.GetConfig("capture_enabled", 0)) {
+	if (!theApp.GetConfigB("capture_enabled")) {
 		printf("GSdx: Recording is disabled\n");
 		return 0;
 	}
@@ -1072,7 +1067,7 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 		uint8 regs[0x2000];
 		GSsetBaseMem(regs);
 
-		s_vsync = !!theApp.GetConfig("vsync", 0);
+		s_vsync = theApp.GetConfigB("vsync");
 
 		HWND hWnd = NULL;
 
@@ -1515,7 +1510,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	GSRendererType m_renderer;
 	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
-	m_renderer = static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default)));
+	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	// alternatively:
 	// m_renderer = static_cast<GSRendererType>(renderer);
 
@@ -1537,7 +1532,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	GSsetBaseMem(regs);
 
-	s_vsync = !!theApp.GetConfig("vsync", 0);
+	s_vsync = theApp.GetConfigB("vsync");
 
 	void* hWnd = NULL;
 
@@ -1635,8 +1630,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	//while(IsWindowVisible(hWnd))
 	//FIXME map?
-	int finished = theApp.GetConfig("linux_replay", 1);
-	if (theApp.GetConfig("dump", 0)) {
+	int finished = theApp.GetConfigI("linux_replay");
+	if (theApp.GetConfigI("dump")) {
 		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
 		finished = 1;
 	}
@@ -1706,11 +1701,11 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		}
 	}
 
-	if (theApp.GetConfig("linux_replay", 1) > 1) {
+	if (theApp.GetConfigI("linux_replay") > 1) {
 		// Print some nice stats
 		// Skip first frame (shader compilation populate the result)
 		// it divides by 10 the standard deviation...
-		float n = (float)theApp.GetConfig("linux_replay", 1) - 1.0f;
+		float n = (float)theApp.GetConfigI("linux_replay") - 1.0f;
 		float mean = 0;
 		float sd = 0;
 		for (auto i = stats.begin()+1; i != stats.end(); i++) {

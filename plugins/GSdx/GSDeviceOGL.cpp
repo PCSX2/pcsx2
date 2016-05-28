@@ -74,7 +74,7 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
 	#endif
 
-	m_debug_gl_call =  !!theApp.GetConfig("debug_opengl", 0);
+	m_debug_gl_call =  theApp.GetConfigB("debug_opengl");
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -180,7 +180,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfig("debug_opengl", 0)) {
+	if (theApp.GetConfigB("debug_opengl")) {
 		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 
@@ -200,7 +200,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Various");
 
-		m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
+		m_shader = new GSShaderOGL(theApp.GetConfigB("debug_glsl_shader"));
 
 		glGenFramebuffers(1, &m_fbo);
 		// Always write to the first buffer
@@ -259,7 +259,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
 		// Upload once and forget about it
 		ConvertConstantBuffer cb;
-		cb.ScalingFactor = GSVector4i(theApp.GetConfig("upscale_multiplier", 1));
+		cb.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
 		m_convert.cb->upload(&cb);
 
 		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
@@ -317,9 +317,9 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Shadeboost");
 
-		int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
-		int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
-		int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
+		int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+		int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+		int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
@@ -687,7 +687,7 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
 	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
 	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
 
-	int anisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	int anisotropy = theApp.GetConfigI("MaxAnisotropy");
 	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && aniso)
 		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
@@ -1264,7 +1264,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 			return;
 		}
 
-		std::string   config_name(theApp.GetConfig("shaderfx_conf", "dummy.ini"));
+		std::string   config_name(theApp.GetConfigS("shaderfx_conf"));
 		std::ifstream fconfig(config_name);
 		std::stringstream config;
 		if (fconfig.good())
@@ -1272,7 +1272,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		else
 			fprintf(stderr, "Warning failed to load '%s'. External Shader might be wrongly configured\n", config_name.c_str());
 
-		std::string   shader_name(theApp.GetConfig("shaderfx_glsl", "dummy.glsl"));
+		std::string   shader_name(theApp.GetConfigS("shaderfx_glsl"));
 		std::ifstream fshader(shader_name);
 		std::stringstream shader;
 		if (!fshader.good()) {

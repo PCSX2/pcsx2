@@ -100,7 +100,8 @@ bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKey
 		// Do not save the inifile key which is not an option
 		if (it->first.compare("inifile") == 0) continue;
 
-		if (!it->second.empty())
+		// Only keep option that have a default value (allow to purge old option of the GSdx.ini)
+		if (!it->second.empty() && m_default_configuration.find(it->first) != m_default_configuration.end())
 			fprintf(f, "%s = %s\n", it->first.c_str(), it->second.c_str());
 	}
 	fclose(f);
@@ -235,6 +236,100 @@ GSdxApp::GSdxApp()
 	m_gpu_scale.push_back(GSSetting(2 | (1 << 2), "H x 4 - V x 2", ""));
 	m_gpu_scale.push_back(GSSetting(1 | (2 << 2), "H x 2 - V x 4", ""));
 	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
+
+	// Avoid to clutter the ini file with useless options
+
+	// PSX option (or DX9). Not supported on linux
+#ifdef _WIN32
+	m_default_configuration["dithering"]                                  = "1";
+	m_default_configuration["ModeRefreshRate"]                            = "0";
+	m_default_configuration["scale_x"]                                    = "0";
+	m_default_configuration["scale_y"]                                    = "0";
+	m_default_configuration["windowed"]                                   = "1";
+#endif
+
+	// Per OS option
+#ifdef _WIN32
+	m_default_configuration["Adapter"]                                    = "default";
+	m_default_configuration["CaptureHeight"]                              = "480";
+	m_default_configuration["CaptureFileName"]                            = "";
+	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
+	m_default_configuration["CaptureWidth"]                               = "640";
+	m_default_configuration["fba"]                                        = "1";
+	m_default_configuration["logz"]                                       = "0";
+#else
+	m_default_configuration["linux_replay"]                               = "1";
+#endif
+
+	m_default_configuration["aa1"]                                        = "0";
+	m_default_configuration["accurate_blending_unit"]                     = "1";
+	m_default_configuration["accurate_date"]                              = "0";
+	m_default_configuration["AspectRatio"]                                = "1";
+	m_default_configuration["capture_enabled"]                            = "0";
+	m_default_configuration["capture_out_dir"]                            = "/tmp/GSdx_Capture";
+	m_default_configuration["capture_threads"]                            = "4";
+	m_default_configuration["crc_hack_level"]                             = "3";
+	m_default_configuration["CrcHacksExclusions"]                         = "";
+	m_default_configuration["debug_glsl_shader"]                          = "0";
+	m_default_configuration["debug_opengl"]                               = "0";
+	m_default_configuration["dump"]                                       = "0";
+	m_default_configuration["extrathreads"]                               = "2";
+	m_default_configuration["filter"]                                     = "2";
+	m_default_configuration["fxaa"]                                       = "0";
+	m_default_configuration["interlace"]                                  = "7";
+	m_default_configuration["large_framebuffer"]                          = "1";
+	m_default_configuration["MaxAnisotropy"]                              = "0";
+	m_default_configuration["mipmap"]                                     = "1";
+	m_default_configuration["ModeHeight"]                                 = "480";
+	m_default_configuration["ModeWidth"]                                  = "640";
+	m_default_configuration["NTSC_Saturation"]                            = "1";
+	m_default_configuration["ocldev"]                                     = "";
+	m_default_configuration["override_geometry_shader"]                   = "-1";
+	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
+	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
+	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
+	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
+	m_default_configuration["override_GL_ARB_shader_image_load_store"]    = "-1";
+	m_default_configuration["override_GL_ARB_viewport_array"]             = "-1";
+	m_default_configuration["override_GL_EXT_texture_filter_anisotropic"] = "-1";
+	m_default_configuration["paltex"]                                     = "0";
+	m_default_configuration["png_compression_level"]                      = to_string(Z_BEST_SPEED);
+	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
+	m_default_configuration["Renderer"]                                   = to_string(static_cast<int>(GSRendererType::Default)); // FIXME
+	m_default_configuration["resx"]                                       = "1024";
+	m_default_configuration["resy"]                                       = "1024";
+	m_default_configuration["save"]                                       = "0";
+	m_default_configuration["savef"]                                      = "0";
+	m_default_configuration["savel"]                                      = "5000";
+	m_default_configuration["saven"]                                      = "0";
+	m_default_configuration["savet"]                                      = "0";
+	m_default_configuration["savez"]                                      = "0";
+	m_default_configuration["ShadeBoost"]                                 = "0";
+	m_default_configuration["ShadeBoost_Brightness"]                      = "50";
+	m_default_configuration["ShadeBoost_Contrast"]                        = "50";
+	m_default_configuration["ShadeBoost_Saturation"]                      = "50";
+	m_default_configuration["shaderfx"]                                   = "0";
+	m_default_configuration["shaderfx_conf"]                              = "shaders/GSdx_FX_Settings.ini";
+	m_default_configuration["shaderfx_glsl"]                              = "shaders/GSdx.fx";
+	m_default_configuration["TVShader"]                                   = "0";
+	m_default_configuration["upscale_multiplier"]                         = "1";
+	m_default_configuration["UserHacks"]                                  = "0";
+	m_default_configuration["UserHacks_align_sprite_X"]                   = "0";
+	m_default_configuration["UserHacks_AlphaHack"]                        = "0";
+	m_default_configuration["UserHacks_AlphaStencil"]                     = "0";
+	m_default_configuration["UserHacks_ColorDepthClearOverlap"]           = "0";
+	m_default_configuration["UserHacks_DisableDepthSupport"]              = "0";
+	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
+	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
+	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
+	m_default_configuration["UserHacks_MSAA"]                             = "0";
+	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
+	m_default_configuration["UserHacks_safe_fbmask"]                      = "0";
+	m_default_configuration["UserHacks_SkipDraw"]                         = "0";
+	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
+	m_default_configuration["UserHacks_TCOffset"]                         = "0";
+	m_default_configuration["UserHacks_WildHack"]                         = "0";
+	m_default_configuration["vsync"]                                      = "0";
 }
 
 #if defined(__unix__)
@@ -268,7 +363,9 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 	while( fscanf(f, "%255s = %255s\n", key, value) != EOF ) {
 		std::string key_s(key);
 		std::string value_s(value);
-		m_configuration_map[key_s] = value_s;
+		// Only keep option that have a default value (allow to purge old option of the GSdx.ini)
+		if (m_default_configuration.find(key_s) != m_default_configuration.end())
+			m_configuration_map[key_s] = value_s;
 	}
 
 	fclose(f);
@@ -299,11 +396,17 @@ void GSdxApp::SetConfigDir(const char* dir)
 	}
 }
 
-string GSdxApp::GetConfig(const char* entry, const char* value)
+string GSdxApp::GetConfigS(const char* entry)
 {
 	char buff[4096] = {0};
+	auto def = m_default_configuration.find(entry);
 
-	GetPrivateProfileString(m_section.c_str(), entry, value, buff, countof(buff), m_ini.c_str());
+	if (def != m_default_configuration.end()) {
+		GetPrivateProfileString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+	} else {
+		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
+		GetPrivateProfileString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+	}
 
 	return string(buff);
 }
@@ -313,9 +416,21 @@ void GSdxApp::SetConfig(const char* entry, const char* value)
 	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
 }
 
-int GSdxApp::GetConfig(const char* entry, int value)
+int GSdxApp::GetConfigI(const char* entry)
 {
-	return GetPrivateProfileInt(m_section.c_str(), entry, value, m_ini.c_str());
+	auto def = m_default_configuration.find(entry);
+
+	if (def != m_default_configuration.end()) {
+		return GetPrivateProfileInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
+	} else {
+		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
+		return GetPrivateProfileInt(m_section.c_str(), entry, 0, m_ini.c_str());
+	}
+}
+
+bool GSdxApp::GetConfigB(const char* entry)
+{
+	return !!GetConfigI(entry);
 }
 
 void GSdxApp::SetConfig(const char* entry, int value)

@@ -110,8 +110,8 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 		return -1;
 #endif
 
-	GPURendererType renderer = static_cast<GPURendererType>(theApp.GetConfig("Renderer", static_cast<int>(GPURendererType::D3D9_SW)));
-	int threads = theApp.GetConfig("extrathreads", DEFAULT_EXTRA_RENDERING_THREADS);
+	GPURendererType renderer = static_cast<GPURendererType>(theApp.GetConfigI("Renderer"));
+	int threads = theApp.GetConfigI("extrathreads");
 
 	switch(renderer)
 	{

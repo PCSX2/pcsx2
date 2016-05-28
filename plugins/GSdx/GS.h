@@ -231,7 +231,7 @@ enum class GSRendererType : int8_t
 	OGL_OpenCL = 17,
 
 #ifdef _WIN32
-	Default = DX9_HW
+	Default = DX1011_HW
 #else
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
@@ -1271,9 +1271,6 @@ enum {FREEZE_LOAD=0, FREEZE_SAVE=1, FREEZE_SIZE=2};
 struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
-
-// default gs config settings
-#define DEFAULT_EXTRA_RENDERING_THREADS 2
 
 enum class GSVideoMode : uint8
 {

@@ -57,7 +57,7 @@ static void FindAdapter(IDirect3D9 *d3d9, UINT &adapter, D3DDEVTYPE &devtype, st
 	devtype = D3DDEVTYPE_HAL;
 
 	if (!adapter_id.length())
-		adapter_id = theApp.GetConfig("Adapter", "default");
+		adapter_id = theApp.GetConfigS("Adapter");
 
 	if (adapter_id == "default")
 		;
@@ -178,7 +178,7 @@ uint32 GSDevice9::GetMaxDepth(uint32 msaa, std::string adapter_id)
 
 void GSDevice9::ForceValidMsaaConfig()
 {
-	if(0 == GetMaxDepth(theApp.GetConfig("UserHacks_MSAA", 0)))
+	if(0 == GetMaxDepth(theApp.GetConfigI("UserHacks_MSAA")))
 	{
 		theApp.SetConfig("UserHacks_MSAA", 0); // replace invalid msaa value in ini file with 0.
 	}
@@ -304,8 +304,8 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	m_convert.bs.BlendEnable = false;
 	m_convert.bs.RenderTargetWriteMask = D3DCOLORWRITEENABLE_RGBA;
-	D3DTEXTUREFILTERTYPE LinearToAnisotropic = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-	D3DTEXTUREFILTERTYPE PointToAnisotropic = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
+	D3DTEXTUREFILTERTYPE LinearToAnisotropic = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+	D3DTEXTUREFILTERTYPE PointToAnisotropic = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
 
 	m_convert.ln.FilterMin[0] = LinearToAnisotropic;
 	m_convert.ln.FilterMag[0] = LinearToAnisotropic;
@@ -313,7 +313,7 @@ bool GSDevice9::Create(GSWnd* wnd)
 	m_convert.ln.FilterMag[1] = LinearToAnisotropic;
 	m_convert.ln.AddressU = D3DTADDRESS_CLAMP;
 	m_convert.ln.AddressV = D3DTADDRESS_CLAMP;
-	m_convert.ln.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	m_convert.ln.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 
 	m_convert.pt.FilterMin[0] = PointToAnisotropic;
 	m_convert.pt.FilterMag[0] = PointToAnisotropic;
@@ -321,7 +321,7 @@ bool GSDevice9::Create(GSWnd* wnd)
 	m_convert.pt.FilterMag[1] = PointToAnisotropic;
 	m_convert.pt.AddressU = D3DTADDRESS_CLAMP;
 	m_convert.pt.AddressV = D3DTADDRESS_CLAMP;
-	m_convert.pt.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	m_convert.pt.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 
 	// merge
 
@@ -348,20 +348,20 @@ bool GSDevice9::Create(GSWnd* wnd)
 		CompileShader((const char *)shader.data(), shader.size(), "interlace.fx", format("ps_main%d", i), nullptr, &m_interlace.ps[i]);
 	}
 
-	// Shade Boost	
+	// Shade Boost
 
-	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
-	int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
-	int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
-		
-	string str[3];		
-		
+	int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+
+	string str[3];
+
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);
 	str[2] = format("%d", ShadeBoost_Contrast);
 
 	D3D_SHADER_MACRO macro[] =
-	{			
+	{
 		{"SB_SATURATION", str[0].c_str()},
 		{"SB_BRIGHTNESS", str[1].c_str()},
 		{"SB_CONTRAST", str[2].c_str()},
@@ -403,7 +403,7 @@ bool GSDevice9::Reset(int w, int h)
 
 	HRESULT hr;
 
-	int mode = (!m_wnd->IsManaged() || theApp.GetConfig("windowed", 1)) ? Windowed : Fullscreen;
+	int mode = (!m_wnd->IsManaged() || theApp.GetConfigB("windowed")) ? Windowed : Fullscreen;
 
 	if(mode == DontCare)
 	{
@@ -461,9 +461,9 @@ bool GSDevice9::Reset(int w, int h)
 
 	// m_pp.Flags |= D3DPRESENTFLAG_VIDEO; // enables tv-out (but I don't think anyone would still use a regular tv...)
 
-	int mw = theApp.GetConfig("ModeWidth", 0);
-	int mh = theApp.GetConfig("ModeHeight", 0);
-	int mrr = theApp.GetConfig("ModeRefreshRate", 0);
+	int mw = theApp.GetConfigI("ModeWidth");
+	int mh = theApp.GetConfigI("ModeHeight");
+	int mrr = theApp.GetConfigI("ModeRefreshRate");
 
 	if(m_wnd->IsManaged() && mode == Fullscreen && mw > 0 && mh > 0 && mrr >= 0)
 	{
@@ -945,7 +945,7 @@ void GSDevice9::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			std::string config_name(theApp.GetConfig("shaderfx_conf", "shaders/GSdx_FX_Settings.ini"));
+			std::string config_name(theApp.GetConfigS("shaderfx_conf"));
 			std::ifstream fconfig(config_name);
 			std::stringstream shader;
 			if (fconfig.good())
@@ -953,7 +953,7 @@ void GSDevice9::InitExternalFX()
 			else
 				fprintf(stderr, "GSdx: External shader config '%s' not loaded.\n", config_name.c_str());
 
-			std::string shader_name(theApp.GetConfig("shaderfx_glsl", "shaders/GSdx.fx"));
+			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
 			std::ifstream fshader(shader_name);
 			if (fshader.good())
 			{

@@ -223,8 +223,8 @@ namespace GLLoader {
 		std::string opt("override_");
 		opt += name;
 
-		if (theApp.GetConfig(opt.c_str(), -1) != -1) {
-			found = !!theApp.GetConfig(opt.c_str(), -1);
+		if (theApp.GetConfigI(opt.c_str()) != -1) {
+			found = theApp.GetConfigB(opt.c_str());
 			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
 		}
 
@@ -256,8 +256,8 @@ namespace GLLoader {
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
-		if (theApp.GetConfig("override_geometry_shader", -1) != -1) {
-			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
+		if (theApp.GetConfigI("override_geometry_shader") != -1) {
+			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
 

@@ -1870,7 +1870,7 @@ GSRendererCL::CL::CL()
 	WIs = INT_MAX;
 	version = INT_MAX;
 
-	std::string ocldev = theApp.GetConfig("ocldev", "");
+	std::string ocldev = theApp.GetConfigS("ocldev");
 
 #ifdef IOCL_DEBUG
 	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";

@@ -43,19 +43,19 @@ GSState::GSState()
 	, m_options(0)
 	, m_frameskip(0)
 {
-	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
-	m_mipmap = !!theApp.GetConfig("mipmap", 1);
-	m_NTSC_Saturation = !!theApp.GetConfig("NTSC_Saturation", true);
-	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
+	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1;
+	m_mipmap = theApp.GetConfigB("mipmap");
+	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
+	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
 
 	s_n     = 0;
-	s_dump  = !!theApp.GetConfig("dump", 0);
-	s_save  = !!theApp.GetConfig("save", 0);
-	s_savet = !!theApp.GetConfig("savet", 0);
-	s_savez = !!theApp.GetConfig("savez", 0);
-	s_savef = !!theApp.GetConfig("savef", 0);
-	s_saven = theApp.GetConfig("saven", 0);
-	s_savel = theApp.GetConfig("savel", 5000);
+	s_dump  = theApp.GetConfigB("dump");
+	s_save  = theApp.GetConfigB("save");
+	s_savet = theApp.GetConfigB("savet");
+	s_savez = theApp.GetConfigB("savez");
+	s_savef = theApp.GetConfigB("savef");
+	s_saven = theApp.GetConfigI("saven");
+	s_savel = theApp.GetConfigI("savel");
 #if defined(__unix__)
 	if (s_dump) {
 		GSmkdir("/tmp/GS_HW_dump");
@@ -71,8 +71,8 @@ GSState::GSState()
 	//s_saven = 0;
 	//s_savel = 0;
 
-	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
-	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+	UserHacks_WildHack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_WildHack") : 0;
+	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));

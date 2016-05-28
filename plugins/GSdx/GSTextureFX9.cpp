@@ -213,8 +213,8 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 
 			memset(ss, 0, sizeof(*ss));
 
-			ss->Anisotropic[0] = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-			ss->Anisotropic[1] = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
+			ss->Anisotropic[0] = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+			ss->Anisotropic[1] = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
 			ss->FilterMin[0] = ssel.ltf ? ss->Anisotropic[0] : D3DTEXF_POINT;
 			ss->FilterMag[0] = ssel.ltf ? ss->Anisotropic[0] : D3DTEXF_POINT;
 			ss->FilterMip[0] = ssel.ltf ? ss->Anisotropic[0] : D3DTEXF_POINT;
@@ -223,7 +223,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 			ss->FilterMip[1] = ss->Anisotropic[1];
 			ss->AddressU = ssel.tau ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
 			ss->AddressV = ssel.tav ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
-			ss->MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+			ss->MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 			ss->MaxLOD = ULONG_MAX;
 
 
