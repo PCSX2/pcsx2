@@ -1491,7 +1491,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 			// AMD DRIVER SUCK
 			uint16 src = b.src;
 			uint16 dst = b.dst;
-			if (GLLoader::fglrx_buggy_driver) {
+			if (GLLoader::legacy_fglrx_buggy_driver) {
 				if (src == GL_SRC1_ALPHA)
 					src = GL_SRC_ALPHA;
 				else if (src == GL_ONE_MINUS_SRC1_ALPHA)

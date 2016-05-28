@@ -247,6 +247,8 @@ namespace GLLoader {
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
+		if (fglrx_buggy_driver && strstr((const char*)&s[v], "15.301.1801.1001")) // Latest legacy driver
+			legacy_fglrx_buggy_driver = true;
 		if (strstr(vendor, "NVIDIA Corporation"))
 			nvidia_buggy_driver = true;
 		if (strstr(vendor, "Intel"))
