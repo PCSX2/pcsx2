@@ -345,20 +345,12 @@ vec4 fetch_rgb()
     return c * 255.0f;
 }
 
-vec4 fetch_g7b1()
+vec4 fetch_gXbY()
 {
-    vec4 rt = fetch_raw_color() * 255.0f;
-    uint g7 = (uint(rt.g) >> 1u) & 0x7Fu;
-    uint b1 = (uint(rt.b) << 7u) & 0x80u;
-    return vec4(float(g7 | b1));
-}
-
-vec4 fetch_g4b4()
-{
-    vec4 rt = fetch_raw_color() * 255.0f;
-    uint g4 = (uint(rt.g) >> 4u) & 0x0Fu;
-    uint b4 = (uint(rt.b) << 4u) & 0xF0u;
-    return vec4(float(g4 | b4));
+    ivec4 rt = ivec4(fetch_raw_color() * 255.0f);
+    int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
+    int blue  = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
+    return vec4(green | blue);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -530,10 +522,8 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
-#elif PS_CHANNEL_FETCH == 5
-    vec4 T = fetch_g7b1();
 #elif PS_CHANNEL_FETCH == 6
-    vec4 T = fetch_g4b4();
+    vec4 T = fetch_gXbY();
 #elif PS_CHANNEL_FETCH == 7
     vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0

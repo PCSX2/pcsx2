@@ -720,17 +720,45 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			GL_INS("Blue channel");
 			ps_sel.channel = 3;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
-			// Read either Red or Green. Let's go for Red ;)
-			// Pop
-			if (m_context->FRAME.FBMSK == 0xF0FFFFFF) {
-				GL_INS("Terminator 3 G4B4 Channel");
-				ps_sel.channel = 6;
-				m_context->FRAME.FBMSK = 0x00FFFFFF;
-			} else if (m_context->FRAME.FBMSK == 0x80FFFFFF) {;
-				GL_INS("Terminator 3 G7B1 Channel");
-				ps_sel.channel = 5;
-				m_context->FRAME.FBMSK = 0x00FFFFFF;
+			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
+			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
+			bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
+			if (green && (m_context->FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF) {
+				// Typically used in Terminator 3
+				int blue_mask  = m_context->FRAME.FBMSK >> 24;
+				int green_mask = ~blue_mask & 0xFF;
+				int blue_shift = -1;
+
+				// Note: potentially we could also check the value of the clut
+				switch (m_context->FRAME.FBMSK >> 24) {
+					case 0xFF: ASSERT(0);      break;
+					case 0xFE: blue_shift = 1; break;
+					case 0xFC: blue_shift = 2; break;
+					case 0xF8: blue_shift = 3; break;
+					case 0xF0: blue_shift = 4; break;
+					case 0xE0: blue_shift = 5; break;
+					case 0xC0: blue_shift = 6; break;
+					case 0x80: blue_shift = 7; break;
+					default:   ASSERT(0);      break;
+				}
+
+				int green_shift = 8 - blue_shift;
+				dev->SetupCBMisc(GSVector4i(blue_mask, blue_shift, green_mask, green_shift));
+
+				if (blue_shift >= 0) {
+					GL_INS("Green/Blue channel (%d, %d)", blue_shift, green_shift);
+					ps_sel.channel = 6;
+					m_context->FRAME.FBMSK = 0x00FFFFFF;
+				} else {
+					GL_INS("Green channel (wrong mask) (fbmask %x)", m_context->FRAME.FBMSK >> 24);
+					ps_sel.channel = 2;
+				}
+
+			} else if (green) {
+				GL_INS("Green channel");
+				ps_sel.channel = 2;
 			} else {
+				// Pop
 				GL_INS("Red channel");
 				ps_sel.channel = 1;
 			}
