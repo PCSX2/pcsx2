@@ -61,6 +61,7 @@ layout(std140, binding = 14) uniform cb14
 layout(std140, binding = 15) uniform cb15
 {
     ivec4 ScalingFactor;
+    ivec4 ChannelShuffle;
 };
 
 layout(std140, binding = 20) uniform cb20

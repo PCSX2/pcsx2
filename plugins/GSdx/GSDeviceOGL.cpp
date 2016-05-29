@@ -256,11 +256,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Convert");
 
-		m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(ConvertConstantBuffer));
+		m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(MiscConstantBuffer));
 		// Upload once and forget about it
-		ConvertConstantBuffer cb;
-		cb.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
-		m_convert.cb->cache_upload(&cb);
+		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
+		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
 		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
 
@@ -1565,6 +1564,12 @@ void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer*
 	if(m_ps_cb_cache.Update(ps_cb)) {
 		m_ps_cb->upload(ps_cb);
 	}
+}
+
+void GSDeviceOGL::SetupCBMisc(const GSVector4i& channel)
+{
+	m_misc_cb_cache.ChannelShuffle = channel;
+	m_convert.cb->cache_upload(&m_misc_cb_cache);
 }
 
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)

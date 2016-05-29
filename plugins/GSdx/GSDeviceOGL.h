@@ -380,6 +380,14 @@ public:
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
+	struct alignas(32) MiscConstantBuffer
+	{
+		GSVector4i ScalingFactor;
+		GSVector4i ChannelShuffle;
+
+		MiscConstantBuffer() {memset(this, 0, sizeof(*this));}
+	};
+
 	struct OGLBlend {uint16 bogus, op, src, dst;};
 	static const OGLBlend m_blendMapOGL[3*3*3*3 + 1];
 	static const int m_NO_BLEND;
@@ -453,6 +461,7 @@ public:
 
 	VSConstantBuffer m_vs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
+	MiscConstantBuffer m_misc_cb_cache;
 
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
@@ -546,6 +555,7 @@ public:
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
+	void SetupCBMisc(const GSVector4i& channel);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel);
 	GLuint GetSamplerID(PSSamplerSelector ssel);

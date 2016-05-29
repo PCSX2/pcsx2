@@ -86,6 +86,7 @@ static const char* const common_header_glsl =
 	"layout(std140, binding = 15) uniform cb15\n"
 	"{\n"
 	"    ivec4 ScalingFactor;\n"
+	"    ivec4 ChannelShuffle;\n"
 	"};\n"
 	"\n"
 	"layout(std140, binding = 20) uniform cb20\n"
