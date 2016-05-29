@@ -294,7 +294,7 @@ __fi void mVUaddrFix(mV, const x32& gprReg)
 				// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
 #ifdef __GNUC__
 				xSUB(esp, 4);
-#endif{
+#endif
 				if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
 					xMOV(gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
 					xMOV(gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
