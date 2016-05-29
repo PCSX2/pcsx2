@@ -251,10 +251,8 @@ GSdxApp::GSdxApp()
 	// Per OS option
 #ifdef _WIN32
 	m_default_configuration["Adapter"]                                    = "default";
-	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
-	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["fba"]                                        = "1";
 	m_default_configuration["logz"]                                       = "0";
 #else
@@ -268,6 +266,8 @@ GSdxApp::GSdxApp()
 	m_default_configuration["capture_enabled"]                            = "0";
 	m_default_configuration["capture_out_dir"]                            = "/tmp/GSdx_Capture";
 	m_default_configuration["capture_threads"]                            = "4";
+	m_default_configuration["CaptureHeight"]                              = "480";
+	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["crc_hack_level"]                             = "3";
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
