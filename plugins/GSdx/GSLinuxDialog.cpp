@@ -26,6 +26,8 @@
 #include "GSLinuxLogo.h"
 #include "GSSetting.h"
 
+static GtkWidget* s_hack_frame;
+
 void AddTooltip(GtkWidget* w, int idc)
 {
 	gtk_widget_set_tooltip_text(w, dialog_message(idc));
@@ -102,7 +104,8 @@ void CB_EntryActived(GtkEntry *entry, gpointer user_data)
 	theApp.SetConfig((char*)user_data, hex_value);
 }
 
-GtkWidget* CreateTextBox(const char* opt_name) {
+GtkWidget* CreateTextBox(const char* opt_name)
+{
 	GtkWidget* entry = gtk_entry_new();
 
 	int hex_value = theApp.GetConfigI(opt_name);
@@ -121,7 +124,11 @@ GtkWidget* CreateTextBox(const char* opt_name) {
 
 void CB_ToggleCheckBox(GtkToggleButton *togglebutton, gpointer user_data)
 {
-	theApp.SetConfig((char*)user_data, (int)gtk_toggle_button_get_active(togglebutton));
+	char* opt = (char*)user_data;
+	theApp.SetConfig(opt, (int)gtk_toggle_button_get_active(togglebutton));
+	if (strcmp(opt, "UserHacks") == 0) {
+		gtk_widget_set_sensitive(s_hack_frame, gtk_toggle_button_get_active(togglebutton));
+	}
 }
 
 GtkWidget* CreateCheckBox(const char* label, const char* opt_name)
@@ -240,6 +247,8 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* acc_bld_label     = left_label("Blending Unit Accuracy:");
 	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit");
 
+	GtkWidget* hack_enable_check   = CreateCheckBox("Enable User Hacks", "UserHacks");
+
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
@@ -248,10 +257,11 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
+	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table , paltex_check  , acc_date_check);
-	InsertWidgetInTable(hw_table , large_fb_check);
+	InsertWidgetInTable(hw_table , large_fb_check, hack_enable_check);
 	InsertWidgetInTable(hw_table , fsaa_label    , fsaa_combo_box);
 	InsertWidgetInTable(hw_table , filter_label  , filter_combo_box);
 	InsertWidgetInTable(hw_table , af_label      , af_combo_box);
@@ -333,7 +343,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_offset_check   = CreateCheckBox("Half-pixel Offset Hack", "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
-	GtkWidget* hack_enble_check    = CreateCheckBox("Enable User Hacks", "UserHacks");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
 	GtkWidget* hack_tco_label      = left_label("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
@@ -352,7 +361,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
-	gtk_widget_set_tooltip_text(hack_enble_check, "Allows the use of the hack below");
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
 	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
@@ -366,7 +374,6 @@ void populate_hack_table(GtkWidget* hack_table)
 
 
 	s_table_line = 0;
-	InsertWidgetInTable(hack_table , hack_enble_check);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
 	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
 	InsertWidgetInTable(hack_table , hack_safe_fbmask    , hack_fast_inv);
@@ -491,6 +498,10 @@ bool RunLinuxDialog()
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
+
+	// Enable/disable hack frame based on enable option
+	s_hack_frame = hack_table;
+	gtk_widget_set_sensitive(s_hack_frame, theApp.GetConfigB("UserHacks"));
 
 	// Put the box in the dialog and show it to the world.
 	gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
