@@ -347,10 +347,16 @@ vec4 fetch_rgb()
 
 vec4 fetch_gXbY()
 {
+#if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
+    int depth = fetch_raw_depth();
+    int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+    return vec4(bg);
+#else
     ivec4 rt = ivec4(fetch_raw_color() * 255.0f);
     int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
     int blue  = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
     return vec4(green | blue);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
