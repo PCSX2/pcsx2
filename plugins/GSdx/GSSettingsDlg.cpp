@@ -147,7 +147,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
 	UpdateRenderers();
 
-	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("Interlace"));
+	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("interlace"));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfigI("upscale_multiplier"));
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfigI("MaxAnisotropy"));
 	ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, theApp.GetConfigI("filter"));
@@ -244,7 +244,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_INTERLACE, data))
 			{
-				theApp.SetConfig("Interlace", (int)data);
+				theApp.SetConfig("interlace", (int)data);
 			}
 
 			if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, data))
