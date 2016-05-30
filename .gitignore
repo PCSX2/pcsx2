@@ -109,3 +109,7 @@ oprofile_data/
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
+
+# Visual Studio databases
+/PCSX2_suite.VC.db
+/old_plugins.VC.db
