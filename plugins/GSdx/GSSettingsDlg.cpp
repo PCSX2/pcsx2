@@ -438,7 +438,7 @@ GSShaderDlg::GSShaderDlg() :
 void GSShaderDlg::OnInit()
 {
 	//TV Shader
-	ComboBoxInit(IDC_TVSHADER, theApp.m_gs_tv_shaders, theApp.GetConfigI("TVshader"));
+	ComboBoxInit(IDC_TVSHADER, theApp.m_gs_tv_shaders, theApp.GetConfigI("TVShader"));
 
 	//Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfigB("ShadeBoost"));
@@ -544,7 +544,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			//TV Shader
 			if (ComboBoxGetSelData(IDC_TVSHADER, data))
 			{
-				theApp.SetConfig("TVshader", (int)data);
+				theApp.SetConfig("TVShader", (int)data);
 			}
 			// Shade Boost
 			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
