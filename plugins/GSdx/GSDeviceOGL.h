@@ -151,10 +151,9 @@ public:
 		{
 			struct
 			{
-				uint32 wildhack:1;
 				uint32 bppz:2;
 
-				uint32 _free:29;
+				uint32 _free:30;
 			};
 
 			uint32 key;
@@ -447,7 +446,7 @@ public:
 		GLuint ps;
 	} m_shadeboost;
 
-	GLuint m_vs[1<<3];
+	GLuint m_vs[1<<2];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<4];
 	GSDepthStencilOGL* m_om_dss[1<<5];

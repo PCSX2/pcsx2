@@ -130,6 +130,12 @@ void GSRendererOGL::SetupIA()
 
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
+
+	if (UserHacks_WildHack && !isPackedUV_HackFlag && PRIM->TME && PRIM->FST) {
+		for(unsigned int i = 0; i < m_vertex.next; i++)
+			m_vertex.buff[i].UV &= 0x3FEF3FEF;
+	}
+
 	if (!GLLoader::found_geometry_shader)
 		EmulateGS();
 
@@ -972,8 +978,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// vs
-
-	vs_sel.wildhack = (UserHacks_WildHack && !isPackedUV_HackFlag) ? 1 : 0;
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.

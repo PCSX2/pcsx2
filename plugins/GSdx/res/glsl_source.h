@@ -683,7 +683,7 @@ static const char* const tfx_vgs_glsl =
 	"\n"
 	"void texture_coord()\n"
 	"{\n"
-	"    vec2 uv = (VS_WILDHACK == 1) ? vec2(i_uv &  uvec2(0x3FEF, 0x3FEF)) : vec2(i_uv);\n"
+	"    vec2 uv = vec2(i_uv);\n"
 	"\n"
 	"    // Float coordinate\n"
 	"    VSout.t_float.xy = i_st;\n"

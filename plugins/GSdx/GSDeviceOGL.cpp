@@ -769,7 +769,6 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
 	std::string macro = format("#define VS_BPPZ %d\n", sel.bppz)
-		+ format("#define VS_WILDHACK %d\n", sel.wildhack)
 		;
 
 	return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, macro);
