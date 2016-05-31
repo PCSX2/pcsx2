@@ -362,7 +362,7 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 
 	if( parser.Found(L"usecd") )
 	{
-		Startup.CdvdSource	= CDVDsrc_Plugin;
+		Startup.CdvdSource	= CDVD_SourceType::CDVDsrc_Plugin;
 		Startup.SysAutoRun	= true;
 	}
 

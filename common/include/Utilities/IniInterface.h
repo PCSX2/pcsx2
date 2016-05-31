@@ -70,10 +70,11 @@ public:
 	void EnumEntry( const wxString& var, T& value, const wxChar* const* enumArray=NULL, const T defvalue=(T)0 )
 	{
 		int tstore = (int)value;
+		int default_value = (int)defvalue;
 		if( enumArray == NULL )
-			Entry( var, tstore, defvalue );
+			Entry( var, tstore, default_value );
 		else
-			_EnumEntry( var, tstore, enumArray, defvalue );
+			_EnumEntry( var, tstore, enumArray, default_value );
 		value = (T)tstore;
 	}
 

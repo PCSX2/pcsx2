@@ -1072,7 +1072,7 @@ public:
 	SysExecEvent_Execute()
 		: m_UseCDVDsrc(false)
 		, m_UseELFOverride(false)
-		, m_cdvdsrc_type(CDVDsrc_Iso)
+		, m_cdvdsrc_type(CDVD_SourceType::CDVDsrc_Iso)
 	{
 	}
 
@@ -1098,11 +1098,11 @@ protected:
 		CoreThread.ResetQuick();
 		symbolMap.Clear();
 
-		CDVDsys_SetFile( CDVDsrc_Iso, g_Conf->CurrentIso );
+		CDVDsys_SetFile(CDVD_SourceType::CDVDsrc_Iso, g_Conf->CurrentIso );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
-			CDVDsys_ChangeSource( CDVDsrc_NoDisc );
+			CDVDsys_ChangeSource(CDVD_SourceType::CDVDsrc_NoDisc );
 
 		if( m_UseELFOverride && !CoreThread.HasActiveMachine() )
 			CoreThread.SetElfOverride( m_elf_override );
