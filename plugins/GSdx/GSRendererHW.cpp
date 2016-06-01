@@ -864,6 +864,7 @@ void GSRendererHW::OI_GsMemClear()
 {
 	// Rectangle draw without texture
 	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE // Direct write
+			&& (m_context->FRAME.FBMSK == 0)
 			&& !m_context->TEST.ATE // no alpha test
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 			&& (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) // Constant 0 write
