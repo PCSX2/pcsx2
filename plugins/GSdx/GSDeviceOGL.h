@@ -120,12 +120,14 @@ public:
 	struct alignas(32) VSConstantBuffer
 	{
 		GSVector4 Vertex_Scale_Offset;
-		GSVector4 TextureScale;
+		GSVector2i DepthMask;
+		GSVector2 TextureScale;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
-			TextureScale = GSVector4::zero();
+			DepthMask           = GSVector2i(0, 0);
+			TextureScale        = GSVector2(0, 0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -151,9 +153,7 @@ public:
 		{
 			struct
 			{
-				uint32 bppz:2;
-
-				uint32 _free:30;
+				uint32 _free:32;
 			};
 
 			uint32 key;
@@ -446,7 +446,7 @@ public:
 		GLuint ps;
 	} m_shadeboost;
 
-	GLuint m_vs[1<<2];
+	GLuint m_vs[1];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<4];
 	GSDepthStencilOGL* m_om_dss[1<<5];

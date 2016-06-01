@@ -417,28 +417,16 @@ void GSDeviceOGL::CreateTextureFX()
 	m_palette_ss = CreateSampler(false, false, false);
 	glBindSampler(1, m_palette_ss);
 
-	// Pre compile all Geometry & Vertex Shader
-	// It might cost a seconds at startup but it would reduce benchmark pollution
-	{
-		GL_PUSH("Compile GS");
-
-		for (uint32 key = 0; key < countof(m_gs); key++) {
-			GSSelector sel(key);
-			if (sel.point == sel.sprite)
-				m_gs[key] = 0;
-			else
-				m_gs[key] = CompileGS(GSSelector(key));
-		}
+	// Pre compile the (remaining) Geometry & Vertex Shader
+	for (uint32 key = 0; key < countof(m_gs); key++) {
+		GSSelector sel(key);
+		if (sel.point == sel.sprite)
+			m_gs[key] = 0;
+		else
+			m_gs[key] = CompileGS(GSSelector(key));
 	}
 
-	{
-		GL_PUSH("Compile VS");
-
-		for (uint32 key = 0; key < countof(m_vs); key++) {
-			VSSelector sel(key);
-			m_vs[key] = CompileVS(sel);
-		}
-	}
+	m_vs[0] = CompileVS(VSSelector(0));
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
@@ -768,10 +756,7 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 /* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
-	std::string macro = format("#define VS_BPPZ %d\n", sel.bppz)
-		;
-
-	return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, macro);
+	return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
 }
 
 /* Note: must be here because tfx_glsl is static */

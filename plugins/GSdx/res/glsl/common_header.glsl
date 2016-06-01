@@ -68,7 +68,8 @@ layout(std140, binding = 20) uniform cb20
 {
     vec2 VertexScale;
     vec2 VertexOffset;
-    vec2 _removed_TextureScale;
+    uint DepthMask;
+    uint cb20_pad;
     vec2 PointSize;
 };
 

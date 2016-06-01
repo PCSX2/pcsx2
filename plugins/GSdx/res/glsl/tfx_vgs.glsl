@@ -35,13 +35,7 @@ void texture_coord()
 
 void vs_main()
 {
-    highp uint z;
-    if(VS_BPPZ == 1) // 24
-        z = i_z & uint(0xffffff);
-    else if(VS_BPPZ == 2) // 16
-        z = i_z & uint(0xffff);
-    else
-        z = i_z;
+    highp uint z = i_z & DepthMask;
 
     // pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
     // example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty

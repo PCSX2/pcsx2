@@ -982,6 +982,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
 	// We are probably receiving bad coordinates from VU1 in these cases.
+	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
 
 	if (om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe)
 	{
@@ -994,7 +995,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				if (m_vt.m_min.p.z > 0xffffff)
 				{
 					GL_INS("Bad Z size on 24 bits buffers")
-					vs_sel.bppz = 1;
+					vs_cb.DepthMask = GSVector2i(0x00FFFFFF, 0x00FFFFFF);
 					om_dssel.ztst = ZTST_ALWAYS;
 				}
 			}
@@ -1008,7 +1009,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				if (m_vt.m_min.p.z > 0xffff)
 				{
 					GL_INS("Bad Z size on 16 bits buffers")
-					vs_sel.bppz = 2;
+					vs_cb.DepthMask = GSVector2i(0x0000FFFF, 0x0000FFFF);
 					om_dssel.ztst = ZTST_ALWAYS;
 				}
 			}
