@@ -81,6 +81,15 @@ PFNGLCLIENTWAITSYNCPROC                glClientWaitSync                    = NUL
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange            = NULL;
 PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+// Shader compilation (Broken driver)
+PFNGLCOMPILESHADERPROC                 glCompileShader                     = NULL;
+PFNGLCREATEPROGRAMPROC                 glCreateProgram                     = NULL;
+PFNGLCREATESHADERPROC                  glCreateShader                      = NULL;
+PFNGLDELETESHADERPROC                  glDeleteShader                      = NULL;
+PFNGLLINKPROGRAMPROC                   glLinkProgram                       = NULL;
+PFNGLUSEPROGRAMPROC                    glUseProgram                        = NULL;
+PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog                  = NULL;
+PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i                  = NULL;
 // Query object
 PFNGLBEGINQUERYPROC                    glBeginQuery                        = NULL;
 PFNGLENDQUERYPROC                      glEndQuery                          = NULL;

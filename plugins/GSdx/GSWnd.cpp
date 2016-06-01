@@ -109,8 +109,15 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glViewportIndexedfv);
 	GL_EXT_LOAD_OPT(glScissorIndexed);
 	GL_EXT_LOAD_OPT(glScissorIndexedv);
-	// NO GL4.1
+	// NO GL4.1 (or broken driver...)
 	GL_EXT_LOAD(glDeleteProgram);
+	GL_EXT_LOAD(glDeleteShader);
+	GL_EXT_LOAD(glCompileShader);
+	GL_EXT_LOAD(glCreateProgram);
+	GL_EXT_LOAD(glCreateShader);
+	GL_EXT_LOAD(glUseProgram);
+	GL_EXT_LOAD(glGetShaderInfoLog);
+	GL_EXT_LOAD(glLinkProgram);
 	// GL4.2
 	GL_EXT_LOAD_OPT(glBindImageTexture);
 	GL_EXT_LOAD_OPT(glMemoryBarrier);

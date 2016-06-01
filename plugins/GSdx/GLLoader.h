@@ -40,13 +40,6 @@
 #define APIENTRYP APIENTRY *
 #endif
 
-// Mesa glext.h < 20150122 uses GLsizei for BUFFER*PROCs
-#if GL_GLEXT_VERSION < 20150122
-typedef GLsizei buffer_proc_t;
-#else
-typedef GLsizeiptr buffer_proc_t;
-#endif
-
 // Allow compilation with older mesa
 #ifndef GL_VERSION_4_3
 #define GL_VERSION_4_3 1
@@ -256,6 +249,15 @@ extern   PFNGLCLIENTWAITSYNCPROC                glClientWaitSync;
 extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange;
 extern   PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate;
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
+// Shader compilation (Broken driver)
+extern   PFNGLCOMPILESHADERPROC                 glCompileShader;
+extern   PFNGLCREATEPROGRAMPROC                 glCreateProgram;
+extern   PFNGLCREATESHADERPROC                  glCreateShader;
+extern   PFNGLDELETESHADERPROC                  glDeleteShader;
+extern   PFNGLLINKPROGRAMPROC                   glLinkProgram;
+extern   PFNGLUSEPROGRAMPROC                    glUseProgram;
+extern   PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog;
+extern   PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i;
 // Query object
 extern   PFNGLBEGINQUERYPROC                    glBeginQuery;
 extern   PFNGLENDQUERYPROC                      glEndQuery;
