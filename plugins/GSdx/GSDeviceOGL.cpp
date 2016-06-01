@@ -1479,23 +1479,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
-			// AMD DRIVER SUCK
-			uint16 src = b.src;
-			uint16 dst = b.dst;
-			if (GLLoader::legacy_fglrx_buggy_driver) {
-				if (src == GL_SRC1_ALPHA)
-					src = GL_SRC_ALPHA;
-				else if (src == GL_ONE_MINUS_SRC1_ALPHA)
-					src = GL_ONE_MINUS_SRC_ALPHA;
-
-				if (dst == GL_SRC1_ALPHA)
-					dst = GL_SRC_ALPHA;
-				else if (dst == GL_ONE_MINUS_SRC1_ALPHA)
-					dst = GL_ONE_MINUS_SRC_ALPHA;
-			}
-			// AMD DRIVER SUCK
-
-			glBlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
+			glBlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {
