@@ -56,23 +56,24 @@ GLuint GSShaderOGL::LinkPipeline(GLuint vs, GLuint gs, GLuint ps)
 void GSShaderOGL::BindPipeline(GLuint vs, GLuint gs, GLuint ps)
 {
 	BindPipeline(m_pipeline);
-	if (GLState::vs != vs)
-	{
+
+	if (GLState::vs != vs) {
 		GLState::vs = vs;
 		glUseProgramStages(m_pipeline, GL_VERTEX_SHADER_BIT, vs);
 	}
-	if (GLState::gs != gs)
-	{
+
+	if (GLState::gs != gs) {
 		GLState::gs = gs;
 		glUseProgramStages(m_pipeline, GL_GEOMETRY_SHADER_BIT, gs);
 	}
+
 #ifdef _DEBUG
+	// In debug always sets the program. It allow to replace the program in apitrace easily.
 	if (true)
 #else
 	if (GLState::ps != ps)
 #endif
 	{
-		// In debug always sets the program. It allow to replace the program in apitrace easily.
 		GLState::ps = ps;
 		glUseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, ps);
 	}
@@ -179,10 +180,6 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	ASSERT(glsl_h_code != NULL);
 
 	GLuint program = 0;
-
-	if (type == GL_GEOMETRY_SHADER && !GLLoader::found_geometry_shader) {
-		return program;
-	}
 
 	// Note it is better to separate header and source file to have the good line number
 	// in the glsl compiler report

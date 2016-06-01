@@ -420,7 +420,9 @@ void GSDeviceOGL::CreateTextureFX()
 	// Pre compile the (remaining) Geometry & Vertex Shader
 	for (uint32 key = 0; key < countof(m_gs); key++) {
 		GSSelector sel(key);
-		if (sel.point == sel.sprite)
+		if (!GLLoader::found_geometry_shader)
+			m_gs[key] = 0;
+		else if (sel.point == sel.sprite) // Invalid key
 			m_gs[key] = 0;
 		else
 			m_gs[key] = CompileGS(GSSelector(key));
