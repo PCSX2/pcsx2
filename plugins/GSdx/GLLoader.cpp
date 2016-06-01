@@ -192,6 +192,7 @@ namespace GLLoader {
 	bool nvidia_buggy_driver   = false;
 	bool intel_buggy_driver    = false;
 	bool in_replayer           = false;
+	bool buggy_sso_dual_src    = false;
 
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
@@ -267,6 +268,12 @@ namespace GLLoader {
 			mesa_amd_buggy_driver = true;
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
+
+#ifdef _WIN32
+		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+#else
+		buggy_sso_dual_src = fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+#endif
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");

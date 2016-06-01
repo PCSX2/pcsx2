@@ -758,7 +758,10 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 /* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
-	return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
+	if (GLLoader::buggy_sso_dual_src)
+		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
+	else
+		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -766,7 +769,10 @@ GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
 	std::string macro = format("#define GS_POINT %d\n", sel.point);
 
-	return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
+	if (GLLoader::buggy_sso_dual_src)
+		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
+	else
+		return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
 }
 
 /* Note: must be here because tfx_glsl is static */
@@ -804,9 +810,12 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		+ format("#define PS_HDR %d\n", sel.hdr)
 		+ format("#define PS_PABE %d\n", sel.pabe);
-		;
+	;
 
-	return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
+	if (GLLoader::buggy_sso_dual_src)
+		return m_shader->CompileShader("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
+	else
+		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
 }
 
 void GSDeviceOGL::SelfShaderTest()
@@ -1576,7 +1585,10 @@ void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, 
 	// *************************************************************
 	// Dynamic
 	// *************************************************************
-	m_shader->BindPipeline(m_vs[vsel], m_gs[gsel], ps);
+	if (GLLoader::buggy_sso_dual_src)
+		m_shader->BindProgram(m_vs[vsel], m_gs[gsel], ps);
+	else
+		m_shader->BindPipeline(m_vs[vsel], m_gs[gsel], ps);
 }
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)
