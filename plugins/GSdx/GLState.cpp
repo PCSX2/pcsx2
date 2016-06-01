@@ -54,6 +54,7 @@ namespace GLState {
 	GLuint ps;
 	GLuint gs;
 	GLuint vs;
+	GLuint program;
 	GLuint pipeline;
 
 	void Clear() {
@@ -90,6 +91,7 @@ namespace GLState {
 		ps = 0;
 		gs = 0;
 		vs = 0;
+		program  = 0;
 		pipeline = 0;
 	}
 }

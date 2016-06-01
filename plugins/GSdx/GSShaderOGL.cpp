@@ -36,6 +36,10 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 
 GSShaderOGL::~GSShaderOGL()
 {
+	printf("Delete %d Shaders, %d Programs, %d Pipelines\n",
+			m_shad_to_delete.size(), m_prog_to_delete.size(), m_pipe_to_delete.size());
+
+	for (auto s : m_shad_to_delete) glDeleteShader(s);
 	for (auto p : m_prog_to_delete) glDeleteProgram(p);
 	glDeleteProgramPipelines(m_pipe_to_delete.size(), &m_pipe_to_delete[0]);
 }
@@ -51,6 +55,46 @@ GLuint GSShaderOGL::LinkPipeline(GLuint vs, GLuint gs, GLuint ps)
 	m_pipe_to_delete.push_back(p);
 
 	return p;
+}
+
+GLuint GSShaderOGL::LinkProgram(GLuint vs, GLuint gs, GLuint ps)
+{
+	uint32 hash = ((vs ^ gs) << 24) ^ ps;
+	auto it = m_program.find(hash);
+	if (it != m_program.end())
+		return it->second;
+
+	GLuint p = glCreateProgram();
+	if (vs) glAttachShader(p, vs);
+	if (ps) glAttachShader(p, ps);
+	if (gs) glAttachShader(p, gs);
+
+	glLinkProgram(p);
+
+	ValidateProgram(p);
+
+	m_prog_to_delete.push_back(p);
+	m_program[hash] = p;
+
+	return p;
+}
+
+void GSShaderOGL::BindProgram(GLuint vs, GLuint gs, GLuint ps)
+{
+	GLuint p = LinkProgram(vs, gs, ps);
+
+	if (GLState::program != p) {
+		GLState::program = p;
+		glUseProgram(p);
+	}
+}
+
+void GSShaderOGL::BindProgram(GLuint p)
+{
+	if (GLState::program != p) {
+		GLState::program = p;
+		glUseProgram(p);
+	}
 }
 
 void GSShaderOGL::BindPipeline(GLuint vs, GLuint gs, GLuint ps)
@@ -85,6 +129,32 @@ void GSShaderOGL::BindPipeline(GLuint pipe)
 		GLState::pipeline = pipe;
 		glBindProgramPipeline(pipe);
 	}
+
+	if (GLState::program) {
+		GLState::program = 0;
+		glUseProgram(0);
+	}
+}
+
+bool GSShaderOGL::ValidateShader(GLuint s)
+{
+	if (!m_debug_shader) return true;
+
+	GLint status = 0;
+	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
+	if (status) return true;
+
+	GLint log_length = 0;
+	glGetShaderiv(s, GL_INFO_LOG_LENGTH, &log_length);
+	if (log_length > 0) {
+		char* log = new char[log_length];
+		glGetShaderInfoLog(s, log_length, NULL, log);
+		fprintf(stderr, "%s", log);
+		delete[] log;
+	}
+	fprintf(stderr, "\n");
+
+	return false;
 }
 
 bool GSShaderOGL::ValidateProgram(GLuint p)
@@ -206,6 +276,42 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	m_prog_to_delete.push_back(program);
 
 	return program;
+}
+
+// Same as above but for not-separated build
+GLuint GSShaderOGL::CompileShader(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel)
+{
+	ASSERT(glsl_h_code != NULL);
+
+	GLuint shader = 0;
+
+	// Note it is better to separate header and source file to have the good line number
+	// in the glsl compiler report
+	const int shader_nb = 3;
+	const char* sources[shader_nb];
+
+	std::string header = GenGlslHeader(entry, type, macro_sel);
+
+	sources[0] = header.c_str();
+	sources[1] = common_header_glsl;
+	sources[2] = glsl_h_code;
+
+	shader =  glCreateShader(type);
+	glShaderSource(shader, shader_nb, sources, NULL);
+	glCompileShader(shader);
+
+	bool status = ValidateShader(shader);
+
+	if (!status) {
+		// print extra info
+		fprintf(stderr, "%s (entry %s, prog %d) :", glsl_file.c_str(), entry.c_str(), shader);
+		fprintf(stderr, "\n%s", macro_sel.c_str());
+		fprintf(stderr, "\n");
+	}
+
+	m_shad_to_delete.push_back(shader);
+
+	return shader;
 }
 
 // This function will get the binary program. Normally it must be used a caching
