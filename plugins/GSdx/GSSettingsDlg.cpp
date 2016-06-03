@@ -316,8 +316,8 @@ void GSSettingsDlg::UpdateRenderers()
 	}
 	else
 	{
-		//GSRendererType best_renderer = (level >= D3D_FEATURE_LEVEL_10_0) ? GSRendererType::DX1011_HW : GSRendererType::DX9_HW;
-		renderer_setting = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
+		renderer_setting = (ini_renderer == GSRendererType::Undefined) ? GSUtil::GetBestRenderer() : ini_renderer;
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
