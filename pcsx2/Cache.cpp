@@ -62,8 +62,18 @@ int getFreeCache(u32 mem, int mode, int * way ) {
 	ppf = (ppf & ~0x3F) ; 
 	if((pCache[i].tag[number] & (DIRTY_FLAG|VALID_FLAG)) == (DIRTY_FLAG|VALID_FLAG))	// Dirty Write
 	{		
-		//Perform a cache miss.
-		return -1;
+		s32 oldppf = (pCache[i].tag[number] & ~0x80000fff) + (mem & 0xFC0);
+		
+		CACHE_LOG("Dirty cache fill! PPF %x", oldppf);
+		*reinterpret_cast<mem64_t*>(oldppf) = pCache[i].data[number][0].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+8) =  pCache[i].data[number][0].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+16) = pCache[i].data[number][1].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+24) = pCache[i].data[number][1].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+32) = pCache[i].data[number][2].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+40) = pCache[i].data[number][2].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+48) = pCache[i].data[number][3].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+56) = pCache[i].data[number][3].b8._u64[1];
+		pCache[i].tag[number] &= ~DIRTY_FLAG;
 	}
 	
 	
