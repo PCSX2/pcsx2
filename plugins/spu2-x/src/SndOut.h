@@ -670,6 +670,7 @@ public:
 //internal
 extern SndOutModule* WaveOut;
 extern SndOutModule* DSoundOut;
+extern SndOutModule* XAudio2_27_Out;
 extern SndOutModule* XAudio2Out;
 #endif
 extern SndOutModule* PortaudioOut;
