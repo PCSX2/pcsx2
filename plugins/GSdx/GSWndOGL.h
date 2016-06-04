@@ -31,7 +31,8 @@ class GSWndOGL final : public GSWndGL
 	Display*   m_NativeDisplay;
 	GLXContext m_context;
 
-	PFNGLXSWAPINTERVALEXTPROC m_swapinterval;
+	PFNGLXSWAPINTERVALEXTPROC  m_swapinterval_ext;
+	PFNGLXSWAPINTERVALMESAPROC m_swapinterval_mesa;
 
 	void CreateContext(int major, int minor);
 	void CheckContext();
