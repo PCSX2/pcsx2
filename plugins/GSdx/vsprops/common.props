@@ -17,7 +17,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;d3d10_1.lib;d3d9.lib;dxgi.lib;dxguid.lib;winmm.lib;strmiids.lib;opengl32.lib;opencl.lib;comsuppw.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3d9.lib;dxgi.lib;dxguid.lib;winmm.lib;strmiids.lib;opengl32.lib;comsuppw.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>d3d9.dll;d3d11.dll;dxgi.dll;opengl32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

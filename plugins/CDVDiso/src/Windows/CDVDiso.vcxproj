@@ -85,7 +85,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2-dbg.lib;zlib-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <TargetMachine>MachineX86</TargetMachine>
@@ -99,7 +98,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -116,7 +114,6 @@
       <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\bzip2;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>bzip2-dev.lib;zlib-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>.\CDVDiso.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
