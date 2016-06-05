@@ -24,6 +24,7 @@ int FindHids(HidDeviceInfo **foundDevs, int vid, int pid) {
 	GUID GUID_DEVINTERFACE_HID;
 	int numFoundDevs = 0;
 	*foundDevs = 0;
+	HidD_GetHidGuid(&GUID_DEVINTERFACE_HID);
 	HDEVINFO hdev = SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, 0, 0, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 	if (hdev != INVALID_HANDLE_VALUE) {
 		SP_DEVICE_INTERFACE_DATA devInterfaceData;
