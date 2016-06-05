@@ -41,29 +41,18 @@ out gl_PerVertex {
 //////////////////////////////////////////////////////////////////////
 // Constant Buffer Definition
 //////////////////////////////////////////////////////////////////////
-layout(std140, binding = 10) uniform cb10
-{
-    vec4 BGColor;
-};
+// Performance note, some drivers (nouveau) will validate all Constant Buffers
+// even if only one was updated.
 
-layout(std140, binding = 11) uniform cb11
-{
-    vec2 ZrH;
-    float hH;
-};
-
-layout(std140, binding = 14) uniform cb14
-{
-    vec2 _xyFrame;
-    vec4 _rcpFrame;
-};
-
+#ifdef FRAGMENT_SHADER
 layout(std140, binding = 15) uniform cb15
 {
     ivec4 ScalingFactor;
     ivec4 ChannelShuffle;
 };
+#endif
 
+#if defined(VERTEX_SHADER) || defined(GEOMETRY_SHADER)
 layout(std140, binding = 20) uniform cb20
 {
     vec2 VertexScale;
@@ -72,7 +61,9 @@ layout(std140, binding = 20) uniform cb20
     uint cb20_pad;
     vec2 PointSize;
 };
+#endif
 
+#if defined(VERTEX_SHADER) || defined(FRAGMENT_SHADER)
 layout(std140, binding = 21) uniform cb21
 {
     vec3 FogColor;
@@ -95,11 +86,12 @@ layout(std140, binding = 21) uniform cb21
     vec2 TextureScale;
     vec2 TC_OffsetHack;
 };
+#endif
 
-layout(std140, binding = 22) uniform cb22
-{
-    vec4 rt_size;
-};
+//layout(std140, binding = 22) uniform cb22
+//{
+//    vec4 rt_size;
+//};
 
 //////////////////////////////////////////////////////////////////////
 // Default Sampler

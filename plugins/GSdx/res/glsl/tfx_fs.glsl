@@ -44,6 +44,9 @@ layout(binding = 4) uniform sampler2D RawTextureSampler;
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
+// Performance note: images mustn't be declared if they are unused. Otherwise it will
+// require extra shader validation.
+
 // FIXME how to declare memory access
 layout(r32i, binding = 2) uniform iimage2D img_prim_min;
 // WARNING:
