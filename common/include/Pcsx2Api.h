@@ -33,7 +33,7 @@
 #define NEW_PLUGIN_APIS
 
 #ifdef _MSC_VER
-#define EXPORT_C(type) extern "C" __declspec(dllexport) type CALLBACK
+#define EXPORT_C(type) extern "C" type CALLBACK
 #else
 #define EXPORT_C(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
 #endif

@@ -26,7 +26,7 @@
 #endif
 
 #ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
+#define EXPORT_C_(type) extern "C" type CALLBACK
 #else
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
 #endif

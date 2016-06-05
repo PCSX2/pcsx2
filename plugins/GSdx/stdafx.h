@@ -202,7 +202,7 @@ using namespace stdext;
     #define alignas(n) __declspec(align(n))
 #endif
 
-    #define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
+    #define EXPORT_C_(type) extern "C" type __stdcall
     #define EXPORT_C EXPORT_C_(void)
 
     #define ALIGN_STACK(n) alignas(n) int dummy__;
