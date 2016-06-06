@@ -111,6 +111,9 @@ bool GSDevice11::Create(GSWnd* wnd)
 	scd.Windowed = TRUE;
 
 	spritehack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SpriteHack") : 0;
+
+	isNative = theApp.GetConfigI("upscale_multiplier") == 1;
+
 	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
@@ -1265,11 +1268,9 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
 	if(m_state.viewport != size)
 	{
-		bool isNative = theApp.GetConfigI("upscale_multiplier") == 1;
 		m_state.viewport = size;
 
 		D3D11_VIEWPORT vp;
-
 		memset(&vp, 0, sizeof(vp));
 
 		vp.TopLeftX = (spritehack > 0 || isNative) ? 0.0f : -0.01f;

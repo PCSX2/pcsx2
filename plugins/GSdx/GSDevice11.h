@@ -55,6 +55,7 @@ class GSDevice11 : public GSDeviceDX
 
 	bool m_srv_changed, m_ss_changed;
 	int spritehack;
+	bool isNative;
 
 	struct
 	{
