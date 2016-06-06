@@ -221,22 +221,27 @@ bool GSRenderer::Merge(int field)
 		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 		src_hw[i] = (GSVector4(r) + GSVector4 (0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
-		GSVector2 off(0, 0);
+		GSVector2 offset(0, 0);
+		GSVector2i diff(dr[i].left - baseline.x, dr[i].top - baseline.y);
 
 		// Time Crisis 2/3 uses two side by side images when in split screen mode.
-		off.x = tex[i]->GetScale().x * (dr[i].left - baseline.x);
-
-		if(dr[i].top - baseline.y >= 4) // 2?
+		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
+		if(diff.x >= 2)
 		{
-			off.y = tex[i]->GetScale().y * (dr[i].top - baseline.y);
+			offset.x = tex[i]->GetScale().x * diff.x;
+		}
 
-			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+		if(diff.y >= 4) // Shouldn't this be 2?
+		{
+			offset.y = tex[i]->GetScale().y * diff.y;
+
+			if(IsInterlaced() && m_regs->SMODE2.FFMD)
 			{
-				off.y /= 2;
+				offset.y /= 2;
 			}
 		}
 
-		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
+		dst[i] = GSVector4(offset).xyxy() + scale * GSVector4(r.rsize());
 
 		fs.x = max(fs.x, (int)(dst[i].z + 0.5f));
 		fs.y = max(fs.y, (int)(dst[i].w + 0.5f));
@@ -244,7 +249,7 @@ bool GSRenderer::Merge(int field)
 
 	ds = fs;
 
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+	if(IsInterlaced() && m_regs->SMODE2.FFMD)
 	{
 		ds.y *= 2;
 	}
@@ -265,7 +270,7 @@ bool GSRenderer::Merge(int field)
 
 		m_dev->Merge(tex, src_hw, dst, fs, slbg, mmod, c);
 
-		if(m_regs->SMODE2.INT && m_interlace > 0)
+		if(IsInterlaced() && m_interlace > 0)
 		{
 			if (m_interlace == 7 && m_regs->SMODE2.FFMD == 1) // Auto interlace enabled / Odd frame interlace setting
 			{
@@ -354,7 +359,7 @@ void GSRenderer::VSync(int field)
 		{
 			//GSdx owns the window's title, be verbose.
 
-			string s2 = m_regs->SMODE2.INT ? (string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
+			string s2 = IsInterlaced() ? (string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
