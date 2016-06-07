@@ -73,7 +73,7 @@ class GSRendererOGL final : public GSRendererHW
 
 	private:
 		inline void ResetStates();
-		inline void EmulateGS();
+		inline void Lines2Sprites();
 		inline void SetupIA();
 		inline void EmulateTextureShuffleAndFbmask();
 		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);

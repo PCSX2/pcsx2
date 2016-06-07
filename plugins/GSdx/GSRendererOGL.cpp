@@ -60,7 +60,7 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 	return true;
 }
 
-void GSRendererOGL::EmulateGS()
+void GSRendererOGL::Lines2Sprites()
 {
 	if (m_vt.m_primclass != GS_SPRITE_CLASS) return;
 
@@ -137,7 +137,7 @@ void GSRendererOGL::SetupIA()
 	}
 
 	if (!GLLoader::found_geometry_shader)
-		EmulateGS();
+		Lines2Sprites();
 
 	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
 	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
