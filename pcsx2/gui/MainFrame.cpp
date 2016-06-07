@@ -451,7 +451,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuSys.Append(MenuId_Sys_Shutdown,	_("Shut&down"),
 		_("Wipes all internal VM states and shuts down plugins."));
 
-	m_menuSys.Append(MenuId_Exit,			_("&Exit"),
+	m_menuSys.Append(MenuId_Exit,			_("E&xit"),
 		AddAppName(_("Closing %s may be hazardous to your health")));
 
 
@@ -610,7 +610,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		if( !CoreThread.IsClosing() )
 		{
 			susres->Enable();
-			susres->SetItemLabel(_("&Pause"));
+			susres->SetItemLabel(_("Paus&e"));
 			susres->SetHelp(_("Safely pauses emulation and preserves the PS2 state."));
 		}
 		else
@@ -618,12 +618,12 @@ void MainEmuFrame::ApplyCoreStatus()
 			susres->Enable(vm);
 			if( vm )
 			{
-				susres->SetItemLabel(_("Resu&me"));
+				susres->SetItemLabel(_("R&esume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
 			}
 			else
 			{
-				susres->SetItemLabel(_("&Pause/Resume"));
+				susres->SetItemLabel(_("Pause/Resume"));
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
 		}

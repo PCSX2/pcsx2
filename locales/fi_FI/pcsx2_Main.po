@@ -723,7 +723,7 @@ msgid "Fits a lot of log in a microcosmically small area."
 msgstr "Sovittaa paljon lokia mikrokosmisen pieneen tilaan."
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
-msgid "Small"
+msgid "&Small"
 msgstr "Pieni"
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
@@ -732,7 +732,7 @@ msgstr "Tätä minä käytän (ohjelmoija)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
 #, fuzzy
-msgid "Normal font"
+msgid "&Normal font"
 msgstr "Normaali"
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
@@ -740,11 +740,11 @@ msgid "Its nice and readable."
 msgstr "Mukava ja luettava."
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
-msgid "Large"
+msgid "&Large"
 msgstr "Suuri"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
-msgid "Huge"
+msgid "&Huge"
 msgstr "Valtava"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
@@ -756,7 +756,7 @@ msgid "Default soft-tone color scheme."
 msgstr "Oletusarvoinen pehmeävärinen teema."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
-msgid "Light theme"
+msgid "&Light theme"
 msgstr "Vaalea teema"
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
@@ -768,7 +768,7 @@ msgstr ""
 "korventumisesta näköhermoihinsa."
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-msgid "Dark theme"
+msgid "&Dark theme"
 msgstr "Tumma teema"
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
@@ -809,7 +809,7 @@ msgid "Close this log window; contents are preserved"
 msgstr "Sulkee tämän loki-ikkunan, ikkunan sisältö säilytetään"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
-msgid "Dev/Verbose"
+msgid "Dev/&Verbose"
 msgstr "Kehitys/runsas"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
@@ -825,7 +825,7 @@ msgid "Shows disk read activity"
 msgstr "Näyttää levynlukutoiminnan"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
-msgid "Enable all"
+msgid "&Enable all"
 msgstr "Ota kaikki käyttöön"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
@@ -833,7 +833,7 @@ msgid "Enables all log source filters."
 msgstr "Ottaa käyttöön kaikki lokilähteet."
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
-msgid "Disable all"
+msgid "&Disable all"
 msgstr "Poista kaikki käytöstä"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
@@ -842,7 +842,7 @@ msgstr "Poistaa käytöstä kaikki lokilähteet."
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
-msgid "Restore Default"
+msgid "&Restore Default"
 msgstr "Palauta oletusasetukset"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
@@ -1329,7 +1329,7 @@ msgid "Exit PCSX2?"
 msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:473 pcsx2/gui/MainFrame.cpp:430
-msgid "Save state"
+msgid "&Save state"
 msgstr "Tallenna tila"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
@@ -1337,7 +1337,7 @@ msgid "Saves the virtual machine state to the current slot."
 msgstr "Tallentaa virtuaalikoneen tilan nykyiseen paikkaan."
 
 #: pcsx2/gui/GlobalCommands.cpp:479 pcsx2/gui/MainFrame.cpp:429
-msgid "Load state"
+msgid "&Load state"
 msgstr "Lataa tila"
 
 #: pcsx2/gui/GlobalCommands.cpp:480
@@ -1409,11 +1409,11 @@ msgid "Backup"
 msgstr "Varmuuskopio"
 
 #: pcsx2/gui/MainFrame.cpp:332
-msgid "Show Console"
+msgid "&Show Console"
 msgstr "Näytä konsoli"
 
 #: pcsx2/gui/MainFrame.cpp:333
-msgid "Console to Stdio"
+msgid "&Console to Stdio"
 msgstr "Konsoli Stdioon"
 
 #: pcsx2/gui/MainFrame.cpp:346
@@ -1442,7 +1442,7 @@ msgid "Initializing..."
 msgstr "Alustetaan..."
 
 #: pcsx2/gui/MainFrame.cpp:419
-msgid "Run ELF..."
+msgid "&Run ELF..."
 msgstr "Suorita ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:420
@@ -1450,11 +1450,11 @@ msgid "For running raw PS2 binaries directly"
 msgstr "Raakojen PS2-binaarien suorittamiseen"
 
 #: pcsx2/gui/MainFrame.cpp:432
-msgid "Backup before save"
+msgid "&Backup before save"
 msgstr "Varmuuskopioi ennen tallennusta"
 
 #: pcsx2/gui/MainFrame.cpp:437
-msgid "Automatic Gamefixes"
+msgid "Automatic &Gamefixes"
 msgstr "Automaattiset pelikorjaukset"
 
 #: pcsx2/gui/MainFrame.cpp:438
@@ -1464,20 +1464,20 @@ msgstr ""
 "peleihin"
 
 #: pcsx2/gui/MainFrame.cpp:440
-msgid "Enable Cheats"
+msgid "Enable &Cheats"
 msgstr "Ota huijaukset käyttöön"
 
 #: pcsx2/gui/MainFrame.cpp:443
 #, fuzzy
-msgid "Enable Widescreen Patches"
+msgid "Enable &Widescreen Patches"
 msgstr "Ota käyttöön nopeusviritelmät"
 
 #: pcsx2/gui/MainFrame.cpp:446
-msgid "Enable Host Filesystem"
+msgid "Enable &Host Filesystem"
 msgstr "Yhdistä isäntäjärjestelmän tiedostojärjestelmä"
 
 #: pcsx2/gui/MainFrame.cpp:451
-msgid "Shutdown"
+msgid "Shut&down"
 msgstr "Sammuta"
 
 #: pcsx2/gui/MainFrame.cpp:452
@@ -1486,7 +1486,7 @@ msgstr ""
 "Pyyhkii kaikki sisäiset virtuaalikoneen tilat ja sammuttaa liitännäiset."
 
 #: pcsx2/gui/MainFrame.cpp:454
-msgid "Exit"
+msgid "E&xit"
 msgstr "Lopeta"
 
 #: pcsx2/gui/MainFrame.cpp:455
@@ -1495,7 +1495,7 @@ msgid "Closing %s may be hazardous to your health"
 msgstr "%s:n sulkeminen saattaa olla vaarallista terveydellesi"
 
 #: pcsx2/gui/MainFrame.cpp:462
-msgid "Iso Selector"
+msgid "Iso &Selector"
 msgstr "Iso-valitsin"
 
 #: pcsx2/gui/MainFrame.cpp:463
@@ -1503,7 +1503,7 @@ msgid "Plugin Menu"
 msgstr "Liitännäisen valikko"
 
 #: pcsx2/gui/MainFrame.cpp:466
-msgid "Iso"
+msgid "&Iso"
 msgstr "Iso"
 
 #: pcsx2/gui/MainFrame.cpp:466
@@ -1511,7 +1511,7 @@ msgid "Makes the specified ISO image the CDVD source."
 msgstr "Tekee valitusta ISO-levykuvasta CDVD-lähteen."
 
 #: pcsx2/gui/MainFrame.cpp:467
-msgid "Plugin"
+msgid "&Plugin"
 msgstr "Liitännäinen"
 
 #: pcsx2/gui/MainFrame.cpp:467
@@ -1519,7 +1519,7 @@ msgid "Uses an external plugin as the CDVD source."
 msgstr "Käyttää ulkoista liitännäistä CDVD-lähteenä."
 
 #: pcsx2/gui/MainFrame.cpp:468
-msgid "No disc"
+msgid "&No disc"
 msgstr "Ei levyä"
 
 #: pcsx2/gui/MainFrame.cpp:468
@@ -1539,7 +1539,7 @@ msgid "&Plugin/BIOS Selector"
 msgstr "&Liitännäis/BIOS-valitsin"
 
 #: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
-msgid "Game Database Editor"
+msgid "&Game Database Editor"
 msgstr "Pelitietokannan muokkaustyökalu"
 
 #: pcsx2/gui/MainFrame.cpp:485
@@ -1555,27 +1555,27 @@ msgid "&Controllers (PAD)"
 msgstr "&Ohjaimet (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:488
-msgid "Dev9"
+msgid "&Dev9"
 msgstr "Dev9"
 
 #: pcsx2/gui/MainFrame.cpp:489
-msgid "USB"
+msgid "&USB"
 msgstr "USB"
 
 #: pcsx2/gui/MainFrame.cpp:490
-msgid "Firewire"
+msgid "&Firewire"
 msgstr "Firewire"
 
 #: pcsx2/gui/MainFrame.cpp:496
-msgid "Multitap 1"
+msgid "Multitap &1"
 msgstr "Multitap 1"
 
 #: pcsx2/gui/MainFrame.cpp:497
-msgid "Multitap 2"
+msgid "Multitap &2"
 msgstr "Multitap 2"
 
 #: pcsx2/gui/MainFrame.cpp:500
-msgid "Clear all settings..."
+msgid "C&lear all settings..."
 msgstr "Nollaa kaikki asetukset..."
 
 #: pcsx2/gui/MainFrame.cpp:501
@@ -1586,19 +1586,19 @@ msgstr ""
 "uudelleen."
 
 #: pcsx2/gui/MainFrame.cpp:523
-msgid "About..."
+msgid "&About..."
 msgstr "Tietoja..."
 
 #: pcsx2/gui/MainFrame.cpp:528
-msgid "Open Debug Window..."
+msgid "&Open Debug Window..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:531
-msgid "Logging..."
+msgid "&Logging..."
 msgstr "Lokitus..."
 
 #: pcsx2/gui/MainFrame.cpp:613
-msgid "Pause"
+msgid "Paus&e"
 msgstr "Keskeytä"
 
 #: pcsx2/gui/MainFrame.cpp:614
@@ -1606,7 +1606,7 @@ msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "Turvallisesti tauottaa emulaation ja säilyttää PS2:n tilan."
 
 #: pcsx2/gui/MainFrame.cpp:621
-msgid "Resume"
+msgid "R&esume"
 msgstr "Jatka"
 
 #: pcsx2/gui/MainFrame.cpp:622
@@ -1622,7 +1622,7 @@ msgid "No emulation state is active; cannot suspend or resume."
 msgstr "Ei aktiivista emulaatiotilaa; ei voi keskeyttää tai jatkaa."
 
 #: pcsx2/gui/MainFrame.cpp:636
-msgid "Restart"
+msgid "Res&tart"
 msgstr "Uudelleenkäynnistä"
 
 #: pcsx2/gui/MainFrame.cpp:637
@@ -1634,7 +1634,7 @@ msgid "No emulation state is active; boot something first."
 msgstr "Ei aktiivista emulaatiotilaa; käynnistä jotain ensin."
 
 #: pcsx2/gui/MainFrame.cpp:650
-msgid "Reboot CDVD (full)"
+msgid "Reboot CDVD (f&ull)"
 msgstr "Uudelleenkäynnistä CDVD (täysi)"
 
 #: pcsx2/gui/MainFrame.cpp:651
@@ -1650,7 +1650,7 @@ msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "Käynnistä virtuaalikone käyttäen nykyistä DVD- tai Iso-lähdettä"
 
 #: pcsx2/gui/MainFrame.cpp:664
-msgid "Reboot CDVD (fast)"
+msgid "Reboot CDVD (&fast)"
 msgstr "Uudelleenkäynnistä CDVD (nopea)"
 
 #: pcsx2/gui/MainFrame.cpp:665
@@ -1658,7 +1658,7 @@ msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "Uudelleenkäynnistä nopeasti (ohittaa aloitusruudut)"
 
 #: pcsx2/gui/MainFrame.cpp:669
-msgid "Boot CDVD (fast)"
+msgid "Boot CDVD (&fast)"
 msgstr "Käynnistä CDVD (nopea)"
 
 #: pcsx2/gui/MainFrame.cpp:670
@@ -1671,7 +1671,7 @@ msgid "No plugin loaded"
 msgstr "Ei ladattua liitännäistä"
 
 #: pcsx2/gui/MainFrame.cpp:755
-msgid "Core GS Settings..."
+msgid "&Core GS Settings..."
 msgstr "GS:n ydinasetukset..."
 
 #: pcsx2/gui/MainFrame.cpp:756
@@ -1682,7 +1682,7 @@ msgstr ""
 "Muokkaa PCSX2:n ydinvirtuaalikoneen sääntelemiä laitteistoemulaatioasetuksia."
 
 #: pcsx2/gui/MainFrame.cpp:758
-msgid "Window Settings..."
+msgid "&Window Settings..."
 msgstr "Ikkunan asetukset..."
 
 #: pcsx2/gui/MainFrame.cpp:759
@@ -1690,7 +1690,7 @@ msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Muokkaa ikkunan ja ulkoasun asetuksia, kuvasuhde mukaanlukien."
 
 #: pcsx2/gui/MainFrame.cpp:766
-msgid "Plugin Settings..."
+msgid "&Plugin Settings..."
 msgstr "Liitännäisen asetukset..."
 
 #: pcsx2/gui/MainFrame.cpp:767
