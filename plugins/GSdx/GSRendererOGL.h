@@ -48,7 +48,6 @@ class GSRendererOGL final : public GSRendererHW
 		bool m_accurate_date;
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
-		bool m_unsafe_fbmask;
 		vector<size_t> m_drawlist;
 
 		unsigned int UserHacks_TCOffset;
@@ -61,12 +60,15 @@ class GSRendererOGL final : public GSRendererHW
 
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 
+		bool m_require_one_barrier;
+		bool m_require_full_barrier;
+
 	private:
 		inline void EmulateGS();
 		inline void SetupIA();
-		inline bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
+		inline void EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
 		inline void EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTexture** rt, const GSTextureCache::Source* tex);
-		inline bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
+		inline void EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
 		inline void EmulateTextureSampler(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSSamplerSelector ps_ssel, const GSTextureCache::Source* tex);
 
 	public:
@@ -79,5 +81,5 @@ class GSRendererOGL final : public GSRendererHW
 
 		PRIM_OVERLAP PrimitiveOverlap();
 
-		void SendDraw(bool require_barrier);
+		void SendDraw();
 };

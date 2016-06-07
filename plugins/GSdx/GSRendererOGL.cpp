@@ -41,7 +41,8 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
-	m_unsafe_fbmask = false;
+	m_require_full_barrier = false;
+	m_require_one_barrier  = false;
 
 	if (!theApp.GetConfigB("UserHacks")) {
 		UserHacks_TCOffset       = 0;
@@ -168,10 +169,8 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
-bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel)
+void GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel)
 {
-	bool require_barrier = false;
-
 	if (m_texture_shuffle) {
 		ps_sel.shuffle = 1;
 		ps_sel.dfmt = 0;
@@ -290,7 +289,7 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 			ps_cb.FbMask.g = rg_mask;
 			ps_cb.FbMask.b = ba_mask;
 			ps_cb.FbMask.a = ba_mask;
-			require_barrier = true;
+			m_require_full_barrier = true;
 		} else {
 			ps_sel.fbmask = 0;
 		}
@@ -330,18 +329,15 @@ bool GSRendererOGL::EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_s
 			if (!(~ff_fbmask & ~zero_fbmask & 0x7) && !UserHacks_safe_fbmask) {
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
-				m_unsafe_fbmask = true;
-				require_barrier = false;
+				m_require_one_barrier = true;
 			} else {
 				// The safe and accurate path (but slow)
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
-				require_barrier = true;
+				m_require_full_barrier = true;;
 			}
 		}
 	}
-
-	return require_barrier;
 }
 
 void GSRendererOGL::EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTexture** rt, const GSTextureCache::Source* tex)
@@ -445,7 +441,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTex
 	// Effect is really a channel shuffle effect so let's cheat a little
 	if (m_channel_shuffle) {
 		dev->PSSetShaderResource(4, tex->m_from_target);
-		glTextureBarrier();
+		m_require_one_barrier = true;
 
 		// Replace current draw with a fullscreen sprite
 		//
@@ -468,11 +464,10 @@ void GSRendererOGL::EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTex
 	}
 }
 
-bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42)
+void GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42)
 {
 	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	bool require_barrier     = false;
 	bool sw_blending         = false;
 
 	// No blending so early exit
@@ -483,7 +478,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		}
 #endif
 		dev->OMSetBlendState();
-		return false;
+		return;
 	}
 
 	if (m_env.PABE.PABE)
@@ -491,7 +486,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 		GL_INS("!!! ENV PABE  not supported !!!");
 		if (m_sw_blending >= ACC_BLEND_CCLIP_DALPHA) {
 			ps_sel.pabe = 1;
-			require_barrier |= (ALPHA.C == 1);
+			m_require_full_barrier |= (ALPHA.C == 1);
 			sw_blending = true;
 		}
 		//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
@@ -503,8 +498,9 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 	int blend_flag = GSDeviceOGL::m_blendMapOGL[blend_index].bogus;
 
 	// SW Blend is (nearly) free. Let's use it.
-	bool impossible_or_free_blend = (blend_flag & (BLEND_NO_BAR|BLEND_A_MAX|BLEND_ACCU))
-			|| (m_prim_overlap == PRIM_OVERLAP_NO);
+	bool impossible_or_free_blend = (blend_flag & (BLEND_NO_BAR|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
+		|| (m_prim_overlap == PRIM_OVERLAP_NO)	// Blend can be done in a single draw
+		|| (m_require_full_barrier);			// Another effect (for example fbmask) already requires a full barrier
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
@@ -520,7 +516,7 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 										// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
 										// In order to keep it fast, let's limit it to smaller draw call.
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
-		case ACC_BLEND_FREE:            sw_blending |= (ps_sel.fbmask  && !m_unsafe_fbmask) || impossible_or_free_blend; // blending is only free when we use slow fbmask
+		case ACC_BLEND_FREE:            sw_blending |= impossible_or_free_blend;
 		default:                        sw_blending |= accumulation_blend;
 	}
 	// SW Blending
@@ -580,18 +576,20 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 			}
 			// Remove the addition/substraction from the SW blending
 			ps_sel.blend_d = 2;
+
+			// Note accumulation_blend doesn't require a barrier
+
 		} else {
 			// Disable HW blending
 			dev->OMSetBlendState();
+
+			m_require_full_barrier |= !(blend_flag & BLEND_NO_BAR);
 		}
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2) {
 			ps_cb.TA_Af.a = (float)ALPHA.FIX / 128.0f;
 		}
-
-		// No need to flush for every primitive
-		require_barrier |= !(blend_flag & BLEND_NO_BAR) && !accumulation_blend;
 	} else {
 		ps_sel.clr1 = !!(blend_flag & BLEND_C_CLR);
 		if (ps_sel.dfmt == 1 && ALPHA.C == 1) {
@@ -602,8 +600,6 @@ bool GSRendererOGL::EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_G
 			dev->OMSetBlendState(blend_index, ALPHA.FIX, (ALPHA.C == 2));
 		}
 	}
-
-	return require_barrier;
 }
 
 void GSRendererOGL::EmulateTextureSampler(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSSamplerSelector ps_ssel, const GSTextureCache::Source* tex)
@@ -866,17 +862,19 @@ GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSV
 	return GSVector4i(box * scale.xyxy()).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
 }
 
-void GSRendererOGL::SendDraw(bool require_barrier)
+void GSRendererOGL::SendDraw()
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
-	if (!require_barrier && m_unsafe_fbmask) {
-		// Not safe but still worth to take some precautions.
+	if (!m_require_full_barrier && m_require_one_barrier) {
+		// Need only a single barrier
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
-	} else if (!require_barrier) {
+	} else if (!m_require_full_barrier) {
+		// Don't need any barrier
 		dev->DrawIndexedPrimitive();
 	} else if (m_prim_overlap == PRIM_OVERLAP_NO) {
+		// Need full barrier but a single barrier will be enough
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
@@ -944,8 +942,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE_GL45 = false;
 	bool DATE_one  = false;
 
-	bool require_barrier = false; // For accurate option
-	m_unsafe_fbmask = false;
+	// Reset state
+	m_require_one_barrier  = false;
+	m_require_full_barrier = false;
 
 	ASSERT(m_dev != NULL);
 
@@ -1016,7 +1015,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 #endif
 
-	require_barrier |= EmulateTextureShuffleAndFbmask(ps_sel, om_csel);
+	EmulateTextureShuffleAndFbmask(ps_sel, om_csel);
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 
@@ -1024,7 +1023,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
-			require_barrier = true;
+			m_require_full_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
@@ -1044,7 +1043,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("Slower DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				require_barrier = true;
+				m_require_full_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
 			} else if (m_accurate_date) {
@@ -1053,7 +1052,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				if (GLLoader::found_GL_ARB_shader_image_load_store) {
 					DATE_GL42 = true;
 				} else {
-					require_barrier = true;
+					m_require_full_barrier = true;
 					DATE_GL45 = true;
 					DATE = false;
 				}
@@ -1061,7 +1060,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		} else if (!om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
 			// TODO: is it legal ? Likely but it need to be tested carefully
 			// DATE_GL45 = true;
-			// m_unsafe_fbmask = true; << replace it with a cheap barrier
+			// m_require_one_barrier = true; << replace it with a cheap barrier
 
 		}
 
@@ -1074,7 +1073,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Blend
 
 	if (!IsOpaque() && rt) {
-		require_barrier |= EmulateBlending(ps_sel, DATE_GL42);
+		EmulateBlending(ps_sel, DATE_GL42);
 	} else {
 		dev->OMSetBlendState(); // No blending please
 	}
@@ -1200,7 +1199,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (DATE_GL45) {
 		ps_sel.date = 5 + m_context->TEST.DATM;
 	} else if (DATE_one) {
-		glTextureBarrier();
+		m_require_one_barrier = true;
 		ps_sel.date       = 5 + m_context->TEST.DATM;
 		om_dssel.date     = 1;
 		om_dssel.date_one = 1;
@@ -1289,8 +1288,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		// Don't write anything on the color buffer
 		// Neither in the depth buffer
 		glDepthMask(false);
-		// Compute primitiveID max that pass the date test
-		SendDraw(false);
+		// Compute primitiveID max that pass the date test (Draw without barrier)
+		dev->DrawIndexedPrimitive();
 
 		// Ask PS to discard shader above the primitiveID max
 		glDepthMask(GLState::depth_mask);
@@ -1314,7 +1313,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (m_context->TEST.DoFirstPass())
 	{
-		SendDraw(require_barrier);
+		SendDraw();
 	}
 
 	if (m_context->TEST.DoSecondPass())
@@ -1356,7 +1355,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->OMSetColorMaskState(om_csel);
 			dev->SetupOM(om_dssel);
 
-			SendDraw(require_barrier);
+			SendDraw();
 		}
 	}
 
