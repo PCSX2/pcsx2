@@ -63,13 +63,22 @@ class GSRendererOGL final : public GSRendererHW
 		bool m_require_one_barrier;
 		bool m_require_full_barrier;
 
+		GSDeviceOGL::VSSelector m_vs_sel;
+		GSDeviceOGL::GSSelector m_gs_sel;
+		GSDeviceOGL::PSSelector m_ps_sel;
+
+		GSDeviceOGL::PSSamplerSelector		m_ps_ssel;
+		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
+		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
+
 	private:
+		inline void ResetStates();
 		inline void EmulateGS();
 		inline void SetupIA();
-		inline void EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
-		inline void EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTexture** rt, const GSTextureCache::Source* tex);
-		inline void EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
-		inline void EmulateTextureSampler(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSSamplerSelector ps_ssel, const GSTextureCache::Source* tex);
+		inline void EmulateTextureShuffleAndFbmask();
+		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+		inline void EmulateBlending(bool DATE_GL42);
+		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 
 	public:
 		GSRendererOGL();
