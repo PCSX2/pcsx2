@@ -129,6 +129,8 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glDebugMessageInsert);
 	GL_EXT_LOAD(glDebugMessageControl);
 	GL_EXT_LOAD(glDebugMessageCallback);
+	GL_EXT_LOAD(glObjectLabel);
+	GL_EXT_LOAD(glObjectPtrLabel);
 	// GL4.4
 	GL_EXT_LOAD_OPT(glClearTexImage);
 	GL_EXT_LOAD_OPT(glClearTexSubImage);

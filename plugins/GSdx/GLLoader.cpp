@@ -119,6 +119,8 @@ PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup                    = NUL
 PFNGLPOPDEBUGGROUPPROC                 glPopDebugGroup                     = NULL;
 PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert                = NULL;
 PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl               = NULL;
+PFNGLOBJECTLABELPROC                   glObjectLabel                       = NULL;
+PFNGLOBJECTPTRLABELPROC                glObjectPtrLabel                    = NULL;
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 glMemoryBarrier                     = NULL;

@@ -290,6 +290,8 @@ extern   PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage;
 extern   PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup;
 extern   PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert;
 extern   PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl;
+extern   PFNGLOBJECTLABELPROC                   glObjectLabel;
+extern   PFNGLOBJECTPTRLABELPROC                glObjectPtrLabel;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 glClearTexImage;
 extern   PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage;
