@@ -39,9 +39,9 @@ enum GameDataColumnId
 
 struct ListViewColumnInfo
 {
-	const wxChar*		name;
-	int					width;
-	wxListColumnFormat	align;
+	const wxChar*      name;
+	int                width;
+	wxListColumnFormat align;
 };
 
 // --------------------------------------------------------------------------------------
@@ -87,11 +87,11 @@ const ListViewColumnInfo& GameDatabaseListView::GetDefaultColumnInfo( uint idx )
 {
 	static const ListViewColumnInfo columns[] =
 	{
-		{ L"Serial",		96,		wxLIST_FORMAT_LEFT		},
-		{ L"Title",			132,	wxLIST_FORMAT_LEFT		},
-		{ L"Region",		72,		wxLIST_FORMAT_CENTER	},
-		{ L"Compat",		48,		wxLIST_FORMAT_CENTER	},
-		{ L"Patches",		48,		wxLIST_FORMAT_CENTER	},
+		{ L"Serial",	        90,	wxLIST_FORMAT_LEFT},
+		{ L"Title",             100,	wxLIST_FORMAT_LEFT},
+		{ L"Region",	        90,	wxLIST_FORMAT_CENTER},
+		{ L"Compatibility",	130,	wxLIST_FORMAT_CENTER},
+		{ L"Patches",	        90,	wxLIST_FORMAT_CENTER},
 	};
 
 	pxAssertDev( idx < ArraySize(columns), "ListView column index is out of bounds." );
@@ -111,7 +111,6 @@ GameDatabaseListView& GameDatabaseListView::AddGame( const wxString& serial )
 {
 	if (m_GamesInView.Index( serial, false ) != wxNOT_FOUND) return *this;
 	m_GamesInView.Add( serial );
-	
 	return *this;
 }
 
@@ -132,7 +131,7 @@ class BaseGameListSort
 {
 protected:
 	IGameDatabase*	m_GameDB;
-	bool			m_descending;
+	bool m_descending;
 
 public:
 	BaseGameListSort( bool descend )
@@ -150,7 +149,7 @@ public:
 
 		// note: Anything not in the database gets sorted to the bottom of the list ...
 		Game_Data first, second;
-		if (!m_GameDB->findGame(first, i1))		return false;
+		if (!m_GameDB->findGame(first, i1))	return false;
 		if (!m_GameDB->findGame(second, i2))	return true;
 
 		if (int retval = _doCompare(first, second))
@@ -232,7 +231,7 @@ GameDatabaseListView& GameDatabaseListView::SortBy( GameDataColumnId column )
 	const bool isDescending = false;
 
 	wxArrayString::iterator begin	= m_GamesInView.begin();
-	wxArrayString::iterator end		= m_GamesInView.end();
+	wxArrayString::iterator end	= m_GamesInView.end();
 
 	// Note: std::sort does not pass predicate instances by reference, which means we can't use
 	// object polymorphism to simplify the code below. --air
@@ -243,7 +242,7 @@ GameDatabaseListView& GameDatabaseListView::SortBy( GameDataColumnId column )
 		case GdbCol_Title:		std::sort(begin, end, GLSort_byTitle(isDescending));	break;
 		case GdbCol_Region:		std::sort(begin, end, GLSort_byRegion(isDescending));	break;
 		case GdbCol_Compat:		std::sort(begin, end, GLSort_byCompat(isDescending));	break;
-		case GdbCol_Patches:	std::sort(begin, end, GLSort_byPatches(isDescending));	break;
+		case GdbCol_Patches:		std::sort(begin, end, GLSort_byPatches(isDescending));	break;
 
 		default: break; // for GdbCol_Count
 	}
@@ -269,10 +268,10 @@ wxString GameDatabaseListView::OnGetItemText(long item, long column) const
 
 	switch( column )
 	{
-		case GdbCol_Serial:		return m_GamesInView[item];
-		case GdbCol_Title:		return game.getString("Name");
-		case GdbCol_Region:		return game.getString("Region");
-		case GdbCol_Compat:		return game.getString("Compat");
+		case GdbCol_Serial:	return m_GamesInView[item];
+		case GdbCol_Title:	return game.getString("Name");
+		case GdbCol_Region:	return game.getString("Region");
+		case GdbCol_Compat:	return game.getString("Compat");
 		case GdbCol_Patches:	return game.getString("[patches]").IsEmpty() ? L"No" : L"Yes";
 	}
 
@@ -324,7 +323,7 @@ wxListItemAttr* GameDatabaseListView::OnGetItemAttr(long item) const
 wxTextCtrl* CreateMultiLineTextCtrl( wxWindow* parent, int digits, long flags = 0 )
 {
 	wxTextCtrl* ctrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-	pxFitToDigits(ctrl, digits);
+	pxFitToDigits(ctrl, digits, 70);
 	return ctrl;
 }
 
@@ -337,7 +336,6 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 	nameBox    = CreateNumericalTextCtrl(this, 40, wxTE_LEFT);
 	regionBox  = CreateNumericalTextCtrl(this, 40, wxTE_LEFT);
 	compatBox  = CreateNumericalTextCtrl(this, 40, wxTE_LEFT);
-	commentBox = CreateMultiLineTextCtrl(this, 40, wxTE_LEFT);
 	patchesBox = CreateMultiLineTextCtrl(this, 40, wxTE_LEFT);
 
 	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
@@ -345,38 +343,37 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 
 	*this	+= Heading(_("Game Database Editor")).Bold() | StdExpand();
 
-	*this	+= new GameDatabaseListView( this ) | StdExpand();
+	*this += new GameDatabaseListView(this) | StdExpand();
 
 	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding, 0));
 	sizer1.AddGrowableCol(0);
 
 	blankLine();
-	sizer1	+= Label(L"Serial: ");	
-	sizer1	+= 5;
-	sizer1	+= serialBox | pxCenter;
-	sizer1	+= 5;
-	sizer1	+= searchBtn;
+	sizer1 += Label(L"Serial: ");
+	sizer1 += 5;
+	sizer1 += serialBox | pxCenter;
+	sizer1 += 5;
+	sizer1 += searchBtn;
 
-	placeTextBox(nameBox,    "Name: ");
-	placeTextBox(regionBox,  "Region: ");
-	placeTextBox(compatBox,  "Compatibility: ");
-	placeTextBox(commentBox, "Comments: ");
+	placeTextBox(nameBox, "Name: ");
+	placeTextBox(regionBox, "Region: ");
+	placeTextBox(compatBox, "Compatibility: ");
 	placeTextBox(patchesBox, "Patches: ");
 
 	blankLine();
 
 	wxStaticBoxSizer& sizer2 = *new wxStaticBoxSizer(wxVERTICAL, this, _("Gamefixes"));
-	wxFlexGridSizer&  sizer3(*new wxFlexGridSizer(3, 0, StdPadding*4));
+	wxFlexGridSizer&  sizer3(*new wxFlexGridSizer(3, 0, StdPadding * 4));
 	sizer3.AddGrowableCol(0);
 
-	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
+	for (GamefixId i = GamefixId_FIRST; i < pxEnumEnd; ++i)
 		sizer3 += gameFixes[i];
 
 	sizer2 += sizer3 | StdCenter();
 
-	*this	+= sizer1  | pxCenter;
-	*this	+= sizer2  | pxCenter;
-	
+	*this += sizer1 | pxCenter;
+	*this += sizer2 | pxCenter;
+
 	Connect(searchBtn->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(GameDatabasePanel::Search_Click));
 	PopulateFields();
 }
@@ -388,28 +385,35 @@ void Panels::GameDatabasePanel::PopulateFields( const wxString& id ) {
 	Game_Data game;
 	if (GameDB->findGame(game, id.IsEmpty() ? SysGetDiscID() : id))
 	{
-		serialBox ->SetLabel(game.getString("Serial"));
-		nameBox   ->SetLabel(game.getString("Name"));
-		regionBox ->SetLabel(game.getString("Region"));
-		compatBox ->SetLabel(game.getString("Compat"));
-		commentBox->SetLabel(game.getString("[comments]"));
+		serialBox->SetLabel(game.getString("Serial"));
+		nameBox->SetLabel(game.getString("Name"));
+		regionBox->SetLabel(game.getString("Region"));
+		switch (game.getInt("Compat"))
+		{
+		case 1: compatBox->SetLabel("Nothing"); break;
+		case 2: compatBox->SetLabel("Intro"); break;
+		case 3: compatBox->SetLabel("Menu"); break;
+		case 4: compatBox->SetLabel("In-game"); break;
+		case 5: compatBox->SetLabel("Playable"); break;
+		case 6: compatBox->SetLabel("Perfect"); break;
+		default: compatBox->SetLabel("Unknown");
+		}
 		patchesBox->SetLabel(game.getString("[patches]"));
 
-		for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
+		for (GamefixId i = GamefixId_FIRST; i < pxEnumEnd; ++i)
 		{
-			wxString keyName (EnumToString(i)); keyName += L"Hack";
-			if( game.keyExists(keyName) )
+			wxString keyName(EnumToString(i)); keyName += L"Hack";
+			if ( game.keyExists(keyName) )
 				gameFixes[i]->SetValue(game.getBool(keyName));
 			else
 				gameFixes[i]->SetIndeterminate();
 		}
 	}
 	else {
-		serialBox ->SetLabel(wxEmptyString);
-		nameBox   ->SetLabel(wxEmptyString);
-		regionBox ->SetLabel(wxEmptyString);
-		compatBox ->SetLabel(wxEmptyString);
-		commentBox->SetLabel(wxEmptyString);
+		serialBox->SetLabel(wxEmptyString);
+		nameBox->SetLabel(wxEmptyString);
+		regionBox->SetLabel(wxEmptyString);
+		compatBox->SetLabel(wxEmptyString);
 		patchesBox->SetLabel(wxEmptyString);
 		for (int i = 0; i < GamefixId_COUNT; i++) {
 			gameFixes[i]->SetValue(0);
@@ -430,15 +434,21 @@ bool Panels::GameDatabasePanel::WriteFieldsToDB() {
 	if (serialBox->GetValue().IsEmpty()) return false;
 
 	Game_Data game;
+	wxString com = compatBox->GetValue();
 	GameDB->findGame(game, serialBox->GetValue());
 
 	game.id = serialBox->GetValue();
 
-	game.writeString(L"Serial",		serialBox->GetValue());
-	game.writeString(L"Name",		nameBox->GetValue());
-	game.writeString(L"Region",		regionBox->GetValue());
-	game.writeString(L"Compat",		compatBox->GetValue());
-	game.writeString(L"[comments]",	commentBox->GetValue());
+	game.writeString(L"Serial", serialBox->GetValue());
+	game.writeString(L"Name", nameBox->GetValue());
+	game.writeString(L"Region", regionBox->GetValue());
+	if (com == "Unknown")          game.writeString(L"Compat", "0");
+	else if (com == "Nothing")     game.writeString(L"Compat", "1");
+	else if (com == "Intro")       game.writeString(L"Compat", "2");
+	else if (com == "Menu")        game.writeString(L"Compat", "3");
+	else if (com == "In-game")     game.writeString(L"Compat", "4");
+	else if (com == "Playable")    game.writeString(L"Compat", "5");
+	else if (com == "Perfect")      game.writeString(L"Compat", "6");
 	game.writeString(L"[patches]",	patchesBox->GetValue());
 	
 	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i) {
