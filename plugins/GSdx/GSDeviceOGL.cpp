@@ -256,7 +256,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Convert");
 
-		m_convert.cb = new GSUniformBufferOGL(g_convert_index, sizeof(MiscConstantBuffer));
+		m_convert.cb = new GSUniformBufferOGL("Misc UBO", g_convert_index, sizeof(MiscConstantBuffer));
 		// Upload once and forget about it
 		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
@@ -266,7 +266,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		m_convert.vs = vs;
 		for(size_t i = 0; i < countof(m_convert.ps); i++) {
 			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
-			m_convert.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+			string pretty_name = "Convert pipe " + to_string(i);
+			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 
 		PSSamplerSelector point;
@@ -288,11 +289,12 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Merge");
 
-		m_merge_obj.cb = new GSUniformBufferOGL(g_merge_cb_index, sizeof(MergeConstantBuffer));
+		m_merge_obj.cb = new GSUniformBufferOGL("Merge UBO", g_merge_cb_index, sizeof(MergeConstantBuffer));
 
 		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
-			m_merge_obj.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+			string pretty_name = "Merge pipe " + to_string(i);
+			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
 
@@ -302,11 +304,12 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Interlace");
 
-		m_interlace.cb = new GSUniformBufferOGL(g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
+		m_interlace.cb = new GSUniformBufferOGL("Interlace UBO", g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
 		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
-			m_interlace.ps[i] = m_shader->LinkPipeline(vs, 0, ps);
+			string pretty_name = "Interlace pipe " + to_string(i);
+			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
 
@@ -324,7 +327,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
 		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
-		m_shadeboost.ps = m_shader->LinkPipeline(vs, 0, ps);
+		m_shadeboost.ps = m_shader->LinkPipeline("ShadeBoost pipe", vs, 0, ps);
 	}
 
 	// ****************************************************************
@@ -410,8 +413,8 @@ void GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
 
-	m_vs_cb = new GSUniformBufferOGL(g_vs_cb_index, sizeof(VSConstantBuffer));
-	m_ps_cb = new GSUniformBufferOGL(g_ps_cb_index, sizeof(PSConstantBuffer));
+	m_vs_cb = new GSUniformBufferOGL("HW VS UBO", g_vs_cb_index, sizeof(VSConstantBuffer));
+	m_ps_cb = new GSUniformBufferOGL("HW PS UBO", g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(false, false, false);
@@ -1233,7 +1236,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
 		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
-		m_fxaa.ps = m_shader->LinkPipeline(m_convert.vs, 0, ps);
+		m_fxaa.ps = m_shader->LinkPipeline("FXAA pipe", m_convert.vs, 0, ps);
 	}
 
 	GL_PUSH("DoFxaa");
@@ -1274,9 +1277,9 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		shader << fshader.rdbuf();
 
 
-		m_shaderfx.cb = new GSUniformBufferOGL(g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
+		m_shaderfx.cb = new GSUniformBufferOGL("eFX UBO", g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
 		GLuint ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
-		m_shaderfx.ps = m_shader->LinkPipeline(m_convert.vs, 0, ps);
+		m_shaderfx.ps = m_shader->LinkPipeline("eFX pipie", m_convert.vs, 0, ps);
 	}
 
 	GL_PUSH("DoExternalFX");

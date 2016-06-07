@@ -64,6 +64,12 @@ class GSBufferOGL {
 		// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
 		// => bigger buffer => less sync
 		bind();
+
+		if (STRIDE <= 4)
+			glObjectLabel(GL_BUFFER, m_buffer_name, -1, "IBO");
+		else
+			glObjectLabel(GL_BUFFER, m_buffer_name, -1, "VBO");
+
 		// coherency will be done by flushing
 		const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
 		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;

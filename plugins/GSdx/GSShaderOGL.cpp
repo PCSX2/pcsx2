@@ -30,7 +30,7 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_debug_shader(debug)
 {
 	// Create a default pipeline
-	m_pipeline = LinkPipeline(0, 0, 0);
+	m_pipeline = LinkPipeline("HW pipe", 0, 0, 0);
 	BindPipeline(m_pipeline);
 }
 
@@ -44,13 +44,15 @@ GSShaderOGL::~GSShaderOGL()
 	glDeleteProgramPipelines(m_pipe_to_delete.size(), &m_pipe_to_delete[0]);
 }
 
-GLuint GSShaderOGL::LinkPipeline(GLuint vs, GLuint gs, GLuint ps)
+GLuint GSShaderOGL::LinkPipeline(const string& pretty_print, GLuint vs, GLuint gs, GLuint ps)
 {
 	GLuint p;
 	glCreateProgramPipelines(1, &p);
 	glUseProgramStages(p, GL_VERTEX_SHADER_BIT, vs);
 	glUseProgramStages(p, GL_GEOMETRY_SHADER_BIT, gs);
 	glUseProgramStages(p, GL_FRAGMENT_SHADER_BIT, ps);
+
+	glObjectLabel(GL_PROGRAM_PIPELINE, p, pretty_print.size(), pretty_print.c_str());
 
 	m_pipe_to_delete.push_back(p);
 

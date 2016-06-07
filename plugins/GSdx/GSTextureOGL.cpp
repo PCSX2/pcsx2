@@ -57,6 +57,9 @@ namespace PboPool {
 		for (size_t i = 0; i < countof(m_pool); i++) {
 			BindPbo();
 
+			string pretty_name = "PBO" + to_string(i);
+			glObjectLabel(GL_BUFFER, m_pool[i], pretty_name.size(), pretty_name.c_str());
+
 			glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
 			m_map[m_current_pbo] = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
 			m_fence[m_current_pbo] = 0;

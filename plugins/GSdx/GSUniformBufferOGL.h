@@ -35,11 +35,12 @@ class GSUniformBufferOGL {
 	uint8* cache;       // content of the previous upload
 
 public:
-	GSUniformBufferOGL(GLuint index, uint32 size) : index(index)
-												  , size(size)
+	GSUniformBufferOGL(const string& pretty_name, GLuint index, uint32 size)
+		: index(index), size(size)
 	{
 		glGenBuffers(1, &buffer);
 		bind();
+		glObjectLabel(GL_BUFFER, buffer, pretty_name.size(), pretty_name.c_str());
 		allocate();
 		attach();
 		cache = (uint8*)_aligned_malloc(size, 32);
