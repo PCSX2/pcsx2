@@ -67,6 +67,7 @@ class GSRendererOGL final : public GSRendererHW
 		inline bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
 		inline void EmulateChannelShuffle(GSDeviceOGL::PSSelector& ps_sel, GSTexture** rt, const GSTextureCache::Source* tex);
 		inline bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
+		inline void EmulateTextureSampler(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::PSSamplerSelector ps_ssel, const GSTextureCache::Source* tex);
 
 	public:
 		GSRendererOGL();
