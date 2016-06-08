@@ -92,27 +92,27 @@ void SysTraceLog_VIFcode::ApplyPrefix( FastFormatAscii& ascii ) const
 static const TraceLogDescriptor
 
 TLD_ELF = {
-	L"ELF",			L"ELF",
+	L"ELF",			L"E&LF",
 	pxDt("Dumps detailed information for PS2 executables (ELFs).")
 }, 
 
 TLD_eeRecPerf = {
-	L"EErecPerf",	L"EErec Performance",
+	L"EErecPerf",	L"EErec &Performance",
 	pxDt("Logs manual protection, split blocks, and other things that might impact performance.")
 },
 
 TLD_eeConsole = {
-	L"EEout",		L"EE Console",
+	L"EEout",		L"EE C&onsole",
 	pxDt("Shows the game developer's logging text (EE processor)")
 },
 
 TLD_iopConsole = {
-	L"IOPout",		L"IOP Console",
+	L"IOPout",		L"&IOP Console",
 	pxDt("Shows the game developer's logging text (IOP processor)")
 },
 
 TLD_deci2 = {
-	L"DECI2",		L"DECI2 Console",
+	L"DECI2",		L"DECI&2 Console",
 	pxDt("Shows DECI2 debugging logs (EE processor)")
 };
 

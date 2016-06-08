@@ -37,7 +37,7 @@ ConsoleLogSource_Event::ConsoleLogSource_Event()
 {
 	static const TraceLogDescriptor myDesc =
 	{
-		L"SysEvents",	L"SysVM Control Events",
+		L"SysEvents",	L"S&ysVM Control Events",
 		pxLt("Logs events as they are passed to the PS2 virtual machine."),
 	};
 	

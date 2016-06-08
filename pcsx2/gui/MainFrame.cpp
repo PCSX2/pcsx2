@@ -329,8 +329,8 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_LoadStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Load01, MenuId_State_LoadBackup ) )
 	, m_SaveStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Save01 ) )
 
-	, m_MenuItem_Console( *new wxMenuItem( &m_menuMisc, MenuId_Console, _("Show Console"), wxEmptyString, wxITEM_CHECK ) )
-	, m_MenuItem_Console_Stdio( *new wxMenuItem( &m_menuMisc, MenuId_Console_Stdio, _("Console to Stdio"), wxEmptyString, wxITEM_CHECK ) )
+	, m_MenuItem_Console( *new wxMenuItem( &m_menuMisc, MenuId_Console, _("&Show Console"), wxEmptyString, wxITEM_CHECK ) )
+	, m_MenuItem_Console_Stdio( *new wxMenuItem( &m_menuMisc, MenuId_Console_Stdio, _("&Console to Stdio"), wxEmptyString, wxITEM_CHECK ) )
 
 {
 	m_RestartEmuOnDelete = false;
@@ -416,7 +416,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	m_menuSys.Append(MenuId_Boot_CDVD2,		_("Initializing..."));
 
-	m_menuSys.Append(MenuId_Boot_ELF,		_("Run ELF..."),
+	m_menuSys.Append(MenuId_Boot_ELF,		_("&Run ELF..."),
 		_("For running raw PS2 binaries directly"));
 
 	m_menuSys.AppendSeparator();
@@ -426,32 +426,32 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	//m_menuSys.Append(MenuId_Sys_Close,		_("Close"),
 	//	_("Stops emulation and closes the GS window."));
 
-	m_menuSys.Append(MenuId_Sys_LoadStates,	_("Load state"), &m_LoadStatesSubmenu);
-	m_menuSys.Append(MenuId_Sys_SaveStates,	_("Save state"), &m_SaveStatesSubmenu);
+	m_menuSys.Append(MenuId_Sys_LoadStates,	_("&Load state"), &m_LoadStatesSubmenu);
+	m_menuSys.Append(MenuId_Sys_SaveStates,	_("&Save state"), &m_SaveStatesSubmenu);
 
-	m_menuSys.Append(MenuId_EnableBackupStates,	_("Backup before save"),
+	m_menuSys.Append(MenuId_EnableBackupStates,	_("&Backup before save"),
 		wxEmptyString, wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
 
-	m_menuSys.Append(MenuId_EnablePatches,	_("Automatic Gamefixes"),
+	m_menuSys.Append(MenuId_EnablePatches,	_("Automatic &Gamefixes"),
 		_("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
 
-	m_menuSys.Append(MenuId_EnableCheats,	_("Enable Cheats"),
+	m_menuSys.Append(MenuId_EnableCheats,	_("Enable &Cheats"),
 		wxEmptyString, wxITEM_CHECK);
 
-	m_menuSys.Append(MenuId_EnableWideScreenPatches,	_("Enable Widescreen Patches"),
+	m_menuSys.Append(MenuId_EnableWideScreenPatches,	_("Enable &Widescreen Patches"),
 		wxEmptyString, wxITEM_CHECK);
 
-	m_menuSys.Append(MenuId_EnableHostFs,	_("Enable Host Filesystem"),
+	m_menuSys.Append(MenuId_EnableHostFs,	_("Enable &Host Filesystem"),
 		wxEmptyString, wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
 
-	m_menuSys.Append(MenuId_Sys_Shutdown,	_("Shutdown"),
+	m_menuSys.Append(MenuId_Sys_Shutdown,	_("Shut&down"),
 		_("Wipes all internal VM states and shuts down plugins."));
 
-	m_menuSys.Append(MenuId_Exit,			_("Exit"),
+	m_menuSys.Append(MenuId_Exit,			_("E&xit"),
 		AddAppName(_("Closing %s may be hazardous to your health")));
 
 
@@ -459,13 +459,13 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	wxMenu& isoRecents( wxGetApp().GetRecentIsoMenu() );
 
 	//m_menuCDVD.AppendSeparator();
-	m_menuCDVD.Append( MenuId_IsoSelector,	_("Iso Selector"), &isoRecents );
-	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin Menu"), m_PluginMenuPacks[PluginId_CDVD] );
+	m_menuCDVD.Append( MenuId_IsoSelector,	_("Iso &Selector"), &isoRecents );
+	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 
 	m_menuCDVD.AppendSeparator();
-	m_menuCDVD.Append( MenuId_Src_Iso,		_("Iso"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
-	m_menuCDVD.Append( MenuId_Src_Plugin,	_("Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
-	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_Iso,		_("&Iso"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
 	//m_menuCDVD.AppendSeparator();
 	//m_menuCDVD.Append( MenuId_SkipBiosToggle,_("Enable BOOT2 injection"),
@@ -476,7 +476,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuConfig.Append(MenuId_Config_SysSettings,	_("Emulation &Settings") );
 	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector") );
-	if (IsDebugBuild) m_menuConfig.Append(MenuId_Config_GameDatabase,	_("Game Database Editor") );
+	if (IsDebugBuild) m_menuConfig.Append(MenuId_Config_GameDatabase,	_("&Game Database Editor") );
 	// Empty menu
 	// m_menuConfig.Append(MenuId_Config_Language,		_("Appearance...") );
 
@@ -485,19 +485,19 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuConfig.Append(MenuId_Config_GS,		_("&Video (GS)"),		m_PluginMenuPacks[PluginId_GS]);
 	m_menuConfig.Append(MenuId_Config_SPU2,		_("&Audio (SPU2)"),		m_PluginMenuPacks[PluginId_SPU2]);
 	m_menuConfig.Append(MenuId_Config_PAD,		_("&Controllers (PAD)"),m_PluginMenuPacks[PluginId_PAD]);
-	m_menuConfig.Append(MenuId_Config_DEV9,		_("Dev9"),				m_PluginMenuPacks[PluginId_DEV9]);
-	m_menuConfig.Append(MenuId_Config_USB,		_("USB"),				m_PluginMenuPacks[PluginId_USB]);
-	m_menuConfig.Append(MenuId_Config_FireWire,	_("Firewire"),			m_PluginMenuPacks[PluginId_FW]);
+	m_menuConfig.Append(MenuId_Config_DEV9,		_("&Dev9"),				m_PluginMenuPacks[PluginId_DEV9]);
+	m_menuConfig.Append(MenuId_Config_USB,		_("&USB"),				m_PluginMenuPacks[PluginId_USB]);
+	m_menuConfig.Append(MenuId_Config_FireWire,	_("&Firewire"),			m_PluginMenuPacks[PluginId_FW]);
 
 	//m_menuConfig.AppendSeparator();
 	//m_menuConfig.Append(MenuId_Config_Patches,	_("Patches (unimplemented)"),	wxEmptyString);
 
 	m_menuConfig.AppendSeparator();
-	m_menuConfig.Append(MenuId_Config_Multitap0Toggle,	_("Multitap 1"),	wxEmptyString, wxITEM_CHECK );
-	m_menuConfig.Append(MenuId_Config_Multitap1Toggle,	_("Multitap 2"),	wxEmptyString, wxITEM_CHECK );
+	m_menuConfig.Append(MenuId_Config_Multitap0Toggle,	_("Multitap &1"),	wxEmptyString, wxITEM_CHECK );
+	m_menuConfig.Append(MenuId_Config_Multitap1Toggle,	_("Multitap &2"),	wxEmptyString, wxITEM_CHECK );
 
 	m_menuConfig.AppendSeparator();
-	m_menuConfig.Append(MenuId_Config_ResetAll,	_("Clear all settings..."),
+	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear all settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 
 	// ------------------------------------------------------------------------
@@ -520,15 +520,15 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	//There's a great working "open website" in the about panel. Less clutter by just using that.
 	//m_menuMisc.Append(MenuId_Website,			_("Visit Website..."),
 	//	_("Opens your web-browser to our favorite website."));
-	m_menuMisc.Append(MenuId_About,				_("About...") );
+	m_menuMisc.Append(MenuId_About,				_("&About...") );
 
 	m_menuMisc.AppendSeparator();
-	m_menuMisc.Append( MenuId_ChangeLang,		L"Change Language" ); // Always in English
+	m_menuMisc.Append( MenuId_ChangeLang,		L"Change &Language" ); // Always in English
 
-	m_menuDebug.Append(MenuId_Debug_Open,		_("Open Debug Window..."),	wxEmptyString);
+	m_menuDebug.Append(MenuId_Debug_Open,		_("&Open Debug Window..."),	wxEmptyString);
 
 #ifdef PCSX2_DEVBUILD
-	m_menuDebug.Append(MenuId_Debug_Logging,	_("Logging..."),			wxEmptyString);
+	m_menuDebug.Append(MenuId_Debug_Logging,	_("&Logging..."),			wxEmptyString);
 #endif
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
@@ -610,7 +610,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		if( !CoreThread.IsClosing() )
 		{
 			susres->Enable();
-			susres->SetItemLabel(_("Pause"));
+			susres->SetItemLabel(_("Paus&e"));
 			susres->SetHelp(_("Safely pauses emulation and preserves the PS2 state."));
 		}
 		else
@@ -618,7 +618,7 @@ void MainEmuFrame::ApplyCoreStatus()
 			susres->Enable(vm);
 			if( vm )
 			{
-				susres->SetItemLabel(_("Resume"));
+				susres->SetItemLabel(_("R&esume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
 			}
 			else
@@ -633,7 +633,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )	
 		{
-			restart->SetItemLabel(_("Restart"));
+			restart->SetItemLabel(_("Res&tart"));
 			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
 		}
 		else
@@ -647,12 +647,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd->SetItemLabel(_("Reboot CDVD (full)"));
+			cdvd->SetItemLabel(_("Reboot CDVD (f&ull)"));
 			cdvd->SetHelp(_("Hard reset of the active VM."));
 		}
 		else
 		{
-			cdvd->SetItemLabel(_("Boot CDVD (full)"));
+			cdvd->SetItemLabel(_("Boot CDVD (f&ull)"));
 			cdvd->SetHelp(_("Boot the VM using the current DVD or Iso source media"));
 		}	
 	}
@@ -661,12 +661,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd2->SetItemLabel(_("Reboot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Reboot CDVD (&fast)"));
 			cdvd2->SetHelp(_("Reboot using fast BOOT (skips splash screens)"));
 		}
 		else
 		{
-			cdvd2->SetItemLabel(_("Boot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Boot CDVD (&fast)"));
 			cdvd2->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
 		}
 	}
@@ -752,10 +752,10 @@ void PerPluginMenuInfo::Populate( PluginsEnum_t pid )
 
 	if( PluginId == PluginId_GS )
 	{
-		MyMenu.Append( MenuId_Video_CoreSettings, _("Core GS Settings..."),
+		MyMenu.Append( MenuId_Video_CoreSettings, _("&Core GS Settings..."),
 			_("Modify hardware emulation settings regulated by the PCSX2 core virtual machine.") );
 
-		MyMenu.Append( MenuId_Video_WindowSettings, _("Window Settings..."),
+		MyMenu.Append( MenuId_Video_WindowSettings, _("&Window Settings..."),
 			_("Modify window and appearance options, including aspect ratio.") );
 
 		MyMenu.AppendSeparator();
@@ -763,7 +763,7 @@ void PerPluginMenuInfo::Populate( PluginsEnum_t pid )
 
 	// Populate options from the plugin here.
 
-	MyMenu.Append( GetPluginMenuId_Settings(PluginId), _("Plugin Settings..."),
+	MyMenu.Append( GetPluginMenuId_Settings(PluginId), _("&Plugin Settings..."),
 		wxsFormat( _("Opens the %s plugin's advanced settings dialog."), tbl_PluginInfo[pid].GetShortname().c_str() )
 	);
 }
