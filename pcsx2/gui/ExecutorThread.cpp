@@ -199,7 +199,6 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
     {
         std::unique_ptr<SysExecEvent> deleteMe(*node);
 
-		list.erase( node );
 		if( !m_Quitting || deleteMe->IsCriticalEvent() )
 		{
 			// Some messages can be blocking, so we should release the mutex lock while
@@ -235,6 +234,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 			pxEvtLog.Write( this, deleteMe.get(), L"Skipping Event: %s" );
 			deleteMe->PostResult();
 		}
+		list.erase( node ); 
 	}
 }
 
