@@ -25,7 +25,7 @@
 #include "CDVD_internal.h"
 #include "CDVDisoReader.h"
 
-#include "GS.h"			// for gsVideoMode
+#include "GS.h"			// for gsRegionMode
 #include "Elfheader.h"
 #include "ps2/BiosTools.h"
 #include "GameDatabase.h"
@@ -958,7 +958,7 @@ u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 void cdvdVsync() {
 	cdvd.RTCcount++;
-	if (cdvd.RTCcount < ((gsVideoMode == GS_VideoMode::NTSC) ? 60 : 50)) return;
+	if (cdvd.RTCcount < ((gsRegionMode == Region_NTSC) ? 60 : 50)) return;
 	cdvd.RTCcount = 0;
 
 	if ( cdvd.Status == CDVD_STATUS_TRAY_OPEN )

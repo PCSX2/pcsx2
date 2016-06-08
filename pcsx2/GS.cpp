@@ -33,14 +33,14 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 }
 
 bool			gsIsInterlaced	= false;
+GS_RegionMode	gsRegionMode	= Region_NTSC;
 
 
-void gsSetVideoMode( GS_VideoMode VideoMode )
+void gsSetRegionMode( GS_RegionMode region )
 {
-	if( gsVideoMode == VideoMode )
-		return;
+	if( gsRegionMode == region ) return;
 
-	gsVideoMode = VideoMode;
+	gsRegionMode = region;
 	UpdateVSyncRate();
 }
 
@@ -157,8 +157,21 @@ __fi void gsWrite8(u32 mem, u8 value)
 
 static void _gsSMODEwrite( u32 mem, u32 value )
 {
-	if(mem == GS_SMODE2)
+	switch (mem)
+	{
+	case GS_SMODE1:
+		if ( (value & 0x6000) == 0x6000 ) 
+			gsSetRegionMode( Region_PAL );
+		else if (value & 0x400000 || value & 0x200000) 
+			gsSetRegionMode( Region_NTSC_PROGRESSIVE );
+		else
+			gsSetRegionMode( Region_NTSC );
+		break;
+
+	case GS_SMODE2:
 		gsIsInterlaced = (value & 0x1);
+		break;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,5 +436,5 @@ void gsResetFrameSkip()
 void SaveStateBase::gsFreeze()
 {
 	FreezeMem(PS2MEM_GS, 0x2000);
-	Freeze(gsVideoMode);
+	Freeze(gsRegionMode);
 }

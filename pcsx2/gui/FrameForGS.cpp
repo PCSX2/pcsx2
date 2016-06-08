@@ -591,8 +591,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
 	double fps = wxGetApp().FpsManager.GetFramerate();
-	// The "not PAL" case covers both NTSC and Progressive modes
-	float per = gsVideoMode == GS_VideoMode::PAL ? (fps * 100) / EmuConfig.GS.FrameratePAL.ToFloat() : (fps * 100) / EmuConfig.GS.FramerateNTSC.ToFloat();
+	// The "not PAL" case covers both Region_NTSC and Region_NTSC_PROGRESSIVE
+	float per = gsRegionMode == Region_PAL ? (fps * 100) / EmuConfig.GS.FrameratePAL.ToFloat() : (fps * 100) / EmuConfig.GS.FramerateNTSC.ToFloat();
 
 	char gsDest[128];
 	gsDest[0] = 0; // No need to set whole array to NULL.
