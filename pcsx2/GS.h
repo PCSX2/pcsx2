@@ -217,20 +217,14 @@ struct GSRegSIGBLID
 #define GSIMR		((u32&)*(PS2MEM_GS+0x1010))
 #define GSSIGLBLID	((GSRegSIGBLID&)*(PS2MEM_GS+0x1080))
 
-enum class GS_VideoMode : u8
+enum GS_RegionMode
 {
-	NTSC,
-	PAL,
-	VESA,
-	HDTV_480P,
-	HDTV_576P,
-	HDTV_720P,
-	HDTV_1080I,
-	HDTV_1080P,
-	Unknown
+	Region_NTSC,
+	Region_PAL,
+	Region_NTSC_PROGRESSIVE
 };
 
-extern GS_VideoMode gsVideoMode;
+extern GS_RegionMode gsRegionMode;
 
 /////////////////////////////////////////////////////////////////////////////
 // MTGS Threaded Class Declaration
@@ -369,7 +363,7 @@ extern s32 gsOpen();
 extern void gsClose();
 extern void gsReset();
 extern void gsOnModeChanged( Fixed100 framerate, u32 newTickrate );
-extern void gsSetVideoMode( GS_VideoMode VideoMode );
+extern void gsSetRegionMode( GS_RegionMode isPal );
 extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
 extern void gsFrameSkip();
