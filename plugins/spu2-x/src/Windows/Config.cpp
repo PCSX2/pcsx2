@@ -101,7 +101,7 @@ void ReadSettings()
 	VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
 	VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
 	VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
-	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
+	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 1);
 	VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
 	VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
 	VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);

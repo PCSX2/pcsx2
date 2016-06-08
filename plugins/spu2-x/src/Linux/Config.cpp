@@ -115,7 +115,7 @@ void ReadSettings()
 	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
 	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
 	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
-	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
+	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 1);
 
 
 	wxString temp;
