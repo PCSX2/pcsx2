@@ -609,13 +609,19 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 	const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
+
+	const uint8 wms = m_context->CLAMP.WMS;
+	const uint8 wmt = m_context->CLAMP.WMT;
+	bool complex_wms_wmt = (wms | wmt) & 2;
+
 	bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-	bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2 && !psm.depth;
+	bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && !complex_wms_wmt && !psm.depth;
 	// Don't force extra filtering on sprite (it creates various upscaling issue)
 	bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
-	m_ps_sel.wms = m_context->CLAMP.WMS;
-	m_ps_sel.wmt = m_context->CLAMP.WMT;
+	// 1 and 0 are equivalent
+	m_ps_sel.wms = (wms & 2) ? wms : 0;
+	m_ps_sel.wmt = (wmt & 2) ? wmt : 0;
 
 	// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
 	// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
@@ -730,7 +736,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	ps_cb.WH = WH;
 	ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-	if ((m_context->CLAMP.WMS | m_context->CLAMP.WMT) > 1) {
+	if (complex_wms_wmt) {
 		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 		ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
 	}
@@ -741,8 +747,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
-	m_ps_ssel.tau   = (m_context->CLAMP.WMS != CLAMP_CLAMP);
-	m_ps_ssel.tav   = (m_context->CLAMP.WMT != CLAMP_CLAMP);
+	m_ps_ssel.tau   = (wms != CLAMP_CLAMP);
+	m_ps_ssel.tav   = (wmt != CLAMP_CLAMP);
 	m_ps_ssel.ltf   = bilinear && simple_sample;
 	m_ps_ssel.aniso = simple_sample;
 
