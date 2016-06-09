@@ -1080,7 +1080,7 @@ static const char* const tfx_fs_all_glsl =
 	"    vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScalingFactor.xy) * vec2(1.0f/16.0f);\n"
 	"    ivec2 uv = ivec2(uv_f);\n"
 	"\n"
-	"    vec4 t;\n"
+	"    vec4 t = vec4(0.0f);\n"
 	"#if PS_TALES_OF_ABYSS_HLE == 1\n"
 	"    // Warning: UV can't be used in channel effect\n"
 	"    int depth = fetch_raw_depth();\n"
