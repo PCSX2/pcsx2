@@ -773,9 +773,6 @@ void ResetPad(int port, int slot) {
 	pads[port][slot].umask[0] = pads[port][slot].umask[1] = 0xFF;
 	// Sets up vibrate variable.
 	ResetVibrate(port, slot);
-	if (config.padConfigs[port][slot].autoAnalog && !ps2e) {
-		pads[port][slot].mode = MODE_ANALOG;
-	}
 	pads[port][slot].initialized = 1;
 
 	pads[port][slot].enabled = enabled;
@@ -1176,6 +1173,9 @@ u8 CALLBACK PADpoll(u8 value) {
 		// CONFIG_MODE
 		case 0x43:
 			if (pad->config) {
+				if (pad->mode == MODE_DIGITAL && config.padConfigs[query.port][query.slot].autoAnalog && !ps2e) {
+					pad->mode = MODE_ANALOG;
+				}
 				// In config mode.  Might not actually be leaving it.
 				SET_RESULT(ConfigExit);
 				DEBUG_OUT(0xF3);
