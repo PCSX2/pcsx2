@@ -17006,6 +17006,12 @@ Serial = SLES-55039
 Name   = Rock Band
 Region = PAL-M5
 ---------------------------------------------
+Serial = SLES-55049
+Name   = Toy Golf Extreme
+Region = PAL-M5
+Compat = 5
+eeClampMode = 3 //Stops ball falling through tables
+---------------------------------------------
 Serial = SLES-55050
 Name   = MX vs. ATV - Untamed
 Region = PAL-E
