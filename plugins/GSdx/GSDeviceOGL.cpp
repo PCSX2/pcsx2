@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
+#include "GSUtil.h"
 #include <fstream>
 
 #include "res/glsl_source.h"
@@ -43,8 +44,10 @@ static const uint32 g_vs_cb_index         = 20;
 static const uint32 g_ps_cb_index         = 21;
 static const uint32 g_gs_cb_index         = 22;
 
-bool GSDeviceOGL::m_debug_gl_call = false;
-int  GSDeviceOGL::s_n = 0;
+bool  GSDeviceOGL::m_debug_gl_call = false;
+int   GSDeviceOGL::s_n = 0;
+int   GSDeviceOGL::m_shader_inst = 0;
+int   GSDeviceOGL::m_shader_reg  = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
@@ -821,28 +824,67 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
 }
 
+void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader)
+{
+#ifdef __unix__
+	string out = "/tmp/GSdx_Shader/";
+	GSmkdir(out.c_str());
+
+	out += dir + "/";
+	GSmkdir(out.c_str());
+
+	out += file;
+#else
+	string out = file;
+#endif
+
+#ifdef __linux__
+	// Nouveau actually
+	if (GLLoader::mesa_amd_buggy_driver) {
+		if (freopen(out.c_str(), "w", stderr) == NULL)
+			fprintf(stderr, "Failed to redirect stderr\n");
+	}
+#endif
+
+	GLuint p = CompilePS(sel);
+	nb_shader++;
+	m_shader_inst += m_shader->DumpAsm(out, p);
+
+#ifdef __linux__
+	// Nouveau actually
+	if (GLLoader::mesa_amd_buggy_driver) {
+		if (freopen("/dev/tty", "w", stderr) == NULL)
+			fprintf(stderr, "Failed to restore stderr\n");
+	}
+#endif
+}
+
+void GSDeviceOGL::SelfShaderTestPrint(const string& test, int& nb_shader)
+{
+	fprintf(stderr, "%-25s\t\t%d shaders:\t%d instructions (M %4.2f)\t%d registers (M %4.2f)\n",
+			test.c_str(), nb_shader,
+			m_shader_inst, (float)m_shader_inst/(float)nb_shader,
+			m_shader_reg, (float)m_shader_reg/(float)nb_shader);
+
+	m_shader_inst = 0;
+	m_shader_reg  = 0;
+	nb_shader = 0;
+}
+
 void GSDeviceOGL::SelfShaderTest()
 {
-#define RUN_TEST \
-	do { \
-		GLuint p = CompilePS(sel); \
-		nb_shader++; \
-		perf += m_shader->DumpAsm(file, p); \
-	} while(0);
+	string out = "";
 
-#define PRINT_TEST(s) \
-	do { \
-		fprintf(stderr, "%s %d instructions for %d shaders (mean of %4.2f)\n", \
-				s, perf, nb_shader, (float)perf/(float)nb_shader); \
-		all += perf; \
-		perf = 0; \
-		nb_shader = 0; \
-	} while(0);
+#ifdef __unix__
+	setenv("NV50_PROG_DEBUG", "1", 1);
+#endif
 
+	string test;
+	m_shader_inst = 0;
+	m_shader_reg  = 0;
 	int nb_shader = 0;
-	int perf = 0;
-	int all = 0;
-	// Test: SW blending
+
+	test = "SW_Blending";
 	for (int colclip = 0; colclip < 2; colclip++) {
 		for (int fmt = 0; fmt < 3; fmt++) {
 			for (int i = 0; i < 3; i++) {
@@ -860,24 +902,24 @@ void GSDeviceOGL::SelfShaderTest()
 
 				std::string file = format("Shader_Blend_%d_%d_%d_%d__Cclip_%d__Dfmt_%d.glsl.asm",
 						i, ib, i, i, colclip, fmt);
-				RUN_TEST;
+				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
 		}
 	}
-	PRINT_TEST("Blend");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: alpha test
+	test = "Alpha_Test";
 	for (int atst = 0; atst < 8; atst++) {
 		PSSelector sel;
 		sel.tfx = 4;
 
 		sel.atst = atst;
 		std::string file = format("Shader_Atst_%d.glsl.asm", atst);
-		RUN_TEST;
+		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
-	PRINT_TEST("Alpha Tst");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: fbmask/fog/shuffle/read_ba
+	test = "Fbmask__Fog__Shuffle__Read_ba";
 	for (int read_ba = 0; read_ba < 2; read_ba++) {
 		PSSelector sel;
 		sel.tfx = 4;
@@ -889,11 +931,11 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.read_ba = read_ba;
 
 		std::string file = format("Shader_Fog__Fbmask__Shuffle__Read_ba_%d.glsl.asm", read_ba);
-		RUN_TEST;
+		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
-	PRINT_TEST("Fbmask/fog/shuffle/read_ba");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: Date
+	test = "Date";
 	for (int date = 1; date < 7; date++) {
 		PSSelector sel;
 		sel.tfx = 4;
@@ -901,11 +943,11 @@ void GSDeviceOGL::SelfShaderTest()
 
 		sel.date = date;
 		std::string file = format("Shader_Date_%d.glsl.asm", date);
-		RUN_TEST;
+		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
-	PRINT_TEST("Date");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: FBA
+	test = "FBA";
 	for (int fmt = 0; fmt < 3; fmt++) {
 		PSSelector sel;
 		sel.tfx = 4;
@@ -915,11 +957,11 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.dfmt = fmt;
 		sel.clr1 = 1;
 		std::string file = format("Shader_Fba__Clr1__Dfmt_%d.glsl.asm", fmt);
-		RUN_TEST;
+		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
-	PRINT_TEST("Fba/Clr1/Dfmt");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: Fst/Tc/IIP
+	test = "Fst__Tc__IIP";
 	{
 		PSSelector sel;
 		sel.tfx = 1;
@@ -930,11 +972,11 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.tcoffsethack = 1;
 
 		std::string file = format("Shader_Fst__TC__Iip.glsl.asm");
-		RUN_TEST;
+		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
-	PRINT_TEST("Fst/Tc/IIp");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: tfx/tcc
+	test = "Tfx__Tcc";
 	for (int channel = 0; channel < 5; channel++) {
 		for (int tfx = 0; tfx < 5; tfx++) {
 			for (int tcc = 0; tcc < 2; tcc++) {
@@ -946,13 +988,13 @@ void GSDeviceOGL::SelfShaderTest()
 				sel.tfx     = tfx;
 				sel.tcc     = tcc;
 				std::string file = format("Shader_Tfx_%d__Tcc_%d__Channel_%d.glsl.asm", tfx, tcc, channel);
-				RUN_TEST;
+				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
 		}
 	}
-	PRINT_TEST("Tfx/Tcc/Channel");
+	SelfShaderTestPrint(test, nb_shader);
 
-	// Test: Texture Sampling
+	test = "Texture_Sampling";
 	for (int depth = 0; depth < 4; depth++) {
 		for (int fmt = 0; fmt < 16; fmt++) {
 			if ((fmt & 3) == 3) continue;
@@ -975,19 +1017,14 @@ void GSDeviceOGL::SelfShaderTest()
 							sel.wmt       = wmt;
 							std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d__DepthFmt_%d.glsl.asm",
 									ltf, aem, fmt, wms, wmt, depth);
-							RUN_TEST;
+							SelfShaderTestRun(test, file, sel, nb_shader);
 						}
 					}
 				}
 			}
 		}
 	}
-	PRINT_TEST("Texture Sampling");
-
-	fprintf(stderr, "\nTotal %d\n", all);
-
-#undef RUN_TEST
-#undef PRINT_TEST
+	SelfShaderTestPrint(test, nb_shader);
 }
 
 GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, bool msaa, int format)
@@ -1698,12 +1735,24 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		default                                  : source = "???"; break;
 	}
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
 	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
 		fprintf(stderr,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
 	}
-	#endif
+#else
+	// Print nouveau shader compiler info
+	if (s_n == 0) {
+		int t, local, gpr, inst, byte;
+		int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
+				&t, &local, &gpr, &inst, &byte);
+		if (status == 5) {
+			m_shader_inst += inst;
+			m_shader_reg  += gpr;
+			fprintf(stderr,"T:%s\t\tS:%s\t=> %s\n", type.c_str(), severity.c_str(), message.c_str());
+		}
+	}
+#endif
 
 	if (m_debug_gl_file)
 		fprintf(m_debug_gl_file,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());

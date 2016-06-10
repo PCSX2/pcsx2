@@ -393,6 +393,8 @@ public:
 	static const int m_MERGE_BLEND;
 
 	static int s_n;
+	static int m_shader_inst;
+	static int m_shader_reg;
 
 	private:
 	uint32 m_msaa;				// Level of Msaa
@@ -548,6 +550,8 @@ public:
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 
+	void SelfShaderTestPrint(const string& test, int& nb_shader);
+	void SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader);
 	void SelfShaderTest();
 
 
