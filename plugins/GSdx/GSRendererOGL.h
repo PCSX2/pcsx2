@@ -71,6 +71,8 @@ class GSRendererOGL final : public GSRendererHW
 		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
 		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
 
+		int m_pass1_atst;
+
 	private:
 		inline void ResetStates();
 		inline void Lines2Sprites();
@@ -79,6 +81,7 @@ class GSRendererOGL final : public GSRendererHW
 		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 		inline void EmulateBlending(bool DATE_GL42);
 		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
+		inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
 
 	public:
 		GSRendererOGL();

@@ -41,6 +41,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
+	m_pass1_atst = 0;
 	ResetStates();
 
 	if (!theApp.GetConfigB("UserHacks")) {
@@ -166,6 +167,34 @@ void GSRendererOGL::SetupIA()
 	}
 
 	dev->IASetPrimitiveTopology(t);
+}
+
+void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
+{
+	if (pass == 1) {
+		if (m_context->TEST.ATE)
+			m_pass1_atst = m_context->TEST.ATST;
+		else
+			m_pass1_atst = ATST_ALWAYS;
+
+		if (m_context->TEST.ATE && m_context->TEST.ATST > 1)
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+
+		if (tex && tex->m_spritehack_t && (m_pass1_atst == 2)) {
+			m_ps_sel.atst = 1;
+		} else {
+			m_ps_sel.atst = m_pass1_atst;
+		}
+
+	} else if (pass == 2) {
+		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
+
+		m_ps_sel.atst = iatst[m_pass1_atst];
+
+		if (tex && tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
+			m_ps_sel.atst = 1;
+		}
+	}
 }
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
@@ -1242,21 +1271,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	}
 
-	if (m_context->TEST.ATE)
-		m_ps_sel.atst = m_context->TEST.ATST;
-	else
-		m_ps_sel.atst = ATST_ALWAYS;
-
-	if (m_context->TEST.ATE && m_context->TEST.ATST > 1)
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-
-	// By default don't use texture
-	m_ps_sel.tfx = 4;
-	int  atst = m_ps_sel.atst;
+	EmulateAtst(1, tex);
 
 	if (tex) {
 		EmulateTextureSampler(tex);
+	} else {
+		m_ps_sel.tfx = 4;
 	}
+
 	// Always bind the RT. This way special effect can use it.
 	dev->PSSetShaderResource(3, rt);
 
@@ -1337,12 +1359,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		ASSERT(!m_env.PABE.PABE);
 
-		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
-
-		m_ps_sel.atst = iatst[atst];
-		if (tex && tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
-			m_ps_sel.atst = 1;
-		}
+		EmulateAtst(2, tex);
 
 		dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
