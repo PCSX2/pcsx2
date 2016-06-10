@@ -430,7 +430,8 @@ extern void vmfree(void* ptr, size_t size);
 #if defined(ENABLE_OGL_DEBUG)
 struct GLAutoPop {
 	~GLAutoPop() {
-		glPopDebugGroup();
+		if (glPopDebugGroup)
+			glPopDebugGroup();
 	}
 };
 
