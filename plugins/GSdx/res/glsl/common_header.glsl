@@ -72,7 +72,8 @@ layout(std140, binding = 21) uniform cb21
     vec4 WH;
 
     vec2 TA;
-    float _pad0;
+    //float _pad0;
+    int   Uber_ATST;
     float Af;
 
     uvec4 MskFix;

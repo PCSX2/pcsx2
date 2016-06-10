@@ -41,7 +41,6 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
-	m_pass1_atst = 0;
 	ResetStates();
 
 	if (!theApp.GetConfigB("UserHacks")) {
@@ -171,29 +170,48 @@ void GSRendererOGL::SetupIA()
 
 void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
 {
-	if (pass == 1) {
-		if (m_context->TEST.ATE)
-			m_pass1_atst = m_context->TEST.ATST;
-		else
-			m_pass1_atst = ATST_ALWAYS;
+	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
+	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
 
-		if (m_context->TEST.ATE && m_context->TEST.ATST > 1)
+	if (!m_context->TEST.ATE) return;
+
+	switch (atst) {
+		case ATST_LESS:
+			if (tex && tex->m_spritehack_t) {
+				m_ps_sel.atst = 0;
+			} else {
+				ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+				m_ps_sel.atst = 1;
+			}
+			break;
+		case ATST_LEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			m_ps_sel.atst = 1;
+			break;
+		case ATST_GEQUAL:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_GREATER:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_EQUAL:
 			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 3;
+			break;
+		case ATST_NOTEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 4;
+			break;
 
-		if (tex && tex->m_spritehack_t && (m_pass1_atst == 2)) {
-			m_ps_sel.atst = 1;
-		} else {
-			m_ps_sel.atst = m_pass1_atst;
-		}
-
-	} else if (pass == 2) {
-		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
-
-		m_ps_sel.atst = iatst[m_pass1_atst];
-
-		if (tex && tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
-			m_ps_sel.atst = 1;
-		}
+		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
+		case ATST_ALWAYS:
+		default:
+			m_ps_sel.atst = 0;
+			break;
 	}
 }
 
@@ -786,10 +804,6 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	// Setup Texture ressources
 	dev->SetupSampler(m_ps_ssel);
 	dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
-
-	if (tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
-		m_ps_sel.atst = 1;
-	}
 }
 
 GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
@@ -1360,6 +1374,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ASSERT(!m_env.PABE.PABE);
 
 		EmulateAtst(2, tex);
+
+		// Potentially AREF was updated (hope perf impact will be limited)
+		dev->SetupCB(&vs_cb, &ps_cb);
 
 		dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 

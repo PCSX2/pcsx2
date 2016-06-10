@@ -71,8 +71,6 @@ class GSRendererOGL final : public GSRendererHW
 		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
 		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
 
-		int m_pass1_atst;
-
 	private:
 		inline void ResetStates();
 		inline void Lines2Sprites();
