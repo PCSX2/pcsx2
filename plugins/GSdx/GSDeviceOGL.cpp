@@ -1029,7 +1029,6 @@ void GSDeviceOGL::SelfShaderTest()
 		for (int fmt = 0; fmt < 3; fmt++) {
 			for (int i = 0; i < 3; i++) {
 				PSSelector sel;
-				sel.atst = 1;
 				sel.tfx = 4;
 
 				int ib = (i + 1) % 3;
@@ -1049,7 +1048,7 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Alpha_Test";
-	for (int atst = 0; atst < 8; atst++) {
+	for (int atst = 0; atst < 5; atst++) {
 		PSSelector sel;
 		sel.tfx = 4;
 
@@ -1063,7 +1062,6 @@ void GSDeviceOGL::SelfShaderTest()
 	for (int read_ba = 0; read_ba < 2; read_ba++) {
 		PSSelector sel;
 		sel.tfx = 4;
-		sel.atst = 1;
 
 		sel.fog = 1;
 		sel.fbmask = 1;
@@ -1079,7 +1077,6 @@ void GSDeviceOGL::SelfShaderTest()
 	for (int date = 1; date < 7; date++) {
 		PSSelector sel;
 		sel.tfx = 4;
-		sel.atst = 1;
 
 		sel.date = date;
 		std::string file = format("Shader_Date_%d.glsl.asm", date);
@@ -1091,7 +1088,6 @@ void GSDeviceOGL::SelfShaderTest()
 	for (int fmt = 0; fmt < 3; fmt++) {
 		PSSelector sel;
 		sel.tfx = 4;
-		sel.atst = 1;
 
 		sel.fba = 1;
 		sel.dfmt = fmt;
@@ -1105,7 +1101,6 @@ void GSDeviceOGL::SelfShaderTest()
 	{
 		PSSelector sel;
 		sel.tfx = 1;
-		sel.atst = 1;
 
 		sel.fst = 0;
 		sel.iip = 1;
@@ -1121,7 +1116,6 @@ void GSDeviceOGL::SelfShaderTest()
 		for (int tfx = 0; tfx < 5; tfx++) {
 			for (int tcc = 0; tcc < 2; tcc++) {
 				PSSelector sel;
-				sel.atst = 1;
 				sel.fst = 1;
 
 				sel.channel = channel;
@@ -1144,7 +1138,6 @@ void GSDeviceOGL::SelfShaderTest()
 					for (int wms = 1; wms < 4; wms++) {
 						for (int wmt = 1; wmt < 4; wmt++) {
 							PSSelector sel;
-							sel.atst = 1;
 							sel.tfx  = 1;
 							sel.tcc  = 1;
 							sel.fst = 1;
