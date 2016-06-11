@@ -566,7 +566,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 
 		if (accumulation_blend) {
 			// Keep HW blending to do the addition/subtraction
-			dev->OMSetBlendState(blend_index);
+			dev->OMSetBlendState(blend_index, 0.0f, false, true);
 			if (ALPHA.A == 2) {
 				// The blend unit does a reverse subtraction so it means
 				// the shader must output a positive value.
