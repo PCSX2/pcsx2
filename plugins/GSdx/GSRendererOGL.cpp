@@ -516,7 +516,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 										// In order to keep it fast, let's limit it to smaller draw call.
 		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
 		case ACC_BLEND_FREE:            sw_blending |= impossible_or_free_blend;
-		default:                        sw_blending |= accumulation_blend;
+		default:                        /*sw_blending |= accumulation_blend*/;
 	}
 	// SW Blending
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
@@ -537,6 +537,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_ps_sel.hdr = 1;
+			sw_blending  = true; // Enable sw blending for the HDR algo
 		} else if (sw_blending) {
 			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
