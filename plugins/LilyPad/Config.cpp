@@ -1323,7 +1323,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 			ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
 			LVCOLUMN c;
 			c.mask = LVCF_TEXT | LVCF_WIDTH;
-			c.cx = 101;
+			c.cx = 100;
 			c.pszText = L"Device";
 			ListView_InsertColumn(hWndList, 0, &c);
 			c.cx = 70;
