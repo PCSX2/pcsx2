@@ -58,6 +58,13 @@ static void rcntWmode(int index, u32 value);
 static void rcntWtarget(int index, u32 value);
 static void rcntWhold(int index, u32 value);
 
+static bool IsAnalogVideoMode(GS_VideoMode mode)
+{
+	if (mode == GS_VideoMode::NTSC || mode == GS_VideoMode::PAL)
+		return true;
+	else
+		return false;
+}
 
 void rcntReset(int index) {
 	counters[index].count = 0;
@@ -155,9 +162,6 @@ void rcntInit()
 	vsyncCounter.Mode = MODE_VRENDER;
 	vsyncCounter.sCycle = cpuRegs.cycle;
 
-	// Set the video mode to user's default request:
-	gsSetRegionMode( (GS_RegionMode)EmuConfig.GS.DefaultRegionMode );
-
 	for (i=0; i<4; i++) rcntReset(i);
 	cpuRcntSet();
 }
@@ -173,7 +177,7 @@ static u64 m_iStart=0;
 struct vSyncTimingInfo
 {
 	Fixed100 Framerate;		// frames per second (8 bit fixed)
-	GS_RegionMode RegionMode; // used to detect change (interlaced/progressive)
+	GS_VideoMode VideoMode; // used to detect change (interlaced/progressive)
 	u32 Render;				// time from vblank end to vblank start (cycles)
 	u32 Blank;				// time from vblank start to vblank end (cycles)
 
@@ -193,7 +197,6 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 
 	// NOTE: mgs3 likes a /4 vsync, but many games prefer /2.  This seems to indicate a
 	// problem in the counters vsync gates somewhere.
-
 	u64 Frame = ((u64)PS2CLK * 1000000ULL) / (framesPerSecond * 100).ToIntRounded();
 	u64 HalfFrame = Frame / 2;
 
@@ -214,7 +217,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 hBlank = Scanline / 2;
 	u64 hRender = Scanline - hBlank;
 
-	if (gsRegionMode == Region_NTSC_PROGRESSIVE)
+	if (!IsAnalogVideoMode(gsVideoMode))
 	{
 		hBlank /= 2;
 		hRender /= 2;
@@ -236,7 +239,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	else if ((hBlank - info->hBlank) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
-	if (gsRegionMode != Region_NTSC_PROGRESSIVE) // gets off the chart in that mode
+	if (IsAnalogVideoMode(gsVideoMode)) // gets off the chart in that mode
 	{
 		u32 hSyncCycles = ((info->hRender + info->hBlank) * scansPerFrame) / 2;
 		u32 vSyncCycles = (info->Render + info->Blank);
@@ -249,6 +252,21 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	// is thus not worth the effort at this time.
 }
 
+static const char* ReportVideoMode(GS_VideoMode videomode)
+{
+	switch (videomode)
+	{
+	case GS_VideoMode::PAL:        return "PAL";
+	case GS_VideoMode::NTSC:       return "NTSC";
+	case GS_VideoMode::VESA:       return "VESA";
+	case GS_VideoMode::HDTV_480P:  return "HDTV 480p";
+	case GS_VideoMode::HDTV_576P:  return "HDTV 576p";
+	case GS_VideoMode::HDTV_720P:  return "HDTV 720p";
+	case GS_VideoMode::HDTV_1080I: return "HDTV 1080i";
+	case GS_VideoMode::HDTV_1080P: return "HDTV 1080p";
+	default:                       return "Unknown";
+	}
+}
 
 u32 UpdateVSyncRate()
 {
@@ -258,37 +276,52 @@ u32 UpdateVSyncRate()
 	//  the GS's output circuit.  It is the same regardless if the GS is outputting interlace
 	//  or progressive scan content. 
 
-	Fixed100	framerate = 0;
-	u32			scanlines = 0;
+	Fixed100	framerate = EmuConfig.GS.FramerateNTSC / 2;
+	u32			scanlines = SCANLINES_TOTAL_NTSC;
 	bool		isCustom  = false;
 
-	if( gsRegionMode == Region_PAL )
+	switch (gsVideoMode)
 	{
+	case GS_VideoMode::PAL:
 		isCustom = (EmuConfig.GS.FrameratePAL != 50.0);
 		framerate = EmuConfig.GS.FrameratePAL / 2;
 		scanlines = SCANLINES_TOTAL_PAL;
 		if (!gsIsInterlaced) scanlines += 3;
-	}
-	else if ( gsRegionMode == Region_NTSC )
-	{
+		break;
+
+	case GS_VideoMode::NTSC:
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
-	}
-	else if ( gsRegionMode == Region_NTSC_PROGRESSIVE )
-	{
+		break;
+
+	case GS_VideoMode::HDTV_480P: case GS_VideoMode::HDTV_576P:  case GS_VideoMode::VESA:
+	case GS_VideoMode::HDTV_720P: case GS_VideoMode::HDTV_1080I: case GS_VideoMode::HDTV_1080P:
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
+		break;
+
+	// SYSCALL instruction hasn't executed yet, nothing to do here.
+	case GS_VideoMode::Uninitialized:
+		break;
+
+	// Falls through to unknown when unidentified mode parameter of SetGSCRT is detected.
+	case GS_VideoMode::Unknown:
+		Console.Error("PCSX2-Counters: Unknown video mode detetcted");
+
+	default:
+		pxAssert(false);
 	}
 
-	if (vSyncInfo.Framerate != framerate || vSyncInfo.RegionMode != gsRegionMode)
+	if (vSyncInfo.Framerate != framerate || vSyncInfo.VideoMode != gsVideoMode)
 	{
-		vSyncInfo.RegionMode = gsRegionMode;
+		vSyncInfo.VideoMode = gsVideoMode;
 		vSyncInfoCalc( &vSyncInfo, framerate, scanlines );
-		Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ( gsRegionMode == Region_PAL ) ? "PAL" : 
-			( gsRegionMode == Region_NTSC ) ? "NTSC" : "NTSC Progressive Scan" );
+
+		if (gsVideoMode != GS_VideoMode::Uninitialized)
+			Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ReportVideoMode(gsVideoMode));
 		
 		if( isCustom )
 			Console.Indent().WriteLn( Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", 2 * framerate.ToFloat() );
@@ -309,7 +342,8 @@ u32 UpdateVSyncRate()
 	{
 		m_iTicks = ticks;
 		gsOnModeChanged( vSyncInfo.Framerate, m_iTicks );
-		Console.WriteLn( Color_Green, "(UpdateVSyncRate) FPS Limit Changed : %.02f fps", fpslimit.ToFloat()*2 );
+		if (gsVideoMode != GS_VideoMode::Uninitialized)
+			Console.WriteLn( Color_Green, "(UpdateVSyncRate) FPS Limit Changed : %.02f fps", fpslimit.ToFloat()*2 );
 	}
 
 	m_iStart = GetCPUTicks();
