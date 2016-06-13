@@ -295,7 +295,7 @@ GSdxApp::GSdxApp()
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
-	m_default_configuration["Renderer"]                                   = to_string(static_cast<int>(GSRendererType::Default)); // FIXME
+	m_default_configuration["Renderer"]                                   = to_string(static_cast<int>(GSRendererType::Default));
 	m_default_configuration["resx"]                                       = "1024";
 	m_default_configuration["resy"]                                       = "1024";
 	m_default_configuration["save"]                                       = "0";

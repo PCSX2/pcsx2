@@ -316,8 +316,8 @@ void GSSettingsDlg::UpdateRenderers()
 	}
 	else
 	{
-		//GSRendererType best_renderer = (level >= D3D_FEATURE_LEVEL_10_0) ? GSRendererType::DX1011_HW : GSRendererType::DX9_HW;
-		renderer_setting = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
+		renderer_setting = (ini_renderer == GSRendererType::Undefined) ? GSUtil::GetBestRenderer() : ini_renderer;
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
@@ -685,6 +685,7 @@ void GSHacksDlg::OnInit()
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_SAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);

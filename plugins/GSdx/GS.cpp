@@ -485,6 +485,10 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	if (renderer == GSRendererType::Undefined)
 	{
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+#ifdef _WIN32
+		if (renderer == GSRendererType::Default)
+			renderer = GSUtil::GetBestRenderer();
+#endif
 	}
 	else if (stored_toggle_state != toggle_state)
 	{

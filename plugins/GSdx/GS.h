@@ -231,7 +231,7 @@ enum class GSRendererType : int8_t
 	OGL_OpenCL = 17,
 
 #ifdef _WIN32
-	Default = DX1011_HW
+	Default = Undefined
 #else
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
