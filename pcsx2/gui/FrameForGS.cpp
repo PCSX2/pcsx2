@@ -100,31 +100,31 @@ GSPanel::GSPanel( wxWindow* parent )
 		m_CursorShown = false;
 	}
 
-	Connect(wxEVT_CLOSE_WINDOW,		wxCloseEventHandler	(GSPanel::OnCloseWindow));
-	Connect(wxEVT_SIZE,				wxSizeEventHandler	(GSPanel::OnResize));
-	Connect(wxEVT_KEY_UP,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
-	Connect(wxEVT_KEY_DOWN,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
+	Bind(wxEVT_CLOSE_WINDOW, &GSPanel::OnCloseWindow, this);
+	Bind(wxEVT_SIZE, &GSPanel::OnResize, this);
+	Bind(wxEVT_KEY_UP, &GSPanel::OnKeyDownOrUp, this);
+	Bind(wxEVT_KEY_DOWN, &GSPanel::OnKeyDownOrUp, this);
 
-	Connect(wxEVT_SET_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocus));
-	Connect(wxEVT_KILL_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocusLost));
+	Bind(wxEVT_SET_FOCUS, &GSPanel::OnFocus, this);
+	Bind(wxEVT_KILL_FOCUS, &GSPanel::OnFocusLost, this);
 
-	Connect(m_HideMouseTimer.GetId(), wxEVT_TIMER, wxTimerEventHandler(GSPanel::OnHideMouseTimeout) );
+	Bind(wxEVT_TIMER, &GSPanel::OnHideMouseTimeout, this, m_HideMouseTimer.GetId());
 
 	// Any and all events which should result in the mouse cursor being made visible
 	// are connected here.  If I missed one, feel free to add it in! --air
+	Bind(wxEVT_LEFT_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_LEFT_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MOTION, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_LEFT_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MOUSEWHEEL, &GSPanel::OnMouseEvent, this);
 
-	Connect(wxEVT_LEFT_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_UP,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MIDDLE_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MIDDLE_UP,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_UP,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MOTION,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_DCLICK,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_DCLICK,		wxMouseEventHandler	(GSPanel::OnLeftDclick));
-	Connect(wxEVT_MIDDLE_DCLICK,	wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_DCLICK,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MOUSEWHEEL,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
+	Bind(wxEVT_LEFT_DCLICK, &GSPanel::OnLeftDclick, this);
 }
 
 GSPanel::~GSPanel() throw()
@@ -456,12 +456,12 @@ GSFrame::GSFrame( const wxString& title)
 	// (main concern is retaining proper client window sizes when closing/re-opening the window).
 	//m_statusbar = CreateStatusBar( 2 );
 
-	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler		(GSFrame::OnCloseWindow) );
-	Connect( wxEVT_MOVE,			wxMoveEventHandler		(GSFrame::OnMove) );
-	Connect( wxEVT_SIZE,			wxSizeEventHandler		(GSFrame::OnResize) );
-	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler	(GSFrame::OnActivate) );
+	Bind(wxEVT_CLOSE_WINDOW, &GSFrame::OnCloseWindow, this);
+	Bind(wxEVT_MOVE, &GSFrame::OnMove, this);
+	Bind(wxEVT_SIZE, &GSFrame::OnResize, this);
+	Bind(wxEVT_ACTIVATE, &GSFrame::OnActivate, this);
 
-	Connect(m_timer_UpdateTitle.GetId(), wxEVT_TIMER, wxTimerEventHandler(GSFrame::OnUpdateTitle) );
+	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
 
 GSFrame::~GSFrame() throw()
