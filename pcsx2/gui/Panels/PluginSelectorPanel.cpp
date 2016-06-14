@@ -40,15 +40,14 @@ static const bool DisableThreading =
 using namespace pxSizerFlags;
 using namespace Threading;
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_EnumeratedNext, -1)
-	DECLARE_EVENT_TYPE(pxEvt_EnumerationFinished, -1)
-	DECLARE_EVENT_TYPE(pxEVT_ShowStatusBar, -1)
-END_DECLARE_EVENT_TYPES()
 
-DEFINE_EVENT_TYPE(pxEvt_EnumeratedNext);
-DEFINE_EVENT_TYPE(pxEvt_EnumerationFinished);
-DEFINE_EVENT_TYPE(pxEVT_ShowStatusBar);
+wxDECLARE_EVENT(pxEvt_EnumeratedNext, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_EnumerationFinished, wxCommandEvent);
+wxDECLARE_EVENT(pxEVT_ShowStatusBar, wxCommandEvent);
+
+wxDEFINE_EVENT(pxEvt_EnumeratedNext, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_EnumerationFinished, wxCommandEvent);
+wxDEFINE_EVENT(pxEVT_ShowStatusBar, wxCommandEvent);
 
 typedef s32		(CALLBACK* TestFnptr)();
 typedef void	(CALLBACK* ConfigureFnptr)();

@@ -61,11 +61,6 @@
 
 IMPLEMENT_APP(Pcsx2App)
 
-DEFINE_EVENT_TYPE( pxEvt_LoadPluginsComplete );
-DEFINE_EVENT_TYPE( pxEvt_LogicalVsync );
-
-DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
-
 std::unique_ptr<AppConfig> g_Conf;
 
 AspectRatioType iniAR;

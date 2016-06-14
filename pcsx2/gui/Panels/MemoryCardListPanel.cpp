@@ -176,7 +176,6 @@ bool McdSlotItem::operator!=( const McdSlotItem& right ) const
 	return operator==( right );
 }
 
-//DEFINE_EVENT_TYPE( pxEvt_RefreshSelections );
 
 // =====================================================================================================
 //  BaseMcdListPanel (implementations)
@@ -196,7 +195,6 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 	m_btn_Refresh = new wxButton( this, wxID_ANY, _("Refresh list") );
 
 	Connect( m_btn_Refresh->GetId(), wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(BaseMcdListPanel::OnRefreshSelections) );
-	//Connect( pxEvt_RefreshSelections, wxCommandEventHandler(BaseMcdListPanel::OnRefreshSelections) );
 }
 
 void Panels::BaseMcdListPanel::RefreshMcds() const

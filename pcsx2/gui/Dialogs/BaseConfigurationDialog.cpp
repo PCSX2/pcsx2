@@ -27,9 +27,9 @@
 #include <wx/listbook.h>
 #include <wx/spinctrl.h>
 
-DEFINE_EVENT_TYPE( pxEvt_ApplySettings )
-DEFINE_EVENT_TYPE( pxEvt_SetSettingsPage )
-DEFINE_EVENT_TYPE( pxEvt_SomethingChanged )
+wxDEFINE_EVENT(pxEvt_ApplySettings, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_SetSettingsPage, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_SomethingChanged, wxCommandEvent);
 
 using namespace Panels;
 
