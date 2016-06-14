@@ -15,13 +15,9 @@
 
 #pragma once
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_StartIdleEventTimer, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_DeleteObject, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_DeleteThread, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_InvokeAction, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_SynchronousCommand, -1 )
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_StartIdleEventTimer, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_DeleteObject, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_DeleteThread, wxCommandEvent);
 
 typedef void FnType_Void();
 
@@ -89,6 +85,10 @@ public:
 // --------------------------------------------------------------------------------------
 //  pxActionEvent
 // --------------------------------------------------------------------------------------
+class pxActionEvent;
+
+wxDECLARE_EVENT(pxEvt_InvokeAction, pxActionEvent);
+
 class pxActionEvent : public wxEvent
 {
 	DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxActionEvent)
@@ -187,6 +187,8 @@ public:
 	void SetException( BaseException* ex );
 	void SetException( const BaseException& ex );
 };
+
+wxDECLARE_EVENT(pxEvt_SynchronousCommand, pxSynchronousCommandEvent);
 
 // --------------------------------------------------------------------------------------
 //  BaseMessageBoxEvent

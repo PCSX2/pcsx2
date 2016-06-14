@@ -117,7 +117,7 @@ bool pxDialogExists( const wxString& name )
 //  wxDialogWithHelpers Class Implementations
 // =====================================================================================================
 
-DEFINE_EVENT_TYPE( pxEvt_OnDialogCreated )
+wxDEFINE_EVENT(pxEvt_OnDialogCreated, wxCommandEvent);
 
 IMPLEMENT_DYNAMIC_CLASS(wxDialogWithHelpers, wxDialog)
 

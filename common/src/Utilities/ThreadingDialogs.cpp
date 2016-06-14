@@ -19,7 +19,7 @@
 
 using namespace pxSizerFlags;
 
-DEFINE_EVENT_TYPE(pxEvt_ThreadedTaskComplete);
+wxDEFINE_EVENT(pxEvt_ThreadedTaskComplete, wxCommandEvent);
 
 // --------------------------------------------------------------------------------------
 //  WaitForTaskDialog Implementations

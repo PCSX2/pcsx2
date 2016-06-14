@@ -19,12 +19,11 @@
 #include "ThreadingInternal.h"
 #include "PersistentThread.h"
 
-DEFINE_EVENT_TYPE( pxEvt_DeleteObject );
-DEFINE_EVENT_TYPE( pxEvt_DeleteThread );
-DEFINE_EVENT_TYPE( pxEvt_StartIdleEventTimer );
-DEFINE_EVENT_TYPE( pxEvt_InvokeAction );
-DEFINE_EVENT_TYPE( pxEvt_SynchronousCommand );
-
+wxDEFINE_EVENT(pxEvt_StartIdleEventTimer, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_DeleteObject, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_DeleteThread, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_InvokeAction, pxActionEvent);
+wxDEFINE_EVENT(pxEvt_SynchronousCommand, pxSynchronousCommandEvent);
 
 IMPLEMENT_DYNAMIC_CLASS( pxSimpleEvent, wxEvent )
 
@@ -484,12 +483,12 @@ void wxAppWithHelpers::AddIdleEvent( const wxEvent& evt )
 {
 	ScopedLock lock( m_IdleEventMutex );
 	if( m_IdleEventQueue.size() == 0 )
-		PostEvent( pxSimpleEvent( pxEvt_StartIdleEventTimer ) );
+		PostEvent(wxCommandEvent(pxEvt_StartIdleEventTimer));
 
 	m_IdleEventQueue.push_back( evt.Clone() );
 }
 
-void wxAppWithHelpers::OnStartIdleEventTimer( wxEvent& evt )
+void wxAppWithHelpers::OnStartIdleEventTimer( wxCommandEvent& evt )
 {
 	ScopedLock lock( m_IdleEventMutex );
 	if( m_IdleEventQueue.size() != 0 )
@@ -641,7 +640,7 @@ bool wxAppWithHelpers::OnInit()
 	Connect( pxEvt_SynchronousCommand,	pxSynchronousEventHandler	(wxAppWithHelpers::OnSynchronousCommand) );
 	Connect( pxEvt_InvokeAction,		pxActionEventHandler		(wxAppWithHelpers::OnInvokeAction) );
 
-	Connect( pxEvt_StartIdleEventTimer,	wxEventHandler				(wxAppWithHelpers::OnStartIdleEventTimer) );
+	Connect( pxEvt_StartIdleEventTimer,	wxCommandEventHandler		(wxAppWithHelpers::OnStartIdleEventTimer) );
 
 	Connect( pxEvt_DeleteObject,		wxCommandEventHandler		(wxAppWithHelpers::OnDeleteObject) );
 	Connect( pxEvt_DeleteThread,		wxCommandEventHandler		(wxAppWithHelpers::OnDeleteThread) );
