@@ -16878,6 +16878,7 @@ Region = PAL-M5
 Serial = SLES-54962
 Name   = Guitar Hero III - Legends of Rock
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54963
 Name   = Tony Hawks - Proving Ground
@@ -16887,6 +16888,11 @@ vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54964
 Name   = Tony Hawk's Proving Ground
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
+Serial = SLES-54974
+Name   = Guitar Hero III - Legends of Rock
 Region = PAL-M4
 vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
@@ -33196,6 +33202,7 @@ Region = NTSC-J
 Serial = SLPS-25840
 Name   = Guitar Hero III - Legends of Rock [with Guitar]
 Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLPS-25841
 Name   = Tales of Destiny [Director's Cut] [Premium Box]
@@ -33321,6 +33328,11 @@ Compat = 5
 Serial = SLPS-25887
 Name   = Super Robot Taisen Z
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25890
+Name   = Guitar Hero III - Legends of Rock [with Guitar]
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLPS-25892
 Name   = Nogizaka Haruka no Himitsu - Cosplay Hajimemashita
@@ -41393,6 +41405,7 @@ Serial = SLUS-21672
 Name   = Guitar Hero III - Legends of Rock
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21673
 Name   = College Hoops 2K8
