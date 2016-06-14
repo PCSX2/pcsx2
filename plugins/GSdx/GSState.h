@@ -243,7 +243,7 @@ public:
 	GSVideoMode GetVideoMode();
 
 	bool IsEnabled(int i);
-	bool isinterlaced();
+	bool IsInterlaced();
 
 	float GetTvRefreshRate();
 

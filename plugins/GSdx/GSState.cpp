@@ -348,7 +348,7 @@ void GSState::ResetHandlers()
 	SetMultithreaded(m_mt);
 }
 
-bool GSState::isinterlaced()
+bool GSState::IsInterlaced()
 {
 	return !!m_regs->SMODE2.INT;
 }
@@ -364,13 +364,13 @@ GSVideoMode GSState::GetVideoMode()
 	switch (Colorburst)
 	{
 	case 0:
-		if (isinterlaced() && PLL_Divider == 22)
+		if (IsInterlaced() && PLL_Divider == 22)
 			videomode = GSVideoMode::DTV_1080I;
 
-		else if (!isinterlaced() && PLL_Divider == 22)
+		else if (!IsInterlaced() && PLL_Divider == 22)
 			videomode = GSVideoMode::DTV_720P;
 
-		else if (!isinterlaced() && PLL_Divider == 32)
+		else if (!IsInterlaced() && PLL_Divider == 32)
 			videomode = GSVideoMode::DTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
 
 		else
@@ -431,7 +431,7 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (videomode == GSVideoMode::NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
 		h = 448;
 
-	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
+	if (IsInterlaced() && m_regs->SMODE2.FFMD && h > 1)
 		h >>= 1;
 
 	rectangle.left = m_regs->DISP[i].DISPFB.DBX;
@@ -461,7 +461,7 @@ GSVector2i GSState::GetDeviceSize(int i)
 	GSVector4i rectangle = GetDisplayRect(i);
 	GSVector2i DeviceSize(rectangle.width(), rectangle.height());
 
-	if(isinterlaced() && m_regs->SMODE2.FFMD && DeviceSize.y > 1)
+	if(IsInterlaced() && m_regs->SMODE2.FFMD && DeviceSize.y > 1)
 		DeviceSize.y >>= 1;
 
 	return DeviceSize;
