@@ -16878,6 +16878,7 @@ Region = PAL-M5
 Serial = SLES-54962
 Name   = Guitar Hero III - Legends of Rock
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54963
 Name   = Tony Hawks - Proving Ground
@@ -17116,6 +17117,7 @@ Region = PAL-F-G
 Serial = SLES-55191
 Name   = Guitar Hero - Aerosmith
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-55197
 Name   = Dancing Stage SuperNOVA 2
@@ -17125,6 +17127,11 @@ Serial = SLES-55198
 Name   = Iron Man
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55200
+Name   = Guitar Hero - Aerosmith
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-55204
 Name   = Crash - Mind Over Mutant
@@ -33318,9 +33325,19 @@ Name   = Kinnikuman Muscle Grand Prix 2
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPS-25886
+Name   = Guitar Hero - Aerosmith
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
 Serial = SLPS-25887
 Name   = Super Robot Taisen Z
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25889
+Name   = Guitar Hero - Aerosmith
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLPS-25892
 Name   = Nogizaka Haruka no Himitsu - Cosplay Hajimemashita
@@ -41393,6 +41410,7 @@ Serial = SLUS-21672
 Name   = Guitar Hero III - Legends of Rock
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21673
 Name   = College Hoops 2K8
@@ -41699,6 +41717,7 @@ Serial = SLUS-21740
 Name   = Guitar Hero - Aerosmith
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21741
 Name   = Sea Monsters - A Prehistoric Adventure
