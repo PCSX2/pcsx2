@@ -217,7 +217,7 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 	if( IsBeingDeleted() ) return;
 
 	// Do nothing for left-button event
-	if (!evt.Button(1)) {
+	if (!evt.Button(wxMOUSE_BTN_LEFT)) {
 		evt.Skip();
 		DoShowMouse();
 	}
