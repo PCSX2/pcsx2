@@ -16891,11 +16891,6 @@ Name   = Tony Hawk's Proving Ground
 Region = PAL-M4
 vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
-Serial = SLES-54974
-Name   = Guitar Hero III - Legends of Rock
-Region = PAL-M4
-vuRoundMode = 0 //Crashes without.
----------------------------------------------
 Serial = SLES-54975
 Name   = George Of The Jungle
 Region = PAL-E
@@ -17122,6 +17117,7 @@ Region = PAL-F-G
 Serial = SLES-55191
 Name   = Guitar Hero - Aerosmith
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-55197
 Name   = Dancing Stage SuperNOVA 2
@@ -17131,6 +17127,11 @@ Serial = SLES-55198
 Name   = Iron Man
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55200
+Name   = Guitar Hero - Aerosmith
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-55204
 Name   = Crash - Mind Over Mutant
@@ -33202,7 +33203,6 @@ Region = NTSC-J
 Serial = SLPS-25840
 Name   = Guitar Hero III - Legends of Rock [with Guitar]
 Region = NTSC-J
-vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLPS-25841
 Name   = Tales of Destiny [Director's Cut] [Premium Box]
@@ -33325,12 +33325,17 @@ Name   = Kinnikuman Muscle Grand Prix 2
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPS-25886
+Name   = Guitar Hero - Aerosmith
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
 Serial = SLPS-25887
 Name   = Super Robot Taisen Z
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPS-25890
-Name   = Guitar Hero III - Legends of Rock [with Guitar]
+Serial = SLPS-25889
+Name   = Guitar Hero - Aerosmith
 Region = NTSC-J
 vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
@@ -41712,6 +41717,7 @@ Serial = SLUS-21740
 Name   = Guitar Hero - Aerosmith
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21741
 Name   = Sea Monsters - A Prehistoric Adventure
