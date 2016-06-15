@@ -299,7 +299,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				break;
 			case GSRendererType::Null:
 				s_gs = new GSRendererNull();
-				s_renderer_type = " Null";
+				s_renderer_type = "";
 				break;
 			case GSRendererType::DX9_OpenCL:
 			case GSRendererType::DX1011_OpenCL:
