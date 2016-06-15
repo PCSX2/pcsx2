@@ -32,7 +32,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_double_downscale(false)
 {
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
-	m_large_framebuffer  = theApp.GetConfigI("large_framebuffer");
+	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
@@ -44,8 +44,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
-		m_width  = theApp.GetConfigI("resx");
-		m_height = theApp.GetConfigI("resy");
+		m_custom_width = theApp.GetConfigI("resx");
+		m_custom_height = theApp.GetConfigI("resy");
+
+		// Use a Slightly bigger buffer size compared to rescaled output circuit.
+		m_width = int(m_custom_width * 1.2f);
+		m_height = int(m_custom_height * 1.2f);
 	}
 
 	if (m_upscale_multiplier == 1) { // hacks are only needed for upscaling issues.
@@ -104,9 +108,23 @@ void GSRendererHW::SetScaling()
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
 	bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
 
-	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
-	// don't resize until the display rectangle and register states are stabilized.
-	if ( m_upscale_multiplier <= 1 || good_rt_size)
+	// Increase the buffer size even higher for progressive games with lower CRTC Size.
+	// Fixes Black bottom issues on ICO at custom resolution.
+	if (!m_upscale_multiplier && !m_regs->SMODE2.INT && GetDisplayRect().height() < 512)
+	{
+		if (!(m_width > m_custom_width * 1.2f))
+		{
+			m_tc->RemovePartial();
+			m_width = int(m_width * 1.7f);
+			m_height = int(m_height * 1.7f);
+		}
+		else
+		{
+			return;
+		}
+	}
+	// No need to resize for native resolution as default size will be enough for native
+	if ( m_upscale_multiplier == 1 || good_rt_size)
 		return;
 
 	m_tc->RemovePartial();
@@ -137,10 +155,9 @@ bool GSRendererHW::CanUpscale()
 	return m_upscale_multiplier!=1 && m_regs->PMODE.EN != 0; // upscale ratio depends on the display size, with no output it may not be set correctly (ps2 logo to game transition)
 }
 
-int GSRendererHW::GetUpscaleMultiplier()
+float GSRendererHW::GetUpscaleMultiplier()
 {
-	// Custom resolution (currently 0) needs an upscale multiplier of 1.
-	return m_upscale_multiplier ? m_upscale_multiplier : 1;
+	return float(m_upscale_multiplier);
 }
 
 GSVector2i GSRendererHW::GetInternalResolution() {
@@ -149,7 +166,7 @@ GSVector2i GSRendererHW::GetInternalResolution() {
 	if (m_upscale_multiplier)
 		return GSVector2i(dr.x * m_upscale_multiplier, dr.y * m_upscale_multiplier);
 	else
-		return GSVector2i(m_width, m_height);
+		return GSVector2i(m_custom_width, m_custom_height);
 }
 
 void GSRendererHW::Reset()

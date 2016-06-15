@@ -67,7 +67,7 @@ public:
 	virtual bool MakeSnapshot(const string& path);
 	virtual void KeyEvent(GSKeyEventData* e);
 	virtual bool CanUpscale() {return false;}
-	virtual int GetUpscaleMultiplier() {return 1;}
+	virtual float GetUpscaleMultiplier() {return 1.0f;}
 	virtual GSVector2i GetInternalResolution() {
 		return GetOutputRect();
 	}

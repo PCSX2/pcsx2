@@ -464,35 +464,25 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(m_renderer->CanUpscale())
 	{
-		int multiplier = m_renderer->GetUpscaleMultiplier();
+		float ScaleFactor = m_renderer->GetUpscaleMultiplier();
+		GSVector2 multiplier(ScaleFactor, ScaleFactor);
 
-		if(multiplier > 1)
+		if (!ScaleFactor) //Custom Resolution
 		{
-			dst->m_texture->SetScale(GSVector2((float)multiplier, (float)multiplier));
-		}
-		else  // Custom resolution hack
-		{
-			GSVector4i fr = m_renderer->GetFrameRect();
+			GSVector2i crtc_size(m_renderer->GetDisplayRect().width(), m_renderer->GetDisplayRect().height());
+			GSVector2i CustomResolution = m_renderer->GetInternalResolution();
+			int valid_height = dst->m_valid.height();
 
-			int ww = (int)(fr.left + m_renderer->GetDisplayRect().width());
-			int hh = (int)(fr.top + m_renderer->GetDisplayRect().height());
-
-			// Gregory: I'm sure this sillyness is related to the usage of a 32bits
-			// buffer as a 16 bits format. In this case the height of the buffer is
-			// multiplyed by 2 (Hence a scissor bigger than the RT)
-
-			// This vp2 fix doesn't work most of the time
-
-			if(hh < 512 && m_renderer->m_context->SCISSOR.SCAY1 == 511) // vp2
+			// (Persona 3 - PAL) CRTC size is 512X511 but game apparently has a real height of 512 which causes it to scale wrongly.
+			if (valid_height % crtc_size.y == 1)
 			{
-				hh = 512;
+				crtc_size.y = valid_height;
 			}
 
-			if(ww && hh)
-			{
-				dst->m_texture->SetScale(GSVector2((float)w / ww, (float)h / hh));
-			}
+			multiplier.x = static_cast<float>(CustomResolution.x) / crtc_size.x;
+			multiplier.y = static_cast<float>(CustomResolution.y) / crtc_size.y;
 		}
+		dst->m_texture->SetScale(multiplier);
 	}
 
 	if(used)
@@ -1330,7 +1320,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if(UserHacks_HalfPixelOffset && hack)
 		{
-			switch(m_renderer->GetUpscaleMultiplier())
+			switch(static_cast<int>(m_renderer->GetUpscaleMultiplier()))
 			{
 			case 2:  modx = 2.2f; mody = 2.2f; dst->m_texture->LikelyOffset = true;  break;
 			case 3:  modx = 3.1f; mody = 3.1f; dst->m_texture->LikelyOffset = true;  break;
