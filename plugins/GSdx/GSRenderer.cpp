@@ -222,13 +222,18 @@ bool GSRenderer::Merge(int field)
 		src_hw[i] = (GSVector4(r) + GSVector4 (0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
 		GSVector2 off(0, 0);
+		GSVector2i diff(dr[i].left - baseline.x, dr[i].top - baseline.y);
 
 		// Time Crisis 2/3 uses two side by side images when in split screen mode.
-		off.x = tex[i]->GetScale().x * (dr[i].left - baseline.x);
-
-		if(dr[i].top - baseline.y >= 4) // 2?
+		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
+		if(diff.x >= 2)
 		{
-			off.y = tex[i]->GetScale().y * (dr[i].top - baseline.y);
+			off.x = tex[i]->GetScale().x * diff.x;
+		}
+
+		if(diff.y >= 4) // Shouldn't this be 2?
+		{
+			off.y = tex[i]->GetScale().y * diff.y;
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{
