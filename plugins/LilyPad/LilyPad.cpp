@@ -163,11 +163,11 @@ struct Stick {
 
 // Sum of states of all controls for a pad (Not including toggles).
 struct ButtonSum {
-	int buttons[12];
-	Stick sticks[3];
+	int buttons[16];
+	Stick sticks[2];
 };
 
-#define PAD_SAVE_STATE_VERSION	3
+#define PAD_SAVE_STATE_VERSION	4
 
 // Freeze data, for a single pad.  Basically has all pad state that
 // a PS2 can set.
@@ -330,18 +330,7 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255) {
 	}
 	// D-pad.  Command numbering is based on ordering of digital values.
 	else if (cmd < 0x18) {
-		if (cmd == 0x14) {
-			sum->sticks[0].vert -= delta;
-		}
-		else if (cmd == 0x15) {
-			sum->sticks[0].horiz += delta;
-		}
-		else if (cmd == 0x16) {
-			sum->sticks[0].vert += delta;
-		}
-		else if (cmd == 0x17) {
-			sum->sticks[0].horiz -= delta;
-		}
+		sum->buttons[cmd-0x08] += delta;
 	}
 	else if (cmd < 0x20) {
 		sum->buttons[cmd-0x10-4] += delta;
@@ -349,31 +338,31 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255) {
 	// Left stick.
 	else if (cmd < 0x24) {
 		if (cmd == 32) {
-			sum->sticks[2].vert -= delta;
+			sum->sticks[1].vert -= delta;
 		}
 		else if (cmd == 33) {
-			sum->sticks[2].horiz += delta;
+			sum->sticks[1].horiz += delta;
 		}
 		else if (cmd == 34) {
-			sum->sticks[2].vert += delta;
+			sum->sticks[1].vert += delta;
 		}
 		else if (cmd == 35) {
-			sum->sticks[2].horiz -= delta;
+			sum->sticks[1].horiz -= delta;
 		}
 	}
 	// Right stick.
 	else if (cmd < 0x28) {
 		if (cmd == 36) {
-			sum->sticks[1].vert -= delta;
+			sum->sticks[0].vert -= delta;
 		}
 		else if (cmd == 37) {
-			sum->sticks[1].horiz += delta;
+			sum->sticks[0].horiz += delta;
 		}
 		else if (cmd == 38) {
-			sum->sticks[1].vert += delta;
+			sum->sticks[0].vert += delta;
 		}
 		else if (cmd == 39) {
-			sum->sticks[1].horiz -= delta;
+			sum->sticks[0].horiz -= delta;
 		}
 	}
 }
@@ -415,7 +404,7 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value) {
 // which is why I use 9 bits of all sticks.  For left and right sticks, I have to remove a bit before sending.
 void CapSum(ButtonSum *sum) {
 	int i;
-	for (i=0; i<3; i++) {
+	for (i=0; i<2; i++) {
 #ifdef __linux__
 		int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
 #else
@@ -426,7 +415,7 @@ void CapSum(ButtonSum *sum) {
 			sum->sticks[i].vert = sum->sticks[i].vert * 255 / div;
 		}
 	}
-	for (i=0; i<12; i++) {
+	for (i=0; i<16; i++) {
 		sum->buttons[i] = Cap(sum->buttons[i]);
 	}
 }
@@ -586,7 +575,7 @@ void Update(unsigned int port, unsigned int slot) {
 				if (config.padConfigs[port][slot].type == DisabledPad || !pads[port][slot].initialized) continue;
 				if (config.padConfigs[port][slot].type == GuitarPad) {
 					if (!config.GH2) {
-						s[port][slot].sticks[1].vert = -s[port][slot].sticks[1].vert;
+						s[port][slot].sticks[0].vert = -s[port][slot].sticks[0].vert;
 					}
 					// GH2 hack.
 					else if (config.GH2) {
@@ -604,7 +593,7 @@ void Update(unsigned int port, unsigned int slot) {
 							int id = idList[i] - 0x1104;
 							s[port][slot].buttons[id] = values[i];
 						}
-						if (abs(s[port][slot].sticks[0].vert) <= 48) {
+						if (s[port][slot].buttons[14] <= 48 && s[port][slot].buttons[12] <= 48) {
 							for (int i=0; i<5; i++) {
 								unsigned int id = idList[i] - 0x1104;
 								if (pads[port][slot].sum.buttons[id] < s[port][slot].buttons[id]) {
@@ -612,7 +601,7 @@ void Update(unsigned int port, unsigned int slot) {
 								}
 							}
 						}
-						else if (abs(pads[port][slot].sum.sticks[0].vert) <= 48) {
+						else if (pads[port][slot].sum.buttons[14] <= 48 && pads[port][slot].sum.buttons[12] <= 48) {
 							for (int i=0; i<5; i++) {
 								unsigned int id = idList[i] - 0x1104;
 								if (pads[port][slot].sum.buttons[id]) {
@@ -624,11 +613,15 @@ void Update(unsigned int port, unsigned int slot) {
 				}
 
 				if (pads[port][slot].mode == 0x41) {
-					for (int i=1; i<=2; i++) {
-						if (abs(s[port][slot].sticks[i].horiz) >= 100)
-							s[port][slot].sticks[0].horiz += s[port][slot].sticks[i].horiz;
-						if (abs(s[port][slot].sticks[i].vert) >= 100)
-							s[port][slot].sticks[0].vert += s[port][slot].sticks[i].vert;
+					for (int i=0; i<=1; i++) {
+						if (s[port][slot].sticks[i].horiz >= 100)
+							s[port][slot].buttons[13] += s[port][slot].sticks[i].horiz;
+						if (s[port][slot].sticks[i].horiz <= -100)
+							s[port][slot].buttons[15] -= s[port][slot].sticks[i].horiz;
+						if (s[port][slot].sticks[i].vert >= 100)
+							s[port][slot].buttons[14] += s[port][slot].sticks[i].vert;
+						if (s[port][slot].sticks[i].vert <= -100)
+							s[port][slot].buttons[12] -= s[port][slot].sticks[i].vert;
 					}
 				}
 
@@ -1195,15 +1188,16 @@ u8 CALLBACK PADpoll(u8 value) {
 				for (i = 0; i<8; i++) {
 					b2 -= (sum->buttons[i+4] > 0) << i;
 				}
+
 				if (config.padConfigs[query.port][query.slot].type == GuitarPad && !config.GH2) {
-					sum->sticks[0].horiz = -255;
+					sum->buttons[15] = 255;
 					// Not sure about this.  Forces wammy to be from 0 to 0x7F.
 					// if (sum->sticks[2].vert > 0) sum->sticks[2].vert = 0;
 				}
-				b1 -= ((sum->sticks[0].vert  < 0) << 4);
-				b1 -= ((sum->sticks[0].horiz > 0) << 5);
-				b1 -= ((sum->sticks[0].vert  > 0) << 6);
-				b1 -= ((sum->sticks[0].horiz < 0) << 7);
+
+				for (i = 4; i<8; i++) {
+					b1 -= (sum->buttons[i+8] > 0) << i;
+				}
 
 				//Left, Right and Down are always pressed on Pop'n Music controller.
 				if (config.padConfigs[query.port][query.slot].type == PopnPad)
@@ -1214,10 +1208,10 @@ u8 CALLBACK PADpoll(u8 value) {
 
 				query.numBytes = 5;
 				if (pad->mode != MODE_DIGITAL) {
-					query.response[5] = Cap((sum->sticks[1].horiz+255)/2);
-					query.response[6] = Cap((sum->sticks[1].vert+255)/2);
-					query.response[7] = Cap((sum->sticks[2].horiz+255)/2);
-					query.response[8] = Cap((sum->sticks[2].vert+255)/2);
+					query.response[5] = Cap((sum->sticks[0].horiz+255)/2);
+					query.response[6] = Cap((sum->sticks[0].vert+255)/2);
+					query.response[7] = Cap((sum->sticks[1].horiz+255)/2);
+					query.response[8] = Cap((sum->sticks[1].vert+255)/2);
 
 					query.numBytes = 9;
 					if (pad->mode != MODE_ANALOG) {
@@ -1225,14 +1219,12 @@ u8 CALLBACK PADpoll(u8 value) {
 						//query.response[3] &= pad->mask[0];
 						//query.response[4] &= pad->mask[1];
 
-						// Each value is from -255 to 255, so have to use cap to convert
-						// negative values to 0.
-						query.response[9] = Cap(sum->sticks[0].horiz);
-						query.response[10] = Cap(-sum->sticks[0].horiz);
-						query.response[11] = Cap(-sum->sticks[0].vert);
-						query.response[12] = Cap(sum->sticks[0].vert);
-
 						// No need to cap these, already done int CapSum().
+						query.response[9] = (unsigned char)sum->buttons[13]; //D-pad right
+						query.response[10] = (unsigned char)sum->buttons[15]; //D-pad left
+						query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
+						query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
+
 						query.response[13] = (unsigned char) sum->buttons[8];
 						query.response[14] = (unsigned char) sum->buttons[9];
 						query.response[15] = (unsigned char) sum->buttons[10];
