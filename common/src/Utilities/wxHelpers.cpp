@@ -167,10 +167,10 @@ void wxDialogWithHelpers::Init( const pxDialogCreationFlags& cflags )
 		delete wxHelpProvider::Set( new wxSimpleHelpProvider() );
 #endif
 
-	Connect( pxEvt_OnDialogCreated,	wxCommandEventHandler	(wxDialogWithHelpers::OnDialogCreated) );
+	Bind(pxEvt_OnDialogCreated, &wxDialogWithHelpers::OnDialogCreated, this);
 
-	Connect( wxID_OK,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
-	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
+	Bind(wxEVT_BUTTON, &wxDialogWithHelpers::OnOkCancel, this, wxID_OK);
+	Bind(wxEVT_BUTTON, &wxDialogWithHelpers::OnOkCancel, this, wxID_CANCEL);
 
 	wxCommandEvent createEvent( pxEvt_OnDialogCreated );
 	createEvent.SetId( GetId() );

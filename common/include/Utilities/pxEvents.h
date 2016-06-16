@@ -362,9 +362,3 @@ public:
 protected:
 	int _DoDialog() const;
 };
-
-
-typedef void (wxEvtHandler::*pxSyncronousEventFunction)(pxSynchronousCommandEvent&);
-
-#define pxSynchronousEventHandler(func) \
-	(wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(pxSyncronousEventFunction, &func )

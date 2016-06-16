@@ -41,7 +41,7 @@ Threading::WaitForTaskDialog::WaitForTaskDialog( const wxString& title, const wx
 	if( m_title.IsEmpty() )		m_title = _("Waiting for task...");
 	if( m_heading.IsEmpty() )	m_heading = m_title;
 
-	Connect( pxEvt_ThreadedTaskComplete, wxCommandEventHandler(WaitForTaskDialog::OnTaskComplete) );
+	Bind(pxEvt_ThreadedTaskComplete, &WaitForTaskDialog::OnTaskComplete, this);
 
 	*this += 12;
 	*this += Heading(m_heading).Unwrapped()	| StdExpand();
@@ -53,7 +53,7 @@ Threading::WaitForTaskDialog::WaitForTaskDialog( const wxString& title, const wx
 	//applyDlg += new wxButton( &applyDlg, wxID_CANCEL )	| pxCenter;
 	//applyDlg += 6;
 
-	//Connect( m_Timer.GetId(),	wxEVT_TIMER, wxTimerEventHandler(WaitForTaskDialog::OnTimer) );
+	//Bind(wxEVT_TIMER, &WaitForTaskDialog::OnTimer, this, m_Timer.GetId());
 	//m_Timer.Start( 200 );
 	//GetSysExecutorThread().PostEvent( new SysExecEvent_ApplyPlugins( this, m_sync ) );
 }

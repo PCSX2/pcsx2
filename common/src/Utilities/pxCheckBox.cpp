@@ -57,7 +57,7 @@ void pxCheckBox::Init(const wxString& label, const wxString& subtext, int flags)
 		*this += &spaced | pxExpand;
 	}
 	
-	Connect( m_checkbox->GetId(), wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(pxCheckBox::OnCheckpartCommand) );
+	Bind(wxEVT_CHECKBOX, &pxCheckBox::OnCheckpartCommand, this, m_checkbox->GetId());
 }
 
 pxCheckBox& pxCheckBox::SetSubPadding( int pad )

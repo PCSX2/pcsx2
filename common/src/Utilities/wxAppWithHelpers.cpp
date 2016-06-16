@@ -630,24 +630,19 @@ void wxAppWithHelpers::DeleteThread( pxThread& obj )
 	AddIdleEvent( evt );
 }
 
-typedef void (wxEvtHandler::*pxInvokeActionEventFunction)(pxActionEvent&);
-
 bool wxAppWithHelpers::OnInit()
 {
-#define pxActionEventHandler(func) \
-	(wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(pxInvokeActionEventFunction, &func )
+	Bind(pxEvt_SynchronousCommand, &wxAppWithHelpers::OnSynchronousCommand, this);
+	Bind(pxEvt_InvokeAction, &wxAppWithHelpers::OnInvokeAction, this);
 
-	Connect( pxEvt_SynchronousCommand,	pxSynchronousEventHandler	(wxAppWithHelpers::OnSynchronousCommand) );
-	Connect( pxEvt_InvokeAction,		pxActionEventHandler		(wxAppWithHelpers::OnInvokeAction) );
+	Bind(pxEvt_StartIdleEventTimer, &wxAppWithHelpers::OnStartIdleEventTimer, this);
 
-	Connect( pxEvt_StartIdleEventTimer,	wxCommandEventHandler		(wxAppWithHelpers::OnStartIdleEventTimer) );
+	Bind(pxEvt_DeleteObject, &wxAppWithHelpers::OnDeleteObject, this);
+	Bind(pxEvt_DeleteThread, &wxAppWithHelpers::OnDeleteThread, this);
 
-	Connect( pxEvt_DeleteObject,		wxCommandEventHandler		(wxAppWithHelpers::OnDeleteObject) );
-	Connect( pxEvt_DeleteThread,		wxCommandEventHandler		(wxAppWithHelpers::OnDeleteThread) );
+	Bind(wxEVT_IDLE, &wxAppWithHelpers::OnIdleEvent, this);
 
-	Connect( wxEVT_IDLE,				wxIdleEventHandler			(wxAppWithHelpers::OnIdleEvent) );
-
-	Connect( m_IdleEventTimer.GetId(),	wxEVT_TIMER, wxTimerEventHandler(wxAppWithHelpers::OnIdleEventTimeout) );
+	Bind(wxEVT_TIMER, &wxAppWithHelpers::OnIdleEventTimeout, this, m_IdleEventTimer.GetId());
 
 	return _parent::OnInit();
 }
