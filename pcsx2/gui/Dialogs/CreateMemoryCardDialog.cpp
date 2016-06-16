@@ -92,8 +92,8 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 
 	*this += s_padding | StdExpand();
 
-	Connect( wxID_OK,							wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
-	Connect( m_text_filenameInput->GetId(),		wxEVT_COMMAND_TEXT_ENTER,		wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
+	Bind(wxEVT_BUTTON, &CreateMemoryCardDialog::OnOk_Click, this, wxID_OK);
+	Bind(wxEVT_TEXT_ENTER, &CreateMemoryCardDialog::OnOk_Click, this, m_text_filenameInput->GetId());
 
 	// ...Typical solution to everything? Or are we doing something weird?
 	SetSizerAndFit(GetSizer());

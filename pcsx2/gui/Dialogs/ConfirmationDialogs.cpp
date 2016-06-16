@@ -310,7 +310,7 @@ void ModalButtonPanel::OnActionButtonClicked( wxCommandEvent& evt )
 void ModalButtonPanel::AddCustomButton( wxWindowID id, const wxString& label )
 {
 	*this += new wxButton( this, id, label ) | StdButton().Proportion(6);
-	Connect( id, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ModalButtonPanel::OnActionButtonClicked ) );
+	Bind(wxEVT_BUTTON, &ModalButtonPanel::OnActionButtonClicked, this, id);
 }
 
 // This is for buttons that are defined internally by wxWidgets, such as wxID_CANCEL, wxID_ABORT, etc.
@@ -318,6 +318,5 @@ void ModalButtonPanel::AddCustomButton( wxWindowID id, const wxString& label )
 void ModalButtonPanel::AddActionButton( wxWindowID id )
 {
 	*this += new wxButton( this, id ) | StdButton().Proportion(6);
-	Connect( id, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ModalButtonPanel::OnActionButtonClicked ) );
+	Bind(wxEVT_BUTTON, &ModalButtonPanel::OnActionButtonClicked, this, id);
 }
-

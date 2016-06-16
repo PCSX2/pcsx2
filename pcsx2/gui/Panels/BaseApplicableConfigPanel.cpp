@@ -180,8 +180,8 @@ void BaseApplicableConfigPanel::Init()
 	// is immediate, and depends on the platform for how it "works", and thus
 	// useless.  Solution: Create our own! :)
 
-	//Connect( wxEVT_CREATE,	wxWindowCreateEventHandler	(BaseApplicableConfigPanel::OnCreateWindow) );
-	Connect( pxEvt_ApplySettings,	wxCommandEventHandler	(BaseApplicableConfigPanel::OnSettingsApplied) );
+	//Bind( wxEVT_CREATE, &BaseApplicableConfigPanel::OnCreateWindow, this);
+	Bind(pxEvt_ApplySettings, &BaseApplicableConfigPanel::OnSettingsApplied, this);
 
 	if( IApplyState* iapp = FindApplyStateManager() )
 	{

@@ -156,11 +156,11 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	// this doesn't descent from wxDialogWithHelpers, so we need to explicitly
 	// fit and center it. :(
 
-	Connect( wxEVT_WIZARD_PAGE_CHANGED,				wxWizardEventHandler	(FirstTimeWizard::OnPageChanged) );
-	Connect( wxEVT_WIZARD_PAGE_CHANGING,			wxWizardEventHandler	(FirstTimeWizard::OnPageChanging) );
-	Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED,	wxCommandEventHandler	(FirstTimeWizard::OnDoubleClicked) );
+	Bind(wxEVT_WIZARD_PAGE_CHANGED, &FirstTimeWizard::OnPageChanged, this);
+	Bind(wxEVT_WIZARD_PAGE_CHANGING, &FirstTimeWizard::OnPageChanging, this);
+	Bind(wxEVT_LISTBOX_DCLICK, &FirstTimeWizard::OnDoubleClicked, this);
 
-	Connect( pxID_RestartWizard,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( FirstTimeWizard::OnRestartWizard ) );
+	Bind(wxEVT_BUTTON, &FirstTimeWizard::OnRestartWizard, this, pxID_RestartWizard);
 }
 
 FirstTimeWizard::~FirstTimeWizard() throw()

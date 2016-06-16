@@ -44,8 +44,8 @@ using namespace pxSizerFlags;
 Panels::BaseSelectorPanel::BaseSelectorPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel( parent, wxVERTICAL )
 {
-	Connect( wxEVT_COMMAND_DIRPICKER_CHANGED,	wxFileDirPickerEventHandler	(BaseSelectorPanel::OnFolderChanged) );
-	Connect( wxEVT_SHOW,						wxShowEventHandler			(BaseSelectorPanel::OnShow) );
+	Bind(wxEVT_DIRPICKER_CHANGED, &BaseSelectorPanel::OnFolderChanged, this);
+	Bind(wxEVT_SHOW, &BaseSelectorPanel::OnShow, this);
 }
 
 Panels::BaseSelectorPanel::~BaseSelectorPanel() throw()
@@ -119,7 +119,7 @@ Panels::BiosSelectorPanel::BiosSelectorPanel( wxWindow* parent )
 	*this	+= 8;
 	*this	+= m_FolderPicker	| StdExpand();
 
-	Connect( refreshButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(BiosSelectorPanel::OnRefreshSelections) );
+	Bind(wxEVT_BUTTON, &BiosSelectorPanel::OnRefreshSelections, this, refreshButton->GetId());
 }
 
 Panels::BiosSelectorPanel::~BiosSelectorPanel() throw ()

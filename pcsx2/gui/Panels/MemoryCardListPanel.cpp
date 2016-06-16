@@ -194,7 +194,7 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 
 	m_btn_Refresh = new wxButton( this, wxID_ANY, _("Refresh list") );
 
-	Connect( m_btn_Refresh->GetId(), wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(BaseMcdListPanel::OnRefreshSelections) );
+	Bind(wxEVT_BUTTON, &BaseMcdListPanel::OnRefreshSelections, this, m_btn_Refresh->GetId());
 }
 
 void Panels::BaseMcdListPanel::RefreshMcds() const
@@ -418,31 +418,31 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 
 	parent->SetWindowStyle(parent->GetWindowStyle() | wxRESIZE_BORDER);
 
-	Connect( m_listview->GetId(),		wxEVT_COMMAND_LIST_BEGIN_DRAG,		wxListEventHandler(MemoryCardListPanel_Simple::OnListDrag));
-	Connect( m_listview->GetId(),		wxEVT_COMMAND_LIST_ITEM_SELECTED,	wxListEventHandler(MemoryCardListPanel_Simple::OnListSelectionChanged));
-	Connect( m_listview->GetId(),		wxEVT_COMMAND_LIST_ITEM_ACTIVATED,	wxListEventHandler(MemoryCardListPanel_Simple::OnItemActivated));//enter or double click
+	Bind(wxEVT_LIST_BEGIN_DRAG, &MemoryCardListPanel_Simple::OnListDrag, this, m_listview->GetId());
+	Bind(wxEVT_LIST_ITEM_SELECTED, &MemoryCardListPanel_Simple::OnListSelectionChanged, this, m_listview->GetId());
+	Bind(wxEVT_LIST_ITEM_ACTIVATED, &MemoryCardListPanel_Simple::OnItemActivated, this, m_listview->GetId()); //enter or double click
 
 	//Deselected is not working for some reason (e.g. when clicking an empty row at the table?) - avih
-	Connect( m_listview->GetId(),		wxEVT_COMMAND_LIST_ITEM_DESELECTED,	wxListEventHandler(MemoryCardListPanel_Simple::OnListSelectionChanged));
+	Bind(wxEVT_LIST_ITEM_DESELECTED, &MemoryCardListPanel_Simple::OnListSelectionChanged, this, m_listview->GetId());
 
-	Connect( m_listview->GetId(),		wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, wxListEventHandler(MemoryCardListPanel_Simple::OnOpenItemContextMenu) );
+	Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MemoryCardListPanel_Simple::OnOpenItemContextMenu, this, m_listview->GetId());
 
-//	Connect( m_button_Mount->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard));
-	Connect( m_button_Create->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard));
-	Connect( m_button_Convert->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard));
-	Connect( m_button_Rename->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile));
-	Connect( m_button_Duplicate->GetId(),		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnDuplicateFile));
-	Connect( m_button_AssignUnassign->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile));
+	//Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnMountCard, this, m_button_Mount->GetId());
+	Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnCreateOrDeleteCard, this, m_button_Create->GetId());
+	Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnConvertCard, this, m_button_Convert->GetId());
+	Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnRenameFile, this, m_button_Rename->GetId());
+	Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnDuplicateFile, this, m_button_Duplicate->GetId());
+	Bind(wxEVT_BUTTON, &MemoryCardListPanel_Simple::OnAssignUnassignFile, this, m_button_AssignUnassign->GetId());
 
 	// Popup Menu Connections!
-	Connect( McdMenuId_Create,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnCreateOrDeleteCard) );
-	Connect( McdMenuId_Convert,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnConvertCard) );
-	//Connect( McdMenuId_Mount,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnMountCard) );
-	Connect( McdMenuId_Rename,		wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnRenameFile) );
-	Connect( McdMenuId_AssignUnassign,	wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnAssignUnassignFile) );
-	Connect( McdMenuId_Duplicate,	wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnDuplicateFile) );
+	//Bind(McdMenuId_Mount, &MemoryCardListPanel_Simple::OnMountCard, this, McdMenuId_Mount);
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnCreateOrDeleteCard, this, McdMenuId_Create);
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnConvertCard, this, McdMenuId_Convert);
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnRenameFile, this, McdMenuId_Rename);
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnDuplicateFile, this, McdMenuId_Duplicate);
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnAssignUnassignFile, this, McdMenuId_AssignUnassign);
 	
-	Connect( McdMenuId_RefreshList,	wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryCardListPanel_Simple::OnRefreshSelections) );
+	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnRefreshSelections, this, McdMenuId_RefreshList);
 
 	//because the wxEVT_COMMAND_LIST_ITEM_DESELECTED doesn't work (buttons stay enabled when clicking an empty area of the list),
 	//  m_listview can send us an event that indicates a change at the list. Ugly, but works.

@@ -429,14 +429,14 @@ Panels::PluginSelectorPanel::PluginSelectorPanel( wxWindow* parent )
 	// refresh button used for diagnostics... (don't think there's a point to having one otherwise) --air
 	//wxButton* refresh = new wxButton( this, wxID_ANY, L"Refresh" );
 	//s_main.Add( refresh );
-	//Connect( refresh->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( PluginSelectorPanel::OnRefresh ) );
+	//Bind(wxEVT_BUTTON, &PluginSelectorPanel::OnRefresh, this, refresh->GetId());
 
-	Connect( pxEvt_EnumeratedNext,				wxCommandEventHandler( PluginSelectorPanel::OnProgress ) );
-	Connect( pxEvt_EnumerationFinished,			wxCommandEventHandler( PluginSelectorPanel::OnEnumComplete ) );
-	Connect( pxEVT_ShowStatusBar,				wxCommandEventHandler( PluginSelectorPanel::OnShowStatusBar ) );
-	Connect( wxEVT_COMMAND_COMBOBOX_SELECTED,	wxCommandEventHandler( PluginSelectorPanel::OnPluginSelected ) );
+	Bind(pxEvt_EnumeratedNext, &PluginSelectorPanel::OnProgress, this);
+	Bind(pxEvt_EnumerationFinished, &PluginSelectorPanel::OnEnumComplete, this);
+	Bind(pxEVT_ShowStatusBar, &PluginSelectorPanel::OnShowStatusBar, this);
+	Bind(wxEVT_COMBOBOX, &PluginSelectorPanel::OnPluginSelected, this);
 
-	Connect( ButtonId_Configure, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( PluginSelectorPanel::OnConfigure_Clicked ) );
+	Bind(wxEVT_BUTTON, &PluginSelectorPanel::OnConfigure_Clicked, this, ButtonId_Configure);
 }
 
 Panels::PluginSelectorPanel::~PluginSelectorPanel() throw()

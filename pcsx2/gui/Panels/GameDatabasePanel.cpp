@@ -377,7 +377,7 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 	*this	+= sizer1  | pxCenter;
 	*this	+= sizer2  | pxCenter;
 	
-	Connect(searchBtn->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(GameDatabasePanel::Search_Click));
+	Bind(wxEVT_BUTTON, &GameDatabasePanel::Search_Click, this, searchBtn->GetId());
 	PopulateFields();
 }
 

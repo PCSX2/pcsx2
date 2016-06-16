@@ -65,7 +65,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	*this	+= m_dirpicker_custom	| pxExpand.Border( wxLEFT, StdPadding + m_radio_UserMode->GetIndentation() );
 	*this	+= 4;
 
-	Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(DocsFolderPickerPanel::OnRadioChanged) );
+	Bind(wxEVT_RADIOBUTTON, &DocsFolderPickerPanel::OnRadioChanged, this);
 }
 
 DocsModeType Panels::DocsFolderPickerPanel::GetDocsMode() const
@@ -129,7 +129,7 @@ Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool s
 		*this += 5;
 	}
 
-	Connect( pxID_RestartWizard,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( LanguageSelectionPanel::OnApplyLanguage_Clicked ) );
+	Bind(wxEVT_BUTTON, &LanguageSelectionPanel::OnApplyLanguage_Clicked, this, pxID_RestartWizard);
 
 	m_picker->SetSelection( 0 );		// always default to System Default
 }

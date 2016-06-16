@@ -131,7 +131,7 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 	for( uint i=0; i<2; ++i )
 	{
 		if( pxCheckBox* check = (pxCheckBox*)FindWindow(pxsFmt( L"CheckBox::Multitap%u", i )) )
-			Connect( check->GetId(), wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(McdConfigDialog::OnMultitapClicked) );
+			Bind(wxEVT_CHECKBOX, &McdConfigDialog::OnMultitapClicked, this, check->GetId());
 	}
 */
 	AddOkCancel(s_bottom);

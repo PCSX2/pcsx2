@@ -72,8 +72,8 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 
 	*this += s_padding | pxSizerFlags::StdExpand();
 
-	Connect( wxID_OK, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConvertMemoryCardDialog::OnOk_Click ) );
-	Connect( m_text_filenameInput->GetId(), wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ConvertMemoryCardDialog::OnOk_Click ) );
+	Bind(wxEVT_BUTTON, &ConvertMemoryCardDialog::OnOk_Click, this, wxID_OK);
+	Bind(wxEVT_TEXT_ENTER, &ConvertMemoryCardDialog::OnOk_Click, this, m_text_filenameInput->GetId());
 
 	SetSizerAndFit(GetSizer());
 

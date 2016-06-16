@@ -112,7 +112,7 @@ public:
 		: _parent( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VIRTUAL )
 	{
 		m_externHandler=NULL;
-		Connect( this->GetId(),				wxEVT_LEFT_UP, wxEventHandler(BaseMcdListView::OnChanged));
+		Bind(wxEVT_LEFT_UP, &BaseMcdListView::OnChanged, this, this->GetId());
 
 		m_CardProvider = NULL;
 	}
