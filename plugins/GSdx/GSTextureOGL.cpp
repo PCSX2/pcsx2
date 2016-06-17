@@ -35,13 +35,14 @@ extern uint64 g_real_texture_upload_byte;
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
 namespace PboPool {
 
-	GLuint m_pool[PBO_POOL_SIZE];
-	uptr m_offset[PBO_POOL_SIZE];
-	char*  m_map[PBO_POOL_SIZE];
-	uint32 m_current_pbo = 0;
+	const  uint32 m_pbo_size = 64*1024*1024;
+	const  uint32 m_seg_size = 16*1024*1024;
+
+	GLuint m_buffer;
+	uptr   m_offset;
+	char*  m_map;
 	uint32 m_size;
-	GLsync m_fence[PBO_POOL_SIZE];
-	const uint32 m_pbo_size = 8*1024*1024;
+	GLsync m_fence[m_pbo_size/m_seg_size];
 
 	// Option for buffer storage
 	// XXX: actually does I really need coherent and barrier???
@@ -52,20 +53,20 @@ namespace PboPool {
 	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
 	void Init() {
-		glGenBuffers(countof(m_pool), m_pool);
+		glGenBuffers(1, &m_buffer);
 
-		for (size_t i = 0; i < countof(m_pool); i++) {
-			BindPbo();
+		BindPbo();
 
-			string pretty_name = "PBO" + to_string(i);
-			glObjectLabel(GL_BUFFER, m_pool[i], pretty_name.size(), pretty_name.c_str());
+		glObjectLabel(GL_BUFFER, m_buffer, -1, "PBO");
 
-			glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
-			m_map[m_current_pbo] = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
-			m_fence[m_current_pbo] = 0;
+		glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
+		m_map    = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
+		m_offset = 0;
 
-			NextPbo();
+		for (size_t i = 0; i < countof(m_fence); i++) {
+			m_fence[i] = 0;
 		}
+
 		UnbindPbo();
 	}
 
@@ -77,69 +78,70 @@ namespace PboPool {
 			fprintf(stderr, "BUG: PBO too small %d but need %d\n", m_pbo_size, m_size);
 		}
 
-		if (m_offset[m_current_pbo] + m_size >= m_pbo_size) {
-			//NextPbo(); // For test purpose
-			NextPboWithSync();
-		}
-
 		// Note: texsubimage will access currently bound buffer
 		// Pbo ready let's get a pointer
 		BindPbo();
 
-		map = m_map[m_current_pbo] + m_offset[m_current_pbo];
+		Sync();
+
+		map = m_map + m_offset;
 
 		return map;
 	}
 
 	void Unmap() {
-		glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset[m_current_pbo], m_size);
+		glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset, m_size);
 	}
 
 	uptr Offset() {
-		return m_offset[m_current_pbo];
+		return m_offset;
 	}
 
 	void Destroy() {
-		for (size_t i = 0; i < countof(m_pool); i++) {
-			m_map[i] = NULL;
-			m_offset[i] = 0;
-			glDeleteSync(m_fence[i]);
+		m_map    = NULL;
+		m_offset = 0;
 
-			// Don't know if we must do it
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[i]);
-			glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-		}
+		// Don't know if we must do it
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-		glDeleteBuffers(countof(m_pool), m_pool);
+
+		for (size_t i = 0; i < countof(m_fence); i++) {
+			glDeleteSync(m_fence[i]);
+		}
+
+		glDeleteBuffers(1, &m_buffer);
 	}
 
 	void BindPbo() {
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pool[m_current_pbo]);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
 	}
 
-	void NextPbo() {
-		m_current_pbo = (m_current_pbo + 1) & (countof(m_pool)-1);
-		// Mark new PBO as free
-		m_offset[m_current_pbo] = 0;
-	}
+	void Sync() {
+		uint32 segment_current = m_offset / m_seg_size;
+		uint32 segment_next    = (m_offset + m_size) / m_seg_size;
 
-	void NextPboWithSync() {
-		m_fence[m_current_pbo] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-		NextPbo();
-		if (m_fence[m_current_pbo]) {
-#ifdef ENABLE_OGL_DEBUG_FENCE
-			GLenum status = glClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-#else
-			glClientWaitSync(m_fence[m_current_pbo], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-#endif
-			glDeleteSync(m_fence[m_current_pbo]);
-			m_fence[m_current_pbo] = 0;
-
-#ifdef ENABLE_OGL_DEBUG_FENCE
-			if (status != GL_ALREADY_SIGNALED) {
-				fprintf(stderr, "GL_PIXEL_UNPACK_BUFFER: Sync Sync! Buffer too small\n");
+		if (segment_current != segment_next) {
+			if (segment_next >= countof(m_fence)) {
+				segment_next = 0;
 			}
-#endif
+			// Align current transfer on the start of the segment
+			m_offset = m_seg_size * segment_next;
+
+			// protect the left segment
+			m_fence[segment_current] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+			// Check next segment is free
+			if (m_fence[segment_next]) {
+				GLenum status = glClientWaitSync(m_fence[segment_next], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+				// Potentially it doesn't work on AMD driver which might always return GL_CONDITION_SATISFIED
+				if (status != GL_ALREADY_SIGNALED) {
+					GL_PERF("GL_PIXEL_UNPACK_BUFFER: Sync Sync (%x)! Buffer too small ?", status);
+				}
+
+				glDeleteSync(m_fence[segment_next]);
+				m_fence[segment_next] = 0;
+			}
 		}
 	}
 
@@ -149,7 +151,7 @@ namespace PboPool {
 
 	void EndTransfer() {
 		// Note: keep offset aligned for SSE/AVX
-		m_offset[m_current_pbo] = (m_offset[m_current_pbo] + m_size + 63) & ~0x3F;
+		m_offset += (m_size + 63) & ~0x3F;
 	}
 }
 
