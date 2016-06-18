@@ -37,6 +37,7 @@ GSRenderer::GSRenderer()
 	, m_texture_shuffle(false)
 	, m_wnd(NULL)
 	, m_dev(NULL)
+	, m_real_size(0,0)
 {
 	m_GStitleInfoBuffer[0] = 0;
 
@@ -248,6 +249,7 @@ bool GSRenderer::Merge(int field)
 	{
 		ds.y *= 2;
 	}
+	m_real_size = ds;
 
 	bool slbg = m_regs->PMODE.SLBG;
 	bool mmod = m_regs->PMODE.MMOD;
@@ -298,6 +300,11 @@ bool GSRenderer::Merge(int field)
 	}
 
 	return true;
+}
+
+GSVector2i GSRenderer::GetInternalResolution()
+{
+	return m_real_size;
 }
 
 void GSRenderer::SetFrameLimit(bool limit)

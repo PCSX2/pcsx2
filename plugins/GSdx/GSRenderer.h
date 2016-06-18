@@ -49,6 +49,7 @@ protected:
 	bool m_fxaa;
 	bool m_shadeboost;
 	bool m_texture_shuffle;
+	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 
@@ -68,9 +69,7 @@ public:
 	virtual void KeyEvent(GSKeyEventData* e);
 	virtual bool CanUpscale() {return false;}
 	virtual int GetUpscaleMultiplier() {return 1;}
-	virtual GSVector2i GetInternalResolution() {
-		return GetOutputRect();
-	}
+	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(bool enabled);
 	void SetFrameLimit(bool limit);
