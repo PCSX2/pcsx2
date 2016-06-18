@@ -185,67 +185,61 @@ void MainEmuFrame::OnLogBoxHidden()
 // ------------------------------------------------------------------------
 void MainEmuFrame::ConnectMenus()
 {
-	#define ConnectMenu( id, handler ) \
-		Connect( id, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainEmuFrame::handler) )
+	// System
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_BootCdvd_Click, this, MenuId_Boot_CDVD);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_BootCdvd2_Click, this, MenuId_Boot_CDVD2);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_OpenELF_Click, this, MenuId_Boot_ELF);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SuspendResume_Click, this, MenuId_Sys_SuspendResume);
 
-	#define ConnectMenuRange( id_start, inc, handler ) \
-		Connect( id_start, id_start + inc, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainEmuFrame::handler) )
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStates_Click, this, MenuId_State_Load01 + 1, MenuId_State_Load01 + 10);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStates_Click, this, MenuId_State_LoadBackup);
+	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStateOther_Click, this, MenuId_State_LoadOther);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SaveStates_Click, this, MenuId_State_Save01 + 1, MenuId_State_Save01 + 10);
+	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_SaveStateOther_Click, this, MenuId_State_SaveOther);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableBackupStates_Click, this, MenuId_EnableBackupStates);
 
-	ConnectMenu( MenuId_Config_SysSettings,	Menu_SysSettings_Click );
-	ConnectMenu( MenuId_Config_McdSettings,	Menu_McdSettings_Click );
-	ConnectMenu( MenuId_Config_AppSettings,	Menu_WindowSettings_Click );
-	ConnectMenu( MenuId_Config_GameDatabase,Menu_GameDatabase_Click );
-	ConnectMenu( MenuId_Config_BIOS,		Menu_SelectPluginsBios_Click );
-	ConnectMenu( MenuId_Config_Language,	Menu_Language_Click );
-	ConnectMenu( MenuId_Config_ResetAll,	Menu_ResetAllSettings_Click );
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnablePatches_Click, this, MenuId_EnablePatches);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableCheats_Click, this, MenuId_EnableCheats);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableWideScreenPatches_Click, this, MenuId_EnableWideScreenPatches);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableHostFs_Click, this, MenuId_EnableHostFs);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysShutdown_Click, this, MenuId_Sys_Shutdown);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Exit_Click, this, MenuId_Exit);
+	// No actual menu item for this.
+	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysReset_Click, this, MenuId_Sys_Restart);
 
-	ConnectMenu( MenuId_Config_Multitap0Toggle,	Menu_MultitapToggle_Click );
-	ConnectMenu( MenuId_Config_Multitap1Toggle,	Menu_MultitapToggle_Click );
+	// CDVD
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoBrowse_Click, this, MenuId_IsoBrowse);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
 
-	ConnectMenu( MenuId_Video_WindowSettings,	Menu_WindowSettings_Click );
-	ConnectMenu( MenuId_Video_CoreSettings,		Menu_GSSettings_Click );
+	// Config
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysSettings_Click, this, MenuId_Config_SysSettings);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_McdSettings_Click, this, MenuId_Config_McdSettings);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SelectPluginsBios_Click, this, MenuId_Config_BIOS);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GameDatabase_Click, this, MenuId_Config_GameDatabase);
 
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GSSettings_Click, this, MenuId_Video_CoreSettings);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_WindowSettings_Click, this, MenuId_Video_WindowSettings);
+	for (int i = 0; i < PluginId_Count; ++i)
+		Bind(wxEVT_MENU, &MainEmuFrame::Menu_ConfigPlugin_Click, this, MenuId_PluginBase_Settings + i * PluginMenuId_Interval);
 
-	ConnectMenuRange(MenuId_Config_GS, PluginId_Count, Menu_ConfigPlugin_Click);
-	ConnectMenuRange(MenuId_Src_Iso, 3, Menu_CdvdSource_Click);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap0Toggle);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap1Toggle);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ResetAllSettings_Click, this, MenuId_Config_ResetAll);
+	// For "appearance" even though it's hinting at language. No menu item exists either.
+	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_Language_Click, this, MenuId_Config_Language);
 
-	for( int i=0; i<PluginId_Count; ++i )
-		ConnectMenu( MenuId_PluginBase_Settings + (i*PluginMenuId_Interval), Menu_ConfigPlugin_Click);
+	// Misc
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole_Stdio, this, MenuId_Console_Stdio);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowAboutBox, this, MenuId_About);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ChangeLang, this, MenuId_ChangeLang);
 
-	ConnectMenu( MenuId_Boot_CDVD,			Menu_BootCdvd_Click );
-	ConnectMenu( MenuId_Boot_CDVD2,			Menu_BootCdvd2_Click );
-	ConnectMenu( MenuId_Boot_ELF,			Menu_OpenELF_Click );
-	ConnectMenu( MenuId_IsoBrowse,			Menu_IsoBrowse_Click );
-	ConnectMenu( MenuId_EnableBackupStates, Menu_EnableBackupStates_Click );
-	ConnectMenu( MenuId_EnablePatches,		Menu_EnablePatches_Click );
-	ConnectMenu( MenuId_EnableCheats,		Menu_EnableCheats_Click );
-	ConnectMenu( MenuId_EnableWideScreenPatches,	Menu_EnableWideScreenPatches_Click );
-	ConnectMenu( MenuId_EnableHostFs,		Menu_EnableHostFs_Click );
-	ConnectMenu( MenuId_Exit,				Menu_Exit_Click );
-
-	ConnectMenu( MenuId_Sys_SuspendResume,	Menu_SuspendResume_Click );
-	ConnectMenu( MenuId_Sys_Restart,		Menu_SysReset_Click );
-	ConnectMenu( MenuId_Sys_Shutdown,		Menu_SysShutdown_Click );
-
-	//ConnectMenu( MenuId_State_LoadOther,	Menu_LoadStateOther_Click );
-
-	ConnectMenuRange(MenuId_State_Load01+1, 10, Menu_LoadStates_Click);
-	ConnectMenu( MenuId_State_LoadBackup,	Menu_LoadStates_Click );
-	
-
-	//ConnectMenu( MenuId_State_SaveOther,	Menu_SaveStateOther_Click );
-
-	ConnectMenuRange(MenuId_State_Save01+1, 10, Menu_SaveStates_Click);
-
-	ConnectMenu( MenuId_Debug_Open,			Menu_Debug_Open_Click );
-	ConnectMenu( MenuId_Debug_MemoryDump,	Menu_Debug_MemoryDump_Click );
-	ConnectMenu( MenuId_Debug_Logging,		Menu_Debug_Logging_Click );
-
-	ConnectMenu( MenuId_Console,			Menu_ShowConsole );
-	ConnectMenu( MenuId_ChangeLang,			Menu_ChangeLang );
-	ConnectMenu( MenuId_Console_Stdio,		Menu_ShowConsole_Stdio );
-
-	ConnectMenu( MenuId_About,				Menu_ShowAboutBox );
+	// Debug
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_Open_Click, this, MenuId_Debug_Open);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_Logging_Click, this, MenuId_Debug_Logging);
+	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_MemoryDump_Click, this, MenuId_Debug_MemoryDump);
 }
 
 void MainEmuFrame::InitLogBoxPosition( AppConfig::ConsoleLogOptions& conf )
