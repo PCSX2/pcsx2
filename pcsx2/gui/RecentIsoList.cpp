@@ -39,12 +39,12 @@ RecentIsoManager::RecentIsoManager( wxMenu* menu, int firstIdForMenuItems_or_wxI
 	IniLoader loader;
 	LoadListFrom(loader);
 
-	Connect( wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(RecentIsoManager::OnChangedSelection) );
+	Bind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }
 
 RecentIsoManager::~RecentIsoManager() throw()
 {
-	Disconnect( wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(RecentIsoManager::OnChangedSelection) );
+	Unbind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }
 
 void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )

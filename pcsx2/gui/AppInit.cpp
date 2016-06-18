@@ -440,11 +440,8 @@ bool Pcsx2App::OnInit()
 
 	i18n_SetLanguagePath();
 
-#define pxAppMethodEventHandler(func) \
-	(wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(pxInvokeAppMethodEventFunction, &func )
-
-	Connect( pxID_PadHandler_Keydown,	wxEVT_KEY_DOWN,		wxKeyEventHandler			(Pcsx2App::OnEmuKeyDown) );
-	Connect(							wxEVT_DESTROY,		wxWindowDestroyEventHandler	(Pcsx2App::OnDestroyWindow) );
+	Bind(wxEVT_KEY_DOWN, &Pcsx2App::OnEmuKeyDown, this, pxID_PadHandler_Keydown);
+	Bind(wxEVT_DESTROY, &Pcsx2App::OnDestroyWindow, this);
 
 	// User/Admin Mode Dual Setup:
 	//   PCSX2 now supports two fundamental modes of operation.  The default is Classic mode,
@@ -474,7 +471,7 @@ bool Pcsx2App::OnInit()
 		// loop termination code.  We have a much safer system in place that continues to process messages
 		// until all "important" threads are closed out -- not just until the main frame is closed(-ish).
 		m_timer_Termination = std::unique_ptr<wxTimer>(new wxTimer( this, wxID_ANY ));
-		Connect( m_timer_Termination->GetId(), wxEVT_TIMER, wxTimerEventHandler(Pcsx2App::OnScheduledTermination) );
+		Bind(wxEVT_TIMER, &Pcsx2App::OnScheduledTermination, this, m_timer_Termination->GetId());
 		SetExitOnFrameDelete( false );
 
 

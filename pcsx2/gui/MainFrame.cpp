@@ -528,10 +528,10 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
 
 	ConnectMenus();
-	Connect( wxEVT_MOVE,			wxMoveEventHandler			(MainEmuFrame::OnMoveAround) );
-	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler			(MainEmuFrame::OnCloseWindow) );
-	Connect( wxEVT_SET_FOCUS,		wxFocusEventHandler			(MainEmuFrame::OnFocus) );
-	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler		(MainEmuFrame::OnActivate) );
+	Bind(wxEVT_MOVE, &MainEmuFrame::OnMoveAround, this);
+	Bind(wxEVT_CLOSE_WINDOW, &MainEmuFrame::OnCloseWindow, this);
+	Bind(wxEVT_SET_FOCUS, &MainEmuFrame::OnFocus, this);
+	Bind(wxEVT_ACTIVATE, &MainEmuFrame::OnActivate, this);
 
 	PushEventHandler( &wxGetApp().GetRecentIsoManager() );
 	SetDropTarget( new IsoDropTarget( this ) );
