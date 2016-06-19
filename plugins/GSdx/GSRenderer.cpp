@@ -270,19 +270,24 @@ bool GSRenderer::Merge(int field)
 
 		m_dev->Merge(tex, src_hw, dst, fs, slbg, mmod, c);
 
-		if(m_regs->SMODE2.INT && m_interlace > 0)
+		if(m_interlace)
 		{
+			// Avoid deinterlacing progressive mode games when interlacing is set to "auto"
+			bool avoid_deinterlacing = m_interlace == 7 && !isinterlaced();
+
 			if (m_interlace == 7 && m_regs->SMODE2.FFMD == 1) // Auto interlace enabled / Odd frame interlace setting
 			{
 				int field2 = 0;
 				int mode = 2;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				if(!avoid_deinterlacing)
+					m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 			else
 			{
 				int field2 = 1 - ((m_interlace - 1) & 1);
 				int mode = (m_interlace - 1) >> 1;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				if(!avoid_deinterlacing)
+					m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 		}
 
