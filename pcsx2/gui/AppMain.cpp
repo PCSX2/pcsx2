@@ -210,7 +210,7 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 	MainEmuFrame* mainFrame = GetMainFramePtr();
 	if( mainFrame == NULL ) return;
 
-	wxCommandEvent joe( wxEVT_COMMAND_MENU_SELECTED, menu_id );
+	wxCommandEvent joe( wxEVT_MENU, menu_id );
 	if( wxThread::IsMain() )
 		mainFrame->GetEventHandler()->ProcessEvent( joe );
 	else

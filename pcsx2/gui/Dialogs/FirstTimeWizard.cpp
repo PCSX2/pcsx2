@@ -191,7 +191,7 @@ void FirstTimeWizard::OnDoubleClicked( wxCommandEvent& evt )
 	wxWindow* forwardButton = FindWindow( wxID_FORWARD );
 	if( forwardButton == NULL ) return;
 
-	wxCommandEvent nextpg( wxEVT_COMMAND_BUTTON_CLICKED, wxID_FORWARD );
+	wxCommandEvent nextpg( wxEVT_BUTTON, wxID_FORWARD );
 	nextpg.SetEventObject( forwardButton );
 	forwardButton->GetEventHandler()->ProcessEvent( nextpg );
 }

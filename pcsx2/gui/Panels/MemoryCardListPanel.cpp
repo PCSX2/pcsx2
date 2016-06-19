@@ -199,7 +199,7 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 
 void Panels::BaseMcdListPanel::RefreshMcds() const
 {
-	wxCommandEvent refit( wxEVT_COMMAND_BUTTON_CLICKED );
+	wxCommandEvent refit( wxEVT_BUTTON );
 	refit.SetId( m_btn_Refresh->GetId() );
 	GetEventHandler()->AddPendingEvent( refit );
 }
@@ -423,6 +423,7 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	Bind(wxEVT_LIST_ITEM_ACTIVATED, &MemoryCardListPanel_Simple::OnItemActivated, this, m_listview->GetId()); //enter or double click
 
 	//Deselected is not working for some reason (e.g. when clicking an empty row at the table?) - avih
+	// wxMSW bug for virtual listviews. Works fine on Linux: http://trac.wxwidgets.org/ticket/1919 - turtleli
 	Bind(wxEVT_LIST_ITEM_DESELECTED, &MemoryCardListPanel_Simple::OnListSelectionChanged, this, m_listview->GetId());
 
 	Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MemoryCardListPanel_Simple::OnOpenItemContextMenu, this, m_listview->GetId());
@@ -441,10 +442,10 @@ Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent
 	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnRenameFile, this, McdMenuId_Rename);
 	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnDuplicateFile, this, McdMenuId_Duplicate);
 	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnAssignUnassignFile, this, McdMenuId_AssignUnassign);
-	
+
 	Bind(wxEVT_MENU, &MemoryCardListPanel_Simple::OnRefreshSelections, this, McdMenuId_RefreshList);
 
-	//because the wxEVT_COMMAND_LIST_ITEM_DESELECTED doesn't work (buttons stay enabled when clicking an empty area of the list),
+	//because the wxEVT_LIST_ITEM_DESELECTED doesn't work (buttons stay enabled when clicking an empty area of the list),
 	//  m_listview can send us an event that indicates a change at the list. Ugly, but works.
 	g_uglyPanel=this;
 	m_listview->setExternHandler(g_uglyFunc);
