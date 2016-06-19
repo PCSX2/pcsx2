@@ -218,7 +218,7 @@ endif()
 #---------------------------------------
 # Not ready to be packaged
 if(EXTRA_PLUGINS OR NOT PACKAGE_MODE)
-    if(Linux AND GTKn_FOUND AND X11_FOUND)
+    if(wxWidgets_FOUND AND Linux AND GTKn_FOUND AND X11_FOUND)
         set(LilyPad TRUE)
     endif()
 endif()
