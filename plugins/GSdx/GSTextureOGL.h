@@ -24,15 +24,14 @@
 #include "GSTexture.h"
 
 namespace PboPool {
-	void BindPbo();
-	void UnbindPbo();
-	void NextPbo();
-	void NextPboWithSync();
+	inline void BindPbo();
+	inline void UnbindPbo();
+	inline void Sync();
 
-	char* Map(uint32 size);
-	void Unmap();
-	uptr Offset();
-	void EndTransfer();
+	inline char* Map(uint32 size);
+	inline void  Unmap();
+	inline uptr  Offset();
+	inline void  EndTransfer();
 
 	void Init();
 	void Destroy();
