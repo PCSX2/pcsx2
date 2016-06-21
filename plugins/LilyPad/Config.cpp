@@ -1474,8 +1474,9 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 						const static unsigned int axisUIDs[3] = {UID_AXIS_NEG, UID_AXIS_POS, UID_AXIS};
 						int uid = dev->virtualControls[b->controlIndex].uid;
 						uid = (uid&0x00FFFFFF) | axisUIDs[cbsel];
+						Binding backup = *b;
 						DeleteSelected(port, slot);
-						int index = BindCommand(dev, uid, port, slot, b->command, b->sensitivity, b->turbo, b->deadZone);
+						int index = BindCommand(dev, uid, port, slot, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
 						ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
 						PropSheet_Changed(hWndProp, hWnd);
 					}
