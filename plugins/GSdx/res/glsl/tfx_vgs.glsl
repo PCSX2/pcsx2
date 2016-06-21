@@ -24,10 +24,10 @@ const float exp_min32 = exp2(-32.0f);
 
 void texture_coord()
 {
-    vec2 uv = vec2(i_uv);
+    vec2 uv = vec2(i_uv) - TextureOffset.xy;
 
     // Float coordinate
-    VSout.t_float.xy = i_st;
+    VSout.t_float.xy = i_st - TextureOffset.zw; // FIXME or .xy check final code
     VSout.t_float.w  = i_q;
 
     // Integer coordinate => normalized

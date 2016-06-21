@@ -60,11 +60,14 @@ layout(std140, binding = 15) uniform cb15
 #if defined(VERTEX_SHADER) || defined(GEOMETRY_SHADER)
 layout(std140, binding = 20) uniform cb20
 {
-    vec2 VertexScale;
-    vec2 VertexOffset;
-    uint DepthMask;
-    uint cb20_pad;
-    vec2 PointSize;
+    vec2  VertexScale;
+    vec2  VertexOffset;
+
+    vec4  TextureOffset;
+
+    uint  DepthMask;
+    uint  cb20_pad;
+    vec2  PointSize;
 };
 #endif
 
