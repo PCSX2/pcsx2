@@ -770,7 +770,7 @@ static const char* const tfx_vgs_glsl =
 	"    vec2 uv = vec2(i_uv) - TextureOffset.xy;\n"
 	"\n"
 	"    // Float coordinate\n"
-	"    VSout.t_float.xy = i_st - TextureOffset.zw; // FIXME or .xy check final code\n"
+	"    VSout.t_float.xy = i_st - TextureOffset.xy;\n"
 	"    VSout.t_float.w  = i_q;\n"
 	"\n"
 	"    // Integer coordinate => normalized\n"
