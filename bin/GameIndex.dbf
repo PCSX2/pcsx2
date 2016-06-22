@@ -9239,23 +9239,28 @@ Serial = SLES-51252
 Name   = Lord of the Rings, The - The Two Towers
 Region = PAL-M3
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51253
 Name   = Lord of the Rings, The - The Two Towers (Seigneur des Anneaux - Les Deux Tours)
 Region = PAL-F
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51254
 Name   = Lord of the Rings, The - The Two Towers (Der Herr der Ringe - Die Zwei Turme)
 Region = PAL-G
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51255
 Name   = Lord of the Rings, The - The Two Towers
 Region = PAL-I
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51256
 Name   = Lord of the Rings, The - The Two Towers (El Senor de Los Anillos - Las Dos Torres)
 Region = PAL-S
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51257
 Name   = Sims, The (Die Sims)
@@ -21879,6 +21884,11 @@ Serial = SLPM-65210
 Name   = Chou Battle Houshin - Bundle #1
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-65212
+Name   = The Lord of the Rings: The Two Towers
+Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
+---------------------------------------------
 Serial = SLPM-65213
 Name   = Evolution Skateboarding
 Region = NTSC-J
@@ -28380,8 +28390,9 @@ Name   = Medal of Honor - Rising Sun
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-67005
-Name   = Lord of the Rings, The - The Return of the King
+Name   = The Lord of the Rings: The Two Towers (EA Best Hits)
 Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPM-67006
 Name   = Train Simulator - Kyushu Shinkansen
@@ -28480,6 +28491,7 @@ Compat = 5
 Serial = SLPM-67546
 Name   = Lord of the Rings - The Two Towers
 Region = NTSC-K
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPM-67552
 Name   = Tomak - Save the Earth Again [Complete Edition]
@@ -33413,11 +33425,13 @@ Compat = 5
 Serial = SLPS-29003
 Name   = Lord of the Rings - The Two Towers [Collector's Box]
 Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPS-29004
 Name   = Lord of the Rings, The - The Two Towers
 Region = NTSC-J
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPS-29005
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]
@@ -36312,6 +36326,7 @@ Serial = SLUS-20578
 Name   = Lord of the Rings, The - The Two Towers
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLUS-20579
 Name   = James Bond 007 - Nightfire
