@@ -269,21 +269,6 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-#if defined(__clang__)
-#include <limits.h>
-static s32 rotr(u32 x, u32 s)
-{
-	//return (x >> s) | (x << (32 - s));
-	return (x >> s) | (x << (sizeof(x) * CHAR_BIT - s));
-}
-
-static s32 rotl(u32 x, u32 s)
-{
-	//return (x << s) | (x >> (32 - s));
-	return (x << s) | (x >> (sizeof(x) * CHAR_BIT - s));
-}
-#endif
 
 static s32 __forceinline GetNoiseValues()
 {
@@ -294,42 +279,14 @@ static s32 __forceinline GetNoiseValues()
 		retval = (Seed&0xff) << 8;
 	else if( Seed&0xffff )
 		retval = 0x7fff;
-#ifdef _WIN32
-	__asm {
-		MOV eax,Seed
-		ROR eax,5
-		XOR eax,0x9a
-		MOV ebx,eax
-		ROL eax,2
-		ADD eax,ebx
-		XOR eax,ebx
-		ROR eax,3
-		MOV Seed,eax
-	}
-#elif !defined(__clang__) // Linux with GCC
-	__asm__ (
-		".intel_syntax\n"
-		"MOV %%eax,%1\n"
-		"ROR %%eax,5\n"
-		"XOR %%eax,0x9a\n"
-		"MOV %%esi,%%eax\n"
-		"ROL %%eax,2\n"
-		"ADD %%eax,%%esi\n"
-		"XOR %%eax,%%esi\n"
-		"ROR %%eax,3\n"
-		"MOV %0,%%eax\n"
-		".att_syntax\n" : "=r"(Seed) :"r"(Seed)
-		: "%eax", "%esi"
-		);
-#else // Clang and others
-	s32 s = rotr(Seed,5);
-	s ^= 0x9a;
-	s32 k = rotl(s,2);
-	k+=s;
-	k^=s;
-	k = rotr(k,3);
-	Seed=k;
-#endif
+
+	s32 x = _rotr(Seed, 0x5);
+	x ^= 0x9a;
+	s32 y = _rotl(x, 0x2);
+	y += x;
+	y ^= x;
+	Seed = _rotr(y, 0x3);
+
 	return retval;
 }
 /////////////////////////////////////////////////////////////////////////////////////////
