@@ -29,9 +29,6 @@
 extern uint64 g_real_texture_upload_byte;
 #endif
 
-// FIXME find the optimal number of PBO
-#define PBO_POOL_SIZE 8
-
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
 namespace PboPool {
 

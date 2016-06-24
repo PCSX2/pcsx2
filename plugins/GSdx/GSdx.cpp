@@ -275,6 +275,7 @@ GSdxApp::GSdxApp()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["filter"]                                     = "2";
+	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
 	m_default_configuration["large_framebuffer"]                          = "1";
