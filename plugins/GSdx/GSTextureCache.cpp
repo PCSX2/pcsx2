@@ -472,21 +472,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 		else  // Custom resolution hack
 		{
-			GSVector4i fr = m_renderer->GetFrameRect();
-
-			int ww = (int)(fr.left + m_renderer->GetDisplayRect().width());
-			int hh = (int)(fr.top + m_renderer->GetDisplayRect().height());
-
-			// Gregory: I'm sure this sillyness is related to the usage of a 32bits
-			// buffer as a 16 bits format. In this case the height of the buffer is
-			// multiplyed by 2 (Hence a scissor bigger than the RT)
-
-			// This vp2 fix doesn't work most of the time
-
-			if(hh < 512 && m_renderer->m_context->SCISSOR.SCAY1 == 511) // vp2
-			{
-				hh = 512;
-			}
+			int ww = m_renderer->GetDisplayRect().width();
+			int hh = m_renderer->GetDisplayRect().height();
 
 			if(ww && hh)
 			{
