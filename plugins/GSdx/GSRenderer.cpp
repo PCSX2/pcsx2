@@ -61,7 +61,7 @@ GSRenderer::~GSRenderer()
 
 	delete m_dev;
 
-	if (m_wnd)
+	if(m_wnd)
 	{
 		delete m_wnd;
 	}
@@ -100,7 +100,8 @@ bool GSRenderer::Merge(int field)
 	GSVector4i fr[2];
 	GSVector4i dr[2];
 
-	GSVector2i baseline = {INT_MAX, INT_MAX};
+	GSVector2i display_baseline = { INT_MAX, INT_MAX };
+	GSVector2i frame_baseline = { INT_MAX, INT_MAX };
 
 	for(int i = 0; i < 2; i++)
 	{
@@ -111,8 +112,10 @@ bool GSRenderer::Merge(int field)
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
 
-			baseline.x = min(dr[i].left, baseline.x);
-			baseline.y = min(dr[i].top, baseline.y);
+			display_baseline.x = min(dr[i].left, display_baseline.x);
+			display_baseline.y = min(dr[i].top, display_baseline.y);
+			frame_baseline.x = min(fr[i].left, frame_baseline.x);
+			frame_baseline.y = min(fr[i].top, frame_baseline.y);
 
 			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 		}
@@ -223,23 +226,33 @@ bool GSRenderer::Merge(int field)
 		src_hw[i] = (GSVector4(r) + GSVector4 (0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
 		GSVector2 off(0, 0);
-		GSVector2i diff(dr[i].left - baseline.x, dr[i].top - baseline.y);
+		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
+		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
 		// Time Crisis 2/3 uses two side by side images when in split screen mode.
 		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
-		if(diff.x >= 2)
+		if(display_diff.x > 2)
 		{
-			off.x = tex[i]->GetScale().x * diff.x;
+			off.x = tex[i]->GetScale().x * display_diff.x;
+		}
+		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
+		else if(display_diff.x || frame_diff.x)
+		{
+			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(diff.y >= 4) // Shouldn't this be 2?
+		if(display_diff.y >= 4) // Shouldn't this be 2?
 		{
-			off.y = tex[i]->GetScale().y * diff.y;
+			off.y = tex[i]->GetScale().y * display_diff.y;
 
 			if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 			{
 				off.y /= 2;
 			}
+		}
+		else if(display_diff.y || frame_diff.y)
+		{
+			off.y = tex[i]->GetScale().y * frame_diff.y;
 		}
 
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
@@ -274,7 +287,7 @@ bool GSRenderer::Merge(int field)
 
 		if(m_regs->SMODE2.INT && m_interlace > 0)
 		{
-			if (m_interlace == 7 && m_regs->SMODE2.FFMD == 1) // Auto interlace enabled / Odd frame interlace setting
+			if(m_interlace == 7 && m_regs->SMODE2.FFMD) // Auto interlace enabled / Odd frame interlace setting
 			{
 				int field2 = 0;
 				int mode = 2;
@@ -293,7 +306,7 @@ bool GSRenderer::Merge(int field)
 			m_dev->ShadeBoost();
 		}
 
-		if (m_shaderfx)
+		if(m_shaderfx)
 		{
 			m_dev->ExternalFX();
 		}
@@ -359,9 +372,9 @@ void GSRenderer::VSync(int field)
 		string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
-		if (1)//force verbose reply
+		if(1)//force verbose reply
 #else
-		if (m_wnd->IsManaged())
+		if(m_wnd->IsManaged())
 #endif
 		{
 			//GSdx owns the window's title, be verbose.
