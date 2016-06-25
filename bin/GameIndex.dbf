@@ -37332,6 +37332,11 @@ Name   = Midway Arcade Treasures
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
+Serial = SLUS-20801P
+Name   = Midway Arcade Treasures (Promotional Copy)
+Region = NTSC-U
+Compat = 5
+---------------------------------------------
 Serial = SLUS-20803
 Name   = The Bard's Tale
 Region = NTSC-U
