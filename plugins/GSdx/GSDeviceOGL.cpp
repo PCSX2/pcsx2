@@ -71,6 +71,7 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_date, 0, sizeof(m_date));
 	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
+	memset(&m_profiler, 0 , sizeof(m_profiler));
 	GLState::Clear();
 
 	// Reset the debug file
@@ -93,6 +94,10 @@ GSDeviceOGL::~GSDeviceOGL()
 		return;
 
 	GL_PUSH("GSDeviceOGL destructor");
+
+	if (GLLoader::in_replayer) {
+		GenerateProfilerData();
+	}
 
 	// Clean vertex buffer state
 	delete m_va;
@@ -137,6 +142,51 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
 	m_shader = NULL;
+}
+
+void GSDeviceOGL::GenerateProfilerData()
+{
+	if (m_profiler.last_query < 3) return;
+
+	// Point to the last query
+	m_profiler.last_query--;
+
+	// Wait latest quey to get valid result
+	GLuint available = 0;
+	while (!available) {
+		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
+	}
+
+	uint64 time_start;
+	uint64 time_end;
+
+	uint64 min_time = 0xFFFFFFFFFFFFFFFFull;
+	uint64 max_time = 0;
+	uint64 total    = 0;
+
+	glGetQueryObjectui64v(m_profiler.timer_query[0], GL_QUERY_RESULT, &time_start);
+	for (uint32 q = 1; q < m_profiler.last_query; q++) {
+		glGetQueryObjectui64v(m_profiler.timer_query[q], GL_QUERY_RESULT, &time_end);
+		uint64 t = time_end - time_start;
+
+		min_time = std::min(t, min_time);
+		max_time = std::max(t, max_time);
+		total   += t;
+
+		time_start = time_end;
+	}
+
+	glDeleteQueries(1 << 16, m_profiler.timer_query);
+
+	// FIXME remove 1/linux_replay frame info
+	// Add fps, deviation
+	// remove glFinish
+
+	double ms = 0.000001;
+	fprintf(stderr, "\nGenerateProfilerData:\n");
+	fprintf(stderr, "Min  %f\n", (double)min_time * ms);
+	fprintf(stderr, "Mean %f\n", (double)total/(double)m_profiler.last_query * ms);
+	fprintf(stderr, "Max  %f\n", (double)max_time * ms);
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
@@ -248,6 +298,11 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+		// Some timers to help profiling
+		if (GLLoader::in_replayer) {
+			glCreateQueries(GL_TIMESTAMP, 1 << 16, m_profiler.timer_query);
+		}
 	}
 
 	// ****************************************************************
@@ -504,6 +559,11 @@ void GSDeviceOGL::Flip()
 	#endif
 
 	m_wnd->Flip();
+
+	if (GLLoader::in_replayer) {
+		glQueryCounter(m_profiler.timer(), GL_TIMESTAMP);
+		m_profiler.last_query++;
+	}
 }
 
 void GSDeviceOGL::BeforeDraw()

@@ -1689,7 +1689,9 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		// Ensure the rendering is complete to measure correctly the time.
 		glFinish();
 
-		if (finished > 90) {
+		if (finished >= 200) {
+			; // Nop for Nvidia Profiler
+		} else if (finished > 90) {
 			sleep(1);
 		} else {
 			unsigned long end = timeGetTime();
@@ -1724,7 +1726,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		fprintf(stderr, "\n\nMean: %fms\n", mean);
 		fprintf(stderr, "Standard deviation: %fms\n", sd);
 		fprintf(stderr, "Mean by frame: %fms (%ffps)\n", mean/(float)frame_number, 1000.0f*frame_number/mean);
-		fprintf(stderr, "Standard deviatin by frame: %fms\n", sd/(float)frame_number);
+		fprintf(stderr, "Standard deviation by frame: %fms\n", sd/(float)frame_number);
 	}
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	total_frame_nb *= 1024;
@@ -1748,4 +1750,3 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	GSshutdown();
 }
 #endif
-

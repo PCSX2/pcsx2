@@ -84,15 +84,17 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glClientWaitSync);
 	GL_EXT_LOAD(glFlushMappedBufferRange);
 	// Query object
-	GL_EXT_LOAD(glBeginQuery);
-	GL_EXT_LOAD(glEndQuery);
-	GL_EXT_LOAD(glGetQueryiv);
-	GL_EXT_LOAD(glGetQueryObjectiv);
-	GL_EXT_LOAD(glGetQueryObjectuiv);
-	GL_EXT_LOAD(glQueryCounter);
-	GL_EXT_LOAD(glGetQueryObjecti64v);
-	GL_EXT_LOAD(glGetQueryObjectui64v);
-	GL_EXT_LOAD(glGetInteger64v);
+	GL_EXT_LOAD_OPT(glBeginQuery);
+	GL_EXT_LOAD_OPT(glEndQuery);
+	GL_EXT_LOAD_OPT(glGetQueryiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectuiv);
+	GL_EXT_LOAD_OPT(glQueryCounter);
+	GL_EXT_LOAD_OPT(glGetQueryObjecti64v);
+	GL_EXT_LOAD_OPT(glGetQueryObjectui64v);
+	GL_EXT_LOAD_OPT(glGetInteger64v);
+	GL_EXT_LOAD_OPT(glCreateQueries);
+	GL_EXT_LOAD_OPT(glDeleteQueries);
 	// GL4.0
 	GL_EXT_LOAD_OPT(glBlendEquationSeparateiARB);
 	GL_EXT_LOAD_OPT(glBlendFuncSeparateiARB);

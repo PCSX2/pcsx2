@@ -268,6 +268,8 @@ extern   PFNGLQUERYCOUNTERPROC                  glQueryCounter;
 extern   PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v;
 extern   PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v;
 extern   PFNGLGETINTEGER64VPROC                 glGetInteger64v;
+extern   PFNGLCREATEQUERIESPROC                 glCreateQueries;
+extern   PFNGLDELETEQUERIESPROC                 glDeleteQueries;
 // GL4.0
 // GL4.1
 extern   PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline;
