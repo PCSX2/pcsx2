@@ -157,8 +157,8 @@ void GSDeviceOGL::GenerateProfilerData()
 		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
 	}
 
-	uint64 time_start;
-	uint64 time_end;
+	GLuint64 time_start;
+	GLuint64 time_end;
 	std::vector<double> times;
 	double ms       = 0.000001;
 
@@ -192,7 +192,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	fprintf(stderr, "Min  %4.2f ms\t(%4.2f fps)\n", *minmax_time.first, 1000.0 / *minmax_time.first);
 	fprintf(stderr, "Mean %4.2f ms\t(%4.2f fps)\n", mean, 1000.0 / mean);
 	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
-	fprintf(stderr, "SD   %4.2f ms\t(%4.2f fps)\n", sd, 1000.0 / sd);
+	fprintf(stderr, "SD   %4.2f ms\n", sd);
 	fprintf(stderr, "\n");
 }
 
