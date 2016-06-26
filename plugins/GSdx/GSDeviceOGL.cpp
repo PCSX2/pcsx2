@@ -159,34 +159,41 @@ void GSDeviceOGL::GenerateProfilerData()
 
 	uint64 time_start;
 	uint64 time_end;
+	std::vector<double> times;
+	double ms       = 0.000001;
 
-	uint64 min_time = 0xFFFFFFFFFFFFFFFFull;
-	uint64 max_time = 0;
-	uint64 total    = 0;
+	float replay    = (float)(theApp.GetConfigI("linux_replay"));
+	int first_query = (float)m_profiler.last_query / replay;
 
-	glGetQueryObjectui64v(m_profiler.timer_query[0], GL_QUERY_RESULT, &time_start);
-	for (uint32 q = 1; q < m_profiler.last_query; q++) {
+	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
+	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++) {
 		glGetQueryObjectui64v(m_profiler.timer_query[q], GL_QUERY_RESULT, &time_end);
 		uint64 t = time_end - time_start;
-
-		min_time = std::min(t, min_time);
-		max_time = std::max(t, max_time);
-		total   += t;
+		times.push_back((double)t * ms);
 
 		time_start = time_end;
 	}
 
 	glDeleteQueries(1 << 16, m_profiler.timer_query);
 
-	// FIXME remove 1/linux_replay frame info
-	// Add fps, deviation
-	// remove glFinish
+	double frames    = times.size();
+	double mean      = 0.0;
+	double sd        = 0.0;
 
-	double ms = 0.000001;
-	fprintf(stderr, "\nGenerateProfilerData:\n");
-	fprintf(stderr, "Min  %f\n", (double)min_time * ms);
-	fprintf(stderr, "Mean %f\n", (double)total/(double)m_profiler.last_query * ms);
-	fprintf(stderr, "Max  %f\n", (double)max_time * ms);
+	auto minmax_time = std::minmax_element(times.begin(), times.end());
+
+	for (auto t : times) mean += t;
+	mean = mean / frames;
+
+	for (auto t : times) sd += pow(t-mean, 2);
+	sd = sqrt(sd / frames);
+
+	fprintf(stderr, "\nPerformance Profile for %.0f frames:\n", frames);
+	fprintf(stderr, "Min  %4.2f ms\t(%4.2f fps)\n", *minmax_time.first, 1000.0 / *minmax_time.first);
+	fprintf(stderr, "Mean %4.2f ms\t(%4.2f fps)\n", mean, 1000.0 / mean);
+	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
+	fprintf(stderr, "SD   %4.2f ms\t(%4.2f fps)\n", sd, 1000.0 / sd);
+	fprintf(stderr, "\n");
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
