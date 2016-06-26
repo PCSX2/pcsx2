@@ -464,22 +464,26 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(m_renderer->CanUpscale())
 	{
-		int multiplier = m_renderer->GetUpscaleMultiplier();
+		float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
+		GSVector2 scale_factor(multiplier, multiplier);
 
-		if(multiplier > 1)
+		if(!multiplier) //Custom Resolution
 		{
-			dst->m_texture->SetScale(GSVector2((float)multiplier, (float)multiplier));
-		}
-		else  // Custom resolution hack
-		{
-			int ww = m_renderer->GetDisplayRect().width();
-			int hh = m_renderer->GetDisplayRect().height();
+			int width = m_renderer->GetDisplayRect().width();
+			int height = m_renderer->GetDisplayRect().height();
+			int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / dst->m_texture->GetScale().y));
 
-			if(ww && hh)
-			{
-				dst->m_texture->SetScale(GSVector2((float)w / ww, (float)h / hh));
-			}
+			// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
+			if(real_height % height == 1)
+				height = real_height;
+
+			GSVector2i custom_resolution = m_renderer->GetCustomResolution();
+			scale_factor.x = static_cast<float>(custom_resolution.x) / width;
+			scale_factor.y = static_cast<float>(custom_resolution.y) / height;
 		}
+
+		if(scale_factor.x && scale_factor.y)
+			dst->m_texture->SetScale(scale_factor);
 	}
 
 	if(used)

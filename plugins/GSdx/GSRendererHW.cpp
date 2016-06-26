@@ -44,8 +44,8 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
-		m_width  = theApp.GetConfigI("resx");
-		m_height = theApp.GetConfigI("resy");
+		m_custom_width = m_width = theApp.GetConfigI("resx");
+		m_custom_height = m_height = theApp.GetConfigI("resy");
 	}
 
 	if (m_upscale_multiplier == 1) { // hacks are only needed for upscaling issues.
@@ -103,6 +103,20 @@ void GSRendererHW::SetScaling()
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
 	bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
+	bool initialized_register_state = (m_context->FRAME.FBW > 1) && (crtc_size.y > 1);
+
+	if (!m_upscale_multiplier && initialized_register_state)
+	{
+		if (m_height == m_custom_height)
+		{
+			float ratio = ceil(static_cast<float>(m_height) / crtc_size.y);
+			float buffer_scale_offset = (m_large_framebuffer) ? ratio : 0.5f;
+			ratio = round(ratio + buffer_scale_offset);
+
+			m_tc->RemovePartial();
+			m_height = crtc_size.y * ratio;
+		}
+	}
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
@@ -139,8 +153,12 @@ bool GSRendererHW::CanUpscale()
 
 int GSRendererHW::GetUpscaleMultiplier()
 {
-	// Custom resolution (currently 0) needs an upscale multiplier of 1.
-	return m_upscale_multiplier ? m_upscale_multiplier : 1;
+	return m_upscale_multiplier;
+}
+
+GSVector2i GSRendererHW::GetCustomResolution()
+{
+	return GSVector2i(m_custom_width, m_custom_height);
 }
 
 void GSRendererHW::Reset()
