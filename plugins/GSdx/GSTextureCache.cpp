@@ -1852,7 +1852,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 
 bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
 {
-	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.x, rect.y, bp, bw);
+	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.width(), rect.height(), bp, bw);
 
 	return bp > m_TEX0.TBP0 && block < m_end_block;
 }
