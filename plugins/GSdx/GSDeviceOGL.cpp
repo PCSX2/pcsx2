@@ -706,7 +706,14 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 	GL_PUSH("Clear Depth %d", T->GetID());
 
-	if (GLLoader::found_GL_ARB_clear_texture) {
+	if (0 && GLLoader::found_GL_ARB_clear_texture) {
+		// I don't know what the driver does but it creates
+		// some slowdowns on Harry Potter PS
+		// Maybe it triggers some texture relocations, or maybe
+		// it clears also the stencil value (2 times slower)
+		//
+		// Let's disable this code for the moment.
+
 		// Don't bother with Depth_Stencil insanity
 		ASSERT(c == 0.0f);
 		T->Clear(NULL);
