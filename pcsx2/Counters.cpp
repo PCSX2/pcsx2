@@ -156,7 +156,7 @@ void rcntInit()
 	vsyncCounter.sCycle = cpuRegs.cycle;
 
 	// Set the video mode to user's default request:
-	gsSetRegionMode( (GS_RegionMode)EmuConfig.GS.DefaultRegionMode );
+	gsSetVideoMode( (GS_VideoMode)EmuConfig.GS.DefaultVideoMode );
 
 	for (i=0; i<4; i++) rcntReset(i);
 	cpuRcntSet();
@@ -173,7 +173,7 @@ static u64 m_iStart=0;
 struct vSyncTimingInfo
 {
 	Fixed100 Framerate;		// frames per second (8 bit fixed)
-	GS_RegionMode RegionMode; // used to detect change (interlaced/progressive)
+	GS_VideoMode VideoMode; // used to detect change (interlaced/progressive)
 	u32 Render;				// time from vblank end to vblank start (cycles)
 	u32 Blank;				// time from vblank start to vblank end (cycles)
 
@@ -214,7 +214,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 hBlank = Scanline / 2;
 	u64 hRender = Scanline - hBlank;
 
-	if (gsRegionMode == Region_NTSC_PROGRESSIVE)
+	if (gsVideoMode == GS_VideoMode::PROGRESSIVE)
 	{
 		hBlank /= 2;
 		hRender /= 2;
@@ -236,7 +236,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	else if ((hBlank - info->hBlank) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
-	if (gsRegionMode != Region_NTSC_PROGRESSIVE) // gets off the chart in that mode
+	if (gsVideoMode != GS_VideoMode::PROGRESSIVE) // gets off the chart in that mode
 	{
 		u32 hSyncCycles = ((info->hRender + info->hBlank) * scansPerFrame) / 2;
 		u32 vSyncCycles = (info->Render + info->Blank);
@@ -262,33 +262,33 @@ u32 UpdateVSyncRate()
 	u32			scanlines = 0;
 	bool		isCustom  = false;
 
-	if( gsRegionMode == Region_PAL )
+	if(gsVideoMode == GS_VideoMode::PAL )
 	{
 		isCustom = (EmuConfig.GS.FrameratePAL != 50.0);
 		framerate = EmuConfig.GS.FrameratePAL / 2;
 		scanlines = SCANLINES_TOTAL_PAL;
 		if (!gsIsInterlaced) scanlines += 3;
 	}
-	else if ( gsRegionMode == Region_NTSC )
+	else if (gsVideoMode == GS_VideoMode::NTSC )
 	{
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
 	}
-	else if ( gsRegionMode == Region_NTSC_PROGRESSIVE )
+	else if (gsVideoMode == GS_VideoMode::PROGRESSIVE )
 	{
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 	}
 
-	if (vSyncInfo.Framerate != framerate || vSyncInfo.RegionMode != gsRegionMode)
+	if (vSyncInfo.Framerate != framerate || vSyncInfo.VideoMode != gsVideoMode)
 	{
-		vSyncInfo.RegionMode = gsRegionMode;
+		vSyncInfo.VideoMode = gsVideoMode;
 		vSyncInfoCalc( &vSyncInfo, framerate, scanlines );
-		Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ( gsRegionMode == Region_PAL ) ? "PAL" : 
-			( gsRegionMode == Region_NTSC ) ? "NTSC" : "NTSC Progressive Scan" );
+		Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", (gsVideoMode == GS_VideoMode::PAL ) ? "PAL" :
+			(gsVideoMode == GS_VideoMode::NTSC ) ? "NTSC" : "NTSC Progressive Scan" );
 		
 		if( isCustom )
 			Console.Indent().WriteLn( Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", 2 * framerate.ToFloat() );
