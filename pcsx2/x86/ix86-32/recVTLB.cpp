@@ -327,7 +327,7 @@ void vtlb_dynarec_init()
 			{
 				xSetPtr( GetIndirectDispatcherPtr( mode, bits, !!sign ) );
 
-				DynGen_IndirectTlbDispatcher( mode, bits, sign );
+				DynGen_IndirectTlbDispatcher( mode, bits, !!sign );
 			}
 		}
 	}
