@@ -163,7 +163,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	double ms       = 0.000001;
 
 	float replay    = (float)(theApp.GetConfigI("linux_replay"));
-	int first_query = (float)m_profiler.last_query / replay;
+	int first_query = static_cast<int>((float)m_profiler.last_query / replay);
 
 	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
 	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++) {
@@ -1658,7 +1658,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	{
 		GLState::viewport = size;
 		// FIXME ViewportIndexedf or ViewportIndexedfv (GL4.1)
-		glViewportIndexedf(0, 0, 0, size.x, size.y);
+		glViewportIndexedf(0, 0, 0, GLfloat(size.x), GLfloat(size.y));
 	}
 
 	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
