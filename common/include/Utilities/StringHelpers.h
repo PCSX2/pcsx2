@@ -132,6 +132,7 @@ struct ParsedAssignmentString
 //    accepts Ascii/UTF8 only.
 //
 
+typedef ScopedAlignedAlloc<char, 16> CharBufferType;
 // --------------------------------------------------------------------------------------
 //  FastFormatAscii 
 // --------------------------------------------------------------------------------------
@@ -139,9 +140,8 @@ struct ParsedAssignmentString
 class FastFormatAscii
 {
 protected:
-	ScopedAlignedAlloc<char,16>*	m_dest;
-	bool				m_deleteDest;
-	
+	CharBufferType m_dest;
+
 public:
 	FastFormatAscii();
 	~FastFormatAscii() throw();
@@ -151,8 +151,8 @@ public:
 	void Clear();
 	bool IsEmpty() const;
 
-	const char* c_str() const		{ return m_dest->GetPtr(); }
-	operator const char*() const	{ return m_dest->GetPtr(); }
+	const char* c_str() const		{ return m_dest.GetPtr(); }
+	operator const char*() const	{ return m_dest.GetPtr(); }
 
 	const wxString GetString() const;
 	//operator wxString() const;
@@ -182,9 +182,8 @@ public:
 class FastFormatUnicode
 {
 protected:
-	ScopedAlignedAlloc<char,16>*	m_dest;
-	bool				m_deleteDest;
-	uint				m_Length;
+	CharBufferType m_dest;
+	uint m_Length;
 
 public:
 	FastFormatUnicode();
@@ -203,9 +202,9 @@ public:
 	FastFormatUnicode& ToUpper();
 	FastFormatUnicode& ToLower();
 
-	const wxChar* c_str() const		{ return (const wxChar*)m_dest->GetPtr(); }
-	operator const wxChar*() const	{ return (const wxChar*)m_dest->GetPtr(); }
-	operator wxString() const		{ return (const wxChar*)m_dest->GetPtr(); }
+	const wxChar* c_str() const		{ return (const wxChar*)m_dest.GetPtr(); }
+	operator const wxChar*() const	{ return (const wxChar*)m_dest.GetPtr(); }
+	operator wxString() const		{ return (const wxChar*)m_dest.GetPtr(); }
 
 	FastFormatUnicode& operator+=(const wxString& s)
 	{
