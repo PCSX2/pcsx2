@@ -52,6 +52,7 @@ FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_msaa(0)
+	, m_force_texture_clear(0)
 	, m_window(NULL)
 	, m_fbo(0)
 	, m_fbo_read(0)
@@ -70,6 +71,7 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_date, 0, sizeof(m_date));
 	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
+	memset(&m_profiler, 0 , sizeof(m_profiler));
 	GLState::Clear();
 
 	// Reset the debug file
@@ -92,6 +94,10 @@ GSDeviceOGL::~GSDeviceOGL()
 		return;
 
 	GL_PUSH("GSDeviceOGL destructor");
+
+	if (GLLoader::in_replayer) {
+		GenerateProfilerData();
+	}
 
 	// Clean vertex buffer state
 	delete m_va;
@@ -138,6 +144,58 @@ GSDeviceOGL::~GSDeviceOGL()
 	m_shader = NULL;
 }
 
+void GSDeviceOGL::GenerateProfilerData()
+{
+	if (m_profiler.last_query < 3) return;
+
+	// Point to the last query
+	m_profiler.last_query--;
+
+	// Wait latest quey to get valid result
+	GLuint available = 0;
+	while (!available) {
+		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
+	}
+
+	GLuint64 time_start;
+	GLuint64 time_end;
+	std::vector<double> times;
+	double ms       = 0.000001;
+
+	float replay    = (float)(theApp.GetConfigI("linux_replay"));
+	int first_query = (float)m_profiler.last_query / replay;
+
+	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
+	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++) {
+		glGetQueryObjectui64v(m_profiler.timer_query[q], GL_QUERY_RESULT, &time_end);
+		uint64 t = time_end - time_start;
+		times.push_back((double)t * ms);
+
+		time_start = time_end;
+	}
+
+	glDeleteQueries(1 << 16, m_profiler.timer_query);
+
+	double frames    = times.size();
+	double mean      = 0.0;
+	double sd        = 0.0;
+
+	auto minmax_time = std::minmax_element(times.begin(), times.end());
+
+	for (auto t : times) mean += t;
+	mean = mean / frames;
+
+	for (auto t : times) sd += pow(t-mean, 2);
+	sd = sqrt(sd / frames);
+
+	fprintf(stderr, "\nPerformance Profile for %.0f frames:\n", frames);
+	fprintf(stderr, "Min  %4.2f ms\t(%4.2f fps)\n", *minmax_time.first, 1000.0 / *minmax_time.first);
+	fprintf(stderr, "Mean %4.2f ms\t(%4.2f fps)\n", mean, 1000.0 / mean);
+	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
+	fprintf(stderr, "SD   %4.2f ms\n", sd);
+	fprintf(stderr, "\n");
+}
+
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
 {
 	GL_PUSH("Create surface");
@@ -150,15 +208,19 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 	}
 
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
-	switch(type)
-	{
-		case GSTexture::RenderTarget:
-			ClearRenderTarget(t, 0);
-			break;
-		case GSTexture::DepthStencil:
-			ClearDepth(t, 0);
-			// No need to clear the stencil now.
-			break;
+	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
+	//  of the texture. However we could reuse a deleted texture.
+	if (m_force_texture_clear == 0) {
+		switch(type)
+		{
+			case GSTexture::RenderTarget:
+				ClearRenderTarget(t, 0);
+				break;
+			case GSTexture::DepthStencil:
+				ClearDepth(t, 0);
+				// No need to clear the stencil now.
+				break;
+		}
 	}
 
 	return t;
@@ -166,7 +228,31 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 
 GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int format)
 {
-	return GSDevice::FetchSurface(type, w, h, false, format);
+	GSTexture* t = GSDevice::FetchSurface(type, w, h, false, format);
+
+
+	if (m_force_texture_clear) {
+		GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
+		switch(type)
+		{
+			case GSTexture::RenderTarget:
+				ClearRenderTarget(t, 0);
+				break;
+			case GSTexture::DepthStencil:
+				ClearDepth(t, 0);
+				// No need to clear the stencil now.
+				break;
+			case GSTexture::Texture:
+				if (m_force_texture_clear > 1)
+					static_cast<GSTextureOGL*>(t)->Clear((void*)&red);
+				else if (m_force_texture_clear)
+					static_cast<GSTextureOGL*>(t)->Clear(NULL);
+
+				break;
+		}
+	}
+
+	return t;
 }
 
 bool GSDeviceOGL::Create(GSWnd* wnd)
@@ -194,6 +280,8 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	}
 #endif
 
+	m_force_texture_clear = theApp.GetConfigI("force_texture_clear");
+
 	// WARNING it must be done after the control setup (at least on MESA)
 	GL_PUSH("GSDeviceOGL::Create");
 
@@ -217,6 +305,11 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+		// Some timers to help profiling
+		if (GLLoader::in_replayer) {
+			glCreateQueries(GL_TIMESTAMP, 1 << 16, m_profiler.timer_query);
+		}
 	}
 
 	// ****************************************************************
@@ -473,6 +566,11 @@ void GSDeviceOGL::Flip()
 	#endif
 
 	m_wnd->Flip();
+
+	if (GLLoader::in_replayer) {
+		glQueryCounter(m_profiler.timer(), GL_TIMESTAMP);
+		m_profiler.last_query++;
+	}
 }
 
 void GSDeviceOGL::BeforeDraw()

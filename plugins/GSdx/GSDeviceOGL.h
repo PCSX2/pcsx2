@@ -398,6 +398,7 @@ public:
 
 	private:
 	uint32 m_msaa;				// Level of Msaa
+	int m_force_texture_clear;
 
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
@@ -448,6 +449,13 @@ public:
 		GLuint ps;
 	} m_shadeboost;
 
+	struct {
+		uint16 last_query;
+		GLuint timer_query[1<<16];
+
+		GLuint timer() { return timer_query[last_query]; }
+	} m_profiler;
+
 	GLuint m_vs[1];
 	GLuint m_gs[1<<2];
 	GLuint m_ps_ss[1<<4];
@@ -482,6 +490,8 @@ public:
 
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
+
+	void GenerateProfilerData();
 
 	static void CheckDebugLog();
 	// Used by OpenGL, so the same calling convention is required.
@@ -553,7 +563,6 @@ public:
 	void SelfShaderTestPrint(const string& test, int& nb_shader);
 	void SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader);
 	void SelfShaderTest();
-
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);

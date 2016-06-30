@@ -100,6 +100,8 @@ PFNGLQUERYCOUNTERPROC                  glQueryCounter                      = NUL
 PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v                = NULL;
 PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v               = NULL;
 PFNGLGETINTEGER64VPROC                 glGetInteger64v                     = NULL;
+PFNGLCREATEQUERIESPROC                 glCreateQueries                     = NULL;
+PFNGLDELETEQUERIESPROC                 glDeleteQueries                     = NULL;
 // GL4.0
 // GL4.1
 PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline               = NULL;

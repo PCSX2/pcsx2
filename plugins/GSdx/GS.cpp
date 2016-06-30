@@ -1528,8 +1528,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	list<Packet*> packets;
 	vector<uint8> buff;
-	vector<float> stats;
-	stats.clear();
 	uint8 regs[0x2000];
 
 	GSinit();
@@ -1640,11 +1638,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		finished = 1;
 	}
 	unsigned long frame_number = 0;
-	unsigned long total_frame_nb = 0;
 	while(finished > 0)
 	{
-		frame_number = 0;
-		unsigned long start = timeGetTime();
 		for(auto i = packets.begin(); i != packets.end(); i++)
 		{
 			Packet* p = *i;
@@ -1686,48 +1681,17 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			}
 		}
 
-		// Ensure the rendering is complete to measure correctly the time.
-		glFinish();
-
-		if (finished > 90) {
+		if (finished >= 200) {
+			; // Nop for Nvidia Profiler
+		} else if (finished > 90) {
 			sleep(1);
 		} else {
-			unsigned long end = timeGetTime();
-			frame_number = std::max(1ul, frame_number); // avoid a potential division by 0
-
-			fprintf(stderr, "The %ld frames of the scene was render on %ldms\n", frame_number, end - start);
-			fprintf(stderr, "A means of %fms by frame\n", (float)(end - start)/(float)frame_number);
-
-			stats.push_back((float)(end - start));
-
 			finished--;
-			total_frame_nb += frame_number;
 		}
 	}
 
-	if (theApp.GetConfigI("linux_replay") > 1) {
-		// Print some nice stats
-		// Skip first frame (shader compilation populate the result)
-		// it divides by 10 the standard deviation...
-		float n = (float)theApp.GetConfigI("linux_replay") - 1.0f;
-		float mean = 0;
-		float sd = 0;
-		for (auto i = stats.begin()+1; i != stats.end(); i++) {
-			mean += *i;
-		}
-		mean = mean/n;
-		for (auto i = stats.begin()+1; i != stats.end(); i++) {
-			sd += pow((*i)-mean, 2);
-		}
-		sd = sqrt(sd/n);
-
-		fprintf(stderr, "\n\nMean: %fms\n", mean);
-		fprintf(stderr, "Standard deviation: %fms\n", sd);
-		fprintf(stderr, "Mean by frame: %fms (%ffps)\n", mean/(float)frame_number, 1000.0f*frame_number/mean);
-		fprintf(stderr, "Standard deviatin by frame: %fms\n", sd/(float)frame_number);
-	}
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-	total_frame_nb *= 1024;
+	unsigned long total_frame_nb = std::max(1ul, frame_number) << 10;
 	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
 			(float)g_real_texture_upload_byte/(float)total_frame_nb,
 			(float)g_vertex_upload_byte/(float)total_frame_nb,
@@ -1748,4 +1712,3 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	GSshutdown();
 }
 #endif
-
