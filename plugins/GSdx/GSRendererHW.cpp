@@ -114,7 +114,8 @@ void GSRendererHW::SetScaling()
 			ratio = round(ratio + buffer_scale_offset);
 
 			m_tc->RemovePartial();
-			m_height = crtc_size.y * ratio;
+			m_width = max(m_width, 1280);
+			m_height = max(static_cast<int>(crtc_size.y * ratio) , 1024);
 		}
 	}
 
