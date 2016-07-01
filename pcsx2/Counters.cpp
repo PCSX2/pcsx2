@@ -155,9 +155,6 @@ void rcntInit()
 	vsyncCounter.Mode = MODE_VRENDER;
 	vsyncCounter.sCycle = cpuRegs.cycle;
 
-	// Set the video mode to user's default request:
-	gsSetVideoMode( (GS_VideoMode)EmuConfig.GS.DefaultVideoMode );
-
 	for (i=0; i<4; i++) rcntReset(i);
 	cpuRcntSet();
 }

@@ -288,11 +288,6 @@ struct Pcsx2Config
 		bool	FrameSkipEnable;
 		bool	VsyncEnable;
 
-		// The region mode controls the default Maximum/Minimum FPS settings and also
-		// regulates the vsync rates (which in turn control the IOP's SPU2 tick sync and ensure
-		// proper audio playback speed).
-		int		DefaultVideoMode;	// 0=NTSC and 1=PAL
-
 		int		FramesToDraw;	// number of consecutive frames (fields) to render
 		int		FramesToSkip;	// number of consecutive frames (fields) to skip
 
@@ -318,7 +313,6 @@ struct Pcsx2Config
 				OpEqu( FramerateNTSC )			&&
 				OpEqu( FrameratePAL )			&&
 
-				OpEqu( DefaultVideoMode )		&&
 				OpEqu( FramesToDraw )			&&
 				OpEqu( FramesToSkip );
 		}

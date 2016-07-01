@@ -206,7 +206,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableOutput			= false;
 	VsyncQueueSize			= 2;
 
-	DefaultVideoMode		= NTSC;
 	FramesToDraw			= 2;
 	FramesToSkip			= 2;
 
@@ -230,10 +229,6 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 	IniEntry( LimitScalar );
 	IniEntry( FramerateNTSC );
 	IniEntry( FrameratePAL );
-
-	// WARNING: array must be NULL terminated to compute it size
-	static const wxChar * const ntsc_pal_str[3] =  { L"ntsc", L"pal", NULL };
-	ini.EnumEntry( L"DefaultRegionMode", DefaultVideoMode, ntsc_pal_str, DefaultVideoMode );
 
 	IniEntry( FramesToDraw );
 	IniEntry( FramesToSkip );
