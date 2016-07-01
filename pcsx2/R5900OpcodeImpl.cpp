@@ -927,10 +927,10 @@ void SYSCALL()
 						case 0x73: mode = "DVD PAL 720x480 @ ??.???"; gsSetVideoMode(GS_VideoMode::BIOS); break;
 
 						default:
-							Console.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
 							gsSetVideoMode(GS_VideoMode::Unknown);
 					}
-					Console.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
 				}
 				break;
 
