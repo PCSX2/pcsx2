@@ -58,6 +58,13 @@ static void rcntWmode(int index, u32 value);
 static void rcntWtarget(int index, u32 value);
 static void rcntWhold(int index, u32 value);
 
+static bool IsAnalogVideoMode()
+{
+	if (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC)
+		return true;
+
+	return false;
+}
 
 void rcntReset(int index) {
 	counters[index].count = 0;
@@ -211,7 +218,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 hBlank = Scanline / 2;
 	u64 hRender = Scanline - hBlank;
 
-	if (gsVideoMode == GS_VideoMode::PROGRESSIVE)
+	if (!IsAnalogVideoMode())
 	{
 		hBlank /= 2;
 		hRender /= 2;
@@ -233,7 +240,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	else if ((hBlank - info->hBlank) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
-	if (gsVideoMode != GS_VideoMode::PROGRESSIVE) // gets off the chart in that mode
+	if (IsAnalogVideoMode()) // gets off the chart in that mode
 	{
 		u32 hSyncCycles = ((info->hRender + info->hBlank) * scansPerFrame) / 2;
 		u32 vSyncCycles = (info->Render + info->Blank);
@@ -246,6 +253,22 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	// is thus not worth the effort at this time.
 }
 
+static const char* ReportVideoMode()
+{
+	switch (gsVideoMode)
+	{
+	case GS_VideoMode::PAL:        return "PAL";
+	case GS_VideoMode::NTSC:       return "NTSC";
+	case GS_VideoMode::VESA:       return "VESA";
+	case GS_VideoMode::BIOS:       return "BIOS";
+	case GS_VideoMode::HDTV_480P:  return "HDTV 480p";
+	case GS_VideoMode::HDTV_576P:  return "HDTV 576p";
+	case GS_VideoMode::HDTV_720P:  return "HDTV 720p";
+	case GS_VideoMode::HDTV_1080I: return "HDTV 1080i";
+	case GS_VideoMode::HDTV_1080P: return "HDTV 1080p";
+	default:                       return "Unknown";
+	}
+}
 
 u32 UpdateVSyncRate()
 {
@@ -259,35 +282,64 @@ u32 UpdateVSyncRate()
 	u32			scanlines = 0;
 	bool		isCustom  = false;
 
-	if(gsVideoMode == GS_VideoMode::PAL )
+	//Set up scanlines and framerate based on video mode
+	switch (gsVideoMode)
 	{
+	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
+		framerate = 60;
+		scanlines = SCANLINES_TOTAL_NTSC;
+		break;
+
+	case GS_VideoMode::PAL:
 		isCustom = (EmuConfig.GS.FrameratePAL != 50.0);
 		framerate = EmuConfig.GS.FrameratePAL / 2;
 		scanlines = SCANLINES_TOTAL_PAL;
 		if (!gsIsInterlaced) scanlines += 3;
-	}
-	else if (gsVideoMode == GS_VideoMode::NTSC )
-	{
+		break;
+
+	case GS_VideoMode::NTSC:
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
-	}
-	else if (gsVideoMode == GS_VideoMode::PROGRESSIVE )
-	{
-		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
-		framerate = EmuConfig.GS.FramerateNTSC / 2;
+		break;
+
+	case GS_VideoMode::HDTV_480P:
+		framerate = 29.97;
 		scanlines = SCANLINES_TOTAL_NTSC;
+		break;
+
+	case GS_VideoMode::HDTV_1080P:
+	case GS_VideoMode::HDTV_1080I:
+	case GS_VideoMode::HDTV_576P:
+	case GS_VideoMode::HDTV_720P:
+	case GS_VideoMode::VESA:
+	case GS_VideoMode::BIOS:
+		framerate = 30;
+		scanlines = SCANLINES_TOTAL_NTSC;
+		break;
+
+	// Falls through to unknown when unidentified mode parameter of SetGsCrt is detected.
+	case GS_VideoMode::Unknown:
+		// For Release builds, keep using the NTSC timing values when unknown video mode is detected.
+		// Assert will be triggered for debug/dev builds.
+		framerate = FRAMERATE_NTSC;
+		scanlines = SCANLINES_TOTAL_NTSC;
+		Console.Error("PCSX2-Counters: Unknown video mode detected");
+
+	default:
+		pxAssertDev(false , "Unknown video mode detected via SetGsCrt");
 	}
 
+	bool ActiveVideoMode = gsVideoMode != GS_VideoMode::Uninitialized;
 	if (vSyncInfo.Framerate != framerate || vSyncInfo.VideoMode != gsVideoMode)
 	{
 		vSyncInfo.VideoMode = gsVideoMode;
 		vSyncInfoCalc( &vSyncInfo, framerate, scanlines );
-		Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", (gsVideoMode == GS_VideoMode::PAL ) ? "PAL" :
-			(gsVideoMode == GS_VideoMode::NTSC ) ? "NTSC" : "NTSC Progressive Scan" );
+		if(ActiveVideoMode)
+			Console.WriteLn( Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ReportVideoMode());
 		
-		if( isCustom )
+		if( isCustom && ActiveVideoMode)
 			Console.Indent().WriteLn( Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", 2 * framerate.ToFloat() );
 
 		hsyncCounter.CycleT = vSyncInfo.hRender;	// Amount of cycles before the counter will be updated
@@ -306,7 +358,8 @@ u32 UpdateVSyncRate()
 	{
 		m_iTicks = ticks;
 		gsOnModeChanged( vSyncInfo.Framerate, m_iTicks );
-		Console.WriteLn( Color_Green, "(UpdateVSyncRate) FPS Limit Changed : %.02f fps", fpslimit.ToFloat()*2 );
+		if (ActiveVideoMode)
+			Console.WriteLn( Color_Green, "(UpdateVSyncRate) FPS Limit Changed : %.02f fps", fpslimit.ToFloat()*2 );
 	}
 
 	m_iStart = GetCPUTicks();

@@ -219,9 +219,17 @@ struct GSRegSIGBLID
 
 enum class GS_VideoMode : int
 {
+	Uninitialized,
+	Unknown,
 	NTSC,
 	PAL,
-	PROGRESSIVE
+	VESA,
+	HDTV_480P,
+	HDTV_576P,
+	HDTV_720P,
+	HDTV_1080I,
+	HDTV_1080P,
+	BIOS
 };
 
 extern GS_VideoMode gsVideoMode;
