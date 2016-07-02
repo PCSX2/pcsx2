@@ -75,11 +75,11 @@ void VU_Thread::Reset()
 {
 	ScopedLock lock(mtxBusy);
 
-	read_pos     = 0;
 	write_pos    = 0;
 	write_offset = 0;
 	vuCycleIdx   = 0;
-	isBusy = false;
+	read_pos     = 0;
+	isBusy       = false;
 	memzero(vif);
 	memzero(vifRegs);
 	memzero(vuCycles);
@@ -202,7 +202,7 @@ __fi u32* VU_Thread::GetWritePtr()
 
 __fi void VU_Thread::incReadPos(s32 offset)
 { // Offset in u32 sizes
-	read_pos = (read_pos + offset) & buffer_mask;
+	read_pos.store((read_pos.load(std::memory_order_relaxed) + offset) & buffer_mask, std::memory_order_release);
 }
 __fi void VU_Thread::incWritePos()
 { // Adds write_offset
@@ -272,12 +272,12 @@ u32 VU_Thread::Get_vuCycles()
 void VU_Thread::KickStart(bool forceKick)
 {
 	if ((forceKick && !semaEvent.Count())
-	|| (!isBusy && GetReadPos() != write_pos)) semaEvent.Post();
+	|| (!isBusy.load(std::memory_order_relaxed) && GetReadPos() != write_pos)) semaEvent.Post();
 }
 
 bool VU_Thread::IsDone()
 {
-	return !isBusy && GetReadPos() == GetWritePos();
+	return !isBusy.load(std::memory_order_relaxed) && GetReadPos() == GetWritePos();
 }
 
 void VU_Thread::WaitVU()
