@@ -74,7 +74,7 @@ void SysMtgsThread::OnStart()
 
 	m_ReadPos			= 0;
 	m_WritePos			= 0;
-	m_RingBufferIsBusy	= false;
+	m_RingBufferIsBusy  = false;
 	m_packet_size		= 0;
 	m_packet_writepos	= 0;
 
@@ -110,9 +110,9 @@ void SysMtgsThread::ResetGS()
 	//  * Signal a reset.
 	//  * clear the path and byRegs structs (used by GIFtagDummy)
 
-	m_ReadPos = m_WritePos;
-	m_QueuedFrameCount = 0;
-	m_VsyncSignalListener = false;
+	m_ReadPos             = m_WritePos;
+	m_QueuedFrameCount    = 0;
+	m_VsyncSignalListener = 0;
 
 	MTGS_LOG( "MTGS: Sending Reset..." );
 	SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
@@ -163,7 +163,7 @@ void SysMtgsThread::PostVsyncStart()
 
 	if ((m_QueuedFrameCount.fetch_add(1) < EmuConfig.GS.VsyncQueueSize) /*|| (!EmuConfig.GS.VsyncEnable && !EmuConfig.GS.FrameLimitEnable)*/) return;
 
-	m_VsyncSignalListener = true;
+	m_VsyncSignalListener.store(true, std::memory_order_release);
 	//Console.WriteLn( Color_Blue, "(EEcore Sleep) Vsync\t\tringpos=0x%06x, writepos=0x%06x", volatize(m_ReadPos), m_WritePos );
 	m_sem_Vsync.WaitNoCancel();
 }
@@ -247,18 +247,18 @@ struct RingBufferLock {
 		: m_lock1(mtgs.m_mtx_RingBufferBusy),
 		  m_lock2(mtgs.m_mtx_RingBufferBusy2),
 		  m_mtgs(mtgs) {
-		m_mtgs.m_RingBufferIsBusy = true;
+		m_mtgs.m_RingBufferIsBusy.store(true, std::memory_order_relaxed);
 	}
 	virtual ~RingBufferLock() throw() {
-		m_mtgs.m_RingBufferIsBusy = false;
+		m_mtgs.m_RingBufferIsBusy.store(false, std::memory_order_relaxed);
 	}
 	void Acquire() {
 		m_lock1.Acquire();
 		m_lock2.Acquire();
-		m_mtgs.m_RingBufferIsBusy = true;
+		m_mtgs.m_RingBufferIsBusy.store(true, std::memory_order_relaxed);
 	}
 	void Release() {
-		m_mtgs.m_RingBufferIsBusy = false;
+		m_mtgs.m_RingBufferIsBusy.store(false, std::memory_order_relaxed);
 		m_lock2.Release();
 		m_lock1.Release();
 	}
@@ -525,13 +525,13 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 			m_ReadPos = newringpos;
 
-			if( m_SignalRingEnable )
+			if(m_SignalRingEnable.load(std::memory_order_acquire))
 			{
 				// The EEcore has requested a signal after some amount of processed data.
 				if( m_SignalRingPosition.fetch_sub( ringposinc ) <= 0 )
 				{
 					// Make sure to post the signal after the m_ReadPos has been updated...
-					m_SignalRingEnable = false;
+					m_SignalRingEnable.store(false, std::memory_order_release);
 					m_sem_OnRingReset.Post();
 					continue;
 				}
@@ -547,7 +547,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 		if( m_SignalRingEnable.exchange(false) )
 		{
 			//Console.Warning( "(MTGS Thread) Dangling RingSignal on empty buffer!  signalpos=0x%06x", m_SignalRingPosition.exchange(0) ) );
-			m_SignalRingPosition = 0;
+			m_SignalRingPosition.store(0, std::memory_order_release);
 			m_sem_OnRingReset.Post();
 		}
 
@@ -629,7 +629,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 // For use in loops that wait on the GS thread to do certain things.
 void SysMtgsThread::SetEvent()
 {
-	if(!m_RingBufferIsBusy)
+	if(!m_RingBufferIsBusy.load(std::memory_order_relaxed))
 		m_sem_event.Post();
 
 	m_CopyDataTally = 0;
@@ -655,11 +655,11 @@ void SysMtgsThread::SendDataPacket()
 
 	m_WritePos = m_packet_writepos;
 
-	if( EmuConfig.GS.SynchronousMTGS )
+	if(EmuConfig.GS.SynchronousMTGS)
 	{
 		WaitGS();
 	}
-	else if( !m_RingBufferIsBusy )
+	else if(!m_RingBufferIsBusy.load(std::memory_order_relaxed))
 	{
 		m_CopyDataTally += m_packet_size;
 		if( m_CopyDataTally > 0x2000 ) SetEvent();
@@ -714,12 +714,12 @@ void SysMtgsThread::GenericStall( uint size )
 		if( somedone > 0x80 )
 		{
 			pxAssertDev( m_SignalRingEnable == 0, "MTGS Thread Synchronization Error" );
-			m_SignalRingPosition = somedone;
+			m_SignalRingPosition.store(somedone, std::memory_order_release);
 
 			//Console.WriteLn( Color_Blue, "(EEcore Sleep) PrepDataPacker \tringpos=0x%06x, writepos=0x%06x, signalpos=0x%06x", readpos, writepos, m_SignalRingPosition );
 
 			while(true) {
-				m_SignalRingEnable = true;
+				m_SignalRingEnable.store(true, std::memory_order_release);
 				SetEvent();
 				m_sem_OnRingReset.WaitWithoutYield();
 				readpos = volatize(m_ReadPos);
@@ -814,7 +814,7 @@ void SysMtgsThread::SendSimpleGSPacket(MTGS_RingCommand type, u32 offset, u32 si
 	SendSimplePacket(type, (int)offset, (int)size, (int)path);
 
 	if(!EmuConfig.GS.SynchronousMTGS) {
-		if(!m_RingBufferIsBusy) {
+		if(!m_RingBufferIsBusy.load(std::memory_order_relaxed)) {
 			m_CopyDataTally += size / 16;
 			if (m_CopyDataTally > 0x2000) SetEvent();
 		}
