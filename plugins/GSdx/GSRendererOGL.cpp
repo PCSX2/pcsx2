@@ -530,7 +530,8 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			// The fastest algo that requires a single pass
 			GL_INS("COLCLIP Free mode ENABLED");
 			m_ps_sel.colclip = 1;
-			ASSERT(sw_blending);
+			//ASSERT(sw_blending);
+			sw_blending = true;
 			accumulation_blend = false; // disable the HDR algo
 		} else if (accumulation_blend) {
 			// A fast algo that requires 2 passes
