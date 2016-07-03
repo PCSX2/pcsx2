@@ -435,7 +435,7 @@ bool PCAPAdapter::blocks()
 }
 bool PCAPAdapter::isInitialised()
 {
-	return pcap_io_running;
+	return !!pcap_io_running;
 }
 //gets a packet.rv :true success
 bool PCAPAdapter::recv(NetPacket* pkt)

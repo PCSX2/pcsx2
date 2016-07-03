@@ -613,7 +613,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	const uint8 wms = m_context->CLAMP.WMS;
 	const uint8 wmt = m_context->CLAMP.WMT;
-	bool complex_wms_wmt = (wms | wmt) & 2;
+	bool complex_wms_wmt = !!((wms | wmt) & 2);
 
 	bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
 	bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && !complex_wms_wmt && !psm.depth;
@@ -999,15 +999,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// Replace all sprite with a single fullscreen sprite.
 				GSVertex* s = &m_vertex.buff[0];
 
-				s[0].XYZ.X = (16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX;
-				s[1].XYZ.X = (16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX;
-				s[0].XYZ.Y = (16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY;
-				s[1].XYZ.Y = (16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY;
+				s[0].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
+				s[1].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
+				s[0].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
+				s[1].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
 
-				s[0].U     = 16.0f * m_vt.m_min.t.x;
-				s[0].V     = 16.0f * m_vt.m_min.t.y;
-				s[1].U     = 16.0f * m_vt.m_max.t.x;
-				s[1].V     = 16.0f * m_vt.m_max.t.y;
+				s[0].U     = static_cast<uint16>(16.0f * m_vt.m_min.t.x);
+				s[0].V     = static_cast<uint16>(16.0f * m_vt.m_min.t.y);
+				s[1].U     = static_cast<uint16>(16.0f * m_vt.m_max.t.x);
+				s[1].V     = static_cast<uint16>(16.0f * m_vt.m_max.t.y);
 
 				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 				m_index.tail = 2;

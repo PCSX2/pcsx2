@@ -184,7 +184,7 @@ namespace ReplaceGL {
 
 	void APIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 	{
-		glViewport(x, y, w, h);
+		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
 	}
 }
 
