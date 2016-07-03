@@ -146,10 +146,10 @@ GSDeviceOGL::~GSDeviceOGL()
 
 void GSDeviceOGL::GenerateProfilerData()
 {
-	if (m_profiler.last_query < 3) return;
-
-	// Point to the last query
-	m_profiler.last_query--;
+	if (m_profiler.last_query < 3) {
+		glDeleteQueries(1 << 16, m_profiler.timer_query);
+		return;
+	}
 
 	// Wait latest quey to get valid result
 	GLuint available = 0;
@@ -162,8 +162,8 @@ void GSDeviceOGL::GenerateProfilerData()
 	std::vector<double> times;
 	double ms       = 0.000001;
 
-	float replay    = (float)(theApp.GetConfigI("linux_replay"));
-	int first_query = static_cast<int>((float)m_profiler.last_query / replay);
+	int replay      = theApp.GetConfigI("linux_replay");
+	int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
 
 	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
 	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++) {
