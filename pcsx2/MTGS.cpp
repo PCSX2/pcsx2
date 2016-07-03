@@ -231,10 +231,12 @@ void SysMtgsThread::OpenPlugin()
 	GSsetGameCRC( ElfCRC, 0 );
 }
 
-struct RingBufferLock {
+class RingBufferLock {
 	ScopedLock     m_lock1;
 	ScopedLock     m_lock2;
 	SysMtgsThread& m_mtgs;
+
+	public:
 
 	RingBufferLock(SysMtgsThread& mtgs)
 		: m_lock1(mtgs.m_mtx_RingBufferBusy),
@@ -254,6 +256,12 @@ struct RingBufferLock {
 		m_mtgs.m_RingBufferIsBusy.store(false, std::memory_order_relaxed);
 		m_lock2.Release();
 		m_lock1.Release();
+	}
+	void PartialAcquire() {
+		m_lock2.Acquire();
+	}
+	void PartialRelease() {
+		m_lock2.Release();
 	}
 };
 
@@ -400,10 +408,10 @@ void SysMtgsThread::ExecuteTaskInThread()
 				case GS_RINGTYPE_MTVU_GSPACKET: {
 					MTVU_LOG("MTGS - Waiting on semaXGkick!");
 					vu1Thread.KickStart(true);
-					busy.m_lock2.Release();
+					busy.PartialRelease();
 					// Wait for MTVU to complete vu1 program
 					vu1Thread.semaXGkick.WaitWithoutYield();
-					busy.m_lock2.Acquire();
+					busy.PartialAcquire();
 					Gif_Path& path   = gifUnit.gifPath[GIF_PATH_1];
 					GS_Packet gsPack = path.GetGSPacketMTVU(); // Get vu1 program's xgkick packet(s)
 					if (gsPack.size) GSgifTransfer((u32*)&path.buffer[gsPack.offset], gsPack.size/16);
