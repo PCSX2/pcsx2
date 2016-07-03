@@ -52,7 +52,10 @@ void SaveStateBase::mtvuFreeze()
 	FreezeTag("MTVU");
 	pxAssert(vu1Thread.IsDone());
 	if (!IsSaving()) vu1Thread.Reset();
-	Freeze(vu1Thread.vuCycles);
+	for (size_t i = 0; i < 4; ++i) {
+		unsigned int v = vu1Thread.vuCycles[i].load();
+		Freeze(v);
+	}
 	Freeze(vu1Thread.vuCycleIdx);
 }
 
@@ -82,7 +85,8 @@ void VU_Thread::Reset()
 	write_pos    = 0;
 	memzero(vif);
 	memzero(vifRegs);
-	memzero(vuCycles);
+	for (size_t i = 0; i < 4; ++i)
+		vu1Thread.vuCycles[i] = 0;
 }
 
 void VU_Thread::ExecuteTaskInThread()
@@ -109,7 +113,7 @@ void VU_Thread::ExecuteRingBuffer()
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
 					semaXGkick.Post(); // Tell MTGS a path1 packet is complete
-					AtomicExchange(vuCycles[vuCycleIdx], vuRegs.cycle);
+					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_relaxed);
 					vuCycleIdx  = (vuCycleIdx + 1) & 3;
 					break;
 				}
@@ -265,8 +269,10 @@ __fi void VU_Thread::WriteRegs(VIFregisters* src)
 // Used for vu cycle stealing hack
 u32 VU_Thread::Get_vuCycles()
 {
-	return (AtomicRead(vuCycles[0]) + AtomicRead(vuCycles[1])
-		  + AtomicRead(vuCycles[2]) + AtomicRead(vuCycles[3])) >> 2;
+	return (vuCycles[0].load(std::memory_order_relaxed) +
+			vuCycles[1].load(std::memory_order_relaxed) +
+			vuCycles[2].load(std::memory_order_relaxed) +
+			vuCycles[3].load(std::memory_order_relaxed)) >> 2;
 }
 
 void VU_Thread::KickStart(bool forceKick)

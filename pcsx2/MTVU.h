@@ -43,7 +43,7 @@ public:
 	__aligned16  vifStruct        vif;
 	__aligned16  VIFregisters     vifRegs;
 	__aligned(4) Semaphore semaXGkick;
-	__aligned(4) u32 vuCycles[4]; // Used for VU cycle stealing hack
+	__aligned(4) std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	__aligned(4) u32 vuCycleIdx;  // Used for VU cycle stealing hack
 
 	VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs);
