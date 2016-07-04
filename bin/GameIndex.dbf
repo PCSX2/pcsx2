@@ -2870,6 +2870,11 @@ Region = NTSC-K
 Serial = SCKA-20032
 Name   = Syphon Filter - The Omega Virus
 Region = NTSC-K
+EETimingHack = 1 //random hangs
+[patches = 3676E74C]
+patch=1,EE,00398898,word,48438000 //4b06521b
+patch=1,EE,0039889c,word,4b06521b //48438000
+[/patches]
 ---------------------------------------------
 Serial = SCKA-20033
 Name   = Smash Court Professional Tournament 2 [Limited Edition]
