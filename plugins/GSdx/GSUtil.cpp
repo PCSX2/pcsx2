@@ -203,22 +203,31 @@ bool GSUtil::CheckSSE()
 {
 	Xbyak::util::Cpu cpu;
 	Xbyak::util::Cpu::Type type;
+	const char* instruction_set = "";
 
-	#if _M_SSE >= 0x500
+	#if _M_SSE >= 0x501
+	type = Xbyak::util::Cpu::tAVX2;
+	instruction_set = "AVX2";
+	#elif _M_SSE >= 0x500
 	type = Xbyak::util::Cpu::tAVX;
+	instruction_set = "AVX";
 	#elif _M_SSE >= 0x402
 	type = Xbyak::util::Cpu::tSSE42;
+	instruction_set = "SSE4.2";
 	#elif _M_SSE >= 0x401
 	type = Xbyak::util::Cpu::tSSE41;
+	instruction_set = "SSE4.1";
 	#elif _M_SSE >= 0x301
 	type = Xbyak::util::Cpu::tSSSE3;
+	instruction_set = "SSSE3";
 	#elif _M_SSE >= 0x200
 	type = Xbyak::util::Cpu::tSSE2;
+	instruction_set = "SSE2";
 	#endif
 
 	if(!cpu.has(type))
 	{
-		fprintf(stderr, "This CPU does not support SSE %d.%02d", _M_SSE >> 8, _M_SSE & 0xff);
+		fprintf(stderr, "This CPU does not support %s\n", instruction_set);
 
 		return false;
 	}
