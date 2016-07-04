@@ -211,7 +211,7 @@ public:
 
 private:
 	static Game m_games[];
-	static hash_map<uint32, Game*> m_map;
+	static map<uint32, Game*> m_map;
 
 public:
 	static Game Lookup(uint32 crc);
