@@ -44,35 +44,13 @@ alignas(8) const uint8 GSDrawScanlineCodeGenerator::m_test[16][8] =
 	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 };
 
-const GSVector8 GSDrawScanlineCodeGenerator::m_log2_coef[4] = 
-{
-	GSVector8(0.204446009836232697516f),
-	GSVector8(-1.04913055217340124191f),
-	GSVector8(2.28330284476918490682f),
-	GSVector8(1.0f),
-};
+GSVector8 GSDrawScanlineCodeGenerator::m_log2_coef[4];
 
 #else
 
-const GSVector4i GSDrawScanlineCodeGenerator::m_test[8] =
-{
-	GSVector4i::zero(),
-	GSVector4i(0xffffffff, 0x00000000, 0x00000000, 0x00000000),
-	GSVector4i(0xffffffff, 0xffffffff, 0x00000000, 0x00000000),
-	GSVector4i(0xffffffff, 0xffffffff, 0xffffffff, 0x00000000),
-	GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff),
-	GSVector4i::zero(),
-};
+GSVector4i GSDrawScanlineCodeGenerator::m_test[8];
 
-const GSVector4 GSDrawScanlineCodeGenerator::m_log2_coef[4] = 
-{
-	GSVector4(0.204446009836232697516f),
-	GSVector4(-1.04913055217340124191f),
-	GSVector4(2.28330284476918490682f),
-	GSVector4(1.0f),
-};
+GSVector4 GSDrawScanlineCodeGenerator::m_log2_coef[4];
 
 #endif
 
@@ -83,6 +61,33 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 	m_sel.key = key;
 
 	Generate();
+}
+
+void GSDrawScanlineCodeGenerator::InitConstants()
+{
+#if _M_SSE >= 0x501
+
+	m_log2_coef[0] = GSVector8(0.204446009836232697516f);
+	m_log2_coef[1] = GSVector8(-1.04913055217340124191f);
+	m_log2_coef[2] = GSVector8(2.28330284476918490682f);
+	m_log2_coef[3] = GSVector8(1.0f);
+
+#else
+	m_test[0] = GSVector4i::zero();
+	m_test[1] = GSVector4i(0xffffffff, 0x00000000, 0x00000000, 0x00000000);
+	m_test[2] = GSVector4i(0xffffffff, 0xffffffff, 0x00000000, 0x00000000);
+	m_test[3] = GSVector4i(0xffffffff, 0xffffffff, 0xffffffff, 0x00000000);
+	m_test[4] = GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff);
+	m_test[5] = GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff);
+	m_test[6] = GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff);
+	m_test[7] = GSVector4i::zero();
+
+	m_log2_coef[0] = GSVector4(0.204446009836232697516f);
+	m_log2_coef[1] = GSVector4(-1.04913055217340124191f);
+	m_log2_coef[2] = GSVector4(2.28330284476918490682f);
+	m_log2_coef[3] = GSVector4(1.0f);
+
+#endif
 }
 
 #if _M_SSE >= 0x501

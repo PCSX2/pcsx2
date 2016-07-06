@@ -36,5 +36,7 @@ class GPUSetupPrimCodeGenerator : public GSCodeGenerator
 public:
 	GPUSetupPrimCodeGenerator(void* param, uint32 key, void* code, size_t maxsize);
 
-	static const GSVector4 m_shift[3];
+	static void Init();
+
+	static GSVector4 m_shift[3];
 };

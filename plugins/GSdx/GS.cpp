@@ -54,6 +54,9 @@ extern bool RunLinuxDialog();
 
 #endif
 
+#include "PSX\GPUDrawScanlineCodeGenerator.h"
+#include "PSX\GPUSetupPrimCodeGenerator.h"
+
 #define PS2E_LT_GS 0x01
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_X86 0x01   // 32 bit
@@ -116,12 +119,33 @@ EXPORT_C GSsetSettingsDir(const char* dir)
 	theApp.SetConfigDir(dir);
 }
 
+void _InitConsts()
+{
+	GSVector4::Init();
+	GSVector4i::Init();
+#if _M_SSE >= 0x500
+	GSVector8::Init();
+#elif _M_SSE >= 0x501
+	GSVector8i::Init();
+#endif
+	GSBlock::Init();
+	GSClut::Init();
+	GSDrawScanlineCodeGenerator::InitConstants();
+	GSSetupPrimCodeGenerator::Init();
+	GSVertexTrace::Init();
+	GPUDrawScanlineCodeGenerator::InitConstants();
+	GPULocalMemory::Init();
+	GPUSetupPrimCodeGenerator::Init();
+}
+
 EXPORT_C_(int) GSinit()
 {
 	if(!GSUtil::CheckSSE())
 	{
 		return -1;
 	}
+
+	_InitConsts();
 
 #ifdef _WIN32
 

@@ -200,11 +200,11 @@ GSTexture* GSRendererCL::GetOutput(int i, int& y_offset)
 	return m_texture[i];
 }
 
-const GSVector4 g_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 1.0f);
-
 template<uint32 primclass, uint32 tme, uint32 fst>
 void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
+	static GSVector4 g_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 1.0f);
+
 	GSVector4i o = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 st_scale = GSVector4(16 << m_context->TEX0.TW, 16 << m_context->TEX0.TH, 1, 0);
 

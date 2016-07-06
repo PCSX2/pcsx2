@@ -38,7 +38,7 @@ public:
 protected:
 	const GSState* m_state;
 
-	static const GSVector4 s_minmax;
+	static GSVector4 s_minmax;
 
 	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
 
@@ -71,6 +71,8 @@ public:
 public:
 	GSVertexTrace(const GSState* state);
 	virtual ~GSVertexTrace() {}
+
+	static void Init();
 
 	void Update(const void* vertex, const uint32* index, int count, GS_PRIM_CLASS primclass);
 
