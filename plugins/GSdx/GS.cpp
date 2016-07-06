@@ -54,8 +54,8 @@ extern bool RunLinuxDialog();
 
 #endif
 
-#include "PSX\GPUDrawScanlineCodeGenerator.h"
-#include "PSX\GPUSetupPrimCodeGenerator.h"
+#include "PSX/GPUDrawScanlineCodeGenerator.h"
+#include "PSX/GPUSetupPrimCodeGenerator.h"
 
 #define PS2E_LT_GS 0x01
 #define PS2E_GS_VERSION 0x0006
