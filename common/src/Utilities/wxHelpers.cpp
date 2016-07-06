@@ -66,7 +66,7 @@ BaseDeletableObject::BaseDeletableObject()
 	//pxAssertDev( _CrtIsValidHeapPointer( this ), "BaseDeletableObject types cannot be created on the stack or as temporaries!" );
 	#endif
 
-	m_IsBeingDeleted = false;
+	m_IsBeingDeleted.store(false, std::memory_order_relaxed);
 }
 
 BaseDeletableObject::~BaseDeletableObject() throw()
