@@ -220,9 +220,17 @@ void GPUSetupPrimCodeGenerator::Generate()
 	ret();
 }
 
-const GSVector4 GPUSetupPrimCodeGenerator::m_shift[3] =
+GSVector4 GPUSetupPrimCodeGenerator::m_shift[3];
+
+void GPUSetupPrimCodeGenerator::InitVectors()
 {
-	GSVector4(8.0f, 8.0f, 8.0f, 8.0f),
-	GSVector4(0.0f, 1.0f, 2.0f, 3.0f),
-	GSVector4(4.0f, 5.0f, 6.0f, 7.0f),
-};
+	GSVector4 shift[3] =
+	{
+		GSVector4(8.0f, 8.0f, 8.0f, 8.0f),
+		GSVector4(0.0f, 1.0f, 2.0f, 3.0f),
+		GSVector4(4.0f, 5.0f, 6.0f, 7.0f),
+	};
+
+	for (size_t n = 0; n < countof(shift); ++n)
+		m_shift[n] = shift[n];
+}

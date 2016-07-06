@@ -59,6 +59,19 @@ EXPORT_C_(uint32) PSEgetLibVersion()
 
 EXPORT_C_(int32) GPUinit()
 {
+	GSVector4i::InitVectors();
+	GSVector4::InitVectors();
+#if _M_SSE >= 0x500
+	GSVector8::InitVectors();
+#endif
+#if _M_SSE >= 0x501
+	GSVector8i::InitVectors();
+#endif
+
+	GPUDrawScanlineCodeGenerator::InitVectors();
+	GPULocalMemory::InitVectors();
+	GPUSetupPrimCodeGenerator::InitVectors();
+
 	return 0;
 }
 

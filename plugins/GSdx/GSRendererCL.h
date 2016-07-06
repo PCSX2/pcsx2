@@ -32,6 +32,8 @@ struct alignas(32) GSVertexCL
 
 class GSRendererCL : public GSRenderer
 {
+	static GSVector4 m_pos_scale;
+
 	typedef void (GSRendererCL::*ConvertVertexBufferPtr)(GSVertexCL* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 	ConvertVertexBufferPtr m_cvb[4][2][2];
@@ -261,6 +263,8 @@ protected:
 	bool SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* vertex, size_t vertex_count, const uint32* index, size_t index_count);
 
 public:
+	static void InitVectors();
+
 	GSRendererCL();
 	virtual ~GSRendererCL();
 };

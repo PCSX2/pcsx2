@@ -26,10 +26,10 @@
 
 class GPULocalMemory
 {
-	static const GSVector4i m_xxxa;
-	static const GSVector4i m_xxbx;
-	static const GSVector4i m_xgxx;
-	static const GSVector4i m_rxxx;
+	static GSVector4i m_xxxa;
+	static GSVector4i m_xxbx;
+	static GSVector4i m_xgxx;
+	static GSVector4i m_rxxx;
 
 	uint16* m_vm; 
 
@@ -50,6 +50,8 @@ class GPULocalMemory
 	GSVector2i m_scale;
 
 public:
+	static void InitVectors();
+
 	GPULocalMemory();
 	virtual ~GPULocalMemory();
 

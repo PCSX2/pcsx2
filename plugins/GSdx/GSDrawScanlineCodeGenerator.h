@@ -136,10 +136,11 @@ public:
 
 	#if _M_SSE >= 0x501
 	alignas(8) static const uint8 m_test[16][8];
-	static const GSVector8 m_log2_coef[4];
+	static GSVector8 m_log2_coef[4];
 	#else
-	static const GSVector4i m_test[8];
-	static const GSVector4 m_log2_coef[4];
+	static GSVector4i m_test[8];
+	static GSVector4 m_log2_coef[4];
 	#endif
 
+	static void InitVectors();
 };

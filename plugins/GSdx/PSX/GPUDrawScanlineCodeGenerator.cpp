@@ -1010,18 +1010,8 @@ void GPUDrawScanlineCodeGenerator::blend(const Xmm& a, const Xmm& b, const Xmm& 
 	movdqa(a, b);
 }
 
-const GSVector4i GPUDrawScanlineCodeGenerator::m_test[8] =
-{
-	GSVector4i(0xffff0000, 0xffffffff, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0xffff0000, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0xffff0000, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffff0000),
-	GSVector4i::zero(),
-};
 
+GSVector4i GPUDrawScanlineCodeGenerator::m_test[8];
 alignas(32) const uint16_t GPUDrawScanlineCodeGenerator::m_dither[4][16] =
 {
 	{7, 0, 6, 1, 7, 0, 6, 1, 7, 0, 6, 1, 7, 0, 6, 1},
@@ -1029,3 +1019,21 @@ alignas(32) const uint16_t GPUDrawScanlineCodeGenerator::m_dither[4][16] =
 	{1, 6, 0, 7, 1, 6, 0, 7, 1, 6, 0, 7, 1, 6, 0, 7},
 	{4, 3, 5, 2, 4, 3, 5, 2, 4, 3, 5, 2, 4, 3, 5, 2},
 };
+
+void GPUDrawScanlineCodeGenerator::InitVectors()
+{
+	GSVector4i test[8] =
+	{
+		GSVector4i(0xffff0000, 0xffffffff, 0xffffffff, 0xffffffff),
+		GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff),
+		GSVector4i(0x00000000, 0xffff0000, 0xffffffff, 0xffffffff),
+		GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff),
+		GSVector4i(0x00000000, 0x00000000, 0xffff0000, 0xffffffff),
+		GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff),
+		GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffff0000),
+		GSVector4i::zero(),
+	};
+
+	for (size_t n = 0; n < countof(test); ++n)
+		m_test[n] = test[n];
+}
