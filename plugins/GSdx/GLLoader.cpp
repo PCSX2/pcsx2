@@ -365,7 +365,7 @@ namespace GLLoader {
 #ifdef _WIN32
 		if (status) {
 			if (fglrx_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.");
+				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.\n");
 			}
 		}
 #endif

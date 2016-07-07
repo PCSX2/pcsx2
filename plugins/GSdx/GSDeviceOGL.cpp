@@ -490,7 +490,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Get Available Memory
 	// ****************************************************************
 	GLint vram[4] = {0};
-	if (GLLoader::found_GL_NVX_gpu_memory_info) {
+	if (GLLoader::found_GL_NVX_gpu_memory_info && !GLLoader::fglrx_buggy_driver) {
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
 	} else if (GLLoader::found_GL_ATI_meminfo) {
 		// Why openGL is always that complicated !
