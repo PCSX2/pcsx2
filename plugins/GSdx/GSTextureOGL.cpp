@@ -221,14 +221,14 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GL_DEPTH32F_STENCIL8:
 			m_int_format    = GL_DEPTH_STENCIL;
 			m_int_type      = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-			m_int_shift     = 0;
+			m_int_shift     = 3; // 4 bytes for depth + 4 bytes for stencil by texels
 			break;
 
 			// Backbuffer
 		case 0:
 			m_int_format    = 0;
 			m_int_type      = 0;
-			m_int_shift     = 0;
+			m_int_shift     = 2; // 4 bytes by texels
 			break;
 
 		default:
@@ -236,6 +236,13 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 			m_int_type      = 0;
 			m_int_shift     = 0;
 			ASSERT(0);
+	}
+
+	m_mem_usage = (m_size.x * m_size.y) << m_int_shift;
+	if (m_mem_usage > GLState::available_vram) {
+		throw GSDXErrorOOM(); // Still time to do a prayer !
+	} else {
+		GLState::available_vram -= m_mem_usage;
 	}
 
 	// Generate & Allocate the buffer
@@ -274,6 +281,8 @@ GSTextureOGL::~GSTextureOGL()
 	}
 
 	glDeleteTextures(1, &m_texture_id);
+
+	GLState::available_vram += m_mem_usage;
 
 	if (m_local_buffer)
 		_aligned_free(m_local_buffer);
@@ -485,16 +494,5 @@ bool GSTextureOGL::Save(const string& fn, bool user_image, bool dds)
 
 uint32 GSTextureOGL::GetMemUsage()
 {
-	switch (m_type) {
-		case GSTexture::Offscreen:
-			return m_size.x * m_size.y * (4 + 4); // Texture + buffer
-		case GSTexture::Texture:
-		case GSTexture::RenderTarget:
-			return m_size.x * m_size.y * 4;
-		case GSTexture::DepthStencil:
-			return m_size.x * m_size.y * 8;
-		case GSTexture::Backbuffer:
-		default:
-			return 0;
-	}
+	return m_mem_usage;
 }

@@ -53,11 +53,13 @@ class GSTextureOGL final : public GSTexture
 		int m_r_w;
 		int m_r_h;
 
-
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
 		GLenum m_int_type;
 		uint32 m_int_shift;
+
+		// Allow to track size of allocated memory
+		uint32 m_mem_usage;
 
 	public:
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
