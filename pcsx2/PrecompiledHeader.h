@@ -41,6 +41,7 @@
 #include <stdexcept>
 #include <vector>
 #include <list>
+#include <stack>
 #include <cstring>		// string.h under c++
 #include <cstdio>		// stdio.h under c++
 #include <cstdlib>

@@ -72,4 +72,5 @@ private:
 	u32 lastPc;
 	int category;
 	int maxBits;
+	bool resolvePointerStrings;
 };
