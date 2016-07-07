@@ -187,6 +187,17 @@ typedef void (APIENTRYP PFNGLTEXTUREBARRIERPROC) (void);
 typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
 #endif /* GL_VERSION_4_5 */
 
+#ifndef GL_NVX_gpu_memory_info
+#define GL_NVX_gpu_memory_info 1
+#define GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
+#define GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
+#define GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+#define GL_GPU_MEMORY_INFO_EVICTION_COUNT_NVX 0x904A
+#define GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX 0x904B
+#endif /* GL_NVX_gpu_memory_info */
+
+// **********************  End of the extra header ******************* //
+
 // Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
 // (maybe gl.h is outdated, or my setup is wrong)
 // Anyway, let's just keep the mangled function pointer for those 2 functions.
