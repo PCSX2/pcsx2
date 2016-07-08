@@ -95,10 +95,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	GL_PUSH("GSDeviceOGL destructor");
 
-	if (GLLoader::in_replayer) {
-		GenerateProfilerData();
-	}
-
 	// Clean vertex buffer state
 	delete m_va;
 
@@ -194,6 +190,15 @@ void GSDeviceOGL::GenerateProfilerData()
 	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
 	fprintf(stderr, "SD   %4.2f ms\n", sd);
 	fprintf(stderr, "\n");
+
+	FILE* csv = fopen("GSdx_profile.csv", "w");
+	if (csv) {
+		for (size_t i = 0; i < times.size(); i++) {
+			fprintf(csv, "%d,%lf\n", i, times[i]);
+		}
+
+		fclose(csv);
+	}
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)

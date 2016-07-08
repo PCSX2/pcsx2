@@ -1569,9 +1569,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 		file->Read(regs, 0x2000);
 
-		GSvsync(1);
-
-
 		while(!file->IsEof())
 		{
 			uint8 type;
@@ -1628,7 +1625,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		delete file;
 	}
 
-	sleep(1);
+	sleep(2);
 
 	//while(IsWindowVisible(hWnd))
 	//FIXME map?
@@ -1638,6 +1635,10 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		finished = 1;
 	}
 	unsigned long frame_number = 0;
+
+	// Init vsync stuff
+	GSvsync(1);
+
 	while(finished > 0)
 	{
 		for(auto i = packets.begin(); i != packets.end(); i++)
@@ -1690,6 +1691,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		}
 	}
 
+	static_cast<GSDeviceOGL*>(s_gs->m_dev)->GenerateProfilerData();
+
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	unsigned long total_frame_nb = std::max(1ul, frame_number) << 10;
 	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
@@ -1706,7 +1709,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	packets.clear();
 
-	sleep(1);
+	sleep(2);
 
 	GSclose();
 	GSshutdown();
