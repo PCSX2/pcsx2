@@ -210,7 +210,6 @@ namespace GLLoader {
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
 	// Bonus to monitor the VRAM
 	bool found_GL_NVX_gpu_memory_info = false;
-	bool found_GL_ATI_meminfo = false;
 
 	// Mandatory
 	bool found_GL_ARB_buffer_storage = false;
@@ -309,7 +308,6 @@ namespace GLLoader {
 				// Bonus
 				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
-				if (ext.compare("GL_ATI_meminfo") == 0) found_GL_ATI_meminfo = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
