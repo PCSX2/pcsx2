@@ -327,7 +327,7 @@ void Threading::ScopedLock::AssignAndLock( const Mutex* locker )
 	if( !m_lock ) return;
 
 	m_IsLocked = true;
-	m_lock->Acquire();		
+	m_lock->Acquire();
 }
 
 void Threading::ScopedLock::Assign( const Mutex& locker )

@@ -36,11 +36,6 @@ __fi void Threading::SpinWait()
 	__asm pause;
 }
 
-__fi void Threading::StoreFence()
-{
-	__asm sfence;
-}
-
 __fi void Threading::EnableHiresScheduler()
 {
 	// This improves accuracy of Sleep() by some amount, and only adds a negligible amount of

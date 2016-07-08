@@ -159,9 +159,6 @@ namespace Threading
 	// For use in spin/wait loops.
 	extern void SpinWait();
 
-	// Use prior to committing data to another thread
-	extern void StoreFence();
-
 	// Optional implementation to enable hires thread/process scheduler for the operating system.
 	// Needed by Windows, but might not be relevant to other platforms.
 	extern void EnableHiresScheduler();
@@ -169,18 +166,6 @@ namespace Threading
 
 	// sleeps the current thread for the given number of milliseconds.
 	extern void Sleep( int ms );
-
-// --------------------------------------------------------------------------------------
-//  AtomicExchange / AtomicIncrement
-// --------------------------------------------------------------------------------------
-// Our fundamental interlocking functions.  All other useful interlocks can be derived
-// from these little beasties!  (these are all implemented internally using cross-platform
-// implementations of _InterlockedExchange and such)
-
-	extern u32 AtomicRead( volatile u32& Target );
-	extern s32 AtomicRead( volatile s32& Target );
-	extern u32 AtomicExchange( volatile u32& Target, u32 value );
-	extern s32 AtomicExchange( volatile s32& Target, s32 value );
 
 	// pthread Cond is an evil api that is not suited for Pcsx2 needs.
 	// Let's not use it. Use mutexes and semaphores instead to create waits. (Air)
@@ -309,7 +294,7 @@ namespace Threading
 	// will be automatically released on any return or exit from the function.
 	//
 	// Const qualification note:
-	//  ScopedLock takes const instances of the mutex, even though the mutex is modified 
+	//  ScopedLock takes const instances of the mutex, even though the mutex is modified
 	//  by locking and unlocking.  Two rationales:
 	//
 	//  1) when designing classes with accessors (GetString, GetValue, etc) that need mutexes,
