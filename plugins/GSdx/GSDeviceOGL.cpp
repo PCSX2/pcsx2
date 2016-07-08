@@ -493,15 +493,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	if (GLLoader::found_GL_NVX_gpu_memory_info && !GLLoader::fglrx_buggy_driver) {
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
 	} else if (GLLoader::found_GL_ATI_meminfo) {
-		// Why openGL is always that complicated !
-		//glGetIntegerv(GL_RENDERBUFFER_FREE_MEMORY_ATI, vram);
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
 	} else {
 		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
 	}
 
-	if (vram[0] > 0)
-		GLState::available_vram = (uint64)vram[0] * 1024ul;
+	if (vram[0] > 200000)
+		GLState::available_vram = (uint64)(vram[0] - 200000) * 1024ul;
 
 	fprintf(stdout, "Available VRAM:%lluMB\n", GLState::available_vram >> 20u);
 
