@@ -172,13 +172,18 @@ EXPORT_C_(void) PADupdate(int pad)
 
 	// Actually PADupdate is always call with pad == 0. So you need to update both
 	// pads -- Gregory
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-		// Poll keyboard/mouse event
-		key_status->keyboard_state_acces(cpad);
-		PollForX11KeyboardInput(cpad);
 
-		// Get joystick state
+	// Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
+	// So we will populate both pad in the same time
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+		key_status->keyboard_state_acces(cpad);
+	}
+	PollForX11KeyboardInput();
+
+	// Get joystick state + Commit
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
 		key_status->joystick_state_acces(cpad);
+
 		PollForJoystickInput(cpad);
 
 		key_status->commit_status(cpad);

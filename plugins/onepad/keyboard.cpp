@@ -56,10 +56,19 @@ static bool s_grab_input = false;
 static bool s_Shift = false;
 static unsigned int  s_previous_mouse_x = 0;
 static unsigned int  s_previous_mouse_y = 0;
-void AnalyzeKeyEvent(int pad, keyEvent &evt)
+void AnalyzeKeyEvent(keyEvent &evt)
 {
 	KeySym key = (KeySym)evt.key;
-	int index = get_keyboard_key(pad, key);
+	int pad    = 0;
+	int index = -1;
+
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+		int tmp_index = get_keyboard_key(cpad, key);
+		if (tmp_index != -1) {
+			pad   = cpad;
+			index = tmp_index;
+		}
+	}
 
 	switch (evt.evt)
 	{
@@ -194,14 +203,14 @@ void AnalyzeKeyEvent(int pad, keyEvent &evt)
 	}
 }
 
-void PollForX11KeyboardInput(int pad)
+void PollForX11KeyboardInput()
 {
 	keyEvent evt;
 	XEvent E;
 
 	// Keyboard input send by PCSX2
 	while (!ev_fifo.empty()) {
-		AnalyzeKeyEvent(pad, ev_fifo.front());
+		AnalyzeKeyEvent(ev_fifo.front());
 		pthread_spin_lock(&mutex_KeyEvent);
 		ev_fifo.pop();
 		pthread_spin_unlock(&mutex_KeyEvent);
@@ -227,7 +236,7 @@ void PollForX11KeyboardInput(int pad)
 				evt.key = (int)XLookupKeysym(&E.xkey, 0);
 		}
 
-		AnalyzeKeyEvent(pad, evt);
+		AnalyzeKeyEvent(evt);
 	}
 }
 
