@@ -499,17 +499,23 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	GLint vram[4] = {0};
 	if (GLLoader::fglrx_buggy_driver) {
+		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
+		if (vram[0] > 200000)
+			vram[0] -= 128 * 1024;
+
 	} else if (GLLoader::found_GL_NVX_gpu_memory_info) {
+		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
+		// Available vram
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
 	} else {
 		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
 	}
 
-	if (vram[0] > 200000)
-		GLState::available_vram = (uint64)(vram[0] - 200000) * 1024ul;
+	if (vram[0] > 0)
+		GLState::available_vram = (int64)(vram[0]) * 1024ul;
 
-	fprintf(stdout, "Available VRAM:%lluMB\n", GLState::available_vram >> 20u);
+	fprintf(stdout, "Available VRAM:%lldMB\n", GLState::available_vram >> 20u);
 
 	// ****************************************************************
 	// Finish window setup and backbuffer

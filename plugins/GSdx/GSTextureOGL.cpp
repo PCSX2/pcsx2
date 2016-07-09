@@ -239,10 +239,12 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 	}
 
 	m_mem_usage = (m_size.x * m_size.y) << m_int_shift;
-	if (m_mem_usage > GLState::available_vram) {
-		throw GSDXErrorOOM(); // Still time to do a prayer !
-	} else {
-		GLState::available_vram -= m_mem_usage;
+
+	static int every_16 = 0;
+	GLState::available_vram -= m_mem_usage;
+	if ((GLState::available_vram < 0) && (every_16 % 16 == 0)) {
+		fprintf(stderr, "Available VRAM is very low, a crash is expected ! Disable Larger framebuffer or reduce upscaling!");
+		every_16++;
 	}
 
 	// Generate & Allocate the buffer

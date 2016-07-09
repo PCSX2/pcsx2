@@ -57,7 +57,7 @@ namespace GLState {
 	GLuint program;
 	GLuint pipeline;
 
-	uint64 available_vram;
+	int64 available_vram;
 
 	void Clear() {
 		fbo = 0;
