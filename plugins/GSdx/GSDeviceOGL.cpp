@@ -170,6 +170,9 @@ void GSDeviceOGL::GenerateProfilerData()
 		time_start = time_end;
 	}
 
+	// Latest value is often silly, just drop it
+	times.pop_back();
+
 	glDeleteQueries(1 << 16, m_profiler.timer_query);
 
 	double frames    = times.size();
