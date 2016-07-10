@@ -180,7 +180,7 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 256 >
+	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 65536 >
 	{
 		GSRasterizer* m_r;
 

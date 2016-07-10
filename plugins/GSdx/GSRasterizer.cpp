@@ -1211,7 +1211,7 @@ int GSRasterizerList::GetPixels(bool reset)
 // GSRasterizerList::GSWorker
 
 GSRasterizerList::GSWorker::GSWorker(GSRasterizer* r)
-	: GSJobQueue<shared_ptr<GSRasterizerData>, 256>()
+	: GSJobQueue<shared_ptr<GSRasterizerData>, 65536>()
 	, m_r(r)
 {
 }
