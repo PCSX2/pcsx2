@@ -129,6 +129,7 @@ protected:
 	IDrawScanline* m_ds;
 	int m_id;
 	int m_threads;
+	int m_thread_height;
 	uint8* m_scanline;
 	GSVector4i m_scissor;
 	GSVector4 m_fscissor_x;
@@ -138,7 +139,7 @@ protected:
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
-	template<bool scissor_test> 
+	template<bool scissor_test>
 	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const uint32* index, int index_count);
 	void DrawLine(const GSVertexSW* vertex, const uint32* index);
 	void DrawTriangle(const GSVertexSW* vertex, const uint32* index);
@@ -198,6 +199,7 @@ protected:
 	GSPerfMon* m_perfmon;
 	vector<GSWorker*> m_workers;
 	uint8* m_scanline;
+	int m_thread_height;
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
 
