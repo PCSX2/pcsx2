@@ -501,9 +501,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	if (GLLoader::fglrx_buggy_driver) {
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
-		if (vram[0] > 200000)
-			vram[0] -= 128 * 1024;
-
 	} else if (GLLoader::found_GL_NVX_gpu_memory_info) {
 		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
 		// Available vram
@@ -512,10 +509,13 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
 	}
 
-	if (vram[0] > 0)
-		GLState::available_vram = (int64)(vram[0]) * 1024ul;
+	// When VRAM is at least 2GB, we set the limit to the default i.e. 3.8 GB
+	// When VRAM is below 2GB, we add a factor 2 because RAM can be used. Potentially
+	// low VRAM gpu can go higher but perf will be bad anyway.
+	if (vram[0] > 0 && vram[0] < 1800000)
+		GLState::available_vram = (int64)(vram[0]) * 1024ul * 2ul;
 
-	fprintf(stdout, "Available VRAM:%lldMB\n", GLState::available_vram >> 20u);
+	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
 
 	// ****************************************************************
 	// Finish window setup and backbuffer
