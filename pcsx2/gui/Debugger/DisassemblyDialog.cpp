@@ -619,6 +619,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 				if (currentCpu != NULL)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
+				CBreakPoints::SetSkipFirst(0);
 			}
 
 			if (currentCpu != NULL)
