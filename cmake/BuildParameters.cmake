@@ -402,6 +402,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 #-------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
     if (GTK3_API)
-        message(FATAL_ERROR "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
+        message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
 endif()
