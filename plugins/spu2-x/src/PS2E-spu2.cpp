@@ -390,7 +390,7 @@ EXPORT_C_(s32) SPU2init()
 extern bool debugDialogOpen;
 extern HWND hDebugDialog;
 
-static BOOL CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId;
 
