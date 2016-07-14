@@ -56,6 +56,7 @@ GSState::GSState()
 	s_savef = theApp.GetConfigB("savef");
 	s_saven = theApp.GetConfigI("saven");
 	s_savel = theApp.GetConfigI("savel");
+	m_dump_root = "";
 #if defined(__unix__)
 	if (s_dump) {
 		GSmkdir("/tmp/GS_HW_dump");
@@ -1663,8 +1664,10 @@ void GSState::Read(uint8* mem, int len)
 	int sy = m_env.TRXPOS.SSAY;
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
+	GSVector4i r(sx, sy, sx + w, sy + h);
 
-	// printf("Read len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d\n", len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
+	GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d",
+			len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
 
 	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
 	{
@@ -1675,11 +1678,18 @@ void GSState::Read(uint8* mem, int len)
 	{
 		if(m_tr.x == sx && m_tr.y == sy)
 		{
-			InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
+			InvalidateLocalMem(m_env.BITBLTBUF, r);
 		}
 	}
 
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+
+	if(s_dump && s_save && s_n >= s_saven) {
+		string s= m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+				s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
+				r.left, r.top, r.right, r.bottom);
+		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
+	}
 }
 
 void GSState::Move()

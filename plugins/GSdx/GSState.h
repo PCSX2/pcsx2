@@ -229,6 +229,7 @@ public:
 	bool s_savef;
 	int s_saven;
 	int s_savel;
+	string m_dump_root;
 
 public:
 	GSState();

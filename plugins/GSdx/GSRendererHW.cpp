@@ -53,6 +53,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_align_sprite_X      = 0;
 	}
 
+	m_dump_root = root_hw;
 }
 
 void GSRendererHW::SetScaling()
@@ -217,7 +218,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if(s_savef && s_n >= s_saven)
 			{
-				t->Save(root_hw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
+				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
 			}
 		}
 
@@ -517,8 +518,8 @@ void GSRendererHW::Draw()
 			// Dump Register state
 			s = format("%05d_context.txt", s_n);
 
-			m_env.Dump(root_hw+s);
-			m_context->Dump(root_hw+s);
+			m_env.Dump(m_dump_root+s);
+			m_context->Dump(m_dump_root+s);
 		}
 
 		if(s_savet && s_n >= s_saven && tex)
@@ -529,13 +530,13 @@ void GSRendererHW::Draw()
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(root_hw+s, false, true);
+			tex->m_texture->Save(m_dump_root+s, false, true);
 
 			if(tex->m_palette)
 			{
 				s = format("%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
 
-				tex->m_palette->Save(root_hw+s, false, true);
+				tex->m_palette->Save(m_dump_root+s, false, true);
 			}
 		}
 
@@ -546,7 +547,7 @@ void GSRendererHW::Draw()
 			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
 			if (rt)
-				rt->m_texture->Save(root_hw+s);
+				rt->m_texture->Save(m_dump_root+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -554,7 +555,7 @@ void GSRendererHW::Draw()
 			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
 			if (ds_tex)
-				ds_tex->Save(root_hw+s);
+				ds_tex->Save(m_dump_root+s);
 		}
 
 		s_n++;
@@ -706,7 +707,7 @@ void GSRendererHW::Draw()
 			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
 
 			if (rt)
-				rt->m_texture->Save(root_hw+s);
+				rt->m_texture->Save(m_dump_root+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
@@ -714,7 +715,7 @@ void GSRendererHW::Draw()
 			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
 
 			if (ds_tex)
-				ds_tex->Save(root_hw+s);
+				ds_tex->Save(m_dump_root+s);
 		}
 
 		s_n++;
