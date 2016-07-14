@@ -158,6 +158,13 @@ void SysMtgsThread::PostVsyncStart()
 
 	m_VsyncSignalListener.store(true, std::memory_order_release);
 	//Console.WriteLn( Color_Blue, "(EEcore Sleep) Vsync\t\tringpos=0x%06x, writepos=0x%06x", m_ReadPos.load(), m_WritePos.load() );
+
+	// We will wait a vsync event from the MTGS ring. If the ring is already purged, the event will never come !
+	// To avoid this potential deadlock, ring must be wake up after m_VsyncSignalListener
+	// Note: potentially we can also miss the previous wake up if we optimize away the post just before the release of busy signal of the ring
+	// So let's ensure the ring doesn't sleep
+	m_sem_event.Post();
+
 	m_sem_Vsync.WaitNoCancel();
 }
 
