@@ -69,16 +69,6 @@ static __inline__ __attribute__((always_inline)) s64 _InterlockedExchange64(vola
 }
 
 /*** System information ***/
-static __inline__ __attribute__((always_inline)) void __cpuid(int CPUInfo[], const int InfoType)
-{
-	__asm__ __volatile__("cpuid": "=a" (CPUInfo[0]), "=b" (CPUInfo[1]), "=c" (CPUInfo[2]), "=d" (CPUInfo[3]) : "a" (InfoType));
-}
-
-static __inline__ __attribute__((always_inline)) void __cpuidex(int CPUInfo[], const int level, const int count)
-{
-	__asm__ __volatile__("cpuid": "=a" (CPUInfo[0]), "=b" (CPUInfo[1]), "=c" (CPUInfo[2]), "=d" (CPUInfo[3]) : "a" (level), "c" (count));
-}
-
 static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
 {
 	unsigned int eax, edx;

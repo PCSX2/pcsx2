@@ -149,7 +149,7 @@ void x86capabilities::CountCores()
 	s32 regs[ 4 ];
 	u32 cmds;
 
-	__cpuid( regs, 0x80000000 );
+	cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 
 	// detect multicore for AMD cpu
@@ -191,7 +191,7 @@ void x86capabilities::Identify()
 #endif
 
 	memzero( VendorName );
-	__cpuid( regs, 0 );
+	cpuid( regs, 0 );
 
 	cmds = regs[ 0 ];
 	((u32*)VendorName)[ 0 ] = regs[ 1 ];
@@ -211,7 +211,7 @@ void x86capabilities::Identify()
 
 	if ( cmds >= 0x00000001 )
 	{
-		__cpuid( regs, 0x00000001 );
+		cpuid( regs, 0x00000001 );
 
 		StepID		=  regs[ 0 ]        & 0xf;
 		Model		= (regs[ 0 ] >>  4) & 0xf;
@@ -227,16 +227,16 @@ void x86capabilities::Identify()
 	if ( cmds >= 0x00000007 )
 	{
 		// Note: ECX must be 0 for AVX2 detection.
-		__cpuidex( regs, 0x00000007, 0 );
+		cpuidex( regs, 0x00000007, 0 );
 
 		SEFlag = regs[ 1 ];
 	}
 
-	__cpuid( regs, 0x80000000 );
+	cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 	if ( cmds >= 0x80000001 )
 	{
-		__cpuid( regs, 0x80000001 );
+		cpuid( regs, 0x80000001 );
 
 #ifdef __x86_64__
 		x86_64_12BITBRANDID = regs[1] & 0xfff;
@@ -246,9 +246,9 @@ void x86capabilities::Identify()
 	}
 
 	memzero( FamilyName );
-	__cpuid( (int*)FamilyName,		0x80000002);
-	__cpuid( (int*)(FamilyName+16),	0x80000003);
-	__cpuid( (int*)(FamilyName+32),	0x80000004);
+	cpuid( (int*)FamilyName,		0x80000002);
+	cpuid( (int*)(FamilyName+16),	0x80000003);
+	cpuid( (int*)(FamilyName+32),	0x80000004);
 
 	hasFloatingPointUnit						= ( Flags >>  0 ) & 1;
 	hasVirtual8086ModeEnhancements				= ( Flags >>  1 ) & 1;
