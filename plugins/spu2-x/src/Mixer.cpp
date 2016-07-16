@@ -398,7 +398,7 @@ static __forceinline void CalculateADSR( V_Core& thiscore, uint voiceidx )
 		vc.Stop();
 	}
 
-	jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
+	pxAssume( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
 }
 
 /*
@@ -529,7 +529,7 @@ static __forceinline s32 GetNoiseValues( V_Core& thiscore, uint voiceidx )
 
 	// GetNoiseValues can't set the phase zero on us unexpectedly
 	// like GetVoiceValues can.  Better assert just in case though..
-	jASSUME( vc.ADSR.Phase != 0 );
+	pxAssume( vc.ADSR.Phase != 0 );
 
 	return retval;
 }
@@ -554,7 +554,7 @@ static __forceinline void spu2M_WriteFast( u32 addr, s16 value )
 	}
 	// throw an assertion if the memory range is invalid:
 #ifndef DEBUG_FAST
-	jASSUME( addr < SPU2_DYN_MEMLINE );
+	pxAssume( addr < SPU2_DYN_MEMLINE );
 #endif
 	*GetMemPtr( addr ) = value;
 }

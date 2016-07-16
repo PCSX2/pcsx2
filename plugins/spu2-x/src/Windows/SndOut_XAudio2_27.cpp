@@ -243,7 +243,7 @@ public:
 	{
 		HRESULT hr;
 
-		jASSUME( pXAudio2 == NULL );
+		pxAssume( pXAudio2 == NULL );
 
 		// On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
 		// Maintain an extra library reference so it can't do so. Does not
@@ -291,7 +291,7 @@ public:
 			}
 
 			// Any windows driver should support stereo at the software level, I should think!
-			jASSUME( deviceDetails.OutputFormat.Format.nChannels > 1 );
+			pxAssume( deviceDetails.OutputFormat.Format.nChannels > 1 );
 
 			//
 			// Create a mastering voice

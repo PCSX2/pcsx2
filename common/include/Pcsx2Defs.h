@@ -43,33 +43,6 @@
 #endif
 
 // --------------------------------------------------------------------------------------
-// jASSUME - give hints to the optimizer  [obsolete, use pxAssume() instead]
-// --------------------------------------------------------------------------------------
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-//
-// Note: When using the PCSX2 Utilities library, this is deprecated.  Use pxAssert instead,
-//  which itself optimizes to an __assume() hint in release mode builds.
-//
-#ifndef jASSUME
-#	ifdef NDEBUG
-#		define jBREAKPOINT() ((void) 0)
-#		ifdef _MSC_VER
-#			define jASSUME(exp) (__assume(exp))
-#		else
-#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
-#		endif
-#	else
-#		define jBREAKPOINT() __debugbreak();
-#		ifdef wxASSERT
-#			define jASSUME(exp) wxASSERT(exp)
-#		else
-#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
-#		endif
-#	endif
-#endif
-
-// --------------------------------------------------------------------------------------
 // Dev / Debug conditionals - Consts for using if() statements instead of uglier #ifdef.
 // --------------------------------------------------------------------------------------
 // Note: Using if() optimizes nicely in Devel and Release builds, but will generate extra

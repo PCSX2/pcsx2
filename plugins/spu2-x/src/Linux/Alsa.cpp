@@ -69,8 +69,8 @@ protected:
 		fprintf(stderr,"* SPU2-X:Iz in your external callback.\n");
 		AlsaMod *data = (AlsaMod*)snd_async_handler_get_callback_private( pcm_call );
 
-		jASSUME( data != NULL );
-		//jASSUME( data->handle == snd_async_handler_get_pcm(pcm_call) );
+		pxAssume( data != NULL );
+		//pxAssume( data->handle == snd_async_handler_get_pcm(pcm_call) );
 
 		// Not sure if we just need an assert, or something like this:
 		if (data->handle != snd_async_handler_get_pcm(pcm_call)) 

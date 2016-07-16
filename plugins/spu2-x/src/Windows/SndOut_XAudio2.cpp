@@ -241,7 +241,7 @@ public:
 	{
 		HRESULT hr;
 
-		jASSUME(pXAudio2 == NULL);
+		pxAssume(pXAudio2 == NULL);
 
 		xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (xAudio2DLL == nullptr)

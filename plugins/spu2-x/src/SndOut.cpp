@@ -262,8 +262,8 @@ template<typename T> void SndBuffer::ReadSamples(T* bData)
 	int quietSamples;
 	if( CheckUnderrunStatus( nSamples, quietSamples ) )
 	{
-		jASSUME( nSamples <= SndOutPacketSize );
-		
+		pxAssume( nSamples <= SndOutPacketSize );
+
 		// WARNING: This code assumes there's only ONE reading process.
 		int b1 = m_size - m_rpos;
 

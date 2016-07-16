@@ -671,7 +671,7 @@ EXPORT_C_(int) SPU2setupRecording(int start, void* pData)
 
 EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 {
-	jASSUME( data != NULL );
+	pxAssume( data != NULL );
 	if ( !data )
 	{
 		printf("SPU2-X savestate null pointer!\n");
@@ -684,7 +684,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 		return 0;
 	}
 
-	jASSUME( mode == FREEZE_LOAD || mode == FREEZE_SAVE );
+	pxAssume( mode == FREEZE_LOAD || mode == FREEZE_SAVE );
 
 	if( data->data == NULL )
 	{

@@ -57,7 +57,7 @@ __forceinline s16* GetMemPtr(u32 addr)
 #ifndef DEBUG_FAST
 	// In case you're wondering, this assert is the reason SPU2-X
 	// runs so incrediously slow in Debug mode. :P
-	jASSUME( addr < 0x100000 );
+	pxAssume( addr < 0x100000 );
 #endif
 	return (_spu2mem+addr);
 }
@@ -491,7 +491,7 @@ void V_VolumeSlide::RegSet( u16 src )
 
 void V_Core::WriteRegPS1( u32 mem, u16 value )
 {
-	jASSUME( Index == 0 );		// Valid on Core 0 only!
+	pxAssume( Index == 0 );		// Valid on Core 0 only!
 
 	bool show	= true;
 	u32 reg		= mem & 0xffff;
@@ -641,7 +641,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 
 u16 V_Core::ReadRegPS1(u32 mem)
 {
-	jASSUME( Index == 0 );		// Valid on Core 0 only!
+	pxAssume( Index == 0 );		// Valid on Core 0 only!
 
 	bool show=true;
 	u16 value = spu2Ru16(mem);
