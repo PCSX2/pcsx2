@@ -54,7 +54,7 @@ static int GetLinearSrAr( uint SrAr )
 
 bool V_ADSR::Calculate()
 {
-	jASSUME( Phase != 0 );
+	pxAssume( Phase != 0 );
 
 	if(Releasing && (Phase < 5))
 		Phase = 5;

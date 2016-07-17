@@ -33,44 +33,13 @@
 
 #include "Pcsx2Types.h"
 
-#ifdef _MSC_VER
-#	include <intrin.h>
-#else
-#	include <intrin_x86.h>
-#endif
+#include "x86emitter/x86_intrin.h"
 
 // Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
 // Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
 // that as well.  >_<
 #ifndef ArraySize
 #	define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
-#endif
-
-// --------------------------------------------------------------------------------------
-// jASSUME - give hints to the optimizer  [obsolete, use pxAssume() instead]
-// --------------------------------------------------------------------------------------
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-//
-// Note: When using the PCSX2 Utilities library, this is deprecated.  Use pxAssert instead,
-//  which itself optimizes to an __assume() hint in release mode builds.
-//
-#ifndef jASSUME
-#	ifdef NDEBUG
-#		define jBREAKPOINT() ((void) 0)
-#		ifdef _MSC_VER
-#			define jASSUME(exp) (__assume(exp))
-#		else
-#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
-#		endif
-#	else
-#		define jBREAKPOINT() __debugbreak();
-#		ifdef wxASSERT
-#			define jASSUME(exp) wxASSERT(exp)
-#		else
-#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
-#		endif
-#	endif
 #endif
 
 // --------------------------------------------------------------------------------------

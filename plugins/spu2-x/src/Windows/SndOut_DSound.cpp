@@ -476,7 +476,7 @@ BOOL CALLBACK DSound::ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 BOOL CALLBACK DSound::DSEnumCallback( LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext )
 {
-	jASSUME( DSoundOut != NULL );
+	pxAssume( DSoundOut != NULL );
 	return DS._DSEnumCallback( lpGuid, lpcstrDescription, lpcstrModule, lpContext );
 }
 
