@@ -67,11 +67,3 @@ static __inline__ __attribute__((always_inline)) s64 _InterlockedExchange64(vola
 	__sync_synchronize();
 	return __sync_lock_test_and_set(Target, Value);
 }
-
-/*** System information ***/
-static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
-{
-	unsigned int eax, edx;
-	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-	return ((unsigned long long)edx << 32) | eax;
-}

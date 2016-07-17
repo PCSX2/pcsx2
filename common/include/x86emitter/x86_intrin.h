@@ -49,6 +49,13 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
 	__cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
+static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
+{
+	unsigned int eax, edx;
+	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
+	return ((unsigned long long)edx << 32) | eax;
+}
+
 #endif
 
 // Rotate instruction
