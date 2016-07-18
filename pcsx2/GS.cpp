@@ -32,15 +32,14 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 	GetMTGS().SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate.Raw, newTickrate, 0 );
 }
 
-bool			gsIsInterlaced	= false;
-GS_RegionMode	gsRegionMode	= Region_NTSC;
+bool gsIsInterlaced	= false;
 
 
-void gsSetRegionMode( GS_RegionMode region )
+void gsSetVideoMode(GS_VideoMode mode )
 {
-	if( gsRegionMode == region ) return;
+	if( gsVideoMode == mode ) return;
 
-	gsRegionMode = region;
+	gsVideoMode = mode;
 	UpdateVSyncRate();
 }
 
@@ -157,21 +156,8 @@ __fi void gsWrite8(u32 mem, u8 value)
 
 static void _gsSMODEwrite( u32 mem, u32 value )
 {
-	switch (mem)
-	{
-	case GS_SMODE1:
-		if ( (value & 0x6000) == 0x6000 ) 
-			gsSetRegionMode( Region_PAL );
-		else if (value & 0x400000 || value & 0x200000) 
-			gsSetRegionMode( Region_NTSC_PROGRESSIVE );
-		else
-			gsSetRegionMode( Region_NTSC );
-		break;
-
-	case GS_SMODE2:
+	if(mem == GS_SMODE2)
 		gsIsInterlaced = (value & 0x1);
-		break;
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -436,5 +422,5 @@ void gsResetFrameSkip()
 void SaveStateBase::gsFreeze()
 {
 	FreezeMem(PS2MEM_GS, 0x2000);
-	Freeze(gsRegionMode);
+	Freeze(gsVideoMode);
 }
