@@ -80,6 +80,13 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	SetScrollbars(1, rowHeight, actualSize.x, actualSize.y / rowHeight, 0, 0);
 }
 
+CtrlRegisterList::~CtrlRegisterList()
+{
+	for (auto& regs : changedCategories)
+		delete[] regs;
+
+}
+
 wxSize CtrlRegisterList::getOptimalSize() const
 {
 	int columnChars = 0;
