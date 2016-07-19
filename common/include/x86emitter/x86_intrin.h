@@ -16,7 +16,7 @@
 #pragma once
 
 // Because nobody can't agree on a single name !
-#if defined(__GNUG__)
+#if defined(__GNUC__)
 
 // Yes there are several files for the same features!
 // x86intrin.h which is the general include provided by the compiler
