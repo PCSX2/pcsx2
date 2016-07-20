@@ -138,6 +138,10 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
 	m_shader = NULL;
+
+	// Purge any pending message to reduce noise in Valgrind (potential memory leak
+	// in Mesa driver that doesn't free internal buffer when the context is destroyed)
+	CheckDebugLog();
 }
 
 void GSDeviceOGL::GenerateProfilerData()
