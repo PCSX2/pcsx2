@@ -7956,6 +7956,7 @@ Serial = SLES-50677
 Name   = Shadow Hearts
 Region = PAL-E
 Compat = 5
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLES-50679
 Name   = Tenchu 3 - Wrath of Heaven
@@ -8287,6 +8288,7 @@ Compat = 5
 Serial = SLES-50822
 Name   = Shadow Hearts
 Region = PAL-M3
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLES-50826
 Name   = Star Wars - Clone Wars
@@ -30328,6 +30330,7 @@ MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 Serial = SLPS-25041
 Name   = Shadow Hearts
 Region = NTSC-J
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLPS-25042
 Name   = Maken Shao [Limited Edition]
@@ -33827,6 +33830,7 @@ Region = NTSC-J
 Serial = SLPS-73418
 Name   = Shadow Hearts [PlayStation 2 The Best]
 Region = NTSC-J
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLPS-73419
 Name   = Lupin III - Majutsu-Ou no Isan [PlayStation 2 The Best]
@@ -35306,6 +35310,7 @@ Serial = SLUS-20347
 Name   = Shadow Hearts
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLUS-20348
 Name   = Monopoly Party
