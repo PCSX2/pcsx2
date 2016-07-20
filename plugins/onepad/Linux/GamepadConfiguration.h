@@ -32,7 +32,7 @@
 #include "keyboard.h"
 #include "onepad.h"
 
-class GamepadConfiguration : public wxFrame
+class GamepadConfiguration : public wxDialog
 {
     wxPanel* m_pan_gamepad_config;
     wxCheckBox *m_cb_rumble, *m_cb_hack_sixaxis_usb, *m_cb_hack_sixaxis_pressure;

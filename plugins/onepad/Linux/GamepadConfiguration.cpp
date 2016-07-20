@@ -20,7 +20,7 @@
 #include "GamepadConfiguration.h"
 
 // Construtor of GamepadConfiguration
-GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxFrame(
+GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent) : wxDialog(
     parent, // Parent
     wxID_ANY, // ID
     _T("Gamepad configuration"), // Title

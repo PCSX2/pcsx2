@@ -32,7 +32,7 @@
 #include "keyboard.h"
 #include "onepad.h"
 
-class JoystickConfiguration : public wxFrame
+class JoystickConfiguration : public wxDialog
 {
     wxPanel* m_pan_joystick_config;
     wxCheckBox *m_cb_reverse_Lx, *m_cb_reverse_Ly, *m_cb_reverse_Rx, *m_cb_reverse_Ry,

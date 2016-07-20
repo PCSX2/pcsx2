@@ -20,7 +20,7 @@
 #include "dialog.h"
 
 // Construtor of Dialog
-Dialog::Dialog() : wxFrame( NULL, // Parent
+Dialog::Dialog() : wxDialog( NULL, // Parent
                             wxID_ANY, // ID
                             _T("OnePad configuration"), // Title
                             wxDefaultPosition, // Position
@@ -320,21 +320,24 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     }
     else if(bt_id == Gamepad_config) // If the button ID is equals to the Gamepad_config button ID
     {
-        m_frm_gamepad_config = new GamepadConfiguration(gamepad_id, this);
-        m_frm_gamepad_config->InitGamepadConfiguration();
-        m_frm_gamepad_config->Show(true);
+        GamepadConfiguration gamepad_config(gamepad_id, this);
+
+        gamepad_config.InitGamepadConfiguration();
+        gamepad_config.ShowModal();
     }
     else if(bt_id == JoyL_config) // If the button ID is equals to the JoyL_config button ID
     {
-        m_frm_joystick_config = new JoystickConfiguration(gamepad_id, true, this);
-        m_frm_joystick_config->InitJoystickConfiguration();
-        m_frm_joystick_config->Show(true);
+        JoystickConfiguration joystick_config(gamepad_id, true, this);
+
+        joystick_config.InitJoystickConfiguration();
+        joystick_config.ShowModal();
     }
     else if(bt_id == JoyR_config) // If the button ID is equals to the JoyR_config button ID
     {
-        m_frm_joystick_config = new JoystickConfiguration(gamepad_id, false, this);
-        m_frm_joystick_config->InitJoystickConfiguration();
-        m_frm_joystick_config->Show(true);
+        JoystickConfiguration joystick_config(gamepad_id, false, this);
+
+        joystick_config.InitJoystickConfiguration();
+        joystick_config.ShowModal();
     }
     else if(bt_id == Set_all) // If the button ID is equals to the Set_all button ID
     {
@@ -696,7 +699,8 @@ void Dialog::repopulate()
 // Main
 void DisplayDialog()
 {
-    Dialog* dialog = new Dialog();
-    dialog->InitDialog();
-    dialog->Show(true);
+    Dialog dialog;
+
+    dialog.InitDialog();
+    dialog.ShowModal();
 }

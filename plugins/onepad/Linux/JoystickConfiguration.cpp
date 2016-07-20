@@ -20,7 +20,7 @@
 #include "JoystickConfiguration.h"
 
 // Construtor of JoystickConfiguration
-JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *parent) : wxFrame(
+JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *parent) : wxDialog(
     parent, // Parent
     wxID_ANY, // ID
     _T("Gamepad configuration"), // Title
