@@ -30,9 +30,9 @@ class VU_Thread : public pxThread {
 	static const s32 buffer_size = (_1mb * 16) / sizeof(s32);
 	static const u32 buffer_mask = buffer_size - 1;
 	__aligned(4) u32 buffer[buffer_size];
-	__aligned(4) std::atomic<int> read_pos; // Only modified by VU thread
-	__aligned(4) std::atomic<bool> isBusy;   // Is thread processing data?
-	__aligned(4) s32  write_pos;    // Only modified by EE thread
+	std::atomic<int> read_pos; // Only modified by VU thread
+	std::atomic<bool> isBusy;   // Is thread processing data?
+	std::atomic<int> write_pos;    // Only modified by EE thread
 	__aligned(4) s32  write_offset; // Only modified by EE thread
 	__aligned(4) Mutex     mtxBusy;
 	__aligned(4) Semaphore semaEvent;
@@ -43,7 +43,7 @@ public:
 	__aligned16  vifStruct        vif;
 	__aligned16  VIFregisters     vifRegs;
 	__aligned(4) Semaphore semaXGkick;
-	__aligned(4) u32 vuCycles[4]; // Used for VU cycle stealing hack
+	__aligned(4) std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	__aligned(4) u32 vuCycleIdx;  // Used for VU cycle stealing hack
 
 	VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs);

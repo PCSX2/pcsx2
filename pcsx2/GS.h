@@ -275,8 +275,9 @@ class SysMtgsThread : public SysThreadBase
 
 public:
 	// note: when m_ReadPos == m_WritePos, the fifo is empty
-	__aligned(4) uint m_ReadPos;	// cur pos gs is reading from
-	__aligned(4) uint m_WritePos;	// cur pos ee thread is writing to
+	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
+	std::atomic<unsigned int> m_ReadPos;  // cur pos gs is reading from
+	std::atomic<unsigned int> m_WritePos; // cur pos ee thread is writing to
 
 	std::atomic<bool>	m_RingBufferIsBusy;
 	std::atomic<bool>	m_SignalRingEnable;
