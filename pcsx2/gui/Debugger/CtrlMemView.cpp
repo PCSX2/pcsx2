@@ -201,9 +201,9 @@ void CtrlMemView::render(wxDC& dc)
 		for (int j = 0; j < rowSize; j++)
 		{
 			u32 byteAddress = rowAddress + j;
-			u8 byteCurrent;
-			bool byteValid;
-			
+			u8 byteCurrent = 0;
+			bool byteValid = false;
+
 			try {
 				byteValid = validCpu && cpu->isValidAddress(byteAddress);
 
