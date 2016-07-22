@@ -20,10 +20,8 @@
 
 // Yes there are several files for the same features!
 // x86intrin.h which is the general include provided by the compiler
-// intrin_x86.h which is a compatibility layer (as this file) but with a BSD license
-// x86_intrin.h, this file, which is another compatibility layer
+// x86_intrin.h, this file, which is compatibility layer for severals intrinsics
 #include "x86intrin.h"
-#include "intrin_x86.h"
 
 #else
 

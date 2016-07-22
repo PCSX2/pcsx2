@@ -122,7 +122,6 @@
     <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h" />
     <ClInclude Include="..\..\include\Utilities\General.h" />
     <ClInclude Include="..\..\include\Utilities\HashMap.h" />
-    <ClInclude Include="..\..\include\intrin_x86.h" />
     <ClInclude Include="..\..\include\Utilities\lnx_memzero.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />

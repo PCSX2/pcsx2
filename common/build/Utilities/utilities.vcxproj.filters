@@ -165,9 +165,6 @@
     <ClInclude Include="..\..\include\Utilities\HashMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\intrin_x86.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\lnx_memzero.h">
       <Filter>Header Files</Filter>
     </ClInclude>
