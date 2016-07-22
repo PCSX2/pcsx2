@@ -205,8 +205,8 @@ void AnalyzeKeyEvent(keyEvent &evt)
 
 void PollForX11KeyboardInput()
 {
-	keyEvent evt;
-	XEvent E;
+	keyEvent evt = {0};
+	XEvent E = {0};
 
 	// Keyboard input send by PCSX2
 	while (!ev_fifo.empty()) {
