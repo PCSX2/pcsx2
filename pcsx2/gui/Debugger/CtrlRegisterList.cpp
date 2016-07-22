@@ -52,6 +52,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	category  = 0;
 	maxBits   = 128;
 	lastPc    = 0xFFFFFFFF;
+	resolvePointerStrings = false;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{
@@ -78,6 +79,13 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	wxSize actualSize = getOptimalSize();
 	SetVirtualSize(actualSize);
 	SetScrollbars(1, rowHeight, actualSize.x, actualSize.y / rowHeight, 0, 0);
+}
+
+CtrlRegisterList::~CtrlRegisterList()
+{
+	for (auto& regs : changedCategories)
+		delete[] regs;
+
 }
 
 wxSize CtrlRegisterList::getOptimalSize() const

@@ -63,7 +63,7 @@ enum gui_buttons {
 #define DEFAULT_WIDTH 1000
 #define DEFAULT_HEIGHT 740
 
-class Dialog : public wxFrame
+class Dialog : public wxDialog
 {
     // Panels
     opPanel* m_pan_tabs[GAMEPAD_NUMBER]; // Gamepad Tabs box
@@ -79,10 +79,6 @@ class Dialog : public wxFrame
     bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
     // Map the key pressed with the feedback image id
     std::map<u32,int> m_map_images[GAMEPAD_NUMBER];
-
-    // Frame
-    GamepadConfiguration* m_frm_gamepad_config; // Gamepad Configuration frame
-    JoystickConfiguration* m_frm_joystick_config; // Joystick Configuration frame
 
     // methods
     void config_key(int, int);

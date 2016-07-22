@@ -203,6 +203,7 @@ public:
 			FogColor_AREF = GSVector4::zero();
 			HalfTexel     = GSVector4::zero();
 			WH            = GSVector4::zero();
+			TA_Af         = GSVector4::zero();
 			MinMax        = GSVector4::zero();
 			MskFix        = GSVector4i::zero();
 			TC_OH_TS      = GSVector4::zero();

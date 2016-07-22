@@ -66,7 +66,7 @@ int FlatFileReader::FinishRead(void)
 
 	int min_nr = 1;
 	int max_nr = 1;
-    struct io_event* events = new io_event[max_nr];
+	struct io_event events[max_nr];
 
 	int event = io_getevents(m_aio_context, min_nr, max_nr, events, NULL);
 	if (event < 1) {
