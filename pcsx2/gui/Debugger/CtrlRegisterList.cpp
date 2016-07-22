@@ -52,6 +52,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	category  = 0;
 	maxBits   = 128;
 	lastPc    = 0xFFFFFFFF;
+	resolvePointerStrings = false;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{
