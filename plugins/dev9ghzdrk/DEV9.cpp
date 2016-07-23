@@ -396,9 +396,9 @@ u32 CALLBACK DEV9read32(u32 addr)
 		//smap
 		return smap_read32(addr);
 	}
-	switch (addr) {
+//	switch (addr) {
 
-		default:
+//		default:
 			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
 				return (u32)FLASHread32(addr, 4);
 			}
@@ -406,10 +406,10 @@ u32 CALLBACK DEV9read32(u32 addr)
 			hard = dev9Ru32(addr); 
 			DEV9_LOG("*Unknown 32bit read at address %lx value %x\n", addr, hard);
 			return hard;
-	}
+//	}
 
-	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
-	return hard;
+//	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
+//	return hard;
 }
 
 void CALLBACK DEV9write8(u32 addr,  u8 value) 
