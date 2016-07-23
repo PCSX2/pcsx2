@@ -59,6 +59,8 @@ EXPORT_C_(uint32) PSEgetLibVersion()
 
 EXPORT_C_(int32) GPUinit()
 {
+	theApp.Init();
+
 	GSVector4i::InitVectors();
 	GSVector4::InitVectors();
 #if _M_SSE >= 0x500
@@ -153,6 +155,8 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 
 EXPORT_C_(int32) GPUconfigure()
 {
+	theApp.Init();
+
 #ifdef _WIN32
 
 	GPUSettingsDlg dlg;

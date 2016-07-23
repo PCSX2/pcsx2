@@ -127,6 +127,21 @@ GSdxApp theApp;
 
 GSdxApp::GSdxApp()
 {
+	// Empty constructor causes an illegal instruction exception on an SSE4.2 machine on Windows.
+	// Non-empty doesn't, but raises a SIGILL signal when compiled against GCC 6.1.1.
+	// So here's a compromise.
+#ifdef _WIN32
+	Init();
+#endif
+}
+
+void GSdxApp::Init()
+{
+	static bool is_initialised = false;
+	if (is_initialised)
+		return;
+	is_initialised = true;
+
 	m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 

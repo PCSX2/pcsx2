@@ -127,6 +127,8 @@ EXPORT_C_(int) GSinit()
 	// can crash if the CPU does not support the instruction set.
 	// Initialise it here instead - it's not ideal since we have to strip the
 	// const type qualifier from all the affected variables.
+	theApp.Init();
+
 	GSBlock::InitVectors();
 	GSClut::InitVectors();
 	GSDrawScanlineCodeGenerator::InitVectors();
@@ -814,6 +816,8 @@ EXPORT_C GSconfigure()
 	try
 	{
 		if(!GSUtil::CheckSSE()) return;
+
+		theApp.Init();
 
 #ifdef _WIN32
 		GSDialog::InitCommonControls();
