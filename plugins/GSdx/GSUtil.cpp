@@ -35,58 +35,60 @@
 
 const char* GSUtil::GetLibName()
 {
-	// TODO: critsec
+	// The following ifdef mess is courtesy of "static string str;"
+	// being optimised by GCC to be unusable by older CPUs. Enjoy!
+	static char name[255];
 
-	static string str;
+	snprintf(name, sizeof(name), "GSdx "
 
-	if(str.empty())
-	{
-		str = "GSdx";
+#ifdef _WIN32
+		"%lld "
+#endif
+#ifdef _M_AMD64
+		"64-bit "
+#endif
+#ifdef __INTEL_COMPILER
+		"(Intel C++ %d.%02d %s)",
+#elif _MSC_VER
+		"(MSVC %d.%02d %s)",
+#elif __clang__
+		"(clang %d.%d.%d %s)",
+#elif __GNUC__
+		"(GCC %d.%d.%d %s)",
+#else
+		"(%s)",
+#endif
+#ifdef _WIN32
+		SVN_REV,
+#endif
+#ifdef __INTEL_COMPILER
+		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100,
+#elif _MSC_VER
+		_MSC_VER / 100, _MSC_VER % 100,
+#elif __clang__
+		__clang_major__, __clang_minor__, __clang_patchlevel__,
+#elif __GNUC__
+		__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
+#endif
 
-		#ifdef _WIN32
-		str += format(" %lld", SVN_REV);
-		if(SVN_MODS) str += "m";
-		#endif
+#if _M_SSE >= 0x501
+		"AVX2"
+#elif _M_SSE >= 0x500
+		"AVX"
+#elif _M_SSE >= 0x402
+		"SSE4.2"
+#elif _M_SSE >= 0x401
+		"SSE4.1"
+#elif _M_SSE >= 0x301
+		"SSSE3"
+#elif _M_SSE >= 0x200
+		"SSE2"
+#elif _M_SSE >= 0x100
+		"SSE"
+#endif
+	);
 
-		#ifdef _M_AMD64
-		str += " 64-bit";
-		#endif
-
-		list<string> sl;
-
-		#ifdef __INTEL_COMPILER
-		sl.push_back(format("Intel C++ %d.%02d", __INTEL_COMPILER / 100, __INTEL_COMPILER % 100));
-		#elif _MSC_VER
-		sl.push_back(format("MSVC %d.%02d", _MSC_VER / 100, _MSC_VER % 100));
-		#elif __GNUC__
-		sl.push_back(format("GCC %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__));
-		#endif
-
-		#if _M_SSE >= 0x501
-		sl.push_back("AVX2");
-		#elif _M_SSE >= 0x500
-		sl.push_back("AVX");
-		#elif _M_SSE >= 0x402
-		sl.push_back("SSE42");
-		#elif _M_SSE >= 0x401
-		sl.push_back("SSE41");
-		#elif _M_SSE >= 0x301
-		sl.push_back("SSSE3");
-		#elif _M_SSE >= 0x200
-		sl.push_back("SSE2");
-		#elif _M_SSE >= 0x100
-		sl.push_back("SSE");
-		#endif
-
-		for(list<string>::iterator i = sl.begin(); i != sl.end(); )
-		{
-			if(i == sl.begin()) str += " (";
-			str += *i;
-			str += ++i != sl.end() ? ", " : ")";
-		}
-	}
-
-	return str.c_str();
+	return name;
 }
 
 static class GSUtilMaps
