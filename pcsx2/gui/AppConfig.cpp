@@ -556,6 +556,9 @@ AppConfig::AppConfig()
 	{
 		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
 		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
+
+		// Folder memory card is autodetected later.
+		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
 	}
 
 	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
