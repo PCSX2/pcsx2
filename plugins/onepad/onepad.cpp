@@ -27,6 +27,7 @@
 
 #include "onepad.h"
 #include "svnrev.h"
+#include "state_management.h"
 
 #ifdef __linux__
 #include <unistd.h>
@@ -47,79 +48,8 @@ bool toggleAutoRepeat = false;
 
 const u32 version  = PS2E_PAD_VERSION;
 const u32 revision = 1;
-const u32 build    = 2;    // increase that with each version
+const u32 build    = 3;    // increase that with each version
 
-// Useless variable ...
-//int PadEnum[2][2] = {{0, 2}, {1, 3}};
-
-u8 stdpar[2][20] = {
-	{0xff, 0x5a, 0xff, 0xff, 0x80, 0x80, 0x80, 0x80,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00},
-	{0xff, 0x5a, 0xff, 0xff, 0x80, 0x80, 0x80, 0x80,
-	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	 0x00, 0x00, 0x00, 0x00}
-};
-u8 cmd40[2][8]    = {
-	{0xff, 0x5a, 0x00, 0x00, 0x02, 0x00, 0x00, 0x5a},
-	{0xff, 0x5a, 0x00, 0x00, 0x02, 0x00, 0x00, 0x5a}
-};
-u8 cmd41[2][8]    = {
-	{0xff, 0x5a, 0xff, 0xff, 0x03, 0x00, 0x00, 0x5a},
-	{0xff, 0x5a, 0xff, 0xff, 0x03, 0x00, 0x00, 0x5a}
-};
-u8 unk46[2][8]    = {
-	{0xFF, 0x5A, 0x00, 0x00, 0x01, 0x02, 0x00, 0x0A},
-	{0xFF, 0x5A, 0x00, 0x00, 0x01, 0x02, 0x00, 0x0A}
-};
-u8 unk47[2][8]    = {
-	{0xff, 0x5a, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00},
-	{0xff, 0x5a, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00}
-};
-u8 unk4c[2][8]    = {
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-};
-u8 unk4d[2][8]    = {
-	{0xff, 0x5a, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-	{0xff, 0x5a, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-};
-u8 cmd4f[2][8]    = {
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5a},
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5a}
-};
-u8 stdcfg[2][8]   = {
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-}; // 2 & 3 = 0
-u8 stdmode[2][8]  = {
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-	{0xff, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-};
-u8 stdmodel[2][8] = {
-		{0xff,
-		0x5a,
-		0x03, // 03 - dualshock2, 01 - dualshock
-		0x02, // number of modes
-		0x01, // current mode: 01 - analog, 00 - digital
-		0x02,
-		0x01,
-		0x00},
-	{0xff,
-	 0x5a,
-	 0x03, // 03 - dualshock2, 01 - dualshock
-	 0x02, // number of modes
-	 0x01, // current mode: 01 - analog, 00 - digital
-	 0x02,
-	 0x01,
-	 0x00}
-};
-
-u8 *buf;
-int padID[2];
-int padMode[2];
-int curPad, curByte, curCmd, cmdLen;
-int ds2mode = 0; // DS Mode at start
 FILE *padLog = NULL;
 
 pthread_spinlock_t	   mutex_KeyEvent;
@@ -127,11 +57,6 @@ bool mutex_WasInit = false;
 KeyStatus* key_status = NULL;
 
 queue<keyEvent> ev_fifo;
-
-static int padVib0[2];
-static int padVib1[2];
-//static int padVibC[2];
-static int padVibF[2][4];
 
 static void InitLibraryName()
 {
@@ -237,10 +162,14 @@ EXPORT_C_(s32) PADinit(u32 flags)
 
 	LoadConfig();
 
-	PADsetMode(0, 0);
-	PADsetMode(1, 0);
-
 	key_status = new KeyStatus();
+
+	Pad::reset_all();
+
+	query.reset();
+
+	for (int port = 0; port < 2; port++)
+		slots[port] = 0;
 
 	return 0;
 }
@@ -248,8 +177,10 @@ EXPORT_C_(s32) PADinit(u32 flags)
 EXPORT_C_(void) PADshutdown()
 {
 	CloseLogging();
+
 	delete conf;
 	conf = nullptr;
+
 	delete key_status;
 	key_status = nullptr;
 }
@@ -298,292 +229,27 @@ EXPORT_C_(u32) PADquery()
 	return 3; // both
 }
 
-void PADsetMode(int pad, int mode)
+EXPORT_C_(s32) PADsetSlot(u8 port, u8 slot)
 {
-	padMode[pad] = mode;
-	padVib0[pad] = 0;
-	padVib1[pad] = 0;
-	padVibF[pad][0] = 0;
-	padVibF[pad][1] = 0;
-	switch (ds2mode)
-	{
-		case 0: // dualshock
-			switch (mode)
-			{
-				case 0: // digital
-					padID[pad] = 0x41;
-					break;
-
-				case 1: // analog
-					padID[pad] = 0x73;
-					break;
-			}
-			break;
-
-		case 1: // dualshock2
-			switch (mode)
-			{
-				case 0: // digital
-					padID[pad] = 0x41;
-					break;
-
-				case 1: // analog
-					padID[pad] = 0x79;
-					break;
-			}
-			break;
+	port--;
+	slot--;
+	if (port > 1 || slot > 3) {
+		return 0;
 	}
+	// Even if no pad there, record the slot, as it is the active slot regardless.
+	slots[port] = slot;
+
+	return 1;
 }
 
 EXPORT_C_(u8) PADstartPoll(int pad)
 {
-	//PAD_LOG("PADstartPoll: %d\n", pad);
-
-	curPad = pad - 1;
-	curByte = 0;
-
-	return 0xff;
-}
-
-u8  _PADpoll(u8 value)
-{
-	u8 button_check = 0;
-	int vib_small;
-	int vib_big;
-
-	if (curByte == 0)
-	{
-		curByte++;
-
-		//PAD_LOG("PADpoll: cmd: %x\n", value);
-
-		curCmd = value;
-		switch (value)
-		{
-			case CMD_SET_VREF_PARAM: // DUALSHOCK2 ENABLER
-				cmdLen = 8;
-				buf = cmd40[curPad];
-				return 0xf3;
-
-			case CMD_QUERY_DS2_ANALOG_MODE: // QUERY_DS2_ANALOG_MODE
-				cmdLen = 8;
-				buf = cmd41[curPad];
-				return 0xf3;
-
-			case CMD_READ_DATA_AND_VIBRATE: // READ_DATA
-
-				stdpar[curPad][2] = key_status->get(curPad) >> 8;
-				stdpar[curPad][3] = key_status->get(curPad) & 0xff;
-				stdpar[curPad][4] = key_status->get(curPad, PAD_R_RIGHT);
-				stdpar[curPad][5] = key_status->get(curPad, PAD_R_UP);
-				stdpar[curPad][6] = key_status->get(curPad, PAD_L_RIGHT);
-				stdpar[curPad][7] = key_status->get(curPad, PAD_L_UP);
-
-				if (padMode[curPad] == 1)
-					cmdLen = 20;
-				else
-					cmdLen = 4;
-
-				// Square
-				stdpar[curPad][15] = !test_bit(stdpar[curPad][3], 7) ? key_status->get(curPad, PAD_SQUARE) : 0;
-				// X
-				stdpar[curPad][14] = !test_bit(stdpar[curPad][3], 6) ? key_status->get(curPad, PAD_CROSS) : 0;
-				// Circle
-				stdpar[curPad][13] = !test_bit(stdpar[curPad][3], 5) ? key_status->get(curPad, PAD_CIRCLE) : 0;
-				// Triangle
-				stdpar[curPad][12] = !test_bit(stdpar[curPad][3], 4) ? key_status->get(curPad, PAD_TRIANGLE) : 0;
-				// R1
-				stdpar[curPad][17] = !test_bit(stdpar[curPad][3], 3) ? key_status->get(curPad, PAD_R1) : 0;
-				// L1
-				stdpar[curPad][16] = !test_bit(stdpar[curPad][3], 2) ? key_status->get(curPad, PAD_L1) : 0;
-				// R2
-				stdpar[curPad][19] = !test_bit(stdpar[curPad][3], 1) ? key_status->get(curPad, PAD_R2) : 0;
-				// L2
-				stdpar[curPad][18] = !test_bit(stdpar[curPad][3], 0) ? key_status->get(curPad, PAD_L2) : 0;
-
-				button_check = stdpar[curPad][2] >> 4;
-				// LEFT
-				stdpar[curPad][9] = !test_bit(button_check, 3) ? key_status->get(curPad, PAD_LEFT) : 0;
-				// DOWN
-				stdpar[curPad][11] = !test_bit(button_check, 2) ? key_status->get(curPad, PAD_DOWN) : 0;
-				// RIGHT
-				stdpar[curPad][8] = !test_bit(button_check, 1) ? key_status->get(curPad, PAD_RIGHT) : 0;
-				// UP
-				stdpar[curPad][10] = !test_bit(button_check, 0) ? key_status->get(curPad, PAD_UP) : 0;
-
-				buf = stdpar[curPad];
-
-				/* Small Motor */
-				vib_small = padVibF[curPad][0] ? 2000 : 0;
-				// if ((padVibF[curPad][2] != vib_small) && (padVibC[curPad] >= 0))
-				if (padVibF[curPad][2] != vib_small)
-				{
-					padVibF[curPad][2] = vib_small;
-					GamePad::DoRumble(0, curPad);
-				}
-
-				/* Big Motor */
-				vib_big = padVibF[curPad][1] ? 500 + 37*padVibF[curPad][1] : 0;
-				// if ((padVibF[curPad][3] != vib_big) && (padVibC[curPad] >= 0))
-				if (padVibF[curPad][3] != vib_big)
-				{
-					padVibF[curPad][3] = vib_big;
-					GamePad::DoRumble(1, curPad);
-				}
-
-				return padID[curPad];
-
-			case CMD_CONFIG_MODE: // CONFIG_MODE
-				cmdLen = 8;
-				buf = stdcfg[curPad];
-				if (stdcfg[curPad][3] == 0xff)
-					return 0xf3;
-				else
-					return padID[curPad];
-
-			case CMD_SET_MODE_AND_LOCK: // SET_MODE_AND_LOCK
-				cmdLen = 8;
-				buf = stdmode[curPad];
-				return 0xf3;
-
-			case CMD_QUERY_MODEL_AND_MODE: // QUERY_MODEL_AND_MODE
-				cmdLen = 8;
-				buf = stdmodel[curPad];
-				buf[4] = padMode[curPad];
-				return 0xf3;
-
-			case CMD_QUERY_ACT: // ??
-				cmdLen = 8;
-				buf = unk46[curPad];
-				return 0xf3;
-
-			case CMD_QUERY_COMB: // ??
-				cmdLen = 8;
-				buf = unk47[curPad];
-				return 0xf3;
-
-			case CMD_QUERY_MODE: // QUERY_MODE ??
-				cmdLen = 8;
-				buf = unk4c[curPad];
-				return 0xf3;
-
-			case CMD_VIBRATION_TOGGLE:
-				cmdLen = 8;
-				buf = unk4d[curPad];
-				return 0xf3;
-
-			case CMD_SET_DS2_NATIVE_MODE: // SET_DS2_NATIVE_MODE
-				cmdLen = 8;
-				padID[curPad] = 0x79; // setting ds2 mode
-				ds2mode = 1; // Set DS2 Mode
-				buf = cmd4f[curPad];
-				return 0xf3;
-
-			default:
-				PAD_LOG("*PADpoll*: unknown cmd %x\n", value);
-				break;
-		}
-	}
-
-	switch (curCmd)
-	{
-		case CMD_READ_DATA_AND_VIBRATE:
-
-			if (curByte == padVib0[curPad])
-				padVibF[curPad][0] = value&1;
-			if (curByte == padVib1[curPad])
-				padVibF[curPad][1] = value;
-			break;
-		case CMD_CONFIG_MODE:
-			if (curByte == 2)
-			{
-				switch (value)
-				{
-					case 0:
-						buf[2] = 0;
-						buf[3] = 0;
-						break;
-					case 1:
-						buf[2] = 0xff;
-						buf[3] = 0xff;
-						break;
-				}
-			}
-			break;
-
-		case CMD_SET_MODE_AND_LOCK:
-			if (curByte == 2)
-			{
-				PADsetMode(curPad, value);
-			}
-			break;
-
-		case CMD_QUERY_ACT:
-			if (curByte == 2)
-			{
-				switch (value)
-				{
-					case 0: // default
-						buf[5] = 0x2;
-						buf[6] = 0x0;
-						buf[7] = 0xA;
-						break;
-					case 1: // Param std conf change
-						buf[5] = 0x1;
-						buf[6] = 0x1;
-						buf[7] = 0x14;
-						break;
-				}
-			}
-			break;
-
-		case CMD_QUERY_MODE:
-			if (curByte == 2)
-			{
-				switch (value)
-				{
-					case 0: // mode 0 - digital mode
-						buf[5] = 0x4;
-						break;
-
-					case 1: // mode 1 - analog mode
-						buf[5] = 0x7;
-						break;
-				}
-			}
-			break;
-
-		case CMD_VIBRATION_TOGGLE:
-
-			if (curByte >= 2)
-			{
-				if (curByte == padVib0[curPad])
-					buf[curByte] = 0x00;
-				if (curByte == padVib1[curPad])
-					buf[curByte] = 0x01;
-				if (value == 0x00)
-				{
-					padVib0[curPad] = curByte;
-				}
-				else if (value == 0x01)
-				{
-					padVib1[curPad] = curByte;
-				}
-			}
-			break;
-	}
-
-	if (curByte >= cmdLen) return 0;
-	return buf[curByte++];
+	return pad_start_poll(pad);
 }
 
 EXPORT_C_(u8) PADpoll(u8 value)
 {
-	u8 ret;
-
-	ret = _PADpoll(value);
-	//PAD_LOG("PADpoll: %x (%d: %x)\n", value, curByte, ret);
-	return ret;
+	return pad_poll(value);
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)

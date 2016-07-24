@@ -38,7 +38,7 @@ set(onepadGuiResources
     )
 
 # plugin name
-set(Output onepad-1.2.0)
+set(Output onepad-1.3.0)
 set(onepadFinalFlags "")
 
 # onepad sources
@@ -48,7 +48,8 @@ set(onepadSources
 	SDL/joystick.cpp
 	keyboard.cpp
 	KeyStatus.cpp
-	onepad.cpp)
+	onepad.cpp
+	state_management.cpp)
 
 # onepad headers
 set(onepadHeaders
@@ -58,7 +59,8 @@ set(onepadHeaders
 	SDL/joystick.h
 	keyboard.h
 	KeyStatus.h
-	onepad.h)
+	onepad.h
+	state_management.h)
 
 # onepad Linux sources
 set(onepadLinuxSources
@@ -85,14 +87,10 @@ set(onepadWindowsHeaders
 	)
 
 if (SDL2_API)
-	set(onepadFinalLibs
-		${SDL2_LIBRARIES}
-	)
+	set(onepadFinalLibs ${SDL2_LIBRARIES})
 	add_definitions(-DSDL_BUILD)
 else()
-	set(onepadFinalLibs
-		${SDL_LIBRARY}
-	)
+	set(onepadFinalLibs ${SDL_LIBRARY})
 	add_definitions(-DSDL_BUILD)
 endif()
 
