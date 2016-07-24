@@ -20,8 +20,6 @@
 #include "newVif.h"
 #include "MTVU.h"
 
-#include "SamplProf.h"
-
 #include "Elfheader.h"
 
 #include "System/RecTypes.h"
@@ -43,8 +41,6 @@ RecompiledCodeReserve::RecompiledCodeReserve( const wxString& name, uint defComm
 	m_blocksize		= (1024 * 128) / __pagesize;
 	m_prot_mode		= PageAccess_Any();
 	m_def_commit	= defCommit / __pagesize;
-	
-	m_profiler_registered = false;
 }
 
 RecompiledCodeReserve::~RecompiledCodeReserve() throw()
@@ -55,17 +51,12 @@ RecompiledCodeReserve::~RecompiledCodeReserve() throw()
 void RecompiledCodeReserve::_registerProfiler()
 {
 	if (m_profiler_name.IsEmpty() || !IsOk()) return;
-	ProfilerRegisterSource( m_profiler_name, m_baseptr, GetReserveSizeInBytes() );
-	m_profiler_registered = true;
 
-	// Could potentially be integrated into ProfilerRegisterSource
 	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.ToUTF8());
 }
 
 void RecompiledCodeReserve::_termProfiler()
 {
-	if (m_profiler_registered)
-		ProfilerTerminateSource( m_profiler_name );
 }
 
 uint RecompiledCodeReserve::_calcDefaultCommitInBlocks() const

@@ -23,7 +23,6 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
-#include "SamplProf.h"
 
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.

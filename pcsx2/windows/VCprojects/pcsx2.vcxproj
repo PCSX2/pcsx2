@@ -203,7 +203,6 @@
     <ClCompile Include="..\..\Pcsx2Config.cpp" />
     <ClCompile Include="..\..\PluginManager.cpp" />
     <ClCompile Include="..\FlatFileReaderWindows.cpp" />
-    <ClCompile Include="..\SamplProf.cpp" />
     <ClCompile Include="..\..\SaveState.cpp" />
     <ClCompile Include="..\..\SourceLog.cpp" />
     <ClCompile Include="..\..\System\SysCoreThread.cpp" />
@@ -456,7 +455,6 @@
     <ClInclude Include="..\..\IopCommon.h" />
     <ClInclude Include="..\..\NakedAsm.h" />
     <ClInclude Include="..\..\Plugins.h" />
-    <ClInclude Include="..\..\SamplProf.h" />
     <ClInclude Include="..\..\SaveState.h" />
     <ClInclude Include="..\..\System.h" />
     <ClInclude Include="..\..\System\SysThreads.h" />
