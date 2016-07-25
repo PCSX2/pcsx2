@@ -35,6 +35,8 @@ typedef struct
 class KeyStatus
 {
 	private:
+		const u8 m_analog_released_val;
+
 		u16 m_button[GAMEPAD_NUMBER];
 		u16 m_internal_button_kbd[GAMEPAD_NUMBER];
 		u16 m_internal_button_joy[GAMEPAD_NUMBER];
@@ -53,7 +55,7 @@ class KeyStatus
 		u8   analog_merge(u8 kbd, u8 joy);
 
 	public:
-		KeyStatus() { Init(); }
+		KeyStatus() : m_analog_released_val(0x7F) { Init(); }
 		void Init();
 
 		void keyboard_state_acces(u32 pad) { m_state_acces[pad] = true; }

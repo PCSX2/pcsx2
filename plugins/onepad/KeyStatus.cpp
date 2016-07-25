@@ -33,18 +33,18 @@ void KeyStatus::Init()
 			m_internal_button_pressure[pad][index] = 0xFF;
 		}
 
-		m_analog[pad].lx = 0x80;
-		m_analog[pad].ly = 0x80;
-		m_analog[pad].rx = 0x80;
-		m_analog[pad].ry = 0x80;
-		m_internal_analog_kbd[pad].lx = 0x80;
-		m_internal_analog_kbd[pad].ly = 0x80;
-		m_internal_analog_kbd[pad].rx = 0x80;
-		m_internal_analog_kbd[pad].ry = 0x80;
-		m_internal_analog_joy[pad].lx = 0x80;
-		m_internal_analog_joy[pad].ly = 0x80;
-		m_internal_analog_joy[pad].rx = 0x80;
-		m_internal_analog_joy[pad].ry = 0x80;
+		m_analog[pad].lx = m_analog_released_val;
+		m_analog[pad].ly = m_analog_released_val;
+		m_analog[pad].rx = m_analog_released_val;
+		m_analog[pad].ry = m_analog_released_val;
+		m_internal_analog_kbd[pad].lx = m_analog_released_val;
+		m_internal_analog_kbd[pad].ly = m_analog_released_val;
+		m_internal_analog_kbd[pad].rx = m_analog_released_val;
+		m_internal_analog_kbd[pad].ry = m_analog_released_val;
+		m_internal_analog_joy[pad].lx = m_analog_released_val;
+		m_internal_analog_joy[pad].ly = m_analog_released_val;
+		m_internal_analog_joy[pad].rx = m_analog_released_val;
+		m_internal_analog_joy[pad].ry = m_analog_released_val;
 	}
 }
 
@@ -69,8 +69,10 @@ void KeyStatus::press(u32 pad, u32 index, s32 value)
 		// Normal mode : expect value 0  -> 80 -> FF
 		// Reverse mode: expect value FF -> 7F -> 0
 		u8 force = (value / 256);
-		if (analog_is_reversed(pad,index)) analog_set(pad, index, 0x7F - force);
-		else						   analog_set(pad, index, 0x80 + force);
+		if (analog_is_reversed(pad,index))
+			analog_set(pad, index, m_analog_released_val - force);
+		else
+			analog_set(pad, index, m_analog_released_val + force);
 	}
 }
 
@@ -82,7 +84,7 @@ void KeyStatus::release(u32 pad, u32 index)
 		else
 			set_bit(m_internal_button_joy[pad], index);
 	} else {
-		analog_set(pad, index, 0x80);
+		analog_set(pad, index, m_analog_released_val);
 	}
 }
 
@@ -163,7 +165,7 @@ u8 KeyStatus::get(u32 pad, u32 index)
 
 u8 KeyStatus::analog_merge(u8 kbd, u8 joy)
 {
-	if (kbd != 0x80)
+	if (kbd != m_analog_released_val)
 		return kbd;
 	else
 		return joy;
