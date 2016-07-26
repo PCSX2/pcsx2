@@ -87,11 +87,6 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
-	if (!CanConvertDepth()) {
-		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
-		throw GSDXRecoverableError();
-	}
-
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 
 	Source* src = NULL;
@@ -107,6 +102,17 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 			dst = t;
 			break;
+		}
+	}
+
+	if (!CanConvertDepth()) {
+		if (dst) {
+			GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+			throw GSDXRecoverableError();
+		} else {
+			// LookupSource call LookupDepthSource, I'm sure it is nice testcase for formal tools ;)
+			GL_CACHE("LookupDepthSource not supported let's try standard LookupSource");
+			return LookupSource(TEX0, TEXA, r);
 		}
 	}
 
@@ -608,9 +614,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 {
-	if (!CanConvertDepth())
-		return;
-
 	for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); i++)
 	{
 		Target* t = *i;
