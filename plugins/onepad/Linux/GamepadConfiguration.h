@@ -40,7 +40,7 @@ class GamepadConfiguration : public wxDialog
     wxButton *m_bt_ok, *m_bt_cancel;
     wxStaticText *m_lbl_rumble_intensity;
 
-    int m_pad_id;
+    u32 m_pad_id;
     u32 m_init_rumble_intensity, m_init_joystick_sensibility;
     bool m_init_rumble, m_init_hack_sixaxis, m_init_hack_sixaxis_pressure;
 
