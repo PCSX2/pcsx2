@@ -467,35 +467,26 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(m_renderer->CanUpscale())
 	{
-		int multiplier = m_renderer->GetUpscaleMultiplier();
+		float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
+		GSVector2 scale_factor(multiplier, multiplier);
 
-		if(multiplier > 1)
+		if(!multiplier) //Custom Resolution
 		{
-			dst->m_texture->SetScale(GSVector2((float)multiplier, (float)multiplier));
+			int width = m_renderer->GetDisplayRect().width();
+			int height = m_renderer->GetDisplayRect().height();
+			int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / dst->m_texture->GetScale().y));
+
+			// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
+			if(real_height % height == 1)
+				height = real_height;
+
+			GSVector2i custom_resolution = m_renderer->GetCustomResolution();
+			scale_factor.x = static_cast<float>(custom_resolution.x) / width;
+			scale_factor.y = static_cast<float>(custom_resolution.y) / height;
 		}
-		else  // Custom resolution hack
-		{
-			GSVector4i fr = m_renderer->GetFrameRect();
 
-			int ww = (int)(fr.left + m_renderer->GetDisplayRect().width());
-			int hh = (int)(fr.top + m_renderer->GetDisplayRect().height());
-
-			// Gregory: I'm sure this sillyness is related to the usage of a 32bits
-			// buffer as a 16 bits format. In this case the height of the buffer is
-			// multiplyed by 2 (Hence a scissor bigger than the RT)
-
-			// This vp2 fix doesn't work most of the time
-
-			if(hh < 512 && m_renderer->m_context->SCISSOR.SCAY1 == 511) // vp2
-			{
-				hh = 512;
-			}
-
-			if(ww && hh)
-			{
-				dst->m_texture->SetScale(GSVector2((float)w / ww, (float)h / hh));
-			}
-		}
+		if(scale_factor.x && scale_factor.y)
+			dst->m_texture->SetScale(scale_factor);
 	}
 
 	if(used)

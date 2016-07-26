@@ -32,6 +32,8 @@ class GSRendererHW : public GSRenderer
 private:
 	int m_width;
 	int m_height;
+	int m_custom_width;
+	int m_custom_height;
 	bool m_reset;
 	int m_upscale_multiplier;
 
@@ -162,6 +164,7 @@ public:
 	void SetGameCRC(uint32 crc, int options);
 	bool CanUpscale();
 	int GetUpscaleMultiplier();
+	GSVector2i GetCustomResolution();
 	void SetScaling();
 
 	void Reset();
