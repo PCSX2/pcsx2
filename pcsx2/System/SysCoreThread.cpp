@@ -197,6 +197,8 @@ void SysCoreThread::_reset_stuff_as_needed()
 
 		m_resetVirtualMachine	= false;
 		m_resetVsyncTimers		= false;
+
+		ResetCheatsCount();
 	}
 
 	if( m_resetVsyncTimers )
