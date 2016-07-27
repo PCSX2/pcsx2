@@ -3100,6 +3100,11 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		else _mm_storeu_ps((float*)p, v.m);
 	}
 
+	__forceinline static void store(float* p, const GSVector4& v)
+	{
+		_mm_store_ss(p, v.m);
+	}
+
 	__forceinline static void expand(const GSVector4i& v, GSVector4& a, GSVector4& b, GSVector4& c, GSVector4& d)
 	{
 		GSVector4i mask = GSVector4i::x000000ff();

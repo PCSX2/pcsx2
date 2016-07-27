@@ -530,7 +530,7 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 	// Suikoden 4 creates some nan for Q. Let's avoid undefined behavior (See GIFRegHandlerRGBAQ)
 	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
 
-	*(int*)&m_q = GSVector4i::store(q);
+	GSVector4::store(&m_q, GSVector4::cast(q));
 
 	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
