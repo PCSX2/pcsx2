@@ -1741,8 +1741,11 @@ void GSTextureCache::Target::Update()
 
 	GSVector2i t_size = m_texture->GetSize();
 	GSVector2 t_scale = m_texture->GetScale();
-	t_size.x = (int)((float)t_size.x/max(1.0f, t_scale.x));
-	t_size.y = (int)((float)t_size.y/max(1.0f, t_scale.y));
+
+	//Avoids division by zero when calculating texture size.
+	t_scale = GSVector2(max(1.0f, t_scale.x), max(1.0f, t_scale.y));
+	t_size.x = lround(static_cast<float>(t_size.x) / t_scale.x);
+	t_size.y = lround(static_cast<float>(t_size.y) / t_scale.y);
 
 	// Don't load above the GS memory
 	int max_y_blocks = (MAX_BLOCKS - m_TEX0.TBP0) / max(1u, m_TEX0.TBW);
