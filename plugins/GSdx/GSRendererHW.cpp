@@ -860,7 +860,7 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
 			//GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
 			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
-				m_dev->ClearDepth(ds, 0);
+				m_dev->ClearDepth(ds);
 			} else {
 				m_dev->ClearRenderTarget(rt, 0);
 			}
@@ -1095,7 +1095,7 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 	{
 		// random battle transition (z buffer written directly, clear it now)
 
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1144,7 +1144,7 @@ bool GSRendererHW::OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::So
 
 		if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(tmp_ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture);
 		}
 
 		return false;
@@ -1166,7 +1166,7 @@ bool GSRendererHW::OI_SimpsonsGame(GSTexture* rt, GSTexture* ds, GSTextureCache:
 
 		// TODO: tony hawk pro skater 4 same problem, the empty half is not visible though, painted over fully
 
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1210,7 +1210,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 			{
-				m_dev->ClearDepth(tmp_ds->m_texture, 0);
+				m_dev->ClearDepth(tmp_ds->m_texture);
 			}
 
 			return false;
@@ -1228,7 +1228,7 @@ bool GSRendererHW::OI_SpidermanWoS(GSTexture* rt, GSTexture* ds, GSTextureCache:
 	if((FBP == 0x025a0 || FBP == 0x02800) && FPSM == PSM_PSMCT32)	//0x2800 pal, 0x25a0 ntsc
 	{
 		//only top half of the screen clears
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1242,7 +1242,7 @@ bool GSRendererHW::OI_TyTasmanianTiger(GSTexture* rt, GSTexture* ds, GSTextureCa
 	if((FBP == 0x02800 || FBP == 0x02BC0) && FPSM == PSM_PSMCT24)	//0x2800 pal, 0x2bc0 ntsc
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1260,7 +1260,7 @@ bool GSRendererHW::OI_DigimonRumbleArena2(GSTexture* rt, GSTexture* ds, GSTextur
 		if((FBP == 0x02300 || FBP == 0x03fc0) && FPSM == PSM_PSMCT32)
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1275,7 +1275,7 @@ bool GSRendererHW::OI_BlackHawkDown(GSTexture* rt, GSTexture* ds, GSTextureCache
 	if(FBP == 0x02000 && FPSM == PSM_PSMZ24)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1292,7 +1292,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1301,7 +1301,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_max.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1316,7 +1316,7 @@ bool GSRendererHW::OI_XmenOriginsWolverine(GSTexture* rt, GSTexture* ds, GSTextu
 	if(FBP == 0x0 && FPSM == PSM_PSMCT16)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1330,7 +1330,7 @@ bool GSRendererHW::OI_CallofDutyFinalFronts(GSTexture* rt, GSTexture* ds, GSText
 	if(FBP == 0x02300 && FPSM == PSM_PSMZ24)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1348,7 +1348,7 @@ bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureC
 		if(FPSM == PSM_PSMCT24 && (FBP == 0x02800 || FBP == 0x02bc0))	//0x2800 pal, 0x2bc0 ntsc
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1357,7 +1357,7 @@ bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureC
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1374,7 +1374,7 @@ bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureC
 		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1383,7 +1383,7 @@ bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureC
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1398,7 +1398,7 @@ bool GSRendererHW::OI_TalesOfLegendia(GSTexture* rt, GSTexture* ds, GSTextureCac
 	if (FPSM == PSM_PSMCT32 && FBP == 0x01c00 && !m_context->TEST.ATE && m_vt.m_eq.z)
 	{
 		m_context->TEST.ZTST = ZTST_ALWAYS;
-		//m_dev->ClearDepth(ds, 0);
+		//m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1421,7 +1421,7 @@ bool GSRendererHW::OI_SMTNocturne(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		TEX0.PSM = FPSM;
 		if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(tmp_ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture);
 		}
 		return false;
 	}
@@ -1540,7 +1540,7 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 
 	if (m_vertex.next == 2 && !PRIM->TME && m_context->FRAME.FBW == 10 && v->XYZ.Z == 0 && m_context->TEST.ZTST == ZTST_ALWAYS) {
 		GL_INS("OI_ArTonelico2");
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;

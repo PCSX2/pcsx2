@@ -463,7 +463,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 #ifdef ENABLE_OGL_DEBUG
 				switch (type) {
 					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture, 0); break;
+					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
 					default:break;
 				}
 #endif
@@ -1771,7 +1771,7 @@ void GSTextureCache::Target::Update()
 		GL_INS("ERROR: Update DepthStencil dummy");
 
 		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
-			m_renderer->m_dev->ClearDepth(m_texture, 0);
+			m_renderer->m_dev->ClearDepth(m_texture);
 
 		return;
 	} else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
@@ -1784,7 +1784,7 @@ void GSTextureCache::Target::Update()
 		// could be a gsdx transfer bug too due to unaligned-page transfer.
 		//
 		// So the quick and dirty solution is just to clean the depth buffer.
-		m_renderer->m_dev->ClearDepth(m_texture, 0);
+		m_renderer->m_dev->ClearDepth(m_texture);
 		return;
 	}
 

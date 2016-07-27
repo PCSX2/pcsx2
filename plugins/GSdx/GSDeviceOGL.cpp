@@ -229,7 +229,7 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 				ClearRenderTarget(t, 0);
 				break;
 			case GSTexture::DepthStencil:
-				ClearDepth(t, 0);
+				ClearDepth(t);
 				// No need to clear the stencil now.
 				break;
 		}
@@ -251,7 +251,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 				ClearRenderTarget(t, 0);
 				break;
 			case GSTexture::DepthStencil:
-				ClearDepth(t, 0);
+				ClearDepth(t);
 				// No need to clear the stencil now.
 				break;
 			case GSTexture::Texture:
@@ -733,7 +733,7 @@ void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
 	}
 }
 
-void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
+void GSDeviceOGL::ClearDepth(GSTexture* t)
 {
 	if (!t) return;
 
@@ -750,7 +750,6 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 		// Let's disable this code for the moment.
 
 		// Don't bother with Depth_Stencil insanity
-		ASSERT(c == 0.0f);
 		T->Clear(NULL);
 	} else {
 		OMSetFBO(m_fbo);
@@ -761,6 +760,7 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 
 		// TODO: check size of scissor before toggling it
 		glDisable(GL_SCISSOR_TEST);
+		float c = 0.0f;
 		if (GLState::depth_mask) {
 			glClearBufferfv(GL_DEPTH, 0, &c);
 		} else {
