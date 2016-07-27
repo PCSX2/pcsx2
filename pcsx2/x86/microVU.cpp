@@ -191,16 +191,20 @@ __ri void mVUcacheProg(microVU& mVU, microProgram& prog) {
 
 // Generate Hash for partial program based on compiled ranges...
 u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
-	u32 hash[2] = {0, 0};
+	union {
+		u64 v64;
+		u32 v32[2];
+	} hash = {0};
+
 	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		for(int i = it[0].start/4; i < it[0].end/4; i++) {
-			hash[0] -= prog.data[i];
-			hash[1] ^= prog.data[i];
+			hash.v32[0] -= prog.data[i];
+			hash.v32[1] ^= prog.data[i];
 		}
 	}
-	return *(u64*)hash;
+	return hash.v64;
 }
 
 // Prints the ratio of unique programs to total programs
