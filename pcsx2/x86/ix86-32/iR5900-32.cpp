@@ -1618,8 +1618,7 @@ static void __fastcall recRecompile( const u32 startpc )
 		// First tentative was to call eeGameStarting directly (not through the
 		// recompiler) but it crashes some games (GT4, DMC3). It is either a
 		// thread issue or linked to the various components reset.
-		if (EmuConfig.EnablePatches) ApplyPatch(PPT_ONCE_ON_LOAD);
-		if (EmuConfig.EnableCheats)  ApplyCheat(PPT_ONCE_ON_LOAD);
+		ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 	}
 
 	g_branch = 0;

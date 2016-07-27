@@ -424,6 +424,8 @@ void handle_extended_t(IniPatch *p)
 	}
 }
 
+// Only used from Patch.cpp and we don't export this in any h file.
+// Patch.cpp itself declares this prototype, so make sure to keep in sync.
 void _ApplyPatch(IniPatch *p)
 {
 	if (p->enabled == 0) return;

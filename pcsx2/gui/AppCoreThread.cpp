@@ -54,7 +54,7 @@ public:
 
 	bool AllowCancelOnExit() const { return false; }
 	bool IsCriticalEvent() const { return m_IsCritical; }
-	
+
 	SysExecEvent_InvokeCoreThreadMethod( FnPtr_CoreThreadMethod method, bool critical=false )
 	{
 		m_method = method;
@@ -113,7 +113,7 @@ void AppCoreThread::Reset()
 		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset) );
 		return;
 	}
-		
+
 	_parent::Reset();
 }
 
@@ -203,7 +203,7 @@ void AppCoreThread::OnResumeReady()
 {
 	wxGetApp().SysApplySettings();
 	wxGetApp().PostMethod( AppSaveSettings );
-	
+
 	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
 	_parent::OnResumeReady();
 }
@@ -232,7 +232,7 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 			++gf;
 		}
 	}
-	
+
 	if (game.keyExists("vuRoundMode"))
 	{
 		SSE_RoundMode vuRM = (SSE_RoundMode)game.getInt("vuRoundMode");
@@ -359,6 +359,8 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	curGameKey = newGameKey;
 
+	ForgetLoadedPatches();
+
 	if (!curGameKey.IsEmpty())
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase() )
@@ -375,7 +377,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 			if (fixup.EnablePatches)
 			{
-				if (int patches = InitPatches(gameCRC, game))
+				if (int patches = LoadPatchesFromGamesDB(gameCRC, game))
 				{
 					gamePatch.Printf(L" [%d Patches]", patches);
 					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
@@ -400,8 +402,6 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 		gameName = L"Booting PS2 BIOS... ";
 	}
 
-	ResetCheatsCount();
-
 	//Till the end of this function, entry CRC will be 00000000
 	if (!gameCRC.Length())
 	{
@@ -411,20 +411,21 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadCheats(gameCRC, GetCheatsFolder(), L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, GetCheatsFolder(), L"Cheats"));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadCheats(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
+			Console.WriteLn(Color_Gray, "Found ws patches at cheats_ws --> skipping cheats_ws.zip");
 		}
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
-			int numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive);
+			int numberDbfCheatsLoaded = LoadPatchesFromZip(gameCRC, cheats_ws_archive);
 			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
@@ -517,7 +518,7 @@ void AppCoreThread::GameStartingInThread()
 	_reset_stuff_as_needed();
 	ClearMcdEjectTimeoutNow(); // probably safe to do this when a game boots, eliminates annoying prompts
 	m_ExecMode = ExecMode_Opened;
-	
+
 	_parent::GameStartingInThread();
 }
 
@@ -552,7 +553,7 @@ void AppCoreThread::DoCpuExecute()
 		Console.Error( ex.FormatMessage() );
 
 		// [TODO] : Debugger Hook!
-		
+
 		if( ++m_except_threshold > 6 )
 		{
 			// If too many TLB Misses occur, we're probably going to crash and
@@ -611,7 +612,7 @@ void SysExecEvent_CoreThreadClose::InvokeEvent()
 	ScopedCoreThreadClose closed_core;
 	_post_and_wait(closed_core);
 	closed_core.AllowResume();
-}	
+}
 
 
 void SysExecEvent_CoreThreadPause::InvokeEvent()
@@ -621,7 +622,7 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 	ScopedCoreThreadPause paused_core;
 	_post_and_wait(paused_core);
 
-	// All plugins should be initialized and opened upon resuming from 
+	// All plugins should be initialized and opened upon resuming from
 	// a paused state.  If the thread that puased us changed plugin status, it should
 	// have used Close instead.
 	if( CorePluginsAreOpen )
@@ -638,7 +639,7 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 	paused_core.AllowResume();
 
 #endif
-}	
+}
 
 
 // --------------------------------------------------------------------------------------
@@ -713,7 +714,7 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 		m_alreadyScoped = true;
 		return;
 	}
-	
+
 	if( !PostToSysExec(new SysExecEvent_CoreThreadClose()) )
 	{
 		m_alreadyStopped = CoreThread.IsClosed();

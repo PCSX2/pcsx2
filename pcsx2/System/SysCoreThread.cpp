@@ -198,8 +198,7 @@ void SysCoreThread::_reset_stuff_as_needed()
 		m_resetVirtualMachine	= false;
 		m_resetVsyncTimers		= false;
 
-		ResetPatchesCount();
-		ResetCheatsCount();
+		ForgetLoadedPatches();
 	}
 
 	if( m_resetVsyncTimers )
@@ -228,9 +227,7 @@ void SysCoreThread::DoCpuReset()
 //
 void SysCoreThread::VsyncInThread()
 {
-	if (EmuConfig.EnablePatches) ApplyPatch(PPT_CONTINUOUSLY);
-	if (EmuConfig.EnableCheats)  ApplyCheat(PPT_CONTINUOUSLY);
-	if (EmuConfig.EnableWideScreenPatches)  ApplyCheat(PPT_CONTINUOUSLY);
+	ApplyLoadedPatches(PPT_CONTINUOUSLY);
 }
 
 void SysCoreThread::GameStartingInThread()
@@ -241,8 +238,7 @@ void SysCoreThread::GameStartingInThread()
 	symbolMap.UpdateActiveSymbols();
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
-	if (EmuConfig.EnablePatches) ApplyPatch(PPT_ONCE_ON_LOAD);
-	if (EmuConfig.EnableCheats)  ApplyCheat(PPT_ONCE_ON_LOAD);
+	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 }
 
 bool SysCoreThread::StateCheckInThread()
