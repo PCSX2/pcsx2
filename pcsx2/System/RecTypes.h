@@ -34,7 +34,6 @@ protected:
 	uint		m_def_commit;
 
 	wxString	m_profiler_name;
-	bool		m_profiler_registered;
 
 public:
 	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0 );

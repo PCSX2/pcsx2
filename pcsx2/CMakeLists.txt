@@ -150,7 +150,6 @@ set(pcsx2Headers
 	R5900Exceptions.h
 	R5900.h
 	R5900OpcodeTables.h
-	SamplProf.h
 	SaveState.h
 	Sifcmd.h
 	Sif.h
@@ -476,7 +475,6 @@ set(pcsx2WindowsSources
 	windows/DwmSetup.cpp
 	windows/ini.cpp
 	windows/PatchBrowser.cpp
-	windows/SamplProf.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinSysExec.cpp)

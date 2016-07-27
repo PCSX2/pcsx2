@@ -49,6 +49,6 @@ public:
 	int m_width;
 	int m_height;
 	string m_filename;
-	int m_colorspace;
+	INT_PTR m_colorspace;
 	CComPtr<IBaseFilter> m_enc;
 };
