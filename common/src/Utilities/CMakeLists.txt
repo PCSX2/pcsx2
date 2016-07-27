@@ -9,7 +9,6 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 set(Output Utilities)
 
 set(CommonFlags
-	-fno-strict-aliasing
     )
 
 set(UtilitiesFinalFlags ${CommonFlags})
