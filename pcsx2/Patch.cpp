@@ -176,6 +176,12 @@ void inifile_process(wxTextFile &f1 )
     }
 }
 
+void ResetPatchesCount()
+{
+  patchnumber = 0;
+}
+
+
 void ResetCheatsCount()
 {
   cheatnumber = 0;

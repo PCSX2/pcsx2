@@ -57,6 +57,7 @@ namespace PatchFunc
 	PATCHTABLEFUNC cheat;
 }
 
+extern void ResetPatchesCount();
 extern void ResetCheatsCount();
 extern int  LoadCheats(wxString name, const wxDirName& folderName, const wxString& friendlyName);
 extern int  LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename);
