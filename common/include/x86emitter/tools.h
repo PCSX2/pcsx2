@@ -19,9 +19,9 @@
 
 enum x86VendorType
 {
-	x86Vendor_Intel=0,
-	x86Vendor_AMD,
-	x86Vendor_Unknown,
+	x86Vendor_Intel   = 0,
+	x86Vendor_AMD     = 1,
+	x86Vendor_Unknown = 2
 };
 
 // --------------------------------------------------------------------------------------
