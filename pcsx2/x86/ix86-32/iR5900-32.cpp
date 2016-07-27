@@ -483,7 +483,7 @@ static void recReserveCache()
 		if (m_ConfiguredCacheReserve < 16) break;
 		m_ConfiguredCacheReserve /= 2;
 	}
-	
+
 	recMem->ThrowIfNotOk();
 }
 
@@ -503,7 +503,7 @@ static void recAlloc()
 	{
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 	}
-	
+
 	if (!recRAM)
 	{
 		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
@@ -1618,8 +1618,8 @@ static void __fastcall recRecompile( const u32 startpc )
 		// First tentative was to call eeGameStarting directly (not through the
 		// recompiler) but it crashes some games (GT4, DMC3). It is either a
 		// thread issue or linked to the various components reset.
-		if (EmuConfig.EnablePatches) ApplyPatch(0);
-		if (EmuConfig.EnableCheats)  ApplyCheat(0);
+		if (EmuConfig.EnablePatches) ApplyPatch(PPT_ONCE_ON_LOAD);
+		if (EmuConfig.EnableCheats)  ApplyCheat(PPT_ONCE_ON_LOAD);
 	}
 
 	g_branch = 0;
@@ -2099,7 +2099,7 @@ R5900cpu recCpu =
 	recThrowException,
 	recThrowException,
 	recClear,
-	
+
 	recGetCacheReserve,
 	recSetCacheReserve,
 };

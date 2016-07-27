@@ -362,7 +362,7 @@ namespace PatchFunc
 }
 
 // This is for applying patches directly to memory
-void ApplyPatch(int place)
+void ApplyPatch(patch_place_type place)
 {
 	for (int i = 0; i < patchnumber; i++)
 	{
@@ -372,7 +372,7 @@ void ApplyPatch(int place)
 }
 
 // This is for applying cheats directly to memory
-void ApplyCheat(int place)
+void ApplyCheat(patch_place_type place)
 {
 	for (int i = 0; i < cheatnumber; i++)
 	{

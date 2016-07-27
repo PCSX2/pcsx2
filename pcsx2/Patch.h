@@ -36,6 +36,28 @@ enum patch_data_type {
 	EXTENDED_T
 };
 
+// "place" is the first number at a pnach line (patch=<place>,...), e.g.:
+// - patch=1,EE,001110e0,word,00000000 <-- place is 1
+// - patch=0,EE,0010BC88,word,48468800 <-- place is 0
+// In PCSX2 it indicates how/when/where the patch line should be applied. If
+// place is not one of the supported values then the patch line is never applied.
+// PCSX2 currently supports the following values:
+// 0 - apply the patch line once on game boot/startup
+// 1 - apply the patch line continuously (technically - on every vsync)
+// Note:
+// - while it may seem that a value of 1 does the same as 0, but also later
+//   continues to apply the patch on every vsync - it's not.
+//   The current (and past) behavior is that these patches are applied at different
+//   places at the code, and it's possible, depending on circumstances, that 0 patches
+//   will get applied before the first vsync and therefore earlier than 1 patches.
+// - There's no "place" value which indicates to apply both once on startup
+//   and then also continuously, however such behavior can be achieved by
+//   duplicating the line where one has a 0 place and the other has a 1 place.
+enum patch_place_type {
+	PPT_ONCE_ON_LOAD = 0,
+	PPT_CONTINUOUSLY = 1
+};
+
 typedef void PATCHTABLEFUNC( const wxString& text1, const wxString& text2 );
 
 struct IniPatch
@@ -67,8 +89,8 @@ extern void inifile_trim(wxString& buffer);
 extern int  InitPatches(const wxString& name, const Game_Data& game);
 extern int  AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 extern void ResetPatch(void);
-extern void ApplyPatch(int place = 1);
-extern void ApplyCheat(int place = 1);
+extern void ApplyPatch(patch_place_type place);
+extern void ApplyCheat(patch_place_type place);
 extern void _ApplyPatch(IniPatch *p);
 
 extern const IConsoleWriter *PatchesCon;

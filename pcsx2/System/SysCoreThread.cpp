@@ -147,7 +147,7 @@ void SysCoreThread::ApplySettings( const Pcsx2Config& src )
 	if( src == EmuConfig ) return;
 
 	if( !pxAssertDev( IsPaused(), "CoreThread is not paused; settings cannot be applied." ) ) return;
-	
+
 	m_resetRecompilers		= ( src.Cpu != EmuConfig.Cpu ) || ( src.Gamefixes != EmuConfig.Gamefixes ) || ( src.Speedhacks != EmuConfig.Speedhacks );
 	m_resetProfilers		= ( src.Profiler != EmuConfig.Profiler );
 	m_resetVsyncTimers		= ( src.GS != EmuConfig.GS );
@@ -228,9 +228,9 @@ void SysCoreThread::DoCpuReset()
 //
 void SysCoreThread::VsyncInThread()
 {
-	if (EmuConfig.EnablePatches) ApplyPatch();
-	if (EmuConfig.EnableCheats)  ApplyCheat();
-	if (EmuConfig.EnableWideScreenPatches)  ApplyCheat();
+	if (EmuConfig.EnablePatches) ApplyPatch(PPT_CONTINUOUSLY);
+	if (EmuConfig.EnableCheats)  ApplyCheat(PPT_CONTINUOUSLY);
+	if (EmuConfig.EnableWideScreenPatches)  ApplyCheat(PPT_CONTINUOUSLY);
 }
 
 void SysCoreThread::GameStartingInThread()
@@ -241,8 +241,8 @@ void SysCoreThread::GameStartingInThread()
 	symbolMap.UpdateActiveSymbols();
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
-	if (EmuConfig.EnablePatches) ApplyPatch(0);
-	if (EmuConfig.EnableCheats)  ApplyCheat(0);
+	if (EmuConfig.EnablePatches) ApplyPatch(PPT_ONCE_ON_LOAD);
+	if (EmuConfig.EnableCheats)  ApplyCheat(PPT_ONCE_ON_LOAD);
 }
 
 bool SysCoreThread::StateCheckInThread()
