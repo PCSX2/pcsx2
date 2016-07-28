@@ -1562,6 +1562,10 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 	return 0;
 }
 
+// defined at AppCoreThread.cpp but unclean and should not be public. We're the only
+// consumers of it, so it's declared only here.
+void LoadAllPatchesAndStuff(const Pcsx2Config&);
+
 static void __fastcall recRecompile( const u32 startpc )
 {
 	u32 i = 0;
@@ -1611,6 +1615,7 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (HWADDR(startpc) == ElfEntry) {
+		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall(eeGameStarting);
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
@@ -1618,6 +1623,7 @@ static void __fastcall recRecompile( const u32 startpc )
 		// First tentative was to call eeGameStarting directly (not through the
 		// recompiler) but it crashes some games (GT4, DMC3). It is either a
 		// thread issue or linked to the various components reset.
+		LoadAllPatchesAndStuff(EmuConfig);
 		ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 	}
 

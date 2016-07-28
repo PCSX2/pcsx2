@@ -321,8 +321,10 @@ static void SetupPatchesCon(bool verbose)
 // Oh, and updates curGameKey. I think that's it.
 // It doesn't require that the emulation is paused, and console writes/title should
 // be thread safe, but it's best if things don't move around much while it runs.
+static Threading::Mutex mtx__ApplySettings;
 static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 {
+	Threading::ScopedLock lock(mtx__ApplySettings);
 	// 'fixup' is the EmuConfig we're going to upload to the emulator, which very well may
 	// differ from the user-configured EmuConfig settings.  So we make a copy here and then
 	// we apply the commandline overrides and database gamefixes, and then upload 'fixup'
@@ -440,6 +442,23 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	wxString consoleTitle = gameName + gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	Console.SetTitle(consoleTitle);
+}
+
+// FIXME: This function is not for general consumption. Its only consumer (and
+//        the only place it's declared at) is i5900-32.cpp .
+// It's here specifically to allow loading the patches synchronously (to the caller)
+// when the recompiler detects the game's elf entry point, such that the patches
+// are applied to the elf in memory before it's getting recompiled.
+// TODO: Find a way to pause the recompiler once it detects the elf entry, then
+//       make AppCoreThread::ApplySettings run more normally, and then resume
+//       the recompiler.
+//       The key point is that the patches should be loaded exactly before the elf
+//       is recompiled. Loading them earlier might incorrectly patch the bios memory,
+//       and later might be too late since the code was already recompiled
+void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
+{
+	Pcsx2Config dummy;
+	_ApplySettings(cfg, dummy);
 }
 
 void AppCoreThread::ApplySettings( const Pcsx2Config& src )
