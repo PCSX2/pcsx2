@@ -17,6 +17,10 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
+if(USE_ICC)
+	set(CommonFlags "${CommonFlags} -restrict")
+endif()
+
 set(GSdxFinalFlags ${CommonFlags})
 
 if(XDG_STD)
