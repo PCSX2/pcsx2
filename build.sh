@@ -20,6 +20,7 @@ flags=(-DCMAKE_BUILD_PO=FALSE)
 
 cleanBuild=0
 useClang=0
+useIcc=0
 # 0 => no, 1 => yes, 2 => force yes
 useCross=2
 CoverityBuild=0
@@ -52,6 +53,7 @@ for ARG in "$@"; do
         --clean             ) cleanBuild=1 ;;
         --clang-tidy        ) flags+=(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON); clangTidy=1 ;;
         --clang             ) useClang=1 ;;
+        --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
         --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel)   build="$root/build_dev";;
         --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug)   build="$root/build_dbg";;
@@ -94,6 +96,7 @@ for ARG in "$@"; do
             echo "--gtk3          : replace GTK2 by GTK3"
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
+            echo "--intel         : Build with ICC (Intel compiler)"
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"
@@ -145,7 +148,16 @@ if [[ "$useClang" -eq 1 ]]; then
         CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     fi
 else
-    cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+    if [[ "$useIcc" -eq 1 ]]; then
+        if [[ "$useCross" -eq 0 ]]; then
+            CC="icc" CXX="icpc" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        else
+            CC="icc -m32" CXX="icpc -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        fi
+    else
+        # Default compiler AKA GCC
+        cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+    fi
 fi
 
 

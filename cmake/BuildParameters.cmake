@@ -81,6 +81,14 @@ option(USE_ASAN "Enable address sanitizer")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(USE_CLANG TRUE)
     message(STATUS "Building with Clang/LLVM.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    set(USE_ICC TRUE)
+    message(STATUS "Building with Intel's ICC.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(USE_GCC TRUE)
+    message(STATUS "Building with GNU GCC")
+else()
+    message(FATAL_ERROR "Unknow compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -291,15 +299,25 @@ set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-unused-function: warn for function not used in release build
 # -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value ")
+set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable ")
+if (NOT USE_ICC)
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
+endif()
+
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=2 ")
+if (USE_ICC)
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing ")
+else()
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=2 ")
+endif()
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register -Wno-c++14-extensions")
     set(DBG "-g -fno-omit-frame-pointer")
-else()
+elseif (USE_ICC)
+    set(DBG "-g -fno-omit-frame-pointer")
+elseif (USE_GCC)
     set(DBG "-ggdb3 -fno-omit-frame-pointer")
 endif()
 
@@ -334,10 +352,10 @@ endif()
 
 if(NOT DEFINED OPTIMIZATION_FLAG)
     if (CMAKE_BUILD_TYPE STREQUAL Debug)
-        if (USE_CLANG)
-            set(OPTIMIZATION_FLAG -O0)
-        else()
+        if (USE_GCC)
             set(OPTIMIZATION_FLAG -Og)
+        else()
+            set(OPTIMIZATION_FLAG -O0)
         endif()
     else()
         set(OPTIMIZATION_FLAG -O2)
