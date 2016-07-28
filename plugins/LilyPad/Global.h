@@ -22,7 +22,9 @@
 #include "stdint.h"
 typedef uint32_t DWORD;
 typedef uint16_t USHORT;
+#ifndef __INTEL_COMPILER
 typedef int64_t  __int64;
+#endif
 
 #define MAX_PATH (256) // random value
 

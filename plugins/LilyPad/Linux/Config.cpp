@@ -367,7 +367,7 @@ int LoadSettings(int force, wchar_t *file) {
 				w++;
 			}
 			string[w] = 0;
-			int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone);
+			int len = sscanf(string, " %u , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone);
 			if (len >= 5 && type) {
 				VirtualControl *c = dev->GetVirtualControl(uid);
 				if (!c) c = dev->AddVirtualControl(uid, -1);
