@@ -24,7 +24,7 @@ struct BASEBLOCK
 {
 	uptr m_pFnptr;
 
-	const __inline uptr GetFnptr() const { return m_pFnptr; }
+	__inline uptr GetFnptr() const { return m_pFnptr; }
 	void __inline SetFnptr( uptr ptr ) { m_pFnptr = ptr; }
 };
 
