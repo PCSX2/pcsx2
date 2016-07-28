@@ -170,15 +170,15 @@ void LoadConfig()
 	}
 
 	u32 value;
-	if (fscanf(f, "log = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "log = %u\n", &value) == 0) goto error;
 	conf->log = value;
-	if (fscanf(f, "options = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "options = %u\n", &value) == 0) goto error;
 	conf->packed_options = value;
-	if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "mouse_sensibility = %u\n", &value) == 0) goto error;
 	conf->set_sensibility(value);
-	if (fscanf(f, "joy_pad_map = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "joy_pad_map = %u\n", &value) == 0) goto error;
 	conf->joyid_map = value;
-	if (fscanf(f, "ff_intensity = %d\n", &value) == 0) goto error;
+	if (fscanf(f, "ff_intensity = %u\n", &value) == 0) goto error;
 	conf->set_ff_intensity(value);
 
 	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
@@ -197,7 +197,7 @@ void LoadConfig()
 	u32 pad;
 	u32 keysym;
 	u32 index;
-	while( fscanf(f, "PAD %d:KEYSYM 0x%x = %d\n", &pad, &keysym, &index) != EOF ) {
+	while( fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF ) {
 		set_keyboad_key(pad & 1, keysym, index);
 		if(pad == 0) have_user_setting = true;
 	}
