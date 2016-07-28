@@ -315,7 +315,13 @@ static void SetupPatchesCon(bool verbose)
 		PatchesCon = &ConsoleWriter_Null;
 }
 
-void AppCoreThread::ApplySettings( const Pcsx2Config& src )
+// fixup = src + command line overrides + game overrides (according to elfCRC).
+// While at it, also [re]loads the relevant patches (but doesn't apply them),
+// updates the console title, and, for good measures, does some (static) sio stuff.
+// Oh, and updates curGameKey. I think that's it.
+// It doesn't require that the emulation is paused, and console writes/title should
+// be thread safe, but it's best if things don't move around much while it runs.
+static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 {
 	// 'fixup' is the EmuConfig we're going to upload to the emulator, which very well may
 	// differ from the user-configured EmuConfig settings.  So we make a copy here and then
@@ -325,7 +331,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	// Note: It's important that we apply the commandline overrides *before* database fixes.
 	// The database takes precedence (if enabled).
 
-	Pcsx2Config fixup( src );
+	fixup = src;
 
 	const CommandlineOverrides& overrides( wxGetApp().Overrides );
 	if( overrides.DisableSpeedhacks || !g_Conf->EnableSpeedHacks )
@@ -434,10 +440,15 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	wxString consoleTitle = gameName + gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	Console.SetTitle(consoleTitle);
+}
 
+void AppCoreThread::ApplySettings( const Pcsx2Config& src )
+{
 	// Re-entry guard protects against cases where code wants to manually set core settings
 	// which are not part of g_Conf.  The subsequent call to apply g_Conf settings (which is
 	// usually the desired behavior) will be ignored.
+	Pcsx2Config fixup;
+	_ApplySettings(src, fixup);
 
 	static int localc = 0;
 	RecursionGuard guard( localc );
