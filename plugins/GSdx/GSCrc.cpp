@@ -402,6 +402,7 @@ CRC::Game CRC::m_games[] =
 	{0xEEA60511, BurnoutRevenge, KO, 0},
 	{0x8C9576A1, BurnoutDominator, US, 0},
 	{0x8C9576B4, BurnoutDominator, EU, 0},
+	{0x8C9C76B4, BurnoutDominator, EU, 0},
 	{0x4A0E5B3A, MidnightClub3, US, 0},	//dub
 	{0xEBE1972D, MidnightClub3, EU, 0},	//dub
 	{0x60A42FF5, MidnightClub3, US, 0},	//remix
@@ -472,6 +473,7 @@ CRC::Game CRC::m_games[] =
 	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0x399A49CA, GTASanAndreas, US, 0}, 
+	{0x2C6BE434, GTASanAndreas, US, 0},
 	{0x60FE139C, GTASanAndreas, JP, 0}, 
 	{0x2615F542, FrontMission5, JP, 0}, 
 	{0xF60255AC, FrontMission5, JP, 0},
