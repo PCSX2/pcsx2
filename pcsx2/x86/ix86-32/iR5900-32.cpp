@@ -1607,14 +1607,18 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	pxAssert(s_pCurBlockEx);
 
-	if (g_SkipBiosHack && HWADDR(startpc) == EELOAD_START) {
-		xFastCall(eeloadReplaceOSDSYS);
-		xCMP(ptr32[&cpuRegs.pc], startpc);
-		xJNE(DispatcherReg);
+	if (HWADDR(startpc) == EELOAD_START) {
+		// The EELOAD _start function is the same across all BIOS versions afaik
+		u32 mainjump = memRead32(EELOAD_START + 0x9c);
+		if (mainjump >> 26 == 3) // JAL
+			eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
 	}
 
+	if (eeloadMain && HWADDR(startpc) == HWADDR(eeloadMain))
+		xFastCall(eeloadHook);
+
 	// this is the only way patches get applied, doesn't depend on a hack
-	if (HWADDR(startpc) == ElfEntry) {
+	if (g_GameLoading && HWADDR(startpc) == ElfEntry) {
 		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall(eeGameStarting);
 		// Apply patch as soon as possible. Normally it is done in
