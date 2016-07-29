@@ -358,10 +358,16 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	wxString gameCompat;
 	wxString gameMemCardFilter;
 
-	if (ElfCRC) gameCRC.Printf( L"%8.8x", ElfCRC );
-	if (!DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial  + L"]";
+	// The CRC can be known before the game actually starts (at the bios), so when
+	// we have the CRC but we're still at the bios and the settings are changed
+	// (e.g. the user presses TAB to speed up emulation), we don't want to apply the
+	// settings as if the game is already running (title, loadeding patches, etc).
+	bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
+	if (ingame)
+		gameCRC.Printf( L"%8.8x", ElfCRC );
+	if (ingame && !DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial + L"]";
 
-	const wxString newGameKey( SysGetDiscID() );
+	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
 	const bool verbose( newGameKey != curGameKey );
 	SetupPatchesCon(verbose);
 
@@ -442,6 +448,11 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	wxString consoleTitle = gameName + gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	Console.SetTitle(consoleTitle);
+	// It's possible then when we're booting, the bios loader will set a more detailed title
+	// with region, version, etc, thus overriding our patches status at the title. That's OK. Those
+	// users which want to know the status of the patches at the bios can check the console content.
+	// However, the bios loader sets the title once, so if any settings are changed and we're called
+	// (e.g. if the user presses tab to change the limiter), then the title will be set to consoleTitle.
 }
 
 // FIXME: This function is not for general consumption. Its only consumer (and

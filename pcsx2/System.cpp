@@ -284,7 +284,7 @@ class CpuInitializer
 public:
 	std::unique_ptr<CpuType> MyCpu;
 	ScopedExcept ExThrown;
-	
+
 	CpuInitializer();
 	virtual ~CpuInitializer() throw();
 
@@ -392,7 +392,7 @@ void SysMainMemory::ReserveAll()
 	m_ee.Reserve();
 	m_iop.Reserve();
 	m_vu.Reserve();
-	
+
 	reserveNewVif(0);
 	reserveNewVif(1);
 }
@@ -444,7 +444,7 @@ void SysMainMemory::DecommitAll()
 
 	closeNewVif(0);
 	closeNewVif(1);
-	
+
 	vtlb_Core_Free();
 }
 
@@ -653,20 +653,26 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	return Mem;
 }
 
+wxString SysGetBiosDiscID()
+{
+	// FIXME: we should return a serial based on
+	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
+	// region and revision).
+
+	return wxEmptyString;
+}
+
 // This function always returns a valid DiscID -- using the Sony serial when possible, and
 // falling back on the CRC checksum of the ELF binary if the PS2 software being run is
 // homebrew or some other serial-less item.
 wxString SysGetDiscID()
 {
 	if( !DiscSerial.IsEmpty() ) return DiscSerial;
-	
+
 	if( !ElfCRC )
 	{
-		// FIXME: system is currently running the BIOS, so it should return a serial based on
-		// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
-		// region and revision).
-		
-		return wxEmptyString;
+		// system is currently running the BIOS
+		return SysGetBiosDiscID();
 	}
 
 	return pxsFmt( L"%08x", ElfCRC );
