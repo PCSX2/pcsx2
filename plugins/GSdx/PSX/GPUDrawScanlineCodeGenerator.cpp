@@ -1010,17 +1010,19 @@ void GPUDrawScanlineCodeGenerator::blend(const Xmm& a, const Xmm& b, const Xmm& 
 	movdqa(a, b);
 }
 
-const GSVector4i GPUDrawScanlineCodeGenerator::m_test[8] =
+GSVector4i GPUDrawScanlineCodeGenerator::m_test[8];
+
+void GPUDrawScanlineCodeGenerator::InitConstants()
 {
-	GSVector4i(0xffff0000, 0xffffffff, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0xffff0000, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0xffff0000, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff),
-	GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffff0000),
-	GSVector4i::zero(),
-};
+	m_test[0] = GSVector4i(0xffff0000, 0xffffffff, 0xffffffff, 0xffffffff);
+	m_test[1] = GSVector4i(0x00000000, 0xffffffff, 0xffffffff, 0xffffffff);
+	m_test[2] = GSVector4i(0x00000000, 0xffff0000, 0xffffffff, 0xffffffff);
+	m_test[3] = GSVector4i(0x00000000, 0x00000000, 0xffffffff, 0xffffffff);
+	m_test[4] = GSVector4i(0x00000000, 0x00000000, 0xffff0000, 0xffffffff);
+	m_test[5] = GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffffffff);
+	m_test[6] = GSVector4i(0x00000000, 0x00000000, 0x00000000, 0xffff0000);
+	m_test[7] = GSVector4i::zero();
+}
 
 alignas(32) const uint16_t GPUDrawScanlineCodeGenerator::m_dither[4][16] =
 {

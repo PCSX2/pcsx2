@@ -55,6 +55,8 @@ class GPUDrawScanlineCodeGenerator : public GSCodeGenerator
 public:
 	GPUDrawScanlineCodeGenerator(void* param, uint32 key, void* code, size_t maxsize);
 
-	static const GSVector4i m_test[8];
+	static void InitConstants();
+
+	static GSVector4i m_test[8];
 	alignas(32) static const uint16 m_dither[4][16];
 };

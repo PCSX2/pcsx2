@@ -96,6 +96,8 @@ public:
 	GSClut(GSLocalMemory* mem);
 	virtual ~GSClut();
 
+	static void Init();
+
 	void Invalidate();
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);

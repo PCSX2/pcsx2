@@ -24,29 +24,11 @@
 
 #if _M_SSE >= 0x501
 
-const GSVector8 GSSetupPrimCodeGenerator::m_shift[9] =
-{
-	GSVector8(8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f),
-	GSVector8(0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f),
-	GSVector8(-1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f),
-	GSVector8(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f),
-	GSVector8(-3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f),
-	GSVector8(-4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f),
-	GSVector8(-5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f),
-	GSVector8(-6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f),
-	GSVector8(-7.0f, -6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f),
-};
+GSVector8 GSSetupPrimCodeGenerator::m_shift[9];
 
 #else
 
-const GSVector4 GSSetupPrimCodeGenerator::m_shift[5] =
-{
-	GSVector4(4.0f, 4.0f, 4.0f, 4.0f),
-	GSVector4(0.0f, 1.0f, 2.0f, 3.0f),
-	GSVector4(-1.0f, 0.0f, 1.0f, 2.0f),
-	GSVector4(-2.0f, -1.0f, 0.0f, 1.0f),
-	GSVector4(-3.0f, -2.0f, -1.0f, 0.0f),
-};
+GSVector4 GSSetupPrimCodeGenerator::m_shift[5];
 
 #endif
 
@@ -62,4 +44,29 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 
 	Generate();
+}
+
+void GSSetupPrimCodeGenerator::Init()
+{
+	#if _M_SSE >= 0x501
+
+	m_shift[0] = GSVector8(8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f);
+	m_shift[1] = GSVector8(0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f);
+	m_shift[2] = GSVector8(-1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f);
+	m_shift[3] = GSVector8(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f);
+	m_shift[4] = GSVector8(-3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f);
+	m_shift[5] = GSVector8(-4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f);
+	m_shift[6] = GSVector8(-5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f);
+	m_shift[7] = GSVector8(-6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f);
+	m_shift[8] = GSVector8(-7.0f, -6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f);
+
+	#else
+
+	m_shift[0] = GSVector4(4.0f, 4.0f, 4.0f, 4.0f);
+	m_shift[1] = GSVector4(0.0f, 1.0f, 2.0f, 3.0f);
+	m_shift[2] = GSVector4(-1.0f, 0.0f, 1.0f, 2.0f);
+	m_shift[3] = GSVector4(-2.0f, -1.0f, 0.0f, 1.0f);
+	m_shift[4] = GSVector4(-3.0f, -2.0f, -1.0f, 0.0f);
+
+	#endif
 }

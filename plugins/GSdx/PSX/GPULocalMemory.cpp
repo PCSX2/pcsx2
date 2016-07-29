@@ -23,14 +23,22 @@
 #include "GPULocalMemory.h"
 #include "GSdx.h"
 
-const GSVector4i GPULocalMemory::m_xxxa(0x00008000);
-const GSVector4i GPULocalMemory::m_xxbx(0x00007c00);
-const GSVector4i GPULocalMemory::m_xgxx(0x000003e0);
-const GSVector4i GPULocalMemory::m_rxxx(0x0000001f);
+GSVector4i GPULocalMemory::m_xxxa;
+GSVector4i GPULocalMemory::m_xxbx;
+GSVector4i GPULocalMemory::m_xgxx;
+GSVector4i GPULocalMemory::m_rxxx;
 
 #define VM_REAL_SIZE ((1 << (12 + 11)) * sizeof(uint16))
 #define VM_ALLOC_SIZE (VM_REAL_SIZE * 2)
 #define TEX_ALLOC_SIZE (256 * 256 * (1 + 1 + 4) * 32)
+
+void GPULocalMemory::Init()
+{
+	m_xxxa = GSVector4i(0x00008000);
+	m_xxbx = GSVector4i(0x00007c00);
+	m_xgxx = GSVector4i(0x000003e0);
+	m_rxxx = GSVector4i(0x0000001f);
+}
 
 GPULocalMemory::GPULocalMemory()
 {

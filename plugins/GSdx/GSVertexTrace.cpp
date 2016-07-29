@@ -24,7 +24,7 @@
 #include "GSUtil.h"
 #include "GSState.h"
 
-const GSVector4 GSVertexTrace::s_minmax(FLT_MAX, -FLT_MAX);
+GSVector4 GSVertexTrace::s_minmax;
 
 GSVertexTrace::GSVertexTrace(const GSState* state)
 	: m_state(state)
@@ -51,6 +51,11 @@ GSVertexTrace::GSVertexTrace(const GSState* state)
 	InitUpdate(GS_LINE_CLASS);
 	InitUpdate(GS_TRIANGLE_CLASS);
 	InitUpdate(GS_SPRITE_CLASS);
+}
+
+void GSVertexTrace::Init()
+{
+	s_minmax = GSVector4(FLT_MAX, -FLT_MAX);
 }
 
 void GSVertexTrace::Update(const void* vertex, const uint32* index, int count, GS_PRIM_CLASS primclass)
