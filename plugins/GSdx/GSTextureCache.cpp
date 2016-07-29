@@ -856,8 +856,8 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 		if (m_can_convert_depth) {
 			for(auto t : m_dst[DepthStencil]) {
 				if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
-					// Read the full depth buffer for easy testing
-					Read(t, t->m_valid);
+					if (GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+						Read(t, r.rintersect(t->m_valid));
 				}
 			}
 		}
