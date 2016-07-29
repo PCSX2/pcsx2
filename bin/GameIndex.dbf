@@ -3358,6 +3358,7 @@ Region = NTSC-J
 Serial = SCPS-15019
 Name   = Formula One 2001
 Region = NTSC-J
+Compat = 5
 XgKickHack = 1
 ---------------------------------------------
 Serial = SCPS-15020
@@ -4617,14 +4618,8 @@ Region = NTSC-U
 Serial = SCUS-97150
 Name   = Formula One 2001
 Region = NTSC-U
-Compat = 3
+Compat = 5
 XgKickHack = 1
-[patches = 272F1C14]
-	comment=patches by Plot and Ref Skip videos
-	patch=0,EE,0010aafc,word,00000000
-	patch=0,EE,0010ae2c,word,00000000
-	patch=0,EE,00230010,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97152
 Name   = Dark Cloud [Demo]
@@ -7337,6 +7332,7 @@ Compat = 5
 Serial = SLES-50362
 Name   = Jonny Moseley Mad Trix
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50364
 Name   = City Crisis
@@ -7849,6 +7845,7 @@ Compat = 5
 Serial = SLES-50619
 Name   = Jonny Moseley Mad Trix
 Region = PAL-F-G
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50620
 Name   = Micro Machines
@@ -17564,6 +17561,7 @@ Region = PAL-M6
 Serial = SLES-55578
 Name   = Band Hero
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
@@ -29223,6 +29221,7 @@ Region = NTSC-J
 Serial = SLPS-20120
 Name   = Formula One 2001
 Region = NTSC-J
+Compat = 5
 XgKickHack = 1
 ---------------------------------------------
 Serial = SLPS-20121
@@ -34781,7 +34780,7 @@ Compat = 5
 Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
 Region = NTSC-U
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20230
 Name   = Max Payne
@@ -42431,6 +42430,7 @@ Compat = 5
 Serial = SLUS-21898
 Name   = Band Hero
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21899
 Name   = Silent Hill - Shattered Memories
