@@ -569,6 +569,7 @@ static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 static std::atomic<bool> eeRecIsReset(false);
 static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
+static int g_resetEeScalingStats = 0;
 
 ////////////////////////////////////////////////////
 static void recResetRaw()
@@ -604,6 +605,7 @@ static void recResetRaw()
 	recConstBufPtr = recConstBuf;
 
 	g_branch = 0;
+	g_resetEeScalingStats = 1;
 }
 
 static void recShutdown()
@@ -952,14 +954,16 @@ void iFlushCall(int flushtype)
 // s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 // Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.
 
-static u32 scaleblockcycles()
+#define DEFAULT_SCALING_UNSANITIZED() (s_nBlockCycles >> 3)  /* unsanitized sinec we don't check if 0 */
+
+static u32 scaleblockcycles_calc()
 {
 	bool lowcycles = (s_nBlockCycles <= 40);
 	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
 	u32 scale_cycles = 0;
 
 	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 2)
-		scale_cycles = s_nBlockCycles >> 3; // Default cycle rate
+		scale_cycles = DEFAULT_SCALING_UNSANITIZED(); // Default cycle rate, could be 0
 
 	else if (cyclerate > 0)
 		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
@@ -971,6 +975,28 @@ static u32 scaleblockcycles()
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
+static u32 scaleblockcycles() {
+	u32 scaled = scaleblockcycles_calc();
+
+#if 0 /* Enable this to get some runtime statistics about the scaling result in practuce */
+	static u32 scaled_overal = 0, unscaled_overal = 0;
+	if (g_resetEeScalingStats) {
+		scaled_overal = unscaled_overal = 0;
+		g_resetEeScalingStats = 0;
+	}
+	u32 unscaled = DEFAULT_SCALING_UNSANITIZED();
+	if (!unscaled) unscaled = 1;
+
+	scaled_overal += scaled;
+	unscaled_overal += unscaled;
+	float ratio = (float)unscaled_overal / scaled_overal;
+
+	DevCon.WriteLn(L"Unscaled overal: %d,  scaled overal: %d,  relative EE clock speed: %d %%",
+	               unscaled_overal, scaled_overal, (int)(100 * ratio));
+#endif
+
+	return scaled;
+}
 
 // Generates dynarec code for Event tests followed by a block dispatch (branch).
 // Parameters:

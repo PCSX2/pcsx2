@@ -26,27 +26,27 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 		case -2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs.");
+			return pxEt(L"-2 - Reduces the EE's cyclerate to about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs.");
 		}
 		case -1:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility.");
+			return pxEt(L"-1 - Reduces the EE's cyclerate to about 60%.  Mild speedup for most games with high compatibility.");
 		}
 		case 0:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(14,158,19)); // Dark Green
-			return pxEt(L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine.");
+			return pxEt(L"0 - Default cyclerate (100%). This closely matches the actual speed of a real PS2 EmotionEngine.");
 		}
 		case 1:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS.");
+			return pxEt(L"1 - Increases the EE's cyclerate to about 180%. Increases hardware requirements, may increase in-game FPS.");
 		}
 		case 2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
+			return pxEt(L"2 - Increases the EE's cyclerate to about 300%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
 		}
 		default:
 			break;
