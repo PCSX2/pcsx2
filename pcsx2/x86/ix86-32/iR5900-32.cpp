@@ -970,7 +970,7 @@ static u32 scaleblockcycles_calc()
 
 	else if (cyclerate == -1)  // the mildest value which is also used by the "balanced" preset.
 		// These values were manually tuned to yield mild speedup with high compatibility
-		scale_cycles = (s_nBlockCycles <= 80 || s_nBlockCycles >= 168 ? 5 : 7) * s_nBlockCycles / 32;
+		scale_cycles = (s_nBlockCycles <= 80 || s_nBlockCycles > 168 ? 5 : 7) * s_nBlockCycles / 32;
 
 	else
 		scale_cycles = ((5 + (-2 * (cyclerate + 1))) * s_nBlockCycles) >> 5;
