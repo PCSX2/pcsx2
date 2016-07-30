@@ -23,19 +23,24 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 {
 	switch( val )
 	{
+		case -3:
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause stuttering audio on many FMVs.");
+		}
 		case -2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-2 - Reduces the EE's cyclerate to about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs.");
+			return pxEt(L"-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may cause stuttering audio on many FMVs.");
 		}
 		case -1:
 		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-1 - Reduces the EE's cyclerate to about 60%.  Mild speedup for most games with high compatibility.");
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Dark Green"));
+			return pxEt(L"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games with high compatibility.");
 		}
 		case 0:
 		{
-			m_msg_eecycle->SetForegroundColour(wxColour(14,158,19)); // Dark Green
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Forest Green")); // Dark Green
 			return pxEt(L"0 - Default cyclerate (100%). This closely matches the actual speed of a real PS2 EmotionEngine.");
 		}
 		case 1:
@@ -126,7 +131,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -2, 2,
+	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -3, 2,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
