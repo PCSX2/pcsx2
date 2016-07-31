@@ -454,12 +454,11 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 
 	wxString consoleTitle = gameName + gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
-	Console.SetTitle(consoleTitle);
-	// It's possible then when we're booting, the bios loader will set a more detailed title
-	// with region, version, etc, thus overriding our patches status at the title. That's OK. Those
+	if (ingame)
+		Console.SetTitle(consoleTitle);
+	// When we're booting, the bios loader will set a a title which would be more interesting than this
+	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
 	// users which want to know the status of the patches at the bios can check the console content.
-	// However, the bios loader sets the title once, so if any settings are changed and we're called
-	// (e.g. if the user presses tab to change the limiter), then the title will be set to consoleTitle.
 }
 
 // FIXME: This function is not for general consumption. Its only consumer (and
