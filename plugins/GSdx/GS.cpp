@@ -1636,8 +1636,15 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	}
 	unsigned long frame_number = 0;
 
-	// Init vsync stuff
+	// Init vsync stuff without any real draw
+	//uint32 old_enable[2] = {s_gs->m_regs->PMODE.EN1, s_gs->m_regs->PMODE.EN2};
+	//s_gs->m_regs->PMODE.EN1 = 0;
+	//s_gs->m_regs->PMODE.EN2 = 0;
+
 	GSvsync(1);
+
+	//s_gs->m_regs->PMODE.EN1 = old_enable[0];
+	//s_gs->m_regs->PMODE.EN2 = old_enable[1];
 
 	while(finished > 0)
 	{
