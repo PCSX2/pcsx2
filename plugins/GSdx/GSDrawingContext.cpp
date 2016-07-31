@@ -72,7 +72,7 @@ static int extend(int uv, int size)
 	return size;
 }
 
-GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap)
+GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap)
 {
 	if(mipmap) return TEX0; // no mipmaping allowed
 
@@ -120,7 +120,8 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 #ifdef _DEBUG
 	if(TEX0.TW != tw || TEX0.TH != th)
 	{
-		printf("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+		printf("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+			s_n,
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
 			(int)TEX0.TW, tw, (int)TEX0.TH, th,
 			uvf.x, uvf.y, uvf.z, uvf.w,
