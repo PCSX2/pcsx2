@@ -940,9 +940,17 @@ void GSRendererOGL::ResetStates()
 
 void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-	GL_PUSH("GL Draw from %d in %d (Depth %d)",
-				tex && tex->m_texture ? tex->m_texture->GetID() : 0,
-				rt ? rt->GetID() : -1, ds ? ds->GetID() : -1);
+#ifdef ENABLE_OGL_DEBUG
+	GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i area_in  = GSVector4i(m_vt.m_min.t.xyxy(m_vt.m_max.t));
+
+	GL_PUSH("GL Draw from %d (area %d,%d => %d,%d) in %d (Depth %d) (area %d,%d => %d,%d)",
+			tex && tex->m_texture ? tex->m_texture->GetID() : -1,
+			area_in.x, area_in.y, area_in.z, area_in.w,
+			rt ? rt->GetID() : -1, ds ? ds->GetID() : -1,
+			area_out.x, area_out.y, area_out.z, area_out.w
+		   );
+#endif
 
 	GSTexture* hdr_rt = NULL;
 
