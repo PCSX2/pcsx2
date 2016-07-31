@@ -570,6 +570,7 @@ static std::atomic<bool> eeRecIsReset(false);
 static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
 static int g_resetEeScalingStats = 0;
+static int g_patchesNeedRedo = 0;
 
 ////////////////////////////////////////////////////
 static void recResetRaw()
@@ -606,6 +607,8 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = 1;
+
+	g_patchesNeedRedo = 1;
 }
 
 static void recShutdown()
@@ -1595,6 +1598,11 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 // defined at AppCoreThread.cpp but unclean and should not be public. We're the only
 // consumers of it, so it's declared only here.
 void LoadAllPatchesAndStuff(const Pcsx2Config&);
+void doPlace0Patches()
+{
+    LoadAllPatchesAndStuff(EmuConfig);
+    ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+}
 
 static void __fastcall recRecompile( const u32 startpc )
 {
@@ -1644,21 +1652,26 @@ static void __fastcall recRecompile( const u32 startpc )
 			eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
 	}
 
-	if (eeloadMain && HWADDR(startpc) == HWADDR(eeloadMain))
+	if (eeloadMain && HWADDR(startpc) == HWADDR(eeloadMain)) {
 		xFastCall(eeloadHook);
+
+		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
+		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
+		// g_patchesNeedRedo is set on rec reset, and this is the only consumer.
+		// Also makes sure that patches from the previous elf/game are not applied on boot.
+		if (g_patchesNeedRedo)
+			doPlace0Patches();
+		g_patchesNeedRedo = 0;
+	}
 
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (g_GameLoading && HWADDR(startpc) == ElfEntry) {
 		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall(eeGameStarting);
+
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
-		//
-		// First tentative was to call eeGameStarting directly (not through the
-		// recompiler) but it crashes some games (GT4, DMC3). It is either a
-		// thread issue or linked to the various components reset.
-		LoadAllPatchesAndStuff(EmuConfig);
-		ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+		doPlace0Patches();
 	}
 
 	g_branch = 0;
