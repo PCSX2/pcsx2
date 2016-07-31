@@ -295,7 +295,13 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 // applied patches if the game info hasn't changed.  (avoids spam when suspending/resuming
 // or using TAB or other things), but gets verbose again when booting (even if the same game).
 // File scope since it gets reset externally when rebooting
-static wxString curGameKey;
+#define _UNKNOWN_GAME_KEY (L"_UNKNOWN_GAME_KEY")
+static wxString curGameKey = _UNKNOWN_GAME_KEY;
+
+void PatchesVerboseReset()
+{
+	curGameKey = _UNKNOWN_GAME_KEY;
+}
 
 // PatchesCon points to either Console or ConsoleWriter_Null, such that if we're in Devel mode
 // or the user enabled the devel/verbose console it prints all patching info whenever it's applied,
@@ -368,7 +374,8 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	if (ingame && !DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial + L"]";
 
 	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
-	const bool verbose( newGameKey != curGameKey );
+	const bool verbose( newGameKey != curGameKey && ingame );
+	//Console.WriteLn(L"------> patches verbose: %d   prev: '%s'   new: '%s'", (int)verbose, WX_STR(curGameKey), WX_STR(newGameKey));
 	SetupPatchesCon(verbose);
 
 	curGameKey = newGameKey;
@@ -469,6 +476,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
 {
 	Pcsx2Config dummy;
+	PatchesVerboseReset();
 	_ApplySettings(cfg, dummy);
 }
 
@@ -547,10 +555,6 @@ void AppCoreThread::VsyncInThread()
 
 void AppCoreThread::GameStartingInThread()
 {
-	// Make AppCoreThread::ApplySettings get verbose again even if we're booting
-	// the same game, by making it think that the current CRC is a new one.
-	curGameKey = L"";
-
 	// Simulate a Close/Resume, so that settings get re-applied and the database
 	// lookups and other game-based detections are done.
 

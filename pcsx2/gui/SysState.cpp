@@ -27,6 +27,8 @@
 #include <wx/wfstream.h>
 #include <memory>
 
+#include "Patch.h"
+
 // Used to hold the current state backup (fullcopy of PS2 memory and plugin states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
@@ -318,7 +320,7 @@ public:
 
 	bool IsCriticalEvent() const { return true; }
 	bool AllowCancelOnExit() const { return false; }
-	
+
 protected:
 	void InvokeEvent()
 	{
@@ -374,7 +376,7 @@ public:
 	virtual ~VmStateCompressThread() throw()
 	{
 	}
-	
+
 protected:
 	void OnStartInThread()
 	{
@@ -453,7 +455,7 @@ protected:
 		}
 
 		std::unique_ptr<wxImage> m_screenshot;
-		
+
 		if (m_screenshot)
 		{
 			wxZipEntry* vent = new wxZipEntry(EntryFilename_Screenshot);
@@ -469,11 +471,11 @@ protected:
 			.SetFinishedPath(m_filename)
 			.Start();
 
-		// No errors?  Release cleanup handlers:			
+		// No errors?  Release cleanup handlers:
 		elist.release();
 		out.release();
 	}
-	
+
 	void CleanupEvent()
 	{
 	}
@@ -490,10 +492,10 @@ class SysExecEvent_UnzipFromDisk : public SysExecEvent
 {
 protected:
 	wxString	m_filename;
-	
+
 public:
 	wxString GetEventName() const { return L"VM_UnzipFromDisk"; }
-	
+
 	virtual ~SysExecEvent_UnzipFromDisk() throw() {}
 	SysExecEvent_UnzipFromDisk* Clone() const { return new SysExecEvent_UnzipFromDisk( *this ); }
 	SysExecEvent_UnzipFromDisk( const wxString& filename )
@@ -588,7 +590,7 @@ protected:
 		for (uint i=0; i<ArraySize(SavestateEntries); ++i)
 		{
 			if (foundEntry[i]) continue;
-			
+
 			if (SavestateEntries[i]->IsRequired())
 			{
 				throwIt = true;
@@ -603,6 +605,8 @@ protected:
 
 		// We use direct Suspend/Resume control here, since it's desirable that emulation
 		// *ALWAYS* start execution after the new savestate is loaded.
+
+		PatchesVerboseReset();
 
 		GetCoreThread().Pause();
 		SysClearExecutionCache();
@@ -638,10 +642,10 @@ void StateCopy_SaveToFile( const wxString& file )
 	UI_DisableStateActions();
 
 	std::unique_ptr<ArchiveEntryList> ziplist(new ArchiveEntryList(new VmStateBuffer(L"Zippable Savestate")));
-	
+
 	GetSysExecutorThread().PostEvent(new SysExecEvent_DownloadState(ziplist.get()));
 	GetSysExecutorThread().PostEvent(new SysExecEvent_ZipToDisk(ziplist.get(), file));
-	
+
 	ziplist.release();
 }
 
@@ -663,7 +667,7 @@ void StateCopy_SaveToSlot( uint num )
 	if( wxFileExists( file ) && EmuConfig.BackupSavestate )
 	{
 		const wxString copy( SaveStateBase::GetFilename( num ) + pxsFmt( L".backup") );
-		
+
 		Console.Indent().WriteLn( Color_StrongGreen, L"Backing up existing state in slot %d.", num);
 		wxRenameFile( file, copy );
 	}
