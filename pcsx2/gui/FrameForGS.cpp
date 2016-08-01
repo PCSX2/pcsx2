@@ -18,7 +18,7 @@
 #include "GSFrame.h"
 #include "AppAccelerators.h"
 #include "AppSaveStates.h"
-
+#include "Counters.h"
 #include "GS.h"
 #include "MSWstuff.h"
 
@@ -591,8 +591,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
 	double fps = wxGetApp().FpsManager.GetFramerate();
-	// The "not PAL" case covers both NTSC and Progressive
-	float per = gsVideoMode == GS_VideoMode::PAL ? (fps * 100) / EmuConfig.GS.FrameratePAL.ToFloat() : (fps * 100) / EmuConfig.GS.FramerateNTSC.ToFloat();
+	float percentage = (fps * 100) / GetVerticalFrequency().ToFloat();
 
 	char gsDest[128];
 	gsDest[0] = 0; // No need to set whole array to NULL.
@@ -630,7 +629,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	wxString title = templates.TitleTemplate;
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
-	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(per)));
+	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
 	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
