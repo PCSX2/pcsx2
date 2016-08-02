@@ -263,7 +263,7 @@ void UpdateEnabledDevices(int updateList = 0) {
 			}
 		}
 	}
-	for (size_t i=0; i<dm->numDevices; i++) {
+	for (int i=0; i<dm->numDevices; i++) {
 		Device *dev = dm->devices[i];
 
 		if (!dev->enabled) continue;
@@ -490,7 +490,7 @@ void Update(unsigned int port, unsigned int slot) {
 
 	LastCheck = t;
 
-	size_t i;
+	int i;
 	ButtonSum s[2][4];
 	u8 lockStateChanged[2][4];
 	memset(lockStateChanged, 0, sizeof(lockStateChanged));

@@ -26,7 +26,7 @@ InputDeviceManager::InputDeviceManager() {
 }
 
 void InputDeviceManager::ClearDevices() {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		delete devices[i];
 	}
 	free(devices);
@@ -84,7 +84,7 @@ Device::~Device() {
 	Deactivate();
 	// Generally called by deactivate, but just in case...
 	FreeState();
-	size_t i;
+	int i;
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
 			free(pads[port][slot].bindings);
@@ -135,7 +135,7 @@ void Device::AddFFAxis(const wchar_t *displayName, int id) {
 	int bindingsExist = 0;
 	for (int port=0; port<2; port++) {
 		for (int slot=0; slot<4; slot++) {
-			for (size_t i=0; i<pads[port][slot].numFFBindings; i++) {
+			for (int i=0; i<pads[port][slot].numFFBindings; i++) {
 				ForceFeedbackBinding *b = pads[port][slot].ffBindings+i;
 				b->axes = (AxisEffectInfo*) realloc(b->axes, sizeof(AxisEffectInfo) * (numFFAxes));
 				memset(b->axes + (numFFAxes-1), 0, sizeof(AxisEffectInfo));
@@ -244,7 +244,7 @@ void Device::CalcVirtualState() {
 }
 
 VirtualControl *Device::GetVirtualControl(unsigned int uid) {
-	for (size_t i=0; i<numVirtualControls; i++) {
+	for (int i=0; i<numVirtualControls; i++) {
 		if (virtualControls[i].uid == uid)
 			return virtualControls + i;
 	}
@@ -303,7 +303,7 @@ PhysicalControl *Device::AddPhysicalControl(ControlType type, unsigned short id,
 }
 
 void Device::SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force) {
-	for (size_t i=0; i<pads[port][slot].numFFBindings; i++) {
+	for (int i=0; i<pads[port][slot].numFFBindings; i++) {
 		ForceFeedbackBinding *binding = pads[port][slot].ffBindings+i;
 		if (binding->motor == motor) {
 			SetEffect(binding, force);
@@ -380,7 +380,7 @@ void InputDeviceManager::AddDevice(Device *d) {
 }
 
 void InputDeviceManager::Update(InitInfo *info) {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		if (devices[i]->enabled) {
 			if (!devices[i]->active) {
 				if (!devices[i]->Activate(info) || !devices[i]->Update()) continue;
@@ -394,14 +394,14 @@ void InputDeviceManager::Update(InitInfo *info) {
 }
 
 void InputDeviceManager::PostRead() {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		if (devices[i]->active)
 			devices[i]->PostRead();
 	}
 }
 
 Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, int *index, int *value) {
-	size_t i, j;
+	int i, j;
 	Update(info);
 	int bestDiff = FULLY_DOWN/2;
 	Device *bestDevice = 0;
@@ -461,13 +461,13 @@ Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, i
 }
 
 void InputDeviceManager::ReleaseInput() {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		if (devices[i]->active) devices[i]->Deactivate();
 	}
 }
 
 void InputDeviceManager::EnableDevices(DeviceType type, DeviceAPI api) {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		if (devices[i]->api == api && devices[i]->type == type) {
 			EnableDevice(i);
 		}
@@ -475,7 +475,7 @@ void InputDeviceManager::EnableDevices(DeviceType type, DeviceAPI api) {
 }
 
 void InputDeviceManager::DisableAllDevices() {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		DisableDevice(i);
 	}
 }
@@ -488,7 +488,7 @@ void InputDeviceManager::DisableDevice(int index) {
 }
 
 ForceFeedbackEffectType *Device::GetForcefeedbackEffect(wchar_t *id) {
-	for (size_t i=0; i<numFFEffectTypes; i++) {
+	for (int i=0; i<numFFEffectTypes; i++) {
 		if (!wcsicmp(id, ffEffectTypes[i].effectID)) {
 			return &ffEffectTypes[i];
 		}
@@ -497,16 +497,16 @@ ForceFeedbackEffectType *Device::GetForcefeedbackEffect(wchar_t *id) {
 }
 
 ForceFeedbackAxis *Device::GetForceFeedbackAxis(int id) {
-	for (size_t i=0; i<numFFAxes; i++) {
+	for (int i=0; i<numFFAxes; i++) {
 		if (ffAxes[i].id == id) return &ffAxes[i];
 	}
 	return 0;
 }
 
-void InputDeviceManager::CopyBindings(size_t numOldDevices, Device **oldDevices) {
+void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices) {
 	int *oldMatches = (int*) malloc(sizeof(int) * numOldDevices);
 	int *matches = (int*) malloc(sizeof(int) * numDevices);
-	size_t i, j, port, slot;
+	int i, j, port, slot;
 	Device *old, *dev;
 	for (i=0; i<numDevices; i++) {
 		matches[i] = -1;
@@ -588,7 +588,7 @@ void InputDeviceManager::CopyBindings(size_t numOldDevices, Device **oldDevices)
 					}
 					if (old->pads[port][slot].numFFBindings) {
 						dev->pads[port][slot].ffBindings = (ForceFeedbackBinding*) malloc(old->pads[port][slot].numFFBindings * sizeof(ForceFeedbackBinding));
-						for (size_t j=0; j<old->pads[port][slot].numFFBindings; j++) {
+						for (int j=0; j<old->pads[port][slot].numFFBindings; j++) {
 							ForceFeedbackBinding *bo = old->pads[port][slot].ffBindings + j;
 							ForceFeedbackBinding *bn = dev->pads[port][slot].ffBindings + dev->pads[port][slot].numFFBindings;
 							ForceFeedbackEffectType *en = dev->GetForcefeedbackEffect(old->ffEffectTypes[bo->effectIndex].effectID);
@@ -596,7 +596,7 @@ void InputDeviceManager::CopyBindings(size_t numOldDevices, Device **oldDevices)
 								*bn = *bo;
 								bn->effectIndex = en - dev->ffEffectTypes;
 								bn->axes = (AxisEffectInfo*)calloc(dev->numFFAxes, sizeof(AxisEffectInfo));
-								for (size_t k=0; k<old->numFFAxes; k++) {
+								for (int k=0; k<old->numFFAxes; k++) {
 									ForceFeedbackAxis *newAxis = dev->GetForceFeedbackAxis(old->ffAxes[k].id);
 									if (newAxis) {
 										bn->axes[newAxis - dev->ffAxes] = bo->axes[k];
@@ -615,7 +615,7 @@ void InputDeviceManager::CopyBindings(size_t numOldDevices, Device **oldDevices)
 }
 
 void InputDeviceManager::SetEffect(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force) {
-	for (size_t i=0; i<numDevices; i++) {
+	for (int i=0; i<numDevices; i++) {
 		Device *dev = devices[i];
 		if (dev->enabled && dev->numFFEffectTypes) {
 			dev->SetEffects(port, slot, motor, force);
