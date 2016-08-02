@@ -1000,7 +1000,7 @@ void recVUMI_SQI(VURegs *VU, int info)
 void recVUMI_ILW(VURegs *VU, int info)
 {
 	int itreg;
-	s16 imm, off;
+	s16 imm, off = 0;
 
 	if ( ( _It_ == 0 ) || ( _X_Y_Z_W == 0 ) ) return;
 	//Console.WriteLn("recVUMI_ILW");
@@ -1009,6 +1009,7 @@ void recVUMI_ILW(VURegs *VU, int info)
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
+	else pxAssertMsg(0, "off is 0 as default value, could be incorrect");
 
 	ADD_VI_NEEDED(_Is_);
 	itreg = ALLOCVI(_It_, MODE_WRITE);
@@ -1065,7 +1066,8 @@ void recVUMI_ISW( VURegs *VU, int info )
 //------------------------------------------------------------------
 void recVUMI_ILWR( VURegs *VU, int info )
 {
-	int off, itreg;
+	int off = 0;
+	int itreg = 0;
 
 	if ( ( _It_ == 0 ) || ( _X_Y_Z_W == 0 ) ) return;
 	//Console.WriteLn("recVUMI_ILWR");
@@ -1073,6 +1075,7 @@ void recVUMI_ILWR( VURegs *VU, int info )
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
+	else pxAssertMsg(0, "off is 0 as default value, could be incorrect");
 
 	ADD_VI_NEEDED(_Is_);
 	itreg = ALLOCVI(_It_, MODE_WRITE);

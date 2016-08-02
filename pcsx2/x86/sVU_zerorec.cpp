@@ -2611,7 +2611,7 @@ __declspec(naked) static void SuperVUEndProgram()
 // Flushes P/Q regs
 void SuperVUFlush(int p, int wait)
 {
-	u8* pjmp[3];
+	u8* pjmp[3] = { nullptr, nullptr, nullptr };
 	if (!(s_needFlush&(1 << p))) return;
 
 	int recwait = p ? s_recWriteP : s_recWriteQ;

@@ -223,7 +223,7 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	u8 *end3 = JMP8(0);
 
 	x86SetJ8(to_underflow);
-	u8 *end4;
+	u8 *end4 = nullptr;
 	if (flags && FPU_FLAGS_UNDERFLOW) //set underflow flags if not zero
 	{
 		xXOR.PD(xRegisterSSE(absreg), xRegisterSSE(absreg));
@@ -397,7 +397,7 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 {
 	u8 *noHack;
-	u32 *endMul;
+	u32 *endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
