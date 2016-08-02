@@ -22,6 +22,7 @@
 #include "GamePad.h"
 #include "onepad.h"
 #include "keyboard.h"
+#include "state_management.h"
 
 #include <string.h>
 #include <gtk/gtk.h>
@@ -188,6 +189,8 @@ EXPORT_C_(void) PADupdate(int pad)
 
 		key_status->commit_status(cpad);
 	}
+
+	Pad::rumble_all();
 }
 
 EXPORT_C_(void) PADconfigure()
