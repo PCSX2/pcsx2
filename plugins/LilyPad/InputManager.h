@@ -188,7 +188,7 @@ struct PadBindings {
 	Binding *bindings;
 	int numBindings;
 	ForceFeedbackBinding *ffBindings;
-	int numFFBindings;
+	size_t numFFBindings;
 };
 
 class WndProcEater;
@@ -254,7 +254,7 @@ public:
 	// are allowed, but *only* for absolute axes (Which don't support the flip checkbox).
 	// Each control on a device must have a unique id, used for binding.
 	VirtualControl *virtualControls;
-	int numVirtualControls;
+	size_t numVirtualControls;
 
 	int *virtualControlState;
 	int *oldVirtualControlState;
@@ -264,9 +264,9 @@ public:
 	int *physicalControlState;
 
 	ForceFeedbackEffectType *ffEffectTypes;
-	int numFFEffectTypes;
+	size_t numFFEffectTypes;
 	ForceFeedbackAxis *ffAxes;
-	int numFFAxes;
+	size_t numFFAxes;
 	void AddFFAxis(const wchar_t *displayName, int id);
 	void AddFFEffectType(const wchar_t *displayName, const wchar_t *effectID, EffectType type);
 
@@ -331,7 +331,7 @@ public:
 class InputDeviceManager {
 public:
 	Device **devices;
-	int numDevices;
+	size_t numDevices;
 
 	void ClearDevices();
 
@@ -342,7 +342,7 @@ public:
 	// When old devices are missing, I do a slightly more careful search
 	// using productIDs and then (in desperation) displayName.
 	// Finally create new dummy devices if no matches found.
-	void CopyBindings(int numDevices, Device **devices);
+	void CopyBindings(size_t numDevices, Device **devices);
 
 
 	InputDeviceManager();

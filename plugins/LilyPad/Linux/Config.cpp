@@ -238,7 +238,7 @@ int SaveSettings(wchar_t *file=0) {
 	if (!dm)
 		return 0;
 
-	for (int i=0; i<dm->numDevices; i++) {
+	for (size_t i=0; i<dm->numDevices; i++) {
 		wchar_t id[50];
 		wchar_t temp[50], temp2[1000];
 		wsprintfW(id, L"Device %i", i);
@@ -270,12 +270,12 @@ int SaveSettings(wchar_t *file=0) {
 					cfg.WriteStr(id, temp, temp2);
 				}
 
-				for (int j=0; j<dev->pads[port][slot].numFFBindings; j++) {
+				for (size_t j=0; j<dev->pads[port][slot].numFFBindings; j++) {
 					ForceFeedbackBinding *b = dev->pads[port][slot].ffBindings+j;
 					ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
 					wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
 					wsprintfW(temp2, L"%s %i, %i, %i", eff->effectID, port, b->motor, slot);
-					for (int k=0; k<dev->numFFAxes; k++) {
+					for (size_t k=0; k<dev->numFFAxes; k++) {
 						ForceFeedbackAxis *axis = dev->ffAxes + k;
 						AxisEffectInfo *info = b->axes + k;
 						//wsprintfW(wcschr(temp2,0), L", %i, %i", axis->id, info->force);
@@ -463,7 +463,7 @@ void RefreshEnabledDevices(int updateDeviceList) {
 		lastXInputState = config.gameApis.xInput;
 	}
 
-	for (int i=0; i<dm->numDevices; i++) {
+	for (size_t i=0; i<dm->numDevices; i++) {
 		Device *dev = dm->devices[i];
 
 		// XXX windows magic?
