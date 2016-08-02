@@ -28,31 +28,33 @@
 class GSBlock
 {
 	#if _M_SSE >= 0x501
-	static const GSVector8i m_r16mask;
+	static GSVector8i m_r16mask;
 	#else
-	static const GSVector4i m_r16mask;
+	static GSVector4i m_r16mask;
 	#endif
-	static const GSVector4i m_r8mask;
-	static const GSVector4i m_r4mask;
+	static GSVector4i m_r8mask;
+	static GSVector4i m_r4mask;
 
 	#if _M_SSE >= 0x501
-	static const GSVector8i m_xxxa;
-	static const GSVector8i m_xxbx;
-	static const GSVector8i m_xgxx;
-	static const GSVector8i m_rxxx;
+	static GSVector8i m_xxxa;
+	static GSVector8i m_xxbx;
+	static GSVector8i m_xgxx;
+	static GSVector8i m_rxxx;
 	#else
-	static const GSVector4i m_xxxa;
-	static const GSVector4i m_xxbx;
-	static const GSVector4i m_xgxx;
-	static const GSVector4i m_rxxx;
+	static GSVector4i m_xxxa;
+	static GSVector4i m_xxbx;
+	static GSVector4i m_xgxx;
+	static GSVector4i m_rxxx;
 	#endif
 
-	static const GSVector4i m_uw8hmask0;
-	static const GSVector4i m_uw8hmask1;
-	static const GSVector4i m_uw8hmask2;
-	static const GSVector4i m_uw8hmask3;
+	static GSVector4i m_uw8hmask0;
+	static GSVector4i m_uw8hmask1;
+	static GSVector4i m_uw8hmask2;
+	static GSVector4i m_uw8hmask3;
 
 public:
+	static void InitVectors();
+
 	template<int i, int alignment, uint32 mask> __forceinline static void WriteColumn32(uint8* RESTRICT dst, const uint8* RESTRICT src, int srcpitch)
 	{
 		const uint8* RESTRICT s0 = &src[srcpitch * 0];

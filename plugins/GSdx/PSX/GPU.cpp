@@ -57,8 +57,33 @@ EXPORT_C_(uint32) PSEgetLibVersion()
 	return version << 16 | revision << 8 | PLUGIN_VERSION;
 }
 
+static void InitVectors()
+{
+	GSVector4i::InitVectors();
+	GSVector4::InitVectors();
+#if _M_SSE >= 0x500
+	GSVector8::InitVectors();
+#endif
+#if _M_SSE >= 0x501
+	GSVector8i::InitVectors();
+#endif
+
+	GPUDrawScanlineCodeGenerator::InitVectors();
+	GPULocalMemory::InitVectors();
+	GPUSetupPrimCodeGenerator::InitVectors();
+}
+
 EXPORT_C_(int32) GPUinit()
 {
+	if(!GSUtil::CheckSSE())
+	{
+		return -1;
+	}
+
+	theApp.Init();
+
+	InitVectors();
+
 	return 0;
 }
 
@@ -140,6 +165,13 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 
 EXPORT_C_(int32) GPUconfigure()
 {
+	if(!GSUtil::CheckSSE())
+	{
+		return -1;
+	}
+
+	theApp.Init();
+
 #ifdef _WIN32
 
 	GPUSettingsDlg dlg;
@@ -160,6 +192,11 @@ EXPORT_C_(int32) GPUconfigure()
 
 EXPORT_C_(int32) GPUtest()
 {
+	if(!GSUtil::CheckSSE())
+	{
+		return -1;
+	}
+
 	return 0;
 }
 

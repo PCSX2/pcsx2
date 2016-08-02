@@ -26,11 +26,19 @@
 
 static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
 
-const GSVector4 g_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+GSVector4 GSRendererSW::m_pos_scale;
+#if _M_SSE >= 0x501
+GSVector8 GSRendererSW::m_pos_scale2;
+#endif
+
+void GSRendererSW::InitVectors()
+{
+	m_pos_scale = GSVector4(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 
 #if _M_SSE >= 0x501
-const GSVector8 g_pos_scale2(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+	m_pos_scale2 = GSVector8(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #endif
+}
 
 GSRendererSW::GSRendererSW(int threads)
 	: m_fzb(NULL)
@@ -294,7 +302,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		GSVector8i xy = xyzuvf.upl16() - o2;
 		GSVector8i zf = xyzuvf.ywww().min_u32(GSVector8i::xffffff00());
 
-		GSVector8 p = GSVector8(xy).xyxy(GSVector8(zf) + (GSVector8::m_x4f800000 & GSVector8::cast(zf.sra32(31)))) * g_pos_scale2;
+		GSVector8 p = GSVector8(xy).xyxy(GSVector8(zf) + (GSVector8::m_x4f800000 & GSVector8::cast(zf.sra32(31)))) * m_pos_scale2;
 		GSVector8 c = GSVector8(GSVector8i::cast(stcq).uph8().upl16() << 7);
 
 		GSVector8 t = GSVector8::zero();
@@ -364,7 +372,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 		#endif
 
-		dst->p = GSVector4(xy).xyxy(GSVector4(zf) + (GSVector4::m_x4f800000 & GSVector4::cast(zf.sra32(31)))) * g_pos_scale;
+		dst->p = GSVector4(xy).xyxy(GSVector4(zf) + (GSVector4::m_x4f800000 & GSVector4::cast(zf.sra32(31)))) * m_pos_scale;
 		dst->c = GSVector4(GSVector4i::cast(stcq).zzzz().u8to32() << 7);
 
 		GSVector4 t = GSVector4::zero();

@@ -516,7 +516,7 @@ CRC::Game CRC::m_games[] =
 	{0x06A7506A, SacredBlaze, JP, 0},
 };
 
-hash_map<uint32, CRC::Game*> CRC::m_map;
+map<uint32, CRC::Game*> CRC::m_map;
 
 string ToLower( string str )
 {
@@ -563,7 +563,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 			printf("[FIXME] GSdx: Duplicate CRC: Overall: %d\n", crcDups);
 	}
 
-	hash_map<uint32, Game*>::iterator i = m_map.find(crc);
+	auto i = m_map.find(crc);
 
 	if(i != m_map.end())
 	{

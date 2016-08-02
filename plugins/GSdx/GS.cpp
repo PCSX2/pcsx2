@@ -123,6 +123,30 @@ EXPORT_C_(int) GSinit()
 		return -1;
 	}
 
+	// Vector instructions must be avoided when initialising GSdx since PCSX2
+	// can crash if the CPU does not support the instruction set.
+	// Initialise it here instead - it's not ideal since we have to strip the
+	// const type qualifier from all the affected variables.
+	theApp.Init();
+
+	GSBlock::InitVectors();
+	GSClut::InitVectors();
+	GSDrawScanlineCodeGenerator::InitVectors();
+#ifdef ENABLE_OPENCL
+	GSRendererCL::InitVectors();
+#endif
+	GSRendererSW::InitVectors();
+	GSSetupPrimCodeGenerator::InitVectors();
+	GSVector4i::InitVectors();
+	GSVector4::InitVectors();
+#if _M_SSE >= 0x500
+	GSVector8::InitVectors();
+#endif
+#if _M_SSE >= 0x501
+	GSVector8i::InitVectors();
+#endif
+	GSVertexTrace::InitVectors();
+
 #ifdef _WIN32
 
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -792,6 +816,8 @@ EXPORT_C GSconfigure()
 	try
 	{
 		if(!GSUtil::CheckSSE()) return;
+
+		theApp.Init();
 
 #ifdef _WIN32
 		GSDialog::InitCommonControls();
