@@ -2230,6 +2230,7 @@ Region = PAL-M9
 Serial = SCES-53372
 Name   = Tourist Trophy - The Real Riding Simulator
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SCES-53397
 Name   = SingStar Pop - World Events Code
@@ -4380,16 +4381,16 @@ Serial = SCPS-56015
 Name   = Ninja Assault
 Region = NTSC-J
 ---------------------------------------------
-Serial = SCUS-21494
-Name   = Need for Speed Carbon Collector's Edition
-Region = NTSC-U
-Compat = 5
----------------------------------------------
 Serial = SCUS-21295
 Name   = Tony Hawk's American Wasteland Collector's Edition
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+---------------------------------------------
+Serial = SCUS-21494
+Name   = Need for Speed Carbon Collector's Edition
+Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -6642,6 +6643,7 @@ Compat = 2
 Serial = SLES-50047
 Name   = F1 Racing Championship
 Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50048
 Name   = Donald Duck - Quack Attack
@@ -7942,6 +7944,7 @@ Region = PAL-M3
 Serial = SLES-50662
 Name   = Shadow of Zorro, The
 Region = PAL-M5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-50670
 Name   = ESPN Winter X-Games Snowboarding 2
@@ -9610,6 +9613,7 @@ Region = PAL-E
 Serial = SLES-51433
 Name   = Ghost Vibration
 Region = PAL-E
+Compat = 4
 ---------------------------------------------
 Serial = SLES-51434
 Name   = Silent Hill 3
@@ -9694,6 +9698,7 @@ Region = PAL-I
 Serial = SLES-51473
 Name   = Kya - Dark Lineage
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51474
 Name   = Blood Rayne
@@ -11080,7 +11085,7 @@ Region = PAL-S
 Serial = SLES-52143
 Name   = Carmen Sandiego - The Secret of the Stolen Drums
 Region = PAL-M4
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52149
 Name   = Tom Clancy's Splinter Cell - Pandora Tomorrow
@@ -12557,6 +12562,7 @@ patch=1,EE,0010ec20,word,00000000
 Serial = SLES-52813
 Name   = Incredibles, The
 Region = PAL-DU-F
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52814
 Name   = Incredibles, The
@@ -14393,6 +14399,7 @@ Region = PAL-S // Voices in English, text and subtitles in Spanish.
 Serial = SLES-53621
 Name   = Wallace & Grommit - The Curse of the Were Rabbit
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53623
 Name   = Spongebob Squarepants - Battle for Bikini Bottom
@@ -16936,6 +16943,7 @@ Region = PAL-M11
 Serial = SLES-54995
 Name   = Puzzle Quest - Challenge of the Warlords
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-54996
 Name   = The Golden Compass
@@ -20097,6 +20105,7 @@ Compat = 5
 Serial = SLPM-62467
 Name   = Simple 2000 Series Vol.18 - Love Aerobics
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-62468
 Name   = Simple 2000 Series Vol.17 - Taisen! Bakudan Poy Poy
@@ -21987,6 +21996,7 @@ Region = NTSC-J
 Serial = SLPM-65235
 Name   = New Roommania - Porori Seishun
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65236
 Name   = Anubis: Zone of the Enders
@@ -23425,6 +23435,7 @@ Region = NTSC-J
 Serial = SLPM-65632
 Name   = Virtua Fighter Cyber Generation - Ambition of the Judgement Six
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65633
 Name   = I Love Baseball - Pro Yakyu wo Koyonaku
@@ -26178,6 +26189,7 @@ Region = NTSC-J
 Serial = SLPM-66395
 Name   = Honoo no Takkyubin
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-66396
 Name   = Tensei Hakken Fuumoroku
@@ -27240,6 +27252,11 @@ Serial = SLPM-66679
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou [Plus]
 Region = NTSC-J
 MemCardFilter = SLPM-66679/SLPM-66683/SLPM-66246/SLPM-66634
+---------------------------------------------
+Serial = SLPM-66681
+Name   = Shin Megami Tensei - Nocturne Maniax
+Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-66683
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou
@@ -28340,6 +28357,7 @@ Region = NTSC-J
 Serial = SLPM-66978
 Name   = Persona 4 [Konami-style Special Edition]
 Region = NTSC-J
+Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-66987
@@ -28792,6 +28810,7 @@ Region = NTSC-J
 Serial = SLPM-74277
 Name   = Persona 3 FES [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-74278
@@ -29350,6 +29369,7 @@ Region = NTSC-J
 Serial = SLPS-20208
 Name   = I am Small!
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-20214
 Name   = 3-D Fighting School 2
@@ -32850,6 +32870,7 @@ Region = NTSC-J
 Serial = SLPS-25738
 Name   = Soul Cradle Sekai o Kurau Mono [Limited Edition]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25739
 Name   = Soul Cradle Sekai o Kurau Mono
@@ -33493,6 +33514,7 @@ Region = NTSC-J
 Serial = SLPS-73103
 Name   = Makai Senki Disgaea [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-73104
 Name   = Tekken Tag Tournament [PlayStation 2 The Best]
@@ -33513,6 +33535,7 @@ Region = NTSC-J
 Serial = SLPS-73108
 Name   = Phantom Brave [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-73109
 Name   = Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PlayStation 2 The Best]
@@ -34781,7 +34804,7 @@ Compat = 5
 Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
 Region = NTSC-U
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20230
 Name   = Max Payne
@@ -36080,6 +36103,7 @@ Compat = 5
 Serial = SLUS-20519
 Name   = Tak and The Power of Juju
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20520
 Name   = Lord of the Rings, The - The Fellowship of the Ring
@@ -37930,7 +37954,7 @@ Region = NTSC-U
 Serial = SLUS-20921
 Name   = ESPN - NHL 2K5
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = 9B6E69EC]
 	//Patched by Prafull
 	//Avoid hang at start
@@ -42431,6 +42455,7 @@ Compat = 5
 Serial = SLUS-21898
 Name   = Band Hero
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21899
 Name   = Silent Hill - Shattered Memories
