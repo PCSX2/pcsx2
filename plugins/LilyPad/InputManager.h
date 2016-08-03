@@ -331,7 +331,7 @@ public:
 class InputDeviceManager {
 public:
 	Device **devices;
-	int numDevices;
+	size_t numDevices;
 
 	void ClearDevices();
 
