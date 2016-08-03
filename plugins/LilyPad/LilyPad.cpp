@@ -655,7 +655,7 @@ void Update(unsigned int port, unsigned int slot) {
 						}
 						pads[port][slot].lockedState ^= LOCK_BUTTONS;
 					}
-					for (i=0; i<sizeof(pads[port][slot].lockedSum)/4; i++) {
+					for (i=0; i< (int)sizeof(pads[port][slot].lockedSum)/4; i++) {
 						if (((int*)&pads[port][slot].lockedSum)[i]) break;
 					}
 					if (i==sizeof(pads[port][slot].lockedSum)/4) {
