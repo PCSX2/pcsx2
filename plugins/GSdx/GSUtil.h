@@ -69,3 +69,5 @@ public:
 #if defined(__unix__)
 void GSmkdir(const char* dir);
 #endif
+
+const char* psm_str(int psm);

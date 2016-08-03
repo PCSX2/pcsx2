@@ -107,7 +107,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 	if (!CanConvertDepth()) {
 		if (dst) {
-			GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+			GL_CACHE("LookupDepthSource not supported (0x%x, %s)", TEX0.TBP0, psm_str(TEX0.PSM));
 			throw GSDXRecoverableError();
 		} else {
 			// LookupSource call LookupDepthSource, I'm sure it is nice testcase for formal tools ;)
@@ -129,9 +129,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	}
 
 	if (dst) {
-		GL_CACHE("TC depth: dst %s hit: %d (0x%x, F:0x%x)", to_string(dst->m_type),
+		GL_CACHE("TC depth: dst %s hit: %d (0x%x, %s)", to_string(dst->m_type),
 				dst->m_texture ? dst->m_texture->GetID() : 0,
-				TEX0.TBP0, psm);
+				TEX0.TBP0, psm_str(psm));
 
 		// Create a shared texture source
 		src = new Source(m_renderer, TEX0, TEXA, m_temp, true);
@@ -156,7 +156,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 		m_src.m_surfaces.insert(src);
 	} else {
-		GL_CACHE("TC depth: ERROR miss (0x%x, F:0x%x)", TEX0.TBP0, psm);
+		GL_CACHE("TC depth: ERROR miss (0x%x, %s)", TEX0.TBP0, psm_str(psm));
 		// Possible ? In this case we could call LookupSource
 		// Or just put a basic texture
 		// src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
@@ -332,19 +332,19 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
-			GL_CACHE("TC: dst %s hit (%s): %d (0x%x, F:0x%x)", to_string(dst->m_type), half_right ? "half" : "full",
+			GL_CACHE("TC: dst %s hit (%s): %d (0x%x, %s", to_string(dst->m_type), half_right ? "half" : "full",
 						dst->m_texture ? dst->m_texture->GetID() : 0,
-						TEX0.TBP0, TEX0.PSM);
+						TEX0.TBP0, psm_str(TEX0.PSM));
 		} else {
-			GL_CACHE("TC: src miss (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+			GL_CACHE("TC: src miss (0x%x, %s)", TEX0.TBP0, psm_str(TEX0.PSM));
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right);
 
 	} else {
-		GL_CACHE("TC: src hit: %d (0x%x, F:0x%x)",
+		GL_CACHE("TC: src hit: %d (0x%x, %s)",
 					src->m_texture ? src->m_texture->GetID() : 0,
-					TEX0.TBP0, TEX0.PSM);
+					TEX0.TBP0, psm_str(TEX0.PSM));
 	}
 
 	if (src->m_palette)
@@ -390,7 +390,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	if (dst) {
-		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, F:0x%x)", to_string(type), w, h, dst->m_texture->GetID(), bp, TEX0.PSM);
+		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, %s)", to_string(type), w, h, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
 		dst->Update();
 
@@ -417,10 +417,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				int shader;
 				bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16);
 				if (type == DepthStencil) {
-					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
+					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(t->m_TEX0.PSM));
 					shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + psm_s.fmt;
 				} else {
-					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, F:0x%x was F:0x%x)", w, h, bp, TEX0.PSM, t->m_TEX0.PSM);
+					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(t->m_TEX0.PSM));
 					shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
 				}
 				m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
@@ -432,7 +432,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, F:0x%x)", to_string(type), w, h, bp, TEX0.PSM);
+		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, %s)", to_string(type), w, h, bp, psm_str(TEX0.PSM));
 
 		dst = CreateTarget(TEX0, w, h, type);
 

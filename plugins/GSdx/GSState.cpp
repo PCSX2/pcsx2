@@ -1574,8 +1574,8 @@ void GSState::Write(const uint8* mem, int len)
 		return;
 	}
 
-	GL_CACHE("Write! ...  => 0x%x W:%d F:%d (DIR %d%d), dPos(%d %d) size(%d %d)",
-		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 		m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
@@ -1666,8 +1666,8 @@ void GSState::Read(uint8* mem, int len)
 	int h = m_env.TRXREG.RRH;
 	GSVector4i r(sx, sy, sx + w, sy + h);
 
-	GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d",
-			len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
+	GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%s SSAX=%d SSAY=%d RRW=%d RRH=%d",
+			len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM), sx, sy, w, h);
 
 	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
 	{
@@ -1704,9 +1704,9 @@ void GSState::Move()
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	GL_CACHE("Move! 0x%x W:%d F:%d => 0x%x W:%d F:%d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
-		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM,
-		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+	GL_CACHE("Move! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 		sx, sy, dx, dy, w, h);
 
