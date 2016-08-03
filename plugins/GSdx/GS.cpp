@@ -1538,6 +1538,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 {
 	GLLoader::in_replayer = true;
 
+	GSinit();
+
 	GSRendererType m_renderer;
 	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
 	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
@@ -1555,8 +1557,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	list<Packet*> packets;
 	vector<uint8> buff;
 	uint8 regs[0x2000];
-
-	GSinit();
 
 	GSsetBaseMem(regs);
 
