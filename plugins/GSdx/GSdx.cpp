@@ -142,7 +142,8 @@ void GSdxApp::Init()
 		return;
 	is_initialised = true;
 
-	m_ini = "inis/GSdx.ini";
+	if (m_ini.empty())
+		m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
 
 #ifdef _WIN32
