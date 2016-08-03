@@ -26,7 +26,7 @@ InputDeviceManager::InputDeviceManager() {
 }
 
 void InputDeviceManager::ClearDevices() {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		delete devices[i];
 	}
 	free(devices);
@@ -380,7 +380,7 @@ void InputDeviceManager::AddDevice(Device *d) {
 }
 
 void InputDeviceManager::Update(InitInfo *info) {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		if (devices[i]->enabled) {
 			if (!devices[i]->active) {
 				if (!devices[i]->Activate(info) || !devices[i]->Update()) continue;
@@ -394,18 +394,18 @@ void InputDeviceManager::Update(InitInfo *info) {
 }
 
 void InputDeviceManager::PostRead() {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		if (devices[i]->active)
 			devices[i]->PostRead();
 	}
 }
 
 Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, int *index, int *value) {
-	int i, j;
+	int j;
 	Update(info);
 	int bestDiff = FULLY_DOWN/2;
 	Device *bestDevice = 0;
-	for (i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		if (devices[i]->active) {
 			for (j=0; j<devices[i]->numVirtualControls; j++) {
 				if (devices[i]->virtualControlState[j] == devices[i]->oldVirtualControlState[j]) continue;
@@ -461,13 +461,13 @@ Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, i
 }
 
 void InputDeviceManager::ReleaseInput() {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		if (devices[i]->active) devices[i]->Deactivate();
 	}
 }
 
 void InputDeviceManager::EnableDevices(DeviceType type, DeviceAPI api) {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		if (devices[i]->api == api && devices[i]->type == type) {
 			EnableDevice(i);
 		}
@@ -475,7 +475,7 @@ void InputDeviceManager::EnableDevices(DeviceType type, DeviceAPI api) {
 }
 
 void InputDeviceManager::DisableAllDevices() {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		DisableDevice(i);
 	}
 }
@@ -508,7 +508,7 @@ void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices) {
 	int *matches = (int*) malloc(sizeof(int) * numDevices);
 	int i, j, port, slot;
 	Device *old, *dev;
-	for (i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		matches[i] = -1;
 	}
 	for (i=0; i<numOldDevices; i++) {
@@ -527,7 +527,7 @@ void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices) {
 	for (int id=0; id<3; id++) {
 		for (i=0; i<numOldDevices; i++) {
 			if (oldMatches[i] >= 0) continue;
-			for (j=0; j<numDevices; j++) {
+			for (size_t j=0; j<numDevices; j++) {
 				if (matches[j] >= 0) {
 					continue;
 				}
@@ -615,7 +615,7 @@ void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices) {
 }
 
 void InputDeviceManager::SetEffect(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force) {
-	for (int i=0; i<numDevices; i++) {
+	for (size_t i=0; i<numDevices; i++) {
 		Device *dev = devices[i];
 		if (dev->enabled && dev->numFFEffectTypes) {
 			dev->SetEffects(port, slot, motor, force);

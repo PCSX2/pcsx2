@@ -238,7 +238,7 @@ int SaveSettings(wchar_t *file=0) {
 	if (!dm)
 		return 0;
 
-	for (int i=0; i<dm->numDevices; i++) {
+	for (size_t i=0; i<dm->numDevices; i++) {
 		wchar_t id[50];
 		wchar_t temp[50], temp2[1000];
 		wsprintfW(id, L"Device %i", i);
@@ -463,7 +463,7 @@ void RefreshEnabledDevices(int updateDeviceList) {
 		lastXInputState = config.gameApis.xInput;
 	}
 
-	for (int i=0; i<dm->numDevices; i++) {
+	for (size_t i=0; i<dm->numDevices; i++) {
 		Device *dev = dm->devices[i];
 
 		// XXX windows magic?
