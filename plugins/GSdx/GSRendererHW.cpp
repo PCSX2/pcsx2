@@ -880,10 +880,14 @@ void GSRendererHW::OI_GsMemClear()
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 			&& (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) // Constant 0 write
 			) {
-		GL_INS("OI_GsMemClear");
 		GSOffset* off = m_context->offset.fb;
 		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+		// Limit the hack to a single fullscreen clear. Some games might use severals column to clear a screen
+		// but hopefully it will be enough.
+		if (r.width() <= 128 || r.height() <= 128)
+			return;
 
+		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
