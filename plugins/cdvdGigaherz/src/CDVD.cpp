@@ -172,13 +172,13 @@ DWORD CALLBACK keepAliveThread(PVOID param)
 
 s32 StartKeepAliveThread()
 {
-    hNotify_keepAlive = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if (hNotify_keepAlive == INVALID_HANDLE_VALUE)
-        return -1;
+	hNotify_keepAlive = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hNotify_keepAlive == nullptr)
+		return -1;
 
 	cdvdKeepAlive_is_open = true;
 	hThread_keepAlive = CreateThread(NULL, 0, keepAliveThread, NULL, 0, &pidThreadKeepAlive);
-	if (hThread_keepAlive == INVALID_HANDLE_VALUE) {
+	if (hThread_keepAlive == nullptr) {
 		cdvdKeepAlive_is_open = false;
 		return -1;
 	}

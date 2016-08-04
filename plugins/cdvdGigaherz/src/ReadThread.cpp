@@ -257,17 +257,17 @@ s32 cdvdStartThread()
 	InitializeCriticalSection( &CacheMutex );
 
 	hNotify = CreateEvent(NULL,FALSE,FALSE,NULL);
-	if(hNotify==INVALID_HANDLE_VALUE)
+	if(hNotify == nullptr)
 		return -1;
 
 	hRequestComplete = CreateEvent(NULL,FALSE,FALSE,NULL);
-	if(hRequestComplete==INVALID_HANDLE_VALUE)
+	if(hRequestComplete == nullptr)
 		return -1;
 
 	cdvd_is_open=true;
 	hThread = CreateThread(NULL,0,cdvdThread,NULL,0,&pidThread);
 
-	if(hThread==INVALID_HANDLE_VALUE)
+	if(hThread == nullptr)
 		return -1;
 
 	SetThreadPriority(hThread,THREAD_PRIORITY_NORMAL);
