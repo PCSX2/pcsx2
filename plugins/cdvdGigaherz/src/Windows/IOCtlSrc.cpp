@@ -351,7 +351,6 @@ s32 IOCtlSrc::GetSectorCount()
 	DWORD size;
 
 	LARGE_INTEGER li;
-	int plain_sectors = 0;
 
 	if(discSizeCached)
 		return discSize;
@@ -434,7 +433,6 @@ s32 IOCtlSrc::GetSectorCount()
 s32 IOCtlSrc::GetLayerBreakAddress()
 {
 	DWORD size;
-	DWORD code;
 
 	if(GetMediaType()<0)
 		return -1;
@@ -446,7 +444,7 @@ s32 IOCtlSrc::GetLayerBreakAddress()
 	dvdrs.Format=DvdPhysicalDescriptor;
 	dvdrs.SessionId=sessID;
 	dvdrs.LayerNumber=0;
-	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
+	if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr))
 	{
 		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
@@ -517,7 +515,6 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) {
 s32 IOCtlSrc::GetMediaType()
 {
 	DWORD size;
-	DWORD code;
 
 	if(mediaTypeCached)
 		return mediaType;
@@ -540,7 +537,7 @@ s32 IOCtlSrc::GetMediaType()
 	dvdrs.Format=DvdPhysicalDescriptor;
 	dvdrs.SessionId=sessID;
 	dvdrs.LayerNumber=0;
-	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
+	if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr))
 	{
 		if (dld.ld.NumberOfLayers == 0) // Single layer
 		{
@@ -578,8 +575,6 @@ s32 IOCtlSrc::ReadTOC(char *toc,int msize)
 		tocrq.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
 		tocrq.Msf=1;
 		tocrq.SessionTrack=1;
-
-		CDROM_TOC_FULL_TOC_DATA *ftd=(CDROM_TOC_FULL_TOC_DATA*)tocCacheData;
 
 		if(!OpenOK) return -1;
 

@@ -65,8 +65,6 @@ PlainIso::~PlainIso()
 
 s32 PlainIso::GetSectorCount()
 {
-	int plain_sectors = 0;
-
 	if(discSizeCached)
 		return discSize;
 
@@ -116,8 +114,6 @@ s32 PlainIso::GetMediaType()
 
 s32 PlainIso::ReadTOC(char *toc,int msize)
 {
-	DWORD size=0;
-
 	if(GetMediaType()>=0)
 		return -1;
 
@@ -192,8 +188,6 @@ s32 PlainIso::ReadSectors2352(u32 sector, u32 count, char *buffer)
 
 s32 PlainIso::DiscChanged()
 {
-	DWORD size=0;
-
 	if(!OpenOK) return -1;
 
 	return 0;

@@ -170,8 +170,6 @@ DWORD CALLBACK cdvdThread(PVOID param)
 
 	while(cdvd_is_open)
 	{
-		DWORD f=0;
-
 		if(!src) break;
 
 		if(cdvdUpdateDiscStatus())
