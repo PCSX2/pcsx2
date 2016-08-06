@@ -46,12 +46,17 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 		case 1:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"1 - Increases the EE's cyclerate to about 180%. Increases hardware requirements, may increase in-game FPS.");
+			return pxEt(L"1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware requirements, may increase in-game FPS.");
 		}
 		case 2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"2 - Increases the EE's cyclerate to about 300%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
+			return pxEt(L"2 - Increases the EE's cyclerate to about 180%. Increases hardware requirements, may noticeably increase in-game FPS.");
+		}
+		case 3:
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
 		}
 		default:
 			break;
@@ -131,7 +136,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -3, 2,
+	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -3, 3,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );

@@ -964,11 +964,14 @@ static u32 scaleblockcycles_calculation()
 	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
 	u32 scale_cycles = 0;
 
-	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 2)
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
 		scale_cycles = DEFAULT_SCALED_BLOCKS();
 
-	else if (cyclerate > 0)
-		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
+	else if (cyclerate > 1)
+		scale_cycles = s_nBlockCycles >> (2 + cyclerate);
+
+	else if (cyclerate == 1)
+		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
 
 	else if (cyclerate == -1)  // the mildest value which is also used by the "balanced" preset.
 		// These values were manually tuned to yield mild speedup with high compatibility
