@@ -54,8 +54,8 @@ void vif1TransferToMemory()
 	// completely and execute the transfer there-after.
 	//Console.Warning("Real QWC %x", vif1ch.qwc);
 	const u32   size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
-	const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
-	
+	//const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
+
 	if (size) {
 		// Checking if any crazy game does a partial
 		// gs primitive and then does a gs download...
@@ -73,29 +73,39 @@ void vif1TransferToMemory()
 		GetMTGS().WaitGS(false); // wait without reg sync
 	}
 	GSreadFIFO2((u64*)pMem, size);
-	pMem += size;
+//	pMem += size;
 
-	if(pMem < pMemEnd) {
-		//DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space");
-		
-		__m128 zeroreg = _mm_setzero_ps();
-		do {
-			_mm_store_ps((float*)pMem, zeroreg);
-		} while (++pMem < pMemEnd);
-	}
+	//Some games such as Alex Ferguson's Player Manager 2001 reads less than GSLastDownloadSize by VIF then reads the remainder by FIFO
+	//Clearing the memory is clearing memory it shouldn't be and kills it.
+	//The only scenario where this could be used is the transfer size really is less than QWC, not the other way around as it was doing
+	//That said, I think this is pointless and a waste of cycles and could cause more problems than good. We will alert this situation below anyway.
+	/*if (vif1.GSLastDownloadSize < vif1ch.qwc) {
+		if (pMem < pMemEnd) {
+			DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space GST %x QWC %x", vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 
-	g_vif1Cycles += vif1ch.qwc * 2;
-	vif1ch.madr += vif1ch.qwc * 16; // mgs3 scene changes
+			__m128 zeroreg = _mm_setzero_ps();
+			do {
+				_mm_store_ps((float*)pMem, zeroreg);
+			} while (++pMem < pMemEnd);
+		}
+	}*/
+
+	g_vif1Cycles += size * 2;
+	vif1ch.madr += size * 16; // mgs3 scene changes
 	if (vif1.GSLastDownloadSize >= vif1ch.qwc) {
 		vif1.GSLastDownloadSize -= vif1ch.qwc;
 		vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
+		vif1ch.qwc = 0;
 	}
 	else {
 		vif1Regs.stat.FQC = 0;
+		vif1ch.qwc -= vif1.GSLastDownloadSize;
 		vif1.GSLastDownloadSize = 0;
+		//This could be potentially bad and cause hangs. I guess we will find out.
+		DevCon.Warning("QWC left on VIF FIFO Reverse");
 	}
 
-	vif1ch.qwc = 0;
+	
 }
 
 bool _VIF1chain()
