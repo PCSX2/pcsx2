@@ -99,12 +99,10 @@ void GSRendererSW::VSync(int field)
 
 		GSVector4i dr = GetDisplayRect();
 		GSVector4i fr = GetFrameRect();
-		GSVector2i ds = GetDeviceSize();
 
-		fprintf(s_fp, "dr %d %d %d %d, fr %d %d %d %d, ds %d %d\n",
+		fprintf(s_fp, "dr %d %d %d %d, fr %d %d %d %d\n",
 			dr.x, dr.y, dr.z, dr.w,
-			fr.x, fr.y, fr.z, fr.w,
-			ds.x, ds.y);
+			fr.x, fr.y, fr.z, fr.w);
 
 		for(int i = 0; i < 2; i++)
 		{
