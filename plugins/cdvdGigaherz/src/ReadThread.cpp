@@ -21,9 +21,9 @@ s32 prefetch_last_lba=0;
 s32 prefetch_last_mode=0;
 s32 prefetch_left=0;
 
-HANDLE hNotify = INVALID_HANDLE_VALUE;
-HANDLE hThread = INVALID_HANDLE_VALUE;
-HANDLE hRequestComplete = INVALID_HANDLE_VALUE;
+HANDLE hNotify = nullptr;
+HANDLE hThread = nullptr;
+HANDLE hRequestComplete = nullptr;
 
 CRITICAL_SECTION CacheMutex;
 

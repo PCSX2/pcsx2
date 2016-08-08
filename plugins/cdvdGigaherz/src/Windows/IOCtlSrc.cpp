@@ -295,6 +295,7 @@ s32 IOCtlSrc::Reopen()
 	// Dual layer DVDs cannot read from layer 1 without this ioctl
 	DeviceIoControl(device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
 
+	// FIXME: 0 is a valid session id, but the code assumes that it isn't.
 	sessID=0;
 	DeviceIoControl(device,IOCTL_DVD_START_SESSION,NULL,0,&sessID,sizeof(DVD_SESSION_ID), &size, NULL);
 

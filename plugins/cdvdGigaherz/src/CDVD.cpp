@@ -25,8 +25,8 @@
 
 void (*newDiscCB)();
 
-HANDLE hThread_keepAlive = INVALID_HANDLE_VALUE;
-HANDLE hNotify_keepAlive = INVALID_HANDLE_VALUE;
+HANDLE hThread_keepAlive = nullptr;
+HANDLE hNotify_keepAlive = nullptr;
 DWORD  pidThreadKeepAlive = 0;
 
 #define STRFY(x) #x
