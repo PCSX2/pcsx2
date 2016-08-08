@@ -569,7 +569,7 @@ static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 static std::atomic<bool> eeRecIsReset(false);
 static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
-static int g_resetEeScalingStats = 0;
+static bool g_resetEeScalingStats = false;
 static int g_patchesNeedRedo = 0;
 
 ////////////////////////////////////////////////////
@@ -606,8 +606,7 @@ static void recResetRaw()
 	recConstBufPtr = recConstBuf;
 
 	g_branch = 0;
-	g_resetEeScalingStats = 1;
-
+	g_resetEeScalingStats = true;
 	g_patchesNeedRedo = 1;
 }
 
@@ -957,19 +956,22 @@ void iFlushCall(int flushtype)
 // s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 // Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.
 
-#define DEFAULT_SCALING_UNSANITIZED() (s_nBlockCycles >> 3)  /* unsanitized sinec we don't check if 0 */
+#define DEFAULT_SCALED_BLOCKS() (s_nBlockCycles >> 3)
 
-static u32 scaleblockcycles_calc()
+static u32 scaleblockcycles_calculation()
 {
 	bool lowcycles = (s_nBlockCycles <= 40);
 	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
 	u32 scale_cycles = 0;
 
-	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 2)
-		scale_cycles = DEFAULT_SCALING_UNSANITIZED(); // Default cycle rate, could be 0
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
+		scale_cycles = DEFAULT_SCALED_BLOCKS();
 
-	else if (cyclerate > 0)
-		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
+	else if (cyclerate > 1)
+		scale_cycles = s_nBlockCycles >> (2 + cyclerate);
+
+	else if (cyclerate == 1)
+		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
 
 	else if (cyclerate == -1)  // the mildest value which is also used by the "balanced" preset.
 		// These values were manually tuned to yield mild speedup with high compatibility
@@ -982,24 +984,26 @@ static u32 scaleblockcycles_calc()
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
-static u32 scaleblockcycles() {
-	u32 scaled = scaleblockcycles_calc();
+static u32 scaleblockcycles()
+{
+	u32 scaled = scaleblockcycles_calculation();
 
-#if 0 /* Enable this to get some runtime statistics about the scaling result in practuce */
-	static u32 scaled_overal = 0, unscaled_overal = 0;
-	if (g_resetEeScalingStats) {
-		scaled_overal = unscaled_overal = 0;
-		g_resetEeScalingStats = 0;
+#if 0 // Enable this to get some runtime statistics about the scaling result in practice
+	static u32 scaled_overall = 0, unscaled_overall = 0;
+	if (g_resetEeScalingStats)
+	{
+		scaled_overall = unscaled_overall = 0;
+		g_resetEeScalingStats = false;
 	}
-	u32 unscaled = DEFAULT_SCALING_UNSANITIZED();
+	u32 unscaled = DEFAULT_SCALED_BLOCKS();
 	if (!unscaled) unscaled = 1;
 
-	scaled_overal += scaled;
-	unscaled_overal += unscaled;
-	float ratio = (float)unscaled_overal / scaled_overal;
+	scaled_overall += scaled;
+	unscaled_overall += unscaled;
+	float ratio = static_cast<float>(unscaled_overall) / scaled_overall;
 
-	DevCon.WriteLn(L"Unscaled overal: %d,  scaled overal: %d,  relative EE clock speed: %d %%",
-	               unscaled_overal, scaled_overal, (int)(100 * ratio));
+	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
+	               unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
 #endif
 
 	return scaled;
