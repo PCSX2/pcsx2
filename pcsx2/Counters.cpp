@@ -270,6 +270,31 @@ static const char* ReportVideoMode()
 	}
 }
 
+Fixed100 GetVerticalFrequency()
+{
+	switch (gsVideoMode)
+	{
+	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
+		return 60;
+	case GS_VideoMode::PAL:
+		return EmuConfig.GS.FrameratePAL;
+	case GS_VideoMode::NTSC:
+		return EmuConfig.GS.FramerateNTSC;
+	case GS_VideoMode::HDTV_480P:
+		return 59.94;
+	case GS_VideoMode::HDTV_1080P:
+	case GS_VideoMode::HDTV_1080I:
+	case GS_VideoMode::HDTV_576P:
+	case GS_VideoMode::HDTV_720P:
+	case GS_VideoMode::VESA:
+	case GS_VideoMode::BIOS:
+		return 60;
+	default:
+		// Pass NTSC vertical frequency value when unknown video mode is detected.
+		return FRAMERATE_NTSC * 2;
+	}
+}
+
 u32 UpdateVSyncRate()
 {
 	// Notice:  (and I probably repeat this elsewhere, but it's worth repeating)
@@ -278,7 +303,7 @@ u32 UpdateVSyncRate()
 	//  the GS's output circuit.  It is the same regardless if the GS is outputting interlace
 	//  or progressive scan content. 
 
-	Fixed100	framerate = 0;
+	Fixed100	framerate = GetVerticalFrequency() / 2;
 	u32			scanlines = 0;
 	bool		isCustom  = false;
 
@@ -286,36 +311,28 @@ u32 UpdateVSyncRate()
 	switch (gsVideoMode)
 	{
 	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
-		framerate = 60;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		break;
 
 	case GS_VideoMode::PAL:
 		isCustom = (EmuConfig.GS.FrameratePAL != 50.0);
-		framerate = EmuConfig.GS.FrameratePAL / 2;
 		scanlines = SCANLINES_TOTAL_PAL;
 		if (!gsIsInterlaced) scanlines += 3;
 		break;
 
 	case GS_VideoMode::NTSC:
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
-		framerate = EmuConfig.GS.FramerateNTSC / 2;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
 		break;
 
 	case GS_VideoMode::HDTV_480P:
-		framerate = 29.97;
-		scanlines = SCANLINES_TOTAL_NTSC;
-		break;
-
 	case GS_VideoMode::HDTV_1080P:
 	case GS_VideoMode::HDTV_1080I:
 	case GS_VideoMode::HDTV_576P:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
 	case GS_VideoMode::BIOS:
-		framerate = 30;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		break;
 
@@ -323,7 +340,6 @@ u32 UpdateVSyncRate()
 	case GS_VideoMode::Unknown:
 		// For Release builds, keep using the NTSC timing values when unknown video mode is detected.
 		// Assert will be triggered for debug/dev builds.
-		framerate = FRAMERATE_NTSC;
 		scanlines = SCANLINES_TOTAL_NTSC;
 		Console.Error("PCSX2-Counters: Unknown video mode detected");
 
