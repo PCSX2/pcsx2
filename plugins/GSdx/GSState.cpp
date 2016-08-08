@@ -449,25 +449,6 @@ GSVector4i GSState::GetFrameRect(int i)
 	return rectangle;
 }
 
-GSVector2i GSState::GetDeviceSize(int i)
-{
-	// TODO: return (m_regs->SMODE1.CMOD & 1) ? GSVector2i(640, 576) : GSVector2i(640, 480);
-
-	// TODO: other params of SMODE1 should affect the true device display size
-
-	// TODO2: pal games at 60Hz
-
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-
-	GSVector4i rectangle = GetDisplayRect(i);
-	GSVector2i DeviceSize(rectangle.width(), rectangle.height());
-
-	if(isinterlaced() && m_regs->SMODE2.FFMD && DeviceSize.y > 1)
-		DeviceSize.y >>= 1;
-
-	return DeviceSize;
-}
-
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
