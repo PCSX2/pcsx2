@@ -35,12 +35,13 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 		}
 		case -1:
 		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Dark Green"));
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
 			return pxEt(L"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games with high compatibility.");
 		}
 		case 0:
 		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Forest Green")); // Dark Green
+			const wxColour DarkSeaGreen = wxColour(14, 158, 19);
+			m_msg_eecycle->SetForegroundColour(DarkSeaGreen);
 			return pxEt(L"0 - Default cyclerate (100%). This closely matches the actual speed of a real PS2 EmotionEngine.");
 		}
 		case 1:
@@ -71,7 +72,8 @@ const wxChar* Panels::SpeedHacksPanel::GetVUcycleSliderMsg( int val )
 	{
 		case 0:
 		{
-			m_msg_vustealer->SetForegroundColour(wxColour(14,158,19)); // Dark Green
+			const wxColour DarkSeaGreen = wxColour(14, 158, 19);
+			m_msg_vustealer->SetForegroundColour(DarkSeaGreen);
 			return pxEt(L"0 - Disables VU Cycle Stealing.  Most compatible setting!");
 		}
 		case 1:
