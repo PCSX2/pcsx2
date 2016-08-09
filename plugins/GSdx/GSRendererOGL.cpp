@@ -763,6 +763,9 @@ void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source*
 			} else if (linear && t_position == 16) {
 				half_offset.x = 16;
 				half_offset.y = 16;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
 			}
 		} else {
 			if (!linear && t_position == 8) {
@@ -771,6 +774,9 @@ void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source*
 			} else if (linear && t_position == 16) {
 				half_offset.x = 16 - 16 / scale.x;
 				half_offset.y = 16 - 16 / scale.y;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
 			}
 		}
 
