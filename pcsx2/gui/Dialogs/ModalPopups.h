@@ -71,6 +71,23 @@ namespace Dialogs
 		wxString GetDialogName() const { return GetNameStatic(); }
 	};
 
+	class GSFrameConfigurationDialog : public wxDialogWithHelpers
+	{
+	protected:
+		wxCheckBox* m_show_videomode;
+		wxCheckBox* m_show_saveslot;
+		wxCheckBox* m_show_limiter;
+		wxCheckBox* m_show_threadusage_percentage;
+
+	public:
+		GSFrameConfigurationDialog(wxWindow* parent = NULL);
+		virtual ~GSFrameConfigurationDialog() throw() {}
+
+		static wxString GetNameStatic() { return L"Title bar customization"; }
+		wxString GetDialogName() const { return GetNameStatic(); }
+		void InitValues();
+		void ApplySettings(wxCommandEvent& evt);
+	};
 
 	class PickUserModeDialog : public BaseApplicableDialog
 	{

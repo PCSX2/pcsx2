@@ -20,6 +20,8 @@
 #include "CDVD/CDVDaccess.h"
 #include <memory>
 
+const wxString DefaultTitleTemplate = L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${videomode} | ${gsdx} | ${omodei} | ${cpuusage}";
+
 enum DocsModeType
 {
 	// uses /home/user or /cwd for the program data.  This is the default mode and is the most
@@ -243,7 +245,8 @@ public:
 		void SanityCheck();
 	};
 
-	struct UiTemplateOptions {
+	struct UiTemplateOptions
+	{
 		UiTemplateOptions();
 		void LoadSave(IniInterface& conf);
 
@@ -257,6 +260,10 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
+		bool ShowVideoMode;
+		bool ShowSaveSlot;
+		bool ShowLimiter;
+		bool ShowThreadUsage;
 	};
 
 public:

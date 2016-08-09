@@ -877,6 +877,9 @@
     <ClCompile Include="..\..\IopGte.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Dialogs\GSFrameConfiguration.cpp">
+      <Filter>AppHost\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">

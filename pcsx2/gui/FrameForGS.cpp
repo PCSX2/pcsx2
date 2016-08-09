@@ -625,8 +625,20 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
-
 	wxString title = templates.TitleTemplate;
+
+	if (title == DefaultTitleTemplate)
+	{
+		if (!templates.ShowSaveSlot)
+			title.Replace(L"Slot: ${slot} | ", L"");
+		if (!templates.ShowLimiter)
+			title.Replace(L" Limiter: ${limiter} |", L"");
+		if (!templates.ShowThreadUsage)
+			title.Replace(L"| ${cpuusage}", L"");
+		if (!templates.ShowVideoMode)
+			title.Replace(L"| ${videomode} ", L"");
+	}
+
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
 	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
@@ -635,6 +647,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
 	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
+	title.Replace(L"${videomode}",	ReportVideoMode());
 	if (CoreThread.IsPaused())
 		title = templates.Paused + title;
 

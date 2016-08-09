@@ -250,6 +250,7 @@ set(pcsx2GuiSources
 	gui/CpuUsageProvider.cpp
 	gui/CpuUsageProviderLnx.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
+	gui/Dialogs/GSFrameConfiguration.cpp
 	gui/Dialogs/AppConfigDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp

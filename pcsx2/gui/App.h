@@ -148,6 +148,7 @@ enum MenuIdentifiers
 	MenuId_Video_WindowSettings,
 
 	// Miscellaneous Menu!  (Misc)
+	MenuId_GSFrame,
 	MenuId_Website,				// Visit our awesome website!
 	MenuId_Profiler,			// Enable profiler
 	MenuId_Console,				// Enable console
