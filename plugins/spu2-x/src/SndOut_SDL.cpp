@@ -37,7 +37,7 @@ namespace {
 	/* Samples should vary from [512,8192] according to SDL spec. Take note this is the desired
 	 * sample count and SDL may provide otherwise. Pulseaudio will cut this value in half if
 	 * PA_STREAM_ADJUST_LATENCY is set in the backened, for example. */
-	const Uint16 desiredSamples = 1024;
+	const Uint16 desiredSamples = 2048;
 	const Uint16 format = AUDIO_S16SYS;
 
 	Uint16 samples = desiredSamples;
