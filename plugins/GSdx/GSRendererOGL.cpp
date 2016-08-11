@@ -1051,6 +1051,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE_GL45 = false;
 	bool DATE_one  = false;
 
+	bool ate_first_pass  = m_context->TEST.DoFirstPass();
+	bool ate_second_pass = m_context->TEST.DoSecondPass();
+
 	ResetStates();
 
 	ASSERT(m_dev != NULL);
@@ -1286,7 +1289,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	}
 
-	EmulateAtst(1, tex);
+	// Warning must be done after EmulateZbuffer
+	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
+	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
+	// pass to handle the depth based on the alpha test.
+	bool ate_all_color_then_depth = ate_first_pass & ate_second_pass & (m_context->TEST.AFAIL != AFAIL_ZB_ONLY) & (m_om_dssel.ztst == ZTST_ALWAYS);
+	if (ate_all_color_then_depth) {
+		// Render all color but don't update depth
+		// ATE is disabled here
+		m_om_dssel.zwe = false;
+	} else {
+		EmulateAtst(1, tex);
+	}
 
 	if (tex) {
 		EmulateTextureSampler(tex);
@@ -1365,16 +1379,24 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->OMSetRenderTargets(rt, ds, &scissor);
 	}
 
-	if (m_context->TEST.DoFirstPass())
+	if (ate_first_pass)
 	{
 		SendDraw();
 	}
 
-	if (m_context->TEST.DoSecondPass())
+	if (ate_second_pass)
 	{
 		ASSERT(!m_env.PABE.PABE);
 
-		EmulateAtst(2, tex);
+		if (ate_all_color_then_depth) {
+			// Enable ATE as first pass to update the depth
+			// of pixels that passed the alpha test
+			EmulateAtst(1, tex);
+		} else {
+			// second pass will process the pixels that failed
+			// the alpha test
+			EmulateAtst(2, tex);
+		}
 
 		// Potentially AREF was updated (hope perf impact will be limited)
 		dev->SetupCB(&vs_cb, &ps_cb);
@@ -1394,6 +1416,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			case AFAIL_ZB_ONLY: r = g = b = a = false; break; // z
 			case AFAIL_RGB_ONLY: z = a = false; break; // rgb
 			default: __assume(0);
+		}
+
+		if (ate_all_color_then_depth) {
+			z = true;
+			r = g = b = a = false;
 		}
 
 		if (z || r || g || b || a)
