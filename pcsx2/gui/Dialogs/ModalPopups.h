@@ -78,6 +78,8 @@ namespace Dialogs
 		wxCheckBox* m_show_saveslot;
 		wxCheckBox* m_show_limiter;
 		wxCheckBox* m_show_threadusage_percentage;
+		wxTextCtrl* m_template_text;
+		wxButton*   m_restore_defaults;
 
 	public:
 		GSFrameConfigurationDialog(wxWindow* parent = NULL);
@@ -86,7 +88,11 @@ namespace Dialogs
 		static wxString GetNameStatic() { return L"Title bar customization"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
 		void InitValues();
+		void SetBold(wxStaticText* text);
+		void GrayOut(wxCommandEvent& evt);
 		void ApplySettings(wxCommandEvent& evt);
+		void RestoreDefaults(wxCommandEvent& evt);
+		void GrayOutCheckboxes();
 	};
 
 	class PickUserModeDialog : public BaseApplicableDialog
