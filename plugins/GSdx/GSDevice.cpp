@@ -348,7 +348,7 @@ void GSDevice::ExternalFX()
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shaderfx, dRect, 7, false);
+		StretchRect(m_current, sRect, m_shaderfx, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
 		DoExternalFX(m_shaderfx, m_current);
 	}
 }
@@ -368,7 +368,7 @@ void GSDevice::FXAA()
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_fxaa, dRect, 7, false);
+		StretchRect(m_current, sRect, m_fxaa, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
 		DoFXAA(m_fxaa, m_current);
 	}
 }
@@ -388,7 +388,7 @@ void GSDevice::ShadeBoost()
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shadeboost, dRect, 0, false);
+		StretchRect(m_current, sRect, m_shadeboost, dRect, ShaderConvert_COPY, false);
 		DoShadeBoost(m_shadeboost, m_current);
 	}
 }
