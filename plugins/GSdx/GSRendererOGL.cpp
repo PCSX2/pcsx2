@@ -215,6 +215,52 @@ void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* te
 	}
 }
 
+void GSRendererOGL::EmulateZbuffer()
+{
+	if (m_context->TEST.ZTE) {
+		m_om_dssel.ztst = m_context->TEST.ZTST;
+		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
+	} else {
+		m_om_dssel.ztst = ZTST_ALWAYS;
+	}
+
+	uint32 max_z;
+	uint32 max_z_flt;
+	if (m_context->ZBUF.PSM == PSM_PSMZ32) {
+		max_z     = 0xFFFFFFFF;
+		max_z_flt = 0xFFFFFFFF;
+	} else if (m_context->ZBUF.PSM == PSM_PSMZ24) {
+		// Float mantissa is only 23 bits so the max 24 bits was rounded down
+		max_z     = 0xFFFFFF;
+		max_z_flt = 0xFFFFFE;
+	} else {
+		max_z     = 0xFFFF;
+		max_z_flt = 0xFFFF;
+	}
+
+	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
+	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
+	// We are probably receiving bad coordinates from VU1 in these cases.
+	vs_cb.DepthMask = GSVector2i(max_z, max_z);
+
+	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32)) {
+		if (m_vt.m_max.p.z > max_z) {
+			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
+			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
+			if (m_vt.m_min.p.z > max_z) {
+				GL_INS("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
+				m_om_dssel.ztst = ZTST_ALWAYS;
+			}
+		}
+	}
+
+	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
+	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_min.p.z >= max_z_flt) {
+		GL_INS("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
+		m_om_dssel.ztst = ZTST_ALWAYS;
+	}
+}
+
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
 	if (m_texture_shuffle) {
@@ -1180,54 +1226,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	if (m_context->TEST.ZTE)
-	{
-		m_om_dssel.ztst = m_context->TEST.ZTST;
-		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
-	}
-	else
-	{
-		m_om_dssel.ztst = ZTST_ALWAYS;
-	}
+	EmulateZbuffer(); // will update VS depth mask
 
 	// vs
-
-	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
-	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
-	// We are probably receiving bad coordinates from VU1 in these cases.
-	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
-
-	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe)
-	{
-		if (m_context->ZBUF.PSM == PSM_PSMZ24)
-		{
-			if (m_vt.m_max.p.z > 0xffffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffffff);
-				// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
-				if (m_vt.m_min.p.z > 0xffffff)
-				{
-					GL_INS("Bad Z size on 24 bits buffers")
-					vs_cb.DepthMask = GSVector2i(0x00FFFFFF, 0x00FFFFFF);
-					m_om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-		else if (m_context->ZBUF.PSM == PSM_PSMZ16 || m_context->ZBUF.PSM == PSM_PSMZ16S)
-		{
-			if (m_vt.m_max.p.z > 0xffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffff); // sfex capcom logo
-				// Fixme : Same as above, I guess.
-				if (m_vt.m_min.p.z > 0xffff)
-				{
-					GL_INS("Bad Z size on 16 bits buffers")
-					vs_cb.DepthMask = GSVector2i(0x0000FFFF, 0x0000FFFF);
-					m_om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-	}
 
 	// FIXME Opengl support half pixel center (as dx10). Code could be easier!!!
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);

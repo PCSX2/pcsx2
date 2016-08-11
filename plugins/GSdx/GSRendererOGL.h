@@ -80,6 +80,7 @@ class GSRendererOGL final : public GSRendererHW
 		inline void EmulateBlending(bool DATE_GL42);
 		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 		inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+		inline void EmulateZbuffer();
 
 	public:
 		GSRendererOGL();
