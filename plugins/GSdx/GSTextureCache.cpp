@@ -1728,6 +1728,7 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_type(-1)
 	, m_used(false)
 	, m_depth_supported(depth_supported)
+	, m_end_block(0)
 {
 	m_TEX0 = TEX0;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
