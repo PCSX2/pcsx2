@@ -259,7 +259,7 @@ void Threading::pxThread::Start()
 
 	pxThreadLog.Write(GetName(), L"Calling pthread_create...");
 	if( pthread_create( &m_thread, NULL, _internal_callback, this ) != 0 )
-		throw Exception::ThreadCreationError( this );
+		throw Exception::ThreadCreationError( this ).SetDiagMsg( L"Thread creation error: "  + wxString(std::strerror(errno)) );
 
 	if( !m_sem_startup.WaitWithoutYield( wxTimeSpan( 0, 0, 3, 0 ) ) )
 	{
