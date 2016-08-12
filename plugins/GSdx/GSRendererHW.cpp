@@ -25,6 +25,8 @@
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(1280)
 	, m_height(1024)
+	, m_custom_width(1280)
+	, m_custom_height(1024)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
