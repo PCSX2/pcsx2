@@ -194,8 +194,8 @@ u8 pad_poll(u8 value)
 			if (pad->config) {
 				// In config mode.  Might not actually be leaving it.
 				query.set_result(ConfigExit);
-				return 0xF3;
 			}
+			break;
 
 		case CMD_READ_DATA_AND_VIBRATE:
 			{
