@@ -289,7 +289,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 				{
 					int startIndex = std::min<int>(3, maxBits / 32 - 1);
 
-					if (resolvePointerStrings && cpu && cpu->isAlive()) {
+					if (resolvePointerStrings && cpu->isAlive()) {
 						char *strval = cpu->stringFromPointer(value._u32[0]);
 						if (strval) {
 							static wxColor clr = wxColor(0xFF228822);
