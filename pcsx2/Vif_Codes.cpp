@@ -280,7 +280,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	VURegs& VUx = idx ? VU1 : VU0;
 	vifStruct& vifX = GetVifX;
 	u16 vuMemSize = idx ? 0x4000 : 0x1000;
-	pxAssert(VUx.Micro > 0);
+	pxAssert(VUx.Micro);
 
 	vifExecQueue(idx);
 
