@@ -272,7 +272,7 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 		}
 
 		for (i=1; i<maxreg; i++) {
-			if ( i == esp.GetId() || i == ebp.GetId() ) continue;
+			if ( (int)i == esp.GetId() || (int)i == ebp.GetId() ) continue;
 			if (!x86regs[i].inuse || x86regs[i].type != type || x86regs[i].reg != reg) continue;
 
 			if( i >= maxreg ) {
