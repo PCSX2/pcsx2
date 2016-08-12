@@ -290,6 +290,7 @@ void GSdxApp::Init()
 	m_default_configuration["debug_opengl"]                               = "0";
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
+	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = "2";
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
