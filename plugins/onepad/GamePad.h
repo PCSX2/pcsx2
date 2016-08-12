@@ -69,22 +69,27 @@ class GamePad
 			return 0;
 		}
 
-		virtual const string& GetName()
+		const string& GetName()
 		{
 			return devname;
 		}
 
-		virtual int GetNumButtons()
+		int GetPAD()
+		{
+			return pad;
+		}
+
+		int GetNumButtons()
 		{
 			return numbuttons;
 		}
 
-		virtual int GetNumAxes()
+		int GetNumAxes()
 		{
 			return numaxes;
 		}
 
-		virtual int GetNumHats()
+		int GetNumHats()
 		{
 			return numhats;
 		}
@@ -94,35 +99,35 @@ class GamePad
 			return deadzone;
 		}
 
-		virtual void SaveState(){return;}
+		virtual void SaveState() {}
 
-		virtual int GetButtonState(int i)
+		int GetButtonState(int i)
 		{
 			return vbuttonstate[i];
 		}
 
-		virtual int GetAxisState(int i)
+		int GetAxisState(int i)
 		{
 			return vaxisstate[i];
 		}
 
-		virtual int GetHatState(int i)
+		int GetHatState(int i)
 		{
 			//PAD_LOG("Getting POV State of %d.\n", i);
 			return vhatstate[i];
 		}
 
-		virtual void SetButtonState(int i, int state)
+		void SetButtonState(int i, int state)
 		{
 			vbuttonstate[i] = state;
 		}
 
-		virtual void SetAxisState(int i, int value)
+		void SetAxisState(int i, int value)
 		{
 			vaxisstate[i] = value;
 		}
 
-		virtual void SetHatState(int i, int value)
+		void SetHatState(int i, int value)
 		{
 			//PAD_LOG("We should set %d to %d.\n", i, value);
 			vhatstate[i] = value;

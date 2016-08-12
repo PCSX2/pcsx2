@@ -34,11 +34,7 @@
 class JoystickInfo : GamePad
 {
 	public:
-		JoystickInfo() : devname(""), _id(-1), numbuttons(0), numaxes(0), numhats(0),
-		 deadzone(1500), pad(-1), joy(NULL) {
-			vbuttonstate.clear();
-			vaxisstate.clear();
-			vhatstate.clear();
+		JoystickInfo() : GamePad(), joy(NULL) {
 #if SDL_MAJOR_VERSION >= 2
 			haptic = NULL;
 			first = true;
@@ -71,69 +67,8 @@ class JoystickInfo : GamePad
 
 		int GetButton(int key_to_button);
 
-		const string& GetName()
-		{
-			return devname;
-		}
-
-		int GetNumButtons()
-		{
-			return numbuttons;
-		}
-
-		int GetNumAxes()
-		{
-			return numaxes;
-		}
-
-		int GetNumHats()
-		{
-			return numhats;
-		}
-
-		int GetPAD()
-		{
-			return pad;
-		}
-
-		int GetDeadzone()
-		{
-			return deadzone;
-		}
 
 		void SaveState();
-
-		int GetButtonState(int i)
-		{
-			return vbuttonstate[i];
-		}
-
-		int GetAxisState(int i)
-		{
-			return vaxisstate[i];
-		}
-
-		int GetHatState(int i)
-		{
-			//PAD_LOG("Getting POV State of %d.\n", i);
-			return vhatstate[i];
-		}
-
-		void SetButtonState(int i, int state)
-		{
-			vbuttonstate[i] = state;
-		}
-
-		void SetAxisState(int i, int value)
-		{
-			vaxisstate[i] = value;
-		}
-
-		void SetHatState(int i, int value)
-		{
-			//PAD_LOG("We should set %d to %d.\n", i, value);
-			vhatstate[i] = value;
-		}
 
 		int GetAxisFromKey(int pad, int index);
 
@@ -145,13 +80,6 @@ class JoystickInfo : GamePad
 			return joy;
 		}
 		void GenerateDefaultEffect();
-		string devname; // pretty device name
-		int _id;
-		int numbuttons, numaxes, numhats;
-		int deadzone;
-		int pad;
-
-		vector<int> vbuttonstate, vaxisstate, vhatstate;
 
 		SDL_Joystick*		joy;
 #if SDL_MAJOR_VERSION >= 2
