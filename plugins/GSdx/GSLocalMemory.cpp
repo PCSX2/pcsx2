@@ -463,7 +463,7 @@ GSLocalMemory::~GSLocalMemory()
 	for_each(m_pomap.begin(), m_pomap.end(), aligned_free_second());
 	for_each(m_po4map.begin(), m_po4map.end(), aligned_free_second());
 
-	for(hash_map<uint64, vector<GSVector2i>*>::iterator i = m_p2tmap.begin(); i != m_p2tmap.end(); i++)
+	for(hash_map<uint64, vector<GSVector2i>*>::iterator i = m_p2tmap.begin(); i != m_p2tmap.end(); ++i)
 	{
 		delete [] i->second;
 	}
@@ -640,7 +640,7 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 	vector<GSVector2i>* p2t = new vector<GSVector2i>[MAX_PAGES];
 
-	for(hash_map<uint32, hash_set<uint32> >::iterator i = tmp.begin(); i != tmp.end(); i++)
+	for(hash_map<uint32, hash_set<uint32> >::iterator i = tmp.begin(); i != tmp.end(); ++i)
 	{
 		uint32 page = i->first;
 
@@ -648,7 +648,7 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 		hash_map<uint32, uint32> m;
 
-		for(hash_set<uint32>::iterator j = tiles.begin(); j != tiles.end(); j++)
+		for(hash_set<uint32>::iterator j = tiles.begin(); j != tiles.end(); ++j)
 		{
 			uint32 addr = *j;
 
@@ -669,7 +669,7 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 		// sort by x and flip the mask (it will be used to erase a lot of bits in a loop, [x] &= ~y)
 
-		for(hash_map<uint32, uint32>::iterator j = m.begin(); j != m.end(); j++)
+		for(hash_map<uint32, uint32>::iterator j = m.begin(); j != m.end(); ++j)
 		{
 			p2t[page].push_back(GSVector2i(j->first, ~j->second));
 		}

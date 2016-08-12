@@ -132,7 +132,7 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 {
 	GSVector2i size(w, h);
 
-	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); i++)
+	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); ++i)
 	{
 		GSTexture* t = *i;
 

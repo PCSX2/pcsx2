@@ -108,7 +108,7 @@ public:
 
 		typename hash_map<KEY, ActivePtr*>::iterator i;
 
-		for(i = m_map_active.begin(); i != m_map_active.end(); i++)
+		for(i = m_map_active.begin(); i != m_map_active.end(); ++i)
 		{
 			ActivePtr* p = i->second;
 
@@ -120,7 +120,7 @@ public:
 
 		printf("GS stats\n");
 
-		for(i = m_map_active.begin(); i != m_map_active.end(); i++)
+		for(i = m_map_active.begin(); i != m_map_active.end(); ++i)
 		{
 			KEY key = i->first;
 			ActivePtr* p = i->second;
