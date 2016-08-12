@@ -40004,7 +40004,6 @@ Serial = SLUS-21335
 Name   = Hustle, The - Detroit Streets - Kat's Story
 Region = NTSC-U
 Compat = 5
-MemCardFilter = SLUS-21334
 ---------------------------------------------
 Serial = SLUS-21336
 Name   = Zathura
@@ -40055,6 +40054,7 @@ Serial = SLUS-21345
 Name   = Grandia III [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21334
 ---------------------------------------------
 Serial = SLUS-21346
 Name   = Ace Combat Zero - The Belkan War
