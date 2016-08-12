@@ -115,7 +115,7 @@ class PADconf
 	 **/
 	void set_ff_intensity(u32 new_intensity)
 	{
-		if(new_intensity <= 0x7FFF && new_intensity >= 0)
+		if(new_intensity <= 0x7FFF)
 		{
 			ff_intensity = new_intensity;
 		}

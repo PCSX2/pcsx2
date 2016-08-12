@@ -251,7 +251,9 @@ void EmitSibMagic( uint regfield, const void* address )
 	// We must make sure that the displacement is within the 32bit range
 	// Else we will fail out in a spectacular fashion
 	sptr displacement = (sptr)address;
+#ifdef __x86_64__
 	pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
+#endif
 
 	xWrite<s32>( (s32)displacement );
 }
