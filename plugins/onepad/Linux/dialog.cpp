@@ -624,7 +624,7 @@ void Dialog::config_key(int pad, int key)
                     m_map_images[pad][key_pressed] = key;
     				captured = true;
     			}
-    			itjoy++;
+    			++itjoy;
     		}
         }
 	}

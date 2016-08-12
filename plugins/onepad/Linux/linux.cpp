@@ -81,7 +81,7 @@ void _PADclose()
 	while (it != s_vgamePad.end())
 	{
 		delete *it;
-		it ++;
+		++it;
 	}
 
 	s_vgamePad.clear();

@@ -38,7 +38,7 @@ void JoystickInfo::UpdateReleaseState()
 	while (itjoy != s_vgamePad.end())
 	{
 		(*itjoy)->SaveState();
-		itjoy++;
+		++itjoy;
 	}
 }
 
@@ -70,7 +70,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad*>& vjoysticks)
 	while (it != vjoysticks.end())
 	{
 		delete *it;
-		it ++;
+		++it;
 	}
 
 	vjoysticks.resize(SDL_NumJoysticks());

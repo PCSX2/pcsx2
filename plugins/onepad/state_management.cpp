@@ -183,7 +183,6 @@ u8 pad_poll(u8 value)
 		return query.response[++query.lastByte];
 	}
 
-	int i;
 	Pad *pad = &pads[query.port][query.slot];
 
 	if (query.lastByte == 0) {
@@ -202,6 +201,7 @@ u8 pad_poll(u8 value)
 			{
 				query.response[2] = 0x5A;
 #if 0
+				int i;
 				Update(query.port, query.slot);
 				ButtonSum *sum = &pad->sum;
 

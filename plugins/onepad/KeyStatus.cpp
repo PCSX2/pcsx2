@@ -27,6 +27,7 @@ void KeyStatus::Init()
 		m_button[pad] = 0xFFFF;
 		m_internal_button_kbd[pad] = 0xFFFF;
 		m_internal_button_joy[pad] = 0xFFFF;
+		m_state_acces[pad] = false;
 
 		for (int index = 0; index < MAX_KEYS; index++) {
 			m_button_pressure[pad][index] = 0xFF;
