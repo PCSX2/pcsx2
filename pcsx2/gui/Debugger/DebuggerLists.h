@@ -25,7 +25,6 @@ struct GenericListViewColumn
 {
 	const wchar_t *name;
 	float size;
-	int flags;
 };
 
 class GenericListView: public wxListView
