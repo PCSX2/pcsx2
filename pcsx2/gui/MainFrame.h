@@ -197,6 +197,7 @@ protected:
 	void Menu_ShowConsole(wxCommandEvent &event);
 	void Menu_ChangeLang(wxCommandEvent &event);
 	void Menu_ShowConsole_Stdio(wxCommandEvent &event);
+	void Menu_ShowTitlebarConfiguration(wxCommandEvent &event);
 	void Menu_ShowAboutBox(wxCommandEvent &event);
 
 	void _DoBootCdvd();

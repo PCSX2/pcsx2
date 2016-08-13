@@ -603,3 +603,8 @@ void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent &event)
 {
 	AppOpenDialog<AboutBoxDialog>( this );
 }
+
+void MainEmuFrame::Menu_ShowTitlebarConfiguration(wxCommandEvent &event)
+{
+	AppOpenDialog<GSFrameConfigurationDialog>(this);
+}

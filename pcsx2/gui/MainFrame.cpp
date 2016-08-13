@@ -234,6 +234,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole_Stdio, this, MenuId_Console_Stdio);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowAboutBox, this, MenuId_About);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowTitlebarConfiguration, this, MenuId_GSFrame);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ChangeLang, this, MenuId_ChangeLang);
 
 	// Debug
@@ -514,13 +515,16 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	//There's a great working "open website" in the about panel. Less clutter by just using that.
 	//m_menuMisc.Append(MenuId_Website,			_("Visit Website..."),
 	//	_("Opens your web-browser to our favorite website."));
-	m_menuMisc.Append(MenuId_About,				_("&About...") );
-
+	m_menuMisc.Append(MenuId_GSFrame, _("&Titlebar Customization"));
 	m_menuMisc.AppendSeparator();
+
+	m_menuMisc.Append(MenuId_About,				_("&About...") );
+	m_menuMisc.AppendSeparator();
+
 	m_menuMisc.Append( MenuId_ChangeLang,		L"Change &Language" ); // Always in English
 
+	// Debug Menu
 	m_menuDebug.Append(MenuId_Debug_Open,		_("&Open Debug Window..."),	wxEmptyString);
-
 #ifdef PCSX2_DEVBUILD
 	m_menuDebug.Append(MenuId_Debug_Logging,	_("&Logging..."),			wxEmptyString);
 #endif

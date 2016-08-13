@@ -124,6 +124,7 @@ struct SyncCounter
 
 
 extern Fixed100 GetVerticalFrequency();
+extern const char *ReportVideoMode();
 extern Counter counters[4];
 extern SyncCounter hsyncCounter;
 extern SyncCounter vsyncCounter;

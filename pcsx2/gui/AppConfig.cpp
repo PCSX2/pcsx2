@@ -947,7 +947,11 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputProgressive	= L"Progressive";
 	OutputInterlaced	= L"Interlaced";
 	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+	TitleTemplate		= DefaultTitleTemplate;
+	ShowLimiter			= true;
+	ShowSaveSlot		= true;
+	ShowThreadUsage		= true;
+	ShowVideoMode		= false;
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -963,6 +967,10 @@ void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
 	IniEntry(OutputProgressive);
 	IniEntry(OutputInterlaced);
 	IniEntry(Paused);
+	IniEntry(ShowVideoMode);
+	IniEntry(ShowSaveSlot);
+	IniEntry(ShowLimiter);
+	IniEntry(ShowThreadUsage);
 	IniEntry(TitleTemplate);
 }
 
