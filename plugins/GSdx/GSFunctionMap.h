@@ -131,7 +131,7 @@ public:
 				uint64 tpf = p->frames > 0 ? p->ticks / p->frames : 0;
 				uint64 ppf = p->frames > 0 ? p->actual / p->frames : 0;
 
-				printf("[%014llx]%c %6.2f%% %5.2f%% f %4lld t %12lld p %12lld w %12lld tpp %4lld tpf %9lld ppf %9lld\n",
+				printf("[%014llx]%c %6.2f%% %5.2f%% f %4llu t %12llu p %12llu w %12lld tpp %4llu tpf %9llu ppf %9llu\n",
 					(uint64)key, m_map.find(key) == m_map.end() ? '*' : ' ',
 					(float)(tpf * 10000 / 34000000) / 100,
 					(float)(tpf * 10000 / ttpf) / 100,

@@ -103,7 +103,7 @@ void GSRendererSW::VSync(int field)
 
 	if(0) if(LOG)
 	{
-		fprintf(s_fp, "%lld\n", m_perfmon.GetFrame());
+		fprintf(s_fp, "%llu\n", m_perfmon.GetFrame());
 
 		GSVector4i dr = GetDisplayRect();
 		GSVector4i fr = GetFrameRect();
@@ -117,7 +117,7 @@ void GSRendererSW::VSync(int field)
 			if(i == 0 && !m_regs->PMODE.EN1) continue;
 			if(i == 1 && !m_regs->PMODE.EN2) continue;
 
-			fprintf(s_fp, "DISPFB[%d] BP=%05x BW=%d PSM=%d DBX=%d DBY=%d\n", 
+			fprintf(s_fp, "DISPFB[%d] BP=%05x BW=%d PSM=%d DBX=%d DBY=%d\n",
 				i,
 				m_regs->DISP[i].DISPFB.Block(),
 				m_regs->DISP[i].DISPFB.FBW,
@@ -126,7 +126,7 @@ void GSRendererSW::VSync(int field)
 				m_regs->DISP[i].DISPFB.DBY
 				);
 
-			fprintf(s_fp, "DISPLAY[%d] DX=%d DY=%d DW=%d DH=%d MAGH=%d MAGV=%d\n", 
+			fprintf(s_fp, "DISPLAY[%d] DX=%d DY=%d DW=%d DH=%d MAGH=%d MAGV=%d\n",
 				i,
 				m_regs->DISP[i].DISPLAY.DX,
 				m_regs->DISP[i].DISPLAY.DY,
@@ -137,7 +137,7 @@ void GSRendererSW::VSync(int field)
 				);
 		}
 
-		fprintf(s_fp, "PMODE EN1=%d EN2=%d CRTMD=%d MMOD=%d AMOD=%d SLBG=%d ALP=%d\n", 
+		fprintf(s_fp, "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
 			m_regs->PMODE.EN1,
 			m_regs->PMODE.EN2,
 			m_regs->PMODE.CRTMD,
@@ -147,7 +147,7 @@ void GSRendererSW::VSync(int field)
 			m_regs->PMODE.ALP
 			);
 
-		fprintf(s_fp, "SMODE1 CLKSEL=%d CMOD=%d EX=%d GCONT=%d LC=%d NVCK=%d PCK2=%d PEHS=%d PEVS=%d PHS=%d PRST=%d PVS=%d RC=%d SINT=%d SLCK=%d SLCK2=%d SPML=%d T1248=%d VCKSEL=%d VHP=%d XPCK=%d\n",
+		fprintf(s_fp, "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
 			m_regs->SMODE1.CLKSEL,
 			m_regs->SMODE1.CMOD,
 			m_regs->SMODE1.EX,
@@ -171,33 +171,33 @@ void GSRendererSW::VSync(int field)
 			m_regs->SMODE1.XPCK
 			);
 
-		fprintf(s_fp, "SMODE2 INT=%d FFMD=%d DPMS=%d\n", 
+		fprintf(s_fp, "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
 			m_regs->SMODE2.INT,
 			m_regs->SMODE2.FFMD,
 			m_regs->SMODE2.DPMS
 			);
 
-		fprintf(s_fp, "SRFSH %08x_%08x\n", 
+		fprintf(s_fp, "SRFSH %08x_%08x\n",
 			m_regs->SRFSH.u32[0],
 			m_regs->SRFSH.u32[1]
 			);
 
-		fprintf(s_fp, "SYNCH1 %08x_%08x\n", 
+		fprintf(s_fp, "SYNCH1 %08x_%08x\n",
 			m_regs->SYNCH1.u32[0],
 			m_regs->SYNCH1.u32[1]
 			);
 
-		fprintf(s_fp, "SYNCH2 %08x_%08x\n", 
+		fprintf(s_fp, "SYNCH2 %08x_%08x\n",
 			m_regs->SYNCH2.u32[0],
 			m_regs->SYNCH2.u32[1]
 			);
 
-		fprintf(s_fp, "SYNCV %08x_%08x\n", 
+		fprintf(s_fp, "SYNCV %08x_%08x\n",
 			m_regs->SYNCV.u32[0],
 			m_regs->SYNCV.u32[1]
 			);
 
-		fprintf(s_fp, "CSR %08x_%08x\n", 
+		fprintf(s_fp, "CSR %08x_%08x\n",
 			m_regs->CSR.u32[0],
 			m_regs->CSR.u32[1]
 			);
@@ -648,7 +648,7 @@ void GSRendererSW::Queue(shared_ptr<GSRasterizerData>& item)
 	{
 		GSScanlineGlobalData& gd = ((SharedData*)item.get())->global;
 
-		fprintf(s_fp, "[%d] queue %05x %d (%d) %05x %d (%d) %05x %d %dx%d (%d %d %d) | %d %d %d\n",
+		fprintf(s_fp, "[%d] queue %05x %d (%d) %05x %d (%d) %05x %d %dx%d (%d %d %d) | %u %d %d\n",
 			sd->counter,
 			m_context->FRAME.Block(), m_context->FRAME.PSM, gd.sel.fwrite, 
 			m_context->ZBUF.Block(), m_context->ZBUF.PSM, gd.sel.zwrite,
@@ -708,14 +708,14 @@ void GSRendererSW::Sync(int reason)
 
 	int pixels = m_rl->GetPixels();
 
-	if(LOG) {fprintf(s_fp, "sync n=%d r=%d t=%lld p=%d %c\n", s_n, reason, t, pixels, t > 10000000 ? '*' : ' '); fflush(s_fp);}
+	if(LOG) {fprintf(s_fp, "sync n=%d r=%d t=%llu p=%d %c\n", s_n, reason, t, pixels, t > 10000000 ? '*' : ' '); fflush(s_fp);}
 
 	m_perfmon.Put(GSPerfMon::Fillrate, pixels);
 }
 
 void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
-	if(LOG) {fprintf(s_fp, "w %05x %d %d, %d %d %d %d\n", BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
+	if(LOG) {fprintf(s_fp, "w %05x %u %u, %d %d %d %d\n", BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
 	
 	GSOffset* off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
 
@@ -741,7 +741,7 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
 {
-	if(LOG) {fprintf(s_fp, "%s %05x %d %d, %d %d %d %d\n", clut ? "rp" : "r", BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
+	if(LOG) {fprintf(s_fp, "%s %05x %u %u, %d %d %d %d\n", clut ? "rp" : "r", BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM, r.x, r.y, r.z, r.w); fflush(s_fp);}
 
 	if(!m_rl->IsSynced())
 	{

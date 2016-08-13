@@ -36,7 +36,7 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 
 GSShaderOGL::~GSShaderOGL()
 {
-	printf("Delete %d Shaders, %d Programs, %d Pipelines\n",
+	printf("Delete %zu Shaders, %zu Programs, %zu Pipelines\n",
 			m_shad_to_delete.size(), m_prog_to_delete.size(), m_pipe_to_delete.size());
 
 	for (auto s : m_shad_to_delete) glDeleteShader(s);

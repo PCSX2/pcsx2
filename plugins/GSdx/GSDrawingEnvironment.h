@@ -91,54 +91,54 @@ public:
 		if (!fp) return;
 
 		fprintf(fp, "PRIM\n"
-				"\tPRIM:%d\n"
-				"\tIIP:%d\n"
-				"\tTME:%d\n"
-				"\tFGE:%d\n"
-				"\tABE:%d\n"
-				"\tAA1:%d\n"
-				"\tFST:%d\n"
-				"\tCTXT:%d\n"
-				"\tFIX:%d\n\n"
+				"\tPRIM:%u\n"
+				"\tIIP:%u\n"
+				"\tTME:%u\n"
+				"\tFGE:%u\n"
+				"\tABE:%u\n"
+				"\tAA1:%u\n"
+				"\tFST:%u\n"
+				"\tCTXT:%u\n"
+				"\tFIX:%u\n\n"
 				, PRIM.PRIM, PRIM.IIP, PRIM.TME, PRIM.FGE, PRIM.ABE, PRIM.AA1, PRIM.FST, PRIM.CTXT, PRIM.FIX);
 
 		fprintf(fp, "PRMODE (when AC=0)\n"
-				"\t_PRIM:%d\n"
-				"\tIIP:%d\n"
-				"\tTME:%d\n"
-				"\tFGE:%d\n"
-				"\tABE:%d\n"
-				"\tAA1:%d\n"
-				"\tFST:%d\n"
-				"\tCTXT:%d\n"
-				"\tFIX:%d\n\n"
+				"\t_PRIM:%u\n"
+				"\tIIP:%u\n"
+				"\tTME:%u\n"
+				"\tFGE:%u\n"
+				"\tABE:%u\n"
+				"\tAA1:%u\n"
+				"\tFST:%u\n"
+				"\tCTXT:%u\n"
+				"\tFIX:%u\n\n"
 				, PRMODE._PRIM, PRMODE.IIP, PRMODE.TME, PRMODE.FGE, PRMODE.ABE, PRMODE.AA1, PRMODE.FST, PRMODE.CTXT, PRMODE.FIX);
 
 		fprintf(fp, "PRMODECONT\n"
-				"\tAC:%d\n\n"
+				"\tAC:%u\n\n"
 				, PRMODECONT.AC);
 
 		fprintf(fp, "TEXCLUT\n"
-				"\tCOU:%d\n"
-				"\tCBW:%d\n"
-				"\tCOV:%d\n\n"
+				"\tCOU:%u\n"
+				"\tCBW:%u\n"
+				"\tCOV:%u\n\n"
 				, TEXCLUT.COU, TEXCLUT.CBW, TEXCLUT.COV);
 
 		fprintf(fp, "SCANMSK\n"
-				"\tMSK:%d\n\n"
+				"\tMSK:%u\n\n"
 				"\n"
 				, SCANMSK.MSK);
 
 		fprintf(fp, "TEXA\n"
-				"\tAEM:%d\n"
-				"\tTA0:%d\n"
-				"\tTA1:%d\n\n"
+				"\tAEM:%u\n"
+				"\tTA0:%u\n"
+				"\tTA1:%u\n\n"
 				, TEXA.AEM, TEXA.TA0, TEXA.TA1);
 
 		fprintf(fp, "FOGCOL\n"
-				"\tFCG:%d\n"
-				"\tFCB:%d\n"
-				"\tFCR:%d\n\n"
+				"\tFCG:%u\n"
+				"\tFCB:%u\n"
+				"\tFCR:%u\n\n"
 				, FOGCOL.FCG, FOGCOL.FCB, FOGCOL.FCR);
 
 		fprintf(fp, "DIMX\n"
@@ -161,42 +161,42 @@ public:
 				, DIMX.DM22, DIMX.DM23, DIMX.DM31, DIMX.DM02, DIMX.DM21, DIMX.DM12, DIMX.DM03, DIMX.DM01, DIMX.DM33, DIMX.DM30, DIMX.DM11, DIMX.DM10, DIMX.DM20, DIMX.DM32, DIMX.DM00, DIMX.DM13);
 
 		fprintf(fp, "DTHE\n"
-				"\tDTHE:%d\n\n"
+				"\tDTHE:%u\n\n"
 				, DTHE.DTHE);
 
 		fprintf(fp, "COLCLAMP\n"
-				"\tCLAMP:%d\n\n"
+				"\tCLAMP:%u\n\n"
 				, COLCLAMP.CLAMP);
 
 		fprintf(fp, "PABE\n"
-				"\tPABE:%d\n\n"
+				"\tPABE:%u\n\n"
 				, PABE.PABE);
 
 		fprintf(fp, "BITBLTBUF\n"
-				"\tSBW:%d\n"
+				"\tSBW:%u\n"
 				"\tSBP:0x%x\n"
-				"\tSPSM:%d\n"
-				"\tDBW:%d\n"
-				"\tDPSM:%d\n"
+				"\tSPSM:%u\n"
+				"\tDBW:%u\n"
+				"\tDPSM:%u\n"
 				"\tDBP:0x%x\n\n"
 				, BITBLTBUF.SBW, BITBLTBUF.SBP, BITBLTBUF.SPSM, BITBLTBUF.DBW, BITBLTBUF.DPSM, BITBLTBUF.DBP);
 
 		fprintf(fp, "TRXDIR\n"
-				"\tXDIR:%d\n\n"
+				"\tXDIR:%u\n\n"
 				, TRXDIR.XDIR);
 
 		fprintf(fp, "TRXPOS\n"
-				"\tDIRY:%d\n"
-				"\tSSAY:%d\n"
-				"\tSSAX:%d\n"
-				"\tDIRX:%d\n"
-				"\tDSAX:%d\n"
-				"\tDSAY:%d\n\n"
+				"\tDIRY:%u\n"
+				"\tSSAY:%u\n"
+				"\tSSAX:%u\n"
+				"\tDIRX:%u\n"
+				"\tDSAX:%u\n"
+				"\tDSAY:%u\n\n"
 				, TRXPOS.DIRY, TRXPOS.SSAY, TRXPOS.SSAX, TRXPOS.DIRX, TRXPOS.DSAX, TRXPOS.DSAY);
 
 		fprintf(fp, "TRXREG\n"
-				"\tRRH:%d\n"
-				"\tRRW:%d\n\n"
+				"\tRRH:%u\n"
+				"\tRRW:%u\n\n"
 				, TRXREG.RRH, TRXREG.RRW);
 
 		fclose(fp);

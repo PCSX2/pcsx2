@@ -72,7 +72,7 @@ namespace PboPool {
 		m_size = size;
 
 		if (m_size > m_pbo_size) {
-			fprintf(stderr, "BUG: PBO too small %d but need %d\n", m_pbo_size, m_size);
+			fprintf(stderr, "BUG: PBO too small %u but need %u\n", m_pbo_size, m_size);
 		}
 
 		// Note: texsubimage will access currently bound buffer

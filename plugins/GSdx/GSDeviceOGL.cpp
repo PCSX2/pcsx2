@@ -201,7 +201,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	FILE* csv = fopen("GSdx_profile.csv", "w");
 	if (csv) {
 		for (size_t i = 0; i < times.size(); i++) {
-			fprintf(csv, "%d,%lf\n", i, times[i]);
+			fprintf(csv, "%zu,%lf\n", i, times[i]);
 		}
 
 		fclose(csv);
