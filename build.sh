@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2014  PCSX2 Dev Team
@@ -16,7 +16,7 @@
 
 #set -e # This terminates the script in case of any error
 
-flags=(-DCMAKE_BUILD_PO=FALSE)
+flags="-DCMAKE_BUILD_PO=FALSE"
 
 cleanBuild=0
 useClang=0
@@ -33,8 +33,8 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if [[ $(uname -s) == 'Darwin' ]]; then
-    ncpu=$(sysctl -n hw.ncpu)
+if [ `uname -s` = 'Darwin' ]; then
+    ncpu=`sysctl -n hw.ncpu`
     release=$(uname -r)
     if [[ ${release:0:2} -lt 13 ]]; then
         echo "This old OSX version is not supported! Build will fail."
@@ -44,33 +44,33 @@ if [[ $(uname -s) == 'Darwin' ]]; then
         toolfile=cmake/darwin13-compiler-i386-clang.cmake
     fi
 else
-    ncpu=$(grep -w -c processor /proc/cpuinfo)
+    ncpu=`grep -w -c processor /proc/cpuinfo`
     toolfile=cmake/linux-compiler-i386-multilib.cmake
 fi
 
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
-        --clang-tidy        ) flags+=(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON); clangTidy=1 ;;
+        --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ;;
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
-        --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel)   build="$root/build_dev";;
-        --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug)   build="$root/build_dbg";;
-        --rel|--release     ) flags+=(-DCMAKE_BUILD_TYPE=Release) build="$root/build_rel";;
-        --prof              ) flags+=(-DCMAKE_BUILD_TYPE=Prof)    build="$root/build_prof";;
-        --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
-        --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
-        --egl               ) flags+=(-DEGL_API=TRUE) ;;
-        --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
-        --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
-        --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
-        --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;
-        --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile); useCross=1; ;;
+        --dev|--devel       ) flags="$flags -DCMAKE_BUILD_TYPE=Devel"   ; build="$root/build_dev";;
+        --dbg|--debug       ) flags="$flags -DCMAKE_BUILD_TYPE=Debug"   ; build="$root/build_dbg";;
+        --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
+        --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=Prof"    ; build="$root/build_prof";;
+        --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
+        --glsl              ) flags="$flags -DGLSL_API=TRUE" ;;
+        --egl               ) flags="$flags -DEGL_API=TRUE" ;;
+        --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
+        --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
+        --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
+        --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
+        --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
-        -D*                 ) flags+=($ARG) ;;
+        -D*                 ) flags="$flags $ARG" ;;
 
         *)
             # Unknown option
@@ -108,32 +108,32 @@ for ARG in "$@"; do
     esac
 done
 
-if [[ "$cleanBuild" -eq 1 ]]; then
+if [ "$cleanBuild" -eq 1 ]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
 fi
 
-if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
+if [ "$useCross" -eq 2 ] && [ `getconf LONG_BIT 2> /dev/null` != 32 ]; then
     echo "Forcing cross compilation."
-    flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile)
+    flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"
 elif [[ "$useCross" -ne 1 ]]; then
     useCross=0
 fi
 
 # Helper to easily switch wx-config on my system
-if [[ "$useCross" -eq 0 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+if [ "$useCross" -eq 0 ] && [ `uname -m` = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
-if [[ "$useCross" -eq 2 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+if [ "$useCross" -eq 2 ] && [ `uname -m` = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
 
-echo "Building pcsx2 with ${flags[*]}" | tee "$log"
+echo "Building pcsx2 with $flags" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
-if [[ -L "$build"  ]]; then
+if [ -L "$build"  ]; then
     build=`readlink "$build"`
 fi
 
@@ -141,22 +141,22 @@ mkdir -p "$build"
 # Cmake will generate file inside $CWD. It would be nicer if an option to cmake can be provided.
 cd "$build"
 
-if [[ "$useClang" -eq 1 ]]; then
-    if [[ "$useCross" -eq 0 ]]; then
+if [ "$useClang" -eq 1 ]; then
+    if [ "$useCross" -eq 0 ]; then
         CC=clang CXX=clang++ cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     else
         CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
     fi
 else
-    if [[ "$useIcc" -eq 1 ]]; then
-        if [[ "$useCross" -eq 0 ]]; then
+    if [ "$useIcc" -eq 1 ]; then
+        if [ "$useCross" -eq 0 ]; then
             CC="icc" CXX="icpc" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
         else
             CC="icc -m32" CXX="icpc -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
         fi
     else
         # Default compiler AKA GCC
-        cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        cmake $flags $root 2>&1 | tee -a "$log"
     fi
 fi
 
@@ -165,7 +165,7 @@ fi
 ############################################################
 # CPP check build
 ############################################################
-if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
+if [ "$cppcheck" -eq 1 ] && [ -x `which cppcheck` ]; then
     summary=cpp_check_summary.log
     rm -f $summary
     touch $summary
@@ -192,7 +192,7 @@ fi
 ############################################################
 # Clang tidy build
 ############################################################
-if [[ "$clangTidy" -eq 1 ]] && [[ -x `which clang-tidy` ]]; then
+if [ "$clangTidy" -eq 1 ] && [ -x `which clang-tidy` ]; then
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
@@ -231,7 +231,7 @@ fi
 ############################################################
 # Coverity build
 ############################################################
-if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
+if [ "$CoverityBuild" -eq 1 ] && [ -x `which cov-build` ]; then
     cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
