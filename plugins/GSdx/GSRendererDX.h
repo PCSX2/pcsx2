@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSRendererHW.h"
+#include "GSDeviceDX.h"
 
 class GSRendererDX : public GSRendererHW
 {
@@ -33,12 +34,28 @@ class GSRendererDX : public GSRendererHW
 	bool UserHacks_AlphaStencil;
 
 protected:
+	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+	void EmulateZbuffer();
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 	virtual void SetupIA() = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
 	unsigned int UserHacks_TCOffset;
 	float UserHacks_TCO_x, UserHacks_TCO_y;
+
+	bool DATE;
+
+	GSDrawingContext* context;
+	GSDrawingEnvironment env;
+
+	GSDeviceDX* dev;
+
+	GSDeviceDX::OMDepthStencilSelector om_dssel;
+	GSDeviceDX::OMBlendSelector om_bsel;
+
+	GSDeviceDX::PSSelector ps_sel;
+	GSDeviceDX::PSSamplerSelector ps_ssel;
+	GSDeviceDX::PSConstantBuffer ps_cb;
 
 public:
 	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0, 0));
