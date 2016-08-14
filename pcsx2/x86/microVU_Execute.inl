@@ -27,8 +27,8 @@ void mVUdispatcherAB(mV) {
 		xScopedStackFrame frame(false, true);
 
 		// __fastcall = The caller has already put the needed parameters in ecx/edx:
-		if (!isVU1)	{ xFastCall(mVUexecuteVU0, ecx, edx); }
-		else		{ xFastCall(mVUexecuteVU1, ecx, edx); }
+		if (!isVU1)	{ xFastCall((void*)mVUexecuteVU0, ecx, edx); }
+		else		{ xFastCall((void*)mVUexecuteVU1, ecx, edx); }
 
 		// Load VU's MXCSR state
 		xLDMXCSR(g_sseVUMXCSR);
@@ -61,8 +61,8 @@ void mVUdispatcherAB(mV) {
 
 		// __fastcall = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
-		if (!isVU1) { xFastCall(mVUcleanUpVU0); }
-		else		{ xFastCall(mVUcleanUpVU1); }
+		if (!isVU1) { xFastCall((void*)mVUcleanUpVU0); }
+		else		{ xFastCall((void*)mVUcleanUpVU1); }
 	}
 
 	xRET();

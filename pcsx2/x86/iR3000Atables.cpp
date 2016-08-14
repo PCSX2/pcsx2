@@ -631,7 +631,7 @@ static void rpsxLB()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead8, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -647,7 +647,7 @@ static void rpsxLBU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead8, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -663,7 +663,7 @@ static void rpsxLH()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead16, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -679,7 +679,7 @@ static void rpsxLHU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead16, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -700,7 +700,7 @@ static void rpsxLW()
 	xTEST(ecx, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xFastCall(iopMemRead32, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -728,7 +728,7 @@ static void rpsxSB()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite8, ecx, edx );
+	xFastCall((void*)iopMemWrite8, ecx, edx );
 }
 
 static void rpsxSH()
@@ -739,7 +739,7 @@ static void rpsxSH()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite16, ecx, edx );
+	xFastCall((void*)iopMemWrite16, ecx, edx );
 }
 
 static void rpsxSW()
@@ -750,7 +750,7 @@ static void rpsxSW()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite32, ecx, edx );
+	xFastCall((void*)iopMemWrite32, ecx, edx );
 }
 
 //// SLL

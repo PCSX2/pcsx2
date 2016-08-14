@@ -307,7 +307,7 @@ void recBranchCall( void (*func)() )
 void recCall( void (*func)() )
 {
 	iFlushCall(FLUSH_INTERPRETER);
-	xFastCall(func);
+	xFastCall((void*)func);
 }
 
 // =====================================================================================================
@@ -347,7 +347,7 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetAlignedCallTarget();
 
-	xFastCall(recRecompile, ptr[&cpuRegs.pc] );
+	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
 
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
@@ -361,7 +361,7 @@ static DynGenFunc* _DynGen_JITCompile()
 static DynGenFunc* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetAlignedCallTarget();
-	xJMP( JITCompile );
+	xJMP( (void*)JITCompile );
 	return (DynGenFunc*)retval;
 }
 
@@ -383,7 +383,7 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 {
 	u8* retval = xGetPtr();
 
-	xFastCall(recEventTest );
+	xFastCall((void*)recEventTest );
 
 	return (DynGenFunc*)retval;
 }
@@ -397,7 +397,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	{ // Properly scope the frame prologue/epilogue
 		xScopedStackFrame frame(IsDevBuild);
 
-		xJMP(DispatcherReg);
+		xJMP((void*)DispatcherReg);
 
 		// Save an exit point
 		ExitRecompiledCode = (DynGenFunc*)xGetPtr();
@@ -411,16 +411,16 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static DynGenFunc* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
-	xFastCall(dyna_block_discard);
-	xJMP(ExitRecompiledCode);
+	xFastCall((void*)dyna_block_discard);
+	xJMP((void*)ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
 
 static DynGenFunc* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
-	xFastCall(dyna_page_reset);
-	xJMP(ExitRecompiledCode);
+	xFastCall((void*)dyna_page_reset);
+	xJMP((void*)ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
 
@@ -742,7 +742,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
 	// Note: technically the address is 0x8000_0180 (or 0x180)
 	// (if CPU is booted)
-	xJMP( DispatcherReg );
+	xJMP( (void*)DispatcherReg );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
 }
@@ -757,7 +757,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	xCMP(ptr32[&cpuRegs.pc], pc);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-	xJMP( DispatcherEvent );
+	xJMP( (void*)DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
 }
@@ -1034,7 +1034,7 @@ static void iBranchTest(u32 newpc)
 		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
 		xMOV(ptr32[&cpuRegs.cycle], eax);
 
-		xJMP( DispatcherEvent );
+		xJMP( (void*)DispatcherEvent );
 	}
 	else
 	{
@@ -1048,7 +1048,7 @@ static void iBranchTest(u32 newpc)
 		else
 			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
 
-		xJMP( DispatcherEvent );
+		xJMP( (void*)DispatcherEvent );
 	}
 }
 
@@ -1179,7 +1179,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xFastCall(standardizeBreakpointAddress, ecx);
+	xFastCall((void*)standardizeBreakpointAddress, ecx);
 	xMOV(ecx,eax);
 	xMOV(edx,eax);
 	xADD(edx,bits/8);
@@ -1210,10 +1210,10 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		// hit the breakpoint
 		if (checks[i].result & MEMCHECK_LOG) {
 			xMOV(edx, store);
-			xFastCall(dynarecMemLogcheck, ecx, edx);
+			xFastCall((void*)dynarecMemLogcheck, ecx, edx);
 		}
 		if (checks[i].result & MEMCHECK_BREAK) {
-			xFastCall(dynarecMemcheck);
+			xFastCall((void*)dynarecMemcheck);
 		}
 
 		next1.SetTarget();
@@ -1226,7 +1226,7 @@ void encodeBreakpoint()
 	if (isBreakpointNeeded(pc) != 0)
 	{
 		iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
-		xFastCall(dynarecCheckBreakpoint);
+		xFastCall((void*)dynarecCheckBreakpoint);
 	}
 }
 
@@ -1657,7 +1657,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	}
 
 	if (eeloadMain && HWADDR(startpc) == HWADDR(eeloadMain)) {
-		xFastCall(eeloadHook);
+		xFastCall((void*)eeloadHook);
 
 		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
 		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
@@ -1671,7 +1671,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (g_GameLoading && HWADDR(startpc) == ElfEntry) {
 		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
-		xFastCall(eeGameStarting);
+		xFastCall((void*)eeGameStarting);
 
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
@@ -1695,18 +1695,18 @@ static void __fastcall recRecompile( const u32 startpc )
 		// [TODO] : These must be enabled from the GUI or INI to be used, otherwise the
 		// code that calls PreBlockCheck will not be generated.
 
-		xFastCall(PreBlockCheck, pc);
+		xFastCall((void*)PreBlockCheck, pc);
 	}
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		if (pc == 0x33ad48 || pc == 0x35060c) {
 			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
-			xFastCall(GoemonPreloadTlb);
+			xFastCall((void*)GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			xFastCall(GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
+			xFastCall((void*)GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
 

@@ -249,15 +249,15 @@ void recBC2TL() { _setupBranchTest(JZ32,  true);  }
 void COP2_Interlock(bool mBitSync) {
 	if (cpuRegs.code & 1) {
 		iFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
-		if (mBitSync) xFastCall(_vu0WaitMicro);
-		else		  xFastCall(_vu0FinishMicro);
+		if (mBitSync) xFastCall((void*)_vu0WaitMicro);
+		else		  xFastCall((void*)_vu0FinishMicro);
 	}
 }
 
 void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
 	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;
-		xFastCall(resetFunct);
+		xFastCall((void*)resetFunct);
 		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	skip.SetTarget();
 }
@@ -316,8 +316,8 @@ static void recCTC2() {
 				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			}
 			else xXOR(ecx, ecx);
-			xFastCall(vu1ExecMicro, ecx);
-			xFastCall(vif1VUFinish);
+			xFastCall((void*)vu1ExecMicro, ecx);
+			xFastCall((void*)vif1VUFinish);
 			break;
 		case REG_FBRST:
 			if (!_Rt_) { 
@@ -336,7 +336,7 @@ static void recCTC2() {
 			// Executing vu0 block here fixes the intro of Ratchet and Clank
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
 			if (_Rd_) _eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
-			xFastCall(BaseVUmicroCPU::ExecuteBlockJIT, (uptr)CpuVU0);
+			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, (uptr)CpuVU0);
 			break;
 	}
 }
