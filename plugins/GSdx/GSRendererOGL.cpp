@@ -168,6 +168,99 @@ void GSRendererOGL::SetupIA()
 	dev->IASetPrimitiveTopology(t);
 }
 
+void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
+{
+	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
+	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
+
+	if (!m_context->TEST.ATE) return;
+
+	switch (atst) {
+		case ATST_LESS:
+			if (tex && tex->m_spritehack_t) {
+				m_ps_sel.atst = 0;
+			} else {
+				ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+				m_ps_sel.atst = 1;
+			}
+			break;
+		case ATST_LEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			m_ps_sel.atst = 1;
+			break;
+		case ATST_GEQUAL:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_GREATER:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_EQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 3;
+			break;
+		case ATST_NOTEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 4;
+			break;
+
+		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
+		case ATST_ALWAYS:
+		default:
+			m_ps_sel.atst = 0;
+			break;
+	}
+}
+
+void GSRendererOGL::EmulateZbuffer()
+{
+	if (m_context->TEST.ZTE) {
+		m_om_dssel.ztst = m_context->TEST.ZTST;
+		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
+	} else {
+		m_om_dssel.ztst = ZTST_ALWAYS;
+	}
+
+	uint32 max_z;
+	uint32 max_z_flt;
+	if (m_context->ZBUF.PSM == PSM_PSMZ32) {
+		max_z     = 0xFFFFFFFF;
+		max_z_flt = 0xFFFFFFFF;
+	} else if (m_context->ZBUF.PSM == PSM_PSMZ24) {
+		// Float mantissa is only 23 bits so the max 24 bits was rounded down
+		max_z     = 0xFFFFFF;
+		max_z_flt = 0xFFFFFE;
+	} else {
+		max_z     = 0xFFFF;
+		max_z_flt = 0xFFFF;
+	}
+
+	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
+	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
+	// We are probably receiving bad coordinates from VU1 in these cases.
+	vs_cb.DepthMask = GSVector2i(max_z, max_z);
+
+	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32)) {
+		if (m_vt.m_max.p.z > max_z) {
+			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
+			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
+			if (m_vt.m_min.p.z > max_z) {
+				GL_INS("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
+				m_om_dssel.ztst = ZTST_ALWAYS;
+			}
+		}
+	}
+
+	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
+	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_min.p.z >= max_z_flt) {
+		GL_INS("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
+		m_om_dssel.ztst = ZTST_ALWAYS;
+	}
+}
+
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
 	if (m_texture_shuffle) {
@@ -757,10 +850,6 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	// Setup Texture ressources
 	dev->SetupSampler(m_ps_ssel);
 	dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
-
-	if (tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
-		m_ps_sel.atst = 1;
-	}
 }
 
 GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
@@ -962,6 +1051,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool DATE_GL45 = false;
 	bool DATE_one  = false;
 
+	bool ate_first_pass  = m_context->TEST.DoFirstPass();
+	bool ate_second_pass = m_context->TEST.DoSecondPass();
+
 	ResetStates();
 
 	ASSERT(m_dev != NULL);
@@ -1137,54 +1229,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	if (m_context->TEST.ZTE)
-	{
-		m_om_dssel.ztst = m_context->TEST.ZTST;
-		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
-	}
-	else
-	{
-		m_om_dssel.ztst = ZTST_ALWAYS;
-	}
+	EmulateZbuffer(); // will update VS depth mask
 
 	// vs
-
-	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
-	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
-	// We are probably receiving bad coordinates from VU1 in these cases.
-	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
-
-	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe)
-	{
-		if (m_context->ZBUF.PSM == PSM_PSMZ24)
-		{
-			if (m_vt.m_max.p.z > 0xffffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffffff);
-				// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
-				if (m_vt.m_min.p.z > 0xffffff)
-				{
-					GL_INS("Bad Z size on 24 bits buffers")
-					vs_cb.DepthMask = GSVector2i(0x00FFFFFF, 0x00FFFFFF);
-					m_om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-		else if (m_context->ZBUF.PSM == PSM_PSMZ16 || m_context->ZBUF.PSM == PSM_PSMZ16S)
-		{
-			if (m_vt.m_max.p.z > 0xffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffff); // sfex capcom logo
-				// Fixme : Same as above, I guess.
-				if (m_vt.m_min.p.z > 0xffff)
-				{
-					GL_INS("Bad Z size on 16 bits buffers")
-					vs_cb.DepthMask = GSVector2i(0x0000FFFF, 0x0000FFFF);
-					m_om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-	}
 
 	// FIXME Opengl support half pixel center (as dx10). Code could be easier!!!
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
@@ -1242,21 +1289,25 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 #endif
 	}
 
-	if (m_context->TEST.ATE)
-		m_ps_sel.atst = m_context->TEST.ATST;
-	else
-		m_ps_sel.atst = ATST_ALWAYS;
-
-	if (m_context->TEST.ATE && m_context->TEST.ATST > 1)
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-
-	// By default don't use texture
-	m_ps_sel.tfx = 4;
-	int  atst = m_ps_sel.atst;
+	// Warning must be done after EmulateZbuffer
+	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
+	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
+	// pass to handle the depth based on the alpha test.
+	bool ate_all_color_then_depth = ate_first_pass & ate_second_pass & (m_context->TEST.AFAIL != AFAIL_ZB_ONLY) & (m_om_dssel.ztst == ZTST_ALWAYS);
+	if (ate_all_color_then_depth) {
+		// Render all color but don't update depth
+		// ATE is disabled here
+		m_om_dssel.zwe = false;
+	} else {
+		EmulateAtst(1, tex);
+	}
 
 	if (tex) {
 		EmulateTextureSampler(tex);
+	} else {
+		m_ps_sel.tfx = 4;
 	}
+
 	// Always bind the RT. This way special effect can use it.
 	dev->PSSetShaderResource(3, rt);
 
@@ -1328,21 +1379,27 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		dev->OMSetRenderTargets(rt, ds, &scissor);
 	}
 
-	if (m_context->TEST.DoFirstPass())
+	if (ate_first_pass)
 	{
 		SendDraw();
 	}
 
-	if (m_context->TEST.DoSecondPass())
+	if (ate_second_pass)
 	{
 		ASSERT(!m_env.PABE.PABE);
 
-		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
-
-		m_ps_sel.atst = iatst[atst];
-		if (tex && tex->m_spritehack_t && (m_ps_sel.atst == 2)) {
-			m_ps_sel.atst = 1;
+		if (ate_all_color_then_depth) {
+			// Enable ATE as first pass to update the depth
+			// of pixels that passed the alpha test
+			EmulateAtst(1, tex);
+		} else {
+			// second pass will process the pixels that failed
+			// the alpha test
+			EmulateAtst(2, tex);
 		}
+
+		// Potentially AREF was updated (hope perf impact will be limited)
+		dev->SetupCB(&vs_cb, &ps_cb);
 
 		dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
@@ -1359,6 +1416,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			case AFAIL_ZB_ONLY: r = g = b = a = false; break; // z
 			case AFAIL_RGB_ONLY: z = a = false; break; // rgb
 			default: __assume(0);
+		}
+
+		if (ate_all_color_then_depth) {
+			z = true;
+			r = g = b = a = false;
 		}
 
 		if (z || r || g || b || a)

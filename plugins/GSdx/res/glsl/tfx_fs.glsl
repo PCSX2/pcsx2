@@ -478,32 +478,45 @@ vec4 tfx(vec4 T, vec4 C)
 
 void atst(vec4 C)
 {
-    // FIXME use integer cmp
     float a = C.a;
 
-#if (PS_ATST == 0) // never
-    discard;
-#elif (PS_ATST == 1) // always
-    // nothing to do
-#elif (PS_ATST == 2) // l
-    if ((AREF - a - 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 3 ) // le
-    if ((AREF - a + 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 4) // e
-    if ((0.5f - abs(a - AREF)) < 0.0f)
-        discard;
-#elif (PS_ATST == 5) // ge
-    if ((a-AREF + 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 6) // g
-    if ((a-AREF - 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 7) // ne
-    if ((abs(a - AREF) - 0.5f) < 0.0f)
-        discard;
+#if 0
+    switch(Uber_ATST) {
+        case 0:
+            break;
+        case 1:
+            if (a > AREF) discard;
+            break;
+        case 2:
+            if (a < AREF) discard;
+            break;
+        case 3:
+            if (abs(a - AREF) > 0.5f) discard;
+            break;
+        case 4:
+            if (abs(a - AREF) < 0.5f) discard;
+            break;
+    }
+
+
 #endif
+
+#if 1
+
+#if (PS_ATST == 0)
+    // nothing to do
+#elif (PS_ATST == 1)
+    if (a > AREF) discard;
+#elif (PS_ATST == 2)
+    if (a < AREF) discard;
+#elif (PS_ATST == 3)
+    if (abs(a - AREF) > 0.5f) discard;
+#elif (PS_ATST == 4)
+    if (abs(a - AREF) < 0.5f) discard;
+#endif
+
+#endif
+
 }
 
 void fog(inout vec4 C, float f)
