@@ -398,6 +398,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 					)
 				);
 				//Console.Error( "Playstation1 game discs are not supported by PCSX2." );
+			return;
 		}
 		
 		// Isn't a disc we recognize?
