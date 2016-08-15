@@ -86,37 +86,35 @@ static int mg_BIToffset(u8 *buffer)
 	return ofs + 0x20;
 }
 
-FILE *_cdvdOpenMechaVer()
+static void cdvdGetMechaVer(u8* ver)
 {
-	// get the name of the bios file
-
 	wxFileName mecfile(EmuConfig.BiosFilename);
 	mecfile.SetExt( L"mec" );
 	const wxString fname( mecfile.GetFullPath() );
 
-	// if file doesnt exist, create empty one
-	FILE* fd = wxFopen(fname, L"r+b");
-	if (fd == NULL)
-	{
+	// Likely a bad idea to go further
+	if (mecfile.IsDir())
+		throw Exception::CannotCreateStream(fname);
+
+
+	if (Path::GetFileSize(fname) < 4) {
 		Console.Warning("MEC File Not Found, creating substitute...");
-		fd = wxFopen(fname, L"wb");
-		if (fd == NULL)
+
+		wxFFile fp(fname, L"wb");
+		if (!fp.IsOpened())
 			throw Exception::CannotCreateStream(fname);
 
-		fputc(0x03, fd);
-		fputc(0x06, fd);
-		fputc(0x02, fd);
-		fputc(0x00, fd);
+		u8 version[4] = {0x3, 0x6, 0x2, 0x0};
+		fp.Write(version, sizeof(version));
 	}
-	return fd;
-}
 
-static void cdvdGetMechaVer(u8* ver)
-{
-	FILE* fd = _cdvdOpenMechaVer();
-	fseek(fd, 0, SEEK_SET);
-	fread(ver, 1, 4, fd);
-	fclose(fd);
+	wxFFile fp(fname, L"rb");
+	if (!fp.IsOpened())
+		throw Exception::CannotCreateStream(fname);
+
+	size_t ret = fp.Read(ver, 4);
+	if (ret != 4)
+		Console.Error(L"Failed to read from %s. Did only %zu/4 bytes", WX_STR(fname), ret);
 }
 
 NVMLayout* getNvmLayout()
