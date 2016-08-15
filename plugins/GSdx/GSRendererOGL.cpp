@@ -234,8 +234,9 @@ void GSRendererOGL::EmulateZbuffer()
 		max_z     = 0xFFFFFF;
 		max_z_flt = 0xFFFFFE;
 	} else {
+		// I don't understand why but it seems 0xFFFF becomes 65534.0 in m_vt.m_min.p.z
 		max_z     = 0xFFFF;
-		max_z_flt = 0xFFFF;
+		max_z_flt = 0xFFFE;
 	}
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
