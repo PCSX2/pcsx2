@@ -122,63 +122,69 @@ static void cdvdGetMechaVer(u8* ver)
 NVMLayout* getNvmLayout()
 {
 	NVMLayout* nvmLayout = NULL;
-	
+
 	if(nvmlayouts[1].biosVer <= BiosVersion)
 		nvmLayout = &nvmlayouts[1];
 	else
 		nvmLayout = &nvmlayouts[0];
-	
+
 	return nvmLayout;
 }
 
 // Throws Exception::CannotCreateStream if the file cannot be opened for reading, or cannot
 // be created for some reason.
-FILE* _cdvdOpenNVM()
+static void cdvdNVM(u8 *buffer, int offset, size_t bytes, bool read)
 {
 	wxFileName nvmfile(EmuConfig.BiosFilename);
-	nvmfile.SetExt( L"nvm" );
-	const wxString fname( nvmfile.GetFullPath() );
+	nvmfile.SetExt(L"nvm");
+	const wxString fname(nvmfile.GetFullPath());
 
-	// if file doesn't exist, create empty one
-	FILE* fd = wxFopen(fname, L"r+b");
-	if (fd == NULL)
-	{
-		Console.Warning("NVM File Not Found, Creating Blank File");
-		fd = wxFopen(fname, L"wb");
-		if (fd == NULL)
+	// Likely a bad idea to go further
+	if (nvmfile.IsDir())
+		throw Exception::CannotCreateStream(fname);
+
+	if (Path::GetFileSize(fname) < 1024) {
+		Console.Warning("NVM File Not Found, creating substitute...");
+
+		wxFFile fp(fname, L"wb");
+		if (!fp.IsOpened())
 			throw Exception::CannotCreateStream(fname);
 
-		for (int i=0; i<1024; i++) fputc(0, fd);
-		
+		u8 zero[1024] = {0};
+		fp.Write(zero, sizeof(zero));
+
 		//Write NVM ILink area with dummy data (Age of Empires 2)
 
 		NVMLayout* nvmLayout = getNvmLayout();
 		u8 ILinkID_Data[8] = { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
-		
-		fseek(fd, *(s32*)(((u8*)nvmLayout)+offsetof(NVMLayout, ilinkId)), SEEK_SET);
-		fwrite(ILinkID_Data, 1, 8, fd);
+
+		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
+		fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
 	}
-	return fd;
+
+	wxFFile fp(fname, L"r+b");
+	if (!fp.IsOpened())
+		throw Exception::CannotCreateStream(fname);
+
+	fp.Seek(offset);
+
+	size_t ret;
+	if (read)
+		ret = fp.Read(buffer, bytes);
+	else
+		ret = fp.Write(buffer, bytes);
+
+	if (ret != bytes)
+		Console.Error(L"Failed to %s %s. Did only %zu/%zu bytes",
+				read ? L"read from" : L"write to", WX_STR(fname), ret, bytes);
 }
 
-//
-// the following 'cdvd' functions all return 0 if successful
-//
-
 static void cdvdReadNVM(u8 *dst, int offset, int bytes) {
-	FILE* fd = _cdvdOpenNVM();
-
-	fseek(fd, offset, SEEK_SET);
-	fread(dst, 1, bytes, fd);
-	fclose(fd);
+	cdvdNVM(dst, offset, bytes, true);
 }
 
 static void cdvdWriteNVM(const u8 *src, int offset, int bytes) {
-	FILE* fd = _cdvdOpenNVM();
-
-	fseek(fd, offset, SEEK_SET);
-	fwrite(src, 1, bytes, fd);
-	fclose(fd);
+	cdvdNVM(const_cast<u8*>(src), offset, bytes, false);
 }
 
 void getNvmData(u8* buffer, s32 offset, s32 size, s32 fmtOffset)
