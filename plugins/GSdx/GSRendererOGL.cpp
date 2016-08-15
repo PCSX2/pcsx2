@@ -1293,8 +1293,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
 	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
 	// pass to handle the depth based on the alpha test.
-	bool ate_all_color_then_depth = ate_first_pass & ate_second_pass & (m_context->TEST.AFAIL != AFAIL_ZB_ONLY) & (m_om_dssel.ztst == ZTST_ALWAYS);
+	bool complex_ate = ate_first_pass & ate_second_pass;
+	bool ate_all_color_then_depth = complex_ate & (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & (m_om_dssel.ztst == ZTST_ALWAYS);
+
 	if (ate_all_color_then_depth) {
+		GL_INS("Alternate ATE handling: ate_all_color_then_depth");
 		// Render all color but don't update depth
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
