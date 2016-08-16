@@ -144,6 +144,47 @@ void gs_main()
     EndPrimitive();
 }
 
+#elif GS_LINE == 1
+
+void gs_main()
+{
+    // Transform a line to a thick line-sprite
+    vertex right = vertex(GSin[1].t_float, GSin[1].t_int, GSin[1].c);
+    vertex left  = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
+    vec4 lt_p = gl_in[0].gl_Position;
+    vec4 rt_p = gl_in[1].gl_Position;
+
+    // Potentially there is faster math
+    vec2 line_vector = normalize(rt_p.xy - lt_p.xy);
+    vec2 line_normal = vec2(line_vector.y, -line_vector.x);
+    vec2 line_width  = line_normal * PointSize;
+
+    vec4 lb_p = gl_in[0].gl_Position + vec4(line_width, 0.0f, 0.0f);
+    vec4 rb_p = gl_in[1].gl_Position + vec4(line_width, 0.0f, 0.0f);
+
+    // Triangle 1
+    gl_Position = lt_p;
+    out_vertex(left);
+
+    gl_Position = lb_p;
+    out_vertex(left);
+
+    gl_Position = rt_p;
+    out_vertex(right);
+    EndPrimitive();
+
+    // Triangle 2
+    gl_Position = lb_p;
+    out_vertex(left);
+
+    gl_Position = rt_p;
+    out_vertex(right);
+
+    gl_Position = rb_p;
+    out_vertex(right);
+    EndPrimitive();
+}
+
 #else
 
 void gs_main()
