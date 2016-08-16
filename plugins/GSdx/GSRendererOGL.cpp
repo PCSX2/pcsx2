@@ -1330,6 +1330,34 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 #endif
 	m_gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
+	if ((GetUpscaleMultiplier() > 1) && (m_vt.m_primclass == GS_LINE_CLASS) && GLLoader::found_geometry_shader) {
+		size_t count = m_vertex.next;
+		GSVertex* v = &m_vertex.buff[0];
+
+		bool line_to_sprite = true;
+		for(size_t i = 0; i < count; i += 2) {
+			if ((v[i].XYZ.X != v[i+1].XYZ.X) && (v[i].XYZ.Y != v[i+1].XYZ.Y)) {
+				line_to_sprite = false;
+				break;
+			}
+		}
+
+		// Improve line upscaling when possible
+		if (line_to_sprite) {
+			for(size_t i = 0; i < count; i += 2) {
+				if (v[i].XYZ.X == v[i+1].XYZ.X) {
+					// Vertical line
+					v[i+1].XYZ.X += 16;
+				} else if (v[i].XYZ.Y == v[i+1].XYZ.Y) {
+					// Horizontal line
+					v[i+1].XYZ.Y += 16;
+				}
+			}
+
+			// Lines are now sprite, magic
+			m_gs_sel.sprite = 1;
+		}
+	}
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
