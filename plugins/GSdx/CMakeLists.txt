@@ -189,13 +189,10 @@ set(GSdxFinalSources
 
 set(GSdxFinalLibs
     ${X11_LIBRARIES}
-)
-
-set(GSdxFinalLibs ${GSdxFinalLibs}
     ${OPENGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
-    ${PNG_LIBRARY}
+    ${PNG_LIBRARIES}
 )
 
 if(EGL_API AND EGL_FOUND)
