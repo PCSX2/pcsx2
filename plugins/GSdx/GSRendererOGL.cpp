@@ -225,18 +225,12 @@ void GSRendererOGL::EmulateZbuffer()
 	}
 
 	uint32 max_z;
-	uint32 max_z_flt;
 	if (m_context->ZBUF.PSM == PSM_PSMZ32) {
 		max_z     = 0xFFFFFFFF;
-		max_z_flt = 0xFFFFFFFF;
 	} else if (m_context->ZBUF.PSM == PSM_PSMZ24) {
-		// Float mantissa is only 23 bits so the max 24 bits was rounded down
 		max_z     = 0xFFFFFF;
-		max_z_flt = 0xFFFFFE;
 	} else {
-		// I don't understand why but it seems 0xFFFF becomes 65534.0 in m_vt.m_min.p.z
 		max_z     = 0xFFFF;
-		max_z_flt = 0xFFFE;
 	}
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
@@ -255,8 +249,9 @@ void GSRendererOGL::EmulateZbuffer()
 		}
 	}
 
+	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
-	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_min.p.z >= max_z_flt) {
+	if (m_om_dssel.ztst == ZTST_GEQUAL && (m_vt.m_eq.xyzf & 0x8) && v[0].XYZ.Z == max_z) {
 		GL_INS("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
 		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
