@@ -238,15 +238,10 @@ extern IConsoleWriter	Console;
 extern void Console_SetStdout(FILE *fp);
 #endif
 extern void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp=NULL );
-extern const wxString& ConsoleBuffer_Get();
-extern void ConsoleBuffer_Clear();
-extern void ConsoleBuffer_FlushToFile( FILE *fp );
 
 extern const IConsoleWriter		ConsoleWriter_Null;
 extern const IConsoleWriter		ConsoleWriter_Stdout;
 extern const IConsoleWriter		ConsoleWriter_Assert;
-extern const IConsoleWriter		ConsoleWriter_Buffered;
-extern const IConsoleWriter		ConsoleWriter_wxError;
 
 extern NullConsoleWriter	NullCon;
 

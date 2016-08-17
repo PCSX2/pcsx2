@@ -28,10 +28,6 @@ static DeclareTls(int) conlog_Indent( 0 );
 // thread-local console color storage.
 static DeclareTls(ConsoleColors) conlog_Color( DefaultConsoleColor );
 
-
-static wxString	m_buffer;		// used by ConsoleBuffer
-static Mutex	m_bufferlock;	// used by ConsoleBuffer
-
 #ifdef __POSIX__
 static FILE *stdout_fp = stdout;
 
@@ -56,13 +52,6 @@ void Console_SetActiveHandler( const IConsoleWriter& writer, FILE* flushfp )
 		(writer.DoSetColor != NULL),
 		"Invalid IConsoleWriter object!  All function pointer interfaces must be implemented."
 	);
-
-	if( &writer != &ConsoleWriter_Buffered )
-	{
-		ScopedLock lock( m_bufferlock );
-		if( !ConsoleBuffer_Get().IsEmpty() )
-			writer.DoWriteLn( ConsoleBuffer_Get() );
-	}
 
 	Console			= writer;
 	DevConWriter	= writer;
@@ -222,83 +211,6 @@ const IConsoleWriter ConsoleWriter_Assert =
 	ConsoleNull_DoSetColor,
 
 	ConsoleNull_DoWrite,
-	ConsoleNull_Newline,
-	ConsoleNull_SetTitle,
-
-	0,		// instance-level indentation (should always be 0)
-};
-
-// --------------------------------------------------------------------------------------
-//  ConsoleBuffer
-// --------------------------------------------------------------------------------------
-
-const wxString& ConsoleBuffer_Get()
-{
-	return m_buffer;
-}
-
-void ConsoleBuffer_Clear()
-{
-	ScopedLock lock( m_bufferlock );
-	m_buffer.clear();
-}
-
-// Flushes the contents of the ConsoleBuffer to the specified destination file stream, and
-// clears the buffer contents to 0.
-void ConsoleBuffer_FlushToFile( FILE *fp )
-{
-	ScopedLock lock( m_bufferlock );
-	if( fp == NULL || m_buffer.IsEmpty() ) return;
-	px_fputs( fp, m_buffer.ToUTF8() );
-	m_buffer.clear();
-}
-
-static void __concall ConsoleBuffer_DoWrite( const wxString& fmt )
-{
-	ScopedLock lock( m_bufferlock );
-	m_buffer += fmt;
-}
-
-static void __concall ConsoleBuffer_DoWriteLn( const wxString& fmt )
-{
-	ScopedLock lock( m_bufferlock );
-	m_buffer += fmt + L"\n";
-}
-
-const IConsoleWriter ConsoleWriter_Buffered =
-{
-	ConsoleBuffer_DoWrite,			// Writes without newlines go to buffer to avoid assertion spam.
-	ConsoleBuffer_DoWriteLn,
-	ConsoleNull_DoSetColor,
-
-	ConsoleBuffer_DoWrite,
-	ConsoleNull_Newline,
-	ConsoleNull_SetTitle,
-
-	0,		// instance-level indentation (should always be 0)
-};
-
-// --------------------------------------------------------------------------------------
-//  Console_wxLogError
-// --------------------------------------------------------------------------------------
-
-static void __concall Console_wxLogError_DoWriteLn( const wxString& fmt )
-{
-	if( !m_buffer.IsEmpty() )
-	{
-		wxLogError( m_buffer );
-		m_buffer.clear();
-	}
-	wxLogError( fmt );
-}
-
-const IConsoleWriter ConsoleWriter_wxError =
-{
-	ConsoleBuffer_DoWrite,			// Writes without newlines go to buffer to avoid error log spam.
-	Console_wxLogError_DoWriteLn,
-	ConsoleNull_DoSetColor,
-
-	ConsoleBuffer_DoWrite,
 	ConsoleNull_Newline,
 	ConsoleNull_SetTitle,
 
