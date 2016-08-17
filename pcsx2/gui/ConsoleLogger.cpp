@@ -346,7 +346,8 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, AppConfig::ConsoleLogOptions& options )
 	: wxFrame(parent, wxID_ANY, title)
 	, m_conf( options )
-	, m_TextCtrl( *new pxLogTextCtrl(this) )
+	, m_TextCtrl( *new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_NOHIDESEL) )
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 

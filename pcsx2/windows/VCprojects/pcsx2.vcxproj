@@ -366,7 +366,6 @@
     <ClCompile Include="..\..\gui\MemoryCardFolder.cpp" />
     <ClCompile Include="..\..\gui\MessageBoxes.cpp" />
     <ClCompile Include="..\..\gui\MSWstuff.cpp" />
-    <ClCompile Include="..\..\gui\pxLogTextCtrl.cpp" />
     <ClCompile Include="..\..\gui\RecentIsoList.cpp" />
     <ClCompile Include="..\..\gui\UpdateUI.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\AboutBoxDialog.cpp" />

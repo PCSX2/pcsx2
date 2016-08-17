@@ -85,27 +85,6 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
-//  pxLogTextCtrl
-// --------------------------------------------------------------------------------------
-class pxLogTextCtrl : public wxTextCtrl
-{
-protected:
-	std::unique_ptr<ScopedCoreThreadPause> m_IsPaused;
-
-public:
-	pxLogTextCtrl(wxWindow* parent);
-	virtual ~pxLogTextCtrl() throw();
-
-#ifdef __WXMSW__
-	virtual void WriteText(const wxString& text);
-#endif
-
-protected:
-	virtual void OnThumbTrack(wxScrollWinEvent& event);
-	virtual void OnThumbRelease(wxScrollWinEvent& event);
-};
-
-// --------------------------------------------------------------------------------------
 //  ConsoleLogFrame  --  Because the one built in wx is poop.
 // --------------------------------------------------------------------------------------
 class ConsoleLogFrame : public wxFrame
@@ -151,7 +130,7 @@ protected:
 
 protected:
 	ConLogConfig&	m_conf;
-	pxLogTextCtrl&	m_TextCtrl;
+	wxTextCtrl&		m_TextCtrl;
 	wxTimer			m_timer_FlushLimiter;
 	wxTimer			m_timer_FlushUnlocker;
 	ColorArray		m_ColorTable;

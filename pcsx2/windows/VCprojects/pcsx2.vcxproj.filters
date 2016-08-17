@@ -641,9 +641,6 @@
     <ClCompile Include="..\..\gui\MSWstuff.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\pxLogTextCtrl.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\RecentIsoList.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
