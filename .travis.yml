@@ -16,6 +16,9 @@ matrix:
     - env: VERSION=4.9 BITS=32
       compiler: gcc-4.9-32
       os: linux
+    - env: VERSION=3.8 BITS=32
+      compiler: clang-3.8-32
+      os: linux
     - env: VERSION=4.9 BITS=64
       compiler: gcc-4.9-64
       os: linux
