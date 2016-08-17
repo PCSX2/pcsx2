@@ -668,13 +668,13 @@ void GSDevice9::ClearRenderTarget(GSTexture* rt, uint32 c)
 	m_dev->SetRenderTarget(0, surface);
 }
 
-void GSDevice9::ClearDepth(GSTexture* t, float c)
+void GSDevice9::ClearDepth(GSTexture* t)
 {
 	if (!t) return;
 	CComPtr<IDirect3DSurface9> dssurface;
 	m_dev->GetDepthStencilSurface(&dssurface);
 	m_dev->SetDepthStencilSurface(*(GSTexture9*)t);
-	m_dev->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, c, 0);
+	m_dev->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 0.0f, 0);
 	m_dev->SetDepthStencilSurface(dssurface);
 }
 
@@ -739,7 +739,7 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 			ClearRenderTarget(t, 0);
 			break;
 		case GSTexture::DepthStencil:
-			ClearDepth(t, 0);
+			ClearDepth(t);
 			break;
 		}
 	}

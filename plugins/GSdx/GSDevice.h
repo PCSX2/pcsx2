@@ -152,7 +152,7 @@ public:
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
 	virtual void ClearRenderTarget(GSTexture* t, uint32 c) {}
-	virtual void ClearDepth(GSTexture* t, float c) {}
+	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, uint8 c) {}
 
 	virtual GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0);

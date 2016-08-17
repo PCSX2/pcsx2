@@ -80,9 +80,9 @@ void GSDeviceSW::ClearRenderTarget(GSTexture* t, uint32 c)
 	Clear(t, c);
 }
 
-void GSDeviceSW::ClearDepth(GSTexture* t, float c)
+void GSDeviceSW::ClearDepth(GSTexture* t)
 {
-	Clear(t, *(uint32*)&c);
+	Clear(t, 0);
 }
 
 void GSDeviceSW::ClearStencil(GSTexture* t, uint8 c)
