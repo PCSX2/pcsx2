@@ -2890,7 +2890,7 @@ void VuBaseBlock::Recompile()
 	if (itparent == parents.end()) xMOV(ptr32[&skipparent], -1);
 
 	xMOV( ecx, s_vu );
-	xCALL( svudispfn );
+	xCALL( (void*)svudispfn );
 #endif
 
 	s_pCurBlock = this;
@@ -3599,7 +3599,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		u8* jptr = JZ8(0);
 		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], s_vu ? 0x200 : 0x002);
 		xMOV( ecx, s_vu ? INTC_VU1 : INTC_VU0 );
-		xCALL( hwIntcIrq );
+		xCALL( (void*)hwIntcIrq );
 		x86SetJ8(jptr);
 	}
 	if (code_ptr[1] & 0x08000000)   // T flag
@@ -3608,7 +3608,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		u8* jptr = JZ8(0);
 		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], s_vu ? 0x400 : 0x004);
 		xMOV( ecx, s_vu ? INTC_VU1 : INTC_VU0 );
-		xCALL( hwIntcIrq );
+		xCALL( (void*)hwIntcIrq );
 		x86SetJ8(jptr);
 	}
 
@@ -4311,7 +4311,7 @@ void recVUMI_XGKICK_(VURegs *VU)
 	_freeXMMregs();
 
 	xMOV(ecx, xRegister32(s_XGKICKReg));
-	xCALL(VU1XGKICK_MTGSTransfer);
+	xCALL((void*)VU1XGKICK_MTGSTransfer);
 
 	s_ScheduleXGKICK = 0;
 }
