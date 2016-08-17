@@ -825,9 +825,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
 					if(rowsize > 0 && offset % rowsize == 0) {
-						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x)", to_string(type),
+						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) bw:%u", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0);
+								t->m_TEX0.TBP0, t->m_end_block, bw);
 
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
@@ -1848,7 +1848,8 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 		nb_block >>= 1;
 
 	m_end_block = m_TEX0.TBP0 + nb_block;
-	//fprintf(stderr, "S: 0x%x E:0x%x\n", m_TEX0.TBP0, m_end_block);
+
+	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
 bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
