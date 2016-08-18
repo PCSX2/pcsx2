@@ -33,6 +33,10 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
+if [ -x `which ninja` ]; then
+    flags="$flags -GNinja"
+fi
+
 if [ `uname -s` = 'Darwin' ]; then
     ncpu=`sysctl -n hw.ncpu`
     release=$(uname -r)
@@ -241,7 +245,12 @@ fi
 ############################################################
 # Real build
 ############################################################
-make -j"$ncpu" 2>&1 | tee -a "$log"
-make install 2>&1 | tee -a "$log"
+if [ -x `which ninja` ]; then
+    ninja 2>&1 | tee -a "$log"
+    ninja install 2>&1 | tee -a "$log"
+else
+    make -j"$ncpu" 2>&1 | tee -a "$log"
+    make install 2>&1 | tee -a "$log"
+fi
 
 exit 0
