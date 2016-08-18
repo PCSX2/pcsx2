@@ -25,6 +25,7 @@
 #include "GS.h"
 
 GS_VideoMode gsVideoMode = GS_VideoMode::Uninitialized;
+bool gsIsInterlaced = false;
 
 static __fi bool _add64_Overflow( s64 x, s64 y, s64 &ret )
 {
@@ -884,8 +885,13 @@ void SYSCALL()
 
 	switch (call) {
 		case 2: {
-					const char* inter = (cpuRegs.GPR.n.a0.UL[0] & 1) ? "Interlaced" : "Progressive";
-					const char* field = (cpuRegs.GPR.n.a2.UL[0] & 1) ? "FRAME" : "FIELD";
+					//Function "SetGsCrt(Interlace, Mode, Field)"
+					//Useful for fetching information of interlace/video/field display parameters of the Graphics Synthesizer
+
+					gsIsInterlaced = cpuRegs.GPR.n.a0.UL[0] & 1;
+					bool gsIsFrameMode = cpuRegs.GPR.n.a2.UL[0] & 1;
+					const char* inter = (gsIsInterlaced) ? "Interlaced" : "Progressive";
+					const char* field = (gsIsFrameMode) ? "FRAME" : "FIELD";
 					std::string mode;
 					// Warning info might be incorrect!
 					switch (cpuRegs.GPR.n.a1.UC[0])

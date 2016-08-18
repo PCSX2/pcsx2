@@ -233,6 +233,7 @@ enum class GS_VideoMode : int
 };
 
 extern GS_VideoMode gsVideoMode;
+extern bool gsIsInterlaced;
 
 /////////////////////////////////////////////////////////////////////////////
 // MTGS Threaded Class Declaration

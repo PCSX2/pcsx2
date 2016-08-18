@@ -32,8 +32,6 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 	GetMTGS().SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate.Raw, newTickrate, 0 );
 }
 
-bool gsIsInterlaced	= false;
-
 
 void gsSetVideoMode(GS_VideoMode mode )
 {
@@ -154,20 +152,12 @@ __fi void gsWrite8(u32 mem, u8 value)
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx", mem, value);
 }
 
-static void _gsSMODEwrite( u32 mem, u32 value )
-{
-	if(mem == GS_SMODE2)
-		gsIsInterlaced = (value & 0x1);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // GS Write 16 bit
 
 __fi void gsWrite16(u32 mem, u16 value)
 {
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx", mem, value);
-
-	_gsSMODEwrite( mem, value );
 
 	switch (mem)
 	{
@@ -198,8 +188,6 @@ __fi void gsWrite32(u32 mem, u32 value)
 	pxAssume( (mem & 3) == 0 );
 	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx", mem, value);
 
-	_gsSMODEwrite( mem, value );
-
 	switch (mem)
 	{
 		case GS_CSR:
@@ -228,7 +216,6 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
 	gsWrite64_generic( mem, value );
-	_gsSMODEwrite( mem, (u32)value[0] );
 }
 
 void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
@@ -280,7 +267,6 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 void __fastcall gsWrite128_page_00( u32 mem, const mem128_t* value )
 {
 	gsWrite128_generic( mem, value );
-	_gsSMODEwrite( mem, (u32)value[0] );
 }
 
 void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
