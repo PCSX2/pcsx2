@@ -820,7 +820,11 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				// FIXME: this code "fixes" black FMV issue with rule of rose.
 #if 1
 				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
-				if (t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)) {
+				//
+				// Ben 10 Alien Force : Vilgax Attacks uses a small temporary target for multiple textures (different bw)
+				// It is too complex to handle, and purpose of the code was to handle FMV (large bw). So let's skip small
+				// (128 pixels) target
+				if (bw > 2 && t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)) {
 					uint32 rowsize = bw * 8192u;
 					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
