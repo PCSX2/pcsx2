@@ -883,8 +883,11 @@ void SYSCALL()
 
 	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
 
-	switch (call) {
-		case 2: {
+
+	switch (static_cast<Syscall>(call))
+	{
+		case Syscall::SetGsCrt:
+		{
 					//Function "SetGsCrt(Interlace, Mode, Field)"
 					//Useful for fetching information of interlace/video/field display parameters of the Graphics Synthesizer
 
@@ -940,22 +943,12 @@ void SYSCALL()
 				}
 				break;
 
-		case 13:
+		case Syscall::SetVTLBRefillHandler:
 			DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
 			break;
 
-		case 0x7c:
-			{
-				if(cpuRegs.GPR.n.a0.UL[0] == 0x10)
-				{
-					eeConLog( ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))) );
-				}
-				else
-					__Deci2Call( cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]) );
-			}
-			break;
 
-		case 0x77:
+		case Syscall::sceSifSetDma:
 			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
 			if (SysTraceActive(EE.Bios))
 			{
@@ -980,6 +973,17 @@ void SYSCALL()
 				}
 			}
 			break;
+
+		case Syscall::Deci2Call:
+		{
+			if (cpuRegs.GPR.n.a0.UL[0] == 0x10)
+			{
+				eeConLog(ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))));
+			}
+			else
+				__Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+		}
+		break;
 
 		default:
 			break;
