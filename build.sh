@@ -33,7 +33,7 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if [ -x `which ninja` ]; then
+if [ `command -v ninja` ]; then
     flags="$flags -GNinja"
 fi
 
@@ -169,7 +169,7 @@ fi
 ############################################################
 # CPP check build
 ############################################################
-if [ "$cppcheck" -eq 1 ] && [ -x `which cppcheck` ]; then
+if [ "$cppcheck" -eq 1 ] && [ `command -v cppcheck` ]; then
     summary=cpp_check_summary.log
     rm -f $summary
     touch $summary
@@ -196,7 +196,7 @@ fi
 ############################################################
 # Clang tidy build
 ############################################################
-if [ "$clangTidy" -eq 1 ] && [ -x `which clang-tidy` ]; then
+if [ "$clangTidy" -eq 1 ] && [ `command -v clang-tidy` ]; then
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
@@ -235,7 +235,7 @@ fi
 ############################################################
 # Coverity build
 ############################################################
-if [ "$CoverityBuild" -eq 1 ] && [ -x `which cov-build` ]; then
+if [ "$CoverityBuild" -eq 1 ] && [ `command -v cov-build` ]; then
     cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
@@ -245,7 +245,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-if [ -x `which ninja` ]; then
+if [ `command -v ninja` ]; then
     ninja 2>&1 | tee -a "$log"
     ninja install 2>&1 | tee -a "$log"
 else
