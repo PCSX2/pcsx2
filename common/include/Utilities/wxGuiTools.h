@@ -553,7 +553,7 @@ protected:
 //    matically adjusts the width based on the sizer type (groupsizers get truncated to
 //    account for borders).
 //
-class wxPanelWithHelpers : public wxPanel
+class wxPanelWithHelpers : public wxScrolled<wxPanel>
 {
 	DECLARE_DYNAMIC_CLASS_NO_COPY(wxPanelWithHelpers)
 

@@ -434,27 +434,27 @@ pxStaticText& wxPanelWithHelpers::Heading( const wxString& label )
 }
 
 wxPanelWithHelpers::wxPanelWithHelpers( wxWindow* parent, wxOrientation orient, const wxString& staticBoxLabel )
-	: wxPanel( parent )
+	: wxScrolled<wxPanel>( parent )
 {
 	SetSizer( new wxStaticBoxSizer( orient, this, staticBoxLabel ) );
 	Init();
 }
 
 wxPanelWithHelpers::wxPanelWithHelpers( wxWindow* parent, wxOrientation orient )
-	: wxPanel( parent )
+	: wxScrolled<wxPanel>( parent )
 {
 	SetSizer( new wxBoxSizer( orient ) );
 	Init();
 }
 
 wxPanelWithHelpers::wxPanelWithHelpers( wxWindow* parent )
-	: wxPanel( parent )
+	: wxScrolled<wxPanel>( parent )
 {
 	Init();
 }
 
 wxPanelWithHelpers::wxPanelWithHelpers( wxWindow* parent, const wxPoint& pos, const wxSize& size )
-	: wxPanel( parent, wxID_ANY, pos, size )
+	: wxScrolled<wxPanel>( parent, wxID_ANY, pos, size )
 {
 	Init();
 }
