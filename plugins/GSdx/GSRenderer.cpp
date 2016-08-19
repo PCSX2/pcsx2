@@ -349,8 +349,11 @@ void GSRenderer::VSync(int field)
 
 	if(!m_dev->IsLost(true))
 	{
-		if(!Merge(field ? 1 : 0))
-		{
+		try {
+			if(!Merge(field ? 1 : 0))
+				return;
+		} catch (GSDXRecoverableError) {
+			s_n++;
 			return;
 		}
 	}

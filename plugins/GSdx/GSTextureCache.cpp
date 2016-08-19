@@ -48,6 +48,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
 	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
 
+	m_first_frame = true;
+
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
@@ -582,7 +584,18 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp);
+		if (m_first_frame) {
+			m_first_frame = false;
+			// First frame lookup is a miss. Throw an error because the frame could be invalid
+			// Dummy Vsync in replayer, load/save state, renderer toggling (F9)
+			// So in doubt, don't print the frame
+			//
+			// Test Haunting ground
+			GL_CACHE("TC: Lookup Frame %dx%d, skip miss (0x%x)", w, h, bp);
+			throw GSDXRecoverableError();
+		} else {
+			GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp);
+		}
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 
@@ -605,6 +618,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	dst->m_used = true;
+
+	m_first_frame = false;
 
 	return dst;
 }
