@@ -56,7 +56,7 @@ fi
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
-        --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ;;
+        --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ; useClang=1;;
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
