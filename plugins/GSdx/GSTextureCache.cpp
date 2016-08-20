@@ -521,7 +521,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		if(bp == t->m_TEX0.TBP0 && t->m_end_block > bp) {
 			dst = t;
 
-			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", w, h, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
 
 			break;
 		}
@@ -533,7 +533,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			if (t->m_TEX0.TBP0 < bp && bp < t->m_end_block) {
 				dst = t;
 
-				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block);
+				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
 
 				break;
 			}
@@ -546,7 +546,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			if(bp == t->m_TEX0.TBP0) {
 				dst = t;
 
-				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x)", w, h, dst->m_texture->GetID(), bp, t->m_end_block);
+				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x %s)", w, h, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
 
 				break;
 			}
@@ -582,7 +582,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	if(dst == NULL)
 	{
-		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x)", w, h, bp);
+		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x %s)", w, h, bp, psm_str(TEX0.PSM));
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 
@@ -825,11 +825,12 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
 					if(rowsize > 0 && offset % rowsize == 0) {
-						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) bw:%u", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0, t->m_end_block, bw);
-
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+
+						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u", to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0, t->m_end_block,
+								r.left, r.top + y, r.right, r.bottom + y, bw);
 
 						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
 						t->m_TEX0.TBW = bw;
@@ -1824,7 +1825,7 @@ void GSTextureCache::Target::Update()
 	// Copy the new GS memory content into the destination texture.
 	if(m_type == RenderTarget)
 	{
-		GL_INS("ERROR: Update RenderTarget 0x%x", m_TEX0.TBP0);
+		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
 
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 	}
