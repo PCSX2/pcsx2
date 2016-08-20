@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -u
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2014  PCSX2 Dev Team
@@ -33,14 +33,15 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if [ `command -v ninja` ]; then
+if command -v ninja ; then
     flags="$flags -GNinja"
 fi
 
-if [ `uname -s` = 'Darwin' ]; then
-    ncpu=`sysctl -n hw.ncpu`
-    release=$(uname -r)
-    if [[ ${release:0:2} -lt 13 ]]; then
+if [ "$(uname -s)" = 'Darwin' ]; then
+    ncpu="$(sysctl -n hw.ncpu)"
+
+    # Get the major Darwin/OSX version.
+    if [ "$(sysctl -n kern.osrelease | cut -d . -f 1)" -lt 13 ]; then
         echo "This old OSX version is not supported! Build will fail."
         toolfile=cmake/darwin-compiler-i386-clang.cmake
     else
@@ -48,7 +49,7 @@ if [ `uname -s` = 'Darwin' ]; then
         toolfile=cmake/darwin13-compiler-i386-clang.cmake
     fi
 else
-    ncpu=`grep -w -c processor /proc/cpuinfo`
+    ncpu=$(grep -w -c processor /proc/cpuinfo)
     toolfile=cmake/linux-compiler-i386-multilib.cmake
 fi
 
@@ -118,18 +119,18 @@ if [ "$cleanBuild" -eq 1 ]; then
     rm -fr "$build"/*
 fi
 
-if [ "$useCross" -eq 2 ] && [ `getconf LONG_BIT 2> /dev/null` != 32 ]; then
+if [ "$useCross" -eq 2 ] && [ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]; then
     echo "Forcing cross compilation."
     flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"
-elif [[ "$useCross" -ne 1 ]]; then
+elif [ "$useCross" -ne 1 ]; then
     useCross=0
 fi
 
 # Helper to easily switch wx-config on my system
-if [ "$useCross" -eq 0 ] && [ `uname -m` = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
+if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
-if [ "$useCross" -eq 2 ] && [ `uname -m` = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
+if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
 
@@ -138,7 +139,7 @@ echo "Building pcsx2 with $flags" | tee "$log"
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
 if [ -L "$build"  ]; then
-    build=`readlink "$build"`
+    build=$(readlink "$build")
 fi
 
 mkdir -p "$build"
@@ -147,20 +148,20 @@ cd "$build"
 
 if [ "$useClang" -eq 1 ]; then
     if [ "$useCross" -eq 0 ]; then
-        CC=clang CXX=clang++ cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        CC=clang CXX=clang++ cmake "$flags" "$root" 2>&1 | tee -a "$log"
     else
-        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        CC="clang -m32" CXX="clang++ -m32" cmake "$flags" "$root" 2>&1 | tee -a "$log"
     fi
 else
     if [ "$useIcc" -eq 1 ]; then
         if [ "$useCross" -eq 0 ]; then
-            CC="icc" CXX="icpc" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+            CC="icc" CXX="icpc" cmake "$flags" "$root" 2>&1 | tee -a "$log"
         else
-            CC="icc -m32" CXX="icpc -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+            CC="icc -m32" CXX="icpc -m32" cmake "$flags" "$root" 2>&1 | tee -a "$log"
         fi
     else
         # Default compiler AKA GCC
-        cmake $flags $root 2>&1 | tee -a "$log"
+        cmake "$flags" "$root" 2>&1 | tee -a "$log"
     fi
 fi
 
@@ -169,7 +170,7 @@ fi
 ############################################################
 # CPP check build
 ############################################################
-if [ "$cppcheck" -eq 1 ] && [ `command -v cppcheck` ]; then
+if [ "$cppcheck" -eq 1 ] && command -v cppcheck ; then
     summary=cpp_check_summary.log
     rm -f $summary
     touch $summary
@@ -182,7 +183,7 @@ if [ "$cppcheck" -eq 1 ] && [ `command -v cppcheck` ]; then
     check="--enable=warning,style,missingInclude"
     for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
     do
-        flat_d=`echo $d | sed -e 's@/@_@'`
+        flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log
         rm -f "$log"
 
@@ -196,17 +197,16 @@ fi
 ############################################################
 # Clang tidy build
 ############################################################
-if [ "$clangTidy" -eq 1 ] && [ `command -v clang-tidy` ]; then
+if [ "$clangTidy" -eq 1 ] && command -v clang-tidy ; then
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
     rm -f $summary
     touch $summary
 
-    grep '"file"' $compile_json | sed -e 's/"//g' | sed -e 's/^\s*file\s*:\s*//' > $cpp_list
+    grep '"file"' $compile_json | sed -e 's/"//g' -e 's/^\s*file\s*:\s*//' > $cpp_list
 
-    for cpp in `cat $cpp_list`
-    do
+    while read -r cpp ; do
         # Example:
         # clang-tidy-3.8 -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
         # List of modernize check
@@ -225,9 +225,8 @@ if [ "$clangTidy" -eq 1 ] && [ `command -v clang-tidy` ]; then
         #clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
 
         # Don't check header, don't check google/llvm coding conventions
-        echo "$count/$total"
-        clang-tidy -p $compile_json $cpp -checks='*,-llvm-*,-google-*'  >> $summary
-    done
+        clang-tidy -p $compile_json "$cpp" -checks='*,-llvm-*,-google-*'  >> $summary
+    done < $cpp_list
 
     exit 0
 fi
@@ -235,7 +234,7 @@ fi
 ############################################################
 # Coverity build
 ############################################################
-if [ "$CoverityBuild" -eq 1 ] && [ `command -v cov-build` ]; then
+if [ "$CoverityBuild" -eq 1 ] && command -v cov-build ; then
     cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
@@ -245,7 +244,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-if [ `command -v ninja` ]; then
+if command -v ninja ; then
     ninja 2>&1 | tee -a "$log"
     ninja install 2>&1 | tee -a "$log"
 else
