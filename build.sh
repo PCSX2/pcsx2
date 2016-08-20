@@ -148,20 +148,20 @@ cd "$build"
 
 if [ "$useClang" -eq 1 ]; then
     if [ "$useCross" -eq 0 ]; then
-        CC=clang CXX=clang++ cmake "$flags" "$root" 2>&1 | tee -a "$log"
+        CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
     else
-        CC="clang -m32" CXX="clang++ -m32" cmake "$flags" "$root" 2>&1 | tee -a "$log"
+        CC="clang -m32" CXX="clang++ -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
     fi
 else
     if [ "$useIcc" -eq 1 ]; then
         if [ "$useCross" -eq 0 ]; then
-            CC="icc" CXX="icpc" cmake "$flags" "$root" 2>&1 | tee -a "$log"
+            CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
         else
-            CC="icc -m32" CXX="icpc -m32" cmake "$flags" "$root" 2>&1 | tee -a "$log"
+            CC="icc -m32" CXX="icpc -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
         fi
     else
         # Default compiler AKA GCC
-        cmake "$flags" "$root" 2>&1 | tee -a "$log"
+        cmake $flags "$root" 2>&1 | tee -a "$log"
     fi
 fi
 
