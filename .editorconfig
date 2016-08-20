@@ -4,9 +4,9 @@ root = true
 # TODO: Add one for resource script file and other Linux specific files ?
 
 [*.{cpp,h}]
-indent_style = space
+indent_style = tab
 indent_size = 4
-trim_trailing_whitespace = true
+#trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
