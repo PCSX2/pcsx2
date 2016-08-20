@@ -551,13 +551,13 @@ void GSRendererHW::Draw()
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(m_dump_root+s, false, true);
+			tex->m_texture->Save(m_dump_root+s, true);
 
 			if(tex->m_palette)
 			{
 				s = format("%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
 
-				tex->m_palette->Save(m_dump_root+s, false, true);
+				tex->m_palette->Save(m_dump_root+s, true);
 			}
 		}
 
