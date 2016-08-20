@@ -33,7 +33,7 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if command -v ninja ; then
+if command -v ninja >/dev/null ; then
     flags="$flags -GNinja"
 fi
 
@@ -170,7 +170,7 @@ fi
 ############################################################
 # CPP check build
 ############################################################
-if [ "$cppcheck" -eq 1 ] && command -v cppcheck ; then
+if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
     summary=cpp_check_summary.log
     rm -f $summary
     touch $summary
@@ -197,36 +197,39 @@ fi
 ############################################################
 # Clang tidy build
 ############################################################
-if [ "$clangTidy" -eq 1 ] && command -v clang-tidy ; then
+if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
-    rm -f $summary
-    touch $summary
-
     grep '"file"' $compile_json | sed -e 's/"//g' -e 's/^\s*file\s*:\s*//' > $cpp_list
 
-    while read -r cpp ; do
-        # Example:
-        # clang-tidy-3.8 -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
-        # List of modernize check
-        # modernize-loop-convert
-        # modernize-make-unique
-        # modernize-pass-by-value
-        # modernize-redundant-void-arg
-        # modernize-replace-auto-ptr
-        # modernize-shrink-to-fit
-        # modernize-use-auto
-        # modernize-use-default
-        # modernize-use-nullptr
-        # modernize-use-override
+    # EXAMPLE
+    #
+    #   Modernize loop syntax, fix if old style found.
+    #     $ clang-tidy -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
+    #   Check all, tons of output:
+    #     $ clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
+    #   List of modernize checks:
+    #     modernize-loop-convert
+    #     modernize-make-unique
+    #     modernize-pass-by-value
+    #     modernize-redundant-void-arg
+    #     modernize-replace-auto-ptr
+    #     modernize-shrink-to-fit
+    #     modernize-use-auto
+    #     modernize-use-default
+    #     modernize-use-nullptr
+    #     modernize-use-override
 
-        # Check all, likely severals millions of log...
-        #clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
-
-        # Don't check header, don't check google/llvm coding conventions
-        clang-tidy -p $compile_json "$cpp" -checks='*,-llvm-*,-google-*'  >> $summary
-    done < $cpp_list
+    # Don't check headers, don't check google/llvm coding conventions
+    if command -v parallel >/dev/null ; then
+        # Run clang-tidy in parallel with as many jobs as there are CPUs.
+        parallel -m "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
+    else
+        # xargs(1) can also run jobs in parallel with -P, but will mix the
+        # output from the distinct processes together willy-nilly.
+        xargs clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*'
+    fi < $cpp_list > $summary
 
     exit 0
 fi
@@ -234,7 +237,7 @@ fi
 ############################################################
 # Coverity build
 ############################################################
-if [ "$CoverityBuild" -eq 1 ] && command -v cov-build ; then
+if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
     cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
@@ -244,7 +247,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-if command -v ninja ; then
+if command -v ninja >/dev/null ; then
     ninja 2>&1 | tee -a "$log"
     ninja install 2>&1 | tee -a "$log"
 else
