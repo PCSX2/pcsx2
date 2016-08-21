@@ -121,13 +121,13 @@ public:
 	{
 		GSVector4 Vertex_Scale_Offset;
 		GSVector2i DepthMask;
-		GSVector2 TextureScale;
+		GSVector2 PointSize;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
 			DepthMask           = GSVector2i(0, 0);
-			TextureScale        = GSVector2(0, 0);
+			PointSize           = GSVector2(0, 0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -173,8 +173,9 @@ public:
 			{
 				uint32 sprite:1;
 				uint32 point:1;
+				uint32 line:1;
 
-				uint32 _free:30;
+				uint32 _free:29;
 			};
 
 			uint32 key;
@@ -458,7 +459,7 @@ public:
 	} m_profiler;
 
 	GLuint m_vs[1];
-	GLuint m_gs[1<<2];
+	GLuint m_gs[1<<3];
 	GLuint m_ps_ss[1<<4];
 	GSDepthStencilOGL* m_om_dss[1<<5];
 	hash_map<uint64, GLuint > m_ps;

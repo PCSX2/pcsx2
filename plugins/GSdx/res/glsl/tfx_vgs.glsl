@@ -106,34 +106,64 @@ layout(lines) in;
 #endif
 layout(triangle_strip, max_vertices = 6) out;
 
+#if GS_POINT == 1
+
+void gs_main()
+{
+    // Transform a point to a NxN sprite
+    vertex point = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
+
+    // Get new position
+    vec4 lt_p = gl_in[0].gl_Position;
+    vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
+    vec4 lb_p = rb_p;
+    vec4 rt_p = rb_p;
+    lb_p.x    = lt_p.x;
+    rt_p.y    = lt_p.y;
+
+    // Triangle 1
+    gl_Position = lt_p;
+    out_vertex(point);
+
+    gl_Position = lb_p;
+    out_vertex(point);
+
+    gl_Position = rt_p;
+    out_vertex(point);
+    EndPrimitive();
+
+    // Triangle 2
+    gl_Position = lb_p;
+    out_vertex(point);
+
+    gl_Position = rt_p;
+    out_vertex(point);
+
+    gl_Position = rb_p;
+    out_vertex(point);
+    EndPrimitive();
+}
+
+#else
+
 void gs_main()
 {
     // left top     => GSin[0];
     // right bottom => GSin[1];
-#if GS_POINT == 1
-    vertex rb = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
-#else
     vertex rb = vertex(GSin[1].t_float, GSin[1].t_int, GSin[1].c);
-#endif
     vertex lt = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
 
-#if GS_POINT == 1
-    vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
-#else
     vec4 rb_p = gl_in[1].gl_Position;
-#endif
     vec4 lb_p = rb_p;
     vec4 rt_p = rb_p;
     vec4 lt_p = gl_in[0].gl_Position;
 
-#if GS_POINT == 0
     // flat depth
     lt_p.z = rb_p.z;
     // flat fog and texture perspective
     lt.t_float.zw = rb.t_float.zw;
     // flat color
     lt.c = rb.c;
-#endif
 
     // Swap texture and position coordinate
     vertex lb    = rb;
@@ -170,5 +200,7 @@ void gs_main()
     out_vertex(rb);
     EndPrimitive();
 }
+
+#endif
 
 #endif

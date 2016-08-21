@@ -552,15 +552,11 @@ void GSDeviceOGL::CreateTextureFX()
 	glBindSampler(1, m_palette_ss);
 
 	// Pre compile the (remaining) Geometry & Vertex Shader
-	for (uint32 key = 0; key < countof(m_gs); key++) {
-		GSSelector sel(key);
-		if (!GLLoader::found_geometry_shader)
-			m_gs[key] = 0;
-		else if (sel.point == sel.sprite) // Invalid key
-			m_gs[key] = 0;
-		else
-			m_gs[key] = CompileGS(GSSelector(key));
-	}
+	// One-Hot encoding
+	memset(m_gs, 0, sizeof(m_gs));
+	m_gs[1] = CompileGS(GSSelector(1));
+	m_gs[2] = CompileGS(GSSelector(2));
+	m_gs[4] = CompileGS(GSSelector(4));
 
 	m_vs[0] = CompileVS(VSSelector(0));
 
@@ -913,7 +909,8 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 /* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
-	std::string macro = format("#define GS_POINT %d\n", sel.point);
+	std::string macro = format("#define GS_POINT %d\n", sel.point)
+		+ format("#define GS_LINE %d\n", sel.line);
 
 	if (GLLoader::buggy_sso_dual_src)
 		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
