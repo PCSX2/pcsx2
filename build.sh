@@ -224,7 +224,7 @@ if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     # Don't check headers, don't check google/llvm coding conventions
     if command -v parallel >/dev/null ; then
         # Run clang-tidy in parallel with as many jobs as there are CPUs.
-        parallel -m "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
+        parallel "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
     else
         # xargs(1) can also run jobs in parallel with -P, but will mix the
         # output from the distinct processes together willy-nilly.
