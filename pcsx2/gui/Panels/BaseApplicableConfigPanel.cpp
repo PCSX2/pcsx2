@@ -30,7 +30,7 @@ using namespace Dialogs;
 //
 void ApplyStateStruct::DoCleanup() throw()
 {
-	pxAssertMsg( PanelList.size() != 0, L"PanelList list hasn't been cleaned up." );
+	pxAssertMsg( !PanelList.empty(), L"PanelList list hasn't been cleaned up." );
 	PanelList.clear();
 	ParentBook = NULL;
 }

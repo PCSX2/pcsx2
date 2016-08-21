@@ -23,7 +23,7 @@ void ChunksCache::SetLimit(uint megabytes) {
 
 void ChunksCache::MatchLimit(bool removeAll) {
 	std::list<CacheEntry*>::reverse_iterator rit;
-	while (m_entries.size() && (removeAll || m_size > m_limit)) {
+	while (!m_entries.empty() && (removeAll || m_size > m_limit)) {
 		rit = m_entries.rbegin();
 		m_size -= (*rit)->size;
 		delete(*rit);

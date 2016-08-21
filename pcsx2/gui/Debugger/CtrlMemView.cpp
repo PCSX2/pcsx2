@@ -502,7 +502,7 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 		scrollWindow(GetClientSize().y/rowHeight);
 		break;
 	case WXK_ESCAPE:
-		if (history.size()) {
+		if (!history.empty()) {
 			gotoAddress(history.top());
 			history.pop();
 		}

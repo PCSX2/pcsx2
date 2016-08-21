@@ -108,7 +108,7 @@ std::map<u32,DisassemblyEntry*>::iterator findDisassemblyEntry(std::map<u32,Disa
 	if (exact)
 		return entries.find(address);
 
-	if (entries.size() == 0)
+	if (entries.empty())
 		return entries.end();
 
 	// find first elem that's >= address

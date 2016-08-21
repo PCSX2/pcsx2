@@ -810,7 +810,7 @@ void VuBaseBlock::GetInstsAtPc(int instpc, std::list<VuInstruction*>& listinsts)
 		}
 	}
 
-	pxAssert(listinsts.size() > 0);
+	pxAssert(!listinsts.empty());
 }
 
 static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
@@ -1382,7 +1382,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 #endif
 	{
 		// flush writebacks
-		if (listWritebacks.size() > 0)
+		if (!listWritebacks.empty())
 		{
 			listWritebacks.sort(WRITEBACK::SortWritebacks);
 			for (itwriteback = listWritebacks.begin(); itwriteback != listWritebacks.end(); ++itwriteback)
@@ -1428,7 +1428,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 	newpipes.efu.sCycle -= vucycle;
 	for (i = 0; i < 8; ++i) newpipes.ialu[i].sCycle -= vucycle;
 
-	if (listWritebacks.size() > 0)
+	if (!listWritebacks.empty())
 	{
 		// flush all when jumping, send down the pipe when in branching
 		bool bFlushWritebacks = (vucode >> 25) == 0x24 || (vucode >> 25) == 0x25;//||(vucode>>25)==0x20||(vucode>>25)==0x21;
@@ -1455,7 +1455,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 		}
 	}
 
-	if (newpipes.listWritebacks.size() > 0)  // other blocks might read the mac flags
+	if (!newpipes.listWritebacks.empty())  // other blocks might read the mac flags
 		pblock->type |= BLOCKTYPE_MACFLAGS;
 
 	u32 firstbranch = vucode >> 25;
@@ -1622,7 +1622,7 @@ static void SuperVUInitLiveness(VuBaseBlock* pblock)
 {
 	std::list<VuInstruction>::iterator itinst, itnext;
 
-	pxAssert(pblock->insts.size() > 0);
+	pxAssert(!pblock->insts.empty());
 
 	for (itinst = pblock->insts.begin(); itinst != pblock->insts.end(); ++itinst)
 	{
@@ -1721,7 +1721,7 @@ static void SuperVULivenessAnalysis()
 			// the last inst relies on the neighbor's insts
 			itinst = --pb->insts.end();
 
-			if (pb->blocks.size() > 0)
+			if (!pb->blocks.empty())
 			{
 				livevars[0] = 0;
 				livevars[1] = 0;
@@ -2326,13 +2326,13 @@ void VuBaseBlock::AssignVIRegs(int parent)
 	_x86regs* pregs = &s_vecRegArray[allocX86Regs];
 	memset(pregs, 0, sizeof(_x86regs)*iREGCNT_GPR);
 
-	pxAssert(parents.size() > 0);
+	pxAssert(!parents.empty());
 
 	std::list<VuBaseBlock*>::iterator itparent;
 	u32 usedvars = insts.front().usedvars[0];
 	u32 livevars = insts.front().livevars[0];
 
-	if (parents.size() > 0)
+	if (!parents.empty())
 	{
 		u32 usedvars2 = 0xffffffff;
 
@@ -2714,7 +2714,7 @@ static void SuperVURecompile()
 
 				if (pchild->type & BLOCKTYPE_HASEOP)
 				{
-					pxAssert(pchild->blocks.size() == 0);
+					pxAssert(pchild->blocks.empty());
 
 					xAND(ptr32[&VU0.VI[ REG_VPU_STAT ].UL], s_vu ? ~0x100 : ~0x001); // E flag
 					//xAND(ptr32[(&VU->GetVifRegs().stat)], ~VIF1_STAT_VEW);
@@ -3012,7 +3012,7 @@ void VuBaseBlock::Recompile()
 		else
 		{
 			// take from children
-			if (blocks.size() > 0)
+			if (!blocks.empty())
 			{
 				LISTBLOCKS::iterator itchild;
 				for(itchild = blocks.begin(); itchild != blocks.end(); itchild++)

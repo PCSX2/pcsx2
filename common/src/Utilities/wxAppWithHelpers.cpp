@@ -482,7 +482,7 @@ void wxAppWithHelpers::OnSynchronousCommand( pxSynchronousCommandEvent& evt )
 void wxAppWithHelpers::AddIdleEvent( const wxEvent& evt )
 {
 	ScopedLock lock( m_IdleEventMutex );
-	if( m_IdleEventQueue.size() == 0 )
+	if( m_IdleEventQueue.empty() )
 		PostEvent(wxCommandEvent(pxEvt_StartIdleEventTimer));
 
 	m_IdleEventQueue.push_back( evt.Clone() );
@@ -491,7 +491,7 @@ void wxAppWithHelpers::AddIdleEvent( const wxEvent& evt )
 void wxAppWithHelpers::OnStartIdleEventTimer( wxCommandEvent& evt )
 {
 	ScopedLock lock( m_IdleEventMutex );
-	if( m_IdleEventQueue.size() != 0 )
+	if( !m_IdleEventQueue.empty() )
 		m_IdleEventTimer.Start( 100, true );
 }
 
@@ -535,7 +535,7 @@ void wxAppWithHelpers::IdleEventDispatcher( const wxChar* action )
 	}
 
 	m_IdleEventQueue = postponed;
-	if( m_IdleEventQueue.size() > 0 )
+	if( !m_IdleEventQueue.empty() )
 		pxAppLog.Write( L"(AppIdleQueue%s) %d events postponed due to dependencies.", action, m_IdleEventQueue.size() );
 }
 

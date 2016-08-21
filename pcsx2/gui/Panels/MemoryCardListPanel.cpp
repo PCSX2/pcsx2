@@ -1049,7 +1049,7 @@ void Panels::MemoryCardListPanel_Simple::OnOpenItemContextMenu(wxListEvent& evt)
 
 void Panels::MemoryCardListPanel_Simple::ReadFilesAtMcdFolder(){
 	//Dir enumeration/iteration code courtesy of cotton. - avih.
-	while( m_allFilesystemCards.size() )
+	while( !m_allFilesystemCards.empty() )
 		m_allFilesystemCards.pop_back();
 
 	m_filesystemPlaceholderCard.Slot=-1;

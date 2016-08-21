@@ -203,7 +203,7 @@ void GSDevice::AgePool()
 void GSDevice::PurgePool()
 {
 	// OOM emergency. Let's free this useless pool
-	while(m_pool.size() > 0)
+	while(!m_pool.empty())
 	{
 		delete m_pool.back();
 
