@@ -39,6 +39,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_safe_fbmask    = theApp.GetConfigB("UserHacks_safe_fbmask");
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
+	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
@@ -49,6 +50,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCO_y          = 0;
 		UserHacks_safe_fbmask    = false;
 		UserHacks_merge_sprite   = false;
+		UserHacks_unscale_pt_ln  = false;
 	}
 }
 
@@ -1317,16 +1319,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 
 	// GS
-
-#if 0
-	if (m_vt.m_primclass == GS_POINT_CLASS) {
+#if 1
+	if (UserHacks_unscale_pt_ln && m_vt.m_primclass == GS_POINT_CLASS) {
 		// Upscaling point will create aliasing because point has a size of 0 pixels.
 		// This code tries to replace point with sprite. So a point in 4x will be replaced by
-		// a 4x4 sprite.
+		// a 4x4 flat sprite.
 		m_gs_sel.point = 1;
-		// FIXME this formula is potentially wrong
-		GSVector4 point_size = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y) * 2.0f;
-		vs_cb.TextureScale = vs_cb.TextureScale.xyxy(point_size);
+		vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
 	}
 #endif
 	m_gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
