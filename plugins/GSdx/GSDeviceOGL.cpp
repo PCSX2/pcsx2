@@ -330,7 +330,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Vertex Buffer");
 
-		ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
+		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
 		GSInputLayoutOGL il_convert[] =
 		{
 			{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
@@ -531,11 +531,11 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	Reset(rect.z, rect.w);
 
 	// Basic to ensure structures are correctly packed
-	ASSERT(sizeof(VSSelector) == 4);
-	ASSERT(sizeof(PSSelector) == 8);
-	ASSERT(sizeof(PSSamplerSelector) == 4);
-	ASSERT(sizeof(OMDepthStencilSelector) == 4);
-	ASSERT(sizeof(OMColorMaskSelector) == 4);
+	static_assert(sizeof(VSSelector) == 4, "Wrong VSSelector size");
+	static_assert(sizeof(PSSelector) == 8, "Wrong PSSelector size");
+	static_assert(sizeof(PSSamplerSelector) == 4, "Wrong PSSamplerSelector size");
+	static_assert(sizeof(OMDepthStencilSelector) == 4, "Wrong OMDepthStencilSelector size");
+	static_assert(sizeof(OMColorMaskSelector) == 4, "Wrong OMColorMaskSelector size");
 
 	return true;
 }
