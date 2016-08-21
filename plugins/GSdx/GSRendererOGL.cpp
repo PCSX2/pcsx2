@@ -1319,43 +1319,28 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 
 	// GS
-#if 1
-	if (UserHacks_unscale_pt_ln && m_vt.m_primclass == GS_POINT_CLASS) {
-		// Upscaling point will create aliasing because point has a size of 0 pixels.
-		// This code tries to replace point with sprite. So a point in 4x will be replaced by
-		// a 4x4 flat sprite.
-		m_gs_sel.point = 1;
-		vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
-	}
-#endif
-	m_gs_sel.sprite = m_vt.m_primclass == GS_SPRITE_CLASS;
-	if ((GetUpscaleMultiplier() > 1) && (m_vt.m_primclass == GS_LINE_CLASS) && GLLoader::found_geometry_shader) {
-		size_t count = m_vertex.next;
-		GSVertex* v = &m_vertex.buff[0];
-
-		bool line_to_sprite = true;
-		for(size_t i = 0; i < count; i += 2) {
-			if ((v[i].XYZ.X != v[i+1].XYZ.X) && (v[i].XYZ.Y != v[i+1].XYZ.Y)) {
-				line_to_sprite = false;
-				break;
+	bool unscale_hack = UserHacks_unscale_pt_ln  & (GetUpscaleMultiplier() > 1) & GLLoader::found_geometry_shader;
+	switch(m_vt.m_primclass)
+	{
+		case GS_POINT_CLASS:
+			if (unscale_hack) {
+				m_gs_sel.point = 1;
+				vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
 			}
-		}
-
-		// Improve line upscaling when possible
-		if (line_to_sprite) {
-			for(size_t i = 0; i < count; i += 2) {
-				if (v[i].XYZ.X == v[i+1].XYZ.X) {
-					// Vertical line
-					v[i+1].XYZ.X += 16;
-				} else if (v[i].XYZ.Y == v[i+1].XYZ.Y) {
-					// Horizontal line
-					v[i+1].XYZ.Y += 16;
-				}
+			break;
+		case GS_LINE_CLASS:
+			if (unscale_hack) {
+				m_gs_sel.line = 1;
+				vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
 			}
-
-			// Lines are now sprite, magic
+			break;
+		case GS_SPRITE_CLASS:
 			m_gs_sel.sprite = 1;
-		}
+			break;
+		case GS_TRIANGLE_CLASS:
+			break;
+		default:
+			__assume(0);
 	}
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
