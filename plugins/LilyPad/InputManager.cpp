@@ -433,7 +433,6 @@ Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, i
 							  (devices[i]->oldVirtualControlState[j] > 31*FULLY_DOWN/32 && devices[i]->virtualControlState[j] < 7*FULLY_DOWN/8))) {
 									continue;
 						}
-						devices[i]->virtualControls[j].uid = devices[i]->virtualControls[j].uid;
 					}
 					else if ((((devices[i]->virtualControls[j].uid>>16)&0xFF) == ABSAXIS)) {
 						if (devices[i]->oldVirtualControlState[j] > 15*FULLY_DOWN/16)
