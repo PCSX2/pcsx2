@@ -34,7 +34,6 @@
 using namespace Threading;
 
 extern u8 psxhblankgate;
-extern bool gsIsInterlaced;
 static const uint EECNT_FUTURE_TARGET = 0x10000000;
 static int gates = 0;
 
