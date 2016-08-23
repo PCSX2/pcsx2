@@ -64,6 +64,13 @@ __fi void IPUProcessInterrupt()
 {
 	if (ipuRegs.ctrl.BUSY) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
 		IPUWorker();
+	if (ipuRegs.ctrl.BUSY && ipuRegs.cmd.BUSY && ipuRegs.cmd.DATA == 0x000001B7) {
+		// 0x000001B7 is the MPEG2 sequence end code, signalling the end of a video.
+		// At the end of a video BUSY values should be automatically set to 0. 
+		// This does not happen for Enthusia - Professional Racing, causing it to get stuck in an endless loop.
+		ipuRegs.cmd.BUSY = 0;
+		ipuRegs.ctrl.BUSY = 0;
+	}
 }
 
 /////////////////////////////////////////////////////////
@@ -274,6 +281,7 @@ void ipuSoftReset()
 	ipuRegs.top = 0;
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
+	ipuRegs.cmd.DATA = NULL; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
 
 	memzero(g_BP);
 }

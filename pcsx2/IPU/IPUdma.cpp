@@ -293,6 +293,19 @@ __fi void dmaIPU1() // toIPU
 		hwDmacIrq(DMAC_TO_IPU);
 	}
 
+	if (ipu1ch.chcr.MOD == NORMAL_MODE && ipu1ch.qwc == 0) //avoids freeze when IPU1 Normal error is triggered
+	{
+		/*ipu1ch.chcr.STR = false;
+		// Hack to force stop IPU
+		ipuRegs.cmd.BUSY = 0;
+		ipuRegs.ctrl.BUSY = 0;
+		ipuRegs.topbusy = 0;
+		//
+		hwDmacIrq(DMAC_TO_IPU);*/
+		IPU_LOG("IPU1 Normal error fix");
+		ipu1ch.qwc = 1;
+	}
+
 	if (ipu1ch.chcr.MOD == CHAIN_MODE)  //Chain Mode
 	{
 		IPU_LOG("Setting up IPU1 Chain mode");
@@ -322,25 +335,11 @@ __fi void dmaIPU1() // toIPU
 	}
 	else //Normal Mode
 	{
-		if(ipu1ch.qwc == 0)
-		{
-			ipu1ch.chcr.STR = false;
-				// Hack to force stop IPU
-				ipuRegs.cmd.BUSY = 0;
-				ipuRegs.ctrl.BUSY = 0;
-				ipuRegs.topbusy = 0;
-				//
-			hwDmacIrq(DMAC_TO_IPU);
-			Console.Warning("IPU1 Normal error!");
-		}
-		else
-		{
 			IPU_LOG("Setting up IPU1 Normal mode");
 			IPU1Status.InProgress = true;
 			IPU1Status.DMAFinished = true;
 			IPU1Status.DMAMode = DMA_MODE_NORMAL;
 			IPU1dma();
-		}
 	}
 }
 
