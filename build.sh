@@ -175,6 +175,7 @@ if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
     rm -f $summary
     touch $summary
 
+    define=""
     for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
         __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG
     do
@@ -224,7 +225,7 @@ if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     # Don't check headers, don't check google/llvm coding conventions
     if command -v parallel >/dev/null ; then
         # Run clang-tidy in parallel with as many jobs as there are CPUs.
-        parallel "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
+        parallel -v --keep-order "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
     else
         # xargs(1) can also run jobs in parallel with -P, but will mix the
         # output from the distinct processes together willy-nilly.
