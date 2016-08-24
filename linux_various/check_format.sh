@@ -45,7 +45,7 @@ files=`git diff $diff_range --name-only --diff-filter=ACMRT | \
     grep -v "${1}plugins/zzogl-pg/" | \
     \
     grep -v "/resource.h" | \
-    grep -v "3rdpary/" | \
+    grep -v "3rdparty/" | \
     grep -v "bin/" | \
     grep -v "cmake/" | \
     grep -v "tools/" | \
