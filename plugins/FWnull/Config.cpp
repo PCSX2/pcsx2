@@ -25,55 +25,51 @@ PluginConf Ini;
 
 void setLoggingState()
 {
-	if (conf.Log)
-	{
-		FWLog.WriteToConsole = true;
-		FWLog.WriteToFile = true;
-	}
-	else
-	{
-		FWLog.WriteToConsole = false;
-		FWLog.WriteToFile = false;
-	}
+    if (conf.Log) {
+        FWLog.WriteToConsole = true;
+        FWLog.WriteToFile = true;
+    } else {
+        FWLog.WriteToConsole = false;
+        FWLog.WriteToFile = false;
+    }
 }
 
-EXPORT_C_(void) FWabout()
+EXPORT_C_(void)
+FWabout()
 {
-	SysMessage("FWnull: A simple null plugin.");
+    SysMessage("FWnull: A simple null plugin.");
 }
 
-EXPORT_C_(void) FWconfigure()
+EXPORT_C_(void)
+FWconfigure()
 {
-	LoadConfig();
-	PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
-	SaveConfig();
+    LoadConfig();
+    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    SaveConfig();
 }
 
 void LoadConfig()
 {
-	string IniPath = s_strIniPath + "/FWnull.ini";
-	if (!Ini.Open(IniPath, READ_FILE))
-	{
-		FWLog.WriteLn("Failed to open %s", IniPath.c_str());
-		SaveConfig();
-		return;
-	}
+    string IniPath = s_strIniPath + "/FWnull.ini";
+    if (!Ini.Open(IniPath, READ_FILE)) {
+        FWLog.WriteLn("Failed to open %s", IniPath.c_str());
+        SaveConfig();
+        return;
+    }
 
-	conf.Log = Ini.ReadInt("logging", 0);
-	setLoggingState();
-	Ini.Close();
+    conf.Log = Ini.ReadInt("logging", 0);
+    setLoggingState();
+    Ini.Close();
 }
 
 void SaveConfig()
 {
-	string IniPath = s_strIniPath + "/FWnull.ini";
-	if (!Ini.Open(IniPath, WRITE_FILE))
-	{
-		FWLog.WriteLn("Failed to open %s\n", IniPath.c_str());
-		return;
-	}
+    string IniPath = s_strIniPath + "/FWnull.ini";
+    if (!Ini.Open(IniPath, WRITE_FILE)) {
+        FWLog.WriteLn("Failed to open %s\n", IniPath.c_str());
+        return;
+    }
 
-	Ini.WriteInt("logging", conf.Log);
-	Ini.Close();
+    Ini.WriteInt("logging", conf.Log);
+    Ini.Close();
 }
-
