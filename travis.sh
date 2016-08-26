@@ -2,6 +2,12 @@
 
 set -ex
 
+clang_syntax_check() {
+	if [ "${CXX}" = "clang++" ]; then
+        ./linux_various/check_format.sh
+	fi
+}
+
 linux_32_before_install() {
 	# Build worker is 64-bit only by default it seems.
 	sudo dpkg --add-architecture i386
@@ -15,7 +21,7 @@ linux_32_before_install() {
 		# g++-4.9-multilib is necessary for compiler dependencies. 4.8 currently
 		# has dependency issues, but 4.9 from the toolchain repo seems to work
 		# fine, so let's just use that.
-		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib"
+		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
 		COMPILER_PACKAGE="g++-${VERSION}-multilib"
@@ -85,7 +91,7 @@ linux_64_before_install() {
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
 		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		COMPILER_PACKAGE="clang-${VERSION}"
+		COMPILER_PACKAGE="clang-${VERSION} clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
 		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -143,6 +149,9 @@ case "${1}" in
 before_install|script)
 	${TRAVIS_OS_NAME}_${BITS}_${1}
 	;;
+before_script)
+    clang_syntax_check
+    ;;
 after_success)
 	${TRAVIS_OS_NAME}_${1}
 	;;

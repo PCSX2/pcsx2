@@ -26,6 +26,9 @@ matrix:
 before_install:
   - ./travis.sh before_install
 
+before_script:
+  - ./travis.sh before_script
+
 script:
   - ./travis.sh script
 
