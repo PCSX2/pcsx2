@@ -300,7 +300,7 @@ void pxEvtQueue::PostIdleEvent( SysExecEvent* evt )
 
 	pxEvtLog.Write( this, evt, pxsFmt(L"Posting event! (pending=%d, idle=%d) [idle]", m_pendingEvents.size(), m_idleEvents.size()) );
 
-	if( m_pendingEvents.size() == 0)
+	if( m_pendingEvents.empty() )
 	{
 		m_pendingEvents.push_back( evt );
 		m_wakeup.Post();
