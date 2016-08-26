@@ -14,7 +14,7 @@
  */
 
 
- #ifndef __CDVD_H__
+#ifndef __CDVD_H__
 #define __CDVD_H__
 
 #define CDVDdefs
@@ -30,7 +30,7 @@
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
 #else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 #endif
 
 extern const unsigned char version;
@@ -38,5 +38,5 @@ extern const unsigned char revision;
 extern const unsigned char build;
 extern const unsigned int minor;
 
-extern void SysMessage(const char *fmt, ...);
+extern void SysMessage(const char* fmt, ...);
 #endif /* __CDVD_H__ */

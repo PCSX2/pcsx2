@@ -28,54 +28,50 @@ PluginConf Ini;
 
 void setLoggingState()
 {
-	if (conf.Log)
-	{
-		Dev9Log.WriteToConsole = true;
-		Dev9Log.WriteToFile = true;
-	}
-	else
-	{
-		Dev9Log.WriteToConsole = false;
-		Dev9Log.WriteToFile = false;
-	}
+    if (conf.Log) {
+        Dev9Log.WriteToConsole = true;
+        Dev9Log.WriteToFile = true;
+    } else {
+        Dev9Log.WriteToConsole = false;
+        Dev9Log.WriteToFile = false;
+    }
 }
 
-EXPORT_C_(void) DEV9about()
+EXPORT_C_(void)
+DEV9about()
 {
-	SysMessage("Dev9null: A simple null plugin.");
+    SysMessage("Dev9null: A simple null plugin.");
 }
 
-EXPORT_C_(void) DEV9configure()
+EXPORT_C_(void)
+DEV9configure()
 {
-	LoadConfig();
-	PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
-	SaveConfig();
+    LoadConfig();
+    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    SaveConfig();
 }
 
 void LoadConfig()
 {
-	string IniPath = s_strIniPath + "/Dev9null.ini";
-	if (!Ini.Open(IniPath, READ_FILE))
-	{
-		Dev9Log.WriteLn("Failed to open %s", IniPath.c_str());
-		SaveConfig();
-		return;
-	}
+    string IniPath = s_strIniPath + "/Dev9null.ini";
+    if (!Ini.Open(IniPath, READ_FILE)) {
+        Dev9Log.WriteLn("Failed to open %s", IniPath.c_str());
+        SaveConfig();
+        return;
+    }
 
-	conf.Log = Ini.ReadInt("logging",0);
-	Ini.Close();
+    conf.Log = Ini.ReadInt("logging", 0);
+    Ini.Close();
 }
 
 void SaveConfig()
 {
-	string IniPath = s_strIniPath + "/Dev9null.ini";
-	if (!Ini.Open(IniPath, WRITE_FILE))
-	{
-		Dev9Log.WriteLn("Failed to open %s", IniPath.c_str());
-		return;
-	}
+    string IniPath = s_strIniPath + "/Dev9null.ini";
+    if (!Ini.Open(IniPath, WRITE_FILE)) {
+        Dev9Log.WriteLn("Failed to open %s", IniPath.c_str());
+        return;
+    }
 
-	Ini.WriteInt("logging", conf.Log);
-	Ini.Close();
+    Ini.WriteInt("logging", conf.Log);
+    Ini.Close();
 }
-

@@ -19,13 +19,14 @@
 #include "GS.h"
 #include "Config.h"
 
-EXPORT_C_(void) GSconfigure()
+EXPORT_C_(void)
+GSconfigure()
 {
-	CFGconfigure();
+    CFGconfigure();
 }
 
-EXPORT_C_(void) GSabout()
+EXPORT_C_(void)
+GSabout()
 {
-	CFGabout();
+    CFGabout();
 }
-

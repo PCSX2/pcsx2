@@ -15,7 +15,7 @@
 
 void SaveConf();
 void LoadConf();
-void SysMessage(const char *fmt, ...);
+void SysMessage(const char* fmt, ...);
 
 #define is_checked(main_widget, widget_name) (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name))))
-#define set_checked(main_widget,widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
+#define set_checked(main_widget, widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
