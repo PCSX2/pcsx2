@@ -409,6 +409,10 @@ namespace Panels
 		void PopulateFields( const wxString& serial=wxEmptyString );
 		bool WriteFieldsToDB();
 		void Search_Click( wxCommandEvent& evt );
+
+	private:
+		void placeTextBox(wxFlexGridSizer& sizer1, wxTextCtrl* wxBox, const wxString& txt);
+		void blankLine(wxFlexGridSizer& sizer1);
 	};
 
 	class SettingsDirPickerPanel : public DirPickerPanel

@@ -309,18 +309,6 @@ wxListItemAttr* GameDatabaseListView::OnGetItemAttr(long item) const
 }
 
 
-#define blankLine() {	\
-	sizer1+=5; sizer1+=5; sizer1+=Text(wxEmptyString); sizer1+=5; sizer1+=5;	\
-}
-
-#define placeTextBox(wxBox, txt) {	\
-	sizer1	+= Label(_(txt));		\
-	sizer1	+= 5;					\
-	sizer1	+= wxBox | pxCenter;	\
-	sizer1	+= 5;					\
-	sizer1	+= 5;					\
-}
-
 wxTextCtrl* CreateMultiLineTextCtrl( wxWindow* parent, int digits, long flags = 0 )
 {
 	wxTextCtrl* ctrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
@@ -350,20 +338,20 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding, 0));
 	sizer1.AddGrowableCol(0);
 
-	blankLine();
-	sizer1	+= Label(L"Serial: ");	
+	blankLine(sizer1);
+	sizer1	+= Label(L"Serial: ");
 	sizer1	+= 5;
 	sizer1	+= serialBox | pxCenter;
 	sizer1	+= 5;
 	sizer1	+= searchBtn;
 
-	placeTextBox(nameBox,    "Name: ");
-	placeTextBox(regionBox,  "Region: ");
-	placeTextBox(compatBox,  "Compatibility: ");
-	placeTextBox(commentBox, "Comments: ");
-	placeTextBox(patchesBox, "Patches: ");
+	placeTextBox(sizer1, nameBox,    _("Name: "));
+	placeTextBox(sizer1, regionBox,  _("Region: "));
+	placeTextBox(sizer1, compatBox,  _("Compatibility: "));
+	placeTextBox(sizer1, commentBox, _("Comments: "));
+	placeTextBox(sizer1, patchesBox, _("Patches: "));
 
-	blankLine();
+	blankLine(sizer1);
 
 	wxStaticBoxSizer& sizer2 = *new wxStaticBoxSizer(wxVERTICAL, this, _("Gamefixes"));
 	wxFlexGridSizer&  sizer3(*new wxFlexGridSizer(3, 0, StdPadding*4));
@@ -379,6 +367,20 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 	
 	Bind(wxEVT_BUTTON, &GameDatabasePanel::Search_Click, this, searchBtn->GetId());
 	PopulateFields();
+}
+
+void Panels::GameDatabasePanel::blankLine(wxFlexGridSizer& sizer1)
+{
+	sizer1+=5; sizer1+=5; sizer1+=Text(wxEmptyString); sizer1+=5; sizer1+=5;
+}
+
+void Panels::GameDatabasePanel::placeTextBox(wxFlexGridSizer& sizer1, wxTextCtrl* wxBox, const wxString& txt)
+{
+	sizer1	+= Label(txt);
+	sizer1	+= 5;
+	sizer1	+= wxBox | pxCenter;
+	sizer1	+= 5;
+	sizer1	+= 5;
 }
 
 void Panels::GameDatabasePanel::PopulateFields( const wxString& id ) {
@@ -415,11 +417,6 @@ void Panels::GameDatabasePanel::PopulateFields( const wxString& id ) {
 			gameFixes[i]->SetValue(0);
 		}
 	}
-}
-
-#define writeTextBoxToDB(_key, _value) {								\
-	if (_value.IsEmpty()) 	GameDB->deleteKey(wxT(_key));				\
-	else					GameDB->writeString(wxT(_key), _value);		\
 }
 
 // returns True if the database is modified, or FALSE if no changes to save.
