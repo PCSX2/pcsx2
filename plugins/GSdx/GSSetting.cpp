@@ -128,6 +128,10 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
 #endif
+#ifdef __linux__
+		case IDC_LINEAR_PRESENT:
+			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
+#endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";

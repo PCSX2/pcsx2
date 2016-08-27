@@ -312,6 +312,8 @@ void populate_shader_table(GtkWidget* shader_table)
 	GtkWidget* tv_shader_label  = left_label("TV shader:");
 	GtkWidget* tv_shader        = CreateComboBoxFromVector(theApp.m_gs_tv_shaders, "TVShader");
 
+	GtkWidget* linear_check     = CreateCheckBox("Texture Filtering of Display", "linear_present");
+
 	// Shadeboost scale
 	GtkWidget* sb_brightness       = CreateScale("ShadeBoost_Brightness");
 	GtkWidget* sb_brightness_label = left_label("Shade Boost Brightness:");
@@ -325,8 +327,10 @@ void populate_shader_table(GtkWidget* shader_table)
 	AddTooltip(shadeboost_check, IDC_SHADEBOOST);
 	AddTooltip(shaderfx_check, IDC_SHADER_FX);
 	AddTooltip(fxaa_check, IDC_FXAA);
+	AddTooltip(linear_check, IDC_LINEAR_PRESENT);
 
 	s_table_line = 0;
+	InsertWidgetInTable(shader_table , linear_check);
 	InsertWidgetInTable(shader_table , fxaa_check);
 	InsertWidgetInTable(shader_table , shadeboost_check);
 	InsertWidgetInTable(shader_table , sb_brightness_label , sb_brightness);

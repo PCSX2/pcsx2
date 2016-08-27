@@ -117,6 +117,7 @@ protected:
 	struct {size_t stride, start, count, limit;} m_vertex;
 	struct {size_t start, count, limit;} m_index;
 	unsigned int m_frame; // for ageing the pool
+	bool m_linear_present;
 
 	virtual GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format) = 0;
 	virtual GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);

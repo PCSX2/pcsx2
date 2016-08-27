@@ -296,6 +296,7 @@ void GSdxApp::Init()
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
 	m_default_configuration["large_framebuffer"]                          = "1";
+	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
 	m_default_configuration["ModeHeight"]                                 = "480";

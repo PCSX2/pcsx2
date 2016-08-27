@@ -40,6 +40,7 @@ GSDevice::GSDevice()
 {
 	memset(&m_vertex, 0, sizeof(m_vertex));
 	memset(&m_index, 0, sizeof(m_index));
+	m_linear_present = theApp.GetConfigB("linear_present");
 }
 
 GSDevice::~GSDevice()
@@ -109,6 +110,7 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 
 	GL_PUSH("Present");
 
+	// FIXME is it mandatory, it could be slow
 	ClearRenderTarget(m_backbuffer, 0);
 
 	if(m_current)
@@ -125,7 +127,7 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 
 void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader)
 {
-	StretchRect(sTex, dTex, dRect, shader);
+	StretchRect(sTex, dTex, dRect, shader, m_linear_present);
 }
 
 GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
