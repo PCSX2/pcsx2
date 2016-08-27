@@ -1037,8 +1037,10 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const uint8* src, int len, GIFR
 }
 
 
-#define IsTopLeftAligned(dsax, tx, ty, bw, bh) \
-	((((int)dsax) & ((bw)-1)) == 0 && ((tx) & ((bw)-1)) == 0 && ((int)dsax) == (tx) && ((ty) & ((bh)-1)) == 0)
+static bool IsTopLeftAligned(int dsax, int tx, int ty, int bw, int bh)
+{
+	return ((dsax & (bw-1)) == 0 && (tx & (bw-1)) == 0 && dsax == tx && (ty & (bh-1)) == 0);
+}
 
 void GSLocalMemory::WriteImage24(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG)
 {
