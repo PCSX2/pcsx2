@@ -51,20 +51,17 @@ static __aligned16 u8 clip_lut[1024];
 
 #define CLIP(i) ((clip_lut+384)[(i)])
 
+static __fi void BUTTERFLY(int& t0, int& t1, int w0, int w1, int d0, int d1)
+{
 #if 0
-#define BUTTERFLY(t0,t1,W0,W1,d0,d1)	\
-do {					\
-    t0 = W0*d0 + W1*d1;			\
-    t1 = W0*d1 - W1*d0;			\
-} while (0)
+    t0 = w0*d0 + w1*d1;
+    t1 = w0*d1 - w1*d0;
 #else
-#define BUTTERFLY(t0,t1,W0,W1,d0,d1)	\
-do {					\
-    int tmp = W0 * (d0 + d1);		\
-    t0 = tmp + (W1 - W0) * d1;		\
-    t1 = tmp - (W1 + W0) * d0;		\
-} while (0)
+    int tmp = w0 * (d0 + d1);
+    t0 = tmp + (w1 - w0) * d1;
+    t1 = tmp - (w1 + w0) * d0;
 #endif
+}
 
 static __fi void idct_row (s16 * const block)
 {
