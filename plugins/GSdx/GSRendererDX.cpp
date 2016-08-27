@@ -159,7 +159,7 @@ void GSRendererDX::EmulateZbuffer()
 
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
-	if (om_dssel.ztst == ZTST_GEQUAL && (m_vt.m_eq.xyzf & 0x8) && v[0].XYZ.Z == max_z) {
+	if (om_dssel.ztst == ZTST_GEQUAL && (m_vt.m_eq.xyzf & 0x4) && v[0].XYZ.Z == max_z) {
 #ifdef _DEBUG
 		fprintf(stdout, "Optimize Z test GEQUAL to ALWAYS (%s)\n", psm_str(m_context->ZBUF.PSM));
 #endif
