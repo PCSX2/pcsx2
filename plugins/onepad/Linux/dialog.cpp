@@ -312,35 +312,26 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId()-wxID_HIGHEST-1; // get the real ID
     int gamepad_id = m_tab_gamepad->GetSelection(); // get the tab ID (equivalent to the gamepad id)
-    if(bt_id >= 0 && bt_id <= PAD_R_LEFT) // if the button ID is a gamepad button
-    {
+    if(bt_id >= 0 && bt_id <= PAD_R_LEFT) { // if the button ID is a gamepad button
         bt_tmp->Disable(); // switch the button state to "Disable"
         config_key(gamepad_id, bt_id);
         bt_tmp->Enable(); // switch the button state to "Enable"
-    }
-    else if(bt_id == Gamepad_config) // If the button ID is equals to the Gamepad_config button ID
-    {
+    } else if(bt_id == Gamepad_config) { // If the button ID is equals to the Gamepad_config button ID
         GamepadConfiguration gamepad_config(gamepad_id, this);
 
         gamepad_config.InitGamepadConfiguration();
         gamepad_config.ShowModal();
-    }
-    else if(bt_id == JoyL_config) // If the button ID is equals to the JoyL_config button ID
-    {
+    } else if(bt_id == JoyL_config) { // If the button ID is equals to the JoyL_config button ID
         JoystickConfiguration joystick_config(gamepad_id, true, this);
 
         joystick_config.InitJoystickConfiguration();
         joystick_config.ShowModal();
-    }
-    else if(bt_id == JoyR_config) // If the button ID is equals to the JoyR_config button ID
-    {
+    } else if(bt_id == JoyR_config) { // If the button ID is equals to the JoyR_config button ID
         JoystickConfiguration joystick_config(gamepad_id, false, this);
 
         joystick_config.InitJoystickConfiguration();
         joystick_config.ShowModal();
-    }
-    else if(bt_id == Set_all) // If the button ID is equals to the Set_all button ID
-    {
+    } else if(bt_id == Set_all) { // If the button ID is equals to the Set_all button ID
         for(int i=0; i<MAX_KEYS; ++i)
         {
             bt_tmp = m_bt_gamepad[gamepad_id][i];
@@ -411,18 +402,12 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
             m_pan_tabs[gamepad_id]->Update();
             usleep(500000); // give enough time to the user to release the button
         }
-    }
-    else if(bt_id == Ok) // If the button ID is equals to the Ok button ID
-    {
+    } else if(bt_id == Ok) { // If the button ID is equals to the Ok button ID
         SaveConfig(); // Save the configuration
         Close(); // Close the window
-    }
-    else if(bt_id == Apply) // If the button ID is equals to the Apply button ID
-    {
+    } else if(bt_id == Apply) { // If the button ID is equals to the Apply button ID
         SaveConfig(); // Save the configuration
-    }
-    else if(bt_id == Cancel) // If the button ID is equals to the cancel button ID
-    {
+    } else if(bt_id == Cancel) { // If the button ID is equals to the cancel button ID
         Close(); // Close the window
     }
 }
@@ -472,8 +457,7 @@ void Dialog::JoystickEvent(wxTimerEvent& event)
                                 m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
                                 m_pan_tabs[events.jaxis.which]->ShowImg(img_right_cursor);
                             }
-                            else if(map < PAD_L_UP) // if this is not a joystick
-                            {
+                            else if(map < PAD_L_UP) { // if this is not a joystick
                                 m_pan_tabs[events.jaxis.which]->ShowImg(map);
                             }
                         }
@@ -485,8 +469,7 @@ void Dialog::JoystickEvent(wxTimerEvent& event)
                     if(it2 != m_map_images[events.jaxis.which].end())
                     {
                         map = m_map_images[events.jaxis.which][key];
-                        if(map < PAD_L_UP) // if this is not a joystick
-                        {
+                        if(map < PAD_L_UP) { // if this is not a joystick
                             m_pan_tabs[events.jaxis.which]->HideImg(map);
                         }
                         break;

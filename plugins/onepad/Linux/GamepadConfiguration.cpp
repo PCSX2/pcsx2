@@ -173,12 +173,9 @@ void GamepadConfiguration::OnButtonClicked(wxCommandEvent &event)
     // Affichage d'un message à chaque clic sur le bouton
     wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId(); // get the real ID
-    if(bt_id == m_bt_ok->GetId()) // If the button ID is equals to the Ok button ID
-    {
+    if(bt_id == m_bt_ok->GetId()) { // If the button ID is equals to the Ok button ID
         Close(); // Close the window
-    }
-    else if(bt_id == m_bt_cancel->GetId()) // If the button ID is equals to the cancel button ID
-    {
+    } else if(bt_id == m_bt_cancel->GetId()) { // If the button ID is equals to the cancel button ID
         reset(); // reinitialize the value of each parameters
         Close(); // Close the window
     }
@@ -193,8 +190,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
 {
     wxSlider* sl_tmp = (wxSlider*)event.GetEventObject(); // get the slider object
     int sl_id = sl_tmp->GetId(); // slider id
-    if(sl_id == m_sl_rumble_intensity->GetId()) // if this is the rumble intensity slider
-    {
+    if(sl_id == m_sl_rumble_intensity->GetId()) { // if this is the rumble intensity slider
         u32 intensity = m_sl_rumble_intensity->GetValue();  // get the new value
         conf->set_ff_intensity(intensity); // and set the force feedback intensity value with it
          // get the rumble intensity
@@ -211,9 +207,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
         * 1 : maximum value of the intensity for the sdl rumble test
         */
         s_vgamePad[m_pad_id]->TestForce(strength/0x7FFF);
-    }
-    else if(sl_id == m_sl_joystick_sensibility->GetId())
-    {
+    } else if(sl_id == m_sl_joystick_sensibility->GetId()) {
         u32 sensibility = m_sl_joystick_sensibility->GetValue(); // get the new value
         conf->set_sensibility(sensibility); // and set the joystick sensibility
     }

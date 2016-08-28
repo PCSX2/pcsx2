@@ -152,12 +152,9 @@ void JoystickConfiguration::OnButtonClicked(wxCommandEvent &event)
     // Affichage d'un message à chaque clic sur le bouton
     wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId(); // get the real ID
-    if(bt_id == m_bt_ok->GetId()) // If the button ID is equals to the Ok button ID
-    {
+    if(bt_id == m_bt_ok->GetId()) { // If the button ID is equals to the Ok button ID
         Close(); // Close the window
-    }
-    else if(bt_id == m_bt_cancel->GetId()) // If the button ID is equals to the cancel button ID
-    {
+    } else if(bt_id == m_bt_cancel->GetId()) { // If the button ID is equals to the cancel button ID
         reset(); // reinitialize the value of each parameters
         Close(); // Close the window
     }
