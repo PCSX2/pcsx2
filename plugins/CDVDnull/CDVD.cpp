@@ -27,7 +27,7 @@ const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 6;
 
-EXPORT_C_(char*)
+EXPORT_C_(char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "CDVDnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -53,7 +53,7 @@ CDVDinit()
 }
 
 EXPORT_C_(s32)
-CDVDopen(const char* pTitle)
+CDVDopen(const char *pTitle)
 {
     return 0;
 }
@@ -75,32 +75,32 @@ CDVDreadTrack(u32 lsn, int mode)
 }
 
 // return can be NULL (for async modes)
-EXPORT_C_(u8*)
+EXPORT_C_(u8 *)
 CDVDgetBuffer()
 {
     return NULL;
 }
 
 EXPORT_C_(s32)
-CDVDreadSubQ(u32 lsn, cdvdSubQ* subq)
+CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
     return -1;
 }
 
 EXPORT_C_(s32)
-CDVDgetTN(cdvdTN* Buffer)
+CDVDgetTN(cdvdTN *Buffer)
 {
     return -1;
 }
 
 EXPORT_C_(s32)
-CDVDgetTD(u8 Track, cdvdTD* Buffer)
+CDVDgetTD(u8 Track, cdvdTD *Buffer)
 {
     return -1;
 }
 
 EXPORT_C_(s32)
-CDVDgetTOC(void* toc)
+CDVDgetTOC(void *toc)
 {
     return -1;
 }

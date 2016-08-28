@@ -22,7 +22,7 @@
 
 HINSTANCE hInst;
 
-void SysMessage(char* fmt, ...)
+void SysMessage(char *fmt, ...)
 {
     va_list list;
     char tmp[512];

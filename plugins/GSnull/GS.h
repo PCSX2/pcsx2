@@ -81,10 +81,10 @@ namespace GSLog
 {
 extern bool Open();
 extern void Close();
-extern void Log(char* fmt, ...);
-extern void Message(char* fmt, ...);
-extern void Print(const char* fmt, ...);
-extern void WriteLn(const char* fmt, ...);
+extern void Log(char *fmt, ...);
+extern void Message(char *fmt, ...);
+extern void Print(const char *fmt, ...);
+extern void WriteLn(const char *fmt, ...);
 };
 
 extern void SaveConfig();

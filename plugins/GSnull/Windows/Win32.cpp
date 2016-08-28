@@ -24,7 +24,7 @@
 HINSTANCE hInst;
 extern HWND GShwnd;
 
-void SysMessage(char* fmt, ...)
+void SysMessage(char *fmt, ...)
 {
     va_list list;
     char tmp[512];

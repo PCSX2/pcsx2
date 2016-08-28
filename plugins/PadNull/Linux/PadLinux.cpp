@@ -18,7 +18,7 @@
 #include <gdk/gdkx.h>
 #include "PadLinux.h"
 
-Display* GSdsp;
+Display *GSdsp;
 int autoRepeatMode;
 
 void _PadUpdate(int pad)
@@ -31,7 +31,7 @@ void _PadUpdate(int pad)
         XNextEvent(GSdsp, &evt);
         switch (evt.type) {
             case KeyPress:
-                key = XLookupKeysym((XKeyEvent*)&evt, 0);
+                key = XLookupKeysym((XKeyEvent *)&evt, 0);
 
                 // Add code to check if it's one of the keys we configured here on a real pda plugin..
 
@@ -40,7 +40,7 @@ void _PadUpdate(int pad)
                 break;
 
             case KeyRelease:
-                key = XLookupKeysym((XKeyEvent*)&evt, 0);
+                key = XLookupKeysym((XKeyEvent *)&evt, 0);
 
                 // Add code to check if it's one of the keys we configured here on a real pda plugin..
 
@@ -59,12 +59,12 @@ void _PadUpdate(int pad)
     }
 }
 
-s32 _PADOpen(void* pDsp)
+s32 _PADOpen(void *pDsp)
 {
 
-    GtkScrolledWindow* win;
+    GtkScrolledWindow *win;
 
-    win = *(GtkScrolledWindow**)pDsp;
+    win = *(GtkScrolledWindow **)pDsp;
 
     if (GTK_IS_WIDGET(win)) {
         // Since we have a GtkScrolledWindow, for now we'll grab whatever display
@@ -73,7 +73,7 @@ s32 _PADOpen(void* pDsp)
         // be able to manage... --arcum42
         GSdsp = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
     } else {
-        GSdsp = *(Display**)pDsp;
+        GSdsp = *(Display **)pDsp;
     }
 
     XAutoRepeatOff(GSdsp);

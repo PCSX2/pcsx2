@@ -44,7 +44,7 @@ void LogInit()
 }
 
 EXPORT_C_(void)
-USBsetLogDir(const char* dir)
+USBsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs" : dir;
@@ -60,7 +60,7 @@ PS2EgetLibType()
     return PS2E_LT_USB;
 }
 
-EXPORT_C_(char*)
+EXPORT_C_(char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "USBnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -82,7 +82,7 @@ USBinit()
     USBLog.WriteLn("Initializing USBnull");
 
     // Initialize memory structures here.
-    usbregs = (s8*)calloc(0x10000, 1);
+    usbregs = (s8 *)calloc(0x10000, 1);
 
     if (usbregs == NULL) {
         USBLog.Message("Error allocating memory");
@@ -104,7 +104,7 @@ USBshutdown()
 }
 
 EXPORT_C_(s32)
-USBopen(void* pDsp)
+USBopen(void *pDsp)
 {
     USBLog.WriteLn("Opening USBnull.");
 
@@ -245,14 +245,14 @@ USBirqHandler(void)
 }
 
 EXPORT_C_(void)
-USBsetRAM(void* mem)
+USBsetRAM(void *mem)
 {
-    ram = (s8*)mem;
+    ram = (s8 *)mem;
     USBLog.WriteLn("*Setting ram.");
 }
 
 EXPORT_C_(void)
-USBsetSettingsDir(const char* dir)
+USBsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
     s_strIniPath = (dir == NULL) ? "inis" : dir;
@@ -261,7 +261,7 @@ USBsetSettingsDir(const char* dir)
 // extended funcs
 
 EXPORT_C_(s32)
-USBfreeze(int mode, freezeData* data)
+USBfreeze(int mode, freezeData *data)
 {
     // This should store or retrieve any information, for if emulation
     // gets suspended, or for savestates.

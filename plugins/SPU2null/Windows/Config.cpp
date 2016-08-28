@@ -21,8 +21,8 @@ extern HINSTANCE hInst;
 void SaveConfig()
 {
 
-    Config* Conf1 = &conf;
-    char* szTemp;
+    Config *Conf1 = &conf;
+    char *szTemp;
     char szIniFile[256], szValue[256];
 
     GetModuleFileName(GetModuleHandle((LPCSTR)hInst), szIniFile, 256);
@@ -37,11 +37,11 @@ void SaveConfig()
 
 void LoadConfig()
 {
-    FILE* fp;
+    FILE *fp;
 
 
-    Config* Conf1 = &conf;
-    char* szTemp;
+    Config *Conf1 = &conf;
+    char *szTemp;
     char szIniFile[256], szValue[256];
 
     GetModuleFileName(GetModuleHandle((LPCSTR)hInst), szIniFile, 256);

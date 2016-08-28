@@ -61,7 +61,7 @@ void LogInit()
 }
 
 EXPORT_C_(void)
-DEV9setLogDir(const char* dir)
+DEV9setLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs" : dir;
@@ -77,7 +77,7 @@ PS2EgetLibType()
     return PS2E_LT_DEV9;
 }
 
-EXPORT_C_(char*)
+EXPORT_C_(char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "DEV9null Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -111,7 +111,7 @@ DEV9shutdown()
 }
 
 EXPORT_C_(s32)
-DEV9open(void* pDsp)
+DEV9open(void *pDsp)
 {
     Dev9Log.WriteLn("Opening Dev9null.");
     // Get anything ready we need to. Opening and creating hard
@@ -237,7 +237,7 @@ DEV9write32(u32 addr, u32 value)
 
 //#ifdef ENABLE_NEW_IOPDMA_DEV9
 EXPORT_C_(s32)
-DEV9dmaRead(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
+DEV9dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
     // You'll want to put your own DMA8 reading code here.
     // Time to interact with your fake (or real) hardware.
@@ -247,7 +247,7 @@ DEV9dmaRead(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
 }
 
 EXPORT_C_(s32)
-DEV9dmaWrite(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
+DEV9dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
     // See above.
     Dev9Log.WriteLn("Writing DMA8 Mem.");
@@ -262,7 +262,7 @@ DEV9dmaInterrupt(s32 channel)
 }
 //#else
 EXPORT_C_(void)
-DEV9readDMA8Mem(u32* pMem, int size)
+DEV9readDMA8Mem(u32 *pMem, int size)
 {
     // You'll want to put your own DMA8 reading code here.
     // Time to interact with your fake (or real) hardware.
@@ -270,7 +270,7 @@ DEV9readDMA8Mem(u32* pMem, int size)
 }
 
 EXPORT_C_(void)
-DEV9writeDMA8Mem(u32* pMem, int size)
+DEV9writeDMA8Mem(u32 *pMem, int size)
 {
     // See above.
     Dev9Log.WriteLn("Writing DMA8 Mem.");
@@ -299,7 +299,7 @@ DEV9irqHandler(void)
 }
 
 EXPORT_C_(void)
-DEV9setSettingsDir(const char* dir)
+DEV9setSettingsDir(const char *dir)
 {
     // Grab the ini directory.
     s_strIniPath = (dir == NULL) ? "inis" : dir;
@@ -314,7 +314,7 @@ DEV9test()
 }
 
 EXPORT_C_(s32)
-DEV9freeze(int mode, freezeData* data)
+DEV9freeze(int mode, freezeData *data)
 {
     // This should store or retrieve any information, for if emulation
     // gets suspended, or for savestates.

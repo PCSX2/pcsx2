@@ -16,28 +16,28 @@
 #include "GS.h"
 #include "GSLinux.h"
 
-Display* display;
+Display *display;
 int screen;
-GtkScrolledWindow* win;
+GtkScrolledWindow *win;
 
-int GSOpenWindow(void* pDsp, const char* Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
     display = XOpenDisplay(0);
     screen = DefaultScreen(display);
 
     if (pDsp != NULL)
-        *(Display**)pDsp = display;
+        *(Display **)pDsp = display;
     else
         return -1;
 
     return 0;
 }
 
-int GSOpenWindow2(void* pDsp, u32 flags)
+int GSOpenWindow2(void *pDsp, u32 flags)
 {
-    GtkWidget* widget;
+    GtkWidget *widget;
     if (pDsp != NULL)
-        win = *(GtkScrolledWindow**)pDsp;
+        win = *(GtkScrolledWindow **)pDsp;
     else
         return -1;
 
@@ -75,7 +75,7 @@ void GSProcessMessages()
 }
 
 
-void HandleKeyEvent(keyEvent* ev)
+void HandleKeyEvent(keyEvent *ev)
 {
     switch (ev->evt) {
         case KEYPRESS:

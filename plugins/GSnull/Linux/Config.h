@@ -19,6 +19,6 @@
 void SaveConf();
 void LoadConf();
 
-extern long CFGmessage(char* msg);
+extern long CFGmessage(char *msg);
 extern void CFGconfigure();
 extern void CFGabout();

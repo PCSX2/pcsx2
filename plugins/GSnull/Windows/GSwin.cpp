@@ -33,7 +33,7 @@ LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int GSOpenWindow(void* pDsp, const char* Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
     WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
                      GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
@@ -49,7 +49,7 @@ int GSOpenWindow(void* pDsp, const char* Title)
     }
 
     if (pDsp != NULL)
-        *(uptr*)pDsp = (uptr)GShwnd;
+        *(uptr *)pDsp = (uptr)GShwnd;
 
     return 0;
 }
@@ -64,6 +64,6 @@ void GSProcessMessages()
 }
 
 // GSkeyEvent gets called when there is a keyEvent from the PAD plugin
-void HandleKeyEvent(keyEvent* ev)
+void HandleKeyEvent(keyEvent *ev)
 {
 }

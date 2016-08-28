@@ -32,7 +32,7 @@ static char libraryName[256];
 string s_strIniPath = "inis";
 string s_strLogPath = "logs";
 
-FILE* padLog;
+FILE *padLog;
 Config conf;
 keyEvent event;
 static keyEvent s_event;
@@ -43,7 +43,7 @@ PS2EgetLibType()
     return PS2E_LT_PAD;
 }
 
-EXPORT_C_(char*)
+EXPORT_C_(char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "Padnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -56,7 +56,7 @@ PS2EgetLibVersion2(u32 type)
     return (version << 16) | (revision << 8) | build;
 }
 
-void __Log(const char* fmt, ...)
+void __Log(const char *fmt, ...)
 {
     va_list list;
 
@@ -67,7 +67,7 @@ void __Log(const char* fmt, ...)
     va_end(list);
 }
 
-void __LogToConsole(const char* fmt, ...)
+void __LogToConsole(const char *fmt, ...)
 {
     va_list list;
 
@@ -82,7 +82,7 @@ void __LogToConsole(const char* fmt, ...)
 }
 
 EXPORT_C_(void)
-PADsetSettingsDir(const char* dir)
+PADsetSettingsDir(const char *dir)
 {
     s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
@@ -109,7 +109,7 @@ bool OpenLog()
 }
 
 EXPORT_C_(void)
-PADsetLogDir(const char* dir)
+PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs" : dir;
@@ -144,7 +144,7 @@ PADshutdown()
 }
 
 EXPORT_C_(s32)
-PADopen(void* pDsp)
+PADopen(void *pDsp)
 {
     memset(&event, 0, sizeof(event));
 
@@ -158,7 +158,7 @@ PADclose()
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent*)
+EXPORT_C_(keyEvent *)
 PADkeyEvent()
 {
 
@@ -204,12 +204,12 @@ PADupdate(int pad)
 }
 
 EXPORT_C_(void)
-PADgsDriverInfo(GSdriverInfo* info)
+PADgsDriverInfo(GSdriverInfo *info)
 {
 }
 
 EXPORT_C_(s32)
-PADfreeze(int mode, freezeData* data)
+PADfreeze(int mode, freezeData *data)
 {
     return 0;
 }

@@ -29,11 +29,11 @@ extern GSVars gs;
 PCSX2_ALIGNED16(u8 g_RealGSMem[0x2000]);
 
 template <int index>
-void _GSgifTransfer(const u32* pMem, u32 size)
+void _GSgifTransfer(const u32 *pMem, u32 size)
 {
     //	FUNCLOG
 
-    pathInfo* path = &gs.path[index];
+    pathInfo *path = &gs.path[index];
 
     while (size > 0) {
         //GSLog::Writeln(_T("Transfer(%08x, %d) START\n"), pMem, size);
@@ -49,7 +49,7 @@ void _GSgifTransfer(const u32* pMem, u32 size)
 
                 if (path->tag.PRE && (path->tag.FLG == GIF_FLG_PACKED)) {
                     u32 tagprim = path->tag.PRIM;
-                    GIFRegHandlerPRIM((u32*)&tagprim);
+                    GIFRegHandlerPRIM((u32 *)&tagprim);
                 }
             }
         } else {
@@ -150,34 +150,34 @@ void _GSgifTransfer(const u32* pMem, u32 size)
 
 // Obsolete. Included because it's still in GSdef.
 EXPORT_C_(void)
-GSgifTransfer1(u32* pMem, u32 addr)
+GSgifTransfer1(u32 *pMem, u32 addr)
 {
 #ifdef DO_GIF_TRANSFERS
-    _GSgifTransfer<0>((u32*)((u8*)pMem + addr), (0x4000 - addr) / 16);
+    _GSgifTransfer<0>((u32 *)((u8 *)pMem + addr), (0x4000 - addr) / 16);
 #endif
 }
 
 EXPORT_C_(void)
-GSgifTransfer(const u32* pMem, u32 size)
+GSgifTransfer(const u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
-    _GSgifTransfer<3>(const_cast<u32*>(pMem), size);
+    _GSgifTransfer<3>(const_cast<u32 *>(pMem), size);
 #endif
 }
 
 EXPORT_C_(void)
-GSgifTransfer2(u32* pMem, u32 size)
+GSgifTransfer2(u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
-    _GSgifTransfer<1>(const_cast<u32*>(pMem), size);
+    _GSgifTransfer<1>(const_cast<u32 *>(pMem), size);
 #endif
 }
 
 EXPORT_C_(void)
-GSgifTransfer3(u32* pMem, u32 size)
+GSgifTransfer3(u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
-    _GSgifTransfer<2>(const_cast<u32*>(pMem), size);
+    _GSgifTransfer<2>(const_cast<u32 *>(pMem), size);
 #endif
 }
 
