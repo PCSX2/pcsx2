@@ -1343,10 +1343,10 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch(m_env.TRXDIR.XDIR)
 	{
 	case 0: // host -> local
-		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY);
+		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF);
 		break;
 	case 1: // local -> host
-		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY);
+		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF);
 		break;
 	case 2: // local -> local
 		Move();
@@ -1524,7 +1524,8 @@ void GSState::Write(const uint8* mem, int len)
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM];
+	GIFRegBITBLTBUF& blit = m_tr.m_blit;
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
 	/*
 	 *  The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
@@ -1542,13 +1543,13 @@ void GSState::Write(const uint8* mem, int len)
 	 * depth buffer. Let's reduce the size of the transfer
 	 */
 	if (m_game.title == CRC::SMTNocturne) {
-		if (m_env.BITBLTBUF.DBP == 0 && m_env.BITBLTBUF.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
+		if (blit.DBP == 0 && blit.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
 			h = 224;
 			m_env.TRXREG.RRH = 224;
 		}
 	}
 
-	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
+	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, blit.DBP, blit.DBW, blit.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
 
 	if(!m_tr.Update(w, h, psm.trbpp, len))
 	{
@@ -1556,11 +1557,11 @@ void GSState::Write(const uint8* mem, int len)
 	}
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
-		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
+		blit.DBP, blit.DBW, psm_str(blit.DPSM),
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 		m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
-	if(PRIM->TME && (m_env.BITBLTBUF.DBP == m_context->TEX0.TBP0 || m_env.BITBLTBUF.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
+	if(PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
 	{
 		FlushPrim();
 	}
@@ -1578,9 +1579,9 @@ void GSState::Write(const uint8* mem, int len)
 		r.right = r.left + m_env.TRXREG.RRW;
 		r.bottom = r.top + m_env.TRXREG.RRH;
 
-		InvalidateVideoMem(m_env.BITBLTBUF, r);
+		InvalidateVideoMem(blit, r);
 
-		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
 
 		m_tr.start = m_tr.end = m_tr.total;
 
@@ -1590,9 +1591,9 @@ void GSState::Write(const uint8* mem, int len)
 		static int n = 0;
 		string s;
 		s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
-			n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
+			n++, (int)blit.DBP, (int)blit.DBW, (int)blit.DPSM,
 			r.left, r.top, r.right, r.bottom);
-		m_mem.SaveBMP(s, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, r.right, r.bottom);
+		m_mem.SaveBMP(s, blit.DBP, blit.DBW, blit.DPSM, r.right, r.bottom);
 		*/
 	}
 	else
@@ -2299,6 +2300,12 @@ int GSState::Defrost(const GSFreezeData* fd)
 	ReadState(&m_env.TRXPOS, data);
 	ReadState(&m_env.TRXREG, data);
 	ReadState(&m_env.TRXREG, data); // obsolete
+	// Technically this value ought to be saved like m_tr.x/y (break
+	// compatibility) but so far only a single game (Motocross Mania) really
+	// depends on this value (i.e != BITBLTBUF) Savestates are likely done at
+	// VSYNC, so not in the middle of a texture transfer, therefore register
+	// will be set again properly
+	m_tr.m_blit = m_env.BITBLTBUF;
 
 	for(int i = 0; i < 2; i++)
 	{
@@ -3050,11 +3057,12 @@ GSState::GSTransferBuffer::~GSTransferBuffer()
 	_aligned_free(buff);
 }
 
-void GSState::GSTransferBuffer::Init(int tx, int ty)
+void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit)
 {
 	x = tx;
 	y = ty;
 	total = 0;
+	m_blit = blit;
 }
 
 bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
