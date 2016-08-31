@@ -64,7 +64,7 @@ bool GSRendererOGL::CreateDevice(GSDevice* dev)
 
 void GSRendererOGL::Lines2Sprites()
 {
-	if (m_vt.m_primclass != GS_SPRITE_CLASS) return;
+	ASSERT(m_vt.m_primclass == GS_SPRITE_CLASS);
 
 	// each sprite converted to quad needs twice the space
 
@@ -126,7 +126,7 @@ void GSRendererOGL::Lines2Sprites()
 	}
 }
 
-void GSRendererOGL::SetupIA()
+void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 {
 	GL_PUSH("IA");
 
@@ -138,35 +138,51 @@ void GSRendererOGL::SetupIA()
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}
 
-	if (!GLLoader::found_geometry_shader)
-		Lines2Sprites();
-
-	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
-	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
-
 	GLenum t = 0;
+	bool unscale_hack = UserHacks_unscale_pt_ln  & (GetUpscaleMultiplier() > 1) & GLLoader::found_geometry_shader;
 
 	switch(m_vt.m_primclass)
 	{
-	case GS_POINT_CLASS:
-		t = GL_POINTS;
-		break;
-	case GS_LINE_CLASS:
-		t = GL_LINES;
-		break;
-	case GS_SPRITE_CLASS:
-		if (GLLoader::found_geometry_shader)
+		case GS_POINT_CLASS:
+			if (unscale_hack) {
+				m_gs_sel.point = 1;
+				vs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
+			}
+
+			t = GL_POINTS;
+			break;
+
+		case GS_LINE_CLASS:
+			if (unscale_hack) {
+				m_gs_sel.line = 1;
+				vs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
+			}
+
 			t = GL_LINES;
-		else
+			break;
+
+		case GS_SPRITE_CLASS:
+			if (GLLoader::found_geometry_shader) {
+				m_gs_sel.sprite = 1;
+
+				t = GL_LINES;
+			} else {
+				Lines2Sprites();
+
+				t = GL_TRIANGLES;
+			}
+			break;
+
+		case GS_TRIANGLE_CLASS:
 			t = GL_TRIANGLES;
-		break;
-	case GS_TRIANGLE_CLASS:
-		t = GL_TRIANGLES;
-		break;
-	default:
-		__assume(0);
+			break;
+
+		default:
+			__assume(0);
 	}
 
+	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
+	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
 	dev->IASetPrimitiveTopology(t);
 }
 
@@ -1333,44 +1349,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Always bind the RT. This way special effect can use it.
 	dev->PSSetShaderResource(3, rt);
 
-
-	// GS
-	bool unscale_hack = UserHacks_unscale_pt_ln  & (GetUpscaleMultiplier() > 1) & GLLoader::found_geometry_shader;
-	switch(m_vt.m_primclass)
-	{
-		case GS_POINT_CLASS:
-			if (unscale_hack) {
-				m_gs_sel.point = 1;
-				vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
-			}
-			break;
-		case GS_LINE_CLASS:
-			if (unscale_hack) {
-				m_gs_sel.line = 1;
-				vs_cb.PointSize = GSVector2(2.0f * rtscale.x / rtsize.x, 2.0f * rtscale.y / rtsize.y);
-			}
-			break;
-		case GS_SPRITE_CLASS:
-			m_gs_sel.sprite = 1;
-			break;
-		case GS_TRIANGLE_CLASS:
-			break;
-		default:
-			__assume(0);
-	}
-
-	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
-
 	// rs
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
-	SetupIA();
+	SetupIA(sx, sy);
 
 	dev->OMSetColorMaskState(m_om_csel);
 	dev->SetupOM(m_om_dssel);
 
 	dev->SetupCB(&vs_cb, &ps_cb);
+
+	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
