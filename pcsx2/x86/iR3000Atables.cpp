@@ -1420,6 +1420,9 @@ REC_GTE_FUNC(CFC2);
 REC_GTE_FUNC(MTC2);
 REC_GTE_FUNC(CTC2);
 
+REC_GTE_FUNC(LWC2);
+REC_GTE_FUNC(SWC2);
+
 
 // R3000A tables
 extern void (*rpsxBSC[64])();
@@ -1446,8 +1449,8 @@ void (*rpsxBSC[64])() = {
 	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxLB     , rpsxLH    , rpsxLWL , rpsxLW   , rpsxLBU , rpsxLHU , rpsxLWR , rpsxNULL,
 	rpsxSB     , rpsxSH    , rpsxSWL , rpsxSW   , rpsxNULL, rpsxNULL, rpsxSWR , rpsxNULL,
-	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL   , rpsxNULL  , rgteLWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
+	rpsxNULL   , rpsxNULL  , rgteSWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
 };
 
 void (*rpsxSPC[64])() = {
@@ -1559,6 +1562,11 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 		case 40: case 41: case 42: case 43: case 46:
 			rpsxpropSetRead(_Rt_);
 			rpsxpropSetRead(_Rs_);
+			break;
+
+		case 50: // LWC2
+		case 58: // SWC2
+			// Operation on COP2 registers/memory. GPRs are left untouched
 			break;
 
 		default:
