@@ -1553,7 +1553,7 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 			break;
 
 		case 16: rpsxpropCP0(prev, pinst); break;
-		case 18: pxFailDev( "iop invalid opcode in const propagation" ); break;
+		case 18: rpsxpropCP2(prev, pinst); break;
 
 		// stores
 		case 40: case 41: case 42: case 43: case 46:
@@ -1688,5 +1688,54 @@ void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 			break;
 
 		jNO_DEFAULT
+	}
+}
+
+
+// Basic table:
+// gteMFC2, psxNULL, gteCFC2, psxNULL, gteMTC2, psxNULL, gteCTC2, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
+void rpsxpropCP2_basic(EEINST* prev, EEINST* pinst)
+{
+	switch(_Rs_) {
+		case 0: // mfc2
+		case 2: // cfc2
+			rpsxpropSetWrite(_Rt_);
+			break;
+
+		case 4: // mtc2
+		case 6: // ctc2
+			rpsxpropSetRead(_Rt_);
+			break;
+
+		default:
+			pxFailDev( "iop invalid opcode in const propagation (rpsxpropCP2/BASIC)" );
+			break;
+	}
+}
+
+
+// Main table:
+// psxBASIC, gteRTPS , psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
+// psxNULL , psxNULL , psxNULL , psxNULL, gteOP  , psxNULL , psxNULL , psxNULL, // 08
+// gteDPCS , gteINTPL, gteMVMVA, gteNCDS, gteCDP , psxNULL , gteNCDT , psxNULL, // 10
+// psxNULL , psxNULL , psxNULL , gteNCCS, gteCC  , psxNULL , gteNCS  , psxNULL, // 18
+// gteNCT  , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
+// gteSQR  , gteDCPL , gteDPCT , psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28
+// gteRTPT , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
+// psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT  // 38
+void rpsxpropCP2(EEINST* prev, EEINST* pinst)
+{
+	switch(_Funct_) {
+		case 0: // Basic opcode
+			rpsxpropCP2_basic(prev, pinst);
+			break;
+
+		default:
+			// COP2 operation are likely done with internal COP2 registers
+			// No impact on GPR
+			break;
 	}
 }
