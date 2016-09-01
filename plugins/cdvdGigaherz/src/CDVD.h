@@ -90,7 +90,7 @@ class IOCtlSrc: public Source
 	IOCtlSrc(IOCtlSrc&);
 
 	HANDLE device;
-
+	bool m_can_use_spti;
 	bool OpenOK;
 
 	s32 last_read_mode;
