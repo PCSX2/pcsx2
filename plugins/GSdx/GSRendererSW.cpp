@@ -1672,7 +1672,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
 
-				s = format("%05d_f%lld_texp_%05x_%d.bmp", m_parent->s_n - 2, frame, (int)m_parent->m_context->TEX0.TBP0, (int)m_parent->m_context->TEX0.PSM);
+				s = format("%05d_f%lld_texp_%05x_%d.bmp", m_parent->s_n - 2, frame, (int)m_parent->m_context->TEX0.CBP, (int)m_parent->m_context->TEX0.CPSM);
 
 				t->Save(root_sw+s);
 
