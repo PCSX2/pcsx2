@@ -103,6 +103,7 @@ public:
 	virtual ~GSClut();
 
 	void Invalidate();
+	void Invalidate(uint32 block);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	//void Read(const GIFRegTEX0& TEX0);

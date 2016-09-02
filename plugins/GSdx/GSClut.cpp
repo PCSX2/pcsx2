@@ -98,6 +98,13 @@ void GSClut::Invalidate()
 	m_write.dirty = true;
 }
 
+void GSClut::Invalidate(uint32 block)
+{
+	if (block == m_write.TEX0.CBP) {
+		m_write.dirty = true;
+	}
+}
+
 bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	switch(TEX0.CLD)

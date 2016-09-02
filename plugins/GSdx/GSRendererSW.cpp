@@ -665,6 +665,8 @@ void GSRendererSW::Queue(shared_ptr<GSRasterizerData>& item)
 	if(sd->global.sel.fwrite)
 	{
 		m_tc->InvalidatePages(sd->m_fb_pages, sd->m_fpsm);
+
+		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
 	}
 
 	if(sd->global.sel.zwrite)
