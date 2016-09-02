@@ -605,6 +605,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	dst->m_used = true;
+	dst->m_dirty_alpha = false;
 
 	return dst;
 }
