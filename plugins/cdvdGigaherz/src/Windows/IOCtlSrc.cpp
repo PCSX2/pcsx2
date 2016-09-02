@@ -18,6 +18,12 @@
 #include <winioctl.h>
 #include <ntddcdvd.h>
 #include <ntddcdrm.h>
+// "typedef ignored" warning will disappear once we move to the Windows 10 SDK.
+#pragma warning (push)
+#pragma warning (disable: 4091)
+#include <ntddscsi.h>
+#pragma warning (pop)
+
 #include <cstddef>
 #include <cstdlib>
 
@@ -284,13 +290,15 @@ s32 IOCtlSrc::Reopen()
 	DWORD size;
 
 	OpenOK = false;
-
+	// SPTI only works if the device is opened with GENERIC_WRITE access.
+	m_can_use_spti = true;
 	device = CreateFile(fName, GENERIC_READ|GENERIC_WRITE|FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
 	if(device==INVALID_HANDLE_VALUE)
 	{
 		device = CreateFile(fName, GENERIC_READ|FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
 		if(device==INVALID_HANDLE_VALUE)
 			return -1;
+		m_can_use_spti = false;
 	}
 	// Dual layer DVDs cannot read from layer 1 without this ioctl
 	DeviceIoControl(device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
@@ -624,6 +632,8 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
 }
 
 
+// FIXME: Probably doesn't work if the sectors to be read are from two tracks
+// of different types.
 s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 {
 	RAW_READ_INFO rri;
@@ -631,6 +641,48 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 	DWORD size=0;
 
 	if(!OpenOK) return -1;
+
+	if (m_can_use_spti)
+	{
+		struct sptdinfo
+		{
+			SCSI_PASS_THROUGH_DIRECT info;
+			char sense_buffer[20];
+		} sptd = {};
+
+		// READ CD command
+		sptd.info.Cdb[0] = 0xBE;
+		// Don't care about sector type.
+		sptd.info.Cdb[1] = 0;
+		sptd.info.Cdb[2] = (sector >> 24) & 0xFF;
+		sptd.info.Cdb[3] = (sector >> 16) & 0xFF;
+		sptd.info.Cdb[4] = (sector >> 8) & 0xFF;
+		sptd.info.Cdb[5] = sector & 0xFF;
+		sptd.info.Cdb[6] = (count >> 16) & 0xFF;
+		sptd.info.Cdb[7] = (count >> 8) & 0xFF;
+		sptd.info.Cdb[8] = count & 0xFF;
+		// Sync + all headers + user data + EDC/ECC. Excludes C2 + subchannel
+		sptd.info.Cdb[9] = 0xF8;
+		sptd.info.Cdb[10] = 0;
+		sptd.info.Cdb[11] = 0;
+
+		sptd.info.CdbLength = 12;
+		sptd.info.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
+		sptd.info.DataIn = SCSI_IOCTL_DATA_IN;
+		sptd.info.DataTransferLength = 2352 * count;
+		sptd.info.DataBuffer = buffer;
+		sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
+		sptd.info.SenseInfoOffset = offsetof(sptdinfo, sense_buffer);
+		sptd.info.TimeOutValue = 5;
+
+		if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
+			sizeof(sptd), &sptd, sizeof(sptd), &size, nullptr))
+		{
+			if (sptd.info.DataTransferLength == 2352 * count)
+				return 0;
+		}
+		printf(" * CDVD: SPTI failed reading sectors %u-%u\n", sector, sector + count - 1);
+	}
 
 	rri.DiskOffset.QuadPart=sector*(u64)2048;
 	rri.SectorCount=count;
