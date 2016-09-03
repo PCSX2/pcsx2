@@ -277,13 +277,23 @@ void GSRendererOGL::EmulateZbuffer()
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
+	size_t count = m_vertex.next;
+	GSVertex* v = &m_vertex.buff[0];
+
+	// Shadow_of_memories_Shadow_Flickering
+	if (m_texture_shuffle && count < 3 && PRIM->FST) {
+		// Avious dubious call to m_texture_shuffle on 16 bits games
+		// The pattern is severals column of 8 pixels. A single sprite
+		// smell fishy but a big sprite is wrong.
+		m_texture_shuffle = ((v[1].U - v[0].U) < 256);
+	}
+
+
 	if (m_texture_shuffle) {
 		m_ps_sel.shuffle = 1;
 		m_ps_sel.dfmt = 0;
 
 		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-		GSVertex* v = &m_vertex.buff[0];
-		size_t count = m_vertex.next;
 
 		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
 		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
