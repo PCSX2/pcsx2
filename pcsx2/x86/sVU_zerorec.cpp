@@ -304,13 +304,17 @@ VuBaseBlock::VuBaseBlock()
 	type = 0;
 	endpc = 0;
 	cycles = 0;
-	pcode = NULL;
 	id = 0;
 	memzero(pChildJumps);
 	memzero(startregs);
 	memzero(endregs);
 	allocX86Regs = nStartx86 = nEndx86 = -1;
 	prevFlagsOutOfBlock = 0;
+	startpc = 0;
+	vuxy = 0;
+	vuxyz = 0;
+	pendcode = nullptr;
+	pcode = nullptr;
 }
 
 #define SUPERVU_STACKSIZE 0x1000
