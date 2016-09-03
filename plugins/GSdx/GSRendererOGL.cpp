@@ -1133,7 +1133,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Always check if primitive overlap. The function will return PRIM_OVERLAP_UNKNOW for non sprite primitive
 	m_prim_overlap = PrimitiveOverlap();
 #ifdef ENABLE_OGL_DEBUG
-	if (m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
+	if (PRIM->TME && m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
 		GL_INS("ERROR: Source and Target are the same!");
 	}
 #endif
