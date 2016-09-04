@@ -22,91 +22,91 @@
 
 wxString CfgHelper::m_path = L"inis/LilyPad.ini";
 
-void CfgHelper::SetSettingsDir(const char* dir)
+void CfgHelper::SetSettingsDir(const char *dir)
 {
-	m_path = wxString::FromAscii(dir) + L"/LilyPad.ini";
+    m_path = wxString::FromAscii(dir) + L"/LilyPad.ini";
 }
 
 CfgHelper::CfgHelper()
 {
-	m_config = new wxFileConfig(L"", L"", m_path, L"", wxCONFIG_USE_LOCAL_FILE);
+    m_config = new wxFileConfig(L"", L"", m_path, L"", wxCONFIG_USE_LOCAL_FILE);
 }
 
 CfgHelper::~CfgHelper()
 {
-	delete m_config;
+    delete m_config;
 }
 
-void CfgHelper::setIni(const wchar_t* Section)
+void CfgHelper::setIni(const wchar_t *Section)
 {
-	m_config->SetPath(wxsFormat(L"/%s", Section));
+    m_config->SetPath(wxsFormat(L"/%s", Section));
 }
 
 
-void CfgHelper::WriteBool(const wchar_t* Section, const wchar_t* Name, bool Value)
+void CfgHelper::WriteBool(const wchar_t *Section, const wchar_t *Name, bool Value)
 {
-	setIni(Section);
-	m_config->Write(Name, Value);
+    setIni(Section);
+    m_config->Write(Name, Value);
 }
 
-void CfgHelper::WriteInt(const wchar_t* Section, const wchar_t* Name, int Value)
+void CfgHelper::WriteInt(const wchar_t *Section, const wchar_t *Name, int Value)
 {
-	setIni(Section);
-	m_config->Write(Name, Value);
+    setIni(Section);
+    m_config->Write(Name, Value);
 }
 
-void CfgHelper::WriteFloat(const wchar_t* Section, const wchar_t* Name, float Value)
+void CfgHelper::WriteFloat(const wchar_t *Section, const wchar_t *Name, float Value)
 {
-	setIni(Section);
-	m_config->Write(Name, (double)Value);
+    setIni(Section);
+    m_config->Write(Name, (double)Value);
 }
 
-void CfgHelper::WriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data)
+void CfgHelper::WriteStr(const wchar_t *Section, const wchar_t *Name, const wxString &Data)
 {
-	setIni(Section);
-	m_config->Write(Name, Data);
+    setIni(Section);
+    m_config->Write(Name, Data);
 }
 
-bool CfgHelper::ReadBool(const wchar_t *Section,const wchar_t* Name, bool Default)
+bool CfgHelper::ReadBool(const wchar_t *Section, const wchar_t *Name, bool Default)
 {
-	bool ret;
+    bool ret;
 
-	setIni(Section);
-	m_config->Read(Name, &ret, Default);
+    setIni(Section);
+    m_config->Read(Name, &ret, Default);
 
-	return ret;
+    return ret;
 }
 
-int CfgHelper::ReadInt(const wchar_t* Section, const wchar_t* Name,int Default)
+int CfgHelper::ReadInt(const wchar_t *Section, const wchar_t *Name, int Default)
 {
-	int ret;
+    int ret;
 
-	setIni(Section);
-	m_config->Read(Name, &ret, Default);
+    setIni(Section);
+    m_config->Read(Name, &ret, Default);
 
-	return ret;
+    return ret;
 }
 
-float CfgHelper::ReadFloat(const wchar_t* Section, const wchar_t* Name, float Default)
+float CfgHelper::ReadFloat(const wchar_t *Section, const wchar_t *Name, float Default)
 {
-	double ret;
+    double ret;
 
-	setIni(Section);
-	m_config->Read(Name, &ret, (double)Default);
+    setIni(Section);
+    m_config->Read(Name, &ret, (double)Default);
 
-	return (float)ret;
+    return (float)ret;
 }
 
-int CfgHelper::ReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, const wchar_t* Default)
+int CfgHelper::ReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, const wchar_t *Default)
 {
-	setIni(Section);
-	wcscpy(Data, m_config->Read(Name, Default).wc_str());
-	return wcslen(Data);
+    setIni(Section);
+    wcscpy(Data, m_config->Read(Name, Default).wc_str());
+    return wcslen(Data);
 }
 
-int CfgHelper::ReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default)
+int CfgHelper::ReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default)
 {
-	setIni(Section);
-	Data = m_config->Read(Name, Default);
-	return Data.size();
+    setIni(Section);
+    Data = m_config->Read(Name, Default);
+    return Data.size();
 }

@@ -21,20 +21,20 @@
  */
 
 /* Number of bits for 1 unsigned char */
-#define nBitsPerUchar          (sizeof(unsigned char) * 8)
+#define nBitsPerUchar (sizeof(unsigned char) * 8)
 
 /* Number of unsigned chars to contain a given number of bits */
-#define nUcharsForNBits(nBits) ((((nBits)-1)/nBitsPerUchar)+1)
+#define nUcharsForNBits(nBits) ((((nBits)-1) / nBitsPerUchar) + 1)
 
 /* Index=Offset of given bit in 1 unsigned char */
-#define bitOffsetInUchar(bit)  ((bit)%nBitsPerUchar)
+#define bitOffsetInUchar(bit) ((bit) % nBitsPerUchar)
 
 /* Index=Offset of the unsigned char associated to the bit
    at the given index=offset */
-#define ucharIndexForBit(bit)  ((bit)/nBitsPerUchar)
+#define ucharIndexForBit(bit) ((bit) / nBitsPerUchar)
 
 /* Value of an unsigned char with bit set at given index=offset */
-#define ucharValueForBit(bit)  (((unsigned char)(1))<<bitOffsetInUchar(bit))
+#define ucharValueForBit(bit) (((unsigned char)(1)) << bitOffsetInUchar(bit))
 
 /* Test the bit with given index=offset in an unsigned char array */
-#define testBit(bit, array)    ((array[ucharIndexForBit(bit)] >> bitOffsetInUchar(bit)) & 1)
+#define testBit(bit, array) ((array[ucharIndexForBit(bit)] >> bitOffsetInUchar(bit)) & 1)

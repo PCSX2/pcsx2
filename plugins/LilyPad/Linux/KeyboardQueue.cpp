@@ -32,30 +32,35 @@ static u8 R_lastQueuedEvent = 0;
 static u8 R_nextQueuedEvent = 0;
 static keyEvent R_queuedEvents[R_EVENT_QUEUE_LEN];
 
-void R_QueueKeyEvent(const keyEvent &evt) {
-	std::lock_guard<std::mutex> lock(core_event);
-
-	R_queuedEvents[R_lastQueuedEvent] = evt;
-	R_lastQueuedEvent = (R_lastQueuedEvent + 1) % R_EVENT_QUEUE_LEN;
-	// In case someone has a severe Parkingson's disease
-	assert(R_nextQueuedEvent != R_lastQueuedEvent);
-}
-
-int R_GetQueuedKeyEvent(keyEvent *event) {
-	if (R_lastQueuedEvent == R_nextQueuedEvent) return 0;
-
-	std::lock_guard<std::mutex> lock(core_event);
-	*event = R_queuedEvents[R_nextQueuedEvent];
-	R_nextQueuedEvent = (R_nextQueuedEvent + 1) % R_EVENT_QUEUE_LEN;
-	return 1;
-}
-
-void R_ClearKeyQueue() {
-	R_lastQueuedEvent = R_nextQueuedEvent;
-}
-
-EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
+void R_QueueKeyEvent(const keyEvent &evt)
 {
-	R_QueueKeyEvent(evt);
+    std::lock_guard<std::mutex> lock(core_event);
+
+    R_queuedEvents[R_lastQueuedEvent] = evt;
+    R_lastQueuedEvent = (R_lastQueuedEvent + 1) % R_EVENT_QUEUE_LEN;
+    // In case someone has a severe Parkingson's disease
+    assert(R_nextQueuedEvent != R_lastQueuedEvent);
+}
+
+int R_GetQueuedKeyEvent(keyEvent *event)
+{
+    if (R_lastQueuedEvent == R_nextQueuedEvent)
+        return 0;
+
+    std::lock_guard<std::mutex> lock(core_event);
+    *event = R_queuedEvents[R_nextQueuedEvent];
+    R_nextQueuedEvent = (R_nextQueuedEvent + 1) % R_EVENT_QUEUE_LEN;
+    return 1;
+}
+
+void R_ClearKeyQueue()
+{
+    R_lastQueuedEvent = R_nextQueuedEvent;
+}
+
+EXPORT_C_(void)
+PADWriteEvent(keyEvent &evt)
+{
+    R_QueueKeyEvent(evt);
 }
 #endif

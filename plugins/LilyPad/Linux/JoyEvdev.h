@@ -23,55 +23,62 @@
 #include <fcntl.h>
 #include <linux/input.h>
 
-struct abs_info {
-	uint16_t code;
-	int32_t min;
-	int32_t max;
+struct abs_info
+{
+    uint16_t code;
+    int32_t min;
+    int32_t max;
 
-	int32_t factor;
-	int32_t translation;
+    int32_t factor;
+    int32_t translation;
 
-	abs_info(int32_t _code, int32_t _min, int32_t _max, ControlType type) : code(_code), min(_min), max(_max) {
-		translation = 0;
-		// Note: ABSAXIS ranges from -64K to 64K
-		// Note: PSHBTN ranges from 0 to 64K
-		if ((min == 0) && (max == 255)) {
-			if (type == ABSAXIS) {
-				translation = 128;
-				factor = FULLY_DOWN/128;
-			} else {
-				factor = FULLY_DOWN/256;
-			}
-		} else if ((min == -1) && (max == 1)) {
-			factor = FULLY_DOWN;
-		} else if ((min == 0) && (std::abs(max - 127) < 2)) {
-			translation = 64;
-			factor = -FULLY_DOWN/64;
-		} else if ((max == 255) && (std::abs(min - 127) < 2)) {
-			translation = 64+128;
-			factor = FULLY_DOWN/64;
-		} else {
-			fprintf(stderr, "Scale not supported\n");
-			factor = 0;
-		}
-	}
+    abs_info(int32_t _code, int32_t _min, int32_t _max, ControlType type)
+        : code(_code)
+        , min(_min)
+        , max(_max)
+    {
+        translation = 0;
+        // Note: ABSAXIS ranges from -64K to 64K
+        // Note: PSHBTN ranges from 0 to 64K
+        if ((min == 0) && (max == 255)) {
+            if (type == ABSAXIS) {
+                translation = 128;
+                factor = FULLY_DOWN / 128;
+            } else {
+                factor = FULLY_DOWN / 256;
+            }
+        } else if ((min == -1) && (max == 1)) {
+            factor = FULLY_DOWN;
+        } else if ((min == 0) && (std::abs(max - 127) < 2)) {
+            translation = 64;
+            factor = -FULLY_DOWN / 64;
+        } else if ((max == 255) && (std::abs(min - 127) < 2)) {
+            translation = 64 + 128;
+            factor = FULLY_DOWN / 64;
+        } else {
+            fprintf(stderr, "Scale not supported\n");
+            factor = 0;
+        }
+    }
 
-	int scale(int32_t value) {
-		return (value - translation) * factor;
-	}
+    int scale(int32_t value)
+    {
+        return (value - translation) * factor;
+    }
 };
 
-class JoyEvdev : public Device {
-	int m_fd;
-	std::vector<abs_info> m_abs;
-	std::vector<uint16_t> m_btn;
-	std::vector<uint16_t> m_rel;
+class JoyEvdev : public Device
+{
+    int m_fd;
+    std::vector<abs_info> m_abs;
+    std::vector<uint16_t> m_btn;
+    std::vector<uint16_t> m_rel;
 
-	public:
-		JoyEvdev(int fd, bool ds3, const wchar_t *id);
-		~JoyEvdev();
-		int Activate(InitInfo* args);
-		int Update();
+public:
+    JoyEvdev(int fd, bool ds3, const wchar_t *id);
+    ~JoyEvdev();
+    int Activate(InitInfo *args);
+    int Update();
 };
 
 void EnumJoystickEvdev();
