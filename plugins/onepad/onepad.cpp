@@ -36,7 +36,7 @@
 #define snprintf sprintf_s
 #endif
 
-PADconf* conf;
+PADconf *conf;
 static char libraryName[256];
 
 keyEvent event;
@@ -46,16 +46,16 @@ std::string s_strIniPath("inis/");
 std::string s_strLogPath("logs/");
 bool toggleAutoRepeat = false;
 
-const u32 version  = PS2E_PAD_VERSION;
+const u32 version = PS2E_PAD_VERSION;
 const u32 revision = 1;
-const u32 build    = 3;    // increase that with each version
+const u32 build = 3;  // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 FILE *padLog = NULL;
 
-pthread_spinlock_t	   mutex_KeyEvent;
+pthread_spinlock_t mutex_KeyEvent;
 bool mutex_WasInit = false;
-KeyStatus* key_status = NULL;
+KeyStatus *key_status = NULL;
 
 queue<keyEvent> ev_fifo;
 
@@ -63,281 +63,302 @@ static void InitLibraryName()
 {
 #ifdef PUBLIC
 
-	// Public Release!
-	// Output a simplified string that's just our name:
+    // Public Release!
+    // Output a simplified string that's just our name:
 
-	strcpy(libraryName, "OnePAD");
+    strcpy(libraryName, "OnePAD");
 
 #else
 
-	// Use TortoiseSVN's SubWCRev utility's output
-	// to label the specific revision:
+    // Use TortoiseSVN's SubWCRev utility's output
+    // to label the specific revision:
 
-	snprintf(libraryName, 255, "OnePAD %lld%s"
-#	ifdef PCSX2_DEBUG
-	          "-Debug"
-#	elif defined(PCSX2_DEVBUILD)
-	          "-Dev"
-#	endif
-	          , SVN_REV,
-	          SVN_MODS ? "m" : ""
-	         );
+    snprintf(libraryName, 255, "OnePAD %lld%s"
+#ifdef PCSX2_DEBUG
+                               "-Debug"
+#elif defined(PCSX2_DEVBUILD)
+                               "-Dev"
+#endif
+             ,
+             SVN_REV,
+             SVN_MODS ? "m" : "");
 #endif
 }
 
-EXPORT_C_(u32) PS2EgetLibType()
+EXPORT_C_(u32)
+PS2EgetLibType()
 {
-	return PS2E_LT_PAD;
+    return PS2E_LT_PAD;
 }
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(char *)
+PS2EgetLibName()
 {
-	InitLibraryName();
-	return libraryName;
+    InitLibraryName();
+    return libraryName;
 }
 
-EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32)
+PS2EgetLibVersion2(u32 type)
 {
-	return (version << 16) | (revision << 8) | build;
+    return (version << 16) | (revision << 8) | build;
 }
 
 void __Log(const char *fmt, ...)
 {
-	va_list list;
+    va_list list;
 
-	if (padLog == NULL) return;
-	va_start(list, fmt);
-	vfprintf(padLog, fmt, list);
-	va_end(list);
+    if (padLog == NULL)
+        return;
+    va_start(list, fmt);
+    vfprintf(padLog, fmt, list);
+    va_end(list);
 }
 
 void __LogToConsole(const char *fmt, ...)
 {
-	va_list list;
+    va_list list;
 
-	va_start(list, fmt);
+    va_start(list, fmt);
 
-	if (padLog != NULL) vfprintf(padLog, fmt, list);
+    if (padLog != NULL)
+        vfprintf(padLog, fmt, list);
 
-	printf("OnePAD: ");
-	vprintf(fmt, list);
-	va_end(list);
+    printf("OnePAD: ");
+    vprintf(fmt, list);
+    va_end(list);
 }
 
 void initLogging()
 {
 #ifdef PAD_LOG
-	if (padLog) return;
+    if (padLog)
+        return;
 
     const std::string LogFile(s_strLogPath + "padLog.txt");
     padLog = fopen(LogFile.c_str(), "w");
 
     if (padLog)
-        setvbuf(padLog, NULL,  _IONBF, 0);
+        setvbuf(padLog, NULL, _IONBF, 0);
 
-	PAD_LOG("PADinit\n");
+    PAD_LOG("PADinit\n");
 #endif
 }
 
 void CloseLogging()
 {
 #ifdef PAD_LOG
-	if (padLog)
-	{
-		fclose(padLog);
-		padLog = NULL;
-	}
+    if (padLog) {
+        fclose(padLog);
+        padLog = NULL;
+    }
 #endif
 }
 
 void clearPAD(int pad)
 {
-	conf->keysym_map[pad].clear();
-	for (int key= 0; key < MAX_KEYS; ++key)
-		set_key(pad, key, 0);
+    conf->keysym_map[pad].clear();
+    for (int key = 0; key < MAX_KEYS; ++key)
+        set_key(pad, key, 0);
 }
 
-EXPORT_C_(s32) PADinit(u32 flags)
+EXPORT_C_(s32)
+PADinit(u32 flags)
 {
-	initLogging();
+    initLogging();
 
-	LoadConfig();
+    LoadConfig();
 
-	key_status = new KeyStatus();
+    key_status = new KeyStatus();
 
-	Pad::reset_all();
+    Pad::reset_all();
 
-	query.reset();
+    query.reset();
 
-	for (int port = 0; port < 2; port++)
-		slots[port] = 0;
+    for (int port = 0; port < 2; port++)
+    slots[port] = 0;
 
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(void) PADshutdown()
+EXPORT_C_(void)
+PADshutdown()
 {
-	CloseLogging();
+    CloseLogging();
 
-	delete conf;
-	conf = nullptr;
+    delete conf;
+    conf = nullptr;
 
-	delete key_status;
-	key_status = nullptr;
+    delete key_status;
+    key_status = nullptr;
 }
 
-EXPORT_C_(s32) PADopen(void *pDsp)
+EXPORT_C_(s32)
+PADopen(void *pDsp)
 {
-	memset(&event, 0, sizeof(event));
-	key_status->Init();
+    memset(&event, 0, sizeof(event));
+    key_status->Init();
 
-	while (!ev_fifo.empty()) ev_fifo.pop();
-	pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
-	mutex_WasInit = true;
+    while (!ev_fifo.empty())
+        ev_fifo.pop();
+    pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
+    mutex_WasInit = true;
 
 #if defined(__unix__)
-	GamePad::EnumerateGamePads(s_vgamePad);
+    GamePad::EnumerateGamePads(s_vgamePad);
 #endif
-	return _PADopen(pDsp);
+    return _PADopen(pDsp);
 }
 
-EXPORT_C_(void) PADsetSettingsDir(const char* dir)
+EXPORT_C_(void)
+PADsetSettingsDir(const char *dir)
 {
-	// Get the path to the ini directory.
-    s_strIniPath = (dir==NULL) ? "inis/" : dir;
+    // Get the path to the ini directory.
+    s_strIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
-EXPORT_C_(void) PADsetLogDir(const char* dir)
+EXPORT_C_(void)
+PADsetLogDir(const char *dir)
 {
-	// Get the path to the log directory.
-	s_strLogPath = (dir==NULL) ? "logs/" : dir;
+    // Get the path to the log directory.
+    s_strLogPath = (dir == NULL) ? "logs/" : dir;
 
-	// Reload the log file after updated the path
+    // Reload the log file after updated the path
     CloseLogging();
     initLogging();
 }
 
-EXPORT_C_(void) PADclose()
+EXPORT_C_(void)
+PADclose()
 {
-	while (!ev_fifo.empty()) ev_fifo.pop();
-	mutex_WasInit = false;
-	pthread_spin_destroy(&mutex_KeyEvent);
-	_PADclose();
+    while (!ev_fifo.empty())
+        ev_fifo.pop();
+    mutex_WasInit = false;
+    pthread_spin_destroy(&mutex_KeyEvent);
+    _PADclose();
 }
 
-EXPORT_C_(u32) PADquery()
+EXPORT_C_(u32)
+PADquery()
 {
-	return 3; // both
+    return 3;  // both
 }
 
-EXPORT_C_(s32) PADsetSlot(u8 port, u8 slot)
+EXPORT_C_(s32)
+PADsetSlot(u8 port, u8 slot)
 {
-	port--;
-	slot--;
-	if (port > 1 || slot > 3) {
-		return 0;
-	}
-	// Even if no pad there, record the slot, as it is the active slot regardless.
-	slots[port] = slot;
+    port--;
+    slot--;
+    if (port > 1 || slot > 3) {
+        return 0;
+    }
+    // Even if no pad there, record the slot, as it is the active slot regardless.
+    slots[port] = slot;
 
-	return 1;
+    return 1;
 }
 
-EXPORT_C_(s32) PADfreeze(int mode, freezeData *data)
+EXPORT_C_(s32)
+PADfreeze(int mode, freezeData *data)
 {
-	if (!data)
-		return -1;
+    if (!data)
+        return -1;
 
-	if (mode == FREEZE_SIZE) {
-		data->size = sizeof(PadPluginFreezeData);
+    if (mode == FREEZE_SIZE) {
+        data->size = sizeof(PadPluginFreezeData);
 
-	} else if (mode == FREEZE_LOAD) {
-		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
+    } else if (mode == FREEZE_LOAD) {
+        PadPluginFreezeData *pdata = (PadPluginFreezeData *)(data->data);
 
-		Pad::stop_vibrate_all();
+        Pad::stop_vibrate_all();
 
-		if (data->size != sizeof(PadPluginFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
-				strncmp(pdata->format, "OnePad", sizeof(pdata->format)))
-			return 0;
+        if (data->size != sizeof(PadPluginFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
+            strncmp(pdata->format, "OnePad", sizeof(pdata->format)))
+            return 0;
 
-		query = pdata->query;
-		if (pdata->query.slot < 4) {
-			query = pdata->query;
-		}
+        query = pdata->query;
+        if (pdata->query.slot < 4) {
+            query = pdata->query;
+        }
 
-		// Tales of the Abyss - pad fix
-		// - restore data for both ports
-		for (int port=0; port<2; port++) {
-			for (int slot=0; slot<4; slot++) {
-				u8 mode = pdata->padData[port][slot].mode;
+        // Tales of the Abyss - pad fix
+        // - restore data for both ports
+        for (int port = 0; port < 2; port++) {
+            for (int slot = 0; slot < 4; slot++) {
+                u8 mode = pdata->padData[port][slot].mode;
 
-				if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
-					break;
-				}
+                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
+                    break;
+                }
 
-				memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
-			}
+                memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
+            }
 
-			if (pdata->slot[port] < 4)
-				slots[port] = pdata->slot[port];
-		}
+            if (pdata->slot[port] < 4)
+            slots[port] = pdata->slot[port];
+        }
 
-	} else if (mode == FREEZE_SAVE) {
-		if (data->size != sizeof(PadPluginFreezeData)) return 0;
+    } else if (mode == FREEZE_SAVE) {
+        if (data->size != sizeof(PadPluginFreezeData))
+            return 0;
 
-		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
+        PadPluginFreezeData *pdata = (PadPluginFreezeData *)(data->data);
 
-		// Tales of the Abyss - pad fix
-		// - PCSX2 only saves port0 (save #1), then port1 (save #2)
+        // Tales of the Abyss - pad fix
+        // - PCSX2 only saves port0 (save #1), then port1 (save #2)
 
-		memset(pdata, 0, data->size);
-		strncpy(pdata->format, "OnePad", sizeof(pdata->format));
-		pdata->version = PAD_SAVE_STATE_VERSION;
-		pdata->query = query;
+        memset(pdata, 0, data->size);
+        strncpy(pdata->format, "OnePad", sizeof(pdata->format));
+        pdata->version = PAD_SAVE_STATE_VERSION;
+        pdata->query = query;
 
-		for (int port=0; port<2; port++) {
-			for (int slot=0; slot<4; slot++) {
-				pdata->padData[port][slot] = pads[port][slot];
-			}
+        for (int port = 0; port < 2; port++) {
+            for (int slot = 0; slot < 4; slot++) {
+                pdata->padData[port][slot] = pads[port][slot];
+            }
 
-			pdata->slot[port] = slots[port];
-		}
+            pdata->slot[port] = slots[port];
+        }
 
-	} else {
-		return -1;
-	}
+    } else {
+        return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(u8) PADstartPoll(int pad)
+EXPORT_C_(u8)
+PADstartPoll(int pad)
 {
-	return pad_start_poll(pad);
+    return pad_start_poll(pad);
 }
 
-EXPORT_C_(u8) PADpoll(u8 value)
+EXPORT_C_(u8)
+PADpoll(u8 value)
 {
-	return pad_poll(value);
+    return pad_poll(value);
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent*) PADkeyEvent()
+EXPORT_C_(keyEvent *)
+PADkeyEvent()
 {
-	s_event = event;
-	event.evt = 0;
-	event.key = 0;
-	return &s_event;
+    s_event = event;
+    event.evt = 0;
+    event.key = 0;
+    return &s_event;
 }
 
 #if defined(__unix__)
-EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
+EXPORT_C_(void)
+PADWriteEvent(keyEvent &evt)
 {
-	// This function call be called before PADopen. Therefore we cann't
-	// guarantee that the spin lock was initialized
-	if (mutex_WasInit) {
-		pthread_spin_lock(&mutex_KeyEvent);
-		ev_fifo.push(evt);
-		pthread_spin_unlock(&mutex_KeyEvent);
-	}
+    // This function call be called before PADopen. Therefore we cann't
+    // guarantee that the spin lock was initialized
+    if (mutex_WasInit) {
+        pthread_spin_lock(&mutex_KeyEvent);
+        ev_fifo.push(evt);
+        pthread_spin_unlock(&mutex_KeyEvent);
+    }
 }
 #endif
