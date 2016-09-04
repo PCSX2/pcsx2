@@ -143,11 +143,12 @@ class GSState : public GSAlignedClass<32>
 		int start, end, total;
 		bool overflow;
 		uint8* buff;
+		GIFRegBITBLTBUF m_blit;
 
 		GSTransferBuffer();
 		virtual ~GSTransferBuffer();
 
-		void Init(int tx, int ty);
+		void Init(int tx, int ty, const GIFRegBITBLTBUF& blit);
 		bool Update(int tw, int th, int bpp, int& len);
 
 	} m_tr;
