@@ -36,7 +36,6 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep -v "${1}common/" | \
     grep -v "${1}pcsx2/" | \
     grep -v "${1}plugins/cdvdGigaherz/" | \
-    grep -v "${1}plugins/CDVDiso/" | \
     grep -v "${1}plugins/CDVDisoEFP/" | \
     grep -v "${1}plugins/CDVDlinuz/" | \
     grep -v "${1}plugins/CDVDolio/" | \
@@ -44,8 +43,6 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep -v "${1}plugins/dev9ghzdrk/" | \
     grep -v "${1}plugins/GSdx/" | \
     grep -v "${1}plugins/GSdx_legacy/" | \
-    grep -v "${1}plugins/LilyPad/" | \
-    grep -v "${1}plugins/onepad/" | \
     grep -v "${1}plugins/PeopsSPU2/" | \
     grep -v "${1}plugins/spu2-x/" | \
     grep -v "${1}plugins/SSSPSXPAD/" | \
