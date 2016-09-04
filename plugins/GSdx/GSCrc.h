@@ -174,6 +174,7 @@ public:
 		SteambotChronicles,
 		SacredBlaze,
 		SuperManReturns,
+		ItadakiStreet,
 		TitleCount,
 	};
 

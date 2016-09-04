@@ -514,6 +514,7 @@ CRC::Game CRC::m_games[] =
 	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
+	{0x4CE7FB04, ItadakiStreet, JP, 0},
 };
 
 map<uint32, CRC::Game*> CRC::m_map;
