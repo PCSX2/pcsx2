@@ -5,6 +5,18 @@ set -x
 
 ret=0
 
+if command -v clang-format-3.8 > /dev/null ; then
+    clang_format=clang-format-3.8
+else
+    if command -v clang-format > /dev/null ; then
+        clang_format=clang-format
+    else
+        return 2;
+    fi
+fi
+
+$clang_format -version
+
 # Doesn't work as travis only populate a single branch history
 
 #branch=`git rev-parse --abbrev-ref HEAD`
@@ -64,7 +76,7 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
 # Check remaining files are clang-format compliant
 for f in $files
 do
-    clang-format -style=file -output-replacements-xml $f | grep "<replacement " >/dev/null
+    $clang_format -style=file -output-replacements-xml $f | grep "<replacement " >/dev/null
     if [ $? -ne 1 ]
     then
         echo "file $f did not match clang-format"
