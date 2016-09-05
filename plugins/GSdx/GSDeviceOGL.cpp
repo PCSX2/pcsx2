@@ -191,12 +191,25 @@ void GSDeviceOGL::GenerateProfilerData()
 	for (auto t : times) sd += pow(t-mean, 2);
 	sd = sqrt(sd / frames);
 
+	uint32 time_repartition[16] = {0};
+	for (auto t : times) {
+		uint32 slot = (uint32)(t/2.0);
+		if (slot >= countof(time_repartition)) {
+			slot = countof(time_repartition) - 1;
+		}
+		time_repartition[slot]++;
+	}
+
 	fprintf(stderr, "\nPerformance Profile for %.0f frames:\n", frames);
 	fprintf(stderr, "Min  %4.2f ms\t(%4.2f fps)\n", *minmax_time.first, 1000.0 / *minmax_time.first);
 	fprintf(stderr, "Mean %4.2f ms\t(%4.2f fps)\n", mean, 1000.0 / mean);
 	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
 	fprintf(stderr, "SD   %4.2f ms\n", sd);
 	fprintf(stderr, "\n");
+	fprintf(stderr, "Frame Repartition\n");
+	for (uint32 i = 0; i < countof(time_repartition); i ++) {
+		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i+1), time_repartition[i]);
+	}
 
 	FILE* csv = fopen("GSdx_profile.csv", "w");
 	if (csv) {
