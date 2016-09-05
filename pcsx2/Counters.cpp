@@ -335,14 +335,13 @@ u32 UpdateVSyncRate()
 		scanlines = SCANLINES_TOTAL_NTSC;
 		break;
 
-	// Falls through to unknown when unidentified mode parameter of SetGsCrt is detected.
 	case GS_VideoMode::Unknown:
+	default:
+		// Falls through to default when unidentified mode parameter of SetGsCrt is detected.
 		// For Release builds, keep using the NTSC timing values when unknown video mode is detected.
 		// Assert will be triggered for debug/dev builds.
 		scanlines = SCANLINES_TOTAL_NTSC;
 		Console.Error("PCSX2-Counters: Unknown video mode detected");
-
-	default:
 		pxAssertDev(false , "Unknown video mode detected via SetGsCrt");
 	}
 
