@@ -239,7 +239,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if(s_savef && s_n >= s_saven)
 			{
-				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
+				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
 
@@ -528,7 +528,6 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
-#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -545,8 +544,8 @@ void GSRendererHW::Draw()
 
 		if(s_savet && s_n >= s_saven && tex)
 		{
-			s = format("%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
-				s_n, frame, (int)context->TEX0.TBP0, (int)context->TEX0.PSM,
+			s = format("%05d_f%lld_tex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
@@ -555,7 +554,7 @@ void GSRendererHW::Draw()
 
 			if(tex->m_palette)
 			{
-				s = format("%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
+				s = format("%05d_f%lld_tpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
 				tex->m_palette->Save(m_dump_root+s, true);
 			}
@@ -565,7 +564,7 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
 				rt->m_texture->Save(m_dump_root+s);
@@ -573,7 +572,7 @@ void GSRendererHW::Draw()
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root+s);
@@ -584,7 +583,6 @@ void GSRendererHW::Draw()
 	} else {
 		s_n += 2;
 	}
-#endif
 
 	// The rectangle of the draw
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
@@ -716,7 +714,6 @@ void GSRendererHW::Draw()
 		(this->*m_hacks.m_oo)();
 	}
 
-#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -725,7 +722,7 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
 				rt->m_texture->Save(m_dump_root+s);
@@ -733,7 +730,7 @@ void GSRendererHW::Draw()
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root+s);
@@ -748,7 +745,6 @@ void GSRendererHW::Draw()
 	} else {
 		s_n += 1;
 	}
-#endif
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 
