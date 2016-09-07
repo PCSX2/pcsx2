@@ -28,20 +28,20 @@
 #include "GSLocalMemory.h"
 
 #define ASSERT_BLOCK(r, w, h) \
-	ASSERT((r).width() >= w && (r).height() >= h && !((r).left & (w - 1)) && !((r).top & (h - 1)) && !((r).right & (w - 1)) && !((r).bottom & (h - 1))); \
+	ASSERT((r).width() >= (w) && (r).height() >= (h) && !((r).left & ((w) - 1)) && !((r).top & ((h) - 1)) && !((r).right & ((w) - 1)) && !((r).bottom & ((h) - 1))); \
 
 #define FOREACH_BLOCK_START(r, w, h, bpp) \
 	ASSERT_BLOCK(r, w, h); \
-	GSVector4i _r = r >> 3; \
-	uint8* _dst = dst - _r.left * bpp; \
-	int _offset = dstpitch * h; \
-	for(int y = _r.top; y < _r.bottom; y += h >> 3, _dst += _offset) \
+	GSVector4i _r = (r) >> 3; \
+	uint8* _dst = dst - _r.left * (bpp); \
+	int _offset = dstpitch * (h); \
+	for(int y = _r.top; y < _r.bottom; y += (h) >> 3, _dst += _offset) \
 	{ \
 		uint32 _base = off->block.row[y]; \
-		for(int x = _r.left; x < _r.right; x += w >> 3) \
+		for(int x = _r.left; x < _r.right; x += (w) >> 3) \
 		{ \
 			const uint8* src = BlockPtr(_base + off->block.col[x]); \
-			uint8* read_dst = &_dst[x * bpp]; \
+			uint8* read_dst = &_dst[x * (bpp)]; \
 
 #define FOREACH_BLOCK_END }}
 

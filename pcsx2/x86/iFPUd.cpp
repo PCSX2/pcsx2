@@ -285,19 +285,19 @@ void SetMaxValue(int regd)
 	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(sreg), xRegisterSSE(EEREC_S)); \
 	else xMOVSSZX(xRegisterSSE(sreg), ptr[&fpuRegs.fpr[_Fs_]]); }
 
-#define ALLOC_S(sreg) { sreg = _allocTempXMMreg(XMMT_FPS, -1);  GET_S(sreg); }
+#define ALLOC_S(sreg) { (sreg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_S(sreg); }
 
 #define GET_T(treg) { \
 	if( info & PROCESS_EE_T ) xMOVSS(xRegisterSSE(treg), xRegisterSSE(EEREC_T)); \
 	else xMOVSSZX(xRegisterSSE(treg), ptr[&fpuRegs.fpr[_Ft_]]); }
 
-#define ALLOC_T(treg) { treg = _allocTempXMMreg(XMMT_FPS, -1);  GET_T(treg); }
+#define ALLOC_T(treg) { (treg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_T(treg); }
 
 #define GET_ACC(areg) { \
 	if( info & PROCESS_EE_ACC ) xMOVSS(xRegisterSSE(areg), xRegisterSSE(EEREC_ACC)); \
 	else xMOVSSZX(xRegisterSSE(areg), ptr[&fpuRegs.ACC]); }
 
-#define ALLOC_ACC(areg) { areg = _allocTempXMMreg(XMMT_FPS, -1);  GET_ACC(areg); }
+#define ALLOC_ACC(areg) { (areg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_ACC(areg); }
 
 #define CLEAR_OU_FLAGS { xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU)); }
 
