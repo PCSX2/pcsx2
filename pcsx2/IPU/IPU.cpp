@@ -281,7 +281,7 @@ void ipuSoftReset()
 	ipuRegs.top = 0;
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
-	ipuRegs.cmd.DATA = NULL; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
+	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
 
 	memzero(g_BP);
 }
