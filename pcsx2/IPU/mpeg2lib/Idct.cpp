@@ -38,8 +38,6 @@
 #define W5 1609 /* 2048*sqrt (2)*cos (5*pi/16) */
 #define W6 1108 /* 2048*sqrt (2)*cos (6*pi/16) */
 #define W7 565  /* 2048*sqrt (2)*cos (7*pi/16) */
-#define clp(val,res)	res = (val < 0) ? 0 : ((val > 255) ? 255 : val);
-#define clp2(val,res)	res = (val < -255) ? -255 : ((val > 255) ? 255 : val);
 
 /*
  * In legal streams, the IDCT output should be between -384 and +384.

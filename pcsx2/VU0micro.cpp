@@ -26,8 +26,6 @@
 
 using namespace R5900;
 
-#define VF_VAL(x) ((x==0x80000000)?0:(x))
-
 // This is called by the COP2 as per the CTC instruction
 void vu0ResetRegs()
 {
