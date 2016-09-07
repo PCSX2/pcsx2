@@ -33,10 +33,6 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if command -v ninja >/dev/null ; then
-    flags="$flags -GNinja"
-fi
-
 if [ "$(uname -s)" = 'Darwin' ]; then
     ncpu="$(sysctl -n hw.ncpu)"
 
@@ -51,6 +47,13 @@ if [ "$(uname -s)" = 'Darwin' ]; then
 else
     ncpu=$(grep -w -c processor /proc/cpuinfo)
     toolfile=cmake/linux-compiler-i386-multilib.cmake
+fi
+
+if command -v ninja >/dev/null ; then
+    flags="$flags -GNinja"
+    make=ninja
+else
+    make="make --jobs=$ncpu"
 fi
 
 for ARG in "$@"; do
@@ -239,7 +242,7 @@ fi
 # Coverity build
 ############################################################
 if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
-    cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
+    cov-build --dir "$coverity_dir" $make 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
     exit 0
@@ -248,12 +251,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-if command -v ninja >/dev/null ; then
-    ninja 2>&1 | tee -a "$log"
-    ninja install 2>&1 | tee -a "$log"
-else
-    make -j"$ncpu" 2>&1 | tee -a "$log"
-    make install 2>&1 | tee -a "$log"
-fi
+$make 2>&1 | tee -a "$log"
+$make install 2>&1 | tee -a "$log"
 
 exit 0
