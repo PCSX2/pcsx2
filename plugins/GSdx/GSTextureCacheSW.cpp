@@ -370,7 +370,7 @@ bool GSTextureCacheSW::Texture::Save(const string& fn, bool dds) const
 
 		t.Unmap();
 
-		return t.Save(fn.c_str());
+		return t.Save(fn);
 	}
 
 	return false;

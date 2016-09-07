@@ -69,7 +69,7 @@ GSRenderer::~GSRenderer()
 
 bool GSRenderer::CreateWnd(const string& title, int w, int h)
 {
-	return m_wnd->Create(title.c_str(), w, h);
+	return m_wnd->Create(title, w, h);
 }
 
 bool GSRenderer::CreateDevice(GSDevice* dev)
