@@ -34,7 +34,7 @@
 
 class GamepadConfiguration : public wxDialog
 {
-    wxPanel* m_pan_gamepad_config;
+    wxPanel *m_pan_gamepad_config;
     wxCheckBox *m_cb_rumble, *m_cb_hack_sixaxis_usb, *m_cb_hack_sixaxis_pressure;
     wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
     wxButton *m_bt_ok, *m_bt_cancel;
@@ -48,13 +48,13 @@ class GamepadConfiguration : public wxDialog
     void repopulate();
     void reset();
     // Events
-    void OnButtonClicked(wxCommandEvent&);
-    void OnSliderReleased(wxCommandEvent&);
-    void OnCheckboxChange(wxCommandEvent&);
+    void OnButtonClicked(wxCommandEvent &);
+    void OnSliderReleased(wxCommandEvent &);
+    void OnCheckboxChange(wxCommandEvent &);
 
 public:
-    GamepadConfiguration(int, wxWindow*);
+    GamepadConfiguration(int, wxWindow *);
     void InitGamepadConfiguration();
 };
 
-#endif // __GAMEPADCONFIGURATION_H__
+#endif  // __GAMEPADCONFIGURATION_H__

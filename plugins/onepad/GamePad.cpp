@@ -1,12 +1,12 @@
 #include "GamePad.h"
-#ifdef  SDL_BUILD
+#ifdef SDL_BUILD
 #include "SDL/joystick.h"
 #endif
 
-vector<GamePad*> s_vgamePad;
+vector<GamePad *> s_vgamePad;
 bool GamePadIdWithinBounds(int GamePadId)
 {
-	return ((GamePadId >= 0) && (GamePadId < (int)s_vgamePad.size()));
+    return ((GamePadId >= 0) && (GamePadId < (int)s_vgamePad.size()));
 }
 
 /**
@@ -17,17 +17,17 @@ bool GamePadIdWithinBounds(int GamePadId)
 /**
  * Find every interesting devices and create right structure for them(depend on backend)
  **/
-void GamePad::EnumerateGamePads(vector<GamePad*>& vgamePad)
+void GamePad::EnumerateGamePads(vector<GamePad *> &vgamePad)
 {
-#ifdef  SDL_BUILD
-	JoystickInfo::EnumerateJoysticks(vgamePad);
+#ifdef SDL_BUILD
+    JoystickInfo::EnumerateJoysticks(vgamePad);
 #endif
 }
 
 void GamePad::UpdateReleaseState()
 {
-#ifdef  SDL_BUILD
-	JoystickInfo::UpdateReleaseState();
+#ifdef SDL_BUILD
+    JoystickInfo::UpdateReleaseState();
 #endif
 }
 
@@ -36,12 +36,12 @@ void GamePad::UpdateReleaseState()
  **/
 void GamePad::DoRumble(int type, int pad)
 {
-	u32 id = conf->get_joyid(pad);
-	if (GamePadIdWithinBounds(id)) {
-		GamePad* gamePad = s_vgamePad[id];
-		if (gamePad)
-			gamePad->Rumble(type, pad);
-	}
+    u32 id = conf->get_joyid(pad);
+    if (GamePadIdWithinBounds(id)) {
+        GamePad *gamePad = s_vgamePad[id];
+        if (gamePad)
+            gamePad->Rumble(type, pad);
+    }
 }
 
 /**
@@ -49,9 +49,7 @@ void GamePad::DoRumble(int type, int pad)
  **/
 void GamePad::UpdateGamePadState()
 {
-#ifdef  SDL_BUILD
-	SDL_JoystickUpdate(); // No need to make yet another function call for that
+#ifdef SDL_BUILD
+    SDL_JoystickUpdate();  // No need to make yet another function call for that
 #endif
 }
-
-

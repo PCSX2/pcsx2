@@ -42,10 +42,10 @@ typedef struct
 } Config;
 
 extern Config conf;
-extern FILE* padLog;
+extern FILE *padLog;
 extern keyEvent event;
 
-extern void __Log(char* fmt, ...);
+extern void __Log(char *fmt, ...);
 extern void SaveConfig();
 extern void LoadConfig();
 

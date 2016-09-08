@@ -41,14 +41,14 @@ extern "C" {
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 #endif
 
-extern FILE* spu2Log;
+extern FILE *spu2Log;
 #define SPU2_LOG __Log  //debug mode
 
 extern const u8 version;
 extern const u8 revision;
 extern const u8 build;
 extern const u32 minor;
-extern char* libraryName;
+extern char *libraryName;
 
 typedef struct
 {
@@ -57,10 +57,10 @@ typedef struct
 
 extern Config conf;
 
-void __Log(char* fmt, ...);
+void __Log(char *fmt, ...);
 void SaveConfig();
 void LoadConfig();
-void SysMessage(char* fmt, ...);
+void SysMessage(char *fmt, ...);
 
 ////////////////////
 // SPU2 Registers //
@@ -134,8 +134,8 @@ void SysMessage(char* fmt, ...);
 #define SPDIF_MODE 0x07C6
 #define SPDIF_MEDIA 0x07C8
 
-#define spu2Rs16(mem) (*(s16*)&spu2regs[(mem)&0xffff])
-#define spu2Ru16(mem) (*(u16*)&spu2regs[(mem)&0xffff])
+#define spu2Rs16(mem) (*(s16 *)&spu2regs[(mem)&0xffff])
+#define spu2Ru16(mem) (*(u16 *)&spu2regs[(mem)&0xffff])
 //#define spu2Rs32(mem)	(*(s32*)&spu2regs[(mem) & 0xffff])
 //#define spu2Ru32(mem)	(*(u32*)&spu2regs[(mem) & 0xffff])
 
@@ -236,7 +236,7 @@ struct ADSRInfoEx
 #define NSSIZE 48    // ~ 1 ms of data
 #define NSFRAMES 16  // gather at least NSFRAMES of NSSIZE before submitting
 #define NSPACKETS 4
-#define SPU_VOICE_STATE_SIZE (sizeof(VOICE_PROCESSED) - 4 * sizeof(void*))
+#define SPU_VOICE_STATE_SIZE (sizeof(VOICE_PROCESSED) - 4 * sizeof(void *))
 
 struct VOICE_PROCESSED
 {
@@ -254,7 +254,7 @@ struct VOICE_PROCESSED
     void FModChangeFrequency(int ns);
     void Stop();
 
-    SPU_CONTROL_* GetCtrl();
+    SPU_CONTROL_ *GetCtrl();
 
     // start save state
 
@@ -276,15 +276,15 @@ struct VOICE_PROCESSED
     ///////////////////
     // Sound Buffers //
     ///////////////////
-    u8* pStart;  // start and end addresses
+    u8 *pStart;  // start and end addresses
     u8 *pLoop, *pCurr;
 
-    _SPU_VOICE* pvoice;
+    _SPU_VOICE *pvoice;
 };
 
 struct ADMA
 {
-    u16* MemAddr;
+    u16 *MemAddr;
     s32 IntPointer;
     s32 Index;
     s32 AmountLeft;

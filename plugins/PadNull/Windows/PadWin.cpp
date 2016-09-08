@@ -52,9 +52,9 @@ void _PadUpdate(int pad)
 {
 }
 
-s32 _PADOpen(void* pDsp)
+s32 _PADOpen(void *pDsp)
 {
-    GShwnd = (HWND) * (long*)pDsp;
+    GShwnd = (HWND) * (long *)pDsp;
 
     if (GShwnd != NULL && GSwndProc != NULL) {
         // revert

@@ -114,8 +114,8 @@ enum GIF_A_D_REG {
 // In case we want to change to/from __fastcall for GIF register handlers:
 #define __gifCall __fastcall
 
-typedef void __gifCall FnType_GIFRegHandler(const u32* data);
-typedef FnType_GIFRegHandler* GIFRegHandler;
+typedef void __gifCall FnType_GIFRegHandler(const u32 *data);
+typedef FnType_GIFRegHandler *GIFRegHandler;
 
 extern FnType_GIFRegHandler GIFPackedRegHandlerNull;
 extern FnType_GIFRegHandler GIFPackedRegHandlerRGBA;

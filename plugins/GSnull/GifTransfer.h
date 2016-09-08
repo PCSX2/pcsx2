@@ -47,14 +47,14 @@ union GIFTag
         u64 REGS : 64;
     };
 
-    void set(const u32* data)
+    void set(const u32 *data)
     {
         for (int i = 0; i <= 3; i++) {
             ai32[i] = data[i];
         }
     }
 
-    GIFTag(u32* data)
+    GIFTag(u32 *data)
     {
         set(data);
     }
@@ -79,7 +79,7 @@ typedef struct
     u32 adonly;
     GIFTag tag;
 
-    void setTag(const u32* data)
+    void setTag(const u32 *data)
     {
         tag.set(data);
 
@@ -123,10 +123,10 @@ typedef struct
 
 } pathInfo;
 
-extern void _GSgifPacket(pathInfo* path, const u32* pMem);
-extern void _GSgifRegList(pathInfo* path, const u32* pMem);
+extern void _GSgifPacket(pathInfo *path, const u32 *pMem);
+extern void _GSgifRegList(pathInfo *path, const u32 *pMem);
 template <int index>
-extern void _GSgifTransfer(const u32* pMem, u32 size);
+extern void _GSgifTransfer(const u32 *pMem, u32 size);
 extern GIFRegHandler GIFPackedRegHandlers[];
 extern GIFRegHandler GIFRegHandlers[];
 #endif  // GIFTRANSFER_H_INCLUDED

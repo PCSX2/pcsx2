@@ -20,11 +20,12 @@
 
 #include <hidsdi.h>
 
-struct HidDeviceInfo {
-	HIDP_CAPS caps;
-	wchar_t *path;
-	unsigned short vid;
-	unsigned short pid;
+struct HidDeviceInfo
+{
+    HIDP_CAPS caps;
+    wchar_t *path;
+    unsigned short vid;
+    unsigned short pid;
 };
 
 int FindHids(HidDeviceInfo **foundDevs, int vid, int pid);

@@ -19,8 +19,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
- #ifndef __KEYBOARD_H__
- #define __KEYBOARD_H__
+#ifndef __KEYBOARD_H__
+#define __KEYBOARD_H__
 
 #include "onepad.h"
 
@@ -35,7 +35,7 @@ extern Window GSwin;
 
 #else
 
-extern char* KeysymToChar(int keysym);
+extern char *KeysymToChar(int keysym);
 extern WNDPROC GSwndProc;
 extern HWND GShwnd;
 

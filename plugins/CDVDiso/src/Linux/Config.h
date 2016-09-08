@@ -31,9 +31,8 @@
 #include <bzlib.h>
 #include <gtk/gtk.h>
 
- #ifdef __cplusplus
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #include "support.h"
@@ -59,7 +58,7 @@ extern GtkWidget *AboutDlg, *ConfDlg, *MsgDlg, *FileSel;
 extern GtkWidget *Edit, *CdEdit;
 extern bool stop;
 
-extern GtkWidget *Method,*Progress;
+extern GtkWidget *Method, *Progress;
 extern GtkWidget *BtnCompress, *BtnDecompress;
 extern GtkWidget *BtnCreate, *BtnCreateZ;
 
@@ -67,7 +66,7 @@ extern GList *methodlist;
 
 // Make it easier to check and set checkmarks in the gui
 #define is_checked(main_widget, widget_name) (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name))))
-#define set_checked(main_widget,widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
+#define set_checked(main_widget, widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
 
 
 extern void OnFileSel(GtkButton *button, gpointer user_data);
@@ -78,4 +77,3 @@ extern void OnCreate(GtkButton *button, gpointer user_data);
 extern void OnCreateZ(GtkButton *button, gpointer user_data);
 extern void OnOk(GtkButton *button, gpointer user_data);
 extern void OnCancel(GtkButton *button, gpointer user_data);
-

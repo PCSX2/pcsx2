@@ -36,7 +36,7 @@ string s_strIniPath = "inis";
 string s_strLogPath = "logs";
 
 u8 phyregs[16];
-s8* fwregs;
+s8 *fwregs;
 Config conf;
 PluginLog FWLog;
 
@@ -50,7 +50,7 @@ void LogInit()
 }
 
 EXPORT_C_(void)
-FWsetLogDir(const char* dir)
+FWsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs" : dir;
@@ -66,7 +66,7 @@ PS2EgetLibType()
     return PS2E_LT_FW;
 }
 
-EXPORT_C_(char*)
+EXPORT_C_(char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "FWnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -89,7 +89,7 @@ FWinit()
 
     memset(phyregs, 0, sizeof(phyregs));
     // Initializing our registers.
-    fwregs = (s8*)calloc(0x10000, 1);
+    fwregs = (s8 *)calloc(0x10000, 1);
     if (fwregs == NULL) {
         FWLog.Message("Error allocating Memory");
         return -1;
@@ -108,7 +108,7 @@ FWshutdown()
 }
 
 EXPORT_C_(s32)
-FWopen(void* pDsp)
+FWopen(void *pDsp)
 {
     FWLog.WriteLn("Opening FWnull.");
 
@@ -278,14 +278,14 @@ FWirqCallback(void (*callback)())
 }
 
 EXPORT_C_(void)
-FWsetSettingsDir(const char* dir)
+FWsetSettingsDir(const char *dir)
 {
     // Find out from pcsx2 where we are supposed to put our ini file.
     s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
 EXPORT_C_(s32)
-FWfreeze(int mode, freezeData* data)
+FWfreeze(int mode, freezeData *data)
 {
     // This should store or retrieve any information, for if emulation
     // gets suspended, or for savestates.
