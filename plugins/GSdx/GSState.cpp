@@ -47,6 +47,7 @@ GSState::GSState()
 	m_mipmap = theApp.GetConfigB("mipmap");
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
+	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
 
 	s_n     = 0;
 	s_dump  = theApp.GetConfigB("dump");
@@ -271,26 +272,37 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_A_D] = &GSState::GIFPackedRegHandlerA_D;
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
-	#define SetHandlerXYZ(P) \
-		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1>; \
-		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P>; \
+	#define SetHandlerXYZ(P, auto_flush) \
+		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush>; \
 
-	SetHandlerXYZ(GS_POINTLIST);
-	SetHandlerXYZ(GS_LINELIST);
-	SetHandlerXYZ(GS_LINESTRIP);
-	SetHandlerXYZ(GS_TRIANGLELIST);
-	SetHandlerXYZ(GS_TRIANGLESTRIP);
-	SetHandlerXYZ(GS_TRIANGLEFAN);
-	SetHandlerXYZ(GS_SPRITE);
-	SetHandlerXYZ(GS_INVALID);
+	if (m_userhacks_auto_flush) {
+		SetHandlerXYZ(GS_POINTLIST, true);
+		SetHandlerXYZ(GS_LINELIST, true);
+		SetHandlerXYZ(GS_LINESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLELIST, true);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLEFAN, true);
+		SetHandlerXYZ(GS_SPRITE, true);
+		SetHandlerXYZ(GS_INVALID, true);
+	} else {
+		SetHandlerXYZ(GS_POINTLIST, false);
+		SetHandlerXYZ(GS_LINELIST, false);
+		SetHandlerXYZ(GS_LINESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLELIST, false);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLEFAN, false);
+		SetHandlerXYZ(GS_SPRITE, false);
+		SetHandlerXYZ(GS_INVALID, false);
+	}
 
 	for(size_t i = 0; i < countof(m_fpGIFRegHandlers); i++)
 	{
@@ -558,7 +570,7 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
     isPackedUV_HackFlag = true;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
 	/*
@@ -574,10 +586,10 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZF2.Skip());
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
 /*
@@ -591,7 +603,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZ2.Skip());
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -608,7 +620,7 @@ void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
 {
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -637,7 +649,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZF2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -645,7 +657,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -673,7 +685,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZ2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
 		r += 3;
 	}
@@ -772,7 +784,7 @@ void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
     isPackedUV_HackFlag = false;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
 /*
@@ -794,17 +806,17 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 	
 	m_v.m[1] = xyz.upl64(uvf);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 {
 	// m_v.XYZ = (GSVector4i)r->XYZ;
 
 	m_v.m[1] = GSVector4i::load(&r->XYZ, &m_v.UV);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
 template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
@@ -2455,7 +2467,7 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-template<uint32 prim> 
+template<uint32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(uint32 skip)
 {
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
@@ -2688,6 +2700,9 @@ __forceinline void GSState::VertexKick(uint32 skip)
 	default:
 		__assume(0);
 	}
+
+	if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0))
+		FlushPrim();
 }
 
 void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
