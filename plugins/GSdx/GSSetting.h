@@ -76,5 +76,6 @@ enum {
 	IDC_FAST_TC_INV,
 	IDC_LARGE_FB,
 	IDC_LINEAR_PRESENT,
+	IDC_AUTO_FLUSH,
 };
 #endif

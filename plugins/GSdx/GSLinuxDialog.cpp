@@ -355,6 +355,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_safe_fbmask    = CreateCheckBox("Safe Accurate Blending", "UserHacks_safe_fbmask");
 	GtkWidget* hack_fast_inv       = CreateCheckBox("Fast Texture Invalidation", "UserHacks_DisablePartialInvalidation");
 	GtkWidget* hack_depth_check    = CreateCheckBox("Disable Depth Emulation", "UserHacks_DisableDepthSupport");
+	GtkWidget* hack_auto_flush     = CreateCheckBox("Auto Flush Primitives", "UserHacks_AutoFlush");
 
 	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
 	GtkWidget* hack_sprite_label   = left_label("Alpha-Sprite Hack:");
@@ -375,13 +376,14 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_safe_fbmask, IDC_SAFE_FBMASK);
 	AddTooltip(hack_fast_inv, IDC_FAST_TC_INV);
 	AddTooltip(hack_depth_check, IDC_TC_DEPTH);
+	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
 
 
 	s_table_line = 0;
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
 	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
 	InsertWidgetInTable(hack_table , hack_safe_fbmask    , hack_fast_inv);
-	InsertWidgetInTable(hack_table , hack_depth_check);
+	InsertWidgetInTable(hack_table , hack_depth_check    , hack_auto_flush);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);

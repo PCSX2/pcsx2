@@ -131,6 +131,8 @@ const char* dialog_message(int ID, bool* updateText) {
 #ifdef __linux__
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
+		case IDC_AUTO_FLUSH:
+			return "Force a primitive flush when framebuffer is also an input texture. Warning: it is very costly on the performances. Help to fix some processing effects such as Jak shadows, GTA radiosity...";
 #endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
