@@ -62,7 +62,7 @@ char *LibName       = "cdvdGigaherz "
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 9;
+const unsigned char build = 10;
 
 HINSTANCE hinst;
 
@@ -197,6 +197,7 @@ void StopKeepAliveThread()
 		TerminateThread(hThread_keepAlive, 0);
 	}
 	CloseHandle(hThread_keepAlive);
+	CloseHandle(hNotify_keepAlive);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
