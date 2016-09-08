@@ -515,7 +515,7 @@ CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
 	{0x4CE7FB04, ItadakiStreet, JP, 0},
-	{0x12804727, Jak3, PAL, 0},
+	{0x12804727, Jak3, EU, 0},
 };
 
 map<uint32, CRC::Game*> CRC::m_map;
