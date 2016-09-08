@@ -264,7 +264,9 @@ namespace GLLoader {
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
-		if (fglrx_buggy_driver && strstr((const char*)&s[v], " 15.")) // blacklist all 2015 drivers
+		if (fglrx_buggy_driver && (
+					strstr((const char*)&s[v], " 15.") // blacklist all 2015 drivers
+					|| strstr((const char*)&s[v], " 16.1"))) // And start of 2016
 			legacy_fglrx_buggy_driver = true;
 		if (strstr(vendor, "NVIDIA Corporation"))
 			nvidia_buggy_driver = true;
@@ -276,9 +278,9 @@ namespace GLLoader {
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
 #ifdef _WIN32
-		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
 #else
-		buggy_sso_dual_src = fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = legacy_fglrx_buggy_driver;
 #endif
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
