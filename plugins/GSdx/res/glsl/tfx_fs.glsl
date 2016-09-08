@@ -75,7 +75,11 @@ layout(early_fragment_tests) in;
 
 vec4 sample_c(vec2 uv)
 {
+#if PS_TEX_IS_FB == 1
+    return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#else
     return texture(TextureSampler, uv);
+#endif
 }
 
 vec4 sample_p(float idx)

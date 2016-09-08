@@ -1142,11 +1142,15 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Always check if primitive overlap. The function will return PRIM_OVERLAP_UNKNOW for non sprite primitive
 	m_prim_overlap = PrimitiveOverlap();
-#ifdef ENABLE_OGL_DEBUG
-	if (PRIM->TME && m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_vertex.next > 2)) {
-		GL_INS("ERROR: Source and Target are the same!");
+	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_vertex.next > 2)) {
+		if (m_game.title == CRC::Jak3) {
+			GL_INS("ERROR: Source and Target are the same! Let's sample the framebuffer");
+			m_ps_sel.tex_is_fb = 1;
+			m_require_full_barrier = true;
+		} else {
+			GL_INS("ERROR: Source and Target are the same!");
+		}
 	}
-#endif
 
 	EmulateTextureShuffleAndFbmask();
 

@@ -292,8 +292,9 @@ public:
 				uint32 tcoffsethack:1;
 				uint32 urban_chaos_hle:1;
 				uint32 tales_of_abyss_hle:1;
+				uint32 tex_is_fb:1; // Jak Shadows
 
-				uint32 _free2:14;
+				uint32 _free2:13;
 			};
 
 			uint64 key;
