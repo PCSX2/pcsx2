@@ -35,11 +35,11 @@
 #include <gtk/gtk.h>
 #include <cstring>
 
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
 #else
 
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
 #endif
 
