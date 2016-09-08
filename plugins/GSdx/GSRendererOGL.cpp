@@ -162,7 +162,20 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			break;
 
 		case GS_SPRITE_CLASS:
-			if (GLLoader::found_geometry_shader) {
+			// Heuristics: trade-off
+			// CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
+			// GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			//
+			// Note: severals openGL operation does draw call under the wood like texture upload. So even if
+			// you do 10 consecutive draw with the geometry shader, you will still pay extra validation if new
+			// texture are uploaded. (game Shadow Hearts)
+			//
+			// Note2: Due to MultiThreaded driver, Nvidia suffers less of the previous issue. Still it isn't free
+			// Shadow Heart is 90 fps (gs) vs 113 fps (no gs)
+
+			// If the draw calls contains few primitives. Geometry Shader gain with be rather small versus
+			// the extra validation cost of the extra stage.
+			if (GLLoader::found_geometry_shader &&  m_vertex.next > 32) { // <=> 16 sprites (based on Shadow Hearts)
 				m_gs_sel.sprite = 1;
 
 				t = GL_LINES;
