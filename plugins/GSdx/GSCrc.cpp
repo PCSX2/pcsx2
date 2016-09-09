@@ -519,6 +519,7 @@ CRC::Game CRC::m_games[] =
 	{0x472E7699, Jak1, US, 0},
 	{0x2479F4A9, Jak2, EU, 0},
 	{0x12804727, Jak3, EU, 0},
+	{0x644CFD03, Jak3, US, 0},
 	{0xDF659E77, JakX, EU, 0},
 };
 
