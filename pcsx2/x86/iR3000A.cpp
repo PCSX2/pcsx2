@@ -101,8 +101,6 @@ static u32 psxdump = 0;
 
 static void __fastcall iopRecRecompile( const u32 startpc );
 
-static u32 s_store_ebp, s_store_esp;
-
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned iopRecDispatchers[__pagesize];
 

@@ -52,7 +52,6 @@ namespace MipsStackWalk {
 	bool IsSWInstr(const R5900::OPCODE& op) {
 		if ((op.flags & IS_MEMORY) && (op.flags & IS_STORE))
 		{
-			u32 type = op.flags & MEMTYPE_MASK;
 			switch (op.flags & MEMTYPE_MASK)
 			{
 			case MEMTYPE_WORD:

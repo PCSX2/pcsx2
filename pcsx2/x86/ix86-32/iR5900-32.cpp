@@ -318,8 +318,6 @@ static void __fastcall recRecompile( const u32 startpc );
 static void __fastcall dyna_block_discard(u32 start,u32 sz);
 static void __fastcall dyna_page_reset(u32 start,u32 sz);
 
-static u32 s_store_ebp, s_store_esp;
-
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned eeRecDispatchers[__pagesize];
 

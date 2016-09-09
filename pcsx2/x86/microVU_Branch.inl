@@ -262,7 +262,6 @@ void normBranch(mV, microFlagCycles& mFC) {
 void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 
 	u32 bPC = iPC-1; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
-	microBlock* pBlock = mVUpBlock;
 	u32 badBranchAddr;
 	iPC = bPC-2;
 	setCode();

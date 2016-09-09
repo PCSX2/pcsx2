@@ -463,8 +463,7 @@ bool CMipsInstruction::parseOpcode(const tMipsOpcode& SourceOpcode, const char* 
 bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char* Line)
 {
 	int RetLen;
-	bool Immediate = false;
-	
+
 	immediateType = MIPS_NOIMMEDIATE;
 	registers.reset();
 
@@ -477,7 +476,6 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 	}
 
 	const char* SourceEncoding = SourceOpcode.encoding;
-	const char* OriginalLine = Line;
 
 	while (*Line == ' ' || *Line == '\t') Line++;
 

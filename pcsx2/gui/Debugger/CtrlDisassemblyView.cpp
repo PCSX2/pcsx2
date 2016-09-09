@@ -493,10 +493,9 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	for (int i = 0; i < visibleRows+1; i++)
 	{
 		manager.getLine(address,displaySymbols,line);
-		
+
 		int rowY1 = rowHeight*i;
-		int rowY2 = rowHeight*(i+1);
-		
+
 		addressPositions[address] = rowY1;
 
 		wxColor backgroundColor = wxColor(getBackgroundColor(address));
@@ -1227,7 +1226,7 @@ void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool with
 		int space = count * 32;
 		char *temp = new char[space];
 
-		char *p = temp, *end = temp + space;
+		char *p = temp;
 		for (u32 pos = startAddr; pos < endAddr; pos += instructionSize)
 		{
 			p += sprintf(p, "%08X", cpu->read32(pos));

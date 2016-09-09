@@ -293,7 +293,6 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 		{
 			DisassemblyEntry* entry = it->second;
 			int oldLineNum = entry->getLineNum(address,true);
-			int oldNumLines = entry->getNumLines();
 			if (n <= oldLineNum)
 			{
 				return entry->getLineAddress(oldLineNum-n);
@@ -388,7 +387,6 @@ int DisassemblyFunction::getLineNum(u32 address, bool findStart)
 		int last = (int)lineAddresses.size() - 1;
 		for (int i = 0; i < last; i++)
 		{
-			u32 next = lineAddresses[i + 1];
 			if (lineAddresses[i] == address)
 				return i;
 		}

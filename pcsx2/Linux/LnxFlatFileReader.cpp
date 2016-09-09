@@ -62,8 +62,6 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 int FlatFileReader::FinishRead(void)
 {
-	u32 bytes;
-
 	int min_nr = 1;
 	int max_nr = 1;
 	struct io_event events[max_nr];

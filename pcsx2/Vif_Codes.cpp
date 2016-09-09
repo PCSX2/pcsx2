@@ -182,7 +182,7 @@ vifOp(vifCode_DirectHL) {
 
 vifOp(vifCode_Flush) {
 	vif1Only();
-	vifStruct& vifX = GetVifX;
+	//vifStruct& vifX = GetVifX;
 	pass1or2 {
 		bool p1or2 = (gifRegs.stat.APATH != 0 && gifRegs.stat.APATH != 3);
 		vif1Regs.stat.VGW = false;
@@ -204,7 +204,7 @@ vifOp(vifCode_Flush) {
 
 vifOp(vifCode_FlushA) {
 	vif1Only();
-	vifStruct& vifX = GetVifX;
+	//vifStruct& vifX = GetVifX;
 	pass1or2 {
 		//Gif_Path& p3      = gifUnit.gifPath[GIF_PATH_3];
 		u32       gifBusy   = gifUnit.checkPaths(1,1,1) || (gifRegs.stat.APATH != 0);
@@ -321,7 +321,6 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 vifOp(vifCode_MPG) {
 	vifStruct& vifX = GetVifX;
 	pass1 {
-		bool   bProgramExists = false;
 		int    vifNum =  (u8)(vifXRegs.code >> 16);
 		vifX.tag.addr = (u16)(vifXRegs.code <<  3) & (idx ? 0x3fff : 0xfff);
 		vifX.tag.size = vifNum ? (vifNum*2) : 512;

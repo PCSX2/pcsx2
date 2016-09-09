@@ -456,7 +456,7 @@ SIO_WRITE memcardWrite(u8 data)
 
 SIO_WRITE memcardRead(u8 data)
 {
-	static u8 checksum_pos = 0;
+	//static u8 checksum_pos = 0;
 	static u8 transfer_size = 0;
 	static bool once = false;
 

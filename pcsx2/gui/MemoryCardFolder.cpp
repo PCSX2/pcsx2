@@ -314,8 +314,6 @@ bool FilterMatches( const wxString& fileName, const wxString& filter ) {
 bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent, const bool enableFiltering, const wxString& filter ) {
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
-		const u32 dirStartCluster = dirEntry->entry.data.cluster;
-
 		wxString fileName;
 		bool hasNext;
 
@@ -751,10 +749,10 @@ bool FolderMemoryCard::ReadFromFile( u8 *dest, u32 adr, u32 dataLength ) {
 }
 
 s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
-	const u32 block = adr / BlockSizeRaw;
+	//const u32 block = adr / BlockSizeRaw;
 	const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
-	const u32 cluster = adr / ClusterSizeRaw;
+	//const u32 cluster = adr / ClusterSizeRaw;
 	const u32 end = offset + size;
 
 	if ( end > PageSizeRaw ) {
@@ -767,7 +765,6 @@ s32 FolderMemoryCard::Read( u8 *dest, u32 adr, int size ) {
 
 	if ( offset < PageSize ) {
 		// is trying to read (part of) an actual data block
-		const u32 dataOffset = 0;
 		const u32 dataLength = std::min( (u32)size, (u32)( PageSize - offset ) );
 
 		// if we have a cache for this page, just load from that
@@ -816,8 +813,8 @@ void FolderMemoryCard::ReadDataWithoutCache( u8* const dest, const u32 adr, cons
 }
 
 s32 FolderMemoryCard::Save( const u8 *src, u32 adr, int size ) {
-	const u32 block = adr / BlockSizeRaw;
-	const u32 cluster = adr / ClusterSizeRaw;
+	//const u32 block = adr / BlockSizeRaw;
+	//const u32 cluster = adr / ClusterSizeRaw;
 	const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
 	const u32 end = offset + size;
@@ -1126,9 +1123,9 @@ void FolderMemoryCard::RemoveUnchangedDataFromCache( const MemoryCardFileEntry* 
 }
 
 s32 FolderMemoryCard::WriteWithoutCache( const u8 *src, u32 adr, int size ) {
-	const u32 block = adr / BlockSizeRaw;
-	const u32 cluster = adr / ClusterSizeRaw;
-	const u32 page = adr / PageSizeRaw;
+	//const u32 block = adr / BlockSizeRaw;
+	//const u32 cluster = adr / ClusterSizeRaw;
+	//const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
 	const u32 end = offset + size;
 

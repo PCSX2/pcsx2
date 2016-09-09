@@ -101,7 +101,6 @@ void Panels::FramelimiterPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	const AppConfig::GSWindowOptions& appwin( configToApply.GSWindow );
 	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 

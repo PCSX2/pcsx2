@@ -314,8 +314,6 @@ public:
 		//if( !pxAssert( (src.Slot >= 0) && (dest.Slot >= 0) ) ) return wxDragNone;
 		const wxDirName basepath( m_listview->GetMcdProvider().GetMcdPath() );
 
-		bool result = true;
-
 		if( wxDragCopy == def )
 		{
 			if( !m_listview->GetMcdProvider().UiDuplicateCard(src, dest) )

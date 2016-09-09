@@ -187,7 +187,6 @@ void EnumJoystickEvdev()
     // Technically it must be done with udev but another lib for
     // avoid a loop is too much for me (even if udev is mandatory
     // so maybe later)
-    int found_devices = 0;
     std::string input_root("/dev/input/event");
     for (int i = 0; i < 32; i++) {
         std::string dev = input_root + std::to_string(i);

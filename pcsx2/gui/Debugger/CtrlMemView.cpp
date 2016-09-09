@@ -182,7 +182,6 @@ void CtrlMemView::render(wxDC& dc)
 	const int TEMP_SIZE = 64;
 	wchar_t temp[TEMP_SIZE];
 
-	u32 byteGroupMask = ~(byteGroupSize - 1);
 	bool validCpu = cpu && cpu->isAlive();
 
 	// not hexGroupPositionFromIndex(byteGroupSize), because we dont need space after last symbol;
@@ -637,12 +636,9 @@ void CtrlMemView::updateStatusBarText()
 }
 
 void CtrlMemView::gotoAddress(u32 addr, bool pushInHistory)
-{	
+{
 	if (pushInHistory)
 		history.push(windowStart);
-
-	int lines= GetClientSize().y / rowHeight;
-	u32 windowEnd = windowStart + lines * rowSize;
 
 	curAddress = addr;
 	selectedNibble = 0;
@@ -670,7 +666,6 @@ void CtrlMemView::gotoPoint(int x, int y)
 	} else if (x >= hexStart)
 	{
 		int col = (x-hexStart);
-		int space = (charWidth / 4);
 
 		int groupWidth = byteGroupSize * charWidth * 3;
 		int group = col / groupWidth;
