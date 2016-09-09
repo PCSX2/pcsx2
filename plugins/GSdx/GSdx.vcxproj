@@ -365,6 +365,9 @@
     <Image Include="res\psx-logo9.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\3rdparty\freetype\builds\windows\freetype.vcxproj">
+      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
