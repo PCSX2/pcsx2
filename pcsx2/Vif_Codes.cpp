@@ -327,7 +327,7 @@ vifOp(vifCode_MPG) {
 		vifX.tag.size = vifNum ? (vifNum*2) : 512;
 		vifFlush(idx);
 
-		if(vifX.vifstalled.enabled == true) return 0;
+		if(vifX.vifstalled.enabled) return 0;
 		else
 		{
 			vifX.pass = 1;
@@ -364,7 +364,7 @@ vifOp(vifCode_MSCAL) {
 	pass1 { 
 		vifFlush(idx); 
 
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
 			vuExecMicro(idx, (u16)(vifXRegs.code) << 3); 
 			vifX.cmd = 0;
@@ -395,7 +395,7 @@ vifOp(vifCode_MSCALF) {
 			vifX.vifstalled.enabled   = VifStallEnable(vifXch);
 			vifX.vifstalled.value = VIF_TIMING_BREAK;
 		}
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
 			vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
 			vifX.cmd = 0;
@@ -411,7 +411,7 @@ vifOp(vifCode_MSCNT) {
 	vifStruct& vifX = GetVifX;
 	pass1 { 
 		vifFlush(idx); 
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
 			vuExecMicro(idx, -1);
 			vifX.cmd = 0;

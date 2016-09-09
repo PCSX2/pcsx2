@@ -388,17 +388,17 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 void CBreakPoints::Update(u32 addr)
 {
 	bool resume = false;
-	if (r5900Debug.isCpuPaused() == false)
+	if (!r5900Debug.isCpuPaused())
 	{
 		r5900Debug.pauseCpu();
 		resume = true;
 	}
-	
+
 //	if (addr != 0)
 //		Cpu->Clear(addr-4,8);
 //	else
 		SysClearExecutionCache();
-	
+
 	if (resume)
 		r5900Debug.resumeCpu();
 	auto disassembly_window = wxGetApp().GetDisassemblyPtr();

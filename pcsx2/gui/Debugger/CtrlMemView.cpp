@@ -457,9 +457,9 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 		case 'G':
 			{
 				u64 addr;
-				if (executeExpressionWindow(this,cpu,addr) == false)
+				if (!executeExpressionWindow(this,cpu,addr))
 					return;
-				
+
 				gotoAddress(addr, true);
 			}
 			break;

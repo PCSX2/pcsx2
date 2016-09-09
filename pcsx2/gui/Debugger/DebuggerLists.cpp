@@ -275,7 +275,7 @@ wxString BreakpointList::getColumnText(int item, int col) const
 		break;
 	case BPL_CONDITION:
 		{
-			if (isMemory || displayedBreakPoints_[index].hasCond == false) {
+			if (isMemory || !displayedBreakPoints_[index].hasCond) {
 				dest.Write("-");
 			} else {
 				dest.Write("%s",displayedBreakPoints_[index].cond.expressionString);

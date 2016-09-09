@@ -36,7 +36,7 @@ struct BreakPointCond
 	u32 Evaluate()
 	{
 		u64 result;
-		if (debug->parseExpression(expression,result) == false || result == 0) return 0;
+		if (!debug->parseExpression(expression,result) || result == 0) return 0;
 		return 1;
 	}
 };

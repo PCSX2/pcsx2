@@ -162,11 +162,7 @@ namespace MipsStackWalk {
 		// Okay, we failed to get one.  Our possibleEntry could be wrong, it often is.
 		// Let's just scan upward.
 		u32 newPossibleEntry = frame.pc > threadEntry ? threadEntry : frame.pc - MAX_FUNC_SIZE;
-		if (ScanForEntry(cpu, frame, newPossibleEntry, ra)) {
-			return true;
-		} else {
-			return false;
-		}
+		return ScanForEntry(cpu, frame, newPossibleEntry, ra);
 	}
 
 	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry, u32 threadStackTop) {

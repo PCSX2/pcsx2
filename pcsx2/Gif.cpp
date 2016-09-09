@@ -278,12 +278,12 @@ void GIFdma()
 	{
 		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 
-		if (CheckPaths(DMAC_GIF) == false) return;
+		if (!CheckPaths(DMAC_GIF)) return;
 
 		GIFchain();	//Transfers the data set by the switch
 		CPU_INT(DMAC_GIF, gscycles);
 		return;
-	} else if(gspath3done == false) GIFdma(); //Loop round if there was a blank tag, causes hell otherwise with P3 masking games.
+	} else if(!gspath3done) GIFdma(); //Loop round if there was a blank tag, causes hell otherwise with P3 masking games.
 
 	prevcycles = 0;
 	CPU_INT(DMAC_GIF, gscycles);
@@ -440,7 +440,7 @@ void mfifoGIFtransfer(int qwc)
 
 	if (qwc > 0 ) {
 		if ((gifstate & GIF_STATE_EMPTY)) {
-			if(gifch.chcr.STR == true && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_GIF)))
+			if(gifch.chcr.STR && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_GIF)))
 				CPU_INT(DMAC_MFIFO_GIF, 4);
 			gifstate &= ~GIF_STATE_EMPTY;			
 		}
@@ -473,7 +473,7 @@ void mfifoGIFtransfer(int qwc)
 		}
 		mfifoGifMaskMem(ptag->ID);
 
-		if(gspath3done == true) gifstate = GIF_STATE_DONE;
+		if(gspath3done) gifstate = GIF_STATE_DONE;
 		else gifstate = GIF_STATE_READY;
 
 		if ((gifch.chcr.TIE) && (ptag->IRQ)) {
@@ -559,7 +559,7 @@ void gifMFIFOInterrupt()
 		if(!(gifstate & GIF_STATE_STALL)) return;
 	}
 
-	if (CheckPaths(DMAC_MFIFO_GIF) == false) return;
+	if (!CheckPaths(DMAC_MFIFO_GIF)) return;
 
 	if(!gifch.chcr.STR) {
 		Console.WriteLn("WTF GIFMFIFO");

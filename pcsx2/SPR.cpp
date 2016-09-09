@@ -34,7 +34,7 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 	{
 		if (madr < 0x11004000)
 		{
-			if(isWrite == true)
+			if(isWrite)
 			{
 				DbgCon.Warning("scratch pad clearing vu0");
 
@@ -48,7 +48,7 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 		}
 		else if (madr >= 0x11008000 && madr < 0x1100c000)
 		{
-			if(isWrite == true)
+			if(isWrite)
 			{
 				DbgCon.Warning("scratch pad clearing vu1");
 

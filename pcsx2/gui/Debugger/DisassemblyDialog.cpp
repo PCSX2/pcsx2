@@ -386,7 +386,7 @@ void DisassemblyDialog::stepOver()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			if (info.isLinkedBranch)	// jal, jalr
 			{
@@ -433,7 +433,7 @@ void DisassemblyDialog::stepInto()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			breakpointAddress = info.branchTarget;
 		} else {

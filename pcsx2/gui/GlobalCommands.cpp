@@ -79,25 +79,22 @@ namespace Implementations
 	void Framelimiter_TurboToggle()
 	{
 		ScopedCoreThreadPause pauser;
-		
+
 		if( !g_Conf->EmuOptions.GS.FrameLimitEnable )
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			g_LimiterMode = Limit_Turbo;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 			Console.WriteLn("(FrameLimiter) Turbo + FrameLimit ENABLED." );
-			if ( g_Conf->Framerate.SkipOnTurbo == true) 
-				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
-			else
-				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
+			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
 		}
 		else if( g_LimiterMode == Limit_Turbo )
 		{
 			GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 			g_LimiterMode = Limit_Nominal;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
-			
-			if ( g_Conf->Framerate.SkipOnLimit == true) 
+
+			if ( g_Conf->Framerate.SkipOnLimit)
 			{
 				Console.WriteLn("(FrameLimiter) Turbo DISABLED. Frameskip ENABLED" );
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
@@ -113,8 +110,8 @@ namespace Implementations
 			GSsetVsync( false );
 			g_LimiterMode = Limit_Turbo;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
-			
-			if ( g_Conf->Framerate.SkipOnTurbo == true)
+
+			if ( g_Conf->Framerate.SkipOnTurbo)
 			{
 				Console.WriteLn("(FrameLimiter) Turbo + Frameskip ENABLED." );
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;

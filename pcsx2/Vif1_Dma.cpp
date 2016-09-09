@@ -25,7 +25,7 @@ u32 g_vif1Cycles = 0;
 
 __fi void vif1FLUSH()
 {
-	if(vif1Regs.stat.VEW == true)
+	if(vif1Regs.stat.VEW)
 	{
 		vif1.waitforvu = true;
 		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
@@ -255,12 +255,12 @@ __fi void vif1VUFinish()
 		}
 
 	}
-	if(vif1.waitforvu == true)
+	if(vif1.waitforvu)
 	{
 		vif1.waitforvu = false;
 		ExecuteVU(1);
 		//Check if VIF is already scheduled to interrupt, if it's waiting, kick it :P
-		if((cpuRegs.interrupt & (1<<DMAC_VIF1 | 1 << DMAC_MFIFO_VIF)) == 0 && vif1ch.chcr.STR == true && !vif1Regs.stat.INT)
+		if((cpuRegs.interrupt & (1<<DMAC_VIF1 | 1 << DMAC_MFIFO_VIF)) == 0 && vif1ch.chcr.STR && !vif1Regs.stat.INT)
 		{
 			if(dmacRegs.ctrl.MFD == MFD_VIF1)
 				vifMFIFOInterrupt();
@@ -313,7 +313,7 @@ __fi void vif1Interrupt()
 		//Simulated GS transfer time done, clear the flags
 	}
 	
-	if(vif1.waitforvu == true)
+	if(vif1.waitforvu)
 	{
 		//DevCon.Warning("Waiting on VU1");
 		//CPU_INT(DMAC_VIF1, 16);
@@ -412,7 +412,7 @@ __fi void vif1Interrupt()
 	vif1ch.chcr.STR = false;
 	vif1.vifstalled.enabled = false;
 	vif1.irqoffset.enabled = false;
-	if(vif1.queued_program == true) vifExecQueue(1);
+	if(vif1.queued_program) vifExecQueue(1);
 	g_vif1Cycles = 0;
 	DMA_LOG("VIF1 DMA End");
 	hwDmacIrq(DMAC_VIF1);
@@ -463,7 +463,7 @@ void dmaVIF1()
 			else
 				vif1.dmamode = VIF_NORMAL_TO_MEM_MODE;
 
-			if(vif1.irqoffset.enabled == true && vif1.done == false) DevCon.Warning("Warning! VIF1 starting a Normal transfer with vif offset set (Possible force stop?)");
+			if(vif1.irqoffset.enabled && !vif1.done) DevCon.Warning("Warning! VIF1 starting a Normal transfer with vif offset set (Possible force stop?)");
 			vif1.done = true;
 		}
 
@@ -471,7 +471,7 @@ void dmaVIF1()
 	}
 	else
 	{
-		if(vif1.irqoffset.enabled == true && vif1.done == false) DevCon.Warning("Warning! VIF1 starting a new Chain transfer with vif offset set (Possible force stop?)");
+		if(vif1.irqoffset.enabled && !vif1.done) DevCon.Warning("Warning! VIF1 starting a new Chain transfer with vif offset set (Possible force stop?)");
 		vif1.dmamode = VIF_CHAIN_MODE;
 		vif1.done = false;
 		vif1.inprogress &= ~0x1;
