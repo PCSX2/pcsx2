@@ -743,7 +743,7 @@ void recVUMI_LQ(VURegs *VU, int info)
 //------------------------------------------------------------------
 void recVUMI_LQD( VURegs *VU, int info )
 {
-	int isreg;
+	int isreg = 0;
 	//Console.WriteLn("recVUMI_LQD");
 	if ( _Is_ != 0 ) {
 		isreg = ALLOCVI(_Is_, MODE_READ|MODE_WRITE);
