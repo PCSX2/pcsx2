@@ -132,7 +132,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
 		case IDC_AUTO_FLUSH:
-			return "Force a primitive flush when framebuffer is also an input texture. Warning: it is very costly on the performances. Help to fix some processing effects such as Jak shadows, GTA radiosity...";
+			return "Force a primitive flush when framebuffer is also an input texture. Warning: it is very costly on the performances. Help to fix some processing effects such as Jak shadows, GTA radiosity..."
+				"Note: openGL HW renderer is able to handle Jak shadows at full speed without this option.";
 #endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
