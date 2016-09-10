@@ -612,11 +612,11 @@ void CtrlMemView::scrollCursor(int bytes)
 
 	if (curAddress < windowStart)
 	{
-		windowStart = (curAddress / rowSize) * curAddress;
+		windowStart = (curAddress / rowSize) * rowSize;
 	} else if (curAddress >= windowEnd)
 	{
 		windowStart = curAddress - (visibleRows - 1)*rowSize;
-		windowStart = (windowStart / rowSize) * windowStart;
+		windowStart = (windowStart / rowSize) * rowSize;
 	}
 	
 	updateStatusBarText();
@@ -642,7 +642,12 @@ void CtrlMemView::gotoAddress(u32 addr, bool pushInHistory)
 
 	curAddress = addr;
 	selectedNibble = 0;
-	windowStart = curAddress;
+
+	int visibleRows = GetClientSize().y/rowHeight;
+	u32 windowEnd = windowStart+visibleRows*rowSize;
+
+	if (curAddress < windowStart || curAddress >= windowEnd)
+		windowStart = (curAddress / rowSize) * rowSize;
 
 	updateStatusBarText();
 	redraw();
