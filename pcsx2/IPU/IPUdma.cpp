@@ -47,23 +47,23 @@ static __fi void ipuDmacSrcChain()
 	switch (IPU1Status.ChainMode)
 	{
 		case TAG_REFE: // refe
-			//if(IPU1Status.InProgress == false) ipu1ch.tadr += 16;
+			//if(!IPU1Status.InProgress) ipu1ch.tadr += 16;
 			IPU1Status.DMAFinished = true;
 			break;
 		case TAG_CNT: // cnt
 			// Set the taddr to the next tag
 			ipu1ch.tadr = ipu1ch.madr;
-			//if(IPU1Status.DMAFinished == false) IPU1Status.DMAFinished = false;
+			//if(!IPU1Status.DMAFinished) IPU1Status.DMAFinished = false;
 			break;
 
 		case TAG_NEXT: // next
 			ipu1ch.tadr = IPU1Status.NextMem;
-			//if(IPU1Status.DMAFinished == false) IPU1Status.DMAFinished = false;
+			//if(!IPU1Status.DMAFinished) IPU1Status.DMAFinished = false;
 			break;
 
 		case TAG_REF: // ref
-			//if(IPU1Status.InProgress == false)ipu1ch.tadr += 16;
-			//if(IPU1Status.DMAFinished == false) IPU1Status.DMAFinished = false;
+			//if(!IPU1Status.InProgress)ipu1ch.tadr += 16;
+			//if(!IPU1Status.DMAFinished) IPU1Status.DMAFinished = false;
 			break;
 
 		case TAG_END: // end
@@ -77,7 +77,7 @@ static __fi int IPU1chain() {
 
 	int totalqwc = 0;
 
-	if (ipu1ch.qwc > 0 && IPU1Status.InProgress == true)
+	if (ipu1ch.qwc > 0 && IPU1Status.InProgress)
 	{
 		int qwc = ipu1ch.qwc;
 		u32 *pMem;
@@ -114,7 +114,7 @@ int IPU1dma()
 
 	//We need to make sure GIF has flushed before sending IPU data, it seems to REALLY screw FFX videos
 
-	if(ipu1ch.chcr.STR == false || IPU1Status.DMAMode == 2)
+	if(!ipu1ch.chcr.STR || IPU1Status.DMAMode == 2)
 	{
 		//We MUST stop the IPU from trying to fill the FIFO with more data if the DMA has been suspended
 		//if we don't, we risk causing the data to go out of sync with the fifo and we end up losing some!
@@ -130,20 +130,20 @@ int IPU1dma()
 		case DMA_MODE_NORMAL:
 			{
 				IPU_LOG("Processing Normal QWC left %x Finished %d In Progress %d", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress);
-				if(IPU1Status.InProgress == true) totalqwc += IPU1chain();
+				if(IPU1Status.InProgress) totalqwc += IPU1chain();
 			}
 			break;
 
 		case DMA_MODE_CHAIN:
 			{
-				if(IPU1Status.InProgress == true) //No transfer is ready to go so we need to set one up
+				if(IPU1Status.InProgress) //No transfer is ready to go so we need to set one up
 				{
 					IPU_LOG("Processing Chain QWC left %x Finished %d In Progress %d", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress);
 					totalqwc += IPU1chain();
 				}
 
 
-				if(IPU1Status.InProgress == false && IPU1Status.DMAFinished == false) //No transfer is ready to go so we need to set one up
+				if(!IPU1Status.InProgress && !IPU1Status.DMAFinished) //No transfer is ready to go so we need to set one up
 				{
 					tDMA_TAG* ptag = dmaGetAddr(ipu1ch.tadr, false);  //Set memory pointer to TADR
 
@@ -401,7 +401,7 @@ IPU_FORCEINLINE void ipu1Interrupt()
 {
 	IPU_LOG("ipu1Interrupt %x:", cpuRegs.cycle);
 
-	if(IPU1Status.DMAFinished == false || IPU1Status.InProgress == true)  //Sanity Check
+	if(!IPU1Status.DMAFinished || IPU1Status.InProgress)  //Sanity Check
 	{
 		IPU1dma();
 		return;

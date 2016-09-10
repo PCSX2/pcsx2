@@ -83,7 +83,7 @@ __fi void vif0FBRST(u32 value) {
 		u128 SaveCol;
 		u128 SaveRow;
 
-	//	if(vif0ch.chcr.STR == true) DevCon.Warning("FBRST While Vif0 active");
+	//	if(vif0ch.chcr.STR) DevCon.Warning("FBRST While Vif0 active");
 		//Must Preserve Row/Col registers! (Downhill Domination for testing)
 		SaveCol._u64[0] = vif0.MaskCol._u64[0];
 		SaveCol._u64[1] = vif0.MaskCol._u64[1];
@@ -160,7 +160,7 @@ __fi void vif1FBRST(u32 value) {
 	{
 		u128 SaveCol;
 		u128 SaveRow;
-		//if(vif1ch.chcr.STR == true) DevCon.Warning("FBRST While Vif1 active");
+		//if(vif1ch.chcr.STR) DevCon.Warning("FBRST While Vif1 active");
 		//Must Preserve Row/Col registers! (Downhill Domination for testing) - Really shouldnt be part of the vifstruct.
 		SaveCol._u64[0] = vif1.MaskCol._u64[0];
 		SaveCol._u64[1] = vif1.MaskCol._u64[1];
@@ -202,7 +202,7 @@ __fi void vif1FBRST(u32 value) {
 		}
 		
 #if USE_OLD_GIF == 1 // ...
-		if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gifch.chcr.STR == true) {
+		if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gifch.chcr.STR) {
 			DevCon.Warning("VIF Path3 Resume on FBRST MSK = %x", vif1Regs.mskpath3);
 			gifInterrupt();
 			vif1Regs.mskpath3 = false;
@@ -271,14 +271,14 @@ __fi void vif1FBRST(u32 value) {
 				    case MFD_VIF1:
                         //Console.WriteLn("MFIFO Stall");
 						//MFIFO active and not empty
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
+                        if(vif1ch.chcr.STR) CPU_INT(DMAC_MFIFO_VIF, 0);
                         break;
 
                     case NO_MFD:
                     case MFD_RESERVED:
                     case MFD_GIF: // Wonder if this should be with VIF?
                         // Gets the timing right - Flatout
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
+                        if(vif1ch.chcr.STR) CPU_INT(DMAC_VIF1, 0);
                         break;
 				}
 

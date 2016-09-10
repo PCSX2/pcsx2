@@ -59,10 +59,7 @@ static void rcntWhold(int index, u32 value);
 
 static bool IsAnalogVideoMode()
 {
-	if (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC)
-		return true;
-
-	return false;
+	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC);
 }
 
 void rcntReset(int index) {

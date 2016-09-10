@@ -141,7 +141,7 @@ std::map<u32,DisassemblyEntry*>::iterator findDisassemblyEntry(std::map<u32,Disa
 
 void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 {
-	if (cpu->isAlive() == false)
+	if (!cpu->isAlive())
 		return;
 
 	u32 end = address+size;
@@ -484,7 +484,7 @@ void DisassemblyFunction::generateBranchLines()
 		int lane = -1;
 		for (int l = 0; l < NUM_LANES; l++)
 		{
-			if (lanes[l].used == false)
+			if (!lanes[l].used)
 			{
 				lane = l;
 				break;
@@ -897,7 +897,7 @@ void DisassemblyData::createLines()
 			{
 				if (currentLine.size()+1 >= maxChars)
 				{
-					if (inString == true)
+					if (inString)
 						currentLine += "\"";
 
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
@@ -909,7 +909,7 @@ void DisassemblyData::createLines()
 					inString = false;
 				}
 
-				if (inString == false)
+				if (!inString)
 					currentLine += "\"";
 				currentLine += (char)b;
 				inString = true;
@@ -922,7 +922,7 @@ void DisassemblyData::createLines()
 
 				if (currentLine.size()+strlen(buffer) >= maxChars)
 				{
-					if (inString == true)
+					if (inString)
 						currentLine += "\"";
 					
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
@@ -949,7 +949,7 @@ void DisassemblyData::createLines()
 			}
 		}
 
-		if (inString == true)
+		if (inString)
 			currentLine += "\"";
 
 		if (currentLine.size() != 0)

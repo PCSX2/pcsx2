@@ -306,7 +306,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
             const s32 half_axis_ceil = 0x1FFF;
 
             // Normally, old_value contains the release state so it can be used to detect the types of axis.
-            bool is_full_axis = (old_value < full_axis_ceil) ? true : false;
+            bool is_full_axis = (old_value < full_axis_ceil);
 
             if ((!is_full_axis && abs(value) <= half_axis_ceil) || (is_full_axis && value <= full_axis_ceil))  // we don't want this
             {

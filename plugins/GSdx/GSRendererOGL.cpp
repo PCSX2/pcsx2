@@ -56,10 +56,7 @@ GSRendererOGL::GSRendererOGL()
 
 bool GSRendererOGL::CreateDevice(GSDevice* dev)
 {
-	if (!GSRenderer::CreateDevice(dev))
-		return false;
-
-	return true;
+	return GSRenderer::CreateDevice(dev);
 }
 
 void GSRendererOGL::Lines2Sprites()

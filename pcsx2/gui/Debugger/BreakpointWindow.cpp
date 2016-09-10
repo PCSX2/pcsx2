@@ -245,7 +245,7 @@ bool BreakpointWindow::fetchDialogData()
 
 	// parse address
 	wxCharBuffer addressText = editAddress->GetValue().ToUTF8();
-	if (cpu->initExpression(addressText,exp) == false)
+	if (!cpu->initExpression(addressText,exp))
 	{
 		swprintf(errorMessage,512,L"Invalid expression \"%s\".",editAddress->GetValue().wchar_str().data());
 		wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -253,7 +253,7 @@ bool BreakpointWindow::fetchDialogData()
 	}
 
 	u64 value;
-	if (cpu->parseExpression(exp,value) == false)
+	if (!cpu->parseExpression(exp,value))
 	{
 		swprintf(errorMessage,512,L"Invalid expression \"%s\".",editAddress->GetValue().wchar_str().data());
 		wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -265,14 +265,14 @@ bool BreakpointWindow::fetchDialogData()
 	{
 		// parse size
 		wxCharBuffer sizeText = editSize->GetValue().ToUTF8();
-		if (cpu->initExpression(sizeText,exp) == false)
+		if (!cpu->initExpression(sizeText,exp))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editSize->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
 			return false;
 		}
 
-		if (cpu->parseExpression(exp,value) == false)
+		if (!cpu->parseExpression(exp,value))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editSize->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -289,7 +289,7 @@ bool BreakpointWindow::fetchDialogData()
 	compiledCondition.clear();
 	if (condition[0] != 0)
 	{
-		if (cpu->initExpression(condition,compiledCondition) == false)
+		if (!cpu->initExpression(condition,compiledCondition))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editCondition->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -302,7 +302,7 @@ bool BreakpointWindow::fetchDialogData()
 
 void BreakpointWindow::onButtonOk(wxCommandEvent& evt)
 {
-	if (fetchDialogData() == true)
+	if (fetchDialogData())
 		evt.Skip();
 }
 
@@ -339,7 +339,7 @@ void BreakpointWindow::addBreakpoint()
 			CBreakPoints::ChangeBreakPointAddCond(address,cond);
 		}
 
-		if (enabled == false)
+		if (!enabled)
 		{
 			CBreakPoints::ChangeBreakPoint(address,false);
 		}
