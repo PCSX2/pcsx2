@@ -502,9 +502,8 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		{
 			currentCpu->showMemoryView();
 
-			CtrlMemView *memview = currentCpu->getMemoryView();
-			memview->gotoAddress(evt.GetInt(), true);
-			memview->SetFocus();
+			currentCpu->getMemoryView()->gotoAddress(evt.GetInt(), true);
+			currentCpu->getDisassembly()->SetFocus();
 		}
 	} else if (type == debEVT_RUNTOPOS)
 	{
