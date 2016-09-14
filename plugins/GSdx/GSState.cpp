@@ -823,6 +823,15 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
 	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
 
+	// Handle invalid PSM here
+	switch (TEX0.PSM) {
+		case 3:
+			TEX0.PSM = 0x13; // International Star Soccer (menu)
+			break;
+		default:
+			break;
+	}
+
 	bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
 	// clut loading already covered with WriteTest, for drawing only have to check CPSM and CSA (MGS3 intro skybox would be drawn piece by piece without this)
