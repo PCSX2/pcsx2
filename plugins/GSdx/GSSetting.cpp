@@ -121,6 +121,12 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Enables external shader for additional post-processing effects.";
 		case IDC_FXAA:
 			return "Enables fast approximate anti-aliasing. Small performance impact.";
+		case IDC_AUTO_FLUSH:
+			return "Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
+				"Warning: it's very costly on the performance.\n\n"
+				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
+		case IDC_UNSCALE_POINT_LINE:
+			return "Increases the width of lines at higher than native resolutions. This ensures that the lines will keep the correct proportions and prevents aliasing. Avoids empty lines on the screen in games such as Ridge Racer V, and clears FMV's obscured by a grid like Silent Hill series and Dirge of Cerberus.";
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:
@@ -131,9 +137,6 @@ const char* dialog_message(int ID, bool* updateText) {
 #ifdef __linux__
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
-		case IDC_AUTO_FLUSH:
-			return "Force a primitive flush when framebuffer is also an input texture. Warning: it is very costly on the performances. Help to fix some processing effects such as Jak shadows, GTA radiosity..."
-				"Note: openGL HW renderer is able to handle Jak shadows at full speed without this option.";
 #endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
