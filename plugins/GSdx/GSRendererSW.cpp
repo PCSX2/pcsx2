@@ -72,6 +72,11 @@ GSRendererSW::GSRendererSW(int threads)
 	InitCVB(GS_SPRITE_CLASS);
 
 	m_dump_root = root_sw;
+
+	// Reset handler with the auto flush hack enabled on the SW renderer
+	// Impact on perf is rather small, and it avoids an extra hack option.
+	m_userhacks_auto_flush = true;
+	ResetHandlers();
 }
 
 GSRendererSW::~GSRendererSW()
