@@ -767,6 +767,11 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 			EndDialog(m_hWnd, id);
 		} break;
+
+		case IDCANCEL:
+		{
+			EndDialog(m_hWnd, IDCANCEL);
+		} break;
 		}
 
 	} break;
