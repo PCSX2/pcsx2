@@ -52,6 +52,7 @@ private:
 	void OI_GsMemClear(); // always on
 
 	bool OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	bool OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -73,6 +74,7 @@ private:
 	bool OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	bool OI_FFVIIDoC(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	void OO_DBZBT2();
 	void OO_MajokkoALaMode2();

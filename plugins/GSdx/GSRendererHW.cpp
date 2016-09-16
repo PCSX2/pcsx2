@@ -787,6 +787,7 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_FFVIIDoC));
 	if (!can_handle_depth)
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 
@@ -842,6 +843,7 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
 		// It is hard to predict the ratio, so I round it to 1. And I use
 		// <= comparison below.
+		// FIXME: I don't understand anymore what I used it
 		uint32 h_pages  = m_context->FRAME.FBW;
 
 		uint32 base;
@@ -866,6 +868,61 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 			//return false;
 		}
 	}
+	return true;
+}
+
+// Same as above but instead to split the screen in top/bottom. The screen is splitted in left/right
+// FIXME: Maybe it could be merged with the above code. The difference is the initial FBW check and the way to compute h_page
+// However I'm not sure above code is correct. Let's keep them separately until I managed to test others games impacted by this
+// half screen issue.
+bool GSRendererHW::OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// So far only used by FFVII dirge of cerberus
+
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW <= 4) && rt) {
+		GSVertex* v = &m_vertex.buff[0];
+
+		//GL_INS("OI_DoubleHalfClear: psm:%s. Z:%d R:%d G:%d B:%d A:%d", psm_str(m_context->FRAME.PSM),
+		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
+
+		// Check it is a clear on the first primitive only
+		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
+			return true;
+		}
+		// Only 32 bits format is supported otherwise it is complicated
+		if (m_context->FRAME.PSM & 2)
+			return true;
+
+		// FIXME might need some rounding
+		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
+		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
+		// It is hard to predict the ratio, so I round it to 1. And I use
+		// <= comparison below.
+		uint32 h_pages = roundf(m_vt.m_max.p.y / 32.0f);
+
+		uint32 base;
+		uint32 half;
+		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+			base = m_context->ZBUF.ZBP;
+			half = m_context->FRAME.FBP;
+		} else {
+			base = m_context->FRAME.FBP;
+			half = m_context->ZBUF.ZBP;
+		}
+
+		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
+			GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
+			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+				m_dev->ClearDepth(ds);
+			} else {
+				m_dev->ClearRenderTarget(rt, 0);
+			}
+			// Don't return false, it will break the rendering. I guess that it misses texture
+			// invalidation
+			//return false;
+		}
+	}
+
 	return true;
 }
 
@@ -1567,6 +1624,11 @@ bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache
 	}
 
 	return true;
+}
+
+bool GSRendererHW::OI_FFVIIDoC(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	return OI_DoubleHalfClear_Vertical(rt, ds, t);
 }
 
 
