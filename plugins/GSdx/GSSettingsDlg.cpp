@@ -388,7 +388,6 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl ? SW_SHOW : SW_HIDE);
 
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling != 1 && hw);
@@ -671,6 +670,8 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_SAFE_FBMASK, theApp.GetConfigB("UserHacks_safe_fbmask"));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfigB("UserHacks_DisableDepthSupport"));
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
+	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
+	CheckDlgButton(m_hWnd, IDC_UNSCALE_POINT_LINE, theApp.GetConfigB("UserHacks_unscale_point_line"));
 
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
@@ -688,6 +689,7 @@ void GSHacksDlg::OnInit()
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_SAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
@@ -716,6 +718,8 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_SAFE_FBMASK);
 	AddTooltip(IDC_TC_DEPTH);
 	AddTooltip(IDC_FAST_TC_INV);
+	AddTooltip(IDC_AUTO_FLUSH);
+	AddTooltip(IDC_UNSCALE_POINT_LINE);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -753,6 +757,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_safe_fbmask", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FBMASK));
 			theApp.SetConfig("UserHacks_DisableDepthSupport", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
+			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH));
+			theApp.SetConfig("UserHacks_unscale_point_line", (int)IsDlgButtonChecked(m_hWnd, IDC_UNSCALE_POINT_LINE));
 
 			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
 						 TCOFFSET |= (SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0) & 0xFFFF) << 16;
@@ -760,6 +766,11 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_TCOffset", TCOFFSET);
 
 			EndDialog(m_hWnd, id);
+		} break;
+
+		case IDCANCEL:
+		{
+			EndDialog(m_hWnd, IDCANCEL);
 		} break;
 		}
 

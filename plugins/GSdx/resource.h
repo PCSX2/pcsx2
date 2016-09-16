@@ -104,6 +104,8 @@
 #define IDC_SAFE_FBMASK                 2100
 #define IDC_FAST_TC_INV                 2101
 #define IDC_LARGE_FB                    2102
+#define IDC_AUTO_FLUSH                  2103
+#define IDC_UNSCALE_POINT_LINE          2104
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
