@@ -299,10 +299,9 @@ void BGEZ()    // Branch if Rs >= 0
 
 void BGEZAL() // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -333,9 +332,9 @@ void BLTZ()    // Branch if Rs <  0
 
 void BLTZAL()  // Branch if Rs <  0 and link
 {
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -426,10 +425,9 @@ void BGEZL()     // Branch if Rs >= 0
 
 void BLTZALL()   // Branch if Rs <  0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
@@ -441,10 +439,9 @@ void BLTZALL()   // Branch if Rs <  0 and link
 
 void BGEZALL()   // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
