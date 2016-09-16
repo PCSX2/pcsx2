@@ -26,7 +26,6 @@
 // DEBUG
 
 char source_drive;
-char source_file[MAX_PATH];
 
 char CfgFile[MAX_PATH+10] = "inis/cdvdGigaherz.ini";
 
@@ -123,23 +122,16 @@ void ReadSettings()
 
 	CfgReadStr("Config","Source",temp,511,"-");
 	source_drive=temp[0];
-
-	if(source_drive=='$')
-		strcpy_s(source_file,sizeof(source_file),temp+1);
-	else
-		source_file[0]=0;
 }
 
 /*****************************************************************************/
 
 void WriteSettings()
 {
-	char temp[511];
+	char temp[2];
 
 	temp[0]=source_drive;
 	temp[1]=0;
-
-	strcat(temp,source_file);
 
 	CfgWriteStr("Config","Source",temp);
 }
