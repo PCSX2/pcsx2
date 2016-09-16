@@ -55,7 +55,8 @@ BEGIN
     "#include ""res/fxaa.fx""\r\n"
     "#include ""res/cs.fx""\r\n"
     "#include ""res/shadeboost.fx""\r\n"
-    "#include ""res/tfx.cl""\r\0"
+    "#include ""res/tfx.cl""\r\n"
+    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
