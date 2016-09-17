@@ -18,13 +18,32 @@
 
 /*  This code was based on the FPSE v0.08 Mdec decoder*/
 
-#if 0
+//#if 1
+
+#include "PrecompiledHeader.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #include "IopCommon.h"
 #include "Mdec.h"
+
+struct {
+	u32 command;
+	u32 status;
+	u16 *rl;
+	int rlsize;
+} mdec;
+
+struct config_mdec {
+	u32 Mdec;
+};
+struct config_mdec Config;
+
+u32 mdecMem[0x100000]; //watherver large size. //Memory only used to get DMA data and not really for anything else. 
+					   //Sould be optimized(the funcs. that use it) to read IOP RAM direcly.
+#define PSXM(x) ((u32)mdecMem + x)
+
 
 int iq_y[DCTSIZE2],iq_uv[DCTSIZE2];
 
@@ -150,7 +169,11 @@ void idct(int *block,int k)
 }
 
 void mdecInit(void) {
-	mdec.rl = (u16*)&psxM[0x100000];
+	
+	Config.Mdec = 1; //XXXXXXXXXXXXXXXXX  0 or 1
+
+	mdec.rl = (u16*)PSXM(0);
+	//mdec.rl = (u16*)&psxM[0x100000];
 	mdec.command = 0;
 	mdec.status = 0;
 	round_init();
@@ -193,23 +216,32 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	int size;
 
 	CDR_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
+	
+	if (chcr != 0x01000201) return;
 
-	if (chcr!=0x01000201) return;
-
-	size = (bcr>>16)*(bcr&0xffff);
-
-	if (cmd==0x40000001) {
-		u8 *p = (u8*)PSXM(adr);
-		iqtab_init(iq_y,p);
-		iqtab_init(iq_uv,p+64);
+	size = (bcr >> 16)*(bcr & 0xffff);
+	int i;
+	for (i = 0; i<(size); i++) {
+		*(u32*)PSXM(((i + 0) * 4)) = iopMemRead32(adr + ((i + 0) * 4));
+		if (i <20)
+			CDR_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), *(u32*)PSXM((i * 4)));
 	}
-	else if ((cmd&0xf5ff0000)==0x30000000) {
-		mdec.rl = (u16*)PSXM(adr);
+
+
+	if (cmd == 0x40000001) {
+		u8 *p = (u8*)PSXM(0); //u8 *p = (u8*)PSXM(adr); 
+		iqtab_init(iq_y, p);
+		iqtab_init(iq_uv, p + 64);
+	}
+	else if ((cmd & 0xf5ff0000) == 0x30000000) {
+		mdec.rl = (u16*)PSXM(0); //mdec.rl = (u16*)PSXM(adr);
 	}
 
 	HW_DMA0_CHCR &= ~0x01000000;
 	psxDmaInterrupt(0);
 }
+
+u32 mdecArr2[0x100000] = { 0 };
 
 void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	int blk[DCTSIZE2*6];
@@ -217,11 +249,14 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	int size;
 
 	CDR_LOG("DMA1 %lx %lx %lx (cmd = %lx)", adr, bcr, chcr, mdec.command);
+	
+	if (chcr != 0x01000200) return;
+	size = (bcr >> 16)*(bcr & 0xffff);
+	int size2 = (bcr >> 16)*(bcr & 0xffff);
+	int i;
 
-	if (chcr!=0x01000200) return;
+	image = (u16*)mdecArr2;//(u16*)PSXM(0); //image = (u16*)PSXM(adr);
 
-	size = (bcr>>16)*(bcr&0xffff);
-	image = (u16*)PSXM(adr);
 	if (mdec.command&0x08000000) {
 		for (;size>0;size-=(16*16)/2,image+=(16*16)) {
 			mdec.rl = rl2blk(blk,mdec.rl);
@@ -234,6 +269,12 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 		}
 	}
 
+	for (i = 0; i<(size2); i++) {
+		iopMemWrite32(((adr & 0x00FFFFFF) + (i * 4) + 0), mdecArr2[i]);
+		if (i <20)
+			CDR_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), mdecArr2[i]);
+	}
+	
 	HW_DMA1_CHCR &= ~0x01000000;
 	psxDmaInterrupt(1);
 }
@@ -407,15 +448,17 @@ void yuv2rgb24(int *blk,unsigned char *image) {
 	}
 }
 
-int SaveState::mdecFreeze() {
-	Freeze(mdec);
-	Freeze(iq_y);
-	Freeze(iq_uv);
+//todo: psxmode: add mdec savestate support
+//int SaveState::mdecFreeze() {
+//	Freeze(mdec);
+//	Freeze(iq_y);
+//	Freeze(iq_uv);
+//
+//	return 0;
+//
+//}
 
-	return 0;
-
-}
-#endif
+//#endif
 
 
 
