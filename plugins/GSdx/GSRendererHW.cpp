@@ -822,6 +822,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	}
 }
 
+// Handle case where the frame buffer and the Z buffer overlap
 bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7) && rt) {
@@ -885,12 +886,16 @@ bool GSRendererHW::OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GST
 		//GL_INS("OI_DoubleHalfClear: psm:%s. Z:%d R:%d G:%d B:%d A:%d", psm_str(m_context->FRAME.PSM),
 		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
 
-		// Check it is a clear on the first primitive only
-		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
+		// Z and color must be constant
+		if (m_vt.m_eq.rgba != 0xFFFF || !(m_vt.m_eq.xyzf & 0x4))
 			return true;
-		}
-		// Only 32 bits format is supported otherwise it is complicated
-		if (m_context->FRAME.PSM & 2)
+
+		// Z and color must be the same
+		if (v[1].XYZ.Z != v[1].RGBAQ.u32[0])
+			return true;
+
+		// Only 32/24 bits format are supported otherwise it is complicated
+		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp != 32)
 			return true;
 
 		// FIXME might need some rounding
@@ -911,12 +916,20 @@ bool GSRendererHW::OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GST
 		}
 
 		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
-			GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
-			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
-				m_dev->ClearDepth(ds);
+			bool is_clear = (v[1].XYZ.Z == 0);
+
+			GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d. Clear %d", base << 5, half << 5, h_pages, m_context->FRAME.FBW, is_clear);
+			if (is_clear) {
+				if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+					m_dev->ClearDepth(ds);
+				} else {
+					m_dev->ClearRenderTarget(rt, 0);
+				}
 			} else {
-				m_dev->ClearRenderTarget(rt, 0);
+				// depth clear won't be supported here
+				m_dev->ClearRenderTarget(rt, v[1].RGBAQ.u32[0]);
 			}
+
 			// Don't return false, it will break the rendering. I guess that it misses texture
 			// invalidation
 			//return false;
