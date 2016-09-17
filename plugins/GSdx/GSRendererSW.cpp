@@ -75,8 +75,10 @@ GSRendererSW::GSRendererSW(int threads)
 
 	// Reset handler with the auto flush hack enabled on the SW renderer
 	// Impact on perf is rather small, and it avoids an extra hack option.
-	m_userhacks_auto_flush = true;
-	ResetHandlers();
+	if (!GLLoader::in_replayer) {
+		m_userhacks_auto_flush = true;
+		ResetHandlers();
+	}
 }
 
 GSRendererSW::~GSRendererSW()
