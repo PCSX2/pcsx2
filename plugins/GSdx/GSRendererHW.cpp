@@ -894,16 +894,12 @@ bool GSRendererHW::OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GST
 		if (v[1].XYZ.Z != v[1].RGBAQ.u32[0])
 			return true;
 
-		// Only 32/24 bits format are supported otherwise it is complicated
-		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp != 32)
-			return true;
-
 		// FIXME might need some rounding
 		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
 		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
 		// It is hard to predict the ratio, so I round it to 1. And I use
 		// <= comparison below.
-		uint32 h_pages = roundf(m_vt.m_max.p.y / 32.0f);
+		uint32 h_pages = roundf(m_vt.m_max.p.y) / GSLocalMemory::m_psm[m_context->FRAME.PSM].pgs.y;
 
 		uint32 base;
 		uint32 half;
