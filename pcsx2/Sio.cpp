@@ -136,7 +136,8 @@ void SIO_FORCEINLINE sioInterrupt()
 {
 	PAD_LOG("Sio Interrupt");
 	sio.StatReg|= IRQ;
-	psxHu32(0x1070)|=0x80;
+	iopIntcIrq(7); //Should this be used instead of the one below?
+	//psxHu32(0x1070)|=0x80;
 }
 
 SIO_WRITE sioWriteStart(u8 data)
@@ -173,11 +174,24 @@ SIO_WRITE sioWriteStart(u8 data)
 	sioWrite8inl(data);
 }
 
+int byteCnt = 0;
+
+//This is only for digital pad! .... a fast hacky fix for testing
+//#define IS_LAST_BYTE_IN_PACKET ((byteCnt >= 3) ? 1 : 0) 
+//this should be done on the last byte, but it works like this fine for now... How does one know which number is the last byte anyway (or are there any more following it).
+//maybe in the end a small LUT will be necessary that has the number of bytes for each command...
+//On the real PS1, if the controller doesn't supply an /ACK signal after each byte but the last, the transmission falls through... but it seems it is actually the interrupt
+//what 'continues' a transfer. 
+//On the real PS1, asserting /ACK after the last byte would cause the transfer to fail.
+#define IS_LAST_BYTE_IN_PACKET ((sio.bufCount >= 3) ? 1 : 0) 
+
 SIO_WRITE sioWriteController(u8 data)
 {
+	//if (data == 0x01) byteCnt = 0;
 	switch(sio.bufCount)
 	{
 	case 0:
+		byteCnt = 0; //hope this gets only cleared on the first byte... 
 		SIO_STAT_READY();
 		DEVICE_PLUGGED();
 		sio.buf[0] = PADstartPoll(sio.port + 1);
@@ -187,8 +201,8 @@ SIO_WRITE sioWriteController(u8 data)
 		sio.buf[sio.bufCount] = PADpoll(data);
 		break;
 	}
-
-	SIO_INT();
+	//Console.WriteLn( "SIO: sent = %02X  From pad data =  %02X  bufCnt %08X ", data, sio.buf[sio.bufCount], sio.bufCount);
+	SIO_INT(); //Don't all commands(transfers) cause an interrupt?
 }
 
 SIO_WRITE sioWriteMultitap(u8 data)
@@ -456,7 +470,7 @@ SIO_WRITE memcardWrite(u8 data)
 
 SIO_WRITE memcardRead(u8 data)
 {
-	//static u8 checksum_pos = 0;
+	static u8 checksum_pos = 0;
 	static u8 transfer_size = 0;
 	static bool once = false;
 
@@ -817,8 +831,41 @@ SIO_WRITE sioWriteInfraRed(u8 data)
 	SIO_INT();
 }
 
+//This bit-field in the STATUS register contains the (inveted) state of the /ACK linre from the Controller / MC.
+//1 = /ACK_line_active_low
+//Should go into Sio.h
+#define ACK_INP 0x80
+
+//This is named RESET_ERR in sio_internal.h.
+#define CLR_INTR 0x0010
+//Set the ammount of received bytes that triggers an interrupt.
+//0=1, 1=2, 2=4, 3=8 receivedBytesIntTriger = 1<< ((ctrl & RX_BYTES_INT) >>8)
+#define RX_BYTES_INT 0x0300
+//Enable interrupt on TX ready and TX empty 
+#define TX_INT_EN 0x0400
+//Trigger interrupt after receiving several (see above) bytes.
+#define RX_INT_EN 0x0800
+//Controll register: Enable the /ACK line trigerring the interrupt. 
+#define ACK_INT_EN 0x1000
+//Selects slot 1 or 2
+#define SLOT_NR 0x2000
+
+void chkTriggerInt(void) {
+	//Conditions for triggerring an interrupt.
+	//this is not correct, but ... it can be fixed later
+	 SIO_INT(); return; 
+	if ((sio.StatReg & IRQ)) { SIO_INT(); return; } //The interrupt flag in the main INTR_STAT reg should go active on multiple occasions. Set it here for now (hack), until the correct mechanism is made.
+	if ((sio.CtrlReg & ACK_INT_EN) && ((sio.StatReg & TX_RDY) || (sio.StatReg & TX_EMPTY))) { SIO_INT(); return; }
+	if ((sio.CtrlReg & ACK_INT_EN) && (sio.StatReg & ACK_INP)) { SIO_INT(); return; }
+	//The following one may be incorrect.
+	//if ((sio.CtrlReg & RX_INT_EN) && ((byteCnt >= (1<< ((sio.CtrlReg & RX_BYTES_INT) >>8))) ? 1:0) ) { SIO_INT(); return; }
+	return;
+}
+
+
 static void sioWrite8inl(u8 data)
 {
+//	Console.WriteLn( "SIO DATA write %02X  mode %08X " , data, siomode);
 	switch(siomode)
 	{
 	case SIO_START: sioWriteStart(data); break;
@@ -834,11 +881,43 @@ static void sioWrite8inl(u8 data)
 	case SIO_MEMCARD_PSX: sioWriteMemcardPSX(data); break;
 	case SIO_DUMMY: break;
 	};
+	sio.StatReg |= RX_RDY; //Why not set the byte-received flag, when for EVERY sent byte, one is received... it's just how SPI is...
+	sio.StatReg |= TX_EMPTY; //The current byte *has* been sent, so it is empty.
+	if (IS_LAST_BYTE_IN_PACKET != 1) //The following should be set after each byte transfer but the last one.
+		sio.StatReg |= ACK_INP; //Signal that Controller (or MC) has brought the /ACK (Acknowledge) line active low. 
+
+		SIO_INT();
+		//chkTriggerInt();
+	//Console.WriteLn( "SIO0 WR DATA COMMON %02X  INT_STAT= %08X  IOPpc= %08X " , data, psxHu32(0x1070), psxRegs.pc);
+	byteCnt++;
+}
+
+int clrAckCnt =0;
+
+void sioStatRead(void) {
+
+if (clrAckCnt > 1) {  //This check can probably be removed...
+	sio.StatReg &= ~ACK_INP; //clear (goes inactive) /ACK line. 
+//sio.StatReg &= ~TX_RDY;
+//	sio.StatReg &= ~0x200; //irq
+	//if (byteCnt == 1)
+	//	sio.StatReg &= ~RX_RDY;
+clrAckCnt = 0;
+}
+	//The /ACK line should go active for >2us, in a time window between 12us and 100us after each byte is sent (received by the controller).
+	//If that doesn't happen, the controller is considered missing.
+	//The /ACK line must NOT go active after the last byte in the transmission! (Otherwise some err. may happen - tested.)
+if ((sio.StatReg & ACK_INP)) clrAckCnt++;
+
+	chkTriggerInt();
+	return;
 }
 
 void sioWriteCtrl16(u16 value) 
 {
 	static u8 tcount[2];
+
+//	Console.WriteLn( "SIO0 WR CTRL %02X  IOPpc= %08X " , value, psxRegs.pc);
 
 	tcount[sio.port] = sio.bufCount;
 	sio.port = (value >> 13) & 1;
@@ -859,7 +938,9 @@ void sioWriteCtrl16(u16 value)
 		psxRegs.interrupt &= ~(1<<IopEvt_SIO);
 	}
 
+	if (sio.CtrlReg & CLR_INTR) sio.StatReg &= ~(IRQ | PARITY_ERR); //clear internal interrupt 
 	sio.bufCount = tcount[sio.port];
+	//chkTriggerInt(); //necessary? - causes transfer to stup after the third byte
 }
 
 u8 sioRead8() 
@@ -871,12 +952,15 @@ u8 sioRead8()
 		ret = sio.buf[sio.bufCount];
 		if(sio.bufCount == sio.bufSize) SIO_STAT_EMPTY();
 		sio.bufCount++;
+		SIO_STAT_EMPTY(); //this should depend on the counter above... but it seems wrong (buffer never empties).
+		sio.StatReg &= ~TX_RDY; //all clear (transfer of byte ended)
 	}
 	else
 	{
 		ret = sio.ret;
 	}
-
+		//	sio.StatReg &= ~TX_RDY; //all clear (transfer of byte ended)
+//	Console.WriteLn( "SIO DATA read %02X  stat= %08X " , ret, sio.StatReg);
 	return ret;
 }
 
@@ -885,8 +969,8 @@ void sioWrite8(u8 value)
 	sioWrite8inl(value);
 }
 
-void SIODMAWrite(u8 value)
-{
+void SIODMAWrite(u8 value) //Why does the SIO2 FIFO handler call this function...?? 
+{ //PS1 and PS2 modes are separate and the SIO0 and SIO2 aren't active at the sam time... 
 	sioWrite8inl(value);
 }
 
