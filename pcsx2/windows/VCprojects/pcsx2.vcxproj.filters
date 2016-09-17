@@ -874,6 +874,9 @@
     <ClCompile Include="..\..\IopGte.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ps2\pgif.cpp">
+      <Filter>System\Ps2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1307,6 +1310,9 @@
     </ClInclude>
     <ClInclude Include="..\..\IopGte.h">
       <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ps2\pgif.h">
+      <Filter>System\Ps2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
