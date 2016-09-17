@@ -21,6 +21,8 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/PGPU.h"
+
 using namespace R5900;
 
 static __fi void IntCHackCheck()
@@ -41,6 +43,11 @@ template< uint page, bool intcstathack >
 mem32_t __fastcall _hwRead32(u32 mem)
 {
 	pxAssume( (mem & 0x03) == 0 );
+	
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		return PGIFr((mem & 0x1FFFFFFF));
+	}
 
 	switch( page )
 	{
@@ -139,14 +146,17 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			switch( mem )
 			{
 				case SIO_ISR:
-				case SBUS_F260:
+				
 				case 0x1000f410:
 				case MCH_RICM:
 					return 0;
 
 				case SBUS_F240:
+					DevCon.Warning("Read  SBUS_F240  %x ", psHu32(SBUS_F240));
 					return psHu32(SBUS_F240) | 0xF0000102;
-
+				case SBUS_F260:
+					DevCon.Warning("Read  SBUS_F260  %x ", psHu32(SBUS_F260));
+					return psHu32(SBUS_F260);
 				case MCH_DRD:
 					if( !((psHu32(MCH_RICM) >> 6) & 0xF) )
 					{
@@ -324,6 +334,12 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 	// FIFOs are the only "legal" 128 bit registers, so we Handle them first.
 	// All other registers fall back on the 64-bit handler (and from there
 	// all non-IPU reads fall back to the 32-bit handler).
+
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		PGIFrQword((mem & 0x1FFFFFFF), result);
+		return;
+	}
 
 	switch (page)
 	{

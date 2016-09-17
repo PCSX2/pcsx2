@@ -134,11 +134,13 @@ void spu2DMA7Irq()
 #ifndef DISABLE_PSX_GPU_DMAS
 void psxDma2(u32 madr, u32 bcr, u32 chcr)		// GPU
 {
-	DevCon.Warning("SIF2 IOP CHCR = %x MADR = %x BCR = %x first 16bits %x", chcr, madr, bcr, iopMemRead16(madr));
+	//DevCon.Warning("SIF2 IOP CHCR = %x MADR = %x BCR = %x first 16bits %x", chcr, madr, bcr, iopMemRead16(madr));
 	sif2.iop.busy = true;
 	sif2.iop.end = false;
 	//SIF2Dma();
-	dmaSIF2();
+	// todo: psxmode: dmaSIF2 appears to interface with PGPU but everything is already handled without it.
+	// it slows down psxmode if it's run.
+	//dmaSIF2();
 	
 }
 

@@ -37,6 +37,8 @@
 #include "../DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
 
+#include "ps2/PGPU.h"
+
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
@@ -371,6 +373,9 @@ __fi void _cpuEventTest_Shared()
 	// escape/suspend hooks, and it's really a good idea to suspend/resume emulation before
 	// doing any actual meaningful branchtest logic.
 
+	// todo: psx mode: this is new.
+	testInt();
+
 	if( cpuTestCycle( nextsCounter, nextCounter ) )
 	{
 		rcntUpdate();
@@ -601,7 +606,7 @@ void __fastcall eeloadHook()
 		}
 	}
 
-	if (!g_GameStarted && disctype == 2 && elfname == discelf)
+	if (!g_GameStarted && (disctype == 2 || disctype == 1) && elfname == discelf)
 		g_GameLoading = true;
 }
 
