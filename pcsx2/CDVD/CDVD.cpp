@@ -53,7 +53,7 @@ static void CDVDREAD_INT(u32 eCycle)
 		if(eCycle < Cdvd_FullSeek_Cycles)
 			eCycle = 3000;
 	}
-	
+
 	PSX_INT(IopEvt_CdvdRead, eCycle);
 }
 
@@ -402,9 +402,9 @@ void cdvdReloadElfInfo(wxString elfoverride)
 					)
 				);
 				//Console.Error( "Playstation1 game discs are not supported by PCSX2." );
-			
+
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
-			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection, 
+			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
 			wxString fname = elfpath.AfterLast('\\');
 			wxString fname2 = fname.BeforeFirst(';');
@@ -412,7 +412,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			Console.SetTitle(DiscSerial);
 			return;
 		}
-		
+
 		// Isn't a disc we recognize?
 		if(discType == 0)  return;
 
@@ -468,7 +468,7 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 	key[ 2] = (key_0_3&0x00FF0000)>>16;
 	key[ 3] = (key_0_3&0xFF000000)>>24;
 	key[ 4] = key_4;
-	
+
     switch (arg2)
     {
         case 75:
@@ -535,10 +535,10 @@ s32 cdvdCtrlTrayClose()
 	cdvd.Status = CDVD_STATUS_PAUSE;
 	cdvd.Ready = CDVD_READY1;
 	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
-	
+
 	cdvdDetectDisk();
 	GetCoreThread().ApplySettings(g_Conf->EmuOptions);
-	
+
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
@@ -639,7 +639,7 @@ void cdvdNewDiskCB()
 {
 	ScopedTryLock lock( Mutex_NewDiskCB );
 	if( lock.Failed() ) return;
-	
+
 	DoCDVDresetDiskTypeCache();
 	cdvdDetectDisk();
 }

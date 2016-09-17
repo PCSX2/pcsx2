@@ -354,7 +354,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			// ------------------------------------------------------------------------
 			//
-			
+
 			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN
 				// psx mode
 				HW_DMA0_CHCR = val;
@@ -472,9 +472,9 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				else {
 					psxDmaInterrupt(33);
 				}
-			}				
+			}
 			break;
-			
+
 			mcase(0x1f8010f6):		// ICR_hi (16 bit?) [dunno if it ever happens]
 			{
 				DevCon.Warning("High ICR Write!!");
@@ -528,7 +528,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(HW_PS1_GPU_DATA) :
 				// todo: psx mode: replaced all this junk with "psxGPUw(addr, val);"
-				
+
 				//DevCon.Warning("GPUDATA Write %x", val);
 				///*if (val == 0x00000000)
 				//{
@@ -539,14 +539,14 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				//	DevCon.Warning("GP0 FIFO Clear");
 				//	sif2.fifo.clear();
 				//}
-			 //    else 
+			 //    else
 				//{*/
 				//	psxHu(HW_PS1_GPU_DATA) = val; // guess
 				//	WriteFifoSingleWord();
-				//		
+				//
 				////}
 				////GPU_writeData(value); // really old code from PCSX? (rama)
-				
+
 				psxGPUw(addr, val);
 				break;
 			mcase (HW_PS1_GPU_STATUS):
@@ -573,7 +573,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				//		//psxHu32(HW_PS1_GPU_STATUS) |= 0x80000000;
 				//		//psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 26);
 				//	}
-				
+
 				psxGPUw(addr, val);
 				psxHu(addr) = val; // guess
 				break;

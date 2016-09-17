@@ -40,7 +40,7 @@ struct config_mdec {
 };
 struct config_mdec Config;
 
-u32 mdecMem[0x100000]; //watherver large size. //Memory only used to get DMA data and not really for anything else. 
+u32 mdecMem[0x100000]; //watherver large size. //Memory only used to get DMA data and not really for anything else.
 					   //Sould be optimized(the funcs. that use it) to read IOP RAM direcly.
 #define PSXM(x) ((u32)mdecMem + x)
 
@@ -169,7 +169,7 @@ void idct(int *block,int k)
 }
 
 void mdecInit(void) {
-	
+
 	Config.Mdec = 1; //XXXXXXXXXXXXXXXXX  0 or 1
 
 	mdec.rl = (u16*)PSXM(0);
@@ -216,7 +216,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	int size;
 
 	CDVD_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
-	
+
 	if (chcr != 0x01000201) return;
 
 	size = (bcr >> 16)*(bcr & 0xffff);
@@ -229,7 +229,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 
 
 	if (cmd == 0x40000001) {
-		u8 *p = (u8*)PSXM(0); //u8 *p = (u8*)PSXM(adr); 
+		u8 *p = (u8*)PSXM(0); //u8 *p = (u8*)PSXM(adr);
 		iqtab_init(iq_y, p);
 		iqtab_init(iq_uv, p + 64);
 	}
@@ -249,7 +249,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	int size;
 
 	CDVD_LOG("DMA1 %lx %lx %lx (cmd = %lx)", adr, bcr, chcr, mdec.command);
-	
+
 	if (chcr != 0x01000200) return;
 	size = (bcr >> 16)*(bcr & 0xffff);
 	int size2 = (bcr >> 16)*(bcr & 0xffff);
@@ -274,7 +274,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 		if (i <20)
 			CDVD_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), mdecArr2[i]);
 	}
-	
+
 	HW_DMA1_CHCR &= ~0x01000000;
 	psxDmaInterrupt(1);
 }
