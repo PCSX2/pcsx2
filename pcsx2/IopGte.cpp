@@ -425,8 +425,8 @@ __inline s32 FNC_OVERFLOW4(s64 x) {
 }
 
 #define _LIMX(negv, posv, flagb) { \
-	if (x < (negv)) { x = (negv); gteFLAG |= (1<<flagb); } else \
-	if (x > (posv)) { x = (posv); gteFLAG |= (1<<flagb); } return (x); \
+	if (x < (negv)) { x = (negv); gteFLAG |= (1<<(flagb)); } else \
+	if (x > (posv)) { x = (posv); gteFLAG |= (1<<(flagb)); } return (x); \
 }
 
 __inline double limA1S(double x) { _LIMX(-32768.0, 32767.0, 24); }

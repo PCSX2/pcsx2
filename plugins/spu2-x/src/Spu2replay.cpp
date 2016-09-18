@@ -35,7 +35,10 @@ void s2r_write32(u32 data)
 	fwrite(&data,4,1,s2rfile);
 }
 
-#define EMITC(i,a) s2r_write32(((u32)(i&0x7)<<29)|(a&0x1FFFFFFF))
+static void EMITC(u32 i, u32 a)
+{
+	s2r_write32(((i&0x7u)<<29u)|(a&0x1FFFFFFFu));
+}
 
 int s2r_open(u32 ticks, char *filename)
 {

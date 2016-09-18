@@ -27,8 +27,6 @@
 u32 vudump = 0;
 #endif
 
-#define VF_VAL(x) ((x==0x80000000)?0:(x))
-
 // This is called by the COP2 as per the CTC instruction
 void vu1ResetRegs()
 {
