@@ -1213,3 +1213,19 @@ void Pcsx2App::DisableWindowLogging() const
 	AffinityAssert_AllowFrom_MainUI();
 	Console_SetActiveHandler( (emuLog!=NULL) ? (IConsoleWriter&)ConsoleWriter_File : (IConsoleWriter&)ConsoleWriter_Stdout );
 }
+
+void OSDlog(ConsoleColors color, bool console, const std::string& str)
+{
+	if (GSosdLog)
+		GSosdLog(str.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+
+	if (console)
+		Console.WriteLn(color, str.c_str());
+}
+
+void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
+	if(!GSosdMonitor) return;
+
+	GSosdMonitor(wxString(key).utf8_str(), wxString(value).utf8_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+}
+

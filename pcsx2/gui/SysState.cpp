@@ -24,6 +24,8 @@
 #include "ZipTools/ThreadedZipTools.h"
 #include "Utilities/pxStreams.h"
 
+#include "ConsoleLogger.h"
+
 #include <wx/wfstream.h>
 #include <memory>
 
@@ -672,7 +674,7 @@ void StateCopy_SaveToSlot( uint num )
 		wxRenameFile( file, copy );
 	}
 
-	Console.WriteLn( Color_StrongGreen, "Saving savestate to slot %d...", num );
+	OSDlog( Color_StrongGreen, true, "Saving savestate to slot %d...", num );
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
@@ -688,7 +690,7 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 		return;
 	}
 
-	Console.WriteLn( Color_StrongGreen, L"Loading savestate from slot %d...%s", slot, WX_STR(wxString( isFromBackup?L" (backup)":L"" )) );
+	OSDlog( Color_StrongGreen, true, "Loading savestate from slot %d...%s", slot, isFromBackup?" (backup)":"" );
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );
