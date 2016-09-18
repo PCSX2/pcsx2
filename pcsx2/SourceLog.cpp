@@ -329,6 +329,12 @@ TLD_IOP_CDVD = {
 	L"CDVD",			L"CDVD",
 	pxDt("Detailed logging of CDVD hardware."),
 	"CDVD"
+},
+
+TLD_IOP_MDEC = {
+	L"MDEC",			L"MDEC",
+	pxDt("Detailed logging of the Motion (FMV) Decoder hardware unit."),
+	"MDEC"
 };
 
 SysTraceLogPack::SysTraceLogPack()
@@ -379,5 +385,6 @@ SysTraceLogPack::IOP_PACK::IOP_PACK()
 	, DMAC		(&TLD_IOP_DMAC)
 	, Counters	(&TLD_IOP_Counters)
 	, CDVD		(&TLD_IOP_CDVD)
+	, MDEC		(&TLD_IOP_MDEC)
 {
 }

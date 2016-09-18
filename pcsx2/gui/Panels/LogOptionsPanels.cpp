@@ -163,6 +163,7 @@ static SysTraceLog * const traceLogList[] =
 	&SysTrace.IOP.DMAC,
 	&SysTrace.IOP.Counters,
 	&SysTrace.IOP.CDVD,
+	&SysTrace.IOP.MDEC,
 };
 
 static const uint traceLogCount = ArraySize(traceLogList);
