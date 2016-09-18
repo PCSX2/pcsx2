@@ -771,11 +771,8 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SimpsonsGame, CRC::RegionCount, &GSRendererHW::OI_SimpsonsGame));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpidermanWoS, CRC::RegionCount, &GSRendererHW::OI_SpidermanWoS));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger, CRC::RegionCount, &GSRendererHW::OI_TyTasmanianTiger));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger2, CRC::RegionCount, &GSRendererHW::OI_TyTasmanianTiger));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::DigimonRumbleArena2, CRC::RegionCount, &GSRendererHW::OI_DigimonRumbleArena2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BlackHawkDown, CRC::RegionCount, &GSRendererHW::OI_BlackHawkDown));
@@ -787,7 +784,12 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
+	// Enable it by default in the future (hack ought to be safe enough)
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SimpsonsGame, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger2, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+
 	if (!can_handle_depth)
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 
@@ -1159,27 +1161,6 @@ bool GSRendererHW::OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::So
 	return true;
 }
 
-bool GSRendererHW::OI_SimpsonsGame(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x01500 || FBP == 0x01800) && FPSM == PSM_PSMZ24)	//0x1800 pal, 0x1500 ntsc
-	{
-		// instead of just simply drawing a full height 512x512 sprite to clear the z buffer,
-		// it uses a 512x256 sprite only, yet it is still able to fill the whole surface with zeros,
-		// how? by using a render target that overlaps with the lower half of the z buffer...
-
-		// TODO: tony hawk pro skater 4 same problem, the empty half is not visible though, painted over fully
-
-		m_dev->ClearDepth(ds);
-
-		return false;
-	}
-
-	return true;
-}
-
 bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	if(!PRIM->TME)
@@ -1235,22 +1216,6 @@ bool GSRendererHW::OI_SpidermanWoS(GSTexture* rt, GSTexture* ds, GSTextureCache:
 	{
 		//only top half of the screen clears
 		m_dev->ClearDepth(ds);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_TyTasmanianTiger(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x02800 || FBP == 0x02BC0) && FPSM == PSM_PSMCT24)	//0x2800 pal, 0x2bc0 ntsc
-	{
-		//half height buffer clear
-		m_dev->ClearDepth(ds);
-
-		return false;
 	}
 
 	return true;
