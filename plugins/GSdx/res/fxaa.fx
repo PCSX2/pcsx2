@@ -17,6 +17,7 @@ in SHADER
 {
     vec4 p;
     vec2 t;
+    vec4 c;
 } PSin;
 
 layout(location = 0) out vec4 SV_Target0;
