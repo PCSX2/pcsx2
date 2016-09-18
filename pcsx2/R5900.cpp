@@ -37,8 +37,6 @@
 #include "../DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
 
-#include "ps2/PGPU.h"
-
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
@@ -372,9 +370,6 @@ __fi void _cpuEventTest_Shared()
 	// Important: the vsync counter must be the first to be checked.  It includes emulation
 	// escape/suspend hooks, and it's really a good idea to suspend/resume emulation before
 	// doing any actual meaningful branchtest logic.
-
-	// todo: psx mode: this is new.
-	testInt();
 
 	if( cpuTestCycle( nextsCounter, nextCounter ) )
 	{

@@ -205,9 +205,8 @@ u32 mdecRead0(void) {
 }
 
 u32 mdecRead1(void) {
-#ifdef CDVD_LOG
 	CDVD_LOG("mdec1 read %lx", mdec.status);
-#endif
+
 	return mdec.status;
 }
 

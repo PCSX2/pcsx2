@@ -200,8 +200,6 @@ int ringBufPut(struct ringBuf_t *rb, u32 *data) {
 		rb->count++;
 	} else {
 		Console.WriteLn("############################# PGIF FIFO overflow! sz= %X", rb->size);
-		int i;
-		for (i=0;i<0xFFFFFFF; i++) {}
 		return 1; //overflow
 	}
 	return 0;
@@ -214,8 +212,6 @@ int ringBufGet(struct ringBuf_t *rb, u32 *data) {
 		rb->count--;
 	} else {
 		Console.WriteLn("############################# PGIF FIFO underflow! sz= %X", rb->size);
-		int i;
-		for (i=0;i<0xFFFFFFF; i++) {}
 		return 1; //underflow
 	}
 	return 0;
@@ -596,9 +592,6 @@ u32 psxGPUr(int addr) {
 
 void PGIFw(int addr, u32 data) {
 	#if REG_LOG == 1
-	if (addr != PGIF_CTRL)
-	if ((addr != PGIF_CTRL) || ((addr == PGIF_CTRL) && (getUpdPgifCtrlReg() != data)))
-	if (addr != PGPU_STAT)
 		Console.WriteLn( "PGIF write 0x%08X = 0x%08X  0x%08X  EEpc= %08X  IOPpc= %08X ",  addr, data, getUpdPgifCtrlReg(),  cpuRegs.pc, psxRegs.pc);
 	#endif
 
@@ -686,7 +679,7 @@ void PGIFrQword(u32 addr, void* dat) {
 
 void PGIFwQword(u32 addr, void* dat) {
 	u32 data = (u32)dat;
-	Console.WriteLn( "\n\r WARNING PGIF WRITE BY PS1DRV ! - NOT KNOWN TO EVER BE DONE! \n\r");
+	DevCon.Warning( "WARNING PGIF WRITE BY PS1DRV ! - NOT KNOWN TO EVER BE DONE!" );
 	Console.WriteLn( "PGIF QW write  0x%08X = 0x%08X %08X %08X %08X ",  addr, *(u32*)(data +0), *(u32*)(data +1), *(u32*)(data +2), *(u32*)(data +3));
 	if (addr == PGPU_CMD_FIFO) { //shouldn't happen
 		Console.WriteLn( "PGIF QW CMD write =ERR!");
@@ -1032,22 +1025,6 @@ u32 getIntTmrKReg(u32 mem, u32 data) {
 	}
 	return outd;
 }
-
-int cntint = 0;
-void testInt(void) {
-
-
-	if (flgint == 1) {
-		if (cntint > 500) {
-	//Console.WriteLn("  ZZZZZZZZZZZZZZZZ  cpuEventTest_Shared  ");
-		cntint = 0;
-		}
-		cntint ++;
-	}
-}
-
-
-
 
 void HPCoS_print(u32 mem, u32 data) {
 	int i;
