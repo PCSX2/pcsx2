@@ -281,7 +281,7 @@ void GSRendererOGL::EmulateZbuffer()
 
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
-	if (m_om_dssel.ztst == ZTST_GEQUAL && (m_vt.m_eq.xyzf & 0x4) && v[0].XYZ.Z == max_z) {
+	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z) {
 		GL_INS("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
 		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
@@ -1338,7 +1338,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool ate_skip = false;
 	if (ate_first_pass & ate_second_pass) {
 		GL_INS("Complex Alpha Test");
-		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && (m_vt.m_eq.xyzf & 0x4)) || (m_om_dssel.ztst == ZTST_ALWAYS);
+		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
 		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
 		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;

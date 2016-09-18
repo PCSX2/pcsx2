@@ -834,7 +834,7 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 		const GSLocalMemory::psm_t& depth_psm = GSLocalMemory::m_psm[m_context->ZBUF.PSM];
 
 		// Z and color must be constant and the same
-		if (m_vt.m_eq.rgba != 0xFFFF || !(m_vt.m_eq.xyzf & 0x4) || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
+		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
 			return true;
 
 		// Format doesn't have the same size. It smells fishy
