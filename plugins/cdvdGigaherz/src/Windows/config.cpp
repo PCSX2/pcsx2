@@ -143,11 +143,6 @@ char* path[] = {
 
 int n,s;
 
-#define SET_CHECK(idc,value) SendMessage(GetDlgItem(hWnd,idc),BM_SETCHECK,((value)==0)?BST_UNCHECKED:BST_CHECKED,0)
-#define HANDLE_CHECK(idc,hvar)	case idc: hvar=hvar?0:1; SendMessage(GetDlgItem(hWnd,idc),BM_SETCHECK,(hvar==1)?BST_CHECKED:BST_UNCHECKED,0); break
-#define HANDLE_CHECKNB(idc,hvar)case idc: hvar=hvar?0:1; SendMessage(GetDlgItem(hWnd,idc),BM_SETCHECK,(hvar==1)?BST_CHECKED:BST_UNCHECKED,0)
-#define ENABLE_CONTROL(idc,value) EnableWindow(GetDlgItem(hWnd,idc),value)
-
 BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId,wmEvent;

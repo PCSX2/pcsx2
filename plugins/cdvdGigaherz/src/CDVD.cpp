@@ -13,15 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-
 #include "CDVD.h"
-#include "resource.h"
-#include "Shlwapi.h"
-
+#include <cstdio>
 #include "svnrev.h"
-
-#include <assert.h>
 
 void (*newDiscCB)();
 
@@ -579,7 +573,6 @@ void CALLBACK CDVDnewDiskCB(void (*callback)())
 	newDiscCB=callback;
 }
 
-void configure();
 void CALLBACK CDVDconfigure()
 {
 	configure();

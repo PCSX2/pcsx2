@@ -139,8 +139,6 @@ public:
 
 extern Source *src;
 
-int FindDiskType();
-
 void configure();
 
 extern char source_drive;
