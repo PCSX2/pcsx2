@@ -787,7 +787,7 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_FFVIIDoC));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
 	if (!can_handle_depth)
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 
@@ -825,28 +825,28 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 // Handle case where the frame buffer and the Z buffer overlap
 bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7) && rt) {
-		GSVertex* v = &m_vertex.buff[0];
+	// Trick to do a fast clear on the GS
+	// Set frame buffer pointer on the start of the buffer. Set depth buffer pointer on the half buffer
+	// FB + depth write will fill the full buffer.
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && rt && ds) {
+		const GSVertex* v = &m_vertex.buff[0];
+		const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+		const GSLocalMemory::psm_t& depth_psm = GSLocalMemory::m_psm[m_context->ZBUF.PSM];
 
-		//GL_INS("OI_DoubleHalfClear: psm:%s. Z:%d R:%d G:%d B:%d A:%d", psm_str(m_context->FRAME.PSM),
-		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
-
-		// Check it is a clear on the first primitive only
-		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
-			return true;
-		}
-		// Only 32 bits format is supported otherwise it is complicated
-		if (m_context->FRAME.PSM & 2)
+		// Z and color must be constant and the same
+		if (m_vt.m_eq.rgba != 0xFFFF || !(m_vt.m_eq.xyzf & 0x4) || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
 			return true;
 
-		// FIXME might need some rounding
-		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
-		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
-		// It is hard to predict the ratio, so I round it to 1. And I use
-		// <= comparison below.
-		// FIXME: I don't understand anymore what I used it
-		uint32 h_pages  = m_context->FRAME.FBW;
+		// Format doesn't have the same size. It smells fishy
+		if (frame_psm.trbpp != depth_psm.trbpp)
+			return true;
 
+		// Size of the current draw
+		uint32 w_pages = roundf(m_vt.m_max.p.x / frame_psm.pgs.x);
+		uint32 h_pages = roundf(m_vt.m_max.p.y / frame_psm.pgs.y);
+		uint32 written_pages = w_pages * h_pages;
+
+		// Frame and depth pointer can be inverted
 		uint32 base;
 		uint32 half;
 		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
@@ -857,78 +857,21 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 			half = m_context->ZBUF.ZBP;
 		}
 
-		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
-			//GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
+		// If both buffers are side by side we can expect a fast clear in on-going
+		if (half <= (base + written_pages)) {
+			uint32 color = v[1].RGBAQ.u32[0];
+
+			GL_INS("OI_DoubleHalfClear: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x", base << 5, half << 5, w_pages, h_pages, m_context->FRAME.FBW, color);
+
 			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+				// Only pure clear are supported for depth
+				ASSERT(color == 0);
 				m_dev->ClearDepth(ds);
 			} else {
-				m_dev->ClearRenderTarget(rt, 0);
-			}
-			// Don't return false, it will break the rendering. I guess that it misses texture
-			// invalidation
-			//return false;
-		}
-	}
-	return true;
-}
-
-// Same as above but instead to split the screen in top/bottom. The screen is splitted in left/right
-// FIXME: Maybe it could be merged with the above code. The difference is the initial FBW check and the way to compute h_page
-// However I'm not sure above code is correct. Let's keep them separately until I managed to test others games impacted by this
-// half screen issue.
-bool GSRendererHW::OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	// So far only used by FFVII dirge of cerberus
-
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW <= 4) && rt) {
-		GSVertex* v = &m_vertex.buff[0];
-
-		//GL_INS("OI_DoubleHalfClear: psm:%s. Z:%d R:%d G:%d B:%d A:%d", psm_str(m_context->FRAME.PSM),
-		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
-
-		// Z and color must be constant
-		if (m_vt.m_eq.rgba != 0xFFFF || !(m_vt.m_eq.xyzf & 0x4))
-			return true;
-
-		// Z and color must be the same
-		if (v[1].XYZ.Z != v[1].RGBAQ.u32[0])
-			return true;
-
-		// FIXME might need some rounding
-		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
-		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
-		// It is hard to predict the ratio, so I round it to 1. And I use
-		// <= comparison below.
-		uint32 h_pages = roundf(m_vt.m_max.p.y) / GSLocalMemory::m_psm[m_context->FRAME.PSM].pgs.y;
-
-		uint32 base;
-		uint32 half;
-		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
-			base = m_context->ZBUF.ZBP;
-			half = m_context->FRAME.FBP;
-		} else {
-			base = m_context->FRAME.FBP;
-			half = m_context->ZBUF.ZBP;
-		}
-
-		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
-			bool is_clear = (v[1].XYZ.Z == 0);
-
-			GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d. Clear %d", base << 5, half << 5, h_pages, m_context->FRAME.FBW, is_clear);
-			if (is_clear) {
-				if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
-					m_dev->ClearDepth(ds);
-				} else {
-					m_dev->ClearRenderTarget(rt, 0);
-				}
-			} else {
-				// depth clear won't be supported here
-				m_dev->ClearRenderTarget(rt, v[1].RGBAQ.u32[0]);
+				m_dev->ClearRenderTarget(rt, color);
 			}
 
-			// Don't return false, it will break the rendering. I guess that it misses texture
-			// invalidation
-			//return false;
+			// warning: draw call mustn't be skipped to keep correct invalidation. Don't return false
 		}
 	}
 
@@ -1634,12 +1577,6 @@ bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache
 
 	return true;
 }
-
-bool GSRendererHW::OI_FFVIIDoC(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	return OI_DoubleHalfClear_Vertical(rt, ds, t);
-}
-
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 
