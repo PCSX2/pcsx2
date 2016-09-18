@@ -67,6 +67,8 @@ struct alignas(32) GSVertexPT1
 {
 	GSVector4 p;
 	GSVector2 t;
+	char pad[4];
+	union {uint32 c; struct {uint8 r, g, b, a;};};
 };
 
 struct GSVertexPT2

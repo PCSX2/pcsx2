@@ -4,6 +4,7 @@ in SHADER
 {
     vec4 p;
     vec2 t;
+    vec4 c;
 } PSin;
 
 #ifdef FRAGMENT_SHADER
