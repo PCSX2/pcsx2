@@ -449,6 +449,29 @@ void populate_record_table(GtkWidget* record_table)
 	InsertWidgetInTable(record_table , out_dir_label , out_dir);
 }
 
+void populate_osd_table(GtkWidget* osd_table)
+{
+	GtkWidget* fontname_label  = left_label("Font:");
+	GtkWidget* fontname_file = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select a font", "osd_fontname");
+	GtkWidget* fontsize_label  = left_label("Size:");
+	GtkWidget* fontsize_text = CreateSpinButton(1, 100, "osd_fontsize");
+	GtkWidget* transparency_label = left_label("Transparency:");
+	GtkWidget* transparency_slide = CreateScale("osd_transparency");
+	GtkWidget* log_check = CreateCheckBox("Enable Log", "osd_log_enabled");
+	GtkWidget* log_speed_label  = left_label("Speed:");
+	GtkWidget* log_speed_text = CreateSpinButton(2, 10, "osd_log_speed");
+	GtkWidget* monitor_check = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
+	GtkWidget* indicator_check = CreateCheckBox("Enable Indicator", "osd_indicator_enabled");
+
+	InsertWidgetInTable(osd_table , fontname_label , fontname_file);
+	InsertWidgetInTable(osd_table , fontsize_label , fontsize_text);
+	InsertWidgetInTable(osd_table , transparency_label , transparency_slide);
+	InsertWidgetInTable(osd_table , log_check);
+	InsertWidgetInTable(osd_table , log_speed_label, log_speed_text);
+	InsertWidgetInTable(osd_table , monitor_check);
+	InsertWidgetInTable(osd_table , indicator_check);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -468,6 +491,7 @@ bool RunLinuxDialog()
 	GtkWidget* central_box  = gtk_vbox_new(false, 5);
 	GtkWidget* advanced_box = gtk_vbox_new(false, 5);
 	GtkWidget* debug_box    = gtk_vbox_new(false, 5);
+	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
 	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
@@ -486,6 +510,8 @@ bool RunLinuxDialog()
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
+	GtkWidget* osd_table    = CreateTableInBox(osd_box     , NULL                                   , 6  , 2);
+
 	// Populate all the tables
 	populate_main_table(main_table);
 
@@ -499,11 +525,14 @@ bool RunLinuxDialog()
 	populate_debug_table(debug_table);
 	populate_record_table(record_table);
 
+	populate_osd_table(osd_table);
+
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Global Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("On Screen Display"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
