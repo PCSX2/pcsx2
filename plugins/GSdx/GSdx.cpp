@@ -301,17 +301,27 @@ void GSdxApp::Init()
 	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = "2";
 	m_default_configuration["force_texture_clear"]                        = "0";
+#ifdef _WIN32
+	m_default_configuration["fontname"]                                   = "C:\\Windows\\Fonts\\tahoma.ttf";
+#else
+	m_default_configuration["fontname"]                                   = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+#endif
+	m_default_configuration["fontsize"]                                   = "48";
 	m_default_configuration["fxaa"]                                       = "0";
+	m_default_configuration["indicator_enabled"]                          = "0";
 	m_default_configuration["interlace"]                                  = "7";
 	m_default_configuration["large_framebuffer"]                          = "1";
 	m_default_configuration["linear_present"]                             = "1";
+	m_default_configuration["log_enabled"]                                = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
 	m_default_configuration["mipmap_hw"]                                  = "0";
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
+	m_default_configuration["monitor_enabled"]                            = "0";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
 	m_default_configuration["ocldev"]                                     = "";
+	m_default_configuration["osd_transparency"]                           = "50";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";

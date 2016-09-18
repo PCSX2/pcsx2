@@ -158,6 +158,7 @@
     <ClCompile Include="GSHwHack.cpp" />
     <ClCompile Include="GSLocalMemory.cpp" />
     <ClCompile Include="GSPerfMon.cpp" />
+    <ClCompile Include="GSOsdManager.cpp" />
     <ClCompile Include="GSPng.cpp" />
     <ClCompile Include="GSRasterizer.cpp" />
     <ClCompile Include="GSRenderer.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="GSFunctionMap.h" />
     <ClInclude Include="GSLocalMemory.h" />
     <ClInclude Include="GSPerfMon.h" />
+    <ClInclude Include="GSOsdManager.h" />
     <ClInclude Include="GSPng.h" />
     <ClInclude Include="GSRasterizer.h" />
     <ClInclude Include="GSRenderer.h" />

@@ -120,6 +120,7 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 			ShaderConvert_COMPLEX_FILTER}; // FIXME
 
 		Present(m_current, m_backbuffer, GSVector4(r), s_shader[shader]);
+		RenderOsd(m_backbuffer);
 	}
 
 	Flip();

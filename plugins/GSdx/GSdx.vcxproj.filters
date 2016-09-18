@@ -90,6 +90,9 @@
     <ClCompile Include="GSPerfMon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSOsdManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GSRasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -369,6 +372,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSPerfMon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSOsdManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSRasterizer.h">
