@@ -1074,19 +1074,6 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2150,6 +2137,19 @@ bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1;
+		}
+	}
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Aggresive only hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -2463,7 +2463,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GetaWay] = GSC_GetaWay;
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::GodHand] = GSC_GodHand;
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
 		lut[CRC::HauntingGround] = GSC_HauntingGround;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		lut[CRC::HummerBadlands] = GSC_HummerBadlands;
@@ -2578,6 +2577,9 @@ void GSState::SetupCrcHack()
 		lut[CRC::GTConcept] = GSC_GTConcept;
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
 		lut[CRC::Tekken5] = GSC_Tekken5;
+
+		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
+		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
 	}
 
 	m_gsc = lut[m_game.title];
