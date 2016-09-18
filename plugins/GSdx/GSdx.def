@@ -9,6 +9,8 @@ EXPORTS
 	GSsetBaseMem		
 	GSinit				
 	GSshutdown			
+	GSosdLog
+	GSosdMonitor
 	GSopen
 	GSopen2				
 	GSclose				

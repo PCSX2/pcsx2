@@ -570,6 +570,8 @@ typedef void(CALLBACK *_PS2EsetEmuVersion)(const char *emuId, u32 version); // H
 // GS
 // NOTE: GSreadFIFOX/GSwriteCSR functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
+typedef void(CALLBACK *_GSosdLog)(const char *utf8, u32 color);
+typedef void(CALLBACK *_GSosdMonitor)(const char *key, const char *value, u32 color);
 typedef s32(CALLBACK *_GSopen)(void *pDsp, const char *Title, int multithread);
 typedef s32(CALLBACK *_GSopen2)(void *pDsp, u32 flags);
 typedef void(CALLBACK *_GSvsync)(int field);
@@ -729,6 +731,8 @@ typedef void(CALLBACK *_FWirqCallback)(void (*callback)());
 
 // GS
 #ifndef BUILTIN_GS_PLUGIN
+extern _GSosdLog GSosdLog;
+extern _GSosdMonitor GSosdMonitor;
 extern _GSopen GSopen;
 extern _GSopen2 GSopen2;
 extern _GSvsync GSvsync;

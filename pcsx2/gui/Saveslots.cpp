@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "AppSaveStates.h"
+#include "ConsoleLogger.h"
 
 #include "Common.h"
 
@@ -126,7 +127,7 @@ void States_registerLoadBackupMenuItem( wxMenuItem* loadBackupMenuItem )
 
 static void OnSlotChanged()
 {
-	Console.Warning( " > Selected savestate slot %d", StatesC);
+	OSDlog( Color_StrongGreen, true, " > Selected savestate slot %d", StatesC );
 
 	if( GSchangeSaveState != NULL )
 		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).mb_str());
