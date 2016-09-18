@@ -241,22 +241,12 @@ s32 CALLBACK CDVDopen(const char* pTitleFilename)
 		return 0;
 	}
 
-	if(source_drive=='$')
-	{
-		printf(" * CDVD: Opening image '%s'...\n",source_file);
+	sprintf(csrc, "\\\\.\\%c:", source_drive);
 
-		//open device file
-		src= TryLoaders(source_file);
-	}
-	else
-	{
-		sprintf(csrc,"\\\\.\\%c:",source_drive);
+	printf(" * CDVD: Opening drive '%s'...\n", csrc);
 
-		printf(" * CDVD: Opening drive '%s'...\n",csrc);
-
-		//open device file
-		src=new IOCtlSrc(csrc);
-	}
+	// open device file
+	src = new IOCtlSrc(csrc);
 
 	if(!src->IsOK())
 	{

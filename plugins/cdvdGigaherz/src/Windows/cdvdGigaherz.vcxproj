@@ -54,19 +54,13 @@
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp" />
     <ClCompile Include="config.cpp" />
-    <ClCompile Include="..\FileStream.cpp" />
     <ClCompile Include="IOCtlSrc.cpp" />
-    <ClCompile Include="..\ReaderModules.cpp" />
     <ClCompile Include="..\ReadThread.cpp" />
     <ClCompile Include="..\TocStuff.cpp" />
-    <ClCompile Include="..\PlainIso.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CDVD.h" />
-    <ClInclude Include="..\FileStream.h" />
-    <ClInclude Include="..\ReaderModules.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\SectorConverters.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cdvdGigaherz.rc" />

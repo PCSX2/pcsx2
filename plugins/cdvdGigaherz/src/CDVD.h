@@ -139,14 +139,11 @@ public:
 
 extern Source *src;
 
-Source* TryLoaders(const char* fileName);
-
 int FindDiskType();
 
 void configure();
 
 extern char source_drive;
-extern char source_file[];
 
 extern HINSTANCE hinst;
 
