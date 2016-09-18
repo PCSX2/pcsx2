@@ -95,6 +95,11 @@ typedef int64 sint64;
 #include <cstring>
 #include <cassert>
 
+#if __GNUC__ > 5 || ( __GNUC__ == 5 && __GNUC_MINOR__ >= 4 )
+#include <codecvt>
+#include <locale>
+#endif
+
 #include <complex>
 #include <string>
 #include <vector>

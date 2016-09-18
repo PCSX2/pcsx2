@@ -86,6 +86,7 @@ set(GSdxSources
     GSRendererNull.cpp
     GSRendererOGL.cpp
     GSRendererSW.cpp
+    GSOsdManager.cpp
     GSSetting.cpp
     GSSetupPrimCodeGenerator.cpp
     GSSetupPrimCodeGenerator.x64.cpp
@@ -193,6 +194,7 @@ set(GSdxFinalLibs
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
     ${PNG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
 )
 
 if(EGL_API AND EGL_FOUND)

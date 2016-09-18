@@ -25,6 +25,7 @@
 #include "GSTexture.h"
 #include "GSVertex.h"
 #include "GSAlignedClass.h"
+#include "GSOsdManager.h"
 
 enum ShaderConvert {
 	ShaderConvert_COPY = 0,
@@ -132,6 +133,8 @@ protected:
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
 
 public:
+	GSOsdManager m_osd;
+
 	GSDevice();
 	virtual ~GSDevice();
 
@@ -184,6 +187,7 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void ExternalFX();
+	virtual void RenderOsd(GSTexture* dt) {};
 
 	bool ResizeTexture(GSTexture** t, int w, int h);
 

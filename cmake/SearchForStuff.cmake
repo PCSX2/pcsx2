@@ -5,6 +5,7 @@
 if (Linux)
     find_package(ALSA)
 endif()
+find_package(Freetype) # GSdx OSD
 find_package(Gettext) # translation tool
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
     find_package(Git)
