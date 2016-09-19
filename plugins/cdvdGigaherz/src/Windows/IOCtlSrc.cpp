@@ -230,7 +230,7 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
                             &dontcare,              //#bytes returned
                             (LPOVERLAPPED)NULL))    //synchronous I/O == 0)
         {
-            printf(" * CDVD: setSpindleSpeed success (%dKB/s)\n", speed);
+            printf(" * CDVD: setSpindleSpeed success (%uKB/s)\n", speed);
         } else {
             printf(" * CDVD: setSpindleSpeed failed! \n");
         }
@@ -418,7 +418,7 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
                 rri.TrackMode = CDDA;
                 printf(" * CDVD: Trying CDDA\n");
                 if (DeviceIoControl(device, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), buffer, 2352 * count, &size, NULL) == 0) {
-                    printf(" * CDVD: Failed to read this CD-ROM with error code: %d\n", GetLastError());
+                    printf(" * CDVD: Failed to read this CD-ROM with error code: %u\n", GetLastError());
                     return -1;
                 }
             }

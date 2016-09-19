@@ -113,7 +113,7 @@ s32 cdvdParseTOC()
                             tracks[tn].type = CDVD_MODE1_TRACK;
                         }
 
-                        fprintf(stderr, "Track %d: %d mins %d secs %d frames\n", tn, min, sec, frm);
+                        fprintf(stderr, "Track %d: %u mins %u secs %u frames\n", tn, min, sec, frm);
                     } else if (cdtoc.Descriptors[i].Point > 0) {
                         printf("Found code 0x%02x\n", cdtoc.Descriptors[i].Point);
                     }

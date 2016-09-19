@@ -521,7 +521,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
         tocBuff[28] = itob(sec);
         tocBuff[29] = itob(frm);
 
-        fprintf(stderr, "Track 0: %d mins %d secs %d frames\n", min, sec, frm);
+        fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
 
         for (i = diskInfo.strack; i <= diskInfo.etrack; i++) {
             err = CDVDgetTD(i, &trackInfo);
@@ -531,7 +531,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             tocBuff[i * 10 + 37] = itob(min);
             tocBuff[i * 10 + 38] = itob(sec);
             tocBuff[i * 10 + 39] = itob(frm);
-            fprintf(stderr, "Track %d: %d mins %d secs %d frames\n", i, min, sec, frm);
+            fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
         }
     } else
         return -1;
