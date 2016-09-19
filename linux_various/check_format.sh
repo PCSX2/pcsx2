@@ -47,7 +47,6 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep "\.\(c\|h\|inl\|cpp\|hpp\)$" | \
     grep -v "${1}common/" | \
     grep -v "${1}pcsx2/" | \
-    grep -v "${1}plugins/cdvdGigaherz/" | \
     grep -v "${1}plugins/CDVDisoEFP/" | \
     grep -v "${1}plugins/CDVDlinuz/" | \
     grep -v "${1}plugins/CDVDolio/" | \
