@@ -383,7 +383,6 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
             memcpy(buffer, bfr + 12, 2352);
             return 0;
     }
-    return 0;
 }
 
 s32 cdvdGetMediaType()
