@@ -30,8 +30,8 @@ DWORD pidThreadKeepAlive = 0;
 ///////////////////////////////////////////////////////////////////////////////
 // State Information                                                         //
 
-int strack;
-int etrack;
+u8 strack;
+u8 etrack;
 track tracks[100];
 
 int curDiskType;
@@ -357,7 +357,6 @@ int CALLBACK CDVDgetBuffer2(u8 *dest)
 
 s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
-    int i;
     // the formatted subq command returns:  control/adr, track, index, trk min, trk sec, trk frm, 0x00, abs min, abs sec, abs frm
 
     if (lsn > tracks[0].length)  // track 0 is total disc.
@@ -367,7 +366,7 @@ s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 
     lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
-    i = strack;
+    u8 i = strack;
     while (i <= etrack) {
         if (lsn <= tracks[i].length)
             break;

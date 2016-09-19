@@ -23,15 +23,15 @@
 #define CDVDdefs
 #include <PS2Edefs.h>
 
-typedef struct _track
+struct track
 {
     u32 start_lba;
     u32 length;
-    u32 type;
-} track;
+    u8 type;
+};
 
-extern int strack;
-extern int etrack;
+extern u8 strack;
+extern u8 etrack;
 extern track tracks[100];
 
 extern int curDiskType;

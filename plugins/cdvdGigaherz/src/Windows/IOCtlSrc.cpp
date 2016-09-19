@@ -209,7 +209,7 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
 {
 
     DWORD dontcare;
-    int speed = 0;
+    USHORT speed = 0;
 
     if (GetMediaType() < 0)
         speed = 4800;  // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
