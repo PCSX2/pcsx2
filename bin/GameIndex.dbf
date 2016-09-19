@@ -3359,7 +3359,6 @@ Region = NTSC-J
 Serial = SCPS-15019
 Name   = Formula One 2001
 Region = NTSC-J
-Compat = 5
 XgKickHack = 1
 ---------------------------------------------
 Serial = SCPS-15020
@@ -7334,7 +7333,6 @@ Compat = 5
 Serial = SLES-50362
 Name   = Jonny Moseley Mad Trix
 Region = PAL-E
-Compat = 5
 ---------------------------------------------
 Serial = SLES-50364
 Name   = City Crisis
@@ -7847,7 +7845,6 @@ Compat = 5
 Serial = SLES-50619
 Name   = Jonny Moseley Mad Trix
 Region = PAL-F-G
-Compat = 5
 ---------------------------------------------
 Serial = SLES-50620
 Name   = Micro Machines
@@ -17569,7 +17566,6 @@ Region = PAL-M6
 Serial = SLES-55578
 Name   = Band Hero
 Region = PAL-M5
-Compat = 5
 ---------------------------------------------
 Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
@@ -29240,7 +29236,6 @@ Region = NTSC-J
 Serial = SLPS-20120
 Name   = Formula One 2001
 Region = NTSC-J
-Compat = 5
 XgKickHack = 1
 ---------------------------------------------
 Serial = SLPS-20121
