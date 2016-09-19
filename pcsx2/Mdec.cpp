@@ -42,7 +42,7 @@ struct config_mdec Config;
 
 u32 mdecMem[0x100000]; //watherver large size. //Memory only used to get DMA data and not really for anything else.
 					   //Sould be optimized(the funcs. that use it) to read IOP RAM direcly.
-#define PSXM(x) ((u32)mdecMem + x)
+#define PSXM(x) ((uptr)mdecMem + x)
 
 
 int iq_y[DCTSIZE2],iq_uv[DCTSIZE2];

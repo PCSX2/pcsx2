@@ -195,7 +195,7 @@ struct ringBuf_t {
 
 int ringBufPut(struct ringBuf_t *rb, u32 *data) {
 	if (rb->count < rb->size) { //there is available space
-		*(u32*)((u32)(rb->buf) + (rb->head *4)) = *data;
+		*((u32*)rb->buf + rb->head) = *data;
 		if ((++(rb->head)) >= rb->size) rb->head = 0; //wrap back when the end is reached
 		rb->count++;
 	} else {
@@ -207,7 +207,7 @@ int ringBufPut(struct ringBuf_t *rb, u32 *data) {
 
 int ringBufGet(struct ringBuf_t *rb, u32 *data) {
 	if (rb->count > 0) { //there is available data
-		*data = *(u32*)((u32)(rb->buf) + (rb->tail *4));
+		*data = *((u32*)rb->buf + rb->tail);
 		if ((++(rb->tail)) >= rb->size) rb->tail = 0; //wrap back when the end is reached
 		rb->count--;
 	} else {
@@ -221,8 +221,7 @@ void ringBufClear(struct ringBuf_t *rb) {
 	rb->head = 0;
 	rb->tail = 0;
 	rb->count = 0;
-	int i;
- 	for (i=0; i<(rb->size);i++) *(u32*)((u32)(rb->buf) + (i *4)) = 0;
+	memset(rb->buf, 0, rb->size * sizeof(u32));
 	return;
 }
 
@@ -658,10 +657,10 @@ void PGIFrQword(u32 addr, void* dat) {
 		Console.WriteLn( "PGIF QW CMD read =ERR!");
 	} else 	if (addr == PGPU_DAT_FIFO) {
 		fillFifoOnDrain();
-		datRingBufGet((u32*)((u32)data +0));
-		datRingBufGet((u32*)((u32)data +4));
-		datRingBufGet((u32*)((u32)data +8));
-		datRingBufGet((u32*)((u32)data +0xC));
+		datRingBufGet(data + 0);
+		datRingBufGet(data + 1);
+		datRingBufGet(data + 2);
+		datRingBufGet(data + 3);
 		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +0));
 		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +4));
 		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +8));
@@ -678,7 +677,7 @@ void PGIFrQword(u32 addr, void* dat) {
 }
 
 void PGIFwQword(u32 addr, void* dat) {
-	u32 data = (u32)dat;
+	u32 *data = (u32*)dat;
 	DevCon.Warning( "WARNING PGIF WRITE BY PS1DRV ! - NOT KNOWN TO EVER BE DONE!" );
 	Console.WriteLn( "PGIF QW write  0x%08X = 0x%08X %08X %08X %08X ",  addr, *(u32*)(data +0), *(u32*)(data +1), *(u32*)(data +2), *(u32*)(data +3));
 	if (addr == PGPU_CMD_FIFO) { //shouldn't happen
