@@ -440,7 +440,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// pass to handle the depth based on the alpha test.
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
-	bool ate_skip = false;
 	if (ate_first_pass & ate_second_pass) {
 #ifdef _DEBUG
 		fprintf(stdout, "Complex Alpha Test\n");
@@ -450,17 +449,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
 		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) & commutative_depth & commutative_alpha;
-
-		// In FB_ONLY mode, only the z buffer is impacted by the alpha test. No depth => useless alpha test
-		ate_skip = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & (ds == nullptr);
 	}
 
-	if (ate_skip) {
-#ifdef _DEBUG
-		fprintf(stdout, "Alternate ATE handling: ate_skip\n");
-#endif
-		ate_second_pass = false;
-	} else if (ate_RGBA_then_Z) {
+	if (ate_RGBA_then_Z) {
 #ifdef _DEBUG
 		fprintf(stdout, "Alternate ATE handling: ate_RGBA_then_Z\n");
 #endif

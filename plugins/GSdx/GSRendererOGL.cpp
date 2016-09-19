@@ -1335,7 +1335,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// pass to handle the depth based on the alpha test.
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
-	bool ate_skip = false;
 	if (ate_first_pass & ate_second_pass) {
 		GL_INS("Complex Alpha Test");
 		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
@@ -1343,15 +1342,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
 		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) & commutative_depth & commutative_alpha;
-
-		// In FB_ONLY mode, only the z buffer is impacted by the alpha test. No depth => useless alpha test
-		ate_skip = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & (ds == nullptr);
 	}
 
-	if (ate_skip) {
-		GL_INS("Alternate ATE handling: ate_skip");
-		ate_second_pass = false;
-	} else if (ate_RGBA_then_Z) {
+	if (ate_RGBA_then_Z) {
 		GL_INS("Alternate ATE handling: ate_RGBA_then_Z");
 		// Render all color but don't update depth
 		// ATE is disabled here

@@ -2953,6 +2953,21 @@ bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 	{
 		pass = false;
 	}
+	else if((context->TEST.AFAIL == AFAIL_FB_ONLY) && zm == 0xFFFFFFFF)
+	{
+		// Alpha test controls depth writes but they're masked
+		pass = true;
+	}
+	else if((context->TEST.AFAIL == AFAIL_ZB_ONLY) && fm == 0xFFFFFFFF)
+	{
+		// Alpha test controls color writes but they're masked
+		pass = true;
+	}
+	else if((context->TEST.AFAIL == AFAIL_RGB_ONLY) && zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 1))
+	{
+		// Alpha test controls alpha/depth writes but they're both masked
+		pass = true;
+	}
 	else if(context->TEST.ATST != ATST_ALWAYS)
 	{
 		GetAlphaMinMax();
