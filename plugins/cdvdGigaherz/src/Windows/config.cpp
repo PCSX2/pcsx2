@@ -154,7 +154,7 @@ char *path[] = {
 
 int n, s;
 
-BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     int wmId, wmEvent;
     char temp[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -214,9 +214,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void configure()
 {
-    INT_PTR ret;
     ReadSettings();
-    ret = DialogBoxParam(hinst, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
+    INT_PTR ret = DialogBoxParam(hinst, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), ConfigProc, 1);
     if (ret == -1) {
         MessageBoxEx(GetActiveWindow(), "Error Opening the config dialog.", "OMG ERROR!", MB_OK, 0);
         return;
