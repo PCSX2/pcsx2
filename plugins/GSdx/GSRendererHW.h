@@ -50,8 +50,8 @@ private:
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	void OI_GsMemClear(); // always on
+	void OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds); // always on
 
-	bool OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_DoubleHalfClear_Vertical(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
