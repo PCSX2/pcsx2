@@ -307,8 +307,6 @@ CRC::Game CRC::m_games[] =
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
-	{0xEDDD6573, SpidermanWoS, US, 0},	//Web of Shadows
-	{0xF14C1D82, SpidermanWoS, EU, 0},
 	{0xF56C7948, HeavyMetalThunder, JP, 0},
 	{0x2498951B, SilentHill3, US, 0},
 	{0x5088CCDB, SilentHill3, EU, 0},
@@ -369,17 +367,9 @@ CRC::Game CRC::m_games[] =
 	{0xB3A9F9ED, Black, JP, 0},
 	{0x7838882F, VF4, JP, 0},
 	{0xEA131B57, VF4, US, 0},
-	{0x4F755D39, TyTasmanianTiger, US, 0},
-	{0xD59D3252, TyTasmanianTiger, EU, 0},
-	{0x5A1BB2A1, TyTasmanianTiger2, US, 0},
 	{0x44A5FA15, FFVIIDoC, US, 0},
 	{0x33F7D21A, FFVIIDoC, EU, 0},
 	{0xAFAC88EF, FFVIIDoC, JP, 0},
-	{0x568A5C78, DigimonRumbleArena2, US, 0},
-	{0x785E22BB, DigimonRumbleArena2, EU, 0},
-	{0x4C5CE4C3, DigimonRumbleArena2, EU, 0},
-	{0x7F995E8D, DigimonRumbleArena2, JP, 0},
-	{0x115A184D, DigimonRumbleArena2, KO, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
 	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0},  // EU and US versions have the same CRC
@@ -406,9 +396,6 @@ CRC::Game CRC::m_games[] =
 	{0x4A0E5B3A, MidnightClub3, US, 0},	//dub
 	{0xEBE1972D, MidnightClub3, EU, 0},	//dub
 	{0x60A42FF5, MidnightClub3, US, 0},	//remix
-	{0x4B1A0FFA, XmenOriginsWolverine, US, 0},
-	{0xBFF3DBCB, CallofDutyFinalFronts, US, 0},
-	{0xB78A5F5A, CallofDutyFinalFronts, EU, 0},
 	{0xD03D4C77, SpyroNewBeginning, US, 0},
 	{0x0EE5646B, SpyroNewBeginning, EU, 0},
 	// {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0}, // same CRC as {ICO, NoRegion}
