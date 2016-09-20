@@ -1010,7 +1010,7 @@ void GSRendererOGL::SendDraw()
 		glTextureBarrier();
 		dev->DrawIndexedPrimitive();
 	} else if (m_vt.m_primclass == GS_SPRITE_CLASS) {
-		size_t nb_vertex = (GLLoader::found_geometry_shader) ? 2 : 6;
+		size_t nb_vertex = (m_gs_sel.sprite == 1) ? 2 : 6;
 
 		GL_PUSH("Split the draw (SPRITE)");
 
