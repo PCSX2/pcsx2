@@ -104,19 +104,10 @@ CDROM_READ_TOC_EX tocrq = {0};
 
 s32 IOCtlSrc::GetSectorCount()
 {
-    DWORD size;
-
-    LARGE_INTEGER li;
-
     if (discSizeCached)
         return discSize;
 
-    if (GetFileSizeEx(device, &li)) {
-        discSizeCached = true;
-        discSize = (s32)(li.QuadPart / 2048);
-        return discSize;
-    }
-
+    DWORD size;
     GET_LENGTH_INFORMATION info;
     if (DeviceIoControl(device, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &info, sizeof(info), &size, NULL)) {
         discSizeCached = true;
