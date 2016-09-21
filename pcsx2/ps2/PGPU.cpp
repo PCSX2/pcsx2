@@ -111,12 +111,6 @@ All the PS1 GPU info comes from psx-spx: http://problemkaputt.de/psx-spx.htm
 #define PGIF_CFIFO_STAT (0x1000F380)
 #define PGIF_CFIFO_DATA (0x1000F3C0)*/
 
-//XXX: These two already exist in IopHw.h, so remove them from here.
-#define	HW_PS1_GPU_DATA 	0x1f801810
-#define	HW_PS1_GPU_STATUS	0x1f801814
-
-
-
 //Bit-fields definitions for the PGPU Status register:
 #define PGPU_STAT_IRQ1	0x01000000
 
@@ -208,28 +202,24 @@ struct ringBuf_t {
 	int tail;
 };
 
-int ringBufPut(struct ringBuf_t *rb, u32 *data) {
+void ringBufPut(struct ringBuf_t *rb, u32 *data) {
 	if (rb->count < rb->size) { //there is available space
 		*((u32*)rb->buf + rb->head) = *data;
 		if ((++(rb->head)) >= rb->size) rb->head = 0; //wrap back when the end is reached
 		rb->count++;
 	} else {
 		Console.WriteLn("############################# PGIF FIFO overflow! sz= %X", rb->size);
-		return 1; //overflow
 	}
-	return 0;
 }
 
-int ringBufGet(struct ringBuf_t *rb, u32 *data) {
+void ringBufGet(struct ringBuf_t *rb, u32 *data) {
 	if (rb->count > 0) { //there is available data
 		*data = *((u32*)rb->buf + rb->tail);
 		if ((++(rb->tail)) >= rb->size) rb->tail = 0; //wrap back when the end is reached
 		rb->count--;
 	} else {
 		Console.WriteLn("############################# PGIF FIFO underflow! sz= %X", rb->size);
-		return 1; //underflow
 	}
-	return 0;
 }
 
 void ringBufClear(struct ringBuf_t *rb) {
