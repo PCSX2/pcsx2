@@ -119,7 +119,6 @@ mem8_t __fastcall iopHwRead8_Page8( u32 addr )
 	IopHwTraceLog<mem8_t>( addr, ret, true );
 	return ret;
 }
-int cdromDmaAcsCnt = 0;
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 template< typename T >
@@ -237,8 +236,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 	}
 	else
 	{
-		u32 sif2fifosize = sif2.fifo.size;
-
 		switch( masked_addr )
 		{
 			// ------------------------------------------------------------------------
