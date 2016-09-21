@@ -253,9 +253,7 @@ u32 pgiffDatRbD[PGIF_DAT_RB_SZ] = {0}; //Ring buffer data.
 
 //TODO: Make this be called by IopHw.cpp / psxHwReset()... but maybe it should be called by the EE reset func,
 //given that the PGIF is in the EE ASIC, on the other side of the SBUS.
-int pgifInitialized = 0;
-void pgifInit(void) {
-	pgifInitialized = 1;
+void pgifInit() {
 	pgifCmdRbC.buf = (void*)pgiffCmdRbD;
 	pgifCmdRbC.size = PGIF_CMD_RB_SZ;
 	ringBufClear(&pgifCmdRbC);
@@ -294,7 +292,7 @@ nrWordsN = 0; //total number of words in Normal DMA
 }
 
 //Basically resetting the PS1 GPU.
-void pgifReset(void) {
+void pgifReset() {
 	//pgifInit();
 	//return;
 
@@ -366,7 +364,7 @@ void getIrqCmd(u32 data) { //For the IOP GPU. This is triggered by the GP0(1Fh) 
 	return;
 }
 
-void ackGpuIrq(void) { //Acknowledge for the IOP GPU interrupt.
+void ackGpuIrq() { //Acknowledge for the IOP GPU interrupt.
 	//This is a "null"-function in PS1DRV... maybe because hardware takes care of it... but does any software use it?
 	PGpuStatReg &= ~PGPU_STAT_IRQ1;
 	return;
@@ -439,7 +437,7 @@ void ckhCmdSetPgif(u32 cmd) { //Check GP1() command and configure PGIF according
 	return;
 }
 
-u32 getUpdPgpuStatReg(void) {
+u32 getUpdPgpuStatReg() {
 	#if SKIP_UPD_PGPU_STAT == 1
 	return PGpuStatReg;
 	#endif
@@ -498,7 +496,7 @@ void setPgifCtrlReg(u32 data) {
 	return;
 }
 
-u32 getUpdPgifCtrlReg(void) {
+u32 getUpdPgifCtrlReg() {
 	PGifCtrlReg &= 0xFFFFE0FF;
 	if (pgifCmdRbC.count == 0) //fake that DATA FIFO is empty, so that PS1DRV processes any commands on the GP1() register first.
 		PGifCtrlReg |= ((getDatRbC_Count() & 0x1F) <<8) & 0x1F00;
@@ -704,7 +702,7 @@ void PGIFwQword(u32 addr, void* dat) {
 
 //This function is used as a global FIFO-DMA-fill function and both Linked-list normal DMA call it,
 //regardless which DMA mode runs.
-void fillFifoOnDrain(void) {
+void fillFifoOnDrain() {
 	if ((getUpdPgifCtrlReg() & 0x8) == 0) return; //Skip filing FIFO with elements, if PS1DRV hasn't set this bit.
 	//Maybe it could be cleared once FIFO has data?
 	//This bit could be an enabler for the DREQ (EE->IOP for SIF2=PGIF) line. The FIFO is filled only when this is set
@@ -726,7 +724,7 @@ void fillFifoOnDrain(void) {
 	return;
 }
 
-void drainPgpuDmaLl(void) {
+void drainPgpuDmaLl() {
 	u32 data = 0;
 	if (PgpuDmaLlAct == 0) return;	//process only on transfer active
 
@@ -783,7 +781,7 @@ void drainPgpuDmaLl(void) {
 	return;
 }
 
-void drainPgpuDmaNrToGpu(void) {
+void drainPgpuDmaNrToGpu() {
 	u32 data = 0;
 
 	if (PgpuDmaNrActToGpu == 0) return;	//process only on transfer active
@@ -816,7 +814,7 @@ void drainPgpuDmaNrToGpu(void) {
 	return;
 }
 
-void drainPgpuDmaNrToIop(void) {
+void drainPgpuDmaNrToIop() {
 	u32 data;
 	if (PgpuDmaNrActToIop == 0) return;
 	if (pgifDatRbC.count <= 0) return;
@@ -852,7 +850,7 @@ void drainPgpuDmaNrToIop(void) {
 }
 
 
-void processPgpuDma(void) { //For normal mode & linked list.
+void processPgpuDma() { //For normal mode & linked list.
 	if ((pgpuDmaChcr & DMA_START_BUSY) == 0) return; //not really neessary in this case.
 	pgpuDmaChcr |= DMA_TRIGGER; //DMA is active (in transfer)
 	#if LOG_PGPU_DMA == 1
@@ -1061,7 +1059,7 @@ void anyIopLS(u32 addr, u32 data, int Wr) {
 }
 
 
-void dma6_OTClear(void) {
+void dma6_OTClear() {
 	if ((psxHu(0x1f8010e8) & 0x01000000) == 0) return;
 	u32 madr = psxHu(0x1f8010e0);
 	u32 blkSz = psxHu(0x1f8010e4) & 0xFFFF;
