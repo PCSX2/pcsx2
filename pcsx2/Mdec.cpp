@@ -181,7 +181,7 @@ void mdecInit(void) {
 
 
 void mdecWrite0(u32 data) {
-	CDVD_LOG("mdec0 write %lx", data);
+	MDEC_LOG("mdec0 write %lx", data);
 
 	mdec.command = data;
 	if ((data&0xf5ff0000)==0x30000000) {
@@ -190,7 +190,7 @@ void mdecWrite0(u32 data) {
 }
 
 void mdecWrite1(u32 data) {
-	CDVD_LOG("mdec1 write %lx", data);
+	MDEC_LOG("mdec1 write %lx", data);
 
 	if (data&0x80000000) { // mdec reset
 		round_init();
@@ -199,13 +199,13 @@ void mdecWrite1(u32 data) {
 }
 
 u32 mdecRead0(void) {
-	CDVD_LOG("mdec0 read %lx", mdec.command);
+	MDEC_LOG("mdec0 read %lx", mdec.command);
 
 	return mdec.command;
 }
 
 u32 mdecRead1(void) {
-	CDVD_LOG("mdec1 read %lx", mdec.status);
+	MDEC_LOG("mdec1 read %lx", mdec.status);
 
 	return mdec.status;
 }
@@ -214,7 +214,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	int cmd = mdec.command;
 	int size;
 
-	CDVD_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
+	MDEC_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
 
 	if (chcr != 0x01000201) return;
 
@@ -223,7 +223,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	for (i = 0; i<(size); i++) {
 		*(u32*)PSXM(((i + 0) * 4)) = iopMemRead32(adr + ((i + 0) * 4));
 		if (i <20)
-			CDVD_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), *(u32*)PSXM((i * 4)));
+			MDEC_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), *(u32*)PSXM((i * 4)));
 	}
 
 
@@ -247,7 +247,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	unsigned short *image;
 	int size;
 
-	CDVD_LOG("DMA1 %lx %lx %lx (cmd = %lx)", adr, bcr, chcr, mdec.command);
+	MDEC_LOG("DMA1 %lx %lx %lx (cmd = %lx)", adr, bcr, chcr, mdec.command);
 
 	if (chcr != 0x01000200) return;
 	size = (bcr >> 16)*(bcr & 0xffff);
@@ -271,7 +271,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	for (i = 0; i<(size2); i++) {
 		iopMemWrite32(((adr & 0x00FFFFFF) + (i * 4) + 0), mdecArr2[i]);
 		if (i <20)
-			CDVD_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), mdecArr2[i]);
+			MDEC_LOG(" data %08X  %08X ", iopMemRead32((adr & 0x00FFFFFF) + (i * 4)), mdecArr2[i]);
 	}
 
 	HW_DMA1_CHCR &= ~0x01000000;
