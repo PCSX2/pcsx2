@@ -124,7 +124,7 @@ bool cdvdKeepAlive_is_open = false;
 bool disc_has_changed = false;
 bool weAreInNewDiskCB = false;
 
-Source *src;
+IOCtlSrc *src;
 
 char throwaway[2352];
 extern s32 prefetch_last_lba;
