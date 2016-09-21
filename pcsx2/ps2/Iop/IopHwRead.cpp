@@ -40,13 +40,10 @@ mem8_t __fastcall iopHwRead8_Page1( u32 addr )
 	switch( masked_addr )
 	{
 		mcase(HW_SIO_DATA) :
+			// 1F801040h 1/4  JOY_DATA Joypad/Memory Card Data (R/W)
+			// psxmode: documentation suggests a valid 8 bit read and the rest of the 32 bit register is unclear.
+			// todo: check this and compare with the HW_SIO_DATA read around line 245 as well.
 			ret = sioRead8();
-			ret |= sioRead8() << 8;
-			if ( 1 /*sizeof(T) == 4*/)
-			{
-				ret |= sioRead8() << 16;
-				//ret |= sioRead8() << 24;
-			}
 		break;
 
 		// for use of serial port ignore for now
@@ -138,7 +135,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 	);
 
 	u32 masked_addr = pgmsk( addr );
-	T ret;
+	T ret = 0;
 
 	// todo: psx mode: this is new
 	if (((addr & 0x1FFFFFFF) >= 0x1F8010A0) && ((addr & 0x1FFFFFFF) <= 0x1F8010AF)) {
@@ -171,7 +168,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			case 0x8:
 				ret = psxCounters[cntidx].target;
 			break;
-			
+
 			default:
 				DevCon.Warning("Unknown 16bit counter read %x", addr);
 				ret = psxHu32(addr);
@@ -327,11 +324,11 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				//ret = psxHu32(addr); // old
 				DevCon.Warning("GPU Data Read %x", ret);
 			break;
-			
+
 			mcase(HW_PS1_GPU_STATUS) :
 				ret = psxGPUr(addr);
 			break;
-			
+
 			mcase (0x1f801820): // MDEC
 				// ret = psxHu32(addr); // old
 				ret = mdecRead0();
@@ -339,7 +336,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				DevCon.Warning("MDEC 1820 Read %x", ret);
 #endif
 			break;
-			
+
 			mcase (0x1f801824): // MDEC
 				//ret = psxHu32(addr); // old
 				ret = mdecRead1();
