@@ -555,7 +555,7 @@ void psxGPUw(int addr, u32 data) {
 }
 
 u32 psxGPUr(int addr) {
-	u32 data;
+	u32 data = 0;
 	if (addr == HW_PS1_GPU_DATA) {
 		//data = PGpuDataReg;
 		//The following is commented-out, because it seems more logical to return GP1() CMD responces only when Data FIFO is empty.
@@ -608,7 +608,7 @@ void PGIFw(int addr, u32 data) {
 }
 
 u32 PGIFr(int addr) {
-	u32 data;
+	u32 data = 0;
 	if (addr == PGPU_CMD_FIFO) {
 		cmdRingBufGet(&data);
 	} else 	if (addr == PGPU_DAT_FIFO) {
@@ -961,7 +961,7 @@ char strb[200] = {0};
 void kernelTTYFileDescrWrite(u32 mem, u32 data) {
 	//data is an address actually
 	char stra[100];
-	int i, k;
+	int i, k; // "k" will be used in below commented out Console.WriteLn
 //	if (mem == ) {
 		k = iopMemRead32(data);
 
@@ -1035,7 +1035,7 @@ void dma6_OTClear() {
 	if ((psxHu(0x1f8010e8) & 0x01000000) == 0) return;
 	u32 madr = psxHu(0x1f8010e0);
 	u32 blkSz = psxHu(0x1f8010e4) & 0xFFFF;
-	u32 blkCnt = (psxHu(0x1f8010e4) >> 16) & 0xFFFF;
+	//u32 blkCnt = (psxHu(0x1f8010e4) >> 16) & 0xFFFF;
 	u32 addrPnt = madr;
 	u32 pntCnt = 0;
 	Console.WriteLn("DMA6 OT clr madr %08X  bcr %08X  chcr %08X", psxHu(0x1f8010e0), psxHu(0x1f8010e4), psxHu(0x1f8010e8));
