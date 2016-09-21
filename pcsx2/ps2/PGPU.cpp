@@ -275,18 +275,18 @@ void pgifInit() {
 	pgpuDmaChcr = 0;
 	pgpuDmaTadr = 0;
 
-		PgpuDmaLlAct = 0;
-PgpuDmaNrActToGpu = 0;
-PgpuDmaNrActToIop = 0;
+	PgpuDmaLlAct = 0;
+	PgpuDmaNrActToGpu = 0;
+	PgpuDmaNrActToIop = 0;
 
-pgpuDmaTrAddr = 0;
-wCnt = 0; //
- wordNr = 0; //total number of words
-nextAddr = 0;
+	pgpuDmaTrAddr = 0;
+	wCnt = 0; //
+	wordNr = 0; //total number of words
+	nextAddr = 0;
 
-nrWordsN = 0; //total number of words in Normal DMA
- crWordN = 0; //current word number in Normal DMA
- addrNdma = 0;
+	nrWordsN = 0; //total number of words in Normal DMA
+	crWordN = 0; //current word number in Normal DMA
+	addrNdma = 0;
 
 	return;
 }
@@ -306,37 +306,29 @@ void pgifReset() {
 	pgif4reg = 0;
 	PGifCtrlReg = 0;
 	PGpuDataReg = 0;
-/*
-	pgpuDmaMadr = 0;
-	pgpuDmaBcr = 0;
-	pgpuDmaChcr = 0;
-	pgpuDmaTadr = 0;
 
+	//pgpuDmaMadr = 0;
+	//pgpuDmaBcr = 0;
+	//pgpuDmaChcr = 0;
+	//pgpuDmaTadr = 0;
 
-	PgpuDmaLlAct = 0;
-PgpuDmaNrActToGpu = 0;
-PgpuDmaNrActToIop = 0;
+	//PgpuDmaLlAct = 0;
+	//PgpuDmaNrActToGpu = 0;
+	//PgpuDmaNrActToIop = 0;
 
-pgpuDmaTrAddr = 0;
-wCnt = 0; //
- wordNr = 0; //total number of words
-nextAddr = 0;
+	//pgpuDmaTrAddr = 0;
+	//wCnt = 0; //
+	//wordNr = 0; //total number of words
+	//nextAddr = 0;
 
-nrWordsN = 0; //total number of words in Normal DMA
- crWordN = 0; //current word number in Normal DMA
- addrNdma = 0;
- */
-
+	//nrWordsN = 0; //total number of words in Normal DMA
+	//crWordN = 0; //current word number in Normal DMA
+	//addrNdma = 0;
 
 	return;
 }
 
-
-
-
-
 //------
-
 
 //Interrupt-related (IOP, EE and DMA):
 
@@ -361,13 +353,11 @@ void getIrqCmd(u32 data) { //For the IOP GPU. This is triggered by the GP0(1Fh) 
 		PGpuStatReg |= PGPU_STAT_IRQ1;
 	}
 	#endif
-	return;
 }
 
 void ackGpuIrq() { //Acknowledge for the IOP GPU interrupt.
 	//This is a "null"-function in PS1DRV... maybe because hardware takes care of it... but does any software use it?
 	PGpuStatReg &= ~PGPU_STAT_IRQ1;
-	return;
 }
 
 void pgpuDmaIntr(int trigDma) {	//For the IOP GPU DMA channel.
@@ -434,7 +424,6 @@ void ckhCmdSetPgif(u32 cmd) { //Check GP1() command and configure PGIF according
 			drainPgpuDmaLl(); //See comment in this function.
 			break;
 	}
-	return;
 }
 
 u32 getUpdPgpuStatReg() {
@@ -493,7 +482,6 @@ int getDatRbC_Count() {
 
 void setPgifCtrlReg(u32 data) {
 	PGifCtrlReg = (data & (~PGIF_CTRL_RO_MASK)) | (PGifCtrlReg & PGIF_CTRL_RO_MASK);
-	return;
 }
 
 u32 getUpdPgifCtrlReg() {
@@ -520,7 +508,6 @@ void cmdRingBufGet(u32 *data) { //Used by PGIF/PS1DRV.
 	#if CMD_INTERCEPT_AT_RD == 1
 	ckhCmdSetPgif(*data); //Let's assume that the PGIF hardware processes GPU commands just when the EE reads them from its FIFO.
 	#endif
-	return;
 }
 
 void datRingBufGet(u32 *data) { //
@@ -537,7 +524,6 @@ void datRingBufGet(u32 *data) { //
 		#endif
 		*data = PGpuDataReg;
 	}
-	return;
 }
 
 
@@ -566,7 +552,6 @@ void psxGPUw(int addr, u32 data) {
 		ckhCmdSetPgif(data);
 		#endif
 	}
-	return;
 }
 
 u32 psxGPUr(int addr) {
@@ -620,7 +605,6 @@ void PGIFw(int addr, u32 data) {
 	} else if (addr == PGIF_4) {
 		pgif4reg = data;
 	}
-	return;
 }
 
 u32 PGIFr(int addr) {
@@ -676,7 +660,6 @@ void PGIFrQword(u32 addr, void* dat) {
 		if (addr != PGPU_DAT_FIFO)
 			Console.WriteLn( "PGIF QW read  0x%08X = %08X %08X %08X %08X ",  addr, *(u32*)(data +0), *(u32*)(data +1), *(u32*)(data +2), *(u32*)(data +3));
 	#endif
-	return;
 }
 
 void PGIFwQword(u32 addr, void* dat) {
@@ -692,7 +675,6 @@ void PGIFwQword(u32 addr, void* dat) {
 		ringBufPut(&pgifDatRbC, (u32*)(data +3));
 		drainPgpuDmaNrToIop();
 	}
-	return;
 }
 
 
@@ -721,7 +703,6 @@ void fillFifoOnDrain() {
 	//Clear bit as DMA will be run - normally it should be cleared only once the current request finishes, but the IOP won't notice anything anyway.
 	//WARNING: Check if GPU->IOP DMA uses this flag, and if it does (it would make sense for it to use it as well),
 	//then only clear it here if the mode is not GPU->IOP.
-	return;
 }
 
 void drainPgpuDmaLl() {
@@ -778,7 +759,6 @@ void drainPgpuDmaLl() {
 		pgpuDmaTrAddr += 4;
 		wCnt++;
 	}
-	return;
 }
 
 void drainPgpuDmaNrToGpu() {
@@ -811,7 +791,6 @@ void drainPgpuDmaNrToGpu() {
 			Console.WriteLn( "PGPU DMA Norm IOP->GPU FINISHED ");
 			#endif
 	}
-	return;
 }
 
 void drainPgpuDmaNrToIop() {
@@ -846,7 +825,6 @@ void drainPgpuDmaNrToIop() {
 	}
 
 	if (pgifDatRbC.count > 0) drainPgpuDmaNrToIop();
-	return;
 }
 
 
@@ -896,7 +874,6 @@ void processPgpuDma() { //For normal mode & linked list.
 		PgpuDmaNrActToIop = 1;
 		drainPgpuDmaNrToIop();
 	}
-	return;
 }
 
 
@@ -943,7 +920,6 @@ void psxDma2GpuW(u32 addr, u32 data) {
 		pgpuDmaTadr = data;
 		Console.WriteLn( "PGPU DMA read TADR !!! ");
 	}
-	return;
 }
 
 
@@ -960,7 +936,6 @@ void psxDma2GpuW(u32 addr, u32 data) {
 void ps12PostOut(u32 mem, u8 value) {
 	Console.WriteLn( "XXXXXXXXXXXXXXXXXXXXXXX PS12 POST = %02X ", value);
 	//iopMemWrite32(0x0000B9B0, 1); //a bit of high-level emulation to enable DUART TTY in PS1 kernel...which doesn't work
-	return;
 }
 
 
@@ -971,7 +946,6 @@ void psDuartW(u32 mem, u8 value) {
 	} else if ((mem & 0x1FFFFFFF) == 0x1F80202B) {
 		Console.WriteLn( "XXXXXXXXXXXXXXXXXXXXXXX DUART B = %02X >%c<", value, value);
 	}
-	return;
 }
 
 u8 psExp2R8(u32 mem) {
@@ -1042,7 +1016,6 @@ void HPCoS_print(u32 mem, u32 data) {
 	//	Console.WriteLn("HPCoS BufAdr = %08X  >%c<", data, data);
 
 	//}
-	return;
 }
 
 int startPrntPc = 0;
@@ -1055,7 +1028,6 @@ void anyIopLS(u32 addr, u32 data, int Wr) {
 	//else
 	if  (startPrntPc <= (nrRuns + 2000))
 		startPrntPc++;
-	return;
 }
 
 
@@ -1080,10 +1052,6 @@ void dma6_OTClear() {
 
 	psxHu(0x1f8010e8) &= ~0x01000000;
 	psxDmaInterrupt(6);
-	return;
 }
-
-
-
 
 //NOTE: use iopPhysMem(madr) for getting the physical (local) address of IOP RAM stuff.  ... does this account for the complete 16MB range?
