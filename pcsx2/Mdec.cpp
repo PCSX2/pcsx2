@@ -18,8 +18,6 @@
 
 /*  This code was based on the FPSE v0.08 Mdec decoder*/
 
-//#if 1
-
 #include "PrecompiledHeader.h"
 
 #include <stdio.h>
@@ -39,6 +37,8 @@ struct config_mdec {
 	u32 Mdec;
 };
 struct config_mdec Config;
+
+u32 mdecArr2[0x100000] = { 0 };
 
 u32 mdecMem[0x100000]; //watherver large size. //Memory only used to get DMA data and not really for anything else.
 					   //Sould be optimized(the funcs. that use it) to read IOP RAM direcly.
@@ -239,8 +239,6 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	HW_DMA0_CHCR &= ~0x01000000;
 	psxDmaInterrupt(0);
 }
-
-u32 mdecArr2[0x100000] = { 0 };
 
 void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	int blk[DCTSIZE2*6];
@@ -456,8 +454,3 @@ void yuv2rgb24(int *blk,unsigned char *image) {
 //	return 0;
 //
 //}
-
-//#endif
-
-
-

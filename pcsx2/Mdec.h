@@ -100,12 +100,5 @@ void iqtab_init(int *iqtab,unsigned char *iq_y);
 void round_init(void);
 void yuv2rgb24(int *blk,unsigned char *image);
 void yuv2rgb15(int *blk,u16 *image);
-/*
-struct {
-	u32 command;
-	u32 status;
-	u16 *rl;
-	int rlsize;
-} mdec; */
 
 #endif /* __MDEC_H__ */

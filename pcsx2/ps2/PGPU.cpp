@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2010  PCSX2 Dev Team
+*  Copyright (C) 2002-2016  PCSX2 Dev Team
 *  Copyright (C) 2016 Wisi
 *
 *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -648,10 +648,7 @@ void PGIFrQword(u32 addr, void* dat) {
 		datRingBufGet(data + 1);
 		datRingBufGet(data + 2);
 		datRingBufGet(data + 3);
-		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +0));
-		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +4));
-		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +8));
-		//ringBufGet(&pgifDatRbC, (u32*)((u32)data +0xC));
+
 		fillFifoOnDrain();
 	} else {
 		Console.WriteLn( "PGIF QWord Read from add %08X  ERR - shouldnt happen!", addr);

@@ -527,64 +527,20 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			//
 
 			mcase(HW_PS1_GPU_DATA) :
-				// todo: psx mode: replaced all this junk with "psxGPUw(addr, val);"
-
-				//DevCon.Warning("GPUDATA Write %x", val);
-				///*if (val == 0x00000000)
-				//{
-				//	psxHu32(HW_PS1_GPU_STATUS) = 0x14802000;
-				//}
-				//else if (val == 0x01000000)
-				//{
-				//	DevCon.Warning("GP0 FIFO Clear");
-				//	sif2.fifo.clear();
-				//}
-			 //    else
-				//{*/
-				//	psxHu(HW_PS1_GPU_DATA) = val; // guess
-				//	WriteFifoSingleWord();
-				//
-				////}
-				////GPU_writeData(value); // really old code from PCSX? (rama)
-
 				psxGPUw(addr, val);
-				break;
+			break;
 			mcase (HW_PS1_GPU_STATUS):
-				//	//WriteFifoSingleWord();
-				//	if (val == 0x03000000)
-				//	{
-				//	//	DevCon.Warning("Turn Display on");
-				//		psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 23);
-				//	}
-				//	else if ((val & 0xff000000) == 0x05000000)
-				//	{
-				//		DevCon.Warning("Start display area");
-
-				//		//psxHu32(HW_PS1_GPU_STATUS) |= 0x80000000;
-				//		//psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 26);
-				//	}
-				//	else if ((val & 0xff000000) == 0x08000000)
-				//	{
-				//		//DevCon.Warning("Display Mode");
-				//		psxHu32(HW_PS1_GPU_STATUS) &= ~0x7F4000;
-				//		psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x3f) << 17;
-				//		psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x40) << 10;
-				//		psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x80) << 7;
-				//		//psxHu32(HW_PS1_GPU_STATUS) |= 0x80000000;
-				//		//psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 26);
-				//	}
-
 				psxGPUw(addr, val);
 				psxHu(addr) = val; // guess
-				break;
+			break;
 			mcase (0x1f801820): // MDEC
 				psxHu(addr) = val; // guess
-				mdecWrite0(val); // really old code from PCSX? (rama)
-				break;
+				mdecWrite0(val);
+			break;
 			mcase (0x1f801824): // MDEC
 				psxHu(addr) = val; // guess
-				mdecWrite1(val); // really old code from PCSX? (rama)
-				break;
+				mdecWrite1(val);
+			break;
 
 				// ------------------------------------------------------------------------
 
