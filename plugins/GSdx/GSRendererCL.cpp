@@ -74,6 +74,13 @@ typedef struct
 
 #pragma pack(pop)
 
+static GSVector4 GSRendererCL::m_pos_scale;
+
+void GSRendererCL::InitVectors()
+{
+	m_pos_scale = GSVector4(1.0f / 16, 1.0f / 16, 1.0f, 1.0f);
+}
+
 GSRendererCL::GSRendererCL()
 	: m_vb_count(0)
 	, m_synced(true)
@@ -200,8 +207,6 @@ GSTexture* GSRendererCL::GetOutput(int i, int& y_offset)
 	return m_texture[i];
 }
 
-const GSVector4 g_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 1.0f);
-
 template<uint32 primclass, uint32 tme, uint32 fst>
 void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
@@ -214,7 +219,7 @@ void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex*
 
 		GSVector4i xyzuvf(src->m[1]);
 
-		dst->p = (GSVector4(xyzuvf.upl16() - o) * g_pos_scale).xyxy(GSVector4::cast(xyzuvf.ywyw())); // pass zf as uints
+		dst->p = (GSVector4(xyzuvf.upl16() - o) * m_pos_scale).xyxy(GSVector4::cast(xyzuvf.ywyw())); // pass zf as uints
 
 		GSVector4 t = GSVector4::zero();
 
@@ -1870,7 +1875,7 @@ GSRendererCL::CL::CL()
 	WIs = INT_MAX;
 	version = INT_MAX;
 
-	std::string ocldev = theApp.GetConfig("ocldev", "");
+	std::string ocldev = theApp.GetConfigS("ocldev");
 
 #ifdef IOCL_DEBUG
 	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";

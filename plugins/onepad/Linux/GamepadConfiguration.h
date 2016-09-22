@@ -32,15 +32,15 @@
 #include "keyboard.h"
 #include "onepad.h"
 
-class GamepadConfiguration : public wxFrame
+class GamepadConfiguration : public wxDialog
 {
-    wxPanel* m_pan_gamepad_config;
+    wxPanel *m_pan_gamepad_config;
     wxCheckBox *m_cb_rumble, *m_cb_hack_sixaxis_usb, *m_cb_hack_sixaxis_pressure;
     wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
     wxButton *m_bt_ok, *m_bt_cancel;
     wxStaticText *m_lbl_rumble_intensity;
 
-    int m_pad_id;
+    u32 m_pad_id;
     u32 m_init_rumble_intensity, m_init_joystick_sensibility;
     bool m_init_rumble, m_init_hack_sixaxis, m_init_hack_sixaxis_pressure;
 
@@ -48,13 +48,13 @@ class GamepadConfiguration : public wxFrame
     void repopulate();
     void reset();
     // Events
-    void OnButtonClicked(wxCommandEvent&);
-    void OnSliderReleased(wxCommandEvent&);
-    void OnCheckboxChange(wxCommandEvent&);
+    void OnButtonClicked(wxCommandEvent &);
+    void OnSliderReleased(wxCommandEvent &);
+    void OnCheckboxChange(wxCommandEvent &);
 
 public:
-    GamepadConfiguration(int, wxWindow*);
+    GamepadConfiguration(int, wxWindow *);
     void InitGamepadConfiguration();
 };
 
-#endif // __GAMEPADCONFIGURATION_H__
+#endif  // __GAMEPADCONFIGURATION_H__

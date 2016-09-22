@@ -94,7 +94,7 @@ public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
 
 		void UpdateValidity(const GSVector4i& rect);
-		bool Inside(uint32 bp, uint32 psm, const GSVector4i& rect);
+		bool Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 
 		virtual void Update();
 	};
@@ -110,12 +110,12 @@ public:
 
 		SourceMap() : m_used(false) {memset(m_pages, 0, sizeof(m_pages));}
 
-		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset* off);
+		void Add(Source* s, const GIFRegTEX0& TEX0, GSOffset* off);
 		void RemoveAll();
 		void RemovePartial();
 		void RemoveAt(Source* s);
 
-		uint32* GetPagesCoverage(const GIFRegTEX0& TEX0, const GSOffset* off);
+		uint32* GetPagesCoverage(const GIFRegTEX0& TEX0, GSOffset* off);
 	};
 
 protected:

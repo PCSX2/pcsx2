@@ -20,7 +20,7 @@
 #include "Dialogs.h"
 #include <cstring>
 
-#ifdef __linux__
+#if defined(__unix__)
 #include <gtk/gtk.h>
 
 void SysMessage(const char *fmt, ...)

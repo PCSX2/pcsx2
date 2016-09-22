@@ -7,15 +7,20 @@ if(LIBC_LIBRARIES)
     set(LIBC_FIND_QUIETLY TRUE)
 endif(LIBC_LIBRARIES)
 
-find_library(libdl NAMES dl)
 find_library(libm NAMES m)
 
 # OSX doesn't have rt. On Linux timer and aio dependency.
 if(APPLE)
+	find_library(libdl NAMES dl)
 	set(LIBC_LIBRARIES ${librt} ${libdl} ${libm})    
-else()
+elseif(Linux)
+	find_library(libdl NAMES dl)
 	find_library(librt NAMES rt)
 	set(LIBC_LIBRARIES ${librt} ${libdl} ${libm})
+else()
+	# FreeBSD doesn't have libdl
+	find_library(librt NAMES rt)
+	set(LIBC_LIBRARIES ${librt} ${libm})
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set LIBC_FOUND to TRUE if 

@@ -8,6 +8,12 @@ in SHADER
 
 #ifdef FRAGMENT_SHADER
 
+layout(std140, binding = 11) uniform cb11
+{
+    vec2 ZrH;
+    float hH;
+};
+
 layout(location = 0) out vec4 SV_Target0;
 
 // TODO ensure that clip (discard) is < 0 and not <= 0 ???

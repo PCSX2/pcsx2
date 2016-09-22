@@ -21,31 +21,31 @@ HWND GShwnd = NULL;
 
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-		case WM_KEYDOWN:
-			if (lParam & 0x40000000)return TRUE;
+    switch (msg) {
+        case WM_KEYDOWN:
+            if (lParam & 0x40000000)
+                return TRUE;
 
-			event.evt = KEYPRESS;
-			event.key = wParam;
-			break;
+            event.evt = KEYPRESS;
+            event.key = wParam;
+            break;
 
-		case WM_KEYUP:
-			event.evt = KEYRELEASE;
-			event.key = wParam;
-			break;
+        case WM_KEYUP:
+            event.evt = KEYRELEASE;
+            event.key = wParam;
+            break;
 
-		case WM_DESTROY:
-		case WM_QUIT:
-			event.evt = KEYPRESS;
-			event.key = VK_ESCAPE;
-			return GSwndProc(hWnd, msg, wParam, lParam);
+        case WM_DESTROY:
+        case WM_QUIT:
+            event.evt = KEYPRESS;
+            event.key = VK_ESCAPE;
+            return GSwndProc(hWnd, msg, wParam, lParam);
 
-		default:
-			return GSwndProc(hWnd, msg, wParam, lParam);
-	};
+        default:
+            return GSwndProc(hWnd, msg, wParam, lParam);
+    };
 
-	return TRUE;
+    return TRUE;
 }
 
 void _PadUpdate(int pad)
@@ -54,23 +54,21 @@ void _PadUpdate(int pad)
 
 s32 _PADOpen(void *pDsp)
 {
-    GShwnd = (HWND)*(long*)pDsp;
+    GShwnd = (HWND) * (long *)pDsp;
 
-	if (GShwnd != NULL && GSwndProc != NULL)
-	{
-		// revert
-		SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(GSwndProc));
-	}
+    if (GShwnd != NULL && GSwndProc != NULL) {
+        // revert
+        SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(GSwndProc));
+    }
 
     GSwndProc = (WNDPROC)GetWindowLongPtr(GShwnd, GWLP_WNDPROC);
     GSwndProc = ((WNDPROC)SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(PADwndProc)));
-	return 0;
+    return 0;
 }
 
-void  _PADClose()
+void _PADClose()
 {
-    if (GShwnd != NULL && GSwndProc != NULL)
-	{
+    if (GShwnd != NULL && GSwndProc != NULL) {
         SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(GSwndProc));
         GSwndProc = NULL;
         GShwnd = NULL;

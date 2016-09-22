@@ -20,7 +20,7 @@
 #include <windows.h>
 
 void _PadUpdate(int pad);
-s32  _PADOpen(void *pDsp);
+s32 _PADOpen(void *pDsp);
 void _PADClose();
 
 #endif

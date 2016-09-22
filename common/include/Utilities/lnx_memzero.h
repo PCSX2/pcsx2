@@ -25,7 +25,7 @@ static __fi void memset32( T& obj )
 	// If the data length is not a factor of 32 bits, the C++ optimizing compiler will
 	// probably just generate mysteriously broken code in Release builds. ;)
 
-	jASSUME( (sizeof(T) & 0x3) == 0 );
+	pxAssume((sizeof(T) & 0x3) == 0);
 
 	u32* dest = (u32*)&obj;
 	for( int i=sizeof(T)>>2; i; --i, ++dest )

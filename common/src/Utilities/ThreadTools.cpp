@@ -37,7 +37,7 @@ ConsoleLogSource_Threading::ConsoleLogSource_Threading()
 {
 	static const TraceLogDescriptor myDesc =
 	{
-		L"pxThread",	L"pxThread",
+		L"p&xThread",	L"pxThread",
 		pxLt("Threading activity: start, detach, sync, deletion, etc.")
 	};
 
@@ -259,7 +259,7 @@ void Threading::pxThread::Start()
 
 	pxThreadLog.Write(GetName(), L"Calling pthread_create...");
 	if( pthread_create( &m_thread, NULL, _internal_callback, this ) != 0 )
-		throw Exception::ThreadCreationError( this );
+		throw Exception::ThreadCreationError( this ).SetDiagMsg( L"Thread creation error: "  + wxString(std::strerror(errno)) );
 
 	if( !m_sem_startup.WaitWithoutYield( wxTimeSpan( 0, 0, 3, 0 ) ) )
 	{
@@ -781,27 +781,6 @@ void Threading::WaitEvent::Wait()
 	pthread_mutex_unlock( &mutex );
 }
 #endif
-
-// --------------------------------------------------------------------------------------
-//  InterlockedExchanges / AtomicExchanges (PCSX2's Helper versions)
-// --------------------------------------------------------------------------------------
-// define some overloads for InterlockedExchanges for commonly used types, like u32 and s32.
-// Note: For all of these atomic operations below to be atomic, the variables need to be 4-byte
-// aligned. Read: http://msdn.microsoft.com/en-us/library/ms684122%28v=vs.85%29.aspx
-
-__fi u32 Threading::AtomicRead(volatile u32& Target) {
-	return Target; // Properly-aligned 32-bit reads are atomic
-}
-__fi s32 Threading::AtomicRead(volatile s32& Target) {
-	return Target; // Properly-aligned 32-bit reads are atomic
-}
-
-__fi u32 Threading::AtomicExchange(volatile u32& Target, u32 value ) {
-	return _InterlockedExchange( (volatile vol_t*)&Target, value );
-}
-__fi s32 Threading::AtomicExchange( volatile s32& Target, s32 value ) {
-	return _InterlockedExchange( (volatile vol_t*)&Target, value );
-}
 
 // --------------------------------------------------------------------------------------
 //  BaseThreadError

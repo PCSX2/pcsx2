@@ -1167,7 +1167,18 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 		pcsx2_GetBoolean,
 		pcsx2_GetString,
 		pcsx2_GetStringAlloc,
-		pcsx2_OSD_WriteLn
+		pcsx2_OSD_WriteLn,
+
+		NULL, // AddMenuItem
+		NULL, // Menu_Create
+		NULL, // Menu_Delete
+		NULL, // Menu_AddItem
+
+		{ 0 }, // MenuItem
+		{ 0 }, // Console
+		{ 0 }, // ConsoleW
+
+		{ 0,0,0,0,0,0,0,0 },
 	};
 
 	m_mcdPlugin = FileMcd_InitAPI( &myself );

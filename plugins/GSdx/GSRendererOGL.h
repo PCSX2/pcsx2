@@ -48,23 +48,40 @@ class GSRendererOGL final : public GSRendererHW
 		bool m_accurate_date;
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
-		bool m_unsafe_fbmask;
 		vector<size_t> m_drawlist;
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
 		bool UserHacks_safe_fbmask;
+		bool UserHacks_merge_sprite;
+		bool UserHacks_unscale_pt_ln;
 
 		GSDeviceOGL::VSConstantBuffer vs_cb;
 		GSDeviceOGL::PSConstantBuffer ps_cb;
 
 		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 
+		bool m_require_one_barrier;
+		bool m_require_full_barrier;
+
+		GSDeviceOGL::VSSelector m_vs_sel;
+		GSDeviceOGL::GSSelector m_gs_sel;
+		GSDeviceOGL::PSSelector m_ps_sel;
+
+		GSDeviceOGL::PSSamplerSelector		m_ps_ssel;
+		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
+		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
+
 	private:
-		void EmulateGS();
-		void SetupIA();
-		bool EmulateTextureShuffleAndFbmask(GSDeviceOGL::PSSelector& ps_sel, GSDeviceOGL::OMColorMaskSelector& om_csel);
-		bool EmulateBlending(GSDeviceOGL::PSSelector& ps_sel, bool DATE_GL42);
+		inline void ResetStates();
+		inline void Lines2Sprites();
+		inline void SetupIA(const float& sx, const float& sy);
+		inline void EmulateTextureShuffleAndFbmask();
+		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+		inline void EmulateBlending(bool DATE_GL42);
+		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
+		inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+		inline void EmulateZbuffer();
 
 	public:
 		GSRendererOGL();
@@ -76,5 +93,5 @@ class GSRendererOGL final : public GSRendererHW
 
 		PRIM_OVERLAP PrimitiveOverlap();
 
-		void SendDraw(bool require_barrier);
+		void SendDraw();
 };

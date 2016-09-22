@@ -33,12 +33,7 @@ __fi void Threading::Sleep( int ms )
 // improve performance and reduce cpu power consumption.
 __fi void Threading::SpinWait()
 {
-	__asm pause;
-}
-
-__fi void Threading::StoreFence()
-{
-	__asm sfence;
+	_mm_pause();
 }
 
 __fi void Threading::EnableHiresScheduler()

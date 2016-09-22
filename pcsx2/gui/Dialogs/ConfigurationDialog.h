@@ -29,9 +29,7 @@ namespace Panels
 	class BaseMcdListPanel;
 }
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_SomethingChanged, -1 );
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_SomethingChanged, wxCommandEvent);
 
 namespace Dialogs
 {

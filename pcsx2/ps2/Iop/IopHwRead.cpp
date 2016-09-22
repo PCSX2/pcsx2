@@ -222,8 +222,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 	}
 	else
 	{
-		u32 sif2fifosize = sif2.fifo.size;
-
 		switch( masked_addr )
 		{
 			// ------------------------------------------------------------------------
@@ -309,7 +307,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			
 			mcase(HW_PS1_GPU_STATUS) :
 				//ret = psxHu32(addr);
-				/*if (sif2fifosize == 0x8) psxHu32(0x1f801814) &= ~(3 << 25);
+				/*if (sif2.fifo.size == 0x8) psxHu32(0x1f801814) &= ~(3 << 25);
 				else psxHu32(0x1f801814) |= (3 << 25);*/
 				/*switch ((psxHu32(HW_PS1_GPU_STATUS) >> 29) & 0x3)
 				{
@@ -333,7 +331,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				ret = psxHu32(addr); //Idle & Ready to recieve command.
 				//psxHu32(addr) = psHu32(0x1000f300);
 #if PSX_EXTRALOGS
-			DevCon.Warning("GPU Status Read %x Sif fifo size %x", ret, sif2fifosize);
+			DevCon.Warning("GPU Status Read %x Sif fifo size %x", ret, sif2.fifo.size);
 #endif
 				//ret = -1; // fake alive GPU :p
 			break;

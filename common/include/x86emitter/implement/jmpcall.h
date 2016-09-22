@@ -19,23 +19,6 @@
 
 namespace x86Emitter {
 
-#ifdef __GNUG__
-	// GCC has a bug that causes the templated function handler for Jmp/Call emitters to generate
-	// bad asm code.  (error is something like "7#*_uber_379s_mangled_$&02_name is already defined!")
-	// Using GCC's always_inline attribute fixes it.  This differs from __fi in that it
-	// inlines *even in debug builds* which is (usually) undesirable.
-	//  ... except when it avoids compiler bugs.
-
-	// Note: I try with -fabi-version=6 without success
-	// {standard input}: Assembler messages:
-	// {standard input}:30773: Error: symbol `_ZNK10x86Emitter13xImpl_JmpCallclIFvvEEEvPT_' is already defined
-	// pcsx2/CMakeFiles/PCSX2.dir/build.make:4550: recipe for target 'pcsx2/CMakeFiles/PCSX2.dir/x86/ix86-32/iR5900-32.cpp.o' failed
-
-#	define __always_inline_tmpl_fail	__attribute__((always_inline))
-#else
-#	define __always_inline_tmpl_fail
-#endif
-
 extern void xJccKnownTarget( JccComparisonType comparison, const void* target, bool slideForward );
 
 // ------------------------------------------------------------------------
@@ -48,8 +31,7 @@ struct xImpl_JmpCall
 
 	// Special form for calling functions.  This form automatically resolves the
 	// correct displacement based on the size of the instruction being generated.
-	template< typename T > __fi __always_inline_tmpl_fail
-	void operator()( T* func ) const
+	void operator()( void* func ) const
 	{
 		if( isJmp )
 			xJccKnownTarget( Jcc_Unconditional, (void*)(uptr)func, false );	// double cast to/from (uptr) needed to appease GCC
@@ -79,35 +61,34 @@ struct xImpl_FastCall
 #ifdef __x86_64__
 
 #define XFASTCALL \
-	xCALL(func);
+	xCALL(f);
 
 #define XFASTCALL1 \
 	xMOV(rdi, a1); \
-	xCALL(func);
+	xCALL(f);
 
 #define XFASTCALL2 \
 	xMOV(rdi, a1); \
 	xMOV(rsi, a2); \
-	xCALL(func);
+	xCALL(f);
 
 #else
 
 #define XFASTCALL \
-	xCALL(func);
+	xCALL(f);
 
 #define XFASTCALL1 \
 	xMOV(ecx, a1); \
-	xCALL(func);
+	xCALL(f);
 
 #define XFASTCALL2 \
 	xMOV(ecx, a1); \
 	xMOV(edx, a2); \
-	xCALL(func);
+	xCALL(f);
 
 #endif
 
-	template< typename T > __fi __always_inline_tmpl_fail
-	void operator()( T* func, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
+	void operator()( void* f, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
 	{
 #ifdef __x86_64__
 		if (a1.IsEmpty()) {
@@ -128,9 +109,11 @@ struct xImpl_FastCall
 #endif
 	}
 
-	template< typename T > __fi __always_inline_tmpl_fail
+	template< typename T > __fi
 	void operator()( T* func, u32 a1, const xRegisterLong& a2) const
 	{
+		void* f = (void*)func;
+
 #ifdef __x86_64__
 		XFASTCALL2;
 #else
@@ -138,9 +121,11 @@ struct xImpl_FastCall
 #endif
 	}
 
-	template< typename T > __fi __always_inline_tmpl_fail
+	template< typename T > __fi
 	void operator()( T* func, const xIndirectVoid& a1) const
 	{
+		void* f = (void*)func;
+
 #ifdef __x86_64__
 		XFASTCALL1;
 #else
@@ -148,9 +133,11 @@ struct xImpl_FastCall
 #endif
 	}
 
-	template< typename T > __fi __always_inline_tmpl_fail
+	template< typename T > __fi
 	void operator()( T* func, u32 a1, u32 a2) const
 	{
+		void* f = (void*)func;
+
 #ifdef __x86_64__
 		XFASTCALL2;
 #else
@@ -158,9 +145,11 @@ struct xImpl_FastCall
 #endif
 	}
 
-	template< typename T > __fi __always_inline_tmpl_fail
+	template< typename T > __fi
 	void operator()( T* func, u32 a1) const
 	{
+		void* f = (void*)func;
+
 #ifdef __x86_64__
 		XFASTCALL1;
 #else
@@ -168,7 +157,7 @@ struct xImpl_FastCall
 #endif
 	}
 
-	void operator()(const xIndirect32& func, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
+	void operator()(const xIndirect32& f, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
 	{
 #ifdef __x86_64__
 		if (a1.IsEmpty()) {

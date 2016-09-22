@@ -21,10 +21,11 @@
 
 __aligned16 VU_Thread vu1Thread(CpuVU1, VU1);
 
-#define volatize(x) (*reinterpret_cast<volatile uint*>(&(x)))
-#define size_u32(x) (((u32)x+3u)>>2) // Rounds up a size in bytes for size in u32's
 #define MTVU_ALWAYS_KICK 0
 #define MTVU_SYNC_MODE   0
+
+// Rounds up a size in bytes for size in u32's
+static __fi u32 size_u32(u32 x) { return (x + 3) >> 2; }
 
 enum MTVU_EVENT {
 	MTVU_VU_EXECUTE,     // Execute VU program
@@ -52,7 +53,10 @@ void SaveStateBase::mtvuFreeze()
 	FreezeTag("MTVU");
 	pxAssert(vu1Thread.IsDone());
 	if (!IsSaving()) vu1Thread.Reset();
-	Freeze(vu1Thread.vuCycles);
+	for (size_t i = 0; i < 4; ++i) {
+		unsigned int v = vu1Thread.vuCycles[i].load();
+		Freeze(v);
+	}
 	Freeze(vu1Thread.vuCycleIdx);
 }
 
@@ -75,14 +79,15 @@ void VU_Thread::Reset()
 {
 	ScopedLock lock(mtxBusy);
 
-	read_pos     = 0;
-	write_pos    = 0;
 	write_offset = 0;
 	vuCycleIdx   = 0;
-	isBusy = false;
+	read_pos     = 0;
+	isBusy       = false;
+	write_pos    = 0;
 	memzero(vif);
 	memzero(vifRegs);
-	memzero(vuCycles);
+	for (size_t i = 0; i < 4; ++i)
+		vu1Thread.vuCycles[i] = 0;
 }
 
 void VU_Thread::ExecuteTaskInThread()
@@ -97,7 +102,7 @@ void VU_Thread::ExecuteRingBuffer()
 	for(;;) {
 		semaEvent.WaitWithoutYield();
 		ScopedLockBool lock(mtxBusy, isBusy);
-		while (read_pos != GetWritePos()) {
+		while (read_pos.load(std::memory_order_relaxed) != GetWritePos()) {
 			u32 tag = Read();
 			switch (tag) {
 				case MTVU_VU_EXECUTE: {
@@ -109,7 +114,7 @@ void VU_Thread::ExecuteRingBuffer()
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
 					semaXGkick.Post(); // Tell MTGS a path1 packet is complete
-					AtomicExchange(vuCycles[vuCycleIdx], vuRegs.cycle);
+					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_relaxed);
 					vuCycleIdx  = (vuCycleIdx + 1) & 3;
 					break;
 				}
@@ -137,12 +142,12 @@ void VU_Thread::ExecuteRingBuffer()
 					Read(&vif.tag, vif_copy_size);
 					ReadRegs(&vifRegs);
 					u32 size = Read();
-					MTVU_Unpack(&buffer[read_pos], vifRegs);
+					MTVU_Unpack(&buffer[read_pos.load(std::memory_order_relaxed)], vifRegs);
 					incReadPos(size_u32(size));
 					break;
 				}
 				case MTVU_NULL_PACKET:
-					read_pos = 0;
+					read_pos.store(0, std::memory_order_release);
 					break;
 				jNO_DEFAULT;
 			}
@@ -156,8 +161,8 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 {
 	for(;;) {
 		s32 readPos  = GetReadPos();
-		if (readPos <= write_pos) break; // MTVU is reading in back of write_pos
-		if (readPos >  write_pos + size) break; // Enough free front space
+		if (readPos <= write_pos.load(std::memory_order_relaxed)) break; // MTVU is reading in back of write_pos
+		if (readPos >  write_pos.load(std::memory_order_relaxed) + size) break; // Enough free front space
 		if (1) { // Let MTVU run to free up buffer space
 			KickStart();
 			if (IsDevBuild) DevCon.WriteLn("WaitOnSize()");
@@ -174,12 +179,12 @@ void VU_Thread::ReserveSpace(s32 size)
 	pxAssert(size      < buffer_size);
 	pxAssert(size > 0);
 	pxAssert(write_offset == 0);
-	if (write_pos + size > buffer_size) {
+	if (write_pos.load(std::memory_order_relaxed) + size > buffer_size) {
 		pxAssert(write_pos > 0);
 		WaitOnSize(1); // Size of MTVU_NULL_PACKET
 		Write(MTVU_NULL_PACKET);
 		write_offset = 0;
-		AtomicExchange(volatize(write_pos), 0);
+		write_pos.store(0, std::memory_order_release);
 	}
 	WaitOnSize(size);
 }
@@ -187,48 +192,48 @@ void VU_Thread::ReserveSpace(s32 size)
 // Use this when reading read_pos from ee thread
 __fi s32 VU_Thread::GetReadPos()
 {
-	return read_pos.load();
+	return read_pos.load(std::memory_order_acquire);
 }
 // Use this when reading write_pos from vu thread
 __fi s32 VU_Thread::GetWritePos()
 {
-	return AtomicRead(volatize(write_pos));
+	return write_pos.load(std::memory_order_acquire);
 }
 // Gets the effective write pointer after adding write_offset
 __fi u32* VU_Thread::GetWritePtr()
 {
-	return &buffer[(write_pos + write_offset) & buffer_mask];
+	return &buffer[(write_pos.load(std::memory_order_relaxed) + write_offset) & buffer_mask];
 }
 
 __fi void VU_Thread::incReadPos(s32 offset)
 { // Offset in u32 sizes
-	read_pos = (read_pos + offset) & buffer_mask;
+	read_pos.store((read_pos.load(std::memory_order_relaxed) + offset) & buffer_mask, std::memory_order_release);
 }
 __fi void VU_Thread::incWritePos()
 { // Adds write_offset
-	s32 temp = (write_pos + write_offset) & buffer_mask;
+	s32 temp = (write_pos.load(std::memory_order_relaxed) + write_offset) & buffer_mask;
 	write_offset = 0;
-	AtomicExchange(volatize(write_pos), temp);
+	write_pos.store(temp, std::memory_order_release);
 	if (MTVU_ALWAYS_KICK) KickStart();
 	if (MTVU_SYNC_MODE)   WaitVU();
 }
 
 __fi u32 VU_Thread::Read()
 {
-	u32 ret = buffer[read_pos];
+	u32 ret = buffer[read_pos.load(std::memory_order_relaxed)];
 	incReadPos(1);
 	return ret;
 }
 
 __fi void VU_Thread::Read(void* dest, u32 size)
 {
-	memcpy(dest, &buffer[read_pos], size);
+	memcpy(dest, &buffer[read_pos.load(std::memory_order_relaxed)], size);
 	incReadPos(size_u32(size));
 }
 
 __fi void VU_Thread::ReadRegs(VIFregisters* dest)
 {
-	VIFregistersMTVU* src = (VIFregistersMTVU*)&buffer[read_pos];
+	VIFregistersMTVU* src = (VIFregistersMTVU*)&buffer[read_pos.load(std::memory_order_relaxed)];
 	dest->cycle = src->cycle;
 	dest->mode = src->mode;
 	dest->num = src->num;
@@ -265,19 +270,21 @@ __fi void VU_Thread::WriteRegs(VIFregisters* src)
 // Used for vu cycle stealing hack
 u32 VU_Thread::Get_vuCycles()
 {
-	return (AtomicRead(vuCycles[0]) + AtomicRead(vuCycles[1])
-		  + AtomicRead(vuCycles[2]) + AtomicRead(vuCycles[3])) >> 2;
+	return (vuCycles[0].load(std::memory_order_relaxed) +
+			vuCycles[1].load(std::memory_order_relaxed) +
+			vuCycles[2].load(std::memory_order_relaxed) +
+			vuCycles[3].load(std::memory_order_relaxed)) >> 2;
 }
 
 void VU_Thread::KickStart(bool forceKick)
 {
 	if ((forceKick && !semaEvent.Count())
-	|| (!isBusy && GetReadPos() != write_pos)) semaEvent.Post();
+	|| (!isBusy.load(std::memory_order_relaxed) && GetReadPos() != write_pos.load(std::memory_order_relaxed))) semaEvent.Post();
 }
 
 bool VU_Thread::IsDone()
 {
-	return !isBusy && GetReadPos() == GetWritePos();
+	return !isBusy.load(std::memory_order_relaxed) && GetReadPos() == GetWritePos();
 }
 
 void VU_Thread::WaitVU()

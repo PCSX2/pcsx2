@@ -36,7 +36,7 @@ struct BreakPointCond
 	u32 Evaluate()
 	{
 		u64 result;
-		if (debug->parseExpression(expression,result) == false || result == 0) return 0;
+		if (!debug->parseExpression(expression,result) || result == 0) return 0;
 		return 1;
 	}
 };
@@ -141,7 +141,7 @@ public:
 
 	static const std::vector<MemCheck> GetMemChecks();
 	static const std::vector<BreakPoint> GetBreakpoints();
-	static const size_t GetNumMemchecks() { return memChecks_.size(); }
+	static size_t GetNumMemchecks() { return memChecks_.size(); }
 
 	static void Update(u32 addr = 0);
 

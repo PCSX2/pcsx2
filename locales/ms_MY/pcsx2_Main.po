@@ -700,7 +700,7 @@ msgid "Fits a lot of log in a microcosmically small area."
 msgstr "Meuatkan banyak log dalam ruang kecil."
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
-msgid "Small"
+msgid "&Small"
 msgstr "Kecil"
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
@@ -709,7 +709,7 @@ msgstr "Apa yg saya gunakan (programmer)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
 #, fuzzy
-msgid "Normal font"
+msgid "&Normal font"
 msgstr "Normal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
@@ -717,11 +717,11 @@ msgid "Its nice and readable."
 msgstr "Ia lawa dan boleh dibaca."
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
-msgid "Large"
+msgid "&Large"
 msgstr "Besar"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
-msgid "Huge"
+msgid "&Huge"
 msgstr "Sgt Besar"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
@@ -733,7 +733,7 @@ msgid "Default soft-tone color scheme."
 msgstr "Skema warna tona lembut asal."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
-msgid "Light theme"
+msgid "&Light theme"
 msgstr "Tema terang."
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
@@ -743,7 +743,7 @@ msgid ""
 msgstr "Tema warna hitam untuk mereka yang hmmm...."
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-msgid "Dark theme"
+msgid "&Dark theme"
 msgstr "Tema gelap"
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
@@ -784,7 +784,7 @@ msgid "Close this log window; contents are preserved"
 msgstr "Menutup tetingkap log; kandungan dikekalkan"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
-msgid "Dev/Verbose"
+msgid "Dev/&Verbose"
 msgstr "Dev/Verbose"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
@@ -800,7 +800,7 @@ msgid "Shows disk read activity"
 msgstr "Menunjukkan aktiviti disk read"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
-msgid "Enable all"
+msgid "&Enable all"
 msgstr "Hidupkan semua"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
@@ -808,7 +808,7 @@ msgid "Enables all log source filters."
 msgstr "Hidupkan semua tapisan log punca."
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
-msgid "Disable all"
+msgid "&Disable all"
 msgstr "Matikan semua"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
@@ -817,7 +817,7 @@ msgstr "Matikan semua tapisan log punca."
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
-msgid "Restore Default"
+msgid "&Restore Default"
 msgstr "Kembali kpd Asal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
@@ -1300,7 +1300,7 @@ msgid "Exit PCSX2?"
 msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:473 pcsx2/gui/MainFrame.cpp:430
-msgid "Save state"
+msgid "&Save state"
 msgstr "Save state"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
@@ -1308,7 +1308,7 @@ msgid "Saves the virtual machine state to the current slot."
 msgstr "Menyimpan state virtual machine ke slot yg dipilih."
 
 #: pcsx2/gui/GlobalCommands.cpp:479 pcsx2/gui/MainFrame.cpp:429
-msgid "Load state"
+msgid "&Load state"
 msgstr "Load state"
 
 #: pcsx2/gui/GlobalCommands.cpp:480
@@ -1380,11 +1380,11 @@ msgid "Backup"
 msgstr "Buat sokongan"
 
 #: pcsx2/gui/MainFrame.cpp:332
-msgid "Show Console"
+msgid "&Show Console"
 msgstr "Paparkan Console"
 
 #: pcsx2/gui/MainFrame.cpp:333
-msgid "Console to Stdio"
+msgid "&Console to Stdio"
 msgstr "Console ke Stdio"
 
 #: pcsx2/gui/MainFrame.cpp:346
@@ -1413,7 +1413,7 @@ msgid "Initializing..."
 msgstr "Memulakan..."
 
 #: pcsx2/gui/MainFrame.cpp:419
-msgid "Run ELF..."
+msgid "&Run ELF..."
 msgstr "Jalankan ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:420
@@ -1421,11 +1421,11 @@ msgid "For running raw PS2 binaries directly"
 msgstr "Untuk menjalankan binari PS2 mentah secara terus"
 
 #: pcsx2/gui/MainFrame.cpp:432
-msgid "Backup before save"
+msgid "&Backup before save"
 msgstr "buat sokongan sblm Simpan"
 
 #: pcsx2/gui/MainFrame.cpp:437
-msgid "Automatic Gamefixes"
+msgid "Automatic &Gamefixes"
 msgstr "GameFixes Automatik"
 
 #: pcsx2/gui/MainFrame.cpp:438
@@ -1433,20 +1433,20 @@ msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr "Menetapkan fix2 ke game2 yg diketahui bermasalah"
 
 #: pcsx2/gui/MainFrame.cpp:440
-msgid "Enable Cheats"
+msgid "Enable &Cheats"
 msgstr "Hidupkan Cheats"
 
 #: pcsx2/gui/MainFrame.cpp:443
 #, fuzzy
-msgid "Enable Widescreen Patches"
+msgid "Enable &Widescreen Patches"
 msgstr "Hidupkan speedhacks"
 
 #: pcsx2/gui/MainFrame.cpp:446
-msgid "Enable Host Filesystem"
+msgid "Enable &Host Filesystem"
 msgstr "Hidupkan Host Filesystem"
 
 #: pcsx2/gui/MainFrame.cpp:451
-msgid "Shutdown"
+msgid "Shut&down"
 msgstr "Tutup PS2 VM"
 
 #: pcsx2/gui/MainFrame.cpp:452
@@ -1454,7 +1454,7 @@ msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "Menghapus semua state dalaman VM dan menutup plugin."
 
 #: pcsx2/gui/MainFrame.cpp:454
-msgid "Exit"
+msgid "E&xit"
 msgstr "Keluar"
 
 #: pcsx2/gui/MainFrame.cpp:455
@@ -1463,7 +1463,7 @@ msgid "Closing %s may be hazardous to your health"
 msgstr "Menutup %s mungkin membahayakan hidup anda"
 
 #: pcsx2/gui/MainFrame.cpp:462
-msgid "Iso Selector"
+msgid "Iso &Selector"
 msgstr "Pilih Iso"
 
 #: pcsx2/gui/MainFrame.cpp:463
@@ -1471,7 +1471,7 @@ msgid "Plugin Menu"
 msgstr "Menu Plugin"
 
 #: pcsx2/gui/MainFrame.cpp:466
-msgid "Iso"
+msgid "&Iso"
 msgstr "Iso"
 
 #: pcsx2/gui/MainFrame.cpp:466
@@ -1479,7 +1479,7 @@ msgid "Makes the specified ISO image the CDVD source."
 msgstr "Menjadikan imej ISO sbg punca CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:467
-msgid "Plugin"
+msgid "&Plugin"
 msgstr "Plugin"
 
 #: pcsx2/gui/MainFrame.cpp:467
@@ -1487,7 +1487,7 @@ msgid "Uses an external plugin as the CDVD source."
 msgstr "Menggunakan plugin sbg punca CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:468
-msgid "No disc"
+msgid "&No disc"
 msgstr "Tiada CDVD"
 
 #: pcsx2/gui/MainFrame.cpp:468
@@ -1507,7 +1507,7 @@ msgid "&Plugin/BIOS Selector"
 msgstr "&Pilihan Plugin/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
-msgid "Game Database Editor"
+msgid "&Game Database Editor"
 msgstr "Editor Database Permainan"
 
 #: pcsx2/gui/MainFrame.cpp:485
@@ -1523,27 +1523,27 @@ msgid "&Controllers (PAD)"
 msgstr "&Controllers (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:488
-msgid "Dev9"
+msgid "&Dev9"
 msgstr "Dev9"
 
 #: pcsx2/gui/MainFrame.cpp:489
-msgid "USB"
+msgid "&USB"
 msgstr "USB"
 
 #: pcsx2/gui/MainFrame.cpp:490
-msgid "Firewire"
+msgid "&Firewire"
 msgstr "Firewire"
 
 #: pcsx2/gui/MainFrame.cpp:496
-msgid "Multitap 1"
+msgid "Multitap &1"
 msgstr "Multitap 1"
 
 #: pcsx2/gui/MainFrame.cpp:497
-msgid "Multitap 2"
+msgid "Multitap &2"
 msgstr "Multitap 2"
 
 #: pcsx2/gui/MainFrame.cpp:500
-msgid "Clear all settings..."
+msgid "C&lear all settings..."
 msgstr "Hapus semua tetapan..."
 
 #: pcsx2/gui/MainFrame.cpp:501
@@ -1552,19 +1552,19 @@ msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "Mengosongkan semua tetapan %s dan menjalankan semula wizard startup."
 
 #: pcsx2/gui/MainFrame.cpp:523
-msgid "About..."
+msgid "&About..."
 msgstr "About..."
 
 #: pcsx2/gui/MainFrame.cpp:528
-msgid "Open Debug Window..."
+msgid "&Open Debug Window..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:531
-msgid "Logging..."
+msgid "&Logging..."
 msgstr "Logging..."
 
 #: pcsx2/gui/MainFrame.cpp:613
-msgid "Pause"
+msgid "Paus&e"
 msgstr "Jeda"
 
 #: pcsx2/gui/MainFrame.cpp:614
@@ -1572,7 +1572,7 @@ msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "Menjedakan emulation dan mengekalkan state PS2."
 
 #: pcsx2/gui/MainFrame.cpp:621
-msgid "Resume"
+msgid "R&esume"
 msgstr "Sambung"
 
 #: pcsx2/gui/MainFrame.cpp:622
@@ -1588,7 +1588,7 @@ msgid "No emulation state is active; cannot suspend or resume."
 msgstr "Tiada emulation state aktif; tidak boleh jeda atau sambung."
 
 #: pcsx2/gui/MainFrame.cpp:636
-msgid "Restart"
+msgid "Res&tart"
 msgstr "Mula Semula"
 
 #: pcsx2/gui/MainFrame.cpp:637
@@ -1600,7 +1600,7 @@ msgid "No emulation state is active; boot something first."
 msgstr "Tiada emulation state aktif; boot apa2 dahulu."
 
 #: pcsx2/gui/MainFrame.cpp:650
-msgid "Reboot CDVD (full)"
+msgid "Reboot CDVD (f&ull)"
 msgstr "Reboot CDVD (full)"
 
 #: pcsx2/gui/MainFrame.cpp:651
@@ -1616,7 +1616,7 @@ msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "Memulakan VM dgn DVD atau ISO sbg punca media"
 
 #: pcsx2/gui/MainFrame.cpp:664
-msgid "Reboot CDVD (fast)"
+msgid "Reboot CDVD (&fast)"
 msgstr "Reboot CDVD (fast)"
 
 #: pcsx2/gui/MainFrame.cpp:665
@@ -1624,7 +1624,7 @@ msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "Memulakan semula boot tanpa skrin BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:669
-msgid "Boot CDVD (fast)"
+msgid "Boot CDVD (&fast)"
 msgstr "Boot CDVD (fast)"
 
 #: pcsx2/gui/MainFrame.cpp:670
@@ -1636,7 +1636,7 @@ msgid "No plugin loaded"
 msgstr "Tiada plugin dimuatkan"
 
 #: pcsx2/gui/MainFrame.cpp:755
-msgid "Core GS Settings..."
+msgid "&Core GS Settings..."
 msgstr "Tetapan teras GS..."
 
 #: pcsx2/gui/MainFrame.cpp:756
@@ -1646,7 +1646,7 @@ msgid ""
 msgstr "Mengubah tetapan perkakasan emulation, dikawal oleh teras VM PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:758
-msgid "Window Settings..."
+msgid "&Window Settings..."
 msgstr "Tetapan Tetingkap..."
 
 #: pcsx2/gui/MainFrame.cpp:759
@@ -1654,7 +1654,7 @@ msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Megubah tetapan rupa dan tetingkap, termasuk aspect ratio."
 
 #: pcsx2/gui/MainFrame.cpp:766
-msgid "Plugin Settings..."
+msgid "&Plugin Settings..."
 msgstr "Tetapan Plugin..."
 
 #: pcsx2/gui/MainFrame.cpp:767

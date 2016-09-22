@@ -656,7 +656,7 @@ msgid "Fits a lot of log in a microcosmically small area."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
-msgid "Small"
+msgid "&Small"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
@@ -664,7 +664,7 @@ msgid "It's what I use (the programmer guy)."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
-msgid "Normal font"
+msgid "&Normal font"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
@@ -672,11 +672,11 @@ msgid "Its nice and readable."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
-msgid "Large"
+msgid "&Large"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
-msgid "Huge"
+msgid "&Huge"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
@@ -688,7 +688,7 @@ msgid "Default soft-tone color scheme."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
-msgid "Light theme"
+msgid "&Light theme"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
@@ -698,7 +698,7 @@ msgid ""
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-msgid "Dark theme"
+msgid "&Dark theme"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
@@ -739,7 +739,7 @@ msgid "Close this log window; contents are preserved"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
-msgid "Dev/Verbose"
+msgid "Dev/&Verbose"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
@@ -755,7 +755,7 @@ msgid "Shows disk read activity"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
-msgid "Enable all"
+msgid "&Enable all"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
@@ -763,7 +763,7 @@ msgid "Enables all log source filters."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
-msgid "Disable all"
+msgid "&Disable all"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
@@ -771,7 +771,7 @@ msgid "Disables all log source filters."
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
-msgid "Restore Default"
+msgid "&Restore Default"
 msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
@@ -1236,7 +1236,7 @@ msgid "Exit PCSX2?"
 msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:473 pcsx2/gui/MainFrame.cpp:430
-msgid "Save state"
+msgid "&Save state"
 msgstr "Guarda l'estat"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
@@ -1244,7 +1244,7 @@ msgid "Saves the virtual machine state to the current slot."
 msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:479 pcsx2/gui/MainFrame.cpp:429
-msgid "Load state"
+msgid "&Load state"
 msgstr "Carregarun estat"
 
 #: pcsx2/gui/GlobalCommands.cpp:480
@@ -1312,11 +1312,11 @@ msgid "Backup"
 msgstr "Copia de Seguretat"
 
 #: pcsx2/gui/MainFrame.cpp:332
-msgid "Show Console"
+msgid "&Show Console"
 msgstr "Mostra la consola"
 
 #: pcsx2/gui/MainFrame.cpp:333
-msgid "Console to Stdio"
+msgid "&Console to Stdio"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:346
@@ -1345,7 +1345,7 @@ msgid "Initializing..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:419
-msgid "Run ELF..."
+msgid "&Run ELF..."
 msgstr "Executar ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:420
@@ -1353,11 +1353,11 @@ msgid "For running raw PS2 binaries directly"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:432
-msgid "Backup before save"
+msgid "&Backup before save"
 msgstr "Fes una copia de seguretat abans de guardar"
 
 #: pcsx2/gui/MainFrame.cpp:437
-msgid "Automatic Gamefixes"
+msgid "Automatic &Gamefixes"
 msgstr "Reparacións automàtiques dels jocs"
 
 #: pcsx2/gui/MainFrame.cpp:438
@@ -1365,19 +1365,19 @@ msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:440
-msgid "Enable Cheats"
+msgid "Enable &Cheats"
 msgstr "Activar trucs"
 
 #: pcsx2/gui/MainFrame.cpp:443
-msgid "Enable Widescreen Patches"
+msgid "Enable &Widescreen Patches"
 msgstr "Activar els pegats de pantalla ample"
 
 #: pcsx2/gui/MainFrame.cpp:446
-msgid "Enable Host Filesystem"
+msgid "Enable &Host Filesystem"
 msgstr "Activar el hosting del sistema d'arxius"
 
 #: pcsx2/gui/MainFrame.cpp:451
-msgid "Shutdown"
+msgid "Shut&down"
 msgstr "Apagar"
 
 #: pcsx2/gui/MainFrame.cpp:452
@@ -1385,7 +1385,7 @@ msgid "Wipes all internal VM states and shuts down plugins."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:454
-msgid "Exit"
+msgid "E&xit"
 msgstr "Sortir"
 
 #: pcsx2/gui/MainFrame.cpp:455
@@ -1394,7 +1394,7 @@ msgid "Closing %s may be hazardous to your health"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:462
-msgid "Iso Selector"
+msgid "Iso &Selector"
 msgstr "Selector d'ISO"
 
 #: pcsx2/gui/MainFrame.cpp:463
@@ -1402,7 +1402,7 @@ msgid "Plugin Menu"
 msgstr "Menú de extensións"
 
 #: pcsx2/gui/MainFrame.cpp:466
-msgid "Iso"
+msgid "&Iso"
 msgstr "Iso"
 
 #: pcsx2/gui/MainFrame.cpp:466
@@ -1410,7 +1410,7 @@ msgid "Makes the specified ISO image the CDVD source."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:467
-msgid "Plugin"
+msgid "&Plugin"
 msgstr "Extensió"
 
 #: pcsx2/gui/MainFrame.cpp:467
@@ -1418,7 +1418,7 @@ msgid "Uses an external plugin as the CDVD source."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:468
-msgid "No disc"
+msgid "&No disc"
 msgstr "Sense Disc"
 
 #: pcsx2/gui/MainFrame.cpp:468
@@ -1438,7 +1438,7 @@ msgid "&Plugin/BIOS Selector"
 msgstr "&Selector de Extensións/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
-msgid "Game Database Editor"
+msgid "&Game Database Editor"
 msgstr "Editor de Base de dades de jocs"
 
 #: pcsx2/gui/MainFrame.cpp:485
@@ -1454,27 +1454,27 @@ msgid "&Controllers (PAD)"
 msgstr "&Controladors (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:488
-msgid "Dev9"
+msgid "&Dev9"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:489
-msgid "USB"
+msgid "&USB"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:490
-msgid "Firewire"
+msgid "&Firewire"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:496
-msgid "Multitap 1"
+msgid "Multitap &1"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:497
-msgid "Multitap 2"
+msgid "Multitap &2"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:500
-msgid "Clear all settings..."
+msgid "C&lear all settings..."
 msgstr "Neteja totes les opcións..."
 
 #: pcsx2/gui/MainFrame.cpp:501
@@ -1483,19 +1483,19 @@ msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:523
-msgid "About..."
+msgid "&About..."
 msgstr "Sobre..."
 
 #: pcsx2/gui/MainFrame.cpp:528
-msgid "Open Debug Window..."
+msgid "&Open Debug Window..."
 msgstr "Obrir la finestra per depurar"
 
 #: pcsx2/gui/MainFrame.cpp:531
-msgid "Logging..."
+msgid "&Logging..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:613
-msgid "Pause"
+msgid "Paus&e"
 msgstr "Pausa"
 
 #: pcsx2/gui/MainFrame.cpp:614
@@ -1503,7 +1503,7 @@ msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:621
-msgid "Resume"
+msgid "R&esume"
 msgstr "Continua"
 
 #: pcsx2/gui/MainFrame.cpp:622
@@ -1519,7 +1519,7 @@ msgid "No emulation state is active; cannot suspend or resume."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:636
-msgid "Restart"
+msgid "Res&tart"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:637
@@ -1531,7 +1531,7 @@ msgid "No emulation state is active; boot something first."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:650
-msgid "Reboot CDVD (full)"
+msgid "Reboot CDVD (f&ull)"
 msgstr "Reinicia CDVD (Sencer)"
 
 #: pcsx2/gui/MainFrame.cpp:651
@@ -1547,7 +1547,7 @@ msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "Arrenca utilitzant el CDVD o ISO amb la màquina virtual"
 
 #: pcsx2/gui/MainFrame.cpp:664
-msgid "Reboot CDVD (fast)"
+msgid "Reboot CDVD (&fast)"
 msgstr "Reinicia CDVD (Rapid)"
 
 #: pcsx2/gui/MainFrame.cpp:665
@@ -1555,7 +1555,7 @@ msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:669
-msgid "Boot CDVD (fast)"
+msgid "Boot CDVD (&fast)"
 msgstr "Arrencar CDVD (Rapid)"
 
 #: pcsx2/gui/MainFrame.cpp:670
@@ -1567,7 +1567,7 @@ msgid "No plugin loaded"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:755
-msgid "Core GS Settings..."
+msgid "&Core GS Settings..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:756
@@ -1577,7 +1577,7 @@ msgid ""
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:758
-msgid "Window Settings..."
+msgid "&Window Settings..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:759
@@ -1585,7 +1585,7 @@ msgid "Modify window and appearance options, including aspect ratio."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:766
-msgid "Plugin Settings..."
+msgid "&Plugin Settings..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:767

@@ -211,7 +211,8 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 
 	if( result != wxID_RESET )
 	{
-		Console.Indent().WriteLn( L"(CdvdSource) HotSwapping CDVD source types from %s to %s.", CDVD_SourceLabels[oldsrc], CDVD_SourceLabels[newsrc] );
+		Console.Indent().WriteLn(L"(CdvdSource) HotSwapping CDVD source types from %s to %s.",
+			WX_STR(wxString(CDVD_SourceLabels[oldsrc])), WX_STR(wxString(CDVD_SourceLabels[newsrc])));
 		//CoreThread.ChangeCdvdSource();
 		sMainFrame.UpdateIsoSrcSelection();
 		core.AllowResume();
@@ -439,18 +440,21 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 void MainEmuFrame::Menu_EnablePatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnablePatches = GetMenuBar()->IsChecked( MenuId_EnablePatches );
-    AppSaveSettings();
+	AppApplySettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableCheats_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableCheats  = GetMenuBar()->IsChecked( MenuId_EnableCheats );
-    AppSaveSettings();
+	AppApplySettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableWideScreenPatches  = GetMenuBar()->IsChecked( MenuId_EnableWideScreenPatches );
+	AppApplySettings();
 	AppSaveSettings();
 }
 
@@ -585,7 +589,7 @@ void MainEmuFrame::Menu_ShowConsole(wxCommandEvent &event)
 	// Use messages to relay open/close commands (thread-safe)
 
 	g_Conf->ProgLogBox.Visible = event.IsChecked();
-	wxCommandEvent evt( wxEVT_COMMAND_MENU_SELECTED, g_Conf->ProgLogBox.Visible ? wxID_OPEN : wxID_CLOSE );
+	wxCommandEvent evt( wxEVT_MENU, g_Conf->ProgLogBox.Visible ? wxID_OPEN : wxID_CLOSE );
 	wxGetApp().ProgramLog_PostEvent( evt );
 }
 

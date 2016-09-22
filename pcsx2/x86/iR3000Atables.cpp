@@ -37,6 +37,16 @@ static void rpsx##f() { \
 /*	branch = 2; */\
 }
 
+// Same as above but with a different naming convension (to avoid various rename)
+#define REC_GTE_FUNC(f) \
+static void rgte##f() { \
+	xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
+	_psxFlushCall(FLUSH_EVERYTHING); \
+	xFastCall((void*)(uptr)gte##f); \
+	PSX_DEL_CONST(_Rt_); \
+/*	branch = 2; */\
+}
+
 extern void psxLWL();
 extern void psxLWR();
 extern void psxSWL();
@@ -631,7 +641,7 @@ static void rpsxLB()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead8, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -647,7 +657,7 @@ static void rpsxLBU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead8, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -663,7 +673,7 @@ static void rpsxLH()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead16, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVSX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -679,7 +689,7 @@ static void rpsxLHU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall(iopMemRead16, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOVZX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -700,7 +710,7 @@ static void rpsxLW()
 	xTEST(ecx, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xFastCall(iopMemRead32, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
 	if (_Rt_) {
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -728,7 +738,7 @@ static void rpsxSB()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite8, ecx, edx );
+	xFastCall((void*)iopMemWrite8, ecx, edx );
 }
 
 static void rpsxSH()
@@ -739,7 +749,7 @@ static void rpsxSH()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite16, ecx, edx );
+	xFastCall((void*)iopMemWrite16, ecx, edx );
 }
 
 static void rpsxSW()
@@ -750,7 +760,7 @@ static void rpsxSW()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall(iopMemWrite32, ecx, edx );
+	xFastCall((void*)iopMemWrite32, ecx, edx );
 }
 
 //// SLL
@@ -1381,6 +1391,39 @@ void rpsxRFE()
 	xFastCall((void*)(uptr)&iopTestIntc );
 }
 
+//// COP2
+REC_GTE_FUNC(RTPS);
+REC_GTE_FUNC(NCLIP);
+REC_GTE_FUNC(OP);
+REC_GTE_FUNC(DPCS);
+REC_GTE_FUNC(INTPL);
+REC_GTE_FUNC(MVMVA);
+REC_GTE_FUNC(NCDS);
+REC_GTE_FUNC(CDP);
+REC_GTE_FUNC(NCDT);
+REC_GTE_FUNC(NCCS);
+REC_GTE_FUNC(CC);
+REC_GTE_FUNC(NCS);
+REC_GTE_FUNC(NCT);
+REC_GTE_FUNC(SQR);
+REC_GTE_FUNC(DCPL);
+REC_GTE_FUNC(DPCT);
+REC_GTE_FUNC(AVSZ3);
+REC_GTE_FUNC(AVSZ4);
+REC_GTE_FUNC(RTPT);
+REC_GTE_FUNC(GPF);
+REC_GTE_FUNC(GPL);
+REC_GTE_FUNC(NCCT);
+
+REC_GTE_FUNC(MFC2);
+REC_GTE_FUNC(CFC2);
+REC_GTE_FUNC(MTC2);
+REC_GTE_FUNC(CTC2);
+
+REC_GTE_FUNC(LWC2);
+REC_GTE_FUNC(SWC2);
+
+
 // R3000A tables
 extern void (*rpsxBSC[64])();
 extern void (*rpsxSPC[64])();
@@ -1392,7 +1435,8 @@ extern void (*rpsxCP2BSC[32])();
 static void rpsxSPECIAL() { rpsxSPC[_Funct_](); }
 static void rpsxREGIMM() { rpsxREG[_Rt_](); }
 static void rpsxCOP0() { rpsxCP0[_Rs_](); }
-//static void rpsxBASIC() { rpsxCP2BSC[_Rs_](); }
+static void rpsxCOP2() { rpsxCP2[_Funct_](); }
+static void rpsxBASIC() { rpsxCP2BSC[_Rs_](); }
 
 static void rpsxNULL() {
 	Console.WriteLn("psxUNK: %8.8x", psxRegs.code);
@@ -1401,12 +1445,12 @@ static void rpsxNULL() {
 void (*rpsxBSC[64])() = {
 	rpsxSPECIAL, rpsxREGIMM, rpsxJ   , rpsxJAL  , rpsxBEQ , rpsxBNE , rpsxBLEZ, rpsxBGTZ,
 	rpsxADDI   , rpsxADDIU , rpsxSLTI, rpsxSLTIU, rpsxANDI, rpsxORI , rpsxXORI, rpsxLUI ,
-	rpsxCOP0   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
+	rpsxCOP0   , rpsxNULL  , rpsxCOP2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxLB     , rpsxLH    , rpsxLWL , rpsxLW   , rpsxLBU , rpsxLHU , rpsxLWR , rpsxNULL,
 	rpsxSB     , rpsxSH    , rpsxSWL , rpsxSW   , rpsxNULL, rpsxNULL, rpsxSWR , rpsxNULL,
-	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL   , rpsxNULL  , rpsxNULL, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL   , rpsxNULL  , rgteLWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
+	rpsxNULL   , rpsxNULL  , rgteSWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
 };
 
 void (*rpsxSPC[64])() = {
@@ -1431,6 +1475,24 @@ void (*rpsxCP0[32])() = {
 	rpsxMFC0, rpsxNULL, rpsxCFC0, rpsxNULL, rpsxMTC0, rpsxNULL, rpsxCTC0, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxRFE , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+};
+
+void (*rpsxCP2[64])() = {
+	rpsxBASIC, rgteRTPS , rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL , rgteNCLIP, rpsxNULL, // 00
+	rpsxNULL , rpsxNULL , rpsxNULL , rpsxNULL, rgteOP  , rpsxNULL , rpsxNULL , rpsxNULL, // 08
+	rgteDPCS , rgteINTPL, rgteMVMVA, rgteNCDS, rgteCDP , rpsxNULL , rgteNCDT , rpsxNULL, // 10
+	rpsxNULL , rpsxNULL , rpsxNULL , rgteNCCS, rgteCC  , rpsxNULL , rgteNCS  , rpsxNULL, // 18
+	rgteNCT  , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL , rpsxNULL , rpsxNULL, // 20
+	rgteSQR  , rgteDCPL , rgteDPCT , rpsxNULL, rpsxNULL, rgteAVSZ3, rgteAVSZ4, rpsxNULL, // 28
+	rgteRTPT , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL , rpsxNULL , rpsxNULL, // 30
+	rpsxNULL , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rgteGPF  , rgteGPL  , rgteNCCT  // 38
+};
+
+void(*rpsxCP2BSC[32])() = {
+	rgteMFC2, rpsxNULL, rgteCFC2, rpsxNULL, rgteMTC2, rpsxNULL, rgteCTC2, rpsxNULL,
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
 };
 
@@ -1494,12 +1556,17 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 			break;
 
 		case 16: rpsxpropCP0(prev, pinst); break;
-		case 18: pxFailDev( "iop invalid opcode in const propagation" ); break;
+		case 18: rpsxpropCP2(prev, pinst); break;
 
 		// stores
 		case 40: case 41: case 42: case 43: case 46:
 			rpsxpropSetRead(_Rt_);
 			rpsxpropSetRead(_Rs_);
+			break;
+
+		case 50: // LWC2
+		case 58: // SWC2
+			// Operation on COP2 registers/memory. GPRs are left untouched
 			break;
 
 		default:
@@ -1629,5 +1696,54 @@ void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 			break;
 
 		jNO_DEFAULT
+	}
+}
+
+
+// Basic table:
+// gteMFC2, psxNULL, gteCFC2, psxNULL, gteMTC2, psxNULL, gteCTC2, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
+void rpsxpropCP2_basic(EEINST* prev, EEINST* pinst)
+{
+	switch(_Rs_) {
+		case 0: // mfc2
+		case 2: // cfc2
+			rpsxpropSetWrite(_Rt_);
+			break;
+
+		case 4: // mtc2
+		case 6: // ctc2
+			rpsxpropSetRead(_Rt_);
+			break;
+
+		default:
+			pxFailDev( "iop invalid opcode in const propagation (rpsxpropCP2/BASIC)" );
+			break;
+	}
+}
+
+
+// Main table:
+// psxBASIC, gteRTPS , psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
+// psxNULL , psxNULL , psxNULL , psxNULL, gteOP  , psxNULL , psxNULL , psxNULL, // 08
+// gteDPCS , gteINTPL, gteMVMVA, gteNCDS, gteCDP , psxNULL , gteNCDT , psxNULL, // 10
+// psxNULL , psxNULL , psxNULL , gteNCCS, gteCC  , psxNULL , gteNCS  , psxNULL, // 18
+// gteNCT  , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
+// gteSQR  , gteDCPL , gteDPCT , psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28
+// gteRTPT , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
+// psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT  // 38
+void rpsxpropCP2(EEINST* prev, EEINST* pinst)
+{
+	switch(_Funct_) {
+		case 0: // Basic opcode
+			rpsxpropCP2_basic(prev, pinst);
+			break;
+
+		default:
+			// COP2 operation are likely done with internal COP2 registers
+			// No impact on GPR
+			break;
 	}
 }

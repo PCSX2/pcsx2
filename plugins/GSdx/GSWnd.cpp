@@ -28,9 +28,9 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
 
 	// Load mandatory function pointer
-#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
+#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, false)
 	// Load extra function pointer
-#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, true)
+#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
 
 	GL_EXT_LOAD(glBlendEquationSeparate);
 	GL_EXT_LOAD(glBlendFuncSeparate);
@@ -84,15 +84,17 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glClientWaitSync);
 	GL_EXT_LOAD(glFlushMappedBufferRange);
 	// Query object
-	GL_EXT_LOAD(glBeginQuery);
-	GL_EXT_LOAD(glEndQuery);
-	GL_EXT_LOAD(glGetQueryiv);
-	GL_EXT_LOAD(glGetQueryObjectiv);
-	GL_EXT_LOAD(glGetQueryObjectuiv);
-	GL_EXT_LOAD(glQueryCounter);
-	GL_EXT_LOAD(glGetQueryObjecti64v);
-	GL_EXT_LOAD(glGetQueryObjectui64v);
-	GL_EXT_LOAD(glGetInteger64v);
+	GL_EXT_LOAD_OPT(glBeginQuery);
+	GL_EXT_LOAD_OPT(glEndQuery);
+	GL_EXT_LOAD_OPT(glGetQueryiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectuiv);
+	GL_EXT_LOAD_OPT(glQueryCounter);
+	GL_EXT_LOAD_OPT(glGetQueryObjecti64v);
+	GL_EXT_LOAD_OPT(glGetQueryObjectui64v);
+	GL_EXT_LOAD_OPT(glGetInteger64v);
+	GL_EXT_LOAD_OPT(glCreateQueries);
+	GL_EXT_LOAD_OPT(glDeleteQueries);
 	// GL4.0
 	GL_EXT_LOAD_OPT(glBlendEquationSeparateiARB);
 	GL_EXT_LOAD_OPT(glBlendFuncSeparateiARB);
@@ -109,8 +111,15 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glViewportIndexedfv);
 	GL_EXT_LOAD_OPT(glScissorIndexed);
 	GL_EXT_LOAD_OPT(glScissorIndexedv);
-	// NO GL4.1
+	// NO GL4.1 (or broken driver...)
 	GL_EXT_LOAD(glDeleteProgram);
+	GL_EXT_LOAD(glDeleteShader);
+	GL_EXT_LOAD(glCompileShader);
+	GL_EXT_LOAD(glCreateProgram);
+	GL_EXT_LOAD(glCreateShader);
+	GL_EXT_LOAD(glUseProgram);
+	GL_EXT_LOAD(glGetShaderInfoLog);
+	GL_EXT_LOAD(glLinkProgram);
 	// GL4.2
 	GL_EXT_LOAD_OPT(glBindImageTexture);
 	GL_EXT_LOAD_OPT(glMemoryBarrier);
@@ -122,8 +131,11 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glDebugMessageInsert);
 	GL_EXT_LOAD(glDebugMessageControl);
 	GL_EXT_LOAD(glDebugMessageCallback);
+	GL_EXT_LOAD(glObjectLabel);
+	GL_EXT_LOAD(glObjectPtrLabel);
 	// GL4.4
 	GL_EXT_LOAD_OPT(glClearTexImage);
+	GL_EXT_LOAD_OPT(glClearTexSubImage);
 	GL_EXT_LOAD(glBufferStorage);
 
 	// GL4.5
@@ -159,4 +171,5 @@ void GSWndGL::PopulateGlFunction()
 
 	GL_EXT_LOAD(glClipControl);
 	GL_EXT_LOAD(glTextureBarrier);
+	GL_EXT_LOAD_OPT(glGetTextureSubImage);
 }

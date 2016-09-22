@@ -34,10 +34,7 @@ bool GSDeviceNull::Create(GSWnd* wnd)
 
 bool GSDeviceNull::Reset(int w, int h)
 {
-	if(!GSDevice::Reset(w, h))
-		return false;
-
-	return true;
+	return GSDevice::Reset(w, h);
 }
 
 GSTexture* GSDeviceNull::CreateSurface(int type, int w, int h, bool msaa, int format)

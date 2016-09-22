@@ -97,7 +97,7 @@ bool Gif_HandlerAD_Debug(u8* pMem) {
 }
 
 void Gif_FinishIRQ() {
-	if (CSRreg.FINISH && !(GSIMR & 0x200) && gifUnit.gsFINISH.gsFINISHFired == false) {
+	if (CSRreg.FINISH && !(GSIMR & 0x200) && !gifUnit.gsFINISH.gsFINISHFired) {
 		gsIrq();
 		gifUnit.gsFINISH.gsFINISHFired = true;
 	}

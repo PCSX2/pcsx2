@@ -128,7 +128,7 @@ protected:
 	void IdleEventDispatcher( const wxChar* action=wxEmptyString );
 
 	void OnIdleEvent( wxIdleEvent& evt );
-	void OnStartIdleEventTimer( wxEvent& evt );
+	void OnStartIdleEventTimer( wxCommandEvent& evt );
 	void OnIdleEventTimeout( wxTimerEvent& evt );
 	void OnDeleteObject( wxCommandEvent& evt );
 	void OnDeleteThread( wxCommandEvent& evt );

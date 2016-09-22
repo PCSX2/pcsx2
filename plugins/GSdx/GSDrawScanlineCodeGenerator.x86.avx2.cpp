@@ -2069,21 +2069,6 @@ void GSDrawScanlineCodeGenerator::ReadMask()
 
 void GSDrawScanlineCodeGenerator::TestAlpha()
 {
-	switch(m_sel.afail)
-	{
-	case AFAIL_FB_ONLY:
-		if(!m_sel.zwrite) return;
-		break;
-
-	case AFAIL_ZB_ONLY:
-		if(!m_sel.fwrite) return;
-		break;
-
-	case AFAIL_RGB_ONLY:
-		if(!m_sel.zwrite && m_sel.fpsm == 1) return;
-		break;
-	}
-
 	switch(m_sel.atst)
 	{
 	case ATST_NEVER:

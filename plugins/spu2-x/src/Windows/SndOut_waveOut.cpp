@@ -99,7 +99,7 @@ public:
 			speakerConfig = 2;  // better not mess with this in wavout :p (rama)
 
 		// Any windows driver should support stereo at the software level, I should think!
-		jASSUME( speakerConfig > 1 );
+		pxAssume( speakerConfig > 1 );
 		LPTHREAD_START_ROUTINE threadproc;
 
 		switch( speakerConfig )

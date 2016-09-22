@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh -u
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2014  PCSX2 Dev Team
@@ -16,10 +16,11 @@
 
 #set -e # This terminates the script in case of any error
 
-flags=(-DCMAKE_BUILD_PO=FALSE)
+flags="-DCMAKE_BUILD_PO=FALSE"
 
 cleanBuild=0
 useClang=0
+useIcc=0
 # 0 => no, 1 => yes, 2 => force yes
 useCross=2
 CoverityBuild=0
@@ -32,10 +33,11 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-if [[ $(uname -s) == 'Darwin' ]]; then
-    ncpu=$(sysctl -n hw.ncpu)
-    release=$(uname -r)
-    if [[ ${release:0:2} -lt 13 ]]; then
+if [ "$(uname -s)" = 'Darwin' ]; then
+    ncpu="$(sysctl -n hw.ncpu)"
+
+    # Get the major Darwin/OSX version.
+    if [ "$(sysctl -n kern.osrelease | cut -d . -f 1)" -lt 13 ]; then
         echo "This old OSX version is not supported! Build will fail."
         toolfile=cmake/darwin-compiler-i386-clang.cmake
     else
@@ -47,28 +49,36 @@ else
     toolfile=cmake/linux-compiler-i386-multilib.cmake
 fi
 
+if command -v ninja >/dev/null ; then
+    flags="$flags -GNinja"
+    make=ninja
+else
+    make="make --jobs=$ncpu"
+fi
+
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
-        --clang-tidy        ) flags+=(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON); clangTidy=1 ;;
+        --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ; useClang=1;;
         --clang             ) useClang=1 ;;
+        --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
-        --dev|--devel       ) flags+=(-DCMAKE_BUILD_TYPE=Devel)   build="$root/build_dev";;
-        --dbg|--debug       ) flags+=(-DCMAKE_BUILD_TYPE=Debug)   build="$root/build_dbg";;
-        --rel|--release     ) flags+=(-DCMAKE_BUILD_TYPE=Release) build="$root/build_rel";;
-        --prof              ) flags+=(-DCMAKE_BUILD_TYPE=Prof)    build="$root/build_prof";;
-        --strip             ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
-        --glsl              ) flags+=(-DGLSL_API=TRUE) ;;
-        --egl               ) flags+=(-DEGL_API=TRUE) ;;
-        --sdl12             ) flags+=(-DSDL2_API=FALSE) ;;
-        --extra             ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
-        --asan              ) flags+=(-DUSE_ASAN=TRUE) ;;
-        --gtk3              ) flags+=(-DGTK3_API=TRUE) ;;
-        --no-simd           ) flags+=(-DDISABLE_ADVANCE_SIMD=TRUE) ;;
-        --cross-multilib    ) flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile); useCross=1; ;;
+        --dev|--devel       ) flags="$flags -DCMAKE_BUILD_TYPE=Devel"   ; build="$root/build_dev";;
+        --dbg|--debug       ) flags="$flags -DCMAKE_BUILD_TYPE=Debug"   ; build="$root/build_dbg";;
+        --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
+        --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=Prof"    ; build="$root/build_prof";;
+        --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
+        --glsl              ) flags="$flags -DGLSL_API=TRUE" ;;
+        --egl               ) flags="$flags -DEGL_API=TRUE" ;;
+        --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
+        --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
+        --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
+        --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
+        --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
-        -D*                 ) flags+=($ARG) ;;
+        -D*                 ) flags="$flags $ARG" ;;
 
         *)
             # Unknown option
@@ -94,6 +104,7 @@ for ARG in "$@"; do
             echo "--gtk3          : replace GTK2 by GTK3"
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
+            echo "--intel         : Build with ICC (Intel compiler)"
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"
@@ -105,47 +116,56 @@ for ARG in "$@"; do
     esac
 done
 
-if [[ "$cleanBuild" -eq 1 ]]; then
+if [ "$cleanBuild" -eq 1 ]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
 fi
 
-if [[ "$useCross" -eq 2 ]] && [[ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]]; then
+if [ "$useCross" -eq 2 ] && [ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]; then
     echo "Forcing cross compilation."
-    flags+=(-DCMAKE_TOOLCHAIN_FILE=$toolfile)
-elif [[ "$useCross" -ne 1 ]]; then
+    flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"
+elif [ "$useCross" -ne 1 ]; then
     useCross=0
 fi
 
 # Helper to easily switch wx-config on my system
-if [[ "$useCross" -eq 0 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
-if [[ "$useCross" -eq 2 ]] && [[ "$(uname -m)" == "x86_64" ]] && [[ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]]; then
+if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
 
-echo "Building pcsx2 with ${flags[*]}" | tee "$log"
+echo "Building pcsx2 with $flags" | tee "$log"
 
 # Resolve the symlink otherwise cmake is lost
 # Besides, it allows 'mkdir' to create the real destination directory
-if [[ -L "$build"  ]]; then
-    build=`readlink "$build"`
+if [ -L "$build"  ]; then
+    build=$(readlink "$build")
 fi
 
 mkdir -p "$build"
 # Cmake will generate file inside $CWD. It would be nicer if an option to cmake can be provided.
 cd "$build"
 
-if [[ "$useClang" -eq 1 ]]; then
-    if [[ "$useCross" -eq 0 ]]; then
-        CC=clang CXX=clang++ cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+if [ "$useClang" -eq 1 ]; then
+    if [ "$useCross" -eq 0 ]; then
+        CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
     else
-        CC="clang -m32" CXX="clang++ -m32" cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+        CC="clang -m32" CXX="clang++ -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
     fi
 else
-    cmake "${flags[@]}" "$root" 2>&1 | tee -a "$log"
+    if [ "$useIcc" -eq 1 ]; then
+        if [ "$useCross" -eq 0 ]; then
+            CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
+        else
+            CC="icc -m32" CXX="icpc -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
+        fi
+    else
+        # Default compiler AKA GCC
+        cmake $flags "$root" 2>&1 | tee -a "$log"
+    fi
 fi
 
 
@@ -153,11 +173,12 @@ fi
 ############################################################
 # CPP check build
 ############################################################
-if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
+if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
     summary=cpp_check_summary.log
     rm -f $summary
     touch $summary
 
+    define=""
     for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
         __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG
     do
@@ -166,7 +187,7 @@ if [[ "$cppcheck" -eq 1 ]] && [[ -x `which cppcheck` ]]; then
     check="--enable=warning,style,missingInclude"
     for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
     do
-        flat_d=`echo $d | sed -e 's@/@_@'`
+        flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log
         rm -f "$log"
 
@@ -180,38 +201,39 @@ fi
 ############################################################
 # Clang tidy build
 ############################################################
-if [[ "$clangTidy" -eq 1 ]] && [[ -x `which clang-tidy` ]]; then
+if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
-    rm -f $summary
-    touch $summary
+    grep '"file"' $compile_json | sed -e 's/"//g' -e 's/^\s*file\s*:\s*//' | grep -v "aVUzerorec.S" > $cpp_list
 
-    grep '"file"' $compile_json | sed -e 's/"//g' | sed -e 's/^\s*file\s*:\s*//' > $cpp_list
+    # EXAMPLE
+    #
+    #   Modernize loop syntax, fix if old style found.
+    #     $ clang-tidy -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
+    #   Check all, tons of output:
+    #     $ clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
+    #   List of modernize checks:
+    #     modernize-loop-convert
+    #     modernize-make-unique
+    #     modernize-pass-by-value
+    #     modernize-redundant-void-arg
+    #     modernize-replace-auto-ptr
+    #     modernize-shrink-to-fit
+    #     modernize-use-auto
+    #     modernize-use-default
+    #     modernize-use-nullptr
+    #     modernize-use-override
 
-    for cpp in `cat $cpp_list`
-    do
-        # Example:
-        # clang-tidy-3.8 -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
-        # List of modernize check
-        # modernize-loop-convert
-        # modernize-make-unique
-        # modernize-pass-by-value
-        # modernize-redundant-void-arg
-        # modernize-replace-auto-ptr
-        # modernize-shrink-to-fit
-        # modernize-use-auto
-        # modernize-use-default
-        # modernize-use-nullptr
-        # modernize-use-override
-
-        # Check all, likely severals millions of log...
-        #clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
-
-        # Don't check header, don't check google/llvm coding conventions
-        echo "$count/$total"
-        clang-tidy -p $compile_json $cpp -checks='*,-llvm-*,-google-*'  >> $summary
-    done
+    # Don't check headers, don't check google/llvm coding conventions
+    if command -v parallel >/dev/null ; then
+        # Run clang-tidy in parallel with as many jobs as there are CPUs.
+        parallel -v --keep-order "clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*' {}"
+    else
+        # xargs(1) can also run jobs in parallel with -P, but will mix the
+        # output from the distinct processes together willy-nilly.
+        xargs clang-tidy -p $compile_json -checks='*,-llvm-*,-google-*'
+    fi < $cpp_list > $summary
 
     exit 0
 fi
@@ -219,8 +241,8 @@ fi
 ############################################################
 # Coverity build
 ############################################################
-if [[ "$CoverityBuild" -eq 1 ]] && [[ -x `which cov-build` ]]; then
-    cov-build --dir "$coverity_dir" make -j"$ncpu" 2>&1 | tee -a "$log"
+if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
+    cov-build --dir "$coverity_dir" $make 2>&1 | tee -a "$log"
     # Warning: $coverity_dir must be the root directory
     (cd "$build"; tar caf $coverity_result "$coverity_dir")
     exit 0
@@ -229,7 +251,7 @@ fi
 ############################################################
 # Real build
 ############################################################
-make -j"$ncpu" 2>&1 | tee -a "$log"
-make install 2>&1 | tee -a "$log"
+$make 2>&1 | tee -a "$log"
+$make install 2>&1 | tee -a "$log"
 
 exit 0

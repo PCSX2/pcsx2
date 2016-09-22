@@ -57,8 +57,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
-			if (!isVU1) xFastCall(mVU0clearlpStateJIT);
-			else		xFastCall(mVU1clearlpStateJIT);
+			if (!isVU1) xFastCall((void*)mVU0clearlpStateJIT);
+			else		xFastCall((void*)mVU1clearlpStateJIT);
 		}
 	}
 
@@ -117,9 +117,9 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1)
-				xFastCall(mVU0clearlpStateJIT);
+				xFastCall((void*)mVU0clearlpStateJIT);
 			else
-				xFastCall(mVU1clearlpStateJIT);
+				xFastCall((void*)mVU1clearlpStateJIT);
 		}
 	}
 
@@ -192,8 +192,8 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 		xJMP(mVU.exitFunct);
 	}
 	
-	if (!mVU.index) xFastCall(mVUcompileJIT<0>, gprT2, gprT3); //(u32 startPC, uptr pState)
-	else			xFastCall(mVUcompileJIT<1>, gprT2, gprT3);
+	if (!mVU.index) xFastCall((void*)(void(*)())mVUcompileJIT<0>, gprT2, gprT3); //(u32 startPC, uptr pState)
+	else			xFastCall((void*)(void(*)())mVUcompileJIT<1>, gprT2, gprT3);
 
 	mVUrestoreRegs(mVU);
 	xJMP(gprT1);  // Jump to rec-code address
@@ -262,7 +262,6 @@ void normBranch(mV, microFlagCycles& mFC) {
 void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 
 	u32 bPC = iPC-1; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
-	microBlock* pBlock = mVUpBlock;
 	u32 badBranchAddr;
 	iPC = bPC-2;
 	setCode();

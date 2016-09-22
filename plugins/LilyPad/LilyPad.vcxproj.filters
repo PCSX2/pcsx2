@@ -42,9 +42,6 @@
     <ClCompile Include="HidDevice.cpp">
       <Filter>InputAPIs</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardHook.cpp">
-      <Filter>InputAPIs</Filter>
-    </ClCompile>
     <ClCompile Include="KeyboardQueue.cpp">
       <Filter>InputAPIs</Filter>
     </ClCompile>
@@ -96,9 +93,6 @@
       <Filter>InputAPIs</Filter>
     </ClInclude>
     <ClInclude Include="HidDevice.h">
-      <Filter>InputAPIs</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardHook.h">
       <Filter>InputAPIs</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardQueue.h">

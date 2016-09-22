@@ -23,43 +23,43 @@
 extern std::string s_strIniPath;
 PluginConf Ini;
 
-EXPORT_C_(void) PADabout()
+EXPORT_C_(void)
+PADabout()
 {
-	SysMessage("PADnull: A simple null plugin.");
+    SysMessage("PADnull: A simple null plugin.");
 }
 
-EXPORT_C_(void) PADconfigure()
+EXPORT_C_(void)
+PADconfigure()
 {
-	LoadConfig();
-	PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
-	SaveConfig();
+    LoadConfig();
+    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    SaveConfig();
 }
 
 void LoadConfig()
 {
     const std::string iniFile(s_strIniPath + "/Padnull.ini");
 
-	if (!Ini.Open(iniFile, READ_FILE))
-	{
-		printf("failed to open %s\n", iniFile.c_str());
-		SaveConfig();//save and return
-		return;
-	}
+    if (!Ini.Open(iniFile, READ_FILE)) {
+        printf("failed to open %s\n", iniFile.c_str());
+        SaveConfig();  //save and return
+        return;
+    }
 
-	conf.Log = Ini.ReadInt("logging", 0);
-	Ini.Close();
+    conf.Log = Ini.ReadInt("logging", 0);
+    Ini.Close();
 }
 
 void SaveConfig()
 {
     const std::string iniFile(s_strIniPath + "/Padnull.ini");
 
-	if (!Ini.Open(iniFile, WRITE_FILE))
-	{
-		printf("failed to open %s\n", iniFile.c_str());
-		return;
-	}
+    if (!Ini.Open(iniFile, WRITE_FILE)) {
+        printf("failed to open %s\n", iniFile.c_str());
+        return;
+    }
 
-	Ini.WriteInt("logging", conf.Log);
-	Ini.Close();
+    Ini.WriteInt("logging", conf.Log);
+    Ini.Close();
 }

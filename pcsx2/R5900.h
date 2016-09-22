@@ -26,6 +26,7 @@ class BaseR5900Exception;
 
 extern bool g_SkipBiosHack;
 extern bool g_GameStarted;
+extern bool g_GameLoading;
 
 namespace Exception
 {
@@ -272,9 +273,10 @@ const u32 EEKERNEL_START	= 0;
 const u32 EENULL_START		= 0x81FC0;
 const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
+extern u32 eeloadMain;
 
 extern void __fastcall eeGameStarting();
-extern void __fastcall eeloadReplaceOSDSYS();
+extern void __fastcall eeloadHook();
 
 // --------------------------------------------------------------------------------------
 //  R5900cpu

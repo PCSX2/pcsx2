@@ -22,7 +22,10 @@
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
+#include "GS.h"
 
+GS_VideoMode gsVideoMode = GS_VideoMode::Uninitialized;
+bool gsIsInterlaced = false;
 
 static __fi bool _add64_Overflow( s64 x, s64 y, s64 &ret )
 {
@@ -666,12 +669,12 @@ void LD()
 }
 
 static const u64 LDL_MASK[8] =
-{	0x00ffffffffffffffLL, 0x0000ffffffffffffLL, 0x000000ffffffffffLL, 0x00000000ffffffffLL,
-	0x0000000000ffffffLL, 0x000000000000ffffLL, 0x00000000000000ffLL, 0x0000000000000000LL
+{	0x00ffffffffffffffULL, 0x0000ffffffffffffULL, 0x000000ffffffffffULL, 0x00000000ffffffffULL,
+	0x0000000000ffffffULL, 0x000000000000ffffULL, 0x00000000000000ffULL, 0x0000000000000000ULL
 };
 static const u64 LDR_MASK[8] =
-{	0x0000000000000000LL, 0xff00000000000000LL, 0xffff000000000000LL, 0xffffff0000000000LL,
-	0xffffffff00000000LL, 0xffffffffff000000LL, 0xffffffffffff0000LL, 0xffffffffffffff00LL
+{	0x0000000000000000ULL, 0xff00000000000000ULL, 0xffff000000000000ULL, 0xffffff0000000000ULL,
+	0xffffffff00000000ULL, 0xffffffffff000000ULL, 0xffffffffffff0000ULL, 0xffffffffffffff00ULL
 };
 
 static const u8 LDR_SHIFT[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
@@ -797,12 +800,12 @@ void SD()
 }
 
 static const u64 SDL_MASK[8] =
-{	0xffffffffffffff00LL, 0xffffffffffff0000LL, 0xffffffffff000000LL, 0xffffffff00000000LL,
-	0xffffff0000000000LL, 0xffff000000000000LL, 0xff00000000000000LL, 0x0000000000000000LL
+{	0xffffffffffffff00ULL, 0xffffffffffff0000ULL, 0xffffffffff000000ULL, 0xffffffff00000000ULL,
+	0xffffff0000000000ULL, 0xffff000000000000ULL, 0xff00000000000000ULL, 0x0000000000000000ULL
 };
 static const u64 SDR_MASK[8] =
-{	0x0000000000000000LL, 0x00000000000000ffLL, 0x000000000000ffffLL, 0x0000000000ffffffLL,
-	0x00000000ffffffffLL, 0x000000ffffffffffLL, 0x0000ffffffffffffLL, 0x00ffffffffffffffLL
+{	0x0000000000000000ULL, 0x00000000000000ffULL, 0x000000000000ffffULL, 0x0000000000ffffffULL,
+	0x00000000ffffffffULL, 0x000000ffffffffffULL, 0x0000ffffffffffffULL, 0x00ffffffffffffffULL
 };
 
 static const u8 SDL_SHIFT[8] = { 56, 48, 40, 32, 24, 16, 8, 0 };
@@ -880,67 +883,72 @@ void SYSCALL()
 
 	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
 
-	switch (call) {
-		case 2: {
-					const char* inter = (cpuRegs.GPR.n.a0.UL[0] & 1) ? "Interlaced" : "Progressive";
-					const char* field = (cpuRegs.GPR.n.a2.UL[0] & 1) ? "FRAME" : "FIELD";
+
+	switch (static_cast<Syscall>(call))
+	{
+		case Syscall::SetGsCrt:
+		{
+					//Function "SetGsCrt(Interlace, Mode, Field)"
+					//Useful for fetching information of interlace/video/field display parameters of the Graphics Synthesizer
+
+					gsIsInterlaced = cpuRegs.GPR.n.a0.UL[0] & 1;
+					bool gsIsFrameMode = cpuRegs.GPR.n.a2.UL[0] & 1;
+					const char* inter = (gsIsInterlaced) ? "Interlaced" : "Progressive";
+					const char* field = (gsIsFrameMode) ? "FRAME" : "FIELD";
 					std::string mode;
 					// Warning info might be incorrect!
-					switch (cpuRegs.GPR.n.a1.UC[0]) {
-						case 0x2:  mode = "NTSC 640x448 @ 59.940 (59.82)"; break;
+					switch (cpuRegs.GPR.n.a1.UC[0])
+					{
+						case 0x0:
+						case 0x2:
+							mode = "NTSC 640x448 @ 59.940 (59.82)"; gsSetVideoMode(GS_VideoMode::NTSC); break;
 
-						case 0x3:  mode = "PAL  640x512 @ 50.000 (49.76)"; break;
+						case 0x1:
+						case 0x3:
+							mode = "PAL  640x512 @ 50.000 (49.76)"; gsSetVideoMode(GS_VideoMode::PAL); break;
 
-						case 0x1A: mode = "VESA 640x480 @ 59.940"; break;
-						case 0x1B: mode = "VESA 640x480 @ 72.809"; break;
-						case 0x1C: mode = "VESA 640x480 @ 75.000"; break;
-						case 0x1D: mode = "VESA 640x480 @ 85.008"; break;
+						case 0x1A: mode = "VESA 640x480 @ 59.940"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x1B: mode = "VESA 640x480 @ 72.809"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x1C: mode = "VESA 640x480 @ 75.000"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x1D: mode = "VESA 640x480 @ 85.008"; gsSetVideoMode(GS_VideoMode::VESA); break;
 
-						case 0x2A: mode = "VESA 800x600 @ 56.250"; break;
-						case 0x2B: mode = "VESA 800x600 @ 60.317"; break;
-						case 0x2C: mode = "VESA 800x600 @ 72.188"; break;
-						case 0x2D: mode = "VESA 800x600 @ 75.000"; break;
-						case 0x2E: mode = "VESA 800x600 @ 85.061"; break;
+						case 0x2A: mode = "VESA 800x600 @ 56.250"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x2B: mode = "VESA 800x600 @ 60.317"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x2C: mode = "VESA 800x600 @ 72.188"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x2D: mode = "VESA 800x600 @ 75.000"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x2E: mode = "VESA 800x600 @ 85.061"; gsSetVideoMode(GS_VideoMode::VESA); break;
 
-						case 0x3B: mode = "VESA 1024x768 @ 60.004"; break;
-						case 0x3C: mode = "VESA 1024x768 @ 70.069"; break;
-						case 0x3D: mode = "VESA 1024x768 @ 75.029"; break;
-						case 0x3E: mode = "VESA 1024x768 @ 84.997"; break;
+						case 0x3B: mode = "VESA 1024x768 @ 60.004"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x3C: mode = "VESA 1024x768 @ 70.069"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x3D: mode = "VESA 1024x768 @ 75.029"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x3E: mode = "VESA 1024x768 @ 84.997"; gsSetVideoMode(GS_VideoMode::VESA); break;
 
-						case 0x4A: mode = "VESA 1280x1024 @ 63.981"; break;
-						case 0x4B: mode = "VESA 1280x1024 @ 79.976"; break;
+						case 0x4A: mode = "VESA 1280x1024 @ 63.981"; gsSetVideoMode(GS_VideoMode::VESA); break;
+						case 0x4B: mode = "VESA 1280x1024 @ 79.976"; gsSetVideoMode(GS_VideoMode::VESA); break;
 
-						case 0x50: mode = "HDTV   720x480 @ 59.94"; break;
-						case 0x51: mode = "HDTV 1920x1080 @ 60.00"; break;
-						case 0x52: mode = "HDTV  1280x720 @ ??.???"; break;
-						case 0x53: mode = "HDTV   768x576 @ ??.???"; break;
-						case 0x54: mode = "HDTV 1920x1080 @ ??.???"; break;
+						case 0x50: mode = "HDTV   720x480 @ 59.94"; gsSetVideoMode(GS_VideoMode::HDTV_480P); break;
+						case 0x51: mode = "HDTV 1920x1080 @ 60.00"; gsSetVideoMode(GS_VideoMode::HDTV_1080I); break;
+						case 0x52: mode = "HDTV  1280x720 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_720P); break;
+						case 0x53: mode = "HDTV   768x576 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_576P); break;
+						case 0x54: mode = "HDTV 1920x1080 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_1080P); break;
 
-						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; break;
-						case 0x73: mode = "DVD PAL/480P 720x480 @ ??.???"; break;
+						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; gsSetVideoMode(GS_VideoMode::BIOS); break;
+						case 0x73: mode = "DVD PAL 720x480 @ ??.???"; gsSetVideoMode(GS_VideoMode::BIOS); break;
 
-						default: Console.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+						default:
+							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+							gsSetVideoMode(GS_VideoMode::Unknown);
 					}
-					Console.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
 				}
 				break;
 
-		case 13:
+		case Syscall::SetVTLBRefillHandler:
 			DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
 			break;
 
-		case 0x7c:
-			{
-				if(cpuRegs.GPR.n.a0.UL[0] == 0x10)
-				{
-					eeConLog( ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))) );
-				}
-				else
-					__Deci2Call( cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]) );
-			}
-			break;
 
-		case 0x77:
+		case Syscall::sceSifSetDma:
 			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
 			if (SysTraceActive(EE.Bios))
 			{
@@ -965,6 +973,17 @@ void SYSCALL()
 				}
 			}
 			break;
+
+		case Syscall::Deci2Call:
+		{
+			if (cpuRegs.GPR.n.a0.UL[0] == 0x10)
+			{
+				eeConLog(ShiftJIS_ConvertString((char*)PSM(memRead32(cpuRegs.GPR.n.a1.UL[0]))));
+			}
+			else
+				__Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+		}
+		break;
 
 		default:
 			break;

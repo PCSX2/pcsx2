@@ -98,6 +98,13 @@ void GSClut::Invalidate()
 	m_write.dirty = true;
 }
 
+void GSClut::Invalidate(uint32 block)
+{
+	if (block == m_write.TEX0.CBP) {
+		m_write.dirty = true;
+	}
+}
+
 bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	switch(TEX0.CLD)
@@ -682,17 +689,24 @@ __forceinline void GSClut::ExpandCLUT64_T16(const GSVector4i& hi, const GSVector
 
 // TODO
 
-static const GSVector4i s_bm(0x00007c00);
-static const GSVector4i s_gm(0x000003e0);
-static const GSVector4i s_rm(0x0000001f);
+GSVector4i GSClut::m_bm;
+GSVector4i GSClut::m_gm;
+GSVector4i GSClut::m_rm;
+
+void GSClut::InitVectors()
+{
+	m_bm = GSVector4i(0x00007c00);
+	m_gm = GSVector4i(0x000003e0);
+	m_rm = GSVector4i(0x0000001f);
+}
 
 void GSClut::Expand16(const uint16* RESTRICT src, uint32* RESTRICT dst, int w, const GIFRegTEXA& TEXA)
 {
 	ASSERT((w & 7) == 0);
 
-	const GSVector4i rm = s_rm;
-	const GSVector4i gm = s_gm;
-	const GSVector4i bm = s_bm;
+	const GSVector4i rm = m_rm;
+	const GSVector4i gm = m_gm;
+	const GSVector4i bm = m_bm;
 
 	GSVector4i TA0(TEXA.TA0 << 24);
 	GSVector4i TA1(TEXA.TA1 << 24);

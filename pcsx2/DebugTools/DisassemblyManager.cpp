@@ -108,7 +108,7 @@ std::map<u32,DisassemblyEntry*>::iterator findDisassemblyEntry(std::map<u32,Disa
 	if (exact)
 		return entries.find(address);
 
-	if (entries.size() == 0)
+	if (entries.empty())
 		return entries.end();
 
 	// find first elem that's >= address
@@ -141,7 +141,7 @@ std::map<u32,DisassemblyEntry*>::iterator findDisassemblyEntry(std::map<u32,Disa
 
 void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 {
-	if (cpu->isAlive() == false)
+	if (!cpu->isAlive())
 		return;
 
 	u32 end = address+size;
@@ -293,7 +293,6 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 		{
 			DisassemblyEntry* entry = it->second;
 			int oldLineNum = entry->getLineNum(address,true);
-			int oldNumLines = entry->getNumLines();
 			if (n <= oldLineNum)
 			{
 				return entry->getLineAddress(oldLineNum-n);
@@ -388,7 +387,6 @@ int DisassemblyFunction::getLineNum(u32 address, bool findStart)
 		int last = (int)lineAddresses.size() - 1;
 		for (int i = 0; i < last; i++)
 		{
-			u32 next = lineAddresses[i + 1];
 			if (lineAddresses[i] == address)
 				return i;
 		}
@@ -486,7 +484,7 @@ void DisassemblyFunction::generateBranchLines()
 		int lane = -1;
 		for (int l = 0; l < NUM_LANES; l++)
 		{
-			if (lanes[l].used == false)
+			if (!lanes[l].used)
 			{
 				lane = l;
 				break;
@@ -899,7 +897,7 @@ void DisassemblyData::createLines()
 			{
 				if (currentLine.size()+1 >= maxChars)
 				{
-					if (inString == true)
+					if (inString)
 						currentLine += "\"";
 
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
@@ -911,7 +909,7 @@ void DisassemblyData::createLines()
 					inString = false;
 				}
 
-				if (inString == false)
+				if (!inString)
 					currentLine += "\"";
 				currentLine += (char)b;
 				inString = true;
@@ -924,7 +922,7 @@ void DisassemblyData::createLines()
 
 				if (currentLine.size()+strlen(buffer) >= maxChars)
 				{
-					if (inString == true)
+					if (inString)
 						currentLine += "\"";
 					
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
@@ -951,7 +949,7 @@ void DisassemblyData::createLines()
 			}
 		}
 
-		if (inString == true)
+		if (inString)
 			currentLine += "\"";
 
 		if (currentLine.size() != 0)

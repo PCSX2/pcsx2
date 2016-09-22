@@ -692,7 +692,7 @@ msgid "Fits a lot of log in a microcosmically small area."
 msgstr "축소하여 작은 영역에 로그를 많이하는데 적합합니다."
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
-msgid "Small"
+msgid "&Small"
 msgstr "작게"
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
@@ -701,7 +701,7 @@ msgstr "제가 사용하고 있습니다 (프로그래머)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:402
 #, fuzzy
-msgid "Normal font"
+msgid "&Normal font"
 msgstr "보통"
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
@@ -709,11 +709,11 @@ msgid "Its nice and readable."
 msgstr "보기 좋고 읽기 쉽게."
 
 #: pcsx2/gui/ConsoleLogger.cpp:404
-msgid "Large"
+msgid "&Large"
 msgstr "크게"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
-msgid "Huge"
+msgid "&Huge"
 msgstr "거대하게"
 
 #: pcsx2/gui/ConsoleLogger.cpp:406
@@ -725,7 +725,7 @@ msgid "Default soft-tone color scheme."
 msgstr "부드러운 색조 구성의 기본 테마."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
-msgid "Light theme"
+msgid "&Light theme"
 msgstr "밝은 테마"
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
@@ -736,7 +736,7 @@ msgstr ""
 "문자가 시신경에서 무감각하게 느끼고 즐길 사람들을 위한 고전적인 검은 색 테마."
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-msgid "Dark theme"
+msgid "&Dark theme"
 msgstr "어두운 테마"
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
@@ -777,7 +777,7 @@ msgid "Close this log window; contents are preserved"
 msgstr "이 로그 창을 닫습니다; 내용은 보존됩니다"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
-msgid "Dev/Verbose"
+msgid "Dev/&Verbose"
 msgstr "Dev/Verbose"
 
 #: pcsx2/gui/ConsoleLogger.cpp:426
@@ -793,7 +793,7 @@ msgid "Shows disk read activity"
 msgstr "디스크 읽기 활동을 표시합니다"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
-msgid "Enable all"
+msgid "&Enable all"
 msgstr "모두 활성화"
 
 #: pcsx2/gui/ConsoleLogger.cpp:444
@@ -801,7 +801,7 @@ msgid "Enables all log source filters."
 msgstr "모든 로그 소스 필터를 활성화합니다."
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
-msgid "Disable all"
+msgid "&Disable all"
 msgstr "모두 비활성화"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
@@ -810,7 +810,7 @@ msgstr "모든 로그 소스 필터를 비활성화합니다."
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
-msgid "Restore Default"
+msgid "&Restore Default"
 msgstr "기본 복원"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
@@ -1298,7 +1298,7 @@ msgid "Exit PCSX2?"
 msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:473 pcsx2/gui/MainFrame.cpp:430
-msgid "Save state"
+msgid "&Save state"
 msgstr "상태 저장하기"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
@@ -1306,7 +1306,7 @@ msgid "Saves the virtual machine state to the current slot."
 msgstr "현재 슬롯에 가상 머신 상태를 저장합니다."
 
 #: pcsx2/gui/GlobalCommands.cpp:479 pcsx2/gui/MainFrame.cpp:429
-msgid "Load state"
+msgid "&Load state"
 msgstr "상태 불러오기"
 
 #: pcsx2/gui/GlobalCommands.cpp:480
@@ -1378,11 +1378,11 @@ msgid "Backup"
 msgstr "백업"
 
 #: pcsx2/gui/MainFrame.cpp:332
-msgid "Show Console"
+msgid "&Show Console"
 msgstr "콘솔 표시"
 
 #: pcsx2/gui/MainFrame.cpp:333
-msgid "Console to Stdio"
+msgid "&Console to Stdio"
 msgstr "표준 입출력에 콘솔"
 
 #: pcsx2/gui/MainFrame.cpp:346
@@ -1411,7 +1411,7 @@ msgid "Initializing..."
 msgstr "초기화 중입니다..."
 
 #: pcsx2/gui/MainFrame.cpp:419
-msgid "Run ELF..."
+msgid "&Run ELF..."
 msgstr "ELF 실행..."
 
 #: pcsx2/gui/MainFrame.cpp:420
@@ -1419,11 +1419,11 @@ msgid "For running raw PS2 binaries directly"
 msgstr "직접 원본 PS2 바이너리를 실행하기 위해 ..."
 
 #: pcsx2/gui/MainFrame.cpp:432
-msgid "Backup before save"
+msgid "&Backup before save"
 msgstr "백업하기 전에 저장"
 
 #: pcsx2/gui/MainFrame.cpp:437
-msgid "Automatic Gamefixes"
+msgid "Automatic &Gamefixes"
 msgstr "자동 게임 수정"
 
 #: pcsx2/gui/MainFrame.cpp:438
@@ -1431,19 +1431,19 @@ msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr "알려진 문제의 게임에 필요한 게임 수정을 자동 적용합니다"
 
 #: pcsx2/gui/MainFrame.cpp:440
-msgid "Enable Cheats"
+msgid "Enable &Cheats"
 msgstr "치트 활성화"
 
 #: pcsx2/gui/MainFrame.cpp:443
-msgid "Enable Widescreen Patches"
+msgid "Enable &Widescreen Patches"
 msgstr "와이드 스크린 패치 활성화"
 
 #: pcsx2/gui/MainFrame.cpp:446
-msgid "Enable Host Filesystem"
+msgid "Enable &Host Filesystem"
 msgstr "호스트 파일 시스템 활성화"
 
 #: pcsx2/gui/MainFrame.cpp:451
-msgid "Shutdown"
+msgid "Shut&down"
 msgstr "중단"
 
 #: pcsx2/gui/MainFrame.cpp:452
@@ -1451,7 +1451,7 @@ msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "모든 내부 가상 머신의 상태를 지우고 플러그인을 중단합니다."
 
 #: pcsx2/gui/MainFrame.cpp:454
-msgid "Exit"
+msgid "E&xit"
 msgstr "종료"
 
 #: pcsx2/gui/MainFrame.cpp:455
@@ -1460,7 +1460,7 @@ msgid "Closing %s may be hazardous to your health"
 msgstr "%s를 닫는 것은 당신의 건강에 해롭습니다 :)"
 
 #: pcsx2/gui/MainFrame.cpp:462
-msgid "Iso Selector"
+msgid "Iso &Selector"
 msgstr "Iso 선택"
 
 #: pcsx2/gui/MainFrame.cpp:463
@@ -1468,7 +1468,7 @@ msgid "Plugin Menu"
 msgstr "플러그인 메뉴"
 
 #: pcsx2/gui/MainFrame.cpp:466
-msgid "Iso"
+msgid "&Iso"
 msgstr "Iso"
 
 #: pcsx2/gui/MainFrame.cpp:466
@@ -1476,7 +1476,7 @@ msgid "Makes the specified ISO image the CDVD source."
 msgstr "지정된 ISO 이미지의 CDVD 소스를 만듭니다."
 
 #: pcsx2/gui/MainFrame.cpp:467
-msgid "Plugin"
+msgid "&Plugin"
 msgstr "플러그인"
 
 #: pcsx2/gui/MainFrame.cpp:467
@@ -1484,7 +1484,7 @@ msgid "Uses an external plugin as the CDVD source."
 msgstr "CDVD 소스로 외부 플러그인을 사용합니다."
 
 #: pcsx2/gui/MainFrame.cpp:468
-msgid "No disc"
+msgid "&No disc"
 msgstr "디스크 없음"
 
 #: pcsx2/gui/MainFrame.cpp:468
@@ -1504,7 +1504,7 @@ msgid "&Plugin/BIOS Selector"
 msgstr "플러그인/바이오스 선택"
 
 #: pcsx2/gui/MainFrame.cpp:479 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
-msgid "Game Database Editor"
+msgid "&Game Database Editor"
 msgstr "게임 데이터베이스 편집"
 
 #: pcsx2/gui/MainFrame.cpp:485
@@ -1520,27 +1520,27 @@ msgid "&Controllers (PAD)"
 msgstr "컨트롤러 (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:488
-msgid "Dev9"
+msgid "&Dev9"
 msgstr "Dev9"
 
 #: pcsx2/gui/MainFrame.cpp:489
-msgid "USB"
+msgid "&USB"
 msgstr "USB"
 
 #: pcsx2/gui/MainFrame.cpp:490
-msgid "Firewire"
+msgid "&Firewire"
 msgstr "파이어와이어"
 
 #: pcsx2/gui/MainFrame.cpp:496
-msgid "Multitap 1"
+msgid "Multitap &1"
 msgstr "멀티탭 1"
 
 #: pcsx2/gui/MainFrame.cpp:497
-msgid "Multitap 2"
+msgid "Multitap &2"
 msgstr "멀티탭 2"
 
 #: pcsx2/gui/MainFrame.cpp:500
-msgid "Clear all settings..."
+msgid "C&lear all settings..."
 msgstr "모든 설정 지우기..."
 
 #: pcsx2/gui/MainFrame.cpp:501
@@ -1549,19 +1549,19 @@ msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "모든 %s 설정을 지우고 시작할 때 마법사를 다시-실행합니다."
 
 #: pcsx2/gui/MainFrame.cpp:523
-msgid "About..."
+msgid "&About..."
 msgstr "정보..."
 
 #: pcsx2/gui/MainFrame.cpp:528
-msgid "Open Debug Window..."
+msgid "&Open Debug Window..."
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:531
-msgid "Logging..."
+msgid "&Logging..."
 msgstr "로깅..."
 
 #: pcsx2/gui/MainFrame.cpp:613
-msgid "Pause"
+msgid "Paus&e"
 msgstr "중지"
 
 #: pcsx2/gui/MainFrame.cpp:614
@@ -1569,7 +1569,7 @@ msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "PS2 상태를 유지하고 안전하게 에뮬레이션을 중지합니다."
 
 #: pcsx2/gui/MainFrame.cpp:621
-msgid "Resume"
+msgid "R&esume"
 msgstr "재개"
 
 #: pcsx2/gui/MainFrame.cpp:622
@@ -1585,7 +1585,7 @@ msgid "No emulation state is active; cannot suspend or resume."
 msgstr "활동적인 에뮬레이션 상태가 아닙니다; 중지하거나 재개할 수 없습니다."
 
 #: pcsx2/gui/MainFrame.cpp:636
-msgid "Restart"
+msgid "Res&tart"
 msgstr "재시작"
 
 #: pcsx2/gui/MainFrame.cpp:637
@@ -1597,7 +1597,7 @@ msgid "No emulation state is active; boot something first."
 msgstr "활동적인 에뮬레이션 상태가 아닙니다; 무언가를 처음 부트하십시오."
 
 #: pcsx2/gui/MainFrame.cpp:650
-msgid "Reboot CDVD (full)"
+msgid "Reboot CDVD (f&ull)"
 msgstr "CDVD 재부트 (전체)"
 
 #: pcsx2/gui/MainFrame.cpp:651
@@ -1613,7 +1613,7 @@ msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "현재의 DVD 또는 Iso 소스 미디어를 사용하여 가상 머신을 부트합니다"
 
 #: pcsx2/gui/MainFrame.cpp:664
-msgid "Reboot CDVD (fast)"
+msgid "Reboot CDVD (&fast)"
 msgstr "CDVD 재부트 (빠른)"
 
 #: pcsx2/gui/MainFrame.cpp:665
@@ -1621,7 +1621,7 @@ msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "빠른 부트를 사용하여 재부트합니다 (스플래시 화면 생략)"
 
 #: pcsx2/gui/MainFrame.cpp:669
-msgid "Boot CDVD (fast)"
+msgid "Boot CDVD (&fast)"
 msgstr "CDVD 부트 (빠른)"
 
 #: pcsx2/gui/MainFrame.cpp:670
@@ -1633,7 +1633,7 @@ msgid "No plugin loaded"
 msgstr "불러올 플러그인이 없습니다"
 
 #: pcsx2/gui/MainFrame.cpp:755
-msgid "Core GS Settings..."
+msgid "&Core GS Settings..."
 msgstr "GS 핵심 설정..."
 
 #: pcsx2/gui/MainFrame.cpp:756
@@ -1644,7 +1644,7 @@ msgstr ""
 "PCSX2 핵심 가상 머신에 의해 규제된 하드웨어 에뮬레이션 설정을 변경합니다."
 
 #: pcsx2/gui/MainFrame.cpp:758
-msgid "Window Settings..."
+msgid "&Window Settings..."
 msgstr "창 설정..."
 
 #: pcsx2/gui/MainFrame.cpp:759
@@ -1652,7 +1652,7 @@ msgid "Modify window and appearance options, including aspect ratio."
 msgstr "화면 비율을 포함하여 창 및 외관 옵션을 변경합니다."
 
 #: pcsx2/gui/MainFrame.cpp:766
-msgid "Plugin Settings..."
+msgid "&Plugin Settings..."
 msgstr "플러그인 설정..."
 
 #: pcsx2/gui/MainFrame.cpp:767

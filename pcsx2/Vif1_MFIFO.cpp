@@ -184,7 +184,7 @@ void mfifoVIF1transfer(int qwc)
 		if (vif1.inprogress & 0x10)
 		{
 			//Don't resume if stalled or already looping
-			if(vif1ch.chcr.STR == true && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
+			if(vif1ch.chcr.STR && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
 			{
 				SPR_LOG("Data Added, Resuming");
 				//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
@@ -308,7 +308,7 @@ void vifMFIFOInterrupt()
 			return;
 		}
 	}
-	if(vif1.waitforvu == true)
+	if(vif1.waitforvu)
 	{
 	//	DevCon.Warning("Waiting on VU1 MFIFO");
 		//CPU_INT(DMAC_MFIFO_VIF, 16);
@@ -359,7 +359,7 @@ void vifMFIFOInterrupt()
 
 	vif1.vifstalled.enabled = false;
 
-	if (vif1.done == false || vif1ch.qwc) {
+	if (!vif1.done || vif1ch.qwc) {
 		switch(vif1.inprogress & 1) {
 			case 0: //Set up transfer
 				if (QWCinVIFMFIFO(vif1ch.tadr) == 0) {

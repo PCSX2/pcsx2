@@ -26,6 +26,7 @@
 CRC::Game CRC::m_games[] =
 {
 	{0x00000000, NoTitle, NoRegion, 0},
+	{0xF46142D3, ArTonelico2, NoRegion, 0},
 	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
 	{0x7800DC84, Clannad, JP, PointListPalette},
@@ -401,6 +402,7 @@ CRC::Game CRC::m_games[] =
 	{0xEEA60511, BurnoutRevenge, KO, 0},
 	{0x8C9576A1, BurnoutDominator, US, 0},
 	{0x8C9576B4, BurnoutDominator, EU, 0},
+	{0x8C9C76B4, BurnoutDominator, EU, 0},
 	{0x4A0E5B3A, MidnightClub3, US, 0},	//dub
 	{0xEBE1972D, MidnightClub3, EU, 0},	//dub
 	{0x60A42FF5, MidnightClub3, US, 0},	//remix
@@ -471,6 +473,7 @@ CRC::Game CRC::m_games[] =
 	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0x399A49CA, GTASanAndreas, US, 0}, 
+	{0x2C6BE434, GTASanAndreas, US, 0},
 	{0x60FE139C, GTASanAndreas, JP, 0}, 
 	{0x2615F542, FrontMission5, JP, 0}, 
 	{0xF60255AC, FrontMission5, JP, 0},
@@ -511,9 +514,16 @@ CRC::Game CRC::m_games[] =
 	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
+	{0x4CE7FB04, ItadakiStreet, JP, 0},
+	{0x9C712FF0, Jak1, EU, 0},
+	{0x472E7699, Jak1, US, 0},
+	{0x2479F4A9, Jak2, EU, 0},
+	{0x12804727, Jak3, EU, 0},
+	{0x644CFD03, Jak3, US, 0},
+	{0xDF659E77, JakX, EU, 0},
 };
 
-hash_map<uint32, CRC::Game*> CRC::m_map;
+map<uint32, CRC::Game*> CRC::m_map;
 
 string ToLower( string str )
 {
@@ -534,9 +544,10 @@ bool IsCrcExcluded(string exclusionList, uint32 crc)
 
 CRC::Game CRC::Lookup(uint32 crc)
 {
+	printf("GSdx Lookup CRC:%X\n", crc);
 	if(m_map.empty())
 	{
-		string exclusions = theApp.GetConfig( "CrcHacksExclusions", "" );
+		string exclusions = theApp.GetConfigS("CrcHacksExclusions");
 		if (exclusions.length() != 0)
 			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() );
 
@@ -549,7 +560,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 						, m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
 					crcDups++;
 				}
-				
+
 				m_map[m_games[i].crc] = &m_games[i];
 			}
 			//else
@@ -559,7 +570,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 			printf("[FIXME] GSdx: Duplicate CRC: Overall: %d\n", crcDups);
 	}
 
-	hash_map<uint32, Game*>::iterator i = m_map.find(crc);
+	auto i = m_map.find(crc);
 
 	if(i != m_map.end())
 	{

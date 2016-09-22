@@ -89,8 +89,8 @@ namespace MIPSAnalyst
 		
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_BRANCH)
 		{
-			bool sure;
-			bool takeBranch;
+			bool sure = false;
+			bool takeBranch = false;
 			switch (opcode.flags & CONDTYPE_MASK)
 			{
 			case CONDTYPE_EQ:
@@ -116,7 +116,7 @@ namespace MIPSAnalyst
 				break;
 
 			default:
-				sure = false;
+				break;
 			}
 
 			if (sure && takeBranch)
@@ -326,7 +326,7 @@ namespace MIPSAnalyst
 		MipsOpcodeInfo info;
 		memset(&info, 0, sizeof(info));
 
-		if (cpu->isValidAddress(address) == false)
+		if (!cpu->isValidAddress(address))
 			return info;
 
 		info.cpu = cpu;

@@ -33,6 +33,8 @@ GSState::GSState()
 	, m_irq(NULL)
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
+	, m_gsc(NULL)
+	, m_skip(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -40,21 +42,23 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
-	, m_crcinited(false)
 {
-	m_nativeres = theApp.GetConfig("upscale_multiplier",1) == 1;
-	m_mipmap = !!theApp.GetConfig("mipmap", 1);
-	m_NTSC_Saturation = !!theApp.GetConfig("NTSC_Saturation", true);
+	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1;
+	m_mipmap = theApp.GetConfigB("mipmap");
+	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
+	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
+	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
 
 	s_n     = 0;
-	s_dump  = !!theApp.GetConfig("dump", 0);
-	s_save  = !!theApp.GetConfig("save", 0);
-	s_savet = !!theApp.GetConfig("savet", 0);
-	s_savez = !!theApp.GetConfig("savez", 0);
-	s_savef = !!theApp.GetConfig("savef", 0);
-	s_saven = theApp.GetConfig("saven", 0);
-	s_savel = theApp.GetConfig("savel", 5000);
-#ifdef __linux__
+	s_dump  = theApp.GetConfigB("dump");
+	s_save  = theApp.GetConfigB("save");
+	s_savet = theApp.GetConfigB("savet");
+	s_savez = theApp.GetConfigB("savez");
+	s_savef = theApp.GetConfigB("savef");
+	s_saven = theApp.GetConfigI("saven");
+	s_savel = theApp.GetConfigI("savel");
+	m_dump_root = "";
+#if defined(__unix__)
 	if (s_dump) {
 		GSmkdir("/tmp/GS_HW_dump");
 		GSmkdir("/tmp/GS_SW_dump");
@@ -69,8 +73,8 @@ GSState::GSState()
 	//s_saven = 0;
 	//s_savel = 0;
 
-	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
-	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
+	UserHacks_WildHack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_WildHack") : 0;
+	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -268,26 +272,37 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_A_D] = &GSState::GIFPackedRegHandlerA_D;
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
-	#define SetHandlerXYZ(P) \
-		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1>; \
-		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P>; \
+	#define SetHandlerXYZ(P, auto_flush) \
+		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush>; \
 
-	SetHandlerXYZ(GS_POINTLIST);
-	SetHandlerXYZ(GS_LINELIST);
-	SetHandlerXYZ(GS_LINESTRIP);
-	SetHandlerXYZ(GS_TRIANGLELIST);
-	SetHandlerXYZ(GS_TRIANGLESTRIP);
-	SetHandlerXYZ(GS_TRIANGLEFAN);
-	SetHandlerXYZ(GS_SPRITE);
-	SetHandlerXYZ(GS_INVALID);
+	if (m_userhacks_auto_flush) {
+		SetHandlerXYZ(GS_POINTLIST, true);
+		SetHandlerXYZ(GS_LINELIST, true);
+		SetHandlerXYZ(GS_LINESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLELIST, true);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLEFAN, true);
+		SetHandlerXYZ(GS_SPRITE, true);
+		SetHandlerXYZ(GS_INVALID, true);
+	} else {
+		SetHandlerXYZ(GS_POINTLIST, false);
+		SetHandlerXYZ(GS_LINELIST, false);
+		SetHandlerXYZ(GS_LINESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLELIST, false);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLEFAN, false);
+		SetHandlerXYZ(GS_SPRITE, false);
+		SetHandlerXYZ(GS_INVALID, false);
+	}
 
 	for(size_t i = 0; i < countof(m_fpGIFRegHandlers); i++)
 	{
@@ -346,52 +361,96 @@ void GSState::ResetHandlers()
 	SetMultithreaded(m_mt);
 }
 
+bool GSState::isinterlaced()
+{
+	return !!m_regs->SMODE2.INT;
+}
+
+GSVideoMode GSState::GetVideoMode()
+{
+	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.
+
+	GSVideoMode videomode = GSVideoMode::Unknown;
+	uint8 Colorburst = m_regs->SMODE1.CMOD; // Subcarrier frequency
+	uint8 PLL_Divider = m_regs->SMODE1.LC; // Phased lock loop divider
+
+	switch (Colorburst)
+	{
+	case 0:
+		if (isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::DTV_1080I;
+
+		else if (!isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::DTV_720P;
+
+		else if (!isinterlaced() && PLL_Divider == 32)
+			videomode = GSVideoMode::DTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
+
+		else
+			videomode = GSVideoMode::VESA;
+		break;
+
+	case 2:
+		videomode = GSVideoMode::NTSC; break;
+
+	case 3:
+		videomode = GSVideoMode::PAL; break;
+	}
+
+	return videomode;
+}
+
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	GSVector4i r;
 
+	GSVideoMode videomode = GetVideoMode();
+	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
+	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / magnification.x;
+	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / magnification.y;
+	
 	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && !Vmode_VESA_DTV)
+	if (height > 640 && videomode < GSVideoMode::VESA)
 	{
 		height /= 2;
 	}
 
-	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + width;
-	r.bottom = r.top + height;
+	// Set up the display rectangle based on the values obtained from DISPLAY registers
+	GSVector4i rectangle;
+	rectangle.left = m_regs->DISP[i].DISPLAY.DX / magnification.x;
+	rectangle.top = m_regs->DISP[i].DISPLAY.DY / magnification.y;
+	rectangle.right = rectangle.left + width;
+	rectangle.bottom = rectangle.top + height;
 
 	// Useful for debugging games:
 	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
 
-	return r;
+	return rectangle;
 }
 
 GSVector4i GSState::GetFrameRect(int i)
 {
 	if (i < 0) i = IsEnabled(1) ? 1 : 0;
 
-	GSVector4i r = GetDisplayRect(i);
+	GSVector4i rectangle = GetDisplayRect(i);
+	GSVideoMode videomode = GetVideoMode();
 
-	int w = r.width();
-	int h = r.height();
+	int w = rectangle.width();
+	int h = rectangle.height();
 
 //  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
 //  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
 //  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (Vmode_NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
+	if (videomode == GSVideoMode::NTSC && h > 448 && w < 640 && m_NTSC_Saturation)
 		h = 448;
 
-	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
+	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
 		h >>= 1;
 
-	r.left = m_regs->DISP[i].DISPFB.DBX;
-	r.top = m_regs->DISP[i].DISPFB.DBY;
-	r.right = r.left + w;
-	r.bottom = r.top + h;
+	rectangle.left = m_regs->DISP[i].DISPFB.DBX;
+	rectangle.top = m_regs->DISP[i].DISPFB.DBY;
+	rectangle.right = rectangle.left + w;
+	rectangle.bottom = rectangle.top + h;
 
 	/*static GSVector4i old_r = (GSVector4i) 0;
 	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
@@ -399,38 +458,7 @@ GSVector4i GSState::GetFrameRect(int i)
 	}
 	old_r = r;*/
 
-	return r;
-}
-
-GSVector2i GSState::GetDeviceSize(int i)
-{
-	// TODO: return (m_regs->SMODE1.CMOD & 1) ? GSVector2i(640, 576) : GSVector2i(640, 480);
-
-	// TODO: other params of SMODE1 should affect the true device display size
-
-	// TODO2: pal games at 60Hz
-
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-
-	GSVector4i r = GetDisplayRect(i);
-
-	int w = r.width();
-	int h = r.height();
-
-	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
-	{
-		h /= 2;
-	}
-	else
-	{
-		h = (m_regs->SMODE1.CMOD & 1) ? 512 : 448;
-	}*/
-
-	//Fixme : Just slightly better than the hack above
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
-		h >>= 1;
-
-	return GSVector2i(w, h);
+	return rectangle;
 }
 
 bool GSState::IsEnabled(int i)
@@ -452,29 +480,24 @@ bool GSState::IsEnabled(int i)
 float GSState::GetTvRefreshRate()
 {
 	float vertical_frequency = 0;
+	GSVideoMode videomode = GetVideoMode();
 
-	switch (m_regs->SMODE1.CMOD)
+	//TODO: Check vertical frequencies for VESA video modes, old ones were untested.
+
+	switch (videomode)
 	{
-		case 0:
-		{
-			if (Vmode_VESA_1A)			vertical_frequency = 59.94f;
-			if (Vmode_VESA_1C)			vertical_frequency = 75;
-			if (Vmode_VESA_2B)			vertical_frequency = 60.317f;
-			if (Vmode_VESA_2D)			vertical_frequency = 75;
-			if (Vmode_VESA_3B)			vertical_frequency = 60.004f;
-			if (Vmode_VESA_3D)			vertical_frequency = 75.029f;
-			if (Vmode_VESA_4A)			vertical_frequency = 60.020f;
-			if (Vmode_VESA_4B)			vertical_frequency = 75.025f;
-			if (Vmode_DTV_480P)			vertical_frequency = 59.94f;
-			if (Vmode_DTV_720P_1080I)	vertical_frequency = 60;
-			break;
-		}
+	case GSVideoMode::NTSC: case GSVideoMode::DTV_480P:
+		vertical_frequency = (60 / 1.001f); break;
 
-		case 2: vertical_frequency = (60 / 1.001f); //NTSC
-			break;
-		case 3: vertical_frequency = 50;			//PAL
-			break;
-		default: ASSERT(0);
+	case GSVideoMode::PAL:
+		vertical_frequency = 50; break;
+
+	case GSVideoMode::DTV_720P: case GSVideoMode::DTV_1080I:
+		vertical_frequency = 60; break;
+
+	default:
+		if (videomode == GSVideoMode::Unknown)
+			ASSERT(0);
 	}
 
 	return vertical_frequency;
@@ -519,7 +542,7 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 	// Suikoden 4 creates some nan for Q. Let's avoid undefined behavior (See GIFRegHandlerRGBAQ)
 	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
 
-	*(int*)&m_q = GSVector4i::store(q);
+	GSVector4::store(&m_q, GSVector4::cast(q));
 
 	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
 	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
@@ -547,7 +570,7 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
     isPackedUV_HackFlag = true;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
 	/*
@@ -563,10 +586,10 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZF2.Skip());
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
 /*
@@ -580,7 +603,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZ2.Skip());
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -597,7 +620,7 @@ void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
 {
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -626,7 +649,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZF2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -634,7 +657,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -662,7 +685,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZ2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
 		r += 3;
 	}
@@ -761,7 +784,7 @@ void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
     isPackedUV_HackFlag = false;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
 /*
@@ -783,22 +806,31 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 	
 	m_v.m[1] = xyz.upl64(uvf);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 {
 	// m_v.XYZ = (GSVector4i)r->XYZ;
 
 	m_v.m[1] = GSVector4i::load(&r->XYZ, &m_v.UV);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
 template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
 	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
+
+	// Handle invalid PSM here
+	switch (TEX0.PSM) {
+		case 3:
+			TEX0.PSM = 0x13; // International Star Soccer (menu)
+			break;
+		default:
+			break;
+	}
 
 	bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
@@ -1332,10 +1364,10 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch(m_env.TRXDIR.XDIR)
 	{
 	case 0: // host -> local
-		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY);
+		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF);
 		break;
 	case 1: // local -> host
-		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY);
+		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF);
 		break;
 	case 2: // local -> local
 		Move();
@@ -1473,7 +1505,15 @@ void GSState::FlushPrim()
 
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-			Draw();
+			try {
+				Draw();
+			} catch (GSDXRecoverableError&) {
+				// could be an unsupported draw call
+			} catch (GSDXErrorOOM&) {
+				// Texture Out Of Memory
+				PurgePool();
+				fprintf(stderr, "GSDX OUT OF MEMORY\n");
+			}
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
@@ -1505,7 +1545,8 @@ void GSState::Write(const uint8* mem, int len)
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM];
+	GIFRegBITBLTBUF& blit = m_tr.m_blit;
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
 	/*
 	 *  The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
@@ -1523,25 +1564,25 @@ void GSState::Write(const uint8* mem, int len)
 	 * depth buffer. Let's reduce the size of the transfer
 	 */
 	if (m_game.title == CRC::SMTNocturne) {
-		if (m_env.BITBLTBUF.DBP == 0 && m_env.BITBLTBUF.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
+		if (blit.DBP == 0 && blit.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
 			h = 224;
 			m_env.TRXREG.RRH = 224;
 		}
 	}
 
-	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
+	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, blit.DBP, blit.DBW, blit.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
 
 	if(!m_tr.Update(w, h, psm.trbpp, len))
 	{
 		return;
 	}
 
-	GL_CACHE("Write! ...  => 0x%x W:%d F:%d (DIR %d%d), dPos(%d %d) size(%d %d)",
-		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
+		blit.DBP, blit.DBW, psm_str(blit.DPSM),
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 		m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
-	if(PRIM->TME && (m_env.BITBLTBUF.DBP == m_context->TEX0.TBP0 || m_env.BITBLTBUF.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
+	if(PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
 	{
 		FlushPrim();
 	}
@@ -1559,9 +1600,9 @@ void GSState::Write(const uint8* mem, int len)
 		r.right = r.left + m_env.TRXREG.RRW;
 		r.bottom = r.top + m_env.TRXREG.RRH;
 
-		InvalidateVideoMem(m_env.BITBLTBUF, r);
+		InvalidateVideoMem(blit, r);
 
-		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
 
 		m_tr.start = m_tr.end = m_tr.total;
 
@@ -1571,9 +1612,9 @@ void GSState::Write(const uint8* mem, int len)
 		static int n = 0;
 		string s;
 		s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
-			n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
+			n++, (int)blit.DBP, (int)blit.DBW, (int)blit.DPSM,
 			r.left, r.top, r.right, r.bottom);
-		m_mem.SaveBMP(s, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, r.right, r.bottom);
+		m_mem.SaveBMP(s, blit.DBP, blit.DBW, blit.DPSM, r.right, r.bottom);
 		*/
 	}
 	else
@@ -1626,8 +1667,13 @@ void GSState::Read(uint8* mem, int len)
 	int sy = m_env.TRXPOS.SSAY;
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
+	GSVector4i r(sx, sy, sx + w, sy + h);
 
-	// printf("Read len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d\n", len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
+	// Function is called from the EE thread. Unforunately gl stuff can only be used from a single thread (AKA MTGS)
+	if (GLLoader::in_replayer) {
+		GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%s SSAX=%d SSAY=%d RRW=%d RRH=%d",
+				len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM), sx, sy, w, h);
+	}
 
 	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
 	{
@@ -1638,11 +1684,18 @@ void GSState::Read(uint8* mem, int len)
 	{
 		if(m_tr.x == sx && m_tr.y == sy)
 		{
-			InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
+			InvalidateLocalMem(m_env.BITBLTBUF, r);
 		}
 	}
 
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+
+	if(s_dump && s_save && s_n >= s_saven) {
+		string s= m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+				s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
+				r.left, r.top, r.right, r.bottom);
+		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
+	}
 }
 
 void GSState::Move()
@@ -1657,9 +1710,9 @@ void GSState::Move()
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	GL_CACHE("Move! 0x%x W:%d F:%d => 0x%x W:%d F:%d (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
-		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM,
-		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM,
+	GL_CACHE("Move! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
 		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 		sx, sy, dx, dy, w, h);
 
@@ -2271,6 +2324,12 @@ int GSState::Defrost(const GSFreezeData* fd)
 	ReadState(&m_env.TRXPOS, data);
 	ReadState(&m_env.TRXREG, data);
 	ReadState(&m_env.TRXREG, data); // obsolete
+	// Technically this value ought to be saved like m_tr.x/y (break
+	// compatibility) but so far only a single game (Motocross Mania) really
+	// depends on this value (i.e != BITBLTBUF) Savestates are likely done at
+	// VSYNC, so not in the middle of a texture transfer, therefore register
+	// will be set again properly
+	m_tr.m_blit = m_env.BITBLTBUF;
 
 	for(int i = 0; i < 2; i++)
 	{
@@ -2350,6 +2409,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 	m_crc = crc;
 	m_options = options;
 	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
+	SetupCrcHack();
 }
 
 //
@@ -2367,7 +2427,7 @@ void GSState::UpdateScissor()
 	m_ofxy = m_context->scissor.ofxy;
 }
 
-void GSState::UpdateVertexKick() 
+void GSState::UpdateVertexKick()
 {
 	if(m_frameskip) return;
 
@@ -2419,7 +2479,7 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-template<uint32 prim> 
+template<uint32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(uint32 skip)
 {
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
@@ -2652,6 +2712,9 @@ __forceinline void GSState::VertexKick(uint32 skip)
 	default:
 		__assume(0);
 	}
+
+	if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0))
+		FlushPrim();
 }
 
 void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
@@ -2893,6 +2956,21 @@ bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 	{
 		pass = false;
 	}
+	else if((context->TEST.AFAIL == AFAIL_FB_ONLY) && zm == 0xFFFFFFFF)
+	{
+		// Alpha test controls depth writes but they're masked
+		pass = true;
+	}
+	else if((context->TEST.AFAIL == AFAIL_ZB_ONLY) && fm == 0xFFFFFFFF)
+	{
+		// Alpha test controls color writes but they're masked
+		pass = true;
+	}
+	else if((context->TEST.AFAIL == AFAIL_RGB_ONLY) && zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 1))
+	{
+		// Alpha test controls alpha/depth writes but they're both masked
+		pass = true;
+	}
 	else if(context->TEST.ATST != ATST_ALWAYS)
 	{
 		GetAlphaMinMax();
@@ -3021,11 +3099,12 @@ GSState::GSTransferBuffer::~GSTransferBuffer()
 	_aligned_free(buff);
 }
 
-void GSState::GSTransferBuffer::Init(int tx, int ty)
+void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit)
 {
 	x = tx;
 	y = ty;
 	total = 0;
+	m_blit = blit;
 }
 
 bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)

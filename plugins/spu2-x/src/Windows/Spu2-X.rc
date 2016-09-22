@@ -172,7 +172,7 @@ BEGIN
     CHECKBOX        "KeyOn/Off Events",IDC_MSGKEY,17,18,74,9,NOT WS_TABSTOP
     CONTROL         "Voice Stop Events",IDC_MSGVOICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,31,75,9
     CONTROL         "DMA Operations",IDC_MSGDMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,44,68,9
-    CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,57,83,9
+    CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,57,83,9
     CONTROL         "Buffer Over/Underruns",IDC_DBG_OVERRUNS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,70,97,9
     CONTROL         "ADPCM Cache Statistics",IDC_DBG_CACHE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,83,114,9
     CHECKBOX        "Dump Core and Voice State",IDC_DUMPCORE,159,74,104,10,NOT WS_TABSTOP
@@ -183,7 +183,7 @@ BEGIN
     CHECKBOX        "Log Audio Output",IDC_LOGWAVE,159,44,71,10,NOT WS_TABSTOP
     LTEXT           "Note: This is a non-devel build.  For performance reasons, some logging options are disabled; and only available in devel/debug builds.",IDC_MSG_PUBLIC_BUILD,9,187,174,30
     GROUPBOX        "Others",IDC_DEBUG_OTHERS,5,104,135,68
-    CONTROL         "Show Core Activity",IDC_DEBUG_VISUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,116,90,11
+    CONTROL         "Show Core Activity",IDC_DEBUG_VISUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,116,90,11
 END
 
 

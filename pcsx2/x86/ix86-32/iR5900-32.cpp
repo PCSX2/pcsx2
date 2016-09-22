@@ -53,7 +53,7 @@ u32 maxrecmem = 0;
 static __aligned16 uptr recLUT[_64kb];
 static __aligned16 uptr hwLUT[_64kb];
 
-#define HWADDR(mem) (hwLUT[mem >> 16] + (mem))
+static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
 
@@ -307,7 +307,7 @@ void recBranchCall( void (*func)() )
 void recCall( void (*func)() )
 {
 	iFlushCall(FLUSH_INTERPRETER);
-	xFastCall(func);
+	xFastCall((void*)func);
 }
 
 // =====================================================================================================
@@ -317,8 +317,6 @@ void recCall( void (*func)() )
 static void __fastcall recRecompile( const u32 startpc );
 static void __fastcall dyna_block_discard(u32 start,u32 sz);
 static void __fastcall dyna_page_reset(u32 start,u32 sz);
-
-static u32 s_store_ebp, s_store_esp;
 
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned eeRecDispatchers[__pagesize];
@@ -347,7 +345,7 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetAlignedCallTarget();
 
-	xFastCall(recRecompile, ptr[&cpuRegs.pc] );
+	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
 
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
@@ -361,7 +359,7 @@ static DynGenFunc* _DynGen_JITCompile()
 static DynGenFunc* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetAlignedCallTarget();
-	xJMP( JITCompile );
+	xJMP( (void*)JITCompile );
 	return (DynGenFunc*)retval;
 }
 
@@ -383,7 +381,7 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 {
 	u8* retval = xGetPtr();
 
-	xFastCall(recEventTest );
+	xFastCall((void*)recEventTest );
 
 	return (DynGenFunc*)retval;
 }
@@ -397,7 +395,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	{ // Properly scope the frame prologue/epilogue
 		xScopedStackFrame frame(IsDevBuild);
 
-		xJMP(DispatcherReg);
+		xJMP((void*)DispatcherReg);
 
 		// Save an exit point
 		ExitRecompiledCode = (DynGenFunc*)xGetPtr();
@@ -411,16 +409,16 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static DynGenFunc* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
-	xFastCall(dyna_block_discard);
-	xJMP(ExitRecompiledCode);
+	xFastCall((void*)dyna_block_discard);
+	xJMP((void*)ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
 
 static DynGenFunc* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
-	xFastCall(dyna_page_reset);
-	xJMP(ExitRecompiledCode);
+	xFastCall((void*)dyna_page_reset);
+	xJMP((void*)ExitRecompiledCode);
 	return (DynGenFunc*)retval;
 }
 
@@ -483,7 +481,7 @@ static void recReserveCache()
 		if (m_ConfiguredCacheReserve < 16) break;
 		m_ConfiguredCacheReserve /= 2;
 	}
-	
+
 	recMem->ThrowIfNotOk();
 }
 
@@ -503,7 +501,7 @@ static void recAlloc()
 	{
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 	}
-	
+
 	if (!recRAM)
 	{
 		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
@@ -569,6 +567,8 @@ static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
 static std::atomic<bool> eeRecIsReset(false);
 static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
+static bool g_resetEeScalingStats = false;
+static int g_patchesNeedRedo = 0;
 
 ////////////////////////////////////////////////////
 static void recResetRaw()
@@ -604,6 +604,8 @@ static void recResetRaw()
 	recConstBufPtr = recConstBuf;
 
 	g_branch = 0;
+	g_resetEeScalingStats = true;
+	g_patchesNeedRedo = 1;
 }
 
 static void recShutdown()
@@ -738,7 +740,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
 	// Note: technically the address is 0x8000_0180 (or 0x180)
 	// (if CPU is booted)
-	xJMP( DispatcherReg );
+	xJMP( (void*)DispatcherReg );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
 }
@@ -753,7 +755,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	xCMP(ptr32[&cpuRegs.pc], pc);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-	xJMP( DispatcherEvent );
+	xJMP( (void*)DispatcherEvent );
 	x86SetJ8(j8Ptr[0]);
 	//g_branch = 2;
 }
@@ -952,25 +954,58 @@ void iFlushCall(int flushtype)
 // s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 // Scaling blocks under 40 cycles seems to produce countless problem, so let's try to avoid them.
 
-static u32 scaleblockcycles()
+#define DEFAULT_SCALED_BLOCKS() (s_nBlockCycles >> 3)
+
+static u32 scaleblockcycles_calculation()
 {
 	bool lowcycles = (s_nBlockCycles <= 40);
 	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
 	u32 scale_cycles = 0;
 
-	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 2)
-		scale_cycles = s_nBlockCycles >> 3; // Default cycle rate
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
+		scale_cycles = DEFAULT_SCALED_BLOCKS();
 
-	else if (cyclerate > 0)
-		scale_cycles = s_nBlockCycles >> (3 + cyclerate);
+	else if (cyclerate > 1)
+		scale_cycles = s_nBlockCycles >> (2 + cyclerate);
 
-	else if (cyclerate < 0)
-		scale_cycles = ((5 + (-2 * cyclerate)) * s_nBlockCycles) >> 5;
+	else if (cyclerate == 1)
+		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
+
+	else if (cyclerate == -1)  // the mildest value which is also used by the "balanced" preset.
+		// These values were manually tuned to yield mild speedup with high compatibility
+		scale_cycles = (s_nBlockCycles <= 80 || s_nBlockCycles > 168 ? 5 : 7) * s_nBlockCycles / 32;
+
+	else
+		scale_cycles = ((5 + (-2 * (cyclerate + 1))) * s_nBlockCycles) >> 5;
 
 	// Ensure block cycle count is never less than 1.
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
+static u32 scaleblockcycles()
+{
+	u32 scaled = scaleblockcycles_calculation();
+
+#if 0 // Enable this to get some runtime statistics about the scaling result in practice
+	static u32 scaled_overall = 0, unscaled_overall = 0;
+	if (g_resetEeScalingStats)
+	{
+		scaled_overall = unscaled_overall = 0;
+		g_resetEeScalingStats = false;
+	}
+	u32 unscaled = DEFAULT_SCALED_BLOCKS();
+	if (!unscaled) unscaled = 1;
+
+	scaled_overall += scaled;
+	unscaled_overall += unscaled;
+	float ratio = static_cast<float>(unscaled_overall) / scaled_overall;
+
+	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
+	               unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
+#endif
+
+	return scaled;
+}
 
 // Generates dynarec code for Event tests followed by a block dispatch (branch).
 // Parameters:
@@ -997,7 +1032,7 @@ static void iBranchTest(u32 newpc)
 		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
 		xMOV(ptr32[&cpuRegs.cycle], eax);
 
-		xJMP( DispatcherEvent );
+		xJMP( (void*)DispatcherEvent );
 	}
 	else
 	{
@@ -1011,7 +1046,7 @@ static void iBranchTest(u32 newpc)
 		else
 			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
 
-		xJMP( DispatcherEvent );
+		xJMP( (void*)DispatcherEvent );
 	}
 }
 
@@ -1142,7 +1177,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xFastCall(standardizeBreakpointAddress, ecx);
+	xFastCall((void*)standardizeBreakpointAddress, ecx);
 	xMOV(ecx,eax);
 	xMOV(edx,eax);
 	xADD(edx,bits/8);
@@ -1155,9 +1190,9 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	{
 		if (checks[i].result == 0)
 			continue;
-		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store == true)
+		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((checks[i].cond & MEMCHECK_READ) == 0 && store == false)
+		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
@@ -1173,10 +1208,10 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		// hit the breakpoint
 		if (checks[i].result & MEMCHECK_LOG) {
 			xMOV(edx, store);
-			xFastCall(dynarecMemLogcheck, ecx, edx);
+			xFastCall((void*)dynarecMemLogcheck, ecx, edx);
 		}
 		if (checks[i].result & MEMCHECK_BREAK) {
-			xFastCall(dynarecMemcheck);
+			xFastCall((void*)dynarecMemcheck);
 		}
 
 		next1.SetTarget();
@@ -1189,7 +1224,7 @@ void encodeBreakpoint()
 	if (isBreakpointNeeded(pc) != 0)
 	{
 		iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
-		xFastCall(dynarecCheckBreakpoint);
+		xFastCall((void*)dynarecCheckBreakpoint);
 	}
 }
 
@@ -1562,6 +1597,15 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 	return 0;
 }
 
+// defined at AppCoreThread.cpp but unclean and should not be public. We're the only
+// consumers of it, so it's declared only here.
+void LoadAllPatchesAndStuff(const Pcsx2Config&);
+void doPlace0Patches()
+{
+    LoadAllPatchesAndStuff(EmuConfig);
+    ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+}
+
 static void __fastcall recRecompile( const u32 startpc )
 {
 	u32 i = 0;
@@ -1603,23 +1647,33 @@ static void __fastcall recRecompile( const u32 startpc )
 
 	pxAssert(s_pCurBlockEx);
 
-	if (g_SkipBiosHack && HWADDR(startpc) == EELOAD_START) {
-		xFastCall(eeloadReplaceOSDSYS);
-		xCMP(ptr32[&cpuRegs.pc], startpc);
-		xJNE(DispatcherReg);
+	if (HWADDR(startpc) == EELOAD_START) {
+		// The EELOAD _start function is the same across all BIOS versions afaik
+		u32 mainjump = memRead32(EELOAD_START + 0x9c);
+		if (mainjump >> 26 == 3) // JAL
+			eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+	}
+
+	if (eeloadMain && HWADDR(startpc) == HWADDR(eeloadMain)) {
+		xFastCall((void*)eeloadHook);
+
+		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
+		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
+		// g_patchesNeedRedo is set on rec reset, and this is the only consumer.
+		// Also makes sure that patches from the previous elf/game are not applied on boot.
+		if (g_patchesNeedRedo)
+			doPlace0Patches();
+		g_patchesNeedRedo = 0;
 	}
 
 	// this is the only way patches get applied, doesn't depend on a hack
-	if (HWADDR(startpc) == ElfEntry) {
-		xFastCall(eeGameStarting);
+	if (g_GameLoading && HWADDR(startpc) == ElfEntry) {
+		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
+		xFastCall((void*)eeGameStarting);
+
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
-		//
-		// First tentative was to call eeGameStarting directly (not through the
-		// recompiler) but it crashes some games (GT4, DMC3). It is either a
-		// thread issue or linked to the various components reset.
-		if (EmuConfig.EnablePatches) ApplyPatch(0);
-		if (EmuConfig.EnableCheats)  ApplyCheat(0);
+		doPlace0Patches();
 	}
 
 	g_branch = 0;
@@ -1639,18 +1693,18 @@ static void __fastcall recRecompile( const u32 startpc )
 		// [TODO] : These must be enabled from the GUI or INI to be used, otherwise the
 		// code that calls PreBlockCheck will not be generated.
 
-		xFastCall(PreBlockCheck, pc);
+		xFastCall((void*)PreBlockCheck, pc);
 	}
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		if (pc == 0x33ad48 || pc == 0x35060c) {
 			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
-			xFastCall(GoemonPreloadTlb);
+			xFastCall((void*)GoemonPreloadTlb);
 		} else if (pc == 0x3563b8) {
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			xFastCall(GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
+			xFastCall((void*)GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
 
@@ -2099,7 +2153,7 @@ R5900cpu recCpu =
 	recThrowException,
 	recThrowException,
 	recClear,
-	
+
 	recGetCacheReserve,
 	recSetCacheReserve,
 };

@@ -30,6 +30,8 @@ memory view:
     any             overwrite ansi byte
     left click      select byte/nibble
     right click     open context menu
+    ctrl+wheel      zoom memory view
+    esc             return to previous goto address
 
 breakpoint list:
 

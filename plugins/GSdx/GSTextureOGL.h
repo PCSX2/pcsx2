@@ -24,15 +24,14 @@
 #include "GSTexture.h"
 
 namespace PboPool {
-	void BindPbo();
-	void UnbindPbo();
-	void NextPbo();
-	void NextPboWithSync();
+	inline void BindPbo();
+	inline void UnbindPbo();
+	inline void Sync();
 
-	char* Map(uint32 size);
-	void Unmap();
-	uptr Offset();
-	void EndTransfer();
+	inline char* Map(uint32 size);
+	inline void  Unmap();
+	inline uptr  Offset();
+	inline void  EndTransfer();
 
 	void Init();
 	void Destroy();
@@ -54,11 +53,13 @@ class GSTextureOGL final : public GSTexture
 		int m_r_w;
 		int m_r_h;
 
-
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
 		GLenum m_int_type;
 		uint32 m_int_shift;
+
+		// Allow to track size of allocated memory
+		uint32 m_mem_usage;
 
 	public:
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
@@ -67,7 +68,7 @@ class GSTextureOGL final : public GSTexture
 		bool Update(const GSVector4i& r, const void* data, int pitch) final;
 		bool Map(GSMap& m, const GSVector4i* r = NULL) final;
 		void Unmap() final;
-		bool Save(const string& fn, bool user_image = false, bool dds = false) final;
+		bool Save(const string& fn, bool dds = false) final;
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }
@@ -76,6 +77,9 @@ class GSTextureOGL final : public GSTexture
 		bool HasBeenCleaned() { return m_clean; }
 		void WasAttached() { m_clean = false; }
 		void WasCleaned() { m_clean = true; }
+
+		void Clear(const void* data);
+		void Clear(const void* data, const GSVector4i& area);
 
 		uint32 GetMemUsage();
 };

@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "GSSetting.h"
-#ifndef __linux__
+#ifdef _WIN32
 #include "resource.h"
 #endif
 
@@ -93,7 +93,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It is basically a trade-off between GPU/CPU.";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
-				"It could be slower when the effects are used.\n\nNote: it requires the OpenGL 4.2 extension GL_ARB_shader_image_load_store.";
+				"It could be slower when the effects are used.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\n\n"
@@ -121,6 +121,12 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Enables external shader for additional post-processing effects.";
 		case IDC_FXAA:
 			return "Enables fast approximate anti-aliasing. Small performance impact.";
+		case IDC_AUTO_FLUSH:
+			return "Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
+				"Warning: it's very costly on the performance.\n\n"
+				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
+		case IDC_UNSCALE_POINT_LINE:
+			return "Increases the width of lines at higher than native resolutions. This ensures that the lines will keep the correct proportions and prevents aliasing. Avoids empty lines on the screen in games such as Ridge Racer V, and clears FMV's obscured by a grid like Silent Hill series and Dirge of Cerberus.";
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:
@@ -128,16 +134,21 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
 #endif
+#ifdef __linux__
+		case IDC_LINEAR_PRESENT:
+			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
+#endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
 		case IDC_MIPMAP:
 			return "Enables mipmapping, which some games require to render correctly. Turn off only for debug purposes.";
-#ifdef __linux__
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
-#endif
+		case IDC_LARGE_FB:
+			return "Allocate a large framebuffer to be compliant with GS memory (Prevents FMV flickering).\n"
+				"It increases GPU/memory requirements.";
 		default:
 			if (updateText)
 				*updateText = false;

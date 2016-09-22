@@ -20,29 +20,29 @@
 #include "Global.h"
 #include <wx/fileconf.h>
 
-extern void CfgSetSettingsDir(const char* dir);
+extern void CfgSetSettingsDir(const char *dir);
 
-class CfgHelper {
-	wxFileConfig* m_config;
-	static wxString m_path;
+class CfgHelper
+{
+    wxFileConfig *m_config;
+    static wxString m_path;
 
-	void setIni(const wchar_t* Section);
+    void setIni(const wchar_t *Section);
 
-	public:
-	CfgHelper();
-	~CfgHelper();
+public:
+    CfgHelper();
+    ~CfgHelper();
 
-	void		WriteBool(const wchar_t* Section, const wchar_t* Name, bool Value);
-	void		WriteInt(const wchar_t* Section, const wchar_t* Name, int Value);
-	void		WriteFloat(const wchar_t* Section, const wchar_t* Name, float Value);
-	void		WriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data);
+    void WriteBool(const wchar_t *Section, const wchar_t *Name, bool Value);
+    void WriteInt(const wchar_t *Section, const wchar_t *Name, int Value);
+    void WriteFloat(const wchar_t *Section, const wchar_t *Name, float Value);
+    void WriteStr(const wchar_t *Section, const wchar_t *Name, const wxString &Data);
 
-	bool		ReadBool(const wchar_t *Section,const wchar_t* Name, bool Default = false);
-	int			ReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default = 0);
-	int			ReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, const wchar_t* Default = 0);
-	int			ReadInt(const wchar_t* Section, const wchar_t* Name,int Default = 0);
-	float		ReadFloat(const wchar_t* Section, const wchar_t* Name, float Default = 0.0f);
+    bool ReadBool(const wchar_t *Section, const wchar_t *Name, bool Default = false);
+    int ReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default = 0);
+    int ReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, const wchar_t *Default = 0);
+    int ReadInt(const wchar_t *Section, const wchar_t *Name, int Default = 0);
+    float ReadFloat(const wchar_t *Section, const wchar_t *Name, float Default = 0.0f);
 
-	static void SetSettingsDir(const char* dir);
-
+    static void SetSettingsDir(const char *dir);
 };

@@ -150,7 +150,6 @@ set(pcsx2Headers
 	R5900Exceptions.h
 	R5900.h
 	R5900OpcodeTables.h
-	SamplProf.h
 	SaveState.h
 	Sifcmd.h
 	Sif.h
@@ -301,7 +300,6 @@ set(pcsx2GuiSources
 	gui/Panels/PluginSelectorPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
-	gui/pxLogTextCtrl.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
 	gui/SysState.cpp
@@ -397,6 +395,12 @@ set(pcsx2OSXSources
 	Darwin/DarwinFlatFileReader.cpp
 	)
 
+set(pcsx2FreeBSDSources
+	Linux/LnxConsolePipe.cpp
+	Linux/LnxKeyCodes.cpp
+	Darwin/DarwinFlatFileReader.cpp
+	)
+
 # Linux headers
 set(pcsx2LinuxHeaders
 	)
@@ -470,7 +474,6 @@ set(pcsx2WindowsSources
 	windows/DwmSetup.cpp
 	windows/ini.cpp
 	windows/PatchBrowser.cpp
-	windows/SamplProf.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinSysExec.cpp)
@@ -612,6 +615,12 @@ endif()
 if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
+		${pcsx2LinuxHeaders})
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+	set(Platform
+		${pcsx2FreeBSDSources}
 		${pcsx2LinuxHeaders})
 endif()
 

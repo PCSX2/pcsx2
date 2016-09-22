@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndEGL.h"
 
-#if defined(__linux__) && defined(EGL_SUPPORTED)
+#if defined(__unix__) && defined(EGL_SUPPORTED)
 
 GSWndEGL::GSWndEGL()
 	: m_NativeWindow(0), m_NativeDisplay(NULL)
@@ -164,8 +164,8 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 		throw GSDXRecoverableError();
 
 	if(w <= 0 || h <= 0) {
-		w = theApp.GetConfig("ModeWidth", 640);
-		h = theApp.GetConfig("ModeHeight", 480);
+		w = theApp.GetConfigI("ModeWidth");
+		h = theApp.GetConfigI("ModeHeight");
 	}
 
 	m_managed = true;

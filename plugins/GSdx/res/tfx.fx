@@ -515,40 +515,50 @@ void atst(float4 c)
 {
 	float a = trunc(c.a * 255 + 0.01);
 	
-	if(PS_ATST == 0) // never
-	{
-		discard;
-	}
-	else if(PS_ATST == 1) // always
+#if 0
+    switch(Uber_ATST) {
+        case 0:
+            break;
+        case 1:
+            if (a > AREF) discard;
+            break;
+        case 2:
+            if (a < AREF) discard;
+            break;
+        case 3:
+            if (abs(a - AREF) > 0.5f) discard;
+            break;
+        case 4:
+            if (abs(a - AREF) < 0.5f) discard;
+            break;
+    }
+
+#endif
+
+#if 1
+	if(PS_ATST == 0)
 	{
 		// nothing to do
 	}
-	else if(PS_ATST == 2) // l
+	else if(PS_ATST == 1)
 	{
 		#if PS_SPRITEHACK == 0
-		clip(AREF - a - 0.5f);
-		#endif				
+		if (a > AREF) discard;
+		#endif		
 	}
-	else if(PS_ATST == 3) // le
+	else if(PS_ATST == 2)
 	{
-		clip(AREF - a + 0.5f);
+		if (a < AREF) discard;	
 	}
-	else if(PS_ATST == 4) // e
+	else if(PS_ATST == 3)
 	{
-		clip(0.5f - abs(a - AREF));
+		 if (abs(a - AREF) > 0.5f) discard;
 	}
-	else if(PS_ATST == 5) // ge
+	else if(PS_ATST == 4)
 	{
-		clip(a - AREF + 0.5f);
+		if (abs(a - AREF) < 0.5f) discard;
 	}
-	else if(PS_ATST == 6) // g
-	{
-		clip(a - AREF - 0.5f);
-	}
-	else if(PS_ATST == 7) // ne
-	{
-		clip(abs(a - AREF) - 0.5f);
-	}
+#endif
 }
 
 float4 fog(float4 c, float f)

@@ -19,11 +19,12 @@
 #include "InputManager.h"
 #include "KeyboardQueue.h"
 
-class LinuxKeyboard : public Device {
-	public:
-		LinuxKeyboard();
-		int Activate(InitInfo* args);
-		int Update();
+class LinuxKeyboard : public Device
+{
+public:
+    LinuxKeyboard();
+    int Activate(InitInfo *args);
+    int Update();
 };
 
 void EnumLnx();

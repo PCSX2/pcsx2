@@ -162,22 +162,21 @@ void recMFC0()
 
 	if( _Rd_ == 25 )
 	{
-		switch(_Imm_ & 0x3F)
+		if (0 == (_Imm_ & 1)) // MFPS, register value ignored
 		{
-			case 0:
-				xMOV(eax, ptr[&cpuRegs.PERF.n.pccr]);
-			break;
-
-			case 1:
-				iFlushCall(FLUSH_INTERPRETER);
-				xFastCall(COP0_UpdatePCCR );
-				xMOV(eax, ptr[&cpuRegs.PERF.n.pcr0]);
-				break;
-			case 3:
-				iFlushCall(FLUSH_INTERPRETER);
-				xFastCall(COP0_UpdatePCCR );
-				xMOV(eax, ptr[&cpuRegs.PERF.n.pcr1]);
-			break;
+			xMOV(eax, ptr[&cpuRegs.PERF.n.pccr]);
+		}
+		else if (0 == (_Imm_ & 2)) // MFPC 0, only LSB of register matters
+		{
+			iFlushCall(FLUSH_INTERPRETER);
+			xFastCall((void*)COP0_UpdatePCCR);
+			xMOV(eax, ptr[&cpuRegs.PERF.n.pcr0]);
+		}
+		else // MFPC 1
+		{
+			iFlushCall(FLUSH_INTERPRETER);
+			xFastCall((void*)COP0_UpdatePCCR);
+			xMOV(eax, ptr[&cpuRegs.PERF.n.pcr1]);
 		}
 		_deleteEEreg(_Rt_, 0);
 		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
@@ -207,7 +206,7 @@ void recMTC0()
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
-				xFastCall(WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0] );
+				xFastCall((void*)WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0] );
 			break;
 
 			case 9:
@@ -217,26 +216,27 @@ void recMTC0()
 			break;
 
 			case 25:
-				switch(_Imm_ & 0x3F)
+				if (0 == (_Imm_ & 1)) // MTPS
 				{
-					case 0:
-						iFlushCall(FLUSH_INTERPRETER);
-						xFastCall(COP0_UpdatePCCR );
-						xMOV( ptr32[&cpuRegs.PERF.n.pccr], g_cpuConstRegs[_Rt_].UL[0] );
-						xFastCall(COP0_DiagnosticPCCR );
-					break;
-
-					case 1:
-						xMOV(eax, ptr[&cpuRegs.cycle]);
-						xMOV(ptr32[&cpuRegs.PERF.n.pcr0], g_cpuConstRegs[_Rt_].UL[0]);
-						xMOV(ptr[&s_iLastPERFCycle[0]], eax);
-					break;
-
-					case 3:
-						xMOV(eax, ptr[&cpuRegs.cycle]);
-						xMOV(ptr32[&cpuRegs.PERF.n.pcr1], g_cpuConstRegs[_Rt_].UL[0]);
-						xMOV(ptr[&s_iLastPERFCycle[1]], eax);
-					break;
+					if (0 != (_Imm_ & 0x3E)) // only effective when the register is 0
+						break;
+					// Updates PCRs and sets the PCCR.
+					iFlushCall(FLUSH_INTERPRETER);
+					xFastCall((void*)COP0_UpdatePCCR);
+					xMOV(ptr32[&cpuRegs.PERF.n.pccr], g_cpuConstRegs[_Rt_].UL[0]);
+					xFastCall((void*)COP0_DiagnosticPCCR);
+				}
+				else if (0 == (_Imm_ & 2)) // MTPC 0, only LSB of register matters
+				{
+					xMOV(eax, ptr[&cpuRegs.cycle]);
+					xMOV(ptr32[&cpuRegs.PERF.n.pcr0], g_cpuConstRegs[_Rt_].UL[0]);
+					xMOV(ptr[&s_iLastPERFCycle[0]], eax);
+				}
+				else // MTPC 1
+				{
+					xMOV(eax, ptr[&cpuRegs.cycle]);
+					xMOV(ptr32[&cpuRegs.PERF.n.pcr1], g_cpuConstRegs[_Rt_].UL[0]);
+					xMOV(ptr[&s_iLastPERFCycle[1]], eax);
 				}
 			break;
 
@@ -256,7 +256,7 @@ void recMTC0()
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
 				_eeMoveGPRtoR(ecx, _Rt_);
-				xFastCall(WriteCP0Status, ecx );
+				xFastCall((void*)WriteCP0Status, ecx );
 			break;
 
 			case 9:
@@ -266,26 +266,26 @@ void recMTC0()
 			break;
 
 			case 25:
-				switch(_Imm_ & 0x3F)
+				if (0 == (_Imm_ & 1)) // MTPS
 				{
-					case 0:
-						iFlushCall(FLUSH_INTERPRETER);
-						xFastCall(COP0_UpdatePCCR );
-						_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pccr, _Rt_);
-						xFastCall(COP0_DiagnosticPCCR );
-					break;
-
-					case 1:
-						xMOV(ecx, ptr[&cpuRegs.cycle]);
-						_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr0, _Rt_);
-						xMOV(ptr[&s_iLastPERFCycle[0]], ecx);
-					break;
-
-					case 3:
-						xMOV(ecx, ptr[&cpuRegs.cycle]);
-						_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr1, _Rt_);
-						xMOV(ptr[&s_iLastPERFCycle[1]], ecx);
-					break;
+					if (0 != (_Imm_ & 0x3E)) // only effective when the register is 0
+						break;
+					iFlushCall(FLUSH_INTERPRETER);
+					xFastCall((void*)COP0_UpdatePCCR);
+					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pccr, _Rt_);
+					xFastCall((void*)COP0_DiagnosticPCCR);
+				}
+				else if (0 == (_Imm_ & 2)) // MTPC 0, only LSB of register matters
+				{
+					xMOV(ecx, ptr[&cpuRegs.cycle]);
+					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr0, _Rt_);
+					xMOV(ptr[&s_iLastPERFCycle[0]], ecx);
+				}
+				else // MTPC 1
+				{
+					xMOV(ecx, ptr[&cpuRegs.cycle]);
+					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr1, _Rt_);
+					xMOV(ptr[&s_iLastPERFCycle[1]], ecx);
 				}
 			break;
 

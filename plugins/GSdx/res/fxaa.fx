@@ -21,6 +21,12 @@ in SHADER
 
 layout(location = 0) out vec4 SV_Target0;
 
+layout(std140, binding = 14) uniform cb14
+{
+    vec2 _xyFrame;
+    vec4 _rcpFrame;
+};
+
 #else
 
 #if (SHADER_MODEL >= 0x400)

@@ -41,7 +41,6 @@
 #define IDC_FORCE_HIDE                  1124
 #define IDC_GH2_HACK                    1125
 #define IDC_FORCEFEEDBACK_HACK1         1126
-#define IDC_VISTA_VOLUME                1127
 #define IDC_TURBO_KEY_HACK              1128
 #define IDC_SAVE_STATE_TITLE            1129
 #define IDC_PAD_LIST                    1130
@@ -58,6 +57,8 @@
 #define IDC_DPAD                        0x1008
 #define IDC_LSTICK                      0x1009
 #define IDC_RSTICK                      0x100A
+#define IDC_FACE                        0x100B
+#define IDC_SHOULDER                    0x100C
 #define IDC_SLIDER_DEADZONE             0x1010
 #define IDC_AXIS_DEADZONE               0x1014
 #define IDC_LABEL_SENSITIVITY           0x1020

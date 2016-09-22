@@ -9,7 +9,6 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 set(Output x86emitter)
 
 set(CommonFlags
-	-fno-strict-aliasing
     )
 
 set(x86emitterFinalFlags ${CommonFlags})

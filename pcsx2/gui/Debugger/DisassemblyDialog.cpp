@@ -386,7 +386,7 @@ void DisassemblyDialog::stepOver()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			if (info.isLinkedBranch)	// jal, jalr
 			{
@@ -433,7 +433,7 @@ void DisassemblyDialog::stepInto()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			breakpointAddress = info.branchTarget;
 		} else {
@@ -501,7 +501,8 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		if (currentCpu != NULL)
 		{
 			currentCpu->showMemoryView();
-			currentCpu->getMemoryView()->gotoAddress(evt.GetInt());
+
+			currentCpu->getMemoryView()->gotoAddress(evt.GetInt(), true);
 			currentCpu->getDisassembly()->SetFocus();
 		}
 	} else if (type == debEVT_RUNTOPOS)
@@ -617,6 +618,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 				if (currentCpu != NULL)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
+				CBreakPoints::SetSkipFirst(0);
 			}
 
 			if (currentCpu != NULL)

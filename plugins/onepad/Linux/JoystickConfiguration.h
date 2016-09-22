@@ -32,15 +32,15 @@
 #include "keyboard.h"
 #include "onepad.h"
 
-class JoystickConfiguration : public wxFrame
+class JoystickConfiguration : public wxDialog
 {
-    wxPanel* m_pan_joystick_config;
+    wxPanel *m_pan_joystick_config;
     wxCheckBox *m_cb_reverse_Lx, *m_cb_reverse_Ly, *m_cb_reverse_Rx, *m_cb_reverse_Ry,
-        *m_cb_mouse_Ljoy, // Use mouse for left joystick
-        *m_cb_mouse_Rjoy; // Use mouse for right joystick
+        *m_cb_mouse_Ljoy,  // Use mouse for left joystick
+        *m_cb_mouse_Rjoy;  // Use mouse for right joystick
     wxButton *m_bt_ok, *m_bt_cancel;
 
-    int m_pad_id;
+    u32 m_pad_id;
     // isForLeftJoystick -> true is for Left Joystick, false is for Right Joystick
     bool m_init_reverse_Lx, m_init_reverse_Ly, m_init_reverse_Rx, m_init_reverse_Ry,
         m_init_mouse_Ljoy, m_init_mouse_Rjoy, m_isForLeftJoystick;
@@ -49,12 +49,12 @@ class JoystickConfiguration : public wxFrame
     void repopulate();
     void reset();
     // Events
-    void OnButtonClicked(wxCommandEvent&);
-    void OnCheckboxChange(wxCommandEvent&);
+    void OnButtonClicked(wxCommandEvent &);
+    void OnCheckboxChange(wxCommandEvent &);
 
 public:
-    JoystickConfiguration(int, bool, wxWindow*);
+    JoystickConfiguration(int, bool, wxWindow *);
     void InitJoystickConfiguration();
 };
 
-#endif // __JOYSTICKCONFIGURATION_H__
+#endif  // __JOYSTICKCONFIGURATION_H__

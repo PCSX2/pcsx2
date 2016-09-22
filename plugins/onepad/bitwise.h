@@ -19,26 +19,26 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
- template <class T>
- static void __forceinline set_bit(T &value, int bit)
- {
-	 value |= (1 << bit);
- }
+template <class T>
+static void __forceinline set_bit(T &value, int bit)
+{
+    value |= (1 << bit);
+}
 
-  template <class T>
- static void __forceinline clear_bit(T &value, int bit)
- {
-	 value &= ~(1 << bit);
- }
+template <class T>
+static void __forceinline clear_bit(T &value, int bit)
+{
+    value &= ~(1 << bit);
+}
 
-  template <class T>
- static void __forceinline toggle_bit(T &value, int bit)
- {
-	 value ^= (1 << bit);
- }
+template <class T>
+static void __forceinline toggle_bit(T &value, int bit)
+{
+    value ^= (1 << bit);
+}
 
-   template <class T>
- static bool __forceinline test_bit(T &value, int bit)
- {
-	 return (value & (1 << bit));
- }
+template <class T>
+static bool __forceinline test_bit(T &value, int bit)
+{
+    return (value & (1 << bit));
+}

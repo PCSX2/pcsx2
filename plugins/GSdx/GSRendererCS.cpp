@@ -103,7 +103,7 @@ bool GSRendererCS::CreateDevice(GSDevice* dev_unk)
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.MinLOD = -FLT_MAX;
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	sd.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	hr = (*dev)->CreateSamplerState(&sd, &m_ss);
@@ -747,7 +747,7 @@ void GSRendererCS::Write(GSOffset* off, const GSVector4i& r)
 			ctx->UpdateSubresource(m_vm, 0, &box, m_mem.m_vm8 + page * PAGE_SIZE, 0, 0);
 */
 			if(0)
-			printf("[%lld] write %05x %d %d (%d)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
+			printf("[%lld] write %05x %u %u (%u)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
 		}
 	}
 
@@ -807,7 +807,7 @@ void GSRendererCS::Read(GSOffset* off, const GSVector4i& r, bool invalidate)
 				ctx->Unmap(m_pb, 0);
 				
 				if(0)
-				printf("[%lld] read %05x %d %d (%d)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
+				printf("[%lld] read %05x %u %u (%u)\n", __rdtsc(), off->bp, off->bw, off->psm, page);
 			}
 		}
 	}

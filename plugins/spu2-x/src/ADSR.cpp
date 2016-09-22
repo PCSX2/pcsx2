@@ -38,8 +38,6 @@ void InitADSR()                                    // INIT ADSR
 	}
 }
 
-#define VOL(x) (((s32)x)) //24.8 volume
-
 // Returns the linear slide value for AR and SR inputs.
 // (currently not used, it's buggy)
 static int GetLinearSrAr( uint SrAr )
@@ -54,7 +52,7 @@ static int GetLinearSrAr( uint SrAr )
 
 bool V_ADSR::Calculate()
 {
-	jASSUME( Phase != 0 );
+	pxAssume( Phase != 0 );
 
 	if(Releasing && (Phase < 5))
 		Phase = 5;

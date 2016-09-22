@@ -10,8 +10,8 @@ Build-Depends: cmake (>= 2.8.5),
     libbz2-dev,
     libgl1-mesa-dev,
     libglu1-mesa-dev,
-    libgtk2.0-dev (>= 2.16),
-    libpng12-dev,
+    libgtk2.0-dev,
+    libpng12-dev | libpng-dev,
     libpulse-dev,
     libsdl2-dev,
     libsoundtouch-dev,
@@ -20,7 +20,7 @@ Build-Depends: cmake (>= 2.8.5),
     libx11-dev,
     locales | locales-all,
     portaudio19-dev,
-    zlib1g-dev (>= 1:1.2.3.3)
+    zlib1g-dev
 Standards-Version: 3.9.3
 Homepage: http://pcsx2.net/
 

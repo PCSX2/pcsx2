@@ -62,7 +62,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 	CComPtr<IDXGIAdapter1> adapter;
 	D3D_DRIVER_TYPE driver_type = D3D_DRIVER_TYPE_HARDWARE;
 
-	std::string adapter_id = theApp.GetConfig("Adapter", "default");
+	std::string adapter_id = theApp.GetConfigS("Adapter");
 
 	if (adapter_id == "default")
 		;
@@ -110,7 +110,10 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	scd.Windowed = TRUE;
 
-	spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
+	spritehack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SpriteHack") : 0;
+
+	isNative = theApp.GetConfigI("upscale_multiplier") == 1;
+
 	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
@@ -240,20 +243,20 @@ bool GSDevice11::Create(GSWnd* wnd)
 		CompileShader((const char *)shader.data(), shader.size(), "interlace.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_interlace.ps[i]);
 	}
 
-	// Shade Boost	
+	// Shade Boos
 
-	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
-	int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
-	int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
-		
-	string str[3];		
-		
+	int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+
+	string str[3];
+
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);
 	str[2] = format("%d", ShadeBoost_Contrast);
 
 	D3D_SHADER_MACRO macro[] =
-	{			
+	{
 		{"SB_SATURATION", str[0].c_str()},
 		{"SB_BRIGHTNESS", str[1].c_str()},
 		{"SB_CONTRAST", str[2].c_str()},
@@ -314,18 +317,18 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	memset(&sd, 0, sizeof(sd));
 
-	sd.Filter = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sd.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.MinLOD = -FLT_MAX;
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	sd.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	hr = m_dev->CreateSamplerState(&sd, &m_convert.ln);
 
-	sd.Filter = theApp.GetConfig("MaxAnisotropy", 0) && !theApp.GetConfig("paltex", 0) ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sd.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 	hr = m_dev->CreateSamplerState(&sd, &m_convert.pt);
 
@@ -367,7 +370,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	if(m_wnd->IsManaged())
 	{
-		SetExclusive(!theApp.GetConfig("windowed", 1));
+		SetExclusive(!theApp.GetConfigB("windowed"));
 	}
 
 	return true;
@@ -463,10 +466,10 @@ void GSDevice11::ClearRenderTarget(GSTexture* t, uint32 c)
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, color.v);
 }
 
-void GSDevice11::ClearDepth(GSTexture* t, float c)
+void GSDevice11::ClearDepth(GSTexture* t)
 {
 	if (!t) return;
-	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, c, 0);
+	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, 0.0f, 0);
 }
 
 void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
@@ -523,6 +526,9 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 	if(SUCCEEDED(hr))
 	{
 		t = new GSTexture11(texture);
+		if (t == NULL) {
+			throw GSDXErrorOOM();
+		}
 
 		switch(type)
 		{
@@ -530,7 +536,7 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 			ClearRenderTarget(t, 0);
 			break;
 		case GSTexture::DepthStencil:
-			ClearDepth(t, 0);
+			ClearDepth(t);
 			break;
 		}
 	}
@@ -755,7 +761,7 @@ void GSDevice11::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			std::string config_name(theApp.GetConfig("shaderfx_conf", "shaders/GSdx_FX_Settings.ini"));
+			std::string config_name(theApp.GetConfigS("shaderfx_conf"));
 			std::ifstream fconfig(config_name);
 			std::stringstream shader;
 			if (fconfig.good())
@@ -763,12 +769,12 @@ void GSDevice11::InitExternalFX()
 			else
 				fprintf(stderr, "GSdx: External shader config '%s' not loaded.\n", config_name.c_str());
 
-			std::string shader_name(theApp.GetConfig("shaderfx_glsl", "shaders/GSdx.fx"));
+			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
 			std::ifstream fshader(shader_name);
 			if (fshader.good())
 			{
 				shader << fshader.rdbuf();
-				CompileShader(shader.str().c_str(), shader.str().length(), shader_name.c_str(), nullptr, "ps_main", nullptr, &m_shaderfx.ps);
+				CompileShader(shader.str().c_str(), shader.str().length(), shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", nullptr, &m_shaderfx.ps);
 			}
 			else
 			{
@@ -1262,11 +1268,9 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
 	if(m_state.viewport != size)
 	{
-		bool isNative = theApp.GetConfig("upscale_multiplier", 1) == 1;
 		m_state.viewport = size;
 
 		D3D11_VIEWPORT vp;
-
 		memset(&vp, 0, sizeof(vp));
 
 		vp.TopLeftX = (spritehack > 0 || isNative) ? 0.0f : -0.01f;

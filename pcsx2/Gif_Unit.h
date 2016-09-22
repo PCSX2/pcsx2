@@ -663,6 +663,8 @@ struct Gif_Unit {
 
 	void PrintInfo(bool printP1=1, bool printP2=1, bool printP3=1) {
 		u32 a = checkPaths(1,1,1), b = checkQueued(1,1,1);
+		(void)a; // Don't warn about unused variable
+		(void)b;
 		GUNIT_LOG("Gif Unit - LastTransfer = %s, Paths = [%d,%d,%d], Queued = [%d,%d,%d]",
 				   Gif_TransferStr[(lastTranType>>8)&0xf],
 				   !!(a&1),!!(a&2),!!(a&4),!!(b&1),!!(b&2),!!(b&4));

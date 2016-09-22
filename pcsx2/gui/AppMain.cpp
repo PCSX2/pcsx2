@@ -61,12 +61,10 @@
 
 IMPLEMENT_APP(Pcsx2App)
 
-DEFINE_EVENT_TYPE( pxEvt_LoadPluginsComplete );
-DEFINE_EVENT_TYPE( pxEvt_LogicalVsync );
-
-DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
-
 std::unique_ptr<AppConfig> g_Conf;
+
+AspectRatioType iniAR;
+bool switchAR;
 
 static bool HandlePluginError( BaseException& ex )
 {
@@ -212,7 +210,7 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 	MainEmuFrame* mainFrame = GetMainFramePtr();
 	if( mainFrame == NULL ) return;
 
-	wxCommandEvent joe( wxEVT_COMMAND_MENU_SELECTED, menu_id );
+	wxCommandEvent joe( wxEVT_MENU, menu_id );
 	if( wxThread::IsMain() )
 		mainFrame->GetEventHandler()->ProcessEvent( joe );
 	else
@@ -520,11 +518,25 @@ extern bool FMVstarted;
 extern bool renderswitch;
 extern bool EnableFMV;
 
-void DoFmvSwitch()
+void DoFmvSwitch(bool on)
 {
-	ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(PluginId_GS) );
-	renderswitch = !renderswitch;
-	paused_core.AllowResume();
+	if (g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+		if (on) {
+			switchAR = true;
+			iniAR = g_Conf->GSWindow.AspectRatio;
+		} else {
+			switchAR = false;
+		}
+		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+			if (GSPanel* viewport = gsFrame->GetViewport())
+				viewport->DoResize();
+	}
+
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+		ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+		renderswitch = !renderswitch;
+		paused_core.AllowResume();
+	}
 }
 
 void Pcsx2App::LogicalVsync()
@@ -537,19 +549,19 @@ void Pcsx2App::LogicalVsync()
 
 	FpsManager.DoFrame();
 	
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
-		if (EnableFMV == 1) {
-			Console.Warning("FMV on");
-			DoFmvSwitch();
-			EnableFMV = 0;
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+		if (EnableFMV) {
+			DevCon.Warning("FMV on");
+			DoFmvSwitch(true);
+			EnableFMV = false;
 		}
 
-		if (FMVstarted){
+		if (FMVstarted) {
 			int diff = cpuRegs.cycle - eecount_on_last_vdec;
 			if (diff > 60000000 ) {
-				Console.Warning("FMV off");
-				DoFmvSwitch();
-				FMVstarted = 0;
+				DevCon.Warning("FMV off");
+				DoFmvSwitch(false);
+				FMVstarted = false;
 			}
 		}
 	}

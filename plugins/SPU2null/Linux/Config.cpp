@@ -23,44 +23,44 @@ using namespace std;
 extern string s_strIniPath;
 PluginConf Ini;
 
-EXPORT_C_(void) SPU2configure()
+EXPORT_C_(void)
+SPU2configure()
 {
- 	LoadConfig();
-	PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
-	SaveConfig();
+    LoadConfig();
+    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    SaveConfig();
 }
 
-EXPORT_C_(void) SPU2about()
+EXPORT_C_(void)
+SPU2about()
 {
-	//SysMessage("%s %d.%d", libraryName, version, build);
-	SysMessage("SPU2null: A simple null plugin.");
+    //SysMessage("%s %d.%d", libraryName, version, build);
+    SysMessage("SPU2null: A simple null plugin.");
 }
 
 void LoadConfig()
 {
     const std::string iniFile(s_strIniPath + "/Spu2null.ini");
 
-	if (!Ini.Open(iniFile, READ_FILE))
-	{
-		printf("failed to open %s\n", iniFile.c_str());
-		SaveConfig();//save and return
-		return;
-	}
+    if (!Ini.Open(iniFile, READ_FILE)) {
+        printf("failed to open %s\n", iniFile.c_str());
+        SaveConfig();  //save and return
+        return;
+    }
 
-	conf.Log = Ini.ReadInt("logging", 0);
-	Ini.Close();
+    conf.Log = Ini.ReadInt("logging", 0);
+    Ini.Close();
 }
 
 void SaveConfig()
 {
     const std::string iniFile(s_strIniPath + "/Spu2null.ini");
 
-	if (!Ini.Open(iniFile, WRITE_FILE))
-	{
-		printf("failed to open %s\n", iniFile.c_str());
-		return;
-	}
+    if (!Ini.Open(iniFile, WRITE_FILE)) {
+        printf("failed to open %s\n", iniFile.c_str());
+        return;
+    }
 
-	Ini.WriteInt("logging", conf.Log);
-	Ini.Close();
+    Ini.WriteInt("logging", conf.Log);
+    Ini.Close();
 }

@@ -251,7 +251,9 @@ void EmitSibMagic( uint regfield, const void* address )
 	// We must make sure that the displacement is within the 32bit range
 	// Else we will fail out in a spectacular fashion
 	sptr displacement = (sptr)address;
+#ifdef __x86_64__
 	pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
+#endif
 
 	xWrite<s32>( (s32)displacement );
 }
@@ -426,10 +428,10 @@ void EmitRex( const xRegisterBase& reg1, const void* src )
 
 void EmitRex( const xRegisterBase& reg1, const xIndirectVoid& sib )
 {
-	u8 w = reg1.IsWide();
-	u8 r = reg1.IsExtended();
-	u8 x = sib.Index.IsExtended();
-	u8 b = sib.Base.IsExtended();
+	bool w = reg1.IsWide();
+	bool r = reg1.IsExtended();
+	bool x = sib.Index.IsExtended();
+	bool b = sib.Base.IsExtended();
 	EmitRex(w, r, x, b);
 }
 

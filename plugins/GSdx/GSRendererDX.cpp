@@ -27,13 +27,19 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 	: GSRendererHW(tc)
 	, m_pixelcenter(pixelcenter)
 {
-	m_logz = !!theApp.GetConfig("logz", 0);
-	m_fba = !!theApp.GetConfig("fba", 1);
+	m_logz = theApp.GetConfigB("logz");
+	m_fba = theApp.GetConfigB("fba");
 
-	UserHacks_AlphaHack = !!theApp.GetConfig("UserHacks_AlphaHack", 0) && !!theApp.GetConfig("UserHacks", 0);
-	UserHacks_AlphaStencil = !!theApp.GetConfig("UserHacks_AlphaStencil", 0) && !!theApp.GetConfig("UserHacks", 0);
+	if (theApp.GetConfigB("UserHacks")) {
+		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
+		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
+		UserHacks_TCOffset     = theApp.GetConfigI("UserHacks_TCOffset");
+	} else {
+		UserHacks_AlphaHack    = false;
+		UserHacks_AlphaStencil = false;
+		UserHacks_TCOffset     = 0;
+	}
 
-	UserHacks_TCOffset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_TCOffset", 0) : 0;
 	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 }
@@ -42,21 +48,140 @@ GSRendererDX::~GSRendererDX()
 {
 }
 
+void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
+{
+	static const uint32 inverted_atst[] = { ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL };
+	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
+
+	if (!m_context->TEST.ATE) return;
+
+	switch (atst) {
+	case ATST_LESS:
+		if (tex && tex->m_spritehack_t) {
+			ps_sel.atst = 0;
+		}
+		else {
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			ps_sel.atst = 1;
+		}
+		break;
+	case ATST_LEQUAL:
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+		ps_sel.atst = 1;
+		break;
+	case ATST_GEQUAL:
+		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+		ps_sel.atst = 2;
+		break;
+	case ATST_GREATER:
+		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+		ps_sel.atst = 2;
+		break;
+	case ATST_EQUAL:
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+		ps_sel.atst = 3;
+		break;
+	case ATST_NOTEQUAL:
+		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+		ps_sel.atst = 4;
+		break;
+	case ATST_NEVER:
+	case ATST_ALWAYS:
+	default:
+		ps_sel.atst = 0;
+		break;
+	}
+
+	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
+	// to only draw pixels which would cause the destination alpha test to fail in the future once.
+	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
+	// The interaction with FBA in D3D9 is probably less than ideal.
+	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == 1))
+	{
+		if (!m_context->FBA.FBA)
+		{
+			if (m_context->TEST.DATM == 0)
+				ps_sel.atst = 2; // >=
+			else {
+				if (tex && tex->m_spritehack_t)
+					ps_sel.atst = 0; // <
+				else
+					ps_sel.atst = 1; // <
+			}
+			ps_cb.FogColor_AREF.a = (float)0x80;
+		}
+		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
+			om_dssel.alpha_stencil = 1;
+	}
+}
+
+void GSRendererDX::EmulateZbuffer()
+{
+	if (m_context->TEST.ZTE)
+	{
+		om_dssel.ztst = m_context->TEST.ZTST;
+		om_dssel.zwe = !m_context->ZBUF.ZMSK;
+	}
+	else
+	{
+		om_dssel.ztst = ZTST_ALWAYS;
+	}
+
+	uint32 max_z;
+	if (m_context->ZBUF.PSM == PSM_PSMZ32) {
+		max_z = 0xFFFFFFFF;
+	}
+	else if (m_context->ZBUF.PSM == PSM_PSMZ24) {
+		max_z = 0xFFFFFF;
+	}
+	else {
+		max_z = 0xFFFF;
+	}
+
+	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
+	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
+	// We are probably receiving bad coordinates from VU1 in these cases.
+
+	if (om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32)) {
+		if (m_vt.m_max.p.z > max_z) {
+			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
+			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
+			if (m_vt.m_min.p.z > max_z) {
+#ifdef _DEBUG
+				fprintf(stdout, "Bad Z size on %s buffers\n", psm_str(m_context->ZBUF.PSM));
+#endif
+				om_dssel.ztst = ZTST_ALWAYS;
+			}
+		}
+	}
+
+	GSVertex* v = &m_vertex.buff[0];
+	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
+	if (om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z) {
+#ifdef _DEBUG
+		fprintf(stdout, "Optimize Z test GEQUAL to ALWAYS (%s)\n", psm_str(m_context->ZBUF.PSM));
+#endif
+		om_dssel.ztst = ZTST_ALWAYS;
+	}
+}
+
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-	GSDrawingEnvironment& env = m_env;
-	GSDrawingContext* context = m_context;
-
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
-	bool DATE = m_context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
+
+	bool ate_first_pass = m_context->TEST.DoFirstPass();
+	bool ate_second_pass = m_context->TEST.DoSecondPass();
 
 	GSTexture* rtcopy = NULL;
 
 	ASSERT(m_dev != NULL);
 
-	GSDeviceDX* dev = (GSDeviceDX*)m_dev;
+	dev = (GSDeviceDX*)m_dev;
 
 	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
 	// reduce memory requirement (and why not a partial port)
@@ -106,37 +231,29 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// om
 
-	GSDeviceDX::OMDepthStencilSelector om_dssel;
+	om_dssel.key = 0;
 
-	if(context->TEST.ZTE)
+	EmulateZbuffer();
+
+	if (m_fba)
 	{
-		om_dssel.ztst = context->TEST.ZTST;
-		om_dssel.zwe = !context->ZBUF.ZMSK;
-	}
-	else
-	{
-		om_dssel.ztst = ZTST_ALWAYS;
+		om_dssel.fba = m_context->FBA.FBA;
 	}
 
-	if(m_fba)
-	{
-		om_dssel.fba = context->FBA.FBA;
-	}
+	om_bsel.key = 0;
 
-	GSDeviceDX::OMBlendSelector om_bsel;
-
-	if(!IsOpaque())
+	if (!IsOpaque())
 	{
 		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
-		om_bsel.a = context->ALPHA.A;
-		om_bsel.b = context->ALPHA.B;
-		om_bsel.c = context->ALPHA.C;
-		om_bsel.d = context->ALPHA.D;
+		om_bsel.a = m_context->ALPHA.A;
+		om_bsel.b = m_context->ALPHA.B;
+		om_bsel.c = m_context->ALPHA.C;
+		om_bsel.d = m_context->ALPHA.D;
 
-		if(env.PABE.PABE)
+		if (m_env.PABE.PABE)
 		{
-			if(om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
+			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
 			{
 				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
@@ -151,7 +268,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	om_bsel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+	om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 
 	// vs
 
@@ -162,46 +279,12 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	vs_sel.logz = dev->HasDepth32() ? 0 : m_logz ? 1 : 0;
 	vs_sel.rtcopy = !!rtcopy;
 
-	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
-	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
-	// We are probably receiving bad coordinates from VU1 in these cases.
-
-	if(om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe)
-	{
-		if(context->ZBUF.PSM == PSM_PSMZ24)
-		{
-			if(m_vt.m_max.p.z > 0xffffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffffff);
-				// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
-				if (m_vt.m_min.p.z > 0xffffff)
-				{
-					vs_sel.bppz = 1;
-					om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-		else if(context->ZBUF.PSM == PSM_PSMZ16 || context->ZBUF.PSM == PSM_PSMZ16S)
-		{
-			if(m_vt.m_max.p.z > 0xffff)
-			{
-				ASSERT(m_vt.m_min.p.z > 0xffff); // sfex capcom logo
-				// Fixme : Same as above, I guess.
-				if (m_vt.m_min.p.z > 0xffff)
-				{
-					vs_sel.bppz = 2;
-					om_dssel.ztst = ZTST_ALWAYS;
-				}
-			}
-		}
-	}
-
 	GSDeviceDX::VSConstantBuffer vs_cb;
 
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
-	float ox = (float)(int)context->XYOFFSET.OFX;
-	float oy = (float)(int)context->XYOFFSET.OFY;
+	float ox = (float)(int)m_context->XYOFFSET.OFX;
+	float oy = (float)(int)m_context->XYOFFSET.OFY;
 	float ox2 = 2.0f * m_pixelcenter.x / rtsize.x;
 	float oy2 = 2.0f * m_pixelcenter.y / rtsize.y;
 
@@ -233,9 +316,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// ps
 
-	GSDeviceDX::PSSelector ps_sel;
-	GSDeviceDX::PSSamplerSelector ps_ssel;
-	GSDeviceDX::PSConstantBuffer ps_cb;
+	ps_sel.key = 0;
+	ps_ssel.key = 0;
 
 	// Gregory: code is not yet ready so let's only enable it when
 	// CRC is below the FULL level
@@ -283,7 +365,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
-		const uint32& m = context->FRAME.FBMSK;
+		const uint32& m = m_context->FRAME.FBMSK;
 		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
 		om_bsel.wrgba = 0;
 
@@ -317,9 +399,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	}
 	else {
-		//ps_sel.fmt = GSLocalMemory::m_psm[context->FRAME.PSM].fmt;
+		//ps_sel.fmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		om_bsel.wrgba = ~GSVector4i::load((int)context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	}
 
 	if(DATE)
@@ -330,18 +412,18 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 		else
 		{
-			ps_sel.date = 1 + context->TEST.DATM;
+			ps_sel.date = 1 + m_context->TEST.DATM;
 		}
 	}
 
-	if(env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+	if(m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 	{
 		ps_sel.colclip = 1;
 	}
 
 	ps_sel.clr1 = om_bsel.IsCLR1();
-	ps_sel.fba = context->FBA.FBA;
-	ps_sel.aout = context->FRAME.PSM == PSM_PSMCT16 || context->FRAME.PSM == PSM_PSMCT16S || (context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
+	ps_sel.fba = m_context->FBA.FBA;
+	ps_sel.aout = m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
 	ps_sel.aout &= !ps_sel.shuffle;
 	if(UserHacks_AlphaHack) ps_sel.aout = 1;
 
@@ -349,54 +431,64 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	{
 		ps_sel.fog = 1;
 
-		ps_cb.FogColor_AREF = GSVector4::rgba32(env.FOGCOL.u32[0]) / 255;
+		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]) / 255;
 	}
 
-	if(context->TEST.ATE)
-		ps_sel.atst = context->TEST.ATST;
-	else
-		ps_sel.atst = ATST_ALWAYS;
+	// Warning must be done after EmulateZbuffer
+	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
+	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
+	// pass to handle the depth based on the alpha test.
+	bool ate_RGBA_then_Z = false;
+	bool ate_RGB_then_ZA = false;
+	if (ate_first_pass & ate_second_pass) {
+#ifdef _DEBUG
+		fprintf(stdout, "Complex Alpha Test\n");
+#endif
+		bool commutative_depth = (om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (om_dssel.ztst == ZTST_ALWAYS);
+		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
-	if (context->TEST.ATE && context->TEST.ATST > 1)
-		ps_cb.FogColor_AREF.a = (float)context->TEST.AREF;
+		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
+		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) & commutative_depth & commutative_alpha;
+	}
 
-	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
-	// to only draw pixels which would cause the destination alpha test to fail in the future once.
-	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
-	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && (!context->TEST.ATE || context->TEST.ATST == 1))
-	{
-		if (!context->FBA.FBA)
-		{
-			if (context->TEST.DATM == 0)
-				ps_sel.atst = 5; // >=
-			else
-				ps_sel.atst = 2; // <
-			ps_cb.FogColor_AREF.a = (float)0x80;
-		}
-		if (!(context->FBA.FBA && context->TEST.DATM == 1))
-			om_dssel.alpha_stencil = 1;
+	if (ate_RGBA_then_Z) {
+#ifdef _DEBUG
+		fprintf(stdout, "Alternate ATE handling: ate_RGBA_then_Z\n");
+#endif
+		// Render all color but don't update depth
+		// ATE is disabled here
+		om_dssel.zwe = false;
+	} else if (ate_RGB_then_ZA) {
+#ifdef _DEBUG
+		fprintf(stdout, "Alternate ATE handling: ate_RGB_then_ZA\n");
+#endif
+		// Render RGB color but don't update depth/alpha
+		// ATE is disabled here
+		om_dssel.zwe = false;
+		om_bsel.wa = false;
+	} else {
+		EmulateAtst(1, tex);
 	}
 
 	if(tex)
 	{
-		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[context->TEX0.PSM];
-		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[context->TEX0.CPSM] : psm;
+		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
-		ps_sel.wms = context->CLAMP.WMS;
-		ps_sel.wmt = context->CLAMP.WMT;
+		ps_sel.wms = m_context->CLAMP.WMS;
+		ps_sel.wmt = m_context->CLAMP.WMT;
 		if (ps_sel.shuffle) {
 			ps_sel.fmt = 0;
 		} else {
 			ps_sel.fmt = tex->m_palette ? cpsm.fmt | 4 : cpsm.fmt;
 		}
-		ps_sel.aem = env.TEXA.AEM;
-		ps_sel.tfx = context->TEX0.TFX;
-		ps_sel.tcc = context->TEX0.TCC;
+		ps_sel.aem = m_env.TEXA.AEM;
+		ps_sel.tfx = m_context->TEX0.TFX;
+		ps_sel.tcc = m_context->TEX0.TCC;
 		ps_sel.ltf = bilinear && !simple_sample;
 		ps_sel.rt = tex->m_target;
 		ps_sel.spritehack = tex->m_spritehack_t;
@@ -405,8 +497,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		int w = tex->m_texture->GetWidth();
 		int h = tex->m_texture->GetHeight();
 
-		int tw = (int)(1 << context->TEX0.TW);
-		int th = (int)(1 << context->TEX0.TH);
+		int tw = (int)(1 << m_context->TEX0.TW);
+		int th = (int)(1 << m_context->TEX0.TH);
 
 		GSVector4 WH(tw, th, w, h);
 
@@ -420,20 +512,20 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		ps_cb.WH = WH;
 		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-		ps_cb.MskFix = GSVector4i(context->CLAMP.MINU, context->CLAMP.MINV, context->CLAMP.MAXU, context->CLAMP.MAXV);
+		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 
 		// TC Offset Hack
 		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
 		ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
 		GSVector4 clamp(ps_cb.MskFix);
-		GSVector4 ta(env.TEXA & GSVector4i::x000000ff());
+		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 
 		ps_cb.MinMax = clamp / WH.xyxy();
 		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
 
-		ps_ssel.tau = (context->CLAMP.WMS + 3) >> 1;
-		ps_ssel.tav = (context->CLAMP.WMT + 3) >> 1;
+		ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
+		ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
 		ps_ssel.ltf = bilinear && simple_sample;
 	}
 	else
@@ -443,14 +535,14 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// rs
 
-	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
+	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * m_context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
 	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
 	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
 	dev->PSSetShaderResource(2, rtcopy);
 
-	uint8 afix = context->ALPHA.FIX;
+	uint8 afix = m_context->ALPHA.FIX;
 
 	SetupIA();
 
@@ -461,11 +553,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// draw
 
-	if(context->TEST.DoFirstPass())
+	if (ate_first_pass)
 	{
 		dev->DrawIndexedPrimitive();
 
-		if (env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+		if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 		{
 			GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceDX::PSSelector ps_selneg(ps_sel);
@@ -481,13 +573,20 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	if(context->TEST.DoSecondPass())
+	if (ate_second_pass)
 	{
-		ASSERT(!env.PABE.PABE);
+		ASSERT(!m_env.PABE.PABE);
 
-		static const uint32 iatst[] = {1, 0, 5, 6, 7, 2, 3, 4};
-
-		ps_sel.atst = iatst[ps_sel.atst];
+		if (ate_RGBA_then_Z | ate_RGB_then_ZA) {
+			// Enable ATE as first pass to update the depth
+			// of pixels that passed the alpha test
+			EmulateAtst(1, tex);
+		}
+		else {
+			// second pass will process the pixels that failed
+			// the alpha test
+			EmulateAtst(2, tex);
+		}
 
 		dev->SetupPS(ps_sel, &ps_cb, ps_ssel);
 
@@ -497,13 +596,22 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		bool b = om_bsel.wb;
 		bool a = om_bsel.wa;
 
-		switch(context->TEST.AFAIL)
+		switch(m_context->TEST.AFAIL)
 		{
-		case 0: z = r = g = b = a = false; break; // none
-		case 1: z = false; break; // rgba
-		case 2: r = g = b = a = false; break; // z
-		case 3: z = a = false; break; // rgb
-		default: __assume(0);
+			case 0: z = r = g = b = a = false; break; // none
+			case 1: z = false; break; // rgba
+			case 2: r = g = b = a = false; break; // z
+			case 3: z = a = false; break; // rgb
+			default: __assume(0);
+		}
+
+		if (ate_RGBA_then_Z) {
+			z = !m_context->ZBUF.ZMSK;
+			r = g = b = a = false;
+		} else if (ate_RGB_then_ZA) {
+			z = !m_context->ZBUF.ZMSK;
+			a = !!(m_context->FRAME.FBMSK & 0xFF000000);
+			r = g = b = false;
 		}
 
 		if(z || r || g || b || a)
@@ -518,7 +626,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 			dev->DrawIndexedPrimitive();
 
-			if (env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+			if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 			{
 				GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceDX::PSSelector ps_selneg(ps_sel);

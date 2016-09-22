@@ -85,37 +85,6 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
-//  pxLogTextCtrl
-// --------------------------------------------------------------------------------------
-class pxLogTextCtrl : public wxTextCtrl,
-	public EventListener_CoreThread,
-	public EventListener_Plugins
-{
-protected:
-	std::unique_ptr<ScopedCoreThreadPause> m_IsPaused;
-	bool m_FreezeWrites;
-
-public:
-	pxLogTextCtrl(wxWindow* parent);
-	virtual ~pxLogTextCtrl() throw();
-
-	bool HasWriteLock() const { return m_FreezeWrites; }
-	void ConcludeIssue();
-
-#ifdef __WXMSW__
-	virtual void WriteText(const wxString& text);
-#endif
-
-protected:
-	virtual void OnThumbTrack(wxScrollWinEvent& event);
-	virtual void OnThumbRelease(wxScrollWinEvent& event);
-	virtual void OnResize( wxSizeEvent& evt );
-
-	void DispatchEvent( const CoreThreadStatus& status );
-	void DispatchEvent( const PluginEventType& evt );
-};
-
-// --------------------------------------------------------------------------------------
 //  ConsoleLogFrame  --  Because the one built in wx is poop.
 // --------------------------------------------------------------------------------------
 class ConsoleLogFrame : public wxFrame
@@ -161,7 +130,7 @@ protected:
 
 protected:
 	ConLogConfig&	m_conf;
-	pxLogTextCtrl&	m_TextCtrl;
+	wxTextCtrl&		m_TextCtrl;
 	wxTimer			m_timer_FlushLimiter;
 	wxTimer			m_timer_FlushUnlocker;
 	ColorArray		m_ColorTable;
@@ -232,6 +201,7 @@ protected:
 
 	void OnToggleTheme(wxCommandEvent& event);
 	void OnFontSize(wxCommandEvent& event);
+	void OnAutoDock(wxCommandEvent& event);
 	void OnToggleSource(wxCommandEvent& event);
 	void OnToggleCDVDInfo(wxCommandEvent& event);
 

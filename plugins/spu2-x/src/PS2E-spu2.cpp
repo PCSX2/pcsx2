@@ -160,6 +160,20 @@ EXPORT_C_(s32) SPU2test()
 {
 	if( !CheckSSE() ) return -1;
 
+#ifdef _WIN32
+	if (IsWindows8OrGreater())
+	{
+		for (int n = 0; mods[n] != nullptr; ++n)
+		{
+			if (mods[n] == XAudio2_27_Out)
+			{
+				mods[n] = XAudio2Out;
+				break;
+			}
+		}
+	}
+#endif
+
 	ReadSettings();
 	if( SndBuffer::Test() != 0 )
 	{
@@ -376,7 +390,7 @@ EXPORT_C_(s32) SPU2init()
 extern bool debugDialogOpen;
 extern HWND hDebugDialog;
 
-static BOOL CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId;
 
@@ -657,7 +671,7 @@ EXPORT_C_(int) SPU2setupRecording(int start, void* pData)
 
 EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 {
-	jASSUME( data != NULL );
+	pxAssume( data != NULL );
 	if ( !data )
 	{
 		printf("SPU2-X savestate null pointer!\n");
@@ -670,7 +684,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 		return 0;
 	}
 
-	jASSUME( mode == FREEZE_LOAD || mode == FREEZE_SAVE );
+	pxAssume( mode == FREEZE_LOAD || mode == FREEZE_SAVE );
 
 	if( data->data == NULL )
 	{

@@ -220,6 +220,7 @@ public:
 		bool		IsFullscreen;
 
 		bool		IsToggleFullscreenOnDoubleClick;
+		bool		IsToggleAspectRatioSwitch;
 
 		GSWindowOptions();
 

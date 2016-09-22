@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-02-21 11:51+0100\n"
-"PO-Revision-Date: 2015-04-22 18:25+0200\n"
+"PO-Revision-Date: 2016-08-15 15:18+0300\n"
 "Last-Translator: Ceyhun Özgöç <atiamar@hotmail.com>\n"
 "Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
 "Language: tr_TR\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-Basepath: C:\\Users\\Ceyhun\\Downloads\\PCSX2 SVN\n"
-"X-Generator: Poedit 1.6.9\n"
+"X-Poedit-Basepath: C:/Users/Ceyhun/Downloads/PCSX2 SVN\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -119,6 +119,8 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"Kaynak hafıza kartında kaçının bulunduğuna bağlı olarak son dosya tüm "
+"kayıtları içermeyebilir."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -126,22 +128,29 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"UYARI: Hafıza kartı dönüştürme işlemi biraz zaman alabilir! Dönüştürme "
+"işlemi boyunca emülatör yanıt vermiyor gibi gözükse bile emülatörü "
+"kapatmayın."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Bu hafıza kartını standart bir 8 MB Hafıza Kartı .ps2 dosyasına dönüştürün."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
 msgstr ""
+"Bu hafıza kartını standart bir 16 MB Hafıza Kartı .ps2 dosyasına dönüştürün."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
 msgstr ""
+"Bu hafıza kartını standart bir 32 MB Hafıza Kartı .ps2 dosyasına dönüştürün."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr ""
+"Bu hafıza kartını standart bir 64 MB Hafıza Kartı .ps2 dosyasına dönüştürün."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -232,6 +241,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Yalnızca klasör biçimi) Çalışan yazılım her değiştirildiğinde hafıza kartı "
+"içeriğini yeniden dizine alın. Bu, hafıza kartında kayıt için yer "
+"kalmamasını önler."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -346,7 +358,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:530
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
+msgstr "(FolderMcd) Hafıza Kartı dolu, öğe eklenemedi: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
@@ -480,16 +492,17 @@ msgstr ""
 "* Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Ayarları buradan yapmak yerine ana menüden 'Otomatik Oyun Düzeltmeleri' "
-"seçeneğini etkinleştirmeniz önerilir. ('Otomatik' kelimesi test edilmiş "
-"düzeltmelerin belirli oyunlara doğrudan uygulanması anlamına gelir)"
+"Ayarları buradan yapmak yerine bu sayfayı boş bırakıp ana menüden 'Otomatik "
+"oyun düzeltmeleri' seçeneğini etkinleştirmeniz önerilir. ('Otomatik' "
+"kelimesi test edilmiş düzeltmelerin belirli oyunlara doğrudan uygulanması "
+"anlamına gelir). El ile oyun düzeltmeleri performansı ARTIRMAZ. Aksine "
+"azaltabilirler."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 msgid ""
@@ -601,35 +614,35 @@ msgstr ""
 "yapamıyorsanız İptal'i tıklayarak Yapılandırma panelini kapatın."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - EE'nin döngü oranını %50 oranında azaltır. Ortalama hız artışı "
-"sağlamasına rağmen takılmalara neden olur."
+"-2 - EE'nin döngü oranını %50 oranında azaltır. Ortalama hız artışı "
+"sağlamasına rağmen çoğu FMV videolarında seste takılmalara neden olur."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"2 - EE'nin döngü oranını %33 oranında azaltır. Birçok oyunda hız artışı "
-"sağlar, uyumluluğu oldukça yüksektir."
+"-2 - EE'nin döngü oranını %33 oranında azaltır. Birçok oyunda hız artışı "
+"sağlar ve uyumluluğu yüksektir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
-msgstr "1 - Varsayılan döngü oranı. Gerçek PS2 EE hızına oldukça yakındır."
+msgstr ""
+"0 - Varsayılan döngü oranı. Gerçek PS2 EmotionEngine hızına oldukça yakındır."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
 msgid ""
 "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - EE'nin döngü oranını %33 oranında artırır. Donanım gereksinimlerini "
+"artırır ve oyun içi FPS oranını artırabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
 msgid ""
@@ -637,6 +650,9 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"2 - EE'nin döngü oranını %50 oranında artırır. Donanım gereksinimlerini "
+"büyük oranda artırır ve oyun içi FPS oranını gözle görülür ölçüde artırır.\n"
+"Bu ayar nedeniyle oyunlar BAŞLATILAMAYABİLİR."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -663,8 +679,8 @@ msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
 msgstr ""
-"3 - Maximum VU Cycle Stealing. Titremeye ve takılmalara neden olacağından "
-"faydaları sınırlıdır."
+"3 - Maximum VU Cycle Stealing. Çoğu oyunda titremeye veya takılmalara neden "
+"olacağından faydaları sınırlıdır."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:106
 msgid ""
@@ -677,7 +693,6 @@ msgstr ""
 "yaşarsanız ilk olarak bu paneli devre dışı bırakın."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -686,9 +701,12 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"Buradan yüksek değerleri seçtiğinizde EE'nin R5900 çekirdek işlemcisinin "
-"saat hızı azaltılarak gerçek PS2 donanımı seviyesine ulaşamayan oyunlarda "
-"büyük hız artışı sağlanır."
+"Buradan yüksek değerleri seçtiğinizde EmotionEngine'in R5900 çekirdek "
+"işlemcisinin saat hızı azaltılarak gerçek PS2 donanımı seviyesine ulaşamayan "
+"oyunlarda büyük hız artışı sağlanır. Buna karşın daha yüksek değerler saat "
+"hızını artıracağından çoğu oyunun donanım gereksimini artırarak oyun içi FPS "
+"artışı elde etmenizi sağlayabilir; dolayısıyla bazı oyun içi hatalar "
+"gerçekleşebilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
 msgid ""

@@ -49,6 +49,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_VsyncEnable	= new pxCheckBox( this, _("Wait for Vsync on refresh") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
+	m_check_AspectRatioSwitch = new pxCheckBox(this, _("Switch to 4:3 aspect ratio when an FMV plays"));
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
 	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\nAbove/Below 100: Zoom In/Out\n0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\nKeyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + NUMPAD-*: Toggle 100/0"
@@ -99,6 +100,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
+	*this += m_check_AspectRatioSwitch;
 
 	//*this += m_check_ExclusiveFS;
 	*this += new wxStaticLine( this )	| StdExpand();
@@ -131,7 +133,8 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 		m_combo_AspectRatio	->SetSelection( (int)conf.AspectRatio );
 		m_text_Zoom			->ChangeValue( conf.Zoom.ToString() );
 
-		m_check_DclickFullscreen ->SetValue ( conf.IsToggleFullscreenOnDoubleClick );
+		m_check_DclickFullscreen ->SetValue( conf.IsToggleFullscreenOnDoubleClick );
+		m_check_AspectRatioSwitch->SetValue( conf.IsToggleAspectRatioSwitch );
 
 		m_text_WindowWidth	->ChangeValue( wxsFormat( L"%d", conf.WindowSize.GetWidth() ) );
 		m_text_WindowHeight	->ChangeValue( wxsFormat( L"%d", conf.WindowSize.GetHeight() ) );
@@ -157,6 +160,7 @@ void Panels::GSWindowSettingsPanel::Apply()
 	gsconf.VsyncEnable		= m_check_VsyncEnable->GetValue();
 
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();
+	appconf.IsToggleAspectRatioSwitch = m_check_AspectRatioSwitch->GetValue();
 
 	long xr, yr = 1;
 

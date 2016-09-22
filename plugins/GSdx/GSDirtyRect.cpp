@@ -68,7 +68,7 @@ GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const G
 	{
 		GSVector4i r(INT_MAX, INT_MAX, 0, 0);
 
-		for(list<GSDirtyRect>::iterator i = begin(); i != end(); i++)
+		for(list<GSDirtyRect>::iterator i = begin(); i != end(); ++i)
 		{
 			r = r.runion(i->GetDirtyRect(TEX0));
 		}

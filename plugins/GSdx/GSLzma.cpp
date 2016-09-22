@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "GSLzma.h"
 
-#ifdef __linux__
+#if defined(__unix__)
 
 GSDumpFile::GSDumpFile(char* filename) {
 	m_fp = fopen(filename, "rb");
@@ -152,7 +152,7 @@ void GSDumpRaw::Read(void* ptr, size_t size) {
 	} else {
 		size_t ret = fread(ptr, 1, size, m_fp);
 		if (ret != size) {
-			fprintf(stderr, "GSDumpRaw:: Read error\n");
+			fprintf(stderr, "GSDumpRaw:: Read error (%d/%d)\n", ret, size);
 			throw "BAD"; // Just exit the program
 		}
 	}

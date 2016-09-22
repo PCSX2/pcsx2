@@ -35,11 +35,6 @@
 #define _Fs_ _Rd_
 #define _Fd_ _Sa_
 
-#define _X (cpuRegs.code>>24) & 0x1
-#define _Y (cpuRegs.code>>23) & 0x1
-#define _Z (cpuRegs.code>>22) & 0x1
-#define _W (cpuRegs.code>>21) & 0x1
-
 #define _Fsf_ ((cpuRegs.code >> 21) & 0x03)
 #define _Ftf_ ((cpuRegs.code >> 23) & 0x03)
 

@@ -32,7 +32,7 @@ GSCodeBuffer::GSCodeBuffer(size_t blocksize)
 
 GSCodeBuffer::~GSCodeBuffer()
 {
-	for(list<void*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
+	for(list<void*>::iterator i = m_buffers.begin(); i != m_buffers.end(); ++i)
 	{
 		vmfree(*i, m_blocksize);
 	}

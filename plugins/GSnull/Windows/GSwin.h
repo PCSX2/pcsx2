@@ -22,4 +22,3 @@ extern int GSOpenWindow(void *pDsp, const char *Title);
 extern void GSCloseWindow();
 extern void GSProcessMessages();
 extern void HandleKeyEvent(keyEvent *ev);
-

@@ -25,7 +25,6 @@ struct GenericListViewColumn
 {
 	const wchar_t *name;
 	float size;
-	int flags;
 };
 
 class GenericListView: public wxListView
@@ -65,6 +64,7 @@ private:
 
 	GenericListViewColumn* columns;
 	wxPoint clickPos;
+	bool dontResizeColumnsInSizeEventHandler;
 };
 
 class BreakpointList: public GenericListView

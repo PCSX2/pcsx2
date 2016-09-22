@@ -144,7 +144,7 @@
     <ClCompile Include="SndOut_waveOut.cpp">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="SndOut_XAudio2.cpp">
+    <ClCompile Include="SndOut_XAudio2_27.cpp">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\Linux\Alsa.cpp">
@@ -212,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="..\DplIIdecoder.cpp">
       <Filter>Source Files\Sound Output</Filter>
+    </ClCompile>
+    <ClCompile Include="SndOut_XAudio2.cpp">
+      <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

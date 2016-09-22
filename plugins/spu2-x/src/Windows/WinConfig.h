@@ -25,6 +25,7 @@
 #include <commctrl.h>
 #include <initguid.h>
 #include <tchar.h>
+#include <VersionHelpers.h>
 
 #include "resource.h"
 

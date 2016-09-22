@@ -437,19 +437,29 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 		Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
 }
 
-#define _tmpl(ret) template<typename OperandType, u32 saddr> ret __fastcall
+template<typename OperandType, u32 saddr>
+OperandType __fastcall vtlbUnmappedVReadSm(u32 addr)					{ vtlb_Miss(addr|saddr,0); return 0; }
 
-_tmpl(OperandType) vtlbUnmappedVReadSm(u32 addr)					{ vtlb_Miss(addr|saddr,0); return 0; }
-_tmpl(void) vtlbUnmappedVReadLg(u32 addr,OperandType* data)			{ vtlb_Miss(addr|saddr,0); }
-_tmpl(void) vtlbUnmappedVWriteSm(u32 addr,OperandType data)			{ vtlb_Miss(addr|saddr,1); }
-_tmpl(void) vtlbUnmappedVWriteLg(u32 addr,const OperandType* data)	{ vtlb_Miss(addr|saddr,1); }
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVReadLg(u32 addr,OperandType* data)			{ vtlb_Miss(addr|saddr,0); }
 
-_tmpl(OperandType) vtlbUnmappedPReadSm(u32 addr)					{ vtlb_BusError(addr|saddr,0); return 0; }
-_tmpl(void) vtlbUnmappedPReadLg(u32 addr,OperandType* data)			{ vtlb_BusError(addr|saddr,0); }
-_tmpl(void) vtlbUnmappedPWriteSm(u32 addr,OperandType data)			{ vtlb_BusError(addr|saddr,1); }
-_tmpl(void) vtlbUnmappedPWriteLg(u32 addr,const OperandType* data)	{ vtlb_BusError(addr|saddr,1); }
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVWriteSm(u32 addr,OperandType data)			{ vtlb_Miss(addr|saddr,1); }
 
-#undef _tmpl
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVWriteLg(u32 addr,const OperandType* data)	{ vtlb_Miss(addr|saddr,1); }
+
+template<typename OperandType, u32 saddr>
+OperandType __fastcall vtlbUnmappedPReadSm(u32 addr)					{ vtlb_BusError(addr|saddr,0); return 0; }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPReadLg(u32 addr,OperandType* data)			{ vtlb_BusError(addr|saddr,0); }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPWriteSm(u32 addr,OperandType data)			{ vtlb_BusError(addr|saddr,1); }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data)	{ vtlb_BusError(addr|saddr,1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -510,7 +520,6 @@ static void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write128 to unmapped physical address @ 0x%08X.", addr));
 }
-#undef _tmpl
 
 // ===========================================================================================
 //  VTLB Public API -- Init/Term/RegisterHandler stuff 

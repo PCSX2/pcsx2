@@ -334,11 +334,11 @@ static __fi int get_chroma_dc_dct_diff()
 	return dc_diff;
 }
 
-#define SATURATE(val)					\
-do {							\
-	 if (((u32)(val + 2048) > 4095))	\
-	val = (((s32)val) >> 31) ^ 2047;			\
-} while (0)
+static __fi void SATURATE(int& val)
+{
+	if ((u32)(val + 2048) > 4095)
+		val = (val >> 31) ^ 2047;
+}
 
 static bool get_intra_block()
 {

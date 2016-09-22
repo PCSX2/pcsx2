@@ -35,9 +35,12 @@ enum DisassemblyMenuIdentifiers
 	ID_REGISTERLIST_DISPLAY32 = 1,
 	ID_REGISTERLIST_DISPLAY64,
 	ID_REGISTERLIST_DISPLAY128,
+	ID_REGISTERLIST_DISPLAY128STRINGS,
 	ID_REGISTERLIST_CHANGELOWER,
 	ID_REGISTERLIST_CHANGEUPPER,
-	ID_REGISTERLIST_CHANGEVALUE
+	ID_REGISTERLIST_CHANGEVALUE,
+	ID_REGISTERLIST_GOTOINMEMORYVIEW,
+	ID_REGISTERLIST_GOTOINDISASM
 };
 
 
@@ -49,6 +52,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	category  = 0;
 	maxBits   = 128;
 	lastPc    = 0xFFFFFFFF;
+	resolvePointerStrings = false;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{
@@ -75,6 +79,13 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	wxSize actualSize = getOptimalSize();
 	SetVirtualSize(actualSize);
 	SetScrollbars(1, rowHeight, actualSize.x, actualSize.y / rowHeight, 0, 0);
+}
+
+CtrlRegisterList::~CtrlRegisterList()
+{
+	for (auto& regs : changedCategories)
+		delete[] regs;
+
 }
 
 wxSize CtrlRegisterList::getOptimalSize() const
@@ -276,7 +287,18 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 			{
 			case 128:
 				{
-					int startIndex = std::min<int>(3,maxBits/32-1);
+					int startIndex = std::min<int>(3, maxBits / 32 - 1);
+
+					if (resolvePointerStrings && cpu->isAlive()) {
+						char *strval = cpu->stringFromPointer(value._u32[0]);
+						if (strval) {
+							static wxColor clr = wxColor(0xFF228822);
+							dc.SetTextForeground(clr);
+							dc.DrawText(wxString(strval), width - (32 * charWidth + 12), y + 2);
+							startIndex = 0;
+						}
+					}
+
 					int actualX = width-4-(startIndex+1)*(8*charWidth+2);
 					x = std::max<int>(actualX,x);
 
@@ -396,21 +418,31 @@ void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
 	switch (evt.GetId())
 	{
 	case ID_REGISTERLIST_DISPLAY32:
+		resolvePointerStrings = false;
 		maxBits = 32;
 		SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 		postEvent(debEVT_UPDATELAYOUT,0);
 		Refresh();
 		break;
 	case ID_REGISTERLIST_DISPLAY64:
+		resolvePointerStrings = false;
 		maxBits = 64;
 		SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 		postEvent(debEVT_UPDATELAYOUT,0);
 		Refresh();
 		break;
 	case ID_REGISTERLIST_DISPLAY128:
+		resolvePointerStrings = false;
 		maxBits = 128;
 		SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 		postEvent(debEVT_UPDATELAYOUT,0);
+		Refresh();
+		break;
+	case ID_REGISTERLIST_DISPLAY128STRINGS:
+		resolvePointerStrings = true;
+		maxBits = 128;
+		SetInitialSize(ClientToWindowSize(GetMinClientSize()));
+		postEvent(debEVT_UPDATELAYOUT, 0);
 		Refresh();
 		break;
 	case ID_REGISTERLIST_CHANGELOWER:
@@ -427,6 +459,12 @@ void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
 		else
 			changeValue(LOWER64);
 		Refresh();
+		break;
+	case ID_REGISTERLIST_GOTOINMEMORYVIEW:
+		postEvent(debEVT_GOTOINMEMORYVIEW, cpu->getRegister(category, currentRows[category])._u32[0]);
+		break;
+	case ID_REGISTERLIST_GOTOINDISASM:
+		postEvent(debEVT_GOTOINDISASM, cpu->getRegister(category, currentRows[category])._u32[0]);
 		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
@@ -467,6 +505,7 @@ void CtrlRegisterList::setCurrentRow(int row)
 
 	currentRows[category] = row;
 	postEvent(debEVT_SETSTATUSBARTEXT,text);
+	ensureVisible(currentRows[category] + 1); //offset due to header at scroll position 0
 	Refresh();
 }
 
@@ -495,6 +534,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 		menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY32,		L"Display 32 bit");
 		menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY64,		L"Display 64 bit");
 		menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY128,	L"Display 128 bit");
+		menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY128STRINGS,	L"Display 128 bit + Resolve string pointers");
 		menu.AppendSeparator();
 
 		if (bits >= 64)
@@ -505,10 +545,17 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			menu.Append(ID_REGISTERLIST_CHANGEVALUE,	L"Change value");
 		}
 
+		menu.AppendSeparator();
+		menu.Append(ID_REGISTERLIST_GOTOINMEMORYVIEW, L"Follow in Memory view");
+		menu.Append(ID_REGISTERLIST_GOTOINDISASM, L"Follow in Disasm");
+
 		switch (maxBits)
 		{
 		case 128:
-			menu.Check(ID_REGISTERLIST_DISPLAY128,true);
+			if (resolvePointerStrings)
+				menu.Check(ID_REGISTERLIST_DISPLAY128STRINGS, true);
+			else
+				menu.Check(ID_REGISTERLIST_DISPLAY128,true);
 			break;
 		case 64:
 			menu.Check(ID_REGISTERLIST_DISPLAY64,true);
@@ -546,12 +593,29 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 	}
 }
 
+void CtrlRegisterList::ensureVisible(int index) {
+	//scroll vertically to keep a logical position visible
+	int x, y;
+	GetViewStart(&x, &y);
+	int visibleOffset = floor(float(GetClientSize().y) / rowHeight) - 1;
+	if (index < y)
+		Scroll(x, index);
+	else if (index > y + visibleOffset)
+		Scroll(x, index - visibleOffset);
+}
+
 void CtrlRegisterList::keydownEvent(wxKeyEvent& evt)
 {
 	switch (evt.GetKeyCode())
 	{
 	case WXK_UP:
-		setCurrentRow(std::max<int>(currentRows[category]-1,0));
+		int x, y;
+		GetViewStart(&x, &y);
+		//If at top of rows allow scrolling an extra time to show tab header
+		if (currentRows[category] == 0 && y == 1)
+			Scroll(x, 0);
+		else
+			setCurrentRow(std::max<int>(currentRows[category]-1,0));
 		break;
 	case WXK_DOWN:
 		setCurrentRow(std::min<int>(currentRows[category]+1,cpu->getRegisterCount(category)-1));

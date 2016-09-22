@@ -46,7 +46,7 @@ void pxStaticText::Init( const wxString& label )
 	m_autowrap			= true;
 	m_wrappedWidth		= -1;
 	m_label				= label;
-	Connect( wxEVT_PAINT, wxPaintEventHandler(pxStaticText::paintEvent) );
+	Bind(wxEVT_PAINT, &pxStaticText::paintEvent, this);
 }
 
 // we need to refresh the window after changing its size as the standard

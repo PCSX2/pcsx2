@@ -53,7 +53,7 @@ Panels::ThemeSelectorPanel::ThemeSelectorPanel( wxWindow* parent )
 	*this	+= 8;
 	*this	+= m_FolderPicker	| StdExpand();
 
-	Connect( refreshButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ThemeSelectorPanel::OnRefreshSelections) );
+	Bind(wxEVT_BUTTON, &ThemeSelectorPanel::OnRefreshSelections, this, refreshButton->GetId());
 }
 
 Panels::ThemeSelectorPanel::~ThemeSelectorPanel() throw ()

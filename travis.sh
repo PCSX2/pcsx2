@@ -2,6 +2,12 @@
 
 set -ex
 
+clang_syntax_check() {
+	if [ "${CXX}" = "clang++" ]; then
+        ./linux_various/check_format.sh
+	fi
+}
+
 linux_32_before_install() {
 	# Build worker is 64-bit only by default it seems.
 	sudo dpkg --add-architecture i386
@@ -10,12 +16,12 @@ linux_32_before_install() {
 
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-${VERSION} main"
+		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
+		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
 		# g++-4.9-multilib is necessary for compiler dependencies. 4.8 currently
 		# has dependency issues, but 4.9 from the toolchain repo seems to work
 		# fine, so let's just use that.
-		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib"
+		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
 		COMPILER_PACKAGE="g++-${VERSION}-multilib"
@@ -30,7 +36,7 @@ linux_32_before_install() {
 	# build image. libgtk2.0-dev:i386 and libsdl2-dev:i386 require the 32-bit
 	# versions of the dependencies, and the 2 versions conflict. So those
 	# dependencies must be explicitly installed.
-	sudo apt-get -qq -y install \
+	sudo apt-get -y install \
 		gir1.2-freedesktop:i386 \
 		gir1.2-gdkpixbuf-2.0:i386 \
 		gir1.2-glib-2.0:i386 \
@@ -51,12 +57,22 @@ linux_32_before_install() {
 		portaudio19-dev:i386 \
 		zlib1g-dev:i386 \
 		${COMPILER_PACKAGE}
+
+	# Manually add ccache symlinks for clang
+	if [ "${CXX}" = "clang++" ]; then
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
+	fi
 }
 
 linux_32_script() {
 	mkdir build
 	cd build
 
+	# Prevents warning spam
+	if [ "${CXX}" = "clang++" ]; then
+		export CCACHE_CPP2=yes
+	fi
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake \
@@ -73,9 +89,9 @@ linux_32_script() {
 linux_64_before_install() {
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		COMPILER_PACKAGE="clang-${VERSION}"
+		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
+		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
+		COMPILER_PACKAGE="clang-${VERSION} clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
 		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -86,7 +102,7 @@ linux_64_before_install() {
 
 	# libgl1-mesa-dev, liblzma-dev, libxext-dev, zlib1g-dev already installed on
 	# build worker, I put these here in case the build image changes.
-	sudo apt-get -qq -y install \
+	sudo apt-get -y install \
 		libaio-dev \
 		libasound2-dev \
 		libgtk2.0-dev \
@@ -96,6 +112,12 @@ linux_64_before_install() {
 		libwxgtk3.0-dev \
 		portaudio19-dev \
 		${COMPILER_PACKAGE}
+
+	# Manually add ccache symlinks for clang
+	if [ "${CXX}" = "clang++" ]; then
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
+	fi
 }
 
 
@@ -103,6 +125,10 @@ linux_64_script() {
 	mkdir build
 	cd build
 
+	# Prevents warning spam
+	if [ "${CXX}" = "clang++" ]; then
+		export CCACHE_CPP2=yes
+	fi
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_BUILD_TYPE=Devel \
@@ -114,10 +140,20 @@ linux_64_script() {
 	make -j3 install
 }
 
+linux_after_success() {
+	ccache -s
+}
+
 # Just in case I do manual testing and accidentally insert "rm -rf /"
 case "${1}" in
 before_install|script)
 	${TRAVIS_OS_NAME}_${BITS}_${1}
+	;;
+before_script)
+    clang_syntax_check
+    ;;
+after_success)
+	${TRAVIS_OS_NAME}_${1}
 	;;
 *)
 	echo "Unknown command" && false

@@ -218,7 +218,7 @@ endif()
 #---------------------------------------
 # Not ready to be packaged
 if(EXTRA_PLUGINS OR NOT PACKAGE_MODE)
-    if(GTKn_FOUND AND X11_FOUND)
+    if(wxWidgets_FOUND AND Linux AND GTKn_FOUND AND X11_FOUND)
         set(LilyPad TRUE)
     endif()
 endif()
@@ -230,7 +230,7 @@ endif()
 # requires: -SDL
 #			-X11
 #---------------------------------------
-if(GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
 	set(onepad TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
@@ -257,8 +257,8 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if((APPLE AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
-    OR (Linux AND ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs))
+if((PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+	AND ((Linux AND ALSA_FOUND) OR (UNIX AND NOT Linux)))
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)

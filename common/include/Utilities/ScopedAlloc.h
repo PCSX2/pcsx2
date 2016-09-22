@@ -184,7 +184,7 @@ public:
 
 	virtual ~ScopedAlloc() throw()
 	{
-		Alloc(0);
+		safe_free(this->m_buffer);
 	}
 
 	virtual void Alloc( size_t newsize )
@@ -232,7 +232,7 @@ public:
 	
 	virtual ~ScopedAlignedAlloc() throw()
 	{
-		Alloc(0);
+		safe_aligned_free(this->m_buffer);
 	}
 
 	virtual void Alloc( size_t newsize )

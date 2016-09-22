@@ -33,6 +33,8 @@
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 
+extern bool switchAR;
+
 static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
 
@@ -77,25 +79,22 @@ namespace Implementations
 	void Framelimiter_TurboToggle()
 	{
 		ScopedCoreThreadPause pauser;
-		
+
 		if( !g_Conf->EmuOptions.GS.FrameLimitEnable )
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			g_LimiterMode = Limit_Turbo;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 			Console.WriteLn("(FrameLimiter) Turbo + FrameLimit ENABLED." );
-			if ( g_Conf->Framerate.SkipOnTurbo == true) 
-				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
-			else
-				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
+			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
 		}
 		else if( g_LimiterMode == Limit_Turbo )
 		{
 			GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 			g_LimiterMode = Limit_Nominal;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
-			
-			if ( g_Conf->Framerate.SkipOnLimit == true) 
+
+			if ( g_Conf->Framerate.SkipOnLimit)
 			{
 				Console.WriteLn("(FrameLimiter) Turbo DISABLED. Frameskip ENABLED" );
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
@@ -111,8 +110,8 @@ namespace Implementations
 			GSsetVsync( false );
 			g_LimiterMode = Limit_Turbo;
 			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
-			
-			if ( g_Conf->Framerate.SkipOnTurbo == true)
+
+			if ( g_Conf->Framerate.SkipOnTurbo)
 			{
 				Console.WriteLn("(FrameLimiter) Turbo + Frameskip ENABLED." );
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
@@ -175,6 +174,8 @@ namespace Implementations
 	{
 		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
 		wxString arts(L"Not modified");
+		if (art == AspectRatio_Stretch && switchAR) //avoids a double 4:3 when coming from FMV aspect ratio switch
+			art = AspectRatio_4_3;
 		switch( art )
 		{
 			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = L"AspectRatio_4_3"; break;
@@ -472,48 +473,56 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		States_FreezeCurrentSlot,
 		pxL( "Save state" ),
 		pxL( "Saves the virtual machine state to the current slot." ),
+		false,
 	},
 
 	{	"States_DefrostCurrentSlot",
 		States_DefrostCurrentSlot,
 		pxL( "Load state" ),
 		pxL( "Loads a virtual machine state from the current slot." ),
+		false,
 	},
 
 	{	"States_DefrostCurrentSlotBackup",
 		States_DefrostCurrentSlotBackup,
 		pxL( "Load State Backup" ),
 		pxL( "Loads virtual machine state backup for current slot." ),
+		false,
 	},
 
 	{	"States_CycleSlotForward",
 		States_CycleSlotForward,
 		pxL( "Cycle to next slot" ),
 		pxL( "Cycles the current save slot in +1 fashion!" ),
+		false,
 	},
 
 	{	"States_CycleSlotBackward",
 		States_CycleSlotBackward,
 		pxL( "Cycle to prev slot" ),
 		pxL( "Cycles the current save slot in -1 fashion!" ),
+		false,
 	},
 
 	{	"Frameskip_Toggle",
 		Implementations::Frameskip_Toggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Framelimiter_TurboToggle",
 		Implementations::Framelimiter_TurboToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Framelimiter_SlomoToggle",
 		Implementations::Framelimiter_SlomoToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Framelimiter_MasterToggle",
@@ -534,69 +543,79 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		Implementations::GSwindow_ZoomIn,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"GSwindow_ZoomOut",
 		Implementations::GSwindow_ZoomOut,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"GSwindow_ZoomToggle",
 		Implementations::GSwindow_ZoomToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
-	{	"GSwindow_ZoomInY",	Implementations::GSwindow_ZoomInY, NULL, NULL, },
-	{	"GSwindow_ZoomOutY",	Implementations::GSwindow_ZoomOutY, NULL, NULL, },
-	{	"GSwindow_ZoomResetY",	Implementations::GSwindow_ZoomResetY, NULL, NULL, },
+	{	"GSwindow_ZoomInY"     , Implementations::GSwindow_ZoomInY     , NULL, NULL, false},
+	{	"GSwindow_ZoomOutY"    , Implementations::GSwindow_ZoomOutY    , NULL, NULL, false},
+	{	"GSwindow_ZoomResetY"  , Implementations::GSwindow_ZoomResetY  , NULL, NULL, false},
 
-	{	"GSwindow_OffsetYminus",	Implementations::GSwindow_OffsetYminus, NULL, NULL, },
-	{	"GSwindow_OffsetYplus",		Implementations::GSwindow_OffsetYplus, NULL, NULL, },
-	{	"GSwindow_OffsetXminus",	Implementations::GSwindow_OffsetXminus, NULL, NULL, },
-	{	"GSwindow_OffsetXplus",		Implementations::GSwindow_OffsetXplus, NULL, NULL, },
-	{	"GSwindow_OffsetReset",		Implementations::GSwindow_OffsetReset, NULL, NULL, },
+	{	"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, NULL, NULL, false},
+	{	"GSwindow_OffsetYplus" , Implementations::GSwindow_OffsetYplus , NULL, NULL, false},
+	{	"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, NULL, NULL, false},
+	{	"GSwindow_OffsetXplus" , Implementations::GSwindow_OffsetXplus , NULL, NULL, false},
+	{	"GSwindow_OffsetReset" , Implementations::GSwindow_OffsetReset , NULL, NULL, false},
 
 	{	"Sys_SuspendResume",
 		Implementations::Sys_SuspendResume,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Sys_TakeSnapshot",
 		Implementations::Sys_TakeSnapshot,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Sys_RenderswitchToggle",
 		Implementations::Sys_RenderToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Sys_LoggingToggle",
 		Implementations::Sys_LoggingToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"Sys_FreezeGS",
 		Implementations::Sys_FreezeGS,
 		NULL,
 		NULL,
+		false,
 	},
 	{	"Sys_RecordingToggle",
 		Implementations::Sys_RecordingToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	{	"FullscreenToggle",
 		Implementations::FullscreenToggle,
 		NULL,
 		NULL,
+		false,
 	},
 
 	// Command Declarations terminator:

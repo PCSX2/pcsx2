@@ -20,19 +20,20 @@
 // actually it is even more but it is enough to distinguish different key
 #define MAX_KEYCODE (0xFF)
 
-LinuxKeyboard::LinuxKeyboard() :
-	Device(LNX_KEYBOARD, KEYBOARD, L"displayName", L"instanceID", L"deviceID")
+LinuxKeyboard::LinuxKeyboard()
+    : Device(LNX_KEYBOARD, KEYBOARD, L"displayName", L"instanceID", L"deviceID")
 {
-	for (int i=0; i<MAX_KEYCODE; i++) {
-		AddPhysicalControl(PSHBTN, i, i);
-	}
+    for (int i = 0; i < MAX_KEYCODE; i++) {
+        AddPhysicalControl(PSHBTN, i, i);
+    }
 }
 
-int LinuxKeyboard::Activate(InitInfo* args) {
-	// Always active
-	active = 1;
-	
-	AllocState();
+int LinuxKeyboard::Activate(InitInfo *args)
+{
+    // Always active
+    active = 1;
+
+    AllocState();
 
 #if 0
 	for (int vkey=5; vkey<256; vkey++) {
@@ -44,35 +45,37 @@ int LinuxKeyboard::Activate(InitInfo* args) {
 		physicalControlState[vkey] = 0;
 	}
 #endif
-	// Every button released
-	memset(physicalControlState, 0, sizeof(int)*MAX_KEYCODE);
+    // Every button released
+    memset(physicalControlState, 0, sizeof(int) * MAX_KEYCODE);
 
-	return 1;
+    return 1;
 }
 
-int LinuxKeyboard::Update() {
-	keyEvent event;
-	int status = 0;
-	while (R_GetQueuedKeyEvent(&event)) {
-		switch (event.evt) {
-			case KeyPress:
-				physicalControlState[MAX_KEYCODE & event.key] = FULLY_DOWN;
-				status = 1;
-				break;
-			case KeyRelease:
-				physicalControlState[MAX_KEYCODE & event.key] = 0;
-				status = 1;
-				break;
-			default:
-				//fprintf(stderr, "Unsupported event %x\n", event.evt);
-				//assert(0);
-				break;
-		}
-	}
+int LinuxKeyboard::Update()
+{
+    keyEvent event;
+    int status = 0;
+    while (R_GetQueuedKeyEvent(&event)) {
+        switch (event.evt) {
+            case KeyPress:
+                physicalControlState[MAX_KEYCODE & event.key] = FULLY_DOWN;
+                status = 1;
+                break;
+            case KeyRelease:
+                physicalControlState[MAX_KEYCODE & event.key] = 0;
+                status = 1;
+                break;
+            default:
+                //fprintf(stderr, "Unsupported event %x\n", event.evt);
+                //assert(0);
+                break;
+        }
+    }
 
-	return status; // XXX ????
+    return status;  // XXX ????
 }
 
-void EnumLnx() {
-	dm->AddDevice(new LinuxKeyboard());
+void EnumLnx()
+{
+    dm->AddDevice(new LinuxKeyboard());
 }

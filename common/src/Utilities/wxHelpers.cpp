@@ -66,7 +66,7 @@ BaseDeletableObject::BaseDeletableObject()
 	//pxAssertDev( _CrtIsValidHeapPointer( this ), "BaseDeletableObject types cannot be created on the stack or as temporaries!" );
 	#endif
 
-	m_IsBeingDeleted = false;
+	m_IsBeingDeleted.store(false, std::memory_order_relaxed);
 }
 
 BaseDeletableObject::~BaseDeletableObject() throw()
@@ -117,7 +117,7 @@ bool pxDialogExists( const wxString& name )
 //  wxDialogWithHelpers Class Implementations
 // =====================================================================================================
 
-DEFINE_EVENT_TYPE( pxEvt_OnDialogCreated )
+wxDEFINE_EVENT(pxEvt_OnDialogCreated, wxCommandEvent);
 
 IMPLEMENT_DYNAMIC_CLASS(wxDialogWithHelpers, wxDialog)
 
@@ -167,10 +167,10 @@ void wxDialogWithHelpers::Init( const pxDialogCreationFlags& cflags )
 		delete wxHelpProvider::Set( new wxSimpleHelpProvider() );
 #endif
 
-	Connect( pxEvt_OnDialogCreated,	wxCommandEventHandler	(wxDialogWithHelpers::OnDialogCreated) );
+	Bind(pxEvt_OnDialogCreated, &wxDialogWithHelpers::OnDialogCreated, this);
 
-	Connect( wxID_OK,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
-	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler	(wxDialogWithHelpers::OnOkCancel) );
+	Bind(wxEVT_BUTTON, &wxDialogWithHelpers::OnOkCancel, this, wxID_OK);
+	Bind(wxEVT_BUTTON, &wxDialogWithHelpers::OnOkCancel, this, wxID_CANCEL);
 
 	wxCommandEvent createEvent( pxEvt_OnDialogCreated );
 	createEvent.SetId( GetId() );

@@ -23,7 +23,7 @@
 
 #include "GSVector.h"
 
-__aligned(struct, 32) GSVertexSW
+struct alignas(32) GSVertexSW
 {
 	GSVector4 p, _pad, t, c;
 
@@ -237,7 +237,7 @@ __aligned(struct, 32) GSVertexSW
 
 #if _M_SSE >= 0x501
 
-__aligned(struct, 32) GSVertexSW2
+struct alignas(32) GSVertexSW2
 {
 	GSVector4 p, _pad;
 	GSVector8 tc;

@@ -20,7 +20,7 @@
 #	undef Yield
 #elif defined(__linux__)
 #	include <libaio.h>
-#elif defined(__APPLE__)
+#elif defined(__POSIX__)
 #	include <aio.h>
 #endif
 #include <memory>
@@ -78,7 +78,8 @@ class FlatFileReader : public AsyncFileReader
 	io_context_t m_aio_context;
 #elif defined(__POSIX__)
 	int m_fd; // TODO OSX don't know if overlap as an equivalent on OSX
-	struct aiocb m_aio_context;
+	struct aiocb m_aiocb;
+	bool m_read_in_progress;
 #endif
 
 	bool shareWrite;

@@ -23,9 +23,7 @@
 class BaseApplicableConfigPanel;
 class BaseApplicableDialog;
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_ApplySettings, -1 )
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_ApplySettings, wxCommandEvent);
 
 namespace Exception
 {

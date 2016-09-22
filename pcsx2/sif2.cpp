@@ -208,7 +208,7 @@ static __fi void EndIOP()
 // Handle the EE transfer.
 static __fi void HandleEETransfer()
 {
-	if (sif2dma.chcr.STR == false)
+	if (!sif2dma.chcr.STR)
 	{
 		//DevCon.Warning("Replacement for irq prevention hack EE SIF2");
 		sif2.ee.end = false;
@@ -329,7 +329,7 @@ __fi void SIF2Dma()
 
 		if (sif2.iop.busy)
 		{
-			if (sif2.fifo.sif_free() > 0 || (sif2.iop.end == true && sif2.iop.counter == 0))
+			if (sif2.fifo.sif_free() > 0 || (sif2.iop.end && sif2.iop.counter == 0))
 			{
 				BusyCheck++;
 				HandleIOPTransfer();
@@ -337,7 +337,7 @@ __fi void SIF2Dma()
 		}
 		if (sif2.ee.busy)
 		{
-			if (sif2.fifo.size >= 4 || (sif2.ee.end == true && sif2dma.qwc == 0))
+			if (sif2.fifo.size >= 4 || (sif2.ee.end && sif2dma.qwc == 0))
 			{
 				BusyCheck++;
 				HandleEETransfer();
@@ -350,7 +350,7 @@ __fi void SIF2Dma()
 
 __fi void  sif2Interrupt()
 {
-	if (sif2.iop.end == false || sif2.iop.counter > 0)
+	if (!sif2.iop.end || sif2.iop.counter > 0)
 	{
 		SIF2Dma();
 		return;

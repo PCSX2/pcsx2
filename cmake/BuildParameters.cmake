@@ -81,6 +81,14 @@ option(USE_ASAN "Enable address sanitizer")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(USE_CLANG TRUE)
     message(STATUS "Building with Clang/LLVM.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    set(USE_ICC TRUE)
+    message(STATUS "Building with Intel's ICC.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(USE_GCC TRUE)
+    message(STATUS "Building with GNU GCC")
+else()
+    message(FATAL_ERROR "Unknow compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -115,6 +123,34 @@ if(BUILTIN_DEV)
 endif()
 if(BUILTIN_CDVD)
     set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_CDVD_PLUGIN")
+endif()
+
+#-------------------------------------------------------------------------------
+# if no build type is set, use Devel as default
+# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
+# Ensure that the value set by the User is correct to avoid some bad behavior later
+#-------------------------------------------------------------------------------
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
+	set(CMAKE_BUILD_TYPE Devel)
+	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
+endif()
+# AVX2 doesn't play well with gdb
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    SET(DISABLE_ADVANCE_SIMD ON)
+endif()
+
+# Initially strip was disabled on release build but it is not stackstrace friendly!
+# It only cost several MB so disbable it by default
+option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
+
+if(NOT DEFINED CMAKE_BUILD_PO)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_BUILD_PO TRUE)
+        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    else()
+        set(CMAKE_BUILD_PO FALSE)
+        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -164,13 +200,22 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
-            set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
+            if (USE_ICC)
+                set(ARCH_FLAG "-msse2")
+            else()
+                set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
+            endif()
         else()
             # AVX requires some fix of the ABI (mangling) (default 2)
             # Note: V6 requires GCC 4.7
             #set(ARCH_FLAG "-march=native -fabi-version=6")
             set(ARCH_FLAG "-march=native")
         endif()
+    endif()
+
+    # Don't bother porting SuperVU
+    if (NOT Linux)
+        set(DISABLE_SVU TRUE)
     endif()
 
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
@@ -186,7 +231,11 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
-            set(ARCH_FLAG "-msse -msse2 -mfxsr")
+            if (USE_ICC)
+                set(ARCH_FLAG "-msse2")
+            else()
+                set(ARCH_FLAG "-msse -msse2 -mfxsr")
+            endif()
         else()
             #set(ARCH_FLAG "-march=native -fabi-version=6")
             set(ARCH_FLAG "-march=native")
@@ -202,31 +251,6 @@ else()
 
     message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
-
-#-------------------------------------------------------------------------------
-# if no build type is set, use Devel as default
-# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
-# Ensure that the value set by the User is correct to avoid some bad behavior later
-#-------------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
-	set(CMAKE_BUILD_TYPE Devel)
-	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
-endif()
-
-# Initially strip was disabled on release build but it is not stackstrace friendly!
-# It only cost several MB so disbable it by default
-option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
-
-if(NOT DEFINED CMAKE_BUILD_PO)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_BUILD_PO TRUE)
-        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    else()
-        set(CMAKE_BUILD_PO FALSE)
-        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    endif()
-endif()
-
 
 #-------------------------------------------------------------------------------
 # Control GCC flags
@@ -280,21 +304,28 @@ endif()
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
+# Note: future GCC (aka GCC 5.1.1) has less false positive so warning could maybe put back
 # -Wno-unused-function: warn for function not used in release build
-# -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value ")
+set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers ")
+if (NOT USE_ICC)
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
+endif()
+
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=2 ")
+if (USE_ICC)
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing ")
+else()
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=1 ")
+endif()
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register -Wno-c++14-extensions")
-    if (NOT APPLE)
-        set(COMMON_FLAG "${COMMON_FLAG} -no-integrated-as")
-    endif()
     set(DBG "-g -fno-omit-frame-pointer")
-else()
+elseif (USE_ICC)
+    set(DBG "-g -fno-omit-frame-pointer")
+elseif (USE_GCC)
     set(DBG "-ggdb3 -fno-omit-frame-pointer")
 endif()
 
@@ -329,10 +360,10 @@ endif()
 
 if(NOT DEFINED OPTIMIZATION_FLAG)
     if (CMAKE_BUILD_TYPE STREQUAL Debug)
-        if (USE_CLANG)
-            set(OPTIMIZATION_FLAG -O0)
-        else()
+        if (USE_GCC)
             set(OPTIMIZATION_FLAG -Og)
+        else()
+            set(OPTIMIZATION_FLAG -O0)
         endif()
     else()
         set(OPTIMIZATION_FLAG -O2)
@@ -397,6 +428,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 #-------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
     if (GTK3_API)
-        message(FATAL_ERROR "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
+        message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
 endif()

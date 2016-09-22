@@ -22,13 +22,14 @@
 #include "GamePad.h"
 #include "onepad.h"
 #include "keyboard.h"
+#include "state_management.h"
 
 #include <string.h>
 #include <gtk/gtk.h>
 #include "linux.h"
 
 Display *GSdsp;
-Window	GSwin;
+Window GSwin;
 
 void SysMessage(const char *fmt, ...)
 {
@@ -39,156 +40,164 @@ void SysMessage(const char *fmt, ...)
     vsprintf(msg, fmt, list);
     va_end(list);
 
-    if (msg[strlen(msg)-1] == '\n') msg[strlen(msg)-1] = 0;
+    if (msg[strlen(msg) - 1] == '\n')
+        msg[strlen(msg) - 1] = 0;
 
     GtkWidget *dialog;
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK,
-                                     "%s", msg);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    dialog = gtk_message_dialog_new(NULL,
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "%s", msg);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
 
-EXPORT_C_(void) PADabout()
+EXPORT_C_(void)
+PADabout()
 {
-	SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
+    SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
 }
 
-EXPORT_C_(s32) PADtest()
+EXPORT_C_(s32)
+PADtest()
 {
-	return 0;
+    return 0;
 }
 
-s32  _PADopen(void *pDsp)
+s32 _PADopen(void *pDsp)
 {
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window)*(((u32*)pDsp)+1);
+    GSdsp = *(Display **)pDsp;
+    GSwin = (Window) * (((u32 *)pDsp) + 1);
 
     SetAutoRepeat(false);
-	return 0;
+    return 0;
 }
 
 void _PADclose()
 {
-	SetAutoRepeat(true);
+    SetAutoRepeat(true);
 
-	vector<GamePad*>::iterator it = s_vgamePad.begin();
+    vector<GamePad *>::iterator it = s_vgamePad.begin();
 
-	// Delete everything in the vector vjoysticks.
-	while (it != s_vgamePad.end())
-	{
-		delete *it;
-		it ++;
-	}
+    // Delete everything in the vector vjoysticks.
+    while (it != s_vgamePad.end()) {
+        delete *it;
+        ++it;
+    }
 
-	s_vgamePad.clear();
+    s_vgamePad.clear();
 }
 
 void PollForJoystickInput(int cpad)
 {
-	int joyid = conf->get_joyid(cpad);
-	if (!GamePadIdWithinBounds(joyid)) return;
+    int joyid = conf->get_joyid(cpad);
+    if (!GamePadIdWithinBounds(joyid))
+        return;
 
-	GamePad::UpdateGamePadState();
-	for (int i = 0; i < MAX_KEYS; i++)
-	{
-		GamePad* gamePad = s_vgamePad[joyid];
+    GamePad::UpdateGamePadState();
+    for (int i = 0; i < MAX_KEYS; i++) {
+        GamePad *gamePad = s_vgamePad[joyid];
 
-		switch (type_of_joykey(cpad, i))
-		{
-			case PAD_JOYBUTTONS:
-				{
+        switch (type_of_joykey(cpad, i)) {
+            case PAD_JOYBUTTONS: {
 
-					int value = gamePad->GetButton(key_to_button(cpad, i));
-					if (value)
-						key_status->press(cpad, i);
-					else
-						key_status->release(cpad, i);
+                int value = gamePad->GetButton(key_to_button(cpad, i));
+                if (value)
+                    key_status->press(cpad, i);
+                else
+                    key_status->release(cpad, i);
 
-					break;
-				}
-			case PAD_HAT:
-				{
-					int value = gamePad->GetHat(key_to_axis(cpad, i));
+                break;
+            }
+            case PAD_HAT: {
+                int value = gamePad->GetHat(key_to_axis(cpad, i));
 
-					// key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
-					// key_to_hat_dir. SDL_JoystickGetHat handles diagonal too (2 bits) so you must check the intersection
-					// '&' not only equality '=='. -- Gregory
-					if (key_to_hat_dir(cpad, i) & value)
-						key_status->press(cpad, i);
-					else
-						key_status->release(cpad, i);
+                // key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
+                // key_to_hat_dir. SDL_JoystickGetHat handles diagonal too (2 bits) so you must check the intersection
+                // '&' not only equality '=='. -- Gregory
+                if (key_to_hat_dir(cpad, i) & value)
+                    key_status->press(cpad, i);
+                else
+                    key_status->release(cpad, i);
 
-					break;
-				}
-			case PAD_AXIS:
-				{
-					int value = gamePad->GetAxisFromKey(cpad, i);
-					bool sign = key_to_axis_sign(cpad, i);
-					bool full_axis = key_to_axis_type(cpad, i);
+                break;
+            }
+            case PAD_AXIS: {
+                int value = gamePad->GetAxisFromKey(cpad, i);
+                bool sign = key_to_axis_sign(cpad, i);
+                bool full_axis = key_to_axis_type(cpad, i);
 
-					if (IsAnalogKey(i)) {
-						if (abs(value) > gamePad->GetDeadzone())
-							key_status->press(cpad, i, value);
-						else
-							key_status->release(cpad, i);
+                if (IsAnalogKey(i)) {
+                    if (abs(value) > gamePad->GetDeadzone())
+                        key_status->press(cpad, i, value);
+                    else
+                        key_status->release(cpad, i);
 
-					} else {
-						if (full_axis) {
-							value += 0x8000;
-							if (value > gamePad->GetDeadzone())
-								key_status->press(cpad, i, min(value/256 , 0xFF));
-							else
-								key_status->release(cpad, i);
+                } else {
+                    if (full_axis) {
+                        value += 0x8000;
+                        if (value > gamePad->GetDeadzone())
+                            key_status->press(cpad, i, min(value / 256, 0xFF));
+                        else
+                            key_status->release(cpad, i);
 
-						} else {
-							if (sign && (-value > gamePad->GetDeadzone()))
-								key_status->press(cpad, i, min(-value /128, 0xFF));
-							else if (!sign && (value > gamePad->GetDeadzone()))
-								key_status->press(cpad, i, min(value /128, 0xFF));
-							else
-								key_status->release(cpad, i);
-						}
-					}
-				}
-			default: break;
-		}
-	}
+                    } else {
+                        if (sign && (-value > gamePad->GetDeadzone()))
+                            key_status->press(cpad, i, min(-value / 128, 0xFF));
+                        else if (!sign && (value > gamePad->GetDeadzone()))
+                            key_status->press(cpad, i, min(value / 128, 0xFF));
+                        else
+                            key_status->release(cpad, i);
+                    }
+                }
+            }
+            default:
+                break;
+        }
+    }
 }
 
-EXPORT_C_(void) PADupdate(int pad)
+EXPORT_C_(void)
+PADupdate(int pad)
 {
-	// Gamepad inputs don't count as an activity. Therefore screensaver will
-	// be fired after a couple of minute.
-	// Emulate an user activity
-	static int count = 0;
-	count++;
-	if ((count & 0xFFF) == 0) {
-		// 1 call every 4096 Vsync is enough
-		XResetScreenSaver(GSdsp);
-	}
+    // Gamepad inputs don't count as an activity. Therefore screensaver will
+    // be fired after a couple of minute.
+    // Emulate an user activity
+    static int count = 0;
+    count++;
+    if ((count & 0xFFF) == 0) {
+        // 1 call every 4096 Vsync is enough
+        XResetScreenSaver(GSdsp);
+    }
 
-	// Actually PADupdate is always call with pad == 0. So you need to update both
-	// pads -- Gregory
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-		// Poll keyboard/mouse event
-		key_status->keyboard_state_acces(cpad);
-		PollForX11KeyboardInput(cpad);
+    // Actually PADupdate is always call with pad == 0. So you need to update both
+    // pads -- Gregory
 
-		// Get joystick state
-		key_status->joystick_state_acces(cpad);
-		PollForJoystickInput(cpad);
+    // Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
+    // So we will populate both pad in the same time
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+        key_status->keyboard_state_acces(cpad);
+    }
+    PollForX11KeyboardInput();
 
-		key_status->commit_status(cpad);
-	}
+    // Get joystick state + Commit
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+        key_status->joystick_state_acces(cpad);
+
+        PollForJoystickInput(cpad);
+
+        key_status->commit_status(cpad);
+    }
+
+    Pad::rumble_all();
 }
 
-EXPORT_C_(void) PADconfigure()
+EXPORT_C_(void)
+PADconfigure()
 {
-	LoadConfig();
+    LoadConfig();
 
-	DisplayDialog();
-	return;
+    DisplayDialog();
+    return;
 }

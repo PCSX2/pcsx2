@@ -28,7 +28,7 @@
 
 #pragma pack(push, 1)
 
-__aligned(struct, 32) GSVertex
+struct alignas(32) GSVertex
 {
 	union
 	{
@@ -41,10 +41,21 @@ __aligned(struct, 32) GSVertex
 			uint32 FOG; // FOG:28
 		};
 
+#if _M_SSE >= 0x500
+		__m256i mx;
+#endif
 		__m128i m[2];
 	};
 
+	GSVertex() = default; // Warning object is potentially used in hot path
+
+#if _M_SSE >= 0x500
+	GSVertex(const GSVertex& v) {mx = v.mx;}
+	void operator = (const GSVertex& v) {mx = v.mx;}
+#else
+	GSVertex(const GSVertex& v) {m[0] = v.m[0]; m[1] = v.m[1];}
 	void operator = (const GSVertex& v) {m[0] = v.m[0]; m[1] = v.m[1];}
+#endif
 };
 
 struct GSVertexP
@@ -52,7 +63,7 @@ struct GSVertexP
 	GSVector4 p;
 };
 
-__aligned(struct, 32) GSVertexPT1
+struct alignas(32) GSVertexPT1
 {
 	GSVector4 p;
 	GSVector2 t;

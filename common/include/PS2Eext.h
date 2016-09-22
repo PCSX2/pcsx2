@@ -30,16 +30,16 @@
 
 #define EXPORT_C_(type) extern "C" type CALLBACK
 
-#elif defined(__linux__)
+#elif defined(__unix__)
 
 #include <gtk/gtk.h>
 #include <cstring>
 
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
 #else
 
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
 #endif
 
@@ -193,7 +193,7 @@ struct PluginConf
     }
 };
 
-#if defined(__linux__)
+#if defined(__unix__)
 
 static void SysMessage(const char *fmt, ...)
 {

@@ -49,14 +49,6 @@ enum ShaderConvert {
 
 #pragma pack(push, 1)
 
-class ConvertConstantBuffer
-{
-public:
-	GSVector4i ScalingFactor;
-
-	ConvertConstantBuffer() {memset(this, 0, sizeof(*this));}
-};
-
 class MergeConstantBuffer
 {
 public:
@@ -125,6 +117,7 @@ protected:
 	struct {size_t stride, start, count, limit;} m_vertex;
 	struct {size_t start, count, limit;} m_index;
 	unsigned int m_frame; // for ageing the pool
+	bool m_linear_present;
 
 	virtual GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format) = 0;
 	virtual GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
@@ -160,7 +153,7 @@ public:
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
 	virtual void ClearRenderTarget(GSTexture* t, uint32 c) {}
-	virtual void ClearDepth(GSTexture* t, float c) {}
+	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, uint8 c) {}
 
 	virtual GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0);
@@ -194,6 +187,7 @@ public:
 	bool IsRBSwapped() {return m_rbswapped;}
 
 	void AgePool();
+	void PurgePool();
 
 	virtual void PrintMemoryUsage();
 };

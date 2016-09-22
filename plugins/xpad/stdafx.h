@@ -36,8 +36,8 @@ typedef signed long long int64;
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-#define EXPORT_C extern "C" __declspec(dllexport) void __stdcall
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
+#define EXPORT_C extern "C" void __stdcall
+#define EXPORT_C_(type) extern "C" type __stdcall
 
 #define ALIGN_STACK(n) __declspec(align(n)) int __dummy;
 

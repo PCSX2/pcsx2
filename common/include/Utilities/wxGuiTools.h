@@ -270,13 +270,7 @@ void operator+=( wxSizer& target, const pxWindowAndFlags<WinType>& src )
 	target.Add( src.window, src.flags );
 }
 
-
-
-BEGIN_DECLARE_EVENT_TYPES()
-	// Added to the event queue by pxDialogWithHelpers
-	DECLARE_EVENT_TYPE( pxEvt_OnDialogCreated, -1 )
-END_DECLARE_EVENT_TYPES()
-
+wxDECLARE_EVENT(pxEvt_OnDialogCreated, wxCommandEvent);
 
 // --------------------------------------------------------------------------------------
 //  pxDialogCreationFlags

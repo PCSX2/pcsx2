@@ -33,44 +33,13 @@
 
 #include "Pcsx2Types.h"
 
-#ifdef _MSC_VER
-#	include <intrin.h>
-#else
-#	include <intrin_x86.h>
-#endif
+#include "x86emitter/x86_intrin.h"
 
 // Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
 // Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
 // that as well.  >_<
 #ifndef ArraySize
 #	define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
-#endif
-
-// --------------------------------------------------------------------------------------
-// jASSUME - give hints to the optimizer  [obsolete, use pxAssume() instead]
-// --------------------------------------------------------------------------------------
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-//
-// Note: When using the PCSX2 Utilities library, this is deprecated.  Use pxAssert instead,
-//  which itself optimizes to an __assume() hint in release mode builds.
-//
-#ifndef jASSUME
-#	ifdef NDEBUG
-#		define jBREAKPOINT() ((void) 0)
-#		ifdef _MSC_VER
-#			define jASSUME(exp) (__assume(exp))
-#		else
-#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
-#		endif
-#	else
-#		define jBREAKPOINT() __debugbreak();
-#		ifdef wxASSERT
-#			define jASSUME(exp) wxASSERT(exp)
-#		else
-#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
-#		endif
-#	endif
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -213,9 +182,12 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 //  GCC / Intel Compilers Section
 // --------------------------------------------------------------------------------------
 
+#ifndef __packed
 #	define __packed			__attribute__((packed))
-
+#endif
+#ifndef __aligned
 #	define __aligned(alig)	__attribute__((aligned(alig)))
+#endif
 #	define __aligned16		__attribute__((aligned(16)))
 #	define __aligned32		__attribute__((aligned(32)))
 #	define __pagealigned	__attribute__((aligned(PCSX2_PAGESIZE)))
@@ -232,14 +204,18 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
+#ifndef __fastcall
 #	define __fastcall		__attribute__((fastcall))
+#endif
 #	define _inline			__inline__ __attribute__((unused))
 #	ifdef NDEBUG
 #		define __forceinline	__attribute__((always_inline,unused))
 #	else
 #		define __forceinline	__attribute__((unused))
 #	endif
+#ifndef __noinline
 #	define __noinline		__attribute__((noinline))
+#endif
 #	define __threadlocal	__thread
 #	define likely(x)		__builtin_expect(!!(x), 1)
 #	define unlikely(x)		__builtin_expect(!!(x), 0)

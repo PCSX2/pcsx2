@@ -25,7 +25,7 @@
 
 GSTextureSW::GSTextureSW(int type, int width, int height)
 {
-	m_mapped.clear();
+	m_mapped.clear(std::memory_order_release);
 	m_size = GSVector2i(width, height);
 	m_type = type;
 	m_format = 0;
@@ -68,7 +68,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 	if(m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
 	{
-		if (!m_mapped.test_and_set())
+		if (!m_mapped.test_and_set(std::memory_order_acquire))
 		{
 			m.bits = (uint8*)m_data + m_pitch * r2.top + (r2.left << 2);
 			m.pitch = m_pitch;
@@ -82,10 +82,10 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 void GSTextureSW::Unmap()
 {
-	m_mapped.clear();
+	m_mapped.clear(std::memory_order_release);
 }
 
-bool GSTextureSW::Save(const string& fn, bool user_image, bool dds)
+bool GSTextureSW::Save(const string& fn, bool dds)
 {
 	if(dds) return false; // not implemented
 
@@ -94,6 +94,6 @@ bool GSTextureSW::Save(const string& fn, bool user_image, bool dds)
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
-	int compression = user_image ? Z_BEST_COMPRESSION : theApp.GetConfig("png_compression_level", Z_BEST_SPEED);
+	int compression = theApp.GetConfigI("png_compression_level");
 	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }

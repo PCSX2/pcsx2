@@ -27,6 +27,7 @@ public:
 	enum Title
 	{
 		NoTitle,
+		ArTonelico2,
 		MetalSlug6,
 		TomoyoAfter,
 		Clannad,
@@ -173,6 +174,11 @@ public:
 		SteambotChronicles,
 		SacredBlaze,
 		SuperManReturns,
+		ItadakiStreet,
+		Jak1,
+		Jak2,
+		Jak3,
+		JakX,
 		TitleCount,
 	};
 
@@ -210,7 +216,7 @@ public:
 
 private:
 	static Game m_games[];
-	static hash_map<uint32, Game*> m_map;
+	static map<uint32, Game*> m_map;
 
 public:
 	static Game Lookup(uint32 crc);

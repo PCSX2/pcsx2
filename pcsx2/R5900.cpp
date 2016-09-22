@@ -49,10 +49,13 @@ R5900cpu *Cpu = NULL;
 
 bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started
 bool g_GameStarted; // set when we reach the game's entry point or earlier if the entry point cannot be determined
+bool g_GameLoading; // EELOAD has been called to load the game
 
 static const uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
+
+u32 eeloadMain = 0;
 
 extern SysMainMemory& GetVmMemory();
 
@@ -87,6 +90,7 @@ void cpuReset()
 	Deci2Reset();
 
 	g_GameStarted = false;
+	g_GameLoading = false;
 	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
 
 	ElfCRC = 0;
@@ -103,6 +107,8 @@ void cpuReset()
 	// run into this while testing minor binary hacked changes to ISO images, which
 	// is why I found out about this) --air
 	LastELF = L"";
+
+	eeloadMain = 0;
 }
 
 void cpuShutdown()
@@ -517,6 +523,7 @@ void __fastcall eeGameStarting()
 	{
 		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
 		g_GameStarted = true;
+		g_GameLoading = false;
 		GetCoreThread().GameStartingInThread();
 
 		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
@@ -530,10 +537,8 @@ void __fastcall eeGameStarting()
 }
 
 // Called from recompilers; __fastcall define is mandatory.
-void __fastcall eeloadReplaceOSDSYS()
+void __fastcall eeloadHook()
 {
-	g_SkipBiosHack = false;
-
 	const wxString &elf_override = GetCoreThread().GetElfOverride();
 
 	if (!elf_override.IsEmpty())
@@ -541,55 +546,63 @@ void __fastcall eeloadReplaceOSDSYS()
 	else
 		cdvdReloadElfInfo();
 
-	// didn't recognize an ELF
-	if (ElfEntry == 0xFFFFFFFF) {
-		eeGameStarting();
-		return;
-	}
-
-	static u32 osdsys = 0, osdsys_p = 0;
-	// Memory this high is safe before the game's running presumably
-	// Other options are kernel memory (first megabyte) or the scratchpad
-	// PS2LOGO is loaded at 16MB, let's use 17MB
-	const u32 safemem = 0x1100000;
-
-	// The strings are all 64-bit aligned.  Why? I don't know, but they are
-	for (u32 i = EELOAD_START; i < EELOAD_START + EELOAD_SIZE; i += 8) {
-		if (!strcmp((char*)PSM(i), "rom0:OSDSYS")) {
-			osdsys = i;
-			break;
-		}
-	}
-	pxAssert(osdsys);
-
-	for (u32 i = osdsys - 4; i >= EELOAD_START; i -= 4) {
-		if (memRead32(i) == osdsys) {
-			osdsys_p = i;
-			break;
-		}
-	}
-	pxAssert(osdsys_p);
+	wxString discelf;
+	int disctype = GetPS2ElfName(discelf);
 
 	std::string elfname;
+	if (cpuRegs.GPR.n.a0.SD[0] >= 2) // argc >= 2
+		elfname = (char*)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + 4)); // argv[1]
 
-	if (!elf_override.IsEmpty())
+	if (g_SkipBiosHack && elfname.empty())
 	{
-		elfname += "host:";
-		elfname += elf_override.ToUTF8();
-	}
-	else
-	{
-		wxString boot2;
-		if (GetPS2ElfName(boot2) == 2)
-			elfname = boot2.ToUTF8();
+		std::string elftoload;
+		if (!elf_override.IsEmpty())
+		{
+			elftoload = "host:";
+			elftoload += elf_override.ToUTF8();
+		}
+		else
+		{
+			if (disctype == 2)
+				elftoload = discelf.ToUTF8();
+		}
+
+		if (!elftoload.empty())
+		{
+#if 0
+			// FIXME: you'd think that changing argc and argv would work but no, need to work out why not
+			// This method would support adding command line arguments to homebrew (and is generally less hacky)
+			// It works if you hook on rom0:PS2LOGO loading, but not on the first call with no arguments
+			cpuRegs.GPR.n.a0.SD[0] = 2; // argc = 2
+			// argv[0] = "EELOAD"
+			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), "EELOAD");
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 0, cpuRegs.GPR.n.a1.UD[0] + 0x40);
+			// argv[1] = elftoload
+			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x47), elftoload.c_str());
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 4, cpuRegs.GPR.n.a1.UD[0] + 0x47);
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 8, 0);
+			g_GameLoading = true;
+			return;
+#else
+			// The strings are all 64-bit aligned.  Why? I don't know, but they are
+			for (u32 osdsys_str = EELOAD_START; osdsys_str < EELOAD_START + EELOAD_SIZE; osdsys_str += 8) {
+				if (!strcmp((char*)PSM(osdsys_str), "rom0:OSDSYS")) {
+					for (u32 osdsys_ptr = osdsys_str - 4; osdsys_ptr >= EELOAD_START; osdsys_ptr -= 4) {
+						if (memRead32(osdsys_ptr) == osdsys_str) {
+							strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), elftoload.c_str());
+							memWrite32(osdsys_ptr, cpuRegs.GPR.n.a1.UD[0] + 0x40);
+							g_GameLoading = true;
+							return;
+						}
+					}
+				}
+			}
+#endif
+		}
 	}
 
-	if (!elfname.empty())
-	{
-		strcpy((char*)PSM(safemem), elfname.c_str());
-		memWrite32(osdsys_p, safemem);
-	}
-	// else... uh...?
+	if (!g_GameStarted && disctype == 2 && elfname == discelf)
+		g_GameLoading = true;
 }
 
 inline bool isBranchOrJump(u32 addr)

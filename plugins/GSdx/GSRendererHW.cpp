@@ -25,34 +25,60 @@
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(1280)
 	, m_height(1024)
-	, m_skip(0)
+	, m_custom_width(1280)
+	, m_custom_height(1024)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
 	, m_channel_shuffle(false)
 	, m_double_downscale(false)
 {
-	m_upscale_multiplier = theApp.GetConfig("upscale_multiplier", 1);
-	m_userhacks_skipdraw = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SkipDraw", 0) : 0;
-	m_userhacks_align_sprite_X = !!theApp.GetConfig("UserHacks_align_sprite_X", 0) && !!theApp.GetConfig("UserHacks", 0);
-	m_userhacks_round_sprite_offset = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_round_sprite_offset", 0) : 0;
-	m_userhacks_disable_gs_mem_clear = theApp.GetConfig("UserHacks_DisableGsMemClear", 0) && theApp.GetConfig("UserHacks", 0);
+	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
+	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
+	if (theApp.GetConfigB("UserHacks")) {
+		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
+		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
+		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
+	} else {
+		m_userhacks_align_sprite_X       = false;
+		m_userhacks_round_sprite_offset  = 0;
+		m_userhacks_disable_gs_mem_clear = false;
+	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
-		m_width = theApp.GetConfig("resx", m_width);
-		m_height = theApp.GetConfig("resy", m_height);
+		m_custom_width = m_width = theApp.GetConfigI("resx");
+		m_custom_height = m_height = theApp.GetConfigI("resy");
 	}
 
 	if (m_upscale_multiplier == 1) { // hacks are only needed for upscaling issues.
 		m_userhacks_round_sprite_offset = 0;
-		m_userhacks_align_sprite_X = 0;
+		m_userhacks_align_sprite_X      = 0;
 	}
 
+	m_dump_root = root_hw;
 }
 
 void GSRendererHW::SetScaling()
 {
 	GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
+
+	// Details of (potential) perf impact of a big framebuffer
+	// 1/ extra memory
+	// 2/ texture cache framebuffer rescaling/copy
+	// 3/ upload of framebuffer (preload hack)
+	// 4/ framebuffer clear (color/depth/stencil)
+	// 5/ read back of the frambuffer
+	// 6/ MSAA
+	//
+	// With the solution
+	// 1/ Nothing to do.Except the texture cache bug (channel shuffle effect)
+	//    most of the market is 1GB of VRAM (and soon 2GB)
+	// 2/ limit rescaling/copy to the valid data of the framebuffer
+	// 3/ ??? no solution so far
+	// 4a/ stencil can be limited to valid data.
+	// 4b/ is it useful to clear color? depth? (in any case, it ought to be few operation)
+	// 5/ limit the read to the valid data
+	// 6/ not support on openGL
 
 	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
 	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
@@ -69,11 +95,32 @@ void GSRendererHW::SetScaling()
 	// If memory consumption is an issue, there are 2 possibilities
 	// * 1/ Avoid to create hundreds of RT
 	// * 2/ Use sparse texture (requires recent HW)
-	int fb_height = (fb_width < 1024) ? 1280 : 1024;
+	//
+	// Avoid to alternate between 640x1280 and 1280x1024 on snow blind engine game
+	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
+	//
+	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
+	int fb_height = m_large_framebuffer ? 1280 :
+		(fb_width < 1024) ? max(512, crtc_size.y) : 1024;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
 	bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
+	bool initialized_register_state = (m_context->FRAME.FBW > 1) && (crtc_size.y > 1);
+
+	if (!m_upscale_multiplier && initialized_register_state)
+	{
+		if (m_height == m_custom_height)
+		{
+			float ratio = ceil(static_cast<float>(m_height) / crtc_size.y);
+			float buffer_scale_offset = (m_large_framebuffer) ? ratio : 0.5f;
+			ratio = round(ratio + buffer_scale_offset);
+
+			m_tc->RemovePartial();
+			m_width = max(m_width, 1280);
+			m_height = max(static_cast<int>(crtc_size.y * ratio) , 1024);
+		}
+	}
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
@@ -110,17 +157,12 @@ bool GSRendererHW::CanUpscale()
 
 int GSRendererHW::GetUpscaleMultiplier()
 {
-	// Custom resolution (currently 0) needs an upscale multiplier of 1.
-	return m_upscale_multiplier ? m_upscale_multiplier : 1;
+	return m_upscale_multiplier;
 }
 
-GSVector2i GSRendererHW::GetInternalResolution() {
-	GSVector2i dr(GetDisplayRect().width(), GetDisplayRect().height());
-
-	if (m_upscale_multiplier)
-		return GSVector2i(dr.x * m_upscale_multiplier, dr.y * m_upscale_multiplier);
-	else
-		return GSVector2i(m_width, m_height);
+GSVector2i GSRendererHW::GetCustomResolution()
+{
+	return GSVector2i(m_custom_width, m_custom_height);
 }
 
 void GSRendererHW::Reset()
@@ -182,8 +224,13 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 		int delta = TEX0.TBP0 - rt->m_TEX0.TBP0;
 		if (delta > 0) {
+			// Code was corrected to use generic format. But I'm not sure behavior is correct.
+			// Let's keep the warning to easily spot game that trigger this code path.
 			ASSERT(DISPFB.PSM == PSM_PSMCT32 || DISPFB.PSM == PSM_PSMCT24);
-			y_offset = delta / DISPFB.FBW;
+
+			int pages = delta >> 5u;
+			int y_pages = pages / DISPFB.FBW;
+			y_offset = y_pages * GSLocalMemory::m_psm[DISPFB.PSM].pgs.y;
 			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
 		}
 
@@ -192,7 +239,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if(s_savef && s_n >= s_saven)
 			{
-				t->Save(root_hw + format("%05d_f%lld_fr%d_%05x_%d.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM));
+				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
 
@@ -348,7 +395,7 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if(m_dev->IsLost() || GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) {
+	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		s_n += 3; // Keep it sync with SW renderer
 		return;
@@ -379,8 +426,7 @@ void GSRendererHW::Draw()
 	if (m_channel_shuffle) {
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
-			GL_INS("Channel shuffle effect detected SKIP");
-			GL_POP();
+			GL_CACHE("Channel shuffle effect detected SKIP");
 			s_n += 3; // Keep it sync with SW renderer
 			return;
 		}
@@ -392,15 +438,8 @@ void GSRendererHW::Draw()
 			GL_INS("Double downscale effect detected");
 			m_double_downscale = true;
 		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
-			if (m_channel_shuffle) {
-				GL_INS("Channel shuffle effect detected SKIP");
-				GL_POP();
-				s_n += 3; // Keep it sync with SW renderer
-				return;
-			} else {
-				GL_INS("Channel shuffle effect detected");
-				m_channel_shuffle = true;
-			}
+			GL_INS("Channel shuffle effect detected");
+			m_channel_shuffle = true;
 		} else {
 			GL_INS("Special post-processing effect not supported");
 			m_channel_shuffle = false;
@@ -417,21 +456,22 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
 
-	GSTextureCache::Target* rt = no_rt ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
-	GSTexture* rt_tex = rt ? rt->m_texture : NULL;
+	GSTextureCache::Target* rt = NULL;
+	GSTexture* rt_tex = NULL;
+	if (!no_rt) {
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+		rt_tex = rt->m_texture;
+	}
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
-	GSTextureCache::Target* ds = no_ds ? NULL : m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
-	GSTexture* ds_tex = ds ? ds->m_texture : NULL;
-
-	if(!(rt || no_rt) || !(ds || no_ds))
-	{
-		GL_POP();
-		ASSERT(0);
-		return;
+	GSTextureCache::Target* ds = NULL;
+	GSTexture* ds_tex = NULL;
+	if (!no_ds) {
+		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds_tex = ds->m_texture;
 	}
 
 	GSTextureCache::Source* tex = NULL;
@@ -457,11 +497,6 @@ void GSRendererHW::Draw()
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
-
-		if(!tex) {
-			GL_POP();
-			return;
-		}
 
 		// FIXME: Could be removed on openGL
 		if(tex_psm.pal > 0)
@@ -493,7 +528,6 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
-#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -504,25 +538,25 @@ void GSRendererHW::Draw()
 			// Dump Register state
 			s = format("%05d_context.txt", s_n);
 
-			m_env.Dump(root_hw+s);
-			m_context->Dump(root_hw+s);
+			m_env.Dump(m_dump_root+s);
+			m_context->Dump(m_dump_root+s);
 		}
 
 		if(s_savet && s_n >= s_saven && tex)
 		{
-			s = format("%05d_f%lld_tex_%05x_%d_%d%d_%02x_%02x_%02x_%02x.dds",
-				s_n, frame, (int)context->TEX0.TBP0, (int)context->TEX0.PSM,
+			s = format("%05d_f%lld_tex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(root_hw+s, false, true);
+			tex->m_texture->Save(m_dump_root+s, true);
 
 			if(tex->m_palette)
 			{
-				s = format("%05d_f%lld_tpx_%05x_%d.dds", s_n, frame, context->TEX0.CBP, context->TEX0.CPSM);
+				s = format("%05d_f%lld_tpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
-				tex->m_palette->Save(root_hw+s, false, true);
+				tex->m_palette->Save(m_dump_root+s, true);
 			}
 		}
 
@@ -530,18 +564,18 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
-				rt->m_texture->Save(root_hw+s);
+				rt->m_texture->Save(m_dump_root+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
-				ds_tex->Save(root_hw+s);
+				ds_tex->Save(m_dump_root+s);
 		}
 
 		s_n++;
@@ -549,7 +583,6 @@ void GSRendererHW::Draw()
 	} else {
 		s_n += 2;
 	}
-#endif
 
 	// The rectangle of the draw
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
@@ -558,14 +591,12 @@ void GSRendererHW::Draw()
 	{
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
 	if (!OI_BlitFMV(rt, tex, r)) {
 		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		GL_POP();
 		return;
 	}
 
@@ -594,7 +625,9 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
-	if ((m_upscale_multiplier > 1) && draw_sprite_tex) {
+	// Note: first hack corrects both position and texture coordinate
+	// Note: second hack corrects only the texture coordinate
+	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
 		size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
 
@@ -619,7 +652,8 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		if (PRIM->FST) {
+		// Noting to do if no texture is sampled
+		if (PRIM->FST && draw_sprite_tex) {
 			if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear())) {
 				if (m_vt.IsLinear())
 					RoundSpriteOffset<true>();
@@ -680,7 +714,6 @@ void GSRendererHW::Draw()
 		(this->*m_hacks.m_oo)();
 	}
 
-#ifdef ENABLE_OGL_DEBUG
 	if(s_dump)
 	{
 		uint64 frame = m_perfmon.GetFrame();
@@ -689,18 +722,18 @@ void GSRendererHW::Draw()
 
 		if(s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%d.bmp", s_n, frame, context->FRAME.Block(), context->FRAME.PSM);
+			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
-				rt->m_texture->Save(root_hw+s);
+				rt->m_texture->Save(m_dump_root+s);
 		}
 
 		if(s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%d.bmp", s_n, frame, context->ZBUF.Block(), context->ZBUF.PSM);
+			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
-				ds_tex->Save(root_hw+s);
+				ds_tex->Save(m_dump_root+s);
 		}
 
 		s_n++;
@@ -712,7 +745,6 @@ void GSRendererHW::Draw()
 	} else {
 		s_n += 1;
 	}
-#endif
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 
@@ -720,8 +752,6 @@ void GSRendererHW::Draw()
 		m_tc->Read(rt, r);
 
 	#endif
-
-	GL_POP();
 }
 
 // hacks
@@ -734,18 +764,15 @@ GSRendererHW::Hacks::Hacks()
 	, m_oo(NULL)
 	, m_cu(NULL)
 {
-	bool is_opengl = (static_cast<GSRendererType>(theApp.GetConfig("Renderer", static_cast<int>(GSRendererType::Default))) == GSRendererType::OGL_HW);
-	bool can_handle_depth = (!theApp.GetConfig("UserHacks", 0) || !theApp.GetConfig("UserHacks_DisableDepthSupport", 0)) && is_opengl;
+	bool is_opengl = (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW);
+	bool can_handle_depth = (!theApp.GetConfigB("UserHacks") || !theApp.GetConfigB("UserHacks_DisableDepthSupport")) && is_opengl;
 
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SimpsonsGame, CRC::RegionCount, &GSRendererHW::OI_SimpsonsGame));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpidermanWoS, CRC::RegionCount, &GSRendererHW::OI_SpidermanWoS));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger, CRC::RegionCount, &GSRendererHW::OI_TyTasmanianTiger));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger2, CRC::RegionCount, &GSRendererHW::OI_TyTasmanianTiger));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::DigimonRumbleArena2, CRC::RegionCount, &GSRendererHW::OI_DigimonRumbleArena2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BlackHawkDown, CRC::RegionCount, &GSRendererHW::OI_BlackHawkDown));
@@ -755,6 +782,14 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
+	// Enable it by default in the future (hack ought to be safe enough)
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SimpsonsGame, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger2, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
+
 	if (!can_handle_depth)
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 
@@ -780,7 +815,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
 
-	bool hack = theApp.GetConfig("UserHacks_ColorDepthClearOverlap", 0) && theApp.GetConfig("UserHacks", 0);
+	bool hack = theApp.GetConfigB("UserHacks_ColorDepthClearOverlap") && theApp.GetConfigB("UserHacks");
 	if (hack && !m_oi) {
 		// FIXME: Enable this code in the future. I think it could replace
 		// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
@@ -789,29 +824,31 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	}
 }
 
+// Handle case where the frame buffer and the Z buffer overlap
 bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && (m_context->FRAME.FBW >= 7) && rt) {
-		GSVertex* v = &m_vertex.buff[0];
+	// Trick to do a fast clear on the GS
+	// Set frame buffer pointer on the start of the buffer. Set depth buffer pointer on the half buffer
+	// FB + depth write will fill the full buffer.
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && rt && ds) {
+		const GSVertex* v = &m_vertex.buff[0];
+		const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+		const GSLocalMemory::psm_t& depth_psm = GSLocalMemory::m_psm[m_context->ZBUF.PSM];
 
-		//GL_INS("OI_DoubleHalfClear: psm:%x. Z:%d R:%d G:%d B:%d A:%d", m_context->FRAME.PSM,
-		//		v[1].XYZ.Z, v[1].RGBAQ.R, v[1].RGBAQ.G, v[1].RGBAQ.B, v[1].RGBAQ.A);
-
-		// Check it is a clear on the first primitive only
-		if (v[1].XYZ.Z || v[1].RGBAQ.R || v[1].RGBAQ.G || v[1].RGBAQ.B || v[1].RGBAQ.A) {
-			return true;
-		}
-		// Only 32 bits format is supported otherwise it is complicated
-		if (m_context->FRAME.PSM & 2)
+		// Z and color must be constant and the same
+		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
 			return true;
 
-		// FIXME might need some rounding
-		// In 32 bits pages are 64x32 pixels. In theory, it must be somethings
-		// like FBW * 64 pixels * ratio / 32 pixels / 2 = FBW * ratio
-		// It is hard to predict the ratio, so I round it to 1. And I use
-		// <= comparison below.
-		uint32 h_pages  = m_context->FRAME.FBW;
+		// Format doesn't have the same size. It smells fishy
+		if (frame_psm.trbpp != depth_psm.trbpp)
+			return true;
 
+		// Size of the current draw
+		uint32 w_pages = roundf(m_vt.m_max.p.x / frame_psm.pgs.x);
+		uint32 h_pages = roundf(m_vt.m_max.p.y / frame_psm.pgs.y);
+		uint32 written_pages = w_pages * h_pages;
+
+		// Frame and depth pointer can be inverted
 		uint32 base;
 		uint32 half;
 		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
@@ -822,18 +859,24 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 			half = m_context->ZBUF.ZBP;
 		}
 
-		if (half <= (base + h_pages * m_context->FRAME.FBW)) {
-			//GL_INS("OI_DoubleHalfClear: base %x half %x. h_pages %d fbw %d", base, half, h_pages, m_context->FRAME.FBW);
+		// If both buffers are side by side we can expect a fast clear in on-going
+		if (half <= (base + written_pages)) {
+			uint32 color = v[1].RGBAQ.u32[0];
+
+			GL_INS("OI_DoubleHalfClear: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x", base << 5, half << 5, w_pages, h_pages, m_context->FRAME.FBW, color);
+
 			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
-				m_dev->ClearDepth(ds, 0);
+				// Only pure clear are supported for depth
+				ASSERT(color == 0);
+				m_dev->ClearDepth(ds);
 			} else {
-				m_dev->ClearRenderTarget(rt, 0);
+				m_dev->ClearRenderTarget(rt, color);
 			}
-			// Don't return false, it will break the rendering. I guess that it misses texture
-			// invalidation
-			//return false;
+
+			// warning: draw call mustn't be skipped to keep correct invalidation. Don't return false
 		}
 	}
+
 	return true;
 }
 
@@ -842,18 +885,24 @@ void GSRendererHW::OI_GsMemClear()
 {
 	// Rectangle draw without texture
 	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE // Direct write
+			&& (m_context->FRAME.FBMSK == 0)
 			&& !m_context->TEST.ATE // no alpha test
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 			&& (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) // Constant 0 write
 			) {
-		GL_INS("OI_GsMemClear");
 		GSOffset* off = m_context->offset.fb;
 		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+		// Limit the hack to a single fullscreen clear. Some games might use severals column to clear a screen
+		// but hopefully it will be enough.
+		if (r.width() <= 128 || r.height() <= 128)
+			return;
 
+		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
 		// linear but the value will be done for all pixels of a block.
+		// FIXME: maybe we could limit the write to the top and bottom row page.
 		if (format == 0) {
 			// Based on WritePixel32
 			for(int y = r.top; y < r.bottom; y++)
@@ -899,7 +948,7 @@ void GSRendererHW::OI_GsMemClear()
 
 bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)
 {
-	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && PRIM->TME && !PRIM->ABE) {
+	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && PRIM->TME && !PRIM->ABE && tex && !tex->m_target) {
 		GL_PUSH("OI_BlitFMV");
 
 		GL_INS("OI_BlitFMV");
@@ -952,8 +1001,6 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		m_tc->Read(tex, r_texture);
 
 		m_tc->InvalidateVideoMemSubTarget(_rt);
-
-		GL_POP();
 
 		return false; // skip current draw
 	}
@@ -1056,7 +1103,7 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 	{
 		// random battle transition (z buffer written directly, clear it now)
 
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1105,29 +1152,8 @@ bool GSRendererHW::OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::So
 
 		if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(tmp_ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture);
 		}
-
-		return false;
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_SimpsonsGame(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x01500 || FBP == 0x01800) && FPSM == PSM_PSMZ24)	//0x1800 pal, 0x1500 ntsc
-	{
-		// instead of just simply drawing a full height 512x512 sprite to clear the z buffer,
-		// it uses a 512x256 sprite only, yet it is still able to fill the whole surface with zeros,
-		// how? by using a render target that overlaps with the lower half of the z buffer...
-
-		// TODO: tony hawk pro skater 4 same problem, the empty half is not visible though, painted over fully
-
-		m_dev->ClearDepth(ds, 0);
 
 		return false;
 	}
@@ -1171,7 +1197,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 			{
-				m_dev->ClearDepth(tmp_ds->m_texture, 0);
+				m_dev->ClearDepth(tmp_ds->m_texture);
 			}
 
 			return false;
@@ -1189,23 +1215,7 @@ bool GSRendererHW::OI_SpidermanWoS(GSTexture* rt, GSTexture* ds, GSTextureCache:
 	if((FBP == 0x025a0 || FBP == 0x02800) && FPSM == PSM_PSMCT32)	//0x2800 pal, 0x25a0 ntsc
 	{
 		//only top half of the screen clears
-		m_dev->ClearDepth(ds, 0);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_TyTasmanianTiger(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x02800 || FBP == 0x02BC0) && FPSM == PSM_PSMCT24)	//0x2800 pal, 0x2bc0 ntsc
-	{
-		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
-
-		return false;
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1221,7 +1231,7 @@ bool GSRendererHW::OI_DigimonRumbleArena2(GSTexture* rt, GSTexture* ds, GSTextur
 		if((FBP == 0x02300 || FBP == 0x03fc0) && FPSM == PSM_PSMCT32)
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1236,7 +1246,7 @@ bool GSRendererHW::OI_BlackHawkDown(GSTexture* rt, GSTexture* ds, GSTextureCache
 	if(FBP == 0x02000 && FPSM == PSM_PSMZ24)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1253,7 +1263,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1262,7 +1272,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_max.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1277,7 +1287,7 @@ bool GSRendererHW::OI_XmenOriginsWolverine(GSTexture* rt, GSTexture* ds, GSTextu
 	if(FBP == 0x0 && FPSM == PSM_PSMCT16)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1291,7 +1301,7 @@ bool GSRendererHW::OI_CallofDutyFinalFronts(GSTexture* rt, GSTexture* ds, GSText
 	if(FBP == 0x02300 && FPSM == PSM_PSMZ24)
 	{
 		//half height buffer clear
-		m_dev->ClearDepth(ds, 0);
+		m_dev->ClearDepth(ds);
 
 		return false;
 	}
@@ -1309,7 +1319,7 @@ bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureC
 		if(FPSM == PSM_PSMCT24 && (FBP == 0x02800 || FBP == 0x02bc0))	//0x2800 pal, 0x2bc0 ntsc
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1318,7 +1328,7 @@ bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureC
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1335,7 +1345,7 @@ bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureC
 		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
 		{
 			//half height buffer clear
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 
 			return false;
 		}
@@ -1344,7 +1354,7 @@ bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureC
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
-			m_dev->ClearDepth(ds, 0);
+			m_dev->ClearDepth(ds);
 		}
 	}
 
@@ -1359,7 +1369,7 @@ bool GSRendererHW::OI_TalesOfLegendia(GSTexture* rt, GSTexture* ds, GSTextureCac
 	if (FPSM == PSM_PSMCT32 && FBP == 0x01c00 && !m_context->TEST.ATE && m_vt.m_eq.z)
 	{
 		m_context->TEST.ZTST = ZTST_ALWAYS;
-		//m_dev->ClearDepth(ds, 0);
+		//m_dev->ClearDepth(ds);
 	}
 
 	return true;
@@ -1382,7 +1392,7 @@ bool GSRendererHW::OI_SMTNocturne(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		TEX0.PSM = FPSM;
 		if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 		{
-			m_dev->ClearDepth(tmp_ds->m_texture, 0);
+			m_dev->ClearDepth(tmp_ds->m_texture);
 		}
 		return false;
 	}
@@ -1474,6 +1484,64 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	return false;
 }
 
+bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// world map clipping
+	//
+	// The bad draw call is a sprite rendering to clear the z buffer
+
+	/*
+	   Depth buffer description
+	   * width is 10 pages
+	   * texture/scissor size is 640x448
+	   * depth is 16 bits so it writes 70 (10w * 7h) pages of data.
+
+	   following draw calls will use the buffer as 6 pages width with a scissor
+	   test of 384x672. So the above texture can be seen as a
+
+	   * texture width: 6 pages * 64 pixels/page = 384
+	   * texture height: 70/6 pages * 64 pixels/page =746
+
+	   So as you can see the GS issue a write of 640x448 but actually it
+	   expects to clean a 384x746 area. Ideally the fix will transform the
+	   buffer to adapt the page width properly.
+	 */
+
+	GSVertex* v = &m_vertex.buff[0];
+
+	if (m_vertex.next == 2 && !PRIM->TME && m_context->FRAME.FBW == 10 && v->XYZ.Z == 0 && m_context->TEST.ZTST == ZTST_ALWAYS) {
+		GL_INS("OI_ArTonelico2");
+		m_dev->ClearDepth(ds);
+	}
+
+	return true;
+}
+
+bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	if (m_context->TEST.ATST == ATST_NOTEQUAL && m_context->TEST.AREF == 0) {
+		// It is also broken on the SW renderer. Issue appears because fragment alpha is 0
+		// I suspect the game expect low value of alpha, and due to bad rounding on the core
+		// you have wrongly 0.
+		// Otherwise some draws calls are empty (all pixels are discarded).
+		// It fixes missing element on the board
+
+		GL_INS("OI_ItadakiStreetSpecial disable alpha test");
+		m_context->TEST.ATST = ATST_ALWAYS;
+
+#if 0 // Not enough
+		uint32 dummy_fm;
+		uint32 dummy_zm;
+
+		if (!TryAlphaTest(dummy_fm, dummy_zm)) {
+			GL_INS("OI_ItadakiStreetSpecial disable alpha test");
+			m_context->TEST.ATST = ATST_ALWAYS;
+		}
+#endif
+	}
+
+	return true;
+}
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 

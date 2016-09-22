@@ -420,13 +420,19 @@ void GIFdma()
 	// Transfer Dn_QWC from Dn_MADR to GIF
 	if (gifch.qwc > 0) // Normal Mode
 	{
+<<<<<<< HEAD
 		if (CheckPaths() == false) return;
+=======
+		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+
+		if (!CheckPaths(DMAC_GIF)) return;
+>>>>>>> remotes/origin/master
 
 		GIFchain();	//Transfers the data set by the switch
 		//if (gscycles < 8) DevCon.Warning("GSCycles = %d", gscycles);
 		GifDMAInt(gscycles);
 		return;
-	} else if(gspath3done == false) GIFdma(); //Loop round if there was a blank tag, causes hell otherwise with P3 masking games.
+	} else if(!gspath3done) GIFdma(); //Loop round if there was a blank tag, causes hell otherwise with P3 masking games.
 
 	//QWC == 0 && gspath3done == true - End of DMA
 	prevcycles = 0;
@@ -601,6 +607,7 @@ void mfifoGIFtransfer(int qwc)
 	//DevCon.Warning("GIF MFIFO");
 	if (qwc > 0 ) {
 		if ((gifstate & GIF_STATE_EMPTY)) {
+<<<<<<< HEAD
 			GifDMAInt(4);
 			gifstate &= ~GIF_STATE_EMPTY;
 		}
@@ -608,6 +615,11 @@ void mfifoGIFtransfer(int qwc)
 		{
 			gifRegs.stat.FQC = 16;
 			clearFIFOstuff(true);
+=======
+			if(gifch.chcr.STR && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_GIF)))
+				CPU_INT(DMAC_MFIFO_GIF, 4);
+			gifstate &= ~GIF_STATE_EMPTY;			
+>>>>>>> remotes/origin/master
 		}
 		return;
 	}
@@ -637,7 +649,7 @@ void mfifoGIFtransfer(int qwc)
 		}
 		mfifoGifMaskMem(ptag->ID);
 
-		if(gspath3done == true) gifstate = GIF_STATE_DONE;
+		if(gspath3done) gifstate = GIF_STATE_DONE;
 		else gifstate = GIF_STATE_READY;
 
 		if ((gifch.chcr.TIE) && (ptag->IRQ)) {
@@ -726,7 +738,11 @@ void gifMFIFOInterrupt()
 		if(!(gifstate & GIF_STATE_STALL)) return;
 	}
 
+<<<<<<< HEAD
 	if (CheckPaths() == false) return;
+=======
+	if (!CheckPaths(DMAC_MFIFO_GIF)) return;
+>>>>>>> remotes/origin/master
 
 	if(!gifch.chcr.STR) {
 		Console.WriteLn("WTF GIFMFIFO");

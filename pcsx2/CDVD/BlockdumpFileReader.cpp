@@ -34,7 +34,7 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 
 	reader->SetBlockSize(1);
 
-	char buf[4];
+	char buf[5] = {0};
 	reader->ReadSync(buf, 0, 4);
 
 	bool isbd = (strncmp(buf, "BDV2", 4) == 0);

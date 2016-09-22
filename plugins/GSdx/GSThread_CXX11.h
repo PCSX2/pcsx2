@@ -113,7 +113,10 @@ protected:
 		while (true) {
 
 			while (m_count == 0) {
-				if (m_exit.load(memory_order_acquire)) return;
+				if (m_exit.load(memory_order_relaxed)) {
+					m_exit = false;
+					return;
+				}
 				m_notempty.wait(l);
 			}
 
@@ -144,8 +147,10 @@ public:
 	}
 
 	virtual ~GSJobQueue() {
-		m_exit.store(true, memory_order_release);
-		m_notempty.notify_one();
+		m_exit = true;
+		do {
+			m_notempty.notify_one();
+		} while (m_exit);
 		this->CloseThread();
 	}
 

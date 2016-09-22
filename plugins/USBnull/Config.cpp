@@ -25,55 +25,51 @@ PluginConf Ini;
 
 void setLoggingState()
 {
-	if (conf.Log)
-	{
-		USBLog.WriteToConsole = true;
-		USBLog.WriteToFile = true;
-	}
-	else
-	{
-		USBLog.WriteToConsole = false;
-		USBLog.WriteToFile = false;
-	}
+    if (conf.Log) {
+        USBLog.WriteToConsole = true;
+        USBLog.WriteToFile = true;
+    } else {
+        USBLog.WriteToConsole = false;
+        USBLog.WriteToFile = false;
+    }
 }
 
-EXPORT_C_(void) USBabout()
+EXPORT_C_(void)
+USBabout()
 {
-	SysMessage("USBnull: A simple null plugin.");
+    SysMessage("USBnull: A simple null plugin.");
 }
 
-EXPORT_C_(void) USBconfigure()
+EXPORT_C_(void)
+USBconfigure()
 {
-	LoadConfig();
-	PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
-	SaveConfig();
+    LoadConfig();
+    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    SaveConfig();
 }
 
 void LoadConfig()
 {
-	string IniPath = s_strIniPath + "/USBnull.ini";
-	if (!Ini.Open(IniPath, READ_FILE))
-	{
-		USBLog.WriteLn("Failed to open %s", IniPath.c_str());
-		SaveConfig();
-		return;
-	}
+    string IniPath = s_strIniPath + "/USBnull.ini";
+    if (!Ini.Open(IniPath, READ_FILE)) {
+        USBLog.WriteLn("Failed to open %s", IniPath.c_str());
+        SaveConfig();
+        return;
+    }
 
-	conf.Log = Ini.ReadInt("logging", 0);
-	setLoggingState();
-	Ini.Close();
+    conf.Log = Ini.ReadInt("logging", 0);
+    setLoggingState();
+    Ini.Close();
 }
 
 void SaveConfig()
 {
-	string IniPath = s_strIniPath + "/USBnull.ini";
-	if (!Ini.Open(IniPath, WRITE_FILE))
-	{
-		USBLog.WriteLn("Failed to open %s", IniPath.c_str());
-		return;
-	}
+    string IniPath = s_strIniPath + "/USBnull.ini";
+    if (!Ini.Open(IniPath, WRITE_FILE)) {
+        USBLog.WriteLn("Failed to open %s", IniPath.c_str());
+        return;
+    }
 
-	Ini.WriteInt("logging", conf.Log);
-	Ini.Close();
+    Ini.WriteInt("logging", conf.Log);
+    Ini.Close();
 }
-

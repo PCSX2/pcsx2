@@ -50,8 +50,8 @@ Dialogs::ImportSettingsDialog::ImportSettingsDialog( wxWindow* parent )
 	*this += 12;
 	*this += &s_buttons		| StdCenter();
 
-	Connect( b_import->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ImportSettingsDialog::OnImport_Click) );
-	Connect( b_over->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ImportSettingsDialog::OnOverwrite_Click) );
+	Bind(wxEVT_BUTTON, &ImportSettingsDialog::OnImport_Click, this, b_import->GetId());
+	Bind(wxEVT_BUTTON, &ImportSettingsDialog::OnOverwrite_Click, this, b_over->GetId());
 }
 
 void Dialogs::ImportSettingsDialog::OnImport_Click( wxCommandEvent& /* evt */ )

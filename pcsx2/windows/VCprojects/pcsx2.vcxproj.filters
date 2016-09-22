@@ -230,9 +230,6 @@
     <ClCompile Include="..\..\PluginManager.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="..\SamplProf.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SaveState.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -644,9 +641,6 @@
     <ClCompile Include="..\..\gui\MSWstuff.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\pxLogTextCtrl.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\RecentIsoList.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
@@ -913,9 +907,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SamplProf.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SaveState.h">

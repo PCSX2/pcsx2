@@ -60,11 +60,14 @@ public:
 	static bool CheckDirectX();
 	static bool CheckDXGI();
 	static bool CheckD3D11();
+	static GSRendererType GetBestRenderer();
 	static D3D_FEATURE_LEVEL CheckDirect3D11Level(IDXGIAdapter *adapter = NULL, D3D_DRIVER_TYPE type = D3D_DRIVER_TYPE_HARDWARE);
 
 #endif
 };
 
-#ifdef __linux__
+#if defined(__unix__)
 void GSmkdir(const char* dir);
 #endif
+
+const char* psm_str(int psm);

@@ -20,8 +20,6 @@
 #include "newVif.h"
 #include "MTVU.h"
 
-#include "SamplProf.h"
-
 #include "Elfheader.h"
 
 #include "System/RecTypes.h"
@@ -43,8 +41,6 @@ RecompiledCodeReserve::RecompiledCodeReserve( const wxString& name, uint defComm
 	m_blocksize		= (1024 * 128) / __pagesize;
 	m_prot_mode		= PageAccess_Any();
 	m_def_commit	= defCommit / __pagesize;
-	
-	m_profiler_registered = false;
 }
 
 RecompiledCodeReserve::~RecompiledCodeReserve() throw()
@@ -55,17 +51,12 @@ RecompiledCodeReserve::~RecompiledCodeReserve() throw()
 void RecompiledCodeReserve::_registerProfiler()
 {
 	if (m_profiler_name.IsEmpty() || !IsOk()) return;
-	ProfilerRegisterSource( m_profiler_name, m_baseptr, GetReserveSizeInBytes() );
-	m_profiler_registered = true;
 
-	// Could potentially be integrated into ProfilerRegisterSource
 	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.ToUTF8());
 }
 
 void RecompiledCodeReserve::_termProfiler()
 {
-	if (m_profiler_registered)
-		ProfilerTerminateSource( m_profiler_name );
 }
 
 uint RecompiledCodeReserve::_calcDefaultCommitInBlocks() const
@@ -293,7 +284,7 @@ class CpuInitializer
 public:
 	std::unique_ptr<CpuType> MyCpu;
 	ScopedExcept ExThrown;
-	
+
 	CpuInitializer();
 	virtual ~CpuInitializer() throw();
 
@@ -401,7 +392,7 @@ void SysMainMemory::ReserveAll()
 	m_ee.Reserve();
 	m_iop.Reserve();
 	m_vu.Reserve();
-	
+
 	reserveNewVif(0);
 	reserveNewVif(1);
 }
@@ -453,7 +444,7 @@ void SysMainMemory::DecommitAll()
 
 	closeNewVif(0);
 	closeNewVif(1);
-	
+
 	vtlb_Core_Free();
 }
 
@@ -662,20 +653,26 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	return Mem;
 }
 
+wxString SysGetBiosDiscID()
+{
+	// FIXME: we should return a serial based on
+	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
+	// region and revision).
+
+	return wxEmptyString;
+}
+
 // This function always returns a valid DiscID -- using the Sony serial when possible, and
 // falling back on the CRC checksum of the ELF binary if the PS2 software being run is
 // homebrew or some other serial-less item.
 wxString SysGetDiscID()
 {
 	if( !DiscSerial.IsEmpty() ) return DiscSerial;
-	
+
 	if( !ElfCRC )
 	{
-		// FIXME: system is currently running the BIOS, so it should return a serial based on
-		// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
-		// region and revision).
-		
-		return wxEmptyString;
+		// system is currently running the BIOS
+		return SysGetBiosDiscID();
 	}
 
 	return pxsFmt( L"%08x", ElfCRC );

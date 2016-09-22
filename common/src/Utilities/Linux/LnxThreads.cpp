@@ -16,16 +16,20 @@
 
 #include "../PrecompiledHeader.h"
 #include "PersistentThread.h"
-#include <sys/prctl.h>
 #include <unistd.h>
+#if defined(__linux__)
+#include <sys/prctl.h>
+#elif defined(__unix__)
+#include <pthread_np.h>
+#endif
 
 // We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
 // to remove an unneeded dependency.
 //#include "x86emitter/tools.h"
 
-#if !defined(__linux__) && !defined(__WXMAC__)
+#if !defined(__unix__)
 
-#	pragma message( "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/Mac distros.")
+#	pragma message( "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/BSD distros.")
 
 #else
 
@@ -68,7 +72,7 @@ static u64 get_thread_time(uptr id = 0)
 {
 	clockid_t cid;
 	if (id) {
-		int err = pthread_getcpuclockid(id, &cid);
+		int err = pthread_getcpuclockid((pthread_t)id, &cid);
 		if (err) return 0;
 	} else {
 		cid = CLOCK_THREAD_CPUTIME_ID;
@@ -113,9 +117,13 @@ void Threading::pxThread::_platform_specific_OnCleanupInThread()
 
 void Threading::pxThread::_DoSetThreadName( const char* name )
 {
+#if defined(__linux__)
 	// Extract of manpage: "The name can be up to 16 bytes long, and should be
 	//						null-terminated if it contains fewer bytes."
 	prctl(PR_SET_NAME, name, 0, 0, 0);
+#elif defined(__unix__)
+	pthread_set_name_np(pthread_self(), name);
+#endif
 }
 
 #endif

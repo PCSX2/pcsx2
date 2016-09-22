@@ -23,11 +23,14 @@
 
 class GSShaderOGL {
 	GLuint m_pipeline;
+	hash_map<uint32, GLuint> m_program;
 	const bool m_debug_shader;
 
+	std::vector<GLuint> m_shad_to_delete;
 	std::vector<GLuint> m_prog_to_delete;
 	std::vector<GLuint> m_pipe_to_delete;
 
+	bool ValidateShader(GLuint s);
 	bool ValidateProgram(GLuint p);
 	bool ValidatePipeline(GLuint p);
 
@@ -41,7 +44,14 @@ class GSShaderOGL {
 	void BindPipeline(GLuint pipe);
 
 	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
-	GLuint LinkPipeline(GLuint vs, GLuint gs, GLuint ps);
+	GLuint LinkPipeline(const string& pretty_print, GLuint vs, GLuint gs, GLuint ps);
+
+	// Same as above but for not separated build
+	void BindProgram(GLuint vs, GLuint gs, GLuint ps);
+	void BindProgram(GLuint p);
+
+	GLuint CompileShader(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+	GLuint LinkProgram(GLuint vs, GLuint gs, GLuint ps);
 
 	int DumpAsm(const std::string& file, GLuint p);
 };

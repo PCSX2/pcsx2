@@ -27,11 +27,15 @@
 #include <wx/txtstrm.h>
 #include <wx/zipstrm.h>
 
+// This is a declaration for PatchMemory.cpp::_ApplyPatch where we're (patch.cpp)
+// the only consumer, so it's not made public via Patch.h
+// Applies a single patch line to emulation memory regardless of its "place" value.
+extern void _ApplyPatch(IniPatch *p);
+
+
 IniPatch Patch[ MAX_PATCH ];
-IniPatch Cheat[ MAX_CHEAT ];
 
 int patchnumber = 0;
-int cheatnumber = 0;
 
 wxString strgametitle;
 
@@ -46,13 +50,6 @@ static const PatchTextTable commands_patch[] =
 {
 	{ 1, L"comment",	PatchFunc::comment },
 	{ 2, L"patch",		PatchFunc::patch },
-	{ 0, wxEmptyString, NULL } // Array Terminator
-};
-
-static const PatchTextTable commands_cheat[] =
-{
-	{ 1, L"comment",	PatchFunc::comment },
-	{ 2, L"patch",		PatchFunc::cheat },
 	{ 0, wxEmptyString, NULL } // Array Terminator
 };
 
@@ -75,7 +72,7 @@ static const PatchTextTable cpuCore[] =
 
 // IniFile Functions.
 
-void inifile_trim( wxString& buffer )
+static void inifile_trim( wxString& buffer )
 {
 	buffer.Trim(false);			// trims left side.
 
@@ -112,7 +109,7 @@ static int PatchTableExecute( const ParsedAssignmentString& set, const PatchText
 }
 
 // This routine is for executing the commands of the ini file.
-void inifile_command(bool isCheat, const wxString& cmd)
+static void inifile_command(const wxString& cmd)
 {
 	ParsedAssignmentString set( cmd );
 
@@ -120,7 +117,7 @@ void inifile_command(bool isCheat, const wxString& cmd)
 	// would make more sense... --air
     if (set.rvalue.IsEmpty()) set.rvalue = set.lvalue;
 
-	/*int code = */PatchTableExecute(set, isCheat ? commands_cheat : commands_patch);
+	/*int code = */PatchTableExecute(set, commands_patch);
 }
 
 // This routine receives a string containing patches, trims it,
@@ -128,19 +125,18 @@ void inifile_command(bool isCheat, const wxString& cmd)
 void TrimPatches(wxString& s)
 {
 	wxStringTokenizer tkn( s, L"\n" );
-	
+
     while(tkn.HasMoreTokens()) {
-		inifile_command(0, tkn.GetNextToken());
+		inifile_command(tkn.GetNextToken());
 	}
 }
 
-// This routine loads patches from the game database
+// This routine loads patches from the game database (but not the config/game fixes/hacks)
 // Returns number of patches loaded
-int InitPatches(const wxString& crc, const Game_Data& game)
+int LoadPatchesFromGamesDB(const wxString& crc, const Game_Data& game)
 {
 	bool patchFound = false;
 	wxString patch;
-	patchnumber = 0;
 
 	if (game.IsOk())
 	{
@@ -153,9 +149,9 @@ int InitPatches(const wxString& crc, const Game_Data& game)
 			patchFound = true;
 		}
 	}
-	
+
 	if (patchFound) TrimPatches(patch);
-	
+
 	return patchnumber;
 }
 
@@ -163,7 +159,7 @@ void inifile_processString(const wxString& inStr)
 {
   wxString str(inStr);
   inifile_trim(str);
-  if (!str.IsEmpty()) inifile_command(1, str);
+  if (!str.IsEmpty()) inifile_command(str);
 }
 
 // This routine receives a file from inifile_read, trims it,
@@ -176,14 +172,14 @@ void inifile_process(wxTextFile &f1 )
     }
 }
 
-void ResetCheatsCount()
+void ForgetLoadedPatches()
 {
-  cheatnumber = 0;
+  patchnumber = 0;
 }
 
-static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundCheatsFiles)
+static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundPatchFiles)
 {
-	numberFoundCheatsFiles = 0;
+	numberFoundPatchFiles = 0;
 
 	if (!folderName.Exists()) {
 		Console.WriteLn(Color_Red, L"The %s folder ('%s') is inaccessible. Skipping...", WX_STR(friendlyName), WX_STR(folderName.ToString()));
@@ -191,72 +187,72 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 	}
 	wxDir dir(folderName.ToString());
 
-	int before = cheatnumber;
+	int before = patchnumber;
 	wxString buffer;
 	wxTextFile f;
 	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
 	while (found) {
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
 			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
-			int before = cheatnumber;
+			int before = patchnumber;
 			f.Open(Path::Combine(dir.GetName(), buffer));
 			inifile_process(f);
 			f.Close();
-			int loaded = cheatnumber - before;
+			int loaded = patchnumber - before;
 			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
-			               loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
-			numberFoundCheatsFiles ++;
+			                    loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
+			numberFoundPatchFiles++;
 		}
 		found = dir.GetNext(&buffer);
 	}
 
-	return cheatnumber - before;
+	return patchnumber - before;
 }
 
-// This routine loads cheats from a zip file
-// Returns number of cheats loaded
-// Note: Should be called after InitPatches()
-// Note: only load cheats from the root folder of the zip
-int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
-  gameCRC.MakeUpper();
+// This routine loads patches from a zip file
+// Returns number of patches loaded
+// Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
+// Note: only load patches from the root folder of the zip
+int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename) {
+	gameCRC.MakeUpper();
 
-  int before = cheatnumber;
+	int before = patchnumber;
 
-  std::unique_ptr<wxZipEntry> entry;
-  wxFFileInputStream in(cheatsArchiveFilename);
-  wxZipInputStream zip(in);
-  while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
-  {
-    wxString name = entry->GetName();
-    name.MakeUpper();
-    if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
-		PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-                         WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
-      wxTextInputStream pnach(zip);
-      while (!zip.Eof()) {
-        inifile_processString(pnach.ReadLine());
-      }
-    }
-  }
-  return cheatnumber - before;
+	std::unique_ptr<wxZipEntry> entry;
+	wxFFileInputStream in(patchesArchiveFilename);
+	wxZipInputStream zip(in);
+	while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
+	{
+		wxString name = entry->GetName();
+		name.MakeUpper();
+		if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
+			PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
+			                    WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
+			wxTextInputStream pnach(zip);
+			while (!zip.Eof()) {
+				inifile_processString(pnach.ReadLine());
+			}
+		}
+	}
+	return patchnumber - before;
 }
 
 
-// This routine loads cheats from *.pnach files
-// Returns number of cheats loaded
-// Note: Should be called after InitPatches()
-int LoadCheats(wxString name, const wxDirName& folderName, const wxString& friendlyName)
+// This routine loads patches from *.pnach files
+// Returns number of patches loaded
+// Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
+int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxString& friendlyName)
 {
 	int loaded = 0;
-	int numberFoundCheatsFiles;
+	int numberFoundPatchFiles;
 
 	wxString filespec = name + L"*.pnach";
-	loaded += LoadCheatsFiles(folderName, filespec, friendlyName, numberFoundCheatsFiles);
+	loaded += _LoadPatchFiles(folderName, filespec, friendlyName, numberFoundPatchFiles);
 
-	// This message _might_ be buggy. This function (LoadCheats) loads from an explicit folder.
+	// This comment _might_ be buggy. This function (LoadPatchesFromDir) loads from an explicit folder.
 	// This folder can be cheats or cheats_ws at either the default location or a custom one.
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
-	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundCheatsFiles == 0) {
+	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundPatchFiles == 0) {
 		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
@@ -305,7 +301,6 @@ namespace PatchFunc
 		const wxString& WriteValue() const		{ return m_pieces[4]; }
     };
 
-	template<bool isCheat> 
 	void patchHelper(const wxString& cmd, const wxString& param) {
 		// Error Handling Note:  I just throw simple wxStrings here, and then catch them below and
 		// format them into more detailed cmd+data+error printouts.  If we want to add user-friendly
@@ -318,17 +313,17 @@ namespace PatchFunc
 
 		try
 		{
-			if (isCheat && cheatnumber >= MAX_CHEAT)
-				throw wxString( L"Maximum number of cheats reached" );
-			if(!isCheat && patchnumber >= MAX_PATCH)
+			if(patchnumber >= MAX_PATCH)
 				throw wxString( L"Maximum number of patches reached" );
 
-			IniPatch& iPatch = isCheat ? Cheat[cheatnumber] : Patch[patchnumber];
+			IniPatch& iPatch = Patch[patchnumber];
 			PatchPieces pieces(param);
 
 			iPatch.enabled = 0;
 
 			iPatch.placetopatch	= StrToU32(pieces.PlaceToPatch(), 10);
+			if (iPatch.placetopatch >= _PPT_END_MARKER)
+				throw wxsFormat(L"Invalid 'place' value '%s' (0 - once on startup, 1: continuously)", WX_STR(pieces.PlaceToPatch()));
 			iPatch.cpu			= (patch_cpu_type)PatchTableExecute(pieces.CpuType(), cpuCore);
 			iPatch.addr			= StrToU32(pieces.MemAddr(), 16);
 			iPatch.type			= (patch_data_type)PatchTableExecute(pieces.OperandSize(), dataType);
@@ -342,8 +337,7 @@ namespace PatchFunc
 
 			iPatch.enabled = 1; // omg success!!
 
-			if (isCheat) cheatnumber++;
-			else		 patchnumber++;
+			patchnumber++;
 		}
 		catch( wxString& exmsg )
 		{
@@ -351,26 +345,15 @@ namespace PatchFunc
 			Console.Indent().Error( exmsg );
 		}
 	}
-	void patch(const wxString& cmd, const wxString& param) { patchHelper<0>(cmd, param); }
-	void cheat(const wxString& cmd, const wxString& param) { patchHelper<1>(cmd, param); }
+	void patch(const wxString& cmd, const wxString& param) { patchHelper(cmd, param); }
 }
 
 // This is for applying patches directly to memory
-void ApplyPatch(int place)
+void ApplyLoadedPatches(patch_place_type place)
 {
 	for (int i = 0; i < patchnumber; i++)
 	{
 	    if (Patch[i].placetopatch == place)
             _ApplyPatch(&Patch[i]);
-	}
-}
-
-// This is for applying cheats directly to memory
-void ApplyCheat(int place)
-{
-	for (int i = 0; i < cheatnumber; i++)
-	{
-	    if (Cheat[i].placetopatch == place)
-            _ApplyPatch(&Cheat[i]);
 	}
 }

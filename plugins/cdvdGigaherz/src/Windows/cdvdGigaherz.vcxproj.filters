@@ -5,9 +5,6 @@
       <UniqueIdentifier>{c03fe088-95f7-4235-a796-5fe044914fb5}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
-    <Filter Include="Source Files\Reader Modules">
-      <UniqueIdentifier>{1dc55077-7d7a-4951-8841-26d21ff1513b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{6c12b075-7b05-42ce-8628-c668f325f4ce}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
@@ -24,13 +21,7 @@
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\FileStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IOCtlSrc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ReaderModules.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ReadThread.cpp">
@@ -39,24 +30,12 @@
     <ClCompile Include="..\TocStuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\PlainIso.cpp">
-      <Filter>Source Files\Reader Modules</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CDVD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\FileStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ReaderModules.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SectorConverters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

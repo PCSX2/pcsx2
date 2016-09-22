@@ -20,19 +20,14 @@
  */
 
 #pragma once
-#include <string.h> // for memset
-#ifdef __linux__
+#include <string.h>  // for memset
 #define MAX_KEYS 24
-#else
-#define MAX_KEYS 20
-#endif
 
-enum KeyType
-{
-	PAD_JOYBUTTONS = 0,
-	PAD_AXIS,
-	PAD_HAT,
-	PAD_NULL = -1
+enum KeyType {
+    PAD_JOYBUTTONS = 0,
+    PAD_AXIS,
+    PAD_HAT,
+    PAD_NULL = -1
 };
 
 extern void set_keyboad_key(int pad, int keysym, int index);
@@ -56,91 +51,94 @@ extern int hat_to_key(int dir, int axis_id);
 
 class PADconf
 {
-	u32 ff_intensity;
-	u32 sensibility;
-	public:
-	union {
-		struct {
-			u16 forcefeedback :1;
-			u16 reverse_lx :1;
-			u16 reverse_ly :1;
-			u16 reverse_rx :1;
-			u16 reverse_ry :1;
-			u16 mouse_l :1;
-			u16 mouse_r :1;
-			u16 sixaxis_usb :1;
-			u16 sixaxis_pressure :1;
-			u16 _free : 7; // The 8 remaining bits are unused, do what you wish with them ;)
-		} pad_options[GAMEPAD_NUMBER]; // One for each pads
-		u32 packed_options; // Only first 8 bits of each 16 bits series are really used, rest is padding
-	};
+    u32 ff_intensity;
+    u32 sensibility;
 
-	u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
-	u32 log;
-	u32 joyid_map;
-	map<u32,u32> keysym_map[GAMEPAD_NUMBER];
+public:
+    union
+    {
+        struct
+        {
+            u16 forcefeedback : 1;
+            u16 reverse_lx : 1;
+            u16 reverse_ly : 1;
+            u16 reverse_rx : 1;
+            u16 reverse_ry : 1;
+            u16 mouse_l : 1;
+            u16 mouse_r : 1;
+            u16 sixaxis_usb : 1;
+            u16 sixaxis_pressure : 1;
+            u16 _free : 7;              // The 8 remaining bits are unused, do what you wish with them ;)
+        } pad_options[GAMEPAD_NUMBER];  // One for each pads
+        u32 packed_options;             // Only first 8 bits of each 16 bits series are really used, rest is padding
+    };
 
-	PADconf() { init(); }
+    u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
+    u32 log;
+    u32 joyid_map;
+    map<u32, u32> keysym_map[GAMEPAD_NUMBER];
 
-	void init() {
-		memset(&keys, 0, sizeof(keys));
-		log = packed_options = joyid_map = 0;
-		ff_intensity = 0x7FFF; // set it at max value by default
-		sensibility = 500;
-		for (int pad = 0; pad < GAMEPAD_NUMBER ; pad++)
-		{
-			keysym_map[pad].clear();
-		    set_joyid((u32)pad, (u32)pad); // define id mapping for each gamepad
-		}
-	}
+    PADconf() { init(); }
 
-	void set_joyid(u32 pad, u32 joy_id) {
-		int shift = 8 * pad;
-		joyid_map &= ~(0xFF << shift); // clear
-		joyid_map |= (joy_id & 0xFF) << shift; // set
-	}
+    void init()
+    {
+        memset(&keys, 0, sizeof(keys));
+        log = packed_options = joyid_map = 0;
+        ff_intensity = 0x7FFF;  // set it at max value by default
+        sensibility = 500;
+        for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
+            keysym_map[pad].clear();
+            set_joyid((u32)pad, (u32)pad);  // define id mapping for each gamepad
+        }
+    }
 
-	u32 get_joyid(u32 pad) {
-		int shift = 8 * pad;
-		return ((joyid_map >> shift) & 0xFF);
-	}
+    void set_joyid(u32 pad, u32 joy_id)
+    {
+        int shift = 8 * pad;
+        joyid_map &= ~(0xFF << shift);          // clear
+        joyid_map |= (joy_id & 0xFF) << shift;  // set
+    }
 
-	/**
+    u32 get_joyid(u32 pad)
+    {
+        int shift = 8 * pad;
+        return ((joyid_map >> shift) & 0xFF);
+    }
+
+    /**
 	 * Return (a copy of) private memner ff_instensity
 	 **/
-	u32 get_ff_intensity()
-	{
-		return ff_intensity;
-	}
+    u32 get_ff_intensity()
+    {
+        return ff_intensity;
+    }
 
-	/**
+    /**
 	 * Set intensity while checking that the new value is within
 	 * valid range, more than 0x7FFF will cause pad not to rumble(and less than 0 is obviously bad)
 	 **/
-	void set_ff_intensity(u32 new_intensity)
-	{
-		if(new_intensity <= 0x7FFF && new_intensity >= 0)
-		{
-			ff_intensity = new_intensity;
-		}
-	}
+    void set_ff_intensity(u32 new_intensity)
+    {
+        if (new_intensity <= 0x7FFF) {
+            ff_intensity = new_intensity;
+        }
+    }
 
-	/**
+    /**
 	 * Set sensibility value, sensibility is not yet implemented(and will probably be after evdev)
 	 * However, there will be an upper range too, less than 0 is an obvious wrong
 	 * Anyway, we are doing object oriented code, members are definitely not supposed to be public
 	 **/
-	void set_sensibility(u32 new_sensibility)
-	{
-		if(sensibility > 0)
-		{
-			sensibility = new_sensibility;
-		}
-	}
+    void set_sensibility(u32 new_sensibility)
+    {
+        if (sensibility > 0) {
+            sensibility = new_sensibility;
+        }
+    }
 
-	u32 get_sensibility()
-	{
-		return sensibility;
-	}
+    u32 get_sensibility()
+    {
+        return sensibility;
+    }
 };
 extern PADconf *conf;

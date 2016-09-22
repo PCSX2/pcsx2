@@ -2230,6 +2230,7 @@ Region = PAL-M9
 Serial = SCES-53372
 Name   = Tourist Trophy - The Real Riding Simulator
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SCES-53397
 Name   = SingStar Pop - World Events Code
@@ -2870,6 +2871,11 @@ Region = NTSC-K
 Serial = SCKA-20032
 Name   = Syphon Filter - The Omega Virus
 Region = NTSC-K
+EETimingHack = 1 //random hangs
+[patches = 3676E74C]
+patch=1,EE,00398898,word,48438000 //4b06521b
+patch=1,EE,0039889c,word,4b06521b //48438000
+[/patches]
 ---------------------------------------------
 Serial = SCKA-20033
 Name   = Smash Court Professional Tournament 2 [Limited Edition]
@@ -4375,16 +4381,16 @@ Serial = SCPS-56015
 Name   = Ninja Assault
 Region = NTSC-J
 ---------------------------------------------
-Serial = SCUS-21494
-Name   = Need for Speed Carbon Collector's Edition
-Region = NTSC-U
-Compat = 5
----------------------------------------------
 Serial = SCUS-21295
 Name   = Tony Hawk's American Wasteland Collector's Edition
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+---------------------------------------------
+Serial = SCUS-21494
+Name   = Need for Speed Carbon Collector's Edition
+Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -4612,14 +4618,8 @@ Region = NTSC-U
 Serial = SCUS-97150
 Name   = Formula One 2001
 Region = NTSC-U
-Compat = 3
+Compat = 5
 XgKickHack = 1
-[patches = 272F1C14]
-	comment=patches by Plot and Ref Skip videos
-	patch=0,EE,0010aafc,word,00000000
-	patch=0,EE,0010ae2c,word,00000000
-	patch=0,EE,00230010,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97152
 Name   = Dark Cloud [Demo]
@@ -6637,6 +6637,7 @@ Compat = 2
 Serial = SLES-50047
 Name   = F1 Racing Championship
 Region = PAL-M3
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50048
 Name   = Donald Duck - Quack Attack
@@ -7937,6 +7938,7 @@ Region = PAL-M3
 Serial = SLES-50662
 Name   = Shadow of Zorro, The
 Region = PAL-M5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-50670
 Name   = ESPN Winter X-Games Snowboarding 2
@@ -7951,6 +7953,7 @@ Serial = SLES-50677
 Name   = Shadow Hearts
 Region = PAL-E
 Compat = 5
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLES-50679
 Name   = Tenchu 3 - Wrath of Heaven
@@ -8282,6 +8285,7 @@ Compat = 5
 Serial = SLES-50822
 Name   = Shadow Hearts
 Region = PAL-M3
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLES-50826
 Name   = Star Wars - Clone Wars
@@ -9239,23 +9243,28 @@ Serial = SLES-51252
 Name   = Lord of the Rings, The - The Two Towers
 Region = PAL-M3
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51253
 Name   = Lord of the Rings, The - The Two Towers (Seigneur des Anneaux - Les Deux Tours)
 Region = PAL-F
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51254
 Name   = Lord of the Rings, The - The Two Towers (Der Herr der Ringe - Die Zwei Turme)
 Region = PAL-G
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51255
 Name   = Lord of the Rings, The - The Two Towers
 Region = PAL-I
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51256
 Name   = Lord of the Rings, The - The Two Towers (El Senor de Los Anillos - Las Dos Torres)
 Region = PAL-S
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLES-51257
 Name   = Sims, The (Die Sims)
@@ -9599,6 +9608,7 @@ Region = PAL-E
 Serial = SLES-51433
 Name   = Ghost Vibration
 Region = PAL-E
+Compat = 4
 ---------------------------------------------
 Serial = SLES-51434
 Name   = Silent Hill 3
@@ -9683,6 +9693,7 @@ Region = PAL-I
 Serial = SLES-51473
 Name   = Kya - Dark Lineage
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51474
 Name   = Blood Rayne
@@ -11072,7 +11083,7 @@ Region = PAL-S
 Serial = SLES-52143
 Name   = Carmen Sandiego - The Secret of the Stolen Drums
 Region = PAL-M4
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52149
 Name   = Tom Clancy's Splinter Cell - Pandora Tomorrow
@@ -12549,6 +12560,7 @@ patch=1,EE,0010ec20,word,00000000
 Serial = SLES-52813
 Name   = Incredibles, The
 Region = PAL-DU-F
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52814
 Name   = Incredibles, The
@@ -14385,6 +14397,7 @@ Region = PAL-S // Voices in English, text and subtitles in Spanish.
 Serial = SLES-53621
 Name   = Wallace & Grommit - The Curse of the Were Rabbit
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53623
 Name   = Spongebob Squarepants - Battle for Bikini Bottom
@@ -16882,6 +16895,7 @@ Region = PAL-M5
 Serial = SLES-54962
 Name   = Guitar Hero III - Legends of Rock
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54963
 Name   = Tony Hawks - Proving Ground
@@ -16891,6 +16905,11 @@ vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-54964
 Name   = Tony Hawk's Proving Ground
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
+Serial = SLES-54974
+Name   = Guitar Hero III - Legends of Rock
 Region = PAL-M4
 vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
@@ -16922,6 +16941,7 @@ Region = PAL-M11
 Serial = SLES-54995
 Name   = Puzzle Quest - Challenge of the Warlords
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-54996
 Name   = The Golden Compass
@@ -17009,6 +17029,12 @@ Region = PAL-M5
 Serial = SLES-55039
 Name   = Rock Band
 Region = PAL-M5
+---------------------------------------------
+Serial = SLES-55049
+Name   = Toy Golf Extreme
+Region = PAL-M5
+Compat = 5
+eeClampMode = 3 //Stops ball falling through tables
 ---------------------------------------------
 Serial = SLES-55050
 Name   = MX vs. ATV - Untamed
@@ -17114,6 +17140,7 @@ Region = PAL-F-G
 Serial = SLES-55191
 Name   = Guitar Hero - Aerosmith
 Region = PAL-E
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLES-55197
 Name   = Dancing Stage SuperNOVA 2
@@ -17123,6 +17150,11 @@ Serial = SLES-55198
 Name   = Iron Man
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55200
+Name   = Guitar Hero - Aerosmith
+Region = PAL-M4
+vuRoundMode = 0 //Crashes without
 ---------------------------------------------
 Serial = SLES-55204
 Name   = Crash - Mind Over Mutant
@@ -17548,6 +17580,8 @@ Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
 Region = PAL-M7
 Compat = 5
+vuClampMode = 0
+eeRoundMode = 1
 ---------------------------------------------
 Serial = SLES-55582
 Name   = FIFA 10
@@ -20074,6 +20108,7 @@ Compat = 5
 Serial = SLPM-62467
 Name   = Simple 2000 Series Vol.18 - Love Aerobics
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-62468
 Name   = Simple 2000 Series Vol.17 - Taisen! Bakudan Poy Poy
@@ -21284,6 +21319,14 @@ GoemonTlbHack = 1
 Serial = SLPM-65015
 Name   = Kessen 2
 Region = NTSC-J
+[patches = 7C012435]
+	comment=COP2 flag instance patch by refraction
+	// a mac flag check just after a vsub which gets in the way, rearranging
+	patch=0,EE,00170F20,word,48438800
+	patch=0,EE,00170F24,word,4BE521AC
+	patch=0,EE,00170F28,word,30848000
+	patch=0,EE,00170F2C,word,4BE72B3C
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65016
 Name   = Love Songs [Limited Edition]
@@ -21868,6 +21911,11 @@ Serial = SLPM-65210
 Name   = Chou Battle Houshin - Bundle #1
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-65212
+Name   = The Lord of the Rings: The Two Towers
+Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
+---------------------------------------------
 Serial = SLPM-65213
 Name   = Evolution Skateboarding
 Region = NTSC-J
@@ -21951,6 +21999,7 @@ Region = NTSC-J
 Serial = SLPM-65235
 Name   = New Roommania - Porori Seishun
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65236
 Name   = Anubis: Zone of the Enders
@@ -23389,6 +23438,7 @@ Region = NTSC-J
 Serial = SLPM-65632
 Name   = Virtua Fighter Cyber Generation - Ambition of the Judgement Six
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65633
 Name   = I Love Baseball - Pro Yakyu wo Koyonaku
@@ -26142,6 +26192,7 @@ Region = NTSC-J
 Serial = SLPM-66395
 Name   = Honoo no Takkyubin
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-66396
 Name   = Tensei Hakken Fuumoroku
@@ -27204,6 +27255,11 @@ Serial = SLPM-66679
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou [Plus]
 Region = NTSC-J
 MemCardFilter = SLPM-66679/SLPM-66683/SLPM-66246/SLPM-66634
+---------------------------------------------
+Serial = SLPM-66681
+Name   = Shin Megami Tensei - Nocturne Maniax
+Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-66683
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou
@@ -28304,6 +28360,7 @@ Region = NTSC-J
 Serial = SLPM-66978
 Name   = Persona 4 [Konami-style Special Edition]
 Region = NTSC-J
+Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-66987
@@ -28369,8 +28426,9 @@ Name   = Medal of Honor - Rising Sun
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-67005
-Name   = Lord of the Rings, The - The Return of the King
+Name   = The Lord of the Rings: The Two Towers (EA Best Hits)
 Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPM-67006
 Name   = Train Simulator - Kyushu Shinkansen
@@ -28452,6 +28510,14 @@ Region = NTSC-K
 Serial = SLPM-67531
 Name   = Kessen 2
 Region = NTSC-K
+[patches = 46CFF455]
+	comment=COP2 flag instance patch by refraction
+	// a mac flag check just after a vsub which gets in the way, rearranging
+	patch=0,EE,00170F20,word,48438800
+	patch=0,EE,00170F24,word,4BE521AC
+	patch=0,EE,00170F28,word,30848000
+	patch=0,EE,00170F2C,word,4BE72B3C
+[/patches]
 ---------------------------------------------
 Serial = SLPM-67535
 Name   = Memories Of
@@ -28469,6 +28535,7 @@ Compat = 5
 Serial = SLPM-67546
 Name   = Lord of the Rings - The Two Towers
 Region = NTSC-K
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPM-67552
 Name   = Tomak - Save the Earth Again [Complete Edition]
@@ -28746,6 +28813,7 @@ Region = NTSC-J
 Serial = SLPM-74277
 Name   = Persona 3 FES [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-74278
@@ -29304,6 +29372,7 @@ Region = NTSC-J
 Serial = SLPS-20208
 Name   = I am Small!
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-20214
 Name   = 3-D Fighting School 2
@@ -30284,6 +30353,7 @@ MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 Serial = SLPS-25041
 Name   = Shadow Hearts
 Region = NTSC-J
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLPS-25042
 Name   = Maken Shao [Limited Edition]
@@ -32803,6 +32873,7 @@ Region = NTSC-J
 Serial = SLPS-25738
 Name   = Soul Cradle Sekai o Kurau Mono [Limited Edition]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25739
 Name   = Soul Cradle Sekai o Kurau Mono
@@ -33197,6 +33268,7 @@ Region = NTSC-J
 Serial = SLPS-25840
 Name   = Guitar Hero III - Legends of Rock [with Guitar]
 Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLPS-25841
 Name   = Tales of Destiny [Director's Cut] [Premium Box]
@@ -33323,6 +33395,16 @@ Serial = SLPS-25887
 Name   = Super Robot Taisen Z
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25889
+Name   = Guitar Hero - Aerosmith
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without
+---------------------------------------------
+Serial = SLPS-25890
+Name   = Guitar Hero III - Legends of Rock [with Guitar]
+Region = NTSC-J
+vuRoundMode = 0 //Crashes without.
+---------------------------------------------
 Serial = SLPS-25892
 Name   = Nogizaka Haruka no Himitsu - Cosplay Hajimemashita
 Region = NTSC-J
@@ -33391,11 +33473,13 @@ Compat = 5
 Serial = SLPS-29003
 Name   = Lord of the Rings - The Two Towers [Collector's Box]
 Region = NTSC-J
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPS-29004
 Name   = Lord of the Rings, The - The Two Towers
 Region = NTSC-J
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLPS-29005
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]
@@ -33433,6 +33517,7 @@ Region = NTSC-J
 Serial = SLPS-73103
 Name   = Makai Senki Disgaea [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-73104
 Name   = Tekken Tag Tournament [PlayStation 2 The Best]
@@ -33453,6 +33538,7 @@ Region = NTSC-J
 Serial = SLPS-73108
 Name   = Phantom Brave [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-73109
 Name   = Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PlayStation 2 The Best]
@@ -33770,6 +33856,7 @@ Region = NTSC-J
 Serial = SLPS-73418
 Name   = Shadow Hearts [PlayStation 2 The Best]
 Region = NTSC-J
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLPS-73419
 Name   = Lupin III - Majutsu-Ou no Isan [PlayStation 2 The Best]
@@ -34720,7 +34807,7 @@ Compat = 5
 Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
 Region = NTSC-U
-Compat = 2
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20230
 Name   = Max Payne
@@ -35249,6 +35336,7 @@ Serial = SLUS-20347
 Name   = Shadow Hearts
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // fixes invisible characters in various scenes
 ---------------------------------------------
 Serial = SLUS-20348
 Name   = Monopoly Party
@@ -36018,6 +36106,7 @@ Compat = 5
 Serial = SLUS-20519
 Name   = Tak and The Power of Juju
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20520
 Name   = Lord of the Rings, The - The Fellowship of the Ring
@@ -36290,6 +36379,7 @@ Serial = SLUS-20578
 Name   = Lord of the Rings, The - The Two Towers
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // fix white shiny weapons
 ---------------------------------------------
 Serial = SLUS-20579
 Name   = James Bond 007 - Nightfire
@@ -37868,7 +37958,7 @@ Region = NTSC-U
 Serial = SLUS-20921
 Name   = ESPN - NHL 2K5
 Region = NTSC-U
-Compat = 2
+Compat = 5
 [patches = 9B6E69EC]
 	//Patched by Prafull
 	//Avoid hang at start
@@ -39729,6 +39819,8 @@ Name   = Tony Hawk's American Wasteland [Collector's Edition]
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0		//Crashes without.
+// Game saves use the normal edition serial
+MemCardFilter = SLUS-21208
 ---------------------------------------------
 Serial = SLUS-21296
 Name   = Dance Factory
@@ -39916,7 +40008,6 @@ Serial = SLUS-21335
 Name   = Hustle, The - Detroit Streets - Kat's Story
 Region = NTSC-U
 Compat = 5
-MemCardFilter = SLUS-21334
 ---------------------------------------------
 Serial = SLUS-21336
 Name   = Zathura
@@ -39967,6 +40058,7 @@ Serial = SLUS-21345
 Name   = Grandia III [Disc2of2]
 Region = NTSC-U
 Compat = 5
+MemCardFilter = SLUS-21334
 ---------------------------------------------
 Serial = SLUS-21346
 Name   = Ace Combat Zero - The Belkan War
@@ -41393,6 +41485,7 @@ Serial = SLUS-21672
 Name   = Guitar Hero III - Legends of Rock
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21673
 Name   = College Hoops 2K8
@@ -41699,6 +41792,7 @@ Serial = SLUS-21740
 Name   = Guitar Hero - Aerosmith
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 //Crashes without.
 ---------------------------------------------
 Serial = SLUS-21741
 Name   = Sea Monsters - A Prehistoric Adventure
@@ -42365,6 +42459,7 @@ Compat = 5
 Serial = SLUS-21898
 Name   = Band Hero
 Region = NTSC-U
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-21899
 Name   = Silent Hill - Shattered Memories
@@ -42385,6 +42480,8 @@ Serial = SLUS-21902
 Name   = Bakugan: Battle Brawlers
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0
+eeRoundMode = 1
 ---------------------------------------------
 Serial = SLUS-21904
 Name   = Teenage Mutant Ninja Turtles: Smash-Up

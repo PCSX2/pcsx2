@@ -25,6 +25,7 @@
 #include "Gif.h"
 #include "Vif_Dma.h"
 #include <limits.h>
+#include "AppConfig.h"
 
 #include "Utilities/MemsetFast.inl"
 
@@ -50,8 +51,8 @@ int coded_block_pattern = 0;
 u8 indx4[16*16/2];
 
 uint eecount_on_last_vdec = 0;
-bool FMVstarted = 0;
-bool EnableFMV = 0;
+bool FMVstarted = false;
+bool EnableFMV = false;
 
 void tIPU_cmd::clear()
 {
@@ -63,6 +64,13 @@ __fi void IPUProcessInterrupt()
 {
 	if (ipuRegs.ctrl.BUSY) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
 		IPUWorker();
+	if (ipuRegs.ctrl.BUSY && ipuRegs.cmd.BUSY && ipuRegs.cmd.DATA == 0x000001B7) {
+		// 0x000001B7 is the MPEG2 sequence end code, signalling the end of a video.
+		// At the end of a video BUSY values should be automatically set to 0. 
+		// This does not happen for Enthusia - Professional Racing, causing it to get stuck in an endless loop.
+		ipuRegs.cmd.BUSY = 0;
+		ipuRegs.ctrl.BUSY = 0;
+	}
 }
 
 /////////////////////////////////////////////////////////
@@ -273,6 +281,7 @@ void ipuSoftReset()
 	ipuRegs.top = 0;
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
+	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
 
 	memzero(g_BP);
 }
@@ -400,12 +409,12 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 
 static __fi bool ipuVDEC(u32 val)
 {
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
 		static int count = 0;
 		if (count++ > 5) {
-			if (FMVstarted == 0) {
-				EnableFMV = 1;
-				FMVstarted = 1;
+			if (!FMVstarted) {
+				EnableFMV = true;
+				FMVstarted = true;
 			}
 			count = 0;
 		}

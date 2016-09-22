@@ -29,7 +29,7 @@
 
 class GSState;
 
-__aligned(class, 32) GSVertexTrace : public GSAlignedClass<32>
+class alignas(32) GSVertexTrace : public GSAlignedClass<32>
 {
 public:
 	struct Vertex {GSVector4i c; GSVector4 p, t;};
@@ -38,7 +38,7 @@ public:
 protected:
 	const GSState* m_state;
 
-	static const GSVector4 s_minmax;
+	static GSVector4 s_minmax;
 
 	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
 
@@ -69,6 +69,8 @@ public:
 	GSVector2 m_lod; // x = min, y = max
 
 public:
+	static void InitVectors();
+
 	GSVertexTrace(const GSState* state);
 	virtual ~GSVertexTrace() {}
 

@@ -23,14 +23,15 @@ class CtrlRegisterList: public wxScrolledWindow
 {
 public:
 	CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu);
-	
+	~CtrlRegisterList();
+
 	void mouseEvent(wxMouseEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
 	void onPopupClick(wxCommandEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
 	void redraw();
 	DECLARE_EVENT_TABLE()
-	
+
 	virtual wxSize GetMinClientSize() const
 	{
 		wxSize optimalSize = getOptimalSize();
@@ -50,6 +51,7 @@ private:
 	void OnDraw(wxDC& dc);
 	void refreshChangedRegs();
 	void setCurrentRow(int row);
+	void ensureVisible(int index);
 	void changeValue(RegisterChangeMode mode);
 	wxSize getOptimalSize() const;
 
@@ -71,4 +73,5 @@ private:
 	u32 lastPc;
 	int category;
 	int maxBits;
+	bool resolvePointerStrings;
 };

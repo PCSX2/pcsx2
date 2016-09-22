@@ -46,7 +46,7 @@ enum gui_img {
     img_left_cursor,
     img_right_cursor,
     img_analog,
-    img_background, // background pic
+    img_background,  // background pic
     img_l_arrow_up,
     img_l_arrow_right,
     img_l_arrow_bottom,
@@ -65,13 +65,13 @@ class opPanel : public wxPanel
     bool m_show_image[NB_IMG];
     int m_left_cursor_x, m_left_cursor_y, m_right_cursor_x, m_right_cursor_y;
     DECLARE_EVENT_TABLE()
-    void OnPaint(wxPaintEvent& event);
+    void OnPaint(wxPaintEvent &event);
 
 public:
-    opPanel(wxWindow*, wxWindowID, const wxPoint&, const wxSize&);
+    opPanel(wxWindow *, wxWindowID, const wxPoint &, const wxSize &);
     void HideImg(int);
     void ShowImg(int);
     void MoveJoystick(int, int);
 };
 
-#endif // __OPPANEL_H__
+#endif  // __OPPANEL_H__

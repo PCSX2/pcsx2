@@ -15,8 +15,8 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Lowpass.h"
 #include "Global.h"
+#include "Lowpass.h"
 #include <math.h>
 #include <float.h>
 

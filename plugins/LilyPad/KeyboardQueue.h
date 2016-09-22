@@ -26,7 +26,7 @@ int GetQueuedKeyEvent(keyEvent *event);
 void ClearKeyQueue();
 
 #ifdef __linux__
-void R_QueueKeyEvent(const keyEvent& event);
+void R_QueueKeyEvent(const keyEvent &event);
 int R_GetQueuedKeyEvent(keyEvent *event);
 void R_ClearKeyQueue();
 #endif

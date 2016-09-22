@@ -43,8 +43,10 @@ public:
 	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
 
 	#if _M_SSE >= 0x501
-	static const GSVector8 m_shift[9];
+	static GSVector8 m_shift[9];
 	#else
-	static const GSVector4 m_shift[5];
+	static GSVector4 m_shift[5];
 	#endif
+
+	static void InitVectors();
 };

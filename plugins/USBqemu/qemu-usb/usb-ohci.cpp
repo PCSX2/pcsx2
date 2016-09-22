@@ -349,7 +349,7 @@ static inline int ohci_put_hcca(OHCIState *ohci,
 
 /* Read/Write the contents of a TD from/to main memory.  */
 static void ohci_copy_td(OHCIState *ohci, struct ohci_td *td,
-                         uint8_t *buf, int len, int write)
+                         uint8_t *buf, size_t len, int write)
 {
     uint32_t ptr;
     uint32_t n;
@@ -369,7 +369,7 @@ static void ohci_copy_td(OHCIState *ohci, struct ohci_td *td,
 /* Read/Write the contents of an ISO TD from/to main memory.  */
 static void ohci_copy_iso_td(OHCIState *ohci,
                              uint32_t start_addr, uint32_t end_addr,
-                             uint8_t *buf, int len, int write)
+                             uint8_t *buf, size_t len, int write)
 {
     uint32_t ptr;
     uint32_t n;
@@ -577,7 +577,7 @@ static int ohci_service_iso_td(OHCIState *ohci, struct ohci_ed *ed,
 #endif
 
     /* Writeback */
-    if (dir == OHCI_TD_DIR_IN && ret >= 0 && ret <= len) {
+    if (dir == OHCI_TD_DIR_IN && ret >= 0 && ret <= static_cast<int>(len)) {
         /* IN transfer succeeded */
         ohci_copy_iso_td(ohci, start_addr, end_addr, ohci->usb_buf, ret, 1);
         OHCI_SET_BM(iso_td.offset[relative_frame_number], TD_PSW_CC,
@@ -1117,7 +1117,7 @@ static uint32_t ohci_get_frame_remaining(OHCIState *ohci)
     if (tks >= usb_frame_time)
         return (ohci->frt << 31);
 
-    tks = muldiv64(1, tks, usb_bit_time);
+    tks = muldiv64(1, static_cast<uint32_t>(tks), static_cast<uint32_t>(usb_bit_time));
     fr = (uint16_t)(ohci->fi - tks);
 
     return (ohci->frt << 31) | fr;
@@ -1216,7 +1216,7 @@ uint32_t ohci_mem_read(void *ptr, target_phys_addr_t addr)
     if (addr & 3) {
         fprintf(stderr, "usb-ohci: Mis-aligned read\n");
         return 0xffffffff;
-    } else if (addr >= 0x54 && addr < 0x54 + ohci->num_ports * 4) {
+    } else if (addr >= 0x54 && addr < 0x54U + ohci->num_ports * 4) {
         /* HcRhPortStatus */
         retval = ohci->rhport[(addr - 0x54) >> 2].ctrl | OHCI_PORT_PPS;
     } else {
@@ -1340,7 +1340,7 @@ void ohci_mem_write(void *ptr, target_phys_addr_t addr, uint32_t val)
         return;
     }
 
-    if (addr >= 0x54 && addr < 0x54 + ohci->num_ports * 4) {
+    if (addr >= 0x54 && addr < 0x54U + ohci->num_ports * 4) {
         /* HcRhPortStatus */
         ohci_port_set_status(ohci, (addr - 0x54) >> 2, val);
         return;
@@ -1488,9 +1488,9 @@ OHCIState *ohci_create(uint32_t base, int ports)
         usb_frame_time = get_ticks_per_sec();
         usb_bit_time = muldiv64(1, get_ticks_per_sec(), USB_HZ/1000);
 #else
-        usb_frame_time = muldiv64(1, get_ticks_per_sec(), 1000);
+        usb_frame_time = muldiv64(1, static_cast<uint32_t>(get_ticks_per_sec()), 1000U);
         if (get_ticks_per_sec() >= USB_HZ) {
-            usb_bit_time = muldiv64(1, get_ticks_per_sec(), USB_HZ);
+            usb_bit_time = muldiv64(1U, static_cast<uint32_t>(get_ticks_per_sec()), USB_HZ);
         } else {
             usb_bit_time = 1;
         }

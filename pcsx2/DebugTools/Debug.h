@@ -303,6 +303,7 @@ struct SysTraceLogPack
 		SysTraceLog_IOP_Events		DMAC;
 		SysTraceLog_IOP_Events		Counters;
 		SysTraceLog_IOP_Events		CDVD;
+		SysTraceLog_IOP_Events		MDEC;
 
 		IOP_PACK();
 	} IOP;
@@ -380,6 +381,7 @@ extern void __Log( const char* fmt, ... );
 #define PAD_LOG			macTrace(IOP.PAD)
 #define GPU_LOG			macTrace(IOP.GPU)
 #define CDVD_LOG		macTrace(IOP.CDVD)
+#define MDEC_LOG		macTrace(IOP.MDEC)
 
 
 #define ELF_LOG			SysConsole.ELF.IsActive()		&& SysConsole.ELF.Write

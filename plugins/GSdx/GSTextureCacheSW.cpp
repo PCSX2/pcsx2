@@ -40,7 +40,7 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 	list<Texture*>& m = m_map[TEX0.TBP0 >> 5];
 
-	for(list<Texture*>::iterator i = m.begin(); i != m.end(); i++)
+	for(list<Texture*>::iterator i = m.begin(); i != m.end(); ++i)
 	{
 		Texture* t2 = *i;
 
@@ -91,7 +91,7 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 
 		const list<Texture*>& map = m_map[page];
 
-		for(list<Texture*>::const_iterator i = map.begin(); i != map.end(); i++)
+		for(list<Texture*>::const_iterator i = map.begin(); i != map.end(); ++i)
 		{
 			Texture* t = *i;
 
@@ -103,7 +103,7 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 				{
 					vector<GSVector2i>& l = t->m_p2t[page];
 
-					for(vector<GSVector2i>::iterator j = l.begin(); j != l.end(); j++)
+					for(vector<GSVector2i>::iterator j = l.begin(); j != l.end(); ++j)
 					{
 						valid[j->x] &= j->y;
 					}
@@ -370,7 +370,7 @@ bool GSTextureCacheSW::Texture::Save(const string& fn, bool dds) const
 
 		t.Unmap();
 
-		return t.Save(fn.c_str());
+		return t.Save(fn);
 	}
 
 	return false;

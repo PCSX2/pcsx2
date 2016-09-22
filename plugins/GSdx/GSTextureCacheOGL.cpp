@@ -125,8 +125,6 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 		// FIXME invalidate data
 		m_renderer->m_dev->Recycle(offscreen);
 	}
-
-	GL_POP();
 }
 
 void GSTextureCacheOGL::Read(Source* t, const GSVector4i& r)

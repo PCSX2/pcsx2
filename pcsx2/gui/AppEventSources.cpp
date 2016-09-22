@@ -132,19 +132,19 @@ void Pcsx2App::DispatchEvent( CoreThreadStatus evt )
 {
 	switch( evt )
 	{
-		// FIXME what to do for this case
-		// case CoreThread_Indeterminate:
+		case CoreThread_Indeterminate:
+			break;
 
 		case CoreThread_Started:
 		case CoreThread_Reset:
 		case CoreThread_Stopped:
 			FpsManager.Reset();
-		break;
+			break;
 
 		case CoreThread_Resumed:
 		case CoreThread_Suspended:
 			FpsManager.Resume();
-		break;
+			break;
 	}
 
 	// Clear the sticky key statuses, because hell knows what'll change while the PAD

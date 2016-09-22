@@ -38,7 +38,7 @@ void GSPerfMon::Put(counter_t c, double val)
 #ifndef DISABLE_PERF_MON
 	if(c == Frame)
 	{
-#ifdef __linux__
+#if defined(__unix__)
 		// clock on linux will return CLOCK_PROCESS_CPUTIME_ID.
 		// CLOCK_THREAD_CPUTIME_ID is much more useful to measure the fps
 		struct timespec ts;

@@ -28,7 +28,7 @@
 #include "GSPerfMon.h"
 #include "GSThread_CXX11.h"
 
-__aligned(class, 32) GSRasterizerData : public GSAlignedClass<32>
+class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {
 	static int s_counter;
 
@@ -122,13 +122,14 @@ public:
 	virtual void PrintStats() = 0;
 };
 
-__aligned(class, 32) GSRasterizer : public IRasterizer
+class alignas(32) GSRasterizer : public IRasterizer
 {
 protected:
 	GSPerfMon* m_perfmon;
 	IDrawScanline* m_ds;
 	int m_id;
 	int m_threads;
+	int m_thread_height;
 	uint8* m_scanline;
 	GSVector4i m_scissor;
 	GSVector4 m_fscissor_x;
@@ -138,7 +139,7 @@ protected:
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
-	template<bool scissor_test> 
+	template<bool scissor_test>
 	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const uint32* index, int index_count);
 	void DrawLine(const GSVertexSW* vertex, const uint32* index);
 	void DrawTriangle(const GSVertexSW* vertex, const uint32* index);
@@ -180,7 +181,7 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 256 >
+	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 65536 >
 	{
 		GSRasterizer* m_r;
 
@@ -198,6 +199,7 @@ protected:
 	GSPerfMon* m_perfmon;
 	vector<GSWorker*> m_workers;
 	uint8* m_scanline;
+	int m_thread_height;
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
 

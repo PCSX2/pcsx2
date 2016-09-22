@@ -18,7 +18,7 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#ifdef __linux__
+#if defined(__unix__)
 #include <gtk/gtk.h>
 #endif
 

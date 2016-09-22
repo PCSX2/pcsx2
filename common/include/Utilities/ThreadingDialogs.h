@@ -18,9 +18,7 @@
 #include "Threading.h"
 #include "wxAppWithHelpers.h"
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_ThreadedTaskComplete, -1)
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_ThreadedTaskComplete, wxCommandEvent);
 
 namespace Threading
 {

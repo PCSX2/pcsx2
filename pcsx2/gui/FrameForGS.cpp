@@ -18,7 +18,7 @@
 #include "GSFrame.h"
 #include "AppAccelerators.h"
 #include "AppSaveStates.h"
-
+#include "Counters.h"
 #include "GS.h"
 #include "MSWstuff.h"
 
@@ -100,31 +100,31 @@ GSPanel::GSPanel( wxWindow* parent )
 		m_CursorShown = false;
 	}
 
-	Connect(wxEVT_CLOSE_WINDOW,		wxCloseEventHandler	(GSPanel::OnCloseWindow));
-	Connect(wxEVT_SIZE,				wxSizeEventHandler	(GSPanel::OnResize));
-	Connect(wxEVT_KEY_UP,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
-	Connect(wxEVT_KEY_DOWN,			wxKeyEventHandler	(GSPanel::OnKeyDownOrUp));
+	Bind(wxEVT_CLOSE_WINDOW, &GSPanel::OnCloseWindow, this);
+	Bind(wxEVT_SIZE, &GSPanel::OnResize, this);
+	Bind(wxEVT_KEY_UP, &GSPanel::OnKeyDownOrUp, this);
+	Bind(wxEVT_KEY_DOWN, &GSPanel::OnKeyDownOrUp, this);
 
-	Connect(wxEVT_SET_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocus));
-	Connect(wxEVT_KILL_FOCUS,		wxFocusEventHandler	(GSPanel::OnFocusLost));
+	Bind(wxEVT_SET_FOCUS, &GSPanel::OnFocus, this);
+	Bind(wxEVT_KILL_FOCUS, &GSPanel::OnFocusLost, this);
 
-	Connect(m_HideMouseTimer.GetId(), wxEVT_TIMER, wxTimerEventHandler(GSPanel::OnHideMouseTimeout) );
+	Bind(wxEVT_TIMER, &GSPanel::OnHideMouseTimeout, this, m_HideMouseTimer.GetId());
 
 	// Any and all events which should result in the mouse cursor being made visible
 	// are connected here.  If I missed one, feel free to add it in! --air
+	Bind(wxEVT_LEFT_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_LEFT_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_DOWN, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_UP, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MOTION, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_LEFT_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MIDDLE_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_RIGHT_DCLICK, &GSPanel::OnMouseEvent, this);
+	Bind(wxEVT_MOUSEWHEEL, &GSPanel::OnMouseEvent, this);
 
-	Connect(wxEVT_LEFT_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_UP,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MIDDLE_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MIDDLE_UP,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_DOWN,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_UP,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MOTION,			wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_DCLICK,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_LEFT_DCLICK,		wxMouseEventHandler	(GSPanel::OnLeftDclick));
-	Connect(wxEVT_MIDDLE_DCLICK,	wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_RIGHT_DCLICK,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
-	Connect(wxEVT_MOUSEWHEEL,		wxMouseEventHandler	(GSPanel::OnMouseEvent));
+	Bind(wxEVT_LEFT_DCLICK, &GSPanel::OnLeftDclick, this);
 }
 
 GSPanel::~GSPanel() throw()
@@ -155,11 +155,22 @@ void GSPanel::DoResize()
 
 	double clientAr = (double)client.GetWidth()/(double)client.GetHeight();
 
+	extern AspectRatioType iniAR;
+	extern bool switchAR;
 	double targetAr = clientAr;
-	if( g_Conf->GSWindow.AspectRatio == AspectRatio_4_3 )
-		targetAr = 4.0/3.0;
-	else if( g_Conf->GSWindow.AspectRatio == AspectRatio_16_9 )
-		targetAr = 16.0/9.0;
+
+	if (g_Conf->GSWindow.AspectRatio != iniAR) {
+		switchAR = false;
+	}
+
+	if (!switchAR) {
+		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3)
+			targetAr = 4.0 / 3.0;
+		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
+			targetAr = 16.0 / 9.0;
+	} else {
+		targetAr = 4.0 / 3.0;
+	}
 
 	double arr = targetAr / clientAr;
 
@@ -173,6 +184,8 @@ void GSPanel::DoResize()
 		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
+	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
+		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
 	SetSize( viewport );
 	CenterOnParent();
 	
@@ -204,12 +217,12 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 	if( IsBeingDeleted() ) return;
 
 	// Do nothing for left-button event
-	if (!evt.Button(1)) {
+	if (!evt.Button(wxMOUSE_BTN_LEFT)) {
 		evt.Skip();
 		DoShowMouse();
 	}
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -272,7 +285,7 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 	// to the APP level message handler, which in turn routes them right back here -- yes it's
 	// silly, but oh well).
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -354,7 +367,7 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 	else
 		DoShowMouse();
 
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -372,7 +385,7 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	evt.Skip();
 	m_HasFocus = false;
 	DoShowMouse();
-#ifdef __linux__
+#if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -443,12 +456,12 @@ GSFrame::GSFrame( const wxString& title)
 	// (main concern is retaining proper client window sizes when closing/re-opening the window).
 	//m_statusbar = CreateStatusBar( 2 );
 
-	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler		(GSFrame::OnCloseWindow) );
-	Connect( wxEVT_MOVE,			wxMoveEventHandler		(GSFrame::OnMove) );
-	Connect( wxEVT_SIZE,			wxSizeEventHandler		(GSFrame::OnResize) );
-	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler	(GSFrame::OnActivate) );
+	Bind(wxEVT_CLOSE_WINDOW, &GSFrame::OnCloseWindow, this);
+	Bind(wxEVT_MOVE, &GSFrame::OnMove, this);
+	Bind(wxEVT_SIZE, &GSFrame::OnResize, this);
+	Bind(wxEVT_ACTIVATE, &GSFrame::OnActivate, this);
 
-	Connect(m_timer_UpdateTitle.GetId(), wxEVT_TIMER, wxTimerEventHandler(GSFrame::OnUpdateTitle) );
+	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
 
 GSFrame::~GSFrame() throw()
@@ -578,8 +591,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
 	double fps = wxGetApp().FpsManager.GetFramerate();
-	// The "not PAL" case covers both Region_NTSC and Region_NTSC_PROGRESSIVE
-	float per = gsRegionMode == Region_PAL ? (fps * 100) / EmuConfig.GS.FrameratePAL.ToFloat() : (fps * 100) / EmuConfig.GS.FramerateNTSC.ToFloat();
+	float percentage = (fps * 100) / GetVerticalFrequency().ToFloat();
 
 	char gsDest[128];
 	gsDest[0] = 0; // No need to set whole array to NULL.
@@ -617,7 +629,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	wxString title = templates.TitleTemplate;
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
-	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(per)));
+	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
 	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);

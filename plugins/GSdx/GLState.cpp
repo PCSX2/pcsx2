@@ -54,7 +54,10 @@ namespace GLState {
 	GLuint ps;
 	GLuint gs;
 	GLuint vs;
+	GLuint program;
 	GLuint pipeline;
+
+	int64 available_vram;
 
 	void Clear() {
 		fbo = 0;
@@ -70,7 +73,7 @@ namespace GLState {
 
 		depth = false;
 		depth_func = 0;
-		depth_mask = false;
+		depth_mask = true;
 
 		stencil = false;
 		stencil_func = 0;
@@ -90,6 +93,11 @@ namespace GLState {
 		ps = 0;
 		gs = 0;
 		vs = 0;
+		program  = 0;
 		pipeline = 0;
+
+		// Set a max vram limit for texture allocation
+		// (256MB are reserved for PBO/IBO/VBO/UBO buffers)
+		available_vram = (4096u - 256u) * 1024u * 1024u;
 	}
 }

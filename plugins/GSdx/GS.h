@@ -219,28 +219,19 @@ enum GS_AFAIL
 enum class GSRendererType : int8_t
 {
 	Undefined = -1,
-
-	DX9_HW = 0,
-	DX9_SW = 1,
-	DX9_OpenCL = 14,
-	DX9_Null = 2,
-
+	DX9_HW,
+	DX9_SW,
 	DX1011_HW = 3,
-	DX1011_SW = 4,
-	DX1011_OpenCL = 15,
-	DX1011_Null = 5,
-
-	Null_HW = 9,
-	Null_SW = 10,
-	Null_OpenCL = 16,
-	Null_Null = 11,
-
-	OGL_HW = 12,
-	OGL_SW = 13,
+	DX1011_SW,
+	Null = 11,
+	OGL_HW,
+	OGL_SW,
+	DX9_OpenCL,
+	DX1011_OpenCL,
 	OGL_OpenCL = 17,
 
 #ifdef _WIN32
-	Default = DX9_HW
+	Default = Undefined
 #else
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
@@ -1110,7 +1101,7 @@ REG128_SET(GIFPackedReg)
 	GIFPackedNOP	NOP;
 REG_SET_END
 
-__aligned(struct, 32) GIFPath
+struct alignas(32) GIFPath
 {
 	GIFTag tag;
 	uint32 nloop;
@@ -1281,20 +1272,13 @@ struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
 
-// default gs config settings
-#define DEFAULT_EXTRA_RENDERING_THREADS 2
-
-// GS Video modes macros
-#define Vmode_VESA_DTV			(m_regs->SMODE1.CMOD == 0)
-#define Vmode_NTSC				(m_regs->SMODE1.CMOD == 2)
-#define Vmode_PAL				(m_regs->SMODE1.CMOD == 3)
-#define Vmode_VESA_1A			(m_regs->SMODE1.LC == 15 && Vmode_VESA_DTV)
-#define Vmode_VESA_1C			(m_regs->SMODE1.LC == 28 && Vmode_VESA_DTV)
-#define Vmode_VESA_2B			(m_regs->SMODE1.LC == 71 && Vmode_VESA_DTV)
-#define Vmode_VESA_2D			(m_regs->SMODE1.LC == 44 && Vmode_VESA_DTV)
-#define Vmode_VESA_3B			(m_regs->SMODE1.LC == 58 && Vmode_VESA_DTV)
-#define Vmode_VESA_3D			(m_regs->SMODE1.LC == 35 && Vmode_VESA_DTV)
-#define Vmode_VESA_4A			(m_regs->SMODE1.LC == 8  && Vmode_VESA_DTV)
-#define Vmode_VESA_4B			(m_regs->SMODE1.LC == 10 && Vmode_VESA_DTV)
-#define Vmode_DTV_480P			(m_regs->SMODE1.LC == 32 && Vmode_VESA_DTV)
-#define Vmode_DTV_720P_1080I	(m_regs->SMODE1.LC == 22 && Vmode_VESA_DTV)
+enum class GSVideoMode : uint8
+{
+	Unknown,
+	NTSC,
+	PAL,
+	VESA,
+	DTV_480P,
+	DTV_720P,
+	DTV_1080I
+};

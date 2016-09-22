@@ -163,6 +163,7 @@ static SysTraceLog * const traceLogList[] =
 	&SysTrace.IOP.DMAC,
 	&SysTrace.IOP.Counters,
 	&SysTrace.IOP.CDVD,
+	&SysTrace.IOP.MDEC,
 };
 
 static const uint traceLogCount = ArraySize(traceLogList);
@@ -264,7 +265,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	*this		+= topSizer						| StdExpand();
 	*this		+= s_misc						| StdSpace().Centre();
 
-	Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(LogOptionsPanel::OnCheckBoxClicked) );
+	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this);
 }
 
 Panels::BaseCpuLogOptionsPanel* Panels::LogOptionsPanel::GetCpuPanel( const wxString& token ) const
@@ -346,4 +347,3 @@ void Panels::iopLogOptionsPanel::Apply()
 	conf.m_EnableRegisters	= m_hwPanel->GetValue();
 	conf.m_EnableEvents		= m_evtPanel->GetValue();
 }
-

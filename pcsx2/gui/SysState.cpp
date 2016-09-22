@@ -27,6 +27,8 @@
 #include <wx/wfstream.h>
 #include <memory>
 
+#include "Patch.h"
+
 // Used to hold the current state backup (fullcopy of PS2 memory and plugin states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
@@ -42,9 +44,10 @@ class BaseSavestateEntry
 {
 protected:
 	BaseSavestateEntry() {}
-	virtual ~BaseSavestateEntry() throw() {}
 
 public:
+	virtual ~BaseSavestateEntry() throw() {}
+
 	virtual wxString GetFilename() const=0;
 	virtual void FreezeIn( pxInputStream& reader ) const=0;
 	virtual void FreezeOut( SaveStateBase& writer ) const=0;
@@ -142,10 +145,12 @@ void PluginSavestateEntry::FreezeOut( SaveStateBase& writer ) const
 class SavestateEntry_EmotionMemory : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_EmotionMemory() throw() {}
+
 	wxString GetFilename() const		{ return L"eeMemory.bin"; }
 	u8* GetDataPtr() const				{ return eeMem->Main; }
 	uint GetDataSize() const			{ return sizeof(eeMem->Main); }
-	
+
 	virtual void FreezeIn( pxInputStream& reader ) const
 	{
 		SysClearExecutionCache();
@@ -156,6 +161,8 @@ public:
 class SavestateEntry_IopMemory : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_IopMemory() throw() {}
+
 	wxString GetFilename() const		{ return L"iopMemory.bin"; }
 	u8* GetDataPtr() const				{ return iopMem->Main; }
 	uint GetDataSize() const			{ return sizeof(iopMem->Main); }
@@ -164,6 +171,8 @@ public:
 class SavestateEntry_HwRegs : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_HwRegs() throw() {}
+
 	wxString GetFilename() const		{ return L"eeHwRegs.bin"; }
 	u8* GetDataPtr() const				{ return eeHw; }
 	uint GetDataSize() const			{ return sizeof(eeHw); }
@@ -172,6 +181,8 @@ public:
 class SavestateEntry_IopHwRegs : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_IopHwRegs() throw() {}
+
 	wxString GetFilename() const		{ return L"iopHwRegs.bin"; }
 	u8* GetDataPtr() const				{ return iopHw; }
 	uint GetDataSize() const			{ return sizeof(iopHw); }
@@ -180,6 +191,8 @@ public:
 class SavestateEntry_Scratchpad : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_Scratchpad() throw() {}
+
 	wxString GetFilename() const		{ return L"Scratchpad.bin"; }
 	u8* GetDataPtr() const				{ return eeMem->Scratch; }
 	uint GetDataSize() const			{ return sizeof(eeMem->Scratch); }
@@ -188,6 +201,8 @@ public:
 class SavestateEntry_VU0mem : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_VU0mem() throw() {}
+
 	wxString GetFilename() const		{ return L"vu0Memory.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[0].Mem; }
 	uint GetDataSize() const			{ return VU0_MEMSIZE; }
@@ -196,6 +211,8 @@ public:
 class SavestateEntry_VU1mem : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_VU1mem() throw() {}
+
 	wxString GetFilename() const		{ return L"vu1Memory.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[1].Mem; }
 	uint GetDataSize() const			{ return VU1_MEMSIZE; }
@@ -204,6 +221,8 @@ public:
 class SavestateEntry_VU0prog : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_VU0prog() throw() {}
+
 	wxString GetFilename() const		{ return L"vu0MicroMem.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[0].Micro; }
 	uint GetDataSize() const			{ return VU0_PROGSIZE; }
@@ -212,6 +231,8 @@ public:
 class SavestateEntry_VU1prog : public MemorySavestateEntry
 {
 public:
+	virtual ~SavestateEntry_VU1prog() throw() {}
+
 	wxString GetFilename() const		{ return L"vu1MicroMem.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[1].Micro; }
 	uint GetDataSize() const			{ return VU1_PROGSIZE; }
@@ -227,41 +248,25 @@ public:
 //  would not be useful).
 //
 
-static const uint NumSavestateEntries = 9 + PluginId_Count;
+static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_EmotionMemory),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_IopMemory),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_HwRegs),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_IopHwRegs),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_Scratchpad),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0mem),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1mem),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0prog),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
 
-class SavestateEntryPack : public ScopedAlloc<const BaseSavestateEntry*>
-{
-	typedef ScopedAlloc<const BaseSavestateEntry*> _parent;
-
-public:
-	SavestateEntryPack()
-		: _parent( NumSavestateEntries )
-	{
-		uint i = 0;		// more convenient in case we re-arrange anything...
-
-		this->operator[](i++)	= new SavestateEntry_EmotionMemory;
-		this->operator[](i++)	= new SavestateEntry_IopMemory;
-		this->operator[](i++)	= new SavestateEntry_HwRegs;
-		this->operator[](i++)	= new SavestateEntry_IopHwRegs;
-		this->operator[](i++)	= new SavestateEntry_Scratchpad;
-		this->operator[](i++)	= new SavestateEntry_VU0mem;
-		this->operator[](i++)	= new SavestateEntry_VU1mem;
-		this->operator[](i++)	= new SavestateEntry_VU0prog;
-		this->operator[](i++)	= new SavestateEntry_VU1prog;
-		
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_GS );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_PAD );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_SPU2 );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_CDVD );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_USB );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_FW );
-		this->operator[](i++)	= new PluginSavestateEntry( PluginId_DEV9 );
-	}
-	
-	using _parent::operator[];
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_GS )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_PAD )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_SPU2 )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_CDVD )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_USB )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_FW )),
+	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_DEV9 ))
 };
-
-static const SavestateEntryPack SavestateEntries;
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
 // same time.  To prevent that we use this mutex lock, which is used by both the
@@ -275,7 +280,7 @@ static void CheckVersion( pxInputStream& thr )
 {
 	u32 savever;
 	thr.Read( savever );
-	
+
 	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
 	// was removed entirely.
 	if( savever > g_SaveVersion )
@@ -315,7 +320,7 @@ public:
 
 	bool IsCriticalEvent() const { return true; }
 	bool AllowCancelOnExit() const { return false; }
-	
+
 protected:
 	void InvokeEvent()
 	{
@@ -336,7 +341,7 @@ protected:
 		internals.SetDataSize( saveme.GetCurrentPos() - internals.GetDataIndex() );
 		m_dest_list->Add( internals );
 
-		for (uint i=0; i<SavestateEntries.GetSize(); ++i)
+		for (uint i=0; i<ArraySize(SavestateEntries); ++i)
 		{
 			uint startpos = saveme.GetCurrentPos();
 			SavestateEntries[i]->FreezeOut( saveme );
@@ -371,7 +376,7 @@ public:
 	virtual ~VmStateCompressThread() throw()
 	{
 	}
-	
+
 protected:
 	void OnStartInThread()
 	{
@@ -450,7 +455,7 @@ protected:
 		}
 
 		std::unique_ptr<wxImage> m_screenshot;
-		
+
 		if (m_screenshot)
 		{
 			wxZipEntry* vent = new wxZipEntry(EntryFilename_Screenshot);
@@ -466,11 +471,11 @@ protected:
 			.SetFinishedPath(m_filename)
 			.Start();
 
-		// No errors?  Release cleanup handlers:			
+		// No errors?  Release cleanup handlers:
 		elist.release();
 		out.release();
 	}
-	
+
 	void CleanupEvent()
 	{
 	}
@@ -487,10 +492,10 @@ class SysExecEvent_UnzipFromDisk : public SysExecEvent
 {
 protected:
 	wxString	m_filename;
-	
+
 public:
 	wxString GetEventName() const { return L"VM_UnzipFromDisk"; }
-	
+
 	virtual ~SysExecEvent_UnzipFromDisk() throw() {}
 	SysExecEvent_UnzipFromDisk* Clone() const { return new SysExecEvent_UnzipFromDisk( *this ); }
 	SysExecEvent_UnzipFromDisk( const wxString& filename )
@@ -527,10 +532,10 @@ protected:
 
 		bool foundVersion = false;
 		//bool foundScreenshot = false;
-		//bool foundEntry[numSavestateEntries] = false;
+		//bool foundEntry[ArraySize(SavestateEntries)] = false;
 
 		std::unique_ptr<wxZipEntry> foundInternal;
-		std::unique_ptr<wxZipEntry> foundEntry[NumSavestateEntries];
+		std::unique_ptr<wxZipEntry> foundEntry[ArraySize(SavestateEntries)];
 
 		while(true)
 		{
@@ -561,7 +566,7 @@ protected:
 				foundScreenshot = true;
 			}*/
 
-			for (uint i=0; i<NumSavestateEntries; ++i)
+			for (uint i=0; i<ArraySize(SavestateEntries); ++i)
 			{
 				if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
 				{
@@ -582,10 +587,10 @@ protected:
 
 		// Log any parts and pieces that are missing, and then generate an exception.
 		bool throwIt = false;
-		for (uint i=0; i<NumSavestateEntries; ++i)
+		for (uint i=0; i<ArraySize(SavestateEntries); ++i)
 		{
 			if (foundEntry[i]) continue;
-			
+
 			if (SavestateEntries[i]->IsRequired())
 			{
 				throwIt = true;
@@ -601,10 +606,12 @@ protected:
 		// We use direct Suspend/Resume control here, since it's desirable that emulation
 		// *ALWAYS* start execution after the new savestate is loaded.
 
+		PatchesVerboseReset();
+
 		GetCoreThread().Pause();
 		SysClearExecutionCache();
 
-		for (uint i=0; i<NumSavestateEntries; ++i)
+		for (uint i=0; i<ArraySize(SavestateEntries); ++i)
 		{
 			if (!foundEntry[i]) continue;
 
@@ -635,10 +642,10 @@ void StateCopy_SaveToFile( const wxString& file )
 	UI_DisableStateActions();
 
 	std::unique_ptr<ArchiveEntryList> ziplist(new ArchiveEntryList(new VmStateBuffer(L"Zippable Savestate")));
-	
+
 	GetSysExecutorThread().PostEvent(new SysExecEvent_DownloadState(ziplist.get()));
 	GetSysExecutorThread().PostEvent(new SysExecEvent_ZipToDisk(ziplist.get(), file));
-	
+
 	ziplist.release();
 }
 
@@ -660,7 +667,7 @@ void StateCopy_SaveToSlot( uint num )
 	if( wxFileExists( file ) && EmuConfig.BackupSavestate )
 	{
 		const wxString copy( SaveStateBase::GetFilename( num ) + pxsFmt( L".backup") );
-		
+
 		Console.Indent().WriteLn( Color_StrongGreen, L"Backing up existing state in slot %d.", num);
 		wxRenameFile( file, copy );
 	}

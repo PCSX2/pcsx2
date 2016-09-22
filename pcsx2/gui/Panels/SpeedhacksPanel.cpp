@@ -23,30 +23,41 @@ const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 {
 	switch( val )
 	{
+		case -3:
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause stuttering audio on many FMVs.");
+		}
 		case -2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* cause stuttering audio on many FMVs.");
+			return pxEt(L"-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may cause stuttering audio on many FMVs.");
 		}
 		case -1:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games with high compatibility.");
+			return pxEt(L"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games with high compatibility.");
 		}
 		case 0:
 		{
-			m_msg_eecycle->SetForegroundColour(wxColour(14,158,19)); // Dark Green
-			return pxEt(L"0 - Default cyclerate. This closely matches the actual speed of a real PS2 EmotionEngine.");
+			const wxColour DarkSeaGreen = wxColour(14, 158, 19);
+			m_msg_eecycle->SetForegroundColour(DarkSeaGreen);
+			return pxEt(L"0 - Default cyclerate (100%). This closely matches the actual speed of a real PS2 EmotionEngine.");
 		}
 		case 1:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"1 - Increases the EE's cyclerate by about 33%. Increases hardware requirements, may increase in-game FPS.");
+			return pxEt(L"1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware requirements, may increase in-game FPS.");
 		}
 		case 2:
 		{
 			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
+			return pxEt(L"2 - Increases the EE's cyclerate to about 180%. Increases hardware requirements, may noticeably increase in-game FPS.");
+		}
+		case 3:
+		{
+			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
+			return pxEt(L"3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
 		}
 		default:
 			break;
@@ -61,7 +72,8 @@ const wxChar* Panels::SpeedHacksPanel::GetVUcycleSliderMsg( int val )
 	{
 		case 0:
 		{
-			m_msg_vustealer->SetForegroundColour(wxColour(14,158,19)); // Dark Green
+			const wxColour DarkSeaGreen = wxColour(14, 158, 19);
+			m_msg_vustealer->SetForegroundColour(DarkSeaGreen);
 			return pxEt(L"0 - Disables VU Cycle Stealing.  Most compatible setting!");
 		}
 		case 1:
@@ -126,7 +138,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -2, 2,
+	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -3, 3,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
@@ -242,10 +254,10 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	// ------------------------------------------------------------------------
 
-	Connect( m_slider_eecycle->GetId(),		wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::EECycleRate_Scroll ) );
-	Connect( m_slider_vustealer->GetId(),	wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SpeedHacksPanel::VUCycleRate_Scroll ) );
-	Connect( m_check_Enable->GetId(),		wxEVT_COMMAND_CHECKBOX_CLICKED,	wxCommandEventHandler( SpeedHacksPanel::OnEnable_Toggled ) );
-	Connect( wxID_DEFAULT,					wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( SpeedHacksPanel::Defaults_Click ) );
+	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::EECycleRate_Scroll, this, m_slider_eecycle->GetId());
+	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::VUCycleRate_Scroll, this, m_slider_vustealer->GetId());
+	Bind(wxEVT_CHECKBOX, &SpeedHacksPanel::OnEnable_Toggled, this, m_check_Enable->GetId());
+	Bind(wxEVT_BUTTON, &SpeedHacksPanel::Defaults_Click, this, wxID_DEFAULT);
 }
 
 // Doesn't modify values - only locks(gray out)/unlocks as necessary.

@@ -155,7 +155,7 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 		throw Exception::BadStream( fp.GetStreamName() )
 			.SetDiagMsg(L"BIOS version check failed: 'ROMDIR' tag could not be found.")
 			.SetUserMsg(_("The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."));
-	
+
 	wxFileOffset fileSize = fp.Length();
 	if (fileSize < (int)fileOffset)
 	{
@@ -325,7 +325,7 @@ bool IsBIOS(const wxString& filename, wxString& description)
 {
 	wxFileName Bios( g_Conf->Folders.Bios + filename );
 	pxInputStream inway( filename, new wxFFileInputStream( filename ) );
-	
+
 	if (!inway.IsOk()) return false;
 	// FPS2BIOS is smaller and of variable size
 	//if (inway.Length() < 512*1024) return false;

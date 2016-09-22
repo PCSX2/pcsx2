@@ -83,9 +83,9 @@ void intMemcheck(u32 op, u32 bits, bool store)
 
 		if (check.result == 0)
 			continue;
-		if ((check.cond & MEMCHECK_WRITE) == 0 && store == true)
+		if ((check.cond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((check.cond & MEMCHECK_READ) == 0 && store == false)
+		if ((check.cond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		if (start < check.end && check.start < end)
@@ -299,10 +299,9 @@ void BGEZ()    // Branch if Rs >= 0
 
 void BGEZAL() // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -333,9 +332,9 @@ void BLTZ()    // Branch if Rs <  0
 
 void BLTZAL()  // Branch if Rs <  0 and link
 {
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -426,10 +425,9 @@ void BGEZL()     // Branch if Rs >= 0
 
 void BLTZALL()   // Branch if Rs <  0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
@@ -441,10 +439,9 @@ void BLTZALL()   // Branch if Rs <  0 and link
 
 void BGEZALL()   // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
@@ -512,8 +509,8 @@ static void intExecute()
 	bool instruction_was_cancelled;
 	enum ExecuteState {
 		RESET,
-		REPLACE_OSDSYS_DONE,
-		GAME_STARTING_DONE
+		GAME_LOADING,
+		GAME_RUNNING
 	};
 	ExecuteState state = RESET;
 	do {
@@ -523,24 +520,32 @@ static void intExecute()
 			// resume it after a cancelled instruction.
 			switch (state) {
 				case RESET:
-					if (g_SkipBiosHack) {
-						do
-							execI();
-						while (cpuRegs.pc != EELOAD_START);
-						eeloadReplaceOSDSYS();
-					}
-					state = REPLACE_OSDSYS_DONE;
+					do
+						execI();
+					while (cpuRegs.pc != (eeloadMain ? eeloadMain : EELOAD_START));
+					if (cpuRegs.pc == EELOAD_START)
+					{
+						// The EELOAD _start function is the same across all BIOS versions afaik
+						u32 mainjump = memRead32(EELOAD_START + 0x9c);
+						if (mainjump >> 26 == 3) // JAL
+							eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+					} else if (cpuRegs.pc == eeloadMain)
+						eeloadHook();
+					if (g_GameLoading)
+						state = GAME_LOADING;
+					else
+						break;
 
-				case REPLACE_OSDSYS_DONE:
+				case GAME_LOADING:
 					if (ElfEntry != 0xFFFFFFFF) {
 						do
 							execI();
 						while (cpuRegs.pc != ElfEntry);
 						eeGameStarting();
 					}
-					state = GAME_STARTING_DONE;
+					state = GAME_RUNNING;
 
-				case GAME_STARTING_DONE:
+				case GAME_RUNNING:
 					while (true)
 						execI();
 			}

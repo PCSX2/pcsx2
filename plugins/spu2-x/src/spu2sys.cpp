@@ -57,7 +57,7 @@ __forceinline s16* GetMemPtr(u32 addr)
 #ifndef DEBUG_FAST
 	// In case you're wondering, this assert is the reason SPU2-X
 	// runs so incrediously slow in Debug mode. :P
-	jASSUME( addr < 0x100000 );
+	pxAssume( addr < 0x100000 );
 #endif
 	return (_spu2mem+addr);
 }
@@ -491,7 +491,7 @@ void V_VolumeSlide::RegSet( u16 src )
 
 void V_Core::WriteRegPS1( u32 mem, u16 value )
 {
-	jASSUME( Index == 0 );		// Valid on Core 0 only!
+	pxAssume( Index == 0 );		// Valid on Core 0 only!
 
 	bool show	= true;
 	u32 reg		= mem & 0xffff;
@@ -641,7 +641,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 
 u16 V_Core::ReadRegPS1(u32 mem)
 {
-	jASSUME( Index == 0 );		// Valid on Core 0 only!
+	pxAssume( Index == 0 );		// Valid on Core 0 only!
 
 	bool show=true;
 	u16 value = spu2Ru16(mem);
@@ -990,8 +990,8 @@ static void __fastcall RegWrite_Core( u16 value )
 		SetLoWord( thiscore.Regs.reg_out, value ); \
 	if( result == thiscore.Regs.reg_out ) break; \
 	\
-	const uint start_bit	= hiword ? 16 : 0; \
-	const uint end_bit		= hiword ? 24 : 16; \
+	const uint start_bit	= (hiword) ? 16 : 0; \
+	const uint end_bit		= (hiword) ? 24 : 16; \
 	for (uint vc=start_bit, vx=1; vc<end_bit; ++vc, vx<<=1) \
 		thiscore.VoiceGates[vc].mask_out = (value & vx) ? -1 : 0; \
 }
@@ -1264,10 +1264,10 @@ static void __fastcall RegWrite_Null( u16 value )
 
 
 #define CoreParamsPair( core, omem ) \
-	RegWrite_Core<core, omem>, RegWrite_Core<core, (omem+2)>
+	RegWrite_Core<core, omem>, RegWrite_Core<core, ((omem)+2)>
 
 #define ReverbPair( core, mem ) \
-	RegWrite_Reverb<core, mem>, RegWrite_Core<core, (mem+2)>
+	RegWrite_Reverb<core, mem>, RegWrite_Core<core, ((mem)+2)>
 
 #define REGRAW(addr) RegWrite_Raw<addr>
 

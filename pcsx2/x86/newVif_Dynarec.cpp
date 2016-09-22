@@ -68,8 +68,9 @@ VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlo
 	vCL			= 0;
 }
 
-#define makeMergeMask(x) {									\
-	x = ((x&0x40)>>6) | ((x&0x10)>>3) | (x&4) | ((x&1)<<3);	\
+__fi void makeMergeMask(u32& x)
+{
+	x = ((x&0x40)>>6) | ((x&0x10)>>3) | (x&4) | ((x&1)<<3);
 }
 
 __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const {
@@ -174,16 +175,16 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 	
 	switch( upknum )
 	{
-		case 0:	
-		case 1: 
-		case 2: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x3; } break;
+		case 0:
+		case 1:
+		case 2: if(PostOp) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x3; } break;
 
-		case 4:  
+		case 4:
 		case 5:
-		case 6: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
+		case 6: if(PostOp) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
 
-		case 8: if(PostOp == true) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
-		case 9:	if (PostOp == false) { UnpkLoopIteration++; } break;
+		case 8: if(PostOp) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
+		case 9:	if (!PostOp) { UnpkLoopIteration++; } break;
 		case 10: 	break;
 
 		case 12: 	break;

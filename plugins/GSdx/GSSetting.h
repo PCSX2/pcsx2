@@ -40,7 +40,7 @@ struct GSSetting
 
 const char* dialog_message(int ID, bool* updateText = NULL);
 
-#ifdef __linux__
+#ifndef _WIN32
 enum {
 	IDC_FILTER,
 	IDC_SKIPDRAWHACK,
@@ -74,5 +74,9 @@ enum {
 	IDC_MIPMAP,
 	IDC_PRELOAD_GS,
 	IDC_FAST_TC_INV,
+	IDC_LARGE_FB,
+	IDC_LINEAR_PRESENT,
+	IDC_AUTO_FLUSH,
+	IDC_UNSCALE_POINT_LINE,
 };
 #endif

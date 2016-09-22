@@ -100,8 +100,6 @@ struct GlobalCommandDescriptor
 	const wxChar*	Tooltip;			// text displayed in toolbar tooltips and menu status bars.
 
 	bool			AlsoApplyToGui;		// Indicates that the GUI should be updated if possible.
-
-	int				ToolbarIconId;		// not implemented yet, leave 0 for now.
 };
 
 // --------------------------------------------------------------------------------------

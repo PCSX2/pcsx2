@@ -44,6 +44,9 @@ layout(binding = 4) uniform sampler2D RawTextureSampler;
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
+// Performance note: images mustn't be declared if they are unused. Otherwise it will
+// require extra shader validation.
+
 // FIXME how to declare memory access
 layout(r32i, binding = 2) uniform iimage2D img_prim_min;
 // WARNING:
@@ -72,7 +75,11 @@ layout(early_fragment_tests) in;
 
 vec4 sample_c(vec2 uv)
 {
+#if PS_TEX_IS_FB == 1
+    return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#else
     return texture(TextureSampler, uv);
+#endif
 }
 
 vec4 sample_p(float idx)
@@ -176,14 +183,24 @@ mat4 sample_4p(vec4 u)
     return c;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Depth sampling
-//////////////////////////////////////////////////////////////////////
+int fetch_raw_depth()
+{
+    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+}
+
+vec4 fetch_raw_color()
+{
+    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+}
+
 vec4 fetch_c(ivec2 uv)
 {
     return texelFetch(TextureSampler, ivec2(uv), 0);
 }
 
+//////////////////////////////////////////////////////////////////////
+// Depth sampling
+//////////////////////////////////////////////////////////////////////
 ivec2 clamp_wrap_uv_depth(ivec2 uv)
 {
     ivec2 uv_out = uv;
@@ -224,13 +241,26 @@ vec4 sample_depth(vec2 st)
     vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScalingFactor.xy) * vec2(1.0f/16.0f);
     ivec2 uv = ivec2(uv_f);
 
-    vec4 t;
-#if PS_URBAN_CHAOS_HACK == 1
-    // Convert a GL_FLOAT32 to a special color format expected by the game
-    int depth = int(fetch_c(uv).r * exp2(32.0f));
+    vec4 t = vec4(0.0f);
+#if PS_TALES_OF_ABYSS_HLE == 1
+    // Warning: UV can't be used in channel effect
+    int depth = fetch_raw_depth();
+
+    // Convert msb based on the palette
+    t = texelFetch(PaletteSampler, ivec2((depth >> 8) & 0xFF, 0), 0) * 255.0f;
+
+#elif PS_URBAN_CHAOS_HLE == 1
+    // Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
+    // So it will do a first channel trick to extract lsb, value is right-shifted.
+    // Then a new channel trick to extract msb which will shifted to the left.
+    // OpenGL uses a FLOAT32 format for the depth so it requires a couple of conversion.
+    // To be faster both steps (msb&lsb) are done in a single pass.
+
+    // Warning: UV can't be used in channel effect
+    int depth = fetch_raw_depth();
 
     // Convert lsb based on the palette
-    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0);
+    t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0) * 255.0f;
 
     // Msb is easier
     float green = float((depth >> 8) & 0xFF) * 36.0f;
@@ -281,16 +311,6 @@ vec4 sample_depth(vec2 st)
 //////////////////////////////////////////////////////////////////////
 // Fetch a Single Channel
 //////////////////////////////////////////////////////////////////////
-int fetch_raw_depth()
-{
-    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
-}
-
-vec4 fetch_raw_color()
-{
-    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
-}
-
 vec4 fetch_red()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
@@ -323,6 +343,27 @@ vec4 fetch_alpha()
 {
     vec4 rt = fetch_raw_color();
     return sample_p(rt.a) * 255.0f;
+}
+
+vec4 fetch_rgb()
+{
+    vec4 rt = fetch_raw_color();
+    vec4 c = vec4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0f);
+    return c * 255.0f;
+}
+
+vec4 fetch_gXbY()
+{
+#if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
+    int depth = fetch_raw_depth();
+    int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+    return vec4(bg);
+#else
+    ivec4 rt = ivec4(fetch_raw_color() * 255.0f);
+    int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
+    int blue  = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
+    return vec4(green | blue);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -441,32 +482,45 @@ vec4 tfx(vec4 T, vec4 C)
 
 void atst(vec4 C)
 {
-    // FIXME use integer cmp
     float a = C.a;
 
-#if (PS_ATST == 0) // never
-    discard;
-#elif (PS_ATST == 1) // always
-    // nothing to do
-#elif (PS_ATST == 2) // l
-    if ((AREF - a - 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 3 ) // le
-    if ((AREF - a + 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 4) // e
-    if ((0.5f - abs(a - AREF)) < 0.0f)
-        discard;
-#elif (PS_ATST == 5) // ge
-    if ((a-AREF + 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 6) // g
-    if ((a-AREF - 0.5f) < 0.0f)
-        discard;
-#elif (PS_ATST == 7) // ne
-    if ((abs(a - AREF) - 0.5f) < 0.0f)
-        discard;
+#if 0
+    switch(Uber_ATST) {
+        case 0:
+            break;
+        case 1:
+            if (a > AREF) discard;
+            break;
+        case 2:
+            if (a < AREF) discard;
+            break;
+        case 3:
+            if (abs(a - AREF) > 0.5f) discard;
+            break;
+        case 4:
+            if (abs(a - AREF) < 0.5f) discard;
+            break;
+    }
+
+
 #endif
+
+#if 1
+
+#if (PS_ATST == 0)
+    // nothing to do
+#elif (PS_ATST == 1)
+    if (a > AREF) discard;
+#elif (PS_ATST == 2)
+    if (a < AREF) discard;
+#elif (PS_ATST == 3)
+    if (abs(a - AREF) > 0.5f) discard;
+#elif (PS_ATST == 4)
+    if (abs(a - AREF) < 0.5f) discard;
+#endif
+
+#endif
+
 }
 
 void fog(inout vec4 C, float f)
@@ -494,6 +548,10 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
+#elif PS_CHANNEL_FETCH == 6
+    vec4 T = fetch_gXbY();
+#elif PS_CHANNEL_FETCH == 7
+    vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0
     // Integral coordinate
     vec4 T = sample_depth(PSin.t_int.zw);

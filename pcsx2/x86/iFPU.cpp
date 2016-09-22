@@ -510,7 +510,7 @@ u32 __fastcall FPU_MUL_HACK(u32 s, u32 t)
 
 void FPU_MUL(int regd, int regt, bool reverseOperands)
 {
-	u8 *noHack, *endMul;
+	u8 *noHack, *endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{

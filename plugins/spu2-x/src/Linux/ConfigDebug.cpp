@@ -154,7 +154,7 @@ void WriteSettings()
 
 }
 
-#ifdef __linux__
+#ifdef __unix__
 void DisplayDialog()
 {
     GtkWidget *dialog;

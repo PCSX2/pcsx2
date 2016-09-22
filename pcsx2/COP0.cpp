@@ -422,22 +422,20 @@ void MFC0()
 		break;
 
 		case 25:
-		    switch(_Imm_ & 0x3F)
-		    {
-			    case 0:		// MFPS  [LSB is clear]
-					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pccr.val;
-				break;
-
-			    case 1:		// MFPC [LSB is set] - read PCR0
-					COP0_UpdatePCCR();
-                    cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
-				break;
-
-			    case 3:		// MFPC [LSB is set] - read PCR1
-					COP0_UpdatePCCR();
-					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr1;
-				break;
-		    }
+			if (0 == (_Imm_ & 1)) // MFPS, register value ignored
+			{
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pccr.val;
+			}
+			else if (0 == (_Imm_ & 2)) // MFPC 0, only LSB of register matters
+			{
+				COP0_UpdatePCCR();
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
+			}
+			else // MFPC 1
+			{
+				COP0_UpdatePCCR();
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr1;
+			}
 		    /*Console.WriteLn("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x",  params
 		    cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
 		break;
@@ -481,24 +479,24 @@ void MTC0()
 		case 25:
 			/*if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x", params
 				cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
-			switch(_Imm_ & 0x3F)
+			if (0 == (_Imm_ & 1)) // MTPS
 			{
-				case 0:		// MTPS  [LSB is clear]
-					// Updates PCRs and sets the PCCR.
-					COP0_UpdatePCCR();
-					cpuRegs.PERF.n.pccr.val = cpuRegs.GPR.r[_Rt_].UL[0];
-					COP0_DiagnosticPCCR();
-				break;
-
-				case 1:		// MTPC [LSB is set] - set PCR0
-					cpuRegs.PERF.n.pcr0 = cpuRegs.GPR.r[_Rt_].UL[0];
-					s_iLastPERFCycle[0] = cpuRegs.cycle;
-				break;
-
-				case 3:		// MTPC [LSB is set] - set PCR0
-					cpuRegs.PERF.n.pcr1 = cpuRegs.GPR.r[_Rt_].UL[0];
-					s_iLastPERFCycle[1] = cpuRegs.cycle;
-				break;
+				if (0 != (_Imm_ & 0x3E)) // only effective when the register is 0
+					break;
+				// Updates PCRs and sets the PCCR.
+				COP0_UpdatePCCR();
+				cpuRegs.PERF.n.pccr.val = cpuRegs.GPR.r[_Rt_].UL[0];
+				COP0_DiagnosticPCCR();
+			}
+			else if (0 == (_Imm_ & 2)) // MTPC 0, only LSB of register matters
+			{
+				cpuRegs.PERF.n.pcr0 = cpuRegs.GPR.r[_Rt_].UL[0];
+				s_iLastPERFCycle[0] = cpuRegs.cycle;
+			}
+			else // MTPC 1
+			{
+				cpuRegs.PERF.n.pcr1 = cpuRegs.GPR.r[_Rt_].UL[0];
+				s_iLastPERFCycle[1] = cpuRegs.cycle;
 			}
 		break;
 

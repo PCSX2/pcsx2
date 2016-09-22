@@ -244,6 +244,8 @@ enum MenuIDs_t
 	MenuId_ColorScheme_Light = 0x20,
 	MenuId_ColorScheme_Dark,
 
+	MenuId_AutoDock,
+
 	MenuId_LogSource_EnableAll = 0x30,
 	MenuId_LogSource_DisableAll,
 	MenuId_LogSource_Devel,
@@ -344,7 +346,8 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, AppConfig::ConsoleLogOptions& options )
 	: wxFrame(parent, wxID_ANY, title)
 	, m_conf( options )
-	, m_TextCtrl( *new pxLogTextCtrl(this) )
+	, m_TextCtrl( *new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_NOHIDESEL) )
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 
@@ -386,34 +389,36 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	// create Appearance menu and submenus
 
-	menuFontSizes.Append( MenuId_FontSize_Small,	_("Small"),	_t("Fits a lot of log in a microcosmically small area."),
+	menuFontSizes.Append( MenuId_FontSize_Small,	_("&Small"),	_t("Fits a lot of log in a microcosmically small area."),
 		wxITEM_RADIO )->Check( options.FontSize == 7 );
-	menuFontSizes.Append( MenuId_FontSize_Normal,	_("Normal font"),_t("It's what I use (the programmer guy)."),
+	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal font"),_t("It's what I use (the programmer guy)."),
 		wxITEM_RADIO )->Check( options.FontSize == 8 );
-	menuFontSizes.Append( MenuId_FontSize_Large,	_("Large"),	_t("Its nice and readable."),
+	menuFontSizes.Append( MenuId_FontSize_Large,	_("&Large"),	_t("Its nice and readable."),
 		wxITEM_RADIO )->Check( options.FontSize == 10 );
-	menuFontSizes.Append( MenuId_FontSize_Huge,		_("Huge"),	_t("In case you have a really high res display."),
+	menuFontSizes.Append( MenuId_FontSize_Huge,		_("&Huge"),	_t("In case you have a really high res display."),
 		wxITEM_RADIO )->Check( options.FontSize == 12 );
 
 	menuFontSizes.AppendSeparator();
-	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
-	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("Dark theme"),	_t("Classic black color scheme for people who enjoy having text seared into their optic nerves."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("&Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark theme"),	_t("Classic black color scheme for people who enjoy having text seared into their optic nerves."), wxITEM_RADIO );
 
-	menuAppear.AppendSeparator();
-	menuAppear.Append( wxID_ANY, _("Always on Top"),
-		_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
+	// The "Always on Top" option currently doesn't work
+	//menuAppear.AppendSeparator();
+	//menuAppear.Append( wxID_ANY, _("Always on Top"),
+	//	_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
 
 	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
 	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
 	menuLog.AppendSeparator();
-	menuLog.AppendSubMenu( &menuAppear, _("Appearance") );
+	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
+	menuLog.AppendSubMenu( &menuAppear, _("&Appearance") );
 	menuLog.AppendSeparator();
 	menuLog.Append(wxID_CLOSE,	_("&Close"),		_("Close this log window; contents are preserved"));
 
 	// Source Selection/Toggle menu
 
-	menuSources.Append( MenuId_LogSource_Devel, _("Dev/Verbose"), _("Shows PCSX2 developer logs"), wxITEM_CHECK );
-	menuSources.Append( MenuId_LogSource_CDVD_Info, _("CDVD reads"), _("Shows disk read activity"), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs"), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity"), wxITEM_CHECK );
 	
 	menuSources.AppendSeparator();
 
@@ -430,9 +435,9 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	}
 
 	menuSources.AppendSeparator();
-	menuSources.Append( MenuId_LogSource_EnableAll,		_("Enable all"),	_("Enables all log source filters.") );
-	menuSources.Append( MenuId_LogSource_DisableAll,	_("Disable all"),	_("Disables all log source filters.") );
-	menuSources.Append( MenuId_LogSource_SetDefault,	_("Restore Default"), _("Restore default source filters.") );
+	menuSources.Append( MenuId_LogSource_EnableAll,		_("&Enable all"),	_("Enables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_DisableAll,	_("&Disable all"),	_("Disables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_SetDefault,	_("&Restore Default"), _("Restore default source filters.") );
 
 	pMenuBar->Append(&menuLog,		_("&Log"));
 	pMenuBar->Append(&menuSources,	_("&Sources"));
@@ -452,6 +457,8 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnFontSize, this, MenuId_FontSize_Small, MenuId_FontSize_Huge);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleTheme, this, MenuId_ColorScheme_Light, MenuId_ColorScheme_Dark);
+
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnAutoDock, this, MenuId_AutoDock);
 
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Devel);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleCDVDInfo, this, MenuId_LogSource_CDVD_Info);
@@ -862,6 +869,13 @@ void ConsoleLogFrame::OnFontSize( wxCommandEvent& evt )
 	// it hardly matters being a once-in-a-bluemoon action).
 }
 
+void ConsoleLogFrame::OnAutoDock(wxCommandEvent& evt)
+{
+	if (auto menuBar = GetMenuBar())
+		m_conf.AutoDock = menuBar->IsChecked(MenuId_AutoDock);
+	evt.Skip();
+}
+
 // ----------------------------------------------------------------------------
 //  Logging Events (typically received from Console class interfaces)
 // ----------------------------------------------------------------------------
@@ -979,8 +993,6 @@ void ConsoleLogFrame::DoFlushQueue()
 
 	if( len > 64 ) m_TextCtrl.Thaw();
 
-	m_TextCtrl.ConcludeIssue();
-
 	m_QueueColorSection.Clear();
 	m_CurQueuePos		= 0;
 }
@@ -1007,11 +1019,11 @@ void Pcsx2App::ProgramLog_PostEvent( wxEvent& evt )
 
 static void __concall ConsoleToFile_Newline()
 {
-#ifdef __linux__
+#if defined(__unix__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.Newline();
 #endif
 
-#ifdef __linux__
+#if defined(__unix__)
 	fputc( '\n', emuLog );
 #else
 	fputs( "\r\n", emuLog );
@@ -1020,7 +1032,7 @@ static void __concall ConsoleToFile_Newline()
 
 static void __concall ConsoleToFile_DoWrite( const wxString& fmt )
 {
-#ifdef __linux__
+#if defined(__unix__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.WriteRaw(fmt);
 #endif
 

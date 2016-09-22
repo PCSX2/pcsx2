@@ -266,8 +266,8 @@ s32 CALLBACK USBfreeze(int mode, freezeData *data) {
 
 		usbd = *(USBfreezeData*)data->data;
 		usbd.freezeID[9] = 0;
-		usbd.cycles = clocks;
-		usbd.remaining = remaining;
+		usbd.cycles = static_cast<int>(clocks);
+		usbd.remaining = static_cast<int>(remaining);
 		
 		if( strcmp(usbd.freezeID, USBfreezeID) != 0)
 		{

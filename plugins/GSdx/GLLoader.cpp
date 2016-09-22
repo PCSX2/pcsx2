@@ -81,6 +81,15 @@ PFNGLCLIENTWAITSYNCPROC                glClientWaitSync                    = NUL
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange            = NULL;
 PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate             = NULL;
 PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+// Shader compilation (Broken driver)
+PFNGLCOMPILESHADERPROC                 glCompileShader                     = NULL;
+PFNGLCREATEPROGRAMPROC                 glCreateProgram                     = NULL;
+PFNGLCREATESHADERPROC                  glCreateShader                      = NULL;
+PFNGLDELETESHADERPROC                  glDeleteShader                      = NULL;
+PFNGLLINKPROGRAMPROC                   glLinkProgram                       = NULL;
+PFNGLUSEPROGRAMPROC                    glUseProgram                        = NULL;
+PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog                  = NULL;
+PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i                  = NULL;
 // Query object
 PFNGLBEGINQUERYPROC                    glBeginQuery                        = NULL;
 PFNGLENDQUERYPROC                      glEndQuery                          = NULL;
@@ -91,6 +100,8 @@ PFNGLQUERYCOUNTERPROC                  glQueryCounter                      = NUL
 PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v                = NULL;
 PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v               = NULL;
 PFNGLGETINTEGER64VPROC                 glGetInteger64v                     = NULL;
+PFNGLCREATEQUERIESPROC                 glCreateQueries                     = NULL;
+PFNGLDELETEQUERIESPROC                 glDeleteQueries                     = NULL;
 // GL4.0
 // GL4.1
 PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline               = NULL;
@@ -110,11 +121,14 @@ PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup                    = NUL
 PFNGLPOPDEBUGGROUPPROC                 glPopDebugGroup                     = NULL;
 PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert                = NULL;
 PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl               = NULL;
+PFNGLOBJECTLABELPROC                   glObjectLabel                       = NULL;
+PFNGLOBJECTPTRLABELPROC                glObjectPtrLabel                    = NULL;
 // GL4.2
 PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture                  = NULL;
 PFNGLMEMORYBARRIERPROC                 glMemoryBarrier                     = NULL;
 // GL4.4
 PFNGLCLEARTEXIMAGEPROC                 glClearTexImage                     = NULL;
+PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage                  = NULL;
 PFNGLBUFFERSTORAGEPROC                 glBufferStorage                     = NULL;
 
 // GL4.5
@@ -150,24 +164,52 @@ PFNGLCREATEPROGRAMPIPELINESPROC        glCreateProgramPipelines            = NUL
 
 PFNGLCLIPCONTROLPROC                   glClipControl                       = NULL;
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
+PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
+
+namespace ReplaceGL {
+	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
+	{
+		glBlendEquationSeparate(modeRGB, modeAlpha);
+	}
+
+	void APIENTRY BlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+	{
+		glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+	}
+
+	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
+	{
+		glScissor(left, bottom, width, height);
+	}
+
+	void APIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
+	{
+		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
+	}
+}
 
 namespace GLLoader {
 
+	bool legacy_fglrx_buggy_driver = false;
 	bool fglrx_buggy_driver    = false;
 	bool mesa_amd_buggy_driver = false;
 	bool nvidia_buggy_driver   = false;
 	bool intel_buggy_driver    = false;
 	bool in_replayer           = false;
+	bool buggy_sso_dual_src    = false;
 
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
 	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
+	// Bonus to monitor the VRAM
+	bool found_GL_NVX_gpu_memory_info = false;
 
 	// Mandatory
 	bool found_GL_ARB_buffer_storage = false;
@@ -198,8 +240,8 @@ namespace GLLoader {
 		std::string opt("override_");
 		opt += name;
 
-		if (theApp.GetConfig(opt.c_str(), -1) != -1) {
-			found = !!theApp.GetConfig(opt.c_str(), -1);
+		if (theApp.GetConfigI(opt.c_str()) != -1) {
+			found = theApp.GetConfigB(opt.c_str());
 			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
 		}
 
@@ -222,6 +264,10 @@ namespace GLLoader {
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
+		if (fglrx_buggy_driver && (
+					strstr((const char*)&s[v], " 15.") // blacklist all 2015 drivers
+					|| strstr((const char*)&s[v], " 16.1"))) // And start of 2016
+			legacy_fglrx_buggy_driver = true;
 		if (strstr(vendor, "NVIDIA Corporation"))
 			nvidia_buggy_driver = true;
 		if (strstr(vendor, "Intel"))
@@ -231,8 +277,14 @@ namespace GLLoader {
 		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
 			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
-		if (theApp.GetConfig("override_geometry_shader", -1) != -1) {
-			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
+#ifdef _WIN32
+		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
+#else
+		buggy_sso_dual_src = legacy_fglrx_buggy_driver;
+#endif
+
+		if (theApp.GetConfigI("override_geometry_shader") != -1) {
+			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
 
@@ -257,6 +309,7 @@ namespace GLLoader {
 				string ext((const char*)glGetStringi(GL_EXTENSIONS, i));
 				// Bonus
 				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
+				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
@@ -277,6 +330,7 @@ namespace GLLoader {
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
 				if (ext.compare("GL_ARB_texture_barrier") == 0) found_GL_ARB_texture_barrier = true;
+				if (ext.compare("GL_ARB_get_texture_sub_image") == 0) found_GL_ARB_get_texture_sub_image = true;
 
 				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 			}
@@ -306,14 +360,27 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
+		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 #ifdef _WIN32
 		if (status) {
 			if (fglrx_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.");
+				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.\n");
 			}
 		}
 #endif
+
+		if (!found_GL_ARB_viewport_array) {
+			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
+			glScissorIndexed   = ReplaceGL::ScissorIndexed;
+			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+		}
+
+		if (!found_GL_ARB_draw_buffers_blend) {
+			fprintf(stderr, "GL_ARB_draw_buffers_blend: not supported ! function pointer will be replaced\n");
+			glBlendFuncSeparateiARB     = ReplaceGL::BlendFuncSeparateiARB;
+			glBlendEquationSeparateiARB = ReplaceGL::BlendEquationSeparateiARB;
+		}
 
 		fprintf(stdout, "\n");
 

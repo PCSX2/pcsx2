@@ -27,20 +27,22 @@ class GSdxApp
 {
 	std::string m_ini;
 	std::string m_section;
-#ifdef __linux__
+	std::map< std::string, std::string > m_default_configuration;
+#if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
 #endif
 
 public:
 	GSdxApp();
 
-    void* GetModuleHandlePtr();
+	void Init();
+	void* GetModuleHandlePtr();
 
 #ifdef _WIN32
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
 #endif
 
-#ifdef __linux__
+#if defined(__unix__)
 	void BuildConfigurationMap(const char* lpFileName);
 	void ReloadConfig();
 
@@ -51,10 +53,13 @@ public:
 
 	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
 
-	string GetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, const char* value);
-	int GetConfig(const char* entry, int value);
 	void SetConfig(const char* entry, int value);
+	// Avoid issue with overloading
+	int    GetConfigI(const char* entry);
+	bool   GetConfigB(const char* entry);
+	string GetConfigS(const char* entry);
+
 
 	void SetConfigDir(const char* dir);
 
@@ -79,5 +84,6 @@ public:
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};
+struct GSDXErrorOOM : GSDXError {};
 
 extern GSdxApp theApp;

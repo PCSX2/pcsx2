@@ -201,7 +201,7 @@ WXLRESULT CtrlDisassemblyView::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPA
 
 void CtrlDisassemblyView::scanFunctions()
 {
-	if (cpu->isAlive() == false)
+	if (!cpu->isAlive())
 		return;
 
 	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
@@ -493,10 +493,9 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	for (int i = 0; i < visibleRows+1; i++)
 	{
 		manager.getLine(address,displaySymbols,line);
-		
+
 		int rowY1 = rowHeight*i;
-		int rowY2 = rowHeight*(i+1);
-		
+
 		addressPositions[address] = rowY1;
 
 		wxColor backgroundColor = wxColor(getBackgroundColor(address));
@@ -628,7 +627,7 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 {
 	u32 encoded;
 
-	if (cpu->isCpuPaused() == false)
+	if (!cpu->isCpuPaused())
 	{
 		wxMessageBox( L"Cannot change code while the core is running",  L"Error.", wxICON_ERROR);
 		return;
@@ -643,7 +642,7 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 	wxString op = entry.getText();
 	std::string errorText;
 	bool result = MipsAssembleOpcode(op.To8BitData(),cpu,address,encoded,errorText);
-	if (result == true)
+	if (result)
 	{
 		SysClearExecutionCache();
 		cpu->write32(address,encoded);
@@ -824,7 +823,7 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 		case 'G':
 			{
 				u64 addr;
-				if (executeExpressionWindow(this,cpu,addr) == false)
+				if (!executeExpressionWindow(this,cpu,addr))
 					return;
 				gotoAddress(addr);
 			}
@@ -1220,14 +1219,14 @@ void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool with
 		return;
 	}
 
-	if (withDisasm == false)
+	if (!withDisasm)
 	{
 		int instructionSize = 4;
 		int count = (endAddr - startAddr) / instructionSize;
 		int space = count * 32;
 		char *temp = new char[space];
 
-		char *p = temp, *end = temp + space;
+		char *p = temp;
 		for (u32 pos = startAddr; pos < endAddr; pos += instructionSize)
 		{
 			p += sprintf(p, "%08X", cpu->read32(pos));

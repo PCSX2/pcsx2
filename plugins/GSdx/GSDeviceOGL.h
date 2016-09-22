@@ -116,16 +116,18 @@ public:
 
 class GSDeviceOGL final : public GSDevice
 {
-	public:
-	__aligned(struct, 32) VSConstantBuffer
+public:
+	struct alignas(32) VSConstantBuffer
 	{
 		GSVector4 Vertex_Scale_Offset;
-		GSVector4 TextureScale;
+		GSVector2i DepthMask;
+		GSVector2 PointSize;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
-			TextureScale = GSVector4::zero();
+			DepthMask           = GSVector2i(0, 0);
+			PointSize           = GSVector2(0, 0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -151,10 +153,7 @@ class GSDeviceOGL final : public GSDevice
 		{
 			struct
 			{
-				uint32 wildhack:1;
-				uint32 bppz:2;
-
-				uint32 _free:29;
+				uint32 _free:32;
 			};
 
 			uint32 key;
@@ -174,8 +173,9 @@ class GSDeviceOGL final : public GSDevice
 			{
 				uint32 sprite:1;
 				uint32 point:1;
+				uint32 line:1;
 
-				uint32 _free:30;
+				uint32 _free:29;
 			};
 
 			uint32 key;
@@ -187,7 +187,7 @@ class GSDeviceOGL final : public GSDevice
 		GSSelector(uint32 k) : key(k) {}
 	};
 
-	__aligned(struct, 32) PSConstantBuffer
+	struct alignas(32) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
 		GSVector4 WH;
@@ -204,6 +204,7 @@ class GSDeviceOGL final : public GSDevice
 			FogColor_AREF = GSVector4::zero();
 			HalfTexel     = GSVector4::zero();
 			WH            = GSVector4::zero();
+			TA_Af         = GSVector4::zero();
 			MinMax        = GSVector4::zero();
 			MskFix        = GSVector4i::zero();
 			TC_OH_TS      = GSVector4::zero();
@@ -289,9 +290,11 @@ class GSDeviceOGL final : public GSDevice
 
 				// Hack
 				uint32 tcoffsethack:1;
-				uint32 urban_chaos_hack:1;
+				uint32 urban_chaos_hle:1;
+				uint32 tales_of_abyss_hle:1;
+				uint32 tex_is_fb:1; // Jak Shadows
 
-				uint32 _free2:15;
+				uint32 _free2:13;
 			};
 
 			uint64 key;
@@ -335,8 +338,9 @@ class GSDeviceOGL final : public GSDevice
 				uint32 ztst:2;
 				uint32 zwe:1;
 				uint32 date:1;
+				uint32 date_one:1;
 
-				uint32 _free:28;
+				uint32 _free:27;
 			};
 
 			uint32 key;
@@ -378,15 +382,26 @@ class GSDeviceOGL final : public GSDevice
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
+	struct alignas(32) MiscConstantBuffer
+	{
+		GSVector4i ScalingFactor;
+		GSVector4i ChannelShuffle;
+
+		MiscConstantBuffer() {memset(this, 0, sizeof(*this));}
+	};
+
 	struct OGLBlend {uint16 bogus, op, src, dst;};
 	static const OGLBlend m_blendMapOGL[3*3*3*3 + 1];
 	static const int m_NO_BLEND;
 	static const int m_MERGE_BLEND;
 
 	static int s_n;
+	static int m_shader_inst;
+	static int m_shader_reg;
 
 	private:
 	uint32 m_msaa;				// Level of Msaa
+	int m_force_texture_clear;
 
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
@@ -437,10 +452,17 @@ class GSDeviceOGL final : public GSDevice
 		GLuint ps;
 	} m_shadeboost;
 
-	GLuint m_vs[1<<3];
-	GLuint m_gs[1<<2];
+	struct {
+		uint16 last_query;
+		GLuint timer_query[1<<16];
+
+		GLuint timer() { return timer_query[last_query]; }
+	} m_profiler;
+
+	GLuint m_vs[1];
+	GLuint m_gs[1<<3];
 	GLuint m_ps_ss[1<<4];
-	GSDepthStencilOGL* m_om_dss[1<<4];
+	GSDepthStencilOGL* m_om_dss[1<<5];
 	hash_map<uint64, GLuint > m_ps;
 	GLuint m_apitrace;
 
@@ -451,6 +473,7 @@ class GSDeviceOGL final : public GSDevice
 
 	VSConstantBuffer m_vs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
+	MiscConstantBuffer m_misc_cb_cache;
 
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
@@ -470,6 +493,8 @@ class GSDeviceOGL final : public GSDevice
 
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
+
+	void GenerateProfilerData();
 
 	static void CheckDebugLog();
 	// Used by OpenGL, so the same calling convention is required.
@@ -493,14 +518,14 @@ class GSDeviceOGL final : public GSDevice
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;
 	void ClearRenderTarget_i(GSTexture* t, int32 c);
-	void ClearDepth(GSTexture* t, float c) final;
+	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 
 	GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0) final;
 	GSTexture* CreateDepthStencil(int w, int h, bool msaa, int format = 0) final;
 	GSTexture* CreateTexture(int w, int h, int format = 0) final;
 	GSTexture* CreateOffscreen(int w, int h, int format = 0) final;
-	void InitPrimDateTexture(GSTexture* rt);
+	void InitPrimDateTexture(GSTexture* rt, const GSVector4i& area);
 	void RecycleDateTexture();
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) final;
@@ -525,7 +550,7 @@ class GSDeviceOGL final : public GSDevice
 	void PSSetSamplerState(GLuint ss);
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
-	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false);
+	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false, bool accumulation_blend = false);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
@@ -538,12 +563,14 @@ class GSDeviceOGL final : public GSDevice
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 
+	void SelfShaderTestPrint(const string& test, int& nb_shader);
+	void SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader);
 	void SelfShaderTest();
-
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);
 	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);
 	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
+	void SetupCBMisc(const GSVector4i& channel);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel);
 	GLuint GetSamplerID(PSSamplerSelector ssel);

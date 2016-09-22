@@ -22,9 +22,6 @@ using namespace x86Emitter;
 
 __aligned16 x86capabilities x86caps;
 
-// Recompiled code buffer for SSE and MXCSR feature testing.
-static __pagealigned u8 targetFXSAVE[512];
-
 x86capabilities::x86capabilities() :
 	isIdentified(false),
 	VendorID(x86Vendor_Unknown),
@@ -65,10 +62,13 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 		MXCSR_Mask.bitmask = 0xFFFF;	// SSE2 features added
 	}
 
+	__aligned16 u8 targetFXSAVE[512];
+
 	// Work for recent enough GCC/CLANG/MSVC 2012
 	_fxsave(&targetFXSAVE);
 
-	u32 result = (u32&)targetFXSAVE[28];			// bytes 28->32 are the MXCSR_Mask.
+	u32 result;
+	memcpy(&result, &targetFXSAVE[28], 4); // bytes 28->32 are the MXCSR_Mask.
 	if( result != 0 )
 		MXCSR_Mask.bitmask = result;
 }
@@ -149,7 +149,7 @@ void x86capabilities::CountCores()
 	s32 regs[ 4 ];
 	u32 cmds;
 
-	__cpuid( regs, 0x80000000 );
+	cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 
 	// detect multicore for AMD cpu
@@ -191,27 +191,28 @@ void x86capabilities::Identify()
 #endif
 
 	memzero( VendorName );
-	__cpuid( regs, 0 );
+	cpuid( regs, 0 );
 
 	cmds = regs[ 0 ];
-	((u32*)VendorName)[ 0 ] = regs[ 1 ];
-	((u32*)VendorName)[ 1 ] = regs[ 3 ];
-	((u32*)VendorName)[ 2 ] = regs[ 2 ];
+	memcpy(&VendorName[0], &regs[1], 4);
+	memcpy(&VendorName[4], &regs[3], 4);
+	memcpy(&VendorName[8], &regs[2], 4);
 
 	// Determine Vendor Specifics!
 	// It's really not recommended that we base much (if anything) on CPU vendor names,
 	// however it's currently necessary in order to gain a (pseudo)reliable count of cores
 	// and threads used by the CPU (AMD and Intel can't agree on how to make this info available).
 
-	int& vid = (int&)VendorID;
+	int vid;
 	for( vid=0; vid<x86Vendor_Unknown; ++vid )
 	{
 		if( memcmp( VendorName, tbl_x86vendors[vid], 12 ) == 0 ) break;
 	}
+	VendorID = static_cast<x86VendorType>(vid);
 
 	if ( cmds >= 0x00000001 )
 	{
-		__cpuid( regs, 0x00000001 );
+		cpuid( regs, 0x00000001 );
 
 		StepID		=  regs[ 0 ]        & 0xf;
 		Model		= (regs[ 0 ] >>  4) & 0xf;
@@ -227,16 +228,16 @@ void x86capabilities::Identify()
 	if ( cmds >= 0x00000007 )
 	{
 		// Note: ECX must be 0 for AVX2 detection.
-		__cpuidex( regs, 0x00000007, 0 );
+		cpuidex( regs, 0x00000007, 0 );
 
 		SEFlag = regs[ 1 ];
 	}
 
-	__cpuid( regs, 0x80000000 );
+	cpuid( regs, 0x80000000 );
 	cmds = regs[ 0 ];
 	if ( cmds >= 0x80000001 )
 	{
-		__cpuid( regs, 0x80000001 );
+		cpuid( regs, 0x80000001 );
 
 #ifdef __x86_64__
 		x86_64_12BITBRANDID = regs[1] & 0xfff;
@@ -246,9 +247,9 @@ void x86capabilities::Identify()
 	}
 
 	memzero( FamilyName );
-	__cpuid( (int*)FamilyName,		0x80000002);
-	__cpuid( (int*)(FamilyName+16),	0x80000003);
-	__cpuid( (int*)(FamilyName+32),	0x80000004);
+	cpuid( (int*)FamilyName,		0x80000002);
+	cpuid( (int*)(FamilyName+16),	0x80000003);
+	cpuid( (int*)(FamilyName+32),	0x80000004);
 
 	hasFloatingPointUnit						= ( Flags >>  0 ) & 1;
 	hasVirtual8086ModeEnhancements				= ( Flags >>  1 ) & 1;

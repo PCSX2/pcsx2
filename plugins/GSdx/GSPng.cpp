@@ -42,15 +42,17 @@ struct {
 namespace GSPng {
 
     bool SaveFile(const string& file, Format fmt, uint8* image, uint8* row,
-        int width, int height, int pitch, int compression,
+        int width, int height, int pitch, int _compression,
         bool rb_swapped = false, bool first_image = false)
     {
         int channel_bit_depth = pixel[fmt].channel_bit_depth;
         int bytes_per_pixel_in = pixel[fmt].bytes_per_pixel_in;
 
-        int type = first_image ? pixel[fmt].type : PNG_COLOR_TYPE_GRAY;
-        int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
-        int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
+        const int type = first_image ? pixel[fmt].type : PNG_COLOR_TYPE_GRAY;
+        const int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
+        const int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
+
+        const int compression = (_compression < 0 || _compression > Z_BEST_COMPRESSION) ? Z_BEST_SPEED : _compression;
 
         FILE *fp = fopen(file.c_str(), "wb");
         if (fp == nullptr)
@@ -70,9 +72,6 @@ namespace GSPng {
 
             if (setjmp(png_jmpbuf(png_ptr)))
                 throw GSDXRecoverableError();
-
-            if (compression < 0 || compression > Z_BEST_COMPRESSION)
-                compression = Z_BEST_SPEED;
 
             png_init_io(png_ptr, fp);
             png_set_compression_level(png_ptr, compression);

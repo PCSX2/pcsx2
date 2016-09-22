@@ -157,9 +157,9 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	*m_extraButtonSizer += 5;
 	*m_extraButtonSizer += m_msg_preset     | pxMiddle;
 
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_THUMBTRACK,		wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_CHANGED,			wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_check_presets->GetId(), 	wxEVT_COMMAND_CHECKBOX_CLICKED,	wxCommandEventHandler( Dialogs::SysConfigDialog::Presets_Toggled ) );
+	Bind(wxEVT_SCROLL_THUMBTRACK, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_SCROLL_CHANGED, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_CHECKBOX, &Dialogs::SysConfigDialog::Presets_Toggled, this, m_check_presets->GetId());
 }
 
 

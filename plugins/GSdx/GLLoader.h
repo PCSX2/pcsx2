@@ -40,13 +40,6 @@
 #define APIENTRYP APIENTRY *
 #endif
 
-// Mesa glext.h < 20150122 uses GLsizei for BUFFER*PROCs
-#if GL_GLEXT_VERSION < 20150122
-typedef GLsizei buffer_proc_t;
-#else
-typedef GLsizeiptr buffer_proc_t;
-#endif
-
 // Allow compilation with older mesa
 #ifndef GL_VERSION_4_3
 #define GL_VERSION_4_3 1
@@ -194,6 +187,17 @@ typedef void (APIENTRYP PFNGLTEXTUREBARRIERPROC) (void);
 typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
 #endif /* GL_VERSION_4_5 */
 
+#ifndef GL_NVX_gpu_memory_info
+#define GL_NVX_gpu_memory_info 1
+#define GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
+#define GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
+#define GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+#define GL_GPU_MEMORY_INFO_EVICTION_COUNT_NVX 0x904A
+#define GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX 0x904B
+#endif /* GL_NVX_gpu_memory_info */
+
+// **********************  End of the extra header ******************* //
+
 // Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
 // (maybe gl.h is outdated, or my setup is wrong)
 // Anyway, let's just keep the mangled function pointer for those 2 functions.
@@ -256,6 +260,15 @@ extern   PFNGLCLIENTWAITSYNCPROC                glClientWaitSync;
 extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange;
 extern   PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate;
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
+// Shader compilation (Broken driver)
+extern   PFNGLCOMPILESHADERPROC                 glCompileShader;
+extern   PFNGLCREATEPROGRAMPROC                 glCreateProgram;
+extern   PFNGLCREATESHADERPROC                  glCreateShader;
+extern   PFNGLDELETESHADERPROC                  glDeleteShader;
+extern   PFNGLLINKPROGRAMPROC                   glLinkProgram;
+extern   PFNGLUSEPROGRAMPROC                    glUseProgram;
+extern   PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog;
+extern   PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i;
 // Query object
 extern   PFNGLBEGINQUERYPROC                    glBeginQuery;
 extern   PFNGLENDQUERYPROC                      glEndQuery;
@@ -266,6 +279,8 @@ extern   PFNGLQUERYCOUNTERPROC                  glQueryCounter;
 extern   PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v;
 extern   PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v;
 extern   PFNGLGETINTEGER64VPROC                 glGetInteger64v;
+extern   PFNGLCREATEQUERIESPROC                 glCreateQueries;
+extern   PFNGLDELETEQUERIESPROC                 glDeleteQueries;
 // GL4.0
 // GL4.1
 extern   PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline;
@@ -288,8 +303,11 @@ extern   PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage;
 extern   PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup;
 extern   PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert;
 extern   PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl;
+extern   PFNGLOBJECTLABELPROC                   glObjectLabel;
+extern   PFNGLOBJECTPTRLABELPROC                glObjectPtrLabel;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 glClearTexImage;
+extern   PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage;
 extern   PFNGLBUFFERSTORAGEPROC                 glBufferStorage;
 
 // GL4.5
@@ -325,6 +343,7 @@ extern PFNGLCREATEPROGRAMPIPELINESPROC          glCreateProgramPipelines;
 
 extern PFNGLCLIPCONTROLPROC                     glClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
+extern PFNGLGETTEXTURESUBIMAGEPROC              glGetTextureSubImage;
 
 namespace GLLoader {
 	bool check_gl_version(int major, int minor);
@@ -332,9 +351,11 @@ namespace GLLoader {
 	bool check_gl_supported_extension();
 
 	extern bool fglrx_buggy_driver;
+	extern bool legacy_fglrx_buggy_driver;
 	extern bool mesa_amd_buggy_driver;
 	extern bool nvidia_buggy_driver;
 	extern bool intel_buggy_driver;
+	extern bool buggy_sso_dual_src;
 	extern bool in_replayer;
 
 	// GL
@@ -344,4 +365,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_clear_texture;
 	extern bool found_GL_ARB_direct_state_access;
 	extern bool found_GL_EXT_texture_filter_anisotropic;
+	extern bool found_GL_NVX_gpu_memory_info;
+	extern bool found_GL_ATI_meminfo;
 }

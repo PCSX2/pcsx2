@@ -24,7 +24,7 @@ struct BASEBLOCK
 {
 	uptr m_pFnptr;
 
-	const __inline uptr GetFnptr() const { return m_pFnptr; }
+	__inline uptr GetFnptr() const { return m_pFnptr; }
 	void __inline SetFnptr( uptr ptr ) { m_pFnptr = ptr; }
 };
 
@@ -242,7 +242,7 @@ static void recLUT_SetPage(uptr reclut[0x10000], uptr hwlut[0x10000],
 		hwlut[page] = 0u - (pagebase << 16);
 }
 
-#ifdef __x86_64__
+#if defined(_M_X86_64)
 static_assert( sizeof(BASEBLOCK) == 8, "BASEBLOCK is not 8 bytes" );
 #else
 static_assert( sizeof(BASEBLOCK) == 4, "BASEBLOCK is not 4 bytes" );

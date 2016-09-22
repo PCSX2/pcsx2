@@ -31,7 +31,7 @@ wxDEFINE_EVENT(debEVT_BREAKPOINTWINDOW, wxCommandEvent);
 bool parseExpression(const char* exp, DebugInterface* cpu, u64& dest)
 {
 	PostfixExpression postfix;
-	if (cpu->initExpression(exp,postfix) == false) return false;
+	if (!cpu->initExpression(exp,postfix)) return false;
 	return cpu->parseExpression(postfix,dest);
 }
 
@@ -47,7 +47,7 @@ bool executeExpressionWindow(wxWindow* parent, DebugInterface* cpu, u64& dest, c
 		return false;
 
 	wxCharBuffer expression = result.ToUTF8();
-	if (parseExpression(expression, cpu, dest) == false)
+	if (!parseExpression(expression, cpu, dest))
 	{
 		displayExpressionError(parent);
 		return false;
