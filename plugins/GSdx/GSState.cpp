@@ -1669,8 +1669,11 @@ void GSState::Read(uint8* mem, int len)
 	int h = m_env.TRXREG.RRH;
 	GSVector4i r(sx, sy, sx + w, sy + h);
 
-	GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%s SSAX=%d SSAY=%d RRW=%d RRH=%d",
-			len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM), sx, sy, w, h);
+	// Function is called from the EE thread. Unforunately gl stuff can only be used from a single thread (AKA MTGS)
+	if (GLLoader::in_replayer) {
+		GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%s SSAX=%d SSAY=%d RRW=%d RRH=%d",
+				len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM), sx, sy, w, h);
+	}
 
 	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
 	{
