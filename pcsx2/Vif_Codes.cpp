@@ -220,29 +220,7 @@ vifOp(vifCode_FlushA) {
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
 			return 0;
 			
-			//gifUnit.PrintInfo();
-			/*if (p3.state != GIF_PATH_IDLE && !p1or2) { // Only path 3 left...
-				GUNIT_WARN("Vif FlushA - Getting path3 to finish!");
-				if (gifUnit.lastTranType == GIF_TRANS_FIFO
-				&&  p3.state != GIF_PATH_IDLE && !p3.hasDataRemaining()) { 
-					//p3.state= GIF_PATH_IDLE; // Does any game need this anymore?
-					DevCon.Warning("Vif FlushA - path3 has no more data, but didn't EOP");
-				}
-
-				if (p3.state != GIF_PATH_IDLE) {
-					doStall = true; // If path3 still isn't finished...
-				}
-			}
-			else doStall = true;*/
 		}
-		/*if (doStall) {
-			vif1Regs.stat.VGW = true;
-			vifX.vifstalled.enabled   = VifStallEnable(vifXch);
-			vifX.vifstalled.value = VIF_TIMING_BREAK;
-			return 0;
-		}
-		else*/ 
-		//Didn't need to stall!
 		vif1.cmd = 0;
 		vif1.pass = 0;
 	}
@@ -428,12 +406,11 @@ vifOp(vifCode_MskPath3) {
 	pass1 {		
 		vif1Regs.mskpath3 = (vif1Regs.code >> 15) & 0x1;
 		gifRegs.stat.M3P  = (vif1Regs.code >> 15) & 0x1;
-		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "disabled" : "enabled");
+		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "masked" : "enabled");
 		if(!vif1Regs.mskpath3) {
-			//if(!gifUnit.gifPath[GIF_PATH_3].isDone() || gifRegs.stat.P3Q || gifRegs.stat.IP3) {
-				GUNIT_WARN("Path3 triggering!");
-				gifInterrupt();
-			//}
+			GUNIT_WARN("Path3 triggering!");
+			if(CHECK_GIFFIFOHACK)gif_fifo.read(false);
+			else gifInterrupt();
 		}
 		vif1.cmd = 0;
 		vif1.pass = 0;
@@ -457,7 +434,7 @@ vifOp(vifCode_Nop) {
 
 		if (GetVifX.vifpacketsize > 1)
 		{
-			if(((data[1] >> 24) & 0x7f) == 0x6) //is mskpath3 next
+			if(((data[1] >> 24) & 0x7f) == 0x6 && (data[1] & 0x1)) //is mskpath3 next
 			{ 
 				GetVifX.vifstalled.enabled   = VifStallEnable(vifXch);
 				GetVifX.vifstalled.value = VIF_TIMING_BREAK;
