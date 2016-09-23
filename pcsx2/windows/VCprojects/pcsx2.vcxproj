@@ -188,6 +188,7 @@
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\Mdec.cpp" />
     <ClCompile Include="..\..\MultipartFileReader.cpp" />
     <ClCompile Include="..\..\Patch.cpp" />
     <ClCompile Include="..\..\Patch_Memory.cpp" />
@@ -444,6 +445,7 @@
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
+    <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
     <ClInclude Include="..\..\ps2\pgif.h" />

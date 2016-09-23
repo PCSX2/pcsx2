@@ -66,7 +66,7 @@ set(pcsx2Sources
 	IopIrq.cpp
 	IopMem.cpp
 	IopSio2.cpp
-#	Mdec.cpp
+	Mdec.cpp
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
@@ -137,7 +137,7 @@ set(pcsx2Headers
 	IopHw.h
 	IopMem.h
 	IopSio2.h
-#	Mdec.h
+	Mdec.h
 	MTVU.h
 	Memory.h
 	MemoryTypes.h
