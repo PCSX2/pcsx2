@@ -726,7 +726,7 @@ void gifMFIFOInterrupt()
 		if(!(gifstate & GIF_STATE_STALL)) return;
 	}
 
-	if (!CheckPaths(DMAC_MFIFO_GIF)) return;
+	if (!CheckPaths()) return;
 
 	if(!gifch.chcr.STR) {
 		Console.WriteLn("WTF GIFMFIFO");
