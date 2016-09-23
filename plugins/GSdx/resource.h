@@ -101,7 +101,6 @@
 #define IDC_MIPMAP                      2097
 #define IDC_PRELOAD_GS                  2098
 #define IDC_TVSHADER                    2099
-#define IDC_SAFE_FBMASK                 2100
 #define IDC_FAST_TC_INV                 2101
 #define IDC_LARGE_FB                    2102
 #define IDC_AUTO_FLUSH                  2103
