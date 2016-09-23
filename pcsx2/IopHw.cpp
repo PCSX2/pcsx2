@@ -19,6 +19,8 @@
 
 #include "iR5900.h"
 #include "Sio.h"
+#include "Mdec.h"
+#include "ps2/pgif.h" // for pgpu reset
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 // found in iPsxHw.cpp.
@@ -29,7 +31,10 @@ void psxHwReset() {
 
 	memset(iopHw, 0, 0x10000);
 
-//	mdecInit(); //initialize mdec decoder
+	// todo: psxmode: this should be in an EE reset routine, since PGIF is on that IC
+	pgifInit();
+
+	mdecInit(); //initialize mdec decoder
 	cdrReset();
 	cdvdReset();
 	psxRcntInit();
