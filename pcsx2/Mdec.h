@@ -85,26 +85,20 @@
 	image[n+1] = ROUND(Y); \
 	image[n+0] = ROUND(Y);
 
-void mdecInit();
-void mdecWrite0(u32 data);
-void mdecWrite1(u32 data);
-u32  mdecRead0();
-u32  mdecRead1();
-void psxDma0(u32 madr, u32 bcr, u32 chcr);
-void psxDma1(u32 madr, u32 bcr, u32 chcr);
-int  mdecFreeze(gzFile f, int Mode);
+extern void mdecInit();
+extern void mdecWrite0(u32 data);
+extern void mdecWrite1(u32 data);
+extern u32  mdecRead0();
+extern u32  mdecRead1();
+extern void psxDma0(u32 madr, u32 bcr, u32 chcr);
+extern void psxDma1(u32 madr, u32 bcr, u32 chcr);
+//int  mdecFreeze(gzFile f, int Mode);
+
 
 u16* rl2blk(int *blk,u16 *mdec_rl);
 void iqtab_init(int *iqtab,unsigned char *iq_y);
 void round_init(void);
 void yuv2rgb24(int *blk,unsigned char *image);
 void yuv2rgb15(int *blk,u16 *image);
-
-struct {
-	u32 command;
-	u32 status;
-	u16 *rl;
-	int rlsize;
-} mdec;
 
 #endif /* __MDEC_H__ */
