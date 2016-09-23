@@ -402,6 +402,14 @@ void cdvdReloadElfInfo(wxString elfoverride)
 					)
 				);
 				//Console.Error( "Playstation1 game discs are not supported by PCSX2." );
+
+			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
+			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
+			// simply using the exe name, stripped of problematic characters.
+			wxString fname = elfpath.AfterLast('\\');
+			wxString fname2 = fname.BeforeFirst(';');
+			DiscSerial = fname2;
+			Console.SetTitle(DiscSerial);
 			return;
 		}
 		

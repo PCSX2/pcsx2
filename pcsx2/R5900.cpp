@@ -601,7 +601,7 @@ void __fastcall eeloadHook()
 		}
 	}
 
-	if (!g_GameStarted && disctype == 2 && elfname == discelf)
+	if (!g_GameStarted && (disctype == 2 || disctype == 1) && elfname == discelf)
 		g_GameLoading = true;
 }
 
