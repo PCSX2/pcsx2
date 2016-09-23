@@ -21,6 +21,8 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/pgif.h"
+
 using namespace R5900;
 
 static __fi void IntCHackCheck()
@@ -92,8 +94,13 @@ mem32_t __fastcall _hwRead32(u32 mem)
 				return psHu32(INTC_STAT);
 			}
 
-			
-				
+			// todo: psx mode: this is new
+			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+				return PGIFr((mem & 0x1FFFFFFF));
+			}
+
+			// WARNING: this code is never executed anymore due to previous condition.
+			// It requires investigation of what to do.
 			if ((mem & 0x1000ff00) == 0x1000f300)
 			{
 				int ret = 0;
@@ -139,14 +146,21 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			switch( mem )
 			{
 				case SIO_ISR:
-				case SBUS_F260:
+
 				case 0x1000f410:
 				case MCH_RICM:
 					return 0;
 
 				case SBUS_F240:
+#if PSX_EXTRALOGS
+					DevCon.Warning("Read  SBUS_F240  %x ", psHu32(SBUS_F240));
+#endif
 					return psHu32(SBUS_F240) | 0xF0000102;
-
+				case SBUS_F260:
+#if PSX_EXTRALOGS
+					DevCon.Warning("Read  SBUS_F260  %x ", psHu32(SBUS_F260));
+#endif
+					return psHu32(SBUS_F260);
 				case MCH_DRD:
 					if( !((psHu32(MCH_RICM) >> 6) & 0xF) )
 					{
@@ -347,6 +361,14 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 			ZeroQWC( result );
 		break;
 		case 0x0F:
+			// todo: psx mode: this is new
+			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+				PGIFrQword((mem & 0x1FFFFFFF), result);
+				return;
+			}
+
+			// WARNING: this code is never executed anymore due to previous condition.
+			// It requires investigation of what to do.
 			if ((mem & 0xffffff00) == 0x1000f300)
 			{
 				DevCon.Warning("128bit read from %x wibble", mem);
