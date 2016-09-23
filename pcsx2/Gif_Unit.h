@@ -592,9 +592,11 @@ struct Gif_Unit {
 					break; // Not finished with GS packet
 				}
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
-				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
+				if (gifPath[curPath].state == GIF_PATH_WAIT || gifPath[curPath].state == GIF_PATH_IDLE) {
+					AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH - 1));
+				}
+				
 			}
-
 			if (!gsSIGNAL.queued && !gifPath[0].isDone()) {
 				stat.APATH = 1;
 				stat.P1Q = 0;
@@ -620,11 +622,10 @@ struct Gif_Unit {
 				break;
 			}
 		}
-
 		//Some loaders/Refresh Rate selectors and things dont issue "End of Packet" commands
 		//So we look and see if the end of the last tag is all there, if so, stick it in the buffer for the GS :)
 		//(Invisible Screens on Terminator 3 and Growlanser 2/3)
-		if(gifPath[curPath].curOffset == gifPath[curPath].curSize) 
+		if(gifPath[curPath].curOffset == gifPath[curPath].curSize)
 		{
 			FlushToMTGS();
 		}
@@ -650,13 +651,13 @@ struct Gif_Unit {
 	bool CanDoPath2HL() const {
 		return (stat.APATH == 0 || stat.APATH == 2) && CanDoGif();
 	}
-	// Gif DMA - CHECK_GIFREVERSEHACK is a hack for Hot Wheels.
+	// Gif DMA
 	bool CanDoPath3() const {
 		return((stat.APATH == 0 && !Path3Masked()) || stat.APATH == 3) && CanDoGif();
 	}
 
 	bool CanDoP3Slice()const { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
-	bool CanDoGif() const    { return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
+	bool CanDoGif() const    { return stat.PSE == 0 && stat.DIR == 0 && gsSIGNAL.queued == 0; }
 	//Mask stops the next packet which hasnt started from transferring
 	bool Path3Masked() const { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
 

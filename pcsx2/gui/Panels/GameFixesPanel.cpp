@@ -89,11 +89,11 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
-			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."),
+			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."),
 			wxEmptyString
 		},
 		{
-			_("Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"),
+			_("Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"),
 			wxEmptyString
 		},
 		{
