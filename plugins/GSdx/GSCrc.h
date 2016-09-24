@@ -175,10 +175,6 @@ public:
 		SacredBlaze,
 		SuperManReturns,
 		ItadakiStreet,
-		Jak1,
-		Jak2,
-		Jak3,
-		JakX,
 		TitleCount,
 	};
 
