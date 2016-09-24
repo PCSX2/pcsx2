@@ -521,6 +521,9 @@ CRC::Game CRC::m_games[] =
 	{0x12804727, Jak3, EU, 0},
 	{0x644CFD03, Jak3, US, 0},
 	{0xDF659E77, JakX, EU, 0},
+	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0x17125698, RatchetAndClank3, EU, 0},
+	{0xD697D204, RatchetGladiator, EU, 0},
 };
 
 map<uint32, CRC::Game*> CRC::m_map;

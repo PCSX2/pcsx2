@@ -179,6 +179,9 @@ public:
 		Jak2,
 		Jak3,
 		JakX,
+		RatchetAndClank,
+		RatchetAndClank3,
+		RatchetGladiator,
 		TitleCount,
 	};
 
