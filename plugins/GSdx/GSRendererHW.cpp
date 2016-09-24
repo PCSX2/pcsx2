@@ -39,10 +39,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
+		m_mipmap                         = theApp.GetConfigB("UserHacks_mipmap");
 	} else {
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userhacks_disable_gs_mem_clear = false;
+		m_mipmap                         = false;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
@@ -480,6 +482,95 @@ void GSRendererHW::Draw()
 	if(PRIM->TME)
 	{
 		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		int lod = 0;
+		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
+		TEX0 = m_context->TEX0;
+
+		// Code from the SW renderer
+		if (IsMipMapActive()) {
+			//gd.sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
+
+			int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
+			int k = (m_context->TEX1.K >> 4);
+			int lcm = m_context->TEX1.LCM;
+
+			if ((int)m_vt.m_lod.x >= mxl) {
+				k = mxl; // set lod to max level
+				lcm = 1; // constant lod
+			}
+
+			if (PRIM->FST) {
+				ASSERT(lcm == 1);
+				ASSERT(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
+
+				lcm = 1;
+			}
+
+			if (lcm == 1) {
+				lod = std::max<int>(std::min<int>(k, mxl), 0);
+			} else {
+				// Not constant but who care !
+				lod = std::max<int>((int)m_vt.m_lod.x, 0);
+			}
+
+			MIP_CLAMP.MINU >>= lod;
+			MIP_CLAMP.MINV >>= lod;
+			MIP_CLAMP.MAXU >>= lod;
+			MIP_CLAMP.MAXV >>= lod;
+
+			switch(lod)
+			{
+				case 0:
+					break;
+				case 1:
+					TEX0.TBP0 = m_context->MIPTBP1.TBP1;
+					TEX0.TBW = m_context->MIPTBP1.TBW1;
+					break;
+				case 2:
+					TEX0.TBP0 = m_context->MIPTBP1.TBP2;
+					TEX0.TBW = m_context->MIPTBP1.TBW2;
+					break;
+				case 3:
+					TEX0.TBP0 = m_context->MIPTBP1.TBP3;
+					TEX0.TBW = m_context->MIPTBP1.TBW3;
+					break;
+				case 4:
+					TEX0.TBP0 = m_context->MIPTBP2.TBP4;
+					TEX0.TBW = m_context->MIPTBP2.TBW4;
+					break;
+				case 5:
+					TEX0.TBP0 = m_context->MIPTBP2.TBP5;
+					TEX0.TBW = m_context->MIPTBP2.TBW5;
+					break;
+				case 6:
+					TEX0.TBP0 = m_context->MIPTBP2.TBP6;
+					TEX0.TBW = m_context->MIPTBP2.TBW6;
+					break;
+				default:
+					__assume(0);
+			}
+
+			if (TEX0.TH <= lod) {
+				TEX0.TH = 1;
+			} else {
+				TEX0.TH -= lod;
+			}
+			if (TEX0.TW <= lod) {
+				TEX0.TW = 1;
+			} else {
+				TEX0.TW -= lod;
+			}
+
+			for (int i = 0; i < lod; i++) {
+				m_vt.m_min.t *= 0.5f;
+				m_vt.m_max.t *= 0.5f;
+			}
+
+			m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+
+			GL_INS("Mipmap LOD %d (%f %f) new size %dx%d", lod, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH);
+		}
+
 
 		/*
 
@@ -494,14 +585,14 @@ void GSRendererHW::Draw()
 
 		GSVector4i r;
 
-		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
+		GetTextureMinMax(r, context->TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-		tex = tex_psm.depth ? m_tc->LookupDepthSource(context->TEX0, env.TEXA, r) : m_tc->LookupSource(context->TEX0, env.TEXA, r);
+		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
 
 		// FIXME: Could be removed on openGL
 		if(tex_psm.pal > 0)
 		{
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+			m_mem.m_clut.Read32(TEX0, env.TEXA);
 		}
 
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.

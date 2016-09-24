@@ -343,6 +343,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
+	m_default_configuration["UserHacks_mipmap"]                           = "0";
 	m_default_configuration["UserHacks_MSAA"]                             = "0";
 	m_default_configuration["UserHacks_unscale_point_line"]               = "0";
 	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
