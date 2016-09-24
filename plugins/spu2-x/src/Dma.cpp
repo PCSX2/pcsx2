@@ -214,7 +214,10 @@ void V_Core::PlainDMAWrite(u16 *pMem, u32 size)
 	else
 		DMA7LogWrite(pMem,size<<1);
 
-	TSA &= 0xfffff;
+	if (psxmode)
+		TSA &= 0x7ffff;
+	else
+		TSA &= 0xfffff;
 
 	u32 buff1end = TSA + size;
 	u32 buff2end=0;
@@ -235,14 +238,11 @@ void V_Core::PlainDMAWrite(u16 *pMem, u32 size)
 		cacheLine++;
 	} while ( cacheLine != &cacheEnd );
 
-	//ConLog( "* SPU2-X: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
-	//	TSA, buff1end, flagTSA, flagTDA, clearLen );
-
-
 	// First Branch needs cleared:
 	// It starts at TSA and goes to buff1end.
 
 	const u32 buff1size = (buff1end-TSA);
+	ConLog("* SPU2-X: DMA exec! TSA = %x buff1size*2 = %x\n", TSA, buff1size*2);
 	memcpy( GetMemPtr( TSA ), pMem, buff1size*2 );
 
 	u32 TDA;
@@ -261,7 +261,8 @@ void V_Core::PlainDMAWrite(u16 *pMem, u32 size)
 		// 0x2800?  Hard to know for sure (almost no games depend on this)
 
 		memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
-		TDA = (buff2end+1) & 0xfffff;
+		if (psxmode) TDA = (buff2end + 1) & 0x7ffff;
+		else TDA = (buff2end+1) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -297,7 +298,8 @@ void V_Core::PlainDMAWrite(u16 *pMem, u32 size)
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end + 1) & 0xfffff;
+		if (psxmode) TDA = (buff1end + 1) & 0x7ffff;
+		else TDA = (buff1end + 1) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -402,6 +404,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 
 	if(size<2) {
 		//if(dma7callback) dma7callback();
+		ConLog("* SPU2-X: Warning DMA Transfer of 0 bytes? size is %x\n", size);
 		Regs.STATX &= ~0x80;
 		//Regs.ATTR |= 0x30;
 		DMAICounter=1;
@@ -422,11 +425,12 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 		}
 	}
 
-	TSA &= 0xfffff;
+	if (psxmode) TSA &= 0x7ffff;
+	else TSA &= 0xfffff;
 
 	bool adma_enable = ((AutoDMACtrl&(Index+1))==(Index+1));
 
-	if(adma_enable)
+	if(adma_enable && !psxmode) // no adma in psx mode
 	{
 		TSA&=0x1fff;
 		StartADMAWrite(pMem,size);
