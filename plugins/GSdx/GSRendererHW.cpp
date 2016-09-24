@@ -491,7 +491,7 @@ void GSRendererHW::Draw()
 			//gd.sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
 
 			int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
-			int k = (m_context->TEX1.K >> 4);
+			int k = (m_context->TEX1.K + 8) >> 4;
 			int lcm = m_context->TEX1.LCM;
 
 			if ((int)m_vt.m_lod.x >= mxl) {
@@ -510,7 +510,7 @@ void GSRendererHW::Draw()
 				lod = std::max<int>(std::min<int>(k, mxl), 0);
 			} else {
 				// Not constant but who care !
-				lod = std::max<int>((int)m_vt.m_lod.x, 0);
+				lod = std::max<int>((int)round(m_vt.m_lod.x), 0);
 			}
 
 			MIP_CLAMP.MINU >>= lod;
