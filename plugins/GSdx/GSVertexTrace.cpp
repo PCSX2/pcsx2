@@ -446,6 +446,11 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 		}
 	}
 
+	// FIXME/WARNING. A division by 2 is done on the depth. I suspect to avoid
+	// negative value. However it means that we lost the lsb bit. m_eq.z could
+	// be true if depth isn't constant but close enough. It also imply that
+	// pmin.z & 1 == 0 and pax.z & 1 == 0
+
 	#if _M_SSE >= 0x401
 
 	pmin = pmin.blend16<0x30>(pmin.srl32(1));
