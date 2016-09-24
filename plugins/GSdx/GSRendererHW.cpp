@@ -585,7 +585,7 @@ void GSRendererHW::Draw()
 
 		GSVector4i r;
 
-		GetTextureMinMax(r, context->TEX0, MIP_CLAMP, m_vt.IsLinear());
+		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
 
