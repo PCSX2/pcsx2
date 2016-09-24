@@ -554,11 +554,11 @@ void GSRendererSW::Draw()
 		{
 			if (texture_shuffle) {
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_tex_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				s = format("%05d_f%lld_texraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 				m_mem.SaveBMP(m_dump_root+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 			}
 
-			s = format("%05d_f%lld_tex_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
+			s = format("%05d_f%lld_texraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
 			m_mem.SaveBMP(m_dump_root+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
 
@@ -1670,7 +1670,35 @@ void GSRendererSW::SharedData::UpdateSource()
 		{
 			for(size_t i = 0; m_tex[i].t != NULL; i++)
 			{
-				s = format("%05d_f%lld_tex%d_%05x_%d.bmp", m_parent->s_n - 2, frame, i, (int)m_parent->m_context->TEX0.TBP0, (int)m_parent->m_context->TEX0.PSM);
+				int TBP0 = 0;
+				switch(i)
+				{
+					case 0:
+						TBP0 = m_parent->m_context->TEX0.TBP0;
+						break;
+					case 1:
+						TBP0 = m_parent->m_context->MIPTBP1.TBP1;
+						break;
+					case 2:
+						TBP0 = m_parent->m_context->MIPTBP1.TBP2;
+						break;
+					case 3:
+						TBP0 = m_parent->m_context->MIPTBP1.TBP3;
+						break;
+					case 4:
+						TBP0 = m_parent->m_context->MIPTBP2.TBP4;
+						break;
+					case 5:
+						TBP0 = m_parent->m_context->MIPTBP2.TBP5;
+						break;
+					case 6:
+						TBP0 = m_parent->m_context->MIPTBP2.TBP6;
+						break;
+					default:
+						__assume(0);
+				}
+
+				s = format("%05d_f%lld_tex%d_%05x_%s.bmp", m_parent->s_n - 2, frame, i, TBP0, psm_str((int)m_parent->m_context->TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw+s);
 			}
@@ -1681,7 +1709,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
 
-				s = format("%05d_f%lld_texp_%05x_%d.bmp", m_parent->s_n - 2, frame, (int)m_parent->m_context->TEX0.CBP, (int)m_parent->m_context->TEX0.CPSM);
+				s = format("%05d_f%lld_texp_%05x_%s.bmp", m_parent->s_n - 2, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 
 				t->Save(root_sw+s);
 
