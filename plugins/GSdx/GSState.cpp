@@ -2966,39 +2966,49 @@ void GSState::GetAlphaMinMax()
 
 bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 {
-	const GSDrawingContext* context = m_context;
+	// Shortcut for the easy case
+	if(m_context->TEST.ATST == ATST_ALWAYS)
+		return true;
+
+	// Alpha test can only control the write of some channels. If channels are already masked
+	// the alpha test is therefore a nop.
+	switch (m_context->TEST.AFAIL) {
+		case AFAIL_KEEP:
+			break;
+
+		case AFAIL_FB_ONLY:
+			if (zm == 0xFFFFFFFF)
+				return true;
+
+			break;
+
+		case AFAIL_ZB_ONLY:
+			if (fm == 0xFFFFFFFF)
+				return true;
+
+			break;
+
+		case AFAIL_RGB_ONLY:
+			if (zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
+				return true;
+	}
 
 	bool pass = true;
 
-	if(context->TEST.ATST == ATST_NEVER)
+	if(m_context->TEST.ATST == ATST_NEVER)
 	{
-		pass = false;
+		pass = false; // Shortcut to avoid GetAlphaMinMax below
 	}
-	else if((context->TEST.AFAIL == AFAIL_FB_ONLY) && zm == 0xFFFFFFFF)
-	{
-		// Alpha test controls depth writes but they're masked
-		pass = true;
-	}
-	else if((context->TEST.AFAIL == AFAIL_ZB_ONLY) && fm == 0xFFFFFFFF)
-	{
-		// Alpha test controls color writes but they're masked
-		pass = true;
-	}
-	else if((context->TEST.AFAIL == AFAIL_RGB_ONLY) && zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[context->FRAME.PSM].fmt == 1))
-	{
-		// Alpha test controls alpha/depth writes but they're both masked
-		pass = true;
-	}
-	else if(context->TEST.ATST != ATST_ALWAYS)
+	else
 	{
 		GetAlphaMinMax();
 
 		int amin = m_vt.m_alpha.min;
 		int amax = m_vt.m_alpha.max;
 
-		int aref = context->TEST.AREF;
+		int aref = m_context->TEST.AREF;
 
-		switch(context->TEST.ATST)
+		switch(m_context->TEST.ATST)
 		{
 		case ATST_NEVER:
 			pass = false;
@@ -3043,7 +3053,7 @@ bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 
 	if(!pass)
 	{
-		switch(context->TEST.AFAIL)
+		switch(m_context->TEST.AFAIL)
 		{
 		case AFAIL_KEEP: fm = zm = 0xffffffff; break;
 		case AFAIL_FB_ONLY: zm = 0xffffffff; break;
