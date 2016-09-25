@@ -474,8 +474,12 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	{
 		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
+		// The texture cache will handle various format conversion internally for non-target texture
+		// After the conversion the texture will be RGBA8 (aka 32 bits) hence the 0 below
+		int gpu_tex_fmt = (tex->m_target) ? cpsm.fmt : 0;
+
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
@@ -484,7 +488,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		if (ps_sel.shuffle) {
 			ps_sel.fmt = 0;
 		} else {
-			ps_sel.fmt = tex->m_palette ? cpsm.fmt | 4 : cpsm.fmt;
+			ps_sel.fmt = tex->m_palette ? gpu_tex_fmt | 4 : gpu_tex_fmt;
 		}
 		ps_sel.aem = m_env.TEXA.AEM;
 		ps_sel.tfx = m_context->TEX0.TFX;

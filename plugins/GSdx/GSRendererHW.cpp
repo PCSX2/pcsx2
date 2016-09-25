@@ -548,28 +548,14 @@ void GSRendererHW::Draw()
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-		/*
-
-		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
-
 		if(tex_psm.pal > 0)
-		{
 			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
-		}
-
-		*/
 
 		GSVector4i r;
 
 		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
-
-		// FIXME: Could be removed on openGL
-		if(tex_psm.pal > 0)
-		{
-			m_mem.m_clut.Read32(TEX0, env.TEXA);
-		}
 
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 		// Initially code also tested the RT but it gives too much false-positive
