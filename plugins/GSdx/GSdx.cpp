@@ -337,7 +337,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_AlphaHack"]                        = "0";
 	m_default_configuration["UserHacks_AlphaStencil"]                     = "0";
 	m_default_configuration["UserHacks_AutoFlush"]                        = "0";
-	m_default_configuration["UserHacks_ColorDepthClearOverlap"]           = "0";
 	m_default_configuration["UserHacks_DisableDepthSupport"]              = "0";
 	m_default_configuration["UserHacks_DisableGsMemClear"]                = "0";
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";

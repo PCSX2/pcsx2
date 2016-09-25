@@ -692,7 +692,18 @@ void GSRendererHW::Draw()
 	}
 
 	if (!m_userhacks_disable_gs_mem_clear) {
-		OI_GsMemClear();
+		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
+		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !PRIM->ABE // Direct write
+				&& (m_context->FRAME.FBMSK == 0) // no color mask
+				&& !m_context->TEST.ATE // no alpha test
+				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
+				&& r.x == 0 && r.y == 0) { // Likely full buffer write
+
+			OI_GsMemClear();
+
+			OI_DoubleHalfClear(rt_tex, ds_tex);
+		}
 	}
 
 	// skip alpha test if possible
@@ -861,28 +872,19 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpidermanWoS, CRC::RegionCount, &GSRendererHW::OI_SpidermanWoS));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::DigimonRumbleArena2, CRC::RegionCount, &GSRendererHW::OI_DigimonRumbleArena2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BlackHawkDown, CRC::RegionCount, &GSRendererHW::OI_BlackHawkDown));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::XmenOriginsWolverine, CRC::RegionCount, &GSRendererHW::OI_XmenOriginsWolverine));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::CallofDutyFinalFronts, CRC::RegionCount, &GSRendererHW::OI_CallofDutyFinalFronts));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroNewBeginning, CRC::RegionCount, &GSRendererHW::OI_SpyroNewBeginning));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
-	// Enable it by default in the future (hack ought to be safe enough)
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SimpsonsGame, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TyTasmanianTiger2, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFVIIDoC, CRC::RegionCount, &GSRendererHW::OI_DoubleHalfClear));
 
-	if (!can_handle_depth)
+	if (!can_handle_depth) {
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
+		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
+	}
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
@@ -905,34 +907,28 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
-
-	bool hack = theApp.GetConfigB("UserHacks_ColorDepthClearOverlap") && theApp.GetConfigB("UserHacks");
-	if (hack && !m_oi) {
-		// FIXME: Enable this code in the future. I think it could replace
-		// most of the "old" OI hack. So far code was tested on GoW2 & SimpsonsGame with
-		// success
-		m_oi = &GSRendererHW::OI_DoubleHalfClear;
-	}
 }
 
-// Handle case where the frame buffer and the Z buffer overlap
-bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+// Trick to do a fast clear on the GS
+// Set frame buffer pointer on the start of the buffer. Set depth buffer pointer on the half buffer
+// FB + depth write will fill the full buffer.
+void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 {
-	// Trick to do a fast clear on the GS
-	// Set frame buffer pointer on the start of the buffer. Set depth buffer pointer on the half buffer
-	// FB + depth write will fill the full buffer.
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME && !m_context->ZBUF.ZMSK && rt && ds) {
+	// Note gs mem clear must be tested before calling this function
+
+	// Limit further to unmask Z write
+	if (!m_context->ZBUF.ZMSK && rt && ds) {
 		const GSVertex* v = &m_vertex.buff[0];
 		const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
 		const GSLocalMemory::psm_t& depth_psm = GSLocalMemory::m_psm[m_context->ZBUF.PSM];
 
 		// Z and color must be constant and the same
 		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
-			return true;
+			return;
 
 		// Format doesn't have the same size. It smells fishy
 		if (frame_psm.trbpp != depth_psm.trbpp)
-			return true;
+			return;
 
 		// Size of the current draw
 		uint32 w_pages = roundf(m_vt.m_max.p.x / frame_psm.pgs.x);
@@ -963,24 +959,17 @@ bool GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds, GSTextureCac
 			} else {
 				m_dev->ClearRenderTarget(rt, color);
 			}
-
-			// warning: draw call mustn't be skipped to keep correct invalidation. Don't return false
 		}
 	}
-
-	return true;
 }
 
 // Note: hack is safe, but it could impact the perf a little (normally games do only a couple of clear by frame)
 void GSRendererHW::OI_GsMemClear()
 {
-	// Rectangle draw without texture
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && !PRIM->TME && !PRIM->ABE // Direct write
-			&& (m_context->FRAME.FBMSK == 0)
-			&& !m_context->TEST.ATE // no alpha test
-			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
-			&& (m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(0))) // Constant 0 write
-			) {
+	// Note gs mem clear must be tested before calling this function
+
+	// Limit it further to a full screen 0 write
+	if ((m_vertex.next == 2) &&  m_vt.m_min.c.eq(GSVector4i(0))) {
 		GSOffset* off = m_context->offset.fb;
 		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 		// Limit the hack to a single fullscreen clear. Some games might use severals column to clear a screen
@@ -1298,53 +1287,6 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 	return true;
 }
 
-bool GSRendererHW::OI_SpidermanWoS(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x025a0 || FBP == 0x02800) && FPSM == PSM_PSMCT32)	//0x2800 pal, 0x25a0 ntsc
-	{
-		//only top half of the screen clears
-		m_dev->ClearDepth(ds);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_DigimonRumbleArena2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(!PRIM->TME)
-	{
-		if((FBP == 0x02300 || FBP == 0x03fc0) && FPSM == PSM_PSMCT32)
-		{
-			//half height buffer clear
-			m_dev->ClearDepth(ds);
-		}
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_BlackHawkDown(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(FBP == 0x02000 && FPSM == PSM_PSMZ24)
-	{
-		//half height buffer clear
-		m_dev->ClearDepth(ds);
-
-		return false;
-	}
-
-	return true;
-}
-
 bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	uint32 FBP = m_context->FRAME.Block();
@@ -1370,52 +1312,12 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	return true;
 }
 
-bool GSRendererHW::OI_XmenOriginsWolverine(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(FBP == 0x0 && FPSM == PSM_PSMCT16)
-	{
-		//half height buffer clear
-		m_dev->ClearDepth(ds);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_CallofDutyFinalFronts(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(FBP == 0x02300 && FPSM == PSM_PSMZ24)
-	{
-		//half height buffer clear
-		m_dev->ClearDepth(ds);
-
-		return false;
-	}
-
-	return true;
-}
-
 bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	uint32 FBP = m_context->FRAME.Block();
 	uint32 FPSM = m_context->FRAME.PSM;
 
-	if(!PRIM->TME)
-	{
-		if(FPSM == PSM_PSMCT24 && (FBP == 0x02800 || FBP == 0x02bc0))	//0x2800 pal, 0x2bc0 ntsc
-		{
-			//half height buffer clear
-			m_dev->ClearDepth(ds);
-
-			return false;
-		}
-	}
-	else if(PRIM->TME)
+	if(PRIM->TME)
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
@@ -1431,17 +1333,7 @@ bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureC
 	uint32 FBP = m_context->FRAME.Block();
 	uint32 FPSM = m_context->FRAME.PSM;
 
-	if(!PRIM->TME)
-	{
-		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
-		{
-			//half height buffer clear
-			m_dev->ClearDepth(ds);
-
-			return false;
-		}
-	}
-	else if(PRIM->TME)
+	if(PRIM->TME)
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
