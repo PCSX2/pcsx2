@@ -3084,6 +3084,60 @@ bool GSState::IsMipMapActive()
 	return m_mipmap && m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0; 
 }
 
+GIFRegTEX0 GSState::GetTex0Layer(int lod)
+{
+	// Shortcut
+	if (lod == 0) {
+		return m_context->TEX0;
+	}
+
+	GIFRegTEX0 TEX0 = m_context->TEX0;
+
+	switch(lod)
+	{
+		case 1:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP1;
+			TEX0.TBW = m_context->MIPTBP1.TBW1;
+			break;
+		case 2:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP2;
+			TEX0.TBW = m_context->MIPTBP1.TBW2;
+			break;
+		case 3:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP3;
+			TEX0.TBW = m_context->MIPTBP1.TBW3;
+			break;
+		case 4:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP4;
+			TEX0.TBW = m_context->MIPTBP2.TBW4;
+			break;
+		case 5:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP5;
+			TEX0.TBW = m_context->MIPTBP2.TBW5;
+			break;
+		case 6:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP6;
+			TEX0.TBW = m_context->MIPTBP2.TBW6;
+			break;
+		default:
+			__assume(0);
+	}
+
+	// Correct the texture size
+	if (TEX0.TH <= lod) {
+		TEX0.TH = 1;
+	} else {
+		TEX0.TH -= lod;
+	}
+	if (TEX0.TW <= lod) {
+		TEX0.TW = 1;
+	} else {
+		TEX0.TW -= lod;
+	}
+
+	return TEX0;
+}
+
 // GSTransferBuffer
 
 GSState::GSTransferBuffer::GSTransferBuffer()

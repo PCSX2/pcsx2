@@ -1201,7 +1201,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.k = GSVector4((float)k);
 				}
 
-				GIFRegTEX0 MIP_TEX0 = TEX0;
 				GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
 				GSVector4 tmin = m_vt.m_min.t;
@@ -1211,38 +1210,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 				for(int i = 1, j = std::min<int>((int)context->TEX1.MXL, 6); i <= j; i++)
 				{
-					switch(i)
-					{
-					case 1:
-						MIP_TEX0.TBP0 = context->MIPTBP1.TBP1;
-						MIP_TEX0.TBW = context->MIPTBP1.TBW1;
-						break;
-					case 2:
-						MIP_TEX0.TBP0 = context->MIPTBP1.TBP2;
-						MIP_TEX0.TBW = context->MIPTBP1.TBW2;
-						break;
-					case 3:
-						MIP_TEX0.TBP0 = context->MIPTBP1.TBP3;
-						MIP_TEX0.TBW = context->MIPTBP1.TBW3;
-						break;
-					case 4:
-						MIP_TEX0.TBP0 = context->MIPTBP2.TBP4;
-						MIP_TEX0.TBW = context->MIPTBP2.TBW4;
-						break;
-					case 5:
-						MIP_TEX0.TBP0 = context->MIPTBP2.TBP5;
-						MIP_TEX0.TBW = context->MIPTBP2.TBW5;
-						break;
-					case 6:
-						MIP_TEX0.TBP0 = context->MIPTBP2.TBP6;
-						MIP_TEX0.TBW = context->MIPTBP2.TBW6;
-						break;
-					default:
-						__assume(0);
-					}
-
-					if(MIP_TEX0.TW > 0) MIP_TEX0.TW--;
-					if(MIP_TEX0.TH > 0) MIP_TEX0.TH--;
+					const GIFRegTEX0& MIP_TEX0 = GetTex0Layer(i);
 
 					MIP_CLAMP.MINU >>= 1;
 					MIP_CLAMP.MINV >>= 1;
@@ -1670,35 +1638,9 @@ void GSRendererSW::SharedData::UpdateSource()
 		{
 			for(size_t i = 0; m_tex[i].t != NULL; i++)
 			{
-				int TBP0 = 0;
-				switch(i)
-				{
-					case 0:
-						TBP0 = m_parent->m_context->TEX0.TBP0;
-						break;
-					case 1:
-						TBP0 = m_parent->m_context->MIPTBP1.TBP1;
-						break;
-					case 2:
-						TBP0 = m_parent->m_context->MIPTBP1.TBP2;
-						break;
-					case 3:
-						TBP0 = m_parent->m_context->MIPTBP1.TBP3;
-						break;
-					case 4:
-						TBP0 = m_parent->m_context->MIPTBP2.TBP4;
-						break;
-					case 5:
-						TBP0 = m_parent->m_context->MIPTBP2.TBP5;
-						break;
-					case 6:
-						TBP0 = m_parent->m_context->MIPTBP2.TBP6;
-						break;
-					default:
-						__assume(0);
-				}
+				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_tex%d_%05x_%s.bmp", m_parent->s_n - 2, frame, i, TBP0, psm_str((int)m_parent->m_context->TEX0.PSM));
+				s = format("%05d_f%lld_tex%d_%05x_%s.bmp", m_parent->s_n - 2, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw+s);
 			}

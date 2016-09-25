@@ -484,7 +484,6 @@ void GSRendererHW::Draw()
 		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		int lod = 0;
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
-		TEX0 = m_context->TEX0;
 
 		// Code from the SW renderer
 		if (IsMipMapActive()) {
@@ -513,53 +512,12 @@ void GSRendererHW::Draw()
 				lod = std::max<int>((int)round(m_vt.m_lod.x), 0);
 			}
 
+			TEX0 = GetTex0Layer(lod);
+
 			MIP_CLAMP.MINU >>= lod;
 			MIP_CLAMP.MINV >>= lod;
 			MIP_CLAMP.MAXU >>= lod;
 			MIP_CLAMP.MAXV >>= lod;
-
-			switch(lod)
-			{
-				case 0:
-					break;
-				case 1:
-					TEX0.TBP0 = m_context->MIPTBP1.TBP1;
-					TEX0.TBW = m_context->MIPTBP1.TBW1;
-					break;
-				case 2:
-					TEX0.TBP0 = m_context->MIPTBP1.TBP2;
-					TEX0.TBW = m_context->MIPTBP1.TBW2;
-					break;
-				case 3:
-					TEX0.TBP0 = m_context->MIPTBP1.TBP3;
-					TEX0.TBW = m_context->MIPTBP1.TBW3;
-					break;
-				case 4:
-					TEX0.TBP0 = m_context->MIPTBP2.TBP4;
-					TEX0.TBW = m_context->MIPTBP2.TBW4;
-					break;
-				case 5:
-					TEX0.TBP0 = m_context->MIPTBP2.TBP5;
-					TEX0.TBW = m_context->MIPTBP2.TBW5;
-					break;
-				case 6:
-					TEX0.TBP0 = m_context->MIPTBP2.TBP6;
-					TEX0.TBW = m_context->MIPTBP2.TBW6;
-					break;
-				default:
-					__assume(0);
-			}
-
-			if (TEX0.TH <= lod) {
-				TEX0.TH = 1;
-			} else {
-				TEX0.TH -= lod;
-			}
-			if (TEX0.TW <= lod) {
-				TEX0.TW = 1;
-			} else {
-				TEX0.TW -= lod;
-			}
 
 			for (int i = 0; i < lod; i++) {
 				m_vt.m_min.t *= 0.5f;
@@ -569,6 +527,8 @@ void GSRendererHW::Draw()
 			m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 			GL_INS("Mipmap LOD %d (%f %f) new size %dx%d", lod, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH);
+		} else {
+			TEX0 = GetTex0Layer(0);
 		}
 
 

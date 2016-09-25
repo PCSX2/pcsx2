@@ -204,6 +204,7 @@ protected:
 	bool TryAlphaTest(uint32& fm, uint32& zm);
 	bool IsOpaque();
 	bool IsMipMapActive();
+	GIFRegTEX0 GetTex0Layer(int lod);
 
 public:
 	GIFPath m_path[4];
