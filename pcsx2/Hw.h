@@ -80,7 +80,9 @@ namespace EEMemoryMap
 	static const uint SIO_Start			= 0x1000F100;
 	static const uint SIO_End			= 0x1000F200;
 	static const uint SBUS_Start		= 0x1000F200;
-	static const uint SBUS_End			= 0x1000F400;
+	static const uint SBUS_End			= 0x1000F300;
+	static const uint SBUS_PS1_Start	= 0x1000F300;
+	static const uint SBUS_PS1_End		= 0x1000F400;
 
 	// MCH area --  Really not sure what this area is.  Information is lacking.
 	static const uint MCH_Start			= 0x1000F400;
@@ -330,7 +332,7 @@ enum EERegisterAddresses
 	SBUS_F250		=	0x1000F250,
 	SBUS_F260		=	0x1000F260,
 	SBUS_F300		=	0x1000F300,
-	SBUS_F380 =			0x1000F380,
+	SBUS_F380		=	0x1000F380,
 
 	MCH_RICM		=	0x1000F430,
 	MCH_DRD			=	0x1000F440,
