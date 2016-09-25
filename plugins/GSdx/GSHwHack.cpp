@@ -803,35 +803,6 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 3; //3, 9
-		}
-		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 2;
-		}
-		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
-		{
-			skip = 1;
-		}
-		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
-		{
-			skip = 1;
-		}
-		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1279,6 +1250,35 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 ////////////////////////////////////////////////////////////////////////////////
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
+
+bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
+		{
+			skip = 3; //3, 9
+		}
+		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
+		{
+			skip = 2;
+		}
+		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
+		{
+			skip = 1;
+		}
+		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
+		{
+			skip = 1;
+		}
+		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
+		{
+			skip = 1;
+		}
+	}
+
+	return true;
+}
 
 bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 {
@@ -2490,7 +2490,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
@@ -2526,6 +2525,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
+		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::XE3] = GSC_XE3;
 
 		// Not tested but must be fixed with texture shuffle
