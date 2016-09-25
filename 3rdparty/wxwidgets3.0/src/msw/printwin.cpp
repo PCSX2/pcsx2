@@ -356,13 +356,13 @@ void wxWindowsPrintPreview::DetermineScaling()
     if ( printerDC.IsOk() )
     {
         wxPrinterDCImpl *impl = (wxPrinterDCImpl*) printerDC.GetImpl();
-        HDC dc = GetHdcOf(*impl);
-        printerWidthMM = ::GetDeviceCaps(dc, HORZSIZE);
-        printerHeightMM = ::GetDeviceCaps(dc, VERTSIZE);
-        printerXRes = ::GetDeviceCaps(dc, HORZRES);
-        printerYRes = ::GetDeviceCaps(dc, VERTRES);
-        logPPIPrinterX = ::GetDeviceCaps(dc, LOGPIXELSX);
-        logPPIPrinterY = ::GetDeviceCaps(dc, LOGPIXELSY);
+        HDC hdc = GetHdcOf(*impl);
+        printerWidthMM = ::GetDeviceCaps(hdc, HORZSIZE);
+        printerHeightMM = ::GetDeviceCaps(hdc, VERTSIZE);
+        printerXRes = ::GetDeviceCaps(hdc, HORZRES);
+        printerYRes = ::GetDeviceCaps(hdc, VERTRES);
+        logPPIPrinterX = ::GetDeviceCaps(hdc, LOGPIXELSX);
+        logPPIPrinterY = ::GetDeviceCaps(hdc, LOGPIXELSY);
 
         paperRect = printerDC.GetPaperRect();
 

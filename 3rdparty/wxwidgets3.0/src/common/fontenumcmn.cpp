@@ -124,7 +124,8 @@ bool wxFontEnumerator::EnumerateEncodingsUTF8(const wxString& facename)
 
     for ( size_t n = 0; n < count; n++ )
     {
-        OnFontEncoding(facenames[n], utf8);
+        if ( !OnFontEncoding(facenames[n], utf8) )
+            break;
     }
 
     return true;

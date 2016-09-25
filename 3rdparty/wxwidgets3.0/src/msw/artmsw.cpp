@@ -197,7 +197,7 @@ wxBitmap wxWindowsArtProvider::CreateBitmap(const wxArtID& id,
             wxIcon icon;
             icon.CreateFromHICON( (WXHICON)sii.hIcon );
 
-            wxBitmap bitmap( icon );
+            bitmap = wxBitmap(icon);
             ::DestroyIcon(sii.hIcon);
 
             if ( bitmap.IsOk() )

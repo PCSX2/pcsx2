@@ -573,7 +573,7 @@ wxBitmap::wxBitmap(const char bits[], int width, int height, int depth)
                 unsigned char val = *src++;
                 unsigned char reversed = 0;
 
-                for ( int bits = 0; bits < 8; bits++)
+                for ( int bit = 0; bit < 8; bit++)
                 {
                     reversed <<= 1;
                     reversed |= (unsigned char)(val & 0x01);

@@ -746,7 +746,7 @@ bool wxMenu::DoInsertOrAppend(wxMenuItem *pItem, size_t pos)
             {
                 // we must use position in SetOwnerDrawnMenuItem because
                 // all separators have the same id
-                int pos = 0;
+                int position = 0;
                 wxMenuItemList::compatibility_iterator node = GetMenuItems().GetFirst();
                 while (node)
                 {
@@ -755,14 +755,14 @@ bool wxMenu::DoInsertOrAppend(wxMenuItem *pItem, size_t pos)
                     if ( !item->IsOwnerDrawn())
                     {
                         item->SetOwnerDrawn(true);
-                        SetOwnerDrawnMenuItem(GetHmenu(), pos,
+                        SetOwnerDrawnMenuItem(GetHmenu(), position,
                                               reinterpret_cast<ULONG_PTR>(item), TRUE);
                     }
 
                     item->SetMarginWidth(m_maxBitmapWidth);
 
                     node = node->GetNext();
-                    pos++;
+                    position++;
                 }
 
                 // set menu as ownerdrawn

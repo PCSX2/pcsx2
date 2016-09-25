@@ -557,11 +557,12 @@ void wxMenuItem::Enable(bool enable)
     if ( m_isEnabled == enable )
         return;
 
-    if ( m_parentMenu )
+    const int itemPos = MSGetMenuItemPos();
+    if ( itemPos != -1 )
     {
         long rc = EnableMenuItem(GetHMenuOf(m_parentMenu),
-                                 GetMSWId(),
-                                 MF_BYCOMMAND |
+                                 itemPos,
+                                 MF_BYPOSITION |
                                  (enable ? MF_ENABLED : MF_GRAYED));
 
         if ( rc == -1 )
@@ -872,7 +873,8 @@ bool wxMenuItem::OnDrawItem(wxDC& dc, const wxRect& rc,
         data->SeparatorMargin.ApplyTo(rcSeparator);
 
         RECT rcGutter = rcSelection;
-        rcGutter.right = data->ItemMargin.cxLeftWidth
+        rcGutter.right = rcGutter.left
+                       + data->ItemMargin.cxLeftWidth
                        + data->CheckBgMargin.cxLeftWidth
                        + data->CheckMargin.cxLeftWidth
                        + imgWidth
@@ -993,13 +995,13 @@ bool wxMenuItem::OnDrawItem(wxDC& dc, const wxRect& rc,
             SIZE accelSize;
             ::GetTextExtentPoint32(hdc, accel.c_str(), accel.length(), &accelSize);
 
-            int flags = DST_TEXT;
+            flags = DST_TEXT;
             // themes menu is using specified color for disabled labels
             if ( data->MenuLayout() == MenuDrawData::Classic &&
                  (stat & wxODDisabled) && !(stat & wxODSelected) )
                 flags |= DSS_DISABLED;
 
-            int x = rcText.right - data->ArrowMargin.GetTotalX()
+            x = rcText.right - data->ArrowMargin.GetTotalX()
                                  - data->ArrowSize.cx
                                  - data->ArrowBorder;
 
@@ -1009,7 +1011,7 @@ bool wxMenuItem::OnDrawItem(wxDC& dc, const wxRect& rc,
             else
                 x -= m_parentMenu->GetMaxAccelWidth();
 
-            int y = rcText.top + (rcText.bottom - rcText.top - accelSize.cy) / 2;
+            y = rcText.top + (rcText.bottom - rcText.top - accelSize.cy) / 2;
 
             ::DrawState(hdc, NULL, NULL, wxMSW_CONV_LPARAM(accel),
                         accel.length(), x, y, 0, 0, flags);
@@ -1271,7 +1273,7 @@ int wxMenuItem::MSGetMenuItemPos() const
 
         if ( state & MF_POPUP )
         {
-            if ( ::GetSubMenu(hMenu, i) == (HMENU)id )
+            if ( ::GetSubMenu(hMenu, i) == (HMENU)wxUIntToPtr(id) )
                 return i;
         }
         else if ( !(state & MF_SEPARATOR) )

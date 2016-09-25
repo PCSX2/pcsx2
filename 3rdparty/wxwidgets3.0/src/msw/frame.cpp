@@ -286,16 +286,6 @@ void wxFrame::PositionStatusBar()
     int w, h;
     GetClientSize(&w, &h);
 
-    // Resize the status bar to its default height, as it could have been set
-    // to a wrong value before by WM_SIZE sent during the frame creation and
-    // our status bars preserve their programmatically set size to avoid being
-    // resized by DefWindowProc() to the full window width, so if we didn't do
-    // this here, the status bar would retain the possibly wrong current height.
-    m_frameStatusBar->SetSize(wxDefaultSize, wxSIZE_AUTO_HEIGHT);
-
-    int sw, sh;
-    m_frameStatusBar->GetSize(&sw, &sh);
-
     int x = 0;
 #if wxUSE_TOOLBAR
     wxToolBar * const toolbar = GetToolBar();
@@ -318,6 +308,16 @@ void wxFrame::PositionStatusBar()
     }
     //else: no adjustments necessary for the toolbar on top
 #endif // wxUSE_TOOLBAR
+
+    // Resize the status bar to its default height, as it could have been set
+    // to a wrong value before by WM_SIZE sent during the frame creation and
+    // our status bars preserve their programmatically set size to avoid being
+    // resized by DefWindowProc() to the full window width, so if we didn't do
+    // this here, the status bar would retain the possibly wrong current height.
+    m_frameStatusBar->SetSize(x, h, w, wxDefaultCoord, wxSIZE_AUTO_HEIGHT);
+
+    int sw, sh;
+    m_frameStatusBar->GetSize(&sw, &sh);
 
     // Since we wish the status bar to be directly under the client area,
     // we use the adjusted sizes without using wxSIZE_NO_ADJUSTMENTS.

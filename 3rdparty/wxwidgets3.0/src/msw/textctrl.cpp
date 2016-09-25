@@ -169,7 +169,7 @@ class wxTextCtrlOleCallback : public IRichEditOleCallback
 {
 public:
     wxTextCtrlOleCallback(wxTextCtrl *text) : m_textCtrl(text), m_menu(NULL) {}
-    ~wxTextCtrlOleCallback() { DeleteContextMenuObject(); }
+    virtual ~wxTextCtrlOleCallback() { DeleteContextMenuObject(); }
 
     STDMETHODIMP ContextSensitiveHelp(BOOL WXUNUSED(enterMode)) { return E_NOTIMPL; }
     STDMETHODIMP DeleteObject(LPOLEOBJECT WXUNUSED(oleobj)) { return E_NOTIMPL; }
@@ -1989,10 +1989,10 @@ void wxTextCtrl::OnChar(wxKeyEvent& event)
     {
         case WXK_RETURN:
             {
-                wxCommandEvent event(wxEVT_TEXT_ENTER, m_windowId);
-                InitCommandEvent(event);
-                event.SetString(GetValue());
-                if ( HandleWindowEvent(event) )
+                wxCommandEvent evt(wxEVT_TEXT_ENTER, m_windowId);
+                InitCommandEvent(evt);
+                evt.SetString(GetValue());
+                if ( HandleWindowEvent(evt) )
                 if ( !HasFlag(wxTE_MULTILINE) )
                     return;
                 //else: multiline controls need Enter for themselves

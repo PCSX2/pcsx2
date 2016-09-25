@@ -245,7 +245,9 @@ bool wxRadioBox::Create(wxWindow *parent,
 #endif
 
     SetMajorDim(majorDim == 0 ? n : majorDim, style);
-    SetSelection(0);
+    // Select the first radio button if we have any buttons at all.
+    if ( n > 0 )
+        SetSelection(0);
     SetSize(pos.x, pos.y, size.x, size.y);
 
     // Now that we have items determine what is the best size and set it.

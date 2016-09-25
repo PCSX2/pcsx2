@@ -68,7 +68,7 @@ WXDWORD wxStaticText::MSWGetStyle(long style, WXDWORD *exstyle) const
     //
     // note that both wxALIGN_LEFT and SS_LEFT are equal to 0 so we shouldn't
     // test for them using & operator
-    if ( style & wxALIGN_CENTRE )
+    if ( style & wxALIGN_CENTRE_HORIZONTAL )
         msStyle |= SS_CENTER;
     else if ( style & wxALIGN_RIGHT )
         msStyle |= SS_RIGHT;

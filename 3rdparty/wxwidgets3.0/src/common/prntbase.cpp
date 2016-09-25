@@ -72,6 +72,11 @@
     #endif
 #endif // __WXMSW__
 
+// The value traditionally used as the default max page number and meaning
+// "infinitely many". It should probably be documented and exposed, but for now
+// at least use it here instead of hardcoding the number.
+static const int DEFAULT_MAX_PAGES = 32000;
+
 //----------------------------------------------------------------------------
 // wxPrintFactory
 //----------------------------------------------------------------------------
@@ -541,7 +546,17 @@ void wxPrintAbortDialog::SetProgress(int currentPage, int totalPages,
                                      int currentCopy, int totalCopies)
 {
   wxString text;
-  text.Printf(_("Printing page %d of %d"), currentPage, totalPages);
+  if ( totalPages == DEFAULT_MAX_PAGES )
+  {
+    // This means that the user has not supplied a total number of pages so it
+    // is better not to show this value.
+    text.Printf(_("Printing page %d"), currentPage);
+  }
+  else
+  {
+    // We have a valid total number of pages so we show it.
+    text.Printf(_("Printing page %d of %d"), currentPage, totalPages);
+  }
   if ( totalCopies > 1 )
       text += wxString::Format(_(" (copy %d of %d)"), currentCopy, totalCopies);
   m_progress->SetLabel(text);
@@ -607,7 +622,7 @@ bool wxPrintout::HasPage(int page)
 void wxPrintout::GetPageInfo(int *minPage, int *maxPage, int *fromPage, int *toPage)
 {
     *minPage = 1;
-    *maxPage = 32000;
+    *maxPage = DEFAULT_MAX_PAGES;
     *fromPage = 1;
     *toPage = 1;
 }

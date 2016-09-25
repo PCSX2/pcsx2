@@ -544,10 +544,8 @@ wxSize wxSlider::DoGetBestSize() const
         {
             int labelSize = GetLabelsSize();
 
-            // Min/max labels are compensated by the ticks so we don't need
-            // extra space for them if we're also showing ticks.
-            if ( HasFlag(wxSL_MIN_MAX_LABELS) && !HasFlag(wxSL_TICKS) )
-                size.y += labelSize;
+            // Min/max labels are compensated by the thumb so we don't need
+            // extra space for them
 
             // The value label is always on top of the control and so does need
             // extra space in any case.

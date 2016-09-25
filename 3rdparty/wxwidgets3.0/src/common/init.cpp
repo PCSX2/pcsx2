@@ -137,8 +137,8 @@ static struct InitData
         nInitCount = 0;
 
 #if wxUSE_UNICODE
-        argc = 0;
-        // argv = NULL; -- not even really needed
+        argc = argcOrig = 0;
+        // argv = argvOrig = NULL; -- not even really needed
 #endif // wxUSE_UNICODE
     }
 
@@ -157,6 +157,12 @@ static struct InitData
     // for example), we remember the converted argv here because we'll have to
     // free it when doing cleanup to avoid memory leaks
     wchar_t **argv;
+
+    // we also need to keep two copies, one passed to other functions, and one
+    // unmodified original; somebody may modify the former, so we need to have
+    // the latter to be able to free everything correctly
+    int argcOrig;
+    wchar_t **argvOrig;
 #endif // wxUSE_UNICODE
 
     wxDECLARE_NO_COPY_CLASS(InitData);
@@ -174,7 +180,9 @@ static struct InitData
 
 static void ConvertArgsToUnicode(int argc, char **argv)
 {
+    gs_initData.argvOrig = new wchar_t *[argc + 1];
     gs_initData.argv = new wchar_t *[argc + 1];
+
     int wargc = 0;
     for ( int i = 0; i < argc; i++ )
     {
@@ -190,25 +198,28 @@ static void ConvertArgsToUnicode(int argc, char **argv)
         }
         else // converted ok
         {
-            gs_initData.argv[wargc++] = wxStrdup(buf);
+            gs_initData.argvOrig[wargc] = gs_initData.argv[wargc] = wxStrdup(buf);
+            wargc++;
         }
     }
 
-    gs_initData.argc = wargc;
-    gs_initData.argv[wargc] = NULL;
+    gs_initData.argcOrig = gs_initData.argc = wargc;
+    gs_initData.argvOrig[wargc] =gs_initData.argv[wargc] = NULL;
 }
 
 static void FreeConvertedArgs()
 {
-    if ( gs_initData.argv )
+    if ( gs_initData.argvOrig )
     {
-        for ( int i = 0; i < gs_initData.argc; i++ )
+        for ( int i = 0; i < gs_initData.argcOrig; i++ )
         {
-            free(gs_initData.argv[i]);
+            free(gs_initData.argvOrig[i]);
+            // gs_initData.argv[i] normally points to the same data
         }
 
+        wxDELETEA(gs_initData.argvOrig);
         wxDELETEA(gs_initData.argv);
-        gs_initData.argc = 0;
+        gs_initData.argcOrig = gs_initData.argc = 0;
     }
 }
 

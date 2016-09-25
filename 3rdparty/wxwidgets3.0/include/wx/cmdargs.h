@@ -51,9 +51,11 @@ public:
         if ( !m_argsA )
         {
             const size_t count = m_args.size();
-            m_argsA = new char *[count];
+            m_argsA = new char *[count + 1];
             for ( size_t n = 0; n < count; n++ )
                 m_argsA[n] = wxStrdup(m_args[n].ToAscii());
+
+            m_argsA[count] = NULL;
         }
 
         return m_argsA;
@@ -64,9 +66,11 @@ public:
         if ( !m_argsW )
         {
             const size_t count = m_args.size();
-            m_argsW = new wchar_t *[count];
+            m_argsW = new wchar_t *[count + 1];
             for ( size_t n = 0; n < count; n++ )
                 m_argsW[n] = wxStrdup(m_args[n].wc_str());
+
+            m_argsW[count] = NULL;
         }
 
         return m_argsW;

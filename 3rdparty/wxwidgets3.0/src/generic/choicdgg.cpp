@@ -390,7 +390,7 @@ bool wxAnyChoiceDialog::Create(wxWindow *parent,
     const long styleBtns = styleDlg & (wxOK | wxCANCEL);
     styleDlg &= ~styleBtns;
 
-    if ( !wxDialog::Create(parent, wxID_ANY, caption, pos, wxDefaultSize, styleDlg) )
+    if ( !wxDialog::Create(GetParentForModalDialog(parent, styleDlg), wxID_ANY, caption, pos, wxDefaultSize, styleDlg) )
         return false;
 
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );

@@ -50,6 +50,14 @@ wxString GetMRUEntryLabel(int n, const wxString& path)
     wxString pathInMenu(path);
     pathInMenu.Replace("&", "&&");
 
+#ifdef __WXMSW__
+    // absolute paths always start with Latin characters even in RTL
+    // environments and should therefore be rendered as LTR text (possibly with
+    // RTL chunks in it). Ensure this on Windows by prepending
+    // LEFT-TO-RIGHT EMBEDDING (other platforms detect this automatically)
+    pathInMenu.insert(0, wchar_t(0x202a));
+#endif
+
     return wxString::Format("&%d %s", n + 1, pathInMenu);
 }
 

@@ -2040,6 +2040,8 @@ void wxImage::ClearAlpha()
 {
     wxCHECK_RET( HasAlpha(), wxT("image already doesn't have an alpha channel") );
 
+    AllocExclusive();
+
     if ( !M_IMGDATA->m_staticAlpha )
         free( M_IMGDATA->m_alpha );
 

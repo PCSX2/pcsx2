@@ -278,13 +278,13 @@ unsigned wxLog::LogLastRepeatIfNeeded()
             // Notice that we still use wxPLURAL() to ensure that multiple
             // numbers of times are correctly formatted, even though we never
             // actually use the singular string.
-            msg.Printf(wxPLURAL("The previous message repeated %lu time.",
-                                "The previous message repeated %lu times.",
+            msg.Printf(wxPLURAL("The previous message repeated %u time.",
+                                "The previous message repeated %u times.",
                                 gs_prevLog.numRepeated),
                        gs_prevLog.numRepeated);
         }
 #else
-        msg.Printf(wxS("The previous message was repeated %lu time(s)."),
+        msg.Printf(wxS("The previous message was repeated %u time(s)."),
                    gs_prevLog.numRepeated);
 #endif
         gs_prevLog.numRepeated = 0;
@@ -306,12 +306,12 @@ wxLog::~wxLog()
 #if wxUSE_INTL
             wxPLURAL
             (
-                "Last repeated message (\"%s\", %lu time) wasn't output",
-                "Last repeated message (\"%s\", %lu times) wasn't output",
+                "Last repeated message (\"%s\", %u time) wasn't output",
+                "Last repeated message (\"%s\", %u times) wasn't output",
                 gs_prevLog.numRepeated
             ),
 #else
-            wxS("Last repeated message (\"%s\", %lu time(s)) wasn't output"),
+            wxS("Last repeated message (\"%s\", %u time(s)) wasn't output"),
 #endif
             gs_prevLog.msg,
             gs_prevLog.numRepeated

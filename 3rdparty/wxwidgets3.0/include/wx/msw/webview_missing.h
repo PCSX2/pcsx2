@@ -692,7 +692,7 @@ public:
     virtual HRESULT wxSTDCALL get_onpropertychange(VARIANT *p) = 0;
     virtual HRESULT wxSTDCALL getClientRects(wxIHTMLRectCollection **pRectCol) = 0;
     virtual HRESULT wxSTDCALL getBoundingClientRect(wxIHTMLRect **pRect) = 0;
-    virtual HRESULT wxSTDCALL setExpression(BSTR propname, BSTR expression, BSTR language = L"") = 0;
+    virtual HRESULT wxSTDCALL setExpression(BSTR propname, BSTR expression, BSTR language) = 0;
     virtual HRESULT wxSTDCALL getExpression(BSTR propname, VARIANT *expression) = 0;
     virtual HRESULT wxSTDCALL removeExpression(BSTR propname, VARIANT_BOOL *pfSuccess) = 0;
     virtual HRESULT wxSTDCALL put_tabIndex(short v) = 0;

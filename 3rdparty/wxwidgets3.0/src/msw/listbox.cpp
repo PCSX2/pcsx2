@@ -745,7 +745,7 @@ bool wxListBox::MSWOnDraw(WXDRAWITEMSTRUCT *item)
     if ( pStruct->itemID == (UINT)-1 )
         return false;
 
-    wxListBoxItem *pItem = (wxListBoxItem *)m_aItems[pStruct->itemID];
+    wxOwnerDrawn *pItem = m_aItems[pStruct->itemID];
 
     wxDCTemp dc((WXHDC)pStruct->hDC);
 

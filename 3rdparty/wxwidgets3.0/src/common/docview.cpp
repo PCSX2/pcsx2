@@ -532,7 +532,8 @@ bool wxDocument::OnSaveModified()
                      GetUserReadableName()
                     ),
                     wxTheApp->GetAppDisplayName(),
-                    wxYES_NO | wxCANCEL | wxICON_QUESTION | wxCENTRE
+                    wxYES_NO | wxCANCEL | wxICON_QUESTION | wxCENTRE,
+                    GetDocumentWindow()
                  ) )
         {
             case wxNO:
@@ -1147,17 +1148,21 @@ void wxDocManager::OnFileSaveAs(wxCommandEvent& WXUNUSED(event))
 
 void wxDocManager::OnMRUFile(wxCommandEvent& event)
 {
-    // Check if the id is in the range assigned to MRU list entries.
-    const int id = event.GetId();
-    if ( id >= wxID_FILE1 &&
-            id < wxID_FILE1 + static_cast<int>(m_fileHistory->GetCount()) )
+    if ( m_fileHistory )
     {
-        DoOpenMRUFile(id - wxID_FILE1);
+        // Check if the id is in the range assigned to MRU list entries.
+        const int id = event.GetId();
+        if ( id >= wxID_FILE1 &&
+                id < wxID_FILE1 + static_cast<int>(m_fileHistory->GetCount()) )
+        {
+            DoOpenMRUFile(id - wxID_FILE1);
+
+            // Don't skip the event below.
+            return;
+        }
     }
-    else
-    {
-        event.Skip();
-    }
+
+    event.Skip();
 }
 
 void wxDocManager::DoOpenMRUFile(unsigned n)

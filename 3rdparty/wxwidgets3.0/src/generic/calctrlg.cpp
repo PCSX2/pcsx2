@@ -59,6 +59,7 @@ BEGIN_EVENT_TABLE(wxGenericCalendarCtrl, wxControl)
 
     EVT_LEFT_DOWN(wxGenericCalendarCtrl::OnClick)
     EVT_LEFT_DCLICK(wxGenericCalendarCtrl::OnDClick)
+    EVT_MOUSEWHEEL(wxGenericCalendarCtrl::OnWheel)
 
     EVT_SYS_COLOUR_CHANGED(wxGenericCalendarCtrl::OnSysColourChanged)
 END_EVENT_TABLE()
@@ -1510,6 +1511,31 @@ wxCalendarHitTestResult wxGenericCalendarCtrl::HitTest(const wxPoint& pos,
     {
         return wxCAL_HITTEST_NOWHERE;
     }
+}
+
+void wxGenericCalendarCtrl::OnWheel(wxMouseEvent& event)
+{
+    wxDateSpan span;
+    switch ( event.GetWheelAxis() )
+    {
+        case wxMOUSE_WHEEL_VERTICAL:
+            // For consistency with the native controls, scrolling upwards
+            // should go to the past, even if the rotation is positive and
+            // could be normally expected to increase the date.
+            span = -wxDateSpan::Month();
+            break;
+
+        case wxMOUSE_WHEEL_HORIZONTAL:
+            span = wxDateSpan::Year();
+            break;
+    }
+
+    // Currently we only take into account the rotation direction, not its
+    // magnitude.
+    if ( event.GetWheelRotation() < 0 )
+        span = -span;
+
+    SetDateAndNotify(m_date + span);
 }
 
 // ----------------------------------------------------------------------------

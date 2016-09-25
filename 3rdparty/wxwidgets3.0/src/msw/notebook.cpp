@@ -1201,9 +1201,26 @@ WXHBRUSH wxNotebook::QueryBgBitmap()
     if ( r.IsEmpty() )
         return 0;
 
+    wxUxThemeHandle theme(this, L"TAB");
+    if ( !theme )
+        return 0;
+
+    RECT rc;
+    wxCopyRectToRECT(r, rc);
+
     WindowHDC hDC(GetHwnd());
+    wxUxThemeEngine::Get()->GetThemeBackgroundExtent
+                            (
+                                theme,
+                                (HDC) hDC,
+                                9 /* TABP_PANE */,
+                                0,
+                                &rc,
+                                &rc
+                            );
+
     MemoryHDC hDCMem(hDC);
-    CompatibleBitmap hBmp(hDC, r.x + r.width, r.y + r.height);
+    CompatibleBitmap hBmp(hDC, rc.right, rc.bottom);
 
     SelectInHDC selectBmp(hDCMem, hBmp);
 
@@ -1316,8 +1333,8 @@ wxColour wxNotebook::GetThemeBackgroundColour() const
                 WCHAR szwThemeColor[256];
                 if (S_OK == wxUxThemeEngine::Get()->GetCurrentThemeName(szwThemeFile, 1024, szwThemeColor, 256, NULL, 0))
                 {
-                    wxString themeFile(szwThemeFile), themeColor(szwThemeColor);
-                    if (themeFile.Find(wxT("Aero")) != -1 && themeColor == wxT("NormalColor"))
+                    wxString themeFile(szwThemeFile);
+                    if (themeFile.Find(wxT("Aero")) != -1 && wxString(szwThemeColor) == wxT("NormalColor"))
                         s_AeroStatus = 1;
                     else
                         s_AeroStatus = 0;

@@ -1487,7 +1487,7 @@ WXDLLIMPEXP_BASE const wxChar* wxSysErrorMsg(unsigned long nErrCode = 0);
 
 #define wxDEFINE_EMPTY_LOG_FUNCTION2(level, argclass)                       \
     WX_DEFINE_VARARG_FUNC_NOP(wxLog##level, 2, (argclass, const wxFormatString&)) \
-    WX_WATCOM_OR_MINGW_ONLY_CODE(                                           \
+    WX_WATCOM_ONLY_CODE(                                                    \
         WX_DEFINE_VARARG_FUNC_NOP(wxLog##level, 2, (argclass, const char*)) \
         WX_DEFINE_VARARG_FUNC_NOP(wxLog##level, 2, (argclass, const wchar_t*)) \
         WX_DEFINE_VARARG_FUNC_NOP(wxLog##level, 2, (argclass, const wxCStrData&)) \

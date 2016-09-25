@@ -122,19 +122,15 @@ wxChar wxNumberFormatter::GetDecimalSeparator()
     {
         const wxString
             s = wxLocale::GetInfo(wxLOCALE_DECIMAL_POINT, wxLOCALE_CAT_NUMBER);
-        if ( s.empty() )
+        if ( s.length() == 1 )
+        {
+            s_decimalSeparator = s[0];
+        }
+        else
         {
             // We really must have something for decimal separator, so fall
             // back to the C locale default.
             s_decimalSeparator = '.';
-        }
-        else
-        {
-            // To the best of my knowledge there are no locales like this.
-            wxASSERT_MSG( s.length() == 1,
-                          "Multi-character decimal separator?" );
-
-            s_decimalSeparator = s[0];
         }
     }
 
@@ -154,11 +150,8 @@ bool wxNumberFormatter::GetThousandsSeparatorIfUsed(wxChar *sep)
     {
         const wxString
             s = wxLocale::GetInfo(wxLOCALE_THOUSANDS_SEP, wxLOCALE_CAT_NUMBER);
-        if ( !s.empty() )
+        if ( s.length() == 1 )
         {
-            wxASSERT_MSG( s.length() == 1,
-                          "Multi-character thousands separator?" );
-
             s_thousandsSeparator = s[0];
         }
         //else: Unlike above it's perfectly fine for the thousands separator to
@@ -223,6 +216,10 @@ wxString wxNumberFormatter::ToString(double val, int precision, int style)
 
 void wxNumberFormatter::AddThousandsSeparators(wxString& s)
 {
+    // Thousands separators for numbers in scientific format are not relevant.
+    if ( s.find_first_of("eE") != wxString::npos )
+        return;
+
     wxChar thousandsSep;
     if ( !GetThousandsSeparatorIfUsed(&thousandsSep) )
         return;
@@ -254,9 +251,14 @@ void wxNumberFormatter::AddThousandsSeparators(wxString& s)
 
 void wxNumberFormatter::RemoveTrailingZeroes(wxString& s)
 {
+    // If number is in scientific format, trailing zeroes belong to the exponent and cannot be removed.
+    if ( s.find_first_of("eE") != wxString::npos )
+        return;
+
     const size_t posDecSep = s.find(GetDecimalSeparator());
-    wxCHECK_RET( posDecSep != wxString::npos,
-                 wxString::Format("No decimal separator in \"%s\"", s) );
+    // No decimal point => removing trailing zeroes irrelevant for integer number.
+    if ( posDecSep == wxString::npos )
+        return;
     wxCHECK_RET( posDecSep, "Can't start with decimal separator" );
 
     // Find the last character to keep.
@@ -267,6 +269,9 @@ void wxNumberFormatter::RemoveTrailingZeroes(wxString& s)
         posLastNonZero--;
 
     s.erase(posLastNonZero + 1);
+    // Remove sign from orphaned zero.
+    if ( s.compare("-0") == 0 )
+        s = "0";
 }
 
 // ----------------------------------------------------------------------------

@@ -73,6 +73,10 @@
     #include <xlocale.h>
 #endif
 
+wxDECL_FOR_STRICT_MINGW32(int, vswprintf, (wchar_t*, const wchar_t*, __VALIST));
+wxDECL_FOR_STRICT_MINGW32(int, _putws, (const wchar_t*));
+wxDECL_FOR_STRICT_MINGW32(void, _wperror, (const wchar_t*));
+
 WXDLLIMPEXP_BASE size_t wxMB2WC(wchar_t *buf, const char *psz, size_t n)
 {
   // assume that we have mbsrtowcs() too if we have wcsrtombs()

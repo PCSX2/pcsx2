@@ -101,6 +101,11 @@ public:
 
     wxString GetCaption() const { return m_caption; }
 
+    // Title and caption are the same thing, GetCaption() mostly exists just
+    // for compatibility.
+    virtual void SetTitle(const wxString& title) { m_caption = title; }
+    virtual wxString GetTitle() const { return m_caption; }
+
     virtual void SetMessage(const wxString& message)
     {
         m_message = message;

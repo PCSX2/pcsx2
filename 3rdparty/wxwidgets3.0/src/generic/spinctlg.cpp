@@ -210,16 +210,6 @@ bool wxSpinCtrlGenericBase::Create(wxWindow *parent,
     m_max   = max;
     m_increment = increment;
 
-    m_textCtrl   = new wxSpinCtrlTextGeneric(this, value, style);
-    m_spinButton = new wxSpinCtrlButtonGeneric(this, style);
-
-#if wxUSE_TOOLTIPS
-    m_textCtrl->SetToolTip(GetToolTipText());
-    m_spinButton->SetToolTip(GetToolTipText());
-#endif // wxUSE_TOOLTIPS
-
-    m_spin_value = m_spinButton->GetValue();
-
     // the string value overrides the numeric one (for backwards compatibility
     // reasons and also because it is simpler to satisfy the string value which
     // comes much sooner in the list of arguments and leave the initial
@@ -228,11 +218,18 @@ bool wxSpinCtrlGenericBase::Create(wxWindow *parent,
     {
         double d;
         if ( DoTextToValue(value, &d) )
-        {
             m_value = d;
-            m_textCtrl->ChangeValue(DoValueToText(m_value));
-        }
     }
+
+    m_textCtrl   = new wxSpinCtrlTextGeneric(this, DoValueToText(m_value), style);
+    m_spinButton = new wxSpinCtrlButtonGeneric(this, style);
+
+#if wxUSE_TOOLTIPS
+    m_textCtrl->SetToolTip(GetToolTipText());
+    m_spinButton->SetToolTip(GetToolTipText());
+#endif // wxUSE_TOOLTIPS
+
+    m_spin_value = m_spinButton->GetValue();
 
     SetInitialSize(size);
     Move(pos);

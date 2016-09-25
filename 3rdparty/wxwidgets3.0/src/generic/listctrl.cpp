@@ -39,6 +39,7 @@
 #include "wx/imaglist.h"
 #include "wx/renderer.h"
 #include "wx/generic/private/listctrl.h"
+#include "wx/generic/private/widthcalc.h"
 
 #ifdef __WXMAC__
     #include "wx/osx/private.h"
@@ -1935,6 +1936,13 @@ void wxListMainWindow::RefreshLines( size_t lineFrom, size_t lineTo )
         size_t visibleFrom, visibleTo;
         GetVisibleLinesRange(&visibleFrom, &visibleTo);
 
+        if ( lineFrom > visibleTo || lineTo < visibleFrom )
+        {
+            // None of these lines are currently visible at all, don't bother
+            // doing anything.
+            return;
+        }
+
         if ( lineFrom < visibleFrom )
             lineFrom = visibleFrom;
         if ( lineTo > visibleTo )
@@ -2433,7 +2441,7 @@ void wxListMainWindow::OnMouse( wxMouseEvent &event )
             evtCtx.SetEventObject(GetParent());
             GetParent()->GetEventHandler()->ProcessEvent(evtCtx);
         }
-        else
+        else if (event.LeftDown())
         {
             // reset the selection and bail out
             HighlightAll(false);
@@ -2986,6 +2994,7 @@ void wxListMainWindow::OnChar( wxKeyEvent &event )
                     SetItemState(item,
                                  wxLIST_STATE_FOCUSED | wxLIST_STATE_SELECTED,
                                  wxLIST_STATE_FOCUSED | wxLIST_STATE_SELECTED);
+                    EnsureVisible(item);
 
                     // Reset the bell flag if it had been temporarily disabled
                     // before.
@@ -3186,6 +3195,35 @@ void wxListMainWindow::SetColumn( int col, const wxListItem &item )
     m_headerWidth = 0;
 }
 
+class wxListCtrlMaxWidthCalculator : public wxMaxWidthCalculatorBase
+{
+public:
+    wxListCtrlMaxWidthCalculator(wxListMainWindow *listmain, unsigned int column)
+        : wxMaxWidthCalculatorBase(column),
+          m_listmain(listmain)
+    {
+    }
+
+    virtual void UpdateWithRow(int row)
+    {
+        wxListLineData *line = m_listmain->GetLine( row );
+        wxListItemDataList::compatibility_iterator n = line->m_items.Item( GetColumn() );
+
+        wxCHECK_RET( n, wxS("no subitem?") );
+
+        wxListItemData* const itemData = n->GetData();
+
+        wxListItem item;
+        itemData->GetItem(item);
+
+        UpdateWithWidth(m_listmain->GetItemWidthWithImage(&item));
+    }
+
+private:
+    wxListMainWindow* const m_listmain;
+};
+
+
 void wxListMainWindow::SetColumnWidth( int col, int width )
 {
     wxCHECK_RET( col >= 0 && col < GetColumnCount(),
@@ -3207,48 +3245,42 @@ void wxListMainWindow::SetColumnWidth( int col, int width )
 
     size_t count = GetItemCount();
 
-    if (width == wxLIST_AUTOSIZE_USEHEADER)
+    if ( width == wxLIST_AUTOSIZE_USEHEADER || width == wxLIST_AUTOSIZE )
     {
-        width = ComputeMinHeaderWidth(column);
-    }
-    else if ( width == wxLIST_AUTOSIZE )
-    {
-        width = ComputeMinHeaderWidth(column);
+        wxListCtrlMaxWidthCalculator calculator(this, col);
 
-        if ( !IsVirtual() )
+        calculator.UpdateWithWidth(AUTOSIZE_COL_MARGIN);
+
+        if ( width == wxLIST_AUTOSIZE_USEHEADER )
+            calculator.UpdateWithWidth(ComputeMinHeaderWidth(column));
+
+        //  if the cached column width isn't valid then recalculate it
+        wxColWidthInfo* const pWidthInfo = m_aColWidths.Item(col);
+        if ( pWidthInfo->bNeedsUpdate )
         {
-            wxClientDC dc(this);
-            dc.SetFont( GetFont() );
+            size_t first_visible, last_visible;
+            GetVisibleLinesRange(&first_visible, &last_visible);
 
-            int max = AUTOSIZE_COL_MARGIN;
-
-            //  if the cached column width isn't valid then recalculate it
-            if (m_aColWidths.Item(col)->bNeedsUpdate)
-            {
-                for (size_t i = 0; i < count; i++)
-                {
-                    wxListLineData *line = GetLine( i );
-                    wxListItemDataList::compatibility_iterator n = line->m_items.Item( col );
-
-                    wxCHECK_RET( n, wxT("no subitem?") );
-
-                    wxListItemData *itemData = n->GetData();
-                    wxListItem      item;
-
-                    itemData->GetItem(item);
-                    int itemWidth = GetItemWidthWithImage(&item);
-                    if (itemWidth > max)
-                        max = itemWidth;
-                }
-
-                m_aColWidths.Item(col)->bNeedsUpdate = false;
-                m_aColWidths.Item(col)->nMaxWidth = max;
-            }
-
-            max = m_aColWidths.Item(col)->nMaxWidth + AUTOSIZE_COL_MARGIN;
-            if ( width < max )
-                width = max;
+            calculator.ComputeBestColumnWidth(count, first_visible, last_visible);
+            pWidthInfo->nMaxWidth = calculator.GetMaxWidth();
+            pWidthInfo->bNeedsUpdate = false;
         }
+        else
+        {
+            calculator.UpdateWithWidth(pWidthInfo->nMaxWidth);
+        }
+
+        // expand the last column to fit the client size
+        // only for AUTOSIZE_USEHEADER to mimic MSW behaviour
+        int margin = 0;
+        if ( (width == wxLIST_AUTOSIZE_USEHEADER) && (col == GetColumnCount() - 1) )
+        {
+            margin = GetClientSize().GetX();
+            for ( int i = 0; i < col && margin > 0; ++i )
+                margin -= m_columns.Item(i)->GetData()->GetWidth();
+        }
+
+        width = wxMax(margin, calculator.GetMaxWidth() + AUTOSIZE_COL_MARGIN);
     }
 
     column->SetWidth( width );
@@ -3315,8 +3347,12 @@ void wxListMainWindow::SetItem( wxListItem &item )
             //  update the Max Width Cache if needed
             int width = GetItemWidthWithImage(&item);
 
-            if (width > m_aColWidths.Item(item.m_col)->nMaxWidth)
-                m_aColWidths.Item(item.m_col)->nMaxWidth = width;
+            wxColWidthInfo* const pWidthInfo = m_aColWidths.Item(item.m_col);
+            if ( width > pWidthInfo->nMaxWidth )
+            {
+                pWidthInfo->nMaxWidth = width;
+                pWidthInfo->bNeedsUpdate = true;
+            }
         }
     }
 
@@ -3959,8 +3995,9 @@ void wxListMainWindow::DeleteItem( long lindex )
 
             itemWidth = GetItemWidthWithImage(&item);
 
-            if (itemWidth >= m_aColWidths.Item(i)->nMaxWidth)
-                m_aColWidths.Item(i)->bNeedsUpdate = true;
+            wxColWidthInfo *pWidthInfo = m_aColWidths.Item(i);
+            if ( itemWidth >= pWidthInfo->nMaxWidth )
+                pWidthInfo->bNeedsUpdate = true;
         }
 
         ResetVisibleLinesRange();
@@ -4033,6 +4070,13 @@ void wxListMainWindow::DeleteColumn( int col )
 
 void wxListMainWindow::DoDeleteAllItems()
 {
+    // We will need to update all columns if any items are inserted again.
+    if ( InReportView() )
+    {
+        for ( size_t i = 0; i < m_aColWidths.GetCount(); i++ )
+            m_aColWidths.Item(i)->bNeedsUpdate = true;
+    }
+
     if ( IsEmpty() )
         // nothing to do - in particular, don't send the event
         return;
@@ -4055,13 +4099,7 @@ void wxListMainWindow::DoDeleteAllItems()
     }
 
     if ( InReportView() )
-    {
         ResetVisibleLinesRange();
-        for (size_t i = 0; i < m_aColWidths.GetCount(); i++)
-        {
-            m_aColWidths.Item(i)->bNeedsUpdate = true;
-        }
-    }
 
     m_lines.Clear();
 }
@@ -4225,7 +4263,10 @@ void wxListMainWindow::InsertItem( wxListItem &item )
         int width = GetItemWidthWithImage(&item);
         item.SetWidth(width);
         if (width > pWidthInfo->nMaxWidth)
+        {
             pWidthInfo->nMaxWidth = width;
+            pWidthInfo->bNeedsUpdate = true;
+        }
     }
 
     wxListLineData *line = new wxListLineData(this);
@@ -4271,7 +4312,7 @@ long wxListMainWindow::InsertColumn( long col, const wxListItem &item )
         if (item.m_width == wxLIST_AUTOSIZE_USEHEADER)
             column->SetWidth(ComputeMinHeaderWidth(column));
 
-        wxColWidthInfo *colWidthInfo = new wxColWidthInfo();
+        wxColWidthInfo *colWidthInfo = new wxColWidthInfo(0, IsVirtual());
 
         bool insert = (col >= 0) && ((size_t)col < m_columns.GetCount());
         if ( insert )

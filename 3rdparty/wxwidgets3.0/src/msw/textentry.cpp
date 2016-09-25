@@ -81,9 +81,6 @@
 // above.
 #include <initguid.h>
 
-namespace
-{
-
 // Normally this interface and its IID are defined in shobjidl.h header file
 // included in the platform SDK but MinGW and Cygwin don't have it so redefine
 // the interface ourselves and, as long as we do it all, do it for all
@@ -95,6 +92,9 @@ public:
     virtual HRESULT wxSTDCALL GetDropDownStatus(DWORD *, LPWSTR *) = 0;
     virtual HRESULT wxSTDCALL ResetEnumerator() = 0;
 };
+
+namespace
+{
 
 DEFINE_GUID(wxIID_IAutoCompleteDropDown,
     0x3cd141f4, 0x3c6a, 0x11d2, 0xbc, 0xaa, 0x00, 0xc0, 0x4f, 0xd9, 0x29, 0xdb);

@@ -79,11 +79,11 @@ bool wxSpinButton::Create(wxWindow *parent,
     // get the right size for the control
     if ( width <= 0 || height <= 0 )
     {
-        wxSize size = DoGetBestSize();
+        wxSize bestSize = DoGetBestSize();
         if ( width <= 0 )
-            width = size.x;
+            width = bestSize.x;
         if ( height <= 0 )
-            height = size.y;
+            height = bestSize.y;
     }
 
     if ( x < 0 )

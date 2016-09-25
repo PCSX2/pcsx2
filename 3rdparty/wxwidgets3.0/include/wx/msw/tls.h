@@ -39,7 +39,7 @@ public:
         // here, so explicitly preserve the last error here.
         const DWORD dwLastError = ::GetLastError();
         void* const value = ::TlsGetValue(m_slot);
-        if (dwLastError)
+        if ( dwLastError )
             ::SetLastError(dwLastError);
         return value;
     }

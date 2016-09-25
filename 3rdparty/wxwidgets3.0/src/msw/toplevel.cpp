@@ -613,10 +613,11 @@ bool wxTopLevelWindowMSW::Create(wxWindow *parent,
         memset(dlgTemplate, 0, dlgsize);
 
         // these values are arbitrary, they won't be used normally anyhow
-        dlgTemplate->x  = 34;
+        const LONG baseUnits = ::GetDialogBaseUnits();
+        dlgTemplate->x = 34;
         dlgTemplate->y  = 22;
-        dlgTemplate->cx = 144;
-        dlgTemplate->cy = 75;
+        dlgTemplate->cx = ::MulDiv(sizeReal.x, 4, LOWORD(baseUnits));
+        dlgTemplate->cy = ::MulDiv(sizeReal.y, 8, HIWORD(baseUnits));
 
         // reuse the code in MSWGetStyle() but correct the results slightly for
         // the dialog

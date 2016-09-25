@@ -216,8 +216,22 @@ enum wxPosixPermissions
         #define wxFtell _ftelli64
     #elif wxCHECK_MINGW32_VERSION(3, 5) // mingw-runtime version (not gcc)
         #define wxHAS_HUGE_STDIO_FILES
+
+        wxDECL_FOR_STRICT_MINGW32(int, fseeko64, (FILE*, long long, int));
         #define wxFseek fseeko64
-        #define wxFtell ftello64
+
+        #ifdef wxNEEDS_STRICT_ANSI_WORKAROUNDS
+            // Unfortunately ftello64() is not defined in the library for
+            // whatever reason but as an inline function, so define wxFtell()
+            // here similarly.
+            inline long long wxFtell(FILE* fp)
+            {
+                fpos_t pos;
+                return fgetpos(fp, &pos) == 0 ? pos : -1LL;
+            }
+        #else
+            #define wxFtell ftello64
+        #endif
     #endif
 
     // other Windows compilers (DMC, Watcom, and Borland) don't have huge file
@@ -376,7 +390,7 @@ enum wxPosixPermissions
 
     // finally the default char-type versions
     #if wxUSE_UNICODE
-        #if wxUSE_UNICODE_MSLU || defined(__WX_STRICT_ANSI_GCC__)
+        #if wxUSE_UNICODE_MSLU
             // implement the missing file functions in Win9x ourselves
             WXDLLIMPEXP_BASE int wxMSLU__wopen(const wxChar *name,
                                                int flags, int mode);
@@ -404,6 +418,9 @@ enum wxPosixPermissions
             #define wxCRT_MkDir     wxCRT_MkDirW
             #define wxCRT_RmDir     wxCRT_RmDirW
             #define wxCRT_Stat      wxCRT_StatW
+
+            wxDECL_FOR_STRICT_MINGW32(int, _wmkdir, (const wchar_t*))
+            wxDECL_FOR_STRICT_MINGW32(int, _wrmdir, (const wchar_t*))
         #endif // wxUSE_UNICODE_MSLU/!wxUSE_UNICODE_MSLU
     #else // !wxUSE_UNICODE
         #define wxCRT_Open      wxCRT_OpenA

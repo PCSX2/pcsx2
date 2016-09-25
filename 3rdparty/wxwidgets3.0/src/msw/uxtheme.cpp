@@ -55,7 +55,7 @@ public:
             // something like this
             wxUxThemeEngine *themeEngine = wxUxThemeEngine::ms_themeEngine;
             wxUxThemeEngine::ms_themeEngine = NULL;
-            wxUxThemeEngine::ms_isThemeEngineAvailable = false;
+            wxUxThemeEngine::ms_isThemeEngineAvailable = -1;
 
             delete themeEngine;
         }

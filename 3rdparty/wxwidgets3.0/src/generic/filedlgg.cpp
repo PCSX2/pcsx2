@@ -339,14 +339,40 @@ bool wxGenericFileDialog::Show( bool show )
 void wxGenericFileDialog::OnOk( wxCommandEvent &WXUNUSED(event) )
 {
     wxArrayString selectedFiles;
-    m_filectrl->GetFilenames(selectedFiles);
+    m_filectrl->GetPaths(selectedFiles);
 
     if (selectedFiles.Count() == 0)
         return;
 
+    const wxString& path = selectedFiles[0];
+
     if (selectedFiles.Count() == 1)
     {
-        SetPath( selectedFiles[0] );
+        SetPath(path);
+    }
+
+    // check that the file [doesn't] exist if necessary
+    if ( HasFdFlag(wxFD_SAVE) && HasFdFlag(wxFD_OVERWRITE_PROMPT) &&
+                wxFileExists(path) )
+    {
+        if ( wxMessageBox
+             (
+                wxString::Format
+                (
+                    _("File '%s' already exists, do you really want to overwrite it?"),
+                    path
+                ),
+                _("Confirm"),
+                wxYES_NO
+             ) != wxYES)
+            return;
+    }
+    else if ( HasFdFlag(wxFD_OPEN) && HasFdFlag(wxFD_FILE_MUST_EXIST) &&
+                    !wxFileExists(path) )
+    {
+        wxMessageBox(_("Please choose an existing file."), _("Error"),
+                     wxOK | wxICON_ERROR );
+        return;
     }
 
     EndModal(wxID_OK);

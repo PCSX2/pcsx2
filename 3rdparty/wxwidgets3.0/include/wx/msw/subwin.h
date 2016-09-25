@@ -152,6 +152,7 @@ private:
     {
         m_count = 0;
         m_hwnds = NULL;
+        m_ids = NULL;
     }
 
     // number of elements in m_hwnds array

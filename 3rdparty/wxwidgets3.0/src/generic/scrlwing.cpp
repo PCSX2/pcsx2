@@ -39,8 +39,6 @@
 #include "wx/scrolbar.h"
 #endif
 
-#include "wx/recguard.h"
-
 #ifdef __WXMSW__
     #include <windows.h> // for DLGC_WANTARROWS
     #include "wx/msw/winundef.h"
@@ -57,6 +55,58 @@
 # pragma message enable nosimpint
 #endif
 #endif
+
+typedef wxVector<wxScrollHelper *> wxScrollHelperRecGuardFlags;
+class wxScrollHelperRecGuard
+{
+public:
+    wxScrollHelperRecGuard(wxScrollHelper *instance, wxScrollHelperRecGuardFlags& flags)
+        : m_flags(flags), m_instance(instance), m_inside(false)
+    {
+        // Determine if our instance is already inside a guard
+        for ( wxScrollHelperRecGuardFlags::iterator iter = flags.begin();
+              iter != flags.end();
+              ++iter )
+        {
+            if ( *iter == instance )
+            {
+                m_inside = true;
+                return;
+            }
+        }
+
+        // Not inside so add it to the back
+        flags.push_back(instance);
+    }
+
+    ~wxScrollHelperRecGuard()
+    {
+        if ( IsInside() )
+            return;
+
+        for ( wxScrollHelperRecGuardFlags::iterator iter = m_flags.begin();
+              iter != m_flags.end();
+              ++iter )
+        {
+            if ( *iter == m_instance )
+            {
+                m_flags.erase(iter);
+                break;
+            }
+        }
+    }
+
+    bool IsInside() const { return m_inside; }
+
+private:
+    wxScrollHelperRecGuardFlags& m_flags;
+    wxScrollHelper* m_instance;
+
+    // true if the flag had been already set when we were created
+    bool m_inside;
+
+    wxDECLARE_NO_COPY_CLASS(wxScrollHelperRecGuard);
+};
 
 /*
     TODO PROPERTIES
@@ -214,9 +264,6 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
         return true;
     }
 
-    if ( processed && event.IsCommandEvent())
-        return true;
-
     // For wxEVT_PAINT the user code can either handle this event as usual or
     // override virtual OnDraw(), so if the event hasn't been handled we need
     // to call this virtual function ourselves.
@@ -234,6 +281,11 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
         m_scrollHelper->HandleOnPaint((wxPaintEvent &)event);
         return true;
     }
+
+    // If the user code handled this event, it should prevent the default
+    // handling from taking place, so don't do anything else in this case.
+    if ( processed )
+        return true;
 
     if ( evType == wxEVT_CHILD_FOCUS )
     {
@@ -1303,8 +1355,8 @@ wxScrollHelper::DoAdjustScrollbar(int orient,
 
 void wxScrollHelper::AdjustScrollbars()
 {
-    static wxRecursionGuardFlag s_flagReentrancy;
-    wxRecursionGuard guard(s_flagReentrancy);
+    static wxScrollHelperRecGuardFlags s_flagReentrancy;
+    wxScrollHelperRecGuard guard(this, s_flagReentrancy);
     if ( guard.IsInside() )
     {
         // don't reenter AdjustScrollbars() while another call to

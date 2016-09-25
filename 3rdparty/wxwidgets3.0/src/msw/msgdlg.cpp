@@ -300,7 +300,7 @@ void wxMessageDialog::ReplaceStaticWithEdit()
         if ( !hwndBtn )
             continue;   // it's ok, not all buttons are always present
 
-        RECT rc = wxGetWindowRect(hwndBtn);
+        rc = wxGetWindowRect(hwndBtn);
         rc.top -= dh;
         rc.bottom -= dh;
         rc.left += dw/2;

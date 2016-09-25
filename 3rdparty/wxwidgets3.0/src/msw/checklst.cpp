@@ -157,7 +157,14 @@ bool wxCheckListBoxItem::OnDrawItem(wxDC& dc, const wxRect& rc,
     int y = rc.GetY() + (rc.GetHeight() - size.GetHeight()) / 2;
 
     UINT uState = stat & wxOwnerDrawn::wxODSelected ? wxDSB_SELECTED : wxDSB_NORMAL;
+
+    // checkmarks should not be mirrored in RTL layout
+    DWORD oldLayout = impl->GetLayoutDirection() == wxLayout_RightToLeft ? LAYOUT_RTL : 0;
+    if ( oldLayout & LAYOUT_RTL )
+        ::SetLayout(hdc, oldLayout | LAYOUT_BITMAPORIENTATIONPRESERVED);
     wxDrawStateBitmap(hdc, hBmpCheck, x, y, uState);
+    if ( oldLayout & LAYOUT_RTL )
+        ::SetLayout(hdc, oldLayout);
 
     return true;
 }

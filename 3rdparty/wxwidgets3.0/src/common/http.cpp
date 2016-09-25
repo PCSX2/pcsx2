@@ -22,7 +22,6 @@
 
 #ifndef WX_PRECOMP
     #include "wx/string.h"
-    #include "wx/app.h"
 #endif
 
 #include "wx/tokenzr.h"
@@ -48,8 +47,6 @@ wxHTTP::wxHTTP()
     m_read = false;
     m_proxy_mode = false;
     m_http_response = 0;
-
-    SetNotify(wxSOCKET_LOST_FLAG);
 }
 
 wxHTTP::~wxHTTP()
@@ -370,16 +367,6 @@ bool wxHTTP::BuildRequest(const wxString& path, const wxString& method)
         SetHeader(wxT("Authorization"), GenerateAuthString(m_username, m_password));
     }
 
-    SaveState();
-
-    // we may use non blocking sockets only if we can dispatch events from them
-    int flags = wxIsMainThread() && wxApp::IsMainLoopRunning() ? wxSOCKET_NONE
-                                                               : wxSOCKET_BLOCK;
-    // and we must use wxSOCKET_WAITALL to ensure that all data is sent
-    flags |= wxSOCKET_WAITALL;
-    SetFlags(flags);
-    Notify(false);
-
     wxString buf;
     buf.Printf(wxT("%s %s HTTP/1.0\r\n"), method, path);
     const wxWX2MBbuf pathbuf = buf.mb_str();
@@ -395,10 +382,8 @@ bool wxHTTP::BuildRequest(const wxString& path, const wxString& method)
 
     wxString tmp_str;
     m_lastError = ReadLine(this, tmp_str);
-    if (m_lastError != wxPROTO_NOERR) {
-        RestoreState();
+    if (m_lastError != wxPROTO_NOERR)
         return false;
-    }
 
     if (!tmp_str.Contains(wxT("HTTP/"))) {
         // TODO: support HTTP v0.9 which can have no header.
@@ -441,7 +426,7 @@ bool wxHTTP::BuildRequest(const wxString& path, const wxString& method)
 
     m_lastError = wxPROTO_NOERR;
     ret_value = ParseHeaders();
-    RestoreState();
+
     return ret_value;
 }
 
@@ -539,9 +524,6 @@ wxInputStream *wxHTTP::GetInputStream(const wxString& path)
         inp_stream->m_httpsize = (size_t)-1;
 
     inp_stream->m_read_bytes = 0;
-
-    Notify(false);
-    SetFlags(wxSOCKET_BLOCK | wxSOCKET_WAITALL);
 
     // no error; reset m_lastError
     m_lastError = wxPROTO_NOERR;

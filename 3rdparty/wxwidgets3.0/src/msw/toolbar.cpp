@@ -235,7 +235,7 @@ public:
         }
     }
 
-    void ToBeDeleted() { m_toBeDeleted = true; }
+    void ToBeDeleted(bool toBeDeleted = true) { m_toBeDeleted = toBeDeleted; }
     bool IsToBeDeleted() const { return m_toBeDeleted; }
 
 private:
@@ -294,6 +294,23 @@ static RECT wxGetTBItemRect(HWND hwnd, int index, int id = wxID_NONE)
     }
 
     return r;
+}
+
+static bool MSWShouldBeChecked(const wxToolBarToolBase *tool)
+{
+    // Apparently, "checked" state image overrides the "disabled" image
+    // so we need to enforce our custom "disabled" image (if there is any)
+    // to be drawn for checked and disabled button tool.
+    // Note: We believe this erroneous overriding is fixed in MSW 8.
+    if ( wxGetWinVersion() <= wxWinVersion_7 &&
+            tool->GetKind() == wxITEM_CHECK &&
+                tool->GetDisabledBitmap().IsOk() &&
+                    !tool->IsEnabled() )
+    {
+        return false;
+    }
+
+    return tool->IsToggled();
 }
 
 // ============================================================================
@@ -561,8 +578,13 @@ WXDWORD wxToolBar::MSWGetStyle(long style, WXDWORD *exstyle) const
 // ----------------------------------------------------------------------------
 
 bool wxToolBar::DoInsertTool(size_t WXUNUSED(pos),
-                             wxToolBarToolBase * WXUNUSED(tool))
+                             wxToolBarToolBase *tool)
 {
+    // We might be inserting back a tool previously removed from the toolbar,
+    // make sure to reset its "to be deleted" flag to ensure that we do take it
+    // into account during our layout even in this case.
+    static_cast<wxToolBarTool*>(tool)->ToBeDeleted(false);
+
     // nothing special to do here - we really create the toolbar buttons in
     // Realize() later
     InvalidateBestSize();
@@ -821,10 +843,10 @@ bool wxToolBar::Realize()
                             // MapBitmap() to work correctly
                             for ( int y = 0; y < h; y++ )
                             {
-                                for ( int x = 0; x < w; x++ )
+                                for ( int xx = 0; xx < w; xx++ )
                                 {
-                                    if ( imgGreyed.IsTransparent(x, y) )
-                                        imgGreyed.SetRGB(x, y,
+                                    if ( imgGreyed.IsTransparent(xx, y) )
+                                        imgGreyed.SetRGB(xx, y,
                                                          wxLIGHT_GREY->Red(),
                                                          wxLIGHT_GREY->Green(),
                                                          wxLIGHT_GREY->Blue());
@@ -907,11 +929,11 @@ bool wxToolBar::Realize()
 
         if ( addBitmap ) // no old bitmap or we can't replace it
         {
-            TBADDBITMAP addBitmap;
-            addBitmap.hInst = 0;
-            addBitmap.nID = (UINT_PTR)hBitmap;
+            TBADDBITMAP tbAddBitmap;
+            tbAddBitmap.hInst = 0;
+            tbAddBitmap.nID = (UINT_PTR)hBitmap;
             if ( ::SendMessage(GetHwnd(), TB_ADDBITMAP,
-                               (WPARAM) nButtons, (LPARAM)&addBitmap) == -1 )
+                               (WPARAM) nButtons, (LPARAM)&tbAddBitmap) == -1 )
             {
                 wxFAIL_MSG(wxT("Could not add bitmap to toolbar"));
             }
@@ -1006,7 +1028,7 @@ bool wxToolBar::Realize()
 
                 if ( tool->IsEnabled() )
                     button.fsState |= TBSTATE_ENABLED;
-                if ( tool->IsToggled() )
+                if ( MSWShouldBeChecked(tool) )
                     button.fsState |= TBSTATE_CHECKED;
 
                 switch ( tool->GetKind() )
@@ -1033,12 +1055,12 @@ bool wxToolBar::Realize()
                             while ( nodePrev )
                             {
                                 TBBUTTON& prevButton = buttons[prevIndex];
-                                wxToolBarToolBase *tool = nodePrev->GetData();
-                                if ( !tool->IsButton() || tool->GetKind() != wxITEM_RADIO )
+                                wxToolBarToolBase *toolPrev = nodePrev->GetData();
+                                if ( !toolPrev->IsButton() || toolPrev->GetKind() != wxITEM_RADIO )
                                     break;
 
-                                if ( tool->Toggle(false) )
-                                    DoToggleTool(tool, false);
+                                if ( toolPrev->Toggle(false) )
+                                    DoToggleTool(toolPrev, false);
 
                                 prevButton.fsState &= ~TBSTATE_CHECKED;
                                 nodePrev = nodePrev->GetPrevious();
@@ -1069,11 +1091,12 @@ bool wxToolBar::Realize()
 
                 // Instead of using fixed widths for all buttons, size them
                 // automatically according to the size of their bitmap and text
-                // label, if present. This particularly matters for toolbars
-                // with the wxTB_HORZ_LAYOUT style: they look hideously ugly
-                // without autosizing when the labels have even slightly
-                // different lengths.
-                button.fsStyle |= TBSTYLE_AUTOSIZE;
+                // label, if present. They look hideously ugly without autosizing
+                // when the labels have even slightly different lengths.
+                if ( HasFlag(wxTB_HORZ_LAYOUT) )
+                {
+                    button.fsStyle |= TBSTYLE_AUTOSIZE;
+                }
 
                 bitmapId++;
                 break;
@@ -1393,13 +1416,24 @@ bool wxToolBar::MSWCommand(WXUINT WXUNUSED(cmd), WXWORD id_)
 
     bool allowLeftClick = OnLeftClick(id, toggled);
 
+    // Check if the tool hasn't been deleted in the event handler (notice that
+    // it's also possible that this tool was deleted and a new tool with the
+    // same ID was created, so we really need to check if the pointer to the
+    // tool with the given ID didn't change, not just that it's non null).
+    if ( FindById(id) != tool )
+    {
+        // The rest of this event handler deals with updating the tool and must
+        // not be executed if the tool doesn't exist any more.
+        return true;
+    }
+
     // Restore the unpressed state. Enabled/toggled state might have been
     // changed since so take care of it.
     if (tool->IsEnabled())
         state |= TBSTATE_ENABLED;
     else
         state &= ~TBSTATE_ENABLED;
-    if (tool->IsToggled())
+    if ( MSWShouldBeChecked(tool) )
         state |= TBSTATE_CHECKED;
     else
         state &= ~TBSTATE_CHECKED;
@@ -1412,7 +1446,8 @@ bool wxToolBar::MSWCommand(WXUINT WXUNUSED(cmd), WXWORD id_)
         // revert back
         tool->Toggle(!toggled);
 
-        ::SendMessage(GetHwnd(), TB_CHECKBUTTON, id, MAKELONG(!toggled, 0));
+        ::SendMessage(GetHwnd(), TB_CHECKBUTTON, id,
+                      MAKELONG(MSWShouldBeChecked(tool), 0));
     }
 
     return true;
@@ -1654,14 +1689,34 @@ void wxToolBar::SetWindowStyleFlag(long style)
 
 void wxToolBar::DoEnableTool(wxToolBarToolBase *tool, bool enable)
 {
-    ::SendMessage(GetHwnd(), TB_ENABLEBUTTON,
-                  (WPARAM)tool->GetId(), (LPARAM)MAKELONG(enable, 0));
+    if ( tool->IsButton() )
+    {
+        ::SendMessage(GetHwnd(), TB_ENABLEBUTTON,
+                      (WPARAM)tool->GetId(), (LPARAM)MAKELONG(enable, 0));
+
+        // Adjust displayed checked state -- it could have changed if the tool is
+        // disabled and has a custom "disabled state" bitmap.
+        DoToggleTool(tool, tool->IsToggled());
+    }
+    else if ( tool->IsControl() )
+    {
+        wxToolBarTool* tbTool = static_cast<wxToolBarTool*>(tool);
+
+        tbTool->GetControl()->Enable(enable);
+        wxStaticText* text = tbTool->GetStaticText();
+        if ( text )
+            text->Enable(enable);
+    }
 }
 
-void wxToolBar::DoToggleTool(wxToolBarToolBase *tool, bool toggle)
+void wxToolBar::DoToggleTool(wxToolBarToolBase *tool,
+                             bool WXUNUSED_UNLESS_DEBUG(toggle))
 {
+    wxASSERT_MSG( tool->IsToggled() == toggle, wxT("Inconsistent tool state") );
+
     ::SendMessage(GetHwnd(), TB_CHECKBUTTON,
-                  (WPARAM)tool->GetId(), (LPARAM)MAKELONG(toggle, 0));
+                  (WPARAM)tool->GetId(),
+                  (LPARAM)MAKELONG(MSWShouldBeChecked(tool), 0));
 }
 
 void wxToolBar::DoSetToggle(wxToolBarToolBase *WXUNUSED(tool), bool WXUNUSED(toggle))
@@ -2056,11 +2111,7 @@ WXLRESULT wxToolBar::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam
 
 #ifdef wxHAS_MSW_BACKGROUND_ERASE_HOOK
         case WM_PAINT:
-            // refreshing the controls in the toolbar inside a composite window
-            // results in an endless stream of WM_PAINT messages -- and seems
-            // to be unnecessary anyhow as everything works just fine without
-            // any special workarounds in this case
-            if ( !IsDoubleBuffered() && HandlePaint(wParam, lParam) )
+            if ( HandlePaint(wParam, lParam) )
                 return 0;
             break;
 #endif // wxHAS_MSW_BACKGROUND_ERASE_HOOK

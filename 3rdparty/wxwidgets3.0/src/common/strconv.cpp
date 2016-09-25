@@ -232,12 +232,6 @@ wxMBConv::ToWChar(wchar_t *dst, size_t dstLen,
         if ( !srcEnd )
             dstWritten++;
 
-        if ( !lenChunk )
-        {
-            // nothing left in the input string, conversion succeeded
-            break;
-        }
-
         if ( dst )
         {
             if ( dstWritten > dstLen )
@@ -1057,15 +1051,7 @@ wxMBConvStrictUTF8::ToWChar(wchar_t *dst, size_t dstLen,
             // length:
             static const unsigned char leadValueMask[] = { 0x7F, 0x1F, 0x0F, 0x07 };
 
-            // mask and value of lead byte's most significant bits, by length:
-            static const unsigned char leadMarkerMask[] = { 0x80, 0xE0, 0xF0, 0xF8 };
-            static const unsigned char leadMarkerVal[] = { 0x00, 0xC0, 0xE0, 0xF0 };
-
             len--; // it's more convenient to work with 0-based length here
-
-            // extract the lead byte's value bits:
-            if ( (c & leadMarkerMask[len]) != leadMarkerVal[len] )
-                break;
 
             code = c & leadValueMask[len];
 
@@ -1716,8 +1702,18 @@ wxMBConvUTF16swap::ToWChar(wchar_t *dst, size_t dstLen,
         wxUint16 tmp[2];
 
         tmp[0] = wxUINT16_SWAP_ALWAYS(*inBuff);
-        inBuff++;
-        tmp[1] = wxUINT16_SWAP_ALWAYS(*inBuff);
+        if ( ++inBuff < inEnd )
+        {
+            // Normal case, we have a next character to decode.
+            tmp[1] = wxUINT16_SWAP_ALWAYS(*inBuff);
+        }
+        else // End of input.
+        {
+            // Setting the second character to 0 ensures we correctly return
+            // wxCONV_FAILED if the first one is the first half of a surrogate
+            // as the second half can't be 0 in this case.
+            tmp[1] = 0;
+        }
 
         const size_t numChars = decode_utf16(tmp, ch);
         if ( numChars == wxCONV_FAILED )

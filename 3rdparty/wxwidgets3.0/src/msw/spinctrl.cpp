@@ -196,12 +196,12 @@ void wxSpinCtrl::OnChar(wxKeyEvent& event)
     {
         case WXK_RETURN:
             {
-                wxCommandEvent event(wxEVT_TEXT_ENTER, m_windowId);
-                InitCommandEvent(event);
+                wxCommandEvent evt(wxEVT_TEXT_ENTER, m_windowId);
+                InitCommandEvent(evt);
                 wxString val = wxGetWindowText(m_hwndBuddy);
-                event.SetString(val);
-                event.SetInt(GetValue());
-                if ( HandleWindowEvent(event) )
+                evt.SetString(val);
+                evt.SetInt(GetValue());
+                if ( HandleWindowEvent(evt) )
                     return;
                 break;
             }
@@ -670,7 +670,7 @@ void wxSpinCtrl::DoSetToolTip(wxToolTip *tip)
 
 void wxSpinCtrl::SendSpinUpdate(int value)
 {
-    wxCommandEvent event(wxEVT_SPINCTRL, GetId());
+    wxSpinEvent event(wxEVT_SPINCTRL, GetId());
     event.SetEventObject(this);
     event.SetInt(value);
 

@@ -571,7 +571,7 @@ void wxFileConfig::Parse(const wxTextBuffer& buffer, bool bLocal)
       }
 
       if ( *pEnd != wxT(']') ) {
-        wxLogError(_("file '%s': unexpected character %c at line %d."),
+        wxLogError(_("file '%s': unexpected character %c at line %zu."),
                    buffer.GetName(), *pEnd, n + 1);
         continue; // skip this line
       }
@@ -607,7 +607,7 @@ void wxFileConfig::Parse(const wxTextBuffer& buffer, bool bLocal)
             break;
 
           default:
-            wxLogWarning(_("file '%s', line %d: '%s' ignored after group header."),
+            wxLogWarning(_("file '%s', line %zu: '%s' ignored after group header."),
                          buffer.GetName(), n + 1, pEnd);
             bCont = false;
         }
@@ -636,7 +636,7 @@ void wxFileConfig::Parse(const wxTextBuffer& buffer, bool bLocal)
         pEnd++;
 
       if ( *pEnd++ != wxT('=') ) {
-        wxLogError(_("file '%s', line %d: '=' expected."),
+        wxLogError(_("file '%s', line %zu: '=' expected."),
                    buffer.GetName(), n + 1);
       }
       else {
@@ -649,7 +649,7 @@ void wxFileConfig::Parse(const wxTextBuffer& buffer, bool bLocal)
         else {
           if ( bLocal && pEntry->IsImmutable() ) {
             // immutable keys can't be changed by user
-            wxLogWarning(_("file '%s', line %d: value for immutable key '%s' ignored."),
+            wxLogWarning(_("file '%s', line %zu: value for immutable key '%s' ignored."),
                          buffer.GetName(), n + 1, strKey.c_str());
             continue;
           }
@@ -659,8 +659,8 @@ void wxFileConfig::Parse(const wxTextBuffer& buffer, bool bLocal)
           //  (c) key from global file now found in local one
           // which is exactly what we want.
           else if ( !bLocal || pEntry->IsLocal() ) {
-            wxLogWarning(_("file '%s', line %d: key '%s' was first found at line %d."),
-                         buffer.GetName(), (int)n + 1, strKey.c_str(), pEntry->Line());
+            wxLogWarning(_("file '%s', line %zu: key '%s' was first found at line %d."),
+                         buffer.GetName(), n + 1, strKey.c_str(), pEntry->Line());
 
           }
         }
