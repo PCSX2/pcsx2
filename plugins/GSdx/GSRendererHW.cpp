@@ -429,17 +429,17 @@ void GSRendererHW::Draw()
 	context->ZBUF.ZMSK = zm != 0;
 
 	// It is allowed to use the depth and rt at the same location. However at least 1 must
-	// be disabled.
+	// be disabled. Or the written value must be the same on both channels.
 	// 1/ GoW uses a Cd blending on a 24 bits buffer (no alpha)
 	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
 	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1));
 	const bool no_ds = !no_rt && (
-			// Depth is always pass (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer)
-			(context->ZBUF.ZMSK && m_context->TEST.ZTST == ZTST_ALWAYS && !m_context->TEST.DATE) ||
+			// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
+			(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
 			// Depth will be written through the RT
-			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE)
+			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && fm == 0 && context->TEST.ZTE)
 			);
 
 	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
