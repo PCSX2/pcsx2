@@ -138,6 +138,24 @@ public:
 				"\tY:%u\n\n"
 				, XYOFFSET.OFX, XYOFFSET.OFY);
 
+		fprintf(fp, "MIPTBP1\n"
+				"\tBP1:0x%llx\n"
+				"\tBW1:%llu\n"
+				"\tBP2:0x%llx\n"
+				"\tBW2:%llu\n"
+				"\tBP3:0x%llx\n"
+				"\tBW3:%llu\n\n"
+				, MIPTBP1.TBP1, MIPTBP1.TBW1, MIPTBP1.TBP2, MIPTBP1.TBW2, MIPTBP1.TBP3, MIPTBP1.TBW3);
+
+		fprintf(fp, "MIPTBP2\n"
+				"\tBP4:0x%llx\n"
+				"\tBW4:%llu\n"
+				"\tBP5:0x%llx\n"
+				"\tBW5:%llu\n"
+				"\tBP6:0x%llx\n"
+				"\tBW6:%llu\n\n"
+				, MIPTBP2.TBP4, MIPTBP2.TBW4, MIPTBP2.TBP5, MIPTBP2.TBW5, MIPTBP2.TBP6, MIPTBP2.TBW6);
+
 		fprintf(fp, "TEX0\n"
 				"\tTBP0:0x%x\n"
 				"\tTBW:%u\n"
