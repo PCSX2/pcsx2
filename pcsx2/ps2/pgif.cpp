@@ -71,7 +71,6 @@ int doAnyIopLs = 0;
 
 //NOTES (TODO):
 /*
-- Change this file's name to PGIF.cpp and the corresponding header.
 - 8 and 16 bit access to the PGPU regs is not emulated... is it ever used? Emulating it would be tricky.
 
 
@@ -368,6 +367,8 @@ void ackGpuIrq()
 void pgpuDmaIntr(int trigDma)
 {  //For the IOP GPU DMA channel.
 //trigDma: 1=normal,ToGPU; 2=normal,FromGPU, 3=LinkedList
+
+// psxmode: 25.09.2016 at this point, the emulator works even when removing this interrupt call. how? why?
 #if PREVENT_IRQ_ON_NORM_DMA_TO_GPU == 1
     if (trigDma != 1)  //Interrupt on ToGPU DMA breaks some games. TODO: Why?
 #endif

@@ -170,7 +170,7 @@ void idct(int *block,int k)
 
 void mdecInit(void) {
 
-	Config.Mdec = 1; //XXXXXXXXXXXXXXXXX  0 or 1
+	Config.Mdec = 0; //XXXXXXXXXXXXXXXXX  0 or 1 // 1 is black and white decoding
 
 	mdec.rl = (u16*)PSXM(0);
 	//mdec.rl = (u16*)&psxM[0x100000];
