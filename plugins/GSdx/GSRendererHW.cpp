@@ -406,6 +406,27 @@ void GSRendererHW::Draw()
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
+	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+
+	// skip alpha test if possible
+	// Note: do it first so we know if frame/depth writes are masked
+
+	GIFRegTEST TEST = context->TEST;
+	GIFRegFRAME FRAME = context->FRAME;
+	GIFRegZBUF ZBUF = context->ZBUF;
+
+	uint32 fm = context->FRAME.FBMSK;
+	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+
+	// Note required to compute TryAlphaTest below. So do it now.
+	if (PRIM->TME && tex_psm.pal > 0)
+		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+
+	//  Test if we can optimize Alpha Test as a NOP
+	m_ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
+
+	context->FRAME.FBMSK = fm;
+	context->ZBUF.ZMSK = zm != 0;
 
 	// It is allowed to use the depth and rt at the same location. However at least 1 must
 	// be disabled.
@@ -480,7 +501,6 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
-		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		int lod = 0;
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
@@ -547,9 +567,6 @@ void GSRendererHW::Draw()
 		}
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-
-		if(tex_psm.pal > 0)
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 
 		GSVector4i r;
 
@@ -660,21 +677,6 @@ void GSRendererHW::Draw()
 			OI_DoubleHalfClear(rt_tex, ds_tex);
 		}
 	}
-
-	// skip alpha test if possible
-
-	GIFRegTEST TEST = context->TEST;
-	GIFRegFRAME FRAME = context->FRAME;
-	GIFRegZBUF ZBUF = context->ZBUF;
-
-	uint32 fm = context->FRAME.FBMSK;
-	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
-
-	//  Test if we can optimize Alpha Test as a NOP
-	m_ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
-
-	context->FRAME.FBMSK = fm;
-	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	// Note: first hack corrects both position and texture coordinate
