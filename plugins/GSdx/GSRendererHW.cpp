@@ -514,6 +514,14 @@ void GSRendererHW::Draw()
 
 			TEX0 = GetTex0Layer(lod);
 
+			// Ratchet & Clank set an address of 0 on invalid layer. Address 0 will be really awkward
+			// for a mipmap layer. So use it to avoid invalid data
+			if (TEX0.TBP0 == 0) {
+				GL_INS("Warning invalid lod %d", lod);
+				lod++;
+				TEX0 = GetTex0Layer(lod);
+			}
+
 			MIP_CLAMP.MINU >>= lod;
 			MIP_CLAMP.MINV >>= lod;
 			MIP_CLAMP.MAXU >>= lod;
