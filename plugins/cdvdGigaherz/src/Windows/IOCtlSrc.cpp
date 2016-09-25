@@ -352,12 +352,8 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
 }
 
 
-// FIXME: Probably doesn't work if the sectors to be read are from two tracks
-// of different types.
 s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 {
-    RAW_READ_INFO rri;
-
     DWORD size = 0;
 
     if (!OpenOK)
@@ -374,13 +370,10 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
         sptd.info.Cdb[0] = 0xBE;
         // Don't care about sector type.
         sptd.info.Cdb[1] = 0;
-        sptd.info.Cdb[2] = (sector >> 24) & 0xFF;
-        sptd.info.Cdb[3] = (sector >> 16) & 0xFF;
-        sptd.info.Cdb[4] = (sector >> 8) & 0xFF;
-        sptd.info.Cdb[5] = sector & 0xFF;
-        sptd.info.Cdb[6] = (count >> 16) & 0xFF;
-        sptd.info.Cdb[7] = (count >> 8) & 0xFF;
-        sptd.info.Cdb[8] = count & 0xFF;
+        // Number of sectors to read
+        sptd.info.Cdb[6] = 0;
+        sptd.info.Cdb[7] = 0;
+        sptd.info.Cdb[8] = 1;
         // Sync + all headers + user data + EDC/ECC. Excludes C2 + subchannel
         sptd.info.Cdb[9] = 0xF8;
         sptd.info.Cdb[10] = 0;
@@ -389,20 +382,44 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
         sptd.info.CdbLength = 12;
         sptd.info.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
         sptd.info.DataIn = SCSI_IOCTL_DATA_IN;
-        sptd.info.DataTransferLength = 2352 * count;
-        sptd.info.DataBuffer = buffer;
-        sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
         sptd.info.SenseInfoOffset = offsetof(sptdinfo, sense_buffer);
         sptd.info.TimeOutValue = 5;
 
-        if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
-                            sizeof(sptd), &sptd, sizeof(sptd), &size, nullptr)) {
-            if (sptd.info.DataTransferLength == 2352 * count)
-                return 0;
+        // Read sectors one by one to avoid reading data from 2 tracks of
+        // different types in the same read (which will fail).
+        bool failed = false;
+        for (u32 n = 0; n < count; ++n) {
+            u32 current_sector = sector + n;
+            sptd.info.Cdb[2] = (current_sector >> 24) & 0xFF;
+            sptd.info.Cdb[3] = (current_sector >> 16) & 0xFF;
+            sptd.info.Cdb[4] = (current_sector >> 8) & 0xFF;
+            sptd.info.Cdb[5] = current_sector & 0xFF;
+            sptd.info.DataTransferLength = 2352;
+            sptd.info.DataBuffer = buffer + 2352 * n;
+            sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
+            if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
+                                sizeof(sptd), &sptd, sizeof(sptd), &size, nullptr)) {
+                if (sptd.info.DataTransferLength != 2352)
+                    printf(" * CDVD: SPTI short transfer of %u bytes", sptd.info.DataTransferLength);
+                continue;
+            }
+            failed = true;
+            printf(" * CDVD: SPTI failed reading sector %u; SENSE %u -", current_sector, sptd.info.SenseInfoLength);
+            for (const auto &c : sptd.sense_buffer)
+                printf(" %02X", c);
+            putchar('\n');
+            break;
         }
+
+        if (!failed)
+            return 0;
+
         printf(" * CDVD: SPTI failed reading sectors %u-%u\n", sector, sector + count - 1);
     }
 
+    // TODO: Code doesn't work as well as SPTI (likely due to some optional
+    // drive command requirements being unimplemented). Remove?
+    RAW_READ_INFO rri;
     rri.DiskOffset.QuadPart = sector * (u64)2048;
     rri.SectorCount = count;
 
