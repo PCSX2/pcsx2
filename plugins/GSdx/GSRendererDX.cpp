@@ -53,7 +53,7 @@ void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex
 	static const uint32 inverted_atst[] = { ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL };
 	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
 
-	if (!m_context->TEST.ATE) return;
+	if (!m_ATE) return;
 
 	switch (atst) {
 	case ATST_LESS:
@@ -98,7 +98,7 @@ void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == 1))
+	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && !m_ATE)
 	{
 		if (!m_context->FBA.FBA)
 		{

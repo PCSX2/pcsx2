@@ -32,6 +32,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_tc(tc)
 	, m_channel_shuffle(false)
 	, m_double_downscale(false)
+	, m_ATE(false)
 {
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
@@ -683,13 +684,8 @@ void GSRendererHW::Draw()
 	uint32 fm = context->FRAME.FBMSK;
 	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 
-	if(context->TEST.ATE && context->TEST.ATST != ATST_ALWAYS)
-	{
-		if(GSRenderer::TryAlphaTest(fm, zm))
-		{
-			context->TEST.ATST = ATST_ALWAYS;
-		}
-	}
+	//  Test if we can optimize Alpha Test as a NOP
+	m_ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
 
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;

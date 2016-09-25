@@ -203,7 +203,7 @@ void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* te
 	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
 	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
 
-	if (!m_context->TEST.ATE) return;
+	if (!m_ATE) return;
 
 	switch (atst) {
 		case ATST_LESS:
@@ -1180,7 +1180,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			m_require_full_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
-		} else if (m_om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
+		} else if (m_om_csel.wa && !m_ATE) {
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
@@ -1211,7 +1211,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 					DATE = false;
 				}
 			}
-		} else if (!m_om_csel.wa && (!m_context->TEST.ATE || m_context->TEST.ATST == ATST_ALWAYS)) {
+		} else if (!m_om_csel.wa && !m_ATE) {
 			// TODO: is it legal ? Likely but it need to be tested carefully
 			// DATE_GL45 = true;
 			// m_require_one_barrier = true; << replace it with a cheap barrier

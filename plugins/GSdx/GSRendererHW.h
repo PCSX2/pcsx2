@@ -154,6 +154,7 @@ protected:
 
 	bool m_channel_shuffle;
 	bool m_double_downscale;
+	bool m_ATE;
 
 public:
 	GSRendererHW(GSTextureCache* tc);
