@@ -228,7 +228,9 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		if (delta > 0) {
 			// Code was corrected to use generic format. But I'm not sure behavior is correct.
 			// Let's keep the warning to easily spot game that trigger this code path.
+#ifndef DISABLE_WIP_ASSERTION
 			ASSERT(DISPFB.PSM == PSM_PSMCT32 || DISPFB.PSM == PSM_PSMCT24);
+#endif
 
 			int pages = delta >> 5u;
 			int y_pages = pages / DISPFB.FBW;
