@@ -21,6 +21,8 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/PGPU.h"
+
 using namespace R5900;
 
 static __fi void IntCHackCheck()
@@ -42,11 +44,16 @@ mem32_t __fastcall _hwRead32(u32 mem)
 {
 	pxAssume( (mem & 0x03) == 0 );
 
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		return PGIFr((mem & 0x1FFFFFFF));
+	}
+
 	switch( page )
 	{
 		case 0x00:	return rcntRead32<0x00>( mem );
 		case 0x01:	return rcntRead32<0x01>( mem );
-		
+
 		case 0x02:	return ipuRead32( mem );
 
 		case 0x03:
@@ -58,7 +65,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 					return vifRead32<0>(mem);
 			}
 			return dmacRead32<0x03>( mem );
-		
+
 		case 0x04:
 		case 0x05:
 		case 0x06:
@@ -68,7 +75,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			// No game is known to attempt such a thing (yay!), so probably nothing for us to
 			// worry about.  Chances are, though, doing so is "legal" and yields some sort
 			// of reproducible behavior.  Candidate for real hardware testing.
-			
+
 			// Current assumption: Reads 128 bits and discards the unused portion.
 
 			DevCon.WriteLn( Color_Cyan, "Reading 32-bit FIFO data" );
@@ -92,8 +99,8 @@ mem32_t __fastcall _hwRead32(u32 mem)
 				return psHu32(INTC_STAT);
 			}
 
-			
-				
+
+
 			if ((mem & 0x1000ff00) == 0x1000f300)
 			{
 				int ret = 0;
@@ -104,7 +111,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 				case 0x00:
 					ret = psxHu32(0x1f801814);
 					break;
-				case 0x80:					
+				case 0x80:
 #if PSX_EXTRALOGS
 					DevCon.Warning("FIFO Size %x", sif2fifosize);
 #endif
@@ -130,7 +137,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 #endif
 				return ret;
 
-				
+
 			}
 			/*if ((mem & 0x1000ff00) == 0x1000f200)
 			{
@@ -139,14 +146,17 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			switch( mem )
 			{
 				case SIO_ISR:
-				case SBUS_F260:
+
 				case 0x1000f410:
 				case MCH_RICM:
 					return 0;
 
 				case SBUS_F240:
+					DevCon.Warning("Read  SBUS_F240  %x ", psHu32(SBUS_F240));
 					return psHu32(SBUS_F240) | 0xF0000102;
-
+				case SBUS_F260:
+					DevCon.Warning("Read  SBUS_F260  %x ", psHu32(SBUS_F260));
+					return psHu32(SBUS_F260);
 				case MCH_DRD:
 					if( !((psHu32(MCH_RICM) >> 6) & 0xF) )
 					{
@@ -182,7 +192,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 	//Hack for Transformers and Test Drive Unlimited to simulate filling the VIF FIFO
 	//It actually stalls VIF a few QW before the end of the transfer, so we need to pretend its all gone
 	//else itll take aaaaaaaaages to boot.
-	if(mem == (D1_CHCR + 0x10) && CHECK_VIFFIFOHACK) 
+	if(mem == (D1_CHCR + 0x10) && CHECK_VIFFIFOHACK)
 		return psHu32(mem) + (vif1ch.qwc * 16);
 
 	/*if((mem == GIF_CHCR) && !vif1ch.chcr.STR && gifRegs.stat.M3P && gifRegs.stat.APATH != 3)
@@ -278,7 +288,7 @@ static void _hwRead64(u32 mem, mem64_t* result )
 			// No game is known to attempt such a thing (yay!), so probably nothing for us to
 			// worry about.  Chances are, though, doing so is "legal" and yields some sort
 			// of reproducible behavior.  Candidate for real hardware testing.
-			
+
 			// Current assumption: Reads 128 bits and discards the unused portion.
 
 			uint wordpart = (mem >> 3) & 0x1;
@@ -325,6 +335,12 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 	// All other registers fall back on the 64-bit handler (and from there
 	// all non-IPU reads fall back to the 32-bit handler).
 
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		PGIFrQword((mem & 0x1FFFFFFF), result);
+		return;
+	}
+
 	switch (page)
 	{
 		case 0x05:
@@ -352,7 +368,7 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 				DevCon.Warning("128bit read from %x wibble", mem);
 				if (mem == 0x1000f3E0)
 				{
-					
+
 					ReadFifoSingleWord();
 					result->lo = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
@@ -364,11 +380,11 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 				}
 			}
 			break;
-				
+
 		default:
 			_hwRead64<page>( mem, &result->lo );
 			result->hi = 0;
-		break;		
+		break;
 	}
 }
 

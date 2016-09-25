@@ -127,6 +127,8 @@ static void ReadTrack() {
 	cdr.Prev[2] = itob(cdr.SetSector[2]);
 
 	CDVD_LOG("KEY *** %x:%x:%x", cdr.Prev[0], cdr.Prev[1], cdr.Prev[2]);
+	if (EmuConfig.CdvdVerboseReads)
+		DevCon.WriteLn("CD Read Sector %x", msf_to_lsn(cdr.SetSector));
 	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), CDVD_MODE_2340);
 }
 
@@ -912,7 +914,9 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 		case 0x11000000:
 		case 0x11400100:
 			if (cdr.Readed == 0) {
-				CDVD_LOG("*** DMA 3 *** NOT READY");
+				DevCon.Warning("*** DMA 3 *** NOT READY");
+				HW_DMA3_CHCR &= ~0x01000000; //hack
+				psxDmaInterrupt(3); //hack
 				return;
 			}
 

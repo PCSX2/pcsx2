@@ -188,6 +188,7 @@
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\Mdec.cpp" />
     <ClCompile Include="..\..\MultipartFileReader.cpp" />
     <ClCompile Include="..\..\Patch.cpp" />
     <ClCompile Include="..\..\Patch_Memory.cpp" />
@@ -195,6 +196,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\ps2\LegacyDmac.cpp" />
+    <ClCompile Include="..\..\ps2\PGPU.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
@@ -443,8 +445,10 @@
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
+    <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
+    <ClInclude Include="..\..\ps2\PGPU.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />

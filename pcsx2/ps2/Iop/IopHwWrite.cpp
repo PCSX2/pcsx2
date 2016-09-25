@@ -19,6 +19,9 @@
 #include "Sio.h"
 #include "CDVD/CdRom.h"
 
+#include "ps2/PGPU.h"
+#include "Mdec.h"
+
 namespace IopMemory {
 
 using namespace Internal;
@@ -170,6 +173,11 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 	u32 masked_addr = addr & 0x0fff;
 
+	// todo: psx mode: this is new
+	if (((addr & 0x1FFFFFFF) >= 0x1F8010A0) && ((addr & 0x1FFFFFFF) <= 0x1F8010AF)) {
+		psxDma2GpuW(addr, val);
+	}
+
 	// ------------------------------------------------------------------------
 	// Counters, 16-bit varieties!
 	//
@@ -279,7 +287,8 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			break;
 
 			mcase(HW_SIO_CTRL):
-				sio.CtrlReg = (u16)val;
+				//sio.CtrlReg = (u16)val;
+				sioWriteCtrl16((u16)val);
 			break;
 
 			mcase(HW_SIO_BAUD):
@@ -295,6 +304,10 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(HW_IREG):
 				psxHu(addr) &= val;
+				if ((val == 0xffffffff) ) {
+					psxHu32(addr) |= 1 << 2;
+					psxHu32(addr) |= 1 << 3;
+				}
 			break;
 
 			mcase(HW_IREG+2):
@@ -341,17 +354,19 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			// ------------------------------------------------------------------------
 			//
-			
-			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN [ignored]
-				//DmaExec(0);
-				DevCon.Warning("MDEC IN (DMA0) Started"); //Can be disabled later, need to see when this is used.
-				HW_DMA0_CHCR &= ~0x01000000;
+
+			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN
+				// psx mode
+				HW_DMA0_CHCR = val;
+				//Console.WriteLn("MDEC WR DMA0 %08X = %08X", addr, val);
+				psxDma0(HW_DMA0_MADR, HW_DMA0_BCR, HW_DMA0_CHCR);
 			break;
 
-			mcase(0x1f801098):	// DMA1 CHCR -- MDEC OUT [ignored]
-				//DmaExec(1);
-				DevCon.Warning("MDEC IN (DMA1) Started"); //Can be disabled later, need to see when this is used.
-				HW_DMA1_CHCR &= ~0x01000000;
+			mcase(0x1f801098):	// DMA1 CHCR -- MDEC OUT
+				// psx mode
+				HW_DMA1_CHCR = val;
+				//Console.WriteLn("MDEC WR DMA1 %08X = %08X", addr, val);
+				psxDma1(HW_DMA1_MADR, HW_DMA1_BCR, HW_DMA1_CHCR);
 			break;
 			mcase(0x1f8010ac):
 				DevCon.Warning("SIF2 IOP TADR?? write");
@@ -359,6 +374,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			break;
 
 			mcase(0x1f8010a8) :	// DMA2 CHCR -- GPU [ignored]
+				// todo: psx mode: Original mod doesn't do "psxHu(addr) = val;"
 				psxHu(addr) = val;
 				DmaExec(2);
 			break;
@@ -456,9 +472,9 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				else {
 					psxDmaInterrupt(33);
 				}
-			}				
+			}
 			break;
-			
+
 			mcase(0x1f8010f6):		// ICR_hi (16 bit?) [dunno if it ever happens]
 			{
 				DevCon.Warning("High ICR Write!!");
@@ -511,103 +527,20 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			//
 
 			mcase(HW_PS1_GPU_DATA) :
-				DevCon.Warning("GPUDATA Write %x", val);
-				/*if (val == 0x00000000)
-				{
-					psxHu32(HW_PS1_GPU_STATUS) = 0x14802000;
-				}
-				else if (val == 0x01000000)
-				{
-					DevCon.Warning("GP0 FIFO Clear");
-					sif2.fifo.clear();
-				}
-			     else 
-				{*/
-					psxHu(HW_PS1_GPU_DATA) = val; // guess
-					WriteFifoSingleWord();
-						
-				//}
-				//GPU_writeData(value); // really old code from PCSX? (rama)
-				break;
+				psxGPUw(addr, val);
+			break;
 			mcase (HW_PS1_GPU_STATUS):
-				DevCon.Warning("GPUSTATUS Write Command %x Param %x", (u32)val >> 24, val & 0xffffff);
-			//psxHu(addr) = val; // guess
-				//psxHu(HW_PS1_GPU_STATUS) = val;
-				//WriteFifoSingleWord();
-			//	psxHu(HW_PS1_GPU_DATA) = val; // guess
-			//	WriteFifoSingleWord();
-				/*if (val == 0) //Reset
-				{
-					psxHu32(HW_PS1_GPU_STATUS) = 0x14802000;
-				}
-				else if (val == 0x10000007) //Get GPU version
-				{
-					//DevCon.Warning("Get Version");
-					psxHu(HW_PS1_GPU_DATA) = 2;
-				}
-				else if ((val & 0xff000000) == 0x04000000)
-				{
-					//psxHu32(HW_PS1_GPU_STATUS) = psxHu32(HW_PS1_GPU_STATUS) &= ~0x60000000;
-					psxHu32(HW_PS1_GPU_STATUS) |= (val & 0x3) << 29;
-					switch (val & 0x3)
-					{
-						case 0x0:
-							//DevCon.Warning("Set DMA Mode OFF");
-							psxHu32(HW_PS1_GPU_STATUS) &= ~0x2000000;
-							break;
-						case 0x1:
-							//DevCon.Warning("Set DMA Mode FIFO");
-							psxHu32(HW_PS1_GPU_STATUS) |= 0x2000000;
-							break;
-						case 0x2:
-							//DevCon.Warning("Set DMA Mode CPU->GPU");
-							psxHu32(HW_PS1_GPU_STATUS) = (psxHu32(HW_PS1_GPU_STATUS) & ~0x2000000) | ((psxHu32(HW_PS1_GPU_STATUS) & 0x10000000) >> 3);
-							break;
-						case 0x3:
-							//DevCon.Warning("Set DMA Mode GPUREAD->CPU");
-							psxHu32(HW_PS1_GPU_STATUS) = (psxHu32(HW_PS1_GPU_STATUS) & ~0x2000000) | ((psxHu32(HW_PS1_GPU_STATUS) & 0x8000000) >> 2);
-							break;
-					}
-				
-				}
-				else if (val == 0x03000000)
-				{
-				//	DevCon.Warning("Turn Display on");
-					psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 23);
-				}
-				else if ((val & 0xff000000) == 0x05000000)
-				{
-					DevCon.Warning("Start display area");
-
-					//psxHu32(HW_PS1_GPU_STATUS) |= 0x80000000;
-					//psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 26);
-				}
-				else if ((val & 0xff000000) == 0x08000000)
-				{
-					//DevCon.Warning("Display Mode");
-					psxHu32(HW_PS1_GPU_STATUS) &= ~0x7F4000;
-					psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x3f) << 17;
-					psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x40) << 10;
-					psxHu32(HW_PS1_GPU_STATUS) |= (u32)(val & 0x80) << 7;
-					//psxHu32(HW_PS1_GPU_STATUS) |= 0x80000000;
-					//psxHu32(HW_PS1_GPU_STATUS) &= ~(1 << 26);
-				}
-				else
-				{
-					//DevCon.Warning("Unknown GP1 Command");
-				}*/
-				//GPU_writeStatus(value); // really old code from PCSX? (rama)
-				break;
+				psxGPUw(addr, val);
+				psxHu(addr) = val; // guess
+			break;
 			mcase (0x1f801820): // MDEC
-				DevCon.Warning("MDEX 1820 Write %x", val);
 				psxHu(addr) = val; // guess
-				//mdecWrite0(value); // really old code from PCSX? (rama)
-				break;
+				mdecWrite0(val);
+			break;
 			mcase (0x1f801824): // MDEC
-				DevCon.Warning("MDEX 1824 Write %x", val);
 				psxHu(addr) = val; // guess
-				//mdecWrite1(value); // really old code from PCSX? (rama)
-				break;
+				mdecWrite1(val);
+			break;
 
 				// ------------------------------------------------------------------------
 

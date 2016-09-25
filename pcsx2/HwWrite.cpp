@@ -22,6 +22,8 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/PGPU.h"
+
 using namespace R5900;
 
 // Shift the middle 8 bits (bits 4-12) into the lower 8 bits.
@@ -48,6 +50,16 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("32bit Write to SIF Register %x value %x", mem, value);
 	//if ((mem & 0x1000ff00) == 0x1000f200) DevCon.Warning("Write to SIF Register %x value %x", mem, value);
 #endif
+
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFF0) == 0x1000f010) || ((mem & 0x1FFFFFF0) == 0x1000f010)) Console.WriteLn("EE ###INTC hwWR 0x%08X = 0x%08X  PC=%08X ", mem, value, cpuRegs.pc);
+
+
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		PGIFw((mem & 0x1FFFFFFF), value);
+		return;
+	}
+
 	switch (page)
 	{
 		case 0x00:	if (!rcntWrite32<0x00>(mem, value)) return;	break;
@@ -172,7 +184,8 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					psHu32(mem) &= ~value;
 				return;
 
-				mcase(SBUS_F240):
+				mcase(SBUS_F240) :
+					DevCon.Warning("Write SBUS_F240  %x ", value);
 					if(!(value & 0x100))
 						psHu32(mem) &= ~0x100;
 					else
@@ -180,7 +193,8 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				return;
 
 				mcase(SBUS_F260):
-					psHu32(mem) = 0;
+					DevCon.Warning("Write  SBUS_F260  %x ", psHu32(SBUS_F260));
+					psHu32(mem) = value;
 				return;
 
 				mcase(SBUS_F300) :
@@ -389,6 +403,12 @@ template< uint page >
 void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 {
 	pxAssume( (mem & 0x0f) == 0 );
+
+	// todo: psx mode: this is new
+	if (((mem & 0x1FFFFFFF) >= 0x1000F300) && ((mem & 0x1FFFFFFF) <= 0x1000F3FF)) {
+		PGIFwQword((mem & 0x1FFFFFFF), (void*)srcval);
+		return;
+	}
 
 	// FIFOs are the only "legal" 128 bit registers.  Handle them first.
 	// all other registers fall back on the 64-bit handler (and from there
