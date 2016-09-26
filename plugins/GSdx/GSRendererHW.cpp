@@ -489,7 +489,7 @@ void GSRendererHW::Draw()
 
 		// Code from the SW renderer
 		if (IsMipMapActive()) {
-			//gd.sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
+			int interpolation = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
 
 			int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
 			int k = (m_context->TEX1.K + 8) >> 4;
@@ -508,11 +508,19 @@ void GSRendererHW::Draw()
 			}
 
 			if (lcm == 1) {
-				lod = std::max<int>(std::min<int>(k, mxl), 0);
+				lod = std::max<int>(k, 0);
 			} else {
 				// Not constant but who care !
-				lod = std::max<int>((int)round(m_vt.m_lod.x), 0);
+				if (interpolation == 2) {
+					// Mipmap Linear. Both layers are sampled, only take the big one
+					lod = std::max<int>((int)floor(m_vt.m_lod.x), 0);
+				} else {
+					// On GS lod is an int with 4 decimal digit.
+					lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+				}
 			}
+
+			lod = std::min<int>(lod, mxl);
 
 			TEX0 = GetTex0Layer(lod);
 
