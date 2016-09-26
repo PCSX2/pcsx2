@@ -3120,7 +3120,10 @@ GIFRegTEX0 GSState::GetTex0Layer(int lod)
 			TEX0.TBW = m_context->MIPTBP2.TBW6;
 			break;
 		default:
-			__assume(0);
+			fprintf(stderr, "GetTex0Layer bad parameter. Fix your code!\n");
+			lod = 6;
+			TEX0.TBP0 = m_context->MIPTBP2.TBP6;
+			TEX0.TBW = m_context->MIPTBP2.TBW6;
 	}
 
 	// Correct the texture size

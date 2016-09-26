@@ -516,12 +516,23 @@ void GSRendererHW::Draw()
 
 			TEX0 = GetTex0Layer(lod);
 
+			// FIXME: previous round lod is likely wrong. Following code is a workaround until it is done properly
 			// Ratchet & Clank set an address of 0 on invalid layer. Address 0 will be really awkward
 			// for a mipmap layer. So use it to avoid invalid data
 			if (TEX0.TBP0 == 0) {
 				GL_INS("Warning invalid lod %d", lod);
-				lod++;
+				if (lod < mxl) {
+					lod++;
+				} else {
+					lod--;
+				}
 				TEX0 = GetTex0Layer(lod);
+
+				// Experience: will people complain more about missing or invalid texture ? The bets are open :)
+				if (TEX0.TBP0 == 0) {
+					fprintf(stderr, "Invalid mipmap layer\n");
+					throw GSDXRecoverableError();
+				}
 			}
 
 			MIP_CLAMP.MINU >>= lod;
