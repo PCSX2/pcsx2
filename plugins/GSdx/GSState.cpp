@@ -821,7 +821,8 @@ void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
-	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
+	// Mask invalid bit before any comparison
+	TEX0.CPSM &= 0xa; // 1010b
 
 	// Handle invalid PSM here
 	switch (TEX0.PSM) {
@@ -831,6 +832,20 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		default:
 			break;
 	}
+
+	if (PRIM->CTXT != i) {
+		// Context isn't current. Only update the register value.
+		// Handling (real write of the clut buffer) will be done when ctxt will be switched
+		if((TEX0.u32[0] ^ m_env.CTXT[i].TEX0.u32[0]) & 0x3ffffff) // TBP0 TBW PSM
+		{
+			m_env.CTXT[i].offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+		}
+
+		m_env.CTXT[i].TEX0 = (GSVector4i)TEX0;
+		return;
+	}
+
+	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
 
 	bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
@@ -843,7 +858,6 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		Flush();
 	}
 
-	TEX0.CPSM &= 0xa; // 1010b
 
 	if((TEX0.u32[0] ^ m_env.CTXT[i].TEX0.u32[0]) & 0x3ffffff) // TBP0 TBW PSM
 	{
@@ -2416,9 +2430,21 @@ void GSState::SetGameCRC(uint32 crc, int options)
 
 void GSState::UpdateContext()
 {
+	bool context_switch = (m_context != &m_env.CTXT[PRIM->CTXT]);
+
 	m_context = &m_env.CTXT[PRIM->CTXT];
 
 	UpdateScissor();
+
+	if (context_switch) {
+		// Harley davidson sets TEX0 register before the context. Re-apply it now
+		// so clut is properly loaded
+		if (m_context == &m_env.CTXT[1]) {
+			ApplyTEX0<1>(m_env.CTXT[PRIM->CTXT].TEX0);
+		} else {
+			ApplyTEX0<0>(m_env.CTXT[PRIM->CTXT].TEX0);
+		}
+	}
 }
 
 void GSState::UpdateScissor()
