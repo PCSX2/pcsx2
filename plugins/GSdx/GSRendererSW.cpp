@@ -1001,6 +1001,28 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 
 #include "GSTextureSW.h"
 
+// The idea is to disable Z test at scenarios whenever it's not necessary.
+// There is a certain fast path for the code to take when all the pixel tests are disabled
+// at such cases, disabling the Z test should be helpful on providing a bit of increase in performance.
+// the function below identifies such cases where it would be useful to omit the Z test.
+bool GSRendererSW::DisableZTest()
+{
+	GS_PSM z_storageformat = static_cast<GS_PSM>(m_context->ZBUF.PSM);
+
+	uint32 max_z = 0xffff;
+	if (z_storageformat == PSM_PSMZ32)
+		max_z = 0xffffffff;
+	else if (z_storageformat == PSM_PSMZ24)
+		max_z = 0xffffff;
+
+	bool optimize_ztest = (m_context->TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && m_vertex.buff[0].XYZ.Z == max_z);
+	if (optimize_ztest && LOG)
+	{
+		fprintf(s_fp, "Optimizing Z test GEQUAL to ALWAYS(%s)\n", psm_str(m_context->ZBUF.PSM));
+	}
+	return optimize_ztest;
+}
+
 bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 {
 	GSScanlineGlobalData& gd = data->global;
@@ -1071,7 +1093,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 
 	bool zwrite = zm != 0xffffffff;
-	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
+	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS && !DisableZTest();
 	/*
 	printf("%05x %d %05x %d %05x %d %dx%d\n", 
 		fwrite || ftest ? m_context->FRAME.Block() : 0xfffff, m_context->FRAME.PSM,
