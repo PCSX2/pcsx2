@@ -1479,6 +1479,7 @@ void GSState::FlushPrim()
 	if(m_index.tail > 0)
 	{
 		GSVertex buff[2];
+		s_n++;
 
 		size_t head = m_vertex.head;
 		size_t tail = m_vertex.tail;

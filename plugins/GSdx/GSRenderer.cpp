@@ -199,6 +199,8 @@ bool GSRenderer::Merge(int field)
 	GSTexture* tex[2] = {NULL, NULL};
 	int y_offset[2]   = {0, 0};
 
+	s_n++;
+
 	if(samesrc && fr[0].bottom == fr[1].bottom)
 	{
 		tex[0]      = GetOutput(0, y_offset[0]);

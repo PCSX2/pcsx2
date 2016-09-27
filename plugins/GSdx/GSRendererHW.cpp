@@ -246,8 +246,6 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
-
-		s_n++;
 #endif
 	}
 
@@ -401,7 +399,6 @@ void GSRendererHW::Draw()
 {
 	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		s_n += 3; // Keep it sync with SW renderer
 		return;
 	}
 	GL_PUSH("HW Draw %d", s_n);
@@ -431,7 +428,6 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
 			GL_CACHE("Channel shuffle effect detected SKIP");
-			s_n += 3; // Keep it sync with SW renderer
 			return;
 		}
 	} else if (draw_sprite_tex && m_context->FRAME.Block() == m_context->TEX0.TBP0) {
@@ -623,7 +619,7 @@ void GSRendererHW::Draw()
 
 		if(s_savet && s_n >= s_saven && tex)
 		{
-			s = format("%05d_f%lld_tex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+			s = format("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
@@ -633,13 +629,11 @@ void GSRendererHW::Draw()
 
 			if(tex->m_palette)
 			{
-				s = format("%05d_f%lld_tpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
+				s = format("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
 				tex->m_palette->Save(m_dump_root+s, true);
 			}
 		}
-
-		s_n++;
 
 		if(s_save && s_n >= s_saven)
 		{
@@ -657,10 +651,6 @@ void GSRendererHW::Draw()
 				ds_tex->Save(m_dump_root+s);
 		}
 
-		s_n++;
-
-	} else {
-		s_n += 2;
 	}
 
 	// The rectangle of the draw
@@ -668,13 +658,11 @@ void GSRendererHW::Draw()
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
 	{
-		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
 
 	if (!OI_BlitFMV(rt, tex, r)) {
-		s_n += 1; // keep counter sync
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
@@ -826,14 +814,10 @@ void GSRendererHW::Draw()
 				ds_tex->Save(m_dump_root+s);
 		}
 
-		s_n++;
-
 		if(s_savel > 0 && (s_n - s_saven) > s_savel)
 		{
 			s_dump = 0;
 		}
-	} else {
-		s_n += 1;
 	}
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE

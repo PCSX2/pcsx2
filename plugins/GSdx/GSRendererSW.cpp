@@ -275,8 +275,6 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 			{
 				m_texture[i]->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
 			}
-
-			s_n++;
 		}
 	}
 
@@ -467,7 +465,6 @@ void GSRendererSW::Draw()
 
 	if(!GetScanlineGlobalData(sd))
 	{
-		s_n += 3; // Keep it sync with HW renderer
 		return;
 	}
 
@@ -554,15 +551,13 @@ void GSRendererSW::Draw()
 		{
 			if (texture_shuffle) {
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_texraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				s = format("%05d_f%lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 				m_mem.SaveBMP(m_dump_root+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 			}
 
-			s = format("%05d_f%lld_texraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
+			s = format("%05d_f%lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
 			m_mem.SaveBMP(m_dump_root+s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
-
-		s_n++;
 
 		if(s_save && s_n >= s_saven)
 		{
@@ -583,8 +578,6 @@ void GSRendererSW::Draw()
 
 			m_mem.SaveBMP(m_dump_root+s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
-
-		s_n++;
 
 		Queue(data);
 
@@ -608,8 +601,6 @@ void GSRendererSW::Draw()
 
 			m_mem.SaveBMP(m_dump_root+s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
-
-		s_n++;
 
 		if(s_savel > 0 && (s_n - s_saven) > s_savel)
 		{
@@ -694,8 +685,6 @@ void GSRendererSW::Sync(int reason)
 
 	if(0) if(LOG)
 	{
-		s_n++;
-
 		std::string s;
 		
 		if(s_save)
@@ -1640,7 +1629,7 @@ void GSRendererSW::SharedData::UpdateSource()
 			{
 				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_tex%d_%05x_%s.bmp", m_parent->s_n - 2, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw+s);
 			}
@@ -1651,7 +1640,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
 
-				s = format("%05d_f%lld_texp_%05x_%s.bmp", m_parent->s_n - 2, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
+				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 
 				t->Save(root_sw+s);
 
