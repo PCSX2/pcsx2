@@ -204,7 +204,8 @@ void ringBufPut(struct ringBuf_t *rb, u32 *data)
             rb->head = 0;  //wrap back when the end is reached
         rb->count++;
     } else {
-        Console.WriteLn("############################# PGIF FIFO overflow! sz= %X", rb->size);
+		// This should never happen. If it does, the code is bad somewhere.
+		Console.WriteLn("############################# PGIF FIFO overflow! sz= %X", rb->size);
     }
 }
 
@@ -216,6 +217,7 @@ void ringBufGet(struct ringBuf_t *rb, u32 *data)
             rb->tail = 0;  //wrap back when the end is reached
         rb->count--;
     } else {
+		// This should never happen. If it does, the code is bad somewhere.
         Console.WriteLn("############################# PGIF FIFO underflow! sz= %X", rb->size);
     }
 }
@@ -225,7 +227,10 @@ void ringBufClear(struct ringBuf_t *rb)
     rb->head = 0;
     rb->tail = 0;
     rb->count = 0;
-    memset(rb->buf, 0, rb->size * sizeof(u32));
+    // wisi comment:
+	// Yes, the memset should be commented-out. The reason is that it shouldn't really be necessary (but I am not sure).
+	// It is better not to be enabled, because clearing the new huge PGIF FIFO, can waste significant time.
+	//memset(rb->buf, 0, rb->size * sizeof(u32));
     return;
 }
 
@@ -611,7 +616,10 @@ u32 psxGPUr(int addr)
 void PGIFw(int addr, u32 data)
 {
 #if REG_LOG == 1
-    Console.WriteLn("PGIF write 0x%08X = 0x%08X  0x%08X  EEpc= %08X  IOPpc= %08X ", addr, data, getUpdPgifCtrlReg(), cpuRegs.pc, psxRegs.pc);
+	if (addr != PGIF_CTRL)
+		if ((addr != PGIF_CTRL) || ((addr == PGIF_CTRL) && (getUpdPgifCtrlReg() != data)))
+			if (addr != PGPU_STAT)
+				Console.WriteLn("PGIF write 0x%08X = 0x%08X  0x%08X  EEpc= %08X  IOPpc= %08X ", addr, data, getUpdPgifCtrlReg(), cpuRegs.pc, psxRegs.pc);
 #endif
 
     if (addr == PGPU_CMD_FIFO) {

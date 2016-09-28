@@ -49,9 +49,6 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 #if PSX_EXTRALOGS
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("32bit Write to SIF Register %x value %x", mem, value);
 	//if ((mem & 0x1000ff00) == 0x1000f200) DevCon.Warning("Write to SIF Register %x value %x", mem, value);
-
-	// todo: psx mode: this is new
-	if (((mem & 0x1FFFFFF0) == 0x1000f010) || ((mem & 0x1FFFFFF0) == 0x1000f010)) Console.WriteLn("EE ###INTC hwWR 0x%08X = 0x%08X  PC=%08X ", mem, value, cpuRegs.pc);
 #endif
 
 	switch (page)
