@@ -188,7 +188,7 @@ protected:
 	void UpdateContext();
 	void UpdateScissor();
 
-	virtual void UpdateVertexKick();
+	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
 
@@ -250,9 +250,9 @@ public:
 	float GetTvRefreshRate();
 
 	virtual void Reset();
-	virtual void Flush();
-	virtual void FlushPrim();
-	virtual void FlushWrite();
+	void Flush();
+	void FlushPrim();
+	void FlushWrite();
 	virtual void Draw() = 0;
 	virtual void PurgePool() = 0;
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
