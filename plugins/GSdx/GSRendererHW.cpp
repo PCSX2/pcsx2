@@ -511,7 +511,7 @@ void GSRendererHW::Draw()
 					// Mipmap Linear. Both layers are sampled, only take the big one
 					lod = std::max<int>((int)floor(m_vt.m_lod.x), 0);
 				} else {
-					// On GS lod is an int with 4 decimal digit.
+					// On GS lod is a fixed float number 7:4 (4 bit for the frac part)
 					lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
 				}
 			}

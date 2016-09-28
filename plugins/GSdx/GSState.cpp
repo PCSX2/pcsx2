@@ -2617,6 +2617,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 		case GS_TRIANGLESTRIP:
 		case GS_TRIANGLEFAN:
 		case GS_SPRITE:
+			// FIXME: GREG I don't understand the purpose of the m_nativeres check
+			// It impacts badly the number of draw call in the HW renderer.
 			test |= m_nativeres ? pmin.eq16(pmax).zwzwl() : pmin.eq16(pmax);
 			break;
 		default:
