@@ -512,32 +512,23 @@ void GSRendererHW::Draw()
 					lod = std::max<int>((int)floor(m_vt.m_lod.x), 0);
 				} else {
 					// On GS lod is a fixed float number 7:4 (4 bit for the frac part)
+#if 0
 					lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+#else
+					// Same as above with a bigger margin on rounding
+					// The goal is to avoid 1 undrawn pixels around the edge which trigger the load of the big
+					// layer.
+					if (ceil(m_vt.m_lod.x) < m_vt.m_lod.y)
+						lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625 + 0.01), 0);
+					else
+						lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+#endif
 				}
 			}
 
 			lod = std::min<int>(lod, mxl);
 
 			TEX0 = GetTex0Layer(lod);
-
-			// FIXME: previous round lod is likely wrong. Following code is a workaround until it is done properly
-			// Ratchet & Clank set an address of 0 on invalid layer. Address 0 will be really awkward
-			// for a mipmap layer. So use it to avoid invalid data
-			if (TEX0.TBP0 == 0) {
-				GL_INS("Warning invalid lod %d", lod);
-				if (lod < mxl) {
-					lod++;
-				} else {
-					lod--;
-				}
-				TEX0 = GetTex0Layer(lod);
-
-				// Experience: will people complain more about missing or invalid texture ? The bets are open :)
-				if (TEX0.TBP0 == 0) {
-					fprintf(stderr, "Invalid mipmap layer\n");
-					throw GSDXRecoverableError();
-				}
-			}
 
 			MIP_CLAMP.MINU >>= lod;
 			MIP_CLAMP.MINV >>= lod;
