@@ -826,10 +826,25 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	// Handle invalid PSM here
 	switch (TEX0.PSM) {
+		case PSM_PSMCT32:
+		case PSM_PSMCT24:
+		case PSM_PSMCT16:
+		case PSM_PSMCT16S:
+		case PSM_PSMT8:
+		case PSM_PSMT4:
+		case PSM_PSMT8H:
+		case PSM_PSMT4HL:
+		case PSM_PSMT4HH:
+		case PSM_PSMZ32:
+		case PSM_PSMZ24:
+		case PSM_PSMZ16:
+		case PSM_PSMZ16S:
+				break;
 		case 3:
-			TEX0.PSM = 0x13; // International Star Soccer (menu)
+			TEX0.PSM = PSM_PSMT8; // International Star Soccer (menu)
 			break;
 		default:
+			fprintf(stderr, "INVALID PSM !!!\n");
 			break;
 	}
 
