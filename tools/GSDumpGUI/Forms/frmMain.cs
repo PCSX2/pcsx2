@@ -218,7 +218,7 @@ namespace GSDumpGUI
             psi.RedirectStandardOutput = true;
             psi.RedirectStandardError = false;
             psi.CreateNoWindow = true;
-            psi.FileName = AppDomain.CurrentDomain.BaseDirectory + "GsDumpGUI.exe";
+            psi.FileName = Process.GetCurrentProcess().ProcessName;
             psi.Arguments = "\"" + DLLPath + "\"" + " \"" + DumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer;
             Process p = Process.Start(psi);
             p.OutputDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
