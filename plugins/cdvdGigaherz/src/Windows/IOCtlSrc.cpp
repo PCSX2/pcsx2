@@ -72,46 +72,22 @@ bool IOCtlSrc::Reopen()
 
 void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
+    // IOCTL_CDROM_SET_SPEED issues a SET CD SPEED command. So 0xFFFF should be
+    // equivalent to "optimal performance".
+    // 1x DVD-ROM and CD-ROM speeds are respectively 1385 KB/s and 150KB/s.
+    // The PS2 can do 4x DVD-ROM and 24x CD-ROM speeds (5540KB/s and 3600KB/s).
+    // TODO: What speed? Performance seems smoother with a lower speed (less
+    // time required to get up to speed).
+    const USHORT speed = restore_defaults ? 0xFFFF : GetMediaType() >= 0 ? 5540 : 3600;
+    CDROM_SET_SPEED s{CdromSetSpeed, speed, speed, CdromDefaultRotation};
 
-    DWORD dontcare;
-    USHORT speed = 0;
-
-    if (GetMediaType() < 0)
-        speed = 4800; // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
-    else
-        speed = 11080; // DVD-ROM to  ~8x (PS2 has 4x (5540 KB/s))
-
-    if (!restore_defaults) {
-        CDROM_SET_SPEED s;
-        s.RequestType = CdromSetSpeed;
-        s.RotationControl = CdromDefaultRotation;
-        s.ReadSpeed = speed;
-        s.WriteSpeed = speed;
-
-        if (DeviceIoControl(m_device,
-                            IOCTL_CDROM_SET_SPEED, //operation to perform
-                            &s, sizeof(s),         //no input buffer
-                            NULL, 0,               //output buffer
-                            &dontcare,             //#bytes returned
-                            (LPOVERLAPPED)NULL))   //synchronous I/O == 0)
-        {
+    DWORD unused;
+    if (DeviceIoControl(m_device, IOCTL_CDROM_SET_SPEED, &s, sizeof(s),
+                        nullptr, 0, &unused, nullptr)) {
+        if (!restore_defaults)
             printf(" * CDVD: setSpindleSpeed success (%uKB/s)\n", speed);
-        } else {
-            printf(" * CDVD: setSpindleSpeed failed! \n");
-        }
     } else {
-        CDROM_SET_SPEED s;
-        s.RequestType = CdromSetSpeed;
-        s.RotationControl = CdromDefaultRotation;
-        s.ReadSpeed = 0xffff; // maximum ?
-        s.WriteSpeed = 0xffff;
-
-        DeviceIoControl(m_device,
-                        IOCTL_CDROM_SET_SPEED, //operation to perform
-                        &s, sizeof(s),         //no input buffer
-                        NULL, 0,               //output buffer
-                        &dontcare,             //#bytes returned
-                        (LPOVERLAPPED)NULL);   //synchronous I/O == 0)
+        printf(" * CDVD: setSpindleSpeed failed!\n");
     }
 }
 
