@@ -1015,7 +1015,7 @@ u8 psExp2R8(u32 mem)
     return 0xFF;
 }
 
-int flgint = 0;
+//int flgint = 0;
 
 char strb[200] = {0};
 void kernelTTYFileDescrWrite(u32 mem, u32 data)
@@ -1041,12 +1041,12 @@ void kernelTTYFileDescrWrite(u32 mem, u32 data)
         strcat(strb, stra);
         if ((stra[strlen(stra) - 1] == 0xA) || (stra[strlen(stra) - 1] == 0xD) || (stra[strlen(stra) - 2] == 0xA) || (stra[strlen(stra) - 2] == 0xD)) {
             Console.WriteLn(">%s<", strb);
-            if (strcmp(strb, "VSync") == 0)
+           /* if (strcmp(strb, "VSync") == 0)
                 flgint ^= 1;
             if (strncmp(strb, "Execute", 5) == 0) {
                 Console.WriteLn(" ###EXecute was just printed####");
                 doAnyIopLs = 1;
-            }
+            }*/
             strb[0] = 0;
         }
     }
