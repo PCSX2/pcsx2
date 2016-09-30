@@ -46,7 +46,7 @@ GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 	m_msaa = m_desc.SampleDesc.Count > 1;
 }
 
-bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch)
+bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	if(m_dev && m_texture)
 	{
@@ -60,7 +60,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch)
 	return false;
 }
 
-bool GSTexture11::Map(GSMap& m, const GSVector4i* r)
+bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	if(r != NULL)
 	{

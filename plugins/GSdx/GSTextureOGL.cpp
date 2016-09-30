@@ -302,7 +302,7 @@ void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
 	glClearTexSubImage(m_texture_id, GL_TEX_LEVEL_0, area.x, area.y, 0, area.width(), area.height(), 1, m_int_format, m_int_type, data);
 }
 
-bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
+bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
 
@@ -367,7 +367,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 	return true;
 }
 
-bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
+bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 {
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 	// Will need some investigation

@@ -47,15 +47,15 @@ public:
 		Surface(GSRenderer* r, uint8* temp);
 		virtual ~Surface();
 
-		virtual void Update();
+		void UpdateAge();
 	};
 
 	class Source : public Surface
 	{
 		struct {GSVector4i* rect; uint32 count;} m_write;
 
-		void Write(const GSVector4i& r);
-		void Flush(uint32 count);
+		void Write(const GSVector4i& r, int layer);
+		void Flush(uint32 count, int layer);
 
 	public:
 		GSTexture* m_palette;
@@ -76,7 +76,7 @@ public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);
 		virtual ~Source();
 
-		virtual void Update(const GSVector4i& rect);
+		void Update(const GSVector4i& rect, int layer = 0);
 	};
 
 	class Target : public Surface
@@ -96,7 +96,7 @@ public:
 		void UpdateValidity(const GSVector4i& rect);
 		bool Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 
-		virtual void Update();
+		void Update();
 	};
 
 	class SourceMap

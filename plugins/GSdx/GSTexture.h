@@ -43,8 +43,8 @@ public:
 
 	virtual operator bool() {ASSERT(0); return false;}
 
-	virtual bool Update(const GSVector4i& r, const void* data, int pitch) = 0;
-	virtual bool Map(GSMap& m, const GSVector4i* r = NULL) = 0;
+	virtual bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) = 0;
+	virtual bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) = 0;
 	virtual void Unmap() = 0;
 	virtual bool Save(const string& fn, bool dds = false) = 0;
 	virtual uint32 GetID() { return 0; }
