@@ -540,7 +540,7 @@ void GSRendererHW::Draw()
 				m_vt.m_max.t *= 0.5f;
 			}
 
-			GL_INS("Mipmap LOD %d (%f %f) new size %dx%d", lod, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH);
+			GL_CACHE("Mipmap LOD %d (%f %f) new size %dx%d", lod, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH);
 		} else {
 			TEX0 = GetTex0Layer(0);
 		}
