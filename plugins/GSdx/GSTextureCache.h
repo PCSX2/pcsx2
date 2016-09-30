@@ -71,12 +71,14 @@ public:
 		// still be valid on future. However it ought to be good when the source is created
 		// so it can be used to access un-converted data for the current draw call.
 		GSTexture* m_from_target;
+		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
 
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);
 		virtual ~Source();
 
 		void Update(const GSVector4i& rect, int layer = 0);
+		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
 	};
 
 	class Target : public Surface
