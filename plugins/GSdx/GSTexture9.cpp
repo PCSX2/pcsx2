@@ -77,7 +77,7 @@ GSTexture9::~GSTexture9()
 {
 }
 
-bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch)
+bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	if(m_surface)
 	{
@@ -114,7 +114,7 @@ bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch)
 	return false;
 }
 
-bool GSTexture9::Map(GSMap& m, const GSVector4i* r)
+bool GSTexture9::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	HRESULT hr;
 

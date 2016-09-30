@@ -23,7 +23,7 @@
 
 #include "GSTexture.h"
 
-class GSTextureSW : public GSTexture
+class GSTextureSW final : public GSTexture
 {
 	// mem texture, always 32-bit rgba (might add 8-bit for palette if needed)
 
@@ -35,8 +35,8 @@ public:
 	GSTextureSW(int type, int width, int height);
 	virtual ~GSTextureSW();
 
-	bool Update(const GSVector4i& r, const void* data, int pitch);
-	bool Map(GSMap& m, const GSVector4i* r);
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
 	void Unmap();
 	bool Save(const string& fn, bool dds = false);
 };

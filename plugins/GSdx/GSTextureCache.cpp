@@ -1531,7 +1531,7 @@ GSTextureCache::Surface::~Surface()
 		m_renderer->m_dev->Recycle(m_texture);
 }
 
-void GSTextureCache::Surface::Update()
+void GSTextureCache::Surface::UpdateAge()
 {
 	m_age = 0;
 }
@@ -1589,9 +1589,9 @@ GSTextureCache::Source::~Source()
 	_aligned_free(m_write.rect);
 }
 
-void GSTextureCache::Source::Update(const GSVector4i& rect)
+void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 {
-	Surface::Update();
+	Surface::UpdateAge();
 
 	if(m_complete || m_target)
 	{
@@ -1635,7 +1635,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 					{
 						m_valid[row] |= col;
 
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y));
+						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
 
 						blocks++;
 					}
@@ -1662,7 +1662,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 					{
 						m_valid[row] |= col;
 
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y));
+						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
 
 						blocks++;
 					}
@@ -1675,11 +1675,11 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 	{
 		m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
 
-		Flush(m_write.count);
+		Flush(m_write.count, layer);
 	}
 }
 
-void GSTextureCache::Source::Write(const GSVector4i& r)
+void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 {
 	m_write.rect[m_write.count++] = r;
 
@@ -1708,11 +1708,11 @@ void GSTextureCache::Source::Write(const GSVector4i& r)
 
 	if(m_write.count > 2)
 	{
-		Flush(1);
+		Flush(1, layer);
 	}
 }
 
-void GSTextureCache::Source::Flush(uint32 count)
+void GSTextureCache::Source::Flush(uint32 count, int layer)
 {
 	// This function as written will not work for paletted formats copied from framebuffers
 	// because they are 8 or 4 bit formats on the GS and the GS local memory module reads
@@ -1798,7 +1798,7 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 
 void GSTextureCache::Target::Update()
 {
-	Surface::Update();
+	Surface::UpdateAge();
 
 	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
 	// GH: it must be doable

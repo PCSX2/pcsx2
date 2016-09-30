@@ -65,8 +65,8 @@ class GSTextureOGL final : public GSTexture
 		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
 		virtual ~GSTextureOGL();
 
-		bool Update(const GSVector4i& r, const void* data, int pitch) final;
-		bool Map(GSMap& m, const GSVector4i* r = NULL) final;
+		bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
+		bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 		void Unmap() final;
 		bool Save(const string& fn, bool dds = false) final;
 
