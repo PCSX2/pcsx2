@@ -38,12 +38,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
-		m_mipmap                         = theApp.GetConfigB("UserHacks_mipmap");
+		m_mipmap                         = theApp.GetConfigI("UserHacks_mipmap");
 	} else {
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userhacks_disable_gs_mem_clear = false;
-		m_mipmap                         = false;
+		m_mipmap                         = 0;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
