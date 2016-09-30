@@ -891,9 +891,9 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
 			return;
 
-		// Format doesn't have the same size. It smells fishy
-		if (frame_psm.trbpp != depth_psm.trbpp)
-			return;
+		// Format doesn't have the same size. It smells fishy (xmen...)
+		//if (frame_psm.trbpp != depth_psm.trbpp)
+		//	return;
 
 		// Size of the current draw
 		uint32 w_pages = roundf(m_vt.m_max.p.x / frame_psm.pgs.x);
