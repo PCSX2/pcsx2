@@ -1562,6 +1562,8 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		m_repeating = false;
 
 	} else {
+		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
+
 		memset(m_valid, 0, sizeof(m_valid));
 
 		m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
@@ -1593,7 +1595,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 {
 	Surface::UpdateAge();
 
-	if(m_complete || m_target)
+	if(layer == 0 && (m_complete || m_target))
 	{
 		return;
 	}
@@ -1605,7 +1607,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
 
-	if(r.eq(GSVector4i(0, 0, tw, th)))
+	if(layer == 0 && r.eq(GSVector4i(0, 0, tw, th)))
 	{
 		m_complete = true; // lame, but better than nothing
 	}
@@ -1679,6 +1681,27 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	}
 }
 
+void GSTextureCache::Source::UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer)
+{
+	if (layer > 6)
+		return;
+
+	if (m_target) // Yeah keep dreaming
+		return;
+
+	if (TEX0 == m_layer_TEX0[layer])
+		return;
+
+	GIFRegTEX0 old_TEX0 = m_TEX0;
+
+	m_layer_TEX0[layer] = TEX0;
+	m_TEX0 = TEX0;
+
+	Update(rect, layer);
+
+	m_TEX0 = old_TEX0;
+}
+
 void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 {
 	m_write.rect[m_write.count++] = r;
@@ -1750,13 +1773,13 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 		{
 			(mem.*rtx)(off, r, buff, pitch, m_TEXA);
 
-			m_texture->Update(r.rintersect(tr), buff, pitch);
+			m_texture->Update(r.rintersect(tr), buff, pitch, layer);
 		}
 		else
 		{
 			GSTexture::GSMap m;
 
-			if(m_texture->Map(m, &r))
+			if(m_texture->Map(m, &r, layer))
 			{
 				(mem.*rtx)(off, r, m.bits, m.pitch, m_TEXA);
 
@@ -1766,7 +1789,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 			{
 				(mem.*rtx)(off, r, buff, pitch, m_TEXA);
 
-				m_texture->Update(r, buff, pitch);
+				m_texture->Update(r, buff, pitch, layer);
 			}
 		}
 	}
