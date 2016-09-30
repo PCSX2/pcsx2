@@ -46,7 +46,7 @@ GSState::GSState()
 	, m_frameskip(0)
 {
 	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1;
-	m_mipmap = theApp.GetConfigB("mipmap");
+	m_mipmap = theApp.GetConfigI("mipmap");
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
 	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;

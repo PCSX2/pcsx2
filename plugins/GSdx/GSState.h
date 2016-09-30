@@ -223,7 +223,7 @@ public:
 	bool m_framelimit;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
-	bool m_mipmap;
+	int m_mipmap;
 
 	static int s_n;
 	bool s_dump;
