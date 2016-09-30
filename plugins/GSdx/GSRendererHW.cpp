@@ -852,6 +852,7 @@ GSRendererHW::Hacks::Hacks()
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_Jak));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::CU_DBZBT2));
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
@@ -1519,6 +1520,27 @@ void GSRendererHW::OO_MajokkoALaMode2()
 
 	if(!PRIM->TME && FBP == 0x03f40)
 	{
+		GIFRegBITBLTBUF BITBLTBUF;
+
+		BITBLTBUF.SBP = FBP;
+		BITBLTBUF.SBW = 1;
+		BITBLTBUF.SPSM = PSM_PSMCT32;
+
+		InvalidateLocalMem(BITBLTBUF, GSVector4i(0, 0, 16, 16));
+	}
+}
+
+void GSRendererHW::OO_Jak()
+{
+	// FIXME might need a CU_Jak too
+	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i r_p = GSVector4i(0, 0, 16, 16);
+
+	if(!PRIM->FST && PRIM->TME && (r == r_p).alltrue() && m_context->TEX0.TW == 4 && m_context->TEX0.TH == 4 && m_context->TEX0.PSM == PSM_PSMCT32) {
+		// Game will render a texture directly into a palette.
+		uint32 FBP = m_context->FRAME.Block();
+		GL_INS("OO_Jak read back 0x%x", FBP);
+
 		GIFRegBITBLTBUF BITBLTBUF;
 
 		BITBLTBUF.SBP = FBP;

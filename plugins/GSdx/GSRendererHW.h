@@ -71,6 +71,7 @@ private:
 
 	void OO_DBZBT2();
 	void OO_MajokkoALaMode2();
+	void OO_Jak();
 
 	bool CU_DBZBT2();
 	bool CU_MajokkoALaMode2();
