@@ -152,8 +152,8 @@ namespace PboPool {
 	}
 }
 
-GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
-	: m_pbo_size(0), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0)
+GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap)
+	: m_pbo_size(0), m_clean(false), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = max(1,w);
@@ -249,6 +249,9 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		throw GSDXErrorOOM();
 	}
 
+	// Only 32 bits input texture will be supported for mipmap
+	m_max_layer = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(max(w,h)) : 1;
+
 	// Generate & Allocate the buffer
 	switch (m_type) {
 		case GSTexture::Offscreen:
@@ -258,7 +261,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read)
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
-			glTextureStorage2D(m_texture_id, 1+GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
+			glTextureStorage2D(m_texture_id, m_max_layer + GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
 			if (m_format == GL_R8) {
 				// Emulate DX behavior, beside it avoid special code in shader to differentiate
 				// palette texture from a GL_RGBA target or a GL_R texture.
@@ -305,6 +308,9 @@ void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
+
+	if (layer >= m_max_layer)
+		return true;
 
 	// Default upload path for the texture is the Map/Unmap
 	// This path is mostly used for palette. But also for texture that could
@@ -356,7 +362,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 	PboPool::Unmap();
 
-	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
+	glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 
 	// FIXME OGL4: investigate, only 1 unpack buffer always bound
 	PboPool::UnbindPbo();
@@ -369,6 +375,9 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 {
+	if (layer >= m_max_layer)
+		return false;
+
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 	// Will need some investigation
 	ASSERT(r.width()  != 0);
@@ -422,6 +431,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 		m_r_y = r.y;
 		m_r_w = r.width();
 		m_r_h = r.height();
+		m_layer = layer;
 
 		return true;
 	}
@@ -435,7 +445,7 @@ void GSTextureOGL::Unmap()
 
 		PboPool::Unmap();
 
-		glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, m_r_x, m_r_y, m_r_w, m_r_h, m_int_format, m_int_type, (const void*)PboPool::Offset());
+		glTextureSubImage2D(m_texture_id, m_layer, m_r_x, m_r_y, m_r_w, m_r_h, m_int_format, m_int_type, (const void*)PboPool::Offset());
 
 		// FIXME OGL4: investigate, only 1 unpack buffer always bound
 		PboPool::UnbindPbo();

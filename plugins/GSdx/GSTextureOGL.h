@@ -52,6 +52,8 @@ class GSTextureOGL final : public GSTexture
 		int m_r_y;
 		int m_r_w;
 		int m_r_h;
+		int m_layer;
+		int m_max_layer;
 
 		// internal opengl format/type/alignment
 		GLenum m_int_format;
@@ -62,7 +64,7 @@ class GSTextureOGL final : public GSTexture
 		uint32 m_mem_usage;
 
 	public:
-		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read);
+		explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap);
 		virtual ~GSTextureOGL();
 
 		bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;

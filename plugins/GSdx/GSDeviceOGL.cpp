@@ -74,6 +74,8 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_profiler, 0 , sizeof(m_profiler));
 	GLState::Clear();
 
+	m_mipmap = theApp.GetConfigI("mipmap");
+
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
 	m_debug_gl_file = fopen("GSdx_opengl_debug.txt","w");
@@ -227,7 +229,7 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
 	GSTextureOGL* t = NULL;
-	t = new GSTextureOGL(type, w, h, fmt, m_fbo_read);
+	t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1);
 	if (t == NULL) {
 		throw GSDXErrorOOM();
 	}
@@ -593,7 +595,7 @@ bool GSDeviceOGL::Reset(int w, int h)
 	// Opengl allocate the backbuffer with the window. The render is done in the backbuffer when
 	// there isn't any FBO. Only a dummy texture is created to easily detect when the rendering is done
 	// in the backbuffer
-	m_backbuffer = new GSTextureOGL(GSTextureOGL::Backbuffer, w, h, 0, m_fbo_read);
+	m_backbuffer = new GSTextureOGL(GSTextureOGL::Backbuffer, w, h, 0, m_fbo_read, false);
 
 	return true;
 }
