@@ -747,6 +747,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const uint8 wmt = m_context->CLAMP.WMT;
 	bool complex_wms_wmt = !!((wms | wmt) & 2);
 
+	bool mipmap = m_mipmap > 1 && m_context->TEX1.MMIN > 1;
 	bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
 	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
 	// Don't force extra filtering on sprite (it creates various upscaling issue)
@@ -874,6 +875,12 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	if (complex_wms_wmt) {
 		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 		ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
+	} else if (mipmap) {
+		// Reuse MinMax for mipmap parameter to avoid an extension of the UBO
+		ps_cb.MinMax.x = (float)m_context->TEX1.K / 16.0f;
+		ps_cb.MinMax.y = float(1 << m_context->TEX1.L);
+		ps_cb.MinMax.z = float(m_lod.x); // Offset because first layer is m_lod, dunno if we can do better
+		ps_cb.MinMax.w = float(m_lod.y);
 	}
 
 	// TC Offset Hack
@@ -891,7 +898,12 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	} else {
 		m_ps_ssel.biln  = bilinear;
 		m_ps_ssel.aniso = 1;
-		m_ps_ssel.triln = m_context->TEX1.MMIN & 1;
+		if (mipmap) {
+			m_ps_ssel.triln = m_context->TEX1.MMIN;
+			m_ps_sel.manual_lod = 1;
+		} else {
+			m_ps_ssel.triln = m_context->TEX1.MMIN & 1;
+		}
 	}
 
 	// Setup Texture ressources
