@@ -25,7 +25,7 @@ build_script:
 
 after_build:
   - ps: $env:gitrev = git describe --tags
-  - ps: $env:my_version = "$env:gitrev-$env:appveyor_repo_branch-$env:appveyor_build_number"
+  - ps: $env:my_version = "$env:gitrev-$env:appveyor_build_number"
   - type NUL > bin\portable.ini
   - set folder_name=pcsx2-%my_version%-%visualstudio_string%-%platform%-%target%
   - rename bin %folder_name%
