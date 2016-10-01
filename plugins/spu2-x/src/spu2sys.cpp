@@ -556,7 +556,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 					thisvol.Mode = 0;
 					thisvol.Increment = 0;
 				}
-				//ConLog("voice %x VOLL write: %x\n", voice, value);
+				ConLog("voice %x VOLL write: %x\n", voice, value);
 				break;
 			}
 			case 0x2: //VOLR (Volume R)
@@ -581,7 +581,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 					thisvol.Mode = 0;
 					thisvol.Increment = 0;
 				}
-				//ConLog("voice %x VOLR write: %x\n", voice, value);
+				ConLog("voice %x VOLR write: %x\n", voice, value);
 				break;
 			}
 			case 0x4:
@@ -607,7 +607,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 			case 0xc: // Voice 0..23 ADSR Current Volume
 				// not commonly set by games
 				Voices[voice].ADSR.Value = (value << 16) | value;
-				//ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
+				ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
 			break;
 			case 0xe:
 				Voices[voice].LoopStartA = value * 8;
@@ -723,13 +723,13 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		case 0x1da4:
 			IRQA = value * 8;
 			psxIRQA = value;
-			ConLog("SPU2-X Setting IRQA to %x value was %x \n", IRQA, value);
+			ConLog("SPU2-X Setting IRQA to %x \n", IRQA);
 		break;
 
 		case 0x1da6:
 			TSA = value * 8;
 			psxTSA = value;
-			ConLog("SPU2-X Setting TSA to %x value was %x \n", TSA, value);
+			ConLog("SPU2-X Setting TSA to %x \n", TSA);
 		break;
 
 		case 0x1da8: // Spu Write to Memory
@@ -740,6 +740,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 				_irqcallback();
 			}
 			DmaWritePSX(value);
+			//DmaWrite(value);
 			show = false;
 		break;
 
@@ -1337,19 +1338,6 @@ static void __fastcall RegWrite_Core( u16 value )
 				Cores[1].ReverbX = 0;
 				Cores[1].RevBuffers.NeedsUpdated = true;
 				Cores[1].Mute = 1; // silence core1 in psxmode
-				//for (uint v = 0; v < 24; ++v)
-				//{
-				//	Cores[0].Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
-				//	Cores[0].Voices[v].SCurrent = 28;
-
-				//	Cores[0].Voices[v].ADSR.Value = 0;
-				//	Cores[0].Voices[v].ADSR.Phase = 0;
-				//	Cores[0].Voices[v].Pitch = 0x1000;
-				//	Cores[0].Voices[v].NextA = 0x1001;
-				//	Cores[0].Voices[v].StartA = 0x1000;
-				//	Cores[0].Voices[v].LoopStartA = 0x1000;
-				//	Cores[0].Voices[v].Modulated = 0;
-				//}
 				for (uint v = 0; v < 24; ++v)
 				{
 					Cores[1].Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
