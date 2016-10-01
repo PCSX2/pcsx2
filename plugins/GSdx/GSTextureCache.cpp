@@ -448,7 +448,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		if (s_IS_OPENGL) {
-			if (m_preload_frame && TEX0.TBW > 0) {
+			if (type == DepthStencil) {
+				// It is safer to always clear a new depth buffer. Core optimization might create some shortcut
+				// on the rendering. Texture cache only search old depth data in RT of current frame. Which
+				// can cause flickering (Jak2 FMV)
+				m_renderer->m_dev->ClearDepth(dst->m_texture);
+			} else if (m_preload_frame && TEX0.TBW > 0) {
 				GL_INS("Preloading the RT DATA");
 				// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
 				int page0 = TEX0.TBP0 >> 5;
@@ -461,11 +466,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				dst->Update();
 			} else {
 #ifdef ENABLE_OGL_DEBUG
-				switch (type) {
-					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
-					default:break;
-				}
+				m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0);
 #endif
 			}
 		}
