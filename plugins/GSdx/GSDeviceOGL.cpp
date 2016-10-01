@@ -397,7 +397,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		m_convert.pt = GetSamplerID(point);
 
 		PSSamplerSelector bilinear;
-		bilinear.ltf = true;
+		bilinear.biln = true;
 		m_convert.ln = GetSamplerID(bilinear);
 
 		m_convert.dss = new GSDepthStencilOGL();
@@ -563,7 +563,7 @@ void GSDeviceOGL::CreateTextureFX()
 	m_ps_cb = new GSUniformBufferOGL("HW PS UBO", g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
-	m_palette_ss = CreateSampler(false, false, false);
+	m_palette_ss = CreateSampler(PSSamplerSelector(0));
 	glBindSampler(1, m_palette_ss);
 
 	// Pre compile the (remaining) Geometry & Vertex Shader
@@ -802,39 +802,59 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 {
-	return CreateSampler(sel.ltf, sel.tau, sel.tav, sel.aniso);
-}
-
-GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav, bool aniso)
-{
 	GL_PUSH("Create Sampler");
 
 	GLuint sampler;
 	glCreateSamplers(1, &sampler);
-	if (bilinear) {
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	// Bilinear filtering
+	if (sel.biln) {
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	} else {
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
-	if (tau)
+	switch (static_cast<GS_MIN_FILTER>(sel.triln)) {
+		case GS_MIN_FILTER::Nearest:
+			// Nop based on biln
+			break;
+		case GS_MIN_FILTER::Linear:
+			// Nop based on biln
+			break;
+		case GS_MIN_FILTER::Nearest_Mipmap_Nearest:
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+			break;
+		case GS_MIN_FILTER::Nearest_Mipmap_Linear:
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			break;
+		case GS_MIN_FILTER::Linear_Mipmap_Nearest:
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+			break;
+		case GS_MIN_FILTER::Linear_Mipmap_Linear:
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			break;
+		default:
+			break;
+	}
+
+	//glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
+	//glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
+
+	if (sel.tau)
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	else
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	if (tav)
+	if (sel.tav)
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	else
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
-	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
-
 	int anisotropy = theApp.GetConfigI("MaxAnisotropy");
-	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && aniso)
+	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && sel.aniso)
 		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
 
 	return sampler;
