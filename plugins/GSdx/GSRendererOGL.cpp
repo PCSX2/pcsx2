@@ -884,8 +884,15 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 	m_ps_ssel.tau   = (wms != CLAMP_CLAMP);
 	m_ps_ssel.tav   = (wmt != CLAMP_CLAMP);
-	m_ps_ssel.ltf   = bilinear && !shader_emulated_sampler;
-	m_ps_ssel.aniso = !shader_emulated_sampler;
+	if (shader_emulated_sampler) {
+		m_ps_ssel.biln  = 0;
+		m_ps_ssel.aniso = 0;
+		m_ps_ssel.triln = 0;
+	} else {
+		m_ps_ssel.biln  = bilinear;
+		m_ps_ssel.aniso = 1;
+		m_ps_ssel.triln = m_context->TEX1.MMIN & 1;
+	}
 
 	// Setup Texture ressources
 	dev->SetupSampler(m_ps_ssel);

@@ -316,10 +316,11 @@ public:
 			{
 				uint32 tau:1;
 				uint32 tav:1;
-				uint32 ltf:1;
+				uint32 biln:1;
+				uint32 triln:3;
 				uint32 aniso:1;
 
-				uint32 _free:28;
+				uint32 _free:25;
 			};
 
 			uint32 key;
@@ -463,7 +464,7 @@ public:
 
 	GLuint m_vs[1];
 	GLuint m_gs[1<<3];
-	GLuint m_ps_ss[1<<4];
+	GLuint m_ps_ss[1<<7];
 	GSDepthStencilOGL* m_om_dss[1<<5];
 	hash_map<uint64, GLuint > m_ps;
 	GLuint m_apitrace;
@@ -561,7 +562,6 @@ public:
 	GLuint CompileVS(VSSelector sel);
 	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);
-	GLuint CreateSampler(bool bilinear, bool tau, bool tav, bool aniso = false);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 
