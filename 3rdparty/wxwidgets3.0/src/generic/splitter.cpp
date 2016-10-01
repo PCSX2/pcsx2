@@ -192,21 +192,15 @@ void wxSplitterWindow::OnInternalIdle()
 {
     wxWindow::OnInternalIdle();
 
-    // We may need to update the children sizes in two cases: either because
-    // we're in the middle of a live update as indicated by m_needUpdating or
-    // because we have a requested but not yet set sash position as indicated
-    // by m_requestedSashPosition having a valid value.
+    // We may need to update the children sizes if we're in the middle of
+    // a live update as indicated by m_needUpdating. The other possible case,
+    // when we have a requested but not yet set sash position (as indicated
+    // by m_requestedSashPosition having a valid value) is handled by OnSize.
     if ( m_needUpdating )
     {
         m_needUpdating = false;
+        SizeWindows();
     }
-    else if ( m_requestedSashPosition == INT_MAX )
-    {
-        // We don't need to resize the children.
-        return;
-    }
-
-    SizeWindows();
 }
 
 void wxSplitterWindow::OnMouseEvent(wxMouseEvent& event)

@@ -26,6 +26,8 @@
 #include "wx/msw/missing.h"
 #include "wx/filesys.h"
 #include "wx/dynlib.h"
+#include "wx/scopeguard.h"
+
 #include <initguid.h>
 #include <wininet.h>
 
@@ -141,18 +143,89 @@ void wxWebViewIE::LoadURL(const wxString& url)
     m_ie.CallMethod("Navigate", wxConvertStringToOle(url));
 }
 
-void wxWebViewIE::DoSetPage(const wxString& html, const wxString& baseUrl)
+namespace
 {
-    BSTR bstr = SysAllocString(OLESTR(""));
-    SAFEARRAY *psaStrings = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-    if (psaStrings != NULL)
+
+// Simple RAII wrapper for accessing SAFEARRAY<VARIANT>. This class is not specific
+// to wxWebView at all and could be extended to work for any type and extracted
+// into a header later if it is ever needed elsewhere, but for now keep it here
+// as it is only used in MakeOneElementVariantSafeArray() which, itself, is
+// only used by DoSetPage() below.
+class wxSafeArrayVariantAccessor
+{
+public:
+    explicit wxSafeArrayVariantAccessor(SAFEARRAY* sa)
+        : m_sa(sa),
+          m_data(DoAccessData(sa))
+    {
+    }
+
+    VARIANT* GetData() const
+    {
+        return m_data;
+    }
+
+    ~wxSafeArrayVariantAccessor()
+    {
+        if ( m_data )
+            SafeArrayUnaccessData(m_sa);
+    }
+
+private:
+    static VARIANT* DoAccessData(SAFEARRAY* sa)
     {
         VARIANT *param;
-        HRESULT hr = SafeArrayAccessData(psaStrings, (LPVOID*)&param);
-        param->vt = VT_BSTR;
-        param->bstrVal = bstr;
+        HRESULT hr = SafeArrayAccessData(sa, (LPVOID*)&param);
+        if ( FAILED(hr) )
+        {
+            wxLogLastError(wxT("SafeArrayAccessData"));
+            return NULL;
+        }
 
-        hr = SafeArrayUnaccessData(psaStrings);
+        return param;
+    }
+
+    SAFEARRAY* const m_sa;
+    VARIANT* const m_data;
+
+    wxDECLARE_NO_COPY_CLASS(wxSafeArrayVariantAccessor);
+};
+
+// Helper function: wrap the given string in a SAFEARRAY<VARIANT> of size 1.
+SAFEARRAY* MakeOneElementVariantSafeArray(const wxString& str)
+{
+    SAFEARRAY* const sa = SafeArrayCreateVector(VT_VARIANT, 0, 1);
+    if ( !sa )
+    {
+        wxLogLastError(wxT("SafeArrayCreateVector"));
+        return NULL;
+    }
+
+    wxSafeArrayVariantAccessor access(sa);
+
+    VARIANT* const param = access.GetData();
+    if ( !param )
+    {
+        SafeArrayDestroy(sa);
+        return NULL;
+    }
+
+    param->vt = VT_BSTR;
+    param->bstrVal = SysAllocString(str.wc_str());
+
+    return sa;
+}
+
+} // anonymous namespace
+
+void wxWebViewIE::DoSetPage(const wxString& html, const wxString& baseUrl)
+{
+    {
+        SAFEARRAY* const psaStrings = MakeOneElementVariantSafeArray(wxString());
+        if ( !psaStrings )
+            return;
+
+        wxON_BLOCK_EXIT1(SafeArrayDestroy, psaStrings);
 
         wxCOMPtr<IHTMLDocument2> document(GetDocument());
 
@@ -161,50 +234,34 @@ void wxWebViewIE::DoSetPage(const wxString& html, const wxString& baseUrl)
 
         document->write(psaStrings);
         document->close();
-
-        SafeArrayDestroy(psaStrings);
-
-        bstr = SysAllocString(html.wc_str());
-
-        // Creates a new one-dimensional array
-        psaStrings = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-        if (psaStrings != NULL)
-        {
-            hr = SafeArrayAccessData(psaStrings, (LPVOID*)&param);
-            param->vt = VT_BSTR;
-            param->bstrVal = bstr;
-            hr = SafeArrayUnaccessData(psaStrings);
-
-            document = GetDocument();
-
-            if(!document)
-                return;
-
-            document->write(psaStrings);
-
-            // SafeArrayDestroy calls SysFreeString for each BSTR
-            SafeArrayDestroy(psaStrings);
-
-            //We send the events when we are done to mimic webkit
-            //Navigated event
-            wxWebViewEvent event(wxEVT_WEBVIEW_NAVIGATED,
-                                 GetId(), baseUrl, "");
-            event.SetEventObject(this);
-            HandleWindowEvent(event);
-
-            //Document complete event
-            event.SetEventType(wxEVT_WEBVIEW_LOADED);
-            event.SetEventObject(this);
-            HandleWindowEvent(event);
-        }
-        else
-        {
-            wxLogError("wxWebViewIE::SetPage() : psaStrings is NULL");
-        }
     }
-    else
+
     {
-        wxLogError("wxWebViewIE::SetPage() : psaStrings is NULL during clear");
+        SAFEARRAY* const psaStrings = MakeOneElementVariantSafeArray(html);
+
+        if ( !psaStrings )
+            return;
+
+        wxON_BLOCK_EXIT1(SafeArrayDestroy, psaStrings);
+
+        wxCOMPtr<IHTMLDocument2> document(GetDocument());
+
+        if(!document)
+            return;
+
+        document->write(psaStrings);
+
+        //We send the events when we are done to mimic webkit
+        //Navigated event
+        wxWebViewEvent event(wxEVT_WEBVIEW_NAVIGATED,
+                             GetId(), baseUrl, "");
+        event.SetEventObject(this);
+        HandleWindowEvent(event);
+
+        //Document complete event
+        event.SetEventType(wxEVT_WEBVIEW_LOADED);
+        event.SetEventObject(this);
+        HandleWindowEvent(event);
     }
 }
 
@@ -224,8 +281,8 @@ wxString wxWebViewIE::GetPageSource() const
             if(SUCCEEDED(hr))
             {
                 BSTR bstr;
-                htmlTag->get_outerHTML(&bstr);
-                source = wxString(bstr);
+                if ( htmlTag->get_outerHTML(&bstr) == S_OK )
+                    source = wxString(bstr);
             }
         }
         return source;
@@ -565,16 +622,15 @@ wxString wxWebViewIE::GetCurrentTitle() const
 {
     wxCOMPtr<IHTMLDocument2> document(GetDocument());
 
+    wxString s;
     if(document)
     {
         BSTR title;
-        document->get_nameProp(&title);
-        return wxString(title);
+        if ( document->get_nameProp(&title) == S_OK )
+            s = title;
     }
-    else
-    {
-        return "";
-    }
+
+    return s;
 }
 
 bool wxWebViewIE::CanCut() const
@@ -699,16 +755,13 @@ bool wxWebViewIE::IsEditable() const
     if(document)
     {
         BSTR mode;
-        document->get_designMode(&mode);
-        if(wxString(mode) == "On")
-            return true;
-        else
-            return false;
+        if ( document->get_designMode(&mode) == S_OK )
+        {
+            if ( wxString(mode) == "On" )
+                return true;
+        }
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 void wxWebViewIE::SelectAll()
@@ -728,8 +781,8 @@ bool wxWebViewIE::HasSelection() const
         if(SUCCEEDED(hr))
         {
             BSTR type;
-            selection->get_type(&type);
-            sel = wxString(type);
+            if ( selection->get_type(&type) == S_OK )
+                sel = wxString(type);
         }
         return sel != "None";
     }
@@ -764,8 +817,8 @@ wxString wxWebViewIE::GetSelectedText() const
                 if(SUCCEEDED(hr))
                 {
                     BSTR text;
-                    range->get_text(&text);
-                    selected = wxString(text);
+                    if ( range->get_text(&text) == S_OK )
+                        selected = wxString(text);
                 }
             }
         }
@@ -797,8 +850,8 @@ wxString wxWebViewIE::GetSelectedSource() const
                 if(SUCCEEDED(hr))
                 {
                     BSTR text;
-                    range->get_htmlText(&text);
-                    selected = wxString(text);
+                    if ( range->get_htmlText(&text) == S_OK )
+                        selected = wxString(text);
                 }
             }
         }
@@ -838,8 +891,8 @@ wxString wxWebViewIE::GetPageText() const
         if(SUCCEEDED(hr))
         {
             BSTR out;
-            body->get_innerText(&out);
-            text = wxString(out);
+            if ( body->get_innerText(&out) == S_OK )
+                text = wxString(out);
         }
         return text;
     }

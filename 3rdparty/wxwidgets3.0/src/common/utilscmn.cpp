@@ -23,6 +23,14 @@
     #pragma hdrstop
 #endif
 
+// See comment about this hack in time.cpp: here we do it for environ external
+// variable which can't be easily declared when using MinGW in strict ANSI mode.
+#ifdef wxNEEDS_STRICT_ANSI_WORKAROUNDS
+    #undef __STRICT_ANSI__
+    #include <stdlib.h>
+    #define __STRICT_ANSI__
+#endif
+
 #ifndef WX_PRECOMP
     #include "wx/app.h"
     #include "wx/string.h"

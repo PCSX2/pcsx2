@@ -519,8 +519,9 @@ void wxAnyButton::AdjustForBitmapSize(wxSize &size) const
 {
     wxCHECK_RET( m_imageData, wxT("shouldn't be called if no image") );
 
-    // account for the bitmap size
-    const wxSize sizeBmp = m_imageData->GetBitmap(State_Normal).GetSize();
+    // account for the bitmap size, including the user-specified margins
+    const wxSize sizeBmp = m_imageData->GetBitmap(State_Normal).GetSize()
+                                + 2*m_imageData->GetBitmapMargins();
     const wxDirection dirBmp = m_imageData->GetBitmapPosition();
     if ( dirBmp == wxLEFT || dirBmp == wxRIGHT )
     {
@@ -534,9 +535,6 @@ void wxAnyButton::AdjustForBitmapSize(wxSize &size) const
         if ( sizeBmp.x > size.x )
             size.x = sizeBmp.x;
     }
-
-    // account for the user-specified margins
-    size += 2*m_imageData->GetBitmapMargins();
 
     // and also for the margins we always add internally (unless we have no
     // border at all in which case the button has exactly the same size as

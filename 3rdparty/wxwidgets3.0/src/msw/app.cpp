@@ -630,9 +630,9 @@ private:
 };
 
 //// Initialize
-bool wxApp::Initialize(int& argc, wxChar **argv)
+bool wxApp::Initialize(int& argc_, wxChar **argv_)
 {
-    if ( !wxAppBase::Initialize(argc, argv) )
+    if ( !wxAppBase::Initialize(argc_, argv_) )
         return false;
 
     // ensure that base cleanup is done if we return too early

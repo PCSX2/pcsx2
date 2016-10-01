@@ -156,5 +156,28 @@
     #endif
 #endif
 
+/*
+    Traditional MinGW (but not MinGW-w64 nor TDM-GCC) omits many POSIX
+    functions from their headers when compiled with __STRICT_ANSI__ defined.
+    Unfortunately this means that they are not available when using -std=c++98
+    (not very common) or -std=c++11 (much more so), but we still need them even
+    in this case. As the intention behind using -std=c++11 is probably to get
+    the new C++11 features and not disable the use of POSIX functions, we just
+    manually declare the functions we need in this case if necessary.
+ */
+#if defined(__MINGW32_TOOLCHAIN__) && defined(__STRICT_ANSI__)
+    #define wxNEEDS_STRICT_ANSI_WORKAROUNDS
+
+    /*
+        This macro is somewhat unusual as it takes the list of parameters
+        inside parentheses and includes semicolon inside it as putting the
+        semicolon outside wouldn't do the right thing when this macro is empty.
+     */
+    #define wxDECL_FOR_STRICT_MINGW32(rettype, func, params) \
+        extern "C" _CRTIMP rettype __cdecl __MINGW_NOTHROW func params ;
+#else
+    #define wxDECL_FOR_STRICT_MINGW32(rettype, func, params)
+#endif
+
 #endif
   /* _WX_MSW_GCCPRIV_H_ */

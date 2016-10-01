@@ -222,7 +222,7 @@ int wxDirDialog::ShowModal()
 {
     WX_HOOK_MODAL_DIALOG();
 
-    wxWindow* const parent = GetParent();
+    wxWindow* const parent = GetParentForModalDialog();
     WXHWND hWndParent = parent ? GetHwndOf(parent) : NULL;
 
     // Use IFileDialog under new enough Windows, it's more user-friendly.

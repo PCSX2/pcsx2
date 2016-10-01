@@ -170,10 +170,15 @@ public:
 
         wxScopedArray<wxString> oldTexts(m_columnsTexts);
         m_columnsTexts = new wxString[numColumns - 2];
+
+        // As above, n is the index in the new column texts array and m is the
+        // index in the old one.
         for ( unsigned n = 1, m = 1; n < numColumns - 1; n++, m++ )
         {
-            if ( n == col )
+            if ( m == col )
             {
+                // Skip copying the deleted column and keep the new index the
+                // same (so compensate for "n++" done in the loop).
                 n--;
             }
             else // Not the deleted column.
@@ -738,7 +743,10 @@ void wxTreeListModel::DeleteItem(Node* item)
         previous->DeleteNext();
     }
 
-    ItemDeleted(ToDVI(parent), ToDVI(item));
+    // Note that the item is already deleted by now, so we can't use it in any
+    // way, e.g. by calling ToDVI(item) which does dereference the pointer, but
+    // ToNonRootDVI() that we use here does not.
+    ItemDeleted(ToDVI(parent), ToNonRootDVI(item));
 }
 
 void wxTreeListModel::DeleteAllItems()

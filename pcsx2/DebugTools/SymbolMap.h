@@ -19,8 +19,8 @@
 #include <set>
 #include <map>
 #include <string>
+#include <mutex>
 
-#include "Utilities/Threading.h"
 #include "Pcsx2Types.h"
 
 enum SymbolType {
@@ -145,7 +145,7 @@ private:
 	std::map<SymbolKey, DataEntry> data;
 	std::vector<ModuleEntry> modules;
 
-	mutable Threading::MutexRecursive lock_;
+	mutable std::recursive_mutex m_lock;
 };
 
 extern SymbolMap symbolMap;

@@ -625,7 +625,7 @@ wxQTMediaBackend::~wxQTMediaBackend()
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::CreateControl
 //
-// 1) Intializes QuickTime
+// 1) Initializes QuickTime
 // 2) Creates the control window
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,

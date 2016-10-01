@@ -48,6 +48,7 @@
 #include "wx/dnd.h"
 #include "wx/stopwatch.h"
 #include "wx/weakref.h"
+#include "wx/generic/private/widthcalc.h"
 
 //-----------------------------------------------------------------------------
 // classes
@@ -1790,9 +1791,11 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
     wxDataViewModel *model = GetModel();
     wxAutoBufferedPaintDC dc( this );
 
+    const wxSize size = GetClientSize();
+
     dc.SetBrush(GetOwner()->GetBackgroundColour());
     dc.SetPen( *wxTRANSPARENT_PEN );
-    dc.DrawRectangle(GetClientSize());
+    dc.DrawRectangle(size);
 
     if ( IsEmpty() )
     {
@@ -1878,13 +1881,16 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.SetBrush(wxBrush(altRowColour));
 
+        // We only need to draw the visible part, so limit the rectangle to it.
+        const int xRect = m_owner->CalcUnscrolledPosition(wxPoint(0, 0)).x;
+        const int widthRect = size.x;
         for (unsigned int item = item_start; item < item_last; item++)
         {
             if ( item % 2 )
             {
-                dc.DrawRectangle(x_start,
+                dc.DrawRectangle(xRect,
                                  GetLineStart(item),
-                                 GetClientSize().GetWidth(),
+                                 widthRect,
                                  GetLineHeight(item));
             }
         }
@@ -3208,6 +3214,11 @@ void wxDataViewMainWindow::Expand( unsigned int row )
             ChangeCurrentRow(m_currentRow + rowAdjustment);
 
         m_count = -1;
+
+        // Expanding this item means the previously cached column widths could
+        // have become invalid as new items are now visible.
+        GetOwner()->InvalidateColBestWidths();
+
         UpdateDisplay();
         // Send the expanded event
         SendExpanderEvent(wxEVT_DATAVIEW_ITEM_EXPANDED,node->GetItem());
@@ -3283,6 +3294,9 @@ void wxDataViewMainWindow::Collapse(unsigned int row)
             }
 
             m_count = -1;
+
+            GetOwner()->InvalidateColBestWidths();
+
             UpdateDisplay();
             SendExpanderEvent(wxEVT_DATAVIEW_ITEM_COLLAPSED,node->GetItem());
         }
@@ -3992,7 +4006,7 @@ bool wxDataViewMainWindow::TryAdvanceCurrentColumn(wxDataViewTreeNode *node, boo
     {
         if ( forward )
         {
-            m_currentCol = GetOwner()->GetColumnAt(1);
+            m_currentCol = GetOwner()->GetColumnAt(0);
             m_currentColSetByKeyboard = true;
             RefreshRow(m_currentRow);
             return true;
@@ -4113,23 +4127,23 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
             wxDataViewItem itemDragged = GetItemByRow( drag_item_row );
 
             // Notify cell about drag
-            wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_BEGIN_DRAG, m_owner->GetId() );
-            event.SetEventObject( m_owner );
-            event.SetItem( itemDragged );
-            event.SetModel( model );
-            if (!m_owner->HandleWindowEvent( event ))
+            wxDataViewEvent evt( wxEVT_DATAVIEW_ITEM_BEGIN_DRAG, m_owner->GetId() );
+            evt.SetEventObject( m_owner );
+            evt.SetItem( itemDragged );
+            evt.SetModel( model );
+            if (!m_owner->HandleWindowEvent( evt ))
                 return;
 
-            if (!event.IsAllowed())
+            if (!evt.IsAllowed())
                 return;
 
-            wxDataObject *obj = event.GetDataObject();
+            wxDataObject *obj = evt.GetDataObject();
             if (!obj)
                 return;
 
             wxDataViewDropSource drag( this, drag_item_row );
             drag.SetData( *obj );
-            /* wxDragResult res = */ drag.DoDragDrop(event.GetDragFlags());
+            /* wxDragResult res = */ drag.DoDragDrop(evt.GetDragFlags());
             delete obj;
         }
         return;
@@ -4838,6 +4852,60 @@ int wxDataViewCtrl::GetModelColumnIndex( unsigned int model_column ) const
     return wxNOT_FOUND;
 }
 
+class wxDataViewMaxWidthCalculator : public wxMaxWidthCalculatorBase
+{
+public:
+    wxDataViewMaxWidthCalculator(const wxDataViewCtrl *dvc,
+                                 wxDataViewMainWindow *clientArea,
+                                 wxDataViewRenderer *renderer,
+                                 const wxDataViewModel *model,
+                                 size_t model_column,
+                                 int expanderSize)
+        : wxMaxWidthCalculatorBase(model_column),
+          m_dvc(dvc),
+          m_clientArea(clientArea),
+          m_renderer(renderer),
+          m_model(model),
+          m_expanderSize(expanderSize)
+    {
+        int index = dvc->GetModelColumnIndex( model_column );
+        wxDataViewColumn* column = index == wxNOT_FOUND ? NULL : dvc->GetColumn(index);
+        m_isExpanderCol =
+            !clientArea->IsList() &&
+            (column == 0 ||
+             GetExpanderColumnOrFirstOne(const_cast<wxDataViewCtrl*>(dvc)) == column );
+    }
+
+    virtual void UpdateWithRow(int row)
+    {
+        int indent = 0;
+        wxDataViewItem item;
+
+        if ( m_isExpanderCol )
+        {
+            wxDataViewTreeNode *node = m_clientArea->GetTreeNodeByRow(row);
+            item = node->GetItem();
+            indent = m_dvc->GetIndent() * node->GetIndentLevel() + m_expanderSize;
+        }
+        else
+        {
+            item = m_clientArea->GetItemByRow(row);
+        }
+
+        m_renderer->PrepareForItem(m_model, item, GetColumn());
+        UpdateWithWidth(m_renderer->GetSize().x + indent);
+    }
+
+private:
+    const wxDataViewCtrl *m_dvc;
+    wxDataViewMainWindow *m_clientArea;
+    wxDataViewRenderer *m_renderer;
+    const wxDataViewModel *m_model;
+    bool m_isExpanderCol;
+    int m_expanderSize;
+};
+
+
 unsigned int wxDataViewCtrl::GetBestColumnWidth(int idx) const
 {
     if ( m_colsBestWidths[idx].width != 0 )
@@ -4848,146 +4916,19 @@ unsigned int wxDataViewCtrl::GetBestColumnWidth(int idx) const
     wxDataViewRenderer *renderer =
         const_cast<wxDataViewRenderer*>(column->GetRenderer());
 
-    class MaxWidthCalculator
-    {
-    public:
-        MaxWidthCalculator(const wxDataViewCtrl *dvc,
-                           wxDataViewMainWindow *clientArea,
-                           wxDataViewRenderer *renderer,
-                           const wxDataViewModel *model,
-                           unsigned int model_column,
-                           int expanderSize)
-            : m_width(0),
-              m_dvc(dvc),
-              m_clientArea(clientArea),
-              m_renderer(renderer),
-              m_model(model),
-              m_model_column(model_column),
-              m_expanderSize(expanderSize)
-
-        {
-            int index = dvc->GetModelColumnIndex( model_column );
-            wxDataViewColumn* column = index == wxNOT_FOUND ? NULL : dvc->GetColumn(index);
-            m_isExpanderCol =
-                !clientArea->IsList() &&
-                (column == 0 ||
-                 GetExpanderColumnOrFirstOne(const_cast<wxDataViewCtrl*>(dvc)) == column );
-        }
-
-        void UpdateWithWidth(int width)
-        {
-            m_width = wxMax(m_width, width);
-        }
-
-        void UpdateWithRow(int row)
-        {
-            int indent = 0;
-            wxDataViewItem item;
-
-            if ( m_isExpanderCol )
-            {
-                wxDataViewTreeNode *node = m_clientArea->GetTreeNodeByRow(row);
-                item = node->GetItem();
-                indent = m_dvc->GetIndent() * node->GetIndentLevel() + m_expanderSize;
-            }
-            else
-            {
-                item = m_clientArea->GetItemByRow(row);
-            }
-
-            m_renderer->PrepareForItem(m_model, item, m_model_column);
-            m_width = wxMax(m_width, m_renderer->GetSize().x + indent);
-        }
-
-        int GetMaxWidth() const { return m_width; }
-
-    private:
-        int m_width;
-        const wxDataViewCtrl *m_dvc;
-        wxDataViewMainWindow *m_clientArea;
-        wxDataViewRenderer *m_renderer;
-        const wxDataViewModel *m_model;
-        unsigned m_model_column;
-        bool m_isExpanderCol;
-        int m_expanderSize;
-    };
-
-    MaxWidthCalculator calculator(this, m_clientArea, renderer,
-                                  GetModel(), column->GetModelColumn(),
-                                  m_clientArea->GetRowHeight());
+    wxDataViewMaxWidthCalculator calculator(this, m_clientArea, renderer,
+                                            GetModel(), column->GetModelColumn(),
+                                            m_clientArea->GetRowHeight());
 
     calculator.UpdateWithWidth(column->GetMinWidth());
 
     if ( m_headerArea )
         calculator.UpdateWithWidth(m_headerArea->GetColumnTitleWidth(*column));
 
-    // The code below deserves some explanation. For very large controls, we
-    // simply can't afford to calculate sizes for all items, it takes too
-    // long. So the best we can do is to check the first and the last N/2
-    // items in the control for some sufficiently large N and calculate best
-    // sizes from that. That can result in the calculated best width being too
-    // small for some outliers, but it's better to get slightly imperfect
-    // result than to wait several seconds after every update. To avoid highly
-    // visible miscalculations, we also include all currently visible items
-    // no matter what.  Finally, the value of N is determined dynamically by
-    // measuring how much time we spent on the determining item widths so far.
-
-#if wxUSE_STOPWATCH
-    int top_part_end = count;
-    static const long CALC_TIMEOUT = 20/*ms*/;
-    // don't call wxStopWatch::Time() too often
-    static const unsigned CALC_CHECK_FREQ = 100;
-    wxStopWatch timer;
-#else
-    // use some hard-coded limit, that's the best we can do without timer
-    int top_part_end = wxMin(500, count);
-#endif // wxUSE_STOPWATCH/!wxUSE_STOPWATCH
-
-    int row = 0;
-
-    for ( row = 0; row < top_part_end; row++ )
-    {
-#if wxUSE_STOPWATCH
-        if ( row % CALC_CHECK_FREQ == CALC_CHECK_FREQ-1 &&
-             timer.Time() > CALC_TIMEOUT )
-            break;
-#endif // wxUSE_STOPWATCH
-        calculator.UpdateWithRow(row);
-    }
-
-    // row is the first unmeasured item now; that's our value of N/2
-
-    if ( row < count )
-    {
-        top_part_end = row;
-
-        // add bottom N/2 items now:
-        const int bottom_part_start = wxMax(row, count - row);
-        for ( row = bottom_part_start; row < count; row++ )
-        {
-            calculator.UpdateWithRow(row);
-        }
-
-        // finally, include currently visible items in the calculation:
-        const wxPoint origin = CalcUnscrolledPosition(wxPoint(0, 0));
-        int first_visible = m_clientArea->GetLineAt(origin.y);
-        int last_visible = m_clientArea->GetLineAt(origin.y + GetClientSize().y);
-
-        first_visible = wxMax(first_visible, top_part_end);
-        last_visible = wxMin(bottom_part_start, last_visible);
-
-        for ( row = first_visible; row < last_visible; row++ )
-        {
-            calculator.UpdateWithRow(row);
-        }
-
-        wxLogTrace("dataview",
-                   "determined best size from %d top, %d bottom plus %d more visible items out of %d total",
-                   top_part_end,
-                   count - bottom_part_start,
-                   wxMax(0, last_visible - first_visible),
-                   count);
-    }
+    const wxPoint origin = CalcUnscrolledPosition(wxPoint(0, 0));
+    calculator.ComputeBestColumnWidth(count,
+                                      m_clientArea->GetLineAt(origin.y),
+                                      m_clientArea->GetLineAt(origin.y + GetClientSize().y));
 
     int max_width = calculator.GetMaxWidth();
     if ( max_width > 0 )
@@ -5293,20 +5234,14 @@ void wxDataViewCtrl::Expand( const wxDataViewItem & item )
 
     int row = m_clientArea->GetRowByItem( item );
     if (row != -1)
-    {
         m_clientArea->Expand(row);
-        InvalidateColBestWidths();
-    }
 }
 
 void wxDataViewCtrl::Collapse( const wxDataViewItem & item )
 {
     int row = m_clientArea->GetRowByItem( item );
     if (row != -1)
-    {
         m_clientArea->Collapse(row);
-        InvalidateColBestWidths();
-    }
 }
 
 bool wxDataViewCtrl::IsExpanded( const wxDataViewItem & item ) const

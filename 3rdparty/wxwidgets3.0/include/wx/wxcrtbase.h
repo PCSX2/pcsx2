@@ -73,6 +73,9 @@
 
 #ifdef wxNEED_ISASCII
     inline int isascii(int c) { return (unsigned)c < 0x80; }
+
+    // Avoid further (re)definitions of it.
+    #define isascii isascii
 #endif
 
 #ifdef _WIN32_WCE
@@ -445,7 +448,7 @@ WXDLLIMPEXP_BASE wchar_t *wxCRT_StrtokW(wchar_t *psz, const wchar_t *delim, wcha
 #else /* Unicode filenames */
     /* special case: these functions are missing under Win9x with Unicows so we
        have to implement them ourselves */
-    #if wxUSE_UNICODE_MSLU || defined(__WX_STRICT_ANSI_GCC__)
+    #if wxUSE_UNICODE_MSLU
             WXDLLIMPEXP_BASE FILE* wxMSLU__wfopen(const wchar_t *name, const wchar_t *mode);
             WXDLLIMPEXP_BASE FILE* wxMSLU__wfreopen(const wchar_t *name, const wchar_t *mode, FILE *stream);
             WXDLLIMPEXP_BASE int wxMSLU__wrename(const wchar_t *oldname, const wchar_t *newname);
@@ -455,6 +458,11 @@ WXDLLIMPEXP_BASE wchar_t *wxCRT_StrtokW(wchar_t *psz, const wchar_t *delim, wcha
             #define wxCRT_Remove    wxMSLU__wremove
             #define wxCRT_Rename    wxMSLU__wrename
     #else
+        wxDECL_FOR_STRICT_MINGW32(FILE*, _wfopen, (const wchar_t*, const wchar_t*))
+        wxDECL_FOR_STRICT_MINGW32(FILE*, _wfreopen, (const wchar_t*, const wchar_t*, FILE*))
+        wxDECL_FOR_STRICT_MINGW32(int, _wrename, (const wchar_t*, const wchar_t*))
+        wxDECL_FOR_STRICT_MINGW32(int, _wremove, (const wchar_t*))
+
         /* WinCE CRT doesn't provide these functions so use our own */
         #ifdef __WXWINCE__
             WXDLLIMPEXP_BASE int wxCRT_Rename(const wchar_t *src,

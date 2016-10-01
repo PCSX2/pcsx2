@@ -620,7 +620,15 @@ bool wxListCtrl::SetColumnWidth(int col, int width)
     else if ( width == wxLIST_AUTOSIZE_USEHEADER)
         width = LVSCW_AUTOSIZE_USEHEADER;
 
-    return ListView_SetColumnWidth(GetHwnd(), col, width) != 0;
+    if ( !ListView_SetColumnWidth(GetHwnd(), col, width) )
+        return false;
+
+    // Failure to explicitly refresh the control with horizontal rules results
+    // in corrupted rules display.
+    if ( HasFlag(wxLC_HRULES) )
+        Refresh();
+
+    return true;
 }
 
 // ----------------------------------------------------------------------------

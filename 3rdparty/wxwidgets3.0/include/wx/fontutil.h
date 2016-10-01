@@ -227,6 +227,9 @@ public:
     // init with the parameters of the given font
     void InitFromFont(const wxFont& font)
     {
+#if wxUSE_PANGO
+        Init(*font.GetNativeFontInfo());
+#else
         // translate all font parameters
         SetStyle((wxFontStyle)font.GetStyle());
         SetWeight((wxFontWeight)font.GetWeight());
@@ -252,6 +255,7 @@ public:
         // deal with encoding now (it may override the font family and facename
         // so do it after setting them)
         SetEncoding(font.GetEncoding());
+#endif // !wxUSE_PANGO
     }
 
     // accessors and modifiers for the font elements

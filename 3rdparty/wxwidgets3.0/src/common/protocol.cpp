@@ -21,6 +21,7 @@
 #include "wx/protocol/log.h"
 
 #ifndef WX_PRECOMP
+    #include "wx/app.h"
     #include "wx/module.h"
 #endif
 
@@ -63,7 +64,10 @@ IMPLEMENT_ABSTRACT_CLASS(wxProtocol, wxObject)
 
 wxProtocol::wxProtocol()
 #if wxUSE_SOCKETS
- : wxSocketClient()
+    // Only use non blocking sockets if we can dispatch events.
+    : wxSocketClient((wxIsMainThread() && wxApp::IsMainLoopRunning()
+                        ? wxSOCKET_NONE
+                        : wxSOCKET_BLOCK) | wxSOCKET_WAITALL)
 #endif
 {
     m_lastError = wxPROTO_NOERR;

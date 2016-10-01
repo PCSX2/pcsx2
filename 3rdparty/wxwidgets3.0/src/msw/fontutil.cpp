@@ -258,6 +258,10 @@ wxFontEncoding wxGetFontEncFromCharSet(int cs)
             fontEncoding = wxFONTENCODING_CP1361;
             break;
 
+        case MAC_CHARSET:
+            fontEncoding = wxFONTENCODING_MACROMAN;
+            break;
+
 #endif // Win32
 
         case OEM_CHARSET:

@@ -179,8 +179,6 @@ wxDEFINE_EVENT( wxEVT_VLBOX, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_COMBOBOX, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_TOOL_RCLICKED, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_TOOL_ENTER, wxCommandEvent );
-wxDEFINE_EVENT( wxEVT_SPINCTRL, wxCommandEvent );
-wxDEFINE_EVENT( wxEVT_SPINCTRLDOUBLE, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_TOOL_DROPDOWN, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_COMBOBOX_DROPDOWN, wxCommandEvent);
 wxDEFINE_EVENT( wxEVT_COMBOBOX_CLOSEUP, wxCommandEvent);

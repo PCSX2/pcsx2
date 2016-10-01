@@ -310,7 +310,7 @@
  */
 #elif defined(__UNIX__) || defined(__unix) || defined(__unix__) || \
       defined(____SVR4____) || defined(__LINUX__) || defined(__sgi) || \
-      defined(__hpux) || defined(sun) || defined(__SUN__) || defined(_AIX) || \
+      defined(__hpux) || defined(__sun) || defined(__SUN__) || defined(_AIX) || \
       defined(__EMX__) || defined(__VMS) || defined(__BEOS__) || defined(__MACH__)
 
 #    define __UNIX_LIKE__
@@ -459,6 +459,7 @@
 #    define wxCHECK_W32API_VERSION(maj, min) (0)
 #    undef wxCHECK_MINGW32_VERSION
 #    define wxCHECK_MINGW32_VERSION( major, minor ) (0)
+#    define wxDECL_FOR_STRICT_MINGW32(rettype, func, params)
 #endif
 
 

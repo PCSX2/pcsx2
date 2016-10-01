@@ -1937,6 +1937,26 @@ wxWindowMSW::DoMoveSibling(WXHWND hwnd, int x, int y, int width, int height)
 
     // otherwise (or if deferring failed) move the window in place immediately
 #endif // wxUSE_DEFERRED_SIZING
+
+    // toplevel window's coordinates are mirrored if the TLW is a child of another
+    // RTL window and changing width without moving the position would enlarge the
+    // window in the wrong direction, so we need to adjust for it
+    if ( IsTopLevel() )
+    {
+        // note that this may be different from GetParent() for wxDialogs
+        HWND tlwParent = ::GetParent((HWND)hwnd);
+        if ( tlwParent && (::GetWindowLong(tlwParent, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0 )
+        {
+            RECT old;
+            ::GetWindowRect((HWND) hwnd, &old);
+            if ( old.left == x && old.right - old.left != width )
+            {
+                x -= width - (old.right - old.left);
+            }
+            // else: not a simple resize
+        }
+    }
+
     if ( !::MoveWindow((HWND)hwnd, x, y, width, height, IsShown()) )
     {
         wxLogLastError(wxT("MoveWindow"));
@@ -2082,10 +2102,25 @@ void wxWindowMSW::DoSetClientSize(int width, int height)
         const int widthWin = rectWin.right - rectWin.left,
                   heightWin = rectWin.bottom - rectWin.top;
 
-        // MoveWindow positions the child windows relative to the parent, so
-        // adjust if necessary
-        if ( !IsTopLevel() )
+        if ( IsTopLevel() )
         {
+            // toplevel window's coordinates are mirrored if the TLW is a child of another
+            // RTL window and changing width without moving the position would enlarge the
+            // window in the wrong direction, so we need to adjust for it
+
+            // note that this may be different from GetParent() for wxDialogs
+            HWND tlwParent = ::GetParent(GetHwnd());
+            if ( tlwParent && (::GetWindowLong(tlwParent, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0 )
+            {
+                const int diffWidth = width - (rectClient.right - rectClient.left);
+                rectWin.left -= diffWidth;
+                rectWin.right -= diffWidth;
+            }
+        }
+        else
+        {
+            // MoveWindow positions the child windows relative to the parent, so
+            // adjust if necessary
             wxWindow *parent = GetParent();
             if ( parent )
             {
@@ -2769,17 +2804,17 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
         case WM_MOVING:
             {
                 LPRECT pRect = (LPRECT)lParam;
-                wxRect rc;
-                rc.SetLeft(pRect->left);
-                rc.SetTop(pRect->top);
-                rc.SetRight(pRect->right);
-                rc.SetBottom(pRect->bottom);
-                processed = HandleMoving(rc);
+                wxRect rect;
+                rect.SetLeft(pRect->left);
+                rect.SetTop(pRect->top);
+                rect.SetRight(pRect->right);
+                rect.SetBottom(pRect->bottom);
+                processed = HandleMoving(rect);
                 if (processed) {
-                    pRect->left = rc.GetLeft();
-                    pRect->top = rc.GetTop();
-                    pRect->right = rc.GetRight();
-                    pRect->bottom = rc.GetBottom();
+                    pRect->left = rect.GetLeft();
+                    pRect->top = rect.GetTop();
+                    pRect->right = rect.GetRight();
+                    pRect->bottom = rect.GetBottom();
                 }
             }
             break;
@@ -2799,17 +2834,17 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
         case WM_SIZING:
             {
                 LPRECT pRect = (LPRECT)lParam;
-                wxRect rc;
-                rc.SetLeft(pRect->left);
-                rc.SetTop(pRect->top);
-                rc.SetRight(pRect->right);
-                rc.SetBottom(pRect->bottom);
-                processed = HandleSizing(rc);
+                wxRect rect;
+                rect.SetLeft(pRect->left);
+                rect.SetTop(pRect->top);
+                rect.SetRight(pRect->right);
+                rect.SetBottom(pRect->bottom);
+                processed = HandleSizing(rect);
                 if (processed) {
-                    pRect->left = rc.GetLeft();
-                    pRect->top = rc.GetTop();
-                    pRect->right = rc.GetRight();
-                    pRect->bottom = rc.GetBottom();
+                    pRect->left = rect.GetLeft();
+                    pRect->top = rect.GetTop();
+                    pRect->right = rect.GetRight();
+                    pRect->bottom = rect.GetBottom();
                 }
             }
             break;
@@ -3245,7 +3280,7 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
 
 #if wxUSE_HOTKEY
         case WM_HOTKEY:
-            processed = HandleHotKey((WORD)wParam, lParam);
+            processed = HandleHotKey(wParam, lParam);
             break;
 #endif // wxUSE_HOTKEY
 
@@ -3386,7 +3421,8 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
 
                 if (dwObjId == (LPARAM)OBJID_CLIENT && GetOrCreateAccessible())
                 {
-                    return LresultFromObject(IID_IAccessible, wParam, (IUnknown*) GetAccessible()->GetIAccessible());
+                    processed = true;
+                    rc.result = LresultFromObject(IID_IAccessible, wParam, (IUnknown*) GetAccessible()->GetIAccessible());
                 }
                 break;
             }
@@ -5015,7 +5051,13 @@ wxWindowMSW::MSWGetBgBrushForChild(WXHDC hDC, wxWindowMSW *child)
         RECT rc;
         ::GetWindowRect(GetHwndOf(child), &rc);
 
-        ::MapWindowPoints(NULL, GetHwnd(), (POINT *)&rc, 1);
+        // It is important to pass both points to MapWindowPoints() as in
+        // addition to converting them to our coordinate system, this function
+        // will also exchange the left and right coordinates if this window
+        // uses RTL layout, which is exactly what we need here as the child
+        // window origin is its _right_ top corner in this case and not the
+        // left one.
+        ::MapWindowPoints(NULL, GetHwnd(), (POINT *)&rc, 2);
 
         int x = rc.left,
             y = rc.top;

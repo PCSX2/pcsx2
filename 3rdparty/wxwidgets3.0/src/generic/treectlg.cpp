@@ -515,6 +515,13 @@ void wxTreeTextCtrl::Finish( bool setfocus )
 {
     m_owner->ResetTextControl();
 
+#ifdef __WXMAC__
+    // On wxMac, modal event loops avoid deleting pending objects.
+    // Hide control so it does not remain visible e.g. if the tree
+    // control is used in a dialog.
+    Hide();
+#endif
+
     wxPendingDelete.Append(this);
 
     if (setfocus)

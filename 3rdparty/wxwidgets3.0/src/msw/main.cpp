@@ -297,7 +297,22 @@ void wxSetProcessDPIAware()
 #endif // wxUSE_DYNLIB_CLASS
 }
 
+// It is sometimes undesirable to force DPI awareness on appplications, e.g.
+// when they are artwork heavy and don't have appropriately scaled bitmaps, or
+// when they are using non-wx, DPI-unaware code. Allow disabling
+// SetProcessDPIAware() call.
+//
+// Further discussion:
+//     http://trac.wxwidgets.org/ticket/16116
+//     https://groups.google.com/d/topic/wx-dev/Z0VpgzCY34U/discussion
+bool gs_allowChangingDPIAwareness = true;
+
 } //anonymous namespace
+
+void wxMSWDisableSettingHighDPIAware()
+{
+    gs_allowChangingDPIAwareness = false;
+}
 
 // ----------------------------------------------------------------------------
 // Windows-specific wxEntry
@@ -405,7 +420,9 @@ WXDLLEXPORT int wxEntry(HINSTANCE hInstance,
     // http://msdn.microsoft.com/en-us/library/dd464659%28VS.85%29.aspx).
     // Note that we intentionally do it here and not in wxApp, so that it
     // doesn't happen if wx code is hosted in another app (e.g. a plugin).
-    wxSetProcessDPIAware();
+    // It can be disabled by calling wxMSWAllowChangingDPIAwareness().
+    if ( gs_allowChangingDPIAwareness )
+        wxSetProcessDPIAware();
 
     if ( !wxMSWEntryCommon(hInstance, nCmdShow) )
         return -1;

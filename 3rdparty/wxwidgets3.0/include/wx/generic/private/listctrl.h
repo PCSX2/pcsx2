@@ -863,6 +863,7 @@ private:
     DECLARE_EVENT_TABLE()
 
     friend class wxGenericListCtrl;
+    friend class wxListCtrlMaxWidthCalculator;
 };
 
 #endif // wxUSE_LISTCTRL

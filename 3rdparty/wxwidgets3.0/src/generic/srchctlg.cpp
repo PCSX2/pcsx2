@@ -456,7 +456,12 @@ wxSize wxSearchCtrl::DoGetBestSize() const
     // buttons are square and equal to the height of the text control
     int height = sizeText.y;
     return wxSize(sizeSearch.x + searchMargin + sizeText.x + cancelMargin + sizeCancel.x + 2*horizontalBorder,
-                  height) + DoGetBorderSize();
+#ifdef __WXMSW__
+    // Border is already added in wxSearchTextCtrl::DoGetBestSize()
+                    height);
+#else
+                    height) + DoGetBorderSize();
+#endif
 }
 
 void wxSearchCtrl::DoMoveWindow(int x, int y, int width, int height)
@@ -521,7 +526,17 @@ void wxSearchCtrl::DoLayoutControls()
     x += sizeSearch.x;
     x += searchMargin;
 
-    m_text->SetSize(x, 0, textWidth, height);
+#ifdef __WXMSW__
+    // The text control is too high up on Windows; normally a text control looks OK because
+    // of the white border that's part of the theme border. We can also remove a pixel from
+    // the height to fit the text control in, because the padding in EDIT_HEIGHT_FROM_CHAR_HEIGHT
+    // is already generous.
+    int textY = 1;
+#else
+    int textY = 0;
+#endif
+
+    m_text->SetSize(x, textY, textWidth, height-textY);
     x += textWidth;
     x += cancelMargin;
 

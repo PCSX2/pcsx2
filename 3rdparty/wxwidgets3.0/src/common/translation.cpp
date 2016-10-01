@@ -1719,7 +1719,7 @@ wxString wxTranslations::GetHeaderValue(const wxString& header,
     if ( !trans || trans->empty() )
         return wxEmptyString;
 
-    size_t found = trans->find(header);
+    size_t found = trans->find(header + wxS(": "));
     if ( found == wxString::npos )
         return wxEmptyString;
 

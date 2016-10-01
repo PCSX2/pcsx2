@@ -308,6 +308,9 @@ public:
 protected:
     wxSocketImpl(wxSocketBase& wxsocket);
 
+    // get the associated socket flags
+    wxSocketFlags GetSocketFlags() const { return m_wxsocket->GetFlags(); }
+
     // true if we're a listening stream socket
     bool m_server;
 

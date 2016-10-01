@@ -381,7 +381,7 @@ struct wxPixelDataOut<wxImage>
             {
                 m_pRGB += data.GetRowStride()*y + PixelFormat::SizePixel*x;
                 if ( m_pAlpha )
-                    m_pAlpha += data.GetWidth() + x;
+                    m_pAlpha += data.GetWidth()*y + x;
             }
 
             // move x pixels to the right (again, no row wrapping)
@@ -397,7 +397,7 @@ struct wxPixelDataOut<wxImage>
             {
                 m_pRGB += data.GetRowStride()*y;
                 if ( m_pAlpha )
-                    m_pAlpha += data.GetWidth();
+                    m_pAlpha += data.GetWidth()*y;
             }
 
             // go to the given position

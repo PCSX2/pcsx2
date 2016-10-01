@@ -1064,9 +1064,14 @@ wxFileName wxGenericFileCtrl::DoGetFileName() const
         wxListItem item;
         item.m_itemId = m_list->GetNextItem(-1, wxLIST_NEXT_ALL,
                                             wxLIST_STATE_SELECTED);
-        m_list->GetItem(item);
 
-        fn.Assign(m_list->GetDir(), item.m_text);
+        // ... if anything is selected in the list
+        if ( item.m_itemId != wxNOT_FOUND )
+        {
+            m_list->GetItem(item);
+
+            fn.Assign(m_list->GetDir(), item.m_text);
+        }
     }
     else // user entered the value
     {

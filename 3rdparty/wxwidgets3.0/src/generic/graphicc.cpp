@@ -500,6 +500,11 @@ public:
 
     virtual ~wxCairoImageContext()
     {
+        Flush();
+    }
+
+    virtual void Flush()
+    {
         m_image = m_data.ConvertToImage();
     }
 
@@ -1549,6 +1554,7 @@ wxImage wxCairoBitmapData::ConvertToImage() const
     }
 
     // Prepare for copying data.
+    cairo_surface_flush(m_surface);
     const wxUint32* src = (wxUint32*)cairo_image_surface_get_data(m_surface);
     wxCHECK_MSG( src, wxNullImage, wxS("Failed to get Cairo surface data.") );
 

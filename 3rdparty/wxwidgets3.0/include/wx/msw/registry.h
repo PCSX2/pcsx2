@@ -123,7 +123,7 @@ public:
     // hKey should be opened and will be closed in wxRegKey dtor
   void  SetHkey(WXHKEY hKey);
 
-  // get infomation about the key
+  // get information about the key
     // get the (full) key name. Abbreviate std root keys if bShortPrefix.
   wxString GetName(bool bShortPrefix = true) const;
     // Retrieves the registry view used by this key.
@@ -132,7 +132,7 @@ public:
   bool  Exists() const;
     // get the info about key (any number of these pointers may be NULL)
   bool  GetKeyInfo(size_t *pnSubKeys,      // number of subkeys
-                   size_t *pnMaxKeyLen,    // max len of subkey name
+                   size_t *pnMaxKeyLen,    // max length of subkey name
                    size_t *pnValues,       // number of values
                    size_t *pnMaxValueLen) const;
     // return true if the key is opened

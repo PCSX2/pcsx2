@@ -386,7 +386,8 @@ void wxFontRefData::Init(const wxNativeFontInfo& info, WXHFONT hFont)
     m_hFont = (HFONT)hFont;
     m_nativeFontInfo = info;
 
-    // TODO: m_sizeUsingPixels?
+    // size of native fonts is expressed in pixels
+    m_sizeUsingPixels = true;
 }
 
 wxFontRefData::~wxFontRefData()

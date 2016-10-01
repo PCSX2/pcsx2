@@ -1526,10 +1526,10 @@ wxTreeItemId wxTreeCtrl::DoInsertAfter(const wxTreeItemId& parent,
     // need this to make the "[+]" appear
     if ( firstChild )
     {
-        TVGetItemRectParam param;
+        TVGetItemRectParam param2;
 
-        wxTreeView_GetItemRect(GetHwnd(), HITEM(parent), param, FALSE);
-        ::InvalidateRect(GetHwnd(), &param.rect, FALSE);
+        wxTreeView_GetItemRect(GetHwnd(), HITEM(parent), param2, FALSE);
+        ::InvalidateRect(GetHwnd(), &param2.rect, FALSE);
     }
 
     // associate the application tree item with Win32 tree item handle
@@ -3639,8 +3639,8 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
             {
                 DWORD pos = GetMessagePos();
                 POINT point;
-                point.x = LOWORD(pos);
-                point.y = HIWORD(pos);
+                point.x = GET_X_LPARAM(pos);
+                point.y = GET_Y_LPARAM(pos);
                 ::MapWindowPoints(HWND_DESKTOP, GetHwnd(), &point, 1);
                 int htFlags = 0;
                 wxTreeItemId item = HitTest(wxPoint(point.x, point.y), htFlags);
@@ -3665,7 +3665,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
                     if ( MSWIsOnItem(tvhti.flags) )
                     {
                         event.m_item = tvhti.hItem;
-                        eventType = (int)hdr->code == NM_DBLCLK
+                        eventType = hdr->code == NM_DBLCLK
                                     ? wxEVT_TREE_ITEM_ACTIVATED
                                     : wxEVT_TREE_ITEM_RIGHT_CLICK;
 

@@ -15,7 +15,20 @@
 
 #include "wx/msw/wrapwin.h"
 #ifndef __WXWINCE__
+#ifdef __VISUALC__
+    // Disable a warning that we can do nothing about: we get it at least for
+    // imagehlp.h from 8.1 Windows kit when using VC14.
+    #pragma warning(push)
+
+    // 'typedef ': ignored on left of '' when no variable is declared
+    #pragma warning(disable:4091)
+#endif
+
 #include <imagehlp.h>
+
+#ifdef __VISUALC__
+  #pragma warning(pop)
+#endif
 #endif // __WXWINCE__
 #include "wx/msw/private.h"
 

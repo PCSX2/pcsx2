@@ -45,7 +45,7 @@ LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
 #endif
 
 // ----------------------------------------------------------------------------
-// define possibly missing WGL constants
+// define possibly missing WGL constants and types
 // ----------------------------------------------------------------------------
 
 #ifndef WGL_ARB_pixel_format
@@ -75,6 +75,49 @@ LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
 #define WGL_SAMPLE_BUFFERS_ARB            0x2041
 #define WGL_SAMPLES_ARB                   0x2042
 #endif
+
+#ifndef WGL_ARB_create_context
+#define WGL_ARB_create_context
+#define WGL_CONTEXT_MAJOR_VERSION_ARB   0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB   0x2092
+#define WGL_CONTEXT_LAYER_PLANE_ARB     0x2093
+#define WGL_CONTEXT_FLAGS_ARB           0x2094
+#define WGL_CONTEXT_DEBUG_BIT_ARB       0x0001
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB  0x0002
+
+#ifndef WGL_ARB_create_context_profile
+#define WGL_ARB_create_context_profile
+#define WGL_CONTEXT_PROFILE_MASK_ARB              0x9126
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB          0x00000001
+#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+#endif
+
+#ifndef WGL_ARB_create_context_robustness
+#define WGL_ARB_create_context_robustness
+#define WGL_CONTEXT_ROBUST_ACCESS_BIT_ARB         0x00000004
+#define WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB     0x8256
+#define WGL_NO_RESET_NOTIFICATION_ARB                   0x8261
+#define WGL_LOSE_CONTEXT_ON_RESET_ARB                   0x8252
+#endif
+#endif
+
+#ifndef WGL_EXT_create_context_es2_profile
+#define WGL_EXT_create_context_es2_profile
+#define WGL_CONTEXT_ES2_PROFILE_BIT_EXT           0x00000004
+#endif
+
+#ifndef WGL_EXT_create_context_es_profile
+#define WGL_EXT_create_context_es_profile
+#define WGL_CONTEXT_ES_PROFILE_BIT_EXT            0x00000004
+#endif
+
+#ifndef WGL_ARB_framebuffer_sRGB
+#define WGL_ARB_framebuffer_sRGB
+#define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB                0x20A9
+#endif
+
+typedef HGLRC(WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC)
+    (HDC hDC, HGLRC hShareContext, const int *attribList);
 
 // ----------------------------------------------------------------------------
 // libraries
@@ -108,10 +151,44 @@ LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
 
 IMPLEMENT_CLASS(wxGLContext, wxObject)
 
+// The window will always be created first so the array will be initialized
+// and then the window will be assigned to the context.
+// max 8 attributes plus terminator
+// if first is 0, create legacy context
+static int s_wglContextAttribs[9] = {0};
+
 wxGLContext::wxGLContext(wxGLCanvas *win, const wxGLContext* other)
 {
-    m_glContext = wglCreateContext(win->GetHDC());
-    wxCHECK_RET( m_glContext, wxT("Couldn't create OpenGL context") );
+    if ( s_wglContextAttribs[0] == 0 ) // create legacy context
+    {
+        m_glContext = wglCreateContext(win->GetHDC());
+        wxCHECK_RET( m_glContext, wxT("Couldn't create OpenGL context") );
+    }
+    else // create a context using attributes
+    {
+        // We need to create a temporary context to get the
+        // wglCreateContextAttribsARB function
+        HGLRC tempContext = wglCreateContext(win->GetHDC());
+        wxCHECK_RET( tempContext, wxT("Couldn't create OpenGL context") );
+
+        wglMakeCurrent(win->GetHDC(), tempContext);
+        PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB
+            = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+            wglGetProcAddress("wglCreateContextAttribsARB");
+        wglMakeCurrent(win->GetHDC(), NULL);
+        wglDeleteContext(tempContext);
+
+        if ( !wglCreateContextAttribsARB )
+        {
+            wxLogError(_("Core OpenGL profile is not supported by the OpenGL driver."));
+            return;
+        }
+
+        m_glContext = wglCreateContextAttribsARB(
+            win->GetHDC(), 0, s_wglContextAttribs);
+        wxCHECK_RET( m_glContext,
+                     wxT("Couldn't create core profile OpenGL context") );
+    }
 
     if ( other )
     {
@@ -234,6 +311,58 @@ bool wxGLCanvas::Create(wxWindow *parent,
     // for multisampling support and recreate it later with another pixel format
     if ( !CreateWindow(parent, id, pos, size, style, name) )
         return false;
+
+    // these will be used for the context creation attributes
+    // if a core profile is requested
+    bool useGLCoreProfile = false;
+
+    // the minimum gl core version is 3.0
+    int glVersionMajor = 3,
+        glVersionMinor = 0;
+
+    // Check for a core profile request
+    if ( attribList )
+    {
+        for ( int i = 0; attribList[i]; )
+        {
+            switch ( attribList[i++] )
+            {
+                case WX_GL_CORE_PROFILE:
+                    useGLCoreProfile = true;
+                    break;
+
+                case WX_GL_MAJOR_VERSION:
+                    glVersionMajor = attribList[i++];
+                    break;
+
+                case WX_GL_MINOR_VERSION:
+                    glVersionMinor = attribList[i++];
+                    break;
+
+                default:
+                    // ignore all other flags for now
+                    break;
+            }
+        }
+    }
+
+    if ( useGLCoreProfile )
+    {
+        s_wglContextAttribs[0] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+        s_wglContextAttribs[1] = glVersionMajor;
+        s_wglContextAttribs[2] = WGL_CONTEXT_MINOR_VERSION_ARB;
+        s_wglContextAttribs[3] = glVersionMinor;
+        s_wglContextAttribs[4] = WGL_CONTEXT_FLAGS_ARB;
+        s_wglContextAttribs[5] = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+        s_wglContextAttribs[6] = WGL_CONTEXT_PROFILE_MASK_ARB;
+        s_wglContextAttribs[7] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+        s_wglContextAttribs[8] = 0; // terminate
+    }
+    else // create legacy/compatibility context
+    {
+        s_wglContextAttribs[0] = 0;
+    }
+
 
     PIXELFORMATDESCRIPTOR pfd;
     const int setupVal = DoSetup(pfd, attribList);

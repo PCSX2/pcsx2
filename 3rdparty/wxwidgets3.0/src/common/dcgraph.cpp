@@ -646,13 +646,12 @@ void wxGCDCImpl::DoDrawEllipticArc( wxCoord x, wxCoord y, wxCoord w, wxCoord h,
     m_graphicContext->PushState();
     m_graphicContext->Translate(dx, dy);
     m_graphicContext->Scale(factor, 1.0);
-    wxGraphicsPath path;
+    wxGraphicsPath path = m_graphicContext->CreatePath();
 
     // since these angles (ea,sa) are measured counter-clockwise, we invert them to
     // get clockwise angles
     if ( m_brush.GetStyle() != wxTRANSPARENT )
     {
-        path = m_graphicContext->CreatePath();
         path.MoveToPoint( 0, 0 );
         path.AddArc( 0, 0, h/2.0 , DegToRad(-sa) , DegToRad(-ea), sa > ea );
         path.AddLineToPoint( 0, 0 );
@@ -664,7 +663,6 @@ void wxGCDCImpl::DoDrawEllipticArc( wxCoord x, wxCoord y, wxCoord w, wxCoord h,
     }
     else
     {
-        wxGraphicsPath path = m_graphicContext->CreatePath();
         path.AddArc( 0, 0, h/2.0 , DegToRad(-sa) , DegToRad(-ea), sa > ea );
         m_graphicContext->DrawPath( path );
     }
@@ -878,10 +876,9 @@ void wxGCDCImpl::DoDrawRectangle(wxCoord x, wxCoord y, wxCoord w, wxCoord h)
     CalcBoundingBox(x, y);
     CalcBoundingBox(x + w, y + h);
 
-    if ( m_graphicContext->ShouldOffset() )
+    if (m_pen.IsOk() && m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT && m_pen.GetWidth() > 0)
     {
-        // if we are offsetting the entire rectangle is moved 0.5, so the
-        // border line gets off by 1
+        // outline is one pixel larger than what raster-based wxDC implementations draw
         w -= 1;
         h -= 1;
     }
@@ -907,10 +904,9 @@ void wxGCDCImpl::DoDrawRoundedRectangle(wxCoord x, wxCoord y,
     CalcBoundingBox(x, y);
     CalcBoundingBox(x + w, y + h);
 
-    if ( m_graphicContext->ShouldOffset() )
+    if (m_pen.IsOk() && m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT && m_pen.GetWidth() > 0)
     {
-        // if we are offsetting the entire rectangle is moved 0.5, so the
-        // border line gets off by 1
+        // outline is one pixel larger than what raster-based wxDC implementations draw
         w -= 1;
         h -= 1;
     }
@@ -927,13 +923,6 @@ void wxGCDCImpl::DoDrawEllipse(wxCoord x, wxCoord y, wxCoord w, wxCoord h)
     CalcBoundingBox(x, y);
     CalcBoundingBox(x + w, y + h);
 
-    if ( m_graphicContext->ShouldOffset() )
-    {
-        // if we are offsetting the entire rectangle is moved 0.5, so the
-        // border line gets off by 1
-        w -= 1;
-        h -= 1;
-    }
     m_graphicContext->DrawEllipse(x,y,w,h);
 }
 
@@ -1213,9 +1202,10 @@ void wxGCDCImpl::Clear(void)
     wxCompositionMode formerMode = m_graphicContext->GetCompositionMode();
     m_graphicContext->SetCompositionMode(wxCOMPOSITION_SOURCE);
     // maximum positive coordinate Cairo can handle is 2^23 - 1
+    // Use a value slightly less than this to be sure we avoid the limit
     DoDrawRectangle(
         DeviceToLogicalX(0), DeviceToLogicalY(0),
-        DeviceToLogicalXRel(0x007fffff), DeviceToLogicalYRel(0x007fffff));
+        DeviceToLogicalXRel(0x800000 - 64), DeviceToLogicalYRel(0x800000 - 64));
     m_graphicContext->SetCompositionMode(formerMode);
     m_graphicContext->SetPen( m_pen );
     m_graphicContext->SetBrush( m_brush );

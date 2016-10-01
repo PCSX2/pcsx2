@@ -39,7 +39,7 @@
 
 #ifdef __WIN32__
     #if !defined(__GNUWIN32__) || wxUSE_NORLANDER_HEADERS
-        #include <shlobj.h>            // for DROPFILES structure
+        #include "wx/msw/wrapshl.h"            // for DROPFILES structure
     #endif
 #else
     #include <shellapi.h>

@@ -164,13 +164,17 @@ private:
 public: \
     static bool IsSameClass(const wxAnyValueType* otherType) \
     { \
-        return wxTypeId(*sm_instance.get()) == wxTypeId(*otherType); \
+        return AreSameClasses(*sm_instance.get(), *otherType); \
     } \
     virtual bool IsSameType(const wxAnyValueType* otherType) const \
     { \
         return IsSameClass(otherType); \
     } \
 private: \
+    static bool AreSameClasses(const wxAnyValueType& a, const wxAnyValueType& b) \
+    { \
+        return wxTypeId(a) == wxTypeId(b); \
+    } \
     static wxAnyValueTypeScopedPtr sm_instance; \
 public: \
     static wxAnyValueType* GetInstance() \

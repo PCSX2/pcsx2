@@ -118,6 +118,9 @@
 #ifndef LANG_FRENCH
 #define LANG_FRENCH (0)
 #endif
+#ifndef LANG_FRISIAN
+#define LANG_FRISIAN (0)
+#endif
 #ifndef LANG_GEORGIAN
 #define LANG_GEORGIAN (0)
 #endif
@@ -638,7 +641,7 @@ void wxLocale::InitLanguagesDB()
    LNG(wxLANGUAGE_FRENCH_LUXEMBOURG,          "fr_LU", LANG_FRENCH    , SUBLANG_FRENCH_LUXEMBOURG         , wxLayout_LeftToRight, "French (Luxembourg)")
    LNG(wxLANGUAGE_FRENCH_MONACO,              "fr_MC", LANG_FRENCH    , SUBLANG_FRENCH_MONACO             , wxLayout_LeftToRight, "French (Monaco)")
    LNG(wxLANGUAGE_FRENCH_SWISS,               "fr_CH", LANG_FRENCH    , SUBLANG_FRENCH_SWISS              , wxLayout_LeftToRight, "French (Swiss)")
-   LNG(wxLANGUAGE_FRISIAN,                    "fy"   , 0              , 0                                 , wxLayout_LeftToRight, "Frisian")
+   LNG(wxLANGUAGE_FRISIAN,                    "fy"   , LANG_FRISIAN   , SUBLANG_DEFAULT                   , wxLayout_LeftToRight, "Frisian")
    LNG(wxLANGUAGE_GALICIAN,                   "gl_ES", 0              , 0                                 , wxLayout_LeftToRight, "Galician")
    LNG(wxLANGUAGE_GEORGIAN,                   "ka_GE", LANG_GEORGIAN  , SUBLANG_DEFAULT                   , wxLayout_LeftToRight, "Georgian")
    LNG(wxLANGUAGE_GERMAN,                     "de_DE", LANG_GERMAN    , SUBLANG_GERMAN                    , wxLayout_LeftToRight, "German")

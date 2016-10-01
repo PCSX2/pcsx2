@@ -479,8 +479,7 @@ void wxStaticBox::PaintForeground(wxDC& dc, const RECT&)
             // the label: this is consistent with the behaviour under pre-XP
             // systems (i.e. without visual themes) and generally makes sense
             wxBrush brush = wxBrush(GetBackgroundColour());
-            wxMSWDCImpl *impl = (wxMSWDCImpl*) dc.GetImpl();
-            ::FillRect(GetHdcOf(*impl), &dimensions, GetHbrushOf(brush));
+            ::FillRect(hdc, &dimensions, GetHbrushOf(brush));
         }
         else // paint parent background
         {

@@ -27,7 +27,9 @@
 #ifndef WX_PRECOMP
     #include "wx/intl.h"
     #include "wx/app.h"
+    #include "wx/log.h"
     #include "wx/module.h"
+    #include "wx/msgout.h"
 #endif
 
 #include "wx/apptrait.h"
@@ -1417,8 +1419,17 @@ void WXDLLIMPEXP_BASE wxWakeUpMainThread()
     // sending any message would do - hopefully WM_NULL is harmless enough
     if ( !::PostThreadMessage(wxThread::GetMainId(), WM_NULL, 0, 0) )
     {
-        // should never happen
-        wxLogLastError(wxT("PostThreadMessage(WM_NULL)"));
+        // should never happen, but log an error if it does, however do not use
+        // wxLog here as it would result in reentrancy because logging from a
+        // thread calls wxWakeUpIdle() which calls this function itself again
+        const unsigned long ec = wxSysErrorCode();
+        wxMessageOutputDebug().Printf
+        (
+            wxS("Failed to wake up main thread: PostThreadMessage(WM_NULL) ")
+            wxS("failed with error 0x%08lx (%s)."),
+            ec,
+            wxSysErrorMsg(ec)
+        );
     }
 }
 

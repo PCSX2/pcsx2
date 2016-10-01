@@ -44,7 +44,7 @@
 // even if this is not necessary with most of them
 #include "wx/msw/wrapwin.h"
 #include <shellapi.h>
-#include <shlobj.h>
+#include "wx/msw/wrapshl.h"
 #include "wx/msw/missing.h"
 
 #if wxUSE_BASE
@@ -614,10 +614,13 @@ wxIcon wxFSVolume::GetIcon(wxFSIconType type) const
 
         SHFILEINFO fi;
         long rc = SHGetFileInfo(m_volName.t_str(), 0, &fi, sizeof(fi), flags);
-        m_icons[type].SetHICON((WXHICON)fi.hIcon);
         if (!rc || !fi.hIcon)
         {
             wxLogError(_("Cannot load icon from '%s'."), m_volName.c_str());
+        }
+        else
+        {
+            m_icons[type].CreateFromHICON((WXHICON)fi.hIcon);
         }
     }
 

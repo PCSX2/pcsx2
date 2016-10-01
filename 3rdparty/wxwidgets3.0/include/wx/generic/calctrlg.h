@@ -179,6 +179,7 @@ private:
     void OnPaint(wxPaintEvent& event);
     void OnClick(wxMouseEvent& event);
     void OnDClick(wxMouseEvent& event);
+    void OnWheel(wxMouseEvent& event);
     void OnChar(wxKeyEvent& event);
     void OnMonthChange(wxCommandEvent& event);
 

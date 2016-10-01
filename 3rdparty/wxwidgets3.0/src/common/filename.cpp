@@ -100,7 +100,7 @@
 
 #ifdef __WINDOWS__
     #include "wx/msw/private.h"
-    #include <shlobj.h>         // for CLSID_ShellLink
+    #include "wx/msw/wrapshl.h"         // for CLSID_ShellLink
     #include "wx/msw/missing.h"
     #include "wx/msw/ole/oleutils.h"
 #endif
@@ -1832,15 +1832,27 @@ bool wxFileName::MakeRelativeTo(const wxString& pathBase, wxPathFormat format)
         m_dirs.Insert(wxT(".."), 0u);
     }
 
-    if ( format == wxPATH_UNIX || format == wxPATH_DOS )
+    switch ( GetFormat(format) )
     {
-        // a directory made relative with respect to itself is '.' under Unix
-        // and DOS, by definition (but we don't have to insert "./" for the
-        // files)
-        if ( m_dirs.IsEmpty() && IsDir() )
-        {
-            m_dirs.Add(wxT('.'));
-        }
+        case wxPATH_NATIVE:
+        case wxPATH_MAX:
+            wxFAIL_MSG( wxS("unreachable") );
+            // fall through
+
+        case wxPATH_UNIX:
+        case wxPATH_DOS:
+            // a directory made relative with respect to itself is '.' under
+            // Unix and DOS, by definition (but we don't have to insert "./"
+            // for the files)
+            if ( m_dirs.IsEmpty() && IsDir() )
+            {
+                m_dirs.Add(wxT('.'));
+            }
+            break;
+
+        case wxPATH_MAC:
+        case wxPATH_VMS:
+            break;
     }
 
     m_relative = true;
@@ -2595,7 +2607,7 @@ bool wxFileName::SetPermissions(int permissions)
 {
     // Don't do anything for a symlink but first make sure it is one.
     if ( m_dontFollowLinks &&
-            Exists(wxFILE_EXISTS_SYMLINK|wxFILE_EXISTS_NO_FOLLOW) )
+            Exists(GetFullPath(), wxFILE_EXISTS_SYMLINK|wxFILE_EXISTS_NO_FOLLOW) )
     {
         // Looks like changing permissions for a symlinc is only supported
         // on BSD where lchmod is present and correctly implemented.
