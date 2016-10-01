@@ -31,6 +31,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
 	, m_channel_shuffle(false)
+	, m_lod(GSVector2i(0,0))
 {
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
@@ -492,14 +493,14 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
-		int lod = 0;
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
+		int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
+		m_lod = GSVector2i(0, 0);
 
 		// Code from the SW renderer
 		if (IsMipMapActive()) {
 			int interpolation = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
 
-			int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
 			int k = (m_context->TEX1.K + 8) >> 4;
 			int lcm = m_context->TEX1.LCM;
 
@@ -516,43 +517,47 @@ void GSRendererHW::Draw()
 			}
 
 			if (lcm == 1) {
-				lod = std::max<int>(k, 0);
+				m_lod.x = std::max<int>(k, 0);
+				m_lod.y = m_lod.x;
 			} else {
 				// Not constant but who care !
 				if (interpolation == 2) {
 					// Mipmap Linear. Both layers are sampled, only take the big one
-					lod = std::max<int>((int)floor(m_vt.m_lod.x), 0);
+					m_lod.x = std::max<int>((int)floor(m_vt.m_lod.x), 0);
 				} else {
 					// On GS lod is a fixed float number 7:4 (4 bit for the frac part)
 #if 0
-					lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+					m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
 #else
 					// Same as above with a bigger margin on rounding
 					// The goal is to avoid 1 undrawn pixels around the edge which trigger the load of the big
 					// layer.
 					if (ceil(m_vt.m_lod.x) < m_vt.m_lod.y)
-						lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625 + 0.01), 0);
+						m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625 + 0.01), 0);
 					else
-						lod = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+						m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
 #endif
 				}
+
+				m_lod.y = std::max<int>((int)ceil(m_vt.m_lod.y), 0);
 			}
 
-			lod = std::min<int>(lod, mxl);
+			m_lod.x = std::min<int>(m_lod.x, mxl);
+			m_lod.y = std::min<int>(m_lod.y, mxl);
 
-			TEX0 = GetTex0Layer(lod);
+			TEX0 = GetTex0Layer(m_lod.x);
 
-			MIP_CLAMP.MINU >>= lod;
-			MIP_CLAMP.MINV >>= lod;
-			MIP_CLAMP.MAXU >>= lod;
-			MIP_CLAMP.MAXV >>= lod;
+			MIP_CLAMP.MINU >>= m_lod.x;
+			MIP_CLAMP.MINV >>= m_lod.x;
+			MIP_CLAMP.MAXU >>= m_lod.x;
+			MIP_CLAMP.MAXV >>= m_lod.x;
 
-			for (int i = 0; i < lod; i++) {
+			for (int i = 0; i < m_lod.x; i++) {
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 			}
 
-			GL_CACHE("Mipmap LOD %d (%f %f) new size %dx%d", lod, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH);
+			GL_CACHE("Mipmap LOD %d %d (%f %f) new size %dx%d (K %d L %u)", m_lod.x, m_lod.y, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH, m_context->TEX1.K, m_context->TEX1.L);
 		} else {
 			TEX0 = GetTex0Layer(0);
 		}

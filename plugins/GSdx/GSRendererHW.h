@@ -154,6 +154,8 @@ protected:
 
 	bool m_channel_shuffle;
 
+	GSVector2i m_lod; // Min & Max level of detail
+
 public:
 	GSRendererHW(GSTextureCache* tc);
 	virtual ~GSRendererHW();
