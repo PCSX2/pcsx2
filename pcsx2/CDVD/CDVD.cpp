@@ -1407,7 +1407,7 @@ static __fi void cdvdWrite0F(u8 rt) { // TYPE
 	DevCon.WriteLn("*PCSX2*: CDVD TYPE %x", rt);
 }
 
-static __fi void cdvdWrite14(u8 rt) { // PS1 MODE??
+static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in the SBUS_F240 bit 19 write in HwWrite.cpp
 	u32 cycle = psxRegs.cycle;
 
 	if (rt == 0xFE)

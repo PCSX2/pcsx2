@@ -23,6 +23,7 @@
 #include "ps2/eeHwTraceLog.inl"
 
 #include "ps2/pgif.h"
+#include "R3000A.h"
 
 using namespace R5900;
 
@@ -176,9 +177,15 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				return;
 
 				mcase(SBUS_F240) :
-#if PSX_EXTRALOGS
-					DevCon.Warning("Write SBUS_F240  %x ", value);
-#endif
+					//if (value & (1 << 19)) // switch hardware into psx mode. Doesn't work for some reason, still needs this to be in cdvdWrite14?
+					//{
+					//	u32 cycle = psxRegs.cycle;
+					//	//pgifInit();
+					//	psxHwReset();
+					//	psxHu32(0x1f801450) = 0x8;
+					//	psxHu32(0x1f801078) = 1;
+					//	psxRegs.cycle = cycle;
+					//}
 					if(!(value & 0x100))
 						psHu32(mem) &= ~0x100;
 					else
