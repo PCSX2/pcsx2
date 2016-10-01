@@ -748,7 +748,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool complex_wms_wmt = !!((wms | wmt) & 2);
 
 	bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-	bool simple_sample = !tex->m_palette && cpsm.fmt == 0 && !complex_wms_wmt && !psm.depth;
+	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
 	// Don't force extra filtering on sprite (it creates various upscaling issue)
 	bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
@@ -857,7 +857,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	m_ps_sel.tcc = m_context->TEX0.TCC;
 
-	m_ps_sel.ltf = bilinear && !simple_sample;
+	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
 
 	int w = tex->m_texture->GetWidth();
 	int h = tex->m_texture->GetHeight();
@@ -884,8 +884,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 	m_ps_ssel.tau   = (wms != CLAMP_CLAMP);
 	m_ps_ssel.tav   = (wmt != CLAMP_CLAMP);
-	m_ps_ssel.ltf   = bilinear && simple_sample;
-	m_ps_ssel.aniso = simple_sample;
+	m_ps_ssel.ltf   = bilinear && !shader_emulated_sampler;
+	m_ps_ssel.aniso = !shader_emulated_sampler;
 
 	// Setup Texture ressources
 	dev->SetupSampler(m_ps_ssel);
