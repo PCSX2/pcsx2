@@ -366,14 +366,12 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN
 				// psx mode
 				HW_DMA0_CHCR = val;
-				//Console.WriteLn("MDEC WR DMA0 %08X = %08X", addr, val);
 				psxDma0(HW_DMA0_MADR, HW_DMA0_BCR, HW_DMA0_CHCR);
 			break;
 
 			mcase(0x1f801098):	// DMA1 CHCR -- MDEC OUT
 				// psx mode
 				HW_DMA1_CHCR = val;
-				//Console.WriteLn("MDEC WR DMA1 %08X = %08X", addr, val);
 				psxDma1(HW_DMA1_MADR, HW_DMA1_BCR, HW_DMA1_CHCR);
 			break;
 			mcase(0x1f8010ac):
@@ -381,8 +379,11 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				psxHu(addr) = val;
 			break;
 
-			mcase(0x1f8010a8) :	// DMA2 CHCR -- GPU [ignored]
-				// todo: psx mode: Original mod doesn't do "psxHu(addr) = val;"
+			mcase(0x1f8010a8) :	// DMA2 CHCR -- GPU
+				// BIOS functions
+				// send_gpu_linked_list: [1F8010A8h]=1000401h
+				// gpu_abort_dma: [1F8010A8h]=401h
+				// gpu_send_dma: [1F8010A8h]=1000201h
 				psxHu(addr) = val;
 				DmaExec(2);
 			break;
@@ -534,12 +535,13 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			// Legacy GPU  emulation
 			//
 
-			mcase(HW_PS1_GPU_DATA) :
+			mcase(HW_PS1_GPU_DATA) : // HW_PS1_GPU_DATA = 0x1f801810
+				psxHu(addr) = val; // guess
 				psxGPUw(addr, val);
 			break;
-			mcase (HW_PS1_GPU_STATUS):
-				psxGPUw(addr, val);
+			mcase (HW_PS1_GPU_STATUS): // HW_PS1_GPU_STATUS = 0x1f801814
 				psxHu(addr) = val; // guess
+				psxGPUw(addr, val);
 			break;
 			mcase (0x1f801820): // MDEC
 				psxHu(addr) = val; // guess
