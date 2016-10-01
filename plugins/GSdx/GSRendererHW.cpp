@@ -852,6 +852,7 @@ GSRendererHW::Hacks::Hacks()
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_Jak));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_Jak));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::CU_DBZBT2));
