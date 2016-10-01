@@ -570,6 +570,34 @@ void GSRendererHW::Draw()
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
 
+		// Round 2
+		if (IsMipMapActive() && m_mipmap > 1 && !tex_psm.depth) {
+			// Upload remaining texture layers
+			GSVector4 tmin = m_vt.m_min.t;
+			GSVector4 tmax = m_vt.m_max.t;
+
+			for (int layer = m_lod.x + 1; layer <= m_lod.y; layer++) {
+				const GIFRegTEX0& MIP_TEX0 = GetTex0Layer(layer);
+
+				m_context->offset.tex = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
+
+				MIP_CLAMP.MINU >>= 1;
+				MIP_CLAMP.MINV >>= 1;
+				MIP_CLAMP.MAXU >>= 1;
+				MIP_CLAMP.MAXV >>= 1;
+
+				m_vt.m_min.t *= 0.5f;
+				m_vt.m_max.t *= 0.5f;
+
+				GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, m_vt.IsLinear());
+
+				tex->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
+			}
+
+			m_vt.m_min.t = tmin;
+			m_vt.m_max.t = tmax;
+		}
+
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 		// Initially code also tested the RT but it gives too much false-positive
 		//
