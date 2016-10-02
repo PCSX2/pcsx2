@@ -508,6 +508,7 @@ CRC::Game CRC::m_games[] =
 	{0x12804727, Jak3, EU, 0},
 	{0x644CFD03, Jak3, US, 0},
 	{0xDF659E77, JakX, EU, 0},
+	{0x3091E6FB, JakX, US, 0}, // FIXME not sure on US
 };
 
 map<uint32, CRC::Game*> CRC::m_map;
