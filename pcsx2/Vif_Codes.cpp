@@ -393,7 +393,13 @@ vifOp(vifCode_MSCNT) {
 			vuExecMicro(idx, -1);
 			vifX.cmd = 0;
 			vifX.pass = 0;
-			vifExecQueue(idx);
+			if (GetVifX.vifpacketsize > 1)
+			{
+				if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
+				{
+					vifExecQueue(idx);
+				}
+			}
 		}
 	}
 	pass3 { VifCodeLog("MSCNT"); }
