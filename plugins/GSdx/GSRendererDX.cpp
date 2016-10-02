@@ -479,7 +479,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		int gpu_tex_fmt = (tex->m_target) ? cpsm.fmt : 0;
 
 		bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
-		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 3 && m_context->CLAMP.WMT < 3;
+		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
