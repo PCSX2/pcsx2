@@ -392,6 +392,9 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
+		// In case a target is 16 bits (GT4)
+		glPixelStorei(GL_PACK_ALIGNMENT, 1u << m_int_shift);
+
 		glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m_local_buffer);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
