@@ -708,56 +708,57 @@ void gifMFIFOInterrupt()
 		}
 	}
 
-	if (dmacRegs.ctrl.MFD != MFD_GIF) {
-		DevCon.Warning("Not in GIF MFIFO mode! Stopping GIF MFIFO");
-		return;
-	}
-
-	if (gifUnit.gsSIGNAL.queued) {
-		//DevCon.WriteLn("Path 3 Paused");
-		GifDMAInt(128);
-		return;
-	}
-
-	if((gifstate & GIF_STATE_EMPTY)) {
-		FireMFIFOEmpty();
-		if (CHECK_GIFFIFOHACK)
-			GifDMAInt(128);
-		if(!(gifstate & GIF_STATE_STALL)) return;
-	}
-
-	if (!CheckPaths()) return;
-
-	if(!gifch.chcr.STR) {
+	if (!gifch.chcr.STR) {
 		Console.WriteLn("WTF GIFMFIFO");
 		cpuRegs.interrupt &= ~(1 << 11);
 		return;
 	}
 
-	if (!(gifstate & GIF_STATE_STALL)) {
-
-		if (QWCinGIFMFIFO(gifch.tadr) == 0) {
-			gifstate |= GIF_STATE_EMPTY;
-			GifDMAInt(4);
-			if (CHECK_GIFFIFOHACK)
-				GifDMAInt(128);
+	if (gifch.qwc > 0 || !gspath3done) {
+		if (dmacRegs.ctrl.MFD != MFD_GIF) {
+			DevCon.Warning("Not in GIF MFIFO mode! Stopping GIF MFIFO");
 			return;
 		}
-		mfifoGIFtransfer(0);
-		return;
-	}
 
-	if ((gifstate == GIF_STATE_READY) || (gifch.qwc > 0)) {
-		DevCon.Error("gifMFIFO Panic > Shouldn't go here!");
-		return;
-	}
+		if (gifUnit.gsSIGNAL.queued) {
+			//DevCon.WriteLn("Path 3 Paused");
+			GifDMAInt(128);
+			return;
+		}
 
-	if (gifRegs.stat.FQC > 0) {
-		//DevCon.Warning("GIF Ending with stuff still in it?");
-		GifDMAInt(16);
-		return;
-	}
+		if ((gifstate & GIF_STATE_EMPTY)) {
+			FireMFIFOEmpty();
+			if (CHECK_GIFFIFOHACK)
+				GifDMAInt(128);
+			if (!(gifstate & GIF_STATE_STALL)) return;
+		}
 
+		if (!CheckPaths()) return;		
+
+		if (!(gifstate & GIF_STATE_STALL)) {
+
+			if (QWCinGIFMFIFO(gifch.tadr) == 0) {
+				gifstate |= GIF_STATE_EMPTY;
+				GifDMAInt(4);
+				if (CHECK_GIFFIFOHACK)
+					GifDMAInt(128);
+				return;
+			}
+			mfifoGIFtransfer(0);
+			return;
+		}
+
+		if ((gifstate == GIF_STATE_READY) || (gifch.qwc > 0)) {
+			DevCon.Error("gifMFIFO Panic > Shouldn't go here!");
+			return;
+		}
+
+		if (gifRegs.stat.FQC > 0) {
+			//DevCon.Warning("GIF Ending with stuff still in it?");
+			GifDMAInt(16);
+			return;
+		}
+	}
 	//if(gifqwc > 0) Console.WriteLn("GIF MFIFO ending with stuff in it %x", gifqwc);
 	if (!gifmfifoirq) gifqwc = 0;
 
