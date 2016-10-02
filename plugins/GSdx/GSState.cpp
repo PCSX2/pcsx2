@@ -843,7 +843,9 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 			TEX0.PSM = PSM_PSMT8; // International Star Soccer (menu)
 			break;
 		default:
-			fprintf(stderr, "INVALID PSM !!!\n");
+#ifdef ENABLE_OGL_DEBUG
+			fprintf(stderr, "%d:INVALID PSM 0x%x !!!\n", s_n, TEX0.PSM);
+#endif
 			break;
 	}
 

@@ -406,19 +406,40 @@ void GSRendererHW::Draw()
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
+	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+
+	// skip alpha test if possible
+	// Note: do it first so we know if frame/depth writes are masked
+
+	GIFRegTEST TEST = context->TEST;
+	GIFRegFRAME FRAME = context->FRAME;
+	GIFRegZBUF ZBUF = context->ZBUF;
+
+	uint32 fm = context->FRAME.FBMSK;
+	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+
+	// Note required to compute TryAlphaTest below. So do it now.
+	if (PRIM->TME && tex_psm.pal > 0)
+		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+
+	//  Test if we can optimize Alpha Test as a NOP
+	m_ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
+
+	context->FRAME.FBMSK = fm;
+	context->ZBUF.ZMSK = zm != 0;
 
 	// It is allowed to use the depth and rt at the same location. However at least 1 must
-	// be disabled.
+	// be disabled. Or the written value must be the same on both channels.
 	// 1/ GoW uses a Cd blending on a 24 bits buffer (no alpha)
 	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
 	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1));
 	const bool no_ds = !no_rt && (
-			// Depth is always pass (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer)
-			(context->ZBUF.ZMSK && m_context->TEST.ZTST == ZTST_ALWAYS && !m_context->TEST.DATE) ||
+			// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
+			(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
 			// Depth will be written through the RT
-			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && !context->ZBUF.ZMSK && !context->FRAME.FBMSK && context->TEST.ZTE)
+			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && fm == 0 && context->TEST.ZTE)
 			);
 
 	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
@@ -480,7 +501,6 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
-		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		int lod = 0;
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
@@ -548,28 +568,11 @@ void GSRendererHW::Draw()
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-		/*
-
-		// m_tc->LookupSource will mess with the palette, should not, but we do this after, until it is sorted out
-
-		if(tex_psm.pal > 0)
-		{
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
-		}
-
-		*/
-
 		GSVector4i r;
 
 		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
-
-		// FIXME: Could be removed on openGL
-		if(tex_psm.pal > 0)
-		{
-			m_mem.m_clut.Read32(TEX0, env.TEXA);
-		}
 
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 		// Initially code also tested the RT but it gives too much false-positive
@@ -674,21 +677,6 @@ void GSRendererHW::Draw()
 			OI_DoubleHalfClear(rt_tex, ds_tex);
 		}
 	}
-
-	// skip alpha test if possible
-
-	GIFRegTEST TEST = context->TEST;
-	GIFRegFRAME FRAME = context->FRAME;
-	GIFRegZBUF ZBUF = context->ZBUF;
-
-	uint32 fm = context->FRAME.FBMSK;
-	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
-
-	//  Test if we can optimize Alpha Test as a NOP
-	m_ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
-
-	context->FRAME.FBMSK = fm;
-	context->ZBUF.ZMSK = zm != 0;
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	// Note: first hack corrects both position and texture coordinate

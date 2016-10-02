@@ -178,17 +178,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
 
 	// Until DX is fixed
-	if (s_IS_OPENGL) {
-		if(psm_s.pal > 0)
-			m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
-	} else {
-		GIFRegTEXA plainTEXA;
-
-		plainTEXA.AEM = 1;
-		plainTEXA.TA0 = 0;
-		plainTEXA.TA1 = 0x80;
-		m_renderer->m_mem.m_clut.Read32(TEX0, plainTEXA);
-	}
+	if(psm_s.pal > 0)
+		m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
 
 	const uint32* clut = m_renderer->m_mem.m_clut;
 
@@ -1671,17 +1662,6 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
-	GIFRegTEXA plainTEXA;
-
-	// Until DX is fixed
-	if (s_IS_OPENGL) {
-		plainTEXA = m_TEXA;
-	} else {
-		plainTEXA.AEM = 1;
-		plainTEXA.TA0 = 0;
-		plainTEXA.TA1 = 0x80;
-	}
-
 	if(m_palette)
 	{
 		pitch >>= 2;
@@ -1706,13 +1686,13 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 			if(m_texture->Map(m, &r))
 			{
-				(mem.*rtx)(off, r, m.bits, m.pitch, plainTEXA);
+				(mem.*rtx)(off, r, m.bits, m.pitch, m_TEXA);
 
 				m_texture->Unmap();
 			}
 			else
 			{
-				(mem.*rtx)(off, r, buff, pitch, plainTEXA);
+				(mem.*rtx)(off, r, buff, pitch, m_TEXA);
 
 				m_texture->Update(r, buff, pitch);
 			}
