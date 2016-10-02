@@ -571,7 +571,7 @@ void GSRendererHW::Draw()
 		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
 
 		// Round 2
-		if (IsMipMapActive() && m_mipmap > 1 && !tex_psm.depth) {
+		if (IsMipMapActive() && m_mipmap == 2 && !tex_psm.depth) {
 			// Upload remaining texture layers
 			GSVector4 tmin = m_vt.m_min.t;
 			GSVector4 tmax = m_vt.m_max.t;
