@@ -747,9 +747,45 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const uint8 wmt = m_context->CLAMP.WMT;
 	bool complex_wms_wmt = !!((wms | wmt) & 2);
 
-	bool mipmap = m_mipmap > 1 && m_context->TEX1.MMIN > 1;
-	bool bilinear = m_filter == 2 ? m_vt.IsLinear() : m_filter != 0;
+	bool need_mipmap = IsMipMapDraw();
 	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
+	bool trilinear_manual = need_mipmap && m_mipmap == 2;
+
+	bool bilinear = false;
+	int trilinear = 0;
+	bool trilinear_auto = false;
+	switch (m_filter) {
+		case 0: // Nearest
+			bilinear = false;
+			break;
+		case 1: // Forced Bilinear
+			bilinear = true;
+			break;
+		case 2: // Bilinear PS2
+			bilinear = m_vt.IsLinear();
+			break;
+		case 3: // Trilinear Forced
+			bilinear = true;
+			trilinear = static_cast<uint8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
+			trilinear_auto = m_mipmap != 2;
+			break;
+		case 4: // Trilinear
+			bilinear = m_vt.IsLinear();
+			if (need_mipmap && m_mipmap != 2) {
+				trilinear = m_context->TEX1.MMIN;
+				trilinear_auto = true;
+			}
+			break;
+		case 5: // Trilinear (forced on linear)
+			bilinear = true;
+			if (need_mipmap && m_mipmap != 2) {
+				trilinear = (m_context->TEX1.MMIN | 4) & 0x5;
+				trilinear_auto = true;
+			}
+		default:
+			break;
+	}
+
 	// Don't force extra filtering on sprite (it creates various upscaling issue)
 	bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
@@ -875,12 +911,14 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	if (complex_wms_wmt) {
 		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 		ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
-	} else if (mipmap) {
+	} else if (trilinear_manual) {
 		// Reuse MinMax for mipmap parameter to avoid an extension of the UBO
 		ps_cb.MinMax.x = (float)m_context->TEX1.K / 16.0f;
 		ps_cb.MinMax.y = float(1 << m_context->TEX1.L);
 		ps_cb.MinMax.z = float(m_lod.x); // Offset because first layer is m_lod, dunno if we can do better
 		ps_cb.MinMax.w = float(m_lod.y);
+	} else if (trilinear_auto) {
+		tex->m_texture->GenerateMipmap();
 	}
 
 	// TC Offset Hack
@@ -898,11 +936,11 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	} else {
 		m_ps_ssel.biln  = bilinear;
 		m_ps_ssel.aniso = 1;
-		if (mipmap) {
-			m_ps_ssel.triln = m_context->TEX1.MMIN;
+		m_ps_ssel.triln = trilinear;
+		if (trilinear_manual) {
 			m_ps_sel.manual_lod = 1;
-		} else {
-			m_ps_ssel.triln = m_context->TEX1.MMIN & 1;
+		} else if (trilinear_auto) {
+			m_ps_sel.automatic_lod = 1;
 		}
 	}
 
