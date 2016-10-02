@@ -318,6 +318,7 @@ extern PFNGLCOPYTEXTURESUBIMAGE2DPROC           glCopyTextureSubImage2D;
 extern PFNGLBINDTEXTUREUNITPROC                 glBindTextureUnit;
 extern PFNGLGETTEXTUREIMAGEPROC                 glGetTextureImage;
 extern PFNGLTEXTUREPARAMETERIPROC               glTextureParameteri;
+extern PFNGLGENERATETEXTUREMIPMAPPROC           glGenerateTextureMipmap;
 
 extern PFNGLCREATEFRAMEBUFFERSPROC              glCreateFramebuffers;
 extern PFNGLCLEARNAMEDFRAMEBUFFERFVPROC         glClearNamedFramebufferfv;
