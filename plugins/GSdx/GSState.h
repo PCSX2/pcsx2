@@ -204,6 +204,7 @@ protected:
 	void GetAlphaMinMax();
 	bool TryAlphaTest(uint32& fm, uint32& zm);
 	bool IsOpaque();
+	bool IsMipMapDraw();
 	bool IsMipMapActive();
 	GIFRegTEX0 GetTex0Layer(int lod);
 

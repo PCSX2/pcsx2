@@ -3183,9 +3183,14 @@ bool GSState::IsOpaque()
 	return context->ALPHA.IsOpaque(amin, amax);
 }
 
+bool GSState::IsMipMapDraw()
+{
+	return m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0;
+}
+
 bool GSState::IsMipMapActive()
 {
-	return m_mipmap && m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0; 
+	return m_mipmap && IsMipMapDraw();
 }
 
 GIFRegTEX0 GSState::GetTex0Layer(int lod)
