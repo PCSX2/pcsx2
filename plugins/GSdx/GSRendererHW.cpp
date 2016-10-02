@@ -31,7 +31,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
 	, m_channel_shuffle(false)
-	, m_double_downscale(false)
 	, m_ATE(false)
 {
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
@@ -454,22 +453,15 @@ void GSRendererHW::Draw()
 		}
 	} else if (draw_sprite_tex && m_context->FRAME.Block() == m_context->TEX0.TBP0) {
 		// Special post-processing effect
-		if (m_vertex.next == 4) {
-			// Note potentially we could also check the content of vertex (2nd
-			// sprite must be half of the first one)
-			GL_INS("Double downscale effect detected");
-			m_double_downscale = true;
-		} else if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
+		if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
 			GL_INS("Channel shuffle effect detected");
 			m_channel_shuffle = true;
 		} else {
 			GL_INS("Special post-processing effect not supported");
 			m_channel_shuffle = false;
-			m_double_downscale = false;
 		}
 	} else {
 		m_channel_shuffle = false;
-		m_double_downscale = false;
 	}
 
 	GIFRegTEX0 TEX0;
