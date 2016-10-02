@@ -139,6 +139,7 @@ PFNGLCOPYTEXTURESUBIMAGE2DPROC         glCopyTextureSubImage2D             = NUL
 PFNGLBINDTEXTUREUNITPROC               glBindTextureUnit                   = NULL;
 PFNGLGETTEXTUREIMAGEPROC               glGetTextureImage                   = NULL;
 PFNGLTEXTUREPARAMETERIPROC             glTextureParameteri                 = NULL;
+PFNGLGENERATETEXTUREMIPMAPPROC         glGenerateTextureMipmap             = NULL;
 
 PFNGLCREATEFRAMEBUFFERSPROC            glCreateFramebuffers                = NULL;
 PFNGLCLEARNAMEDFRAMEBUFFERFVPROC       glClearNamedFramebufferfv           = NULL;

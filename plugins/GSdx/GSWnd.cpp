@@ -146,6 +146,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glBindTextureUnit);
 	GL_EXT_LOAD(glGetTextureImage);
 	GL_EXT_LOAD(glTextureParameteri);
+	GL_EXT_LOAD(glGenerateTextureMipmap);
 
 	GL_EXT_LOAD(glCreateFramebuffers);
 	GL_EXT_LOAD(glClearNamedFramebufferfv);

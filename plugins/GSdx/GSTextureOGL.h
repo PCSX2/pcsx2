@@ -44,6 +44,7 @@ class GSTextureOGL final : public GSTexture
 		int m_pbo_size;
 		GLuint m_fbo_read;
 		bool m_clean;
+		bool m_generate_mipmap;
 
 		uint8* m_local_buffer;
 		// Avoid alignment constrain
@@ -70,6 +71,7 @@ class GSTextureOGL final : public GSTexture
 		bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
 		bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 		void Unmap() final;
+		void GenerateMipmap() final;
 		bool Save(const string& fn, bool dds = false) final;
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
