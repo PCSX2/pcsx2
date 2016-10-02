@@ -209,6 +209,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 	
 	uint vNum	= vB.num ? vB.num : 256;
 	doMode		= (upkNum == 0xf) ? 0 : doMode;		// V4_5 has no mode feature.
+	UnpkNoOfIterations = 0;
 	MSKPATH3_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
 	
 	pxAssume(vCL == 0);
