@@ -493,7 +493,7 @@ void GSRendererHW::Draw()
 	GSTextureCache::Target* rt = NULL;
 	GSTexture* rt_tex = NULL;
 	if (!no_rt) {
-		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true);
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
 		rt_tex = rt->m_texture;
 	}
 
