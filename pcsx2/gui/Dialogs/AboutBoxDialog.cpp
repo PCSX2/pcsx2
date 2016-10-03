@@ -40,7 +40,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	// [TODO] : About box should be upgraded to use scrollable read-only text boxes.
 
 	wxString developsString = wxsFormat(
-		L"avih, Refraction, rama, pseudonym, gregory.hainaut"
+		L"avih, Refraction, rama, pseudonym, gregory.hainaut, turtleli"
 		L"\n\n"
 		L"%s: \n"
 		L"Arcum42, Aumatt, drk||raziel, "
@@ -58,7 +58,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		L"ChickenLiver(Lilypad), Gabest (GSdx, Cdvdolio, Xpad)"
 		L"\n\n"
 		L"%s: \n"
-		L"Ckemu, Prafull, General Plot, KrossX, Devina, ssakash, turtleli, Blyss Sarania, micove, black_wd, Belmont, BGome,"
+		L"Ckemu, Prafull, General Plot, KrossX, Devina, ssakash, FlatOut, Blyss Sarania, micove, black_wd, Belmont, BGome,"
 		L" _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady, F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
 		_("Plugin Specialists"), _("Special thanks to"));
 
