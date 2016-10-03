@@ -829,10 +829,10 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			bilinear &= m_vt.IsLinear();
 		} else if (psm.depth) {
 			// Use Integral scaling
-			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 :
+			m_ps_sel.depth_fmt = 3;
 
-				// Don't force interpolation on depth format
-				bilinear &= m_vt.IsLinear();
+			// Don't force interpolation on depth format
+			bilinear &= m_vt.IsLinear();
 		}
 
 	} else if (tex->m_palette) {
