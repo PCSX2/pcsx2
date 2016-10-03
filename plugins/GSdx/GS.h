@@ -217,6 +217,16 @@ enum GS_AFAIL
 	AFAIL_RGB_ONLY	= 3,
 };
 
+enum class GS_MIN_FILTER : uint8_t
+{
+	Nearest                = 0,
+	Linear                 = 1,
+	Nearest_Mipmap_Nearest = 2,
+	Nearest_Mipmap_Linear  = 3,
+	Linear_Mipmap_Nearest  = 4,
+	Linear_Mipmap_Linear   = 5,
+};
+
 enum class GSRendererType : int8_t
 {
 	Undefined = -1,
