@@ -1288,11 +1288,25 @@ template<int i> void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 
 	m_env.CTXT[i].FRAME = (GSVector4i)r->FRAME;
 
-	// Berserk uses the format to only update the alpha channel
-	if (m_env.CTXT[i].FRAME.PSM == PSM_PSMT8H) {
-		GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
-		m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
-		m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
+	switch (m_env.CTXT[i].FRAME.PSM) {
+		case PSM_PSMT8H:
+			// Berserk uses the format to only update the alpha channel
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
+			break;
+		case PSM_PSMT4HH: // Not tested. Based on PSM_PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HH by PSM_PSMCT32/0x0FFF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0x0FFFFFFF;
+			break;
+		case PSM_PSMT4HL: // Not tested. Based on PSM_PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HL by PSM_PSMCT32/0xF0FF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0xF0FFFFFF;
+			break;
+		default:
+			break;
 	}
 
 #ifdef DISABLE_BITMASKING
@@ -1560,8 +1574,6 @@ void GSState::FlushPrim()
 
 		if(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt < 3 && GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt < 3)
 		{
-			// FIXME: berserk fpsm = 27 (8H)
-
 			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
 			try {
