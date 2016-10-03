@@ -10553,6 +10553,7 @@ Region = PAL-E
 Serial = SLES-51887
 Name   = Tiger Woods PGA Tour 2004
 Region = PAL-E
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLES-51888
 Name   = RTL Skiijumping 2004
@@ -11747,8 +11748,9 @@ Name   = Obscure
 Region = PAL-G
 ---------------------------------------------
 Serial = SLES-52509
-Name   = Tiger Woods PGA Tour Golf 2005
+Name   = Tiger Woods PGA Tour 2005
 Region = PAL-M4
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLES-52510
 Name   = Neo Contra
@@ -14215,8 +14217,9 @@ Region = PAL-M4
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53541
-Name   = Tiger Woods PGA Tour '06
+Name   = Tiger Woods PGA Tour 06
 Region = PAL-M4
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLES-53542
 Name   = Shadow the Hedgehog
@@ -15773,8 +15776,9 @@ Name   = NBA Live '07
 Region = PAL-E-G-I
 ---------------------------------------------
 Serial = SLES-54253
-Name   = Tiger Woods PGA Tour '07
+Name   = Tiger Woods PGA Tour 07
 Region = PAL-E
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLES-54254
 Name   = Evolution GT
@@ -25463,8 +25467,9 @@ Name   = Star Wars Battlefront II
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66191
-Name   = Tiger Woods PGA Tour '06
+Name   = Tiger Woods PGA Tour 06
 Region = NTSC-J
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLPM-66192
 Name   = Izumo 2
@@ -27226,8 +27231,9 @@ Name   = Prince of Persia - Warrior Within [Ubisoft the Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66674
-Name   = Tiger Woods PGA Tour '07
+Name   = Tiger Woods PGA Tour 07
 Region = NTSC-J
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLPM-66675
 Name   = Kingdom Hearts II - Final Mix +
@@ -37179,6 +37185,7 @@ Serial = SLUS-20757
 Name   = Tiger Woods PGA Tour 2004
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-20758
 Name   = Growlanser Generations [Disc1of2]
@@ -38376,6 +38383,7 @@ Serial = SLUS-21002
 Name   = Tiger Woods PGA Tour 2005
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21003
 Name   = NASCAR 2005 - Chase for the Cup
@@ -39662,9 +39670,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21264
-Name   = Tiger Woods PGA Tour 2006
+Name   = Tiger Woods PGA Tour 06
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21265
 Name   = Sims 2, The
@@ -40749,9 +40758,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21483
-Name   = Tiger Woods PGA Tour '07
+Name   = Tiger Woods PGA Tour 07
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21484
 Name   = Flushed Away
@@ -41372,9 +41382,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21646
-Name   = Tiger Woods PGA Tour '08
+Name   = Tiger Woods PGA Tour 08
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21647
 Name   = NHL '08
@@ -41929,9 +41940,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21772
-Name   = Tiger Woods PGA Tour '09
+Name   = Tiger Woods PGA Tour 09
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21773
 Name   = PDC World Championship Darts 2008
@@ -42373,6 +42385,7 @@ Serial = SLUS-21877
 Name   = Tiger Woods PGA Tour 10
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fix black textures on characters
 ---------------------------------------------
 Serial = SLUS-21878
 Name   = Ice Age 3 - Dawn of the Dinosaurs
