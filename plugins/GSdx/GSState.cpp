@@ -1285,8 +1285,15 @@ template<int i> void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(r->FRAME, m_env.CTXT[i].ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(r->FRAME, m_env.CTXT[i].ZBUF);
 	}
-	
+
 	m_env.CTXT[i].FRAME = (GSVector4i)r->FRAME;
+
+	// Berserk uses the format to only update the alpha channel
+	if (m_env.CTXT[i].FRAME.PSM == PSM_PSMT8H) {
+		GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
+		m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+		m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
+	}
 
 #ifdef DISABLE_BITMASKING
 	m_env.CTXT[i].FRAME.FBMSK = GSVector4i::store(GSVector4i::load((int)m_env.CTXT[i].FRAME.FBMSK).eq8(GSVector4i::xffffffff()));
@@ -1569,6 +1576,12 @@ void GSState::FlushPrim()
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
+		}
+		else
+		{
+#ifdef ENABLE_OGL_DEBUG
+			fprintf(stderr, "%d:Skip draw call due to invalid format %x/%x\n", s_n, m_context->FRAME.PSM, m_context->ZBUF.PSM);
+#endif
 		}
 
 		m_index.tail = 0;
