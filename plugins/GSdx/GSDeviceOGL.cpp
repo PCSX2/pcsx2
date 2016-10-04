@@ -20,6 +20,7 @@
  */
 
 #include "stdafx.h"
+#include "GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GSUtil.h"
@@ -45,7 +46,6 @@ static const uint32 g_ps_cb_index         = 21;
 static const uint32 g_gs_cb_index         = 22;
 
 bool  GSDeviceOGL::m_debug_gl_call = false;
-int   GSDeviceOGL::s_n = 0;
 int   GSDeviceOGL::m_shader_inst = 0;
 int   GSDeviceOGL::m_shader_reg  = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
@@ -898,7 +898,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 void GSDeviceOGL::RecycleDateTexture()
 {
 	if (m_date.t) {
-		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", s_n));
+		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", GSState::s_n));
 
 		Recycle(m_date.t);
 		m_date.t = NULL;
@@ -1890,11 +1890,11 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #ifdef _DEBUG
 	// Don't spam noisy information on the terminal
 	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
-		fprintf(stderr,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
+		fprintf(stderr,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 	}
 #else
 	// Print nouveau shader compiler info
-	if (s_n == 0) {
+	if (GSState::s_n == 0) {
 		int t, local, gpr, inst, byte;
 		int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
 				&t, &local, &gpr, &inst, &byte);
@@ -1907,7 +1907,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #endif
 
 	if (m_debug_gl_file)
-		fprintf(m_debug_gl_file,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), s_n, severity.c_str(), message.c_str());
+		fprintf(m_debug_gl_file,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 
 #ifdef _DEBUG
 	if (sev_counter >= 5) {

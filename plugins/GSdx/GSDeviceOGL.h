@@ -395,7 +395,6 @@ public:
 	static const int m_NO_BLEND;
 	static const int m_MERGE_BLEND;
 
-	static int s_n;
 	static int m_shader_inst;
 	static int m_shader_reg;
 

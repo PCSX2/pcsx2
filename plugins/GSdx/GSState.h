@@ -224,7 +224,7 @@ public:
 	bool m_nativeres;
 	bool m_mipmap;
 
-	int s_n;
+	static int s_n;
 	bool s_dump;
 	bool s_save;
 	bool s_savet;

@@ -27,6 +27,8 @@ extern int g_crc_hack_level;
 
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
+int GSState::s_n = 0;
+
 GSState::GSState()
 	: m_version(6)
 	, m_mt(false)
@@ -49,7 +51,7 @@ GSState::GSState()
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
 	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
 
-	s_n     = 0;
+	s_n = 0;
 	s_dump  = theApp.GetConfigB("dump");
 	s_save  = theApp.GetConfigB("save");
 	s_savet = theApp.GetConfigB("savet");
