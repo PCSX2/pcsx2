@@ -102,9 +102,6 @@ const char* dialog_message(int ID, bool* updateText) {
 				"High:\nExtend it to destination alpha blending and color wrapping. (help shadow and fog effect). A good CPU is required.\n\n"
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug.\n\n"
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug.";
-		case IDC_SAFE_FBMASK:
-			return "By default, accurate blending relies on undefined hardware behavior to be fast.\n"
-				"This option enables a slower but safer behavior if anyone encounters an issue.\n";
 		case IDC_TC_DEPTH:
 			return "Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.";

@@ -37,7 +37,6 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCOffset       = theApp.GetConfigI("UserHacks_TCOffset");
 	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
-	UserHacks_safe_fbmask    = theApp.GetConfigB("UserHacks_safe_fbmask");
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
 
@@ -48,7 +47,6 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCOffset       = 0;
 		UserHacks_TCO_x          = 0;
 		UserHacks_TCO_y          = 0;
-		UserHacks_safe_fbmask    = false;
 		UserHacks_merge_sprite   = false;
 		UserHacks_unscale_pt_ln  = false;
 	}
@@ -455,7 +453,8 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 			   TextureBarrier() will guarantee that writes have completed and caches
 			   have been invalidated before subsequent Draws are executed.
 			 */
-			if (!(~ff_fbmask & ~zero_fbmask & 0x7) && !UserHacks_safe_fbmask) {
+			// Safe option was removed. Likely nobody never use it. Keep the code commented if it becomes useful one day
+			if (!(~ff_fbmask & ~zero_fbmask & 0x7) /*&& !UserHacks_safe_fbmask*/) {
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
 				m_require_one_barrier = true;

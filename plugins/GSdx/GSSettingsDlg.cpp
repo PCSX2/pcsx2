@@ -667,7 +667,6 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfigB("UserHacks_AlphaStencil"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfigB("UserHacks_align_sprite_X"));
-	CheckDlgButton(m_hWnd, IDC_SAFE_FBMASK, theApp.GetConfigB("UserHacks_safe_fbmask"));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfigB("UserHacks_DisableDepthSupport"));
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
@@ -687,7 +686,6 @@ void GSHacksDlg::OnInit()
 
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
-	ShowWindow(GetDlgItem(m_hWnd, IDC_SAFE_FBMASK), ogl ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
@@ -715,7 +713,6 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_TCOFFSETY);
 	AddTooltip(IDC_TCOFFSETY2);
 	AddTooltip(IDC_PRELOAD_GS);
-	AddTooltip(IDC_SAFE_FBMASK);
 	AddTooltip(IDC_TC_DEPTH);
 	AddTooltip(IDC_FAST_TC_INV);
 	AddTooltip(IDC_AUTO_FLUSH);
@@ -754,7 +751,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("Userhacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
-			theApp.SetConfig("UserHacks_safe_fbmask", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FBMASK));
 			theApp.SetConfig("UserHacks_DisableDepthSupport", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
 			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH));
