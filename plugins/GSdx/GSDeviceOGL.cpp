@@ -1871,7 +1871,11 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		case GL_DEBUG_SEVERITY_HIGH_ARB   : severity = "High"; sev_counter++; break;
 		case GL_DEBUG_SEVERITY_MEDIUM_ARB : severity = "Mid"; break;
 		case GL_DEBUG_SEVERITY_LOW_ARB    : severity = "Low"; break;
-		default                           : severity = "Info"; break;
+		default                           : if (id == 0xFEAD)
+												severity = "Cache";
+											else if (id == 0xB0B0)
+												severity = "REG";
+											break;
 	}
 	switch(gl_source) {
 		case GL_DEBUG_SOURCE_API_ARB             : source = "API"; break;

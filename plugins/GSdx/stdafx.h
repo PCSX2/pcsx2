@@ -427,6 +427,12 @@ extern void vmfree(void* ptr, size_t size);
 #define GL_CACHE(...) (0);
 #endif
 
+#if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
+#define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_REG(...) (0);
+#endif
+
 #if defined(ENABLE_OGL_DEBUG)
 struct GLAutoPop {
 	~GLAutoPop() {
