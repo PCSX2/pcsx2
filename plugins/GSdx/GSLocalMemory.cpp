@@ -1657,6 +1657,21 @@ void GSLocalMemory::ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i
 
 void GSLocalMemory::ReadTextureGPU24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
+	FOREACH_BLOCK_START(r, 16, 8, 16)
+	{
+		GSBlock::ReadBlock16(src, read_dst, dstpitch);
+	}
+	FOREACH_BLOCK_END
+
+	// Convert packed RGB scanline to 32 bits RGBA
+	ASSERT(dstpitch >= r.width() * 4);
+	for(int y = r.top; y < r.bottom; y ++) {
+		uint8* line = dst + y * dstpitch;
+
+		for(int x = r.right; x >= r.left; x--) {
+			*(uint32*)&line[x * 4] = *(uint32*)&line[x * 3] & 0xFFFFFF;
+		}
+	}
 }
 
 void GSLocalMemory::ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)

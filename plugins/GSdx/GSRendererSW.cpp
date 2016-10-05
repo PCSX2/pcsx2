@@ -252,13 +252,6 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 	GSRegDISPFB DISPFB = m_regs->DISP[i].DISPFB;
 
-#if 1
-	// Hack for PSX until we find the correct way to decode it
-	if (DISPFB.PSM == 18) {
-		DISPFB.PSM = PSM_PSMCT16;
-	}
-#endif
-
 	int w = DISPFB.FBW * 64;
 	int h = GetFrameRect(i).bottom;
 
