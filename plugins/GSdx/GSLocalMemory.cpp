@@ -225,6 +225,7 @@ GSLocalMemory::GSLocalMemory()
 		m_psm[i].depth = 0;
 	}
 
+	m_psm[PSM_PSGPU24].pa = &GSLocalMemory::PixelAddress16;
 	m_psm[PSM_PSMCT16].pa = &GSLocalMemory::PixelAddress16;
 	m_psm[PSM_PSMCT16S].pa = &GSLocalMemory::PixelAddress16S;
 	m_psm[PSM_PSMT8].pa = &GSLocalMemory::PixelAddress8;
@@ -234,6 +235,7 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMZ16].pa = &GSLocalMemory::PixelAddress16Z;
 	m_psm[PSM_PSMZ16S].pa = &GSLocalMemory::PixelAddress16SZ;
 
+	m_psm[PSM_PSGPU24].bn = &GSLocalMemory::BlockNumber16;
 	m_psm[PSM_PSMCT16].bn = &GSLocalMemory::BlockNumber16;
 	m_psm[PSM_PSMCT16S].bn = &GSLocalMemory::BlockNumber16S;
 	m_psm[PSM_PSMT8].bn = &GSLocalMemory::BlockNumber8;
@@ -343,6 +345,7 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMZ16S].wi = &GSLocalMemory::WriteImage<PSM_PSMZ16S, 16, 8, 16>;
 
 	m_psm[PSM_PSMCT24].rtx = &GSLocalMemory::ReadTexture24;
+	m_psm[PSM_PSGPU24].rtx = &GSLocalMemory::ReadTextureGPU24;
 	m_psm[PSM_PSMCT16].rtx = &GSLocalMemory::ReadTexture16;
 	m_psm[PSM_PSMCT16S].rtx = &GSLocalMemory::ReadTexture16;
 	m_psm[PSM_PSMT8].rtx = &GSLocalMemory::ReadTexture8;
@@ -394,12 +397,14 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMZ16].rtxbP = &GSLocalMemory::ReadTextureBlock16;
 	m_psm[PSM_PSMZ16S].rtxbP = &GSLocalMemory::ReadTextureBlock16;
 
+	m_psm[PSM_PSGPU24].bpp = 16;
 	m_psm[PSM_PSMCT16].bpp = m_psm[PSM_PSMCT16S].bpp = 16;
 	m_psm[PSM_PSMT8].bpp = 8;
 	m_psm[PSM_PSMT4].bpp = 4;
 	m_psm[PSM_PSMZ16].bpp = m_psm[PSM_PSMZ16S].bpp = 16;
 
 	m_psm[PSM_PSMCT24].trbpp = 24;
+	m_psm[PSM_PSGPU24].trbpp = 16;
 	m_psm[PSM_PSMCT16].trbpp = m_psm[PSM_PSMCT16S].trbpp = 16;
 	m_psm[PSM_PSMT8].trbpp = m_psm[PSM_PSMT8H].trbpp = 8;
 	m_psm[PSM_PSMT4].trbpp = m_psm[PSM_PSMT4HL].trbpp = m_psm[PSM_PSMT4HH].trbpp = 4;
@@ -415,16 +420,20 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMCT16].fmt = m_psm[PSM_PSMZ16].fmt = 2;
 	m_psm[PSM_PSMCT16S].fmt = m_psm[PSM_PSMZ16S].fmt = 2;
 
+
+	m_psm[PSM_PSGPU24].bs = GSVector2i(16, 8);
 	m_psm[PSM_PSMCT16].bs = m_psm[PSM_PSMCT16S].bs = GSVector2i(16, 8);
 	m_psm[PSM_PSMT8].bs = GSVector2i(16, 16);
 	m_psm[PSM_PSMT4].bs = GSVector2i(32, 16);
 	m_psm[PSM_PSMZ16].bs = m_psm[PSM_PSMZ16S].bs = GSVector2i(16, 8);
 
+	m_psm[PSM_PSGPU24].pgs = GSVector2i(64, 64);
 	m_psm[PSM_PSMCT16].pgs = m_psm[PSM_PSMCT16S].pgs = GSVector2i(64, 64);
 	m_psm[PSM_PSMT8].pgs = GSVector2i(128, 64);
 	m_psm[PSM_PSMT4].pgs = GSVector2i(128, 128);
 	m_psm[PSM_PSMZ16].pgs = m_psm[PSM_PSMZ16S].pgs = GSVector2i(64, 64);
 
+	for(int i = 0; i < 8; i++) m_psm[PSM_PSGPU24].rowOffset[i] = rowOffset16;
 	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16].rowOffset[i] = rowOffset16;
 	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16S].rowOffset[i] = rowOffset16S;
 	for(int i = 0; i < 8; i++) m_psm[PSM_PSMT8].rowOffset[i] = rowOffset8[((i + 2) >> 2) & 1];
@@ -434,6 +443,7 @@ GSLocalMemory::GSLocalMemory()
 	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16].rowOffset[i] = rowOffset16Z;
 	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16S].rowOffset[i] = rowOffset16SZ;
 
+	m_psm[PSM_PSGPU24].blockOffset = blockOffset16;
 	m_psm[PSM_PSMCT16].blockOffset = blockOffset16;
 	m_psm[PSM_PSMCT16S].blockOffset = blockOffset16S;
 	m_psm[PSM_PSMT8].blockOffset = blockOffset8;
@@ -1643,6 +1653,10 @@ void GSLocalMemory::ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i
 		}
 		FOREACH_BLOCK_END
 	}
+}
+
+void GSLocalMemory::ReadTextureGPU24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+{
 }
 
 void GSLocalMemory::ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)

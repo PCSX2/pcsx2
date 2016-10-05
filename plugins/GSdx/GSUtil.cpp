@@ -463,6 +463,8 @@ const char* psm_str(int psm)
 		case PSM_PSMZ16:   return "Z_16";
 		case PSM_PSMZ16S:  return "Z_16S";
 
+		case PSM_PSGPU24:     return "PS24";
+
 		default:break;
 	}
 	return "BAD_PSM";
