@@ -153,7 +153,6 @@ protected:
 	int m_userhacks_round_sprite_offset;
 
 	bool m_channel_shuffle;
-	bool m_ATE;
 
 public:
 	GSRendererHW(GSTextureCache* tc);
