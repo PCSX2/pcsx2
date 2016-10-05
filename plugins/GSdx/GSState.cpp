@@ -1510,7 +1510,7 @@ void GSState::FlushPrim()
 {
 	if(m_index.tail > 0)
 	{
-		GL_REG("FlushPrim");
+		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
 
 		GSVertex buff[2];
 		s_n++;

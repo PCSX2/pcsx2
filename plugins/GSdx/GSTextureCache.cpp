@@ -333,9 +333,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		src = CreateSource(TEX0, TEXA, dst, half_right);
 
 	} else {
-		GL_CACHE("TC: src hit: %d (0x%x, %s)",
+		GL_CACHE("TC: src hit: %d (0x%x, 0x%x, %s)",
 					src->m_texture ? src->m_texture->GetID() : 0,
-					TEX0.TBP0, psm_str(TEX0.PSM));
+					TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0,
+					psm_str(TEX0.PSM));
 	}
 
 	if (src->m_palette)
