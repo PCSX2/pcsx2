@@ -36,12 +36,14 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_preload_frame                = theApp.GetConfigB("preload_frame_with_gs_data");
 		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
 		m_can_convert_depth            = !theApp.GetConfigB("UserHacks_DisableDepthSupport");
+		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
 	} else {
 		m_spritehack                   = 0;
 		UserHacks_HalfPixelOffset      = false;
 		m_preload_frame                = false;
 		m_disable_partial_invalidation = false;
 		m_can_convert_depth            = true;
+		m_texture_inside_rt            = false;
 	}
 
 	m_paltex = theApp.GetConfigB("paltex");
@@ -219,6 +221,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	Target* dst = NULL;
 	bool half_right = false;
+	int x_offset = 0;
+	int y_offset = 0;
 
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if( 0 )
@@ -228,6 +232,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 		uint32 bp = TEX0.TBP0;
 		uint32 psm = TEX0.PSM;
+
+		uint32 bw = TEX0.TBW;
+		int tw = 1 << TEX0.TW;
+		int th = 1 << TEX0.TH;
+		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw);
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -280,8 +289,45 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					dst = t;
 
 					break;
-				}
+				} else if (m_texture_inside_rt && psm == PSM_PSMCT32 && bw == 1 && bp_end < t->m_end_block && t->m_TEX0.TBP0 < bp) {
+					// Note bw == 1 until we find a generic formulae below
+					dst = t;
 
+					uint32 delta = bp - t->m_TEX0.TBP0;
+					uint32 delta_p = delta / 32;
+					uint32 delta_b = delta % 32;
+
+					// FIXME
+					x_offset = (delta_p % bw) * psm_s.pgs.x;
+					y_offset = (delta_p / bw) * psm_s.pgs.y;
+
+					static int block32_offset_x[32] = {
+						0, 1, 0, 1,
+						2, 3, 2, 3,
+						0, 1, 0, 1,
+						2, 3, 2, 3,
+						4, 5, 4, 5,
+						6, 7, 6, 7,
+						4, 5, 4, 5,
+						6, 7, 6, 7,
+					};
+
+					static int block32_offset_y[32] = {
+						0, 0, 1, 1,
+						0, 0, 1, 1,
+						2, 2, 3, 3,
+						2, 2, 3, 3,
+						0, 0, 1, 1,
+						0, 0, 1, 1,
+						2, 2, 3, 3,
+						2, 2, 3, 3,
+					};
+
+					x_offset += block32_offset_x[delta_b] * psm_s.bs.x;
+					y_offset += block32_offset_y[delta_b] * psm_s.bs.y;
+
+					GL_INS("WARNING middle of framebuffer 0x%x => 0x%x. Offset %d,%d", t->m_TEX0.TBP0, t->m_end_block, x_offset, y_offset);
+				}
 			}
 		}
 
@@ -330,7 +376,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst, half_right);
+		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset);
 
 	} else {
 		GL_CACHE("TC: src hit: %d (0x%x, 0x%x, %s)",
@@ -1055,7 +1101,7 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
@@ -1077,7 +1123,27 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	else
 		src->m_spritehack_t = false;
 
-	if (dst)
+	if (dst && (x_offset != 0 || y_offset != 0))
+	{
+		GSVector2 scale = dst->m_texture->GetScale();
+		int x = (int)(scale.x * x_offset);
+		int y = (int)(scale.y * y_offset);
+		int w = (int)(scale.x * tw);
+		int h = (int)(scale.y * th);
+
+		GSTexture* sTex = dst->m_texture;
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h, false);
+
+		GSVector4i area(x, y, x + w, y + h);
+		m_renderer->m_dev->CopyRect(sTex, dTex, area);
+
+		// Keep a trace of origin of the texture
+		src->m_texture = dTex;
+		src->m_target = true;
+		src->m_from_target = dst->m_texture;
+		src->m_texture->SetScale(scale);
+	}
+	else if (dst)
 	{
 		// TODO: clean up this mess
 
