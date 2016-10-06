@@ -250,7 +250,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 {
 	Sync(1);
 
-	GSRegDISPFB DISPFB = m_regs->DISP[i].DISPFB;
+	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 
 	int w = DISPFB.FBW * 64;
 	int h = GetFrameRect(i).bottom;
