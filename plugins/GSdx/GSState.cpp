@@ -50,6 +50,7 @@ GSState::GSState()
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
 	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
+	m_clut_load_before_draw = theApp.GetConfigB("clut_load_before_draw");
 
 	s_n = 0;
 	s_dump  = theApp.GetConfigB("dump");
@@ -1511,6 +1512,15 @@ void GSState::FlushPrim()
 	if(m_index.tail > 0)
 	{
 		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
+
+		// Some games (Harley Davidson/Virtua Fighter) do dirty trick with multiple contexts cluts
+		// In doubt, always reload the clut before a draw.
+		// Note: perf impact is likely slow enough as WriteTest will likely be false.
+		if (m_clut_load_before_draw) {
+			if (m_mem.m_clut.WriteTest(m_context->TEX0, m_env.TEXCLUT)) {
+				m_mem.m_clut.Write(m_context->TEX0, m_env.TEXCLUT);
+			}
+		}
 
 		GSVertex buff[2];
 		s_n++;
