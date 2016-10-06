@@ -293,8 +293,10 @@ public:
 				uint32 urban_chaos_hle:1;
 				uint32 tales_of_abyss_hle:1;
 				uint32 tex_is_fb:1; // Jak Shadows
+				uint32 automatic_lod:1;
+				uint32 manual_lod:1;
 
-				uint32 _free2:13;
+				uint32 _free2:11;
 			};
 
 			uint64 key;
