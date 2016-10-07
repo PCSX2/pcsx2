@@ -517,7 +517,7 @@ void  cdrReadInterrupt() {
 
 	if (cdr.RErr == -1)
 	{
-		CDVD_LOG(" err\n");
+		DevCon.Warning("CD err");
 		memzero(cdr.Transfer);
 		cdr.Stat = DiskError;
 		cdr.Result[0] |= 0x01;
@@ -544,12 +544,13 @@ void  cdrReadInterrupt() {
 	cdr.Readed = 0;
 
 	if ((cdr.Transfer[4+2] & 0x80) && (cdr.Mode & 0x2)) { // EOF
-		CDVD_LOG("AutoPausing Read");
+		DevCon.Warning("CD AutoPausing Read");
 		AddIrqQueue(CdlPause, 0x800);
 	}
 	else {
 		ReadTrack();
-		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
+		// psxmode: extra delays | remove once dma is stable (fixes "dma3 not ready" and mdec glitches)
+		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) * 3 : cdReadTime * 3);
 	}
 
 	psxHu32(0x1070)|= 0x4;
