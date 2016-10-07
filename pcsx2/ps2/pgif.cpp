@@ -1040,13 +1040,17 @@ void kernelTTYFileDescrWrite(u32 mem, u32 data)
 
         strcat(strb, stra);
         if ((stra[strlen(stra) - 1] == 0xA) || (stra[strlen(stra) - 1] == 0xD) || (stra[strlen(stra) - 2] == 0xA) || (stra[strlen(stra) - 2] == 0xD)) {
-            Console.WriteLn(">%s<", strb);
-           /* if (strcmp(strb, "VSync") == 0)
-                flgint ^= 1;
-            if (strncmp(strb, "Execute", 5) == 0) {
-                Console.WriteLn(" ###EXecute was just printed####");
-                doAnyIopLs = 1;
-            }*/
+			// VSync: timeout is spammy
+			if (strncmp(strb, "VSync: timeout", 14) != 0) {
+
+				Console.WriteLn("%s", strb);
+				/* if (strcmp(strb, "VSync") == 0)
+					 flgint ^= 1;
+				 if (strncmp(strb, "Execute", 5) == 0) {
+					 Console.WriteLn(" ###EXecute was just printed####");
+					 doAnyIopLs = 1;
+				 }*/
+			}
             strb[0] = 0;
         }
     }
