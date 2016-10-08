@@ -1244,6 +1244,10 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
+#ifdef ENABLE_OGL_DEBUG
+	PSSetShaderResource(6, sTex);
+#endif
+
 	glCopyImageSubData( sid, GL_TEXTURE_2D,
 			0, r.x, r.y, 0,
 			did, GL_TEXTURE_2D,
