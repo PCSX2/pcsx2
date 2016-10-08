@@ -625,6 +625,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 
+		float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
+		GSVector2 scale_factor(multiplier, multiplier);
+		if(scale_factor.x && scale_factor.y)
+			dst->m_texture->SetScale(scale_factor);
+
 		m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
 
 		if (m_preload_frame) {
