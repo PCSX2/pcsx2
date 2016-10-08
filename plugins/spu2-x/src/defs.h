@@ -28,7 +28,6 @@
 
 extern s16*	GetMemPtr(u32 addr);
 extern s16	spu2M_Read( u32 addr );
-extern s16	spu2M_ReadPSX(u32 addr);
 extern void	spu2M_Write( u32 addr, s16 value );
 extern void	spu2M_Write( u32 addr, u16 value );
 
@@ -155,10 +154,6 @@ struct V_Voice
 	s32 Prev1;
 	s32 Prev2;
 
-	// psx caches
-	u16 psxPitch;
-	u16 psxLoopStartA;
-	u16 psxStartA;
 	// Pitch Modulated by previous voice
 	bool Modulated;
 	// Source (Wave/Noise)
@@ -447,12 +442,8 @@ struct V_Core
 	u32				KeyOn; // not the KON register (though maybe it is)
 
 	// psxmode caches
-	u16				psxIRQA;
-	u16				psxTSA;
-	u16				psxSPUCNT;
 	u16				psxSoundDataTransferControl;
 	u16				psxSPUSTAT;
-	u16				psxReverbStartA;
 
 
 	StereoOut32 downbuf[8];
@@ -519,23 +510,10 @@ struct V_Core
 		return ret;
 	}
 
-	__forceinline u16 DmaReadPSX()
-	{
-		const u16 ret = (u16)spu2M_ReadPSX(TSA);
-		++TSA; TSA &= 0x7ffff;
-		return ret;
-	}
-
 	__forceinline void DmaWrite(u16 value)
 	{
 		spu2M_Write( TSA, value );
 		++TSA; TSA &= 0xfffff;
-	}
-
-	__forceinline void DmaWritePSX(u16 value)
-	{
-		spu2M_Write(TSA, value);
-		++TSA; TSA &= 0x7ffff;
 	}
 
 	void LogAutoDMA( FILE* fp );

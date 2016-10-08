@@ -44,6 +44,7 @@ bool has_to_call_irq=false;
 
 bool psxmode = false;
 
+#define PSXUNLIKELYHACKS 1
 void SetIrqCall(int core)
 {
 	// reset by an irq disable/enable cycle, behaviour found by
@@ -67,11 +68,6 @@ __forceinline s16* GetMemPtr(u32 addr)
 __forceinline s16 spu2M_Read( u32 addr )
 {
 	return *GetMemPtr( addr & 0xfffff );
-}
-
-__forceinline s16 spu2M_ReadPSX(u32 addr)
-{
-	return *GetMemPtr(addr & 0x7ffff);
 }
 
 // writes a signed value to the SPU2 ram
@@ -409,7 +405,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 			Cores[0].DMAICounter-=TickInterval;
 			if(Cores[0].DMAICounter<=0)
 			{
-				ConLog("counter set and callback!\n");
+				//ConLog("counter set and callback!\n");
 				Cores[0].MADR=Cores[0].TADR;
 				Cores[0].DMAICounter=0;
 				if(dma4callback) dma4callback();
@@ -519,6 +515,17 @@ static __forceinline u16 GetLoWord(u32& src)
 	return ((u16*)&src)[0];
 }
 
+static u32 map_spu1to2(u32 addr)
+{
+	return addr * 4 + (addr >= 0x100 ? 0xc0000 : 0);
+}
+
+static u32 map_spu2to1(u32 addr)
+{
+	// if (addr >= 0x800 && addr < 0x80000) oh dear
+	return (addr - (addr >= 0xc0000 ? 0xc0000 : 0)) / 4;
+}
+
 void V_Core::WriteRegPS1( u32 mem, u16 value )
 {
 	pxAssume( Index == 0 );		// Valid on Core 0 only!
@@ -535,33 +542,9 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		switch(vval)
 		{
 			case 0x0: //VOLL (Volume L)
-			{
-				V_VolumeSlide& thisvol = Voices[voice].Volume.Left;
-				thisvol.Reg_VOL = value;
-
-				if (value & 0x8000)		// +Lin/-Lin/+Exp/-Exp
-				{
-					thisvol.Mode = (value & 0xF000) >> 12;
-					thisvol.Increment = (value & 0x7F);
-					// We're not sure slides work 100%
-					if (IsDevBuild) ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
-				}
-				else
-				{
-					// Constant Volume mode (no slides or envelopes)
-					// Volumes range from 0x3fff to 0x7fff, with 0x4000 serving as
-					// the "sign" bit, so a simple bitwise extension will do the trick:
-
-					thisvol.RegSet(value << 1);
-					thisvol.Mode = 0;
-					thisvol.Increment = 0;
-				}
-				ConLog("voice %x VOLL write: %x\n", voice, value);
-				break;
-			}
 			case 0x2: //VOLR (Volume R)
 			{
-				V_VolumeSlide& thisvol = Voices[voice].Volume.Right;
+				V_VolumeSlide& thisvol = vval == 0 ? Voices[voice].Volume.Left : Voices[voice].Volume.Right;
 				thisvol.Reg_VOL = value;
 
 				if (value & 0x8000)		// +Lin/-Lin/+Exp/-Exp
@@ -581,7 +564,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 					thisvol.Mode = 0;
 					thisvol.Increment = 0;
 				}
-				ConLog("voice %x VOLR write: %x\n", voice, value);
+				//ConLog("voice %x VOL%c write: %x\n", voice, vval == 0 ? 'L' : 'R', value);
 				break;
 			}
 			case 0x4:
@@ -590,8 +573,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 				//ConLog("voice %x Pitch write: %x\n", voice, Voices[voice].Pitch);
 				break;
 			case 0x6:
-				Voices[voice].StartA = value * 8;
-				Voices[voice].psxStartA = value;
+				Voices[voice].StartA = map_spu1to2(value);
 				//ConLog("voice %x StartA write: %x\n", voice, Voices[voice].StartA);
 				break;
 
@@ -606,12 +588,11 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 			break;
 			case 0xc: // Voice 0..23 ADSR Current Volume
 				// not commonly set by games
-				Voices[voice].ADSR.Value = (value << 16) | value;
+				Voices[voice].ADSR.Value = value * 0x10001U;
 				ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
 			break;
 			case 0xe:
-				Voices[voice].LoopStartA = value * 8;
-				Voices[voice].psxLoopStartA = value;
+				Voices[voice].LoopStartA = map_spu1to2(value);
 				//ConLog("voice %x LoopStartA write: %x\n", voice, Voices[voice].LoopStartA);
 			break;
 
@@ -713,89 +694,87 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 
 		case 0x1da2://         Reverb work area start
 		{
-			EffectsStartA = value * 8;
-			EffectsEndA = 0x7FFFF; // fixed EndA in psx mode
-			psxReverbStartA = value;
+			EffectsStartA = map_spu1to2(value);
+			EffectsEndA = 0xFFFFF; // fixed EndA in psx mode
 			Cores[0].RevBuffers.NeedsUpdated = true;
 		}
 		break;
 
 		case 0x1da4:
-			IRQA = value * 8;
-			psxIRQA = value;
-			ConLog("SPU2-X Setting IRQA to %x \n", IRQA);
+			IRQA = map_spu1to2(value);
+			//ConLog("SPU2-X Setting IRQA to %x \n", IRQA);
 		break;
 
 		case 0x1da6:
-			TSA = value * 8;
-			psxTSA = value;
-			ConLog("SPU2-X Setting TSA to %x \n", TSA);
+			TSA = map_spu1to2(value);
+			//ConLog("SPU2-X Setting TSA to %x \n", TSA);
 		break;
 
 		case 0x1da8: // Spu Write to Memory
-			ConLog("SPU direct DMA Write. Current TSA = %x\n", TSA);
+			//ConLog("SPU direct DMA Write. Current TSA = %x\n", TSA);
 			if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].TSA))
 			{
 				SetIrqCall(0);
 				_irqcallback();
 			}
-			DmaWritePSX(value);
-			//DmaWrite(value);
+			DmaWrite(value);
 			show = false;
 		break;
 
 		case 0x1daa:
 		{
-			psxSPUCNT = value;
-			ConLog("SPU Control register write with %x\n", value);
-			bool irqe = Cores[0].IRQEnable;
-			int bit0 = Cores[0].AttrBit0;
-			bool fxenable = Cores[0].FxEnable;
-			u8 oldDmaMode = Cores[0].DmaMode;
+			V_Core& thiscore = Cores[0];
+			bool irqe = thiscore.IRQEnable;
+			int bit0 = thiscore.AttrBit0;
+			bool fxenable = thiscore.FxEnable;
+			u8 oldDmaMode = thiscore.DmaMode;
 
-			Cores[0].AttrBit0 = (value >> 0) & 0x01; //1 bit
-			Cores[0].DMABits = (value >> 1) & 0x07; //3 bits
-			Cores[0].DmaMode = (value >> 4) & 0x03; //2 bit (not necessary, we get the direction from the iop)
-			Cores[0].IRQEnable = (value >> 6) & 0x01; //1 bit
-			Cores[0].FxEnable = (value >> 7) & 0x01; //1 bit
-			Cores[0].NoiseClk = (value >> 8) & 0x3f; //6 bits
+			thiscore.AttrBit0 = (value >> 0) & 0x01; //1 bit
+			thiscore.DMABits = (value >> 1) & 0x07; //3 bits
+			thiscore.DmaMode = (value >> 4) & 0x03; //2 bit (not necessary, we get the direction from the iop)
+			thiscore.IRQEnable = (value >> 6) & 0x01; //1 bit
+			thiscore.FxEnable = (value >> 7) & 0x01; //1 bit
+			thiscore.NoiseClk = (value >> 8) & 0x3f; //6 bits
 													 //thiscore.Mute		=(value>>14) & 0x01; //1 bit
-			Cores[0].Mute = 0;
+			thiscore.Mute = 0;
 			//thiscore.CoreEnabled=(value>>15) & 0x01; //1 bit
 			// no clue
 			if (value >> 15)
-				Cores[0].Regs.STATX = 0;
-			Cores[0].Regs.ATTR = value & 0x7fff;
+				thiscore.Regs.STATX = 0;
+			thiscore.Regs.ATTR = value & 0x7fff;
 
-			if (fxenable && !Cores[0].FxEnable)
+			if (fxenable && !thiscore.FxEnable
+				&& (thiscore.EffectsStartA != thiscore.ExtEffectsStartA
+					|| thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
 			{
-				Cores[0].ReverbX = 0;
-				Cores[0].RevBuffers.NeedsUpdated = true;
+				thiscore.EffectsStartA = thiscore.ExtEffectsStartA;
+				thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
+				thiscore.ReverbX = 0;
+				thiscore.RevBuffers.NeedsUpdated = true;
 			}
 
-			if (oldDmaMode != Cores[0].DmaMode)
+			if (oldDmaMode != thiscore.DmaMode)
 			{
 				// FIXME... maybe: if this mode was cleared in the middle of a DMA, should we interrupt it?
-				ConLog("* SPU2-X: DMA mode changed. oldDmaMode = %x , newDmaMode = %x \n", oldDmaMode,Cores[0].DmaMode);
-				Cores[0].Regs.STATX &= ~0x400; // ready to transfer
+				thiscore.Regs.STATX &= ~0x400; // ready to transfer
 			}
 
 			if (value & 0x000E)
 			{
-				if (MsgToConsole()) ConLog("* SPU2-X: Core 0 ATTR unknown bits SET! value=%x\n", value);
+				if (MsgToConsole()) ConLog("* SPU2-X: Core 0 ATTR unknown bits SET! value=%04x\n", value);
 			}
 
-			if (Cores[0].AttrBit0 != bit0)
+			if (thiscore.AttrBit0 != bit0)
 			{
-				if (MsgToConsole()) ConLog("* SPU2-X: ATTR bit 0 set to %d\n", Cores[0].AttrBit0);
+				if (MsgToConsole()) ConLog("* SPU2-X: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
 			}
-			if (Cores[0].IRQEnable != irqe)
+			if (thiscore.IRQEnable != irqe)
 			{
-				ConLog("* SPU2-X: write reg psx Core%d IRQ %s at cycle %d. Current IRQA = %x Current TSA = %x\n",
-					0, ((Cores[0].IRQEnable==0)?"disabled":"enabled"), Cycles, Cores[0].IRQA, Cores[0].TSA);
+				//ConLog("* SPU2-X: Core%d IRQ %s at cycle %d. Current IRQA = %x Current EffectA = %x\n",
+				//	core, ((thiscore.IRQEnable==0)?"disabled":"enabled"), Cycles, thiscore.IRQA, thiscore.EffectsStartA);
 
-				if (!Cores[0].IRQEnable)
-					Spdif.Info &= ~(4 << Cores[0].Index);
+				if (!thiscore.IRQEnable)
+					Spdif.Info &= ~(4 << thiscore.Index);
 			}
 		}
 		break;
@@ -869,7 +848,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				//ConLog("voice %d read pitch result = %x\n", voice, value);
 				break;
 			case 0x6:
-				value = Voices[voice].psxStartA;
+				value = map_spu2to1(Voices[voice].StartA);
 				//ConLog("voice %d read StartA result = %x\n", voice, value);
 				break;
 			case 0x8:
@@ -883,7 +862,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				//if (value != 0) ConLog("voice %d read ADSR.Value result = %x\n", voice, value);
 				break;
 			case 0xe:
-				value = Voices[voice].psxLoopStartA;
+				value = map_spu2to1(Voices[voice].LoopStartA);
 				//ConLog("voice %d read LoopStartA result = %x\n", voice, value);
 				break;
 
@@ -916,32 +895,30 @@ u16 V_Core::ReadRegPS1(u32 mem)
 		case 0x1d9e: value = Regs.ENDX >> 16;
 
 		case 0x1da2:
-			value = psxReverbStartA;
+			value = map_spu2to1(EffectsStartA);
 			break;
 		case 0x1da4:
-			value = psxIRQA;
-			ConLog("SPU2-X IRQA read: 0x1da4 = %x , (IRQA = %x)\n", value, IRQA);
+			value = map_spu2to1(IRQA);
+			//ConLog("SPU2-X IRQA read: 0x1da4 = %x , (IRQA = %x)\n", value, IRQA);
 			break;
 		case 0x1da6:
-			value = psxTSA;
-			ConLog("SPU2-X TSA read: 0x1da6 = %x , (TSA = %x)\n", value, TSA);
+			value = map_spu2to1(TSA);
+			//ConLog("SPU2-X TSA read: 0x1da6 = %x , (TSA = %x)\n", value, TSA);
 			break;
 		case 0x1da8:
 			value = DmaRead();
 			show=false;
 			break;
 		case 0x1daa:
-			//value = psxSPUCNT;
 			value = Cores[0].Regs.ATTR;
-			ConLog("SPU2-X ps1 reg psxSPUCNT read return value: %x\n", value);
+			//ConLog("SPU2-X ps1 reg psxSPUCNT read return value: %x\n", value);
 			break;
 		case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
 			value = psxSoundDataTransferControl;
 			break;
 		case 0x1dae:
-			value = Regs.STATX;
-			//value = Cores[0].Regs.STATX;
-			ConLog("SPU2-X ps1 reg REG_P_STATX read return value: %x\n", value);
+			value = Cores[0].Regs.STATX;
+			//ConLog("SPU2-X ps1 reg REG_P_STATX read return value: %x\n", value);
 			break;
 	}
 
@@ -1114,16 +1091,14 @@ static void __fastcall RegWrite_Core( u16 value )
 				thiscore.Regs.STATX = 0;
 			thiscore.Regs.ATTR = value & 0x7fff;
 
-			if (!psxmode) {
-				if (fxenable && !thiscore.FxEnable
-					&& (thiscore.EffectsStartA != thiscore.ExtEffectsStartA
-						|| thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
-				{
-					thiscore.EffectsStartA = thiscore.ExtEffectsStartA;
-					thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
-					thiscore.ReverbX = 0;
-					thiscore.RevBuffers.NeedsUpdated = true;
-				}
+			if (fxenable && !thiscore.FxEnable
+				&& (thiscore.EffectsStartA != thiscore.ExtEffectsStartA
+					|| thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
+			{
+				thiscore.EffectsStartA = thiscore.ExtEffectsStartA;
+				thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
+				thiscore.ReverbX = 0;
+				thiscore.RevBuffers.NeedsUpdated = true;
 			}
 			if(oldDmaMode != thiscore.DmaMode)
 			{
@@ -1320,24 +1295,22 @@ static void __fastcall RegWrite_Core( u16 value )
 
 		case REG_S_ADMAS:
 			if ( MsgToConsole() ) ConLog("* SPU2-X: Core %d AutoDMAControl set to %d (at cycle %d)\n",core,value, Cycles);
+
+			if (psxmode) ConLog("* SPU2-X: Writing to REG_S_ADMAS while in PSX mode! value: %x",value);
 			// hack for ps1driver which writes -1 (and never turns the adma off after psxlogo).
 			// adma isn't available in psx mode either
-			if (value == 32767) {
+			if (value == 32767 && PSXUNLIKELYHACKS) {
 				psxmode = true;
-				//memset(spu2regs, 0, 0x010000);
-				memset(_spu2mem, 0, 0x200000);
-				Cores[0].EffectsStartA = 0x7FFF8;
-				Cores[0].EffectsEndA = 0x7FFFF;
-				Cores[0].ReverbX = 0;
-				Cores[0].RevBuffers.NeedsUpdated = true;
-				Cores[1].EffectsStartA = 0xFFFF8; // park core1 effect area in high mem
-				Cores[1].EffectsEndA = 0xFFFFF;
+				//memset(_spu2mem, 0, 0x200000);
 				Cores[1].FxEnable = 0;
-				Cores[1].ExtEffectsStartA = 0xFFFF8; // park core1 ext effect area in high mem
-				Cores[1].ExtEffectsStartA = 0xFFFFF;
+				Cores[1].EffectsStartA = 0x7FFF8; // park core1 effect area in inaccessible mem
+				Cores[1].EffectsEndA = 0x7FFFF;
+				Cores[1].ExtEffectsStartA = 0x7FFF8; // park core1 ext effect area in high mem
+				Cores[1].ExtEffectsStartA = 0x7FFFF;
 				Cores[1].ReverbX = 0;
 				Cores[1].RevBuffers.NeedsUpdated = true;
-				Cores[1].Mute = 1; // silence core1 in psxmode
+				Cores[0].ReverbX = 0;
+				Cores[0].RevBuffers.NeedsUpdated = true;
 				for (uint v = 0; v < 24; ++v)
 				{
 					Cores[1].Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
@@ -1346,9 +1319,9 @@ static void __fastcall RegWrite_Core( u16 value )
 					Cores[1].Voices[v].ADSR.Value = 0;
 					Cores[1].Voices[v].ADSR.Phase = 0;
 					Cores[1].Voices[v].Pitch = 0x0;
-					Cores[1].Voices[v].NextA = 0xBFFFF;
-					Cores[1].Voices[v].StartA = 0xBFFFF;
-					Cores[1].Voices[v].LoopStartA = 0xBFFFF;
+					Cores[1].Voices[v].NextA = 0x6FFFF;
+					Cores[1].Voices[v].StartA = 0x6FFFF;
+					Cores[1].Voices[v].LoopStartA = 0x6FFFF;
 					Cores[1].Voices[v].Modulated = 0;
 				}
 				return;
