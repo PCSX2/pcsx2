@@ -168,6 +168,7 @@ public:
 	void VSync(int field);
 	void ResetDevice();
 	GSTexture* GetOutput(int i, int& y_offset);
+	GSTexture* GetFeedbackOutput();
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 	void Draw();

@@ -201,7 +201,9 @@ bool GSRenderer::Merge(int field)
 
 	s_n++;
 
-	if(samesrc && fr[0].bottom == fr[1].bottom)
+	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
+
+	if(samesrc && fr[0].bottom == fr[1].bottom && !feedback_merge)
 	{
 		tex[0]      = GetOutput(0, y_offset[0]);
 		tex[1]      = tex[0]; // saves one texture fetch
@@ -211,6 +213,7 @@ bool GSRenderer::Merge(int field)
 	{
 		if(en[0]) tex[0] = GetOutput(0, y_offset[0]);
 		if(en[1]) tex[1] = GetOutput(1, y_offset[1]);
+		if(feedback_merge) tex[2] = GetFeedbackOutput();
 	}
 
 	GSVector4 src[2];

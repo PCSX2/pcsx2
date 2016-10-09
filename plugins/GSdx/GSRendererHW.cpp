@@ -251,6 +251,26 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	return t;
 }
 
+GSTexture* GSRendererHW::GetFeedbackOutput()
+{
+	GIFRegTEX0 TEX0;
+
+	TEX0.TBP0 = m_regs->EXTBUF.EXBP;
+	TEX0.TBW = m_regs->EXTBUF.EXBW;
+	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
+
+	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, /*GetFrameRect(i).bottom*/0);
+
+	GSTexture* t = rt->m_texture;
+
+#ifdef ENABLE_OGL_DEBUG
+	if(s_dump && s_savef && s_n >= s_saven)
+		t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+#endif
+
+	return t;
+}
+
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
 	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.DBP, (int)BITBLTBUF.DPSM);
