@@ -1372,23 +1372,56 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 {
 	GL_PUSH("DoMerge");
 
-	bool slbg = PMODE.SLBG;
-	bool mmod = PMODE.MMOD;
+	GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
+	bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
+	bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
+	bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
 
+	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
+	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
+	// Note: background color is also used when outside of the unit rectangle area
 	OMSetColorMaskState();
 	ClearRenderTarget(dTex, c);
 
-	if(sTex[1] && !slbg)
-	{
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge_obj.ps[0]);
+	// Upload constant to select YUV algo
+	if (feedback_write_2 || feedback_write_1) {
+		// Write result to feedback loop
+		m_misc_cb_cache.EMOD_AC.x = EXTBUF.EMODA;
+		m_misc_cb_cache.EMOD_AC.y = EXTBUF.EMODC;
+		m_convert.cb->cache_upload(&m_misc_cb_cache);
 	}
 
-	if(sTex[0])
-	{
-		m_merge_obj.cb->cache_upload(&c.v);
-
-		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[mmod ? 1 : 0], m_MERGE_BLEND);
+	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg)) {
+		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
+		// Note: value outside of dRect must contains the background color (c)
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert_COPY);
 	}
+
+	// Save 2nd output
+	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
+		StretchRect(dTex, full_r, sTex[2], dRect[1], ShaderConvert_YUV);
+
+	// Restore background color to process the normal merge
+	if (feedback_write_2_but_blend_bg)
+		ClearRenderTarget(dTex, c);
+
+	if (sTex[0]) {
+		if (PMODE.AMOD == 1) // Keep the alpha from the 2nd output
+			OMSetColorMaskState(OMColorMaskSelector(0x7));
+
+		// 1st output is enabled. It must be blended
+		if (PMODE.MMOD == 1) {
+			// Blend with a constant alpha
+			m_merge_obj.cb->cache_upload(&c.v);
+			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], m_MERGE_BLEND);
+		} else {
+			// Blend with 2 * input alpha
+			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], m_MERGE_BLEND);
+		}
+	}
+
+	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
+		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert_YUV);
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
