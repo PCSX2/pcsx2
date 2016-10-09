@@ -84,6 +84,7 @@ protected:
 	void VSync(int field);
 	void ResetDevice();
 	GSTexture* GetOutput(int i, int& y_offset);
+	GSTexture* GetFeedbackOutput();
 
 	void Draw();
 	void Queue(shared_ptr<GSRasterizerData>& item);
