@@ -445,7 +445,6 @@ struct V_Core
 	u16				psxSoundDataTransferControl;
 	u16				psxSPUSTAT;
 
-
 	StereoOut32 downbuf[8];
 	StereoOut32 upbuf[8];
 	int			dbpos, ubpos;

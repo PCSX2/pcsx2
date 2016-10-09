@@ -44,7 +44,6 @@ bool has_to_call_irq=false;
 
 bool psxmode = false;
 
-#define PSXUNLIKELYHACKS 1
 void SetIrqCall(int core)
 {
 	// reset by an irq disable/enable cycle, behaviour found by
@@ -195,32 +194,32 @@ void V_Core::AnalyzeReverbPreset()
 {
 	ConLog("Reverb Parameter Update for Core %d:\n", Index);
 	ConLog("----------------------------------------------------------\n");
-
+	
 	ConLog("    IN_COEF_L, IN_COEF_R        0x%08x, 0x%08x\n", Revb.IN_COEF_L, Revb.IN_COEF_R);
 	ConLog("    FB_SRC_A, FB_SRC_B          0x%08x, 0x%08x\n", Revb.FB_SRC_A, Revb.FB_SRC_B);
 	ConLog("    FB_ALPHA, FB_X              0x%08x, 0x%08x\n", Revb.FB_ALPHA, Revb.FB_X);
-
+	
 	ConLog("    ACC_COEF_A                  0x%08x\n", Revb.ACC_COEF_A);
 	ConLog("    ACC_COEF_B                  0x%08x\n", Revb.ACC_COEF_B);
 	ConLog("    ACC_COEF_C                  0x%08x\n", Revb.ACC_COEF_C);
 	ConLog("    ACC_COEF_D                  0x%08x\n", Revb.ACC_COEF_D);
-
+	
 	ConLog("    ACC_SRC_A0, ACC_SRC_A1      0x%08x, 0x%08x\n", Revb.ACC_SRC_A0, Revb.ACC_SRC_A1);
 	ConLog("    ACC_SRC_B0, ACC_SRC_B1      0x%08x, 0x%08x\n", Revb.ACC_SRC_B0, Revb.ACC_SRC_B1);
 	ConLog("    ACC_SRC_C0, ACC_SRC_C1      0x%08x, 0x%08x\n", Revb.ACC_SRC_C0, Revb.ACC_SRC_C1);
 	ConLog("    ACC_SRC_D0, ACC_SRC_D1      0x%08x, 0x%08x\n", Revb.ACC_SRC_D0, Revb.ACC_SRC_D1);
-
+	
 	ConLog("    IIR_SRC_A0, IIR_SRC_A1      0x%08x, 0x%08x\n", Revb.IIR_SRC_A0, Revb.IIR_SRC_A1);
 	ConLog("    IIR_SRC_B0, IIR_SRC_B1      0x%08x, 0x%08x\n", Revb.IIR_SRC_B0, Revb.IIR_SRC_B1);
 	ConLog("    IIR_DEST_A0, IIR_DEST_A1    0x%08x, 0x%08x\n", Revb.IIR_DEST_A0, Revb.IIR_DEST_A1);
-	ConLog("    IIR_DEST_B0, IIR_DEST_B1    0x%08x, 0x%08x\n", Revb.IIR_DEST_B0, Revb.IIR_DEST_B1);
+	ConLog("    IIR_DEST_B0, IIR_DEST_B1    0x%08x, 0x%08x\n", Revb.IIR_DEST_B0, Revb.IIR_DEST_B1);	
 	ConLog("    IIR_ALPHA, IIR_COEF         0x%08x, 0x%08x\n", Revb.IIR_ALPHA, Revb.IIR_COEF);
 
 	ConLog("    MIX_DEST_A0                 0x%08x\n", Revb.MIX_DEST_A0);
 	ConLog("    MIX_DEST_A1                 0x%08x\n", Revb.MIX_DEST_A1);
 	ConLog("    MIX_DEST_B0                 0x%08x\n", Revb.MIX_DEST_B0);
 	ConLog("    MIX_DEST_B1                 0x%08x\n", Revb.MIX_DEST_B1);
-
+	
     ConLog("    EffectsBufferSize           0x%x\n", EffectsBufferSize);
 	ConLog("----------------------------------------------------------\n");
 }
@@ -230,7 +229,7 @@ s32 V_Core::EffectsBufferIndexer( s32 offset ) const
 	// that it *4's all addresses before upping them to the SPU2 -- so our buffers are
 	// already x4'd.  It doesn't really make sense that we should x4 them again, and this
 	// seems to work. (feedback-free in bios and DDS)  --air
-
+	
 	u32 pos = EffectsStartA + offset;
 
 	// Need to use modulus here, because games can and will drop the buffer size
@@ -264,7 +263,7 @@ void V_Core::UpdateEffectsBufferSize()
 	const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
 
 	if( (newbufsize*2) > 0x20000 ) // max 128kb per core
-	{
+	{ 
 		//printf("too big, returning\n");
 		//return;
 	}
@@ -521,7 +520,6 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		//voice values
 		u8 voice = ((reg-0x1c00)>>4);
 		u8 vval = reg&0xf;
-
 		switch(vval)
 		{
 			case 0x0: //VOLL (Volume L)
@@ -604,51 +602,51 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		break;
 
 		case 0x1d88://         Voice ON  (0-15)
-			SPU2_FastWrite(REG_S_KON, value);
+			SPU2_FastWrite(REG_S_KON,value);
 			break;
 		case 0x1d8a://         Voice ON  (16-23)
-			SPU2_FastWrite(REG_S_KON + 2, value);
+			SPU2_FastWrite(REG_S_KON+2,value);
 			break;
 
 		case 0x1d8c://         Voice OFF (0-15)
-			SPU2_FastWrite(REG_S_KOFF, value);
+			SPU2_FastWrite(REG_S_KOFF,value);
 			break;
 		case 0x1d8e://         Voice OFF (16-23)
-			SPU2_FastWrite(REG_S_KOFF + 2, value);
+			SPU2_FastWrite(REG_S_KOFF+2,value);
 		break;
 
 		case 0x1d90://         Channel FM (pitch lfo) mode (0-15)
-			SPU2_FastWrite(REG_S_PMON, value);
+			SPU2_FastWrite(REG_S_PMON,value);
 			if (value!=0)ConLog("spu2x warning: wants to set Pitch Modulation reg1 to %x \n", value);
 		break;
 
 		case 0x1d92://         Channel FM (pitch lfo) mode (16-23)
-			SPU2_FastWrite(REG_S_PMON + 2, value);
+			SPU2_FastWrite(REG_S_PMON+2,value);
 			if (value != 0)ConLog("spu2x warning: wants to set Pitch Modulation reg2 to %x \n", value);
 		break;
 
 
 		case 0x1d94://         Channel Noise mode (0-15)
-			SPU2_FastWrite(REG_S_NON, value);
+			SPU2_FastWrite(REG_S_NON,value);
 			if (value != 0) ConLog("spu2x warning: wants to set Channel Noise mode reg1 to %x\n", value);
 		break;
 
 		case 0x1d96://         Channel Noise mode (16-23)
-			SPU2_FastWrite(REG_S_NON + 2, value);
+			SPU2_FastWrite(REG_S_NON+2,value);
 			if (value != 0) ConLog("spu2x warning: wants to set Channel Noise mode reg2 to %x\n", value);
 		break;
 
 		case 0x1d98://         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
 			//Regs.VMIXEL = value & 0xFFFF;
-			SPU2_FastWrite(REG_S_VMIXEL, value);
-			SPU2_FastWrite(REG_S_VMIXER, value);
+			SPU2_FastWrite(REG_S_VMIXEL,value);
+			SPU2_FastWrite(REG_S_VMIXER,value);
 			//ConLog("spu2x warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
 		break;
 
 		case 0x1d9a://         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
 			//Regs.VMIXEL = value << 16;
-			SPU2_FastWrite(REG_S_VMIXEL + 2, value);
-			SPU2_FastWrite(REG_S_VMIXER + 2, value);
+			SPU2_FastWrite(REG_S_VMIXEL+2,value);
+			SPU2_FastWrite(REG_S_VMIXER+2,value);
 			//ConLog("spu2x warning: setting reverb mode reg2 to %x \n", Regs.VMIXEL);
 		break;
 
@@ -886,22 +884,22 @@ u16 V_Core::ReadRegPS1(u32 mem)
 }
 
 // Ah the joys of endian-specific code! :D
-static __forceinline void SetHiWord(u32& src, u16 value)
+static __forceinline void SetHiWord( u32& src, u16 value )
 {
 	((u16*)&src)[1] = value;
 }
 
-static __forceinline void SetLoWord(u32& src, u16 value)
+static __forceinline void SetLoWord( u32& src, u16 value )
 {
 	((u16*)&src)[0] = value;
 }
 
-static __forceinline u16 GetHiWord(u32& src)
+static __forceinline u16 GetHiWord( u32& src )
 {
 	return ((u16*)&src)[1];
 }
 
-static __forceinline u16 GetLoWord(u32& src)
+static __forceinline u16 GetLoWord( u32& src )
 {
 	return ((u16*)&src)[0];
 }
@@ -1024,7 +1022,7 @@ static void __fastcall RegWrite_Core( u16 value )
 	const int omem = cAddr;
 	const int core = CoreIdx;
 	V_Core& thiscore = Cores[core];
-	
+
 	switch(omem)
 	{
 		case REG__1AC:
@@ -1052,34 +1050,35 @@ static void __fastcall RegWrite_Core( u16 value )
 
 		case REG_C_ATTR:
 		{
-			bool irqe = thiscore.IRQEnable;
-			int bit0 = thiscore.AttrBit0;
-			bool fxenable = thiscore.FxEnable;
-			u8 oldDmaMode = thiscore.DmaMode;
-
-			thiscore.AttrBit0 = (value >> 0) & 0x01; //1 bit
-			thiscore.DMABits = (value >> 1) & 0x07; //3 bits
-			thiscore.DmaMode = (value >> 4) & 0x03; //2 bit (not necessary, we get the direction from the iop)
-			thiscore.IRQEnable = (value >> 6) & 0x01; //1 bit
-			thiscore.FxEnable = (value >> 7) & 0x01; //1 bit
-			thiscore.NoiseClk = (value >> 8) & 0x3f; //6 bits
+			bool irqe		= thiscore.IRQEnable;
+			int bit0		= thiscore.AttrBit0;
+			bool fxenable	= thiscore.FxEnable;
+			u8 oldDmaMode	= thiscore.DmaMode;
+			
+			thiscore.AttrBit0   =(value>> 0) & 0x01; //1 bit
+			thiscore.DMABits	=(value>> 1) & 0x07; //3 bits
+			thiscore.DmaMode    =(value>> 4) & 0x03; //2 bit (not necessary, we get the direction from the iop)
+			thiscore.IRQEnable  =(value>> 6) & 0x01; //1 bit
+			thiscore.FxEnable   =(value>> 7) & 0x01; //1 bit
+			thiscore.NoiseClk   =(value>> 8) & 0x3f; //6 bits
 			//thiscore.Mute		=(value>>14) & 0x01; //1 bit
-			thiscore.Mute = 0;
+			thiscore.Mute		=0;
 			//thiscore.CoreEnabled=(value>>15) & 0x01; //1 bit
 			// no clue
-			if (value >> 15)
+			if (value>>15)
 				thiscore.Regs.STATX = 0;
-			thiscore.Regs.ATTR = value & 0x7fff;
+			thiscore.Regs.ATTR  =value&0x7fff;
 
 			if (fxenable && !thiscore.FxEnable
 				&& (thiscore.EffectsStartA != thiscore.ExtEffectsStartA
-					|| thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
+				 || thiscore.EffectsEndA   != thiscore.ExtEffectsEndA))
 			{
 				thiscore.EffectsStartA = thiscore.ExtEffectsStartA;
 				thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
 				thiscore.ReverbX = 0;
 				thiscore.RevBuffers.NeedsUpdated = true;
 			}
+
 			if(oldDmaMode != thiscore.DmaMode)
 			{
 				// FIXME... maybe: if this mode was cleared in the middle of a DMA, should we interrupt it?
@@ -1099,7 +1098,7 @@ static void __fastcall RegWrite_Core( u16 value )
 			{
 				//ConLog("* SPU2-X: Core%d IRQ %s at cycle %d. Current IRQA = %x Current EffectA = %x\n",
 				//	core, ((thiscore.IRQEnable==0)?"disabled":"enabled"), Cycles, thiscore.IRQA, thiscore.EffectsStartA);
-
+				
 				if(!thiscore.IRQEnable)
 					Spdif.Info &= ~(4 << thiscore.Index);
 			}
@@ -1224,7 +1223,6 @@ static void __fastcall RegWrite_Core( u16 value )
 
 		case REG_S_ENDX:
 			thiscore.Regs.ENDX &= 0xff0000;
-
 		break;
 
 		case (REG_S_ENDX + 2):
@@ -1279,7 +1277,7 @@ static void __fastcall RegWrite_Core( u16 value )
 			if (psxmode) ConLog("* SPU2-X: Writing to REG_S_ADMAS while in PSX mode! value: %x",value);
 			// hack for ps1driver which writes -1 (and never turns the adma off after psxlogo).
 			// adma isn't available in psx mode either
-			if (value == 32767 && PSXUNLIKELYHACKS) {
+			if (value == 32767) {
 				psxmode = true;
 				//memset(_spu2mem, 0, 0x200000);
 				Cores[1].FxEnable = 0;

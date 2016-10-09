@@ -588,8 +588,9 @@ static __forceinline StereoOut32 MixVoice( uint coreidx, uint voiceidx )
 
 		// Write-back of raw voice data (post ADSR applied)
 
-		if (voiceidx == 1)      spu2M_WriteFast(((0 == coreidx) ? 0x400 : 0xc00) + OutPos, vc.OutX);
-		else if (voiceidx == 3) spu2M_WriteFast(((0 == coreidx) ? 0x600 : 0xe00) + OutPos, vc.OutX);
+		if (voiceidx==1)      spu2M_WriteFast( ( (0==coreidx) ? 0x400 : 0xc00 ) + OutPos, vc.OutX );
+		else if (voiceidx==3) spu2M_WriteFast( ( (0==coreidx) ? 0x600 : 0xe00 ) + OutPos, vc.OutX );
+			
 		return ApplyVolume( StereoOut32( Value, Value ), vc.Volume );
 	}
 	else
@@ -608,8 +609,9 @@ static __forceinline StereoOut32 MixVoice( uint coreidx, uint voiceidx )
 		}
 
 		// Write-back of raw voice data (some zeros since the voice is "dead")
-		if (voiceidx == 1)      spu2M_WriteFast(((0 == coreidx) ? 0x400 : 0xc00) + OutPos, 0);
-		else if (voiceidx == 3) spu2M_WriteFast(((0 == coreidx) ? 0x600 : 0xe00) + OutPos, 0);
+		if (voiceidx==1)      spu2M_WriteFast( ( (0==coreidx) ? 0x400 : 0xc00 ) + OutPos, 0 );
+		else if (voiceidx==3) spu2M_WriteFast( ( (0==coreidx) ? 0x600 : 0xe00 ) + OutPos, 0 );
+
 		return StereoOut32( 0, 0 );
 	}
 }
@@ -641,10 +643,10 @@ StereoOut32 V_Core::Mix( const VoiceMixSet& inVoices, const StereoOut32& Input, 
 	const VoiceMixSet Voices( clamp_mix( inVoices.Dry ), clamp_mix( inVoices.Wet ) );
 
 	// Write Mixed results To Output Area
-	spu2M_WriteFast(((0 == Index) ? 0x1000 : 0x1800) + OutPos, Voices.Dry.Left);
-	spu2M_WriteFast(((0 == Index) ? 0x1200 : 0x1A00) + OutPos, Voices.Dry.Right);
-	spu2M_WriteFast(((0 == Index) ? 0x1400 : 0x1C00) + OutPos, Voices.Wet.Left);
-	spu2M_WriteFast(((0 == Index) ? 0x1600 : 0x1E00) + OutPos, Voices.Wet.Right);
+	spu2M_WriteFast( ( (0==Index) ? 0x1000 : 0x1800 ) + OutPos, Voices.Dry.Left );
+	spu2M_WriteFast( ( (0==Index) ? 0x1200 : 0x1A00 ) + OutPos, Voices.Dry.Right );
+	spu2M_WriteFast( ( (0==Index) ? 0x1400 : 0x1C00 ) + OutPos, Voices.Wet.Left );
+	spu2M_WriteFast( ( (0==Index) ? 0x1600 : 0x1E00 ) + OutPos, Voices.Wet.Right );
 
 	// Write mixed results to logfile (if enabled)
 
