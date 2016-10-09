@@ -278,6 +278,13 @@ void ps_main17()
 }
 #endif
 
+#ifdef ps_main18
+void ps_main18()
+{
+    SV_Target0 = PSin.c * vec4(1.0, 1.0, 1.0, sample_c().r);
+}
+#endif
+
 #ifdef ps_main7
 void ps_main7()
 {
