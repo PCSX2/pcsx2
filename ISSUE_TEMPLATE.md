@@ -3,6 +3,7 @@
 
 - **Note**: It's preferred to only report bugs which are present on the [latest development builds](http://pcsx2.net/download/development.html).
 
+- **Note2**: The new backwards compatibility (psx) mode is in active development. Issue reports are too early at this point.
 
 ***PCSX2 options:***
 ``(For example, Clamping/Rounding, Speedhacks, GameFixes)``
