@@ -243,7 +243,7 @@ GSTexture* GSDevice::GetCurrent()
 	return m_current;
 }
 
-void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, bool slbg, bool mmod, const GSVector4& c)
+void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
 	if(m_merge == NULL || m_merge->GetSize() != fs)
 	{
@@ -260,7 +260,7 @@ void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dRect, con
 
 	if(m_merge)
 	{
-		GSTexture* tex[2] = {NULL, NULL};
+		GSTexture* tex[3] = {NULL, NULL, NULL};
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
@@ -270,7 +270,7 @@ void GSDevice::Merge(GSTexture* sTex[2], GSVector4* sRect, GSVector4* dRect, con
 			}
 		}
 
-		DoMerge(tex, sRect, m_merge, dRect, slbg, mmod, c);
+		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c);
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{

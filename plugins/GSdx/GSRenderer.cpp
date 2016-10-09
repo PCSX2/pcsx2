@@ -196,8 +196,8 @@ bool GSRenderer::Merge(int field)
 	GSVector2i fs(0, 0);
 	GSVector2i ds(0, 0);
 
-	GSTexture* tex[2] = {NULL, NULL};
-	int y_offset[2]   = {0, 0};
+	GSTexture* tex[3] = {NULL, NULL, NULL};
+	int y_offset[3]   = {0, 0, 0};
 
 	s_n++;
 
@@ -272,7 +272,6 @@ bool GSRenderer::Merge(int field)
 	m_real_size = ds;
 
 	bool slbg = m_regs->PMODE.SLBG;
-	bool mmod = m_regs->PMODE.MMOD;
 
 	if(tex[0] || tex[1])
 	{
@@ -285,7 +284,7 @@ bool GSRenderer::Merge(int field)
 
 		GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
 
-		m_dev->Merge(tex, src_hw, dst, fs, slbg, mmod, c);
+		m_dev->Merge(tex, src_hw, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
 		if(m_regs->SMODE2.INT && m_interlace > 0)
 		{
