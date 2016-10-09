@@ -350,7 +350,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_SkipDraw"]                         = "0";
 	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
 	m_default_configuration["UserHacks_TCOffset"]                         = "0";
-	m_default_configuration["UserHacks_TextureInsideRt"]                  = "1";
+	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["vsync"]                                      = "0";
 }
