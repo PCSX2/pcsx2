@@ -268,7 +268,9 @@ void V_Core::UpdateEffectsBufferSize()
 		//printf("too big, returning\n");
 		//return;
 	}
-	if (newbufsize == EffectsBufferSize && EffectsStartA == EffectsBufferStart) return;
+
+	// bad optimization?
+	//if (newbufsize == EffectsBufferSize && EffectsStartA == EffectsBufferStart) return;
 
 	//printf("Rvb Area change: ESA = %x, EEA = %x, Size(dec) = %d, Size(hex) = %x FxEnable = %d\n", EffectsStartA, EffectsEndA, newbufsize * 2, newbufsize * 2, FxEnable);
 
@@ -623,54 +625,51 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		break;
 
 		case 0x1d88://         Voice ON  (0-15)
-			StartVoices(0, (u32)value);
+			SPU2_FastWrite(REG_S_KON, value);
 			break;
 		case 0x1d8a://         Voice ON  (16-23)
-			StartVoices(0, ((u32)value) << 16);
+			SPU2_FastWrite(REG_S_KON + 2, value);
 			break;
 
 		case 0x1d8c://         Voice OFF (0-15)
-			StopVoices(0, (u32)value);
+			SPU2_FastWrite(REG_S_KOFF, value);
 			break;
 		case 0x1d8e://         Voice OFF (16-23)
-			StopVoices(0, ((u32)value) << 16);
+			SPU2_FastWrite(REG_S_KOFF + 2, value);
 		break;
 
 		case 0x1d90://         Channel FM (pitch lfo) mode (0-15)
-			Regs.PMON = value & 0xFFFF;
-			for (int vc = 1; vc<16; ++vc)
-				Voices[vc].Modulated = (value >> vc) & 1;
-				if (value != 0) ConLog("spu2x warning: wants to set Pitch Modulation reg1 to %x \n", value);
+			SPU2_FastWrite(REG_S_PMON, value);
+			if (value!=0)ConLog("spu2x warning: wants to set Pitch Modulation reg1 to %x \n", value);
 		break;
 
 		case 0x1d92://         Channel FM (pitch lfo) mode (16-23)
-			Regs.PMON = value << 16;
-			for (int vc = 0; vc<8; ++vc)
-				Voices[vc + 16].Modulated = (value >> vc) & 1;
+			SPU2_FastWrite(REG_S_PMON + 2, value);
+			if (value != 0)ConLog("spu2x warning: wants to set Pitch Modulation reg2 to %x \n", value);
 		break;
 
 
 		case 0x1d94://         Channel Noise mode (0-15)
-			SetLoWord(Regs.NON, value);
-			for (int vc = 0; vc<16; ++vc)
-				Voices[vc].Noise = (value >> vc) & 1;
+			SPU2_FastWrite(REG_S_NON, value);
 			if (value != 0) ConLog("spu2x warning: wants to set Channel Noise mode reg1 to %x\n", value);
 		break;
 
 		case 0x1d96://         Channel Noise mode (16-23)
-			SetHiWord(Regs.NON, value);
-			for (int vc = 0; vc<8; ++vc)
-				Voices[vc + 16].Noise = (value >> vc) & 1;
-			//ConLog("spu2x warning: wants to set Channel Noise mode reg2 to %x (ignored)\n", value);
+			SPU2_FastWrite(REG_S_NON + 2, value);
+			if (value != 0) ConLog("spu2x warning: wants to set Channel Noise mode reg2 to %x\n", value);
 		break;
 
 		case 0x1d98://         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
-			Regs.VMIXEL = value & 0xFFFF;
+			//Regs.VMIXEL = value & 0xFFFF;
+			SPU2_FastWrite(REG_S_VMIXEL, value);
+			SPU2_FastWrite(REG_S_VMIXER, value);
 			//ConLog("spu2x warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
 		break;
 
 		case 0x1d9a://         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
-			Regs.VMIXEL = value << 16;
+			//Regs.VMIXEL = value << 16;
+			SPU2_FastWrite(REG_S_VMIXEL + 2, value);
+			SPU2_FastWrite(REG_S_VMIXER + 2, value);
 			//ConLog("spu2x warning: setting reverb mode reg2 to %x \n", Regs.VMIXEL);
 		break;
 
@@ -685,20 +684,21 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		//	SPU2_FastWrite(REG_S_VMIXR+2,value);
 		//break;
 		case 0x1d9c:			// Voice 0..15 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
-			Regs.ENDX &= 0xff0000;
+			//Regs.ENDX &= 0xff0000;
 			ConLog("spu2x warning: wants to set ENDX reg1 to %x \n", value);
 		break;
 
 		case 0x1d9e://         // Voice 15..23 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
-			Regs.ENDX &= 0xffff;
+			//Regs.ENDX &= 0xffff;
 			ConLog("spu2x warning: wants to set ENDX reg2 to %x \n", value);
 		break;
 
 		case 0x1da2://         Reverb work area start
 		{
 			EffectsStartA = map_spu1to2(value);
-			EffectsEndA = 0xFFFFF; // fixed EndA in psx mode
+			//EffectsEndA = 0xFFFFF; // fixed EndA in psx mode
 			Cores[0].RevBuffers.NeedsUpdated = true;
+			ReverbX = 0;
 		}
 		break;
 
@@ -724,74 +724,19 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		break;
 
 		case 0x1daa:
-		{
-			V_Core& thiscore = Cores[0];
-			bool irqe = thiscore.IRQEnable;
-			int bit0 = thiscore.AttrBit0;
-			bool fxenable = thiscore.FxEnable;
-			u8 oldDmaMode = thiscore.DmaMode;
-
-			thiscore.AttrBit0 = (value >> 0) & 0x01; //1 bit
-			thiscore.DMABits = (value >> 1) & 0x07; //3 bits
-			thiscore.DmaMode = (value >> 4) & 0x03; //2 bit (not necessary, we get the direction from the iop)
-			thiscore.IRQEnable = (value >> 6) & 0x01; //1 bit
-			thiscore.FxEnable = (value >> 7) & 0x01; //1 bit
-			thiscore.NoiseClk = (value >> 8) & 0x3f; //6 bits
-													 //thiscore.Mute		=(value>>14) & 0x01; //1 bit
-			thiscore.Mute = 0;
-			//thiscore.CoreEnabled=(value>>15) & 0x01; //1 bit
-			// no clue
-			if (value >> 15)
-				thiscore.Regs.STATX = 0;
-			thiscore.Regs.ATTR = value & 0x7fff;
-
-			if (fxenable && !thiscore.FxEnable
-				&& (thiscore.EffectsStartA != thiscore.ExtEffectsStartA
-					|| thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
-			{
-				thiscore.EffectsStartA = thiscore.ExtEffectsStartA;
-				thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
-				thiscore.ReverbX = 0;
-				thiscore.RevBuffers.NeedsUpdated = true;
-				ConLog("fx toggle!\n");
-			}
-
-			if (oldDmaMode != thiscore.DmaMode)
-			{
-				// FIXME... maybe: if this mode was cleared in the middle of a DMA, should we interrupt it?
-				thiscore.Regs.STATX &= ~0x400; // ready to transfer
-			}
-
-			if (value & 0x000E)
-			{
-				if (MsgToConsole()) ConLog("* SPU2-X: Core 0 ATTR unknown bits SET! value=%04x\n", value);
-			}
-
-			if (thiscore.AttrBit0 != bit0)
-			{
-				if (MsgToConsole()) ConLog("* SPU2-X: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
-			}
-			if (thiscore.IRQEnable != irqe)
-			{
-				//ConLog("* SPU2-X: Core%d IRQ %s at cycle %d. Current IRQA = %x Current EffectA = %x\n",
-				//	core, ((thiscore.IRQEnable==0)?"disabled":"enabled"), Cycles, thiscore.IRQA, thiscore.EffectsStartA);
-
-				if (!thiscore.IRQEnable)
-					Spdif.Info &= ~(4 << thiscore.Index);
-			}
-		}
+			SPU2_FastWrite(REG_C_ATTR, value);
 		break;
 
 		case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
-			ConLog("SPU Sound RAM Data Transfer Control (should be 0004h) : value = %x \n", value);
+			ConLog("SPU Sound RAM Data Transfer Control (should be 4) : value = %x \n", value);
 			psxSoundDataTransferControl = value;
-			break;
+		break;
 
 		case 0x1dae: // 1F801DAEh - SPU Status Register (SPUSTAT) (R)
 			// The SPUSTAT register should be treated read-only (writing is possible in so far that the written
 			// value can be read-back for a short moment, however, thereafter the hardware is overwriting that value).
 			//Regs.STATX = value;
-			break;
+		break;
 
 		case 0x1DB0: // 1F801DB0h 4  CD Volume Left/Right
 			break; // cd left?
@@ -810,8 +755,8 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		case 0x1DBE:
 			break;
 
-		case	0x1DC0: Revb.FB_SRC_A = value; break;
-		case	0x1DC2: Revb.FB_SRC_B = value; break;
+		case	0x1DC0: Revb.FB_SRC_A = value * 4; break;
+		case	0x1DC2: Revb.FB_SRC_B = value * 4; break;
 		case	0x1DC4: Revb.IIR_ALPHA = value; break;
 		case	0x1DC6: Revb.ACC_COEF_A = value; break;
 		case	0x1DC8: Revb.ACC_COEF_B = value; break;
@@ -820,26 +765,26 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		case	0x1DCE: Revb.IIR_COEF = value; break;
 		case	0x1DD0: Revb.FB_ALPHA = value; break;
 		case	0x1DD2: Revb.FB_X = value; break;
-		case	0x1DD4: Revb.IIR_DEST_A0 = value; break;
-		case	0x1DD6: Revb.IIR_DEST_A1 = value; break;
-		case	0x1DD8: Revb.ACC_SRC_A0 = value; break;
-		case	0x1DDA: Revb.ACC_SRC_A1 = value; break;
-		case	0x1DDC: Revb.ACC_SRC_B0 = value; break;
-		case	0x1DDE: Revb.ACC_SRC_B1 = value; break;
-		case	0x1DE0: Revb.IIR_SRC_A0 = value; break;
-		case	0x1DE2: Revb.IIR_SRC_A1 = value; break;
-		case	0x1DE4: Revb.IIR_DEST_B0 = value; break;
-		case	0x1DE6: Revb.IIR_DEST_B1 = value; break;
-		case	0x1DE8: Revb.ACC_SRC_C0 = value; break;
-		case	0x1DEA: Revb.ACC_SRC_C1 = value; break;
-		case	0x1DEC: Revb.ACC_SRC_D0 = value; break;
-		case	0x1DEE: Revb.ACC_SRC_D1 = value; break;
-		case	0x1DF0: Revb.IIR_SRC_B1 = value; break;
-		case	0x1DF2: Revb.IIR_SRC_B0 = value; break;
-		case	0x1DF4: Revb.MIX_DEST_A0 = value; break;
-		case	0x1DF6: Revb.MIX_DEST_A1 = value; break;
-		case	0x1DF8: Revb.MIX_DEST_B0 = value; break;
-		case	0x1DFA: Revb.MIX_DEST_B1 = value; break;
+		case	0x1DD4: Revb.IIR_DEST_A0 = value * 4; break;
+		case	0x1DD6: Revb.IIR_DEST_A1 = value * 4; break;
+		case	0x1DD8: Revb.ACC_SRC_A0 = value * 4; break;
+		case	0x1DDA: Revb.ACC_SRC_A1 = value * 4; break;
+		case	0x1DDC: Revb.ACC_SRC_B0 = value * 4; break;
+		case	0x1DDE: Revb.ACC_SRC_B1 = value * 4; break;
+		case	0x1DE0: Revb.IIR_SRC_A0 = value * 4; break;
+		case	0x1DE2: Revb.IIR_SRC_A1 = value * 4; break;
+		case	0x1DE4: Revb.IIR_DEST_B0 = value * 4; break;
+		case	0x1DE6: Revb.IIR_DEST_B1 = value * 4; break;
+		case	0x1DE8: Revb.ACC_SRC_C0 = value * 4; break;
+		case	0x1DEA: Revb.ACC_SRC_C1 = value * 4; break;
+		case	0x1DEC: Revb.ACC_SRC_D0 = value * 4; break;
+		case	0x1DEE: Revb.ACC_SRC_D1 = value * 4; break;
+		case	0x1DF0: Revb.IIR_SRC_B0 = value * 4; break;  // IIR_SRC_B0 and IIR_SRC_B1 supposedly swapped on SPU2 
+		case	0x1DF2: Revb.IIR_SRC_B1 = value * 4; break;  // but I don't believe it! (games in psxmode sound better unswapped)
+		case	0x1DF4: Revb.MIX_DEST_A0 = value * 4; break;
+		case	0x1DF6: Revb.MIX_DEST_A1 = value * 4; break;
+		case	0x1DF8: Revb.MIX_DEST_B0 = value * 4; break;
+		case	0x1DFA: Revb.MIX_DEST_B1 = value * 4; break;
 		case	0x1DFC: Revb.IN_COEF_L = value; break;
 		case	0x1DFE: Revb.IN_COEF_R = value; break;
 
