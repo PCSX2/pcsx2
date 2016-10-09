@@ -386,6 +386,7 @@ public:
 	{
 		GSVector4i ScalingFactor;
 		GSVector4i ChannelShuffle;
+		GSVector4i EMOD_AC;
 
 		MiscConstantBuffer() {memset(this, 0, sizeof(*this));}
 	};
