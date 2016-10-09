@@ -23,7 +23,7 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-int s_crc_hack_level = 3;
+int s_crc_hack_level = -1;
 
 // hacks
 #define Aggresive (s_crc_hack_level > 3)
@@ -2435,7 +2435,19 @@ void GSState::SetupCrcHack()
 {
 	GetSkipCount lut[CRC::TitleCount];
 
-	s_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	GSRendererType renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+	int selected_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	if (selected_crc_hack_level == -1) {
+		if (renderer == GSRendererType::OGL_HW) {
+			printf("Automatic crc hack level set to Partial\n");
+			s_crc_hack_level = 2;
+		} else if (renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW) {
+			printf("Automatic crc hack level set to Full\n");
+			s_crc_hack_level = 3;
+		}
+	} else {
+		s_crc_hack_level = selected_crc_hack_level;
+	}
 
 	memset(lut, 0, sizeof(lut));
 

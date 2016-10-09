@@ -42,6 +42,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Partial:\nEnable most of the CRC hacks.\nRecommended OpenGL setting (Accurate/depth options may be required).\n\n"
 				"Full:\nEnable all CRC hacks.\nRecommended Direct3D setting.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer.\n"
+				"Automatic:\nAutomatically select Partial or Full level based on wether you're using an OpenGL or Direct3D renderer.\n"
 				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
 				"Works as a speedhack for: Steambot Chronicles.";
 		case IDC_SKIPDRAWHACK:
