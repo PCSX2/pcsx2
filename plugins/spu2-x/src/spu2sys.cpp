@@ -498,27 +498,6 @@ void V_VolumeSlide::RegSet( u16 src )
 	Value = GetVol32( src );
 }
 
-// Ah the joys of endian-specific code! :D
-static __forceinline void SetHiWord(u32& src, u16 value)
-{
-	((u16*)&src)[1] = value;
-}
-
-static __forceinline void SetLoWord(u32& src, u16 value)
-{
-	((u16*)&src)[0] = value;
-}
-
-static __forceinline u16 GetHiWord(u32& src)
-{
-	return ((u16*)&src)[1];
-}
-
-static __forceinline u16 GetLoWord(u32& src)
-{
-	return ((u16*)&src)[0];
-}
-
 static u32 map_spu1to2(u32 addr)
 {
 	return addr * 4 + (addr >= 0x200 ? 0xc0000 : 0);
@@ -797,7 +776,6 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 
 u16 V_Core::ReadRegPS1(u32 mem)
 {
-	//ConLog("ReadRegPS1 from %x on core %d\n", mem, Index);
 	pxAssume( Index == 0 );		// Valid on Core 0 only!
 
 	bool show=true;
@@ -905,6 +883,27 @@ u16 V_Core::ReadRegPS1(u32 mem)
 
 	if(show) FileLog("[%10d] (!) SPU read mem %08x value %04x\n",Cycles,mem,value);
 	return value;
+}
+
+// Ah the joys of endian-specific code! :D
+static __forceinline void SetHiWord(u32& src, u16 value)
+{
+	((u16*)&src)[1] = value;
+}
+
+static __forceinline void SetLoWord(u32& src, u16 value)
+{
+	((u16*)&src)[0] = value;
+}
+
+static __forceinline u16 GetHiWord(u32& src)
+{
+	return ((u16*)&src)[1];
+}
+
+static __forceinline u16 GetLoWord(u32& src)
+{
+	return ((u16*)&src)[0];
 }
 
 template< int CoreIdx, int VoiceIdx, int param >
@@ -1025,7 +1024,7 @@ static void __fastcall RegWrite_Core( u16 value )
 	const int omem = cAddr;
 	const int core = CoreIdx;
 	V_Core& thiscore = Cores[core];
-	//ConLog("RegWrite_Core #%d addr: %x value %x \n", core, omem, value);
+	
 	switch(omem)
 	{
 		case REG__1AC:
@@ -1143,8 +1142,8 @@ static void __fastcall RegWrite_Core( u16 value )
 		SetLoWord( thiscore.Regs.reg_out, value ); \
 	if( result == thiscore.Regs.reg_out ) break; \
 	\
-	const uint start_bit	= hiword ? 16 : 0; \
-	const uint end_bit		= hiword ? 24 : 16; \
+	const uint start_bit	= (hiword) ? 16 : 0; \
+	const uint end_bit		= (hiword) ? 24 : 16; \
 	for (uint vc=start_bit, vx=1; vc<end_bit; ++vc, vx<<=1) \
 		thiscore.VoiceGates[vc].mask_out = (value & vx) ? -1 : 0; \
 }
@@ -1449,10 +1448,10 @@ static void __fastcall RegWrite_Null( u16 value )
 
 
 #define CoreParamsPair( core, omem ) \
-	RegWrite_Core<core, omem>, RegWrite_Core<core, (omem+2)>
+	RegWrite_Core<core, omem>, RegWrite_Core<core, ((omem)+2)>
 
 #define ReverbPair( core, mem ) \
-	RegWrite_Reverb<core, mem>, RegWrite_Core<core, (mem+2)>
+	RegWrite_Reverb<core, mem>, RegWrite_Core<core, ((mem)+2)>
 
 #define REGRAW(addr) RegWrite_Raw<addr>
 
