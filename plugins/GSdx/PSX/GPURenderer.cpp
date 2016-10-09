@@ -104,7 +104,7 @@ bool GPURenderer::Create(void* hWnd)
 
 bool GPURenderer::Merge()
 {
-	GSTexture* st[2] = {GetOutput(), NULL};
+	GSTexture* st[3] = {GetOutput(), NULL, NULL};
 
 	if(!st[0])
 	{
@@ -119,7 +119,10 @@ bool GPURenderer::Merge()
 	sr[0] = GSVector4(0, 0, 1, 1);
 	dr[0] = GSVector4(0, 0, s.x, s.y);
 
-	m_dev->Merge(st, sr, dr, s, 1, 1, GSVector4(0, 0, 0, 1));
+	GSRegPMODE PMODE = {0};
+	PMODE.u32[0] = 0xFFFFFFFF;
+	GSRegEXTBUF EXTBUF = {0};
+	m_dev->Merge(st, sr, dr, s, PMODE, EXTBUF, GSVector4(0, 0, 0, 1));
 
 	if(m_shadeboost)
 	{
