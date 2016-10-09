@@ -193,6 +193,20 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 	return m_texture[i];
 }
 
+GSTexture* GSRendererSW::GetFeedbackOutput()
+{
+	int dummy;
+
+	// It is enough to emulate Xenosaga cutscene. (or any game that will do a basic loopback)
+	for (int i = 0; i < 2; i++) {
+		if (m_regs->EXTBUF.EXBP == m_regs->DISP[i].DISPFB.Block())
+			return GetOutput(i, dummy);
+	}
+
+	return nullptr;
+}
+
+
 template<uint32 primclass, uint32 tme, uint32 fst>
 void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
