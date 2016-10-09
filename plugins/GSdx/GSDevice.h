@@ -46,6 +46,7 @@ enum ShaderConvert {
 	ShaderConvert_RGB5A1_TO_FLOAT16,
 	ShaderConvert_RGBA_TO_8I = 17,
 	ShaderConvert_OSD,
+	ShaderConvert_YUV,
 	ShaderConvert_Count
 };
 

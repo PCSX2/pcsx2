@@ -387,4 +387,55 @@ void ps_main4()
 }
 #endif
 
+#ifdef ps_main19
+void ps_main19()
+{
+    vec4 i = sample_c();
+    vec4 o;
+
+    mat3 rgb2yuv; // Value from GS manual
+    rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
+    rgb2yuv[1] = vec3(0.114, 0.500, -0.081);
+    rgb2yuv[2] = vec3(0.299, -0.169, 0.500);
+
+    vec3 yuv = rgb2yuv * i.gbr;
+
+    float Y = float(0xDB)/255.0f * yuv.x + float(0x10)/255.0f;
+    float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
+    float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
+
+    switch(EMODA) {
+        case 0:
+            o.a = i.a;
+            break;
+        case 1:
+            o.a = Y;
+            break;
+        case 2:
+            o.a = Y/2.0f;
+            break;
+        case 3:
+            o.a = 0.0f;
+            break;
+    }
+
+    switch(EMODC) {
+        case 0:
+            o.rgb = i.rgb;
+            break;
+        case 1:
+            o.rgb = vec3(Y);
+            break;
+        case 2:
+            o.rgb = vec3(Y, Cb, Cr);
+            break;
+        case 3:
+            o.rgb = vec3(i.a);
+            break;
+    }
+
+    SV_Target0 = o;
+}
+#endif
+
 #endif
