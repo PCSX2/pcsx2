@@ -262,7 +262,6 @@ void V_Core::UpdateFeedbackBuffersB()
 void V_Core::UpdateEffectsBufferSize()
 {
 	const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
-	//printf("Rvb Area change: ESA = %x, EEA = %x, Size(dec) = %d, Size(hex) = %x FxEnable = %d\n", EffectsStartA, EffectsEndA, newbufsize * 2, newbufsize * 2, FxEnable);
 
 	if( (newbufsize*2) > 0x20000 ) // max 128kb per core
 	{
@@ -271,13 +270,16 @@ void V_Core::UpdateEffectsBufferSize()
 	}
 	if (newbufsize == EffectsBufferSize && EffectsStartA == EffectsBufferStart) return;
 
+	//printf("Rvb Area change: ESA = %x, EEA = %x, Size(dec) = %d, Size(hex) = %x FxEnable = %d\n", EffectsStartA, EffectsEndA, newbufsize * 2, newbufsize * 2, FxEnable);
+
 	RevBuffers.NeedsUpdated = false;
 	EffectsBufferSize = newbufsize;
 	EffectsBufferStart = EffectsStartA;
 
 	if( EffectsBufferSize <= 0 ) return;
 
-	//AnalyzeReverbPreset();
+	// debug: shows reverb parameters in console
+	if(MsgToConsole()) AnalyzeReverbPreset();
 
 	// Rebuild buffer indexers.
 	RevBuffers.ACC_SRC_A0 = EffectsBufferIndexer( Revb.ACC_SRC_A0 );
@@ -517,12 +519,12 @@ static __forceinline u16 GetLoWord(u32& src)
 
 static u32 map_spu1to2(u32 addr)
 {
-	return addr * 4 + (addr >= 0x100 ? 0xc0000 : 0);
+	return addr * 4 + (addr >= 0x200 ? 0xc0000 : 0);
 }
 
 static u32 map_spu2to1(u32 addr)
 {
-	// if (addr >= 0x800 && addr < 0x80000) oh dear
+	// if (addr >= 0x800 && addr < 0xc0000) oh dear
 	return (addr - (addr >= 0xc0000 ? 0xc0000 : 0)) / 4;
 }
 
@@ -663,12 +665,12 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 		break;
 
 		case 0x1d98://         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
-			//Regs.VMIXEL = value & 0xFFFF;
+			Regs.VMIXEL = value & 0xFFFF;
 			//ConLog("spu2x warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
 		break;
 
 		case 0x1d9a://         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
-			//Regs.VMIXEL = value << 16;
+			Regs.VMIXEL = value << 16;
 			//ConLog("spu2x warning: setting reverb mode reg2 to %x \n", Regs.VMIXEL);
 		break;
 
@@ -751,6 +753,7 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 				thiscore.EffectsEndA = thiscore.ExtEffectsEndA;
 				thiscore.ReverbX = 0;
 				thiscore.RevBuffers.NeedsUpdated = true;
+				ConLog("fx toggle!\n");
 			}
 
 			if (oldDmaMode != thiscore.DmaMode)
@@ -806,6 +809,39 @@ void V_Core::WriteRegPS1( u32 mem, u16 value )
 			break;
 		case 0x1DBE:
 			break;
+
+		case	0x1DC0: Revb.FB_SRC_A = value; break;
+		case	0x1DC2: Revb.FB_SRC_B = value; break;
+		case	0x1DC4: Revb.IIR_ALPHA = value; break;
+		case	0x1DC6: Revb.ACC_COEF_A = value; break;
+		case	0x1DC8: Revb.ACC_COEF_B = value; break;
+		case	0x1DCA: Revb.ACC_COEF_C = value; break;
+		case	0x1DCC: Revb.ACC_COEF_D = value; break;
+		case	0x1DCE: Revb.IIR_COEF = value; break;
+		case	0x1DD0: Revb.FB_ALPHA = value; break;
+		case	0x1DD2: Revb.FB_X = value; break;
+		case	0x1DD4: Revb.IIR_DEST_A0 = value; break;
+		case	0x1DD6: Revb.IIR_DEST_A1 = value; break;
+		case	0x1DD8: Revb.ACC_SRC_A0 = value; break;
+		case	0x1DDA: Revb.ACC_SRC_A1 = value; break;
+		case	0x1DDC: Revb.ACC_SRC_B0 = value; break;
+		case	0x1DDE: Revb.ACC_SRC_B1 = value; break;
+		case	0x1DE0: Revb.IIR_SRC_A0 = value; break;
+		case	0x1DE2: Revb.IIR_SRC_A1 = value; break;
+		case	0x1DE4: Revb.IIR_DEST_B0 = value; break;
+		case	0x1DE6: Revb.IIR_DEST_B1 = value; break;
+		case	0x1DE8: Revb.ACC_SRC_C0 = value; break;
+		case	0x1DEA: Revb.ACC_SRC_C1 = value; break;
+		case	0x1DEC: Revb.ACC_SRC_D0 = value; break;
+		case	0x1DEE: Revb.ACC_SRC_D1 = value; break;
+		case	0x1DF0: Revb.IIR_SRC_B1 = value; break;
+		case	0x1DF2: Revb.IIR_SRC_B0 = value; break;
+		case	0x1DF4: Revb.MIX_DEST_A0 = value; break;
+		case	0x1DF6: Revb.MIX_DEST_A1 = value; break;
+		case	0x1DF8: Revb.MIX_DEST_B0 = value; break;
+		case	0x1DFA: Revb.MIX_DEST_B1 = value; break;
+		case	0x1DFC: Revb.IN_COEF_L = value; break;
+		case	0x1DFE: Revb.IN_COEF_R = value; break;
 
 	}
 
