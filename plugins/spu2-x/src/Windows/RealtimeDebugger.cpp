@@ -164,13 +164,6 @@ void UpdateDebugDialog()
 				TextOut(hdc,IX+4,IY+32,t,6);
 
 				vcd.displayPeak = 0;
-
-				if(vcd.lastSetStartA != vc.StartA)
-				{
-					printf(" *** Warning! Core %d Voice %d: StartA should be %06x, and is %06x.\n",
-						c,v,vcd.lastSetStartA,vc.StartA);
-					vcd.lastSetStartA = vc.StartA;
-				}
 			}
 
 			// top now: 400

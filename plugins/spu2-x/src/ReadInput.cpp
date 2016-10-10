@@ -31,6 +31,7 @@
 //
 StereoOut32 V_Core::ReadInput_HiFi()
 {
+	if (psxmode)ConLog("ReadInput_HiFi!!!!!\n");
 	InputPosRead &= ~1;
 //
 //#ifdef PCM24_S1_INTERLEAVE

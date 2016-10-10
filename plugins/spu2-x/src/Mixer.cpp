@@ -834,9 +834,9 @@ void Mix()
 	}
 
 	// Commit Core 0 output to ram before mixing Core 1:
+	spu2M_WriteFast(0x800 + OutPos, Ext.Left);
+	spu2M_WriteFast(0xA00 + OutPos, Ext.Right);
 
-	spu2M_WriteFast( 0x800 + OutPos, Ext.Left );
-	spu2M_WriteFast( 0xA00 + OutPos, Ext.Right );
 	WaveDump::WriteCore( 0, CoreSrc_External, Ext );
 
 	Ext = ApplyVolume( Ext, Cores[1].ExtVol );
