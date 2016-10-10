@@ -55,7 +55,6 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep -v "${1}plugins/GSdx/" | \
     grep -v "${1}plugins/GSdx_legacy/" | \
     grep -v "${1}plugins/PeopsSPU2/" | \
-    grep -v "${1}plugins/spu2-x/" | \
     grep -v "${1}plugins/SSSPSXPAD/" | \
     grep -v "${1}plugins/USBqemu/" | \
     grep -v "${1}plugins/xpad/" | \
