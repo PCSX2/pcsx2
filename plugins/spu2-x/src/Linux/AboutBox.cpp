@@ -15,9 +15,9 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include "Dialogs.h"
+#include "Dialogs.h"
 
 void AboutBox()
 {
-	SysMessage("Yay: Aboutbox.");
+    SysMessage("Yay: Aboutbox.");
 }

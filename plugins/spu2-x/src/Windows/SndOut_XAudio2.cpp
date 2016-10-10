@@ -26,41 +26,41 @@
 
 namespace Exception
 {
-	class XAudio2Error : public std::runtime_error
-	{
-	protected:
-		static const char* SomeKindaErrorString(HRESULT hr)
-		{
-			switch (hr) {
-			case XAUDIO2_E_INVALID_CALL:
-				return "Invalid call for the XA2 object state.";
+class XAudio2Error : public std::runtime_error
+{
+protected:
+    static const char *SomeKindaErrorString(HRESULT hr)
+    {
+        switch (hr) {
+            case XAUDIO2_E_INVALID_CALL:
+                return "Invalid call for the XA2 object state.";
 
-			case XAUDIO2_E_DEVICE_INVALIDATED:
-				return "Device is unavailable, unplugged, unsupported, or has been consumed by The Nothing.";
-			}
-			return "Unknown error code!";
-		}
+            case XAUDIO2_E_DEVICE_INVALIDATED:
+                return "Device is unavailable, unplugged, unsupported, or has been consumed by The Nothing.";
+        }
+        return "Unknown error code!";
+    }
 
-	public:
-		const HRESULT ErrorCode;
-		std::string m_Message;
+public:
+    const HRESULT ErrorCode;
+    std::string m_Message;
 
-		const char* CMessage() const
-		{
-			return m_Message.c_str();
-		}
+    const char *CMessage() const
+    {
+        return m_Message.c_str();
+    }
 
-		virtual ~XAudio2Error() throw() {}
-		XAudio2Error(const HRESULT result, const std::string& msg) :
-			runtime_error(msg),
-			ErrorCode(result),
-			m_Message()
-		{
-			char omg[1024];
-			sprintf_s(omg, "%s (code 0x%x)\n\n%s", what(), ErrorCode, SomeKindaErrorString(ErrorCode));
-			m_Message = omg;
-		}
-	};
+    virtual ~XAudio2Error() throw() {}
+    XAudio2Error(const HRESULT result, const std::string &msg)
+        : runtime_error(msg)
+        , ErrorCode(result)
+        , m_Message()
+    {
+        char omg[1024];
+        sprintf_s(omg, "%s (code 0x%x)\n\n%s", what(), ErrorCode, SomeKindaErrorString(ErrorCode));
+        m_Message = omg;
+    }
+};
 }
 
 static const double SndOutNormalizer = (double)(1UL << (SndOutVolumeShift + 16));
@@ -68,334 +68,364 @@ static const double SndOutNormalizer = (double)(1UL << (SndOutVolumeShift + 16))
 class XAudio2Mod : public SndOutModule
 {
 private:
-	static const int PacketsPerBuffer = 8;
-	static const int MAX_BUFFER_COUNT = 3;
+    static const int PacketsPerBuffer = 8;
+    static const int MAX_BUFFER_COUNT = 3;
 
-	class BaseStreamingVoice : public IXAudio2VoiceCallback
-	{
-	protected:
-		IXAudio2SourceVoice* pSourceVoice;
-		s16* qbuffer;
+    class BaseStreamingVoice : public IXAudio2VoiceCallback
+    {
+    protected:
+        IXAudio2SourceVoice *pSourceVoice;
+        s16 *qbuffer;
 
-		const uint m_nBuffers;
-		const uint m_nChannels;
-		const uint m_BufferSize;
-		const uint m_BufferSizeBytes;
+        const uint m_nBuffers;
+        const uint m_nChannels;
+        const uint m_BufferSize;
+        const uint m_BufferSizeBytes;
 
-		CRITICAL_SECTION cs;
+        CRITICAL_SECTION cs;
 
-	public:
-		int GetEmptySampleCount()
-		{
-			XAUDIO2_VOICE_STATE state;
-			pSourceVoice->GetState(&state);
-			return state.SamplesPlayed & (m_BufferSize - 1);
-		}
+    public:
+        int GetEmptySampleCount()
+        {
+            XAUDIO2_VOICE_STATE state;
+            pSourceVoice->GetState(&state);
+            return state.SamplesPlayed & (m_BufferSize - 1);
+        }
 
-		virtual ~BaseStreamingVoice()
-		{
-		}
+        virtual ~BaseStreamingVoice()
+        {
+        }
 
-		BaseStreamingVoice(uint numChannels) :
-			m_nBuffers(Config_XAudio2.NumBuffers),
-			m_nChannels(numChannels),
-			m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer),
-			m_BufferSizeBytes(m_BufferSize * sizeof(s16))
-		{
-		}
+        BaseStreamingVoice(uint numChannels)
+            : m_nBuffers(Config_XAudio2.NumBuffers)
+            , m_nChannels(numChannels)
+            , m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
+            , m_BufferSizeBytes(m_BufferSize * sizeof(s16))
+        {
+        }
 
-		virtual void Init(IXAudio2* pXAudio2) = 0;
+        virtual void Init(IXAudio2 *pXAudio2) = 0;
 
-	protected:
-		// Several things must be initialized separate of the constructor, due to the fact that
-		// virtual calls can't be made from the constructor's context.
-		void _init(IXAudio2* pXAudio2, uint chanConfig)
-		{
-			WAVEFORMATEXTENSIBLE wfx;
+    protected:
+        // Several things must be initialized separate of the constructor, due to the fact that
+        // virtual calls can't be made from the constructor's context.
+        void _init(IXAudio2 *pXAudio2, uint chanConfig)
+        {
+            WAVEFORMATEXTENSIBLE wfx;
 
-			memset(&wfx, 0, sizeof(WAVEFORMATEXTENSIBLE));
-			wfx.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-			wfx.Format.nSamplesPerSec = SampleRate;
-			wfx.Format.nChannels = m_nChannels;
-			wfx.Format.wBitsPerSample = 16;
-			wfx.Format.nBlockAlign = wfx.Format.nChannels * wfx.Format.wBitsPerSample / 8;
-			wfx.Format.nAvgBytesPerSec = SampleRate * wfx.Format.nBlockAlign;
-			wfx.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
-			wfx.Samples.wValidBitsPerSample = 16;
-			wfx.dwChannelMask = chanConfig;
-			wfx.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+            memset(&wfx, 0, sizeof(WAVEFORMATEXTENSIBLE));
+            wfx.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+            wfx.Format.nSamplesPerSec = SampleRate;
+            wfx.Format.nChannels = m_nChannels;
+            wfx.Format.wBitsPerSample = 16;
+            wfx.Format.nBlockAlign = wfx.Format.nChannels * wfx.Format.wBitsPerSample / 8;
+            wfx.Format.nAvgBytesPerSec = SampleRate * wfx.Format.nBlockAlign;
+            wfx.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+            wfx.Samples.wValidBitsPerSample = 16;
+            wfx.dwChannelMask = chanConfig;
+            wfx.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 
-			//
-			// Create an XAudio2 voice to stream this wave
-			//
-			HRESULT hr;
-			if (FAILED(hr = pXAudio2->CreateSourceVoice(&pSourceVoice, (WAVEFORMATEX*)&wfx,
-				XAUDIO2_VOICE_NOSRC, 1.0f, this))) {
-				throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure.");
-			}
+            //
+            // Create an XAudio2 voice to stream this wave
+            //
+            HRESULT hr;
+            if (FAILED(hr = pXAudio2->CreateSourceVoice(&pSourceVoice, (WAVEFORMATEX *)&wfx,
+                                                        XAUDIO2_VOICE_NOSRC, 1.0f, this))) {
+                throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure.");
+            }
 
-			InitializeCriticalSection(&cs);
-			EnterCriticalSection(&cs);
+            InitializeCriticalSection(&cs);
+            EnterCriticalSection(&cs);
 
-			pSourceVoice->FlushSourceBuffers();
-			pSourceVoice->Start(0, 0);
+            pSourceVoice->FlushSourceBuffers();
+            pSourceVoice->Start(0, 0);
 
-			qbuffer = new s16[m_nBuffers * m_BufferSize];
-			ZeroMemory(qbuffer, m_BufferSizeBytes * m_nBuffers);
+            qbuffer = new s16[m_nBuffers * m_BufferSize];
+            ZeroMemory(qbuffer, m_BufferSizeBytes * m_nBuffers);
 
-			// Start some buffers.
+            // Start some buffers.
 
-			for (uint i = 0; i < m_nBuffers; i++) {
-				XAUDIO2_BUFFER buf = { 0 };
-				buf.AudioBytes = m_BufferSizeBytes;
-				buf.pContext = &qbuffer[i*m_BufferSize];
-				buf.pAudioData = (BYTE*)buf.pContext;
-				pSourceVoice->SubmitSourceBuffer(&buf);
-			}
+            for (uint i = 0; i < m_nBuffers; i++) {
+                XAUDIO2_BUFFER buf = {0};
+                buf.AudioBytes = m_BufferSizeBytes;
+                buf.pContext = &qbuffer[i * m_BufferSize];
+                buf.pAudioData = (BYTE *)buf.pContext;
+                pSourceVoice->SubmitSourceBuffer(&buf);
+            }
 
-			LeaveCriticalSection(&cs);
-		}
+            LeaveCriticalSection(&cs);
+        }
 
-		STDMETHOD_(void, OnVoiceProcessingPassStart) () {}
-		STDMETHOD_(void, OnVoiceProcessingPassStart) (UINT32) {}
-		STDMETHOD_(void, OnVoiceProcessingPassEnd) () {}
-		STDMETHOD_(void, OnStreamEnd) () {}
-		STDMETHOD_(void, OnBufferStart) (void*) {}
-		STDMETHOD_(void, OnLoopEnd) (void*) {}
-		STDMETHOD_(void, OnVoiceError) (THIS_ void* pBufferContext, HRESULT Error) {}
-	};
+        STDMETHOD_(void, OnVoiceProcessingPassStart)
+        () {}
+        STDMETHOD_(void, OnVoiceProcessingPassStart)
+        (UINT32) {}
+        STDMETHOD_(void, OnVoiceProcessingPassEnd)
+        () {}
+        STDMETHOD_(void, OnStreamEnd)
+        () {}
+        STDMETHOD_(void, OnBufferStart)
+        (void *) {}
+        STDMETHOD_(void, OnLoopEnd)
+        (void *) {}
+        STDMETHOD_(void, OnVoiceError)
+        (THIS_ void *pBufferContext, HRESULT Error) {}
+    };
 
-	template< typename T >
-	class StreamingVoice : public BaseStreamingVoice
-	{
-	public:
-		StreamingVoice(IXAudio2* pXAudio2) :
-			BaseStreamingVoice(sizeof(T) / sizeof(s16))
-		{
-		}
+    template <typename T>
+    class StreamingVoice : public BaseStreamingVoice
+    {
+    public:
+        StreamingVoice(IXAudio2 *pXAudio2)
+            : BaseStreamingVoice(sizeof(T) / sizeof(s16))
+        {
+        }
 
-		virtual ~StreamingVoice()
-		{
-			IXAudio2SourceVoice* killMe = pSourceVoice;
-			pSourceVoice = NULL;
-			killMe->FlushSourceBuffers();
-			killMe->DestroyVoice();
+        virtual ~StreamingVoice()
+        {
+            IXAudio2SourceVoice *killMe = pSourceVoice;
+            pSourceVoice = NULL;
+            killMe->FlushSourceBuffers();
+            killMe->DestroyVoice();
 
-			EnterCriticalSection(&cs);
-			safe_delete_array(qbuffer);
-			LeaveCriticalSection(&cs);
-			DeleteCriticalSection(&cs);
-		}
+            EnterCriticalSection(&cs);
+            safe_delete_array(qbuffer);
+            LeaveCriticalSection(&cs);
+            DeleteCriticalSection(&cs);
+        }
 
-		void Init(IXAudio2* pXAudio2)
-		{
-			int chanMask = 0;
-			switch (m_nChannels) {
-			case 1: chanMask |= SPEAKER_FRONT_CENTER; break;
-			case 2: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT; break;
-			case 3: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY; break;
-			case 4: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT; break;
-			case 5: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT; break;
-			case 6: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY; break;
-			case 8: chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT | SPEAKER_LOW_FREQUENCY; break;
-			}
-			_init(pXAudio2, chanMask);
-		}
+        void Init(IXAudio2 *pXAudio2)
+        {
+            int chanMask = 0;
+            switch (m_nChannels) {
+                case 1:
+                    chanMask |= SPEAKER_FRONT_CENTER;
+                    break;
+                case 2:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT;
+                    break;
+                case 3:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY;
+                    break;
+                case 4:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+                    break;
+                case 5:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+                    break;
+                case 6:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY;
+                    break;
+                case 8:
+                    chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT | SPEAKER_LOW_FREQUENCY;
+                    break;
+            }
+            _init(pXAudio2, chanMask);
+        }
 
-	protected:
-		STDMETHOD_(void, OnBufferEnd) (void* context)
-		{
-			EnterCriticalSection(&cs);
+    protected:
+        STDMETHOD_(void, OnBufferEnd)
+        (void *context)
+        {
+            EnterCriticalSection(&cs);
 
-			// All of these checks are necessary because XAudio2 is wonky shizat.
-			if (pSourceVoice == NULL || context == NULL) {
-				LeaveCriticalSection(&cs);
-				return;
-			}
+            // All of these checks are necessary because XAudio2 is wonky shizat.
+            if (pSourceVoice == NULL || context == NULL) {
+                LeaveCriticalSection(&cs);
+                return;
+            }
 
-			T* qb = (T*)context;
+            T *qb = (T *)context;
 
-			for (int p = 0; p < PacketsPerBuffer; p++, qb += SndOutPacketSize)
-				SndBuffer::ReadSamples(qb);
+            for (int p = 0; p < PacketsPerBuffer; p++, qb += SndOutPacketSize)
+                SndBuffer::ReadSamples(qb);
 
-			XAUDIO2_BUFFER buf = { 0 };
-			buf.AudioBytes = m_BufferSizeBytes;
-			buf.pAudioData = (BYTE*)context;
-			buf.pContext = context;
+            XAUDIO2_BUFFER buf = {0};
+            buf.AudioBytes = m_BufferSizeBytes;
+            buf.pAudioData = (BYTE *)context;
+            buf.pContext = context;
 
-			pSourceVoice->SubmitSourceBuffer(&buf);
-			LeaveCriticalSection(&cs);
-		}
+            pSourceVoice->SubmitSourceBuffer(&buf);
+            LeaveCriticalSection(&cs);
+        }
+    };
 
-	};
-
-	HMODULE xAudio2DLL;
-	decltype(&XAudio2Create) pXAudio2Create;
-	CComPtr<IXAudio2> pXAudio2;
-	IXAudio2MasteringVoice* pMasteringVoice;
-	BaseStreamingVoice* voiceContext;
+    HMODULE xAudio2DLL;
+    decltype(&XAudio2Create) pXAudio2Create;
+    CComPtr<IXAudio2> pXAudio2;
+    IXAudio2MasteringVoice *pMasteringVoice;
+    BaseStreamingVoice *voiceContext;
 
 public:
+    s32 Init()
+    {
+        HRESULT hr;
 
-	s32 Init()
-	{
-		HRESULT hr;
+        pxAssume(pXAudio2 == NULL);
 
-		pxAssume(pXAudio2 == NULL);
+        xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        if (xAudio2DLL == nullptr)
+            throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
 
-		xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if (xAudio2DLL == nullptr)
-			throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
+        pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
+        if (pXAudio2Create == nullptr)
+            throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
 
-		pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
-		if (pXAudio2Create == nullptr)
-			throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
+        //
+        // Initialize XAudio2
+        //
+        CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
-		//
-		// Initialize XAudio2
-		//
-		CoInitializeEx(NULL, COINIT_MULTITHREADED);
+        try {
+            if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+                throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
 
-		try {
-			if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
-				throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
+            // Stereo Expansion was planned to grab the currently configured number of
+            // Speakers from Windows's audio config.
+            // This doesn't always work though, so let it be a user configurable option.
 
-			// Stereo Expansion was planned to grab the currently configured number of
-			// Speakers from Windows's audio config.
-			// This doesn't always work though, so let it be a user configurable option.
+            int speakers;
+            switch (numSpeakers)  // speakers = (numSpeakers + 1) *2; ?
+            {
+                case 0:
+                    speakers = 2;
+                    break;  // Stereo
+                case 1:
+                    speakers = 4;
+                    break;  // Quadrafonic
+                case 2:
+                    speakers = 6;
+                    break;  // Surround 5.1
+                case 3:
+                    speakers = 8;
+                    break;  // Surround 7.1
+                default:
+                    speakers = 2;
+            }
 
-			int speakers;
-			switch (numSpeakers) // speakers = (numSpeakers + 1) *2; ?
-			{
-			case 0: speakers = 2; break; // Stereo
-			case 1: speakers = 4; break; // Quadrafonic
-			case 2: speakers = 6; break; // Surround 5.1
-			case 3: speakers = 8; break; // Surround 7.1
-			default: speakers = 2;
-			}
+            //
+            // Create a mastering voice
+            //
+            if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate))) {
+                SysMessage("Failed creating mastering voice: %#X\n", hr);
+                CoUninitialize();
+                return -1;
+            }
 
-			//
-			// Create a mastering voice
-			//
-			if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate))) {
-				SysMessage("Failed creating mastering voice: %#X\n", hr);
-				CoUninitialize();
-				return -1;
-			}
+            switch (speakers) {
+                case 2:
+                    ConLog("* SPU2 > Using normal 2 speaker stereo output.\n");
+                    voiceContext = new StreamingVoice<StereoOut16>(pXAudio2);
+                    break;
 
-			switch (speakers) {
-			case 2:
-				ConLog("* SPU2 > Using normal 2 speaker stereo output.\n");
-				voiceContext = new StreamingVoice<StereoOut16>(pXAudio2);
-				break;
+                case 3:
+                    ConLog("* SPU2 > 2.1 speaker expansion enabled.\n");
+                    voiceContext = new StreamingVoice<Stereo21Out16>(pXAudio2);
+                    break;
 
-			case 3:
-				ConLog("* SPU2 > 2.1 speaker expansion enabled.\n");
-				voiceContext = new StreamingVoice<Stereo21Out16>(pXAudio2);
-				break;
+                case 4:
+                    ConLog("* SPU2 > 4 speaker expansion enabled [quadraphenia]\n");
+                    voiceContext = new StreamingVoice<Stereo40Out16>(pXAudio2);
+                    break;
 
-			case 4:
-				ConLog("* SPU2 > 4 speaker expansion enabled [quadraphenia]\n");
-				voiceContext = new StreamingVoice<Stereo40Out16>(pXAudio2);
-				break;
+                case 5:
+                    ConLog("* SPU2 > 4.1 speaker expansion enabled.\n");
+                    voiceContext = new StreamingVoice<Stereo41Out16>(pXAudio2);
+                    break;
 
-			case 5:
-				ConLog("* SPU2 > 4.1 speaker expansion enabled.\n");
-				voiceContext = new StreamingVoice<Stereo41Out16>(pXAudio2);
-				break;
+                case 6:
+                case 7:
+                    switch (dplLevel) {
+                        case 0:
+                            ConLog("* SPU2 > 5.1 speaker expansion enabled.\n");
+                            voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);  //"normal" stereo upmix
+                            break;
+                        case 1:
+                            ConLog("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n");
+                            voiceContext = new StreamingVoice<Stereo51Out16Dpl>(pXAudio2);  // basic Dpl decoder without rear stereo balancing
+                            break;
+                        case 2:
+                            ConLog("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n");
+                            voiceContext = new StreamingVoice<Stereo51Out16DplII>(pXAudio2);  //gigas PLII
+                            break;
+                    }
+                    break;
 
-			case 6:
-			case 7:
-				switch (dplLevel) {
-				case 0:
-					ConLog("* SPU2 > 5.1 speaker expansion enabled.\n");
-					voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);   //"normal" stereo upmix
-					break;
-				case 1:
-					ConLog("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n");
-					voiceContext = new StreamingVoice<Stereo51Out16Dpl>(pXAudio2); // basic Dpl decoder without rear stereo balancing
-					break;
-				case 2:
-					ConLog("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n");
-					voiceContext = new StreamingVoice<Stereo51Out16DplII>(pXAudio2); //gigas PLII
-					break;
-				}
-				break;
+                default:  // anything 8 or more gets the 7.1 treatment!
+                    ConLog("* SPU2 > 7.1 speaker expansion enabled.\n");
+                    voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);
+                    break;
+            }
 
-			default:	// anything 8 or more gets the 7.1 treatment!
-				ConLog("* SPU2 > 7.1 speaker expansion enabled.\n");
-				voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);
-				break;
-			}
+            voiceContext->Init(pXAudio2);
+        } catch (Exception::XAudio2Error &ex) {
+            SysMessage(ex.CMessage());
+            pXAudio2.Release();
+            CoUninitialize();
+            return -1;
+        }
 
-			voiceContext->Init(pXAudio2);
-		} catch (Exception::XAudio2Error& ex) {
-			SysMessage(ex.CMessage());
-			pXAudio2.Release();
-			CoUninitialize();
-			return -1;
-		}
+        return 0;
+    }
 
-		return 0;
-	}
+    void Close()
+    {
+        safe_delete(voiceContext);
 
-	void Close()
-	{
-		safe_delete(voiceContext);
+        voiceContext = NULL;
 
-		voiceContext = NULL;
+        if (pMasteringVoice != NULL)
+            pMasteringVoice->DestroyVoice();
 
-		if (pMasteringVoice != NULL)
-			pMasteringVoice->DestroyVoice();
+        pMasteringVoice = NULL;
 
-		pMasteringVoice = NULL;
+        pXAudio2.Release();
+        CoUninitialize();
 
-		pXAudio2.Release();
-		CoUninitialize();
+        if (xAudio2DLL) {
+            FreeLibrary(xAudio2DLL);
+            xAudio2DLL = nullptr;
+            pXAudio2Create = nullptr;
+        }
+    }
 
-		if (xAudio2DLL) {
-			FreeLibrary(xAudio2DLL);
-			xAudio2DLL = nullptr;
-			pXAudio2Create = nullptr;
-		}
-	}
+    virtual void Configure(uptr parent)
+    {
+    }
 
-	virtual void Configure(uptr parent)
-	{
-	}
+    s32 Test() const
+    {
+        return 0;
+    }
 
-	s32  Test() const
-	{
-		return 0;
-	}
+    int GetEmptySampleCount()
+    {
+        if (voiceContext == NULL)
+            return 0;
+        return voiceContext->GetEmptySampleCount();
+    }
 
-	int GetEmptySampleCount()
-	{
-		if (voiceContext == NULL) return 0;
-		return voiceContext->GetEmptySampleCount();
-	}
+    const wchar_t *GetIdent() const
+    {
+        return L"xaudio2";
+    }
 
-	const wchar_t* GetIdent() const
-	{
-		return L"xaudio2";
-	}
+    const wchar_t *GetLongName() const
+    {
+        return L"XAudio 2 (Recommended)";
+    }
 
-	const wchar_t* GetLongName() const
-	{
-		return L"XAudio 2 (Recommended)";
-	}
+    void ReadSettings()
+    {
+    }
 
-	void ReadSettings()
-	{
-	}
+    void SetApiSettings(wxString api)
+    {
+    }
 
-	void SetApiSettings(wxString api)
-	{
-	}
-
-	void WriteSettings() const
-	{
-	}
+    void WriteSettings() const
+    {
+    }
 
 } static XA2;
 

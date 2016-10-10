@@ -22,48 +22,45 @@
 
 static LRESULT WINAPI AboutProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch(uMsg)
-	{
-		case WM_INITDIALOG:
-		{
-			wchar_t outstr[256];
-			if( IsDevBuild )
-				swprintf_s( outstr, L"Build %lld -- Compiled on " _T(__DATE__), SVN_REV );
-			else
-				swprintf_s( outstr, L"Release v%d.%d -- Compiled on "  _T(__DATE__),
-					VersionInfo::Release, VersionInfo::Revision );
+    switch (uMsg) {
+        case WM_INITDIALOG: {
+            wchar_t outstr[256];
+            if (IsDevBuild)
+                swprintf_s(outstr, L"Build %lld -- Compiled on " _T(__DATE__), SVN_REV);
+            else
+                swprintf_s(outstr, L"Release v%d.%d -- Compiled on " _T(__DATE__),
+                           VersionInfo::Release, VersionInfo::Revision);
 
-			SetWindowText( GetDlgItem(hDlg, IDC_LABEL_VERSION_INFO), outstr );
-			ShowWindow( hDlg, true );
-		}
-		return TRUE;
+            SetWindowText(GetDlgItem(hDlg, IDC_LABEL_VERSION_INFO), outstr);
+            ShowWindow(hDlg, true);
+        }
+            return TRUE;
 
-		case WM_COMMAND:
-			switch( LOWORD(wParam) )
-			{
-				case IDOK:
-					EndDialog(hDlg, TRUE );
-				return TRUE;
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDOK:
+                    EndDialog(hDlg, TRUE);
+                    return TRUE;
 
-				case IDC_LINK_WEBSITE:
-					ShellExecute(hDlg, L"open", L"http://www.pcsx2.net/",
-						NULL, NULL, SW_SHOWNORMAL);
-				return TRUE;
+                case IDC_LINK_WEBSITE:
+                    ShellExecute(hDlg, L"open", L"http://www.pcsx2.net/",
+                                 NULL, NULL, SW_SHOWNORMAL);
+                    return TRUE;
 
-				case IDC_LINK_GOOGLECODE:
-					ShellExecute(hDlg, L"open", L"https://github.com/PCSX2/pcsx2",
-						NULL, NULL, SW_SHOWNORMAL);
-				return TRUE;
-			}
-		break;
+                case IDC_LINK_GOOGLECODE:
+                    ShellExecute(hDlg, L"open", L"https://github.com/PCSX2/pcsx2",
+                                 NULL, NULL, SW_SHOWNORMAL);
+                    return TRUE;
+            }
+            break;
 
-		default:
-			return FALSE;
-	}
-	return TRUE;
+        default:
+            return FALSE;
+    }
+    return TRUE;
 }
 
 void AboutBox()
 {
-	DialogBox( hInstance, MAKEINTRESOURCE(IDD_ABOUT), GetActiveWindow(), (DLGPROC)AboutProc );
+    DialogBox(hInstance, MAKEINTRESOURCE(IDD_ABOUT), GetActiveWindow(), (DLGPROC)AboutProc);
 }

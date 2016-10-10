@@ -15,7 +15,7 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- // To be continued...
+// To be continued...
 
 #include "Dialogs.h"
 #include <cstring>
@@ -32,34 +32,35 @@ void SysMessage(const char *fmt, ...)
     vsprintf(msg, fmt, list);
     va_end(list);
 
-    if (msg[strlen(msg)-1] == '\n') msg[strlen(msg)-1] = 0;
+    if (msg[strlen(msg) - 1] == '\n')
+        msg[strlen(msg) - 1] = 0;
 
     GtkWidget *dialog;
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK,
-                                     "%s", msg);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    dialog = gtk_message_dialog_new(NULL,
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "%s", msg);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
 
 void SysMessage(const wchar_t *fmt, ...)
 {
-	va_list list;
-	va_start(list,fmt);
-	wxString msg;
-	msg.PrintfV( fmt, list );
-	va_end(list);
+    va_list list;
+    va_start(list, fmt);
+    wxString msg;
+    msg.PrintfV(fmt, list);
+    va_end(list);
 
     GtkWidget *dialog;
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK,
-                                     "%s", msg.ToUTF8().data());
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    dialog = gtk_message_dialog_new(NULL,
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "%s", msg.ToUTF8().data());
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
 #endif
 
@@ -67,8 +68,7 @@ void DspUpdate()
 {
 }
 
-s32 DspLoadLibrary(wchar_t* fileName, int modnum)
+s32 DspLoadLibrary(wchar_t *fileName, int modnum)
 {
-	return 0;
+    return 0;
 }
-

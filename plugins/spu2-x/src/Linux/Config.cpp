@@ -32,7 +32,7 @@ static const int LATENCY_MAX = 750;
 
 static const int LATENCY_MIN = 15;
 
-int AutoDMAPlayRate[2] = {0,0};
+int AutoDMAPlayRate[2] = {0, 0};
 
 // Default settings.
 
@@ -47,9 +47,9 @@ int Interpolation = 4;
 */
 
 bool EffectsDisabled = false;
-float FinalVolume; // global
+float FinalVolume;  // global
 bool AdvancedVolumeControl;
-float VolumeAdjustFLdb; // decibels settings, cos audiophiles love that
+float VolumeAdjustFLdb;  // decibels settings, cos audiophiles love that
 float VolumeAdjustCdb;
 float VolumeAdjustFRdb;
 float VolumeAdjustBLdb;
@@ -57,7 +57,7 @@ float VolumeAdjustBRdb;
 float VolumeAdjustSLdb;
 float VolumeAdjustSRdb;
 float VolumeAdjustLFEdb;
-float VolumeAdjustFL;   // linear coefs calcualted from decibels,
+float VolumeAdjustFL;  // linear coefs calcualted from decibels,
 float VolumeAdjustC;
 float VolumeAdjustFR;
 float VolumeAdjustBL;
@@ -69,12 +69,12 @@ unsigned int delayCycles;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
-bool _visual_debug_enabled = false; // windows only feature
+bool _visual_debug_enabled = false;  // windows only feature
 
 // OUTPUT
 u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
-int SynchMode = 0; // Time Stretch, Async or Disabled
+int SynchMode = 0;  // Time Stretch, Async or Disabled
 static u32 OutputAPI = 0;
 static u32 SdlOutputAPI = 0;
 
@@ -84,135 +84,138 @@ int dplLevel = 0;
 
 void ReadSettings()
 {
-	// For some reason this can be called before we know what ini file we're writing to.
-	// Lets not try to read it if that happens.
-	if (!pathSet) 
-	{
-		FileLog("Read called without the path set.\n");
-		return;
-	}
-	
-	Interpolation = CfgReadInt( L"MIXING",L"Interpolation", 4 );
-	EffectsDisabled = CfgReadBool( L"MIXING", L"Disable_Effects", false );
-	postprocess_filter_dealias = CfgReadBool( L"MIXING", L"DealiasFilter", false );
-	FinalVolume = ((float)CfgReadInt( L"MIXING", L"FinalVolume", 100 )) / 100;
-	if ( FinalVolume > 1.0f) FinalVolume = 1.0f;
+    // For some reason this can be called before we know what ini file we're writing to.
+    // Lets not try to read it if that happens.
+    if (!pathSet) {
+        FileLog("Read called without the path set.\n");
+        return;
+    }
 
-	AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
-	VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
-	VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
-	VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
-	VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
-	VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
-	VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
-	VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
-	VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
-	VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
-	VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
-	VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
-	VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
-	VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
-	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
-	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
-	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
-	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
+    Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
+    EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
+    postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
+    FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
+    if (FinalVolume > 1.0f)
+        FinalVolume = 1.0f;
+
+    AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
+    VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
+    VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
+    VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
+    VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
+    VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
+    VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
+    VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
+    VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
+    VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
+    VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
+    VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
+    VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
+    VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
+    VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
+    VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
+    VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
+    delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 
 
-	wxString temp;
-	CfgReadStr( L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent() );
-	OutputModule = FindOutputModuleById( temp.c_str() );// find the driver index of this module
+    wxString temp;
+    CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
+    OutputModule = FindOutputModuleById(temp.c_str());  // find the driver index of this module
 
-	// find current API
+// find current API
 #ifdef __linux__
-	CfgReadStr( L"PORTAUDIO", L"HostApi", temp, L"ALSA" );
-	OutputAPI = -1;
-	if (temp == L"ALSA") OutputAPI = 0;
-	if (temp == L"OSS")  OutputAPI = 1;
-	if (temp == L"JACK") OutputAPI = 2;
+    CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
+    OutputAPI = -1;
+    if (temp == L"ALSA")
+        OutputAPI = 0;
+    if (temp == L"OSS")
+        OutputAPI = 1;
+    if (temp == L"JACK")
+        OutputAPI = 2;
 #else
-	CfgReadStr( L"PORTAUDIO", L"HostApi", temp, L"OSS" );
-	OutputAPI = -1;
+    CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
+    OutputAPI = -1;
 
-	if (temp == L"OSS")  OutputAPI = 0;
+    if (temp == L"OSS")
+        OutputAPI = 0;
 #endif
 
 #ifdef __linux__
-	CfgReadStr( L"SDL", L"HostApi", temp, L"pulseaudio" );
-	SdlOutputAPI = -1;
+    CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
+    SdlOutputAPI = -1;
 #if SDL_MAJOR_VERSION >= 2
-	// YES It sucks ...
-	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-		if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
-			SdlOutputAPI = i;
-	}
+    // YES It sucks ...
+    for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
+        if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
+            SdlOutputAPI = i;
+    }
 #endif
 #endif
 
-	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 300);
-	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
+    SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
+    SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 
-	PortaudioOut->ReadSettings();
+    PortaudioOut->ReadSettings();
 #ifdef __linux__
-	SDLOut->ReadSettings();
+    SDLOut->ReadSettings();
 #endif
-	SoundtouchCfg::ReadSettings();
-	DebugConfig::ReadSettings();
+    SoundtouchCfg::ReadSettings();
+    DebugConfig::ReadSettings();
 
-	// Sanity Checks
-	// -------------
+    // Sanity Checks
+    // -------------
 
-	Clampify( SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX );
+    Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 
-	WriteSettings();
-	spuConfig->Flush();
+    WriteSettings();
+    spuConfig->Flush();
 }
 
 /*****************************************************************************/
 
 void WriteSettings()
 {
-	if (!pathSet) 
-	{
-		FileLog("Write called without the path set.\n");
-		return;
-	}
+    if (!pathSet) {
+        FileLog("Write called without the path set.\n");
+        return;
+    }
 
-	CfgWriteInt(L"MIXING",L"Interpolation",Interpolation);
-	CfgWriteBool(L"MIXING",L"Disable_Effects",EffectsDisabled);
-	CfgWriteBool(L"MIXING",L"DealiasFilter",postprocess_filter_dealias);
-	CfgWriteInt(L"MIXING",L"FinalVolume",(int)(FinalVolume * 100 +0.5f));
+    CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
+    CfgWriteBool(L"MIXING", L"Disable_Effects", EffectsDisabled);
+    CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
+    CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
 
-	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
-	CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
+    CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
+    CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
 
-	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
-	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
-	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
-	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
+    CfgWriteStr(L"OUTPUT", L"Output_Module", mods[OutputModule]->GetIdent());
+    CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
+    CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
+    CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
-	PortaudioOut->WriteSettings();
+    PortaudioOut->WriteSettings();
 #ifdef __linux__
-	SDLOut->WriteSettings();
+    SDLOut->WriteSettings();
 #endif
-	SoundtouchCfg::WriteSettings();
-	DebugConfig::WriteSettings();
+    SoundtouchCfg::WriteSettings();
+    DebugConfig::WriteSettings();
 }
 
 void advanced_dialog()
 {
-	SoundtouchCfg::DisplayDialog();
+    SoundtouchCfg::DisplayDialog();
 }
 
 void debug_dialog()
 {
-	DebugConfig::DisplayDialog();
+    DebugConfig::DisplayDialog();
 }
 
 #if defined(__unix__)
@@ -241,16 +244,16 @@ void DisplayDialog()
     GtkWidget *advanced_button;
 
     /* Create the widgets */
-    dialog = gtk_dialog_new_with_buttons (
-		"SPU2-X Config",
-		NULL, /* parent window*/
-		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-		"OK", GTK_RESPONSE_ACCEPT,
-		"Cancel", GTK_RESPONSE_REJECT,
-		NULL);
+    dialog = gtk_dialog_new_with_buttons(
+        "SPU2-X Config",
+        NULL, /* parent window*/
+        (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+        "OK", GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_REJECT,
+        NULL);
 
-    int_label = gtk_label_new ("Interpolation:");
-    int_box = gtk_combo_box_text_new ();
+    int_label = gtk_label_new("Interpolation:");
+    int_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (fastest/bad quality)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (simple/okay sound)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (artificial highs)");
@@ -262,10 +265,10 @@ void DisplayDialog()
     dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (overemphasizes the highs)");
 
     debug_check = gtk_check_button_new_with_label("Enable Debug Options");
-	debug_button = gtk_button_new_with_label("Debug...");
+    debug_button = gtk_button_new_with_label("Debug...");
 
-    mod_label = gtk_label_new ("Module:");
-    mod_box = gtk_combo_box_text_new ();
+    mod_label = gtk_label_new("Module:");
+    mod_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
 #ifdef __linux__
@@ -274,10 +277,10 @@ void DisplayDialog()
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
-    api_label = gtk_label_new ("PortAudio API:");
-    api_box = gtk_combo_box_text_new ();
+    api_label = gtk_label_new("PortAudio API:");
+    api_box = gtk_combo_box_text_new();
 #ifdef __linux__
-	// In order to keep it the menu light, I only put linux major api
+    // In order to keep it the menu light, I only put linux major api
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
@@ -287,8 +290,8 @@ void DisplayDialog()
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
 
 #if SDL_MAJOR_VERSION >= 2
-    sdl_api_label = gtk_label_new ("SDL API:");
-    sdl_api_box = gtk_combo_box_text_new ();
+    sdl_api_label = gtk_label_new("SDL API:");
+    sdl_api_box = gtk_combo_box_text_new();
     // YES It sucks ...
     for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sdl_api_box), SDL_GetAudioDriver(i));
@@ -296,7 +299,7 @@ void DisplayDialog()
     gtk_combo_box_set_active(GTK_COMBO_BOX(sdl_api_box), SdlOutputAPI);
 #endif
 
-    latency_label = gtk_label_new ("Latency:");
+    latency_label = gtk_label_new("Latency:");
 #if GTK_MAJOR_VERSION < 3
     latency_slide = gtk_hscale_new_with_range(LATENCY_MIN, LATENCY_MAX, 5);
 #else
@@ -304,123 +307,131 @@ void DisplayDialog()
 #endif
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
-    sync_label = gtk_label_new ("Synchronization Mode:");
-    sync_box = gtk_combo_box_text_new ();
+    sync_label = gtk_label_new("Synchronization Mode:");
+    sync_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "TimeStretch (Recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "Async Mix (Breaks some games!)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "None (Audio can skip.)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(sync_box), SynchMode);
 
-	advanced_button = gtk_button_new_with_label("Advanced...");
+    advanced_button = gtk_button_new_with_label("Advanced...");
 
     main_box = gtk_hbox_new(false, 5);
-    main_frame = gtk_frame_new ("SPU2-X Config");
-    gtk_container_add (GTK_CONTAINER(main_frame), main_box);
+    main_frame = gtk_frame_new("SPU2-X Config");
+    gtk_container_add(GTK_CONTAINER(main_frame), main_box);
 
     mixing_box = gtk_vbox_new(false, 5);
-    mixing_frame = gtk_frame_new ("Mixing Settings:");
-    gtk_container_add (GTK_CONTAINER(mixing_frame), mixing_box);
+    mixing_frame = gtk_frame_new("Mixing Settings:");
+    gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
     output_box = gtk_vbox_new(false, 5);
-    output_frame = gtk_frame_new ("Output Settings:");
-    gtk_container_add (GTK_CONTAINER(output_frame), output_box);
+    output_frame = gtk_frame_new("Output Settings:");
+    gtk_container_add(GTK_CONTAINER(output_frame), output_box);
 
-	gtk_container_add(GTK_CONTAINER(mixing_box), int_label);
-	gtk_container_add(GTK_CONTAINER(mixing_box), int_box);
-	gtk_container_add(GTK_CONTAINER(mixing_box), effects_check);
-	gtk_container_add(GTK_CONTAINER(mixing_box), dealias_filter);
-	gtk_container_add(GTK_CONTAINER(mixing_box), debug_check);
-	gtk_container_add(GTK_CONTAINER(mixing_box), debug_button);
+    gtk_container_add(GTK_CONTAINER(mixing_box), int_label);
+    gtk_container_add(GTK_CONTAINER(mixing_box), int_box);
+    gtk_container_add(GTK_CONTAINER(mixing_box), effects_check);
+    gtk_container_add(GTK_CONTAINER(mixing_box), dealias_filter);
+    gtk_container_add(GTK_CONTAINER(mixing_box), debug_check);
+    gtk_container_add(GTK_CONTAINER(mixing_box), debug_button);
 
-	gtk_container_add(GTK_CONTAINER(output_box), mod_label);
-	gtk_container_add(GTK_CONTAINER(output_box), mod_box);
-	gtk_container_add(GTK_CONTAINER(output_box), api_label);
-	gtk_container_add(GTK_CONTAINER(output_box), api_box);
+    gtk_container_add(GTK_CONTAINER(output_box), mod_label);
+    gtk_container_add(GTK_CONTAINER(output_box), mod_box);
+    gtk_container_add(GTK_CONTAINER(output_box), api_label);
+    gtk_container_add(GTK_CONTAINER(output_box), api_box);
 #if SDL_MAJOR_VERSION >= 2
-	gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
-	gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
+    gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
+    gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
 #endif
-	gtk_container_add(GTK_CONTAINER(output_box), sync_label);
-	gtk_container_add(GTK_CONTAINER(output_box), sync_box);
-	gtk_container_add(GTK_CONTAINER(output_box), latency_label);
-	gtk_container_add(GTK_CONTAINER(output_box), latency_slide);
-	gtk_container_add(GTK_CONTAINER(output_box), advanced_button);
+    gtk_container_add(GTK_CONTAINER(output_box), sync_label);
+    gtk_container_add(GTK_CONTAINER(output_box), sync_box);
+    gtk_container_add(GTK_CONTAINER(output_box), latency_label);
+    gtk_container_add(GTK_CONTAINER(output_box), latency_slide);
+    gtk_container_add(GTK_CONTAINER(output_box), advanced_button);
 
-	gtk_container_add(GTK_CONTAINER(main_box), mixing_frame);
-	gtk_container_add(GTK_CONTAINER(main_box), output_frame);
+    gtk_container_add(GTK_CONTAINER(main_box), mixing_frame);
+    gtk_container_add(GTK_CONTAINER(main_box), output_frame);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(effects_check), EffectsDisabled);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dealias_filter), postprocess_filter_dealias);
-	//FinalVolume;
+    //FinalVolume;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(debug_check), DebugEnabled);
 
-    gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
-    gtk_widget_show_all (dialog);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
+    gtk_widget_show_all(dialog);
 
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 
-    return_value = gtk_dialog_run (GTK_DIALOG (dialog));
+    return_value = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    if (return_value == GTK_RESPONSE_ACCEPT)
-    {
-		DebugEnabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(debug_check));
-		postprocess_filter_dealias = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dealias_filter));
-    	if (gtk_combo_box_get_active(GTK_COMBO_BOX(int_box)) != -1)
-    		Interpolation = gtk_combo_box_get_active(GTK_COMBO_BOX(int_box));
+    if (return_value == GTK_RESPONSE_ACCEPT) {
+        DebugEnabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(debug_check));
+        postprocess_filter_dealias = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dealias_filter));
+        if (gtk_combo_box_get_active(GTK_COMBO_BOX(int_box)) != -1)
+            Interpolation = gtk_combo_box_get_active(GTK_COMBO_BOX(int_box));
 
-    	EffectsDisabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(effects_check));
-		//FinalVolume;
+        EffectsDisabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(effects_check));
+        //FinalVolume;
 
-    	if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
-			OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
+        if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
+            OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
 
-    	if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
-			OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
+        if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
+            OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
 #ifdef __linux__
-			switch(OutputAPI) {
-				case 0: PortaudioOut->SetApiSettings(L"ALSA"); break;
-				case 1: PortaudioOut->SetApiSettings(L"OSS"); break;
-				case 2: PortaudioOut->SetApiSettings(L"JACK"); break;
-				default: PortaudioOut->SetApiSettings(L"Unknown");
-			}
+            switch (OutputAPI) {
+                case 0:
+                    PortaudioOut->SetApiSettings(L"ALSA");
+                    break;
+                case 1:
+                    PortaudioOut->SetApiSettings(L"OSS");
+                    break;
+                case 2:
+                    PortaudioOut->SetApiSettings(L"JACK");
+                    break;
+                default:
+                    PortaudioOut->SetApiSettings(L"Unknown");
+            }
 #else
-			switch(OutputAPI) {
-				case 0: PortaudioOut->SetApiSettings(L"OSS"); break;
-				default: PortaudioOut->SetApiSettings(L"Unknown");
-			}
+            switch (OutputAPI) {
+                case 0:
+                    PortaudioOut->SetApiSettings(L"OSS");
+                    break;
+                default:
+                    PortaudioOut->SetApiSettings(L"Unknown");
+            }
 #endif
-		}
+        }
 
 #if SDL_MAJOR_VERSION >= 2
-		if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
-			SdlOutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box));
-			// YES It sucks ...
-			SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI), wxConvUTF8));
-		}
+        if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
+            SdlOutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box));
+            // YES It sucks ...
+            SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI), wxConvUTF8));
+        }
 #endif
 
-    	SndOutLatencyMS = gtk_range_get_value(GTK_RANGE(latency_slide));
-    	
-    	if (gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box)) != -1)
-			SynchMode = gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box));
+        SndOutLatencyMS = gtk_range_get_value(GTK_RANGE(latency_slide));
+
+        if (gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box)) != -1)
+            SynchMode = gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box));
     }
 
-    gtk_widget_destroy (dialog);
+    gtk_widget_destroy(dialog);
 }
 #else
 void DisplayDialog()
 {
-    
 }
 #endif
 
 void configure()
 {
-	initIni();
-	ReadSettings();
-	DisplayDialog();
-	WriteSettings();
-	delete spuConfig;
-	spuConfig = NULL;
+    initIni();
+    ReadSettings();
+    DisplayDialog();
+    WriteSettings();
+    delete spuConfig;
+    spuConfig = NULL;
 }
