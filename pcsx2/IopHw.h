@@ -312,19 +312,18 @@ static dma_mbc&		hw_dma12	= (dma_mbc&) iopHw[0x1550];
 
 enum IopEventId
 {
-	IopEvt_SIFhack = 1	// The SIF likes to fall asleep and never wake up.  This sends intermittent SBUS flags to rewake it.
-,   IopEvt_SIF2 = 2
-,	IopEvt_Cdvd = 5		// General Cdvd commands (Seek, Standby, Break, etc)
-,	IopEvt_SIF0 = 9
-,	IopEvt_SIF1 = 10
-,	IopEvt_Dma11 = 11
-,	IopEvt_Dma12 = 12
-,	IopEvt_SIO = 16
-,	IopEvt_Cdrom = 17
-,	IopEvt_CdromRead = 18
-,	IopEvt_CdvdRead = 19
-,	IopEvt_DEV9 = 20
-,	IopEvt_USB = 21
+	IopEvt_SIF2,
+	IopEvt_Cdvd,		// General Cdvd commands (Seek, Standby, Break, etc)
+	IopEvt_SIF0,
+	IopEvt_SIF1,
+	IopEvt_Dma11,
+	IopEvt_Dma12,
+	IopEvt_SIO,
+	IopEvt_Cdrom,
+	IopEvt_CdromRead,
+	IopEvt_CdvdRead,
+	IopEvt_DEV9,
+	IopEvt_USB,
 };
 
 extern void PSX_INT( IopEventId n, s32 ecycle);
