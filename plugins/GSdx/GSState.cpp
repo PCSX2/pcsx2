@@ -1590,7 +1590,7 @@ void GSState::FlushPrim()
 				Draw();
 			} catch (GSDXRecoverableError&) {
 				// could be an unsupported draw call
-			} catch (GSDXErrorOOM&) {
+			} catch (const std::bad_alloc& e) {
 				// Texture Out Of Memory
 				PurgePool();
 				fprintf(stderr, "GSDX OUT OF MEMORY\n");

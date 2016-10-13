@@ -246,7 +246,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 		fprintf(stderr, "Available VRAM is very low (%lld), a crash is expected ! Disable Larger framebuffer or reduce upscaling!\n", GLState::available_vram);
 		every_512++;
 		// Pull emergency break
-		throw GSDXErrorOOM();
+		throw std::bad_alloc();
 	}
 
 	// Only 32 bits input texture will be supported for mipmap

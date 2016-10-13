@@ -526,9 +526,6 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 	if(SUCCEEDED(hr))
 	{
 		t = new GSTexture11(texture);
-		if (t == NULL) {
-			throw GSDXErrorOOM();
-		}
 
 		switch(type)
 		{
@@ -539,6 +536,10 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 			ClearDepth(t);
 			break;
 		}
+	}
+	else
+	{
+		throw std::bad_alloc();
 	}
 
 	return t;

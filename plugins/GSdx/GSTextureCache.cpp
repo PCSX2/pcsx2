@@ -1110,7 +1110,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
-	if (src == NULL) throw GSDXErrorOOM();
 
 	int tw = 1 << TEX0.TW;
 	int th = 1 << TEX0.TH;
@@ -1431,11 +1430,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
 	}
 
-	if(src->m_texture == NULL)
-	{
-		delete src;
-		throw GSDXErrorOOM();
-	}
+	ASSERT(src->m_texture);
 
 	if(psm.pal > 0)
 	{
@@ -1449,8 +1444,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type)
 {
+	ASSERT(type == RenderTarget || type == DepthStencil);
+
 	Target* t = new Target(m_renderer, TEX0, m_temp, CanConvertDepth());
-	if (t == NULL) throw GSDXErrorOOM();
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
@@ -1465,12 +1461,6 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 	else if(type == DepthStencil)
 	{
 		t->m_texture = m_renderer->m_dev->CreateDepthStencil(w, h, true);
-	}
-
-	if(t->m_texture == NULL)
-	{
-		delete t;
-		throw GSDXErrorOOM();
 	}
 
 	m_dst[type].push_front(t);
@@ -1880,7 +1870,6 @@ void GSTextureCache::Target::Update()
 	TEXA.TA1 = 0x80;
 
 	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
-	if (t == NULL) return;
 
 	const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
