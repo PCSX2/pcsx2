@@ -93,28 +93,6 @@ void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex
 		ps_sel.atst = 0;
 		break;
 	}
-
-	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
-	// to only draw pixels which would cause the destination alpha test to fail in the future once.
-	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
-	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && !m_context->TEST.ATE)
-	{
-		if (!m_context->FBA.FBA)
-		{
-			if (m_context->TEST.DATM == 0)
-				ps_sel.atst = 2; // >=
-			else {
-				if (tex && tex->m_spritehack_t)
-					ps_sel.atst = 0; // <
-				else
-					ps_sel.atst = 1; // <
-			}
-			ps_cb.FogColor_AREF.a = (float)0x80;
-		}
-		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
-			om_dssel.alpha_stencil = 1;
-	}
 }
 
 void GSRendererDX::EmulateZbuffer()
@@ -468,6 +446,28 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		om_bsel.wa = false;
 	} else {
 		EmulateAtst(1, tex);
+	}
+
+	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
+	// to only draw pixels which would cause the destination alpha test to fail in the future once.
+	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
+	// The interaction with FBA in D3D9 is probably less than ideal.
+	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && !m_context->TEST.ATE)
+	{
+		if (!m_context->FBA.FBA)
+		{
+			if (m_context->TEST.DATM == 0)
+				ps_sel.atst = 2; // >=
+			else {
+				if (tex && tex->m_spritehack_t)
+					ps_sel.atst = 0; // <
+				else
+					ps_sel.atst = 1; // <
+			}
+			ps_cb.FogColor_AREF.a = (float)0x80;
+		}
+		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
+			om_dssel.alpha_stencil = 1;
 	}
 
 	if(tex)
