@@ -55,6 +55,12 @@ public:
 	{
 	}
 
+	GSVector2T(T x)
+	{
+		this->x = x;
+		this->y = x;
+	}
+
 	GSVector2T(T x, T y)
 	{
 		this->x = x;

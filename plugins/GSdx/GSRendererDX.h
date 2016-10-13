@@ -58,7 +58,7 @@ protected:
 	GSDeviceDX::PSConstantBuffer ps_cb;
 
 public:
-	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0, 0));
+	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0));
 	virtual ~GSRendererDX();
 
 };

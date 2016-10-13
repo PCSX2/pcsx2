@@ -231,7 +231,7 @@ bool GSRenderer::Merge(int field)
 		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 		src_hw[i] = (GSVector4(r) + GSVector4 (0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
-		GSVector2 off(0, 0);
+		GSVector2 off(0);
 		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
