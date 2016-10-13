@@ -25,7 +25,7 @@ static const u32 SAVE_ID = 0x1227521;
 
 // versioning for saves.
 // Increment this when changes to the savestate system are made.
-static const u32 SAVE_VERSION = 0x000d;
+static const u32 SAVE_VERSION = 0x000e;
 
 static void wipe_the_cache()
 {

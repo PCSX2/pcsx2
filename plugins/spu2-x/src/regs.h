@@ -61,9 +61,9 @@
 
 // .. repeated for each voice ..
 
-#define REG_A_ESA 0x02E0  //Address: Top address of working area for effects processing
-#define R_FB_SRC_A 0x02E4 // Feedback Source A
-#define R_FB_SRC_B 0x02E8 // Feedback Source B
+#define REG_A_ESA 0x02E0   //Address: Top address of working area for effects processing
+#define R_FB_SIZE_A 0x02E4 // Feedback Source A
+#define R_FB_SIZE_B 0x02E8 // Feedback Source B
 #define R_IIR_DEST_A0 0x02EC
 #define R_IIR_DEST_A1 0x02F0
 #define R_ACC_SRC_A0 0x02F4

@@ -218,15 +218,15 @@ void DoFullDump()
 
             fprintf(dump, "  - FB_ALPHA:    %x\n", Cores[c].Revb.FB_ALPHA);
             fprintf(dump, "  - FB_X:        %x\n", Cores[c].Revb.FB_X);
-            fprintf(dump, "  - FB_SRC_A:    %x\n", Cores[c].Revb.FB_SRC_A);
-            fprintf(dump, "  - FB_SRC_B:    %x\n", Cores[c].Revb.FB_SRC_B);
+            fprintf(dump, "  - FB_SIZE_A:    %x\n", Cores[c].Revb.FB_SIZE_A);
+            fprintf(dump, "  - FB_SIZE_B:    %x\n", Cores[c].Revb.FB_SIZE_B);
 
             fprintf(dump, "  - IIR_ALPHA:   %x\n", Cores[c].Revb.IIR_ALPHA);
             fprintf(dump, "  - IIR_COEF:    %x\n", Cores[c].Revb.IIR_COEF);
             fprintf(dump, "  - IIR_SRC_A0:  %x\n", Cores[c].Revb.IIR_SRC_A0);
             fprintf(dump, "  - IIR_SRC_A1:  %x\n", Cores[c].Revb.IIR_SRC_A1);
-            fprintf(dump, "  - IIR_SRC_B1:  %x\n", Cores[c].Revb.IIR_SRC_B0);
-            fprintf(dump, "  - IIR_SRC_B0:  %x\n", Cores[c].Revb.IIR_SRC_B1);
+            fprintf(dump, "  - IIR_SRC_B0:  %x\n", Cores[c].Revb.IIR_SRC_B0);
+            fprintf(dump, "  - IIR_SRC_B1:  %x\n", Cores[c].Revb.IIR_SRC_B1);
             fprintf(dump, "  - IIR_DEST_A0: %x\n", Cores[c].Revb.IIR_DEST_A0);
             fprintf(dump, "  - IIR_DEST_A1: %x\n", Cores[c].Revb.IIR_DEST_A1);
             fprintf(dump, "  - IIR_DEST_B0: %x\n", Cores[c].Revb.IIR_DEST_B0);

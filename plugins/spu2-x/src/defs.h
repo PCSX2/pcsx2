@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Mixer.h"
+#include "SndOut.h"
 
 // --------------------------------------------------------------------------------------
 //  SPU2 Memory Indexers
@@ -229,8 +230,8 @@ struct V_Reverb
     s16 IN_COEF_L;
     s16 IN_COEF_R;
 
-    u32 FB_SRC_A;
-    u32 FB_SRC_B;
+    u32 FB_SIZE_A;
+    u32 FB_SIZE_B;
 
     s16 FB_ALPHA;
     s16 FB_X;
@@ -269,11 +270,6 @@ struct V_Reverb
 
 struct V_ReverbBuffers
 {
-    s32 FB_SRC_A0;
-    s32 FB_SRC_B0;
-    s32 FB_SRC_A1;
-    s32 FB_SRC_B1;
-
     s32 IIR_SRC_A0;
     s32 IIR_SRC_A1;
     s32 IIR_SRC_B0;
@@ -296,6 +292,16 @@ struct V_ReverbBuffers
     s32 MIX_DEST_A1;
     s32 MIX_DEST_B0;
     s32 MIX_DEST_B1;
+
+    s32 SAME_L_PRV;
+    s32 SAME_R_PRV;
+    s32 DIFF_L_PRV;
+    s32 DIFF_R_PRV;
+
+    s32 APF1_L_SRC;
+    s32 APF1_R_SRC;
+    s32 APF2_L_SRC;
+    s32 APF2_R_SRC;
 
     bool NeedsUpdated;
 };
@@ -419,9 +425,7 @@ struct V_Core
 
     V_CoreRegs Regs; // Registers
 
-    // Last samples to pass through the effects processor.
-    // Used because the effects processor works at 24khz and just pulls
-    // from this for the odd Ts.
+    // Preserves the channel processed last cycle
     StereoOut32 LastEffect;
 
     u8 CoreEnabled;
@@ -443,10 +447,6 @@ struct V_Core
     // psxmode caches
     u16 psxSoundDataTransferControl;
     u16 psxSPUSTAT;
-
-    StereoOut32 downbuf[8];
-    StereoOut32 upbuf[8];
-    int dbpos, ubpos;
 
     // HACK -- This is a temp buffer which is (or isn't?) used to circumvent some memory
     // corruption that originates elsewhere in the plugin. >_<  The actual ADMA buffer
@@ -471,8 +471,6 @@ struct V_Core
     void AnalyzeReverbPreset();
 
     s32 EffectsBufferIndexer(s32 offset) const;
-    void UpdateFeedbackBuffersA();
-    void UpdateFeedbackBuffersB();
 
     void WriteRegPS1(u32 mem, u16 value);
     u16 ReadRegPS1(u32 mem);

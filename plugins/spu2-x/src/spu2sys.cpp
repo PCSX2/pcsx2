@@ -195,7 +195,7 @@ void V_Core::AnalyzeReverbPreset()
     ConLog("----------------------------------------------------------\n");
 
     ConLog("    IN_COEF_L, IN_COEF_R        0x%08x, 0x%08x\n", Revb.IN_COEF_L, Revb.IN_COEF_R);
-    ConLog("    FB_SRC_A, FB_SRC_B          0x%08x, 0x%08x\n", Revb.FB_SRC_A, Revb.FB_SRC_B);
+    ConLog("    FB_SIZE_A, FB_SIZE_B          0x%08x, 0x%08x\n", Revb.FB_SIZE_A, Revb.FB_SIZE_B);
     ConLog("    FB_ALPHA, FB_X              0x%08x, 0x%08x\n", Revb.FB_ALPHA, Revb.FB_X);
 
     ConLog("    ACC_COEF_A                  0x%08x\n", Revb.ACC_COEF_A);
@@ -242,18 +242,6 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
     return pos;
 }
 
-void V_Core::UpdateFeedbackBuffersA()
-{
-    RevBuffers.FB_SRC_A0 = EffectsBufferIndexer(Revb.MIX_DEST_A0 - Revb.FB_SRC_A);
-    RevBuffers.FB_SRC_A1 = EffectsBufferIndexer(Revb.MIX_DEST_A1 - Revb.FB_SRC_A);
-}
-
-void V_Core::UpdateFeedbackBuffersB()
-{
-    RevBuffers.FB_SRC_B0 = EffectsBufferIndexer(Revb.MIX_DEST_B0 - Revb.FB_SRC_B);
-    RevBuffers.FB_SRC_B1 = EffectsBufferIndexer(Revb.MIX_DEST_B1 - Revb.FB_SRC_B);
-}
-
 void V_Core::UpdateEffectsBufferSize()
 {
     const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
@@ -290,9 +278,6 @@ void V_Core::UpdateEffectsBufferSize()
     RevBuffers.ACC_SRC_D0 = EffectsBufferIndexer(Revb.ACC_SRC_D0);
     RevBuffers.ACC_SRC_D1 = EffectsBufferIndexer(Revb.ACC_SRC_D1);
 
-    UpdateFeedbackBuffersA();
-    UpdateFeedbackBuffersB();
-
     RevBuffers.IIR_DEST_A0 = EffectsBufferIndexer(Revb.IIR_DEST_A0);
     RevBuffers.IIR_DEST_A1 = EffectsBufferIndexer(Revb.IIR_DEST_A1);
     RevBuffers.IIR_DEST_B0 = EffectsBufferIndexer(Revb.IIR_DEST_B0);
@@ -307,6 +292,16 @@ void V_Core::UpdateEffectsBufferSize()
     RevBuffers.MIX_DEST_A1 = EffectsBufferIndexer(Revb.MIX_DEST_A1);
     RevBuffers.MIX_DEST_B0 = EffectsBufferIndexer(Revb.MIX_DEST_B0);
     RevBuffers.MIX_DEST_B1 = EffectsBufferIndexer(Revb.MIX_DEST_B1);
+
+    RevBuffers.SAME_L_PRV = EffectsBufferIndexer(Revb.IIR_DEST_A0 - 1);
+    RevBuffers.SAME_R_PRV = EffectsBufferIndexer(Revb.IIR_DEST_A1 - 1);
+    RevBuffers.DIFF_L_PRV = EffectsBufferIndexer(Revb.IIR_DEST_B0 - 1);
+    RevBuffers.DIFF_R_PRV = EffectsBufferIndexer(Revb.IIR_DEST_B1 - 1);
+
+    RevBuffers.APF1_L_SRC = EffectsBufferIndexer(Revb.MIX_DEST_A0 - Revb.FB_SIZE_A);
+    RevBuffers.APF1_R_SRC = EffectsBufferIndexer(Revb.MIX_DEST_A1 - Revb.FB_SIZE_A);
+    RevBuffers.APF2_L_SRC = EffectsBufferIndexer(Revb.MIX_DEST_B0 - Revb.FB_SIZE_B);
+    RevBuffers.APF2_R_SRC = EffectsBufferIndexer(Revb.MIX_DEST_B1 - Revb.FB_SIZE_B);
 }
 
 void V_Voice::QueueStart()
@@ -719,10 +714,10 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 break;
 
             case 0x1DC0:
-                Revb.FB_SRC_A = value * 4;
+                Revb.FB_SIZE_A = value * 4;
                 break;
             case 0x1DC2:
-                Revb.FB_SRC_B = value * 4;
+                Revb.FB_SIZE_B = value * 4;
                 break;
             case 0x1DC4:
                 Revb.IIR_ALPHA = value;
@@ -1550,8 +1545,8 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(0, REG_A_ESA),
 
-        ReverbPair(0, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
-        ReverbPair(0, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
+        ReverbPair(0, R_FB_SIZE_A),   //       0x02E4		// Feedback Source A
+        ReverbPair(0, R_FB_SIZE_B),   //       0x02E8		// Feedback Source B
         ReverbPair(0, R_IIR_DEST_A0), //    0x02EC
         ReverbPair(0, R_IIR_DEST_A1), //    0x02F0
         ReverbPair(0, R_ACC_SRC_A0),  //     0x02F4
@@ -1640,8 +1635,8 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(1, REG_A_ESA),
 
-        ReverbPair(1, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
-        ReverbPair(1, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
+        ReverbPair(1, R_FB_SIZE_A),   //       0x02E4		// Feedback Source A
+        ReverbPair(1, R_FB_SIZE_B),   //       0x02E8		// Feedback Source B
         ReverbPair(1, R_IIR_DEST_A0), //    0x02EC
         ReverbPair(1, R_IIR_DEST_A1), //    0x02F0
         ReverbPair(1, R_ACC_SRC_A0),  //     0x02F4

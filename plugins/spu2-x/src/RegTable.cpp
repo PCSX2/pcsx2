@@ -99,8 +99,8 @@ u16 const *const regtable_original[0x401] =
         PCORE(0, ExtEffectsStartA) + 1,
         PCORE(0, ExtEffectsStartA),
 
-        PREVB_REG(0, FB_SRC_A),
-        PREVB_REG(0, FB_SRC_B),
+        PREVB_REG(0, FB_SIZE_A),
+        PREVB_REG(0, FB_SIZE_B),
         PREVB_REG(0, IIR_DEST_A0),
         PREVB_REG(0, IIR_DEST_A1),
         PREVB_REG(0, ACC_SRC_A0),
@@ -202,8 +202,8 @@ u16 const *const regtable_original[0x401] =
         PCORE(1, ExtEffectsStartA) + 1,
         PCORE(1, ExtEffectsStartA),
 
-        PREVB_REG(1, FB_SRC_A),
-        PREVB_REG(1, FB_SRC_B),
+        PREVB_REG(1, FB_SIZE_A),
+        PREVB_REG(1, FB_SIZE_B),
         PREVB_REG(1, IIR_DEST_A0),
         PREVB_REG(1, IIR_DEST_A1),
         PREVB_REG(1, ACC_SRC_A0),

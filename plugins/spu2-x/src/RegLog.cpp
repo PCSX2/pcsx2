@@ -265,8 +265,8 @@ void SPU2writeLog(const char *action, u32 rmem, u16 value)
         RegLog(2, t "L", mem, core, value); \
         break;
 
-                LOG_REVB_REG(FB_SRC_A, "FB_SRC_A")
-                LOG_REVB_REG(FB_SRC_B, "FB_SRC_B")
+                LOG_REVB_REG(FB_SIZE_A, "FB_SIZE_A")
+                LOG_REVB_REG(FB_SIZE_B, "FB_SIZE_B")
                 LOG_REVB_REG(IIR_SRC_A0, "IIR_SRC_A0")
                 LOG_REVB_REG(IIR_SRC_A1, "IIR_SRC_A1")
                 LOG_REVB_REG(IIR_SRC_B1, "IIR_SRC_B1")
