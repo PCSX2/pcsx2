@@ -25,7 +25,7 @@
 #include "resource.h"
 
 GSRendererDX11::GSRendererDX11()
-	: GSRendererDX(new GSTextureCache11(this), GSVector2(-0.5f, -0.5f))
+	: GSRendererDX(new GSTextureCache11(this), GSVector2(-0.5f))
 {
 }
 

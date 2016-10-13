@@ -126,8 +126,8 @@ public:
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
-			DepthMask           = GSVector2i(0, 0);
-			PointSize           = GSVector2(0, 0);
+			DepthMask           = GSVector2i(0);
+			PointSize           = GSVector2(0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)

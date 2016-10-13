@@ -253,10 +253,10 @@ void GSRendererDX9::UpdateFBA(GSTexture* rt)
 
 	GSVertexPT1 vertices[] =
 	{
-		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(0, 0)},
+		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(0)},
 	};
 
 	dev->IASetVertexBuffer(vertices, sizeof(vertices[0]), countof(vertices));
