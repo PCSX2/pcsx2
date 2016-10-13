@@ -403,6 +403,33 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
+void GSTextureCache::ScaleTexture(GSTexture* texture)
+{
+	if (!m_renderer->CanUpscale())
+		return;
+
+	float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
+	bool custom_resolution = (multiplier == 0);
+	GSVector2 scale_factor(multiplier);
+
+	if (custom_resolution)
+	{
+		int width = m_renderer->GetDisplayRect().width();
+		int height = m_renderer->GetDisplayRect().height();
+		int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / texture->GetScale().y));
+
+		// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
+		if (real_height % height == 1)
+			height = real_height;
+
+		GSVector2i requested_resolution = m_renderer->GetCustomResolution();
+		scale_factor.x = static_cast<float>(requested_resolution.x) / width;
+		scale_factor.y = static_cast<float>(requested_resolution.y) / height;
+	}
+
+	texture->SetScale(scale_factor);
+}
+
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, uint32 fbmask)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -515,31 +542,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			}
 		}
 	}
-
-	if(m_renderer->CanUpscale())
-	{
-		float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
-		GSVector2 scale_factor(multiplier, multiplier);
-
-		if(!multiplier) //Custom Resolution
-		{
-			int width = m_renderer->GetDisplayRect().width();
-			int height = m_renderer->GetDisplayRect().height();
-			int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / dst->m_texture->GetScale().y));
-
-			// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
-			if(real_height % height == 1)
-				height = real_height;
-
-			GSVector2i custom_resolution = m_renderer->GetCustomResolution();
-			scale_factor.x = static_cast<float>(custom_resolution.x) / width;
-			scale_factor.y = static_cast<float>(custom_resolution.y) / height;
-		}
-
-		if(scale_factor.x && scale_factor.y)
-			dst->m_texture->SetScale(scale_factor);
-	}
-
+	ScaleTexture(dst->m_texture);
 	if(used)
 	{
 		dst->m_used = true;
@@ -630,11 +633,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x %s)", w, h, bp, psm_str(TEX0.PSM));
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
-
-		float multiplier = static_cast<float>(m_renderer->GetUpscaleMultiplier());
-		GSVector2 scale_factor(multiplier, multiplier);
-		if(scale_factor.x && scale_factor.y)
-			dst->m_texture->SetScale(scale_factor);
+		ScaleTexture(dst->m_texture);
 
 		m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
 

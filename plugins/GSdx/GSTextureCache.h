@@ -164,6 +164,7 @@ public:
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;
+	void ScaleTexture(GSTexture* texture);
 
 	const char* to_string(int type) {
 		return (type == DepthStencil) ? "Depth" : "Color";
