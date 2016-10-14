@@ -77,7 +77,7 @@ namespace GLState {
 
 		stencil = false;
 		stencil_func = 0;
-		stencil_pass = 0;
+		stencil_pass = 0xFFFF; // Note 0 is valid (GL_ZERO)
 
 		ubo = 0;
 
