@@ -113,30 +113,30 @@ const std::vector<toc_entry> &IOCtlSrc::ReadTOC() const
 
 s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
 {
-    RAW_READ_INFO rri;
+    std::lock_guard<std::mutex> guard(m_lock);
+    LARGE_INTEGER offset;
+    offset.QuadPart = sector * 2048ULL;
 
-    DWORD size = 0;
-
-    rri.DiskOffset.QuadPart = sector * (u64)2048;
-    rri.SectorCount = count;
-
-    //fall back to standard reading
-    if (SetFilePointer(m_device, rri.DiskOffset.LowPart, &rri.DiskOffset.HighPart, FILE_BEGIN) == -1) {
-        if (GetLastError() != 0)
-            return -1;
-    }
-
-    if (ReadFile(m_device, buffer, 2048 * count, &size, NULL) == 0) {
+    if (!SetFilePointerEx(m_device, offset, nullptr, FILE_BEGIN)) {
+        fprintf(stderr, " * CDVD SetFilePointerEx failed: sector %u: error %u\n",
+                sector, GetLastError());
         return -1;
     }
 
-    if (size != (2048 * count)) {
-        return -1;
+    const DWORD bytes_to_read = 2048 * count;
+    DWORD bytes_read;
+    if (ReadFile(m_device, buffer, bytes_to_read, &bytes_read, nullptr)) {
+        if (bytes_read == bytes_to_read)
+            return 0;
+        fprintf(stderr, " * CDVD ReadFile: sectors %u-%u: %u bytes read, %u bytes expected\n",
+                sector, sector + count - 1, bytes_read, bytes_to_read);
+    } else {
+        fprintf(stderr, " * CDVD ReadFile failed: sectors %u-%u: error %u\n",
+                sector, sector + count - 1, GetLastError());
     }
 
-    return 0;
+    return -1;
 }
-
 
 s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 {
