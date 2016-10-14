@@ -22,6 +22,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -61,6 +62,7 @@ class IOCtlSrc
     u32 m_sectors = 0;
     u32 m_layer_break = 0;
     std::vector<toc_entry> m_toc;
+    mutable std::mutex m_lock;
 
     bool ReadDVDInfo();
     bool ReadCDInfo();
