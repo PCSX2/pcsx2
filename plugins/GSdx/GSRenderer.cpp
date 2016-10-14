@@ -28,6 +28,7 @@
 const unsigned int s_interlace_nb = 8;
 const unsigned int s_post_shader_nb = 5;
 const unsigned int s_aspect_ratio_nb = 3;
+const unsigned int s_mipmap_nb = 3;
 
 GSRenderer::GSRenderer()
 	: m_shader(0)
@@ -616,8 +617,8 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case VK_INSERT:
-			m_mipmap = !m_mipmap;
-			printf("GSdx: Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			m_mipmap = (m_mipmap + s_mipmap_nb + step) % s_mipmap_nb;
+			printf("GSdx: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
 			return;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;

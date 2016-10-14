@@ -287,15 +287,13 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads");
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
-	GtkWidget* mipmap_check     = CreateCheckBox("Mipmap", "mipmap");
 
 	AddTooltip(aa_check, IDC_AA1);
-	AddTooltip(mipmap_check, IDC_MIPMAP);
 	AddTooltip(threads_label, threads_spin, IDC_SWTHREADS);
 
 	s_table_line = 0;
 	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
-	InsertWidgetInTable(sw_table , aa_check, mipmap_check);
+	InsertWidgetInTable(sw_table , aa_check);
 }
 
 void populate_shader_table(GtkWidget* shader_table)
@@ -396,10 +394,16 @@ void populate_main_table(GtkWidget* main_table)
 	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer");
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace");
+	GtkWidget* mipmap_label        = left_label("Mipmap (Insert):");
+	GtkWidget* mipmap_combo_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "mipmap");
+
+	AddTooltip(mipmap_label, IDC_MIPMAP);
+	AddTooltip(mipmap_combo_box, IDC_MIPMAP);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
+	InsertWidgetInTable(main_table, mipmap_label, mipmap_combo_box);
 }
 
 void populate_debug_table(GtkWidget* debug_table)
