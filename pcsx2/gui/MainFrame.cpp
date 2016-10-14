@@ -57,14 +57,14 @@ void MainEmuFrame::UpdateIsoSrcSelection()
 
 	switch( g_Conf->CdvdSource )
 	{
-		case CDVDsrc_Iso:		cdsrc = MenuId_Src_Iso;		break;
-		case CDVDsrc_Plugin:	cdsrc = MenuId_Src_Plugin;	break;
-		case CDVDsrc_NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
+		case CDVD_SourceType::CDVDsrc_Iso:		cdsrc = MenuId_Src_Iso;		break;
+		case CDVD_SourceType::CDVDsrc_Plugin:	cdsrc = MenuId_Src_Plugin;	break;
+		case CDVD_SourceType::CDVDsrc_NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
 
 		jNO_DEFAULT
 	}
 	sMenuBar.Check( cdsrc, true );
-	m_statusbar.SetStatusText( CDVD_SourceLabels[g_Conf->CdvdSource], 1 );
+	m_statusbar.SetStatusText( CDVD_SourceLabels[int(g_Conf->CdvdSource)], 1 );
 
 	EnableCdvdPluginSubmenu( cdsrc == MenuId_Src_Plugin );
 
@@ -588,16 +588,16 @@ void MainEmuFrame::OnActivate( wxActivateEvent& evt )
 void MainEmuFrame::ApplyCoreStatus()
 {
 	wxMenuBar& menubar( *GetMenuBar() );
-
 	wxMenuItem* susres	= menubar.FindItem( MenuId_Sys_SuspendResume );
 	wxMenuItem* cdvd	= menubar.FindItem( MenuId_Boot_CDVD );
-	wxMenuItem* cdvd2	= menubar.FindItem( MenuId_Boot_CDVD2 );
+	wxMenuItem* cdvd2 = menubar.FindItem( MenuId_Boot_CDVD2 );
 	wxMenuItem* restart	= menubar.FindItem( MenuId_Sys_Restart );
+	CDVD_SourceType source = g_Conf->CdvdSource;
 
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
-	bool vm = SysHasValidState();
+	bool vmIsActive = SysHasValidState();
 
 	if( susres )
 	{
@@ -609,8 +609,8 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 		else
 		{
-			susres->Enable(vm);
-			if( vm )
+			susres->Enable(vmIsActive);
+			if(vmIsActive)
 			{
 				susres->SetItemLabel(_("R&esume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
@@ -625,7 +625,7 @@ void MainEmuFrame::ApplyCoreStatus()
 
 	if( restart )
 	{
-		if( vm )	
+		if(vmIsActive)
 		{
 			restart->SetItemLabel(_("Res&tart"));
 			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
@@ -637,33 +637,44 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 	}
 
-	if( cdvd )
+	wxString Source_Label[static_cast<int>(CDVD_SourceType::NumberofSources)] = {"ISO" , "CDVD" , "BIOS"};
+	wxString Reboot_Boot_Indicator = (vmIsActive) ? "Reboot" : "Boot";
+	wxString ItemLabel = Reboot_Boot_Indicator + " " + Source_Label[static_cast<int>(source)];
+	wxString Fast_Reboot_HelpText = "Reboot using fast BOOT (skips splash screens)";
+	wxString Fast_Boot_HelpText = "Use fast boot to skip PS2 startup and splash screens";
+	wxString Full_Boot_HelpText[static_cast<int>(CDVD_SourceType::NumberofSources)];
+	wxString Full_Reboot_HelpText = "Hard reset of the active VM";
+
+	// Initialize Full Boot Help text for all the source mediums
+	Full_Boot_HelpText[static_cast<int>(CDVD_SourceType::CDVDsrc_Iso)]    = "Boot the VM using the current ISO source media";
+	Full_Boot_HelpText[static_cast<int>(CDVD_SourceType::CDVDsrc_Plugin)] = "Boot the VM using the current CD/DVD source media";
+	Full_Boot_HelpText[static_cast<int>(CDVD_SourceType::CDVDsrc_NoDisc)] = "Boot the VM without any source media";
+	
+	if (cdvd)
 	{
-		if( vm )
-		{
-			cdvd->SetItemLabel(_("Reboot CDVD (f&ull)"));
-			cdvd->SetHelp(_("Hard reset of the active VM."));
-		}
+		if (source == CDVD_SourceType::CDVDsrc_NoDisc)
+			cdvd->SetItemLabel(ItemLabel);
 		else
-		{
-			cdvd->SetItemLabel(_("Boot CDVD (f&ull)"));
-			cdvd->SetHelp(_("Boot the VM using the current DVD or Iso source media"));
-		}	
+			cdvd->SetItemLabel(ItemLabel + " (f&ull)");
+
+		if (vmIsActive)
+			cdvd->SetHelp(Full_Reboot_HelpText);
+		else
+			cdvd->SetHelp(Full_Boot_HelpText[static_cast<int>(source)]);
 	}
 
-	if( cdvd2 )
-	{
-		if( vm )
-		{
-			cdvd2->SetItemLabel(_("Reboot CDVD (&fast)"));
-			cdvd2->SetHelp(_("Reboot using fast BOOT (skips splash screens)"));
-		}
+		if (!cdvd2)
+			cdvd2 = m_menuSys.Insert(1, MenuId_Boot_CDVD2, ItemLabel + " (&fast)");
 		else
-		{
-			cdvd2->SetItemLabel(_("Boot CDVD (&fast)"));
-			cdvd2->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
-		}
-	}
+			cdvd2->SetItemLabel(ItemLabel + " (&fast)");
+
+		if (vmIsActive)
+			cdvd2->SetHelp(Fast_Reboot_HelpText);
+		else
+			cdvd2->SetHelp(Fast_Boot_HelpText);
+
+		if (cdvd2 && source == CDVD_SourceType::CDVDsrc_NoDisc)
+			m_menuSys.Destroy(cdvd2);
 
 	menubar.Enable( MenuId_Sys_Shutdown, SysHasValidState() || CorePlugins.AreAnyInitialized() );
 }

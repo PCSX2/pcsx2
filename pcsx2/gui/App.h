@@ -305,7 +305,7 @@ public:
 		SysAutoRun				= false;
 		SysAutoRunElf			= false;
 		SysAutoRunIrx			= false;
-		CdvdSource				= CDVDsrc_NoDisc;
+		CdvdSource				= CDVD_SourceType::CDVDsrc_NoDisc;
 	}
 };
 

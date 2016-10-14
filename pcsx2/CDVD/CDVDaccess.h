@@ -17,11 +17,12 @@
 
 #include "Plugins.h"
 
-enum CDVD_SourceType
+enum class CDVD_SourceType : u8
 {
-	CDVDsrc_Iso = 0,	// use built in ISO api
+	CDVDsrc_Iso,	    // use built in ISO api
 	CDVDsrc_Plugin,		// use external plugin
 	CDVDsrc_NoDisc,		// use built in CDVDnull
+	NumberofSources,
 };
 
 struct CDVD_API
