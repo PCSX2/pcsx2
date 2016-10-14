@@ -188,7 +188,31 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_LOGZ);
 	AddTooltip(IDC_LARGE_FB);
 
+	UpdateFilteringCombobox();
 	UpdateControls();
+}
+
+void GSSettingsDlg::UpdateFilteringCombobox()
+{
+	INT_PTR i;
+	ComboBoxGetSelData(IDC_RENDERER, i);
+	bool opengl = static_cast<GSRendererType>(i) == GSRendererType::OGL_HW;
+	bool hw_mode = opengl || static_cast<GSRendererType>(i) == GSRendererType::DX1011_HW || static_cast<GSRendererType>(i) == GSRendererType::DX9_HW;
+	if (!hw_mode)
+		return;
+
+	uint8 filter = (ComboBoxGetSelData(IDC_FILTER, i)) ? static_cast<uint8>(i) : static_cast<uint8>(theApp.GetConfigI("filter"));
+	if (!opengl) //Currently Trilinear is only exclusive to OpenGL, remove those combobox items when any other renderer is used
+	{
+		auto head = theApp.m_gs_filter.begin();
+		auto tail = head + static_cast<uint8>(Filtering::Trilinear);
+		vector<GSSetting> list(head, tail);
+		ComboBoxInit(IDC_FILTER, list, std::max(uint8(Filtering::Nearest), std::min(filter, uint8(Filtering::Bilinear_PS2))));
+	}
+	else
+	{
+		ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, filter);
+	}
 }
 
 bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
@@ -203,6 +227,12 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			}
 			break;
 		case IDC_RENDERER:
+			if (code == CBN_SELCHANGE)
+			{
+				UpdateFilteringCombobox();
+				UpdateControls();
+			}
+			break;
 		case IDC_UPSCALE_MULTIPLIER:
 		case IDC_FILTER:
 			if (code == CBN_SELCHANGE)

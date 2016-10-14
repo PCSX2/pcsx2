@@ -82,6 +82,7 @@ class GSSettingsDlg : public GSDialog
 
 	void UpdateRenderers();
 	void UpdateControls();
+	void UpdateFilteringCombobox();
 
 protected:
 	void OnInit();
