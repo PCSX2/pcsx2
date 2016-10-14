@@ -754,29 +754,35 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool bilinear = false;
 	int trilinear = 0;
 	bool trilinear_auto = false;
-	switch (m_filter) {
-		case 0: // Nearest
+	switch (m_filter)
+	{
+		case Filtering::Nearest:
 			bilinear = false;
 			break;
-		case 1: // Forced Bilinear
+
+		case Filtering::Bilinear_Forced:
 			bilinear = true;
 			break;
-		case 2: // Bilinear PS2
+
+		case Filtering::Bilinear_PS2:
 			bilinear = m_vt.IsLinear();
 			break;
-		case 3: // Trilinear Forced
+
+		case Filtering::Trilinear_Always:
 			bilinear = true;
 			trilinear = static_cast<uint8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
 			trilinear_auto = m_mipmap != 2;
 			break;
-		case 4: // Trilinear
+
+		case Filtering::Trilinear:
 			bilinear = m_vt.IsLinear();
 			if (need_mipmap && m_mipmap != 2) {
 				trilinear = m_context->TEX1.MMIN;
 				trilinear_auto = true;
 			}
 			break;
-		case 5: // Trilinear (forced on linear)
+
+		case Filtering::Trilinear_Bilinear_Forced:
 			bilinear = true;
 			if (need_mipmap && m_mipmap != 2) {
 				trilinear = (m_context->TEX1.MMIN | 4) & 0x5;

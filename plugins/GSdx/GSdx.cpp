@@ -199,12 +199,12 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
 
-	m_gs_filter.push_back(GSSetting(0, "Nearest", ""));
-	m_gs_filter.push_back(GSSetting(1, "Bilinear", "Forced"));
-	m_gs_filter.push_back(GSSetting(2, "Bilinear", "PS2"));
-	m_gs_filter.push_back(GSSetting(3, "Trilinear", "Ultra/Slow"));
-	m_gs_filter.push_back(GSSetting(4, "Trilinear", ""));
-	m_gs_filter.push_back(GSSetting(5, "Trilinear", "Forced Bilinear"));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Nearest), "Nearest", ""));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_Forced), "Bilinear", "Forced"));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_PS2), "Bilinear", "PS2"));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear), "Trilinear", ""));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Bilinear_Forced), "Trilinear", "Forced Bilinear"));
+	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Always), "Trilinear", "Ultra/Slow"));
 
 	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", ""));
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));

@@ -41,7 +41,6 @@ class GSRenderer : public GSState
 protected:
 	int m_interlace;
 	int m_aspectratio;
-	int m_filter;
 	bool m_vsync;
 	bool m_aa1;
 	bool m_framelimit;
@@ -49,6 +48,7 @@ protected:
 	bool m_fxaa;
 	bool m_shadeboost;
 	bool m_texture_shuffle;
+	Filtering m_filter;
 	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;

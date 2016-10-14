@@ -44,7 +44,7 @@ GSRenderer::GSRenderer()
 	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
 	m_aspectratio = theApp.GetConfigI("AspectRatio") % s_aspect_ratio_nb;
 	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
-	m_filter      = theApp.GetConfigI("filter");
+	m_filter      = static_cast<Filtering>(theApp.GetConfigI("filter"));
 	m_vsync       = theApp.GetConfigB("vsync");
 	m_aa1         = theApp.GetConfigB("aa1");
 	m_fxaa        = theApp.GetConfigB("fxaa");

@@ -478,7 +478,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		// After the conversion the texture will be RGBA8 (aka 32 bits) hence the 0 below
 		int gpu_tex_fmt = (tex->m_target) ? cpsm.fmt : 0;
 
-		bool bilinear = m_filter == 2 || m_filter == 4 ? m_vt.IsLinear() : m_filter != 0;
+		bool bilinear = m_filter == Filtering::Bilinear_PS2 || m_filter == Filtering::Trilinear ? m_vt.IsLinear() : m_filter != Filtering::Nearest;
 		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
 		// Don't force extra filtering on sprite (it creates various upscaling issue)
 		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
