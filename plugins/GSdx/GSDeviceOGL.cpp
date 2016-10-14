@@ -1935,6 +1935,8 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 												severity = "Cache";
 											else if (id == 0xB0B0)
 												severity = "REG";
+											else if (id == 0xD0D0)
+												severity = "EXTRA";
 											break;
 	}
 	switch(gl_source) {

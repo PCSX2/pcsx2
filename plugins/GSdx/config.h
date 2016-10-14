@@ -43,7 +43,8 @@
 #define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
 //#define ENABLE_OGL_DEBUG_FENCE
 //#define ENABLE_OGL_DEBUG_MEM_BW // compute the quantity of data transfered (debug purpose)
-//#define ENABLE_TRACE_REG
+//#define ENABLE_TRACE_REG // print GS reg write
+//#define ENABLE_EXTRA_LOG // print extra log
 #endif
 
 #if defined(__unix__) && !(defined(_DEBUG) || defined(_DEVEL))

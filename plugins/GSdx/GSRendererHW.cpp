@@ -477,7 +477,7 @@ void GSRendererHW::Draw()
 			GL_INS("Channel shuffle effect detected");
 			m_channel_shuffle = true;
 		} else {
-			GL_INS("Special post-processing effect not supported");
+			GL_DBG("Special post-processing effect not supported");
 			m_channel_shuffle = false;
 		}
 	} else {

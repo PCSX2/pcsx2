@@ -433,6 +433,12 @@ extern void vmfree(void* ptr, size_t size);
 #define GL_REG(...) (0);
 #endif
 
+#if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
+#define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_DBG(...) (0);
+#endif
+
 #if defined(ENABLE_OGL_DEBUG)
 struct GLAutoPop {
 	~GLAutoPop() {

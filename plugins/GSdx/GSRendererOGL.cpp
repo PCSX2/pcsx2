@@ -271,7 +271,7 @@ void GSRendererOGL::EmulateZbuffer()
 			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
 			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
 			if (m_vt.m_min.p.z > max_z) {
-				GL_INS("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
+				GL_DBG("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
 				vs_cb.DepthMask = GSVector2i(max_z, max_z);
 				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
@@ -281,7 +281,7 @@ void GSRendererOGL::EmulateZbuffer()
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
 	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z) {
-		GL_INS("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
+		GL_DBG("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
 		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
 }
@@ -1217,7 +1217,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_vertex.next > 2)) {
 		if (m_context->FRAME.FBMSK == 0x00FFFFFF) {
 			// Ratchet & Clank / Jak uses this pattern to compute the shadows. Alpha (multiplication) tfx is mostly equivalent to -1/+1 stencil operation
-			GL_INS("ERROR: Source and Target are the same! Let's sample the framebuffer");
+			GL_DBG("ERROR: Source and Target are the same! Let's sample the framebuffer");
 			m_ps_sel.tex_is_fb = 1;
 			m_require_full_barrier = true;
 		} else {
@@ -1397,7 +1397,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
 	if (ate_first_pass & ate_second_pass) {
-		GL_INS("Complex Alpha Test");
+		GL_DBG("Complex Alpha Test");
 		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
 		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
@@ -1406,12 +1406,12 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	if (ate_RGBA_then_Z) {
-		GL_INS("Alternate ATE handling: ate_RGBA_then_Z");
+		GL_DBG("Alternate ATE handling: ate_RGBA_then_Z");
 		// Render all color but don't update depth
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
 	} else if (ate_RGB_then_ZA) {
-		GL_INS("Alternate ATE handling: ate_RGB_then_ZA");
+		GL_DBG("Alternate ATE handling: ate_RGB_then_ZA");
 		// Render RGB color but don't update depth/alpha
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
