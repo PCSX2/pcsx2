@@ -437,34 +437,40 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	} else if (CanConvertDepth()) {
 
 		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, w, h);
 
 		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
 		// some bad data.
-
-		for(list<Target*>::iterator i = m_dst[rev_type].begin(); i != m_dst[rev_type].end(); ++i)
-		{
+		Target* dst_match = nullptr;
+		for(list<Target*>::iterator i = m_dst[rev_type].begin(); i != m_dst[rev_type].end(); ++i) {
 			Target* t = *i;
 
-			if(!t->m_age && bp == t->m_TEX0.TBP0)
-			{
-				dst = CreateTarget(TEX0, w, h, type);
-				dst->m_32_bits_fmt = t->m_32_bits_fmt;
-
-				int shader;
-				bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16);
-				if (type == DepthStencil) {
-					GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(t->m_TEX0.PSM));
-					shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + psm_s.fmt;
-				} else {
-					GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(t->m_TEX0.PSM));
-					shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
+			if (bp == t->m_TEX0.TBP0) {
+				if (t->m_age == 0) {
+					dst_match = t;
+					break;
+				} else if (t->m_age == 1) {
+					//dst_match = t;
 				}
-				m_renderer->m_dev->StretchRect(t->m_texture, sRect, dst->m_texture, dRect, shader, false);
-
-				break;
 			}
+		}
+
+		if (dst_match) {
+			GSVector4 sRect(0, 0, 1, 1);
+			GSVector4 dRect(0, 0, w, h);
+
+			dst = CreateTarget(TEX0, w, h, type);
+			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
+
+			int shader;
+			bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16);
+			if (type == DepthStencil) {
+				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + psm_s.fmt;
+			} else {
+				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
+			}
+			m_renderer->m_dev->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 		}
 	}
 
@@ -489,7 +495,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			if (type == DepthStencil) {
 				// It is safer to always clear a new depth buffer. Core optimization might create some shortcut
 				// on the rendering. Texture cache only search old depth data in RT of current frame. Which
-				// can cause flickering (Jak2 FMV)
+				// can cause flickering (Jak2 cutscene)
 				m_renderer->m_dev->ClearDepth(dst->m_texture);
 			} else if (m_preload_frame && TEX0.TBW > 0) {
 				GL_INS("Preloading the RT DATA");
