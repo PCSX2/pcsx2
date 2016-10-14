@@ -214,6 +214,7 @@ void GSdxApp::Init()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_crc_level.push_back(GSSetting(-1, "Automatic", ""));
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
@@ -288,7 +289,7 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["clut_load_before_draw"]                      = "0";
-	m_default_configuration["crc_hack_level"]                             = "3";
+	m_default_configuration["crc_hack_level"]                             = "-1";
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";

@@ -48,7 +48,18 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
-	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+
+	GSRendererType renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+	int selected_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	if (selected_crc_hack_level == -1) {
+		if (renderer == GSRendererType::OGL_HW) {
+			m_crc_hack_level = 2;
+		} else if (renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW) {
+			m_crc_hack_level = 3;
+		}
+	} else {
+		m_crc_hack_level = selected_crc_hack_level;
+	}
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)

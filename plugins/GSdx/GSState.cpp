@@ -23,8 +23,6 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-extern int g_crc_hack_level;
-
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 int GSState::s_n = 0;
@@ -77,7 +75,18 @@ GSState::GSState()
 	//s_savel = 0;
 
 	UserHacks_WildHack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_WildHack") : 0;
-	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+
+	GSRendererType renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+	int selected_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	if (selected_crc_hack_level == -1) {
+		if (renderer == GSRendererType::OGL_HW) {
+			m_crc_hack_level = 2;
+		} else if (renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW) {
+			m_crc_hack_level = 3;
+		}
+	} else {
+		m_crc_hack_level = selected_crc_hack_level;
+	}
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
