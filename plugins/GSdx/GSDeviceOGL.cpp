@@ -75,7 +75,7 @@ GSDeviceOGL::GSDeviceOGL()
 	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
-	m_filter = theApp.GetConfigI("filter");
+	m_filter = static_cast<Filtering>(theApp.GetConfigI("filter"));
 
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
@@ -228,8 +228,9 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 {
 	GL_PUSH("Create surface");
 
+	bool trilinear = m_filter == Filtering::Trilinear || m_filter == Filtering::Trilinear_Bilinear_Forced || m_filter == Filtering::Trilinear_Always;
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
-	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || m_filter > 2);
+	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || trilinear);
 
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
