@@ -580,11 +580,22 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
-#ifdef _WIN32
 	if(e->type == KEYPRESS)
 	{
 
+#ifdef _WIN32
 		int step = (::GetAsyncKeyState(VK_SHIFT) & 0x8000) ? -1 : 1;
+#elif defined(__unix__)
+		int step = m_shift_key ? -1 : 1;
+
+#define VK_F5 XK_F5
+#define VK_F6 XK_F6
+#define VK_F7 XK_F7
+#define VK_DELETE XK_Delete
+#define VK_INSERT XK_Insert
+#define VK_PRIOR XK_Prior
+#define VK_HOME XK_Home
+#endif
 
 		switch(e->key)
 		{
@@ -606,7 +617,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			return;
 		case VK_INSERT:
 			m_mipmap = !m_mipmap;
-			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
+			printf("GSdx: Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
 			return;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;
@@ -619,65 +630,18 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		}
 
 	}
-#elif defined(__unix__)
-	if(e->type == KEYPRESS)
-	{
-		int step = m_shift_key ? -1 : 1;
 
-		switch(e->key)
-		{
-		case XK_F5:
-			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
-			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
-			return;
-		case XK_F6:
-			if( m_wnd->IsManaged() )
-				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
-			return;
-		case XK_F7:
-			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
-			printf("GSdx: Set shader %d.\n", (int)m_shader);
-			return;
-		case XK_Delete:
-			m_aa1 = !m_aa1;
-			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
-			return;
-		case XK_Insert:
-			m_mipmap = !m_mipmap;
-			printf("GSdx: (Software) Mipmapping is now %s.\n", m_mipmap ? "enabled" : "disabled");
-			return;
-		case XK_Prior:
-			m_fxaa = !m_fxaa;
-			printf("GSdx: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
-			return;
-		case XK_Home:
-			m_shaderfx = !m_shaderfx;
-			printf("GSdx: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
-			return;
+#if defined(__unix__)
+	switch(e->key)
+	{
 		case XK_Shift_L:
 		case XK_Shift_R:
-			m_shift_key = true;
+			m_shift_key = (e->type == KEYPRESS);
 			return;
 		case XK_Control_L:
 		case XK_Control_R:
-			m_control_key = true;
+			m_control_key = (e->type == KEYPRESS);
 			return;
-		}
-
-	}
-	else if(e->type == KEYRELEASE)
-	{
-		switch(e->key)
-		{
-			case XK_Shift_L:
-			case XK_Shift_R:
-				m_shift_key = false;
-				return;
-			case XK_Control_L:
-			case XK_Control_R:
-				m_control_key = false;
-				return;
-		}
 	}
 #endif
 }
