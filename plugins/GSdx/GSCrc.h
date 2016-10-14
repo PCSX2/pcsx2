@@ -173,6 +173,7 @@ public:
 		Jak2,
 		Jak3,
 		JakX,
+		HarleyDavidson,
 		TitleCount,
 	};
 

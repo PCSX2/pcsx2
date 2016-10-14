@@ -2497,6 +2497,12 @@ void GSState::SetGameCRC(uint32 crc, int options)
 	m_options = options;
 	m_game = CRC::Lookup(m_crc_hack_level ? crc : 0);
 	SetupCrcHack();
+
+	// Until we find a solution that work for all games.
+	// (if  a solution does exist)
+	if (m_game.title == CRC::HarleyDavidson) {
+		m_clut_load_before_draw = true;
+	}
 }
 
 //
