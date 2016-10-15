@@ -449,7 +449,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 					dst_match = t;
 					break;
 				} else if (t->m_age == 1) {
-					//dst_match = t;
+					dst_match = t;
 				}
 			}
 		}
