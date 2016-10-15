@@ -35,20 +35,16 @@ s32 IOCtlSrc::Reopen()
         CloseHandle(device);
     }
 
-    DWORD share = FILE_SHARE_READ;
-    DWORD flags = FILE_ATTRIBUTE_READONLY | FILE_FLAG_SEQUENTIAL_SCAN;
     DWORD size;
 
     OpenOK = false;
     // SPTI only works if the device is opened with GENERIC_WRITE access.
-    m_can_use_spti = true;
-    device = CreateFile(fName, GENERIC_READ | GENERIC_WRITE | FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
-    if (device == INVALID_HANDLE_VALUE) {
-        device = CreateFile(fName, GENERIC_READ | FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
-        if (device == INVALID_HANDLE_VALUE)
-            return -1;
-        m_can_use_spti = false;
-    }
+    device = CreateFile(fName, GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                        FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    if (device == INVALID_HANDLE_VALUE)
+        return -1;
+
     // Dual layer DVDs cannot read from layer 1 without this ioctl
     DeviceIoControl(device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
 
@@ -345,97 +341,57 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
 
 s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 {
-    DWORD size = 0;
-
     if (!OpenOK)
         return -1;
 
-    if (m_can_use_spti) {
-        struct sptdinfo
-        {
-            SCSI_PASS_THROUGH_DIRECT info;
-            char sense_buffer[20];
-        } sptd = {};
+    struct sptdinfo
+    {
+        SCSI_PASS_THROUGH_DIRECT info;
+        char sense_buffer[20];
+    } sptd{};
 
-        // READ CD command
-        sptd.info.Cdb[0] = 0xBE;
-        // Don't care about sector type.
-        sptd.info.Cdb[1] = 0;
-        // Number of sectors to read
-        sptd.info.Cdb[6] = 0;
-        sptd.info.Cdb[7] = 0;
-        sptd.info.Cdb[8] = 1;
-        // Sync + all headers + user data + EDC/ECC. Excludes C2 + subchannel
-        sptd.info.Cdb[9] = 0xF8;
-        sptd.info.Cdb[10] = 0;
-        sptd.info.Cdb[11] = 0;
+    // READ CD command
+    sptd.info.Cdb[0] = 0xBE;
+    // Don't care about sector type.
+    sptd.info.Cdb[1] = 0;
+    // Number of sectors to read
+    sptd.info.Cdb[6] = 0;
+    sptd.info.Cdb[7] = 0;
+    sptd.info.Cdb[8] = 1;
+    // Sync + all headers + user data + EDC/ECC. Excludes C2 + subchannel
+    sptd.info.Cdb[9] = 0xF8;
+    sptd.info.Cdb[10] = 0;
+    sptd.info.Cdb[11] = 0;
 
-        sptd.info.CdbLength = 12;
-        sptd.info.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
-        sptd.info.DataIn = SCSI_IOCTL_DATA_IN;
-        sptd.info.SenseInfoOffset = offsetof(sptdinfo, sense_buffer);
-        sptd.info.TimeOutValue = 5;
+    sptd.info.CdbLength = 12;
+    sptd.info.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
+    sptd.info.DataIn = SCSI_IOCTL_DATA_IN;
+    sptd.info.SenseInfoOffset = offsetof(sptdinfo, sense_buffer);
+    sptd.info.TimeOutValue = 5;
 
-        // Read sectors one by one to avoid reading data from 2 tracks of
-        // different types in the same read (which will fail).
-        bool failed = false;
-        for (u32 n = 0; n < count; ++n) {
-            u32 current_sector = sector + n;
-            sptd.info.Cdb[2] = (current_sector >> 24) & 0xFF;
-            sptd.info.Cdb[3] = (current_sector >> 16) & 0xFF;
-            sptd.info.Cdb[4] = (current_sector >> 8) & 0xFF;
-            sptd.info.Cdb[5] = current_sector & 0xFF;
-            sptd.info.DataTransferLength = 2352;
-            sptd.info.DataBuffer = buffer + 2352 * n;
-            sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
-            if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
-                                sizeof(sptd), &sptd, sizeof(sptd), &size, nullptr)) {
-                if (sptd.info.DataTransferLength != 2352)
-                    printf(" * CDVD: SPTI short transfer of %u bytes", sptd.info.DataTransferLength);
-                continue;
-            }
-            failed = true;
-            printf(" * CDVD: SPTI failed reading sector %u; SENSE %u -", current_sector, sptd.info.SenseInfoLength);
-            for (const auto &c : sptd.sense_buffer)
-                printf(" %02X", c);
-            putchar('\n');
-            break;
+    // Read sectors one by one to avoid reading data from 2 tracks of different
+    // types in the same read (which will fail).
+    for (u32 n = 0; n < count; ++n) {
+        u32 current_sector = sector + n;
+        sptd.info.Cdb[2] = (current_sector >> 24) & 0xFF;
+        sptd.info.Cdb[3] = (current_sector >> 16) & 0xFF;
+        sptd.info.Cdb[4] = (current_sector >> 8) & 0xFF;
+        sptd.info.Cdb[5] = current_sector & 0xFF;
+        sptd.info.DataTransferLength = 2352;
+        sptd.info.DataBuffer = buffer + 2352 * n;
+        sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
+
+        DWORD unused;
+        if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
+                            sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr)) {
+            if (sptd.info.DataTransferLength != 2352)
+                printf(" * CDVD: SPTI short transfer of %u bytes", sptd.info.DataTransferLength);
+            continue;
         }
-
-        if (!failed)
-            return 0;
-
-        printf(" * CDVD: SPTI failed reading sectors %u-%u\n", sector, sector + count - 1);
-    }
-
-    // TODO: Code doesn't work as well as SPTI (likely due to some optional
-    // drive command requirements being unimplemented). Remove?
-    RAW_READ_INFO rri;
-    rri.DiskOffset.QuadPart = sector * (u64)2048;
-    rri.SectorCount = count;
-
-    rri.TrackMode = (TRACK_MODE_TYPE)last_read_mode;
-    if (DeviceIoControl(device, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), buffer, 2352 * count, &size, NULL) == 0) {
-        rri.TrackMode = XAForm2;
-        printf(" * CDVD: CD-ROM read mode change\n");
-        printf(" * CDVD: Trying XAForm2\n");
-        if (DeviceIoControl(device, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), buffer, 2352 * count, &size, NULL) == 0) {
-            rri.TrackMode = YellowMode2;
-            printf(" * CDVD: Trying YellowMode2\n");
-            if (DeviceIoControl(device, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), buffer, 2352 * count, &size, NULL) == 0) {
-                rri.TrackMode = CDDA;
-                printf(" * CDVD: Trying CDDA\n");
-                if (DeviceIoControl(device, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), buffer, 2352 * count, &size, NULL) == 0) {
-                    printf(" * CDVD: Failed to read this CD-ROM with error code: %u\n", GetLastError());
-                    return -1;
-                }
-            }
-        }
-    }
-
-    last_read_mode = rri.TrackMode;
-
-    if (size != (2352 * count)) {
+        printf(" * CDVD: SPTI failed reading sector %u; SENSE %u -", current_sector, sptd.info.SenseInfoLength);
+        for (const auto &c : sptd.sense_buffer)
+            printf(" %02X", c);
+        putchar('\n');
         return -1;
     }
 
