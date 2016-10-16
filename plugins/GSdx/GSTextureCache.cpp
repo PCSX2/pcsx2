@@ -732,6 +732,29 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				}
 			}
 		}
+
+		// Haunting ground write frame buffer 0x3000 and expect to write data to 0x3380
+		// Note: the game only does a 0 direct write. If some games expect some real data
+		// we are screwed.
+		if (m_renderer->m_game.title == CRC::HauntingGround) {
+			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.width(), rect.height(), bp, bw);
+			auto type = RenderTarget;
+
+			for(auto i = m_dst[type].begin(); i != m_dst[type].end(); )
+			{
+				auto j = i++;
+
+				Target* t = *j;
+				if (t->m_TEX0.TBP0 > bp && t->m_end_block < end_block) {
+					m_dst[type].erase(j);
+					GL_CACHE("TC: Remove Sub Target(%s) %d (0x%x)", to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0);
+					delete t;
+					continue;
+				}
+			}
+		}
 	}
 
 	GSVector4i r;
