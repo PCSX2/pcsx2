@@ -45,7 +45,9 @@ GSState::GSState()
 	, m_options(0)
 	, m_frameskip(0)
 {
-	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1;
+	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
+	// Let's keep it disabled to ease debug.
+	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1 || GLLoader::in_replayer;
 	m_mipmap = theApp.GetConfigI("mipmap");
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
