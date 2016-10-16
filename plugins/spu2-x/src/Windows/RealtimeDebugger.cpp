@@ -81,7 +81,13 @@ void UpdateDebugDialog()
 
                 SetDCBrushColor(hdc, RGB(0, 0, 0));
                 if ((vc.ADSR.Phase > 0) && (vc.ADSR.Phase < 6)) {
-                    SetDCBrushColor(hdc, RGB(0, 0, 128));
+                    SetDCBrushColor(hdc, RGB(0, 0, 128)); // light blue for playing voice
+					if (vc.Modulated) {
+						SetDCBrushColor(hdc, RGB(0, 128, 0)); // light green for playing voice with modulation enabled
+					}
+					if (vc.Noise) {
+						SetDCBrushColor(hdc, RGB(128, 0, 0)); // light red for playing voice with noise enabled
+					}
                 }
                 /*
 				else
