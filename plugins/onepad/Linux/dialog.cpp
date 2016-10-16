@@ -21,11 +21,11 @@
 
 // Construtor of Dialog
 Dialog::Dialog()
-    : wxDialog(NULL,                                   // Parent
-               wxID_ANY,                               // ID
-               _T("OnePad configuration"),             // Title
-               wxDefaultPosition,                      // Position
-               wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT),  // Width + Lenght
+    : wxDialog(NULL,                                  // Parent
+               wxID_ANY,                              // ID
+               _T("OnePad configuration"),            // Title
+               wxDefaultPosition,                     // Position
+               wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT), // Width + Lenght
                // Style
                wxSYSTEM_MENU |
                    wxCAPTION |
@@ -43,196 +43,196 @@ Dialog::Dialog()
     int padding[BUTTONS_LENGHT][4];
 
     // L1
-    padding[PAD_L1][0] = 218;  // Width
-    padding[PAD_L1][1] = 28;   // Height
-    padding[PAD_L1][2] = 50;   // X
-    padding[PAD_L1][3] = 175;  // Y
+    padding[PAD_L1][0] = 218; // Width
+    padding[PAD_L1][1] = 28;  // Height
+    padding[PAD_L1][2] = 50;  // X
+    padding[PAD_L1][3] = 175; // Y
 
     // L2
-    padding[PAD_L2][0] = 218;  // Width
-    padding[PAD_L2][1] = 28;   // Height
-    padding[PAD_L2][2] = 50;   // X
-    padding[PAD_L2][3] = 104;  // Y
+    padding[PAD_L2][0] = 218; // Width
+    padding[PAD_L2][1] = 28;  // Height
+    padding[PAD_L2][2] = 50;  // X
+    padding[PAD_L2][3] = 104; // Y
 
     // R1
-    padding[PAD_R1][0] = 218;  // Width
-    padding[PAD_R1][1] = 28;   // Height
-    padding[PAD_R1][2] = 726;  // X
-    padding[PAD_R1][3] = 175;  // Y
+    padding[PAD_R1][0] = 218; // Width
+    padding[PAD_R1][1] = 28;  // Height
+    padding[PAD_R1][2] = 726; // X
+    padding[PAD_R1][3] = 175; // Y
 
     // R2
-    padding[PAD_R2][0] = 218;  // Width
-    padding[PAD_R2][1] = 28;   // Height
-    padding[PAD_R2][2] = 726;  // X
-    padding[PAD_R2][3] = 104;  // Y
+    padding[PAD_R2][0] = 218; // Width
+    padding[PAD_R2][1] = 28;  // Height
+    padding[PAD_R2][2] = 726; // X
+    padding[PAD_R2][3] = 104; // Y
 
     // Triangle
-    padding[PAD_TRIANGLE][0] = 218;  // Width
-    padding[PAD_TRIANGLE][1] = 28;   // Height
-    padding[PAD_TRIANGLE][2] = 726;  // X
-    padding[PAD_TRIANGLE][3] = 246;  // Y
+    padding[PAD_TRIANGLE][0] = 218; // Width
+    padding[PAD_TRIANGLE][1] = 28;  // Height
+    padding[PAD_TRIANGLE][2] = 726; // X
+    padding[PAD_TRIANGLE][3] = 246; // Y
 
     // Circle
-    padding[PAD_CIRCLE][0] = 218;  // Width
-    padding[PAD_CIRCLE][1] = 28;   // Height
-    padding[PAD_CIRCLE][2] = 726;  // X
-    padding[PAD_CIRCLE][3] = 319;  // Y
+    padding[PAD_CIRCLE][0] = 218; // Width
+    padding[PAD_CIRCLE][1] = 28;  // Height
+    padding[PAD_CIRCLE][2] = 726; // X
+    padding[PAD_CIRCLE][3] = 319; // Y
 
     // Cross
-    padding[PAD_CROSS][0] = 218;  // Width
-    padding[PAD_CROSS][1] = 28;   // Height
-    padding[PAD_CROSS][2] = 726;  // X
-    padding[PAD_CROSS][3] = 391;  // Y
+    padding[PAD_CROSS][0] = 218; // Width
+    padding[PAD_CROSS][1] = 28;  // Height
+    padding[PAD_CROSS][2] = 726; // X
+    padding[PAD_CROSS][3] = 391; // Y
 
     // Square
-    padding[PAD_SQUARE][0] = 218;  // Width
-    padding[PAD_SQUARE][1] = 28;   // Height
-    padding[PAD_SQUARE][2] = 726;  // X
-    padding[PAD_SQUARE][3] = 463;  // Y
+    padding[PAD_SQUARE][0] = 218; // Width
+    padding[PAD_SQUARE][1] = 28;  // Height
+    padding[PAD_SQUARE][2] = 726; // X
+    padding[PAD_SQUARE][3] = 463; // Y
 
     // Directional pad up
-    padding[PAD_UP][0] = 100;  // Width
-    padding[PAD_UP][1] = 25;   // Height
-    padding[PAD_UP][2] = 108;  // X
-    padding[PAD_UP][3] = 290;  // Y
+    padding[PAD_UP][0] = 100; // Width
+    padding[PAD_UP][1] = 25;  // Height
+    padding[PAD_UP][2] = 108; // X
+    padding[PAD_UP][3] = 290; // Y
 
     // Directional pad down
-    padding[PAD_DOWN][0] = 100;  // Width
-    padding[PAD_DOWN][1] = 25;   // Height
-    padding[PAD_DOWN][2] = 108;  // X
-    padding[PAD_DOWN][3] = 340;  // Y
+    padding[PAD_DOWN][0] = 100; // Width
+    padding[PAD_DOWN][1] = 25;  // Height
+    padding[PAD_DOWN][2] = 108; // X
+    padding[PAD_DOWN][3] = 340; // Y
 
     // Directional pad right
-    padding[PAD_RIGHT][0] = 109;  // Width
-    padding[PAD_RIGHT][1] = 25;   // Height
-    padding[PAD_RIGHT][2] = 159;  // X
-    padding[PAD_RIGHT][3] = 315;  // Y
+    padding[PAD_RIGHT][0] = 109; // Width
+    padding[PAD_RIGHT][1] = 25;  // Height
+    padding[PAD_RIGHT][2] = 159; // X
+    padding[PAD_RIGHT][3] = 315; // Y
 
     // Directional pad left
-    padding[PAD_LEFT][0] = 109;  // Width
-    padding[PAD_LEFT][1] = 25;   // Height
-    padding[PAD_LEFT][2] = 50;   // X
-    padding[PAD_LEFT][3] = 315;  // Y
+    padding[PAD_LEFT][0] = 109; // Width
+    padding[PAD_LEFT][1] = 25;  // Height
+    padding[PAD_LEFT][2] = 50;  // X
+    padding[PAD_LEFT][3] = 315; // Y
 
     // Left Joystick up
-    padding[PAD_L_UP][0] = 100;  // Width
-    padding[PAD_L_UP][1] = 25;   // Height
-    padding[PAD_L_UP][2] = 325;  // X
-    padding[PAD_L_UP][3] = 527;  // Y
+    padding[PAD_L_UP][0] = 100; // Width
+    padding[PAD_L_UP][1] = 25;  // Height
+    padding[PAD_L_UP][2] = 325; // X
+    padding[PAD_L_UP][3] = 527; // Y
 
     // Left Joystick down
-    padding[PAD_L_DOWN][0] = 100;  // Width
-    padding[PAD_L_DOWN][1] = 25;   // Height
-    padding[PAD_L_DOWN][2] = 325;  // X
-    padding[PAD_L_DOWN][3] = 577;  // Y
+    padding[PAD_L_DOWN][0] = 100; // Width
+    padding[PAD_L_DOWN][1] = 25;  // Height
+    padding[PAD_L_DOWN][2] = 325; // X
+    padding[PAD_L_DOWN][3] = 577; // Y
 
     // Left Joystick right
-    padding[PAD_L_RIGHT][0] = 109;  // Width
-    padding[PAD_L_RIGHT][1] = 25;   // Height
-    padding[PAD_L_RIGHT][2] = 377;  // X
-    padding[PAD_L_RIGHT][3] = 552;  // Y
+    padding[PAD_L_RIGHT][0] = 109; // Width
+    padding[PAD_L_RIGHT][1] = 25;  // Height
+    padding[PAD_L_RIGHT][2] = 377; // X
+    padding[PAD_L_RIGHT][3] = 552; // Y
 
     // Left Joystick left
-    padding[PAD_L_LEFT][0] = 109;  // Width
-    padding[PAD_L_LEFT][1] = 25;   // Height
-    padding[PAD_L_LEFT][2] = 268;  // X
-    padding[PAD_L_LEFT][3] = 552;  // Y
+    padding[PAD_L_LEFT][0] = 109; // Width
+    padding[PAD_L_LEFT][1] = 25;  // Height
+    padding[PAD_L_LEFT][2] = 268; // X
+    padding[PAD_L_LEFT][3] = 552; // Y
 
     // L3
-    padding[PAD_L3][0] = 218;  // Width
-    padding[PAD_L3][1] = 28;   // Height
-    padding[PAD_L3][2] = 268;  // X
-    padding[PAD_L3][3] = 641;  // Y
+    padding[PAD_L3][0] = 218; // Width
+    padding[PAD_L3][1] = 28;  // Height
+    padding[PAD_L3][2] = 268; // X
+    padding[PAD_L3][3] = 641; // Y
 
     // Right Joystick up
-    padding[PAD_R_UP][0] = 100;  // Width
-    padding[PAD_R_UP][1] = 25;   // Height
-    padding[PAD_R_UP][2] = 555;  // X
-    padding[PAD_R_UP][3] = 527;  // Y
+    padding[PAD_R_UP][0] = 100; // Width
+    padding[PAD_R_UP][1] = 25;  // Height
+    padding[PAD_R_UP][2] = 555; // X
+    padding[PAD_R_UP][3] = 527; // Y
 
     // Right Joystick down
-    padding[PAD_R_DOWN][0] = 100;  // Width
-    padding[PAD_R_DOWN][1] = 25;   // Height
-    padding[PAD_R_DOWN][2] = 555;  // X
-    padding[PAD_R_DOWN][3] = 577;  // Y
+    padding[PAD_R_DOWN][0] = 100; // Width
+    padding[PAD_R_DOWN][1] = 25;  // Height
+    padding[PAD_R_DOWN][2] = 555; // X
+    padding[PAD_R_DOWN][3] = 577; // Y
 
     // Right Joystick right
-    padding[PAD_R_RIGHT][0] = 109;  // Width
-    padding[PAD_R_RIGHT][1] = 25;   // Height
-    padding[PAD_R_RIGHT][2] = 607;  // X
-    padding[PAD_R_RIGHT][3] = 552;  // Y
+    padding[PAD_R_RIGHT][0] = 109; // Width
+    padding[PAD_R_RIGHT][1] = 25;  // Height
+    padding[PAD_R_RIGHT][2] = 607; // X
+    padding[PAD_R_RIGHT][3] = 552; // Y
 
     // Right Joystick left
-    padding[PAD_R_LEFT][0] = 109;  // Width
-    padding[PAD_R_LEFT][1] = 25;   // Height
-    padding[PAD_R_LEFT][2] = 498;  // X
-    padding[PAD_R_LEFT][3] = 552;  // Y
+    padding[PAD_R_LEFT][0] = 109; // Width
+    padding[PAD_R_LEFT][1] = 25;  // Height
+    padding[PAD_R_LEFT][2] = 498; // X
+    padding[PAD_R_LEFT][3] = 552; // Y
 
     // R3
-    padding[PAD_R3][0] = 218;  // Width
-    padding[PAD_R3][1] = 28;   // Height
-    padding[PAD_R3][2] = 498;  // X
-    padding[PAD_R3][3] = 641;  // Y
+    padding[PAD_R3][0] = 218; // Width
+    padding[PAD_R3][1] = 28;  // Height
+    padding[PAD_R3][2] = 498; // X
+    padding[PAD_R3][3] = 641; // Y
 
     // Start
-    padding[PAD_START][0] = 218;  // Width
-    padding[PAD_START][1] = 28;   // Height
-    padding[PAD_START][2] = 503;  // X
-    padding[PAD_START][3] = 34;   // Y
+    padding[PAD_START][0] = 218; // Width
+    padding[PAD_START][1] = 28;  // Height
+    padding[PAD_START][2] = 503; // X
+    padding[PAD_START][3] = 34;  // Y
 
     // Select
-    padding[PAD_SELECT][0] = 218;  // Width
-    padding[PAD_SELECT][1] = 28;   // Height
-    padding[PAD_SELECT][2] = 273;  // X
-    padding[PAD_SELECT][3] = 34;   // Y
+    padding[PAD_SELECT][0] = 218; // Width
+    padding[PAD_SELECT][1] = 28;  // Height
+    padding[PAD_SELECT][2] = 273; // X
+    padding[PAD_SELECT][3] = 34;  // Y
 
     // Analog
-    padding[Analog][0] = 218;  // Width
-    padding[Analog][1] = 28;   // Height
-    padding[Analog][2] = 50;   // X
-    padding[Analog][3] = 452;  // Y
+    padding[Analog][0] = 218; // Width
+    padding[Analog][1] = 28;  // Height
+    padding[Analog][2] = 50;  // X
+    padding[Analog][3] = 452; // Y
 
     // Left Joystick Configuration
-    padding[JoyL_config][0] = 180;  // Width
-    padding[JoyL_config][1] = 28;   // Height
-    padding[JoyL_config][2] = 50;   // X
-    padding[JoyL_config][3] = 550;  // Y
+    padding[JoyL_config][0] = 180; // Width
+    padding[JoyL_config][1] = 28;  // Height
+    padding[JoyL_config][2] = 50;  // X
+    padding[JoyL_config][3] = 550; // Y
 
     // Right Joystick Configuration
-    padding[JoyR_config][0] = 180;  // Width
-    padding[JoyR_config][1] = 28;   // Height
-    padding[JoyR_config][2] = 764;  // X
-    padding[JoyR_config][3] = 550;  // Y
+    padding[JoyR_config][0] = 180; // Width
+    padding[JoyR_config][1] = 28;  // Height
+    padding[JoyR_config][2] = 764; // X
+    padding[JoyR_config][3] = 550; // Y
 
     // Gamepad Configuration
-    padding[Gamepad_config][0] = 180;  // Width
-    padding[Gamepad_config][1] = 28;   // Height
-    padding[Gamepad_config][2] = 50;   // X
-    padding[Gamepad_config][3] = 585;  // Y
+    padding[Gamepad_config][0] = 180; // Width
+    padding[Gamepad_config][1] = 28;  // Height
+    padding[Gamepad_config][2] = 50;  // X
+    padding[Gamepad_config][3] = 585; // Y
 
     // Set All Buttons
-    padding[Set_all][0] = 180;  // Width
-    padding[Set_all][1] = 28;   // Height
-    padding[Set_all][2] = 764;  // X
-    padding[Set_all][3] = 585;  // Y
+    padding[Set_all][0] = 180; // Width
+    padding[Set_all][1] = 28;  // Height
+    padding[Set_all][2] = 764; // X
+    padding[Set_all][3] = 585; // Y
 
     // Apply modifications without exit
-    padding[Apply][0] = 70;   // Width
-    padding[Apply][1] = 28;   // Height
-    padding[Apply][2] = 833;  // X
-    padding[Apply][3] = 642;  // Y
+    padding[Apply][0] = 70;  // Width
+    padding[Apply][1] = 28;  // Height
+    padding[Apply][2] = 833; // X
+    padding[Apply][3] = 642; // Y
 
     // Ok button
-    padding[Ok][0] = 70;   // Width
-    padding[Ok][1] = 28;   // Height
-    padding[Ok][2] = 913;  // X
-    padding[Ok][3] = 642;  // Y
+    padding[Ok][0] = 70;  // Width
+    padding[Ok][1] = 28;  // Height
+    padding[Ok][2] = 913; // X
+    padding[Ok][3] = 642; // Y
 
     // Cancel button
-    padding[Cancel][0] = 70;   // Width
-    padding[Cancel][1] = 28;   // Height
-    padding[Cancel][2] = 753;  // X
-    padding[Cancel][3] = 642;  // Y
+    padding[Cancel][0] = 70;  // Width
+    padding[Cancel][1] = 28;  // Height
+    padding[Cancel][2] = 753; // X
+    padding[Cancel][3] = 642; // Y
 
     // create a new Notebook
     m_tab_gamepad = new wxNotebook(this, wxID_ANY);
@@ -250,18 +250,18 @@ Dialog::Dialog()
         sstm << label << i;
         // New page creation
         m_tab_gamepad->AddPage(
-            m_pan_tabs[i],                            // Parent
-            wxString(sstm.str().c_str(), wxConvUTF8)  // Title
+            m_pan_tabs[i],                           // Parent
+            wxString(sstm.str().c_str(), wxConvUTF8) // Title
             );
 
         for (int j = 0; j < BUTTONS_LENGHT; ++j) {
             // Gamepad buttons
             m_bt_gamepad[i][j] = new wxButton(
-                m_pan_tabs[i],                          // Parent
-                wxID_HIGHEST + j + 1,                   // ID
-                _T("Undefined"),                        // Label
-                wxPoint(padding[j][2], padding[j][3]),  // Position
-                wxSize(padding[j][0], padding[j][1])    // Size
+                m_pan_tabs[i],                         // Parent
+                wxID_HIGHEST + j + 1,                  // ID
+                _T("Undefined"),                       // Label
+                wxPoint(padding[j][2], padding[j][3]), // Position
+                wxSize(padding[j][0], padding[j][1])   // Size
                 );
         }
         // Redefine others gui buttons label
@@ -292,9 +292,9 @@ Dialog::Dialog()
 
 void Dialog::InitDialog()
 {
-    GamePad::EnumerateGamePads(s_vgamePad);  // activate gamepads
-    LoadConfig();                            // Load configuration from the ini file
-    repopulate();                            // Set label and fit simulated key array
+    GamePad::EnumerateGamePads(s_vgamePad); // activate gamepads
+    LoadConfig();                           // Load configuration from the ini file
+    repopulate();                           // Set label and fit simulated key array
 }
 
 /****************************************/
@@ -304,54 +304,54 @@ void Dialog::InitDialog()
 void Dialog::OnButtonClicked(wxCommandEvent &event)
 {
     // Affichage d'un message à chaque clic sur le bouton
-    wxButton *bt_tmp = (wxButton *)event.GetEventObject();  // get the button object
-    int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1;         // get the real ID
-    int gamepad_id = m_tab_gamepad->GetSelection();         // get the tab ID (equivalent to the gamepad id)
-    if (bt_id >= 0 && bt_id <= PAD_R_LEFT) {                // if the button ID is a gamepad button
-        bt_tmp->Disable();                                  // switch the button state to "Disable"
+    wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
+    int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1;        // get the real ID
+    int gamepad_id = m_tab_gamepad->GetSelection();        // get the tab ID (equivalent to the gamepad id)
+    if (bt_id >= 0 && bt_id <= PAD_R_LEFT) {               // if the button ID is a gamepad button
+        bt_tmp->Disable();                                 // switch the button state to "Disable"
         config_key(gamepad_id, bt_id);
-        bt_tmp->Enable();                  // switch the button state to "Enable"
-    } else if (bt_id == Gamepad_config) {  // If the button ID is equals to the Gamepad_config button ID
+        bt_tmp->Enable();                 // switch the button state to "Enable"
+    } else if (bt_id == Gamepad_config) { // If the button ID is equals to the Gamepad_config button ID
         GamepadConfiguration gamepad_config(gamepad_id, this);
 
         gamepad_config.InitGamepadConfiguration();
         gamepad_config.ShowModal();
-    } else if (bt_id == JoyL_config) {  // If the button ID is equals to the JoyL_config button ID
+    } else if (bt_id == JoyL_config) { // If the button ID is equals to the JoyL_config button ID
         JoystickConfiguration joystick_config(gamepad_id, true, this);
 
         joystick_config.InitJoystickConfiguration();
         joystick_config.ShowModal();
-    } else if (bt_id == JoyR_config) {  // If the button ID is equals to the JoyR_config button ID
+    } else if (bt_id == JoyR_config) { // If the button ID is equals to the JoyR_config button ID
         JoystickConfiguration joystick_config(gamepad_id, false, this);
 
         joystick_config.InitJoystickConfiguration();
         joystick_config.ShowModal();
-    } else if (bt_id == Set_all) {  // If the button ID is equals to the Set_all button ID
+    } else if (bt_id == Set_all) { // If the button ID is equals to the Set_all button ID
         for (int i = 0; i < MAX_KEYS; ++i) {
             bt_tmp = m_bt_gamepad[gamepad_id][i];
             switch (i) {
-                case PAD_L_UP:  // Left joystick (Up) ↑
+                case PAD_L_UP: // Left joystick (Up) ↑
                     m_pan_tabs[gamepad_id]->ShowImg(img_l_arrow_up);
                     break;
-                case PAD_L_RIGHT:  // Left joystick (Right) →
+                case PAD_L_RIGHT: // Left joystick (Right) →
                     m_pan_tabs[gamepad_id]->ShowImg(img_l_arrow_right);
                     break;
-                case PAD_L_DOWN:  // Left joystick (Down) ↓
+                case PAD_L_DOWN: // Left joystick (Down) ↓
                     m_pan_tabs[gamepad_id]->ShowImg(img_l_arrow_bottom);
                     break;
-                case PAD_L_LEFT:  // Left joystick (Left) ←
+                case PAD_L_LEFT: // Left joystick (Left) ←
                     m_pan_tabs[gamepad_id]->ShowImg(img_l_arrow_left);
                     break;
-                case PAD_R_UP:  // Right joystick (Up) ↑
+                case PAD_R_UP: // Right joystick (Up) ↑
                     m_pan_tabs[gamepad_id]->ShowImg(img_r_arrow_up);
                     break;
-                case PAD_R_RIGHT:  // Right joystick (Right) →
+                case PAD_R_RIGHT: // Right joystick (Right) →
                     m_pan_tabs[gamepad_id]->ShowImg(img_r_arrow_right);
                     break;
-                case PAD_R_DOWN:  // Right joystick (Down) ↓
+                case PAD_R_DOWN: // Right joystick (Down) ↓
                     m_pan_tabs[gamepad_id]->ShowImg(img_r_arrow_bottom);
                     break;
-                case PAD_R_LEFT:  // Right joystick (Left) ←
+                case PAD_R_LEFT: // Right joystick (Left) ←
                     m_pan_tabs[gamepad_id]->ShowImg(img_r_arrow_left);
                     break;
                 default:
@@ -362,28 +362,28 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
             m_pan_tabs[gamepad_id]->Update();
             config_key(gamepad_id, i);
             switch (i) {
-                case PAD_L_UP:  // Left joystick (Up) ↑
+                case PAD_L_UP: // Left joystick (Up) ↑
                     m_pan_tabs[gamepad_id]->HideImg(img_l_arrow_up);
                     break;
-                case PAD_L_RIGHT:  // Left joystick (Right) →
+                case PAD_L_RIGHT: // Left joystick (Right) →
                     m_pan_tabs[gamepad_id]->HideImg(img_l_arrow_right);
                     break;
-                case PAD_L_DOWN:  // Left joystick (Down) ↓
+                case PAD_L_DOWN: // Left joystick (Down) ↓
                     m_pan_tabs[gamepad_id]->HideImg(img_l_arrow_bottom);
                     break;
-                case PAD_L_LEFT:  // Left joystick (Left) ←
+                case PAD_L_LEFT: // Left joystick (Left) ←
                     m_pan_tabs[gamepad_id]->HideImg(img_l_arrow_left);
                     break;
-                case PAD_R_UP:  // Right joystick (Up) ↑
+                case PAD_R_UP: // Right joystick (Up) ↑
                     m_pan_tabs[gamepad_id]->HideImg(img_r_arrow_up);
                     break;
-                case PAD_R_RIGHT:  // Right joystick (Right) →
+                case PAD_R_RIGHT: // Right joystick (Right) →
                     m_pan_tabs[gamepad_id]->HideImg(img_r_arrow_right);
                     break;
-                case PAD_R_DOWN:  // Right joystick (Down) ↓
+                case PAD_R_DOWN: // Right joystick (Down) ↓
                     m_pan_tabs[gamepad_id]->HideImg(img_r_arrow_bottom);
                     break;
-                case PAD_R_LEFT:  // Right joystick (Left) ←
+                case PAD_R_LEFT: // Right joystick (Left) ←
                     m_pan_tabs[gamepad_id]->HideImg(img_r_arrow_left);
                     break;
                 default:
@@ -392,15 +392,15 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
             }
             m_pan_tabs[gamepad_id]->Refresh();
             m_pan_tabs[gamepad_id]->Update();
-            usleep(500000);  // give enough time to the user to release the button
+            usleep(500000); // give enough time to the user to release the button
         }
-    } else if (bt_id == Ok) {      // If the button ID is equals to the Ok button ID
-        SaveConfig();              // Save the configuration
-        Close();                   // Close the window
-    } else if (bt_id == Apply) {   // If the button ID is equals to the Apply button ID
-        SaveConfig();              // Save the configuration
-    } else if (bt_id == Cancel) {  // If the button ID is equals to the cancel button ID
-        Close();                   // Close the window
+    } else if (bt_id == Ok) {     // If the button ID is equals to the Ok button ID
+        SaveConfig();             // Save the configuration
+        Close();                  // Close the window
+    } else if (bt_id == Apply) {  // If the button ID is equals to the Apply button ID
+        SaveConfig();             // Save the configuration
+    } else if (bt_id == Cancel) { // If the button ID is equals to the cancel button ID
+        Close();                  // Close the window
     }
 }
 
@@ -438,7 +438,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                             } else if (map >= PAD_R_UP && map <= PAD_R_LEFT) {
                                 m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
                                 m_pan_tabs[events.jaxis.which]->ShowImg(img_right_cursor);
-                            } else if (map < PAD_L_UP) {  // if this is not a joystick
+                            } else if (map < PAD_L_UP) { // if this is not a joystick
                                 m_pan_tabs[events.jaxis.which]->ShowImg(map);
                             }
                         }
@@ -449,7 +449,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                     it2 = m_map_images[events.jaxis.which].find(key);
                     if (it2 != m_map_images[events.jaxis.which].end()) {
                         map = m_map_images[events.jaxis.which][key];
-                        if (map < PAD_L_UP) {  // if this is not a joystick
+                        if (map < PAD_L_UP) { // if this is not a joystick
                             m_pan_tabs[events.jaxis.which]->HideImg(map);
                         }
                         break;
@@ -519,7 +519,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                 break;
         }
     }
-#endif  // SDL_BUILD
+#endif // SDL_BUILD
 }
 
 /****************************************/

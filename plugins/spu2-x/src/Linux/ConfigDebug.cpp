@@ -174,7 +174,7 @@ void DisplayDialog()
     // Create the widgets
     dialog = gtk_dialog_new_with_buttons(
         "Spu2-X Config",
-        NULL,  // parent window
+        NULL, // parent window
         (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
         "OK", GTK_RESPONSE_ACCEPT,
         "Cancel", GTK_RESPONSE_REJECT,

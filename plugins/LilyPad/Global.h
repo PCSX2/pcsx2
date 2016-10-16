@@ -26,7 +26,7 @@ typedef uint16_t USHORT;
 typedef int64_t __int64;
 #endif
 
-#define MAX_PATH (256)  // random value
+#define MAX_PATH (256) // random value
 
 #include <X11/keysym.h>
 
@@ -78,7 +78,7 @@ static inline unsigned int timeGetTime()
     struct timeval now;
     gettimeofday(&now, NULL);
     uint64_t ms = (now.tv_usec / 1000) + ((uint64_t)now.tv_sec * 1000);
-    return (ms & 0xFFFFFFFF);  // MS code is u32 ...
+    return (ms & 0xFFFFFFFF); // MS code is u32 ...
 }
 
 #include "Utilities/Dependencies.h"

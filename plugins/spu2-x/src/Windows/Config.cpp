@@ -40,9 +40,9 @@ int Interpolation = 4;
 
 bool EffectsDisabled = false;
 
-float FinalVolume;  // Global
+float FinalVolume; // Global
 bool AdvancedVolumeControl;
-float VolumeAdjustFLdb;  // decibels settings, cos audiophiles love that
+float VolumeAdjustFLdb; // decibels settings, cos audiophiles love that
 float VolumeAdjustCdb;
 float VolumeAdjustFRdb;
 float VolumeAdjustBLdb;
@@ -50,7 +50,7 @@ float VolumeAdjustBRdb;
 float VolumeAdjustSLdb;
 float VolumeAdjustSRdb;
 float VolumeAdjustLFEdb;
-float VolumeAdjustFL;  // linear coefs calcualted from decibels,
+float VolumeAdjustFL; // linear coefs calcualted from decibels,
 float VolumeAdjustC;
 float VolumeAdjustFR;
 float VolumeAdjustBL;
@@ -65,7 +65,7 @@ bool postprocess_filter_dealias = false;
 
 // OUTPUT
 int SndOutLatencyMS = 100;
-int SynchMode = 0;  // Time Stretch, Async or Disabled
+int SynchMode = 0; // Time Stretch, Async or Disabled
 
 u32 OutputModule = 0;
 
@@ -117,7 +117,7 @@ void ReadSettings()
     dplLevel = CfgReadInt(L"OUTPUT", L"DplDecodingLevel", 0);
     SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 100);
 
-    if ((SynchMode == 0) && (SndOutLatencyMS < LATENCY_MIN_TS))  // can't use low-latency with timestretcher atm
+    if ((SynchMode == 0) && (SndOutLatencyMS < LATENCY_MIN_TS)) // can't use low-latency with timestretcher atm
         SndOutLatencyMS = LATENCY_MIN_TS;
     else if (SndOutLatencyMS < LATENCY_MIN)
         SndOutLatencyMS = LATENCY_MIN;

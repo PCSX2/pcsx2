@@ -35,7 +35,7 @@ using namespace std;
 
 const unsigned char version = PS2E_DEV9_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 5;  // increase that with each version
+const unsigned char build = 5; // increase that with each version
 
 #ifdef _MSC_VER
 #define snprintf sprintf_s

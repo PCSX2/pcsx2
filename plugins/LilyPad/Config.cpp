@@ -40,10 +40,10 @@ const wchar_t *padTypes[] = {
 // Hacks or configurations which PCSX2 needs with a specific value
 void PCSX2_overrideConfig(GeneralConfig &config_in_out)
 {
-    config_in_out.disableScreenSaver = 0;    // Not required - handled internally by PCSX2
-    config_in_out.escapeFullscreenHack = 0;  // Not required - handled internally by PCSX2
-    config_in_out.saveStateTitle = 0;        // Not required - handled internally by PCSX2
-    config_in_out.closeHacks = 0;            // Cannot function when used by PCSX2
+    config_in_out.disableScreenSaver = 0;   // Not required - handled internally by PCSX2
+    config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
+    config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
+    config_in_out.closeHacks = 0;           // Cannot function when used by PCSX2
 }
 
 // Dialog widgets which should be disabled - mostly matching PCSX2_overrideConfig
@@ -53,7 +53,7 @@ const UINT *PCSX2_disabledWidgets()
         IDC_DISABLE_SCREENSAVER,
         IDC_ESCAPE_FULLSCREEN_HACK,
         IDC_SAVE_STATE_TITLE,
-        IDC_ANALOG_START1,  // start in analog mode - only useful for PS1
+        IDC_ANALOG_START1, // start in analog mode - only useful for PS1
         IDC_CLOSE_HACK1,
         IDC_CLOSE_HACK2,
         0};
@@ -102,11 +102,11 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
     {L"Multitap 1", IDC_MULTITAP1, 0},
     {L"Multitap 2", IDC_MULTITAP2, 0},
 
-    {L"Escape Fullscreen Hack", IDC_ESCAPE_FULLSCREEN_HACK, 1},  // Not required for PCSX2
-    {L"Disable Screen Saver", IDC_DISABLE_SCREENSAVER, 1},       // Not required for PCSX2
+    {L"Escape Fullscreen Hack", IDC_ESCAPE_FULLSCREEN_HACK, 1}, // Not required for PCSX2
+    {L"Disable Screen Saver", IDC_DISABLE_SCREENSAVER, 1},      // Not required for PCSX2
     {L"Logging", IDC_DEBUG_FILE, 0},
 
-    {L"Save State in Title", IDC_SAVE_STATE_TITLE, 0},  // Not required for PCSX2
+    {L"Save State in Title", IDC_SAVE_STATE_TITLE, 0}, // Not required for PCSX2
     {L"GH2", IDC_GH2_HACK, 0},
     {L"Turbo Key Hack", IDC_TURBO_KEY_HACK, 0},
 };
@@ -339,7 +339,7 @@ void CALLBACK PADsetSettingsDir(const char *dir)
 
     FILE *temp = nullptr;
     _wfopen_s(&temp, iniFile, L"r");
-    if (!temp) {  // File not found, possibly.
+    if (!temp) { // File not found, possibly.
         HRSRC res = FindResource(hInst, MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
         if (!res)
             return;
@@ -1642,7 +1642,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             SetTimer(hWnd, 1, 3000, 0);
                         }
                     }
-                } else if ((cmd >= ID_LOCK_BUTTONS && cmd <= ID_ANALOG) || cmd == ID_IGNORE) {  // || cmd == ID_FORCE_FEEDBACK) {
+                } else if ((cmd >= ID_LOCK_BUTTONS && cmd <= ID_ANALOG) || cmd == ID_IGNORE) { // || cmd == ID_FORCE_FEEDBACK) {
                     // Messes up things, unfortunately.
                     // End binding on a bunch of notification messages, and
                     // this will send a bunch.

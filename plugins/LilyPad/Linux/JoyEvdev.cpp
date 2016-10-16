@@ -49,7 +49,7 @@ JoyEvdev::JoyEvdev(int fd, bool ds3, const wchar_t *id)
     // Add Absolute axis
     if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(abs_bitmap)), abs_bitmap) >= 0) {
         for (int bit = 0; bit < ABS_CNT; bit++) {
-            ControlType type = ABSAXIS;  // FIXME DS3
+            ControlType type = ABSAXIS; // FIXME DS3
 
             if (testBit(bit, abs_bitmap)) {
                 input_absinfo info;

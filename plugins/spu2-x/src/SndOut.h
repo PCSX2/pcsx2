@@ -27,7 +27,7 @@ static const int SndOutPacketSize = 64;
 // downsamples 32 bit samples to 16 bit sound driver output (this way timestretching and
 // DSP effects get better precision results)
 static const int SndOutVolumeShift = 12;
-static const int SndOutVolumeShift32 = 16 - SndOutVolumeShift;  // shift up, not down
+static const int SndOutVolumeShift32 = 16 - SndOutVolumeShift; // shift up, not down
 
 // Samplerate of the SPU2. For accurate playback we need to match this
 // exactly.  Trying to scale samplerates and maintain SPU2's Ts timing accuracy
@@ -50,7 +50,7 @@ extern unsigned int delayCycles;
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
 
-struct Stereo51Out16Dpl;  // similar to DplII but without rear balancing
+struct Stereo51Out16Dpl; // similar to DplII but without rear balancing
 struct Stereo51Out32Dpl;
 
 extern void ResetDplIIDecoder();
@@ -694,4 +694,4 @@ extern void RecordWrite(const StereoOut16 &sample);
 extern s32 DspLoadLibrary(wchar_t *fileName, int modNum);
 extern void DspCloseLibrary();
 extern int DspProcess(s16 *buffer, int samples);
-extern void DspUpdate();  // to let the Dsp process window messages
+extern void DspUpdate(); // to let the Dsp process window messages

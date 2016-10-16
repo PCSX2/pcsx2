@@ -40,14 +40,14 @@ private:
 
     ds_device_data m_devices[32];
     int ndevs;
-    GUID DevGuid;  // currently employed GUID.
+    GUID DevGuid; // currently employed GUID.
     bool haveGuid;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Instance vars
 
     int channel;
-    int myLastWrite;  // last write position, in bytes
+    int myLastWrite; // last write position, in bytes
 
     bool dsound_running;
     HANDLE thread;
@@ -303,7 +303,7 @@ private:
                         int i = (int)SendMessage(GetDlgItem(hWnd, IDC_DS_DEVICE), CB_GETCURSEL, 0, 0);
 
                         if (!m_devices[i].hasGuid) {
-                            m_Device[0] = 0;  // clear device name to ""
+                            m_Device[0] = 0; // clear device name to ""
                         } else {
                             swprintf_s(temp, L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
                                        m_devices[i].guid.Data1,

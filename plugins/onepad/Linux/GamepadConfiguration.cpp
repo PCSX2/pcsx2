@@ -22,11 +22,11 @@
 // Construtor of GamepadConfiguration
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
     : wxDialog(
-          parent,                       // Parent
-          wxID_ANY,                     // ID
-          _T("Gamepad configuration"),  // Title
-          wxDefaultPosition,            // Position
-          wxSize(400, 230),             // Width + Lenght
+          parent,                      // Parent
+          wxID_ANY,                    // ID
+          _T("Gamepad configuration"), // Title
+          wxDefaultPosition,           // Position
+          wxSize(400, 230),            // Width + Lenght
           // Style
           wxSYSTEM_MENU |
               wxCAPTION |
@@ -36,84 +36,84 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
 
     m_pad_id = pad;
     m_pan_gamepad_config = new wxPanel(
-        this,               // Parent
-        wxID_ANY,           // ID
-        wxDefaultPosition,  // Prosition
-        wxSize(300, 200)    // Size
+        this,              // Parent
+        wxID_ANY,          // ID
+        wxDefaultPosition, // Prosition
+        wxSize(300, 200)   // Size
         );
     m_cb_rumble = new wxCheckBox(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        _T("&Enable rumble"),  // Label
-        wxPoint(20, 20)        // Position
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        _T("&Enable rumble"), // Label
+        wxPoint(20, 20)       // Position
         );
 
     m_cb_hack_sixaxis_usb = new wxCheckBox(
-        m_pan_gamepad_config,                     // Parent
-        wxID_ANY,                                 // ID
-        _T("&Hack: Sixaxis/DS3 plugged in USB"),  // Label
-        wxPoint(20, 40)                           // Position
+        m_pan_gamepad_config,                    // Parent
+        wxID_ANY,                                // ID
+        _T("&Hack: Sixaxis/DS3 plugged in USB"), // Label
+        wxPoint(20, 40)                          // Position
         );
 
     m_cb_hack_sixaxis_pressure = new wxCheckBox(
-        m_pan_gamepad_config,               // Parent
-        wxID_ANY,                           // ID
-        _T("&Hack: Sixaxis/DS3 pressure"),  // Label
-        wxPoint(20, 60)                     // Position
+        m_pan_gamepad_config,              // Parent
+        wxID_ANY,                          // ID
+        _T("&Hack: Sixaxis/DS3 pressure"), // Label
+        wxPoint(20, 60)                    // Position
         );
 
     wxString txt_rumble = wxT("Rumble intensity");
     m_lbl_rumble_intensity = new wxStaticText(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        txt_rumble,            // Text which must be displayed
-        wxPoint(20, 90),       // Position
-        wxDefaultSize          // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        txt_rumble,           // Text which must be displayed
+        wxPoint(20, 90),      // Position
+        wxDefaultSize         // Size
         );
 
     m_sl_rumble_intensity = new wxSlider(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        0,                     // value
-        0,                     // min value 0x0000
-        0x7FFF,                // max value 0x7FFF
-        wxPoint(150, 83),      // Position
-        wxSize(200, 30)        // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        0,                    // value
+        0,                    // min value 0x0000
+        0x7FFF,               // max value 0x7FFF
+        wxPoint(150, 83),     // Position
+        wxSize(200, 30)       // Size
         );
 
     wxString txt_joystick = wxT("Joystick sensibility");
     m_lbl_rumble_intensity = new wxStaticText(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        txt_joystick,          // Text which must be displayed
-        wxPoint(20, 120),      // Position
-        wxDefaultSize          // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        txt_joystick,         // Text which must be displayed
+        wxPoint(20, 120),     // Position
+        wxDefaultSize         // Size
         );
 
     m_sl_joystick_sensibility = new wxSlider(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        0,                     // value
-        0,                     // min value
-        100,                   // max value
-        wxPoint(150, 113),     // Position
-        wxSize(200, 30)        // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        0,                    // value
+        0,                    // min value
+        100,                  // max value
+        wxPoint(150, 113),    // Position
+        wxSize(200, 30)       // Size
         );
 
     m_bt_ok = new wxButton(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        _T("&OK"),             // Label
-        wxPoint(250, 160),     // Position
-        wxSize(60, 25)         // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        _T("&OK"),            // Label
+        wxPoint(250, 160),    // Position
+        wxSize(60, 25)        // Size
         );
 
     m_bt_cancel = new wxButton(
-        m_pan_gamepad_config,  // Parent
-        wxID_ANY,              // ID
-        _T("&Cancel"),         // Label
-        wxPoint(320, 160),     // Position
-        wxSize(60, 25)         // Size
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        _T("&Cancel"),        // Label
+        wxPoint(320, 160),    // Position
+        wxSize(60, 25)        // Size
         );
 
     Bind(wxEVT_BUTTON, &GamepadConfiguration::OnButtonClicked, this);
@@ -130,7 +130,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
 */
 void GamepadConfiguration::InitGamepadConfiguration()
 {
-    repopulate();  // Set label and fit simulated key array
+    repopulate(); // Set label and fit simulated key array
     /*
      * Check if there exist at least one pad available
      * if the pad id is 0, you need at least 1 gamepad connected,
@@ -146,14 +146,14 @@ void GamepadConfiguration::InitGamepadConfiguration()
 
         if (!s_vgamePad[m_pad_id]->TestForce(0.001f)) {
             wxMessageBox(L"Rumble is not available for your device.");
-            m_cb_rumble->Disable();            // disable the rumble checkbox
-            m_sl_rumble_intensity->Disable();  // disable the rumble intensity slider
+            m_cb_rumble->Disable();           // disable the rumble checkbox
+            m_sl_rumble_intensity->Disable(); // disable the rumble intensity slider
         }
     } else {
         wxMessageBox(L"No gamepad detected.");
-        m_sl_joystick_sensibility->Disable();  // disable the joystick sensibility slider
-        m_cb_rumble->Disable();                // disable the rumble checkbox
-        m_sl_rumble_intensity->Disable();      // disable the rumble intensity slider
+        m_sl_joystick_sensibility->Disable(); // disable the joystick sensibility slider
+        m_cb_rumble->Disable();               // disable the rumble checkbox
+        m_sl_rumble_intensity->Disable();     // disable the rumble intensity slider
     }
 }
 
@@ -167,13 +167,13 @@ void GamepadConfiguration::InitGamepadConfiguration()
 void GamepadConfiguration::OnButtonClicked(wxCommandEvent &event)
 {
     // Affichage d'un message à chaque clic sur le bouton
-    wxButton *bt_tmp = (wxButton *)event.GetEventObject();  // get the button object
-    int bt_id = bt_tmp->GetId();                            // get the real ID
-    if (bt_id == m_bt_ok->GetId()) {                        // If the button ID is equals to the Ok button ID
-        Close();                                            // Close the window
-    } else if (bt_id == m_bt_cancel->GetId()) {             // If the button ID is equals to the cancel button ID
-        reset();                                            // reinitialize the value of each parameters
-        Close();                                            // Close the window
+    wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
+    int bt_id = bt_tmp->GetId();                           // get the real ID
+    if (bt_id == m_bt_ok->GetId()) {                       // If the button ID is equals to the Ok button ID
+        Close();                                           // Close the window
+    } else if (bt_id == m_bt_cancel->GetId()) {            // If the button ID is equals to the cancel button ID
+        reset();                                           // reinitialize the value of each parameters
+        Close();                                           // Close the window
     }
 }
 
@@ -184,12 +184,12 @@ void GamepadConfiguration::OnButtonClicked(wxCommandEvent &event)
 */
 void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
 {
-    wxSlider *sl_tmp = (wxSlider *)event.GetEventObject();  // get the slider object
-    int sl_id = sl_tmp->GetId();                            // slider id
-    if (sl_id == m_sl_rumble_intensity->GetId()) {          // if this is the rumble intensity slider
-        u32 intensity = m_sl_rumble_intensity->GetValue();  // get the new value
-        conf->set_ff_intensity(intensity);                  // and set the force feedback intensity value with it
-                                                            // get the rumble intensity
+    wxSlider *sl_tmp = (wxSlider *)event.GetEventObject(); // get the slider object
+    int sl_id = sl_tmp->GetId();                           // slider id
+    if (sl_id == m_sl_rumble_intensity->GetId()) {         // if this is the rumble intensity slider
+        u32 intensity = m_sl_rumble_intensity->GetValue(); // get the new value
+        conf->set_ff_intensity(intensity);                 // and set the force feedback intensity value with it
+                                                           // get the rumble intensity
         float strength = m_sl_rumble_intensity->GetValue();
         /*
         * convert in a float value between 0 and 1, and run rumble feedback
@@ -204,8 +204,8 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
         */
         s_vgamePad[m_pad_id]->TestForce(strength / 0x7FFF);
     } else if (sl_id == m_sl_joystick_sensibility->GetId()) {
-        u32 sensibility = m_sl_joystick_sensibility->GetValue();  // get the new value
-        conf->set_sensibility(sensibility);                       // and set the joystick sensibility
+        u32 sensibility = m_sl_joystick_sensibility->GetValue(); // get the new value
+        conf->set_sensibility(sensibility);                      // and set the joystick sensibility
     }
 }
 
@@ -214,7 +214,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
 */
 void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
 {
-    wxCheckBox *cb_tmp = (wxCheckBox *)event.GetEventObject();  // get the slider object
+    wxCheckBox *cb_tmp = (wxCheckBox *)event.GetEventObject(); // get the slider object
     int cb_id = cb_tmp->GetId();
     if (cb_id == m_cb_rumble->GetId()) {
         conf->pad_options[m_pad_id].forcefeedback = (m_cb_rumble->GetValue()) ? (u32)1 : (u32)0;
@@ -267,6 +267,6 @@ void GamepadConfiguration::repopulate()
     // enable rumble intensity slider if the checkbox is checked
     if (m_cb_rumble->GetValue())
         m_sl_rumble_intensity->Enable();
-    else  // disable otherwise
+    else // disable otherwise
         m_sl_rumble_intensity->Disable();
 }

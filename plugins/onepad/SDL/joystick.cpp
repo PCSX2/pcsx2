@@ -20,7 +20,7 @@
  */
 
 #include "joystick.h"
-#include <signal.h>  // sigaction
+#include <signal.h> // sigaction
 
 //////////////////////////
 // Joystick definitions //
@@ -85,16 +85,16 @@ void JoystickInfo::GenerateDefaultEffect()
 #if SDL_MAJOR_VERSION >= 2
     for (int i = 0; i < NB_EFFECT; i++) {
         SDL_HapticEffect effect;
-        memset(&effect, 0, sizeof(SDL_HapticEffect));  // 0 is safe default
+        memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default
         SDL_HapticDirection direction;
-        direction.type = SDL_HAPTIC_POLAR;  // We'll be using polar direction encoding.
+        direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
         direction.dir[0] = 18000;
         effect.periodic.direction = direction;
         effect.periodic.period = 10;
-        effect.periodic.magnitude = (Sint16)(conf->get_ff_intensity());  // Effect at maximum instensity
+        effect.periodic.magnitude = (Sint16)(conf->get_ff_intensity()); // Effect at maximum instensity
         effect.periodic.offset = 0;
         effect.periodic.phase = 18000;
-        effect.periodic.length = 125;  // 125ms feels quite near to original
+        effect.periodic.length = 125; // 125ms feels quite near to original
         effect.periodic.delay = 0;
         effect.periodic.attack_length = 0;
         effects[i] = effect;
@@ -113,7 +113,7 @@ void JoystickInfo::Rumble(int type, int pad)
     if (haptic == NULL)
         return;
 
-    if (first) {  // If done multiple times, device memory will be filled
+    if (first) { // If done multiple times, device memory will be filled
         first = 0;
         GenerateDefaultEffect();
         /** Sine and triangle are quite probably the best, don't change that lightly and if you do
@@ -157,7 +157,7 @@ void JoystickInfo::Destroy()
 #endif
 
 #if SDL_MAJOR_VERSION >= 2
-#if SDL_MINOR_VERSION >= 4  // Version before 2.0.4 are bugged, JoystickClose crashes randomly
+#if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
         if (joy)
             SDL_JoystickClose(joy);
 #endif
@@ -202,9 +202,9 @@ bool JoystickInfo::Init(int id)
     // FIXME: people need to restart the plugin to take the option into account.
     bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
     if (found_hack != string::npos && numaxes > 4 && hack_enabled) {
-        numbuttons = 4;  // (select, start, l3, r3)
+        numbuttons = 4; // (select, start, l3, r3)
         // Enable this hack in bluetooth too. It avoid to restart the onepad gui
-        numbuttons += 4;  // the 4 hat buttons
+        numbuttons += 4; // the 4 hat buttons
     }
 
 #if SDL_MAJOR_VERSION >= 2
@@ -237,7 +237,7 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 #if SDL_MAJOR_VERSION >= 2
     // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
     if (haptic == NULL)
-        return false;  // Otherwise, core dump!
+        return false; // Otherwise, core dump!
     SDL_HapticRumbleInit(haptic);
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
     if (SDL_HapticRumblePlay(haptic, strength, 400) != 0) {
@@ -308,7 +308,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
             // Normally, old_value contains the release state so it can be used to detect the types of axis.
             bool is_full_axis = (old_value < full_axis_ceil);
 
-            if ((!is_full_axis && abs(value) <= half_axis_ceil) || (is_full_axis && value <= full_axis_ceil))  // we don't want this
+            if ((!is_full_axis && abs(value) <= half_axis_ceil) || (is_full_axis && value <= full_axis_ceil)) // we don't want this
             {
                 continue;
             }

@@ -25,7 +25,7 @@
 #include "Global.h"
 #include "Dma.h"
 
-#include "PS2E-spu2.h"  // needed until I figure out a nice solution for irqcallback dependencies.
+#include "PS2E-spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
 s16 *spu2regs = NULL;
 s16 *_spu2mem = NULL;
@@ -140,7 +140,7 @@ void V_Core::Init(int index)
         WetGate.ExtR = 0;
     }
 
-    Regs.MMIX = c ? 0xFFC : 0xFF0;  // PS2 confirmed (f3c and f30 after BIOS ran, ffc and ff0 after sdinit)
+    Regs.MMIX = c ? 0xFFC : 0xFF0; // PS2 confirmed (f3c and f30 after BIOS ran, ffc and ff0 after sdinit)
     Regs.VMIXL = 0xFFFFFF;
     Regs.VMIXR = 0xFFFFFF;
     Regs.VMIXEL = 0xFFFFFF;
@@ -150,7 +150,7 @@ void V_Core::Init(int index)
     ExtEffectsStartA = EffectsStartA;
     ExtEffectsEndA = EffectsEndA;
 
-    FxEnable = 0;  // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
+    FxEnable = 0; // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
     // These are real PS2 values, mainly constant apart from a few bits: 0x3220EAA4, 0x40505E9C.
     // These values mean nothing.  They do not reflect the actual address the SPU2 is testing,
     // it would seem that reading the IRQA register returns the last written value, not the
@@ -160,7 +160,7 @@ void V_Core::Init(int index)
     // in the input or output areas, so we're using 0x800.
     // F1 2005 is known to rely on an uninitialised IRQA being an address which will be hit.
     IRQA = 0x800;
-    IRQEnable = 0;  // PS2 confirmed
+    IRQEnable = 0; // PS2 confirmed
 
     for (uint v = 0; v < NumVoices; ++v) {
         VoiceGates[v].DryL = -1;
@@ -168,7 +168,7 @@ void V_Core::Init(int index)
         VoiceGates[v].WetL = -1;
         VoiceGates[v].WetR = -1;
 
-        Voices[v].Volume = V_VolumeSlideLR(0, 0);  // V_VolumeSlideLR::Max;
+        Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
         Voices[v].SCurrent = 28;
 
         Voices[v].ADSR.Value = 0;
@@ -183,7 +183,7 @@ void V_Core::Init(int index)
     AdmaInProgress = 0;
 
     Regs.STATX = 0x80;
-    Regs.ENDX = 0xffffff;  // PS2 confirmed
+    Regs.ENDX = 0xffffff; // PS2 confirmed
 
     RevBuffers.NeedsUpdated = true;
     UpdateEffectsBufferSize();
@@ -258,7 +258,7 @@ void V_Core::UpdateEffectsBufferSize()
 {
     const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
 
-    if ((newbufsize * 2) > 0x20000)  // max 128kb per core
+    if ((newbufsize * 2) > 0x20000) // max 128kb per core
     {
         //printf("too big, returning\n");
         //return;
@@ -382,10 +382,10 @@ __forceinline void TimeUpdate(u32 cClocks)
     UpdateDebugDialog();
 #endif
 
-    if (SynchMode == 1)  // AsyncMix on
+    if (SynchMode == 1) // AsyncMix on
         SndBuffer::UpdateTempoChangeAsyncMixing();
     else
-        TickInterval = 768;  // Reset to default, in case the user hotswitched from async to something else.
+        TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
 
     //Update Mixing Progress
     while (dClocks >= TickInterval) {
@@ -448,7 +448,7 @@ __forceinline void UpdateSpdifMode()
 {
     int OPM = PlayMode;
 
-    if (Spdif.Out & 0x4)  // use 24/32bit PCM data streaming
+    if (Spdif.Out & 0x4) // use 24/32bit PCM data streaming
     {
         PlayMode = 8;
         ConLog("* SPU2-X: WARNING: Possibly CDDA mode set!\n");
@@ -458,9 +458,9 @@ __forceinline void UpdateSpdifMode()
     if (Spdif.Out & SPDIF_OUT_BYPASS) {
         PlayMode = 2;
         if (!(Spdif.Mode & SPDIF_MODE_BYPASS_BITSTREAM))
-            PlayMode = 4;  //bitstream bypass
+            PlayMode = 4; //bitstream bypass
     } else {
-        PlayMode = 0;  //normal processing
+        PlayMode = 0; //normal processing
         if (Spdif.Out & SPDIF_OUT_PCM) {
             PlayMode = 1;
         }
@@ -496,7 +496,7 @@ static u32 map_spu2to1(u32 addr)
 
 void V_Core::WriteRegPS1(u32 mem, u16 value)
 {
-    pxAssume(Index == 0);  // Valid on Core 0 only!
+    pxAssume(Index == 0); // Valid on Core 0 only!
 
     bool show = true;
     u32 reg = mem & 0xffff;
@@ -506,13 +506,13 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
         u8 voice = ((reg - 0x1c00) >> 4);
         u8 vval = reg & 0xf;
         switch (vval) {
-            case 0x0:  //VOLL (Volume L)
-            case 0x2:  //VOLR (Volume R)
+            case 0x0: //VOLL (Volume L)
+            case 0x2: //VOLR (Volume R)
             {
                 V_VolumeSlide &thisvol = vval == 0 ? Voices[voice].Volume.Left : Voices[voice].Volume.Right;
                 thisvol.Reg_VOL = value;
 
-                if (value & 0x8000)  // +Lin/-Lin/+Exp/-Exp
+                if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
                 {
                     thisvol.Mode = (value & 0xF000) >> 12;
                     thisvol.Increment = (value & 0x7F);
@@ -542,16 +542,16 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 //ConLog("voice %x StartA write: %x\n", voice, Voices[voice].StartA);
                 break;
 
-            case 0x8:  // ADSR1 (Envelope)
+            case 0x8: // ADSR1 (Envelope)
                 Voices[voice].ADSR.regADSR1 = value;
                 //ConLog("voice %x regADSR1 write: %x\n", voice, Voices[voice].ADSR.regADSR1);
                 break;
 
-            case 0xa:  // ADSR2 (Envelope)
+            case 0xa: // ADSR2 (Envelope)
                 Voices[voice].ADSR.regADSR2 = value;
                 //ConLog("voice %x regADSR2 write: %x\n", voice, Voices[voice].ADSR.regADSR2);
                 break;
-            case 0xc:  // Voice 0..23 ADSR Current Volume
+            case 0xc: // Voice 0..23 ADSR Current Volume
                 // not commonly set by games
                 Voices[voice].ADSR.Value = value * 0x10001U;
                 ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
@@ -567,71 +567,71 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
     else
         switch (reg) {
-            case 0x1d80:  //         Mainvolume left
+            case 0x1d80: //         Mainvolume left
                 MasterVol.Left.Mode = 0;
                 MasterVol.Left.RegSet(value);
                 break;
 
-            case 0x1d82:  //         Mainvolume right
+            case 0x1d82: //         Mainvolume right
                 MasterVol.Right.Mode = 0;
                 MasterVol.Right.RegSet(value);
                 break;
 
-            case 0x1d84:  //         Reverberation depth left
+            case 0x1d84: //         Reverberation depth left
                 FxVol.Left = GetVol32(value);
                 break;
 
-            case 0x1d86:  //         Reverberation depth right
+            case 0x1d86: //         Reverberation depth right
                 FxVol.Right = GetVol32(value);
                 break;
 
-            case 0x1d88:  //         Voice ON  (0-15)
+            case 0x1d88: //         Voice ON  (0-15)
                 SPU2_FastWrite(REG_S_KON, value);
                 break;
-            case 0x1d8a:  //         Voice ON  (16-23)
+            case 0x1d8a: //         Voice ON  (16-23)
                 SPU2_FastWrite(REG_S_KON + 2, value);
                 break;
 
-            case 0x1d8c:  //         Voice OFF (0-15)
+            case 0x1d8c: //         Voice OFF (0-15)
                 SPU2_FastWrite(REG_S_KOFF, value);
                 break;
-            case 0x1d8e:  //         Voice OFF (16-23)
+            case 0x1d8e: //         Voice OFF (16-23)
                 SPU2_FastWrite(REG_S_KOFF + 2, value);
                 break;
 
-            case 0x1d90:  //         Channel FM (pitch lfo) mode (0-15)
+            case 0x1d90: //         Channel FM (pitch lfo) mode (0-15)
                 SPU2_FastWrite(REG_S_PMON, value);
                 if (value != 0)
                     ConLog("spu2x warning: wants to set Pitch Modulation reg1 to %x \n", value);
                 break;
 
-            case 0x1d92:  //         Channel FM (pitch lfo) mode (16-23)
+            case 0x1d92: //         Channel FM (pitch lfo) mode (16-23)
                 SPU2_FastWrite(REG_S_PMON + 2, value);
                 if (value != 0)
                     ConLog("spu2x warning: wants to set Pitch Modulation reg2 to %x \n", value);
                 break;
 
 
-            case 0x1d94:  //         Channel Noise mode (0-15)
+            case 0x1d94: //         Channel Noise mode (0-15)
                 SPU2_FastWrite(REG_S_NON, value);
                 if (value != 0)
                     ConLog("spu2x warning: wants to set Channel Noise mode reg1 to %x\n", value);
                 break;
 
-            case 0x1d96:  //         Channel Noise mode (16-23)
+            case 0x1d96: //         Channel Noise mode (16-23)
                 SPU2_FastWrite(REG_S_NON + 2, value);
                 if (value != 0)
                     ConLog("spu2x warning: wants to set Channel Noise mode reg2 to %x\n", value);
                 break;
 
-            case 0x1d98:  //         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
+            case 0x1d98: //         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
                 //Regs.VMIXEL = value & 0xFFFF;
                 SPU2_FastWrite(REG_S_VMIXEL, value);
                 SPU2_FastWrite(REG_S_VMIXER, value);
                 //ConLog("spu2x warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
                 break;
 
-            case 0x1d9a:  //         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
+            case 0x1d9a: //         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
                 //Regs.VMIXEL = value << 16;
                 SPU2_FastWrite(REG_S_VMIXEL + 2, value);
                 SPU2_FastWrite(REG_S_VMIXER + 2, value);
@@ -648,17 +648,17 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
             //	SPU2_FastWrite(REG_S_VMIXL+2,value);
             //	SPU2_FastWrite(REG_S_VMIXR+2,value);
             //break;
-            case 0x1d9c:  // Voice 0..15 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
+            case 0x1d9c: // Voice 0..15 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
                 //Regs.ENDX &= 0xff0000;
                 ConLog("spu2x warning: wants to set ENDX reg1 to %x \n", value);
                 break;
 
-            case 0x1d9e:  //         // Voice 15..23 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
+            case 0x1d9e: //         // Voice 15..23 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
                 //Regs.ENDX &= 0xffff;
                 ConLog("spu2x warning: wants to set ENDX reg2 to %x \n", value);
                 break;
 
-            case 0x1da2:  //         Reverb work area start
+            case 0x1da2: //         Reverb work area start
             {
                 EffectsStartA = map_spu1to2(value);
                 //EffectsEndA = 0xFFFFF; // fixed EndA in psx mode
@@ -676,7 +676,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 //ConLog("SPU2-X Setting TSA to %x \n", TSA);
                 break;
 
-            case 0x1da8:  // Spu Write to Memory
+            case 0x1da8: // Spu Write to Memory
                 //ConLog("SPU direct DMA Write. Current TSA = %x\n", TSA);
                 if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].TSA)) {
                     SetIrqCall(0);
@@ -690,30 +690,30 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 SPU2_FastWrite(REG_C_ATTR, value);
                 break;
 
-            case 0x1dac:  // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
+            case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
                 ConLog("SPU Sound RAM Data Transfer Control (should be 4) : value = %x \n", value);
                 psxSoundDataTransferControl = value;
                 break;
 
-            case 0x1dae:  // 1F801DAEh - SPU Status Register (SPUSTAT) (R)
-                          // The SPUSTAT register should be treated read-only (writing is possible in so far that the written
-                          // value can be read-back for a short moment, however, thereafter the hardware is overwriting that value).
-                          //Regs.STATX = value;
+            case 0x1dae: // 1F801DAEh - SPU Status Register (SPUSTAT) (R)
+                         // The SPUSTAT register should be treated read-only (writing is possible in so far that the written
+                         // value can be read-back for a short moment, however, thereafter the hardware is overwriting that value).
+                         //Regs.STATX = value;
                 break;
 
-            case 0x1DB0:  // 1F801DB0h 4  CD Volume Left/Right
-                break;    // cd left?
+            case 0x1DB0: // 1F801DB0h 4  CD Volume Left/Right
+                break;   // cd left?
             case 0x1DB2:
-                break;    // cd right?
-            case 0x1DB4:  // 1F801DB4h 4  Extern Volume Left / Right
-                break;    // Extern left?
+                break;   // cd right?
+            case 0x1DB4: // 1F801DB4h 4  Extern Volume Left / Right
+                break;   // Extern left?
             case 0x1DB6:
-                break;    // Extern right?
-            case 0x1DB8:  // 1F801DB8h 4  Current Main Volume Left/Right
-                break;    // Current left?
+                break;   // Extern right?
+            case 0x1DB8: // 1F801DB8h 4  Current Main Volume Left/Right
+                break;   // Current left?
             case 0x1DBA:
-                break;    // Current right?
-            case 0x1DBC:  // 1F801DBCh 4  Unknown? (R/W)
+                break;   // Current right?
+            case 0x1DBC: // 1F801DBCh 4  Unknown? (R/W)
                 break;
             case 0x1DBE:
                 break;
@@ -792,10 +792,10 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 break;
             case 0x1DF0:
                 Revb.IIR_SRC_B0 = value * 4;
-                break;  // IIR_SRC_B0 and IIR_SRC_B1 supposedly swapped on SPU2
+                break; // IIR_SRC_B0 and IIR_SRC_B1 supposedly swapped on SPU2
             case 0x1DF2:
                 Revb.IIR_SRC_B1 = value * 4;
-                break;  // but I don't believe it! (games in psxmode sound better unswapped)
+                break; // but I don't believe it! (games in psxmode sound better unswapped)
             case 0x1DF4:
                 Revb.MIX_DEST_A0 = value * 4;
                 break;
@@ -824,7 +824,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 u16 V_Core::ReadRegPS1(u32 mem)
 {
-    pxAssume(Index == 0);  // Valid on Core 0 only!
+    pxAssume(Index == 0); // Valid on Core 0 only!
 
     bool show = true;
     u16 value = spu2Ru16(mem);
@@ -836,13 +836,13 @@ u16 V_Core::ReadRegPS1(u32 mem)
         u8 voice = ((reg - 0x1c00) >> 4);
         u8 vval = reg & 0xf;
         switch (vval) {
-            case 0x0:  //VOLL (Volume L)
+            case 0x0: //VOLL (Volume L)
                 //value=Voices[voice].VolumeL.Mode;
                 //value=Voices[voice].VolumeL.Value;
                 value = Voices[voice].Volume.Left.Reg_VOL;
                 break;
 
-            case 0x2:  //VOLR (Volume R)
+            case 0x2: //VOLR (Volume R)
                 //value=Voices[voice].VolumeR.Mode;
                 //value=Voices[voice].VolumeR.Value;
                 value = Voices[voice].Volume.Right.Reg_VOL;
@@ -862,8 +862,8 @@ u16 V_Core::ReadRegPS1(u32 mem)
             case 0xa:
                 value = Voices[voice].ADSR.regADSR2;
                 break;
-            case 0xc:                                    // Voice 0..23 ADSR Current Volume
-                value = Voices[voice].ADSR.Value >> 16;  // no clue
+            case 0xc:                                   // Voice 0..23 ADSR Current Volume
+                value = Voices[voice].ADSR.Value >> 16; // no clue
                 //if (value != 0) ConLog("voice %d read ADSR.Value result = %x\n", voice, value);
                 break;
             case 0xe:
@@ -890,42 +890,42 @@ u16 V_Core::ReadRegPS1(u32 mem)
 
             case 0x1d88:
                 value = 0;
-                break;  // Voice 0..23 Key ON(Start Attack / Decay / Sustain) (W)
+                break; // Voice 0..23 Key ON(Start Attack / Decay / Sustain) (W)
             case 0x1d8a:
                 value = 0;
                 break;
             case 0x1d8c:
                 value = 0;
-                break;  // Voice 0..23 Key OFF (Start Release) (W)
+                break; // Voice 0..23 Key OFF (Start Release) (W)
             case 0x1d8e:
                 value = 0;
                 break;
 
             case 0x1d90:
                 value = Regs.PMON & 0xFFFF;
-                break;  // Voice 0..23 Channel FM(pitch lfo) mode(R / W)
+                break; // Voice 0..23 Channel FM(pitch lfo) mode(R / W)
             case 0x1d92:
                 value = Regs.PMON >> 16;
                 break;
 
             case 0x1d94:
                 value = Regs.NON & 0xFFFF;
-                break;  // Voice 0..23 Channel Noise mode (R/W)
+                break; // Voice 0..23 Channel Noise mode (R/W)
             case 0x1d96:
                 value = Regs.NON >> 16;
                 break;
 
             case 0x1d98:
                 value = Regs.VMIXEL & 0xFFFF;
-                break;  // Voice 0..23 Channel Reverb mode (R/W)
+                break; // Voice 0..23 Channel Reverb mode (R/W)
             case 0x1d9a:
                 value = Regs.VMIXEL >> 16;
                 break;
-                /*case 0x1d9c: value = Regs.VMIXL&0xFFFF;  break;*/  // this is wrong?
+                /*case 0x1d9c: value = Regs.VMIXL&0xFFFF;  break;*/ // this is wrong?
             /*case 0x1d9e: value = Regs.VMIXL >> 16;   break;*/
             case 0x1d9c:
                 value = Regs.ENDX & 0xFFFF;
-                break;  // Voice 0..23 Channel ON / OFF(status) (R) (ENDX)
+                break; // Voice 0..23 Channel ON / OFF(status) (R) (ENDX)
             case 0x1d9e:
                 value = Regs.ENDX >> 16;
 
@@ -948,7 +948,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
                 value = Cores[0].Regs.ATTR;
                 //ConLog("SPU2-X ps1 reg psxSPUCNT read return value: %x\n", value);
                 break;
-            case 0x1dac:  // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
+            case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
                 value = psxSoundDataTransferControl;
                 break;
             case 0x1dae:
@@ -992,13 +992,13 @@ static void __fastcall RegWrite_VoiceParams(u16 value)
     V_Voice &thisvoice = Cores[core].Voices[voice];
 
     switch (param) {
-        case 0:  //VOLL (Volume L)
-        case 1:  //VOLR (Volume R)
+        case 0: //VOLL (Volume L)
+        case 1: //VOLR (Volume R)
         {
             V_VolumeSlide &thisvol = (param == 0) ? thisvoice.Volume.Left : thisvoice.Volume.Right;
             thisvol.Reg_VOL = value;
 
-            if (value & 0x8000)  // +Lin/-Lin/+Exp/-Exp
+            if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
             {
                 thisvol.Mode = (value & 0xF000) >> 12;
                 thisvol.Increment = (value & 0x7F);
@@ -1022,11 +1022,11 @@ static void __fastcall RegWrite_VoiceParams(u16 value)
             thisvoice.Pitch = value & 0x3fff;
             break;
 
-        case 3:  // ADSR1 (Envelope)
+        case 3: // ADSR1 (Envelope)
             thisvoice.ADSR.regADSR1 = value;
             break;
 
-        case 4:  // ADSR2 (Envelope)
+        case 4: // ADSR2 (Envelope)
             thisvoice.ADSR.regADSR2 = value;
             break;
 
@@ -1057,13 +1057,13 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
     V_Voice &thisvoice = Cores[core].Voices[voice];
 
     switch (address) {
-        case 0:  // SSA (Waveform Start Addr) (hiword, 4 bits only)
+        case 0: // SSA (Waveform Start Addr) (hiword, 4 bits only)
             thisvoice.StartA = ((value & 0x0F) << 16) | (thisvoice.StartA & 0xFFF8);
             if (IsDevBuild)
                 DebugCores[core].Voices[voice].lastSetStartA = thisvoice.StartA;
             break;
 
-        case 1:  // SSA (loword)
+        case 1: // SSA (loword)
             thisvoice.StartA = (thisvoice.StartA & 0x0F0000) | (value & 0xFFF8);
             if (IsDevBuild)
                 DebugCores[core].Voices[voice].lastSetStartA = thisvoice.StartA;
@@ -1131,12 +1131,12 @@ static void __fastcall RegWrite_Core(u16 value)
             bool fxenable = thiscore.FxEnable;
             u8 oldDmaMode = thiscore.DmaMode;
 
-            thiscore.AttrBit0 = (value >> 0) & 0x01;   //1 bit
-            thiscore.DMABits = (value >> 1) & 0x07;    //3 bits
-            thiscore.DmaMode = (value >> 4) & 0x03;    //2 bit (not necessary, we get the direction from the iop)
-            thiscore.IRQEnable = (value >> 6) & 0x01;  //1 bit
-            thiscore.FxEnable = (value >> 7) & 0x01;   //1 bit
-            thiscore.NoiseClk = (value >> 8) & 0x3f;   //6 bits
+            thiscore.AttrBit0 = (value >> 0) & 0x01;  //1 bit
+            thiscore.DMABits = (value >> 1) & 0x07;   //3 bits
+            thiscore.DmaMode = (value >> 4) & 0x03;   //2 bit (not necessary, we get the direction from the iop)
+            thiscore.IRQEnable = (value >> 6) & 0x01; //1 bit
+            thiscore.FxEnable = (value >> 7) & 0x01;  //1 bit
+            thiscore.NoiseClk = (value >> 8) & 0x3f;  //6 bits
             //thiscore.Mute		=(value>>14) & 0x01; //1 bit
             thiscore.Mute = 0;
             //thiscore.CoreEnabled=(value>>15) & 0x01; //1 bit
@@ -1154,7 +1154,7 @@ static void __fastcall RegWrite_Core(u16 value)
 
             if (oldDmaMode != thiscore.DmaMode) {
                 // FIXME... maybe: if this mode was cleared in the middle of a DMA, should we interrupt it?
-                thiscore.Regs.STATX &= ~0x400;  // ready to transfer
+                thiscore.Regs.STATX &= ~0x400; // ready to transfer
             }
 
             if (value & 0x000E) {
@@ -1349,16 +1349,16 @@ static void __fastcall RegWrite_Core(u16 value)
                 psxmode = true;
                 //memset(_spu2mem, 0, 0x200000);
                 Cores[1].FxEnable = 0;
-                Cores[1].EffectsStartA = 0x7FFF8;  // park core1 effect area in inaccessible mem
+                Cores[1].EffectsStartA = 0x7FFF8; // park core1 effect area in inaccessible mem
                 Cores[1].EffectsEndA = 0x7FFFF;
-                Cores[1].ExtEffectsStartA = 0x7FFF8;  // park core1 ext effect area in high mem
+                Cores[1].ExtEffectsStartA = 0x7FFF8; // park core1 ext effect area in high mem
                 Cores[1].ExtEffectsStartA = 0x7FFFF;
                 Cores[1].ReverbX = 0;
                 Cores[1].RevBuffers.NeedsUpdated = true;
                 Cores[0].ReverbX = 0;
                 Cores[0].RevBuffers.NeedsUpdated = true;
                 for (uint v = 0; v < 24; ++v) {
-                    Cores[1].Voices[v].Volume = V_VolumeSlideLR(0, 0);  // V_VolumeSlideLR::Max;
+                    Cores[1].Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
                     Cores[1].Voices[v].SCurrent = 28;
 
                     Cores[1].Voices[v].ADSR.Value = 0;
@@ -1398,7 +1398,7 @@ static void __fastcall RegWrite_CoreExt(u16 value)
         case REG_P_MVOLR: {
             V_VolumeSlide &thisvol = (addr == REG_P_MVOLL) ? thiscore.MasterVol.Left : thiscore.MasterVol.Right;
 
-            if (value & 0x8000)  // +Lin/-Lin/+Exp/-Exp
+            if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
             {
                 thisvol.Mode = (value & 0xF000) >> 12;
                 thisvol.Increment = (value & 0x7F);
@@ -1517,7 +1517,7 @@ static void __fastcall RegWrite_Null(u16 value)
 typedef void __fastcall RegWriteHandler(u16 value);
 static RegWriteHandler *const tbl_reg_writes[0x401] =
     {
-        VoiceParamsCore(0),  // 0x000 -> 0x180
+        VoiceParamsCore(0), // 0x000 -> 0x180
         CoreParamsPair(0, REG_S_PMON),
         CoreParamsPair(0, REG_S_NON),
         CoreParamsPair(0, REG_S_VMIXL),
@@ -1550,33 +1550,33 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(0, REG_A_ESA),
 
-        ReverbPair(0, R_FB_SRC_A),     //       0x02E4		// Feedback Source A
-        ReverbPair(0, R_FB_SRC_B),     //       0x02E8		// Feedback Source B
-        ReverbPair(0, R_IIR_DEST_A0),  //    0x02EC
-        ReverbPair(0, R_IIR_DEST_A1),  //    0x02F0
-        ReverbPair(0, R_ACC_SRC_A0),   //     0x02F4
-        ReverbPair(0, R_ACC_SRC_A1),   //     0x02F8
-        ReverbPair(0, R_ACC_SRC_B0),   //     0x02FC
-        ReverbPair(0, R_ACC_SRC_B1),   //     0x0300
-        ReverbPair(0, R_IIR_SRC_A0),   //     0x0304
-        ReverbPair(0, R_IIR_SRC_A1),   //     0x0308
-        ReverbPair(0, R_IIR_DEST_B0),  //    0x030C
-        ReverbPair(0, R_IIR_DEST_B1),  //    0x0310
-        ReverbPair(0, R_ACC_SRC_C0),   //     0x0314
-        ReverbPair(0, R_ACC_SRC_C1),   //     0x0318
-        ReverbPair(0, R_ACC_SRC_D0),   //     0x031C
-        ReverbPair(0, R_ACC_SRC_D1),   //     0x0320
-        ReverbPair(0, R_IIR_SRC_B0),   //     0x0324
-        ReverbPair(0, R_IIR_SRC_B1),   //     0x0328
-        ReverbPair(0, R_MIX_DEST_A0),  //    0x032C
-        ReverbPair(0, R_MIX_DEST_A1),  //    0x0330
-        ReverbPair(0, R_MIX_DEST_B0),  //    0x0334
-        ReverbPair(0, R_MIX_DEST_B1),  //    0x0338
+        ReverbPair(0, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
+        ReverbPair(0, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
+        ReverbPair(0, R_IIR_DEST_A0), //    0x02EC
+        ReverbPair(0, R_IIR_DEST_A1), //    0x02F0
+        ReverbPair(0, R_ACC_SRC_A0),  //     0x02F4
+        ReverbPair(0, R_ACC_SRC_A1),  //     0x02F8
+        ReverbPair(0, R_ACC_SRC_B0),  //     0x02FC
+        ReverbPair(0, R_ACC_SRC_B1),  //     0x0300
+        ReverbPair(0, R_IIR_SRC_A0),  //     0x0304
+        ReverbPair(0, R_IIR_SRC_A1),  //     0x0308
+        ReverbPair(0, R_IIR_DEST_B0), //    0x030C
+        ReverbPair(0, R_IIR_DEST_B1), //    0x0310
+        ReverbPair(0, R_ACC_SRC_C0),  //     0x0314
+        ReverbPair(0, R_ACC_SRC_C1),  //     0x0318
+        ReverbPair(0, R_ACC_SRC_D0),  //     0x031C
+        ReverbPair(0, R_ACC_SRC_D1),  //     0x0320
+        ReverbPair(0, R_IIR_SRC_B0),  //     0x0324
+        ReverbPair(0, R_IIR_SRC_B1),  //     0x0328
+        ReverbPair(0, R_MIX_DEST_A0), //    0x032C
+        ReverbPair(0, R_MIX_DEST_A1), //    0x0330
+        ReverbPair(0, R_MIX_DEST_B0), //    0x0334
+        ReverbPair(0, R_MIX_DEST_B1), //    0x0338
 
         RegWrite_Core<0, REG_A_EEA>, RegWrite_Null,
 
-        CoreParamsPair(0, REG_S_ENDX),  //       0x0340	// End Point passed flag
-        RegWrite_Core<0, REG_P_STATX>,  //      0x0344 	// Status register?
+        CoreParamsPair(0, REG_S_ENDX), //       0x0340	// End Point passed flag
+        RegWrite_Core<0, REG_P_STATX>, //      0x0344 	// Status register?
 
         //0x346 here
         REGRAW(0x346),
@@ -1607,7 +1607,7 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
         // AND... we reached 0x400!
         // Last verse, same as the first:
 
-        VoiceParamsCore(1),  // 0x000 -> 0x180
+        VoiceParamsCore(1), // 0x000 -> 0x180
         CoreParamsPair(1, REG_S_PMON),
         CoreParamsPair(1, REG_S_NON),
         CoreParamsPair(1, REG_S_VMIXL),
@@ -1640,33 +1640,33 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(1, REG_A_ESA),
 
-        ReverbPair(1, R_FB_SRC_A),     //       0x02E4		// Feedback Source A
-        ReverbPair(1, R_FB_SRC_B),     //       0x02E8		// Feedback Source B
-        ReverbPair(1, R_IIR_DEST_A0),  //    0x02EC
-        ReverbPair(1, R_IIR_DEST_A1),  //    0x02F0
-        ReverbPair(1, R_ACC_SRC_A0),   //     0x02F4
-        ReverbPair(1, R_ACC_SRC_A1),   //     0x02F8
-        ReverbPair(1, R_ACC_SRC_B0),   //     0x02FC
-        ReverbPair(1, R_ACC_SRC_B1),   //     0x0300
-        ReverbPair(1, R_IIR_SRC_A0),   //     0x0304
-        ReverbPair(1, R_IIR_SRC_A1),   //     0x0308
-        ReverbPair(1, R_IIR_DEST_B0),  //    0x030C
-        ReverbPair(1, R_IIR_DEST_B1),  //    0x0310
-        ReverbPair(1, R_ACC_SRC_C0),   //     0x0314
-        ReverbPair(1, R_ACC_SRC_C1),   //     0x0318
-        ReverbPair(1, R_ACC_SRC_D0),   //     0x031C
-        ReverbPair(1, R_ACC_SRC_D1),   //     0x0320
-        ReverbPair(1, R_IIR_SRC_B0),   //     0x0324
-        ReverbPair(1, R_IIR_SRC_B1),   //     0x0328
-        ReverbPair(1, R_MIX_DEST_A0),  //    0x032C
-        ReverbPair(1, R_MIX_DEST_A1),  //    0x0330
-        ReverbPair(1, R_MIX_DEST_B0),  //    0x0334
-        ReverbPair(1, R_MIX_DEST_B1),  //    0x0338
+        ReverbPair(1, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
+        ReverbPair(1, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
+        ReverbPair(1, R_IIR_DEST_A0), //    0x02EC
+        ReverbPair(1, R_IIR_DEST_A1), //    0x02F0
+        ReverbPair(1, R_ACC_SRC_A0),  //     0x02F4
+        ReverbPair(1, R_ACC_SRC_A1),  //     0x02F8
+        ReverbPair(1, R_ACC_SRC_B0),  //     0x02FC
+        ReverbPair(1, R_ACC_SRC_B1),  //     0x0300
+        ReverbPair(1, R_IIR_SRC_A0),  //     0x0304
+        ReverbPair(1, R_IIR_SRC_A1),  //     0x0308
+        ReverbPair(1, R_IIR_DEST_B0), //    0x030C
+        ReverbPair(1, R_IIR_DEST_B1), //    0x0310
+        ReverbPair(1, R_ACC_SRC_C0),  //     0x0314
+        ReverbPair(1, R_ACC_SRC_C1),  //     0x0318
+        ReverbPair(1, R_ACC_SRC_D0),  //     0x031C
+        ReverbPair(1, R_ACC_SRC_D1),  //     0x0320
+        ReverbPair(1, R_IIR_SRC_B0),  //     0x0324
+        ReverbPair(1, R_IIR_SRC_B1),  //     0x0328
+        ReverbPair(1, R_MIX_DEST_A0), //    0x032C
+        ReverbPair(1, R_MIX_DEST_A1), //    0x0330
+        ReverbPair(1, R_MIX_DEST_B0), //    0x0334
+        ReverbPair(1, R_MIX_DEST_B1), //    0x0338
 
         RegWrite_Core<1, REG_A_EEA>, RegWrite_Null,
 
-        CoreParamsPair(1, REG_S_ENDX),  //       0x0340	// End Point passed flag
-        RegWrite_Core<1, REG_P_STATX>,  //      0x0344 	// Status register?
+        CoreParamsPair(1, REG_S_ENDX), //       0x0340	// End Point passed flag
+        RegWrite_Core<1, REG_P_STATX>, //      0x0344 	// Status register?
 
         REGRAW(0x746),
         REGRAW(0x748), REGRAW(0x74A), REGRAW(0x74C), REGRAW(0x74E),
@@ -1675,64 +1675,64 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         // ------ -------
 
-        RegWrite_CoreExt<0, REG_P_MVOLL>,   //     0x0760		// Master Volume Left
-        RegWrite_CoreExt<0, REG_P_MVOLR>,   //     0x0762		// Master Volume Right
-        RegWrite_CoreExt<0, REG_P_EVOLL>,   //     0x0764		// Effect Volume Left
-        RegWrite_CoreExt<0, REG_P_EVOLR>,   //     0x0766		// Effect Volume Right
-        RegWrite_CoreExt<0, REG_P_AVOLL>,   //     0x0768		// Core External Input Volume Left  (Only Core 1)
-        RegWrite_CoreExt<0, REG_P_AVOLR>,   //     0x076A		// Core External Input Volume Right (Only Core 1)
-        RegWrite_CoreExt<0, REG_P_BVOLL>,   //     0x076C 		// Sound Data Volume Left
-        RegWrite_CoreExt<0, REG_P_BVOLR>,   //     0x076E		// Sound Data Volume Right
-        RegWrite_CoreExt<0, REG_P_MVOLXL>,  //     0x0770		// Current Master Volume Left
-        RegWrite_CoreExt<0, REG_P_MVOLXR>,  //     0x0772		// Current Master Volume Right
+        RegWrite_CoreExt<0, REG_P_MVOLL>,  //     0x0760		// Master Volume Left
+        RegWrite_CoreExt<0, REG_P_MVOLR>,  //     0x0762		// Master Volume Right
+        RegWrite_CoreExt<0, REG_P_EVOLL>,  //     0x0764		// Effect Volume Left
+        RegWrite_CoreExt<0, REG_P_EVOLR>,  //     0x0766		// Effect Volume Right
+        RegWrite_CoreExt<0, REG_P_AVOLL>,  //     0x0768		// Core External Input Volume Left  (Only Core 1)
+        RegWrite_CoreExt<0, REG_P_AVOLR>,  //     0x076A		// Core External Input Volume Right (Only Core 1)
+        RegWrite_CoreExt<0, REG_P_BVOLL>,  //     0x076C 		// Sound Data Volume Left
+        RegWrite_CoreExt<0, REG_P_BVOLR>,  //     0x076E		// Sound Data Volume Right
+        RegWrite_CoreExt<0, REG_P_MVOLXL>, //     0x0770		// Current Master Volume Left
+        RegWrite_CoreExt<0, REG_P_MVOLXR>, //     0x0772		// Current Master Volume Right
 
-        RegWrite_CoreExt<0, R_IIR_ALPHA>,   //     0x0774		//IIR alpha (% used)
-        RegWrite_CoreExt<0, R_ACC_COEF_A>,  //     0x0776
-        RegWrite_CoreExt<0, R_ACC_COEF_B>,  //     0x0778
-        RegWrite_CoreExt<0, R_ACC_COEF_C>,  //     0x077A
-        RegWrite_CoreExt<0, R_ACC_COEF_D>,  //     0x077C
-        RegWrite_CoreExt<0, R_IIR_COEF>,    //     0x077E
-        RegWrite_CoreExt<0, R_FB_ALPHA>,    //     0x0780		//feedback alpha (% used)
-        RegWrite_CoreExt<0, R_FB_X>,        //     0x0782		//feedback
-        RegWrite_CoreExt<0, R_IN_COEF_L>,   //     0x0784
-        RegWrite_CoreExt<0, R_IN_COEF_R>,   //     0x0786
+        RegWrite_CoreExt<0, R_IIR_ALPHA>,  //     0x0774		//IIR alpha (% used)
+        RegWrite_CoreExt<0, R_ACC_COEF_A>, //     0x0776
+        RegWrite_CoreExt<0, R_ACC_COEF_B>, //     0x0778
+        RegWrite_CoreExt<0, R_ACC_COEF_C>, //     0x077A
+        RegWrite_CoreExt<0, R_ACC_COEF_D>, //     0x077C
+        RegWrite_CoreExt<0, R_IIR_COEF>,   //     0x077E
+        RegWrite_CoreExt<0, R_FB_ALPHA>,   //     0x0780		//feedback alpha (% used)
+        RegWrite_CoreExt<0, R_FB_X>,       //     0x0782		//feedback
+        RegWrite_CoreExt<0, R_IN_COEF_L>,  //     0x0784
+        RegWrite_CoreExt<0, R_IN_COEF_R>,  //     0x0786
 
         // ------ -------
 
-        RegWrite_CoreExt<1, REG_P_MVOLL>,   //     0x0788		// Master Volume Left
-        RegWrite_CoreExt<1, REG_P_MVOLR>,   //     0x078A		// Master Volume Right
-        RegWrite_CoreExt<1, REG_P_EVOLL>,   //     0x0764		// Effect Volume Left
-        RegWrite_CoreExt<1, REG_P_EVOLR>,   //     0x0766		// Effect Volume Right
-        RegWrite_CoreExt<1, REG_P_AVOLL>,   //     0x0768		// Core External Input Volume Left  (Only Core 1)
-        RegWrite_CoreExt<1, REG_P_AVOLR>,   //     0x076A		// Core External Input Volume Right (Only Core 1)
-        RegWrite_CoreExt<1, REG_P_BVOLL>,   //     0x076C		// Sound Data Volume Left
-        RegWrite_CoreExt<1, REG_P_BVOLR>,   //     0x076E		// Sound Data Volume Right
-        RegWrite_CoreExt<1, REG_P_MVOLXL>,  //     0x0770		// Current Master Volume Left
-        RegWrite_CoreExt<1, REG_P_MVOLXR>,  //     0x0772		// Current Master Volume Right
+        RegWrite_CoreExt<1, REG_P_MVOLL>,  //     0x0788		// Master Volume Left
+        RegWrite_CoreExt<1, REG_P_MVOLR>,  //     0x078A		// Master Volume Right
+        RegWrite_CoreExt<1, REG_P_EVOLL>,  //     0x0764		// Effect Volume Left
+        RegWrite_CoreExt<1, REG_P_EVOLR>,  //     0x0766		// Effect Volume Right
+        RegWrite_CoreExt<1, REG_P_AVOLL>,  //     0x0768		// Core External Input Volume Left  (Only Core 1)
+        RegWrite_CoreExt<1, REG_P_AVOLR>,  //     0x076A		// Core External Input Volume Right (Only Core 1)
+        RegWrite_CoreExt<1, REG_P_BVOLL>,  //     0x076C		// Sound Data Volume Left
+        RegWrite_CoreExt<1, REG_P_BVOLR>,  //     0x076E		// Sound Data Volume Right
+        RegWrite_CoreExt<1, REG_P_MVOLXL>, //     0x0770		// Current Master Volume Left
+        RegWrite_CoreExt<1, REG_P_MVOLXR>, //     0x0772		// Current Master Volume Right
 
-        RegWrite_CoreExt<1, R_IIR_ALPHA>,   //     0x0774		//IIR alpha (% used)
-        RegWrite_CoreExt<1, R_ACC_COEF_A>,  //     0x0776
-        RegWrite_CoreExt<1, R_ACC_COEF_B>,  //     0x0778
-        RegWrite_CoreExt<1, R_ACC_COEF_C>,  //     0x077A
-        RegWrite_CoreExt<1, R_ACC_COEF_D>,  //     0x077C
-        RegWrite_CoreExt<1, R_IIR_COEF>,    //     0x077E
-        RegWrite_CoreExt<1, R_FB_ALPHA>,    //     0x0780		//feedback alpha (% used)
-        RegWrite_CoreExt<1, R_FB_X>,        //     0x0782		//feedback
-        RegWrite_CoreExt<1, R_IN_COEF_L>,   //     0x0784
-        RegWrite_CoreExt<1, R_IN_COEF_R>,   //     0x0786
+        RegWrite_CoreExt<1, R_IIR_ALPHA>,  //     0x0774		//IIR alpha (% used)
+        RegWrite_CoreExt<1, R_ACC_COEF_A>, //     0x0776
+        RegWrite_CoreExt<1, R_ACC_COEF_B>, //     0x0778
+        RegWrite_CoreExt<1, R_ACC_COEF_C>, //     0x077A
+        RegWrite_CoreExt<1, R_ACC_COEF_D>, //     0x077C
+        RegWrite_CoreExt<1, R_IIR_COEF>,   //     0x077E
+        RegWrite_CoreExt<1, R_FB_ALPHA>,   //     0x0780		//feedback alpha (% used)
+        RegWrite_CoreExt<1, R_FB_X>,       //     0x0782		//feedback
+        RegWrite_CoreExt<1, R_IN_COEF_L>,  //     0x0784
+        RegWrite_CoreExt<1, R_IN_COEF_R>,  //     0x0786
 
         REGRAW(0x7B0), REGRAW(0x7B2), REGRAW(0x7B4), REGRAW(0x7B6),
         REGRAW(0x7B8), REGRAW(0x7BA), REGRAW(0x7BC), REGRAW(0x7BE),
 
         //  SPDIF interface
 
-        RegWrite_SPDIF<SPDIF_OUT>,      //    0x07C0		// SPDIF Out: OFF/'PCM'/Bitstream/Bypass
-        RegWrite_SPDIF<SPDIF_IRQINFO>,  //    0x07C2
+        RegWrite_SPDIF<SPDIF_OUT>,     //    0x07C0		// SPDIF Out: OFF/'PCM'/Bitstream/Bypass
+        RegWrite_SPDIF<SPDIF_IRQINFO>, //    0x07C2
         REGRAW(0x7C4),
-        RegWrite_SPDIF<SPDIF_MODE>,   //    0x07C6
-        RegWrite_SPDIF<SPDIF_MEDIA>,  //    0x07C8		// SPDIF Media: 'CD'/DVD
+        RegWrite_SPDIF<SPDIF_MODE>,  //    0x07C6
+        RegWrite_SPDIF<SPDIF_MEDIA>, //    0x07C8		// SPDIF Media: 'CD'/DVD
         REGRAW(0x7CA),
-        RegWrite_SPDIF<SPDIF_PROTECT>,  //	 0x07CC		// SPDIF Copy Protection
+        RegWrite_SPDIF<SPDIF_PROTECT>, //	 0x07CC		// SPDIF Copy Protection
 
         REGRAW(0x7CE),
         REGRAW(0x7D0), REGRAW(0x7D2), REGRAW(0x7D4), REGRAW(0x7D6),
@@ -1742,7 +1742,7 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
         REGRAW(0x7F0), REGRAW(0x7F2), REGRAW(0x7F4), REGRAW(0x7F6),
         REGRAW(0x7F8), REGRAW(0x7FA), REGRAW(0x7FC), REGRAW(0x7FE),
 
-        NULL  // should be at 0x400!  (we assert check it on startup)
+        NULL // should be at 0x400!  (we assert check it on startup)
 };
 
 

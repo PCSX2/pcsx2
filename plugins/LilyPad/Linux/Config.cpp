@@ -210,7 +210,7 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
     {L"Disable Screen Saver", 0 /*IDC_DISABLE_SCREENSAVER*/, 1},
     {L"Logging", 0 /*IDC_DEBUG_FILE*/, 0},
 
-    {L"Save State in Title", 0 /*IDC_SAVE_STATE_TITLE*/, 0},  //No longer required, PCSX2 now handles it - avih 2011-05-17
+    {L"Save State in Title", 0 /*IDC_SAVE_STATE_TITLE*/, 0}, //No longer required, PCSX2 now handles it - avih 2011-05-17
     {L"GH2", 0 /*IDC_GH2_HACK*/, 0},
     {L"Turbo Key Hack", 0 /*IDC_TURBO_KEY_HACK*/, 0},
 };
@@ -461,7 +461,7 @@ int LoadSettings(int force, wchar_t *file)
     config.multipleBinding = multipleBinding;
 
     //TODO RefreshEnabledDevicesAndDisplay(1);
-    RefreshEnabledDevices(1);  // XXX For the moment only a subfonction
+    RefreshEnabledDevices(1); // XXX For the moment only a subfonction
 
     return 0;
 }
@@ -495,7 +495,7 @@ void RefreshEnabledDevices(int updateDeviceList)
         }
 
         dm->EnableDevice(i);
-#if 0  // windows magic?
+#if 0 // windows magic?
 		if ((dev->type == KEYBOARD && dev->api == IGNORE_KEYBOARD) ||
 			(dev->type == KEYBOARD && dev->api == config.keyboardApi) ||
 			(dev->type == MOUSE && dev->api == config.mouseApi) ||

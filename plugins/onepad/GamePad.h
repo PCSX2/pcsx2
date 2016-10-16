@@ -32,8 +32,8 @@ public:
         return;
     }
 
-    GamePad(const GamePad &);             // copy constructor
-    GamePad &operator=(const GamePad &);  // assignment
+    GamePad(const GamePad &);            // copy constructor
+    GamePad &operator=(const GamePad &); // assignment
 
     /**
 		 * Find every interesting devices and create right structure for them(depend on backend)
@@ -55,7 +55,7 @@ public:
 		 **/
     static void DoRumble(int type, int pad);
 
-    virtual bool Init(int id) { return false; }  // opens a handle and gets information
+    virtual bool Init(int id) { return false; } // opens a handle and gets information
 
     /**
 		 * Used for GUI checkbox to give feedback to the user
@@ -143,7 +143,7 @@ public:
     virtual int GetAxisFromKey(int pad, int index) { return 0; }
     // These fields need to be inherited by child classes
 protected:
-    string devname;  // pretty device name
+    string devname; // pretty device name
     int _id;
     int numbuttons, numaxes, numhats;
     int deadzone;

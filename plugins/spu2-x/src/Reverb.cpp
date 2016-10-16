@@ -230,8 +230,8 @@ StereoOut32 V_Core::DoReverb(const StereoOut32 &Input)
         _spu2mem[mix_dest_b1] = mix_b1;
 
         upbuf[ubpos] = clamp_mix(StereoOut32(
-            mix_a0 + mix_b0,  // left
-            mix_a1 + mix_b1   // right
+            mix_a0 + mix_b0, // left
+            mix_a1 + mix_b1  // right
             ));
     }
 

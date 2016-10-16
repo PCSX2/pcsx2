@@ -153,13 +153,13 @@ s32 IOCtlSrc::GetSectorCount()
     dvdrs.LayerNumber = 0;
     if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, NULL) != 0) {
         s32 sectors1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
-        if (dld.ld.NumberOfLayers == 1) {  // PTP, OTP
-            if (dld.ld.TrackPath == 0) {   // PTP
+        if (dld.ld.NumberOfLayers == 1) { // PTP, OTP
+            if (dld.ld.TrackPath == 0) {  // PTP
                 dvdrs.LayerNumber = 1;
                 if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr) != 0) {
                     sectors1 += _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
                 }
-            } else {  // OTP
+            } else { // OTP
                 // sectors = end_sector - (~end_sector_l0 & 0xFFFFFF) + end_sector_l0 - start_sector
                 dld.ld.EndLayerZeroSector = _byteswap_ulong(dld.ld.EndLayerZeroSector);
                 sectors1 += dld.ld.EndLayerZeroSector - (~dld.ld.EndLayerZeroSector & 0x00FFFFFF) + 1;
@@ -189,11 +189,11 @@ s32 IOCtlSrc::GetLayerBreakAddress()
     dvdrs.SessionId = sessID;
     dvdrs.LayerNumber = 0;
     if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
-        if (dld.ld.NumberOfLayers == 0) {  // Single layer
+        if (dld.ld.NumberOfLayers == 0) { // Single layer
             layerBreak = 0;
-        } else if (dld.ld.TrackPath == 0) {  // PTP
+        } else if (dld.ld.TrackPath == 0) { // PTP
             layerBreak = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector);
-        } else {  // OTP
+        } else { // OTP
             layerBreak = _byteswap_ulong(dld.ld.EndLayerZeroSector) - _byteswap_ulong(dld.ld.StartingDataSector);
         }
 
@@ -212,9 +212,9 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
     USHORT speed = 0;
 
     if (GetMediaType() < 0)
-        speed = 4800;  // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
+        speed = 4800; // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
     else
-        speed = 11080;  // DVD-ROM to  ~8x (PS2 has 4x (5540 KB/s))
+        speed = 11080; // DVD-ROM to  ~8x (PS2 has 4x (5540 KB/s))
 
     if (!restore_defaults) {
         CDROM_SET_SPEED s;
@@ -224,11 +224,11 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
         s.WriteSpeed = speed;
 
         if (DeviceIoControl(device,
-                            IOCTL_CDROM_SET_SPEED,  //operation to perform
-                            &s, sizeof(s),          //no input buffer
-                            NULL, 0,                //output buffer
-                            &dontcare,              //#bytes returned
-                            (LPOVERLAPPED)NULL))    //synchronous I/O == 0)
+                            IOCTL_CDROM_SET_SPEED, //operation to perform
+                            &s, sizeof(s),         //no input buffer
+                            NULL, 0,               //output buffer
+                            &dontcare,             //#bytes returned
+                            (LPOVERLAPPED)NULL))   //synchronous I/O == 0)
         {
             printf(" * CDVD: setSpindleSpeed success (%uKB/s)\n", speed);
         } else {
@@ -238,15 +238,15 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
         CDROM_SET_SPEED s;
         s.RequestType = CdromSetSpeed;
         s.RotationControl = CdromDefaultRotation;
-        s.ReadSpeed = 0xffff;  // maximum ?
+        s.ReadSpeed = 0xffff; // maximum ?
         s.WriteSpeed = 0xffff;
 
         DeviceIoControl(device,
-                        IOCTL_CDROM_SET_SPEED,  //operation to perform
-                        &s, sizeof(s),          //no input buffer
-                        NULL, 0,                //output buffer
-                        &dontcare,              //#bytes returned
-                        (LPOVERLAPPED)NULL);    //synchronous I/O == 0)
+                        IOCTL_CDROM_SET_SPEED, //operation to perform
+                        &s, sizeof(s),         //no input buffer
+                        NULL, 0,               //output buffer
+                        &dontcare,             //#bytes returned
+                        (LPOVERLAPPED)NULL);   //synchronous I/O == 0)
     }
 }
 
@@ -275,11 +275,11 @@ s32 IOCtlSrc::GetMediaType()
     dvdrs.SessionId = sessID;
     dvdrs.LayerNumber = 0;
     if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
-        if (dld.ld.NumberOfLayers == 0) {  // Single layer
+        if (dld.ld.NumberOfLayers == 0) { // Single layer
             mediaType = 0;
-        } else if (dld.ld.TrackPath == 0) {  // PTP
+        } else if (dld.ld.TrackPath == 0) { // PTP
             mediaType = 1;
-        } else {  // OTP
+        } else { // OTP
             mediaType = 2;
         }
 

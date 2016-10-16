@@ -50,12 +50,12 @@ void LoadConfig()
     if (!szTemp)
         return;
     strcpy(szTemp, "\\inis\\usbnull.ini");
-    fp = fopen("inis\\usbnull.ini", "rt");  //check if usbnull.ini really exists
+    fp = fopen("inis\\usbnull.ini", "rt"); //check if usbnull.ini really exists
     if (!fp) {
         CreateDirectory("inis", NULL);
         memset(&conf, 0, sizeof(conf));
-        conf.Log = 0;  //default value
-        SaveConfig();  //save and return
+        conf.Log = 0; //default value
+        SaveConfig(); //save and return
         return;
     }
     fclose(fp);

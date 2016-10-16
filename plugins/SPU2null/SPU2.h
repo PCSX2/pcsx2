@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 extern FILE *spu2Log;
-#define SPU2_LOG __Log  //debug mode
+#define SPU2_LOG __Log //debug mode
 
 extern const u8 version;
 extern const u8 revision;
@@ -115,10 +115,10 @@ void SysMessage(char *fmt, ...);
 #define REG_C0_END2 0x0342
 #define REG_C1_END1 0x0740
 #define REG_C1_END2 0x0742
-#define REG_C0_SPUSTAT 0x0344  //not sure!
+#define REG_C0_SPUSTAT 0x0344 //not sure!
 #define REG_C1_CTRL 0x059A
 #define REG_C1_ADMAS 0x05B0
-#define REG_C1_SPUSTAT 0x0744  //not sure!
+#define REG_C1_SPUSTAT 0x0744 //not sure!
 #define REG_P_MVOLL 0x0760
 #define REG_P_MVOLR 0x0762
 #define REG_P_EVOLL 0x0764
@@ -166,8 +166,8 @@ struct SPU_CONTROL_
     u16 noiseFreq : 6;
     u16 reverb : 1;
     u16 irq : 1;
-    u16 dma : 2;   // 1 - no dma, 2 - write, 3 - read
-    u16 extr : 1;  // external reverb
+    u16 dma : 2;  // 1 - no dma, 2 - write, 3 - read
+    u16 extr : 1; // external reverb
     u16 cdreverb : 1;
     u16 extAudio : 1;
     u16 extCd : 1;
@@ -189,31 +189,31 @@ struct _SPU_VOICE
             u16 Vol : 7;
             u16 res1 : 5;
             u16 Inverted : 1;
-            u16 Decrease : 1;  // if 0, increase
-            u16 ExpSlope : 1;  // if 0, linear slope
-            u16 Sweep1 : 1;    // always one
+            u16 Decrease : 1; // if 0, increase
+            u16 ExpSlope : 1; // if 0, linear slope
+            u16 Sweep1 : 1;   // always one
         } sweep;
         u16 word;
     } left, right;
 
-    u16 pitch : 14;  // 1000 - no pitch, 2000 - pitch + 1, etc
+    u16 pitch : 14; // 1000 - no pitch, 2000 - pitch + 1, etc
     u16 res0 : 2;
 
     u16 SustainLvl : 4;
     u16 DecayRate : 4;
     u16 AttackRate : 7;
-    u16 AttackExp : 1;  // if 0, linear
+    u16 AttackExp : 1; // if 0, linear
 
     u16 ReleaseRate : 5;
-    u16 ReleaseExp : 1;  // if 0, linear
+    u16 ReleaseExp : 1; // if 0, linear
     u16 SustainRate : 7;
     u16 res1 : 1;
-    u16 SustainDec : 1;  // if 0, inc
-    u16 SustainExp : 1;  // if 0, linear
+    u16 SustainDec : 1; // if 0, inc
+    u16 SustainExp : 1; // if 0, linear
 
     u16 AdsrVol;
-    u16 Address;     // add / 8
-    u16 RepeatAddr;  // gets reset when sample starts
+    u16 Address;    // add / 8
+    u16 RepeatAddr; // gets reset when sample starts
 };
 
 // ADSR INFOS PER   CHANNEL
@@ -233,8 +233,8 @@ struct ADSRInfoEx
     s32 lVolume;
 };
 
-#define NSSIZE 48    // ~ 1 ms of data
-#define NSFRAMES 16  // gather at least NSFRAMES of NSSIZE before submitting
+#define NSSIZE 48   // ~ 1 ms of data
+#define NSFRAMES 16 // gather at least NSFRAMES of NSSIZE before submitting
 #define NSPACKETS 4
 #define SPU_VOICE_STATE_SIZE (sizeof(VOICE_PROCESSED) - 4 * sizeof(void *))
 
@@ -258,25 +258,25 @@ struct VOICE_PROCESSED
 
     // start save state
 
-    s32 iSBPos;  // mixing stuff
+    s32 iSBPos; // mixing stuff
     s32 spos;
     s32 sinc;
 
-    s32 iActFreq;   // current psx pitch
-    s32 iUsedFreq;  // current pc pitch
+    s32 iActFreq;  // current psx pitch
+    s32 iUsedFreq; // current pc pitch
 
     s32 iStartAddr, iLoopAddr, iNextAddr;
 
-    ADSRInfoEx ADSRX;  // next ADSR settings (will be moved to active on sample start)
+    ADSRInfoEx ADSRX; // next ADSR settings (will be moved to active on sample start)
     bool bIgnoreLoop, bNew, bNoise, bReverb, bOn, bStop, bVolChanged;
-    s32 memoffset;  // if first core, 0, if second, 0x400
+    s32 memoffset; // if first core, 0, if second, 0x400
 
     // end save state
 
     ///////////////////
     // Sound Buffers //
     ///////////////////
-    u8 *pStart;  // start and end addresses
+    u8 *pStart; // start and end addresses
     u8 *pLoop, *pCurr;
 
     _SPU_VOICE *pvoice;

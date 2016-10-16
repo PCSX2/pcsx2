@@ -385,9 +385,9 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value)
     if (value < b->deadZone || !value)
         return;
 
-    if (config.turboKeyHack == 1) {  // send a tabulator keypress to emulator
+    if (config.turboKeyHack == 1) { // send a tabulator keypress to emulator
         //printf("%x\n", b->command);
-        if (b->command == 0x11) {  // L3 button
+        if (b->command == 0x11) { // L3 button
             static unsigned int LastCheck = 0;
             unsigned int t = timeGetTime();
             if (t - LastCheck < 300)
@@ -1262,10 +1262,10 @@ u8 CALLBACK PADpoll(u8 value)
                             //query.response[4] &= pad->mask[1];
 
                             // No need to cap these, already done int CapSum().
-                            query.response[9] = (unsigned char)sum->buttons[13];   //D-pad right
-                            query.response[10] = (unsigned char)sum->buttons[15];  //D-pad left
-                            query.response[11] = (unsigned char)sum->buttons[12];  //D-pad up
-                            query.response[12] = (unsigned char)sum->buttons[14];  //D-pad down
+                            query.response[9] = (unsigned char)sum->buttons[13];  //D-pad right
+                            query.response[10] = (unsigned char)sum->buttons[15]; //D-pad left
+                            query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
+                            query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
 
                             query.response[13] = (unsigned char)sum->buttons[8];
                             query.response[14] = (unsigned char)sum->buttons[9];

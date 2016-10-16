@@ -97,10 +97,10 @@ GSabout()
               (DLGPROC)AboutDlgProc);
 }
 
-BOOL APIENTRY DllMain(HANDLE hModule,  // DLL INIT
+BOOL APIENTRY DllMain(HANDLE hModule, // DLL INIT
                       DWORD dwReason,
                       LPVOID lpReserved)
 {
     hInst = (HINSTANCE)hModule;
-    return TRUE;  // very quick :)
+    return TRUE; // very quick :)
 }

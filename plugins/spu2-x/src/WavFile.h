@@ -93,10 +93,10 @@ private:
 public:
     /// Constructor: Creates a new WAV file. Throws a 'runtime_error' exception
     /// if file creation fails.
-    WavOutFile(const char *fileName,  ///< Filename
-               int sampleRate,        ///< Sample rate (e.g. 44100 etc)
-               int bits,              ///< Bits per sample (8 or 16 bits)
-               int channels           ///< Number of channels (1=mono, 2=stereo)
+    WavOutFile(const char *fileName, ///< Filename
+               int sampleRate,       ///< Sample rate (e.g. 44100 etc)
+               int bits,             ///< Bits per sample (8 or 16 bits)
+               int channels          ///< Number of channels (1=mono, 2=stereo)
                );
 
     /// Destructor: Finalizes & closes the WAV file.
@@ -104,8 +104,8 @@ public:
 
     /// Write data to WAV file. Throws a 'runtime_error' exception if writing to
     /// file fails.
-    void write(const short *buffer,  ///< Pointer to sample data buffer.
-               int numElems          ///< How many array items are to be written to file.
+    void write(const short *buffer, ///< Pointer to sample data buffer.
+               int numElems         ///< How many array items are to be written to file.
                );
 };
 

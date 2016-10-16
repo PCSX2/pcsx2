@@ -68,4 +68,4 @@ using WaveDump::CoreSrc_PreReverb;
 using WaveDump::CoreSrc_PostReverb;
 using WaveDump::CoreSrc_External;
 
-#endif  // DEBUG_H_INCLUDED //
+#endif // DEBUG_H_INCLUDED //

@@ -57,4 +57,4 @@ public:
     void InitGamepadConfiguration();
 };
 
-#endif  // __GAMEPADCONFIGURATION_H__
+#endif // __GAMEPADCONFIGURATION_H__

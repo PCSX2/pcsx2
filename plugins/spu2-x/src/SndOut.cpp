@@ -95,7 +95,7 @@ SndOutModule *mods[] =
 #if defined(__linux__) /* && defined(__ALSA__)*/
         AlsaOut,
 #endif
-        NULL  // signals the end of our list
+        NULL // signals the end of our list
 };
 
 int FindOutputModuleById(const wchar_t *omodid)
@@ -132,7 +132,7 @@ bool SndBuffer::CheckUnderrunStatus(int &nSamples, int &quietSampleCount)
 
     int data = _GetApproximateDataInBuffer();
     if (m_underrun_freeze) {
-        int toFill = m_size / ((SynchMode == 2) ? 32 : 400);  // TimeStretch and Async off?
+        int toFill = m_size / ((SynchMode == 2) ? 32 : 400); // TimeStretch and Async off?
         toFill = GetAlignedBufferSize(toFill);
 
         // toFill is now aligned to a SndOutPacket
@@ -145,13 +145,13 @@ bool SndBuffer::CheckUnderrunStatus(int &nSamples, int &quietSampleCount)
         m_underrun_freeze = false;
         if (MsgOverruns())
             ConLog(" * SPU2 > Underrun compensation (%d packets buffered)\n", toFill / SndOutPacketSize);
-        lastPct = 0.0;  // normalize timestretcher
+        lastPct = 0.0; // normalize timestretcher
     } else if (data < nSamples) {
         nSamples = data;
         quietSampleCount = SndOutPacketSize - data;
         m_underrun_freeze = true;
 
-        if (SynchMode == 0)  // TimeStrech on
+        if (SynchMode == 0) // TimeStrech on
             timeStretchUnderrun();
 
         return nSamples != 0;
@@ -321,7 +321,7 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
     //  The older portion of the buffer is discarded rather than incoming data,
     //  so that the overall audio synchronization is better.
 
-    int free = m_size - _GetApproximateDataInBuffer();  // -1, but the <= handles that
+    int free = m_size - _GetApproximateDataInBuffer(); // -1, but the <= handles that
     if (free <= nSamples) {
 // Disabled since the lock-free queue can't handle changing the read end from the write thread
 #if 0
@@ -350,7 +350,7 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 #else
         if (MsgOverruns())
             ConLog(" * SPU2 > Overrun! 1 packet tossed)\n");
-        lastPct = 0.0;  // normalize the timestretcher
+        lastPct = 0.0; // normalize the timestretcher
         return;
 #endif
     }
@@ -379,7 +379,7 @@ void SndBuffer::Init()
         m_underrun_freeze = false;
 
         sndTempBuffer = new StereoOut32[SndOutPacketSize];
-        sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2];  // in case of leftovers.
+        sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
     } catch (std::bad_alloc &) {
         // out of memory exception (most likely)
 
@@ -395,7 +395,7 @@ void SndBuffer::Init()
 
     sndTempProgress = 0;
 
-    soundtouchInit();  // initializes the timestretching
+    soundtouchInit(); // initializes the timestretching
 
     // initialize module
     if (mods[OutputModule]->Init() == -1)
@@ -421,7 +421,7 @@ int SndBuffer::ssFreeze = 0;
 void SndBuffer::ClearContents()
 {
     SndBuffer::soundtouchClearContents();
-    SndBuffer::ssFreeze = 256;  //Delays sound output for about 1 second.
+    SndBuffer::ssFreeze = 256; //Delays sound output for about 1 second.
 }
 
 void SndBuffer::Write(const StereoOut32 &Sample)
@@ -432,7 +432,7 @@ void SndBuffer::Write(const StereoOut32 &Sample)
     if (WavRecordEnabled)
         RecordWrite(Sample.DownSample());
 
-    if (mods[OutputModule] == &NullOut)  // null output doesn't need buffering or stretching! :p
+    if (mods[OutputModule] == &NullOut) // null output doesn't need buffering or stretching! :p
         return;
 
     sndTempBuffer[sndTempProgress++] = Sample;
@@ -445,7 +445,7 @@ void SndBuffer::Write(const StereoOut32 &Sample)
     //Don't play anything directly after loading a savestate, avoids static killing your speakers.
     if (ssFreeze > 0) {
         ssFreeze--;
-        memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize);  // Play silence
+        memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize); // Play silence
     }
 #ifndef __POSIX__
     if (dspPluginEnabled) {
@@ -464,7 +464,7 @@ void SndBuffer::Write(const StereoOut32 &Sample)
                 sndTempBuffer[i] = sndTempBuffer16[ei].UpSample();
             }
 
-            if (SynchMode == 0)  // TimeStrech on
+            if (SynchMode == 0) // TimeStrech on
                 timeStretchWrite();
             else
                 _WriteSamples(sndTempBuffer, SndOutPacketSize);
@@ -480,7 +480,7 @@ void SndBuffer::Write(const StereoOut32 &Sample)
     }
 #endif
     else {
-        if (SynchMode == 0)  // TimeStrech on
+        if (SynchMode == 0) // TimeStrech on
             timeStretchWrite();
         else
             _WriteSamples(sndTempBuffer, SndOutPacketSize);

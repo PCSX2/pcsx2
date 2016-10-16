@@ -75,7 +75,7 @@ static void InitLibraryName()
 #ifdef DEBUG_FAST
                         "-Debug"
 #elif defined(PCSX2_DEBUG)
-                        "-Debug/Strict"  // strict debugging is slow!
+                        "-Debug/Strict" // strict debugging is slow!
 #elif defined(PCSX2_DEVBUILD)
                         "-Dev"
 #else
@@ -92,7 +92,7 @@ static void InitLibraryName()
 #ifdef DEBUG_FAST
                                "-Debug"
 #elif defined(PCSX2_DEBUG)
-                               "-Debug/Strict"  // strict debugging is slow!
+                               "-Debug/Strict" // strict debugging is slow!
 #elif defined(PCSX2_DEVBUILD)
                                "-Dev"
 #else
@@ -268,7 +268,7 @@ SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callb
 #endif
 
 EXPORT_C_(void)
-CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size)  // size now in 16bit units
+CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -278,7 +278,7 @@ CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size)  // size now in 16bit units
 }
 
 EXPORT_C_(void)
-CALLBACK SPU2writeDMA4Mem(u16 *pMem, u32 size)  // size now in 16bit units
+CALLBACK SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -336,7 +336,7 @@ SPU2reset()
 {
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
-    memset(_spu2mem + 0x2800, 7, 0x10);  // from BIOS reversal. Locks the voices so they don't run free.
+    memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     Cores[0].Init(0);
     Cores[1].Init(1);
 }
@@ -456,7 +456,7 @@ SPU2open(void *pDsp)
         gsWindowHandle = 0;
 
 #ifdef _MSC_VER
-#ifdef PCSX2_DEVBUILD  // Define may not be needed but not tested yet. Better make sure.
+#ifdef PCSX2_DEVBUILD // Define may not be needed but not tested yet. Better make sure.
     if (IsDevBuild && VisualDebug()) {
         if (debugDialogOpen == 0) {
             hDebugDialog = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);

@@ -20,7 +20,7 @@
  */
 
 #pragma once
-#include <string.h>  // for memset
+#include <string.h> // for memset
 #define MAX_KEYS 24
 
 enum KeyType {
@@ -68,9 +68,9 @@ public:
             u16 mouse_r : 1;
             u16 sixaxis_usb : 1;
             u16 sixaxis_pressure : 1;
-            u16 _free : 7;              // The 8 remaining bits are unused, do what you wish with them ;)
-        } pad_options[GAMEPAD_NUMBER];  // One for each pads
-        u32 packed_options;             // Only first 8 bits of each 16 bits series are really used, rest is padding
+            u16 _free : 7;             // The 8 remaining bits are unused, do what you wish with them ;)
+        } pad_options[GAMEPAD_NUMBER]; // One for each pads
+        u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
     };
 
     u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
@@ -84,19 +84,19 @@ public:
     {
         memset(&keys, 0, sizeof(keys));
         log = packed_options = joyid_map = 0;
-        ff_intensity = 0x7FFF;  // set it at max value by default
+        ff_intensity = 0x7FFF; // set it at max value by default
         sensibility = 500;
         for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
             keysym_map[pad].clear();
-            set_joyid((u32)pad, (u32)pad);  // define id mapping for each gamepad
+            set_joyid((u32)pad, (u32)pad); // define id mapping for each gamepad
         }
     }
 
     void set_joyid(u32 pad, u32 joy_id)
     {
         int shift = 8 * pad;
-        joyid_map &= ~(0xFF << shift);          // clear
-        joyid_map |= (joy_id & 0xFF) << shift;  // set
+        joyid_map &= ~(0xFF << shift);         // clear
+        joyid_map |= (joy_id & 0xFF) << shift; // set
     }
 
     u32 get_joyid(u32 pad)

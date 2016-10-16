@@ -75,7 +75,7 @@ s32 cdvdParseTOC()
                         etrack = cdtoc.Descriptors[i].Msf[0];
                     }
                     break;
-                case 0xa2:  // session size
+                case 0xa2: // session size
                     if (cdtoc.Descriptors[i].SessionNumber == cdtoc.LastCompleteSession) {
                         min = cdtoc.Descriptors[i].Msf[0];
                         sec = cdtoc.Descriptors[i].Msf[1];

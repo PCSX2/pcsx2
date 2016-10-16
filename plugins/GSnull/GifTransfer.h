@@ -42,7 +42,7 @@ union GIFTag
         u32 _PAD2 : 14;
         u32 PRE : 1;
         u32 PRIM : 11;
-        u32 FLG : 2;  // enum GIF_FLG
+        u32 FLG : 2; // enum GIF_FLG
         u32 NREG : 4;
         u64 REGS : 64;
     };
@@ -129,4 +129,4 @@ template <int index>
 extern void _GSgifTransfer(const u32 *pMem, u32 size);
 extern GIFRegHandler GIFPackedRegHandlers[];
 extern GIFRegHandler GIFRegHandlers[];
-#endif  // GIFTRANSFER_H_INCLUDED
+#endif // GIFTRANSFER_H_INCLUDED

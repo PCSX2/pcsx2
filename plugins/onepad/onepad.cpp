@@ -48,7 +48,7 @@ bool toggleAutoRepeat = false;
 
 const u32 version = PS2E_PAD_VERSION;
 const u32 revision = 1;
-const u32 build = 3;  // increase that with each version
+const u32 build = 3; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 FILE *padLog = NULL;
@@ -241,7 +241,7 @@ PADclose()
 EXPORT_C_(u32)
 PADquery()
 {
-    return 3;  // both
+    return 3; // both
 }
 
 EXPORT_C_(s32)

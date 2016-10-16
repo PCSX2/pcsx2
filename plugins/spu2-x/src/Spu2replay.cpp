@@ -183,7 +183,7 @@ u64 HighResCounter()
     return time;
 }
 
-void InitWaitSync()  // not extremely accurate but enough.
+void InitWaitSync() // not extremely accurate but enough.
 {
     HighResFreq = HighResFrequency();
     HighResPrev = HighResCounter();
@@ -202,11 +202,11 @@ u32 WaitSync(u32 TargetCycle)
 
     // Refresh current time after sleeping
     u64 Current = HighResCounter();
-    u32 delta = (u32)floor((Current - HighResPrev) / HighResScale + 0.5);  // We lose some precision here, cycles might drift away over long periods of time ;P
+    u32 delta = (u32)floor((Current - HighResPrev) / HighResScale + 0.5); // We lose some precision here, cycles might drift away over long periods of time ;P
 
     // Calculate time delta
     CurrentIOPCycle += delta;
-    HighResPrev += (u64)floor(delta * HighResScale + 0.5);  // Trying to compensate drifting mentioned above, not necessarily useful.
+    HighResPrev += (u64)floor(delta * HighResScale + 0.5); // Trying to compensate drifting mentioned above, not necessarily useful.
 
     return delta;
 }
@@ -264,7 +264,7 @@ s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 
     replay_mode = true;
 
-    InitWaitSync();  // Initialize the WaitSync stuff
+    InitWaitSync(); // Initialize the WaitSync stuff
 
     SPU2init();
     SPU2irqCallback(dummy1, dummy4, dummy7);

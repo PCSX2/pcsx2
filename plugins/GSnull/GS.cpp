@@ -33,7 +33,7 @@ using namespace std;
 
 const unsigned char version = PS2E_GS_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 1;  // increase that with each version
+const unsigned char build = 1; // increase that with each version
 
 static char libraryName[256];
 Config conf;

@@ -121,19 +121,19 @@ void DPLII::Convert(s16 *obuffer, s32 ValL, s32 ValR)
     LR = (s32)(lpf_r.sample((ValR >> 4) / pow_2_31) * pow_2_31);
     LFE = (LL + LR) >> 4;
 
-    C = (ValL + ValR) >> 1;  //16.8
+    C = (ValL + ValR) >> 1; //16.8
 
-    ValL -= C;  //16.8
-    ValR -= C;  //16.8
+    ValL -= C; //16.8
+    ValR -= C; //16.8
 
-    L = ValL >> 8;  //16.0
-    R = ValR >> 8;  //16.0
-    C = C >> 8;     //16.0
+    L = ValL >> 8; //16.0
+    R = ValR >> 8; //16.0
+    C = C >> 8;    //16.0
 
     const s32 Cfl = 1 + sLogTable[Gfl];
     const s32 Cfr = 1 + sLogTable[Gfr];
 
-    const s32 VL = (ValL >> 4) * Cfl;  //16.12
+    const s32 VL = (ValL >> 4) * Cfl; //16.12
     const s32 VR = (ValR >> 4) * Cfr;
 
     const s32 SC = (VL - VR) >> 15;
@@ -145,7 +145,7 @@ void DPLII::Convert(s16 *obuffer, s32 ValL, s32 ValR)
 
     obuffer[0] = spdif_data[0] + (((L * Config_DSound51.GainL)) >> 8) + AddCX;
     obuffer[1] = spdif_data[1] + (((R * Config_DSound51.GainR)) >> 8) + AddCX;
-    obuffer[2] = spdif_data[2] + (((C * Config_DSound51.GainC)) >> 8);  // - AddCX;
+    obuffer[2] = spdif_data[2] + (((C * Config_DSound51.GainC)) >> 8); // - AddCX;
     obuffer[3] = spdif_data[3] + (((LFE * Config_DSound51.GainLFE)) >> 8);
     obuffer[4] = spdif_data[4] + (((SL * Config_DSound51.GainSL)) >> 8);
     obuffer[5] = spdif_data[5] + (((SR * Config_DSound51.GainSR)) >> 8);

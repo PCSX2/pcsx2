@@ -88,7 +88,7 @@ u16 const *const regtable_original[0x401] =
 
         PCORE(0, AutoDMACtrl),
 
-        PRAW(0x1b2), PRAW(0x1b4), PRAW(0x1b6), PRAW(0x1b8), PRAW(0x1ba), PRAW(0x1bc), PRAW(0x1be),  // unknown
+        PRAW(0x1b2), PRAW(0x1b4), PRAW(0x1b6), PRAW(0x1b8), PRAW(0x1ba), PRAW(0x1bc), PRAW(0x1be), // unknown
 
         // Voice Addresses
         PVCA(0, 0), PVCA(0, 1), PVCA(0, 2), PVCA(0, 3), PVCA(0, 4), PVCA(0, 5),
@@ -191,7 +191,7 @@ u16 const *const regtable_original[0x401] =
 
         PCORE(1, AutoDMACtrl),
 
-        PRAW(0x5b2), PRAW(0x5b4), PRAW(0x5b6), PRAW(0x5b8), PRAW(0x5ba), PRAW(0x5bc), PRAW(0x5be),  // unknown
+        PRAW(0x5b2), PRAW(0x5b4), PRAW(0x5b6), PRAW(0x5b8), PRAW(0x5ba), PRAW(0x5bc), PRAW(0x5be), // unknown
 
         // Voice Addresses
         PVCA(1, 0), PVCA(1, 1), PVCA(1, 2), PVCA(1, 3), PVCA(1, 4), PVCA(1, 5),

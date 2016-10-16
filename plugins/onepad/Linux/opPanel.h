@@ -46,7 +46,7 @@ enum gui_img {
     img_left_cursor,
     img_right_cursor,
     img_analog,
-    img_background,  // background pic
+    img_background, // background pic
     img_l_arrow_up,
     img_l_arrow_right,
     img_l_arrow_bottom,
@@ -74,4 +74,4 @@ public:
     void MoveJoystick(int, int);
 };
 
-#endif  // __OPPANEL_H__
+#endif // __OPPANEL_H__

@@ -47,9 +47,9 @@ int Interpolation = 4;
 */
 
 bool EffectsDisabled = false;
-float FinalVolume;  // global
+float FinalVolume; // global
 bool AdvancedVolumeControl;
-float VolumeAdjustFLdb;  // decibels settings, cos audiophiles love that
+float VolumeAdjustFLdb; // decibels settings, cos audiophiles love that
 float VolumeAdjustCdb;
 float VolumeAdjustFRdb;
 float VolumeAdjustBLdb;
@@ -57,7 +57,7 @@ float VolumeAdjustBRdb;
 float VolumeAdjustSLdb;
 float VolumeAdjustSRdb;
 float VolumeAdjustLFEdb;
-float VolumeAdjustFL;  // linear coefs calcualted from decibels,
+float VolumeAdjustFL; // linear coefs calcualted from decibels,
 float VolumeAdjustC;
 float VolumeAdjustFR;
 float VolumeAdjustBL;
@@ -69,12 +69,12 @@ unsigned int delayCycles;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
-bool _visual_debug_enabled = false;  // windows only feature
+bool _visual_debug_enabled = false; // windows only feature
 
 // OUTPUT
 u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
-int SynchMode = 0;  // Time Stretch, Async or Disabled
+int SynchMode = 0; // Time Stretch, Async or Disabled
 static u32 OutputAPI = 0;
 static u32 SdlOutputAPI = 0;
 
@@ -120,7 +120,7 @@ void ReadSettings()
 
     wxString temp;
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
-    OutputModule = FindOutputModuleById(temp.c_str());  // find the driver index of this module
+    OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
 
 // find current API
 #ifdef __linux__

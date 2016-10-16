@@ -39,4 +39,4 @@ extern void RemoveSound();
 extern int SoundGetBytesBuffered();
 extern void SoundFeedVoiceData(unsigned char *pSound, long lBytes);
 
-#endif  // __LINUX_H__
+#endif // __LINUX_H__

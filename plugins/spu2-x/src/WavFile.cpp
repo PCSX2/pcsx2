@@ -137,7 +137,7 @@ void WavOutFile::write(const short *buffer, int numElems)
 
     assert(header.format.bits_per_sample == 16);
     if (numElems < 1)
-        return;  // nothing to do
+        return; // nothing to do
 
     res = fwrite(buffer, 2, numElems, fptr);
 

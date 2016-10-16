@@ -178,20 +178,20 @@ public:
             const PaDeviceInfo *devinfo = Pa_GetDeviceInfo(deviceIndex);
 
             int speakers;
-            switch (numSpeakers)  // speakers = (numSpeakers + 1) *2; ?
+            switch (numSpeakers) // speakers = (numSpeakers + 1) *2; ?
             {
                 case 0:
                     speakers = 2;
-                    break;  // Stereo
+                    break; // Stereo
                 case 1:
                     speakers = 4;
-                    break;  // Quadrafonic
+                    break; // Quadrafonic
                 case 2:
                     speakers = 6;
-                    break;  // Surround 5.1
+                    break; // Surround 5.1
                 case 3:
                     speakers = 8;
-                    break;  // Surround 7.1
+                    break; // Surround 7.1
                 default:
                     speakers = 2;
             }
@@ -223,24 +223,24 @@ public:
                     switch (dplLevel) {
                         case 0:
                             ConLog("* SPU2 > 5.1 speaker expansion enabled.\n");
-                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32>(&writtenSoFar);  //"normal" stereo upmix
+                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32>(&writtenSoFar); //"normal" stereo upmix
                             break;
                         case 1:
                             ConLog("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n");
-                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32Dpl>(&writtenSoFar);  // basic Dpl decoder without rear stereo balancing
+                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32Dpl>(&writtenSoFar); // basic Dpl decoder without rear stereo balancing
                             break;
                         case 2:
                             ConLog("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n");
-                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32DplII>(&writtenSoFar);  //gigas PLII
+                            ActualPaCallback = new ConvertedSampleReader<Stereo51Out32DplII>(&writtenSoFar); //gigas PLII
                             break;
                     }
-                    actualUsedChannels = 6;  // we do not support 7.0 or 6.2 configurations, downgrade to 5.1
+                    actualUsedChannels = 6; // we do not support 7.0 or 6.2 configurations, downgrade to 5.1
                     break;
 
-                default:  // anything 8 or more gets the 7.1 treatment!
+                default: // anything 8 or more gets the 7.1 treatment!
                     ConLog("* SPU2 > 7.1 speaker expansion enabled.\n");
                     ActualPaCallback = new ConvertedSampleReader<Stereo71Out32>(&writtenSoFar);
-                    actualUsedChannels = 8;  // we do not support 7.2 or more, downgrade to 7.1
+                    actualUsedChannels = 8; // we do not support 7.2 or more, downgrade to 7.1
                     break;
             }
 
@@ -497,7 +497,7 @@ private:
 public:
     virtual void Configure(uptr parent)
     {
-        PaError err = Pa_Initialize();  // Initialization can be done multiple times, PA keeps a counter
+        PaError err = Pa_Initialize(); // Initialization can be done multiple times, PA keeps a counter
         if (err != paNoError) {
             fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
             return;

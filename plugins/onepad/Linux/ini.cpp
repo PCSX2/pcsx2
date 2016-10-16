@@ -46,7 +46,7 @@ string KeyName(int pad, int key, int keysym)
                 case 3:
                     sprintf(&tmp[0], "Mouse Right");
                     break;
-                default:  // Use only number for extra button
+                default: // Use only number for extra button
                     sprintf(&tmp[0], "Mouse %d", keysym);
             }
         } else {
@@ -164,7 +164,7 @@ void LoadConfig()
     f = fopen(iniFile.c_str(), "r");
     if (f == NULL) {
         printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
-        SaveConfig();  //save and return
+        SaveConfig(); //save and return
         return;
     }
 

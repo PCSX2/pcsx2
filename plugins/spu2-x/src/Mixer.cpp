@@ -152,7 +152,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core &thiscore, uint voiceidx)
     if ((vc.SCurrent & 3) == 0) {
         IncrementNextA(thiscore, voiceidx);
 
-        if ((vc.NextA & 7) == 0)  // vc.SCurrent == 24 equivalent
+        if ((vc.NextA & 7) == 0) // vc.SCurrent == 24 equivalent
         {
             if (vc.LoopFlags & XAFLAG_LOOP_END) {
                 thiscore.Regs.ENDX |= (1 << voiceidx);
@@ -166,7 +166,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core &thiscore, uint voiceidx)
                     }
                 }
             } else
-                vc.NextA++;  // no, don't IncrementNextA here.  We haven't read the header yet.
+                vc.NextA++; // no, don't IncrementNextA here.  We haven't read the header yet.
         }
     }
 
@@ -180,7 +180,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core &thiscore, uint voiceidx)
                 SetIrqCall(i);
 
         s16 *memptr = GetMemPtr(vc.NextA & 0xFFFF8);
-        vc.LoopFlags = *memptr >> 8;  // grab loop flags from the upper byte.
+        vc.LoopFlags = *memptr >> 8; // grab loop flags from the upper byte.
 
         if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
             vc.LoopStartA = vc.NextA & 0xFFFF8;
@@ -225,13 +225,13 @@ static __forceinline void GetNextDataDummy(V_Core &thiscore, uint voiceidx)
 
     IncrementNextA(thiscore, voiceidx);
 
-    if ((vc.NextA & 7) == 0)  // vc.SCurrent == 24 equivalent
+    if ((vc.NextA & 7) == 0) // vc.SCurrent == 24 equivalent
     {
         if (vc.LoopFlags & XAFLAG_LOOP_END) {
             thiscore.Regs.ENDX |= (1 << voiceidx);
             vc.NextA = vc.LoopStartA | 1;
         } else
-            vc.NextA++;  // no, don't IncrementNextA here.  We haven't read the header yet.
+            vc.NextA++; // no, don't IncrementNextA here.  We haven't read the header yet.
     }
 
     if (vc.SCurrent == 28) {
@@ -239,7 +239,7 @@ static __forceinline void GetNextDataDummy(V_Core &thiscore, uint voiceidx)
             if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
                 SetIrqCall(i);
 
-        vc.LoopFlags = *GetMemPtr(vc.NextA & 0xFFFF8) >> 8;  // grab loop flags from the upper byte.
+        vc.LoopFlags = *GetMemPtr(vc.NextA & 0xFFFF8) >> 8; // grab loop flags from the upper byte.
 
         if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
             vc.LoopStartA = vc.NextA & 0xFFFF8;
@@ -335,7 +335,7 @@ static __forceinline void CalculateADSR(V_Core &thiscore, uint voiceidx)
         vc.Stop();
     }
 
-    pxAssume(vc.ADSR.Value >= 0);  // ADSR should never be negative...
+    pxAssume(vc.ADSR.Value >= 0); // ADSR should never be negative...
 }
 
 /*
@@ -343,34 +343,34 @@ static __forceinline void CalculateADSR(V_Core &thiscore, uint voiceidx)
 */
 template <s32 i_tension>
 __forceinline static s32 HermiteInterpolate(
-    s32 y0,  // 16.0
-    s32 y1,  // 16.0
-    s32 y2,  // 16.0
-    s32 y3,  // 16.0
-    s32 mu   //  0.12
+    s32 y0, // 16.0
+    s32 y1, // 16.0
+    s32 y2, // 16.0
+    s32 y3, // 16.0
+    s32 mu  //  0.12
     )
 {
-    s32 m00 = ((y1 - y0) * i_tension) >> 16;  // 16.0
-    s32 m01 = ((y2 - y1) * i_tension) >> 16;  // 16.0
+    s32 m00 = ((y1 - y0) * i_tension) >> 16; // 16.0
+    s32 m01 = ((y2 - y1) * i_tension) >> 16; // 16.0
     s32 m0 = m00 + m01;
 
-    s32 m10 = ((y2 - y1) * i_tension) >> 16;  // 16.0
-    s32 m11 = ((y3 - y2) * i_tension) >> 16;  // 16.0
+    s32 m10 = ((y2 - y1) * i_tension) >> 16; // 16.0
+    s32 m11 = ((y3 - y2) * i_tension) >> 16; // 16.0
     s32 m1 = m10 + m11;
 
-    s32 val = ((2 * y1 + m0 + m1 - 2 * y2) * mu) >> 12;        // 16.0
-    val = ((val - 3 * y1 - 2 * m0 - m1 + 3 * y2) * mu) >> 12;  // 16.0
-    val = ((val + m0) * mu) >> 11;                             // 16.0
+    s32 val = ((2 * y1 + m0 + m1 - 2 * y2) * mu) >> 12;       // 16.0
+    val = ((val - 3 * y1 - 2 * m0 - m1 + 3 * y2) * mu) >> 12; // 16.0
+    val = ((val + m0) * mu) >> 11;                            // 16.0
 
     return (val + (y1 << 1));
 }
 
 __forceinline static s32 CatmullRomInterpolate(
-    s32 y0,  // 16.0
-    s32 y1,  // 16.0
-    s32 y2,  // 16.0
-    s32 y3,  // 16.0
-    s32 mu   //  0.12
+    s32 y0, // 16.0
+    s32 y1, // 16.0
+    s32 y2, // 16.0
+    s32 y3, // 16.0
+    s32 mu  //  0.12
     )
 {
     //q(t) = 0.5 *(    	(2 * P1) +
@@ -391,11 +391,11 @@ __forceinline static s32 CatmullRomInterpolate(
 }
 
 __forceinline static s32 CubicInterpolate(
-    s32 y0,  // 16.0
-    s32 y1,  // 16.0
-    s32 y2,  // 16.0
-    s32 y3,  // 16.0
-    s32 mu   //  0.12
+    s32 y0, // 16.0
+    s32 y1, // 16.0
+    s32 y2, // 16.0
+    s32 y3, // 16.0
+    s32 mu  //  0.12
     )
 {
     const s32 a0 = y3 - y2 - y0 + y1;
@@ -445,7 +445,7 @@ static __forceinline s32 GetVoiceValues(V_Core &thiscore, uint voiceidx)
             jNO_DEFAULT;
     }
 
-    return 0;  // technically unreachable!
+    return 0; // technically unreachable!
 }
 
 // Noise values need to be mixed without going through interpolation, since it
@@ -578,14 +578,14 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
         return ApplyVolume(StereoOut32(Value, Value), vc.Volume);
     } else {
         // Continue processing voice, even if it's "off". Or else we miss interrupts! (Fatal Frame engine died because of this.)
-        if (NEVER_SKIP_VOICES || (*GetMemPtr(vc.NextA & 0xFFFF8) >> 8 & 3) != 3 || vc.LoopStartA != (vc.NextA & ~7)     // not in a tight loop
-            || (Cores[0].IRQEnable && (Cores[0].IRQA & ~7) == vc.LoopStartA)                                            // or should be interrupting regularly
-            || (Cores[1].IRQEnable && (Cores[1].IRQA & ~7) == vc.LoopStartA) || !(thiscore.Regs.ENDX & 1 << voiceidx))  // or isn't currently flagged as having passed the endpoint
+        if (NEVER_SKIP_VOICES || (*GetMemPtr(vc.NextA & 0xFFFF8) >> 8 & 3) != 3 || vc.LoopStartA != (vc.NextA & ~7)    // not in a tight loop
+            || (Cores[0].IRQEnable && (Cores[0].IRQA & ~7) == vc.LoopStartA)                                           // or should be interrupting regularly
+            || (Cores[1].IRQEnable && (Cores[1].IRQA & ~7) == vc.LoopStartA) || !(thiscore.Regs.ENDX & 1 << voiceidx)) // or isn't currently flagged as having passed the endpoint
         {
             UpdatePitch(coreidx, voiceidx);
 
             while (vc.SP > 0)
-                GetNextDataDummy(thiscore, voiceidx);  // Dummy is enough
+                GetNextDataDummy(thiscore, voiceidx); // Dummy is enough
         }
 
         // Write-back of raw voice data (some zeros since the voice is "dead")
@@ -598,7 +598,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
     }
 }
 
-const VoiceMixSet VoiceMixSet::Empty((StereoOut32()), (StereoOut32()));  // Don't use SteroOut32::Empty because C++ doesn't make any dep/order checks on global initializers.
+const VoiceMixSet VoiceMixSet::Empty((StereoOut32()), (StereoOut32())); // Don't use SteroOut32::Empty because C++ doesn't make any dep/order checks on global initializers.
 
 static __forceinline void MixCoreVoices(VoiceMixSet &dest, const uint coreidx)
 {
@@ -671,7 +671,7 @@ StereoOut32 V_Core::Mix(const VoiceMixSet &inVoices, const StereoOut32 &Input, c
     //
     // On the other hand, updating the buffer is cheap and easy, so might as well. ;)
 
-    Reverb_AdvanceBuffer();  // Updates the reverb work area as well, if needed.
+    Reverb_AdvanceBuffer(); // Updates the reverb work area as well, if needed.
 
     // ToDo:
     // Bad EndA causes memory corruption. Bad for us, unknown on PS2!
@@ -806,7 +806,7 @@ __forceinline
     WaveDump::WriteCore(1, CoreSrc_Input, InputData[1]);
 
     // Todo: Replace me with memzero initializer!
-    VoiceMixSet VoiceData[2] = {VoiceMixSet::Empty, VoiceMixSet::Empty};  // mixed voice data for each core.
+    VoiceMixSet VoiceData[2] = {VoiceMixSet::Empty, VoiceMixSet::Empty}; // mixed voice data for each core.
     MixCoreVoices(VoiceData[0], 0);
     MixCoreVoices(VoiceData[1], 1);
 

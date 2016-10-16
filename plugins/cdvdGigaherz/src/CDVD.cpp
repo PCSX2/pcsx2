@@ -61,9 +61,9 @@ const unsigned char build = 10;
 HINSTANCE hinst;
 
 BOOL WINAPI DllMain(
-    HINSTANCE hinstDLL,  // handle to DLL module
-    DWORD fdwReason,     // reason for calling function
-    LPVOID lpvReserved   // reserved
+    HINSTANCE hinstDLL, // handle to DLL module
+    DWORD fdwReason,    // reason for calling function
+    LPVOID lpvReserved  // reserved
     )
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
@@ -307,7 +307,7 @@ s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
         return ret;
     }
 
-    if (lsn > tracks[0].length) {  // track 0 is total disc.
+    if (lsn > tracks[0].length) { // track 0 is total disc.
         return -1;
     }
 
@@ -359,7 +359,7 @@ s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
     // the formatted subq command returns:  control/adr, track, index, trk min, trk sec, trk frm, 0x00, abs min, abs sec, abs frm
 
-    if (lsn > tracks[0].length)  // track 0 is total disc.
+    if (lsn > tracks[0].length) // track 0 is total disc.
         return -1;
 
     memset(subq, 0, sizeof(cdvdSubQ));
@@ -428,7 +428,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
         if (mt < 0)
             return -1;
 
-        if (mt == 0) {  //single layer
+        if (mt == 0) { //single layer
             // fake it
             tocBuff[0] = 0x04;
             tocBuff[1] = 0x02;
@@ -437,11 +437,11 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             tocBuff[4] = 0x86;
             tocBuff[5] = 0x72;
 
-            tocBuff[16] = 0x00;  // first sector for layer 0
+            tocBuff[16] = 0x00; // first sector for layer 0
             tocBuff[17] = 0x03;
             tocBuff[18] = 0x00;
             tocBuff[19] = 0x00;
-        } else if (mt == 1) {  //PTP
+        } else if (mt == 1) { //PTP
             u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
             // dual sided
@@ -452,7 +452,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             tocBuff[4] = 0x41;
             tocBuff[5] = 0x95;
 
-            tocBuff[14] = 0x61;  // PTP
+            tocBuff[14] = 0x61; // PTP
 
             tocBuff[16] = 0x00;
             tocBuff[17] = 0x03;
@@ -463,7 +463,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             tocBuff[21] = (layer1start >> 16) & 0xff;
             tocBuff[22] = (layer1start >> 8) & 0xff;
             tocBuff[23] = (layer1start >> 0) & 0xff;
-        } else {  //OTP
+        } else { //OTP
             u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
             // dual sided
@@ -474,7 +474,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             tocBuff[4] = 0x41;
             tocBuff[5] = 0x95;
 
-            tocBuff[14] = 0x71;  // OTP
+            tocBuff[14] = 0x71; // OTP
 
             tocBuff[16] = 0x00;
             tocBuff[17] = 0x03;
@@ -527,7 +527,7 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             err = CDVDgetTD(i, &trackInfo);
             lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
             tocBuff[i * 10 + 30] = trackInfo.type;
-            tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i);  //number
+            tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
             tocBuff[i * 10 + 37] = itob(min);
             tocBuff[i * 10 + 38] = itob(sec);
             tocBuff[i * 10 + 39] = itob(frm);

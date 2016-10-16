@@ -25,8 +25,8 @@ using namespace std;
 
 const u8 version = PS2E_SPU2_VERSION;
 const u8 revision = 0;
-const u8 build = 8;   // increase that with each version
-const u32 minor = 0;  // increase that with each version
+const u8 build = 8;  // increase that with each version
+const u32 minor = 0; // increase that with each version
 
 // ADSR constants
 #define ATTACK_MS 494L
@@ -55,8 +55,8 @@ u16 interrupt = 0;
 s8 *spu2regs = NULL;
 u16 *spu2mem = NULL;
 u16 *pSpuIrq[2] = {NULL};
-u32 dwEndChannel2[2] = {0};  // keeps track of what channels have ended
-u32 dwNoiseVal = 1;          // global noise generator
+u32 dwEndChannel2[2] = {0}; // keeps track of what channels have ended
+u32 dwNoiseVal = 1;         // global noise generator
 
 s32 SPUCycles = 0, SPUWorkerCycles = 0;
 s32 SPUStartCycle[2];
@@ -67,9 +67,9 @@ int ADMAS7Write();
 
 void InitADSR();
 
-void (*irqCallbackSPU2)();      // func of main emu, called on spu irq
-void (*irqCallbackDMA4)() = 0;  // func of main emu, called on spu irq
-void (*irqCallbackDMA7)() = 0;  // func of main emu, called on spu irq
+void (*irqCallbackSPU2)();     // func of main emu, called on spu irq
+void (*irqCallbackDMA4)() = 0; // func of main emu, called on spu irq
+void (*irqCallbackDMA7)() = 0; // func of main emu, called on spu irq
 
 const s32 f[5][2] = {
     {0, 0},
@@ -81,7 +81,7 @@ const s32 f[5][2] = {
 u32 RateTable[160];
 
 // channels and voices
-VOICE_PROCESSED voices[SPU_NUMBER_VOICES + 1];  // +1 for modulation
+VOICE_PROCESSED voices[SPU_NUMBER_VOICES + 1]; // +1 for modulation
 
 EXPORT_C_(u32)
 PS2EgetLibType()
@@ -167,7 +167,7 @@ SPU2init()
     }
     memset(spu2regs, 0, 0x10000);
 
-    spu2mem = (u16 *)malloc(0x200000);  // 2Mb
+    spu2mem = (u16 *)malloc(0x200000); // 2Mb
     if (spu2mem == NULL) {
         SysMessage("Error allocating Memory\n");
         return -1;
@@ -188,7 +188,7 @@ SPU2init()
         voices[i].pLoop = voices[i].pStart = voices[i].pCurr = (u8 *)spu2mem;
 
         voices[i].pvoice = (_SPU_VOICE *)((u8 *)spu2regs + voices[i].memoffset) + (i % 24);
-        voices[i].ADSRX.SustainLevel = 1024;  // -> init sustain
+        voices[i].ADSRX.SustainLevel = 1024; // -> init sustain
     }
 
     return 0;
@@ -259,17 +259,17 @@ SPU2async(u32 cycle)
     }
 }
 
-void InitADSR()  // INIT ADSR
+void InitADSR() // INIT ADSR
 {
     u32 r, rs, rd;
     s32 i;
-    memset(RateTable, 0, sizeof(u32) * 160);  // build the rate table according to Neill's rules (see at bottom of file)
+    memset(RateTable, 0, sizeof(u32) * 160); // build the rate table according to Neill's rules (see at bottom of file)
 
     r = 3;
     rs = 1;
     rd = 0;
 
-    for (i = 32; i < 160; i++)  // we start at pos 32 with the real values... everything before is 0
+    for (i = 32; i < 160; i++) // we start at pos 32 with the real values... everything before is 0
     {
         if (r < 0x3FFFFFFF) {
             r += rs;
@@ -286,9 +286,9 @@ void InitADSR()  // INIT ADSR
     }
 }
 
-int MixADSR(VOICE_PROCESSED *pvoice)  // MIX ADSR
+int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
 {
-    if (pvoice->bStop)  // should be stopped:
+    if (pvoice->bStop) // should be stopped:
     {
         if (pvoice->bIgnoreLoop == 0) {
             pvoice->ADSRX.EnvelopeVol = 0;
@@ -300,7 +300,7 @@ int MixADSR(VOICE_PROCESSED *pvoice)  // MIX ADSR
             pvoice->bIgnoreLoop = false;
             return 0;
         }
-        if (pvoice->ADSRX.ReleaseModeExp)  // do release
+        if (pvoice->ADSRX.ReleaseModeExp) // do release
         {
             switch ((pvoice->ADSRX.EnvelopeVol >> 28) & 0x7) {
                 case 0:
@@ -347,9 +347,9 @@ int MixADSR(VOICE_PROCESSED *pvoice)  // MIX ADSR
         pvoice->ADSRX.lVolume = pvoice->ADSRX.EnvelopeVol >> 21;
         pvoice->ADSRX.lVolume = pvoice->ADSRX.EnvelopeVol >> 21;
         return pvoice->ADSRX.lVolume;
-    } else  // not stopped yet?
+    } else // not stopped yet?
     {
-        if (pvoice->ADSRX.State == 0)  // -> attack
+        if (pvoice->ADSRX.State == 0) // -> attack
         {
             if (pvoice->ADSRX.AttackModeExp) {
                 if (pvoice->ADSRX.EnvelopeVol < 0x60000000)
@@ -369,7 +369,7 @@ int MixADSR(VOICE_PROCESSED *pvoice)  // MIX ADSR
             return pvoice->ADSRX.lVolume;
         }
         //--------------------------------------------------//
-        if (pvoice->ADSRX.State == 1)  // -> decay
+        if (pvoice->ADSRX.State == 1) // -> decay
         {
             switch ((pvoice->ADSRX.EnvelopeVol >> 28) & 0x7) {
                 case 0:
@@ -408,7 +408,7 @@ int MixADSR(VOICE_PROCESSED *pvoice)  // MIX ADSR
             return pvoice->ADSRX.lVolume;
         }
         //--------------------------------------------------//
-        if (pvoice->ADSRX.State == 2)  // -> sustain
+        if (pvoice->ADSRX.State == 2) // -> sustain
         {
             if (pvoice->ADSRX.SustainIncrease) {
                 if (pvoice->ADSRX.SustainModeExp) {
@@ -473,11 +473,11 @@ void SPU2Worker()
     int ch, flags;
 
     VOICE_PROCESSED *pChannel = voices;
-    for (ch = 0; ch < SPU_NUMBER_VOICES; ch++, pChannel++)  // loop em all... we will collect 1 ms of sound of each playing channel
+    for (ch = 0; ch < SPU_NUMBER_VOICES; ch++, pChannel++) // loop em all... we will collect 1 ms of sound of each playing channel
     {
         if (pChannel->bNew) {
-            pChannel->StartSound();                       // start new sound
-            dwEndChannel2[ch / 24] &= ~(1 << (ch % 24));  // clear end channel bit
+            pChannel->StartSound();                      // start new sound
+            dwEndChannel2[ch / 24] &= ~(1 << (ch % 24)); // clear end channel bit
         }
 
         if (!pChannel->bOn) {
@@ -485,24 +485,24 @@ void SPU2Worker()
             continue;
         }
 
-        if (pChannel->iActFreq != pChannel->iUsedFreq)  // new psx frequency?
+        if (pChannel->iActFreq != pChannel->iUsedFreq) // new psx frequency?
             pChannel->VoiceChangeFrequency();
 
         // loop until 1 ms of data is reached
         int ns = 0;
         while (ns < NSSIZE) {
             while (pChannel->spos >= 0x10000) {
-                if (pChannel->iSBPos == 28)  // 28 reached?
+                if (pChannel->iSBPos == 28) // 28 reached?
                 {
-                    start = pChannel->pCurr;  // set up the current pos
+                    start = pChannel->pCurr; // set up the current pos
 
                     // special "stop" sign
-                    if (start == (u8 *)-1)  //!pChannel->bOn
+                    if (start == (u8 *)-1) //!pChannel->bOn
                     {
-                        pChannel->bOn = false;  // -> turn everything off
+                        pChannel->bOn = false; // -> turn everything off
                         pChannel->ADSRX.lVolume = 0;
                         pChannel->ADSRX.EnvelopeVol = 0;
-                        goto ENDX;  // -> and done for this channel
+                        goto ENDX; // -> and done for this channel
                     }
 
                     pChannel->iSBPos = 0;
@@ -524,15 +524,15 @@ void SPU2Worker()
 
                     // flag handler
                     if ((flags & 4) && (!pChannel->bIgnoreLoop))
-                        pChannel->pLoop = start - 16;  // loop adress
+                        pChannel->pLoop = start - 16; // loop adress
 
-                    if (flags & 1)  // 1: stop/loop
+                    if (flags & 1) // 1: stop/loop
                     {
                         // We play this block out first...
                         dwEndChannel2[ch / 24] |= (1 << (ch % 24));
                         //if(!(flags&2))                          // 1+2: do loop... otherwise: stop
-                        if (flags != 3 || pChannel->pLoop == NULL)  // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
-                        {                                           // and checking if pLoop is set avoids crashes, yeah
+                        if (flags != 3 || pChannel->pLoop == NULL) // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
+                        {                                          // and checking if pLoop is set avoids crashes, yeah
                             start = (u8 *)-1;
                             pChannel->bStop = true;
                             pChannel->bIgnoreLoop = false;
@@ -541,10 +541,10 @@ void SPU2Worker()
                         }
                     }
 
-                    pChannel->pCurr = start;  // store values for next cycle
+                    pChannel->pCurr = start; // store values for next cycle
                 }
 
-                pChannel->iSBPos++;  // get sample data
+                pChannel->iSBPos++; // get sample data
                 pChannel->spos -= 0x10000;
             }
 
@@ -612,16 +612,16 @@ SPU2readDMA4Mem(u16 *pMem, int size)
             irqCallbackSPU2();
         }
 
-        spuaddr++;               // inc spu addr
-        if (spuaddr > 0x0fffff)  // wrap at 2Mb
-            spuaddr = 0;         // wrap
+        spuaddr++;              // inc spu addr
+        if (spuaddr > 0x0fffff) // wrap at 2Mb
+            spuaddr = 0;        // wrap
     }
 
-    spuaddr += 19;  //Transfer Local To Host TSAH/L + Data Size + 20 (already +1'd)
+    spuaddr += 19; //Transfer Local To Host TSAH/L + Data Size + 20 (already +1'd)
     C0_SPUADDR_SET(spuaddr);
 
     // got from J.F. and Kanodin... is it needed?
-    spu2Ru16(REG_C0_SPUSTAT) &= ~0x80;  // DMA complete
+    spu2Ru16(REG_C0_SPUSTAT) &= ~0x80; // DMA complete
     SPUStartCycle[0] = SPUCycles;
     SPUTargetCycle[0] = size;
     interrupt |= (1 << 1);
@@ -643,16 +643,16 @@ SPU2readDMA7Mem(u16 *pMem, int size)
             IRQINFO |= 8;
             irqCallbackSPU2();
         }
-        spuaddr++;               // inc spu addr
-        if (spuaddr > 0x0fffff)  // wrap at 2Mb
-            spuaddr = 0;         // wrap
+        spuaddr++;              // inc spu addr
+        if (spuaddr > 0x0fffff) // wrap at 2Mb
+            spuaddr = 0;        // wrap
     }
 
-    spuaddr += 19;  //Transfer Local To Host TSAH/L + Data Size + 20 (already +1'd)
+    spuaddr += 19; //Transfer Local To Host TSAH/L + Data Size + 20 (already +1'd)
     C1_SPUADDR_SET(spuaddr);
 
     // got from J.F. and Kanodin... is it needed?
-    spu2Ru16(REG_C1_SPUSTAT) &= ~0x80;  // DMA complete
+    spu2Ru16(REG_C1_SPUSTAT) &= ~0x80; // DMA complete
     SPUStartCycle[1] = SPUCycles;
     SPUTargetCycle[1] = size;
     interrupt |= (1 << 2);
@@ -686,7 +686,7 @@ int ADMAS4Write()
     Adma4.AmountLeft -= 512;
     if (Adma4.AmountLeft == 0) {
         SPUStartCycle[0] = SPUCycles;
-        SPUTargetCycle[0] = 1;  //512*48000;
+        SPUTargetCycle[0] = 1; //512*48000;
         spu2Ru16(REG_C0_SPUSTAT) &= ~0x80;
         interrupt |= (1 << 1);
     }
@@ -713,7 +713,7 @@ int ADMAS7Write()
     Adma7.AmountLeft -= 512;
     if (Adma7.AmountLeft == 0) {
         SPUStartCycle[1] = SPUCycles;
-        SPUTargetCycle[1] = 1;  //512*48000;
+        SPUTargetCycle[1] = 1; //512*48000;
         spu2Ru16(REG_C1_SPUSTAT) &= ~0x80;
         interrupt |= (1 << 2);
     }
@@ -754,7 +754,7 @@ SPU2writeDMA4Mem(u16 *pMem, int size)
     MemAddr[0] += size << 1;
     spu2Ru16(REG_C0_SPUSTAT) &= ~0x80;
     SPUStartCycle[0] = SPUCycles;
-    SPUTargetCycle[0] = 1;  //iSize;
+    SPUTargetCycle[0] = 1; //iSize;
     interrupt |= (1 << 1);
 }
 
@@ -792,7 +792,7 @@ SPU2writeDMA7Mem(u16 *pMem, int size)
     MemAddr[1] += size << 1;
     spu2Ru16(REG_C1_SPUSTAT) &= ~0x80;
     SPUStartCycle[1] = SPUCycles;
-    SPUTargetCycle[1] = 1;  //iSize;
+    SPUTargetCycle[1] = 1; //iSize;
     interrupt |= (1 << 2);
 }
 
@@ -818,11 +818,11 @@ SPU2interruptDMA7()
 }
 
 // turn channels on
-void SoundOn(s32 start, s32 end, u16 val)  // SOUND ON PSX COMAND
+void SoundOn(s32 start, s32 end, u16 val) // SOUND ON PSX COMAND
 {
-    for (s32 ch = start; ch < end; ch++, val >>= 1)  // loop channels
+    for (s32 ch = start; ch < end; ch++, val >>= 1) // loop channels
     {
-        if ((val & 1) && voices[ch].pStart)  // mmm... start has to be set before key on !?!
+        if ((val & 1) && voices[ch].pStart) // mmm... start has to be set before key on !?!
         {
             voices[ch].bNew = true;
             voices[ch].bIgnoreLoop = false;
@@ -831,22 +831,22 @@ void SoundOn(s32 start, s32 end, u16 val)  // SOUND ON PSX COMAND
 }
 
 // turn channels off
-void SoundOff(s32 start, s32 end, u16 val)  // SOUND OFF PSX COMMAND
+void SoundOff(s32 start, s32 end, u16 val) // SOUND OFF PSX COMMAND
 {
-    for (s32 ch = start; ch < end; ch++, val >>= 1)  // loop channels
+    for (s32 ch = start; ch < end; ch++, val >>= 1) // loop channels
     {
-        if (val & 1)  // && s_chan[i].bOn)  mmm...
+        if (val & 1) // && s_chan[i].bOn)  mmm...
             voices[ch].bStop = true;
     }
 }
 
-void FModOn(s32 start, s32 end, u16 val)  // FMOD ON PSX COMMAND
+void FModOn(s32 start, s32 end, u16 val) // FMOD ON PSX COMMAND
 {
     int ch;
 
-    for (ch = start; ch < end; ch++, val >>= 1)  // loop channels
+    for (ch = start; ch < end; ch++, val >>= 1) // loop channels
     {
-        if (val & 1)  // -> fmod on/off
+        if (val & 1) // -> fmod on/off
         {
             if (ch > 0) {
             }
@@ -870,7 +870,7 @@ SPU2write(u32 mem, u16 value)
     u32 r = mem & 0xffff;
 
     // channel info
-    if ((r >= 0x0000 && r < 0x0180) || (r >= 0x0400 && r < 0x0580))  // some channel info?
+    if ((r >= 0x0000 && r < 0x0180) || (r >= 0x0400 && r < 0x0580)) // some channel info?
     {
         int ch = 0;
         if (r >= 0x400)
@@ -888,16 +888,16 @@ SPU2write(u32 mem, u16 value)
             case 4: {
                 int NP;
                 if (value > 0x3fff)
-                    NP = 0x3fff;  // get pitch val
+                    NP = 0x3fff; // get pitch val
                 else
                     NP = value;
 
                 pvoice->pvoice->pitch = NP;
 
-                NP = (44100L * NP) / 4096L;  // calc frequency
+                NP = (44100L * NP) / 4096L; // calc frequency
                 if (NP < 1)
-                    NP = 1;             // some security
-                pvoice->iActFreq = NP;  // store frequency
+                    NP = 1;            // some security
+                pvoice->iActFreq = NP; // store frequency
                 break;
             }
             case 6: {
@@ -1075,7 +1075,7 @@ SPU2read(u32 mem)
     u16 ret;
     u32 r = mem & 0xffff;
 
-    if ((r >= 0x0000 && r <= 0x0180) || (r >= 0x0400 && r <= 0x0580))  // some channel info?
+    if ((r >= 0x0000 && r <= 0x0180) || (r >= 0x0400 && r <= 0x0580)) // some channel info?
     {
         s32 ch = 0;
 
@@ -1092,7 +1092,7 @@ SPU2read(u32 mem)
         }
     }
 
-    if ((r > 0x01c0 && r <= 0x02E0) || (r > 0x05c0 && r <= 0x06E0))  // some channel info?
+    if ((r > 0x01c0 && r <= 0x02E0) || (r > 0x05c0 && r <= 0x06E0)) // some channel info?
     {
         s32 ch = 0;
         u32 rx = r;
@@ -1193,19 +1193,19 @@ void VOICE_PROCESSED::SetVolume(int iProcessRight)
 {
     u16 vol = iProcessRight ? pvoice->right.word : pvoice->left.word;
 
-    if (vol & 0x8000)  // sweep not working
+    if (vol & 0x8000) // sweep not working
     {
-        s16 sInc = 1;  // -> sweep up?
+        s16 sInc = 1; // -> sweep up?
         if (vol & 0x2000)
-            sInc = -1;  // -> or down?
+            sInc = -1; // -> or down?
         if (vol & 0x1000)
-            vol ^= 0xffff;             // -> mmm... phase inverted? have to investigate this
-        vol = ((vol & 0x7f) + 1) / 2;  // -> sweep: 0..127 -> 0..64
-        vol += vol / (2 * sInc);       // -> HACK: we don't sweep right now, so we just raise/lower the volume by the half!
+            vol ^= 0xffff;            // -> mmm... phase inverted? have to investigate this
+        vol = ((vol & 0x7f) + 1) / 2; // -> sweep: 0..127 -> 0..64
+        vol += vol / (2 * sInc);      // -> HACK: we don't sweep right now, so we just raise/lower the volume by the half!
         vol *= 128;
-    } else  // no sweep:
+    } else // no sweep:
     {
-        if (vol & 0x4000)  // -> mmm... phase inverted? have to investigate this
+        if (vol & 0x4000) // -> mmm... phase inverted? have to investigate this
             vol = 0x3fff - (vol & 0x3fff);
     }
 
@@ -1217,7 +1217,7 @@ void VOICE_PROCESSED::SetVolume(int iProcessRight)
 
 void VOICE_PROCESSED::StartSound()
 {
-    ADSRX.lVolume = 1;  // and init some adsr vars
+    ADSRX.lVolume = 1; // and init some adsr vars
     ADSRX.State = 0;
     ADSRX.EnvelopeVol = 0;
 
@@ -1225,10 +1225,10 @@ void VOICE_PROCESSED::StartSound()
         // setup the reverb effects
     }
 
-    pCurr = pStart;  // set sample start
+    pCurr = pStart; // set sample start
     iSBPos = 28;
 
-    bNew = false;  // init channel flags
+    bNew = false; // init channel flags
     bStop = false;
     bOn = true;
     spos = 0x10000L;
@@ -1236,7 +1236,7 @@ void VOICE_PROCESSED::StartSound()
 
 void VOICE_PROCESSED::VoiceChangeFrequency()
 {
-    iUsedFreq = iActFreq;  // -> take it and calc steps
+    iUsedFreq = iActFreq; // -> take it and calc steps
     sinc = (u32)pvoice->pitch << 4;
     if (!sinc)
         sinc = 1;

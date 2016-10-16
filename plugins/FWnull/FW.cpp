@@ -25,7 +25,7 @@ using namespace std;
 
 const u8 version = PS2E_FW_VERSION;
 const u8 revision = 0;
-const u8 build = 7;  // increase that with each version
+const u8 build = 7; // increase that with each version
 
 #ifdef _MSC_VER
 #define snprintf sprintf_s
@@ -140,7 +140,7 @@ void PHYRead()
 
     PHYACC |= phyregs[reg] | (reg << 8);
 
-    if (fwRu32(0x8424) & 0x40000000)  //RRx interrupt mask
+    if (fwRu32(0x8424) & 0x40000000) //RRx interrupt mask
     {
         fwRu32(0x8420) |= 0x40000000;
         FWirq();
@@ -158,7 +158,7 @@ FWread32(u32 addr)
             break;
         // Control Register 2
         case 0x1f808410:
-            ret = fwRu32(addr);  //SCLK OK (Needs to be set when FW is "Ready"
+            ret = fwRu32(addr); //SCLK OK (Needs to be set when FW is "Ready"
             break;
         //Interrupt 0 Register
         case 0x1f808420:
@@ -201,11 +201,11 @@ FWwrite32(u32 addr, u32 value)
         case 0x1f808414:
             //If in read mode (top bit set) we read the PHY register requested then set the RRx interrupt if it's enabled
             //Im presuming we send that back to pcsx2 then. This register stores the result, plus whatever was written (minus the read/write flag
-            fwRu32(addr) = value;    //R/W Bit cleaned in underneath function
-            if (value & 0x40000000)  //Writing to PHY
+            fwRu32(addr) = value;   //R/W Bit cleaned in underneath function
+            if (value & 0x40000000) //Writing to PHY
             {
                 PHYWrite();
-            } else if (value & 0x80000000)  //Reading from PHY
+            } else if (value & 0x80000000) //Reading from PHY
             {
                 PHYRead();
             }
@@ -231,7 +231,7 @@ FWwrite32(u32 addr, u32 value)
             fwRu32(addr) &= ~0x800000;
             break;
         //Control Register 2
-        case 0x1f808410:  // fwRu32(addr) = value; break;
+        case 0x1f808410: // fwRu32(addr) = value; break;
             //Ignore writes to this for now, apart from 0x2 which is Link Power Enable
             //0x8 is SCLK OK (Ready) which should be set for emulation
             fwRu32(addr) = 0x8 /*| value & 0x2*/;

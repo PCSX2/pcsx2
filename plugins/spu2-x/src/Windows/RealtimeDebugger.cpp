@@ -54,7 +54,7 @@ void UpdateDebugDialog()
         return;
 
     lCount++;
-    if (lCount >= (SampleRate / 100))  // Increase to SampleRate/200 for smooth display.
+    if (lCount >= (SampleRate / 100)) // Increase to SampleRate/200 for smooth display.
     {
         HDC hdc = GetDC(hDebugDialog);
 
@@ -82,12 +82,12 @@ void UpdateDebugDialog()
                 SetDCBrushColor(hdc, RGB(0, 0, 0));
                 if ((vc.ADSR.Phase > 0) && (vc.ADSR.Phase < 6)) {
                     SetDCBrushColor(hdc, RGB(0, 0, 128)); // light blue for playing voice
-					if (vc.Modulated) {
-						SetDCBrushColor(hdc, RGB(0, 128, 0)); // light green for playing voice with modulation enabled
-					}
-					if (vc.Noise) {
-						SetDCBrushColor(hdc, RGB(128, 0, 0)); // light red for playing voice with noise enabled
-					}
+                    if (vc.Modulated) {
+                        SetDCBrushColor(hdc, RGB(0, 128, 0)); // light green for playing voice with modulation enabled
+                    }
+                    if (vc.Noise) {
+                        SetDCBrushColor(hdc, RGB(128, 0, 0)); // light red for playing voice with noise enabled
+                    }
                 }
                 /*
 				else
@@ -122,7 +122,7 @@ void UpdateDebugDialog()
 
                 int peak = (vcd.displayPeak * 38) / 32768;
 
-                if (vcd.displayPeak >= 32700)  // leave a little bit of margin
+                if (vcd.displayPeak >= 32700) // leave a little bit of margin
                 {
                     SetDCBrushColor(hdc, RGB(255, 0, 0));
                 }
@@ -241,7 +241,7 @@ void UpdateDebugDialog()
                     }
                 }
             }
-            if (cd.dmaFlag > 0)  // So it shows x times this is called, since dmas are so fast
+            if (cd.dmaFlag > 0) // So it shows x times this is called, since dmas are so fast
             {
                 swprintf_s(t, L"size = %d", cd.lastsize);
 

@@ -29,9 +29,9 @@
 class AlsaMod : public SndOutModule
 {
 protected:
-    static const int PacketsPerBuffer = 1;  // increase this if ALSA can't keep up with 512-sample packets
+    static const int PacketsPerBuffer = 1; // increase this if ALSA can't keep up with 512-sample packets
     static const int MAX_BUFFER_COUNT = 4;
-    static const int NumBuffers = 4;  // TODO: this should be configurable someday -- lower values reduce latency.
+    static const int NumBuffers = 4; // TODO: this should be configurable someday -- lower values reduce latency.
     unsigned int pspeed;
 
     snd_pcm_t *handle;

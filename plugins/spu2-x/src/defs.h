@@ -70,7 +70,7 @@ public:
     }
 
     void Update();
-    void RegSet(u16 src);  // used to set the volume from a register source (16 bit signed)
+    void RegSet(u16 src); // used to set the volume from a register source (16 bit signed)
     void DebugDump(FILE *dump, const char *title, const char *nameLR);
 };
 
@@ -116,18 +116,18 @@ struct V_ADSR
             u32 SustainLevel : 4,
                 DecayRate : 4,
                 AttackRate : 7,
-                AttackMode : 1,  // 0 for linear (+lin), 1 for pseudo exponential (+exp)
+                AttackMode : 1, // 0 for linear (+lin), 1 for pseudo exponential (+exp)
 
                 ReleaseRate : 5,
-                ReleaseMode : 1,  // 0 for linear (-lin), 1 for exponential (-exp)
+                ReleaseMode : 1, // 0 for linear (-lin), 1 for exponential (-exp)
                 SustainRate : 7,
-                SustainMode : 3;  // 0 = +lin, 1 = -lin, 2 = +exp, 3 = -exp
+                SustainMode : 3; // 0 = +lin, 1 = -lin, 2 = +exp, 3 = -exp
         };
     };
 
-    s32 Value;       // Ranges from 0 to 0x7fffffff (signed values are clamped to 0) [Reg_ENVX]
-    u8 Phase;        // monitors current phase of ADSR envelope
-    bool Releasing;  // Ready To Release, triggered by Voice.Stop();
+    s32 Value;      // Ranges from 0 to 0x7fffffff (signed values are clamped to 0) [Reg_ENVX]
+    u8 Phase;       // monitors current phase of ADSR envelope
+    bool Releasing; // Ready To Release, triggered by Voice.Stop();
 
 public:
     bool Calculate();
@@ -136,7 +136,7 @@ public:
 
 struct V_Voice
 {
-    u32 PlayCycle;  // SPU2 cycle where the Playing started
+    u32 PlayCycle; // SPU2 cycle where the Playing started
 
     V_VolumeSlideLR Volume;
 
@@ -181,7 +181,7 @@ struct V_Voice
 
     // Last outputted audio value, used for voice modulation.
     s32 OutX;
-    s32 NextCrest;  // temp value for Crest calculation
+    s32 NextCrest; // temp value for Crest calculation
 
     // SBuffer now points directly to an ADPCM cache entry.
     s16 *SBuffer;
@@ -329,10 +329,10 @@ struct V_CoreRegs
 
 struct V_VoiceGates
 {
-    s16 DryL;  // 'AND Gate' for Direct Output to Left Channel
-    s16 DryR;  // 'AND Gate' for Direct Output for Right Channel
-    s16 WetL;  // 'AND Gate' for Effect Output for Left Channel
-    s16 WetR;  // 'AND Gate' for Effect Output for Right Channel
+    s16 DryL; // 'AND Gate' for Direct Output to Left Channel
+    s16 DryR; // 'AND Gate' for Direct Output for Right Channel
+    s16 WetL; // 'AND Gate' for Effect Output for Left Channel
+    s16 WetR; // 'AND Gate' for Effect Output for Right Channel
 };
 
 struct V_CoreGates
@@ -343,12 +343,12 @@ struct V_CoreGates
 
         struct
         {
-            s16 InpL;  // Sound Data Input to Direct Output (Left)
-            s16 InpR;  // Sound Data Input to Direct Output (Right)
-            s16 SndL;  // Voice Data to Direct Output (Left)
-            s16 SndR;  // Voice Data to Direct Output (Right)
-            s16 ExtL;  // External Input to Direct Output (Left)
-            s16 ExtR;  // External Input to Direct Output (Right)
+            s16 InpL; // Sound Data Input to Direct Output (Left)
+            s16 InpR; // Sound Data Input to Direct Output (Right)
+            s16 SndL; // Voice Data to Direct Output (Left)
+            s16 SndR; // Voice Data to Direct Output (Right)
+            s16 ExtL; // External Input to Direct Output (Left)
+            s16 ExtR; // External Input to Direct Output (Right)
         };
     };
 };
@@ -370,7 +370,7 @@ struct V_Core
 {
     static const uint NumVoices = 24;
 
-    int Index;  // Core index identifier.
+    int Index; // Core index identifier.
 
     // Voice Gates -- These are SSE-related values, and must always be
     // first to ensure 16 byte alignment
@@ -379,32 +379,32 @@ struct V_Core
     V_CoreGates DryGate;
     V_CoreGates WetGate;
 
-    V_VolumeSlideLR MasterVol;  // Master Volume
-    V_VolumeLR ExtVol;          // Volume for External Data Input
-    V_VolumeLR InpVol;          // Volume for Sound Data Input
-    V_VolumeLR FxVol;           // Volume for Output from Effects
+    V_VolumeSlideLR MasterVol; // Master Volume
+    V_VolumeLR ExtVol;         // Volume for External Data Input
+    V_VolumeLR InpVol;         // Volume for Sound Data Input
+    V_VolumeLR FxVol;          // Volume for Output from Effects
 
     V_Voice Voices[NumVoices];
 
-    u32 IRQA;  // Interrupt Address
-    u32 TSA;   // DMA Transfer Start Address
+    u32 IRQA; // Interrupt Address
+    u32 TSA;  // DMA Transfer Start Address
 
-    bool IRQEnable;  // Interrupt Enable
-    bool FxEnable;   // Effect Enable
-    bool Mute;       // Mute
+    bool IRQEnable; // Interrupt Enable
+    bool FxEnable;  // Effect Enable
+    bool Mute;      // Mute
     bool AdmaInProgress;
 
-    s8 DMABits;         // DMA related?
-    s8 NoiseClk;        // Noise Clock
-    u16 AutoDMACtrl;    // AutoDMA Status
-    s32 DMAICounter;    // DMA Interrupt Counter
-    u32 InputDataLeft;  // Input Buffer
+    s8 DMABits;        // DMA related?
+    s8 NoiseClk;       // Noise Clock
+    u16 AutoDMACtrl;   // AutoDMA Status
+    s32 DMAICounter;   // DMA Interrupt Counter
+    u32 InputDataLeft; // Input Buffer
     u32 InputPosRead;
     u32 InputPosWrite;
     u32 InputDataProgress;
 
-    V_Reverb Revb;               // Reverb Registers
-    V_ReverbBuffers RevBuffers;  // buffer pointers for reverb, pre-calculated and pre-clipped.
+    V_Reverb Revb;              // Reverb Registers
+    V_ReverbBuffers RevBuffers; // buffer pointers for reverb, pre-calculated and pre-clipped.
     u32 EffectsStartA;
     u32 EffectsEndA;
     u32 ExtEffectsStartA;
@@ -417,7 +417,7 @@ struct V_Core
     s32 EffectsBufferSize;
     u32 EffectsBufferStart;
 
-    V_CoreRegs Regs;  // Registers
+    V_CoreRegs Regs; // Registers
 
     // Last samples to pass through the effects processor.
     // Used because the effects processor works at 24khz and just pulls
@@ -438,7 +438,7 @@ struct V_Core
     u32 MADR;
     u32 TADR;
 
-    u32 KeyOn;  // not the KON register (though maybe it is)
+    u32 KeyOn; // not the KON register (though maybe it is)
 
     // psxmode caches
     u16 psxSoundDataTransferControl;
@@ -463,7 +463,7 @@ struct V_Core
         , DMAPtr(NULL)
     {
     }
-    V_Core(int idx);  // our badass constructor
+    V_Core(int idx); // our badass constructor
     ~V_Core() throw();
 
     void Init(int index);

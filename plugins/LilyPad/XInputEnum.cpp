@@ -100,7 +100,7 @@ public:
         memset(&xInputVibration, 0, sizeof(xInputVibration));
         this->index = index;
         int i;
-        for (i = 0; i < 17; i++) {  // Skip empty bit
+        for (i = 0; i < 17; i++) { // Skip empty bit
             AddPhysicalControl(PRESSURE_BTN, i + (i > 10), 0);
         }
         for (; i < 21; i++) {
@@ -282,7 +282,7 @@ void EnumXInputDevices()
 
         if (hMod) {
             if ((pXInputEnable = (_XInputEnable)GetProcAddress(hMod, "XInputEnable")) &&
-                ((pXInputGetStateEx = (_XInputGetStateEx)GetProcAddress(hMod, (LPCSTR)100)) ||  // Try Ex version first
+                ((pXInputGetStateEx = (_XInputGetStateEx)GetProcAddress(hMod, (LPCSTR)100)) || // Try Ex version first
                  (pXInputGetStateEx = (_XInputGetStateEx)GetProcAddress(hMod, "XInputGetState")))) {
                 pXInputGetExtended = (_XInputGetExtended)GetProcAddress(hMod, "XInputGetExtended");
                 pXInputSetState = (_XInputSetState)GetProcAddress(hMod, "XInputSetState");

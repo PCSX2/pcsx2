@@ -29,7 +29,7 @@
 #include "GamePad.h"
 #include "onepad.h"
 #include "controller.h"
-#define NB_EFFECT 2  // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
+#define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
 // holds all joystick info
 class JoystickInfo : GamePad
 {
@@ -49,8 +49,8 @@ public:
         Destroy();
     }
 
-    JoystickInfo(const JoystickInfo &);             // copy constructor
-    JoystickInfo &operator=(const JoystickInfo &);  // assignment
+    JoystickInfo(const JoystickInfo &);            // copy constructor
+    JoystickInfo &operator=(const JoystickInfo &); // assignment
 
     void Destroy();
     // opens handles to all possible joysticks
@@ -58,7 +58,7 @@ public:
 
     void Rumble(int type, int pad);
 
-    bool Init(int id);  // opens a handle and gets information
+    bool Init(int id); // opens a handle and gets information
 
     bool TestForce(float);
 

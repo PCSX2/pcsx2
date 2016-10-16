@@ -39,7 +39,7 @@ typedef struct
 {
     int lsn;
     int mode;
-    char data[2352 * 16];  //we will read in blocks of 16 sectors
+    char data[2352 * 16]; //we will read in blocks of 16 sectors
 } SectorInfo;
 
 //bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
@@ -115,7 +115,7 @@ bool cdvdUpdateDiscStatus()
 {
     int change = src->DiscChanged();
 
-    if (change == -1) {  //error getting status (no disc in drive?)
+    if (change == -1) { //error getting status (no disc in drive?)
         //try to recreate the device
         src->Reopen();
 
@@ -277,7 +277,7 @@ s32 cdvdRequestSector(u32 sector, s32 mode)
     if (sector >= tracks[0].length)
         return -1;
 
-    sector &= ~15;  //align to 16-sector block
+    sector &= ~15; //align to 16-sector block
 
     threadRequestInfo.lsn = sector;
     threadRequestInfo.mode = mode;
@@ -330,7 +330,7 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
     if ((u32)first >= tracks[0].length)
         return -1;
 
-    s32 sector = first & (~15);  //align to 16-sector block
+    s32 sector = first & (~15); //align to 16-sector block
 
     EnterCriticalSection(&CacheMutex);
     if (!cdvdCacheFetch(sector, mode, data)) {

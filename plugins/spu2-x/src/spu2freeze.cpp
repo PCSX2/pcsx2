@@ -16,7 +16,7 @@
  */
 
 #include "Global.h"
-#include "PS2E-spu2.h"  // hopefully temporary, until I resolve lClocks depdendency
+#include "PS2E-spu2.h" // hopefully temporary, until I resolve lClocks depdendency
 
 namespace Savestate
 {
@@ -35,11 +35,11 @@ static void wipe_the_cache()
 
 struct Savestate::DataBlock
 {
-    u32 spu2id;           // SPU2-X state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
-    u8 unkregs[0x10000];  // SPU2 raw register memory
-    u8 mem[0x200000];     // SPU2 raw sample memory
+    u32 spu2id;          // SPU2-X state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
+    u8 unkregs[0x10000]; // SPU2 raw register memory
+    u8 mem[0x200000];    // SPU2 raw sample memory
 
-    u32 version;  // SPU2-X version identifier
+    u32 version; // SPU2-X version identifier
     V_Core Cores[2];
     V_SPDIF Spdif;
     s16 OutPos;

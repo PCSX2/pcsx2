@@ -225,19 +225,19 @@ enum GS_PRIM_CLASS {
 };
 
 enum GS_PSM {
-    PSM_PSMCT32 = 0,    // 0000-0000
-    PSM_PSMCT24 = 1,    // 0000-0001
-    PSM_PSMCT16 = 2,    // 0000-0010
-    PSM_PSMCT16S = 10,  // 0000-1010
-    PSM_PSMT8 = 19,     // 0001-0011
-    PSM_PSMT4 = 20,     // 0001-0100
-    PSM_PSMT8H = 27,    // 0001-1011
-    PSM_PSMT4HL = 36,   // 0010-0100
-    PSM_PSMT4HH = 44,   // 0010-1100
-    PSM_PSMZ32 = 48,    // 0011-0000
-    PSM_PSMZ24 = 49,    // 0011-0001
-    PSM_PSMZ16 = 50,    // 0011-0010
-    PSM_PSMZ16S = 58,   // 0011-1010
+    PSM_PSMCT32 = 0,   // 0000-0000
+    PSM_PSMCT24 = 1,   // 0000-0001
+    PSM_PSMCT16 = 2,   // 0000-0010
+    PSM_PSMCT16S = 10, // 0000-1010
+    PSM_PSMT8 = 19,    // 0001-0011
+    PSM_PSMT4 = 20,    // 0001-0100
+    PSM_PSMT8H = 27,   // 0001-1011
+    PSM_PSMT4HL = 36,  // 0010-0100
+    PSM_PSMT4HH = 44,  // 0010-1100
+    PSM_PSMZ32 = 48,   // 0011-0000
+    PSM_PSMZ24 = 49,   // 0011-0001
+    PSM_PSMZ16 = 50,   // 0011-0010
+    PSM_PSMZ16S = 58,  // 0011-1010
 };
 
 enum GS_TFX {
@@ -385,7 +385,7 @@ u32 wREV : 8;
 u32 wID : 8;
 REG_END
 
-REG64_(GSReg, DISPFB)  // (-1/2)
+REG64_(GSReg, DISPFB) // (-1/2)
 u32 FBP : 9;
 u32 FBW : 6;
 u32 PSM : 5;
@@ -397,7 +397,7 @@ REG_END2
 u32 Block() const { return FBP << 5; }
 REG_END2
 
-REG64_(GSReg, DISPLAY)  // (-1/2)
+REG64_(GSReg, DISPLAY) // (-1/2)
 u32 DX : 12;
 u32 DY : 11;
 u32 MAGH : 4;
@@ -491,7 +491,7 @@ u32 SINT : 1;
 u32 XPCK : 1;
 u32 PCK2 : 2;
 u32 SPML : 4;
-u32 GCONT : 1;  // YCrCb
+u32 GCONT : 1; // YCrCb
 u32 PHS : 1;
 u32 PVS : 1;
 u32 PEHS : 1;
@@ -840,9 +840,9 @@ u32 ZTST : 2;
 u32 _PAD1 : 13;
 u32 _PAD2 : 32;
 REG_END2
-__forceinline bool DoFirstPass() { return !ATE || ATST != ATST_NEVER; }                          // not all pixels fail automatically
-__forceinline bool DoSecondPass() { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; }  // pixels may fail, write fb/z
-__forceinline bool NoSecondPass() { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; }  // pixels may fail, no output
+__forceinline bool DoFirstPass() { return !ATE || ATST != ATST_NEVER; }                         // not all pixels fail automatically
+__forceinline bool DoSecondPass() { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
+__forceinline bool NoSecondPass() { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; } // pixels may fail, no output
 REG_END2
 
 REG64_(GIFReg, TEX0)
@@ -886,7 +886,7 @@ u32 MTBA : 1;
 u32 _PAD2 : 9;
 u32 L : 2;
 u32 _PAD3 : 11;
-s32 K : 12;  // 1:7:4
+s32 K : 12; // 1:7:4
 u32 _PAD4 : 20;
 REG_END2
 bool IsMinLinear() const { return (MMIN == 1) || (MMIN & 4); }
@@ -966,8 +966,8 @@ REG_END
 // GSState::GIFRegHandlerXYOFFSET will make sure that the _PAD1/2 bits are set to zero
 
 REG64_(GIFReg, XYOFFSET)
-u32 OFX;  // :16; u32 _PAD1:16;
-u32 OFY;  // :16; u32 _PAD2:16;
+u32 OFX; // :16; u32 _PAD1:16;
+u32 OFY; // :16; u32 _PAD2:16;
 REG_END
 
 REG64_(GIFReg, XYZ)
@@ -1129,7 +1129,7 @@ REG_END
 
 REG128_(GIFPacked, A_D)
 u64 DATA : 64;
-u32 ADDR : 8;  // enum GIF_A_D_REG
+u32 ADDR : 8; // enum GIF_A_D_REG
 u32 _PAD1 : 24;
 u32 _PAD2 : 32;
 REG_END

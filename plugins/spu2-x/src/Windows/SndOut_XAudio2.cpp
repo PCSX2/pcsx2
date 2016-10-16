@@ -285,20 +285,20 @@ public:
             // This doesn't always work though, so let it be a user configurable option.
 
             int speakers;
-            switch (numSpeakers)  // speakers = (numSpeakers + 1) *2; ?
+            switch (numSpeakers) // speakers = (numSpeakers + 1) *2; ?
             {
                 case 0:
                     speakers = 2;
-                    break;  // Stereo
+                    break; // Stereo
                 case 1:
                     speakers = 4;
-                    break;  // Quadrafonic
+                    break; // Quadrafonic
                 case 2:
                     speakers = 6;
-                    break;  // Surround 5.1
+                    break; // Surround 5.1
                 case 3:
                     speakers = 8;
-                    break;  // Surround 7.1
+                    break; // Surround 7.1
                 default:
                     speakers = 2;
             }
@@ -338,20 +338,20 @@ public:
                     switch (dplLevel) {
                         case 0:
                             ConLog("* SPU2 > 5.1 speaker expansion enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);  //"normal" stereo upmix
+                            voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2); //"normal" stereo upmix
                             break;
                         case 1:
                             ConLog("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16Dpl>(pXAudio2);  // basic Dpl decoder without rear stereo balancing
+                            voiceContext = new StreamingVoice<Stereo51Out16Dpl>(pXAudio2); // basic Dpl decoder without rear stereo balancing
                             break;
                         case 2:
                             ConLog("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16DplII>(pXAudio2);  //gigas PLII
+                            voiceContext = new StreamingVoice<Stereo51Out16DplII>(pXAudio2); //gigas PLII
                             break;
                     }
                     break;
 
-                default:  // anything 8 or more gets the 7.1 treatment!
+                default: // anything 8 or more gets the 7.1 treatment!
                     ConLog("* SPU2 > 7.1 speaker expansion enabled.\n");
                     voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);
                     break;

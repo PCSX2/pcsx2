@@ -114,7 +114,7 @@ void RecordStart()
         m_wavrecord = new WavOutFile("recording.wav", 48000, 16, 2);
         WavRecordEnabled = true;
     } catch (std::runtime_error &) {
-        m_wavrecord = NULL;  // not needed, but what the heck. :)
+        m_wavrecord = NULL; // not needed, but what the heck. :)
         SysMessage("SPU2-X couldn't open file for recording: %s.\nRecording to wavfile disabled.", "recording.wav");
     }
 }

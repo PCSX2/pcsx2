@@ -160,7 +160,7 @@ public:
             whbuffer[i].lpNext = 0;
             whbuffer[i].reserved = 0;
             waveOutPrepareHeader(hwodevice, whbuffer + i, sizeof(WAVEHDR));
-            whbuffer[i].dwFlags |= WHDR_DONE;  //avoid deadlock
+            whbuffer[i].dwFlags |= WHDR_DONE; //avoid deadlock
         }
 
         // Start Thread

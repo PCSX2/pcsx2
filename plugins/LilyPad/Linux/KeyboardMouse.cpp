@@ -72,7 +72,7 @@ int LinuxKeyboard::Update()
         }
     }
 
-    return status;  // XXX ????
+    return status; // XXX ????
 }
 
 void EnumLnx()

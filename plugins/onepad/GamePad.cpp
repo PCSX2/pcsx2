@@ -50,6 +50,6 @@ void GamePad::DoRumble(int type, int pad)
 void GamePad::UpdateGamePadState()
 {
 #ifdef SDL_BUILD
-    SDL_JoystickUpdate();  // No need to make yet another function call for that
+    SDL_JoystickUpdate(); // No need to make yet another function call for that
 #endif
 }

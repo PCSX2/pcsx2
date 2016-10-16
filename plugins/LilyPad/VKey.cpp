@@ -28,20 +28,20 @@ wchar_t *GetVKStringW(unsigned char vk)
         case 0x13:
             return L"Pause";
 
-        case 0x21:  //	return "Page Up";
-        case 0x22:  //	return "Page Down";
-        case 0x23:  //	return "End";
-        case 0x24:  //	return "Home";
-        case 0x25:  //	return "Left";
-        case 0x26:  //	return "Up";
-        case 0x27:  //	return "Right";
-        case 0x28:  //	return "Down";
-        case 0x2D:  //	return "Insert";
-        case 0x2E:  //	return "Delete";
-        case 0x5B:  //	return "Left Windows";
-        case 0x5C:  //	return "Right Windows";
-        case 0x5D:  //	return "Application";
-        case 0x6F:  //	return "Num /";
+        case 0x21: //	return "Page Up";
+        case 0x22: //	return "Page Down";
+        case 0x23: //	return "End";
+        case 0x24: //	return "Home";
+        case 0x25: //	return "Left";
+        case 0x26: //	return "Up";
+        case 0x27: //	return "Right";
+        case 0x28: //	return "Down";
+        case 0x2D: //	return "Insert";
+        case 0x2E: //	return "Delete";
+        case 0x5B: //	return "Left Windows";
+        case 0x5C: //	return "Right Windows";
+        case 0x5D: //	return "Application";
+        case 0x6F: //	return "Num /";
             flag = 1 << 24;
             break;
 

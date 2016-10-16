@@ -36,20 +36,20 @@ void SPU2writeLog(const char *action, u32 rmem, u16 value)
 
     //u32 vx=0, vc=0;
     u32 core = 0, omem, mem;
-    omem = mem = rmem & 0x7FF;  //FFFF;
+    omem = mem = rmem & 0x7FF; //FFFF;
     if (mem & 0x400) {
         omem ^= 0x400;
         core = 1;
     }
 
-    if (omem < 0x0180)  // Voice Params (VP)
+    if (omem < 0x0180) // Voice Params (VP)
     {
         const u32 voice = (omem & 0x1F0) >> 4;
         const u32 param = (omem & 0xF) >> 1;
         char dest[192];
         sprintf(dest, "Voice %d %s", voice, ParamNames[param]);
         RegLog(2, dest, rmem, core, value);
-    } else if ((omem >= 0x01C0) && (omem < 0x02E0))  // Voice Addressing Params (VA)
+    } else if ((omem >= 0x01C0) && (omem < 0x02E0)) // Voice Addressing Params (VA)
     {
         const u32 voice = ((omem - 0x01C0) / 12);
         const u32 address = ((omem - 0x01C0) % 12) >> 1;

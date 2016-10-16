@@ -18,7 +18,7 @@
 #include "Global.h"
 #include "Dma.h"
 
-#include "PS2E-spu2.h"  // temporary until I resolve cyclePtr/TimeUpdate dependencies.
+#include "PS2E-spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 
 extern u8 callirq;
 
@@ -95,10 +95,10 @@ void V_Core::LogAutoDMA(FILE *fp)
     fwrite(DMAPtr + InputDataProgress, 0x400, 1, fp);
 }
 
-void V_Core::AutoDMAReadBuffer(int mode)  //mode: 0= split stereo; 1 = do not split stereo
+void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
 #ifndef ENABLE_NEW_IOPDMA_SPU2
-    int spos = ((InputPosRead + 0xff) & 0x100);  //starting position of the free buffer
+    int spos = ((InputPosRead + 0xff) & 0x100); //starting position of the free buffer
 
     LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
 
@@ -190,7 +190,7 @@ void V_Core::StartADMAWrite(u16 *pMem, u32 sz)
 // by the grace of not being used."
 //
 // Update: This hack is no longer needed when we don't do a core reset. Guess the null pc was in spu2 memory?
-#define NO_BIOS_HACKFIX 1  // set to 1 to disable the hackfix
+#define NO_BIOS_HACKFIX 1 // set to 1 to disable the hackfix
 
 void V_Core::PlainDMAWrite(u16 *pMem, u32 size)
 {
@@ -534,7 +534,7 @@ s32 V_Core::NewDmaWrite(u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 
             s16 *mptr = (s16 *)data;
 
-            if (false)  //(mode)
+            if (false) //(mode)
             {
                 //memcpy((ADMATempBuffer+(InputPosWrite<<1)),mptr,0x400);
                 memcpy(GetMemPtr(0x2000 + (Index << 10) + InputPosWrite), mptr, 0x400);
@@ -595,10 +595,10 @@ s32 V_Core::NewDmaWrite(u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 
         if (processed == 0) {
             *bytesProcessed = 0;
-            return 768 * 15;  // pause a bit
+            return 768 * 15; // pause a bit
         } else {
             *bytesProcessed = processed;
-            return 0;  // auto pause
+            return 0; // auto pause
         }
     } else {
         if (MsgDMA() && DmaStarting)

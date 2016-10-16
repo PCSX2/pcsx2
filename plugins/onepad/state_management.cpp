@@ -244,7 +244,7 @@ u8 pad_poll(u8 value)
                 query.response[3] = (buttons >> 8) & 0xFF;
                 query.response[4] = (buttons >> 0) & 0xFF;
 
-                if (pad->mode != MODE_DIGITAL) {  // ANALOG || DS2 native
+                if (pad->mode != MODE_DIGITAL) { // ANALOG || DS2 native
                     query.numBytes = 9;
 
                     query.response[5] = key_status->get(query.port, PAD_R_RIGHT);
@@ -252,7 +252,7 @@ u8 pad_poll(u8 value)
                     query.response[7] = key_status->get(query.port, PAD_L_RIGHT);
                     query.response[8] = key_status->get(query.port, PAD_L_UP);
 
-                    if (pad->mode != MODE_ANALOG) {  // DS2 native
+                    if (pad->mode != MODE_ANALOG) { // DS2 native
                         query.numBytes = 21;
 
                         query.response[9] = !test_bit(buttons, 13) ? key_status->get(query.port, PAD_RIGHT) : 0;

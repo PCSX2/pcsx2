@@ -23,7 +23,7 @@ static const int InvExpOffsets[] = {0, 4, 6, 8, 9, 10, 11, 12};
 static u32 PsxRates[160];
 
 
-void InitADSR()  // INIT ADSR
+void InitADSR() // INIT ADSR
 {
     for (int i = 0; i < (32 + 128); i++) {
         int shift = (i - 32) >> 2;
@@ -57,7 +57,7 @@ bool V_ADSR::Calculate()
         Phase = 5;
 
     switch (Phase) {
-        case 1:  // attack
+        case 1: // attack
             if (Value == ADSR_MAX_VOL) {
                 // Already maxed out.  Progress phase and nothing more:
                 Phase++;
@@ -79,7 +79,7 @@ bool V_ADSR::Calculate()
             }
             break;
 
-        case 2:  // decay
+        case 2: // decay
         {
             u32 off = InvExpOffsets[(Value >> 28) & 7];
             Value -= PsxRates[((DecayRate ^ 0x1f) * 4) - 0x18 + off + 32];
@@ -95,26 +95,26 @@ bool V_ADSR::Calculate()
             }
         } break;
 
-        case 3:  // sustain
+        case 3: // sustain
         {
             // 0x7f disables sustain (infinite sustain)
             if (SustainRate == 0x7f)
                 return true;
 
-            if (SustainMode & 2)  // decreasing
+            if (SustainMode & 2) // decreasing
             {
-                if (SustainMode & 4)  // exponential
+                if (SustainMode & 4) // exponential
                 {
                     u32 off = InvExpOffsets[(Value >> 28) & 7];
                     Value -= PsxRates[(SustainRate ^ 0x7f) - 0x1b + off + 32];
-                } else  // linear
+                } else // linear
                     Value -= PsxRates[(SustainRate ^ 0x7f) - 0xf + 32];
 
                 if (Value <= 0) {
                     Value = 0;
                     Phase++;
                 }
-            } else {  // increasing
+            } else { // increasing
                 if ((SustainMode & 4) && (Value >= 0x60000000))
                     Value += PsxRates[(SustainRate ^ 0x7f) - 0x18 + 32];
                 else
@@ -128,18 +128,18 @@ bool V_ADSR::Calculate()
             }
         } break;
 
-        case 4:  // sustain end
+        case 4: // sustain end
             Value = (SustainMode & 2) ? 0 : ADSR_MAX_VOL;
             if (Value == 0)
                 Phase = 6;
             break;
 
-        case 5:               // release
-            if (ReleaseMode)  // exponential
+        case 5:              // release
+            if (ReleaseMode) // exponential
             {
                 u32 off = InvExpOffsets[(Value >> 28) & 7];
                 Value -= PsxRates[((ReleaseRate ^ 0x1f) * 4) - 0x18 + off + 32];
-            } else {  // linear
+            } else { // linear
                 //Value-=PsxRates[((ReleaseRate^0x1f)*4)-0xc+32];
                 if (ReleaseRate != 0x1f)
                     Value -= (1 << (0x1f - ReleaseRate));
@@ -151,7 +151,7 @@ bool V_ADSR::Calculate()
             }
             break;
 
-        case 6:  // release end
+        case 6: // release end
             Value = 0;
             break;
 
@@ -195,7 +195,7 @@ void V_VolumeSlide::Update()
 
         if (value < 0) {
             value = 0;
-            Mode = 0;  // disable slide
+            Mode = 0; // disable slide
         }
     } else {
         // Increment
@@ -208,10 +208,10 @@ void V_VolumeSlide::Update()
             // linear / Pseudo below 75% (they're the same)
             value += PsxRates[(Increment ^ 0x7f) - 0x10 + 32];
 
-        if (value < 0)  // wrapped around the "top"?
+        if (value < 0) // wrapped around the "top"?
         {
             value = 0x7fffffff;
-            Mode = 0;  // disable slide
+            Mode = 0; // disable slide
         }
     }
 

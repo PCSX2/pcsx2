@@ -63,7 +63,7 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                         do {
                             GIFPackedRegHandlerA_D(pMem);
 
-                            pMem += 4;  //sizeof(GIFPackedReg)/4;
+                            pMem += 4; //sizeof(GIFPackedReg)/4;
                         } while (--path->nloop > 0);
                         break;
                     }
@@ -72,7 +72,7 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                         u32 reg = path->GetReg();
                         GIFPackedRegHandlers[reg](pMem);
 
-                        pMem += 4;  //sizeof(GIFPackedReg)/4;
+                        pMem += 4; //sizeof(GIFPackedReg)/4;
                         size--;
                     } while (path->StepReg() && (size > 0));
 
@@ -97,8 +97,8 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                     break;
                 }
 
-                case GIF_FLG_IMAGE:   // FROM_VFRAM
-                case GIF_FLG_IMAGE2:  // Used in the DirectX version, so we'll use it here too.
+                case GIF_FLG_IMAGE:  // FROM_VFRAM
+                case GIF_FLG_IMAGE2: // Used in the DirectX version, so we'll use it here too.
                 {
                     int len = min(size, path->nloop);
                     //GSLog::Writeln("GIF_FLG_IMAGE(%d)=%d", gs.imageTransfer, len);
@@ -136,7 +136,7 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                     break;
                 }
 
-                default:  // GIF_IMAGE
+                default: // GIF_IMAGE
                     GSLog::WriteLn("*** WARNING **** Unexpected GIFTag flag.");
                     assert(0);
                     path->nloop = 0;

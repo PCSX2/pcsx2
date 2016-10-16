@@ -50,12 +50,12 @@ void LoadConfig()
     if (!szTemp)
         return;
     strcpy(szTemp, "\\inis\\fwnull.ini");
-    fp = fopen("inis\\fwnull.ini", "rt");  //check if firewirenull.ini really exists
+    fp = fopen("inis\\fwnull.ini", "rt"); //check if firewirenull.ini really exists
     if (!fp) {
         CreateDirectory("inis", NULL);
         memset(&conf, 0, sizeof(conf));
-        conf.Log = 0;  //default value
-        SaveConfig();  //save and return
+        conf.Log = 0; //default value
+        SaveConfig(); //save and return
         return;
     }
     fclose(fp);

@@ -60,7 +60,7 @@ typedef struct _toc_data
 
 extern toc_data cdtoc;
 
-class Source  //abstract class as base for source modules
+class Source //abstract class as base for source modules
 {
     Source(Source &);
 

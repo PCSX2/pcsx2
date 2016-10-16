@@ -50,13 +50,13 @@ void LoadConfig()
     if (!szTemp)
         return;
     strcpy(szTemp, "\\inis\\gsnull.ini");
-    fp = fopen("inis\\gsnull.ini", "rt");  //check if gsnull.ini really exists
+    fp = fopen("inis\\gsnull.ini", "rt"); //check if gsnull.ini really exists
 
     if (!fp) {
         CreateDirectory("inis", NULL);
         memset(&conf, 0, sizeof(conf));
-        conf.Log = 0;  //default value
-        SaveConfig();  //save and return
+        conf.Log = 0; //default value
+        SaveConfig(); //save and return
         return;
     }
 

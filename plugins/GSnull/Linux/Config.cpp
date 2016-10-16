@@ -43,7 +43,7 @@ void LoadConfig()
 
     if (!Ini.Open(iniFile, READ_FILE)) {
         printf("failed to open %s\n", iniFile.c_str());
-        SaveConfig();  //save and return
+        SaveConfig(); //save and return
         return;
     }
 

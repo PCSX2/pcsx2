@@ -51,7 +51,7 @@ float SndBuffer::GetStatusPct()
     // Get the buffer status of the output driver too, so that we can
     // obtain a more accurate overall buffer status.
 
-    int drvempty = mods[OutputModule]->GetEmptySampleCount();  // / 2;
+    int drvempty = mods[OutputModule]->GetEmptySampleCount(); // / 2;
 
     //ConLog( "Data %d >>> driver: %d   predict: %d\n", m_data, drvempty, m_predictData );
 
@@ -112,7 +112,7 @@ float addToAvg(float val)
 {
     static float avg_fullness[AVERAGING_BUFFER_SIZE];
     static unsigned int nextAvgPos = 0;
-    static unsigned int available = 0;  // Make sure we're not averaging AVERAGING_WINDOW items if we inserted less.
+    static unsigned int available = 0; // Make sure we're not averaging AVERAGING_WINDOW items if we inserted less.
     if (gRequestStretcherReset >= STRETCHER_RESET_THRESHOLD)
         available = 0;
 
@@ -137,7 +137,7 @@ float addToAvg(float val)
     }
     sum = sum / actualWindow;
 
-    return sum ? sum : 1;  // 1 because that's the 100% perfect speed value
+    return sum ? sum : 1; // 1 because that's the 100% perfect speed value
 }
 
 template <class T>
@@ -150,14 +150,14 @@ bool IsInRange(const T &val, const T &min, const T &max)
 void SndBuffer::UpdateTempoChangeSoundTouch2()
 {
 
-    long targetSamplesReservoir = 48 * SndOutLatencyMS;  //48000*SndOutLatencyMS/1000
+    long targetSamplesReservoir = 48 * SndOutLatencyMS; //48000*SndOutLatencyMS/1000
     //base aim at buffer filled %
-    float baseTargetFullness = (double)targetSamplesReservoir;  ///(double)m_size;//0.05;
+    float baseTargetFullness = (double)targetSamplesReservoir; ///(double)m_size;//0.05;
 
     //state vars
-    static bool inside_hysteresis;       //=false;
-    static int hys_ok_count;             //=0;
-    static float dynamicTargetFullness;  //=baseTargetFullness;
+    static bool inside_hysteresis;      //=false;
+    static int hys_ok_count;            //=0;
+    static float dynamicTargetFullness; //=baseTargetFullness;
     if (gRequestStretcherReset >= STRETCHER_RESET_THRESHOLD) {
         ConLog("______> stretch: Reset.\n");
         inside_hysteresis = false;
@@ -166,10 +166,10 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
     }
 
     int data = _GetApproximateDataInBuffer();
-    float bufferFullness = (float)data;  ///(float)m_size;
+    float bufferFullness = (float)data; ///(float)m_size;
 
 #ifdef NEWSTRETCHER_USE_DYNAMIC_TUNING
-    {  //test current iterations/sec every 0.5s, and change algo params accordingly if different than previous IPS more than 30%
+    { //test current iterations/sec every 0.5s, and change algo params accordingly if different than previous IPS more than 30%
         static long iters = 0;
         static wxDateTime last = wxDateTime::UNow();
         wxDateTime unow = wxDateTime::UNow();
@@ -192,7 +192,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
     //Algorithm params: (threshold params (hysteresis), etc)
     const float hys_ok_factor = 1.04f;
     const float hys_bad_factor = 1.2f;
-    int hys_min_ok_count = GetClamped((int)(50.0 * (float)targetIPS / 750.0), 2, 100);  //consecutive iterations within hys_ok before going to 1:1 mode
+    int hys_min_ok_count = GetClamped((int)(50.0 * (float)targetIPS / 750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
     int compensationDivider = GetClamped((int)(100.0 * (float)targetIPS / 750), 15, 150);
 
     float tempoAdjust = bufferFullness / dynamicTargetFullness;
@@ -208,7 +208,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
     tempoAdjust = GetClamped(tempoAdjust, 0.05f, 10.0f);
 
     if (tempoAdjust < 1)
-        baseTargetFullness /= sqrt(tempoAdjust);  // slightly increase latency when running slow.
+        baseTargetFullness /= sqrt(tempoAdjust); // slightly increase latency when running slow.
 
     dynamicTargetFullness += (baseTargetFullness / tempoAdjust - dynamicTargetFullness) / (double)compensationDivider;
     if (IsInRange(tempoAdjust, 0.9f, 1.1f) && IsInRange(dynamicTargetFullness, baseTargetFullness * 0.9f, baseTargetFullness * 1.1f))
@@ -242,7 +242,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
         wxDateTime unow = wxDateTime::UNow();
         wxTimeSpan delta = unow.Subtract(last);
 
-        if (delta.GetMilliseconds() > 1000) {  //report buffers state and tempo adjust every second
+        if (delta.GetMilliseconds() > 1000) { //report buffers state and tempo adjust every second
             ConLog("buffers: %4d ms (%3.0f%%), tempo: %f, comp: %2.3f, iters: %d, (N-IPS:%d -> avg:%d, minokc:%d, div:%d) reset:%d\n",
                    (int)(data / 48), (double)(100.0 * bufferFullness / baseTargetFullness), (double)tempoAdjust, (double)(dynamicTargetFullness / baseTargetFullness), iters, (int)targetIPS, AVERAGING_WINDOW, hys_min_ok_count, compensationDivider, gRequestStretcherReset);
             last = unow;
@@ -266,7 +266,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 
     float tempoChange;
     float emergencyAdj = 0;
-    float newcee = cTempo;  // workspace var. for cTempo
+    float newcee = cTempo; // workspace var. for cTempo
 
     // IMPORTANT!
     // If you plan to tweak these values, make sure you're using a release build
