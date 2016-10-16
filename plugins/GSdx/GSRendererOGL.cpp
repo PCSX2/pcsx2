@@ -483,13 +483,18 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			m_context->TEX0.TFX = TFX_DECAL;
 			*rt = tex->m_from_target;
 		} else if (m_game.title == CRC::Tekken5) {
-			GL_INS("Tekken5 RGB Channel");
-			m_ps_sel.channel = 7;
-			m_context->FRAME.FBMSK = 0xFF000000;
-			// 12 pages: 2 calls by channel, 3 channels, 1 blit
-			// Minus current draw call
-			m_skip = 12 * (3 + 3 + 1) - 1;
-			*rt = tex->m_from_target;
+			if (m_context->FRAME.FBW == 1) {
+				GL_INS("Tekken5 RGB Channel");
+				m_ps_sel.channel = 7;
+				m_context->FRAME.FBMSK = 0xFF000000;
+				// 12 pages: 2 calls by channel, 3 channels, 1 blit
+				// Minus current draw call
+				m_skip = 12 * (3 + 3 + 1) - 1;
+				*rt = tex->m_from_target;
+			} else {
+				// Could skip model drawing if wrongly detected
+				m_channel_shuffle = false;
+			}
 		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
 			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 			// UC: will copy depth to green channel
