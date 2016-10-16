@@ -343,6 +343,7 @@ void populate_shader_table(GtkWidget* shader_table)
 void populate_hack_table(GtkWidget* hack_table)
 {
 	GtkWidget* hack_offset_check   = CreateCheckBox("Half-pixel Offset Hack", "UserHacks_HalfPixelOffset");
+	GtkWidget* hack_offset_check_2 = CreateCheckBox("Half-pixel Offset Hack (v2)", "UserHacks_HalfPixelOffset_New");
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
@@ -362,6 +363,7 @@ void populate_hack_table(GtkWidget* hack_table)
 
 	// Reuse windows helper string :)
 	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
+	AddTooltip(hack_offset_check_2, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
@@ -378,10 +380,13 @@ void populate_hack_table(GtkWidget* hack_table)
 
 
 	s_table_line = 0;
+	// Hack
+	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_auto_flush);
+	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
+	// Upscaling hack
+	InsertWidgetInTable(hack_table , hack_offset_check   , hack_offset_check_2);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
-	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
-	InsertWidgetInTable(hack_table , hack_unscale_prim   , hack_fast_inv);
-	InsertWidgetInTable(hack_table , hack_depth_check    , hack_auto_flush);
+	InsertWidgetInTable(hack_table , hack_unscale_prim);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
