@@ -292,11 +292,7 @@ s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
         return ret;
     }
 
-    if (lsn > tracks[0].length) { // track 0 is total disc.
-        return -1;
-    }
-
-    return cdvdRequestSector(lsn, mode);
+    return lsn < src->GetSectorCount() ? cdvdRequestSector(lsn, mode) : -1;
 }
 
 // return can be NULL (for async modes)
@@ -344,7 +340,7 @@ s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
     // the formatted subq command returns:  control/adr, track, index, trk min, trk sec, trk frm, 0x00, abs min, abs sec, abs frm
 
-    if (lsn > tracks[0].length) // track 0 is total disc.
+    if (lsn >= src->GetSectorCount())
         return -1;
 
     memset(subq, 0, sizeof(cdvdSubQ));
@@ -377,7 +373,7 @@ s32 CALLBACK CDVDgetTN(cdvdTN *Buffer)
 s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
 {
     if (Track == 0) {
-        Buffer->lsn = tracks[0].length;
+        Buffer->lsn = src->GetSectorCount();
         Buffer->type = 0;
         return 0;
     }

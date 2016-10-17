@@ -30,7 +30,6 @@
 struct track
 {
     u32 start_lba;
-    u32 length;
     u8 type;
 };
 

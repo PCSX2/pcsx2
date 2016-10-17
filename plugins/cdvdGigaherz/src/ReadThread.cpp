@@ -186,7 +186,7 @@ DWORD CALLBACK cdvdThread(PVOID param)
 
             s32 count = 16;
 
-            s32 left = tracks[0].length - info.lsn;
+            s32 left = src->GetSectorCount() - info.lsn;
 
             if (left < count)
                 count = left;
@@ -268,7 +268,7 @@ void cdvdStopThread()
 
 s32 cdvdRequestSector(u32 sector, s32 mode)
 {
-    if (sector >= tracks[0].length)
+    if (sector >= src->GetSectorCount())
         return -1;
 
     sector &= ~15; //align to 16-sector block
@@ -321,7 +321,7 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
 {
     static char data[16 * 2352];
 
-    if ((u32)first >= tracks[0].length)
+    if ((u32)first >= src->GetSectorCount())
         return -1;
 
     s32 sector = first & (~15); //align to 16-sector block
@@ -333,7 +333,7 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
 
         s32 count = 16;
 
-        s32 left = tracks[0].length - sector;
+        s32 left = src->GetSectorCount() - sector;
 
         if (left < count)
             count = left;
