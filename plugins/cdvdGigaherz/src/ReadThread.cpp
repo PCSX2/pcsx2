@@ -162,28 +162,21 @@ DWORD CALLBACK cdvdThread(PVOID param)
         }
 
         if (threadRequestPending || prefetch_left) {
-            s32 ret = -1;
-            s32 tries = 5;
-
             s32 count = 16;
-
             s32 left = src->GetSectorCount() - info.lsn;
 
             if (left < count)
                 count = left;
 
-            do {
-                if (info.mode == CDVD_MODE_2048)
-                    ret = src->ReadSectors2048(info.lsn, count, info.data);
-                else
-                    ret = src->ReadSectors2352(info.lsn, count, info.data);
-
-                if (ret == 0)
-                    break;
-
-                tries--;
-
-            } while ((ret < 0) && (tries > 0));
+            for (int tries = 0; tries < 4; ++tries) {
+                if (info.mode == CDVD_MODE_2048) {
+                    if (src->ReadSectors2048(info.lsn, count, info.data))
+                        break;
+                } else {
+                    if (src->ReadSectors2352(info.lsn, count, info.data))
+                        break;
+                }
+            }
 
             cdvdCacheUpdate(info.lsn, info.mode, info.data);
 
@@ -309,28 +302,21 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
 
     EnterCriticalSection(&CacheMutex);
     if (!cdvdCacheFetch(sector, mode, data)) {
-        s32 ret = -1;
-        s32 tries = 5;
-
         s32 count = 16;
-
         s32 left = src->GetSectorCount() - sector;
 
         if (left < count)
             count = left;
 
-        do {
-            if (mode == CDVD_MODE_2048)
-                ret = src->ReadSectors2048(sector, count, data);
-            else
-                ret = src->ReadSectors2352(sector, count, data);
-
-            if (ret == 0)
-                break;
-
-            tries--;
-
-        } while ((ret < 0) && (tries > 0));
+        for (int tries = 0; tries < 4; ++tries) {
+            if (mode == CDVD_MODE_2048) {
+                if (src->ReadSectors2048(sector, count, data))
+                    break;
+            } else {
+                if (src->ReadSectors2352(sector, count, data))
+                    break;
+            }
+        }
 
         cdvdCacheUpdate(sector, mode, data);
     }

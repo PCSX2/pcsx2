@@ -111,7 +111,7 @@ const std::vector<toc_entry> &IOCtlSrc::ReadTOC() const
     return m_toc;
 }
 
-s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
+bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer) const
 {
     std::lock_guard<std::mutex> guard(m_lock);
     LARGE_INTEGER offset;
@@ -120,14 +120,14 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
     if (!SetFilePointerEx(m_device, offset, nullptr, FILE_BEGIN)) {
         fprintf(stderr, " * CDVD SetFilePointerEx failed: sector %u: error %u\n",
                 sector, GetLastError());
-        return -1;
+        return false;
     }
 
     const DWORD bytes_to_read = 2048 * count;
     DWORD bytes_read;
     if (ReadFile(m_device, buffer, bytes_to_read, &bytes_read, nullptr)) {
         if (bytes_read == bytes_to_read)
-            return 0;
+            return true;
         fprintf(stderr, " * CDVD ReadFile: sectors %u-%u: %u bytes read, %u bytes expected\n",
                 sector, sector + count - 1, bytes_read, bytes_to_read);
     } else {
@@ -135,10 +135,10 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
                 sector, sector + count - 1, GetLastError());
     }
 
-    return -1;
+    return false;
 }
 
-s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
+bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer) const
 {
     struct sptdinfo
     {
@@ -188,10 +188,10 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
         for (const auto &c : sptd.sense_buffer)
             printf(" %02X", c);
         putchar('\n');
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 bool IOCtlSrc::ReadDVDInfo()
