@@ -489,22 +489,20 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
         tocBuff[0] = 0x41;
         tocBuff[1] = 0x00;
 
-#define itob(n) ((((n) / 10) << 4) + ((n) % 10))
-
         //Number of FirstTrack
         tocBuff[2] = 0xA0;
-        tocBuff[7] = itob(diskInfo.strack);
+        tocBuff[7] = dec_to_bcd(diskInfo.strack);
 
         //Number of LastTrack
         tocBuff[12] = 0xA1;
-        tocBuff[17] = itob(diskInfo.etrack);
+        tocBuff[17] = dec_to_bcd(diskInfo.etrack);
 
         //DiskLength
         lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
         tocBuff[22] = 0xA2;
-        tocBuff[27] = itob(min);
-        tocBuff[28] = itob(sec);
-        tocBuff[29] = itob(frm);
+        tocBuff[27] = dec_to_bcd(min);
+        tocBuff[28] = dec_to_bcd(sec);
+        tocBuff[29] = dec_to_bcd(frm);
 
         fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
 
@@ -512,10 +510,10 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
             err = CDVDgetTD(i, &trackInfo);
             lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
             tocBuff[i * 10 + 30] = trackInfo.type;
-            tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
-            tocBuff[i * 10 + 37] = itob(min);
-            tocBuff[i * 10 + 38] = itob(sec);
-            tocBuff[i * 10 + 39] = itob(frm);
+            tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
+            tocBuff[i * 10 + 37] = dec_to_bcd(min);
+            tocBuff[i * 10 + 38] = dec_to_bcd(sec);
+            tocBuff[i * 10 + 39] = dec_to_bcd(frm);
             fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
         }
     } else
