@@ -74,8 +74,8 @@ public:
 
     u32 GetSectorCount() const;
     const std::vector<toc_entry> &ReadTOC() const;
-    s32 ReadSectors2048(u32 sector, u32 count, char *buffer);
-    s32 ReadSectors2352(u32 sector, u32 count, char *buffer);
+    bool ReadSectors2048(u32 sector, u32 count, char *buffer) const;
+    bool ReadSectors2352(u32 sector, u32 count, char *buffer) const;
     u32 GetLayerBreakAddress() const;
     s32 GetMediaType() const;
     void SetSpindleSpeed(bool restore_defaults) const;
