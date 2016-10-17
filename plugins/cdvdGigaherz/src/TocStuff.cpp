@@ -21,16 +21,12 @@ s32 cdvdParseTOC()
 {
     memset(&cdtoc, 0, sizeof(cdtoc));
 
-    s32 len = src->GetSectorCount();
-
-    tracks[0].length = len;
     tracks[0].start_lba = 0;
     tracks[0].type = 0;
     tracks[1].start_lba = 0;
 
-    if (len <= 0) {
+    if (!src->GetSectorCount()) {
         curDiskType = CDVD_TYPE_NODISC;
-        tracks[0].length = 0;
         strack = 1;
         etrack = 0;
         return 0;
@@ -39,7 +35,6 @@ s32 cdvdParseTOC()
     s32 mt = src->GetMediaType();
 
     if (mt >= 0) {
-        tracks[1].length = tracks[0].length;
         tracks[1].type = 0;
 
         strack = 1;
@@ -81,7 +76,6 @@ s32 cdvdParseTOC()
                         sec = cdtoc.Descriptors[i].Msf[1];
                         frm = cdtoc.Descriptors[i].Msf[2];
 
-                        tracks[0].length = MSF_TO_LBA(min, sec, frm);
                         tracks[0].type = 0;
                     }
                     break;
@@ -102,8 +96,6 @@ s32 cdvdParseTOC()
                         frm = cdtoc.Descriptors[i].Msf[2];
 
                         tracks[tn].start_lba = MSF_TO_LBA(min, sec, frm);
-                        if (tn > 1)
-                            tracks[tn - 1].length = tracks[tn].start_lba - tracks[tn - 1].start_lba;
 
                         if ((cdtoc.Descriptors[i].Control & 4) == 0) {
                             tracks[tn].type = CDVD_AUDIO_TRACK;
@@ -120,8 +112,6 @@ s32 cdvdParseTOC()
                     break;
             }
         }
-
-        tracks[etrack].length = tracks[0].length - tracks[etrack].start_lba;
     }
 
     return 0;
