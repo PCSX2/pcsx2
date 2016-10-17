@@ -352,15 +352,10 @@ s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
     lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
     u8 i = strack;
-    while (i <= etrack) {
-        if (lsn <= tracks[i].length)
-            break;
-        lsn -= tracks[i].length;
-        i++;
-    }
+    while (i < etrack && lsn < tracks[i + 1].start_lba)
+        ++i;
 
-    if (i > etrack)
-        i = etrack;
+    lsn -= tracks[i].start_lba;
 
     lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
 
