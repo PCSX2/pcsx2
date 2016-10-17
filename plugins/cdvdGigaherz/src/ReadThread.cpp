@@ -29,12 +29,6 @@ CRITICAL_SECTION CacheMutex;
 
 DWORD pidThread = 0;
 
-enum loadStatus {
-    LoadIdle,
-    LoadPending,
-    LoadSuccess,
-};
-
 typedef struct
 {
     int lsn;
@@ -389,8 +383,6 @@ s32 cdvdGetMediaType()
 {
     return src->GetMediaType();
 }
-
-s32 refreshes = 0;
 
 s32 cdvdRefreshData()
 {

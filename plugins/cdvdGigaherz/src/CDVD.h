@@ -149,15 +149,10 @@ extern HINSTANCE hinst;
 
 #define MSF_TO_LBA(m, s, f) ((m * 60 + s) * 75 + f - 150)
 
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
-
-s32 cdvdGetMediaType();
-
 void ReadSettings();
 void WriteSettings();
 void CfgSetSettingsDir(const char *dir);
 
-extern char csrc[];
 extern bool cdvd_is_open;
 extern bool cdvdKeepAlive_is_open;
 extern bool disc_has_changed;

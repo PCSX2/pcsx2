@@ -137,7 +137,6 @@ bool weAreInNewDiskCB = false;
 
 Source *src;
 
-char bfr[2352];
 char throwaway[2352];
 extern s32 prefetch_last_lba;
 extern s32 prefetch_last_mode;
