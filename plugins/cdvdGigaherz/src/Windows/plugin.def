@@ -18,8 +18,7 @@ EXPORTS
     CDVDctrlTrayClose	@18
     CDVDconfigure		@19
     CDVDtest			@20
-    CDVDabout			@21
-	CDVDnewDiskCB		@22
+    CDVDnewDiskCB		@22
     CDVDgetBuffer2		@23
     CDVDreadSector		@24
     CDVDgetDualInfo		@25

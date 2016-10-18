@@ -91,17 +91,6 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type)
 ///////////////////////////////////////////////////////////////////////////////
 // Utility Functions                                                         //
 
-void SysMessage(char *fmt, ...)
-{
-    va_list list;
-    char tmp[512];
-
-    va_start(list, fmt);
-    vsprintf(tmp, fmt, list);
-    va_end(list);
-    MessageBox(0, tmp, "cdvdGigaherz Msg", 0);
-}
-
 u8 __inline dec_to_bcd(u8 dec)
 {
     return ((dec / 10) << 4) | (dec % 10);
@@ -568,11 +557,6 @@ void CALLBACK CDVDnewDiskCB(void (*callback)())
 void CALLBACK CDVDconfigure()
 {
     configure();
-}
-
-void CALLBACK CDVDabout()
-{
-    SysMessage("%s %d.%d", LibName, revision, build);
 }
 
 s32 CALLBACK CDVDtest()
