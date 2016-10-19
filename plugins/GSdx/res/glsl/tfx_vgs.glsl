@@ -9,6 +9,9 @@ layout(location = 5) in uint  i_z;
 layout(location = 6) in uvec2 i_uv;
 layout(location = 7) in vec4  i_f;
 
+#if defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+layout(location = 0)
+#endif
 out SHADER
 {
     vec4 t_float;
@@ -61,6 +64,9 @@ void vs_main()
 
 #ifdef GEOMETRY_SHADER
 
+#if defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+layout(location = 0)
+#endif
 in SHADER
 {
     vec4 t_float;
@@ -69,6 +75,9 @@ in SHADER
     flat vec4 fc;
 } GSin[];
 
+#if defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+layout(location = 0)
+#endif
 out SHADER
 {
     vec4 t_float;

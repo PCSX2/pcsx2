@@ -26,6 +26,9 @@
 
 #ifdef FRAGMENT_SHADER
 
+#if defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+layout(location = 0)
+#endif
 in SHADER
 {
     vec4 t_float;
