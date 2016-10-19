@@ -343,44 +343,6 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16S && fi.FBMSK == 0x03FFF)
-		{
-			if (Dx_only)
-				skip = 1;
-			else
-				return false;
-		}
-		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
-		{
-			skip = 1; // bloom
-		}
-		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		else if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1250,6 +1212,41 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 ////////////////////////////////////////////////////////////////////////////////
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
+
+bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16S && fi.FBMSK == 0x03FFF)
+		{
+			skip = 1;
+		}
+		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
+		{
+			skip = 1; // bloom
+		}
+		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1;
+		}
+		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
+		{
+			skip = 1;
+		}
+		else if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				// General, often problematic post processing
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 1;
+			}
+		}
+	}
+
+	return true;
+}
 
 bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 {
@@ -2463,7 +2460,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GetaWay] = GSC_GetaWay;
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::GodHand] = GSC_GodHand;
-		lut[CRC::HauntingGround] = GSC_HauntingGround;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		lut[CRC::HummerBadlands] = GSC_HummerBadlands;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
@@ -2527,6 +2523,9 @@ void GSState::SetupCrcHack()
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::XE3] = GSC_XE3;
+
+		// Depth + Texture cache issue + Date (AKA a real mess)
+		lut[CRC::HauntingGround] = GSC_HauntingGround;
 
 		// Not tested but must be fixed with texture shuffle
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
