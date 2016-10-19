@@ -746,12 +746,18 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 				Target* t = *j;
 				if (t->m_TEX0.TBP0 > bp && t->m_end_block < end_block) {
-					m_dst[type].erase(j);
-					GL_CACHE("TC: Remove Sub Target(%s) %d (0x%x)", to_string(type),
+					// Haunting ground expect to clean buffer B with a rendering into buffer A.
+					// Situation is quite messy as it would require to extract the data from the buffer A
+					// and to move in buffer B.
+					//
+					// Of course buffers don't share the same line width. You can't delete the buffer as next
+					// miss will load invalid data.
+					//
+					// So just clear the damn buffer and forget about it.
+					GL_CACHE("TC: Clear Sub Target(%s) %d (0x%x)", to_string(type),
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0);
-					delete t;
-					continue;
+					m_renderer->m_dev->ClearRenderTarget(t->m_texture, 0);
 				}
 			}
 		}
