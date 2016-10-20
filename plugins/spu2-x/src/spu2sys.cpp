@@ -928,7 +928,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
                 break; // Voice 0..23 Channel ON / OFF(status) (R) (ENDX)
             case 0x1d9e:
                 value = Regs.ENDX >> 16;
-
+                break;
             case 0x1da2:
                 value = map_spu2to1(EffectsStartA);
                 break;
@@ -1349,10 +1349,10 @@ static void __fastcall RegWrite_Core(u16 value)
                 psxmode = true;
                 //memset(_spu2mem, 0, 0x200000);
                 Cores[1].FxEnable = 0;
-                Cores[1].EffectsStartA = 0x7FFF8; // park core1 effect area in inaccessible mem
+                Cores[1].EffectsStartA = 0x7FFF8;  // park core1 effect area in inaccessible mem
                 Cores[1].EffectsEndA = 0x7FFFF;
-                Cores[1].ExtEffectsStartA = 0x7FFF8; // park core1 ext effect area in high mem
-                Cores[1].ExtEffectsStartA = 0x7FFFF;
+                Cores[1].ExtEffectsStartA = 0x7FFF8;
+                Cores[1].ExtEffectsEndA = 0x7FFFF;
                 Cores[1].ReverbX = 0;
                 Cores[1].RevBuffers.NeedsUpdated = true;
                 Cores[0].ReverbX = 0;

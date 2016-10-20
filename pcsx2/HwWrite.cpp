@@ -244,6 +244,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 
 				mcase(DMAC_ENABLEW):
 					if (!dmacWrite32<0x0f>(DMAC_ENABLEW, value)) return;
+				break;
 
 				default:
 					// TODO: psx add the real address in a sbus mcase
