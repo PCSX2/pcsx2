@@ -216,11 +216,8 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
                 break;
             }
         }
-    }
-
-    if (source_drive == '@') {
-        curDiskType = CDVD_TYPE_NODISC;
-        return 0;
+        if (source_drive == '-')
+            return -1;
     }
 
     sprintf(csrc, "\\\\.\\%c:", source_drive);

@@ -152,24 +152,17 @@ char *path[] = {
     "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:",
 };
 
-int n, s;
-
 static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     int wmId, wmEvent;
     char temp[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     switch (uMsg) {
-
-        case WM_PAINT:
-            return FALSE;
-        case WM_INITDIALOG:
-
-            n = 0;
-            s = 0;
+        case WM_INITDIALOG: {
+            int n = -1;
+            int s = 0;
 
             SendMessage(GetDlgItem(hWnd, IDC_DRIVE), CB_RESETCONTENT, 0, 0);
-            SendMessage(GetDlgItem(hWnd, IDC_DRIVE), CB_ADDSTRING, 0, (LPARAM) "@ (No disc)");
             for (char d = 'A'; d <= 'Z'; d++) {
                 if (GetDriveType(path[d - 'A']) == DRIVE_CDROM) {
                     n++;
@@ -182,20 +175,22 @@ static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                 }
             }
 
-            SendMessage(GetDlgItem(hWnd, IDC_DRIVE), CB_SETCURSEL, s, 0);
+            if (n != -1)
+                SendMessage(GetDlgItem(hWnd, IDC_DRIVE), CB_SETCURSEL, s, 0);
 
-            break;
+        } break;
         case WM_COMMAND:
             wmId = LOWORD(wParam);
             wmEvent = HIWORD(wParam);
             // Parse the menu selections:
             switch (wmId) {
                 case IDOK:
-                    GetDlgItemText(hWnd, IDC_DRIVE, temp, 20);
-                    temp[19] = 0;
-                    source_drive = temp[0];
-
-                    WriteSettings();
+                    if (SendMessage(GetDlgItem(hWnd, IDC_DRIVE), CB_GETCOUNT, 0, 0) > 0) {
+                        GetDlgItemText(hWnd, IDC_DRIVE, temp, 20);
+                        temp[19] = 0;
+                        source_drive = temp[0];
+                        WriteSettings();
+                    }
                     EndDialog(hWnd, 0);
                     break;
                 case IDCANCEL:
