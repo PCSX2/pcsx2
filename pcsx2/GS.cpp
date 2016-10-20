@@ -25,6 +25,7 @@
 using namespace Threading;
 using namespace R5900;
 
+static GS_VideoMode s_ColorBurst = GS_VideoMode::Uninitialized;
 __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
@@ -35,9 +36,12 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 
 void gsSetVideoMode(GS_VideoMode mode )
 {
-	if( gsVideoMode == mode ) return;
+	if( gsVideoMode == mode )
+		return;
 
-	gsVideoMode = mode;
+	// SetGsCrt doesn't seem to work for PSX games and they're left with the initial bios mode
+	// At such cases, let's use the colorburst to detect the video mode.
+	gsVideoMode = (mode == GS_VideoMode::BIOS) ? s_ColorBurst : mode;
 	UpdateVSyncRate();
 }
 
@@ -138,6 +142,14 @@ __fi void gsWrite8(u32 mem, u8 value)
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx", mem, value);
 }
 
+static void GetColorBurst(u64 value)
+{
+	GSRegSMODE1 Register;
+	Register.SMODE1 = value;
+	if(Register.CMOD)
+		s_ColorBurst = (Register.CMOD == 3) ? GS_VideoMode::PAL : GS_VideoMode::NTSC;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // GS Write 16 bit
 
@@ -201,6 +213,8 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 
 void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
+	if (mem == GS_SMODE1)
+		GetColorBurst(*value);
 	gsWrite64_generic( mem, value );
 }
 
