@@ -81,29 +81,29 @@ struct GeneralSettingsBool
 };
 
 // XXX: I try to remove only gui stuff
-void DeleteBinding(int port, int slot, Device *dev, Binding *b)
+void DeleteBinding(int port, int slot, int padtype, Device *dev, Binding *b)
 {
     fprintf(stderr, "delete binding %d:%d\n", port, slot);
-    Binding *bindings = dev->pads[port][slot].bindings;
+    Binding *bindings = dev->pads[port][slot][padtype].bindings;
     int i = b - bindings;
-    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot].numBindings - i - 1));
-    dev->pads[port][slot].numBindings--;
+    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numBindings - i - 1));
+    dev->pads[port][slot][padtype].numBindings--;
 }
 
 void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 {
-    ForceFeedbackBinding *bindings = dev->pads[port][slot].ffBindings;
+    int padtype = config.padConfigs[port][slot].type;
+    ForceFeedbackBinding *bindings = dev->pads[port][slot][padtype].ffBindings;
     int i = b - bindings;
-    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot].numFFBindings - i - 1));
-    dev->pads[port][slot].numFFBindings--;
+    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numFFBindings - i - 1));
+    dev->pads[port][slot][padtype].numFFBindings--;
 }
 
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, int command, int sensitivity, int turbo, int deadZone)
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone)
 {
     // Checks needed because I use this directly when loading bindings.
-    if (port > 1 || slot > 3) {
+    if (port > 1 || slot > 3 || padtype >= numPadTypes)
         return -1;
-    }
     if (!sensitivity)
         sensitivity = BASE_SENSITIVITY;
     if ((uid >> 16) & (PSHBTN | TGLBTN)) {
@@ -125,7 +125,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     // Add before deleting.  Means I won't scroll up one line when scrolled down to bottom.
     int controlIndex = c - dev->virtualControls;
     int index = 0;
-    PadBindings *p = dev->pads[port] + slot;
+    PadBindings *p = dev->pads[port][slot] + padtype;
     p->bindings = (Binding *)realloc(p->bindings, (p->numBindings + 1) * sizeof(Binding));
     for (index = p->numBindings; index > 0; index--) {
         if (p->bindings[index - 1].controlIndex < controlIndex)
@@ -167,20 +167,22 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
             newBindingIndex--;
             //count --;
         }
-        DeleteBinding(port, slot, dev, b);
+        DeleteBinding(port, slot, padtype, dev, b);
     }
     if (!config.multipleBinding) {
         for (int port2 = 0; port2 < 2; port2++) {
             for (int slot2 = 0; slot2 < 4; slot2++) {
-                if (port2 == (int)port && slot2 == (int)slot)
-                    continue;
-                PadBindings *p = dev->pads[port2] + slot2;
-                for (int i = 0; i < p->numBindings; i++) {
-                    Binding *b = p->bindings + i;
-                    int uid2 = dev->virtualControls[b->controlIndex].uid;
-                    if (b->controlIndex == controlIndex || (!((uid2 ^ uid) & 0xFFFFFF) && ((uid | uid2) & (UID_POV | UID_AXIS)))) {
-                        DeleteBinding(port2, slot2, dev, b);
-                        i--;
+                for (int padtype2 = 0; padtype2 < numPadTypes; padtype2++) {
+                    if (port2 == (int)port && slot2 == (int)slot)
+                        continue;
+                    PadBindings *p = dev->pads[port2][slot2] + padtype2;
+                    for (int i = 0; i < p->numBindings; i++) {
+                        Binding *b = p->bindings + i;
+                        int uid2 = dev->virtualControls[b->controlIndex].uid;
+                        if (b->controlIndex == controlIndex || (!((uid2 ^ uid) & 0xFFFFFF) && ((uid | uid2) & (UID_POV | UID_AXIS)))) {
+                            DeleteBinding(port2, slot2, padtype2, dev, b);
+                            i--;
+                        }
                     }
                 }
             }
@@ -270,27 +272,29 @@ int SaveSettings(wchar_t *file = 0)
         int bindingCount = 0;
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
-                for (int j = 0; j < dev->pads[port][slot].numBindings; j++) {
-                    Binding *b = dev->pads[port][slot].bindings + j;
-                    VirtualControl *c = &dev->virtualControls[b->controlIndex];
-                    wsprintfW(temp, L"Binding %i", bindingCount++);
-                    wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone);
-                    cfg.WriteStr(id, temp, temp2);
-                }
-
-                for (int j = 0; j < dev->pads[port][slot].numFFBindings; j++) {
-                    ForceFeedbackBinding *b = dev->pads[port][slot].ffBindings + j;
-                    ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
-                    wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
-                    wsprintfW(temp2, L"%s %i, %i, %i", eff->effectID, port, b->motor, slot);
-                    for (int k = 0; k < dev->numFFAxes; k++) {
-                        ForceFeedbackAxis *axis = dev->ffAxes + k;
-                        AxisEffectInfo *info = b->axes + k;
-                        //wsprintfW(wcschr(temp2,0), L", %i, %i", axis->id, info->force);
-                        // Not secure because I'm too lazy to compute the remaining size
-                        wprintf(wcschr(temp2, 0), L", %i, %i", axis->id, info->force);
+                for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                    for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; j++) {
+                        Binding *b = dev->pads[port][slot][padtype].bindings + j;
+                        VirtualControl *c = &dev->virtualControls[b->controlIndex];
+                        wsprintfW(temp, L"Binding %i", bindingCount++);
+                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, padtype);
+                        cfg.WriteStr(id, temp, temp2);
                     }
-                    cfg.WriteStr(id, temp, temp2);
+
+                    for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; j++) {
+                        ForceFeedbackBinding *b = dev->pads[port][slot][padtype].ffBindings + j;
+                        ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
+                        wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
+                        wsprintfW(temp2, L"%s %i, %i, %i, %i", eff->effectID, port, b->motor, slot, padtype);
+                        for (int k = 0; k < dev->numFFAxes; k++) {
+                            ForceFeedbackAxis *axis = dev->ffAxes + k;
+                            AxisEffectInfo *info = b->axes + k;
+                            //wsprintfW(wcschr(temp2,0), L", %i, %i", axis->id, info->force);
+                            // Not secure because I'm too lazy to compute the remaining size
+                            wprintf(wcschr(temp2, 0), L", %i, %i", axis->id, info->force);
+                        }
+                        cfg.WriteStr(id, temp, temp2);
+                    }
                 }
             }
         }
@@ -334,6 +338,7 @@ int LoadSettings(int force, wchar_t *file)
         }
     }
 
+    bool oldIni = false;
     int i = 0;
     int multipleBinding = config.multipleBinding;
     // Disabling multiple binding only prevents new multiple bindings.
@@ -374,7 +379,7 @@ int LoadSettings(int force, wchar_t *file)
             }
             last = 1;
             unsigned int uid;
-            int port, command, sensitivity, turbo, slot = 0, deadZone = 0;
+            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, padtype = 0;
             int w = 0;
             char string[1000];
             while (temp2[w]) {
@@ -382,13 +387,21 @@ int LoadSettings(int force, wchar_t *file)
                 w++;
             }
             string[w] = 0;
-            int len = sscanf(string, " %u , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone);
+            int len = sscanf(string, " %u , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &padtype);
             if (len >= 5 && type) {
                 VirtualControl *c = dev->GetVirtualControl(uid);
                 if (!c)
                     c = dev->AddVirtualControl(uid, -1);
                 if (c) {
-                    BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
+                    if (len < 8) { // If ini file is imported from older version, make sure bindings aren't applied to "Unplugged" padtype.
+                        oldIni = true;
+                        if (config.padConfigs[port][slot].type != 0) {
+                            padtype = config.padConfigs[port][slot].type;
+                        } else {
+                            padtype = 1;
+                        }
+                    }
+                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone);
                 }
             }
         }
@@ -404,7 +417,7 @@ int LoadSettings(int force, wchar_t *file)
                 continue;
             }
             last = 1;
-            int port, slot, motor;
+            int port, slot, motor, padtype;
             int w = 0;
             char string[1000];
             char effect[1000];
@@ -415,8 +428,18 @@ int LoadSettings(int force, wchar_t *file)
             string[w] = 0;
             // wcstok not in ntdll.  More effore than its worth to shave off
             // whitespace without it.
-            if (sscanf(string, " %s %i , %i , %i", effect, &port, &motor, &slot) == 4) {
-                char *s = strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',');
+            if (sscanf(string, " %20s %i , %i , %i , %i", effect, &port, &motor, &slot, &padtype) == 5) {
+                char *s;
+                if (oldIni) { // Make sure bindings aren't applied to "Unplugged" padtype and FF settings are read from old location.
+                    if (config.padConfigs[port][slot].type != 0) {
+                        padtype = config.padConfigs[port][slot].type;
+                    } else {
+                        padtype = 1;
+                    }
+                    s = strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',');
+                } else {
+                    s = strchr(strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',') + 1, ',');
+                }
                 if (!s)
                     continue;
                 s++;

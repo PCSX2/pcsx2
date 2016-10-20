@@ -20,14 +20,6 @@
 
 extern u8 ps2e;
 
-enum PadType {
-    DisabledPad,
-    Dualshock2Pad,
-    GuitarPad,
-    PopnPad
-};
-
-const int numPadTypes = 4;
 extern const wchar_t *padTypes[numPadTypes];
 
 struct PadConfig
@@ -66,6 +58,7 @@ public:
             } gameApis;
 
             u8 multitap[2];
+            u8 swapPadtypes;
 
             u8 escapeFullscreenHack;
             u8 disableScreenSaver;

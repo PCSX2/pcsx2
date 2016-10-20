@@ -46,6 +46,7 @@
 #define IDC_PAD_LIST                    1130
 #define IDC_COMBO1                      1131
 #define IDC_PAD_TYPE                    1132
+#define IDC_SWAP_PAD_TYPES              1133
 #define IDC_SLIDER1                     0x1000
 #define IDC_FLIP1                       0x1001
 #define IDC_AXIS_DIRECTION              0x1002

@@ -32,6 +32,14 @@
  * Still more effort than it's worth to port to Linux, however.
  */
 
+enum PadType {
+    DisabledPad,
+    Dualshock2Pad,
+    GuitarPad,
+    PopnPad,
+    numPadTypes // total number of PadTypes. Add new PadType above this line.
+};
+
 // Mostly match DirectInput8 values.  Note that these are for physical controls.
 // One physical axis maps to 3 virtual ones, and one physical POV control maps to
 // 4 virtual ones.
@@ -259,7 +267,7 @@ public:
         };
     };
 
-    PadBindings pads[2][4];
+    PadBindings pads[2][4][numPadTypes];
 
     // Virtual controls.  All basically act like pressure sensitivity buttons, with
     // values between 0 and 2^16.  2^16 is fully down, 0 is up.  Larger values
