@@ -1543,8 +1543,6 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	GSRendererType m_renderer;
 	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
 	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-	// alternatively:
-	// m_renderer = static_cast<GSRendererType>(renderer);
 
 	if (m_renderer != GSRendererType::OGL_HW && m_renderer != GSRendererType::OGL_SW)
 	{
@@ -1561,9 +1559,17 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	GSsetBaseMem(regs);
 
 	s_vsync = theApp.GetConfigB("vsync");
+	int finished = theApp.GetConfigI("linux_replay");
+	bool repack_dump = (finished < 0);
+
+	if (theApp.GetConfigI("dump")) {
+		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
+		finished = 1;
+	}
+
+	long frame_number = 0;
 
 	void* hWnd = NULL;
-
 	int err = _GSopen((void**)&hWnd, "", m_renderer);
 	if (err != 0) {
 		fprintf(stderr, "Error failed to GSopen\n");
@@ -1573,12 +1579,18 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	{ // Read .gs content
 		std::string f(lpszCmdLine);
+		bool is_xz = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0);
+		if (is_xz)
+			f.replace(f.end()-6, f.end(), "_repack.gs");
+		else
+			f.replace(f.end()-3, f.end(), "_repack.gs");
+
 #ifdef LZMA_SUPPORTED
-		GSDumpFile* file = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0)
-			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine)
-			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine);
+		GSDumpFile* file = is_xz
+			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr)
+			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
 #else
-		GSDumpFile* file = new GSDumpRaw(lpszCmdLine);
+		GSDumpFile* file = new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
 #endif
 
 		uint32 crc;
@@ -1629,6 +1641,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 			case 1:
 				file->Read(&p->param, 1);
+				frame_number++;
 
 				break;
 
@@ -1646,6 +1659,9 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 			}
 
 			packets.push_back(p);
+
+			if (repack_dump && frame_number > -finished)
+				break;
 		}
 
 		delete file;
@@ -1653,14 +1669,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	sleep(2);
 
-	//while(IsWindowVisible(hWnd))
-	//FIXME map?
-	int finished = theApp.GetConfigI("linux_replay");
-	if (theApp.GetConfigI("dump")) {
-		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
-		finished = 1;
-	}
-	unsigned long frame_number = 0;
+
+	frame_number = 0;
 
 	// Init vsync stuff
 	GSvsync(1);
@@ -1720,7 +1730,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 	static_cast<GSDeviceOGL*>(s_gs->m_dev)->GenerateProfilerData();
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-	unsigned long total_frame_nb = std::max(1ul, frame_number) << 10;
+	unsigned long total_frame_nb = std::max(1l, frame_number) << 10;
 	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
 			(float)g_real_texture_upload_byte/(float)total_frame_nb,
 			(float)g_vertex_upload_byte/(float)total_frame_nb,

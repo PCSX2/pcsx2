@@ -23,23 +23,42 @@
 
 #if defined(__unix__)
 
-GSDumpFile::GSDumpFile(char* filename) {
+GSDumpFile::GSDumpFile(char* filename, const char* repack_filename) {
 	m_fp = fopen(filename, "rb");
-	if (m_fp == NULL) {
+	if (m_fp == nullptr) {
 		fprintf(stderr, "failed to open %s\n", filename);
 		throw "BAD"; // Just exit the program
 	}
+
+	m_repack_fp = nullptr;
+	if (repack_filename) {
+		m_repack_fp = fopen(repack_filename, "wb");
+		if (m_repack_fp == nullptr)
+			fprintf(stderr, "failed to open %s for repack\n", repack_filename);
+	}
+}
+
+void GSDumpFile::Repack(void* ptr, size_t size) {
+	if (m_repack_fp == nullptr)
+		return;
+
+	size_t ret = fwrite(ptr, 1, size, m_repack_fp);
+	if (ret != size)
+		fprintf(stderr, "Failed to repack\n");
+
 }
 
 GSDumpFile::~GSDumpFile() {
 	if (m_fp)
 		fclose(m_fp);
+	if (m_repack_fp)
+		fclose(m_repack_fp);
 }
 
 /******************************************************************/
 #ifdef LZMA_SUPPORTED
 
-GSDumpLzma::GSDumpLzma(char* filename) : GSDumpFile(filename) {
+GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 
 	memset(&m_strm, 0, sizeof(lzma_stream));
 
@@ -102,6 +121,7 @@ bool GSDumpLzma::IsEof() {
 void GSDumpLzma::Read(void* ptr, size_t size) {
 	size_t off = 0;
 	uint8_t* dst = (uint8_t*)ptr;
+	size_t full_size = size;
 	while (size) {
 		if (m_avail == 0) {
 			Decompress();
@@ -114,6 +134,7 @@ void GSDumpLzma::Read(void* ptr, size_t size) {
 		m_start += l;
 		off     += l;
 	}
+	Repack(ptr, full_size);
 }
 
 GSDumpLzma::~GSDumpLzma() {
@@ -129,7 +150,7 @@ GSDumpLzma::~GSDumpLzma() {
 
 /******************************************************************/
 
-GSDumpRaw::GSDumpRaw(char* filename) : GSDumpFile(filename) {
+GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 	m_buff_size = 0;
 	m_area      = NULL;
 	m_inbuf     = NULL;
@@ -156,6 +177,7 @@ void GSDumpRaw::Read(void* ptr, size_t size) {
 			throw "BAD"; // Just exit the program
 		}
 	}
+	Repack(ptr, size);
 }
 
 #endif
