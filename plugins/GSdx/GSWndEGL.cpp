@@ -56,7 +56,7 @@ void GSWndEGL::CreateContext(int major, int minor)
 		EGL_NONE
 	};
 
-	eglBindAPI(EGL_OPENGL_API);
+	BindAPI();
 
 	eglChooseConfig(m_eglDisplay, attrList, &eglConfig, 1, &numConfigs);
 	if ( numConfigs == 0 )
@@ -97,9 +97,9 @@ void GSWndEGL::CreateContext(int major, int minor)
 void GSWndEGL::AttachContext()
 {
 	if (!IsContextAttached()) {
-		// The setting of the API is local to a thread. This function 
+		// The setting of the API is local to a thread. This function
 		// can be called from 2 threads.
-		eglBindAPI(EGL_OPENGL_API);
+		BindAPI();
 
 		//fprintf(stderr, "Attach the context\n");
 		eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext);
@@ -120,6 +120,16 @@ void GSWndEGL::CheckContext()
 {
 	fprintf(stderr,"EGL: %s : %s\n", eglQueryString(m_eglDisplay, EGL_VENDOR) , eglQueryString(m_eglDisplay, EGL_VERSION) );
 	fprintf(stderr,"EGL: extensions supported: %s\n", eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
+}
+
+void GSWndEGL::BindAPI()
+{
+	eglBindAPI(EGL_OPENGL_API);
+	EGLenum api = eglQueryAPI();
+	if (api != EGL_OPENGL_API) {
+		fprintf(stderr,"EGL: Failed to bind the OpenGL API got 0x%x instead\n", api);
+		throw GSDXRecoverableError();
+	}
 }
 
 bool GSWndEGL::Attach(void* handle, bool managed)

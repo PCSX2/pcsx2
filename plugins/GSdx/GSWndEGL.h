@@ -37,6 +37,7 @@ class GSWndEGL : public GSWndGL
 
 	void CreateContext(int major, int minor);
 	void CheckContext();
+	void BindAPI();
 
 	void OpenEGLDisplay();
 	void CloseEGLDisplay();
