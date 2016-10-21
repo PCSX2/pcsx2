@@ -57,23 +57,23 @@ StereoOut32 V_Core::DoReverb(const StereoOut32 &Input)
 
     // Calculate the read/write addresses we'll be needing for this session of reverb.
 
-    const u32 same_src = RevbGetIndexer(R ? RevBuffers.IIR_SRC_A1 : RevBuffers.IIR_SRC_A0);
-    const u32 same_dst = RevbGetIndexer(R ? RevBuffers.IIR_DEST_A1 : RevBuffers.IIR_DEST_A0);
+    const u32 same_src = RevbGetIndexer(R ? RevBuffers.SAME_R_SRC : RevBuffers.SAME_L_SRC);
+    const u32 same_dst = RevbGetIndexer(R ? RevBuffers.SAME_R_DST : RevBuffers.SAME_L_DST);
     const u32 same_prv = RevbGetIndexer(R ? RevBuffers.SAME_R_PRV : RevBuffers.SAME_L_PRV);
 
-    const u32 diff_src = RevbGetIndexer(R ? RevBuffers.IIR_SRC_B0 : RevBuffers.IIR_SRC_B1);
-    const u32 diff_dst = RevbGetIndexer(R ? RevBuffers.IIR_DEST_B1 : RevBuffers.IIR_DEST_B0);
+    const u32 diff_src = RevbGetIndexer(R ? RevBuffers.DIFF_L_SRC : RevBuffers.DIFF_R_SRC);
+    const u32 diff_dst = RevbGetIndexer(R ? RevBuffers.DIFF_R_DST : RevBuffers.DIFF_L_DST);
     const u32 diff_prv = RevbGetIndexer(R ? RevBuffers.DIFF_R_PRV : RevBuffers.DIFF_L_PRV);
 
-    const u32 comb1_src = RevbGetIndexer(R ? RevBuffers.ACC_SRC_A1 : RevBuffers.ACC_SRC_A0);
-    const u32 comb2_src = RevbGetIndexer(R ? RevBuffers.ACC_SRC_B1 : RevBuffers.ACC_SRC_B0);
-    const u32 comb3_src = RevbGetIndexer(R ? RevBuffers.ACC_SRC_C1 : RevBuffers.ACC_SRC_C0);
-    const u32 comb4_src = RevbGetIndexer(R ? RevBuffers.ACC_SRC_D1 : RevBuffers.ACC_SRC_D0);
+    const u32 comb1_src = RevbGetIndexer(R ? RevBuffers.COMB1_R_SRC : RevBuffers.COMB1_L_SRC);
+    const u32 comb2_src = RevbGetIndexer(R ? RevBuffers.COMB2_R_SRC : RevBuffers.COMB2_L_SRC);
+    const u32 comb3_src = RevbGetIndexer(R ? RevBuffers.COMB3_R_SRC : RevBuffers.COMB3_L_SRC);
+    const u32 comb4_src = RevbGetIndexer(R ? RevBuffers.COMB4_R_SRC : RevBuffers.COMB4_L_SRC);
 
     const u32 apf1_src = RevbGetIndexer(R ? RevBuffers.APF1_R_SRC : RevBuffers.APF1_L_SRC);
-    const u32 apf1_dst = RevbGetIndexer(R ? RevBuffers.MIX_DEST_A1 : RevBuffers.MIX_DEST_A0);
+    const u32 apf1_dst = RevbGetIndexer(R ? RevBuffers.APF1_R_DST : RevBuffers.APF1_L_DST);
     const u32 apf2_src = RevbGetIndexer(R ? RevBuffers.APF2_R_SRC : RevBuffers.APF2_L_SRC);
-    const u32 apf2_dst = RevbGetIndexer(R ? RevBuffers.MIX_DEST_B1 : RevBuffers.MIX_DEST_B0);
+    const u32 apf2_dst = RevbGetIndexer(R ? RevBuffers.APF2_R_DST : RevBuffers.APF2_L_DST);
 
     // -----------------------------------------
     //          Optimized IRQ Testing !
@@ -109,15 +109,15 @@ StereoOut32 V_Core::DoReverb(const StereoOut32 &Input)
 #define MUL(x, y) ((x) * (y) >> 15)
     in = MUL(R ? Revb.IN_COEF_R : Revb.IN_COEF_L, R ? Input.Right : Input.Left);
 
-    same = MUL(Revb.IIR_ALPHA, in + MUL(Revb.IIR_COEF, _spu2mem[same_src]) - _spu2mem[same_prv]) + _spu2mem[same_prv];
-    diff = MUL(Revb.IIR_ALPHA, in + MUL(Revb.IIR_COEF, _spu2mem[diff_src]) - _spu2mem[diff_prv]) + _spu2mem[diff_prv];
+    same = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[same_src]) - _spu2mem[same_prv]) + _spu2mem[same_prv];
+    diff = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[diff_src]) - _spu2mem[diff_prv]) + _spu2mem[diff_prv];
 
-    out = MUL(Revb.ACC_COEF_A, _spu2mem[comb1_src]) + MUL(Revb.ACC_COEF_B, _spu2mem[comb2_src]) + MUL(Revb.ACC_COEF_C, _spu2mem[comb3_src]) + MUL(Revb.ACC_COEF_D, _spu2mem[comb4_src]);
+    out = MUL(Revb.COMB1_VOL, _spu2mem[comb1_src]) + MUL(Revb.COMB2_VOL, _spu2mem[comb2_src]) + MUL(Revb.COMB3_VOL, _spu2mem[comb3_src]) + MUL(Revb.COMB4_VOL, _spu2mem[comb4_src]);
 
-    apf1 = out - MUL(Revb.FB_ALPHA, _spu2mem[apf1_src]);
-    out = _spu2mem[apf1_src] + MUL(Revb.FB_ALPHA, apf1);
-    apf2 = out - MUL(Revb.FB_X, _spu2mem[apf2_src]);
-    out = _spu2mem[apf2_src] + MUL(Revb.FB_X, apf2);
+    apf1 = out - MUL(Revb.APF1_VOL, _spu2mem[apf1_src]);
+    out = _spu2mem[apf1_src] + MUL(Revb.APF1_VOL, apf1);
+    apf2 = out - MUL(Revb.APF2_VOL, _spu2mem[apf2_src]);
+    out = _spu2mem[apf2_src] + MUL(Revb.APF2_VOL, apf2);
 
     // According to no$psx the effects always run but don't always write back, see check in V_Core::Mix
     if (FxEnable) {

@@ -93,29 +93,29 @@ void SPU2writeLog(const char *action, u32 rmem, u16 value)
             case REG_P_MVOLXR:
                 RegLog(2, "MVOLXR", rmem, core, value);
                 break;
-            case R_IIR_ALPHA:
-                RegLog(2, "IIR_ALPHA", rmem, core, value);
+            case R_IIR_VOL:
+                RegLog(2, "IIR_VOL", rmem, core, value);
                 break;
-            case R_ACC_COEF_A:
-                RegLog(2, "ACC_COEF_A", rmem, core, value);
+            case R_COMB1_VOL:
+                RegLog(2, "COMB1_VOL", rmem, core, value);
                 break;
-            case R_ACC_COEF_B:
-                RegLog(2, "ACC_COEF_B", rmem, core, value);
+            case R_COMB2_VOL:
+                RegLog(2, "COMB2_VOL", rmem, core, value);
                 break;
-            case R_ACC_COEF_C:
-                RegLog(2, "ACC_COEF_C", rmem, core, value);
+            case R_COMB3_VOL:
+                RegLog(2, "COMB3_VOL", rmem, core, value);
                 break;
-            case R_ACC_COEF_D:
-                RegLog(2, "ACC_COEF_D", rmem, core, value);
+            case R_COMB4_VOL:
+                RegLog(2, "COMB4_VOL", rmem, core, value);
                 break;
-            case R_IIR_COEF:
-                RegLog(2, "IIR_COEF", rmem, core, value);
+            case R_WALL_VOL:
+                RegLog(2, "WALL_VOL", rmem, core, value);
                 break;
-            case R_FB_ALPHA:
-                RegLog(2, "FB_ALPHA", rmem, core, value);
+            case R_APF1_VOL:
+                RegLog(2, "APF1_VOL", rmem, core, value);
                 break;
-            case R_FB_X:
-                RegLog(2, "FB_X", rmem, core, value);
+            case R_APF2_VOL:
+                RegLog(2, "APF2_VOL", rmem, core, value);
                 break;
             case R_IN_COEF_L:
                 RegLog(2, "IN_COEF_L", rmem, core, value);
@@ -265,28 +265,28 @@ void SPU2writeLog(const char *action, u32 rmem, u16 value)
         RegLog(2, t "L", mem, core, value); \
         break;
 
-                LOG_REVB_REG(FB_SIZE_A, "FB_SIZE_A")
-                LOG_REVB_REG(FB_SIZE_B, "FB_SIZE_B")
-                LOG_REVB_REG(IIR_SRC_A0, "IIR_SRC_A0")
-                LOG_REVB_REG(IIR_SRC_A1, "IIR_SRC_A1")
-                LOG_REVB_REG(IIR_SRC_B1, "IIR_SRC_B1")
-                LOG_REVB_REG(IIR_SRC_B0, "IIR_SRC_B0")
-                LOG_REVB_REG(IIR_DEST_A0, "IIR_DEST_A0")
-                LOG_REVB_REG(IIR_DEST_A1, "IIR_DEST_A1")
-                LOG_REVB_REG(IIR_DEST_B0, "IIR_DEST_B0")
-                LOG_REVB_REG(IIR_DEST_B1, "IIR_DEST_B1")
-                LOG_REVB_REG(ACC_SRC_A0, "ACC_SRC_A0")
-                LOG_REVB_REG(ACC_SRC_A1, "ACC_SRC_A1")
-                LOG_REVB_REG(ACC_SRC_B0, "ACC_SRC_B0")
-                LOG_REVB_REG(ACC_SRC_B1, "ACC_SRC_B1")
-                LOG_REVB_REG(ACC_SRC_C0, "ACC_SRC_C0")
-                LOG_REVB_REG(ACC_SRC_C1, "ACC_SRC_C1")
-                LOG_REVB_REG(ACC_SRC_D0, "ACC_SRC_D0")
-                LOG_REVB_REG(ACC_SRC_D1, "ACC_SRC_D1")
-                LOG_REVB_REG(MIX_DEST_A0, "MIX_DEST_A0")
-                LOG_REVB_REG(MIX_DEST_A1, "MIX_DEST_A1")
-                LOG_REVB_REG(MIX_DEST_B0, "MIX_DEST_B0")
-                LOG_REVB_REG(MIX_DEST_B1, "MIX_DEST_B1")
+                LOG_REVB_REG(APF1_SIZE, "APF1_SIZE")
+                LOG_REVB_REG(APF2_SIZE, "APF2_SIZE")
+                LOG_REVB_REG(SAME_L_SRC, "SAME_L_SRC")
+                LOG_REVB_REG(SAME_R_SRC, "SAME_R_SRC")
+                LOG_REVB_REG(DIFF_L_SRC, "DIFF_L_SRC")
+                LOG_REVB_REG(DIFF_R_SRC, "DIFF_R_SRC")
+                LOG_REVB_REG(SAME_L_DST, "SAME_L_DST")
+                LOG_REVB_REG(SAME_R_DST, "SAME_R_DST")
+                LOG_REVB_REG(DIFF_L_DST, "DIFF_L_DST")
+                LOG_REVB_REG(DIFF_R_DST, "DIFF_R_DST")
+                LOG_REVB_REG(COMB1_L_SRC, "COMB1_L_SRC")
+                LOG_REVB_REG(COMB1_R_SRC, "COMB1_R_SRC")
+                LOG_REVB_REG(COMB2_L_SRC, "COMB2_L_SRC")
+                LOG_REVB_REG(COMB2_R_SRC, "COMB2_R_SRC")
+                LOG_REVB_REG(COMB3_L_SRC, "COMB3_L_SRC")
+                LOG_REVB_REG(COMB3_R_SRC, "COMB3_R_SRC")
+                LOG_REVB_REG(COMB4_L_SRC, "COMB4_L_SRC")
+                LOG_REVB_REG(COMB4_R_SRC, "COMB4_R_SRC")
+                LOG_REVB_REG(APF1_L_DST, "APF1_L_DST")
+                LOG_REVB_REG(APF1_R_DST, "APF1_R_DST")
+                LOG_REVB_REG(APF2_L_DST, "APF2_L_DST")
+                LOG_REVB_REG(APF2_R_DST, "APF2_R_DST")
 
             default:
                 RegLog(2, "UNKNOWN", rmem, core, value);
