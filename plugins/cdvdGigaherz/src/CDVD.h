@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #define CDVDdefs
 #include <PS2Edefs.h>
@@ -40,28 +41,13 @@ extern track tracks[100];
 extern int curDiskType;
 extern int curTrayStatus;
 
-typedef struct _toc_entry
+struct toc_entry
 {
-    UCHAR SessionNumber;
-    UCHAR Control : 4;
-    UCHAR Adr : 4;
-    UCHAR Reserved1;
-    UCHAR Point;
-    UCHAR MsfExtra[3];
-    UCHAR Zero;
-    UCHAR Msf[3];
-} toc_entry;
-
-typedef struct _toc_data
-{
-    UCHAR Length[2];
-    UCHAR FirstCompleteSession;
-    UCHAR LastCompleteSession;
-
-    toc_entry Descriptors[255];
-} toc_data;
-
-extern toc_data cdtoc;
+    u32 lba;
+    u8 track;
+    u8 adr : 4;
+    u8 control : 4;
+};
 
 class IOCtlSrc
 {
@@ -76,7 +62,7 @@ class IOCtlSrc
     s32 m_media_type = 0;
     u32 m_sectors = 0;
     u32 m_layer_break = 0;
-    char tocCacheData[2048];
+    std::vector<toc_entry> m_toc;
 
     bool ReadDVDInfo();
     bool ReadCDInfo();
@@ -87,7 +73,7 @@ public:
     ~IOCtlSrc();
 
     u32 GetSectorCount();
-    s32 ReadTOC(char *toc, size_t size);
+    const std::vector<toc_entry> &ReadTOC();
     s32 ReadSectors2048(u32 sector, u32 count, char *buffer);
     s32 ReadSectors2352(u32 sector, u32 count, char *buffer);
     u32 GetLayerBreakAddress();
@@ -109,8 +95,6 @@ extern char source_drive;
 
 extern HINSTANCE hinst;
 
-#define MSF_TO_LBA(m, s, f) ((m * 60 + s) * 75 + f - 150)
-
 void ReadSettings();
 void WriteSettings();
 void CfgSetSettingsDir(const char *dir);
@@ -130,6 +114,6 @@ char *cdvdGetSector(s32 sector, s32 mode);
 s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
 s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
-s32 cdvdParseTOC();
+void cdvdParseTOC();
 
 #endif /* __CDVD_H__ */
