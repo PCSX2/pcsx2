@@ -29,28 +29,28 @@
 
 s32 IOCtlSrc::Reopen()
 {
-    if (device != INVALID_HANDLE_VALUE) {
+    if (m_device != INVALID_HANDLE_VALUE) {
         DWORD size;
-        DeviceIoControl(device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
-        CloseHandle(device);
+        DeviceIoControl(m_device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
+        CloseHandle(m_device);
     }
 
     DWORD size;
 
     OpenOK = false;
     // SPTI only works if the device is opened with GENERIC_WRITE access.
-    device = CreateFile(fName, GENERIC_READ | GENERIC_WRITE,
-                        FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                        FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
-    if (device == INVALID_HANDLE_VALUE)
+    m_device = CreateFile(fName, GENERIC_READ | GENERIC_WRITE,
+                          FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                          FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    if (m_device == INVALID_HANDLE_VALUE)
         return -1;
 
     // Dual layer DVDs cannot read from layer 1 without this ioctl
-    DeviceIoControl(device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
+    DeviceIoControl(m_device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
 
     // FIXME: 0 is a valid session id, but the code assumes that it isn't.
     sessID = 0;
-    DeviceIoControl(device, IOCTL_DVD_START_SESSION, NULL, 0, &sessID, sizeof(DVD_SESSION_ID), &size, NULL);
+    DeviceIoControl(m_device, IOCTL_DVD_START_SESSION, NULL, 0, &sessID, sizeof(DVD_SESSION_ID), &size, NULL);
 
     tocCached = false;
     mediaTypeCached = false;
@@ -63,7 +63,7 @@ s32 IOCtlSrc::Reopen()
 
 IOCtlSrc::IOCtlSrc(const char *fileName)
 {
-    device = INVALID_HANDLE_VALUE;
+    m_device = INVALID_HANDLE_VALUE;
 
     strcpy_s(fName, 256, fileName);
 
@@ -76,9 +76,9 @@ IOCtlSrc::~IOCtlSrc()
     if (OpenOK) {
         SetSpindleSpeed(true);
         DWORD size;
-        DeviceIoControl(device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
+        DeviceIoControl(m_device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
 
-        CloseHandle(device);
+        CloseHandle(m_device);
     }
 }
 
@@ -105,7 +105,7 @@ s32 IOCtlSrc::GetSectorCount()
 
     DWORD size;
     GET_LENGTH_INFORMATION info;
-    if (DeviceIoControl(device, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &info, sizeof(info), &size, NULL)) {
+    if (DeviceIoControl(m_device, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &info, sizeof(info), &size, NULL)) {
         discSizeCached = true;
         discSize = (s32)(info.Length.QuadPart / 2048);
         return discSize;
@@ -118,7 +118,7 @@ s32 IOCtlSrc::GetSectorCount()
 
     CDROM_TOC_FULL_TOC_DATA *ftd = (CDROM_TOC_FULL_TOC_DATA *)sectorbuffer;
 
-    if (DeviceIoControl(device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), ftd, 2048, &size, NULL)) {
+    if (DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), ftd, 2048, &size, NULL)) {
         for (int i = 0; i < 101; i++) {
             if (ftd->Descriptors[i].Point == 0xa2) {
                 if (ftd->Descriptors[i].SessionNumber == ftd->LastCompleteSession) {
@@ -138,12 +138,12 @@ s32 IOCtlSrc::GetSectorCount()
     dvdrs.Format = DvdPhysicalDescriptor;
     dvdrs.SessionId = sessID;
     dvdrs.LayerNumber = 0;
-    if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, NULL) != 0) {
+    if (DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, NULL) != 0) {
         s32 sectors1 = _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
         if (dld.ld.NumberOfLayers == 1) { // PTP, OTP
             if (dld.ld.TrackPath == 0) {  // PTP
                 dvdrs.LayerNumber = 1;
-                if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr) != 0) {
+                if (DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr) != 0) {
                     sectors1 += _byteswap_ulong(dld.ld.EndDataSector) - _byteswap_ulong(dld.ld.StartingDataSector) + 1;
                 }
             } else { // OTP
@@ -175,7 +175,7 @@ s32 IOCtlSrc::GetLayerBreakAddress()
     dvdrs.Format = DvdPhysicalDescriptor;
     dvdrs.SessionId = sessID;
     dvdrs.LayerNumber = 0;
-    if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
+    if (DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
         if (dld.ld.NumberOfLayers == 0) { // Single layer
             layerBreak = 0;
         } else if (dld.ld.TrackPath == 0) { // PTP
@@ -210,7 +210,7 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
         s.ReadSpeed = speed;
         s.WriteSpeed = speed;
 
-        if (DeviceIoControl(device,
+        if (DeviceIoControl(m_device,
                             IOCTL_CDROM_SET_SPEED, //operation to perform
                             &s, sizeof(s),         //no input buffer
                             NULL, 0,               //output buffer
@@ -228,7 +228,7 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
         s.ReadSpeed = 0xffff; // maximum ?
         s.WriteSpeed = 0xffff;
 
-        DeviceIoControl(device,
+        DeviceIoControl(m_device,
                         IOCTL_CDROM_SET_SPEED, //operation to perform
                         &s, sizeof(s),         //no input buffer
                         NULL, 0,               //output buffer
@@ -251,7 +251,7 @@ s32 IOCtlSrc::GetMediaType()
 
     CDROM_TOC_FULL_TOC_DATA *ftd = (CDROM_TOC_FULL_TOC_DATA *)sectorbuffer;
 
-    if (DeviceIoControl(device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), ftd, 2048, &size, NULL)) {
+    if (DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), ftd, 2048, &size, NULL)) {
         mediaTypeCached = true;
         mediaType = -1;
         return mediaType;
@@ -261,7 +261,7 @@ s32 IOCtlSrc::GetMediaType()
     dvdrs.Format = DvdPhysicalDescriptor;
     dvdrs.SessionId = sessID;
     dvdrs.LayerNumber = 0;
-    if (DeviceIoControl(device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
+    if (DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs), &dld, sizeof(dld), &size, nullptr)) {
         if (dld.ld.NumberOfLayers == 0) { // Single layer
             mediaType = 0;
         } else if (dld.ld.TrackPath == 0) { // PTP
@@ -296,7 +296,7 @@ s32 IOCtlSrc::ReadTOC(char *toc, int msize)
         if (!OpenOK)
             return -1;
 
-        int code = DeviceIoControl(device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), tocCacheData, 2048, &size, NULL);
+        int code = DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &tocrq, sizeof(tocrq), tocCacheData, 2048, &size, NULL);
 
         if (code == 0)
             return -1;
@@ -322,12 +322,12 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
     rri.SectorCount = count;
 
     //fall back to standard reading
-    if (SetFilePointer(device, rri.DiskOffset.LowPart, &rri.DiskOffset.HighPart, FILE_BEGIN) == -1) {
+    if (SetFilePointer(m_device, rri.DiskOffset.LowPart, &rri.DiskOffset.HighPart, FILE_BEGIN) == -1) {
         if (GetLastError() != 0)
             return -1;
     }
 
-    if (ReadFile(device, buffer, 2048 * count, &size, NULL) == 0) {
+    if (ReadFile(m_device, buffer, 2048 * count, &size, NULL) == 0) {
         return -1;
     }
 
@@ -382,7 +382,7 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
         sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
 
         DWORD unused;
-        if (DeviceIoControl(device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
+        if (DeviceIoControl(m_device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
                             sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr)) {
             if (sptd.info.DataTransferLength != 2352)
                 printf(" * CDVD: SPTI short transfer of %u bytes", sptd.info.DataTransferLength);
@@ -405,7 +405,7 @@ s32 IOCtlSrc::DiscChanged()
     if (!OpenOK)
         return -1;
 
-    int ret = DeviceIoControl(device, IOCTL_STORAGE_CHECK_VERIFY, NULL, 0, NULL, 0, &size, NULL);
+    int ret = DeviceIoControl(m_device, IOCTL_STORAGE_CHECK_VERIFY, NULL, 0, NULL, 0, &size, NULL);
 
     if (ret == 0) {
         tocCached = false;
@@ -414,14 +414,14 @@ s32 IOCtlSrc::DiscChanged()
         layerBreakCached = false;
 
         if (sessID != 0) {
-            DeviceIoControl(device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
+            DeviceIoControl(m_device, IOCTL_DVD_END_SESSION, &sessID, sizeof(DVD_SESSION_ID), NULL, 0, &size, NULL);
             sessID = 0;
         }
         return 1;
     }
 
     if (sessID == 0) {
-        DeviceIoControl(device, IOCTL_DVD_START_SESSION, NULL, 0, &sessID, sizeof(DVD_SESSION_ID), &size, NULL);
+        DeviceIoControl(m_device, IOCTL_DVD_START_SESSION, NULL, 0, &sessID, sizeof(DVD_SESSION_ID), &size, NULL);
     }
 
     return 0;
