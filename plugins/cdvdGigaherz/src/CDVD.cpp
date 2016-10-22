@@ -390,9 +390,6 @@ s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
 
 s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
 {
-    //return src->ReadTOC((char*)toc,2048);
-    //that didn't work too well...
-
     if (curDiskType == CDVD_TYPE_NODISC)
         return -1;
 

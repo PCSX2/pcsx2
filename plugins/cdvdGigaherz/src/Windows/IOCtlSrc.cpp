@@ -27,7 +27,6 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <algorithm>
 #include <array>
 
 IOCtlSrc::IOCtlSrc(const char *filename)
@@ -140,17 +139,12 @@ s32 IOCtlSrc::GetMediaType()
     return m_media_type;
 }
 
-s32 IOCtlSrc::ReadTOC(char *toc, size_t size)
+const std::vector<toc_entry> &IOCtlSrc::ReadTOC()
 {
     if (!m_disc_ready)
         RefreshDiscInfo();
 
-    if (GetMediaType() >= 0)
-        return -1;
-
-    memcpy(toc, tocCacheData, std::min(size, sizeof(tocCacheData)));
-
-    return 0;
+    return m_toc;
 }
 
 s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
@@ -307,13 +301,25 @@ bool IOCtlSrc::ReadCDInfo()
 {
     DWORD unused;
     CDROM_READ_TOC_EX toc_ex{};
-    toc_ex.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
-    toc_ex.Msf = 1;
+    toc_ex.Format = CDROM_READ_TOC_EX_FORMAT_TOC;
+    toc_ex.Msf = 0;
     toc_ex.SessionTrack = 1;
 
+    CDROM_TOC toc;
     if (!DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &toc_ex,
-                         sizeof(toc_ex), tocCacheData, sizeof(tocCacheData), &unused, nullptr))
+                         sizeof(toc_ex), &toc, sizeof(toc), &unused, nullptr))
         return false;
+
+    m_toc.clear();
+    size_t track_count = ((toc.Length[0] << 8) + toc.Length[1] - 2) / sizeof(TRACK_DATA);
+    for (size_t n = 0; n < track_count; ++n) {
+        TRACK_DATA &track = toc.TrackData[n];
+        // Exclude the lead-out track descriptor.
+        if (track.TrackNumber == 0xAA)
+            continue;
+        u32 lba = (track.Address[1] << 16) + (track.Address[2] << 8) + track.Address[3];
+        m_toc.push_back({lba, track.TrackNumber, track.Adr, track.Control});
+    }
 
     GET_LENGTH_INFORMATION info;
     if (!DeviceIoControl(m_device, IOCTL_DISK_GET_LENGTH_INFO, nullptr, 0, &info,
