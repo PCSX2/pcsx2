@@ -107,22 +107,9 @@ void cdvdCallNewDiscCB()
 
 bool cdvdUpdateDiscStatus()
 {
-    int change = src->DiscChanged();
+    bool ready = src->DiscReady();
 
-    if (change == -1) { //error getting status (no disc in drive?)
-        //try to recreate the device
-        src->Reopen();
-
-        if (src->IsOK()) {
-            change = 1;
-        } else {
-            curDiskType = CDVD_TYPE_NODISC;
-            curTrayStatus = CDVD_TRAY_OPEN;
-            return true;
-        }
-    }
-
-    if (change == 1) {
+    if (!ready) {
         if (!disc_has_changed) {
             disc_has_changed = true;
             curDiskType = CDVD_TYPE_NODISC;
@@ -134,15 +121,12 @@ bool cdvdUpdateDiscStatus()
             curDiskType = CDVD_TYPE_NODISC;
             curTrayStatus = CDVD_TRAY_CLOSE;
 
-            // just a test
-            src->Reopen();
-
             disc_has_changed = false;
             cdvdRefreshData();
             cdvdCallNewDiscCB();
         }
     }
-    return (change != 0);
+    return !ready;
 }
 
 DWORD CALLBACK cdvdThread(PVOID param)
@@ -150,9 +134,6 @@ DWORD CALLBACK cdvdThread(PVOID param)
     printf(" * CDVD: IO thread started...\n");
 
     while (cdvd_is_open) {
-        if (!src)
-            break;
-
         if (cdvdUpdateDiscStatus()) {
             // Need to sleep some to avoid an aggressive spin that sucks the cpu dry.
             Sleep(10);
