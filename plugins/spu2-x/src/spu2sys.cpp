@@ -1349,7 +1349,7 @@ static void __fastcall RegWrite_Core(u16 value)
                 psxmode = true;
                 //memset(_spu2mem, 0, 0x200000);
                 Cores[1].FxEnable = 0;
-                Cores[1].EffectsStartA = 0x7FFF8;  // park core1 effect area in inaccessible mem
+                Cores[1].EffectsStartA = 0x7FFF8; // park core1 effect area in inaccessible mem
                 Cores[1].EffectsEndA = 0x7FFFF;
                 Cores[1].ExtEffectsStartA = 0x7FFF8;
                 Cores[1].ExtEffectsEndA = 0x7FFFF;

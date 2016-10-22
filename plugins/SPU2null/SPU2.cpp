@@ -269,8 +269,7 @@ void InitADSR() // INIT ADSR
     rs = 1;
     rd = 0;
 
-    for (i = 32; i < 160; i++) // we start at pos 32 with the real values... everything before is 0
-    {
+    for (i = 32; i < 160; i++) { // we start at pos 32 with the real values... everything before is 0
         if (r < 0x3FFFFFFF) {
             r += rs;
             rd++;
@@ -288,8 +287,7 @@ void InitADSR() // INIT ADSR
 
 int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
 {
-    if (pvoice->bStop) // should be stopped:
-    {
+    if (pvoice->bStop) { // should be stopped:
         if (pvoice->bIgnoreLoop == 0) {
             pvoice->ADSRX.EnvelopeVol = 0;
             pvoice->bOn = false;
@@ -300,8 +298,7 @@ int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
             pvoice->bIgnoreLoop = false;
             return 0;
         }
-        if (pvoice->ADSRX.ReleaseModeExp) // do release
-        {
+        if (pvoice->ADSRX.ReleaseModeExp) { // do release
             switch ((pvoice->ADSRX.EnvelopeVol >> 28) & 0x7) {
                 case 0:
                     pvoice->ADSRX.EnvelopeVol -= RateTable[(4 * (pvoice->ADSRX.ReleaseRate ^ 0x1F)) - 0x18 + 0 + 32];
@@ -349,8 +346,7 @@ int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
         return pvoice->ADSRX.lVolume;
     } else // not stopped yet?
     {
-        if (pvoice->ADSRX.State == 0) // -> attack
-        {
+        if (pvoice->ADSRX.State == 0) { // -> attack
             if (pvoice->ADSRX.AttackModeExp) {
                 if (pvoice->ADSRX.EnvelopeVol < 0x60000000)
                     pvoice->ADSRX.EnvelopeVol += RateTable[(pvoice->ADSRX.AttackRate ^ 0x7F) - 0x10 + 32];
@@ -369,8 +365,7 @@ int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
             return pvoice->ADSRX.lVolume;
         }
         //--------------------------------------------------//
-        if (pvoice->ADSRX.State == 1) // -> decay
-        {
+        if (pvoice->ADSRX.State == 1) { // -> decay
             switch ((pvoice->ADSRX.EnvelopeVol >> 28) & 0x7) {
                 case 0:
                     pvoice->ADSRX.EnvelopeVol -= RateTable[(4 * (pvoice->ADSRX.DecayRate ^ 0x1F)) - 0x18 + 0 + 32];
@@ -408,8 +403,7 @@ int MixADSR(VOICE_PROCESSED *pvoice) // MIX ADSR
             return pvoice->ADSRX.lVolume;
         }
         //--------------------------------------------------//
-        if (pvoice->ADSRX.State == 2) // -> sustain
-        {
+        if (pvoice->ADSRX.State == 2) { // -> sustain
             if (pvoice->ADSRX.SustainIncrease) {
                 if (pvoice->ADSRX.SustainModeExp) {
                     if (pvoice->ADSRX.EnvelopeVol < 0x60000000)
@@ -473,8 +467,7 @@ void SPU2Worker()
     int ch, flags;
 
     VOICE_PROCESSED *pChannel = voices;
-    for (ch = 0; ch < SPU_NUMBER_VOICES; ch++, pChannel++) // loop em all... we will collect 1 ms of sound of each playing channel
-    {
+    for (ch = 0; ch < SPU_NUMBER_VOICES; ch++, pChannel++) { // loop em all... we will collect 1 ms of sound of each playing channel
         if (pChannel->bNew) {
             pChannel->StartSound();                      // start new sound
             dwEndChannel2[ch / 24] &= ~(1 << (ch % 24)); // clear end channel bit
@@ -492,13 +485,11 @@ void SPU2Worker()
         int ns = 0;
         while (ns < NSSIZE) {
             while (pChannel->spos >= 0x10000) {
-                if (pChannel->iSBPos == 28) // 28 reached?
-                {
-                    start = pChannel->pCurr; // set up the current pos
+                if (pChannel->iSBPos == 28) { // 28 reached?
+                    start = pChannel->pCurr;  // set up the current pos
 
                     // special "stop" sign
-                    if (start == (u8 *)-1) //!pChannel->bOn
-                    {
+                    if (start == (u8 *)-1) {   //!pChannel->bOn
                         pChannel->bOn = false; // -> turn everything off
                         pChannel->ADSRX.lVolume = 0;
                         pChannel->ADSRX.EnvelopeVol = 0;
@@ -526,13 +517,12 @@ void SPU2Worker()
                     if ((flags & 4) && (!pChannel->bIgnoreLoop))
                         pChannel->pLoop = start - 16; // loop adress
 
-                    if (flags & 1) // 1: stop/loop
-                    {
+                    if (flags & 1) { // 1: stop/loop
                         // We play this block out first...
                         dwEndChannel2[ch / 24] |= (1 << (ch % 24));
                         //if(!(flags&2))                          // 1+2: do loop... otherwise: stop
-                        if (flags != 3 || pChannel->pLoop == NULL) // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
-                        {                                          // and checking if pLoop is set avoids crashes, yeah
+                        if (flags != 3 || pChannel->pLoop == NULL) { // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
+                                                                     // and checking if pLoop is set avoids crashes, yeah
                             start = (u8 *)-1;
                             pChannel->bStop = true;
                             pChannel->bIgnoreLoop = false;
@@ -820,10 +810,8 @@ SPU2interruptDMA7()
 // turn channels on
 void SoundOn(s32 start, s32 end, u16 val) // SOUND ON PSX COMAND
 {
-    for (s32 ch = start; ch < end; ch++, val >>= 1) // loop channels
-    {
-        if ((val & 1) && voices[ch].pStart) // mmm... start has to be set before key on !?!
-        {
+    for (s32 ch = start; ch < end; ch++, val >>= 1) { // loop channels
+        if ((val & 1) && voices[ch].pStart) {         // mmm... start has to be set before key on !?!
             voices[ch].bNew = true;
             voices[ch].bIgnoreLoop = false;
         }
@@ -833,9 +821,8 @@ void SoundOn(s32 start, s32 end, u16 val) // SOUND ON PSX COMAND
 // turn channels off
 void SoundOff(s32 start, s32 end, u16 val) // SOUND OFF PSX COMMAND
 {
-    for (s32 ch = start; ch < end; ch++, val >>= 1) // loop channels
-    {
-        if (val & 1) // && s_chan[i].bOn)  mmm...
+    for (s32 ch = start; ch < end; ch++, val >>= 1) { // loop channels
+        if (val & 1)                                  // && s_chan[i].bOn)  mmm...
             voices[ch].bStop = true;
     }
 }
@@ -844,10 +831,8 @@ void FModOn(s32 start, s32 end, u16 val) // FMOD ON PSX COMMAND
 {
     int ch;
 
-    for (ch = start; ch < end; ch++, val >>= 1) // loop channels
-    {
-        if (val & 1) // -> fmod on/off
-        {
+    for (ch = start; ch < end; ch++, val >>= 1) { // loop channels
+        if (val & 1) {                            // -> fmod on/off
             if (ch > 0) {
             }
         } else {
@@ -870,8 +855,7 @@ SPU2write(u32 mem, u16 value)
     u32 r = mem & 0xffff;
 
     // channel info
-    if ((r >= 0x0000 && r < 0x0180) || (r >= 0x0400 && r < 0x0580)) // some channel info?
-    {
+    if ((r >= 0x0000 && r < 0x0180) || (r >= 0x0400 && r < 0x0580)) { // some channel info?
         int ch = 0;
         if (r >= 0x400)
             ch = ((r - 0x400) >> 4) + 24;
@@ -1075,8 +1059,7 @@ SPU2read(u32 mem)
     u16 ret;
     u32 r = mem & 0xffff;
 
-    if ((r >= 0x0000 && r <= 0x0180) || (r >= 0x0400 && r <= 0x0580)) // some channel info?
-    {
+    if ((r >= 0x0000 && r <= 0x0180) || (r >= 0x0400 && r <= 0x0580)) { // some channel info?
         s32 ch = 0;
 
         if (r >= 0x400)
@@ -1092,8 +1075,7 @@ SPU2read(u32 mem)
         }
     }
 
-    if ((r > 0x01c0 && r <= 0x02E0) || (r > 0x05c0 && r <= 0x06E0)) // some channel info?
-    {
+    if ((r > 0x01c0 && r <= 0x02E0) || (r > 0x05c0 && r <= 0x06E0)) { // some channel info?
         s32 ch = 0;
         u32 rx = r;
 
@@ -1193,9 +1175,8 @@ void VOICE_PROCESSED::SetVolume(int iProcessRight)
 {
     u16 vol = iProcessRight ? pvoice->right.word : pvoice->left.word;
 
-    if (vol & 0x8000) // sweep not working
-    {
-        s16 sInc = 1; // -> sweep up?
+    if (vol & 0x8000) { // sweep not working
+        s16 sInc = 1;   // -> sweep up?
         if (vol & 0x2000)
             sInc = -1; // -> or down?
         if (vol & 0x1000)
