@@ -28,46 +28,49 @@
 #include <cstddef>
 #include <cstdlib>
 #include <array>
+#include <stdexcept>
 
 IOCtlSrc::IOCtlSrc(const char *filename)
     : m_filename(filename)
 {
-    Reopen();
-    SetSpindleSpeed(false);
+    if (!Reopen())
+        throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()
 {
-    if (OpenOK) {
+    if (m_device != INVALID_HANDLE_VALUE) {
         SetSpindleSpeed(true);
         CloseHandle(m_device);
     }
 }
 
-s32 IOCtlSrc::Reopen()
+// If a new disc is inserted, ReadFile will fail unless the device is closed
+// and reopened.
+bool IOCtlSrc::Reopen()
 {
     if (m_device != INVALID_HANDLE_VALUE)
         CloseHandle(m_device);
 
-    DWORD size;
-
-    OpenOK = false;
     // SPTI only works if the device is opened with GENERIC_WRITE access.
     m_device = CreateFile(m_filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                           FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                           FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
     if (m_device == INVALID_HANDLE_VALUE)
-        return -1;
+        return false;
 
+    DWORD unused;
     // Required to read from layer 1 of Dual layer DVDs
-    DeviceIoControl(m_device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr, 0, &size, nullptr);
+    DeviceIoControl(m_device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr,
+                    0, &unused, nullptr);
 
-    m_disc_ready = false;
-    OpenOK = true;
-    return 0;
+    if (ReadDVDInfo() || ReadCDInfo())
+        SetSpindleSpeed(false);
+
+    return true;
 }
 
-void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
+void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
 
     DWORD dontcare;
@@ -112,38 +115,23 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults)
     }
 }
 
-u32 IOCtlSrc::GetSectorCount()
+u32 IOCtlSrc::GetSectorCount() const
 {
-    if (!m_disc_ready)
-        RefreshDiscInfo();
-
     return m_sectors;
 }
 
-u32 IOCtlSrc::GetLayerBreakAddress()
+u32 IOCtlSrc::GetLayerBreakAddress() const
 {
-    if (!m_disc_ready)
-        RefreshDiscInfo();
-
-    if (GetMediaType() < 0)
-        return 0;
-
     return m_layer_break;
 }
 
-s32 IOCtlSrc::GetMediaType()
+s32 IOCtlSrc::GetMediaType() const
 {
-    if (!m_disc_ready)
-        RefreshDiscInfo();
-
     return m_media_type;
 }
 
-const std::vector<toc_entry> &IOCtlSrc::ReadTOC()
+const std::vector<toc_entry> &IOCtlSrc::ReadTOC() const
 {
-    if (!m_disc_ready)
-        RefreshDiscInfo();
-
     return m_toc;
 }
 
@@ -152,9 +140,6 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
     RAW_READ_INFO rri;
 
     DWORD size = 0;
-
-    if (!OpenOK)
-        return -1;
 
     rri.DiskOffset.QuadPart = sector * (u64)2048;
     rri.SectorCount = count;
@@ -179,9 +164,6 @@ s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
 
 s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 {
-    if (!OpenOK)
-        return -1;
-
     struct sptdinfo
     {
         SCSI_PASS_THROUGH_DIRECT info;
@@ -332,43 +314,21 @@ bool IOCtlSrc::ReadCDInfo()
     return true;
 }
 
-bool IOCtlSrc::RefreshDiscInfo()
+bool IOCtlSrc::DiscReady()
 {
-    if (m_disc_ready)
-        return true;
-
-    m_media_type = 0;
-    m_layer_break = 0;
-    m_sectors = 0;
-
-    if (!OpenOK)
+    if (m_device == INVALID_HANDLE_VALUE)
         return false;
 
-    if (ReadDVDInfo() || ReadCDInfo())
-        m_disc_ready = true;
-
-    return m_disc_ready;
-}
-
-s32 IOCtlSrc::DiscChanged()
-{
-    DWORD size = 0;
-
-    if (!OpenOK)
-        return -1;
-
-    int ret = DeviceIoControl(m_device, IOCTL_STORAGE_CHECK_VERIFY, NULL, 0, NULL, 0, &size, NULL);
-
-    if (ret == 0) {
-        m_disc_ready = false;
-
-        return 1;
+    DWORD unused;
+    if (DeviceIoControl(m_device, IOCTL_STORAGE_CHECK_VERIFY, nullptr, 0,
+                        nullptr, 0, &unused, nullptr)) {
+        if (!m_sectors)
+            Reopen();
+    } else {
+        m_sectors = 0;
+        m_layer_break = 0;
+        m_media_type = 0;
     }
 
-    return 0;
-}
-
-s32 IOCtlSrc::IsOK()
-{
-    return OpenOK;
+    return !!m_sectors;
 }

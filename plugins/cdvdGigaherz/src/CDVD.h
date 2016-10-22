@@ -56,9 +56,7 @@ class IOCtlSrc
 
     HANDLE m_device = INVALID_HANDLE_VALUE;
     std::string m_filename;
-    bool OpenOK;
 
-    bool m_disc_ready = false;
     s32 m_media_type = 0;
     u32 m_sectors = 0;
     u32 m_layer_break = 0;
@@ -66,25 +64,20 @@ class IOCtlSrc
 
     bool ReadDVDInfo();
     bool ReadCDInfo();
-    bool RefreshDiscInfo();
+    bool Reopen();
 
 public:
     IOCtlSrc(const char *filename);
     ~IOCtlSrc();
 
-    u32 GetSectorCount();
-    const std::vector<toc_entry> &ReadTOC();
+    u32 GetSectorCount() const;
+    const std::vector<toc_entry> &ReadTOC() const;
     s32 ReadSectors2048(u32 sector, u32 count, char *buffer);
     s32 ReadSectors2352(u32 sector, u32 count, char *buffer);
-    u32 GetLayerBreakAddress();
-
-    s32 GetMediaType();
-    void SetSpindleSpeed(bool restore_defaults);
-
-    s32 IsOK();
-    s32 Reopen();
-
-    s32 DiscChanged();
+    u32 GetLayerBreakAddress() const;
+    s32 GetMediaType() const;
+    void SetSpindleSpeed(bool restore_defaults) const;
+    bool DiscReady();
 };
 
 extern IOCtlSrc *src;

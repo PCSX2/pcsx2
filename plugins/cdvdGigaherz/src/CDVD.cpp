@@ -225,10 +225,10 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
     printf(" * CDVD: Opening drive '%s'...\n", csrc);
 
     // open device file
-    src = new IOCtlSrc(csrc);
-
-    if (!src->IsOK()) {
-        printf(" * CDVD: Error opening source.\n");
+    try {
+        src = new IOCtlSrc(csrc);
+    } catch (std::runtime_error &ex) {
+        fputs(ex.what(), stdout);
         return -1;
     }
 
