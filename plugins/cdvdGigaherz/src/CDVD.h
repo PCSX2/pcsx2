@@ -17,8 +17,12 @@
 #define __CDVD_H__
 
 #define _WIN32_WINNT 0x0600
+#define NOMINMAX
 #include <windows.h>
-#include <stdio.h>
+
+#include <cstdio>
+#include <cstring>
+#include <string>
 
 #define CDVDdefs
 #include <PS2Edefs.h>
@@ -62,38 +66,32 @@ extern toc_data cdtoc;
 
 class IOCtlSrc
 {
-    IOCtlSrc(IOCtlSrc &);
+    IOCtlSrc(const IOCtlSrc &) = delete;
+    IOCtlSrc &operator=(const IOCtlSrc &) = delete;
 
-    HANDLE m_device;
+    HANDLE m_device = INVALID_HANDLE_VALUE;
+    std::string m_filename;
     bool OpenOK;
 
-    char sectorbuffer[32 * 2048];
-
-    char fName[256];
-
-    DWORD sessID;
-
-    bool tocCached;
+    bool m_disc_ready = false;
+    s32 m_media_type = 0;
+    u32 m_sectors = 0;
+    u32 m_layer_break = 0;
     char tocCacheData[2048];
 
-    bool mediaTypeCached;
-    int mediaType;
-
-    bool discSizeCached;
-    s32 discSize;
-
-    bool layerBreakCached;
-    s32 layerBreak;
+    bool ReadDVDInfo();
+    bool ReadCDInfo();
+    bool RefreshDiscInfo();
 
 public:
-    IOCtlSrc(const char *fileName);
+    IOCtlSrc(const char *filename);
     ~IOCtlSrc();
 
-    s32 GetSectorCount();
-    s32 ReadTOC(char *toc, int size);
+    u32 GetSectorCount();
+    s32 ReadTOC(char *toc, size_t size);
     s32 ReadSectors2048(u32 sector, u32 count, char *buffer);
     s32 ReadSectors2352(u32 sector, u32 count, char *buffer);
-    s32 GetLayerBreakAddress();
+    u32 GetLayerBreakAddress();
 
     s32 GetMediaType();
     void SetSpindleSpeed(bool restore_defaults);
