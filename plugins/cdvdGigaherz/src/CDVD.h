@@ -64,7 +64,7 @@ class IOCtlSrc
 {
     IOCtlSrc(IOCtlSrc &);
 
-    HANDLE device;
+    HANDLE m_device;
     bool OpenOK;
 
     char sectorbuffer[32 * 2048];
