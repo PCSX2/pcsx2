@@ -314,6 +314,7 @@ void GSdxApp::Init()
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
 	m_default_configuration["override_GL_ARB_shader_image_load_store"]    = "-1";
 	m_default_configuration["override_GL_ARB_viewport_array"]             = "-1";
+	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
 	m_default_configuration["override_GL_EXT_texture_filter_anisotropic"] = "-1";
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = to_string(Z_BEST_SPEED);

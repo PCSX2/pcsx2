@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "GLLoader.h"
 #include "GSdx.h"
+#include "GS.h"
 
 PFNGLBLENDCOLORPROC                    gl_BlendColor                       = NULL;
 
@@ -338,6 +339,7 @@ namespace GLLoader {
 		}
 
 		bool status = true;
+		bool mandatory_hw = static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW;
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
@@ -360,7 +362,7 @@ namespace GLLoader {
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
-		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", true);
+		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", mandatory_hw);
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 #ifdef _WIN32
