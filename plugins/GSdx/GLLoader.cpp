@@ -194,7 +194,7 @@ namespace GLLoader {
 
 	bool legacy_fglrx_buggy_driver = false;
 	bool fglrx_buggy_driver    = false;
-	bool mesa_amd_buggy_driver = false;
+	bool mesa_buggy_driver     = false;
 	bool nvidia_buggy_driver   = false;
 	bool intel_buggy_driver    = false;
 	bool in_replayer           = false;
@@ -270,20 +270,19 @@ namespace GLLoader {
 					strstr((const char*)&s[v], " 15.") // blacklist all 2015 drivers
 					|| strstr((const char*)&s[v], " 16.1"))) // And start of 2016
 			legacy_fglrx_buggy_driver = true;
+
 		if (strstr(vendor, "NVIDIA Corporation"))
 			nvidia_buggy_driver = true;
-		if (strstr(vendor, "Intel"))
-			intel_buggy_driver = true;
-		if (strstr(vendor, "X.Org") || strstr(vendor, "nouveau")) // Note: it might actually catch nouveau too, but bugs are likely to be the same anyway
-			mesa_amd_buggy_driver = true;
-		if (strstr(vendor, "VMware")) // Assume worst case because I don't know the real status
-			mesa_amd_buggy_driver = intel_buggy_driver = true;
 
 #ifdef _WIN32
-		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
+		if (strstr(vendor, "Intel"))
+			intel_buggy_driver = true;
 #else
-		buggy_sso_dual_src = legacy_fglrx_buggy_driver;
+		// On linux assumes the free driver if it isn't nvidia or amd pro driver
+		mesa_buggy_driver = !nvidia_buggy_driver && !fglrx_buggy_driver;
 #endif
+
+		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");

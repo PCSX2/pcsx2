@@ -353,7 +353,7 @@ namespace GLLoader {
 
 	extern bool fglrx_buggy_driver;
 	extern bool legacy_fglrx_buggy_driver;
-	extern bool mesa_amd_buggy_driver;
+	extern bool mesa_buggy_driver;
 	extern bool nvidia_buggy_driver;
 	extern bool intel_buggy_driver;
 	extern bool buggy_sso_dual_src;

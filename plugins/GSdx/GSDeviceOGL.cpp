@@ -1013,7 +1013,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_amd_buggy_driver) {
+	if (GLLoader::mesa_buggy_driver) {
 		if (freopen(out.c_str(), "w", stderr) == NULL)
 			fprintf(stderr, "Failed to redirect stderr\n");
 	}
@@ -1025,7 +1025,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_amd_buggy_driver) {
+	if (GLLoader::mesa_buggy_driver) {
 		if (freopen("/dev/tty", "w", stderr) == NULL)
 			fprintf(stderr, "Failed to restore stderr\n");
 	}
