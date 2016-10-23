@@ -218,6 +218,8 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	} else {
 		header += "#define DISABLE_GL42_image\n";
 	}
+	if (GLLoader::fglrx_buggy_driver || GLLoader::intel_buggy_driver)
+		header += "#define BROKEN_DRIVER as_usual\n";
 
 	// Stupid GL implementation (can't use GL_ES)
 	// AMD/nvidia define it to 0

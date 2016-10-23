@@ -26,7 +26,7 @@
 
 #ifdef FRAGMENT_SHADER
 
-#if defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+#if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
 layout(location = 0)
 #endif
 in SHADER
