@@ -30,7 +30,7 @@
 #include <array>
 #include <stdexcept>
 
-IOCtlSrc::IOCtlSrc(const char *filename)
+IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
     : m_filename(filename)
 {
     if (!Reopen())

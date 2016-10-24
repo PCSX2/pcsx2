@@ -28,6 +28,7 @@
 
 #define CDVDdefs
 #include <PS2Edefs.h>
+#include "Settings.h"
 
 struct track
 {
@@ -69,7 +70,7 @@ class IOCtlSrc
     bool Reopen();
 
 public:
-    IOCtlSrc(const char *filename);
+    IOCtlSrc(decltype(m_filename) filename);
     ~IOCtlSrc();
 
     u32 GetSectorCount() const;
@@ -86,13 +87,13 @@ extern IOCtlSrc *src;
 
 void configure();
 
-extern char source_drive;
-
 extern HINSTANCE hinst;
 
 void ReadSettings();
 void WriteSettings();
-void CfgSetSettingsDir(const char *dir);
+std::string GetValidDrive();
+
+extern Settings g_settings;
 
 extern bool cdvd_is_open;
 extern bool cdvdKeepAlive_is_open;
