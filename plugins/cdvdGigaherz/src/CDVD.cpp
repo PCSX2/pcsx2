@@ -61,20 +61,6 @@ const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 10;
 
-HINSTANCE hinst;
-
-BOOL WINAPI DllMain(
-    HINSTANCE hinstDLL, // handle to DLL module
-    DWORD fdwReason,    // reason for calling function
-    LPVOID lpvReserved  // reserved
-    )
-{
-    if (fdwReason == DLL_PROCESS_ATTACH) {
-        hinst = hinstDLL;
-    }
-    return TRUE;
-}
-
 char *CALLBACK PS2EgetLibName()
 {
     return LibName;

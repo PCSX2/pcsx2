@@ -22,6 +22,16 @@
 #include <codecvt>
 #include "resource.h"
 
+static HINSTANCE s_hinstance;
+
+BOOL WINAPI DllMain(HINSTANCE hinstance, DWORD reason, LPVOID reserved)
+{
+    if (reason == DLL_PROCESS_ATTACH)
+        s_hinstance = hinstance;
+
+    return TRUE;
+}
+
 static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
@@ -111,6 +121,6 @@ void configure()
 {
     ReadSettings();
     auto drives = GetOpticalDriveList();
-    DialogBoxParam(hinst, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(),
+    DialogBoxParam(s_hinstance, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(),
                    ConfigProc, reinterpret_cast<LPARAM>(&drives));
 }
