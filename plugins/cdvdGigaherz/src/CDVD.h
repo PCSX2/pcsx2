@@ -87,8 +87,6 @@ extern IOCtlSrc *src;
 
 void configure();
 
-extern HINSTANCE hinst;
-
 void ReadSettings();
 void WriteSettings();
 std::wstring GetValidDrive();
