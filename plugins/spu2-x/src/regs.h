@@ -61,29 +61,29 @@
 
 // .. repeated for each voice ..
 
-#define REG_A_ESA 0x02E0  //Address: Top address of working area for effects processing
-#define R_FB_SRC_A 0x02E4 // Feedback Source A
-#define R_FB_SRC_B 0x02E8 // Feedback Source B
-#define R_IIR_DEST_A0 0x02EC
-#define R_IIR_DEST_A1 0x02F0
-#define R_ACC_SRC_A0 0x02F4
-#define R_ACC_SRC_A1 0x02F8
-#define R_ACC_SRC_B0 0x02FC
-#define R_ACC_SRC_B1 0x0300
-#define R_IIR_SRC_A0 0x0304
-#define R_IIR_SRC_A1 0x0308
-#define R_IIR_DEST_B0 0x030C
-#define R_IIR_DEST_B1 0x0310
-#define R_ACC_SRC_C0 0x0314
-#define R_ACC_SRC_C1 0x0318
-#define R_ACC_SRC_D0 0x031C
-#define R_ACC_SRC_D1 0x0320
-#define R_IIR_SRC_B0 0x0324 // Some sources have R_IIR_SRC_B0 and R_IIR_SRC_B1 swapped ><
-#define R_IIR_SRC_B1 0x0328 // Assume a typo in the docs and B0 is actually at 324, B1 at 328 in the HW.
-#define R_MIX_DEST_A0 0x032C
-#define R_MIX_DEST_A1 0x0330
-#define R_MIX_DEST_B0 0x0334
-#define R_MIX_DEST_B1 0x0338
+#define REG_A_ESA 0x02E0   //Address: Top address of working area for effects processing
+#define R_APF1_SIZE 0x02E4 // Feedback Source A
+#define R_APF2_SIZE 0x02E8 // Feedback Source B
+#define R_SAME_L_DST 0x02EC
+#define R_SAME_R_DST 0x02F0
+#define R_COMB1_L_SRC 0x02F4
+#define R_COMB1_R_SRC 0x02F8
+#define R_COMB2_L_SRC 0x02FC
+#define R_COMB2_R_SRC 0x0300
+#define R_SAME_L_SRC 0x0304
+#define R_SAME_R_SRC 0x0308
+#define R_DIFF_L_DST 0x030C
+#define R_DIFF_R_DST 0x0310
+#define R_COMB3_L_SRC 0x0314
+#define R_COMB3_R_SRC 0x0318
+#define R_COMB4_L_SRC 0x031C
+#define R_COMB4_R_SRC 0x0320
+#define R_DIFF_L_SRC 0x0324 // Some sources have R_DIFF_R_SRC and R_DIFF_L_SRC swapped ><
+#define R_DIFF_R_SRC 0x0328
+#define R_APF1_L_DST 0x032C
+#define R_APF1_R_DST 0x0330
+#define R_APF2_L_DST 0x0334
+#define R_APF2_R_DST 0x0338
 #define REG_A_EEA 0x033C // Address: End address of working area for effects processing (upper part of address only!)
 
 #define REG_S_ENDX 0x0340 // End Point passed flag
@@ -110,14 +110,14 @@
 #define REG_P_MVOLXL 0x0770 // Current Master Volume Left
 #define REG_P_MVOLXR 0x0772 // Current Master Volume Right
 
-#define R_IIR_ALPHA 0x0774 //IIR alpha (% used)
-#define R_ACC_COEF_A 0x0776
-#define R_ACC_COEF_B 0x0778
-#define R_ACC_COEF_C 0x077A
-#define R_ACC_COEF_D 0x077C
-#define R_IIR_COEF 0x077E
-#define R_FB_ALPHA 0x0780 //feedback alpha (% used)
-#define R_FB_X 0x0782     //feedback
+#define R_IIR_VOL 0x0774
+#define R_COMB1_VOL 0x0776
+#define R_COMB2_VOL 0x0778
+#define R_COMB3_VOL 0x077A
+#define R_COMB4_VOL 0x077C
+#define R_WALL_VOL 0x077E
+#define R_APF1_VOL 0x0780
+#define R_APF2_VOL 0x0782
 #define R_IN_COEF_L 0x0784
 #define R_IN_COEF_R 0x0786
 

@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Mixer.h"
+#include "SndOut.h"
 
 // --------------------------------------------------------------------------------------
 //  SPU2 Memory Indexers
@@ -229,73 +230,78 @@ struct V_Reverb
     s16 IN_COEF_L;
     s16 IN_COEF_R;
 
-    u32 FB_SRC_A;
-    u32 FB_SRC_B;
+    u32 APF1_SIZE;
+    u32 APF2_SIZE;
 
-    s16 FB_ALPHA;
-    s16 FB_X;
+    s16 APF1_VOL;
+    s16 APF2_VOL;
 
-    u32 IIR_SRC_A0;
-    u32 IIR_SRC_A1;
-    u32 IIR_SRC_B1;
-    u32 IIR_SRC_B0;
-    u32 IIR_DEST_A0;
-    u32 IIR_DEST_A1;
-    u32 IIR_DEST_B0;
-    u32 IIR_DEST_B1;
+    u32 SAME_L_SRC;
+    u32 SAME_R_SRC;
+    u32 DIFF_L_SRC;
+    u32 DIFF_R_SRC;
+    u32 SAME_L_DST;
+    u32 SAME_R_DST;
+    u32 DIFF_L_DST;
+    u32 DIFF_R_DST;
 
-    s16 IIR_ALPHA;
-    s16 IIR_COEF;
+    s16 IIR_VOL;
+    s16 WALL_VOL;
 
-    u32 ACC_SRC_A0;
-    u32 ACC_SRC_A1;
-    u32 ACC_SRC_B0;
-    u32 ACC_SRC_B1;
-    u32 ACC_SRC_C0;
-    u32 ACC_SRC_C1;
-    u32 ACC_SRC_D0;
-    u32 ACC_SRC_D1;
+    u32 COMB1_L_SRC;
+    u32 COMB1_R_SRC;
+    u32 COMB2_L_SRC;
+    u32 COMB2_R_SRC;
+    u32 COMB3_L_SRC;
+    u32 COMB3_R_SRC;
+    u32 COMB4_L_SRC;
+    u32 COMB4_R_SRC;
 
-    s16 ACC_COEF_A;
-    s16 ACC_COEF_B;
-    s16 ACC_COEF_C;
-    s16 ACC_COEF_D;
+    s16 COMB1_VOL;
+    s16 COMB2_VOL;
+    s16 COMB3_VOL;
+    s16 COMB4_VOL;
 
-    u32 MIX_DEST_A0;
-    u32 MIX_DEST_A1;
-    u32 MIX_DEST_B0;
-    u32 MIX_DEST_B1;
+    u32 APF1_L_DST;
+    u32 APF1_R_DST;
+    u32 APF2_L_DST;
+    u32 APF2_R_DST;
 };
 
 struct V_ReverbBuffers
 {
-    s32 FB_SRC_A0;
-    s32 FB_SRC_B0;
-    s32 FB_SRC_A1;
-    s32 FB_SRC_B1;
+    s32 SAME_L_SRC;
+    s32 SAME_R_SRC;
+    s32 DIFF_R_SRC;
+    s32 DIFF_L_SRC;
+    s32 SAME_L_DST;
+    s32 SAME_R_DST;
+    s32 DIFF_L_DST;
+    s32 DIFF_R_DST;
 
-    s32 IIR_SRC_A0;
-    s32 IIR_SRC_A1;
-    s32 IIR_SRC_B0;
-    s32 IIR_SRC_B1;
-    s32 IIR_DEST_A0;
-    s32 IIR_DEST_A1;
-    s32 IIR_DEST_B0;
-    s32 IIR_DEST_B1;
+    s32 COMB1_L_SRC;
+    s32 COMB1_R_SRC;
+    s32 COMB2_L_SRC;
+    s32 COMB2_R_SRC;
+    s32 COMB3_L_SRC;
+    s32 COMB3_R_SRC;
+    s32 COMB4_L_SRC;
+    s32 COMB4_R_SRC;
 
-    s32 ACC_SRC_A0;
-    s32 ACC_SRC_A1;
-    s32 ACC_SRC_B0;
-    s32 ACC_SRC_B1;
-    s32 ACC_SRC_C0;
-    s32 ACC_SRC_C1;
-    s32 ACC_SRC_D0;
-    s32 ACC_SRC_D1;
+    s32 APF1_L_DST;
+    s32 APF1_R_DST;
+    s32 APF2_L_DST;
+    s32 APF2_R_DST;
 
-    s32 MIX_DEST_A0;
-    s32 MIX_DEST_A1;
-    s32 MIX_DEST_B0;
-    s32 MIX_DEST_B1;
+    s32 SAME_L_PRV;
+    s32 SAME_R_PRV;
+    s32 DIFF_L_PRV;
+    s32 DIFF_R_PRV;
+
+    s32 APF1_L_SRC;
+    s32 APF1_R_SRC;
+    s32 APF2_L_SRC;
+    s32 APF2_R_SRC;
 
     bool NeedsUpdated;
 };
@@ -419,9 +425,7 @@ struct V_Core
 
     V_CoreRegs Regs; // Registers
 
-    // Last samples to pass through the effects processor.
-    // Used because the effects processor works at 24khz and just pulls
-    // from this for the odd Ts.
+    // Preserves the channel processed last cycle
     StereoOut32 LastEffect;
 
     u8 CoreEnabled;
@@ -443,10 +447,6 @@ struct V_Core
     // psxmode caches
     u16 psxSoundDataTransferControl;
     u16 psxSPUSTAT;
-
-    StereoOut32 downbuf[8];
-    StereoOut32 upbuf[8];
-    int dbpos, ubpos;
 
     // HACK -- This is a temp buffer which is (or isn't?) used to circumvent some memory
     // corruption that originates elsewhere in the plugin. >_<  The actual ADMA buffer
@@ -471,8 +471,6 @@ struct V_Core
     void AnalyzeReverbPreset();
 
     s32 EffectsBufferIndexer(s32 offset) const;
-    void UpdateFeedbackBuffersA();
-    void UpdateFeedbackBuffersB();
 
     void WriteRegPS1(u32 mem, u16 value);
     u16 ReadRegPS1(u32 mem);

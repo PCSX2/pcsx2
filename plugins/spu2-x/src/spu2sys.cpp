@@ -195,29 +195,29 @@ void V_Core::AnalyzeReverbPreset()
     ConLog("----------------------------------------------------------\n");
 
     ConLog("    IN_COEF_L, IN_COEF_R        0x%08x, 0x%08x\n", Revb.IN_COEF_L, Revb.IN_COEF_R);
-    ConLog("    FB_SRC_A, FB_SRC_B          0x%08x, 0x%08x\n", Revb.FB_SRC_A, Revb.FB_SRC_B);
-    ConLog("    FB_ALPHA, FB_X              0x%08x, 0x%08x\n", Revb.FB_ALPHA, Revb.FB_X);
+    ConLog("    APF1_SIZE, APF2_SIZE          0x%08x, 0x%08x\n", Revb.APF1_SIZE, Revb.APF2_SIZE);
+    ConLog("    APF1_VOL, APF2_VOL              0x%08x, 0x%08x\n", Revb.APF1_VOL, Revb.APF2_VOL);
 
-    ConLog("    ACC_COEF_A                  0x%08x\n", Revb.ACC_COEF_A);
-    ConLog("    ACC_COEF_B                  0x%08x\n", Revb.ACC_COEF_B);
-    ConLog("    ACC_COEF_C                  0x%08x\n", Revb.ACC_COEF_C);
-    ConLog("    ACC_COEF_D                  0x%08x\n", Revb.ACC_COEF_D);
+    ConLog("    COMB1_VOL                  0x%08x\n", Revb.COMB1_VOL);
+    ConLog("    COMB2_VOL                  0x%08x\n", Revb.COMB2_VOL);
+    ConLog("    COMB3_VOL                  0x%08x\n", Revb.COMB3_VOL);
+    ConLog("    COMB4_VOL                  0x%08x\n", Revb.COMB4_VOL);
 
-    ConLog("    ACC_SRC_A0, ACC_SRC_A1      0x%08x, 0x%08x\n", Revb.ACC_SRC_A0, Revb.ACC_SRC_A1);
-    ConLog("    ACC_SRC_B0, ACC_SRC_B1      0x%08x, 0x%08x\n", Revb.ACC_SRC_B0, Revb.ACC_SRC_B1);
-    ConLog("    ACC_SRC_C0, ACC_SRC_C1      0x%08x, 0x%08x\n", Revb.ACC_SRC_C0, Revb.ACC_SRC_C1);
-    ConLog("    ACC_SRC_D0, ACC_SRC_D1      0x%08x, 0x%08x\n", Revb.ACC_SRC_D0, Revb.ACC_SRC_D1);
+    ConLog("    COMB1_L_SRC, COMB1_R_SRC      0x%08x, 0x%08x\n", Revb.COMB1_L_SRC, Revb.COMB1_R_SRC);
+    ConLog("    COMB2_L_SRC, COMB2_R_SRC      0x%08x, 0x%08x\n", Revb.COMB2_L_SRC, Revb.COMB2_R_SRC);
+    ConLog("    COMB3_L_SRC, COMB3_R_SRC      0x%08x, 0x%08x\n", Revb.COMB3_L_SRC, Revb.COMB3_R_SRC);
+    ConLog("    COMB4_L_SRC, COMB4_R_SRC      0x%08x, 0x%08x\n", Revb.COMB4_L_SRC, Revb.COMB4_R_SRC);
 
-    ConLog("    IIR_SRC_A0, IIR_SRC_A1      0x%08x, 0x%08x\n", Revb.IIR_SRC_A0, Revb.IIR_SRC_A1);
-    ConLog("    IIR_SRC_B0, IIR_SRC_B1      0x%08x, 0x%08x\n", Revb.IIR_SRC_B0, Revb.IIR_SRC_B1);
-    ConLog("    IIR_DEST_A0, IIR_DEST_A1    0x%08x, 0x%08x\n", Revb.IIR_DEST_A0, Revb.IIR_DEST_A1);
-    ConLog("    IIR_DEST_B0, IIR_DEST_B1    0x%08x, 0x%08x\n", Revb.IIR_DEST_B0, Revb.IIR_DEST_B1);
-    ConLog("    IIR_ALPHA, IIR_COEF         0x%08x, 0x%08x\n", Revb.IIR_ALPHA, Revb.IIR_COEF);
+    ConLog("    SAME_L_SRC, SAME_R_SRC      0x%08x, 0x%08x\n", Revb.SAME_L_SRC, Revb.SAME_R_SRC);
+    ConLog("    DIFF_L_SRC, DIFF_R_SRC      0x%08x, 0x%08x\n", Revb.DIFF_L_SRC, Revb.DIFF_R_SRC);
+    ConLog("    SAME_L_DST, SAME_R_DST    0x%08x, 0x%08x\n", Revb.SAME_L_DST, Revb.SAME_R_DST);
+    ConLog("    DIFF_L_DST, DIFF_R_DST    0x%08x, 0x%08x\n", Revb.DIFF_L_DST, Revb.DIFF_R_DST);
+    ConLog("    IIR_VOL, WALL_VOL         0x%08x, 0x%08x\n", Revb.IIR_VOL, Revb.WALL_VOL);
 
-    ConLog("    MIX_DEST_A0                 0x%08x\n", Revb.MIX_DEST_A0);
-    ConLog("    MIX_DEST_A1                 0x%08x\n", Revb.MIX_DEST_A1);
-    ConLog("    MIX_DEST_B0                 0x%08x\n", Revb.MIX_DEST_B0);
-    ConLog("    MIX_DEST_B1                 0x%08x\n", Revb.MIX_DEST_B1);
+    ConLog("    APF1_L_DST                 0x%08x\n", Revb.APF1_L_DST);
+    ConLog("    APF1_R_DST                 0x%08x\n", Revb.APF1_R_DST);
+    ConLog("    APF2_L_DST                 0x%08x\n", Revb.APF2_L_DST);
+    ConLog("    APF2_R_DST                 0x%08x\n", Revb.APF2_R_DST);
 
     ConLog("    EffectsBufferSize           0x%x\n", EffectsBufferSize);
     ConLog("----------------------------------------------------------\n");
@@ -240,18 +240,6 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
         pos = EffectsEndA + 1 - (offset % EffectsBufferSize);
     }
     return pos;
-}
-
-void V_Core::UpdateFeedbackBuffersA()
-{
-    RevBuffers.FB_SRC_A0 = EffectsBufferIndexer(Revb.MIX_DEST_A0 - Revb.FB_SRC_A);
-    RevBuffers.FB_SRC_A1 = EffectsBufferIndexer(Revb.MIX_DEST_A1 - Revb.FB_SRC_A);
-}
-
-void V_Core::UpdateFeedbackBuffersB()
-{
-    RevBuffers.FB_SRC_B0 = EffectsBufferIndexer(Revb.MIX_DEST_B0 - Revb.FB_SRC_B);
-    RevBuffers.FB_SRC_B1 = EffectsBufferIndexer(Revb.MIX_DEST_B1 - Revb.FB_SRC_B);
 }
 
 void V_Core::UpdateEffectsBufferSize()
@@ -281,32 +269,39 @@ void V_Core::UpdateEffectsBufferSize()
         AnalyzeReverbPreset();
 
     // Rebuild buffer indexers.
-    RevBuffers.ACC_SRC_A0 = EffectsBufferIndexer(Revb.ACC_SRC_A0);
-    RevBuffers.ACC_SRC_A1 = EffectsBufferIndexer(Revb.ACC_SRC_A1);
-    RevBuffers.ACC_SRC_B0 = EffectsBufferIndexer(Revb.ACC_SRC_B0);
-    RevBuffers.ACC_SRC_B1 = EffectsBufferIndexer(Revb.ACC_SRC_B1);
-    RevBuffers.ACC_SRC_C0 = EffectsBufferIndexer(Revb.ACC_SRC_C0);
-    RevBuffers.ACC_SRC_C1 = EffectsBufferIndexer(Revb.ACC_SRC_C1);
-    RevBuffers.ACC_SRC_D0 = EffectsBufferIndexer(Revb.ACC_SRC_D0);
-    RevBuffers.ACC_SRC_D1 = EffectsBufferIndexer(Revb.ACC_SRC_D1);
+    RevBuffers.COMB1_L_SRC = EffectsBufferIndexer(Revb.COMB1_L_SRC);
+    RevBuffers.COMB1_R_SRC = EffectsBufferIndexer(Revb.COMB1_R_SRC);
+    RevBuffers.COMB2_L_SRC = EffectsBufferIndexer(Revb.COMB2_L_SRC);
+    RevBuffers.COMB2_R_SRC = EffectsBufferIndexer(Revb.COMB2_R_SRC);
+    RevBuffers.COMB3_L_SRC = EffectsBufferIndexer(Revb.COMB3_L_SRC);
+    RevBuffers.COMB3_R_SRC = EffectsBufferIndexer(Revb.COMB3_R_SRC);
+    RevBuffers.COMB4_L_SRC = EffectsBufferIndexer(Revb.COMB4_L_SRC);
+    RevBuffers.COMB4_R_SRC = EffectsBufferIndexer(Revb.COMB4_R_SRC);
 
-    UpdateFeedbackBuffersA();
-    UpdateFeedbackBuffersB();
+    RevBuffers.SAME_L_DST = EffectsBufferIndexer(Revb.SAME_L_DST);
+    RevBuffers.SAME_R_DST = EffectsBufferIndexer(Revb.SAME_R_DST);
+    RevBuffers.DIFF_L_DST = EffectsBufferIndexer(Revb.DIFF_L_DST);
+    RevBuffers.DIFF_R_DST = EffectsBufferIndexer(Revb.DIFF_R_DST);
 
-    RevBuffers.IIR_DEST_A0 = EffectsBufferIndexer(Revb.IIR_DEST_A0);
-    RevBuffers.IIR_DEST_A1 = EffectsBufferIndexer(Revb.IIR_DEST_A1);
-    RevBuffers.IIR_DEST_B0 = EffectsBufferIndexer(Revb.IIR_DEST_B0);
-    RevBuffers.IIR_DEST_B1 = EffectsBufferIndexer(Revb.IIR_DEST_B1);
+    RevBuffers.SAME_L_SRC = EffectsBufferIndexer(Revb.SAME_L_SRC);
+    RevBuffers.SAME_R_SRC = EffectsBufferIndexer(Revb.SAME_R_SRC);
+    RevBuffers.DIFF_L_SRC = EffectsBufferIndexer(Revb.DIFF_L_SRC);
+    RevBuffers.DIFF_R_SRC = EffectsBufferIndexer(Revb.DIFF_R_SRC);
 
-    RevBuffers.IIR_SRC_A0 = EffectsBufferIndexer(Revb.IIR_SRC_A0);
-    RevBuffers.IIR_SRC_A1 = EffectsBufferIndexer(Revb.IIR_SRC_A1);
-    RevBuffers.IIR_SRC_B0 = EffectsBufferIndexer(Revb.IIR_SRC_B0);
-    RevBuffers.IIR_SRC_B1 = EffectsBufferIndexer(Revb.IIR_SRC_B1);
+    RevBuffers.APF1_L_DST = EffectsBufferIndexer(Revb.APF1_L_DST);
+    RevBuffers.APF1_R_DST = EffectsBufferIndexer(Revb.APF1_R_DST);
+    RevBuffers.APF2_L_DST = EffectsBufferIndexer(Revb.APF2_L_DST);
+    RevBuffers.APF2_R_DST = EffectsBufferIndexer(Revb.APF2_R_DST);
 
-    RevBuffers.MIX_DEST_A0 = EffectsBufferIndexer(Revb.MIX_DEST_A0);
-    RevBuffers.MIX_DEST_A1 = EffectsBufferIndexer(Revb.MIX_DEST_A1);
-    RevBuffers.MIX_DEST_B0 = EffectsBufferIndexer(Revb.MIX_DEST_B0);
-    RevBuffers.MIX_DEST_B1 = EffectsBufferIndexer(Revb.MIX_DEST_B1);
+    RevBuffers.SAME_L_PRV = EffectsBufferIndexer(Revb.SAME_L_DST - 1);
+    RevBuffers.SAME_R_PRV = EffectsBufferIndexer(Revb.SAME_R_DST - 1);
+    RevBuffers.DIFF_L_PRV = EffectsBufferIndexer(Revb.DIFF_L_DST - 1);
+    RevBuffers.DIFF_R_PRV = EffectsBufferIndexer(Revb.DIFF_R_DST - 1);
+
+    RevBuffers.APF1_L_SRC = EffectsBufferIndexer(Revb.APF1_L_DST - Revb.APF1_SIZE);
+    RevBuffers.APF1_R_SRC = EffectsBufferIndexer(Revb.APF1_R_DST - Revb.APF1_SIZE);
+    RevBuffers.APF2_L_SRC = EffectsBufferIndexer(Revb.APF2_L_DST - Revb.APF2_SIZE);
+    RevBuffers.APF2_R_SRC = EffectsBufferIndexer(Revb.APF2_R_DST - Revb.APF2_SIZE);
 }
 
 void V_Voice::QueueStart()
@@ -719,94 +714,94 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 break;
 
             case 0x1DC0:
-                Revb.FB_SRC_A = value * 4;
+                Revb.APF1_SIZE = value * 4;
                 break;
             case 0x1DC2:
-                Revb.FB_SRC_B = value * 4;
+                Revb.APF2_SIZE = value * 4;
                 break;
             case 0x1DC4:
-                Revb.IIR_ALPHA = value;
+                Revb.IIR_VOL = value;
                 break;
             case 0x1DC6:
-                Revb.ACC_COEF_A = value;
+                Revb.COMB1_VOL = value;
                 break;
             case 0x1DC8:
-                Revb.ACC_COEF_B = value;
+                Revb.COMB2_VOL = value;
                 break;
             case 0x1DCA:
-                Revb.ACC_COEF_C = value;
+                Revb.COMB3_VOL = value;
                 break;
             case 0x1DCC:
-                Revb.ACC_COEF_D = value;
+                Revb.COMB4_VOL = value;
                 break;
             case 0x1DCE:
-                Revb.IIR_COEF = value;
+                Revb.WALL_VOL = value;
                 break;
             case 0x1DD0:
-                Revb.FB_ALPHA = value;
+                Revb.APF1_VOL = value;
                 break;
             case 0x1DD2:
-                Revb.FB_X = value;
+                Revb.APF2_VOL = value;
                 break;
             case 0x1DD4:
-                Revb.IIR_DEST_A0 = value * 4;
+                Revb.SAME_L_DST = value * 4;
                 break;
             case 0x1DD6:
-                Revb.IIR_DEST_A1 = value * 4;
+                Revb.SAME_R_DST = value * 4;
                 break;
             case 0x1DD8:
-                Revb.ACC_SRC_A0 = value * 4;
+                Revb.COMB1_L_SRC = value * 4;
                 break;
             case 0x1DDA:
-                Revb.ACC_SRC_A1 = value * 4;
+                Revb.COMB1_R_SRC = value * 4;
                 break;
             case 0x1DDC:
-                Revb.ACC_SRC_B0 = value * 4;
+                Revb.COMB2_L_SRC = value * 4;
                 break;
             case 0x1DDE:
-                Revb.ACC_SRC_B1 = value * 4;
+                Revb.COMB2_R_SRC = value * 4;
                 break;
             case 0x1DE0:
-                Revb.IIR_SRC_A0 = value * 4;
+                Revb.SAME_L_SRC = value * 4;
                 break;
             case 0x1DE2:
-                Revb.IIR_SRC_A1 = value * 4;
+                Revb.SAME_R_SRC = value * 4;
                 break;
             case 0x1DE4:
-                Revb.IIR_DEST_B0 = value * 4;
+                Revb.DIFF_L_DST = value * 4;
                 break;
             case 0x1DE6:
-                Revb.IIR_DEST_B1 = value * 4;
+                Revb.DIFF_R_DST = value * 4;
                 break;
             case 0x1DE8:
-                Revb.ACC_SRC_C0 = value * 4;
+                Revb.COMB3_L_SRC = value * 4;
                 break;
             case 0x1DEA:
-                Revb.ACC_SRC_C1 = value * 4;
+                Revb.COMB3_R_SRC = value * 4;
                 break;
             case 0x1DEC:
-                Revb.ACC_SRC_D0 = value * 4;
+                Revb.COMB4_L_SRC = value * 4;
                 break;
             case 0x1DEE:
-                Revb.ACC_SRC_D1 = value * 4;
+                Revb.COMB4_R_SRC = value * 4;
                 break;
             case 0x1DF0:
-                Revb.IIR_SRC_B0 = value * 4;
-                break; // IIR_SRC_B0 and IIR_SRC_B1 supposedly swapped on SPU2
+                Revb.DIFF_L_SRC = value * 4;
+                break; // DIFF_R_SRC and DIFF_L_SRC supposedly swapped on SPU2
             case 0x1DF2:
-                Revb.IIR_SRC_B1 = value * 4;
+                Revb.DIFF_R_SRC = value * 4;
                 break; // but I don't believe it! (games in psxmode sound better unswapped)
             case 0x1DF4:
-                Revb.MIX_DEST_A0 = value * 4;
+                Revb.APF1_L_DST = value * 4;
                 break;
             case 0x1DF6:
-                Revb.MIX_DEST_A1 = value * 4;
+                Revb.APF1_R_DST = value * 4;
                 break;
             case 0x1DF8:
-                Revb.MIX_DEST_B0 = value * 4;
+                Revb.APF2_L_DST = value * 4;
                 break;
             case 0x1DFA:
-                Revb.MIX_DEST_B1 = value * 4;
+                Revb.APF2_R_DST = value * 4;
                 break;
             case 0x1DFC:
                 Revb.IN_COEF_L = value;
@@ -1550,28 +1545,28 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(0, REG_A_ESA),
 
-        ReverbPair(0, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
-        ReverbPair(0, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
-        ReverbPair(0, R_IIR_DEST_A0), //    0x02EC
-        ReverbPair(0, R_IIR_DEST_A1), //    0x02F0
-        ReverbPair(0, R_ACC_SRC_A0),  //     0x02F4
-        ReverbPair(0, R_ACC_SRC_A1),  //     0x02F8
-        ReverbPair(0, R_ACC_SRC_B0),  //     0x02FC
-        ReverbPair(0, R_ACC_SRC_B1),  //     0x0300
-        ReverbPair(0, R_IIR_SRC_A0),  //     0x0304
-        ReverbPair(0, R_IIR_SRC_A1),  //     0x0308
-        ReverbPair(0, R_IIR_DEST_B0), //    0x030C
-        ReverbPair(0, R_IIR_DEST_B1), //    0x0310
-        ReverbPair(0, R_ACC_SRC_C0),  //     0x0314
-        ReverbPair(0, R_ACC_SRC_C1),  //     0x0318
-        ReverbPair(0, R_ACC_SRC_D0),  //     0x031C
-        ReverbPair(0, R_ACC_SRC_D1),  //     0x0320
-        ReverbPair(0, R_IIR_SRC_B0),  //     0x0324
-        ReverbPair(0, R_IIR_SRC_B1),  //     0x0328
-        ReverbPair(0, R_MIX_DEST_A0), //    0x032C
-        ReverbPair(0, R_MIX_DEST_A1), //    0x0330
-        ReverbPair(0, R_MIX_DEST_B0), //    0x0334
-        ReverbPair(0, R_MIX_DEST_B1), //    0x0338
+        ReverbPair(0, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
+        ReverbPair(0, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
+        ReverbPair(0, R_SAME_L_DST),  //    0x02EC
+        ReverbPair(0, R_SAME_R_DST),  //    0x02F0
+        ReverbPair(0, R_COMB1_L_SRC), //     0x02F4
+        ReverbPair(0, R_COMB1_R_SRC), //     0x02F8
+        ReverbPair(0, R_COMB2_L_SRC), //     0x02FC
+        ReverbPair(0, R_COMB2_R_SRC), //     0x0300
+        ReverbPair(0, R_SAME_L_SRC),  //     0x0304
+        ReverbPair(0, R_SAME_R_SRC),  //     0x0308
+        ReverbPair(0, R_DIFF_L_DST),  //    0x030C
+        ReverbPair(0, R_DIFF_R_DST),  //    0x0310
+        ReverbPair(0, R_COMB3_L_SRC), //     0x0314
+        ReverbPair(0, R_COMB3_R_SRC), //     0x0318
+        ReverbPair(0, R_COMB4_L_SRC), //     0x031C
+        ReverbPair(0, R_COMB4_R_SRC), //     0x0320
+        ReverbPair(0, R_DIFF_L_SRC),  //     0x0324
+        ReverbPair(0, R_DIFF_R_SRC),  //     0x0328
+        ReverbPair(0, R_APF1_L_DST),  //    0x032C
+        ReverbPair(0, R_APF1_R_DST),  //    0x0330
+        ReverbPair(0, R_APF2_L_DST),  //    0x0334
+        ReverbPair(0, R_APF2_R_DST),  //    0x0338
 
         RegWrite_Core<0, REG_A_EEA>, RegWrite_Null,
 
@@ -1640,28 +1635,28 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
 
         CoreParamsPair(1, REG_A_ESA),
 
-        ReverbPair(1, R_FB_SRC_A),    //       0x02E4		// Feedback Source A
-        ReverbPair(1, R_FB_SRC_B),    //       0x02E8		// Feedback Source B
-        ReverbPair(1, R_IIR_DEST_A0), //    0x02EC
-        ReverbPair(1, R_IIR_DEST_A1), //    0x02F0
-        ReverbPair(1, R_ACC_SRC_A0),  //     0x02F4
-        ReverbPair(1, R_ACC_SRC_A1),  //     0x02F8
-        ReverbPair(1, R_ACC_SRC_B0),  //     0x02FC
-        ReverbPair(1, R_ACC_SRC_B1),  //     0x0300
-        ReverbPair(1, R_IIR_SRC_A0),  //     0x0304
-        ReverbPair(1, R_IIR_SRC_A1),  //     0x0308
-        ReverbPair(1, R_IIR_DEST_B0), //    0x030C
-        ReverbPair(1, R_IIR_DEST_B1), //    0x0310
-        ReverbPair(1, R_ACC_SRC_C0),  //     0x0314
-        ReverbPair(1, R_ACC_SRC_C1),  //     0x0318
-        ReverbPair(1, R_ACC_SRC_D0),  //     0x031C
-        ReverbPair(1, R_ACC_SRC_D1),  //     0x0320
-        ReverbPair(1, R_IIR_SRC_B0),  //     0x0324
-        ReverbPair(1, R_IIR_SRC_B1),  //     0x0328
-        ReverbPair(1, R_MIX_DEST_A0), //    0x032C
-        ReverbPair(1, R_MIX_DEST_A1), //    0x0330
-        ReverbPair(1, R_MIX_DEST_B0), //    0x0334
-        ReverbPair(1, R_MIX_DEST_B1), //    0x0338
+        ReverbPair(1, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
+        ReverbPair(1, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
+        ReverbPair(1, R_SAME_L_DST),  //    0x02EC
+        ReverbPair(1, R_SAME_R_DST),  //    0x02F0
+        ReverbPair(1, R_COMB1_L_SRC), //     0x02F4
+        ReverbPair(1, R_COMB1_R_SRC), //     0x02F8
+        ReverbPair(1, R_COMB2_L_SRC), //     0x02FC
+        ReverbPair(1, R_COMB2_R_SRC), //     0x0300
+        ReverbPair(1, R_SAME_L_SRC),  //     0x0304
+        ReverbPair(1, R_SAME_R_SRC),  //     0x0308
+        ReverbPair(1, R_DIFF_L_DST),  //    0x030C
+        ReverbPair(1, R_DIFF_R_DST),  //    0x0310
+        ReverbPair(1, R_COMB3_L_SRC), //     0x0314
+        ReverbPair(1, R_COMB3_R_SRC), //     0x0318
+        ReverbPair(1, R_COMB4_L_SRC), //     0x031C
+        ReverbPair(1, R_COMB4_R_SRC), //     0x0320
+        ReverbPair(1, R_DIFF_R_SRC),  //     0x0324
+        ReverbPair(1, R_DIFF_L_SRC),  //     0x0328
+        ReverbPair(1, R_APF1_L_DST),  //    0x032C
+        ReverbPair(1, R_APF1_R_DST),  //    0x0330
+        ReverbPair(1, R_APF2_L_DST),  //    0x0334
+        ReverbPair(1, R_APF2_R_DST),  //    0x0338
 
         RegWrite_Core<1, REG_A_EEA>, RegWrite_Null,
 
@@ -1686,16 +1681,16 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
         RegWrite_CoreExt<0, REG_P_MVOLXL>, //     0x0770		// Current Master Volume Left
         RegWrite_CoreExt<0, REG_P_MVOLXR>, //     0x0772		// Current Master Volume Right
 
-        RegWrite_CoreExt<0, R_IIR_ALPHA>,  //     0x0774		//IIR alpha (% used)
-        RegWrite_CoreExt<0, R_ACC_COEF_A>, //     0x0776
-        RegWrite_CoreExt<0, R_ACC_COEF_B>, //     0x0778
-        RegWrite_CoreExt<0, R_ACC_COEF_C>, //     0x077A
-        RegWrite_CoreExt<0, R_ACC_COEF_D>, //     0x077C
-        RegWrite_CoreExt<0, R_IIR_COEF>,   //     0x077E
-        RegWrite_CoreExt<0, R_FB_ALPHA>,   //     0x0780		//feedback alpha (% used)
-        RegWrite_CoreExt<0, R_FB_X>,       //     0x0782		//feedback
-        RegWrite_CoreExt<0, R_IN_COEF_L>,  //     0x0784
-        RegWrite_CoreExt<0, R_IN_COEF_R>,  //     0x0786
+        RegWrite_CoreExt<0, R_IIR_VOL>,   //     0x0774		//IIR alpha (% used)
+        RegWrite_CoreExt<0, R_COMB1_VOL>, //     0x0776
+        RegWrite_CoreExt<0, R_COMB2_VOL>, //     0x0778
+        RegWrite_CoreExt<0, R_COMB3_VOL>, //     0x077A
+        RegWrite_CoreExt<0, R_COMB4_VOL>, //     0x077C
+        RegWrite_CoreExt<0, R_WALL_VOL>,  //     0x077E
+        RegWrite_CoreExt<0, R_APF1_VOL>,  //     0x0780		//feedback alpha (% used)
+        RegWrite_CoreExt<0, R_APF2_VOL>,  //     0x0782		//feedback
+        RegWrite_CoreExt<0, R_IN_COEF_L>, //     0x0784
+        RegWrite_CoreExt<0, R_IN_COEF_R>, //     0x0786
 
         // ------ -------
 
@@ -1710,16 +1705,16 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
         RegWrite_CoreExt<1, REG_P_MVOLXL>, //     0x0770		// Current Master Volume Left
         RegWrite_CoreExt<1, REG_P_MVOLXR>, //     0x0772		// Current Master Volume Right
 
-        RegWrite_CoreExt<1, R_IIR_ALPHA>,  //     0x0774		//IIR alpha (% used)
-        RegWrite_CoreExt<1, R_ACC_COEF_A>, //     0x0776
-        RegWrite_CoreExt<1, R_ACC_COEF_B>, //     0x0778
-        RegWrite_CoreExt<1, R_ACC_COEF_C>, //     0x077A
-        RegWrite_CoreExt<1, R_ACC_COEF_D>, //     0x077C
-        RegWrite_CoreExt<1, R_IIR_COEF>,   //     0x077E
-        RegWrite_CoreExt<1, R_FB_ALPHA>,   //     0x0780		//feedback alpha (% used)
-        RegWrite_CoreExt<1, R_FB_X>,       //     0x0782		//feedback
-        RegWrite_CoreExt<1, R_IN_COEF_L>,  //     0x0784
-        RegWrite_CoreExt<1, R_IN_COEF_R>,  //     0x0786
+        RegWrite_CoreExt<1, R_IIR_VOL>,   //     0x0774		//IIR alpha (% used)
+        RegWrite_CoreExt<1, R_COMB1_VOL>, //     0x0776
+        RegWrite_CoreExt<1, R_COMB2_VOL>, //     0x0778
+        RegWrite_CoreExt<1, R_COMB3_VOL>, //     0x077A
+        RegWrite_CoreExt<1, R_COMB4_VOL>, //     0x077C
+        RegWrite_CoreExt<1, R_WALL_VOL>,  //     0x077E
+        RegWrite_CoreExt<1, R_APF1_VOL>,  //     0x0780		//feedback alpha (% used)
+        RegWrite_CoreExt<1, R_APF2_VOL>,  //     0x0782		//feedback
+        RegWrite_CoreExt<1, R_IN_COEF_L>, //     0x0784
+        RegWrite_CoreExt<1, R_IN_COEF_R>, //     0x0786
 
         REGRAW(0x7B0), REGRAW(0x7B2), REGRAW(0x7B4), REGRAW(0x7B6),
         REGRAW(0x7B8), REGRAW(0x7BA), REGRAW(0x7BC), REGRAW(0x7BE),
