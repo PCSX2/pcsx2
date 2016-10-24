@@ -17,6 +17,9 @@
 #include <cstdio>
 #include "svnrev.h"
 
+Settings g_settings;
+static std::string s_config_file{"inis/cdvdGigaherz.ini"};
+
 void (*newDiscCB)();
 
 HANDLE hThread_keepAlive = nullptr;
@@ -113,11 +116,19 @@ void __inline lba_to_msf(s32 lba, u8 *m, u8 *s, u8 *f)
     *f = (u8)(lba % 75);
 }
 
+void ReadSettings()
+{
+    g_settings.Load(s_config_file);
+}
+
+void WriteSettings()
+{
+    g_settings.Save(s_config_file);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // CDVD processing functions                                                 //
-
-char csrc[20];
 
 bool cdvd_is_open = false;
 bool cdvdKeepAlive_is_open = false;
@@ -192,7 +203,7 @@ void StopKeepAliveThread()
 
 void CALLBACK CDVDsetSettingsDir(const char *dir)
 {
-    CfgSetSettingsDir(dir);
+    s_config_file = std::string(dir ? dir : "inis") + "/cdvdGigaherz.ini";
 }
 
 s32 CALLBACK CDVDinit()
@@ -204,29 +215,13 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
 {
     ReadSettings();
 
-    if (source_drive == '-') {
-        // MSDN : Trailing backslash is required to ensure consistent behavior across
-        // various versions of Windows and storage types.
-        char temp[] = "A:\\";
-
-        for (char d = 'A'; d <= 'Z'; d++) {
-            temp[0] = d;
-            if (GetDriveType(temp) == DRIVE_CDROM) {
-                source_drive = d;
-                break;
-            }
-        }
-        if (source_drive == '-')
-            return -1;
-    }
-
-    sprintf(csrc, "\\\\.\\%c:", source_drive);
-
-    printf(" * CDVD: Opening drive '%s'...\n", csrc);
+    auto drive = GetValidDrive();
+    if (drive.empty())
+        return -1;
 
     // open device file
     try {
-        src = new IOCtlSrc(csrc);
+        src = new IOCtlSrc(drive);
     } catch (std::runtime_error &ex) {
         fputs(ex.what(), stdout);
         return -1;
