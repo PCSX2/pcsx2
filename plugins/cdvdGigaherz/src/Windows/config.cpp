@@ -19,16 +19,17 @@
 #include "../CDVD.h"
 #include <Windows.h>
 #include <commctrl.h>
+#include <codecvt>
 #include "resource.h"
 
 static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
         case WM_INITDIALOG: {
-            std::vector<std::string> &drives =
-                *reinterpret_cast<std::vector<std::string> *>(lParam);
+            std::vector<std::wstring> &drives =
+                *reinterpret_cast<std::vector<std::wstring> *>(lParam);
             HWND combobox = GetDlgItem(hWnd, IDC_DRIVE);
-            std::string drive;
+            std::wstring drive;
             g_settings.Get("drive", drive);
             for (size_t n = 0; n < drives.size(); ++n) {
                 SendMessage(combobox, CB_ADDSTRING, 0,
@@ -46,10 +47,10 @@ static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                     if (index != CB_ERR) {
                         LRESULT length = SendMessage(combobox, CB_GETLBTEXTLEN,
                                                      index, 0);
-                        std::vector<char> drive(length + 1);
+                        std::vector<wchar_t> drive(length + 1);
                         SendMessage(combobox, CB_GETLBTEXT, index,
                                     reinterpret_cast<LPARAM>(drive.data()));
-                        g_settings.Set("drive", std::string(drive.data()));
+                        g_settings.Set("drive", std::wstring(drive.data()));
                         WriteSettings();
                     }
                     EndDialog(hWnd, 0);
@@ -68,14 +69,14 @@ static INT_PTR CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     return TRUE;
 }
 
-static std::vector<std::string> GetOpticalDriveList()
+static std::vector<std::wstring> GetOpticalDriveList()
 {
     DWORD size = GetLogicalDriveStrings(0, nullptr);
-    std::vector<char> drive_strings(size);
+    std::vector<wchar_t> drive_strings(size);
     if (GetLogicalDriveStrings(size, drive_strings.data()) != size - 1)
         return {};
 
-    std::vector<std::string> drives;
+    std::vector<std::wstring> drives;
     for (auto p = drive_strings.data(); *p; ++p) {
         if (GetDriveType(p) == DRIVE_CDROM)
             drives.push_back(p);
@@ -85,9 +86,9 @@ static std::vector<std::string> GetOpticalDriveList()
     return drives;
 }
 
-std::string GetValidDrive()
+std::wstring GetValidDrive()
 {
-    std::string drive;
+    std::wstring drive;
     g_settings.Get("drive", drive);
     if (drive.empty() || GetDriveType(drive.c_str()) != DRIVE_CDROM) {
         auto drives = GetOpticalDriveList();
@@ -96,12 +97,13 @@ std::string GetValidDrive()
         drive = drives.front();
     }
 
-    printf(" * CDVD: Opening drive '%s'...\n", drive.c_str());
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    printf(" * CDVD: Opening drive '%s'...\n", converter.to_bytes(drive).c_str());
 
     // The drive string has the form "X:\", but to open the drive, the string
     // has to be in the form "\\.\X:"
     drive.pop_back();
-    drive.insert(0, "\\\\.\\");
+    drive.insert(0, L"\\\\.\\");
     return drive;
 }
 

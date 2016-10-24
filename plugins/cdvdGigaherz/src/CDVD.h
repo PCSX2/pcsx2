@@ -57,7 +57,7 @@ class IOCtlSrc
     IOCtlSrc &operator=(const IOCtlSrc &) = delete;
 
     HANDLE m_device = INVALID_HANDLE_VALUE;
-    std::string m_filename;
+    std::wstring m_filename;
 
     s32 m_media_type = 0;
     u32 m_sectors = 0;
@@ -91,7 +91,7 @@ extern HINSTANCE hinst;
 
 void ReadSettings();
 void WriteSettings();
-std::string GetValidDrive();
+std::wstring GetValidDrive();
 
 extern Settings g_settings;
 
