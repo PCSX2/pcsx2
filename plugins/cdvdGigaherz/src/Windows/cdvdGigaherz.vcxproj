@@ -53,6 +53,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp" />
+    <ClCompile Include="..\Settings.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="IOCtlSrc.cpp" />
     <ClCompile Include="..\ReadThread.cpp" />
@@ -60,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CDVD.h" />
+    <ClInclude Include="..\Settings.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
