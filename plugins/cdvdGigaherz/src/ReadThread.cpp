@@ -25,7 +25,7 @@ HANDLE hNotify = nullptr;
 HANDLE hThread = nullptr;
 HANDLE hRequestComplete = nullptr;
 
-CRITICAL_SECTION CacheMutex;
+static std::mutex s_cache_lock;
 
 DWORD pidThread = 0;
 
@@ -63,39 +63,35 @@ u32 cdvdSectorHash(int lsn, int mode)
 
 void cdvdCacheUpdate(int lsn, int mode, char *data)
 {
-    EnterCriticalSection(&CacheMutex);
+    std::lock_guard<std::mutex> guard(s_cache_lock);
     u32 entry = cdvdSectorHash(lsn, mode);
 
     memcpy(Cache[entry].data, data, 2352 * 16);
     Cache[entry].lsn = lsn;
     Cache[entry].mode = mode;
-    LeaveCriticalSection(&CacheMutex);
 }
 
 bool cdvdCacheFetch(int lsn, int mode, char *data)
 {
-    EnterCriticalSection(&CacheMutex);
+    std::lock_guard<std::mutex> guard(s_cache_lock);
     u32 entry = cdvdSectorHash(lsn, mode);
 
     if ((Cache[entry].lsn == lsn) &&
         (Cache[entry].mode == mode)) {
         memcpy(data, Cache[entry].data, 2352 * 16);
-        LeaveCriticalSection(&CacheMutex);
         return true;
     }
     //printf("NOT IN CACHE\n");
-    LeaveCriticalSection(&CacheMutex);
     return false;
 }
 
 void cdvdCacheReset()
 {
-    EnterCriticalSection(&CacheMutex);
+    std::lock_guard<std::mutex> guard(s_cache_lock);
     for (int i = 0; i < CacheSize; i++) {
         Cache[i].lsn = -1;
         Cache[i].mode = -1;
     }
-    LeaveCriticalSection(&CacheMutex);
 }
 
 void cdvdCallNewDiscCB()
@@ -203,8 +199,6 @@ DWORD CALLBACK cdvdThread(PVOID param)
 
 s32 cdvdStartThread()
 {
-    InitializeCriticalSection(&CacheMutex);
-
     hNotify = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (hNotify == nullptr)
         return -1;
@@ -236,8 +230,6 @@ void cdvdStopThread()
     CloseHandle(hThread);
     CloseHandle(hNotify);
     CloseHandle(hRequestComplete);
-
-    DeleteCriticalSection(&CacheMutex);
 }
 
 s32 cdvdRequestSector(u32 sector, s32 mode)
@@ -300,7 +292,6 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
 
     s32 sector = first & (~15); //align to 16-sector block
 
-    EnterCriticalSection(&CacheMutex);
     if (!cdvdCacheFetch(sector, mode, data)) {
         s32 count = 16;
         s32 left = src->GetSectorCount() - sector;
@@ -320,7 +311,6 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
 
         cdvdCacheUpdate(sector, mode, data);
     }
-    LeaveCriticalSection(&CacheMutex);
 
     s32 offset;
 
