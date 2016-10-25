@@ -278,21 +278,18 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + off->block.col[x];
+				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = i >> 5;
+				uint32 col = 1 << (i & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 row = i >> 5;
-					uint32 col = 1 << (i & 31);
+					m_valid[row] |= col;
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
+					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
 
-						(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -305,21 +302,18 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + off->block.col[x];
+				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = block >> 5;
+				uint32 col = 1 << (block & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 row = block >> 5;
-					uint32 col = 1 << (block & 31);
+					m_valid[row] |= col;
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
+					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
 
-						(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}

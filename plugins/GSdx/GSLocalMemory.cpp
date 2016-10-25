@@ -645,12 +645,9 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 		for(int x = 0, i = y << 7; x < tw; x += bs.x, i += bs.x)
 		{
-			uint32 page = (base + off->block.col[x >> 3]) >> 5;
+			uint32 page = ((base + off->block.col[x >> 3]) >> 5) % MAX_PAGES;
 
-			if(page < MAX_PAGES)
-			{
-				tmp[page].insert(i >> 3); // ((y << 7) | x) >> 3
-			}
+			tmp[page].insert(i >> 3); // ((y << 7) | x) >> 3
 		}
 	}
 
@@ -2114,19 +2111,16 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 
 		for(int x = r.left; x < r.right; x += bs.x)
 		{
-			uint32 n = (base + block.col[x]) >> 5;
+			uint32 n = ((base + block.col[x]) >> 5) % MAX_PAGES;
 
-			if(n < MAX_PAGES)
+			uint32& row = tmp[n >> 5];
+			uint32 col = 1 << (n & 31);
+
+			if((row & col) == 0)
 			{
-				uint32& row = tmp[n >> 5];
-				uint32 col = 1 << (n & 31);
+				row |= col;
 
-				if((row & col) == 0)
-				{
-					row |= col;
-
-					*p++ = n;
-				}
+				*p++ = n;
 			}
 		}
 	}
@@ -2167,12 +2161,9 @@ GSVector4i* GSOffset::GetPagesAsBits(const GSVector4i& rect, GSVector4i* pages, 
 
 		for(int x = r.left; x < r.right; x += bs.x)
 		{
-			uint32 n = (base + block.col[x]) >> 5;
+			uint32 n = ((base + block.col[x]) >> 5) % MAX_PAGES;
 
-			if(n < MAX_PAGES)
-			{
-				((uint32*)pages)[n >> 5] |= 1 << (n & 31);
-			}
+			((uint32*)pages)[n >> 5] |= 1 << (n & 31);
 		}
 	}
 
