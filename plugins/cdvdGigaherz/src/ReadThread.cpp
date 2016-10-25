@@ -16,6 +16,7 @@
 #include "CDVD.h"
 #include <atomic>
 #include <condition_variable>
+#include <thread>
 
 const s32 prefetch_max_blocks = 16;
 s32 prefetch_mode = 0;
@@ -23,7 +24,7 @@ s32 prefetch_last_lba = 0;
 s32 prefetch_last_mode = 0;
 s32 prefetch_left = 0;
 
-HANDLE hThread = nullptr;
+static std::thread s_thread;
 
 static std::mutex s_notify_lock;
 static std::condition_variable s_notify_cv;
@@ -32,8 +33,6 @@ static std::condition_variable s_request_cv;
 static std::mutex s_cache_lock;
 
 static std::atomic<bool> cdvd_is_open;
-
-DWORD pidThread = 0;
 
 typedef struct
 {
@@ -131,7 +130,7 @@ bool cdvdUpdateDiscStatus()
     return !ready;
 }
 
-DWORD CALLBACK cdvdThread(PVOID param)
+void cdvdThread()
 {
     printf(" * CDVD: IO thread started...\n");
     std::unique_lock<std::mutex> guard(s_notify_lock);
@@ -139,7 +138,7 @@ DWORD CALLBACK cdvdThread(PVOID param)
     while (cdvd_is_open) {
         if (cdvdUpdateDiscStatus()) {
             // Need to sleep some to avoid an aggressive spin that sucks the cpu dry.
-            Sleep(10);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
 
@@ -198,32 +197,28 @@ DWORD CALLBACK cdvdThread(PVOID param)
         }
     }
     printf(" * CDVD: IO thread finished.\n");
-    return 0;
 }
 
-s32 cdvdStartThread()
+bool cdvdStartThread()
 {
     cdvd_is_open = true;
-    hThread = CreateThread(NULL, 0, cdvdThread, NULL, 0, &pidThread);
-
-    if (hThread == nullptr)
-        return -1;
-
-    SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
+    try {
+        s_thread = std::thread(cdvdThread);
+    } catch (std::system_error &) {
+        cdvd_is_open = false;
+        return false;
+    }
 
     cdvdCacheReset();
 
-    return 0;
+    return true;
 }
 
 void cdvdStopThread()
 {
     cdvd_is_open = false;
     s_notify_cv.notify_one();
-    if (WaitForSingleObject(hThread, 4000) == WAIT_TIMEOUT) {
-        TerminateThread(hThread, 0);
-    }
-    CloseHandle(hThread);
+    s_thread.join();
 }
 
 s32 cdvdRequestSector(u32 sector, s32 mode)

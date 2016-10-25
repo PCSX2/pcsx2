@@ -99,7 +99,7 @@ extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
 
-s32 cdvdStartThread();
+bool cdvdStartThread();
 void cdvdStopThread();
 s32 cdvdRequestSector(u32 sector, s32 mode);
 s32 cdvdRequestComplete();
