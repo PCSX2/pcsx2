@@ -26,6 +26,7 @@
 
 #include "stdafx.h"
 #include "GSLocalMemory.h"
+#include "GSdx.h"
 
 #define ASSERT_BLOCK(r, w, h) \
 	ASSERT((r).width() >= (w) && (r).height() >= (h) && !((r).left & ((w) - 1)) && !((r).top & ((h) - 1)) && !((r).right & ((w) - 1)) && !((r).bottom & ((h) - 1))); \
@@ -83,7 +84,11 @@ GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
-	m_vm8 = (uint8*)vmalloc(m_vmsize * 4, false);
+	if (theApp.GetConfigB("wrap_gs_mem"))
+		m_vm8 = (uint8*)fifo_alloc(m_vmsize, 4);
+	else
+		m_vm8 = (uint8*)vmalloc(m_vmsize * 4, false);
+
 	m_vm16 = (uint16*)m_vm8;
 	m_vm32 = (uint32*)m_vm8;
 
@@ -467,7 +472,10 @@ GSLocalMemory::GSLocalMemory()
 
 GSLocalMemory::~GSLocalMemory()
 {
-	vmfree(m_vm8, m_vmsize * 4);
+	if (theApp.GetConfigB("wrap_gs_mem"))
+		fifo_free(m_vm8, m_vmsize, 4);
+	else
+		vmfree(m_vm8, m_vmsize * 4);
 
 	for_each(m_omap.begin(), m_omap.end(), aligned_free_second());
 	for_each(m_pomap.begin(), m_pomap.end(), aligned_free_second());

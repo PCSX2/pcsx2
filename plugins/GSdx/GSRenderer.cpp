@@ -127,7 +127,7 @@ bool GSRenderer::Merge(int field)
 		return false;
 	}
 
-	GL_PUSH("Renderer Merge %d", s_n);
+	GL_PUSH("Renderer Merge %d (0: enabled %d 0x%x, 1: enabled %d 0x%x)", s_n, en[0], m_regs->DISP[0].DISPFB.Block(), en[1], m_regs->DISP[1].DISPFB.Block());
 
 	// try to avoid fullscreen blur, could be nice on tv but on a monitor it's like double vision, hurts my eyes (persona 4, guitar hero)
 	//

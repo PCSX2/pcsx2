@@ -45,6 +45,10 @@
 
 #define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
 
+#else
+
+#include <fcntl.h>
+
 #endif
 
 
@@ -403,6 +407,9 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
+
+extern void* fifo_alloc(size_t size, size_t repeat);
+extern void fifo_free(void* ptr, size_t size, size_t repeat);
 
 #ifdef _WIN32
 

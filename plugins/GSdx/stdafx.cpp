@@ -71,6 +71,18 @@ void vmfree(void* ptr, size_t size)
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
+void* fifo_alloc(size_t size, size_t repeat)
+{
+	// FIXME check linux code
+	return vmalloc(size * repeat, false);
+}
+
+void fifo_free(void* ptr, size_t size, size_t repeat)
+{
+	// FIXME check linux code
+	return vmfree(ptr, size * repeat);
+}
+
 #else
 
 #include <sys/mman.h>
@@ -99,6 +111,52 @@ void vmfree(void* ptr, size_t size)
 	size = (size + mask) & ~mask;
 
 	munmap(ptr, size);
+}
+
+static int s_shm_fd = -1;
+
+void* fifo_alloc(size_t size, size_t repeat)
+{
+	fprintf(stderr, "FIFO ALLOC\n");
+	ASSERT(s_shm_fd == -1);
+
+	const char* file_name = "/GSDX.mem";
+	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (s_shm_fd != -1)
+		shm_unlink(file_name); // file is deleted but descriptor is still open
+	else
+		fprintf(stderr, "Failed to open %s due to %s\n", file_name, strerror(errno));
+
+	if (ftruncate(s_shm_fd, repeat * size) < 0)
+		fprintf(stderr, "Failed to reserve memory due to %s\n", strerror(errno));
+
+	void* fifo = mmap(nullptr, size * repeat, PROT_READ | PROT_WRITE, MAP_SHARED, s_shm_fd, 0);
+
+	for (size_t i = 1; i < repeat; i++) {
+		void* base = (uint8*)fifo + size * i;
+		uint8* next = (uint8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
+		if (next != base)
+			fprintf(stderr, "Fail to mmap contiguous segment\n");
+		else
+			fprintf(stderr, "MMAP next %x\n", (uintptr_t)base);
+	}
+
+	return fifo;
+}
+
+void fifo_free(void* ptr, size_t size, size_t repeat)
+{
+	fprintf(stderr, "FIFO FREE\n");
+
+	ASSERT(s_shm_fd >= 0);
+
+	if (s_shm_fd < 0)
+		return;
+
+	munmap(ptr, size * repeat);
+
+	close(s_shm_fd);
+	s_shm_fd = -1;
 }
 
 #endif
