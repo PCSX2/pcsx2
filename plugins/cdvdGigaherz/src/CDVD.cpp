@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <atomic>
 #include <condition_variable>
+#include <thread>
 #include "svnrev.h"
 
 Settings g_settings;
@@ -26,8 +27,7 @@ void (*newDiscCB)();
 
 static std::mutex s_keepalive_lock;
 static std::condition_variable s_keepalive_cv;
-HANDLE hThread_keepAlive = nullptr;
-DWORD pidThreadKeepAlive = 0;
+static std::thread s_keepalive_thread;
 
 #define STRFY(x) #x
 #define TOSTR(x) STRFY(x)
@@ -132,7 +132,7 @@ extern s32 prefetch_last_mode;
 ///////////////////////////////////////////////////////////////////////////////
 // keepAliveThread throws a read event regularly to prevent drive spin down  //
 
-DWORD CALLBACK keepAliveThread(PVOID param)
+void keepAliveThread()
 {
     printf(" * CDVD: KeepAlive thread started...\n");
     std::unique_lock<std::mutex> guard(s_keepalive_lock);
@@ -148,35 +148,31 @@ DWORD CALLBACK keepAliveThread(PVOID param)
     }
 
     printf(" * CDVD: KeepAlive thread finished.\n");
-
-    return 0;
 }
 
-s32 StartKeepAliveThread()
+bool StartKeepAliveThread()
 {
     s_keepalive_is_open = true;
-    hThread_keepAlive = CreateThread(NULL, 0, keepAliveThread, NULL, 0, &pidThreadKeepAlive);
-    if (hThread_keepAlive == nullptr) {
+    try {
+        s_keepalive_thread = std::thread(keepAliveThread);
+    } catch (std::system_error &) {
         s_keepalive_is_open = false;
-        return -1;
     }
 
-    SetThreadPriority(hThread_keepAlive, THREAD_PRIORITY_NORMAL);
-
-    return 0;
+    return s_keepalive_is_open;
 }
 
 void StopKeepAliveThread()
 {
+    if (!s_keepalive_thread.joinable())
+        return;
+
     {
         std::lock_guard<std::mutex> guard(s_keepalive_lock);
         s_keepalive_is_open = false;
     }
     s_keepalive_cv.notify_one();
-    if (WaitForSingleObject(hThread_keepAlive, 5000) == WAIT_TIMEOUT) {
-        TerminateThread(hThread_keepAlive, 0);
-    }
-    CloseHandle(hThread_keepAlive);
+    s_keepalive_thread.join();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -210,7 +206,10 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
     }
 
     //setup threading manager
-    cdvdStartThread();
+    if (!cdvdStartThread()) {
+        src.reset();
+        return -1;
+    }
     StartKeepAliveThread();
 
     return cdvdRefreshData();
