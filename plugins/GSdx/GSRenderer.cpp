@@ -352,7 +352,7 @@ void GSRenderer::VSync(int field)
 
 	Flush();
 
-	if(s_n >= s_saven)
+	if(s_dump && s_n >= s_saven)
 	{
 		m_regs->Dump(root_sw + format("%05d_f%lld_gs_reg.txt", s_n, m_perfmon.GetFrame()));
 	}
