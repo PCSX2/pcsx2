@@ -93,8 +93,6 @@ std::wstring GetValidDrive();
 
 extern Settings g_settings;
 
-extern bool cdvd_is_open;
-extern bool cdvdKeepAlive_is_open;
 extern bool disc_has_changed;
 extern bool weAreInNewDiskCB;
 

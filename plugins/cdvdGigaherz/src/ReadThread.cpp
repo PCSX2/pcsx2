@@ -14,6 +14,8 @@
  */
 
 #include "CDVD.h"
+#include <atomic>
+#include <condition_variable>
 
 const s32 prefetch_max_blocks = 16;
 s32 prefetch_mode = 0;
@@ -21,11 +23,15 @@ s32 prefetch_last_lba = 0;
 s32 prefetch_last_mode = 0;
 s32 prefetch_left = 0;
 
-HANDLE hNotify = nullptr;
 HANDLE hThread = nullptr;
-HANDLE hRequestComplete = nullptr;
 
+static std::mutex s_notify_lock;
+static std::condition_variable s_notify_cv;
+static std::mutex s_request_lock;
+static std::condition_variable s_request_cv;
 static std::mutex s_cache_lock;
+
+static std::atomic<bool> cdvd_is_open;
 
 DWORD pidThread = 0;
 
@@ -128,6 +134,7 @@ bool cdvdUpdateDiscStatus()
 DWORD CALLBACK cdvdThread(PVOID param)
 {
     printf(" * CDVD: IO thread started...\n");
+    std::unique_lock<std::mutex> guard(s_notify_lock);
 
     while (cdvd_is_open) {
         if (cdvdUpdateDiscStatus()) {
@@ -136,10 +143,7 @@ DWORD CALLBACK cdvdThread(PVOID param)
             continue;
         }
 
-        if (prefetch_left)
-            WaitForSingleObject(hNotify, 1);
-        else
-            WaitForSingleObject(hNotify, 250);
+        s_notify_cv.wait_for(guard, std::chrono::milliseconds(prefetch_left ? 1 : 250));
 
         // check again to make sure we're not done here...
         if (!cdvd_is_open)
@@ -181,7 +185,7 @@ DWORD CALLBACK cdvdThread(PVOID param)
 
                 handlingRequest = false;
                 threadRequestPending = false;
-                PulseEvent(hRequestComplete);
+                s_request_cv.notify_one();
 
                 prefetch_last_lba = info.lsn;
                 prefetch_last_mode = info.mode;
@@ -199,14 +203,6 @@ DWORD CALLBACK cdvdThread(PVOID param)
 
 s32 cdvdStartThread()
 {
-    hNotify = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if (hNotify == nullptr)
-        return -1;
-
-    hRequestComplete = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if (hRequestComplete == nullptr)
-        return -1;
-
     cdvd_is_open = true;
     hThread = CreateThread(NULL, 0, cdvdThread, NULL, 0, &pidThread);
 
@@ -223,13 +219,11 @@ s32 cdvdStartThread()
 void cdvdStopThread()
 {
     cdvd_is_open = false;
-    PulseEvent(hNotify);
+    s_notify_cv.notify_one();
     if (WaitForSingleObject(hThread, 4000) == WAIT_TIMEOUT) {
         TerminateThread(hThread, 0);
     }
     CloseHandle(hThread);
-    CloseHandle(hNotify);
-    CloseHandle(hRequestComplete);
 }
 
 s32 cdvdRequestSector(u32 sector, s32 mode)
@@ -247,8 +241,7 @@ s32 cdvdRequestSector(u32 sector, s32 mode)
     }
 
     threadRequestPending = true;
-    ResetEvent(hRequestComplete);
-    PulseEvent(hNotify);
+    s_notify_cv.notify_one();
 
     return 0;
 }
@@ -260,8 +253,10 @@ s32 cdvdRequestComplete()
 
 s8 *cdvdGetSector(s32 sector, s32 mode)
 {
-    while (threadRequestPending) {
-        WaitForSingleObject(hRequestComplete, 10);
+    {
+        std::unique_lock<std::mutex> guard(s_request_lock);
+        while (threadRequestPending)
+            s_request_cv.wait_for(guard, std::chrono::milliseconds(10));
     }
 
     s32 offset;

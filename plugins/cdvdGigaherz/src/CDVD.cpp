@@ -15,6 +15,8 @@
 
 #include "CDVD.h"
 #include <cstdio>
+#include <atomic>
+#include <condition_variable>
 #include "svnrev.h"
 
 Settings g_settings;
@@ -22,8 +24,9 @@ static std::string s_config_file{"inis/cdvdGigaherz.ini"};
 
 void (*newDiscCB)();
 
+static std::mutex s_keepalive_lock;
+static std::condition_variable s_keepalive_cv;
 HANDLE hThread_keepAlive = nullptr;
-HANDLE hNotify_keepAlive = nullptr;
 DWORD pidThreadKeepAlive = 0;
 
 #define STRFY(x) #x
@@ -116,8 +119,7 @@ void WriteSettings()
 ///////////////////////////////////////////////////////////////////////////////
 // CDVD processing functions                                                 //
 
-bool cdvd_is_open = false;
-bool cdvdKeepAlive_is_open = false;
+std::atomic<bool> s_keepalive_is_open;
 bool disc_has_changed = false;
 bool weAreInNewDiskCB = false;
 
@@ -133,14 +135,10 @@ extern s32 prefetch_last_mode;
 DWORD CALLBACK keepAliveThread(PVOID param)
 {
     printf(" * CDVD: KeepAlive thread started...\n");
+    std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
-    while (cdvdKeepAlive_is_open) {
-        // Sleep 30 seconds with thread abort check
-        if (WaitForSingleObject(hNotify_keepAlive, 30000) != WAIT_TIMEOUT)
-            break;
-        if (!cdvdKeepAlive_is_open) {
-            break;
-        }
+    while (!s_keepalive_cv.wait_for(guard, std::chrono::seconds(30),
+                                    []() { return !s_keepalive_is_open; })) {
 
         //printf(" * keepAliveThread: polling drive.\n");
         //if (prefetch_last_mode == CDVD_MODE_2048)
@@ -156,14 +154,10 @@ DWORD CALLBACK keepAliveThread(PVOID param)
 
 s32 StartKeepAliveThread()
 {
-    hNotify_keepAlive = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if (hNotify_keepAlive == nullptr)
-        return -1;
-
-    cdvdKeepAlive_is_open = true;
+    s_keepalive_is_open = true;
     hThread_keepAlive = CreateThread(NULL, 0, keepAliveThread, NULL, 0, &pidThreadKeepAlive);
     if (hThread_keepAlive == nullptr) {
-        cdvdKeepAlive_is_open = false;
+        s_keepalive_is_open = false;
         return -1;
     }
 
@@ -174,13 +168,15 @@ s32 StartKeepAliveThread()
 
 void StopKeepAliveThread()
 {
-    cdvdKeepAlive_is_open = false;
-    PulseEvent(hNotify_keepAlive);
+    {
+        std::lock_guard<std::mutex> guard(s_keepalive_lock);
+        s_keepalive_is_open = false;
+    }
+    s_keepalive_cv.notify_one();
     if (WaitForSingleObject(hThread_keepAlive, 5000) == WAIT_TIMEOUT) {
         TerminateThread(hThread_keepAlive, 0);
     }
     CloseHandle(hThread_keepAlive);
-    CloseHandle(hNotify_keepAlive);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
