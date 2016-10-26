@@ -99,6 +99,8 @@ void ReadSettings();
 void WriteSettings();
 #if defined(_WIN32)
 std::wstring GetValidDrive();
+#else
+std::string GetValidDrive();
 #endif
 
 extern Settings g_settings;

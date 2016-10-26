@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Linux">
       <UniqueIdentifier>{102507ff-fef0-4989-9bcb-4fa14a0b7595}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GTK">
+      <UniqueIdentifier>{2054202d-299a-4cbf-8f4f-282bfe79a98e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp">
@@ -41,6 +44,12 @@
     </ClCompile>
     <ClCompile Include="config.cpp">
       <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\LinuxConfig.cpp">
+      <Filter>Source Files\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\GtkGui.cpp">
+      <Filter>Source Files\GTK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
