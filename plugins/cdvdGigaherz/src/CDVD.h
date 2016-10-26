@@ -109,4 +109,12 @@ s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
 void cdvdParseTOC();
 
+inline void lba_to_msf(s32 lba, u8 *m, u8 *s, u8 *f)
+{
+    lba += 150;
+    *m = static_cast<u8>(lba / (60 * 75));
+    *s = static_cast<u8>((lba / 75) % 60);
+    *f = static_cast<u8>(lba % 75);
+}
+
 #endif /* __CDVD_H__ */
