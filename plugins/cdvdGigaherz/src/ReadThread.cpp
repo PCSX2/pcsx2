@@ -333,7 +333,7 @@ s32 cdvdGetMediaType()
 
 s32 cdvdRefreshData()
 {
-    char *diskTypeName = "Unknown";
+    const char *diskTypeName = "Unknown";
 
     //read TOC from device
     cdvdParseTOC();
