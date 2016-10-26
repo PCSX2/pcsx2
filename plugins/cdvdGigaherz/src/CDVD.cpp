@@ -79,26 +79,18 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type)
 ///////////////////////////////////////////////////////////////////////////////
 // Utility Functions                                                         //
 
-u8 __inline dec_to_bcd(u8 dec)
+inline u8 dec_to_bcd(u8 dec)
 {
     return ((dec / 10) << 4) | (dec % 10);
 }
 
-void __inline lsn_to_msf(u8 *minute, u8 *second, u8 *frame, u32 lsn)
+inline void lsn_to_msf(u8 *minute, u8 *second, u8 *frame, u32 lsn)
 {
     *frame = dec_to_bcd(lsn % 75);
     lsn /= 75;
     *second = dec_to_bcd(lsn % 60);
     lsn /= 60;
     *minute = dec_to_bcd(lsn % 100);
-}
-
-void __inline lba_to_msf(s32 lba, u8 *m, u8 *s, u8 *f)
-{
-    lba += 150;
-    *m = (u8)(lba / (60 * 75));
-    *s = (u8)((lba / 75) % 60);
-    *f = (u8)(lba % 75);
 }
 
 void ReadSettings()
