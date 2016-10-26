@@ -60,17 +60,17 @@ const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 10;
 
-char *CALLBACK PS2EgetLibName()
+EXPORT char *CALLBACK PS2EgetLibName()
 {
     return LibName;
 }
 
-u32 CALLBACK PS2EgetLibType()
+EXPORT u32 CALLBACK PS2EgetLibType()
 {
     return PS2E_LT_CDVD;
 }
 
-u32 CALLBACK PS2EgetLibVersion2(u32 type)
+EXPORT u32 CALLBACK PS2EgetLibVersion2(u32 type)
 {
     return (version << 16) | (revision << 8) | build;
 }
@@ -167,17 +167,17 @@ void StopKeepAliveThread()
 ///////////////////////////////////////////////////////////////////////////////
 // CDVD Pluin Interface                                                      //
 
-void CALLBACK CDVDsetSettingsDir(const char *dir)
+EXPORT void CALLBACK CDVDsetSettingsDir(const char *dir)
 {
     s_config_file = std::string(dir ? dir : "inis") + "/cdvdGigaherz.ini";
 }
 
-s32 CALLBACK CDVDinit()
+EXPORT s32 CALLBACK CDVDinit()
 {
     return 0;
 }
 
-s32 CALLBACK CDVDopen(const char *pTitleFilename)
+EXPORT s32 CALLBACK CDVDopen(const char *pTitleFilename)
 {
     ReadSettings();
 
@@ -203,7 +203,7 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
     return cdvdRefreshData();
 }
 
-void CALLBACK CDVDclose()
+EXPORT void CALLBACK CDVDclose()
 {
     StopKeepAliveThread();
     cdvdStopThread();
@@ -211,12 +211,12 @@ void CALLBACK CDVDclose()
     src.reset();
 }
 
-void CALLBACK CDVDshutdown()
+EXPORT void CALLBACK CDVDshutdown()
 {
     //nothing to do here
 }
 
-s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
+EXPORT s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
 {
     switch (src->GetMediaType()) {
         case 1:
@@ -238,12 +238,12 @@ s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
 int lastReadInNewDiskCB = 0;
 char directReadSectorBuffer[2448];
 
-s32 CALLBACK CDVDreadSector(u8 *buffer, s32 lsn, int mode)
+EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, s32 lsn, int mode)
 {
     return cdvdDirectReadSector(lsn, mode, (char *)buffer);
 }
 
-s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
+EXPORT s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
 {
     csector = lsn;
     cmode = mode;
@@ -259,7 +259,7 @@ s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
 }
 
 // return can be NULL (for async modes)
-u8 *CALLBACK CDVDgetBuffer()
+EXPORT u8 *CALLBACK CDVDgetBuffer()
 {
     if (lastReadInNewDiskCB) {
         lastReadInNewDiskCB = 0;
@@ -272,7 +272,7 @@ u8 *CALLBACK CDVDgetBuffer()
 }
 
 // return can be NULL (for async modes)
-int CALLBACK CDVDgetBuffer2(u8 *dest)
+EXPORT int CALLBACK CDVDgetBuffer2(u8 *dest)
 {
     int csize = 2352;
     switch (cmode) {
@@ -299,7 +299,7 @@ int CALLBACK CDVDgetBuffer2(u8 *dest)
     return 0;
 }
 
-s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
+EXPORT s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
     // the formatted subq command returns:  control/adr, track, index, trk min, trk sec, trk frm, 0x00, abs min, abs sec, abs frm
 
@@ -326,14 +326,14 @@ s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
     return 0;
 }
 
-s32 CALLBACK CDVDgetTN(cdvdTN *Buffer)
+EXPORT s32 CALLBACK CDVDgetTN(cdvdTN *Buffer)
 {
     Buffer->strack = strack;
     Buffer->etrack = etrack;
     return 0;
 }
 
-s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
+EXPORT s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
 {
     if (Track == 0) {
         Buffer->lsn = src->GetSectorCount();
@@ -351,8 +351,9 @@ s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer)
     return 0;
 }
 
-s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
+EXPORT s32 CALLBACK CDVDgetTOC(void *toc)
 {
+    u8 *tocBuff = static_cast<u8 *>(toc);
     if (curDiskType == CDVD_TYPE_NODISC)
         return -1;
 
@@ -473,39 +474,39 @@ s32 CALLBACK CDVDgetTOC(u8 *tocBuff)
     return 0;
 }
 
-s32 CALLBACK CDVDgetDiskType()
+EXPORT s32 CALLBACK CDVDgetDiskType()
 {
     return curDiskType;
 }
 
-s32 CALLBACK CDVDgetTrayStatus()
+EXPORT s32 CALLBACK CDVDgetTrayStatus()
 {
     return curTrayStatus;
 }
 
-s32 CALLBACK CDVDctrlTrayOpen()
+EXPORT s32 CALLBACK CDVDctrlTrayOpen()
 {
     curTrayStatus = CDVD_TRAY_OPEN;
     return 0;
 }
 
-s32 CALLBACK CDVDctrlTrayClose()
+EXPORT s32 CALLBACK CDVDctrlTrayClose()
 {
     curTrayStatus = CDVD_TRAY_CLOSE;
     return 0;
 }
 
-void CALLBACK CDVDnewDiskCB(void (*callback)())
+EXPORT void CALLBACK CDVDnewDiskCB(void (*callback)())
 {
     newDiscCB = callback;
 }
 
-void CALLBACK CDVDconfigure()
+EXPORT void CALLBACK CDVDconfigure()
 {
     configure();
 }
 
-s32 CALLBACK CDVDtest()
+EXPORT s32 CALLBACK CDVDtest()
 {
     return 0;
 }

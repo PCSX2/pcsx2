@@ -123,4 +123,9 @@ inline void lba_to_msf(s32 lba, u8 *m, u8 *s, u8 *f)
     *f = static_cast<u8>(lba % 75);
 }
 
+#if defined(_WIN32)
+#define EXPORT
+#else
+#define EXPORT extern "C" __attribute__((stdcall, externally_visible, visibility("default")))
+#endif
 #endif /* __CDVD_H__ */
