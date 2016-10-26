@@ -16,9 +16,11 @@
 #ifndef __CDVD_H__
 #define __CDVD_H__
 
+#if defined(_WIN32)
 #define _WIN32_WINNT 0x0600
 #define NOMINMAX
 #include <windows.h>
+#endif
 
 #include <cstdio>
 #include <cstring>
@@ -57,8 +59,10 @@ class IOCtlSrc
     IOCtlSrc(const IOCtlSrc &) = delete;
     IOCtlSrc &operator=(const IOCtlSrc &) = delete;
 
+#if defined(_WIN32)
     HANDLE m_device = INVALID_HANDLE_VALUE;
     std::wstring m_filename;
+#endif
 
     s32 m_media_type = 0;
     u32 m_sectors = 0;
@@ -90,7 +94,9 @@ void configure();
 
 void ReadSettings();
 void WriteSettings();
+#if defined(_WIN32)
 std::wstring GetValidDrive();
+#endif
 
 extern Settings g_settings;
 
