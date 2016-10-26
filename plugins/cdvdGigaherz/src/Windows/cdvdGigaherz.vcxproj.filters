@@ -13,15 +13,15 @@
       <UniqueIdentifier>{a80698fd-3734-41c4-b7e8-6b96b34633e0}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{a0a8deec-63fd-4ef5-b815-d6c9ff3d80e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Linux">
+      <UniqueIdentifier>{102507ff-fef0-4989-9bcb-4fa14a0b7595}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IOCtlSrc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ReadThread.cpp">
@@ -32,6 +32,15 @@
     </ClCompile>
     <ClCompile Include="..\Settings.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\LinuxIOCtlSrc.cpp">
+      <Filter>Source Files\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCtlSrc.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
