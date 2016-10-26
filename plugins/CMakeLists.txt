@@ -6,9 +6,9 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
-#	add_subdirectory(cdvdGigaherz)
-#endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
+	add_subdirectory(cdvdGigaherz/src)
+endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso" AND CDVDiso)
 	add_subdirectory(CDVDiso/src)

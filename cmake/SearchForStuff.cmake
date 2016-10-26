@@ -78,6 +78,15 @@ endif()
 include(CheckLib)
 if(Linux)
     check_lib(AIO aio libaio.h)
+    # There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
+    # When cross compiling, pkg-config will be skipped so we have to look for
+    # udev (it'll automatically be prefixed with lib). But when not cross
+    # compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
+    if(CMAKE_CROSSCOMPILING)
+        check_lib(LIBUDEV udev libudev.h)
+    else()
+        check_lib(LIBUDEV libudev libudev.h)
+    endif()
 endif()
 if(EGL_API)
     check_lib(EGL EGL EGL/egl.h)
