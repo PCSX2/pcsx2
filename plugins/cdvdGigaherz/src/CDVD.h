@@ -62,6 +62,9 @@ class IOCtlSrc
 #if defined(_WIN32)
     HANDLE m_device = INVALID_HANDLE_VALUE;
     std::wstring m_filename;
+#else
+    int m_device = -1;
+    std::string m_filename;
 #endif
 
     s32 m_media_type = 0;

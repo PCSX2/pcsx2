@@ -54,6 +54,9 @@
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp" />
     <ClCompile Include="..\Settings.cpp" />
+    <ClCompile Include="..\Unix\LinuxIOCtlSrc.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="config.cpp" />
     <ClCompile Include="IOCtlSrc.cpp" />
     <ClCompile Include="..\ReadThread.cpp" />
