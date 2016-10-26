@@ -50,15 +50,11 @@ int cmode;
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin Interface                                                          //
 
-char *LibName = "cdvdGigaherz "
+char LibName[] = "cdvdGigaherz "
 #ifdef PCSX2_DEBUG
-                " Debug "
+                 " Debug "
 #endif
-                "(" TOSTR(SVN_REV)
-#if SVN_MODS
-                    "/modded"
-#endif
-                    ")";
+                 "(" TOSTR(SVN_REV) ")";
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
