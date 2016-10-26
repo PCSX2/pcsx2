@@ -123,7 +123,7 @@ std::atomic<bool> s_keepalive_is_open;
 bool disc_has_changed = false;
 bool weAreInNewDiskCB = false;
 
-IOCtlSrc *src;
+std::unique_ptr<IOCtlSrc> src;
 
 char throwaway[2352];
 extern s32 prefetch_last_lba;
@@ -203,7 +203,7 @@ s32 CALLBACK CDVDopen(const char *pTitleFilename)
 
     // open device file
     try {
-        src = new IOCtlSrc(drive);
+        src = std::unique_ptr<IOCtlSrc>(new IOCtlSrc(drive));
     } catch (std::runtime_error &ex) {
         fputs(ex.what(), stdout);
         return -1;
@@ -221,8 +221,7 @@ void CALLBACK CDVDclose()
     StopKeepAliveThread();
     cdvdStopThread();
     //close device
-    delete src;
-    src = NULL;
+    src.reset();
 }
 
 void CALLBACK CDVDshutdown()

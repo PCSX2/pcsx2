@@ -22,6 +22,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -83,7 +84,7 @@ public:
     bool DiscReady();
 };
 
-extern IOCtlSrc *src;
+extern std::unique_ptr<IOCtlSrc> src;
 
 void configure();
 
