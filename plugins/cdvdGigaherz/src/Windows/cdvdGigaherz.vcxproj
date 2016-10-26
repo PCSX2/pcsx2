@@ -54,6 +54,12 @@
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp" />
     <ClCompile Include="..\Settings.cpp" />
+    <ClCompile Include="..\Unix\GtkGui.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Unix\LinuxConfig.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Unix\LinuxIOCtlSrc.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
