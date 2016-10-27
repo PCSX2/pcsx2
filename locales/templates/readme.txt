@@ -12,7 +12,7 @@ files, test, and then submit the new PO file to the PCSX2 Team.
 The PCSX2 Team recommends using Poedit to help make your life easier.
 
 Details on PCSX2's use of gettext, translation, and tesing/submitting new translations,
-visit our wiki at googlecode:  https://code.google.com/p/pcsx2/wiki/TranslationGuide
+visit our wiki at http://wiki.pcsx2.net/index.php/PCSX2_Documentation/Translation_Guide
 
 
 Jake Stine (Air)
