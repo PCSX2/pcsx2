@@ -44,6 +44,8 @@ if [ "$(uname -s)" = 'Darwin' ]; then
         echo "Using Mavericks build with C++11 support."
         toolfile=cmake/darwin13-compiler-i386-clang.cmake
     fi
+elif [ "$(uname -s)" = 'FreeBSD' ]; then
+    ncpu="$(sysctl -n hw.ncpu)"
 else
     ncpu=$(grep -w -c processor /proc/cpuinfo)
     toolfile=cmake/linux-compiler-i386-multilib.cmake
@@ -53,7 +55,7 @@ if command -v ninja >/dev/null ; then
     flags="$flags -GNinja"
     make=ninja
 else
-    make="make --jobs=$ncpu"
+    make="make -j$ncpu"
 fi
 
 for ARG in "$@"; do
