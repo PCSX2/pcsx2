@@ -14,7 +14,7 @@ endif()
 
 # plugin name
 set(Output spu2x-2.0.0)
-if (Linux)
+if (UNIX AND NOT APPLE)
 	if (SDL2_API)
 		set(spu2xFinalFlags "-DSPU2X_SDL2")
 	else()

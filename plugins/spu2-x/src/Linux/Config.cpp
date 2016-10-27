@@ -19,7 +19,7 @@
 #include "Dialogs.h"
 #include "Config.h"
 
-#ifdef __linux__
+#ifdef __unix__
 #include <SDL.h>
 #include <SDL_audio.h>
 #endif
@@ -140,7 +140,7 @@ void ReadSettings()
         OutputAPI = 0;
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
     CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
     SdlOutputAPI = -1;
 #if SDL_MAJOR_VERSION >= 2
@@ -156,7 +156,7 @@ void ReadSettings()
     SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 
     PortaudioOut->ReadSettings();
-#ifdef __linux__
+#ifdef __unix__
     SDLOut->ReadSettings();
 #endif
     SoundtouchCfg::ReadSettings();
@@ -201,7 +201,7 @@ void WriteSettings()
     CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
     PortaudioOut->WriteSettings();
-#ifdef __linux__
+#ifdef __unix__
     SDLOut->WriteSettings();
 #endif
     SoundtouchCfg::WriteSettings();
@@ -271,9 +271,7 @@ void DisplayDialog()
     mod_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
-#ifdef __linux__
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
-#endif
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
