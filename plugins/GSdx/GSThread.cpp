@@ -36,7 +36,6 @@ GSThread::GSThread()
 
 GSThread::~GSThread()
 {
-	CloseThread();
 }
 
 #ifdef _WIN32
