@@ -1227,8 +1227,8 @@ msgid ""
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
 "\n"
-"Замечание: Дублирование/Переименовывание/Создание/Удаление НЕ будут "
-"возвращены при нажатии 'Отмена'."
+"Замечание: дублирование/переименование/создание/удаление НЕ будут "
+"отменены при нажатии 'Отмена'."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -1646,7 +1646,7 @@ msgid "Hard reset of the active VM."
 msgstr "\"Холодная\" перезагрузка текущей виртуальной машины."
 
 #: pcsx2/gui/MainFrame.cpp:655
-msgid "Boot CDVD (full)"
+msgid "Boot CDVD (f&ull)"
 msgstr "Запустить CD/DVD (все этапы)"
 
 #: pcsx2/gui/MainFrame.cpp:656
@@ -2058,6 +2058,10 @@ msgstr "Ожидание Vsync на обновлении"
 msgid "Double-click toggles fullscreen mode"
 msgstr "При двойном клике осуществляется переход в полноэкранный режим"
 
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
+msgid "Switch to 4:3 aspect ratio when an FMV plays"
+msgstr "Переключить соотношение сторон на 4:3 при воспроизведении FMV"
+
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:85
 msgid "Aspect Ratio:"
 msgstr "Соотношение сторон:"
@@ -2154,15 +2158,18 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
 msgid ""
-"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
+"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
 "Замедление задержек VIF1 (VIF1 FIFO): для исправления интерфейса SOCOM 2 и "
 "лагов при загрузке Spy Hunter."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
-msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
+msgid ""
+"Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
+"Hero)"
 msgstr ""
-"Пропуск направления шины при передаче Path3: используется для игры Hotwheels"
+"Включить GIF FIFO (медленнее, но необходимо для Hotwheels, Wallace and "
+"Gromit, DJ Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
@@ -2177,6 +2184,8 @@ msgstr ""
 msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
+"VU I bit Hack во избежание постоянной рекомпиляции (Scarface The World Is "
+"Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
@@ -2210,7 +2219,7 @@ msgstr "Выберите папку для вирутальных карт па�
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:484
 msgid "Eject"
-msgstr "Изъять"
+msgstr "Извлечь"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:394
 msgid "Duplicate ..."
@@ -2232,7 +2241,7 @@ msgstr "Конвертировать..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:409
 msgid "Card: "
-msgstr "Карта:"
+msgstr "Карта: "
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:502
@@ -2330,7 +2339,7 @@ msgstr "Переименовать карту памяти"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:833
 msgid "Error: Rename could not be completed.\n"
-msgstr "Ошибка: Переименовывание не может быть завершено. \n"
+msgstr "Ошибка: Переименование не может быть завершено. \n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:933
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
