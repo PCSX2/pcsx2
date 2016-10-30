@@ -1645,7 +1645,7 @@ msgid "Hard reset of the active VM."
 msgstr "Redémarrage intégral du système d'émulation."
 
 #: pcsx2/gui/MainFrame.cpp:655
-msgid "Boot CDVD (full)"
+msgid "Boot CDVD (f&ull)"
 msgstr "Démarrer le CDVD (complet)"
 
 #: pcsx2/gui/MainFrame.cpp:656
