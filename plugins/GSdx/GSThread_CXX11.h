@@ -24,65 +24,7 @@
 #include "GSdx.h"
 #include "boost_spsc_queue.hpp"
 
-class IGSThread
-{
-protected:
-	virtual void ThreadProc() = 0;
-};
-
-// let us use std::thread for now, comment out the definition to go back to pthread
-// There are currently some bugs/limitations to std::thread (see various comment)
-// For the moment let's keep pthread but uses new std object (mutex, cond_var)
-//#define _STD_THREAD_
-
-#ifdef _WIN32
-
-class GSThread : public IGSThread
-{
-    DWORD m_ThreadId;
-    HANDLE m_hThread;
-
-	static DWORD WINAPI StaticThreadProc(void* lpParam);
-
-protected:
-	void CreateThread();
-	void CloseThread();
-
-public:
-	GSThread();
-	virtual ~GSThread();
-};
-
-#else
-
-#ifdef _STD_THREAD_
-#include <thread>
-#else
-#include <pthread.h>
-#endif
-
-class GSThread : public IGSThread
-{
-    #ifdef _STD_THREAD_
-    std::thread *t;
-    #else
-    pthread_attr_t m_thread_attr;
-    pthread_t m_thread;
-    #endif
-    static void* StaticThreadProc(void* param);
-
-protected:
-	void CreateThread();
-	void CloseThread();
-
-public:
-	GSThread();
-	virtual ~GSThread();
-};
-
-#endif
-
-template<class T> class IGSJobQueue : public GSThread
+template<class T> class IGSJobQueue
 {
 public:
 	IGSJobQueue() {}
@@ -93,12 +35,12 @@ public:
 	virtual void Wait() = 0;
 
 	virtual void Process(T& item) = 0;
-	virtual int GetPixels(bool reset) = 0;
 };
 
 template<class T, int CAPACITY> class GSJobQueue : public IGSJobQueue<T>
 {
-protected:
+private:
+	std::thread m_thread;
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
@@ -143,15 +85,17 @@ public:
 		m_count(0),
 		m_exit(false)
 	{
-		this->CreateThread();
+		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
 
-	virtual ~GSJobQueue() {
+	virtual ~GSJobQueue()
+	{
 		m_exit = true;
 		do {
 			m_notempty.notify_one();
 		} while (m_exit);
-		this->CloseThread();
+
+		m_thread.join();
 	}
 
 	bool IsEmpty() const {

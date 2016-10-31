@@ -171,9 +171,6 @@
     <ClCompile Include="GSTextureNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GSUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -564,6 +561,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PSX\GPUVertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="boost_spsc_queue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSThread_CXX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -59,7 +59,5 @@ namespace GSPng {
 			virtual ~Worker() {};
 
 			void Process(shared_ptr<Transaction>& item);
-
-			int GetPixels(bool reset) {return 0;}
 	};
 }

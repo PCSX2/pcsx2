@@ -104,7 +104,6 @@ set(GSdxSources
     GSTextureOGL.cpp
     GSTextureNull.cpp
     GSTextureSW.cpp
-    GSThread.cpp
     GSUtil.cpp
     GSVector.cpp
     GSVertexTrace.cpp
@@ -164,6 +163,7 @@ set(GSdxHeaders
     GSTextureCacheOGL.h
     GSTextureNull.h
     GSThread.h
+    GSThread_CXX11.h
     GSUtil.h
     GSVector.h
     GSVertex.h
