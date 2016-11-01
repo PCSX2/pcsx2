@@ -102,7 +102,7 @@ struct _sio
 	u32 count;     // old_sio remnant
 	u32 packetsize;// old_sio remnant
 
-	u8 buf[256];
+	u8 buf[512];
 	u8 ret; // default return value;
 	u8 cmd; // command backup
 
