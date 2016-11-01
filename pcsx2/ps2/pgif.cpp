@@ -1017,47 +1017,6 @@ u8 psExp2R8(u32 mem)
 
 //int flgint = 0;
 
-char strb[200] = {0};
-void kernelTTYFileDescrWrite(u32 mem, u32 data)
-{
-    //data is an address actually
-    char stra[100];
-    int i;
-               //	if (mem == ) {
-    for (i = 0; i < 100; i++)
-        stra[i] = iopMemRead8(data + i);
-    stra[99] = 0;
-
-    //Console.WriteLn("Wr to PS1 kernel file TTY descr. data = %08X  at addr %08X >%s< ", data, iopMemRead32(data), stra);
-
-    //Console.WriteLn("%s", stra);
-
-
-    if ((strlen(strb) + strlen(stra)) >= 200) {
-        //Console.WriteLn("%s", strb);
-        strb[0] = 0;
-    } else {
-
-        strcat(strb, stra);
-        if ((stra[strlen(stra) - 1] == 0xA) || (stra[strlen(stra) - 1] == 0xD) || (stra[strlen(stra) - 2] == 0xA) || (stra[strlen(stra) - 2] == 0xD)) {
-			// VSync: timeout is spammy
-			if (strncmp(strb, "VSync: timeout", 14) != 0) {
-
-				Console.WriteLn("%s", strb);
-				/* if (strcmp(strb, "VSync") == 0)
-					 flgint ^= 1;
-				 if (strncmp(strb, "Execute", 5) == 0) {
-					 Console.WriteLn(" ###EXecute was just printed####");
-					 doAnyIopLs = 1;
-				 }*/
-			}
-            strb[0] = 0;
-        }
-    }
-    //}
-}
-
-
 //0x80051080
 u32 getIntTmrKReg(u32 mem, u32 data)
 {

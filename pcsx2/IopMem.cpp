@@ -489,7 +489,4 @@ void __fastcall iopMemWrite32(u32 mem, u32 value)
 			}
 		}
 	}
-
-	if (mem == 0x000085CC)
-		kernelTTYFileDescrWrite(mem, value);
 }
