@@ -229,17 +229,13 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
     // already x4'd.  It doesn't really make sense that we should x4 them again, and this
     // seems to work. (feedback-free in bios and DDS)  --air
 
-    u32 pos = EffectsStartA + offset;
-
     // Need to use modulus here, because games can and will drop the buffer size
     // without notice, and it leads to offsets several times past the end of the buffer.
 
-    if (pos > EffectsEndA) {
-        pos = EffectsStartA + (offset % EffectsBufferSize);
-    } else if (pos < EffectsStartA) {
-        pos = EffectsEndA + 1 - (offset % EffectsBufferSize);
-    }
-    return pos;
+    if ((u32)offset >= (u32)EffectsBufferSize)
+        return EffectsStartA + (offset % EffectsBufferSize) + (offset < 0 ? EffectsBufferSize : 0);
+    else
+        return EffectsStartA + offset;
 }
 
 void V_Core::UpdateEffectsBufferSize()
