@@ -607,6 +607,7 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 	mov(ebp, ptr[esi + 4]);
 	add(ebp, ptr[edi + 4]);
+	and(ebp, HALF_VM_SIZE - 1);
 
 	// GSVector4i zs = zi;
 
@@ -2292,6 +2293,7 @@ void GSDrawScanlineCodeGenerator::ReadFrame()
 
 	mov(ebx, ptr[esi]);
 	add(ebx, ptr[edi]);
+	and(ebx, HALF_VM_SIZE - 1);
 
 	if(!m_sel.rfb)
 	{

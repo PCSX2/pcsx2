@@ -532,7 +532,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 			if(sel.zb)
 			{
-				za = fza_base->y + fza_offset->y;
+				za = (fza_base->y + fza_offset->y) % HALF_VM_SIZE;
 
 				if(sel.prim != GS_SPRITE_CLASS)
 				{
@@ -1130,7 +1130,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 			if(sel.fb)
 			{
-				fa = fza_base->x + fza_offset->x;
+				fa = (fza_base->x + fza_offset->x) % HALF_VM_SIZE;
 
 				if(sel.rfb)
 				{
@@ -1646,7 +1646,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 			if(sel.zb)
 			{
-				za = fza_base->y + fza_offset->y;
+				za = (fza_base->y + fza_offset->y) % HALF_VM_SIZE;
 
 				if(sel.prim != GS_SPRITE_CLASS)
 				{
@@ -2249,7 +2249,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 			if(sel.fb)
 			{
-				fa = fza_base->x + fza_offset->x;
+				fa = (fza_base->x + fza_offset->x) % HALF_VM_SIZE;
 
 				if(sel.rfb)
 				{
