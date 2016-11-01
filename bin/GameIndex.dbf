@@ -1218,6 +1218,7 @@ Serial = SCES-50139
 Name   = World Rally Championship
 Region = PAL-M7
 Compat = 5
+EETimingHack = 1 // Fix in-game Freeze
 ---------------------------------------------
 Serial = SCES-50240
 Name   = Extermination
@@ -28853,7 +28854,7 @@ Name   = Samurai Complete Edition [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74406
-Name   = World Rally Chanpionship [PlayStation 2 The Best]
+Name   = World Rally Championship [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74407
