@@ -840,7 +840,6 @@ int SaveSettings(wchar_t *file = 0)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         noError &= WritePrivateProfileInt(L"General Settings", BoolOptionsInfo[i].name, config.bools[i], file);
     }
-    WritePrivateProfileInt(L"General Settings", L"Swap Pad Types", config.swapPadtypes, file);
     WritePrivateProfileInt(L"General Settings", L"Close Hacks", config.closeHacks, file);
 
     WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
@@ -949,7 +948,6 @@ int LoadSettings(int force, wchar_t *file)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
     }
-    config.swapPadtypes = (u8)GetPrivateProfileIntW(L"General Settings", L"Swap Pad Types", 0, file);
     config.closeHacks = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hacks", 0, file);
     if (config.closeHacks & 1)
         config.closeHacks &= ~2;
@@ -2004,7 +2002,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                 CheckDlgButton(hWnd, BoolOptionsInfo[j].ControlId, BST_CHECKED * config.bools[j]);
             }
-            CheckDlgButton(hWnd, IDC_SWAP_PAD_TYPES, BST_CHECKED * config.swapPadtypes);
             CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_CHECKED * (config.closeHacks & 1));
             CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_CHECKED * ((config.closeHacks & 2) >> 1));
 
@@ -2101,7 +2098,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                     config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
                 }
-                config.swapPadtypes = (IsDlgButtonChecked(hWnd, IDC_SWAP_PAD_TYPES) == BST_CHECKED);
                 config.closeHacks = (IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK1) == BST_CHECKED) |
                                     ((IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK2) == BST_CHECKED) << 1);
 
@@ -2161,32 +2157,51 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     if (!hMenu)
                         break;
                     MENUITEMINFOW info;
-                    for (port2 = 1; port2 >= 0; port2--) {
-                        for (slot2 = 3; slot2 >= 0; slot2--) {
-                            padtype2 = config.padConfigs[port2][slot2].type;
-                            wchar_t text[40];
-                            wchar_t pad[40];
-                            if (config.swapPadtypes) {
-                                if (!GetPadTypeString(pad, port2, slot2, padtype2))
-                                    continue;
-                            } else if (!GetPadString(pad, port2, slot2)) {
-                                continue;
-                            }
-                            info.cbSize = sizeof(info);
-                            info.fMask = MIIM_STRING | MIIM_ID;
-                            info.dwTypeData = text;
-                            if (port2 == port1 && slot2 == slot1 && padtype2 == padtype1) {
-                                int index = GetMenuItemCount(hMenu);
-                                wsprintfW(text, L"Clear %s Bindings", pad);
-                                info.wID = -1;
-                                InsertMenuItemW(hMenu, index, 1, &info);
-                                info.fMask = MIIM_TYPE;
-                                info.fType = MFT_SEPARATOR;
-                                InsertMenuItemW(hMenu, index, 1, &info);
-                            } else if (!(port2 == port1 && slot2 == slot1) && !(config.swapPadtypes && !config.multipleBinding && padtype2 != padtype1)) {
-                                info.wID = port2 + 2 * slot2 + 1;
-                                wsprintfW(text, L"Swap with %s", pad);
-                                InsertMenuItemW(hMenu, 0, 1, &info);
+                    for (int IndividualPadtypes = 1; IndividualPadtypes >= 0; IndividualPadtypes--) {
+                        info.fMask = MIIM_TYPE;
+                        info.fType = MFT_SEPARATOR;
+                        InsertMenuItemW(hMenu, 0, 1, &info);
+                        for (port2 = 1; port2 >= 0; port2--) {
+                            for (slot2 = 3; slot2 >= 0; slot2--) {
+                                padtype2 = config.padConfigs[port2][slot2].type;
+                                wchar_t text[40];
+                                wchar_t pad[40];
+                                if (IndividualPadtypes == 0) {
+                                    if (!GetPadString(pad, port2, slot2))
+                                        continue;
+                                } else {
+                                    if (!GetPadTypeString(pad, port2, slot2, padtype2))
+                                        continue;
+                                }
+                                info.cbSize = sizeof(info);
+                                info.fMask = MIIM_STRING | MIIM_ID;
+                                info.dwTypeData = text;
+                                if (port2 == port1 && slot2 == slot1 && padtype2 == padtype1) {
+                                    int index = GetMenuItemCount(hMenu);
+                                    wsprintfW(text, L"Clear %s Bindings", pad);
+                                    if (IndividualPadtypes == 0) {
+                                        info.wID = -1;
+                                        wsprintfW(text, L"Clear all %s Bindings", pad);
+                                    } else {
+                                        info.wID = -2;
+                                        wsprintfW(text, L"Clear %s Bindings only", pad);
+                                    }
+                                    InsertMenuItemW(hMenu, index, 1, &info);
+                                    info.fMask = MIIM_TYPE;
+                                    info.fType = MFT_SEPARATOR;
+                                    InsertMenuItemW(hMenu, index, 1, &info);
+                                } else if (!(port2 == port1 && slot2 == slot1)) {
+                                    info.wID = port2 + 2 * slot2 + 1;
+                                    if (IndividualPadtypes == 1) {
+                                        if (!config.multipleBinding && padtype2 != padtype1)
+                                            continue;
+                                        info.wID += 8;
+                                        wsprintfW(text, L"Swap with %s bindings only", pad);
+                                    } else {
+                                        wsprintfW(text, L"Swap all bindings with %s", pad);
+                                    }
+                                    InsertMenuItemW(hMenu, 0, 1, &info);
+                                }
                             }
                         }
                     }
@@ -2196,7 +2211,12 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     DestroyMenu(hMenu);
                     if (!res)
                         break;
+                    bool swapIndividualPadtypes = false;
                     if (res > 0) {
+                        if (res > 8) {
+                            res -= 8;
+                            swapIndividualPadtypes = true;
+                        }
                         res--;
                         slot2 = res / 2;
                         port2 = res & 1;
@@ -2204,14 +2224,14 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                         PadConfig padCfgTemp = config.padConfigs[port1][slot1];
                         config.padConfigs[port1][slot1] = config.padConfigs[port2][slot2];
                         config.padConfigs[port2][slot2] = padCfgTemp;
-                        if (config.swapPadtypes) {
+                        if (swapIndividualPadtypes) {
                             config.padConfigs[port2][slot2].type = config.padConfigs[port1][slot1].type;
                             config.padConfigs[port1][slot1].type = padCfgTemp.type;
                         }
                         for (int i = 0; i < dm->numDevices; i++) {
                             if (dm->devices[i]->type == IGNORE)
                                 continue;
-                            if (config.swapPadtypes) {
+                            if (swapIndividualPadtypes) {
                                 PadBindings bindings = dm->devices[i]->pads[port1][slot1][padtype1];
                                 dm->devices[i]->pads[port1][slot1][padtype1] = dm->devices[i]->pads[port2][slot2][padtype2];
                                 dm->devices[i]->pads[port2][slot2][padtype2] = bindings;
@@ -2224,10 +2244,13 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                             }
                         }
                     } else {
+                        if (res == -2) {
+                            swapIndividualPadtypes = true;
+                        }
                         for (int i = 0; i < dm->numDevices; i++) {
                             if (dm->devices[i]->type == IGNORE)
                                 continue;
-                            if (config.swapPadtypes) {
+                            if (swapIndividualPadtypes) {
                                 free(dm->devices[i]->pads[port1][slot1][padtype1].bindings);
                                 for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype1].numFFBindings; j++) {
                                     free(dm->devices[i]->pads[port1][slot1][padtype1].ffBindings[j].axes);
