@@ -225,13 +225,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		t = rt->m_texture;
 
 		int delta = TEX0.TBP0 - rt->m_TEX0.TBP0;
-		if (delta > 0) {
-			// Code was corrected to use generic format. But I'm not sure behavior is correct.
-			// Let's keep the warning to easily spot game that trigger this code path.
-#ifndef DISABLE_WIP_ASSERTION
-			ASSERT(DISPFB.PSM == PSM_PSMCT32 || DISPFB.PSM == PSM_PSMCT24);
-#endif
-
+		if (delta > 0 && DISPFB.FBW != 0) {
 			int pages = delta >> 5u;
 			int y_pages = pages / DISPFB.FBW;
 			y_offset = y_pages * GSLocalMemory::m_psm[DISPFB.PSM].pgs.y;
