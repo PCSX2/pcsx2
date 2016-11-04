@@ -232,9 +232,7 @@ public:
 
 	uint8* BlockPtr(uint32 bp) const
 	{
-		ASSERT(bp < 16384);
-
-		return &m_vm8[bp << 8];
+		return &m_vm8[(bp % MAX_BLOCKS) << 8];
 	}
 
 	uint8* BlockPtr32(int x, int y, uint32 bp, uint32 bw) const
