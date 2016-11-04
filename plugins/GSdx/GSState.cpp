@@ -3200,7 +3200,7 @@ bool GSState::IsMipMapActive()
 	return m_mipmap && IsMipMapDraw();
 }
 
-GIFRegTEX0 GSState::GetTex0Layer(int lod)
+GIFRegTEX0 GSState::GetTex0Layer(uint32 lod)
 {
 	// Shortcut
 	if (lod == 0) {

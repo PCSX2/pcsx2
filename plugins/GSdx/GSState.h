@@ -206,7 +206,7 @@ protected:
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
-	GIFRegTEX0 GetTex0Layer(int lod);
+	GIFRegTEX0 GetTex0Layer(uint32 lod);
 
 public:
 	GIFPath m_path[4];
