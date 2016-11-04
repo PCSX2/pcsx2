@@ -378,6 +378,7 @@ VifUnpackSSE_Simple::VifUnpackSSE_Simple(bool usn_, bool domask_, int curCycle_)
 	curCycle	= curCycle_;
 	usn			= usn_;
 	doMask		= domask_;
+	IsAligned	= true;
 }
 
 void VifUnpackSSE_Simple::doMaskWrite(const xRegisterSSE& regX) const {
