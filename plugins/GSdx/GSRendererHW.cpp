@@ -920,8 +920,8 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		//	return;
 
 		// Size of the current draw
-		uint32 w_pages = roundf(m_vt.m_max.p.x / frame_psm.pgs.x);
-		uint32 h_pages = roundf(m_vt.m_max.p.y / frame_psm.pgs.y);
+		uint32 w_pages = static_cast<uint32>(roundf(m_vt.m_max.p.x / frame_psm.pgs.x));
+		uint32 h_pages = static_cast<uint32>(roundf(m_vt.m_max.p.y / frame_psm.pgs.y));
 		uint32 written_pages = w_pages * h_pages;
 
 		// Frame and depth pointer can be inverted
