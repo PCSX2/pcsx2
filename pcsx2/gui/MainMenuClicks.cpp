@@ -133,7 +133,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 {
 	wxWindowID result = wxID_CANCEL;
 
-	if( (g_Conf->CdvdSource == CDVDsrc_Iso) && (isoFilename == g_Conf->CurrentIso) )
+	if( (g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == g_Conf->CurrentIso) )
 	{
 		core_control.AllowResume();
 		return result;
@@ -158,12 +158,12 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 		}
 	}
 
-	g_Conf->CdvdSource = CDVDsrc_Iso;
+	g_Conf->CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile( isoFilename );
 	if( result == wxID_RESET )
 	{
 		core_control.DisallowResume();
-		sApp.SysExecute( CDVDsrc_Iso );
+		sApp.SysExecute(CDVD_SourceType::Iso);
 	}
 	else
 	{
@@ -173,7 +173,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 		core_control.AllowResume();
 	}
 
-	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVDsrc_Plugin );
+	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVD_SourceType::Plugin);
 
 	return result;
 }
@@ -190,7 +190,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 
 		wxString changeMsg;
 		changeMsg.Printf(_("You've selected to switch the CDVD source from %s to %s."),
-			CDVD_SourceLabels[g_Conf->CdvdSource], CDVD_SourceLabels[newsrc] );
+			CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)] );
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 			_("Do you want to swap discs or boot the new image (system reset)?")
@@ -212,7 +212,8 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 	if( result != wxID_RESET )
 	{
 		Console.Indent().WriteLn(L"(CdvdSource) HotSwapping CDVD source types from %s to %s.",
-			WX_STR(wxString(CDVD_SourceLabels[oldsrc])), WX_STR(wxString(CDVD_SourceLabels[newsrc])));
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
 		sMainFrame.UpdateIsoSrcSelection();
 		core.AllowResume();
@@ -223,7 +224,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 		sApp.SysExecute( g_Conf->CdvdSource );
 	}
 
-	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVDsrc_Plugin );
+	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVD_SourceType::Plugin );
 
 	return result;
 }
@@ -313,7 +314,7 @@ void MainEmuFrame::_DoBootCdvd()
 {
 	ScopedCoreThreadPause paused_core;
 
-	if( g_Conf->CdvdSource == CDVDsrc_Iso )
+	if( g_Conf->CdvdSource == CDVD_SourceType::Iso )
 	{
 		bool selector = g_Conf->CurrentIso.IsEmpty();
 
@@ -369,13 +370,13 @@ void MainEmuFrame::EnableCdvdPluginSubmenu(bool isEnable)
 
 void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 {
-	CDVD_SourceType newsrc = CDVDsrc_NoDisc;
+	CDVD_SourceType newsrc = CDVD_SourceType::NoDisc;
 
 	switch( event.GetId() )
 	{
-		case MenuId_Src_Iso:	newsrc = CDVDsrc_Iso;		break;
-		case MenuId_Src_Plugin:	newsrc = CDVDsrc_Plugin;	break;
-		case MenuId_Src_NoDisc: newsrc = CDVDsrc_NoDisc;	break;
+		case MenuId_Src_Iso:	newsrc = CDVD_SourceType::Iso;		break;
+		case MenuId_Src_Plugin:	newsrc = CDVD_SourceType::Plugin;	break;
+		case MenuId_Src_NoDisc: newsrc = CDVD_SourceType::NoDisc;	break;
 		jNO_DEFAULT
 	}
 

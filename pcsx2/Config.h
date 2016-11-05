@@ -63,6 +63,13 @@ enum GamefixId
 	GamefixId_COUNT
 };
 
+// Template function for casting enumerations to their underlying type
+template <typename Enumeration>
+typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
+{
+	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
+}
+
 ImplementEnumOperators( GamefixId );
 
 //------------ DEFAULT sseMXCSR VALUES ---------------

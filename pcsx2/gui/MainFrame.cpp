@@ -57,14 +57,14 @@ void MainEmuFrame::UpdateIsoSrcSelection()
 
 	switch( g_Conf->CdvdSource )
 	{
-		case CDVDsrc_Iso:		cdsrc = MenuId_Src_Iso;		break;
-		case CDVDsrc_Plugin:	cdsrc = MenuId_Src_Plugin;	break;
-		case CDVDsrc_NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
+		case CDVD_SourceType::Iso:		cdsrc = MenuId_Src_Iso;		break;
+		case CDVD_SourceType::Plugin:	cdsrc = MenuId_Src_Plugin;	break;
+		case CDVD_SourceType::NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
 
 		jNO_DEFAULT
 	}
 	sMenuBar.Check( cdsrc, true );
-	m_statusbar.SetStatusText( CDVD_SourceLabels[g_Conf->CdvdSource], 1 );
+	m_statusbar.SetStatusText( CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1 );
 
 	EnableCdvdPluginSubmenu( cdsrc == MenuId_Src_Plugin );
 
