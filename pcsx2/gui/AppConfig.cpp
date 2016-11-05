@@ -549,7 +549,7 @@ AppConfig::AppConfig()
 	EnablePresets		= true;
 	PresetIndex			= 1;
 
-	CdvdSource			= CDVDsrc_Iso;
+	CdvdSource			= CDVD_SourceType::Iso;
 
 	// To be moved to FileMemoryCard pluign (someday)
 	for( uint slot=0; slot<8; ++slot )
