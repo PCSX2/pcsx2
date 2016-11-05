@@ -1110,7 +1110,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	_initX86regs();
 
 	if ((psxHu32(HW_ICFG) & 8) && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0)) {
-		xFastCall(psxBiosCall);
+		xFastCall((void*)psxBiosCall);
 		xTEST(al, al);
 		xJNZ(iopDispatcherReg);
 	}
