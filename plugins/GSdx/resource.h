@@ -98,13 +98,15 @@
 #define IDC_SHADER_FX_CONF_TEXT         2094
 #define IDC_CUSTOM_TEXT                 2095
 #define IDC_UPSCALE_MULTIPLIER_TEXT     2096
-#define IDC_MIPMAP                      2097
-#define IDC_PRELOAD_GS                  2098
-#define IDC_TVSHADER                    2099
-#define IDC_FAST_TC_INV                 2101
-#define IDC_LARGE_FB                    2102
-#define IDC_AUTO_FLUSH                  2103
-#define IDC_UNSCALE_POINT_LINE          2104
+#define IDC_MIPMAP_HW                   2097
+#define IDC_MIPMAP_HW_TEXT              2098
+#define IDC_MIPMAP_SW                   2099
+#define IDC_PRELOAD_GS                  2100
+#define IDC_TVSHADER                    2101
+#define IDC_FAST_TC_INV                 2102
+#define IDC_LARGE_FB                    2103
+#define IDC_AUTO_FLUSH                  2104
+#define IDC_UNSCALE_POINT_LINE          2105
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -123,7 +125,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2103
+#define _APS_NEXT_CONTROL_VALUE         2106
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif

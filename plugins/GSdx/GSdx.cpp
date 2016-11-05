@@ -214,6 +214,10 @@ void GSdxApp::Init()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_hw_mipmapping.push_back(GSSetting(0, "Off", ""));
+	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
+	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
+
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
@@ -303,6 +307,7 @@ void GSdxApp::Init()
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
+	m_default_configuration["mipmap_hw"]                                  = "0";
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
@@ -347,7 +352,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
-	m_default_configuration["UserHacks_mipmap"]                           = "0";
 	m_default_configuration["UserHacks_MSAA"]                             = "0";
 	m_default_configuration["UserHacks_unscale_point_line"]               = "0";
 	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";

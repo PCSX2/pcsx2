@@ -397,8 +397,8 @@ void populate_main_table(GtkWidget* main_table)
 	GtkWidget* mipmap_label        = left_label("Mipmap (Insert):");
 	GtkWidget* mipmap_combo_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "mipmap");
 
-	AddTooltip(mipmap_label, IDC_MIPMAP);
-	AddTooltip(mipmap_combo_box, IDC_MIPMAP);
+	AddTooltip(mipmap_label, IDC_MIPMAP_SW);
+	AddTooltip(mipmap_combo_box, IDC_MIPMAP_SW);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);

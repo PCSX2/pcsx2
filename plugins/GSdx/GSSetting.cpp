@@ -115,6 +115,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_SWTHREADS:
 		case IDC_SWTHREADS_EDIT:
 			return "Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging)";
+		case IDC_MIPMAP_SW:
+			return "Enables mipmapping, which some games require to render correctly.";
 		case IDC_SHADEBOOST:
 			return "Allows brightness, contrast and saturation to be manually adjusted.";
 		case IDC_SHADER_FX:
@@ -141,8 +143,11 @@ const char* dialog_message(int ID, bool* updateText) {
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
-		case IDC_MIPMAP:
-			return "Enables mipmapping, which some games require to render correctly.";
+		case IDC_MIPMAP_HW:
+			return	"Control the accuracy level of the mipmapping emulation\n\n"
+				"Off:\nMipmapping emulation is disabled.\n\n"
+				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligent at most cases.\n\n"
+				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.";
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
