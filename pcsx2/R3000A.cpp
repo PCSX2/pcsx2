@@ -65,6 +65,7 @@ void psxReset()
 	psxHwReset();
 
 	ioman::reset();
+	psxBiosReset();
 }
 
 void psxShutdown() {

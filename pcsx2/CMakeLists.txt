@@ -411,7 +411,8 @@ set(pcsx2ps2Sources
 	ps2/pgif.cpp
 	ps2/LegacyDmac.cpp
 	ps2/Iop/IopHwRead.cpp
-	ps2/Iop/IopHwWrite.cpp)
+	ps2/Iop/IopHwWrite.cpp
+	ps2/Iop/PsxBios.cpp)
 
 # ps2 headers
 set(pcsx2ps2Headers

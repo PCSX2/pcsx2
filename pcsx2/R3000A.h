@@ -211,4 +211,7 @@ extern void (*psxCP0[32])();
 extern void (*psxCP2[64])();
 extern void (*psxCP2BSC[32])();
 
+extern void psxBiosReset();
+extern bool __fastcall psxBiosCall();
+
 #endif /* __R3000A_H__ */

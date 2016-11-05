@@ -147,7 +147,6 @@ static __fi void execI()
 	psxBSC[psxRegs.code >> 26]();
 }
 
-
 static void doBranch(s32 tar) {
 	branch2 = iopIsDelaySlot = true;
 	branchPC = tar;
@@ -179,6 +178,9 @@ static s32 intExecuteBlock( s32 eeCycles )
 	iopCycleEE = eeCycles;
 
 	while (iopCycleEE > 0){
+		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+			psxBiosCall();
+
 		branch2 = 0;
 		while (!branch2) {
 			execI();
