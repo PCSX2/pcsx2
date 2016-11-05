@@ -62,8 +62,18 @@ int getFreeCache(u32 mem, int mode, int * way ) {
 	ppf = (ppf & ~0x3F) ; 
 	if((pCache[i].tag[number] & (DIRTY_FLAG|VALID_FLAG)) == (DIRTY_FLAG|VALID_FLAG))	// Dirty Write
 	{		
-		//Perform a cache miss.
-		return -1;
+		s32 oldppf = (pCache[i].tag[number] & ~0x80000fff) + (mem & 0xFC0);
+		
+		CACHE_LOG("Dirty cache fill! PPF %x", oldppf);
+		*reinterpret_cast<mem64_t*>(oldppf) = pCache[i].data[number][0].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+8) =  pCache[i].data[number][0].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+16) = pCache[i].data[number][1].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+24) = pCache[i].data[number][1].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+32) = pCache[i].data[number][2].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+40) = pCache[i].data[number][2].b8._u64[1];
+		*reinterpret_cast<mem64_t*>(oldppf+48) = pCache[i].data[number][3].b8._u64[0];
+		*reinterpret_cast<mem64_t*>(oldppf+56) = pCache[i].data[number][3].b8._u64[1];
+		pCache[i].tag[number] &= ~DIRTY_FLAG;
 	}
 	
 	
@@ -422,7 +432,27 @@ void CACHE() {
 		{
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
-			
+
+			//DXLTG demands that SYNC.L is called before this command, which forces the cache to write back, so presumably games are checking the cache has updated the memory
+			//For speed, we will do it here.
+			u32 pfnaddr = (pCache[index].tag[way] & ~0x80000fff) | (addr & 0xfc0);
+			u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			s32 ppf = (pfnaddr + vmv) & ~0x3F;
+			if ((pCache[index].tag[way] & (DIRTY_FLAG | VALID_FLAG)) == (DIRTY_FLAG | VALID_FLAG))	// Dirty
+			{
+				CACHE_LOG("DXLTG Dirty WriteBack! PPF %x", ppf);
+				*reinterpret_cast<mem64_t*>(ppf) = pCache[index].data[way][0].b8._u64[0];
+				*reinterpret_cast<mem64_t*>(ppf + 8) = pCache[index].data[way][0].b8._u64[1];
+				*reinterpret_cast<mem64_t*>(ppf + 16) = pCache[index].data[way][1].b8._u64[0];
+				*reinterpret_cast<mem64_t*>(ppf + 24) = pCache[index].data[way][1].b8._u64[1];
+				*reinterpret_cast<mem64_t*>(ppf + 32) = pCache[index].data[way][2].b8._u64[0];
+				*reinterpret_cast<mem64_t*>(ppf + 40) = pCache[index].data[way][2].b8._u64[1];
+				*reinterpret_cast<mem64_t*>(ppf + 48) = pCache[index].data[way][3].b8._u64[0];
+				*reinterpret_cast<mem64_t*>(ppf + 56) = pCache[index].data[way][3].b8._u64[1];
+
+				pCache[index].tag[way] &= ~DIRTY_FLAG;
+			}
+			//DevCon.Warning("DXLTG way %x index %x addr %x tagdata=%x", way, index, addr, pCache[index].tag[way]);
 			cpuRegs.CP0.n.TagLo = pCache[index].tag[way];
 
 			CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x OP %x ",addr,index,way,cpuRegs.CP0.r[28], cpuRegs.code);
