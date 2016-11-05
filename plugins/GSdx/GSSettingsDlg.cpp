@@ -145,6 +145,7 @@ void GSSettingsDlg::OnInit()
 
 	ComboBoxInit(IDC_ADAPTER, adapter_settings, adapter_sel);
 	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
+	ComboBoxInit(IDC_MIPMAP_HW, theApp.m_gs_hw_mipmapping, theApp.GetConfigI("mipmap_hw"));
 	UpdateRenderers();
 
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("interlace"));
@@ -158,8 +159,8 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfigB("logz"));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfigB("fba"));
+	CheckDlgButton(m_hWnd, IDC_MIPMAP_SW, theApp.GetConfigB("mipmap"));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfigB("aa1"));
-	CheckDlgButton(m_hWnd, IDC_MIPMAP, theApp.GetConfigB("mipmap"));
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfigB("accurate_date"));
 
 	// Hacks
@@ -181,7 +182,8 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(IDC_AFCOMBO);
 	AddTooltip(IDC_AA1);
-	AddTooltip(IDC_MIPMAP);
+	AddTooltip(IDC_MIPMAP_HW);
+	AddTooltip(IDC_MIPMAP_SW);
 	AddTooltip(IDC_SWTHREADS);
 	AddTooltip(IDC_SWTHREADS_EDIT);
 	AddTooltip(IDC_FBA);
@@ -277,6 +279,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("interlace", (int)data);
 			}
 
+			if (ComboBoxGetSelData(IDC_MIPMAP_HW, data))
+			{
+				theApp.SetConfig("mipmap_hw", (int)data);
+			}
+
 			if(ComboBoxGetSelData(IDC_UPSCALE_MULTIPLIER, data))
 			{
 				theApp.SetConfig("upscale_multiplier", (int)data);
@@ -306,12 +313,12 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("MaxAnisotropy", (int)data);
 			}
 
+			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP_SW));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
-			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP));
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 
@@ -419,6 +426,8 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
 
+		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling != 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
@@ -447,8 +456,8 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
 
 		// Software mode settings
+		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_SW), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_TEXT), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
