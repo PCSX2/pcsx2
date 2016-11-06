@@ -172,9 +172,9 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     if (!config.multipleBinding) {
         for (int port2 = 0; port2 < 2; port2++) {
             for (int slot2 = 0; slot2 < 4; slot2++) {
+                if (port2 == (int)port && slot2 == (int)slot)
+                    continue;
                 for (int padtype2 = 0; padtype2 < numPadTypes; padtype2++) {
-                    if (port2 == (int)port && slot2 == (int)slot)
-                        continue;
                     PadBindings *p = dev->pads[port2][slot2] + padtype2;
                     for (int i = 0; i < p->numBindings; i++) {
                         Binding *b = p->bindings + i;
