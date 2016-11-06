@@ -38,7 +38,7 @@
 
 const wxChar* CDVD_SourceLabels[] =
 {
-	L"Iso",
+	L"ISO",
 	L"Plugin",
 	L"NoDisc",
 	NULL
