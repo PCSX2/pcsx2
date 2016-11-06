@@ -461,17 +461,17 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// FIXME: VS2015 thinks there's a memory issue here and there probably is one.
 	// The submenu is owned by a unique_ptr, but any menu that is attached to a
 	// menubar or another menu will be deleted by its parent.
-	m_menuCDVD.Append( MenuId_IsoSelector,	_("Iso &Selector"), &isoRecents );
+	m_menuCDVD.Append( MenuId_IsoSelector,	_("ISO &Selector"), &isoRecents );
 	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 
 	m_menuCDVD.AppendSeparator();
-	m_menuCDVD.Append( MenuId_Src_Iso,		_("&Iso"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
 	//m_menuCDVD.AppendSeparator();
 	//m_menuCDVD.Append( MenuId_SkipBiosToggle,_("Enable BOOT2 injection"),
-	//	_("Skips PS2 splash screens when booting from Iso or DVD media"), wxITEM_CHECK );
+	//	_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
 
 	// ------------------------------------------------------------------------
 
@@ -598,14 +598,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	wxMenuBar& menubar( *GetMenuBar() );
 
 	wxMenuItem* susres	= menubar.FindItem( MenuId_Sys_SuspendResume );
-	wxMenuItem* cdvd	= menubar.FindItem( MenuId_Boot_CDVD );
-	wxMenuItem* cdvd2	= menubar.FindItem( MenuId_Boot_CDVD2 );
 	wxMenuItem* restart	= menubar.FindItem( MenuId_Sys_Restart );
 
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
-	bool vm = SysHasValidState();
+	bool ActiveVM = SysHasValidState();
 
 	if( susres )
 	{
@@ -617,8 +615,8 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 		else
 		{
-			susres->Enable(vm);
-			if( vm )
+			susres->Enable(ActiveVM);
+			if( ActiveVM )
 			{
 				susres->SetItemLabel(_("R&esume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
@@ -633,7 +631,7 @@ void MainEmuFrame::ApplyCoreStatus()
 
 	if( restart )
 	{
-		if( vm )	
+		if( ActiveVM )
 		{
 			restart->SetItemLabel(_("Res&tart"));
 			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
@@ -645,31 +643,64 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 	}
 
-	if( cdvd )
+	const CDVD_SourceType Source = g_Conf->CdvdSource;
+	const MenuIdentifiers fullboot_id = MenuId_Boot_CDVD;
+	const MenuIdentifiers fastboot_id = MenuId_Boot_CDVD2;
+
+	wxMenuItem *cdvd_fast = menubar.FindItem(fastboot_id);
+	if (Source == CDVD_SourceType::NoDisc)
 	{
-		if( vm )
+		if(cdvd_fast)
+			m_menuSys.Destroy(cdvd_fast);
+	}
+	else
+	{
+		wxString label;
+		wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");
+
+		switch (Source)
 		{
-			cdvd->SetItemLabel(_("Reboot CDVD (f&ull)"));
-			cdvd->SetHelp(_("Hard reset of the active VM."));
+		case CDVD_SourceType::Iso:
+			label = _("Boot ISO (&fast)");
+			break;
+		case CDVD_SourceType::Plugin:
+			label = _("Boot CDVD (&fast)");
+			break;
+		//case CDVD_SourceType::NoDisc: (Fast boot menu item is destroyed when no disc is selected)
+		default:
+			pxAssert(false);
+		}
+
+		if (cdvd_fast)
+		{
+			cdvd_fast->SetItemLabel(label);
+			cdvd_fast->SetHelp(help_text);
 		}
 		else
 		{
-			cdvd->SetItemLabel(_("Boot CDVD (f&ull)"));
-			cdvd->SetHelp(_("Boot the VM using the current DVD or Iso source media"));
-		}	
+			m_menuSys.Insert(1, fastboot_id, label, help_text);
+		}
 	}
 
-	if( cdvd2 )
+	if (wxMenuItem *cdvd_full = menubar.FindItem(fullboot_id))
 	{
-		if( vm )
+
+		switch (Source)
 		{
-			cdvd2->SetItemLabel(_("Reboot CDVD (&fast)"));
-			cdvd2->SetHelp(_("Reboot using fast BOOT (skips splash screens)"));
-		}
-		else
-		{
-			cdvd2->SetItemLabel(_("Boot CDVD (&fast)"));
-			cdvd2->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
+		case CDVD_SourceType::Iso:
+			cdvd_full->SetItemLabel(_("Boo&t ISO (full)"));
+			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media"));
+			break;
+		case CDVD_SourceType::Plugin:
+			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
+			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
+			break;
+		case CDVD_SourceType::NoDisc:
+			cdvd_full->SetItemLabel(_("Boo&t BIOS"));
+			cdvd_full->SetHelp(_("Boot the VM without any source media"));
+			break;
+		default:
+			pxAssert(false);
 		}
 	}
 }
