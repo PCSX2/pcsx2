@@ -77,7 +77,7 @@ int selected = 0;
 // we shouldn't make our own.
 bool createIniDir = true;
 
-HWND hWnds[2][4];
+HWND hWnds[2][4][numPadTypes];
 HWND hWndGeneral = 0;
 
 struct GeneralSettingsBool
@@ -111,7 +111,7 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
     {L"Turbo Key Hack", IDC_TURBO_KEY_HACK, 0},
 };
 
-void Populate(int port, int slot);
+void Populate(int port, int slot, int padtype);
 
 void SetupLogSlider(HWND hWndSlider)
 {
@@ -256,18 +256,21 @@ void RefreshEnabledDevicesAndDisplay(int updateDeviceList = 0, HWND hWnd = 0, in
         }
     }
     if (populate) {
-        for (int i = 0; i < 8; i++) {
-            Populate(i & 1, i >> 1);
+        for (int j = 0; j < numPadTypes; j++) {
+            for (int i = 0; i < 8; i++) {
+                Populate(i & 1, i >> 1, j);
+            }
         }
     }
 }
 
 wchar_t *GetCommandStringW(u8 command, int port, int slot)
 {
+    int padtype = config.padConfigs[port][slot].type;
     static wchar_t temp[34];
     if (command >= 0x20 && command <= 0x27) {
-        if (config.padConfigs[port][slot].type == GuitarPad && (command == 0x20 || command == 0x22)) {
-            HWND hWnd = GetDlgItem(hWnds[port][slot], 0x10F0 + command);
+        if (padtype == GuitarPad && (command == 0x20 || command == 0x22)) {
+            HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
             int res = GetWindowTextW(hWnd, temp, 20);
             if ((unsigned int)res - 1 <= 18)
                 return temp;
@@ -281,7 +284,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
     }
     /* Get text from the buttons. */
     if (command >= 0x0C && command <= 0x28) {
-        HWND hWnd = GetDlgItem(hWnds[port][slot], 0x10F0 + command);
+        HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
         if (!hWnd) {
             wchar_t *strings[] = {
                 L"Lock Buttons",
@@ -359,13 +362,14 @@ void CALLBACK PADsetSettingsDir(const char *dir)
 }
 
 int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFeedbackBinding *&ffb);
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, int command, int sensitivity, int turbo, int deadZone);
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone);
 
-int CreateEffectBinding(Device *dev, wchar_t *effectName, unsigned int port, unsigned int slot, unsigned int motor, ForceFeedbackBinding **binding);
+int CreateEffectBinding(Device *dev, wchar_t *effectName, unsigned int port, unsigned int slot, unsigned int padtype, unsigned int motor, ForceFeedbackBinding **binding);
 
 void SelChanged(int port, int slot)
 {
-    HWND hWnd = hWnds[port][slot];
+    int padtype = config.padConfigs[port][slot].type;
+    HWND hWnd = hWnds[port][slot][padtype];
     if (!hWnd)
         return;
     HWND hWndTemp, hWndList = GetDlgItem(hWnd, IDC_LIST);
@@ -598,30 +602,32 @@ void UnselectAll(HWND hWnd)
 int GetItemIndex(int port, int slot, Device *dev, ForceFeedbackBinding *binding)
 {
     int count = 0;
+    int padtype = config.padConfigs[port][slot].type;
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev2 = dm->devices[i];
         if (!dev2->enabled)
             continue;
         if (dev2 != dev) {
-            count += dev2->pads[port][slot].numBindings + dev2->pads[port][slot].numFFBindings;
+            count += dev2->pads[port][slot][padtype].numBindings + dev2->pads[port][slot][padtype].numFFBindings;
             continue;
         }
-        return count += dev2->pads[port][slot].numBindings + (binding - dev2->pads[port][slot].ffBindings);
+        return count += dev2->pads[port][slot][padtype].numBindings + (binding - dev2->pads[port][slot][padtype].ffBindings);
     }
     return -1;
 }
 int GetItemIndex(int port, int slot, Device *dev, Binding *binding)
 {
     int count = 0;
+    int padtype = config.padConfigs[port][slot].type;
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev2 = dm->devices[i];
         if (!dev2->enabled)
             continue;
         if (dev2 != dev) {
-            count += dev2->pads[port][slot].numBindings + dev2->pads[port][slot].numFFBindings;
+            count += dev2->pads[port][slot][padtype].numBindings + dev2->pads[port][slot][padtype].numFFBindings;
             continue;
         }
-        return count += binding - dev->pads[port][slot].bindings;
+        return count += binding - dev->pads[port][slot][padtype].bindings;
     }
     return -1;
 }
@@ -629,9 +635,10 @@ int GetItemIndex(int port, int slot, Device *dev, Binding *binding)
 // Doesn't check if already displayed.
 int ListBoundCommand(int port, int slot, Device *dev, Binding *b)
 {
-    if (!hWnds[port][slot])
+    int padtype = config.padConfigs[port][slot].type;
+    if (!hWnds[port][slot][padtype])
         return -1;
-    HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     int index = -1;
     if (hWndList) {
         index = GetItemIndex(port, slot, dev, b);
@@ -656,9 +663,10 @@ int ListBoundCommand(int port, int slot, Device *dev, Binding *b)
 
 int ListBoundEffect(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 {
-    if (!hWnds[port][slot])
+    int padtype = config.padConfigs[port][slot].type;
+    if (!hWnds[port][slot][padtype])
         return -1;
-    HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     int index = -1;
     if (hWndList) {
         index = GetItemIndex(port, slot, dev, b);
@@ -685,9 +693,10 @@ int ListBoundEffect(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 // Only for use with control bindings.  Affects all highlighted bindings.
 void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *newDeadZone)
 {
-    if (!hWnds[port][slot])
+    int padtype = config.padConfigs[port][slot].type;
+    if (!hWnds[port][slot][padtype])
         return;
-    HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     int count = ListView_GetSelectedCount(hWndList);
     if (count < 1)
         return;
@@ -717,16 +726,17 @@ void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *ne
             b->turbo = *newTurbo;
         }
     }
-    PropSheet_Changed(hWndProp, hWnds[port][slot]);
+    PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
     SelChanged(port, slot);
 }
 
 // Only for use with effect bindings.
 void ChangeEffect(int port, int slot, int id, int *newForce, unsigned int *newEffectType)
 {
-    if (!hWnds[port][slot])
+    int padtype = config.padConfigs[port][slot].type;
+    if (!hWnds[port][slot][padtype])
         return;
-    HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     int i = ListView_GetSelectedCount(hWndList);
     if (i != 1)
         return;
@@ -748,17 +758,17 @@ void ChangeEffect(int port, int slot, int id, int *newForce, unsigned int *newEf
         index = ListBoundEffect(port, slot, dev, ffb);
         ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
     }
-    PropSheet_Changed(hWndProp, hWnds[port][slot]);
+    PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
     SelChanged(port, slot);
 }
 
 
 
-void Populate(int port, int slot)
+void Populate(int port, int slot, int padtype)
 {
-    if (!hWnds[port][slot])
+    if (!hWnds[port][slot][padtype])
         return;
-    HWND hWnd = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     ListView_DeleteAllItems(hWnd);
     int i, j;
 
@@ -768,16 +778,16 @@ void Populate(int port, int slot)
         Device *dev = dm->devices[j];
         if (!dev->enabled)
             continue;
-        for (i = 0; i < dev->pads[port][slot].numBindings; i++) {
-            ListBoundCommand(port, slot, dev, dev->pads[port][slot].bindings + i);
+        for (i = 0; i < dev->pads[port][slot][padtype].numBindings; i++) {
+            ListBoundCommand(port, slot, dev, dev->pads[port][slot][padtype].bindings + i);
         }
-        for (i = 0; i < dev->pads[port][slot].numFFBindings; i++) {
-            ListBoundEffect(port, slot, dev, dev->pads[port][slot].ffBindings + i);
+        for (i = 0; i < dev->pads[port][slot][padtype].numFFBindings; i++) {
+            ListBoundEffect(port, slot, dev, dev->pads[port][slot][padtype].ffBindings + i);
         }
     }
     config.multipleBinding = multipleBinding;
 
-    hWnd = GetDlgItem(hWnds[port][slot], IDC_FORCEFEEDBACK);
+    hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_FORCEFEEDBACK);
     SendMessage(hWnd, CB_RESETCONTENT, 0, 0);
     int added = 0;
     for (i = 0; i < dm->numDevices; i++) {
@@ -790,8 +800,8 @@ void Populate(int port, int slot)
     }
     SendMessage(hWnd, CB_SETCURSEL, 0, 0);
     EnableWindow(hWnd, added != 0);
-    EnableWindow(GetDlgItem(hWnds[port][slot], ID_BIG_MOTOR), added != 0);
-    EnableWindow(GetDlgItem(hWnds[port][slot], ID_SMALL_MOTOR), added != 0);
+    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_BIG_MOTOR), added != 0);
+    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_SMALL_MOTOR), added != 0);
 
     SelChanged(port, slot);
 }
@@ -869,24 +879,26 @@ int SaveSettings(wchar_t *file = 0)
         int bindingCount = 0;
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
-                for (int j = 0; j < dev->pads[port][slot].numBindings; j++) {
-                    Binding *b = dev->pads[port][slot].bindings + j;
-                    VirtualControl *c = &dev->virtualControls[b->controlIndex];
-                    wsprintfW(temp, L"Binding %i", bindingCount++);
-                    wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone);
-                    noError &= WritePrivateProfileStringW(id, temp, temp2, file);
-                }
-                for (int j = 0; j < dev->pads[port][slot].numFFBindings; j++) {
-                    ForceFeedbackBinding *b = dev->pads[port][slot].ffBindings + j;
-                    ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
-                    wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
-                    wsprintfW(temp2, L"%s %i, %i, %i", eff->effectID, port, b->motor, slot);
-                    for (int k = 0; k < dev->numFFAxes; k++) {
-                        ForceFeedbackAxis *axis = dev->ffAxes + k;
-                        AxisEffectInfo *info = b->axes + k;
-                        wsprintfW(wcschr(temp2, 0), L", %i, %i", axis->id, info->force);
+                for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                    for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; j++) {
+                        Binding *b = dev->pads[port][slot][padtype].bindings + j;
+                        VirtualControl *c = &dev->virtualControls[b->controlIndex];
+                        wsprintfW(temp, L"Binding %i", bindingCount++);
+                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, padtype);
+                        noError &= WritePrivateProfileStringW(id, temp, temp2, file);
                     }
-                    noError &= WritePrivateProfileStringW(id, temp, temp2, file);
+                    for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; j++) {
+                        ForceFeedbackBinding *b = dev->pads[port][slot][padtype].ffBindings + j;
+                        ForceFeedbackEffectType *eff = &dev->ffEffectTypes[b->effectIndex];
+                        wsprintfW(temp, L"FF Binding %i", ffBindingCount++);
+                        wsprintfW(temp2, L"%s %i, %i, %i, %i", eff->effectID, port, b->motor, slot, padtype);
+                        for (int k = 0; k < dev->numFFAxes; k++) {
+                            ForceFeedbackAxis *axis = dev->ffAxes + k;
+                            AxisEffectInfo *info = b->axes + k;
+                            wsprintfW(wcschr(temp2, 0), L", %i, %i", axis->id, info->force);
+                        }
+                        noError &= WritePrivateProfileStringW(id, temp, temp2, file);
+                    }
                 }
             }
         }
@@ -936,7 +948,6 @@ int LoadSettings(int force, wchar_t *file)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
     }
-
     config.closeHacks = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hacks", 0, file);
     if (config.closeHacks & 1)
         config.closeHacks &= ~2;
@@ -959,6 +970,7 @@ int LoadSettings(int force, wchar_t *file)
         }
     }
 
+    bool oldIni = false;
     int i = 0;
     int multipleBinding = config.multipleBinding;
     // Disabling multiple binding only prevents new multiple bindings.
@@ -999,7 +1011,7 @@ int LoadSettings(int force, wchar_t *file)
             }
             last = 1;
             unsigned int uid;
-            int port, command, sensitivity, turbo, slot = 0, deadZone = 0;
+            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, padtype = 0;
             int w = 0;
             char string[1000];
             while (temp2[w]) {
@@ -1007,13 +1019,21 @@ int LoadSettings(int force, wchar_t *file)
                 w++;
             }
             string[w] = 0;
-            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone);
+            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &padtype);
             if (len >= 5 && type) {
                 VirtualControl *c = dev->GetVirtualControl(uid);
                 if (!c)
                     c = dev->AddVirtualControl(uid, -1);
                 if (c) {
-                    BindCommand(dev, uid, port, slot, command, sensitivity, turbo, deadZone);
+                    if (len < 8) { // If ini file is imported from older version, make sure bindings aren't applied to "Unplugged" padtype.
+                        oldIni = true;
+                        if (config.padConfigs[port][slot].type != 0) {
+                            padtype = config.padConfigs[port][slot].type;
+                        } else {
+                            padtype = 1;
+                        }
+                    }
+                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone);
                 }
             }
         }
@@ -1029,7 +1049,7 @@ int LoadSettings(int force, wchar_t *file)
                 continue;
             }
             last = 1;
-            int port, slot, motor;
+            int port, slot, motor, padtype;
             int w = 0;
             char string[1000];
             char effect[1000];
@@ -1040,8 +1060,18 @@ int LoadSettings(int force, wchar_t *file)
             string[w] = 0;
             // wcstok not in ntdll.  More effore than its worth to shave off
             // whitespace without it.
-            if (sscanf(string, " %s %i , %i , %i", effect, &port, &motor, &slot) == 4) {
-                char *s = strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',');
+            if (sscanf(string, " %20s %i , %i , %i , %i", effect, &port, &motor, &slot, &padtype) == 5) {
+                char *s;
+                if (oldIni) { // Make sure bindings aren't applied to "Unplugged" padtype and FF settings are read from old location.
+                    if (config.padConfigs[port][slot].type != 0) {
+                        padtype = config.padConfigs[port][slot].type;
+                    } else {
+                        padtype = 1;
+                    }
+                    s = strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',');
+                } else {
+                    s = strchr(strchr(strchr(strchr(string, ',') + 1, ',') + 1, ',') + 1, ',');
+                }
                 if (!s)
                     continue;
                 s++;
@@ -1059,7 +1089,7 @@ int LoadSettings(int force, wchar_t *file)
                     // eff = &dev->ffEffectTypes[dev->numFFEffectTypes-1];
                 }
                 ForceFeedbackBinding *b;
-                CreateEffectBinding(dev, temp2, port, slot, motor, &b);
+                CreateEffectBinding(dev, temp2, port, slot, padtype, motor, &b);
                 if (b) {
                     while (1) {
                         int axisID = atoi(s);
@@ -1096,10 +1126,14 @@ int LoadSettings(int force, wchar_t *file)
 
 inline int GetPort(HWND hWnd, int *slot)
 {
-    for (int i = 0; i < sizeof(hWnds) / sizeof(hWnds[0][0]); i++) {
-        if (hWnds[i & 1][i >> 1] == hWnd) {
-            *slot = i >> 1;
-            return i & 1;
+    if (sizeof(hWnds) / sizeof(hWnds[0][0][0]) != (2 * 4 * numPadTypes))
+        MessageBoxA(hWndProp, "The number of detected configurations does not equal the expected number of configurations.", "Pad configurations error", MB_OK | MB_ICONERROR);
+    for (int j = 0; j < numPadTypes; j++) {
+        for (int i = 0; i < 8; i++) {
+            if (hWnds[i & 1][i >> 1][j] == hWnd) {
+                *slot = i >> 1;
+                return i & 1;
+            }
         }
     }
     *slot = 0;
@@ -1129,68 +1163,71 @@ int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFe
 {
     ffb = 0;
     b = 0;
+    int padtype = config.padConfigs[port][slot].type;
     for (int i = 0; i < dm->numDevices; i++) {
         dev = dm->devices[i];
         if (!dev->enabled)
             continue;
-        if (index < dev->pads[port][slot].numBindings) {
-            b = dev->pads[port][slot].bindings + index;
+        if (index < dev->pads[port][slot][padtype].numBindings) {
+            b = dev->pads[port][slot][padtype].bindings + index;
             return 1;
         }
-        index -= dev->pads[port][slot].numBindings;
+        index -= dev->pads[port][slot][padtype].numBindings;
 
-        if (index < dev->pads[port][slot].numFFBindings) {
-            ffb = dev->pads[port][slot].ffBindings + index;
+        if (index < dev->pads[port][slot][padtype].numFFBindings) {
+            ffb = dev->pads[port][slot][padtype].ffBindings + index;
             return 1;
         }
-        index -= dev->pads[port][slot].numFFBindings;
+        index -= dev->pads[port][slot][padtype].numFFBindings;
     }
     return 0;
 }
 
 // Only used when deleting things from ListView. Will remove from listview if needed.
-void DeleteBinding(int port, int slot, Device *dev, Binding *b)
+void DeleteBinding(int port, int slot, int padtype, Device *dev, Binding *b)
 {
-    if (dev->enabled && hWnds[port][slot]) {
+    if (dev->enabled && hWnds[port][slot][padtype]) {
         int count = GetItemIndex(port, slot, dev, b);
         if (count >= 0) {
-            HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
             if (hWndList) {
                 ListView_DeleteItem(hWndList, count);
             }
         }
     }
-    Binding *bindings = dev->pads[port][slot].bindings;
+    Binding *bindings = dev->pads[port][slot][padtype].bindings;
     int i = b - bindings;
-    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot].numBindings - i - 1));
-    dev->pads[port][slot].numBindings--;
+    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numBindings - i - 1));
+    dev->pads[port][slot][padtype].numBindings--;
 }
 
 void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 {
-    if (dev->enabled && hWnds[port][slot]) {
+    int padtype = config.padConfigs[port][slot].type;
+    if (dev->enabled && hWnds[port][slot][padtype]) {
         int count = GetItemIndex(port, slot, dev, b);
         if (count >= 0) {
-            HWND hWndList = GetDlgItem(hWnds[port][slot], IDC_LIST);
+            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
             if (hWndList) {
                 ListView_DeleteItem(hWndList, count);
             }
         }
     }
-    ForceFeedbackBinding *bindings = dev->pads[port][slot].ffBindings;
+    ForceFeedbackBinding *bindings = dev->pads[port][slot][padtype].ffBindings;
     int i = b - bindings;
-    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot].numFFBindings - i - 1));
-    dev->pads[port][slot].numFFBindings--;
+    memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numFFBindings - i - 1));
+    dev->pads[port][slot][padtype].numFFBindings--;
 }
 
 int DeleteByIndex(int port, int slot, int index)
 {
+    int padtype = config.padConfigs[port][slot].type;
     ForceFeedbackBinding *ffb;
     Binding *b;
     Device *dev;
     if (GetBinding(port, slot, index, dev, b, ffb)) {
         if (b) {
-            DeleteBinding(port, slot, dev, b);
+            DeleteBinding(port, slot, padtype, dev, b);
         } else {
             DeleteBinding(port, slot, dev, ffb);
         }
@@ -1201,9 +1238,10 @@ int DeleteByIndex(int port, int slot, int index)
 
 int DeleteSelected(int port, int slot)
 {
-    if (!hWnds[port][slot])
+    int padtype = config.padConfigs[port][slot].type;
+    if (!hWnds[port][slot][padtype])
         return 0;
-    HWND hWnd = GetDlgItem(hWnds[port][slot], IDC_LIST);
+    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
     int changes = 0;
     while (1) {
         int index = ListView_GetNextItem(hWnd, -1, LVNI_SELECTED);
@@ -1215,7 +1253,7 @@ int DeleteSelected(int port, int slot)
     return changes;
 }
 
-int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsigned int slot, unsigned int motor, ForceFeedbackBinding **binding)
+int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsigned int slot, unsigned int padtype, unsigned int motor, ForceFeedbackBinding **binding)
 {
     // Checks needed because I use this directly when loading bindings.
     // Note: dev->numFFAxes *can* be 0, for loading from file.
@@ -1234,28 +1272,28 @@ int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsig
         return -1;
     }
     int effectIndex = eff - dev->ffEffectTypes;
-    dev->pads[port][slot].ffBindings = (ForceFeedbackBinding *)realloc(dev->pads[port][slot].ffBindings, (dev->pads[port][slot].numFFBindings + 1) * sizeof(ForceFeedbackBinding));
-    int newIndex = dev->pads[port][slot].numFFBindings;
-    while (newIndex && dev->pads[port][slot].ffBindings[newIndex - 1].motor >= motor) {
-        dev->pads[port][slot].ffBindings[newIndex] = dev->pads[port][slot].ffBindings[newIndex - 1];
+    dev->pads[port][slot][padtype].ffBindings = (ForceFeedbackBinding *)realloc(dev->pads[port][slot][padtype].ffBindings, (dev->pads[port][slot][padtype].numFFBindings + 1) * sizeof(ForceFeedbackBinding));
+    int newIndex = dev->pads[port][slot][padtype].numFFBindings;
+    while (newIndex && dev->pads[port][slot][padtype].ffBindings[newIndex - 1].motor >= motor) {
+        dev->pads[port][slot][padtype].ffBindings[newIndex] = dev->pads[port][slot][padtype].ffBindings[newIndex - 1];
         newIndex--;
     }
-    ForceFeedbackBinding *b = dev->pads[port][slot].ffBindings + newIndex;
+    ForceFeedbackBinding *b = dev->pads[port][slot][padtype].ffBindings + newIndex;
     b->axes = (AxisEffectInfo *)calloc(dev->numFFAxes, sizeof(AxisEffectInfo));
     b->motor = motor;
     b->effectIndex = effectIndex;
-    dev->pads[port][slot].numFFBindings++;
+    dev->pads[port][slot][padtype].numFFBindings++;
     if (binding)
         *binding = b;
     return ListBoundEffect(port, slot, dev, b);
 }
 
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, int command, int sensitivity, int turbo, int deadZone)
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone)
 {
     // Checks needed because I use this directly when loading bindings.
-    if (port > 1 || slot > 3) {
+    if (port > 1 || slot > 3 || padtype >= numPadTypes)
         return -1;
-    }
+
     if (!sensitivity)
         sensitivity = BASE_SENSITIVITY;
     if ((uid >> 16) & (PSHBTN | TGLBTN)) {
@@ -1277,7 +1315,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     // Add before deleting.  Means I won't scroll up one line when scrolled down to bottom.
     int controlIndex = c - dev->virtualControls;
     int index = 0;
-    PadBindings *p = dev->pads[port] + slot;
+    PadBindings *p = dev->pads[port][slot] + padtype;
     p->bindings = (Binding *)realloc(p->bindings, (p->numBindings + 1) * sizeof(Binding));
     for (index = p->numBindings; index > 0; index--) {
         if (p->bindings[index - 1].controlIndex < controlIndex)
@@ -1319,19 +1357,20 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
             newBindingIndex--;
             count--;
         }
-        DeleteBinding(port, slot, dev, b);
+        DeleteBinding(port, slot, padtype, dev, b);
     }
     if (!config.multipleBinding) {
         for (int port2 = 0; port2 < 2; port2++) {
             for (int slot2 = 0; slot2 < 4; slot2++) {
                 if (port2 == port && slot2 == slot)
                     continue;
-                PadBindings *p = dev->pads[port2] + slot2;
+                int padtype2 = config.padConfigs[port2][slot2].type;
+                PadBindings *p = dev->pads[port2][slot2] + padtype2;
                 for (int i = 0; i < p->numBindings; i++) {
                     Binding *b = p->bindings + i;
                     int uid2 = dev->virtualControls[b->controlIndex].uid;
                     if (b->controlIndex == controlIndex || (!((uid2 ^ uid) & 0xFFFFFF) && ((uid | uid2) & (UID_POV | UID_AXIS)))) {
-                        DeleteBinding(port2, slot2, dev, b);
+                        DeleteBinding(port2, slot2, padtype2, dev, b);
                         i--;
                     }
                 }
@@ -1380,6 +1419,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
     int index = (hWnd == PropSheet_IndexToHwnd(hWndProp, 1));
     int slot;
     int port = GetPort(hWnd, &slot);
+    int padtype = config.padConfigs[port][slot].type;
     HWND hWndList = GetDlgItem(hWnd, IDC_LIST);
     switch (msg) {
         case WM_INITDIALOG: {
@@ -1398,14 +1438,15 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             selected = 0;
             port = (int)((PROPSHEETPAGE *)lParam)->lParam & 1;
             slot = (int)((PROPSHEETPAGE *)lParam)->lParam >> 1;
-            hWnds[port][slot] = hWnd;
+            padtype = config.padConfigs[port][slot].type;
+            hWnds[port][slot][padtype] = hWnd;
             SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER1));
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_DEADZONE));
             if (port || slot)
                 EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
 
-            Populate(port, slot);
+            Populate(port, slot, padtype);
         } break;
         case WM_DEVICECHANGE:
             if (wParam == DBT_DEVNODES_CHANGED) {
@@ -1443,12 +1484,12 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     UnselectAll(hWndList);
                     int index = -1;
                     if (command == 0x7F && dev->api == IGNORE_KEYBOARD) {
-                        index = BindCommand(dev, uid, 0, 0, command, BASE_SENSITIVITY, 0, 0);
+                        index = BindCommand(dev, uid, 0, 0, 0, command, BASE_SENSITIVITY, 0, 0);
                     } else if (command < 0x30) {
-                        index = BindCommand(dev, uid, port, slot, command, BASE_SENSITIVITY, 0, 0);
+                        index = BindCommand(dev, uid, port, slot, padtype, command, BASE_SENSITIVITY, 0, 0);
                     }
                     if (index >= 0) {
-                        PropSheet_Changed(hWndProp, hWnds[port][slot]);
+                        PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
                         ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
                         ListView_EnsureVisible(hWndList, index, 0);
                     }
@@ -1529,7 +1570,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             uid = (uid & 0x00FFFFFF) | axisUIDs[cbsel];
                             Binding backup = *b;
                             DeleteSelected(port, slot);
-                            int index = BindCommand(dev, uid, port, slot, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
+                            int index = BindCommand(dev, uid, port, slot, padtype, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
                             ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
                             PropSheet_Changed(hWndProp, hWnd);
                         }
@@ -1564,7 +1605,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                                 else
                                     effectID = L"13541C22-8E33-11D0-9AD0-00A0C9A06E35";
                             }
-                            int count = CreateEffectBinding(dev, effectID, port, slot, cmd - ID_BIG_MOTOR, &b);
+                            int count = CreateEffectBinding(dev, effectID, port, slot, padtype, cmd - ID_BIG_MOTOR, &b);
                             if (b) {
                                 int needSet = 1;
                                 if (dev->api == XINPUT && dev->numFFAxes == 2) {
@@ -1710,6 +1751,75 @@ int GetPadString(wchar_t *string, unsigned int port, unsigned int slot)
     return 1;
 }
 
+// Returns 0 if pad doesn't exist due to mtap settings, as a convenience.
+int GetPadTypeString(wchar_t *string, unsigned int port, unsigned int slot, unsigned int padtype)
+{
+    if (!slot && !config.multitap[port]) {
+        wsprintfW(string, L"Pad %i, %s", port + 1, padTypes[padtype]);
+    } else {
+        wsprintfW(string, L"Pad %i%c, %s", port + 1, 'A' + slot, padTypes[padtype]);
+        if (!config.multitap[port])
+            return 0;
+    }
+    return 1;
+}
+
+bool ProfilesBindingCheck(unsigned int port, unsigned int slot, unsigned int padtype)
+{
+    bool showWarning = true;
+    int count = 0;
+    for (int i = 0; i < dm->numDevices; i++) {
+        for (int portCheck = 0; portCheck < 2; portCheck++) {
+            int maxslot = 1;
+            if (config.multitap[portCheck])
+                maxslot = 4;
+            if (portCheck == port && !config.multitap[portCheck])
+                continue;
+            for (int slotCheck = 0; slotCheck < maxslot; slotCheck++) {
+                if (portCheck == port && slotCheck == slot)
+                    continue;
+                int padtypeCheck = config.padConfigs[portCheck][slotCheck].type;
+                PadBindings *pCheck = dm->devices[i]->pads[portCheck][slotCheck] + padtypeCheck;
+                PadBindings *pActive = dm->devices[i]->pads[port][slot] + padtype;
+                for (int j = 0; j < pCheck->numBindings; j++) {
+                    for (int k = 0; k < pActive->numBindings; k++) {
+                        Binding *bCheck = pCheck->bindings + j;
+                        Binding *bActive = pActive->bindings + k;
+                        int uidCheck = dm->devices[i]->virtualControls[bCheck->controlIndex].uid;
+                        int uidActive = dm->devices[i]->virtualControls[bActive->controlIndex].uid;
+                        if (bCheck->controlIndex == bActive->controlIndex || (!((uidActive ^ uidCheck) & 0xFFFFFF) && ((uidCheck | uidActive) & (UID_POV | UID_AXIS)))) {
+                            if (showWarning) {
+                                int msgboxID = MessageBoxA(hWndProp, "Warning!  You have selected a pad type that has one or several bindings that conflict with the active pad type of the opposing port or slot(s).\n\n"
+                                                                     "Do you want to keep the bindings of the pad type you are switching to?\n"
+                                                                     "Click ''Yes'' to continue without deleting any binding.\n"
+                                                                     "Click ''No'' to continue and delete any conflicting bindings from the selected pad type.\n"
+                                                                     "Click ''Cancel'' to revert to the previously selected pad type and avoid any further action.\n\n"
+                                                                     "Note: Enable the 'Allow binding multiple PS2 controls to one PC control' option to allow conflicting bindings between opposing ports and slots, and avoid this warning and the possibility of bindings getting deleted.",
+                                                           "Duplicate Binding Warning", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+                                switch (msgboxID) {
+                                    case IDCANCEL:
+                                        return false;
+                                        break;
+                                    case IDYES:
+                                        return true;
+                                        break;
+                                    case IDNO:
+                                        showWarning = false;
+                                        break;
+                                }
+                            }
+                            DeleteBinding(port, slot, padtype, dm->devices[i], bActive);
+                            k--;
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
 void UpdatePadPages()
 {
     HPROPSHEETPAGE pages[10];
@@ -1784,6 +1894,7 @@ void UpdatePadList(HWND hWnd)
 
     for (port = 0; port < 2; port++) {
         for (slot = 0; slot < 4; slot++) {
+            int padtype = config.padConfigs[port][slot].type;
             wchar_t text[25];
             if (!GetPadString(text, port, slot))
                 continue;
@@ -1799,9 +1910,9 @@ void UpdatePadList(HWND hWnd)
             }
 
             item.iSubItem = 1;
-            if (numPadTypes - 1 < (unsigned int)config.padConfigs[port][slot].type)
-                config.padConfigs[port][slot].type = Dualshock2Pad;
-            wcsncpy(item.pszText, padTypes[config.padConfigs[port][slot].type], 25);
+            if (numPadTypes - 1 < (unsigned int)padtype)
+                padtype = Dualshock2Pad;
+            wcsncpy(item.pszText, padTypes[padtype], 25);
             //if (!slot && !config.padConfigs[port][slot].type)
             //	item.pszText = L"Unplugged (Kinda)";
 
@@ -1813,7 +1924,7 @@ void UpdatePadList(HWND hWnd)
                 Device *dev = dm->devices[i];
                 if (!dev->enabled)
                     continue;
-                count += dev->pads[port][slot].numBindings + dev->pads[port][slot].numFFBindings;
+                count += dev->pads[port][slot][padtype].numBindings + dev->pads[port][slot][padtype].numFFBindings;
             }
             wsprintf(text, L"%i", count);
             item.pszText = text;
@@ -1891,7 +2002,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                 CheckDlgButton(hWnd, BoolOptionsInfo[j].ControlId, BST_CHECKED * config.bools[j]);
             }
-
             CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_CHECKED * (config.closeHacks & 1));
             CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_CHECKED * ((config.closeHacks & 2) >> 1));
 
@@ -1919,6 +2029,8 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     if (sel < 0 || !ListIndexToPortAndSlot(index, &port, &slot))
                         break;
                     if (sel != config.padConfigs[port][slot].type) {
+                        if (!config.multipleBinding && !ProfilesBindingCheck(port, slot, sel))
+                            break;
                         config.padConfigs[port][slot].type = (PadType)sel;
                         UpdatePadList(hWnd);
                         UpdatePadPages();
@@ -1986,7 +2098,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                     config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
                 }
-
                 config.closeHacks = (IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK1) == BST_CHECKED) |
                                     ((IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK2) == BST_CHECKED) << 1);
 
@@ -2038,34 +2149,59 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 if (n->hdr.code == NM_RCLICK) {
                     UpdatePadList(hWnd);
                     int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
-                    int port1, slot1, port2, slot2;
+                    int port1, slot1, port2, slot2, padtype1, padtype2;
                     if (!ListIndexToPortAndSlot(index, &port1, &slot1))
                         break;
+                    padtype1 = config.padConfigs[port1][slot1].type;
                     HMENU hMenu = CreatePopupMenu();
                     if (!hMenu)
                         break;
                     MENUITEMINFOW info;
-                    for (port2 = 1; port2 >= 0; port2--) {
-                        for (slot2 = 3; slot2 >= 0; slot2--) {
-                            wchar_t text[40];
-                            wchar_t pad[20];
-                            if (!GetPadString(pad, port2, slot2))
-                                continue;
-                            info.cbSize = sizeof(info);
-                            info.fMask = MIIM_STRING | MIIM_ID;
-                            info.dwTypeData = text;
-                            if (port2 == port1 && slot2 == slot1) {
-                                int index = GetMenuItemCount(hMenu);
-                                wsprintfW(text, L"Clear %s Bindings", pad);
-                                info.wID = -1;
-                                InsertMenuItemW(hMenu, index, 1, &info);
-                                info.fMask = MIIM_TYPE;
-                                info.fType = MFT_SEPARATOR;
-                                InsertMenuItemW(hMenu, index, 1, &info);
-                            } else {
-                                info.wID = port2 + 2 * slot2 + 1;
-                                wsprintfW(text, L"Swap with %s", pad);
-                                InsertMenuItemW(hMenu, 0, 1, &info);
+                    for (int IndividualPadtypes = 1; IndividualPadtypes >= 0; IndividualPadtypes--) {
+                        info.fMask = MIIM_TYPE;
+                        info.fType = MFT_SEPARATOR;
+                        InsertMenuItemW(hMenu, 0, 1, &info);
+                        for (port2 = 1; port2 >= 0; port2--) {
+                            for (slot2 = 3; slot2 >= 0; slot2--) {
+                                padtype2 = config.padConfigs[port2][slot2].type;
+                                wchar_t text[40];
+                                wchar_t pad[40];
+                                if (IndividualPadtypes == 0) {
+                                    if (!GetPadString(pad, port2, slot2))
+                                        continue;
+                                } else {
+                                    if (!GetPadTypeString(pad, port2, slot2, padtype2))
+                                        continue;
+                                }
+                                info.cbSize = sizeof(info);
+                                info.fMask = MIIM_STRING | MIIM_ID;
+                                info.dwTypeData = text;
+                                if (port2 == port1 && slot2 == slot1 && padtype2 == padtype1) {
+                                    int index = GetMenuItemCount(hMenu);
+                                    wsprintfW(text, L"Clear %s Bindings", pad);
+                                    if (IndividualPadtypes == 0) {
+                                        info.wID = -1;
+                                        wsprintfW(text, L"Clear all %s Bindings", pad);
+                                    } else {
+                                        info.wID = -2;
+                                        wsprintfW(text, L"Clear %s Bindings only", pad);
+                                    }
+                                    InsertMenuItemW(hMenu, index, 1, &info);
+                                    info.fMask = MIIM_TYPE;
+                                    info.fType = MFT_SEPARATOR;
+                                    InsertMenuItemW(hMenu, index, 1, &info);
+                                } else if (!(port2 == port1 && slot2 == slot1)) {
+                                    info.wID = port2 + 2 * slot2 + 1;
+                                    if (IndividualPadtypes == 1) {
+                                        if (!config.multipleBinding && padtype2 != padtype1)
+                                            continue;
+                                        info.wID += 8;
+                                        wsprintfW(text, L"Swap with %s bindings only", pad);
+                                    } else {
+                                        wsprintfW(text, L"Swap all bindings with %s", pad);
+                                    }
+                                    InsertMenuItemW(hMenu, 0, 1, &info);
+                                }
                             }
                         }
                     }
@@ -2075,30 +2211,62 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     DestroyMenu(hMenu);
                     if (!res)
                         break;
+                    bool swapIndividualPadtypes = false;
                     if (res > 0) {
+                        if (res > 8) {
+                            res -= 8;
+                            swapIndividualPadtypes = true;
+                        }
                         res--;
                         slot2 = res / 2;
                         port2 = res & 1;
+                        padtype2 = config.padConfigs[port2][slot2].type;
                         PadConfig padCfgTemp = config.padConfigs[port1][slot1];
                         config.padConfigs[port1][slot1] = config.padConfigs[port2][slot2];
                         config.padConfigs[port2][slot2] = padCfgTemp;
+                        if (swapIndividualPadtypes) {
+                            config.padConfigs[port2][slot2].type = config.padConfigs[port1][slot1].type;
+                            config.padConfigs[port1][slot1].type = padCfgTemp.type;
+                        }
                         for (int i = 0; i < dm->numDevices; i++) {
                             if (dm->devices[i]->type == IGNORE)
                                 continue;
-                            PadBindings bindings = dm->devices[i]->pads[port1][slot1];
-                            dm->devices[i]->pads[port1][slot1] = dm->devices[i]->pads[port2][slot2];
-                            dm->devices[i]->pads[port2][slot2] = bindings;
+                            if (swapIndividualPadtypes) {
+                                PadBindings bindings = dm->devices[i]->pads[port1][slot1][padtype1];
+                                dm->devices[i]->pads[port1][slot1][padtype1] = dm->devices[i]->pads[port2][slot2][padtype2];
+                                dm->devices[i]->pads[port2][slot2][padtype2] = bindings;
+                            } else {
+                                for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                                    PadBindings bindings = dm->devices[i]->pads[port1][slot1][padtype];
+                                    dm->devices[i]->pads[port1][slot1][padtype] = dm->devices[i]->pads[port2][slot2][padtype];
+                                    dm->devices[i]->pads[port2][slot2][padtype] = bindings;
+                                }
+                            }
                         }
                     } else {
+                        if (res == -2) {
+                            swapIndividualPadtypes = true;
+                        }
                         for (int i = 0; i < dm->numDevices; i++) {
                             if (dm->devices[i]->type == IGNORE)
                                 continue;
-                            free(dm->devices[i]->pads[port1][slot1].bindings);
-                            for (int j = 0; j < dm->devices[i]->pads[port1][slot1].numFFBindings; j++) {
-                                free(dm->devices[i]->pads[port1][slot1].ffBindings[j].axes);
+                            if (swapIndividualPadtypes) {
+                                free(dm->devices[i]->pads[port1][slot1][padtype1].bindings);
+                                for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype1].numFFBindings; j++) {
+                                    free(dm->devices[i]->pads[port1][slot1][padtype1].ffBindings[j].axes);
+                                }
+                                free(dm->devices[i]->pads[port1][slot1][padtype1].ffBindings);
+                                memset(&dm->devices[i]->pads[port1][slot1][padtype1], 0, sizeof(dm->devices[i]->pads[port1][slot1][padtype1]));
+                            } else {
+                                for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                                    free(dm->devices[i]->pads[port1][slot1][padtype].bindings);
+                                    for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype].numFFBindings; j++) {
+                                        free(dm->devices[i]->pads[port1][slot1][padtype].ffBindings[j].axes);
+                                    }
+                                    free(dm->devices[i]->pads[port1][slot1][padtype].ffBindings);
+                                    memset(&dm->devices[i]->pads[port1][slot1][padtype], 0, sizeof(dm->devices[i]->pads[port1][slot1][padtype]));
+                                }
                             }
-                            free(dm->devices[i]->pads[port1][slot1].ffBindings);
-                            memset(&dm->devices[i]->pads[port1][slot1], 0, sizeof(dm->devices[i]->pads[port1][slot1]));
                         }
                     }
                     UpdatePadPages();

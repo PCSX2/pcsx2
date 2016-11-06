@@ -18,6 +18,7 @@
 #include "Global.h"
 #include "InputManager.h"
 #include "KeyboardQueue.h"
+#include "Config.h"
 
 InputDeviceManager *dm = 0;
 
@@ -94,11 +95,13 @@ Device::~Device()
     int i;
     for (int port = 0; port < 2; port++) {
         for (int slot = 0; slot < 4; slot++) {
-            free(pads[port][slot].bindings);
-            for (i = 0; i < pads[port][slot].numFFBindings; i++) {
-                free(pads[port][slot].ffBindings[i].axes);
+            for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                free(pads[port][slot][padtype].bindings);
+                for (i = 0; i < pads[port][slot][padtype].numFFBindings; i++) {
+                    free(pads[port][slot][padtype].ffBindings[i].axes);
+                }
+                free(pads[port][slot][padtype].ffBindings);
             }
-            free(pads[port][slot].ffBindings);
         }
     }
     free(virtualControls);
@@ -145,11 +148,13 @@ void Device::AddFFAxis(const wchar_t *displayName, int id)
     int bindingsExist = 0;
     for (int port = 0; port < 2; port++) {
         for (int slot = 0; slot < 4; slot++) {
-            for (int i = 0; i < pads[port][slot].numFFBindings; i++) {
-                ForceFeedbackBinding *b = pads[port][slot].ffBindings + i;
-                b->axes = (AxisEffectInfo *)realloc(b->axes, sizeof(AxisEffectInfo) * (numFFAxes));
-                memset(b->axes + (numFFAxes - 1), 0, sizeof(AxisEffectInfo));
-                bindingsExist = 1;
+            for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                for (int i = 0; i < pads[port][slot][padtype].numFFBindings; i++) {
+                    ForceFeedbackBinding *b = pads[port][slot][padtype].ffBindings + i;
+                    b->axes = (AxisEffectInfo *)realloc(b->axes, sizeof(AxisEffectInfo) * (numFFAxes));
+                    memset(b->axes + (numFFAxes - 1), 0, sizeof(AxisEffectInfo));
+                    bindingsExist = 1;
+                }
             }
         }
     }
@@ -319,8 +324,9 @@ PhysicalControl *Device::AddPhysicalControl(ControlType type, unsigned short id,
 
 void Device::SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force)
 {
-    for (int i = 0; i < pads[port][slot].numFFBindings; i++) {
-        ForceFeedbackBinding *binding = pads[port][slot].ffBindings + i;
+    int padtype = config.padConfigs[port][slot].type;
+    for (int i = 0; i < pads[port][slot][padtype].numFFBindings; i++) {
+        ForceFeedbackBinding *binding = pads[port][slot][padtype].ffBindings + i;
         if (binding->motor == motor) {
             SetEffect(binding, force);
         }
@@ -545,9 +551,11 @@ void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices)
         old = oldDevices[i];
         for (port = 0; port < 2; port++) {
             for (slot = 0; slot < 4; slot++) {
-                if (old->pads[port][slot].numBindings + old->pads[port][slot].numFFBindings) {
-                    // Means that there are bindings.
-                    oldMatches[i] = -1;
+                for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                    if (old->pads[port][slot][padtype].numBindings + old->pads[port][slot][padtype].numFFBindings) {
+                        // Means that there are bindings.
+                        oldMatches[i] = -1;
+                    }
                 }
             }
         }
@@ -603,36 +611,38 @@ void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices)
             dev = devices[oldMatches[i]];
             for (port = 0; port < 2; port++) {
                 for (slot = 0; slot < 4; slot++) {
-                    if (old->pads[port][slot].numBindings) {
-                        dev->pads[port][slot].bindings = (Binding *)malloc(old->pads[port][slot].numBindings * sizeof(Binding));
-                        for (int j = 0; j < old->pads[port][slot].numBindings; j++) {
-                            Binding *bo = old->pads[port][slot].bindings + j;
-                            Binding *bn = dev->pads[port][slot].bindings + dev->pads[port][slot].numBindings;
-                            VirtualControl *cn = dev->GetVirtualControl(old->virtualControls[bo->controlIndex].uid);
-                            if (cn) {
-                                *bn = *bo;
-                                bn->controlIndex = cn - dev->virtualControls;
-                                dev->pads[port][slot].numBindings++;
+                    for (int padtype = 0; padtype < numPadTypes; padtype++) {
+                        if (old->pads[port][slot][padtype].numBindings) {
+                            dev->pads[port][slot][padtype].bindings = (Binding *)malloc(old->pads[port][slot][padtype].numBindings * sizeof(Binding));
+                            for (int j = 0; j < old->pads[port][slot][padtype].numBindings; j++) {
+                                Binding *bo = old->pads[port][slot][padtype].bindings + j;
+                                Binding *bn = dev->pads[port][slot][padtype].bindings + dev->pads[port][slot][padtype].numBindings;
+                                VirtualControl *cn = dev->GetVirtualControl(old->virtualControls[bo->controlIndex].uid);
+                                if (cn) {
+                                    *bn = *bo;
+                                    bn->controlIndex = cn - dev->virtualControls;
+                                    dev->pads[port][slot][padtype].numBindings++;
+                                }
                             }
                         }
-                    }
-                    if (old->pads[port][slot].numFFBindings) {
-                        dev->pads[port][slot].ffBindings = (ForceFeedbackBinding *)malloc(old->pads[port][slot].numFFBindings * sizeof(ForceFeedbackBinding));
-                        for (int j = 0; j < old->pads[port][slot].numFFBindings; j++) {
-                            ForceFeedbackBinding *bo = old->pads[port][slot].ffBindings + j;
-                            ForceFeedbackBinding *bn = dev->pads[port][slot].ffBindings + dev->pads[port][slot].numFFBindings;
-                            ForceFeedbackEffectType *en = dev->GetForcefeedbackEffect(old->ffEffectTypes[bo->effectIndex].effectID);
-                            if (en) {
-                                *bn = *bo;
-                                bn->effectIndex = en - dev->ffEffectTypes;
-                                bn->axes = (AxisEffectInfo *)calloc(dev->numFFAxes, sizeof(AxisEffectInfo));
-                                for (int k = 0; k < old->numFFAxes; k++) {
-                                    ForceFeedbackAxis *newAxis = dev->GetForceFeedbackAxis(old->ffAxes[k].id);
-                                    if (newAxis) {
-                                        bn->axes[newAxis - dev->ffAxes] = bo->axes[k];
+                        if (old->pads[port][slot][padtype].numFFBindings) {
+                            dev->pads[port][slot][padtype].ffBindings = (ForceFeedbackBinding *)malloc(old->pads[port][slot][padtype].numFFBindings * sizeof(ForceFeedbackBinding));
+                            for (int j = 0; j < old->pads[port][slot][padtype].numFFBindings; j++) {
+                                ForceFeedbackBinding *bo = old->pads[port][slot][padtype].ffBindings + j;
+                                ForceFeedbackBinding *bn = dev->pads[port][slot][padtype].ffBindings + dev->pads[port][slot][padtype].numFFBindings;
+                                ForceFeedbackEffectType *en = dev->GetForcefeedbackEffect(old->ffEffectTypes[bo->effectIndex].effectID);
+                                if (en) {
+                                    *bn = *bo;
+                                    bn->effectIndex = en - dev->ffEffectTypes;
+                                    bn->axes = (AxisEffectInfo *)calloc(dev->numFFAxes, sizeof(AxisEffectInfo));
+                                    for (int k = 0; k < old->numFFAxes; k++) {
+                                        ForceFeedbackAxis *newAxis = dev->GetForceFeedbackAxis(old->ffAxes[k].id);
+                                        if (newAxis) {
+                                            bn->axes[newAxis - dev->ffAxes] = bo->axes[k];
+                                        }
                                     }
+                                    dev->pads[port][slot][padtype].numFFBindings++;
                                 }
-                                dev->pads[port][slot].numFFBindings++;
                             }
                         }
                     }

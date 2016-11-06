@@ -271,7 +271,7 @@ void UpdateEnabledDevices(int updateList = 0)
     // Figure out which pads I'm getting input for.
     for (int port = 0; port < 2; port++) {
         for (int slot = 0; slot < 4; slot++) {
-            if (slot && !config.multitap[port]) {
+            if (slot > 0 && !config.multitap[port]) {
                 pads[port][slot].enabled = 0;
             } else {
                 pads[port][slot].enabled = pads[port][slot].initialized && config.padConfigs[port][slot].type != DisabledPad;
@@ -290,7 +290,7 @@ void UpdateEnabledDevices(int updateList = 0)
 
         // Disable ignore keyboard if don't have focus or there are no keys to ignore.
         if (dev->api == IGNORE_KEYBOARD) {
-            if ((config.keyboardApi == NO_API || !dev->pads[0][0].numBindings) || !activeWindow) {
+            if ((config.keyboardApi == NO_API || !dev->pads[0][0][0].numBindings) || !activeWindow) {
                 dm->DisableDevice(i);
             }
             continue;
@@ -311,8 +311,9 @@ void UpdateEnabledDevices(int updateList = 0)
             int numActiveBindings = 0;
             for (int port = 0; port < 2; port++) {
                 for (int slot = 0; slot < 4; slot++) {
+                    int padtype = config.padConfigs[port][slot].type;
                     if (pads[port][slot].enabled) {
-                        numActiveBindings += dev->pads[port][slot].numBindings + dev->pads[port][slot].numFFBindings;
+                        numActiveBindings += dev->pads[port][slot][padtype].numBindings + dev->pads[port][slot][padtype].numFFBindings;
                     }
                 }
             }
@@ -537,10 +538,11 @@ void Update(unsigned int port, unsigned int slot)
             continue;
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
-                if (config.padConfigs[port][slot].type == DisabledPad || !pads[port][slot].initialized)
+                int padtype = config.padConfigs[port][slot].type;
+                if (padtype == DisabledPad || !pads[port][slot].initialized)
                     continue;
-                for (int j = 0; j < dev->pads[port][slot].numBindings; j++) {
-                    Binding *b = dev->pads[port][slot].bindings + j;
+                for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; j++) {
+                    Binding *b = dev->pads[port][slot][padtype].bindings + j;
                     int cmd = b->command;
                     int state = dev->virtualControlState[b->controlIndex];
                     if (!(turbo & b->turbo)) {
@@ -833,9 +835,8 @@ s32 CALLBACK PADinit(u32 flags)
 
     port--;
 
-    for (int i = 0; i < 4; i++) {
-        ResetPad(port, i);
-    }
+    for (int slot = 0; slot < 4; slot++)
+        ResetPad(port, slot);
     slots[port] = 0;
     portInitialized[port] = 1;
 

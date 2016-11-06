@@ -17,6 +17,7 @@
 
 #include "Global.h"
 #include "InputManager.h"
+#include "Config.h"
 
 #include "usb.h"
 #include "HidDevice.h"
@@ -421,9 +422,10 @@ public:
         vibration[0] = vibration[1] = 0;
         for (int p = 0; p < 2; p++) {
             for (int s = 0; s < 4; s++) {
-                for (int i = 0; i < pads[p][s].numFFBindings; i++) {
+                int padtype = config.padConfigs[p][s].type;
+                for (int i = 0; i < pads[p][s][padtype].numFFBindings; i++) {
                     // Technically should also be a *65535/BASE_SENSITIVITY, but that's close enough to 1 for me.
-                    ForceFeedbackBinding *ffb = &pads[p][s].ffBindings[i];
+                    ForceFeedbackBinding *ffb = &pads[p][s][padtype].ffBindings[i];
                     vibration[0] += (int)((ffb->axes[0].force * (__int64)ps2Vibration[p][s][ffb->motor]) / 255);
                     vibration[1] += (int)((ffb->axes[1].force * (__int64)ps2Vibration[p][s][ffb->motor]) / 255);
                 }
@@ -436,11 +438,11 @@ public:
 
     void SetEffect(ForceFeedbackBinding *binding, unsigned char force)
     {
-        PadBindings pBackup = pads[0][0];
-        pads[0][0].ffBindings = binding;
-        pads[0][0].numFFBindings = 1;
+        PadBindings pBackup = pads[0][0][0];
+        pads[0][0][0].ffBindings = binding;
+        pads[0][0][0].numFFBindings = 1;
         SetEffects(0, 0, binding->motor, 255);
-        pads[0][0] = pBackup;
+        pads[0][0][0] = pBackup;
     }
 
     void Deactivate()

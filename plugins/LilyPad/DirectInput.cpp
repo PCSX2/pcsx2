@@ -19,6 +19,7 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #include "InputManager.h"
+#include "Config.h"
 
 #include "VKey.h"
 #include "DirectInput.h"
@@ -149,13 +150,14 @@ public:
         }
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
-                unsigned int diff = binding - pads[port][slot].ffBindings;
-                if (diff < (unsigned int)pads[port][slot].numFFBindings) {
+                int padtype = config.padConfigs[port][slot].type;
+                unsigned int diff = binding - pads[port][slot][padtype].ffBindings;
+                if (diff < (unsigned int)pads[port][slot][padtype].numFFBindings) {
                     index += diff;
                     port = 2;
                     break;
                 }
-                index += pads[port][slot].numFFBindings;
+                index += pads[port][slot][padtype].numFFBindings;
             }
         }
         IDirectInputEffect *die = diEffects[index].die;
@@ -269,10 +271,11 @@ public:
         i = 0;
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
+                int padtype = config.padConfigs[port][slot].type;
                 int subIndex = i;
-                for (int j = 0; j < pads[port][slot].numFFBindings; j++) {
+                for (int j = 0; j < pads[port][slot][padtype].numFFBindings; j++) {
                     ForceFeedbackBinding *b = 0;
-                    b = &pads[port][slot].ffBindings[i - subIndex];
+                    b = &pads[port][slot][padtype].ffBindings[i - subIndex];
                     ForceFeedbackEffectType *eff = ffEffectTypes + b->effectIndex;
                     GUID guid;
                     if (!StringToGUID(&guid, eff->effectID))
@@ -369,7 +372,8 @@ public:
         int count = 0;
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
-                count += pads[port][slot].numFFBindings;
+                int padtype = config.padConfigs[port][slot].type;
+                count += pads[port][slot][padtype].numFFBindings;
             }
         }
         return count;
