@@ -18,6 +18,10 @@
 
 static std::string psxout_buf;
 
+// This filtering should almost certainly be done in the console classes instead
+static std::string psxout_last;
+static unsigned psxout_repeat;
+
 static void flush_stdout(bool closing = false)
 {
     size_t linelen;
@@ -29,8 +33,23 @@ static void flush_stdout(bool closing = false)
                 return;
         } else
             psxout_buf[linelen++] = '\n';
-        iopConLog(ShiftJIS_ConvertString(psxout_buf.c_str(), linelen));
+        if (linelen != 1) {
+            if (!psxout_buf.compare(0, linelen, psxout_last))
+                psxout_repeat++;
+            else {
+                if (psxout_repeat) {
+                    iopConLog(wxString::Format(L"[%u more]\n", psxout_repeat));
+                    psxout_repeat = 0;
+                }
+                psxout_last = psxout_buf.substr(0, linelen);
+                iopConLog(ShiftJIS_ConvertString(psxout_last.data()));
+            }
+        }
         psxout_buf.erase(0, linelen);
+    }
+    if (closing && psxout_repeat) {
+        iopConLog(wxString::Format(L"[%u more]\n", psxout_repeat));
+        psxout_repeat = 0;
     }
 }
 
