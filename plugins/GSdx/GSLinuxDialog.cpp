@@ -249,6 +249,9 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	GtkWidget* hack_enable_check   = CreateCheckBox("Enable User Hacks", "UserHacks");
 
+	GtkWidget* mipmap_label     = left_label("Mipmapping (Insert):");
+	GtkWidget* mipmap_combo_box = CreateComboBoxFromVector(theApp.m_gs_hw_mipmapping, "mipmap_hw");
+
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
@@ -258,6 +261,8 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
 	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
+	AddTooltip(mipmap_label, IDC_MIPMAP_HW);
+	AddTooltip(mipmap_combo_box, IDC_MIPMAP_HW);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table , paltex_check  , acc_date_check);
@@ -267,6 +272,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	InsertWidgetInTable(hw_table , af_label      , af_combo_box);
 	InsertWidgetInTable(hw_table , acc_bld_label , acc_bld_combo_box);
 	InsertWidgetInTable(hw_table , crc_label     , crc_combo_box);
+	InsertWidgetInTable(hw_table , mipmap_label  , mipmap_combo_box);
 }
 
 void populate_gl_table(GtkWidget* gl_table)
@@ -287,13 +293,15 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads");
 
 	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
+	GtkWidget* mipmap_check     = CreateCheckBox("Mipmapping", "mipmap");
 
 	AddTooltip(aa_check, IDC_AA1);
+	AddTooltip(mipmap_check, IDC_MIPMAP_SW);
 	AddTooltip(threads_label, threads_spin, IDC_SWTHREADS);
 
 	s_table_line = 0;
-	InsertWidgetInTable(sw_table , threads_label     , threads_spin);
-	InsertWidgetInTable(sw_table , aa_check);
+	InsertWidgetInTable(sw_table , threads_label, threads_spin);
+	InsertWidgetInTable(sw_table , aa_check     , mipmap_check);
 }
 
 void populate_shader_table(GtkWidget* shader_table)
@@ -394,16 +402,11 @@ void populate_main_table(GtkWidget* main_table)
 	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer");
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace");
-	GtkWidget* mipmap_label        = left_label("Mipmap (Insert):");
-	GtkWidget* mipmap_combo_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "mipmap");
 
-	AddTooltip(mipmap_label, IDC_MIPMAP_SW);
-	AddTooltip(mipmap_combo_box, IDC_MIPMAP_SW);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
-	InsertWidgetInTable(main_table, mipmap_label, mipmap_combo_box);
 }
 
 void populate_debug_table(GtkWidget* debug_table)
