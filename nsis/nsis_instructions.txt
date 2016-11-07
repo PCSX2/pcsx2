@@ -2,12 +2,12 @@
   PCSX2 NSIS Installer Instructions
 -------------------------------------
 
- * Install NSIS (tested with 3.00), make sure to include the "Modern User Interface"
+ * Install NSIS (tested with 2.46), make sure to include the "Modern User Interface"
  * Install NSIS Script: Advanced Uninstall Log (you can find it on NSIS wiki)
    ( Currently at http://nsis.sourceforge.net/Advanced_Uninstall_Log_NSIS_Header )
 
   * Download the Visual C++ 2015 Redistributable and save it to this nsis/ folder.
-   ( https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe )
+   ( https://www.microsoft.com/en-us/download/details.aspx?id=49984 )
    Rename the download to "vcredist_2015_Update_1_x86".
    
  * Download the DirectX Web Installer (dxwebsetup.exe) from Microsoft's website and save it to
@@ -29,7 +29,6 @@
  * Compile script (pcsx2_full_install.nsi)!
    Output executables will be generated to the output/ folder.
  
- *Compiler may abort if output/ folder is not already created in Explorer!
  
 --------------------------------------------
   Compilation Targets and Plugin Inclusion
