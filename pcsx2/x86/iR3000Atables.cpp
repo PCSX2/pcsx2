@@ -509,7 +509,7 @@ void rpsxDIV_const()
 	u32 lo, hi;
 
 	/*
-	 * Normally, when 0x80000000(−2147483648), the signed minimum value, is divided by 0xFFFFFFFF(−1), the
+	 * Normally, when 0x80000000(-2147483648), the signed minimum value, is divided by 0xFFFFFFFF(-1), the
 	 * 	operation will result in overflow. However, in this instruction an overflow exception does not occur and the
 	 * 	result will be as follows:
 	 * 	Quotient: 0x80000000 (−2147483648), and remainder: 0x00000000 (0)
