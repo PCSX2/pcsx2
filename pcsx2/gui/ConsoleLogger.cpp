@@ -158,9 +158,6 @@ void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
 	const wxFont fixed( pxGetFixedFont( fontsize ) );
 	const wxFont fixedB( pxGetFixedFont( fontsize+1, wxFONTWEIGHT_BOLD ) );
 
-	//const wxFont fixed( fontsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
-	//const wxFont fixedB( fontsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD );
-
 	// Standard R, G, B format:
 	for (size_t i = 0; i < Color_StrongBlack; ++i)
 		m_table[i].SetFont(fixed);

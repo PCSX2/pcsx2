@@ -800,7 +800,7 @@ extern int pxGetCharHeight(const wxWindow &wind, int rows = 1);
 
 extern void pxSetToolTip(wxWindow *wind, const wxString &src);
 extern void pxSetToolTip(wxWindow &wind, const wxString &src);
-extern wxFont pxGetFixedFont(int ptsize = 8, wxFontWeight weight = wxFONTWEIGHT_NORMAL);
+extern wxFont pxGetFixedFont(int ptsize = 8, wxFontWeight weight = wxFONTWEIGHT_NORMAL, bool underline = false);
 
 extern pxDialogCreationFlags pxDialogFlags();
 
