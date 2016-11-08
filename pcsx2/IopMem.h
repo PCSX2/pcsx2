@@ -83,6 +83,8 @@ extern void __fastcall iopMemWrite8 (u32 mem, u8 value);
 extern void __fastcall iopMemWrite16(u32 mem, u16 value);
 extern void __fastcall iopMemWrite32(u32 mem, u32 value);
 
+std::string iopMemReadString(u32 mem, int maxlen = 65536);
+
 namespace IopMemory
 {
 	// Sif functions not made yet (will for future Iop improvements):
