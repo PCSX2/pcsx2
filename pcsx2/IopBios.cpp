@@ -411,21 +411,18 @@ namespace ioman {
 
 		if (IOManFile *file = getfd<IOManFile>(fd))
 		{
-			char *buf;
 			try {
-				buf = new char[count];
-				v0 = file->read(buf, count);
+				std::unique_ptr<char[]> buf(new char[count]);
+
+				v0 = file->read(buf.get(), count);
+
+				for (s32 i = 0; i < (s32)v0; i++)
+					iopMemWrite8(data + i, buf[i]);
 			}
 			catch (const std::bad_alloc &) {
 				v0 = -IOP_ENOMEM;
 			}
-			catch (...) {
-				delete[] buf;
-				throw;
-			}
-			for (s32 i = 0; i < (s32)v0; i++)
-				iopMemWrite8(data + i, buf[i]);
-			delete[] buf;
+
 			pc = ra;
 			return 1;
 		}
@@ -449,19 +446,18 @@ namespace ioman {
 		}
 		else if (IOManFile *file = getfd<IOManFile>(fd))
 		{
-			char *buf = NULL;
 			try {
-				buf = new char[count];
+				std::unique_ptr<char[]> buf(new char[count]);
+
 				for (u32 i = 0; i < count; i++)
 					buf[i] = iopMemRead8(data + i);
-				v0 = file->write(buf, count);
-			} catch (const std::bad_alloc &) {
-				v0 = -IOP_ENOMEM;
-			} catch (...) {
-				delete[] buf;
-				throw;
+
+				v0 = file->write(buf.get(), count);
 			}
-			delete[] buf;
+			catch (const std::bad_alloc &) {
+				v0 = -IOP_ENOMEM;
+			}
+
 			pc = ra;
 			return 1;
 		}
@@ -618,7 +614,7 @@ namespace sifcmd {
 	}
 }
 
-const u32 irxImportTableAddr(u32 entrypc)
+u32 irxImportTableAddr(u32 entrypc)
 {
 	u32 i;
 
