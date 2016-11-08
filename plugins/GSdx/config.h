@@ -54,7 +54,3 @@
 #ifdef _WIN32
 //#define ENABLE_OPENCL
 #endif
-
-// Disable harmless assertion on stuff not yet finish. Or that requires investigation.
-// Goal of the define is to allow to run a debug build without too much pain.
-//#define DISABLE_WIP_ASSERTION

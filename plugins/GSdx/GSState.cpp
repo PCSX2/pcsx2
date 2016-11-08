@@ -500,8 +500,7 @@ float GSState::GetTvRefreshRate()
 		vertical_frequency = 60; break;
 
 	default:
-		if (videomode == GSVideoMode::Unknown)
-			ASSERT(0);
+		ASSERT(videomode != GSVideoMode::Unknown);
 	}
 
 	return vertical_frequency;
@@ -1578,7 +1577,6 @@ void GSState::FlushPrim()
 				break;
 			default:
 				fprintf(stderr, "%d:INVALID PSM 0x%x !!!\n", s_n, m_context->TEX0.PSM);
-				ASSERT(0);
 				break;
 		}
 #endif

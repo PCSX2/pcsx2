@@ -567,9 +567,6 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 		} else {
 			GL_INS("channel not supported");
 			m_channel_shuffle = false;
-#ifndef DISABLE_WIP_ASSERTION
-			ASSERT(0);
-#endif
 		}
 	}
 
@@ -806,9 +803,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
 	// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
-#ifndef DISABLE_WIP_ASSERTION
 	ASSERT(!(psm.depth && m_vt.IsLinear()));
-#endif
 
 	// Performance note:
 	// 1/ Don't set 0 as it is the default value
