@@ -93,7 +93,7 @@ void psxJ()
 {
 	// check for iop module import table magic
 	u32 delayslot = iopMemRead32(psxRegs.pc);
-	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportLibname(psxRegs.pc), delayslot & 0xffff))
+	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportTableAddr(psxRegs.pc), delayslot & 0xffff))
 		return;
 
 	doBranch(_JumpTarget_);

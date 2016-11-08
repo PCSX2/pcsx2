@@ -498,39 +498,53 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	PSX_DEL_CONST(_Rd_);
 }
 
+static void psxRecompileIrxImport()
+{
+	u32 import_table = irxImportTableAddr(psxpc - 4);
+	u16 index = psxRegs.code & 0xffff;
+	if (!import_table)
+		return;
+
+	const std::string libname = iopMemReadString(import_table + 12, 8);
+
+	irxHLE hle = irxImportHLE(libname, index);
+	irxDEBUG debug = 0;
+	const char *funcname = 0;
+
+#ifdef PCSX2_DEVBUILD
+	funcname = irxImportFuncname(libname, index);
+	debug = irxImportDebug(libname, index);
+#endif
+
+	if (!hle && !debug && (!SysTraceActive(IOP.Bios) || !funcname))
+		return;
+
+	xMOV(ptr32[&psxRegs.code], psxRegs.code);
+	xMOV(ptr32[&psxRegs.pc], psxpc);
+	_psxFlushCall(FLUSH_NODESTROY);
+
+	if (SysTraceActive(IOP.Bios)) {
+		xPUSH((uptr)funcname);
+		xFastCall((void *)irxImportLog_rec, import_table, index);
+	}
+
+	if (debug)
+		xFastCall((void *)debug);
+
+	if (hle) {
+		xFastCall((void *)hle);
+		xTEST(eax, eax);
+		xJNZ(iopDispatcherReg);
+	}
+}
+
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 {
     if ( ! _Rt_ ) {
 		// check for iop module import table magic
-        if (psxRegs.code >> 16 == 0x2400) {
-			xMOV(ptr32[&psxRegs.code], psxRegs.code );
-			xMOV(ptr32[&psxRegs.pc], psxpc );
-			_psxFlushCall(FLUSH_NODESTROY);
-
-			const char *libname = irxImportLibname(psxpc);
-			u16 index = psxRegs.code & 0xffff;
-#ifdef PCSX2_DEVBUILD
-			const char *funcname = irxImportFuncname(libname, index);
-			irxDEBUG debug = irxImportDebug(libname, index);
-
-			if (SysTraceActive(IOP.Bios)) {
-				xMOV(ecx, (uptr)libname);
-				xMOV(edx, index);
-				xPUSH((uptr)funcname);
-				xCALL((void*)irxImportLog);
-			}
-
-			if (debug)
-				xFastCall((void*)debug);
-#endif
-			irxHLE hle = irxImportHLE(libname, index);
-			if (hle) {
-				xFastCall((void*)hle);
-				xCMP(eax, 0);
-				xJNE(iopDispatcherReg);
-			}
-		}
+		if (psxRegs.code >> 16 == 0x2400)
+			psxRecompileIrxImport();
         return;
     }
 

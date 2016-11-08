@@ -91,10 +91,42 @@ namespace R3000A {
 #define ra (psxRegs.GPR.n.ra)
 #define pc (psxRegs.pc)
 
-#define Ra0 (iopVirtMemR<char>(a0))
-#define Ra1 (iopVirtMemR<char>(a1))
-#define Ra2 (iopVirtMemR<char>(a2))
-#define Ra3 (iopVirtMemR<char>(a3))
+#define Ra0 (iopMemReadString(a0))
+#define Ra1 (iopMemReadString(a1))
+#define Ra2 (iopMemReadString(a2))
+#define Ra3 (iopMemReadString(a3))
+
+static std::string host_path(const std::string path)
+{
+// WIP code. Works well on win32, not so sure on unixes
+// TODO: get rid of dependency on CWD/PWD
+#if USE_HOST_REWRITE
+	// we want filenames to be relative to pcs2dir / host
+
+	std::string pathMod;
+
+	// partial "rooting",
+	// it will NOT avoid a path like "../../x" from escaping the pcsx2 folder!
+
+
+	const std::string _local_root = "/usr/local/";
+	if (HOST_REWRITE_USR_LOCAL && 0 == path.compare(0, _local_root.size(), _local_root.data())) {
+		return HostRoot + path.substr(_local_root.size());
+	} else if ((path[0] == '/') || (path[0] == '\\') || (isalpha(path[0]) && (path[1] == ':'))) // absolute NATIVE path (X:\blah)
+	{
+		// TODO: allow some way to use native paths in non-windows platforms
+		// maybe hack it so linux prefixes the path with "X:"? ;P
+		// or have all platforms use a common prefix for native paths
+		// FIXME: Why the hell would we allow this?
+		return path;
+	} else // relative paths
+		return HostRoot + path;
+
+	return pathMod;
+#else
+	return path;
+#endif
+}
 
 // TODO: sandbox option, other permissions
 class HostFile : public IOManFile
@@ -128,48 +160,13 @@ public:
 		}
 	}
 
-	static int open(IOManFile **file, const char *name, s32 flags, u16 mode)
+	static int open(IOManFile **file, const std::string &full_path, s32 flags, u16 mode)
 	{
-		const char *path = strchr(name, ':') + 1;
+		const std::string path = full_path.substr(full_path.rfind(':') + 1);
 
 		// host: actually DOES let you write!
 		//if (flags != IOP_O_RDONLY)
 		//	return -IOP_EROFS;
-
-		// WIP code. Works well on win32, not so sure on unixes
-		// TODO: get rid of dependency on CWD/PWD
-#if USE_HOST_REWRITE
-		// we want filenames to be relative to pcs2dir / host
-
-		static char pathMod[1024];
-
-		// partial "rooting",
-		// it will NOT avoid a path like "../../x" from escaping the pcsx2 folder!
-
-#if HOST_REWRITE_USR_LOCAL
-		const char *_local_root = "/usr/local/";
-		if(strncmp(path,_local_root,strlen(_local_root))==0)
-		{
-			strcpy(pathMod,HostRoot);
-			strcat(pathMod,path+strlen(_local_root));
-		}
-		else
-#endif
-		if((path[0] == '/') || (path[0] == '\\') || (isalpha(path[0]) && (path[1] == ':'))) // absolute NATIVE path (X:\blah)
-		{
-			// TODO: allow some way to use native paths in non-windows platforms
-			// maybe hack it so linux prefixes the path with "X:"? ;P
-			// or have all platforms use a common prefix for native paths
-			strcpy(pathMod,path);
-		}
-		else // relative paths
-		{
-			strcpy(pathMod,HostRoot);
-			strcat(pathMod,path);
-		}
-#else
-		const char* pathMod = path;
-#endif
 
 		int native_flags = O_BINARY; // necessary in Windows.
 
@@ -184,7 +181,7 @@ public:
 		if(flags&IOP_O_CREAT)	native_flags |= O_CREAT;
 		if(flags&IOP_O_TRUNC)	native_flags |= O_TRUNC;
 
-		int hostfd = ::open(pathMod, native_flags);
+		int hostfd = ::open(host_path(path).data(), native_flags);
 		if (hostfd < 0)
 			return translate_error(hostfd);
 
@@ -328,15 +325,21 @@ namespace ioman {
 			fds[i].close();
 	}
 
+	bool is_host(const std::string path)
+	{
+		if ((!g_GameStarted || EmuConfig.HostFs) && 0 == path.compare(0, 4, "host") && path[path.find_first_not_of("0123456789", 4)] == ':')
+			return true;
+		return false;
+	}
+
 	int open_HLE()
 	{
 		IOManFile *file = NULL;
-		const char *name = Ra0;
+		const std::string path = Ra0;
 		s32 flags = a1;
 		u16 mode = a2;
 
-		if ((!g_GameStarted || EmuConfig.HostFs)
-			&& !strncmp(name, "host", 4) && name[4 + strspn(name + 4, "0123456789")] == ':')
+		if (is_host(path))
 		{
 			if (!freefdcount())
 			{
@@ -345,7 +348,7 @@ namespace ioman {
 				return 1;
 			}
 
-			int err = HostFile::open(&file, name, flags, mode);
+			int err = HostFile::open(&file, path, flags, mode);
 
 			if (err != 0 || !file)
 			{
@@ -403,15 +406,26 @@ namespace ioman {
 	int read_HLE()
 	{
 		s32 fd = a0;
-		u32 buf = a1;
+		u32 data = a1;
 		u32 count = a2;
 
 		if (IOManFile *file = getfd<IOManFile>(fd))
 		{
-			if (!iopVirtMemR<void>(buf))
-				return 0;
-
-			v0 = file->read(iopVirtMemW<void>(buf), count);
+			char *buf;
+			try {
+				buf = new char[count];
+				v0 = file->read(buf, count);
+			}
+			catch (const std::bad_alloc &) {
+				v0 = -IOP_ENOMEM;
+			}
+			catch (...) {
+				delete[] buf;
+				throw;
+			}
+			for (s32 i = 0; i < (s32)v0; i++)
+				iopMemWrite8(data + i, buf[i]);
+			delete[] buf;
 			pc = ra;
 			return 1;
 		}
@@ -422,22 +436,32 @@ namespace ioman {
 	int write_HLE()
 	{
 		s32 fd = a0;
-		u32 buf = a1;
+		u32 data = a1;
 		u32 count = a2;
 
 		if (fd == 1) // stdout
 		{
-			iopConLog(ShiftJIS_ConvertString(Ra1, a2));
+			const std::string s = Ra1;
+			iopConLog(ShiftJIS_ConvertString(s.data(), a2));
 			pc = ra;
 			v0 = a2;
 			return 1;
 		}
 		else if (IOManFile *file = getfd<IOManFile>(fd))
 		{
-			if (!iopVirtMemR<void>(buf))
-				return 0;
-
-			v0 = file->write(iopVirtMemW<void>(buf), count);
+			char *buf = NULL;
+			try {
+				buf = new char[count];
+				for (u32 i = 0; i < count; i++)
+					buf[i] = iopMemRead8(data + i);
+				v0 = file->write(buf, count);
+			} catch (const std::bad_alloc &) {
+				v0 = -IOP_ENOMEM;
+			} catch (...) {
+				delete[] buf;
+				throw;
+			}
+			delete[] buf;
 			pc = ra;
 			return 1;
 		}
@@ -456,6 +480,7 @@ namespace sysmem {
 		iopMemWrite32(sp + 12, a3);
 		pc = ra;
 
+		const std::string fmt = Ra0;
 
 		// From here we're intercepting the Kprintf and piping it to our console, complete with
 		// printf-style formatting processing.  This part can be skipped if the user has the
@@ -467,33 +492,33 @@ namespace sysmem {
 		char *ptmp = tmp;
 		int n=1, i=0, j = 0;
 
-		while (Ra0[i])
+		while (fmt[i])
 		{
-			switch (Ra0[i])
+			switch (fmt[i])
 			{
 				case '%':
 					j = 0;
 					tmp2[j++] = '%';
 _start:
-					switch (Ra0[++i])
+					switch (fmt[++i])
 					{
 						case '.':
 						case 'l':
-							tmp2[j++] = Ra0[i];
+							tmp2[j++] = fmt[i];
 							goto _start;
 						default:
-							if (Ra0[i] >= '0' && Ra0[i] <= '9')
+							if (fmt[i] >= '0' && fmt[i] <= '9')
 							{
-								tmp2[j++] = Ra0[i];
+								tmp2[j++] = fmt[i];
 								goto _start;
 							}
 							break;
 					}
 
-					tmp2[j++] = Ra0[i];
+					tmp2[j++] = fmt[i];
 					tmp2[j] = 0;
 
-					switch (Ra0[i])
+					switch (fmt[i])
 					{
 						case 'f': case 'F':
 							ptmp+= sprintf(ptmp, tmp2, (float)iopMemRead32(sp + n * 4));
@@ -522,12 +547,15 @@ _start:
 							break;
 
 						case 's':
-							ptmp+= sprintf(ptmp, tmp2, iopVirtMemR<char>(iopMemRead32(sp + n * 4)));
-							n++;
+							{
+								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
+								ptmp += sprintf(ptmp, tmp2, s.data());
+								n++;
+							}
 							break;
 
 						case '%':
-							*ptmp++ = Ra0[i];
+							*ptmp++ = fmt[i];
 							break;
 
 						default:
@@ -537,7 +565,7 @@ _start:
 					break;
 
 				default:
-					*ptmp++ = Ra0[i++];
+					*ptmp++ = fmt[i++];
 					break;
 			}
 		}
@@ -551,7 +579,8 @@ _start:
 namespace loadcore {
 	void RegisterLibraryEntries_DEBUG()
 	{
-		DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s", iopVirtMemR<char>(a0 + 12));
+		const std::string modname = iopMemReadString(a0 + 12);
+		DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), (unsigned)iopMemRead8(a0 + 9), (unsigned)iopMemRead8(a0 + 8));
 	}
 }
 
@@ -589,18 +618,21 @@ namespace sifcmd {
 	}
 }
 
-const char* irxImportLibname(u32 entrypc)
+const u32 irxImportTableAddr(u32 entrypc)
 {
 	u32 i;
 
-	i = entrypc;
-	while (iopMemRead32(i -= 4) != 0x41e00000) // documented magic number
-		;
+	i = entrypc - 0x18;
+	while (entrypc - i < 0x2000) {
+		if (iopMemRead32(i) == 0x41e00000)
+			return i;
+		i -= 4;
+	}
 
-	return iopVirtMemR<char>(i + 12);
+	return 0;
 }
 
-const char* irxImportFuncname(const char libname[8], u16 index)
+const char* irxImportFuncname(const std::string &libname, u16 index)
 {
 	#include "IopModuleNames.cpp"
 
@@ -614,12 +646,12 @@ const char* irxImportFuncname(const char libname[8], u16 index)
 	return 0;
 }
 
-#define MODULE(n) if (!strncmp(libname, #n, 8)) { using namespace n; switch (index) {
+#define MODULE(n) if (#n == libname) { using namespace n; switch (index) {
 #define END_MODULE }}
 #define EXPORT_D(i, n) case (i): return n ## _DEBUG;
 #define EXPORT_H(i, n) case (i): return n ## _HLE;
 
-irxHLE irxImportHLE(const char libname[8], u16 index)
+irxHLE irxImportHLE(const std::string &libname, u16 index)
 {
 	// debugging output
 	MODULE(sysmem)
@@ -637,7 +669,7 @@ irxHLE irxImportHLE(const char libname[8], u16 index)
 	return 0;
 }
 
-irxDEBUG irxImportDebug(const char libname[8], u16 index)
+irxDEBUG irxImportDebug(const std::string &libname, u16 index)
 {
 	MODULE(loadcore)
 		EXPORT_D(  6, RegisterLibraryEntries)
@@ -657,15 +689,24 @@ irxDEBUG irxImportDebug(const char libname[8], u16 index)
 #undef EXPORT_D
 #undef EXPORT_H
 
-void __fastcall irxImportLog(const char libname[8], u16 index, const char *funcname)
+void irxImportLog(const std::string &libname, u16 index, const char *funcname)
 {
 	PSXBIOS_LOG("%8.8s.%03d: %s (%x, %x, %x, %x)",
-		libname, index, funcname ? funcname : "unknown",
+		libname.data(), index, funcname ? funcname : "unknown",
 		a0, a1, a2, a3);
 }
 
-int __fastcall irxImportExec(const char libname[8], u16 index)
+void __fastcall irxImportLog_rec(u32 import_table, u16 index, const char *funcname)
 {
+	irxImportLog(iopMemReadString(import_table + 12, 8), index, funcname);
+}
+
+int irxImportExec(u32 import_table, u16 index)
+{
+	if (!import_table)
+		return 0;
+
+	std::string libname = iopMemReadString(import_table + 12, 8);
 	const char *funcname = irxImportFuncname(libname, index);
 	irxHLE hle = irxImportHLE(libname, index);
 	irxDEBUG debug = irxImportDebug(libname, index);
