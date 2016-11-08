@@ -87,21 +87,13 @@ GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_
 	return combo_box;
 }
 
-void CB_PreEntryActived(GtkEntry *entry, gchar* preedit, gpointer user_data)
-{
-	int hex_value = 0;
-	sscanf(preedit,"%X",&hex_value);
-
-	theApp.SetConfig((char*)user_data, hex_value);
-}
-
 void CB_EntryActived(GtkEntry *entry, gpointer user_data)
 {
 	int hex_value = 0;
 	const gchar *data = gtk_entry_get_text(entry);
-	sscanf(data,"%X",&hex_value);
 
-	theApp.SetConfig((char*)user_data, hex_value);
+	if (sscanf(data,"%X",&hex_value) == 1)
+		theApp.SetConfig((char*)user_data, hex_value);
 }
 
 GtkWidget* CreateTextBox(const char* opt_name)
@@ -116,8 +108,7 @@ GtkWidget* CreateTextBox(const char* opt_name)
 	g_free(data);
 
 	g_signal_connect(entry, "activate", G_CALLBACK(CB_EntryActived), const_cast<char*>(opt_name));
-	// Note it doesn't seem to work as expected
-	g_signal_connect(entry, "preedit-changed", G_CALLBACK(CB_PreEntryActived), const_cast<char*>(opt_name));
+	g_signal_connect(entry, "changed", G_CALLBACK(CB_EntryActived), const_cast<char*>(opt_name));
 
 	return entry;
 }
