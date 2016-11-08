@@ -37,6 +37,7 @@ endfunction()
 
 function(write_svnrev_h)
     set(PCSX2_WC_TIME 0)
+    set(PCSX2_GIT_REV "")
     if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
         EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
             OUTPUT_VARIABLE PCSX2_WC_TIME
@@ -44,11 +45,15 @@ function(write_svnrev_h)
         # Output: "YYYY-MM-DD HH:MM:SS +HHMM" (last part is time zone, offset from UTC)
         string(REGEX REPLACE "[%:\\-]" "" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
         string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
+
+        EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe
+            OUTPUT_VARIABLE PCSX2_GIT_REV
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
     if ("${PCSX2_WC_TIME}" STREQUAL "")
         set(PCSX2_WC_TIME 0)
     endif()
-    file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0")
+    file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0\n#define GIT_REV \"${PCSX2_GIT_REV}\"")
 endfunction()
 
 function(check_compiler_version version_warn version_err)
@@ -57,7 +62,7 @@ function(check_compiler_version version_warn version_err)
         string(STRIP "${GCC_VERSION}" GCC_VERSION)
         if(GCC_VERSION VERSION_LESS ${version_err})
             message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
-            
+
             The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
         else()
             if(GCC_VERSION VERSION_LESS ${version_warn})

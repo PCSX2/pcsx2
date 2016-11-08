@@ -22,6 +22,10 @@ FOR /F "tokens=1-2" %%i IN ('"git show -s --format=%%%ci HEAD 2> NUL"') do (
   set REV3=%%i%%j
 )
 
+FOR /F %%i IN ('"git describe 2> NUL"') do (
+    set GIT_REV=%%i
+)
+
 set REV2=%REV3: =%
 set REV1=%REV2:-=%
 set REV=%REV1::=%
@@ -37,9 +41,11 @@ if %ERRORLEVEL% NEQ 0 (
   echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
   echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
   echo #define SVN_MODS 0 >> "%CD%\svnrev.h"
+  echo #define GIT_REV "" >> "%CD%\svnrev.h"
 ) else (
   echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
   echo #define SVN_MODS 0 /* Not implemented at the moment. */ >> "%CD%\svnrev.h"
+  echo #define GIT_REV "%GIT_REV%" >> "%CD%\svnrev.h"
 )
 
 ENDLOCAL
