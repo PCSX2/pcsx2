@@ -144,11 +144,12 @@ void GamepadConfiguration::InitGamepadConfiguration()
          * May be better to create a new function in order to check only that
         */
 
-        if (!s_vgamePad[m_pad_id]->TestForce(0.001f)) {
-            wxMessageBox(L"Rumble is not available for your device.");
-            m_cb_rumble->Disable();           // disable the rumble checkbox
-            m_sl_rumble_intensity->Disable(); // disable the rumble intensity slider
-        }
+        // Bad idea. Some connected devices might support rumble but not all connected devices.
+        //        if (!s_vgamePad[m_pad_id]->TestForce(0.001f)) {
+        //            wxMessageBox(L"Rumble is not available for your device.");
+        //            m_cb_rumble->Disable();           // disable the rumble checkbox
+        //            m_sl_rumble_intensity->Disable(); // disable the rumble intensity slider
+        //        }
     } else {
         wxMessageBox(L"No gamepad detected.");
         m_sl_joystick_sensibility->Disable(); // disable the joystick sensibility slider
