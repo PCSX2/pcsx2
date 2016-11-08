@@ -63,7 +63,7 @@ typedef void (*irxDEBUG)();
 
 namespace R3000A
 {
-	const u32 irxImportTableAddr(u32 entrypc);
+	u32 irxImportTableAddr(u32 entrypc);
 	const char* irxImportFuncname(const std::string &libname, u16 index);
 	irxHLE irxImportHLE(const std::string &libnam, u16 index);
 	irxDEBUG irxImportDebug(const std::string & libname, u16 index);
