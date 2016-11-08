@@ -1185,12 +1185,10 @@ void AddTooltip(UINT id, HWND hWnd)
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)hWndTooltip;
     toolInfo.lpszText = message;
-    if (!hasTooltip)
-        return;
     SendMessage(hWndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
     // 32.767s is the max show time.
     SendMessage(hWndTip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 32767);
-    //  Setting a maximum width is necessary for displaying longer messages.
+    // Setting a maximum width is necessary for displaying longer messages.
     SendMessage(hWndTip, TTM_SETMAXTIPWIDTH, 0, 400);
 }
 
@@ -1837,9 +1835,9 @@ bool ProfilesBindingCheck(unsigned int port, unsigned int slot, unsigned int pad
                             if (showWarning) {
                                 int msgboxID = MessageBoxA(hWndProp, "Warning!  You have selected a pad type that has one or several bindings that conflict with the active pad type of the opposing port or slot(s).\n\n"
                                                                      "Do you want to keep the bindings of the pad type you are switching to?\n"
-                                                                     "Click ''Yes'' to continue without deleting any binding.\n"
-                                                                     "Click ''No'' to continue and delete any conflicting bindings from the selected pad type.\n"
-                                                                     "Click ''Cancel'' to revert to the previously selected pad type and avoid any further action.\n\n"
+                                                                     "Click \"Yes\" to continue without deleting any binding.\n"
+                                                                     "Click \"No\" to continue and delete any conflicting bindings from the selected pad type.\n"
+                                                                     "Click \"Cancel\" to revert to the previously selected pad type and avoid any further action.\n\n"
                                                                      "Note: Enable the 'Allow binding multiple PS2 controls to one PC control' option to allow conflicting bindings between opposing ports and slots, and avoid this warning and the possibility of bindings getting deleted.",
                                                            "Duplicate Binding Warning", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
                                 switch (msgboxID) {

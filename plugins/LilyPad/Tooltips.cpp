@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2016  PCSX2 Dev Team
+ *  Copyright (C) 2016  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -31,7 +31,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Note 1: This does not enable the mouse to function as an in-game mouse in PS2 games that support a USB mouse or lightgun."
                    L"This requires a USB plugin, while LilyPad is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).\n\n"
                    L"Note 2: By default PCSX2 uses a double-click by the left mouse button to toggle fullscreen mode, this makes the left mouse button unusable as an input."
-                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the ''Double-click toggles fullscreen mode'' checkbox.";
+                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the \"Double-click toggles fullscreen mode\" checkbox.";
         case IDC_MULTIPLE_BINDING:
             return L"Allows binding multiple PS2 controls to one PC control, and binding conflicting controls on opposing ports and/or slots.\n\n"
                    L"Also enables swapping different kinds of pad types(for example, between DS2 and Guitar) when right-clicking in the pad list.";
@@ -40,7 +40,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"These options include being able to select the pad type(DS2, Guitar, etc.) and enabling automatic analog mode for PS1 emulation.\n\n"
                    L"Right-click to show a pop-up menu that allows for swapping all the settings and bindings, or just the bindings of individual pad types,"
                    L"between the selected pad and one of other active pads, and clearing all the settings and bindings from the selected pad or just the bindings from a selected pad type.\n\n"
-                   L"Note: To allow swapping different kinds of pad types(like DS2 to Guitar), the ''Allow binding multiple PS2 Controls...'' option needs to be enabled as well.";
+                   L"Note: To allow swapping different kinds of pad types(like DS2 to Guitar), the \"Allow binding multiple PS2 Controls...\" option needs to be enabled as well.";
         case IDC_ANALOG_START1:
             return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
@@ -57,7 +57,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Pressing the button when the mouse is out of focus and visible, it captures the mouse so that it can be used as a controller again.\n\n"
                    L"Note 1: Though the binding appears on the page of a specific pad, pressing the button affects all mice.\n\n"
                    L"Note 2: By default PCSX2 uses a double-click by the left mouse button to toggle fullscreen mode, this makes the left mouse button unusable as an input."
-                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the ''Double-click toggles fullscreen mode'' checkbox.";
+                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the \"Double-click toggles fullscreen mode\" checkbox.";
         case ID_ANALOG:
             return L"Bind a keys that switches the pad from digital mode to analog mode and vice versa.\n\n"
                    L"This option is useful when analog mode is enabled in a game that does not support it, as this causes the game to not recognise any input or to not even detect a controller.\n\n"
@@ -76,7 +76,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
             return L"Locks the current state of the buttons. Pressing this when all input is locked unlocks only the buttons. "
                    L"Pressing it again will lock them again, keeping the d-pad and analog sticks locked.";
         case IDC_TURBO:
-            return L"Automatically presses/depresses the input every other time the button is polled.";
+            return L"Automatically presses/releases the input every other time the button is polled.";
         case IDC_FLIP:
             return L"Inverts a button or axis, making down up and up down.";
         case IDC_SLIDER_DEADZONE:
