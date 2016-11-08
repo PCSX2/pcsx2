@@ -4,7 +4,6 @@
 set(msg_dep_common_libs "check these libraries -> wxWidgets (>=2.8.10), aio")
 set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=2.8.10), gtk2 (>=2.16), zlib (>=1.2.4), pcsx2 common libs")
 set(msg_dep_cdvdgiga    "check these libraries -> gtk2, libudev")
-set(msg_dep_cdvdiso     "check these libraries -> bzip2 (>=1.0.5), gtk2 (>=2.16)")
 set(msg_dep_zerogs      "check these libraries -> glew (>=1.6), opengl, X11, nvidia-cg-toolkit (>=2.1)")
 set(msg_dep_gsdx        "check these libraries -> opengl, png (>=1.2), zlib (>=1.2.4), X11")
 set(msg_dep_onepad      "check these libraries -> sdl (>=1.2), X11, gtk2 (>=2.16)")
@@ -109,30 +108,6 @@ else()
     print_dep("Skip build of cdvdGigaherz: miss some dependencies" "${msg_dep_cdvdgiga}")
 endif()
 #---------------------------------------
-
-#---------------------------------------
-#			CDVDiso
-#---------------------------------------
-# requires: -BZip2
-#           -gtk2 (linux)
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    if(BZIP2_FOUND AND GTKn_FOUND)
-        set(CDVDiso TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso")
-        set(CDVDiso FALSE)
-    else()
-        set(CDVDiso FALSE)
-        print_dep("Skip build of CDVDiso: miss some dependencies" "${msg_dep_cdvdiso}")
-    endif()
-endif()
-
-#---------------------------------------
-#			CDVDlinuz
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    set(CDVDlinuz TRUE)
-endif()
 
 #---------------------------------------
 #			dev9null
@@ -313,10 +288,14 @@ endif()
 #---------------------------------------
 
 #-------------------------------------------------------------------------------
-#			[TODO] Write CMakeLists.txt for these plugins.
+# Super-seeded by cdvdGigaherz
 set(CDVDisoEFP FALSE)
 set(CDVDolio FALSE)
 set(CDVDpeops FALSE)
+set(CDVDlinuz FALSE) # used to be compiled on linux
+set(CDVDiso FALSE) # used to be compiled on linux
+
+# [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
 set(PeopsSPU2 FALSE)
 set(SSSPSXPAD FALSE)
 set(xpad FALSE)

@@ -68,7 +68,6 @@ include(FindLibc)
 
 ## Only needed by the extra plugins
 if(EXTRA_PLUGINS)
-    find_package(BZip2)
     include(FindCg)
     include(FindGlew)
     find_package(JPEG)
@@ -135,10 +134,6 @@ endif()
 
 if(ALSA_FOUND)
 	include_directories(${ALSA_INCLUDE_DIRS})
-endif()
-
-if(BZIP2_FOUND)
-	include_directories(${BZIP2_INCLUDE_DIR})
 endif()
 
 if(CG_FOUND)
