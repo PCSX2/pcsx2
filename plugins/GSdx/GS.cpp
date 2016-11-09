@@ -646,6 +646,10 @@ EXPORT_C GSinitReadFIFO(uint8* mem)
 	catch (GSDXRecoverableError)
 	{
 	}
+	catch (const std::bad_alloc&)
+	{
+		fprintf(stderr, "GSdx: Memory allocation error\n");
+	}
 }
 
 EXPORT_C GSreadFIFO(uint8* mem)
@@ -656,6 +660,10 @@ EXPORT_C GSreadFIFO(uint8* mem)
 	}
 	catch (GSDXRecoverableError)
 	{
+	}
+	catch (const std::bad_alloc&)
+	{
+		fprintf(stderr, "GSdx: Memory allocation error\n");
 	}
 }
 
@@ -669,6 +677,10 @@ EXPORT_C GSinitReadFIFO2(uint8* mem, uint32 size)
 	catch (GSDXRecoverableError)
 	{
 	}
+	catch (const std::bad_alloc&)
+	{
+		fprintf(stderr, "GSdx: Memory allocation error\n");
+	}
 }
 
 EXPORT_C GSreadFIFO2(uint8* mem, uint32 size)
@@ -679,6 +691,10 @@ EXPORT_C GSreadFIFO2(uint8* mem, uint32 size)
 	}
 	catch (GSDXRecoverableError)
 	{
+	}
+	catch (const std::bad_alloc&)
+	{
+		fprintf(stderr, "GSdx: Memory allocation error\n");
 	}
 }
 
@@ -751,6 +767,10 @@ EXPORT_C GSvsync(int field)
 	}
 	catch (GSDXRecoverableError)
 	{
+	}
+	catch (const std::bad_alloc&)
+	{
+		fprintf(stderr, "GSdx: Memory allocation error\n");
 	}
 }
 
