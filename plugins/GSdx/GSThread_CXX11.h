@@ -24,23 +24,11 @@
 #include "GSdx.h"
 #include "boost_spsc_queue.hpp"
 
-template<class T> class IGSJobQueue
-{
-public:
-	IGSJobQueue() {}
-	virtual ~IGSJobQueue() {}
-
-	virtual bool IsEmpty() const = 0;
-	virtual void Push(const T& item) = 0;
-	virtual void Wait() = 0;
-
-	virtual void Process(T& item) = 0;
-};
-
-template<class T, int CAPACITY> class GSJobQueue : public IGSJobQueue<T>
+template<class T, int CAPACITY> class GSJobQueue final
 {
 private:
 	std::thread m_thread;
+	std::function<void(T&)> m_func;
 	std::atomic<int16_t> m_count;
 	std::atomic<bool> m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
@@ -81,14 +69,15 @@ private:
 	}
 
 public:
-	GSJobQueue() :
+	GSJobQueue(std::function<void(T&)> func) :
+		m_func(func),
 		m_count(0),
 		m_exit(false)
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
 
-	virtual ~GSJobQueue()
+	~GSJobQueue()
 	{
 		m_exit = true;
 		do {
@@ -129,6 +118,6 @@ public:
 	}
 
 	void operator() (T& item) {
-		this->Process(item);
+		m_func(item);
 	}
 };

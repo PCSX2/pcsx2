@@ -492,7 +492,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float a
 	m_size.y = theApp.GetConfigI("CaptureHeight");
 
 	for(int i = 0; i < m_threads; i++) {
-		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker()));
+		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
 	}
 #endif
 
@@ -555,10 +555,6 @@ bool GSCapture::EndCapture()
 	}
 
 #elif defined(__unix__)
-	// XXX Might not be necessary to wait
-	for(size_t i = 0; i < m_workers.size(); i++) {
-		m_workers[i]->Wait();
-	}
 	m_workers.clear();
 
 	m_frame = 0;

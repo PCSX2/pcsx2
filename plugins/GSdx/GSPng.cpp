@@ -140,7 +140,7 @@ namespace GSPng {
             _aligned_free(m_image);
     }
 
-    void Worker::Process(shared_ptr<Transaction>& item)
+    void Process(std::shared_ptr<Transaction>& item)
     {
         Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch, item->m_compression);
     }

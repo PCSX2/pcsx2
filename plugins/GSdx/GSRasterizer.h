@@ -181,23 +181,12 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData>, 65536 >
-	{
-		GSRasterizer* m_r;
-
-	public:
-		GSWorker(GSRasterizer* r);
-		virtual ~GSWorker();
-
-		int GetPixels(bool reset);
-
-		// GSJobQueue
-
-		void Process(shared_ptr<GSRasterizerData>& item);
-	};
+	using GSWorker = GSJobQueue<std::shared_ptr<GSRasterizerData>, 65536>;
 
 	GSPerfMon* m_perfmon;
-	vector<GSWorker*> m_workers;
+	// Worker threads depend on the rasterizers, so don't change the order.
+	std::vector<std::unique_ptr<GSRasterizer>> m_r;
+	std::vector<std::unique_ptr<GSWorker>> m_workers;
 	uint8* m_scanline;
 	int m_thread_height;
 
@@ -214,17 +203,18 @@ public:
 		{
 			return new GSRasterizer(new DS(), 0, 1, perfmon);
 		}
-		else
+
+		GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
+
+		for(int i = 0; i < threads; i++)
 		{
-			GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
-
-			for(int i = 0; i < threads; i++)
-			{
-				rl->m_workers.push_back(new GSWorker(new GSRasterizer(new DS(), i, threads, perfmon)));
-			}
-
-			return rl;
+			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads, perfmon)));
+			auto &r = *rl->m_r[i];
+			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
+				[&r](std::shared_ptr<GSRasterizerData> &item) { r.Draw(item.get()); })));
 		}
+
+		return rl;
 	}
 
 	// IRasterizer
