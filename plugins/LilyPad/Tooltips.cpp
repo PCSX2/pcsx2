@@ -28,10 +28,15 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case IDC_M_RAW:
         case IDC_M_DI:
             return L"Enables mouse inputs to be used as pad controls.\n\n"
-                   L"Note 1: This does not enable the mouse to function as an in-game mouse in PS2 games that support a USB mouse or lightgun."
-                   L"This requires a USB plugin, while LilyPad is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).\n\n"
-                   L"Note 2: By default PCSX2 uses a double-click by the left mouse button to toggle fullscreen mode, this makes the left mouse button unusable as an input."
-                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the \"Double-click toggles fullscreen mode\" checkbox.";
+                   L"The mouse needs to be focussed to be used for playing. By default this is not the case as the \"Start without mouse focus\" checkbox is enabled. "
+                   L"Either disable this checkbox or enable/disable the mouse while playing by assigning a key to the \"Mouse\" button on the Pad tabs.\n\n"
+                   L"Note 1: By default PCSX2 uses a double-click by the left mouse button to toggle fullscreen mode, this makes the left mouse button unusable as an input."
+                   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the \"Double-click toggles fullscreen mode\" checkbox.\n\n"
+                   L"Note 2: This does not enable the mouse to function as an in-game mouse in PS2 games that support a USB mouse or lightgun."
+                   L"This requires a USB plugin, while LilyPad is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).";
+        case IDC_MOUSE_UNFOCUS:
+            return L"Starts the emulation without the mouse being focussed by the application.\n\n"
+                   L"Without mouse focus, the mouse can still be used outside of the emulation.\nWith the mouse in focus it can only be used as an input for the emulator.";
         case IDC_MULTIPLE_BINDING:
             return L"Allows binding multiple PS2 controls to one PC control, and binding conflicting controls on opposing ports and/or slots.\n\n"
                    L"Also enables swapping different kinds of pad types(for example, between DS2 and Guitar) when right-clicking in the pad list.";

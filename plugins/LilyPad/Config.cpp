@@ -2052,6 +2052,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_M_WM, hWnd);
             AddTooltip(IDC_M_RAW, hWnd);
             AddTooltip(IDC_M_DI, hWnd);
+            AddTooltip(IDC_MOUSE_UNFOCUS, hWnd);
             AddTooltip(IDC_MULTIPLE_BINDING, hWnd);
             AddTooltip(IDC_PAD_LIST, hWnd);
             AddTooltip(ID_TEST, hWnd);
