@@ -238,7 +238,7 @@ EXPORT s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
 int lastReadInNewDiskCB = 0;
 char directReadSectorBuffer[2448];
 
-EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, s32 lsn, int mode)
+EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, u32 lsn, int mode)
 {
     return cdvdDirectReadSector(lsn, mode, (char *)buffer);
 }
