@@ -437,7 +437,7 @@ void CALLBACK CDVDnewDiskCB(void (*callback)());
 // new funcs
 
 // read a track directly
-s32 CALLBACK CDVDreadSector(u8 *buffer, s32 lsn, int mode);
+s32 CALLBACK CDVDreadSector(u8 *buffer, u32 lsn, int mode);
 
 // improved getBuffer
 s32 CALLBACK CDVDgetBuffer2(u8 *buffer);
