@@ -123,8 +123,8 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
 	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
 
-	left->SetMinWidth( 300 );
-	right->SetMinWidth( 300 );
+	left->SetMinWidth( 350 );
+	right->SetMinWidth( 350 );
 
 	m_button_Defaults = new wxButton( right, wxID_DEFAULT, _("Restore Defaults") );
 	pxSetToolTip( m_button_Defaults, _("Resets all speedhack options to their defaults, which consequently turns them all OFF.") );
@@ -142,7 +142,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
-	m_msg_eecycle->SetHeight(5);
 
 	const wxChar* ee_tooltip = pxEt( L"Setting lower values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, higher values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
 	);
@@ -159,7 +158,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 		wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_vustealer = new pxStaticHeading(m_vuSliderPanel);
-	m_msg_vustealer->SetHeight(5);
 
 	const wxChar* vu_tooltip = pxEt( L"This slider controls the amount of cycles the VU unit steals from the EmotionEngine.  Higher values increase the number of cycles stolen from the EE for each VU microprogram the game runs."
 	);
@@ -289,7 +287,7 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
 	// paint event to be sent on Windows)
-	Layout();
+	TrigLayout();
 }
 
 void Panels::SpeedHacksPanel::AppStatusEvent_OnSettingsApplied()
@@ -369,11 +367,44 @@ void Panels::SpeedHacksPanel::Defaults_Click( wxCommandEvent& evt )
 void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)
 {
 	SetEEcycleSliderMsg();
+
+	TrigLayout();
+
 	event.Skip();
 }
 
 void Panels::SpeedHacksPanel::VUCycleRate_Scroll(wxScrollEvent &event)
 {
 	SetVUcycleSliderMsg();
+
+	TrigLayout();
+
 	event.Skip();
+}
+
+void Panels::SpeedHacksPanel::TrigLayout()
+{
+	// Reset the size information so wxWidgets can compute best value
+	wxSize reset(-1, -1);
+	m_eeSliderPanel->SetMinSize(reset);
+	m_vuSliderPanel->SetMinSize(reset);
+
+	// Take into account the current shape
+	Layout();
+
+	// Get the height of both slider boxes
+	int ee_min = m_eeSliderPanel->GetSize().GetHeight();
+	int vu_min = m_vuSliderPanel->GetSize().GetHeight();
+	wxSize max_min(-1, std::max(ee_min, vu_min));
+
+	// Align the small slider box on the big one.
+	m_eeSliderPanel->SetMinSize(max_min);
+	m_vuSliderPanel->SetMinSize(max_min);
+	Layout();
+
+	// Propagate the info to parent so main windows is resized accordingly
+	wxWindow* win = this;
+	do {
+		win->Fit();
+	} while (win = win->GetParent());
 }

@@ -355,6 +355,7 @@ namespace Panels
 		const wxChar* GetVUcycleSliderMsg( int val );
 		void SetEEcycleSliderMsg();
 		void SetVUcycleSliderMsg();
+		void TrigLayout();
 
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Defaults_Click( wxCommandEvent& evt );
