@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -83,8 +84,8 @@ public:
 
     u32 GetSectorCount() const;
     const std::vector<toc_entry> &ReadTOC() const;
-    bool ReadSectors2048(u32 sector, u32 count, char *buffer) const;
-    bool ReadSectors2352(u32 sector, u32 count, char *buffer) const;
+    bool ReadSectors2048(u32 sector, u32 count, u8 *buffer) const;
+    bool ReadSectors2352(u32 sector, u32 count, u8 *buffer) const;
     u32 GetLayerBreakAddress() const;
     s32 GetMediaType() const;
     void SetSpindleSpeed(bool restore_defaults) const;
@@ -114,8 +115,8 @@ bool cdvdStartThread();
 void cdvdStopThread();
 s32 cdvdRequestSector(u32 sector, s32 mode);
 s32 cdvdRequestComplete();
-char *cdvdGetSector(s32 sector, s32 mode);
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
+u8 *cdvdGetSector(u32 sector, s32 mode);
+s32 cdvdDirectReadSector(u32 first, s32 mode, u8 *buffer);
 s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
 void cdvdParseTOC();

@@ -113,7 +113,6 @@ bool weAreInNewDiskCB = false;
 
 std::unique_ptr<IOCtlSrc> src;
 
-char throwaway[2352];
 extern s32 prefetch_last_lba;
 extern s32 prefetch_last_mode;
 
@@ -122,6 +121,8 @@ extern s32 prefetch_last_mode;
 
 void keepAliveThread()
 {
+    u8 throwaway[2352];
+
     printf(" * CDVD: KeepAlive thread started...\n");
     std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
@@ -236,11 +237,11 @@ EXPORT s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
 }
 
 int lastReadInNewDiskCB = 0;
-char directReadSectorBuffer[2448];
+u8 directReadSectorBuffer[2448];
 
 EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, u32 lsn, int mode)
 {
-    return cdvdDirectReadSector(lsn, mode, (char *)buffer);
+    return cdvdDirectReadSector(lsn, mode, buffer);
 }
 
 EXPORT s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
@@ -263,12 +264,10 @@ EXPORT u8 *CALLBACK CDVDgetBuffer()
 {
     if (lastReadInNewDiskCB) {
         lastReadInNewDiskCB = 0;
-        return (u8 *)directReadSectorBuffer;
+        return directReadSectorBuffer;
     }
 
-    u8 *s = (u8 *)cdvdGetSector(csector, cmode);
-
-    return s;
+    return cdvdGetSector(csector, cmode);
 }
 
 // return can be NULL (for async modes)
