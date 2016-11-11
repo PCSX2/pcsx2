@@ -16,7 +16,15 @@
 #include "CDVD.h"
 #include <atomic>
 #include <condition_variable>
+#include <limits>
 #include <thread>
+
+struct SectorInfo
+{
+    u32 lsn;
+    s32 mode;
+    u8 data[2352 * 16]; // we will read in blocks of 16 sectors
+};
 
 const s32 prefetch_max_blocks = 16;
 s32 prefetch_mode = 0;
@@ -34,28 +42,21 @@ static std::mutex s_cache_lock;
 
 static std::atomic<bool> cdvd_is_open;
 
-typedef struct
-{
-    int lsn;
-    int mode;
-    char data[2352 * 16]; //we will read in blocks of 16 sectors
-} SectorInfo;
-
 //bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
 #define CACHE_SIZE 12
 
-const s32 CacheSize = (1 << CACHE_SIZE);
+const u32 CacheSize = 1U << CACHE_SIZE;
 SectorInfo Cache[CacheSize];
 
 bool threadRequestPending;
 SectorInfo threadRequestInfo;
 
-u32 cdvdSectorHash(int lsn, int mode)
+u32 cdvdSectorHash(u32 lsn, s32 mode)
 {
     u32 t = 0;
 
     int i = 32;
-    int m = CacheSize - 1;
+    u32 m = CacheSize - 1;
 
     while (i >= 0) {
         t ^= lsn & m;
@@ -66,7 +67,7 @@ u32 cdvdSectorHash(int lsn, int mode)
     return (t ^ mode) & m;
 }
 
-void cdvdCacheUpdate(int lsn, int mode, char *data)
+void cdvdCacheUpdate(u32 lsn, s32 mode, u8 *data)
 {
     std::lock_guard<std::mutex> guard(s_cache_lock);
     u32 entry = cdvdSectorHash(lsn, mode);
@@ -76,7 +77,7 @@ void cdvdCacheUpdate(int lsn, int mode, char *data)
     Cache[entry].mode = mode;
 }
 
-bool cdvdCacheFetch(int lsn, int mode, char *data)
+bool cdvdCacheFetch(u32 lsn, s32 mode, u8 *data)
 {
     std::lock_guard<std::mutex> guard(s_cache_lock);
     u32 entry = cdvdSectorHash(lsn, mode);
@@ -93,8 +94,8 @@ bool cdvdCacheFetch(int lsn, int mode, char *data)
 void cdvdCacheReset()
 {
     std::lock_guard<std::mutex> guard(s_cache_lock);
-    for (int i = 0; i < CacheSize; i++) {
-        Cache[i].lsn = -1;
+    for (u32 i = 0; i < CacheSize; i++) {
+        Cache[i].lsn = std::numeric_limits<u32>::max();
         Cache[i].mode = -1;
     }
 }
@@ -161,11 +162,7 @@ void cdvdThread()
         }
 
         if (threadRequestPending || prefetch_left) {
-            s32 count = 16;
-            s32 left = src->GetSectorCount() - info.lsn;
-
-            if (left < count)
-                count = left;
+            u32 count = std::min(16U, src->GetSectorCount() - info.lsn);
 
             for (int tries = 0; tries < 4; ++tries) {
                 if (info.mode == CDVD_MODE_2048) {
@@ -246,7 +243,7 @@ s32 cdvdRequestComplete()
     return !threadRequestPending;
 }
 
-s8 *cdvdGetSector(s32 sector, s32 mode)
+u8 *cdvdGetSector(u32 sector, s32 mode)
 {
     {
         std::unique_lock<std::mutex> guard(s_request_lock);
@@ -254,15 +251,13 @@ s8 *cdvdGetSector(s32 sector, s32 mode)
             s_request_cv.wait_for(guard, std::chrono::milliseconds(10));
     }
 
-    s32 offset;
-
     if (mode == CDVD_MODE_2048) {
-        offset = 2048 * (sector - threadRequestInfo.lsn);
+        u32 offset = 2048 * (sector - threadRequestInfo.lsn);
         return threadRequestInfo.data + offset;
     }
 
-    offset = 2352 * (sector - threadRequestInfo.lsn);
-    s8 *data = threadRequestInfo.data + offset;
+    u32 offset = 2352 * (sector - threadRequestInfo.lsn);
+    u8 *data = threadRequestInfo.data + offset;
 
     switch (mode) {
         case CDVD_MODE_2328:
@@ -273,21 +268,17 @@ s8 *cdvdGetSector(s32 sector, s32 mode)
     return data;
 }
 
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
+s32 cdvdDirectReadSector(u32 first, s32 mode, u8 *buffer)
 {
-    static char data[16 * 2352];
+    static u8 data[16 * 2352];
 
-    if ((u32)first >= src->GetSectorCount())
+    if (first >= src->GetSectorCount())
         return -1;
 
-    s32 sector = first & (~15); //align to 16-sector block
+    u32 sector = first & (~15); //align to 16-sector block
 
     if (!cdvdCacheFetch(sector, mode, data)) {
-        s32 count = 16;
-        s32 left = src->GetSectorCount() - sector;
-
-        if (left < count)
-            count = left;
+        u32 count = std::min(16U, src->GetSectorCount() - sector);
 
         for (int tries = 0; tries < 4; ++tries) {
             if (mode == CDVD_MODE_2048) {
@@ -302,16 +293,14 @@ s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer)
         cdvdCacheUpdate(sector, mode, data);
     }
 
-    s32 offset;
-
     if (mode == CDVD_MODE_2048) {
-        offset = 2048 * (first - sector);
+        u32 offset = 2048 * (first - sector);
         memcpy(buffer, data + offset, 2048);
         return 0;
     }
 
-    offset = 2352 * (first - sector);
-    s8 *bfr = data + offset;
+    u32 offset = 2352 * (first - sector);
+    u8 *bfr = data + offset;
 
     switch (mode) {
         case CDVD_MODE_2328:
