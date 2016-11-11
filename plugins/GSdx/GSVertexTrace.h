@@ -74,7 +74,9 @@ public:
 	GSVertexTrace(const GSState* state);
 	virtual ~GSVertexTrace() {}
 
-	void Update(const void* vertex, const uint32* index, int count, GS_PRIM_CLASS primclass);
+	void Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
 
 	bool IsLinear() const {return m_filter.linear;}
+
+	void CorrectDepthTrace(const void* vertex, int count);
 };

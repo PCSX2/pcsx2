@@ -58,7 +58,7 @@ GSVertexTrace::GSVertexTrace(const GSState* state)
 	InitUpdate(GS_SPRITE_CLASS);
 }
 
-void GSVertexTrace::Update(const void* vertex, const uint32* index, int count, GS_PRIM_CLASS primclass)
+void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
 {
 	m_primclass = primclass;
 
@@ -67,11 +67,16 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int count, G
 	uint32 fst = m_state->PRIM->FST;
 	uint32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
-	(this->*m_fmm[color][fst][tme][iip][primclass])(vertex, index, count);
+	(this->*m_fmm[color][fst][tme][iip][primclass])(vertex, index, i_count);
 
 	m_eq.value = (m_min.c == m_max.c).mask() | ((m_min.p == m_max.p).mask() << 16) | ((m_min.t == m_max.t).mask() << 20);
 
 	m_alpha.valid = false;
+
+	// I'm not sure of the cost. In doubt let's do it only when depth is enabled
+	if(m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS) {
+		CorrectDepthTrace(vertex, v_count);
+	}
 
 	if(m_state->PRIM->TME)
 	{
@@ -493,5 +498,46 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	{
 		m_min.c = GSVector4i::zero();
 		m_max.c = GSVector4i::zero();
+	}
+}
+
+void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
+{
+	if (m_eq.z == 0)
+		return;
+
+	// FindMinMax isn't accurate for the depth value. Lsb bit is always 0.
+	// The code below will check that depth value is really constant
+	// and will update m_min/m_max/m_eq accordingly
+	//
+	// Really impact Xenosaga3
+	//
+	// Hopefully function is barely called so AVX/SSE will be useless here
+
+
+	const GSVertex* RESTRICT v = (GSVertex*)vertex;
+	uint32 z = v[0].XYZ.Z;
+
+	// ought to check only 1/2 for sprite
+	if (z & 1) {
+		// Check that first bit is always 1
+		for (int i = 0; i < count; i++) {
+			z &= v[i].XYZ.Z;
+		}
+	} else {
+		// Check that first bit is always 0
+		for (int i = 0; i < count; i++) {
+			z |= v[i].XYZ.Z;
+		}
+	}
+
+	if (z == v[0].XYZ.Z) {
+		m_min.p.z = z;
+		m_max.p.z = z;
+		m_eq.z = 1;
+	} else {
+		m_min.p.z = z & ~1;
+		m_max.p.z = z |  1;
+		m_eq.z = 0;
 	}
 }

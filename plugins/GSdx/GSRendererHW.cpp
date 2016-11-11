@@ -1149,7 +1149,7 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 				m_vertex.head = m_vertex.tail = m_vertex.next = 4;
 				m_index.tail = 6;
 
-				m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GS_TRIANGLE_CLASS);
+				m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GS_TRIANGLE_CLASS);
 			}
 			else
 			{
@@ -1197,7 +1197,7 @@ bool GSRendererHW::OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 		}
 	}
 
-	m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, m_vt.m_primclass);
+	m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, m_vt.m_primclass);
 
 	return true;
 }
