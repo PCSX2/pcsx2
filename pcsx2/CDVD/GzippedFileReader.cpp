@@ -120,8 +120,8 @@ static wxString ApplyTemplate(const wxString &name, const wxDirName &base,
 	wxString key = INDEX_TEMPLATE_KEY;
 	tem = tem.Trim(true).Trim(false); // both sides
 
-	int first = tem.find(key);
-	if (first < 0 // not found
+	size_t first = tem.find(key);
+	if (first == wxString::npos // not found
 	    || first != tem.rfind(key) // more than one instance
 	    || !canEndWithKey && first == tem.length() - key.length())
 	{
@@ -389,7 +389,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 	uint maxInChunk = GZFILE_READ_CHUNK_SIZE - offset % GZFILE_READ_CHUNK_SIZE;
 	if (bytesToRead > maxInChunk) {
 		int first = _ReadSync(pBuffer, offset, maxInChunk);
-		if (first != maxInChunk)
+		if (first != (int)maxInChunk)
 			return first; // EOF or failure
 
 		int rest = _ReadSync((char*)pBuffer + maxInChunk, offset + maxInChunk, bytesToRead - maxInChunk);
