@@ -270,13 +270,13 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 		{
 			// ------------------------------------------------------------------------
 			mcase(HW_SIO_DATA):
-				sioWrite8( (u8)val );
-				sioWrite8( (u8)(val >> 8) );
+				sioWrite8( val & 0xFF );
+				sioWrite8( (val >> 8) & 0xFF );
 				if( sizeof(T) == 4 )
 				{
 					// u32 gets rid of compiler warnings when using the u16 version of this template
-					sioWrite8( (u8)((u32)val >> 16) );
-					sioWrite8( (u8)((u32)val >> 24) );
+					sioWrite8( ((u32)val >> 16) & 0xFF );
+					sioWrite8( ((u32)val >> 24) & 0xFF );
 				}
 			break;
 

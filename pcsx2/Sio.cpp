@@ -433,7 +433,9 @@ SIO_WRITE memcardWrite(u8 data)
 	case 2:
 		transfer_size = data;
 
-		sio.buf[data + 5] = mcd->term;
+		// Note: coverity wrongly detects a buffer overflow. Because data + 5 could be > 512...
+		// So let's add a mask-nop to avoid various useless reports.
+		sio.buf[(data & 0xFF) + 5] = mcd->term;
 		sio.bufSize = data + 5;
 		checksum_pos = data + 4;
 		break;
