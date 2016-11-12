@@ -58,11 +58,15 @@ void Hle_SetElfPath(const char* elfFileName)
 		Console.WriteLn("HLE Notice: ELF does not have a path.\n");
 
 		// use %CD%/host/
-		getcwd(HostRoot,1000); // save the other 23 chars to append /host/ :P
+		char* cwd = getcwd(HostRoot,1000); // save the other 23 chars to append /host/ :P
 		HostRoot[1000]=0; // Be Safe.
+		if (cwd == nullptr) {
+			Console.Error("Hle_SetElfPath: getcwd: buffer is too small");
+			return;
+		}
 
 		char* last = HostRoot + strlen(HostRoot) - 1;
-		
+
 		if((*last!='/') && (*last!='\\')) // PathAppend()-ish
 			last++;
 

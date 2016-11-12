@@ -252,10 +252,13 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 	objdump.Write(x86, x86_size);
 	objdump.Close();
 
-	std::system(
+	int status = std::system(
 			wxsFormat( L"objdump -D -b binary -mi386 --disassembler-options=intel --no-show-raw-insn --adjust-vma=%d %s >> %s",
 				   (u32) x86_pc, WX_STR(obj_filename), WX_STR(dump_filename)).mb_str()
 			);
+
+	if (!WIFEXITED(status))
+		Console.Error("IOP dump didn't terminate normally");
 #endif
 }
 
