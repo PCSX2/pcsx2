@@ -429,7 +429,11 @@ void cdvdReloadElfInfo(wxString elfoverride)
 static __fi s32 StrToS32(const wxString& str, int base = 10)
 {
     long l;
-    str.ToLong(&l, base);
+    if (!str.ToLong(&l, base)) {
+		Console.Error(L"StrToS32: fail to translate '%s' as long", WX_STR(str));
+		return 0;
+	}
+
     return l;
 }
 
