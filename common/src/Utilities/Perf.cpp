@@ -23,118 +23,125 @@
 
 namespace Perf
 {
-	// Warning object aren't thread safe
-	InfoVector any("");
-	InfoVector ee("EE");
-	InfoVector iop("IOP");
-	InfoVector vu("VU");
+// Warning object aren't thread safe
+InfoVector any("");
+InfoVector ee("EE");
+InfoVector iop("IOP");
+InfoVector vu("VU");
 
 // Perf is only supported on linux
 #if defined(__linux__) && defined(ProfileWithPerf)
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Implementation of the Info object
-	////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Implementation of the Info object
+////////////////////////////////////////////////////////////////////////////////
 
-	Info::Info(uptr x86, u32 size, const char* symbol) : m_x86(x86), m_size(size), m_dynamic(false)
-	{
-		strncpy(m_symbol, symbol, sizeof(m_symbol));
-	}
+Info::Info(uptr x86, u32 size, const char *symbol)
+    : m_x86(x86)
+    , m_size(size)
+    , m_dynamic(false)
+{
+    strncpy(m_symbol, symbol, sizeof(m_symbol));
+}
 
-	Info::Info(uptr x86, u32 size, const char* symbol, u32 pc) : m_x86(x86), m_size(size), m_dynamic(true)
-	{
-		snprintf(m_symbol, sizeof(m_symbol), "%s_0x%08x", symbol, pc);
-	}
+Info::Info(uptr x86, u32 size, const char *symbol, u32 pc)
+    : m_x86(x86)
+    , m_size(size)
+    , m_dynamic(true)
+{
+    snprintf(m_symbol, sizeof(m_symbol), "%s_0x%08x", symbol, pc);
+}
 
-	void Info::Print(FILE* fp)
-	{
-		fprintf(fp, "%x %x %s\n", m_x86, m_size, m_symbol);
-	}
+void Info::Print(FILE *fp)
+{
+    fprintf(fp, "%x %x %s\n", m_x86, m_size, m_symbol);
+}
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Implementation of the InfoVector object
-	////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Implementation of the InfoVector object
+////////////////////////////////////////////////////////////////////////////////
 
-	InfoVector::InfoVector(const char* prefix)
-	{
-		strncpy(m_prefix, prefix, sizeof(m_prefix));
-	}
+InfoVector::InfoVector(const char *prefix)
+{
+    strncpy(m_prefix, prefix, sizeof(m_prefix));
+}
 
-	void InfoVector::print(FILE* fp)
-	{
-		for(auto&& it : m_v) it.Print(fp);
-	}
+void InfoVector::print(FILE *fp)
+{
+    for (auto &&it : m_v)
+        it.Print(fp);
+}
 
-	void InfoVector::map(uptr x86, u32 size, const char* symbol)
-	{
-		// This function is typically used for dispatcher and recompiler.
-		// Dispatchers are on a page and must always be kept.
-		// Recompilers are much bigger (TODO check VIF) and are only
-		// useful when MERGE_BLOCK_RESULT is defined
+void InfoVector::map(uptr x86, u32 size, const char *symbol)
+{
+// This function is typically used for dispatcher and recompiler.
+// Dispatchers are on a page and must always be kept.
+// Recompilers are much bigger (TODO check VIF) and are only
+// useful when MERGE_BLOCK_RESULT is defined
 
 #ifdef MERGE_BLOCK_RESULT
-		m_v.emplace_back(x86, size, symbol);
+    m_v.emplace_back(x86, size, symbol);
 #else
-		if (size < 8 * _1kb) m_v.emplace_back(x86, size, symbol);
+    if (size < 8 * _1kb)
+        m_v.emplace_back(x86, size, symbol);
 #endif
-	}
+}
 
-	void InfoVector::map(uptr x86, u32 size, u32 pc)
-	{
+void InfoVector::map(uptr x86, u32 size, u32 pc)
+{
 #ifndef MERGE_BLOCK_RESULT
-		m_v.emplace_back(x86, size, m_prefix, pc);
+    m_v.emplace_back(x86, size, m_prefix, pc);
 #endif
-	}
+}
 
-	void InfoVector::reset()
-	{
-		auto dynamic = std::remove_if(m_v.begin(), m_v.end(), [](Info i) { return i.m_dynamic; });
-		m_v.erase(dynamic, m_v.end());
-	}
+void InfoVector::reset()
+{
+    auto dynamic = std::remove_if(m_v.begin(), m_v.end(), [](Info i) { return i.m_dynamic; });
+    m_v.erase(dynamic, m_v.end());
+}
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Global function
-	////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Global function
+////////////////////////////////////////////////////////////////////////////////
 
-	void dump()
-	{
-		char file[256];
-		snprintf(file, 250, "/tmp/perf-%d.map", getpid());
-		FILE* fp = fopen(file, "w");
+void dump()
+{
+    char file[256];
+    snprintf(file, 250, "/tmp/perf-%d.map", getpid());
+    FILE *fp = fopen(file, "w");
 
-		any.print(fp);
-		ee.print(fp);
-		iop.print(fp);
-		vu.print(fp);
+    any.print(fp);
+    ee.print(fp);
+    iop.print(fp);
+    vu.print(fp);
 
-		if (fp)
-			fclose(fp);
-	}
+    if (fp)
+        fclose(fp);
+}
 
-	void dump_and_reset()
-	{
-		dump();
+void dump_and_reset()
+{
+    dump();
 
-		any.reset();
-		ee.reset();
-		iop.reset();
-		vu.reset();
-	}
+    any.reset();
+    ee.reset();
+    iop.reset();
+    vu.reset();
+}
 
 #else
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Dummy implementation
-	////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Dummy implementation
+////////////////////////////////////////////////////////////////////////////////
 
-	InfoVector::InfoVector(const char* prefix) {}
-	void InfoVector::map(uptr x86, u32 size, const char* symbol) {}
-	void InfoVector::map(uptr x86, u32 size, u32 pc) {}
-	void InfoVector::reset() {}
+InfoVector::InfoVector(const char *prefix) {}
+void InfoVector::map(uptr x86, u32 size, const char *symbol) {}
+void InfoVector::map(uptr x86, u32 size, u32 pc) {}
+void InfoVector::reset() {}
 
-	void dump() {}
-	void dump_and_reset() {}
+void dump() {}
+void dump_and_reset() {}
 
 #endif
-
 }

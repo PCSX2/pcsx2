@@ -23,20 +23,20 @@
 #include "EventSource.inl"
 #include "MemsetFast.inl"
 
-template class EventSource< IEventListener_PageFault >;
+template class EventSource<IEventListener_PageFault>;
 
-SrcType_PageFault* Source_PageFault = NULL;
-Threading::Mutex   PageFault_Mutex;
+SrcType_PageFault *Source_PageFault = NULL;
+Threading::Mutex PageFault_Mutex;
 
 void pxInstallSignalHandler()
 {
-	if(!Source_PageFault) {
-		Source_PageFault = new SrcType_PageFault();
-	}
+    if (!Source_PageFault) {
+        Source_PageFault = new SrcType_PageFault();
+    }
 
-	_platform_InstallSignalHandler();
+    _platform_InstallSignalHandler();
 
-	// NOP on Win32 systems -- we use __try{} __except{} instead.
+    // NOP on Win32 systems -- we use __try{} __except{} instead.
 }
 
 // --------------------------------------------------------------------------------------
@@ -44,62 +44,63 @@ void pxInstallSignalHandler()
 // --------------------------------------------------------------------------------------
 EventListener_PageFault::EventListener_PageFault()
 {
-	pxAssert(Source_PageFault);
-	Source_PageFault->Add( *this );
+    pxAssert(Source_PageFault);
+    Source_PageFault->Add(*this);
 }
 
 EventListener_PageFault::~EventListener_PageFault() throw()
 {
-	if (Source_PageFault)
-		Source_PageFault->Remove( *this );
+    if (Source_PageFault)
+        Source_PageFault->Remove(*this);
 }
 
-void SrcType_PageFault::Dispatch( const PageFaultInfo& params )
+void SrcType_PageFault::Dispatch(const PageFaultInfo &params)
 {
-	m_handled = false;
-	_parent::Dispatch( params );
+    m_handled = false;
+    _parent::Dispatch(params);
 }
 
-void SrcType_PageFault::_DispatchRaw( ListenerIterator iter, const ListenerIterator& iend, const PageFaultInfo& evt )
+void SrcType_PageFault::_DispatchRaw(ListenerIterator iter, const ListenerIterator &iend, const PageFaultInfo &evt)
 {
-	do {
-		(*iter)->DispatchEvent( evt, m_handled );
-	} while( (++iter != iend) && !m_handled );
+    do {
+        (*iter)->DispatchEvent(evt, m_handled);
+    } while ((++iter != iend) && !m_handled);
 }
 
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VirtualMemoryReserve::VirtualMemoryReserve( const wxString& name, size_t size )
-	: m_name( name )
+VirtualMemoryReserve::VirtualMemoryReserve(const wxString &name, size_t size)
+    : m_name(name)
 {
-	m_defsize			= size;
+    m_defsize = size;
 
-	m_pages_commited	= 0;
-	m_pages_reserved	= 0;
-	m_baseptr			= NULL;
-	m_prot_mode			= PageAccess_None();
-	m_allow_writes		= true;
+    m_pages_commited = 0;
+    m_pages_reserved = 0;
+    m_baseptr = NULL;
+    m_prot_mode = PageAccess_None();
+    m_allow_writes = true;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetName( const wxString& newname )
+VirtualMemoryReserve &VirtualMemoryReserve::SetName(const wxString &newname)
 {
-	m_name = newname;
-	return *this;
+    m_name = newname;
+    return *this;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetBaseAddr( uptr newaddr )
+VirtualMemoryReserve &VirtualMemoryReserve::SetBaseAddr(uptr newaddr)
 {
-	if (!pxAssertDev(!m_pages_reserved, "Invalid object state: you must release the virtual memory reserve prior to changing its base address!")) return *this;
+    if (!pxAssertDev(!m_pages_reserved, "Invalid object state: you must release the virtual memory reserve prior to changing its base address!"))
+        return *this;
 
-	m_baseptr = (void*)newaddr;
-	return *this;
+    m_baseptr = (void *)newaddr;
+    return *this;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetPageAccessOnCommit( const PageProtectionMode& mode )
+VirtualMemoryReserve &VirtualMemoryReserve::SetPageAccessOnCommit(const PageProtectionMode &mode)
 {
-	m_prot_mode = mode;
-	return *this;
+    m_prot_mode = mode;
+    return *this;
 }
 
 // Notes:
@@ -114,95 +115,99 @@ VirtualMemoryReserve& VirtualMemoryReserve::SetPageAccessOnCommit( const PagePro
 //   upper_bounds - criteria that must be met for the allocation to be valid.
 //     If the OS refuses to allocate the memory below the specified address, the
 //     object will fail to initialize and an exception will be thrown.
-void* VirtualMemoryReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
+void *VirtualMemoryReserve::Reserve(size_t size, uptr base, uptr upper_bounds)
 {
-	if (!pxAssertDev( m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved." ))
-		return m_baseptr;
+    if (!pxAssertDev(m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
+        return m_baseptr;
 
-	if (!size) size = m_defsize;
-	if (!size) return NULL;
+    if (!size)
+        size = m_defsize;
+    if (!size)
+        return NULL;
 
-	m_pages_reserved = (size + __pagesize-4) / __pagesize;
-	uptr reserved_bytes = m_pages_reserved * __pagesize;
+    m_pages_reserved = (size + __pagesize - 4) / __pagesize;
+    uptr reserved_bytes = m_pages_reserved * __pagesize;
 
-	m_baseptr = (void*)HostSys::MmapReserve(base, reserved_bytes);
+    m_baseptr = (void *)HostSys::MmapReserve(base, reserved_bytes);
 
-	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
-	{
-		DevCon.Warning( L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
-			WX_STR(m_name), pxsPtr(base), pxsPtr(base + size) );
+    if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds))) {
+        DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
+                       WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
 
-		SafeSysMunmap(m_baseptr, reserved_bytes);
+        SafeSysMunmap(m_baseptr, reserved_bytes);
 
-		if (base)
-		{
-			// Let's try again at an OS-picked memory area, and then hope it meets needed
-			// boundschecking criteria below.
-			m_baseptr = HostSys::MmapReserve( 0, reserved_bytes );
-		}
-	}
+        if (base) {
+            // Let's try again at an OS-picked memory area, and then hope it meets needed
+            // boundschecking criteria below.
+            m_baseptr = HostSys::MmapReserve(0, reserved_bytes);
+        }
+    }
 
-	if ((upper_bounds != 0) && (((uptr)m_baseptr + reserved_bytes) > upper_bounds))
-	{
-		SafeSysMunmap(m_baseptr, reserved_bytes);
-		// returns null, caller should throw an exception or handle appropriately.
-	}
+    if ((upper_bounds != 0) && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)) {
+        SafeSysMunmap(m_baseptr, reserved_bytes);
+        // returns null, caller should throw an exception or handle appropriately.
+    }
 
-	if (!m_baseptr) return NULL;
+    if (!m_baseptr)
+        return NULL;
 
-	FastFormatUnicode mbkb;
-	uint mbytes = reserved_bytes / _1mb;
-	if (mbytes)
-		mbkb.Write( "[%umb]", mbytes );
-	else
-		mbkb.Write( "[%ukb]", reserved_bytes / 1024 );
+    FastFormatUnicode mbkb;
+    uint mbytes = reserved_bytes / _1mb;
+    if (mbytes)
+        mbkb.Write("[%umb]", mbytes);
+    else
+        mbkb.Write("[%ukb]", reserved_bytes / 1024);
 
-	DevCon.WriteLn( Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
-		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr+reserved_bytes), mbkb.c_str());
+    DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
+                   pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
 
-	return m_baseptr;
+    return m_baseptr;
 }
 
-void VirtualMemoryReserve::ReprotectCommittedBlocks( const PageProtectionMode& newmode )
+void VirtualMemoryReserve::ReprotectCommittedBlocks(const PageProtectionMode &newmode)
 {
-	if (!m_pages_commited) return;
-	HostSys::MemProtect(m_baseptr, m_pages_commited*__pagesize, newmode);
+    if (!m_pages_commited)
+        return;
+    HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, newmode);
 }
 
 // Clears all committed blocks, restoring the allocation to a reserve only.
 void VirtualMemoryReserve::Reset()
 {
-	if (!m_pages_commited) return;
+    if (!m_pages_commited)
+        return;
 
-	ReprotectCommittedBlocks(PageAccess_None());
-	HostSys::MmapResetPtr(m_baseptr, m_pages_commited*__pagesize);
-	m_pages_commited = 0;
+    ReprotectCommittedBlocks(PageAccess_None());
+    HostSys::MmapResetPtr(m_baseptr, m_pages_commited * __pagesize);
+    m_pages_commited = 0;
 }
 
 void VirtualMemoryReserve::Release()
 {
-	SafeSysMunmap(m_baseptr, m_pages_reserved*__pagesize);
+    SafeSysMunmap(m_baseptr, m_pages_reserved * __pagesize);
 }
 
 bool VirtualMemoryReserve::Commit()
 {
-	if (!m_pages_reserved) return false;
-	if (!pxAssert(!m_pages_commited)) return true;
+    if (!m_pages_reserved)
+        return false;
+    if (!pxAssert(!m_pages_commited))
+        return true;
 
-	m_pages_commited = m_pages_reserved;
-	return HostSys::MmapCommitPtr(m_baseptr, m_pages_reserved*__pagesize, m_prot_mode);
+    m_pages_commited = m_pages_reserved;
+    return HostSys::MmapCommitPtr(m_baseptr, m_pages_reserved * __pagesize, m_prot_mode);
 }
 
 void VirtualMemoryReserve::AllowModification()
 {
-	m_allow_writes = true;
-	HostSys::MemProtect(m_baseptr, m_pages_commited*__pagesize, m_prot_mode);
+    m_allow_writes = true;
+    HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, m_prot_mode);
 }
 
 void VirtualMemoryReserve::ForbidModification()
 {
-	m_allow_writes = false;
-	HostSys::MemProtect(m_baseptr, m_pages_commited*__pagesize, PageProtectionMode(m_prot_mode).Write(false));	
+    m_allow_writes = false;
+    HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, PageProtectionMode(m_prot_mode).Write(false));
 }
 
 
@@ -215,125 +220,115 @@ void VirtualMemoryReserve::ForbidModification()
 //
 // Parameters:
 //  newsize - new size of the reserved buffer, in bytes.
-bool VirtualMemoryReserve::TryResize( uint newsize )
+bool VirtualMemoryReserve::TryResize(uint newsize)
 {
-	uint newPages = (newsize + __pagesize - 1) / __pagesize;
+    uint newPages = (newsize + __pagesize - 1) / __pagesize;
 
-	if (newPages > m_pages_reserved)
-	{
-		uint toReservePages = newPages - m_pages_reserved;
-		uint toReserveBytes = toReservePages * __pagesize;
+    if (newPages > m_pages_reserved) {
+        uint toReservePages = newPages - m_pages_reserved;
+        uint toReserveBytes = toReservePages * __pagesize;
 
-		DevCon.WriteLn( L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
+        DevCon.WriteLn(L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
 
-		m_baseptr = (void*)HostSys::MmapReserve((uptr)GetPtrEnd(), toReserveBytes);
+        m_baseptr = (void *)HostSys::MmapReserve((uptr)GetPtrEnd(), toReserveBytes);
 
-		if (!m_baseptr)
-		{
-			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!");
-			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr+toReserveBytes);
-		}
+        if (!m_baseptr) {
+            Console.Warning("%-32s could not be passively resized due to virtual memory conflict!");
+            Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr + toReserveBytes);
+        }
 
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
-			m_baseptr, (uptr)m_baseptr+toReserveBytes, toReserveBytes / _1mb);
-	}
-	else if (newPages < m_pages_reserved)
-	{
-		if (m_pages_commited > newsize) return false;
+        DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
+                       m_baseptr, (uptr)m_baseptr + toReserveBytes, toReserveBytes / _1mb);
+    } else if (newPages < m_pages_reserved) {
+        if (m_pages_commited > newsize)
+            return false;
 
-		uint toRemovePages = m_pages_reserved - newPages;
-		uint toRemoveBytes = toRemovePages * __pagesize;
+        uint toRemovePages = m_pages_reserved - newPages;
+        uint toRemoveBytes = toRemovePages * __pagesize;
 
-		DevCon.WriteLn( L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
+        DevCon.WriteLn(L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
 
-		HostSys::MmapResetPtr(GetPtrEnd(), toRemoveBytes);
+        HostSys::MmapResetPtr(GetPtrEnd(), toRemoveBytes);
 
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
-			m_baseptr, (uptr)m_baseptr+toRemoveBytes, toRemoveBytes / _1mb);
-	}
+        DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
+                       m_baseptr, (uptr)m_baseptr + toRemoveBytes, toRemoveBytes / _1mb);
+    }
 
-	return true;
+    return true;
 }
 
 // --------------------------------------------------------------------------------------
 //  BaseVmReserveListener  (implementations)
 // --------------------------------------------------------------------------------------
 
-BaseVmReserveListener::BaseVmReserveListener( const wxString& name, size_t size )
-	: VirtualMemoryReserve( name, size )
-	, m_pagefault_listener( this )
+BaseVmReserveListener::BaseVmReserveListener(const wxString &name, size_t size)
+    : VirtualMemoryReserve(name, size)
+    , m_pagefault_listener(this)
 {
-	m_blocksize		= __pagesize;
+    m_blocksize = __pagesize;
 }
 
-void BaseVmReserveListener::CommitBlocks( uptr page, uint blocks )
+void BaseVmReserveListener::CommitBlocks(uptr page, uint blocks)
 {
-	const uptr blocksbytes = blocks * m_blocksize * __pagesize;
-	void* blockptr = (u8*)m_baseptr + (page * __pagesize);
+    const uptr blocksbytes = blocks * m_blocksize * __pagesize;
+    void *blockptr = (u8 *)m_baseptr + (page * __pagesize);
 
-	// Depending on the operating system, this call could fail if the system is low on either
-	// physical ram or virtual memory.
-	if (!HostSys::MmapCommitPtr(blockptr, blocksbytes, m_prot_mode))
-	{
-		throw Exception::OutOfMemory(m_name)
-			.SetDiagMsg(pxsFmt("An additional %u blocks @ 0x%08x were requested, but could not be committed!", blocks, blockptr));
-	}
+    // Depending on the operating system, this call could fail if the system is low on either
+    // physical ram or virtual memory.
+    if (!HostSys::MmapCommitPtr(blockptr, blocksbytes, m_prot_mode)) {
+        throw Exception::OutOfMemory(m_name)
+            .SetDiagMsg(pxsFmt("An additional %u blocks @ 0x%08x were requested, but could not be committed!", blocks, blockptr));
+    }
 
-	u8* init = (u8*)blockptr;
-	u8* endpos = init + blocksbytes;
-	for( ; init<endpos; init += m_blocksize*__pagesize )
-		OnCommittedBlock(init);
+    u8 *init = (u8 *)blockptr;
+    u8 *endpos = init + blocksbytes;
+    for (; init < endpos; init += m_blocksize * __pagesize)
+        OnCommittedBlock(init);
 
-	m_pages_commited += m_blocksize * blocks;
+    m_pages_commited += m_blocksize * blocks;
 }
 
-void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& handled)
+void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo &info, bool &handled)
 {
-	sptr offset = (info.addr - (uptr)m_baseptr) / __pagesize;
-	if ((offset < 0) || ((uptr)offset >= m_pages_reserved)) return;
+    sptr offset = (info.addr - (uptr)m_baseptr) / __pagesize;
+    if ((offset < 0) || ((uptr)offset >= m_pages_reserved))
+        return;
 
-	if (!m_allow_writes)
-	{
-		pxFailRel( pxsFmt(
-			L"Memory Protection Fault @ %ls (%s)\n"
-			L"Modification of this reserve has been disabled (m_allow_writes == false).",
-			pxsPtr(info.addr), WX_STR(m_name))
-		);
-		return;
-	}
+    if (!m_allow_writes) {
+        pxFailRel(pxsFmt(
+            L"Memory Protection Fault @ %ls (%s)\n"
+            L"Modification of this reserve has been disabled (m_allow_writes == false).",
+            pxsPtr(info.addr), WX_STR(m_name)));
+        return;
+    }
 
-	// Linux Note!  the SIGNAL handler is very limited in what it can do, and not only can't
-	// we let the C++ exception try to unwind the stack, we may not be able to log it either.
-	// (but we might as well try -- kernel/posix rules says not to do it, but Linux kernel
-	//  implementations seem to support it).
-	// Note also that logging the exception and/or issuing an assertion dialog are always
-	// possible if the thread handling the signal is not the main thread.
+// Linux Note!  the SIGNAL handler is very limited in what it can do, and not only can't
+// we let the C++ exception try to unwind the stack, we may not be able to log it either.
+// (but we might as well try -- kernel/posix rules says not to do it, but Linux kernel
+//  implementations seem to support it).
+// Note also that logging the exception and/or issuing an assertion dialog are always
+// possible if the thread handling the signal is not the main thread.
 
-	// In windows we can let exceptions bubble out of the page fault handler.  SEH will more
-	// or less handle them in a semi-expected way, and might even avoid a GPF long enough
-	// for the system to log the error or something.
+// In windows we can let exceptions bubble out of the page fault handler.  SEH will more
+// or less handle them in a semi-expected way, and might even avoid a GPF long enough
+// for the system to log the error or something.
 
-	#ifndef __WXMSW__
-	try	{
-	#endif
-		DoCommitAndProtect( offset );
-		handled = true;
+#ifndef __WXMSW__
+    try {
+#endif
+        DoCommitAndProtect(offset);
+        handled = true;
 
-	#ifndef __WXMSW__
-	}
-	catch (Exception::BaseException& ex)
-	{
-		handled = false;
-		if (!wxThread::IsMain())
-		{
-			pxFailRel( ex.FormatDiagnosticMessage() );
-		}
-		else
-		{
-			pxTrap();
-		}
-	}
-	#endif
+#ifndef __WXMSW__
+    } catch (Exception::BaseException &ex) {
+        handled = false;
+        if (!wxThread::IsMain()) {
+            pxFailRel(ex.FormatDiagnosticMessage());
+        } else {
+            pxTrap();
+        }
+    }
+#endif
 }
 
 // --------------------------------------------------------------------------------------
@@ -341,22 +336,27 @@ void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& ha
 // --------------------------------------------------------------------------------------
 wxString PageProtectionMode::ToString() const
 {
-	wxString modeStr;
+    wxString modeStr;
 
-	if (m_read)		modeStr += L"Read";
-	if (m_write)	modeStr += L"Write";
-	if (m_exec)		modeStr += L"Exec";
+    if (m_read)
+        modeStr += L"Read";
+    if (m_write)
+        modeStr += L"Write";
+    if (m_exec)
+        modeStr += L"Exec";
 
-	if (modeStr.IsEmpty()) return L"NoAccess";
-	if (modeStr.Length() <= 5) modeStr += L"Only";
+    if (modeStr.IsEmpty())
+        return L"NoAccess";
+    if (modeStr.Length() <= 5)
+        modeStr += L"Only";
 
-	return modeStr;
+    return modeStr;
 }
 
 // --------------------------------------------------------------------------------------
 //  Common HostSys implementation
 // --------------------------------------------------------------------------------------
-void HostSys::Munmap( void* base, size_t size )
+void HostSys::Munmap(void *base, size_t size)
 {
-	Munmap( (uptr)base, size);
+    Munmap((uptr)base, size);
 }

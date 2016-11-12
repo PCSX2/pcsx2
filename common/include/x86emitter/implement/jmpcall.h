@@ -17,171 +17,170 @@
 
 // Implementations found here: CALL and JMP!  (unconditional only)
 
-namespace x86Emitter {
+namespace x86Emitter
+{
 
-extern void xJccKnownTarget( JccComparisonType comparison, const void* target, bool slideForward );
+extern void xJccKnownTarget(JccComparisonType comparison, const void *target, bool slideForward);
 
 // ------------------------------------------------------------------------
 struct xImpl_JmpCall
 {
-	bool	isJmp;
+    bool isJmp;
 
-	void operator()( const xRegisterInt& absreg ) const;
-	void operator()( const xIndirect64orLess& src ) const;
+    void operator()(const xRegisterInt &absreg) const;
+    void operator()(const xIndirect64orLess &src) const;
 
-	// Special form for calling functions.  This form automatically resolves the
-	// correct displacement based on the size of the instruction being generated.
-	void operator()( void* func ) const
-	{
-		if( isJmp )
-			xJccKnownTarget( Jcc_Unconditional, (void*)(uptr)func, false );	// double cast to/from (uptr) needed to appease GCC
-		else
-		{
-			// calls are relative to the instruction after this one, and length is
-			// always 5 bytes (16 bit calls are bad mojo, so no bother to do special logic).
+    // Special form for calling functions.  This form automatically resolves the
+    // correct displacement based on the size of the instruction being generated.
+    void operator()(void *func) const
+    {
+        if (isJmp)
+            xJccKnownTarget(Jcc_Unconditional, (void *)(uptr)func, false); // double cast to/from (uptr) needed to appease GCC
+        else {
+            // calls are relative to the instruction after this one, and length is
+            // always 5 bytes (16 bit calls are bad mojo, so no bother to do special logic).
 
-			sptr dest = (sptr)func - ((sptr)xGetPtr() + 5);
-			xWrite8( 0xe8 );
-			xWrite32( dest );
-		}
-	}
+            sptr dest = (sptr)func - ((sptr)xGetPtr() + 5);
+            xWrite8(0xe8);
+            xWrite32(dest);
+        }
+    }
 };
 
 // yes it is awful. Due to template code is in a header with a nice circular dep.
-extern const xImpl_Mov			xMOV;
-extern const xImpl_JmpCall		xCALL;
+extern const xImpl_Mov xMOV;
+extern const xImpl_JmpCall xCALL;
 
 struct xImpl_FastCall
 {
-	// FIXME: current 64 bits is mostly a copy/past potentially it would require to push/pop
-	// some registers. But I think it is enough to handle the first call.
+// FIXME: current 64 bits is mostly a copy/past potentially it would require to push/pop
+// some registers. But I think it is enough to handle the first call.
 
 
-	// Type unsafety is nice
+// Type unsafety is nice
 #ifdef __x86_64__
 
 #define XFASTCALL \
-	xCALL(f);
+    xCALL(f);
 
 #define XFASTCALL1 \
-	xMOV(rdi, a1); \
-	xCALL(f);
+    xMOV(rdi, a1); \
+    xCALL(f);
 
 #define XFASTCALL2 \
-	xMOV(rdi, a1); \
-	xMOV(rsi, a2); \
-	xCALL(f);
+    xMOV(rdi, a1); \
+    xMOV(rsi, a2); \
+    xCALL(f);
 
 #else
 
 #define XFASTCALL \
-	xCALL(f);
+    xCALL(f);
 
 #define XFASTCALL1 \
-	xMOV(ecx, a1); \
-	xCALL(f);
+    xMOV(ecx, a1); \
+    xCALL(f);
 
 #define XFASTCALL2 \
-	xMOV(ecx, a1); \
-	xMOV(edx, a2); \
-	xCALL(f);
+    xMOV(ecx, a1); \
+    xMOV(edx, a2); \
+    xCALL(f);
 
 #endif
 
-	void operator()( void* f, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
-	{
+    void operator()(void *f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
+    {
 #ifdef __x86_64__
-		if (a1.IsEmpty()) {
-			XFASTCALL;
-		} else if (a2.IsEmpty()) {
-			XFASTCALL1;
-		} else {
-			XFASTCALL2;
-		}
+        if (a1.IsEmpty()) {
+            XFASTCALL;
+        } else if (a2.IsEmpty()) {
+            XFASTCALL1;
+        } else {
+            XFASTCALL2;
+        }
 #else
-		if (a1.IsEmpty()) {
-			XFASTCALL;
-		} else if (a2.IsEmpty()) {
-			XFASTCALL1;
-		} else {
-			XFASTCALL2;
-		}
+        if (a1.IsEmpty()) {
+            XFASTCALL;
+        } else if (a2.IsEmpty()) {
+            XFASTCALL1;
+        } else {
+            XFASTCALL2;
+        }
 #endif
-	}
+    }
 
-	template< typename T > __fi
-	void operator()( T* func, u32 a1, const xRegisterLong& a2) const
-	{
-		void* f = (void*)func;
-
-#ifdef __x86_64__
-		XFASTCALL2;
-#else
-		XFASTCALL2;
-#endif
-	}
-
-	template< typename T > __fi
-	void operator()( T* func, const xIndirectVoid& a1) const
-	{
-		void* f = (void*)func;
+    template <typename T>
+    __fi void operator()(T *func, u32 a1, const xRegisterLong &a2) const
+    {
+        void *f = (void *)func;
 
 #ifdef __x86_64__
-		XFASTCALL1;
+        XFASTCALL2;
 #else
-		XFASTCALL1;
+        XFASTCALL2;
 #endif
-	}
+    }
 
-	template< typename T > __fi
-	void operator()( T* func, u32 a1, u32 a2) const
-	{
-		void* f = (void*)func;
+    template <typename T>
+    __fi void operator()(T *func, const xIndirectVoid &a1) const
+    {
+        void *f = (void *)func;
 
 #ifdef __x86_64__
-		XFASTCALL2;
+        XFASTCALL1;
 #else
-		XFASTCALL2;
+        XFASTCALL1;
 #endif
-	}
+    }
 
-	template< typename T > __fi
-	void operator()( T* func, u32 a1) const
-	{
-		void* f = (void*)func;
+    template <typename T>
+    __fi void operator()(T *func, u32 a1, u32 a2) const
+    {
+        void *f = (void *)func;
 
 #ifdef __x86_64__
-		XFASTCALL1;
+        XFASTCALL2;
 #else
-		XFASTCALL1;
+        XFASTCALL2;
 #endif
-	}
+    }
 
-	void operator()(const xIndirect32& f, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const
-	{
+    template <typename T>
+    __fi void operator()(T *func, u32 a1) const
+    {
+        void *f = (void *)func;
+
 #ifdef __x86_64__
-		if (a1.IsEmpty()) {
-			XFASTCALL;
-		} else if (a2.IsEmpty()) {
-			XFASTCALL1;
-		} else {
-			XFASTCALL2;
-		}
+        XFASTCALL1;
 #else
-		if (a1.IsEmpty()) {
-			XFASTCALL;
-		} else if (a2.IsEmpty()) {
-			XFASTCALL1;
-		} else {
-			XFASTCALL2;
-		}
+        XFASTCALL1;
 #endif
-	}
+    }
+
+    void operator()(const xIndirect32 &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
+    {
+#ifdef __x86_64__
+        if (a1.IsEmpty()) {
+            XFASTCALL;
+        } else if (a2.IsEmpty()) {
+            XFASTCALL1;
+        } else {
+            XFASTCALL2;
+        }
+#else
+        if (a1.IsEmpty()) {
+            XFASTCALL;
+        } else if (a2.IsEmpty()) {
+            XFASTCALL1;
+        } else {
+            XFASTCALL2;
+        }
+#endif
+    }
 
 #undef XFASTCALL
 #undef XFASTCALL1
 #undef XFASTCALL2
 };
 
-}	// End namespace x86Emitter
-
+} // End namespace x86Emitter
