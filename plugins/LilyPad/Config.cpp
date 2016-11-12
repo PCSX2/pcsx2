@@ -21,6 +21,7 @@
 #include "InputManager.h"
 #include "Config.h"
 
+#include "Tooltips.h"
 #include "Diagnostics.h"
 #include "DeviceEnumerator.h"
 #include "KeyboardQueue.h"
@@ -484,7 +485,7 @@ void SelChanged(int port, int slot)
         }
     }
 
-    for (i = IDC_SLIDER1; i < ID_DELETE; i++) {
+    for (i = IDC_SLIDER_SENSITIVITY; i < ID_DELETE; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
             ShowWindow(hWndTemp, ffb == 0);
@@ -526,11 +527,11 @@ void SelChanged(int port, int slot)
         }
     }
     if (!ffb) {
-        SetLogSliderVal(hWnd, IDC_SLIDER1, GetDlgItem(hWnd, IDC_AXIS_SENSITIVITY1), sensitivity);
+        SetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY, GetDlgItem(hWnd, IDC_AXIS_SENSITIVITY), sensitivity);
         SetLogSliderVal(hWnd, IDC_SLIDER_DEADZONE, GetDlgItem(hWnd, IDC_AXIS_DEADZONE), deadZone);
 
         if (disableFlip)
-            EnableWindow(GetDlgItem(hWnd, IDC_FLIP1), 0);
+            EnableWindow(GetDlgItem(hWnd, IDC_FLIP), 0);
 
         EnableWindow(GetDlgItem(hWnd, IDC_TURBO), turbo >= 0);
         if (turbo > 0 && turbo < bFound) {
@@ -572,8 +573,8 @@ void SelChanged(int port, int slot)
             SendMessage(hWndCombo, CB_SELECTSTRING, i, (LPARAM)key);
         }
 
-        SetDlgItemText(hWnd, IDC_AXIS_DEVICE1, devName);
-        SetDlgItemText(hWnd, IDC_AXIS_CONTROL1, command);
+        SetDlgItemText(hWnd, IDC_AXIS_DEVICE, devName);
+        SetDlgItemText(hWnd, IDC_AXIS_CONTROL, command);
     } else {
         wchar_t temp2[2000];
         wsprintfW(temp2, L"%s / %s", devName, command);
@@ -1159,6 +1160,38 @@ void Diagnostics(HWND hWnd)
     RefreshEnabledDevicesAndDisplay(0, hWnd, 1);
 }
 
+void AddTooltip(UINT id, HWND hWnd)
+{
+    bool hasTooltip;
+    LPWSTR message = dialog_message(id, &hasTooltip);
+    if (!hasTooltip)
+        return;
+
+    HWND hWndTooltip = GetDlgItem(hWnd, id);
+    if (hWndTooltip == NULL)
+        return;
+
+    // TTS_NOPREFIX allows tabs and '&' to be used.
+    HWND hWndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+                                  TTS_ALWAYSTIP | TTS_NOPREFIX,
+                                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                                  hWnd, NULL, hInst, NULL);
+    if (hWndTip == NULL)
+        return;
+
+    TOOLINFO toolInfo = {0};
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = hWnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)hWndTooltip;
+    toolInfo.lpszText = message;
+    SendMessage(hWndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+    // 32.767s is the max show time.
+    SendMessage(hWndTip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 32767);
+    // Setting a maximum width is necessary for displaying longer messages.
+    SendMessage(hWndTip, TTM_SETMAXTIPWIDTH, 0, 400);
+}
+
 int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFeedbackBinding *&ffb)
 {
     ffb = 0;
@@ -1441,10 +1474,21 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             padtype = config.padConfigs[port][slot].type;
             hWnds[port][slot][padtype] = hWnd;
             SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
-            SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER1));
+            SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SENSITIVITY));
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_DEADZONE));
             if (port || slot)
                 EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
+
+            AddTooltip(ID_MOUSE, hWnd);
+            AddTooltip(ID_ANALOG, hWnd);
+            AddTooltip(ID_IGNORE, hWnd);
+            AddTooltip(ID_LOCK_ALL_INPUT, hWnd);
+            AddTooltip(ID_LOCK_DIRECTION, hWnd);
+            AddTooltip(ID_LOCK_BUTTONS, hWnd);
+            AddTooltip(IDC_TURBO, hWnd);
+            AddTooltip(IDC_FLIP, hWnd);
+            AddTooltip(IDC_SLIDER_DEADZONE, hWnd);
+            AddTooltip(IDC_SLIDER_SENSITIVITY, hWnd);
 
             Populate(port, slot, padtype);
         } break;
@@ -1547,7 +1591,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
         case WM_HSCROLL: {
             int id = GetDlgCtrlID((HWND)lParam);
             int val = GetLogSliderVal(hWnd, id);
-            if (id == IDC_SLIDER1) {
+            if (id == IDC_SLIDER_SENSITIVITY) {
                 ChangeValue(port, slot, &val, 0, 0);
             } else if (id == IDC_SLIDER_DEADZONE) {
                 ChangeValue(port, slot, 0, 0, &val);
@@ -1719,8 +1763,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     SendMessage(GetDlgItem(hWnd, IDC_TURBO), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
                     int turbo = (IsDlgButtonChecked(hWnd, IDC_TURBO) == BST_CHECKED);
                     ChangeValue(port, slot, 0, &turbo, 0);
-                } else if (cmd == IDC_FLIP1) {
-                    int val = GetLogSliderVal(hWnd, IDC_SLIDER1);
+                } else if (cmd == IDC_FLIP) {
+                    int val = GetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY);
                     ChangeValue(port, slot, &val, 0, 0);
                 } else if (cmd >= IDC_FF_AXIS1_ENABLED && cmd < IDC_FF_AXIS8_ENABLED + 16) {
                     int index = (cmd - IDC_FF_AXIS1_ENABLED) / 16;
@@ -1791,9 +1835,9 @@ bool ProfilesBindingCheck(unsigned int port, unsigned int slot, unsigned int pad
                             if (showWarning) {
                                 int msgboxID = MessageBoxA(hWndProp, "Warning!  You have selected a pad type that has one or several bindings that conflict with the active pad type of the opposing port or slot(s).\n\n"
                                                                      "Do you want to keep the bindings of the pad type you are switching to?\n"
-                                                                     "Click ''Yes'' to continue without deleting any binding.\n"
-                                                                     "Click ''No'' to continue and delete any conflicting bindings from the selected pad type.\n"
-                                                                     "Click ''Cancel'' to revert to the previously selected pad type and avoid any further action.\n\n"
+                                                                     "Click \"Yes\" to continue without deleting any binding.\n"
+                                                                     "Click \"No\" to continue and delete any conflicting bindings from the selected pad type.\n"
+                                                                     "Click \"Cancel\" to revert to the previously selected pad type and avoid any further action.\n\n"
                                                                      "Note: Enable the 'Allow binding multiple PS2 controls to one PC control' option to allow conflicting bindings between opposing ports and slots, and avoid this warning and the possibility of bindings getting deleted.",
                                                            "Duplicate Binding Warning", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
                                 switch (msgboxID) {
@@ -2004,6 +2048,15 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             }
             CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_CHECKED * (config.closeHacks & 1));
             CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_CHECKED * ((config.closeHacks & 2) >> 1));
+
+            AddTooltip(IDC_M_WM, hWnd);
+            AddTooltip(IDC_M_RAW, hWnd);
+            AddTooltip(IDC_M_DI, hWnd);
+            AddTooltip(IDC_MOUSE_UNFOCUS, hWnd);
+            AddTooltip(IDC_MULTIPLE_BINDING, hWnd);
+            AddTooltip(IDC_PAD_LIST, hWnd);
+            AddTooltip(ID_TEST, hWnd);
+            AddTooltip(IDC_ANALOG_START1, hWnd);
 
             if (config.keyboardApi < 0 || config.keyboardApi > 3)
                 config.keyboardApi = NO_API;

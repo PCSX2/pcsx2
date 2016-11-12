@@ -68,6 +68,7 @@
     <ClCompile Include="HidDevice.cpp" />
     <ClCompile Include="KeyboardQueue.cpp" />
     <ClCompile Include="RawInput.cpp" />
+    <ClCompile Include="Tooltips.cpp" />
     <ClCompile Include="WindowsKeyboard.cpp" />
     <ClCompile Include="WindowsMessaging.cpp" />
     <ClCompile Include="WindowsMouse.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="HidDevice.h" />
     <ClInclude Include="KeyboardQueue.h" />
     <ClInclude Include="RawInput.h" />
+    <ClInclude Include="Tooltips.h" />
     <ClInclude Include="usb.h" />
     <ClInclude Include="WindowsKeyboard.h" />
     <ClInclude Include="WindowsMessaging.h" />

@@ -72,6 +72,9 @@
     <ClCompile Include="XInputEnum.cpp">
       <Filter>InputAPIs</Filter>
     </ClCompile>
+    <ClCompile Include="Tooltips.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="XInputEnum.h">
       <Filter>InputAPIs</Filter>
+    </ClInclude>
+    <ClInclude Include="Tooltips.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
