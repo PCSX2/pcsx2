@@ -511,12 +511,12 @@ static void psxRecompileIrxImport()
 	const std::string libname = iopMemReadString(import_table + 12, 8);
 
 	irxHLE hle = irxImportHLE(libname, index);
-	irxDEBUG debug = 0;
-	const char *funcname = 0;
-
 #ifdef PCSX2_DEVBUILD
-	funcname = irxImportFuncname(libname, index);
-	debug = irxImportDebug(libname, index);
+	const irxDEBUG debug = irxImportDebug(libname, index);
+	const char* funcname = irxImportFuncname(libname, index);
+#else
+	const irxDEBUG debug = 0;
+	const char *funcname = nullptr;
 #endif
 
 	if (!hle && !debug && (!SysTraceActive(IOP.Bios) || !funcname))
