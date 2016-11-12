@@ -254,8 +254,6 @@ __fi void vif1FBRST(u32 value) {
 
 		if (cancel)
 		{
-			if (vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
-			{
 				g_vif1Cycles = 0;
 				// loop necessary for spiderman
 				switch(dmacRegs.ctrl.MFD)
@@ -275,7 +273,6 @@ __fi void vif1FBRST(u32 value) {
 				}
 
 				//vif1ch.chcr.STR = true;
-			}
 		}
 	}
 }

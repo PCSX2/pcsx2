@@ -164,7 +164,7 @@ __fi void gifCheckPathStatus() {
 
 __fi void gifInterrupt()
 {
-	GIF_LOG("gifInterrupt caught!");
+	GIF_LOG("gifInterrupt caught qwc=%d fifo=%d apath=%d oph=%d state=%d!", gifch.qwc, gifRegs.stat.FQC, gifRegs.stat.APATH, gifRegs.stat.OPH, gifUnit.gifPath[GIF_PATH_3].state);
 	gifCheckPathStatus();
 
 	if(gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
@@ -221,6 +221,20 @@ __fi void gifInterrupt()
 		GifDMAInt(128);
 		return;
 	}
+
+	gifCheckPathStatus();
+
+	//Double check as we might have read the fifo as it's ending the DMA
+	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
+	{
+		if (vif1Regs.stat.VGW)
+		{
+			//Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
+			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1))) {
+				CPU_INT(DMAC_VIF1, 1);
+			}
+		}
+	}
 	
 	if (!(gifch.chcr.STR)) return;
 
@@ -236,26 +250,14 @@ __fi void gifInterrupt()
 		return;
 	}
 
-	//Double check as we might have read the fifo as it's ending the DMA
-	gifCheckPathStatus();
-
-	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
-	{
-		if (vif1Regs.stat.VGW)
-		{
-			//Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
-			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1))) {
-				CPU_INT(DMAC_VIF1, 1);
-			}
-		}
-	}
+	
+	
 	if (!CHECK_GIFFIFOHACK)
 	{
 		gifRegs.stat.FQC = 0;
 		clearFIFOstuff(false);
 	}
-	gscycles		 = 0;
-	gspath3done		 = false;
+	gscycles = 0;
 	gifch.chcr.STR	 = false;
 
 	hwDmacIrq(DMAC_GIF);
@@ -707,7 +709,26 @@ void gifMFIFOInterrupt()
 			}
 		}
 	}
+	gifCheckPathStatus();
 
+	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
+	{
+		if (vif1Regs.stat.VGW)
+		{
+			//Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
+			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
+				CPU_INT(DMAC_VIF1, 1);
+
+			//Make sure it loops if the GIF packet is empty to prepare for the next packet
+			//or end if it was the end of a packet.
+			//This must trigger after VIF retriggers as VIf might instantly mask Path3
+			if (!gifUnit.Path3Masked() || gifch.qwc == 0) {
+				GifDMAInt(16);
+			}
+			return;
+		}
+
+	}
 	if (!gifch.chcr.STR) {
 		Console.WriteLn("WTF GIFMFIFO");
 		cpuRegs.interrupt &= ~(1 << 11);
@@ -760,10 +781,7 @@ void gifMFIFOInterrupt()
 		}
 	}
 	//if(gifqwc > 0) Console.WriteLn("GIF MFIFO ending with stuff in it %x", gifqwc);
-	if (!gifmfifoirq) gifqwc = 0;
-
-	gspath3done = false;
-	gscycles    = 0;
+	
 
 	if (!CHECK_GIFFIFOHACK)
 	{
@@ -772,17 +790,9 @@ void gifMFIFOInterrupt()
 	}
 	//vif1Regs.stat.VGW = false; // old code had this
 
-	gifCheckPathStatus();
+	if (!gifmfifoirq) gifqwc = 0;
 
-	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
-	{
-		if (vif1Regs.stat.VGW)
-		{
-			//Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
-			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
-				CPU_INT(DMAC_VIF1, 1);
-		}
-	}
+	gscycles = 0;
 
 	gifch.chcr.STR = false;
 	gifstate = GIF_STATE_READY;
