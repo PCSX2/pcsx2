@@ -159,7 +159,7 @@ void mfifoVifMaskMem(int id)
 				//DevCon.Warning("VIF MFIFO MADR below bottom of ring buffer, wrapping VIF MADR = %x Ring Bottom %x", vif1ch.madr, dmacRegs.rbor.ADDR);
 				vif1ch.madr = qwctag(vif1ch.madr);
 			}
-			if(vif1ch.madr > (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
+			if(vif1ch.madr > (dmacRegs.rbor.ADDR + (u32)dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
 			{
 				//DevCon.Warning("VIF MFIFO MADR outside top of ring buffer, wrapping VIF MADR = %x Ring Top %x", vif1ch.madr, (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)+16);
 				vif1ch.madr = qwctag(vif1ch.madr);

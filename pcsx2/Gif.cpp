@@ -583,7 +583,7 @@ void mfifoGifMaskMem(int id)
 				//DevCon.Warning("GIF MFIFO MADR below bottom of ring buffer, wrapping GIF MADR = %x Ring Bottom %x", gifch.madr, dmacRegs.rbor.ADDR);
 				gifch.madr = qwctag(gifch.madr);
 			}
-			if(gifch.madr > (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
+			if(gifch.madr > (dmacRegs.rbor.ADDR + (u32)dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
 			{
 				//DevCon.Warning("GIF MFIFO MADR outside top of ring buffer, wrapping GIF MADR = %x Ring Top %x", gifch.madr, (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)+16);
 				gifch.madr = qwctag(gifch.madr);

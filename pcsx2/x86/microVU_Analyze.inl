@@ -402,7 +402,7 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 		if (i && mVUstall) {
 			DevCon.Warning("microVU%d: Branch VI-Delay with %d cycle stall (%d) [%04x]", getIndex, mVUstall, i, xPC);
 		}
-		if (i == mVUcount) {
+		if (i == (int)mVUcount) {
 			bool warn = false;
 
 			if (i == 1)
