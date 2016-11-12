@@ -60,7 +60,7 @@ BaseMessageBoxEvent::BaseMessageBoxEvent( const wxString& content, SynchronousAc
 }
 
 BaseMessageBoxEvent::BaseMessageBoxEvent( const BaseMessageBoxEvent& event )
-	: m_Content( event.m_Content )
+	: pxActionEvent(), m_Content( event.m_Content )
 {
 	m_state = event.m_state;
 }
