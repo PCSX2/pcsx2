@@ -192,9 +192,8 @@ bool IOCtlSrc::ReadCDInfo()
 
     // TODO: Do I need a fallback if this doesn't work?
     entry.cdte_track = 0xAA;
-    ioctl(m_device, CDROMREADTOCENTRY, &entry);
-    m_toc.push_back({static_cast<u32>(entry.cdte_addr.lba), entry.cdte_track,
-                     entry.cdte_adr, entry.cdte_ctrl});
+    if (ioctl(m_device, CDROMREADTOCENTRY, &entry) == -1)
+        return false;
 
     m_sectors = entry.cdte_addr.lba;
     m_media_type = -1;
