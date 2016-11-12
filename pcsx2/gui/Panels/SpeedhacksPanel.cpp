@@ -123,8 +123,8 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
 	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
 
-	left->SetMinWidth( 350 );
-	right->SetMinWidth( 350 );
+	left->SetMinWidth( 440 );
+	right->SetMinWidth( 440 );
 
 	m_button_Defaults = new wxButton( right, wxID_DEFAULT, _("Restore Defaults") );
 	pxSetToolTip( m_button_Defaults, _("Resets all speedhack options to their defaults, which consequently turns them all OFF.") );
