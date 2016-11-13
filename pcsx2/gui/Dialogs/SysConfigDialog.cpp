@@ -229,6 +229,21 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 	AddOkCancel();
 	AddPresetsControl();
 
+	// Add scrollbars to Speedhacks and Gamefixes panels if dialog size
+	// exceed desktop size.
+	// Assume user have panels with 50px size in total.
+	if(GetBestSize().GetWidth() >= (wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 50) ||
+		GetBestSize().GetHeight() >= (wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) - 50))
+	{
+		for(int i = 4; i <= 5; i++)
+		{
+			wxPanelWithHelpers* panel = (wxPanelWithHelpers*) m_listbook->GetPage(i);
+			panel->InvalidateBestSize();
+			panel->FitInside();
+			panel->SetScrollRate(10, 10);
+		}
+	}
+
 	SetSizerAndFit(GetSizer());
 
 	if( wxGetApp().Overrides.HasCustomHacks() )
