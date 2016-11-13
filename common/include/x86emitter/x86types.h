@@ -56,7 +56,7 @@ enum XMMSSEType
 #	if x86EMIT_MULTITHREADED
 #		if _MSC_VER == 1800
 			define __tls_emit	__threadlocal
-#		elif x86EMIT_MULTITHREADED
+#		else 
 			define __tls_emit	thread_local
 		#endif
 #	else
