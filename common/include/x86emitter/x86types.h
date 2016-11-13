@@ -54,7 +54,11 @@ enum XMMSSEType
 
 #ifndef __tls_emit
 #	if x86EMIT_MULTITHREADED
-#		define __tls_emit	thread_local
+#		if _MSC_VER == 1800
+			define __tls_emit	__threadlocal
+#		elif x86EMIT_MULTITHREADED
+			define __tls_emit	thread_local
+		#endif
 #	else
 		// Using TlsVariable is sub-optimal and could result in huge executables, so we
 		// force-disable TLS entirely, and disallow running multithreaded recompilation
