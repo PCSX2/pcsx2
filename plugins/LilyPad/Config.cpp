@@ -36,7 +36,8 @@ const wchar_t *padTypes[] = {
     L"Unplugged",
     L"Dualshock 2",
     L"Guitar",
-    L"Pop'n Music controller"};
+    L"Pop'n Music controller",
+    L"PS1 Mouse"};
 
 // Hacks or configurations which PCSX2 needs with a specific value
 void PCSX2_overrideConfig(GeneralConfig &config_in_out)
@@ -1890,6 +1891,8 @@ void UpdatePadPages()
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_GUITAR);
             else if (config.padConfigs[port][slot].type == PopnPad)
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_POPN);
+            else if (config.padConfigs[port][slot].type == MousePad)
+                psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_PS1_MOUSE);
             else
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG);
 
@@ -2055,6 +2058,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_MOUSE_UNFOCUS, hWnd);
             AddTooltip(IDC_MULTIPLE_BINDING, hWnd);
             AddTooltip(IDC_PAD_LIST, hWnd);
+            AddTooltip(IDC_PAD_TYPE, hWnd);
             AddTooltip(ID_TEST, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
 

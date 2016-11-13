@@ -86,6 +86,7 @@ unsigned char inBuf[50];
 
 //		windowThreadId = GetWindowThreadProcessId(hWnd, 0);
 
+#define MODE_PS1_MOUSE 0x12
 #define MODE_DIGITAL 0x41
 #define MODE_ANALOG 0x73
 #define MODE_DS2_NATIVE 0x79
@@ -789,7 +790,10 @@ void ResetPad(int port, int slot)
     SetVibrate(port, slot, 1, 0);
 
     memset(&pads[port][slot], 0, sizeof(pads[0][0]));
-    pads[port][slot].mode = MODE_DIGITAL;
+    if (config.padConfigs[port][slot].type == MousePad)
+        pads[port][slot].mode = MODE_PS1_MOUSE;
+    else
+        pads[port][slot].mode = MODE_DIGITAL;
     pads[port][slot].umask[0] = pads[port][slot].umask[1] = 0xFF;
     // Sets up vibrate variable.
     ResetVibrate(port, slot);
@@ -1224,6 +1228,23 @@ u8 CALLBACK PADpoll(u8 value)
                     Update(query.port, query.slot);
                     ButtonSum *sum = &pad->sum;
 
+                    if (config.padConfigs[query.port][query.slot].type == MousePad) {
+                        u8 b1 = 0xFC;
+                        if (sum->buttons[5 + 4] > 0) // Left button
+                            b1 -= 2 << 2;
+                        if (sum->buttons[6 + 4] > 0) // Right button
+                            b1 -= 2 << 1;
+
+                        query.response[3] = 0xFF;
+                        query.response[4] = b1;
+                        query.response[5] = sum->sticks[1].horiz / 2;
+                        query.response[6] = sum->sticks[1].vert / 2;
+                        query.numBytes = 7;
+                        query.lastByte = 1;
+                        DEBUG_OUT(pad->mode);
+                        return pad->mode;
+                    }
+
                     u8 b1 = 0xFF, b2 = 0xFF;
                     for (i = 0; i < 4; i++) {
                         b1 -= (sum->buttons[i] > 0) << i;
@@ -1291,7 +1312,7 @@ u8 CALLBACK PADpoll(u8 value)
             // QUERY_DS2_ANALOG_MODE
             case 0x41:
                 // Right?  Wrong?  No clue.
-                if (pad->mode == MODE_DIGITAL) {
+                if (pad->mode == MODE_DIGITAL || pad->mode == MODE_PS1_MOUSE) {
                     queryMaskMode[1] = queryMaskMode[2] = queryMaskMode[3] = 0;
                     queryMaskMode[6] = 0x00;
                 } else {
@@ -1373,8 +1394,12 @@ u8 CALLBACK PADpoll(u8 value)
             // SET_MODE_AND_LOCK
             case 0x44:
                 if (query.lastByte == 3 && value < 2) {
-                    static const u8 modes[2] = {MODE_DIGITAL, MODE_ANALOG};
-                    pad->mode = modes[value];
+                    if (value == 0 && config.padConfigs[query.port][query.slot].type == MousePad) {
+                        pad->mode = MODE_PS1_MOUSE;
+                    } else {
+                        static const u8 modes[2] = {MODE_DIGITAL, MODE_ANALOG};
+                        pad->mode = modes[value];
+                    }
                 } else if (query.lastByte == 4) {
                     if (value == 3) {
                         pad->modeLock = 3;
@@ -1596,7 +1621,7 @@ s32 CALLBACK PADfreeze(int mode, freezeData *data)
             for (int slot = 0; slot < 4; slot++) {
                 u8 mode = pdata.padData[port][slot].mode;
 
-                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
+                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE && mode != MODE_PS1_MOUSE) {
                     break;
                 }
 

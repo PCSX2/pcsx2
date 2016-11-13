@@ -13,6 +13,7 @@
 #define IDD_DIAG                        110
 #define IDR_INI1                        111
 #define IDD_CONFIG_POPN                 112
+#define IDD_CONFIG_PS1_MOUSE            113
 #define IDC_CLOSE_HACK1                 1099
 #define IDC_KB_DISABLE                  1100
 #define IDC_KB_DI                       1101
