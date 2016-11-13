@@ -140,15 +140,10 @@ __fi void vif0FBRST(u32 value) {
 		vif0Regs.stat.clear_flags(VIF0_STAT_VSS | VIF0_STAT_VFS | VIF0_STAT_VIS |
 				    VIF0_STAT_INT | VIF0_STAT_ER0 | VIF0_STAT_ER1);
 		if (cancel)
-		{
-			if (vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
-			{				
+		{			
 				g_vif0Cycles = 0;
-
 				// loop necessary for spiderman
-				//vif0ch.chcr.STR = true;
 				 if(vif0ch.chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
-			}
 		}
 	}
 }
