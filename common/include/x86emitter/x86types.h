@@ -53,7 +53,7 @@ enum XMMSSEType
 #endif
 
 #ifndef __tls_emit
-#	if MSVC_VER == 1800
+#	if _MSC_VER == 1800
 #		define __tls_emit   __threadlocal
 #	elif x86EMIT_MULTITHREADED
 #		define __tls_emit	thread_local
