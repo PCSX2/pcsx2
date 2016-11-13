@@ -170,7 +170,7 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #	define __noinline		__declspec(noinline)
 #	if _MSC_VER == 1800
 #		define __threadlocal	__declspec(thread)
-#   else
+#   elif
 #		define local_thread 	__declspec(thread)
 #	endif
 
