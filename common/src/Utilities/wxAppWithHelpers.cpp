@@ -693,8 +693,11 @@ wxAppWithHelpers::wxAppWithHelpers()
 	// full optimization builds.  Without it, DLLs that use TLS won't work because the
 	// FS segment register won't have been initialized by the main exe, due to tls_insurance
 	// being optimized away >_<  --air
-
-	static __threadlocal int	tls_insurance = 0;
+#	if _MSC_VER == 1800
+		static __threadlocal int	tls_insurance = 0;
+#	else 
+		static local_thread	 int	tls_insurance = 0;
+#	endif
 	tls_insurance = 1;
 #endif
 }
