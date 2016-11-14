@@ -1230,10 +1230,10 @@ u8 CALLBACK PADpoll(u8 value)
 
                     if (config.padConfigs[query.port][query.slot].type == MousePad) {
                         u8 b1 = 0xFC;
-                        if (sum->buttons[5 + 4] > 0) // Left button
-                            b1 -= 2 << 2;
-                        if (sum->buttons[6 + 4] > 0) // Right button
-                            b1 -= 2 << 1;
+                        if (sum->buttons[9] > 0) // Left button
+                            b1 -= 8;
+                        if (sum->buttons[10] > 0) // Right button
+                            b1 -= 4;
 
                         query.response[3] = 0xFF;
                         query.response[4] = b1;
