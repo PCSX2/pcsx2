@@ -46,6 +46,12 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Right-click to show a pop-up menu that allows for swapping all the settings and bindings, or just the bindings of individual pad types,"
                    L"between the selected pad and one of other active pads, and clearing all the settings and bindings from the selected pad or just the bindings from a selected pad type.\n\n"
                    L"Note: To allow swapping different kinds of pad types(like DS2 to Guitar), the \"Allow binding multiple PS2 Controls...\" option needs to be enabled as well.";
+        case IDC_PAD_TYPE:
+            return L"\"Unplugged\" disables the controller and removes the corresponding pad tab.\n\n"
+                   L"\"Dualshock 2\" emulates the default PS2 controller for use in both PS1 and PS2 games.\n\n"
+                   L"\"Guitar\" emulates a PS2 controller used in the Guitar Hero and Rock Band series of games.\n\n"
+                   L"\"Pop'n Music controller\" emulates a PS2 controller used exclusively in the Japanese Pop'n Music series of games.\n\n"
+                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".";
         case IDC_ANALOG_START1:
             return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
