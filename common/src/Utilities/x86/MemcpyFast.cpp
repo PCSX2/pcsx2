@@ -4,7 +4,7 @@
 #include "PrecompiledHeader.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:4414)
+#pragma warning(disable : 4414)
 #endif
 
 // Inline assembly syntax for use with Visual C++
@@ -15,11 +15,11 @@
 // returns 0 is equal, nonzero value if not equal
 // ~10 times faster than standard memcmp
 // (zerofrog)
-u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
+u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize)
 {
-	pxAssert( (cmpsize&7) == 0 );
+    pxAssert((cmpsize & 7) == 0);
 
-	__asm {
+    __asm {
 		mov ecx, cmpsize
 		mov edx, src1
 		mov esi, src2
@@ -27,7 +27,7 @@ u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
 		cmp ecx, 32
 		jl Done4
 
-		// custom test first 8 to make sure things are ok
+        // custom test first 8 to make sure things are ok
 		movq mm0, [esi]
 		movq mm1, [esi+8]
 		pcmpeqd mm0, [edx]
@@ -37,7 +37,7 @@ u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
 		pmovmskb eax, mm0
 		movq mm3, [esi+24]
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je NextComp
 		mov eax, 1
@@ -53,7 +53,7 @@ NextComp:
 		add esi, 32
 		add edx, 32
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je ContinueTest
 		mov eax, 1
@@ -88,7 +88,7 @@ Cmp8:
 		pand mm0, mm7
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je Continue
 		mov eax, 1
@@ -121,7 +121,7 @@ Done8:
 		add esi, 32
 		add edx, 32
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je Done4
 		mov eax, 1
@@ -140,7 +140,7 @@ Done4:
 		pand mm0, mm2
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		setne al
 		jmp End
@@ -156,7 +156,7 @@ Done2:
 		pand mm0, mm1
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		setne al
 		jmp End
@@ -182,7 +182,7 @@ Done:
 
 End:
 		emms
-	}
+    }
 }
 
 #endif

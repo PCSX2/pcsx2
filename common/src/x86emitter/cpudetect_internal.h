@@ -27,13 +27,12 @@
 class SingleCoreAffinity
 {
 protected:
-
 #ifdef _WIN32
-	HANDLE s_threadId;
-	DWORD_PTR s_oldmask;
+    HANDLE s_threadId;
+    DWORD_PTR s_oldmask;
 #endif
 
 public:
-	SingleCoreAffinity();
-	virtual ~SingleCoreAffinity() throw();
+    SingleCoreAffinity();
+    virtual ~SingleCoreAffinity() throw();
 };

@@ -40,12 +40,12 @@ extern const wxPoint wxDefaultPosition;
 
 namespace Threading
 {
-	class Mutex;
-	class Semaphore;
-	class pxThread;
+class Mutex;
+class Semaphore;
+class pxThread;
 }
 
 namespace Exception
 {
-	class BaseException;
+class BaseException;
 }

@@ -32,26 +32,30 @@
 // CPU information support
 #if defined(_WIN32)
 
-#define cpuid	__cpuid
+#define cpuid __cpuid
 #define cpuidex __cpuidex
 
 #else
 
 #include <cpuid.h>
 
-static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count) {
-	__cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count)
+{
+    __cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
-static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const int InfoType) {
-	__cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const int InfoType)
+{
+    __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
 static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
 {
-	unsigned int eax, edx;
-	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-	return ((unsigned long long)edx << 32) | eax;
+    unsigned int eax, edx;
+    __asm__ __volatile__("xgetbv"
+                         : "=a"(eax), "=d"(edx)
+                         : "c"(index));
+    return ((unsigned long long)edx << 32) | eax;
 }
 
 #endif
@@ -61,16 +65,16 @@ static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsi
 // Seriously what is so complicated to provided this bunch of intrinsics in clangs.
 static unsigned int _rotr(unsigned int x, int s)
 {
-	return (x >> s) | (x << (32 - s));
+    return (x >> s) | (x << (32 - s));
 }
 
 static unsigned int _rotl(unsigned int x, int s)
 {
-	return (x << s) | (x >> (32 - s));
+    return (x << s) | (x >> (32 - s));
 }
 #endif
 
 // Not correctly defined in GCC4.8 and below ! (dunno for VS)
 #ifndef _MM_MK_INSERTPS_NDX
-#define _MM_MK_INSERTPS_NDX(srcField, dstField, zeroMask) (((srcField)<<6) | ((dstField)<<4) | (zeroMask))
+#define _MM_MK_INSERTPS_NDX(srcField, dstField, zeroMask) (((srcField) << 6) | ((dstField) << 4) | (zeroMask))
 #endif

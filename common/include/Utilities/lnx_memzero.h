@@ -18,43 +18,43 @@
 
 // This header contains non-optimized implementation of memzero_ptr and memset8, etc
 
-template< u32 data, typename T >
-static __fi void memset32( T& obj )
+template <u32 data, typename T>
+static __fi void memset32(T &obj)
 {
-	// this function works on 32-bit aligned lengths of data only.
-	// If the data length is not a factor of 32 bits, the C++ optimizing compiler will
-	// probably just generate mysteriously broken code in Release builds. ;)
+    // this function works on 32-bit aligned lengths of data only.
+    // If the data length is not a factor of 32 bits, the C++ optimizing compiler will
+    // probably just generate mysteriously broken code in Release builds. ;)
 
-	pxAssume((sizeof(T) & 0x3) == 0);
+    pxAssume((sizeof(T) & 0x3) == 0);
 
-	u32* dest = (u32*)&obj;
-	for( int i=sizeof(T)>>2; i; --i, ++dest )
-		*dest = data;
+    u32 *dest = (u32 *)&obj;
+    for (int i = sizeof(T) >> 2; i; --i, ++dest)
+        *dest = data;
 }
 
-template< typename T >
-static __fi void memzero( T& obj )
+template <typename T>
+static __fi void memzero(T &obj)
 {
-	memset( &obj, 0, sizeof( T ) );
+    memset(&obj, 0, sizeof(T));
 }
 
-template< u8 data, typename T >
-static __fi void memset8( T& obj )
+template <u8 data, typename T>
+static __fi void memset8(T &obj)
 {
-	// Aligned sizes use the optimized 32 bit inline memset.  Unaligned sizes use memset.
-	if( (sizeof(T) & 0x3) != 0 )
-		memset( &obj, data, sizeof( T ) );
-	else {
-		const u32 data32 = data + (data<<8) + (data<<16) + (data<<24);
-		memset32<data32>( obj );
-	}
+    // Aligned sizes use the optimized 32 bit inline memset.  Unaligned sizes use memset.
+    if ((sizeof(T) & 0x3) != 0)
+        memset(&obj, data, sizeof(T));
+    else {
+        const u32 data32 = data + (data << 8) + (data << 16) + (data << 24);
+        memset32<data32>(obj);
+    }
 }
 
 // Code is only called in the init so no need to bother with ASM
-template< u8 data, size_t bytes >
-static __fi void memset_8( void *dest )
+template <u8 data, size_t bytes>
+static __fi void memset_8(void *dest)
 {
-	memset(dest, data, bytes);
+    memset(dest, data, bytes);
 }
 
 #endif

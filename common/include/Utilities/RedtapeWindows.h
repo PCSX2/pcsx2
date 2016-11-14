@@ -16,7 +16,7 @@
 #pragma once
 
 #ifdef __WXMSW__
-#	include <wx/msw/wrapwin.h>
+#include <wx/msw/wrapwin.h>
 #else
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 // check, so that we don't have to do it explicitly in every instance where it might
 // be needed from non-Win32-specific files
 
-#define NOMINMAX		// Disables other libs inclusion of their own min/max macros (we use std instead)
+#define NOMINMAX // Disables other libs inclusion of their own min/max macros (we use std instead)
 
 #ifdef _WIN32
 

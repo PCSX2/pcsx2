@@ -38,49 +38,61 @@
 // MTAP SIO plugins should ignore slot values on startPoll, as should RMs (probably).
 
 // Port isn't strictly necessary, but doesn't hurt.
-typedef int (CALLBACK * SIOchangeSlotCB)(int port, int slot);
+typedef int(CALLBACK *SIOchangeSlotCB)(int port, int slot);
 
 // Basic functions.
 
 // Types is an or-ed combination of SioTypes to initialize.  It'd probably be simplest
 // just to make each SIO plugin support only one type, for simplicity.
 // SIOchangeSlotCB should *only* be called by MTAP plugins.
-EXPORT_C_(s32) SIOinit(int types, SIOchangeSlotCB f);
+EXPORT_C_(s32)
+SIOinit(int types, SIOchangeSlotCB f);
 
 // Single plugin can only be PAD, MTAP, RM, or MC.  Only load one plugin of each type,
 // but not both a PAD and MTAP.  Simplifies plugin selection and interface, as well
 // as API.
 // pDisplay normally is passed a handle to the GS plugins window.
-EXPORT_C_(s32) SIOopen(void *pDisplay);
-EXPORT_C_(void) SIOclose();
-EXPORT_C_(void) SIOshutdown();
+EXPORT_C_(s32)
+SIOopen(void *pDisplay);
+EXPORT_C_(void)
+SIOclose();
+EXPORT_C_(void)
+SIOshutdown();
 
 // Returns 0 if device doesn't exist.  Means old pad plugins can just say nothing
 // connected to other slots, and SIOpoll won't be called on those slots, ideally.
-EXPORT_C_(s32) SIOstartPoll(u8 deviceType, u32 port, u32 slot, u8 *returnValue);
+EXPORT_C_(s32)
+SIOstartPoll(u8 deviceType, u32 port, u32 slot, u8 *returnValue);
 
 // Returns 0 on the last output byte.
-EXPORT_C_(s32) SIOpoll(u8 value, u8 *returnValue);
+EXPORT_C_(s32)
+SIOpoll(u8 value, u8 *returnValue);
 
 // returns: SIO_TYPE_{PAD,MTAP,RM,MC}
-EXPORT_C_(u32) SIOquery();
+EXPORT_C_(u32)
+SIOquery();
 
 // extended funcs
 
-EXPORT_C_(void) SIOconfigure();
-EXPORT_C_(keyEvent*) CALLBACK SIOkeyEvent();
+EXPORT_C_(void)
+SIOconfigure();
+EXPORT_C_(keyEvent *)
+CALLBACK SIOkeyEvent();
 
 // Save one type at a time.  If a plugin supports all 4 types,
 // should expect 4 calls.  Increases savestate compatibility.
-EXPORT_C_(s32) SIOfreeze(u8 mode, freezeData *data, int type);
-EXPORT_C_(void) SIOabout();
-EXPORT_C_(s32) SIOtest();
+EXPORT_C_(s32)
+SIOfreeze(u8 mode, freezeData *data, int type);
+EXPORT_C_(void)
+SIOabout();
+EXPORT_C_(s32)
+SIOtest();
 
 enum {
-SIO_TYPE_PAD = 0x00000001,
-SIO_TYPE_MTAP = 0x00000004,
-SIO_TYPE_RM = 0x00000040,
-SIO_TYPE_MC = 0x00000100
+    SIO_TYPE_PAD = 0x00000001,
+    SIO_TYPE_MTAP = 0x00000004,
+    SIO_TYPE_RM = 0x00000040,
+    SIO_TYPE_MC = 0x00000100
 } SioTypes;
 
 #endif // __SIOAPI_H__

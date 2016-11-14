@@ -16,30 +16,30 @@
 #pragma once
 
 #ifdef _MSC_VER
-#	pragma warning(disable:4063)	// case '1' is not a valid value for switch()
+#pragma warning(disable : 4063) // case '1' is not a valid value for switch()
 #endif
 
 // These functions are meant for memset operations of constant length only.
 // For dynamic length clears, use the C-compiler provided memset instead.
 
-template< u8 data, size_t bytes >
-static __fi void memset_8( void *dest )
+template <u8 data, size_t bytes>
+static __fi void memset_8(void *dest)
 {
-	memset(dest, data, bytes);
+    memset(dest, data, bytes);
 }
 
 // This method can clear any object-like entity -- which is anything that is not a pointer.
 // Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
 // for you!
-template< typename T >
-static __fi void memzero( T& object )
+template <typename T>
+static __fi void memzero(T &object)
 {
-	memset(&object, 0, sizeof(T));
+    memset(&object, 0, sizeof(T));
 }
 
 // This method clears an object with the given 8 bit value.
-template< u8 data, typename T >
-static __fi void memset8( T& object )
+template <u8 data, typename T>
+static __fi void memset8(T &object)
 {
-	memset_8<data, sizeof(T)>( &object );
+    memset_8<data, sizeof(T)>(&object);
 }

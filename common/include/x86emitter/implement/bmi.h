@@ -17,21 +17,22 @@
 
 // Implement BMI1/BMI2 instruction set
 
-namespace x86Emitter {
+namespace x86Emitter
+{
 
-	struct xImplBMI_RVM
-	{
-		u8 Prefix;
-		u8 MbPrefix;
-		u8 Opcode;
+struct xImplBMI_RVM
+{
+    u8 Prefix;
+    u8 MbPrefix;
+    u8 Opcode;
 
-		// RVM
-		// MULX 	Unsigned multiply without affecting flags, and arbitrary destination registers
-		// PDEP 	Parallel bits deposit
-		// PEXT 	Parallel bits extract
-		// ANDN 	Logical and not 	~x & y
-		void operator()( const xRegisterInt& to, const xRegisterInt& from1, const xRegisterInt& from2) const;
-		void operator()( const xRegisterInt& to, const xRegisterInt& from1, const xIndirectVoid& from2) const;
+    // RVM
+    // MULX 	Unsigned multiply without affecting flags, and arbitrary destination registers
+    // PDEP 	Parallel bits deposit
+    // PEXT 	Parallel bits extract
+    // ANDN 	Logical and not 	~x & y
+    void operator()(const xRegisterInt &to, const xRegisterInt &from1, const xRegisterInt &from2) const;
+    void operator()(const xRegisterInt &to, const xRegisterInt &from1, const xIndirectVoid &from2) const;
 
 #if 0
 		// RMV
@@ -56,6 +57,5 @@ namespace x86Emitter {
 		void operator()( const xRegisterInt& to, const xRegisterInt& from, u8 imm) const;
 		void operator()( const xRegisterInt& to, const xIndirectVoid& from, u8 imm) const;
 #endif
-	};
-
+};
 }

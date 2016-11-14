@@ -15,7 +15,8 @@
 
 #pragma once
 
-namespace HashTools {
+namespace HashTools
+{
 
 /// <summary>
 ///   Type that represents a hashcode; returned by all hash functions.
@@ -26,7 +27,5 @@ namespace HashTools {
 /// </remarks>
 typedef u32 hash_key_t;
 
-hash_key_t Hash(const char* data, int len);
-
+hash_key_t Hash(const char *data, int len);
 }
-

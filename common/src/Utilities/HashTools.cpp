@@ -16,9 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "HashMap.h"
 
-namespace HashTools {
+namespace HashTools
+{
 
-#define get16bits(d) (*((const u16 *) (d)))
+#define get16bits(d) (*((const u16 *)(d)))
 
 /// <summary>
 ///   Calculates a hash value for an arbitrary set of binary data.
@@ -52,51 +53,53 @@ namespace HashTools {
 ///		uint32 hashval = Hash( (const char*)&data, sizeof( data ) );
 ///   </code>
 /// </example>
-u32 Hash(const s8 * data, int len)
+u32 Hash(const s8 *data, int len)
 {
-	u32 hash = len;
-	int rem;
+    u32 hash = len;
+    int rem;
 
-	if (len <= 0 || data == NULL) return 0;
+    if (len <= 0 || data == NULL)
+        return 0;
 
-	rem = len & 3;
-	len >>= 2;
+    rem = len & 3;
+    len >>= 2;
 
-	/* Main loop */
-	for (;len > 0; --len)
-	{
-		hash  += get16bits (data);
-		u32 tmp = (get16bits (data+2) << 11) ^ hash;
-		hash   = (hash << 16) ^ tmp;
-		data  += 2*sizeof (u16);
-		hash  += hash >> 11;
-	}
+    /* Main loop */
+    for (; len > 0; --len) {
+        hash += get16bits(data);
+        u32 tmp = (get16bits(data + 2) << 11) ^ hash;
+        hash = (hash << 16) ^ tmp;
+        data += 2 * sizeof(u16);
+        hash += hash >> 11;
+    }
 
-	/* Handle end cases */
-	switch (rem)
-	{
-		case 3: hash += get16bits (data);
-				hash ^= hash << 16;
-				hash ^= data[sizeof (u16)] << 18;
-				hash += hash >> 11;
-				break;
-		case 2: hash += get16bits (data);
-				hash ^= hash << 11;
-				hash += hash >> 17;
-				break;
-		case 1: hash += *data;
-				hash ^= hash << 10;
-				hash += hash >> 1;
-	}
+    /* Handle end cases */
+    switch (rem) {
+        case 3:
+            hash += get16bits(data);
+            hash ^= hash << 16;
+            hash ^= data[sizeof(u16)] << 18;
+            hash += hash >> 11;
+            break;
+        case 2:
+            hash += get16bits(data);
+            hash ^= hash << 11;
+            hash += hash >> 17;
+            break;
+        case 1:
+            hash += *data;
+            hash ^= hash << 10;
+            hash += hash >> 1;
+    }
 
-	/* Force "avalanching" of final 127 bits */
-	hash ^= hash << 3;
-	hash += hash >> 5;
-	hash ^= hash << 4;
-	hash += hash >> 17;
-	hash ^= hash << 25;
-	hash += hash >> 6;
+    /* Force "avalanching" of final 127 bits */
+    hash ^= hash << 3;
+    hash += hash >> 5;
+    hash ^= hash << 4;
+    hash += hash >> 17;
+    hash ^= hash << 25;
+    hash += hash >> 6;
 
-	return hash;
+    return hash;
 }
 }

@@ -15,7 +15,8 @@
 
 #pragma once
 
-namespace x86Emitter {
+namespace x86Emitter
+{
 
 // Implementations here cover SHLD and SHRD.
 
@@ -30,14 +31,14 @@ namespace x86Emitter {
 //
 struct xImpl_DwordShift
 {
-	u16		OpcodeBase;
+    u16 OpcodeBase;
 
-	void operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, const xRegisterCL& clreg ) const;
+    void operator()(const xRegister16or32or64 &to, const xRegister16or32or64 &from, const xRegisterCL &clreg) const;
 
-	void operator()( const xRegister16or32or64& to,	const xRegister16or32or64& from, u8 shiftcnt ) const;
+    void operator()(const xRegister16or32or64 &to, const xRegister16or32or64 &from, u8 shiftcnt) const;
 
-	void operator()( const xIndirectVoid& dest,const xRegister16or32or64& from, const xRegisterCL& clreg ) const;
-	void operator()( const xIndirectVoid& dest,const xRegister16or32or64& from, u8 shiftcnt ) const;
+    void operator()(const xIndirectVoid &dest, const xRegister16or32or64 &from, const xRegisterCL &clreg) const;
+    void operator()(const xIndirectVoid &dest, const xRegister16or32or64 &from, u8 shiftcnt) const;
 };
 
-}	// End namespace x86Emitter
+} // End namespace x86Emitter
