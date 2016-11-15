@@ -100,6 +100,9 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 {
 	m_sel.key = key;
 
+	if(m_sel.breakpoint)
+		int3();
+
 	Generate();
 }
 

@@ -69,6 +69,8 @@ union GSScanlineSelector
 		uint32 mmin:2; // 53
 		uint32 notest:1; // 54 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
+
+		uint32 breakpoint:1; // Insert a trap to stop the program, helpful to stop debugger on a program
 	};
 
 	struct
@@ -76,6 +78,7 @@ union GSScanlineSelector
 		uint32 _pad1:22;
 		uint32 ababcd:8;
 		uint32 _pad2:2;
+
 		uint32 fb:2;
 		uint32 _pad3:1;
 		uint32 zb:2;
@@ -88,6 +91,9 @@ union GSScanlineSelector
 	};
 
 	uint64 key;
+
+	GSScanlineSelector() = default;
+	GSScanlineSelector(uint64 k) : key(k) {}
 
 	operator uint32() const {return lo;}
 	operator uint64() const {return key;}
@@ -102,6 +108,18 @@ union GSScanlineSelector
 			&& atst <= 1
 			&& date == 0
 			&& fge == 0;
+	}
+
+	void Print() const
+	{
+		fprintf(stderr, "fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
+				"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
+				"fba:%d cclamp:%d date:%d datm:%d "
+				"prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d\n",
+				fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
+				tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
+				fba, colclamp, date, datm,
+				prim, abe, aba, abb, abc, abd , fge, dthe, notest);
 	}
 };
 
