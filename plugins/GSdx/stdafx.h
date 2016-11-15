@@ -269,10 +269,28 @@ using namespace stdext;
 
 	#define _M_AMD64
 
+	// Yeah let use mips naming ;)
+	#ifdef _WIN64
+	#define a0 rcx
+	#define a1 rdx
+	#define a2 r8
+	#define a3 r9
+	#define t0 rdi
+	#define t1 rsi
+	#else
+	#define a0 rdi
+	#define a1 rsi
+	#define a2 rdx
+	#define a3 rcx
+	#define t0 r8
+	#define t1 r9
+	#endif
+
 #endif
 
 // sse
 #if defined(__GNUC__) && !defined(__x86_64__)
+
 // Convert gcc see define into GSdx (windows) define
 #if defined(__AVX2__)
 	#define _M_SSE 0x501
@@ -288,6 +306,21 @@ using namespace stdext;
 	#define _M_SSE 0x200
 #elif defined(__SSE__)
 	#define _M_SSE 0x100
+#endif
+
+#elif defined(__GNUC__)
+
+#if defined(__AVX2__)
+// FIXME until code is done
+	#define _M_SSE 0x500
+#elif defined(__AVX__)
+	#define _M_SSE 0x500
+#elif defined(__SSE4_1__)
+	#define _M_SSE 0x401
+#else
+// FIXME won't likely be supported but allow to compile the code
+// Note: from steam survey SSE4.1 is supported by 87% (end of 2015)
+	#define _M_SSE 0x200
 #endif
 
 #endif
