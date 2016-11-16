@@ -472,6 +472,11 @@ struct GLAutoPop {
 const std::string root_sw("c:\\temp1\\_");
 const std::string root_hw("c:\\temp2\\_");
 #else
-const std::string root_sw("/tmp/GS_SW_dump/");
-const std::string root_hw("/tmp/GS_HW_dump/");
+#ifdef _M_AMD64
+const std::string root_sw("/tmp/GS_SW_dump64/");
+const std::string root_hw("/tmp/GS_HW_dump64/");
+#else
+const std::string root_sw("/tmp/GS_SW_dump32/");
+const std::string root_hw("/tmp/GS_HW_dump32/");
+#endif
 #endif
