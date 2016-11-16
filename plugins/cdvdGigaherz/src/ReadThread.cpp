@@ -108,6 +108,23 @@ void cdvdCacheReset()
     }
 }
 
+bool cdvdReadBlockOfSectors(u32 sector, s32 mode, u8 *data)
+{
+    u32 count = std::min(16U, src->GetSectorCount() - sector);
+
+    // TODO: Is it really necessary to retry 3 times if it fails?
+    for (int tries = 0; tries < 4; ++tries) {
+        if (mode == CDVD_MODE_2048) {
+            if (src->ReadSectors2048(sector, count, data))
+                return true;
+        } else {
+            if (src->ReadSectors2352(sector, count, data))
+                return true;
+        }
+    }
+    return false;
+}
+
 void cdvdCallNewDiscCB()
 {
     weAreInNewDiskCB = true;
@@ -170,19 +187,8 @@ void cdvdThread()
         }
 
         if (threadRequestPending || prefetch_left) {
-            u32 count = std::min(16U, src->GetSectorCount() - info.lsn);
-
-            for (int tries = 0; tries < 4; ++tries) {
-                if (info.mode == CDVD_MODE_2048) {
-                    if (src->ReadSectors2048(info.lsn, count, info.data))
-                        break;
-                } else {
-                    if (src->ReadSectors2352(info.lsn, count, info.data))
-                        break;
-                }
-            }
-
-            cdvdCacheUpdate(info.lsn, info.mode, info.data);
+            if (cdvdReadBlockOfSectors(info.lsn, info.mode, info.data))
+                cdvdCacheUpdate(info.lsn, info.mode, info.data);
 
             if (handlingRequest) {
                 threadRequestInfo = info;
@@ -286,19 +292,8 @@ s32 cdvdDirectReadSector(u32 first, s32 mode, u8 *buffer)
     u32 sector = first & (~15); //align to 16-sector block
 
     if (!cdvdCacheFetch(sector, mode, data)) {
-        u32 count = std::min(16U, src->GetSectorCount() - sector);
-
-        for (int tries = 0; tries < 4; ++tries) {
-            if (mode == CDVD_MODE_2048) {
-                if (src->ReadSectors2048(sector, count, data))
-                    break;
-            } else {
-                if (src->ReadSectors2352(sector, count, data))
-                    break;
-            }
-        }
-
-        cdvdCacheUpdate(sector, mode, data);
+        if (cdvdReadBlockOfSectors(sector, mode, data))
+            cdvdCacheUpdate(sector, mode, data);
     }
 
     if (mode == CDVD_MODE_2048) {
