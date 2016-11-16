@@ -77,6 +77,14 @@ void cdvdCacheUpdate(u32 lsn, s32 mode, u8 *data)
     Cache[entry].mode = mode;
 }
 
+bool cdvdCacheCheck(u32 lsn, s32 mode)
+{
+    std::lock_guard<std::mutex> guard(s_cache_lock);
+    u32 entry = cdvdSectorHash(lsn, mode);
+
+    return Cache[entry].lsn == lsn && Cache[entry].mode == mode;
+}
+
 bool cdvdCacheFetch(u32 lsn, s32 mode, u8 *data)
 {
     std::lock_guard<std::mutex> guard(s_cache_lock);
