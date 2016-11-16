@@ -480,6 +480,8 @@ void CtrlRegisterList::setCurrentRow(int row)
 	{
 	case DebugInterface::NORMAL:
 		value = cpu->getRegister(category,row);
+		postEvent(debEVT_REFERENCEMEMORYVIEW, value._u32[0]);
+
 		switch (cpu->getRegisterSize(category))
 		{
 		case 128:
