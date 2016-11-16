@@ -31,6 +31,7 @@ public:
 	void charEvent(wxKeyEvent& evt);
 	void redraw();
 	void gotoAddress(u32 address, bool pushInHistory = false);
+	void updateReference(u32 address);
 
 	DECLARE_EVENT_TABLE()
 private:
@@ -50,7 +51,9 @@ private:
 	int rowHeight;
 	int charWidth;
 	u32 windowStart;
-	u32 curAddress;
+	bool alignWindowStart;
+	u32 curAddress; // current selected address
+	u32 referencedAddress; // refrenced by register
 	u32 byteGroupSize;
 	int rowSize;
 	wxFont font,underlineFont;
