@@ -37,7 +37,6 @@ static std::thread s_thread;
 static std::mutex s_notify_lock;
 static std::condition_variable s_notify_cv;
 static std::mutex s_request_lock;
-static std::condition_variable s_request_cv;
 static std::mutex s_cache_lock;
 
 static std::atomic<bool> cdvd_is_open;
@@ -195,7 +194,6 @@ void cdvdThread()
 
                 handlingRequest = false;
                 threadRequestPending = false;
-                s_request_cv.notify_one();
 
                 prefetch_last_lba = info.lsn;
                 prefetch_last_mode = info.mode;
@@ -259,19 +257,20 @@ s32 cdvdRequestComplete()
 
 u8 *cdvdGetSector(u32 sector, s32 mode)
 {
-    {
-        std::unique_lock<std::mutex> guard(s_request_lock);
-        while (threadRequestPending)
-            s_request_cv.wait_for(guard, std::chrono::milliseconds(10));
-    }
+    static u8 buffer[2352 * 16];
+    u32 sector_block = sector & ~15;
+
+    if (!cdvdCacheFetch(sector_block, mode, buffer))
+        if (cdvdReadBlockOfSectors(sector_block, mode, buffer))
+            cdvdCacheUpdate(sector_block, mode, buffer);
 
     if (mode == CDVD_MODE_2048) {
-        u32 offset = 2048 * (sector - threadRequestInfo.lsn);
-        return threadRequestInfo.data + offset;
+        u32 offset = 2048 * (sector - sector_block);
+        return buffer + offset;
     }
 
-    u32 offset = 2352 * (sector - threadRequestInfo.lsn);
-    u8 *data = threadRequestInfo.data + offset;
+    u32 offset = 2352 * (sector - sector_block);
+    u8 *data = buffer + offset;
 
     switch (mode) {
         case CDVD_MODE_2328:
