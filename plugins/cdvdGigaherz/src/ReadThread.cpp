@@ -176,7 +176,7 @@ void cdvdThread()
     while (cdvd_is_open) {
         if (cdvdUpdateDiscStatus()) {
             // Need to sleep some to avoid an aggressive spin that sucks the cpu dry.
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            s_notify_cv.wait_for(guard, std::chrono::milliseconds(10));
             continue;
         }
 
