@@ -130,10 +130,10 @@ void keepAliveThread()
                                     []() { return !s_keepalive_is_open; })) {
 
         //printf(" * keepAliveThread: polling drive.\n");
-        //if (prefetch_last_mode == CDVD_MODE_2048)
-        src->ReadSectors2048(prefetch_last_lba, 1, throwaway);
-        //else
-        //	src->ReadSectors2352(prefetch_last_lba, 1, throwaway);
+        if (prefetch_last_mode == CDVD_MODE_2048)
+            src->ReadSectors2048(prefetch_last_lba, 1, throwaway);
+        else
+            src->ReadSectors2352(prefetch_last_lba, 1, throwaway);
     }
 
     printf(" * CDVD: KeepAlive thread finished.\n");
