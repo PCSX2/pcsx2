@@ -17,7 +17,14 @@
 #include <atomic>
 #include <condition_variable>
 #include <limits>
+#include <queue>
 #include <thread>
+
+struct CacheRequest
+{
+    u32 lsn;
+    s32 mode;
+};
 
 struct SectorInfo
 {
@@ -37,6 +44,7 @@ static std::thread s_thread;
 static std::mutex s_notify_lock;
 static std::condition_variable s_notify_cv;
 static std::mutex s_request_lock;
+static std::queue<CacheRequest> s_request_queue;
 static std::mutex s_cache_lock;
 
 static std::atomic<bool> cdvd_is_open;
@@ -46,9 +54,6 @@ static std::atomic<bool> cdvd_is_open;
 
 const u32 CacheSize = 1U << CACHE_SIZE;
 SectorInfo Cache[CacheSize];
-
-bool threadRequestPending;
-SectorInfo threadRequestInfo;
 
 u32 cdvdSectorHash(u32 lsn, s32 mode)
 {
@@ -149,6 +154,12 @@ bool cdvdUpdateDiscStatus()
 
             disc_has_changed = false;
             cdvdRefreshData();
+
+            {
+                std::lock_guard<std::mutex> request_guard(s_request_lock);
+                s_request_queue = std::queue<CacheRequest>();
+            }
+
             cdvdCallNewDiscCB();
         }
     }
@@ -157,6 +168,8 @@ bool cdvdUpdateDiscStatus()
 
 void cdvdThread()
 {
+    u8 buffer[2352 * 16];
+
     printf(" * CDVD: IO thread started...\n");
     std::unique_lock<std::mutex> guard(s_notify_lock);
 
@@ -173,30 +186,29 @@ void cdvdThread()
         if (!cdvd_is_open)
             break;
 
-        static SectorInfo info;
+        bool handling_request = false;
+        CacheRequest request;
 
-        bool handlingRequest = false;
-
-        if (threadRequestPending) {
-            info = threadRequestInfo;
-            handlingRequest = true;
-        } else {
-            info.lsn = prefetch_last_lba;
-            info.mode = prefetch_last_mode;
+        {
+            std::lock_guard<std::mutex> request_guard(s_request_lock);
+            if (!s_request_queue.empty()) {
+                request = s_request_queue.front();
+                s_request_queue.pop();
+                handling_request = true;
+            } else {
+                request.lsn = prefetch_last_lba;
+                request.mode = prefetch_last_mode;
+            }
         }
 
-        if (threadRequestPending || prefetch_left) {
-            if (cdvdReadBlockOfSectors(info.lsn, info.mode, info.data))
-                cdvdCacheUpdate(info.lsn, info.mode, info.data);
+        if (handling_request || prefetch_left) {
+            if (!cdvdCacheCheck(request.lsn, request.mode))
+                if (cdvdReadBlockOfSectors(request.lsn, request.mode, buffer))
+                    cdvdCacheUpdate(request.lsn, request.mode, buffer);
 
-            if (handlingRequest) {
-                threadRequestInfo = info;
-
-                handlingRequest = false;
-                threadRequestPending = false;
-
-                prefetch_last_lba = info.lsn;
-                prefetch_last_mode = info.mode;
+            if (handling_request) {
+                prefetch_last_lba = request.lsn;
+                prefetch_last_mode = request.mode;
 
                 prefetch_left = prefetch_max_blocks;
             } else {
@@ -237,22 +249,17 @@ s32 cdvdRequestSector(u32 sector, s32 mode)
 
     sector &= ~15; //align to 16-sector block
 
-    threadRequestInfo.lsn = sector;
-    threadRequestInfo.mode = mode;
-    threadRequestPending = false;
-    if (cdvdCacheFetch(sector, mode, threadRequestInfo.data)) {
+    if (cdvdCacheCheck(sector, mode))
         return 0;
+
+    {
+        std::lock_guard<std::mutex> guard(s_request_lock);
+        s_request_queue.push({sector, mode});
     }
 
-    threadRequestPending = true;
     s_notify_cv.notify_one();
 
     return 0;
-}
-
-s32 cdvdRequestComplete()
-{
-    return !threadRequestPending;
 }
 
 u8 *cdvdGetSector(u32 sector, s32 mode)
