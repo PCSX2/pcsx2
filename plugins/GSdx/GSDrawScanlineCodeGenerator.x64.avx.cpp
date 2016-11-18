@@ -47,6 +47,18 @@
 
 #if _M_SSE == 0x500 && (defined(_M_AMD64) || defined(_WIN64))
 
+#ifdef _WIN64
+#else
+static const int _rz_rbx = -8 * 1;
+static const int _rz_r12 = -8 * 2;
+static const int _rz_r13 = -8 * 3;
+static const int _rz_r14 = -8 * 4;
+static const int _rz_r15 = -8 * 5;
+static const int _rz_zs  = -8 * 8;
+static const int _rz_zd  = -8 * 10;
+static const int _rz_cov = -8 * 12;
+#endif
+
 void GSDrawScanlineCodeGenerator::Generate()
 {
 	bool need_tex = m_sel.fb && m_sel.tfx != TFX_NONE;
@@ -69,13 +81,13 @@ void GSDrawScanlineCodeGenerator::Generate()
 #else
 	// No reservation on the stack as a red zone is available
 	push(rbp);
-	mov(ptr[rsp - 1 * 8], rbx);
-	mov(ptr[rsp - 2 * 8], r12);
-	mov(ptr[rsp - 3 * 8], r13);
+	mov(ptr[rsp + _rz_rbx], rbx);
+	mov(ptr[rsp + _rz_r12], r12);
+	mov(ptr[rsp + _rz_r13], r13);
 	if(need_clut)
-		mov(ptr[rsp - 4 * 8], r14);
+		mov(ptr[rsp + _rz_r14], r14);
 	if(need_tex)
-		mov(ptr[rsp - 5 * 8], r15);
+		mov(ptr[rsp + _rz_r15], r15);
 #endif
 
 	mov(r10, (size_t)&m_test[0]);
@@ -252,13 +264,13 @@ L("exit");
 	pop(rsi);
 	pop(rbx);
 #else
-	mov(rbx, ptr[rsp - 1 * 8]);
-	mov(r12, ptr[rsp - 2 * 8]);
-	mov(r13, ptr[rsp - 3 * 8]);
+	mov(rbx, ptr[rsp + _rz_rbx]);
+	mov(r12, ptr[rsp + _rz_r12]);
+	mov(r13, ptr[rsp + _rz_r13]);
 	if(need_clut)
-		mov(r14, ptr[rsp - 4 * 8]);
+		mov(r14, ptr[rsp + _rz_r14]);
 	if(need_tex)
-		mov(r15, ptr[rsp - 5 * 8]);
+		mov(r15, ptr[rsp + _rz_r15]);
 	pop(rbp);
 #endif
 
@@ -375,7 +387,11 @@ void GSDrawScanlineCodeGenerator::Init()
 			vpshufd(xmm1, xmm1, _MM_SHUFFLE(3, 3, 3, 3));
 			vpsrlw(xmm1, 9);
 
+#ifdef _WIN64
 			vmovdqa(ptr[_m_local + offsetof(GSScanlineLocalData, temp.cov)], xmm1);
+#else
+			vmovdqa(ptr[rsp + _rz_cov], xmm1);
+#endif
 		}
 
 		if(m_sel.tfx != TFX_NONE)
@@ -631,7 +647,11 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zwrite)
 		{
+#ifdef _WIN64
 			vmovdqa(ptr[_m_local + offsetof(GSScanlineLocalData, temp.zs)], xmm0);
+#else
+			vmovdqa(ptr[rsp + _rz_zs], xmm0);
+#endif
 		}
 	}
 	else
@@ -645,7 +665,11 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zwrite && m_sel.zpsm < 2)
 		{
+#ifdef _WIN64
 			vmovdqa(ptr[_m_local + offsetof(GSScanlineLocalData, temp.zd)], xmm1);
+#else
+			vmovdqa(ptr[rsp + _rz_zd], xmm1);
+#endif
 		}
 
 		// zd &= 0xffffffff >> m_sel.zpsm * 8;
@@ -1198,7 +1222,11 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 			if(m_sel.edge)
 			{
+#ifdef _WIN64
 				vmovdqa(xmm0, ptr[_m_local + offsetof(GSScanlineLocalData, temp.cov)]);
+#else
+				vmovdqa(xmm0, ptr[rsp + _rz_cov]);
+#endif
 			}
 			else
 			{
@@ -1219,7 +1247,11 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 			if(m_sel.edge)
 			{
+#ifdef _WIN64
 				vmovdqa(xmm1, ptr[_m_local + offsetof(GSScanlineLocalData, temp.cov)]);
+#else
+				vmovdqa(xmm1, ptr[rsp + _rz_cov]);
+#endif
 			}
 			else
 			{
@@ -1524,7 +1556,11 @@ void GSDrawScanlineCodeGenerator::WriteZBuf()
 	}
 
 	if (m_sel.prim != GS_SPRITE_CLASS)
+#ifdef _WIN64
 		vmovdqa(xmm1, ptr[_m_local + offsetof(GSScanlineLocalData, temp.zs)]);
+#else
+		vmovdqa(xmm1, ptr[rsp + _rz_zs]);
+#endif
 	else
 		vmovdqa(xmm1, ptr[_m_local + offsetof(GSScanlineLocalData, p.z)]);
 
@@ -1532,7 +1568,11 @@ void GSDrawScanlineCodeGenerator::WriteZBuf()
 	{
 		// zs = zs.blend8(zd, zm);
 
+#ifdef _WIN64
 		vpblendvb(xmm1, ptr[_m_local + offsetof(GSScanlineLocalData, temp.zd)], _zm);
+#else
+		vpblendvb(xmm1, ptr[rsp + _rz_zd], _zm);
+#endif
 	}
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;
