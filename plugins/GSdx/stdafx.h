@@ -444,11 +444,11 @@ extern void vmfree(void* ptr, size_t size);
 extern void* fifo_alloc(size_t size, size_t repeat);
 extern void fifo_free(void* ptr, size_t size, size_t repeat);
 
-#ifdef _WIN32
+#ifdef ENABLE_VTUNE
 
-	#ifdef ENABLE_VTUNE
+	#include "jitprofiling.h"
 
-	#include <JITProfiling.h>
+	#ifdef _WIN32
 
 	#pragma comment(lib, "jitprofiling.lib")
 

@@ -80,6 +80,7 @@ for ARG in "$@"; do
         --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
+        --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
         *)

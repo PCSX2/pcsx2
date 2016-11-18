@@ -195,15 +195,18 @@ set(GSdxFinalLibs
 )
 
 if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs}
-        ${EGL_LIBRARIES}
-        )
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES})
 endif()
 
 if(LIBLZMA_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs}
-		${LIBLZMA_LIBRARIES}
-		)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${LIBLZMA_LIBRARIES})
+endif()
+
+if(USE_VTUNE)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_VTUNE)
+    include_directories("$ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/include")
+    set(GSdxFinalLibs ${GSdxFinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib64/libjitprofiling.a)
+    set(GSdxFinalLibs ${GSdxFinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib32/libjitprofiling.a)
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL

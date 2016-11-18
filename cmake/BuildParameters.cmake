@@ -28,6 +28,8 @@ if(DISABLE_BUILD_DATE OR openSUSE)
     add_definitions(-DDISABLE_BUILD_DATE)
 endif()
 
+option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
+
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
