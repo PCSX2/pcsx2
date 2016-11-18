@@ -24,8 +24,11 @@
 
 #if _M_SSE < 0x500 && (defined(_M_AMD64) || defined(_WIN64))
 
+// It is useless to port the code to SSEx, better use the faster 32 bits version instead
 void GSDrawScanlineCodeGenerator::Generate()
 {
+	// Avoid a crash if someone want to use it
+	ret();
 }
 
 void GSDrawScanlineCodeGenerator::Init()

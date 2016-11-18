@@ -740,7 +740,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 
 	if(m_sel.ltf)
 	{
-		// GSVector4i uf = u.xxzzlh().srl16(1);
+		// GSVector4i uf = u.xxzzlh().srl16(12);
 
 		vpshuflw(xmm0, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 		vpshufhw(xmm0, xmm0, _MM_SHUFFLE(2, 2, 0, 0));
@@ -749,7 +749,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 
 		if(m_sel.prim != GS_SPRITE_CLASS)
 		{
-			// GSVector4i vf = v.xxzzlh().srl16(1);
+			// GSVector4i vf = v.xxzzlh().srl16(12);
 
 			vpshuflw(xmm0, xmm3, _MM_SHUFFLE(2, 2, 0, 0));
 			vpshufhw(xmm0, xmm0, _MM_SHUFFLE(2, 2, 0, 0));
