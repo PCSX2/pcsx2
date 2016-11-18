@@ -856,81 +856,85 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 
 		ReadTexel(4, 0);
 
-		// xmm0 = c00
-		// xmm1 = c01
-		// xmm2 = c10
-		// xmm3 = c11
+		// xmm0 = c10
+		// xmm1 = c11
+		// xmm4 = c00
+		// xmm5 = c01
 		// xmm6 = uf
 		// xmm7 = vf
 
 		// GSVector4i rb00 = c00 & mask;
 		// GSVector4i ga00 = (c00 >> 8) & mask;
 
-		split16_2x8(xmm4, xmm5, xmm0);
+		split16_2x8(xmm2, xmm3, xmm4);
 
 		// GSVector4i rb01 = c01 & mask;
 		// GSVector4i ga01 = (c01 >> 8) & mask;
 
-		split16_2x8(xmm0, xmm1, xmm1);
+		split16_2x8(xmm4, xmm5, xmm5);
 
-		// xmm0 = rb01
-		// xmm1 = ga01
-		// xmm2 = c10
-		// xmm3 = c11
-		// xmm4 = rb00
-		// xmm5 = ga00
+		// xmm0 = c10
+		// xmm1 = c11
+		// xmm2 = rb00
+		// xmm3 = ga00
+		// xmm4 = rb01
+		// xmm5 = ga01
 		// xmm6 = uf
 		// xmm7 = vf
 
 		// rb00 = rb00.lerp16_4(rb01, uf);
 		// ga00 = ga00.lerp16_4(ga01, uf);
 
-		lerp16_4(xmm0, xmm4, xmm6);
-		lerp16_4(xmm1, xmm5, xmm6);
+		lerp16_4(xmm4, xmm2, xmm6);
+		lerp16_4(xmm5, xmm3, xmm6);
 
-		// xmm0 = rb00
-		// xmm1 = ga00
-		// xmm2 = c10
-		// xmm3 = c11
+		// xmm0 = c10
+		// xmm1 = c11
+		// xmm4 = rb00
+		// xmm5 = ga00
 		// xmm6 = uf
 		// xmm7 = vf
 
 		// GSVector4i rb10 = c10 & mask;
 		// GSVector4i ga10 = (c10 >> 8) & mask;
 
-		split16_2x8(xmm4, xmm5, xmm2);
+		split16_2x8(xmm2, xmm3, xmm0);
 
 		// GSVector4i rb11 = c11 & mask;
 		// GSVector4i ga11 = (c11 >> 8) & mask;
 
-		split16_2x8(xmm2, xmm3, xmm3);
+		split16_2x8(xmm0, xmm1, xmm1);
 
-		// xmm0 = rb00
-		// xmm1 = ga00
-		// xmm2 = rb11
-		// xmm3 = ga11
-		// xmm4 = rb10
-		// xmm5 = ga10
+		// xmm0 = rb11
+		// xmm1 = ga11
+		// xmm2 = rb10
+		// xmm3 = ga10
+		// xmm4 = rb00
+		// xmm5 = ga00
 		// xmm6 = uf
 		// xmm7 = vf
 
 		// rb10 = rb10.lerp16_4(rb11, uf);
 		// ga10 = ga10.lerp16_4(ga11, uf);
 
-		lerp16_4(xmm2, xmm4, xmm6);
-		lerp16_4(xmm3, xmm5, xmm6);
+		lerp16_4(xmm0, xmm2, xmm6);
+		lerp16_4(xmm1, xmm3, xmm6);
 
-		// xmm0 = rb00
-		// xmm1 = ga00
-		// xmm2 = rb10
-		// xmm3 = ga10
+		// xmm0 = rb10
+		// xmm1 = ga10
+		// xmm4 = rb00
+		// xmm5 = ga00
 		// xmm7 = vf
 
 		// rb00 = rb00.lerp16_4(rb10, vf);
 		// ga00 = ga00.lerp16_4(ga10, vf);
 
-		lerp16_4(xmm2, xmm0, xmm7);
-		lerp16_4(xmm3, xmm1, xmm7);
+		lerp16_4(xmm0, xmm4, xmm7);
+		lerp16_4(xmm1, xmm5, xmm7);
+
+		// FIXME not ideal (but allow different source in ReadTexel and less register dependency)
+		vmovdqa(xmm2, xmm0);
+		vmovdqa(xmm3, xmm1);
 	}
 	else
 	{
@@ -947,7 +951,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// c[0] = c00 & mask;
 		// c[1] = (c00 >> 8) & mask;
 
-		split16_2x8(_rb, _ga, xmm0);
+		split16_2x8(_rb, _ga, xmm4);
 	}
 
 	// xmm2 = rb
@@ -1988,14 +1992,14 @@ void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg64& addr, 
 
 void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 {
-	// TODO
-	const int r[] = {0, 0, 1, 1, 2, 2, 3, 3};
+	const int in[] = {0, 1, 2, 3};
+	const int out[] = {4, 5, 0, 1};
 
 	for(int i = 0; i < pixels; i++)
 	{
 		for(int j = 0; j < 4; j++)
 		{
-			ReadTexel(Xmm(r[i * 2 + 1]), Xmm(r[i * 2 + 0]), j);
+			ReadTexel(Xmm(out[i]), Xmm(in[i]), j);
 		}
 	}
 }
@@ -2004,15 +2008,15 @@ void GSDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr, uin
 {
 	const Address& src = m_sel.tlu ? ptr[_m_local__gd__clut + rax * 4] : ptr[_m_local__gd__tex + rax * 4];
 
-	//if(i == 0) vmovd(eax, addr);
-	//else vpextrd(eax, addr, i);
-	vpextrd(eax, addr, i);
+	// Extract address offset
+	if(i == 0) vmovd(eax, addr);
+	else vpextrd(eax, addr, i);
 
+	// If clut, load the value as a byte index
 	if(m_sel.tlu) movzx(eax, byte[_m_local__gd__tex + rax]);
 
-	//if(i == 0) vmovd(dst, src);
-	//else vpinsrd(dst, src, i);
-	vpinsrd(dst, src, i);
+	if(i == 0) vmovd(dst, src);
+	else vpinsrd(dst, src, i);
 }
 
 #endif
