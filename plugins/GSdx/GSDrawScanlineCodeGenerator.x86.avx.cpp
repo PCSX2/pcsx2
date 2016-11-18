@@ -857,16 +857,12 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// GSVector4i rb00 = c00 & mask;
 		// GSVector4i ga00 = (c00 >> 8) & mask;
 
-		vpsllw(xmm2, xmm6, 8);
-		vpsrlw(xmm2, 8);
-		vpsrlw(xmm6, 8);
+		split16_2x8(xmm2, xmm6, xmm6);
 
 		// GSVector4i rb01 = c01 & mask;
 		// GSVector4i ga01 = (c01 >> 8) & mask;
 
-		vpsllw(xmm3, xmm4, 8);
-		vpsrlw(xmm3, 8);
-		vpsrlw(xmm4, 8);
+		split16_2x8(xmm3, xmm4, xmm4);
 
 		// xmm0 = uf
 		// xmm2 = rb00
@@ -894,16 +890,12 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// GSVector4i rb10 = c10 & mask;
 		// GSVector4i ga10 = (c10 >> 8) & mask;
 
-		vpsrlw(xmm2, xmm1, 8);
-		vpsllw(xmm1, 8);
-		vpsrlw(xmm1, 8);
+		split16_2x8(xmm1, xmm2, xmm1);
 
 		// GSVector4i rb11 = c11 & mask;
 		// GSVector4i ga11 = (c11 >> 8) & mask;
 
-		vpsrlw(xmm6, xmm5, 8);
-		vpsllw(xmm5, 8);
-		vpsrlw(xmm5, 8);
+		split16_2x8(xmm5, xmm6, xmm5);
 
 		// xmm0 = uf
 		// xmm3 = rb00
@@ -950,9 +942,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// c[0] = c00 & mask;
 		// c[1] = (c00 >> 8) & mask;
 
-		vpsllw(xmm5, xmm6, 8);
-		vpsrlw(xmm5, 8);
-		vpsrlw(xmm6, 8);
+		split16_2x8(xmm5, xmm6, xmm6);
 	}
 }
 
@@ -1452,16 +1442,12 @@ return;
 		// GSVector4i rb00 = c00 & mask;
 		// GSVector4i ga00 = (c00 >> 8) & mask;
 
-		vpsllw(xmm2, xmm6, 8);
-		vpsrlw(xmm2, 8);
-		vpsrlw(xmm6, 8);
+		split16_2x8(xmm2, xmm6, xmm6);
 
 		// GSVector4i rb01 = c01 & mask;
 		// GSVector4i ga01 = (c01 >> 8) & mask;
 
-		vpsllw(xmm3, xmm4, 8);
-		vpsrlw(xmm3, 8);
-		vpsrlw(xmm4, 8);
+		split16_2x8(xmm3, xmm4, xmm4);
 
 		// xmm0 = uf
 		// xmm2 = rb00
@@ -1489,16 +1475,12 @@ return;
 		// GSVector4i rb10 = c10 & mask;
 		// GSVector4i ga10 = (c10 >> 8) & mask;
 
-		vpsrlw(xmm2, xmm1, 8);
-		vpsllw(xmm1, 8);
-		vpsrlw(xmm1, 8);
+		split16_2x8(xmm1, xmm2, xmm1);
 
 		// GSVector4i rb11 = c11 & mask;
 		// GSVector4i ga11 = (c11 >> 8) & mask;
 
-		vpsrlw(xmm6, xmm5, 8);
-		vpsllw(xmm5, 8);
-		vpsrlw(xmm5, 8);
+		split16_2x8(xmm5, xmm6, xmm5);
 
 		// xmm0 = uf
 		// xmm3 = rb00
@@ -1545,9 +1527,7 @@ return;
 		// c[0] = c00 & mask;
 		// c[1] = (c00 >> 8) & mask;
 
-		vpsllw(xmm5, xmm6, 8);
-		vpsrlw(xmm5, 8);
-		vpsrlw(xmm6, 8);
+		split16_2x8(xmm5, xmm6, xmm6);
 	}
 
 	if(m_sel.mmin != 1) // !round-off mode
@@ -1693,16 +1673,12 @@ return;
 			// GSVector4i rb00 = c00 & mask;
 			// GSVector4i ga00 = (c00 >> 8) & mask;
 
-			vpsllw(xmm2, xmm6, 8);
-			vpsrlw(xmm2, 8);
-			vpsrlw(xmm6, 8);
+			split16_2x8(xmm2, xmm6, xmm6);
 
 			// GSVector4i rb01 = c01 & mask;
 			// GSVector4i ga01 = (c01 >> 8) & mask;
 
-			vpsllw(xmm3, xmm4, 8);
-			vpsrlw(xmm3, 8);
-			vpsrlw(xmm4, 8);
+			split16_2x8(xmm3, xmm4, xmm4);
 
 			// xmm0 = uf
 			// xmm2 = rb00
@@ -1730,16 +1706,12 @@ return;
 			// GSVector4i rb10 = c10 & mask;
 			// GSVector4i ga10 = (c10 >> 8) & mask;
 
-			vpsrlw(xmm2, xmm1, 8);
-			vpsllw(xmm1, 8);
-			vpsrlw(xmm1, 8);
+			split16_2x8(xmm1, xmm2, xmm1);
 
 			// GSVector4i rb11 = c11 & mask;
 			// GSVector4i ga11 = (c11 >> 8) & mask;
 
-			vpsrlw(xmm6, xmm5, 8);
-			vpsllw(xmm5, 8);
-			vpsrlw(xmm5, 8);
+			split16_2x8(xmm5, xmm6, xmm5);
 
 			// xmm0 = uf
 			// xmm3 = rb00
@@ -1786,9 +1758,7 @@ return;
 			// c[0] = c00 & mask;
 			// c[1] = (c00 >> 8) & mask;
 
-			vpsllw(xmm5, xmm6, 8);
-			vpsrlw(xmm5, 8);
-			vpsrlw(xmm6, 8);
+			split16_2x8(xmm5, xmm6, xmm6);
 		}
 
 		vmovdqa(xmm0, ptr[m_sel.lcm ? &m_local.gd->lod.f : &m_local.temp.lod.f]);
@@ -2436,9 +2406,7 @@ void GSDrawScanlineCodeGenerator::AlphaBlend()
 			// c[2] = fd & mask;
 			// c[3] = (fd >> 8) & mask;
 
-			vpsllw(xmm0, xmm2, 8);
-			vpsrlw(xmm0, 8);
-			vpsrlw(xmm1, xmm2, 8);
+			split16_2x8(xmm0, xmm1, xmm2);
 
 			break;
 

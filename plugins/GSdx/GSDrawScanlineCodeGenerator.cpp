@@ -375,4 +375,36 @@ void GSDrawScanlineCodeGenerator::blend8r(const Xmm& b, const Xmm& a)
 	#endif
 }
 
+void GSDrawScanlineCodeGenerator::split16_2x8(const Xmm& l, const Xmm& h, const Xmm& src)
+{
+	// l = src & 0xFF; (1 left shift + 1 right shift)
+	// h = (src >> 8) & 0xFF; (1 right shift)
+
+#if _M_SSE >= 0x500
+	if (src == h) {
+		vpsllw(l, src, 8);
+		vpsrlw(h, 8);
+	} else if (src == l) {
+		vpsrlw(h, src, 8);
+		vpsllw(l, 8);
+	} else {
+		vpsllw(l, src, 8);
+		vpsrlw(h, src, 8);
+	}
+	vpsrlw(l, 8);
+#else
+	if (src == h) {
+		movdqa(l, src);
+	} else if (src == l) {
+		movdqa(h, src);
+	} else {
+		movdqa(l, src);
+		movdqa(h, src);
+	}
+	psllw(l, 8);
+	psrlw(l, 8);
+	psrlw(h, 8);
+#endif
+}
+
 #endif

@@ -866,16 +866,12 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// GSVector4i rb00 = c00 & mask;
 		// GSVector4i ga00 = (c00 >> 8) & mask;
 
-		vpsllw(xmm4, xmm0, 8);
-		vpsrlw(xmm4, 8);
-		vpsrlw(xmm5, xmm0, 8);
+		split16_2x8(xmm4, xmm5, xmm0);
 
 		// GSVector4i rb01 = c01 & mask;
 		// GSVector4i ga01 = (c01 >> 8) & mask;
 
-		vpsllw(xmm0, xmm1, 8);
-		vpsrlw(xmm0, 8);
-		vpsrlw(xmm1, 8);
+		split16_2x8(xmm0, xmm1, xmm1);
 
 		// xmm0 = rb01
 		// xmm1 = ga01
@@ -902,16 +898,12 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// GSVector4i rb10 = c10 & mask;
 		// GSVector4i ga10 = (c10 >> 8) & mask;
 
-		vpsrlw(xmm5, xmm2, 8);
-		vpsllw(xmm4, xmm2, 8);
-		vpsrlw(xmm4, 8);
+		split16_2x8(xmm4, xmm5, xmm2);
 
 		// GSVector4i rb11 = c11 & mask;
 		// GSVector4i ga11 = (c11 >> 8) & mask;
 
-		vpsllw(xmm2, xmm3, 8);
-		vpsrlw(xmm3, 8);
-		vpsrlw(xmm2, 8);
+		split16_2x8(xmm2, xmm3, xmm3);
 
 		// xmm0 = rb00
 		// xmm1 = ga00
@@ -955,9 +947,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		// c[0] = c00 & mask;
 		// c[1] = (c00 >> 8) & mask;
 
-		vpsllw(_rb, xmm0, 8);
-		vpsrlw(_rb, 8);
-		vpsrlw(_ga, xmm0, 8);
+		split16_2x8(_rb, _ga, xmm0);
 	}
 
 	// xmm2 = rb
@@ -1605,9 +1595,7 @@ void GSDrawScanlineCodeGenerator::AlphaBlend()
 			// c[2] = fd & mask;
 			// c[3] = (fd >> 8) & mask;
 
-			vpsllw(_dst_rb, _fd, 8);
-			vpsrlw(_dst_rb, 8);
-			vpsrlw(_dst_ga, _fd, 8);
+			split16_2x8(_dst_rb, _dst_ga, _fd);
 
 			break;
 

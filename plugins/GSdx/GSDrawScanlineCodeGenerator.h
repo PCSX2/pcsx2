@@ -128,6 +128,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void blendr(const Xmm& b, const Xmm& a, const Xmm& mask);
 	void blend8(const Xmm& a, const Xmm& b);
 	void blend8r(const Xmm& b, const Xmm& a);
+	void split16_2x8(const Xmm& l, const Xmm& h, const Xmm& src);
 
 	#endif
 
