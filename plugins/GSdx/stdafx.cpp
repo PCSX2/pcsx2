@@ -138,7 +138,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
 		else
-			fprintf(stderr, "MMAP next %x\n", (uintptr_t)base);
+			fprintf(stderr, "MMAP next %p\n", base);
 	}
 
 	return fifo;
