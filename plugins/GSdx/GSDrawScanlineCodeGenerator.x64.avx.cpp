@@ -72,8 +72,10 @@ void GSDrawScanlineCodeGenerator::Generate()
 	mov(ptr[rsp - 1 * 8], rbx);
 	mov(ptr[rsp - 2 * 8], r12);
 	mov(ptr[rsp - 3 * 8], r13);
-	mov(ptr[rsp - 4 * 8], r14);
-	mov(ptr[rsp - 5 * 8], r15);
+	if(need_clut)
+		mov(ptr[rsp - 4 * 8], r14);
+	if(need_tex)
+		mov(ptr[rsp - 5 * 8], r15);
 #endif
 
 	mov(r10, (size_t)&m_test[0]);
@@ -81,9 +83,10 @@ void GSDrawScanlineCodeGenerator::Generate()
 	mov(_m_local__gd, ptr[_m_local + offsetof(GSScanlineLocalData, gd)]);
 
 	mov(_m_local__gd__vm, ptr[_m_local__gd + offsetof(GSScanlineGlobalData, vm)]);
-	// FIXME: those 2 load could be optimized when no texture
-	mov(_m_local__gd__clut, ptr[_m_local__gd + offsetof(GSScanlineGlobalData, clut)]);
-	mov(_m_local__gd__tex, ptr[_m_local__gd + offsetof(GSScanlineGlobalData, tex)]);
+	if(need_clut)
+		mov(_m_local__gd__clut, ptr[_m_local__gd + offsetof(GSScanlineGlobalData, clut)]);
+	if(need_tex)
+		mov(_m_local__gd__tex, ptr[_m_local__gd + offsetof(GSScanlineGlobalData, tex)]);
 
 	Init();
 
@@ -252,8 +255,10 @@ L("exit");
 	mov(rbx, ptr[rsp - 1 * 8]);
 	mov(r12, ptr[rsp - 2 * 8]);
 	mov(r13, ptr[rsp - 3 * 8]);
-	mov(r14, ptr[rsp - 4 * 8]);
-	mov(r15, ptr[rsp - 5 * 8]);
+	if(need_clut)
+		mov(r14, ptr[rsp - 4 * 8]);
+	if(need_tex)
+		mov(r15, ptr[rsp - 5 * 8]);
 	pop(rbp);
 #endif
 
@@ -266,12 +271,12 @@ void GSDrawScanlineCodeGenerator::Init()
 	{
 		// int skip = left & 3;
 
-		mov(rbx, a1);
-		and(a1, 3);
+		mov(ebx, a1.cvt32());
+		and(a1.cvt32(), 3);
 
 		// left -= skip;
 
-		sub(rbx, a1);
+		sub(ebx, a1.cvt32());
 
 		// int steps = pixels + skip - 4;
 
@@ -279,7 +284,7 @@ void GSDrawScanlineCodeGenerator::Init()
 
 		// GSVector4i test = m_test[skip] | m_test[7 + (steps & (steps >> 31))];
 
-		shl(a1, 4); // * sizeof(m_test[0])
+		shl(a1.cvt32(), 4); // * sizeof(m_test[0])
 
 		vmovdqa(_test, ptr[a1 + r10]);
 
@@ -292,8 +297,8 @@ void GSDrawScanlineCodeGenerator::Init()
 	}
 	else
 	{
-		mov(rbx, a1); // left
-		xor(a1, a1); // skip
+		mov(ebx, a1.cvt32()); // left
+		xor(a1.cvt32(), a1.cvt32()); // skip
 		lea(a0, ptr[a0 - 4]); // steps
 	}
 
@@ -591,10 +596,9 @@ void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
 
 	// int za = fza_base.y + fza_offset->y;
 
-	movsxd(rbp, dword[t1 + 4]);
-	movsxd(rax, dword[t0 + 4]);
-	add(rbp, rax);
-	and(rbp, HALF_VM_SIZE - 1);
+	mov(ebp, dword[t1 + 4]);
+	add(ebp, dword[t0 + 4]);
+	and(ebp, HALF_VM_SIZE - 1);
 
 	// GSVector4i zs = zi;
 
@@ -1413,7 +1417,6 @@ void GSDrawScanlineCodeGenerator::ReadFrame()
 	mov(ebx, dword[t1]);
 	add(ebx, dword[t0]);
 	and(ebx, HALF_VM_SIZE - 1);
-	movsxd(rbx, ebx); // FIXME useful ?
 
 	if(!m_sel.rfb)
 	{
@@ -1776,9 +1779,9 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 
 		// y = (top & 3) << 5
 
-		mov(rax, a1);
-		and(rax, 3);
-		shl(rax, 5);
+		mov(eax, a1.cvt32());
+		and(eax, 3);
+		shl(eax, 5);
 
 		// rb = rb.add16(m_global.dimx[0 + y]);
 		// ga = ga.add16(m_global.dimx[1 + y]);
@@ -1977,7 +1980,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr, uin
 	//else vpextrd(eax, addr, i);
 	vpextrd(eax, addr, i);
 
-	if(m_sel.tlu) movzx(rax, byte[_m_local__gd__tex + rax]);
+	if(m_sel.tlu) movzx(eax, byte[_m_local__gd__tex + rax]);
 
 	//if(i == 0) vmovd(dst, src);
 	//else vpinsrd(dst, src, i);
