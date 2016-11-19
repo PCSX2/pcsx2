@@ -146,26 +146,11 @@
     <ClCompile Include="GSDrawingContext.cpp" />
     <ClCompile Include="GSDrawScanline.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.cpp" />
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX' And '$(Configuration)'!='Debug AVX'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="$(Configuration.Contains(AVX))">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX' And '$(Configuration)'!='Debug AVX'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx2.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX2' And '$(Configuration)'!='Debug AVX2'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="$(Configuration.Contains(AVX))">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.cpp" />
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx.cpp" />
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx2.cpp" />
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.cpp" />
     <ClCompile Include="GSDump.cpp" />
     <ClCompile Include="GSdx.cpp" />
     <ClCompile Include="GSFunctionMap.cpp" />
@@ -187,26 +172,11 @@
     <ClCompile Include="GSSetting.cpp" />
     <ClCompile Include="GSSettingsDlg.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.cpp" />
-    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX' And '$(Configuration)'!='Debug AVX'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x64.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="$(Configuration.Contains(AVX))">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX' And '$(Configuration)'!='Debug AVX'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Release AVX2' And '$(Configuration)'!='Debug AVX2'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="$(Configuration.Contains(AVX))">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GSSetupPrimCodeGenerator.x64.cpp" />
+    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx.cpp" />
+    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp" />
+    <ClCompile Include="GSSetupPrimCodeGenerator.x86.cpp" />
     <ClCompile Include="GSShaderOGL.cpp" />
     <ClCompile Include="GSState.cpp" />
     <ClCompile Include="GSTables.cpp" />
