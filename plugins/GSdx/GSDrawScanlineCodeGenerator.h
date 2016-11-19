@@ -23,6 +23,7 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSFunctionMap.h"
+#include "GSUtil.h"
 
 using namespace Xbyak;
 

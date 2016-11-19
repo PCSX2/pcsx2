@@ -251,39 +251,45 @@ void GSDrawScanlineCodeGenerator::mix16(const Xmm& a, const Xmm& b, const Xmm& t
 	#if _M_SSE >= 0x500
 
 	vpblendw(a, b, 0xaa);
-	
-	#elif _M_SSE >= 0x401
-
-	pblendw(a, b, 0xaa);
 
 	#else
 
-	pcmpeqd(temp, temp);
-	psrld(temp, 16);
-	pand(a, temp);
-	pandn(temp, b);
-	por(a, temp);
-	
+	if(g_cpu.has(util::Cpu::tSSE41))
+	{
+		pblendw(a, b, 0xaa);
+	}
+	else
+	{
+		pcmpeqd(temp, temp);
+		psrld(temp, 16);
+		pand(a, temp);
+		pandn(temp, b);
+		por(a, temp);
+	}
+
 	#endif
 }
 
 void GSDrawScanlineCodeGenerator::clamp16(const Xmm& a, const Xmm& temp)
 {
 	#if _M_SSE >= 0x500
-	
+
 	vpackuswb(a, a);
 	vpmovzxbw(a, a);
 
-	#elif _M_SSE >= 0x401
-
-	packuswb(a, a);
-	pmovzxbw(a, a);
-
 	#else
 
-	packuswb(a, a);
-	pxor(temp, temp);
-	punpcklbw(a, temp);
+	if(g_cpu.has(util::Cpu::tSSE41))
+	{
+		packuswb(a, a);
+		pmovzxbw(a, a);
+	}
+	else
+	{
+		packuswb(a, a);
+		pxor(temp, temp);
+		punpcklbw(a, temp);
+	}
 
 	#endif
 }
@@ -291,7 +297,7 @@ void GSDrawScanlineCodeGenerator::clamp16(const Xmm& a, const Xmm& temp)
 void GSDrawScanlineCodeGenerator::alltrue()
 {
 	#if _M_SSE >= 0x500
-	
+
 	vpmovmskb(eax, xmm7);
 	cmp(eax, 0xffff);
 	je("step", T_NEAR);
@@ -343,16 +349,15 @@ void GSDrawScanlineCodeGenerator::blendr(const Xmm& b, const Xmm& a, const Xmm& 
 void GSDrawScanlineCodeGenerator::blend8(const Xmm& a, const Xmm& b)
 {
 	#if _M_SSE >= 0x500
-	
-	vpblendvb(a, a, b, xmm0);
 
-	#elif _M_SSE >= 0x401
-	
-	pblendvb(a, b);
+	vpblendvb(a, a, b, xmm0);
 
 	#else
 
-	blend(a, b, xmm0);
+	if(g_cpu.has(util::Cpu::tSSE41))
+		pblendvb(a, b);
+	else
+		blend(a, b, xmm0);
 
 	#endif
 }
@@ -360,17 +365,20 @@ void GSDrawScanlineCodeGenerator::blend8(const Xmm& a, const Xmm& b)
 void GSDrawScanlineCodeGenerator::blend8r(const Xmm& b, const Xmm& a)
 {
 	#if _M_SSE >= 0x500
-	
+
 	vpblendvb(b, a, b, xmm0);
-
-	#elif _M_SSE >= 0x401
-
-	pblendvb(a, b);
-	movdqa(b, a);
 
 	#else
 
-	blendr(b, a, xmm0);
+	if(g_cpu.has(util::Cpu::tSSE41))
+	{
+		pblendvb(a, b);
+		movdqa(b, a);
+	}
+	else
+	{
+		blendr(b, a, xmm0);
+	}
 
 	#endif
 }

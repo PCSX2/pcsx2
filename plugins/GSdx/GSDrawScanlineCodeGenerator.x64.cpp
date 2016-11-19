@@ -22,102 +22,102 @@
 #include "stdafx.h"
 #include "GSDrawScanlineCodeGenerator.h"
 
-#if _M_SSE < 0x500 && (defined(_M_AMD64) || defined(_WIN64))
+#if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
 // It is useless to port the code to SSEx, better use the faster 32 bits version instead
-void GSDrawScanlineCodeGenerator::Generate()
+void GSDrawScanlineCodeGenerator::Generate_SSE()
 {
 	// Avoid a crash if someone want to use it
 	ret();
 }
 
-void GSDrawScanlineCodeGenerator::Init()
+void GSDrawScanlineCodeGenerator::Init_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::Step()
+void GSDrawScanlineCodeGenerator::Step_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::TestZ(const Xmm& temp1, const Xmm& temp2)
+void GSDrawScanlineCodeGenerator::TestZ_SSE(const Xmm& temp1, const Xmm& temp2)
 {
 }
 
-void GSDrawScanlineCodeGenerator::SampleTexture()
+void GSDrawScanlineCodeGenerator::SampleTexture_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::Wrap(const Xmm& uv)
+void GSDrawScanlineCodeGenerator::Wrap_SSE(const Xmm& uv)
 {
 }
 
-void GSDrawScanlineCodeGenerator::Wrap(const Xmm& uv0, const Xmm& uv1)
+void GSDrawScanlineCodeGenerator::Wrap_SSE(const Xmm& uv0, const Xmm& uv1)
 {
 }
 
-void GSDrawScanlineCodeGenerator::AlphaTFX()
+void GSDrawScanlineCodeGenerator::AlphaTFX_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadMask()
+void GSDrawScanlineCodeGenerator::ReadMask_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::TestAlpha()
+void GSDrawScanlineCodeGenerator::TestAlpha_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ColorTFX()
+void GSDrawScanlineCodeGenerator::ColorTFX_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::Fog()
+void GSDrawScanlineCodeGenerator::Fog_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadFrame()
+void GSDrawScanlineCodeGenerator::ReadFrame_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::TestDestAlpha()
+void GSDrawScanlineCodeGenerator::TestDestAlpha_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::WriteMask()
+void GSDrawScanlineCodeGenerator::WriteMask_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::WriteZBuf()
+void GSDrawScanlineCodeGenerator::WriteZBuf_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::AlphaBlend()
+void GSDrawScanlineCodeGenerator::AlphaBlend_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::WriteFrame()
+void GSDrawScanlineCodeGenerator::WriteFrame_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadPixel(const Xmm& dst, const Reg64& addr)
+void GSDrawScanlineCodeGenerator::ReadPixel_SSE(const Xmm& dst, const Reg64& addr)
 {
 }
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg64& addr, const Reg8& mask, bool fast, int psm, int fz)
+void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg64& addr, const Reg8& mask, bool fast, int psm, int fz)
 {
 }
 
 static const int s_offsets[4] = {0, 2, 8, 10};
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg64& addr, uint8 i, int psm)
+void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg64& addr, uint8 i, int psm)
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
+void GSDrawScanlineCodeGenerator::ReadTexel_SSE(int pixels, int mip_offset)
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr, uint8 i)
+void GSDrawScanlineCodeGenerator::ReadTexel_SSE(const Xmm& dst, const Xmm& addr, uint8 i)
 {
 }
 
