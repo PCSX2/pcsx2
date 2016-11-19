@@ -39,6 +39,10 @@ const char* GSUtil::GetLibName()
 	// being optimised by GCC to be unusable by older CPUs. Enjoy!
 	static char name[255];
 
+	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
+		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
+		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
+
 	snprintf(name, sizeof(name), "GSdx "
 
 #ifdef _WIN32
@@ -48,15 +52,15 @@ const char* GSUtil::GetLibName()
 		"64-bit "
 #endif
 #ifdef __INTEL_COMPILER
-		"(Intel C++ %d.%02d %s)",
+		"(Intel C++ %d.%02d %s/%s)",
 #elif _MSC_VER
-		"(MSVC %d.%02d %s)",
+		"(MSVC %d.%02d %s/%s)",
 #elif __clang__
-		"(clang %d.%d.%d %s)",
+		"(clang %d.%d.%d %s/%s)",
 #elif __GNUC__
-		"(GCC %d.%d.%d %s)",
+		"(GCC %d.%d.%d %s/%s)",
 #else
-		"(%s)",
+		"(%s/%s)",
 #endif
 #ifdef _WIN32
 		SVN_REV,
@@ -72,19 +76,15 @@ const char* GSUtil::GetLibName()
 #endif
 
 #if _M_SSE >= 0x501
-		"AVX2"
+		"AVX2", "AVX2"
 #elif _M_SSE >= 0x500
-		"AVX"
-#elif _M_SSE >= 0x402
-		"SSE4.2"
+		"AVX", sw_sse
 #elif _M_SSE >= 0x401
-		"SSE4.1"
+		"SSE4.1", sw_sse
 #elif _M_SSE >= 0x301
-		"SSSE3"
+		"SSSE3", sw_sse
 #elif _M_SSE >= 0x200
-		"SSE2"
-#elif _M_SSE >= 0x100
-		"SSE"
+		"SSE2", sw_sse
 #endif
 	);
 
@@ -217,9 +217,6 @@ bool GSUtil::CheckSSE()
 #endif
 #if _M_SSE >= 0x401
 		{Xbyak::util::Cpu::tSSE41, "SSE41"},
-#endif
-#if _M_SSE >= 0x402
-		{Xbyak::util::Cpu::tSSE42, "SSE42"},
 #endif
 #if _M_SSE >= 0x500
 		{Xbyak::util::Cpu::tAVX, "AVX1"},
