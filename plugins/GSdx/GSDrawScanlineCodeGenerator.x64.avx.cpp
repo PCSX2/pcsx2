@@ -2019,4 +2019,42 @@ void GSDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr, uin
 	else vpinsrd(dst, src, i);
 }
 
+// Gather example (AVX2). Not faster on Haswell but potentially better on recent CPU
+// Worst case reduce Icache.
+//
+// Current limitation requires 1 extra free register for the mask.
+// And palette need zero masking.
+// It is not possible to use same source/destination so linear interpolation must be updated
+#if 0
+void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
+{
+	const int in[]   = {0, 1, 2, 3};
+	const int out[]  = {4, 5, 0, 1};
+	const int mask[] = {5, 0, 1, 2};
+
+	if (m_sel.tlu) {
+		for(int i = 0; i < pixels; i++) {
+			// FIXME can't use same dst and add register
+			Gather4Texel(Xmm(in[i]), _m_local__gd__tex, Xmm(in[i]), Xmm(mask[i]));
+			// FIXME need a memory and could be faster
+			vpslld(Xmm(in[i]), 24);
+			vpsrld(Xmm(in[i]), 24);
+			Gather4Texel(Xmm(out[i]), _m_local__gd__clut, Xmm(in[i]), Xmm(mask[i]));
+		}
+	} else {
+		for(int i = 0; i < pixels; i++) {
+			Gather4Texel(Xmm(out[i]), _m_local__gd__tex, Xmm(in[i]), Xmm(mask[i]));
+		}
+	}
+}
+
+static void Gather4Texel(const Xmm& dst, const Reg64& base, const Xmm& addr, const Xmm& Mask)
+{
+	//void vpgatherdd(const Xmm& x1, const Address& addr, const Xmm& x2)
+	vpcmpeqd(Mask, Mask);
+	vpgatherdd(dst, ptr[base + addr * 4], Mask);
+}
+
+#endif
+
 #endif
