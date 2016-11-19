@@ -266,9 +266,10 @@ using namespace stdext;
 #define ASSERT assert
 
 #ifdef __x86_64__
-
 	#define _M_AMD64
+#endif
 
+#ifdef _M_AMD64
 	// Yeah let use mips naming ;)
 	#ifdef _WIN64
 	#define a0 rcx
@@ -285,41 +286,25 @@ using namespace stdext;
 	#define t0 r8
 	#define t1 r9
 	#endif
-
 #endif
 
 // sse
-#if defined(__GNUC__) && !defined(__x86_64__)
+#if defined(__GNUC__)
 
 // Convert gcc see define into GSdx (windows) define
 #if defined(__AVX2__)
-	#define _M_SSE 0x501
+	#if defined(__x86_64__)
+		#define _M_SSE 0x500 // TODO
+	#else
+		#define _M_SSE 0x501
+	#endif
 #elif defined(__AVX__)
 	#define _M_SSE 0x500
-#elif defined(__SSE4_2__)
-	#define _M_SSE 0x402
 #elif defined(__SSE4_1__)
 	#define _M_SSE 0x401
 #elif defined(__SSSE3__)
 	#define _M_SSE 0x301
 #elif defined(__SSE2__)
-	#define _M_SSE 0x200
-#elif defined(__SSE__)
-	#define _M_SSE 0x100
-#endif
-
-#elif defined(__GNUC__)
-
-#if defined(__AVX2__)
-// FIXME until code is done
-	#define _M_SSE 0x500
-#elif defined(__AVX__)
-	#define _M_SSE 0x500
-#elif defined(__SSE4_1__)
-	#define _M_SSE 0x401
-#else
-// FIXME won't likely be supported but allow to compile the code
-// Note: from steam survey SSE4.1 is supported by 87% (end of 2015)
 	#define _M_SSE 0x200
 #endif
 
