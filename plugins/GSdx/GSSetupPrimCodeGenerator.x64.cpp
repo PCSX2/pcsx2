@@ -23,11 +23,11 @@
 #include "GSSetupPrimCodeGenerator.h"
 #include "GSVertexSW.h"
 
-#if _M_SSE < 0x500 && (defined(_M_AMD64) || defined(_WIN64))
+#if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
 using namespace Xbyak;
 
-void GSSetupPrimCodeGenerator::Generate()
+void GSSetupPrimCodeGenerator::Generate_SSE()
 {
 #ifdef _WIN64
 	sub(rsp, 8 + 2 * 16);
@@ -48,11 +48,11 @@ void GSSetupPrimCodeGenerator::Generate()
 		}
 	}
 
-	Depth();
+	Depth_SSE();
 
-	Texture();
+	Texture_SSE();
 
-	Color();
+	Color_SSE();
 
 #ifdef _WIN64
 	vmovdqa(xmm6, ptr[rsp + 0]);
@@ -64,7 +64,7 @@ void GSSetupPrimCodeGenerator::Generate()
 	ret();
 }
 
-void GSSetupPrimCodeGenerator::Depth()
+void GSSetupPrimCodeGenerator::Depth_SSE()
 {
 	if(!m_en.z && !m_en.f)
 	{
@@ -163,7 +163,7 @@ void GSSetupPrimCodeGenerator::Depth()
 	}
 }
 
-void GSSetupPrimCodeGenerator::Texture()
+void GSSetupPrimCodeGenerator::Texture_SSE()
 {
 	if(!m_en.t)
 	{
@@ -242,7 +242,7 @@ void GSSetupPrimCodeGenerator::Texture()
 	}
 }
 
-void GSSetupPrimCodeGenerator::Color()
+void GSSetupPrimCodeGenerator::Color_SSE()
 {
 	if(!m_en.c)
 	{
