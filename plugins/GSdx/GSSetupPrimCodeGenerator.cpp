@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSSetupPrimCodeGenerator.h"
 
+using namespace Xbyak;
+
 #if _M_SSE >= 0x501
 GSVector8 GSSetupPrimCodeGenerator::m_shift[9];
 #else
@@ -75,3 +77,14 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 
 	Generate();
 }
+
+#if _M_SSE >= 0x501
+#else
+void GSSetupPrimCodeGenerator::Generate()
+{
+	if(g_cpu.has(util::Cpu::tAVX))
+		Generate_AVX();
+	else
+		Generate_SSE();
+}
+#endif

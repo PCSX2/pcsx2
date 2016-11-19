@@ -23,6 +23,7 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSFunctionMap.h"
+#include "GSUtil.h"
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {
@@ -35,9 +36,21 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 	void Generate();
 
+#if _M_SSE < 0x501
+	void Generate_SSE();
+	void Depth_SSE();
+	void Texture_SSE();
+	void Color_SSE();
+
+	void Generate_AVX();
+	void Depth_AVX();
+	void Texture_AVX();
+	void Color_AVX();
+#else
 	void Depth();
 	void Texture();
 	void Color();
+#endif
 
 public:
 	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);

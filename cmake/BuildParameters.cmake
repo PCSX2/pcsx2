@@ -28,6 +28,8 @@ if(DISABLE_BUILD_DATE OR openSUSE)
     add_definitions(-DDISABLE_BUILD_DATE)
 endif()
 
+option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
+
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
@@ -234,7 +236,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
             if (USE_ICC)
                 set(ARCH_FLAG "-msse2")
             else()
-                set(ARCH_FLAG "-msse -msse2 -mfxsr")
+                set(ARCH_FLAG "-msse -msse2 -mfxsr -mssse3 -msse4.1 -mavx")
             endif()
         else()
             #set(ARCH_FLAG "-march=native -fabi-version=6")

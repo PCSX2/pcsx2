@@ -65,8 +65,8 @@ GSState::GSState()
 	m_dump_root = "";
 #if defined(__unix__)
 	if (s_dump) {
-		GSmkdir("/tmp/GS_HW_dump");
-		GSmkdir("/tmp/GS_SW_dump");
+		GSmkdir(root_hw.c_str());
+		GSmkdir(root_sw.c_str());
 	}
 #endif
 

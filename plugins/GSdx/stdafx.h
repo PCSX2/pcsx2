@@ -266,28 +266,46 @@ using namespace stdext;
 #define ASSERT assert
 
 #ifdef __x86_64__
-
 	#define _M_AMD64
+#endif
 
+#ifdef _M_AMD64
+	// Yeah let use mips naming ;)
+	#ifdef _WIN64
+	#define a0 rcx
+	#define a1 rdx
+	#define a2 r8
+	#define a3 r9
+	#define t0 rdi
+	#define t1 rsi
+	#else
+	#define a0 rdi
+	#define a1 rsi
+	#define a2 rdx
+	#define a3 rcx
+	#define t0 r8
+	#define t1 r9
+	#endif
 #endif
 
 // sse
-#if defined(__GNUC__) && !defined(__x86_64__)
+#if defined(__GNUC__)
+
 // Convert gcc see define into GSdx (windows) define
 #if defined(__AVX2__)
-	#define _M_SSE 0x501
+	#if defined(__x86_64__)
+		#define _M_SSE 0x500 // TODO
+	#else
+		#define _M_SSE 0x501
+	#endif
 #elif defined(__AVX__)
 	#define _M_SSE 0x500
-#elif defined(__SSE4_2__)
-	#define _M_SSE 0x402
 #elif defined(__SSE4_1__)
 	#define _M_SSE 0x401
 #elif defined(__SSSE3__)
 	#define _M_SSE 0x301
 #elif defined(__SSE2__)
 	#define _M_SSE 0x200
-#elif defined(__SSE__)
-	#define _M_SSE 0x100
 #endif
 
 #endif
@@ -411,11 +429,11 @@ extern void vmfree(void* ptr, size_t size);
 extern void* fifo_alloc(size_t size, size_t repeat);
 extern void fifo_free(void* ptr, size_t size, size_t repeat);
 
-#ifdef _WIN32
+#ifdef ENABLE_VTUNE
 
-	#ifdef ENABLE_VTUNE
+	#include "jitprofiling.h"
 
-	#include <JITProfiling.h>
+	#ifdef _WIN32
 
 	#pragma comment(lib, "jitprofiling.lib")
 
@@ -472,6 +490,11 @@ struct GLAutoPop {
 const std::string root_sw("c:\\temp1\\_");
 const std::string root_hw("c:\\temp2\\_");
 #else
-const std::string root_sw("/tmp/GS_SW_dump/");
-const std::string root_hw("/tmp/GS_HW_dump/");
+#ifdef _M_AMD64
+const std::string root_sw("/tmp/GS_SW_dump64/");
+const std::string root_hw("/tmp/GS_HW_dump64/");
+#else
+const std::string root_sw("/tmp/GS_SW_dump32/");
+const std::string root_hw("/tmp/GS_HW_dump32/");
+#endif
 #endif

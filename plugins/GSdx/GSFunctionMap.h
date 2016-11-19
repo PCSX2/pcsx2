@@ -26,6 +26,8 @@
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 
+#include "GSScanlineEnvironment.h"
+
 template<class KEY, class VALUE> class GSFunctionMap
 {
 protected:
@@ -161,6 +163,7 @@ class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 	void* m_param;
 	hash_map<uint64, VALUE> m_cgmap;
 	GSCodeBuffer m_cb;
+	size_t m_total_code_size;
 
 	enum {MAX_SIZE = 8192};
 
@@ -168,7 +171,13 @@ public:
 	GSCodeGeneratorFunctionMap(const char* name, void* param)
 		: m_name(name)
 		, m_param(param)
+		, m_total_code_size(0)
 	{
+	}
+
+	~GSCodeGeneratorFunctionMap()
+	{
+		fprintf(stderr, "%s generated %zu bytes of instruction\n", m_name.c_str(), m_total_code_size);
 	}
 
 	VALUE GetDefaultFunction(KEY key)
@@ -183,9 +192,18 @@ public:
 		}
 		else
 		{
-			CG* cg = new CG(m_param, key, m_cb.GetBuffer(MAX_SIZE), MAX_SIZE);
+			void* code_ptr = m_cb.GetBuffer(MAX_SIZE);
 
+			CG* cg = new CG(m_param, key, code_ptr, MAX_SIZE);
 			ASSERT(cg->getSize() < MAX_SIZE);
+
+#if 0
+			fprintf(stderr, "%s Location:%p Size:%zu Key:%llx\n", m_name.c_str(), code_ptr, cg->getSize(), (uint64)key);
+			GSScanlineSelector sel(key);
+			sel.Print();
+#endif
+
+			m_total_code_size += cg->getSize();
 
 			m_cb.ReleaseBuffer(cg->getSize());
 

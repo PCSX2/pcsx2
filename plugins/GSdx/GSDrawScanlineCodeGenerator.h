@@ -23,8 +23,15 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSFunctionMap.h"
+#include "GSUtil.h"
 
 using namespace Xbyak;
+
+#if defined(_M_AMD64) || defined(_WIN64)
+#define RegLong Reg64
+#else
+#define RegLong Reg32
+#endif
 
 class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 {
@@ -57,17 +64,9 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void WriteZBuf();
 	void AlphaBlend();
 	void WriteFrame();
-
-	#if defined(_M_AMD64) || defined(_WIN64)
-	void ReadPixel(const Ymm& dst, const Ymm& temp, const Reg64& addr);
-	void WritePixel(const Ymm& src, const Ymm& temp, const Reg64& addr, const Reg32& mask, bool fast, int psm, int fz);
-	void WritePixel(const Xmm& src, const Reg64& addr, uint8 i, uint8 j, int psm);
-	#else
-	void ReadPixel(const Ymm& dst, const Ymm& temp, const Reg32& addr);
-	void WritePixel(const Ymm& src, const Ymm& temp, const Reg32& addr, const Reg32& mask, bool fast, int psm, int fz);
-	void WritePixel(const Xmm& src, const Reg32& addr, uint8 i, uint8 j, int psm);
-	#endif
-
+	void ReadPixel(const Ymm& dst, const Ymm& temp, const RegLong& addr);
+	void WritePixel(const Ymm& src, const Ymm& temp, const RegLong& addr, const Reg32& mask, bool fast, int psm, int fz);
+	void WritePixel(const Xmm& src, const RegLong& addr, uint8 i, uint8 j, int psm);
 	void ReadTexel(int pixels, int mip_offset = 0);
 	void ReadTexel(const Ymm& dst, const Ymm& addr, uint8 i);
 
@@ -84,39 +83,59 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 
 	#else
 
-	void Init();
-	void Step();
-	void TestZ(const Xmm& temp1, const Xmm& temp2);
-	void SampleTexture();
-	void Wrap(const Xmm& uv0);
-	void Wrap(const Xmm& uv0, const Xmm& uv1);
-	void SampleTextureLOD();
-	void WrapLOD(const Xmm& uv0);
-	void WrapLOD(const Xmm& uv0, const Xmm& uv1);
-	void AlphaTFX();
-	void ReadMask();
-	void TestAlpha();
-	void ColorTFX();
-	void Fog();
-	void ReadFrame();
-	void TestDestAlpha();
-	void WriteMask();
-	void WriteZBuf();
-	void AlphaBlend();
-	void WriteFrame();
+	void Generate_SSE();
+	void Init_SSE();
+	void Step_SSE();
+	void TestZ_SSE(const Xmm& temp1, const Xmm& temp2);
+	void SampleTexture_SSE();
+	void Wrap_SSE(const Xmm& uv0);
+	void Wrap_SSE(const Xmm& uv0, const Xmm& uv1);
+	void SampleTextureLOD_SSE();
+	void WrapLOD_SSE(const Xmm& uv0);
+	void WrapLOD_SSE(const Xmm& uv0, const Xmm& uv1);
+	void AlphaTFX_SSE();
+	void ReadMask_SSE();
+	void TestAlpha_SSE();
+	void ColorTFX_SSE();
+	void Fog_SSE();
+	void ReadFrame_SSE();
+	void TestDestAlpha_SSE();
+	void WriteMask_SSE();
+	void WriteZBuf_SSE();
+	void AlphaBlend_SSE();
+	void WriteFrame_SSE();
+	void ReadPixel_SSE(const Xmm& dst, const  RegLong& addr);
+	void WritePixel_SSE(const Xmm& src, const RegLong& addr, const Reg8& mask, bool fast, int psm, int fz);
+	void WritePixel_SSE(const Xmm& src, const RegLong& addr, uint8 i, int psm);
+	void ReadTexel_SSE(int pixels, int mip_offset = 0);
+	void ReadTexel_SSE(const Xmm& dst, const Xmm& addr, uint8 i);
 
-	#if defined(_M_AMD64) || defined(_WIN64)
-	void ReadPixel(const Xmm& dst, const Reg64& addr);
-	void WritePixel(const Xmm& src, const Reg64& addr, const Reg8& mask, bool fast, int psm, int fz);
-	void WritePixel(const Xmm& src, const Reg64& addr, uint8 i, int psm);
-	#else
-	void ReadPixel(const Xmm& dst, const Reg32& addr);
-	void WritePixel(const Xmm& src, const Reg32& addr, const Reg8& mask, bool fast, int psm, int fz);
-	void WritePixel(const Xmm& src, const Reg32& addr, uint8 i, int psm);
-	#endif
-
-	void ReadTexel(int pixels, int mip_offset = 0);
-	void ReadTexel(const Xmm& dst, const Xmm& addr, uint8 i);
+	void Generate_AVX();
+	void Init_AVX();
+	void Step_AVX();
+	void TestZ_AVX(const Xmm& temp1, const Xmm& temp2);
+	void SampleTexture_AVX();
+	void Wrap_AVX(const Xmm& uv0);
+	void Wrap_AVX(const Xmm& uv0, const Xmm& uv1);
+	void SampleTextureLOD_AVX();
+	void WrapLOD_AVX(const Xmm& uv0);
+	void WrapLOD_AVX(const Xmm& uv0, const Xmm& uv1);
+	void AlphaTFX_AVX();
+	void ReadMask_AVX();
+	void TestAlpha_AVX();
+	void ColorTFX_AVX();
+	void Fog_AVX();
+	void ReadFrame_AVX();
+	void TestDestAlpha_AVX();
+	void WriteMask_AVX();
+	void WriteZBuf_AVX();
+	void AlphaBlend_AVX();
+	void WriteFrame_AVX();
+	void ReadPixel_AVX(const Xmm& dst, const  RegLong& addr);
+	void WritePixel_AVX(const Xmm& src, const RegLong& addr, const Reg8& mask, bool fast, int psm, int fz);
+	void WritePixel_AVX(const Xmm& src, const RegLong& addr, uint8 i, int psm);
+	void ReadTexel_AVX(int pixels, int mip_offset = 0);
+	void ReadTexel_AVX(const Xmm& dst, const Xmm& addr, uint8 i);
 
 	void modulate16(const Xmm& a, const Operand& f, int shift);
 	void lerp16(const Xmm& a, const Xmm& b, const Xmm& f, int shift);
@@ -128,6 +147,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void blendr(const Xmm& b, const Xmm& a, const Xmm& mask);
 	void blend8(const Xmm& a, const Xmm& b);
 	void blend8r(const Xmm& b, const Xmm& a);
+	void split16_2x8(const Xmm& l, const Xmm& h, const Xmm& src);
 
 	#endif
 

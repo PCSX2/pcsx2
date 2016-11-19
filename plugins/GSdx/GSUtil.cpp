@@ -20,9 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "GS.h"
 #include "GSUtil.h"
-#include "xbyak/xbyak_util.h"
 
 #ifdef _WIN32
 #include "GSDeviceDX.h"
@@ -32,6 +30,8 @@
 #define SVN_REV 0
 #define SVN_MODS 0
 #endif
+
+Xbyak::util::Cpu g_cpu;
 
 const char* GSUtil::GetLibName()
 {
@@ -203,38 +203,41 @@ bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
 
 bool GSUtil::CheckSSE()
 {
-	Xbyak::util::Cpu cpu;
-	Xbyak::util::Cpu::Type type;
-	const char* instruction_set = "";
+	bool status = true;
 
-	#if _M_SSE >= 0x501
-	type = Xbyak::util::Cpu::tAVX2;
-	instruction_set = "AVX2";
-	#elif _M_SSE >= 0x500
-	type = Xbyak::util::Cpu::tAVX;
-	instruction_set = "AVX";
-	#elif _M_SSE >= 0x402
-	type = Xbyak::util::Cpu::tSSE42;
-	instruction_set = "SSE4.2";
-	#elif _M_SSE >= 0x401
-	type = Xbyak::util::Cpu::tSSE41;
-	instruction_set = "SSE4.1";
-	#elif _M_SSE >= 0x301
-	type = Xbyak::util::Cpu::tSSSE3;
-	instruction_set = "SSSE3";
-	#elif _M_SSE >= 0x200
-	type = Xbyak::util::Cpu::tSSE2;
-	instruction_set = "SSE2";
-	#endif
+	struct ISA {
+		Xbyak::util::Cpu::Type type;
+		const char* name;
+	};
 
-	if(!cpu.has(type))
-	{
-		fprintf(stderr, "This CPU does not support %s\n", instruction_set);
+	ISA checks[] = {
+		{Xbyak::util::Cpu::tSSE2, "SSE2"},
+#if _M_SSE >= 0x301
+		{Xbyak::util::Cpu::tSSSE3, "SSSE3"},
+#endif
+#if _M_SSE >= 0x401
+		{Xbyak::util::Cpu::tSSE41, "SSE41"},
+#endif
+#if _M_SSE >= 0x402
+		{Xbyak::util::Cpu::tSSE42, "SSE42"},
+#endif
+#if _M_SSE >= 0x500
+		{Xbyak::util::Cpu::tAVX, "AVX1"},
+#endif
+#if _M_SSE >= 0x501
+		{Xbyak::util::Cpu::tAVX2, "AVX2"},
+#endif
+	};
 
-		return false;
+	for (size_t i = 0; i < countof(checks); i++) {
+		if(!g_cpu.has(checks[i].type)) {
+			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+
+			status = false;
+		}
 	}
 
-	return true;
+	return status;
 }
 
 #define OCL_PROGRAM_VERSION 3

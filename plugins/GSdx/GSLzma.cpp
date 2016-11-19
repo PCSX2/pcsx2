@@ -173,7 +173,7 @@ void GSDumpRaw::Read(void* ptr, size_t size) {
 	} else {
 		size_t ret = fread(ptr, 1, size, m_fp);
 		if (ret != size) {
-			fprintf(stderr, "GSDumpRaw:: Read error (%d/%d)\n", ret, size);
+			fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
 			throw "BAD"; // Just exit the program
 		}
 	}
