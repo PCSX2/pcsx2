@@ -94,14 +94,17 @@ void* vmalloc(size_t size, bool code)
 
 	size = (size + mask) & ~mask;
 
-	int flags = PROT_READ | PROT_WRITE;
+	int prot = PROT_READ | PROT_WRITE;
+	int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-	if(code)
-	{
-		flags |= PROT_EXEC;
+	if(code) {
+		prot |= PROT_EXEC;
+#ifdef _M_AMD64
+		flags |= MAP_32BIT;
+#endif
 	}
 
-	return mmap(NULL, size, flags, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	return mmap(NULL, size, prot, flags, -1, 0);
 }
 
 void vmfree(void* ptr, size_t size)
