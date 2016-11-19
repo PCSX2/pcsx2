@@ -40,7 +40,7 @@ class wxSpinCtrl;
 
 namespace pxSizerFlags
 {
-static const int StdPadding = 4;
+static int StdPadding = 4;
 
 extern wxSizerFlags StdSpace();
 extern wxSizerFlags StdCenter();
@@ -49,6 +49,7 @@ extern wxSizerFlags TopLevelBox();
 extern wxSizerFlags SubGroup();
 extern wxSizerFlags StdButton();
 extern wxSizerFlags Checkbox();
+extern void SetBestPadding();
 };
 
 #define wxSF wxSizerFlags()

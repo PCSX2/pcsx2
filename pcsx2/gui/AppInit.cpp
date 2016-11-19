@@ -477,6 +477,7 @@ bool Pcsx2App::OnInit()
 
 		//   Start GUI and/or Direct Emulation
 		// -------------------------------------
+		pxSizerFlags::SetBestPadding();
 		if( Startup.ForceConsole ) g_Conf->ProgLogBox.Visible = true;
 		OpenProgramLog();
 		AllocateCoreStuffs();

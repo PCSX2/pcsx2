@@ -269,6 +269,14 @@ wxSizerFlags pxSizerFlags::Checkbox()
     return StdExpand();
 }
 
+void pxSizerFlags::SetBestPadding()
+{
+    if (wxSystemSettings::GetMetric(wxSYS_SCREEN_X) > 1024 && wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) > 864)
+        StdPadding = 4;
+    else
+        StdPadding = 2;
+}
+
 // --------------------------------------------------------------------------------------
 //  pxTextWrapper / pxTextWrapperBase  (implementations)
 // --------------------------------------------------------------------------------------
