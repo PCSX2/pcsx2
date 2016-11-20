@@ -26,11 +26,11 @@
 #if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
 // Ease the reading of the code
-#define _m_local r11
-#define _m_local__gd r12
-#define _m_local__gd__vm r13
-#define _m_local__gd__clut r14
-#define _m_local__gd__tex r15
+#define _m_local r12
+#define _m_local__gd r13
+#define _m_local__gd__vm a1
+#define _m_local__gd__clut r11
+#define _m_local__gd__tex a3
 // More pretty name
 #define _z		xmm8
 #define _f		xmm9
@@ -89,23 +89,22 @@ void GSDrawScanlineCodeGenerator::Generate_AVX()
 	// No reservation on the stack as a red zone is available
 	push(rbp);
 	mov(ptr[rsp + _rz_rbx], rbx);
-	mov(ptr[rsp + _rz_r12], r12);
-	mov(ptr[rsp + _rz_r13], r13);
-	if(need_clut)
-		mov(ptr[rsp + _rz_r14], r14);
-	if(need_tex)
-		mov(ptr[rsp + _rz_r15], r15);
+	if (!m_rip)
+	{
+		mov(ptr[rsp + _rz_r12], r12);
+		mov(ptr[rsp + _rz_r13], r13);
+	}
 #endif
 
 	mov(r10, (size_t)&m_test[0]);
-	mov(_m_local, (size_t)&m_local);
-	mov(_m_local__gd, _rip_local(gd));
+	if (!m_rip)
+	{
+		mov(_m_local, (size_t)&m_local);
+		mov(_m_local__gd, _rip_local(gd));
+	}
 
-	mov(_m_local__gd__vm, _rip_global(vm));
 	if(need_clut)
 		mov(_m_local__gd__clut, _rip_global(clut));
-	if(need_tex)
-		mov(_m_local__gd__tex, _rip_global(tex));
 
 	Init_AVX();
 
@@ -272,12 +271,11 @@ L("exit");
 	pop(rbx);
 #else
 	mov(rbx, ptr[rsp + _rz_rbx]);
-	mov(r12, ptr[rsp + _rz_r12]);
-	mov(r13, ptr[rsp + _rz_r13]);
-	if(need_clut)
-		mov(r14, ptr[rsp + _rz_r14]);
-	if(need_tex)
-		mov(r15, ptr[rsp + _rz_r15]);
+	if (!m_rip)
+	{
+		mov(r12, ptr[rsp + _rz_r12]);
+		mov(r13, ptr[rsp + _rz_r13]);
+	}
 	pop(rbp);
 #endif
 
@@ -482,13 +480,16 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 		}
 	}
 
-
 	if(m_sel.fwrite && m_sel.fpsm == 2 && m_sel.dthe)
 	{
 		// On linux, a2 is edx which will be used for fzm
 		// In all case, it will require a mov in dthe code, so let's keep the value on the stack
 		mov(ptr[rsp + _rz_top], a2);
 	}
+
+	mov(_m_local__gd__vm, _rip_global(vm));
+	if(m_sel.fb && m_sel.tfx != TFX_NONE)
+		mov(_m_local__gd__tex, _rip_global(tex));
 }
 
 void GSDrawScanlineCodeGenerator::Step_AVX()
