@@ -2698,10 +2698,10 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 void GSDrawScanlineCodeGenerator::ReadPixel(const Ymm& dst, const Ymm& temp, const Reg32& addr)
 {
 	vmovq(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm]);
-	vmovhps(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 8 * 2]);	
+	vmovhps(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 8 * 2]);
 	vmovq(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 16 * 2]);
-	vmovhps(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 24 * 2]);	
-	vinserti128(dst, dst, temp, 1);	
+	vmovhps(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 24 * 2]);
+	vinserti128(dst, dst, Xmm(temp.getIdx()), 1);
 /*
 	vmovdqu(dst, ptr[addr * 2 + (size_t)m_local.gd->vm]);
 	vmovdqu(temp, ptr[addr * 2 + (size_t)m_local.gd->vm + 16 * 2]);
@@ -2888,14 +2888,14 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 				ReadTexel(t2, t1, j);
 			}
 
-			vinserti128(dst, dst, t2, 1);
+			vinserti128(dst, dst, Xmm(t2.getIdx()), 1);
 		}
 	}
-	else 
+	else
 	{
 		const int r[] = {5, 6, 2, 4, 0, 1, 3, 5};
 		const int t[] = {1, 4, 5, 1, 2, 5, 0, 2};
-		
+
 		if(m_sel.mmin && m_sel.lcm)
 		{
 			mov(ebx, ptr[&lod_i->u32[0]]);
@@ -2924,7 +2924,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 					ReadTexel(t2, t1, j);
 				}
 
-				vinserti128(dst, dst, t2, 1);
+				vinserti128(dst, dst, Xmm(t2.getIdx()), 1);
 				/*
 				vpcmpeqd(t1, t1);
 				vpgatherdd(t2, ptr[ebx + src * 1], t1); // either this 1x scale, or the latency of two dependendent gathers are too slow
