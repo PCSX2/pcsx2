@@ -57,6 +57,7 @@ static const int _rz_r12 = -8 * 2;
 static const int _rz_r13 = -8 * 3;
 static const int _rz_r14 = -8 * 4;
 static const int _rz_r15 = -8 * 5;
+static const int _rz_top = -8 * 6;
 static const int _rz_zs  = -8 * 8;
 static const int _rz_zd  = -8 * 10;
 static const int _rz_cov = -8 * 12;
@@ -485,7 +486,8 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 	if(m_sel.fwrite && m_sel.fpsm == 2 && m_sel.dthe)
 	{
 		// On linux, a2 is edx which will be used for fzm
-		mov(a1, a2);
+		// In all case, it will require a mov in dthe code, so let's keep the value on the stack
+		mov(ptr[rsp + _rz_top], a2);
 	}
 }
 
@@ -1816,19 +1818,20 @@ void GSDrawScanlineCodeGenerator::WriteFrame_AVX()
 
 	if(m_sel.fpsm == 2 && m_sel.dthe)
 	{
-		mov(a3, _rip_global(dimx));
-
 		// y = (top & 3) << 5
 
-		mov(eax, a1.cvt32());
+		mov(eax, ptr[rsp + _rz_top]);
 		and(eax, 3);
 		shl(eax, 5);
 
 		// rb = rb.add16(m_global.dimx[0 + y]);
 		// ga = ga.add16(m_global.dimx[1 + y]);
 
-		vpaddw(xmm2, ptr[a3 + rax + sizeof(GSVector4i) * 0]);
-		vpaddw(xmm3, ptr[a3 + rax + sizeof(GSVector4i) * 1]);
+		add(rax, _rip_global(dimx));
+
+		vpaddw(xmm2, ptr[rax + sizeof(GSVector4i) * 0]);
+		vpaddw(xmm3, ptr[rax + sizeof(GSVector4i) * 1]);
+
 	}
 
 	if(m_sel.colclamp == 0)
