@@ -39,6 +39,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
+	bool m_rip;
 
 	void Generate();
 
