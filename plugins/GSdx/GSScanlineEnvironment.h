@@ -179,7 +179,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	// these should be stored on stack as normal local variables (no free regs to use, esp cannot be saved to anywhere, and we need an aligned stack)
 
-	struct 
+	struct
 	{
 		GSVector8 z, zo;
 		GSVector8i f;
@@ -196,7 +196,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector8i uv_minmax[2];
 		GSVector8i trb, tga;
 		GSVector8i test;
-	} temp; 
+	} temp;
 
 	#else
 
@@ -207,7 +207,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	// these should be stored on stack as normal local variables (no free regs to use, esp cannot be saved to anywhere, and we need an aligned stack)
 
-	struct 
+	struct
 	{
 		GSVector4 z, zo;
 		GSVector4i f;
@@ -224,7 +224,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector4i uv_minmax[2];
 		GSVector4i trb, tga;
 		GSVector4i test;
-	} temp; 
+	} temp;
 
 	#endif
 

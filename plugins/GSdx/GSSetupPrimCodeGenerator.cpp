@@ -67,6 +67,7 @@ void GSSetupPrimCodeGenerator::InitVectors()
 GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GSScanlineLocalData*)param)
+	, m_rip(false)
 {
 	m_sel.key = key;
 

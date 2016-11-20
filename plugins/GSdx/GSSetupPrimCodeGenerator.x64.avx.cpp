@@ -27,8 +27,14 @@
 
 using namespace Xbyak;
 
+#define _rip_local(field) (m_rip ? ptr[rip + &m_local.field] : ptr[t0 + offsetof(GSScanlineLocalData, field)])
+#define _rip_local_v(field, offset) (m_rip ? ptr[rip + &m_local.field] : ptr[t0 + offset])
+
 void GSSetupPrimCodeGenerator::Generate_AVX()
 {
+	// Technically we just need the delta < 2GB
+	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
+
 #ifdef _WIN64
 	sub(rsp, 8 + 2 * 16);
 
@@ -36,7 +42,8 @@ void GSSetupPrimCodeGenerator::Generate_AVX()
 	vmovdqa(ptr[rsp + 16], xmm7);
 #endif
 
-	mov(t0, (size_t)&m_local);
+	if (!m_rip)
+		mov(t0, (size_t)&m_local);
 
 	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
@@ -89,7 +96,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			vcvttps2dq(xmm2, xmm2);
 			vpshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 			vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
-			vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, d4.f)], xmm2);
+			vmovdqa(_rip_local(d4.f), xmm2);
 
 			for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
@@ -101,7 +108,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 				vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 
 				const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].f) + (i * sizeof(GSScanlineLocalData::d[0]));
-				vmovdqa(ptr[t0 + variableOffset], xmm2);
+				vmovdqa(_rip_local_v(d[i].f, variableOffset), xmm2);
 			}
 		}
 
@@ -114,7 +121,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			// m_local.d4.z = dz * 4.0f;
 
 			vmulps(xmm1, xmm0, xmm3);
-			vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, d4.z)], xmm1);
+			vmovdqa(_rip_local(d4.z), xmm1);
 
 			for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
@@ -123,7 +130,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 				vmulps(xmm1, xmm0, Xmm(4 + i));
 
 				const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].z) + (i * sizeof(GSScanlineLocalData::d[0]));
-				vmovdqa(ptr[t0 + variableOffset], xmm1);
+				vmovdqa(_rip_local_v(d[i].z, variableOffset), xmm1);
 			}
 		}
 	}
@@ -144,7 +151,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			vcvttps2dq(xmm1, xmm0);
 			vpshufhw(xmm1, xmm1, _MM_SHUFFLE(2, 2, 2, 2));
 			vpshufd(xmm1, xmm1, _MM_SHUFFLE(2, 2, 2, 2));
-			vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, p.f)], xmm1);
+			vmovdqa(_rip_local(p.f), xmm1);
 		}
 
 		if(m_en.z)
@@ -153,7 +160,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 
 			vmovdqa(xmm0, ptr[rax + offsetof(GSVertexSW, t)]);
 			vpshufd(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
-			vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, p.z)], xmm0);
+			vmovdqa(_rip_local(p.z), xmm0);
 		}
 	}
 }
@@ -177,13 +184,13 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 		vcvttps2dq(xmm1, xmm1);
 
-		vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, d4.stq)], xmm1);
+		vmovdqa(_rip_local(d4.stq), xmm1);
 	}
 	else
 	{
 		// m_local.d4.stq = t * 4.0f;
 
-		vmovaps(ptr[t0 + offsetof(GSScanlineLocalData, d4.stq)], xmm1);
+		vmovaps(_rip_local(d4.stq), xmm1);
 	}
 
 	for(int j = 0, k = m_sel.fst ? 2 : 3; j < k; j++)
@@ -211,8 +218,8 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 				switch(j)
 				{
-				case 0: vmovdqa(ptr[t0 + variableOffsetS], xmm2); break;
-				case 1: vmovdqa(ptr[t0 + variableOffsetT], xmm2); break;
+				case 0: vmovdqa(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
+				case 1: vmovdqa(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
 				}
 			}
 			else
@@ -225,9 +232,9 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 				switch(j)
 				{
-				case 0: vmovaps(ptr[t0 + variableOffsetS], xmm2); break;
-				case 1: vmovaps(ptr[t0 + variableOffsetT], xmm2); break;
-				case 2: vmovaps(ptr[t0 + variableOffsetQ], xmm2); break;
+				case 0: vmovaps(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
+				case 1: vmovaps(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
+				case 2: vmovaps(_rip_local_v(d[i].q, variableOffsetQ), xmm2); break;
 				}
 			}
 		}
@@ -253,7 +260,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 		vcvttps2dq(xmm1, xmm1);
 		vpshufd(xmm1, xmm1, _MM_SHUFFLE(3, 1, 2, 0));
 		vpackssdw(xmm1, xmm1);
-		vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, d4.c)], xmm1);
+		vmovdqa(_rip_local(d4.c), xmm1);
 
 		// xmm3 is not needed anymore
 
@@ -282,7 +289,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 			vpunpcklwd(xmm0, xmm1);
 
 			const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].rb) + (i * sizeof(GSScanlineLocalData::d[0]));
-			vmovdqa(ptr[t0 + variableOffset], xmm0);
+			vmovdqa(_rip_local_v(d[i].rb, variableOffset), xmm0);
 		}
 
 		// GSVector4 c = dscan.c;
@@ -314,7 +321,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 			vpunpcklwd(xmm0, xmm1);
 
 			const size_t variableOffset = offsetof(GSScanlineLocalData, d[0].ga) + (i * sizeof(GSScanlineLocalData::d[0]));
-			vmovdqa(ptr[t0 + variableOffset], xmm0);
+			vmovdqa(_rip_local_v(d[i].ga, variableOffset), xmm0);
 		}
 	}
 	else
@@ -358,8 +365,8 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 		vpshufd(xmm1, xmm0, _MM_SHUFFLE(0, 0, 0, 0));
 		vpshufd(xmm2, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, c.rb)], xmm1);
-		vmovdqa(ptr[t0 + offsetof(GSScanlineLocalData, c.ga)], xmm2);
+		vmovdqa(_rip_local(c.rb), xmm1);
+		vmovdqa(_rip_local(c.ga), xmm2);
 	}
 }
 
