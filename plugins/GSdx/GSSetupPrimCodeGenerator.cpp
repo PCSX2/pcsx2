@@ -75,7 +75,11 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 	m_en.t = m_sel.fb && m_sel.tfx != TFX_NONE ? 1 : 0;
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 
-	Generate();
+	try {
+		Generate();
+	} catch (std::exception& e) {
+		fprintf(stderr, "ERR:GSSetupPrimCodeGenerator %s\n", e.what());
+	}
 }
 
 #if _M_SSE >= 0x501

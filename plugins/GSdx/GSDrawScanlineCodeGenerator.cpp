@@ -114,7 +114,11 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 	if(m_sel.breakpoint)
 		int3();
 
-	Generate();
+	try {
+		Generate();
+	} catch (std::exception& e) {
+		fprintf(stderr, "ERR:GSDrawScanlineCodeGenerator %s\n", e.what());
+	}
 }
 
 #if _M_SSE >= 0x501
