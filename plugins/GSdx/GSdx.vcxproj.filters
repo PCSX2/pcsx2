@@ -497,9 +497,6 @@
     <ClInclude Include="xbyak\xbyak.h">
       <Filter>Xbyak</Filter>
     </ClInclude>
-    <ClInclude Include="xbyak\xbyak_bin2hex.h">
-      <Filter>Xbyak</Filter>
-    </ClInclude>
     <ClInclude Include="xbyak\xbyak_mnemonic.h">
       <Filter>Xbyak</Filter>
     </ClInclude>

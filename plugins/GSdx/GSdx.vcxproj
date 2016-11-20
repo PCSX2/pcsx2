@@ -305,7 +305,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="xbyak\xbyak.h" />
-    <ClInclude Include="xbyak\xbyak_bin2hex.h" />
     <ClInclude Include="xbyak\xbyak_mnemonic.h" />
     <ClInclude Include="xbyak\xbyak_util.h" />
   </ItemGroup>

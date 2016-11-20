@@ -80,6 +80,7 @@ typedef uint32 uptr;
 // xbyak compatibilities
 typedef int64 sint64;
 #define MIE_INTEGER_TYPE_DEFINED
+#define XBYAK_ENABLE_OMITTED_OPERAND
 
 // stdc
 

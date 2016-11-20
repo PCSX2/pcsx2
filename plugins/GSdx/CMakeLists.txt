@@ -176,7 +176,6 @@ set(GSdxHeaders
     res/glsl_source.h
     stdafx.h
     xbyak/xbyak.h
-    xbyak/xbyak_bin2hex.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
     )
