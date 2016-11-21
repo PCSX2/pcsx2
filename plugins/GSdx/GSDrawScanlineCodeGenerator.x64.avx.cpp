@@ -484,7 +484,11 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 	{
 		// On linux, a2 is edx which will be used for fzm
 		// In all case, it will require a mov in dthe code, so let's keep the value on the stack
+#ifdef _WIN64
+		ASSERT(0);
+#else
 		mov(ptr[rsp + _rz_top], a2);
+#endif
 	}
 
 	mov(_m_local__gd__vm, _rip_global(vm));
@@ -1821,7 +1825,11 @@ void GSDrawScanlineCodeGenerator::WriteFrame_AVX()
 	{
 		// y = (top & 3) << 5
 
+#ifdef _WIN64
+		ASSERT(0);
+#else
 		mov(eax, ptr[rsp + _rz_top]);
+#endif
 		and(eax, 3);
 		shl(eax, 5);
 
