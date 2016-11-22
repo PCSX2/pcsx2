@@ -136,7 +136,8 @@ L("loop");
 
 	// ebp = za
 
-	if(m_sel.mmin)
+	// FIXME not yet done
+	if(m_sel.mmin && 0)
 	{
 		SampleTextureLOD_AVX();
 	}
