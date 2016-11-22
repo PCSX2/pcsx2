@@ -35,8 +35,6 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 	struct {uint32 z:1, f:1, t:1, c:1;} m_en;
 
-	void Generate();
-
 #if _M_SSE < 0x501
 	void Generate_SSE();
 	void Depth_SSE();
@@ -48,9 +46,10 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 	void Texture_AVX();
 	void Color_AVX();
 #else
-	void Depth();
-	void Texture();
-	void Color();
+	void Generate_AVX2();
+	void Depth_AVX2();
+	void Texture_AVX2();
+	void Color_AVX2();
 #endif
 
 public:

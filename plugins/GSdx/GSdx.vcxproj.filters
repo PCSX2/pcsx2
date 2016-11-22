@@ -231,6 +231,9 @@
     <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GSDrawScanlineCodeGenerator.x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -247,6 +250,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSRendererCL.cpp">

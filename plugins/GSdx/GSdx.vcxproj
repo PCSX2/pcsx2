@@ -147,6 +147,7 @@
     <ClCompile Include="GSDrawScanline.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx2.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.x64.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx.cpp" />
     <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx2.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="GSSettingsDlg.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx2.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x64.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp" />

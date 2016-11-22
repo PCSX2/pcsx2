@@ -23,20 +23,95 @@
 #include "GSDrawScanlineCodeGenerator.h"
 #include "GSVertexSW.h"
 
-#if _M_SSE >= 0x501 && !(defined(_M_AMD64) || defined(_WIN64))
+#if _M_SSE >= 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
 static const int _args = 16;
 static const int _top = _args + 4;
 static const int _v = _args + 8;
 
+// Ease the reading of the code
+#define _m_local r12
+#define _m_local__gd r13
+#define _m_local__gd__vm a1
+#define _m_local__gd__clut r11
+#define _m_local__gd__tex a3
+// More pretty name
+#define _z		ymm8
+#define _f		ymm9
+#define _s		ymm10
+#define _t		ymm11
+#define _q		ymm12
+#define _f_rb	ymm13
+#define _f_ga	ymm14
+#define _test	ymm15
+// Extra bonus
+#define _rb		ymm2
+#define _ga		ymm3
+#define _fm		ymm4
+#define _zm		ymm5
+#define _fd		ymm6
+
+#define _rip_local(field) (m_rip ? ptr[rip + &m_local.field] : ptr[_m_local + offsetof(GSScanlineLocalData, field)])
+#define _rip_global(field) (m_rip ? ptr[rip + &m_local.gd->field] : ptr[_m_local__gd + offsetof(GSScanlineGlobalData, field)])
+
+#ifdef _WIN64
+#else
+static const int _rz_rbx = -8 * 1;
+static const int _rz_r12 = -8 * 2;
+static const int _rz_r13 = -8 * 3;
+//static const int _rz_r14 = -8 * 4;
+//static const int _rz_r15 = -8 * 5;
+static const int _rz_top = -8 * 4;
+static const int _rz_zs  = -8 * 8;
+static const int _rz_zd  = -8 * 12;
+static const int _rz_cov = -8 * 16;
+#endif
+
 void GSDrawScanlineCodeGenerator::Generate()
 {
-	//ret(8);
+	ret();
+	return;
 
-	push(ebx);
-	push(esi);
-	push(edi);
-	push(ebp);
+	bool need_tex = m_sel.fb && m_sel.tfx != TFX_NONE;
+	bool need_clut = need_tex && m_sel.tlu;
+	m_rip = (size_t)getCurr() < 0x80000000;
+	m_rip &= (size_t)&m_local < 0x80000000;
+	m_rip &= (size_t)&m_local.gd < 0x80000000;
+
+#ifdef _WIN64
+	push(rbx);
+	push(rsi);
+	push(rdi);
+	push(rbp);
+	push(r12);
+	push(r13);
+
+	sub(rsp, 8 + 10 * 16);
+
+	for(int i = 6; i < 16; i++)
+	{
+		vmovdqa(ptr[rsp + (i - 6) * 16], Xmm(i));
+	}
+#else
+	// No reservation on the stack as a red zone is available
+	push(rbp);
+	mov(ptr[rsp + _rz_rbx], rbx);
+	if (!m_rip)
+	{
+		mov(ptr[rsp + _rz_r12], r12);
+		mov(ptr[rsp + _rz_r13], r13);
+	}
+#endif
+
+	mov(r10, (size_t)&m_test[0]);
+	if (!m_rip)
+	{
+		mov(_m_local, (size_t)&m_local);
+		mov(_m_local__gd, _rip_local(gd));
+	}
+
+	if(need_clut)
+		mov(_m_local__gd__clut, _rip_global(clut));
 
 	//db(0xcc);
 
@@ -60,9 +135,7 @@ L("loop");
 	// ymm6 = ga (!tme)
 	// ymm7 = test
 
-	bool tme = m_sel.tfx != TFX_NONE;
-
-	TestZ(tme ? ymm5 : ymm2, tme ? ymm6 : ymm3);
+	TestZ(ymm5, ymm6);
 
 	// ecx = steps
 	// esi = fzbr
@@ -242,12 +315,29 @@ L("step");
 
 L("exit");
 
-	pop(ebp);
-	pop(edi);
-	pop(esi);
-	pop(ebx);
+#ifdef _WIN64
+	for(int i = 6; i < 16; i++)
+	{
+		vmovdqa(Xmm(i), ptr[rsp + (i - 6) * 16]);
+	}
 
-	ret(8);
+	add(rsp, 8 + 10 * 16);
+
+	pop(r13);
+	pop(r12);
+	pop(rbp);
+	pop(rdi);
+	pop(rsi);
+	pop(rbx);
+#else
+	mov(rbx, ptr[rsp + _rz_rbx]);
+	if (!m_rip)
+	{
+		mov(r12, ptr[rsp + _rz_r12]);
+		mov(r13, ptr[rsp + _rz_r13]);
+	}
+	pop(rbp);
+#endif
 }
 
 void GSDrawScanlineCodeGenerator::Init()
@@ -256,19 +346,19 @@ void GSDrawScanlineCodeGenerator::Init()
 	{
 		// int skip = left & 7;
 
-		mov(ebx, edx);
-		and(edx, 7);
+		mov(ebx, a1.cvt32());
+		and(a1.cvt32(), 7);
 
 		// int steps = pixels + skip - 8;
 
-		lea(ecx, ptr[ecx + edx - 8]);
+		lea(a0, ptr[a0 + a1 - 8]);
 
 		// left -= skip;
 
-		sub(ebx, edx);
+		sub(ebx, a1.cvt32());
 
 		// GSVector4i test = m_test[skip] | m_test[15 + (steps & (steps >> 31))];
-		
+
 		mov(eax, ecx);
 		sar(eax, 31);
 		and(eax, ecx);
@@ -460,11 +550,11 @@ void GSDrawScanlineCodeGenerator::Step()
 {
 	// steps -= 8;
 
-	sub(ecx, 8);
+	sub(a0, 8);
 
 	// fza_offset += 2;
 
-	add(edi, 16);
+	add(t0, 16);
 
 	if(m_sel.prim != GS_SPRITE_CLASS)
 	{
@@ -618,17 +708,17 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 		{
 			// zs = (GSVector8i(z * 0.5f) << 1) | (GSVector8i(z) & GSVector8i::x00000001());
 
-			vbroadcastss(temp1, ptr[&GSVector8::m_half]);
-			vmulps(temp1, ymm0);
-			vcvttps2dq(temp1, temp1);
-			vpslld(temp1, 1);
-
+			vbroadcastss(ymm0, ptr[&GSVector8::m_half]);
+			vmulps(ymm0, _z);
 			vcvttps2dq(ymm0, ymm0);
-			vpcmpeqd(temp2, temp2);
-			vpsrld(temp2, 31);
-			vpand(ymm0, temp2);
+			vpslld(ymm0, 1);
 
-			vpor(ymm0, temp1);
+			vcvttps2dq(ymm1, _z);
+			vpcmpeqd(ymm2, ymm2);
+			vpsrld(ymm2, 31);
+			vpand(ymm1, ymm2);
+
+			vpor(ymm0, ymm1);
 		}
 		else
 		{
@@ -639,17 +729,25 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 
 		if(m_sel.zwrite)
 		{
+#ifdef _WIN64
 			vmovdqa(ptr[&m_local.temp.zs], ymm0);
+#else
+			vmovdqa(ptr[rsp + _rz_zs], ymm0);
+#endif
 		}
 	}
 
 	if(m_sel.ztest)
 	{
-		ReadPixel(ymm1, temp1, ebp);
+		ReadPixel(ymm1, temp1, rbp);
 
 		if(m_sel.zwrite && m_sel.zpsm < 2)
 		{
-			vmovdqa(ptr[&m_local.temp.zd], ymm1);
+#ifdef _WIN64
+			vmovdqa(_rip_local(temp.zd), ymm1);
+#else
+			vmovdqa(ptr[rsp + _rz_zd], ymm1);
+#endif
 		}
 
 		// zd &= 0xffffffff >> m_sel.zpsm * 8;
@@ -2265,7 +2363,7 @@ void GSDrawScanlineCodeGenerator::ReadFrame()
 		return;
 	}
 
-	ReadPixel(ymm2, ymm0, ebx);
+	ReadPixel(ymm2, ymm0, rbx);
 }
 
 void GSDrawScanlineCodeGenerator::TestDestAlpha()
@@ -2383,7 +2481,7 @@ void GSDrawScanlineCodeGenerator::WriteZBuf()
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;
 
-	WritePixel(ymm1, ymm0, ebp, edx, fast, m_sel.zpsm, 1);
+	WritePixel(ymm1, ymm0, rbp, edx, fast, m_sel.zpsm, 1);
 }
 
 void GSDrawScanlineCodeGenerator::AlphaBlend()
@@ -2692,10 +2790,10 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 
 	bool fast = m_sel.rfb ? m_sel.fpsm < 2 : m_sel.fpsm == 0 && m_sel.notest;
 
-	WritePixel(ymm5, ymm0, ebx, edx, fast, m_sel.fpsm, 0);
+	WritePixel(ymm5, ymm0, rbx, edx, fast, m_sel.fpsm, 0);
 }
 
-void GSDrawScanlineCodeGenerator::ReadPixel(const Ymm& dst, const Ymm& temp, const Reg32& addr)
+void GSDrawScanlineCodeGenerator::ReadPixel(const Ymm& dst, const Ymm& temp, const RegLong& addr)
 {
 	vmovq(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm]);
 	vmovhps(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 8 * 2]);
@@ -2710,7 +2808,7 @@ void GSDrawScanlineCodeGenerator::ReadPixel(const Ymm& dst, const Ymm& temp, con
 */
 }
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Ymm& src, const Ymm& temp, const Reg32& addr, const Reg32& mask, bool fast, int psm, int fz)
+void GSDrawScanlineCodeGenerator::WritePixel(const Ymm& src, const Ymm& temp, const RegLong& addr, const Reg32& mask, bool fast, int psm, int fz)
 {
 	Xmm src1 = Xmm(src.getIdx());
 	Xmm src2 = Xmm(temp.getIdx());
@@ -2813,7 +2911,7 @@ void GSDrawScanlineCodeGenerator::WritePixel(const Ymm& src, const Ymm& temp, co
 
 static const int s_offsets[] = {0, 2, 8, 10, 16, 18, 24, 26};
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg32& addr, uint8 i, uint8 j, int psm)
+void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const RegLong& addr, uint8 i, uint8 j, int psm)
 {
 	Address dst = ptr[addr * 2 + (size_t)m_local.gd->vm + s_offsets[i] * 2];
 
