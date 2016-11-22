@@ -1,4 +1,5 @@
 /*
+ *	Copyright (C) 2016-2016 Gregory
  *	Copyright (C) 2007-2009 Gabest
  *	http://www.gabest.org
  *
@@ -142,11 +143,10 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 		shl(eax, 6); // * sizeof(GSVertexSW)
 		add(rax, a0);
 
-		vmovaps(xmm0, ptr[rax + offsetof(GSVertexSW, p)]);
-
 		if(m_en.f)
 		{
 			// m_local.p.f = GSVector4i(p).zzzzh().zzzz();
+			vmovaps(xmm0, ptr[rax + offsetof(GSVertexSW, p)]);
 
 			vcvttps2dq(xmm1, xmm0);
 			vpshufhw(xmm1, xmm1, _MM_SHUFFLE(2, 2, 2, 2));
@@ -270,7 +270,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 		vshufps(xmm2, xmm0, xmm0, _MM_SHUFFLE(0, 0, 0, 0));
 		vshufps(xmm3, xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 		{
 			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
 
