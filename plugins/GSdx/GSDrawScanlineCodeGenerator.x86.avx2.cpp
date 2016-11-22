@@ -691,7 +691,7 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 			break;
 		}
 
-		alltrue();
+		alltrue(ymm7);
 	}
 }
 
@@ -2118,7 +2118,7 @@ void GSDrawScanlineCodeGenerator::TestAlpha()
 	case AFAIL_KEEP:
 		// test |= t;
 		vpor(ymm7, ymm1);
-		alltrue();
+		alltrue(ymm7);
 		break;
 
 	case AFAIL_FB_ONLY:
@@ -2309,7 +2309,7 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha()
 
 	vpor(ymm7, ymm1);
 
-	alltrue();
+	alltrue(ymm7);
 }
 
 void GSDrawScanlineCodeGenerator::WriteMask()

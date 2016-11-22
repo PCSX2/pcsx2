@@ -727,7 +727,7 @@ void GSDrawScanlineCodeGenerator::TestZ_AVX(const Xmm& temp1, const Xmm& temp2)
 			break;
 		}
 
-		alltrue();
+		alltrue(_test);
 	}
 }
 
@@ -1337,7 +1337,7 @@ void GSDrawScanlineCodeGenerator::TestAlpha_AVX()
 	case AFAIL_KEEP:
 		// test |= t;
 		vpor(_test, xmm1);
-		alltrue();
+		alltrue(_test);
 		break;
 
 	case AFAIL_FB_ONLY:
@@ -1509,7 +1509,7 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha_AVX()
 
 	vpor(_test, xmm1);
 
-	alltrue();
+	alltrue(_test);
 }
 
 void GSDrawScanlineCodeGenerator::WriteMask_AVX()

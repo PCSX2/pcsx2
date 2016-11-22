@@ -71,17 +71,6 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void ReadTexel(int pixels, int mip_offset = 0);
 	void ReadTexel(const Ymm& dst, const Ymm& addr, uint8 i);
 
-	void modulate16(const Ymm& a, const Operand& f, int shift);
-	void lerp16(const Ymm& a, const Ymm& b, const Ymm& f, int shift);
-	void lerp16_4(const Ymm& a, const Ymm& b, const Ymm& f);
-	void mix16(const Ymm& a, const Ymm& b, const Ymm& temp);
-	void clamp16(const Ymm& a, const Ymm& temp);
-	void alltrue();
-	void blend(const Ymm& a, const Ymm& b, const Ymm& mask);
-	void blendr(const Ymm& b, const Ymm& a, const Ymm& mask);
-	void blend8(const Ymm& a, const Ymm& b);
-	void blend8r(const Ymm& b, const Ymm& a);
-
 	#else
 
 	void Generate_SSE();
@@ -138,19 +127,19 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void ReadTexel_AVX(int pixels, int mip_offset = 0);
 	void ReadTexel_AVX(const Xmm& dst, const Xmm& addr, uint8 i);
 
-	void modulate16(const Xmm& a, const Operand& f, int shift);
-	void lerp16(const Xmm& a, const Xmm& b, const Xmm& f, int shift);
+	#endif
+
+	void modulate16(const Xmm& a, const Operand& f, uint8 shift);
+	void lerp16(const Xmm& a, const Xmm& b, const Xmm& f, uint8 shift);
 	void lerp16_4(const Xmm& a, const Xmm& b, const Xmm& f);
 	void mix16(const Xmm& a, const Xmm& b, const Xmm& temp);
 	void clamp16(const Xmm& a, const Xmm& temp);
-	void alltrue();
+	void alltrue(const Xmm& test);
 	void blend(const Xmm& a, const Xmm& b, const Xmm& mask);
 	void blendr(const Xmm& b, const Xmm& a, const Xmm& mask);
 	void blend8(const Xmm& a, const Xmm& b);
 	void blend8r(const Xmm& b, const Xmm& a);
 	void split16_2x8(const Xmm& l, const Xmm& h, const Xmm& src);
-
-	#endif
 
 public:
 	GSDrawScanlineCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);

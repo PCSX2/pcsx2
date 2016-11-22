@@ -694,7 +694,7 @@ void GSDrawScanlineCodeGenerator::TestZ_SSE(const Xmm& temp1, const Xmm& temp2)
 			break;
 		}
 
-		alltrue();
+		alltrue(xmm7);
 	}
 }
 
@@ -2162,7 +2162,7 @@ void GSDrawScanlineCodeGenerator::TestAlpha_SSE()
 	case AFAIL_KEEP:
 		// test |= t;
 		por(xmm7, xmm1);
-		alltrue();
+		alltrue(xmm7);
 		break;
 
 	case AFAIL_FB_ONLY:
@@ -2344,7 +2344,7 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha_SSE()
 
 	por(xmm7, xmm1);
 
-	alltrue();
+	alltrue(xmm7);
 }
 
 void GSDrawScanlineCodeGenerator::WriteMask_SSE()
