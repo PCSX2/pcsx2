@@ -39,9 +39,11 @@ const char* GSUtil::GetLibName()
 	// being optimised by GCC to be unusable by older CPUs. Enjoy!
 	static char name[255];
 
+#if _M_SSE < 0x501
 	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
 		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
 		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
+#endif
 
 	snprintf(name, sizeof(name), "GSdx "
 

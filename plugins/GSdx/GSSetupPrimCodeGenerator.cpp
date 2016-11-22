@@ -80,7 +80,7 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 #if _M_SSE >= 0x501
 		Generate_AVX2();
 #else
-		if(g_cpu.has(util::Cpu::tAVX))
+		if(m_cpu.has(util::Cpu::tAVX))
 			Generate_AVX();
 		else
 			Generate_SSE();

@@ -1069,7 +1069,7 @@ void GSDrawScanlineCodeGenerator::Wrap_SSE(const Xmm& uv0, const Xmm& uv1)
 		movdqa(xmm4, ptr[&m_local.gd->t.min]);
 		movdqa(xmm5, ptr[&m_local.gd->t.max]);
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 		{
 			movdqa(xmm0, ptr[&m_local.gd->t.mask]);
 		}
@@ -1099,7 +1099,7 @@ void GSDrawScanlineCodeGenerator::Wrap_SSE(const Xmm& uv0, const Xmm& uv1)
 
 		// clamp.blend8(repeat, m_local.gd->t.mask);
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 			pblendvb(uv0, xmm1);
 		else
 			blendr(uv0, xmm1, xmm0);
@@ -1124,7 +1124,7 @@ void GSDrawScanlineCodeGenerator::Wrap_SSE(const Xmm& uv0, const Xmm& uv1)
 
 		// clamp.blend8(repeat, m_local.gd->t.mask);
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 			pblendvb(uv1, xmm1);
 		else
 			blendr(uv1, xmm1, xmm6);
@@ -1888,7 +1888,7 @@ void GSDrawScanlineCodeGenerator::WrapLOD_SSE(const Xmm& uv0, const Xmm& uv1)
 	}
 	else
 	{
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 		{
 			movdqa(xmm0, ptr[&m_local.gd->t.mask]);
 		}
@@ -1918,7 +1918,7 @@ void GSDrawScanlineCodeGenerator::WrapLOD_SSE(const Xmm& uv0, const Xmm& uv1)
 
 		// clamp.blend8(repeat, m_local.gd->t.mask);
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 			pblendvb(uv0, xmm1);
 		else
 			blendr(uv0, xmm1, xmm0);
@@ -1943,7 +1943,7 @@ void GSDrawScanlineCodeGenerator::WrapLOD_SSE(const Xmm& uv0, const Xmm& uv1)
 
 		// clamp.blend8(repeat, m_local.gd->t.mask);
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 			pblendvb(uv1, xmm1);
 		else
 			blendr(uv1, xmm1, xmm4);
@@ -2630,7 +2630,7 @@ void GSDrawScanlineCodeGenerator::AlphaBlend_SSE()
 
 	if(m_sel.pabe)
 	{
-		if(!g_cpu.has(util::Cpu::tSSE41))
+		if(!m_cpu.has(util::Cpu::tSSE41))
 		{
 			// doh, previous blend8r overwrote xmm0 (sse41 uses pblendvb)
 			movdqa(xmm0, xmm4);
@@ -2823,7 +2823,7 @@ void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg32& ad
 	case 0:
 		if(i == 0) movd(dst, src);
 		else {
-			if(g_cpu.has(util::Cpu::tSSE41)) {
+			if(m_cpu.has(util::Cpu::tSSE41)) {
 				pextrd(dst, src, i);
 			} else {
 				pshufd(xmm0, src, _MM_SHUFFLE(i, i, i, i));
@@ -2835,7 +2835,7 @@ void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg32& ad
 	case 1:
 		if(i == 0) movd(eax, src);
 		else {
-			if(g_cpu.has(util::Cpu::tSSE41)) {
+			if(m_cpu.has(util::Cpu::tSSE41)) {
 				pextrd(eax, src, i);
 			} else {
 				pshufd(xmm0, src, _MM_SHUFFLE(i, i, i, i));
@@ -2879,7 +2879,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_SSE(int pixels, int mip_offset)
 
 	if(m_sel.mmin && !m_sel.lcm)
 	{
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 		{
 
 			const int r[] = {5, 6, 2, 4, 0, 1, 3, 7};
@@ -3038,7 +3038,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_SSE(int pixels, int mip_offset)
 
 		const int r[] = {5, 6, 2, 4, 0, 1, 3, 5};
 
-		if(g_cpu.has(util::Cpu::tSSE41))
+		if(m_cpu.has(util::Cpu::tSSE41))
 		{
 			for(int i = 0; i < pixels; i++)
 			{
@@ -3081,7 +3081,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_SSE(const Xmm& dst, const Xmm& addr,
 {
 	const Address& src = m_sel.tlu ? ptr[edx + eax * 4] : ptr[ebx + eax * 4];
 
-	ASSERT(i == 0 || g_cpu.has(util::Cpu::tSSE41));
+	ASSERT(i == 0 || m_cpu.has(util::Cpu::tSSE41));
 
 	if(i == 0) movd(eax, addr);
 	else pextrd(eax, addr, i);
