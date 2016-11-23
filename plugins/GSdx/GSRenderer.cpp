@@ -237,17 +237,18 @@ bool GSRenderer::Merge(int field)
 
 		// Time Crisis 2/3 uses two side by side images when in split screen mode.
 		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
-		if(display_diff.x > 2)
+		// And cap the offset range to avoid cases with extreme values (NASCAR 09) causing graphical issues.
+		if(display_diff.x > 2 && display_diff.x < 10)
 		{
 			off.x = tex[i]->GetScale().x * display_diff.x;
 		}
 		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
-		else if(display_diff.x || frame_diff.x)
+		else if((display_diff.x != frame_diff.x) && display_diff.x < 10 && frame_diff.x < 10)
 		{
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(display_diff.y >= 4) // Shouldn't this be 2?
+		if(display_diff.y >= 4 && display_diff.y < 10) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 
@@ -256,7 +257,7 @@ bool GSRenderer::Merge(int field)
 				off.y /= 2;
 			}
 		}
-		else if(display_diff.y || frame_diff.y)
+		else if(display_diff.y != frame_diff.y && display_diff.y < 10 && frame_diff.y < 10)
 		{
 			off.y = tex[i]->GetScale().y * frame_diff.y;
 		}
