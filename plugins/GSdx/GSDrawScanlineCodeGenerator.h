@@ -143,14 +143,4 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 
 public:
 	GSDrawScanlineCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
-
-	#if _M_SSE >= 0x501
-	alignas(8) static const uint8 m_test[16][8];
-	static GSVector8 m_log2_coef[4];
-	#else
-	static GSVector4i m_test[8];
-	static GSVector4 m_log2_coef[4];
-	#endif
-
-	static void InitVectors();
 };

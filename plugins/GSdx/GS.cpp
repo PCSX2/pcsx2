@@ -131,12 +131,10 @@ EXPORT_C_(int) GSinit()
 
 	GSBlock::InitVectors();
 	GSClut::InitVectors();
-	GSDrawScanlineCodeGenerator::InitVectors();
 #ifdef ENABLE_OPENCL
 	GSRendererCL::InitVectors();
 #endif
 	GSRendererSW::InitVectors();
-	GSSetupPrimCodeGenerator::InitVectors();
 	GSVector4i::InitVectors();
 	GSVector4::InitVectors();
 #if _M_SSE >= 0x500
@@ -146,6 +144,9 @@ EXPORT_C_(int) GSinit()
 	GSVector8i::InitVectors();
 #endif
 	GSVertexTrace::InitVectors();
+
+	if (g_const == nullptr)
+		return -1;
 
 #ifdef _WIN32
 
@@ -165,8 +166,7 @@ EXPORT_C GSshutdown()
 	gsopen_done = false;
 
 	delete s_gs;
-
-	s_gs = NULL;
+	s_gs = nullptr;
 
 	s_renderer = GSRendererType::Undefined;
 

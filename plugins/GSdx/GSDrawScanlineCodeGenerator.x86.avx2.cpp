@@ -268,13 +268,13 @@ void GSDrawScanlineCodeGenerator::Init()
 		sub(ebx, edx);
 
 		// GSVector4i test = m_test[skip] | m_test[15 + (steps & (steps >> 31))];
-		
+
 		mov(eax, ecx);
 		sar(eax, 31);
 		and(eax, ecx);
 
-		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)&m_test[0]]);
-		vpmovsxbd(ymm0, ptr[eax * 8 + (size_t)&m_test[15]]);
+		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)g_const->m_test_256b[0]]);
+		vpmovsxbd(ymm0, ptr[eax * 8 + (size_t)g_const->m_test_256b[15]]);
 		vpor(ymm7, ymm0);
 
 		shl(edx, 5);
@@ -593,7 +593,7 @@ void GSDrawScanlineCodeGenerator::Step()
 		sar(edx, 31);
 		and(edx, ecx);
 
-		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)&m_test[15]]);
+		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)g_const->m_test_256b[15]]);
 	}
 }
 
@@ -1157,31 +1157,31 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 		vpslld(ymm0, ymm4, 1);
 		vpsrld(ymm0, ymm0, 24);
 		vpsubd(ymm0, ymm1);
-		vcvtdq2ps(ymm0, ymm0); 
+		vcvtdq2ps(ymm0, ymm0);
 
 		// ymm0 = (float)(exp(q) - 127)
 
 		vpslld(ymm4, ymm4, 9);
 		vpsrld(ymm4, ymm4, 9);
-		vorps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); 
-			
+		vorps(ymm4, ptr[g_const->m_log2_coef_256b[3]]);
+
 		// ymm4 = mant(q) | 1.0f
 
 		if(m_cpu.has(util::Cpu::tFMA))
 		{
-			vmovaps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[0]]); // c0
-			vfmadd213ps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[1]]); // c0 * ymm4 + c1
-			vfmadd213ps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[2]]); // (c0 * ymm4 + c1) * ymm4 + c2
-			vsubps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); // ymm4 - 1.0f
+			vmovaps(ymm5, ptr[g_const->m_log2_coef_256b[0]]); // c0
+			vfmadd213ps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[1]]); // c0 * ymm4 + c1
+			vfmadd213ps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[2]]); // (c0 * ymm4 + c1) * ymm4 + c2
+			vsubps(ymm4, ptr[g_const->m_log2_coef_256b[3]]); // ymm4 - 1.0f
 			vfmadd213ps(ymm4, ymm5, ymm0); // ((c0 * ymm4 + c1) * ymm4 + c2) * (ymm4 - 1.0f) + ymm0
 		}
 		else
 		{
-			vmulps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[0]]);
-			vaddps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[1]]);
+			vmulps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[0]]);
+			vaddps(ymm5, ptr[g_const->m_log2_coef_256b[1]]);
 			vmulps(ymm5, ymm4);
-			vsubps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); 
-			vaddps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[2]]);
+			vsubps(ymm4, ptr[g_const->m_log2_coef_256b[3]]);
+			vaddps(ymm5, ptr[g_const->m_log2_coef_256b[2]]);
 			vmulps(ymm4, ymm5);
 			vaddps(ymm4, ymm0);
 		}
@@ -1191,7 +1191,7 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 		if(m_cpu.has(util::Cpu::tFMA))
 		{
 			vmovaps(ymm5, ptr[&m_local.gd->l]);
-			vfmadd213ps(ymm4, ymm5, ptr[&m_local.gd->k]); 
+			vfmadd213ps(ymm4, ymm5, ptr[&m_local.gd->k]);
 		}
 		else
 		{

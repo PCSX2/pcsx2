@@ -54,12 +54,4 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 public:
 	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
-
-	#if _M_SSE >= 0x501
-	static GSVector8 m_shift[9];
-	#else
-	static GSVector4 m_shift[5];
-	#endif
-
-	static void InitVectors();
 };

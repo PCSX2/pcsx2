@@ -24,46 +24,6 @@
 
 using namespace Xbyak;
 
-#if _M_SSE >= 0x501
-GSVector8 GSSetupPrimCodeGenerator::m_shift[9];
-#else
-GSVector4 GSSetupPrimCodeGenerator::m_shift[5];
-#endif
-
-void GSSetupPrimCodeGenerator::InitVectors()
-{
-#if _M_SSE >= 0x501
-	GSVector8 shift[9] =
-	{
-		GSVector8(8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f),
-		GSVector8(0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f),
-		GSVector8(-1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f),
-		GSVector8(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f),
-		GSVector8(-3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f),
-		GSVector8(-4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f),
-		GSVector8(-5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f),
-		GSVector8(-6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f),
-		GSVector8(-7.0f, -6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f),
-	};
-
-	for (size_t n = 0; n < countof(shift); ++n)
-		m_shift[n] = shift[n];
-
-#else
-	GSVector4 shift[5] =
-	{
-		GSVector4(4.0f, 4.0f, 4.0f, 4.0f),
-		GSVector4(0.0f, 1.0f, 2.0f, 3.0f),
-		GSVector4(-1.0f, 0.0f, 1.0f, 2.0f),
-		GSVector4(-2.0f, -1.0f, 0.0f, 1.0f),
-		GSVector4(-3.0f, -2.0f, -1.0f, 0.0f),
-	};
-
-	for (size_t n = 0; n < countof(shift); ++n)
-		m_shift[n] = shift[n];
-#endif
-}
-
 GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GSScanlineLocalData*)param)

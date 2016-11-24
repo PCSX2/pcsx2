@@ -40,7 +40,7 @@ void GSSetupPrimCodeGenerator::Generate_SSE()
 
 	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
-		mov(rax, (size_t)&m_shift[0]);
+		mov(rax, (size_t)g_const->m_shift_128b[0]);
 
 		for(int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{

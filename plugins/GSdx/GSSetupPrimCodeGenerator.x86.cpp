@@ -40,7 +40,7 @@ void GSSetupPrimCodeGenerator::Generate_SSE()
 
 		for(int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{
-			movaps(Xmm(3 + i), ptr[&m_shift[i]]);
+			movaps(Xmm(3 + i), ptr[g_const->m_shift_128b[i]]);
 		}
 	}
 

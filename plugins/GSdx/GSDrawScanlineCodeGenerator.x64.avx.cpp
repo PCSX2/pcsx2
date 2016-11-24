@@ -96,7 +96,7 @@ void GSDrawScanlineCodeGenerator::Generate_AVX()
 	}
 #endif
 
-	mov(r10, (size_t)&m_test[0]);
+	mov(r10, (size_t)g_const->m_test_128b[0]);
 	if (!m_rip)
 	{
 		mov(_m_local, (size_t)&m_local);
