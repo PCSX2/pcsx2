@@ -271,7 +271,7 @@ void GSRendererOGL::EmulateZbuffer()
 			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
 			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
 			if (m_vt.m_min.p.z > max_z) {
-				GL_DBG("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
+				GL_DBG("Bad Z size (%f %f) on %s buffers", m_vt.m_min.p.z, m_vt.m_max.p.z, psm_str(m_context->ZBUF.PSM));
 				vs_cb.DepthMask = GSVector2i(max_z, max_z);
 				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
