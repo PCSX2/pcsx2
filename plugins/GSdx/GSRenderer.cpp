@@ -139,42 +139,31 @@ bool GSRenderer::Merge(int field)
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		m_regs->DISP[0].DISPFB.PSM == m_regs->DISP[1].DISPFB.PSM;
 
-	// bool blurdetected = false;
-
 	if(samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
 	{
-		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dr[0].eq(dr[1] + GSVector4i(0, 0, 0, 1))
-		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dr[1].eq(dr[0] + GSVector4i(0, 0, 0, 1)))
-		{
-			// persona 4:
-			//
-			// fr[0] = 0 0 640 448
-			// fr[1] = 0 1 640 448
-			// dr[0] = 159 50 779 498
-			// dr[1] = 159 50 779 497
-			//
-			// second image shifted up by 1 pixel and blended over itself
-			//
-			// god of war:
-			//
-			// fr[0] = 0 1 512 448
-			// fr[1] = 0 0 512 448
-			// dr[0] = 127 50 639 497
-			// dr[1] = 127 50 639 498
-			//
-			// same just the first image shifted
+		// persona 4:
+		//
+		// fr[0] = 0 0 640 448
+		// fr[1] = 0 1 640 448
+		// dr[0] = 159 50 779 498
+		// dr[1] = 159 50 779 497
+		//
+		// second image shifted up by 1 pixel and blended over itself
+		//
+		// god of war:
+		//
+		// fr[0] = 0 1 512 448
+		// fr[1] = 0 0 512 448
+		// dr[0] = 127 50 639 497
+		// dr[1] = 127 50 639 498
+		//
+		// same just the first image shifted
+		//
+		// These kinds of cases are now fixed by the more generic frame_diff code below, as the code here was too specific and has become obsolete.
+		// NOTE: Persona 4 and God Of War are not rare exceptions, many games have the same(or very similar) offsets.
 
-			int top = min(fr[0].top, fr[1].top);
-			int bottom = max(dr[0].bottom, dr[1].bottom);
-
-			fr[0].top = top;
-			fr[1].top = top;
-			dr[0].bottom = bottom;
-			dr[1].bottom = bottom;
-
-			// blurdetected = true;
-		}
-		else if(dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
+		int topDiff = fr[0].top - fr[1].top;
+		if (dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, topDiff, 0, topDiff)) || fr[1].eq(fr[0] + GSVector4i(0, topDiff, 0, topDiff))))
 		{
 			// dq5:
 			//
@@ -188,10 +177,7 @@ bool GSRenderer::Merge(int field)
 
 			fr[0].top = fr[1].top = top;
 			fr[0].bottom = fr[1].bottom = bottom;
-
-			// blurdetected = true;
 		}
-		//printf("samesrc = %d blurdetected = %d\n",samesrc,blurdetected);
 	}
 
 	GSVector2i fs(0, 0);
@@ -237,18 +223,17 @@ bool GSRenderer::Merge(int field)
 
 		// Time Crisis 2/3 uses two side by side images when in split screen mode.
 		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
-		// And cap the offset range to avoid cases with extreme values (NASCAR 09) causing graphical issues.
-		if(display_diff.x > 2 && display_diff.x < 10)
+		if(display_diff.x > 2)
 		{
 			off.x = tex[i]->GetScale().x * display_diff.x;
 		}
 		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
-		else if((display_diff.x != frame_diff.x) && display_diff.x < 10 && frame_diff.x < 10)
+		else if(display_diff.x != frame_diff.x)
 		{
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(display_diff.y >= 4 && display_diff.y < 10) // Shouldn't this be >= 2?
+		if(display_diff.y >= 4) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 
@@ -257,7 +242,7 @@ bool GSRenderer::Merge(int field)
 				off.y /= 2;
 			}
 		}
-		else if(display_diff.y != frame_diff.y && display_diff.y < 10 && frame_diff.y < 10)
+		else if(display_diff.y != frame_diff.y)
 		{
 			off.y = tex[i]->GetScale().y * frame_diff.y;
 		}
