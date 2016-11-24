@@ -20,7 +20,14 @@
 #warning Tested on FreeBSD, not OS X. Be very afraid.
 #endif
 
-//FlatFileReader::FlatFileReader(void)
+// The aio module has been reported to cause issues with FreeBSD 10.3, so let's
+// disable it for 10.3 and earlier and hope FreeBSD 11 and onwards is fine.
+// Note: It may be worth checking whether aio provides any performance benefit.
+#if defined(__FreeBSD__) && __FreeBSD__ < 11
+#define DISABLE_AIO
+#warning AIO has been disabled.
+#endif
+
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
@@ -54,6 +61,11 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 	u32 bytesToRead = count * m_blocksize;
 
+#if defined(DISABLE_AIO)
+	m_aiocb.aio_nbytes = pread(m_fd, pBuffer, bytesToRead, offset);
+	if (m_aiocb.aio_nbytes != bytesToRead)
+		m_aiocb.aio_nbytes = -1;
+#else
 	m_aiocb = {0};
 	m_aiocb.aio_fildes = m_fd;
 	m_aiocb.aio_offset = offset;
@@ -71,11 +83,16 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 #endif
 		return;
 	}
+#endif
 	m_read_in_progress = true;
 }
 
 int FlatFileReader::FinishRead(void)
 {
+#if defined(DISABLE_AIO)
+	m_read_in_progress = false;
+	return m_aiocb.aio_nbytes == (size_t)-1 ? -1: 1;
+#else
 	struct aiocb *aiocb_list[] = {&m_aiocb};
 
 	while (aio_suspend(aiocb_list, 1, nullptr) == -1)
@@ -84,11 +101,14 @@ int FlatFileReader::FinishRead(void)
 
 	m_read_in_progress = false;
 	return aio_return(&m_aiocb) == -1? -1: 1;
+#endif
 }
 
 void FlatFileReader::CancelRead(void)
 {
+#if !defined(DISABLE_AIO)
 	aio_cancel(m_fd, &m_aiocb);
+#endif
 	m_read_in_progress = false;
 }
 
