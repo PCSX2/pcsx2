@@ -232,3 +232,97 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	const GSScanlineGlobalData* gd;
 };
+
+// Constant shared by all threads (to reduce cache miss)
+//
+// Note: Avoid GSVector* to support all ISA at once
+//
+// WARNING: Don't use static storage. Static variables are relocated to random
+// location (above 2GB). Small allocation on the heap could be below 2GB, this way we can use
+// absolute addressing. Otherwise we need to store a base address in a register.
+struct GSScanlineConstantData : public GSAlignedClass<32>
+{
+	alignas(32) uint8 m_test_256b[16][8];
+	alignas(32) float m_shift_256b[9][8];
+	alignas(32) float m_log2_coef_256b[4][8];
+
+	alignas(16) uint32 m_test_128b[8][4];
+	alignas(16) float m_shift_128b[5][4];
+	alignas(16) float m_log2_coef_128b[4][4];
+
+	GSScanlineConstantData()
+	{
+		uint8 I_hate_vs2013_m_test_256b[16][8] = {
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00},
+			{0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+		};
+
+		uint32 I_hate_vs2013_m_test_128b[8][4] = {
+			{ 0x00000000, 0x00000000, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0x00000000, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0xffffffff, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
+			{ 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0xffffffff, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0x00000000, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0x00000000, 0x00000000}
+		};
+
+		float I_hate_vs2013_m_shift_256b[9][8] = {
+			{ 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f},
+			{ 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f  , 7.0f},
+			{ -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f},
+			{ -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f},
+			{ -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f},
+			{ -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f},
+			{ -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f},
+			{ -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f},
+			{ -7.0f , -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f}
+		};
+
+		float I_hate_vs2013_m_shift_128b[5][4] = {
+			{ 4.0f  , 4.0f  , 4.0f  , 4.0f},
+			{ 0.0f  , 1.0f  , 2.0f  , 3.0f},
+			{ -1.0f , 0.0f  , 1.0f  , 2.0f},
+			{ -2.0f , -1.0f , 0.0f  , 1.0f},
+			{ -3.0f , -2.0f , -1.0f , 0.0f}
+		};
+
+		memcpy(m_test_256b, I_hate_vs2013_m_test_256b, sizeof(I_hate_vs2013_m_test_256b));
+		memcpy(m_test_128b, I_hate_vs2013_m_test_128b, sizeof(I_hate_vs2013_m_test_128b));
+		memcpy(m_shift_256b, I_hate_vs2013_m_shift_256b, sizeof(I_hate_vs2013_m_shift_256b));
+		memcpy(m_shift_128b, I_hate_vs2013_m_shift_128b, sizeof(I_hate_vs2013_m_shift_128b));
+
+		float log2_coef[] = {
+			0.204446009836232697516f,
+			-1.04913055217340124191f,
+			2.28330284476918490682f,
+			1.0f
+		};
+
+		for (size_t n = 0; n < countof(log2_coef); ++n) {
+			for (size_t i = 0; i < 4; ++i) {
+				m_log2_coef_128b[n][i] = log2_coef[n];
+				m_log2_coef_256b[n][i] = log2_coef[n];
+				m_log2_coef_256b[n][i+4] = log2_coef[n];
+			}
+		}
+
+	}
+};
+
+extern std::unique_ptr<GSScanlineConstantData> g_const;

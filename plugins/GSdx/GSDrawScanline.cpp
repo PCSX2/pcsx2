@@ -23,6 +23,9 @@
 #include "GSDrawScanline.h"
 #include "GSTextureCacheSW.h"
 
+// Lack of a better home
+std::unique_ptr<GSScanlineConstantData> g_const(new GSScanlineConstantData());
+
 GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)
 	, m_ds_map("GSDrawScanline", &m_local)
