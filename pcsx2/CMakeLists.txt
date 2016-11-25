@@ -681,6 +681,16 @@ foreach(res_file IN ITEMS
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()
 
+if(USE_VTUNE)
+	set(pcsx2FinalFlags ${pcsx2FinalFlags} -DENABLE_VTUNE)
+	include_directories("$ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/include")
+	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+		set(pcsx2FinalLibs ${pcsx2FinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib32/libjitprofiling.a)
+	else()
+		set(pcsx2FinalLibs ${pcsx2FinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib64/libjitprofiling.a)
+	endif()
+endif()
+
 # Suppress all the system-specific predefined macros outside the reserved namespace.
 # Needed when stringifying macros.
 # See issue: 1233

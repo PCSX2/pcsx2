@@ -107,5 +107,10 @@ set(UtilitiesFinalLibs
 	${wxWidgets_LIBRARIES}
 )
 
+if(USE_VTUNE)
+	set(UtilitiesFinalFlags ${UtilitiesFinalFlags} -DENABLE_VTUNE)
+	include_directories("$ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/include")
+endif()
+
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
 add_pcsx2_lib(${Output}_NO_TLS "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags} -DPCSX2_THREAD_LOCAL=0")

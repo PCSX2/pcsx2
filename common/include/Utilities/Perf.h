@@ -53,4 +53,5 @@ extern InfoVector any;
 extern InfoVector ee;
 extern InfoVector iop;
 extern InfoVector vu;
+extern InfoVector vif;
 }

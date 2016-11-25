@@ -17,9 +17,20 @@
 
 #include "Perf.h"
 
+#ifdef __unix__
+#include "unistd.h"
+#endif
+
 //#define ProfileWithPerf
 #define MERGE_BLOCK_RESULT
 
+#ifdef ENABLE_VTUNE
+	#include "jitprofiling.h"
+
+	#ifdef _WIN32
+	#pragma comment(lib, "jitprofiling.lib")
+	#endif
+#endif
 
 namespace Perf
 {
@@ -28,9 +39,10 @@ InfoVector any("");
 InfoVector ee("EE");
 InfoVector iop("IOP");
 InfoVector vu("VU");
+InfoVector vif("VIF");
 
 // Perf is only supported on linux
-#if defined(__linux__) && defined(ProfileWithPerf)
+#if defined(__linux__) && (defined(ProfileWithPerf) || defined(ENABLE_VTUNE))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation of the Info object
@@ -85,12 +97,47 @@ void InfoVector::map(uptr x86, u32 size, const char *symbol)
     if (size < 8 * _1kb)
         m_v.emplace_back(x86, size, symbol);
 #endif
+
+#ifdef ENABLE_VTUNE
+	// mapping the full recompiler will blow up VTUNE
+	if (size < _16kb) {
+		fprintf(stderr, "map %s: %p size %d\n", symbol, (void*)x86, size);
+		std::string name = std::string(symbol);
+
+		iJIT_Method_Load ml;
+
+		memset(&ml, 0, sizeof(ml));
+
+		ml.method_id = iJIT_GetNewMethodID();
+		ml.method_name = (char*)name.c_str();
+		ml.method_load_address = (void*)x86;
+		ml.method_size = size;
+
+		iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
+	}
+#endif
 }
 
 void InfoVector::map(uptr x86, u32 size, u32 pc)
 {
 #ifndef MERGE_BLOCK_RESULT
     m_v.emplace_back(x86, size, m_prefix, pc);
+#endif
+
+#ifdef ENABLE_VTUNE
+	std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
+	//fprintf(stderr, "map %s: %p size %d\n", name.c_str(), (void*)x86, size);
+
+	iJIT_Method_Load ml;
+
+	memset(&ml, 0, sizeof(ml));
+
+	ml.method_id = iJIT_GetNewMethodID();
+	ml.method_name = (char*)name.c_str();
+	ml.method_load_address = (void*)x86;
+	ml.method_size = size;
+
+	iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
 #endif
 }
 

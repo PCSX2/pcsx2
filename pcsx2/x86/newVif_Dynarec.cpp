@@ -20,6 +20,7 @@
 #include "PrecompiledHeader.h"
 #include "newVif_UnpackSSE.h"
 #include "MTVU.h"
+#include "Utilities/Perf.h"
 
 void dVifReserve(int idx) {
 	if(!nVif[idx].recReserve)
@@ -352,6 +353,8 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	v.block.startPtr = (uptr)xGetAlignedCallTarget();
 	v.vifBlocks->add(v.block);
 	VifUnpackSSE_Dynarec(v, v.block).CompileRoutine();
+
+	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, v.block.upkType /* FIXME ideally a key*/);
 	nVif[idx].recWritePtr = xGetPtr();
 
 	dVifRecLimit(idx);

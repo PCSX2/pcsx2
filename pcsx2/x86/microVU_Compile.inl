@@ -535,7 +535,7 @@ void mVUSaveFlags(microVU& mVU,microFlagCycles &mFC, microFlagCycles &mFCBackup)
 	mVUsetFlags(mVU, mFCBackup);	   // Sets Up Flag instances
 }
 void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
-	
+
 	microFlagCycles mFC;
 	u8*				thisPtr  = x86Ptr;
 	const u32		endCount = (((microRegInfo*)pState)->blockType) ? 1 : (mVU.microMemSize / 8);
@@ -597,7 +597,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 	// Fix up vi15 const info for propagation through blocks
 	mVUregs.vi15  = (doConstProp && mVUconstReg[15].isValid) ? (u16)mVUconstReg[15].regValue : 0;
 	mVUregs.vi15v = (doConstProp && mVUconstReg[15].isValid) ? 1 : 0;
-		
+
 	mVUsetFlags(mVU, mFC);           // Sets Up Flag instances
 	mVUoptimizePipeState(mVU);       // Optimize the End Pipeline State for nicer Block Linking
 	mVUdebugPrintBlocks(mVU, false); // Prints Start/End PC of blocks executed, for debugging...
@@ -653,10 +653,13 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 		}
 	}
 	if ((x == endCount) && (x!=1)) { Console.Error("microVU%d: Possible infinite compiling loop!", mVU.index); }
-	
+
 	// E-bit End
 	mVUsetupRange(mVU, xPC-8, false);
 	mVUendProgram(mVU, &mFC, 1);
+
+	Perf::vu.map((uptr)thisPtr, x86Ptr - thisPtr, startPC);
+
 	return thisPtr;
 }
 

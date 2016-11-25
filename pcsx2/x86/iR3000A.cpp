@@ -170,7 +170,11 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetPtr();
 
 	{ // Properly scope the frame prologue/epilogue
+#ifdef ENABLE_VTUNE
+		xScopedStackFrame frame(true);
+#else
 		xScopedStackFrame frame(IsDevBuild);
+#endif
 
 		xJMP((void*)iopDispatcherReg);
 

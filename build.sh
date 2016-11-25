@@ -114,6 +114,7 @@ for ARG in "$@"; do
             echo "--clang-tidy    : Do a clang-tidy analysis. Results can be found in build directory"
             echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
+            echo "--vtune         : Plug GSdx with VTUNE"
 
             exit 1
     esac
