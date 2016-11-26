@@ -81,7 +81,6 @@ public:
 			if( (result&0x7) == 0x7 ) return (T*)chainpos;
 
 		}
-		if( bucket.Size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", d % hSize, bucket.Size );
 		return NULL;
 	}
 	__fi void add(const T& dataPtr) {
@@ -94,6 +93,7 @@ public:
 			);
 		}
 		memcpy(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(T));
+		if( bucket.Size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", d % hSize, bucket.Size );
 	}
 	void clear() {
 		for (int i = 0; i < hSize; i++) {
