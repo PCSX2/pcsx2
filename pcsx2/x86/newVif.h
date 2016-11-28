@@ -69,8 +69,7 @@ struct __aligned16 nVifBlock {
 }; // 16 bytes
 
 #define _hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
-#define _cmpS  (sizeof(nVifBlock) - (4))
-#define _tParams nVifBlock, _hSize, _cmpS
+#define _tParams nVifBlock, _hSize
 struct nVifStruct {
 
 	__aligned16 nVifBlock   block;

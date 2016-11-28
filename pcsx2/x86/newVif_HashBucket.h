@@ -41,11 +41,10 @@ struct SizeChain
 // to perform quick searches.
 // T is a struct data type (note: size must be in multiples of 16 bytes!)
 // hSize determines the number of buckets HashBucket will use for sorting.
-// cmpSize is the size of data to consider 2 structs equal (see find())
 // The hash function is determined by taking the first bytes of data and
 // performing a modulus the size of hSize. So the most diverse-data should
 // be in the first bytes of the struct. (hence why nVifBlock is specifically sorted)
-template<typename T, int hSize, int cmpSize>
+template<typename T, int hSize>
 class HashBucket {
 protected:
 	SizeChain<T> mBucket[hSize];
@@ -68,18 +67,14 @@ public:
 		const __m128i* endpos = (__m128i*)&bucket.Chain[bucket.Size];
 		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
 
-#ifdef __x86_64__
-		pxAssertMsg(0, "Code is likely not compatible with 64 bits\n"
-				"Vif structure is 16 bytes in ia32 bits but contains an uptr to the x86 buffer. So 20 bytes in x64\n"
-				"Code below increments the iterator by 16 bytes, potentially we could put the x86 buffer in the first 2GB\n"
-				"Another improvement could be a port to std::unordered_map");
-#endif
+		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; chainpos+=sizeof(T) / 16u ) {
+			// Note SSE4/AVX optimization (However it requires to only have the key in the first 16B without the pointer)
+			// tmp = xor (data128, load(chainpos))
+			// ptest tmp tmp (zf will be set if tmp == 0, i.e equality)
 
-		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; ++chainpos ) {
 			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
 			int result = _mm_movemask_ps( (cast_m128) _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) );
 			if( (result&0x7) == 0x7 ) return (T*)chainpos;
-
 		}
 		return NULL;
 	}
