@@ -147,6 +147,8 @@ EXPORT_C_(int) GSinit()
 
 	if (g_const == nullptr)
 		return -1;
+	else
+		g_const->Init();
 
 #ifdef _WIN32
 

@@ -250,7 +250,11 @@ struct GSScanlineConstantData : public GSAlignedClass<32>
 	alignas(16) float m_shift_128b[5][4];
 	alignas(16) float m_log2_coef_128b[4][4];
 
-	GSScanlineConstantData()
+	GSScanlineConstantData() {}
+
+	// GCC will be clever enough to stick some AVX instruction here
+	// So it must be defered to post global constructor
+	void Init()
 	{
 		uint8 I_hate_vs2013_m_test_256b[16][8] = {
 			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
