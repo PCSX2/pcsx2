@@ -6537,6 +6537,7 @@ Region = PAL-G
 Serial = SLES-50021
 Name   = Madden NFL 2001
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-50022
 Name   = NBA Live 2001
@@ -7430,6 +7431,7 @@ Region = PAL-G
 Serial = SLES-50422
 Name   = Madden NFL 2002
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-50423
 Name   = F1 2001
@@ -9041,6 +9043,7 @@ Region = PAL-M8
 Serial = SLES-51154
 Name   = Madden NFL 2003
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51156
 Name   = Silent Hill 2 - Director's Cut
@@ -9122,6 +9125,7 @@ vuClampMode = 2			//missing geometry with microVU
 Serial = SLES-51198
 Name   = NBA Live 2003
 Region = PAL-M5
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51199
 Name   = 4x4 Evolution II
@@ -10285,6 +10289,7 @@ Compat = 5
 Serial = SLES-51797
 Name   = Madden NFL 2004
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51798
 Name   = NHL 2004
@@ -10578,6 +10583,7 @@ Serial = SLES-51897
 Name   = Simpsons, The - Hit & Run
 Region = PAL-M4
 Compat = 5
+FpuNegDivHack = 1			// Lens flare appears even when behind objects
 ---------------------------------------------
 Serial = SLES-51903
 Name   = AFL Live 2004 - Aussie Rules Football
@@ -10702,6 +10708,7 @@ EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled onc
 Serial = SLES-51953
 Name   = FIFA 2004
 Region = PAL-M4
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51954
 Name   = Max Payne 2 - The Fall of Max Payne
@@ -10728,10 +10735,12 @@ Region = PAL-M5
 Serial = SLES-51963
 Name   = FIFA 2004
 Region = PAL-F-G
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51964
 Name   = FIFA 2004
 Region = PAL-P-S
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-51966
 Name   = Bombastic
@@ -10835,6 +10844,7 @@ Compat = 5
 Serial = SLES-52008
 Name   = NBA Live 2004
 Region = PAL-M5
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-52011
 Name   = Tak and The Power of Juju
@@ -10876,6 +10886,7 @@ Region = PAL-M5
 Serial = SLES-52025
 Name   = NFL Street
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-52026
 Name   = Wallace & Gromit in Project Zoo
@@ -11971,6 +11982,7 @@ Region = PAL-E
 Serial = SLES-52581
 Name   = Madden NFL 2005
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-52584
 Name   = Burnout 3 - Takedown
@@ -12954,6 +12966,7 @@ Region = PAL-M5
 Serial = SLES-52982
 Name   = NFL Street 2
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-52983
 Name   = Fitness Fun
@@ -14134,6 +14147,7 @@ Region = PAL-M5
 Serial = SLES-53510
 Name   = Madden NFL 2006
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-53518
 Name   = Castle Shikigami II
@@ -15763,6 +15777,7 @@ Region = PAL-R
 Serial = SLES-54248
 Name   = Madden NFL '07
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-54250
 Name   = NBA Live '07
@@ -15989,6 +16004,7 @@ Region = PAL-E
 Serial = SLES-54379
 Name   = NFL Street 3
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-54380
 Name   = Babe
@@ -16680,6 +16696,7 @@ Region = PAL-I
 Serial = SLES-54812
 Name   = Madden NFL 08
 Region = PAL-E
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLES-54815
 Name   = Spyro - The Eternal Night
@@ -18052,6 +18069,7 @@ Serial = SLKA-25087
 Name   = FIFA Soccer 2004
 Region = NTSC-J
 Compat = 5
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLKA-25091
 Name   = Hanjuku Hero vs. 3D
@@ -21856,6 +21874,7 @@ Region = NTSC-J
 Serial = SLPM-65192
 Name   = NBA Live 2003
 Region = NTSC-J
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-65193
 Name   = FIFA Soccer 2003
@@ -23550,6 +23569,7 @@ Region = NTSC-J
 Serial = SLPM-65666
 Name   = NBA Live 2004 [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-65668
 Name   = Spectral Force - Radical Elements [Limited Edition]
@@ -24039,6 +24059,7 @@ Compat = 5
 Serial = SLPM-65798
 Name   = Madden NFL Superbowl 2005
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-65799
 Name   = New Jinsei Game
@@ -25512,6 +25533,7 @@ Region = NTSC-J
 Serial = SLPM-66204
 Name   = Madden NFL '06
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-66205
 Name   = Front Mission 5 - Scars of the War
@@ -26957,6 +26979,7 @@ Region = NTSC-J
 Serial = SLPM-66600
 Name   = Madden NFL '07
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-66601
 Name   = SSX On Tour [EA Best Hits]
@@ -27841,6 +27864,7 @@ Region = NTSC-J
 Serial = SLPM-66837
 Name   = Madden NFL '08
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPM-66838
 Name   = Fantastic Fortune 2 - Triple Star [Best Hit Selection]
@@ -29118,6 +29142,7 @@ Region = NTSC-J
 Serial = SLPS-20065
 Name   = Madden NFL 2001
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPS-20066
 Name   = Rhapsody 3 - Tenshi no Present - The Marl Kingdom Stories
@@ -30477,6 +30502,7 @@ Region = NTSC-J
 Serial = SLPS-25079
 Name   = Madden NFL 2002
 Region = NTSC-J
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLPS-25080
 Name   = Uchuu Senkan Yamato - Iscandar he no Tsuioku [Special Edition]
@@ -34253,6 +34279,7 @@ Region = NTSC-U
 Serial = SLUS-20093
 Name   = Madden NFL 2001
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20094
 Name   = X Squad
@@ -34871,6 +34898,7 @@ Compat = 5
 Serial = SLUS-20241
 Name   = NCAA Football 2002
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20242
 Name   = Legends of Wrestling
@@ -34953,6 +34981,7 @@ Region = NTSC-U
 Serial = SLUS-20263
 Name   = Madden NFL 2002
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20264
 Name   = F1 2001
@@ -35795,7 +35824,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20453
-Name   = NCAA Football 2K3
+Name   = NCAA College Football 2K3
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20454
@@ -36160,10 +36189,12 @@ Region = NTSC-U
 Serial = SLUS-20529
 Name   = Madden NFL 2003
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20530
 Name   = NCAA Football 2003
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20531
 Name   = NHL 2003
@@ -36194,6 +36225,7 @@ Compat = 5
 Serial = SLUS-20536
 Name   = NBA Live 2003
 Region = NTSC-U
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20537
 Name   = Jimmy Neutron - Boy Genius
@@ -36578,6 +36610,7 @@ Serial = SLUS-20624
 Name   = Simpsons, The - Hit & Run
 Region = NTSC-U
 Compat = 5
+FpuNegDivHack = 1			// Lens flare appears even when behind objects
 ---------------------------------------------
 Serial = SLUS-20625
 Name   = Moto GP 3
@@ -37001,6 +37034,7 @@ Compat = 5
 Serial = SLUS-20719
 Name   = NCAA Football 2004
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20720
 Name   = Romance of the Three Kingdoms VIII
@@ -37155,6 +37189,7 @@ Serial = SLUS-20750
 Name   = FIFA Soccer 2004
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20751
 Name   = James Bond 007 - Everything or Nothing
@@ -37164,6 +37199,7 @@ Compat = 5
 Serial = SLUS-20752
 Name   = Madden NFL 2004
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20753
 Name   = Medal of Honor - Rising Sun
@@ -37177,6 +37213,7 @@ Region = NTSC-U
 Serial = SLUS-20755
 Name   = NBA Live 2004
 Region = NTSC-U
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20756
 Name   = NHL 2004
@@ -37549,6 +37586,7 @@ Serial = SLUS-20841
 Name   = NFL Street
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20842
 Name   = Sims, The - Bustin' Out
@@ -38332,6 +38370,7 @@ Compat = 5
 Serial = SLUS-20991
 Name   = NCAA Football 2005
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-20992
 Name   = Catwoman
@@ -38375,6 +38414,7 @@ Serial = SLUS-21000
 Name   = Madden NFL 2005
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21001
 Name   = NHL 2005
@@ -38517,6 +38557,7 @@ Compat = 5
 Serial = SLUS-21025
 Name   = Madden NFL 2005 [Special Collectors Edition]
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21026
 Name   = Battlefield 2 - Mordern Combat
@@ -38945,6 +38986,7 @@ Serial = SLUS-21118
 Name   = NFL Street 2
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21119
 Name   = Kessen 3
@@ -39395,10 +39437,12 @@ Serial = SLUS-21213
 Name   = Madden NFL '06
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21214
 Name   = NCAA Football 2006
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21215
 Name   = Warriors, The
@@ -40646,6 +40690,7 @@ Compat = 5
 Serial = SLUS-21459
 Name   = NCAA Football '07
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21460
 Name   = NBA Live '07
@@ -40727,10 +40772,12 @@ Serial = SLUS-21476
 Name   = Madden NFL '07
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21477
 Name   = Madden NFL '07 [Hall of Fame Edition]
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21478
 Name   = Pirates - Legend of the Black Buccaneer
@@ -40757,6 +40804,7 @@ Serial = SLUS-21482
 Name   = NFL Street 3
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21483
 Name   = Tiger Woods PGA Tour 07
@@ -41249,6 +41297,7 @@ Compat = 5
 Serial = SLUS-21620
 Name   = NCAA Football '08
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21621
 Name   = Shin Megami Tensei: Persona 3 FES
@@ -41347,6 +41396,7 @@ Serial = SLUS-21638
 Name   = Madden NFL '08
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21639
 Name   = NASCAR '08
@@ -41847,6 +41897,7 @@ Serial = SLUS-21752
 Name   = NCAA Football '09
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21753
 Name   = Monopoly
@@ -41934,6 +41985,7 @@ Serial = SLUS-21770
 Name   = Madden NFL '09
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21771
 Name   = NHL 2009
@@ -42455,11 +42507,13 @@ Compat = 5
 Serial = SLUS-21892
 Name   = NCAA Football 10
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21893
 Name   = Madden NFL 10
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21895
 Name   = Astro Boy: The Video Game
@@ -42599,6 +42653,7 @@ Region = NTSC-U
 Serial = SLUS-21932
 Name   = NCAA Football 11
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21933
 Name   = Despicable Me
@@ -42656,6 +42711,7 @@ Serial = SLUS-21946
 Name   = Madden NFL 12
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-21948
 Name   = Pro Evolution Soccer 2012
@@ -43095,6 +43151,7 @@ Region = NTSC-U
 Serial = SLUS-29086
 Name   = FIFA Soccer 2004 [Demo]
 Region = NTSC-U
+vuClampMode = 2			//missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-29087
 Name   = Square Enix Sampler Disc Vol.1
@@ -43115,6 +43172,7 @@ Region = NTSC-U
 Serial = SLUS-29093
 Name   = NFL Street [Demo]
 Region = NTSC-U
+vuClampMode = 3			// missing geometry with microVU
 ---------------------------------------------
 Serial = SLUS-29095
 Name   = James Bond 007 - Everything or Nothing [Demo]
