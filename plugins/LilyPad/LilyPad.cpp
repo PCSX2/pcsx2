@@ -42,7 +42,7 @@
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
 // LilyPad version.
-#define VERSION ((0 << 8) | 11 | (0 << 24))
+#define VERSION ((0 << 8) | 12 | (0 << 24))
 
 #ifdef __linux__
 Display *GSdsp;
@@ -384,8 +384,12 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255)
 
 void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value)
 {
-    if (value < b->deadZone || !value)
+    if (value < b->deadZone || value == 0) {
         return;
+    }
+    if (b->skipDeadZone > b->deadZone) {
+        value = std::min((int)(((__int64)value * (FULLY_DOWN - (__int64)b->skipDeadZone)) / FULLY_DOWN) + b->skipDeadZone, FULLY_DOWN);
+    }
 
     if (config.turboKeyHack == 1) { // send a tabulator keypress to emulator
         //printf("%x\n", b->command);
@@ -425,11 +429,7 @@ void CapSum(ButtonSum *sum)
 {
     int i;
     for (i = 0; i < 2; i++) {
-#ifdef __linux__
         int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
-#else
-        int div = max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
-#endif
         if (div > 255) {
             sum->sticks[i].horiz = sum->sticks[i].horiz * 255 / div;
             sum->sticks[i].vert = sum->sticks[i].vert * 255 / div;
