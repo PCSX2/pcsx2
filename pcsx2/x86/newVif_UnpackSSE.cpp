@@ -39,7 +39,7 @@ void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xy
 		|| (xyzw==12) || (xyzw==11) || (xyzw==8) || (xyzw==3)) {
 			mVUmergeRegs(dest, src, xyzw);
 	}
-	else 
+	else
 	{
 		if(temp != src) xMOVAPS(temp, src); //Sometimes we don't care if the source is modified and is temp reg.
 		if(dest == temp)
@@ -78,7 +78,7 @@ void VifUnpackSSE_Base::xShiftR(const xRegisterSSE& regX, int n) const {
 
 void VifUnpackSSE_Base::xPMOVXX8(const xRegisterSSE& regX) const {
 	if (usn)	xPMOVZX.BD(regX, ptr32[srcIndirect]);
-	else		xPMOVSX.BD(regX, ptr32[srcIndirect]);	
+	else		xPMOVSX.BD(regX, ptr32[srcIndirect]);
 }
 
 void VifUnpackSSE_Base::xPMOVXX16(const xRegisterSSE& regX) const {
@@ -88,8 +88,8 @@ void VifUnpackSSE_Base::xPMOVXX16(const xRegisterSSE& regX) const {
 
 void VifUnpackSSE_Base::xUPK_S_32() const {
 
-	switch(UnpkLoopIteration)  
-	{	
+	switch(UnpkLoopIteration)
+	{
 		case 0:
 			xMOV128    (workReg, ptr32[srcIndirect]);
 			xPSHUF.D   (destReg, workReg, _v0);
@@ -104,12 +104,12 @@ void VifUnpackSSE_Base::xUPK_S_32() const {
 			xPSHUF.D   (destReg, workReg, _v3);
 			break;
 	}
-	
+
 }
 
 void VifUnpackSSE_Base::xUPK_S_16() const {
 
-	if (!x86caps.hasStreamingSIMD4Extensions) 
+	if (!x86caps.hasStreamingSIMD4Extensions)
 	{
 			xMOV16     (workReg, ptr32[srcIndirect]);
 			xPUNPCK.LWD(workReg, workReg);
@@ -119,8 +119,8 @@ void VifUnpackSSE_Base::xUPK_S_16() const {
 			return;
 	}
 
-	switch(UnpkLoopIteration)  
-	{	
+	switch(UnpkLoopIteration)
+	{
 		case 0:
 			xPMOVXX16  (workReg);
 			xPSHUF.D   (destReg, workReg, _v0);
@@ -135,12 +135,12 @@ void VifUnpackSSE_Base::xUPK_S_16() const {
 			xPSHUF.D   (destReg, workReg, _v3);
 			break;
 	}
-	
+
 }
 
 void VifUnpackSSE_Base::xUPK_S_8() const {
-	
-	if (!x86caps.hasStreamingSIMD4Extensions) 
+
+	if (!x86caps.hasStreamingSIMD4Extensions)
 	{
 		xMOV8      (workReg, ptr32[srcIndirect]);
 		xPUNPCK.LBW(workReg, workReg);
@@ -151,8 +151,8 @@ void VifUnpackSSE_Base::xUPK_S_8() const {
 		return;
 	}
 
-	switch(UnpkLoopIteration)  
-	{	
+	switch(UnpkLoopIteration)
+	{
 		case 0:
 			xPMOVXX8   (workReg);
 			xPSHUF.D   (destReg, workReg, _v0);
@@ -167,7 +167,7 @@ void VifUnpackSSE_Base::xUPK_S_8() const {
 			xPSHUF.D   (destReg, workReg, _v3);
 			break;
 	}
-	
+
 }
 
 // The V2 + V3 unpacks have freaky behaviour, the manual claims "indeterminate".
@@ -177,19 +177,19 @@ void VifUnpackSSE_Base::xUPK_S_8() const {
 
 void VifUnpackSSE_Base::xUPK_V2_32() const {
 
-	if(UnpkLoopIteration == 0) 
-	{	
+	if(UnpkLoopIteration == 0)
+	{
 		xMOV128     (workReg, ptr32[srcIndirect]);
-		xPSHUF.D   (destReg, workReg, 0x44); //v1v0v1v0	
+		xPSHUF.D   (destReg, workReg, 0x44); //v1v0v1v0
 		if(IsAligned)xAND.PS( destReg, ptr128[SSEXYZWMask[0]]); //zero last word - tested on ps2
 	}
 	else
 	{
 		xPSHUF.D   (destReg, workReg, 0xEE); //v3v2v3v2
 		if(IsAligned)xAND.PS( destReg, ptr128[SSEXYZWMask[0]]); //zero last word - tested on ps2
-		
+
 	}
-	
+
 }
 
 void VifUnpackSSE_Base::xUPK_V2_16() const {
@@ -199,7 +199,7 @@ void VifUnpackSSE_Base::xUPK_V2_16() const {
             if (x86caps.hasStreamingSIMD4Extensions)
             {
                     xPMOVXX16  (workReg);
-               
+
             }
             else
             {
@@ -213,19 +213,19 @@ void VifUnpackSSE_Base::xUPK_V2_16() const {
     {
             xPSHUF.D   (destReg, workReg, 0xEE); //v3v2v3v2
     }
-	
-	
+
+
 }
 
 void VifUnpackSSE_Base::xUPK_V2_8() const {
 
 	if(UnpkLoopIteration == 0 || !x86caps.hasStreamingSIMD4Extensions)
 	{
-		if (x86caps.hasStreamingSIMD4Extensions) 
+		if (x86caps.hasStreamingSIMD4Extensions)
 		{
 			xPMOVXX8   (workReg);
 		}
-		else 
+		else
 		{
 			xMOV16     (workReg, ptr32[srcIndirect]);
 			xPUNPCK.LBW(workReg, workReg);
@@ -238,23 +238,23 @@ void VifUnpackSSE_Base::xUPK_V2_8() const {
 	{
 		xPSHUF.D   (destReg, workReg, 0xEE); //v3v2v3v2
 	}
-	
+
 }
 
 void VifUnpackSSE_Base::xUPK_V3_32() const {
 
 	xMOV128    (destReg, ptr128[srcIndirect]);
-	if(UnpkLoopIteration != IsAligned)  
+	if(UnpkLoopIteration != IsAligned)
     	xAND.PS( destReg, ptr128[SSEXYZWMask[0]]);
 }
 
 void VifUnpackSSE_Base::xUPK_V3_16() const {
 
-	if (x86caps.hasStreamingSIMD4Extensions) 
+	if (x86caps.hasStreamingSIMD4Extensions)
 	{
 		xPMOVXX16  (destReg);
 	}
-	else 
+	else
 	{
 		xMOV64     (destReg, ptr32[srcIndirect]);
 		xPUNPCK.LWD(destReg, destReg);
@@ -270,15 +270,15 @@ void VifUnpackSSE_Base::xUPK_V3_16() const {
 	if ((UnpkLoopIteration & 0x1) == 0 && result == 0){
 		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]); //zero last word on QW boundary if whole 32bit word is used - tested on ps2
 	}
-}	
+}
 
 void VifUnpackSSE_Base::xUPK_V3_8() const {
 
-	if (x86caps.hasStreamingSIMD4Extensions) 
+	if (x86caps.hasStreamingSIMD4Extensions)
 	{
 		xPMOVXX8   (destReg);
 	}
-	else 
+	else
 	{
 		xMOV32     (destReg, ptr32[srcIndirect]);
 		xPUNPCK.LBW(destReg, destReg);
@@ -294,11 +294,11 @@ void VifUnpackSSE_Base::xUPK_V4_32() const {
 
 void VifUnpackSSE_Base::xUPK_V4_16() const {
 
-	if (x86caps.hasStreamingSIMD4Extensions) 
+	if (x86caps.hasStreamingSIMD4Extensions)
 	{
 		xPMOVXX16  (destReg);
 	}
-	else 
+	else
 	{
 		xMOV64     (destReg, ptr32[srcIndirect]);
 		xPUNPCK.LWD(destReg, destReg);
@@ -308,11 +308,11 @@ void VifUnpackSSE_Base::xUPK_V4_16() const {
 
 void VifUnpackSSE_Base::xUPK_V4_8() const {
 
-	if (x86caps.hasStreamingSIMD4Extensions) 
+	if (x86caps.hasStreamingSIMD4Extensions)
 	{
 		xPMOVXX8   (destReg);
 	}
-	else 
+	else
 	{
 		xMOV32     (destReg, ptr32[srcIndirect]);
 		xPUNPCK.LBW(destReg, destReg);

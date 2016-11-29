@@ -79,10 +79,10 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const {
 	const vifStruct& vif = MTVU_VifX;
 
 	//This could have ended up copying the row when there was no row to write.1810080
-	u32 m0 = vB.mask; //The actual mask example 0x03020100   
+	u32 m0 = vB.mask; //The actual mask example 0x03020100
 	u32 m3 =  ((m0 & 0xaaaaaaaa)>>1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
 	u32 m2 = (m0 & 0x55555555) & (~m0>>1); // 0x1000100 & 0xFE7EFF7F = 0x00000100 Just the row
-	
+
 	if((m2&&doMask)||doMode) { xMOVAPS(xmmRow, ptr128[&vif.MaskRow]); MSKPATH3_LOG("Moving row");}
 	if (m3&&doMask) {
 		MSKPATH3_LOG("Merging Cols");
@@ -97,10 +97,10 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const {
 
 void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const {
 	pxAssertDev(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
-	
+
 	int cc =  aMin(vCL, 3);
 	u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)
-	u32 m3 =  ((m0 & 0xaa)>>1) & ~m0; //all the upper bits (cols shifted right) cancelling out any write protects 0x10 
+	u32 m3 =  ((m0 & 0xaa)>>1) & ~m0; //all the upper bits (cols shifted right) cancelling out any write protects 0x10
 	u32 m2 = (m0 & 0x55) & (~m0>>1); // all the lower bits (rows)cancelling out any write protects 0x04
 	u32 m4 = (m0 & ~((m3<<1) | m2)) & 0x55; //  = 0xC0 & 0x55 = 0x40 (for merge mask)
 
@@ -110,15 +110,15 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const {
 
 	if (doMask&&m2) { mergeVectors(regX, xmmRow,						xmmTemp, m2); } // Merge MaskRow
 	if (doMask&&m3) { mergeVectors(regX, xRegisterSSE(xmmCol0.Id+cc),	xmmTemp, m3); } // Merge MaskCol
-	if (doMask&&m4) { xMOVAPS(xmmTemp,							   ptr[dstIndirect]); 
+	if (doMask&&m4) { xMOVAPS(xmmTemp,							   ptr[dstIndirect]);
 					  mergeVectors(regX, xmmTemp,						xmmTemp, m4); } // Merge Write Protect
 	if (doMode) {
 		u32 m5 = ~(m2|m3|m4) & 0xf;
 
 		if (!doMask)  m5 = 0xf;
 
-		if (m5 < 0xf) 
-		{			
+		if (m5 < 0xf)
+		{
 			xPXOR(xmmTemp, xmmTemp);
 			if (doMode == 3)
 			{
@@ -130,7 +130,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const {
 				xPADD.D(regX, xmmTemp);
 				if (doMode == 2) mergeVectors(xmmRow, regX, xmmTemp, m5);
 			}
-			
+
 		}
 		else
 		{
@@ -173,7 +173,7 @@ static void ShiftDisplacementWindow( xAddressVoid& addr, const xRegisterLong& mo
 
 void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 {
-	
+
 	switch( upknum )
 	{
 		case 0:
@@ -199,7 +199,7 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 			pxFailRel( wxsFormat( L"Vpu/Vif - Invalid Unpack! [%d]", upknum ) );
 		break;
 	}
-	
+
 }
 void VifUnpackSSE_Dynarec::CompileRoutine() {
 	const int  upkNum	 = vB.upkType & 0xf;
@@ -207,32 +207,32 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 	const int  cycleSize = isFill ? vB.cl : vB.wl;
 	const int  blockSize = isFill ? vB.wl : vB.cl;
 	const int  skipSize	 = blockSize - cycleSize;
-	
+
 	uint vNum	= vB.num ? vB.num : 256;
 	doMode		= (upkNum == 0xf) ? 0 : doMode;		// V4_5 has no mode feature.
 	UnpkNoOfIterations = 0;
 	MSKPATH3_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
-	
+
 	pxAssume(vCL == 0);
-	
+
 	// Value passed determines # of col regs we need to load
 	SetMasks(isFill ? blockSize : cycleSize);
 
 	while (vNum) {
 
-	
+
 		ShiftDisplacementWindow( dstIndirect, ecx );
 
-		if(UnpkNoOfIterations == 0) 
+		if(UnpkNoOfIterations == 0)
 			ShiftDisplacementWindow( srcIndirect, edx ); //Don't need to do this otherwise as we arent reading the source.
-		
-		
+
+
 		if (vCL < cycleSize) {
 			ModUnpack(upkNum, false);
 			xUnpack(upkNum);
 			xMovDest();
 			ModUnpack(upkNum, true);
-			
+
 
 			dstIndirect += 16;
 			srcIndirect += vift;
@@ -266,7 +266,7 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	vifStruct&    vif        = MTVU_VifX;
 	const VURegs& VU         = vuRegs[idx];
 	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
-	
+
 	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
 	u8*  endmem   = VU.Mem + vuMemLimit;
 	uint length   = (v.block.num > 0) ? (v.block.num * 16) : 4096; // 0 = 256
