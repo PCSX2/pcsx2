@@ -80,6 +80,7 @@ struct Binding
     int command;
     int sensitivity;
     int deadZone;
+    int skipDeadZone;
     unsigned char turbo;
 };
 

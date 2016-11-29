@@ -364,7 +364,7 @@ void CALLBACK PADsetSettingsDir(const char *dir)
 }
 
 int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFeedbackBinding *&ffb);
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone);
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone, int skipDeadZone);
 
 int CreateEffectBinding(Device *dev, wchar_t *effectName, unsigned int port, unsigned int slot, unsigned int padtype, unsigned int motor, ForceFeedbackBinding **binding);
 
@@ -383,6 +383,7 @@ void SelChanged(int port, int slot)
     int turbo = -1;
     int sensitivity = 0;
     int deadZone = 0;
+    int skipDeadZone = 0;
     int nonButtons = 0;
     // Set if sensitivity != 0, but need to disable flip anyways.
     // Only used to relative axes.
@@ -456,6 +457,7 @@ void SelChanged(int port, int slot)
                             }
                             if (((control->uid >> 16) & 0xFF) != PSHBTN && ((control->uid >> 16) & 0xFF) != TGLBTN) {
                                 deadZone += b->deadZone;
+                                skipDeadZone += b->skipDeadZone;
                                 nonButtons++;
                             }
                         } else
@@ -469,6 +471,7 @@ void SelChanged(int port, int slot)
             ffb = 0;
             turbo = -1;
             deadZone = 0;
+            skipDeadZone = 0;
             sensitivity = 0;
             disableFlip = 1;
             bFound = ffbFound = 0;
@@ -477,6 +480,7 @@ void SelChanged(int port, int slot)
             sensitivity /= bFound;
             if (nonButtons) {
                 deadZone /= nonButtons;
+                skipDeadZone /= nonButtons;
             }
             if (bFound > 1)
                 disableFlip = 1;
@@ -530,6 +534,7 @@ void SelChanged(int port, int slot)
     if (!ffb) {
         SetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY, GetDlgItem(hWnd, IDC_AXIS_SENSITIVITY), sensitivity);
         SetLogSliderVal(hWnd, IDC_SLIDER_DEADZONE, GetDlgItem(hWnd, IDC_AXIS_DEADZONE), deadZone);
+        SetLogSliderVal(hWnd, IDC_SLIDER_SKIP_DEADZONE, GetDlgItem(hWnd, IDC_AXIS_SKIP_DEADZONE), skipDeadZone);
 
         if (disableFlip)
             EnableWindow(GetDlgItem(hWnd, IDC_FLIP), 0);
@@ -693,7 +698,7 @@ int ListBoundEffect(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 }
 
 // Only for use with control bindings.  Affects all highlighted bindings.
-void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *newDeadZone)
+void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *newDeadZone, int *newSkipDeadZone)
 {
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
@@ -722,6 +727,11 @@ void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *ne
         if (newDeadZone) {
             if (b->deadZone) {
                 b->deadZone = *newDeadZone;
+            }
+        }
+        if (newSkipDeadZone) {
+            if (b->skipDeadZone) {
+                b->skipDeadZone = *newSkipDeadZone;
             }
         }
         if (newTurbo) {
@@ -886,7 +896,7 @@ int SaveSettings(wchar_t *file = 0)
                         Binding *b = dev->pads[port][slot][padtype].bindings + j;
                         VirtualControl *c = &dev->virtualControls[b->controlIndex];
                         wsprintfW(temp, L"Binding %i", bindingCount++);
-                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, padtype);
+                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, b->skipDeadZone, padtype);
                         noError &= WritePrivateProfileStringW(id, temp, temp2, file);
                     }
                     for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; j++) {
@@ -1013,7 +1023,7 @@ int LoadSettings(int force, wchar_t *file)
             }
             last = 1;
             unsigned int uid;
-            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, padtype = 0;
+            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, skipDeadZone = 0, padtype = 0;
             int w = 0;
             char string[1000];
             while (temp2[w]) {
@@ -1021,7 +1031,7 @@ int LoadSettings(int force, wchar_t *file)
                 w++;
             }
             string[w] = 0;
-            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &padtype);
+            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &skipDeadZone, &padtype);
             if (len >= 5 && type) {
                 VirtualControl *c = dev->GetVirtualControl(uid);
                 if (!c)
@@ -1034,8 +1044,11 @@ int LoadSettings(int force, wchar_t *file)
                         } else {
                             padtype = 1;
                         }
+                    } else if (len == 8) {
+                        padtype = skipDeadZone;
+                        skipDeadZone = 0;
                     }
-                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone);
+                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone, skipDeadZone);
                 }
             }
         }
@@ -1322,7 +1335,7 @@ int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsig
     return ListBoundEffect(port, slot, dev, b);
 }
 
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone)
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone, int skipDeadZone)
 {
     // Checks needed because I use this directly when loading bindings.
     if (port > 1 || slot > 3 || padtype >= numPadTypes)
@@ -1332,13 +1345,17 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
         sensitivity = BASE_SENSITIVITY;
     if ((uid >> 16) & (PSHBTN | TGLBTN)) {
         deadZone = 0;
+        skipDeadZone = 0;
     } else if (!deadZone) {
         if ((uid >> 16) & PRESSURE_BTN) {
             deadZone = 1;
         } else {
             deadZone = DEFAULT_DEADZONE;
         }
+    } else if (!skipDeadZone) {
+        skipDeadZone = 1;
     }
+
     // Relative axes can have negative sensitivity.
     else if (((uid >> 16) & 0xFF) == RELAXIS) {
         sensitivity = abs(sensitivity);
@@ -1363,6 +1380,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     b->turbo = turbo;
     b->sensitivity = sensitivity;
     b->deadZone = deadZone;
+    b->skipDeadZone = skipDeadZone;
     // Where it appears in listview.
     int count = ListBoundCommand(port, slot, dev, b);
 
@@ -1477,6 +1495,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SENSITIVITY));
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_DEADZONE));
+            SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SKIP_DEADZONE));
             if (port || slot)
                 EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
 
@@ -1489,6 +1508,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(IDC_TURBO, hWnd);
             AddTooltip(IDC_FLIP, hWnd);
             AddTooltip(IDC_SLIDER_DEADZONE, hWnd);
+            AddTooltip(IDC_SLIDER_SKIP_DEADZONE, hWnd);
             AddTooltip(IDC_SLIDER_SENSITIVITY, hWnd);
 
             Populate(port, slot, padtype);
@@ -1529,9 +1549,9 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     UnselectAll(hWndList);
                     int index = -1;
                     if (command == 0x7F && dev->api == IGNORE_KEYBOARD) {
-                        index = BindCommand(dev, uid, 0, 0, 0, command, BASE_SENSITIVITY, 0, 0);
+                        index = BindCommand(dev, uid, 0, 0, 0, command, BASE_SENSITIVITY, 0, 0, 0);
                     } else if (command < 0x30) {
-                        index = BindCommand(dev, uid, port, slot, padtype, command, BASE_SENSITIVITY, 0, 0);
+                        index = BindCommand(dev, uid, port, slot, padtype, command, BASE_SENSITIVITY, 0, 0, 0);
                     }
                     if (index >= 0) {
                         PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
@@ -1593,9 +1613,11 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             int id = GetDlgCtrlID((HWND)lParam);
             int val = GetLogSliderVal(hWnd, id);
             if (id == IDC_SLIDER_SENSITIVITY) {
-                ChangeValue(port, slot, &val, 0, 0);
+                ChangeValue(port, slot, &val, 0, 0, 0);
             } else if (id == IDC_SLIDER_DEADZONE) {
-                ChangeValue(port, slot, 0, 0, &val);
+                ChangeValue(port, slot, 0, 0, &val, 0);
+            } else if (id == IDC_SLIDER_SKIP_DEADZONE) {
+                ChangeValue(port, slot, 0, 0, 0, &val);
             } else {
                 ChangeEffect(port, slot, id, &val, 0);
             }
@@ -1615,7 +1637,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             uid = (uid & 0x00FFFFFF) | axisUIDs[cbsel];
                             Binding backup = *b;
                             DeleteSelected(port, slot);
-                            int index = BindCommand(dev, uid, port, slot, padtype, backup.command, backup.sensitivity, backup.turbo, backup.deadZone);
+                            int index = BindCommand(dev, uid, port, slot, padtype, backup.command, backup.sensitivity, backup.turbo, backup.deadZone, backup.skipDeadZone);
                             ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
                             PropSheet_Changed(hWndProp, hWnd);
                         }
@@ -1763,10 +1785,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     // Don't allow setting it back to indeterminate.
                     SendMessage(GetDlgItem(hWnd, IDC_TURBO), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
                     int turbo = (IsDlgButtonChecked(hWnd, IDC_TURBO) == BST_CHECKED);
-                    ChangeValue(port, slot, 0, &turbo, 0);
+                    ChangeValue(port, slot, 0, &turbo, 0, 0);
                 } else if (cmd == IDC_FLIP) {
                     int val = GetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY);
-                    ChangeValue(port, slot, &val, 0, 0);
+                    ChangeValue(port, slot, &val, 0, 0, 0);
                 } else if (cmd >= IDC_FF_AXIS1_ENABLED && cmd < IDC_FF_AXIS8_ENABLED + 16) {
                     int index = (cmd - IDC_FF_AXIS1_ENABLED) / 16;
                     int val = GetLogSliderVal(hWnd, 16 * index + IDC_FF_AXIS1);

@@ -62,6 +62,7 @@
 #define IDC_AXIS_DEADZONE               0x1014
 #define IDC_LABEL_SENSITIVITY           0x1020
 #define IDC_LABEL_DEADZONE              0x1021
+#define IDC_SKIP_DEADZONE               0x1022
 #define ID_LOCK_BUTTONS                 0x10FC
 #define ID_LOCK_ALL_INPUT               0x10FD
 #define ID_LOCK_DIRECTION               0x10FE

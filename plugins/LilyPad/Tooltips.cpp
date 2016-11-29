@@ -93,6 +93,9 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case IDC_SLIDER_DEADZONE:
             return L"Decreases or increases the range of an input where no input is recognised.\n\n"
                    L"Increasing the dead zone requires the input to be pressed harder or moved more before it is applied, decreasing it makes it recognise a softer press or a shorter movement.";
+        case IDC_SKIP_DEADZONE:
+            return L"Skips and avoids the dead zone to detect input earlier.\n\n"
+                   L"Note: This is useful when a controller input requires too much movement/pressure before there's a corresponding action in-game.";
         case IDC_SLIDER_SENSITIVITY:
             return L"Sets how hard an axis or button is pressed.\n\n"
                    L"Note 1: What the default sensitivity value of \"1.00\" means depends on the device itself. The default is high enough that relative axes (which are primarily used by mice) are generally either considered fully up or down."
