@@ -25,11 +25,11 @@
 #define MERGE_BLOCK_RESULT
 
 #ifdef ENABLE_VTUNE
-	#include "jitprofiling.h"
+#include "jitprofiling.h"
 
-	#ifdef _WIN32
-	#pragma comment(lib, "jitprofiling.lib")
-	#endif
+#ifdef _WIN32
+#pragma comment(lib, "jitprofiling.lib")
+#endif
 #endif
 
 namespace Perf
@@ -99,22 +99,22 @@ void InfoVector::map(uptr x86, u32 size, const char *symbol)
 #endif
 
 #ifdef ENABLE_VTUNE
-	// mapping the full recompiler will blow up VTUNE
-	if (size < _16kb) {
-		fprintf(stderr, "map %s: %p size %d\n", symbol, (void*)x86, size);
-		std::string name = std::string(symbol);
+    // mapping the full recompiler will blow up VTUNE
+    if (size < _16kb) {
+        fprintf(stderr, "map %s: %p size %d\n", symbol, (void *)x86, size);
+        std::string name = std::string(symbol);
 
-		iJIT_Method_Load ml;
+        iJIT_Method_Load ml;
 
-		memset(&ml, 0, sizeof(ml));
+        memset(&ml, 0, sizeof(ml));
 
-		ml.method_id = iJIT_GetNewMethodID();
-		ml.method_name = (char*)name.c_str();
-		ml.method_load_address = (void*)x86;
-		ml.method_size = size;
+        ml.method_id = iJIT_GetNewMethodID();
+        ml.method_name = (char *)name.c_str();
+        ml.method_load_address = (void *)x86;
+        ml.method_size = size;
 
-		iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
-	}
+        iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
+    }
 #endif
 }
 
@@ -125,19 +125,19 @@ void InfoVector::map(uptr x86, u32 size, u32 pc)
 #endif
 
 #ifdef ENABLE_VTUNE
-	std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
-	//fprintf(stderr, "map %s: %p size %d\n", name.c_str(), (void*)x86, size);
+    std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
+    //fprintf(stderr, "map %s: %p size %d\n", name.c_str(), (void*)x86, size);
 
-	iJIT_Method_Load ml;
+    iJIT_Method_Load ml;
 
-	memset(&ml, 0, sizeof(ml));
+    memset(&ml, 0, sizeof(ml));
 
-	ml.method_id = iJIT_GetNewMethodID();
-	ml.method_name = (char*)name.c_str();
-	ml.method_load_address = (void*)x86;
-	ml.method_size = size;
+    ml.method_id = iJIT_GetNewMethodID();
+    ml.method_name = (char *)name.c_str();
+    ml.method_load_address = (void *)x86;
+    ml.method_size = size;
 
-	iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
+    iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
 #endif
 }
 
