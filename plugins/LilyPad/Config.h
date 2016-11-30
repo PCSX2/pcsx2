@@ -33,6 +33,8 @@ struct GeneralConfig
 public:
     PadConfig padConfigs[2][4];
 
+    int deviceSelect[2][4];
+
     u8 closeHacks;
 
     DeviceAPI keyboardApi;

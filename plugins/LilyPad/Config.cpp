@@ -496,7 +496,7 @@ void SelChanged(int port, int slot)
         }
     }
 
-    for (i = IDC_DPAD; i < IDC_CONFIGURE_ON_BIND; i++) {
+    for (i = IDC_DPAD; i <= IDC_DEVICE_SELECT; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
             ShowWindow(hWndTemp, !ffb && !b);
@@ -627,9 +627,10 @@ int GetItemIndex(int port, int slot, Device *dev, ForceFeedbackBinding *binding)
 {
     int count = 0;
     int padtype = config.padConfigs[port][slot].type;
+    int selectedDevice = config.deviceSelect[port][slot];
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev2 = dm->devices[i];
-        if (!dev2->enabled)
+        if (!dev2->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev2)
             continue;
         if (dev2 != dev) {
             count += dev2->pads[port][slot][padtype].numBindings + dev2->pads[port][slot][padtype].numFFBindings;
@@ -643,9 +644,10 @@ int GetItemIndex(int port, int slot, Device *dev, Binding *binding)
 {
     int count = 0;
     int padtype = config.padConfigs[port][slot].type;
+    int selectedDevice = config.deviceSelect[port][slot];
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev2 = dm->devices[i];
-        if (!dev2->enabled)
+        if (!dev2->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev2)
             continue;
         if (dev2 != dev) {
             count += dev2->pads[port][slot][padtype].numBindings + dev2->pads[port][slot][padtype].numFFBindings;
@@ -799,18 +801,18 @@ void Populate(int port, int slot, int padtype)
         return;
     HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     ListView_DeleteAllItems(hWnd);
-    int i, j;
 
     int multipleBinding = config.multipleBinding;
     config.multipleBinding = 1;
-    for (j = 0; j < dm->numDevices; j++) {
+    int selectedDevice = config.deviceSelect[port][slot];
+    for (int j = 0; j < dm->numDevices; j++) {
         Device *dev = dm->devices[j];
-        if (!dev->enabled)
+        if (!dev->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev)
             continue;
-        for (i = 0; i < dev->pads[port][slot][padtype].numBindings; i++) {
+        for (int i = 0; i < dev->pads[port][slot][padtype].numBindings; i++) {
             ListBoundCommand(port, slot, dev, dev->pads[port][slot][padtype].bindings + i);
         }
-        for (i = 0; i < dev->pads[port][slot][padtype].numFFBindings; i++) {
+        for (int i = 0; i < dev->pads[port][slot][padtype].numFFBindings; i++) {
             ListBoundEffect(port, slot, dev, dev->pads[port][slot][padtype].ffBindings + i);
         }
     }
@@ -819,7 +821,7 @@ void Populate(int port, int slot, int padtype)
     hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_FORCEFEEDBACK);
     SendMessage(hWnd, CB_RESETCONTENT, 0, 0);
     int added = 0;
-    for (i = 0; i < dm->numDevices; i++) {
+    for (int i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
         if (dev->enabled && dev->numFFAxes && dev->numFFEffectTypes) {
             SendMessage(hWnd, CB_INSERTSTRING, added, (LPARAM)dev->displayName);
@@ -1256,9 +1258,10 @@ int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFe
     ffb = 0;
     b = 0;
     int padtype = config.padConfigs[port][slot].type;
+    int selectedDevice = config.deviceSelect[port][slot];
     for (int i = 0; i < dm->numDevices; i++) {
         dev = dm->devices[i];
-        if (!dev->enabled)
+        if (!dev->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev)
             continue;
         if (index < dev->pads[port][slot][padtype].numBindings) {
             b = dev->pads[port][slot][padtype].bindings + index;
@@ -1546,6 +1549,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             CheckDlgButton(hWnd, IDC_CONFIGURE_ON_BIND, BST_CHECKED * config.configureOnBind);
 
             AddTooltip(IDC_BINDINGS_LIST, hWnd);
+            AddTooltip(IDC_DEVICE_SELECT, hWnd);
             AddTooltip(IDC_CONFIGURE_ON_BIND, hWnd);
             AddTooltip(ID_MOUSE, hWnd);
             AddTooltip(ID_ANALOG, hWnd);
@@ -1560,6 +1564,24 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(IDC_SLIDER_SENSITIVITY, hWnd);
 
             config.bind = false;
+            config.deviceSelect[port][slot] = -1;
+            HWND hWndDS = GetDlgItem(hWnds[port][slot][padtype], IDC_DEVICE_SELECT);
+            SendMessage(hWndDS, CB_RESETCONTENT, 0, 0);
+            int added = 0;
+            SendMessage(hWndDS, CB_INSERTSTRING, added, (LPARAM)L"Allow All Devices");
+            SendMessage(hWndDS, CB_SETITEMDATA, added, -1);
+            added++;
+            for (int i = 0; i < dm->numDevices; i++) {
+                Device *dev = dm->devices[i];
+                if (dev->enabled && dev->api != IGNORE_KEYBOARD) {
+                    SendMessage(hWndDS, CB_INSERTSTRING, added, (LPARAM)dev->displayName);
+                    SendMessage(hWndDS, CB_SETITEMDATA, added, i);
+                    added++;
+                }
+            }
+            SendMessage(hWndDS, CB_SETCURSEL, 0, 0);
+            EnableWindow(hWndDS, added != 0);
+
             Populate(port, slot, padtype);
         } break;
         case WM_DEVICECHANGE:
@@ -1590,7 +1612,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 
                 InitInfo info = {selected == 0x7F, 1, hWndProp, &hWndButtonProc};
                 Device *dev = dm->GetActiveDevice(&info, &uid, &index, &value);
-                if (dev) {
+                int selectedDevice = config.deviceSelect[port][slot];
+                if (dev && (selectedDevice == -1 || dm->devices[selectedDevice] == dev)) {
                     int command = selected;
                     // Good idea to do this first, as BindCommand modifies the ListView, which will
                     // call it anyways, which is a bit funky.
@@ -1722,6 +1745,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                         }
                     }
                 }
+            } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_DEVICE_SELECT) {
+                int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
+                config.deviceSelect[port][slot] = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETITEMDATA, selectedDev, 0);
+                RefreshEnabledDevicesAndDisplay(1, hWndGeneral, 1);
             } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_FF_EFFECT) {
                 int typeIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                 if (typeIndex >= 0)
@@ -2064,6 +2091,7 @@ void UpdatePadList(HWND hWnd)
 
             item.iSubItem = 2;
             int count = 0;
+            int selectedDevice = config.deviceSelect[port][slot];
             for (int i = 0; i < dm->numDevices; i++) {
                 Device *dev = dm->devices[i];
                 if (!dev->enabled)

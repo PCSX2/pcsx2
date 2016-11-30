@@ -69,6 +69,9 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Right-click and select \"Delete Selected\" to remove the selected input from the list.\n\n"
                    L"Right-click and select \"Clear All\" to remove all the inputs from the list.\n\n"
                    L"Note: Use Shift/Ctrl + Left-click to select multiple bindings. Changing the displayed configuration will now copy it to all selected bindings.";
+        case IDC_DEVICE_SELECT:
+            return L"Select a single device to hide the bindings from other devices in the bindings list, and to only be able to add new bindings for the selected device.\n\n"
+                   L"This can also avoid input conflict issues when one controller is recognized as several devices through different APIs.";
         case IDC_CONFIGURE_ON_BIND:
             return L"Immediately go to the configuration setup when you create a new binding.";
         case ID_MOUSE:
