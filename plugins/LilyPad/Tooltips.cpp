@@ -69,6 +69,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Right-click and select \"Delete Selected\" to remove the selected input from the list.\n\n"
                    L"Right-click and select \"Clear All\" to remove all the inputs from the list.\n\n"
                    L"Note: Use Shift/Ctrl + Left-click to select multiple bindings. Changing the displayed configuration will now copy it to all selected bindings.";
+        case IDC_CONFIGURE_ON_BIND:
+            return L"Immediately go to the configuration setup when you create a new binding.";
         case ID_MOUSE:
             return L"Bind a key that releases or captures the mouse.\n\n"
                    L"Pressing the assigned button when the mouse is in focus, it releases the mouse from use in-game and makes the cursor visible so it can move/resize the emulator window.\n\n"

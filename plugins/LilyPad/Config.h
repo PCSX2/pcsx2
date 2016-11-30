@@ -40,6 +40,8 @@ public:
 
     // Derived value, calculated by GetInput().
     u8 ignoreKeys;
+    u8 configureOnBind;
+    bool bind;
 
     union
     {
