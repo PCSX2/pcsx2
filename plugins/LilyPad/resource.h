@@ -102,6 +102,7 @@
 #define ID_BIG_MOTOR                    0x111C
 #define ID_SMALL_MOTOR                  0x111D
 #define ID_FORCEFEEDBACK_BOX            0x111E
+#define IDC_CONFIGURE_ON_BIND           0x111F
 #define IDC_BINDINGS_LIST               0x1200
 #define ID_SAVE                         0x1201
 #define ID_LOAD                         0x1202

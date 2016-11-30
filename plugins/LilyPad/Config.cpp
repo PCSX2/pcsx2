@@ -396,6 +396,10 @@ void SelChanged(int port, int slot)
     int ffbFound = 0;
     ForceFeedbackBinding *ffb = 0;
     Binding *b = 0;
+    if (config.bind && !config.configureOnBind) {
+        i = 0;
+        config.bind = false;
+    }
     if (i >= 1) {
         int index = -1;
         int flipped = 0;
@@ -492,7 +496,7 @@ void SelChanged(int port, int slot)
         }
     }
 
-    for (i = IDC_DPAD; i < ID_FORCEFEEDBACK_BOX; i++) {
+    for (i = IDC_DPAD; i < IDC_CONFIGURE_ON_BIND; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
             ShowWindow(hWndTemp, !ffb && !b);
@@ -870,6 +874,8 @@ int SaveSettings(wchar_t *file = 0)
     WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
     WritePrivateProfileInt(L"General Settings", L"Mouse Mode", config.mouseApi, file);
 
+    WritePrivateProfileInt(L"Pad Settings", L"Configure On Bind", config.configureOnBind, file);
+
     for (int port = 0; port < 2; port++) {
         for (int slot = 0; slot < 4; slot++) {
             wchar_t temp[50];
@@ -981,6 +987,8 @@ int LoadSettings(int force, wchar_t *file)
     if (!config.keyboardApi)
         config.keyboardApi = WM;
     config.mouseApi = (DeviceAPI)GetPrivateProfileIntW(L"General Settings", L"Mouse Mode", 0, file);
+
+    config.configureOnBind = (DeviceAPI)GetPrivateProfileIntW(L"Pad Settings", L"Configure On Bind", 0, file);
 
     if (config.debug) {
         CreateDirectory(L"logs", 0);
@@ -1535,8 +1543,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SKIP_DEADZONE));
             if (port || slot)
                 EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
+            CheckDlgButton(hWnd, IDC_CONFIGURE_ON_BIND, BST_CHECKED * config.configureOnBind);
 
             AddTooltip(IDC_BINDINGS_LIST, hWnd);
+            AddTooltip(IDC_CONFIGURE_ON_BIND, hWnd);
             AddTooltip(ID_MOUSE, hWnd);
             AddTooltip(ID_ANALOG, hWnd);
             AddTooltip(ID_IGNORE, hWnd);
@@ -1549,6 +1559,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(IDC_SLIDER_SKIP_DEADZONE, hWnd);
             AddTooltip(IDC_SLIDER_SENSITIVITY, hWnd);
 
+            config.bind = false;
             Populate(port, slot, padtype);
         } break;
         case WM_DEVICECHANGE:
@@ -1595,6 +1606,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                         PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
                         ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
                         ListView_EnsureVisible(hWndList, index, 0);
+                        config.bind = true;
                     }
                 }
             }
@@ -1841,6 +1853,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     dm->Update(&info);
                     dm->PostRead();
                     SetTimer(hWnd, 1, 30, 0);
+                } else if (cmd == IDC_CONFIGURE_ON_BIND) {
+                    config.configureOnBind = IsDlgButtonChecked(hWnd, IDC_CONFIGURE_ON_BIND);
                 }
                 if (cmd == IDC_TURBO) {
                     // Don't allow setting it back to indeterminate.
