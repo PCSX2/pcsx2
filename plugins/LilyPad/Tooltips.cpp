@@ -57,10 +57,18 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
                    L"Note 1: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n"
                    L"Note 2: If analog mode is enabled in a game that does not support it, a game might not recognise a controller is connected.";
-        case ID_TEST:
-            return L"Displays a continuously updated list of the state of all objects on the selected device.\n\n"
-                   L"Use this option to check if all the inputs on a controller function properly.";
+        case IDC_DIAG_LIST:
+            return L"Shows a list of currently available input devices.\n\n"
+                   L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
+                   L"Use this option to check if all the inputs on a controller function properly.\n\n"
+                   L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
         // Pad tabs
+        case IDC_BINDINGS_LIST:
+            return L"Shows a list of currently bound inputs of the selected Pad.\n\n"
+                   L"Left-click on one of the bindings in the list to configure it.\n\n"
+                   L"Right-click and select \"Delete Selected\" to remove the selected input from the list.\n\n"
+                   L"Right-click and select \"Clear All\" to remove all the inputs from the list.\n\n"
+                   L"Note: Use Shift/Ctrl + Left-click to select multiple bindings. Changing the displayed configuration will now copy it to all selected bindings.";
         case ID_MOUSE:
             return L"Bind a key that releases or captures the mouse.\n\n"
                    L"Pressing the assigned button when the mouse is in focus, it releases the mouse from use in-game and makes the cursor visible so it can move/resize the emulator window.\n\n"
@@ -93,7 +101,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case IDC_SLIDER_DEADZONE:
             return L"Decreases or increases the range of an input where no input is recognised.\n\n"
                    L"Increasing the dead zone requires the input to be pressed harder or moved more before it is applied, decreasing it makes it recognise a softer press or a shorter movement.";
-        case IDC_SKIP_DEADZONE:
+        case IDC_SLIDER_SKIP_DEADZONE:
             return L"Skips and avoids the dead zone to detect input earlier.\n\n"
                    L"Note: This is useful when a controller input requires too much movement/pressure before there's a corresponding action in-game.";
         case IDC_SLIDER_SENSITIVITY:
