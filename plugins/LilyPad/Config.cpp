@@ -28,6 +28,8 @@
 #include "WndProcEater.h"
 #include "DualShock3.h"
 
+#include <Shlwapi.h>
+
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "RawInput.h"
 
@@ -231,7 +233,7 @@ void RefreshEnabledDevicesAndDisplay(int updateDeviceList = 0, HWND hWnd = 0, in
 {
     RefreshEnabledDevices(updateDeviceList);
     if (hWnd) {
-        HWND hWndList = GetDlgItem(hWnd, IDC_LIST);
+        HWND hWndList = GetDlgItem(hWnd, IDC_DIAG_LIST);
         ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
         int count = ListView_GetItemCount(hWndList);
         LVITEM item;
@@ -374,7 +376,7 @@ void SelChanged(int port, int slot)
     HWND hWnd = hWnds[port][slot][padtype];
     if (!hWnd)
         return;
-    HWND hWndTemp, hWndList = GetDlgItem(hWnd, IDC_LIST);
+    HWND hWndTemp, hWndList = GetDlgItem(hWnd, IDC_BINDINGS_LIST);
     int j, i = ListView_GetSelectedCount(hWndList);
     wchar_t *devName = L"N/A";
     wchar_t *key = L"N/A";
@@ -490,12 +492,21 @@ void SelChanged(int port, int slot)
         }
     }
 
-    for (i = IDC_SLIDER_SENSITIVITY; i < ID_DELETE; i++) {
+    for (i = IDC_DPAD; i < ID_FORCEFEEDBACK_BOX; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
-            ShowWindow(hWndTemp, ffb == 0);
+            ShowWindow(hWndTemp, !ffb && !b);
     }
-    for (i = 0x1300; i < 0x1400; i++) {
+    for (i = IDC_SLIDER_SENSITIVITY; i <= IDC_AXIS_SKIP_DEADZONE; i++) {
+        hWndTemp = GetDlgItem(hWnd, i);
+        if (hWndTemp)
+            ShowWindow(hWndTemp, !ffb && b);
+        if (i == IDC_SKIP_DEADZONE_OFF && skipDeadZone > deadZone)
+            ShowWindow(hWndTemp, 0);
+        if (i == IDC_AXIS_SKIP_DEADZONE && skipDeadZone <= deadZone)
+            ShowWindow(hWndTemp, 0);
+    }
+    for (i = ID_TEST; i <= IDC_FF_AXIS8_SCALE; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp) {
             int enable = ffb != 0;
@@ -531,6 +542,8 @@ void SelChanged(int port, int slot)
             ShowWindow(hWndTemp, enable);
         }
     }
+    ShowWindow(GetDlgItem(hWnd, ID_CONTROLS), ffb || b);
+
     if (!ffb) {
         SetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY, GetDlgItem(hWnd, IDC_AXIS_SENSITIVITY), sensitivity);
         SetLogSliderVal(hWnd, IDC_SLIDER_DEADZONE, GetDlgItem(hWnd, IDC_AXIS_DEADZONE), deadZone);
@@ -645,7 +658,7 @@ int ListBoundCommand(int port, int slot, Device *dev, Binding *b)
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
         return -1;
-    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     int index = -1;
     if (hWndList) {
         index = GetItemIndex(port, slot, dev, b);
@@ -673,7 +686,7 @@ int ListBoundEffect(int port, int slot, Device *dev, ForceFeedbackBinding *b)
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
         return -1;
-    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     int index = -1;
     if (hWndList) {
         index = GetItemIndex(port, slot, dev, b);
@@ -703,7 +716,7 @@ void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *ne
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
         return;
-    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     int count = ListView_GetSelectedCount(hWndList);
     if (count < 1)
         return;
@@ -748,7 +761,7 @@ void ChangeEffect(int port, int slot, int id, int *newForce, unsigned int *newEf
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
         return;
-    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     int i = ListView_GetSelectedCount(hWndList);
     if (i != 1)
         return;
@@ -780,7 +793,7 @@ void Populate(int port, int slot, int padtype)
 {
     if (!hWnds[port][slot][padtype])
         return;
-    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     ListView_DeleteAllItems(hWnd);
     int i, j;
 
@@ -1157,7 +1170,7 @@ inline int GetPort(HWND hWnd, int *slot)
 
 void Diagnostics(HWND hWnd)
 {
-    HWND hWndList = GetDlgItem(hWnd, IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnd, IDC_DIAG_LIST);
     if (!hWndList)
         return;
     int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
@@ -1174,8 +1187,32 @@ void Diagnostics(HWND hWnd)
     RefreshEnabledDevicesAndDisplay(0, hWnd, 1);
 }
 
+// Tooltips will only show if the TOOLINFO cbSize <= the struct size. If it's
+// smaller some functionality might be disabled. So let's try and use the
+// correct size.
+UINT GetTooltipStructSize()
+{
+    DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(GetModuleHandle(L"ComCtl32.dll"), "DllGetVersion");
+    if (dllGetVersion) {
+        DLLVERSIONINFO2 dllversion = {0};
+        dllversion.info1.cbSize = sizeof(DLLVERSIONINFO2);
+
+        if (dllGetVersion((DLLVERSIONINFO *)&dllversion) == S_OK) {
+            // Minor, then major version.
+            DWORD version = MAKELONG(dllversion.info1.dwMinorVersion, dllversion.info1.dwMajorVersion);
+            DWORD tooltip_v3 = MAKELONG(0, 6);
+            if (version >= tooltip_v3)
+                return TTTOOLINFOA_V3_SIZE;
+        }
+    }
+    // Should be fine for XP and onwards, comctl versions >= 4.7 should at least
+    // be this size.
+    return TTTOOLINFOA_V2_SIZE;
+}
+
 void AddTooltip(UINT id, HWND hWnd)
 {
+    static UINT tooltipStructSize = GetTooltipStructSize();
     bool hasTooltip;
     LPWSTR message = dialog_message(id, &hasTooltip);
     if (!hasTooltip)
@@ -1194,7 +1231,7 @@ void AddTooltip(UINT id, HWND hWnd)
         return;
 
     TOOLINFO toolInfo = {0};
-    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.cbSize = tooltipStructSize;
     toolInfo.hwnd = hWnd;
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)hWndTooltip;
@@ -1236,7 +1273,7 @@ void DeleteBinding(int port, int slot, int padtype, Device *dev, Binding *b)
     if (dev->enabled && hWnds[port][slot][padtype]) {
         int count = GetItemIndex(port, slot, dev, b);
         if (count >= 0) {
-            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
             if (hWndList) {
                 ListView_DeleteItem(hWndList, count);
             }
@@ -1254,7 +1291,7 @@ void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
     if (dev->enabled && hWnds[port][slot][padtype]) {
         int count = GetItemIndex(port, slot, dev, b);
         if (count >= 0) {
-            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+            HWND hWndList = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
             if (hWndList) {
                 ListView_DeleteItem(hWndList, count);
             }
@@ -1288,7 +1325,7 @@ int DeleteSelected(int port, int slot)
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
         return 0;
-    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_LIST);
+    HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_BINDINGS_LIST);
     int changes = 0;
     while (1) {
         int index = ListView_GetNextItem(hWnd, -1, LVNI_SELECTED);
@@ -1472,7 +1509,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
     int slot;
     int port = GetPort(hWnd, &slot);
     int padtype = config.padConfigs[port][slot].type;
-    HWND hWndList = GetDlgItem(hWnd, IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnd, IDC_BINDINGS_LIST);
     switch (msg) {
         case WM_INITDIALOG: {
             ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
@@ -1499,6 +1536,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             if (port || slot)
                 EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
 
+            AddTooltip(IDC_BINDINGS_LIST, hWnd);
             AddTooltip(ID_MOUSE, hWnd);
             AddTooltip(ID_ANALOG, hWnd);
             AddTooltip(ID_IGNORE, hWnd);
@@ -1586,7 +1624,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                         return 1;
                 }
                 break;
-            } else if (n->hdr.idFrom == IDC_LIST) {
+            } else if (n->hdr.idFrom == IDC_BINDINGS_LIST) {
                 static int NeedUpdate = 0;
                 if (n->hdr.code == LVN_KEYDOWN) {
                     NMLVKEYDOWN *key = (NMLVKEYDOWN *)n;
@@ -1606,6 +1644,35 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (n->hdr.code == NM_CUSTOMDRAW && NeedUpdate) {
                     NeedUpdate = 0;
                     SelChanged(port, slot);
+                }
+                if (n->hdr.code == NM_RCLICK) {
+                    HMENU hMenu = CreatePopupMenu();
+                    if (!hMenu)
+                        break;
+                    MENUITEMINFOW info;
+                    wchar_t text[40];
+                    info.cbSize = sizeof(info);
+                    info.fMask = MIIM_STRING | MIIM_ID;
+                    info.dwTypeData = text;
+                    info.wID = 1;
+                    wsprintfW(text, L"Delete Selected");
+                    InsertMenuItemW(hMenu, 0, 1, &info);
+                    info.wID = 2;
+                    wsprintfW(text, L"Clear All");
+                    InsertMenuItemW(hMenu, 1, 1, &info);
+                    POINT pos;
+                    GetCursorPos(&pos);
+                    short res = TrackPopupMenuEx(hMenu, TPM_NONOTIFY | TPM_RETURNCMD, pos.x, pos.y, hWndProp, 0);
+                    DestroyMenu(hMenu);
+                    if (res == 0)
+                        break;
+                    else if (res == 1) {
+                        if (DeleteSelected(port, slot))
+                            PropSheet_Changed(hWndProp, hWnd);
+                    } else if (res == 2) {
+                        while (DeleteByIndex(port, slot, 0))
+                            PropSheet_Changed(hWndProp, hWnd);
+                    }
                 }
             }
         } break;
@@ -1650,13 +1717,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             } else if (HIWORD(wParam) == BN_CLICKED) {
                 EndBinding(hWnd);
                 int cmd = LOWORD(wParam);
-                if (cmd == ID_DELETE) {
-                    if (DeleteSelected(port, slot))
-                        PropSheet_Changed(hWndProp, hWnd);
-                } else if (cmd == ID_CLEAR) {
-                    while (DeleteByIndex(port, slot, 0))
-                        PropSheet_Changed(hWndProp, hWnd);
-                } else if (cmd == ID_BIG_MOTOR || cmd == ID_SMALL_MOTOR) {
+                if (cmd == ID_BIG_MOTOR || cmd == ID_SMALL_MOTOR) {
                     int i = (int)SendMessage(GetDlgItem(hWnd, IDC_FORCEFEEDBACK), CB_GETCURSEL, 0, 0);
                     if (i >= 0) {
                         unsigned int index = (unsigned int)SendMessage(GetDlgItem(hWnd, IDC_FORCEFEEDBACK), CB_GETITEMDATA, i, 0);
@@ -2037,7 +2098,11 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 c.cx = 120;
                 c.pszText = L"Type";
                 ListView_InsertColumn(hWndList, 1, &c);
-                c.cx = 70;
+                if (config.multitap[0] || config.multitap[1]) {
+                    c.cx = 84;
+                } else {
+                    c.cx = 101;
+                }
                 c.pszText = L"Bindings";
                 ListView_InsertColumn(hWndList, 2, &c);
                 selected = 0;
@@ -2081,7 +2146,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_MULTIPLE_BINDING, hWnd);
             AddTooltip(IDC_PAD_LIST, hWnd);
             AddTooltip(IDC_PAD_TYPE, hWnd);
-            AddTooltip(ID_TEST, hWnd);
+            AddTooltip(IDC_DIAG_LIST, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
 
             if (config.keyboardApi < 0 || config.keyboardApi > 3)
@@ -2148,14 +2213,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     }
                 }
                 break;
-            }
-
-            else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == ID_TEST) {
-                Diagnostics(hWnd);
-                RefreshEnabledDevices();
-            } else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == ID_REFRESH) {
-                RefreshEnabledDevicesAndDisplay(1, hWnd, 1);
-                UpdatePadList(hWnd);
             } else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_ANALOG_START1) {
                 int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
                 int port, slot;
@@ -2191,6 +2248,11 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 
                 if (mtap != config.multitap[0] + 2 * config.multitap[1]) {
                     UpdatePadPages();
+                    if (config.multitap[0] || config.multitap[1]) {
+                        ListView_SetColumnWidth(hWndList, 2, 84);
+                    } else {
+                        ListView_SetColumnWidth(hWndList, 2, 101);
+                    }
                 }
                 RefreshEnabledDevicesAndDisplay(0, hWnd, 1);
                 UpdatePadList(hWnd);
@@ -2219,8 +2281,38 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                         SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
                         return 1;
                 }
-            } else if (n->hdr.idFrom == IDC_LIST && n->hdr.code == NM_DBLCLK) {
-                Diagnostics(hWnd);
+            } else if (n->hdr.idFrom == IDC_DIAG_LIST) {
+                if (n->hdr.code == NM_DBLCLK) {
+                    Diagnostics(hWnd);
+                } else if (n->hdr.code == NM_RCLICK) {
+                    HMENU hMenu = CreatePopupMenu();
+                    if (!hMenu)
+                        break;
+                    MENUITEMINFOW info;
+                    wchar_t text[40];
+                    info.cbSize = sizeof(info);
+                    info.fMask = MIIM_STRING | MIIM_ID;
+                    info.dwTypeData = text;
+                    info.wID = 1;
+                    wsprintfW(text, L"Test Device");
+                    InsertMenuItemW(hMenu, 0, 1, &info);
+                    info.wID = 2;
+                    wsprintfW(text, L"Refresh");
+                    InsertMenuItemW(hMenu, 1, 1, &info);
+                    POINT pos;
+                    GetCursorPos(&pos);
+                    short res = TrackPopupMenuEx(hMenu, TPM_NONOTIFY | TPM_RETURNCMD, pos.x, pos.y, hWndProp, 0);
+                    DestroyMenu(hMenu);
+                    if (res == 0)
+                        break;
+                    else if (res == 1) {
+                        Diagnostics(hWnd);
+                        RefreshEnabledDevices();
+                    } else if (res == 2) {
+                        RefreshEnabledDevicesAndDisplay(1, hWnd, 1);
+                        UpdatePadList(hWnd);
+                    }
+                }
             } else if (n->hdr.idFrom == IDC_PAD_LIST) {
                 if (n->hdr.code == LVN_ITEMCHANGED) {
                     UpdatePadList(hWnd);
@@ -2243,7 +2335,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                         for (port2 = 1; port2 >= 0; port2--) {
                             for (slot2 = 3; slot2 >= 0; slot2--) {
                                 padtype2 = config.padConfigs[port2][slot2].type;
-                                wchar_t text[40];
+                                wchar_t text[60];
                                 wchar_t pad[40];
                                 if (IndividualPadtypes == 0) {
                                     if (!GetPadString(pad, port2, slot2))
