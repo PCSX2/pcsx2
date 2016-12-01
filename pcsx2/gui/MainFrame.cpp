@@ -232,7 +232,9 @@ void MainEmuFrame::ConnectMenus()
 
 	// Misc
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
+#if defined(__unix__)
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole_Stdio, this, MenuId_Console_Stdio);
+#endif
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowAboutBox, this, MenuId_About);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ChangeLang, this, MenuId_ChangeLang);
 
@@ -324,7 +326,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_SaveStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Save01 ) )
 
 	, m_MenuItem_Console( *new wxMenuItem( &m_menuMisc, MenuId_Console, _("&Show Console"), wxEmptyString, wxITEM_CHECK ) )
+#if defined(__unix__)
 	, m_MenuItem_Console_Stdio( *new wxMenuItem( &m_menuMisc, MenuId_Console_Stdio, _("&Console to Stdio"), wxEmptyString, wxITEM_CHECK ) )
+#endif
 
 {
 	m_RestartEmuOnDelete = false;
@@ -452,6 +456,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	wxMenu& isoRecents( wxGetApp().GetRecentIsoMenu() );
 
 	//m_menuCDVD.AppendSeparator();
+	// FIXME: VS2015 thinks there's a memory issue here and there probably is one.
+	// The submenu is owned by a unique_ptr, but any menu that is attached to a
+	// menubar or another menu will be deleted by its parent.
 	m_menuCDVD.Append( MenuId_IsoSelector,	_("Iso &Selector"), &isoRecents );
 	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 

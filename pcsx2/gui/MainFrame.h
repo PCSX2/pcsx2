@@ -116,7 +116,9 @@ protected:
 	wxMenu&			m_SaveStatesSubmenu;
 
 	wxMenuItem&		m_MenuItem_Console;
+#if defined(__unix__)
 	wxMenuItem&		m_MenuItem_Console_Stdio;
+#endif
 
 	PerPluginMenuInfo	m_PluginMenuPacks[PluginId_Count];
 
