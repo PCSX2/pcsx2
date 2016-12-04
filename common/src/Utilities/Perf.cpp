@@ -76,6 +76,11 @@ void Info::Print(FILE *fp)
 InfoVector::InfoVector(const char *prefix)
 {
     strncpy(m_prefix, prefix, sizeof(m_prefix));
+#ifdef ENABLE_VTUNE
+    m_vtune_id = iJIT_GetNewMethodID();
+#else
+    m_vtune_id = 0;
+#endif
 }
 
 void InfoVector::print(FILE *fp)
@@ -90,18 +95,16 @@ void InfoVector::map(uptr x86, u32 size, const char *symbol)
 // Dispatchers are on a page and must always be kept.
 // Recompilers are much bigger (TODO check VIF) and are only
 // useful when MERGE_BLOCK_RESULT is defined
-
-#ifdef MERGE_BLOCK_RESULT
-    m_v.emplace_back(x86, size, symbol);
+#if defined(ENABLE_VTUNE) || !defined(MERGE_BLOCK_RESULT)
+    u32 max_code_size = 16 * _1kb;
 #else
-    if (size < 8 * _1kb)
-        m_v.emplace_back(x86, size, symbol);
+    u32 max_code_size = _1gb;
 #endif
 
+    if (size < max_code_size) {
+        m_v.emplace_back(x86, size, symbol);
+
 #ifdef ENABLE_VTUNE
-    // mapping the full recompiler will blow up VTUNE
-    if (size < _16kb) {
-        fprintf(stderr, "map %s: %p size %d\n", symbol, (void *)x86, size);
         std::string name = std::string(symbol);
 
         iJIT_Method_Load ml;
@@ -114,8 +117,10 @@ void InfoVector::map(uptr x86, u32 size, const char *symbol)
         ml.method_size = size;
 
         iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
-    }
+
+//fprintf(stderr, "mapF %s: %p size %dKB\n", ml.method_name, ml.method_load_address, ml.method_size / 1024u);
 #endif
+    }
 }
 
 void InfoVector::map(uptr x86, u32 size, u32 pc)
@@ -125,19 +130,24 @@ void InfoVector::map(uptr x86, u32 size, u32 pc)
 #endif
 
 #ifdef ENABLE_VTUNE
-    std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
-    //fprintf(stderr, "map %s: %p size %d\n", name.c_str(), (void*)x86, size);
-
-    iJIT_Method_Load ml;
+    iJIT_Method_Load_V2 ml;
 
     memset(&ml, 0, sizeof(ml));
 
+#ifdef MERGE_BLOCK_RESULT
+    ml.method_id = m_vtune_id;
+    ml.method_name = m_prefix;
+#else
+    std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
     ml.method_id = iJIT_GetNewMethodID();
     ml.method_name = (char *)name.c_str();
+#endif
     ml.method_load_address = (void *)x86;
     ml.method_size = size;
 
-    iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
+    iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED_V2, &ml);
+
+//fprintf(stderr, "mapB %s: %p size %d\n", ml.method_name, ml.method_load_address, ml.method_size);
 #endif
 }
 
