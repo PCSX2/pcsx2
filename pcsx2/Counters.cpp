@@ -450,10 +450,8 @@ static __fi void VSyncStart(u32 sCycle)
 	if (!CSRreg.VSINT)
 	{
 		CSRreg.VSINT = true;
-		if (!(GSIMR&0x800))
-		{
+		if (!GSIMR.VSMSK)
 			gsIrq();
-		}
 	}
 
 	hwIntcIrq(INTC_VBLANK_S);
@@ -532,10 +530,8 @@ __fi void rcntUpdate_hScanline()
 		if (!CSRreg.HSINT)
 		{
 			CSRreg.HSINT = true;
-			if (!(GSIMR&0x400))
-			{
+			if (!GSIMR.HSMSK)
 				gsIrq();
-			}
 		}
 		if (gates) rcntEndGate(false, hsyncCounter.sCycle);
 		if (psxhblankgate) psxCheckEndGate16(0);

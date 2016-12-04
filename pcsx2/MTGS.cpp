@@ -133,7 +133,7 @@ void SysMtgsThread::PostVsyncStart()
 
 	u32* remainder = (u32*)GetDataPacketPtr();
 	remainder[0] = GSCSRr;
-	remainder[1] = GSIMR;
+	remainder[1] = GSIMR._u32;
 	(GSRegSIGBLID&)remainder[2] = GSSIGLBLID;
 	m_packet_writepos = (m_packet_writepos + 1) & RingBufferMask;
 
