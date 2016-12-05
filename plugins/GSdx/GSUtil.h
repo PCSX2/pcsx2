@@ -50,6 +50,7 @@ public:
 	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
 
 	static bool CheckSSE();
+	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 
 #ifdef ENABLE_OPENCL
 	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);

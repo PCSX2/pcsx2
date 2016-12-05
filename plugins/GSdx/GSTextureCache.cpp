@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSTextureCache.h"
+#include "GSUtil.h"
 
 bool s_IS_OPENGL = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
@@ -51,7 +52,9 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
-	m_crc_hack_level = static_cast<CRCHackLevel>(theApp.GetConfigI("crc_hack_level"));
+	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
+	if (m_crc_hack_level == CRCHackLevel::Automatic)
+		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
