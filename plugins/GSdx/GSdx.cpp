@@ -218,11 +218,11 @@ void GSdxApp::Init()
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
 
-	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
-	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
-	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::None , "None", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL Recommended"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Full, "Full", "Safest"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended low-end PC"));
@@ -292,7 +292,7 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["clut_load_before_draw"]                      = "0";
-	m_default_configuration["crc_hack_level"]                             = "3";
+	m_default_configuration["crc_hack_level"]                             = to_string(static_cast<int8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";

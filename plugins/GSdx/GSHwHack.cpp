@@ -23,11 +23,12 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-int s_crc_hack_level = 3;
+CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 
 // hacks
-#define Aggresive (s_crc_hack_level > 3)
-#define Dx_only   (s_crc_hack_level > 2)
+#define Aggresive  (s_crc_hack_level >= CRCHackLevel::Aggressive)
+#define Dx_only    (s_crc_hack_level >= CRCHackLevel::Full)
+#define Dx_and_OGL (s_crc_hack_level >= CRCHackLevel::Partial)
 
 CRC::Region g_crc_region = CRC::NoRegion;
 
@@ -2432,11 +2433,11 @@ void GSState::SetupCrcHack()
 {
 	GetSkipCount lut[CRC::TitleCount];
 
-	s_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	s_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
 
 	memset(lut, 0, sizeof(lut));
 
-	if (s_crc_hack_level > 1) {
+	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::AlpineRacer3] = GSC_AlpineRacer3;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;

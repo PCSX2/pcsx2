@@ -299,7 +299,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// Gregory: code is not yet ready so let's only enable it when
 	// CRC is below the FULL level
-	if (m_texture_shuffle && (m_crc_hack_level < 3)) {
+	if (m_texture_shuffle && (m_crc_hack_level < CRCHackLevel::Full)) {
 		ps_sel.shuffle = 1;
 		ps_sel.fmt = 0;
 
