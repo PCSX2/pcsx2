@@ -76,6 +76,9 @@ for ARG in "$@"; do
         --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
+        --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
+        --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
@@ -108,6 +111,9 @@ for ARG in "$@"; do
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
             echo "--intel         : Build with ICC (Intel compiler)"
+            echo "--lto           : Use Link Time Optimization"
+            echo "--pgo-generate  : Executable will generate profiling information when run"
+            echo "--pgo-optimize  : Use previously generated profiling information"
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"

@@ -296,6 +296,8 @@ endif()
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
 option(USE_LTO "Enable LTO optimization (will likely break the build)")
+option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
+option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
@@ -349,6 +351,18 @@ else()
     set(LTO_FLAGS "")
 endif()
 
+set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+
+if (USE_PGO_GENERATE)
+    message(WARNING "PGO has not been thoroughly tested. A bug is not impossible.")
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-generate")
+endif()
+
+if(USE_PGO_OPTIMIZE)
+    message(WARNING "PGO has not been thoroughly tested. A bug is not impossible.")
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-use")
+endif()
+
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     set(DEBUG_FLAG "${DBG} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -D_DEBUG")
 elseif(CMAKE_BUILD_TYPE MATCHES "Devel")
@@ -386,7 +400,7 @@ else()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PLUGIN_SUPPORT}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 
