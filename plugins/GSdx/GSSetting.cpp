@@ -46,10 +46,14 @@ const char* dialog_message(int ID, bool* updateText) {
 #endif
 		case IDC_CRC_LEVEL:
 			return "Control the number of Auto-CRC hacks applied to games.\n\n"
+				"Automatic:\nAutomatically sets the recommended CRC hack level based on the selected renderer.\n"
+				"This is the recommended setting.\n"
+				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D.\n\n"
 				"None:\nRemove nearly all CRC hacks (debug only).\n\n"
 				"Minimum:\nEnable a couple of CRC hacks (23).\n\n"
-				"Partial:\nEnable most of the CRC hacks.\nRecommended OpenGL setting (Accurate/depth options may be required).\n\n"
-				"Full:\nEnable all CRC hacks.\nRecommended Direct3D setting.\n\n"
+				"Partial:\nEnable most of the CRC hacks.\n"
+				"For an optimal experience with OpenGL, Blending Unit Accuracy/Depth Emulation may need to be enabled.\n\n"
+				"Full:\nEnable all CRC hacks.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer.\n"
 				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
 				"Works as a speedhack for: Steambot Chronicles.";

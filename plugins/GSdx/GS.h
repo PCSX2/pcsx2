@@ -1432,8 +1432,9 @@ enum class TriFiltering : uint8
 	Forced,
 };
 
-enum class CRCHackLevel : uint8
+enum class CRCHackLevel : int8
 {
+	Automatic = -1,
 	None,
 	Minimum,
 	Partial,

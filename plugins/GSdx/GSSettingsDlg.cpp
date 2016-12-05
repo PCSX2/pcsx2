@@ -334,19 +334,9 @@ void GSSettingsDlg::UpdateRenderers()
 	}
 	else
 	{
-		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-
-		if (ini_renderer == GSRendererType::Undefined)
-		{
+		renderer_setting = GSRendererType(theApp.GetConfigI("Renderer"));
+		if (renderer_setting == GSRendererType::Undefined)
 			renderer_setting = GSUtil::GetBestRenderer();
-
-			if(renderer_setting == GSRendererType::OGL_HW)
-				theApp.SetConfig("crc_hack_level", static_cast<int>(CRCHackLevel::Partial));
-		}
-		else
-		{
-			renderer_setting = ini_renderer;
-		}
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
