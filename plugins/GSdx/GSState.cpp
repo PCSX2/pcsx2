@@ -23,8 +23,6 @@
 #include "GSState.h"
 #include "GSdx.h"
 
-extern CRCHackLevel g_crc_hack_level;
-
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
 int GSState::s_n = 0;
