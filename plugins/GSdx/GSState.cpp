@@ -423,7 +423,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
 	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
 	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (videomode == GSVideoMode::NTSC && height > 448 && width < 640 && m_NTSC_Saturation)
+	if (m_NTSC_Saturation && isinterlaced() && videomode == GSVideoMode::NTSC && height > 448 && width < 640)
 		height = 448;
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
