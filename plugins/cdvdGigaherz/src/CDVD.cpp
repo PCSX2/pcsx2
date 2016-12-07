@@ -58,7 +58,7 @@ char LibName[] = "cdvdGigaherz "
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 10;
+const unsigned char build = 11;
 
 EXPORT char *CALLBACK PS2EgetLibName()
 {
