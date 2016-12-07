@@ -86,16 +86,8 @@ const std::vector<toc_entry> &IOCtlSrc::ReadTOC() const
 
 bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8 *buffer) const
 {
-    std::lock_guard<std::mutex> guard(m_lock);
-
-    if (lseek(m_device, sector * 2048ULL, SEEK_SET) == -1) {
-        fprintf(stderr, " * CDVD lseek sectors %u failed: %s\n",
-                sector, strerror(errno));
-        return false;
-    }
-
     const ssize_t bytes_to_read = 2048 * count;
-    ssize_t bytes_read = read(m_device, buffer, bytes_to_read);
+    ssize_t bytes_read = pread(m_device, buffer, bytes_to_read, sector * 2048ULL);
     if (bytes_read == bytes_to_read)
         return true;
 

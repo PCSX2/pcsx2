@@ -63,6 +63,7 @@ class IOCtlSrc
 #if defined(_WIN32)
     HANDLE m_device = INVALID_HANDLE_VALUE;
     std::wstring m_filename;
+    mutable std::mutex m_lock;
 #else
     int m_device = -1;
     std::string m_filename;
@@ -72,7 +73,6 @@ class IOCtlSrc
     u32 m_sectors = 0;
     u32 m_layer_break = 0;
     std::vector<toc_entry> m_toc;
-    mutable std::mutex m_lock;
 
     bool ReadDVDInfo();
     bool ReadCDInfo();
