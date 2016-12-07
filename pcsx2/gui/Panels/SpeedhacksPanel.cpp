@@ -127,7 +127,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	right->SetMinWidth( 350 );
 
 	m_button_Defaults = new wxButton( right, wxID_DEFAULT, _("Restore Defaults") );
-	pxSetToolTip( m_button_Defaults, _("Resets all speedhack options to their defaults, which consequently turns them all OFF.") );
 
 	// ------------------------------------------------------------------------
 	// EE Cyclerate Hack Section:
