@@ -751,11 +751,10 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 Panels::PluginSelectorPanel::EnumThread::EnumThread( PluginSelectorPanel& master )
 	: pxThread()
-	, Results( master.FileCount(), L"PluginSelectorResults" )
+	, Results( master.FileCount() )
 	, m_master( master )
 	, m_hourglass( Cursor_KindaBusy )
 {
-	Results.MatchLengthToAllocatedSize();
 }
 
 void Panels::PluginSelectorPanel::EnumThread::DoNextPlugin( int curidx )
