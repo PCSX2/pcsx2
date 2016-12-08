@@ -536,6 +536,24 @@ void BC0TL() {
 }
 
 void ERET() {
+#ifdef ENABLE_VTUNE
+	// Allow to stop vtune in a predictable way to compare runs
+	// Of course, the limit will depend on the game.
+	const u32 million = 1000 * 1000;
+	static u32 vtune = 0;
+	vtune++;
+
+	// quick_exit vs exit: quick_exit won't call static storage destructor (OS will manage). It helps
+	// avoiding the race condition between threads destruction.
+	if (vtune > 30 * million) {
+		Console.WriteLn("VTUNE: quick_exit");
+		std::quick_exit(EXIT_SUCCESS);
+	} else if (!(vtune % million)) {
+		Console.WriteLn("VTUNE: ERET was called %uM times", vtune/million);
+	}
+
+#endif
+
 	if (cpuRegs.CP0.n.Status.b.ERL) {
 		cpuRegs.pc = cpuRegs.CP0.n.ErrorEPC;
 		cpuRegs.CP0.n.Status.b.ERL = 0;
