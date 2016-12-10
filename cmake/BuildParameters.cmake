@@ -354,7 +354,9 @@ else()
     set(LTO_FLAGS "")
 endif()
 
-set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
+    set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+endif()
 
 if (USE_PGO_GENERATE)
     message(WARNING "PGO has not been thoroughly tested. A bug is not impossible.")
