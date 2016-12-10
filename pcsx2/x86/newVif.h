@@ -78,18 +78,15 @@ struct nVifStruct {
 	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
 	__aligned16 u8			buffer[256*16];
 	u32						bSize;			// Size of 'buffer'
-	u32						bPtr;
-
-	uint					recReserveSizeMB;	// reserve size, in megabytes.
-	RecompiledCodeReserve*	recReserve;
-	u8*						recWritePtr;		// current write pos into the reserve
-
-	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
-	int						numBlocks;		// # of Blocks Recompiled
 
 	// VIF0 or VIF1 - provided for debugging helpfulness only, and is generally unused.
 	// (templates are used for most or all VIF indexing)
 	u32						idx;
+
+	RecompiledCodeReserve*	recReserve;
+	u8*						recWritePtr;		// current write pos into the reserve
+
+	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
 
 	nVifStruct();
 };

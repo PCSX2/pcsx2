@@ -26,7 +26,7 @@ void dVifReserve(int idx) {
 	if(!nVif[idx].recReserve)
 		nVif[idx].recReserve = new RecompiledCodeReserve(pxsFmt(L"VIF%u Unpack Recompiler Cache", idx), _8mb);
 
-	nVif[idx].recReserve->Reserve( nVif[idx].recReserveSizeMB * _1mb, idx ? HostMemoryMap::VIF1rec : HostMemoryMap::VIF0rec );
+	nVif[idx].recReserve->Reserve( 8 * _1mb, idx ? HostMemoryMap::VIF1rec : HostMemoryMap::VIF0rec );
 }
 
 void dVifReset(int idx) {
@@ -39,13 +39,10 @@ void dVifReset(int idx) {
 
 	nVif[idx].recReserve->Reset();
 
-	nVif[idx].numBlocks   =  0;
 	nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
-	//memset(nVif[idx].recWritePtr, 0xcc, nVif[idx].recReserveSizeMB * _1mb);
 }
 
 void dVifClose(int idx) {
-	nVif[idx].numBlocks = 0;
 	if (nVif[idx].recReserve)
 		nVif[idx].recReserve->Reset();
 
@@ -341,7 +338,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	// values here which cause false recblock cache misses.
 	v.block.mask	= doMask ? vifRegs.mask : 0;
 
-	//DevCon.WriteLn("nVif%d: Recompiled Block! [%d]", idx, nVif[idx].numBlocks++);
+	//DevCon.WriteLn("nVif%d: Recompiled Block!", idx);
 	//DevCon.WriteLn(L"[num=% 3d][upkType=0x%02x][scl=%d][cl=%d][wl=%d][mode=%d][m=%d][mask=%s]",
 	//	v.Block.num, v.Block.upkType, v.Block.scl, v.Block.cl, v.Block.wl, v.Block.mode,
 	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", v.Block.mask ).c_str() : L"ignored"
