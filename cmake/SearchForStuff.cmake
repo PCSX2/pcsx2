@@ -12,6 +12,7 @@ endif()
 find_package(LibLZMA)
 find_package(OpenGL)
 find_package(PNG)
+find_package(Vtune)
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -154,6 +155,10 @@ endif()
 
 if(SDL_FOUND AND NOT SDL2_API)
 	include_directories(${SDL_INCLUDE_DIR})
+endif()
+
+if(USE_VTUNE AND VTUNE_FOUND)
+    include_directories(${VTUNE_INCLUDE_DIRS})
 endif()
 
 if(wxWidgets_FOUND)

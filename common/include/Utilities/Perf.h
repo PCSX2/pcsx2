@@ -36,6 +36,7 @@ class InfoVector
 {
     std::vector<Info> m_v;
     char m_prefix[20];
+    unsigned int m_vtune_id;
 
 public:
     InfoVector(const char *prefix);

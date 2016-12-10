@@ -204,13 +204,7 @@ if(LIBLZMA_FOUND)
 endif()
 
 if(USE_VTUNE)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_VTUNE)
-    include_directories("$ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/include")
-	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-		set(GSdxFinalLibs ${GSdxFinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib32/libjitprofiling.a)
-	else()
-		set(GSdxFinalLibs ${GSdxFinalLibs} $ENV{VTUNE_AMPLIFIER_XE_2016_DIR}/lib64/libjitprofiling.a)
-	endif()
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL

@@ -215,63 +215,6 @@ protected:
     virtual void ReprotectCommittedBlocks(const PageProtectionMode &newmode);
 };
 
-// --------------------------------------------------------------------------------------
-//  BaseVmReserveListener
-// --------------------------------------------------------------------------------------
-class BaseVmReserveListener : public VirtualMemoryReserve
-{
-    DeclareNoncopyableObject(BaseVmReserveListener);
-
-    typedef VirtualMemoryReserve _parent;
-
-protected:
-    EventListenerHelper_PageFault<BaseVmReserveListener> m_pagefault_listener;
-
-    // Incremental size by which the buffer grows (in pages)
-    uptr m_blocksize;
-
-public:
-    BaseVmReserveListener(const wxString &name, size_t size = 0);
-    virtual ~BaseVmReserveListener() throw() {}
-
-    operator void *() { return m_baseptr; }
-    operator const void *() const { return m_baseptr; }
-
-    operator u8 *() { return (u8 *)m_baseptr; }
-    operator const u8 *() const { return (u8 *)m_baseptr; }
-
-    using _parent::operator[];
-
-    void OnPageFaultEvent(const PageFaultInfo &info, bool &handled);
-
-    virtual uptr SetBlockSize(uptr bytes)
-    {
-        m_blocksize = (bytes + __pagesize - 1) / __pagesize;
-        return m_blocksize * __pagesize;
-    }
-
-    virtual void Reset()
-    {
-        _parent::Reset();
-    }
-
-protected:
-    // This function is called from OnPageFaultEvent after the address has been translated
-    // and confirmed to apply to this reserved area in question.  OnPageFaultEvent contains
-    // a try/catch exception handler, which ensures "reasonable" error response behavior if
-    // this function throws exceptions.
-    //
-    // Important: This method is called from the context of an exception/signal handler.  On
-    // Windows this isn't a big deal (most operations are ok).  On Linux, however, logging
-    // and other facilities are probably not a good idea.
-    virtual void DoCommitAndProtect(uptr offset) = 0;
-
-    // This function is called for every committed block.
-    virtual void OnCommittedBlock(void *block) = 0;
-
-    virtual void CommitBlocks(uptr page, uint blocks);
-};
-
 #ifdef __POSIX__
 
 #define PCSX2_PAGEFAULT_PROTECT

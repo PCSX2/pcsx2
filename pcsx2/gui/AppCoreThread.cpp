@@ -353,6 +353,12 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	else if( !g_Conf->EnableGameFixes )
 		fixup.Gamefixes.DisableAll();
 
+	if( overrides.ProfilingMode )
+	{
+		fixup.GS.FrameLimitEnable = false;
+		fixup.GS.VsyncEnable = false;
+	}
+
 	wxString gameCRC;
 	wxString gameSerial;
 	wxString gamePatch;

@@ -324,6 +324,7 @@ public:
 	wxFileName		VmSettingsFile;
 
 	bool			DisableSpeedhacks;
+	bool			ProfilingMode;
 
 	// Note that gamefixes in this array should only be honored if the
 	// "HasCustomGamefixes" boolean is also enabled.
@@ -338,6 +339,7 @@ public:
 		DisableSpeedhacks		= false;
 		ApplyCustomGamefixes	= false;
 		GsWindowMode			= GsWinMode_Unspecified;
+		ProfilingMode			= false;
 	}
 	
 	// Returns TRUE if either speedhacks or gamefixes are being overridden.
