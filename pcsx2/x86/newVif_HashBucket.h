@@ -16,20 +16,6 @@
 #include "x86emitter/x86_intrin.h"
 #pragma once
 
-// Create some typecast operators for SIMD operations.  For some reason MSVC needs a
-// handle/reference typecast to avoid error.  GCC (and presumably other compilers)
-// generate an error if the handle/ref is used.  Honestly neither makes sense, since
-// both typecasts should be perfectly valid >_<.  --air
-#ifdef _MSC_VER
-#	define cast_m128		__m128&
-#	define cast_m128i		__m128i&
-#	define cast_m128d		__m128d&
-#else // defined(__GNUC__)
-#	define cast_m128		__m128
-#	define cast_m128i		__m128i
-#	define cast_m128d		__m128d
-#endif
-
 template< typename T >
 struct SizeChain
 {
@@ -73,7 +59,7 @@ public:
 			// ptest tmp tmp (zf will be set if tmp == 0, i.e equality)
 
 			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
-			int result = _mm_movemask_ps( (cast_m128) _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) );
+			int result = _mm_movemask_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) ) );
 			if( (result&0x7) == 0x7 ) return (T*)chainpos;
 		}
 		return NULL;
