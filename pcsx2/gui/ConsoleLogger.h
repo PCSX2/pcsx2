@@ -108,6 +108,7 @@ protected:
 
 		void SetFont( const wxFont& font );
 		void SetFont( int fontsize );
+		u32 GetRGBA( const ConsoleColors color );
 
 		const wxTextAttr& operator[]( ConsoleColors coloridx ) const
 		{
@@ -184,6 +185,7 @@ public:
 	// Retrieves the current configuration options settings for this box.
 	// (settings change if the user moves the window or changes the font size)
 	const ConLogConfig& GetConfig() const { return m_conf; }
+	u32 GetRGBA( const ConsoleColors color ) { return m_ColorTable.GetRGBA( color ); }
 
 	bool Write( ConsoleColors color, const wxString& text );
 	bool Newline();
