@@ -671,7 +671,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 	}
 
-	menubar.Enable( MenuId_Sys_Shutdown, SysHasValidState() || CorePlugins.AreAnyInitialized() );
+	menubar.Enable( MenuId_Sys_Shutdown, SysHasValidState());
 }
 
 //Apply a config to the menu such that the menu reflects it properly
