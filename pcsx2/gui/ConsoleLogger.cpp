@@ -231,6 +231,11 @@ void ConsoleLogFrame::ColorArray::SetFont( const wxFont& font )
 	//	m_table[i].SetFont( font );
 }
 
+u32 ConsoleLogFrame::ColorArray::GetRGBA( const ConsoleColors color )
+{
+	return m_table[color].GetTextColour().GetRGBA();
+}
+
 enum MenuIDs_t
 {
 	MenuId_FontSize_Small = 0x10,
