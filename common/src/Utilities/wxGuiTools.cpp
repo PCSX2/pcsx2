@@ -400,21 +400,21 @@ static bool no_break_before(const uint ch)
 
 pxTextWrapperBase &pxTextWrapperBase::Wrap(const wxWindow &win, const wxString &text, int widthMax)
 {
-    if (text.IsEmpty())
+    if (text.empty())
         return *this;
 
-    const wxChar *lastSpace = NULL;
     bool wasWrapped = false;
 
     wxString line;
-    line.Alloc(text.Length() + 12);
+    line.reserve(text.length() + 12);
 
-    const wxChar *lineStart = text.wc_str();
-    for (const wxChar *p = lineStart;; p++) {
+    wxString::const_iterator lastSpace = text.end();
+    wxString::const_iterator lineStart = text.begin();
+    for (wxString::const_iterator p = lineStart;; ++p) {
         if (IsStartOfNewLine()) {
             OnNewLine();
 
-            lastSpace = NULL;
+            lastSpace = text.end();
             lineStart = p;
 
             if (wasWrapped)
@@ -423,14 +423,13 @@ pxTextWrapperBase &pxTextWrapperBase::Wrap(const wxWindow &win, const wxString &
                 line.clear();
         }
 
-        if (*p == L'\n' || *p == L'\0') {
+        if (p == text.end() || *p == L'\n') {
             wasWrapped = false;
             DoOutputLine(line);
 
-            if (*p == L'\0')
+            if (p == text.end())
                 break;
-        } else // not EOL
-        {
+        } else { // not EOL
             if (is_cjk_char(*p)) {
                 if (!no_break_before(*p)) {
                     if (p == lineStart || !no_break_after(*(p - 1)))
@@ -441,7 +440,7 @@ pxTextWrapperBase &pxTextWrapperBase::Wrap(const wxWindow &win, const wxString &
 
             line += *p;
 
-            if (widthMax >= 0 && lastSpace) {
+            if (widthMax >= 0 && lastSpace != text.end()) {
                 int width;
                 win.GetTextExtent(line, &width, NULL);
 
