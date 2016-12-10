@@ -22,6 +22,14 @@
 #include "MTVU.h"
 #include "Utilities/Perf.h"
 
+static void recReset(int idx) {
+	nVif[idx].vifBlocks->clear();
+
+	nVif[idx].recReserve->Reset();
+
+	nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
+}
+
 void dVifReserve(int idx) {
 	if(!nVif[idx].recReserve)
 		nVif[idx].recReserve = new RecompiledCodeReserve(pxsFmt(L"VIF%u Unpack Recompiler Cache", idx), _8mb);
@@ -34,12 +42,8 @@ void dVifReset(int idx) {
 
 	if(!nVif[idx].vifBlocks)
 		nVif[idx].vifBlocks = new HashBucket<_tParams>();
-	else
-		nVif[idx].vifBlocks->clear();
 
-	nVif[idx].recReserve->Reset();
-
-	nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
+	recReset(idx);
 }
 
 void dVifClose(int idx) {
@@ -198,6 +202,7 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 	}
 
 }
+
 void VifUnpackSSE_Dynarec::CompileRoutine() {
 	const int  upkNum	 = vB.upkType & 0xf;
 	const u8&  vift		 = nVifT[upkNum];
@@ -283,35 +288,47 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	return NULL; // Fall Back to Interpreters which have wrap-around logic
 }
 
-// [TODO] :  Finish implementing support for VIF's growable recBlocks buffer.  Currently
-//    it clears the buffer only.
-static __fi void dVifRecLimit(int idx) {
-	if (nVif[idx].recWritePtr > (nVif[idx].recReserve->GetPtrEnd() - _256kb)) {
-		DevCon.WriteLn(L"nVif Recompiler Cache Reset! [%ls > %ls]",
-			pxsPtr(nVif[idx].recWritePtr), pxsPtr(nVif[idx].recReserve->GetPtrEnd())
-		);
-		nVif[idx].recReserve->Reset();
-		nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
+_vifT static __ri void dVifExecuteUnpack(const u8* data, uptr x86, bool isFill)
+{
+	VIFregisters& vifRegs = MTVU_VifXRegs;
+
+	if (u8* dest = dVifsetVUptr<idx>(vifRegs.cycle.cl, vifRegs.cycle.wl, isFill)) {
+		//DevCon.WriteLn("Running Recompiled Block!");
+		((nVifrecCall)x86)((uptr)dest, (uptr)data);
+	} else {
+		VIF_LOG("Running Interpreter Block");
+		_nVifUnpack(idx, data, vifRegs.mode, isFill);
 	}
 }
 
-_vifT static __ri bool dVifExecuteUnpack(const u8* data, bool isFill)
-{
-	nVifStruct&   v		  = nVif[idx];
-	VIFregisters& vifRegs = MTVU_VifXRegs;
+_vifT __fi uptr dVifCompile(nVifBlock& key) {
+	nVifStruct& v     = nVif[idx];
+	nVifBlock*  block = v.vifBlocks->find(&key);
 
-	if (nVifBlock* b = v.vifBlocks->find(&v.block)) {
-		if (u8* dest = dVifsetVUptr<idx>(vifRegs.cycle.cl, vifRegs.cycle.wl, isFill)) {
-			//DevCon.WriteLn("Running Recompiled Block!");
-			((nVifrecCall)b->startPtr)((uptr)dest, (uptr)data);
-		}
-		else {
-			VIF_LOG("Running Interpreter Block");
-			_nVifUnpack(idx, data, vifRegs.mode, isFill);
-		}
-		return true;
+	//  Cache hit
+	if (likely(block != nullptr))
+		return block->startPtr;
+
+	// Check size before the compilation
+	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb)) {
+		DevCon.WriteLn(L"nVif Recompiler Cache Reset! [%ls > %ls]",
+			pxsPtr(v.recWritePtr), pxsPtr(v.recReserve->GetPtrEnd())
+		);
+		recReset(idx);
 	}
-	return false;
+
+	// Compile the block now
+	xSetPtr(v.recWritePtr);
+
+	key.startPtr = (uptr)xGetAlignedCallTarget();
+	v.vifBlocks->add(key);
+
+	VifUnpackSSE_Dynarec(v, key).CompileRoutine();
+
+	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, v.block.upkType /* FIXME ideally a key*/);
+	v.recWritePtr = xGetPtr();
+
+	return key.startPtr;
 }
 
 _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
@@ -344,21 +361,9 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", v.Block.mask ).c_str() : L"ignored"
 	//);
 
-	if (dVifExecuteUnpack<idx>(data, isFill)) return;
+	uptr x86 = dVifCompile<idx>(v.block);
 
-	xSetPtr(v.recWritePtr);
-	v.block.startPtr = (uptr)xGetAlignedCallTarget();
-	v.vifBlocks->add(v.block);
-	VifUnpackSSE_Dynarec(v, v.block).CompileRoutine();
-
-	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, v.block.upkType /* FIXME ideally a key*/);
-	nVif[idx].recWritePtr = xGetPtr();
-
-	dVifRecLimit(idx);
-
-	// Run the block we just compiled.  Various conditions may force us to still use
-	// the interpreter unpacker though, so a recursive call is the safest way here...
-	dVifExecuteUnpack<idx>(data, isFill);
+	dVifExecuteUnpack<idx>(data, x86, isFill);
 }
 
 template void dVifUnpack<0>(const u8* data, bool isFill);
