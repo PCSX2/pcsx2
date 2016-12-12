@@ -473,6 +473,20 @@ GSVector4i GSState::GetFrameRect(int i)
 	return rectangle;
 }
 
+int GSState::GetFramebufferHeight()
+{
+	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
+	// Framebuffer height is 11 bits max according to GS user manual
+	const int height_limit = (1 << 11);
+	int max_height = std::max(output[0].height(), output[1].height());
+	int frame_memory_height = std::max(max_height, output[0].runion_ordered(output[1]).height() % height_limit);
+
+	if (frame_memory_height > 1024)
+		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
+
+	return frame_memory_height;
+}
+
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
