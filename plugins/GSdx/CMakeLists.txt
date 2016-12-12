@@ -228,8 +228,7 @@ endif()
 if(BUILD_REPLAY_LOADERS)
     set(Replay pcsx2_GSReplayLoader)
     set(GSdxReplayLoaderFinalSources
-        ${GSdxFinalSources}
         linux_replay.cpp
     )
-    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${LIBC_LIBRARIES}" "${GSdxFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)
