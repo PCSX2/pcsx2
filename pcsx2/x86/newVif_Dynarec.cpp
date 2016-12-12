@@ -23,7 +23,7 @@
 #include "Utilities/Perf.h"
 
 static void recReset(int idx) {
-	nVif[idx].vifBlocks->clear();
+	nVif[idx].vifBlocks.clear();
 
 	nVif[idx].recReserve->Reset();
 
@@ -40,17 +40,12 @@ void dVifReserve(int idx) {
 void dVifReset(int idx) {
 	pxAssertDev(nVif[idx].recReserve, "Dynamic VIF recompiler reserve must be created prior to VIF use or reset!");
 
-	if(!nVif[idx].vifBlocks)
-		nVif[idx].vifBlocks = new HashBucket<_tParams>();
-
 	recReset(idx);
 }
 
 void dVifClose(int idx) {
 	if (nVif[idx].recReserve)
 		nVif[idx].recReserve->Reset();
-
-	safe_delete(nVif[idx].vifBlocks);
 }
 
 void dVifRelease(int idx) {
@@ -303,7 +298,7 @@ _vifT static __ri void dVifExecuteUnpack(const u8* data, uptr x86, bool isFill)
 
 _vifT __fi uptr dVifCompile(nVifBlock& key) {
 	nVifStruct& v     = nVif[idx];
-	nVifBlock*  block = v.vifBlocks->find(&key);
+	nVifBlock*  block = v.vifBlocks.find(&key);
 
 	//  Cache hit
 	if (likely(block != nullptr))
@@ -321,7 +316,7 @@ _vifT __fi uptr dVifCompile(nVifBlock& key) {
 	xSetPtr(v.recWritePtr);
 
 	key.startPtr = (uptr)xGetAlignedCallTarget();
-	v.vifBlocks->add(key);
+	v.vifBlocks.add(key);
 
 	VifUnpackSSE_Dynarec(v, key).CompileRoutine();
 

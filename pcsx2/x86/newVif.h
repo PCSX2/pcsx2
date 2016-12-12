@@ -86,7 +86,7 @@ struct nVifStruct {
 	RecompiledCodeReserve*	recReserve;
 	u8*						recWritePtr;		// current write pos into the reserve
 
-	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
+	HashBucket<_tParams>	vifBlocks;		// Vif Blocks
 
 	nVifStruct();
 };

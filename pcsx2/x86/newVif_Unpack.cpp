@@ -73,7 +73,6 @@ static const __aligned16 Fnptr_VifUnpackLoop UnpackLoopTable[2][2][2] = {
 
 nVifStruct::nVifStruct()
 {
-	vifBlocks	=  NULL;
 }
 
 void reserveNewVif(int idx)
