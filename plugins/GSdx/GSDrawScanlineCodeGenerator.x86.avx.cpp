@@ -654,8 +654,8 @@ void GSDrawScanlineCodeGenerator::TestZ_AVX(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zpsm)
 		{
-			vpslld(xmm1, m_sel.zpsm * 8);
-			vpsrld(xmm1, m_sel.zpsm * 8);
+			vpslld(xmm1, static_cast<uint8>(m_sel.zpsm * 8));
+			vpsrld(xmm1, static_cast<uint8>(m_sel.zpsm * 8));
 		}
 
 		if(m_sel.zoverflow || m_sel.zpsm == 0)
@@ -795,7 +795,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture_AVX()
 
 	vpunpcklwd(xmm4, xmm2, xmm0);
 	vpunpckhwd(xmm2, xmm2, xmm0);
-	vpslld(xmm2, m_sel.tw + 3);
+	vpslld(xmm2, static_cast<uint8>(m_sel.tw + 3));
 
 	// xmm0 = 0
 	// xmm2 = y0
@@ -811,7 +811,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture_AVX()
 
 		vpunpcklwd(xmm6, xmm3, xmm0);
 		vpunpckhwd(xmm3, xmm3, xmm0);
-		vpslld(xmm3, m_sel.tw + 3);
+		vpslld(xmm3, static_cast<uint8>(m_sel.tw + 3));
 
 		// xmm2 = y0
 		// xmm3 = y1
@@ -1380,7 +1380,7 @@ return;
 
 	vpunpcklwd(xmm4, xmm2, xmm0);
 	vpunpckhwd(xmm2, xmm2, xmm0);
-	vpslld(xmm2, m_sel.tw + 3);
+	vpslld(xmm2, static_cast<uint8>(m_sel.tw + 3));
 
 	// xmm0 = 0
 	// xmm2 = y0
@@ -1396,7 +1396,7 @@ return;
 
 		vpunpcklwd(xmm6, xmm3, xmm0);
 		vpunpckhwd(xmm3, xmm3, xmm0);
-		vpslld(xmm3, m_sel.tw + 3);
+		vpslld(xmm3, static_cast<uint8>(m_sel.tw + 3));
 
 		// xmm2 = y0
 		// xmm3 = y1
@@ -1611,7 +1611,7 @@ return;
 
 		vpunpcklwd(xmm4, xmm2, xmm0);
 		vpunpckhwd(xmm2, xmm2, xmm0);
-		vpslld(xmm2, m_sel.tw + 3);
+		vpslld(xmm2, static_cast<uint8>(m_sel.tw + 3));
 
 		// xmm0 = 0
 		// xmm2 = y0
@@ -1627,7 +1627,7 @@ return;
 
 			vpunpcklwd(xmm6, xmm3, xmm0);
 			vpunpckhwd(xmm3, xmm3, xmm0);
-			vpslld(xmm3, m_sel.tw + 3);
+			vpslld(xmm3, static_cast<uint8>(m_sel.tw + 3));
 
 			// xmm2 = y0
 			// xmm3 = y1

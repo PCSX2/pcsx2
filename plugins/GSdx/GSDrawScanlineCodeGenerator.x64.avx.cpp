@@ -693,8 +693,8 @@ void GSDrawScanlineCodeGenerator::TestZ_AVX(const Xmm& temp1, const Xmm& temp2)
 
 		if(m_sel.zpsm)
 		{
-			vpslld(xmm1, m_sel.zpsm * 8);
-			vpsrld(xmm1, m_sel.zpsm * 8);
+			vpslld(xmm1, static_cast<uint8>(m_sel.zpsm * 8));
+			vpsrld(xmm1, static_cast<uint8>(m_sel.zpsm * 8));
 		}
 
 		if(m_sel.zoverflow || m_sel.zpsm == 0)
@@ -824,7 +824,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture_AVX()
 
 	vpunpcklwd(xmm2, xmm4, xmm0);
 	vpunpckhwd(xmm3, xmm4, xmm0);
-	vpslld(xmm3, m_sel.tw + 3);
+	vpslld(xmm3, static_cast<uint8>(m_sel.tw + 3));
 
 	// xmm0 = 0
 	// xmm2 = x0
@@ -840,7 +840,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture_AVX()
 
 		vpunpcklwd(xmm4, xmm5, xmm0);
 		vpunpckhwd(xmm5, xmm5, xmm0);
-		vpslld(xmm5, m_sel.tw + 3);
+		vpslld(xmm5, static_cast<uint8>(m_sel.tw + 3));
 
 		// xmm2 = x0
 		// xmm3 = y0
@@ -2019,7 +2019,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_AVX(int pixels, int mip_offset)
 
 	for(int i = 0; i < pixels; i++)
 	{
-		for(int j = 0; j < 4; j++)
+		for(uint8 j = 0; j < 4; j++)
 		{
 			ReadTexel_AVX(Xmm(out[i]), Xmm(in[i]), j);
 		}
