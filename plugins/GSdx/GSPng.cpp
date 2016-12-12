@@ -59,6 +59,7 @@ namespace GSPng {
         png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         png_infop info_ptr = nullptr;
 
+        bool success = false;
         try {
             if (png_ptr == nullptr)
                 throw GSDXRecoverableError();
@@ -89,16 +90,16 @@ namespace GSPng {
             }
             png_write_end(png_ptr, nullptr);
 
+            success = true;
         } catch (GSDXRecoverableError&) {
             fprintf(stderr, "Failed to write image %s\n", file.c_str());
-            return false;
         }
 
         if (png_ptr)
             png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : nullptr);
         fclose(fp);
 
-        return true;
+        return success;
     }
 
     bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped)
