@@ -406,7 +406,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
-			wxString fname = elfpath.AfterLast('\\');
+			wxString fname = elfpath.AfterLast('\\').AfterLast(':'); // Also catch elf paths which lack a backslash, and only have a colon.
 			wxString fname2 = fname.BeforeFirst(';');
 			DiscSerial = fname2;
 			Console.SetTitle(DiscSerial);
