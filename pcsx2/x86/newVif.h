@@ -55,7 +55,6 @@ _vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 #define xmmRow  xmm6
 #define xmmTemp xmm7
 
-#define _hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
 struct nVifStruct {
 
 	__aligned16 nVifBlock   block;
@@ -72,7 +71,7 @@ struct nVifStruct {
 	RecompiledCodeReserve*	recReserve;
 	u8*						recWritePtr;		// current write pos into the reserve
 
-	HashBucket<_hSize>		vifBlocks;		// Vif Blocks
+	HashBucket				vifBlocks;		// Vif Blocks
 
 	nVifStruct();
 };

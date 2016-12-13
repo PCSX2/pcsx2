@@ -13,8 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "x86emitter/x86_intrin.h"
 #pragma once
+
+#include <array>
 
 // nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
 //             used as the hash bucket selector.
@@ -29,72 +30,96 @@ struct __aligned16 nVifBlock {
 	uptr startPtr; // [12] Start Ptr of RecGen Code
 }; // 16 bytes
 
-template< typename T >
-struct SizeChain
-{
-	int Size;
-	T*  Chain;
-};
+#define hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
 
 // HashBucket is a container which uses a built-in hash function
-// to perform quick searches.
-// hSize determines the number of buckets HashBucket will use for sorting.
+// to perform quick searches. It is designed around the nVifBlock structure
+//
 // The hash function is determined by taking the first bytes of data and
 // performing a modulus the size of hSize. So the most diverse-data should
 // be in the first bytes of the struct. (hence why nVifBlock is specifically sorted)
-template<int hSize>
 class HashBucket {
 protected:
-	SizeChain<nVifBlock> mBucket[hSize];
+	std::array<nVifBlock*, hSize> m_bucket;
 
 public:
 	HashBucket() {
-		for (int i = 0; i < hSize; i++) {
-			mBucket[i].Chain	= NULL;
-			mBucket[i].Size		= 0;
-		}
+		m_bucket.fill(nullptr);
 	}
 
-	virtual ~HashBucket() throw() { clear(); }
-	int quickFind(u32 data) {
-		return mBucket[data % hSize].Size;
-	}
+	~HashBucket() throw() { clear(); }
 
 	__fi nVifBlock* find(nVifBlock* dataPtr) {
 		u32 d = *((u32*)dataPtr);
-		const SizeChain<nVifBlock>& bucket( mBucket[d % hSize] );
+		const __m128i* chainpos = (__m128i*)m_bucket[d % m_bucket.size()];
 
-		const __m128i* endpos = (__m128i*)&bucket.Chain[bucket.Size];
 		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
 
-		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; chainpos+=sizeof(nVifBlock) / 16u ) {
-			// Note SSE4/AVX optimization (However it requires to only have the key in the first 16B without the pointer)
-			// tmp = xor (data128, load(chainpos))
-			// ptest tmp tmp (zf will be set if tmp == 0, i.e equality)
-
+		int result;
+		do {
 			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
-			int result = _mm_movemask_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) ) );
-			if( (result&0x7) == 0x7 ) return (nVifBlock*)chainpos;
-		}
-		return NULL;
+			result = _mm_movemask_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) ) );
+			// startPtr doesn't match (aka not nullptr) hence 4th bit must be 0
+			if (result == 0x7) return (nVifBlock*)chainpos;
+
+			chainpos += sizeof(nVifBlock) / sizeof(__m128i);
+
+		} while(result < 0x8);
+
+		return nullptr;
 	}
 
-	__fi void add(const nVifBlock& dataPtr) {
+	void add(const nVifBlock& dataPtr) {
 		u32 d = (u32&)dataPtr;
-		SizeChain<nVifBlock>& bucket( mBucket[d % hSize] );
+		u32 b = d % m_bucket.size();
 
-		if( (bucket.Chain = (nVifBlock*)pcsx2_aligned_realloc( bucket.Chain, sizeof(nVifBlock)*(bucket.Size+1), 16, sizeof(nVifBlock)*bucket.Size)) == NULL ) {
+		u32 size = bucket_size( dataPtr );
+
+		// Warning there is an extra +1 due to the empty cell
+		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 16, sizeof(nVifBlock)*(size+1) )) == NULL ) {
 			throw Exception::OutOfMemory(
-				wxsFormat(L"HashBucket Chain (bucket size=%d)", bucket.Size+1)
+				wxsFormat(L"HashBucket Chain (bucket size=%d)", size+2)
 			);
 		}
-		memcpy(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(nVifBlock));
-		if( bucket.Size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", d % hSize, bucket.Size );
+
+		// Replace the empty cell by the new block and create a new empty cell
+		memcpy(&m_bucket[b][size++], &dataPtr, sizeof(nVifBlock));
+		memset(&m_bucket[b][size], 0, sizeof(nVifBlock));
+
+		if( size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", b, size );
 	}
+
+	u32 bucket_size(const nVifBlock& dataPtr) {
+		u32 d = (u32&)dataPtr;
+		nVifBlock* chainpos = m_bucket[d % m_bucket.size()];
+
+		u32 size = 0;
+
+		while (chainpos->startPtr != 0) {
+			size++;
+			chainpos++;
+		}
+
+		return size;
+	}
+
 	void clear() {
-		for (int i = 0; i < hSize; i++) {
-			safe_aligned_free(mBucket[i].Chain);
-			mBucket[i].Size = 0;
+		for (auto& bucket : m_bucket)
+			safe_aligned_free(bucket);
+	}
+
+	void reset() {
+		clear();
+
+		// Allocate an empty cell for all buckets
+		for (auto& bucket : m_bucket) {
+			if( (bucket = (nVifBlock*)_aligned_malloc( sizeof(nVifBlock), 16 )) == nullptr ) {
+				throw Exception::OutOfMemory(
+						wxsFormat(L"HashBucket Chain (bucket size=%d)", 1)
+						);
+			}
+
+			memset(bucket, 0, sizeof(nVifBlock));
 		}
 	}
 };

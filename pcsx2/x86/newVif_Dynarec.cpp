@@ -23,7 +23,7 @@
 #include "Utilities/Perf.h"
 
 static void recReset(int idx) {
-	nVif[idx].vifBlocks.clear();
+	nVif[idx].vifBlocks.reset();
 
 	nVif[idx].recReserve->Reset();
 
@@ -341,6 +341,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	v.block.cl      = vifRegs.cycle.cl;
 	v.block.wl      = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
 	v.block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
+	v.block.startPtr = 0; // Ease the detection of the end of the hash bucket
 
 	if ((upkType & 0xf) != 9)
 		v.block.aligned &= 0x1;
