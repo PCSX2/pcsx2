@@ -55,21 +55,7 @@ _vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 #define xmmRow  xmm6
 #define xmmTemp xmm7
 
-// nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
-//             used as the hash bucket selector.
-struct __aligned16 nVifBlock {
-	u8 num; // [00] Num Field
-	u8 upkType; // [01] Unpack Type [usn1:mask1:upk*4]
-	u8 mode; // [02] Mode Field
-	u8 aligned; // [03] Packet Alignment
-	u32 mask; // [04] Mask Field
-	u16 cl; // [08] CL Field
-	u16 wl; // [10] WL Field
-	uptr startPtr; // [12] Start Ptr of RecGen Code
-}; // 16 bytes
-
 #define _hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
-#define _tParams nVifBlock, _hSize
 struct nVifStruct {
 
 	__aligned16 nVifBlock   block;
@@ -86,7 +72,7 @@ struct nVifStruct {
 	RecompiledCodeReserve*	recReserve;
 	u8*						recWritePtr;		// current write pos into the reserve
 
-	HashBucket<_tParams>	vifBlocks;		// Vif Blocks
+	HashBucket<_hSize>		vifBlocks;		// Vif Blocks
 
 	nVifStruct();
 };

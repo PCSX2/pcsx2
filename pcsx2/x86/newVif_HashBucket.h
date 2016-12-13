@@ -16,6 +16,19 @@
 #include "x86emitter/x86_intrin.h"
 #pragma once
 
+// nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
+//             used as the hash bucket selector.
+struct __aligned16 nVifBlock {
+	u8 num; // [00] Num Field
+	u8 upkType; // [01] Unpack Type [usn1:mask1:upk*4]
+	u8 mode; // [02] Mode Field
+	u8 aligned; // [03] Packet Alignment
+	u32 mask; // [04] Mask Field
+	u16 cl; // [08] CL Field
+	u16 wl; // [10] WL Field
+	uptr startPtr; // [12] Start Ptr of RecGen Code
+}; // 16 bytes
+
 template< typename T >
 struct SizeChain
 {
@@ -25,15 +38,14 @@ struct SizeChain
 
 // HashBucket is a container which uses a built-in hash function
 // to perform quick searches.
-// T is a struct data type (note: size must be in multiples of 16 bytes!)
 // hSize determines the number of buckets HashBucket will use for sorting.
 // The hash function is determined by taking the first bytes of data and
 // performing a modulus the size of hSize. So the most diverse-data should
 // be in the first bytes of the struct. (hence why nVifBlock is specifically sorted)
-template<typename T, int hSize>
+template<int hSize>
 class HashBucket {
 protected:
-	SizeChain<T> mBucket[hSize];
+	SizeChain<nVifBlock> mBucket[hSize];
 
 public:
 	HashBucket() {
@@ -42,38 +54,41 @@ public:
 			mBucket[i].Size		= 0;
 		}
 	}
+
 	virtual ~HashBucket() throw() { clear(); }
 	int quickFind(u32 data) {
 		return mBucket[data % hSize].Size;
 	}
-	__fi T* find(T* dataPtr) {
+
+	__fi nVifBlock* find(nVifBlock* dataPtr) {
 		u32 d = *((u32*)dataPtr);
-		const SizeChain<T>& bucket( mBucket[d % hSize] );
+		const SizeChain<nVifBlock>& bucket( mBucket[d % hSize] );
 
 		const __m128i* endpos = (__m128i*)&bucket.Chain[bucket.Size];
 		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
 
-		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; chainpos+=sizeof(T) / 16u ) {
+		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; chainpos+=sizeof(nVifBlock) / 16u ) {
 			// Note SSE4/AVX optimization (However it requires to only have the key in the first 16B without the pointer)
 			// tmp = xor (data128, load(chainpos))
 			// ptest tmp tmp (zf will be set if tmp == 0, i.e equality)
 
 			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
 			int result = _mm_movemask_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) ) );
-			if( (result&0x7) == 0x7 ) return (T*)chainpos;
+			if( (result&0x7) == 0x7 ) return (nVifBlock*)chainpos;
 		}
 		return NULL;
 	}
-	__fi void add(const T& dataPtr) {
-		u32 d = (u32&)dataPtr;
-		SizeChain<T>& bucket( mBucket[d % hSize] );
 
-		if( (bucket.Chain = (T*)pcsx2_aligned_realloc( bucket.Chain, sizeof(T)*(bucket.Size+1), 16, sizeof(T)*bucket.Size)) == NULL ) {
+	__fi void add(const nVifBlock& dataPtr) {
+		u32 d = (u32&)dataPtr;
+		SizeChain<nVifBlock>& bucket( mBucket[d % hSize] );
+
+		if( (bucket.Chain = (nVifBlock*)pcsx2_aligned_realloc( bucket.Chain, sizeof(nVifBlock)*(bucket.Size+1), 16, sizeof(nVifBlock)*bucket.Size)) == NULL ) {
 			throw Exception::OutOfMemory(
 				wxsFormat(L"HashBucket Chain (bucket size=%d)", bucket.Size+1)
 			);
 		}
-		memcpy(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(T));
+		memcpy(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(nVifBlock));
 		if( bucket.Size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", d % hSize, bucket.Size );
 	}
 	void clear() {
