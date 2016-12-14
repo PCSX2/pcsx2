@@ -146,10 +146,15 @@ static __fi void incTag(u32& offset, u32& size, u32 incAmount) {
 
 struct Gif_Path_MTVU {
 	u32   fakePackets; // Fake packets pending to be sent to MTGS
+	GS_Packet fakePacket;
 	Mutex gsPackMutex; // Used for atomic access to gsPackQueue
 	std::deque<GS_Packet> gsPackQueue; // VU1 programs' XGkick(s)
 	Gif_Path_MTVU() { Reset(); }
-	void Reset()    { fakePackets = 0; gsPackQueue.clear(); }
+	void Reset()    { fakePackets = 0; gsPackQueue.clear();
+		fakePacket.Reset();
+		fakePacket.done =  1; // Fake packets don't get processed by pcsx2
+		fakePacket.size =~0u; // Used to indicate that its a fake packet
+	}
 };
 
 struct Gif_Path {
@@ -256,10 +261,7 @@ struct Gif_Path {
 	GS_Packet ExecuteGSPacket() {
 		if (mtvu.fakePackets) { // For MTVU mode...
 			mtvu.fakePackets--;
-			GS_Packet fakePack;
-			fakePack.done =  1; // Fake packets don't get processed by pcsx2
-			fakePack.size =~0u; // Used to indicate that its a fake packet
-			return fakePack;
+			return mtvu.fakePacket;
 		}
 		pxAssert(!isMTVU());
 		for(;;) {
