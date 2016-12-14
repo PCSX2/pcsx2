@@ -258,21 +258,20 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 	xRET();
 }
 
-_vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
-	nVifStruct&   v          = nVif[idx];
+_vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, u8 num, bool isFill) {
 	vifStruct&    vif        = MTVU_VifX;
 	const VURegs& VU         = vuRegs[idx];
 	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
 
 	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
 	u8*  endmem   = VU.Mem + vuMemLimit;
-	uint length   = (v.block.num > 0) ? (v.block.num * 16) : 4096; // 0 = 256
+	uint length   = (num > 0) ? (num * 16) : 4096; // 0 = 256
 
 	//wl = wl ? wl : 256; //0 is taken as 256 (KH2)
 	//if (wl == 256) isFill = true;
 	if (!isFill) {
 		uint skipSize  = (cl - wl) * 16;
-		uint blocks    = (v.block.num + (wl-1)) / wl; //Need to round up num's to calculate skip size correctly.
+		uint blocks    = (num + (wl-1)) / wl; //Need to round up num's to calculate skip size correctly.
 		length += (blocks-1) * skipSize;
 	}
 
@@ -281,19 +280,6 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	}
 	//Console.WriteLn("nVif%x - VU Mem Ptr Overflow; falling back to interpreter. Start = %x End = %x num = %x, wl = %x, cl = %x", v.idx, vif.tag.addr, vif.tag.addr + (_vBlock.num * 16), _vBlock.num, wl, cl);
 	return NULL; // Fall Back to Interpreters which have wrap-around logic
-}
-
-_vifT static __ri void dVifExecuteUnpack(const u8* data, uptr x86, bool isFill)
-{
-	VIFregisters& vifRegs = MTVU_VifXRegs;
-
-	if (u8* dest = dVifsetVUptr<idx>(vifRegs.cycle.cl, vifRegs.cycle.wl, isFill)) {
-		//DevCon.WriteLn("Running Recompiled Block!");
-		((nVifrecCall)x86)((uptr)dest, (uptr)data);
-	} else {
-		VIF_LOG("Running Interpreter Block");
-		_nVifUnpack(idx, data, vifRegs.mode, isFill);
-	}
 }
 
 _vifT __fi uptr dVifCompile(nVifBlock& key) {
@@ -320,7 +306,7 @@ _vifT __fi uptr dVifCompile(nVifBlock& key) {
 
 	VifUnpackSSE_Dynarec(v, key).CompileRoutine();
 
-	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, v.block.upkType /* FIXME ideally a key*/);
+	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, key.upkType /* FIXME ideally a key*/);
 	v.recWritePtr = xGetPtr();
 
 	return key.startPtr;
@@ -335,31 +321,39 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	const u8	upkType   = (vif.cmd & 0x1f) | (vif.usn << 5);
 	const int	doMask    = isFill? 1 : (vif.cmd & 0x10);
 
-	v.block.upkType = upkType;
-	v.block.num     = (u8&)vifRegs.num;
-	v.block.mode    = (u8&)vifRegs.mode;
-	v.block.cl      = vifRegs.cycle.cl;
-	v.block.wl      = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
-	v.block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
-	v.block.startPtr = 0; // Ease the detection of the end of the hash bucket
+	__aligned16 nVifBlock   block;
+	block.upkType = upkType;
+	block.num     = (u8&)vifRegs.num;
+	block.mode    = (u8&)vifRegs.mode;
+	block.cl      = vifRegs.cycle.cl;
+	block.wl      = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
+	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
+	block.startPtr = 0; // Ease the detection of the end of the hash bucket
 
 	if ((upkType & 0xf) != 9)
-		v.block.aligned &= 0x1;
+		block.aligned &= 0x1;
 
-	//DevCon.Warning("Alignment %d", v.block.aligned);
+	//DevCon.Warning("Alignment %d", block.aligned);
 	// Zero out the mask parameter if it's unused -- games leave random junk
 	// values here which cause false recblock cache misses.
-	v.block.mask	= doMask ? vifRegs.mask : 0;
+	block.mask	= doMask ? vifRegs.mask : 0;
 
 	//DevCon.WriteLn("nVif%d: Recompiled Block!", idx);
 	//DevCon.WriteLn(L"[num=% 3d][upkType=0x%02x][scl=%d][cl=%d][wl=%d][mode=%d][m=%d][mask=%s]",
-	//	v.Block.num, v.Block.upkType, v.Block.scl, v.Block.cl, v.Block.wl, v.Block.mode,
-	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", v.Block.mask ).c_str() : L"ignored"
+	//	block.num, block.upkType, block.scl, block.cl, block.wl, block.mode,
+	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", block.mask ).c_str() : L"ignored"
 	//);
 
-	uptr x86 = dVifCompile<idx>(v.block);
+	uptr x86 = dVifCompile<idx>(block);
 
-	dVifExecuteUnpack<idx>(data, x86, isFill);
+	// Run either the dynarec or the interpreter (if complex wrapping)
+	if (u8* dest = dVifsetVUptr<idx>(vifRegs.cycle.cl, vifRegs.cycle.wl, vifRegs.num, isFill)) {
+		//DevCon.WriteLn("Running Recompiled Block!");
+		((nVifrecCall)x86)((uptr)dest, (uptr)data);
+	} else {
+		VIF_LOG("Running Interpreter Block");
+		_nVifUnpack(idx, data, vifRegs.mode, isFill);
+	}
 }
 
 template void dVifUnpack<0>(const u8* data, bool isFill);

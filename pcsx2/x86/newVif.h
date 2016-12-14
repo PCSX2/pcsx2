@@ -56,9 +56,6 @@ _vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 #define xmmTemp xmm7
 
 struct nVifStruct {
-
-	__aligned16 nVifBlock   block;
-
 	// Buffer for partial transfers (should always be first to ensure alignment)
 	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
 	__aligned16 u8			buffer[256*16];
