@@ -57,7 +57,8 @@ VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlo
 	: v(vif_)
 	, vB(vifBlock_)
 {
-	isFill		= (vB.cl < vB.wl);
+	const int wl = vB.wl ? vB.wl : 256; //0 is taken as 256 (KH2)
+	isFill		= (vB.cl < wl);
 	usn			= (vB.upkType>>5) & 1;
 	doMask		= (vB.upkType>>4) & 1;
 	doMode		= vB.mode & 3;
@@ -199,10 +200,11 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 }
 
 void VifUnpackSSE_Dynarec::CompileRoutine() {
+	const int  wl		 = vB.wl ? vB.wl : 256; //0 is taken as 256 (KH2)
 	const int  upkNum	 = vB.upkType & 0xf;
 	const u8&  vift		 = nVifT[upkNum];
-	const int  cycleSize = isFill ? vB.cl : vB.wl;
-	const int  blockSize = isFill ? vB.wl : vB.cl;
+	const int  cycleSize = isFill ? vB.cl : wl;
+	const int  blockSize = isFill ? wl : vB.cl;
 	const int  skipSize	 = blockSize - cycleSize;
 
 	uint vNum	= vB.num ? vB.num : 256;
@@ -326,7 +328,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	block.num     = (u8&)vifRegs.num;
 	block.mode    = (u8&)vifRegs.mode;
 	block.cl      = vifRegs.cycle.cl;
-	block.wl      = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
+	block.wl      = vifRegs.cycle.wl;
 	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 	block.startPtr = 0; // Ease the detection of the end of the hash bucket
 
