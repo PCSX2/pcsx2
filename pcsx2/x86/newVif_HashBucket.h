@@ -64,23 +64,18 @@ public:
 
 	~HashBucket() throw() { clear(); }
 
-	__fi nVifBlock* find(nVifBlock* dataPtr) {
-		const __m128i* chainpos = (__m128i*)m_bucket[dataPtr->hash_key];
+	__fi nVifBlock* find(const nVifBlock& dataPtr) {
+		nVifBlock* chainpos = m_bucket[dataPtr.hash_key];
 
-		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
+		while (true) {
+			if (chainpos->key0 == dataPtr.key0 && chainpos->key1 == dataPtr.key1)
+				return chainpos;
 
-		int result;
-		do {
-			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
-			result = _mm_movemask_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) ) );
-			// startPtr doesn't match (aka not nullptr) hence 4th bit must be 0
-			if (result == 0x7) return (nVifBlock*)chainpos;
+			if (chainpos->startPtr == 0)
+				return nullptr;
 
-			chainpos += sizeof(nVifBlock) / sizeof(__m128i);
-
-		} while(result < 0x8);
-
-		return nullptr;
+			chainpos++;
+		}
 	}
 
 	void add(const nVifBlock& dataPtr) {

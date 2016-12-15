@@ -286,7 +286,7 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, u8 num, bool isFill) {
 
 _vifT __fi uptr dVifCompile(nVifBlock& key) {
 	nVifStruct& v     = nVif[idx];
-	nVifBlock*  block = v.vifBlocks.find(&key);
+	nVifBlock*  block = v.vifBlocks.find(key);
 
 	//  Cache hit
 	if (likely(block != nullptr))
