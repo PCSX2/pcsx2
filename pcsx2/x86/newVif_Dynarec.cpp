@@ -326,10 +326,11 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	__aligned16 nVifBlock   block;
 	block.upkType = upkType;
 	block.num     = (u8&)vifRegs.num;
+	block.length  = 0;
 	block.mode    = (u8&)vifRegs.mode;
+	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 	block.cl      = vifRegs.cycle.cl;
 	block.wl      = vifRegs.cycle.wl;
-	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 	block.startPtr = 0; // Ease the detection of the end of the hash bucket
 
 	if ((upkType & 0xf) != 9)
