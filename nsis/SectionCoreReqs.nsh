@@ -18,8 +18,8 @@
   
   SetOutPath "$INSTDIR"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File           /oname=${APP_EXE}                ..\bin\pcsx2.exe
-    ;File /nonfatal /oname=pcsx2-dev.exe  					..\bin\pcsx2-dev.exe
+    File			..\bin\pcsx2.exe
+    ;File /nonfatal ..\bin\pcsx2-dev.exe
 
   ; ------------------------------------------
   ;       -- Shared Core Components --
@@ -31,11 +31,11 @@
 	File                                            ..\bin\PCSX2_keys.ini.default
 
 	!insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-
-    SetOutPath "$INSTDIR\Cheats"
+	
+	;/bin/Cheats needs CreateDirectory to prevent MakeNSIS from failing due to the folder being empty
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File                                            ..\bin\Cheats\*
-    !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
+    CreateDirectory                                 "$INSTDIR\Cheats"
+	!insertmacro UNINSTALL.LOG_CLOSE_INSTALL
     
     SetOutPath "$INSTDIR\Docs"
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
@@ -53,20 +53,13 @@
     ; in order to run (including CDVD!) -- and really there should be more but we don't have working
     ; SPU2 null plugins right now.
  
-    File ..\bin\Plugins\GSnull.dll
+    ;File ..\bin\Plugins\GSnull.dll
     ;File ..\bin\Plugins\SPU2null.dll            
     File ..\bin\Plugins\USBnull.dll
     File ..\bin\Plugins\DEV9null.dll
     File ..\bin\Plugins\FWnull.dll
-    File ..\bin\Plugins\CDVDnull.dll
+    ;File ..\bin\Plugins\CDVDnull.dll
   !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-  
-  !if ${INC_LANGS} > 0
-    SetOutPath $INSTDIR\Langs
-    !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-      File /nonfatal /r ..\bin\Langs\*.mo
-    !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-  !endif
 
 
   ; ------------------------------------------
@@ -79,6 +72,7 @@
   ; Write the uninstall keys for Windows
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - Playstation 2 Emulator"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "${UNINST_EXE}"
+  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "InstalledVersion" "${APP_VERSION}"
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoModify" 1
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoRepair" 1
   WriteUninstaller "${UNINST_EXE}"
