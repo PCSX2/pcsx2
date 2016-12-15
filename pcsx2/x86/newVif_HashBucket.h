@@ -17,21 +17,35 @@
 
 #include <array>
 
-// nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
+// nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are
 //             used as the hash bucket selector.
-struct __aligned16 nVifBlock {
-	u8 num;			// [00] Num Field
-	u8 upkType; 	// [01] Unpack Type [usn1:mask1:upk*4]
-	u16 length; 	// [02] Extra: pre computed Length
-	u32 mask;		// [04] Mask Field
-	u8 mode;		// [08] Mode Field
-	u8 aligned; 	// [09] Packet Alignment
-	u8 cl;			// [10] CL Field
-	u8 wl;			// [11] WL Field
-	uptr startPtr;	// [12] Start Ptr of RecGen Code
+union __aligned16 nVifBlock {
+	struct {
+		u8 num;			// [00] Num Field
+		u8 upkType; 	// [01] Unpack Type [usn1:mask1:upk*4]
+		u16 length; 	// [02] Extra: pre computed Length
+		u32 mask;		// [04] Mask Field
+		u8 mode;		// [08] Mode Field
+		u8 aligned; 	// [09] Packet Alignment
+		u8 cl;			// [10] CL Field
+		u8 wl;			// [11] WL Field
+		uptr startPtr;	// [12] Start Ptr of RecGen Code
+	};
+
+	struct {
+		u16 hash_key;
+		u16 _pad0;
+		u32 key0;
+		u32 key1;
+		uptr value;
+	};
+
 }; // 16 bytes
 
-#define hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
+// 0x4000 is enough but 0x10000 allow
+// * to skip the compare value of the first double world in lookup
+// * to use a 16 bits move instead of an 'and' mask to compute the hashed key
+#define hSize 0x10000 // [usn*1:mask*1:upk*4:num*8] hash...
 
 // HashBucket is a container which uses a built-in hash function
 // to perform quick searches. It is designed around the nVifBlock structure
@@ -51,8 +65,7 @@ public:
 	~HashBucket() throw() { clear(); }
 
 	__fi nVifBlock* find(nVifBlock* dataPtr) {
-		u32 d = *((u32*)dataPtr);
-		const __m128i* chainpos = (__m128i*)m_bucket[d % m_bucket.size()];
+		const __m128i* chainpos = (__m128i*)m_bucket[dataPtr->hash_key];
 
 		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
 
@@ -71,8 +84,7 @@ public:
 	}
 
 	void add(const nVifBlock& dataPtr) {
-		u32 d = (u32&)dataPtr;
-		u32 b = d % m_bucket.size();
+		u32 b = dataPtr.hash_key;
 
 		u32 size = bucket_size( dataPtr );
 
@@ -91,8 +103,7 @@ public:
 	}
 
 	u32 bucket_size(const nVifBlock& dataPtr) {
-		u32 d = (u32&)dataPtr;
-		nVifBlock* chainpos = m_bucket[d % m_bucket.size()];
+		nVifBlock* chainpos = m_bucket[dataPtr.hash_key];
 
 		u32 size = 0;
 
