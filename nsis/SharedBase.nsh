@@ -12,11 +12,6 @@
   !define INC_PLUGINS   1
 !endif
 
-!ifndef INC_LANGS
-  ; Set to 1 to enable inclusion of Languages folders
-  !define INC_LANGS     1
-!endif
-
 !ifndef USE_PACKAGE_REV
   ; When enabled, all exe and plugins use a single revision based ont he trunk/HEAD svn revision.
   ; When disabled, each plugin and the main exe get their own revision number based on the actual
@@ -30,12 +25,12 @@
 ;   uninstall folders.  
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "1.4.0"
+  !define APP_VERSION      "1.6.0"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION}"
 !define APP_FILENAME     "pcsx2"
-!define UNINSTALL_LOG    "Uninst-pcsx2 ${APP_VERSION}"
+!define UNINSTALL_LOG    "Uninst-pcsx2"
 
 !define INSTDIR_REG_ROOT "HKLM"
 
@@ -95,4 +90,4 @@ RequestExecutionLevel admin
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "banner.bmp"
 !define MUI_COMPONENTSPAGE_SMALLDESC
-
+!define MUI_ICON "AppIcon.ico"
