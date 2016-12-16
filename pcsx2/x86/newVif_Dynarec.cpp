@@ -308,20 +308,26 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	const int	doMask    = isFill? 1 : (vif.cmd & 0x10);
 
 	__aligned16 nVifBlock   block;
-	block.upkType = upkType;
-	block.num     = (u8&)vifRegs.num;
-	block.mode    = (u8&)vifRegs.mode;
-	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
-	block.cl      = vifRegs.cycle.cl;
-	block.wl      = vifRegs.cycle.wl;
 
+	// Performance note: initial code was using u8/u16 field of the struct
+	// directly. However reading back the data (as u32) in HashBucket.find
+	// leads to various memory stalls. So it is way faster to manually build the data
+	// in u32 (aka x86 register).
+	//
+	// Warning the order of data in hash_key/key0/key1 depends on the nVifBlock struct
+	u32 hash_key = (u32)(upkType & 0xFF) << 8 | (vifRegs.num & 0xFF);
+
+	u32 key1 = ((u32)vifRegs.cycle.wl << 24) | ((u32)vifRegs.cycle.cl << 16) | ((u32)(vif.start_aligned & 0xFF) << 8) | ((u32)vifRegs.mode & 0xFF);
 	if ((upkType & 0xf) != 9)
-		block.aligned &= 0x1;
+		key1 &= 0xFFFF01FF;
 
-	//DevCon.Warning("Alignment %d", block.aligned);
 	// Zero out the mask parameter if it's unused -- games leave random junk
 	// values here which cause false recblock cache misses.
-	block.mask	= doMask ? vifRegs.mask : 0;
+	u32 key0 = doMask ? vifRegs.mask : 0;
+
+	block.hash_key = hash_key;
+	block.key0 = key0;
+	block.key1 = key1;
 
 	//DevCon.WriteLn("nVif%d: Recompiled Block!", idx);
 	//DevCon.WriteLn(L"[num=% 3d][upkType=0x%02x][scl=%d][cl=%d][wl=%d][mode=%d][m=%d][mask=%s]",

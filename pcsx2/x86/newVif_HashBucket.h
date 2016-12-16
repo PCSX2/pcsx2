@@ -20,6 +20,7 @@
 // nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are
 //             used as the hash bucket selector.
 union __aligned16 nVifBlock {
+	// Warning: order depends on the newVifDynaRec code
 	struct {
 		u8 num;			// [00] Num Field
 		u8 upkType; 	// [01] Unpack Type [usn1:mask1:upk*4]
