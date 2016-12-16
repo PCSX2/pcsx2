@@ -629,7 +629,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 		if (isEvilBlock) {
 			mVUsetupRange(mVU, xPC, false);
 			normJumpCompile(mVU, mFC, true);
-			return thisPtr;
+			goto perf_and_return;
 		}
 		else if (!mVUinfo.isBdelay) {
 			incPC(1);
@@ -638,18 +638,18 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 			mVUsetupRange(mVU, xPC, false);
 			mVUdebugPrintBlocks(mVU, true);
 			incPC(-3); // Go back to branch opcode
-		
+
 			switch (mVUlow.branch) {
-				case 1: case 2:  normBranch(mVU, mFC);			  return thisPtr; // B/BAL
-				case 9: case 10: normJump  (mVU, mFC);			  return thisPtr; // JR/JALR
-				case 3: condBranch(mVU, mFC, Jcc_Equal);		  return thisPtr; // IBEQ
-				case 4: condBranch(mVU, mFC, Jcc_GreaterOrEqual); return thisPtr; // IBGEZ
-				case 5: condBranch(mVU, mFC, Jcc_Greater);		  return thisPtr; // IBGTZ
-				case 6: condBranch(mVU, mFC, Jcc_LessOrEqual);	  return thisPtr; // IBLEQ
-				case 7: condBranch(mVU, mFC, Jcc_Less);			  return thisPtr; // IBLTZ
-				case 8: condBranch(mVU, mFC, Jcc_NotEqual);		  return thisPtr; // IBNEQ
+				case 1: case 2:  normBranch(mVU, mFC);			  goto perf_and_return; // B/BAL
+				case 9: case 10: normJump  (mVU, mFC);			  goto perf_and_return; // JR/JALR
+				case 3: condBranch(mVU, mFC, Jcc_Equal);		  goto perf_and_return; // IBEQ
+				case 4: condBranch(mVU, mFC, Jcc_GreaterOrEqual); goto perf_and_return; // IBGEZ
+				case 5: condBranch(mVU, mFC, Jcc_Greater);		  goto perf_and_return; // IBGTZ
+				case 6: condBranch(mVU, mFC, Jcc_LessOrEqual);	  goto perf_and_return; // IBLEQ
+				case 7: condBranch(mVU, mFC, Jcc_Less);			  goto perf_and_return; // IBLTZ
+				case 8: condBranch(mVU, mFC, Jcc_NotEqual);		  goto perf_and_return; // IBNEQ
 			}
-			
+
 		}
 	}
 	if ((x == endCount) && (x!=1)) { Console.Error("microVU%d: Possible infinite compiling loop!", mVU.index); }
@@ -657,6 +657,8 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 	// E-bit End
 	mVUsetupRange(mVU, xPC-8, false);
 	mVUendProgram(mVU, &mFC, 1);
+
+perf_and_return:
 
 	Perf::vu.map((uptr)thisPtr, x86Ptr - thisPtr, startPC);
 
