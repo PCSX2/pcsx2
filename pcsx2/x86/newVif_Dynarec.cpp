@@ -272,23 +272,6 @@ static u16 dVifComputeLength(uint cl, uint wl, u8 num, bool isFill) {
 	return std::min(length, 0xFFFFu);
 }
 
-_vifT static __fi u8* dVifsetVUptr(u16 length) {
-	vifStruct&    vif        = MTVU_VifX;
-	const VURegs& VU         = vuRegs[idx];
-	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
-
-	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
-	u8*  endmem   = VU.Mem + vuMemLimit;
-
-	if (likely((startmem + length) <= endmem)) {
-		return startmem;
-	}
-
-	//Console.WriteLn("nVif%x - VU Mem Ptr Overflow; falling back to interpreter. Start = %x End = %x num = %x, wl = %x, cl = %x", v.idx, vif.tag.addr, vif.tag.addr + (_vBlock.num * 16), _vBlock.num, wl, cl);
-
-	return NULL; // Fall Back to Interpreters which have wrap-around logic
-}
-
 _vifT __fi void dVifCompile(nVifBlock& block, bool isFill) {
 	nVifStruct& v = nVif[idx];
 	nVifBlock*  b = v.vifBlocks.find(block);
@@ -356,13 +339,21 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 
 	dVifCompile<idx>(block, isFill);
 
-	// Run either the dynarec or the interpreter (if complex wrapping)
-	if (u8* dest = dVifsetVUptr<idx>(block.length)) {
-		//DevCon.WriteLn("Running Recompiled Block!");
-		((nVifrecCall)block.startPtr)((uptr)dest, (uptr)data);
-	} else {
-		VIF_LOG("Running Interpreter Block");
-		_nVifUnpack(idx, data, vifRegs.mode, isFill);
+	{ // Execute the block
+		const VURegs& VU         = vuRegs[idx];
+		const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
+
+		u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
+		u8*  endmem   = VU.Mem + vuMemLimit;
+
+		if (likely((startmem + block.length) <= endmem)) {
+			// No wrapping, you can run the fast dynarec
+			((nVifrecCall)block.startPtr)((uptr)startmem, (uptr)data);
+		} else {
+			VIF_LOG("Running Interpreter Block: nVif%x - VU Mem Ptr Overflow; falling back to interpreter. Start = %x End = %x num = %x, wl = %x, cl = %x",
+					v.idx, vif.tag.addr, vif.tag.addr + (block.num * 16), block.num, block.wl, block.cl);
+			_nVifUnpack(idx, data, vifRegs.mode, isFill);
+		}
 	}
 }
 
