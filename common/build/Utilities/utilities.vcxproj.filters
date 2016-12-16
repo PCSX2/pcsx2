@@ -165,9 +165,6 @@
     <ClInclude Include="..\..\include\Utilities\HashMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\lnx_memzero.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\MathUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -199,9 +196,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\StringHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\win_memzero.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\wxAppWithHelpers.h">

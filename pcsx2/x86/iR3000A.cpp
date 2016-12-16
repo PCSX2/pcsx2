@@ -193,7 +193,7 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,__pagesize>( iopRecDispatchers );
+	memset( iopRecDispatchers, 0xcc, __pagesize);
 
 	xSetPtr( iopRecDispatchers );
 

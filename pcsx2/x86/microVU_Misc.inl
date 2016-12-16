@@ -565,7 +565,7 @@ __pagealigned u8 mVUsearchXMM[__pagesize];
 // Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)
 void mVUcustomSearch() {
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ReadWrite());
-	memset_8<0xcc,__pagesize>(mVUsearchXMM);
+	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
 
 	xMOVAPS  (xmm0, ptr32[ecx]);

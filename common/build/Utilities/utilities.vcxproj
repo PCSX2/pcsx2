@@ -124,7 +124,6 @@
     <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h" />
     <ClInclude Include="..\..\include\Utilities\General.h" />
     <ClInclude Include="..\..\include\Utilities\HashMap.h" />
-    <ClInclude Include="..\..\include\Utilities\lnx_memzero.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />
     <ClInclude Include="..\..\include\Utilities\Path.h" />
@@ -136,7 +135,6 @@
     <ClInclude Include="..\..\include\Utilities\RedtapeWindows.h" />
     <ClInclude Include="..\..\include\Utilities\SafeArray.h" />
     <ClInclude Include="..\..\include\Utilities\StringHelpers.h" />
-    <ClInclude Include="..\..\include\Utilities\win_memzero.h" />
     <ClInclude Include="..\..\include\Utilities\wxAppWithHelpers.h" />
     <ClInclude Include="..\..\include\Utilities\wxBaseTools.h" />
     <ClInclude Include="..\..\include\Utilities\wxGuiTools.h" />

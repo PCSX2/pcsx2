@@ -432,7 +432,7 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,__pagesize>( eeRecDispatchers );
+	memset( eeRecDispatchers, 0xcc, __pagesize);
 
 	xSetPtr( eeRecDispatchers );
 
