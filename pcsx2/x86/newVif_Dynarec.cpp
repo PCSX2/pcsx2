@@ -260,37 +260,45 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 	xRET();
 }
 
-_vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, u8 num, bool isFill) {
-	vifStruct&    vif        = MTVU_VifX;
-	const VURegs& VU         = vuRegs[idx];
-	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
-
-	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
-	u8*  endmem   = VU.Mem + vuMemLimit;
+static u16 dVifComputeLength(uint cl, uint wl, u8 num, bool isFill) {
 	uint length   = (num > 0) ? (num * 16) : 4096; // 0 = 256
 
-	//wl = wl ? wl : 256; //0 is taken as 256 (KH2)
-	//if (wl == 256) isFill = true;
 	if (!isFill) {
 		uint skipSize  = (cl - wl) * 16;
 		uint blocks    = (num + (wl-1)) / wl; //Need to round up num's to calculate skip size correctly.
 		length += (blocks-1) * skipSize;
 	}
 
-	if ((startmem + length) <= endmem) {
+	return std::min(length, 0xFFFFu);
+}
+
+_vifT static __fi u8* dVifsetVUptr(u16 length) {
+	vifStruct&    vif        = MTVU_VifX;
+	const VURegs& VU         = vuRegs[idx];
+	const uint    vuMemLimit = idx ? 0x4000 : 0x1000;
+
+	u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
+	u8*  endmem   = VU.Mem + vuMemLimit;
+
+	if (likely((startmem + length) <= endmem)) {
 		return startmem;
 	}
+
 	//Console.WriteLn("nVif%x - VU Mem Ptr Overflow; falling back to interpreter. Start = %x End = %x num = %x, wl = %x, cl = %x", v.idx, vif.tag.addr, vif.tag.addr + (_vBlock.num * 16), _vBlock.num, wl, cl);
+
 	return NULL; // Fall Back to Interpreters which have wrap-around logic
 }
 
-_vifT __fi uptr dVifCompile(nVifBlock& key) {
-	nVifStruct& v     = nVif[idx];
-	nVifBlock*  block = v.vifBlocks.find(key);
+_vifT __fi void dVifCompile(nVifBlock& block, bool isFill) {
+	nVifStruct& v = nVif[idx];
+	nVifBlock*  b = v.vifBlocks.find(block);
 
 	//  Cache hit
-	if (likely(block != nullptr))
-		return block->startPtr;
+	if (likely(b != nullptr)) {
+		block.startPtr = b->startPtr;
+		block.length = b->length;
+		return;
+	}
 
 	// Check size before the compilation
 	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb)) {
@@ -303,15 +311,16 @@ _vifT __fi uptr dVifCompile(nVifBlock& key) {
 	// Compile the block now
 	xSetPtr(v.recWritePtr);
 
-	key.startPtr = (uptr)xGetAlignedCallTarget();
-	v.vifBlocks.add(key);
+	block.startPtr = (uptr)xGetAlignedCallTarget();
+	block.length = dVifComputeLength(block.cl, block.wl, block.num, isFill);
+	v.vifBlocks.add(block);
 
-	VifUnpackSSE_Dynarec(v, key).CompileRoutine();
+	VifUnpackSSE_Dynarec(v, block).CompileRoutine();
 
-	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, key.upkType /* FIXME ideally a key*/);
+	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, block.upkType /* FIXME ideally a key*/);
 	v.recWritePtr = xGetPtr();
 
-	return key.startPtr;
+	return;
 }
 
 _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
@@ -326,12 +335,10 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	__aligned16 nVifBlock   block;
 	block.upkType = upkType;
 	block.num     = (u8&)vifRegs.num;
-	block.length  = 0;
 	block.mode    = (u8&)vifRegs.mode;
 	block.aligned = vif.start_aligned;  //MTVU doesn't have a packet size!
 	block.cl      = vifRegs.cycle.cl;
 	block.wl      = vifRegs.cycle.wl;
-	block.startPtr = 0; // Ease the detection of the end of the hash bucket
 
 	if ((upkType & 0xf) != 9)
 		block.aligned &= 0x1;
@@ -347,12 +354,12 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", block.mask ).c_str() : L"ignored"
 	//);
 
-	uptr x86 = dVifCompile<idx>(block);
+	dVifCompile<idx>(block, isFill);
 
 	// Run either the dynarec or the interpreter (if complex wrapping)
-	if (u8* dest = dVifsetVUptr<idx>(vifRegs.cycle.cl, vifRegs.cycle.wl, vifRegs.num, isFill)) {
+	if (u8* dest = dVifsetVUptr<idx>(block.length)) {
 		//DevCon.WriteLn("Running Recompiled Block!");
-		((nVifrecCall)x86)((uptr)dest, (uptr)data);
+		((nVifrecCall)block.startPtr)((uptr)dest, (uptr)data);
 	} else {
 		VIF_LOG("Running Interpreter Block");
 		_nVifUnpack(idx, data, vifRegs.mode, isFill);
