@@ -2433,7 +2433,7 @@ void GSState::SetupCrcHack()
 {
 	GetSkipCount lut[CRC::TitleCount];
 
-	s_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
+	s_crc_hack_level = theApp.GetTempConfig<CRCHackLevel>();
 
 	memset(lut, 0, sizeof(lut));
 

@@ -355,8 +355,7 @@ void GSSettingsDlg::UpdateRenderers()
 	}
 	else
 	{
-		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-		renderer_setting = (ini_renderer == GSRendererType::Undefined) ? GSUtil::GetBestRenderer() : ini_renderer;
+		renderer_setting = theApp.GetConfigT<GSRendererType>("Renderer");
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;

@@ -338,7 +338,7 @@ namespace GLLoader {
 		}
 
 		bool status = true;
-		bool mandatory_hw = static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW;
+		bool mandatory_hw = (theApp.GetConfigT<GSRendererType>("Renderer") == GSRendererType::OGL_HW);
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
