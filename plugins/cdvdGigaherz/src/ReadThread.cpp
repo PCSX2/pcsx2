@@ -341,7 +341,7 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer)
             memcpy(buffer, bfr + 12, 2340);
             return 0;
         default:
-            memcpy(buffer, bfr + 12, 2352);
+            memcpy(buffer, bfr, 2352);
             return 0;
     }
 }
