@@ -1429,6 +1429,7 @@ enum class Filtering : uint8
 //Enum order matters! Don't change it!
 enum class CRCHackLevel : int8
 {
+	Automatic = -1,
 	None,
 	Minimum,
 	Partial,

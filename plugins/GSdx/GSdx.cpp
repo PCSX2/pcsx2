@@ -218,6 +218,7 @@ void GSdxApp::Init()
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
 
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"));
 	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::None , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL Recommended"));

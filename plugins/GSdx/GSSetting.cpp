@@ -40,6 +40,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Trilinear Ultra:\nAlways enable full trilinear interpolation. Warning Slow!\n\n";
 		case IDC_CRC_LEVEL:
 			return "Control the number of Auto-CRC hacks applied to games.\n\n"
+				"Automatic:\nAutomatically select 'Partial' or 'Full' level based on whether you are using OpenGL or Direct3D.\n\n"
 				"None:\nRemove nearly all CRC hacks (debug only).\n\n"
 				"Minimum:\nEnable a couple of CRC hacks (23).\n\n"
 				"Partial:\nEnable most of the CRC hacks.\nRecommended OpenGL setting (Accurate/depth options may be required).\n\n"
