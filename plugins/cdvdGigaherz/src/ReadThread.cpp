@@ -20,6 +20,11 @@
 #include <queue>
 #include <thread>
 
+const u32 sectors_per_read = 16;
+
+static_assert(sectors_per_read > 1 && !(sectors_per_read & (sectors_per_read - 1)),
+              "sectors_per_read must by a power of 2");
+
 struct CacheRequest
 {
     u32 lsn;
@@ -30,7 +35,8 @@ struct SectorInfo
 {
     u32 lsn;
     s32 mode;
-    u8 data[2352 * 16]; // we will read in blocks of 16 sectors
+    // Sectors are read in blocks, not individually
+    u8 data[2352 * sectors_per_read];
 };
 
 const s32 prefetch_max_blocks = 16;
@@ -76,7 +82,7 @@ void cdvdCacheUpdate(u32 lsn, s32 mode, u8 *data)
     std::lock_guard<std::mutex> guard(s_cache_lock);
     u32 entry = cdvdSectorHash(lsn, mode);
 
-    memcpy(Cache[entry].data, data, 2352 * 16);
+    memcpy(Cache[entry].data, data, 2352 * sectors_per_read);
     Cache[entry].lsn = lsn;
     Cache[entry].mode = mode;
 }
@@ -96,7 +102,7 @@ bool cdvdCacheFetch(u32 lsn, s32 mode, u8 *data)
 
     if ((Cache[entry].lsn == lsn) &&
         (Cache[entry].mode == mode)) {
-        memcpy(data, Cache[entry].data, 2352 * 16);
+        memcpy(data, Cache[entry].data, 2352 * sectors_per_read);
         return true;
     }
     //printf("NOT IN CACHE\n");
@@ -114,7 +120,7 @@ void cdvdCacheReset()
 
 bool cdvdReadBlockOfSectors(u32 sector, s32 mode, u8 *data)
 {
-    u32 count = std::min(16U, src->GetSectorCount() - sector);
+    u32 count = std::min(sectors_per_read, src->GetSectorCount() - sector);
 
     // TODO: Is it really necessary to retry 3 times if it fails?
     for (int tries = 0; tries < 4; ++tries) {
@@ -168,7 +174,7 @@ bool cdvdUpdateDiscStatus()
 
 void cdvdThread()
 {
-    u8 buffer[2352 * 16];
+    u8 buffer[2352 * sectors_per_read];
 
     printf(" * CDVD: IO thread started...\n");
     std::unique_lock<std::mutex> guard(s_notify_lock);
@@ -212,7 +218,7 @@ void cdvdThread()
 
                 prefetch_left = prefetch_max_blocks;
             } else {
-                prefetch_last_lba += 16;
+                prefetch_last_lba += sectors_per_read;
                 prefetch_left--;
             }
         }
@@ -247,7 +253,8 @@ s32 cdvdRequestSector(u32 sector, s32 mode)
     if (sector >= src->GetSectorCount())
         return -1;
 
-    sector &= ~15; //align to 16-sector block
+    // Align to cache block
+    sector &= ~(sectors_per_read - 1);
 
     if (cdvdCacheCheck(sector, mode))
         return 0;
@@ -264,8 +271,10 @@ s32 cdvdRequestSector(u32 sector, s32 mode)
 
 u8 *cdvdGetSector(u32 sector, s32 mode)
 {
-    static u8 buffer[2352 * 16];
-    u32 sector_block = sector & ~15;
+    static u8 buffer[2352 * sectors_per_read];
+
+    // Align to cache block
+    u32 sector_block = sector & ~(sectors_per_read - 1);
 
     if (!cdvdCacheFetch(sector_block, mode, buffer))
         if (cdvdReadBlockOfSectors(sector_block, mode, buffer))
@@ -290,12 +299,13 @@ u8 *cdvdGetSector(u32 sector, s32 mode)
 
 s32 cdvdDirectReadSector(u32 first, s32 mode, u8 *buffer)
 {
-    static u8 data[16 * 2352];
+    static u8 data[2352 * sectors_per_read];
 
     if (first >= src->GetSectorCount())
         return -1;
 
-    u32 sector = first & (~15); //align to 16-sector block
+    // Align to cache block
+    u32 sector = first & ~(sectors_per_read - 1);
 
     if (!cdvdCacheFetch(sector, mode, data)) {
         if (cdvdReadBlockOfSectors(sector, mode, data))
