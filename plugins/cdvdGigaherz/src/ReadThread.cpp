@@ -297,28 +297,28 @@ u8 *cdvdGetSector(u32 sector, s32 mode)
     return data;
 }
 
-s32 cdvdDirectReadSector(u32 first, s32 mode, u8 *buffer)
+s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer)
 {
     static u8 data[2352 * sectors_per_read];
 
-    if (first >= src->GetSectorCount())
+    if (sector >= src->GetSectorCount())
         return -1;
 
     // Align to cache block
-    u32 sector = first & ~(sectors_per_read - 1);
+    u32 sector_block = sector & ~(sectors_per_read - 1);
 
-    if (!cdvdCacheFetch(sector, mode, data)) {
-        if (cdvdReadBlockOfSectors(sector, mode, data))
-            cdvdCacheUpdate(sector, mode, data);
+    if (!cdvdCacheFetch(sector_block, mode, data)) {
+        if (cdvdReadBlockOfSectors(sector_block, mode, data))
+            cdvdCacheUpdate(sector_block, mode, data);
     }
 
     if (mode == CDVD_MODE_2048) {
-        u32 offset = 2048 * (first - sector);
+        u32 offset = 2048 * (sector - sector_block);
         memcpy(buffer, data + offset, 2048);
         return 0;
     }
 
-    u32 offset = 2352 * (first - sector);
+    u32 offset = 2352 * (sector - sector_block);
     u8 *bfr = data + offset;
 
     switch (mode) {
