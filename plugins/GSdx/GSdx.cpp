@@ -411,6 +411,12 @@ void* GSdxApp::GetModuleHandlePtr()
 	return s_hModule;
 }
 
+void GSdxApp::ClearTempConfig()
+{
+	m_cached_CRCHackLevel = CRCHackLevel::Automatic;
+	m_cached_GSRendererType = GSRendererType::Undefined;
+}
+
 void GSdxApp::SetConfigDir(const char* dir)
 {
 	if( dir == NULL )
@@ -475,3 +481,45 @@ void GSdxApp::SetConfig(const char* entry, int value)
 
 	SetConfig(entry, buff);
 }
+
+template<> void GSdxApp::SetTempConfig<CRCHackLevel>(CRCHackLevel value)
+{
+	m_cached_CRCHackLevel = value;
+}
+
+template<> void GSdxApp::SetTempConfig<GSRendererType>(GSRendererType value)
+{
+	m_cached_GSRendererType = value;
+}
+
+template<> CRCHackLevel GSdxApp::GetTempConfig<CRCHackLevel>()
+{
+	if (m_cached_CRCHackLevel != CRCHackLevel::Automatic)
+		return m_cached_CRCHackLevel;
+	CRCHackLevel iniValue = GetConfigT<CRCHackLevel>("crc_hack_level");
+	if (iniValue == CRCHackLevel::Automatic)
+	{
+		GSRendererType currentType = GetTempConfig<GSRendererType>();
+		if (currentType == GSRendererType::OGL_HW)
+			iniValue = CRCHackLevel::Partial;
+		else
+			iniValue = CRCHackLevel::Full;
+	}
+	SetTempConfig<CRCHackLevel>(iniValue);
+	return iniValue;
+}
+
+template<> GSRendererType GSdxApp::GetTempConfig<GSRendererType>()
+{
+	if (m_cached_GSRendererType != GSRendererType::Undefined)
+		return m_cached_GSRendererType;
+	GSRendererType iniValue = GetConfigT<GSRendererType>("Renderer");
+
+#ifdef _WIN32 // Unix autoselects OGL in GS.h
+	if (iniValue == GSRendererType::Default)
+		iniValue = GSUtil::GetBestRenderer();
+#endif
+	SetTempConfig<GSRendererType>(iniValue);
+	return iniValue;
+}
+
