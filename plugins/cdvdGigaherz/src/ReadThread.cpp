@@ -25,12 +25,6 @@ const u32 sectors_per_read = 16;
 static_assert(sectors_per_read > 1 && !(sectors_per_read & (sectors_per_read - 1)),
               "sectors_per_read must by a power of 2");
 
-struct CacheRequest
-{
-    u32 lsn;
-    s32 mode;
-};
-
 struct SectorInfo
 {
     u32 lsn;
@@ -39,11 +33,7 @@ struct SectorInfo
     u8 data[2352 * sectors_per_read];
 };
 
-const s32 prefetch_max_blocks = 16;
-s32 prefetch_mode = 0;
-s32 prefetch_last_lba = 0;
-s32 prefetch_last_mode = 0;
-s32 prefetch_left = 0;
+CacheRequest g_last_sector_block;
 
 static std::thread s_thread;
 
@@ -122,8 +112,9 @@ bool cdvdReadBlockOfSectors(u32 sector, s32 mode, u8 *data)
 {
     u32 count = std::min(sectors_per_read, src->GetSectorCount() - sector);
 
-    // TODO: Is it really necessary to retry 3 times if it fails?
-    for (int tries = 0; tries < 4; ++tries) {
+    // TODO: Is it really necessary to retry if it fails? I'm not sure the
+    // second time is really going to be any better.
+    for (int tries = 0; tries < 2; ++tries) {
         if (mode == CDVD_MODE_2048) {
             if (src->ReadSectors2048(sector, count, data))
                 return true;
@@ -175,6 +166,7 @@ bool cdvdUpdateDiscStatus()
 void cdvdThread()
 {
     u8 buffer[2352 * sectors_per_read];
+    u32 prefetches_left = 0;
 
     printf(" * CDVD: IO thread started...\n");
     std::unique_lock<std::mutex> guard(s_notify_lock);
@@ -183,15 +175,18 @@ void cdvdThread()
         if (cdvdUpdateDiscStatus()) {
             // Need to sleep some to avoid an aggressive spin that sucks the cpu dry.
             s_notify_cv.wait_for(guard, std::chrono::milliseconds(10));
+            prefetches_left = 0;
             continue;
         }
 
-        s_notify_cv.wait_for(guard, std::chrono::milliseconds(prefetch_left ? 1 : 250));
+        if (prefetches_left == 0)
+            s_notify_cv.wait_for(guard, std::chrono::milliseconds(250));
 
         // check again to make sure we're not done here...
         if (!cdvd_is_open)
             break;
 
+        // Read request
         bool handling_request = false;
         CacheRequest request;
 
@@ -201,26 +196,43 @@ void cdvdThread()
                 request = s_request_queue.front();
                 s_request_queue.pop();
                 handling_request = true;
-            } else {
-                request.lsn = prefetch_last_lba;
-                request.mode = prefetch_last_mode;
             }
         }
 
-        if (handling_request || prefetch_left) {
-            if (!cdvdCacheCheck(request.lsn, request.mode))
-                if (cdvdReadBlockOfSectors(request.lsn, request.mode, buffer))
-                    cdvdCacheUpdate(request.lsn, request.mode, buffer);
+        if (!handling_request) {
+            if (prefetches_left == 0)
+                continue;
 
-            if (handling_request) {
-                prefetch_last_lba = request.lsn;
-                prefetch_last_mode = request.mode;
+            --prefetches_left;
 
-                prefetch_left = prefetch_max_blocks;
+            u32 next_prefetch_lsn = g_last_sector_block.lsn + sectors_per_read;
+            request = {next_prefetch_lsn, g_last_sector_block.mode};
+        }
+
+        // Handle request
+        if (!cdvdCacheCheck(request.lsn, request.mode)) {
+            if (cdvdReadBlockOfSectors(request.lsn, request.mode, buffer)) {
+                cdvdCacheUpdate(request.lsn, request.mode, buffer);
             } else {
-                prefetch_last_lba += sectors_per_read;
-                prefetch_left--;
+                // If the read fails, further reads are likely to fail too.
+                prefetches_left = 0;
+                continue;
             }
+        }
+
+        g_last_sector_block = request;
+
+        if (!handling_request)
+            continue;
+
+        // Prefetch
+        u32 next_prefetch_lsn = g_last_sector_block.lsn + sectors_per_read;
+        if (next_prefetch_lsn >= src->GetSectorCount()) {
+            prefetches_left = 0;
+        } else {
+            const u32 max_prefetches = 16;
+            u32 remaining = src->GetSectorCount() - next_prefetch_lsn;
+            prefetches_left = std::min((remaining + sectors_per_read - 1) / sectors_per_read, max_prefetches);
         }
     }
     printf(" * CDVD: IO thread finished.\n");
