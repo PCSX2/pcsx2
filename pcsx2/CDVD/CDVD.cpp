@@ -1048,9 +1048,9 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead07(Break) %x", 0);
 			return 0;
 
-		case 0x08:  // STATUS
-			CDVD_LOG("cdvdRead08(Status) %x", cdvd.Status);
-			return cdvd.Status;
+		case 0x08:  // INTR_STAT
+			CDVD_LOG("cdvdRead08(IntrReason) %x", cdvd.PwOff);
+			return cdvd.PwOff;
 
 		case 0x0A:  // STATUS
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
