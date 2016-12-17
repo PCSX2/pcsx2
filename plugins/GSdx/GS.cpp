@@ -506,6 +506,8 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	static bool stored_toggle_state = false;
 	bool toggle_state = !!(flags & 4);
 
+	theApp.ClearTempConfig();
+
 	GSRendererType renderer = s_renderer;
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
