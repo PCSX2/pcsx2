@@ -63,18 +63,9 @@ public:
 	bool   GetConfigB(const char* entry);
 	string GetConfigS(const char* entry);
 
-	template<typename T>
-	T GetTempConfig() {
-		throw GSDXError();
-	}
-
-	template<typename T>
-	void SetTempConfig(T value) {
-		throw GSDXError();
-	}
-
+	template<typename T> T GetTempConfig();
+	template<typename T> void SetTempConfig(T value);
 	void ClearTempConfig();
-	
 	void SetConfigDir(const char* dir);
 
 	vector<GSSetting> m_gs_renderers;
@@ -106,10 +97,7 @@ template<> void GSdxApp::SetTempConfig<CRCHackLevel>(CRCHackLevel value);
 template<> void GSdxApp::SetTempConfig<GSRendererType>(GSRendererType value);
 
 
-template<typename T>
-void TempOverwriteConfig() {
-	printf("GSdx: Was not able to find a cached version of type '%s' to write.\n", typeid(type).name());
-}
+
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};

@@ -523,3 +523,5 @@ template<> GSRendererType GSdxApp::GetTempConfig<GSRendererType>()
 	return iniValue;
 }
 
+template<typename T> T GSdxApp::GetTempConfig() {throw GSDXError();}
+template<typename T> void GSdxApp::SetTempConfig(T value) {throw GSDXError();}
