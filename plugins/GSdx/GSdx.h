@@ -30,6 +30,8 @@ class GSdxApp
 	std::string m_section;
 	std::map< std::string, std::string > m_default_configuration;
 	std::map< std::string, std::string > m_configuration_map;
+	GSRendererType m_cached_GSRendererType = GSRendererType::Undefined;
+	CRCHackLevel m_cached_CRCHackLevel = CRCHackLevel::Automatic;
 
 	void BuildConfigurationMap(const char* lpFileName);
 	size_t GetIniEntryString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
@@ -81,9 +83,6 @@ public:
 	vector<GSSetting> m_gpu_dithering;
 	vector<GSSetting> m_gpu_aspectratio;
 	vector<GSSetting> m_gpu_scale;
-
-	GSRendererType m_cached_GSRendererType = GSRendererType::Undefined;
-	CRCHackLevel m_cached_CRCHackLevel = CRCHackLevel::Automatic;
 };
 
 template<> CRCHackLevel GSdxApp::GetTempConfig<CRCHackLevel>();

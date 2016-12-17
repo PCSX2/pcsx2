@@ -523,5 +523,6 @@ template<> GSRendererType GSdxApp::GetTempConfig<GSRendererType>()
 	return iniValue;
 }
 
+// throw if somebody wants to access a settings that is not cached
 template<typename T> T GSdxApp::GetTempConfig() {throw GSDXError();}
 template<typename T> void GSdxApp::SetTempConfig(T value) {throw GSDXError();}
