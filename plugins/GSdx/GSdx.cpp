@@ -66,7 +66,9 @@ bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type
 	return false;
 }
 
-size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
+#endif
+
+size_t GSdxApp::GetIniEntryString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -82,7 +84,7 @@ size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKey
     return 0;
 }
 
-bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
+bool GSdxApp::WriteIniEntryString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -109,7 +111,7 @@ bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKey
 	return false;
 }
 
-int GSdxApp::GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
+int GSdxApp::GetIniEntryInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -121,7 +123,7 @@ int GSdxApp::GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, 
 	} else
 		return atoi(value.c_str());
 }
-#endif
+
 
 GSdxApp theApp;
 
@@ -366,7 +368,6 @@ void GSdxApp::Init()
 	m_default_configuration["vsync"]                                      = "0";
 }
 
-#if defined(__unix__)
 void GSdxApp::ReloadConfig()
 {
 	if (m_configuration_map.empty()) return;
@@ -404,7 +405,6 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 
 	fclose(f);
 }
-#endif
 
 void* GSdxApp::GetModuleHandlePtr()
 {
@@ -442,10 +442,10 @@ string GSdxApp::GetConfigS(const char* entry)
 	auto def = m_default_configuration.find(entry);
 
 	if (def != m_default_configuration.end()) {
-		GetPrivateProfileString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+		GetIniEntryString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
 	} else {
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetPrivateProfileString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+		GetIniEntryString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
 	}
 
 	return string(buff);
@@ -453,7 +453,7 @@ string GSdxApp::GetConfigS(const char* entry)
 
 void GSdxApp::SetConfig(const char* entry, const char* value)
 {
-	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
+	WriteIniEntryString(m_section.c_str(), entry, value, m_ini.c_str());
 }
 
 int GSdxApp::GetConfigI(const char* entry)
@@ -461,10 +461,10 @@ int GSdxApp::GetConfigI(const char* entry)
 	auto def = m_default_configuration.find(entry);
 
 	if (def != m_default_configuration.end()) {
-		return GetPrivateProfileInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
+		return GetIniEntryInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
 	} else {
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		return GetPrivateProfileInt(m_section.c_str(), entry, 0, m_ini.c_str());
+		return GetIniEntryInt(m_section.c_str(), entry, 0, m_ini.c_str());
 	}
 }
 

@@ -29,9 +29,12 @@ class GSdxApp
 	std::string m_ini;
 	std::string m_section;
 	std::map< std::string, std::string > m_default_configuration;
-#if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
-#endif
+
+	void BuildConfigurationMap(const char* lpFileName);
+	size_t GetIniEntryString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
+	bool WriteIniEntryString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
+	int GetIniEntryInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 
 public:
 	GSdxApp();
@@ -41,15 +44,6 @@ public:
 
 #ifdef _WIN32
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
-#endif
-
-#if defined(__unix__)
-	void BuildConfigurationMap(const char* lpFileName);
-	void ReloadConfig();
-
-	size_t GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
-	bool WritePrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
-	int GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 #endif
 
 	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
@@ -67,6 +61,7 @@ public:
 	template<typename T> void SetTempConfig(T value);
 	void ClearTempConfig();
 	void SetConfigDir(const char* dir);
+	void ReloadConfig();
 
 	vector<GSSetting> m_gs_renderers;
 	vector<GSSetting> m_gs_interlace;
