@@ -130,8 +130,7 @@ void MainEmuFrame::OnCloseWindow(wxCloseEvent& evt)
 
 	sApp.OnMainFrameClosed( GetId() );
 
-	if( m_menubar.FindItem(MenuId_IsoSelector) )
-		m_menuCDVD.Remove(MenuId_IsoSelector);
+	RemoveCdvdMenu();
 
 	RemoveEventHandler( &wxGetApp().GetRecentIsoManager() );
 	wxGetApp().PostIdleAppMethod( &Pcsx2App::PrepForExit );
@@ -458,10 +457,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	wxMenu& isoRecents( wxGetApp().GetRecentIsoMenu() );
 
 	//m_menuCDVD.AppendSeparator();
-	// FIXME: VS2015 thinks there's a memory issue here and there probably is one.
-	// The submenu is owned by a unique_ptr, but any menu that is attached to a
-	// menubar or another menu will be deleted by its parent.
-	m_menuCDVD.Append( MenuId_IsoSelector,	_("ISO &Selector"), &isoRecents );
+	m_menuItem_RecentIsoMenu = m_menuCDVD.AppendSubMenu(&isoRecents, _("ISO &Selector"));
 	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 
 	m_menuCDVD.AppendSeparator();

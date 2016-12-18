@@ -101,8 +101,11 @@ static void WipeSettings()
 
 void MainEmuFrame::RemoveCdvdMenu()
 {
-	if( wxMenuItem* item = m_menuCDVD.FindItem(MenuId_IsoSelector) )
-		m_menuCDVD.Remove( item );
+	// Delete() keeps the sub menu and delete the menu item.
+	// Remove() does not delete the menu item.
+	if (m_menuItem_RecentIsoMenu)
+		m_menuCDVD.Delete(m_menuItem_RecentIsoMenu);
+	m_menuItem_RecentIsoMenu = nullptr;
 }
 
 void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent &event)

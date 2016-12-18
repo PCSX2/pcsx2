@@ -115,6 +115,7 @@ protected:
 	wxMenu&			m_LoadStatesSubmenu;
 	wxMenu&			m_SaveStatesSubmenu;
 
+	wxMenuItem*		m_menuItem_RecentIsoMenu;
 	wxMenuItem&		m_MenuItem_Console;
 #if defined(__unix__)
 	wxMenuItem&		m_MenuItem_Console_Stdio;
