@@ -272,16 +272,8 @@ static u16 dVifComputeLength(uint cl, uint wl, u8 num, bool isFill) {
 	return std::min(length, 0xFFFFu);
 }
 
-_vifT __fi void dVifCompile(nVifBlock& block, bool isFill) {
+_vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill) {
 	nVifStruct& v = nVif[idx];
-	nVifBlock*  b = v.vifBlocks.find(block);
-
-	//  Cache hit
-	if (likely(b != nullptr)) {
-		block.startPtr = b->startPtr;
-		block.length = b->length;
-		return;
-	}
 
 	// Check size before the compilation
 	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb)) {
@@ -303,7 +295,7 @@ _vifT __fi void dVifCompile(nVifBlock& block, bool isFill) {
 	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, block.upkType /* FIXME ideally a key*/);
 	v.recWritePtr = xGetPtr();
 
-	return;
+	return &block;
 }
 
 _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
@@ -337,7 +329,11 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	//	doMask >> 4, doMask ? wxsFormat( L"0x%08x", block.mask ).c_str() : L"ignored"
 	//);
 
-	dVifCompile<idx>(block, isFill);
+	// Seach in cache before trying to compile the block
+	nVifBlock*  b = v.vifBlocks.find(block);
+	if (unlikely(b == nullptr)) {
+		b = dVifCompile<idx>(block, isFill);
+	}
 
 	{ // Execute the block
 		const VURegs& VU         = vuRegs[idx];
@@ -346,9 +342,9 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 		u8*  startmem = VU.Mem + (vif.tag.addr & (vuMemLimit-0x10));
 		u8*  endmem   = VU.Mem + vuMemLimit;
 
-		if (likely((startmem + block.length) <= endmem)) {
+		if (likely((startmem + b->length) <= endmem)) {
 			// No wrapping, you can run the fast dynarec
-			((nVifrecCall)block.startPtr)((uptr)startmem, (uptr)data);
+			((nVifrecCall)b->startPtr)((uptr)startmem, (uptr)data);
 		} else {
 			VIF_LOG("Running Interpreter Block: nVif%x - VU Mem Ptr Overflow; falling back to interpreter. Start = %x End = %x num = %x, wl = %x, cl = %x",
 					v.idx, vif.tag.addr, vif.tag.addr + (block.num * 16), block.num, block.wl, block.cl);
