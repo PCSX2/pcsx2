@@ -307,7 +307,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill) {
 	const u8	upkType   = (vif.cmd & 0x1f) | (vif.usn << 5);
 	const int	doMask    = isFill? 1 : (vif.cmd & 0x10);
 
-	__aligned16 nVifBlock   block;
+	nVifBlock   block;
 
 	// Performance note: initial code was using u8/u16 field of the struct
 	// directly. However reading back the data (as u32) in HashBucket.find

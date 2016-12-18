@@ -19,7 +19,7 @@
 
 // nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are
 //             used as the hash bucket selector.
-union __aligned16 nVifBlock {
+union nVifBlock {
 	// Warning: order depends on the newVifDynaRec code
 	struct {
 		u8 num;			// [00] Num Field
@@ -85,7 +85,8 @@ public:
 		u32 size = bucket_size( dataPtr );
 
 		// Warning there is an extra +1 due to the empty cell
-		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 16, sizeof(nVifBlock)*(size+1) )) == NULL ) {
+		// Performance note: 64B align to reduce cache miss penalty in `find`
+		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 64, sizeof(nVifBlock)*(size+1) )) == NULL ) {
 			throw Exception::OutOfMemory(
 				wxsFormat(L"HashBucket Chain (bucket size=%d)", size+2)
 			);
@@ -121,7 +122,7 @@ public:
 
 		// Allocate an empty cell for all buckets
 		for (auto& bucket : m_bucket) {
-			if( (bucket = (nVifBlock*)_aligned_malloc( sizeof(nVifBlock), 16 )) == nullptr ) {
+			if( (bucket = (nVifBlock*)_aligned_malloc( sizeof(nVifBlock), 64 )) == nullptr ) {
 				throw Exception::OutOfMemory(
 						wxsFormat(L"HashBucket Chain (bucket size=%d)", 1)
 						);
