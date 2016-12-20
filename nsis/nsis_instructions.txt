@@ -54,9 +54,7 @@
  * Once you have downloaded both Microsoft packages and built the required plugins; you are ready to compile! :)
  
  * Open MakeNSIS.exe and compile script (pcsx2_full_install.nsi)!
-   Output executables will be generated to the local git repo; in the "pcsx2/nsis/output" folder.
- 
- * If compiler fails, make sure that the output folder in the path shown above
+   Output executables will be generated to the local git repo; in the "pcsx2/nsis" folder.
 
 --------------------------------------------
       Recommendations to Developers
