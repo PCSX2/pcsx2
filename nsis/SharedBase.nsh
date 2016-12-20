@@ -12,13 +12,6 @@
   !define INC_PLUGINS   1
 !endif
 
-!ifndef USE_PACKAGE_REV
-  ; When enabled, all exe and plugins use a single revision based ont he trunk/HEAD svn revision.
-  ; When disabled, each plugin and the main exe get their own revision number based on the actual
-  ; revision the component was last updated.
-  !define USE_PACKAGE_REV 0
-!endif
-
 ; Notes on Uninstall Log Location (UNINSTALL_LOG)
 ;   The name of the uninstall log determines whether or not future installers
 ;   fall under the same single uninstall entry, or if they use multiple (separate)
@@ -45,7 +38,8 @@ SetCompressorDictSize 24
 ; The name of the installer
 Name "${APP_NAME}"
 
-OutFile "output\pcsx2-${APP_VERSION}-${OUTFILE_POSTFIX}.exe"
+; Output the installer to the nsis folder (in git repo)
+OutFile "pcsx2-${APP_VERSION}-${OUTFILE_POSTFIX}.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\PCSX2 ${APP_VERSION}"
