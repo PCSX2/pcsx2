@@ -2889,7 +2889,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_SSE(int pixels, int mip_offset)
 				movdqa(ptr[&m_local.temp.test], xmm7);
 			}
 
-			for(int j = 0; j < 4; j++)
+			for(uint8 j = 0; j < 4; j++)
 			{
 				mov(ebx, ptr[&lod_i->u32[j]]);
 				mov(ebx, ptr[ebp + ebx * sizeof(void*) + mip_offset]);
@@ -3042,7 +3042,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel_SSE(int pixels, int mip_offset)
 		{
 			for(int i = 0; i < pixels; i++)
 			{
-				for(int j = 0; j < 4; j++)
+				for(uint8 j = 0; j < 4; j++)
 				{
 					ReadTexel_SSE(Xmm(r[i * 2 + 1]), Xmm(r[i * 2 + 0]), j);
 				}
