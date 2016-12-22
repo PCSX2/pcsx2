@@ -17635,6 +17635,11 @@ Name   = Ben 10: Alien Force - Vilgax Attacks
 Region = PAL-M5
 Compat = 4
 ---------------------------------------------
+Serial = SLES-55597
+Name   = Hugo: Magic in the Trollwoods
+Region = PAL
+Compat = 5
+---------------------------------------------
 Serial = SLES-55593
 Name   = Astro Boy - The Video Game
 Region = PAL-M5
