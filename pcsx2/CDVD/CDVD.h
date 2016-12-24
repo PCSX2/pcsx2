@@ -100,6 +100,8 @@ struct cdvdStruct {
 	u8 CReadWrite;
 	u8 CNumBlocks;
 
+	// Calculates the number of Vsyncs and once it reaches a total number of Vsyncs worth a second with respect to
+	// the videomode's vertical frequency, it updates the real time clock.
 	int RTCcount;
 	cdvdRTC RTC;
 
