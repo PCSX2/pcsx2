@@ -123,7 +123,6 @@ struct SyncCounter
 #define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
 
 
-extern Fixed100 GetVerticalFrequency();
 extern Counter counters[4];
 extern SyncCounter hsyncCounter;
 extern SyncCounter vsyncCounter;
