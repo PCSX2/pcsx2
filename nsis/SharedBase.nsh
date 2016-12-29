@@ -27,8 +27,6 @@
 
 !define INSTDIR_REG_ROOT "HKLM"
 
-XPStyle on
-
 ; LZMA is the best, by far, so let's make sure it's always in use:
 ;  (dictionaries larger than 24MB don't seem to help)
 SetCompressor /SOLID lzma
