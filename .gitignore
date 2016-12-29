@@ -76,7 +76,6 @@ oprofile_data/
 /bin/sstates
 /deps
 /ipch
-/nsis/output/
 
 !/3rdparty/libjpeg/change.log
 /3rdparty/portaudio/portaudio-2.0.pc
@@ -95,13 +94,6 @@ oprofile_data/
 /3rdparty/portaudio/src/hostapi/wasapi/mingw-include
 /3rdparty/**/include/wx/setup.h
 /3rdparty/**/wx/msw/rcdefs.h
-/nsis/svnrev_cdvdiso.nsh
-/nsis/svnrev_gsdx.nsh
-/nsis/svnrev_lilypad.nsh
-/nsis/svnrev_pcsx2.nsh
-/nsis/svnrev_spu2x.nsh
-/nsis/svnrev_zerogs.nsh
-/nsis/svnrev_zerospu2.nsh
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
 /plugins/CDVDolio/Template

@@ -15,10 +15,10 @@
 
   SetShellVarContext all
   ;SetShellVarContext current
-  
+
   SetOutPath "$INSTDIR"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File			..\bin\pcsx2.exe
+    File ..\bin\pcsx2.exe
     ;File /nonfatal ..\bin\pcsx2-dev.exe
 
   ; ------------------------------------------
@@ -26,39 +26,30 @@
   ; ------------------------------------------
   ; (Binaries, shared DLLs, null plugins, game database, languages, etc)
 
-    File                                            ..\bin\GameIndex.dbf
-    File                                            ..\bin\cheats_ws.zip
-	File                                            ..\bin\PCSX2_keys.ini.default
+    File ..\bin\GameIndex.dbf
+    File ..\bin\cheats_ws.zip
+    File ..\bin\PCSX2_keys.ini.default
 
-	!insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-	
-	;/bin/Cheats needs CreateDirectory to prevent MakeNSIS from failing due to the folder being empty
-    !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    CreateDirectory                                 "$INSTDIR\Cheats"
-	!insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-    
+    !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
+
     SetOutPath "$INSTDIR\Docs"
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File                                            ..\bin\docs\*
+    File ..\bin\docs\*
     !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-	
-	SetOutPath "$INSTDIR\Shaders"
+
+    SetOutPath "$INSTDIR\Shaders"
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File                                            ..\bin\shaders\*
+    File ..\bin\shaders\*
     !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-    
+
     SetOutPath "$INSTDIR\Plugins"
-	!insertmacro UNINSTALL.LOG_OPEN_INSTALL
+    !insertmacro UNINSTALL.LOG_OPEN_INSTALL
     ; NULL plugins are required, because the PCSX2 plugin selector needs a dummy plugin in every slot
-    ; in order to run (including CDVD!) -- and really there should be more but we don't have working
-    ; SPU2 null plugins right now.
- 
-    ;File ..\bin\Plugins\GSnull.dll
-    ;File ..\bin\Plugins\SPU2null.dll            
+    ; in order to run (including CDVD!)
+
     File ..\bin\Plugins\USBnull.dll
     File ..\bin\Plugins\DEV9null.dll
     File ..\bin\Plugins\FWnull.dll
-    ;File ..\bin\Plugins\CDVDnull.dll
   !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
 
 
@@ -68,7 +59,7 @@
 
   ; Write the installation path into the registry
   WriteRegStr HKLM Software\PCSX2 "Install_Dir" "$INSTDIR"
-  
+
   ; Write the uninstall keys for Windows
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - Playstation 2 Emulator"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "${UNINST_EXE}"
