@@ -288,7 +288,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
         return temp;
     }
     /* Get text from the buttons. */
-    if (command >= 0x0C && command <= 0x28) {
+    if (command >= 0x0C && command <= 0x29) {
         HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
         if (!hWnd) {
             wchar_t *strings[] = {
@@ -321,6 +321,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
                 L"R-Stick Down",
                 L"R-Stick Left",
                 L"Analog",
+                L"Excluded Input",
             };
             return strings[command - 0xC];
         }
@@ -1614,24 +1615,35 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 InitInfo info = {selected == 0x7F, 1, hWndProp, &hWndButtonProc};
                 Device *dev = dm->GetActiveDevice(&info, &uid, &index, &value);
                 int selectedDevice = config.deviceSelect[port][slot];
-                if (dev && (selectedDevice == -1 || dm->devices[selectedDevice] == dev)) {
-                    int command = selected;
-                    // Good idea to do this first, as BindCommand modifies the ListView, which will
-                    // call it anyways, which is a bit funky.
-                    EndBinding(hWnd);
-                    UnselectAll(hWndList);
-                    int index = -1;
-                    if (command == 0x7F && dev->api == IGNORE_KEYBOARD) {
-                        index = BindCommand(dev, uid, 0, 0, 0, command, BASE_SENSITIVITY, 0, 0, 0);
-                    } else if (command < 0x30) {
-                        index = BindCommand(dev, uid, port, slot, padtype, command, BASE_SENSITIVITY, 0, 0, 0);
+
+                if (dev == nullptr || (selectedDevice != -1 && dm->devices[selectedDevice] != dev))
+                    return 0;
+
+                //Check the bindings for an excluded input, and ignore it if found.
+                PadBindings *p_c = dev->pads[port][slot] + padtype;
+                for (int i = 0; i < p_c->numBindings; i++) {
+                    Binding *b2 = p_c->bindings + i;
+                    int uid2 = dev->virtualControls[b2->controlIndex].uid;
+                    if (b2->command == 0x29 && uid == uid2) {
+                        return 0;
                     }
-                    if (index >= 0) {
-                        PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
-                        ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
-                        ListView_EnsureVisible(hWndList, index, 0);
-                        config.bind = true;
-                    }
+                }
+
+                int command = selected;
+                // Good idea to do this first, as BindCommand modifies the ListView, which will
+                // call it anyways, which is a bit funky.
+                EndBinding(hWnd);
+                UnselectAll(hWndList);
+                int index = -1;
+                if (command < 0x30) {
+                    index = BindCommand(dev, uid, port, slot, padtype, command, BASE_SENSITIVITY, 0, 0, 0);
+                }
+                if (index >= 0) {
+                    PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
+                    ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
+                    ListView_EnsureVisible(hWndList, index, 0);
+                    config.bind = true;
+                    ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                 }
             }
             break;
@@ -1851,7 +1863,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             SetTimer(hWnd, 1, 3000, 0);
                         }
                     }
-                } else if ((cmd >= ID_LOCK_BUTTONS && cmd <= ID_ANALOG) || cmd == ID_IGNORE) { // || cmd == ID_FORCE_FEEDBACK) {
+                } else if ((cmd >= ID_LOCK_BUTTONS && cmd <= ID_EXCLUDE) || cmd == ID_IGNORE) { // || cmd == ID_FORCE_FEEDBACK) {
                     // Messes up things, unfortunately.
                     // End binding on a bunch of notification messages, and
                     // this will send a bunch.
