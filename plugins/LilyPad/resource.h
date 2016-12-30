@@ -14,6 +14,7 @@
 #define IDR_INI1                        111
 #define IDD_CONFIG_POPN                 112
 #define IDD_CONFIG_PS1_MOUSE            113
+#define IDD_CONFIG_NEGCON               114
 #define IDC_CLOSE_HACK1                 1099
 #define IDC_KB_DISABLE                  1100
 #define IDC_KB_DI                       1101
@@ -104,6 +105,7 @@
 #define ID_FORCEFEEDBACK_BOX            0x111E
 #define IDC_CONFIGURE_ON_BIND           0x111F
 #define IDC_DEVICE_SELECT               0x1120
+#define IDC_FACE_ANALOG                 0x1121
 #define IDC_BINDINGS_LIST               0x1200
 #define ID_SAVE                         0x1201
 #define ID_LOAD                         0x1202

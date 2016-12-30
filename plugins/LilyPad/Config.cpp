@@ -39,7 +39,8 @@ const wchar_t *padTypes[] = {
     L"Dualshock 2",
     L"Guitar",
     L"Pop'n Music controller",
-    L"PS1 Mouse"};
+    L"PS1 Mouse",
+    L"neGcon"};
 
 // Hacks or configurations which PCSX2 needs with a specific value
 void PCSX2_overrideConfig(GeneralConfig &config_in_out)
@@ -496,7 +497,7 @@ void SelChanged(int port, int slot)
         }
     }
 
-    for (i = IDC_DPAD; i <= IDC_DEVICE_SELECT; i++) {
+    for (i = IDC_DPAD; i <= IDC_FACE_ANALOG; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
             ShowWindow(hWndTemp, !ffb && !b);
@@ -2017,6 +2018,8 @@ void UpdatePadPages()
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_POPN);
             else if (config.padConfigs[port][slot].type == MousePad)
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_PS1_MOUSE);
+            else if (config.padConfigs[port][slot].type == neGconPad)
+                psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_NEGCON);
             else
                 psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG);
 

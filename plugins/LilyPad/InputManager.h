@@ -38,6 +38,7 @@ enum PadType {
     GuitarPad,
     PopnPad,
     MousePad,
+    neGconPad,
     numPadTypes // total number of PadTypes. Add new PadType above this line.
 };
 

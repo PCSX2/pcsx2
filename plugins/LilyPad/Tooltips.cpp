@@ -51,7 +51,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"\"Dualshock 2\" emulates the default PS2 controller for use in both PS1 and PS2 games.\n\n"
                    L"\"Guitar\" emulates a PS2 controller used in the Guitar Hero and Rock Band series of games.\n\n"
                    L"\"Pop'n Music controller\" emulates a PS2 controller used exclusively in the Japanese Pop'n Music series of games.\n\n"
-                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".";
+                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".\n\n"
+                   L"\"neGcon\" emulates a controller that can be used in a number of PS1 games and PS2 games like the \"Ridge Racer\" and \"Ace Combat\" series.";
         case IDC_ANALOG_START1:
             return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
