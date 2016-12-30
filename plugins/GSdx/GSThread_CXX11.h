@@ -24,6 +24,88 @@
 #include "GSdx.h"
 #include "boost_spsc_queue.hpp"
 
+#define QUEUE_SEM
+
+#ifdef QUEUE_SEM
+
+#include <semaphore.h>
+#include <errno.h> // EBUSY
+#include <pthread.h>
+
+template<class T, int CAPACITY> class GSJobQueue final
+{
+private:
+	std::thread m_thread;
+	std::function<void(T&)> m_func;
+	std::atomic<bool> m_exit;
+	std::atomic<int32_t> m_count;
+	ringbuffer_base<T, CAPACITY> m_queue;
+
+    sem_t m_sem_work;
+
+	void ThreadProc() {
+		while (true) {
+			sem_wait(&m_sem_work);
+
+			if (m_exit.load(memory_order_relaxed)) {
+				return;
+			}
+
+			m_queue.consume_one(*this);
+
+			m_count--;
+		}
+	}
+
+public:
+	GSJobQueue(std::function<void(T&)> func) :
+		m_func(func),
+		m_exit(false),
+		m_count(0)
+	{
+		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
+		sem_init(&m_sem_work, false, 0);
+	}
+
+	~GSJobQueue()
+	{
+		m_exit = true;
+		sem_post(&m_sem_work);
+
+		m_thread.join();
+
+		sem_destroy(&m_sem_work);
+
+	}
+
+	bool IsEmpty() {
+		// Warning: You can't check the value of the semaphore (it could be busy processing last element)
+		return m_count <= 0;
+	}
+
+	void Push(const T& item) {
+		while(!m_queue.push(item))
+			std::this_thread::yield();
+
+		m_count++;
+
+		sem_post(&m_sem_work);
+	}
+
+	void Wait() {
+		while(!IsEmpty())
+			std::this_thread::yield();
+
+		ASSERT(IsEmpty());
+	}
+
+	void operator() (T& item) {
+		m_func(item);
+	}
+};
+
+#else
+
 template<class T, int CAPACITY> class GSJobQueue final
 {
 private:
@@ -121,3 +203,5 @@ public:
 		m_func(item);
 	}
 };
+
+#endif
