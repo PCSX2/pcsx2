@@ -41,19 +41,27 @@ private:
 	std::atomic<int32_t> m_count;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
-    sem_t m_sem_work;
+	std::mutex m_busy_lock;
+	sem_t m_sem_work;
 
 	void ThreadProc() {
 		while (true) {
 			sem_wait(&m_sem_work);
 
+			std::unique_lock<std::mutex> l(m_busy_lock);
+
 			if (m_exit.load(memory_order_relaxed)) {
 				return;
 			}
 
-			m_queue.consume_one(*this);
+			do {
+				m_queue.consume_one(*this);
 
-			m_count--;
+				m_count--;
+
+				// If there is a pending job, ack the semaphore (won't block in most case)
+				// It avoids to lock/unlock & check m_exit for each job.
+			} while (m_count > 0 && sem_wait(&m_sem_work) == 0);
 		}
 	}
 
@@ -70,7 +78,8 @@ public:
 	~GSJobQueue()
 	{
 		m_exit = true;
-		sem_post(&m_sem_work);
+		m_count = -1; // Stop the thread inner-loop
+		sem_post(&m_sem_work); // Awake the thread to check m_exit condition
 
 		m_thread.join();
 
@@ -93,8 +102,17 @@ public:
 	}
 
 	void Wait() {
-		while(!IsEmpty())
-			std::this_thread::yield();
+		while(!IsEmpty()) {
+#if 1
+			std::unique_lock<std::mutex> l(m_busy_lock);
+#else
+			// Spin wait if a single job remain on the queue.
+			if (m_count > 1)
+				std::unique_lock<std::mutex> l(m_busy_lock);
+			else
+				std::this_thread::yield();
+#endif
+		}
 
 		ASSERT(IsEmpty());
 	}
