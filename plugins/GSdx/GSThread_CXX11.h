@@ -50,7 +50,7 @@ private:
 				m_notempty.wait(l);
 			}
 
-			int32_t nb = m_count
+			int32_t nb = m_count;
 
 			l.unlock();
 
