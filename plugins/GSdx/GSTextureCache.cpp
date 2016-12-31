@@ -414,8 +414,8 @@ void GSTextureCache::ScaleTexture(GSTexture* texture)
 
 	if (custom_resolution)
 	{
-		int width = m_renderer->GetDisplayRect().width();
-		int height = m_renderer->GetDisplayRect().height();
+		int width = m_renderer->GetDisplayRect(-1, true).width();
+		int height = m_renderer->GetDisplayRect(-1, true).height();
 		int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / texture->GetScale().y));
 
 		// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
