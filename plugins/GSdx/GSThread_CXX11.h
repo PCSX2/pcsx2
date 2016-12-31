@@ -72,8 +72,9 @@ public:
 		m_count(0),
 		m_queue()
 	{
-		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
+		// Turtleli: must be done before thread creation. Otherwise the semaphore can remain uninitialised
 		sem_init(&m_sem_work, false, 0);
+		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
 
 	~GSJobQueue()
