@@ -69,7 +69,8 @@ public:
 	GSJobQueue(std::function<void(T&)> func) :
 		m_func(func),
 		m_exit(false),
-		m_count(0)
+		m_count(0),
+		m_queue()
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 		sem_init(&m_sem_work, false, 0);
