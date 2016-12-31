@@ -57,11 +57,11 @@ private:
 			do {
 				m_queue.consume_one(*this);
 
-				m_count--;
+				m_count.fetch_sub(1);
 
 				// If there is a pending job, ack the semaphore (won't block in most case)
 				// It avoids to lock/unlock & check m_exit for each job.
-			} while (m_count > 0 && sem_wait(&m_sem_work) == 0);
+			} while (sem_trywait(&m_sem_work) == 0);
 		}
 	}
 
@@ -72,7 +72,8 @@ public:
 		m_count(0),
 		m_queue()
 	{
-		// Turtleli: must be done before thread creation. Otherwise the semaphore can remain uninitialised
+		// It must be done before thread creation. Otherwise the
+		// semaphore WAIT (inside the thread) won't work
 		sem_init(&m_sem_work, false, 0);
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
@@ -105,14 +106,14 @@ public:
 
 	void Wait() {
 		while(!IsEmpty()) {
+			// Avoid any issue if ThreadProc didn't take the lock yet
+			std::this_thread::yield();
 #if 1
 			std::unique_lock<std::mutex> l(m_busy_lock);
 #else
 			// Spin wait if a single job remain on the queue.
 			if (m_count > 1)
 				std::unique_lock<std::mutex> l(m_busy_lock);
-			else
-				std::this_thread::yield();
 #endif
 		}
 
