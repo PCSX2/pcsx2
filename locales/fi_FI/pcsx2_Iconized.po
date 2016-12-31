@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2016-02-21 11:51+0100\n"
+"POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2012-05-20 13:26+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: kmartimo <kimmo.martimo@gmail.com>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:275
+#: common/src/Utilities/Exceptions.cpp:268
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -32,7 +32,7 @@ msgstr ""
 "virtuaalimuistin kartoitukset on jo varattu muille prosseille, palveluille "
 "tai DLLeille."
 
-#: pcsx2/CDVD/CDVD.cpp:397
+#: pcsx2/CDVD/CDVD.cpp:401
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -41,7 +41,12 @@ msgstr ""
 "PCSX2 ei tue Playstationin pelilevyjä. Jos haluat emuloida PSX-pelejä, sinun "
 "täytyy ladata PSX-emulaattori, kuten ePSXe tai PCSX."
 
-#: pcsx2/System.cpp:133
+#: pcsx2/CDVD/CDVD.cpp:2054
+msgid ""
+"Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
+msgstr ""
+
+#: pcsx2/System.cpp:112
 #, fuzzy
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -56,7 +61,7 @@ msgstr ""
 "yrittää vähentää oletusarvoisia välimuistin kokoja kaikille PCSX2:den "
 "uudelleenkääntäjille. Asetukset löytyvät isäntäasetuksista."
 
-#: pcsx2/System.cpp:375
+#: pcsx2/System.cpp:354
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -83,7 +88,7 @@ msgstr ""
 "manuaalisesti ottamaan käyttöön yllä listatut uudelleenkääntäjät, jos saat "
 "virheet ratkaistua."
 
-#: pcsx2/gui/AppMain.cpp:161
+#: pcsx2/gui/AppMain.cpp:154
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -317,7 +322,7 @@ msgstr ""
 "Tämä toiminto resetoi olemassaolevan PS2-virtuaalikoneen tilan; kaikki "
 "nykyiset tiedot menetetään.  Oletko varma?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:115
+#: pcsx2/gui/MainMenuClicks.cpp:118
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -338,7 +343,7 @@ msgstr ""
 "\n"
 "(huom. liitännäisten asetuksia ei poisteta)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:525
+#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -350,7 +355,7 @@ msgstr ""
 "ja ottaa se uudestaan käyttöön milloin tahansa valikosta Asetukset: "
 "Muistikortit."
 
-#: pcsx2/gui/MemoryCardFolder.h:530
+#: pcsx2/gui/MemoryCardFolder.h:539
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr ""
@@ -367,7 +372,7 @@ msgstr ""
 msgid "Notice: Most games are fine with the default options. "
 msgstr "Huomautus: Useimmat pelit toimivat hyvin oletusasetuksilla."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:179
+#: pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
 msgstr "Huomautus: Useimmat pelit toimivat hyvin oletusasetuksilla."
 
@@ -384,7 +389,7 @@ msgstr ""
 "Kun valittu, tämä kansio automaattisesti kuvaa PCSX2:den nykyiseen "
 "käyttäjätila-asetukseen liitettyä oletusarvoa."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:54
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -408,7 +413,7 @@ msgstr ""
 "CTRL + NUMERONÄPPÄIMISTÖ-MIINUS: Zoomaus ulos\n"
 "CTRL + NUMERONÄPPÄIMISTÖ-*: Vaihtelee 100/0 välillä"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -418,7 +423,7 @@ msgstr ""
 "suuren suorituskyvyn laskun. Yleensä vaikuttaa vain koko ruudun tilaan, eikä "
 "välttämättä toimi kaikkien GS-liitännäisten kanssa."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -428,7 +433,7 @@ msgstr ""
 "sisällä; käytännöllinen jos käytät hiirtä peliohjaimena. Oletusarvoisesti "
 "kursori menee näkymättömäksi kahden sekunnin liikkumattomuuden jälkeen."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:63
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -438,7 +443,7 @@ msgstr ""
 "jatkaessa emulaatiota. Voit silti kytkeä koko ruudun tilan päälle ja pois "
 "milloin tahansa näppäinyhdistelmällä alt-enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -522,7 +527,7 @@ msgstr ""
 "('Automaattinen' tarkoittaa: valikoivasti käytä tiettyjä testattuja "
 "korjauksia tietyille peleille)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:686
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -531,14 +536,14 @@ msgstr ""
 "Olet poistamassa alustettua muistikorttia '%s'. Kaikki tämän kortin "
 "sisältämät tiedot menetetään!  Oletko aivan varma?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:722
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Epäonnistui: Kopiointi sallitaan vain tyhjään PS2-muistikorttipaikkaan tai "
 "tiedostojärjestelmään."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:767
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:764
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Epäonnistui: Kohdemuistikortti '%s' on käytössä."
@@ -595,7 +600,7 @@ msgstr ""
 "Useimmat liitännäiset käyttävät myös tätä kansiota, mutta jotkin vanhemmat "
 "liitännäiset saattavat jättää valinnan huomiotta."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:243
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -611,7 +616,7 @@ msgstr ""
 "\n"
 "Oletko varma, että haluat ottaa asetukset käyttöön nyt?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:455
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:454
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -626,8 +631,8 @@ msgstr ""
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
 #, fuzzy
 msgid ""
-"-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
-"cause stuttering audio on many FMVs."
+"-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
+"stuttering audio on many FMVs."
 msgstr ""
 "3 - Vähentää EE-prosessorin syklinopeutta noin 50%. Kohtuullinen "
 "nopeuslisäys, mutta *tulee* aiheuttamaan pätkivää ääntä monissa videoissa."
@@ -635,40 +640,55 @@ msgstr ""
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
 #, fuzzy
 msgid ""
-"-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
+"-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
+"cause stuttering audio on many FMVs."
+msgstr ""
+"3 - Vähentää EE-prosessorin syklinopeutta noin 50%. Kohtuullinen "
+"nopeuslisäys, mutta *tulee* aiheuttamaan pätkivää ääntä monissa videoissa."
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#, fuzzy
+msgid ""
+"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
 "2 - Vähentää EE-prosessorin syklinopeutta noin 33%. Lievä nopeuslisäys "
 "useimmille peleille korkealla yhteensopivuudella."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
 #, fuzzy
 msgid ""
-"0 - Default cyclerate. This closely matches the actual speed of a real PS2 "
-"EmotionEngine."
+"0 - Default cyclerate (100%). This closely matches the actual speed of a "
+"real PS2 EmotionEngine."
 msgstr ""
 "1 - Oletusarvoinen syklinopeus. Tämä vastaa hyvin pitkälle oikean PS2:den "
 "EmotionEnginen todellista nopeutta."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:44
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
 msgid ""
-"1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+"1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:49
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
 msgid ""
-"2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+"2 - Increases the EE's cyclerate to about 180%. Increases hardware "
+"requirements, may noticeably increase in-game FPS."
+msgstr ""
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
+msgid ""
+"3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:65
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
 msgstr ""
 "0 - Poistaa VU-syklivarastamisen käytöstä. Kaikkein yhteensopivin asetus!"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:70
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:82
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
@@ -676,7 +696,7 @@ msgstr ""
 "1 - Lievä VU-syklivarastaminen. Alhaisempi yhteensopivuus, mutta nopeuttaa "
 "jonkin verran useimpia pelejä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:75
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
@@ -684,7 +704,7 @@ msgstr ""
 "2 - Kohtuullinen VU-syklivarastaminen. Vielä alhaisempi yhteensopivuus, "
 "mutta huomattava nopeuslisäys joissain peleissä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
@@ -693,7 +713,7 @@ msgstr ""
 "aiheuttaa vilkkuvia grafiikoita tai nopeuden hidastumista useimmissa "
 "peleissä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:106
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -703,7 +723,7 @@ msgstr ""
 "aiheuttaa ongelmia, rikkinäistä ääntä ja virheellisiä FPS-lukemia. Kun "
 "kohtaat ongelmia emulaatiossa, ota tämä paneeli pois käytöstä ensin."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:135
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
 #, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
@@ -718,7 +738,7 @@ msgstr ""
 "nopeuslisän peleihin, jotka eivät käytä oikean PS2:den laitteiston täyttä "
 "suorituskykyä hyväkseen."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:152
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid ""
 "This slider controls the amount of cycles the VU unit steals from the "
 "EmotionEngine.  Higher values increase the number of cycles stolen from the "
@@ -728,7 +748,7 @@ msgstr ""
 "määrää. Korkeammat arvot lisäävät EE:ltä varastettujen syklien määrää "
 "jokaiselle VU-mikro-ohjelmalle joita peli suorittaa."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -738,7 +758,7 @@ msgstr ""
 "reaaliaikaisen päivittämisen sijaan. Tämä on useimmiten turvallista, ja "
 "Super VU tekee jotain samankaltaista oletuksena."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -751,7 +771,7 @@ msgstr ""
 "saattaa jumiutua. GS-rajoitteisissa peleissä saattaa hidastaa nopeutta "
 "(erityisesti tuplaydinsuorittimilla)."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -763,7 +783,7 @@ msgstr ""
 "pystytahdistukseen saavat vain pienen tai ei yhtään nopeutusta tästä "
 "viritelmästä."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -779,7 +799,7 @@ msgstr ""
 "kierroksen jälkeen etenemme seuraavan tapahtuman ajankohtaan tai prosessorin "
 "aikasiivun loppuun, riippuen kumpi tulee ennemmin."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:205
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
@@ -795,7 +815,7 @@ msgstr ""
 "Huomioi, että kun nopeusrajoitus on poistettu käytöstä, nopeutus- ja "
 "hidastustilat eivät myöskään ole saatavilla."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:216
+#: pcsx2/gui/Panels/VideoPanel.cpp:219
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
@@ -804,7 +824,7 @@ msgstr ""
 "on mahdotonta. Sen ottaminen käyttöön aiheuttaa vakavia grafiikkavirheitä "
 "joissain peleissä."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:295
+#: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
@@ -812,7 +832,7 @@ msgstr ""
 "Ota tämä käyttöön jos epäilet MTGS:n säiesynkronoinnin aiheuttavan "
 "kaatumisia tai grafiikkavirheitä."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:298
+#: pcsx2/gui/Panels/VideoPanel.cpp:301
 msgid ""
 "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
 "option is best used in conjunction with savestates: save a state at an ideal "
@@ -829,7 +849,7 @@ msgstr ""
 "Varoitus: Tämän valinnan voi ottaa käyttöön lennosta, mutta yleensä ei voi "
 "poistaa käytöstä lennosta (pelikuvan tilalla on yleensä roskaa)."
 
-#: pcsx2/vtlb.cpp:826
+#: pcsx2/vtlb.cpp:835
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -839,7 +859,7 @@ msgstr ""
 "Tämän voi aiheuttaa pieni tai käytöstä poistettu heittovaihtotiedosto (swap "
 "file) tai muut ohjelmat, jotka vievät resursseja. "
 
-#: pcsx2/x86/sVU_zerorec.cpp:363
+#: pcsx2/x86/sVU_zerorec.cpp:367
 msgid ""
 "Out of Memory (sorta): The SuperVU recompiler was unable to reserve the "
 "specific memory ranges required, and will not be available for use.  This is "
