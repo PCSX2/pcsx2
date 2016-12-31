@@ -29,7 +29,7 @@ template<class T, int CAPACITY> class GSJobQueue final
 private:
 	std::thread m_thread;
 	std::function<void(T&)> m_func;
-	std::atomic<int16_t> m_count;
+	std::atomic<int32_t> m_count;
 	std::atomic<bool> m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
@@ -50,19 +50,21 @@ private:
 				m_notempty.wait(l);
 			}
 
+			int32_t nb = m_count
+
 			l.unlock();
 
-			int16_t consumed = 0;
-			for (int16_t nb = m_count; nb >= 0; nb--) {
+			int32_t consumed = 0;
+			for (; nb >= 0; nb--) {
 				if (m_queue.consume_one(*this))
 					consumed++;
 			}
 
 			l.lock();
 
-			m_count -= consumed;
+			int32_t old_count = m_count.fetch_sub(consumed);
 
-			if (m_count <= 0)
+			if (old_count == consumed)
 				m_empty.notify_one();
 
 		}
