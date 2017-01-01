@@ -87,6 +87,7 @@ for ARG in "$@"; do
         -D*                 ) flags="$flags $ARG" ;;
 
         *)
+        echo $ARG
             # Unknown option
             echo "** User options **"
             echo "--dev / --devel : Build PCSX2 as a Development build."
