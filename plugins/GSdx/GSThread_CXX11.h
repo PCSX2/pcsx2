@@ -34,6 +34,7 @@ private:
 	ringbuffer_base<T, CAPACITY> m_queue;
 
 	std::mutex m_lock;
+	std::mutex m_wait_lock;
 	std::condition_variable m_empty;
 	std::condition_variable m_notempty;
 
@@ -64,8 +65,13 @@ private:
 
 			int32_t old_count = m_count.fetch_sub(consumed);
 
-			if (old_count == consumed)
+			if (old_count == consumed) {
+
+				{
+					std::lock_guard<std::mutex> wait_guard(m_wait_lock);
+				}
 				m_empty.notify_one();
+			}
 
 		}
 	}
@@ -110,7 +116,7 @@ public:
 
 	void Wait() {
 		if (m_count > 0) {
-			std::unique_lock<std::mutex> l(m_lock);
+			std::unique_lock<std::mutex> l(m_wait_lock);
 			while (m_count > 0) {
 				m_empty.wait(l);
 			}
