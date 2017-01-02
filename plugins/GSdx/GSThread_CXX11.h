@@ -29,7 +29,7 @@ template<class T, int CAPACITY> class GSJobQueue final
 private:
 	std::thread m_thread;
 	std::function<void(T&)> m_func;
-	std::atomic<bool> m_exit;
+	bool m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
 	std::mutex m_lock;
@@ -43,7 +43,7 @@ private:
 		while (true) {
 
 			while (m_queue.empty()) {
-				if (m_exit.load(memory_order_relaxed))
+				if (m_exit)
 					return;
 
 				m_notempty.wait(l);
